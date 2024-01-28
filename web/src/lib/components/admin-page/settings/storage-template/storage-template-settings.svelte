@@ -13,6 +13,7 @@
   import SettingSwitch from '../setting-switch.svelte';
   import SupportedDatetimePanel from './supported-datetime-panel.svelte';
   import SupportedVariablesPanel from './supported-variables-panel.svelte';
+  import { AppRoute } from '$lib/constants';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
@@ -185,7 +186,7 @@
                   <p>
                     Template changes will only apply to new assets. To retroactively apply the template to previously
                     uploaded assets, run the
-                    <a href="/admin/jobs-status" class="text-immich-primary dark:text-immich-dark-primary"
+                    <a href={AppRoute.ADMIN_JOBS} class="text-immich-primary dark:text-immich-dark-primary"
                       >Storage Migration Job</a
                     >.
                   </p>
@@ -193,7 +194,7 @@
                     The template variable <span class="font-mono">{`{{album}}`}</span> will always be empty for new
                     assets, so manually running the
 
-                    <a href="/admin/jobs-status" class="text-immich-primary dark:text-immich-dark-primary"
+                    <a href={AppRoute.ADMIN_JOBS} class="text-immich-primary dark:text-immich-dark-primary"
                       >Storage Migration Job</a
                     >
                     is required in order to successfully use the variable.

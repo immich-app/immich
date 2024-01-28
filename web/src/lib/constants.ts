@@ -24,6 +24,7 @@ export enum AppRoute {
   PLACES = '/places',
   PHOTOS = '/photos',
   EXPLORE = '/explore',
+  SHARE = '/share',
   SHARING = '/sharing',
   SHARED_LINKS = '/sharing/sharedlinks',
   SEARCH = '/search',
@@ -59,6 +60,32 @@ export const dateFormats = {
   },
 };
 
+export enum QueryParameter {
+  ACTION = 'action',
+  ASSET_INDEX = 'assetIndex',
+  CLIP = 'clip',
+  MEMORY_INDEX = 'memoryIndex',
+  ONBOARDING_STEP = 'step',
+  OPEN_SETTING = 'openSetting',
+  QUERY = 'query',
+  PREVIOUS_ROUTE = 'previousRoute',
+  SEARCHED_PEOPLE = 'searchedPeople',
+  SEARCH_TERM = 'q',
+}
+
+export enum OpenSettingQueryParameterValue {
+  OAUTH = 'oauth',
+  JOB = 'job',
+  STORAGE_TEMPLATE = 'storageTemplate',
+}
+
+export enum ActionQueryParameterValue {
+  MERGE = 'merge',
+}
+
+export const maximumLengthSearchPeople: number = 20;
+
+export const timeBeforeShowLoadingSpinner: number = 100;
 // should be the same values as the ones in the app.html
 export enum Theme {
   LIGHT = 'light',

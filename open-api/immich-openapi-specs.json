@@ -8523,15 +8523,11 @@
           },
           "total": {
             "type": "integer"
-          },
-          "visible": {
-            "type": "integer"
           }
         },
         "required": [
           "people",
-          "total",
-          "visible"
+          "total"
         ],
         "type": "object"
       },

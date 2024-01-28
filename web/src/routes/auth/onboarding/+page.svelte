@@ -4,7 +4,7 @@
   import OnboadingStorageTemplate from '$lib/components/onboarding-page/onboarding-storage-template.svelte';
   import { api } from '@api';
   import { goto } from '$app/navigation';
-  import { AppRoute } from '$lib/constants';
+  import { AppRoute, QueryParameter } from '$lib/constants';
   import { page } from '$app/stores';
 
   let index = 0;
@@ -32,14 +32,14 @@
       goto(AppRoute.PHOTOS);
     } else {
       index++;
-      goto(`${AppRoute.AUTH_ONBOARDING}?step=${onboardingSteps[index].name}`);
+      goto(`${AppRoute.AUTH_ONBOARDING}?${QueryParameter.ONBOARDING_STEP}=${onboardingSteps[index].name}`);
     }
   };
 
   const handlePrevious = () => {
     if (index >= 1) {
       index--;
-      goto(`${AppRoute.AUTH_ONBOARDING}?step=${onboardingSteps[index].name}`);
+      goto(`${AppRoute.AUTH_ONBOARDING}?${QueryParameter.ONBOARDING_STEP}=${onboardingSteps[index].name}`);
     }
   };
 </script>

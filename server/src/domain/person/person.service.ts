@@ -82,6 +82,7 @@ export class PersonService {
       minimumFaceCount: machineLearning.facialRecognition.minFaces,
       withHidden: dto.withHidden || false,
     });
+    const total = await this.repository.getNumberOfPeople(auth.user.id);
     const persons: PersonResponseDto[] = people
       // with thumbnails
       .filter((person) => !!person.thumbnailPath)
@@ -89,8 +90,7 @@ export class PersonService {
 
     return {
       people: persons.filter((person) => dto.withHidden || !person.isHidden),
-      total: persons.length,
-      visible: persons.filter((person: PersonResponseDto) => !person.isHidden).length,
+      total,
     };
   }
 

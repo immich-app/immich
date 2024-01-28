@@ -10,6 +10,7 @@
   import { getPersonNameWithHiddenValue, searchNameLocal } from '$lib/utils/person';
   import { handleError } from '$lib/utils/handle-error';
   import { photoViewer } from '$lib/stores/assets.store';
+  import { maximumLengthSearchPeople, timeBeforeShowLoadingSpinner } from '$lib/constants';
 
   export let peopleWithFaces: AssetFaceResponseDto[];
   export let allPeople: PersonResponseDto[];
@@ -90,7 +91,7 @@
   };
 
   const handleCreatePerson = async () => {
-    const timeout = setTimeout(() => (isShowLoadingNewPerson = true), 100);
+    const timeout = setTimeout(() => (isShowLoadingNewPerson = true), timeBeforeShowLoadingSpinner);
     const personToUpdate = peopleWithFaces.find((person) => person.id === peopleWithFaces[editedPersonIndex].id);
 
     const newFeaturePhoto = personToUpdate ? await zoomImageToBase64(personToUpdate) : null;
@@ -103,10 +104,10 @@
   };
 
   const searchPeople = async () => {
-    if ((searchedPeople.length < 20 && searchName.startsWith(searchWord)) || searchName === '') {
+    if ((searchedPeople.length < maximumLengthSearchPeople && searchName.startsWith(searchWord)) || searchName === '') {
       return;
     }
-    const timeout = setTimeout(() => (isShowLoadingSearch = true), 100);
+    const timeout = setTimeout(() => (isShowLoadingSearch = true), timeBeforeShowLoadingSpinner);
     try {
       const { data } = await api.searchApi.searchPerson({ name: searchName });
       searchedPeople = data;
@@ -122,7 +123,7 @@
   };
 
   $: {
-    searchedPeople = searchNameLocal(searchName, searchedPeopleCopy, 10);
+    searchedPeople = searchNameLocal(searchName, searchedPeopleCopy, 20);
   }
 
   const initInput = (element: HTMLInputElement) => {
