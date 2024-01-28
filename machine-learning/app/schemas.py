@@ -6,6 +6,13 @@ import numpy.typing as npt
 from pydantic import BaseModel
 
 
+class StrEnum(str, Enum):
+    value: str
+
+    def __str__(self) -> str:
+        return self.value
+
+
 class TextResponse(BaseModel):
     __root__: str
 
@@ -21,12 +28,12 @@ class BoundingBox(TypedDict):
     y2: int
 
 
-class ModelType(str, Enum):
+class ModelType(StrEnum):
     CLIP = "clip"
     FACIAL_RECOGNITION = "facial-recognition"
 
 
-class ModelRuntime(str, Enum):
+class ModelRuntime(StrEnum):
     ONNX = "onnx"
     ARMNN = "armnn"
 
