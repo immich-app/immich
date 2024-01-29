@@ -32,7 +32,7 @@ void main() {
 
     container.listen(
       activityStatisticsProvider('test-album', 'test-asset'),
-      listener,
+      listener.call,
       fireImmediately: true,
     );
 
@@ -55,7 +55,7 @@ void main() {
     final provider = activityStatisticsProvider('test-album');
     container.listen(
       provider,
-      listener,
+      listener.call,
       fireImmediately: true,
     );
 
@@ -76,7 +76,7 @@ void main() {
     final provider = activityStatisticsProvider('new-album', 'test-asset');
     container.listen(
       provider,
-      listener,
+      listener.call,
       fireImmediately: true,
     );
 

@@ -115,8 +115,8 @@
 
 ## 捐赠
 
-- 通过 GitHub Sponsors [按月捐赠](https://github.com/sponsors/alextran1502)
-- 通过 Github Sponsors [单次捐赠](https://github.com/sponsors/alextran1502?frequency=one-time&sponsor=alextran1502)
+- 通过 GitHub Sponsors [按月捐赠](https://github.com/sponsors/immich-app)
+- 通过 Github Sponsors [单次捐赠](https://github.com/sponsors/immich-app?frequency=one-time&sponsor=alextran1502)
 - [Librepay](https://liberapay.com/alex.tran1502/)
 - [buymeacoffee](https://www.buymeacoffee.com/altran1502)
 - 比特币: 1FvEp6P6NM8EZEkpGUFAN2LqJ1gxusNxZX

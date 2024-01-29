@@ -2,11 +2,10 @@
   import { api, type PersonResponseDto } from '@api';
   import FaceThumbnail from './face-thumbnail.svelte';
   import { createEventDispatcher } from 'svelte';
-  import Icon from '../elements/icon.svelte';
-  import { mdiClose, mdiMagnify } from '@mdi/js';
   import { handleError } from '$lib/utils/handle-error';
-  import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { searchNameLocal } from '$lib/utils/person';
+  import SearchBar from './search-bar.svelte';
+  import { maximumLengthSearchPeople, timeBeforeShowLoadingSpinner } from '$lib/constants';
 
   export let screenHeight: number;
   export let people: PersonResponseDto[];
@@ -21,17 +20,12 @@
     select: PersonResponseDto;
   }>();
 
-  const resetSearch = () => {
-    name = '';
-    people = peopleCopy;
-  };
-
   $: {
     people = peopleCopy.filter(
       (person) => !unselectedPeople.some((unselectedPerson) => unselectedPerson.id === person.id),
     );
     if (name) {
-      people = searchNameLocal(name, people, 10);
+      people = searchNameLocal(name, people, maximumLengthSearchPeople);
     }
   }
 
@@ -41,12 +35,12 @@
       return;
     }
     if (!force) {
-      if (people.length < 20 && name.startsWith(searchWord)) {
+      if (people.length < maximumLengthSearchPeople && name.startsWith(searchWord)) {
         return;
       }
     }
 
-    const timeout = setTimeout(() => (isSearchingPeople = true), 100);
+    const timeout = setTimeout(() => (isSearchingPeople = true), timeBeforeShowLoadingSpinner);
     try {
       const { data } = await api.searchApi.searchPerson({ name });
       people = data;
@@ -61,31 +55,15 @@
   };
 </script>
 
-<div class="flex w-40 sm:w-48 md:w-96 h-14 rounded-lg bg-gray-100 p-2 dark:bg-gray-700 mb-8 gap-2 place-items-center">
-  <button on:click={() => searchPeople(true)}>
-    <div class="w-fit">
-      <Icon path={mdiMagnify} size="24" />
-    </div>
-  </button>
-  <!-- svelte-ignore a11y-autofocus -->
-  <input
-    autofocus
-    class="w-full gap-2 bg-gray-100 dark:bg-gray-700 dark:text-white"
-    type="text"
-    placeholder="Search names"
-    bind:value={name}
-    on:input={() => searchPeople(false)}
+<div class=" w-40 sm:w-48 md:w-96 h-14 mb-8">
+  <SearchBar
+    bind:name
+    {isSearchingPeople}
+    on:reset={() => {
+      people = peopleCopy;
+    }}
+    on:search={({ detail }) => searchPeople(detail.force ?? false)}
   />
-  {#if name}
-    <button on:click={resetSearch}>
-      <Icon path={mdiClose} />
-    </button>
-  {/if}
-  {#if isSearchingPeople}
-    <div class="flex place-items-center">
-      <LoadingSpinner />
-    </div>
-  {/if}
 </div>
 
 <div

@@ -108,7 +108,7 @@ export class AssetRepositoryV1 implements IAssetRepositoryV1 {
       relations: {
         exifInfo: true,
         tags: true,
-        stack: true,
+        stack: { assets: true },
       },
       skip: dto.skip || 0,
       take: dto.take,

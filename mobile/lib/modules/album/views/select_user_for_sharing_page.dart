@@ -15,8 +15,7 @@ import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
 
 @RoutePage<List<String>>()
 class SelectUserForSharingPage extends HookConsumerWidget {
-  const SelectUserForSharingPage({Key? key, required this.assets})
-      : super(key: key);
+  const SelectUserForSharingPage({super.key, required this.assets});
 
   final Set<Asset> assets;
 

@@ -93,7 +93,7 @@ export enum WithoutProperty {
   THUMBNAIL = 'thumbnail',
   ENCODED_VIDEO = 'encoded-video',
   EXIF = 'exif',
-  CLIP_ENCODING = 'clip-embedding',
+  SMART_SEARCH = 'smart-search',
   OBJECT_TAGS = 'object-tags',
   FACES = 'faces',
   PERSON = 'person',

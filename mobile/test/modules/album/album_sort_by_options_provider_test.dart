@@ -253,7 +253,7 @@ void main() {
       final listener = ListenerMock<AlbumSortMode>();
       container.listen(
         albumSortByOptionsProvider,
-        listener,
+        listener.call,
         fireImmediately: true,
       );
 
@@ -318,7 +318,7 @@ void main() {
       final listener = ListenerMock<bool>();
       container.listen(
         albumSortOrderProvider,
-        listener,
+        listener.call,
         fireImmediately: true,
       );
 

@@ -211,6 +211,18 @@ export class PersonRepository implements IPersonRepository {
     });
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getNumberOfPeople(userId: string): Promise<number> {
+    return this.personRepository
+      .createQueryBuilder('person')
+      .leftJoin('person.faces', 'face')
+      .where('person.ownerId = :userId', { userId })
+      .having('COUNT(face.assetId) != 0')
+      .groupBy('person.id')
+      .withDeleted()
+      .getCount();
+  }
+
   create(entity: Partial<PersonEntity>): Promise<PersonEntity> {
     return this.personRepository.save(entity);
   }

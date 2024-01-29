@@ -82,6 +82,7 @@ export class PersonService {
       minimumFaceCount: machineLearning.facialRecognition.minFaces,
       withHidden: dto.withHidden || false,
     });
+    const total = await this.repository.getNumberOfPeople(auth.user.id);
     const persons: PersonResponseDto[] = people
       // with thumbnails
       .filter((person) => !!person.thumbnailPath)
@@ -89,8 +90,7 @@ export class PersonService {
 
     return {
       people: persons.filter((person) => dto.withHidden || !person.isHidden),
-      total: persons.length,
-      visible: persons.filter((person: PersonResponseDto) => !person.isHidden).length,
+      total,
     };
   }
 
@@ -258,7 +258,7 @@ export class PersonService {
 
   private async deleteAllPeople() {
     const personPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
-      this.repository.getAll(pagination),
+      this.repository.getAll({ ...pagination, skip: 0 }),
     );
 
     for await (const people of personPagination) {
@@ -400,7 +400,7 @@ export class PersonService {
       { person: true, asset: true },
       { id: true, personId: true, embedding: true },
     );
-    if (!face) {
+    if (!face || !face.asset) {
       this.logger.warn(`Face ${id} not found`);
       return false;
     }

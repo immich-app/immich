@@ -33,7 +33,7 @@ class ControlBottomAppBar extends ConsumerWidget {
   final SelectionAssetState selectionAssetState;
 
   const ControlBottomAppBar({
-    Key? key,
+    super.key,
     required this.onShare,
     this.onFavorite,
     this.onArchive,
@@ -51,7 +51,7 @@ class ControlBottomAppBar extends ConsumerWidget {
     this.enabled = true,
     this.unarchive = false,
     this.unfavorite = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

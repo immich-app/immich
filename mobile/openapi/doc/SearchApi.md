@@ -66,7 +66,7 @@ This endpoint does not need any parameter.
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **search**
-> SearchResponseDto search(clip, motion, q, query, recent, type, withArchived)
+> SearchResponseDto search(clip, motion, q, query, recent, smart, type, withArchived)
 
 
 
@@ -89,16 +89,17 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = SearchApi();
-final clip = true; // bool | 
+final clip = true; // bool | @deprecated
 final motion = true; // bool | 
 final q = q_example; // String | 
 final query = query_example; // String | 
 final recent = true; // bool | 
+final smart = true; // bool | 
 final type = type_example; // String | 
 final withArchived = true; // bool | 
 
 try {
-    final result = api_instance.search(clip, motion, q, query, recent, type, withArchived);
+    final result = api_instance.search(clip, motion, q, query, recent, smart, type, withArchived);
     print(result);
 } catch (e) {
     print('Exception when calling SearchApi->search: $e\n');
@@ -109,11 +110,12 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **clip** | **bool**|  | [optional] 
+ **clip** | **bool**| @deprecated | [optional] 
  **motion** | **bool**|  | [optional] 
  **q** | **String**|  | [optional] 
  **query** | **String**|  | [optional] 
  **recent** | **bool**|  | [optional] 
+ **smart** | **bool**|  | [optional] 
  **type** | **String**|  | [optional] 
  **withArchived** | **bool**|  | [optional] 
 

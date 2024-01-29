@@ -15,11 +15,11 @@
   $: showClearIcon = value.length > 0;
 
   function onSearch() {
-    let clipSearch = 'true';
+    let smartSearch = 'true';
     let searchValue = value;
 
     if (value.slice(0, 2) == 'm:') {
-      clipSearch = 'false';
+      smartSearch = 'false';
       searchValue = value.slice(2);
     }
 
@@ -28,7 +28,7 @@
 
     const params = new URLSearchParams({
       q: searchValue,
-      clip: clipSearch,
+      smart: smartSearch,
     });
 
     showBigSearchBar = false;
