@@ -185,7 +185,7 @@ describe(SearchService.name, () => {
       { key: SystemConfigKey.MACHINE_LEARNING_CLIP_ENABLED },
     ])('should throw an error if clip is requested but disabled', async ({ key }) => {
       const dto: SearchDto = { q: 'test query', clip: true };
-      configMock.load.mockResolvedValue([{ key, value: false }])
+      configMock.load.mockResolvedValue([{ key, value: false }]);
 
       await expect(sut.search(authStub.user1, dto)).rejects.toThrow('Smart search is not enabled');
     });
