@@ -1,4 +1,4 @@
-import { AssetFaceEntity, Colorspace, SystemConfigKey } from '@app/infra/entities';
+import { AssetEntity, AssetFaceEntity, Colorspace, SystemConfigKey } from '@app/infra/entities';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import {
   IAccessRepositoryMock,
@@ -779,6 +779,17 @@ describe(PersonService.name, () => {
   describe('handleRecognizeFaces', () => {
     it('should return false if face does not exist', async () => {
       personMock.getFaceByIdWithAssets.mockResolvedValue(null);
+
+      expect(await sut.handleRecognizeFaces({ id: faceStub.face1.id })).toBe(false);
+
+      expect(personMock.reassignFaces).not.toHaveBeenCalled();
+      expect(personMock.create).not.toHaveBeenCalled();
+      expect(personMock.createFaces).not.toHaveBeenCalled();
+    });
+
+    it('should return false if face does not have asset', async () => {
+      const face = { ...faceStub.face1, asset: null } as AssetFaceEntity & { asset: null};
+      personMock.getFaceByIdWithAssets.mockResolvedValue(face);
 
       expect(await sut.handleRecognizeFaces({ id: faceStub.face1.id })).toBe(false);
 
