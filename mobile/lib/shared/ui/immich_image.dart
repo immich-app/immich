@@ -49,7 +49,7 @@ class ImmichImage extends StatelessWidget {
     final Asset asset = this.asset!;
     if (useLocal(asset)) {
       return Image(
-        image: localThumbnailProvider(asset),
+        image: localThumbnailProvider(asset, dimension: 2048),
         width: width,
         height: height,
         fit: fit,
@@ -145,11 +145,14 @@ class ImmichImage extends StatelessWidget {
     );
   }
 
-  static AssetEntityImageProvider localThumbnailProvider(Asset asset) =>
+  static AssetEntityImageProvider localThumbnailProvider(
+    Asset asset, {
+    int dimension = 250,
+  }) =>
       AssetEntityImageProvider(
         asset.local!,
         isOriginal: false,
-        thumbnailSize: const ThumbnailSize.square(250),
+        thumbnailSize: ThumbnailSize.square(dimension),
       );
 
   static CachedNetworkImageProvider remoteThumbnailProvider(
@@ -184,7 +187,10 @@ class ImmichImage extends StatelessWidget {
   }) {
     if (useLocal(asset)) {
       // Precache the local image
-      return precacheImage(localThumbnailProvider(asset), context);
+      return precacheImage(
+        localThumbnailProvider(asset, dimension: 2048),
+        context,
+      );
     } else {
       final authToken = 'Bearer ${Store.get(StoreKey.accessToken)}';
       // Precache the remote image since we are not using local images
