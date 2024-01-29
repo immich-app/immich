@@ -64,6 +64,7 @@ class SearchApi {
   /// Parameters:
   ///
   /// * [bool] clip:
+  ///   @deprecated
   ///
   /// * [bool] motion:
   ///
@@ -73,10 +74,12 @@ class SearchApi {
   ///
   /// * [bool] recent:
   ///
+  /// * [bool] smart:
+  ///
   /// * [String] type:
   ///
   /// * [bool] withArchived:
-  Future<Response> searchWithHttpInfo({ bool? clip, bool? motion, String? q, String? query, bool? recent, String? type, bool? withArchived, }) async {
+  Future<Response> searchWithHttpInfo({ bool? clip, bool? motion, String? q, String? query, bool? recent, bool? smart, String? type, bool? withArchived, }) async {
     // ignore: prefer_const_declarations
     final path = r'/search';
 
@@ -102,6 +105,9 @@ class SearchApi {
     if (recent != null) {
       queryParams.addAll(_queryParams('', 'recent', recent));
     }
+    if (smart != null) {
+      queryParams.addAll(_queryParams('', 'smart', smart));
+    }
     if (type != null) {
       queryParams.addAll(_queryParams('', 'type', type));
     }
@@ -126,6 +132,7 @@ class SearchApi {
   /// Parameters:
   ///
   /// * [bool] clip:
+  ///   @deprecated
   ///
   /// * [bool] motion:
   ///
@@ -135,11 +142,13 @@ class SearchApi {
   ///
   /// * [bool] recent:
   ///
+  /// * [bool] smart:
+  ///
   /// * [String] type:
   ///
   /// * [bool] withArchived:
-  Future<SearchResponseDto?> search({ bool? clip, bool? motion, String? q, String? query, bool? recent, String? type, bool? withArchived, }) async {
-    final response = await searchWithHttpInfo( clip: clip, motion: motion, q: q, query: query, recent: recent, type: type, withArchived: withArchived, );
+  Future<SearchResponseDto?> search({ bool? clip, bool? motion, String? q, String? query, bool? recent, bool? smart, String? type, bool? withArchived, }) async {
+    final response = await searchWithHttpInfo( clip: clip, motion: motion, q: q, query: query, recent: recent, smart: smart, type: type, withArchived: withArchived, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

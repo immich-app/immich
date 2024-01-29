@@ -80,9 +80,9 @@ export enum JobName {
   DELETE_FILES = 'delete-files',
   CLEAN_OLD_AUDIT_LOGS = 'clean-old-audit-logs',
 
-  // clip
-  QUEUE_ENCODE_CLIP = 'queue-clip-encode',
-  ENCODE_CLIP = 'clip-encode',
+  // smart search
+  QUEUE_SMART_SEARCH = 'queue-smart-search',
+  SMART_SEARCH = 'smart-search',
 
   // XMP sidecars
   QUEUE_SIDECAR = 'queue-sidecar',
@@ -135,9 +135,9 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   [JobName.QUEUE_FACIAL_RECOGNITION]: QueueName.FACIAL_RECOGNITION,
   [JobName.FACIAL_RECOGNITION]: QueueName.FACIAL_RECOGNITION,
 
-  // clip
-  [JobName.QUEUE_ENCODE_CLIP]: QueueName.SMART_SEARCH,
-  [JobName.ENCODE_CLIP]: QueueName.SMART_SEARCH,
+  // smart search
+  [JobName.QUEUE_SMART_SEARCH]: QueueName.SMART_SEARCH,
+  [JobName.SMART_SEARCH]: QueueName.SMART_SEARCH,
 
   // XMP sidecars
   [JobName.QUEUE_SIDECAR]: QueueName.SIDECAR,

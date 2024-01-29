@@ -56,23 +56,26 @@ export class SearchService {
   }
 
   async search(auth: AuthDto, dto: SearchDto): Promise<SearchResponseDto> {
+    await this.configCore.requireFeature(FeatureFlag.SEARCH);
     const { machineLearning } = await this.configCore.getConfig();
     const query = dto.q || dto.query;
     if (!query) {
       throw new Error('Missing query');
     }
-    const hasClip = machineLearning.enabled && machineLearning.clip.enabled;
-    if (dto.clip && !hasClip) {
-      throw new Error('CLIP is not enabled');
+
+    let strategy = SearchStrategy.TEXT;
+    if (dto.smart || dto.clip) {
+      await this.configCore.requireFeature(FeatureFlag.SMART_SEARCH);
+      strategy = SearchStrategy.SMART;
     }
-    const strategy = dto.clip ? SearchStrategy.CLIP : SearchStrategy.TEXT;
+
     const userIds = await this.getUserIdsToSearch(auth);
     const withArchived = dto.withArchived || false;
 
     let assets: AssetEntity[] = [];
 
     switch (strategy) {
-      case SearchStrategy.CLIP:
+      case SearchStrategy.SMART:
         const embedding = await this.machineLearning.encodeText(
           machineLearning.url,
           { text: query },

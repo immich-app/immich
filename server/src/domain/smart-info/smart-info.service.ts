@@ -53,11 +53,13 @@ export class SmartInfoService {
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
       return force
         ? this.assetRepository.getAll(pagination)
-        : this.assetRepository.getWithout(pagination, WithoutProperty.CLIP_ENCODING);
+        : this.assetRepository.getWithout(pagination, WithoutProperty.SMART_SEARCH);
     });
 
     for await (const assets of assetPagination) {
-      await this.jobRepository.queueAll(assets.map((asset) => ({ name: JobName.ENCODE_CLIP, data: { id: asset.id } })));
+      await this.jobRepository.queueAll(
+        assets.map((asset) => ({ name: JobName.SMART_SEARCH, data: { id: asset.id } })),
+      );
     }
 
     return true;

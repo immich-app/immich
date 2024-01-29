@@ -85,7 +85,7 @@
       icon: mdiImageSearch,
       title: api.getJobName(JobName.SmartSearch),
       subtitle: 'Run machine learning on assets to support smart search',
-      disabled: !$featureFlags.clipEncode,
+      disabled: !$featureFlags.smartSearch,
     },
     [JobName.FaceDetection]: {
       icon: mdiFaceRecognition,

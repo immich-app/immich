@@ -1,7 +1,7 @@
 import { AssetType } from '@app/infra/entities';
 
 export enum SearchStrategy {
-  CLIP = 'CLIP',
+  SMART = 'SMART',
   TEXT = 'TEXT',
 }
 
