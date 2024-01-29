@@ -1,6 +1,6 @@
-import { APIKeyCreateResponseDto } from '@app/domain';
+import { APIKeyCreateResponseDto } from '@app/domain/api-key';
 import { api } from '@api';
-import { IMMICH_TEST_ASSET_PATH, restoreTempFolder, testApp } from '@test/../e2e/jobs/utils';
+import { IMMICH_TEST_ASSET_PATH, restoreTempFolder, testApp } from '@test/utils';
 import { LoginResponseDto } from '@immich/sdk';
 import { Upload } from 'src/commands/upload';
 import { CLI_BASE_OPTIONS, spyOnConsole } from 'test/cli-test-utils';

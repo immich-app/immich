@@ -1,9 +1,9 @@
 import { LoginResponseDto } from '@app/domain';
 import { AssetType } from '@app/infra/entities';
-import { readFile } from 'fs/promises';
-import { basename, join } from 'path';
-import { api } from '../../client';
-import { IMMICH_TEST_ASSET_PATH, testApp } from '../utils';
+import { readFile } from 'node:fs/promises';
+import { basename, join } from 'node:path';
+import { api } from '../../../src/test/client';
+import { IMMICH_TEST_ASSET_PATH, testApp } from '../../../src/test/utils';
 
 const JPEG = {
   type: AssetType.IMAGE,

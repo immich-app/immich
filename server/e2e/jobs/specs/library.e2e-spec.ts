@@ -2,11 +2,16 @@ import { LibraryResponseDto, LoginResponseDto } from '@app/domain';
 import { LibraryController } from '@app/immich';
 import { AssetType, LibraryType } from '@app/infra/entities';
 import { errorStub, uuidStub } from '@test/fixtures';
-import * as fs from 'fs';
+import * as fs from 'node:fs';
 import request from 'supertest';
 import { utimes } from 'utimes';
-import { api } from '../../client';
-import { IMMICH_TEST_ASSET_PATH, IMMICH_TEST_ASSET_TEMP_PATH, restoreTempFolder, testApp } from '../utils';
+import { api } from '../../../src/test/client';
+import {
+  IMMICH_TEST_ASSET_PATH,
+  IMMICH_TEST_ASSET_TEMP_PATH,
+  restoreTempFolder,
+  testApp,
+} from '../../../src/test/utils';
 
 describe(`${LibraryController.name} (e2e)`, () => {
   let server: any;

@@ -9,7 +9,7 @@ import {
   uuidStub,
 } from '@test/fixtures';
 import request from 'supertest';
-import { api } from '../../client';
+import { api } from '../../../src/test/client';
 import { testApp } from '../utils';
 
 const name = 'Immich Admin';

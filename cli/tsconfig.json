@@ -17,8 +17,10 @@
     "rootDirs": ["src", "../server/src"],
     "baseUrl": "./",
     "paths": {
-      "@api": ["../server/e2e/client"],
-      "@api/*": ["../server/e2e/client/*"],
+      "@api": ["../server/src/test/client"],
+      "@api/*": ["../server/src/test/client/*"],
+      "@test/utils": ["../server/src/test/utils"],
+      "@test/utils/*": ["../server/src/test/utils/*"],
       "@test": ["../server/test"],
       "@test/*": ["../server/test/*"],
       "@app/immich": ["../server/src/immich"],

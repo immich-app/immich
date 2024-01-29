@@ -2,9 +2,15 @@ import { AssetResponseDto, LoginResponseDto } from '@app/domain';
 import { AssetController } from '@app/immich';
 import { INestApplication } from '@nestjs/common';
 import { exiftool } from 'exiftool-vendored';
-import { readFile, writeFile } from 'fs/promises';
-import { api } from '../../client';
-import { IMMICH_TEST_ASSET_PATH, IMMICH_TEST_ASSET_TEMP_PATH, db, restoreTempFolder, testApp } from '../utils';
+import { readFile, writeFile } from 'node:fs/promises';
+import { api } from '../../../src/test/client';
+import {
+  IMMICH_TEST_ASSET_PATH,
+  IMMICH_TEST_ASSET_TEMP_PATH,
+  db,
+  restoreTempFolder,
+  testApp,
+} from '../../../src/test/utils';
 
 describe(`${AssetController.name} (e2e)`, () => {
   let app: INestApplication;
