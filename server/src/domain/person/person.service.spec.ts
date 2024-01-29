@@ -1,4 +1,4 @@
-import { AssetEntity, AssetFaceEntity, Colorspace, SystemConfigKey } from '@app/infra/entities';
+import { AssetFaceEntity, Colorspace, SystemConfigKey } from '@app/infra/entities';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import {
   IAccessRepositoryMock,
