@@ -16,11 +16,6 @@ void main() {
   // final instance = ServerFeaturesDto();
 
   group('test ServerFeaturesDto', () {
-    // bool clipEncode
-    test('to test the property `clipEncode`', () async {
-      // TODO
-    });
-
     // bool configFile
     test('to test the property `configFile`', () async {
       // TODO
@@ -63,6 +58,11 @@ void main() {
 
     // bool sidecar
     test('to test the property `sidecar`', () async {
+      // TODO
+    });
+
+    // bool smartSearch
+    test('to test the property `smartSearch`', () async {
       // TODO
     });
 

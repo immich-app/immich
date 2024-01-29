@@ -4684,6 +4684,8 @@
             "name": "clip",
             "required": false,
             "in": "query",
+            "description": "@deprecated",
+            "deprecated": true,
             "schema": {
               "type": "boolean"
             }
@@ -4714,6 +4716,14 @@
           },
           {
             "name": "recent",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "smart",
             "required": false,
             "in": "query",
             "schema": {
@@ -8919,9 +8929,6 @@
       },
       "ServerFeaturesDto": {
         "properties": {
-          "clipEncode": {
-            "type": "boolean"
-          },
           "configFile": {
             "type": "boolean"
           },
@@ -8949,12 +8956,14 @@
           "sidecar": {
             "type": "boolean"
           },
+          "smartSearch": {
+            "type": "boolean"
+          },
           "trash": {
             "type": "boolean"
           }
         },
         "required": [
-          "clipEncode",
           "configFile",
           "facialRecognition",
           "map",
@@ -8964,6 +8973,7 @@
           "reverseGeocoding",
           "search",
           "sidecar",
+          "smartSearch",
           "trash"
         ],
         "type": "object"

@@ -17,6 +17,12 @@ export class SearchDto {
   @IsBoolean()
   @Optional()
   @Transform(toBoolean)
+  smart?: boolean;
+
+  /** @deprecated */
+  @IsBoolean()
+  @Optional()
+  @Transform(toBoolean)
   clip?: boolean;
 
   @IsEnum(AssetType)

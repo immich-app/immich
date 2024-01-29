@@ -63,7 +63,7 @@ export const dateFormats = {
 export enum QueryParameter {
   ACTION = 'action',
   ASSET_INDEX = 'assetIndex',
-  CLIP = 'clip',
+  SMART_SEARCH = 'smartSearch',
   MEMORY_INDEX = 'memoryIndex',
   ONBOARDING_STEP = 'step',
   OPEN_SETTING = 'openSetting',
