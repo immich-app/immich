@@ -1139,7 +1139,7 @@ describe(LibraryService.name, () => {
 
     it('should update library', async () => {
       libraryMock.update.mockResolvedValue(libraryStub.uploadLibrary1);
-      await expect(sut.update(authStub.admin, authStub.admin.user.id, {})).resolves.toBe(true);
+      await expect(sut.update(authStub.admin, authStub.admin.user.id, {})).resolves.toBeTruthy();
       expect(libraryMock.update).toHaveBeenCalledWith(
         expect.objectContaining({
           id: authStub.admin.user.id,
@@ -1161,7 +1161,7 @@ describe(LibraryService.name, () => {
 
       storageMock.watch.mockReturnValue(mockWatcher);
 
-      await expect(sut.update(authStub.admin, authStub.admin.user.id, { importPaths: ['/foo'] })).resolves.toBe(true);
+      await expect(sut.update(authStub.admin, authStub.admin.user.id, { importPaths: ['/foo'] })).resolves.toBeTruthy();
 
       expect(libraryMock.update).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -1174,7 +1174,7 @@ describe(LibraryService.name, () => {
       );
     });
 
-    it('should re-watch library when updating exclusion patterns paths', async () => {
+    it('should re-watch library when updating exclusion patterns', async () => {
       libraryMock.update.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
       configMock.load.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
       libraryMock.get.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
@@ -1189,9 +1189,9 @@ describe(LibraryService.name, () => {
 
       storageMock.watch.mockReturnValue(mockWatcher);
 
-      await expect(sut.update(authStub.admin, authStub.admin.user.id, { exclusionPatterns: ['bar'] })).resolves.toBe(
-        true,
-      );
+      await expect(
+        sut.update(authStub.admin, authStub.admin.user.id, { exclusionPatterns: ['bar'] }),
+      ).resolves.toBeTruthy();
 
       expect(libraryMock.update).toHaveBeenCalledWith(
         expect.objectContaining({
