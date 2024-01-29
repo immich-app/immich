@@ -20,8 +20,3 @@ The API e2e tests spin up a test database and execute http requests against the 
 #### Jobs (e2e)
 
 The Jobs e2e tests spin up a docker test environment where thumbnail generation, library scanning, and other _job_ workflows are validated.
-
-:::note
-Note that there is a bug in nodejs \<20.8 that causes segmentation faults when running these tests. If you run into segfaults, ensure you are using at least version 20.8.
-:::
-/follow

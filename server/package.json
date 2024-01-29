@@ -22,7 +22,7 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "e2e:jobs": "NODE_OPTIONS='--experimental-vm-modules' jest --config e2e/jobs/jest-e2e.json --runInBand",
+    "e2e:jobs": "jest --config e2e/jobs/jest-e2e.json --runInBand",
     "e2e:api": "jest --config e2e/api/jest-e2e.json --runInBand",
     "typeorm": "typeorm",
     "typeorm:migrations:create": "typeorm migration:create",
