@@ -117,6 +117,10 @@ export class LibraryService extends EventEmitter {
 
     const config = await this.configCore.getConfig();
 
+    this.logger.debug(
+      `Settings for watcher: usePolling: ${config.library.watch.usePolling}, interval: ${config.library.watch.interval}`,
+    );
+
     const watcher = this.storageRepository.watch(library.importPaths, {
       usePolling: config.library.watch.usePolling,
       interval: config.library.watch.interval,
