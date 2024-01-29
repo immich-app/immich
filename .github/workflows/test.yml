@@ -138,11 +138,6 @@ jobs:
         working-directory: ./cli
 
     steps:
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
       - name: Checkout code
         uses: actions/checkout@v4
         with:
