@@ -108,8 +108,8 @@ Si vous estimez que c'est pour la bonne cause et que vous prévoyez d'utiliser l
 
 ## Donation
 
-- [Donation mensuelle](https://github.com/sponsors/alextran1502) via GitHub Sponsors
-- [Donation occasionnelle](https://github.com/sponsors/alextran1502?frequency=one-time&sponsor=alextran1502) via GitHub Sponsors
+- [Donation mensuelle](https://github.com/sponsors/immich-app) via GitHub Sponsors
+- [Donation occasionnelle](https://github.com/sponsors/immich-app?frequency=one-time&sponsor=alextran1502) via GitHub Sponsors
 - [Librepay](https://liberapay.com/alex.tran1502/)
 - [buymeacoffee](https://www.buymeacoffee.com/altran1502)
 - Bitcoin: 1FvEp6P6NM8EZEkpGUFAN2LqJ1gxusNxZX
