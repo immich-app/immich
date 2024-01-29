@@ -6,8 +6,7 @@ import 'package:immich_mobile/shared/ui/immich_image.dart';
 class SharedAlbumThumbnailImage extends HookConsumerWidget {
   final Asset asset;
 
-  const SharedAlbumThumbnailImage({Key? key, required this.asset})
-      : super(key: key);
+  const SharedAlbumThumbnailImage({super.key, required this.asset});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

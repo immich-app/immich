@@ -8,6 +8,7 @@ import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:openapi/api.dart' as api;
+import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
 
 /// Renders an Asset using local data if available, else remote data
 class ImmichImage extends StatelessWidget {

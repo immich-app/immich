@@ -7,13 +7,13 @@ import 'package:immich_mobile/extensions/string_extensions.dart';
 // ignore: must_be_immutable
 class ThumbnailWithInfo extends StatelessWidget {
   ThumbnailWithInfo({
-    Key? key,
+    super.key,
     required this.textInfo,
     this.imageUrl,
     this.noImageIcon,
     this.borderRadius = 10,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   final String textInfo;
   final String? imageUrl;

@@ -19,6 +19,7 @@
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import { getAssetType } from '$lib/utils/asset-utils';
   import * as luxon from 'luxon';
+  import { timeBeforeShowLoadingSpinner } from '$lib/constants';
   import { autoGrowHeight } from '$lib/utils/autogrow';
 
   const units: Intl.RelativeTimeFormatUnit[] = ['year', 'month', 'week', 'day', 'hour', 'minute', 'second'];
@@ -132,7 +133,7 @@
     if (!message) {
       return;
     }
-    const timeout = setTimeout(() => (isSendingMessage = true), 100);
+    const timeout = setTimeout(() => (isSendingMessage = true), timeBeforeShowLoadingSpinner);
     try {
       const { data } = await api.activityApi.createActivity({
         activityCreateDto: { albumId, assetId, type: ReactionType.Comment, comment: message },

@@ -11,7 +11,7 @@ class HttpSSLCertOverride extends HttpOverrides {
         var log = Logger("HttpSSLCertOverride");
 
         AppSettingsEnum setting = AppSettingsEnum.allowSelfSignedSSLCert;
-        
+
         // Check if user has allowed self signed SSL certificates.
         bool selfSignedCertsAllowed =
             Store.get(setting.storeKey as StoreKey<bool>, setting.defaultValue);

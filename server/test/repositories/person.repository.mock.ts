@@ -27,5 +27,6 @@ export const newPersonRepositoryMock = (): jest.Mocked<IPersonRepository> => {
     reassignFace: jest.fn(),
     getFaceById: jest.fn(),
     getFaceByIdWithAssets: jest.fn(),
+    getNumberOfPeople: jest.fn(),
   };
 };

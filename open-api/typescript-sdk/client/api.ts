@@ -2583,12 +2583,6 @@ export interface PeopleResponseDto {
      * @memberof PeopleResponseDto
      */
     'total': number;
-    /**
-     * 
-     * @type {number}
-     * @memberof PeopleResponseDto
-     */
-    'visible': number;
 }
 /**
  * 
@@ -3676,6 +3670,18 @@ export interface SystemConfigFFmpegDto {
      * @memberof SystemConfigFFmpegDto
      */
     'accel': TranscodeHWAccel;
+    /**
+     * 
+     * @type {Array<AudioCodec>}
+     * @memberof SystemConfigFFmpegDto
+     */
+    'acceptedAudioCodecs': Array<AudioCodec>;
+    /**
+     * 
+     * @type {Array<VideoCodec>}
+     * @memberof SystemConfigFFmpegDto
+     */
+    'acceptedVideoCodecs': Array<VideoCodec>;
     /**
      * 
      * @type {number}

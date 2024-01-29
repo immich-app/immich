@@ -9,13 +9,13 @@ import 'package:immich_mobile/modules/settings/services/app_settings.service.dar
 
 class GroupDividerTitle extends HookConsumerWidget {
   const GroupDividerTitle({
-    Key? key,
+    super.key,
     required this.text,
     required this.multiselectEnabled,
     required this.onSelect,
     required this.onDeselect,
     required this.selected,
-  }) : super(key: key);
+  });
 
   final String text;
   final bool multiselectEnabled;

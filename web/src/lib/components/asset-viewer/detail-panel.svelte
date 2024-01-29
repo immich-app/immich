@@ -27,7 +27,7 @@
   import Map from '../shared-components/map/map.svelte';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { websocketStore } from '$lib/stores/websocket';
-  import { AppRoute } from '$lib/constants';
+  import { AppRoute, QueryParameter } from '$lib/constants';
   import ChangeLocation from '../shared-components/change-location.svelte';
   import { handleError } from '../../utils/handle-error';
   import { user } from '$lib/stores/user.store';
@@ -274,7 +274,7 @@
               on:mouseleave={() => ($boundingBoxesArray = [])}
             >
               <a
-                href="{AppRoute.PEOPLE}/{person.id}?previousRoute={albumId
+                href="{AppRoute.PEOPLE}/{person.id}?{QueryParameter.PREVIOUS_ROUTE}={albumId
                   ? `${AppRoute.ALBUMS}/${albumId}`
                   : AppRoute.PHOTOS}"
                 on:click={() => dispatch('closeViewer')}

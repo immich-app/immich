@@ -18,7 +18,7 @@ from .models.base import InferenceModel, PicklableSessionOptions
 from .models.cache import ModelCache
 from .models.clip import OpenCLIPEncoder
 from .models.facial_recognition import FaceRecognizer
-from .schemas import ModelType
+from .schemas import ModelRuntime, ModelType
 
 
 class TestBase:
@@ -127,6 +127,30 @@ class TestBase:
 
         assert encoder.cache_dir == cache_dir
 
+    def test_sets_default_preferred_runtime(self, mocker: MockerFixture) -> None:
+        mocker.patch.object(settings, "ann", True)
+        mocker.patch("ann.ann.is_available", False)
+
+        encoder = OpenCLIPEncoder("ViT-B-32__openai")
+
+        assert encoder.preferred_runtime == ModelRuntime.ONNX
+
+    def test_sets_default_preferred_runtime_to_armnn_if_available(self, mocker: MockerFixture) -> None:
+        mocker.patch.object(settings, "ann", True)
+        mocker.patch("ann.ann.is_available", True)
+
+        encoder = OpenCLIPEncoder("ViT-B-32__openai")
+
+        assert encoder.preferred_runtime == ModelRuntime.ARMNN
+
+    def test_sets_preferred_runtime_kwarg(self, mocker: MockerFixture) -> None:
+        mocker.patch.object(settings, "ann", False)
+        mocker.patch("ann.ann.is_available", False)
+
+        encoder = OpenCLIPEncoder("ViT-B-32__openai", preferred_runtime=ModelRuntime.ARMNN)
+
+        assert encoder.preferred_runtime == ModelRuntime.ARMNN
+
     def test_casts_cache_dir_string_to_path(self) -> None:
         cache_dir = "/test_cache"
         encoder = OpenCLIPEncoder("ViT-B-32__openai", cache_dir=cache_dir)
@@ -195,45 +219,78 @@ class TestBase:
         warning.assert_called_once()
 
     def test_make_session_return_ann_if_available(self, mocker: MockerFixture) -> None:
-        mock_cache_dir = mocker.Mock()
-        mock_cache_dir.is_file.return_value = True
-        mock_cache_dir.with_suffix.return_value = mock_cache_dir
-        mocker.patch.object(settings, "ann", True)
-        mocker.patch("ann.ann.is_available", True)
+        mock_model_path = mocker.Mock()
+        mock_model_path.is_file.return_value = True
+        mock_model_path.suffix = ".armnn"
+        mock_model_path.with_suffix.return_value = mock_model_path
         mock_session = mocker.patch("app.models.base.AnnSession")
 
         encoder = OpenCLIPEncoder("ViT-B-32__openai")
-        encoder._make_session(mock_cache_dir)
+        encoder._make_session(mock_model_path)
 
         mock_session.assert_called_once()
 
     def test_make_session_return_ort_if_available_and_ann_is_not(self, mocker: MockerFixture) -> None:
-        mock_cache_dir = mocker.Mock()
-        mock_cache_dir.is_file.return_value = True
-        mock_cache_dir.with_suffix.return_value = mock_cache_dir
-        mocker.patch.object(settings, "ann", False)
-        mocker.patch("ann.ann.is_available", False)
-        mock_session = mocker.patch("app.models.base.ort.InferenceSession")
+        mock_armnn_path = mocker.Mock()
+        mock_armnn_path.is_file.return_value = False
+        mock_armnn_path.suffix = ".armnn"
+
+        mock_onnx_path = mocker.Mock()
+        mock_onnx_path.is_file.return_value = True
+        mock_onnx_path.suffix = ".onnx"
+        mock_armnn_path.with_suffix.return_value = mock_onnx_path
+
+        mock_ann = mocker.patch("app.models.base.AnnSession")
+        mock_ort = mocker.patch("app.models.base.ort.InferenceSession")
 
         encoder = OpenCLIPEncoder("ViT-B-32__openai")
-        encoder._make_session(mock_cache_dir)
+        encoder._make_session(mock_armnn_path)
 
-        mock_session.assert_called_once()
+        mock_ort.assert_called_once()
+        mock_ann.assert_not_called()
 
     def test_make_session_raises_exception_if_path_does_not_exist(self, mocker: MockerFixture) -> None:
-        mock_cache_dir = mocker.Mock()
-        mock_cache_dir.is_file.return_value = False
-        mock_cache_dir.with_suffix.return_value = mock_cache_dir
-        mocker.patch("ann.ann.is_available", False)
-        mock_ann = mocker.patch("app.models.base.ort.InferenceSession")
+        mock_model_path = mocker.Mock()
+        mock_model_path.is_file.return_value = False
+        mock_model_path.suffix = ".onnx"
+        mock_model_path.with_suffix.return_value = mock_model_path
+        mock_ann = mocker.patch("app.models.base.AnnSession")
         mock_ort = mocker.patch("app.models.base.ort.InferenceSession")
 
         encoder = OpenCLIPEncoder("ViT-B-32__openai")
         with pytest.raises(ValueError):
-            encoder._make_session(mock_cache_dir)
+            encoder._make_session(mock_model_path)
 
         mock_ann.assert_not_called()
         mock_ort.assert_not_called()
+
+    def test_download(self, mocker: MockerFixture) -> None:
+        mock_snapshot_download = mocker.patch("app.models.base.snapshot_download")
+
+        encoder = OpenCLIPEncoder("ViT-B-32__openai")
+        encoder.download()
+
+        mock_snapshot_download.assert_called_once_with(
+            "immich-app/ViT-B-32__openai",
+            cache_dir=encoder.cache_dir,
+            local_dir=encoder.cache_dir,
+            local_dir_use_symlinks=False,
+            ignore_patterns=["*.armnn"],
+        )
+
+    def test_download_downloads_armnn_if_preferred_runtime(self, mocker: MockerFixture) -> None:
+        mock_snapshot_download = mocker.patch("app.models.base.snapshot_download")
+
+        encoder = OpenCLIPEncoder("ViT-B-32__openai", preferred_runtime=ModelRuntime.ARMNN)
+        encoder.download()
+
+        mock_snapshot_download.assert_called_once_with(
+            "immich-app/ViT-B-32__openai",
+            cache_dir=encoder.cache_dir,
+            local_dir=encoder.cache_dir,
+            local_dir_use_symlinks=False,
+            ignore_patterns=[],
+        )
 
 
 class TestCLIP:

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
+  import { createEventDispatcher } from 'svelte';
 
   export let value: string | number;
   export let options: { value: string | number; text: string }[];
@@ -11,11 +12,14 @@
   export let number = false;
   export let disabled = false;
 
+  const dispatch = createEventDispatcher<{ select: string | number }>();
+
   const handleChange = (e: Event) => {
     value = (e.target as HTMLInputElement).value;
     if (number) {
       value = parseInt(value);
     }
+    dispatch('select', value);
   };
 </script>
 

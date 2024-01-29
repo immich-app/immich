@@ -10,7 +10,7 @@ import 'package:photo_manager/photo_manager.dart';
 @RoutePage()
 class AlbumPreviewPage extends HookConsumerWidget {
   final AssetPathEntity album;
-  const AlbumPreviewPage({Key? key, required this.album}) : super(key: key);
+  const AlbumPreviewPage({super.key, required this.album});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

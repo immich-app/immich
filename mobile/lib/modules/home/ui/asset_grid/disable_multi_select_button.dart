@@ -4,10 +4,10 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 
 class DisableMultiSelectButton extends ConsumerWidget {
   const DisableMultiSelectButton({
-    Key? key,
+    super.key,
     required this.onPressed,
     required this.selectedItemCount,
-  }) : super(key: key);
+  });
 
   final Function onPressed;
   final int selectedItemCount;

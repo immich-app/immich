@@ -44,6 +44,7 @@ class BaseConfig implements VideoCodecSWConfig {
       // explicitly selects the video stream instead of leaving it up to FFmpeg
       `-map 0:${videoStream.index}`,
     ];
+
     if (audioStream) {
       options.push(`-map 0:${audioStream.index}`);
     }
@@ -56,6 +57,11 @@ class BaseConfig implements VideoCodecSWConfig {
     if (this.getGopSize() > 0) {
       options.push(`-g ${this.getGopSize()}`);
     }
+
+    if (this.config.targetVideoCodec === VideoCodec.HEVC) {
+      options.push('-tag:v hvc1');
+    }
+
     return options;
   }
 

@@ -15,36 +15,30 @@ class PeopleResponseDto {
   PeopleResponseDto({
     this.people = const [],
     required this.total,
-    required this.visible,
   });
 
   List<PersonResponseDto> people;
 
   int total;
 
-  int visible;
-
   @override
   bool operator ==(Object other) => identical(this, other) || other is PeopleResponseDto &&
     _deepEquality.equals(other.people, people) &&
-    other.total == total &&
-    other.visible == visible;
+    other.total == total;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (people.hashCode) +
-    (total.hashCode) +
-    (visible.hashCode);
+    (total.hashCode);
 
   @override
-  String toString() => 'PeopleResponseDto[people=$people, total=$total, visible=$visible]';
+  String toString() => 'PeopleResponseDto[people=$people, total=$total]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'people'] = this.people;
       json[r'total'] = this.total;
-      json[r'visible'] = this.visible;
     return json;
   }
 
@@ -58,7 +52,6 @@ class PeopleResponseDto {
       return PeopleResponseDto(
         people: PersonResponseDto.listFromJson(json[r'people']),
         total: mapValueOfType<int>(json, r'total')!,
-        visible: mapValueOfType<int>(json, r'visible')!,
       );
     }
     return null;
@@ -108,7 +101,6 @@ class PeopleResponseDto {
   static const requiredKeys = <String>{
     'people',
     'total',
-    'visible',
   };
 }
 

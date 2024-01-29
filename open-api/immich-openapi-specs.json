@@ -8526,15 +8526,11 @@
           },
           "total": {
             "type": "integer"
-          },
-          "visible": {
-            "type": "integer"
           }
         },
         "required": [
           "people",
-          "total",
-          "visible"
+          "total"
         ],
         "type": "object"
       },
@@ -9389,6 +9385,18 @@
           "accel": {
             "$ref": "#/components/schemas/TranscodeHWAccel"
           },
+          "acceptedAudioCodecs": {
+            "items": {
+              "$ref": "#/components/schemas/AudioCodec"
+            },
+            "type": "array"
+          },
+          "acceptedVideoCodecs": {
+            "items": {
+              "$ref": "#/components/schemas/VideoCodec"
+            },
+            "type": "array"
+          },
           "bframes": {
             "type": "integer"
           },
@@ -9440,6 +9448,8 @@
         },
         "required": [
           "accel",
+          "acceptedAudioCodecs",
+          "acceptedVideoCodecs",
           "bframes",
           "cqMode",
           "crf",

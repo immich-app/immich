@@ -6,6 +6,7 @@
   import { goto } from '$app/navigation';
   import { fade } from 'svelte/transition';
   import { mdiChevronLeft, mdiChevronRight } from '@mdi/js';
+  import { AppRoute, QueryParameter } from '$lib/constants';
 
   $: shouldRender = $memoryStore?.length > 0;
 
@@ -71,7 +72,7 @@
       {#each $memoryStore as memory, i (memory.title)}
         <button
           class="memory-card relative mr-8 inline-block aspect-video h-[215px] rounded-xl"
-          on:click={() => goto(`/memory?memory=${i}`)}
+          on:click={() => goto(`${AppRoute.MEMORY}?${QueryParameter.MEMORY_INDEX}=${i}`)}
         >
           <img
             class="h-full w-full rounded-xl object-cover"
