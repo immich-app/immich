@@ -3,9 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 
+/// The stacked children assets for the gallyer viewer page
 class StackedChildren extends StatelessWidget {
+
+  /// The stack index
   final int stackIndex;
+
+  /// The elements in this stack
   final List<Asset> stackElements;
+
+  /// A callback function to get the stack index of the tapped element
   final Function(int)? onTap;
 
   const StackedChildren({
