@@ -788,7 +788,7 @@ describe(PersonService.name, () => {
     });
 
     it('should return false if face does not have asset', async () => {
-      const face = { ...faceStub.face1, asset: null } as AssetFaceEntity & { asset: null};
+      const face = { ...faceStub.face1, asset: null } as AssetFaceEntity & { asset: null };
       personMock.getFaceByIdWithAssets.mockResolvedValue(face);
 
       expect(await sut.handleRecognizeFaces({ id: faceStub.face1.id })).toBe(false);
