@@ -20,7 +20,7 @@ class SearchResultPageNotifier extends StateNotifier<SearchResultPageState> {
 
   final SearchService _searchService;
 
-  Future<void> search(String searchTerm, {bool clipEnable = true}) async {
+  Future<void> search(String searchTerm, {bool smartSearch = true}) async {
     state = state.copyWith(
       searchResult: [],
       isError: false,
@@ -28,10 +28,7 @@ class SearchResultPageNotifier extends StateNotifier<SearchResultPageState> {
       isSuccess: false,
     );
 
-    List<Asset>? assets = await _searchService.searchAsset(
-      searchTerm,
-      clipEnable: clipEnable,
-    );
+    List<Asset>? assets = await _searchService.searchAsset(searchTerm, smartSearch);
 
     if (assets != null) {
       state = state.copyWith(
@@ -39,7 +36,7 @@ class SearchResultPageNotifier extends StateNotifier<SearchResultPageState> {
         isError: false,
         isLoading: false,
         isSuccess: true,
-        isClip: clipEnable,
+        isClip: smartSearch,
       );
     } else {
       state = state.copyWith(
@@ -47,7 +44,7 @@ class SearchResultPageNotifier extends StateNotifier<SearchResultPageState> {
         isError: true,
         isLoading: false,
         isSuccess: false,
-        isClip: clipEnable,
+        isClip: smartSearch,
       );
     }
   }
