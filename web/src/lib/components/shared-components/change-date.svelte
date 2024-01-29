@@ -10,36 +10,39 @@
   import { createEventDispatcher } from 'svelte';
   import { DateTime } from 'luxon';
   import ConfirmDialogue from './confirm-dialogue.svelte';
-  import Dropdown from '../elements/dropdown.svelte';
+  import Combobox from './combobox.svelte';
   export let initialDate: DateTime = DateTime.now();
 
-  interface ZoneOption {
-    zone: string;
-    offset: string;
-  }
+  type ZoneOption = {
+    /**
+     * Timezone name
+     *
+     * e.g. Europe/Berlin
+     */
+    label: string;
+
+    /**
+     * Timezone offset
+     *
+     * e.g. UTC+01:00
+     */
+    value: string;
+  };
 
   const timezones: ZoneOption[] = Intl.supportedValuesOf('timeZone').map((zone: string) => ({
-    zone,
-    offset: 'UTC' + DateTime.local({ zone }).toFormat('ZZ'),
+    label: zone + ` (${DateTime.local({ zone }).toFormat('ZZ')})`,
+    value: 'UTC' + DateTime.local({ zone }).toFormat('ZZ'),
   }));
 
-  const initialOption = timezones.find((item) => item.offset === 'UTC' + initialDate.toFormat('ZZ'));
+  const initialOption = timezones.find((item) => item.value === 'UTC' + initialDate.toFormat('ZZ'));
+
+  let selectedOption = {
+    label: initialOption?.label || '',
+    value: initialOption?.value || '',
+  };
 
   let selectedDate = initialDate.toFormat("yyyy-MM-dd'T'HH:mm");
-  let selectedTimezone = initialOption?.offset || null;
   let disabled = false;
-
-  let searchQuery = '';
-  let filteredTimezones: ZoneOption[] = timezones;
-
-  const updateSearchQuery = (event: Event) => {
-    searchQuery = (event.target as HTMLInputElement).value;
-    filterTimezones();
-  };
-
-  const filterTimezones = () => {
-    filteredTimezones = timezones.filter((timezone) => timezone.zone.toLowerCase().includes(searchQuery.toLowerCase()));
-  };
 
   const dispatch = createEventDispatcher<{
     cancel: void;
@@ -47,11 +50,11 @@
   }>();
 
   const handleCancel = () => dispatch('cancel');
+
   const handleConfirm = () => {
     let date = DateTime.fromISO(selectedDate);
-    if (selectedTimezone != null) {
-      date = date.setZone(selectedTimezone, { keepLocalTime: true }); // Keep local time if not it's really confusing
-    }
+
+    date = date.setZone(selectedOption.value, { keepLocalTime: true }); // Keep local time if not it's really confusing
 
     const value = date.toISO();
     if (value) {
@@ -64,34 +67,6 @@
     if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
       event.stopPropagation();
     }
-  };
-
-  let isDropdownOpen = false;
-  let isSearching = false;
-
-  const onSearchFocused = () => {
-    isSearching = true;
-
-    openDropdown();
-  };
-
-  const onSearchBlurred = () => {
-    isSearching = false;
-
-    closeDropdown();
-  };
-
-  const openDropdown = () => {
-    isDropdownOpen = true;
-  };
-
-  const closeDropdown = () => {
-    isDropdownOpen = false;
-  };
-
-  const handleSelectTz = (item: ZoneOption) => {
-    selectedTimezone = item.offset;
-    closeDropdown();
   };
 </script>
 
@@ -118,29 +93,7 @@
       </div>
       <div class="flex flex-col w-full mt-2">
         <label for="timezone">Timezone</label>
-
-        <div class="relative">
-          <input
-            class="text-sm my-4 w-full bg-gray-200 p-3 rounded-lg dark:text-white dark:bg-gray-600"
-            id="timezoneSearch"
-            type="text"
-            placeholder="Search timezone..."
-            bind:value={searchQuery}
-            on:input={updateSearchQuery}
-            on:focus={onSearchFocused}
-            on:blur={onSearchBlurred}
-          />
-          <Dropdown
-            class="h-[400px]"
-            selectedOption={initialOption}
-            options={filteredTimezones}
-            render={(item) => (item ? `${item.zone} (${item.offset})` : '(not selected)')}
-            on:select={({ detail: item }) => handleSelectTz(item)}
-            controlable={true}
-            bind:showMenu={isDropdownOpen}
-            on:click-outside={isSearching ? null : closeDropdown}
-          />
-        </div>
+        <Combobox bind:selectedOption options={timezones} placeholder="Search timezone..." />
       </div>
     </div>
   </ConfirmDialogue>

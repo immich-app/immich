@@ -180,14 +180,14 @@ describe(SearchService.name, () => {
       expect(assetMock.searchMetadata).not.toHaveBeenCalled();
     });
 
-    it('should throw an error if clip is requested but disabled', async () => {
+    it.each([
+      { key: SystemConfigKey.MACHINE_LEARNING_ENABLED },
+      { key: SystemConfigKey.MACHINE_LEARNING_CLIP_ENABLED },
+    ])('should throw an error if clip is requested but disabled', async ({ key }) => {
       const dto: SearchDto = { q: 'test query', clip: true };
-      configMock.load
-        .mockResolvedValueOnce([{ key: SystemConfigKey.MACHINE_LEARNING_ENABLED, value: false }])
-        .mockResolvedValueOnce([{ key: SystemConfigKey.MACHINE_LEARNING_CLIP_ENABLED, value: false }]);
+      configMock.load.mockResolvedValue([{ key, value: false }]);
 
-      await expect(sut.search(authStub.user1, dto)).rejects.toThrow('CLIP is not enabled');
-      await expect(sut.search(authStub.user1, dto)).rejects.toThrow('CLIP is not enabled');
+      await expect(sut.search(authStub.user1, dto)).rejects.toThrow('Smart search is not enabled');
     });
   });
 });

@@ -136,7 +136,7 @@ export const defaults = Object.freeze<SystemConfig>({
 });
 
 export enum FeatureFlag {
-  CLIP_ENCODE = 'clipEncode',
+  SMART_SEARCH = 'smartSearch',
   FACIAL_RECOGNITION = 'facialRecognition',
   MAP = 'map',
   REVERSE_GEOCODING = 'reverseGeocoding',
@@ -178,8 +178,8 @@ export class SystemConfigCore {
     const hasFeature = await this.hasFeature(feature);
     if (!hasFeature) {
       switch (feature) {
-        case FeatureFlag.CLIP_ENCODE:
-          throw new BadRequestException('Clip encoding is not enabled');
+        case FeatureFlag.SMART_SEARCH:
+          throw new BadRequestException('Smart search is not enabled');
         case FeatureFlag.FACIAL_RECOGNITION:
           throw new BadRequestException('Facial recognition is not enabled');
         case FeatureFlag.SIDECAR:
@@ -208,7 +208,7 @@ export class SystemConfigCore {
     const mlEnabled = config.machineLearning.enabled;
 
     return {
-      [FeatureFlag.CLIP_ENCODE]: mlEnabled && config.machineLearning.clip.enabled,
+      [FeatureFlag.SMART_SEARCH]: mlEnabled && config.machineLearning.clip.enabled,
       [FeatureFlag.FACIAL_RECOGNITION]: mlEnabled && config.machineLearning.facialRecognition.enabled,
       [FeatureFlag.MAP]: config.map.enabled,
       [FeatureFlag.REVERSE_GEOCODING]: config.reverseGeocoding.enabled,

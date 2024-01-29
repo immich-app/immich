@@ -73,7 +73,7 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
       const { status, body } = await request(server).get('/server-info/features');
       expect(status).toBe(200);
       expect(body).toEqual({
-        clipEncode: true,
+        smartSearch: true,
         configFile: false,
         facialRecognition: true,
         map: true,

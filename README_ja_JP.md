@@ -108,8 +108,8 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 
 ## 寄付
 
-- GitHub スポンサー経由の[毎月の寄付](https://github.com/sponsors/alextran1502)
-- GitHub スポンサー経由の[一回寄付](https://github.com/sponsors/alextran1502?frequency=one-time&sponsor=alextran1502)
+- GitHub スポンサー経由の[毎月の寄付](https://github.com/sponsors/immich-app)
+- GitHub スポンサー経由の[一回寄付](https://github.com/sponsors/immich-app?frequency=one-time&sponsor=alextran1502)
 - [Librepay](https://liberapay.com/alex.tran1502/)
 - [buymeacoffee](https://www.buymeacoffee.com/altran1502)
 - Bitcoin: 1FvEp6P6NM8EZEkpGUFAN2LqJ1gxusNxZX

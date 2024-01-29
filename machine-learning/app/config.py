@@ -70,6 +70,8 @@ LOG_LEVELS: dict[str, int] = {
 settings = Settings()
 log_settings = LogSettings()
 
+LOG_LEVEL = LOG_LEVELS.get(log_settings.log_level.lower(), logging.INFO)
+
 
 class CustomRichHandler(RichHandler):
     def __init__(self) -> None:
@@ -81,6 +83,7 @@ class CustomRichHandler(RichHandler):
             console=console,
             rich_tracebacks=True,
             tracebacks_suppress=[*self.excluded, concurrent.futures],
+            tracebacks_show_locals=LOG_LEVEL == logging.DEBUG,
         )
 
     # hack to exclude certain modules from rich tracebacks
@@ -96,7 +99,7 @@ class CustomRichHandler(RichHandler):
 
 
 log = logging.getLogger("ml.log")
-log.setLevel(LOG_LEVELS.get(log_settings.log_level.lower(), logging.INFO))
+log.setLevel(LOG_LEVEL)
 
 
 # patches this issue https://github.com/encode/uvicorn/discussions/1803

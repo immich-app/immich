@@ -23,7 +23,8 @@ download_dot_env_file() {
 }
 
 replace_env_value() {
-  if [[ "$OSTYPE" == "darwin"* ]]; then
+  KERNEL="$(uname -s | tr '[:upper:]' '[:lower:]')"
+  if [ "$KERNEL" = "darwin" ]; then
     sed -i '' "s|$1=.*|$1=$2|" ./.env
   else
     sed -i "s|$1=.*|$1=$2|" ./.env
@@ -39,9 +40,9 @@ populate_upload_location() {
 start_docker_compose() {
   echo "Starting Immich's docker containers"
 
-  if docker compose &>/dev/null; then
+  if docker compose > /dev/null 2>&1; then
     docker_bin="docker compose"
-  elif docker-compose &>/dev/null; then
+  elif docker-compose > /dev/null 2>&1; then
     docker_bin="docker-compose"
   else
     echo 'Cannot find `docker compose` or `docker-compose`.'

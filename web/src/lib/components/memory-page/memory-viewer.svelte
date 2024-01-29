@@ -6,7 +6,7 @@
   import { goto } from '$app/navigation';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import { fromLocalDateTime } from '$lib/utils/timeline-util';
-  import { AppRoute } from '$lib/constants';
+  import { AppRoute, QueryParameter } from '$lib/constants';
   import { page } from '$app/stores';
   import noThumbnailUrl from '$lib/assets/no-thumbnail.png';
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
@@ -18,8 +18,8 @@
 
   const parseIndex = (s: string | null, max: number | null) => Math.max(Math.min(parseInt(s ?? '') || 0, max ?? 0), 0);
 
-  $: memoryIndex = parseIndex($page.url.searchParams.get('memory'), $memoryStore?.length - 1);
-  $: assetIndex = parseIndex($page.url.searchParams.get('asset'), currentMemory?.assets.length - 1);
+  $: memoryIndex = parseIndex($page.url.searchParams.get(QueryParameter.MEMORY_INDEX), $memoryStore?.length - 1);
+  $: assetIndex = parseIndex($page.url.searchParams.get(QueryParameter.ASSET_INDEX), currentMemory?.assets.length - 1);
 
   $: previousMemory = $memoryStore?.[memoryIndex - 1];
   $: currentMemory = $memoryStore?.[memoryIndex];
@@ -32,11 +32,13 @@
   $: canGoForward = !!(nextMemory || nextAsset);
   $: canGoBack = !!(previousMemory || previousAsset);
 
-  const toNextMemory = () => goto(`?memory=${memoryIndex + 1}`);
-  const toPreviousMemory = () => goto(`?memory=${memoryIndex - 1}`);
+  const toNextMemory = () => goto(`?${QueryParameter.MEMORY_INDEX}=${memoryIndex + 1}`);
+  const toPreviousMemory = () => goto(`?${QueryParameter.MEMORY_INDEX}=${memoryIndex - 1}`);
 
-  const toNextAsset = () => goto(`?memory=${memoryIndex}&asset=${assetIndex + 1}`);
-  const toPreviousAsset = () => goto(`?memory=${memoryIndex}&asset=${assetIndex - 1}`);
+  const toNextAsset = () =>
+    goto(`?${QueryParameter.MEMORY_INDEX}=${memoryIndex}&${QueryParameter.ASSET_INDEX}=${assetIndex + 1}`);
+  const toPreviousAsset = () =>
+    goto(`?${QueryParameter.MEMORY_INDEX}=${memoryIndex}&${QueryParameter.ASSET_INDEX}=${assetIndex - 1}`);
 
   const toNext = () => (nextAsset ? toNextAsset() : toNextMemory());
   const toPrevious = () => (previousAsset ? toPreviousAsset() : toPreviousMemory());
@@ -113,7 +115,10 @@
           <CircleIconButton icon={paused ? mdiPlay : mdiPause} forceDark on:click={() => (paused = !paused)} />
 
           {#each currentMemory.assets as _, i}
-            <button class="relative w-full py-2" on:click={() => goto(`?memory=${memoryIndex}&asset=${i}`)}>
+            <button
+              class="relative w-full py-2"
+              on:click={() => goto(`?${QueryParameter.MEMORY_INDEX}=${memoryIndex}&${QueryParameter.ASSET_INDEX}=${i}`)}
+            >
               <span class="absolute left-0 h-[2px] w-full bg-gray-500" />
               {#await resetPromise}
                 <span class="absolute left-0 h-[2px] bg-white" style:width={`${i < assetIndex ? 100 : 0}%`} />
