@@ -159,7 +159,7 @@ export class LibraryService extends EventEmitter {
 
     watcher.on('error', async (error) => {
       // TODO: should we log, or throw an exception?
-      this.logger.error(`Library watcher encountered error: ${error}`);
+      this.logger.error(`Library watcher for library ${library.id} encountered error: ${error}`);
     });
 
     // Wait for the watcher to initialize before returning
