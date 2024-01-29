@@ -52,7 +52,7 @@ class SearchResultPage extends HookConsumerWidget {
           Duration.zero,
           () => ref
               .read(searchResultPageProvider.notifier)
-              .search(searchType.searchTerm, clipEnable: searchType.isClip),
+              .search(searchType.searchTerm, smartSearch: searchType.isClip),
         );
         return () => searchFocusNode?.dispose();
       },
@@ -67,7 +67,7 @@ class SearchResultPage extends HookConsumerWidget {
       var searchType = _getSearchType(newSearchTerm);
       return ref
           .watch(searchResultPageProvider.notifier)
-          .search(searchType.searchTerm, clipEnable: searchType.isClip);
+          .search(searchType.searchTerm, smartSearch: searchType.isClip);
     }
 
     buildTextField() {
