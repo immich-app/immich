@@ -11,7 +11,8 @@ import path from 'path';
 import { EventEmitter } from 'stream';
 import { Server } from 'tls';
 import { EntityTarget, ObjectLiteral } from 'typeorm';
-import { AppService, AppService as MicroAppService } from '../../src/microservices/app.service';
+import { AppService } from '../../src/immich/app.service';
+import { AppService as MicroAppService } from '../../src/microservices/app.service';
 
 export const IMMICH_TEST_ASSET_PATH = process.env.IMMICH_TEST_ASSET_PATH as string;
 export const IMMICH_TEST_ASSET_TEMP_PATH = path.normalize(`${IMMICH_TEST_ASSET_PATH}/temp/`);
