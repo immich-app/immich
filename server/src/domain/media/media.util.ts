@@ -61,7 +61,7 @@ class BaseConfig implements VideoCodecSWConfig {
     if (this.config.targetVideoCodec === VideoCodec.HEVC) {
       options.push('-tag:v hvc1');
     }
-    
+
     return options;
   }
 
