@@ -87,7 +87,7 @@
 
   $: term = (() => {
     let term = $page.url.searchParams.get(QueryParameter.SEARCH_TERM) || data.term || '';
-    const isMetadataSearch = $page.url.searchParams.get(QueryParameter.CLIP) === 'false';
+    const isMetadataSearch = $page.url.searchParams.get(QueryParameter.SMART_SEARCH) === 'false';
     if (isMetadataSearch && term !== '') {
       term = `m:${term}`;
     }
