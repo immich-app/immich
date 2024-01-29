@@ -93,7 +93,7 @@ export class LibraryService extends EventEmitter {
     });
   }
 
-  async watch(id: string): Promise<boolean> {
+  private async watch(id: string): Promise<boolean> {
     if (!this.watchLibraries) {
       return false;
     }
