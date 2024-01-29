@@ -95,8 +95,8 @@ export class JobService {
         return this.jobRepository.queue({ name: JobName.QUEUE_MIGRATION });
 
       case QueueName.SMART_SEARCH:
-        await this.configCore.requireFeature(FeatureFlag.CLIP_ENCODE);
-        return this.jobRepository.queue({ name: JobName.QUEUE_ENCODE_CLIP, data: { force } });
+        await this.configCore.requireFeature(FeatureFlag.SMART_SEARCH);
+        return this.jobRepository.queue({ name: JobName.QUEUE_SMART_SEARCH, data: { force } });
 
       case QueueName.METADATA_EXTRACTION:
         return this.jobRepository.queue({ name: JobName.QUEUE_METADATA_EXTRACTION, data: { force } });
@@ -226,7 +226,7 @@ export class JobService {
         const jobs: JobItem[] = [
           { name: JobName.GENERATE_WEBP_THUMBNAIL, data: item.data },
           { name: JobName.GENERATE_THUMBHASH_THUMBNAIL, data: item.data },
-          { name: JobName.ENCODE_CLIP, data: item.data },
+          { name: JobName.SMART_SEARCH, data: item.data },
           { name: JobName.FACE_DETECTION, data: item.data },
         ];
 
