@@ -400,7 +400,7 @@ export class PersonService {
       { person: true, asset: true },
       { id: true, personId: true, embedding: true },
     );
-    if (!face) {
+    if (!face || !face.asset) {
       this.logger.warn(`Face ${id} not found`);
       return false;
     }
