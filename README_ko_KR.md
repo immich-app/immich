@@ -109,8 +109,8 @@ password: demo
 
 ### 후원
 
-- GitHub 스폰서를 통한 [정기 후원](https://github.com/sponsors/alextran1502)
-- GitHub 스폰서를 통한 [일시 후원](https://github.com/sponsors/alextran1502?frequency=one-time&sponsor=alextran1502)
+- GitHub 스폰서를 통한 [정기 후원](https://github.com/sponsors/immich-app)
+- GitHub 스폰서를 통한 [일시 후원](https://github.com/sponsors/immich-app?frequency=one-time&sponsor=alextran1502)
 - [Librepay](https://liberapay.com/alex.tran1502/)
 - [buymeacoffee](https://www.buymeacoffee.com/altran1502)
 - Bitcoin: 1FvEp6P6NM8EZEkpGUFAN2LqJ1gxusNxZX
