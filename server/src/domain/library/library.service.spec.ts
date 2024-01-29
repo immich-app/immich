@@ -748,7 +748,7 @@ describe(LibraryService.name, () => {
       storageMock.watch.mockReturnValue(mockWatcher);
 
       await sut.init();
-      await expect(sut.watch(libraryStub.externalLibraryWithImportPaths1.id)).resolves.toBeTruthy();
+      await expect(sut.watch(libraryStub.externalLibraryWithImportPaths1.id)).resolves.toBe(true);
 
       await sut.delete(authStub.admin, libraryStub.externalLibraryWithImportPaths1.id);
 
@@ -1139,7 +1139,7 @@ describe(LibraryService.name, () => {
 
     it('should update library', async () => {
       libraryMock.update.mockResolvedValue(libraryStub.uploadLibrary1);
-      await expect(sut.update(authStub.admin, authStub.admin.user.id, {})).resolves.toBeTruthy();
+      await expect(sut.update(authStub.admin, authStub.admin.user.id, {})).resolves.toBe(true);
       expect(libraryMock.update).toHaveBeenCalledWith(
         expect.objectContaining({
           id: authStub.admin.user.id,
@@ -1161,7 +1161,7 @@ describe(LibraryService.name, () => {
 
       storageMock.watch.mockReturnValue(mockWatcher);
 
-      await expect(sut.update(authStub.admin, authStub.admin.user.id, { importPaths: ['/foo'] })).resolves.toBeTruthy();
+      await expect(sut.update(authStub.admin, authStub.admin.user.id, { importPaths: ['/foo'] })).resolves.toBe(true);
 
       expect(libraryMock.update).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -1189,9 +1189,10 @@ describe(LibraryService.name, () => {
 
       storageMock.watch.mockReturnValue(mockWatcher);
 
-      await expect(
-        sut.update(authStub.admin, authStub.admin.user.id, { exclusionPatterns: ['bar'] }),
-      ).resolves.toBeTruthy();
+      await expect(sut.update(authStub.admin, authStub.admin.user.id, { exclusionPatterns: ['bar'] })).resolves.toBe(
+        true,
+      );
+
       expect(libraryMock.update).toHaveBeenCalledWith(
         expect.objectContaining({
           id: authStub.admin.user.id,
@@ -1242,14 +1243,14 @@ describe(LibraryService.name, () => {
 
         storageMock.watch.mockReturnValue(mockWatcher);
 
-        await expect(sut.watch(libraryStub.externalLibraryWithImportPaths1.id)).resolves.toBeTruthy();
+        await expect(sut.watch(libraryStub.externalLibraryWithImportPaths1.id)).resolves.toBe(true);
 
         expect(storageMock.watch).toHaveBeenCalledWith(
           libraryStub.externalLibraryWithImportPaths1.importPaths,
           expect.anything(),
         );
 
-        expect(isReady).toBeTruthy();
+        expect(isReady).toBe(true);
       });
 
       it('should watch and unwatch library', async () => {
@@ -1261,7 +1262,7 @@ describe(LibraryService.name, () => {
           }
         });
 
-        await expect(sut.watch(libraryStub.externalLibraryWithImportPaths1.id)).resolves.toBeTruthy();
+        await expect(sut.watch(libraryStub.externalLibraryWithImportPaths1.id)).resolves.toBe(true);
         await sut.unwatch(libraryStub.externalLibraryWithImportPaths1.id);
 
         expect(mockWatcher.close).toHaveBeenCalled();
@@ -1294,7 +1295,7 @@ describe(LibraryService.name, () => {
           }
         });
 
-        await expect(sut.watch(libraryStub.externalLibraryWithImportPaths1.id)).resolves.toBeTruthy();
+        await expect(sut.watch(libraryStub.externalLibraryWithImportPaths1.id)).resolves.toBe(true);
 
         expect(jobMock.queueAll).toHaveBeenCalledWith([
           {
@@ -1320,7 +1321,7 @@ describe(LibraryService.name, () => {
           }
         });
 
-        await expect(sut.watch(libraryStub.externalLibraryWithImportPaths1.id)).resolves.toBeTruthy();
+        await expect(sut.watch(libraryStub.externalLibraryWithImportPaths1.id)).resolves.toBe(true);
 
         expect(jobMock.queueAll).toHaveBeenCalledWith([
           {
@@ -1347,7 +1348,7 @@ describe(LibraryService.name, () => {
           }
         });
 
-        await expect(sut.watch(libraryStub.externalLibraryWithImportPaths1.id)).resolves.toBeTruthy();
+        await expect(sut.watch(libraryStub.externalLibraryWithImportPaths1.id)).resolves.toBe(true);
 
         expect(assetMock.save).toHaveBeenCalledWith({ id: assetStub.external.id, isOffline: true });
       });
@@ -1367,9 +1368,9 @@ describe(LibraryService.name, () => {
           }
         });
 
-        await expect(sut.watch(libraryStub.externalLibraryWithImportPaths1.id)).resolves.toBeTruthy();
+        await expect(sut.watch(libraryStub.externalLibraryWithImportPaths1.id)).resolves.toBe(true);
 
-        expect(didError).toBeTruthy();
+        expect(didError).toBe(true);
       });
 
       it('should ignore unknown extensions', async () => {
@@ -1383,7 +1384,7 @@ describe(LibraryService.name, () => {
           }
         });
 
-        await expect(sut.watch(libraryStub.externalLibraryWithImportPaths1.id)).resolves.toBeTruthy();
+        await expect(sut.watch(libraryStub.externalLibraryWithImportPaths1.id)).resolves.toBe(true);
 
         expect(jobMock.queue).not.toHaveBeenCalled();
       });
@@ -1399,7 +1400,7 @@ describe(LibraryService.name, () => {
           }
         });
 
-        await expect(sut.watch(libraryStub.patternPath.id)).resolves.toBeTruthy();
+        await expect(sut.watch(libraryStub.patternPath.id)).resolves.toBe(true);
 
         expect(jobMock.queue).not.toHaveBeenCalled();
       });
@@ -1415,7 +1416,7 @@ describe(LibraryService.name, () => {
           }
         });
 
-        await expect(sut.watch(libraryStub.patternPath.id)).resolves.toBeTruthy();
+        await expect(sut.watch(libraryStub.patternPath.id)).resolves.toBe(true);
 
         expect(jobMock.queue).not.toHaveBeenCalled();
       });
