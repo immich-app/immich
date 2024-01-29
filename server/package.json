@@ -31,7 +31,7 @@
     "typeorm:migrations:revert": "typeorm migration:revert -d ./dist/src/infra/database.config.js",
     "typeorm:schema:drop": "typeorm query -d ./dist/src/infra/database.config.js 'DROP schema public cascade; CREATE schema public;'",
     "typeorm:schema:reset": "npm run typeorm:schema:drop && npm run typeorm:migrations:run",
-    "sql:generate": "node ./dist/infra/sql-generator/"
+    "sql:generate": "node ./dist/src/infra/sql-generator/"
   },
   "dependencies": {
     "@babel/runtime": "^7.22.11",
