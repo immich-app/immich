@@ -72,7 +72,7 @@ export class AppService {
   }
 
   async teardown() {
-    await this.libraryService.teardown();
+    await this.libraryService.unwatchAll();
   }
 
   ssr(excludePaths: string[]) {

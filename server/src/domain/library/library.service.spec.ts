@@ -98,6 +98,7 @@ describe(LibraryService.name, () => {
             enabled: true,
             cronExpression: '0 1 * * *',
           },
+          watch: { enabled: false },
         },
       } as SystemConfig);
 
@@ -644,7 +645,7 @@ describe(LibraryService.name, () => {
       expect(createdAsset.fileModifiedAt).toEqual(filemtime);
     });
 
-    it('should error when asset does not exist', async () => {
+    it('should throw error when asset does not exist', async () => {
       storageMock.stat.mockRejectedValue(new Error("ENOENT, no such file or directory '/data/user1/photo.jpg'"));
 
       const mockLibraryJob: ILibraryFileJob = {
@@ -1257,7 +1258,7 @@ describe(LibraryService.name, () => {
         expect(storageMock.watch).not.toHaveBeenCalled();
       });
 
-      it('should error when watching upload library', async () => {
+      it('should throw error when watching upload library', async () => {
         libraryMock.get.mockResolvedValue(libraryStub.uploadLibrary1);
 
         await expect(sut.watch(libraryStub.uploadLibrary1.id)).rejects.toThrow('Can only watch external libraries');
@@ -1436,7 +1437,7 @@ describe(LibraryService.name, () => {
       storageMock.watch.mockReturnValue(mockWatcher);
 
       await sut.init();
-      await sut.teardown();
+      await sut.unwatchAll();
 
       expect(mockWatcher.close).toHaveBeenCalledTimes(2);
     });

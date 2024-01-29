@@ -75,17 +75,22 @@ export class LibraryService extends EventEmitter {
       config.library.scan.enabled,
     );
 
-    this.configCore.config$.subscribe((config) => {
-      this.jobRepository.updateCronJob('libraryScan', config.library.scan.cronExpression, config.library.scan.enabled);
-    });
-
     if (this.watchLibraries) {
-      const libraries = await this.repository.getAll(false, LibraryType.EXTERNAL);
-
-      for (const library of libraries) {
-        await this.watch(library.id);
-      }
+      await this.watchAll();
     }
+
+    this.configCore.config$.subscribe(async (config) => {
+      this.jobRepository.updateCronJob('libraryScan', config.library.scan.cronExpression, config.library.scan.enabled);
+
+      if (config.library.watch.enabled !== this.watchLibraries) {
+        this.watchLibraries = config.library.watch.enabled;
+        if (this.watchLibraries) {
+          await this.watchAll();
+        } else {
+          await this.unwatchAll();
+        }
+      }
+    });
   }
 
   async watch(id: string): Promise<boolean> {
@@ -174,9 +179,17 @@ export class LibraryService extends EventEmitter {
     }
   }
 
-  async teardown() {
+  async unwatchAll() {
     for (const id in this.watchers) {
       await this.unwatch(id);
+    }
+  }
+
+  async watchAll() {
+    const libraries = await this.repository.getAll(false, LibraryType.EXTERNAL);
+
+    for (const library of libraries) {
+      await this.watch(library.id);
     }
   }
 
