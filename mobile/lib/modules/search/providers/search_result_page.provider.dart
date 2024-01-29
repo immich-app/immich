@@ -14,7 +14,7 @@ class SearchResultPageNotifier extends StateNotifier<SearchResultPageState> {
             isError: false,
             isLoading: true,
             isSuccess: false,
-            isClip: false,
+            isSmart: false,
           ),
         );
 
@@ -37,7 +37,7 @@ class SearchResultPageNotifier extends StateNotifier<SearchResultPageState> {
         isError: false,
         isLoading: false,
         isSuccess: true,
-        isClip: smartSearch,
+        isSmart: smartSearch,
       );
     } else {
       state = state.copyWith(
@@ -45,7 +45,7 @@ class SearchResultPageNotifier extends StateNotifier<SearchResultPageState> {
         isError: true,
         isLoading: false,
         isSuccess: false,
-        isClip: smartSearch,
+        isSmart: smartSearch,
       );
     }
   }
@@ -61,7 +61,7 @@ final searchRenderListProvider = Provider((ref) {
   final result = ref.watch(searchResultPageProvider);
   return ref.watch(
     renderListProviderWithGrouping(
-      (result.searchResult, result.isClip ? GroupAssetsBy.none : null),
+      (result.searchResult, result.isSmart ? GroupAssetsBy.none : null),
     ),
   );
 });
