@@ -30,6 +30,7 @@ import {
   IUserRepository,
 } from '../repositories';
 import { SystemConfigCore } from '../system-config/system-config.core';
+import { mapLibrary } from './library.dto';
 import { LibraryService } from './library.service';
 
 const newFSWatcherMock = () => {
@@ -1139,7 +1140,9 @@ describe(LibraryService.name, () => {
 
     it('should update library', async () => {
       libraryMock.update.mockResolvedValue(libraryStub.uploadLibrary1);
-      await expect(sut.update(authStub.admin, authStub.admin.user.id, {})).resolves.toBeTruthy();
+      await expect(sut.update(authStub.admin, authStub.admin.user.id, {})).resolves.toEqual(
+        mapLibrary(libraryStub.uploadLibrary1),
+      );
       expect(libraryMock.update).toHaveBeenCalledWith(
         expect.objectContaining({
           id: authStub.admin.user.id,
@@ -1161,7 +1164,9 @@ describe(LibraryService.name, () => {
 
       storageMock.watch.mockReturnValue(mockWatcher);
 
-      await expect(sut.update(authStub.admin, authStub.admin.user.id, { importPaths: ['/foo'] })).resolves.toBeTruthy();
+      await expect(sut.update(authStub.admin, authStub.admin.user.id, { importPaths: ['/foo'] })).resolves.toEqual(
+        mapLibrary(libraryStub.externalLibraryWithImportPaths1),
+      );
 
       expect(libraryMock.update).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -1189,9 +1194,9 @@ describe(LibraryService.name, () => {
 
       storageMock.watch.mockReturnValue(mockWatcher);
 
-      await expect(
-        sut.update(authStub.admin, authStub.admin.user.id, { exclusionPatterns: ['bar'] }),
-      ).resolves.toBeTruthy();
+      await expect(sut.update(authStub.admin, authStub.admin.user.id, { exclusionPatterns: ['bar'] })).resolves.toEqual(
+        mapLibrary(libraryStub.externalLibraryWithImportPaths1),
+      );
 
       expect(libraryMock.update).toHaveBeenCalledWith(
         expect.objectContaining({
