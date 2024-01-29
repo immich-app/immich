@@ -9,6 +9,7 @@ import Flutter
 import BackgroundTasks
 import path_provider_foundation
 import CryptoKit
+import Network
 
 class BackgroundServicePlugin: NSObject, FlutterPlugin {
     
@@ -335,13 +336,27 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
         defaults.set(Date().timeIntervalSince1970, forKey: "last_background_fetch_run_time")
         
         // If we have required charging, we should check the charging status
-        let requireCharging = defaults.value(forKey: "require_charging") as? Bool
-        if (requireCharging ?? false) {
+        let requireCharging = defaults.value(forKey: "require_charging") as? Bool ?? false
+        if (requireCharging) {
             UIDevice.current.isBatteryMonitoringEnabled = true
             if (UIDevice.current.batteryState == .unplugged) {
                 // The device is unplugged and we have required charging
                 // Therefore, we will simply complete the task without
                 // running it.
+                task.setTaskCompleted(success: true)
+                return
+            }
+        }
+        
+        // If we have required Wi-Fi, we can check the isExpensive property
+        let requireWifi = defaults.value(forKey: "require_wifi") as? Bool ?? false
+        if (requireWifi) {
+            let wifiMonitor = NWPathMonitor(requiredInterfaceType: .wifi)
+            let isExpensive = wifiMonitor.currentPath.isExpensive
+            if (isExpensive) {
+                // The network is expensive and we have required Wi-Fi
+                // Therfore, we will simply complete the task without
+                // running it
                 task.setTaskCompleted(success: true)
                 return
             }
