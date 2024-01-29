@@ -366,7 +366,7 @@ export class MediaService {
       case TranscodePolicy.OPTIMAL:
         return !allTargetsMatching || isLargerThanTargetRes || videoStream.isHDR;
 
-      case TranscodePolicy.BY_BITRATE:
+      case TranscodePolicy.BITRATE:
         return !allTargetsMatching || isLargerThanTargetBitrate || videoStream.isHDR;
 
       default:

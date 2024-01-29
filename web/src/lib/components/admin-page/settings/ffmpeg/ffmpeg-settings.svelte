@@ -184,8 +184,8 @@
               text: 'Videos higher than target resolution or not in an accepted format',
             },
             {
-              value: TranscodePolicy.ByBitrate,
-              text: 'Videos with bitrate higher than max bitrate or not in an accepted format',
+              value: TranscodePolicy.Bitrate,
+              text: 'Videos higher than max bitrate or not in an accepted format',
             },
             {
               value: TranscodePolicy.Required,

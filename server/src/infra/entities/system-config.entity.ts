@@ -107,7 +107,7 @@ export enum SystemConfigKey {
 export enum TranscodePolicy {
   ALL = 'all',
   OPTIMAL = 'optimal',
-  BY_BITRATE = 'byBitrate',
+  BITRATE = 'bitrate',
   REQUIRED = 'required',
   DISABLED = 'disabled',
 }
