@@ -1,10 +1,11 @@
 <script lang="ts">
   import { api } from '@api';
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, onMount } from 'svelte';
   import ImmichLogo from '../shared-components/immich-logo.svelte';
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
   import Button from '../elements/buttons/button.svelte';
   import { convertToBytes } from '$lib/utils/byte-converter';
+  import { serverInfo } from '$lib/stores/server-info.store';
 
   let error: string;
   let success: string;
@@ -13,9 +14,17 @@
   let confirmPassowrd = '';
 
   let canCreateUser = false;
-
+  let quotaSize: number | undefined = undefined;
   let isCreatingUser = false;
 
+  $: warning = quotaSize && convertToBytes(Number(quotaSize), 'GiB') > $serverInfo.diskSizeRaw;
+
+  onMount(async () => {
+    if (!$serverInfo) {
+      const { data } = await api.serverInfoApi.getServerInfo();
+      $serverInfo = data;
+    }
+  });
   $: {
     if (password !== confirmPassowrd && confirmPassowrd.length > 0) {
       error = 'Password does not match';
@@ -121,8 +130,12 @@
     </div>
 
     <div class="m-4 flex flex-col gap-2">
-      <label class="immich-form-label" for="quotaSize">Quota Size (GiB)</label>
-      <input class="immich-form-input" id="quotaSize" name="quotaSize" type="number" min="0" />
+      <label class="flex items-center gap-2 immich-form-label" for="quotaSize"
+        >Quota Size (GiB) {#if warning}
+          <p class="text-red-400 text-sm">You set a quota superior to the disk size</p>
+        {/if}</label
+      >
+      <input class="immich-form-input" id="quotaSize" name="quotaSize" type="number" min="0" bind:value={quotaSize} />
     </div>
 
     {#if error}

@@ -1,4 +1,4 @@
 import { writable } from 'svelte/store';
 import type { ServerInfoResponseDto } from '@api';
 
-export const serverInfoStore = writable<ServerInfoResponseDto>();
+export const serverInfo = writable<ServerInfoResponseDto>();
