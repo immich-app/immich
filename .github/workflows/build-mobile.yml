@@ -38,7 +38,7 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: "zulu"
-          java-version: "12.x"
+          java-version: "11.0.21+9"
           cache: "gradle"
 
       - name: Setup Flutter SDK
