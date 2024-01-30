@@ -559,6 +559,47 @@ describe(`${AssetController.name} (e2e)`, () => {
       expect(status).toBe(200);
       expect(body).toMatchObject({ id: asset1.id });
     });
+
+    it('should not send people data for shared links for un-authenticated users', async () => {
+      const personRepository = app.get<IPersonRepository>(IPersonRepository);
+      const person = await personRepository.create({ ownerId: asset1.ownerId, name: 'Test Person' });
+
+      await personRepository.createFaces([
+        {
+          assetId: asset1.id,
+          personId: person.id,
+          embedding: Array.from({ length: 512 }, Math.random),
+        },
+      ]);
+
+      const { status, body } = await request(server)
+        .put(`/asset/${asset1.id}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ isFavorite: true });
+      expect(status).toEqual(200);
+      expect(body).toMatchObject({
+        id: asset1.id,
+        isFavorite: true,
+        people: [
+          {
+            birthDate: null,
+            id: expect.any(String),
+            isHidden: false,
+            name: 'Test Person',
+            thumbnailPath: '',
+          },
+        ],
+      });
+
+      const sharedLink = await api.sharedLinkApi.create(server, user1.accessToken, {
+        type: SharedLinkType.INDIVIDUAL,
+        assetIds: [asset1.id],
+      });
+
+      const data = await request(server).get(`/asset/assetById/${asset1.id}?key=${sharedLink.key}`);
+      expect(data.status).toBe(200);
+      expect(data.body).toMatchObject({ people: [] });
+    });
   });
 
   describe('GET /asset/:id', () => {
