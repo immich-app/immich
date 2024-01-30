@@ -20,7 +20,7 @@ jobs:
     name: Build and sign Android
     # Skip when PR from a fork
     if: ${{ !github.event.pull_request.head.repo.fork && github.actor != 'dependabot[bot]' }}
-    runs-on: macos-13
+    runs-on: macos-14
 
     steps:
       - name: Determine ref
@@ -38,7 +38,7 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: "zulu"
-          java-version: "12.x"
+          java-version: "11.0.21+9"
           cache: "gradle"
 
       - name: Setup Flutter SDK
