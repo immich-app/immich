@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:immich_mobile/constants/immich_colors.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 
 class MemoryEpilogue extends StatefulWidget {
   final Function()? onStartOver;
@@ -47,25 +49,34 @@ class _MemoryEpilogueState extends State<MemoryEpilogue>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
+              const Icon(
                 Icons.check_circle_outline_sharp,
-                color: Theme.of(context).primaryColor,
+                color: immichDarkThemePrimaryColor,
                 size: 64.0,
               ),
               const SizedBox(height: 16.0),
               Text(
                 'All caught up',
-                style: Theme.of(context).textTheme.headlineMedium,
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      color: Colors.white,
+                    ),
               ),
               const SizedBox(height: 16.0),
               Text(
                 'Check back tomorrow for more memories',
-                style: Theme.of(context).textTheme.bodyMedium,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Colors.white,
+                    ),
               ),
               const SizedBox(height: 16.0),
               TextButton(
                 onPressed: widget.onStartOver,
-                child: const Text('Start Over'),
+                child: Text(
+                  'Start Over',
+                  style: context.textTheme.displayMedium?.copyWith(
+                    color: immichDarkThemePrimaryColor,
+                  ),
+                ),
               ),
             ],
           ),
@@ -85,12 +96,15 @@ class _MemoryEpilogueState extends State<MemoryEpilogue>
                 child: const Icon(
                   size: 32,
                   Icons.expand_less_sharp,
+                  color: Colors.white,
                 ),
               ),
             ),
             Text(
               'Swipe up to close',
-              style: Theme.of(context).textTheme.bodyMedium,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Colors.white,
+                  ),
             ),
           ],
         ),
