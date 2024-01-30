@@ -140,49 +140,17 @@ class MemoryPage extends HookConsumerWidget {
         // maxScrollExtend contains the sum of horizontal pixels of all assets for depth = 1
         // or sum of vertical pixels of all memories for depth = 0
         if (notification is ScrollUpdateNotification) {
+          final isEpiloguePage =
+              (memoryPageController.page?.floor() ?? 0) >= memories.length;
+
           final offset = notification.metrics.pixels;
-          final isLastMemory =
-              (memories.indexOf(currentMemory.value) + 1) >= memories.length;
-          if (isLastMemory) {
-            // Vertical scroll handling only at the last asset.
-            // Tapping on the last asset instead of swiping will trigger the scroll
-            // implicitly which will trigger the below handling and thereby closes the
-            // memory lane as well
-            if (notification.depth == 0) {
-              final isLastAsset = (currentAssetPage.value + 1) ==
-                  currentMemory.value.assets.length;
-              if (isLastAsset &&
-                  (offset > notification.metrics.maxScrollExtent + 150)) {
-                context.popRoute();
-                return true;
-              }
-            }
-            // Horizontal scroll handling
-            if (notification.depth == 1 &&
-                (offset > notification.metrics.maxScrollExtent + 100)) {
-              context.popRoute();
-              return true;
-            }
+          if (isEpiloguePage &&
+              (offset > notification.metrics.maxScrollExtent + 150)) {
+            context.popRoute();
+            return true;
           }
         }
 
-        if (notification.depth == 0) {
-          if (notification is ScrollStartNotification) {
-            assetProgress.value = "";
-            return true;
-          }
-          var currentPageNumber = memoryPageController.page!.toInt();
-          currentMemory.value = memories[currentPageNumber];
-          if (notification is ScrollEndNotification) {
-            HapticFeedback.mediumImpact();
-            if (currentPageNumber != previousMemoryIndex.value) {
-              currentAssetPage.value = 0;
-              previousMemoryIndex.value = currentPageNumber;
-            }
-            updateProgressText();
-            return true;
-          }
-        }
         return false;
       },
       child: Scaffold(
@@ -194,12 +162,21 @@ class MemoryPage extends HookConsumerWidget {
             ),
             scrollDirection: Axis.vertical,
             controller: memoryPageController,
+            onPageChanged: (pageNumber) {
+              HapticFeedback.mediumImpact();
+              if (pageNumber < memories.length) {
+                currentMemory.value = memories[pageNumber];
+              }
+
+              updateProgressText();
+            },
             itemCount: memories.length + 1,
             itemBuilder: (context, mIndex) {
               // Build last page
               if (mIndex == memories.length) {
                 return const MemoryEpilogue();
               }
+
               // Build horizontal page
               return Column(
                 children: [

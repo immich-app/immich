@@ -1,7 +1,37 @@
 import 'package:flutter/material.dart';
 
-class MemoryEpilogue extends StatelessWidget {
+class MemoryEpilogue extends StatefulWidget {
   const MemoryEpilogue({super.key});
+
+  @override
+  State<MemoryEpilogue> createState() => _MemoryEpilogueState();
+}
+
+class _MemoryEpilogueState extends State<MemoryEpilogue>
+    with TickerProviderStateMixin {
+  late final _animationController = AnimationController(
+    vsync: this,
+    duration: const Duration(
+      seconds: 3,
+    ),
+  )..repeat(reverse: true, );
+
+  late final Animation _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animation = CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    );
+  }
+
+  @override
+    void dispose() {
+      _animationController.dispose();
+      super.dispose();
+    }
 
   @override
   Widget build(BuildContext context) {
@@ -11,11 +41,12 @@ class MemoryEpilogue extends StatelessWidget {
       children: [
         Expanded(
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
-                Icons.check_circle_outline,
+                Icons.check_circle_outline_sharp,
                 color: Theme.of(context).primaryColor,
-                size: 48.0,
+                size: 64.0,
               ),
               const SizedBox(height: 16.0),
               Text(
@@ -32,8 +63,21 @@ class MemoryEpilogue extends StatelessWidget {
         ),
         Column(
           children: [
-            const Icon(
-              Icons.arrow_upward,
+            SizedBox(
+              height: 48,
+              child: AnimatedBuilder(
+                animation: _animation,
+                builder: (context, child) {
+                  return Transform.translate(
+                    offset: Offset(0, 5 * _animationController.value),
+                    child: child,
+                  );
+                },
+                child: const Icon(
+                  size: 32,
+                  Icons.expand_less_sharp,
+                ),
+              ),
             ),
             Text(
               'Swipe up to close',
