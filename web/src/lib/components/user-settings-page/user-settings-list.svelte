@@ -17,6 +17,7 @@
   import { OpenSettingQueryParameterValue, QueryParameter } from '$lib/constants';
   import AppearanceSettings from './appearance-settings.svelte';
   import TrashSettings from './trash-settings.svelte';
+  import QualitySettings from './quality-settings.svelte';
 
   export let keys: APIKeyResponseDto[] = [];
   export let devices: AuthDeviceResponseDto[] = [];
@@ -65,6 +66,10 @@
 
 <SettingAccordion key="password" title="Password" subtitle="Change your password">
   <ChangePasswordSettings />
+</SettingAccordion>
+
+<SettingAccordion key="quality" title="Quality" subtitle="Manage your photo viewing experience">
+  <QualitySettings />
 </SettingAccordion>
 
 <SettingAccordion key="sharing" title="Sharing" subtitle="Manage sharing with partners">
