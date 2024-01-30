@@ -1,15 +1,112 @@
-import { Asset } from '../cores/models/asset';
-import { CrawlService } from '../services';
-import { UploadOptionsDto } from '../cores/dto/upload-options-dto';
-import { CrawlOptionsDto } from '../cores/dto/crawl-options-dto';
-import fs from 'node:fs';
-import cliProgress from 'cli-progress';
-import byteSize from 'byte-size';
-import { BaseCommand } from '../cli/base-command';
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
+import byteSize from 'byte-size';
+import cliProgress from 'cli-progress';
 import FormData from 'form-data';
+import fs, { ReadStream, createReadStream } from 'node:fs';
+import { CrawlService } from '../services/crawl.service';
+import { BaseCommand } from './base-command';
+import { basename } from 'node:path';
+import { access, constants, stat, unlink } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import Os from 'os';
 
-export class Upload extends BaseCommand {
+class Asset {
+  readonly path: string;
+  readonly deviceId!: string;
+
+  deviceAssetId?: string;
+  fileCreatedAt?: string;
+  fileModifiedAt?: string;
+  sidecarPath?: string;
+  fileSize!: number;
+  albumName?: string;
+
+  constructor(path: string) {
+    this.path = path;
+  }
+
+  async prepare() {
+    const stats = await stat(this.path);
+    this.deviceAssetId = `${basename(this.path)}-${stats.size}`.replace(/\s+/g, '');
+    this.fileCreatedAt = stats.mtime.toISOString();
+    this.fileModifiedAt = stats.mtime.toISOString();
+    this.fileSize = stats.size;
+    this.albumName = this.extractAlbumName();
+  }
+
+  async getUploadFormData(): Promise<FormData> {
+    if (!this.deviceAssetId) throw new Error('Device asset id not set');
+    if (!this.fileCreatedAt) throw new Error('File created at not set');
+    if (!this.fileModifiedAt) throw new Error('File modified at not set');
+
+    // TODO: doesn't xmp replace the file extension? Will need investigation
+    const sideCarPath = `${this.path}.xmp`;
+    let sidecarData: ReadStream | undefined = undefined;
+    try {
+      await access(sideCarPath, constants.R_OK);
+      sidecarData = createReadStream(sideCarPath);
+    } catch (error) {}
+
+    const data: any = {
+      assetData: createReadStream(this.path),
+      deviceAssetId: this.deviceAssetId,
+      deviceId: 'CLI',
+      fileCreatedAt: this.fileCreatedAt,
+      fileModifiedAt: this.fileModifiedAt,
+      isFavorite: String(false),
+    };
+    const formData = new FormData();
+
+    for (const prop in data) {
+      formData.append(prop, data[prop]);
+    }
+
+    if (sidecarData) {
+      formData.append('sidecarData', sidecarData);
+    }
+
+    return formData;
+  }
+
+  async delete(): Promise<void> {
+    return unlink(this.path);
+  }
+
+  public async hash(): Promise<string> {
+    const sha1 = (filePath: string) => {
+      const hash = createHash('sha1');
+      return new Promise<string>((resolve, reject) => {
+        const rs = createReadStream(filePath);
+        rs.on('error', reject);
+        rs.on('data', (chunk) => hash.update(chunk));
+        rs.on('end', () => resolve(hash.digest('hex')));
+      });
+    };
+
+    return await sha1(this.path);
+  }
+
+  private extractAlbumName(): string {
+    if (Os.platform() === 'win32') {
+      return this.path.split('\\').slice(-2)[0];
+    } else {
+      return this.path.split('/').slice(-2)[0];
+    }
+  }
+}
+
+export class UploadOptionsDto {
+  recursive? = false;
+  exclusionPatterns?: string[] = [];
+  dryRun? = false;
+  skipHash? = false;
+  delete? = false;
+  album? = false;
+  albumName? = '';
+  includeHidden? = false;
+}
+
+export class UploadCommand extends BaseCommand {
   uploadLength!: number;
 
   public async run(paths: string[], options: UploadOptionsDto): Promise<void> {
@@ -18,32 +115,29 @@ export class Upload extends BaseCommand {
     const formatResponse = await this.immichApi.serverInfoApi.getSupportedMediaTypes();
     const crawlService = new CrawlService(formatResponse.data.image, formatResponse.data.video);
 
-    const crawlOptions = new CrawlOptionsDto();
-    crawlOptions.pathsToCrawl = paths;
-    crawlOptions.recursive = options.recursive;
-    crawlOptions.exclusionPatterns = options.exclusionPatterns;
-    crawlOptions.includeHidden = options.includeHidden;
-
-    const files: string[] = [];
-
+    const inputFiles: string[] = [];
     for (const pathArgument of paths) {
       const fileStat = await fs.promises.lstat(pathArgument);
-
       if (fileStat.isFile()) {
-        files.push(pathArgument);
+        inputFiles.push(pathArgument);
       }
     }
 
-    const crawledFiles: string[] = await crawlService.crawl(crawlOptions);
+    const files: string[] = await crawlService.crawl({
+      pathsToCrawl: paths,
+      recursive: options.recursive,
+      exclusionPatterns: options.exclusionPatterns,
+      includeHidden: options.includeHidden,
+    });
 
-    crawledFiles.push(...files);
+    files.push(...inputFiles);
 
-    if (crawledFiles.length === 0) {
+    if (files.length === 0) {
       console.log('No assets found, exiting');
       return;
     }
 
-    const assetsToUpload = crawledFiles.map((path) => new Asset(path));
+    const assetsToUpload = files.map((path) => new Asset(path));
 
     const uploadProgress = new cliProgress.SingleBar(
       {
@@ -104,7 +198,7 @@ export class Upload extends BaseCommand {
         if (!skipAsset) {
           if (!options.dryRun) {
             if (!skipUpload) {
-              const formData = asset.getUploadFormData();
+              const formData = await asset.getUploadFormData();
               const res = await this.uploadAsset(formData);
               existingAssetId = res.data.id;
               uploadCounter++;
@@ -157,7 +251,7 @@ export class Upload extends BaseCommand {
       } else {
         console.log('Deleting assets that have been uploaded...');
         const deletionProgress = new cliProgress.SingleBar(cliProgress.Presets.shades_classic);
-        deletionProgress.start(crawledFiles.length, 0);
+        deletionProgress.start(files.length, 0);
 
         for (const asset of assetsToUpload) {
           if (!options.dryRun) {
@@ -172,14 +266,14 @@ export class Upload extends BaseCommand {
   }
 
   private async uploadAsset(data: FormData): Promise<AxiosResponse> {
-    const url = this.immichApi.apiConfiguration.instanceUrl + '/asset/upload';
+    const url = this.immichApi.instanceUrl + '/asset/upload';
 
     const config: AxiosRequestConfig = {
       method: 'post',
       maxRedirects: 0,
       url,
       headers: {
-        'x-api-key': this.immichApi.apiConfiguration.apiKey,
+        'x-api-key': this.immichApi.apiKey,
         ...data.getHeaders(),
       },
       maxContentLength: Infinity,

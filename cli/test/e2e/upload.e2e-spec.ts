@@ -1,18 +1,15 @@
-import { APIKeyCreateResponseDto } from '@app/domain';
-import { api } from '@api';
 import { IMMICH_TEST_ASSET_PATH, restoreTempFolder, testApp } from '@test/../e2e/jobs/utils';
-import { LoginResponseDto } from '@immich/sdk';
-import { Upload } from 'src/commands/upload';
-import { CLI_BASE_OPTIONS, spyOnConsole } from 'test/cli-test-utils';
+import { CLI_BASE_OPTIONS, setup, spyOnConsole } from 'test/cli-test-utils';
+import { UploadCommand } from '../../src/commands/upload.command';
+import { ImmichApi } from '../../src/services/api.service';
 
 describe(`upload (e2e)`, () => {
-  let server: any;
-  let admin: LoginResponseDto;
-  let apiKey: APIKeyCreateResponseDto;
+  let api: ImmichApi;
+
   spyOnConsole();
 
   beforeAll(async () => {
-    server = (await testApp.create()).getHttpServer();
+    await testApp.create();
   });
 
   afterAll(async () => {
@@ -23,60 +20,58 @@ describe(`upload (e2e)`, () => {
   beforeEach(async () => {
     await testApp.reset();
     await restoreTempFolder();
-    await api.authApi.adminSignUp(server);
-    admin = await api.authApi.adminLogin(server);
-    apiKey = await api.apiKeyApi.createApiKey(server, admin.accessToken);
-    process.env.IMMICH_API_KEY = apiKey.secret;
+    api = await setup();
+    process.env.IMMICH_API_KEY = api.apiKey;
   });
 
   it('should upload a folder recursively', async () => {
-    await new Upload(CLI_BASE_OPTIONS).run([`${IMMICH_TEST_ASSET_PATH}/albums/nature/`], { recursive: true });
-    const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
+    await new UploadCommand(CLI_BASE_OPTIONS).run([`${IMMICH_TEST_ASSET_PATH}/albums/nature/`], { recursive: true });
+    const { data: assets } = await api.assetApi.getAllAssets({}, { headers: { 'x-api-key': api.apiKey } });
     expect(assets.length).toBeGreaterThan(4);
   });
 
   it('should not create a new album', async () => {
-    await new Upload(CLI_BASE_OPTIONS).run([`${IMMICH_TEST_ASSET_PATH}/albums/nature/`], { recursive: true });
-    const albums = await api.albumApi.getAllAlbums(server, admin.accessToken);
+    await new UploadCommand(CLI_BASE_OPTIONS).run([`${IMMICH_TEST_ASSET_PATH}/albums/nature/`], { recursive: true });
+    const { data: albums } = await api.albumApi.getAllAlbums({}, { headers: { 'x-api-key': api.apiKey } });
     expect(albums.length).toEqual(0);
   });
 
   it('should create album from folder name', async () => {
-    await new Upload(CLI_BASE_OPTIONS).run([`${IMMICH_TEST_ASSET_PATH}/albums/nature/`], {
+    await new UploadCommand(CLI_BASE_OPTIONS).run([`${IMMICH_TEST_ASSET_PATH}/albums/nature/`], {
       recursive: true,
       album: true,
     });
 
-    const albums = await api.albumApi.getAllAlbums(server, admin.accessToken);
+    const { data: albums } = await api.albumApi.getAllAlbums({}, { headers: { 'x-api-key': api.apiKey } });
     expect(albums.length).toEqual(1);
     const natureAlbum = albums[0];
     expect(natureAlbum.albumName).toEqual('nature');
   });
 
   it('should add existing assets to album', async () => {
-    await new Upload(CLI_BASE_OPTIONS).run([`${IMMICH_TEST_ASSET_PATH}/albums/nature/`], {
+    await new UploadCommand(CLI_BASE_OPTIONS).run([`${IMMICH_TEST_ASSET_PATH}/albums/nature/`], {
       recursive: true,
     });
 
-    // Upload again, but this time add to album
-    await new Upload(CLI_BASE_OPTIONS).run([`${IMMICH_TEST_ASSET_PATH}/albums/nature/`], {
+    // upload again, but this time add to album
+    await new UploadCommand(CLI_BASE_OPTIONS).run([`${IMMICH_TEST_ASSET_PATH}/albums/nature/`], {
       recursive: true,
       album: true,
     });
 
-    const albums = await api.albumApi.getAllAlbums(server, admin.accessToken);
+    const { data: albums } = await api.albumApi.getAllAlbums({}, { headers: { 'x-api-key': api.apiKey } });
     expect(albums.length).toEqual(1);
     const natureAlbum = albums[0];
     expect(natureAlbum.albumName).toEqual('nature');
   });
 
   it('should upload to the specified album name', async () => {
-    await new Upload(CLI_BASE_OPTIONS).run([`${IMMICH_TEST_ASSET_PATH}/albums/nature/`], {
+    await new UploadCommand(CLI_BASE_OPTIONS).run([`${IMMICH_TEST_ASSET_PATH}/albums/nature/`], {
       recursive: true,
       albumName: 'testAlbum',
     });
 
-    const albums = await api.albumApi.getAllAlbums(server, admin.accessToken);
+    const { data: albums } = await api.albumApi.getAllAlbums({}, { headers: { 'x-api-key': api.apiKey } });
     expect(albums.length).toEqual(1);
     const testAlbum = albums[0];
     expect(testAlbum.albumName).toEqual('testAlbum');

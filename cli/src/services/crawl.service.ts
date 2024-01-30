@@ -1,6 +1,12 @@
-import { CrawlOptionsDto } from 'src/cores/dto/crawl-options-dto';
 import { glob } from 'glob';
 import * as fs from 'fs';
+
+export class CrawlOptions {
+  pathsToCrawl!: string[];
+  recursive? = false;
+  includeHidden? = false;
+  exclusionPatterns?: string[];
+}
 
 export class CrawlService {
   private readonly extensions!: string[];
@@ -9,8 +15,9 @@ export class CrawlService {
     this.extensions = image.concat(video).map((extension) => extension.replace('.', ''));
   }
 
-  async crawl(crawlOptions: CrawlOptionsDto): Promise<string[]> {
-    const { pathsToCrawl, exclusionPatterns, includeHidden } = crawlOptions;
+  async crawl(options: CrawlOptions): Promise<string[]> {
+    const { recursive, pathsToCrawl, exclusionPatterns, includeHidden } = options;
+
     if (!pathsToCrawl) {
       return Promise.resolve([]);
     }
@@ -44,7 +51,7 @@ export class CrawlService {
       searchPattern = '{' + patterns.join(',') + '}';
     }
 
-    if (crawlOptions.recursive) {
+    if (recursive) {
       searchPattern = searchPattern + '/**/';
     }
 
