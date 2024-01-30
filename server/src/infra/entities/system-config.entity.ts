@@ -30,6 +30,7 @@ export enum SystemConfigKey {
   FFMPEG_TEMPORAL_AQ = 'ffmpeg.temporalAQ',
   FFMPEG_CQ_MODE = 'ffmpeg.cqMode',
   FFMPEG_TWO_PASS = 'ffmpeg.twoPass',
+  FFMPEG_PREFERRED_HW_DEVICE = 'ffmpeg.preferredHwDevice',
   FFMPEG_TRANSCODE = 'ffmpeg.transcode',
   FFMPEG_ACCEL = 'ffmpeg.accel',
   FFMPEG_TONEMAP = 'ffmpeg.tonemap',
@@ -176,6 +177,7 @@ export interface SystemConfig {
     temporalAQ: boolean;
     cqMode: CQMode;
     twoPass: boolean;
+    preferredHwDevice: string;
     transcode: TranscodePolicy;
     accel: TranscodeHWAccel;
     tonemap: ToneMapping;
