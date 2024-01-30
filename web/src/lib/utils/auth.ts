@@ -59,12 +59,3 @@ export const requestServerInfo = async () => {
     serverInfo.set(data);
   }
 };
-
-export const isLoggedIn = async () => {
-  const savedUser = currentUser();
-  const user = savedUser || (await loadUser());
-  if (!savedUser) {
-    setUser(user);
-  }
-  return user;
-};
