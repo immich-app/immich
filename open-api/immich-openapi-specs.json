@@ -9422,6 +9422,9 @@
           "npl": {
             "type": "integer"
           },
+          "preferredHwDevice": {
+            "type": "string"
+          },
           "preset": {
             "type": "string"
           },
@@ -9463,6 +9466,7 @@
           "gopSize",
           "maxBitrate",
           "npl",
+          "preferredHwDevice",
           "preset",
           "refs",
           "targetAudioCodec",

@@ -17,6 +17,7 @@ Name | Type | Description | Notes
 **gopSize** | **int** |  | 
 **maxBitrate** | **String** |  | 
 **npl** | **int** |  | 
+**preferredHwDevice** | **String** |  | 
 **preset** | **String** |  | 
 **refs** | **int** |  | 
 **targetAudioCodec** | [**AudioCodec**](AudioCodec.md) |  | 
