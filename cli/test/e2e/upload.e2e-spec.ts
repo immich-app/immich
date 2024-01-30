@@ -1,4 +1,4 @@
-import { IMMICH_TEST_ASSET_PATH, restoreTempFolder, testApp } from '@test/../e2e/jobs/utils';
+import { IMMICH_TEST_ASSET_PATH, restoreTempFolder, testApp } from '@test-utils';
 import { CLI_BASE_OPTIONS, setup, spyOnConsole } from 'test/cli-test-utils';
 import { UploadCommand } from '../../src/commands/upload.command';
 import { ImmichApi } from '../../src/services/api.service';

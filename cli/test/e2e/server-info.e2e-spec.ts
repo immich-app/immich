@@ -1,4 +1,4 @@
-import { restoreTempFolder, testApp } from '@test/../e2e/jobs/utils';
+import { restoreTempFolder, testApp } from '@test-utils';
 import { CLI_BASE_OPTIONS, setup, spyOnConsole } from 'test/cli-test-utils';
 import { ServerInfoCommand } from '../../src/commands/server-info.command';
 
