@@ -5,13 +5,13 @@ import { ImmichApi } from '../api/client';
 import { LoginError } from '../cores/errors/login-error';
 
 export class SessionService {
-  readonly configDir!: string;
+  readonly configDirectory!: string;
   readonly authPath!: string;
   private api!: ImmichApi;
 
-  constructor(configDir: string) {
-    this.configDir = configDir;
-    this.authPath = path.join(configDir, '/auth.yml');
+  constructor(configDirectory: string) {
+    this.configDirectory = configDirectory;
+    this.authPath = path.join(configDirectory, '/auth.yml');
   }
 
   public async connect(): Promise<ImmichApi> {
@@ -57,11 +57,11 @@ export class SessionService {
 
     console.log(`Logged in as ${userInfo.email}`);
 
-    if (!fs.existsSync(this.configDir)) {
+    if (!fs.existsSync(this.configDirectory)) {
       // Create config folder if it doesn't exist
-      const created = await fs.promises.mkdir(this.configDir, { recursive: true });
+      const created = await fs.promises.mkdir(this.configDirectory, { recursive: true });
       if (!created) {
-        throw new Error(`Failed to create config folder ${this.configDir}`);
+        throw new Error(`Failed to create config folder ${this.configDirectory}`);
       }
     }
 

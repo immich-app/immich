@@ -8,16 +8,16 @@ import { Logout } from './commands/logout';
 import { version } from '../package.json';
 
 import path from 'node:path';
-import os from 'os';
+import os from 'node:os';
 
-const userHomeDir = os.homedir();
-const configDir = path.join(userHomeDir, '.config/immich/');
+const homeDirectory = os.homedir();
+const configDirectory = path.join(homeDirectory, '.config/immich/');
 
 const program = new Command()
   .name('immich')
   .version(version)
   .description('Command line interface for Immich')
-  .addOption(new Option('-d, --config', 'Configuration directory').env('IMMICH_CONFIG_DIR').default(configDir));
+  .addOption(new Option('-d, --config', 'Configuration directory').env('IMMICH_CONFIG_DIR').default(configDirectory));
 
 program
   .command('upload')

@@ -68,7 +68,8 @@ export class Upload extends BaseCommand {
       }
     }
 
-    const existingAlbums = (await this.immichApi.albumApi.getAllAlbums()).data;
+    const allAlbums = await this.immichApi.albumApi.getAllAlbums();
+    const existingAlbums = allAlbums.data;
 
     uploadProgress.start(totalSize, 0);
     uploadProgress.update({ value_formatted: 0, total_formatted: byteSize(totalSize) });
@@ -101,32 +102,30 @@ export class Upload extends BaseCommand {
           skipAsset = skipUpload && !isDuplicate;
         }
 
-        if (!skipAsset) {
-          if (!options.dryRun) {
-            if (!skipUpload) {
-              const formData = asset.getUploadFormData();
-              const res = await this.uploadAsset(formData);
-              existingAssetId = res.data.id;
-              uploadCounter++;
-              totalSizeUploaded += asset.fileSize;
+        if (!skipAsset && !options.dryRun) {
+          if (!skipUpload) {
+            const formData = asset.getUploadFormData();
+            const response = await this.uploadAsset(formData);
+            existingAssetId = response.data.id;
+            uploadCounter++;
+            totalSizeUploaded += asset.fileSize;
+          }
+
+          if ((options.album || options.albumName) && asset.albumName !== undefined) {
+            let album = existingAlbums.find((album) => album.albumName === asset.albumName);
+            if (!album) {
+              const response = await this.immichApi.albumApi.createAlbum({
+                createAlbumDto: { albumName: asset.albumName },
+              });
+              album = response.data;
+              existingAlbums.push(album);
             }
 
-            if ((options.album || options.albumName) && asset.albumName !== undefined) {
-              let album = existingAlbums.find((album) => album.albumName === asset.albumName);
-              if (!album) {
-                const res = await this.immichApi.albumApi.createAlbum({
-                  createAlbumDto: { albumName: asset.albumName },
-                });
-                album = res.data;
-                existingAlbums.push(album);
-              }
-
-              if (existingAssetId) {
-                await this.immichApi.albumApi.addAssetsToAlbum({
-                  id: album.id,
-                  bulkIdsDto: { ids: [existingAssetId] },
-                });
-              }
+            if (existingAssetId) {
+              await this.immichApi.albumApi.addAssetsToAlbum({
+                id: album.id,
+                bulkIdsDto: { ids: [existingAssetId] },
+              });
             }
           }
         }
@@ -139,12 +138,7 @@ export class Upload extends BaseCommand {
       uploadProgress.stop();
     }
 
-    let messageStart;
-    if (options.dryRun) {
-      messageStart = 'Would have';
-    } else {
-      messageStart = 'Successfully';
-    }
+    const messageStart = options.dryRun ? 'Would have' : 'Successfully';
 
     if (uploadCounter === 0) {
       console.log('All assets were already uploaded, nothing to do.');
@@ -182,12 +176,12 @@ export class Upload extends BaseCommand {
         'x-api-key': this.immichApi.apiConfiguration.apiKey,
         ...data.getHeaders(),
       },
-      maxContentLength: Infinity,
-      maxBodyLength: Infinity,
+      maxContentLength: Number.POSITIVE_INFINITY,
+      maxBodyLength: Number.POSITIVE_INFINITY,
       data,
     };
 
-    const res = await axios(config);
-    return res;
+    const response = await axios(config);
+    return response;
   }
 }

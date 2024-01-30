@@ -12,7 +12,8 @@ describe(`upload (e2e)`, () => {
   spyOnConsole();
 
   beforeAll(async () => {
-    server = (await testApp.create()).getHttpServer();
+    const app = await testApp.create();
+    server = app.getHttpServer();
   });
 
   afterAll(async () => {

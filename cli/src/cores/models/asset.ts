@@ -1,9 +1,9 @@
-import crypto from 'crypto';
+import crypto from 'node:crypto';
 import FormData from 'form-data';
 import * as fs from 'graceful-fs';
 import { createReadStream } from 'node:fs';
 import { basename } from 'node:path';
-import Os from 'os';
+import Os from 'node:os';
 
 export class Asset {
   readonly path: string;
@@ -22,7 +22,7 @@ export class Asset {
 
   async prepare() {
     const stats = await fs.promises.stat(this.path);
-    this.deviceAssetId = `${basename(this.path)}-${stats.size}`.replace(/\s+/g, '');
+    this.deviceAssetId = `${basename(this.path)}-${stats.size}`.replaceAll(/\s+/g, '');
     this.fileCreatedAt = stats.mtime.toISOString();
     this.fileModifiedAt = stats.mtime.toISOString();
     this.fileSize = stats.size;
@@ -30,9 +30,9 @@ export class Asset {
   }
 
   getUploadFormData(): FormData {
-    if (!this.deviceAssetId) throw new Error('Device asset id not set');
-    if (!this.fileCreatedAt) throw new Error('File created at not set');
-    if (!this.fileModifiedAt) throw new Error('File modified at not set');
+    if (!this.deviceAssetId) {throw new Error('Device asset id not set');}
+    if (!this.fileCreatedAt) {throw new Error('File created at not set');}
+    if (!this.fileModifiedAt) {throw new Error('File modified at not set');}
 
     // TODO: doesn't xmp replace the file extension? Will need investigation
     const sideCarPath = `${this.path}.xmp`;
@@ -40,7 +40,7 @@ export class Asset {
     try {
       fs.accessSync(sideCarPath, fs.constants.R_OK);
       sidecarData = createReadStream(sideCarPath);
-    } catch (error) {}
+    } catch {}
 
     const data: any = {
       assetData: createReadStream(this.path),
@@ -52,8 +52,8 @@ export class Asset {
     };
     const formData = new FormData();
 
-    for (const prop in data) {
-      formData.append(prop, data[prop]);
+    for (const property in data) {
+      formData.append(property, data[property]);
     }
 
     if (sidecarData) {
@@ -82,10 +82,6 @@ export class Asset {
   }
 
   private extractAlbumName(): string {
-    if (Os.platform() === 'win32') {
-      return this.path.split('\\').slice(-2)[0];
-    } else {
-      return this.path.split('/').slice(-2)[0];
-    }
+    return Os.platform() === 'win32' ? this.path.split('\\').at(-2) : this.path.split('/').at(-2);
   }
 }

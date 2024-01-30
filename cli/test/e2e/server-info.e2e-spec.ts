@@ -12,7 +12,8 @@ describe(`server-info (e2e)`, () => {
   const consoleSpy = spyOnConsole();
 
   beforeAll(async () => {
-    server = (await testApp.create()).getHttpServer();
+    const app = await testApp.create();
+    server = app.getHttpServer();
   });
 
   afterAll(async () => {
