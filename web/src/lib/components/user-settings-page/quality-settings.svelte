@@ -13,8 +13,8 @@
     <div class="ml-4 mt-4 flex flex-col gap-4">
       <div class="ml-4">
         <SettingSwitch
-          title="Load original photos"
-          subtitle="Show the original photo when viewing an asset. This may result in slower photo display speeds."
+          title="Display original photos"
+          subtitle="Prefer to display the original photo when viewing an asset rather than thumbnails when the original asset is web-compatible. This may result in slower photo display speeds."
           bind:checked={$alwaysLoadOriginalFile}
           on:toggle={handleToggle}
         />
