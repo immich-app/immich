@@ -4,10 +4,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/memories/models/memory.dart';
+import 'package:immich_mobile/modules/memories/ui/memory_bottom_info.dart';
 import 'package:immich_mobile/modules/memories/ui/memory_card.dart';
+import 'package:immich_mobile/modules/memories/ui/memory_epilogue.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
-import 'package:intl/intl.dart';
 import 'package:openapi/api.dart' as api;
 
 @RoutePage()
@@ -129,39 +130,6 @@ class MemoryPage extends HookConsumerWidget {
       updateProgressText();
     }
 
-    buildBottomInfo(Memory memory) {
-      return Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  memory.title,
-                  style: TextStyle(
-                    color: Colors.grey[400],
-                    fontSize: 13.0,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                Text(
-                  DateFormat.yMMMMd().format(
-                    memory.assets[0].fileCreatedAt,
-                  ),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 15.0,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      );
-    }
-
     /* Notification listener is used instead of OnPageChanged callback since OnPageChanged is called
      * when the page in the **center** of the viewer changes. We want to reset currentAssetPage only when the final
      * page during the end of scroll is different than the current page
@@ -226,8 +194,12 @@ class MemoryPage extends HookConsumerWidget {
             ),
             scrollDirection: Axis.vertical,
             controller: memoryPageController,
-            itemCount: memories.length,
+            itemCount: memories.length + 1,
             itemBuilder: (context, mIndex) {
+              // Build last page
+              if (mIndex == memories.length) {
+                return const MemoryEpilogue();
+              }
               // Build horizontal page
               return Column(
                 children: [
@@ -256,7 +228,7 @@ class MemoryPage extends HookConsumerWidget {
                       },
                     ),
                   ),
-                  buildBottomInfo(memories[mIndex]),
+                  MemoryBottomInfo(memory: memories[mIndex]),
                 ],
               );
             },
