@@ -22,6 +22,7 @@ class SystemConfigFFmpegDto {
     required this.gopSize,
     required this.maxBitrate,
     required this.npl,
+    required this.preferredHwDevice,
     required this.preset,
     required this.refs,
     required this.targetAudioCodec,
@@ -51,6 +52,8 @@ class SystemConfigFFmpegDto {
   String maxBitrate;
 
   int npl;
+
+  String preferredHwDevice;
 
   String preset;
 
@@ -83,6 +86,7 @@ class SystemConfigFFmpegDto {
     other.gopSize == gopSize &&
     other.maxBitrate == maxBitrate &&
     other.npl == npl &&
+    other.preferredHwDevice == preferredHwDevice &&
     other.preset == preset &&
     other.refs == refs &&
     other.targetAudioCodec == targetAudioCodec &&
@@ -106,6 +110,7 @@ class SystemConfigFFmpegDto {
     (gopSize.hashCode) +
     (maxBitrate.hashCode) +
     (npl.hashCode) +
+    (preferredHwDevice.hashCode) +
     (preset.hashCode) +
     (refs.hashCode) +
     (targetAudioCodec.hashCode) +
@@ -118,7 +123,7 @@ class SystemConfigFFmpegDto {
     (twoPass.hashCode);
 
   @override
-  String toString() => 'SystemConfigFFmpegDto[accel=$accel, acceptedAudioCodecs=$acceptedAudioCodecs, acceptedVideoCodecs=$acceptedVideoCodecs, bframes=$bframes, cqMode=$cqMode, crf=$crf, gopSize=$gopSize, maxBitrate=$maxBitrate, npl=$npl, preset=$preset, refs=$refs, targetAudioCodec=$targetAudioCodec, targetResolution=$targetResolution, targetVideoCodec=$targetVideoCodec, temporalAQ=$temporalAQ, threads=$threads, tonemap=$tonemap, transcode=$transcode, twoPass=$twoPass]';
+  String toString() => 'SystemConfigFFmpegDto[accel=$accel, acceptedAudioCodecs=$acceptedAudioCodecs, acceptedVideoCodecs=$acceptedVideoCodecs, bframes=$bframes, cqMode=$cqMode, crf=$crf, gopSize=$gopSize, maxBitrate=$maxBitrate, npl=$npl, preferredHwDevice=$preferredHwDevice, preset=$preset, refs=$refs, targetAudioCodec=$targetAudioCodec, targetResolution=$targetResolution, targetVideoCodec=$targetVideoCodec, temporalAQ=$temporalAQ, threads=$threads, tonemap=$tonemap, transcode=$transcode, twoPass=$twoPass]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -131,6 +136,7 @@ class SystemConfigFFmpegDto {
       json[r'gopSize'] = this.gopSize;
       json[r'maxBitrate'] = this.maxBitrate;
       json[r'npl'] = this.npl;
+      json[r'preferredHwDevice'] = this.preferredHwDevice;
       json[r'preset'] = this.preset;
       json[r'refs'] = this.refs;
       json[r'targetAudioCodec'] = this.targetAudioCodec;
@@ -161,6 +167,7 @@ class SystemConfigFFmpegDto {
         gopSize: mapValueOfType<int>(json, r'gopSize')!,
         maxBitrate: mapValueOfType<String>(json, r'maxBitrate')!,
         npl: mapValueOfType<int>(json, r'npl')!,
+        preferredHwDevice: mapValueOfType<String>(json, r'preferredHwDevice')!,
         preset: mapValueOfType<String>(json, r'preset')!,
         refs: mapValueOfType<int>(json, r'refs')!,
         targetAudioCodec: AudioCodec.fromJson(json[r'targetAudioCodec'])!,
@@ -227,6 +234,7 @@ class SystemConfigFFmpegDto {
     'gopSize',
     'maxBitrate',
     'npl',
+    'preferredHwDevice',
     'preset',
     'refs',
     'targetAudioCodec',

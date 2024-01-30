@@ -3723,6 +3723,12 @@ export interface SystemConfigFFmpegDto {
      * @type {string}
      * @memberof SystemConfigFFmpegDto
      */
+    'preferredHwDevice': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SystemConfigFFmpegDto
+     */
     'preset': string;
     /**
      * 
