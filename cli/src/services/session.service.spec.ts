@@ -1,7 +1,6 @@
 import { SessionService } from './session.service';
 import fs from 'node:fs';
 import yaml from 'yaml';
-import { LoginError } from '../cores/errors/login-error';
 import {
   TEST_AUTH_FILE,
   TEST_CONFIG_DIR,
@@ -70,7 +69,6 @@ describe('SessionService', () => {
       }),
     );
     await sessionService.connect().catch((error) => {
-      expect(error).toBeInstanceOf(LoginError);
       expect(error.message).toEqual(`Instance URL missing in auth config file ${TEST_AUTH_FILE}`);
     });
   });
@@ -82,13 +80,11 @@ describe('SessionService', () => {
       }),
     );
 
-    await expect(sessionService.connect()).rejects.toThrow(
-      new LoginError(`API key missing in auth config file ${TEST_AUTH_FILE}`),
-    );
+    await expect(sessionService.connect()).rejects.toThrow(`API key missing in auth config file ${TEST_AUTH_FILE}`);
   });
 
   it('should create auth file when logged in', async () => {
-    await sessionService.keyLogin(TEST_IMMICH_INSTANCE_URL, TEST_IMMICH_API_KEY);
+    await sessionService.login(TEST_IMMICH_INSTANCE_URL, TEST_IMMICH_API_KEY);
 
     const data: string = await readTestAuthFile();
     const authConfig = yaml.parse(data);
@@ -109,6 +105,10 @@ describe('SessionService', () => {
       expect(error.message).toContain('ENOENT');
     });
 
-    expect(consoleSpy.mock.calls).toEqual([[`Removed auth file ${TEST_AUTH_FILE}`]]);
+    expect(consoleSpy.mock.calls).toEqual([
+      ['Logging out...'],
+      [`Removed auth file ${TEST_AUTH_FILE}`],
+      ['Successfully logged out'],
+    ]);
   });
 });

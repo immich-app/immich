@@ -1,12 +1,12 @@
 import pkg from '../package.json';
 
-export interface ICLIVersion {
+export interface ICliVersion {
   major: number;
   minor: number;
   patch: number;
 }
 
-export class CLIVersion implements ICLIVersion {
+export class CliVersion implements ICliVersion {
   constructor(
     public readonly major: number,
     public readonly minor: number,
@@ -22,16 +22,16 @@ export class CLIVersion implements ICLIVersion {
     return { major, minor, patch };
   }
 
-  static fromString(version: string): CLIVersion {
+  static fromString(version: string): CliVersion {
     const regex = /(?:v)?(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)/i;
     const matchResult = version.match(regex);
     if (matchResult) {
       const [, major, minor, patch] = matchResult.map(Number);
-      return new CLIVersion(major, minor, patch);
+      return new CliVersion(major, minor, patch);
     } else {
       throw new Error(`Invalid version format: ${version}`);
     }
   }
 }
 
-export const cliVersion = CLIVersion.fromString(pkg.version);
+export const cliVersion = CliVersion.fromString(pkg.version);
