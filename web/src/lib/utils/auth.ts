@@ -37,6 +37,10 @@ export const authenticate = async (options?: AuthOptions) => {
   const savedUser = getSavedUser();
   const user = savedUser || isAuthenticated() ? await getAuthUser() : null;
 
+  if (options.public === true && !user) {
+    return;
+  }
+
   if (options.admin && user && !user.isAdmin) {
     redirect(302, AppRoute.PHOTOS);
   }
