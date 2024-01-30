@@ -22,7 +22,7 @@
 
   const previousQutoa = user.quotaSizeInBytes;
 
-  $: warning =
+  $: quotaSizeWarning =
     previousQutoa !== convertToBytes(Number(quotaSize), 'GiB') &&
     !!quotaSize &&
     convertToBytes(Number(quotaSize), 'GiB') > $serverInfo.diskSizeRaw;
@@ -109,8 +109,8 @@
 
     <div class="m-4 flex flex-col gap-2">
       <label class="flex items-center gap-2 immich-form-label" for="quotaSize"
-        >Quota Size (GiB) {#if warning}
-          <p class="text-red-400 text-sm">You set a quota superior to the disk size</p>
+        >Quota Size (GiB) {#if quotaSizeWarning}
+          <p class="text-red-400 text-sm">You set a quota higher than the disk size</p>
         {/if}</label
       >
       <input class="immich-form-input" id="quotaSize" name="quotaSize" type="number" min="0" bind:value={quotaSize} />
