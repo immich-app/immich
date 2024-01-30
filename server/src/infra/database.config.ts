@@ -1,5 +1,5 @@
 import { DataSource } from 'typeorm';
-import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
+import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions.js';
 
 const url = process.env.DB_URL;
 const urlOrParts = url

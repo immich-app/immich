@@ -12,28 +12,21 @@ import {
   spyOnConsole,
 } from '../../test/cli-test-utils';
 
-const mockPingServer = jest.fn(() => Promise.resolve({ data: { res: 'pong' } }));
-const mockUserInfo = jest.fn(() => Promise.resolve({ data: { email: 'admin@example.com' } }));
+const mockPingServer = vi.fn(() => Promise.resolve({ data: { res: 'pong' } }));
+const mockUserInfo = vi.fn(() => Promise.resolve({ data: { email: 'admin@example.com' } }));
 
-jest.mock('@immich/sdk', () => {
-  return {
-    ...jest.requireActual('@immich/sdk'),
-    UserApi: jest.fn().mockImplementation(() => {
-      return { getMyUserInfo: mockUserInfo };
-    }),
-    ServerInfoApi: jest.fn().mockImplementation(() => {
-      return { pingServer: mockPingServer };
-    }),
-  };
-});
+vi.mock('@immich/sdk', async () => ({
+  ...(await vi.importActual('@immich/sdk')),
+  UserApi: vi.fn().mockImplementation(() => {
+    return { getMyUserInfo: mockUserInfo };
+  }),
+  ServerInfoApi: vi.fn().mockImplementation(() => {
+    return { pingServer: mockPingServer };
+  }),
+}));
 
 describe('SessionService', () => {
   let sessionService: SessionService;
-  let consoleSpy: jest.SpyInstance;
-
-  beforeAll(() => {
-    consoleSpy = spyOnConsole();
-  });
 
   beforeEach(() => {
     deleteAuthFile();
@@ -93,6 +86,8 @@ describe('SessionService', () => {
   });
 
   it('should delete auth file when logging out', async () => {
+    const consoleSpy = spyOnConsole();
+
     await createTestAuthFile(
       JSON.stringify({
         apiKey: TEST_IMMICH_API_KEY,

@@ -9,7 +9,7 @@ import * as fs from 'node:fs';
 import path from 'node:path';
 import { Server } from 'node:tls';
 import { EntityTarget, ObjectLiteral } from 'typeorm';
-import { AppService } from '../../src/microservices/app.service';
+import { AppService } from '../microservices/app.service';
 
 export const IMMICH_TEST_ASSET_PATH = process.env.IMMICH_TEST_ASSET_PATH as string;
 export const IMMICH_TEST_ASSET_TEMP_PATH = path.normalize(`${IMMICH_TEST_ASSET_PATH}/temp/`);

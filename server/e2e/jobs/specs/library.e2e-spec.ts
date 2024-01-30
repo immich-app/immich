@@ -5,8 +5,13 @@ import { errorStub, uuidStub } from '@test/fixtures';
 import * as fs from 'fs';
 import request from 'supertest';
 import { utimes } from 'utimes';
+import {
+  IMMICH_TEST_ASSET_PATH,
+  IMMICH_TEST_ASSET_TEMP_PATH,
+  restoreTempFolder,
+  testApp,
+} from '../../../src/test-utils/utils';
 import { api } from '../../client';
-import { IMMICH_TEST_ASSET_PATH, IMMICH_TEST_ASSET_TEMP_PATH, restoreTempFolder, testApp } from '../utils';
 
 describe(`${LibraryController.name} (e2e)`, () => {
   let server: any;
