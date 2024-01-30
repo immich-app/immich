@@ -17,7 +17,6 @@
   import { featureFlags } from '$lib/stores/server-config.store';
   import { mdiMagnify, mdiTrayArrowUp, mdiCog } from '@mdi/js';
   import { resetSavedUser, user } from '$lib/stores/user.store';
-  import { removeAuthCookie } from '$lib/utils/cookies';
 
   export let showUploadButton = true;
 
@@ -30,7 +29,6 @@
 
   const logOut = async () => {
     resetSavedUser();
-    removeAuthCookie();
     const { data } = await api.authenticationApi.logout();
     if (data.redirectUri.startsWith('/')) {
       goto(data.redirectUri);

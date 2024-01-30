@@ -14,7 +14,6 @@
   afterNavigate(async ({ from }) => {
     if (from?.url?.pathname === AppRoute.AUTH_CHANGE_PASSWORD) {
       resetSavedUser();
-      removeAuthCookie();
       await api.authenticationApi.logout();
     }
   });

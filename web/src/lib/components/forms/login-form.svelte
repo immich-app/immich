@@ -8,7 +8,6 @@
   import { createEventDispatcher, onMount } from 'svelte';
   import { fade } from 'svelte/transition';
   import Button from '../elements/buttons/button.svelte';
-  import { setAuthCookie } from '$lib/utils/cookies';
 
   let errorMessage: string;
   let email = '';
@@ -32,7 +31,6 @@
     if (oauth.isCallback(window.location)) {
       try {
         await oauth.login(window.location);
-        setAuthCookie();
         dispatch('success');
         return;
       } catch (error) {
@@ -78,7 +76,6 @@
         dispatch('firstLogin');
         return;
       }
-      setAuthCookie();
       dispatch('success');
       return;
     } catch (error) {
