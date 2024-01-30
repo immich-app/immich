@@ -14,13 +14,13 @@ class SearchResultPageNotifier extends StateNotifier<SearchResultPageState> {
             isError: false,
             isLoading: true,
             isSuccess: false,
-            isClip: false,
+            isSmart: false,
           ),
         );
 
   final SearchService _searchService;
 
-  Future<void> search(String searchTerm, {bool clipEnable = true}) async {
+  Future<void> search(String searchTerm, {bool smartSearch = true}) async {
     state = state.copyWith(
       searchResult: [],
       isError: false,
@@ -28,10 +28,8 @@ class SearchResultPageNotifier extends StateNotifier<SearchResultPageState> {
       isSuccess: false,
     );
 
-    List<Asset>? assets = await _searchService.searchAsset(
-      searchTerm,
-      clipEnable: clipEnable,
-    );
+    List<Asset>? assets =
+        await _searchService.searchAsset(searchTerm, smartSearch: smartSearch);
 
     if (assets != null) {
       state = state.copyWith(
@@ -39,7 +37,7 @@ class SearchResultPageNotifier extends StateNotifier<SearchResultPageState> {
         isError: false,
         isLoading: false,
         isSuccess: true,
-        isClip: clipEnable,
+        isSmart: smartSearch,
       );
     } else {
       state = state.copyWith(
@@ -47,7 +45,7 @@ class SearchResultPageNotifier extends StateNotifier<SearchResultPageState> {
         isError: true,
         isLoading: false,
         isSuccess: false,
-        isClip: clipEnable,
+        isSmart: smartSearch,
       );
     }
   }
@@ -63,7 +61,7 @@ final searchRenderListProvider = Provider((ref) {
   final result = ref.watch(searchResultPageProvider);
   return ref.watch(
     renderListProviderWithGrouping(
-      (result.searchResult, result.isClip ? GroupAssetsBy.none : null),
+      (result.searchResult, result.isSmart ? GroupAssetsBy.none : null),
     ),
   );
 });

@@ -44,6 +44,7 @@ class BaseConfig implements VideoCodecSWConfig {
       // explicitly selects the video stream instead of leaving it up to FFmpeg
       `-map 0:${videoStream.index}`,
     ];
+
     if (audioStream) {
       options.push(`-map 0:${audioStream.index}`);
     }
@@ -56,6 +57,11 @@ class BaseConfig implements VideoCodecSWConfig {
     if (this.getGopSize() > 0) {
       options.push(`-g ${this.getGopSize()}`);
     }
+
+    if (this.config.targetVideoCodec === VideoCodec.HEVC) {
+      options.push('-tag:v hvc1');
+    }
+
     return options;
   }
 
@@ -279,6 +285,20 @@ export class BaseHWConfig extends BaseConfig implements VideoCodecHWConfig {
     }
     return this.config.gopSize;
   }
+
+  getPreferredHardwareDevice(): string | null {
+    const device = this.config.preferredHwDevice;
+    if (device === 'auto') {
+      return null;
+    }
+
+    const deviceName = device.replace('/dev/dri/', '');
+    if (!this.devices.includes(deviceName)) {
+      throw new Error(`Device '${device}' does not exist`);
+    }
+
+    return device;
+  }
 }
 
 export class ThumbnailConfig extends BaseConfig {
@@ -457,7 +477,14 @@ export class QSVConfig extends BaseHWConfig {
     if (!this.devices.length) {
       throw Error('No QSV device found');
     }
-    return ['-init_hw_device qsv=hw', '-filter_hw_device hw'];
+
+    let qsvString = '';
+    const hwDevice = this.getPreferredHardwareDevice();
+    if (hwDevice !== null) {
+      qsvString = `,child_device=${hwDevice}`;
+    }
+
+    return [`-init_hw_device qsv=hw${qsvString}`, '-filter_hw_device hw'];
   }
 
   getBaseOutputOptions(videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
@@ -521,9 +548,15 @@ export class QSVConfig extends BaseHWConfig {
 export class VAAPIConfig extends BaseHWConfig {
   getBaseInputOptions() {
     if (this.devices.length === 0) {
-      throw Error('No VAAPI device found');
+      throw new Error('No VAAPI device found');
     }
-    return [`-init_hw_device vaapi=accel:/dev/dri/${this.devices[0]}`, '-filter_hw_device accel'];
+
+    let hwDevice = this.getPreferredHardwareDevice();
+    if (hwDevice === null) {
+      hwDevice = `/dev/dri/${this.devices[0]}`;
+    }
+
+    return [`-init_hw_device vaapi=accel:${hwDevice}`, '-filter_hw_device accel'];
   }
 
   getFilterOptions(videoStream: VideoStreamInfo) {

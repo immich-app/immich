@@ -787,6 +787,17 @@ describe(PersonService.name, () => {
       expect(personMock.createFaces).not.toHaveBeenCalled();
     });
 
+    it('should return false if face does not have asset', async () => {
+      const face = { ...faceStub.face1, asset: null } as AssetFaceEntity & { asset: null };
+      personMock.getFaceByIdWithAssets.mockResolvedValue(face);
+
+      expect(await sut.handleRecognizeFaces({ id: faceStub.face1.id })).toBe(false);
+
+      expect(personMock.reassignFaces).not.toHaveBeenCalled();
+      expect(personMock.create).not.toHaveBeenCalled();
+      expect(personMock.createFaces).not.toHaveBeenCalled();
+    });
+
     it('should return true if face already has an assigned person', async () => {
       personMock.getFaceByIdWithAssets.mockResolvedValue(faceStub.face1);
 

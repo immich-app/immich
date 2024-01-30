@@ -501,7 +501,7 @@ export class AssetRepository implements IAssetRepository {
         };
         break;
 
-      case WithoutProperty.CLIP_ENCODING:
+      case WithoutProperty.SMART_SEARCH:
         relations = {
           smartSearch: true,
         };

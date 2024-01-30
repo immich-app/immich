@@ -321,7 +321,7 @@ export class AssetService {
       delete data.owner;
     }
 
-    if (data.ownerId !== auth.user.id) {
+    if (data.ownerId !== auth.user.id || auth.sharedLink) {
       data.people = [];
     }
 
