@@ -9,7 +9,10 @@ export enum DatabaseExtension {
 
 export type VectorExtension = DatabaseExtension.VECTOR | DatabaseExtension.VECTORS;
 
-export type VectorIndex = 'clip_index' | 'face_index';
+export enum VectorIndex {
+  CLIP = 'clip_index',
+  FACE = 'face_index',
+}
 
 export enum DatabaseLock {
   GeodataImport = 100,
@@ -26,9 +29,8 @@ export const extName: Record<DatabaseExtension, string> = {
 } as const;
 
 export interface VectorUpdateResult {
-  restartRequired: boolean,
+  restartRequired: boolean;
 }
-
 
 export const IDatabaseRepository = 'IDatabaseRepository';
 

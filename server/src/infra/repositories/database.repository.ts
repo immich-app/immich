@@ -14,6 +14,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import AsyncLock from 'async-lock';
 import { DataSource, EntityManager, QueryRunner } from 'typeorm';
+import { isValidInteger } from '../infra.utils';
 import { ImmichLogger } from '../logger';
 
 @Injectable()
@@ -80,36 +81,46 @@ export class DatabaseRepository implements IDatabaseRepository {
     const minorOrMajor = version && curVersion.isOlderThan(version) >= VersionType.MINOR;
     const isVectors = extension === DatabaseExtension.VECTORS;
     let restartRequired = false;
-    await this.dataSource.manager.transaction(async (manager) => {
-      if (minorOrMajor && isVectors) {
-        await this.updateVectorsSchema(manager, curVersion);
-      }
+    // await this.dataSource.manager.transaction(async (manager) => {
+    const manager = this.dataSource.manager;
+    if (minorOrMajor && isVectors) {
+      await this.updateVectorsSchema(manager, curVersion);
+    }
 
-      await manager.query(`ALTER EXTENSION ${extension} UPDATE${version ? ` TO '${version}-alpha.1'` : ''}`);
+    await manager.query(`ALTER EXTENSION ${extension} UPDATE${version ? ` TO '${version}-alpha.2'` : ''}`);
 
-      if (!minorOrMajor) {
-        return;
-      }
+    if (!minorOrMajor) {
+      return { restartRequired };
+    }
 
-      if (isVectors) {
-        await manager.query('SELECT pgvectors_upgrade()');
-        restartRequired = true;
-      } else {
-        await this.reindex('clip_index');
-        await this.reindex('face_index');
-      }
-    });
+    if (isVectors) {
+      await manager.query('SELECT pgvectors_upgrade()');
+      restartRequired = true;
+    } else {
+      await this.reindex(VectorIndex.CLIP);
+      await this.reindex(VectorIndex.FACE);
+    }
+    // });
 
     return { restartRequired };
   }
 
   async reindex(index: VectorIndex): Promise<void> {
-    await this.dataSource.query(`DROP INDEX ${index}`);
-    await this.createVectorIndex(
-      this.dataSource.manager,
-      index,
-      index === 'clip_index' ? 'smart_search' : 'asset_faces',
-    );
+    try {
+      await this.dataSource.query(`REINDEX INDEX ${index}`);
+    } catch (err) {
+      if (vectorExt === DatabaseExtension.VECTORS) {
+        this.logger.warn(`Could not reindex index ${index}. Attempting to auto-fix.`);
+        const table = index === VectorIndex.CLIP ? 'smart_search' : 'asset_faces';
+        await this.dataSource.manager.transaction(async (manager) => {
+          await manager.query(`ALTER TABLE ${table} ALTER COLUMN embedding SET DATA TYPE real[]`);
+          await manager.query(`ALTER TABLE ${table} ALTER COLUMN embedding SET DATA TYPE vector`);
+          await manager.query(`REINDEX INDEX ${index}`);
+        });
+      } else {
+        throw err;
+      }
+    }
   }
 
   async shouldReindex(name: VectorIndex): Promise<boolean> {
