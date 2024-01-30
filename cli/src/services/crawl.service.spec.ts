@@ -1,10 +1,9 @@
 import mockfs from 'mock-fs';
-import { CrawlOptionsDto } from 'src/cores/dto/crawl-options-dto';
-import { CrawlService } from '.';
+import { CrawlService, CrawlOptions } from './crawl.service';
 
 interface Test {
   test: string;
-  options: CrawlOptionsDto;
+  options: CrawlOptions;
   files: Record<string, boolean>;
 }
 
