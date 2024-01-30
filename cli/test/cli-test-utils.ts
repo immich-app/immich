@@ -27,7 +27,7 @@ export const setup = async () => {
   return api;
 };
 
-export const spyOnConsole = () => jest.spyOn(console, 'log').mockImplementation();
+export const spyOnConsole = () => vi.spyOn(console, 'log').mockImplementation(() => {});
 
 export const createTestAuthFile = async (contents: string) => {
   if (!fs.existsSync(TEST_CONFIG_DIR)) {

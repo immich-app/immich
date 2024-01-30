@@ -3,7 +3,7 @@ import { AssetType } from '@app/infra/entities';
 import { readFile } from 'fs/promises';
 import { basename, join } from 'path';
 import { api } from '../../client';
-import { IMMICH_TEST_ASSET_PATH, testApp } from '../utils';
+import { IMMICH_TEST_ASSET_PATH, testApp } from '../../../src/test-utils/utils';
 
 const JPEG = {
   type: AssetType.IMAGE,

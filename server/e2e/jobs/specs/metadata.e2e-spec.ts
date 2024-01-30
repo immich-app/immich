@@ -4,7 +4,7 @@ import { INestApplication } from '@nestjs/common';
 import { exiftool } from 'exiftool-vendored';
 import { readFile, writeFile } from 'fs/promises';
 import { api } from '../../client';
-import { IMMICH_TEST_ASSET_PATH, IMMICH_TEST_ASSET_TEMP_PATH, db, restoreTempFolder, testApp } from '../utils';
+import { IMMICH_TEST_ASSET_PATH, IMMICH_TEST_ASSET_TEMP_PATH, db, restoreTempFolder, testApp } from '../../../src/test-utils/utils';
 
 describe(`${AssetController.name} (e2e)`, () => {
   let app: INestApplication;

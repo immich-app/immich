@@ -2,7 +2,8 @@
   "name": "@immich/cli",
   "version": "2.0.6",
   "description": "Command Line Interface (CLI) for Immich",
-  "main": "dist/index.js",
+  "type": "module",
+  "exports": "./dist/index.js",
   "bin": {
     "immich": "./dist/src/index.js"
   },
@@ -25,61 +26,33 @@
     "@testcontainers/postgresql": "^10.4.0",
     "@types/byte-size": "^8.1.0",
     "@types/cli-progress": "^3.11.0",
-    "@types/jest": "^29.5.2",
     "@types/mock-fs": "^4.13.1",
     "@types/node": "^20.3.1",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
+    "@vitest/coverage-v8": "^1.2.2",
     "eslint": "^8.43.0",
     "eslint-config-prettier": "^9.0.0",
-    "eslint-plugin-jest": "^27.2.2",
     "eslint-plugin-prettier": "^5.0.0",
     "eslint-plugin-unicorn": "^50.0.0",
     "immich": "file:../server",
-    "jest": "^29.5.0",
-    "jest-extended": "^4.0.0",
     "mock-fs": "^5.2.0",
-    "ts-jest": "^29.1.0",
     "ts-node": "^10.9.1",
     "tslib": "^2.5.3",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "vitest": "^1.2.1"
   },
   "scripts": {
     "build": "tsc --project tsconfig.build.json",
     "lint": "eslint \"src/**/*.ts\" \"test/**/*.ts\" --max-warnings 0",
     "lint:fix": "npm run lint -- --fix",
     "prepack": "npm run build",
-    "test": "jest",
-    "test:cov": "jest --coverage",
+    "test": "vitest",
+    "test:cov": "vitest --coverage",
     "format": "prettier --check .",
     "format:fix": "prettier --write .",
     "check": "tsc --noEmit",
-    "test:e2e": "jest --config test/e2e/jest-e2e.json --runInBand"
-  },
-  "jest": {
-    "clearMocks": true,
-    "moduleFileExtensions": [
-      "js",
-      "json",
-      "ts"
-    ],
-    "rootDir": ".",
-    "testRegex": ".*\\.spec\\.ts$",
-    "transform": {
-      "^.+\\.ts$": "ts-jest"
-    },
-    "collectCoverageFrom": [
-      "<rootDir>/src/**/*.(t|j)s",
-      "!**/open-api/**"
-    ],
-    "moduleNameMapper": {
-      "^@test(|/.*)$": "<rootDir>../server/test/$1",
-      "^@app/immich(|/.*)$": "<rootDir>../server/src/immich/$1",
-      "^@app/infra(|/.*)$": "<rootDir>../server/src/infra/$1",
-      "^@app/domain(|/.*)$": "<rootDir>../server/src/domain/$1"
-    },
-    "coverageDirectory": "./coverage",
-    "testEnvironment": "node"
+    "test:e2e": "vitest --config test/e2e/vitest.config.ts"
   },
   "repository": {
     "type": "git",
