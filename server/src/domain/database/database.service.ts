@@ -1,11 +1,11 @@
 import { ImmichLogger } from '@app/infra/logger';
-import { Inject, Injectable, OnModuleDestroy } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { QueryFailedError } from 'typeorm';
 import { Version, VersionType } from '../domain.constant';
 import { DatabaseExtension, DatabaseLock, IDatabaseRepository, VectorExtension, extName } from '../repositories';
 
 @Injectable()
-export class DatabaseService implements OnModuleDestroy {
+export class DatabaseService {
   private logger = new ImmichLogger(DatabaseService.name);
   private vectorExt: VectorExtension;
   minPostgresVersion = 14;
@@ -25,13 +25,13 @@ export class DatabaseService implements OnModuleDestroy {
       await this.createVectorExtension();
       await this.updateVectorExtension();
       await this.assertVectorExtension();
+      if (await this.databaseRepository.shouldReindex('clip_index')) {
+        await this.databaseRepository.reindex('clip_index');
+      }
+      if (await this.databaseRepository.shouldReindex('face_index')) {
+        await this.databaseRepository.reindex('face_index');
+      }
       await this.databaseRepository.runMigrations();
-    });
-  }
-
-  async onModuleDestroy() {
-    await this.databaseRepository.withLock(DatabaseLock.Migrations, async () => {
-      await this.databaseRepository.vectorDown();
     });
   }
 
@@ -73,9 +73,6 @@ export class DatabaseService implements OnModuleDestroy {
     if (version == null) {
       throw new Error(`Unexpected: ${extName[this.vectorExt]} extension is not installed.`);
     }
-
-    this.logger.warn(`The ${extName[this.vectorExt]} extension version is ${version}.`);
-    this.logger.warn(`The ${extName[this.vectorExt]} available version is ${availableVersion}.`);
 
     if (availableVersion == null) {
       return;
@@ -124,7 +121,7 @@ export class DatabaseService implements OnModuleDestroy {
     if (version.isOlderThan(minVersion) || version.isNewerThan(minVersion) > maxVersion) {
       const releases =
         maxVersion !== VersionType.EQUAL
-          ? `${minVersion} and later ${VersionType[maxVersion].toLowerCase()} releases`
+          ? `${minVersion} and later ${VersionType[maxVersion - 1].toLowerCase()} releases`
           : minVersion.toString();
 
       this.logger.fatal(`

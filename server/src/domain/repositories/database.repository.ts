@@ -9,6 +9,8 @@ export enum DatabaseExtension {
 
 export type VectorExtension = DatabaseExtension.VECTOR | DatabaseExtension.VECTORS;
 
+export type VectorIndex = 'clip_index' | 'face_index';
+
 export enum DatabaseLock {
   GeodataImport = 100,
   Migrations = 200,
@@ -34,7 +36,8 @@ export interface IDatabaseRepository {
   updateExtension(extension: DatabaseExtension, version?: Version): Promise<void>;
   updateVectorExtension(extension: VectorExtension, version?: Version): Promise<void>;
   setSearchPath(): Promise<void>;
-  vectorDown(): Promise<void>
+  reindex(index: VectorIndex): Promise<void>;
+  shouldReindex(name: 'clip_index' | 'face_index'): Promise<boolean>;
   runMigrations(options?: { transaction?: 'all' | 'none' | 'each' }): Promise<void>;
   withLock<R>(lock: DatabaseLock, callback: () => Promise<R>): Promise<R>;
   isBusy(lock: DatabaseLock): boolean;
