@@ -161,7 +161,7 @@ class GalleryViewerPage extends HookConsumerWidget {
 
     Iterable<ImageProvider> allImageProviders(Asset asset) sync* {
       if (ImmichImage.useLocal(asset)) {
-        yield ImmichImage.localThumbnailProvider(asset);
+        yield ImmichImage.localImageProvider(asset);
         yield localOriginalProvider(asset);
       } else {
         yield ImmichImage.remoteThumbnailProvider(asset, webp, header);
@@ -787,7 +787,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                 final a = loadAsset(index);
                 if (ImmichImage.useLocal(a)) {
                   return Image(
-                    image: ImmichImage.localThumbnailProvider(a),
+                    image: ImmichImage.localImageProvider(a),
                     fit: BoxFit.contain,
                   );
                 }

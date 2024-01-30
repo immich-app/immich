@@ -323,3 +323,7 @@ If the error mentions SIGKILL or error code 137, it most likely means the servic
 If it mentions SIGILL (note the lack of a K) or error code 132, it most likely means your server's CPU is incompatible. This is unlikely to occur on version 1.92.0 or later. Consider upgrading if your version of Immich is below that.
 
 If your version of Immich is below 1.92.0 and the crash occurs after logs about tracing or exporting a model, consider either upgrading or disabling the Tag Objects job.
+
+### Why do I get the error "duplicate key value violates unique constraint" in the log files?
+
+Because of Immich's container structure, this error can be seen when both immich and immich-microservices start at the same time and attempt to migrate or create the database structure. Since the database migration is run sequentially and inside of transactions, this error message does not cause harm to your installation of Immich and can safely be ignored. If needed, you can manually restart Immich by running `docker restart immich immich-microservices`.

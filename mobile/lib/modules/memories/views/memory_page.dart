@@ -101,6 +101,7 @@ class MemoryPage extends HookConsumerWidget {
           asset,
           context,
           type: api.ThumbnailFormat.WEBP,
+          size: 2048,
         ),
       );
       precaches.add(
@@ -108,6 +109,7 @@ class MemoryPage extends HookConsumerWidget {
           asset,
           context,
           type: api.ThumbnailFormat.JPEG,
+          size: 2048,
         ),
       );
 

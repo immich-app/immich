@@ -2,13 +2,13 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { websocketStore } from '$lib/stores/websocket';
-  import { api } from '@api';
   import { onMount } from 'svelte';
   import { asByteUnitString } from '../../utils/byte-units';
   import LoadingSpinner from './loading-spinner.svelte';
   import { mdiChartPie, mdiDns } from '@mdi/js';
-  import { serverInfoStore } from '$lib/stores/server-info.store';
+  import { serverInfo } from '$lib/stores/server-info.store';
   import { user } from '$lib/stores/user.store';
+  import { requestServerInfo } from '$lib/utils/auth';
 
   const { serverVersion, connected } = websocketStore;
 
@@ -16,8 +16,8 @@
 
   $: version = $serverVersion ? `v${$serverVersion.major}.${$serverVersion.minor}.${$serverVersion.patch}` : null;
   $: hasQuota = $user?.quotaSizeInBytes !== null;
-  $: availableBytes = (hasQuota ? $user?.quotaSizeInBytes : $serverInfoStore?.diskSizeRaw) || 0;
-  $: usedBytes = (hasQuota ? $user?.quotaUsageInBytes : $serverInfoStore?.diskUseRaw) || 0;
+  $: availableBytes = (hasQuota ? $user?.quotaSizeInBytes : $serverInfo?.diskSizeRaw) || 0;
+  $: usedBytes = (hasQuota ? $user?.quotaUsageInBytes : $serverInfo?.diskUseRaw) || 0;
   $: usedPercentage = Math.round((usedBytes / availableBytes) * 100);
 
   const onUpdate = () => {
@@ -39,19 +39,8 @@
   $: $user && onUpdate();
 
   onMount(async () => {
-    await refresh();
+    await requestServerInfo();
   });
-
-  const refresh = async () => {
-    try {
-      if (!$serverInfoStore) {
-        const { data } = await api.serverInfoApi.getServerInfo();
-        $serverInfoStore = data;
-      }
-    } catch (e) {
-      console.log('Error [StatusBox] [onMount]');
-    }
-  };
 </script>
 
 <div class="dark:text-immich-dark-fg">
@@ -64,7 +53,7 @@
     </div>
     <div class="hidden group-hover:sm:block md:block">
       <p class="text-sm font-medium text-immich-primary dark:text-immich-dark-primary">Storage</p>
-      {#if $serverInfoStore}
+      {#if $serverInfo}
         <div class="my-2 h-[7px] w-full rounded-full bg-gray-200 dark:bg-gray-700">
           <div class="h-[7px] rounded-full {usageClasses}" style="width: {usedPercentage}%" />
         </div>
