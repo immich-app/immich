@@ -17,7 +17,6 @@ export const getAuthUser = async () => {
   }
 };
 
-// TODO: re-use already loaded user (once) instead of fetching on each page navigation
 export const authenticate = async (options?: AuthOptions) => {
   options = options || {};
 
