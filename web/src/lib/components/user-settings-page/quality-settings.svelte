@@ -3,7 +3,7 @@
   import { alwaysLoadOriginalFile } from '../../stores/preferences.store';
   import SettingSwitch from '../admin-page/settings/setting-switch.svelte';
 
-  export const handleToggle = () => {
+  const handleToggle = () => {
     $alwaysLoadOriginalFile = !$alwaysLoadOriginalFile;
   };
 </script>
