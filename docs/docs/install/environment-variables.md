@@ -46,7 +46,7 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 
 `exiftool` is only present in the microservices container.
 
-Timezones should be entered as the "TZ identifier" from [this list](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List). For example, TZ="Etc/UTC".
+Timezones should be entered as the `TZ identifier` from [this list](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List). For example, `TZ="Etc/UTC"`.
 
 :::
 
