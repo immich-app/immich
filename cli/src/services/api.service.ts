@@ -10,7 +10,6 @@ import {
   SystemConfigApi,
   UserApi,
 } from '@immich/sdk';
-import { ApiConfiguration } from '../cores/api-configuration';
 import FormData from 'form-data';
 
 export class ImmichApi {
@@ -25,10 +24,11 @@ export class ImmichApi {
   public systemConfigApi: SystemConfigApi;
 
   private readonly config;
-  public readonly apiConfiguration: ApiConfiguration;
 
-  constructor(instanceUrl: string, apiKey: string) {
-    this.apiConfiguration = new ApiConfiguration(instanceUrl, apiKey);
+  constructor(
+    public instanceUrl: string,
+    public apiKey: string,
+  ) {
     this.config = new Configuration({
       basePath: instanceUrl,
       baseOptions: {
@@ -48,5 +48,10 @@ export class ImmichApi {
     this.jobApi = new JobApi(this.config);
     this.keyApi = new APIKeyApi(this.config);
     this.systemConfigApi = new SystemConfigApi(this.config);
+  }
+
+  setApiKey(apiKey: string) {
+    this.apiKey = apiKey;
+    this.config.baseOptions.headers['x-api-key'] = apiKey;
   }
 }

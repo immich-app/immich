@@ -82,6 +82,7 @@ class MemoryCard extends HookConsumerWidget {
               height: double.infinity,
               width: double.infinity,
               type: ThumbnailFormat.JPEG,
+              preferredLocalAssetSize: 2048,
             ),
           ),
           Positioned(

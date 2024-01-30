@@ -282,6 +282,13 @@
               bind:checked={config.ffmpeg.temporalAQ}
               isEdited={config.ffmpeg.temporalAQ !== savedConfig.ffmpeg.temporalAQ}
             />
+            <SettingInputField
+              inputType={SettingInputFieldType.TEXT}
+              label="PREFERRED HARDWARE DEVICE FOR TRANSCODING"
+              desc="Applies only to VAAPI and QSV. Sets the dri node used for hardware transcoding. Set to 'auto' to let immich decide for you"
+              bind:value={config.ffmpeg.preferredHwDevice}
+              isEdited={config.ffmpeg.preferredHwDevice !== savedConfig.ffmpeg.preferredHwDevice}
+            />
           </div>
         </SettingAccordion>
 
