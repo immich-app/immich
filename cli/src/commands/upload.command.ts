@@ -93,7 +93,11 @@ class Asset {
   }
 
   private extractAlbumName(): string {
-    return Os.platform() === 'win32' ? this.path.split('\\').at(-2) : this.path.split('/').at(-2);
+    if (Os.platform() === 'win32') {
+      return this.path.split('\\').slice(-2)[0];
+    } else {
+      return this.path.split('/').slice(-2)[0];
+    }
   }
 }
 
