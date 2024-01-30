@@ -1,7 +1,7 @@
 import { api } from '@api';
 import { redirect } from '@sveltejs/kit';
 import { AppRoute } from '../constants';
-import { getSavedUser, setUser } from '$lib/stores/user.store';
+import { currentUser, setUser } from '$lib/stores/user.store';
 import { serverInfo } from '$lib/stores/server-info.store';
 import { browser } from '$app/environment';
 
@@ -10,16 +10,20 @@ export interface AuthOptions {
   public?: true;
 }
 
-export const getAuthUser = async () => {
+export const loadUser = async () => {
   try {
-    const { data: user } = await api.userApi.getMyUserInfo();
-    return user;
+    const user = currentUser();
+    if (!user && hasAuthCookie()) {
+      const { data } = await api.userApi.getMyUserInfo();
+      setUser(data);
+    }
+    return currentUser();
   } catch {
-    return null;
+    return undefined;
   }
 };
 
-const isAuthenticated = (): boolean => {
+const hasAuthCookie = (): boolean => {
   if (browser) {
     const cookies = document.cookie.split('; ');
     for (const cookie of cookies) {
@@ -34,10 +38,9 @@ const isAuthenticated = (): boolean => {
 
 export const authenticate = async (options?: AuthOptions) => {
   options = options || {};
-  const savedUser = getSavedUser();
-  const user = savedUser || isAuthenticated() ? await getAuthUser() : null;
+  const user = await loadUser();
 
-  if (options.public === true && !user) {
+  if (options.public && !user) {
     return;
   }
 
@@ -48,22 +51,18 @@ export const authenticate = async (options?: AuthOptions) => {
   if (!options.public && !user) {
     redirect(302, AppRoute.AUTH_LOGIN);
   }
-
-  if (!savedUser && user) {
-    setUser(user);
-  }
 };
 
 export const requestServerInfo = async () => {
-  if (getSavedUser()) {
+  if (currentUser()) {
     const { data } = await api.serverInfoApi.getServerInfo();
     serverInfo.set(data);
   }
 };
 
 export const isLoggedIn = async () => {
-  const savedUser = getSavedUser();
-  const user = savedUser || (await getAuthUser());
+  const savedUser = currentUser();
+  const user = savedUser || (await loadUser());
   if (!savedUser) {
     setUser(user);
   }

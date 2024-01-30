@@ -7,7 +7,7 @@ export const setUser = (value: UserResponseDto) => {
   user.set(value);
 };
 
-export const getSavedUser = () => {
+export const currentUser = () => {
   return get(user);
 };
 
