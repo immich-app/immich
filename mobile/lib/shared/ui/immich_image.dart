@@ -20,6 +20,7 @@ class ImmichImage extends StatelessWidget {
     this.useGrayBoxPlaceholder = false,
     this.useProgressIndicator = false,
     this.type = api.ThumbnailFormat.WEBP,
+    this.preferredLocalAssetSize = 250,
     super.key,
   });
   final Asset? asset;
@@ -29,6 +30,7 @@ class ImmichImage extends StatelessWidget {
   final double? height;
   final BoxFit fit;
   final api.ThumbnailFormat type;
+  final int preferredLocalAssetSize;
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +51,7 @@ class ImmichImage extends StatelessWidget {
     final Asset asset = this.asset!;
     if (useLocal(asset)) {
       return Image(
-        image: localThumbnailProvider(asset, dimension: 2048),
+        image: localImageProvider(asset, size: preferredLocalAssetSize),
         width: width,
         height: height,
         fit: fit,
@@ -145,14 +147,14 @@ class ImmichImage extends StatelessWidget {
     );
   }
 
-  static AssetEntityImageProvider localThumbnailProvider(
+  static AssetEntityImageProvider localImageProvider(
     Asset asset, {
-    int dimension = 250,
+    int size = 250,
   }) =>
       AssetEntityImageProvider(
         asset.local!,
         isOriginal: false,
-        thumbnailSize: ThumbnailSize.square(dimension),
+        thumbnailSize: ThumbnailSize.square(size),
       );
 
   static CachedNetworkImageProvider remoteThumbnailProvider(
@@ -184,11 +186,12 @@ class ImmichImage extends StatelessWidget {
     Asset asset,
     BuildContext context, {
     type = api.ThumbnailFormat.WEBP,
+    size = 250,
   }) {
     if (useLocal(asset)) {
       // Precache the local image
       return precacheImage(
-        localThumbnailProvider(asset, dimension: 2048),
+        localImageProvider(asset, size: size),
         context,
       );
     } else {
