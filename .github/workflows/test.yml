@@ -151,7 +151,7 @@ jobs:
         run: npm ci
 
       - name: Run npm install (server)
-        run: npm ci
+        run: npm ci && npm run build
         working-directory: ./server
 
       - name: Run e2e tests
