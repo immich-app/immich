@@ -7,12 +7,14 @@
   import { resetSavedUser } from '$lib/stores/user.store';
   import { api } from '@api';
   import type { PageData } from './$types';
+  import { removeAuthCookie } from '$lib/utils/cookies';
 
   export let data: PageData;
 
   afterNavigate(async ({ from }) => {
     if (from?.url?.pathname === AppRoute.AUTH_CHANGE_PASSWORD) {
       resetSavedUser();
+      removeAuthCookie();
       await api.authenticationApi.logout();
     }
   });

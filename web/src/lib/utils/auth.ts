@@ -1,11 +1,13 @@
 import { api } from '@api';
 import { redirect } from '@sveltejs/kit';
 import { AppRoute } from '../constants';
-import { getSavedUser, setUser } from '$lib/stores/user.store';
 import { serverInfo } from '$lib/stores/server-info.store';
+import { getSavedUser, publicUser, setUser } from '$lib/stores/user.store';
+import { getAuthCookie } from './cookies';
 
 export interface AuthOptions {
   admin?: true;
+  public?: true;
 }
 
 export const getAuthUser = async () => {
@@ -19,19 +21,21 @@ export const getAuthUser = async () => {
 
 export const authenticate = async (options?: AuthOptions) => {
   options = options || {};
+  const isAuthenticated = getAuthCookie() === 'true';
 
   const savedUser = getSavedUser();
-  const user = savedUser || (await getAuthUser());
-
-  if (!user) {
-    redirect(302, AppRoute.AUTH_LOGIN);
+  const user = savedUser || isAuthenticated ? await getAuthUser() : null;
+  if (options.public) {
+    publicUser.set(user);
+  } else {
+    if (!user) {
+      redirect(302, AppRoute.AUTH_LOGIN);
+    }
+    if (options.admin && !user.isAdmin) {
+      redirect(302, AppRoute.PHOTOS);
+    }
   }
-
-  if (options.admin && !user.isAdmin) {
-    redirect(302, AppRoute.PHOTOS);
-  }
-
-  if (!savedUser) {
+  if (!savedUser && user) {
     setUser(user);
   }
 };
