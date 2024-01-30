@@ -185,15 +185,15 @@
   "home_page_add_to_album_conflicts": "{added} éléments ajoutés à l'album {album}. Les éléments {failed} sont déjà dans l'album.",
   "home_page_add_to_album_err_local": "Impossible d'ajouter des éléments locaux aux albums pour le moment, étape ignorée",
   "home_page_add_to_album_success": "{added} éléments ajoutés à l'album {album}.",
-  "home_page_album_err_partner": "Impossible d'ajouter les médias de partenaire à un album pour le moment, cette opération est donc ignorée."
+  "home_page_album_err_partner": "Impossible d'ajouter les médias de partenaire à un album pour le moment, cette opération est donc ignorée.",
   "home_page_archive_err_local": "Impossible d'archiver les ressources locales pour l'instant, étape ignorée",
-  "home_page_archive_err_partner": "Impossible d'archiver les médias de partenaire à un album pour le moment, cette opération est donc ignorée."
+  "home_page_archive_err_partner": "Impossible d'archiver les médias de partenaire à un album pour le moment, cette opération est donc ignorée.",
   "home_page_building_timeline": "Construction de la chronologie",
-  "home_page_delete_err_partner": "Impossible de supprimer les médias de partenaire à un album pour le moment, cette opération est donc ignorée."
-  "home_page_favorite_err_local": "Impossible d'ajouter les médias locaux aux favoris pour le moment, cette opération est donc ignorée."
-  "home_page_favorite_err_partner": "Impossible de marquer comme favoris les médias de partenaires pour le moment, cette opération est donc ignorée."
+  "home_page_delete_err_partner": "Impossible de supprimer les médias de partenaire à un album pour le moment, cette opération est donc ignorée.",
+  "home_page_favorite_err_local": "Impossible d'ajouter les médias locaux aux favoris pour le moment, cette opération est donc ignorée.",
+  "home_page_favorite_err_partner": "Impossible de marquer comme favoris les médias de partenaires pour le moment, cette opération est donc ignorée.",
   "home_page_first_time_notice": "Si c'est la première fois que vous utilisez l'application, veillez à choisir un ou plusieurs albums de sauvegarde afin que la chronologie puisse alimenter les photos et les vidéos de cet ou ces albums.",
-  "home_page_share_err_local": "Impossible de partager par lien les médias locaux, cette opération est donc ignorée."
+  "home_page_share_err_local": "Impossible de partager par lien les médias locaux, cette opération est donc ignorée.",
   "home_page_upload_err_limit": "Limite de téléchargement de 30 éléments en même temps, demande ignorée",
   "image_viewer_page_state_provider_download_error": "Erreur de téléchargement",
   "image_viewer_page_state_provider_download_success": "Téléchargement réussi",
