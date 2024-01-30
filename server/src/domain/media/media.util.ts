@@ -287,14 +287,17 @@ export class BaseHWConfig extends BaseConfig implements VideoCodecHWConfig {
   }
 
   getPreferredHardwareDevice(): string | null {
-    if (this.config.preferredHwDevice !== 'auto') {
-      if (!this.devices.includes(this.config.preferredHwDevice.replace('/dev/dri/', ''))) {
-        throw new Error(`Device '${this.config.preferredHwDevice}' does not exist`);
-      }
-      return this.config.preferredHwDevice;
+    const device = this.config.preferredHwDevice;
+    if (device === 'auto') {
+      return null;
     }
 
-    return null;
+    const deviceName = device.replace('/dev/dri/', '');
+    if (!this.devices.includes(deviceName)) {
+      throw new Error(`Device '${device}' does not exist`);
+    }
+
+    return device;
   }
 }
 
