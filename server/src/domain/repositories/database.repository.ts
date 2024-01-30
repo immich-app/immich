@@ -25,6 +25,11 @@ export const extName: Record<DatabaseExtension, string> = {
   vectors: 'pgvecto.rs',
 } as const;
 
+export interface VectorUpdateResult {
+  restartRequired: boolean,
+}
+
+
 export const IDatabaseRepository = 'IDatabaseRepository';
 
 export interface IDatabaseRepository {
@@ -34,7 +39,7 @@ export interface IDatabaseRepository {
   getPostgresVersion(): Promise<Version>;
   createExtension(extension: DatabaseExtension): Promise<void>;
   updateExtension(extension: DatabaseExtension, version?: Version): Promise<void>;
-  updateVectorExtension(extension: VectorExtension, version?: Version): Promise<void>;
+  updateVectorExtension(extension: VectorExtension, version?: Version): Promise<VectorUpdateResult>;
   setSearchPath(): Promise<void>;
   reindex(index: VectorIndex): Promise<void>;
   shouldReindex(name: 'clip_index' | 'face_index'): Promise<boolean>;

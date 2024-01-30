@@ -4,6 +4,7 @@ import {
   IDatabaseRepository,
   VectorExtension,
   VectorIndex,
+  VectorUpdateResult,
   Version,
   VersionType,
   extName,
@@ -41,7 +42,7 @@ export class DatabaseRepository implements IDatabaseRepository {
     const res = await this.dataSource.query(
       `
     SELECT version FROM pg_available_extension_versions
-    WHERE name = $1 AND installed = false 
+    WHERE name = $1 AND installed = false
     ORDER BY version DESC`,
       [extension],
     );
@@ -70,7 +71,7 @@ export class DatabaseRepository implements IDatabaseRepository {
     await this.dataSource.query(`ALTER DATABASE immich SET search_path TO "$user", public, vectors`);
   }
 
-  async updateVectorExtension(extension: VectorExtension, version?: Version): Promise<void> {
+  async updateVectorExtension(extension: VectorExtension, version?: Version): Promise<VectorUpdateResult> {
     const curVersion = await this.getExtensionVersion(extension);
     if (!curVersion) {
       throw new Error(`${extName[extension]} extension is not installed`);
@@ -78,6 +79,7 @@ export class DatabaseRepository implements IDatabaseRepository {
 
     const minorOrMajor = version && curVersion.isOlderThan(version) >= VersionType.MINOR;
     const isVectors = extension === DatabaseExtension.VECTORS;
+    let restartRequired = false;
     await this.dataSource.manager.transaction(async (manager) => {
       if (minorOrMajor && isVectors) {
         await this.updateVectorsSchema(manager, curVersion);
@@ -91,18 +93,23 @@ export class DatabaseRepository implements IDatabaseRepository {
 
       if (isVectors) {
         await manager.query('SELECT pgvectors_upgrade()');
-        this.logger.log('Successfully upgraded vectors extension.');
-        throw new Error('Please restart the Postgres instance.');
+        restartRequired = true;
       } else {
         await this.reindex('clip_index');
         await this.reindex('face_index');
       }
     });
+
+    return { restartRequired };
   }
 
   async reindex(index: VectorIndex): Promise<void> {
     await this.dataSource.query(`DROP INDEX ${index}`);
-    await this.createVectorIndex(this.dataSource.manager, index, index === 'clip_index' ? 'smart_search' : 'asset_faces');
+    await this.createVectorIndex(
+      this.dataSource.manager,
+      index,
+      index === 'clip_index' ? 'smart_search' : 'asset_faces',
+    );
   }
 
   async shouldReindex(name: VectorIndex): Promise<boolean> {
@@ -113,14 +120,17 @@ export class DatabaseRepository implements IDatabaseRepository {
     try {
       const res = await this.dataSource.query(
         `
-        SELECT idx_status
-        FROM pg_vector_index_stat
-        WHERE indexname = $1`,
+          SELECT idx_status
+          FROM pg_vector_index_stat
+          WHERE indexname = $1`,
         [name],
       );
       return res[0]?.['idx_status'] === 'UPGRADE';
     } catch (err) {
-      return true;
+      if ((err as any).message.includes('index is not existing')) {
+        return true;
+      }
+      throw err;
     }
   }
 

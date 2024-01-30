@@ -25,12 +25,18 @@ export class DatabaseService {
       await this.createVectorExtension();
       await this.updateVectorExtension();
       await this.assertVectorExtension();
-      if (await this.databaseRepository.shouldReindex('clip_index')) {
-        await this.databaseRepository.reindex('clip_index');
+      try {
+        if (await this.databaseRepository.shouldReindex('clip_index')) {
+          await this.databaseRepository.reindex('clip_index');
+        }
+        if (await this.databaseRepository.shouldReindex('face_index')) {
+          await this.databaseRepository.reindex('face_index');
+        }
+      } catch(err) {
+        this.logger.warn('Could not run vector reindexing checks. If the extension was updated, please restart the Postgres instance.');
+        throw err;
       }
-      if (await this.databaseRepository.shouldReindex('face_index')) {
-        await this.databaseRepository.reindex('face_index');
-      }
+      
       await this.databaseRepository.runMigrations();
     });
   }
@@ -81,13 +87,17 @@ export class DatabaseService {
     const maxVersion = this.vectorExt === DatabaseExtension.VECTOR ? this.vectorVersionPin : this.vectorsVersionPin;
     const isNewer = availableVersion.isNewerThan(version);
     if (isNewer == null || isNewer > maxVersion) {
-      this.logger.warn(`Not updating since isNewer=${isNewer}`);
       return;
     }
 
     try {
       this.logger.warn(`Updating ${extName[this.vectorExt]} extension to ${availableVersion}`);
-      await this.databaseRepository.updateVectorExtension(this.vectorExt, availableVersion);
+      const { restartRequired } = await this.databaseRepository.updateVectorExtension(this.vectorExt, availableVersion);
+      if (restartRequired) {
+        this.logger.warn(`
+          The ${extName[this.vectorExt]} extension has been updated to ${availableVersion}.
+          Please restart the Postgres instance to complete the update.`);
+      }
     } catch (err) {
       this.logger.warn(`
         The ${extName[this.vectorExt]} extension version is ${version}, but ${availableVersion} is available.
