@@ -78,10 +78,10 @@ By default, all files in the import paths will be added to the library. If there
 
 Some basic examples:
 
-- `*.tif` will exclude all files with the extension `.tif`
-- `hidden.jpg` will exclude all files named `hidden.jpg`
+- `**/*.tif` will exclude all files with the extension `.tif`
+- `**/hidden.jpg` will exclude all files named `hidden.jpg`
 - `**/Raw/**` will exclude all files in any directory named `Raw`
-- `*.{tif,jpg}` will exclude all files with the extension `.tif` or `.jpg`
+- `**/*.{tif,jpg}` will exclude all files with the extension `.tif` or `.jpg`
 
 ### Nightly job
 
