@@ -281,7 +281,6 @@ export class UploadCommand extends BaseCommand {
       data,
     };
 
-    const response = await axios(config);
-    return response;
+    return await axios(config);
   }
 }
