@@ -35,15 +35,14 @@ const isAuthenticated = (): boolean => {
 export const authenticate = async (options?: AuthOptions) => {
   options = options || {};
   const savedUser = getSavedUser();
-  const user = savedUser || (isAuthenticated() ? await getAuthUser() : null);
-  if (!options.public) {
-    if (!user) {
-      redirect(302, AppRoute.AUTH_LOGIN);
-    }
+  const user = savedUser || isAuthenticated() ? await getAuthUser() : null;
 
-    if (options.admin && !user.isAdmin) {
-      redirect(302, AppRoute.PHOTOS);
-    }
+  if (options.admin && user && !user.isAdmin) {
+    redirect(302, AppRoute.PHOTOS);
+  }
+
+  if (!options.public && !user) {
+    redirect(302, AppRoute.AUTH_LOGIN);
   }
 
   if (!savedUser && user) {
