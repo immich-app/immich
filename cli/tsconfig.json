@@ -9,7 +9,7 @@
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
-    "target": "es2022",
+    "target": "es2023",
     "sourceMap": true,
     "outDir": "./dist",
     "incremental": true,
