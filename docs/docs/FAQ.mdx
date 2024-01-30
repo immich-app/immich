@@ -326,4 +326,4 @@ If your version of Immich is below 1.92.0 and the crash occurs after logs about 
 
 ### Why do I get the error "duplicate key value violates unique constraint" in the log files?
 
-Because of Immich's container structure, this error can be seen when both immich and immich-microservices start at the same time and attempt to migrate or create the database structure. Since the database migration is run sequentially and inside of transactions, this error message does not cause harm to your installation of Immich and can safely be ignored.
+Because of Immich's container structure, this error can be seen when both immich and immich-microservices start at the same time and attempt to migrate or create the database structure. Since the database migration is run sequentially and inside of transactions, this error message does not cause harm to your installation of Immich and can safely be ignored. If needed, you can manually restart Immich by running `docker restart immich immich-microservices`.
