@@ -27,7 +27,6 @@ class MemoryPage extends HookConsumerWidget {
     final memoryPageController = usePageController(initialPage: memoryIndex);
     final memoryAssetPageController = usePageController();
     final currentMemory = useState(memories[memoryIndex]);
-    final previousMemoryIndex = useState(memoryIndex);
     final currentAssetPage = useState(0);
     final assetProgress = useState(
       "${currentAssetPage.value + 1}|${currentMemory.value.assets.length}",
@@ -168,15 +167,22 @@ class MemoryPage extends HookConsumerWidget {
                 currentMemory.value = memories[pageNumber];
               }
 
+              currentAssetPage.value = 0;
+
               updateProgressText();
             },
             itemCount: memories.length + 1,
             itemBuilder: (context, mIndex) {
               // Build last page
               if (mIndex == memories.length) {
-                return const MemoryEpilogue();
+                return MemoryEpilogue(
+                  onStartOver: () => memoryPageController.animateToPage(
+                    0,
+                    duration: const Duration(seconds: 1),
+                    curve: Curves.easeInOut,
+                  ),
+                );
               }
-
               // Build horizontal page
               return Column(
                 children: [

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 class MemoryEpilogue extends StatefulWidget {
-  const MemoryEpilogue({super.key});
+  final Function()? onStartOver;
+
+  const MemoryEpilogue({super.key, this.onStartOver});
 
   @override
   State<MemoryEpilogue> createState() => _MemoryEpilogueState();
@@ -14,7 +16,9 @@ class _MemoryEpilogueState extends State<MemoryEpilogue>
     duration: const Duration(
       seconds: 3,
     ),
-  )..repeat(reverse: true, );
+  )..repeat(
+      reverse: true,
+    );
 
   late final Animation _animation;
 
@@ -28,10 +32,10 @@ class _MemoryEpilogueState extends State<MemoryEpilogue>
   }
 
   @override
-    void dispose() {
-      _animationController.dispose();
-      super.dispose();
-    }
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,6 +61,11 @@ class _MemoryEpilogueState extends State<MemoryEpilogue>
               Text(
                 'Check back tomorrow for more memories',
                 style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              const SizedBox(height: 16.0),
+              TextButton(
+                onPressed: widget.onStartOver,
+                child: const Text('Start Over'),
               ),
             ],
           ),
