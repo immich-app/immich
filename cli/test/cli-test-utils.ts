@@ -9,7 +9,7 @@ export const TEST_IMMICH_API_KEY = 'pNussssKSYo5WasdgalvKJ1n9kdvaasdfbluPg';
 
 export const CLI_BASE_OPTIONS: BaseOptionsDto = { config: TEST_CONFIG_DIR };
 
-export const spyOnConsole = () => jest.spyOn(console, 'log').mockImplementation();
+export const spyOnConsole = () => vi.spyOn(console, 'log').mockImplementation();
 
 export const createTestAuthFile = async (contents: string) => {
   if (!fs.existsSync(TEST_CONFIG_DIR)) {
