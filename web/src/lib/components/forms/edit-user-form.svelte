@@ -1,6 +1,6 @@
 <script lang="ts">
   import { api, type UserResponseDto } from '@api';
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { createEventDispatcher } from 'svelte';
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
   import Button from '../elements/buttons/button.svelte';
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
@@ -32,13 +32,6 @@
     resetPasswordSuccess: void;
     editSuccess: void;
   }>();
-
-  onMount(async () => {
-    if (!$serverInfo) {
-      const { data } = await api.serverInfoApi.getServerInfo();
-      $serverInfo = data;
-    }
-  });
 
   const editUser = async () => {
     try {

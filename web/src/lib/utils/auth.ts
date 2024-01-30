@@ -2,6 +2,7 @@ import { api } from '@api';
 import { redirect } from '@sveltejs/kit';
 import { AppRoute } from '../constants';
 import { getSavedUser, setUser } from '$lib/stores/user.store';
+import { serverInfo } from '$lib/stores/server-info.store';
 
 export interface AuthOptions {
   admin?: true;
@@ -33,6 +34,13 @@ export const authenticate = async (options?: AuthOptions) => {
 
   if (!savedUser) {
     setUser(user);
+  }
+};
+
+export const requestServerInfo = async () => {
+  if (getSavedUser()) {
+    const { data } = await api.serverInfoApi.getServerInfo();
+    serverInfo.set(data);
   }
 };
 

@@ -2,13 +2,13 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { websocketStore } from '$lib/stores/websocket';
-  import { api } from '@api';
   import { onMount } from 'svelte';
   import { asByteUnitString } from '../../utils/byte-units';
   import LoadingSpinner from './loading-spinner.svelte';
   import { mdiChartPie, mdiDns } from '@mdi/js';
   import { serverInfo } from '$lib/stores/server-info.store';
   import { user } from '$lib/stores/user.store';
+  import { requestServerInfo } from '$lib/utils/auth';
 
   const { serverVersion, connected } = websocketStore;
 
@@ -39,19 +39,8 @@
   $: $user && onUpdate();
 
   onMount(async () => {
-    await refresh();
+    await requestServerInfo();
   });
-
-  const refresh = async () => {
-    try {
-      if (!$serverInfo) {
-        const { data } = await api.serverInfoApi.getServerInfo();
-        $serverInfo = data;
-      }
-    } catch (e) {
-      console.log('Error [StatusBox] [onMount]');
-    }
-  };
 </script>
 
 <div class="dark:text-immich-dark-fg">

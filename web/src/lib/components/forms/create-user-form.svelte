@@ -1,6 +1,6 @@
 <script lang="ts">
   import { api } from '@api';
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { createEventDispatcher } from 'svelte';
   import ImmichLogo from '../shared-components/immich-logo.svelte';
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
   import Button from '../elements/buttons/button.svelte';
@@ -19,12 +19,6 @@
 
   $: warning = quotaSize && convertToBytes(Number(quotaSize), 'GiB') > $serverInfo.diskSizeRaw;
 
-  onMount(async () => {
-    if (!$serverInfo) {
-      const { data } = await api.serverInfoApi.getServerInfo();
-      $serverInfo = data;
-    }
-  });
   $: {
     if (password !== confirmPassowrd && confirmPassowrd.length > 0) {
       error = 'Password does not match';
