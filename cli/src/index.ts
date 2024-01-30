@@ -1,7 +1,7 @@
 #! /usr/bin/env node
 import { Command, Option } from 'commander';
 import path from 'node:path';
-import os from 'os';
+import os from 'node:os';
 import { version } from '../package.json';
 import { LoginCommand } from './commands/login';
 import { LogoutCommand } from './commands/logout.command';

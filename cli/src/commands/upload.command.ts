@@ -8,7 +8,7 @@ import { BaseCommand } from './base-command';
 import { basename } from 'node:path';
 import { access, constants, stat, unlink } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
-import Os from 'os';
+import Os from 'node:os';
 
 class Asset {
   readonly path: string;
@@ -27,7 +27,7 @@ class Asset {
 
   async prepare() {
     const stats = await stat(this.path);
-    this.deviceAssetId = `${basename(this.path)}-${stats.size}`.replace(/\s+/g, '');
+    this.deviceAssetId = `${basename(this.path)}-${stats.size}`.replaceAll(/\s+/g, '');
     this.fileCreatedAt = stats.mtime.toISOString();
     this.fileModifiedAt = stats.mtime.toISOString();
     this.fileSize = stats.size;
@@ -35,9 +35,15 @@ class Asset {
   }
 
   async getUploadFormData(): Promise<FormData> {
-    if (!this.deviceAssetId) throw new Error('Device asset id not set');
-    if (!this.fileCreatedAt) throw new Error('File created at not set');
-    if (!this.fileModifiedAt) throw new Error('File modified at not set');
+    if (!this.deviceAssetId) {
+      throw new Error('Device asset id not set');
+    }
+    if (!this.fileCreatedAt) {
+      throw new Error('File created at not set');
+    }
+    if (!this.fileModifiedAt) {
+      throw new Error('File modified at not set');
+    }
 
     // TODO: doesn't xmp replace the file extension? Will need investigation
     const sideCarPath = `${this.path}.xmp`;
@@ -45,7 +51,7 @@ class Asset {
     try {
       await access(sideCarPath, constants.R_OK);
       sidecarData = createReadStream(sideCarPath);
-    } catch (error) {}
+    } catch {}
 
     const data: any = {
       assetData: createReadStream(this.path),
@@ -57,8 +63,8 @@ class Asset {
     };
     const formData = new FormData();
 
-    for (const prop in data) {
-      formData.append(prop, data[prop]);
+    for (const property in data) {
+      formData.append(property, data[property]);
     }
 
     if (sidecarData) {
@@ -87,11 +93,7 @@ class Asset {
   }
 
   private extractAlbumName(): string {
-    if (Os.platform() === 'win32') {
-      return this.path.split('\\').slice(-2)[0];
-    } else {
-      return this.path.split('/').slice(-2)[0];
-    }
+    return Os.platform() === 'win32' ? this.path.split('\\').at(-2) : this.path.split('/').at(-2);
   }
 }
 
@@ -196,32 +198,30 @@ export class UploadCommand extends BaseCommand {
           skipAsset = skipUpload && !isDuplicate;
         }
 
-        if (!skipAsset) {
-          if (!options.dryRun) {
-            if (!skipUpload) {
-              const formData = await asset.getUploadFormData();
-              const res = await this.uploadAsset(formData);
-              existingAssetId = res.data.id;
-              uploadCounter++;
-              totalSizeUploaded += asset.fileSize;
+        if (!skipAsset && !options.dryRun) {
+          if (!skipUpload) {
+            const formData = await asset.getUploadFormData();
+            const response = await this.uploadAsset(formData);
+            existingAssetId = response.data.id;
+            uploadCounter++;
+            totalSizeUploaded += asset.fileSize;
+          }
+
+          if ((options.album || options.albumName) && asset.albumName !== undefined) {
+            let album = existingAlbums.find((album) => album.albumName === asset.albumName);
+            if (!album) {
+              const response = await this.immichApi.albumApi.createAlbum({
+                createAlbumDto: { albumName: asset.albumName },
+              });
+              album = response.data;
+              existingAlbums.push(album);
             }
 
-            if ((options.album || options.albumName) && asset.albumName !== undefined) {
-              let album = existingAlbums.find((album) => album.albumName === asset.albumName);
-              if (!album) {
-                const res = await this.immichApi.albumApi.createAlbum({
-                  createAlbumDto: { albumName: asset.albumName },
-                });
-                album = res.data;
-                existingAlbums.push(album);
-              }
-
-              if (existingAssetId) {
-                await this.immichApi.albumApi.addAssetsToAlbum({
-                  id: album.id,
-                  bulkIdsDto: { ids: [existingAssetId] },
-                });
-              }
+            if (existingAssetId) {
+              await this.immichApi.albumApi.addAssetsToAlbum({
+                id: album.id,
+                bulkIdsDto: { ids: [existingAssetId] },
+              });
             }
           }
         }

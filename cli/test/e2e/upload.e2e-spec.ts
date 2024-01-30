@@ -9,7 +9,7 @@ describe(`upload (e2e)`, () => {
   spyOnConsole();
 
   beforeAll(async () => {
-    const app = await testApp.create();
+    await testApp.create();
   });
 
   afterAll(async () => {

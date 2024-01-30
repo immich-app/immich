@@ -1,4 +1,4 @@
-import { existsSync } from 'fs';
+import { existsSync } from 'node:fs';
 import { access, constants, mkdir, readFile, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import yaml from 'yaml';
