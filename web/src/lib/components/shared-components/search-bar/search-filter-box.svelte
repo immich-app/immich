@@ -9,11 +9,17 @@
     Video = 'video',
   }
 
+  enum AlbumOption {
+    Donotcare = 'Donotcare',
+    NotInAlbum = 'NotInAlbum',
+  }
+
   let selectedCountry: ComboBoxOption = { label: '', value: '' };
   let selectedState: ComboBoxOption = { label: '', value: '' };
   let selectedCity: ComboBoxOption = { label: '', value: '' };
 
   let mediaType: MediaType = MediaType.All;
+  let albumOption: AlbumOption = AlbumOption.Donotcare;
 </script>
 
 <div
@@ -35,43 +41,84 @@
       />
     </div>
 
-    <!-- MEDIA TYPE -->
-    <div class="py-3">
-      <p class="immich-form-label">MEDIA TYPE</p>
+    <div class="py-3 grid grid-cols-2">
+      <!-- MEDIA TYPE -->
+      <div id="media-type-selection">
+        <p class="immich-form-label">MEDIA TYPE</p>
 
-      <div class="flex gap-5 mt-3">
-        <label
-          for="type-all"
-          class="text-base flex place-items-center gap-1 hover:cursor-pointer text-black dark:text-white"
-        >
-          <input bind:group={mediaType} value={MediaType.All} type="radio" name="radio-type" id="type-all" />All</label
-        >
+        <div class="flex gap-5 mt-3">
+          <label
+            for="type-all"
+            class="text-base flex place-items-center gap-1 hover:cursor-pointer text-black dark:text-white"
+          >
+            <input
+              bind:group={mediaType}
+              value={MediaType.All}
+              type="radio"
+              name="radio-type"
+              id="type-all"
+            />All</label
+          >
 
-        <label
-          for="type-image"
-          class="text-base flex place-items-center gap-1 hover:cursor-pointer text-black dark:text-white"
-        >
-          <input
-            bind:group={mediaType}
-            value={MediaType.Image}
-            type="radio"
-            name="radio-type"
-            id="type-image"
-          />Image</label
-        >
+          <label
+            for="type-image"
+            class="text-base flex place-items-center gap-1 hover:cursor-pointer text-black dark:text-white"
+          >
+            <input
+              bind:group={mediaType}
+              value={MediaType.Image}
+              type="radio"
+              name="radio-type"
+              id="type-image"
+            />Image</label
+          >
 
-        <label
-          for="type-video"
-          class="text-base flex place-items-center gap-1 hover:cursor-pointer text-black dark:text-white"
-        >
-          <input
-            bind:group={mediaType}
-            value={MediaType.Video}
-            type="radio"
-            name="radio-type"
-            id="type-video"
-          />Video</label
-        >
+          <label
+            for="type-video"
+            class="text-base flex place-items-center gap-1 hover:cursor-pointer text-black dark:text-white"
+          >
+            <input
+              bind:group={mediaType}
+              value={MediaType.Video}
+              type="radio"
+              name="radio-type"
+              id="type-video"
+            />Video</label
+          >
+        </div>
+      </div>
+
+      <!-- ALBUM BELONGING -->
+      <div id="album-belonging-selection">
+        <p class="immich-form-label">ALBUM OPTION</p>
+
+        <div class="flex gap-5 mt-3">
+          <label
+            for="album-donotcare"
+            class="text-base flex place-items-center gap-1 hover:cursor-pointer text-black dark:text-white"
+          >
+            <input
+              bind:group={albumOption}
+              value={AlbumOption.Donotcare}
+              type="radio"
+              name="radio-album-option"
+              id="album-donotcare"
+            />Don't care</label
+          >
+
+          <label
+            for="album-ops-notinalbum"
+            class="text-base flex place-items-center gap-1 hover:cursor-pointer text-black dark:text-white"
+          >
+            <input
+              bind:group={albumOption}
+              value={AlbumOption.NotInAlbum}
+              type="radio"
+              name="radio-album-option"
+              id="album-ops-notinalbum"
+            />Not in any album</label
+          >
+        </div>
       </div>
     </div>
 
