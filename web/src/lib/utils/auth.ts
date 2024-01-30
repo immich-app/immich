@@ -2,7 +2,7 @@ import { api } from '@api';
 import { redirect } from '@sveltejs/kit';
 import { AppRoute } from '../constants';
 import { serverInfo } from '$lib/stores/server-info.store';
-import { getSavedUser, publicUser, setUser } from '$lib/stores/user.store';
+import { getSavedUser, setUser } from '$lib/stores/user.store';
 import { getAuthCookie } from './cookies';
 
 export interface AuthOptions {
@@ -25,9 +25,7 @@ export const authenticate = async (options?: AuthOptions) => {
 
   const savedUser = getSavedUser();
   const user = savedUser || isAuthenticated ? await getAuthUser() : null;
-  if (options.public) {
-    publicUser.set(user);
-  } else {
+  if (!options.public) {
     if (!user) {
       redirect(302, AppRoute.AUTH_LOGIN);
     }

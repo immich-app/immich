@@ -3,8 +3,6 @@ import type { UserResponseDto } from '@api';
 
 export let user = writable<UserResponseDto>();
 
-export const publicUser = writable<UserResponseDto | null>();
-
 export const setUser = (value: UserResponseDto) => {
   user.set(value);
 };
