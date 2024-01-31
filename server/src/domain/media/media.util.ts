@@ -22,9 +22,7 @@ class BaseConfig implements VideoCodecSWConfig {
     if (filters.length > 0) {
       options.outputOptions.push(`-vf ${filters.join(',')}`);
     }
-    options.outputOptions.push(...this.getPresetOptions());
-    options.outputOptions.push(...this.getThreadOptions());
-    options.outputOptions.push(...this.getBitrateOptions());
+    options.outputOptions.push(...this.getPresetOptions(), ...this.getThreadOptions(), ...this.getBitrateOptions());
 
     return options;
   }
@@ -129,7 +127,10 @@ class BaseConfig implements VideoCodecSWConfig {
 
   getTargetResolution(videoStream: VideoStreamInfo) {
     let target;
-    target = this.config.targetResolution === 'original' ? Math.min(videoStream.height, videoStream.width) : Number.parseInt(this.config.targetResolution);
+    target =
+      this.config.targetResolution === 'original'
+        ? Math.min(videoStream.height, videoStream.width)
+        : Number.parseInt(this.config.targetResolution);
 
     if (target % 2 !== 0) {
       target -= 1;

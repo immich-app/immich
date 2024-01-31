@@ -3,9 +3,9 @@ import { ImmichLogger } from '@app/infra/logger';
 import { Inject, Injectable } from '@nestjs/common';
 import { ExifDateTime, Tags } from 'exiftool-vendored';
 import { firstDateTime } from 'exiftool-vendored/dist/FirstDateTime';
-import { constants } from 'node:fs/promises';
 import _ from 'lodash';
 import { Duration } from 'luxon';
+import { constants } from 'node:fs/promises';
 import { Subscription } from 'rxjs';
 import { usePagination } from '../domain.util';
 import { IBaseJob, IEntityJob, ISidecarWriteJob, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
@@ -85,7 +85,7 @@ const validate = <T>(value: T): NonNullable<T> | null => {
     return null;
   }
 
-  if (typeof value === 'number' && (isNaN(value) || !isFinite(value))) {
+  if (typeof value === 'number' && (Number.isNaN(value) || !Number.isFinite(value))) {
     return null;
   }
 

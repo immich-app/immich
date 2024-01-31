@@ -18,9 +18,9 @@ import {
   SwaggerModule,
 } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
+import _ from 'lodash';
 import { writeFileSync } from 'node:fs';
 import { access, constants } from 'node:fs/promises';
-import _ from 'lodash';
 import path, { isAbsolute } from 'node:path';
 import { promisify } from 'node:util';
 
@@ -154,7 +154,7 @@ const patchOpenAPI = (document: OpenAPIObject) => {
         continue;
       }
 
-      if ((operation.security || []).find((item) => !!item[Metadata.PUBLIC_SECURITY])) {
+      if ((operation.security || []).some((item) => !!item[Metadata.PUBLIC_SECURITY])) {
         delete operation.security;
       }
 

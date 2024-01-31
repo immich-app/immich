@@ -22,13 +22,9 @@ module.exports = {
     'unicorn/prevent-abbreviations': 'off',
     'unicorn/filename-case': 'off',
     'unicorn/no-null': 'off',
+    'unicorn/prefer-top-level-await': 'off',
+    'unicorn/prefer-event-target': 'off',
     curly: 2,
     'prettier/prettier': 0,
-    'unicorn/prevent-abbreviations': [
-      'error',
-      {
-        ignore: ['\\.e2e-spec$', /^ignore/i],
-      },
-    ],
   },
 };

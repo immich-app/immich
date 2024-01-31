@@ -8,8 +8,8 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import cookieParser from 'cookie';
-import { IncomingHttpHeaders } from 'node:http';
 import { DateTime } from 'luxon';
+import { IncomingHttpHeaders } from 'node:http';
 import { ClientMetadata, Issuer, UserinfoResponse, custom, generators } from 'openid-client';
 import { AccessCore, Permission } from '../access';
 import {
@@ -213,7 +213,8 @@ export class AuthService {
     }
 
     const { scope, buttonText, autoLaunch } = config.oauth;
-    const url = (await this.getOAuthClient(config)).authorizationUrl({
+    const oauthClient = await this.getOAuthClient(config);
+    const url = oauthClient.authorizationUrl({
       redirect_uri: this.normalize(config, dto.redirectUri),
       scope,
       state: generators.state(),
@@ -377,11 +378,11 @@ export class AuthService {
     const bytes = Buffer.from(key, key.length === 100 ? 'hex' : 'base64url');
     const sharedLink = await this.sharedLinkRepository.getByKey(bytes);
     if (sharedLink && (!sharedLink.expiresAt || new Date(sharedLink.expiresAt) > new Date())) {
-        const user = sharedLink.user;
-        if (user) {
-          return { user, sharedLink };
-        }
+      const user = sharedLink.user;
+      if (user) {
+        return { user, sharedLink };
       }
+    }
     throw new UnauthorizedException('Invalid share key');
   }
 

@@ -251,7 +251,9 @@ export class AssetService {
     await this.timeBucketChecks(auth, dto);
     const timeBucketOptions = await this.buildTimeBucketOptions(auth, dto);
     const assets = await this.assetRepository.getTimeBucket(dto.timeBucket, timeBucketOptions);
-    return !auth.sharedLink || auth.sharedLink?.showExif ? assets.map((asset) => mapAsset(asset, { withStack: true })) : assets.map((asset) => mapAsset(asset, { stripMetadata: true }));
+    return !auth.sharedLink || auth.sharedLink?.showExif
+      ? assets.map((asset) => mapAsset(asset, { withStack: true }))
+      : assets.map((asset) => mapAsset(asset, { stripMetadata: true }));
   }
 
   async buildTimeBucketOptions(auth: AuthDto, dto: TimeBucketDto): Promise<TimeBucketOptions> {
@@ -394,9 +396,10 @@ export class AssetService {
     }
 
     await this.assetRepository.updateAll(ids, options);
-    const stacksToDelete = (
-      await Promise.all(stackIdsToCheckForDelete.map((id) => this.assetStackRepository.getById(id)))
-    )
+    const stackIdsToDelete = await Promise.all(
+      stackIdsToCheckForDelete.map((id) => this.assetStackRepository.getById(id)),
+    );
+    const stacksToDelete = stackIdsToDelete
       .flatMap((stack) => (stack ? [stack] : []))
       .filter((stack) => stack.assets.length < 2);
     await Promise.all(stacksToDelete.map((as) => this.assetStackRepository.delete(as.id)));
@@ -510,9 +513,8 @@ export class AssetService {
       throw new Error('Asset not found or not in a stack');
     }
     if (oldParent != null) {
-      childIds.push(oldParent.id);
       // Get all children of old parent
-      childIds.push(...(oldParent.stack?.assets.map((a) => a.id) ?? []));
+      childIds.push(oldParent.id, ...(oldParent.stack?.assets.map((a) => a.id) ?? []));
     }
     await this.assetStackRepository.update({
       id: oldParent.stackId,

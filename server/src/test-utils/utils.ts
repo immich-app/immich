@@ -7,8 +7,8 @@ import { Test } from '@nestjs/testing';
 import { DateTime } from 'luxon';
 import * as fs from 'node:fs';
 import path from 'node:path';
-import { Server } from 'node:tls';
 import { EventEmitter } from 'node:stream';
+import { Server } from 'node:tls';
 import { EntityTarget, ObjectLiteral } from 'typeorm';
 import { AppService } from '../immich/app.service';
 import { AppService as MicroAppService } from '../microservices/app.service';
@@ -69,7 +69,7 @@ class JobMock implements IJobRepository {
     return this._handler(item);
   }
   queueAll(items: JobItem[]) {
-    return Promise.all(items.map(this._handler)).then(() => {});
+    return Promise.all(items.map((arg) => this._handler(arg))).then(() => {});
   }
   async resume() {}
   async empty() {}

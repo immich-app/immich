@@ -23,8 +23,7 @@ function bootstrap() {
       return admin();
     }
     default: {
-      console.log(`Invalid app name: ${immichApp}. Expected one of immich|microservices|cli`);
-      process.exit(1);
+      throw new Error(`Invalid app name: ${immichApp}. Expected one of immich|microservices|cli`);
     }
   }
 }

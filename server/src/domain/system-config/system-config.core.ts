@@ -338,19 +338,20 @@ export class SystemConfigCore {
   private async loadFromFile(filepath: string, force = false) {
     if (force || !this.configCache) {
       try {
-        const file = JSON.parse((await this.repository.readFile(filepath)).toString());
+        const file = await this.repository.readFile(filepath);
+        const json = JSON.parse(file).toString();
         const overrides: SystemConfigEntity<SystemConfigValue>[] = [];
 
         for (const key of Object.values(SystemConfigKey)) {
-          const value = _.get(file, key);
-          this.unsetDeep(file, key);
+          const value = _.get(json, key);
+          this.unsetDeep(json, key);
           if (value !== undefined) {
             overrides.push({ key, value });
           }
         }
 
-        if (!_.isEmpty(file)) {
-          this.logger.warn(`Unknown keys found: ${JSON.stringify(file, null, 2)}`);
+        if (!_.isEmpty(json)) {
+          this.logger.warn(`Unknown keys found: ${JSON.stringify(json, null, 2)}`);
         }
 
         this.configCache = overrides;

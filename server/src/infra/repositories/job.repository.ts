@@ -184,6 +184,6 @@ export class JobRepository implements IJobRepository {
   }
 
   private getQueue(queue: QueueName): Queue {
-    return this.moduleRef.get<Queue>(getQueueToken(queue), { strict: false });
+    return this.moduleReference.get<Queue>(getQueueToken(queue), { strict: false });
   }
 }

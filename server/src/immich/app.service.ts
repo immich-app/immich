@@ -87,7 +87,7 @@ export class AppService {
       if (
         request.url.startsWith('/api') ||
         request.method.toLowerCase() !== 'get' ||
-        excludePaths.find((item) => request.url.startsWith(item))
+        excludePaths.some((item) => request.url.startsWith(item))
       ) {
         return next();
       }

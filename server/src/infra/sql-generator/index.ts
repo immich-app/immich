@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import { ISystemConfigRepository } from '@app/domain';
 import { INestApplication } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';

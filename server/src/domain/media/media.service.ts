@@ -459,7 +459,7 @@ export class MediaService {
   parseBitrateToBps(bitrateString: string) {
     const bitrateValue = Number.parseInt(bitrateString);
 
-    if (isNaN(bitrateValue)) {
+    if (Number.isNaN(bitrateValue)) {
       return 0;
     }
 

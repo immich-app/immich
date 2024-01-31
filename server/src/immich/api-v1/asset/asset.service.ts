@@ -27,7 +27,6 @@ import { AssetSearchDto } from './dto/asset-search.dto';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { GetAssetThumbnailDto, GetAssetThumbnailFormatEnum } from './dto/get-asset-thumbnail.dto';
-import { SearchPropertiesDto } from './dto/search-properties.dto';
 import { ServeFileDto } from './dto/serve-file.dto';
 import {
   AssetBulkUploadCheckResponseDto,
@@ -163,7 +162,8 @@ export class AssetService {
     const possibleSearchTerm = new Set<string>();
 
     const rows = await this.assetRepositoryV1.getSearchPropertiesByUserId(auth.user.id);
-    rows.forEach((row: SearchPropertiesDto) => {
+
+    for (const row of rows) {
       // tags
       row.tags?.map((tag: string) => possibleSearchTerm.add(tag?.toLowerCase()));
 
@@ -187,7 +187,7 @@ export class AssetService {
       possibleSearchTerm.add(row.city?.toLowerCase() || '');
       possibleSearchTerm.add(row.state?.toLowerCase() || '');
       possibleSearchTerm.add(row.country?.toLowerCase() || '');
-    });
+    }
 
     return [...possibleSearchTerm].filter((x) => x != null && x != '');
   }
@@ -255,9 +255,7 @@ export class AssetService {
         }
         this.logger.warn(`WebP thumbnail requested but not found for asset ${asset.id}, falling back to JPEG`);
       }
-
-      case GetAssetThumbnailFormatEnum.JPEG:
-      default: {
+      case GetAssetThumbnailFormatEnum.JPEG: {
         if (!asset.resizePath) {
           throw new NotFoundException(`No thumbnail found for asset ${asset.id}`);
         }

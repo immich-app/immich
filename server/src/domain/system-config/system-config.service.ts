@@ -121,7 +121,7 @@ export class SystemConfigService {
   private async setLogLevel({ logging }: SystemConfig) {
     const environmentLevel = this.getEnvLogLevel();
     const configLevel = logging.enabled ? logging.level : false;
-    const level = environmentLevel ? environmentLevel : configLevel;
+    const level = environmentLevel ?? configLevel;
     ImmichLogger.setLogLevel(level);
     this.logger.log(`LogLevel=${level} ${environmentLevel ? '(set via LOG_LEVEL)' : '(set via system config)'}`);
   }

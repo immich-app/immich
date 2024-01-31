@@ -10,7 +10,7 @@ export class TagService {
   constructor(@Inject(ITagRepository) private repository: ITagRepository) {}
 
   getAll(auth: AuthDto) {
-    return this.repository.getAll(auth.user.id).then((tags) => tags.map(mapTag));
+    return this.repository.getAll(auth.user.id).then((tags) => tags.map((tag) => mapTag(tag)));
   }
 
   async getById(auth: AuthDto, id: string): Promise<TagResponseDto> {

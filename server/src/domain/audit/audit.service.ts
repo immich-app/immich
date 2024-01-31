@@ -129,9 +129,10 @@ export class AuditService {
     }
   }
 
+  private fullPath = (filename: string) => resolve(filename);
+
   async getFileReport() {
-    const fullPath = (filename: string) => resolve(filename);
-    const hasFile = (items: Set<string>, filename: string) => items.has(filename) || items.has(fullPath(filename));
+    const hasFile = (items: Set<string>, filename: string) => items.has(filename) || items.has(this.fullPath(filename));
     const crawl = async (folder: StorageFolder) =>
       new Set(
         await this.storageRepository.crawl({
@@ -157,7 +158,7 @@ export class AuditService {
         return;
       }
       allFiles.delete(filename);
-      allFiles.delete(fullPath(filename));
+      allFiles.delete(this.fullPath(filename));
     };
 
     this.logger.log(
@@ -233,7 +234,7 @@ export class AuditService {
 
     // send as absolute paths
     for (const orphan of orphans) {
-      orphan.pathValue = fullPath(orphan.pathValue);
+      orphan.pathValue = this.fullPath(orphan.pathValue);
     }
 
     return { orphans, extras };

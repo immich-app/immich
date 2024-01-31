@@ -4,8 +4,7 @@ import picomatch from 'picomatch';
 
 import { R_OK } from 'node:constants';
 import { Stats } from 'node:fs';
-import path from 'node:path';
-import { basename, parse } from 'node:path';
+import path, { basename, parse } from 'node:path';
 import { AccessCore, Permission } from '../access';
 import { AuthDto } from '../auth';
 import { mimeTypes } from '../domain.constant';
@@ -532,13 +531,13 @@ export class LibraryService extends EventEmitter {
     }
 
     this.logger.verbose(`Refreshing library: ${job.id}`);
-    const crawledAssetPaths = (
-      await this.storageRepository.crawl({
-        pathsToCrawl: library.importPaths,
-        exclusionPatterns: library.exclusionPatterns,
-      })
-    )
-      .map(path.normalize)
+    const rawPaths = await this.storageRepository.crawl({
+      pathsToCrawl: library.importPaths,
+      exclusionPatterns: library.exclusionPatterns,
+    });
+
+    const crawledAssetPaths = rawPaths
+      .map((filePath) => path.normalize(filePath))
       .filter((assetPath) =>
         // Filter out paths that are not within the user's external path
         assetPath.match(new RegExp(`^${user.externalPath}`)),

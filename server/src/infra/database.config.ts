@@ -12,6 +12,7 @@ const urlOrParts = url
       database: process.env.DB_DATABASE_NAME || 'immich',
     };
 
+/* eslint unicorn/prefer-module: "off" -- We can fix this when migrating to ESM*/
 export const databaseConfig: PostgresConnectionOptions = {
   type: 'postgres',
   entities: [__dirname + '/entities/*.entity.{js,ts}'],

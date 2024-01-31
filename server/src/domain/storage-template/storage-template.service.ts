@@ -86,7 +86,8 @@ export class StorageTemplateService {
   }
 
   async handleMigrationSingle({ id }: IEntityJob) {
-    const storageTemplateEnabled = (await this.configCore.getConfig()).storageTemplate.enabled;
+    const config = await this.configCore.getConfig();
+    const storageTemplateEnabled = config.storageTemplate.enabled;
     if (!storageTemplateEnabled) {
       return true;
     }
@@ -109,7 +110,8 @@ export class StorageTemplateService {
 
   async handleMigration() {
     this.logger.log('Starting storage template migration');
-    const storageTemplateEnabled = (await this.configCore.getConfig()).storageTemplate.enabled;
+    const config = await this.configCore.getConfig();
+    const storageTemplateEnabled = config.storageTemplate.enabled;
     if (!storageTemplateEnabled) {
       this.logger.log('Storage template migration disabled, skipping');
       return true;
@@ -145,7 +147,7 @@ export class StorageTemplateService {
     }
 
     return this.databaseRepository.withLock(DatabaseLock.StorageTemplateMigration, async () => {
-      const { id, sidecarPath, originalPath, exifInfo } = asset;
+      const { id, sidecarPath, originalPath, exifInfo, checksum } = asset;
       const oldPath = originalPath;
       const newPath = await this.getTemplatePath(asset, metadata);
 
@@ -160,7 +162,7 @@ export class StorageTemplateService {
           pathType: AssetPathType.ORIGINAL,
           oldPath,
           newPath,
-          assetInfo: { sizeInBytes: exifInfo.fileSizeInByte, checksum: asset.checksum },
+          assetInfo: { sizeInBytes: exifInfo.fileSizeInByte, checksum },
         });
         if (sidecarPath) {
           await this.storageCore.moveFile({
@@ -171,7 +173,7 @@ export class StorageTemplateService {
           });
         }
       } catch (error: any) {
-        this.logger.error(`Problem applying storage template`, error?.stack, { id: asset.id, oldPath, newPath });
+        this.logger.error(`Problem applying storage template`, error?.stack, { id, oldPath, newPath });
       }
     });
   }

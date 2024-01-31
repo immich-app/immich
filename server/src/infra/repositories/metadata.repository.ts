@@ -15,10 +15,10 @@ import { ImmichLogger } from '@app/infra/logger';
 import { Inject } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DefaultReadTaskOptions, exiftool, Tags } from 'exiftool-vendored';
-import { createReadStream, existsSync } from 'node:fs';
-import { readFile } from 'node:fs/promises';
 import * as geotz from 'geo-tz';
 import { getName } from 'i18n-iso-countries';
+import { createReadStream, existsSync } from 'node:fs';
+import { readFile } from 'node:fs/promises';
 import * as readLine from 'node:readline';
 import { DataSource, DeepPartial, QueryRunner, Repository } from 'typeorm';
 
@@ -193,6 +193,7 @@ export class MetadataRepository implements IMetadataRepository {
         inferTimezoneFromDatestamps: true,
         useMWG: true,
         numericTags: [...DefaultReadTaskOptions.numericTags, 'FocalLength'],
+        /* eslint unicorn/no-array-callback-reference: off, unicorn/no-array-method-this-argument: off */
         geoTz: (lat, lon) => geotz.find(lat, lon)[0],
       })
       .catch((error) => {

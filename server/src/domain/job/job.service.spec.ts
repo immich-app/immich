@@ -23,7 +23,7 @@ import { JobService } from './job.service';
 
 const makeMockHandlers = (success: boolean) => {
   const mock = jest.fn().mockResolvedValue(success);
-  return Object.fromEntries(Object.values(JobName).map(( jobName) => [jobName, mock])) as Record<
+  return Object.fromEntries(Object.values(JobName).map((jobName) => [jobName, mock])) as unknown as Record<
     JobName,
     JobHandler
   >;

@@ -39,7 +39,7 @@ export class UserService {
 
   async getAll(auth: AuthDto, isAll: boolean): Promise<UserResponseDto[]> {
     const users = await this.userRepository.getList({ withDeleted: !isAll });
-    return users.map(mapUser);
+    return users.map((user) => mapUser(user));
   }
 
   async get(userId: string): Promise<UserResponseDto> {

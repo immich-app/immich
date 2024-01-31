@@ -535,7 +535,7 @@ describe(LibraryService.name, () => {
     });
 
     it('should set a missing asset to offline', async () => {
-      storageMock.stat.mockRejectedValue(new Error());
+      storageMock.stat.mockRejectedValue(new Error('Path not found'));
 
       const mockLibraryJob: ILibraryFileJob = {
         id: assetStub.image.id,

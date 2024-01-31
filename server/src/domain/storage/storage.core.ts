@@ -172,7 +172,8 @@ export class StorageCore {
       this.logger.log(`Attempting to finish incomplete move: ${move.oldPath} => ${move.newPath}`);
       const oldPathExists = await this.repository.checkFileExists(move.oldPath);
       const newPathExists = await this.repository.checkFileExists(move.newPath);
-      const actualPath = oldPathExists ? move.oldPath : (newPathExists ? move.newPath : null);
+      const newPathCheck = newPathExists ? move.newPath : null;
+      const actualPath = oldPathExists ? move.oldPath : newPathCheck;
       if (!actualPath) {
         this.logger.warn('Unable to complete move. File does not exist at either location.');
         return;
@@ -181,12 +182,15 @@ export class StorageCore {
       const fileAtNewLocation = actualPath === move.newPath;
       this.logger.log(`Found file at ${fileAtNewLocation ? 'new' : 'old'} location`);
 
-      if (fileAtNewLocation && !(await this.verifyNewPathContentsMatchesExpected(move.oldPath, move.newPath, assetInfo))) {
-          this.logger.fatal(
-            `Skipping move as file verification failed, old file is missing and new file is different to what was expected`,
-          );
-          return;
-        }
+      if (
+        fileAtNewLocation &&
+        !(await this.verifyNewPathContentsMatchesExpected(move.oldPath, move.newPath, assetInfo))
+      ) {
+        this.logger.fatal(
+          `Skipping move as file verification failed, old file is missing and new file is different to what was expected`,
+        );
+        return;
+      }
 
       move = await this.moveRepository.update({ id: move.id, oldPath: actualPath, newPath });
     } else {
@@ -235,14 +239,17 @@ export class StorageCore {
     newPath: string,
     assetInfo?: { sizeInBytes: number; checksum: Buffer },
   ) {
-    const oldPathSize = assetInfo ? assetInfo.sizeInBytes : (await this.repository.stat(oldPath)).size;
-    const newPathSize = (await this.repository.stat(newPath)).size;
+    const oldStat = await this.repository.stat(oldPath);
+    const newStat = await this.repository.stat(newPath);
+    const oldPathSize = assetInfo ? assetInfo.sizeInBytes : oldStat.size;
+    const newPathSize = newStat.size;
     this.logger.debug(`File size check: ${newPathSize} === ${oldPathSize}`);
     if (newPathSize !== oldPathSize) {
       this.logger.warn(`Unable to complete move. File size mismatch: ${newPathSize} !== ${oldPathSize}`);
       return false;
     }
-    if (assetInfo && (await this.configCore.getConfig()).storageTemplate.hashVerificationEnabled) {
+    const config = await this.configCore.getConfig();
+    if (assetInfo && config.storageTemplate.hashVerificationEnabled) {
       const { checksum } = assetInfo;
       const newChecksum = await this.cryptoRepository.hashFile(newPath);
       if (!newChecksum.equals(checksum)) {

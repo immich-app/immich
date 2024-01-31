@@ -24,7 +24,7 @@ export class PartnerService {
     }
 
     const partner = await this.repository.create(partnerId);
-    return this.map(partner, PartnerDirection.SharedBy);
+    return this.mapToPartnerEntity(partner, PartnerDirection.SharedBy);
   }
 
   async remove(auth: AuthDto, sharedWithId: string): Promise<void> {
@@ -43,7 +43,7 @@ export class PartnerService {
     return partners
       .filter((partner) => partner.sharedBy && partner.sharedWith) // Filter out soft deleted users
       .filter((partner) => partner[key] === auth.user.id)
-      .map((partner) => this.map(partner, direction));
+      .map((partner) => this.mapToPartnerEntity(partner, direction));
   }
 
   async update(auth: AuthDto, sharedById: string, dto: UpdatePartnerDto): Promise<PartnerResponseDto> {
@@ -51,10 +51,10 @@ export class PartnerService {
     const partnerId: PartnerIds = { sharedById, sharedWithId: auth.user.id };
 
     const entity = await this.repository.update({ ...partnerId, inTimeline: dto.inTimeline });
-    return this.map(entity, PartnerDirection.SharedWith);
+    return this.mapToPartnerEntity(entity, PartnerDirection.SharedWith);
   }
 
-  private map(partner: PartnerEntity, direction: PartnerDirection): PartnerResponseDto {
+  private mapToPartnerEntity(partner: PartnerEntity, direction: PartnerDirection): PartnerResponseDto {
     // this is opposite to return the non-me user of the "partner"
     const user = mapUser(
       direction === PartnerDirection.SharedBy ? partner.sharedWith : partner.sharedBy,

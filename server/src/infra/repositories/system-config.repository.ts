@@ -22,7 +22,7 @@ export class SystemConfigRepository implements ISystemConfigRepository {
   }
 
   readFile(filename: string): Promise<string> {
-    return readFile(filename, { encoding: 'utf-8' });
+    return readFile(filename, { encoding: 'utf8' });
   }
 
   saveAll(items: SystemConfigEntity[]): Promise<SystemConfigEntity[]> {
