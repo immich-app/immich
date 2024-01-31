@@ -1010,7 +1010,7 @@ describe(AssetService.name, () => {
     const assets = [assetStub.image, assetStub.image1];
 
     assetMock.getAllByDeviceId.mockImplementation(() =>
-      Promise.resolve<string[]>(Array.from(assets.map((asset) => asset.deviceAssetId))),
+      Promise.resolve<string[]>(assets.map((asset) => asset.deviceAssetId)),
     );
 
     const deviceId = 'device-id';

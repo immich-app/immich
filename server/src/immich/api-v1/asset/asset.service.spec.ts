@@ -51,8 +51,8 @@ const _getAsset_1 = () => {
   asset_1.encodedVideoPath = '';
   asset_1.duration = '0:00:00.000000';
   asset_1.exifInfo = new ExifEntity();
-  asset_1.exifInfo.latitude = 49.533547;
-  asset_1.exifInfo.longitude = 10.703075;
+  asset_1.exifInfo.latitude = 49.533_547;
+  asset_1.exifInfo.longitude = 10.703_075;
   return asset_1;
 };
 

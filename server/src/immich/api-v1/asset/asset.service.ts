@@ -189,7 +189,7 @@ export class AssetService {
       possibleSearchTerm.add(row.country?.toLowerCase() || '');
     });
 
-    return Array.from(possibleSearchTerm).filter((x) => x != null && x != '');
+    return [...possibleSearchTerm].filter((x) => x != null && x != '');
   }
 
   async getCuratedLocation(auth: AuthDto): Promise<CuratedLocationsResponseDto[]> {
@@ -249,18 +249,20 @@ export class AssetService {
 
   private getThumbnailPath(asset: AssetEntity, format: GetAssetThumbnailFormatEnum) {
     switch (format) {
-      case GetAssetThumbnailFormatEnum.WEBP:
+      case GetAssetThumbnailFormatEnum.WEBP: {
         if (asset.webpPath) {
           return asset.webpPath;
         }
         this.logger.warn(`WebP thumbnail requested but not found for asset ${asset.id}, falling back to JPEG`);
+      }
 
       case GetAssetThumbnailFormatEnum.JPEG:
-      default:
+      default: {
         if (!asset.resizePath) {
           throw new NotFoundException(`No thumbnail found for asset ${asset.id}`);
         }
         return asset.resizePath;
+      }
     }
   }
 

@@ -1,7 +1,7 @@
 import { FSWatcher, WatchOptions } from 'chokidar';
-import { Stats } from 'fs';
-import { FileReadOptions } from 'fs/promises';
-import { Readable } from 'stream';
+import { Stats } from 'node:fs';
+import { FileReadOptions } from 'node:fs/promises';
+import { Readable } from 'node:stream';
 import { CrawlOptionsDto } from '../library';
 
 export interface ImmichReadStream {

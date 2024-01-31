@@ -28,7 +28,7 @@ import { NextFunction, Response } from 'express';
 import { AdminRoute, Auth, Authenticated, FileResponse } from '../app.guard';
 import { UseValidation, sendFile } from '../app.utils';
 import { FileUploadInterceptor, Route } from '../interceptors';
-import { UUIDParamDto } from './dto/uuid-param.dto';
+import { UUIDParamDto as UIDParameterDto } from './dto/uuid-param.dto';
 
 @ApiTags('User')
 @Controller(Route.USER)
@@ -43,7 +43,7 @@ export class UserController {
   }
 
   @Get('info/:id')
-  getUserById(@Param() { id }: UUIDParamDto): Promise<UserResponseDto> {
+  getUserById(@Param() { id }: UIDParameterDto): Promise<UserResponseDto> {
     return this.service.get(id);
   }
 
@@ -66,13 +66,13 @@ export class UserController {
 
   @AdminRoute()
   @Delete(':id')
-  deleteUser(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<UserResponseDto> {
+  deleteUser(@Auth() auth: AuthDto, @Param() { id }: UIDParameterDto): Promise<UserResponseDto> {
     return this.service.delete(auth, id);
   }
 
   @AdminRoute()
   @Post(':id/restore')
-  restoreUser(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<UserResponseDto> {
+  restoreUser(@Auth() auth: AuthDto, @Param() { id }: UIDParameterDto): Promise<UserResponseDto> {
     return this.service.restore(auth, id);
   }
 
@@ -95,7 +95,7 @@ export class UserController {
 
   @Get('profile-image/:id')
   @FileResponse()
-  async getProfileImage(@Res() res: Response, @Next() next: NextFunction, @Param() { id }: UUIDParamDto) {
+  async getProfileImage(@Res() res: Response, @Next() next: NextFunction, @Param() { id }: UIDParameterDto) {
     await sendFile(res, next, () => this.service.getProfileImage(id));
   }
 }

@@ -8,7 +8,7 @@ import { DateTime } from 'luxon';
 import * as fs from 'node:fs';
 import path from 'node:path';
 import { Server } from 'node:tls';
-import { EventEmitter } from 'stream';
+import { EventEmitter } from 'node:stream';
 import { EntityTarget, ObjectLiteral } from 'typeorm';
 import { AppService } from '../immich/app.service';
 import { AppService as MicroAppService } from '../microservices/app.service';
@@ -69,7 +69,7 @@ class JobMock implements IJobRepository {
     return this._handler(item);
   }
   queueAll(items: JobItem[]) {
-    return Promise.all(items.map(this._handler)).then(() => Promise.resolve());
+    return Promise.all(items.map(this._handler)).then(() => {});
   }
   async resume() {}
   async empty() {}
@@ -140,13 +140,13 @@ export const testApp = {
 
 export function waitForEvent<T>(emitter: EventEmitter, event: string): Promise<T> {
   return new Promise((resolve, reject) => {
-    const success = (val: T) => {
+    const success = (value: T) => {
       emitter.off('error', fail);
-      resolve(val);
+      resolve(value);
     };
-    const fail = (err: Error) => {
+    const fail = (error: Error) => {
       emitter.off(event, success);
-      reject(err);
+      reject(error);
     };
     emitter.once(event, success);
     emitter.once('error', fail);

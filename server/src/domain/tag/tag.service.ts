@@ -78,10 +78,10 @@ export class TagService {
     const results: AssetIdsResponseDto[] = [];
     for (const assetId of dto.assetIds) {
       const hasAsset = await this.repository.hasAsset(auth.user.id, id, assetId);
-      if (!hasAsset) {
-        results.push({ assetId, success: false, error: AssetIdErrorReason.NOT_FOUND });
-      } else {
+      if (hasAsset) {
         results.push({ assetId, success: true });
+      } else {
+        results.push({ assetId, success: false, error: AssetIdErrorReason.NOT_FOUND });
       }
     }
 

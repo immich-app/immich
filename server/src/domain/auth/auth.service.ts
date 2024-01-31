@@ -8,7 +8,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import cookieParser from 'cookie';
-import { IncomingHttpHeaders } from 'http';
+import { IncomingHttpHeaders } from 'node:http';
 import { DateTime } from 'luxon';
 import { ClientMetadata, Issuer, UserinfoResponse, custom, generators } from 'openid-client';
 import { AccessCore, Permission } from '../access';
@@ -85,7 +85,7 @@ export class AuthService {
     this.configCore = SystemConfigCore.create(configRepository);
     this.userCore = UserCore.create(cryptoRepository, libraryRepository, userRepository);
 
-    custom.setHttpOptionsDefaults({ timeout: 30000 });
+    custom.setHttpOptionsDefaults({ timeout: 30_000 });
   }
 
   async login(dto: LoginCredentialDto, details: LoginDetails): Promise<LoginResponse> {
@@ -154,13 +154,13 @@ export class AuthService {
     return mapUser(admin);
   }
 
-  async validate(headers: IncomingHttpHeaders, params: Record<string, string>): Promise<AuthDto> {
-    const shareKey = (headers['x-immich-share-key'] || params.key) as string;
+  async validate(headers: IncomingHttpHeaders, parameters: Record<string, string>): Promise<AuthDto> {
+    const shareKey = (headers['x-immich-share-key'] || parameters.key) as string;
     const userToken = (headers['x-immich-user-token'] ||
-      params.userToken ||
+      parameters.userToken ||
       this.getBearerToken(headers) ||
       this.getCookieToken(headers)) as string;
-    const apiKey = (headers[IMMICH_API_KEY_HEADER] || params.apiKey) as string;
+    const apiKey = (headers[IMMICH_API_KEY_HEADER] || parameters.apiKey) as string;
 
     if (shareKey) {
       return this.validateSharedLink(shareKey);
@@ -316,8 +316,8 @@ export class AuthService {
   private async getOAuthProfile(config: SystemConfig, url: string): Promise<OAuthProfile> {
     const redirectUri = this.normalize(config, url.split('?')[0]);
     const client = await this.getOAuthClient(config);
-    const params = client.callbackParams(url);
-    const tokens = await client.callback(redirectUri, params, { state: params.state });
+    const parameters = client.callbackParams(url);
+    const tokens = await client.callback(redirectUri, parameters, { state: parameters.state });
     return client.userinfo<OAuthProfile>(tokens.access_token || '');
   }
 
@@ -376,14 +376,12 @@ export class AuthService {
 
     const bytes = Buffer.from(key, key.length === 100 ? 'hex' : 'base64url');
     const sharedLink = await this.sharedLinkRepository.getByKey(bytes);
-    if (sharedLink) {
-      if (!sharedLink.expiresAt || new Date(sharedLink.expiresAt) > new Date()) {
+    if (sharedLink && (!sharedLink.expiresAt || new Date(sharedLink.expiresAt) > new Date())) {
         const user = sharedLink.user;
         if (user) {
           return { user, sharedLink };
         }
       }
-    }
     throw new UnauthorizedException('Invalid share key');
   }
 
@@ -423,7 +421,7 @@ export class AuthService {
   }
 
   private async createLoginResponse(user: UserEntity, authType: AuthType, loginDetails: LoginDetails) {
-    const key = this.cryptoRepository.randomBytes(32).toString('base64').replace(/\W/g, '');
+    const key = this.cryptoRepository.randomBytes(32).toString('base64').replaceAll(/\W/g, '');
     const token = this.cryptoRepository.hashSha256(key);
 
     await this.userTokenRepository.create({

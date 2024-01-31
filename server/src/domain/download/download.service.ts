@@ -1,6 +1,6 @@
 import { AssetEntity } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { extname } from 'path';
+import { extname } from 'node:path';
 import { AccessCore, Permission } from '../access';
 import { AssetIdsDto } from '../asset';
 import { AuthDto } from '../auth';
@@ -82,12 +82,12 @@ export class DownloadService {
     const paths: Record<string, number> = {};
 
     for (const { originalPath, originalFileName } of assets) {
-      const ext = extname(originalPath);
-      let filename = `${originalFileName}${ext}`;
+      const extension = extname(originalPath);
+      let filename = `${originalFileName}${extension}`;
       const count = paths[filename] || 0;
       paths[filename] = count + 1;
       if (count !== 0) {
-        filename = `${originalFileName}+${count}${ext}`;
+        filename = `${originalFileName}+${count}${extension}`;
       }
 
       zip.addFile(originalPath, filename);

@@ -4,22 +4,22 @@ import { CreateAdminDto, CreateUserDto, CreateUserOAuthDto } from './create-user
 
 describe('create user DTO', () => {
   it('validates the email', async () => {
-    const params: Partial<CreateUserDto> = {
+    const parameters: Partial<CreateUserDto> = {
       email: undefined,
       password: 'password',
       name: 'name',
     };
-    let dto: CreateUserDto = plainToInstance(CreateUserDto, params);
+    let dto: CreateUserDto = plainToInstance(CreateUserDto, parameters);
     let errors = await validate(dto);
     expect(errors).toHaveLength(1);
 
-    params.email = 'invalid email';
-    dto = plainToInstance(CreateUserDto, params);
+    parameters.email = 'invalid email';
+    dto = plainToInstance(CreateUserDto, parameters);
     errors = await validate(dto);
     expect(errors).toHaveLength(1);
 
-    params.email = 'valid@email.com';
-    dto = plainToInstance(CreateUserDto, params);
+    parameters.email = 'valid@email.com';
+    dto = plainToInstance(CreateUserDto, parameters);
     errors = await validate(dto);
     expect(errors).toHaveLength(0);
   });

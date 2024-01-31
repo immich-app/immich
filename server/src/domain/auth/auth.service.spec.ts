@@ -18,7 +18,7 @@ import {
   userStub,
   userTokenStub,
 } from '@test';
-import { IncomingHttpHeaders } from 'http';
+import { IncomingHttpHeaders } from 'node:http';
 import { Issuer, generators } from 'openid-client';
 import { Socket } from 'socket.io';
 import {

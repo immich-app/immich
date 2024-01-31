@@ -181,8 +181,8 @@ export class StorageTemplateService {
 
     try {
       const source = asset.originalPath;
-      const ext = path.extname(source).split('.').pop() as string;
-      const sanitized = sanitize(path.basename(filename, `.${ext}`));
+      const extension = path.extname(source).split('.').pop() as string;
+      const sanitized = sanitize(path.basename(filename, `.${extension}`));
       const rootPath = StorageCore.getLibraryFolder({ id: asset.ownerId, storageLabel });
 
       let albumName = null;
@@ -194,11 +194,11 @@ export class StorageTemplateService {
       const storagePath = this.render(this.template.compiled, {
         asset,
         filename: sanitized,
-        extension: ext,
+        extension: extension,
         albumName,
       });
       const fullPath = path.normalize(path.join(rootPath, storagePath));
-      let destination = `${fullPath}.${ext}`;
+      let destination = `${fullPath}.${extension}`;
 
       if (!fullPath.startsWith(rootPath)) {
         this.logger.warn(`Skipped attempt to access an invalid path: ${fullPath}. Path should start with ${rootPath}`);
@@ -223,8 +223,8 @@ export class StorageTemplateService {
        * The lines below will be used to check if the differences between the source and destination is only the
        * +7 suffix, and if so, it will be considered as already migrated.
        */
-      if (source.startsWith(fullPath) && source.endsWith(`.${ext}`)) {
-        const diff = source.replace(fullPath, '').replace(`.${ext}`, '');
+      if (source.startsWith(fullPath) && source.endsWith(`.${extension}`)) {
+        const diff = source.replace(fullPath, '').replace(`.${extension}`, '');
         const hasDuplicationAnnotation = /^\+\d+$/.test(diff);
         if (hasDuplicationAnnotation) {
           return source;
@@ -240,7 +240,7 @@ export class StorageTemplateService {
         }
 
         duplicateCount++;
-        destination = `${fullPath}+${duplicateCount}.${ext}`;
+        destination = `${fullPath}+${duplicateCount}.${extension}`;
       }
 
       return destination;
@@ -264,9 +264,9 @@ export class StorageTemplateService {
         extension: 'jpg',
         albumName: 'album',
       });
-    } catch (e) {
-      this.logger.warn(`Storage template validation failed: ${JSON.stringify(e)}`);
-      throw new Error(`Invalid storage template: ${e}`);
+    } catch (error) {
+      this.logger.warn(`Storage template validation failed: ${JSON.stringify(error)}`);
+      throw new Error(`Invalid storage template: ${error}`);
     }
   }
 
@@ -282,7 +282,7 @@ export class StorageTemplateService {
     return {
       raw: template,
       compiled: handlebar.compile(template, { knownHelpers: undefined, strict: true }),
-      needsAlbum: template.indexOf('{{album}}') !== -1,
+      needsAlbum: template.includes('{{album}}'),
     };
   }
 
@@ -295,7 +295,7 @@ export class StorageTemplateService {
       filetypefull: asset.type == AssetType.IMAGE ? 'IMAGE' : 'VIDEO',
       assetId: asset.id,
       //just throw into the root if it doesn't belong to an album
-      album: (albumName && sanitize(albumName.replace(/\.+/g, ''))) || '.',
+      album: (albumName && sanitize(albumName.replaceAll(/\.+/g, ''))) || '.',
     };
 
     const systemTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;

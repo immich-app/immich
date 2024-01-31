@@ -91,33 +91,40 @@ export class AuditService {
       }
 
       switch (pathType) {
-        case AssetPathType.ENCODED_VIDEO:
+        case AssetPathType.ENCODED_VIDEO: {
           await this.assetRepository.save({ id, encodedVideoPath: pathValue });
           break;
+        }
 
-        case AssetPathType.JPEG_THUMBNAIL:
+        case AssetPathType.JPEG_THUMBNAIL: {
           await this.assetRepository.save({ id, resizePath: pathValue });
           break;
+        }
 
-        case AssetPathType.WEBP_THUMBNAIL:
+        case AssetPathType.WEBP_THUMBNAIL: {
           await this.assetRepository.save({ id, webpPath: pathValue });
           break;
+        }
 
-        case AssetPathType.ORIGINAL:
+        case AssetPathType.ORIGINAL: {
           await this.assetRepository.save({ id, originalPath: pathValue });
           break;
+        }
 
-        case AssetPathType.SIDECAR:
+        case AssetPathType.SIDECAR: {
           await this.assetRepository.save({ id, sidecarPath: pathValue });
           break;
+        }
 
-        case PersonPathType.FACE:
+        case PersonPathType.FACE: {
           await this.personRepository.update({ id, thumbnailPath: pathValue });
           break;
+        }
 
-        case UserPathType.PROFILE:
+        case UserPathType.PROFILE: {
           await this.userRepository.update(id, { profileImagePath: pathValue });
           break;
+        }
       }
     }
   }

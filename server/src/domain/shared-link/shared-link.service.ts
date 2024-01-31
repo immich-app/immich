@@ -45,14 +45,15 @@ export class SharedLinkService {
 
   async create(auth: AuthDto, dto: SharedLinkCreateDto): Promise<SharedLinkResponseDto> {
     switch (dto.type) {
-      case SharedLinkType.ALBUM:
+      case SharedLinkType.ALBUM: {
         if (!dto.albumId) {
           throw new BadRequestException('Invalid albumId');
         }
         await this.access.requirePermission(auth, Permission.ALBUM_SHARE, dto.albumId);
         break;
+      }
 
-      case SharedLinkType.INDIVIDUAL:
+      case SharedLinkType.INDIVIDUAL: {
         if (!dto.assetIds || dto.assetIds.length === 0) {
           throw new BadRequestException('Invalid assetIds');
         }
@@ -60,6 +61,7 @@ export class SharedLinkService {
         await this.access.requirePermission(auth, Permission.ASSET_SHARE, dto.assetIds);
 
         break;
+      }
     }
 
     const sharedLink = await this.repository.create({

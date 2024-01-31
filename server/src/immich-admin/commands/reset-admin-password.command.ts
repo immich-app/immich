@@ -22,7 +22,7 @@ export class ResetAdminPasswordCommand extends CommandRunner {
 - Email=${email}
 - Name=${name}`);
 
-      return this.inquirer.ask<{ password: string }>('prompt-password', undefined).then(({ password }) => password);
+      return this.inquirer.ask<{ password: string }>('prompt-password').then(({ password }) => password);
     };
 
     try {
@@ -46,7 +46,7 @@ export class PromptPasswordQuestions {
     message: 'Please choose a new password (optional)',
     name: 'password',
   })
-  parsePassword(val: string) {
-    return val;
+  parsePassword(value: string) {
+    return value;
   }
 }

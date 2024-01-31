@@ -6,7 +6,7 @@ const urlOrParts = url
   ? { url }
   : {
       host: process.env.DB_HOSTNAME || 'localhost',
-      port: parseInt(process.env.DB_PORT || '5432'),
+      port: Number.parseInt(process.env.DB_PORT || '5432'),
       username: process.env.DB_USERNAME || 'postgres',
       password: process.env.DB_PASSWORD || 'postgres',
       database: process.env.DB_DATABASE_NAME || 'immich',
@@ -19,7 +19,7 @@ export const databaseConfig: PostgresConnectionOptions = {
   migrations: [__dirname + '/migrations/*.{js,ts}'],
   subscribers: [__dirname + '/subscribers/*.{js,ts}'],
   migrationsRun: false,
-  connectTimeoutMS: 10000, // 10 seconds
+  connectTimeoutMS: 10_000, // 10 seconds
   parseInt8: true,
   ...urlOrParts,
 };

@@ -10,7 +10,7 @@ import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger';
 import { Auth, Authenticated } from '../app.guard';
 import { UseValidation } from '../app.utils';
-import { UUIDParamDto } from './dto/uuid-param.dto';
+import { UUIDParamDto as UIDParameterDto } from './dto/uuid-param.dto';
 
 @ApiTags('API Key')
 @Controller('api-key')
@@ -30,21 +30,21 @@ export class APIKeyController {
   }
 
   @Get(':id')
-  getApiKey(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<APIKeyResponseDto> {
+  getApiKey(@Auth() auth: AuthDto, @Param() { id }: UIDParameterDto): Promise<APIKeyResponseDto> {
     return this.service.getById(auth, id);
   }
 
   @Put(':id')
   updateApiKey(
     @Auth() auth: AuthDto,
-    @Param() { id }: UUIDParamDto,
+    @Param() { id }: UIDParameterDto,
     @Body() dto: APIKeyUpdateDto,
   ): Promise<APIKeyResponseDto> {
     return this.service.update(auth, id, dto);
   }
 
   @Delete(':id')
-  deleteApiKey(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
+  deleteApiKey(@Auth() auth: AuthDto, @Param() { id }: UIDParameterDto): Promise<void> {
     return this.service.delete(auth, id);
   }
 }

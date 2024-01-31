@@ -1,5 +1,5 @@
 import { VideoCodec } from '@app/infra/entities';
-import { Writable } from 'stream';
+import { Writable } from 'node:stream';
 
 export const IMediaRepository = 'IMediaRepository';
 

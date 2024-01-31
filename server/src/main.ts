@@ -10,18 +10,22 @@ if (process.argv[2] === immichApp) {
 
 function bootstrap() {
   switch (immichApp) {
-    case 'immich':
+    case 'immich': {
       process.title = 'immich_server';
       return server();
-    case 'microservices':
+    }
+    case 'microservices': {
       process.title = 'immich_microservices';
       return microservices();
-    case 'immich-admin':
+    }
+    case 'immich-admin': {
       process.title = 'immich_admin_cli';
       return admin();
-    default:
+    }
+    default: {
       console.log(`Invalid app name: ${immichApp}. Expected one of immich|microservices|cli`);
       process.exit(1);
+    }
   }
 }
 void bootstrap();

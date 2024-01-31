@@ -17,7 +17,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
 import { Auth, Authenticated, FileResponse } from '../app.guard';
 import { UseValidation, sendFile } from '../app.utils';
-import { UUIDParamDto } from './dto/uuid-param.dto';
+import { UUIDParamDto as UIDParameterDto } from './dto/uuid-param.dto';
 
 @ApiTags('Person')
 @Controller('person')
@@ -39,7 +39,7 @@ export class PersonController {
   @Put(':id/reassign')
   reassignFaces(
     @Auth() auth: AuthDto,
-    @Param() { id }: UUIDParamDto,
+    @Param() { id }: UIDParameterDto,
     @Body() dto: AssetFaceUpdateDto,
   ): Promise<PersonResponseDto[]> {
     return this.service.reassignFaces(auth, id, dto);
@@ -51,21 +51,21 @@ export class PersonController {
   }
 
   @Get(':id')
-  getPerson(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<PersonResponseDto> {
+  getPerson(@Auth() auth: AuthDto, @Param() { id }: UIDParameterDto): Promise<PersonResponseDto> {
     return this.service.getById(auth, id);
   }
 
   @Put(':id')
   updatePerson(
     @Auth() auth: AuthDto,
-    @Param() { id }: UUIDParamDto,
+    @Param() { id }: UIDParameterDto,
     @Body() dto: PersonUpdateDto,
   ): Promise<PersonResponseDto> {
     return this.service.update(auth, id, dto);
   }
 
   @Get(':id/statistics')
-  getPersonStatistics(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<PersonStatisticsResponseDto> {
+  getPersonStatistics(@Auth() auth: AuthDto, @Param() { id }: UIDParameterDto): Promise<PersonStatisticsResponseDto> {
     return this.service.getStatistics(auth, id);
   }
 
@@ -75,20 +75,20 @@ export class PersonController {
     @Res() res: Response,
     @Next() next: NextFunction,
     @Auth() auth: AuthDto,
-    @Param() { id }: UUIDParamDto,
+    @Param() { id }: UIDParameterDto,
   ) {
     await sendFile(res, next, () => this.service.getThumbnail(auth, id));
   }
 
   @Get(':id/assets')
-  getPersonAssets(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AssetResponseDto[]> {
+  getPersonAssets(@Auth() auth: AuthDto, @Param() { id }: UIDParameterDto): Promise<AssetResponseDto[]> {
     return this.service.getAssets(auth, id);
   }
 
   @Post(':id/merge')
   mergePerson(
     @Auth() auth: AuthDto,
-    @Param() { id }: UUIDParamDto,
+    @Param() { id }: UIDParameterDto,
     @Body() dto: MergePersonDto,
   ): Promise<BulkIdResponseDto[]> {
     return this.service.mergePerson(auth, id, dto);

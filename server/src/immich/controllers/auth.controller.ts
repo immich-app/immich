@@ -19,7 +19,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { Auth, Authenticated, GetLoginDetails, PublicRoute } from '../app.guard';
 import { UseValidation } from '../app.utils';
-import { UUIDParamDto } from './dto/uuid-param.dto';
+import { UUIDParamDto as UIDParameterDto } from './dto/uuid-param.dto';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -59,7 +59,7 @@ export class AuthController {
 
   @Delete('devices/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  logoutAuthDevice(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
+  logoutAuthDevice(@Auth() auth: AuthDto, @Param() { id }: UIDParameterDto): Promise<void> {
     return this.service.logoutDevice(auth, id);
   }
 
@@ -78,13 +78,13 @@ export class AuthController {
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   logout(
-    @Req() req: Request,
+    @Req() request: Request,
     @Res({ passthrough: true }) res: Response,
     @Auth() auth: AuthDto,
   ): Promise<LogoutResponseDto> {
     res.clearCookie(IMMICH_ACCESS_COOKIE);
     res.clearCookie(IMMICH_AUTH_TYPE_COOKIE);
 
-    return this.service.logout(auth, (req.cookies || {})[IMMICH_AUTH_TYPE_COOKIE]);
+    return this.service.logout(auth, (request.cookies || {})[IMMICH_AUTH_TYPE_COOKIE]);
   }
 }

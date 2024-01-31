@@ -3,7 +3,7 @@ import { Body, Controller, Get, Param, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Auth, Authenticated } from '../app.guard';
 import { UseValidation } from '../app.utils';
-import { UUIDParamDto } from './dto/uuid-param.dto';
+import { UUIDParamDto as UIDParameterDto } from './dto/uuid-param.dto';
 
 @ApiTags('Face')
 @Controller('face')
@@ -20,7 +20,7 @@ export class FaceController {
   @Put(':id')
   reassignFacesById(
     @Auth() auth: AuthDto,
-    @Param() { id }: UUIDParamDto,
+    @Param() { id }: UIDParameterDto,
     @Body() dto: FaceDto,
   ): Promise<PersonResponseDto> {
     return this.service.reassignFacesById(auth, id, dto);

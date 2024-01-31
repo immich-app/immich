@@ -2,7 +2,7 @@ import { SystemMetadataKey } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
 import { Inject, Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
-import { Version, isDev, mimeTypes, serverVersion } from '../domain.constant';
+import { Version, isDev as isDevelopment, mimeTypes, serverVersion } from '../domain.constant';
 import { asHumanReadable } from '../domain.util';
 import {
   ClientEvent,
@@ -67,7 +67,7 @@ export class ServerInfoService {
     serverInfo.diskAvailableRaw = diskInfo.available;
     serverInfo.diskSizeRaw = diskInfo.total;
     serverInfo.diskUseRaw = diskInfo.total - diskInfo.free;
-    serverInfo.diskUsagePercentage = parseFloat(usagePercentage);
+    serverInfo.diskUsagePercentage = Number.parseFloat(usagePercentage);
     return serverInfo;
   }
 
@@ -139,7 +139,7 @@ export class ServerInfoService {
 
   async handleVersionCheck(): Promise<boolean> {
     try {
-      if (isDev) {
+      if (isDevelopment) {
         return true;
       }
 

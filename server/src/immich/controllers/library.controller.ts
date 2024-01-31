@@ -11,7 +11,7 @@ import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger';
 import { Auth, Authenticated } from '../app.guard';
 import { UseValidation } from '../app.utils';
-import { UUIDParamDto } from './dto/uuid-param.dto';
+import { UUIDParamDto as UIDParameterDto } from './dto/uuid-param.dto';
 
 @ApiTags('Library')
 @Controller('library')
@@ -31,32 +31,32 @@ export class LibraryController {
   }
 
   @Put(':id')
-  updateLibrary(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto, @Body() dto: UpdateDto): Promise<ResponseDto> {
+  updateLibrary(@Auth() auth: AuthDto, @Param() { id }: UIDParameterDto, @Body() dto: UpdateDto): Promise<ResponseDto> {
     return this.service.update(auth, id, dto);
   }
 
   @Get(':id')
-  getLibraryInfo(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<ResponseDto> {
+  getLibraryInfo(@Auth() auth: AuthDto, @Param() { id }: UIDParameterDto): Promise<ResponseDto> {
     return this.service.get(auth, id);
   }
 
   @Delete(':id')
-  deleteLibrary(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
+  deleteLibrary(@Auth() auth: AuthDto, @Param() { id }: UIDParameterDto): Promise<void> {
     return this.service.delete(auth, id);
   }
 
   @Get(':id/statistics')
-  getLibraryStatistics(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<LibraryStatsResponseDto> {
+  getLibraryStatistics(@Auth() auth: AuthDto, @Param() { id }: UIDParameterDto): Promise<LibraryStatsResponseDto> {
     return this.service.getStatistics(auth, id);
   }
 
   @Post(':id/scan')
-  scanLibrary(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto, @Body() dto: ScanLibraryDto) {
+  scanLibrary(@Auth() auth: AuthDto, @Param() { id }: UIDParameterDto, @Body() dto: ScanLibraryDto) {
     return this.service.queueScan(auth, id, dto);
   }
 
   @Post(':id/removeOffline')
-  removeOfflineFiles(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto) {
+  removeOfflineFiles(@Auth() auth: AuthDto, @Param() { id }: UIDParameterDto) {
     return this.service.queueRemoveOffline(auth, id);
   }
 }

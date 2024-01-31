@@ -12,7 +12,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { Auth, Authenticated } from '../app.guard';
 import { UseValidation } from '../app.utils';
-import { UUIDParamDto } from './dto/uuid-param.dto';
+import { UUIDParamDto as UIDParameterDto } from './dto/uuid-param.dto';
 
 @ApiTags('Activity')
 @Controller('activity')
@@ -46,7 +46,7 @@ export class ActivityController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  deleteActivity(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
+  deleteActivity(@Auth() auth: AuthDto, @Param() { id }: UIDParameterDto): Promise<void> {
     return this.service.delete(auth, id);
   }
 }
