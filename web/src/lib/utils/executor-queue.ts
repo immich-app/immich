@@ -38,8 +38,8 @@ export class ExecutorQueue {
           this.running++;
           const result = task();
           resolve(await result);
-        } catch (e) {
-          reject(e);
+        } catch (error) {
+          reject(error);
         } finally {
           this.taskFinished();
         }

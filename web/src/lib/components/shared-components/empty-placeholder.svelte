@@ -1,13 +1,13 @@
 <script lang="ts">
   import empty1Url from '$lib/assets/empty-1.svg';
 
-  export let actionHandler: undefined | (() => unknown) = undefined;
+  export let actionHandler: undefined | (() => unknown);
   export let text = '';
   export let alt = '';
   export let fullWidth = false;
   export let src = empty1Url;
 
-  const noop = () => undefined;
+  const noop = () => {};
 
   $: handler = actionHandler || noop;
   $: width = fullWidth ? 'w-full' : 'w-[50%]';

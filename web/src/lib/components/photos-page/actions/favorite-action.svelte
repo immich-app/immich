@@ -11,7 +11,7 @@
   import { mdiHeartMinusOutline, mdiHeartOutline, mdiTimerSand } from '@mdi/js';
   import type { OnFavorite } from '$lib/utils/actions';
 
-  export let onFavorite: OnFavorite | undefined = undefined;
+  export let onFavorite: OnFavorite | undefined;
 
   export let menuItem = false;
   export let removeFavorite: boolean;
@@ -28,7 +28,7 @@
     loading = true;
 
     try {
-      const assets = Array.from(getOwnedAssets()).filter((asset) => asset.isFavorite !== isFavorite);
+      const assets = [...getOwnedAssets()].filter((asset) => asset.isFavorite !== isFavorite);
 
       const ids = assets.map(({ id }) => id);
 

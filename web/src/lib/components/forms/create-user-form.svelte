@@ -14,7 +14,7 @@
   let confirmPassowrd = '';
 
   let canCreateUser = false;
-  let quotaSize: number | undefined = undefined;
+  let quotaSize: number | undefined;
   let isCreatingUser = false;
 
   $: quotaSizeWarning = quotaSize && convertToBytes(Number(quotaSize), 'GiB') > $serverInfo.diskSizeRaw;
@@ -69,11 +69,11 @@
           error = 'Error create user account';
           isCreatingUser = false;
         }
-      } catch (e) {
+      } catch (error_) {
         error = 'Error create user account';
         isCreatingUser = false;
 
-        console.log('[ERROR] registerUser', e);
+        console.log('[ERROR] registerUser', error_);
 
         notificationController.show({
           message: `Error create new user, check console for more detail`,

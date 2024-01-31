@@ -30,10 +30,10 @@
   const logOut = async () => {
     resetSavedUser();
     const { data } = await api.authenticationApi.logout();
-    if (!data.redirectUri.startsWith('/')) {
-      window.location.href = data.redirectUri;
-    } else {
+    if (data.redirectUri.startsWith('/')) {
       goto(data.redirectUri);
+    } else {
+      window.location.href = data.redirectUri;
     }
   };
 </script>

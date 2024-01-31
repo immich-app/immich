@@ -11,9 +11,9 @@
   export { className as class };
   export let viewBox = '0 0 24 24';
   export let role: AriaRole = 'img';
-  export let ariaHidden: boolean | undefined = undefined;
-  export let ariaLabel: string | undefined = undefined;
-  export let ariaLabelledby: string | undefined = undefined;
+  export let ariaHidden: boolean | undefined;
+  export let ariaLabel: string | undefined;
+  export let ariaLabelledby: string | undefined;
 </script>
 
 <svg

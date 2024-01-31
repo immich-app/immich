@@ -25,7 +25,7 @@
   const dispatchShowContextMenu = createEventDispatcher<OnShowContextMenu>();
 
   const loadHighQualityThumbnail = async (thubmnailId: string | null) => {
-    if (thubmnailId == null) {
+    if (thubmnailId == undefined) {
       return;
     }
 

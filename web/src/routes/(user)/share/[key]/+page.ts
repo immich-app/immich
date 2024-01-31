@@ -24,10 +24,10 @@ export const load = (async ({ params }) => {
           : '/feature-panel.png',
       },
     };
-  } catch (e) {
+  } catch (error_) {
     // handle unauthorized error
     // TODO this doesn't allow for 404 shared links anymore
-    if ((e as AxiosError).response?.status === 401) {
+    if ((error_ as AxiosError).response?.status === 401) {
       return {
         passwordRequired: true,
         sharedLinkKey: key,

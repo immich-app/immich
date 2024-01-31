@@ -27,9 +27,9 @@
 
   export let asset: AssetResponseDto;
   export let groupIndex = 0;
-  export let thumbnailSize: number | undefined = undefined;
-  export let thumbnailWidth: number | undefined = undefined;
-  export let thumbnailHeight: number | undefined = undefined;
+  export let thumbnailSize: number | undefined;
+  export let thumbnailWidth: number | undefined;
+  export let thumbnailHeight: number | undefined;
   export let format: ThumbnailFormat = ThumbnailFormat.Webp;
   export let selected = false;
   export let selectionCandidate = false;
@@ -161,7 +161,7 @@
 
         {#if asset.stackCount && showStackedIcon}
           <div
-            class="absolute {asset.type == AssetTypeEnum.Image && asset.livePhotoVideoId == null
+            class="absolute {asset.type == AssetTypeEnum.Image && asset.livePhotoVideoId == undefined
               ? 'top-0 right-0'
               : 'top-7 right-1'} z-20 flex place-items-center gap-1 text-xs font-medium text-white"
           >

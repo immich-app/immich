@@ -26,14 +26,14 @@
     $savedSearchTerms = $savedSearchTerms.filter((item) => item !== value);
     saveSearchTerm(value);
 
-    const params = new URLSearchParams({
+    const parameters = new URLSearchParams({
       q: searchValue,
       smart: smartSearch,
     });
 
     showBigSearchBar = false;
     $isSearchEnabled = false;
-    goto(`${AppRoute.SEARCH}?${params}`, { invalidateAll: true });
+    goto(`${AppRoute.SEARCH}?${parameters}`, { invalidateAll: true });
   }
 
   const clearSearchTerm = (searchTerm: string) => {
@@ -140,7 +140,7 @@
           </div>
         {/if}
 
-        {#each $savedSearchTerms as savedSearchTerm, i (i)}
+        {#each $savedSearchTerms as savedSearchTerm, index (index)}
           <div
             class="flex w-full items-center justify-between text-sm text-black hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-500/10"
           >

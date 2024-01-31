@@ -6,7 +6,7 @@
   import Button from './button.svelte';
 
   export let color: Color = 'transparent-primary';
-  export let title: string | undefined = undefined;
+  export let title: string | undefined;
 </script>
 
 <Button size="icon" {color} {title} shadow={false} rounded="full" on:click>

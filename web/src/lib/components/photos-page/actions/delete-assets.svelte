@@ -32,7 +32,7 @@
 
   const handleDelete = async () => {
     loading = true;
-    const ids = Array.from(getOwnedAssets())
+    const ids = [...getOwnedAssets()]
       .filter((a) => !a.isExternal)
       .map((a) => a.id);
     await deleteAssets(force, onAssetDelete, ids);

@@ -23,7 +23,7 @@
   import UpdatePanel from '../shared-components/update-panel.svelte';
 
   export let sharedLink: SharedLinkResponseDto;
-  export let user: UserResponseDto | undefined = undefined;
+  export let user: UserResponseDto | undefined;
 
   const album = sharedLink.album as AlbumResponseDto;
 
@@ -83,11 +83,12 @@
     }
     if (!$showAssetViewer) {
       switch (event.key) {
-        case 'Escape':
+        case 'Escape': {
           if ($isMultiSelectState) {
             assetInteractionStore.clearMultiselect();
           }
           return;
+        }
       }
     }
   };

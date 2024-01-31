@@ -18,9 +18,9 @@
     if (browser) {
       const scrollTop = document.documentElement.scrollTop;
       const scrollLeft = document.documentElement.scrollLeft;
-      window.onscroll = function () {
+      window.addEventListener('scroll', function () {
         window.scrollTo(scrollLeft, scrollTop);
-      };
+      });
     }
   });
 

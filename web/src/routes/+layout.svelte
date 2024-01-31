@@ -98,7 +98,7 @@
       return;
     }
 
-    const filesArray: File[] = Array.from<File>(files);
+    const filesArray: File[] = [...files];
     albumId = ($page.route.id === '/(user)/albums/[albumId]' || undefined) && $page.params.albumId;
 
     const isShare = $page.route.id === '/(user)/share/[key]' || undefined;

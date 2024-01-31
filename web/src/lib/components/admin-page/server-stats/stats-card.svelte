@@ -4,7 +4,7 @@
   export let icon: string;
   export let title: string;
   export let value: number;
-  export let unit: string | undefined = undefined;
+  export let unit: string | undefined;
 
   $: zeros = () => {
     const maxLength = 13;

@@ -4,7 +4,7 @@
   import ConfirmDialogue from './confirm-dialogue.svelte';
   import Map from './map/map.svelte';
   export const title = 'Change Location';
-  export let asset: AssetResponseDto | undefined = undefined;
+  export let asset: AssetResponseDto | undefined;
 
   interface Point {
     lng: number;
@@ -29,10 +29,10 @@
   };
 
   const handleConfirm = () => {
-    if (!point) {
-      dispatch('cancel');
-    } else {
+    if (point) {
       dispatch('confirm', point);
+    } else {
+      dispatch('cancel');
     }
   };
 </script>

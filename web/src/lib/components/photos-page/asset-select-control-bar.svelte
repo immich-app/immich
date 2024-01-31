@@ -20,12 +20,12 @@
 
   export let assets: Set<AssetResponseDto>;
   export let clearSelect: () => void;
-  export let ownerId: string | undefined = undefined;
+  export let ownerId: string | undefined;
 
   setContext({
     getAssets: () => assets,
     getOwnedAssets: () =>
-      ownerId !== undefined ? new Set(Array.from(assets).filter((asset) => asset.ownerId === ownerId)) : assets,
+      ownerId === undefined ? assets : new Set([...assets].filter((asset) => asset.ownerId === ownerId)),
     clearSelect,
   });
 </script>

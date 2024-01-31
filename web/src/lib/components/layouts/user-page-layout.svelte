@@ -6,8 +6,8 @@
 
   export let hideNavbar = false;
   export let showUploadButton = false;
-  export let title: string | undefined = undefined;
-  export let description: string | undefined = undefined;
+  export let title: string | undefined;
+  export let description: string | undefined;
   export let scrollbar = true;
   export let admin = false;
 

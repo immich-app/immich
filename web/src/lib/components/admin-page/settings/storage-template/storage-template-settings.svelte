@@ -38,7 +38,7 @@
   $: parsedTemplate = () => {
     try {
       return renderTemplate(config.storageTemplate.template);
-    } catch (error) {
+    } catch {
       return 'error';
     }
   };

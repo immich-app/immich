@@ -47,7 +47,7 @@
       img.src = data;
 
       await new Promise<void>((resolve) => {
-        img.onload = () => resolve();
+        img.addEventListener('load', () => resolve());
         img.onerror = () => resolve();
       });
 
@@ -72,7 +72,7 @@
     faceImage.src = image.src;
 
     await new Promise((resolve) => {
-      faceImage.onload = resolve;
+      faceImage.addEventListener('load', resolve);
       faceImage.onerror = () => resolve(null);
     });
 
@@ -80,9 +80,9 @@
     canvas.width = faceWidth;
     canvas.height = faceHeight;
 
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      ctx.drawImage(faceImage, coordinates.x1, coordinates.y1, faceWidth, faceHeight, 0, 0, faceWidth, faceHeight);
+    const context = canvas.getContext('2d');
+    if (context) {
+      context.drawImage(faceImage, coordinates.x1, coordinates.y1, faceWidth, faceHeight, 0, 0, faceWidth, faceHeight);
 
       return canvas.toDataURL();
     } else {

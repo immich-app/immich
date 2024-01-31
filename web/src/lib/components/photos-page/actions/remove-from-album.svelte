@@ -11,7 +11,7 @@
   import { mdiDeleteOutline } from '@mdi/js';
 
   export let album: AlbumResponseDto;
-  export let onRemove: ((assetIds: string[]) => void) | undefined = undefined;
+  export let onRemove: ((assetIds: string[]) => void) | undefined;
   export let menuItem = false;
 
   const { getAssets, clearSelect } = getAssetControlContext();
@@ -20,7 +20,7 @@
 
   const removeFromAlbum = async () => {
     try {
-      const ids = Array.from(getAssets()).map((a) => a.id);
+      const ids = [...getAssets()].map((a) => a.id);
       const { data: results } = await api.albumApi.removeAssetFromAlbum({
         id: album.id,
         bulkIdsDto: { ids },
@@ -38,8 +38,8 @@
       });
 
       clearSelect();
-    } catch (e) {
-      console.error('Error [album-viewer] [removeAssetFromAlbum]', e);
+    } catch (error) {
+      console.error('Error [album-viewer] [removeAssetFromAlbum]', error);
       notificationController.show({
         type: NotificationType.Error,
         message: 'Error removing assets from album, check console for more details',

@@ -31,7 +31,7 @@
   });
 
   const isDeleted = (user: UserResponseDto): boolean => {
-    return user.deletedAt != null;
+    return user.deletedAt != undefined;
   };
 
   const deleteDateFormat: Intl.DateTimeFormatOptions = {
@@ -188,15 +188,15 @@
         </thead>
         <tbody class="block max-h-[320px] w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
           {#if allUsers}
-            {#each allUsers as immichUser, i}
+            {#each allUsers as immichUser, index}
               <tr
                 class="flex h-[80px] overflow-hidden w-full place-items-center text-center dark:text-immich-dark-fg {isDeleted(
                   immichUser,
                 )
                   ? 'bg-red-300 dark:bg-red-900'
-                  : i % 2 == 0
+                  : (index % 2 == 0
                     ? 'bg-immich-gray dark:bg-immich-dark-gray/75'
-                    : 'bg-immich-bg dark:bg-immich-dark-gray/50'}"
+                    : 'bg-immich-bg dark:bg-immich-dark-gray/50')}"
               >
                 <td class="w-8/12 sm:w-5/12 lg:w-6/12 xl:w-4/12 2xl:w-5/12 text-ellipsis break-all px-2 text-sm"
                   >{immichUser.email}</td

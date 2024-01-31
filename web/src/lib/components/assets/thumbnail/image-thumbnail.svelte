@@ -2,14 +2,14 @@
   import { onMount, tick } from 'svelte';
   import { fade } from 'svelte/transition';
   import { thumbHashToDataURL } from 'thumbhash';
-  import { Buffer } from 'buffer';
+  import { Buffer } from 'node:buffer';
   import { mdiEyeOffOutline } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
 
   export let url: string;
   export let altText: string;
   export let title: string | null = null;
-  export let heightStyle: string | undefined = undefined;
+  export let heightStyle: string | undefined;
   export let widthStyle: string;
   export let thumbhash: string | null = null;
   export let curve = false;

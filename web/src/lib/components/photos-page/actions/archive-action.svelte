@@ -11,7 +11,7 @@
   import { mdiArchiveArrowUpOutline, mdiArchiveArrowDownOutline, mdiTimerSand } from '@mdi/js';
   import type { OnArchive } from '$lib/utils/actions';
 
-  export let onArchive: OnArchive | undefined = undefined;
+  export let onArchive: OnArchive | undefined;
 
   export let menuItem = false;
   export let unarchive = false;
@@ -28,7 +28,7 @@
     loading = true;
 
     try {
-      const assets = Array.from(getOwnedAssets()).filter((asset) => asset.isArchived !== isArchived);
+      const assets = [...getOwnedAssets()].filter((asset) => asset.isArchived !== isArchived);
       const ids = assets.map(({ id }) => id);
 
       if (ids.length > 0) {

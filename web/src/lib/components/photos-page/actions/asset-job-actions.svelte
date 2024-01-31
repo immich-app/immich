@@ -16,11 +16,11 @@
 
   const { clearSelect, getOwnedAssets } = getAssetControlContext();
 
-  $: isAllVideos = Array.from(getOwnedAssets()).every((asset) => asset.type === AssetTypeEnum.Video);
+  $: isAllVideos = [...getOwnedAssets()].every((asset) => asset.type === AssetTypeEnum.Video);
 
   const handleRunJob = async (name: AssetJobName) => {
     try {
-      const ids = Array.from(getOwnedAssets()).map(({ id }) => id);
+      const ids = [...getOwnedAssets()].map(({ id }) => id);
       await api.assetApi.runAssetJobs({ assetJobsDto: { assetIds: ids, name } });
       notificationController.show({ message: api.getAssetJobMessage(name), type: NotificationType.Info });
       clearSelect();

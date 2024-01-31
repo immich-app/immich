@@ -19,11 +19,7 @@
   const dispatch = createEventDispatcher<{ save: void }>();
 
   const handleReset = async (detail: SettingsEventType['reset']) => {
-    if (detail.default) {
-      await resetToDefault(detail.configKeys);
-    } else {
-      await reset(detail.configKeys);
-    }
+    await (detail.default ? resetToDefault(detail.configKeys) : reset(detail.configKeys));
   };
 
   const handleSave = async (update: Partial<SystemConfigDto>) => {
@@ -47,7 +43,7 @@
 
   const reset = async (configKeys: Array<keyof SystemConfigDto>) => {
     const { data: resetConfig } = await api.systemConfigApi.getConfig();
-    config = configKeys.reduce((acc, key) => ({ ...acc, [key]: resetConfig[key] }), config);
+    config = configKeys.reduce((accumulator, key) => ({ ...accumulator, [key]: resetConfig[key] }), config);
 
     notificationController.show({
       message: 'Reset settings to the recent saved settings',
@@ -56,7 +52,7 @@
   };
 
   const resetToDefault = async (configKeys: Array<keyof SystemConfigDto>) => {
-    config = configKeys.reduce((acc, key) => ({ ...acc, [key]: defaultConfig[key] }), config);
+    config = configKeys.reduce((accumulator, key) => ({ ...accumulator, [key]: defaultConfig[key] }), config);
 
     notificationController.show({
       message: 'Reset settings to default',
