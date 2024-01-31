@@ -21,16 +21,16 @@ describe(`${LibraryController.name} (e2e)`, () => {
     server = (await testApp.create()).getHttpServer();
   });
 
-  afterAll(async () => {
-    await testApp.teardown();
-    await restoreTempFolder();
-  });
-
   beforeEach(async () => {
     await testApp.reset();
     await restoreTempFolder();
     await api.authApi.adminSignUp(server);
     admin = await api.authApi.adminLogin(server);
+  });
+
+  afterAll(async () => {
+    await testApp.teardown();
+    await restoreTempFolder();
   });
 
   describe('DELETE /library/:id', () => {

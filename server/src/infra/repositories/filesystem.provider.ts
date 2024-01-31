@@ -2,12 +2,14 @@ import {
   CrawlOptionsDto,
   DiskUsage,
   ImmichReadStream,
+  ImmichWatcher,
   ImmichZipStream,
   IStorageRepository,
   mimeTypes,
 } from '@app/domain';
 import { ImmichLogger } from '@app/infra/logger';
 import archiver from 'archiver';
+import chokidar, { WatchOptions } from 'chokidar';
 import { constants, createReadStream, existsSync, mkdirSync } from 'fs';
 import fs, { copyFile, readdir, rename, writeFile } from 'fs/promises';
 import { glob } from 'glob';
@@ -130,6 +132,10 @@ export class FilesystemProvider implements IStorageRepository {
       dot: includeHidden,
       ignore: exclusionPatterns,
     });
+  }
+
+  watch(paths: string[], options: WatchOptions): ImmichWatcher {
+    return chokidar.watch(paths, options);
   }
 
   readdir = readdir;

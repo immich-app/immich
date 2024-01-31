@@ -16,6 +16,7 @@ class CreateLibraryDto {
     this.exclusionPatterns = const [],
     this.importPaths = const [],
     this.isVisible,
+    this.isWatched,
     this.name,
     required this.type,
   });
@@ -38,6 +39,14 @@ class CreateLibraryDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
+  bool? isWatched;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
   String? name;
 
   LibraryType type;
@@ -47,6 +56,7 @@ class CreateLibraryDto {
     _deepEquality.equals(other.exclusionPatterns, exclusionPatterns) &&
     _deepEquality.equals(other.importPaths, importPaths) &&
     other.isVisible == isVisible &&
+    other.isWatched == isWatched &&
     other.name == name &&
     other.type == type;
 
@@ -56,11 +66,12 @@ class CreateLibraryDto {
     (exclusionPatterns.hashCode) +
     (importPaths.hashCode) +
     (isVisible == null ? 0 : isVisible!.hashCode) +
+    (isWatched == null ? 0 : isWatched!.hashCode) +
     (name == null ? 0 : name!.hashCode) +
     (type.hashCode);
 
   @override
-  String toString() => 'CreateLibraryDto[exclusionPatterns=$exclusionPatterns, importPaths=$importPaths, isVisible=$isVisible, name=$name, type=$type]';
+  String toString() => 'CreateLibraryDto[exclusionPatterns=$exclusionPatterns, importPaths=$importPaths, isVisible=$isVisible, isWatched=$isWatched, name=$name, type=$type]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -70,6 +81,11 @@ class CreateLibraryDto {
       json[r'isVisible'] = this.isVisible;
     } else {
     //  json[r'isVisible'] = null;
+    }
+    if (this.isWatched != null) {
+      json[r'isWatched'] = this.isWatched;
+    } else {
+    //  json[r'isWatched'] = null;
     }
     if (this.name != null) {
       json[r'name'] = this.name;
@@ -95,6 +111,7 @@ class CreateLibraryDto {
             ? (json[r'importPaths'] as Iterable).cast<String>().toList(growable: false)
             : const [],
         isVisible: mapValueOfType<bool>(json, r'isVisible'),
+        isWatched: mapValueOfType<bool>(json, r'isWatched'),
         name: mapValueOfType<String>(json, r'name'),
         type: LibraryType.fromJson(json[r'type'])!,
       );

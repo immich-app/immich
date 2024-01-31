@@ -1389,6 +1389,12 @@ export interface CreateLibraryDto {
     'isVisible'?: boolean;
     /**
      * 
+     * @type {boolean}
+     * @memberof CreateLibraryDto
+     */
+    'isWatched'?: boolean;
+    /**
+     * 
      * @type {string}
      * @memberof CreateLibraryDto
      */
@@ -3860,6 +3866,12 @@ export interface SystemConfigLibraryDto {
      * @memberof SystemConfigLibraryDto
      */
     'scan': SystemConfigLibraryScanDto;
+    /**
+     * 
+     * @type {SystemConfigLibraryWatchDto}
+     * @memberof SystemConfigLibraryDto
+     */
+    'watch': SystemConfigLibraryWatchDto;
 }
 /**
  * 
@@ -3879,6 +3891,31 @@ export interface SystemConfigLibraryScanDto {
      * @memberof SystemConfigLibraryScanDto
      */
     'enabled': boolean;
+}
+/**
+ * 
+ * @export
+ * @interface SystemConfigLibraryWatchDto
+ */
+export interface SystemConfigLibraryWatchDto {
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SystemConfigLibraryWatchDto
+     */
+    'enabled': boolean;
+    /**
+     * 
+     * @type {number}
+     * @memberof SystemConfigLibraryWatchDto
+     */
+    'interval': number;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SystemConfigLibraryWatchDto
+     */
+    'usePolling': boolean;
 }
 /**
  * 

@@ -14,25 +14,31 @@ class SystemConfigLibraryDto {
   /// Returns a new [SystemConfigLibraryDto] instance.
   SystemConfigLibraryDto({
     required this.scan,
+    required this.watch,
   });
 
   SystemConfigLibraryScanDto scan;
 
+  SystemConfigLibraryWatchDto watch;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigLibraryDto &&
-    other.scan == scan;
+    other.scan == scan &&
+    other.watch == watch;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (scan.hashCode);
+    (scan.hashCode) +
+    (watch.hashCode);
 
   @override
-  String toString() => 'SystemConfigLibraryDto[scan=$scan]';
+  String toString() => 'SystemConfigLibraryDto[scan=$scan, watch=$watch]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'scan'] = this.scan;
+      json[r'watch'] = this.watch;
     return json;
   }
 
@@ -45,6 +51,7 @@ class SystemConfigLibraryDto {
 
       return SystemConfigLibraryDto(
         scan: SystemConfigLibraryScanDto.fromJson(json[r'scan'])!,
+        watch: SystemConfigLibraryWatchDto.fromJson(json[r'watch'])!,
       );
     }
     return null;
@@ -93,6 +100,7 @@ class SystemConfigLibraryDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'scan',
+    'watch',
   };
 }
 

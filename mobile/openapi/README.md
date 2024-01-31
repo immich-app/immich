@@ -341,6 +341,7 @@ Class | Method | HTTP request | Description
  - [SystemConfigJobDto](doc//SystemConfigJobDto.md)
  - [SystemConfigLibraryDto](doc//SystemConfigLibraryDto.md)
  - [SystemConfigLibraryScanDto](doc//SystemConfigLibraryScanDto.md)
+ - [SystemConfigLibraryWatchDto](doc//SystemConfigLibraryWatchDto.md)
  - [SystemConfigLoggingDto](doc//SystemConfigLoggingDto.md)
  - [SystemConfigMachineLearningDto](doc//SystemConfigMachineLearningDto.md)
  - [SystemConfigMapDto](doc//SystemConfigMapDto.md)

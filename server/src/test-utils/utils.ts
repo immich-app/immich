@@ -8,8 +8,10 @@ import { DateTime } from 'luxon';
 import * as fs from 'node:fs';
 import path from 'node:path';
 import { Server } from 'node:tls';
+import { EventEmitter } from 'stream';
 import { EntityTarget, ObjectLiteral } from 'typeorm';
-import { AppService } from '../microservices/app.service';
+import { AppService } from '../immich/app.service';
+import { AppService as MicroAppService } from '../microservices/app.service';
 
 export const IMMICH_TEST_ASSET_PATH = process.env.IMMICH_TEST_ASSET_PATH as string;
 export const IMMICH_TEST_ASSET_TEMP_PATH = path.normalize(`${IMMICH_TEST_ASSET_PATH}/temp/`);
@@ -95,7 +97,10 @@ let app: INestApplication;
 
 export const testApp = {
   create: async (): Promise<INestApplication> => {
-    const moduleFixture = await Test.createTestingModule({ imports: [AppModule], providers: [AppService] })
+    const moduleFixture = await Test.createTestingModule({
+      imports: [AppModule],
+      providers: [AppService, MicroAppService],
+    })
       .overrideModule(InfraModule)
       .useModule(InfraTestModule)
       .overrideProvider(IJobRepository)
@@ -106,7 +111,9 @@ export const testApp = {
 
     app = await moduleFixture.createNestApplication().init();
     await app.listen(0);
+    await db.reset();
     await app.get(AppService).init();
+    await app.get(MicroAppService).init();
 
     const port = app.getHttpServer().address().port;
     const protocol = app instanceof Server ? 'https' : 'http';
@@ -115,17 +122,36 @@ export const testApp = {
     return app;
   },
   reset: async (options?: ResetOptions) => {
-    await app.get(AppService).init();
     await db.reset(options);
+    await app.get(AppService).init();
+
+    await app.get(MicroAppService).init();
   },
+  get: (member: any) => app.get(member),
   teardown: async () => {
     if (app) {
+      await app.get(MicroAppService).teardown();
       await app.get(AppService).teardown();
       await app.close();
     }
     await db.disconnect();
   },
 };
+
+export function waitForEvent<T>(emitter: EventEmitter, event: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const success = (val: T) => {
+      emitter.off('error', fail);
+      resolve(val);
+    };
+    const fail = (err: Error) => {
+      emitter.off(event, success);
+      reject(err);
+    };
+    emitter.once(event, success);
+    emitter.once('error', fail);
+  });
+}
 
 const directoryExists = async (dirPath: string) =>
   await fs.promises

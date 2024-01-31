@@ -1,6 +1,5 @@
 import { AssetResponseDto, LoginResponseDto } from '@app/domain';
 import { AssetController } from '@app/immich';
-import { INestApplication } from '@nestjs/common';
 import { exiftool } from 'exiftool-vendored';
 import { readFile, writeFile } from 'fs/promises';
 import {
@@ -13,17 +12,15 @@ import {
 import { api } from '../../client';
 
 describe(`${AssetController.name} (e2e)`, () => {
-  let app: INestApplication;
   let server: any;
   let admin: LoginResponseDto;
 
   beforeAll(async () => {
-    app = await testApp.create();
-    server = app.getHttpServer();
+    server = (await testApp.create()).getHttpServer();
   });
 
   beforeEach(async () => {
-    await db.reset();
+    await testApp.reset();
     await restoreTempFolder();
     await api.authApi.adminSignUp(server);
     admin = await api.authApi.adminLogin(server);

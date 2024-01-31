@@ -71,6 +71,10 @@ export class AppService {
     this.logger.log(`Feature Flags: ${JSON.stringify(await this.serverService.getFeatures(), null, 2)}`);
   }
 
+  async teardown() {
+    await this.libraryService.unwatchAll();
+  }
+
   ssr(excludePaths: string[]) {
     let index = '';
     try {

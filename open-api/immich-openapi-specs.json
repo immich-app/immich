@@ -7601,6 +7601,9 @@
           "isVisible": {
             "type": "boolean"
           },
+          "isWatched": {
+            "type": "boolean"
+          },
           "name": {
             "type": "string"
           },
@@ -9531,10 +9534,14 @@
         "properties": {
           "scan": {
             "$ref": "#/components/schemas/SystemConfigLibraryScanDto"
+          },
+          "watch": {
+            "$ref": "#/components/schemas/SystemConfigLibraryWatchDto"
           }
         },
         "required": [
-          "scan"
+          "scan",
+          "watch"
         ],
         "type": "object"
       },
@@ -9550,6 +9557,25 @@
         "required": [
           "cronExpression",
           "enabled"
+        ],
+        "type": "object"
+      },
+      "SystemConfigLibraryWatchDto": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "interval": {
+            "type": "integer"
+          },
+          "usePolling": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled",
+          "interval",
+          "usePolling"
         ],
         "type": "object"
       },

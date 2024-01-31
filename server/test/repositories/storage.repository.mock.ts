@@ -21,5 +21,6 @@ export const newStorageRepositoryMock = (reset = true): jest.Mocked<IStorageRepo
     crawl: jest.fn(),
     rename: jest.fn(),
     copyFile: jest.fn(),
+    watch: jest.fn(),
   };
 };

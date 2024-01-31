@@ -129,6 +129,11 @@ export const defaults = Object.freeze<SystemConfig>({
       enabled: true,
       cronExpression: CronExpression.EVERY_DAY_AT_MIDNIGHT,
     },
+    watch: {
+      enabled: false,
+      usePolling: false,
+      interval: 10000,
+    },
   },
   server: {
     externalDomain: '',
