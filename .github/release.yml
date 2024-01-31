@@ -28,14 +28,13 @@ changelog:
       labels:
         - documentation
 
-    - title: 🔨 Build
+    - title: 🔨 Maintenance
       labels:
         - deployment
-
-    - title: 🤖 Dependencies
-      labels:
         - dependencies
         - renovate
+        - maintenance
+        - tech-debt
 
     - title: Other changes
       labels:
