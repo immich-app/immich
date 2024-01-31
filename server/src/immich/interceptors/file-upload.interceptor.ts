@@ -4,9 +4,9 @@ import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nes
 import { PATH_METADATA } from '@nestjs/common/constants';
 import { Reflector } from '@nestjs/core';
 import { transformException } from '@nestjs/platform-express/multer/multer/multer.utils';
-import { createHash, randomUUID } from 'node:crypto';
 import { NextFunction, RequestHandler } from 'express';
 import multer, { StorageEngine, diskStorage } from 'multer';
+import { createHash, randomUUID } from 'node:crypto';
 import { Observable } from 'rxjs';
 import { AuthRequest } from '../app.guard';
 
@@ -115,7 +115,10 @@ export class FileUploadInterceptor implements NestInterceptor {
   }
 
   private filename(request: AuthRequest, file: Express.Multer.File, callback: DiskStorageCallback) {
-    return callbackify(() => this.assetService.getUploadFilename(asRequest(request, file)), callback as Callback<string>);
+    return callbackify(
+      () => this.assetService.getUploadFilename(asRequest(request, file)),
+      callback as Callback<string>,
+    );
   }
 
   private destination(request: AuthRequest, file: Express.Multer.File, callback: DiskStorageCallback) {

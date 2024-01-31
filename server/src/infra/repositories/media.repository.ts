@@ -3,9 +3,9 @@ import { Colorspace } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import fs from 'node:fs/promises';
-import sharp from 'sharp';
 import { Writable } from 'node:stream';
 import { promisify } from 'node:util';
+import sharp from 'sharp';
 
 const probe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
 sharp.concurrency(0);

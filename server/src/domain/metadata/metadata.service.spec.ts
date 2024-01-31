@@ -16,11 +16,11 @@ import {
   newSystemConfigRepositoryMock,
   probeStub,
 } from '@test';
-import { randomBytes } from 'node:crypto';
 import { BinaryField } from 'exiftool-vendored';
+import { when } from 'jest-when';
+import { randomBytes } from 'node:crypto';
 import { Stats } from 'node:fs';
 import { constants } from 'node:fs/promises';
-import { when } from 'jest-when';
 import { JobName } from '../job';
 import {
   ClientEvent,

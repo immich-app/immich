@@ -27,10 +27,12 @@ export class AlbumResponseDto {
 export const mapAlbum = (entity: AlbumEntity, withAssets: boolean): AlbumResponseDto => {
   const sharedUsers: UserResponseDto[] = [];
 
-  if (entity.sharedUsers) {for (const user of entity.sharedUsers) {
-    const userDto = mapUser(user);
-    sharedUsers.push(userDto);
-  }}
+  if (entity.sharedUsers) {
+    for (const user of entity.sharedUsers) {
+      const userDto = mapUser(user);
+      sharedUsers.push(userDto);
+    }
+  }
 
   const assets = entity.assets || [];
 

@@ -10,9 +10,9 @@ import {
 import { ImmichLogger } from '@app/infra/logger';
 import archiver from 'archiver';
 import chokidar, { WatchOptions } from 'chokidar';
+import { glob } from 'glob';
 import { constants, createReadStream, existsSync, mkdirSync } from 'node:fs';
 import fs, { copyFile, readdir, rename, writeFile } from 'node:fs/promises';
-import { glob } from 'glob';
 import path from 'node:path';
 
 export class FilesystemProvider implements IStorageRepository {

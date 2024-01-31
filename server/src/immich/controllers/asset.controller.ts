@@ -206,7 +206,11 @@ export class AssetController {
   }
 
   @Put(':id')
-  updateAsset(@Auth() auth: AuthDto, @Param() { id }: UIDParameterDto, @Body() dto: UpdateDto): Promise<AssetResponseDto> {
+  updateAsset(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UIDParameterDto,
+    @Body() dto: UpdateDto,
+  ): Promise<AssetResponseDto> {
     return this.service.update(auth, id, dto);
   }
 }

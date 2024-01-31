@@ -37,7 +37,11 @@ export class TagController {
   }
 
   @Patch(':id')
-  updateTag(@Auth() auth: AuthDto, @Param() { id }: UIDParameterDto, @Body() dto: UpdateTagDto): Promise<TagResponseDto> {
+  updateTag(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UIDParameterDto,
+    @Body() dto: UpdateTagDto,
+  ): Promise<TagResponseDto> {
     return this.service.update(auth, id, dto);
   }
 

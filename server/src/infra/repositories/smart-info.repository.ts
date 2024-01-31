@@ -119,7 +119,9 @@ export class SmartInfoRepository implements ISmartInfoRepository {
         cte = cte.andWhere('faces."personId" IS NOT NULL');
       }
 
-      for (const col of this.faceColumns) {cte.addSelect(`faces.${col}`, col);}
+      for (const col of this.faceColumns) {
+        cte.addSelect(`faces.${col}`, col);
+      }
 
       results = await manager
         .createQueryBuilder()

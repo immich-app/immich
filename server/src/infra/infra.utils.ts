@@ -73,7 +73,11 @@ export function Chunked(options: { paramIndex?: number; mergeFn?: (results: any)
 
       return Promise.all(
         chunks(argument, DATABASE_PARAMETER_CHUNK_SIZE).map(async (chunk) => {
-          await Reflect.apply(originalMethod, this, [...arguments_.slice(0, parameterIndex), chunk, ...arguments_.slice(parameterIndex + 1)]);
+          await Reflect.apply(originalMethod, this, [
+            ...arguments_.slice(0, parameterIndex),
+            chunk,
+            ...arguments_.slice(parameterIndex + 1),
+          ]);
         }),
       ).then((results) => (options.mergeFn ? options.mergeFn(results) : results));
     };
