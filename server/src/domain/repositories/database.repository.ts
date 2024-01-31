@@ -44,7 +44,7 @@ export interface IDatabaseRepository {
   updateVectorExtension(extension: VectorExtension, version?: Version): Promise<VectorUpdateResult>;
   setSearchPath(): Promise<void>;
   reindex(index: VectorIndex): Promise<void>;
-  shouldReindex(name: 'clip_index' | 'face_index'): Promise<boolean>;
+  shouldReindex(name: VectorIndex): Promise<boolean>;
   runMigrations(options?: { transaction?: 'all' | 'none' | 'each' }): Promise<void>;
   withLock<R>(lock: DatabaseLock, callback: () => Promise<R>): Promise<R>;
   isBusy(lock: DatabaseLock): boolean;
