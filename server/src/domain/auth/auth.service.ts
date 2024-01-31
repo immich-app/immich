@@ -435,7 +435,7 @@ export class AuthService {
     if (isSecure) {
       accessTokenCookie = `${IMMICH_ACCESS_COOKIE}=${loginResponse.accessToken}; HttpOnly; Secure; Path=/; Max-Age=${maxAge}; SameSite=Lax;`;
       authTypeCookie = `${IMMICH_AUTH_TYPE_COOKIE}=${authType}; HttpOnly; Secure; Path=/; Max-Age=${maxAge}; SameSite=Lax;`;
-      isAuthenticatedCookie = `${IMMICH_IS_AUTHENTICATED}=true; Path=/; Secure; Max-Age=${maxAge}; SameSite=Lax;`;
+      isAuthenticatedCookie = `${IMMICH_IS_AUTHENTICATED}=true; Secure; Path=/; Max-Age=${maxAge}; SameSite=Lax;`;
     } else {
       accessTokenCookie = `${IMMICH_ACCESS_COOKIE}=${loginResponse.accessToken}; HttpOnly; Path=/; Max-Age=${maxAge}; SameSite=Lax;`;
       authTypeCookie = `${IMMICH_AUTH_TYPE_COOKIE}=${authType}; HttpOnly; Path=/; Max-Age=${maxAge}; SameSite=Lax;`;
