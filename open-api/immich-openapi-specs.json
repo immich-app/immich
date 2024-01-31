@@ -9923,6 +9923,7 @@
         "enum": [
           "all",
           "optimal",
+          "bitrate",
           "required",
           "disabled"
         ],
