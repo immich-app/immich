@@ -33,6 +33,12 @@ class MemoryPage extends HookConsumerWidget {
     );
     const bgColor = Colors.black;
 
+    useEffect(() {
+      // Memories is an immersive activity
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
+      return null;
+    });
+
     toNextMemory() {
       memoryPageController.nextPage(
         duration: const Duration(milliseconds: 500),
@@ -154,67 +160,79 @@ class MemoryPage extends HookConsumerWidget {
       },
       child: Scaffold(
         backgroundColor: bgColor,
-        body: SafeArea(
-          child: PageView.builder(
-            physics: const BouncingScrollPhysics(
-              parent: AlwaysScrollableScrollPhysics(),
-            ),
-            scrollDirection: Axis.vertical,
-            controller: memoryPageController,
-            onPageChanged: (pageNumber) {
-              HapticFeedback.mediumImpact();
-              if (pageNumber < memories.length) {
-                currentMemory.value = memories[pageNumber];
-              }
+        body: PopScope(
+          onPopInvoked: (didPop) {
+            // Remove immersive mode and go back to normal mode
+            SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+          },
+          child: SafeArea(
+            child: PageView.builder(
+              physics: const BouncingScrollPhysics(
+                parent: AlwaysScrollableScrollPhysics(),
+              ),
+              scrollDirection: Axis.vertical,
+              controller: memoryPageController,
+              onPageChanged: (pageNumber) {
+                HapticFeedback.mediumImpact();
+                if (pageNumber < memories.length) {
+                  currentMemory.value = memories[pageNumber];
+                }
 
-              currentAssetPage.value = 0;
+                currentAssetPage.value = 0;
 
-              updateProgressText();
-            },
-            itemCount: memories.length + 1,
-            itemBuilder: (context, mIndex) {
-              // Build last page
-              if (mIndex == memories.length) {
-                return MemoryEpilogue(
-                  onStartOver: () => memoryPageController.animateToPage(
-                    0,
-                    duration: const Duration(seconds: 1),
-                    curve: Curves.easeInOut,
-                  ),
-                );
-              }
-              // Build horizontal page
-              return Column(
-                children: [
-                  Expanded(
-                    child: PageView.builder(
-                      physics: const BouncingScrollPhysics(
-                        parent: AlwaysScrollableScrollPhysics(),
-                      ),
-                      controller: memoryAssetPageController,
-                      onPageChanged: onAssetChanged,
-                      scrollDirection: Axis.horizontal,
-                      itemCount: memories[mIndex].assets.length,
-                      itemBuilder: (context, index) {
-                        final asset = memories[mIndex].assets[index];
-                        return Container(
-                          color: Colors.black,
-                          child: MemoryCard(
-                            asset: asset,
-                            onTap: () => toNextAsset(index),
-                            onClose: () => context.popRoute(),
-                            rightCornerText: assetProgress.value,
-                            title: memories[mIndex].title,
-                            showTitle: index == 0,
-                          ),
-                        );
-                      },
+                updateProgressText();
+              },
+              itemCount: memories.length + 1,
+              itemBuilder: (context, mIndex) {
+                // Build last page
+                if (mIndex == memories.length) {
+                  return MemoryEpilogue(
+                    onStartOver: () => memoryPageController.animateToPage(
+                      0,
+                      duration: const Duration(seconds: 1),
+                      curve: Curves.easeInOut,
                     ),
-                  ),
-                  MemoryBottomInfo(memory: memories[mIndex]),
-                ],
-              );
-            },
+                  );
+                }
+                // Build horizontal page
+                return Column(
+                  children: [
+                    Expanded(
+                      child: PageView.builder(
+                        physics: const BouncingScrollPhysics(
+                          parent: AlwaysScrollableScrollPhysics(),
+                        ),
+                        controller: memoryAssetPageController,
+                        onPageChanged: onAssetChanged,
+                        scrollDirection: Axis.horizontal,
+                        itemCount: memories[mIndex].assets.length,
+                        itemBuilder: (context, index) {
+                          final asset = memories[mIndex].assets[index];
+                          return Container(
+                            color: Colors.black,
+                            child: MemoryCard(
+                              asset: asset,
+                              onTap: () => toNextAsset(index),
+                              onClose: () {
+                                // auto_route doesn't invoke pop scope, so
+                                // turn off full screen mode here
+                                // https://github.com/Milad-Akarie/auto_route_library/issues/1799
+                                context.popRoute();
+                                SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+                              },
+                              rightCornerText: assetProgress.value,
+                              title: memories[mIndex].title,
+                              showTitle: index == 0,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    MemoryBottomInfo(memory: memories[mIndex]),
+                  ],
+                );
+              },
+            ),
           ),
         ),
       ),
