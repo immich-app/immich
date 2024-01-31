@@ -16,22 +16,32 @@ class MemoryPage extends HookConsumerWidget {
   final List<Memory> memories;
   final int memoryIndex;
 
-  const MemoryPage({
+  MemoryPage({
     required this.memories,
     required this.memoryIndex,
     super.key,
   });
 
+  /// The list of all of the asset page controllers
+  late final memoryAssetPageControllers =
+      List.generate(memories.length, (i) => PageController());
+
+  /// The main vertically scrolling page controller with each list of memories
+  late final memoryPageController = PageController(initialPage: memoryIndex);
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final memoryPageController = usePageController(initialPage: memoryIndex);
-    final memoryAssetPageController = usePageController();
     final currentMemory = useState(memories[memoryIndex]);
     final currentAssetPage = useState(0);
+    final currentMemoryIndex = useState(0);
     final assetProgress = useState(
       "${currentAssetPage.value + 1}|${currentMemory.value.assets.length}",
     );
     const bgColor = Colors.black;
+
+    // The Page Controller that scrolls horizontally with all of the assets
+    PageController currentMemoryAssetPageController =
+        memoryAssetPageControllers[currentMemoryIndex.value];
 
     useEffect(() {
       // Memories is an immersive activity
@@ -49,7 +59,7 @@ class MemoryPage extends HookConsumerWidget {
     toNextAsset(int currentAssetIndex) {
       if (currentAssetIndex + 1 < currentMemory.value.assets.length) {
         // Go to the next asset
-        memoryAssetPageController.nextPage(
+        currentMemoryAssetPageController.nextPage(
           curve: Curves.easeInOut,
           duration: const Duration(milliseconds: 500),
         );
@@ -175,6 +185,7 @@ class MemoryPage extends HookConsumerWidget {
               onPageChanged: (pageNumber) {
                 HapticFeedback.mediumImpact();
                 if (pageNumber < memories.length) {
+                  currentMemoryIndex.value = pageNumber;
                   currentMemory.value = memories[pageNumber];
                 }
 
@@ -197,33 +208,65 @@ class MemoryPage extends HookConsumerWidget {
                 // Build horizontal page
                 return Column(
                   children: [
+                    AnimatedBuilder(
+                      animation: currentMemoryAssetPageController,
+                      builder: (context, child) {
+                        double value = 0.0;
+                        if (currentMemoryAssetPageController.hasClients) {
+                          // We can only access [page] if this has clients
+                          value = currentMemoryAssetPageController.page ?? 0;
+                        }
+                        return LinearProgressIndicator(
+                          value: (value + 1) / memories[mIndex].assets.length,
+                        );
+                      },
+                    ),
                     Expanded(
                       child: PageView.builder(
                         physics: const BouncingScrollPhysics(
                           parent: AlwaysScrollableScrollPhysics(),
                         ),
-                        controller: memoryAssetPageController,
+                        controller: memoryAssetPageControllers[mIndex],
                         onPageChanged: onAssetChanged,
                         scrollDirection: Axis.horizontal,
                         itemCount: memories[mIndex].assets.length,
                         itemBuilder: (context, index) {
                           final asset = memories[mIndex].assets[index];
-                          return Container(
-                            color: Colors.black,
-                            child: MemoryCard(
-                              asset: asset,
-                              onTap: () => toNextAsset(index),
-                              onClose: () {
-                                // auto_route doesn't invoke pop scope, so
-                                // turn off full screen mode here
-                                // https://github.com/Milad-Akarie/auto_route_library/issues/1799
-                                context.popRoute();
-                                SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-                              },
-                              rightCornerText: assetProgress.value,
-                              title: memories[mIndex].title,
-                              showTitle: index == 0,
-                            ),
+                          return Stack(
+                            children: [
+                              Container(
+                                color: Colors.black,
+                                child: MemoryCard(
+                                  asset: asset,
+                                  onTap: () => toNextAsset(index),
+                                  title: memories[mIndex].title,
+                                  showTitle: index == 0,
+                                ),
+                              ),
+                              Positioned(
+                                top: 8,
+                                left: 8,
+                                child: MaterialButton(
+                                  minWidth: 0,
+                                  onPressed: () {
+                                    // auto_route doesn't invoke pop scope, so
+                                    // turn off full screen mode here
+                                    // https://github.com/Milad-Akarie/auto_route_library/issues/1799
+                                    context.popRoute();
+                                    SystemChrome.setEnabledSystemUIMode(
+                                      SystemUiMode.edgeToEdge,
+                                    );
+                                  },
+                                  shape: const CircleBorder(),
+                                  color: Colors.white.withOpacity(0.2),
+                                  elevation: 0,
+                                  child: const Icon(
+                                    Icons.close_rounded,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ],
                           );
                         },
                       ),
