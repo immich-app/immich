@@ -68,8 +68,13 @@ export class DownloadService {
       }
     }
 
+    let totalSize = 0;
+    for (const archive of archives) {
+      totalSize += archive.size;
+    }
+
     return {
-      totalSize: archives.reduce((total, item) => (total += item.size), 0),
+      totalSize,
       archives,
     };
   }

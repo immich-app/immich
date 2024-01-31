@@ -70,18 +70,18 @@ export class AlbumService {
     // Get asset count for each album. Then map the result to an object:
     // { [albumId]: assetCount }
     const albumMetadataForIds = await this.albumRepository.getMetadataForIds(albums.map((album) => album.id));
-    const albumMetadataForIdsObject: Record<string, AlbumAssetCount> = albumMetadataForIds.reduce(
-      (object: Record<string, AlbumAssetCount>, { albumId, assetCount, startDate, endDate }) => {
-        object[albumId] = {
-          albumId,
-          assetCount,
-          startDate,
-          endDate,
-        };
-        return object;
-      },
-      {},
-    );
+
+    const albumMetadataForIdsObject: Record<string, AlbumAssetCount> = {};
+
+    for (const metadata of albumMetadataForIds) {
+      const { albumId, assetCount, startDate, endDate } = metadata;
+      albumMetadataForIdsObject[albumId] = {
+        albumId,
+        assetCount,
+        startDate,
+        endDate,
+      };
+    }
 
     return Promise.all(
       albums.map(async (album) => {

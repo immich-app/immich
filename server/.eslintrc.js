@@ -24,6 +24,7 @@ module.exports = {
     'unicorn/no-null': 'off',
     'unicorn/prefer-top-level-await': 'off',
     'unicorn/prefer-event-target': 'off',
+    'unicorn/no-thenable': 'off',
     curly: 2,
     'prettier/prettier': 0,
   },
