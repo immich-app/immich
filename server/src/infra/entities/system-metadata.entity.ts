@@ -6,7 +6,7 @@ export class SystemMetadataEntity {
   key!: string;
 
   @Column({ type: 'jsonb', default: '{}', transformer: { to: JSON.stringify, from: JSON.parse } })
-  value!: { [key: string]: unknown };
+  value!: { [key in SystemMetadataKey]: SystemMetadata[key] };
 }
 
 export enum SystemMetadataKey {
