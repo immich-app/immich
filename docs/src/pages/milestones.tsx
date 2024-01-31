@@ -61,7 +61,7 @@ const items: Item[] = [
     title: 'Library watching',
     release: 'v1.94.0',
     tag: 'v1.94.0',
-    date: new Date(2024, 1, 31),
+    date: new Date(2024, 0, 30),
     dateType: DateType.RELEASE,
   },
   {
