@@ -92,12 +92,8 @@ class Asset {
     return await sha1(this.path);
   }
 
-  private extractAlbumName(): string {
-    if (os.platform() === 'win32') {
-      return this.path.split('\\').slice(-2)[0];
-    } else {
-      return this.path.split('/').slice(-2)[0];
-    }
+  private extractAlbumName(): string | undefined {
+    return os.platform() === 'win32' ? this.path.split('\\').at(-2) : this.path.split('/').at(-2);
   }
 }
 
