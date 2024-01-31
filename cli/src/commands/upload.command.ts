@@ -8,7 +8,7 @@ import { BaseCommand } from './base-command';
 import { basename } from 'node:path';
 import { access, constants, stat, unlink } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
-import Os from 'node:os';
+import os from 'node:os';
 
 class Asset {
   readonly path: string;
@@ -93,7 +93,7 @@ class Asset {
   }
 
   private extractAlbumName(): string {
-    if (Os.platform() === 'win32') {
+    if (os.platform() === 'win32') {
       return this.path.split('\\').slice(-2)[0];
     } else {
       return this.path.split('/').slice(-2)[0];
