@@ -580,6 +580,8 @@ describe(MediaService.name, () => {
             '-vf scale=-2:720,format=yuv420p',
             '-preset ultrafast',
             '-crf 23',
+            '-maxrate 30M',
+            '-bufsize 60M',
           ],
           twoPass: false,
         },
