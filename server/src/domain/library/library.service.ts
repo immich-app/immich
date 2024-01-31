@@ -545,7 +545,7 @@ export class LibraryService extends EventEmitter {
       .filter((assetPath) =>
         // Filter out paths that are not within the user's external path
         assetPath.match(new RegExp(`^${user.externalPath}`)),
-      );
+      ) as string[];
 
     this.logger.debug(`Found ${crawledAssetPaths.length} asset(s) when crawling import paths ${library.importPaths}`);
     const assetsInLibrary = await this.assetRepository.getByLibraryId([job.id]);
