@@ -5,7 +5,7 @@
   "globalSetup": "<rootDir>/e2e/jobs/setup.ts",
   "testEnvironment": "node",
   "testMatch": ["**/e2e/jobs/specs/*.e2e-spec.[tj]s"],
-  "testTimeout": 60000,
+  "testTimeout": 10000,
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
   },

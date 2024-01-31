@@ -557,6 +557,37 @@ describe(MediaService.name, () => {
       );
     });
 
+    it('should transcode when policy Bitrate and bitrate higher than max bitrate', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.videoStream40Mbps);
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.FFMPEG_TRANSCODE, value: TranscodePolicy.BITRATE },
+        { key: SystemConfigKey.FFMPEG_MAX_BITRATE, value: '30M' },
+      ]);
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        {
+          inputOptions: [],
+          outputOptions: [
+            '-c:v h264',
+            '-c:a aac',
+            '-movflags faststart',
+            '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-v verbose',
+            '-vf scale=-2:720,format=yuv420p',
+            '-preset ultrafast',
+            '-crf 23',
+            '-maxrate 30M',
+            '-bufsize 60M',
+          ],
+          twoPass: false,
+        },
+      );
+    });
+
     it('should not scale resolution if no target resolution', async () => {
       mediaMock.probe.mockResolvedValue(probeStub.videoStream2160p);
       configMock.load.mockResolvedValue([

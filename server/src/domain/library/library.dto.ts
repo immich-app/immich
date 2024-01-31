@@ -26,6 +26,10 @@ export class CreateLibraryDto {
   @IsString({ each: true })
   @IsNotEmpty({ each: true })
   exclusionPatterns?: string[];
+
+  @IsOptional()
+  @IsBoolean()
+  isWatched?: boolean;
 }
 
 export class UpdateLibraryDto {
