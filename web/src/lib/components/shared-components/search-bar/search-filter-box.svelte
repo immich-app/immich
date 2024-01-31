@@ -15,6 +15,8 @@
 
   let mediaType: MediaType = MediaType.All;
   let notInAlbum = false;
+  let inArchive = false;
+  let inFavorite = false;
 </script>
 
 <div
@@ -85,17 +87,22 @@
 
       <!-- ALBUM BELONGING -->
       <div id="album-belonging-selection">
-        <p class="immich-form-label">ALBUM OPTIONS</p>
+        <p class="immich-form-label">DISPLAY OPTIONS</p>
 
         <div class="flex gap-5 mt-3">
-          <label
-            for="album-donotcare"
-            class="text-base flex place-items-center gap-1 hover:cursor-pointer text-black dark:text-white"
-          >
-            <label class="flex items-center mb-2">
-              <input type="checkbox" class="form-checkbox h-5 w-5 color" bind:checked={notInAlbum} />
-              <span class="ml-2 text-sm text-gray-500 dark:text-gray-300 pt-1">Not in any album</span>
-            </label>
+          <label class="flex items-center mb-2">
+            <input type="checkbox" class="form-checkbox h-5 w-5 color" bind:checked={notInAlbum} />
+            <span class="ml-2 text-sm text-black dark:text-white pt-1">Not in any album</span>
+          </label>
+
+          <label class="flex items-center mb-2">
+            <input type="checkbox" class="form-checkbox h-5 w-5 color" bind:checked={inArchive} />
+            <span class="ml-2 text-sm text-black dark:text-white pt-1">Archive</span>
+          </label>
+
+          <label class="flex items-center mb-2">
+            <input type="checkbox" class="form-checkbox h-5 w-5 color" bind:checked={inFavorite} />
+            <span class="ml-2 text-sm text-black dark:text-white pt-1">Favorite</span>
           </label>
         </div>
       </div>
