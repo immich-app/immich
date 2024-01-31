@@ -222,19 +222,19 @@ class MemoryPage extends HookConsumerWidget {
                       },
                     ),
                     Expanded(
-                      child: PageView.builder(
-                        physics: const BouncingScrollPhysics(
-                          parent: AlwaysScrollableScrollPhysics(),
-                        ),
-                        controller: memoryAssetPageControllers[mIndex],
-                        onPageChanged: onAssetChanged,
-                        scrollDirection: Axis.horizontal,
-                        itemCount: memories[mIndex].assets.length,
-                        itemBuilder: (context, index) {
-                          final asset = memories[mIndex].assets[index];
-                          return Stack(
-                            children: [
-                              Container(
+                      child: Stack(
+                        children: [
+                          PageView.builder(
+                            physics: const BouncingScrollPhysics(
+                              parent: AlwaysScrollableScrollPhysics(),
+                            ),
+                            controller: memoryAssetPageControllers[mIndex],
+                            onPageChanged: onAssetChanged,
+                            scrollDirection: Axis.horizontal,
+                            itemCount: memories[mIndex].assets.length,
+                            itemBuilder: (context, index) {
+                              final asset = memories[mIndex].assets[index];
+                              return Container(
                                 color: Colors.black,
                                 child: MemoryCard(
                                   asset: asset,
@@ -242,33 +242,33 @@ class MemoryPage extends HookConsumerWidget {
                                   title: memories[mIndex].title,
                                   showTitle: index == 0,
                                 ),
+                              );
+                            },
+                          ),
+                          Positioned(
+                            top: 8,
+                            left: 8,
+                            child: MaterialButton(
+                              minWidth: 0,
+                              onPressed: () {
+                                // auto_route doesn't invoke pop scope, so
+                                // turn off full screen mode here
+                                // https://github.com/Milad-Akarie/auto_route_library/issues/1799
+                                context.popRoute();
+                                SystemChrome.setEnabledSystemUIMode(
+                                  SystemUiMode.edgeToEdge,
+                                );
+                              },
+                              shape: const CircleBorder(),
+                              color: Colors.white.withOpacity(0.2),
+                              elevation: 0,
+                              child: const Icon(
+                                Icons.close_rounded,
+                                color: Colors.white,
                               ),
-                              Positioned(
-                                top: 8,
-                                left: 8,
-                                child: MaterialButton(
-                                  minWidth: 0,
-                                  onPressed: () {
-                                    // auto_route doesn't invoke pop scope, so
-                                    // turn off full screen mode here
-                                    // https://github.com/Milad-Akarie/auto_route_library/issues/1799
-                                    context.popRoute();
-                                    SystemChrome.setEnabledSystemUIMode(
-                                      SystemUiMode.edgeToEdge,
-                                    );
-                                  },
-                                  shape: const CircleBorder(),
-                                  color: Colors.white.withOpacity(0.2),
-                                  elevation: 0,
-                                  child: const Icon(
-                                    Icons.close_rounded,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          );
-                        },
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     MemoryBottomInfo(memory: memories[mIndex]),
