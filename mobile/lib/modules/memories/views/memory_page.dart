@@ -16,18 +16,11 @@ class MemoryPage extends HookConsumerWidget {
   final List<Memory> memories;
   final int memoryIndex;
 
-  MemoryPage({
+  const MemoryPage({
     required this.memories,
     required this.memoryIndex,
     super.key,
   });
-
-  /// The list of all of the asset page controllers
-  late final memoryAssetPageControllers =
-      List.generate(memories.length, (i) => PageController());
-
-  /// The main vertically scrolling page controller with each list of memories
-  late final memoryPageController = PageController(initialPage: memoryIndex);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -38,6 +31,13 @@ class MemoryPage extends HookConsumerWidget {
       "${currentAssetPage.value + 1}|${currentMemory.value.assets.length}",
     );
     const bgColor = Colors.black;
+
+    /// The list of all of the asset page controllers
+    final memoryAssetPageControllers =
+        List.generate(memories.length, (i) => usePageController());
+
+    /// The main vertically scrolling page controller with each list of memories
+    final memoryPageController = usePageController(initialPage: memoryIndex);
 
     // The Page Controller that scrolls horizontally with all of the assets
     PageController currentMemoryAssetPageController =
