@@ -32,6 +32,7 @@ export interface VideoFormat {
   formatName?: string;
   formatLongName?: string;
   duration: number;
+  bitrate: number;
 }
 
 export interface VideoInfo {

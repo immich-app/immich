@@ -79,7 +79,7 @@ The default configuration looks like this:
       "modelName": "buffalo_l",
       "minScore": 0.7,
       "maxDistance": 0.6,
-      "minFaces": 1
+      "minFaces": 3
     }
   },
   "map": {
@@ -129,6 +129,11 @@ The default configuration looks like this:
     "scan": {
       "enabled": true,
       "cronExpression": "0 0 * * *"
+    },
+    "watch": {
+      "enabled": false,
+      "usePolling": false,
+      "interval": 10000
     }
   }
 }

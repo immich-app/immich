@@ -25,7 +25,9 @@ FROM
       "UserTokenEntity__UserTokenEntity_user"."createdAt" AS "UserTokenEntity__UserTokenEntity_user_createdAt",
       "UserTokenEntity__UserTokenEntity_user"."deletedAt" AS "UserTokenEntity__UserTokenEntity_user_deletedAt",
       "UserTokenEntity__UserTokenEntity_user"."updatedAt" AS "UserTokenEntity__UserTokenEntity_user_updatedAt",
-      "UserTokenEntity__UserTokenEntity_user"."memoriesEnabled" AS "UserTokenEntity__UserTokenEntity_user_memoriesEnabled"
+      "UserTokenEntity__UserTokenEntity_user"."memoriesEnabled" AS "UserTokenEntity__UserTokenEntity_user_memoriesEnabled",
+      "UserTokenEntity__UserTokenEntity_user"."quotaSizeInBytes" AS "UserTokenEntity__UserTokenEntity_user_quotaSizeInBytes",
+      "UserTokenEntity__UserTokenEntity_user"."quotaUsageInBytes" AS "UserTokenEntity__UserTokenEntity_user_quotaUsageInBytes"
     FROM
       "user_token" "UserTokenEntity"
       LEFT JOIN "users" "UserTokenEntity__UserTokenEntity_user" ON "UserTokenEntity__UserTokenEntity_user"."id" = "UserTokenEntity"."userId"

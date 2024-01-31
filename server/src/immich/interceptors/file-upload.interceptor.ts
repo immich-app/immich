@@ -27,6 +27,7 @@ export function mapToUploadFile(file: ImmichFile): UploadFile {
     checksum: file.checksum,
     originalPath: file.path,
     originalName: Buffer.from(file.originalname, 'latin1').toString('utf8'),
+    size: file.size,
   };
 }
 

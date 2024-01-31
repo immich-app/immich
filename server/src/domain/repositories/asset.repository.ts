@@ -1,6 +1,6 @@
 import { SearchExploreItem } from '@app/domain';
 import { AssetEntity, AssetJobStatusEntity, AssetType, ExifEntity } from '@app/infra/entities';
-import { FindOptionsRelations } from 'typeorm';
+import { FindOptionsRelations, FindOptionsSelect } from 'typeorm';
 import { Paginated, PaginationOptions } from '../domain.util';
 
 export type AssetStats = Record<AssetType, number>;
@@ -33,6 +33,9 @@ export interface AssetSearchOptions {
   withStacked?: boolean;
   withExif?: boolean;
   withPeople?: boolean;
+  withSmartInfo?: boolean;
+  withSmartSearch?: boolean;
+  withFaces?: boolean;
 
   createdBefore?: Date;
   createdAfter?: Date;
@@ -90,9 +93,10 @@ export enum WithoutProperty {
   THUMBNAIL = 'thumbnail',
   ENCODED_VIDEO = 'encoded-video',
   EXIF = 'exif',
-  CLIP_ENCODING = 'clip-embedding',
+  SMART_SEARCH = 'smart-search',
   OBJECT_TAGS = 'object-tags',
   FACES = 'faces',
+  PERSON = 'person',
   SIDECAR = 'sidecar',
 }
 
@@ -168,7 +172,11 @@ export const IAssetRepository = 'IAssetRepository';
 export interface IAssetRepository {
   create(asset: AssetCreate): Promise<AssetEntity>;
   getByDate(ownerId: string, date: Date): Promise<AssetEntity[]>;
-  getByIds(ids: string[], relations?: FindOptionsRelations<AssetEntity>): Promise<AssetEntity[]>;
+  getByIds(
+    ids: string[],
+    relations?: FindOptionsRelations<AssetEntity>,
+    select?: FindOptionsSelect<AssetEntity>,
+  ): Promise<AssetEntity[]>;
   getByDayOfYear(ownerId: string, monthDay: MonthDay): Promise<AssetEntity[]>;
   getByChecksum(userId: string, checksum: Buffer): Promise<AssetEntity | null>;
   getByAlbumId(pagination: PaginationOptions, albumId: string): Paginated<AssetEntity>;

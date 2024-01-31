@@ -1,3 +1,3 @@
 export * from './api';
-export * from './open-api';
+export * from '@immich/sdk';
 export * from './utils';

@@ -24,9 +24,17 @@ export class SystemConfigFFmpegDto {
   @ApiProperty({ enumName: 'VideoCodec', enum: VideoCodec })
   targetVideoCodec!: VideoCodec;
 
+  @IsEnum(VideoCodec, { each: true })
+  @ApiProperty({ enumName: 'VideoCodec', enum: VideoCodec, isArray: true })
+  acceptedVideoCodecs!: VideoCodec[];
+
   @IsEnum(AudioCodec)
   @ApiProperty({ enumName: 'AudioCodec', enum: AudioCodec })
   targetAudioCodec!: AudioCodec;
+
+  @IsEnum(AudioCodec, { each: true })
+  @ApiProperty({ enumName: 'AudioCodec', enum: AudioCodec, isArray: true })
+  acceptedAudioCodecs!: AudioCodec[];
 
   @IsString()
   targetResolution!: string;
@@ -69,6 +77,9 @@ export class SystemConfigFFmpegDto {
 
   @IsBoolean()
   twoPass!: boolean;
+
+  @IsString()
+  preferredHwDevice!: string;
 
   @IsEnum(TranscodePolicy)
   @ApiProperty({ enumName: 'TranscodePolicy', enum: TranscodePolicy })

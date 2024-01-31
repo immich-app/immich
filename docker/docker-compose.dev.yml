@@ -15,6 +15,7 @@ x-server-build: &server-common
   restart: always
   volumes:
     - ../server:/usr/src/app
+    - ../open-api:/usr/src/open-api
     - ${UPLOAD_LOCATION}/photos:/usr/src/app/upload
     - ${UPLOAD_LOCATION}/photos/upload:/usr/src/app/upload/upload
     - /usr/src/app/node_modules
@@ -43,8 +44,8 @@ services:
     command: [ "/usr/src/app/bin/immich-dev", "microservices" ]
     <<: *server-common
     # extends:
-    #   file: hwaccel.yml
-    #   service: hwaccel
+    #   file: hwaccel.transcoding.yml
+    #   service: cpu # set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for accelerated transcoding
     ports:
       - 9231:9230
     depends_on:
@@ -53,11 +54,10 @@ services:
 
   immich-web:
     container_name: immich_web
-    image: immich-web-dev:1.9.0
+    image: immich-web-dev:latest
     build:
       context: ../web
-      dockerfile: Dockerfile
-    command: "node ./node_modules/.bin/vite dev --host 0.0.0.0 --port 3000"
+    command: "/usr/src/app/bin/immich-web"
     env_file:
       - .env
     ports:
@@ -65,6 +65,7 @@ services:
       - 24678:24678
     volumes:
       - ../web:/usr/src/app
+      - ../open-api/:/usr/src/open-api/
       - /usr/src/app/node_modules
     ulimits:
       nofile:
@@ -77,9 +78,14 @@ services:
   immich-machine-learning:
     container_name: immich_machine_learning
     image: immich-machine-learning-dev:latest
+    # extends:
+    #   file: hwaccel.ml.yml
+    #   service: cpu # set to one of [armnn, cuda, openvino, openvino-wsl] for accelerated inference
     build:
       context: ../machine-learning
       dockerfile: Dockerfile
+      args:
+        - DEVICE=cpu # set to one of [armnn, cuda, openvino, openvino-wsl] for accelerated inference
     ports:
       - 3003:3003
     volumes:
@@ -93,7 +99,7 @@ services:
 
   redis:
     container_name: immich_redis
-    image: redis:6.2-alpine@sha256:c5a607fb6e1bb15d32bbcf14db22787d19e428d59e31a5da67511b49bb0f1ccc
+    image: redis:6.2-alpine@sha256:afb290a0a0d0b2bd7537b62ebff1eb84d045c757c1c31ca2ca48c79536c0de82
 
   database:
     container_name: immich_postgres

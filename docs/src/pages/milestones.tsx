@@ -1,4 +1,5 @@
 import {
+  mdiEyeRefreshOutline,
   mdiAccountGroup,
   mdiAndroid,
   mdiAppleIos,
@@ -11,6 +12,7 @@ import {
   mdiCollage,
   mdiContentCopy,
   mdiDevices,
+  mdiExpansionCard,
   mdiFaceMan,
   mdiFaceManOutline,
   mdiFile,
@@ -54,6 +56,24 @@ import React from 'react';
 import Timeline, { DateType, Item } from '../components/timeline';
 
 const items: Item[] = [
+  {
+    icon: mdiEyeRefreshOutline,
+    description: 'Automatically import files in external libraries when the operating system detects changes.',
+    title: 'Library watching',
+    release: 'v1.94.0',
+    tag: 'v1.94.0',
+    date: new Date(2024, 0, 31),
+    dateType: DateType.RELEASE,
+  },
+  {
+    icon: mdiExpansionCard,
+    description: 'Hardware acceleration support for Nvidia and Intel devices through CUDA and OpenVINO.',
+    title: 'GPU acceleration for machine-learning',
+    release: 'v1.94.0',
+    tag: 'v1.94.0',
+    date: new Date(2024, 0, 31),
+    dateType: DateType.RELEASE,
+  },
   {
     icon: mdiMatrix,
     description: 'Moved the search from typesense to pgvecto.rs',

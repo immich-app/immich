@@ -60,7 +60,12 @@ export class UserService {
   }
 
   async update(auth: AuthDto, dto: UpdateUserDto): Promise<UserResponseDto> {
-    await this.findOrFail(dto.id, {});
+    const user = await this.findOrFail(dto.id, {});
+
+    if (dto.quotaSizeInBytes && user.quotaSizeInBytes !== dto.quotaSizeInBytes) {
+      await this.userRepository.syncUsage(dto.id);
+    }
+
     return this.userCore.updateUser(auth.user, dto.id, dto).then(mapUser);
   }
 
@@ -125,6 +130,11 @@ export class UserService {
     await this.userCore.updateUser(admin, admin.id, { password });
 
     return { admin, password, provided: !!providedPassword };
+  }
+
+  async handleUserSyncUsage() {
+    await this.userRepository.syncUsage();
+    return true;
   }
 
   async handleUserDeleteCheck() {

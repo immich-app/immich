@@ -7,8 +7,9 @@
   import { handleError } from '$lib/utils/handle-error';
   import { api } from '@api';
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
-  import { OnArchive, getAssetControlContext } from '../asset-select-control-bar.svelte';
+  import { getAssetControlContext } from '../asset-select-control-bar.svelte';
   import { mdiArchiveArrowUpOutline, mdiArchiveArrowDownOutline, mdiTimerSand } from '@mdi/js';
+  import type { OnArchive } from '$lib/utils/actions';
 
   export let onArchive: OnArchive | undefined = undefined;
 

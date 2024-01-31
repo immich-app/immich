@@ -20,7 +20,7 @@ class SystemConfigReverseGeocodingDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigReverseGeocodingDto &&
-     other.enabled == enabled;
+    other.enabled == enabled;
 
   @override
   int get hashCode =>

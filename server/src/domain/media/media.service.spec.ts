@@ -70,7 +70,10 @@ describe(MediaService.name, () => {
         items: [assetStub.image],
         hasNextPage: false,
       });
-      personMock.getAll.mockResolvedValue([personStub.newThumbnail]);
+      personMock.getAll.mockResolvedValue({
+        items: [personStub.newThumbnail],
+        hasNextPage: false,
+      });
       personMock.getFacesByIds.mockResolvedValue([faceStub.face1]);
 
       await sut.handleQueueGenerateThumbnails({ force: true });
@@ -84,8 +87,7 @@ describe(MediaService.name, () => {
         },
       ]);
 
-      expect(personMock.getAll).toHaveBeenCalled();
-      expect(personMock.getAllWithoutThumbnail).not.toHaveBeenCalled();
+      expect(personMock.getAll).toHaveBeenCalledWith({ skip: 0, take: 1000 }, {});
       expect(jobMock.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.GENERATE_PERSON_THUMBNAIL,
@@ -99,7 +101,10 @@ describe(MediaService.name, () => {
         items: [assetStub.image],
         hasNextPage: false,
       });
-      personMock.getAllWithoutThumbnail.mockResolvedValue([personStub.noThumbnail]);
+      personMock.getAll.mockResolvedValue({
+        items: [personStub.noThumbnail],
+        hasNextPage: false,
+      });
       personMock.getRandomFace.mockResolvedValue(faceStub.face1);
 
       await sut.handleQueueGenerateThumbnails({ force: false });
@@ -107,8 +112,7 @@ describe(MediaService.name, () => {
       expect(assetMock.getAll).not.toHaveBeenCalled();
       expect(assetMock.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.THUMBNAIL);
 
-      expect(personMock.getAll).not.toHaveBeenCalled();
-      expect(personMock.getAllWithoutThumbnail).toHaveBeenCalled();
+      expect(personMock.getAll).toHaveBeenCalledWith({ skip: 0, take: 1000 }, { where: { thumbnailPath: '' } });
       expect(personMock.getRandomFace).toHaveBeenCalled();
       expect(jobMock.queueAll).toHaveBeenCalledWith([
         {
@@ -125,7 +129,10 @@ describe(MediaService.name, () => {
         items: [assetStub.noResizePath],
         hasNextPage: false,
       });
-      personMock.getAllWithoutThumbnail.mockResolvedValue([]);
+      personMock.getAll.mockResolvedValue({
+        items: [],
+        hasNextPage: false,
+      });
 
       await sut.handleQueueGenerateThumbnails({ force: false });
 
@@ -138,8 +145,7 @@ describe(MediaService.name, () => {
         },
       ]);
 
-      expect(personMock.getAll).not.toHaveBeenCalled();
-      expect(personMock.getAllWithoutThumbnail).toHaveBeenCalled();
+      expect(personMock.getAll).toHaveBeenCalledWith({ skip: 0, take: 1000 }, { where: { thumbnailPath: '' } });
     });
 
     it('should queue all assets with missing webp path', async () => {
@@ -147,7 +153,10 @@ describe(MediaService.name, () => {
         items: [assetStub.noWebpPath],
         hasNextPage: false,
       });
-      personMock.getAllWithoutThumbnail.mockResolvedValue([]);
+      personMock.getAll.mockResolvedValue({
+        items: [],
+        hasNextPage: false,
+      });
 
       await sut.handleQueueGenerateThumbnails({ force: false });
 
@@ -160,8 +169,7 @@ describe(MediaService.name, () => {
         },
       ]);
 
-      expect(personMock.getAll).not.toHaveBeenCalled();
-      expect(personMock.getAllWithoutThumbnail).toHaveBeenCalled();
+      expect(personMock.getAll).toHaveBeenCalledWith({ skip: 0, take: 1000 }, { where: { thumbnailPath: '' } });
     });
 
     it('should queue all assets with missing thumbhash', async () => {
@@ -169,7 +177,10 @@ describe(MediaService.name, () => {
         items: [assetStub.noThumbhash],
         hasNextPage: false,
       });
-      personMock.getAllWithoutThumbnail.mockResolvedValue([]);
+      personMock.getAll.mockResolvedValue({
+        items: [],
+        hasNextPage: false,
+      });
 
       await sut.handleQueueGenerateThumbnails({ force: false });
 
@@ -182,8 +193,7 @@ describe(MediaService.name, () => {
         },
       ]);
 
-      expect(personMock.getAll).not.toHaveBeenCalled();
-      expect(personMock.getAllWithoutThumbnail).toHaveBeenCalled();
+      expect(personMock.getAll).toHaveBeenCalledWith({ skip: 0, take: 1000 }, { where: { thumbnailPath: '' } });
     });
   });
 
@@ -394,7 +404,10 @@ describe(MediaService.name, () => {
         items: [assetStub.video],
         hasNextPage: false,
       });
-      personMock.getAll.mockResolvedValue([]);
+      personMock.getAll.mockResolvedValue({
+        items: [],
+        hasNextPage: false,
+      });
 
       await sut.handleQueueVideoConversion({ force: true });
 
@@ -544,6 +557,37 @@ describe(MediaService.name, () => {
       );
     });
 
+    it('should transcode when policy Bitrate and bitrate higher than max bitrate', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.videoStream40Mbps);
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.FFMPEG_TRANSCODE, value: TranscodePolicy.BITRATE },
+        { key: SystemConfigKey.FFMPEG_MAX_BITRATE, value: '30M' },
+      ]);
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        {
+          inputOptions: [],
+          outputOptions: [
+            '-c:v h264',
+            '-c:a aac',
+            '-movflags faststart',
+            '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-v verbose',
+            '-vf scale=-2:720,format=yuv420p',
+            '-preset ultrafast',
+            '-crf 23',
+            '-maxrate 30M',
+            '-bufsize 60M',
+          ],
+          twoPass: false,
+        },
+      );
+    });
+
     it('should not scale resolution if no target resolution', async () => {
       mediaMock.probe.mockResolvedValue(probeStub.videoStream2160p);
       configMock.load.mockResolvedValue([
@@ -592,6 +636,66 @@ describe(MediaService.name, () => {
             '-map 0:1',
             '-v verbose',
             '-vf scale=720:-2,format=yuv420p',
+            '-preset ultrafast',
+            '-crf 23',
+          ],
+          twoPass: false,
+        },
+      );
+    });
+
+    it('should always scale video if height is uneven', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.videoStreamOddHeight);
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.FFMPEG_TRANSCODE, value: TranscodePolicy.ALL },
+        { key: SystemConfigKey.FFMPEG_TARGET_RESOLUTION, value: 'original' },
+      ]);
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        {
+          inputOptions: [],
+          outputOptions: [
+            '-c:v h264',
+            '-c:a aac',
+            '-movflags faststart',
+            '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-v verbose',
+            `-vf scale=-2:354,format=yuv420p`,
+            '-preset ultrafast',
+            '-crf 23',
+          ],
+          twoPass: false,
+        },
+      );
+    });
+
+    it('should always scale video if width is uneven', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.videoStreamOddWidth);
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.FFMPEG_TRANSCODE, value: TranscodePolicy.ALL },
+        { key: SystemConfigKey.FFMPEG_TARGET_RESOLUTION, value: 'original' },
+      ]);
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        {
+          inputOptions: [],
+          outputOptions: [
+            '-c:v h264',
+            '-c:a aac',
+            '-movflags faststart',
+            '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-v verbose',
+            `-vf scale=354:-2,format=yuv420p`,
             '-preset ultrafast',
             '-crf 23',
           ],
@@ -815,6 +919,39 @@ describe(MediaService.name, () => {
       );
     });
 
+    it('should transcode by crf in two passes for vp9 when two pass mode is enabled and max bitrate is disabled', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.FFMPEG_MAX_BITRATE, value: '0' },
+        { key: SystemConfigKey.FFMPEG_TWO_PASS, value: true },
+        { key: SystemConfigKey.FFMPEG_TARGET_VIDEO_CODEC, value: VideoCodec.VP9 },
+      ]);
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        {
+          inputOptions: [],
+          outputOptions: [
+            '-c:v vp9',
+            '-c:a aac',
+            '-movflags faststart',
+            '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-v verbose',
+            '-vf scale=-2:720,format=yuv420p',
+            '-cpu-used 5',
+            '-row-mt 1',
+            '-crf 23',
+            '-b:v 0',
+          ],
+          twoPass: true,
+        },
+      );
+    });
+
     it('should configure preset for vp9', async () => {
       mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
       configMock.load.mockResolvedValue([
@@ -988,6 +1125,7 @@ describe(MediaService.name, () => {
             '-fps_mode passthrough',
             '-map 0:0',
             '-map 0:1',
+            '-tag:v hvc1',
             '-v verbose',
             '-vf scale=-2:720,format=yuv420p',
             '-preset ultrafast',
@@ -1021,6 +1159,7 @@ describe(MediaService.name, () => {
             '-fps_mode passthrough',
             '-map 0:0',
             '-map 0:1',
+            '-tag:v hvc1',
             '-v verbose',
             '-vf scale=-2:720,format=yuv420p',
             '-preset ultrafast',
@@ -1250,6 +1389,43 @@ describe(MediaService.name, () => {
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: ['-init_hw_device qsv=hw', '-filter_hw_device hw'],
+          outputOptions: [
+            `-c:v h264_qsv`,
+            '-c:a aac',
+            '-movflags faststart',
+            '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-bf 7',
+            '-refs 5',
+            '-g 256',
+            '-v verbose',
+            '-vf format=nv12,hwupload=extra_hw_frames=64,scale_qsv=-1:720',
+            '-preset 7',
+            '-global_quality 23',
+            '-maxrate 10000k',
+            '-bufsize 20000k',
+          ],
+          twoPass: false,
+        },
+      );
+    });
+
+    it('should set options for qsv with custom dri node', async () => {
+      storageMock.readdir.mockResolvedValue(['renderD128']);
+      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.FFMPEG_ACCEL, value: TranscodeHWAccel.QSV },
+        { key: SystemConfigKey.FFMPEG_MAX_BITRATE, value: '10000k' },
+        { key: SystemConfigKey.FFMPEG_PREFERRED_HW_DEVICE, value: '/dev/dri/renderD128' },
+      ]);
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        {
+          inputOptions: ['-init_hw_device qsv=hw,child_device=/dev/dri/renderD128', '-filter_hw_device hw'],
           outputOptions: [
             `-c:v h264_qsv`,
             '-c:a aac',
@@ -1505,6 +1681,40 @@ describe(MediaService.name, () => {
       );
     });
 
+    it('should select specific gpu node if selected', async () => {
+      storageMock.readdir.mockResolvedValue(['renderD129', 'card1', 'card0', 'renderD128']);
+      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.FFMPEG_ACCEL, value: TranscodeHWAccel.VAAPI },
+        { key: SystemConfigKey.FFMPEG_PREFERRED_HW_DEVICE, value: '/dev/dri/renderD128' },
+      ]);
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        {
+          inputOptions: ['-init_hw_device vaapi=accel:/dev/dri/renderD128', '-filter_hw_device accel'],
+          outputOptions: [
+            `-c:v h264_vaapi`,
+            '-c:a aac',
+            '-movflags faststart',
+            '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-g 256',
+            '-v verbose',
+            '-vf format=nv12,hwupload,scale_vaapi=-2:720',
+            '-compression_level 7',
+            '-qp 23',
+            '-global_quality 23',
+            '-rc_mode 1',
+          ],
+          twoPass: false,
+        },
+      );
+    });
+
     it('should fallback to sw transcoding if hw transcoding fails', async () => {
       storageMock.readdir.mockResolvedValue(['renderD128']);
       mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
@@ -1567,6 +1777,7 @@ describe(MediaService.name, () => {
             '-map 0:0',
             '-map 0:1',
             '-g 256',
+            '-tag:v hvc1',
             '-v verbose',
             '-level 153',
             '-rc_mode 3',

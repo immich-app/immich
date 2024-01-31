@@ -26,9 +26,9 @@ class BulkIdResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is BulkIdResponseDto &&
-     other.error == error &&
-     other.id == id &&
-     other.success == success;
+    other.error == error &&
+    other.id == id &&
+    other.success == success;
 
   @override
   int get hashCode =>
@@ -143,7 +143,7 @@ class BulkIdResponseDtoErrorEnum {
 
   static BulkIdResponseDtoErrorEnum? fromJson(dynamic value) => BulkIdResponseDtoErrorEnumTypeTransformer().decode(value);
 
-  static List<BulkIdResponseDtoErrorEnum>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<BulkIdResponseDtoErrorEnum> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <BulkIdResponseDtoErrorEnum>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {

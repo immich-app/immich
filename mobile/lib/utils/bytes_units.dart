@@ -7,8 +7,7 @@ String formatBytes(int bytes) {
     if (magnitude + 1 < units.length) {
       magnitude++;
       remainder /= 1024;
-    }
-    else {
+    } else {
       break;
     }
   }

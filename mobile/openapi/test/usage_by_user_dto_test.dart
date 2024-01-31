@@ -21,6 +21,11 @@ void main() {
       // TODO
     });
 
+    // int quotaSizeInBytes
+    test('to test the property `quotaSizeInBytes`', () async {
+      // TODO
+    });
+
     // int usage
     test('to test the property `usage`', () async {
       // TODO

@@ -38,3 +38,29 @@ immich.example.org {
     reverse_proxy http://<snip>:2283
 }
 ```
+
+### Apache example config
+
+Below is an example config for Apache2 site configuration.
+
+```
+<VirtualHost *:80>
+    ServerName <snip>
+
+    ProxyRequests off
+    ProxyVia on
+
+    RewriteEngine On
+    RewriteCond %{REQUEST_URI}  ^/api/socket.io            [NC]
+    RewriteCond %{QUERY_STRING} transport=websocket    [NC]
+    RewriteRule /(.*)           ws://localhost:2283/$1 [P,L]
+
+    ProxyPass        /api/socket.io ws://localhost:2283/api/socket.io
+    ProxyPassReverse /api/socket.io ws://localhost:2283/api/socket.io
+
+    <Location />
+        ProxyPass http://localhost:2283/
+        ProxyPassReverse http://localhost:2283/
+    </Location>
+</VirtualHost>
+```

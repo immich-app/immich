@@ -5,9 +5,11 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/backup/providers/error_backup_list.provider.dart';
 import 'package:intl/intl.dart';
 import 'package:photo_manager/photo_manager.dart';
+import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
 
+@RoutePage()
 class FailedBackupStatusPage extends HookConsumerWidget {
-  const FailedBackupStatusPage({Key? key}) : super(key: key);
+  const FailedBackupStatusPage({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final errorBackupList = ref.watch(errorBackupListProvider);
@@ -56,9 +58,9 @@ class FailedBackupStatusPage extends HookConsumerWidget {
                   ConstrainedBox(
                     constraints: const BoxConstraints(
                       minWidth: 100,
-                      minHeight: 150,
+                      minHeight: 100,
                       maxWidth: 100,
-                      maxHeight: 200,
+                      maxHeight: 150,
                     ),
                     child: ClipRRect(
                       borderRadius: const BorderRadius.only(
@@ -94,9 +96,10 @@ class FailedBackupStatusPage extends HookConsumerWidget {
                                   ).toLocal(),
                                 ),
                                 style: TextStyle(
-                                  fontSize: 12,
                                   fontWeight: FontWeight.w600,
-                                  color: Colors.grey[700],
+                                  color: context.isDarkTheme
+                                      ? Colors.white70
+                                      : Colors.grey[800],
                                 ),
                               ),
                               Icon(
@@ -114,7 +117,6 @@ class FailedBackupStatusPage extends HookConsumerWidget {
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
-                                fontSize: 12,
                                 color: context.primaryColor,
                               ),
                             ),
@@ -122,9 +124,10 @@ class FailedBackupStatusPage extends HookConsumerWidget {
                           Text(
                             errorAsset.errorMessage,
                             style: TextStyle(
-                              fontSize: 12,
                               fontWeight: FontWeight.w500,
-                              color: Colors.grey[800],
+                              color: context.isDarkTheme
+                                  ? Colors.white70
+                                  : Colors.grey[800],
                             ),
                           ),
                         ],

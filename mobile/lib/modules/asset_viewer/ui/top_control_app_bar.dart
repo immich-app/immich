@@ -8,7 +8,7 @@ import 'package:immich_mobile/shared/providers/asset.provider.dart';
 
 class TopControlAppBar extends HookConsumerWidget {
   const TopControlAppBar({
-    Key? key,
+    super.key,
     required this.asset,
     required this.onMoreInfoPressed,
     required this.onDownloadPressed,
@@ -20,7 +20,7 @@ class TopControlAppBar extends HookConsumerWidget {
     required this.isOwner,
     required this.onActivitiesPressed,
     required this.isPartner,
-  }) : super(key: key);
+  });
 
   final Asset asset;
   final Function onMoreInfoPressed;
@@ -39,7 +39,9 @@ class TopControlAppBar extends HookConsumerWidget {
     const double iconSize = 22.0;
     final a = ref.watch(assetWatcher(asset)).value ?? asset;
     final album = ref.watch(currentAlbumProvider);
-    final comments = album != null
+    final comments = album != null &&
+            album.remoteId != null &&
+            asset.remoteId != null
         ? ref.watch(activityStatisticsProvider(album.remoteId!, asset.remoteId))
         : 0;
 

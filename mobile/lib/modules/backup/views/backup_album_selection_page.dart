@@ -10,8 +10,9 @@ import 'package:immich_mobile/modules/backup/ui/album_info_card.dart';
 import 'package:immich_mobile/modules/backup/ui/album_info_list_tile.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 
+@RoutePage()
 class BackupAlbumSelectionPage extends HookConsumerWidget {
-  const BackupAlbumSelectionPage({Key? key}) : super(key: key);
+  const BackupAlbumSelectionPage({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // final availableAlbums = ref.watch(backupProvider).availableAlbums;

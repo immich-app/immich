@@ -7,8 +7,9 @@ import 'package:immich_mobile/modules/login/ui/login_form.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
+@RoutePage()
 class LoginPage extends HookConsumerWidget {
-  const LoginPage({Key? key}) : super(key: key);
+  const LoginPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

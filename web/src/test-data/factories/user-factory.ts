@@ -17,4 +17,6 @@ export const userFactory = Sync.makeFactory<UserResponseDto>({
   memoriesEnabled: true,
   oauthId: '',
   avatarColor: UserAvatarColor.Primary,
+  quotaUsageInBytes: 0,
+  quotaSizeInBytes: null,
 });

@@ -3,7 +3,7 @@
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
-  import { api, UserResponseDto } from '@api';
+  import { api, type UserResponseDto } from '@api';
   import { fade } from 'svelte/transition';
   import { handleError } from '../../utils/handle-error';
   import SettingInputField, { SettingInputFieldType } from '../admin-page/settings/setting-input-field.svelte';

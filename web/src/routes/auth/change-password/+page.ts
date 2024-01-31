@@ -7,7 +7,7 @@ import { getSavedUser } from '$lib/stores/user.store';
 export const load = (async () => {
   await authenticate();
   if (!getSavedUser().shouldChangePassword) {
-    throw redirect(302, AppRoute.PHOTOS);
+    redirect(302, AppRoute.PHOTOS);
   }
 
   return {

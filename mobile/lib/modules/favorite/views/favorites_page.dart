@@ -6,8 +6,9 @@ import 'package:immich_mobile/modules/favorite/providers/favorite_provider.dart'
 import 'package:immich_mobile/modules/home/providers/multiselect.provider.dart';
 import 'package:immich_mobile/shared/ui/asset_grid/multiselect_grid.dart';
 
+@RoutePage()
 class FavoritesPage extends HookConsumerWidget {
-  const FavoritesPage({Key? key}) : super(key: key);
+  const FavoritesPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

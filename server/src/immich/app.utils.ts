@@ -20,10 +20,12 @@ import {
 import { NextFunction, Response } from 'express';
 import { writeFileSync } from 'fs';
 import { access, constants } from 'fs/promises';
+import _ from 'lodash';
 import path, { isAbsolute } from 'path';
 import { promisify } from 'util';
 
 import { applyDecorators, UsePipes, ValidationPipe } from '@nestjs/common';
+import { SchemaObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
 import { Metadata } from './app.guard';
 
 export function UseValidation() {
@@ -110,8 +112,21 @@ export const routeToErrorMessage = (methodName: string) =>
 
 const patchOpenAPI = (document: OpenAPIObject) => {
   document.paths = sortKeys(document.paths);
+
   if (document.components?.schemas) {
-    document.components.schemas = sortKeys(document.components.schemas);
+    const schemas = document.components.schemas as Record<string, SchemaObject>;
+
+    document.components.schemas = sortKeys(schemas);
+
+    for (const schema of Object.values(schemas)) {
+      if (schema.properties) {
+        schema.properties = sortKeys(schema.properties);
+      }
+
+      if (schema.required) {
+        schema.required = schema.required.sort();
+      }
+    }
   }
 
   for (const [key, value] of Object.entries(document.paths)) {
@@ -151,6 +166,10 @@ const patchOpenAPI = (document: OpenAPIObject) => {
 
       if (operation.description === '') {
         delete operation.description;
+      }
+
+      if (operation.parameters) {
+        operation.parameters = _.orderBy(operation.parameters, 'name');
       }
     }
   }
@@ -197,7 +216,7 @@ export const useSwagger = (app: INestApplication, isDev: boolean) => {
 
   if (isDev) {
     // Generate API Documentation only in development mode
-    const outputPath = path.resolve(process.cwd(), 'immich-openapi-specs.json');
+    const outputPath = path.resolve(process.cwd(), '../open-api/immich-openapi-specs.json');
     writeFileSync(outputPath, JSON.stringify(patchOpenAPI(doc), null, 2), { encoding: 'utf8' });
   }
 };

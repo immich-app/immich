@@ -23,11 +23,11 @@ class RecognitionConfig {
 
   bool enabled;
 
-  int maxDistance;
+  double maxDistance;
 
   int minFaces;
 
-  int minScore;
+  double minScore;
 
   String modelName;
 
@@ -41,12 +41,12 @@ class RecognitionConfig {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is RecognitionConfig &&
-     other.enabled == enabled &&
-     other.maxDistance == maxDistance &&
-     other.minFaces == minFaces &&
-     other.minScore == minScore &&
-     other.modelName == modelName &&
-     other.modelType == modelType;
+    other.enabled == enabled &&
+    other.maxDistance == maxDistance &&
+    other.minFaces == minFaces &&
+    other.minScore == minScore &&
+    other.modelName == modelName &&
+    other.modelType == modelType;
 
   @override
   int get hashCode =>
@@ -85,9 +85,9 @@ class RecognitionConfig {
 
       return RecognitionConfig(
         enabled: mapValueOfType<bool>(json, r'enabled')!,
-        maxDistance: mapValueOfType<int>(json, r'maxDistance')!,
+        maxDistance: mapValueOfType<double>(json, r'maxDistance')!,
         minFaces: mapValueOfType<int>(json, r'minFaces')!,
-        minScore: mapValueOfType<int>(json, r'minScore')!,
+        minScore: mapValueOfType<double>(json, r'minScore')!,
         modelName: mapValueOfType<String>(json, r'modelName')!,
         modelType: ModelType.fromJson(json[r'modelType']),
       );

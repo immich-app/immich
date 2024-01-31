@@ -44,6 +44,7 @@ class BaseConfig implements VideoCodecSWConfig {
       // explicitly selects the video stream instead of leaving it up to FFmpeg
       `-map 0:${videoStream.index}`,
     ];
+
     if (audioStream) {
       options.push(`-map 0:${audioStream.index}`);
     }
@@ -56,6 +57,11 @@ class BaseConfig implements VideoCodecSWConfig {
     if (this.getGopSize() > 0) {
       options.push(`-g ${this.getGopSize()}`);
     }
+
+    if (this.config.targetVideoCodec === VideoCodec.HEVC) {
+      options.push('-tag:v hvc1');
+    }
+
     return options;
   }
 
@@ -122,15 +128,24 @@ class BaseConfig implements VideoCodecSWConfig {
   }
 
   getTargetResolution(videoStream: VideoStreamInfo) {
+    let target;
     if (this.config.targetResolution === 'original') {
-      return Math.min(videoStream.height, videoStream.width);
+      target = Math.min(videoStream.height, videoStream.width);
+    } else {
+      target = Number.parseInt(this.config.targetResolution);
     }
 
-    return Number.parseInt(this.config.targetResolution);
+    if (target % 2 !== 0) {
+      target -= 1;
+    }
+
+    return target;
   }
 
   shouldScale(videoStream: VideoStreamInfo) {
-    return Math.min(videoStream.height, videoStream.width) > this.getTargetResolution(videoStream);
+    const oddDimensions = videoStream.height % 2 !== 0 || videoStream.width % 2 !== 0;
+    const largerThanTarget = Math.min(videoStream.height, videoStream.width) > this.getTargetResolution(videoStream);
+    return oddDimensions || largerThanTarget;
   }
 
   shouldToneMap(videoStream: VideoStreamInfo) {
@@ -146,7 +161,10 @@ class BaseConfig implements VideoCodecSWConfig {
   getSize(videoStream: VideoStreamInfo) {
     const smaller = this.getTargetResolution(videoStream);
     const factor = Math.max(videoStream.height, videoStream.width) / Math.min(videoStream.height, videoStream.width);
-    const larger = Math.round(smaller * factor);
+    let larger = Math.round(smaller * factor);
+    if (larger % 2 !== 0) {
+      larger -= 1;
+    }
     return this.isVideoVertical(videoStream) ? { width: smaller, height: larger } : { width: larger, height: smaller };
   }
 
@@ -267,6 +285,20 @@ export class BaseHWConfig extends BaseConfig implements VideoCodecHWConfig {
     }
     return this.config.gopSize;
   }
+
+  getPreferredHardwareDevice(): string | null {
+    const device = this.config.preferredHwDevice;
+    if (device === 'auto') {
+      return null;
+    }
+
+    const deviceName = device.replace('/dev/dri/', '');
+    if (!this.devices.includes(deviceName)) {
+      throw new Error(`Device '${device}' does not exist`);
+    }
+
+    return device;
+  }
 }
 
 export class ThumbnailConfig extends BaseConfig {
@@ -344,7 +376,7 @@ export class VP9Config extends BaseConfig {
 
   getBitrateOptions() {
     const bitrates = this.getBitrateDistribution();
-    if (this.eligibleForTwoPass()) {
+    if (bitrates.max > 0 && this.eligibleForTwoPass()) {
       return [
         `-b:v ${bitrates.target}${bitrates.unit}`,
         `-minrate ${bitrates.min}${bitrates.unit}`,
@@ -445,7 +477,14 @@ export class QSVConfig extends BaseHWConfig {
     if (!this.devices.length) {
       throw Error('No QSV device found');
     }
-    return ['-init_hw_device qsv=hw', '-filter_hw_device hw'];
+
+    let qsvString = '';
+    const hwDevice = this.getPreferredHardwareDevice();
+    if (hwDevice !== null) {
+      qsvString = `,child_device=${hwDevice}`;
+    }
+
+    return [`-init_hw_device qsv=hw${qsvString}`, '-filter_hw_device hw'];
   }
 
   getBaseOutputOptions(videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
@@ -509,9 +548,15 @@ export class QSVConfig extends BaseHWConfig {
 export class VAAPIConfig extends BaseHWConfig {
   getBaseInputOptions() {
     if (this.devices.length === 0) {
-      throw Error('No VAAPI device found');
+      throw new Error('No VAAPI device found');
     }
-    return [`-init_hw_device vaapi=accel:/dev/dri/${this.devices[0]}`, '-filter_hw_device accel'];
+
+    let hwDevice = this.getPreferredHardwareDevice();
+    if (hwDevice === null) {
+      hwDevice = `/dev/dri/${this.devices[0]}`;
+    }
+
+    return [`-init_hw_device vaapi=accel:${hwDevice}`, '-filter_hw_device accel'];
   }
 
   getFilterOptions(videoStream: VideoStreamInfo) {

@@ -1,0 +1,25 @@
+{
+  "name": "@immich/sdk",
+  "version": "1.92.1",
+  "description": "",
+  "type": "module",
+  "main": "./build/esm/index.js",
+  "types": "./build/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./build/types/index.d.ts",
+      "default": "./build/esm/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b ./tsconfig.esm.json ./tsconfig.types.json"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "axios": "^1.6.7"
+  }
+}

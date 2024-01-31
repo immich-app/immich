@@ -2,7 +2,6 @@ import { SystemConfig, SystemConfigKey } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
 import {
   assetStub,
-  asyncTick,
   newAssetRepositoryMock,
   newCommunicationRepositoryMock,
   newJobRepositoryMock,
@@ -61,6 +60,8 @@ describe(JobService.name, () => {
         { name: JobName.PERSON_CLEANUP },
         { name: JobName.QUEUE_GENERATE_THUMBNAILS, data: { force: false } },
         { name: JobName.CLEAN_OLD_AUDIT_LOGS },
+        { name: JobName.USER_SYNC_USAGE },
+        { name: JobName.QUEUE_FACIAL_RECOGNITION, data: { force: false } },
       ]);
     });
   });
@@ -104,7 +105,8 @@ describe(JobService.name, () => {
         [QueueName.MIGRATION]: expectedJobStatus,
         [QueueName.THUMBNAIL_GENERATION]: expectedJobStatus,
         [QueueName.VIDEO_CONVERSION]: expectedJobStatus,
-        [QueueName.RECOGNIZE_FACES]: expectedJobStatus,
+        [QueueName.FACE_DETECTION]: expectedJobStatus,
+        [QueueName.FACIAL_RECOGNITION]: expectedJobStatus,
         [QueueName.SIDECAR]: expectedJobStatus,
         [QueueName.LIBRARY]: expectedJobStatus,
       });
@@ -157,12 +159,12 @@ describe(JobService.name, () => {
       expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.STORAGE_TEMPLATE_MIGRATION });
     });
 
-    it('should handle a start clip encoding command', async () => {
+    it('should handle a start smart search command', async () => {
       jobMock.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: false });
 
       await sut.handleCommand(QueueName.SMART_SEARCH, { command: JobCommand.START, force: false });
 
-      expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.QUEUE_ENCODE_CLIP, data: { force: false } });
+      expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.QUEUE_SMART_SEARCH, data: { force: false } });
     });
 
     it('should handle a start metadata extraction command', async () => {
@@ -189,12 +191,20 @@ describe(JobService.name, () => {
       expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.QUEUE_GENERATE_THUMBNAILS, data: { force: false } });
     });
 
-    it('should handle a start recognize faces command', async () => {
+    it('should handle a start face detection command', async () => {
       jobMock.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: false });
 
-      await sut.handleCommand(QueueName.RECOGNIZE_FACES, { command: JobCommand.START, force: false });
+      await sut.handleCommand(QueueName.FACE_DETECTION, { command: JobCommand.START, force: false });
 
-      expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.QUEUE_RECOGNIZE_FACES, data: { force: false } });
+      expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.QUEUE_FACE_DETECTION, data: { force: false } });
+    });
+
+    it('should handle a start facial recognition command', async () => {
+      jobMock.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: false });
+
+      await sut.handleCommand(QueueName.FACIAL_RECOGNITION, { command: JobCommand.START, force: false });
+
+      expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.QUEUE_FACIAL_RECOGNITION, data: { force: false } });
     });
 
     it('should throw a bad request when an invalid queue is used', async () => {
@@ -224,7 +234,7 @@ describe(JobService.name, () => {
           [QueueName.BACKGROUND_TASK]: { concurrency: 10 },
           [QueueName.SMART_SEARCH]: { concurrency: 10 },
           [QueueName.METADATA_EXTRACTION]: { concurrency: 10 },
-          [QueueName.RECOGNIZE_FACES]: { concurrency: 10 },
+          [QueueName.FACE_DETECTION]: { concurrency: 10 },
           [QueueName.SEARCH]: { concurrency: 10 },
           [QueueName.SIDECAR]: { concurrency: 10 },
           [QueueName.LIBRARY]: { concurrency: 10 },
@@ -237,7 +247,7 @@ describe(JobService.name, () => {
       expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.BACKGROUND_TASK, 10);
       expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.SMART_SEARCH, 10);
       expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.METADATA_EXTRACTION, 10);
-      expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.RECOGNIZE_FACES, 10);
+      expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.FACE_DETECTION, 10);
       expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.SIDECAR, 10);
       expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.LIBRARY, 10);
       expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.MIGRATION, 10);
@@ -279,8 +289,8 @@ describe(JobService.name, () => {
         jobs: [
           JobName.GENERATE_WEBP_THUMBNAIL,
           JobName.GENERATE_THUMBHASH_THUMBNAIL,
-          JobName.ENCODE_CLIP,
-          JobName.RECOGNIZE_FACES,
+          JobName.SMART_SEARCH,
+          JobName.FACE_DETECTION,
         ],
       },
       {
@@ -288,8 +298,8 @@ describe(JobService.name, () => {
         jobs: [
           JobName.GENERATE_WEBP_THUMBNAIL,
           JobName.GENERATE_THUMBHASH_THUMBNAIL,
-          JobName.ENCODE_CLIP,
-          JobName.RECOGNIZE_FACES,
+          JobName.SMART_SEARCH,
+          JobName.FACE_DETECTION,
           JobName.VIDEO_CONVERSION,
         ],
       },
@@ -298,17 +308,21 @@ describe(JobService.name, () => {
         jobs: [
           JobName.GENERATE_WEBP_THUMBNAIL,
           JobName.GENERATE_THUMBHASH_THUMBNAIL,
-          JobName.ENCODE_CLIP,
-          JobName.RECOGNIZE_FACES,
+          JobName.SMART_SEARCH,
+          JobName.FACE_DETECTION,
           JobName.VIDEO_CONVERSION,
         ],
       },
       {
-        item: { name: JobName.ENCODE_CLIP, data: { id: 'asset-1' } },
+        item: { name: JobName.SMART_SEARCH, data: { id: 'asset-1' } },
         jobs: [],
       },
       {
-        item: { name: JobName.RECOGNIZE_FACES, data: { id: 'asset-1' } },
+        item: { name: JobName.FACE_DETECTION, data: { id: 'asset-1' } },
+        jobs: [],
+      },
+      {
+        item: { name: JobName.FACIAL_RECOGNITION, data: { id: 'asset-1' } },
         jobs: [],
       },
     ];
@@ -327,7 +341,6 @@ describe(JobService.name, () => {
 
         await sut.init(makeMockHandlers(true));
         await jobMock.addHandler.mock.calls[0][2](item);
-        await asyncTick(3);
 
         if (jobs.length > 1) {
           expect(jobMock.queueAll).toHaveBeenCalledWith(
@@ -344,7 +357,6 @@ describe(JobService.name, () => {
       it(`should not queue any jobs when ${item.name} finishes with 'false'`, async () => {
         await sut.init(makeMockHandlers(false));
         await jobMock.addHandler.mock.calls[0][2](item);
-        await asyncTick(3);
 
         expect(jobMock.queueAll).not.toHaveBeenCalled();
       });
@@ -353,11 +365,16 @@ describe(JobService.name, () => {
     const featureTests: Array<{ queue: QueueName; feature: FeatureFlag; configKey: SystemConfigKey }> = [
       {
         queue: QueueName.SMART_SEARCH,
-        feature: FeatureFlag.CLIP_ENCODE,
+        feature: FeatureFlag.SMART_SEARCH,
         configKey: SystemConfigKey.MACHINE_LEARNING_CLIP_ENABLED,
       },
       {
-        queue: QueueName.RECOGNIZE_FACES,
+        queue: QueueName.FACE_DETECTION,
+        feature: FeatureFlag.FACIAL_RECOGNITION,
+        configKey: SystemConfigKey.MACHINE_LEARNING_FACIAL_RECOGNITION_ENABLED,
+      },
+      {
+        queue: QueueName.FACIAL_RECOGNITION,
         feature: FeatureFlag.FACIAL_RECOGNITION,
         configKey: SystemConfigKey.MACHINE_LEARNING_FACIAL_RECOGNITION_ENABLED,
       },

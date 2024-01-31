@@ -6,6 +6,7 @@ import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/modules/search/providers/people.provider.dart';
 import 'package:immich_mobile/modules/search/ui/explore_grid.dart';
 
+@RoutePage()
 class AllPeoplePage extends HookConsumerWidget {
   const AllPeoplePage({super.key});
 

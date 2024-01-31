@@ -105,8 +105,8 @@ Eğer bu size doğru bir amaç gibi geliyorsa ve uygulamanın uzun bir süre boy
 
 ## Bağış
 
-- [Aylık bağış](https://github.com/sponsors/alextran1502) via GitHub Sponsors
-- [Bir seferlik bağış](https://github.com/sponsors/alextran1502?frequency=one-time&sponsor=alextran1502) via GitHub Sponsors
+- [Aylık bağış](https://github.com/sponsors/immich-app) via GitHub Sponsors
+- [Bir seferlik bağış](https://github.com/sponsors/immich-app?frequency=one-time&sponsor=alextran1502) via GitHub Sponsors
 - [Librepay](https://liberapay.com/alex.tran1502/)
 - [buymeacoffee](https://www.buymeacoffee.com/altran1502)
 - Bitcoin: 1FvEp6P6NM8EZEkpGUFAN2LqJ1gxusNxZX

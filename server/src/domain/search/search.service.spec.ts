@@ -114,6 +114,39 @@ describe(SearchService.name, () => {
       expect(smartInfoMock.searchCLIP).not.toHaveBeenCalled();
     });
 
+    it('should search archived photos if `withArchived` option is true', async () => {
+      const dto: SearchDto = { q: 'test query', clip: true, withArchived: true };
+      const embedding = [1, 2, 3];
+      smartInfoMock.searchCLIP.mockResolvedValueOnce([assetStub.image]);
+      machineMock.encodeText.mockResolvedValueOnce(embedding);
+      partnerMock.getAll.mockResolvedValueOnce([]);
+      const expectedResponse = {
+        albums: {
+          total: 0,
+          count: 0,
+          items: [],
+          facets: [],
+        },
+        assets: {
+          total: 1,
+          count: 1,
+          items: [mapAsset(assetStub.image)],
+          facets: [],
+        },
+      };
+
+      const result = await sut.search(authStub.user1, dto);
+
+      expect(result).toEqual(expectedResponse);
+      expect(smartInfoMock.searchCLIP).toHaveBeenCalledWith({
+        userIds: [authStub.user1.user.id],
+        embedding,
+        numResults: 100,
+        withArchived: true,
+      });
+      expect(assetMock.searchMetadata).not.toHaveBeenCalled();
+    });
+
     it('should search by CLIP if `clip` option is true', async () => {
       const dto: SearchDto = { q: 'test query', clip: true };
       const embedding = [1, 2, 3];
@@ -142,18 +175,19 @@ describe(SearchService.name, () => {
         userIds: [authStub.user1.user.id],
         embedding,
         numResults: 100,
+        withArchived: false,
       });
       expect(assetMock.searchMetadata).not.toHaveBeenCalled();
     });
 
-    it('should throw an error if clip is requested but disabled', async () => {
+    it.each([
+      { key: SystemConfigKey.MACHINE_LEARNING_ENABLED },
+      { key: SystemConfigKey.MACHINE_LEARNING_CLIP_ENABLED },
+    ])('should throw an error if clip is requested but disabled', async ({ key }) => {
       const dto: SearchDto = { q: 'test query', clip: true };
-      configMock.load
-        .mockResolvedValueOnce([{ key: SystemConfigKey.MACHINE_LEARNING_ENABLED, value: false }])
-        .mockResolvedValueOnce([{ key: SystemConfigKey.MACHINE_LEARNING_CLIP_ENABLED, value: false }]);
+      configMock.load.mockResolvedValue([{ key, value: false }]);
 
-      await expect(sut.search(authStub.user1, dto)).rejects.toThrow('CLIP is not enabled');
-      await expect(sut.search(authStub.user1, dto)).rejects.toThrow('CLIP is not enabled');
+      await expect(sut.search(authStub.user1, dto)).rejects.toThrow('Smart search is not enabled');
     });
   });
 });

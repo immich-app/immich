@@ -45,6 +45,8 @@ export class UsageByUserDto {
   videos!: number;
   @ApiProperty({ type: 'integer', format: 'int64' })
   usage!: number;
+  @ApiProperty({ type: 'integer', format: 'int64' })
+  quotaSizeInBytes!: number | null;
 }
 
 export class ServerStatsResponseDto {
@@ -91,7 +93,7 @@ export class ServerConfigDto {
 }
 
 export class ServerFeaturesDto implements FeatureFlags {
-  clipEncode!: boolean;
+  smartSearch!: boolean;
   configFile!: boolean;
   facialRecognition!: boolean;
   map!: boolean;

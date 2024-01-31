@@ -29,6 +29,8 @@ FROM
       "AlbumEntity__AlbumEntity_owner"."deletedAt" AS "AlbumEntity__AlbumEntity_owner_deletedAt",
       "AlbumEntity__AlbumEntity_owner"."updatedAt" AS "AlbumEntity__AlbumEntity_owner_updatedAt",
       "AlbumEntity__AlbumEntity_owner"."memoriesEnabled" AS "AlbumEntity__AlbumEntity_owner_memoriesEnabled",
+      "AlbumEntity__AlbumEntity_owner"."quotaSizeInBytes" AS "AlbumEntity__AlbumEntity_owner_quotaSizeInBytes",
+      "AlbumEntity__AlbumEntity_owner"."quotaUsageInBytes" AS "AlbumEntity__AlbumEntity_owner_quotaUsageInBytes",
       "AlbumEntity__AlbumEntity_sharedUsers"."id" AS "AlbumEntity__AlbumEntity_sharedUsers_id",
       "AlbumEntity__AlbumEntity_sharedUsers"."name" AS "AlbumEntity__AlbumEntity_sharedUsers_name",
       "AlbumEntity__AlbumEntity_sharedUsers"."avatarColor" AS "AlbumEntity__AlbumEntity_sharedUsers_avatarColor",
@@ -43,6 +45,8 @@ FROM
       "AlbumEntity__AlbumEntity_sharedUsers"."deletedAt" AS "AlbumEntity__AlbumEntity_sharedUsers_deletedAt",
       "AlbumEntity__AlbumEntity_sharedUsers"."updatedAt" AS "AlbumEntity__AlbumEntity_sharedUsers_updatedAt",
       "AlbumEntity__AlbumEntity_sharedUsers"."memoriesEnabled" AS "AlbumEntity__AlbumEntity_sharedUsers_memoriesEnabled",
+      "AlbumEntity__AlbumEntity_sharedUsers"."quotaSizeInBytes" AS "AlbumEntity__AlbumEntity_sharedUsers_quotaSizeInBytes",
+      "AlbumEntity__AlbumEntity_sharedUsers"."quotaUsageInBytes" AS "AlbumEntity__AlbumEntity_sharedUsers_quotaUsageInBytes",
       "AlbumEntity__AlbumEntity_sharedLinks"."id" AS "AlbumEntity__AlbumEntity_sharedLinks_id",
       "AlbumEntity__AlbumEntity_sharedLinks"."description" AS "AlbumEntity__AlbumEntity_sharedLinks_description",
       "AlbumEntity__AlbumEntity_sharedLinks"."password" AS "AlbumEntity__AlbumEntity_sharedLinks_password",
@@ -101,6 +105,8 @@ SELECT
   "AlbumEntity__AlbumEntity_owner"."deletedAt" AS "AlbumEntity__AlbumEntity_owner_deletedAt",
   "AlbumEntity__AlbumEntity_owner"."updatedAt" AS "AlbumEntity__AlbumEntity_owner_updatedAt",
   "AlbumEntity__AlbumEntity_owner"."memoriesEnabled" AS "AlbumEntity__AlbumEntity_owner_memoriesEnabled",
+  "AlbumEntity__AlbumEntity_owner"."quotaSizeInBytes" AS "AlbumEntity__AlbumEntity_owner_quotaSizeInBytes",
+  "AlbumEntity__AlbumEntity_owner"."quotaUsageInBytes" AS "AlbumEntity__AlbumEntity_owner_quotaUsageInBytes",
   "AlbumEntity__AlbumEntity_sharedUsers"."id" AS "AlbumEntity__AlbumEntity_sharedUsers_id",
   "AlbumEntity__AlbumEntity_sharedUsers"."name" AS "AlbumEntity__AlbumEntity_sharedUsers_name",
   "AlbumEntity__AlbumEntity_sharedUsers"."avatarColor" AS "AlbumEntity__AlbumEntity_sharedUsers_avatarColor",
@@ -114,7 +120,9 @@ SELECT
   "AlbumEntity__AlbumEntity_sharedUsers"."createdAt" AS "AlbumEntity__AlbumEntity_sharedUsers_createdAt",
   "AlbumEntity__AlbumEntity_sharedUsers"."deletedAt" AS "AlbumEntity__AlbumEntity_sharedUsers_deletedAt",
   "AlbumEntity__AlbumEntity_sharedUsers"."updatedAt" AS "AlbumEntity__AlbumEntity_sharedUsers_updatedAt",
-  "AlbumEntity__AlbumEntity_sharedUsers"."memoriesEnabled" AS "AlbumEntity__AlbumEntity_sharedUsers_memoriesEnabled"
+  "AlbumEntity__AlbumEntity_sharedUsers"."memoriesEnabled" AS "AlbumEntity__AlbumEntity_sharedUsers_memoriesEnabled",
+  "AlbumEntity__AlbumEntity_sharedUsers"."quotaSizeInBytes" AS "AlbumEntity__AlbumEntity_sharedUsers_quotaSizeInBytes",
+  "AlbumEntity__AlbumEntity_sharedUsers"."quotaUsageInBytes" AS "AlbumEntity__AlbumEntity_sharedUsers_quotaUsageInBytes"
 FROM
   "albums" "AlbumEntity"
   LEFT JOIN "users" "AlbumEntity__AlbumEntity_owner" ON "AlbumEntity__AlbumEntity_owner"."id" = "AlbumEntity"."ownerId"
@@ -155,6 +163,8 @@ SELECT
   "AlbumEntity__AlbumEntity_owner"."deletedAt" AS "AlbumEntity__AlbumEntity_owner_deletedAt",
   "AlbumEntity__AlbumEntity_owner"."updatedAt" AS "AlbumEntity__AlbumEntity_owner_updatedAt",
   "AlbumEntity__AlbumEntity_owner"."memoriesEnabled" AS "AlbumEntity__AlbumEntity_owner_memoriesEnabled",
+  "AlbumEntity__AlbumEntity_owner"."quotaSizeInBytes" AS "AlbumEntity__AlbumEntity_owner_quotaSizeInBytes",
+  "AlbumEntity__AlbumEntity_owner"."quotaUsageInBytes" AS "AlbumEntity__AlbumEntity_owner_quotaUsageInBytes",
   "AlbumEntity__AlbumEntity_sharedUsers"."id" AS "AlbumEntity__AlbumEntity_sharedUsers_id",
   "AlbumEntity__AlbumEntity_sharedUsers"."name" AS "AlbumEntity__AlbumEntity_sharedUsers_name",
   "AlbumEntity__AlbumEntity_sharedUsers"."avatarColor" AS "AlbumEntity__AlbumEntity_sharedUsers_avatarColor",
@@ -168,7 +178,9 @@ SELECT
   "AlbumEntity__AlbumEntity_sharedUsers"."createdAt" AS "AlbumEntity__AlbumEntity_sharedUsers_createdAt",
   "AlbumEntity__AlbumEntity_sharedUsers"."deletedAt" AS "AlbumEntity__AlbumEntity_sharedUsers_deletedAt",
   "AlbumEntity__AlbumEntity_sharedUsers"."updatedAt" AS "AlbumEntity__AlbumEntity_sharedUsers_updatedAt",
-  "AlbumEntity__AlbumEntity_sharedUsers"."memoriesEnabled" AS "AlbumEntity__AlbumEntity_sharedUsers_memoriesEnabled"
+  "AlbumEntity__AlbumEntity_sharedUsers"."memoriesEnabled" AS "AlbumEntity__AlbumEntity_sharedUsers_memoriesEnabled",
+  "AlbumEntity__AlbumEntity_sharedUsers"."quotaSizeInBytes" AS "AlbumEntity__AlbumEntity_sharedUsers_quotaSizeInBytes",
+  "AlbumEntity__AlbumEntity_sharedUsers"."quotaUsageInBytes" AS "AlbumEntity__AlbumEntity_sharedUsers_quotaUsageInBytes"
 FROM
   "albums" "AlbumEntity"
   LEFT JOIN "users" "AlbumEntity__AlbumEntity_owner" ON "AlbumEntity__AlbumEntity_owner"."id" = "AlbumEntity"."ownerId"
@@ -273,6 +285,8 @@ SELECT
   "AlbumEntity__AlbumEntity_sharedUsers"."deletedAt" AS "AlbumEntity__AlbumEntity_sharedUsers_deletedAt",
   "AlbumEntity__AlbumEntity_sharedUsers"."updatedAt" AS "AlbumEntity__AlbumEntity_sharedUsers_updatedAt",
   "AlbumEntity__AlbumEntity_sharedUsers"."memoriesEnabled" AS "AlbumEntity__AlbumEntity_sharedUsers_memoriesEnabled",
+  "AlbumEntity__AlbumEntity_sharedUsers"."quotaSizeInBytes" AS "AlbumEntity__AlbumEntity_sharedUsers_quotaSizeInBytes",
+  "AlbumEntity__AlbumEntity_sharedUsers"."quotaUsageInBytes" AS "AlbumEntity__AlbumEntity_sharedUsers_quotaUsageInBytes",
   "AlbumEntity__AlbumEntity_sharedLinks"."id" AS "AlbumEntity__AlbumEntity_sharedLinks_id",
   "AlbumEntity__AlbumEntity_sharedLinks"."description" AS "AlbumEntity__AlbumEntity_sharedLinks_description",
   "AlbumEntity__AlbumEntity_sharedLinks"."password" AS "AlbumEntity__AlbumEntity_sharedLinks_password",
@@ -298,7 +312,9 @@ SELECT
   "AlbumEntity__AlbumEntity_owner"."createdAt" AS "AlbumEntity__AlbumEntity_owner_createdAt",
   "AlbumEntity__AlbumEntity_owner"."deletedAt" AS "AlbumEntity__AlbumEntity_owner_deletedAt",
   "AlbumEntity__AlbumEntity_owner"."updatedAt" AS "AlbumEntity__AlbumEntity_owner_updatedAt",
-  "AlbumEntity__AlbumEntity_owner"."memoriesEnabled" AS "AlbumEntity__AlbumEntity_owner_memoriesEnabled"
+  "AlbumEntity__AlbumEntity_owner"."memoriesEnabled" AS "AlbumEntity__AlbumEntity_owner_memoriesEnabled",
+  "AlbumEntity__AlbumEntity_owner"."quotaSizeInBytes" AS "AlbumEntity__AlbumEntity_owner_quotaSizeInBytes",
+  "AlbumEntity__AlbumEntity_owner"."quotaUsageInBytes" AS "AlbumEntity__AlbumEntity_owner_quotaUsageInBytes"
 FROM
   "albums" "AlbumEntity"
   LEFT JOIN "albums_shared_users_users" "AlbumEntity_AlbumEntity__AlbumEntity_sharedUsers" ON "AlbumEntity_AlbumEntity__AlbumEntity_sharedUsers"."albumsId" = "AlbumEntity"."id"
@@ -342,6 +358,8 @@ SELECT
   "AlbumEntity__AlbumEntity_sharedUsers"."deletedAt" AS "AlbumEntity__AlbumEntity_sharedUsers_deletedAt",
   "AlbumEntity__AlbumEntity_sharedUsers"."updatedAt" AS "AlbumEntity__AlbumEntity_sharedUsers_updatedAt",
   "AlbumEntity__AlbumEntity_sharedUsers"."memoriesEnabled" AS "AlbumEntity__AlbumEntity_sharedUsers_memoriesEnabled",
+  "AlbumEntity__AlbumEntity_sharedUsers"."quotaSizeInBytes" AS "AlbumEntity__AlbumEntity_sharedUsers_quotaSizeInBytes",
+  "AlbumEntity__AlbumEntity_sharedUsers"."quotaUsageInBytes" AS "AlbumEntity__AlbumEntity_sharedUsers_quotaUsageInBytes",
   "AlbumEntity__AlbumEntity_sharedLinks"."id" AS "AlbumEntity__AlbumEntity_sharedLinks_id",
   "AlbumEntity__AlbumEntity_sharedLinks"."description" AS "AlbumEntity__AlbumEntity_sharedLinks_description",
   "AlbumEntity__AlbumEntity_sharedLinks"."password" AS "AlbumEntity__AlbumEntity_sharedLinks_password",
@@ -367,7 +385,9 @@ SELECT
   "AlbumEntity__AlbumEntity_owner"."createdAt" AS "AlbumEntity__AlbumEntity_owner_createdAt",
   "AlbumEntity__AlbumEntity_owner"."deletedAt" AS "AlbumEntity__AlbumEntity_owner_deletedAt",
   "AlbumEntity__AlbumEntity_owner"."updatedAt" AS "AlbumEntity__AlbumEntity_owner_updatedAt",
-  "AlbumEntity__AlbumEntity_owner"."memoriesEnabled" AS "AlbumEntity__AlbumEntity_owner_memoriesEnabled"
+  "AlbumEntity__AlbumEntity_owner"."memoriesEnabled" AS "AlbumEntity__AlbumEntity_owner_memoriesEnabled",
+  "AlbumEntity__AlbumEntity_owner"."quotaSizeInBytes" AS "AlbumEntity__AlbumEntity_owner_quotaSizeInBytes",
+  "AlbumEntity__AlbumEntity_owner"."quotaUsageInBytes" AS "AlbumEntity__AlbumEntity_owner_quotaUsageInBytes"
 FROM
   "albums" "AlbumEntity"
   LEFT JOIN "albums_shared_users_users" "AlbumEntity_AlbumEntity__AlbumEntity_sharedUsers" ON "AlbumEntity_AlbumEntity__AlbumEntity_sharedUsers"."albumsId" = "AlbumEntity"."id"
@@ -424,6 +444,8 @@ SELECT
   "AlbumEntity__AlbumEntity_sharedUsers"."deletedAt" AS "AlbumEntity__AlbumEntity_sharedUsers_deletedAt",
   "AlbumEntity__AlbumEntity_sharedUsers"."updatedAt" AS "AlbumEntity__AlbumEntity_sharedUsers_updatedAt",
   "AlbumEntity__AlbumEntity_sharedUsers"."memoriesEnabled" AS "AlbumEntity__AlbumEntity_sharedUsers_memoriesEnabled",
+  "AlbumEntity__AlbumEntity_sharedUsers"."quotaSizeInBytes" AS "AlbumEntity__AlbumEntity_sharedUsers_quotaSizeInBytes",
+  "AlbumEntity__AlbumEntity_sharedUsers"."quotaUsageInBytes" AS "AlbumEntity__AlbumEntity_sharedUsers_quotaUsageInBytes",
   "AlbumEntity__AlbumEntity_sharedLinks"."id" AS "AlbumEntity__AlbumEntity_sharedLinks_id",
   "AlbumEntity__AlbumEntity_sharedLinks"."description" AS "AlbumEntity__AlbumEntity_sharedLinks_description",
   "AlbumEntity__AlbumEntity_sharedLinks"."password" AS "AlbumEntity__AlbumEntity_sharedLinks_password",
@@ -449,7 +471,9 @@ SELECT
   "AlbumEntity__AlbumEntity_owner"."createdAt" AS "AlbumEntity__AlbumEntity_owner_createdAt",
   "AlbumEntity__AlbumEntity_owner"."deletedAt" AS "AlbumEntity__AlbumEntity_owner_deletedAt",
   "AlbumEntity__AlbumEntity_owner"."updatedAt" AS "AlbumEntity__AlbumEntity_owner_updatedAt",
-  "AlbumEntity__AlbumEntity_owner"."memoriesEnabled" AS "AlbumEntity__AlbumEntity_owner_memoriesEnabled"
+  "AlbumEntity__AlbumEntity_owner"."memoriesEnabled" AS "AlbumEntity__AlbumEntity_owner_memoriesEnabled",
+  "AlbumEntity__AlbumEntity_owner"."quotaSizeInBytes" AS "AlbumEntity__AlbumEntity_owner_quotaSizeInBytes",
+  "AlbumEntity__AlbumEntity_owner"."quotaUsageInBytes" AS "AlbumEntity__AlbumEntity_owner_quotaUsageInBytes"
 FROM
   "albums" "AlbumEntity"
   LEFT JOIN "albums_shared_users_users" "AlbumEntity_AlbumEntity__AlbumEntity_sharedUsers" ON "AlbumEntity_AlbumEntity__AlbumEntity_sharedUsers"."albumsId" = "AlbumEntity"."id"
@@ -498,7 +522,9 @@ SELECT
   "AlbumEntity__AlbumEntity_owner"."createdAt" AS "AlbumEntity__AlbumEntity_owner_createdAt",
   "AlbumEntity__AlbumEntity_owner"."deletedAt" AS "AlbumEntity__AlbumEntity_owner_deletedAt",
   "AlbumEntity__AlbumEntity_owner"."updatedAt" AS "AlbumEntity__AlbumEntity_owner_updatedAt",
-  "AlbumEntity__AlbumEntity_owner"."memoriesEnabled" AS "AlbumEntity__AlbumEntity_owner_memoriesEnabled"
+  "AlbumEntity__AlbumEntity_owner"."memoriesEnabled" AS "AlbumEntity__AlbumEntity_owner_memoriesEnabled",
+  "AlbumEntity__AlbumEntity_owner"."quotaSizeInBytes" AS "AlbumEntity__AlbumEntity_owner_quotaSizeInBytes",
+  "AlbumEntity__AlbumEntity_owner"."quotaUsageInBytes" AS "AlbumEntity__AlbumEntity_owner_quotaUsageInBytes"
 FROM
   "albums" "AlbumEntity"
   LEFT JOIN "users" "AlbumEntity__AlbumEntity_owner" ON "AlbumEntity__AlbumEntity_owner"."id" = "AlbumEntity"."ownerId"

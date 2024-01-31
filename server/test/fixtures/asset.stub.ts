@@ -1,8 +1,17 @@
-import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
+import { AssetEntity, AssetStackEntity, AssetType, ExifEntity } from '@app/infra/entities';
 import { authStub } from './auth.stub';
 import { fileStub } from './file.stub';
 import { libraryStub } from './library.stub';
 import { userStub } from './user.stub';
+
+export const assetStackStub = (stackId: string, assets: AssetEntity[]): AssetStackEntity => {
+  return {
+    id: stackId,
+    assets: assets,
+    primaryAsset: assets[0],
+    primaryAssetId: assets[0].id,
+  };
+};
 
 export const assetStub = {
   noResizePath: Object.freeze<AssetEntity>({
@@ -120,7 +129,7 @@ export const assetStub = {
   }),
 
   primaryImage: Object.freeze<AssetEntity>({
-    id: 'asset-id',
+    id: 'primary-asset-id',
     deviceAssetId: 'device-asset-id',
     fileModifiedAt: new Date('2023-02-23T05:06:29.716Z'),
     fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
@@ -157,7 +166,11 @@ export const assetStub = {
     exifInfo: {
       fileSizeInByte: 5_000,
     } as ExifEntity,
-    stack: [{ id: 'stack-child-asset-1' } as AssetEntity, { id: 'stack-child-asset-2' } as AssetEntity],
+    stack: assetStackStub('stack-1', [
+      { id: 'primary-asset-id' } as AssetEntity,
+      { id: 'stack-child-asset-1' } as AssetEntity,
+      { id: 'stack-child-asset-2' } as AssetEntity,
+    ]),
   }),
 
   image: Object.freeze<AssetEntity>({
@@ -401,7 +414,7 @@ export const assetStub = {
   }),
 
   livePhotoMotionAsset: Object.freeze({
-    id: 'live-photo-motion-asset',
+    id: fileStub.livePhotoMotion.uuid,
     originalPath: fileStub.livePhotoMotion.originalPath,
     ownerId: authStub.user1.user.id,
     type: AssetType.VIDEO,

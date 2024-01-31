@@ -180,7 +180,11 @@ const tests: Test[] = [
 ];
 
 describe(FilesystemProvider.name, () => {
-  const sut = new FilesystemProvider();
+  let sut: FilesystemProvider;
+
+  beforeEach(() => {
+    sut = new FilesystemProvider();
+  });
 
   afterEach(() => {
     mockfs.restore();

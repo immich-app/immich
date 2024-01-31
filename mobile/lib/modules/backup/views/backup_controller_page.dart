@@ -18,8 +18,9 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 import 'package:immich_mobile/modules/backup/ui/backup_info_card.dart';
 
+@RoutePage()
 class BackupControllerPage extends HookConsumerWidget {
-  const BackupControllerPage({Key? key}) : super(key: key);
+  const BackupControllerPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

@@ -11,10 +11,10 @@ import 'package:openapi/api.dart';
 
 class AlbumThumbnailListTile extends StatelessWidget {
   const AlbumThumbnailListTile({
-    Key? key,
+    super.key,
     required this.album,
     this.onTap,
-  }) : super(key: key);
+  });
 
   final Album album;
   final void Function()? onTap;
@@ -46,12 +46,12 @@ class AlbumThumbnailListTile extends StatelessWidget {
         fadeInDuration: const Duration(milliseconds: 200),
         imageUrl: getAlbumThumbnailUrl(
           album,
-          type: ThumbnailFormat.JPEG,
+          type: ThumbnailFormat.WEBP,
         ),
         httpHeaders: {
           "Authorization": "Bearer ${Store.get(StoreKey.accessToken)}",
         },
-        cacheKey: getAlbumThumbNailCacheKey(album, type: ThumbnailFormat.JPEG),
+        cacheKey: getAlbumThumbNailCacheKey(album, type: ThumbnailFormat.WEBP),
         errorWidget: (context, url, error) =>
             const Icon(Icons.image_not_supported_outlined),
       );

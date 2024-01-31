@@ -363,6 +363,7 @@ class BackupService {
           } else {
             var data = await response.stream.bytesToString();
             var error = jsonDecode(data);
+            var errorMessage = error['message'] ?? error['error'];
 
             debugPrint(
               "Error(${error['statusCode']}) uploading ${entity.id} | $originalFileName | Created on ${entity.createDateTime} | ${error['error']}",
@@ -375,9 +376,14 @@ class BackupService {
                 fileCreatedAt: entity.createDateTime,
                 fileName: originalFileName,
                 fileType: _getAssetType(entity.type),
-                errorMessage: error['error'],
+                errorMessage: errorMessage,
               ),
             );
+
+            if (errorMessage == "Quota has been exceeded!") {
+              anyErrors = true;
+              break;
+            }
             continue;
           }
         }
@@ -423,10 +429,10 @@ class BackupService {
 class MultipartRequest extends http.MultipartRequest {
   /// Creates a new [MultipartRequest].
   MultipartRequest(
-    String method,
-    Uri url, {
+    super.method,
+    super.url, {
     required this.onProgress,
-  }) : super(method, url);
+  });
 
   final void Function(int bytes, int totalBytes) onProgress;
 

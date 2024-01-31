@@ -17,6 +17,12 @@ export class SearchDto {
   @IsBoolean()
   @Optional()
   @Transform(toBoolean)
+  smart?: boolean;
+
+  /** @deprecated */
+  @IsBoolean()
+  @Optional()
+  @Transform(toBoolean)
   clip?: boolean;
 
   @IsEnum(AssetType)
@@ -32,6 +38,11 @@ export class SearchDto {
   @Optional()
   @Transform(toBoolean)
   motion?: boolean;
+
+  @IsBoolean()
+  @Optional()
+  @Transform(toBoolean)
+  withArchived?: boolean;
 }
 
 export class SearchPeopleDto {

@@ -36,24 +36,24 @@ void main() {
       // TODO
     });
 
-    //Future<MultipartFile> downloadArchive(AssetIdsDto assetIdsDto, { String key }) async
-    test('test downloadArchive', () async {
+    //Future<MultipartFile> downloadArchiveOld(AssetIdsDto assetIdsDto, { String key }) async
+    test('test downloadArchiveOld', () async {
       // TODO
     });
 
-    //Future<MultipartFile> downloadFile(String id, { String key }) async
-    test('test downloadFile', () async {
+    //Future<MultipartFile> downloadFileOld(String id, { String key }) async
+    test('test downloadFileOld', () async {
       // TODO
     });
 
-    //Future emptyTrash() async
-    test('test emptyTrash', () async {
+    //Future emptyTrashOld() async
+    test('test emptyTrashOld', () async {
       // TODO
     });
 
     // Get all AssetEntity belong to the user
     //
-    //Future<List<AssetResponseDto>> getAllAssets({ int skip, int take, String userId, bool isFavorite, bool isArchived, DateTime updatedAfter, DateTime updatedBefore, String ifNoneMatch }) async
+    //Future<List<AssetResponseDto>> getAllAssets({ String ifNoneMatch, bool isArchived, bool isFavorite, int skip, int take, DateTime updatedAfter, DateTime updatedBefore, String userId }) async
     test('test getAllAssets', () async {
       // TODO
     });
@@ -69,6 +69,11 @@ void main() {
     //
     //Future<AssetResponseDto> getAssetById(String id, { String key }) async
     test('test getAssetById', () async {
+      // TODO
+    });
+
+    //Future<AssetResponseDto> getAssetInfo(String id, { String key }) async
+    test('test getAssetInfo', () async {
       // TODO
     });
 
@@ -97,12 +102,12 @@ void main() {
       // TODO
     });
 
-    //Future<DownloadResponseDto> getDownloadInfo(DownloadInfoDto downloadInfoDto, { String key }) async
-    test('test getDownloadInfo', () async {
+    //Future<DownloadResponseDto> getDownloadInfoOld(DownloadInfoDto downloadInfoDto, { String key }) async
+    test('test getDownloadInfoOld', () async {
       // TODO
     });
 
-    //Future<List<MapMarkerResponseDto>> getMapMarkers({ bool isArchived, bool isFavorite, DateTime fileCreatedAfter, DateTime fileCreatedBefore }) async
+    //Future<List<MapMarkerResponseDto>> getMapMarkers({ DateTime fileCreatedAfter, DateTime fileCreatedBefore, bool isArchived, bool isFavorite }) async
     test('test getMapMarkers', () async {
       // TODO
     });
@@ -117,30 +122,23 @@ void main() {
       // TODO
     });
 
-    //Future<List<AssetResponseDto>> getTimeBucket(TimeBucketSize size, String timeBucket, { String userId, String albumId, String personId, bool isArchived, bool isFavorite, bool isTrashed, bool withStacked, bool withPartners, String key }) async
+    //Future<List<AssetResponseDto>> getTimeBucket(TimeBucketSize size, String timeBucket, { String albumId, bool isArchived, bool isFavorite, bool isTrashed, String key, String personId, String userId, bool withPartners, bool withStacked }) async
     test('test getTimeBucket', () async {
       // TODO
     });
 
-    //Future<List<TimeBucketResponseDto>> getTimeBuckets(TimeBucketSize size, { String userId, String albumId, String personId, bool isArchived, bool isFavorite, bool isTrashed, bool withStacked, bool withPartners, String key }) async
+    //Future<List<TimeBucketResponseDto>> getTimeBuckets(TimeBucketSize size, { String albumId, bool isArchived, bool isFavorite, bool isTrashed, String key, String personId, String userId, bool withPartners, bool withStacked }) async
     test('test getTimeBuckets', () async {
       // TODO
     });
 
-    // Use /asset/device/:deviceId instead - Remove in 1.92 release
-    //
-    //Future<List<String>> getUserAssetsByDeviceId(String deviceId) async
-    test('test getUserAssetsByDeviceId', () async {
+    //Future restoreAssetsOld(BulkIdsDto bulkIdsDto) async
+    test('test restoreAssetsOld', () async {
       // TODO
     });
 
-    //Future restoreAssets(BulkIdsDto bulkIdsDto) async
-    test('test restoreAssets', () async {
-      // TODO
-    });
-
-    //Future restoreTrash() async
-    test('test restoreTrash', () async {
+    //Future restoreTrashOld() async
+    test('test restoreTrashOld', () async {
       // TODO
     });
 
@@ -149,7 +147,7 @@ void main() {
       // TODO
     });
 
-    //Future<List<AssetResponseDto>> searchAssets({ String id, String libraryId, AssetTypeEnum type, AssetOrder order, String deviceAssetId, String deviceId, String checksum, bool isArchived, bool isEncoded, bool isExternal, bool isFavorite, bool isMotion, bool isOffline, bool isReadOnly, bool isVisible, bool withDeleted, bool withStacked, bool withExif, bool withPeople, DateTime createdBefore, DateTime createdAfter, DateTime updatedBefore, DateTime updatedAfter, DateTime trashedBefore, DateTime trashedAfter, DateTime takenBefore, DateTime takenAfter, String originalFileName, String originalPath, String resizePath, String webpPath, String encodedVideoPath, String city, String state, String country, String make, String model, String lensModel, num page, num size }) async
+    //Future<List<AssetResponseDto>> searchAssets({ String checksum, String city, String country, DateTime createdAfter, DateTime createdBefore, String deviceAssetId, String deviceId, String encodedVideoPath, String id, bool isArchived, bool isEncoded, bool isExternal, bool isFavorite, bool isMotion, bool isOffline, bool isReadOnly, bool isVisible, String lensModel, String libraryId, String make, String model, AssetOrder order, String originalFileName, String originalPath, num page, String resizePath, num size, String state, DateTime takenAfter, DateTime takenBefore, DateTime trashedAfter, DateTime trashedBefore, AssetTypeEnum type, DateTime updatedAfter, DateTime updatedBefore, String webpPath, bool withDeleted, bool withExif, bool withPeople, bool withStacked }) async
     test('test searchAssets', () async {
       // TODO
     });

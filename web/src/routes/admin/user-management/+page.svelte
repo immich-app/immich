@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { api, UserResponseDto } from '@api';
+  import { api, type UserResponseDto } from '@api';
   import { onMount } from 'svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
@@ -14,6 +14,7 @@
   import type { PageData } from './$types';
   import { mdiCheck, mdiClose, mdiDeleteRestore, mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
   import { user } from '$lib/stores/user.store';
+  import { asByteUnitString } from '$lib/utils/byte-units';
 
   export let data: PageData;
 
@@ -109,13 +110,19 @@
   <section id="setting-content" class="flex place-content-center sm:mx-4">
     <section class="w-full pb-28 lg:w-[850px]">
       {#if shouldShowCreateUserForm}
-        <FullScreenModal on:clickOutside={() => (shouldShowCreateUserForm = false)}>
+        <FullScreenModal
+          on:clickOutside={() => (shouldShowCreateUserForm = false)}
+          on:escape={() => (shouldShowCreateUserForm = false)}
+        >
           <CreateUserForm on:submit={onUserCreated} on:cancel={() => (shouldShowCreateUserForm = false)} />
         </FullScreenModal>
       {/if}
 
       {#if shouldShowEditUserForm}
-        <FullScreenModal on:clickOutside={() => (shouldShowEditUserForm = false)}>
+        <FullScreenModal
+          on:clickOutside={() => (shouldShowEditUserForm = false)}
+          on:escape={() => (shouldShowEditUserForm = false)}
+        >
           <EditUserForm
             user={selectedUser}
             canResetPassword={selectedUser?.id !== $user.id}
@@ -129,7 +136,7 @@
       {#if shouldShowDeleteConfirmDialog}
         <DeleteConfirmDialog
           user={selectedUser}
-          on:succes={onUserDeleteSuccess}
+          on:success={onUserDeleteSuccess}
           on:fail={onUserDeleteFail}
           on:cancel={() => (shouldShowDeleteConfirmDialog = false)}
         />
@@ -145,7 +152,10 @@
       {/if}
 
       {#if shouldShowInfoPanel}
-        <FullScreenModal on:clickOutside={() => (shouldShowInfoPanel = false)}>
+        <FullScreenModal
+          on:clickOutside={() => (shouldShowInfoPanel = false)}
+          on:escape={() => (shouldShowInfoPanel = false)}
+        >
           <div class="w-[500px] max-w-[95vw] rounded-3xl border bg-white p-8 text-sm shadow-sm">
             <h1 class="mb-4 text-lg font-medium text-immich-primary">Password reset success</h1>
 
@@ -171,6 +181,7 @@
           <tr class="flex w-full place-items-center">
             <th class="w-8/12 sm:w-5/12 lg:w-6/12 xl:w-4/12 2xl:w-5/12 text-center text-sm font-medium">Email</th>
             <th class="hidden sm:block w-3/12 text-center text-sm font-medium">Name</th>
+            <th class="hidden xl:block w-3/12 2xl:w-2/12 text-center text-sm font-medium">Has quota</th>
             <th class="hidden xl:block w-3/12 2xl:w-2/12 text-center text-sm font-medium">Can import</th>
             <th class="w-4/12 lg:w-3/12 xl:w-2/12 text-center text-sm font-medium">Action</th>
           </tr>
@@ -193,6 +204,15 @@
                 <td class="hidden sm:block w-3/12 text-ellipsis break-all px-2 text-sm">{immichUser.name}</td>
                 <td class="hidden xl:block w-3/12 2xl:w-2/12 text-ellipsis break-all px-2 text-sm">
                   <div class="container mx-auto flex flex-wrap justify-center">
+                    {#if immichUser.quotaSizeInBytes && immichUser.quotaSizeInBytes > 0}
+                      {asByteUnitString(immichUser.quotaSizeInBytes, $locale)}
+                    {:else}
+                      <Icon path={mdiClose} size="16" />
+                    {/if}
+                  </div>
+                </td>
+                <td class="hidden xl:block w-3/12 2xl:w-2/12 text-ellipsis break-all px-2 text-sm">
+                  <div class="container mx-auto flex flex-wrap justify-center">
                     {#if immichUser.externalPath}
                       <Icon path={mdiCheck} size="16" />
                     {:else}
@@ -200,7 +220,8 @@
                     {/if}
                   </div>
                 </td>
-                <td class="w-4/12 lg:w-3/12 xl:w-2/12 text-ellipsis break-all px-4 text-sm">
+
+                <td class="w-4/12 lg:w-3/12 xl:w-2/12 text-ellipsis break-all text-sm">
                   {#if !isDeleted(immichUser)}
                     <button
                       on:click={() => editUserHandler(immichUser)}

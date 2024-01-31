@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "build/types",
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "lib": ["es2020"]
+  }
+}

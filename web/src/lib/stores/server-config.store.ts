@@ -1,11 +1,11 @@
-import { api, ServerConfigDto, ServerFeaturesDto } from '@api';
+import { api, type ServerConfigDto, type ServerFeaturesDto } from '@api';
 import { writable } from 'svelte/store';
 
 export type FeatureFlags = ServerFeaturesDto & { loaded: boolean };
 
 export const featureFlags = writable<FeatureFlags>({
   loaded: false,
-  clipEncode: true,
+  smartSearch: true,
   facialRecognition: true,
   sidecar: true,
   map: true,

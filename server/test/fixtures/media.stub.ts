@@ -4,6 +4,7 @@ const probeStubDefaultFormat: VideoFormat = {
   formatName: 'mov,mp4,m4a,3gp,3g2,mj2',
   formatLongName: 'QuickTime / MOV',
   duration: 0,
+  bitrate: 0,
 };
 
 const probeStubDefaultVideoStream: VideoStreamInfo[] = [
@@ -87,6 +88,15 @@ export const probeStub = {
       },
     ],
   }),
+  videoStream40Mbps: Object.freeze<VideoInfo>({
+    ...probeStubDefault,
+    format: {
+      formatName: 'mov,mp4,m4a,3gp,3g2,mj2',
+      formatLongName: 'QuickTime / MOV',
+      duration: 0,
+      bitrate: 40000000,
+    },
+  }),
   videoStreamHDR: Object.freeze<VideoInfo>({
     ...probeStubDefault,
     videoStreams: [
@@ -117,6 +127,36 @@ export const probeStub = {
       },
     ],
   }),
+  videoStreamOddHeight: Object.freeze<VideoInfo>({
+    ...probeStubDefault,
+    videoStreams: [
+      {
+        index: 0,
+        height: 355,
+        width: 1586,
+        codecName: 'h264',
+        codecType: 'video',
+        frameCount: 100,
+        rotation: 0,
+        isHDR: false,
+      },
+    ],
+  }),
+  videoStreamOddWidth: Object.freeze<VideoInfo>({
+    ...probeStubDefault,
+    videoStreams: [
+      {
+        index: 0,
+        height: 1586,
+        width: 355,
+        codecName: 'h264',
+        codecType: 'video',
+        frameCount: 100,
+        rotation: 0,
+        isHDR: false,
+      },
+    ],
+  }),
   audioStreamMp3: Object.freeze<VideoInfo>({
     ...probeStubDefault,
     audioStreams: [{ index: 1, codecType: 'audio', codecName: 'aac', frameCount: 100 }],
@@ -127,6 +167,7 @@ export const probeStub = {
       formatName: 'matroska,webm',
       formatLongName: 'Matroska / WebM',
       duration: 0,
+      bitrate: 0,
     },
   }),
 };

@@ -35,12 +35,12 @@ class ServerConfigDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ServerConfigDto &&
-     other.externalDomain == externalDomain &&
-     other.isInitialized == isInitialized &&
-     other.isOnboarded == isOnboarded &&
-     other.loginPageMessage == loginPageMessage &&
-     other.oauthButtonText == oauthButtonText &&
-     other.trashDays == trashDays;
+    other.externalDomain == externalDomain &&
+    other.isInitialized == isInitialized &&
+    other.isOnboarded == isOnboarded &&
+    other.loginPageMessage == loginPageMessage &&
+    other.oauthButtonText == oauthButtonText &&
+    other.trashDays == trashDays;
 
   @override
   int get hashCode =>

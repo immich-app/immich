@@ -14,7 +14,7 @@ import {
   QueueCleanType,
 } from '../repositories';
 import { FeatureFlag, SystemConfigCore } from '../system-config/system-config.core';
-import { JobCommand, JobName, QueueName } from './job.constants';
+import { ConcurrentQueueName, JobCommand, JobName, QueueName } from './job.constants';
 import { AllJobStatusResponseDto, JobCommandDto, JobStatusDto } from './job.dto';
 
 @Injectable()
@@ -95,8 +95,8 @@ export class JobService {
         return this.jobRepository.queue({ name: JobName.QUEUE_MIGRATION });
 
       case QueueName.SMART_SEARCH:
-        await this.configCore.requireFeature(FeatureFlag.CLIP_ENCODE);
-        return this.jobRepository.queue({ name: JobName.QUEUE_ENCODE_CLIP, data: { force } });
+        await this.configCore.requireFeature(FeatureFlag.SMART_SEARCH);
+        return this.jobRepository.queue({ name: JobName.QUEUE_SMART_SEARCH, data: { force } });
 
       case QueueName.METADATA_EXTRACTION:
         return this.jobRepository.queue({ name: JobName.QUEUE_METADATA_EXTRACTION, data: { force } });
@@ -108,9 +108,13 @@ export class JobService {
       case QueueName.THUMBNAIL_GENERATION:
         return this.jobRepository.queue({ name: JobName.QUEUE_GENERATE_THUMBNAILS, data: { force } });
 
-      case QueueName.RECOGNIZE_FACES:
+      case QueueName.FACE_DETECTION:
         await this.configCore.requireFeature(FeatureFlag.FACIAL_RECOGNITION);
-        return this.jobRepository.queue({ name: JobName.QUEUE_RECOGNIZE_FACES, data: { force } });
+        return this.jobRepository.queue({ name: JobName.QUEUE_FACE_DETECTION, data: { force } });
+
+      case QueueName.FACIAL_RECOGNITION:
+        await this.configCore.requireFeature(FeatureFlag.FACIAL_RECOGNITION);
+        return this.jobRepository.queue({ name: JobName.QUEUE_FACIAL_RECOGNITION, data: { force } });
 
       case QueueName.LIBRARY:
         return this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SCAN_ALL, data: { force } });
@@ -124,7 +128,8 @@ export class JobService {
     const config = await this.configCore.getConfig();
     for (const queueName of Object.values(QueueName)) {
       let concurrency = 1;
-      if (queueName !== QueueName.STORAGE_TEMPLATE_MIGRATION) {
+
+      if (this.isConcurrentQueue(queueName)) {
         concurrency = config.job[queueName].concurrency;
       }
 
@@ -145,16 +150,20 @@ export class JobService {
     }
 
     this.configCore.config$.subscribe((config) => {
-      this.logger.log(`Updating queue concurrency settings`);
+      this.logger.debug(`Updating queue concurrency settings`);
       for (const queueName of Object.values(QueueName)) {
         let concurrency = 1;
-        if (queueName !== QueueName.STORAGE_TEMPLATE_MIGRATION) {
+        if (this.isConcurrentQueue(queueName)) {
           concurrency = config.job[queueName].concurrency;
         }
         this.logger.debug(`Setting ${queueName} concurrency to ${concurrency}`);
         this.jobRepository.setConcurrency(queueName, concurrency);
       }
     });
+  }
+
+  private isConcurrentQueue(name: QueueName): name is ConcurrentQueueName {
+    return ![QueueName.FACIAL_RECOGNITION, QueueName.STORAGE_TEMPLATE_MIGRATION].includes(name);
   }
 
   async handleNightlyJobs() {
@@ -164,6 +173,8 @@ export class JobService {
       { name: JobName.PERSON_CLEANUP },
       { name: JobName.QUEUE_GENERATE_THUMBNAILS, data: { force: false } },
       { name: JobName.CLEAN_OLD_AUDIT_LOGS },
+      { name: JobName.USER_SYNC_USAGE },
+      { name: JobName.QUEUE_FACIAL_RECOGNITION, data: { force: false } },
     ]);
   }
 
@@ -215,8 +226,8 @@ export class JobService {
         const jobs: JobItem[] = [
           { name: JobName.GENERATE_WEBP_THUMBNAIL, data: item.data },
           { name: JobName.GENERATE_THUMBHASH_THUMBNAIL, data: item.data },
-          { name: JobName.ENCODE_CLIP, data: item.data },
-          { name: JobName.RECOGNIZE_FACES, data: item.data },
+          { name: JobName.SMART_SEARCH, data: item.data },
+          { name: JobName.FACE_DETECTION, data: item.data },
         ];
 
         const [asset] = await this.assetRepository.getByIds([item.data.id]);
@@ -243,6 +254,7 @@ export class JobService {
         if (asset && asset.isVisible) {
           this.communicationRepository.send(ClientEvent.UPLOAD_SUCCESS, asset.ownerId, mapAsset(asset));
         }
+        break;
       }
     }
   }

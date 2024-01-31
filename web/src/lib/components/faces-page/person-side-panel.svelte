@@ -1,7 +1,7 @@
 <script lang="ts">
   import { fly } from 'svelte/transition';
   import { linear } from 'svelte/easing';
-  import { api, type PersonResponseDto, AssetFaceResponseDto, AssetTypeEnum } from '@api';
+  import { api, type PersonResponseDto, type AssetFaceResponseDto, AssetTypeEnum } from '@api';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { createEventDispatcher, onMount } from 'svelte';
@@ -13,6 +13,7 @@
   import { websocketStore } from '$lib/stores/websocket';
   import AssignFaceSidePanel from './assign-face-side-panel.svelte';
   import { getPersonNameWithHiddenValue } from '$lib/utils/person';
+  import { timeBeforeShowLoadingSpinner } from '$lib/constants';
 
   export let assetId: string;
   export let assetType: AssetTypeEnum;
@@ -65,7 +66,7 @@
   }
 
   onMount(async () => {
-    const timeout = setTimeout(() => (isShowLoadingPeople = true), 100);
+    const timeout = setTimeout(() => (isShowLoadingPeople = true), timeBeforeShowLoadingSpinner);
     try {
       const { data } = await api.personApi.getAllPeople({ withHidden: true });
       allPeople = data.people;
@@ -99,7 +100,7 @@
   };
 
   const handleEditFaces = async () => {
-    loaderLoadingDoneTimeout = setTimeout(() => (isShowLoadingDone = true), 100);
+    loaderLoadingDoneTimeout = setTimeout(() => (isShowLoadingDone = true), timeBeforeShowLoadingSpinner);
     const numberOfChanges =
       selectedPersonToCreate.filter((person) => person !== null).length +
       selectedPersonToReassign.filter((person) => person !== null).length;

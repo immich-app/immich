@@ -1,30 +1,41 @@
 changelog:
   categories:
-    - title: Breaking Changes 🛠
+    - title: ⚠️ Breaking Changes
       labels:
         - breaking-change
-    - title: Server
+
+    - title: 🗄️ Server
       labels:
         - 🗄️server
-    - title: Mobile
+
+    - title: 📱 Mobile
       labels:
         - 📱mobile
-    - title: Web
+
+    - title: 🖥️ Web
       labels:
         - 🖥️web
-    - title: Machine Learning
+
+    - title: 🧠 Machine Learning
       labels:
         - 🧠machine-learning
-    - title: CLI
+
+    - title: ⚡ CLI
       labels:
         - cli
-    - title: Documentation
+
+    - title: 📓 Documentation
       labels:
         - documentation
-    - title: Dependency updates
+
+    - title: 🔨 Maintenance
       labels:
+        - deployment
         - dependencies
         - renovate
+        - maintenance
+        - tech-debt
+
     - title: Other changes
       labels:
         - "*"

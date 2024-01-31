@@ -13,6 +13,7 @@ import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
 
+@RoutePage()
 class SharedLinkEditPage extends HookConsumerWidget {
   final SharedLink? existingLink;
   final List<String>? assetsList;
@@ -267,15 +268,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
     }
 
     void copyLinkToClipboard() {
-      Clipboard.setData(
-        ClipboardData(
-          text: passwordController.text.isEmpty
-              ? newShareLink.value
-              : "shared_link_clipboard_text".tr(
-                  args: [newShareLink.value, passwordController.text],
-                ),
-        ),
-      ).then((_) {
+      Clipboard.setData(ClipboardData(text: newShareLink.value)).then((_) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -358,10 +351,13 @@ class SharedLinkEditPage extends HookConsumerWidget {
       final externalDomain = ref.read(
         serverInfoProvider.select((s) => s.serverConfig.externalDomain),
       );
-      final serverUrl =
+      var serverUrl =
           externalDomain.isNotEmpty ? externalDomain : getServerUrl();
+      if (serverUrl != null && !serverUrl.endsWith('/')) {
+        serverUrl += '/';
+      }
       if (newLink != null && serverUrl != null) {
-        newShareLink.value = "$serverUrl/share/${newLink.key}";
+        newShareLink.value = "${serverUrl}share/${newLink.key}";
         copyLinkToClipboard();
       } else if (newLink == null) {
         ImmichToast.show(

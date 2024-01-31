@@ -1,0 +1,47 @@
+version: "3.8"
+
+# Configurations for hardware-accelerated machine learning
+
+# If using Unraid or another platform that doesn't allow multiple Compose files,
+# you can inline the config for a backend by copying its contents 
+# into the immich-machine-learning service in the docker-compose.yml file.
+
+# See https://immich.app/docs/features/ml-hardware-acceleration for info on usage.
+
+services:
+  armnn:
+    devices:
+      - /dev/mali0:/dev/mali0
+    volumes:
+      - /lib/firmware/mali_csffw.bin:/lib/firmware/mali_csffw.bin:ro # Mali firmware for your chipset (not always required depending on the driver)
+      - /usr/lib/libmali.so:/usr/lib/libmali.so:ro # Mali driver for your chipset (always required)
+
+  cpu:
+
+  cuda:
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities:
+                - gpu
+                - compute
+                - video
+
+  openvino:
+    device_cgroup_rules:
+      - "c 189:* rmw"
+    devices:
+      - /dev/dri:/dev/dri
+    volumes:
+      - /dev/bus/usb:/dev/bus/usb
+
+  openvino-wsl:
+    devices:
+      - /dev/dri:/dev/dri
+      - /dev/dxg:/dev/dxg
+    volumes:
+      - /dev/bus/usb:/dev/bus/usb
+      - /usr/lib/wsl:/usr/lib/wsl

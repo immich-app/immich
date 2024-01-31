@@ -46,6 +46,7 @@ import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:isar/isar.dart';
 import 'package:openapi/api.dart' show ThumbnailFormat;
 
+@RoutePage()
 // ignore: must_be_immutable
 class GalleryViewerPage extends HookConsumerWidget {
   final Asset Function(int index) loadAsset;
@@ -160,7 +161,7 @@ class GalleryViewerPage extends HookConsumerWidget {
 
     Iterable<ImageProvider> allImageProviders(Asset asset) sync* {
       if (ImmichImage.useLocal(asset)) {
-        yield ImmichImage.localThumbnailProvider(asset);
+        yield ImmichImage.localImageProvider(asset);
         yield localOriginalProvider(asset);
       } else {
         yield ImmichImage.remoteThumbnailProvider(asset, webp, header);
@@ -632,6 +633,7 @@ class GalleryViewerPage extends HookConsumerWidget {
       );
     }
 
+    // TODO: Migrate to a custom bottom bar and handle long press to delete
     Widget buildBottomBar() {
       // !!!! itemsList and actionlist should always be in sync
       final itemsList = [
@@ -749,15 +751,16 @@ class GalleryViewerPage extends HookConsumerWidget {
       }
     });
 
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: WillPopScope(
-        onWillPop: () async {
-          // Change immersive mode back to normal "edgeToEdge" mode
-          await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-          return true;
-        },
-        child: Stack(
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (_) {
+        // Change immersive mode back to normal "edgeToEdge" mode
+        SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+        context.pop();
+      },
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        body: Stack(
           children: [
             PhotoViewGallery.builder(
               scaleStateChangedCallback: (state) {
@@ -784,7 +787,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                 final a = loadAsset(index);
                 if (ImmichImage.useLocal(a)) {
                   return Image(
-                    image: ImmichImage.localThumbnailProvider(a),
+                    image: ImmichImage.localImageProvider(a),
                     fit: BoxFit.contain,
                   );
                 }

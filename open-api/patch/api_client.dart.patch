@@ -1,0 +1,21 @@
+@@ -143,19 +143,19 @@
+     );
+   }
+
+-  Future<dynamic> deserializeAsync(String value, String targetType, {bool growable = false,}) async =>
++  Future<dynamic> deserializeAsync(String value, String targetType, {bool growable = false,}) =>
+     // ignore: deprecated_member_use_from_same_package
+     deserialize(value, targetType, growable: growable);
+
+   @Deprecated('Scheduled for removal in OpenAPI Generator 6.x. Use deserializeAsync() instead.')
+-  dynamic deserialize(String value, String targetType, {bool growable = false,}) {
++  Future<dynamic> deserialize(String value, String targetType, {bool growable = false,}) async {
+     // Remove all spaces. Necessary for regular expressions as well.
+     targetType = targetType.replaceAll(' ', ''); // ignore: parameter_assignments
+
+     // If the expected target type is String, nothing to do...
+     return targetType == 'String'
+       ? value
+-      : fromJson(json.decode(value), targetType, growable: growable);
++      : fromJson(await compute((String j) => json.decode(j), value), targetType, growable: growable);
+   }

@@ -11,8 +11,8 @@ import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:immich_mobile/shared/services/sync.service.dart';
 import 'package:isar/isar.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:logging/logging.dart';
+import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:openapi/api.dart';
 
 final assetServiceProvider = Provider(
@@ -53,7 +53,7 @@ class AssetService {
   Future<(List<Asset>? toUpsert, List<String>? toDelete)>
       _getRemoteAssetChanges(User user, DateTime since) async {
     final deleted = await _apiService.auditApi
-        .getAuditDeletes(EntityType.ASSET, since, userId: user.id);
+        .getAuditDeletes(since, EntityType.ASSET, userId: user.id);
     if (deleted == null || deleted.needsFullSync) return (null, null);
     final assetDto = await _apiService.assetApi
         .getAllAssets(userId: user.id, updatedAfter: since);

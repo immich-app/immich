@@ -159,9 +159,13 @@
       {/if}
 
       <!-- ALBUM DESCRIPTION -->
-      <p class="mb-12 mt-6 w-full pb-2 text-left text-lg font-medium dark:text-gray-300">
-        {album.description}
-      </p>
+      {#if album.description}
+        <p
+          class="whitespace-pre-line mb-12 mt-6 w-full pb-2 text-left font-medium text-base text-black dark:text-gray-300"
+        >
+          {album.description}
+        </p>
+      {/if}
     </section>
   </AssetGrid>
   <UpdatePanel {assetStore} />

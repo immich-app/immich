@@ -13,12 +13,12 @@ class AddToAlbumSliverList extends HookConsumerWidget {
   final bool enabled;
 
   const AddToAlbumSliverList({
-    Key? key,
+    super.key,
     required this.onAddToAlbum,
     required this.albums,
     required this.sharedAlbums,
     this.enabled = true,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

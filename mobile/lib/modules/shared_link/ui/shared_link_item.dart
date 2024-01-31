@@ -76,8 +76,11 @@ class SharedLinkItem extends ConsumerWidget {
       final externalDomain = ref.read(
         serverInfoProvider.select((s) => s.serverConfig.externalDomain),
       );
-      final serverUrl =
+      var serverUrl =
           externalDomain.isNotEmpty ? externalDomain : getServerUrl();
+      if (serverUrl != null && !serverUrl.endsWith('/')) {
+        serverUrl += '/';
+      }
       if (serverUrl == null) {
         ImmichToast.show(
           context: context,
@@ -89,9 +92,7 @@ class SharedLinkItem extends ConsumerWidget {
       }
 
       Clipboard.setData(
-        ClipboardData(
-          text: "$serverUrl/share/${sharedLink.key}",
-        ),
+        ClipboardData(text: "${serverUrl}share/${sharedLink.key}"),
       ).then((_) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

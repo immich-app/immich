@@ -17,6 +17,12 @@ import {
 import { Optional, QueryBoolean, QueryDate, ValidateUUID } from '../../domain.util';
 import { BulkIdsDto } from '../response-dto';
 
+export class DeviceIdDto {
+  @IsNotEmpty()
+  @IsString()
+  deviceId!: string;
+}
+
 export enum AssetOrder {
   ASC = 'asc',
   DESC = 'desc',
@@ -238,11 +244,6 @@ export class RandomAssetsDto {
   @IsPositive()
   @Type(() => Number)
   count?: number;
-}
-
-export enum TrashAction {
-  EMPTY_ALL = 'empty-all',
-  RESTORE_ALL = 'restore-all',
 }
 
 export class AssetBulkDeleteDto extends BulkIdsDto {

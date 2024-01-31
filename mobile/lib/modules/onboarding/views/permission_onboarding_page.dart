@@ -9,6 +9,7 @@ import 'package:immich_mobile/shared/ui/immich_logo.dart';
 import 'package:immich_mobile/shared/ui/immich_title_text.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+@RoutePage()
 class PermissionOnboardingPage extends HookConsumerWidget {
   const PermissionOnboardingPage({super.key});
 
