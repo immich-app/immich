@@ -42,3 +42,8 @@ As this is a new feature, it is still experimental and may not work on all syste
 
 [hw-file]: https://github.com/immich-app/immich/releases/latest/download/hwaccel.ml.yml
 [nvcr]: https://github.com/NVIDIA/nvidia-container-runtime/
+
+## Tips
+
+- You may want to increase concurrency past the default for higher utilization. However, keep in mind that this will also increase VRAM consumption.
+- Larger models benefit more from hardware acceleration, if you have the VRAM for them.
