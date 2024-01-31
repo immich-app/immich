@@ -109,6 +109,15 @@
 
       <SettingInputField
         inputType={SettingInputFieldType.TEXT}
+        label="SIGNING ALGORITHM"
+        bind:value={config.oauth.signingAlgorithm}
+        required={true}
+        disabled={disabled || !config.oauth.enabled}
+        isEdited={!(config.oauth.signingAlgorithm == savedConfig.oauth.signingAlgorithm)}
+      />
+
+      <SettingInputField
+        inputType={SettingInputFieldType.TEXT}
         label="STORAGE LABEL CLAIM"
         desc="Automatically set the user's storage label to the value of this claim."
         bind:value={config.oauth.storageLabelClaim}

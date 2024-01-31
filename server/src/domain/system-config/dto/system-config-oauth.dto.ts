@@ -5,12 +5,13 @@ const isOverrideEnabled = (config: SystemConfigOAuthDto) => config.mobileOverrid
 
 export class SystemConfigOAuthDto {
   @IsBoolean()
-  enabled!: boolean;
+  autoLaunch!: boolean;
 
-  @ValidateIf(isEnabled)
-  @IsNotEmpty()
+  @IsBoolean()
+  autoRegister!: boolean;
+
   @IsString()
-  issuerUrl!: string;
+  buttonText!: string;
 
   @ValidateIf(isEnabled)
   @IsNotEmpty()
@@ -22,20 +23,13 @@ export class SystemConfigOAuthDto {
   @IsString()
   clientSecret!: string;
 
-  @IsString()
-  scope!: string;
-
-  @IsString()
-  storageLabelClaim!: string;
-
-  @IsString()
-  buttonText!: string;
-
   @IsBoolean()
-  autoRegister!: boolean;
+  enabled!: boolean;
 
-  @IsBoolean()
-  autoLaunch!: boolean;
+  @ValidateIf(isEnabled)
+  @IsNotEmpty()
+  @IsString()
+  issuerUrl!: string;
 
   @IsBoolean()
   mobileOverrideEnabled!: boolean;
@@ -43,4 +37,14 @@ export class SystemConfigOAuthDto {
   @ValidateIf(isOverrideEnabled)
   @IsUrl()
   mobileRedirectUri!: string;
+
+  @IsString()
+  scope!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  signingAlgorithm!: string;
+
+  @IsString()
+  storageLabelClaim!: string;
 }

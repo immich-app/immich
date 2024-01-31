@@ -77,17 +77,18 @@ export enum SystemConfigKey {
 
   NEW_VERSION_CHECK_ENABLED = 'newVersionCheck.enabled',
 
-  OAUTH_ENABLED = 'oauth.enabled',
-  OAUTH_ISSUER_URL = 'oauth.issuerUrl',
+  OAUTH_AUTO_LAUNCH = 'oauth.autoLaunch',
+  OAUTH_AUTO_REGISTER = 'oauth.autoRegister',
+  OAUTH_BUTTON_TEXT = 'oauth.buttonText',
   OAUTH_CLIENT_ID = 'oauth.clientId',
   OAUTH_CLIENT_SECRET = 'oauth.clientSecret',
-  OAUTH_SCOPE = 'oauth.scope',
-  OAUTH_STORAGE_LABEL_CLAIM = 'oauth.storageLabelClaim',
-  OAUTH_AUTO_LAUNCH = 'oauth.autoLaunch',
-  OAUTH_BUTTON_TEXT = 'oauth.buttonText',
-  OAUTH_AUTO_REGISTER = 'oauth.autoRegister',
+  OAUTH_ENABLED = 'oauth.enabled',
+  OAUTH_ISSUER_URL = 'oauth.issuerUrl',
   OAUTH_MOBILE_OVERRIDE_ENABLED = 'oauth.mobileOverrideEnabled',
   OAUTH_MOBILE_REDIRECT_URI = 'oauth.mobileRedirectUri',
+  OAUTH_SCOPE = 'oauth.scope',
+  OAUTH_SIGNING_ALGORITHM = 'oauth.signingAlgorithm',
+  OAUTH_STORAGE_LABEL_CLAIM = 'oauth.storageLabelClaim',
 
   PASSWORD_LOGIN_ENABLED = 'passwordLogin.enabled',
 
@@ -216,17 +217,18 @@ export interface SystemConfig {
     enabled: boolean;
   };
   oauth: {
-    enabled: boolean;
-    issuerUrl: string;
+    autoLaunch: boolean;
+    autoRegister: boolean;
+    buttonText: string;
     clientId: string;
     clientSecret: string;
-    scope: string;
-    storageLabelClaim: string;
-    buttonText: string;
-    autoRegister: boolean;
-    autoLaunch: boolean;
+    enabled: boolean;
+    issuerUrl: string;
     mobileOverrideEnabled: boolean;
     mobileRedirectUri: string;
+    scope: string;
+    signingAlgorithm: string;
+    storageLabelClaim: string;
   };
   passwordLogin: {
     enabled: boolean;

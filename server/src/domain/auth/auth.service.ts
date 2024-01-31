@@ -337,10 +337,7 @@ export class AuthService {
 
     try {
       const issuer = await Issuer.discover(issuerUrl);
-      const algorithms = (issuer.id_token_signing_alg_values_supported || []) as string[];
-      if (algorithms[0] === 'HS256') {
-        metadata.id_token_signed_response_alg = algorithms[0];
-      }
+      metadata.id_token_signed_response_alg = config.oauth.signingAlgorithm;
 
       return new issuer.Client(metadata);
     } catch (error: any | AggregateError) {
