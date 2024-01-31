@@ -26,7 +26,6 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   libraryId!: string;
   originalPath!: string;
   originalFileName!: string;
-  resized!: boolean;
   fileCreatedAt!: Date;
   fileModifiedAt!: Date;
   updatedAt!: Date;
