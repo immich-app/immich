@@ -1,4 +1,10 @@
-import { CreateLibraryDto, LibraryResponseDto, LibraryStatsResponseDto, ScanLibraryDto } from '@app/domain';
+import {
+  CreateLibraryDto,
+  LibraryResponseDto,
+  LibraryStatsResponseDto,
+  ScanLibraryDto,
+  UpdateLibraryDto,
+} from '@app/domain';
 import request from 'supertest';
 
 export const libraryApi = {
@@ -43,5 +49,13 @@ export const libraryApi = {
       .set('Authorization', `Bearer ${accessToken}`);
     expect(status).toBe(200);
     return body;
+  },
+  update: async (server: any, accessToken: string, id: string, data: UpdateLibraryDto) => {
+    const { body, status } = await request(server)
+      .put(`/library/${id}`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send(data);
+    expect(status).toBe(200);
+    return body as LibraryResponseDto;
   },
 };

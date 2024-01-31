@@ -26,13 +26,57 @@
 
 <div>
   <div in:fade={{ duration: 500 }}>
-    <SettingAccordion title="Scanning" subtitle="Settings for library scanning" isOpen>
+    <SettingAccordion title="Library watching (EXPERIMENTAL)" subtitle="Automatically watch for changed files" isOpen>
+      <form autocomplete="off" on:submit|preventDefault>
+        <div class="ml-4 mt-4 flex flex-col gap-4">
+          <SettingSwitch
+            title="Watch filesystem"
+            {disabled}
+            subtitle="Watch external libraries for file changes"
+            bind:checked={config.library.watch.enabled}
+          />
+
+          <SettingSwitch
+            title="Use filesystem polling (EXPERIMENTAL)"
+            disabled={disabled || !config.library.watch.enabled}
+            subtitle="Use polling instead of native filesystem watching. This is required for network shares but can be very resource intensive. Use with care!"
+            bind:checked={config.library.watch.usePolling}
+          />
+
+          <SettingInputField
+            inputType={SettingInputFieldType.NUMBER}
+            required={config.library.watch.usePolling}
+            disabled={disabled || !config.library.watch.usePolling || !config.library.watch.enabled}
+            label="Polling interval"
+            bind:value={config.library.watch.interval}
+            isEdited={config.library.watch.interval !== savedConfig.library.watch.interval}
+          >
+            <svelte:fragment slot="desc">
+              <p class="text-sm dark:text-immich-dark-fg">
+                Interval of filesystem polling, in milliseconds. Lower values will result in higher CPU usage.
+              </p>
+            </svelte:fragment>
+          </SettingInputField>
+        </div>
+
+        <div class="ml-4">
+          <SettingButtonsRow
+            on:reset={({ detail }) => dispatch('reset', { ...detail, configKeys: ['library'] })}
+            on:save={() => dispatch('save', { library: config.library })}
+            showResetToDefault={!isEqual(savedConfig.library, defaultConfig.library)}
+            {disabled}
+          />
+        </div>
+      </form>
+    </SettingAccordion>
+
+    <SettingAccordion title="Periodic Scanning" subtitle="Configure periodic library scanning" isOpen>
       <form autocomplete="off" on:submit|preventDefault>
         <div class="ml-4 mt-4 flex flex-col gap-4">
           <SettingSwitch
             title="ENABLED"
             {disabled}
-            subtitle="Enable automatic library scanning"
+            subtitle="Enable periodic library scanning"
             bind:checked={config.library.scan.enabled}
           />
 

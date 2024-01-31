@@ -129,6 +129,11 @@ The default configuration looks like this:
     "scan": {
       "enabled": true,
       "cronExpression": "0 0 * * *"
+    },
+    "watch": {
+      "enabled": false,
+      "usePolling": false,
+      "interval": 10000
     }
   }
 }

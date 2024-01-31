@@ -8,5 +8,10 @@
   "logging": {
     "enabled": false,
     "level": "debug"
+  },
+  "library": {
+    "watch": {
+      "enabled": true
+    }
   }
 }

@@ -6473,7 +6473,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.93.3",
+    "version": "1.94.0",
     "contact": {}
   },
   "tags": [],
@@ -7599,6 +7599,9 @@
             "type": "array"
           },
           "isVisible": {
+            "type": "boolean"
+          },
+          "isWatched": {
             "type": "boolean"
           },
           "name": {
@@ -9531,10 +9534,14 @@
         "properties": {
           "scan": {
             "$ref": "#/components/schemas/SystemConfigLibraryScanDto"
+          },
+          "watch": {
+            "$ref": "#/components/schemas/SystemConfigLibraryWatchDto"
           }
         },
         "required": [
-          "scan"
+          "scan",
+          "watch"
         ],
         "type": "object"
       },
@@ -9550,6 +9557,25 @@
         "required": [
           "cronExpression",
           "enabled"
+        ],
+        "type": "object"
+      },
+      "SystemConfigLibraryWatchDto": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "interval": {
+            "type": "integer"
+          },
+          "usePolling": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled",
+          "interval",
+          "usePolling"
         ],
         "type": "object"
       },
@@ -9923,6 +9949,7 @@
         "enum": [
           "all",
           "optimal",
+          "bitrate",
           "required",
           "disabled"
         ],
