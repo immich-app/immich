@@ -1,4 +1,3 @@
-import { goto } from '$app/navigation';
 import type { AxiosError, AxiosPromise } from 'axios';
 import {
   notificationController,
