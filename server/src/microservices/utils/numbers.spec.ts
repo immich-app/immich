@@ -33,7 +33,8 @@ describe('checks if a number is within a range', () => {
 describe('converts input to a number or null', () => {
   it('returns null for invalid inputs', () => {
     expect(toNumberOrNull(null)).toBeNull();
-    expect(toNumberOrNull()).toBeNull();
+    // eslint-disable-next-line unicorn/no-useless-undefined
+    expect(toNumberOrNull(undefined)).toBeNull();
     expect(toNumberOrNull('')).toBeNull();
     expect(toNumberOrNull(Number.NaN)).toBeNull();
   });
