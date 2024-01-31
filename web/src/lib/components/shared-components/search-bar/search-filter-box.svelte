@@ -9,17 +9,12 @@
     Video = 'video',
   }
 
-  enum AlbumOption {
-    Donotcare = 'Donotcare',
-    NotInAlbum = 'NotInAlbum',
-  }
-
   let selectedCountry: ComboBoxOption = { label: '', value: '' };
   let selectedState: ComboBoxOption = { label: '', value: '' };
   let selectedCity: ComboBoxOption = { label: '', value: '' };
 
   let mediaType: MediaType = MediaType.All;
-  let albumOption: AlbumOption = AlbumOption.Donotcare;
+  let notInAlbum = false;
 </script>
 
 <div
@@ -90,34 +85,18 @@
 
       <!-- ALBUM BELONGING -->
       <div id="album-belonging-selection">
-        <p class="immich-form-label">ALBUM OPTION</p>
+        <p class="immich-form-label">ALBUM OPTIONS</p>
 
         <div class="flex gap-5 mt-3">
           <label
             for="album-donotcare"
             class="text-base flex place-items-center gap-1 hover:cursor-pointer text-black dark:text-white"
           >
-            <input
-              bind:group={albumOption}
-              value={AlbumOption.Donotcare}
-              type="radio"
-              name="radio-album-option"
-              id="album-donotcare"
-            />Don't care</label
-          >
-
-          <label
-            for="album-ops-notinalbum"
-            class="text-base flex place-items-center gap-1 hover:cursor-pointer text-black dark:text-white"
-          >
-            <input
-              bind:group={albumOption}
-              value={AlbumOption.NotInAlbum}
-              type="radio"
-              name="radio-album-option"
-              id="album-ops-notinalbum"
-            />Not in any album</label
-          >
+            <label class="flex items-center mb-2">
+              <input type="checkbox" class="form-checkbox h-5 w-5 color" bind:checked={notInAlbum} />
+              <span class="ml-2 text-sm text-gray-500 dark:text-gray-300 pt-1">Not in any album</span>
+            </label>
+          </label>
         </div>
       </div>
     </div>

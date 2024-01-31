@@ -10,7 +10,7 @@
   };
 </script>
 
-<script lang="ts" generics="T">
+<script lang="ts">
   import { fly } from 'svelte/transition';
 
   import Icon from '$lib/components/elements/icon.svelte';
