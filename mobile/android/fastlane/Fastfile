@@ -35,7 +35,7 @@ platform :android do
       task: 'bundle', 
       build_type: 'Release',
       properties: {
-        "android.injected.version.code" => 120,
+        "android.injected.version.code" => 121,
         "android.injected.version.name" => "1.94.1",
       }
     )
