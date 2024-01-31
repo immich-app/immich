@@ -35,8 +35,8 @@ platform :android do
       task: 'bundle', 
       build_type: 'Release',
       properties: {
-        "android.injected.version.code" => 119,
-        "android.injected.version.name" => "1.93.3",
+        "android.injected.version.code" => 121,
+        "android.injected.version.name" => "1.94.1",
       }
     )
     upload_to_play_store(skip_upload_apk: true, skip_upload_images: true, skip_upload_screenshots: true, aab: '../build/app/outputs/bundle/release/app-release.aab')

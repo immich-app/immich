@@ -1,4 +1,3 @@
-import { goto } from '$app/navigation';
 import type { AxiosError, AxiosPromise } from 'axios';
 import {
   notificationController,
@@ -45,7 +44,7 @@ export const oauth = {
     try {
       const redirectUri = location.href.split('?')[0];
       const { data } = await api.oauthApi.startOAuth({ oAuthConfigDto: { redirectUri } });
-      goto(data.url);
+      window.location.href = data.url;
     } catch (error) {
       handleError(error, 'Unable to login with OAuth');
     }
