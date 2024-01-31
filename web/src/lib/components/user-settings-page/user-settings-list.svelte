@@ -32,7 +32,7 @@
 </SettingAccordion>
 
 <SettingAccordion key="account" title="Account" subtitle="Manage your account">
-  <UserProfileSettings user={$user} />
+  <UserProfileSettings />
 </SettingAccordion>
 
 <SettingAccordion key="api-keys" title="API Keys" subtitle="Manage your API keys">

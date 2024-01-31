@@ -1,9 +1,10 @@
 import { api } from '@api';
 import { redirect } from '@sveltejs/kit';
 import { AppRoute } from '../constants';
-import { currentUser, setUser } from '$lib/stores/user.store';
+import { get } from 'svelte/store';
 import { serverInfo } from '$lib/stores/server-info.store';
 import { browser } from '$app/environment';
+import { user } from '$lib/stores/user.store';
 
 export interface AuthOptions {
   admin?: true;
@@ -12,12 +13,11 @@ export interface AuthOptions {
 
 export const loadUser = async () => {
   try {
-    const user = currentUser();
-    if (!user && hasAuthCookie()) {
+    if (!get(user) && hasAuthCookie()) {
       const { data } = await api.userApi.getMyUserInfo();
-      setUser(data);
+      user.set(data);
     }
-    return currentUser();
+    return get(user);
   } catch {
     return undefined;
   }
@@ -54,7 +54,7 @@ export const authenticate = async (options?: AuthOptions) => {
 };
 
 export const requestServerInfo = async () => {
-  if (currentUser()) {
+  if (get(user)) {
     const { data } = await api.serverInfoApi.getServerInfo();
     serverInfo.set(data);
   }

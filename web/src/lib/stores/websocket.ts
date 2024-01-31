@@ -1,8 +1,8 @@
 import type { AssetResponseDto, ServerVersionResponseDto } from '@api';
 import { type Socket, io } from 'socket.io-client';
-import { writable } from 'svelte/store';
+import { get, writable } from 'svelte/store';
 import { loadConfig } from './server-config.store';
-import { currentUser } from './user.store';
+import { user } from './user.store';
 
 export interface ReleaseEvent {
   isAvailable: boolean;
@@ -30,7 +30,7 @@ export const openWebsocketConnection = async () => {
       return;
     }
 
-    if (!currentUser()) {
+    if (!get(user)) {
       return;
     }
 
