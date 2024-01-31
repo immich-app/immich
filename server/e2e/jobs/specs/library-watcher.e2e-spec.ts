@@ -1,8 +1,6 @@
 import { LibraryResponseDto, LibraryService, LoginResponseDto } from '@app/domain';
 import { AssetType, LibraryType } from '@app/infra/entities';
-import * as fs from 'fs/promises';
-import { api } from '../../client';
-
+import fs from 'fs/promises';
 import path from 'path';
 import {
   IMMICH_TEST_ASSET_PATH,
@@ -11,6 +9,7 @@ import {
   testApp,
   waitForEvent,
 } from '../../../src/test-utils/utils';
+import { api } from '../../client';
 
 describe(`Library watcher (e2e)`, () => {
   let server: any;
@@ -45,11 +44,9 @@ describe(`Library watcher (e2e)`, () => {
   });
 
   describe('Event handling', () => {
-    let library: LibraryResponseDto;
-
     describe('Single import path', () => {
       beforeEach(async () => {
-        library = await api.libraryApi.create(server, admin.accessToken, {
+        await api.libraryApi.create(server, admin.accessToken, {
           type: LibraryType.EXTERNAL,
           importPaths: [`${IMMICH_TEST_ASSET_TEMP_PATH}`],
         });
@@ -139,7 +136,7 @@ describe(`Library watcher (e2e)`, () => {
         await fs.mkdir(`${IMMICH_TEST_ASSET_TEMP_PATH}/dir2`, { recursive: true });
         await fs.mkdir(`${IMMICH_TEST_ASSET_TEMP_PATH}/dir3`, { recursive: true });
 
-        library = await api.libraryApi.create(server, admin.accessToken, {
+        await api.libraryApi.create(server, admin.accessToken, {
           type: LibraryType.EXTERNAL,
           importPaths: [
             `${IMMICH_TEST_ASSET_TEMP_PATH}/dir1`,

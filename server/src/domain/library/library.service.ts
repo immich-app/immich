@@ -1,19 +1,17 @@
 import { AssetType, LibraryType } from '@app/infra/entities';
+import { ImmichLogger } from '@app/infra/logger';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import picomatch from 'picomatch';
-
+import { EventEmitter } from 'events';
 import { R_OK } from 'node:constants';
 import { Stats } from 'node:fs';
 import path from 'node:path';
 import { basename, parse } from 'path';
+import picomatch from 'picomatch';
 import { AccessCore, Permission } from '../access';
 import { AuthDto } from '../auth';
 import { mimeTypes } from '../domain.constant';
 import { usePagination, validateCronExpression } from '../domain.util';
 import { IBaseJob, IEntityJob, ILibraryFileJob, ILibraryRefreshJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
-
-import { ImmichLogger } from '@app/infra/logger';
-import { EventEmitter } from 'events';
 import {
   IAccessRepository,
   IAssetRepository,
@@ -59,31 +57,33 @@ export class LibraryService extends EventEmitter {
     this.access = AccessCore.create(accessRepository);
     this.configCore = SystemConfigCore.create(configRepository);
     this.configCore.addValidator((config) => {
-      if (!validateCronExpression(config.library.scan.cronExpression)) {
-        throw new Error(`Invalid cron expression ${config.library.scan.cronExpression}`);
+      const { scan } = config.library;
+      if (!validateCronExpression(scan.cronExpression)) {
+        throw new Error(`Invalid cron expression ${scan.cronExpression}`);
       }
     });
   }
 
   async init() {
     const config = await this.configCore.getConfig();
-    this.watchLibraries = config.library.watch.enabled;
+    const { watch, scan } = config.library;
+    this.watchLibraries = watch.enabled;
     this.jobRepository.addCronJob(
       'libraryScan',
-      config.library.scan.cronExpression,
+      scan.cronExpression,
       () => this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SCAN_ALL, data: { force: false } }),
-      config.library.scan.enabled,
+      scan.enabled,
     );
 
     if (this.watchLibraries) {
       await this.watchAll();
     }
 
-    this.configCore.config$.subscribe(async (config) => {
-      this.jobRepository.updateCronJob('libraryScan', config.library.scan.cronExpression, config.library.scan.enabled);
+    this.configCore.config$.subscribe(async ({ library }) => {
+      this.jobRepository.updateCronJob('libraryScan', library.scan.cronExpression, library.scan.enabled);
 
-      if (config.library.watch.enabled !== this.watchLibraries) {
-        this.watchLibraries = config.library.watch.enabled;
+      if (library.watch.enabled !== this.watchLibraries) {
+        this.watchLibraries = library.watch.enabled;
         if (this.watchLibraries) {
           await this.watchAll();
         } else {
@@ -116,15 +116,14 @@ export class LibraryService extends EventEmitter {
     });
 
     const config = await this.configCore.getConfig();
+    const { usePolling, interval } = config.library.watch;
 
-    this.logger.debug(
-      `Settings for watcher: usePolling: ${config.library.watch.usePolling}, interval: ${config.library.watch.interval}`,
-    );
+    this.logger.debug(`Settings for watcher: usePolling: ${usePolling}, interval: ${interval}`);
 
     const watcher = this.storageRepository.watch(library.importPaths, {
-      usePolling: config.library.watch.usePolling,
-      interval: config.library.watch.interval,
-      binaryInterval: config.library.watch.interval,
+      usePolling,
+      interval,
+      binaryInterval: interval,
       ignoreInitial: true,
     });
 
