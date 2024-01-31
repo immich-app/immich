@@ -46,7 +46,8 @@ export type Options = {
 
 export const isConnectionAborted = (error: Error | any) => error.code === 'ECONNABORTED';
 
-export function ValidateUUID({ optional = false, each = false }) {
+export function ValidateUUID(options?: Options) {
+  const { optional, each } = { optional: false, each: false, ...options };
   return applyDecorators(
     IsUUID('4', { each }),
     ApiProperty({ format: 'uuid' }),
