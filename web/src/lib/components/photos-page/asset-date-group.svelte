@@ -1,5 +1,6 @@
 <script lang="ts">
   import { locale } from '$lib/stores/preferences.store';
+  import { thumbnailsZoom } from '$lib/stores/user.store';
   import { getAssetRatio } from '$lib/utils/asset-utils';
   import { formatGroupTitle, fromLocalDateTime, splitBucketIntoDateGroups } from '$lib/utils/timeline-util';
   import type { AssetResponseDto } from '@api';
@@ -53,7 +54,7 @@
         containerWidth: Math.floor(viewport.width),
         containerPadding: 0,
         targetRowHeightTolerance: 0.15,
-        targetRowHeight: 235,
+        targetRowHeight: 235 * $thumbnailsZoom,
       });
       geometry.push({
         ...justifiedLayoutResult,
