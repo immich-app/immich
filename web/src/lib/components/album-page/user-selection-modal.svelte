@@ -40,7 +40,9 @@
   };
 
   const handleSelect = (user: UserResponseDto) => {
-    selectedUsers = selectedUsers.includes(user) ? selectedUsers.filter((selectedUser) => selectedUser.id !== user.id) : [...selectedUsers, user];
+    selectedUsers = selectedUsers.includes(user)
+      ? selectedUsers.filter((selectedUser) => selectedUser.id !== user.id)
+      : [...selectedUsers, user];
   };
 
   const handleUnselect = (user: UserResponseDto) => {

@@ -183,8 +183,8 @@ export function getAssetRatio(asset: AssetResponseDto) {
   let width = asset.exifInfo?.exifImageWidth || 235;
   const orientation = Number(asset.exifInfo?.orientation);
   if (orientation && (isRotated90CW(orientation) || isRotated270CW(orientation))) {
-      [width, height] = [height, width];
-    }
+    [width, height] = [height, width];
+  }
   return { width, height };
 }
 
@@ -215,9 +215,7 @@ export const getAssetType = (type: AssetTypeEnum) => {
 };
 
 export const getSelectedAssets = (assets: Set<AssetResponseDto>, user: UserResponseDto | null): string[] => {
-  const ids = [...assets]
-    .filter((a) => !a.isExternal && user && a.ownerId === user.id)
-    .map((a) => a.id);
+  const ids = [...assets].filter((a) => !a.isExternal && user && a.ownerId === user.id).map((a) => a.id);
 
   const numberOfIssues = [...assets].filter((a) => a.isExternal || (user && a.ownerId !== user.id)).length;
   if (numberOfIssues > 0) {

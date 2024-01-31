@@ -66,7 +66,7 @@
     close: void;
   }>();
 
-  $: showDeleteReaction = Array.from({length: reactions.length}).fill(false);
+  $: showDeleteReaction = Array.from({ length: reactions.length }).fill(false);
   $: {
     if (innerHeight && activityHeight) {
       divHeight = innerHeight - activityHeight;

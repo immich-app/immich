@@ -16,8 +16,8 @@ export const handleToggleTheme = () => {
 
 const initTheme = (): ThemeSetting => {
   if (browser && !window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      return { value: Theme.LIGHT, system: false };
-    }
+    return { value: Theme.LIGHT, system: false };
+  }
   return { value: Theme.DARK, system: false };
 };
 

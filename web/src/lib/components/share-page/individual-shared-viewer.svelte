@@ -38,7 +38,9 @@
   const handleUploadAssets = async (files: File[] = []) => {
     try {
       let results: (string | undefined)[] = [];
-      results = await (!files || files.length === 0 || !Array.isArray(files) ? openFileUploadDialog() : fileUploadHandler(files));
+      results = await (!files || files.length === 0 || !Array.isArray(files)
+        ? openFileUploadDialog()
+        : fileUploadHandler(files));
       const { data } = await api.sharedLinkApi.addSharedLinkAssets({
         id: sharedLink.id,
         assetIdsDto: {

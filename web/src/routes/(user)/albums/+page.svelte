@@ -227,7 +227,8 @@
   };
 
   const handleChangeListMode = () => {
-    $albumViewSettings.view = $albumViewSettings.view === AlbumViewMode.Cover ? AlbumViewMode.List : AlbumViewMode.Cover;
+    $albumViewSettings.view =
+      $albumViewSettings.view === AlbumViewMode.Cover ? AlbumViewMode.List : AlbumViewMode.Cover;
   };
 </script>
 

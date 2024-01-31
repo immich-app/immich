@@ -35,8 +35,8 @@
       return;
     }
     if (!force && people.length < maximumLengthSearchPeople && name.startsWith(searchWord)) {
-        return;
-      }
+      return;
+    }
 
     const timeout = setTimeout(() => (isSearchingPeople = true), timeBeforeShowLoadingSpinner);
     try {

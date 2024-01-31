@@ -327,7 +327,9 @@ export class AssetStore {
   }
 
   async getRandomAsset(): Promise<AssetResponseDto | null> {
-    let index = Math.floor(Math.random() * this.buckets.reduce((accumulator, bucket) => accumulator + bucket.bucketCount, 0));
+    let index = Math.floor(
+      Math.random() * this.buckets.reduce((accumulator, bucket) => accumulator + bucket.bucketCount, 0),
+    );
     for (const bucket of this.buckets) {
       if (index < bucket.bucketCount) {
         await this.loadBucket(bucket.bucketDate, BucketPosition.Unknown);

@@ -30,9 +30,12 @@
   });
 
   $: {
-    filteredAlbums = search.length > 0 && albums.length > 0 ? albums.filter((album) => {
-        return album.albumName.toLowerCase().includes(search.toLowerCase());
-      }) : albums;
+    filteredAlbums =
+      search.length > 0 && albums.length > 0
+        ? albums.filter((album) => {
+            return album.albumName.toLowerCase().includes(search.toLowerCase());
+          })
+        : albums;
   }
 
   const handleSelect = (album: AlbumResponseDto) => {

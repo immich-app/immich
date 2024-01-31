@@ -44,9 +44,7 @@
 
   $: timelineY = element?.scrollTop || 0;
   $: isEmpty = $assetStore.initialized && $assetStore.buckets.length === 0;
-  $: idsSelectedAssets = [...$selectedAssets]
-    .filter((a) => !a.isExternal)
-    .map((a) => a.id);
+  $: idsSelectedAssets = [...$selectedAssets].filter((a) => !a.isExternal).map((a) => a.id);
 
   const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
   const dispatch = createEventDispatcher<{ select: AssetResponseDto; escape: void }>();
@@ -399,7 +397,7 @@
     <div class="mt-8 animate-pulse">
       <div class="mb-2 h-4 w-24 rounded-full bg-immich-primary/20 dark:bg-immich-dark-primary/20" />
       <div class="flex w-[120%] flex-wrap">
-        {#each Array.from({length: 100}) as _}
+        {#each Array.from({ length: 100 }) as _}
           <div class="m-[1px] h-[10em] w-[16em] bg-immich-primary/20 dark:bg-immich-dark-primary/20" />
         {/each}
       </div>
