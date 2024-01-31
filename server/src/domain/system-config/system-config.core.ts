@@ -339,7 +339,7 @@ export class SystemConfigCore {
     if (force || !this.configCache) {
       try {
         const file = await this.repository.readFile(filepath);
-        const json = JSON.parse(file).toString();
+        const json = JSON.parse(file.toString());
         const overrides: SystemConfigEntity<SystemConfigValue>[] = [];
 
         for (const key of Object.values(SystemConfigKey)) {
