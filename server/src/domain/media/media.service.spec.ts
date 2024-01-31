@@ -561,7 +561,7 @@ describe(MediaService.name, () => {
       mediaMock.probe.mockResolvedValue(probeStub.videoStream40Mbps);
       configMock.load.mockResolvedValue([
         { key: SystemConfigKey.FFMPEG_TRANSCODE, value: TranscodePolicy.BITRATE },
-        { key: SystemConfigKey.FFMPEG_MAX_BITRATE, value: 30000000 },
+        { key: SystemConfigKey.FFMPEG_MAX_BITRATE, value: '30M' },
       ]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mediaMock.transcode).toHaveBeenCalledWith(
