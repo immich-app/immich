@@ -202,6 +202,8 @@ class _VideoPlayerState extends State<VideoPlayer> {
   Widget build(BuildContext context) {
     if (chewieController?.videoPlayerController.value.isInitialized == true) {
       return SizedBox(
+        height: context.height,
+        width: context.width,
         child: Chewie(
           controller: chewieController!,
         ),
