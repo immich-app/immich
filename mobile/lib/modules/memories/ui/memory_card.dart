@@ -2,7 +2,6 @@ import 'dart:ui';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/store.dart';
@@ -10,7 +9,7 @@ import 'package:immich_mobile/shared/ui/immich_image.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:openapi/api.dart';
 
-class MemoryCard extends HookConsumerWidget {
+class MemoryCard extends StatelessWidget {
   final Asset asset;
   final void Function() onTap;
   final void Function() onClose;
@@ -28,20 +27,10 @@ class MemoryCard extends HookConsumerWidget {
     super.key,
   });
 
+  String get authToken => 'Bearer ${Store.get(StoreKey.accessToken)}';
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final authToken = 'Bearer ${Store.get(StoreKey.accessToken)}';
-
-    buildTitle() {
-      return Text(
-        title,
-        style: context.textTheme.headlineMedium?.copyWith(
-          color: Colors.white,
-          fontWeight: FontWeight.w500,
-        ),
-      );
-    }
-
+  Widget build(BuildContext context) {
     return Card(
       color: Colors.black,
       shape: RoundedRectangleBorder(
@@ -110,7 +99,13 @@ class MemoryCard extends HookConsumerWidget {
             Positioned(
               left: 18.0,
               bottom: 18.0,
-              child: buildTitle(),
+              child: Text(
+                title,
+                style: context.textTheme.headlineMedium?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ),
         ],
       ),
