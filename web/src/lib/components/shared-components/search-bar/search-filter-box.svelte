@@ -2,6 +2,7 @@
   import Button from '$lib/components/elements/buttons/button.svelte';
   import { fly } from 'svelte/transition';
   import Combobox, { type ComboBoxOption } from '../combobox.svelte';
+  import type { PersonResponseDto } from '@immich/sdk';
 
   enum MediaType {
     All = 'all',
@@ -17,6 +18,8 @@
   let notInAlbum = false;
   let inArchive = false;
   let inFavorite = false;
+
+  let people: PersonResponseDto[] = [];
 </script>
 
 <div
@@ -85,8 +88,8 @@
         </div>
       </div>
 
-      <!-- ALBUM BELONGING -->
-      <div id="album-belonging-selection">
+      <!-- DISPLAY OPTIONS -->
+      <div id="display-options-selection">
         <p class="immich-form-label">DISPLAY OPTIONS</p>
 
         <div class="flex gap-5 mt-3">
@@ -108,8 +111,31 @@
       </div>
     </div>
 
+    <hr />
+
+    <!-- PEOPLE -->
+    <div id="people-selection" class="my-4">
+      <div class="flex justify-between place-items-center">
+        <p class="immich-form-label">PEOPLE</p>
+        <Button size="sm">Add people</Button>
+      </div>
+
+      <div class="flex gap-5 mt-3">
+        <label class="flex items-center mb-2">
+          <input type="checkbox" class="form-checkbox h-5 w-5 color" />
+          <span class="ml-2 text-sm text-black dark:text-white pt-1">With people</span>
+        </label>
+
+        <label class="flex items-center mb-2">
+          <input type="checkbox" class="form-checkbox h-5 w-5 color" />
+          <span class="ml-2 text-sm text-black dark:text-white pt-1">Without people</span>
+        </label>
+      </div>
+    </div>
+
+    <hr />
     <!-- LOCATION -->
-    <div class="py-3">
+    <div id="location-selection" class="my-4">
       <p class="immich-form-label">PLACE</p>
 
       <div class="flex justify-between gap-5 mt-3">
@@ -130,8 +156,9 @@
       </div>
     </div>
 
+    <hr />
     <!-- CAMERA MODEL -->
-    <div class="py-3">
+    <div id="camera-selection" class="my-4">
       <p class="immich-form-label">CAMERA</p>
 
       <div class="flex justify-between gap-5 mt-3">
@@ -147,9 +174,11 @@
       </div>
     </div>
 
+    <hr />
+
     <!-- DATE RANGE -->
-    <div class="flex justify-between gap-5">
-      <div class="py-3 flex-1 mt">
+    <div id="date-range-selection" class="my-4 flex justify-between gap-5">
+      <div class="mb-3 flex-1 mt">
         <label class="immich-form-label" for="start-date">START DATE</label>
         <input
           class="immich-form-input w-full mt-3 hover:cursor-pointer"
@@ -159,7 +188,7 @@
         />
       </div>
 
-      <div class="py-3 flex-1">
+      <div class="mb-3 flex-1">
         <label class="immich-form-label" for="end-date">END DATE</label>
         <input
           class="immich-form-input w-full mt-3 hover:cursor-pointer"
