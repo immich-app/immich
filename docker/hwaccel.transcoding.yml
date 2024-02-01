@@ -9,7 +9,7 @@ version: "3.8"
 # See https://immich.app/docs/features/hardware-transcoding for more info on using hardware transcoding.
 
 services:
-  cpu:
+  cpu: {}
 
   nvenc:
     deploy:
