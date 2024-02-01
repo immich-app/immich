@@ -217,22 +217,22 @@
                       api.getPeopleThumbnailUrl(selectedPersonToReassign[index]?.id || face.person.id)}
                     altText={selectedPersonToReassign[index]
                       ? selectedPersonToReassign[index]?.name || ''
-                      : selectedPersonToCreate[index]
+                      : (selectedPersonToCreate[index]
                         ? 'new person'
-                        : getPersonNameWithHiddenValue(face.person?.name, face.person?.isHidden)}
+                        : getPersonNameWithHiddenValue(face.person?.name, face.person?.isHidden))}
                     title={selectedPersonToReassign[index]
                       ? selectedPersonToReassign[index]?.name || ''
-                      : selectedPersonToCreate[index]
+                      : (selectedPersonToCreate[index]
                         ? 'new person'
-                        : getPersonNameWithHiddenValue(face.person?.name, face.person?.isHidden)}
+                        : getPersonNameWithHiddenValue(face.person?.name, face.person?.isHidden))}
                     widthStyle="90px"
                     heightStyle="90px"
                     thumbhash={null}
                     hidden={selectedPersonToReassign[index]
                       ? selectedPersonToReassign[index]?.isHidden
-                      : selectedPersonToCreate[index]
+                      : (selectedPersonToCreate[index]
                         ? false
-                        : face.person?.isHidden}
+                        : face.person?.isHidden)}
                   />
                 </div>
                 {#if !selectedPersonToCreate[index]}

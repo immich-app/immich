@@ -4,7 +4,7 @@
   import ConfirmDialogue from './confirm-dialogue.svelte';
   import Map from './map/map.svelte';
   export const title = 'Change Location';
-  export let asset: AssetResponseDto | undefined;
+  export let asset: AssetResponseDto | undefined = undefined;
 
   interface Point {
     lng: number;

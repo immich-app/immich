@@ -20,7 +20,7 @@
 
   export let assets: Set<AssetResponseDto>;
   export let clearSelect: () => void;
-  export let ownerId: string | undefined;
+  export let ownerId: string | undefined = undefined;
 
   setContext({
     getAssets: () => assets,

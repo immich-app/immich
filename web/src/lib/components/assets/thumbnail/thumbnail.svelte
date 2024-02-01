@@ -27,9 +27,9 @@
 
   export let asset: AssetResponseDto;
   export let groupIndex = 0;
-  export let thumbnailSize: number | undefined;
-  export let thumbnailWidth: number | undefined;
-  export let thumbnailHeight: number | undefined;
+  export let thumbnailSize: number | undefined = undefined;
+  export let thumbnailWidth: number | undefined = undefined;
+  export let thumbnailHeight: number | undefined = undefined;
   export let format: ThumbnailFormat = ThumbnailFormat.Webp;
   export let selected = false;
   export let selectionCandidate = false;

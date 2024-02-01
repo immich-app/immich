@@ -1,7 +1,7 @@
 <script lang="ts">
   import empty1Url from '$lib/assets/empty-1.svg';
 
-  export let actionHandler: undefined | (() => unknown);
+  export let actionHandler: undefined | (() => unknown) = undefined;
   export let text = '';
   export let alt = '';
   export let fullWidth = false;

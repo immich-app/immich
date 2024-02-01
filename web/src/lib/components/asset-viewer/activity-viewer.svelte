@@ -43,9 +43,9 @@
 
   export let reactions: ActivityResponseDto[];
   export let user: UserResponseDto;
-  export let assetId: string | undefined;
+  export let assetId: string | undefined = undefined;
   export let albumId: string;
-  export let assetType: AssetTypeEnum | undefined;
+  export let assetType: AssetTypeEnum | undefined = undefined;
   export let albumOwnerId: string;
   export let disabled: boolean;
   export let isLiked: ActivityResponseDto | null;

@@ -9,7 +9,7 @@
   export let url: string;
   export let altText: string;
   export let title: string | null = null;
-  export let heightStyle: string | undefined;
+  export let heightStyle: string | undefined = undefined;
   export let widthStyle: string;
   export let thumbhash: string | null = null;
   export let curve = false;

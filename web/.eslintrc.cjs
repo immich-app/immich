@@ -32,6 +32,10 @@ module.exports = {
     NodeJS: true,
   },
   rules: {
+    'unicorn/no-useless-undefined': 'off',
+    'unicorn/prefer-spread': 'off',
+    'unicorn/no-null': 'off',
+    'unicorn/prevent-abbreviations': 'off',
     '@typescript-eslint/no-unused-vars': [
       'warn',
       {

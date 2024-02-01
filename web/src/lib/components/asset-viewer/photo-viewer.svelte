@@ -13,7 +13,7 @@
   import { boundingBoxesArray } from '$lib/stores/people.store';
 
   export let asset: AssetResponseDto;
-  export let element: HTMLDivElement | undefined;
+  export let element: HTMLDivElement | undefined = undefined;
   export let haveFadeTransition = true;
 
   let imgElement: HTMLDivElement;

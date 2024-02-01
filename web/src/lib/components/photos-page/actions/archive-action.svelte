@@ -11,7 +11,7 @@
   import { mdiArchiveArrowUpOutline, mdiArchiveArrowDownOutline, mdiTimerSand } from '@mdi/js';
   import type { OnArchive } from '$lib/utils/actions';
 
-  export let onArchive: OnArchive | undefined;
+  export let onArchive: OnArchive | undefined = undefined;
 
   export let menuItem = false;
   export let unarchive = false;

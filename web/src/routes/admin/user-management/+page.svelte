@@ -41,7 +41,7 @@
   };
 
   const getDeleteDate = (user: UserResponseDto): string => {
-    let deletedAt = new Date(user.deletedAt ? user.deletedAt : Date.now());
+    let deletedAt = new Date(user.deletedAt ?? Date.now());
     deletedAt.setDate(deletedAt.getDate() + 7);
     return deletedAt.toLocaleString($locale, deleteDateFormat);
   };

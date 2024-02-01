@@ -46,7 +46,7 @@
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
   export let showNavigation = true;
-  export let sharedLink: SharedLinkResponseDto | undefined;
+  export let sharedLink: SharedLinkResponseDto | undefined = undefined;
   $: isTrashEnabled = $featureFlags.trash;
   export let withStacked = false;
   export let isShared = false;

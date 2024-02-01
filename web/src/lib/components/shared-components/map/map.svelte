@@ -25,9 +25,9 @@
   import { Theme } from '$lib/constants';
 
   export let mapMarkers: MapMarkerResponseDto[];
-  export let showSettingsModal: boolean | undefined;
-  export let zoom: number | undefined;
-  export let center: LngLatLike | undefined;
+  export let showSettingsModal: boolean | undefined = undefined;
+  export let zoom: number | undefined = undefined;
+  export let center: LngLatLike | undefined = undefined;
   export let simplified = false;
   export let clickable = false;
   export let useLocationPin = false;

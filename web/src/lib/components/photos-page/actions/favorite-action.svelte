@@ -11,7 +11,7 @@
   import { mdiHeartMinusOutline, mdiHeartOutline, mdiTimerSand } from '@mdi/js';
   import type { OnFavorite } from '$lib/utils/actions';
 
-  export let onFavorite: OnFavorite | undefined;
+  export let onFavorite: OnFavorite | undefined = undefined;
 
   export let menuItem = false;
   export let removeFavorite: boolean;

@@ -23,7 +23,7 @@
   import UpdatePanel from '../shared-components/update-panel.svelte';
 
   export let sharedLink: SharedLinkResponseDto;
-  export let user: UserResponseDto | undefined;
+  export let user: UserResponseDto | undefined = undefined;
 
   const album = sharedLink.album as AlbumResponseDto;
 

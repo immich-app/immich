@@ -127,7 +127,7 @@
               {:then}
                 <span
                   class="absolute left-0 h-[2px] bg-white"
-                  style:width={`${index < assetIndex ? 100 : index > assetIndex ? 0 : $progress * 100}%`}
+                  style:width={`${index < assetIndex ? 100 : (index > assetIndex ? 0 : $progress * 100)}%`}
                 />
               {/await}
             </button>

@@ -141,7 +141,7 @@
 
 <section class="relative mb-12 bg-immich-bg pt-32 dark:bg-immich-dark-bg">
   <section class="immich-scrollbar relative overflow-y-auto">
-    {#if albums && albums.length}
+    {#if albums && albums.length > 0}
       <section>
         <div class="ml-6 text-4xl font-medium text-black/70 dark:text-white/80">ALBUMS</div>
         <div class="grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))]">

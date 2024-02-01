@@ -15,9 +15,9 @@
   import { mdiLink } from '@mdi/js';
   import { serverConfig } from '$lib/stores/server-config.store';
 
-  export let albumId: string | undefined;
+  export let albumId: string | undefined = undefined;
   export let assetIds: string[] = [];
-  export let editingLink: SharedLinkResponseDto | undefined;
+  export let editingLink: SharedLinkResponseDto | undefined = undefined;
 
   let sharedLink: string | null = null;
   let description = '';
