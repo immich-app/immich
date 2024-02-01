@@ -133,7 +133,9 @@
   {#if $featureFlags.configFile}
     <div class="flex flex-row items-center gap-2 bg-gray-100 p-3 dark:bg-gray-800">
       <Icon path={mdiAlert} class="text-yellow-400" size={18} />
-      <h2 class="text-md text-immich-primary dark:text-immich-dark-primary">Config is currently set by a config file</h2>
+      <h2 class="text-md text-immich-primary dark:text-immich-dark-primary">
+        Config is currently set by a config file
+      </h2>
     </div>
   {/if}
 
@@ -152,7 +154,7 @@
         </div>
       </LinkButton>
     </div>
-  
+
     <AdminSettings bind:config let:handleReset let:handleSave let:savedConfig let:defaultConfig>
       <section id="setting-content" class="flex place-content-center sm:mx-4">
         <section class="w-full pb-28 sm:w-5/6 md:w-[850px]">
