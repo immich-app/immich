@@ -1,5 +1,5 @@
 # dev build
-FROM ghcr.io/immich-app/base-server-dev:20231214@sha256:cd5be516b27c0c402bee3a6a93d8c83dfd5a827c18a2343cb97b55f3be98151b as dev
+FROM ghcr.io/immich-app/base-server-dev:20240130@sha256:a11ac5c56f0ccce1f218954c07c43caadf489557252ba5b9ca1c5977aaa25999 as dev
 
 RUN apt-get install --no-install-recommends -yqq tini
 WORKDIR /usr/src/app
@@ -26,15 +26,21 @@ COPY --from=dev /usr/src/app/node_modules/@img ./node_modules/@img
 # web build
 FROM node:iron-alpine3.18 as web
 
-WORKDIR /usr/src/app
-COPY web/package*.json web/svelte.config.js .
+WORKDIR /usr/src/open-api/typescript-sdk
+COPY open-api/typescript-sdk/package*.json open-api/typescript-sdk/tsconfig*.json ./
 RUN npm ci
-COPY web .
+COPY open-api/typescript-sdk/ ./
+RUN npm run build
+
+WORKDIR /usr/src/app
+COPY web/package*.json web/svelte.config.js ./
+RUN npm ci
+COPY web ./
 RUN npm run build
 
 
 # prod build
-FROM ghcr.io/immich-app/base-server-prod:20231214@sha256:b214f86683fde081b09beed2d7bfc28bec55c829751ccf2e02ad7dd18293f5e0
+FROM ghcr.io/immich-app/base-server-prod:20240130@sha256:ce23a32154540b906df3c971766bcd991561c60331794e0ebb780947ac48113f
 
 WORKDIR /usr/src/app
 ENV NODE_ENV=production \

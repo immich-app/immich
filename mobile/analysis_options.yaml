@@ -52,7 +52,6 @@ dart_code_metrics:
     - avoid-cascade-after-if-null
     - avoid-collapsible-if
     - avoid-collection-methods-with-unrelated-types
-    - avoid-declaring-call-method
     - avoid-double-slash-imports
     - avoid-duplicate-cascades
     - avoid-duplicate-patterns

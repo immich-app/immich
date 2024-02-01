@@ -23,8 +23,8 @@ class SearchExploreResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SearchExploreResponseDto &&
-     other.fieldName == fieldName &&
-     other.items == items;
+    other.fieldName == fieldName &&
+    _deepEquality.equals(other.items, items);
 
   @override
   int get hashCode =>

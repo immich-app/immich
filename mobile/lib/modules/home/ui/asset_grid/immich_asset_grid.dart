@@ -27,7 +27,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
   final bool canDeselect;
   final bool? dynamicLayout;
   final bool showMultiSelectIndicator;
-  final void Function(ItemPosition start, ItemPosition end)?
+  final void Function(Iterable<ItemPosition> itemPositions)?
       visibleItemsListener;
   final Widget? topWidget;
   final bool shrinkWrap;
@@ -89,8 +89,10 @@ class ImmichAssetGrid extends HookConsumerWidget {
             };
 
             scale.onUpdate = (details) {
-              scaleFactor.value =
-                  max(min(5.0, baseScaleFactor.value * details.scale), 1.0);
+              scaleFactor.value = max(
+                min(5.0, baseScaleFactor.value * details.scale),
+                1.0,
+              );
               if (7 - scaleFactor.value.toInt() != perRow.value) {
                 perRow.value = 7 - scaleFactor.value.toInt();
               }

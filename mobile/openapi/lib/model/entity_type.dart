@@ -34,7 +34,7 @@ class EntityType {
 
   static EntityType? fromJson(dynamic value) => EntityTypeTypeTransformer().decode(value);
 
-  static List<EntityType>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<EntityType> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <EntityType>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {

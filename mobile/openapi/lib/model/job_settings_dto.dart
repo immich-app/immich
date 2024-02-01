@@ -20,7 +20,7 @@ class JobSettingsDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is JobSettingsDto &&
-     other.concurrency == concurrency;
+    other.concurrency == concurrency;
 
   @override
   int get hashCode =>

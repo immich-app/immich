@@ -5,12 +5,14 @@ class SearchResultPageState {
   final bool isLoading;
   final bool isSuccess;
   final bool isError;
+  final bool isSmart;
   final List<Asset> searchResult;
 
   SearchResultPageState({
     required this.isLoading,
     required this.isSuccess,
     required this.isError,
+    required this.isSmart,
     required this.searchResult,
   });
 
@@ -18,19 +20,21 @@ class SearchResultPageState {
     bool? isLoading,
     bool? isSuccess,
     bool? isError,
+    bool? isSmart,
     List<Asset>? searchResult,
   }) {
     return SearchResultPageState(
       isLoading: isLoading ?? this.isLoading,
       isSuccess: isSuccess ?? this.isSuccess,
       isError: isError ?? this.isError,
+      isSmart: isSmart ?? this.isSmart,
       searchResult: searchResult ?? this.searchResult,
     );
   }
 
   @override
   String toString() {
-    return 'SearchresultPageState(isLoading: $isLoading, isSuccess: $isSuccess, isError: $isError, searchResult: $searchResult)';
+    return 'SearchresultPageState(isLoading: $isLoading, isSuccess: $isSuccess, isError: $isError, isSmart: $isSmart, searchResult: $searchResult)';
   }
 
   @override
@@ -42,6 +46,7 @@ class SearchResultPageState {
         other.isLoading == isLoading &&
         other.isSuccess == isSuccess &&
         other.isError == isError &&
+        other.isSmart == isSmart &&
         listEquals(other.searchResult, searchResult);
   }
 
@@ -50,6 +55,7 @@ class SearchResultPageState {
     return isLoading.hashCode ^
         isSuccess.hashCode ^
         isError.hashCode ^
+        isSmart.hashCode ^
         searchResult.hashCode;
   }
 }

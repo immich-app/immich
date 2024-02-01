@@ -1,35 +1,36 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/modules/search/providers/search_page_state.provider.dart';
 import 'package:immich_mobile/modules/search/providers/search_result_page.provider.dart';
-import 'package:immich_mobile/modules/search/ui/search_result_grid.dart';
 import 'package:immich_mobile/modules/search/ui/search_suggestion_list.dart';
+import 'package:immich_mobile/shared/ui/asset_grid/multiselect_grid.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 
 class SearchType {
-  SearchType({required this.isClip, required this.searchTerm});
+  SearchType({required this.isSmart, required this.searchTerm});
 
-  final bool isClip;
+  final bool isSmart;
   final String searchTerm;
 }
 
 SearchType _getSearchType(String searchTerm) {
   if (searchTerm.startsWith('m:')) {
-    return SearchType(isClip: false, searchTerm: searchTerm.substring(2));
+    return SearchType(isSmart: false, searchTerm: searchTerm.substring(2));
   } else {
-    return SearchType(isClip: true, searchTerm: searchTerm);
+    return SearchType(isSmart: true, searchTerm: searchTerm);
   }
 }
 
+@RoutePage()
 class SearchResultPage extends HookConsumerWidget {
   const SearchResultPage({
-    Key? key,
+    super.key,
     required this.searchTerm,
-  }) : super(key: key);
+  });
 
   final String searchTerm;
 
@@ -38,7 +39,6 @@ class SearchResultPage extends HookConsumerWidget {
     final searchTermController = useTextEditingController(text: "");
     final isNewSearch = useState(false);
     final currentSearchTerm = useState(searchTerm);
-    final isDisplayDateGroup = useState(true);
 
     FocusNode? searchFocusNode;
 
@@ -47,35 +47,27 @@ class SearchResultPage extends HookConsumerWidget {
         searchFocusNode = FocusNode();
 
         var searchType = _getSearchType(searchTerm);
-        searchType.isClip
-            ? isDisplayDateGroup.value = false
-            : isDisplayDateGroup.value = true;
 
         Future.delayed(
           Duration.zero,
           () => ref
               .read(searchResultPageProvider.notifier)
-              .search(searchType.searchTerm, clipEnable: searchType.isClip),
+              .search(searchType.searchTerm, smartSearch: searchType.isSmart),
         );
         return () => searchFocusNode?.dispose();
       },
       [],
     );
 
-    onSearchSubmitted(String newSearchTerm) {
+    Future<void> onSearchSubmitted(String newSearchTerm) {
       debugPrint("Re-Search with $newSearchTerm");
       searchFocusNode?.unfocus();
       isNewSearch.value = false;
       currentSearchTerm.value = newSearchTerm;
-
       var searchType = _getSearchType(newSearchTerm);
-      searchType.isClip
-          ? isDisplayDateGroup.value = false
-          : isDisplayDateGroup.value = true;
-
-      ref
+      return ref
           .watch(searchResultPageProvider.notifier)
-          .search(searchType.searchTerm, clipEnable: searchType.isClip);
+          .search(searchType.searchTerm, smartSearch: searchType.isSmart);
     }
 
     buildTextField() {
@@ -147,9 +139,10 @@ class SearchResultPage extends HookConsumerWidget {
       );
     }
 
+    Future<void> refresh() async => onSearchSubmitted(currentSearchTerm.value);
+
     buildSearchResult() {
-      var searchResultPageState = ref.watch(searchResultPageProvider);
-      var allSearchAssets = ref.watch(searchResultPageProvider).searchResult;
+      final searchResultPageState = ref.watch(searchResultPageProvider);
 
       if (searchResultPageState.isError) {
         return Padding(
@@ -163,15 +156,15 @@ class SearchResultPage extends HookConsumerWidget {
       }
 
       if (searchResultPageState.isSuccess) {
-        if (isDisplayDateGroup.value) {
-          return ImmichAssetGrid(
-            assets: allSearchAssets,
-          );
-        } else {
-          return SearchResultGrid(
-            assets: allSearchAssets,
-          );
-        }
+        return MultiselectGrid(
+          renderListProvider: searchRenderListProvider,
+          archiveEnabled: true,
+          deleteEnabled: true,
+          editEnabled: true,
+          favoriteEnabled: true,
+          stackEnabled: false,
+          onRefresh: refresh,
+        );
       }
 
       return const SizedBox();
@@ -185,7 +178,7 @@ class SearchResultPage extends HookConsumerWidget {
             if (isNewSearch.value) {
               isNewSearch.value = false;
             } else {
-              context.autoPop(true);
+              context.popRoute(true);
             }
           },
           icon: const Icon(Icons.arrow_back_ios_rounded),

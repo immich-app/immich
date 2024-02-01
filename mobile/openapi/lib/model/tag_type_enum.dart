@@ -36,7 +36,7 @@ class TagTypeEnum {
 
   static TagTypeEnum? fromJson(dynamic value) => TagTypeEnumTypeTransformer().decode(value);
 
-  static List<TagTypeEnum>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<TagTypeEnum> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <TagTypeEnum>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {

@@ -7,8 +7,9 @@
   import { api } from '@api';
   import Icon from '$lib/components/elements/icon.svelte';
   import Button from '../../elements/buttons/button.svelte';
-  import { OnRestore, getAssetControlContext } from '../asset-select-control-bar.svelte';
+  import { getAssetControlContext } from '../asset-select-control-bar.svelte';
   import { mdiHistory } from '@mdi/js';
+  import type { OnRestore } from '$lib/utils/actions';
 
   export let onRestore: OnRestore | undefined = undefined;
 
@@ -21,7 +22,7 @@
 
     try {
       const ids = Array.from(getAssets()).map((a) => a.id);
-      await api.assetApi.restoreAssets({ bulkIdsDto: { ids } });
+      await api.trashApi.restoreAssets({ bulkIdsDto: { ids } });
       onRestore?.(ids);
 
       notificationController.show({

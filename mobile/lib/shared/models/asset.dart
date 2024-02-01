@@ -32,6 +32,8 @@ class Asset {
         isFavorite = remote.isFavorite,
         isArchived = remote.isArchived,
         isTrashed = remote.isTrashed,
+        isReadOnly = remote.isReadOnly,
+        isOffline = remote.isOffline,
         stackParentId = remote.stackParentId,
         stackCount = remote.stackCount;
 
@@ -49,6 +51,8 @@ class Asset {
         isFavorite = local.isFavorite,
         isArchived = false,
         isTrashed = false,
+        isReadOnly = false,
+        isOffline = false,
         stackCount = 0,
         fileCreatedAt = local.createDateTime {
     if (fileCreatedAt.year == 1970) {
@@ -77,11 +81,13 @@ class Asset {
     required this.fileName,
     this.livePhotoVideoId,
     this.exifInfo,
-    required this.isFavorite,
-    required this.isArchived,
-    required this.isTrashed,
+    this.isFavorite = false,
+    this.isArchived = false,
+    this.isTrashed = false,
     this.stackParentId,
-    required this.stackCount,
+    this.stackCount = 0,
+    this.isReadOnly = false,
+    this.isOffline = false,
   });
 
   @ignore
@@ -147,6 +153,10 @@ class Asset {
   bool isArchived;
 
   bool isTrashed;
+
+  bool isReadOnly;
+
+  bool isOffline;
 
   @ignore
   ExifInfo? exifInfo;
@@ -256,6 +266,8 @@ class Asset {
         isFavorite != a.isFavorite ||
         isArchived != a.isArchived ||
         isTrashed != a.isTrashed ||
+        isReadOnly != a.isReadOnly ||
+        isOffline != a.isOffline ||
         a.exifInfo?.latitude != exifInfo?.latitude ||
         a.exifInfo?.longitude != exifInfo?.longitude ||
         // no local stack count or different count from remote
@@ -288,6 +300,7 @@ class Asset {
           exifInfo: exifInfo ?? a.exifInfo?.copyWith(id: id),
         );
       } else {
+        // TODO: Revisit this and remove all bool field assignments
         return a._copyWith(
           id: id,
           remoteId: remoteId,
@@ -297,6 +310,8 @@ class Asset {
           isFavorite: isFavorite,
           isArchived: isArchived,
           isTrashed: isTrashed,
+          isReadOnly: isReadOnly,
+          isOffline: isOffline,
         );
       }
     } else {
@@ -314,6 +329,8 @@ class Asset {
           isFavorite: a.isFavorite,
           isArchived: a.isArchived,
           isTrashed: a.isTrashed,
+          isReadOnly: a.isReadOnly,
+          isOffline: a.isOffline,
           exifInfo: a.exifInfo?.copyWith(id: id) ?? exifInfo,
         );
       } else {
@@ -346,6 +363,8 @@ class Asset {
     bool? isFavorite,
     bool? isArchived,
     bool? isTrashed,
+    bool? isReadOnly,
+    bool? isOffline,
     ExifInfo? exifInfo,
     String? stackParentId,
     int? stackCount,
@@ -368,6 +387,8 @@ class Asset {
         isFavorite: isFavorite ?? this.isFavorite,
         isArchived: isArchived ?? this.isArchived,
         isTrashed: isTrashed ?? this.isTrashed,
+        isReadOnly: isReadOnly ?? this.isReadOnly,
+        isOffline: isOffline ?? this.isOffline,
         exifInfo: exifInfo ?? this.exifInfo,
         stackParentId: stackParentId ?? this.stackParentId,
         stackCount: stackCount ?? this.stackCount,
@@ -426,7 +447,9 @@ class Asset {
   "width": ${width ?? "N/A"},
   "height": ${height ?? "N/A"},
   "isArchived": $isArchived,
-  "isTrashed": $isTrashed
+  "isTrashed": $isTrashed,
+  "isReadOnly": $isReadOnly,
+  "isOffline": $isOffline,
 }""";
   }
 }

@@ -5,10 +5,10 @@ from unittest import mock
 import numpy as np
 import pytest
 from fastapi.testclient import TestClient
+from numpy.typing import NDArray
 from PIL import Image
 
 from .main import app
-from .schemas import ndarray_f32
 
 
 @pytest.fixture
@@ -17,7 +17,7 @@ def pil_image() -> Image.Image:
 
 
 @pytest.fixture
-def cv_image(pil_image: Image.Image) -> ndarray_f32:
+def cv_image(pil_image: Image.Image) -> NDArray[np.float32]:
     return np.asarray(pil_image)[:, :, ::-1]  # PIL uses RGB while cv2 uses BGR
 
 
@@ -93,3 +93,15 @@ def clip_tokenizer_cfg() -> dict[str, Any]:
         "tokenizer_class": "CLIPTokenizer",
         "unk_token": "<|endoftext|>",
     }
+
+
+@pytest.fixture(scope="function")
+def providers(request: pytest.FixtureRequest) -> Iterator[dict[str, Any]]:
+    marker = request.node.get_closest_marker("providers")
+    if marker is None:
+        raise ValueError("Missing marker 'providers'")
+
+    providers = marker.args[0]
+    with mock.patch("app.models.base.ort.get_available_providers") as mocked:
+        mocked.return_value = providers
+        yield providers

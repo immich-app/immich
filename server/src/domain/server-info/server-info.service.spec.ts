@@ -1,8 +1,10 @@
+import { SystemMetadataKey } from '@app/infra/entities';
 import {
   newCommunicationRepositoryMock,
   newServerInfoRepositoryMock,
   newStorageRepositoryMock,
   newSystemConfigRepositoryMock,
+  newSystemMetadataRepositoryMock,
   newUserRepositoryMock,
 } from '@test';
 import { serverVersion } from '../domain.constant';
@@ -11,6 +13,7 @@ import {
   IServerInfoRepository,
   IStorageRepository,
   ISystemConfigRepository,
+  ISystemMetadataRepository,
   IUserRepository,
 } from '../repositories';
 import { ServerInfoService } from './server-info.service';
@@ -22,6 +25,7 @@ describe(ServerInfoService.name, () => {
   let serverInfoMock: jest.Mocked<IServerInfoRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
   let userMock: jest.Mocked<IUserRepository>;
+  let systemMetadataMock: jest.Mocked<ISystemMetadataRepository>;
 
   beforeEach(() => {
     configMock = newSystemConfigRepositoryMock();
@@ -29,8 +33,16 @@ describe(ServerInfoService.name, () => {
     serverInfoMock = newServerInfoRepositoryMock();
     storageMock = newStorageRepositoryMock();
     userMock = newUserRepositoryMock();
+    systemMetadataMock = newSystemMetadataRepositoryMock();
 
-    sut = new ServerInfoService(communicationMock, configMock, userMock, serverInfoMock, storageMock);
+    sut = new ServerInfoService(
+      communicationMock,
+      configMock,
+      userMock,
+      serverInfoMock,
+      storageMock,
+      systemMetadataMock,
+    );
   });
 
   it('should work', () => {
@@ -162,7 +174,7 @@ describe(ServerInfoService.name, () => {
   describe('getFeatures', () => {
     it('should respond the server features', async () => {
       await expect(sut.getFeatures()).resolves.toEqual({
-        clipEncode: true,
+        smartSearch: true,
         facialRecognition: true,
         map: true,
         reverseGeocoding: true,
@@ -184,8 +196,18 @@ describe(ServerInfoService.name, () => {
         loginPageMessage: '',
         oauthButtonText: 'Login with OAuth',
         trashDays: 30,
+        isInitialized: undefined,
+        isOnboarded: false,
+        externalDomain: '',
       });
       expect(configMock.load).toHaveBeenCalled();
+    });
+  });
+
+  describe('setAdminOnboarding', () => {
+    it('should set admin onboarding to true', async () => {
+      await sut.setAdminOnboarding();
+      expect(systemMetadataMock.set).toHaveBeenCalledWith(SystemMetadataKey.ADMIN_ONBOARDING, { isOnboarded: true });
     });
   });
 
@@ -198,6 +220,7 @@ describe(ServerInfoService.name, () => {
           photos: 10,
           videos: 11,
           usage: 12345,
+          quotaSizeInBytes: 0,
         },
         {
           userId: 'user2',
@@ -205,6 +228,7 @@ describe(ServerInfoService.name, () => {
           photos: 10,
           videos: 20,
           usage: 123456,
+          quotaSizeInBytes: 0,
         },
         {
           userId: 'user3',
@@ -212,6 +236,7 @@ describe(ServerInfoService.name, () => {
           photos: 100,
           videos: 0,
           usage: 987654,
+          quotaSizeInBytes: 0,
         },
       ]);
 
@@ -222,6 +247,7 @@ describe(ServerInfoService.name, () => {
         usageByUser: [
           {
             photos: 10,
+            quotaSizeInBytes: 0,
             usage: 12345,
             userName: '1 User',
             userId: 'user1',
@@ -229,6 +255,7 @@ describe(ServerInfoService.name, () => {
           },
           {
             photos: 10,
+            quotaSizeInBytes: 0,
             usage: 123456,
             userName: '2 User',
             userId: 'user2',
@@ -236,6 +263,7 @@ describe(ServerInfoService.name, () => {
           },
           {
             photos: 100,
+            quotaSizeInBytes: 0,
             usage: 987654,
             userName: '3 User',
             userId: 'user3',

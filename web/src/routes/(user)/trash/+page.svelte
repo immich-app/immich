@@ -37,7 +37,7 @@
   const handleEmptyTrash = async () => {
     isShowEmptyConfirmation = false;
     try {
-      await api.assetApi.emptyTrash();
+      await api.trashApi.emptyTrash();
 
       notificationController.show({
         message: `Empty trash initiated. Refresh the page to see the changes`,
@@ -50,7 +50,7 @@
 
   const handleRestoreTrash = async () => {
     try {
-      await api.assetApi.restoreTrash();
+      await api.trashApi.restoreTrash();
 
       notificationController.show({
         message: `Restore trash initiated. Refresh the page to see the changes`,
@@ -87,7 +87,7 @@
       </LinkButton>
     </div>
 
-    <AssetGrid forceDelete {assetStore} {assetInteractionStore}>
+    <AssetGrid {assetStore} {assetInteractionStore}>
       <p class="font-medium text-gray-500/60 dark:text-gray-300/60 p-4">
         Trashed items will be permanently deleted after {$serverConfig.trashDays} days.
       </p>

@@ -29,8 +29,8 @@ class AssetBulkDeleteDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetBulkDeleteDto &&
-     other.force == force &&
-     other.ids == ids;
+    other.force == force &&
+    _deepEquality.equals(other.ids, ids);
 
   @override
   int get hashCode =>
@@ -61,8 +61,8 @@ class AssetBulkDeleteDto {
 
       return AssetBulkDeleteDto(
         force: mapValueOfType<bool>(json, r'force'),
-        ids: json[r'ids'] is List
-            ? (json[r'ids'] as List).cast<String>()
+        ids: json[r'ids'] is Iterable
+            ? (json[r'ids'] as Iterable).cast<String>().toList(growable: false)
             : const [],
       );
     }

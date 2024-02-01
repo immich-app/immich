@@ -1,5 +1,5 @@
 import { DataSource } from 'typeorm';
-import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
+import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions.js';
 
 const url = process.env.DB_URL;
 const urlOrParts = url
@@ -20,6 +20,7 @@ export const databaseConfig: PostgresConnectionOptions = {
   subscribers: [__dirname + '/subscribers/*.{js,ts}'],
   migrationsRun: false,
   connectTimeoutMS: 10000, // 10 seconds
+  parseInt8: true,
   ...urlOrParts,
 };
 

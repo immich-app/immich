@@ -3,17 +3,32 @@ import 'dart:async';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/models/user.dart';
+import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
+import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:isar/isar.dart';
 
 class CurrentUserProvider extends StateNotifier<User?> {
-  CurrentUserProvider() : super(null) {
+  CurrentUserProvider(this._apiService) : super(null) {
     state = Store.tryGet(StoreKey.currentUser);
     streamSub =
         Store.watch(StoreKey.currentUser).listen((user) => state = user);
   }
 
+  final ApiService _apiService;
   late final StreamSubscription<User?> streamSub;
+
+  refresh() async {
+    try {
+      final user = await _apiService.userApi.getMyUserInfo();
+      if (user != null) {
+        Store.put(
+          StoreKey.currentUser,
+          User.fromUserDto(user),
+        );
+      }
+    } catch (_) {}
+  }
 
   @override
   void dispose() {
@@ -24,7 +39,9 @@ class CurrentUserProvider extends StateNotifier<User?> {
 
 final currentUserProvider =
     StateNotifierProvider<CurrentUserProvider, User?>((ref) {
-  return CurrentUserProvider();
+  return CurrentUserProvider(
+    ref.watch(apiServiceProvider),
+  );
 });
 
 class TimelineUserIdsProvider extends StateNotifier<List<int>> {

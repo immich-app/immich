@@ -44,10 +44,7 @@ class BackupService {
     final String deviceId = Store.get(StoreKey.deviceId);
 
     try {
-      return await _apiService.assetApi.getUserAssetsByDeviceId(deviceId);
-
-      // TODO! Start using this in 1.92.0
-      // return await _apiService.assetApi.getAllUserAssetsByDeviceId(deviceId);
+      return await _apiService.assetApi.getAllUserAssetsByDeviceId(deviceId);
     } catch (e) {
       debugPrint('Error [getDeviceBackupAsset] ${e.toString()}');
       return null;
@@ -366,6 +363,7 @@ class BackupService {
           } else {
             var data = await response.stream.bytesToString();
             var error = jsonDecode(data);
+            var errorMessage = error['message'] ?? error['error'];
 
             debugPrint(
               "Error(${error['statusCode']}) uploading ${entity.id} | $originalFileName | Created on ${entity.createDateTime} | ${error['error']}",
@@ -378,9 +376,14 @@ class BackupService {
                 fileCreatedAt: entity.createDateTime,
                 fileName: originalFileName,
                 fileType: _getAssetType(entity.type),
-                errorMessage: error['error'],
+                errorMessage: errorMessage,
               ),
             );
+
+            if (errorMessage == "Quota has been exceeded!") {
+              anyErrors = true;
+              break;
+            }
             continue;
           }
         }
@@ -426,10 +429,10 @@ class BackupService {
 class MultipartRequest extends http.MultipartRequest {
   /// Creates a new [MultipartRequest].
   MultipartRequest(
-    String method,
-    Uri url, {
+    super.method,
+    super.url, {
     required this.onProgress,
-  }) : super(method, url);
+  });
 
   final void Function(int bytes, int totalBytes) onProgress;
 

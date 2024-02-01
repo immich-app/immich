@@ -83,5 +83,6 @@ jobs:
           files: |
             docker/docker-compose.yml
             docker/example.env
-            docker/hwaccel.yml
+            docker/hwaccel.ml.yml
+            docker/hwaccel.transcoding.yml
             *.apk

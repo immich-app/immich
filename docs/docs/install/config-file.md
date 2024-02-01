@@ -79,7 +79,7 @@ The default configuration looks like this:
       "modelName": "buffalo_l",
       "minScore": 0.7,
       "maxDistance": 0.6,
-      "minFaces": 1
+      "minFaces": 3
     }
   },
   "map": {
@@ -129,6 +129,11 @@ The default configuration looks like this:
     "scan": {
       "enabled": true,
       "cronExpression": "0 0 * * *"
+    },
+    "watch": {
+      "enabled": false,
+      "usePolling": false,
+      "interval": 10000
     }
   }
 }
@@ -142,4 +147,4 @@ So you can just grab it from there, paste it into a file and you're pretty much 
 ### Step 2 - Specify the file location
 
 In your `.env` file, set the variable `IMMICH_CONFIG_FILE` to the path of your config.
-For more information, refer to the [Environment Variables](https://docs.immich.app/docs/install/environment-variables) section.
+For more information, refer to the [Environment Variables](/docs/install/environment-variables.md) section.

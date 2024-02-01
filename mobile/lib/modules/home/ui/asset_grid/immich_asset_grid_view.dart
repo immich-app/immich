@@ -32,7 +32,7 @@ class ImmichAssetGridView extends StatefulWidget {
   final bool canDeselect;
   final bool dynamicLayout;
   final bool showMultiSelectIndicator;
-  final void Function(ItemPosition start, ItemPosition end)?
+  final void Function(Iterable<ItemPosition> itemPositions)?
       visibleItemsListener;
   final Widget? topWidget;
   final int heroOffset;
@@ -389,15 +389,6 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
     }
   }
 
-  Future<bool> onWillPop() async {
-    if (widget.selectionActive && _selectedAssets.isNotEmpty) {
-      _deselectAll();
-      return false;
-    }
-
-    return true;
-  }
-
   @override
   void initState() {
     super.initState();
@@ -421,15 +412,7 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
 
   void _positionListener() {
     final values = _itemPositionsListener.itemPositions.value;
-    final start = values.firstOrNull;
-    final end = values.lastOrNull;
-    if (start != null && end != null) {
-      if (start.index <= end.index) {
-        widget.visibleItemsListener?.call(start, end);
-      } else {
-        widget.visibleItemsListener?.call(end, start);
-      }
-    }
+    widget.visibleItemsListener?.call(values);
   }
 
   void _scrollToTop() {
@@ -446,8 +429,9 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: onWillPop,
+    return PopScope(
+      canPop: !(widget.selectionActive && _selectedAssets.isNotEmpty),
+      onPopInvoked: (didPop) => !didPop ? _deselectAll() : null,
       child: Stack(
         children: [
           _buildAssetGrid(),

@@ -40,7 +40,7 @@ class JobCommand {
 
   static JobCommand? fromJson(dynamic value) => JobCommandTypeTransformer().decode(value);
 
-  static List<JobCommand>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<JobCommand> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <JobCommand>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {

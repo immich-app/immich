@@ -1,12 +1,13 @@
 import { AuthDto, IJobRepository, JobName, mimeTypes, UploadFile } from '@app/domain';
 import { AssetEntity } from '@app/infra/entities';
+import { BadRequestException } from '@nestjs/common';
 import { parse } from 'node:path';
-import { IAssetRepository } from './asset-repository';
+import { IAssetRepositoryV1 } from './asset-repository';
 import { CreateAssetDto } from './dto/create-asset.dto';
 
 export class AssetCore {
   constructor(
-    private repository: IAssetRepository,
+    private repository: IAssetRepositoryV1,
     private jobRepository: IJobRepository,
   ) {}
 
@@ -52,8 +53,15 @@ export class AssetCore {
       isOffline: dto.isOffline ?? false,
     });
 
+    await this.repository.upsertExif({ assetId: asset.id, fileSizeInByte: file.size });
     await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: asset.id, source: 'upload' } });
 
     return asset;
+  }
+
+  static requireQuota(auth: AuthDto, size: number) {
+    if (auth.user.quotaSizeInBytes && auth.user.quotaSizeInBytes < auth.user.quotaUsageInBytes + size) {
+      throw new BadRequestException('Quota has been exceeded!');
+    }
   }
 }

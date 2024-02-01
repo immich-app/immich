@@ -7,80 +7,6 @@ SET
 WHERE
   "personId" = $2
 
--- PersonRepository.getAllFaces
-SELECT
-  "AssetFaceEntity"."id" AS "AssetFaceEntity_id",
-  "AssetFaceEntity"."assetId" AS "AssetFaceEntity_assetId",
-  "AssetFaceEntity"."personId" AS "AssetFaceEntity_personId",
-  "AssetFaceEntity"."imageWidth" AS "AssetFaceEntity_imageWidth",
-  "AssetFaceEntity"."imageHeight" AS "AssetFaceEntity_imageHeight",
-  "AssetFaceEntity"."boundingBoxX1" AS "AssetFaceEntity_boundingBoxX1",
-  "AssetFaceEntity"."boundingBoxY1" AS "AssetFaceEntity_boundingBoxY1",
-  "AssetFaceEntity"."boundingBoxX2" AS "AssetFaceEntity_boundingBoxX2",
-  "AssetFaceEntity"."boundingBoxY2" AS "AssetFaceEntity_boundingBoxY2",
-  "AssetFaceEntity__AssetFaceEntity_asset"."id" AS "AssetFaceEntity__AssetFaceEntity_asset_id",
-  "AssetFaceEntity__AssetFaceEntity_asset"."deviceAssetId" AS "AssetFaceEntity__AssetFaceEntity_asset_deviceAssetId",
-  "AssetFaceEntity__AssetFaceEntity_asset"."ownerId" AS "AssetFaceEntity__AssetFaceEntity_asset_ownerId",
-  "AssetFaceEntity__AssetFaceEntity_asset"."libraryId" AS "AssetFaceEntity__AssetFaceEntity_asset_libraryId",
-  "AssetFaceEntity__AssetFaceEntity_asset"."deviceId" AS "AssetFaceEntity__AssetFaceEntity_asset_deviceId",
-  "AssetFaceEntity__AssetFaceEntity_asset"."type" AS "AssetFaceEntity__AssetFaceEntity_asset_type",
-  "AssetFaceEntity__AssetFaceEntity_asset"."originalPath" AS "AssetFaceEntity__AssetFaceEntity_asset_originalPath",
-  "AssetFaceEntity__AssetFaceEntity_asset"."resizePath" AS "AssetFaceEntity__AssetFaceEntity_asset_resizePath",
-  "AssetFaceEntity__AssetFaceEntity_asset"."webpPath" AS "AssetFaceEntity__AssetFaceEntity_asset_webpPath",
-  "AssetFaceEntity__AssetFaceEntity_asset"."thumbhash" AS "AssetFaceEntity__AssetFaceEntity_asset_thumbhash",
-  "AssetFaceEntity__AssetFaceEntity_asset"."encodedVideoPath" AS "AssetFaceEntity__AssetFaceEntity_asset_encodedVideoPath",
-  "AssetFaceEntity__AssetFaceEntity_asset"."createdAt" AS "AssetFaceEntity__AssetFaceEntity_asset_createdAt",
-  "AssetFaceEntity__AssetFaceEntity_asset"."updatedAt" AS "AssetFaceEntity__AssetFaceEntity_asset_updatedAt",
-  "AssetFaceEntity__AssetFaceEntity_asset"."deletedAt" AS "AssetFaceEntity__AssetFaceEntity_asset_deletedAt",
-  "AssetFaceEntity__AssetFaceEntity_asset"."fileCreatedAt" AS "AssetFaceEntity__AssetFaceEntity_asset_fileCreatedAt",
-  "AssetFaceEntity__AssetFaceEntity_asset"."localDateTime" AS "AssetFaceEntity__AssetFaceEntity_asset_localDateTime",
-  "AssetFaceEntity__AssetFaceEntity_asset"."fileModifiedAt" AS "AssetFaceEntity__AssetFaceEntity_asset_fileModifiedAt",
-  "AssetFaceEntity__AssetFaceEntity_asset"."isFavorite" AS "AssetFaceEntity__AssetFaceEntity_asset_isFavorite",
-  "AssetFaceEntity__AssetFaceEntity_asset"."isArchived" AS "AssetFaceEntity__AssetFaceEntity_asset_isArchived",
-  "AssetFaceEntity__AssetFaceEntity_asset"."isExternal" AS "AssetFaceEntity__AssetFaceEntity_asset_isExternal",
-  "AssetFaceEntity__AssetFaceEntity_asset"."isReadOnly" AS "AssetFaceEntity__AssetFaceEntity_asset_isReadOnly",
-  "AssetFaceEntity__AssetFaceEntity_asset"."isOffline" AS "AssetFaceEntity__AssetFaceEntity_asset_isOffline",
-  "AssetFaceEntity__AssetFaceEntity_asset"."checksum" AS "AssetFaceEntity__AssetFaceEntity_asset_checksum",
-  "AssetFaceEntity__AssetFaceEntity_asset"."duration" AS "AssetFaceEntity__AssetFaceEntity_asset_duration",
-  "AssetFaceEntity__AssetFaceEntity_asset"."isVisible" AS "AssetFaceEntity__AssetFaceEntity_asset_isVisible",
-  "AssetFaceEntity__AssetFaceEntity_asset"."livePhotoVideoId" AS "AssetFaceEntity__AssetFaceEntity_asset_livePhotoVideoId",
-  "AssetFaceEntity__AssetFaceEntity_asset"."originalFileName" AS "AssetFaceEntity__AssetFaceEntity_asset_originalFileName",
-  "AssetFaceEntity__AssetFaceEntity_asset"."sidecarPath" AS "AssetFaceEntity__AssetFaceEntity_asset_sidecarPath",
-  "AssetFaceEntity__AssetFaceEntity_asset"."stackParentId" AS "AssetFaceEntity__AssetFaceEntity_asset_stackParentId"
-FROM
-  "asset_faces" "AssetFaceEntity"
-  LEFT JOIN "assets" "AssetFaceEntity__AssetFaceEntity_asset" ON "AssetFaceEntity__AssetFaceEntity_asset"."id" = "AssetFaceEntity"."assetId"
-
--- PersonRepository.getAll
-SELECT
-  "PersonEntity"."id" AS "PersonEntity_id",
-  "PersonEntity"."createdAt" AS "PersonEntity_createdAt",
-  "PersonEntity"."updatedAt" AS "PersonEntity_updatedAt",
-  "PersonEntity"."ownerId" AS "PersonEntity_ownerId",
-  "PersonEntity"."name" AS "PersonEntity_name",
-  "PersonEntity"."birthDate" AS "PersonEntity_birthDate",
-  "PersonEntity"."thumbnailPath" AS "PersonEntity_thumbnailPath",
-  "PersonEntity"."faceAssetId" AS "PersonEntity_faceAssetId",
-  "PersonEntity"."isHidden" AS "PersonEntity_isHidden"
-FROM
-  "person" "PersonEntity"
-
--- PersonRepository.getAllWithoutThumbnail
-SELECT
-  "PersonEntity"."id" AS "PersonEntity_id",
-  "PersonEntity"."createdAt" AS "PersonEntity_createdAt",
-  "PersonEntity"."updatedAt" AS "PersonEntity_updatedAt",
-  "PersonEntity"."ownerId" AS "PersonEntity_ownerId",
-  "PersonEntity"."name" AS "PersonEntity_name",
-  "PersonEntity"."birthDate" AS "PersonEntity_birthDate",
-  "PersonEntity"."thumbnailPath" AS "PersonEntity_thumbnailPath",
-  "PersonEntity"."faceAssetId" AS "PersonEntity_faceAssetId",
-  "PersonEntity"."isHidden" AS "PersonEntity_isHidden"
-FROM
-  "person" "PersonEntity"
-WHERE
-  ("PersonEntity"."thumbnailPath" = $1)
-
 -- PersonRepository.getAllForUser
 SELECT
   "person"."id" AS "person_id",
@@ -99,6 +25,7 @@ FROM
   AND ("asset"."deletedAt" IS NULL)
 WHERE
   "person"."ownerId" = $1
+  AND "asset"."isArchived" = false
   AND "person"."isHidden" = false
 GROUP BY
   "person"."id"
@@ -245,7 +172,7 @@ FROM
       "AssetFaceEntity__AssetFaceEntity_asset"."livePhotoVideoId" AS "AssetFaceEntity__AssetFaceEntity_asset_livePhotoVideoId",
       "AssetFaceEntity__AssetFaceEntity_asset"."originalFileName" AS "AssetFaceEntity__AssetFaceEntity_asset_originalFileName",
       "AssetFaceEntity__AssetFaceEntity_asset"."sidecarPath" AS "AssetFaceEntity__AssetFaceEntity_asset_sidecarPath",
-      "AssetFaceEntity__AssetFaceEntity_asset"."stackParentId" AS "AssetFaceEntity__AssetFaceEntity_asset_stackParentId"
+      "AssetFaceEntity__AssetFaceEntity_asset"."stackId" AS "AssetFaceEntity__AssetFaceEntity_asset_stackId"
     FROM
       "asset_faces" "AssetFaceEntity"
       LEFT JOIN "person" "AssetFaceEntity__AssetFaceEntity_person" ON "AssetFaceEntity__AssetFaceEntity_person"."id" = "AssetFaceEntity"."personId"
@@ -343,7 +270,7 @@ FROM
       "AssetEntity"."livePhotoVideoId" AS "AssetEntity_livePhotoVideoId",
       "AssetEntity"."originalFileName" AS "AssetEntity_originalFileName",
       "AssetEntity"."sidecarPath" AS "AssetEntity_sidecarPath",
-      "AssetEntity"."stackParentId" AS "AssetEntity_stackParentId",
+      "AssetEntity"."stackId" AS "AssetEntity_stackId",
       "AssetEntity__AssetEntity_faces"."id" AS "AssetEntity__AssetEntity_faces_id",
       "AssetEntity__AssetEntity_faces"."assetId" AS "AssetEntity__AssetEntity_faces_assetId",
       "AssetEntity__AssetEntity_faces"."personId" AS "AssetEntity__AssetEntity_faces_personId",
@@ -376,6 +303,7 @@ FROM
       "AssetEntity__AssetEntity_exifInfo"."projectionType" AS "AssetEntity__AssetEntity_exifInfo_projectionType",
       "AssetEntity__AssetEntity_exifInfo"."city" AS "AssetEntity__AssetEntity_exifInfo_city",
       "AssetEntity__AssetEntity_exifInfo"."livePhotoCID" AS "AssetEntity__AssetEntity_exifInfo_livePhotoCID",
+      "AssetEntity__AssetEntity_exifInfo"."autoStackId" AS "AssetEntity__AssetEntity_exifInfo_autoStackId",
       "AssetEntity__AssetEntity_exifInfo"."state" AS "AssetEntity__AssetEntity_exifInfo_state",
       "AssetEntity__AssetEntity_exifInfo"."country" AS "AssetEntity__AssetEntity_exifInfo_country",
       "AssetEntity__AssetEntity_exifInfo"."make" AS "AssetEntity__AssetEntity_exifInfo_make",
@@ -409,6 +337,17 @@ ORDER BY
   "AssetEntity_id" ASC
 LIMIT
   1000
+
+-- PersonRepository.getNumberOfPeople
+SELECT
+  COUNT(DISTINCT ("person"."id")) AS "cnt"
+FROM
+  "person" "person"
+  LEFT JOIN "asset_faces" "face" ON "face"."personId" = "person"."id"
+WHERE
+  "person"."ownerId" = $1
+HAVING
+  COUNT("face"."assetId") != 0
 
 -- PersonRepository.getFacesByIds
 SELECT
@@ -449,7 +388,7 @@ SELECT
   "AssetFaceEntity__AssetFaceEntity_asset"."livePhotoVideoId" AS "AssetFaceEntity__AssetFaceEntity_asset_livePhotoVideoId",
   "AssetFaceEntity__AssetFaceEntity_asset"."originalFileName" AS "AssetFaceEntity__AssetFaceEntity_asset_originalFileName",
   "AssetFaceEntity__AssetFaceEntity_asset"."sidecarPath" AS "AssetFaceEntity__AssetFaceEntity_asset_sidecarPath",
-  "AssetFaceEntity__AssetFaceEntity_asset"."stackParentId" AS "AssetFaceEntity__AssetFaceEntity_asset_stackParentId"
+  "AssetFaceEntity__AssetFaceEntity_asset"."stackId" AS "AssetFaceEntity__AssetFaceEntity_asset_stackId"
 FROM
   "asset_faces" "AssetFaceEntity"
   LEFT JOIN "assets" "AssetFaceEntity__AssetFaceEntity_asset" ON "AssetFaceEntity__AssetFaceEntity_asset"."id" = "AssetFaceEntity"."assetId"

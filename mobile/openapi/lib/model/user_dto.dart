@@ -32,11 +32,11 @@ class UserDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UserDto &&
-     other.avatarColor == avatarColor &&
-     other.email == email &&
-     other.id == id &&
-     other.name == name &&
-     other.profileImagePath == profileImagePath;
+    other.avatarColor == avatarColor &&
+    other.email == email &&
+    other.id == id &&
+    other.name == name &&
+    other.profileImagePath == profileImagePath;
 
   @override
   int get hashCode =>

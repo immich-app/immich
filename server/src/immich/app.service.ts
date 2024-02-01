@@ -67,8 +67,12 @@ export class AppService {
     await this.configService.init();
     this.storageService.init();
     await this.libraryService.init();
-    await this.serverService.handleVersionCheck();
+    await this.serverService.init();
     this.logger.log(`Feature Flags: ${JSON.stringify(await this.serverService.getFeatures(), null, 2)}`);
+  }
+
+  async teardown() {
+    await this.libraryService.unwatchAll();
   }
 
   ssr(excludePaths: string[]) {

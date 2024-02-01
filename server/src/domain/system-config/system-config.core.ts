@@ -31,7 +31,9 @@ export const defaults = Object.freeze<SystemConfig>({
     threads: 0,
     preset: 'ultrafast',
     targetVideoCodec: VideoCodec.H264,
+    acceptedVideoCodecs: [VideoCodec.H264],
     targetAudioCodec: AudioCodec.AAC,
+    acceptedAudioCodecs: [AudioCodec.AAC],
     targetResolution: '720',
     maxBitrate: '0',
     bframes: -1,
@@ -41,6 +43,7 @@ export const defaults = Object.freeze<SystemConfig>({
     temporalAQ: false,
     cqMode: CQMode.AUTO,
     twoPass: false,
+    preferredHwDevice: 'auto',
     transcode: TranscodePolicy.REQUIRED,
     tonemap: ToneMapping.HABLE,
     accel: TranscodeHWAccel.DISABLED,
@@ -49,11 +52,10 @@ export const defaults = Object.freeze<SystemConfig>({
     [QueueName.BACKGROUND_TASK]: { concurrency: 5 },
     [QueueName.SMART_SEARCH]: { concurrency: 2 },
     [QueueName.METADATA_EXTRACTION]: { concurrency: 5 },
-    [QueueName.RECOGNIZE_FACES]: { concurrency: 2 },
+    [QueueName.FACE_DETECTION]: { concurrency: 2 },
     [QueueName.SEARCH]: { concurrency: 5 },
     [QueueName.SIDECAR]: { concurrency: 5 },
     [QueueName.LIBRARY]: { concurrency: 5 },
-    [QueueName.STORAGE_TEMPLATE_MIGRATION]: { concurrency: 5 },
     [QueueName.MIGRATION]: { concurrency: 5 },
     [QueueName.THUMBNAIL_GENERATION]: { concurrency: 5 },
     [QueueName.VIDEO_CONVERSION]: { concurrency: 1 },
@@ -74,7 +76,7 @@ export const defaults = Object.freeze<SystemConfig>({
       modelName: 'buffalo_l',
       minScore: 0.7,
       maxDistance: 0.6,
-      minFaces: 1,
+      minFaces: 3,
     },
   },
   map: {
@@ -102,6 +104,8 @@ export const defaults = Object.freeze<SystemConfig>({
     enabled: true,
   },
   storageTemplate: {
+    enabled: false,
+    hashVerificationEnabled: true,
     template: '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
   },
   thumbnail: {
@@ -125,11 +129,20 @@ export const defaults = Object.freeze<SystemConfig>({
       enabled: true,
       cronExpression: CronExpression.EVERY_DAY_AT_MIDNIGHT,
     },
+    watch: {
+      enabled: false,
+      usePolling: false,
+      interval: 10000,
+    },
+  },
+  server: {
+    externalDomain: '',
+    loginPageMessage: '',
   },
 });
 
 export enum FeatureFlag {
-  CLIP_ENCODE = 'clipEncode',
+  SMART_SEARCH = 'smartSearch',
   FACIAL_RECOGNITION = 'facialRecognition',
   MAP = 'map',
   REVERSE_GEOCODING = 'reverseGeocoding',
@@ -171,8 +184,8 @@ export class SystemConfigCore {
     const hasFeature = await this.hasFeature(feature);
     if (!hasFeature) {
       switch (feature) {
-        case FeatureFlag.CLIP_ENCODE:
-          throw new BadRequestException('Clip encoding is not enabled');
+        case FeatureFlag.SMART_SEARCH:
+          throw new BadRequestException('Smart search is not enabled');
         case FeatureFlag.FACIAL_RECOGNITION:
           throw new BadRequestException('Facial recognition is not enabled');
         case FeatureFlag.SIDECAR:
@@ -201,7 +214,7 @@ export class SystemConfigCore {
     const mlEnabled = config.machineLearning.enabled;
 
     return {
-      [FeatureFlag.CLIP_ENCODE]: mlEnabled && config.machineLearning.clip.enabled,
+      [FeatureFlag.SMART_SEARCH]: mlEnabled && config.machineLearning.clip.enabled,
       [FeatureFlag.FACIAL_RECOGNITION]: mlEnabled && config.machineLearning.facialRecognition.enabled,
       [FeatureFlag.MAP]: config.map.enabled,
       [FeatureFlag.REVERSE_GEOCODING]: config.reverseGeocoding.enabled,
@@ -241,6 +254,14 @@ export class SystemConfigCore {
       if (configFilePath) {
         throw new Error(`Invalid value(s) in file: ${errors}`);
       }
+    }
+
+    if (!config.ffmpeg.acceptedVideoCodecs.includes(config.ffmpeg.targetVideoCodec)) {
+      config.ffmpeg.acceptedVideoCodecs.unshift(config.ffmpeg.targetVideoCodec);
+    }
+
+    if (!config.ffmpeg.acceptedAudioCodecs.includes(config.ffmpeg.targetAudioCodec)) {
+      config.ffmpeg.acceptedAudioCodecs.unshift(config.ffmpeg.targetAudioCodec);
     }
 
     return config;

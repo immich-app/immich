@@ -679,7 +679,7 @@ describe(AlbumService.name, () => {
       ]);
 
       expect(albumMock.update).toHaveBeenCalledWith({ id: 'album-123', updatedAt: expect.any(Date) });
-      expect(albumMock.removeAssets).toHaveBeenCalledWith({ assetIds: ['asset-id'], albumId: 'album-123' });
+      expect(albumMock.removeAssets).toHaveBeenCalledWith('album-123', ['asset-id']);
     });
 
     it('should skip assets not in the album', async () => {

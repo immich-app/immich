@@ -1,13 +1,17 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
-import 'package:isar/isar.dart';
+import 'package:immich_mobile/utils/renderlist_generator.dart';
 
-final allVideoAssetsProvider = FutureProvider<List<Asset>>((ref) async {
-  return ref
+final allVideoAssetsProvider = StreamProvider<RenderList>((ref) {
+  final query = ref
       .watch(dbProvider)
       .assets
       .filter()
+      .isArchivedEqualTo(false)
+      .isTrashedEqualTo(false)
       .typeEqualTo(AssetType.video)
-      .findAll();
+      .sortByFileCreatedAtDesc();
+  return renderListGenerator(query, ref);
 });

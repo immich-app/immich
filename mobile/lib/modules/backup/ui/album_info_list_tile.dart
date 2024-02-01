@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -13,8 +14,7 @@ class AlbumInfoListTile extends HookConsumerWidget {
   final Uint8List? imageData;
   final AvailableAlbum albumInfo;
 
-  const AlbumInfoListTile({Key? key, this.imageData, required this.albumInfo})
-      : super(key: key);
+  const AlbumInfoListTile({super.key, this.imageData, required this.albumInfo});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -134,7 +134,7 @@ class AlbumInfoListTile extends HookConsumerWidget {
         subtitle: Text(assetCount.value.toString()),
         trailing: IconButton(
           onPressed: () {
-            context.autoPush(
+            context.pushRoute(
               AlbumPreviewRoute(album: albumInfo.albumEntity),
             );
           },

@@ -50,7 +50,7 @@ class UserAvatarColor {
 
   static UserAvatarColor? fromJson(dynamic value) => UserAvatarColorTypeTransformer().decode(value);
 
-  static List<UserAvatarColor>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<UserAvatarColor> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <UserAvatarColor>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {

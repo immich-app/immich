@@ -1,7 +1,9 @@
 import { AssetType } from '@app/infra/entities';
 import { Duration } from 'luxon';
+import { readFileSync } from 'node:fs';
 import { extname, join } from 'node:path';
-import pkg from 'src/../../package.json';
+
+const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'));
 
 export const AUDIT_LOG_MAX_DURATION = Duration.fromObject({ days: 100 });
 export const ONE_HOUR = Duration.fromObject({ hours: 1 });
@@ -72,6 +74,14 @@ export const APP_MEDIA_LOCATION = process.env.IMMICH_MEDIA_LOCATION || './upload
 
 export const WEB_ROOT_PATH = join(process.env.IMMICH_WEB_ROOT || '/usr/src/app/www', 'index.html');
 
+const GEODATA_ROOT_PATH = process.env.IMMICH_REVERSE_GEOCODING_ROOT || '/usr/src/resources';
+
+export const citiesFile = 'cities500.txt';
+export const geodataDatePath = join(GEODATA_ROOT_PATH, 'geodata-date.txt');
+export const geodataAdmin1Path = join(GEODATA_ROOT_PATH, 'admin1CodesASCII.txt');
+export const geodataAdmin2Path = join(GEODATA_ROOT_PATH, 'admin2Codes.txt');
+export const geodataCitites500Path = join(GEODATA_ROOT_PATH, citiesFile);
+
 const image: Record<string, string[]> = {
   '.3fr': ['image/3fr', 'image/x-hasselblad-3fr'],
   '.ari': ['image/ari', 'image/x-arriflex-ari'],
@@ -90,6 +100,7 @@ const image: Record<string, string[]> = {
   '.gif': ['image/gif'],
   '.heic': ['image/heic'],
   '.heif': ['image/heif'],
+  '.hif': ['image/hif'],
   '.iiq': ['image/iiq', 'image/x-phaseone-iiq'],
   '.insp': ['image/jpeg'],
   '.jpe': ['image/jpeg'],
@@ -107,6 +118,7 @@ const image: Record<string, string[]> = {
   '.psd': ['image/psd', 'image/vnd.adobe.photoshop'],
   '.raf': ['image/raf', 'image/x-fuji-raf'],
   '.raw': ['image/raw', 'image/x-panasonic-raw'],
+  '.rw2': ['image/rw2', 'image/x-panasonic-rw2'],
   '.rwl': ['image/rwl', 'image/x-leica-rwl'],
   '.sr2': ['image/sr2', 'image/x-sony-sr2'],
   '.srf': ['image/srf', 'image/x-sony-srf'],

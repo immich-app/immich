@@ -4,6 +4,8 @@
   import ImmichLogo from '../shared-components/immich-logo.svelte';
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
   import Button from '../elements/buttons/button.svelte';
+  import { convertToBytes } from '$lib/utils/byte-converter';
+  import { serverInfo } from '$lib/stores/server-info.store';
 
   let error: string;
   let success: string;
@@ -12,8 +14,10 @@
   let confirmPassowrd = '';
 
   let canCreateUser = false;
-
+  let quotaSize: number | undefined = undefined;
   let isCreatingUser = false;
+
+  $: quotaSizeWarning = quotaSize && convertToBytes(Number(quotaSize), 'GiB') > $serverInfo.diskSizeRaw;
 
   $: {
     if (password !== confirmPassowrd && confirmPassowrd.length > 0) {
@@ -42,6 +46,7 @@
       const email = form.get('email');
       const password = form.get('password');
       const name = form.get('name');
+      const quotaSize = form.get('quotaSize');
 
       try {
         const { status } = await api.userApi.createUser({
@@ -49,6 +54,7 @@
             email: String(email),
             password: String(password),
             name: String(name),
+            quotaSizeInBytes: quotaSize ? convertToBytes(Number(quotaSize), 'GiB') : null,
           },
         });
 
@@ -115,6 +121,15 @@
     <div class="m-4 flex flex-col gap-2">
       <label class="immich-form-label" for="name">Name</label>
       <input class="immich-form-input" id="name" name="name" type="text" required />
+    </div>
+
+    <div class="m-4 flex flex-col gap-2">
+      <label class="flex items-center gap-2 immich-form-label" for="quotaSize"
+        >Quota Size (GiB) {#if quotaSizeWarning}
+          <p class="text-red-400 text-sm">You set a quota higher than the disk size</p>
+        {/if}</label
+      >
+      <input class="immich-form-input" id="quotaSize" name="quotaSize" type="number" min="0" bind:value={quotaSize} />
     </div>
 
     {#if error}

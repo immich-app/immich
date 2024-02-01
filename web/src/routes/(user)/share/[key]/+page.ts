@@ -37,7 +37,7 @@ export const load = (async ({ params }) => {
       };
     }
 
-    throw error(404, {
+    error(404, {
       message: 'Invalid shared link',
     });
   }

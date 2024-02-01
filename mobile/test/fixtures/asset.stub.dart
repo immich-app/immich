@@ -6,6 +6,7 @@ final class AssetStub {
   static final image1 = Asset(
     checksum: "image1-checksum",
     localId: "image1",
+    remoteId: 'image1-remote',
     ownerId: 1,
     fileCreatedAt: DateTime.now(),
     fileModifiedAt: DateTime.now(),
@@ -22,6 +23,7 @@ final class AssetStub {
   static final image2 = Asset(
     checksum: "image2-checksum",
     localId: "image2",
+    remoteId: 'image2-remote',
     ownerId: 1,
     fileCreatedAt: DateTime(2000),
     fileModifiedAt: DateTime(2010),

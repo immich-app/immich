@@ -5,7 +5,7 @@
   } from '$lib/components/shared-components/notification/notification';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { handleError } from '$lib/utils/handle-error';
-  import { AllJobStatusResponseDto, api, JobCommand, JobCommandDto, JobName } from '@api';
+  import { type AllJobStatusResponseDto, api, JobCommand, type JobCommandDto, JobName } from '@api';
   import type { ComponentType } from 'svelte';
   import {
     mdiFaceRecognition,
@@ -15,6 +15,7 @@
     mdiImageSearch,
     mdiLibraryShelves,
     mdiTable,
+    mdiTagFaces,
     mdiVideo,
   } from '@mdi/js';
   import ConfirmDialogue from '../../shared-components/confirm-dialogue.svelte';
@@ -35,20 +36,23 @@
     handleCommand?: (jobId: JobName, jobCommand: JobCommandDto) => Promise<void>;
   }
 
-  let faceConfirm = false;
+  let confirmJob: JobName | null = null;
 
-  const handleFaceCommand = async (jobId: JobName, dto: JobCommandDto) => {
+  const handleConfirmCommand = async (jobId: JobName, dto: JobCommandDto) => {
     if (dto.force) {
-      faceConfirm = true;
+      confirmJob = jobId;
       return;
     }
 
     await handleCommand(jobId, dto);
   };
 
-  const onFaceConfirm = () => {
-    faceConfirm = false;
-    handleCommand(JobName.RecognizeFaces, { command: JobCommand.Start, force: true });
+  const onConfirm = () => {
+    if (!confirmJob) {
+      return;
+    }
+    handleCommand(confirmJob, { command: JobCommand.Start, force: true });
+    confirmJob = null;
   };
 
   $: jobDetails = <Partial<Record<JobName, JobDetails>>>{
@@ -81,13 +85,22 @@
       icon: mdiImageSearch,
       title: api.getJobName(JobName.SmartSearch),
       subtitle: 'Run machine learning on assets to support smart search',
-      disabled: !$featureFlags.clipEncode,
+      disabled: !$featureFlags.smartSearch,
     },
-    [JobName.RecognizeFaces]: {
+    [JobName.FaceDetection]: {
       icon: mdiFaceRecognition,
-      title: api.getJobName(JobName.RecognizeFaces),
-      subtitle: 'Run machine learning on assets to recognize faces',
-      handleCommand: handleFaceCommand,
+      title: api.getJobName(JobName.FaceDetection),
+      subtitle:
+        'Detect the faces in assets using machine learning. For videos, only the thumbnail is considered. "All" (re-)processes all assets. "Missing" queues assets that haven\'t been processed yet. Detected faces will be queued for Facial Recognition after Face Detection is complete, grouping them into existing or new people.',
+      handleCommand: handleConfirmCommand,
+      disabled: !$featureFlags.facialRecognition,
+    },
+    [JobName.FacialRecognition]: {
+      icon: mdiTagFaces,
+      title: api.getJobName(JobName.FacialRecognition),
+      subtitle:
+        'Group detected faces into people. This step runs after Face Detection is complete. "All" (re-)clusters all faces. "Missing" queues faces that don\'t have a person assigned.',
+      handleCommand: handleConfirmCommand,
       disabled: !$featureFlags.facialRecognition,
     },
     [JobName.VideoConversion]: {
@@ -131,11 +144,11 @@
   }
 </script>
 
-{#if faceConfirm}
+{#if confirmJob}
   <ConfirmDialogue
     prompt="Are you sure you want to reprocess all faces? This will also clear named people."
-    on:confirm={onFaceConfirm}
-    on:cancel={() => (faceConfirm = false)}
+    on:confirm={onConfirm}
+    on:cancel={() => (confirmJob = null)}
   />
 {/if}
 

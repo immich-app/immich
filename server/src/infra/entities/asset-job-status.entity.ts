@@ -12,4 +12,7 @@ export class AssetJobStatusEntity {
 
   @Column({ type: 'timestamptz', nullable: true })
   facesRecognizedAt!: Date | null;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  metadataExtractedAt!: Date | null;
 }

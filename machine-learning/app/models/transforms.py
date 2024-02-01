@@ -1,7 +1,6 @@
 import numpy as np
+from numpy.typing import NDArray
 from PIL import Image
-
-from app.schemas import ndarray_f32
 
 _PIL_RESAMPLING_METHODS = {resampling.name.lower(): resampling for resampling in Image.Resampling}
 
@@ -23,11 +22,13 @@ def crop(img: Image.Image, size: int) -> Image.Image:
     return img.crop((left, upper, right, lower))
 
 
-def to_numpy(img: Image.Image) -> ndarray_f32:
+def to_numpy(img: Image.Image) -> NDArray[np.float32]:
     return np.asarray(img.convert("RGB")).astype(np.float32) / 255.0
 
 
-def normalize(img: ndarray_f32, mean: float | ndarray_f32, std: float | ndarray_f32) -> ndarray_f32:
+def normalize(
+    img: NDArray[np.float32], mean: float | NDArray[np.float32], std: float | NDArray[np.float32]
+) -> NDArray[np.float32]:
     return (img - mean) / std
 
 

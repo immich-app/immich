@@ -1,7 +1,7 @@
 <script lang="ts">
   import { fly } from 'svelte/transition';
   import { linear } from 'svelte/easing';
-  import { api, type PersonResponseDto, AssetFaceResponseDto } from '@api';
+  import { api, type PersonResponseDto, type AssetFaceResponseDto } from '@api';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { createEventDispatcher, onMount } from 'svelte';
@@ -17,6 +17,9 @@
   import UnassignedFacesSidePannel from './unassigned-faces-side-pannel.svelte';
   import type { FaceWithGeneretedThumbnail } from '$lib/utils/people-utils';
   import Button from '../elements/buttons/button.svelte';
+  import { timeBeforeShowLoadingSpinner } from '$lib/constants';
+
+
 
   // keep track of the changes
   let idsOfPersonToCreate: string[] = [];
@@ -78,7 +81,7 @@
     if ($currentAsset === null) {
       return;
     }
-    const timeout = setTimeout(() => (isShowLoadingPeople = true), 100);
+    const timeout = setTimeout(() => (isShowLoadingPeople = true), timeBeforeShowLoadingSpinner);
     try {
       const { data } = await api.personApi.getAllPeople({ withHidden: true });
       allPeople = data.people;
@@ -202,8 +205,7 @@
   };
 
   const handleEditFaces = async () => {
-    loaderLoadingDoneTimeout = setTimeout(() => (isShowLoadingDone = true), 100);
-
+    loaderLoadingDoneTimeout = setTimeout(() => (isShowLoadingDone = true), timeBeforeShowLoadingSpinner);
     const numberOfChanges =
       selectedPersonToCreate.filter((person) => person !== null).length +
       selectedPersonToReassign.filter((person) => person !== null).length +

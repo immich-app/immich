@@ -7,12 +7,14 @@ import { DatabaseExtension, IDatabaseRepository } from '../repositories';
 @Injectable()
 export class DatabaseService {
   private logger = new ImmichLogger(DatabaseService.name);
+  minPostgresVersion = 14;
   minVectorsVersion = new Version(0, 1, 1);
   maxVectorsVersion = new Version(0, 1, 11);
 
   constructor(@Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository) {}
 
   async init() {
+    await this.assertPostgresql();
     await this.createVectors();
     await this.assertVectors();
     await this.databaseRepository.runMigrations();
@@ -65,5 +67,14 @@ export class DatabaseService {
       return null;
     }
     return `tensorchord/pgvecto-rs:pg${major}-v${this.maxVectorsVersion}`;
+  }
+
+  private async assertPostgresql() {
+    const { major } = await this.databaseRepository.getPostgresVersion();
+    if (major < this.minPostgresVersion) {
+      throw new Error(`
+        The PostgreSQL version is ${major}, which is older than the minimum supported version ${this.minPostgresVersion}.
+        Please upgrade to this version or later.`);
+    }
   }
 }

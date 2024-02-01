@@ -29,8 +29,8 @@ class ScanLibraryDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ScanLibraryDto &&
-     other.refreshAllFiles == refreshAllFiles &&
-     other.refreshModifiedFiles == refreshModifiedFiles;
+    other.refreshAllFiles == refreshAllFiles &&
+    other.refreshModifiedFiles == refreshModifiedFiles;
 
   @override
   int get hashCode =>

@@ -134,9 +134,6 @@ export class PeopleResponseDto {
   @ApiProperty({ type: 'integer' })
   total!: number;
 
-  @ApiProperty({ type: 'integer' })
-  visible!: number;
-
   people!: PersonResponseDto[];
 }
 

@@ -1,10 +1,9 @@
 import mockfs from 'mock-fs';
-import { CrawlOptionsDto } from 'src/cores/dto/crawl-options-dto';
-import { CrawlService } from '.';
+import { CrawlService, CrawlOptions } from './crawl.service';
 
 interface Test {
   test: string;
-  options: CrawlOptionsDto;
+  options: CrawlOptions;
   files: Record<string, boolean>;
 }
 
@@ -196,6 +195,58 @@ const tests: Test[] = [
       [`${cwd}/photos/1.jpg`]: true,
       [`${cwd}/photos/2.jpg`]: true,
       [`/photos/3.jpg`]: false,
+    },
+  },
+  {
+    test: 'should support ignoring full filename',
+    options: {
+      pathsToCrawl: ['/photos'],
+      exclusionPatterns: ['**/image2.jpg'],
+    },
+    files: {
+      '/photos/image1.jpg': true,
+      '/photos/image2.jpg': false,
+      '/photos/image3.jpg': true,
+    },
+  },
+  {
+    test: 'should support ignoring file extensions',
+    options: {
+      pathsToCrawl: ['/photos'],
+      exclusionPatterns: ['**/*.png'],
+    },
+    files: {
+      '/photos/image1.jpg': true,
+      '/photos/image2.png': false,
+      '/photos/image3.jpg': true,
+    },
+  },
+  {
+    test: 'should support ignoring folder names',
+    options: {
+      pathsToCrawl: ['/photos'],
+      recursive: true,
+      exclusionPatterns: ['**/raw/**'],
+    },
+    files: {
+      '/photos/image1.jpg': true,
+      '/photos/image/image1.jpg': true,
+      '/photos/raw/image2.dng': false,
+      '/photos/raw/image3.dng': false,
+      '/photos/notraw/image3.jpg': true,
+    },
+  },
+  {
+    test: 'should support ignoring absolute paths',
+    options: {
+      pathsToCrawl: ['/'],
+      recursive: true,
+      exclusionPatterns: ['/images/**'],
+    },
+    files: {
+      '/photos/image1.jpg': true,
+      '/images/image2.jpg': false,
+      '/assets/image3.jpg': true,
     },
   },
 ];

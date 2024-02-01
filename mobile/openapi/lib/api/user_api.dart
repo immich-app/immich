@@ -247,7 +247,7 @@ class UserApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<UserResponseDto>') as List)
         .cast<UserResponseDto>()
-        .toList();
+        .toList(growable: false);
 
     }
     return null;

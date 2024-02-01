@@ -10,8 +10,8 @@ import 'package:package_info_plus/package_info_plus.dart';
 
 class AppBarServerInfo extends HookConsumerWidget {
   const AppBarServerInfo({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

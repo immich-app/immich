@@ -7,7 +7,7 @@
     ControlButton,
     Control,
     ControlGroup,
-    Map,
+    type Map,
     FullscreenControl,
     GeolocateControl,
     NavigationControl,
@@ -15,13 +15,14 @@
     Popup,
   } from 'svelte-maplibre';
   import { colorTheme, mapSettings } from '$lib/stores/preferences.store';
-  import { MapMarkerResponseDto, api } from '@api';
+  import { type MapMarkerResponseDto, api } from '@api';
   import maplibregl from 'maplibre-gl';
   import type { GeoJSONSource, LngLatLike, StyleSpecification } from 'maplibre-gl';
   import type { Feature, Geometry, GeoJsonProperties, Point } from 'geojson';
   import Icon from '$lib/components/elements/icon.svelte';
   import { mdiCog, mdiMapMarker } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
+  import { Theme } from '$lib/constants';
 
   export let mapMarkers: MapMarkerResponseDto[];
   export let showSettingsModal: boolean | undefined = undefined;
@@ -36,7 +37,7 @@
 
   $: style = (async () => {
     const { data } = await api.systemConfigApi.getMapStyle({
-      theme: $mapSettings.allowDarkMode ? $colorTheme : 'light',
+      theme: $mapSettings.allowDarkMode ? $colorTheme.value : Theme.LIGHT,
     });
     return data as StyleSpecification;
   })();

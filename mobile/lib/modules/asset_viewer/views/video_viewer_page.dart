@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:chewie/chewie.dart';
@@ -14,6 +15,7 @@ import 'package:photo_manager/photo_manager.dart';
 import 'package:video_player/video_player.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
+@RoutePage()
 // ignore: must_be_immutable
 class VideoViewerPage extends HookConsumerWidget {
   final Asset asset;
@@ -24,14 +26,14 @@ class VideoViewerPage extends HookConsumerWidget {
   final VoidCallback? onPaused;
 
   const VideoViewerPage({
-    Key? key,
+    super.key,
     required this.asset,
     required this.isMotionVideo,
     required this.onVideoEnded,
     this.onPlaying,
     this.onPaused,
     this.placeholder,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -110,7 +112,7 @@ class VideoPlayer extends StatefulWidget {
   final Widget? placeholder;
 
   const VideoPlayer({
-    Key? key,
+    super.key,
     this.url,
     this.jwtToken,
     this.file,
@@ -119,7 +121,7 @@ class VideoPlayer extends StatefulWidget {
     this.onPlaying,
     this.onPaused,
     this.placeholder,
-  }) : super(key: key);
+  });
 
   @override
   State<VideoPlayer> createState() => _VideoPlayerState();
@@ -200,6 +202,8 @@ class _VideoPlayerState extends State<VideoPlayer> {
   Widget build(BuildContext context) {
     if (chewieController?.videoPlayerController.value.isInitialized == true) {
       return SizedBox(
+        height: context.height,
+        width: context.width,
         child: Chewie(
           controller: chewieController!,
         ),

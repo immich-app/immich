@@ -1,5 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/render_list.provider.dart';
+import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/modules/search/models/search_result_page_state.model.dart';
 
 import 'package:immich_mobile/modules/search/services/search.service.dart';
@@ -13,12 +14,13 @@ class SearchResultPageNotifier extends StateNotifier<SearchResultPageState> {
             isError: false,
             isLoading: true,
             isSuccess: false,
+            isSmart: false,
           ),
         );
 
   final SearchService _searchService;
 
-  void search(String searchTerm, {bool clipEnable = true}) async {
+  Future<void> search(String searchTerm, {bool smartSearch = true}) async {
     state = state.copyWith(
       searchResult: [],
       isError: false,
@@ -26,10 +28,8 @@ class SearchResultPageNotifier extends StateNotifier<SearchResultPageState> {
       isSuccess: false,
     );
 
-    List<Asset>? assets = await _searchService.searchAsset(
-      searchTerm,
-      clipEnable: clipEnable,
-    );
+    List<Asset>? assets =
+        await _searchService.searchAsset(searchTerm, smartSearch: smartSearch);
 
     if (assets != null) {
       state = state.copyWith(
@@ -37,6 +37,7 @@ class SearchResultPageNotifier extends StateNotifier<SearchResultPageState> {
         isError: false,
         isLoading: false,
         isSuccess: true,
+        isSmart: smartSearch,
       );
     } else {
       state = state.copyWith(
@@ -44,6 +45,7 @@ class SearchResultPageNotifier extends StateNotifier<SearchResultPageState> {
         isError: true,
         isLoading: false,
         isSuccess: false,
+        isSmart: smartSearch,
       );
     }
   }
@@ -55,7 +57,11 @@ final searchResultPageProvider =
   return SearchResultPageNotifier(ref.watch(searchServiceProvider));
 });
 
-final searchRenderListProvider = FutureProvider((ref) {
-  final assets = ref.watch(searchResultPageProvider).searchResult;
-  return ref.watch(renderListProvider(assets));
+final searchRenderListProvider = Provider((ref) {
+  final result = ref.watch(searchResultPageProvider);
+  return ref.watch(
+    renderListProviderWithGrouping(
+      (result.searchResult, result.isSmart ? GroupAssetsBy.none : null),
+    ),
+  );
 });

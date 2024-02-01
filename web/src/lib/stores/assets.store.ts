@@ -1,7 +1,7 @@
-import { api, AssetApiGetTimeBucketsRequest, AssetResponseDto, TimeBucketSize } from '@api';
+import { api, type AssetApiGetTimeBucketsRequest, type AssetResponseDto, TimeBucketSize } from '@api';
 import { throttle } from 'lodash-es';
 import { DateTime } from 'luxon';
-import { Unsubscriber, writable } from 'svelte/store';
+import { type Unsubscriber, writable } from 'svelte/store';
 import { handleError } from '../utils/handle-error';
 import { websocketStore } from './websocket';
 
@@ -440,3 +440,5 @@ export class AssetStore {
     this.store$.update(() => this);
   }
 }
+
+export const isSelectAllCancelled = writable(false);

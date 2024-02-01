@@ -16,6 +16,16 @@ void main() {
   // final instance = SystemConfigStorageTemplateDto();
 
   group('test SystemConfigStorageTemplateDto', () {
+    // bool enabled
+    test('to test the property `enabled`', () async {
+      // TODO
+    });
+
+    // bool hashVerificationEnabled
+    test('to test the property `hashVerificationEnabled`', () async {
+      // TODO
+    });
+
     // String template
     test('to test the property `template`', () async {
       // TODO

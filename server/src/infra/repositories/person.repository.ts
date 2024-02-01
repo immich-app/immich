@@ -1,16 +1,19 @@
 import {
   AssetFaceId,
   IPersonRepository,
+  Paginated,
+  PaginationOptions,
   PersonNameSearchOptions,
   PersonSearchOptions,
   PersonStatistics,
   UpdateFacesData,
 } from '@app/domain';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import _ from 'lodash';
+import { FindManyOptions, FindOptionsRelations, FindOptionsSelect, In, Repository } from 'typeorm';
 import { AssetEntity, AssetFaceEntity, PersonEntity } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';
-import { asVector } from '../infra.utils';
+import { ChunkedArray, asVector, paginate } from '../infra.utils';
 
 export class PersonRepository implements IPersonRepository {
   constructor(
@@ -19,60 +22,44 @@ export class PersonRepository implements IPersonRepository {
     @InjectRepository(AssetFaceEntity) private assetFaceRepository: Repository<AssetFaceEntity>,
   ) {}
 
-  /**
-   * Before reassigning faces, delete potential key violations
-   */
-  async prepareReassignFaces({ oldPersonId, newPersonId }: UpdateFacesData): Promise<string[]> {
-    const results = await this.assetFaceRepository
-      .createQueryBuilder('face')
-      .select('face."assetId"')
-      .where(`face."personId" IN (:...ids)`, { ids: [oldPersonId, newPersonId] })
-      .groupBy('face."assetId"')
-      .having('COUNT(face."personId") > 1')
-      .getRawMany();
-
-    const assetIds = results.map(({ assetId }) => assetId);
-
-    await this.assetFaceRepository.delete({ personId: oldPersonId, assetId: In(assetIds) });
-
-    return assetIds;
-  }
-
   @GenerateSql({ params: [{ oldPersonId: DummyValue.UUID, newPersonId: DummyValue.UUID }] })
-  async reassignFaces({ oldPersonId, newPersonId }: UpdateFacesData): Promise<number> {
+  async reassignFaces({ oldPersonId, faceIds, newPersonId }: UpdateFacesData): Promise<number> {
     const result = await this.assetFaceRepository
       .createQueryBuilder()
       .update()
       .set({ personId: newPersonId })
-      .where({ personId: oldPersonId })
+      .where(
+        _.omitBy(
+          { personId: oldPersonId ? oldPersonId : undefined, id: faceIds ? In(faceIds) : undefined },
+          _.isUndefined,
+        ),
+      )
       .execute();
 
     return result.affected ?? 0;
   }
 
-  delete(entity: PersonEntity): Promise<PersonEntity | null> {
-    return this.personRepository.remove(entity);
+  async delete(entities: PersonEntity[]): Promise<void> {
+    await this.personRepository.remove(entities);
   }
 
-  async deleteAll(): Promise<number> {
-    const people = await this.personRepository.find();
-    await this.personRepository.remove(people);
-    return people.length;
+  async deleteAll(): Promise<void> {
+    await this.personRepository.delete({});
   }
 
-  @GenerateSql()
-  getAllFaces(): Promise<AssetFaceEntity[]> {
-    return this.assetFaceRepository.find({ relations: { asset: true }, withDeleted: true });
+  async deleteAllFaces(): Promise<void> {
+    await this.assetFaceRepository.delete({});
   }
 
-  @GenerateSql()
-  getAll(): Promise<PersonEntity[]> {
-    return this.personRepository.find();
+  getAllFaces(
+    pagination: PaginationOptions,
+    options: FindManyOptions<AssetFaceEntity> = {},
+  ): Paginated<AssetFaceEntity> {
+    return paginate(this.assetFaceRepository, pagination, options);
   }
 
-  @GenerateSql()
-  getAllWithoutThumbnail(): Promise<PersonEntity[]> {
-    return this.personRepository.findBy({ thumbnailPath: '' });
+  getAll(pagination: PaginationOptions, options: FindManyOptions<PersonEntity> = {}): Paginated<PersonEntity> {
+    return paginate(this.personRepository, pagination, options);
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
@@ -82,6 +69,7 @@ export class PersonRepository implements IPersonRepository {
       .leftJoin('person.faces', 'face')
       .where('person.ownerId = :userId', { userId })
       .innerJoin('face.asset', 'asset')
+      .andWhere('asset.isArchived = false')
       .orderBy('person.isHidden', 'ASC')
       .addOrderBy("NULLIF(person.name, '') IS NULL", 'ASC')
       .addOrderBy('COUNT(face.assetId)', 'DESC')
@@ -128,14 +116,25 @@ export class PersonRepository implements IPersonRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  getFaceByIdWithAssets(id: string): Promise<AssetFaceEntity | null> {
-    return this.assetFaceRepository.findOne({
-      where: { id },
-      relations: {
-        person: true,
-        asset: true,
-      },
-    });
+  getFaceByIdWithAssets(
+    id: string,
+    relations: FindOptionsRelations<AssetFaceEntity>,
+    select: FindOptionsSelect<AssetFaceEntity>,
+  ): Promise<AssetFaceEntity | null> {
+    return this.assetFaceRepository.findOne(
+      _.omitBy(
+        {
+          where: { id },
+          relations: {
+            ...relations,
+            person: true,
+            asset: true,
+          },
+          select,
+        },
+        _.isUndefined,
+      ),
+    );
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
@@ -212,19 +211,27 @@ export class PersonRepository implements IPersonRepository {
     });
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getNumberOfPeople(userId: string): Promise<number> {
+    return this.personRepository
+      .createQueryBuilder('person')
+      .leftJoin('person.faces', 'face')
+      .where('person.ownerId = :userId', { userId })
+      .having('COUNT(face.assetId) != 0')
+      .groupBy('person.id')
+      .withDeleted()
+      .getCount();
+  }
+
   create(entity: Partial<PersonEntity>): Promise<PersonEntity> {
     return this.personRepository.save(entity);
   }
 
-  async createFace(entity: AssetFaceEntity): Promise<AssetFaceEntity> {
-    if (!entity.personId) {
-      throw new Error('Person ID is required to create a face');
-    }
-    if (!entity.embedding) {
-      throw new Error('Embedding is required to create a face');
-    }
-    await this.assetFaceRepository.insert({ ...entity, embedding: () => asVector(entity.embedding, true) });
-    return this.assetFaceRepository.findOneByOrFail({ assetId: entity.assetId, personId: entity.personId });
+  async createFaces(entities: AssetFaceEntity[]): Promise<string[]> {
+    const res = await this.assetFaceRepository.insert(
+      entities.map((entity) => ({ ...entity, embedding: () => asVector(entity.embedding, true) })),
+    );
+    return res.identifiers.map((row) => row.id);
   }
 
   async update(entity: Partial<PersonEntity>): Promise<PersonEntity> {
@@ -233,6 +240,7 @@ export class PersonRepository implements IPersonRepository {
   }
 
   @GenerateSql({ params: [[{ assetId: DummyValue.UUID, personId: DummyValue.UUID }]] })
+  @ChunkedArray()
   async getFacesByIds(ids: AssetFaceId[]): Promise<AssetFaceEntity[]> {
     return this.assetFaceRepository.find({ where: ids, relations: { asset: true }, withDeleted: true });
   }

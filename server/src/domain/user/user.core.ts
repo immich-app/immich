@@ -97,7 +97,7 @@ export class UserCore {
       payload.password = await this.cryptoRepository.hashBcrypt(payload.password, SALT_ROUNDS);
     }
     if (payload.storageLabel) {
-      payload.storageLabel = sanitize(payload.storageLabel);
+      payload.storageLabel = sanitize(payload.storageLabel.replace(/\./g, ''));
     }
     const userEntity = await this.userRepository.create(payload);
     await this.libraryRepository.create({

@@ -1,4 +1,4 @@
-import type { Configuration } from './open-api';
+import type { Configuration } from '@immich/sdk';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export type ApiFp = (configuration: Configuration) => Record<any, (...args: any) => any>;
