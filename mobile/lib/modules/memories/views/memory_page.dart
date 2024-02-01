@@ -7,6 +7,7 @@ import 'package:immich_mobile/modules/memories/models/memory.dart';
 import 'package:immich_mobile/modules/memories/ui/memory_bottom_info.dart';
 import 'package:immich_mobile/modules/memories/ui/memory_card.dart';
 import 'package:immich_mobile/modules/memories/ui/memory_epilogue.dart';
+import 'package:immich_mobile/modules/memories/ui/memory_progress_indicator.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
 import 'package:openapi/api.dart' as api;
@@ -208,18 +209,27 @@ class MemoryPage extends HookConsumerWidget {
                 // Build horizontal page
                 return Column(
                   children: [
-                    AnimatedBuilder(
-                      animation: currentMemoryAssetPageController,
-                      builder: (context, child) {
-                        double value = 0.0;
-                        if (currentMemoryAssetPageController.hasClients) {
-                          // We can only access [page] if this has clients
-                          value = currentMemoryAssetPageController.page ?? 0;
-                        }
-                        return LinearProgressIndicator(
-                          value: (value + 1) / memories[mIndex].assets.length,
-                        );
-                      },
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        left: 24.0,
+                        right: 24.0,
+                        top: 8.0,
+                        bottom: 2.0,
+                      ),
+                      child: AnimatedBuilder(
+                        animation: currentMemoryAssetPageController,
+                        builder: (context, child) {
+                          double value = 0.0;
+                          if (currentMemoryAssetPageController.hasClients) {
+                            // We can only access [page] if this has clients
+                            value = currentMemoryAssetPageController.page ?? 0;
+                          }
+                          return MemoryProgressIndicator(
+                            ticks: memories[mIndex].assets.length,
+                            value: (value + 1) / memories[mIndex].assets.length,
+                          );
+                        },
+                      ),
                     ),
                     Expanded(
                       child: Stack(
