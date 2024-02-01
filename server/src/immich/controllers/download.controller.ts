@@ -4,7 +4,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
 import { Auth, Authenticated, FileResponse, SharedLinkRoute } from '../app.guard';
 import { UseValidation, asStreamableFile, sendFile } from '../app.utils';
-import { UUIDParamDto as UIDParameterDto } from './dto/uuid-param.dto';
+import { UUIDParamDto } from './dto/uuid-param.dto';
 
 @ApiTags('Download')
 @Controller('download')
@@ -35,7 +35,7 @@ export class DownloadController {
     @Res() res: Response,
     @Next() next: NextFunction,
     @Auth() auth: AuthDto,
-    @Param() { id }: UIDParameterDto,
+    @Param() { id }: UUIDParamDto,
   ) {
     await sendFile(res, next, () => this.service.downloadFile(auth, id));
   }

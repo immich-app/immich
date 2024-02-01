@@ -46,7 +46,7 @@ import { NextFunction, Response } from 'express';
 import { Auth, Authenticated, FileResponse, SharedLinkRoute } from '../app.guard';
 import { UseValidation, asStreamableFile, sendFile } from '../app.utils';
 import { Route } from '../interceptors';
-import { UUIDParamDto as UIDParameterDto } from './dto/uuid-param.dto';
+import { UUIDParamDto } from './dto/uuid-param.dto';
 
 @ApiTags('Asset')
 @Controller('assets')
@@ -118,7 +118,7 @@ export class AssetController {
     @Res() res: Response,
     @Next() next: NextFunction,
     @Auth() auth: AuthDto,
-    @Param() { id }: UIDParameterDto,
+    @Param() { id }: UUIDParamDto,
   ) {
     await sendFile(res, next, () => this.downloadService.downloadFile(auth, id));
   }
@@ -201,16 +201,12 @@ export class AssetController {
 
   @SharedLinkRoute()
   @Get(':id')
-  getAssetInfo(@Auth() auth: AuthDto, @Param() { id }: UIDParameterDto): Promise<AssetResponseDto> {
+  getAssetInfo(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AssetResponseDto> {
     return this.service.get(auth, id) as Promise<AssetResponseDto>;
   }
 
   @Put(':id')
-  updateAsset(
-    @Auth() auth: AuthDto,
-    @Param() { id }: UIDParameterDto,
-    @Body() dto: UpdateDto,
-  ): Promise<AssetResponseDto> {
+  updateAsset(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto, @Body() dto: UpdateDto): Promise<AssetResponseDto> {
     return this.service.update(auth, id, dto);
   }
 }

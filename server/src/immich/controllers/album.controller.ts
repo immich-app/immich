@@ -16,7 +16,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { ParseMeUUIDPipe } from '../api-v1/validation/parse-me-uuid-pipe';
 import { Auth, Authenticated, SharedLinkRoute } from '../app.guard';
 import { UseValidation } from '../app.utils';
-import { UUIDParamDto as UIDParameterDto } from './dto/uuid-param.dto';
+import { UUIDParamDto } from './dto/uuid-param.dto';
 
 @ApiTags('Album')
 @Controller('album')
@@ -44,7 +44,7 @@ export class AlbumController {
   @Get(':id')
   getAlbumInfo(
     @Auth() auth: AuthDto,
-    @Param() { id }: UIDParameterDto,
+    @Param() { id }: UUIDParamDto,
     @Query() dto: AlbumInfoDto,
   ): Promise<AlbumResponseDto> {
     return this.service.get(auth, id, dto);
@@ -53,14 +53,14 @@ export class AlbumController {
   @Patch(':id')
   updateAlbumInfo(
     @Auth() auth: AuthDto,
-    @Param() { id }: UIDParameterDto,
+    @Param() { id }: UUIDParamDto,
     @Body() dto: UpdateDto,
   ): Promise<AlbumResponseDto> {
     return this.service.update(auth, id, dto);
   }
 
   @Delete(':id')
-  deleteAlbum(@Auth() auth: AuthDto, @Param() { id }: UIDParameterDto) {
+  deleteAlbum(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto) {
     return this.service.delete(auth, id);
   }
 
@@ -68,7 +68,7 @@ export class AlbumController {
   @Put(':id/assets')
   addAssetsToAlbum(
     @Auth() auth: AuthDto,
-    @Param() { id }: UIDParameterDto,
+    @Param() { id }: UUIDParamDto,
     @Body() dto: BulkIdsDto,
   ): Promise<BulkIdResponseDto[]> {
     return this.service.addAssets(auth, id, dto);
@@ -78,7 +78,7 @@ export class AlbumController {
   removeAssetFromAlbum(
     @Auth() auth: AuthDto,
     @Body() dto: BulkIdsDto,
-    @Param() { id }: UIDParameterDto,
+    @Param() { id }: UUIDParamDto,
   ): Promise<BulkIdResponseDto[]> {
     return this.service.removeAssets(auth, id, dto);
   }
@@ -86,7 +86,7 @@ export class AlbumController {
   @Put(':id/users')
   addUsersToAlbum(
     @Auth() auth: AuthDto,
-    @Param() { id }: UIDParameterDto,
+    @Param() { id }: UUIDParamDto,
     @Body() dto: AddUsersDto,
   ): Promise<AlbumResponseDto> {
     return this.service.addUsers(auth, id, dto);
@@ -95,7 +95,7 @@ export class AlbumController {
   @Delete(':id/user/:userId')
   removeUserFromAlbum(
     @Auth() auth: AuthDto,
-    @Param() { id }: UIDParameterDto,
+    @Param() { id }: UUIDParamDto,
     @Param('userId', new ParseMeUUIDPipe({ version: '4' })) userId: string,
   ) {
     return this.service.removeUser(auth, id, userId);

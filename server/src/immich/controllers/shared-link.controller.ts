@@ -14,7 +14,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { Auth, Authenticated, SharedLinkRoute } from '../app.guard';
 import { UseValidation } from '../app.utils';
-import { UUIDParamDto as UIDParameterDto } from './dto/uuid-param.dto';
+import { UUIDParamDto } from './dto/uuid-param.dto';
 
 @ApiTags('Shared Link')
 @Controller('shared-link')
@@ -52,7 +52,7 @@ export class SharedLinkController {
   }
 
   @Get(':id')
-  getSharedLinkById(@Auth() auth: AuthDto, @Param() { id }: UIDParameterDto): Promise<SharedLinkResponseDto> {
+  getSharedLinkById(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<SharedLinkResponseDto> {
     return this.service.get(auth, id);
   }
 
@@ -64,14 +64,14 @@ export class SharedLinkController {
   @Patch(':id')
   updateSharedLink(
     @Auth() auth: AuthDto,
-    @Param() { id }: UIDParameterDto,
+    @Param() { id }: UUIDParamDto,
     @Body() dto: SharedLinkEditDto,
   ): Promise<SharedLinkResponseDto> {
     return this.service.update(auth, id, dto);
   }
 
   @Delete(':id')
-  removeSharedLink(@Auth() auth: AuthDto, @Param() { id }: UIDParameterDto): Promise<void> {
+  removeSharedLink(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.remove(auth, id);
   }
 
@@ -79,7 +79,7 @@ export class SharedLinkController {
   @Put(':id/assets')
   addSharedLinkAssets(
     @Auth() auth: AuthDto,
-    @Param() { id }: UIDParameterDto,
+    @Param() { id }: UUIDParamDto,
     @Body() dto: AssetIdsDto,
   ): Promise<AssetIdsResponseDto[]> {
     return this.service.addAssets(auth, id, dto);
@@ -89,7 +89,7 @@ export class SharedLinkController {
   @Delete(':id/assets')
   removeSharedLinkAssets(
     @Auth() auth: AuthDto,
-    @Param() { id }: UIDParameterDto,
+    @Param() { id }: UUIDParamDto,
     @Body() dto: AssetIdsDto,
   ): Promise<AssetIdsResponseDto[]> {
     return this.service.removeAssets(auth, id, dto);

@@ -12,7 +12,7 @@ import { Body, Controller, Delete, Get, Param, Patch, Post, Put } from '@nestjs/
 import { ApiTags } from '@nestjs/swagger';
 import { Auth, Authenticated } from '../app.guard';
 import { UseValidation } from '../app.utils';
-import { UUIDParamDto as UIDParameterDto } from './dto/uuid-param.dto';
+import { UUIDParamDto } from './dto/uuid-param.dto';
 
 @ApiTags('Tag')
 @Controller('tag')
@@ -32,33 +32,29 @@ export class TagController {
   }
 
   @Get(':id')
-  getTagById(@Auth() auth: AuthDto, @Param() { id }: UIDParameterDto): Promise<TagResponseDto> {
+  getTagById(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<TagResponseDto> {
     return this.service.getById(auth, id);
   }
 
   @Patch(':id')
-  updateTag(
-    @Auth() auth: AuthDto,
-    @Param() { id }: UIDParameterDto,
-    @Body() dto: UpdateTagDto,
-  ): Promise<TagResponseDto> {
+  updateTag(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto, @Body() dto: UpdateTagDto): Promise<TagResponseDto> {
     return this.service.update(auth, id, dto);
   }
 
   @Delete(':id')
-  deleteTag(@Auth() auth: AuthDto, @Param() { id }: UIDParameterDto): Promise<void> {
+  deleteTag(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.remove(auth, id);
   }
 
   @Get(':id/assets')
-  getTagAssets(@Auth() auth: AuthDto, @Param() { id }: UIDParameterDto): Promise<AssetResponseDto[]> {
+  getTagAssets(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AssetResponseDto[]> {
     return this.service.getAssets(auth, id);
   }
 
   @Put(':id/assets')
   tagAssets(
     @Auth() auth: AuthDto,
-    @Param() { id }: UIDParameterDto,
+    @Param() { id }: UUIDParamDto,
     @Body() dto: AssetIdsDto,
   ): Promise<AssetIdsResponseDto[]> {
     return this.service.addAssets(auth, id, dto);
@@ -68,7 +64,7 @@ export class TagController {
   untagAssets(
     @Auth() auth: AuthDto,
     @Body() dto: AssetIdsDto,
-    @Param() { id }: UIDParameterDto,
+    @Param() { id }: UUIDParamDto,
   ): Promise<AssetIdsResponseDto[]> {
     return this.service.removeAssets(auth, id, dto);
   }

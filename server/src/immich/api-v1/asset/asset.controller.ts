@@ -19,7 +19,7 @@ import { ApiBody, ApiConsumes, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
 import { Auth, Authenticated, FileResponse, SharedLinkRoute } from '../../app.guard';
 import { UseValidation, sendFile } from '../../app.utils';
-import { UUIDParamDto as UIDParameterDto } from '../../controllers/dto/uuid-param.dto';
+import { UUIDParamDto } from '../../controllers/dto/uuid-param.dto';
 import { FileUploadInterceptor, ImmichFile, Route, mapToUploadFile } from '../../interceptors';
 import FileNotEmptyValidator from '../validation/file-not-empty-validator';
 import { AssetService as AssetServiceV1 } from './asset.service';
@@ -92,7 +92,7 @@ export class AssetController {
     @Res() res: Response,
     @Next() next: NextFunction,
     @Auth() auth: AuthDto,
-    @Param() { id }: UIDParameterDto,
+    @Param() { id }: UUIDParamDto,
     @Query(new ValidationPipe({ transform: true })) dto: ServeFileDto,
   ) {
     await sendFile(res, next, () => this.serviceV1.serveFile(auth, id, dto));
@@ -105,7 +105,7 @@ export class AssetController {
     @Res() res: Response,
     @Next() next: NextFunction,
     @Auth() auth: AuthDto,
-    @Param() { id }: UIDParameterDto,
+    @Param() { id }: UUIDParamDto,
     @Query(new ValidationPipe({ transform: true })) dto: GetAssetThumbnailDto,
   ) {
     await sendFile(res, next, () => this.serviceV1.serveThumbnail(auth, id, dto));
@@ -150,7 +150,7 @@ export class AssetController {
   @SharedLinkRoute()
   @UseValidation()
   @Get('/assetById/:id')
-  getAssetById(@Auth() auth: AuthDto, @Param() { id }: UIDParameterDto): Promise<AssetResponseDto> {
+  getAssetById(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AssetResponseDto> {
     return this.service.get(auth, id) as Promise<AssetResponseDto>;
   }
 

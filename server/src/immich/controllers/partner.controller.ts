@@ -4,7 +4,7 @@ import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/
 import { ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Auth, Authenticated } from '../app.guard';
 import { UseValidation } from '../app.utils';
-import { UUIDParamDto as UIDParameterDto } from './dto/uuid-param.dto';
+import { UUIDParamDto } from './dto/uuid-param.dto';
 
 @ApiTags('Partner')
 @Controller('partner')
@@ -20,21 +20,21 @@ export class PartnerController {
   }
 
   @Post(':id')
-  createPartner(@Auth() auth: AuthDto, @Param() { id }: UIDParameterDto): Promise<PartnerResponseDto> {
+  createPartner(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<PartnerResponseDto> {
     return this.service.create(auth, id);
   }
 
   @Put(':id')
   updatePartner(
     @Auth() auth: AuthDto,
-    @Param() { id }: UIDParameterDto,
+    @Param() { id }: UUIDParamDto,
     @Body() dto: UpdatePartnerDto,
   ): Promise<PartnerResponseDto> {
     return this.service.update(auth, id, dto);
   }
 
   @Delete(':id')
-  removePartner(@Auth() auth: AuthDto, @Param() { id }: UIDParameterDto): Promise<void> {
+  removePartner(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.remove(auth, id);
   }
 }
