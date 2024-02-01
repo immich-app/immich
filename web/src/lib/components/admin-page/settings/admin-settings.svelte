@@ -43,7 +43,10 @@
 
   const reset = async (configKeys: Array<keyof SystemConfigDto>) => {
     const { data: resetConfig } = await api.systemConfigApi.getConfig();
-    config = configKeys.reduce((accumulator, key) => ({ ...accumulator, [key]: resetConfig[key] }), config);
+
+    for (const key of configKeys) {
+      config = { ...config, [key]: resetConfig[key] };
+    }
 
     notificationController.show({
       message: 'Reset settings to the recent saved settings',
@@ -52,7 +55,9 @@
   };
 
   const resetToDefault = async (configKeys: Array<keyof SystemConfigDto>) => {
-    config = configKeys.reduce((accumulator, key) => ({ ...accumulator, [key]: defaultConfig[key] }), config);
+    for (const key of configKeys) {
+      config = { ...config, [key]: defaultConfig[key] };
+    }
 
     notificationController.show({
       message: 'Reset settings to default',

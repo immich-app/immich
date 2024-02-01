@@ -48,7 +48,7 @@
 
       await new Promise<void>((resolve) => {
         img.addEventListener('load', () => resolve());
-        img.onerror = () => resolve();
+        img.addEventListener('error', () => resolve());
       });
 
       image = img;
@@ -56,13 +56,20 @@
     if (image === null) {
       return null;
     }
-    const { boundingBoxX1: x1, boundingBoxX2: x2, boundingBoxY1: y1, boundingBoxY2: y2 } = face;
+    const {
+      boundingBoxX1: x1,
+      boundingBoxX2: x2,
+      boundingBoxY1: y1,
+      boundingBoxY2: y2,
+      imageWidth,
+      imageHeight,
+    } = face;
 
     const coordinates = {
-      x1: (image.naturalWidth / face.imageWidth) * x1,
-      x2: (image.naturalWidth / face.imageWidth) * x2,
-      y1: (image.naturalHeight / face.imageHeight) * y1,
-      y2: (image.naturalHeight / face.imageHeight) * y2,
+      x1: (image.naturalWidth / imageWidth) * x1,
+      x2: (image.naturalWidth / imageWidth) * x2,
+      y1: (image.naturalHeight / imageHeight) * y1,
+      y2: (image.naturalHeight / imageHeight) * y2,
     };
 
     const faceWidth = coordinates.x2 - coordinates.x1;
@@ -73,7 +80,7 @@
 
     await new Promise((resolve) => {
       faceImage.addEventListener('load', resolve);
-      faceImage.onerror = () => resolve(null);
+      faceImage.addEventListener('error', () => resolve(null));
     });
 
     const canvas = document.createElement('canvas');

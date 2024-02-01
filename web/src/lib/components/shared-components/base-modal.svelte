@@ -26,7 +26,7 @@
 
   onDestroy(() => {
     if (browser) {
-      window.onscroll = null;
+      window.addEventListener('scroll', () => {});
     }
   });
 </script>
