@@ -32,7 +32,7 @@ export const openFileUploadDialog = async (albumId?: string | undefined) => {
         if (!target.files) {
           return;
         }
-        const files = [...target.files];
+        const files = Array.from(target.files);
 
         resolve(fileUploadHandler(files, albumId));
       });
@@ -120,6 +120,6 @@ async function fileUploader(asset: File, albumId: string | undefined = undefined
       await handleError(error, 'Unable to upload file');
       const reason = (await getServerErrorMessage(error)) || error;
       uploadAssetsStore.updateAsset(deviceAssetId, { state: UploadState.ERROR, error: reason });
-      return;
+      return undefined;
     });
 }

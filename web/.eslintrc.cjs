@@ -36,6 +36,7 @@ module.exports = {
     'unicorn/prefer-spread': 'off',
     'unicorn/no-null': 'off',
     'unicorn/prevent-abbreviations': 'off',
+    'unicorn/no-nested-ternary': 'off',
     '@typescript-eslint/no-unused-vars': [
       'warn',
       {

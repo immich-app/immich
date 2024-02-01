@@ -35,6 +35,7 @@
   let map: maplibregl.Map;
   let marker: maplibregl.Marker | null = null;
 
+  // eslint-disable-next-line unicorn/prefer-top-level-await
   $: style = (async () => {
     const { data } = await api.systemConfigApi.getMapStyle({
       theme: $mapSettings.allowDarkMode ? $colorTheme.value : Theme.LIGHT,
