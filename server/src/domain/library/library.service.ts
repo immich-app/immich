@@ -1,8 +1,8 @@
 import { AssetType, LibraryType } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { EventEmitter } from 'events';
 import { R_OK } from 'node:constants';
+import { EventEmitter } from 'node:events';
 import { Stats } from 'node:fs';
 import path, { basename, parse } from 'node:path';
 import picomatch from 'picomatch';
@@ -82,13 +82,9 @@ export class LibraryService extends EventEmitter {
     this.configCore.config$.subscribe(async ({ library }) => {
       this.jobRepository.updateCronJob('libraryScan', library.scan.cronExpression, library.scan.enabled);
 
-      if (config.library.watch.enabled !== this.watchLibraries) {
-        this.watchLibraries = config.library.watch.enabled;
-        if (this.watchLibraries) {
-          await this.watchAll();
-        } else {
-          await this.unwatchAll();
-        }
+      if (library.watch.enabled !== this.watchLibraries) {
+        this.watchLibraries = library.watch.enabled;
+        await (this.watchLibraries ? this.watchAll() : this.unwatchAll());
       }
     });
   }
