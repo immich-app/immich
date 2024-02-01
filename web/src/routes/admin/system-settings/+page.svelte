@@ -129,46 +129,50 @@
   ];
 </script>
 
-{#if $featureFlags.configFile}
-  <div class="mb-8 flex flex-row items-center gap-2 rounded-md bg-gray-100 p-3 dark:bg-gray-800">
-    <Icon path={mdiAlert} class="text-yellow-400" size={18} />
-    <h2 class="text-md text-immich-primary dark:text-immich-dark-primary">Config is currently set by a config file</h2>
-  </div>
-{/if}
+<div class="h-svh flex flex-col overflow-hidden">
+  {#if $featureFlags.configFile}
+    <div class="flex flex-row items-center gap-2 bg-gray-100 p-3 dark:bg-gray-800">
+      <Icon path={mdiAlert} class="text-yellow-400" size={18} />
+      <h2 class="text-md text-immich-primary dark:text-immich-dark-primary">
+        Config is currently set by a config file
+      </h2>
+    </div>
+  {/if}
 
-<UserPageLayout title={data.meta.title} admin>
-  <div class="flex justify-end gap-2" slot="buttons">
-    <LinkButton on:click={() => copyToClipboard(JSON.stringify(config, null, 2))}>
-      <div class="flex place-items-center gap-2 text-sm">
-        <Icon path={mdiContentCopy} size="18" />
-        Copy to Clipboard
-      </div>
-    </LinkButton>
-    <LinkButton on:click={() => downloadConfig()}>
-      <div class="flex place-items-center gap-2 text-sm">
-        <Icon path={mdiDownload} size="18" />
-        Export as JSON
-      </div>
-    </LinkButton>
-  </div>
+  <UserPageLayout title={data.meta.title} admin>
+    <div class="flex justify-end gap-2" slot="buttons">
+      <LinkButton on:click={() => copyToClipboard(JSON.stringify(config, null, 2))}>
+        <div class="flex place-items-center gap-2 text-sm">
+          <Icon path={mdiContentCopy} size="18" />
+          Copy to Clipboard
+        </div>
+      </LinkButton>
+      <LinkButton on:click={() => downloadConfig()}>
+        <div class="flex place-items-center gap-2 text-sm">
+          <Icon path={mdiDownload} size="18" />
+          Export as JSON
+        </div>
+      </LinkButton>
+    </div>
 
-  <AdminSettings bind:config let:handleReset let:handleSave let:savedConfig let:defaultConfig>
-    <section id="setting-content" class="flex place-content-center sm:mx-4">
-      <section class="w-full pb-28 sm:w-5/6 md:w-[850px]">
-        {#each settings as { item, title, subtitle, isOpen }}
-          <SettingAccordion {title} {subtitle} {isOpen}>
-            <svelte:component
-              this={item}
-              on:save={({ detail }) => handleSave(detail)}
-              on:reset={({ detail }) => handleReset(detail)}
-              disabled={$featureFlags.configFile}
-              {defaultConfig}
-              {config}
-              {savedConfig}
-            />
-          </SettingAccordion>
-        {/each}
+    <AdminSettings bind:config let:handleReset let:handleSave let:savedConfig let:defaultConfig>
+      <section id="setting-content" class="flex place-content-center sm:mx-4">
+        <section class="w-full pb-28 sm:w-5/6 md:w-[850px]">
+          {#each settings as { item, title, subtitle, isOpen }}
+            <SettingAccordion {title} {subtitle} {isOpen}>
+              <svelte:component
+                this={item}
+                on:save={({ detail }) => handleSave(detail)}
+                on:reset={({ detail }) => handleReset(detail)}
+                disabled={$featureFlags.configFile}
+                {defaultConfig}
+                {config}
+                {savedConfig}
+              />
+            </SettingAccordion>
+          {/each}
+        </section>
       </section>
-    </section>
-  </AdminSettings>
-</UserPageLayout>
+    </AdminSettings>
+  </UserPageLayout>
+</div>
