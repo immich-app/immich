@@ -89,8 +89,7 @@ class _AssetMarkerIcon extends StatelessWidget {
                     imageUrl,
                     cacheKey: cacheKey,
                     headers: {
-                      "Authorization":
-                          "Bearer ${Store.get(StoreKey.accessToken)}",
+                      "x-immich-user-token": Store.get(StoreKey.accessToken),
                     },
                     errorListener: (_) =>
                         const Icon(Icons.image_not_supported_outlined),
