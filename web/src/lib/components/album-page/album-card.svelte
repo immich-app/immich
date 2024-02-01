@@ -91,9 +91,7 @@
       data-testid="album-image"
       draggable="false"
     />
-    <div
-      class="absolute top-0 h-full w-full rounded-3xl"
-    />
+    <div class="absolute top-0 h-full w-full rounded-3xl" />
   </div>
 
   <div class="mt-4">
