@@ -26,7 +26,9 @@ export class ExecutorQueue {
 
     const v = concurrency - this.running;
     if (v > 0) {
-      [...new Array(this._concurrency)].forEach(() => this.tryRun());
+      for (let i = 0; i < v; i++) {
+        this.tryRun();
+      }
     }
   }
 

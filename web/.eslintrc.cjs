@@ -37,6 +37,7 @@ module.exports = {
     'unicorn/no-null': 'off',
     'unicorn/prevent-abbreviations': 'off',
     'unicorn/no-nested-ternary': 'off',
+    'unicorn/consistent-function-scoping': 'off',
     '@typescript-eslint/no-unused-vars': [
       'warn',
       {
