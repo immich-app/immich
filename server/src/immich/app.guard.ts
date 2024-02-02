@@ -50,8 +50,8 @@ export const SharedLinkRoute = () =>
   applyDecorators(SetMetadata(Metadata.SHARED_ROUTE, true), ApiQuery({ name: 'key', type: String, required: false }));
 export const AdminRoute = (value = true) => SetMetadata(Metadata.ADMIN_ROUTE, value);
 
-export const Auth = createParamDecorator((data, ctx: ExecutionContext): AuthDto => {
-  return ctx.switchToHttp().getRequest<{ user: AuthDto }>().user;
+export const Auth = createParamDecorator((data, context: ExecutionContext): AuthDto => {
+  return context.switchToHttp().getRequest<{ user: AuthDto }>().user;
 });
 
 export const FileResponse = () =>
@@ -59,15 +59,15 @@ export const FileResponse = () =>
     content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } },
   });
 
-export const GetLoginDetails = createParamDecorator((data, ctx: ExecutionContext): LoginDetails => {
-  const req = ctx.switchToHttp().getRequest<Request>();
-  const userAgent = UAParser(req.headers['user-agent']);
+export const GetLoginDetails = createParamDecorator((data, context: ExecutionContext): LoginDetails => {
+  const request = context.switchToHttp().getRequest<Request>();
+  const userAgent = UAParser(request.headers['user-agent']);
 
   return {
-    clientIp: req.ip,
-    isSecure: req.secure,
-    deviceType: userAgent.browser.name || userAgent.device.type || (req.headers.devicemodel as string) || '',
-    deviceOS: userAgent.os.name || (req.headers.devicetype as string) || '',
+    clientIp: request.ip,
+    isSecure: request.secure,
+    deviceType: userAgent.browser.name || userAgent.device.type || (request.headers.devicemodel as string) || '',
+    deviceOS: userAgent.os.name || (request.headers.devicetype as string) || '',
   };
 });
 
@@ -95,20 +95,20 @@ export class AppGuard implements CanActivate {
       return true;
     }
 
-    const req = context.switchToHttp().getRequest<AuthRequest>();
+    const request = context.switchToHttp().getRequest<AuthRequest>();
 
-    const authDto = await this.authService.validate(req.headers, req.query as Record<string, string>);
+    const authDto = await this.authService.validate(request.headers, request.query as Record<string, string>);
     if (authDto.sharedLink && !isSharedRoute) {
-      this.logger.warn(`Denied access to non-shared route: ${req.path}`);
+      this.logger.warn(`Denied access to non-shared route: ${request.path}`);
       return false;
     }
 
     if (isAdminRoute && !authDto.user.isAdmin) {
-      this.logger.warn(`Denied access to admin only route: ${req.path}`);
+      this.logger.warn(`Denied access to admin only route: ${request.path}`);
       return false;
     }
 
-    req.user = authDto;
+    request.user = authDto;
 
     return true;
   }

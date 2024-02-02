@@ -16,7 +16,8 @@
   import { tweened } from 'svelte/motion';
   import { mdiChevronDown, mdiChevronLeft, mdiChevronRight, mdiChevronUp, mdiPause, mdiPlay } from '@mdi/js';
 
-  const parseIndex = (s: string | null, max: number | null) => Math.max(Math.min(parseInt(s ?? '') || 0, max ?? 0), 0);
+  const parseIndex = (s: string | null, max: number | null) =>
+    Math.max(Math.min(Number.parseInt(s ?? '') || 0, max ?? 0), 0);
 
   $: memoryIndex = parseIndex($page.url.searchParams.get(QueryParameter.MEMORY_INDEX), $memoryStore?.length - 1);
   $: assetIndex = parseIndex($page.url.searchParams.get(QueryParameter.ASSET_INDEX), currentMemory?.assets.length - 1);
@@ -114,18 +115,19 @@
         <div class="flex place-content-center place-items-center gap-2 overflow-hidden">
           <CircleIconButton icon={paused ? mdiPlay : mdiPause} forceDark on:click={() => (paused = !paused)} />
 
-          {#each currentMemory.assets as _, i}
+          {#each currentMemory.assets as _, index}
             <button
               class="relative w-full py-2"
-              on:click={() => goto(`?${QueryParameter.MEMORY_INDEX}=${memoryIndex}&${QueryParameter.ASSET_INDEX}=${i}`)}
+              on:click={() =>
+                goto(`?${QueryParameter.MEMORY_INDEX}=${memoryIndex}&${QueryParameter.ASSET_INDEX}=${index}`)}
             >
               <span class="absolute left-0 h-[2px] w-full bg-gray-500" />
               {#await resetPromise}
-                <span class="absolute left-0 h-[2px] bg-white" style:width={`${i < assetIndex ? 100 : 0}%`} />
+                <span class="absolute left-0 h-[2px] bg-white" style:width={`${index < assetIndex ? 100 : 0}%`} />
               {:then}
                 <span
                   class="absolute left-0 h-[2px] bg-white"
-                  style:width={`${i < assetIndex ? 100 : i > assetIndex ? 0 : $progress * 100}%`}
+                  style:width={`${index < assetIndex ? 100 : index > assetIndex ? 0 : $progress * 100}%`}
                 />
               {/await}
             </button>

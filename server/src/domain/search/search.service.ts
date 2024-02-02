@@ -46,7 +46,7 @@ export class SearchService {
       this.assetRepository.getAssetIdByTag(auth.user.id, options),
     ]);
     const assetIds = new Set<string>(results.flatMap((field) => field.items.map((item) => item.data)));
-    const assets = await this.assetRepository.getByIds(Array.from(assetIds));
+    const assets = await this.assetRepository.getByIds([...assetIds]);
     const assetMap = new Map<string, AssetResponseDto>(assets.map((asset) => [asset.id, mapAsset(asset)]));
 
     return results.map(({ fieldName, items }) => ({
@@ -75,7 +75,7 @@ export class SearchService {
     let assets: AssetEntity[] = [];
 
     switch (strategy) {
-      case SearchStrategy.SMART:
+      case SearchStrategy.SMART: {
         const embedding = await this.machineLearning.encodeText(
           machineLearning.url,
           { text: query },
@@ -88,10 +88,13 @@ export class SearchService {
           withArchived,
         });
         break;
-      case SearchStrategy.TEXT:
+      }
+      case SearchStrategy.TEXT: {
         assets = await this.assetRepository.searchMetadata(query, userIds, { numResults: 250 });
-      default:
+      }
+      default: {
         break;
+      }
     }
 
     return {

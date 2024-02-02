@@ -18,7 +18,7 @@
       const { data: results } = await api.sharedLinkApi.removeSharedLinkAssets({
         id: sharedLink.id,
         assetIdsDto: {
-          assetIds: Array.from(getAssets()).map((asset) => asset.id),
+          assetIds: [...getAssets()].map((asset) => asset.id),
         },
         key: api.getKey(),
       });

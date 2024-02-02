@@ -1009,9 +1009,7 @@ describe(AssetService.name, () => {
   it('get assets by device id', async () => {
     const assets = [assetStub.image, assetStub.image1];
 
-    assetMock.getAllByDeviceId.mockImplementation(() =>
-      Promise.resolve<string[]>(Array.from(assets.map((asset) => asset.deviceAssetId))),
-    );
+    assetMock.getAllByDeviceId.mockResolvedValue(assets.map((asset) => asset.deviceAssetId));
 
     const deviceId = 'device-id';
     const result = await sut.getUserAssetsByDeviceId(authStub.user1, deviceId);

@@ -55,8 +55,8 @@ export const openWebsocketConnection = async () => {
       .on('on_config_update', () => loadConfig())
       .on('on_new_release', (data) => websocketStore.onRelease.set(data))
       .on('error', (e) => console.log('Websocket Error', e));
-  } catch (e) {
-    console.log('Cannot connect to websocket ', e);
+  } catch (error) {
+    console.log('Cannot connect to websocket', error);
   }
 };
 

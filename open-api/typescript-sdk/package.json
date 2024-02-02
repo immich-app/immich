@@ -3,16 +3,16 @@
   "version": "1.92.1",
   "description": "",
   "type": "module",
-  "main": "./build/esm/index.js",
-  "types": "./build/types/index.d.ts",
+  "main": "./build/index.js",
+  "types": "./build/index.d.ts",
   "exports": {
     ".": {
-      "types": "./build/types/index.d.ts",
-      "default": "./build/esm/index.js"
+      "types": "./build/index.d.ts",
+      "default": "./build/index.js"
     }
   },
   "scripts": {
-    "build": "tsc -b ./tsconfig.esm.json ./tsconfig.types.json"
+    "build": "tsc -b ./tsconfig.json"
   },
   "license": "MIT",
   "devDependencies": {

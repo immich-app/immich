@@ -24,7 +24,7 @@
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
-  $: isAllFavorite = Array.from($selectedAssets).every((asset) => asset.isFavorite);
+  $: isAllFavorite = [...$selectedAssets].every((asset) => asset.isFavorite);
 </script>
 
 {#if $isMultiSelectState}

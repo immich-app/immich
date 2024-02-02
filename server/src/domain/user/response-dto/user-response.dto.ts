@@ -5,10 +5,7 @@ import { IsEnum } from 'class-validator';
 export const getRandomAvatarColor = (user: UserEntity): UserAvatarColor => {
   const values = Object.values(UserAvatarColor);
   const randomIndex = Math.floor(
-    user.email
-      .split('')
-      .map((letter) => letter.charCodeAt(0))
-      .reduce((a, b) => a + b, 0) % values.length,
+    [...user.email].map((letter) => letter.codePointAt(0) ?? 0).reduce((a, b) => a + b, 0) % values.length,
   );
   return values[randomIndex] as UserAvatarColor;
 };

@@ -33,9 +33,9 @@
         await oauth.login(window.location);
         dispatch('success');
         return;
-      } catch (e) {
-        console.error('Error [login-form] [oauth.callback]', e);
-        oauthError = (await getServerErrorMessage(e)) || 'Unable to complete OAuth login';
+      } catch (error) {
+        console.error('Error [login-form] [oauth.callback]', error);
+        oauthError = (await getServerErrorMessage(error)) || 'Unable to complete OAuth login';
         oauthLoading = false;
       }
     }

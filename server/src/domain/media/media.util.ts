@@ -15,16 +15,14 @@ class BaseConfig implements VideoCodecSWConfig {
   getOptions(videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
     const options = {
       inputOptions: this.getBaseInputOptions(),
-      outputOptions: this.getBaseOutputOptions(videoStream, audioStream).concat('-v verbose'),
+      outputOptions: [...this.getBaseOutputOptions(videoStream, audioStream), '-v verbose'],
       twoPass: this.eligibleForTwoPass(),
     } as TranscodeOptions;
     const filters = this.getFilterOptions(videoStream);
     if (filters.length > 0) {
       options.outputOptions.push(`-vf ${filters.join(',')}`);
     }
-    options.outputOptions.push(...this.getPresetOptions());
-    options.outputOptions.push(...this.getThreadOptions());
-    options.outputOptions.push(...this.getBitrateOptions());
+    options.outputOptions.push(...this.getPresetOptions(), ...this.getThreadOptions(), ...this.getBitrateOptions());
 
     return options;
   }
@@ -129,11 +127,10 @@ class BaseConfig implements VideoCodecSWConfig {
 
   getTargetResolution(videoStream: VideoStreamInfo) {
     let target;
-    if (this.config.targetResolution === 'original') {
-      target = Math.min(videoStream.height, videoStream.width);
-    } else {
-      target = Number.parseInt(this.config.targetResolution);
-    }
+    target =
+      this.config.targetResolution === 'original'
+        ? Math.min(videoStream.height, videoStream.width)
+        : Number.parseInt(this.config.targetResolution);
 
     if (target % 2 !== 0) {
       target -= 1;
@@ -182,7 +179,7 @@ class BaseConfig implements VideoCodecSWConfig {
 
   getBitrateUnit() {
     const maxBitrate = this.getMaxBitrateValue();
-    return this.config.maxBitrate.trim().substring(maxBitrate.toString().length); // use inputted unit if provided
+    return this.config.maxBitrate.trim().slice(maxBitrate.toString().length); // use inputted unit if provided
   }
 
   getMaxBitrateValue() {
@@ -411,8 +408,7 @@ export class NVENCConfig extends BaseHWConfig {
       ...super.getBaseOutputOptions(videoStream, audioStream),
     ];
     if (this.getBFrames() > 0) {
-      options.push('-b_ref_mode middle');
-      options.push('-b_qfactor 1.1');
+      options.push('-b_ref_mode middle', '-b_qfactor 1.1');
     }
     if (this.config.temporalAQ) {
       options.push('-temporal-aq 1');
@@ -474,8 +470,8 @@ export class NVENCConfig extends BaseHWConfig {
 
 export class QSVConfig extends BaseHWConfig {
   getBaseInputOptions() {
-    if (!this.devices.length) {
-      throw Error('No QSV device found');
+    if (this.devices.length === 0) {
+      throw new Error('No QSV device found');
     }
 
     let qsvString = '';
@@ -519,8 +515,7 @@ export class QSVConfig extends BaseHWConfig {
     options.push(`-${this.useCQP() ? 'q:v' : 'global_quality'} ${this.config.crf}`);
     const bitrates = this.getBitrateDistribution();
     if (bitrates.max > 0) {
-      options.push(`-maxrate ${bitrates.max}${bitrates.unit}`);
-      options.push(`-bufsize ${bitrates.max * 2}${bitrates.unit}`);
+      options.push(`-maxrate ${bitrates.max}${bitrates.unit}`, `-bufsize ${bitrates.max * 2}${bitrates.unit}`);
     }
     return options;
   }
@@ -623,7 +618,7 @@ export class RKMPPConfig extends BaseHWConfig {
 
   getBaseInputOptions() {
     if (this.devices.length === 0) {
-      throw Error('No RKMPP device found');
+      throw new Error('No RKMPP device found');
     }
     return [];
   }
@@ -642,14 +637,17 @@ export class RKMPPConfig extends BaseHWConfig {
 
   getPresetOptions() {
     switch (this.config.targetVideoCodec) {
-      case VideoCodec.H264:
+      case VideoCodec.H264: {
         // from ffmpeg_mpp help, commonly referred to as H264 level 5.1
         return ['-level 51'];
-      case VideoCodec.HEVC:
+      }
+      case VideoCodec.HEVC: {
         // from ffmpeg_mpp help, commonly referred to as HEVC level 5.1
         return ['-level 153'];
-      default:
-        throw Error(`Incompatible video codec for RKMPP: ${this.config.targetVideoCodec}`);
+      }
+      default: {
+        throw new Error(`Incompatible video codec for RKMPP: ${this.config.targetVideoCodec}`);
+      }
     }
   }
 

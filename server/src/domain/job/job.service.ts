@@ -36,26 +36,31 @@ export class JobService {
     this.logger.debug(`Handling command: queue=${queueName},force=${dto.force}`);
 
     switch (dto.command) {
-      case JobCommand.START:
+      case JobCommand.START: {
         await this.start(queueName, dto);
         break;
+      }
 
-      case JobCommand.PAUSE:
+      case JobCommand.PAUSE: {
         await this.jobRepository.pause(queueName);
         break;
+      }
 
-      case JobCommand.RESUME:
+      case JobCommand.RESUME: {
         await this.jobRepository.resume(queueName);
         break;
+      }
 
-      case JobCommand.EMPTY:
+      case JobCommand.EMPTY: {
         await this.jobRepository.empty(queueName);
         break;
+      }
 
-      case JobCommand.CLEAR_FAILED:
+      case JobCommand.CLEAR_FAILED: {
         const failedJobs = await this.jobRepository.clear(queueName, QueueCleanType.FAILED);
         this.logger.debug(`Cleared failed jobs: ${failedJobs}`);
         break;
+      }
     }
 
     return this.getJobStatus(queueName);
@@ -85,42 +90,53 @@ export class JobService {
     }
 
     switch (name) {
-      case QueueName.VIDEO_CONVERSION:
+      case QueueName.VIDEO_CONVERSION: {
         return this.jobRepository.queue({ name: JobName.QUEUE_VIDEO_CONVERSION, data: { force } });
+      }
 
-      case QueueName.STORAGE_TEMPLATE_MIGRATION:
+      case QueueName.STORAGE_TEMPLATE_MIGRATION: {
         return this.jobRepository.queue({ name: JobName.STORAGE_TEMPLATE_MIGRATION });
+      }
 
-      case QueueName.MIGRATION:
+      case QueueName.MIGRATION: {
         return this.jobRepository.queue({ name: JobName.QUEUE_MIGRATION });
+      }
 
-      case QueueName.SMART_SEARCH:
+      case QueueName.SMART_SEARCH: {
         await this.configCore.requireFeature(FeatureFlag.SMART_SEARCH);
         return this.jobRepository.queue({ name: JobName.QUEUE_SMART_SEARCH, data: { force } });
+      }
 
-      case QueueName.METADATA_EXTRACTION:
+      case QueueName.METADATA_EXTRACTION: {
         return this.jobRepository.queue({ name: JobName.QUEUE_METADATA_EXTRACTION, data: { force } });
+      }
 
-      case QueueName.SIDECAR:
+      case QueueName.SIDECAR: {
         await this.configCore.requireFeature(FeatureFlag.SIDECAR);
         return this.jobRepository.queue({ name: JobName.QUEUE_SIDECAR, data: { force } });
+      }
 
-      case QueueName.THUMBNAIL_GENERATION:
+      case QueueName.THUMBNAIL_GENERATION: {
         return this.jobRepository.queue({ name: JobName.QUEUE_GENERATE_THUMBNAILS, data: { force } });
+      }
 
-      case QueueName.FACE_DETECTION:
+      case QueueName.FACE_DETECTION: {
         await this.configCore.requireFeature(FeatureFlag.FACIAL_RECOGNITION);
         return this.jobRepository.queue({ name: JobName.QUEUE_FACE_DETECTION, data: { force } });
+      }
 
-      case QueueName.FACIAL_RECOGNITION:
+      case QueueName.FACIAL_RECOGNITION: {
         await this.configCore.requireFeature(FeatureFlag.FACIAL_RECOGNITION);
         return this.jobRepository.queue({ name: JobName.QUEUE_FACIAL_RECOGNITION, data: { force } });
+      }
 
-      case QueueName.LIBRARY:
+      case QueueName.LIBRARY: {
         return this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SCAN_ALL, data: { force } });
+      }
 
-      default:
+      default: {
         throw new BadRequestException(`Invalid job name: ${name}`);
+      }
     }
   }
 
@@ -184,17 +200,19 @@ export class JobService {
   private async onDone(item: JobItem) {
     switch (item.name) {
       case JobName.SIDECAR_SYNC:
-      case JobName.SIDECAR_DISCOVERY:
+      case JobName.SIDECAR_DISCOVERY: {
         await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: item.data });
         break;
+      }
 
-      case JobName.SIDECAR_WRITE:
+      case JobName.SIDECAR_WRITE: {
         await this.jobRepository.queue({
           name: JobName.METADATA_EXTRACTION,
           data: { id: item.data.id, source: 'sidecar-write' },
         });
+      }
 
-      case JobName.METADATA_EXTRACTION:
+      case JobName.METADATA_EXTRACTION: {
         if (item.data.source === 'sidecar-write') {
           const [asset] = await this.assetRepository.getByIds([item.data.id]);
           if (asset) {
@@ -203,24 +221,28 @@ export class JobService {
         }
         await this.jobRepository.queue({ name: JobName.LINK_LIVE_PHOTOS, data: item.data });
         break;
+      }
 
-      case JobName.LINK_LIVE_PHOTOS:
+      case JobName.LINK_LIVE_PHOTOS: {
         await this.jobRepository.queue({ name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: item.data });
         break;
+      }
 
-      case JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE:
+      case JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE: {
         if (item.data.source === 'upload') {
           await this.jobRepository.queue({ name: JobName.GENERATE_JPEG_THUMBNAIL, data: item.data });
         }
         break;
+      }
 
-      case JobName.GENERATE_PERSON_THUMBNAIL:
+      case JobName.GENERATE_PERSON_THUMBNAIL: {
         const { id } = item.data;
         const person = await this.personRepository.getById(id);
         if (person) {
           this.communicationRepository.send(ClientEvent.PERSON_THUMBNAIL, person.ownerId, person.id);
         }
         break;
+      }
 
       case JobName.GENERATE_JPEG_THUMBNAIL: {
         const jobs: JobItem[] = [

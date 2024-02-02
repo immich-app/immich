@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
-    "esModuleInterop": true,
     "strict": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "declaration": true,
+    "outDir": "build",
+    "module": "esnext",
+    "moduleResolution": "Bundler",
+    "lib": ["esnext"]
   }
 }

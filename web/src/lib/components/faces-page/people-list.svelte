@@ -34,10 +34,8 @@
       people = peopleCopy;
       return;
     }
-    if (!force) {
-      if (people.length < maximumLengthSearchPeople && name.startsWith(searchWord)) {
-        return;
-      }
+    if (!force && people.length < maximumLengthSearchPeople && name.startsWith(searchWord)) {
+      return;
     }
 
     const timeout = setTimeout(() => (isSearchingPeople = true), timeBeforeShowLoadingSpinner);

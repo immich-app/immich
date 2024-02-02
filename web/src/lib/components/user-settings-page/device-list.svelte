@@ -73,9 +73,9 @@
   {#if otherDevices.length > 0}
     <div class="mb-6">
       <h3 class="mb-2 text-xs font-medium text-immich-primary dark:text-immich-dark-primary">OTHER DEVICES</h3>
-      {#each otherDevices as device, i}
+      {#each otherDevices as device, index}
         <DeviceCard {device} on:delete={() => (deleteDevice = device)} />
-        {#if i !== otherDevices.length - 1}
+        {#if index !== otherDevices.length - 1}
           <hr class="my-3" />
         {/if}
       {/each}

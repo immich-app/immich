@@ -30,14 +30,14 @@
     $savedSearchTerms = $savedSearchTerms.filter((item) => item !== value);
     saveSearchTerm(value);
 
-    const params = new URLSearchParams({
+    const parameters = new URLSearchParams({
       q: searchValue,
       smart: smartSearch,
     });
 
     showHistory = false;
     $isSearchEnabled = false;
-    goto(`${AppRoute.SEARCH}?${params}`, { invalidateAll: true });
+    goto(`${AppRoute.SEARCH}?${parameters}`, { invalidateAll: true });
   }
 
   const clearSearchTerm = (searchTerm: string) => {

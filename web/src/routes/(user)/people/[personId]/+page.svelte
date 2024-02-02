@@ -108,14 +108,14 @@
     isSearchingPeople = false;
   };
 
-  $: isAllArchive = Array.from($selectedAssets).every((asset) => asset.isArchived);
-  $: isAllFavorite = Array.from($selectedAssets).every((asset) => asset.isFavorite);
+  $: isAllArchive = [...$selectedAssets].every((asset) => asset.isArchived);
+  $: isAllFavorite = [...$selectedAssets].every((asset) => asset.isFavorite);
   $: $onPersonThumbnail === data.person.id &&
     (thumbnailData = api.getPeopleThumbnailUrl(data.person.id) + `?now=${Date.now()}`);
 
   $: {
     if (people) {
-      suggestedPeople = !name ? [] : searchNameLocal(name, people, 5, data.person.id);
+      suggestedPeople = name ? searchNameLocal(name, people, 5, data.person.id) : [];
     }
   }
 
@@ -158,7 +158,7 @@
   });
 
   const handleUnmerge = () => {
-    $assetStore.removeAssets(Array.from($selectedAssets).map((a) => a.id));
+    $assetStore.removeAssets([...$selectedAssets].map((a) => a.id));
     assetInteractionStore.clearMultiselect();
     viewMode = ViewMode.VIEW_ASSETS;
   };
@@ -352,7 +352,7 @@
 
 {#if viewMode === ViewMode.UNASSIGN_ASSETS}
   <UnMergeFaceSelector
-    assetIds={Array.from($selectedAssets).map((a) => a.id)}
+    assetIds={[...$selectedAssets].map((a) => a.id)}
     personAssets={data.person}
     on:close={() => (viewMode = ViewMode.VIEW_ASSETS)}
     on:confirm={handleUnmerge}

@@ -17,6 +17,6 @@ export default defineConfig({
         minForks: 1,
       },
     },
-    testTimeout: 10000,
+    testTimeout: 10_000,
   },
 });

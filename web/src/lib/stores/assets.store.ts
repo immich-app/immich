@@ -90,7 +90,7 @@ export class AssetStore {
     setTimeout(() => {
       this.pendingChanges.push(...changes);
       this.processPendingChanges();
-    }, 1_000);
+    }, 1000);
   }
 
   connect() {
@@ -124,19 +124,22 @@ export class AssetStore {
   processPendingChanges = throttle(() => {
     for (const { type, value } of this.pendingChanges) {
       switch (type) {
-        case 'add':
+        case 'add': {
           this.addAsset(value);
           break;
+        }
 
-        case 'trash':
+        case 'trash': {
           if (!this.options.isTrashed) {
             this.removeAsset(value);
           }
           break;
+        }
 
-        case 'delete':
+        case 'delete': {
           this.removeAsset(value);
           break;
+        }
       }
     }
 
@@ -174,7 +177,7 @@ export class AssetStore {
       };
     });
 
-    this.timelineHeight = this.buckets.reduce((acc, b) => acc + b.bucketHeight, 0);
+    this.timelineHeight = this.buckets.reduce((accumulator, b) => accumulator + b.bucketHeight, 0);
 
     this.emit(false);
 
@@ -199,7 +202,7 @@ export class AssetStore {
 
       bucket.position = position;
 
-      if (bucket.assets.length !== 0) {
+      if (bucket.assets.length > 0) {
         this.emit(false);
         return;
       }
@@ -324,7 +327,9 @@ export class AssetStore {
   }
 
   async getRandomAsset(): Promise<AssetResponseDto | null> {
-    let index = Math.floor(Math.random() * this.buckets.reduce((acc, bucket) => acc + bucket.bucketCount, 0));
+    let index = Math.floor(
+      Math.random() * this.buckets.reduce((accumulator, bucket) => accumulator + bucket.bucketCount, 0),
+    );
     for (const bucket of this.buckets) {
       if (index < bucket.bucketCount) {
         await this.loadBucket(bucket.bucketDate, BucketPosition.Unknown);
@@ -356,17 +361,17 @@ export class AssetStore {
   }
 
   removeAsset(id: string) {
-    for (let i = 0; i < this.buckets.length; i++) {
-      const bucket = this.buckets[i];
-      for (let j = 0; j < bucket.assets.length; j++) {
-        const asset = bucket.assets[j];
+    for (let index = 0; index < this.buckets.length; index++) {
+      const bucket = this.buckets[index];
+      for (let index_ = 0; index_ < bucket.assets.length; index_++) {
+        const asset = bucket.assets[index_];
         if (asset.id !== id) {
           continue;
         }
 
-        bucket.assets.splice(j, 1);
+        bucket.assets.splice(index_, 1);
         if (bucket.assets.length === 0) {
-          this.buckets.splice(i, 1);
+          this.buckets.splice(index, 1);
         }
 
         this.emit(true);
@@ -422,14 +427,14 @@ export class AssetStore {
       this.assets = this.buckets.flatMap(({ assets }) => assets);
 
       const assetToBucket: Record<string, AssetLookup> = {};
-      for (let i = 0; i < this.buckets.length; i++) {
-        const bucket = this.buckets[i];
-        if (bucket.assets.length !== 0) {
+      for (let index = 0; index < this.buckets.length; index++) {
+        const bucket = this.buckets[index];
+        if (bucket.assets.length > 0) {
           bucket.bucketCount = bucket.assets.length;
         }
-        for (let j = 0; j < bucket.assets.length; j++) {
-          const asset = bucket.assets[j];
-          assetToBucket[asset.id] = { bucket, bucketIndex: i, assetIndex: j };
+        for (let index_ = 0; index_ < bucket.assets.length; index_++) {
+          const asset = bucket.assets[index_];
+          assetToBucket[asset.id] = { bucket, bucketIndex: index, assetIndex: index_ };
         }
       }
       this.assetToBucket = assetToBucket;

@@ -25,7 +25,7 @@
   setContext({
     getAssets: () => assets,
     getOwnedAssets: () =>
-      ownerId !== undefined ? new Set(Array.from(assets).filter((asset) => asset.ownerId === ownerId)) : assets,
+      ownerId === undefined ? assets : new Set([...assets].filter((asset) => asset.ownerId === ownerId)),
     clearSelect,
   });
 </script>

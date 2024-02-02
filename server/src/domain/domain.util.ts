@@ -46,7 +46,8 @@ export type Options = {
 
 export const isConnectionAborted = (error: Error | any) => error.code === 'ECONNABORTED';
 
-export function ValidateUUID({ optional, each }: Options = { optional: false, each: false }) {
+export function ValidateUUID(options?: Options) {
+  const { optional, each } = { optional: false, each: false, ...options };
   return applyDecorators(
     IsUUID('4', { each }),
     ApiProperty({ format: 'uuid' }),
@@ -58,7 +59,7 @@ export function ValidateUUID({ optional, each }: Options = { optional: false, ea
 export function validateCronExpression(expression: string) {
   try {
     new CronJob(expression, () => {});
-  } catch (error) {
+  } catch {
     return false;
   }
 
@@ -96,7 +97,7 @@ export const toBoolean = ({ value }: IValue) => {
 
 export const toEmail = ({ value }: IValue) => value?.toLowerCase();
 
-export const toSanitized = ({ value }: IValue) => sanitize((value || '').replace(/\./g, ''));
+export const toSanitized = ({ value }: IValue) => sanitize((value || '').replaceAll('.', ''));
 
 export function getFileNameWithoutExtension(path: string): string {
   return basename(path, extname(path));
@@ -173,7 +174,7 @@ export function Optional({ nullable, ...validationOptions }: OptionalOptions = {
     return IsOptional(validationOptions);
   }
 
-  return ValidateIf((obj: any, v: any) => v !== undefined, validationOptions);
+  return ValidateIf((object: any, v: any) => v !== undefined, validationOptions);
 }
 
 /**
@@ -186,8 +187,8 @@ export function chunks<T>(collection: Array<T> | Set<T>, size: number): T[][] {
   if (collection instanceof Set) {
     const result = [];
     let chunk = [];
-    for (const elem of collection) {
-      chunk.push(elem);
+    for (const element of collection) {
+      chunk.push(element);
       if (chunk.length === size) {
         result.push(chunk);
         chunk = [];
@@ -209,8 +210,8 @@ export function chunks<T>(collection: Array<T> | Set<T>, size: number): T[][] {
 export const setUnion = <T>(...sets: Set<T>[]): Set<T> => {
   const union = new Set(sets[0]);
   for (const set of sets.slice(1)) {
-    for (const elem of set) {
-      union.add(elem);
+    for (const element of set) {
+      union.add(element);
     }
   }
   return union;
@@ -219,16 +220,16 @@ export const setUnion = <T>(...sets: Set<T>[]): Set<T> => {
 export const setDifference = <T>(setA: Set<T>, ...sets: Set<T>[]): Set<T> => {
   const difference = new Set(setA);
   for (const set of sets) {
-    for (const elem of set) {
-      difference.delete(elem);
+    for (const element of set) {
+      difference.delete(element);
     }
   }
   return difference;
 };
 
 export const setIsSuperset = <T>(set: Set<T>, subset: Set<T>): boolean => {
-  for (const elem of subset) {
-    if (!set.has(elem)) {
+  for (const element of subset) {
+    if (!set.has(element)) {
       return false;
     }
   }

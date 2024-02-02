@@ -25,9 +25,9 @@ export class OAuthController {
   @PublicRoute()
   @Get('mobile-redirect')
   @Redirect()
-  redirectOAuthToMobile(@Req() req: Request) {
+  redirectOAuthToMobile(@Req() request: Request) {
     return {
-      url: this.service.getMobileRedirect(req.url),
+      url: this.service.getMobileRedirect(request.url),
       statusCode: HttpStatus.TEMPORARY_REDIRECT,
     };
   }

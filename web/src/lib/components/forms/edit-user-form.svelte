@@ -70,8 +70,8 @@
       if (status == 200) {
         dispatch('resetPasswordSuccess');
       }
-    } catch (e) {
-      console.error('Error reseting user password', e);
+    } catch (error) {
+      console.error('Error reseting user password', error);
       notificationController.show({
         message: 'Error reseting user password, check console for more details',
         type: NotificationType.Error,

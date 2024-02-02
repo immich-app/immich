@@ -1,17 +1,15 @@
 # Hardware Transcoding [Experimental]
 
-This feature allows you to use a GPU or Intel Quick Sync to accelerate transcoding and reduce CPU load.
+This feature allows you to use a GPU to accelerate transcoding and reduce CPU load.
 Note that hardware transcoding is much less efficient for file sizes.
 As this is a new feature, it is still experimental and may not work on all systems.
 
 ## Supported APIs
 
-- NVENC
-  - NVIDIA GPUs
-- Quick Sync
-  - Intel CPUs
-- VAAPI
-  - GPUs
+- NVENC (NVIDIA)
+- Quick Sync (Intel)
+- RKMPP (Rockchip)
+- VAAPI (AMD / NVIDIA / Intel)
 
 ## Limitations
 
@@ -20,8 +18,7 @@ As this is a new feature, it is still experimental and may not work on all syste
 - WSL2 does not support Quick Sync.
 - Raspberry Pi is currently not supported.
 - Two-pass mode is only supported for NVENC. Other APIs will ignore this setting.
-- Only encoding is currently hardware accelerated, so the CPU is still used for software decoding.
-  - This is mainly because the original video may not be hardware-decodable.
+- Only encoding is currently hardware accelerated, so the CPU is still used for software decoding and tone-mapping.
 - Hardware dependent
   - Codec support varies, but H.264 and HEVC are usually supported.
     - Notably, NVIDIA and AMD GPUs do not support VP9 encoding.
@@ -43,34 +40,45 @@ As this is a new feature, it is still experimental and may not work on all syste
 
 ## Setup
 
-#### Initial Setup
+#### Basic Setup
 
-1. If you do not already have it, download the latest [`hwaccel.yml`][hw-file] file and ensure it's in the same folder as the `docker-compose.yml`.
-2. Uncomment the lines that apply to your system and desired usage.
-3. In the `docker-compose.yml` under `immich-microservices`, uncomment the lines relating to the `hwaccel.yml` file.
-4. Redeploy the `immich-microservices` container with these updated settings.
-5. In the Admin page under `FFmpeg settings`, change the hardware acceleration setting to the appropriate option and save.
+1. If you do not already have it, download the latest [`hwaccel.transcoding.yml`][hw-file] file and ensure it's in the same folder as the `docker-compose.yml`.
+2. In the `docker-compose.yml` under `immich-microservices`, uncomment the `extends` section and change `cpu` to the appropriate backend.
+
+- For VAAPI on WSL2, be sure to use `vaapi-wsl` rather than `vaapi`
+
+3. Redeploy the `immich-microservices` container with these updated settings.
+4. In the Admin page under `Video transcoding settings`, change the hardware acceleration setting to the appropriate option and save.
 
 #### All-In-One - Unraid Setup
 
 ##### NVENC - NVIDIA GPUs
 
-- If you are using other backends. You will still need to implement [`hwaccel.yml`][hw-file] file into the `immich-microservices` service directly, please see the "Initial Setup" section above on how to do that.
-- As of v1.92.0, steps 1 and 2 are no longer necessary. If your version of Immich is below that or missing the environment variables, please follow these steps. Otherwise, skip to step 3.
-- Please note that`NVIDIA_DRIVER_CAPABILITIES` is no longer required to enter as a variable.
+1. In the container app, add this environmental variable: Key=`NVIDIA_VISIBLE_DEVICES` Value=`all`
+2. While still in the container app, change the container from Basic Mode to Advanced Mode and add the following parameter to the Extra Parameters field: `--runtime=nvidia`
+3. Restart the container app.
+4. Continue to step 4 of "Basic Setup".
 
-1. Assuming you already have the Nvidia Driver Plugin installed on your Unraid Server. Please confirm that your Nvida GPU is showing up with its GPU ID in the Nvidia Driver Plugin. The ID will be `GPU-LONG_STRING_OF_CHARACTERS`. Copy the GPU ID.
-2. In the Imagegenius/Immich Docker Container app, add two new variables: Key=`NVIDIA_VISIBLE_DEVICES` Value=`GPU-LONG_STRING_OF_CHARACTERS` and Key=`NVIDIA_DRIVER_CAPABILITIES` Value=`all`
-3. While you are in the docker container app, change the Container from Basic Mode to Advanced Mode and add the following parameter to the Extra Parameters field: `--runtime=nvidia`
-4. Restart the Imagegenius/Immich Docker Container app.
-5. In the Admin page under FFmpeg settings, change the hardware acceleration setting to the appropriate option and save.
+##### Other APIs
+
+Unraid does not currently support multiple Compose files. As an alternative, you can "inline" the relevant contents of the [`hwaccel.transcoding.yml`][hw-file] file into the `immich-microservices` service directly.
+
+For example, the `qsv` section in this file is:
+
+```
+devices:
+  - /dev/dri:/dev/dri
+```
+
+You can add this to the `immich-microservices` service instead of extending from `hwaccel.transcoding.yml`.
+Once this is done, you can continue to step 3 of "Basic Setup".
 
 ## Tips
 
 - You may want to choose a slower preset than for software transcoding to maintain quality and efficiency
-- While you can use VAAPI with Nvidia GPUs and Intel CPUs, prefer the more specific APIs since they're more optimized for their respective devices
+- While you can use VAAPI with NVIDIA and Intel devices, prefer the more specific APIs since they're more optimized for their respective devices
 
-[hw-file]: https://github.com/immich-app/immich/releases/latest/download/hwaccel.yml
+[hw-file]: https://github.com/immich-app/immich/releases/latest/download/hwaccel.transcoding.yml
 [nvcr]: https://github.com/NVIDIA/nvidia-container-runtime/
 [jellyfin-lp]: https://jellyfin.org/docs/general/administration/hardware-acceleration/intel/#configure-and-verify-lp-mode-on-linux
 [jellyfin-kernel-bug]: https://jellyfin.org/docs/general/administration/hardware-acceleration/intel/#known-issues-and-limitations

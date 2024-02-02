@@ -3,9 +3,9 @@ import { ImmichLogger } from '@app/infra/logger';
 import { Inject, Injectable } from '@nestjs/common';
 import { ExifDateTime, Tags } from 'exiftool-vendored';
 import { firstDateTime } from 'exiftool-vendored/dist/FirstDateTime';
-import { constants } from 'fs/promises';
 import _ from 'lodash';
 import { Duration } from 'luxon';
+import { constants } from 'node:fs/promises';
 import { Subscription } from 'rxjs';
 import { usePagination } from '../domain.util';
 import { IBaseJob, IEntityJob, ISidecarWriteJob, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
@@ -85,7 +85,7 @@ const validate = <T>(value: T): NonNullable<T> | null => {
     return null;
   }
 
-  if (typeof value === 'number' && (isNaN(value) || !isFinite(value))) {
+  if (typeof value === 'number' && (Number.isNaN(value) || !Number.isFinite(value))) {
     return null;
   }
 
@@ -217,18 +217,22 @@ export class MetadataService {
 
       if (videoStreams[0]) {
         switch (videoStreams[0].rotation) {
-          case -90:
+          case -90: {
             exifData.orientation = Orientation.Rotate90CW;
             break;
-          case 0:
+          }
+          case 0: {
             exifData.orientation = Orientation.Horizontal;
             break;
-          case 90:
+          }
+          case 90: {
             exifData.orientation = Orientation.Rotate270CW;
             break;
-          case 180:
+          }
+          case 180: {
             exifData.orientation = Orientation.Rotate180;
             break;
+          }
         }
       }
     }
@@ -243,7 +247,7 @@ export class MetadataService {
     const timeZoneOffset = tzOffset(firstDateTime(tags as Tags)) ?? 0;
 
     if (dateTimeOriginal && timeZoneOffset) {
-      localDateTime = new Date(dateTimeOriginal.getTime() + timeZoneOffset * 60000);
+      localDateTime = new Date(dateTimeOriginal.getTime() + timeZoneOffset * 60_000);
     }
     await this.assetRepository.save({
       id: asset.id,
@@ -413,7 +417,13 @@ export class MetadataService {
       const checksum = this.cryptoRepository.hashSha1(video);
 
       let motionAsset = await this.assetRepository.getByChecksum(asset.ownerId, checksum);
-      if (!motionAsset) {
+      if (motionAsset) {
+        this.logger.debug(
+          `Asset ${asset.id}'s motion photo video with checksum ${checksum.toString(
+            'base64',
+          )} already exists in the repository`,
+        );
+      } else {
         // We create a UUID in advance so that each extracted video can have a unique filename
         // (allowing us to delete old ones if necessary)
         const motionAssetId = this.cryptoRepository.randomUUID();
@@ -448,12 +458,6 @@ export class MetadataService {
           await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: asset.livePhotoVideoId } });
           this.logger.log(`Removed old motion photo video asset (${asset.livePhotoVideoId})`);
         }
-      } else {
-        this.logger.debug(
-          `Asset ${asset.id}'s motion photo video with checksum ${checksum.toString(
-            'base64',
-          )} already exists in the repository`,
-        );
       }
 
       this.logger.debug(`Finished motion photo video extraction (${asset.id})`);
@@ -494,7 +498,7 @@ export class MetadataService {
       fileSizeInByte: stats.size,
       fNumber: validate(tags.FNumber),
       focalLength: validate(tags.FocalLength),
-      fps: validate(parseFloat(tags.VideoFrameRate!)),
+      fps: validate(Number.parseFloat(tags.VideoFrameRate!)),
       iso: validate(tags.ISO),
       latitude: validate(tags.GPSLatitude),
       lensModel: tags.LensModel ?? null,

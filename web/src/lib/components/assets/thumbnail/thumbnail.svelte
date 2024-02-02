@@ -161,7 +161,7 @@
 
         {#if asset.stackCount && showStackedIcon}
           <div
-            class="absolute {asset.type == AssetTypeEnum.Image && asset.livePhotoVideoId == null
+            class="absolute {asset.type == AssetTypeEnum.Image && asset.livePhotoVideoId == undefined
               ? 'top-0 right-0'
               : 'top-7 right-1'} z-20 flex place-items-center gap-1 text-xs font-medium text-white"
           >

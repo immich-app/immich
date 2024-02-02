@@ -118,40 +118,44 @@ export class StorageCore {
   async moveAssetFile(asset: AssetEntity, pathType: GeneratedAssetPath) {
     const { id: entityId, resizePath, webpPath, encodedVideoPath } = asset;
     switch (pathType) {
-      case AssetPathType.JPEG_THUMBNAIL:
+      case AssetPathType.JPEG_THUMBNAIL: {
         return this.moveFile({
           entityId,
           pathType,
           oldPath: resizePath,
           newPath: StorageCore.getLargeThumbnailPath(asset),
         });
-      case AssetPathType.WEBP_THUMBNAIL:
+      }
+      case AssetPathType.WEBP_THUMBNAIL: {
         return this.moveFile({
           entityId,
           pathType,
           oldPath: webpPath,
           newPath: StorageCore.getSmallThumbnailPath(asset),
         });
-      case AssetPathType.ENCODED_VIDEO:
+      }
+      case AssetPathType.ENCODED_VIDEO: {
         return this.moveFile({
           entityId,
           pathType,
           oldPath: encodedVideoPath,
           newPath: StorageCore.getEncodedVideoPath(asset),
         });
+      }
     }
   }
 
   async movePersonFile(person: PersonEntity, pathType: PersonPathType) {
     const { id: entityId, thumbnailPath } = person;
     switch (pathType) {
-      case PersonPathType.FACE:
+      case PersonPathType.FACE: {
         await this.moveFile({
           entityId,
           pathType,
           oldPath: thumbnailPath,
           newPath: StorageCore.getPersonThumbnailPath(person),
         });
+      }
     }
   }
 
@@ -168,7 +172,8 @@ export class StorageCore {
       this.logger.log(`Attempting to finish incomplete move: ${move.oldPath} => ${move.newPath}`);
       const oldPathExists = await this.repository.checkFileExists(move.oldPath);
       const newPathExists = await this.repository.checkFileExists(move.newPath);
-      const actualPath = oldPathExists ? move.oldPath : newPathExists ? move.newPath : null;
+      const newPathCheck = newPathExists ? move.newPath : null;
+      const actualPath = oldPathExists ? move.oldPath : newPathCheck;
       if (!actualPath) {
         this.logger.warn('Unable to complete move. File does not exist at either location.');
         return;
@@ -177,13 +182,14 @@ export class StorageCore {
       const fileAtNewLocation = actualPath === move.newPath;
       this.logger.log(`Found file at ${fileAtNewLocation ? 'new' : 'old'} location`);
 
-      if (fileAtNewLocation) {
-        if (!(await this.verifyNewPathContentsMatchesExpected(move.oldPath, move.newPath, assetInfo))) {
-          this.logger.fatal(
-            `Skipping move as file verification failed, old file is missing and new file is different to what was expected`,
-          );
-          return;
-        }
+      if (
+        fileAtNewLocation &&
+        !(await this.verifyNewPathContentsMatchesExpected(move.oldPath, move.newPath, assetInfo))
+      ) {
+        this.logger.fatal(
+          `Skipping move as file verification failed, old file is missing and new file is different to what was expected`,
+        );
+        return;
       }
 
       move = await this.moveRepository.update({ id: move.id, oldPath: actualPath, newPath });
@@ -200,10 +206,10 @@ export class StorageCore {
       try {
         this.logger.debug(`Attempting to rename file: ${move.oldPath} => ${newPath}`);
         await this.repository.rename(move.oldPath, newPath);
-      } catch (err: any) {
-        if (err.code !== 'EXDEV') {
+      } catch (error: any) {
+        if (error.code !== 'EXDEV') {
           this.logger.warn(
-            `Unable to complete move. Error renaming file with code ${err.code} and message: ${err.message}`,
+            `Unable to complete move. Error renaming file with code ${error.code} and message: ${error.message}`,
           );
           return;
         }
@@ -218,8 +224,8 @@ export class StorageCore {
 
         try {
           await this.repository.unlink(move.oldPath);
-        } catch (err: any) {
-          this.logger.warn(`Unable to delete old file, it will now no longer be tracked by Immich: ${err.message}`);
+        } catch (error: any) {
+          this.logger.warn(`Unable to delete old file, it will now no longer be tracked by Immich: ${error.message}`);
         }
       }
     }
@@ -233,14 +239,17 @@ export class StorageCore {
     newPath: string,
     assetInfo?: { sizeInBytes: number; checksum: Buffer },
   ) {
-    const oldPathSize = assetInfo ? assetInfo.sizeInBytes : (await this.repository.stat(oldPath)).size;
-    const newPathSize = (await this.repository.stat(newPath)).size;
+    const oldStat = await this.repository.stat(oldPath);
+    const newStat = await this.repository.stat(newPath);
+    const oldPathSize = assetInfo ? assetInfo.sizeInBytes : oldStat.size;
+    const newPathSize = newStat.size;
     this.logger.debug(`File size check: ${newPathSize} === ${oldPathSize}`);
     if (newPathSize !== oldPathSize) {
       this.logger.warn(`Unable to complete move. File size mismatch: ${newPathSize} !== ${oldPathSize}`);
       return false;
     }
-    if (assetInfo && (await this.configCore.getConfig()).storageTemplate.hashVerificationEnabled) {
+    const config = await this.configCore.getConfig();
+    if (assetInfo && config.storageTemplate.hashVerificationEnabled) {
       const { checksum } = assetInfo;
       const newChecksum = await this.cryptoRepository.hashFile(newPath);
       if (!newChecksum.equals(checksum)) {
@@ -266,23 +275,29 @@ export class StorageCore {
 
   private savePath(pathType: PathType, id: string, newPath: string) {
     switch (pathType) {
-      case AssetPathType.ORIGINAL:
+      case AssetPathType.ORIGINAL: {
         return this.assetRepository.save({ id, originalPath: newPath });
-      case AssetPathType.JPEG_THUMBNAIL:
+      }
+      case AssetPathType.JPEG_THUMBNAIL: {
         return this.assetRepository.save({ id, resizePath: newPath });
-      case AssetPathType.WEBP_THUMBNAIL:
+      }
+      case AssetPathType.WEBP_THUMBNAIL: {
         return this.assetRepository.save({ id, webpPath: newPath });
-      case AssetPathType.ENCODED_VIDEO:
+      }
+      case AssetPathType.ENCODED_VIDEO: {
         return this.assetRepository.save({ id, encodedVideoPath: newPath });
-      case AssetPathType.SIDECAR:
+      }
+      case AssetPathType.SIDECAR: {
         return this.assetRepository.save({ id, sidecarPath: newPath });
-      case PersonPathType.FACE:
+      }
+      case PersonPathType.FACE: {
         return this.personRepository.update({ id, thumbnailPath: newPath });
+      }
     }
   }
 
   static getNestedFolder(folder: StorageFolder, ownerId: string, filename: string): string {
-    return join(StorageCore.getFolderLocation(folder, ownerId), filename.substring(0, 2), filename.substring(2, 4));
+    return join(StorageCore.getFolderLocation(folder, ownerId), filename.slice(0, 2), filename.slice(2, 4));
   }
 
   static getNestedPath(folder: StorageFolder, ownerId: string, filename: string): string {

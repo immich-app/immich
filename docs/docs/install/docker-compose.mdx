@@ -28,8 +28,12 @@ wget https://github.com/immich-app/immich/releases/latest/download/docker-compos
 wget -O .env https://github.com/immich-app/immich/releases/latest/download/example.env
 ```
 
-```bash title="(Optional) Get hwaccel.yml file"
-wget https://github.com/immich-app/immich/releases/latest/download/hwaccel.yml
+```bash title="(Optional) Get hwaccel.transcoding.yml file"
+wget https://github.com/immich-app/immich/releases/latest/download/hwaccel.transcoding.yml
+```
+
+```bash title="(Optional) Get hwaccel.ml.yml file"
+wget https://github.com/immich-app/immich/releases/latest/download/hwaccel.ml.yml
 ```
 
 or by downloading from your browser and moving the files to the directory that you created.
@@ -37,7 +41,7 @@ or by downloading from your browser and moving the files to the directory that y
 Note: If you downloaded the files from your browser, also ensure that you rename `example.env` to `.env`.
 
 :::info
-Optionally, you can use the [`hwaccel.yml`][hw-file] file to enable hardware acceleration for transcoding. See the [Hardware Transcoding](/docs/features/hardware-transcoding.md) guide for info on how to set this up.
+Optionally, you can enable hardware acceleration for machine learning and transcoding. See the [Hardware Transcoding](/docs/features/hardware-transcoding.md) and [Hardware-Accelerated Machine Learning](/docs/features/ml-hardware-acceleration.md) guides for info on how to set these up.
 :::
 
 ### Step 2 - Populate the .env file with custom values
@@ -98,5 +102,4 @@ Immich is currently under heavy development, which means you can expect breaking
 
 [compose-file]: https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml
 [env-file]: https://github.com/immich-app/immich/releases/latest/download/example.env
-[hw-file]: https://github.com/immich-app/immich/releases/latest/download/hwaccel.yml
 [watchtower]: https://containrrr.dev/watchtower/

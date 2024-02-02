@@ -33,7 +33,7 @@ export function mapExif(entity: ExifEntity): ExifResponseDto {
     model: entity.model,
     exifImageWidth: entity.exifImageWidth,
     exifImageHeight: entity.exifImageHeight,
-    fileSizeInByte: entity.fileSizeInByte ? parseInt(entity.fileSizeInByte.toString()) : null,
+    fileSizeInByte: entity.fileSizeInByte ? Number.parseInt(entity.fileSizeInByte.toString()) : null,
     orientation: entity.orientation,
     dateTimeOriginal: entity.dateTimeOriginal,
     modifyDate: entity.modifyDate,
@@ -55,7 +55,7 @@ export function mapExif(entity: ExifEntity): ExifResponseDto {
 
 export function mapSanitizedExif(entity: ExifEntity): ExifResponseDto {
   return {
-    fileSizeInByte: entity.fileSizeInByte ? parseInt(entity.fileSizeInByte.toString()) : null,
+    fileSizeInByte: entity.fileSizeInByte ? Number.parseInt(entity.fileSizeInByte.toString()) : null,
     orientation: entity.orientation,
     dateTimeOriginal: entity.dateTimeOriginal,
     timeZone: entity.timeZone,

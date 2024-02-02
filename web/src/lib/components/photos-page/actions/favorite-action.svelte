@@ -28,7 +28,7 @@
     loading = true;
 
     try {
-      const assets = Array.from(getOwnedAssets()).filter((asset) => asset.isFavorite !== isFavorite);
+      const assets = [...getOwnedAssets()].filter((asset) => asset.isFavorite !== isFavorite);
 
       const ids = assets.map(({ id }) => id);
 

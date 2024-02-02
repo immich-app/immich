@@ -108,10 +108,11 @@
     }
     const ctrl = event.ctrlKey;
     switch (event.key) {
-      case 'Enter':
+      case 'Enter': {
         if (ctrl && event.target === textArea) {
           handleFocusOut();
         }
+      }
     }
   };
 
@@ -222,7 +223,7 @@
           bind:this={textArea}
           class="max-h-[500px]
       w-full resize-none overflow-hidden border-b border-gray-500 bg-transparent text-base text-black outline-none transition-all focus:border-b-2 focus:border-immich-primary disabled:border-none dark:text-white dark:focus:border-immich-dark-primary"
-          placeholder={!isOwner ? '' : 'Add a description'}
+          placeholder={isOwner ? 'Add a description' : ''}
           on:focusin={handleFocusIn}
           on:focusout={handleFocusOut}
           on:input={() => autoGrowHeight(textArea)}
