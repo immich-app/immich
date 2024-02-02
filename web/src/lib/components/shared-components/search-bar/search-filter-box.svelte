@@ -2,7 +2,6 @@
   import Button from '$lib/components/elements/buttons/button.svelte';
   import { fly } from 'svelte/transition';
   import Combobox, { type ComboBoxOption } from '../combobox.svelte';
-  import type { PersonResponseDto } from '@immich/sdk';
 
   enum MediaType {
     All = 'all',
