@@ -572,7 +572,7 @@
     {/if}
 
     <main
-      class="relative h-screen overflow-hidden bg-immich-bg px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg sm:px-12 md:px-24 lg:px-40"
+      class="relative h-screen overflow-hidden bg-immich-bg px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg"
       style={`width:${assetGridWidth}px`}
     >
       {#if viewMode === ViewMode.SELECT_ASSETS}
