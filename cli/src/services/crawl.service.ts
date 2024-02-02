@@ -1,5 +1,5 @@
 import { glob } from 'glob';
-import * as fs from 'fs';
+import * as fs from 'node:fs';
 
 export class CrawlOptions {
   pathsToCrawl!: string[];
@@ -12,14 +12,14 @@ export class CrawlService {
   private readonly extensions!: string[];
 
   constructor(image: string[], video: string[]) {
-    this.extensions = image.concat(video).map((extension) => extension.replace('.', ''));
+    this.extensions = [...image, ...video].map((extension) => extension.replace('.', ''));
   }
 
   async crawl(options: CrawlOptions): Promise<string[]> {
     const { recursive, pathsToCrawl, exclusionPatterns, includeHidden } = options;
 
     if (!pathsToCrawl) {
-      return Promise.resolve([]);
+      return [];
     }
 
     const patterns: string[] = [];
@@ -65,8 +65,6 @@ export class CrawlService {
       ignore: exclusionPatterns,
     });
 
-    const returnedFiles = crawledFiles.concat(globbedFiles);
-    returnedFiles.sort();
-    return returnedFiles;
+    return [...crawledFiles, ...globbedFiles].sort();
   }
 }

@@ -27,4 +27,4 @@ export const DummyValue = {
 // maximum number of parameters is 65535. Any query that tries to bind more than that (e.g. searching
 // by a list of IDs) requires splitting the query into multiple chunks.
 // We are rounding down this limit, as queries commonly include other filters and parameters.
-export const DATABASE_PARAMETER_CHUNK_SIZE = 65500;
+export const DATABASE_PARAMETER_CHUNK_SIZE = 65_500;

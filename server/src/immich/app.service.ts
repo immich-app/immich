@@ -15,7 +15,7 @@ import { ImmichLogger } from '@app/infra/logger';
 import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression, Interval } from '@nestjs/schedule';
 import { NextFunction, Request, Response } from 'express';
-import { readFileSync } from 'fs';
+import { readFileSync } from 'node:fs';
 
 const render = (index: string, meta: OpenGraphTags) => {
   const tags = `
@@ -79,15 +79,15 @@ export class AppService {
     let index = '';
     try {
       index = readFileSync(WEB_ROOT_PATH).toString();
-    } catch (error: Error | any) {
+    } catch {
       this.logger.warn('Unable to open `www/index.html, skipping SSR.');
     }
 
-    return async (req: Request, res: Response, next: NextFunction) => {
+    return async (request: Request, res: Response, next: NextFunction) => {
       if (
-        req.url.startsWith('/api') ||
-        req.method.toLowerCase() !== 'get' ||
-        excludePaths.find((item) => req.url.startsWith(item))
+        request.url.startsWith('/api') ||
+        request.method.toLowerCase() !== 'get' ||
+        excludePaths.some((item) => request.url.startsWith(item))
       ) {
         return next();
       }
@@ -107,7 +107,7 @@ export class AppService {
 
       try {
         for (const { regex, onMatch } of targets) {
-          const matches = req.url.match(regex);
+          const matches = request.url.match(regex);
           if (matches) {
             const meta = await onMatch(matches);
             if (meta) {

@@ -90,9 +90,10 @@
       return;
     }
     switch (event.key) {
-      case 'Escape':
+      case 'Escape': {
         handleCloseClick();
         return;
+      }
     }
   };
 
@@ -288,10 +289,8 @@
       }
       return;
     }
-    if (!force) {
-      if (people.length < maximumLengthSearchPeople && searchName.startsWith(searchWord)) {
-        return;
-      }
+    if (!force && people.length < maximumLengthSearchPeople && searchName.startsWith(searchWord)) {
+      return;
     }
 
     const timeout = setTimeout(() => (isSearchingPeople = true), timeBeforeShowLoadingSpinner);
@@ -417,7 +416,7 @@
   </FullScreenModal>
 {/if}
 
-<UserPageLayout title="People" description={countTotalPeople !== 0 ? `(${countTotalPeople.toString()})` : undefined}>
+<UserPageLayout title="People" description={countTotalPeople === 0 ? undefined : `(${countTotalPeople.toString()})`}>
   <svelte:fragment slot="buttons">
     {#if countTotalPeople > 0}
       <div class="flex gap-2 items-center justify-center">
@@ -445,11 +444,11 @@
 
   {#if countVisiblePeople > 0}
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-7 2xl:grid-cols-9 gap-1">
-      {#each people as person, idx (person.id)}
+      {#each people as person, index (person.id)}
         {#if !person.isHidden && (searchName ? searchedPeopleLocal.some((searchedPerson) => searchedPerson.id === person.id) : true)}
           <PeopleCard
             {person}
-            preload={idx < 20}
+            preload={index < 20}
             on:change-name={() => handleChangeName(person)}
             on:set-birth-date={() => handleSetBirthDate(person)}
             on:merge-people={() => handleMergePeople(person)}
@@ -519,7 +518,7 @@
     screenHeight={innerHeight}
   >
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-7 2xl:grid-cols-9 gap-1">
-      {#each people as person, idx (person.id)}
+      {#each people as person, index (person.id)}
         <button
           class="relative"
           on:click={() => (person.isHidden = !person.isHidden)}
@@ -527,7 +526,7 @@
           on:mouseleave={() => (eyeColorMap[person.id] = 'white')}
         >
           <ImageThumbnail
-            preload={searchName !== '' || idx < 20}
+            preload={searchName !== '' || index < 20}
             bind:hidden={person.isHidden}
             shadow
             url={api.getPeopleThumbnailUrl(person.id)}

@@ -1,10 +1,11 @@
+#!/usr/bin/env node
 import { ISystemConfigRepository } from '@app/domain';
 import { INestApplication } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Test } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { mkdir, rm, writeFile } from 'fs/promises';
-import { join } from 'path';
+import { mkdir, rm, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import { databaseConfig } from '../database.config';
 import { databaseEntities } from '../entities';
 import { GENERATE_SQL_KEY, GenerateSqlQueries } from '../infra.util';
@@ -157,7 +158,7 @@ class SqlGenerator {
 
   private async write() {
     for (const [repoName, data] of Object.entries(this.results)) {
-      const filename = repoName.replace(/[A-Z]/g, (letter) => `.${letter.toLowerCase()}`).replace('.', '');
+      const filename = repoName.replaceAll(/[A-Z]/g, (letter) => `.${letter.toLowerCase()}`).replace('.', '');
       const file = join(this.options.targetDir, `${filename}.sql`);
       await writeFile(file, data.join('\n\n') + '\n');
     }

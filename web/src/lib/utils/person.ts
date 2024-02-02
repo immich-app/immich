@@ -6,27 +6,21 @@ export const searchNameLocal = (
   slice: number,
   personId?: string,
 ): PersonResponseDto[] => {
-  return name.indexOf(' ') >= 0
+  return name.includes(' ')
     ? people
         .filter((person: PersonResponseDto) => {
-          if (personId) {
-            return person.name.toLowerCase().startsWith(name.toLowerCase()) && person.id !== personId;
-          } else {
-            return person.name.toLowerCase().startsWith(name.toLowerCase());
-          }
+          return personId
+            ? person.name.toLowerCase().startsWith(name.toLowerCase()) && person.id !== personId
+            : person.name.toLowerCase().startsWith(name.toLowerCase());
         })
         .slice(0, slice)
     : people
         .filter((person: PersonResponseDto) => {
           const nameParts = person.name.split(' ');
-          if (personId) {
-            return (
-              nameParts.some((splitName) => splitName.toLowerCase().startsWith(name.toLowerCase())) &&
-              person.id !== personId
-            );
-          } else {
-            return nameParts.some((splitName) => splitName.toLowerCase().startsWith(name.toLowerCase()));
-          }
+          return personId
+            ? nameParts.some((splitName) => splitName.toLowerCase().startsWith(name.toLowerCase())) &&
+                person.id !== personId
+            : nameParts.some((splitName) => splitName.toLowerCase().startsWith(name.toLowerCase()));
         })
         .slice(0, slice);
 };

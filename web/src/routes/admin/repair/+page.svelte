@@ -44,7 +44,7 @@
       downloadManager.add(downloadKey, blob.size);
       downloadManager.update(downloadKey, blob.size);
       downloadBlob(blob, downloadKey);
-      setTimeout(() => downloadManager.clear(downloadKey), 5_000);
+      setTimeout(() => downloadManager.clear(downloadKey), 5000);
     }
 
     if (orphans.length > 0) {
@@ -53,7 +53,7 @@
       downloadManager.add(downloadKey, blob.size);
       downloadManager.update(downloadKey, blob.size);
       downloadBlob(blob, downloadKey);
-      setTimeout(() => downloadManager.clear(downloadKey), 5_000);
+      setTimeout(() => downloadManager.clear(downloadKey), 5000);
     }
   };
 
@@ -130,9 +130,9 @@
 
     try {
       const chunkSize = 10;
-      const filenames = [...extras.filter(({ checksum }) => !checksum).map(({ filename }) => filename)];
-      for (let i = 0; i < filenames.length; i += chunkSize) {
-        count += await loadAndMatch(filenames.slice(i, i + chunkSize));
+      const filenames = extras.filter(({ checksum }) => !checksum).map(({ filename }) => filename);
+      for (let index = 0; index < filenames.length; index += chunkSize) {
+        count += await loadAndMatch(filenames.slice(index, index + chunkSize));
       }
     } catch (error) {
       handleError(error, 'Unable to check items');
@@ -218,7 +218,7 @@
               <tr class="flex w-full place-items-center p-2 md:p-5">
                 <th class="w-full text-sm place-items-center font-medium flex justify-between" colspan="2">
                   <div class="px-3">
-                    <p>MATCHES {matches.length ? `(${matches.length})` : ''}</p>
+                    <p>MATCHES {matches.length > 0 ? `(${matches.length})` : ''}</p>
                     <p class="text-gray-600 dark:text-gray-300 mt-1">These files are matched by their checksums</p>
                   </div>
                 </th>
@@ -252,7 +252,7 @@
               <tr class="flex w-full place-items-center p-1 md:p-5">
                 <th class="w-full text-sm font-medium justify-between place-items-center flex" colspan="2">
                   <div class="px-3">
-                    <p>OFFLINE PATHS {orphans.length ? `(${orphans.length})` : ''}</p>
+                    <p>OFFLINE PATHS {orphans.length > 0 ? `(${orphans.length})` : ''}</p>
                     <p class="text-gray-600 dark:text-gray-300 mt-1">
                       These files are the results of manually deletion of the default upload library
                     </p>
@@ -290,7 +290,7 @@
               <tr class="flex w-full place-items-center p-2 md:p-5">
                 <th class="w-full text-sm font-medium place-items-center flex justify-between" colspan="2">
                   <div class="px-3">
-                    <p>UNTRACKS FILES {extras.length ? `(${extras.length})` : ''}</p>
+                    <p>UNTRACKS FILES {extras.length > 0 ? `(${extras.length})` : ''}</p>
                     <p class="text-gray-600 dark:text-gray-300 mt-1">
                       These files are not tracked by the application. They can be the results of failed moves,
                       interrupted uploads, or left behind due to a bug

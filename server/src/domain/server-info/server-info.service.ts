@@ -67,7 +67,7 @@ export class ServerInfoService {
     serverInfo.diskAvailableRaw = diskInfo.available;
     serverInfo.diskSizeRaw = diskInfo.total;
     serverInfo.diskUseRaw = diskInfo.total - diskInfo.free;
-    serverInfo.diskUsagePercentage = parseFloat(usagePercentage);
+    serverInfo.diskUsagePercentage = Number.parseFloat(usagePercentage);
     return serverInfo;
   }
 

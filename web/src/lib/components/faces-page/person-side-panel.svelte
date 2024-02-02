@@ -87,8 +87,8 @@
       allPeople = data.people;
       const result = await api.faceApi.getFaces({ id: $currentAsset.id });
       peopleWithFaces = result.data;
-      selectedPersonToCreate = new Array<string | null>(peopleWithFaces.length);
-      selectedPersonToReassign = new Array<PersonResponseDto | null>(peopleWithFaces.length);
+      selectedPersonToCreate = Array.from({ length: peopleWithFaces.length });
+      selectedPersonToReassign = Array.from({ length: peopleWithFaces.length });
       selectedPersonToRemove = new Array<boolean>(peopleWithFaces.length);
       unassignedFaces = (
         await Promise.all(
@@ -213,20 +213,20 @@
       selectedPersonToUnassign.length;
     if (numberOfChanges > 0) {
       try {
-        for (let i = 0; i < peopleWithFaces.length; i++) {
-          const personId = selectedPersonToReassign[i]?.id;
+        for (const [index, peopleWithFace] of peopleWithFaces.entries()) {
+          const personId = selectedPersonToReassign[index]?.id;
 
           if (personId) {
             await api.faceApi.reassignFace({
               id: personId,
-              faceDto: { id: peopleWithFaces[i].id },
+              faceDto: { id: peopleWithFace.id },
             });
-          } else if (selectedPersonToCreate[i]) {
+          } else if (selectedPersonToCreate[index]) {
             const { data } = await api.personApi.createPerson();
             idsOfPersonToCreate.push(data.id);
             await api.faceApi.reassignFace({
               id: data.id,
-              faceDto: { id: peopleWithFaces[i].id },
+              faceDto: { id: peopleWithFace.id },
             });
           }
         }
@@ -266,7 +266,7 @@
       clearTimeout(loaderLoadingDoneTimeout);
       dispatch('refresh');
     } else {
-      automaticRefreshTimeout = setTimeout(() => dispatch('refresh'), 15000);
+      automaticRefreshTimeout = setTimeout(() => dispatch('refresh'), 15_000);
     }
   };
 

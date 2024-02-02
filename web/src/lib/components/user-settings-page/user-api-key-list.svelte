@@ -129,11 +129,13 @@
           </tr>
         </thead>
         <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
-          {#each keys as key, i}
+          {#each keys as key, index}
             {#key key.id}
               <tr
                 class={`flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
-                  i % 2 == 0 ? 'bg-immich-gray dark:bg-immich-dark-gray/75' : 'bg-immich-bg dark:bg-immich-dark-gray/50'
+                  index % 2 == 0
+                    ? 'bg-immich-gray dark:bg-immich-dark-gray/75'
+                    : 'bg-immich-bg dark:bg-immich-dark-gray/50'
                 }`}
               >
                 <td class="w-1/3 text-ellipsis px-4 text-sm">{key.name}</td>

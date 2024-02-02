@@ -20,9 +20,9 @@
         dataUrl = URL.createObjectURL(data);
         return dataUrl;
       } else {
-        throw new Error('Invalid data format');
+        throw new TypeError('Invalid data format');
       }
-    } catch (error) {
+    } catch {
       errorMessage = 'Failed to load asset';
       return '';
     }

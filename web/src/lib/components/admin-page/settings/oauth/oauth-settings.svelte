@@ -69,94 +69,106 @@
         >.
       </p>
 
-      <SettingSwitch {disabled} title="ENABLE" bind:checked={config.oauth.enabled} />
-      <hr />
-      <SettingInputField
-        inputType={SettingInputFieldType.TEXT}
-        label="ISSUER URL"
-        bind:value={config.oauth.issuerUrl}
-        required={true}
-        disabled={disabled || !config.oauth.enabled}
-        isEdited={!(config.oauth.issuerUrl == savedConfig.oauth.issuerUrl)}
-      />
+      <SettingSwitch {disabled} title="ENABLE" subtitle="Login with OAuth" bind:checked={config.oauth.enabled} />
 
-      <SettingInputField
-        inputType={SettingInputFieldType.TEXT}
-        label="CLIENT ID"
-        bind:value={config.oauth.clientId}
-        required={true}
-        disabled={disabled || !config.oauth.enabled}
-        isEdited={!(config.oauth.clientId == savedConfig.oauth.clientId)}
-      />
-
-      <SettingInputField
-        inputType={SettingInputFieldType.TEXT}
-        label="CLIENT SECRET"
-        bind:value={config.oauth.clientSecret}
-        required={true}
-        disabled={disabled || !config.oauth.enabled}
-        isEdited={!(config.oauth.clientSecret == savedConfig.oauth.clientSecret)}
-      />
-
-      <SettingInputField
-        inputType={SettingInputFieldType.TEXT}
-        label="SCOPE"
-        bind:value={config.oauth.scope}
-        required={true}
-        disabled={disabled || !config.oauth.enabled}
-        isEdited={!(config.oauth.scope == savedConfig.oauth.scope)}
-      />
-
-      <SettingInputField
-        inputType={SettingInputFieldType.TEXT}
-        label="STORAGE LABEL CLAIM"
-        desc="Automatically set the user's storage label to the value of this claim."
-        bind:value={config.oauth.storageLabelClaim}
-        required={true}
-        disabled={disabled || !config.oauth.storageLabelClaim}
-        isEdited={!(config.oauth.storageLabelClaim == savedConfig.oauth.storageLabelClaim)}
-      />
-
-      <SettingInputField
-        inputType={SettingInputFieldType.TEXT}
-        label="BUTTON TEXT"
-        bind:value={config.oauth.buttonText}
-        required={false}
-        disabled={disabled || !config.oauth.enabled}
-        isEdited={!(config.oauth.buttonText == savedConfig.oauth.buttonText)}
-      />
-
-      <SettingSwitch
-        title="AUTO REGISTER"
-        subtitle="Automatically register new users after signing in with OAuth"
-        bind:checked={config.oauth.autoRegister}
-        disabled={disabled || !config.oauth.enabled}
-      />
-
-      <SettingSwitch
-        title="AUTO LAUNCH"
-        subtitle="Start the OAuth login flow automatically upon navigating to the login page"
-        disabled={disabled || !config.oauth.enabled}
-        bind:checked={config.oauth.autoLaunch}
-      />
-
-      <SettingSwitch
-        title="MOBILE REDIRECT URI OVERRIDE"
-        subtitle="Enable when 'app.immich:/' is an invalid redirect URI."
-        disabled={disabled || !config.oauth.enabled}
-        on:click={() => handleToggleOverride()}
-        bind:checked={config.oauth.mobileOverrideEnabled}
-      />
-
-      {#if config.oauth.mobileOverrideEnabled}
+      {#if config.oauth.enabled}
+        <hr />
         <SettingInputField
           inputType={SettingInputFieldType.TEXT}
-          label="MOBILE REDIRECT URI"
-          bind:value={config.oauth.mobileRedirectUri}
+          label="ISSUER URL"
+          bind:value={config.oauth.issuerUrl}
           required={true}
           disabled={disabled || !config.oauth.enabled}
-          isEdited={!(config.oauth.mobileRedirectUri == savedConfig.oauth.mobileRedirectUri)}
+          isEdited={!(config.oauth.issuerUrl == savedConfig.oauth.issuerUrl)}
         />
+
+        <SettingInputField
+          inputType={SettingInputFieldType.TEXT}
+          label="CLIENT ID"
+          bind:value={config.oauth.clientId}
+          required={true}
+          disabled={disabled || !config.oauth.enabled}
+          isEdited={!(config.oauth.clientId == savedConfig.oauth.clientId)}
+        />
+
+        <SettingInputField
+          inputType={SettingInputFieldType.TEXT}
+          label="CLIENT SECRET"
+          bind:value={config.oauth.clientSecret}
+          required={true}
+          disabled={disabled || !config.oauth.enabled}
+          isEdited={!(config.oauth.clientSecret == savedConfig.oauth.clientSecret)}
+        />
+
+        <SettingInputField
+          inputType={SettingInputFieldType.TEXT}
+          label="SCOPE"
+          bind:value={config.oauth.scope}
+          required={true}
+          disabled={disabled || !config.oauth.enabled}
+          isEdited={!(config.oauth.scope == savedConfig.oauth.scope)}
+        />
+
+        <SettingInputField
+          inputType={SettingInputFieldType.TEXT}
+          label="SIGNING ALGORITHM"
+          bind:value={config.oauth.signingAlgorithm}
+          required={true}
+          disabled={disabled || !config.oauth.enabled}
+          isEdited={!(config.oauth.signingAlgorithm == savedConfig.oauth.signingAlgorithm)}
+        />
+
+        <SettingInputField
+          inputType={SettingInputFieldType.TEXT}
+          label="STORAGE LABEL CLAIM"
+          desc="Automatically set the user's storage label to the value of this claim."
+          bind:value={config.oauth.storageLabelClaim}
+          required={true}
+          disabled={disabled || !config.oauth.enabled}
+          isEdited={!(config.oauth.storageLabelClaim == savedConfig.oauth.storageLabelClaim)}
+        />
+
+        <SettingInputField
+          inputType={SettingInputFieldType.TEXT}
+          label="BUTTON TEXT"
+          bind:value={config.oauth.buttonText}
+          required={false}
+          disabled={disabled || !config.oauth.enabled}
+          isEdited={!(config.oauth.buttonText == savedConfig.oauth.buttonText)}
+        />
+
+        <SettingSwitch
+          title="AUTO REGISTER"
+          subtitle="Automatically register new users after signing in with OAuth"
+          bind:checked={config.oauth.autoRegister}
+          disabled={disabled || !config.oauth.enabled}
+        />
+
+        <SettingSwitch
+          title="AUTO LAUNCH"
+          subtitle="Start the OAuth login flow automatically upon navigating to the login page"
+          disabled={disabled || !config.oauth.enabled}
+          bind:checked={config.oauth.autoLaunch}
+        />
+
+        <SettingSwitch
+          title="MOBILE REDIRECT URI OVERRIDE"
+          subtitle="Enable when 'app.immich:/' is an invalid redirect URI."
+          disabled={disabled || !config.oauth.enabled}
+          on:click={() => handleToggleOverride()}
+          bind:checked={config.oauth.mobileOverrideEnabled}
+        />
+
+        {#if config.oauth.mobileOverrideEnabled}
+          <SettingInputField
+            inputType={SettingInputFieldType.TEXT}
+            label="MOBILE REDIRECT URI"
+            bind:value={config.oauth.mobileRedirectUri}
+            required={true}
+            disabled={disabled || !config.oauth.enabled}
+            isEdited={!(config.oauth.mobileRedirectUri == savedConfig.oauth.mobileRedirectUri)}
+          />
+        {/if}
       {/if}
 
       <SettingButtonsRow

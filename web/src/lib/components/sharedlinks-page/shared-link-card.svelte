@@ -55,7 +55,7 @@
   };
 
   const isExpired = (expiresAt: string) => {
-    const now = new Date().getTime();
+    const now = Date.now();
     const expiration = new Date(expiresAt).getTime();
 
     return now > expiration;

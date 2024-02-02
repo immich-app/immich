@@ -9782,6 +9782,9 @@
           "scope": {
             "type": "string"
           },
+          "signingAlgorithm": {
+            "type": "string"
+          },
           "storageLabelClaim": {
             "type": "string"
           }
@@ -9797,6 +9800,7 @@
           "mobileOverrideEnabled",
           "mobileRedirectUri",
           "scope",
+          "signingAlgorithm",
           "storageLabelClaim"
         ],
         "type": "object"

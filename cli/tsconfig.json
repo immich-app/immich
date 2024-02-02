@@ -9,7 +9,7 @@
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
-    "target": "es2021",
+    "target": "es2022",
     "sourceMap": true,
     "outDir": "./dist",
     "incremental": true,
@@ -30,5 +30,5 @@
     },
     "types": ["vitest/globals"]
   },
-  "exclude": ["dist", "node_modules", "upload"]
+  "exclude": ["dist", "node_modules"]
 }

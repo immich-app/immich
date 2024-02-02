@@ -74,11 +74,7 @@ export class UserRepository implements IUserRepository {
   }
 
   async delete(user: UserEntity, hard?: boolean): Promise<UserEntity> {
-    if (hard) {
-      return this.userRepository.remove(user);
-    } else {
-      return this.userRepository.softRemove(user);
-    }
+    return hard ? this.userRepository.remove(user) : this.userRepository.softRemove(user);
   }
 
   async restore(user: UserEntity): Promise<UserEntity> {

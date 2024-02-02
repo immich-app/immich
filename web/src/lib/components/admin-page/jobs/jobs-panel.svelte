@@ -131,12 +131,13 @@
       jobs[jobId] = data;
 
       switch (jobCommand.command) {
-        case JobCommand.Empty:
+        case JobCommand.Empty: {
           notificationController.show({
             message: `Cleared jobs for: ${title}`,
             type: NotificationType.Info,
           });
           break;
+        }
       }
     } catch (error) {
       handleError(error, `Command '${jobCommand.command}' failed for job: ${title}`);

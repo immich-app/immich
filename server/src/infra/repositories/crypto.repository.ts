@@ -1,8 +1,8 @@
 import { ICryptoRepository } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { compareSync, hash } from 'bcrypt';
-import { createHash, randomBytes, randomUUID } from 'crypto';
-import { createReadStream } from 'fs';
+import { createHash, randomBytes, randomUUID } from 'node:crypto';
+import { createReadStream } from 'node:fs';
 
 @Injectable()
 export class CryptoRepository implements ICryptoRepository {
@@ -24,7 +24,7 @@ export class CryptoRepository implements ICryptoRepository {
     return new Promise<Buffer>((resolve, reject) => {
       const hash = createHash('sha1');
       const stream = createReadStream(filepath);
-      stream.on('error', (err) => reject(err));
+      stream.on('error', (error) => reject(error));
       stream.on('data', (chunk) => hash.update(chunk));
       stream.on('end', () => resolve(hash.digest()));
     });

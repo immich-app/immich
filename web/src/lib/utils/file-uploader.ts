@@ -17,7 +17,7 @@ const getExtensions = async () => {
   return _extensions;
 };
 
-export const openFileUploadDialog = async (albumId: string | undefined = undefined) => {
+export const openFileUploadDialog = async (albumId?: string | undefined) => {
   const extensions = await getExtensions();
 
   return new Promise<(string | undefined)[]>((resolve, reject) => {
@@ -27,7 +27,7 @@ export const openFileUploadDialog = async (albumId: string | undefined = undefin
       fileSelector.type = 'file';
       fileSelector.multiple = true;
       fileSelector.accept = extensions.join(',');
-      fileSelector.onchange = async (e: Event) => {
+      fileSelector.addEventListener('change', async (e: Event) => {
         const target = e.target as HTMLInputElement;
         if (!target.files) {
           return;
@@ -35,12 +35,12 @@ export const openFileUploadDialog = async (albumId: string | undefined = undefin
         const files = Array.from(target.files);
 
         resolve(fileUploadHandler(files, albumId));
-      };
+      });
 
       fileSelector.click();
-    } catch (e) {
-      console.log('Error selecting file', e);
-      reject(e);
+    } catch (error) {
+      console.log('Error selecting file', error);
+      reject(error);
     }
   });
 };
@@ -50,7 +50,7 @@ export const fileUploadHandler = async (files: File[], albumId: string | undefin
   const promises = [];
   for (const file of files) {
     const name = file.name.toLowerCase();
-    if (extensions.some((ext) => name.endsWith(ext))) {
+    if (extensions.some((extension) => name.endsWith(extension))) {
       uploadAssetsStore.addNewUploadAsset({ id: getDeviceAssetId(file), file, albumId });
       promises.push(uploadExecutionQueue.addTask(() => fileUploader(file, albumId)));
     }

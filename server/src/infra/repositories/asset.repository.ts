@@ -24,7 +24,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import _ from 'lodash';
 import { DateTime } from 'luxon';
-import path from 'path';
+import path from 'node:path';
 import {
   And,
   Brackets,
@@ -471,7 +471,7 @@ export class AssetRepository implements IAssetRepository {
     let where: FindOptionsWhere<AssetEntity> | FindOptionsWhere<AssetEntity>[] = {};
 
     switch (property) {
-      case WithoutProperty.THUMBNAIL:
+      case WithoutProperty.THUMBNAIL: {
         where = [
           { resizePath: IsNull(), isVisible: true },
           { resizePath: '', isVisible: true },
@@ -480,15 +480,17 @@ export class AssetRepository implements IAssetRepository {
           { thumbhash: IsNull(), isVisible: true },
         ];
         break;
+      }
 
-      case WithoutProperty.ENCODED_VIDEO:
+      case WithoutProperty.ENCODED_VIDEO: {
         where = [
           { type: AssetType.VIDEO, encodedVideoPath: IsNull() },
           { type: AssetType.VIDEO, encodedVideoPath: '' },
         ];
         break;
+      }
 
-      case WithoutProperty.EXIF:
+      case WithoutProperty.EXIF: {
         relations = {
           exifInfo: true,
           jobStatus: true,
@@ -500,8 +502,9 @@ export class AssetRepository implements IAssetRepository {
           },
         };
         break;
+      }
 
-      case WithoutProperty.SMART_SEARCH:
+      case WithoutProperty.SMART_SEARCH: {
         relations = {
           smartSearch: true,
         };
@@ -513,8 +516,9 @@ export class AssetRepository implements IAssetRepository {
           },
         };
         break;
+      }
 
-      case WithoutProperty.OBJECT_TAGS:
+      case WithoutProperty.OBJECT_TAGS: {
         relations = {
           smartInfo: true,
         };
@@ -526,8 +530,9 @@ export class AssetRepository implements IAssetRepository {
           },
         };
         break;
+      }
 
-      case WithoutProperty.FACES:
+      case WithoutProperty.FACES: {
         relations = {
           faces: true,
           jobStatus: true,
@@ -544,8 +549,9 @@ export class AssetRepository implements IAssetRepository {
           },
         };
         break;
+      }
 
-      case WithoutProperty.PERSON:
+      case WithoutProperty.PERSON: {
         relations = {
           faces: true,
         };
@@ -558,16 +564,19 @@ export class AssetRepository implements IAssetRepository {
           },
         };
         break;
+      }
 
-      case WithoutProperty.SIDECAR:
+      case WithoutProperty.SIDECAR: {
         where = [
           { sidecarPath: IsNull(), isVisible: true },
           { sidecarPath: '', isVisible: true },
         ];
         break;
+      }
 
-      default:
+      default: {
         throw new Error(`Invalid getWithout property: ${property}`);
+      }
     }
 
     return paginate(this.repository, pagination, {
@@ -584,18 +593,21 @@ export class AssetRepository implements IAssetRepository {
     let where: FindOptionsWhere<AssetEntity> | FindOptionsWhere<AssetEntity>[] = {};
 
     switch (property) {
-      case WithProperty.SIDECAR:
+      case WithProperty.SIDECAR: {
         where = [{ sidecarPath: Not(IsNull()), isVisible: true }];
         break;
-      case WithProperty.IS_OFFLINE:
+      }
+      case WithProperty.IS_OFFLINE: {
         if (!libraryId) {
           throw new Error('Library id is required when finding offline assets');
         }
         where = [{ isOffline: true, libraryId: libraryId }];
         break;
+      }
 
-      default:
+      default: {
         throw new Error(`Invalid getWith property: ${property}`);
+      }
     }
 
     return paginate(this.repository, pagination, {

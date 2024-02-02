@@ -111,14 +111,10 @@
   const { selectedAssets: timelineSelected } = timelineInteractionStore;
 
   $: isOwned = $user.id == album.ownerId;
-  $: isAllUserOwned = Array.from($selectedAssets).every((asset) => asset.ownerId === $user.id);
-  $: isAllFavorite = Array.from($selectedAssets).every((asset) => asset.isFavorite);
+  $: isAllUserOwned = [...$selectedAssets].every((asset) => asset.ownerId === $user.id);
+  $: isAllFavorite = [...$selectedAssets].every((asset) => asset.isFavorite);
   $: {
-    if (isShowActivity) {
-      assetGridWidth = globalWidth - (globalWidth < 768 ? 360 : 460);
-    } else {
-      assetGridWidth = globalWidth;
-    }
+    assetGridWidth = isShowActivity ? globalWidth - (globalWidth < 768 ? 360 : 460) : globalWidth;
   }
   $: showActivityStatus =
     album.sharedUsers.length > 0 && !$showAssetViewer && (album.isActivityEnabled || $numberOfComments > 0);
@@ -157,7 +153,7 @@
         message: `Activity is ${album.isActivityEnabled ? 'enabled' : 'disabled'}`,
       });
     } catch (error) {
-      handleError(error, `Can't ${!album.isActivityEnabled ? 'enable' : 'disable'} activity`);
+      handleError(error, `Can't ${album.isActivityEnabled ? 'disable' : 'enable'} activity`);
     }
   };
 
@@ -224,10 +220,11 @@
     }
     const ctrl = event.ctrlKey;
     switch (event.key) {
-      case 'Enter':
+      case 'Enter': {
         if (ctrl && event.target === textArea) {
           textArea.blur();
         }
+      }
     }
   };
 
@@ -302,7 +299,7 @@
   };
 
   const handleAddAssets = async () => {
-    const assetIds = Array.from($timelineSelected).map((asset) => asset.id);
+    const assetIds = [...$timelineSelected].map((asset) => asset.id);
 
     try {
       const { data: results } = await api.albumApi.addAssetsToAlbum({
@@ -352,7 +349,7 @@
       const { data } = await api.albumApi.addUsersToAlbum({
         id: album.id,
         addUsersDto: {
-          sharedUserIds: Array.from(users).map(({ id }) => id),
+          sharedUserIds: [...users].map(({ id }) => id),
         },
       });
 
@@ -373,8 +370,8 @@
     try {
       await refreshAlbum();
       viewMode = album.sharedUsers.length > 1 ? ViewMode.SELECT_USERS : ViewMode.VIEW;
-    } catch (e) {
-      handleError(e, 'Error deleting share users');
+    } catch (error) {
+      handleError(error, 'Error deleting share users');
     }
   };
 
@@ -572,7 +569,7 @@
     {/if}
 
     <main
-      class="relative h-screen overflow-hidden bg-immich-bg px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg sm:px-12 md:px-24 lg:px-40"
+      class="relative h-screen overflow-hidden bg-immich-bg px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg"
       style={`width:${assetGridWidth}px`}
     >
       {#if viewMode === ViewMode.SELECT_ASSETS}

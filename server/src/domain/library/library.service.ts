@@ -1,17 +1,17 @@
 import { AssetType, LibraryType } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { EventEmitter } from 'events';
 import { R_OK } from 'node:constants';
+import { EventEmitter } from 'node:events';
 import { Stats } from 'node:fs';
-import path from 'node:path';
-import { basename, parse } from 'path';
+import path, { basename, parse } from 'node:path';
 import picomatch from 'picomatch';
 import { AccessCore, Permission } from '../access';
 import { AuthDto } from '../auth';
 import { mimeTypes } from '../domain.constant';
 import { usePagination, validateCronExpression } from '../domain.util';
 import { IBaseJob, IEntityJob, ILibraryFileJob, ILibraryRefreshJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
+
 import {
   IAccessRepository,
   IAssetRepository,
@@ -84,11 +84,7 @@ export class LibraryService extends EventEmitter {
 
       if (library.watch.enabled !== this.watchLibraries) {
         this.watchLibraries = library.watch.enabled;
-        if (this.watchLibraries) {
-          await this.watchAll();
-        } else {
-          await this.unwatchAll();
-        }
+        await (this.watchLibraries ? this.watchAll() : this.unwatchAll());
       }
     });
   }
@@ -227,12 +223,13 @@ export class LibraryService extends EventEmitter {
 
   async create(auth: AuthDto, dto: CreateLibraryDto): Promise<LibraryResponseDto> {
     switch (dto.type) {
-      case LibraryType.EXTERNAL:
+      case LibraryType.EXTERNAL: {
         if (!dto.name) {
           dto.name = 'New External Library';
         }
         break;
-      case LibraryType.UPLOAD:
+      }
+      case LibraryType.UPLOAD: {
         if (!dto.name) {
           dto.name = 'New Upload Library';
         }
@@ -246,6 +243,7 @@ export class LibraryService extends EventEmitter {
           throw new BadRequestException('Upload libraries cannot be watched');
         }
         break;
+      }
     }
 
     const library = await this.repository.create({
@@ -401,7 +399,7 @@ export class LibraryService extends EventEmitter {
       sidecarPath = `${assetPath}.xmp`;
     }
 
-    const deviceAssetId = `${basename(assetPath)}`.replace(/\s+/g, '');
+    const deviceAssetId = `${basename(assetPath)}`.replaceAll(/\s+/g, '');
 
     let assetId;
     if (doImport) {
@@ -533,17 +531,17 @@ export class LibraryService extends EventEmitter {
     }
 
     this.logger.verbose(`Refreshing library: ${job.id}`);
-    const crawledAssetPaths = (
-      await this.storageRepository.crawl({
-        pathsToCrawl: library.importPaths,
-        exclusionPatterns: library.exclusionPatterns,
-      })
-    )
-      .map(path.normalize)
+    const rawPaths = await this.storageRepository.crawl({
+      pathsToCrawl: library.importPaths,
+      exclusionPatterns: library.exclusionPatterns,
+    });
+
+    const crawledAssetPaths = rawPaths
+      .map((filePath) => path.normalize(filePath))
       .filter((assetPath) =>
         // Filter out paths that are not within the user's external path
         assetPath.match(new RegExp(`^${user.externalPath}`)),
-      );
+      ) as string[];
 
     this.logger.debug(`Found ${crawledAssetPaths.length} asset(s) when crawling import paths ${library.importPaths}`);
     const assetsInLibrary = await this.assetRepository.getByLibraryId([job.id]);

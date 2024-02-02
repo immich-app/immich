@@ -872,7 +872,7 @@ describe(PersonService.name, () => {
       }
 
       const faces = [
-        { face: faceStub.noPerson1, distance: 0.0 },
+        { face: faceStub.noPerson1, distance: 0 },
         { face: faceStub.primaryFace1, distance: 0.2 },
         { face: faceStub.noPerson2, distance: 0.3 },
         { face: faceStub.face1, distance: 0.4 },
@@ -901,7 +901,7 @@ describe(PersonService.name, () => {
 
     it('should create a new person if the face is a core point with no person', async () => {
       const faces = [
-        { face: faceStub.noPerson1, distance: 0.0 },
+        { face: faceStub.noPerson1, distance: 0 },
         { face: faceStub.noPerson2, distance: 0.3 },
       ] as FaceSearchResult[];
 
@@ -925,7 +925,7 @@ describe(PersonService.name, () => {
     });
 
     it('should defer non-core faces to end of queue', async () => {
-      const faces = [{ face: faceStub.noPerson1, distance: 0.0 }] as FaceSearchResult[];
+      const faces = [{ face: faceStub.noPerson1, distance: 0 }] as FaceSearchResult[];
 
       configMock.load.mockResolvedValue([
         { key: SystemConfigKey.MACHINE_LEARNING_FACIAL_RECOGNITION_MIN_FACES, value: 2 },
@@ -946,7 +946,7 @@ describe(PersonService.name, () => {
     });
 
     it('should not assign person to non-core face with no matching person', async () => {
-      const faces = [{ face: faceStub.noPerson1, distance: 0.0 }] as FaceSearchResult[];
+      const faces = [{ face: faceStub.noPerson1, distance: 0 }] as FaceSearchResult[];
 
       configMock.load.mockResolvedValue([
         { key: SystemConfigKey.MACHINE_LEARNING_FACIAL_RECOGNITION_MIN_FACES, value: 2 },
