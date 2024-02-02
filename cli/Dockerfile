@@ -8,12 +8,10 @@ RUN npm run build
 
 WORKDIR /usr/src/app
 
-COPY cli/package.json cli/package-lock.json ./
+COPY cli/ .
 RUN npm ci
-
-COPY cli .
 RUN npm run build
-RUN npm install -g
+RUN npm install -g .
 
 WORKDIR /import
 ENTRYPOINT [ "immich" ]
