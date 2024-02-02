@@ -557,9 +557,13 @@ export class MetadataService {
 
   private getDuration(seconds?: number | ExifDuration): string {
     let _seconds = seconds as number;
+
     if (typeof seconds === 'object') {
       _seconds = seconds.Value * (seconds?.Scale || 1);
+    } else if (typeof seconds === 'string') {
+      _seconds = Duration.fromISOTime(seconds).as('seconds');
     }
+
     return Duration.fromObject({ seconds: _seconds }).toFormat('hh:mm:ss.SSS');
   }
 }
