@@ -7,8 +7,10 @@ import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
 import 'package:openapi/api.dart';
 import 'package:http/http.dart';
+import 'package:logging/logging.dart';
 
 class ApiService {
+  final _log = Logger("ApiService");
   late ApiClient _apiClient;
 
   late UserApi userApi;
@@ -126,8 +128,8 @@ class ApiService {
         }
         return endpoint;
       }
-    } catch (e) {
-      debugPrint("Could not locate /.well-known/immich at $baseUrl");
+    } catch (error, stack) {
+      _log.severe("Could not locate /.well-known/immich at $baseUrl", error, stack);
     }
 
     return "";
