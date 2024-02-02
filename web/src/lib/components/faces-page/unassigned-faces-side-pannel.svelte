@@ -1,21 +1,19 @@
 <script lang="ts">
   import { fly } from 'svelte/transition';
   import { linear } from 'svelte/easing';
-
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
-
   import { mdiAccountOff, mdiArrowLeftThin } from '@mdi/js';
   import Icon from '../elements/icon.svelte';
-
   import { createEventDispatcher } from 'svelte';
   import AssignFaceSidePanel from './assign-face-side-panel.svelte';
-  import type { PersonResponseDto } from '@api';
+  import type { AssetResponseDto, PersonResponseDto } from '@api';
   import type { FaceWithGeneretedThumbnail } from '$lib/utils/people-utils';
   import { boundingBoxesArray } from '$lib/stores/people.store';
 
   export let unassignedFaces: FaceWithGeneretedThumbnail[];
   export let allPeople: PersonResponseDto[];
   export let selectedPersonToAdd: FaceWithGeneretedThumbnail[];
+  export let asset: AssetResponseDto;
 
   let showSeletecFaces = false;
   let personSelected: FaceWithGeneretedThumbnail;
@@ -113,6 +111,7 @@
 
 {#if showSeletecFaces}
   <AssignFaceSidePanel
+    {asset}
     personWithFace={personSelected}
     {allPeople}
     on:close={() => (showSeletecFaces = false)}

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { api, type AssetFaceResponseDto, type PersonResponseDto } from '@api';
+  import { api, type AssetFaceResponseDto, type AssetResponseDto, type PersonResponseDto } from '@api';
   import { createEventDispatcher } from 'svelte';
   import { linear } from 'svelte/easing';
   import { fly } from 'svelte/transition';
@@ -9,11 +9,11 @@
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import { getPersonNameWithHiddenValue, searchNameLocal, zoomImageToBase64 } from '$lib/utils/person';
   import { handleError } from '$lib/utils/handle-error';
-  import { currentAsset } from '$lib/stores/assets.store';
   import { maximumLengthSearchPeople, timeBeforeShowLoadingSpinner } from '$lib/constants';
 
   export let personWithFace: AssetFaceResponseDto;
   export let allPeople: PersonResponseDto[];
+  export let asset: AssetResponseDto;
 
   // loading spinners
   let isShowLoadingNewPerson = false;
@@ -26,16 +26,6 @@
   let isSearchingPerson = false;
   let searchName = '';
 
-  $: {
-    searchedPeople = searchedPeopleCopy.filter(
-      (person) => personWithFace.person && personWithFace.person.id !== person.id,
-    );
-
-    if (searchName) {
-      searchedPeople = searchNameLocal(searchName, searchedPeople, 10);
-    }
-  }
-
   const dispatch = createEventDispatcher<{
     close: void;
     createPerson: string | null;
@@ -46,13 +36,13 @@
   };
 
   const handleCreatePerson = async () => {
-    if ($currentAsset === null) {
+    if (asset === null) {
       return;
     }
 
     const timeout = setTimeout(() => (isShowLoadingNewPerson = true), timeBeforeShowLoadingSpinner);
 
-    const newFeaturePhoto = await zoomImageToBase64(personWithFace, $currentAsset.type, $currentAsset.id);
+    const newFeaturePhoto = await zoomImageToBase64(personWithFace, asset.type, asset.id);
 
     clearTimeout(timeout);
     isShowLoadingNewPerson = false;
@@ -163,7 +153,9 @@
     {/if}
   </div>
   <div class="px-4 py-4 text-sm">
-    <h2 class="mb-8 mt-4 uppercase">All people</h2>
+    {#if allPeople.length > 0}
+      <h2 class="mb-8 mt-4 uppercase">All people</h2>
+    {/if}
     <div class="immich-scrollbar mt-4 flex flex-wrap gap-2 overflow-y-auto">
       {#if searchName == ''}
         {#each allPeople as person (person.id)}

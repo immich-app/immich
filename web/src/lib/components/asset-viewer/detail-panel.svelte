@@ -699,6 +699,7 @@
 
 {#if showEditFaces}
   <PersonSidePanel
+    {asset}
     on:close={() => {
       showEditFaces = false;
     }}

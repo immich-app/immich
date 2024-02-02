@@ -50,7 +50,6 @@ import {
   TimeBucketResponseDto,
   mapAsset,
 } from './response-dto';
-import { PeopleWithFacesResponseDto } from '../person';
 
 export enum UploadFieldName {
   ASSET_DATA = 'assetData',

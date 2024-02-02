@@ -1,7 +1,7 @@
 <script lang="ts">
   import { fly } from 'svelte/transition';
   import { linear } from 'svelte/easing';
-  import { api, type PersonResponseDto, type AssetFaceResponseDto } from '@api';
+  import { api, type PersonResponseDto, type AssetFaceResponseDto, type AssetResponseDto } from '@api';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { createEventDispatcher, onMount } from 'svelte';
@@ -13,11 +13,12 @@
   import { websocketStore } from '$lib/stores/websocket';
   import AssignFaceSidePanel from './assign-face-side-panel.svelte';
   import { getPersonNameWithHiddenValue, zoomImageToBase64 } from '$lib/utils/person';
-  import { currentAsset } from '$lib/stores/assets.store';
   import UnassignedFacesSidePannel from './unassigned-faces-side-pannel.svelte';
   import type { FaceWithGeneretedThumbnail } from '$lib/utils/people-utils';
   import Button from '../elements/buttons/button.svelte';
   import { timeBeforeShowLoadingSpinner } from '$lib/constants';
+
+  export let asset: AssetResponseDto;
 
   // keep track of the changes
   let idsOfPersonToCreate: string[] = [];
@@ -76,24 +77,25 @@
   }
 
   onMount(async () => {
-    if ($currentAsset === null) {
+    if (asset === null) {
       return;
     }
     const timeout = setTimeout(() => (isShowLoadingPeople = true), timeBeforeShowLoadingSpinner);
     try {
       const { data } = await api.personApi.getAllPeople({ withHidden: true });
       allPeople = data.people;
-      const result = await api.faceApi.getFaces({ faceId: $currentAsset.id });
+      const result = await api.faceApi.getFaces({ faceId: asset.id });
       peopleWithFaces = result.data;
+
       selectedPersonToCreate = Array.from({ length: peopleWithFaces.length });
       selectedPersonToReassign = Array.from({ length: peopleWithFaces.length });
       selectedPersonToRemove = Array.from({ length: peopleWithFaces.length });
       const peopleWithGeneratedImage = await Promise.all(
         peopleWithFaces.map(async (personWithFace) => {
-          if (personWithFace.person || $currentAsset === null) {
+          if (personWithFace.person || asset === null) {
             return null;
           } else {
-            const image = await zoomImageToBase64(personWithFace, $currentAsset.type, $currentAsset.id);
+            const image = await zoomImageToBase64(personWithFace, asset.type, asset.id);
             return image ? { ...personWithFace, customThumbnail: image } : null;
           }
         }),
@@ -174,13 +176,13 @@
   };
 
   const handleUnassignFaces = async () => {
-    if ($currentAsset === null) {
+    if (asset === null) {
       return;
     }
     if (numberOfFacesToUnassign > 0) {
       for (const [i, peopleWithFace] of peopleWithFaces.entries()) {
         if (selectedPersonToRemove[i]) {
-          const image = await zoomImageToBase64(peopleWithFace, $currentAsset.type, $currentAsset.id);
+          const image = await zoomImageToBase64(peopleWithFace, asset.type, asset.id);
           if (image) {
             selectedPersonToUnassign.push({ ...peopleWithFace, customThumbnail: image });
             // Trigger reactivity
@@ -204,10 +206,10 @@
   const handleEditFaces = async () => {
     loaderLoadingDoneTimeout = setTimeout(() => (isShowLoadingDone = true), timeBeforeShowLoadingSpinner);
     const numberOfChanges =
-      selectedPersonToCreate.filter((person) => person !== null).length +
-      selectedPersonToReassign.filter((person) => person !== null).length +
-      selectedPersonToAdd.length +
-      selectedPersonToUnassign.length;
+      selectedPersonToCreate.filter((person) => person !== null && person !== undefined).length +
+      selectedPersonToReassign.filter((person) => person !== null && person !== undefined).length +
+      selectedPersonToAdd.filter((person) => person !== null && person !== undefined).length +
+      selectedPersonToUnassign.filter((person) => person !== null && person !== undefined).length;
     if (numberOfChanges > 0) {
       try {
         for (const [index, peopleWithFace] of peopleWithFaces.entries()) {
@@ -359,7 +361,7 @@
         <div class="flex items-center justify-center w-full">
           <div class="grid place-items-center">
             <Icon path={mdiAccountOff} size="3.5em" />
-            <p class="mt-5 font-medium">No faces visible</p>
+            <p class="mt-5 font-medium">No faces currently visible</p>
           </div>
         </div>
       {:else}
@@ -461,7 +463,7 @@
       {/if}
     </div>
     {#if selectedPersonToAdd.length > 0}
-      <div class="mt-2">
+      <div class="mt-8">
         <p>Faces to add</p>
         <div class="mt-4 flex flex-wrap gap-2">
           {#each selectedPersonToAdd as face, index}
@@ -561,6 +563,7 @@
 
 {#if showSeletecFaces}
   <AssignFaceSidePanel
+    {asset}
     personWithFace={peopleWithFaces[editedPersonIndex]}
     {allPeople}
     on:close={closeAssigningFaceModal}
@@ -571,6 +574,7 @@
 
 {#if showUnassignedFaces}
   <UnassignedFacesSidePannel
+    {asset}
     {allPeople}
     {unassignedFaces}
     {selectedPersonToAdd}
