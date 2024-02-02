@@ -269,7 +269,7 @@ describe(StorageTemplateService.name, () => {
       when(storageMock.stat)
         .calledWith(newPath)
         .mockResolvedValue({ size: 5000 } as Stats);
-      when(cryptoMock.hashFile).calledWith(newPath).mockResolvedValue(Buffer.from('different-hash', 'utf-8'));
+      when(cryptoMock.hashFile).calledWith(newPath).mockResolvedValue(Buffer.from('different-hash', 'utf8'));
 
       when(assetMock.save)
         .calledWith({ id: assetStub.image.id, originalPath: newPath })
@@ -311,9 +311,9 @@ describe(StorageTemplateService.name, () => {
     });
 
     it.each`
-      failedPathChecksum                      | failedPathSize                              | reason
-      ${assetStub.image.checksum}             | ${500}                                      | ${'file size'}
-      ${Buffer.from('bad checksum', 'utf-8')} | ${assetStub.image.exifInfo?.fileSizeInByte} | ${'checksum'}
+      failedPathChecksum                     | failedPathSize                              | reason
+      ${assetStub.image.checksum}            | ${500}                                      | ${'file size'}
+      ${Buffer.from('bad checksum', 'utf8')} | ${assetStub.image.exifInfo?.fileSizeInByte} | ${'checksum'}
     `(
       'should fail to migrate previously failed move from previous new path when old path no longer exists if $reason validation fails',
       async ({ failedPathChecksum, failedPathSize }) => {

@@ -69,10 +69,10 @@
     {/if}
 
     <div class="inline-block" bind:offsetWidth={innerWidth}>
-      {#each $memoryStore as memory, i (memory.title)}
+      {#each $memoryStore as memory, index (memory.title)}
         <button
           class="memory-card relative mr-8 inline-block aspect-video h-[215px] rounded-xl"
-          on:click={() => goto(`${AppRoute.MEMORY}?${QueryParameter.MEMORY_INDEX}=${i}`)}
+          on:click={() => goto(`${AppRoute.MEMORY}?${QueryParameter.MEMORY_INDEX}=${index}`)}
         >
           <img
             class="h-full w-full rounded-xl object-cover"

@@ -22,8 +22,8 @@
 
   $: {
     const stepState = $page.url.searchParams.get('step');
-    const tempIndex = onboardingSteps.findIndex((step) => step.name === stepState);
-    index = tempIndex >= 0 ? tempIndex : 0;
+    const temporaryIndex = onboardingSteps.findIndex((step) => step.name === stepState);
+    index = temporaryIndex >= 0 ? temporaryIndex : 0;
   }
 
   const handleDoneClicked = async () => {

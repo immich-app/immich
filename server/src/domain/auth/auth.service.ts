@@ -8,8 +8,8 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import cookieParser from 'cookie';
-import { IncomingHttpHeaders } from 'http';
 import { DateTime } from 'luxon';
+import { IncomingHttpHeaders } from 'node:http';
 import { ClientMetadata, Issuer, UserinfoResponse, custom, generators } from 'openid-client';
 import { AccessCore, Permission } from '../access';
 import {
@@ -85,7 +85,7 @@ export class AuthService {
     this.configCore = SystemConfigCore.create(configRepository);
     this.userCore = UserCore.create(cryptoRepository, libraryRepository, userRepository);
 
-    custom.setHttpOptionsDefaults({ timeout: 30000 });
+    custom.setHttpOptionsDefaults({ timeout: 30_000 });
   }
 
   async login(dto: LoginCredentialDto, details: LoginDetails): Promise<LoginResponse> {
@@ -213,7 +213,8 @@ export class AuthService {
     }
 
     const { scope, buttonText, autoLaunch } = config.oauth;
-    const url = (await this.getOAuthClient(config)).authorizationUrl({
+    const oauthClient = await this.getOAuthClient(config);
+    const url = oauthClient.authorizationUrl({
       redirect_uri: this.normalize(config, dto.redirectUri),
       scope,
       state: generators.state(),
@@ -376,12 +377,10 @@ export class AuthService {
 
     const bytes = Buffer.from(key, key.length === 100 ? 'hex' : 'base64url');
     const sharedLink = await this.sharedLinkRepository.getByKey(bytes);
-    if (sharedLink) {
-      if (!sharedLink.expiresAt || new Date(sharedLink.expiresAt) > new Date()) {
-        const user = sharedLink.user;
-        if (user) {
-          return { user, sharedLink };
-        }
+    if (sharedLink && (!sharedLink.expiresAt || new Date(sharedLink.expiresAt) > new Date())) {
+      const user = sharedLink.user;
+      if (user) {
+        return { user, sharedLink };
       }
     }
     throw new UnauthorizedException('Invalid share key');
@@ -423,7 +422,7 @@ export class AuthService {
   }
 
   private async createLoginResponse(user: UserEntity, authType: AuthType, loginDetails: LoginDetails) {
-    const key = this.cryptoRepository.randomBytes(32).toString('base64').replace(/\W/g, '');
+    const key = this.cryptoRepository.randomBytes(32).toString('base64').replaceAll(/\W/g, '');
     const token = this.cryptoRepository.hashSha256(key);
 
     await this.userTokenRepository.create({

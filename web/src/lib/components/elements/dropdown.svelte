@@ -26,7 +26,7 @@
   export let options: T[];
   export let selectedOption = options[0];
 
-  export let render: (item: T) => string | RenderedOption = (item) => String(item);
+  export let render: (item: T) => string | RenderedOption = String;
 
   type RenderedOption = {
     title: string;
@@ -54,13 +54,15 @@
   const renderOption = (option: T): RenderedOption => {
     const renderedOption = render(option);
     switch (typeof renderedOption) {
-      case 'string':
+      case 'string': {
         return { title: renderedOption };
-      default:
+      }
+      default: {
         return {
           title: renderedOption.title,
           icon: renderedOption.icon,
         };
+      }
     }
   };
 

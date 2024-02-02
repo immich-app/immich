@@ -26,7 +26,6 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   libraryId!: string;
   originalPath!: string;
   originalFileName!: string;
-  resized!: boolean;
   fileCreatedAt!: Date;
   fileModifiedAt!: Date;
   updatedAt!: Date;
@@ -56,7 +55,7 @@ export type AssetMapOptions = {
 const peopleWithFaces = (faces: AssetFaceEntity[]): PersonWithFacesResponseDto[] => {
   const result: PersonWithFacesResponseDto[] = [];
   if (faces) {
-    faces.forEach((face) => {
+    for (const face of faces) {
       if (face.person) {
         const existingPersonEntry = result.find((item) => item.id === face.person!.id);
         if (existingPersonEntry) {
@@ -65,7 +64,7 @@ const peopleWithFaces = (faces: AssetFaceEntity[]): PersonWithFacesResponseDto[]
           result.push({ ...mapPerson(face.person!), faces: [mapFacesWithoutPerson(face)] });
         }
       }
-    });
+    }
   }
 
   return result;

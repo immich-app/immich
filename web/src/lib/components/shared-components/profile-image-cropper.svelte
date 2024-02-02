@@ -26,18 +26,18 @@
     const canvas = document.createElement('canvas');
     canvas.width = img.width;
     canvas.height = img.height;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) {
+    const context = canvas.getContext('2d');
+    if (!context) {
       throw new Error('Could not get canvas context.');
     }
-    ctx.drawImage(img, 0, 0);
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    context.drawImage(img, 0, 0);
+    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
     const data = imageData?.data;
     if (!data) {
       throw new Error('Could not get image data.');
     }
-    for (let i = 0; i < data.length; i += 4) {
-      if (data[i + 3] < 255) {
+    for (let index = 0; index < data.length; index += 4) {
+      if (data[index + 3] < 255) {
         return true;
       }
     }
@@ -62,8 +62,8 @@
         message: 'Profile picture set.',
         timeout: 3000,
       });
-    } catch (err) {
-      handleError(err, 'Error setting profile picture.');
+    } catch (error) {
+      handleError(error, 'Error setting profile picture.');
     }
     dispatch('close');
   };

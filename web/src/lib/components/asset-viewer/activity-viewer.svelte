@@ -66,7 +66,7 @@
     close: void;
   }>();
 
-  $: showDeleteReaction = Array(reactions.length).fill(false);
+  $: showDeleteReaction = Array.from({ length: reactions.length }).fill(false);
   $: {
     if (innerHeight && activityHeight) {
       divHeight = innerHeight - activityHeight;
@@ -198,7 +198,7 @@
               {/if}
               {#if reaction.user.id === user.id || albumOwnerId === user.id}
                 <div class="flex items-start w-fit pt-[5px]" title="Delete comment">
-                  <button on:click={() => (!showDeleteReaction[index] ? showOptionsMenu(index) : '')}>
+                  <button on:click={() => (showDeleteReaction[index] ? '' : showOptionsMenu(index))}>
                     <Icon path={mdiDotsVertical} />
                   </button>
                 </div>
@@ -244,7 +244,7 @@
                 {/if}
                 {#if reaction.user.id === user.id || albumOwnerId === user.id}
                   <div class="flex items-start w-fit" title="Delete like">
-                    <button on:click={() => (!showDeleteReaction[index] ? showOptionsMenu(index) : '')}>
+                    <button on:click={() => (showDeleteReaction[index] ? '' : showOptionsMenu(index))}>
                       <Icon path={mdiDotsVertical} />
                     </button>
                   </div>

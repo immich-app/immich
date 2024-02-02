@@ -51,13 +51,15 @@ export class CommunicationRepository
 
   on(event: 'connect' | ServerEvent, callback: OnConnectCallback | OnServerEventCallback) {
     switch (event) {
-      case 'connect':
+      case 'connect': {
         this.onConnectCallbacks.push(callback);
         break;
+      }
 
-      default:
+      default: {
         this.onServerEventCallbacks[event].push(callback as OnServerEventCallback);
         break;
+      }
     }
   }
 

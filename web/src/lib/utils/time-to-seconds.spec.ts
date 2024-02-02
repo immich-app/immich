@@ -14,7 +14,7 @@ describe('converting time to seconds', () => {
   });
 
   it('parses hhh:mm:ss.SSS correctly', () => {
-    expect(timeToSeconds('100:02:03.456')).toBeCloseTo(360123.456);
+    expect(timeToSeconds('100:02:03.456')).toBeCloseTo(360_123.456);
   });
 
   it('ignores ignores double milliseconds hh:mm:ss.SSS.SSSSSS', () => {

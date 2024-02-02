@@ -11,11 +11,7 @@
   export let disabled = false;
 
   function handleCheckboxChange(option: string) {
-    if (value.includes(option)) {
-      value = value.filter((item) => item !== option);
-    } else {
-      value = [...value, option];
-    }
+    value = value.includes(option) ? value.filter((item) => item !== option) : [...value, option];
   }
 </script>
 

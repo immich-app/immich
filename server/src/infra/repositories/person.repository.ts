@@ -28,12 +28,7 @@ export class PersonRepository implements IPersonRepository {
       .createQueryBuilder()
       .update()
       .set({ personId: newPersonId })
-      .where(
-        _.omitBy(
-          { personId: oldPersonId ? oldPersonId : undefined, id: faceIds ? In(faceIds) : undefined },
-          _.isUndefined,
-        ),
-      )
+      .where(_.omitBy({ personId: oldPersonId ?? undefined, id: faceIds ? In(faceIds) : undefined }, _.isUndefined))
       .execute();
 
     return result.affected ?? 0;

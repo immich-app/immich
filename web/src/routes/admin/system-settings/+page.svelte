@@ -38,7 +38,7 @@
     downloadManager.add(downloadKey, blob.size);
     downloadManager.update(downloadKey, blob.size);
     downloadBlob(blob, downloadKey);
-    setTimeout(() => downloadManager.clear(downloadKey), 5_000);
+    setTimeout(() => downloadManager.clear(downloadKey), 5000);
   };
 
   const settings = [

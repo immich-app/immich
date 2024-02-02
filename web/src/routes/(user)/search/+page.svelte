@@ -56,7 +56,7 @@
     }
     if (!$showAssetViewer) {
       switch (event.key) {
-        case 'Escape':
+        case 'Escape': {
           if (isMultiSelectionMode) {
             selectedAssets = new Set();
             return;
@@ -66,6 +66,7 @@
           }
           $preventRaceConditionSearchBar = false;
           return;
+        }
       }
     }
   };
@@ -96,8 +97,8 @@
 
   let selectedAssets: Set<AssetResponseDto> = new Set();
   $: isMultiSelectionMode = selectedAssets.size > 0;
-  $: isAllArchived = Array.from(selectedAssets).every((asset) => asset.isArchived);
-  $: isAllFavorite = Array.from(selectedAssets).every((asset) => asset.isFavorite);
+  $: isAllArchived = [...selectedAssets].every((asset) => asset.isArchived);
+  $: isAllFavorite = [...selectedAssets].every((asset) => asset.isFavorite);
   $: searchResultAssets = data.results?.assets.items;
 
   const onAssetDelete = (assetId: string) => {
@@ -140,14 +141,14 @@
 
 <section class="relative mb-12 bg-immich-bg pt-32 dark:bg-immich-dark-bg">
   <section class="immich-scrollbar relative overflow-y-auto">
-    {#if albums && albums.length}
+    {#if albums && albums.length > 0}
       <section>
         <div class="ml-6 text-4xl font-medium text-black/70 dark:text-white/80">ALBUMS</div>
         <div class="grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))]">
-          {#each albums as album, idx (album.id)}
+          {#each albums as album, index (album.id)}
             <a data-sveltekit-preload-data="hover" href={`albums/${album.id}`} animate:flip={{ duration: 200 }}>
               <AlbumCard
-                preload={idx < 20}
+                preload={index < 20}
                 {album}
                 isSharingView={false}
                 showItemCount={false}

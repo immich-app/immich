@@ -19,7 +19,7 @@ import {
 } from '@test';
 
 import { newFSWatcherMock } from '@test/mocks';
-import { Stats } from 'fs';
+import { Stats } from 'node:fs';
 import { ILibraryFileJob, ILibraryRefreshJob, JobName } from '../job';
 import {
   IAssetRepository,
@@ -116,12 +116,15 @@ describe(LibraryService.name, () => {
 
       libraryMock.get.mockImplementation(async (id) => {
         switch (id) {
-          case libraryStub.externalLibraryWithImportPaths1.id:
+          case libraryStub.externalLibraryWithImportPaths1.id: {
             return libraryStub.externalLibraryWithImportPaths1;
-          case libraryStub.externalLibraryWithImportPaths2.id:
+          }
+          case libraryStub.externalLibraryWithImportPaths2.id: {
             return libraryStub.externalLibraryWithImportPaths2;
-          default:
+          }
+          default: {
             return null;
+          }
         }
       });
 
@@ -532,7 +535,7 @@ describe(LibraryService.name, () => {
     });
 
     it('should set a missing asset to offline', async () => {
-      storageMock.stat.mockRejectedValue(new Error());
+      storageMock.stat.mockRejectedValue(new Error('Path not found'));
 
       const mockLibraryJob: ILibraryFileJob = {
         id: assetStub.image.id,
@@ -1430,12 +1433,15 @@ describe(LibraryService.name, () => {
 
       libraryMock.get.mockImplementation(async (id) => {
         switch (id) {
-          case libraryStub.externalLibraryWithImportPaths1.id:
+          case libraryStub.externalLibraryWithImportPaths1.id: {
             return libraryStub.externalLibraryWithImportPaths1;
-          case libraryStub.externalLibraryWithImportPaths2.id:
+          }
+          case libraryStub.externalLibraryWithImportPaths2.id: {
             return libraryStub.externalLibraryWithImportPaths2;
-          default:
+          }
+          default: {
             return null;
+          }
         }
       });
 

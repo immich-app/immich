@@ -12,7 +12,7 @@
 
   const restoreUser = async () => {
     const restoredUser = await api.userApi.restoreUser({ id: user.id });
-    if (restoredUser.data.deletedAt == null) {
+    if (restoredUser.data.deletedAt == undefined) {
       dispatch('success');
     } else {
       dispatch('fail');

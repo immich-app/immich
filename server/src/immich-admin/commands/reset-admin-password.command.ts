@@ -13,20 +13,20 @@ export class ResetAdminPasswordCommand extends CommandRunner {
     super();
   }
 
-  async run(): Promise<void> {
-    const ask = (admin: UserResponseDto) => {
-      const { id, oauthId, email, name } = admin;
-      console.log(`Found Admin:
+  ask = (admin: UserResponseDto) => {
+    const { id, oauthId, email, name } = admin;
+    console.log(`Found Admin:
 - ID=${id}
 - OAuth ID=${oauthId}
 - Email=${email}
 - Name=${name}`);
 
-      return this.inquirer.ask<{ password: string }>('prompt-password', undefined).then(({ password }) => password);
-    };
+    return this.inquirer.ask<{ password: string }>('prompt-password', {}).then(({ password }) => password);
+  };
 
+  async run(): Promise<void> {
     try {
-      const { password, provided } = await this.userService.resetAdminPassword(ask);
+      const { password, provided } = await this.userService.resetAdminPassword(this.ask);
 
       if (provided) {
         console.log(`The admin password has been updated.`);
@@ -46,7 +46,7 @@ export class PromptPasswordQuestions {
     message: 'Please choose a new password (optional)',
     name: 'password',
   })
-  parsePassword(val: string) {
-    return val;
+  parsePassword(value: string) {
+    return value;
   }
 }

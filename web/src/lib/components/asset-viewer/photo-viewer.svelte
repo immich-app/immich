@@ -20,7 +20,7 @@
   let assetData: string;
   let abortController: AbortController;
   let hasZoomed = false;
-  let copyImageToClipboard: (src: string) => Promise<Blob>;
+  let copyImageToClipboard: (source: string) => Promise<Blob>;
   let canCopyImagesToClipboard: () => boolean;
 
   $: if (imgElement) {
@@ -90,8 +90,8 @@
         message: 'Copied image to clipboard.',
         timeout: 3000,
       });
-    } catch (err) {
-      console.error('Error [photo-viewer]:', err);
+    } catch (error) {
+      console.error('Error [photo-viewer]:', error);
       notificationController.show({
         type: NotificationType.Error,
         message: 'Copying image to clipboard failed.',

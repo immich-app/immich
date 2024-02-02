@@ -65,8 +65,8 @@ function createUploadStore() {
     });
   };
 
-  const updateAsset = (id: string, partialObj: Partial<UploadAsset>) => {
-    updateAssetMap(id, (v) => ({ ...v, ...partialObj }));
+  const updateAsset = (id: string, partialObject: Partial<UploadAsset>) => {
+    updateAssetMap(id, (v) => ({ ...v, ...partialObject }));
   };
 
   const removeUploadAsset = (id: string) => {

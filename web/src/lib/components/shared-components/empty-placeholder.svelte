@@ -7,7 +7,7 @@
   export let fullWidth = false;
   export let src = empty1Url;
 
-  const noop = () => undefined;
+  const noop = () => {};
 
   $: handler = actionHandler || noop;
   $: width = fullWidth ? 'w-full' : 'w-[50%]';

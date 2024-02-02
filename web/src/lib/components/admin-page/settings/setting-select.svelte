@@ -17,7 +17,7 @@
   const handleChange = (e: Event) => {
     value = (e.target as HTMLInputElement).value;
     if (number) {
-      value = parseInt(value);
+      value = Number.parseInt(value);
     }
     dispatch('select', value);
   };

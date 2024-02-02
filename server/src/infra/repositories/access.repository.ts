@@ -167,7 +167,7 @@ class AlbumAccess implements IAlbumAccess {
           })
           .then(
             (sharedLinks) =>
-              new Set(sharedLinks.flatMap((sharedLink) => (!!sharedLink.albumId ? [sharedLink.albumId] : []))),
+              new Set(sharedLinks.flatMap((sharedLink) => (sharedLink.albumId ? [sharedLink.albumId] : []))),
           ),
       ),
     ).then((results) => setUnion(...results));

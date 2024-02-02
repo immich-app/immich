@@ -83,11 +83,12 @@
     }
     if (!$showAssetViewer) {
       switch (event.key) {
-        case 'Escape':
+        case 'Escape': {
           if ($isMultiSelectState) {
             assetInteractionStore.clearMultiselect();
           }
           return;
+        }
       }
     }
   };

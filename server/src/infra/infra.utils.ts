@@ -59,21 +59,25 @@ export const isValidInteger = (value: number, options: { min?: number; max?: num
 export function Chunked(options: { paramIndex?: number; mergeFn?: (results: any) => any } = {}): MethodDecorator {
   return (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) => {
     const originalMethod = descriptor.value;
-    const paramIndex = options.paramIndex ?? 0;
-    descriptor.value = async function (...args: any[]) {
-      const arg = args[paramIndex];
+    const parameterIndex = options.paramIndex ?? 0;
+    descriptor.value = async function (...arguments_: any[]) {
+      const argument = arguments_[parameterIndex];
 
       // Early return if argument length is less than or equal to the chunk size.
       if (
-        (arg instanceof Array && arg.length <= DATABASE_PARAMETER_CHUNK_SIZE) ||
-        (arg instanceof Set && arg.size <= DATABASE_PARAMETER_CHUNK_SIZE)
+        (Array.isArray(argument) && argument.length <= DATABASE_PARAMETER_CHUNK_SIZE) ||
+        (argument instanceof Set && argument.size <= DATABASE_PARAMETER_CHUNK_SIZE)
       ) {
-        return await originalMethod.apply(this, args);
+        return await originalMethod.apply(this, arguments_);
       }
 
       return Promise.all(
-        chunks(arg, DATABASE_PARAMETER_CHUNK_SIZE).map(async (chunk) => {
-          await originalMethod.apply(this, [...args.slice(0, paramIndex), chunk, ...args.slice(paramIndex + 1)]);
+        chunks(argument, DATABASE_PARAMETER_CHUNK_SIZE).map(async (chunk) => {
+          await Reflect.apply(originalMethod, this, [
+            ...arguments_.slice(0, parameterIndex),
+            chunk,
+            ...arguments_.slice(parameterIndex + 1),
+          ]);
         }),
       ).then((results) => (options.mergeFn ? options.mergeFn(results) : results));
     };

@@ -16,11 +16,7 @@
   }>();
 
   $: isSelected = (id: string): boolean | undefined => {
-    if (!selectedThumbnail && album.albumThumbnailAssetId == id) {
-      return true;
-    } else {
-      return selectedThumbnail?.id == id;
-    }
+    return !selectedThumbnail && album.albumThumbnailAssetId == id ? true : selectedThumbnail?.id == id;
   };
 </script>
 

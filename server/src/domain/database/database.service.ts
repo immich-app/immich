@@ -50,14 +50,14 @@ export class DatabaseService {
   }
 
   private async createVectors() {
-    await this.databaseRepository.createExtension(DatabaseExtension.VECTORS).catch(async (err: QueryFailedError) => {
+    await this.databaseRepository.createExtension(DatabaseExtension.VECTORS).catch(async (error: QueryFailedError) => {
       const image = await this.getVectorsImage();
       this.logger.fatal(`
         Failed to create pgvecto.rs extension.
         If you have not updated your Postgres instance to a docker image that supports pgvecto.rs (such as '${image}'), please do so.
         See the v1.91.0 release notes for more info: https://github.com/immich-app/immich/releases/tag/v1.91.0'
       `);
-      throw err;
+      throw error;
     });
   }
 

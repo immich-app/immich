@@ -22,7 +22,7 @@
 
   onMount(async () => {
     await load();
-    timer = setInterval(load, 5_000);
+    timer = setInterval(load, 5000);
   });
 
   onDestroy(() => {

@@ -44,9 +44,7 @@
 
   $: timelineY = element?.scrollTop || 0;
   $: isEmpty = $assetStore.initialized && $assetStore.buckets.length === 0;
-  $: idsSelectedAssets = Array.from($selectedAssets)
-    .filter((a) => !a.isExternal)
-    .map((a) => a.id);
+  $: idsSelectedAssets = [...$selectedAssets].filter((a) => !a.isExternal).map((a) => a.id);
 
   const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
   const dispatch = createEventDispatcher<{ select: AssetResponseDto; escape: void }>();
@@ -86,20 +84,23 @@
 
     if (!$showAssetViewer) {
       switch (key) {
-        case 'Escape':
+        case 'Escape': {
           dispatch('escape');
           return;
-        case '?':
+        }
+        case '?': {
           if (event.shiftKey) {
             event.preventDefault();
             showShortcuts = !showShortcuts;
           }
           return;
-        case '/':
+        }
+        case '/': {
           event.preventDefault();
           goto(AppRoute.EXPLORE);
           return;
-        case 'Delete':
+        }
+        case 'Delete': {
           if ($isMultiSelectState) {
             let force = false;
             if (shiftKey || !isTrashEnabled) {
@@ -113,6 +114,7 @@
             trashOrDelete(force);
           }
           return;
+        }
       }
     }
   };
@@ -124,8 +126,8 @@
   };
 
   function intersectedHandler(event: CustomEvent) {
-    const el = event.detail.container as HTMLElement;
-    const target = el.firstChild as HTMLElement;
+    const element_ = event.detail.container as HTMLElement;
+    const target = element_.firstChild as HTMLElement;
     if (target) {
       const bucketDate = target.id.split('_')[1];
       assetStore.loadBucket(bucketDate, event.detail.position);
@@ -160,24 +162,27 @@
     switch (action) {
       case removeAction:
       case AssetAction.TRASH:
-      case AssetAction.DELETE:
+      case AssetAction.DELETE: {
         // find the next asset to show or close the viewer
         (await handleNext()) || (await handlePrevious()) || handleClose();
 
         // delete after find the next one
         assetStore.removeAsset(asset.id);
         break;
+      }
 
       case AssetAction.ARCHIVE:
       case AssetAction.UNARCHIVE:
       case AssetAction.FAVORITE:
-      case AssetAction.UNFAVORITE:
+      case AssetAction.UNFAVORITE: {
         assetStore.updateAsset(asset);
         break;
+      }
 
-      case AssetAction.ADD:
+      case AssetAction.ADD: {
         assetStore.addAsset(asset);
         break;
+      }
     }
   };
 
@@ -392,7 +397,7 @@
     <div class="mt-8 animate-pulse">
       <div class="mb-2 h-4 w-24 rounded-full bg-immich-primary/20 dark:bg-immich-dark-primary/20" />
       <div class="flex w-[120%] flex-wrap">
-        {#each Array(100) as _}
+        {#each Array.from({ length: 100 }) as _}
           <div class="m-[1px] h-[10em] w-[16em] bg-immich-primary/20 dark:bg-immich-dark-primary/20" />
         {/each}
       </div>
