@@ -70,7 +70,7 @@
       <p class="flex text-lg text-immich-fg dark:text-immich-dark-fg">Faces available</p>
     </div>
   </div>
-  {#if unassignedFaces.some((face) => face)}
+  {#if unassignedFaces.some(Boolean)}
     <div class="px-4 py-4 text-sm">
       <div class="mt-4 flex flex-wrap gap-2">
         {#each unassignedFaces as face, index}

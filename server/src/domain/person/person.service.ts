@@ -40,6 +40,7 @@ import {
   PersonSearchDto,
   PersonStatisticsResponseDto,
   PersonUpdateDto,
+  ReassignFaceDto,
   mapFaces,
   mapPerson,
 } from './person.dto';
@@ -98,14 +99,14 @@ export class PersonService {
     return this.repository.create({ ownerId: auth.user.id });
   }
 
-  async reassignFace(authUser: AuthDto, personId: string, dto: FaceDto): Promise<PersonResponseDto> {
-    await this.access.requirePermission(authUser, Permission.PERSON_WRITE, personId);
+  async reassignFace(auth: AuthDto, faceId: string, dto: ReassignFaceDto): Promise<PersonResponseDto> {
+    await this.access.requirePermission(auth, Permission.PERSON_WRITE, dto.personId);
 
-    await this.access.requirePermission(authUser, Permission.PERSON_CREATE, dto.id);
-    const face = await this.repository.getFaceById(dto.id);
-    const person = await this.findOrFail(personId);
+    await this.access.requirePermission(auth, Permission.PERSON_CREATE, faceId);
+    const face = await this.repository.getFaceById(faceId);
+    const person = await this.findOrFail(dto.personId);
 
-    await this.repository.reassignFace(face.id, personId);
+    await this.repository.reassignFace(face.id, dto.personId);
     if (person.faceAssetId === null) {
       await this.createNewFeaturePhoto([person.id]);
     }
@@ -113,11 +114,11 @@ export class PersonService {
       await this.createNewFeaturePhoto([face.person.id]);
     }
 
-    return await this.findOrFail(personId).then(mapPerson);
+    return this.findOrFail(dto.personId).then(mapPerson);
   }
 
-  async reassignFaces(authUser: AuthDto, personId: string, dto: AssetFaceUpdateDto): Promise<PersonResponseDto[]> {
-    await this.access.requirePermission(authUser, Permission.PERSON_WRITE, personId);
+  async reassignFaces(auth: AuthDto, personId: string, dto: AssetFaceUpdateDto): Promise<PersonResponseDto[]> {
+    await this.access.requirePermission(auth, Permission.PERSON_WRITE, personId);
     const person = await this.findOrFail(personId);
     const result: PersonResponseDto[] = [];
     const changeFeaturePhoto: string[] = [];
@@ -125,7 +126,7 @@ export class PersonService {
       const faces = await this.repository.getFacesByIds([{ personId: data.personId, assetId: data.assetId }]);
 
       for (const face of faces) {
-        await this.access.requirePermission(authUser, Permission.PERSON_CREATE, face.id);
+        await this.access.requirePermission(auth, Permission.PERSON_CREATE, face.id);
         if (person.faceAssetId === null) {
           changeFeaturePhoto.push(person.id);
         }
@@ -145,11 +146,11 @@ export class PersonService {
     return result;
   }
 
-  async unassignFace(authUser: AuthDto, id: string): Promise<AssetFaceResponseDto> {
+  async unassignFace(auth: AuthDto, id: string): Promise<AssetFaceResponseDto> {
     let face = await this.repository.getFaceById(id);
-    await this.access.requirePermission(authUser, Permission.PERSON_CREATE, face.id);
+    await this.access.requirePermission(auth, Permission.PERSON_CREATE, face.id);
     if (face.personId) {
-      await this.access.requirePermission(authUser, Permission.PERSON_WRITE, face.personId);
+      await this.access.requirePermission(auth, Permission.PERSON_WRITE, face.personId);
     }
 
     await this.repository.reassignFace(face.id, null);
@@ -157,10 +158,10 @@ export class PersonService {
       await this.createNewFeaturePhoto([face.person.id]);
     }
     face = await this.repository.getFaceById(id);
-    return mapFaces(face, authUser);
+    return mapFaces(face, auth);
   }
 
-  async unassignFaces(authUser: AuthDto, dto: AssetFaceUpdateDto): Promise<BulkIdResponseDto[]> {
+  async unassignFaces(auth: AuthDto, dto: AssetFaceUpdateDto): Promise<BulkIdResponseDto[]> {
     const changeFeaturePhoto: string[] = [];
     const results: BulkIdResponseDto[] = [];
 
@@ -168,9 +169,9 @@ export class PersonService {
       const faces = await this.repository.getFacesByIds([{ personId: data.personId, assetId: data.assetId }]);
 
       for (const face of faces) {
-        await this.access.requirePermission(authUser, Permission.PERSON_CREATE, face.id);
+        await this.access.requirePermission(auth, Permission.PERSON_CREATE, face.id);
         if (face.personId) {
-          await this.access.requirePermission(authUser, Permission.PERSON_WRITE, face.personId);
+          await this.access.requirePermission(auth, Permission.PERSON_WRITE, face.personId);
         }
 
         await this.repository.reassignFace(face.id, null);
@@ -182,15 +183,15 @@ export class PersonService {
     }
     if (changeFeaturePhoto.length > 0) {
       // Remove duplicates
-      await this.createNewFeaturePhoto(Array.from(new Set(changeFeaturePhoto)));
+      await this.createNewFeaturePhoto([...changeFeaturePhoto]);
     }
 
     return results;
   }
 
   async getFacesById(auth: AuthDto, dto: FaceDto): Promise<AssetFaceResponseDto[]> {
-    await this.access.requirePermission(auth, Permission.ASSET_READ, dto.id);
-    const faces = await this.repository.getFaces(dto.id);
+    await this.access.requirePermission(auth, Permission.ASSET_READ, dto.faceId);
+    const faces = await this.repository.getFaces(dto.faceId);
     return faces.map((asset) => mapFaces(asset, auth));
   }
 

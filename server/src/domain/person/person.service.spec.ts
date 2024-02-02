@@ -441,14 +441,14 @@ describe(PersonService.name, () => {
     it('should get the bounding boxes for an asset', async () => {
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set([faceStub.face1.assetId]));
       personMock.getFaces.mockResolvedValue([faceStub.primaryFace1]);
-      await expect(sut.getFacesById(authStub.admin, { id: faceStub.face1.assetId })).resolves.toStrictEqual([
+      await expect(sut.getFacesById(authStub.admin, { faceId: faceStub.face1.assetId })).resolves.toStrictEqual([
         mapFaces(faceStub.primaryFace1, authStub.admin),
       ]);
     });
     it('should reject if the user has not access to the asset', async () => {
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set());
       personMock.getFaces.mockResolvedValue([faceStub.primaryFace1]);
-      await expect(sut.getFacesById(authStub.admin, { id: faceStub.primaryFace1.assetId })).rejects.toBeInstanceOf(
+      await expect(sut.getFacesById(authStub.admin, { faceId: faceStub.primaryFace1.assetId })).rejects.toBeInstanceOf(
         BadRequestException,
       );
     });
@@ -476,8 +476,8 @@ describe(PersonService.name, () => {
       personMock.getById.mockResolvedValue(personStub.noName);
       personMock.getRandomFace.mockResolvedValue(null);
       await expect(
-        sut.reassignFace(authStub.admin, personStub.noName.id, {
-          id: faceStub.face1.id,
+        sut.reassignFace(authStub.admin, faceStub.face1.id, {
+          personId: personStub.noName.id,
         }),
       ).resolves.toEqual({
         birthDate: personStub.noName.birthDate,
@@ -498,8 +498,8 @@ describe(PersonService.name, () => {
       personMock.getById.mockResolvedValue(personStub.noName);
       personMock.getRandomFace.mockResolvedValue(null);
       await expect(
-        sut.reassignFace(authStub.admin, personStub.noName.id, {
-          id: faceStub.face1.id,
+        sut.reassignFace(authStub.admin, faceStub.face1.id, {
+          personId: personStub.noName.id,
         }),
       ).rejects.toBeInstanceOf(BadRequestException);
 
@@ -545,34 +545,6 @@ describe(PersonService.name, () => {
       await expect(
         sut.unassignFaces(authStub.admin, { data: [{ assetId: faceStub.face1.id, personId: 'person-1' }] }),
       ).resolves.toStrictEqual([{ id: 'assetFaceId', success: true }]);
-    });
-  });
-
-  describe('handlePersonDelete', () => {
-    it('should stop if a person has not be found', async () => {
-      personMock.getById.mockResolvedValue(null);
-
-      await expect(sut.handlePersonDelete({ id: 'person-1' })).resolves.toBe(false);
-      expect(personMock.update).not.toHaveBeenCalled();
-      expect(storageMock.unlink).not.toHaveBeenCalled();
-    });
-    it('should delete a person', async () => {
-      personMock.getById.mockResolvedValue(personStub.primaryPerson);
-
-      await expect(sut.handlePersonDelete({ id: 'person-1' })).resolves.toBe(true);
-      expect(personMock.delete).toHaveBeenCalledWith(personStub.primaryPerson);
-      expect(storageMock.unlink).toHaveBeenCalledWith(personStub.primaryPerson.thumbnailPath);
-    });
-  });
-
-  describe('handlePersonDelete', () => {
-    it('should delete person', async () => {
-      personMock.getById.mockResolvedValue(personStub.withName);
-
-      await sut.handlePersonDelete({ id: personStub.withName.id });
-
-      expect(personMock.delete).toHaveBeenCalledWith(personStub.withName);
-      expect(storageMock.unlink).toHaveBeenCalledWith(personStub.withName.thumbnailPath);
     });
   });
 

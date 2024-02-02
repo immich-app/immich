@@ -1790,19 +1790,6 @@ export interface ExifResponseDto {
 /**
  * 
  * @export
- * @interface FaceDto
- */
-export interface FaceDto {
-    /**
-     * 
-     * @type {string}
-     * @memberof FaceDto
-     */
-    'id': string;
-}
-/**
- * 
- * @export
  * @interface FileChecksumDto
  */
 export interface FileChecksumDto {
@@ -2824,6 +2811,19 @@ export const ReactionType = {
 export type ReactionType = typeof ReactionType[keyof typeof ReactionType];
 
 
+/**
+ * 
+ * @export
+ * @interface ReassignFaceDto
+ */
+export interface ReassignFaceDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof ReassignFaceDto
+     */
+    'personId': string;
+}
 /**
  * 
  * @export
@@ -12185,13 +12185,13 @@ export const FaceApiAxiosParamCreator = function (configuration?: Configuration)
     return {
         /**
          * 
-         * @param {string} id 
+         * @param {string} faceId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getFaces: async (id: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'id' is not null or undefined
-            assertParamExists('getFaces', 'id', id)
+        getFaces: async (faceId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'faceId' is not null or undefined
+            assertParamExists('getFaces', 'faceId', faceId)
             const localVarPath = `/face`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -12213,8 +12213,8 @@ export const FaceApiAxiosParamCreator = function (configuration?: Configuration)
             // http bearer authentication required
             await setBearerAuthToObject(localVarHeaderParameter, configuration)
 
-            if (id !== undefined) {
-                localVarQueryParameter['id'] = id;
+            if (faceId !== undefined) {
+                localVarQueryParameter['faceId'] = faceId;
             }
 
 
@@ -12231,15 +12231,15 @@ export const FaceApiAxiosParamCreator = function (configuration?: Configuration)
         /**
          * 
          * @param {string} id 
-         * @param {FaceDto} faceDto 
+         * @param {ReassignFaceDto} reassignFaceDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        reassignFace: async (id: string, faceDto: FaceDto, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        reassignFace: async (id: string, reassignFaceDto: ReassignFaceDto, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
             assertParamExists('reassignFace', 'id', id)
-            // verify required parameter 'faceDto' is not null or undefined
-            assertParamExists('reassignFace', 'faceDto', faceDto)
+            // verify required parameter 'reassignFaceDto' is not null or undefined
+            assertParamExists('reassignFace', 'reassignFaceDto', reassignFaceDto)
             const localVarPath = `/face/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -12269,7 +12269,7 @@ export const FaceApiAxiosParamCreator = function (configuration?: Configuration)
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(faceDto, localVarRequestOptions, configuration)
+            localVarRequestOptions.data = serializeDataIfNeeded(reassignFaceDto, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -12330,12 +12330,12 @@ export const FaceApiFp = function(configuration?: Configuration) {
     return {
         /**
          * 
-         * @param {string} id 
+         * @param {string} faceId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getFaces(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetFaceResponseDto>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getFaces(id, options);
+        async getFaces(faceId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetFaceResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getFaces(faceId, options);
             const index = configuration?.serverIndex ?? 0;
             const operationBasePath = operationServerMap['FaceApi.getFaces']?.[index]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, operationBasePath || basePath);
@@ -12343,12 +12343,12 @@ export const FaceApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @param {string} id 
-         * @param {FaceDto} faceDto 
+         * @param {ReassignFaceDto} reassignFaceDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async reassignFace(id: string, faceDto: FaceDto, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PersonResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.reassignFace(id, faceDto, options);
+        async reassignFace(id: string, reassignFaceDto: ReassignFaceDto, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PersonResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.reassignFace(id, reassignFaceDto, options);
             const index = configuration?.serverIndex ?? 0;
             const operationBasePath = operationServerMap['FaceApi.reassignFace']?.[index]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, operationBasePath || basePath);
@@ -12382,7 +12382,7 @@ export const FaceApiFactory = function (configuration?: Configuration, basePath?
          * @throws {RequiredError}
          */
         getFaces(requestParameters: FaceApiGetFacesRequest, options?: RawAxiosRequestConfig): AxiosPromise<Array<AssetFaceResponseDto>> {
-            return localVarFp.getFaces(requestParameters.id, options).then((request) => request(axios, basePath));
+            return localVarFp.getFaces(requestParameters.faceId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -12391,7 +12391,7 @@ export const FaceApiFactory = function (configuration?: Configuration, basePath?
          * @throws {RequiredError}
          */
         reassignFace(requestParameters: FaceApiReassignFaceRequest, options?: RawAxiosRequestConfig): AxiosPromise<PersonResponseDto> {
-            return localVarFp.reassignFace(requestParameters.id, requestParameters.faceDto, options).then((request) => request(axios, basePath));
+            return localVarFp.reassignFace(requestParameters.id, requestParameters.reassignFaceDto, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -12416,7 +12416,7 @@ export interface FaceApiGetFacesRequest {
      * @type {string}
      * @memberof FaceApiGetFaces
      */
-    readonly id: string
+    readonly faceId: string
 }
 
 /**
@@ -12434,10 +12434,10 @@ export interface FaceApiReassignFaceRequest {
 
     /**
      * 
-     * @type {FaceDto}
+     * @type {ReassignFaceDto}
      * @memberof FaceApiReassignFace
      */
-    readonly faceDto: FaceDto
+    readonly reassignFaceDto: ReassignFaceDto
 }
 
 /**
@@ -12469,7 +12469,7 @@ export class FaceApi extends BaseAPI {
      * @memberof FaceApi
      */
     public getFaces(requestParameters: FaceApiGetFacesRequest, options?: RawAxiosRequestConfig) {
-        return FaceApiFp(this.configuration).getFaces(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
+        return FaceApiFp(this.configuration).getFaces(requestParameters.faceId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -12480,7 +12480,7 @@ export class FaceApi extends BaseAPI {
      * @memberof FaceApi
      */
     public reassignFace(requestParameters: FaceApiReassignFaceRequest, options?: RawAxiosRequestConfig) {
-        return FaceApiFp(this.configuration).reassignFace(requestParameters.id, requestParameters.faceDto, options).then((request) => request(this.axios, this.basePath));
+        return FaceApiFp(this.configuration).reassignFace(requestParameters.id, requestParameters.reassignFaceDto, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

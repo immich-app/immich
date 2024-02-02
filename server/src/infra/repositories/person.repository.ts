@@ -133,7 +133,7 @@ export class PersonRepository implements IPersonRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
-  async reassignFace(assetFaceId: string, newPersonId: string): Promise<number> {
+  async reassignFace(assetFaceId: string, newPersonId: string | null): Promise<number> {
     const result = await this.assetFaceRepository
       .createQueryBuilder()
       .update()

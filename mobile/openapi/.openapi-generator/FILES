@@ -65,7 +65,6 @@ doc/DownloadResponseDto.md
 doc/EntityType.md
 doc/ExifResponseDto.md
 doc/FaceApi.md
-doc/FaceDto.md
 doc/FileChecksumDto.md
 doc/FileChecksumResponseDto.md
 doc/FileReportDto.md
@@ -112,6 +111,7 @@ doc/PersonWithFacesResponseDto.md
 doc/QueueStatusDto.md
 doc/ReactionLevel.md
 doc/ReactionType.md
+doc/ReassignFaceDto.md
 doc/RecognitionConfig.md
 doc/ScanLibraryDto.md
 doc/SearchAlbumResponseDto.md
@@ -266,7 +266,6 @@ lib/model/download_info_dto.dart
 lib/model/download_response_dto.dart
 lib/model/entity_type.dart
 lib/model/exif_response_dto.dart
-lib/model/face_dto.dart
 lib/model/file_checksum_dto.dart
 lib/model/file_checksum_response_dto.dart
 lib/model/file_report_dto.dart
@@ -308,6 +307,7 @@ lib/model/person_with_faces_response_dto.dart
 lib/model/queue_status_dto.dart
 lib/model/reaction_level.dart
 lib/model/reaction_type.dart
+lib/model/reassign_face_dto.dart
 lib/model/recognition_config.dart
 lib/model/scan_library_dto.dart
 lib/model/search_album_response_dto.dart
@@ -434,7 +434,6 @@ test/download_response_dto_test.dart
 test/entity_type_test.dart
 test/exif_response_dto_test.dart
 test/face_api_test.dart
-test/face_dto_test.dart
 test/file_checksum_dto_test.dart
 test/file_checksum_response_dto_test.dart
 test/file_report_dto_test.dart
@@ -481,6 +480,7 @@ test/person_with_faces_response_dto_test.dart
 test/queue_status_dto_test.dart
 test/reaction_level_test.dart
 test/reaction_type_test.dart
+test/reassign_face_dto_test.dart
 test/recognition_config_test.dart
 test/scan_library_dto_test.dart
 test/search_album_response_dto_test.dart

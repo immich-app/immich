@@ -17,12 +17,12 @@ void main() {
   // final instance = FaceApi();
 
   group('tests for FaceApi', () {
-    //Future<List<AssetFaceResponseDto>> getFaces(String id) async
+    //Future<List<AssetFaceResponseDto>> getFaces(String faceId) async
     test('test getFaces', () async {
       // TODO
     });
 
-    //Future<PersonResponseDto> reassignFace(String id, FaceDto faceDto) async
+    //Future<PersonResponseDto> reassignFace(String id, ReassignFaceDto reassignFaceDto) async
     test('test reassignFace', () async {
       // TODO
     });

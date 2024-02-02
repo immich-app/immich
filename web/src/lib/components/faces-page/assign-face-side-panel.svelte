@@ -9,7 +9,7 @@
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import { getPersonNameWithHiddenValue, searchNameLocal, zoomImageToBase64 } from '$lib/utils/person';
   import { handleError } from '$lib/utils/handle-error';
-  import { currentAsset, photoViewer } from '$lib/stores/assets.store';
+  import { currentAsset } from '$lib/stores/assets.store';
   import { maximumLengthSearchPeople, timeBeforeShowLoadingSpinner } from '$lib/constants';
 
   export let personWithFace: AssetFaceResponseDto;
@@ -51,9 +51,8 @@
     }
 
     const timeout = setTimeout(() => (isShowLoadingNewPerson = true), timeBeforeShowLoadingSpinner);
-    const personToUpdate = peopleWithFaces.find((person) => person.id === peopleWithFaces[editedPersonIndex].id);
 
-    const newFeaturePhoto = await zoomImageToBase64(personWithFace, $photoViewer, $currentAsset.type, $currentAsset.id);
+    const newFeaturePhoto = await zoomImageToBase64(personWithFace, $currentAsset.type, $currentAsset.id);
 
     clearTimeout(timeout);
     isShowLoadingNewPerson = false;

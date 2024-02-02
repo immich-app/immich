@@ -3376,7 +3376,7 @@
         "operationId": "getFaces",
         "parameters": [
           {
-            "name": "id",
+            "name": "faceId",
             "required": true,
             "in": "query",
             "schema": {
@@ -3474,7 +3474,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/FaceDto"
+                "$ref": "#/components/schemas/ReassignFaceDto"
               }
             }
           },
@@ -8011,18 +8011,6 @@
         },
         "type": "object"
       },
-      "FaceDto": {
-        "properties": {
-          "id": {
-            "format": "uuid",
-            "type": "string"
-          }
-        },
-        "required": [
-          "id"
-        ],
-        "type": "object"
-      },
       "FileChecksumDto": {
         "properties": {
           "filenames": {
@@ -8818,6 +8806,18 @@
           "like"
         ],
         "type": "string"
+      },
+      "ReassignFaceDto": {
+        "properties": {
+          "personId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "personId"
+        ],
+        "type": "object"
       },
       "RecognitionConfig": {
         "properties": {

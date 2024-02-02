@@ -107,7 +107,12 @@ export class AssetFaceResponseDto extends AssetFaceWithoutPersonResponseDto {
 
 export class FaceDto {
   @ValidateUUID()
-  id!: string;
+  faceId!: string;
+}
+
+export class ReassignFaceDto {
+  @ValidateUUID()
+  personId!: string;
 }
 
 export class AssetFaceUpdateDto {

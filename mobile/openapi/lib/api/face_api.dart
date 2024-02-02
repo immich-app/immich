@@ -19,8 +19,8 @@ class FaceApi {
   /// Performs an HTTP 'GET /face' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [String] id (required):
-  Future<Response> getFacesWithHttpInfo(String id,) async {
+  /// * [String] faceId (required):
+  Future<Response> getFacesWithHttpInfo(String faceId,) async {
     // ignore: prefer_const_declarations
     final path = r'/face';
 
@@ -31,7 +31,7 @@ class FaceApi {
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-      queryParams.addAll(_queryParams('', 'id', id));
+      queryParams.addAll(_queryParams('', 'faceId', faceId));
 
     const contentTypes = <String>[];
 
@@ -49,9 +49,9 @@ class FaceApi {
 
   /// Parameters:
   ///
-  /// * [String] id (required):
-  Future<List<AssetFaceResponseDto>?> getFaces(String id,) async {
-    final response = await getFacesWithHttpInfo(id,);
+  /// * [String] faceId (required):
+  Future<List<AssetFaceResponseDto>?> getFaces(String faceId,) async {
+    final response = await getFacesWithHttpInfo(faceId,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -73,14 +73,14 @@ class FaceApi {
   ///
   /// * [String] id (required):
   ///
-  /// * [FaceDto] faceDto (required):
-  Future<Response> reassignFaceWithHttpInfo(String id, FaceDto faceDto,) async {
+  /// * [ReassignFaceDto] reassignFaceDto (required):
+  Future<Response> reassignFaceWithHttpInfo(String id, ReassignFaceDto reassignFaceDto,) async {
     // ignore: prefer_const_declarations
     final path = r'/face/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
-    Object? postBody = faceDto;
+    Object? postBody = reassignFaceDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
@@ -104,9 +104,9 @@ class FaceApi {
   ///
   /// * [String] id (required):
   ///
-  /// * [FaceDto] faceDto (required):
-  Future<PersonResponseDto?> reassignFace(String id, FaceDto faceDto,) async {
-    final response = await reassignFaceWithHttpInfo(id, faceDto,);
+  /// * [ReassignFaceDto] reassignFaceDto (required):
+  Future<PersonResponseDto?> reassignFace(String id, ReassignFaceDto reassignFaceDto,) async {
+    final response = await reassignFaceWithHttpInfo(id, reassignFaceDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

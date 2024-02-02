@@ -13,13 +13,11 @@
   import { websocketStore } from '$lib/stores/websocket';
   import AssignFaceSidePanel from './assign-face-side-panel.svelte';
   import { getPersonNameWithHiddenValue, zoomImageToBase64 } from '$lib/utils/person';
-  import { currentAsset, photoViewer } from '$lib/stores/assets.store';
+  import { currentAsset } from '$lib/stores/assets.store';
   import UnassignedFacesSidePannel from './unassigned-faces-side-pannel.svelte';
   import type { FaceWithGeneretedThumbnail } from '$lib/utils/people-utils';
   import Button from '../elements/buttons/button.svelte';
   import { timeBeforeShowLoadingSpinner } from '$lib/constants';
-
-
 
   // keep track of the changes
   let idsOfPersonToCreate: string[] = [];
@@ -58,7 +56,7 @@
 
   // Reset value
   $onPersonThumbnail = '';
-  $: numberOfFacesToUnassign = selectedPersonToRemove ? selectedPersonToRemove.filter((value) => value).length : 0;
+  $: numberOfFacesToUnassign = selectedPersonToRemove ? selectedPersonToRemove.filter(Boolean).length : 0;
   $: {
     if ($onPersonThumbnail) {
       idsOfAssetFaceGenerated.push($onPersonThumbnail);
@@ -85,23 +83,22 @@
     try {
       const { data } = await api.personApi.getAllPeople({ withHidden: true });
       allPeople = data.people;
-      const result = await api.faceApi.getFaces({ id: $currentAsset.id });
+      const result = await api.faceApi.getFaces({ faceId: $currentAsset.id });
       peopleWithFaces = result.data;
       selectedPersonToCreate = Array.from({ length: peopleWithFaces.length });
       selectedPersonToReassign = Array.from({ length: peopleWithFaces.length });
-      selectedPersonToRemove = new Array<boolean>(peopleWithFaces.length);
-      unassignedFaces = (
-        await Promise.all(
-          peopleWithFaces.map(async (personWithFace) => {
-            if (personWithFace.person || $currentAsset === null) {
-              return null;
-            } else {
-              const image = await zoomImageToBase64(personWithFace, $photoViewer, $currentAsset.type, $currentAsset.id);
-              return image ? { ...personWithFace, customThumbnail: image } : null;
-            }
-          }),
-        )
-      ).filter((item): item is FaceWithGeneretedThumbnail => item !== null);
+      selectedPersonToRemove = Array.from({ length: peopleWithFaces.length });
+      const peopleWithGeneratedImage = await Promise.all(
+        peopleWithFaces.map(async (personWithFace) => {
+          if (personWithFace.person || $currentAsset === null) {
+            return null;
+          } else {
+            const image = await zoomImageToBase64(personWithFace, $currentAsset.type, $currentAsset.id);
+            return image ? { ...personWithFace, customThumbnail: image } : null;
+          }
+        }),
+      );
+      unassignedFaces = peopleWithGeneratedImage.filter((item): item is FaceWithGeneretedThumbnail => item !== null);
     } catch (error) {
       handleError(error, "Can't get faces");
     } finally {
@@ -117,7 +114,7 @@
   const handleBackButton = () => {
     if (isSelectingFaces) {
       isSelectingFaces = false;
-      selectedPersonToRemove = new Array<boolean>(peopleWithFaces.length);
+      selectedPersonToRemove = Array.from({ length: peopleWithFaces.length });
       return;
     }
     if (shouldRefresh) {
@@ -181,11 +178,11 @@
       return;
     }
     if (numberOfFacesToUnassign > 0) {
-      for (let i = 0; i < peopleWithFaces.length; i++) {
+      for (const [i, peopleWithFace] of peopleWithFaces.entries()) {
         if (selectedPersonToRemove[i]) {
-          const image = await zoomImageToBase64(peopleWithFaces[i], $photoViewer, $currentAsset.type, $currentAsset.id);
+          const image = await zoomImageToBase64(peopleWithFace, $currentAsset.type, $currentAsset.id);
           if (image) {
-            selectedPersonToUnassign.push({ ...peopleWithFaces[i], customThumbnail: image });
+            selectedPersonToUnassign.push({ ...peopleWithFace, customThumbnail: image });
             // Trigger reactivity
             selectedPersonToUnassign = selectedPersonToUnassign;
             if (selectedPersonToReassign[i]) {
@@ -200,7 +197,7 @@
       const uniqueIds = new Set(selectedPersonToUnassign.map((objA) => objA.id));
       selectedPersonToAdd = selectedPersonToAdd.filter((objB) => !uniqueIds.has(objB.id));
     }
-    selectedPersonToRemove = new Array<boolean>(peopleWithFaces.length);
+    selectedPersonToRemove = Array.from({ length: peopleWithFaces.length });
     isSelectingFaces = false;
   };
 
@@ -218,30 +215,30 @@
 
           if (personId) {
             await api.faceApi.reassignFace({
-              id: personId,
-              faceDto: { id: peopleWithFace.id },
+              id: peopleWithFace.id,
+              reassignFaceDto: { personId },
             });
           } else if (selectedPersonToCreate[index]) {
             const { data } = await api.personApi.createPerson();
             idsOfPersonToCreate.push(data.id);
             await api.faceApi.reassignFace({
-              id: data.id,
-              faceDto: { id: peopleWithFace.id },
+              id: peopleWithFace.id,
+              reassignFaceDto: { personId: data.id },
             });
           }
         }
         for (const face of selectedPersonToAdd) {
           if (face.person) {
             await api.faceApi.reassignFace({
-              id: face.person.id,
-              faceDto: { id: face.id },
+              id: face.id,
+              reassignFaceDto: { personId: face.person.id },
             });
           } else {
             const { data } = await api.personApi.createPerson();
             idsOfPersonToCreate.push(data.id);
             await api.faceApi.reassignFace({
-              id: data.id,
-              faceDto: { id: face.id },
+              id: face.id,
+              reassignFaceDto: { personId: data.id },
             });
           }
         }
@@ -369,7 +366,7 @@
         <div>Faces visible</div>
       {/if}
 
-      {#if isSelectingFaces && selectedPersonToRemove && selectedPersonToRemove.filter((value) => value).length > 0}
+      {#if isSelectingFaces && selectedPersonToRemove && selectedPersonToRemove.some(Boolean)}
         <Button
           size="xs"
           color="red"
@@ -419,13 +416,13 @@
                         : getPersonNameWithHiddenValue(face.person?.name, face.person?.isHidden)}
                     widthStyle="90px"
                     heightStyle="90px"
-                    hidden={!isSelectingFaces
-                      ? selectedPersonToReassign[index]
+                    hidden={isSelectingFaces
+                      ? false
+                      : selectedPersonToReassign[index]
                         ? selectedPersonToReassign[index]?.isHidden
                         : selectedPersonToCreate[index]
                           ? false
-                          : face.person?.isHidden
-                      : false}
+                          : face.person?.isHidden}
                     persistentBorder={isSelectingFaces ? selectedPersonToRemove[index] : false}
                   />
                 </div>

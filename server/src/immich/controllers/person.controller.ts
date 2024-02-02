@@ -46,8 +46,8 @@ export class PersonController {
   }
 
   @Delete()
-  unassignFaces(@Auth() authUser: AuthDto, @Body() dto: AssetFaceUpdateDto): Promise<BulkIdResponseDto[]> {
-    return this.service.unassignFaces(authUser, dto);
+  unassignFaces(@Auth() auth: AuthDto, @Body() dto: AssetFaceUpdateDto): Promise<BulkIdResponseDto[]> {
+    return this.service.unassignFaces(auth, dto);
   }
 
   @Put()

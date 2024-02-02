@@ -2,7 +2,13 @@
   import { locale } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { getAssetFilename } from '$lib/utils/asset-utils';
-  import { type AlbumResponseDto, type AssetResponseDto, ThumbnailFormat, api } from '@api';
+  import {
+    type AlbumResponseDto,
+    type AssetResponseDto,
+    ThumbnailFormat,
+    api,
+    type PersonWithFacesResponseDto,
+  } from '@api';
   import { DateTime } from 'luxon';
   import { createEventDispatcher, onDestroy } from 'svelte';
   import { slide } from 'svelte/transition';
@@ -63,7 +69,7 @@
     // Get latest description from server
     if (newAsset.id && !api.isSharedLink) {
       const { data } = await api.assetApi.getAssetInfo({ id: asset.id });
-      people = data?.people || [];
+      people = data?.people?.people || [];
 
       description = data.exifInfo?.description || '';
     }
@@ -81,7 +87,7 @@
     }
   })();
 
-  $: people = asset.people?.people || [];
+  $: people = asset.people?.people || ([] as PersonWithFacesResponseDto[]);
   $: numberOfFaces = asset.people?.numberOfAssets || 0;
   $: showingHiddenPeople = false;
 
@@ -129,7 +135,7 @@
 
   const handleRefreshPeople = async () => {
     await api.assetApi.getAssetInfo({ id: asset.id }).then((res) => {
-      people = res.data?.people || [];
+      people = res.data?.people?.people || ([] as PersonWithFacesResponseDto[]);
       textArea.value = res.data?.exifInfo?.description || '';
     });
     showEditFaces = false;

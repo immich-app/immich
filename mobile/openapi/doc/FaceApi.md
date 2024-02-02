@@ -15,7 +15,7 @@ Method | HTTP request | Description
 
 
 # **getFaces**
-> List<AssetFaceResponseDto> getFaces(id)
+> List<AssetFaceResponseDto> getFaces(faceId)
 
 
 
@@ -38,10 +38,10 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = FaceApi();
-final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final faceId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 
 try {
-    final result = api_instance.getFaces(id);
+    final result = api_instance.getFaces(faceId);
     print(result);
 } catch (e) {
     print('Exception when calling FaceApi->getFaces: $e\n');
@@ -52,7 +52,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **id** | **String**|  | 
+ **faceId** | **String**|  | 
 
 ### Return type
 
@@ -70,7 +70,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **reassignFace**
-> PersonResponseDto reassignFace(id, faceDto)
+> PersonResponseDto reassignFace(id, reassignFaceDto)
 
 
 
@@ -94,10 +94,10 @@ import 'package:openapi/api.dart';
 
 final api_instance = FaceApi();
 final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final faceDto = FaceDto(); // FaceDto | 
+final reassignFaceDto = ReassignFaceDto(); // ReassignFaceDto | 
 
 try {
-    final result = api_instance.reassignFace(id, faceDto);
+    final result = api_instance.reassignFace(id, reassignFaceDto);
     print(result);
 } catch (e) {
     print('Exception when calling FaceApi->reassignFace: $e\n');
@@ -109,7 +109,7 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **id** | **String**|  | 
- **faceDto** | [**FaceDto**](FaceDto.md)|  | 
+ **reassignFaceDto** | [**ReassignFaceDto**](ReassignFaceDto.md)|  | 
 
 ### Return type
 

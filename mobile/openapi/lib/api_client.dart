@@ -290,8 +290,6 @@ class ApiClient {
           return EntityTypeTypeTransformer().decode(value);
         case 'ExifResponseDto':
           return ExifResponseDto.fromJson(value);
-        case 'FaceDto':
-          return FaceDto.fromJson(value);
         case 'FileChecksumDto':
           return FileChecksumDto.fromJson(value);
         case 'FileChecksumResponseDto':
@@ -374,6 +372,8 @@ class ApiClient {
           return ReactionLevelTypeTransformer().decode(value);
         case 'ReactionType':
           return ReactionTypeTypeTransformer().decode(value);
+        case 'ReassignFaceDto':
+          return ReassignFaceDto.fromJson(value);
         case 'RecognitionConfig':
           return RecognitionConfig.fromJson(value);
         case 'ScanLibraryDto':
