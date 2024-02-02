@@ -89,7 +89,11 @@
   const handleOAuthLogin = async () => {
     oauthLoading = true;
     oauthError = '';
-    await oauth.authorize(window.location);
+    const success = await oauth.authorize(window.location);
+    if (!success) {
+      oauthLoading = false;
+      oauthError = 'Unable to login with OAuth';
+    }
   };
 </script>
 

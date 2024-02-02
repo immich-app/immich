@@ -318,12 +318,25 @@ export class AuthService {
     const redirectUri = this.normalize(config, url.split('?')[0]);
     const client = await this.getOAuthClient(config);
     const params = client.callbackParams(url);
-    const tokens = await client.callback(redirectUri, params, { state: params.state });
-    return client.userinfo<OAuthProfile>(tokens.access_token || '');
+    try {
+      const tokens = await client.callback(redirectUri, params, { state: params.state });
+      return client.userinfo<OAuthProfile>(tokens.access_token || '');
+    } catch (error: Error | any) {
+      if (error.message.includes('unexpected JWT alg received')) {
+        this.logger.warn(
+          [
+            'Algorithm mismatch. Make sure the signing algorithm is set correctly in the OAuth settings.',
+            'Or, that you have specified a signing key in your OAuth provider.',
+          ].join(' '),
+        );
+      }
+
+      throw error;
+    }
   }
 
   private async getOAuthClient(config: SystemConfig) {
-    const { enabled, clientId, clientSecret, issuerUrl } = config.oauth;
+    const { enabled, clientId, clientSecret, issuerUrl, signingAlgorithm } = config.oauth;
 
     if (!enabled) {
       throw new BadRequestException('OAuth2 is not enabled');
@@ -337,7 +350,7 @@ export class AuthService {
 
     try {
       const issuer = await Issuer.discover(issuerUrl);
-      metadata.id_token_signed_response_alg = config.oauth.signingAlgorithm;
+      metadata.id_token_signed_response_alg = signingAlgorithm;
 
       return new issuer.Client(metadata);
     } catch (error: any | AggregateError) {
