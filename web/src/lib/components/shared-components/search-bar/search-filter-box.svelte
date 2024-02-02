@@ -19,7 +19,11 @@
   let inArchive = false;
   let inFavorite = false;
 
-  let people: PersonResponseDto[] = [];
+  let peopleCount = 1;
+
+  const addPeopleHandler = () => {
+    peopleCount += 1;
+  };
 </script>
 
 <div
@@ -115,21 +119,14 @@
 
     <!-- PEOPLE -->
     <div id="people-selection" class="my-4">
-      <div class="flex justify-between place-items-center">
-        <p class="immich-form-label">PEOPLE</p>
-        <Button size="sm">Add people</Button>
-      </div>
+      <div class="flex justify-between place-items-center gap-6">
+        <div class="flex-1">
+          <p class="immich-form-label">PEOPLE</p>
+        </div>
 
-      <div class="flex gap-5 mt-3">
-        <label class="flex items-center mb-2">
-          <input type="checkbox" class="form-checkbox h-5 w-5 color" />
-          <span class="ml-2 text-sm text-black dark:text-white pt-1">With people</span>
-        </label>
-
-        <label class="flex items-center mb-2">
-          <input type="checkbox" class="form-checkbox h-5 w-5 color" />
-          <span class="ml-2 text-sm text-black dark:text-white pt-1">Without people</span>
-        </label>
+        <div class="flex-1">
+          <Combobox options={[]} selectedOption={selectedCountry} placeholder="Search people..." />
+        </div>
       </div>
     </div>
 
