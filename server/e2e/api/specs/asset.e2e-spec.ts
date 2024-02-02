@@ -598,7 +598,7 @@ describe(`${AssetController.name} (e2e)`, () => {
 
       const data = await request(server).get(`/asset/assetById/${asset1.id}?key=${sharedLink.key}`);
       expect(data.status).toBe(200);
-      expect(data.body).toMatchObject({ people: [] });
+      expect(data.body).toMatchObject({ people: undefined });
     });
   });
 

@@ -544,7 +544,7 @@ describe(PersonService.name, () => {
 
       await expect(
         sut.unassignFaces(authStub.admin, { data: [{ assetId: faceStub.face1.id, personId: 'person-1' }] }),
-      ).resolves.toStrictEqual([{ id: 'assetFaceId', success: true }]);
+      ).resolves.toStrictEqual([{ id: 'assetFaceId1', success: true }]);
     });
   });
 

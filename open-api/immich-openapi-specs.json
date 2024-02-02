@@ -7289,12 +7289,7 @@
             "type": "string"
           },
           "people": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/PeopleWithFacesResponseDto"
-              }
-            ],
-            "nullable": true
+            "$ref": "#/components/schemas/PeopleWithFacesResponseDto"
           },
           "resized": {
             "type": "boolean"

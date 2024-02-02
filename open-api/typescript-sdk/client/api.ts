@@ -981,7 +981,7 @@ export interface AssetResponseDto {
      * @type {PeopleWithFacesResponseDto}
      * @memberof AssetResponseDto
      */
-    'people'?: PeopleWithFacesResponseDto | null;
+    'people'?: PeopleWithFacesResponseDto;
     /**
      * 
      * @type {boolean}
