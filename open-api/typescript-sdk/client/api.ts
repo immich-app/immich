@@ -4097,6 +4097,12 @@ export interface SystemConfigOAuthDto {
      * @type {string}
      * @memberof SystemConfigOAuthDto
      */
+    'signingAlgorithm': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SystemConfigOAuthDto
+     */
     'storageLabelClaim': string;
 }
 /**
