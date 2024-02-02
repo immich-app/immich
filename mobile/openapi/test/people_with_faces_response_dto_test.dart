@@ -16,8 +16,8 @@ void main() {
   // final instance = PeopleWithFacesResponseDto();
 
   group('test PeopleWithFacesResponseDto', () {
-    // int numberOfAssets
-    test('to test the property `numberOfAssets`', () async {
+    // int numberOfFaces
+    test('to test the property `numberOfFaces`', () async {
       // TODO
     });
 

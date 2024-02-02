@@ -72,7 +72,7 @@ const peopleWithFaces = (faces: AssetFaceEntity[]): PeopleWithFacesResponseDto =
     }
   }
 
-  return { people: result, numberOfAssets: faces.length };
+  return { people: result, numberOfFaces: faces.length };
 };
 
 export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): AssetResponseDto {

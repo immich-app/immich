@@ -88,7 +88,7 @@
   })();
 
   $: people = asset.people?.people || ([] as PersonWithFacesResponseDto[]);
-  $: numberOfFaces = asset.people?.numberOfAssets || 0;
+  $: numberOfFaces = asset.people?.numberOfFaces || 0;
   $: showingHiddenPeople = false;
 
   const unsubscribe = websocketStore.onAssetUpdate.subscribe((assetUpdate) => {

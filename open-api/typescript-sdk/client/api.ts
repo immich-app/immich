@@ -2632,7 +2632,7 @@ export interface PeopleWithFacesResponseDto {
      * @type {number}
      * @memberof PeopleWithFacesResponseDto
      */
-    'numberOfAssets': number;
+    'numberOfFaces': number;
     /**
      * 
      * @type {Array<PersonWithFacesResponseDto>}

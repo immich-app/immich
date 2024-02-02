@@ -26,6 +26,15 @@
   let isSearchingPerson = false;
   let searchName = '';
 
+  $: {
+    searchedPeople = searchedPeopleCopy.filter(
+      (person) => personWithFace.person && personWithFace.person.id !== person.id,
+    );
+    if (searchName) {
+      searchedPeople = searchNameLocal(searchName, searchedPeople, 10);
+    }
+  }
+
   const dispatch = createEventDispatcher<{
     close: void;
     createPerson: string | null;

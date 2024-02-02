@@ -908,7 +908,7 @@ describe(`${AssetController.name} (e2e)`, () => {
         id: asset1.id,
         isFavorite: true,
         people: {
-          numberOfAssets: 1,
+          numberOfFaces: 1,
           people: [
             {
               birthDate: null,

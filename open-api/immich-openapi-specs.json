@@ -8658,7 +8658,7 @@
       },
       "PeopleWithFacesResponseDto": {
         "properties": {
-          "numberOfAssets": {
+          "numberOfFaces": {
             "type": "integer"
           },
           "people": {
@@ -8669,7 +8669,7 @@
           }
         },
         "required": [
-          "numberOfAssets",
+          "numberOfFaces",
           "people"
         ],
         "type": "object"
