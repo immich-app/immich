@@ -23,8 +23,8 @@ class PeopleWithFacesResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is PeopleWithFacesResponseDto &&
-     other.numberOfAssets == numberOfAssets &&
-     other.people == people;
+    other.numberOfAssets == numberOfAssets &&
+    _deepEquality.equals(other.people, people);
 
   @override
   int get hashCode =>
