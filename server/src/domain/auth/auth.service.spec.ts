@@ -73,7 +73,7 @@ describe('AuthService', () => {
 
     jest.spyOn(generators, 'state').mockReturnValue('state');
     jest.spyOn(Issuer, 'discover').mockResolvedValue({
-      id_token_signing_alg_values_supported: ['HS256'],
+      id_token_signing_alg_values_supported: ['RS256'],
       Client: jest.fn().mockResolvedValue({
         issuer: {
           metadata: {
