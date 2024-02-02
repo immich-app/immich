@@ -555,7 +555,7 @@ export class MetadataService {
     return bitsPerSample;
   }
 
-  private getDuration(seconds?: number | ExifDuration): string {
+  private getDuration(seconds?: ImmichTags['Duration']): string {
     let _seconds = seconds as number;
 
     if (typeof seconds === 'object') {
