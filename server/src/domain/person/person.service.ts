@@ -105,13 +105,17 @@ export class PersonService {
     await this.access.requirePermission(auth, Permission.PERSON_CREATE, faceId);
     const face = await this.repository.getFaceById(faceId);
     const person = await this.findOrFail(dto.personId);
+    const refreshIds = [];
 
     await this.repository.reassignFace(face.id, dto.personId);
     if (person.faceAssetId === null) {
-      await this.createNewFeaturePhoto([person.id]);
+      refreshIds.push(person.id);
     }
     if (face.person && face.person.faceAssetId === face.id) {
-      await this.createNewFeaturePhoto([face.person.id]);
+      refreshIds.push(face.person.id);
+    }
+    if (refreshIds.length > 0) {
+      await this.createNewFeaturePhoto(refreshIds);
     }
 
     return this.findOrFail(dto.personId).then(mapPerson);
@@ -124,9 +128,12 @@ export class PersonService {
     const changeFeaturePhoto: string[] = [];
     for (const data of dto.data) {
       const faces = await this.repository.getFacesByIds([{ personId: data.personId, assetId: data.assetId }]);
-
+      await this.access.requirePermission(
+        auth,
+        Permission.PERSON_CREATE,
+        faces.map((face) => face.id),
+      );
       for (const face of faces) {
-        await this.access.requirePermission(auth, Permission.PERSON_CREATE, face.id);
         if (person.faceAssetId === null) {
           changeFeaturePhoto.push(person.id);
         }
