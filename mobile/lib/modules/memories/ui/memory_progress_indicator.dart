@@ -15,32 +15,36 @@ class MemoryProgressIndicator extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final tickWidth = constraints.maxWidth / ticks;
-        return Stack(
-          children: [
-            LinearProgressIndicator(
-              value: value,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: List.generate(
-                ticks,
-                (i) => Container(
-                  width: tickWidth,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    border: i == 0
-                        ? null
-                        : Border(
-                            left: BorderSide(
-                              color: Theme.of(context).scaffoldBackgroundColor,
-                              width: 1,
+        return ClipRRect(
+          borderRadius: const BorderRadius.all(Radius.circular(2.0)),
+          child: Stack(
+            children: [
+              LinearProgressIndicator(
+                value: value,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: List.generate(
+                  ticks,
+                  (i) => Container(
+                    width: tickWidth,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      border: i == 0
+                          ? null
+                          : Border(
+                              left: BorderSide(
+                                color:
+                                    Theme.of(context).scaffoldBackgroundColor,
+                                width: 1,
+                              ),
                             ),
-                          ),
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         );
       },
     );
