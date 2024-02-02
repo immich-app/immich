@@ -3,7 +3,6 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { goto } from '$app/navigation';
   import { isSearchEnabled, preventRaceConditionSearchBar, savedSearchTerms } from '$lib/stores/search.store';
-  import { fly } from 'svelte/transition';
   import { clickOutside } from '$lib/utils/click-outside';
   import { mdiClose, mdiMagnify, mdiTune } from '@mdi/js';
   import IconButton from '$lib/components/elements/buttons/icon-button.svelte';
