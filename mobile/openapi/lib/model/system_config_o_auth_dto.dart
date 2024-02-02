@@ -23,6 +23,7 @@ class SystemConfigOAuthDto {
     required this.mobileOverrideEnabled,
     required this.mobileRedirectUri,
     required this.scope,
+    required this.signingAlgorithm,
     required this.storageLabelClaim,
   });
 
@@ -46,6 +47,8 @@ class SystemConfigOAuthDto {
 
   String scope;
 
+  String signingAlgorithm;
+
   String storageLabelClaim;
 
   @override
@@ -60,6 +63,7 @@ class SystemConfigOAuthDto {
     other.mobileOverrideEnabled == mobileOverrideEnabled &&
     other.mobileRedirectUri == mobileRedirectUri &&
     other.scope == scope &&
+    other.signingAlgorithm == signingAlgorithm &&
     other.storageLabelClaim == storageLabelClaim;
 
   @override
@@ -75,10 +79,11 @@ class SystemConfigOAuthDto {
     (mobileOverrideEnabled.hashCode) +
     (mobileRedirectUri.hashCode) +
     (scope.hashCode) +
+    (signingAlgorithm.hashCode) +
     (storageLabelClaim.hashCode);
 
   @override
-  String toString() => 'SystemConfigOAuthDto[autoLaunch=$autoLaunch, autoRegister=$autoRegister, buttonText=$buttonText, clientId=$clientId, clientSecret=$clientSecret, enabled=$enabled, issuerUrl=$issuerUrl, mobileOverrideEnabled=$mobileOverrideEnabled, mobileRedirectUri=$mobileRedirectUri, scope=$scope, storageLabelClaim=$storageLabelClaim]';
+  String toString() => 'SystemConfigOAuthDto[autoLaunch=$autoLaunch, autoRegister=$autoRegister, buttonText=$buttonText, clientId=$clientId, clientSecret=$clientSecret, enabled=$enabled, issuerUrl=$issuerUrl, mobileOverrideEnabled=$mobileOverrideEnabled, mobileRedirectUri=$mobileRedirectUri, scope=$scope, signingAlgorithm=$signingAlgorithm, storageLabelClaim=$storageLabelClaim]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -92,6 +97,7 @@ class SystemConfigOAuthDto {
       json[r'mobileOverrideEnabled'] = this.mobileOverrideEnabled;
       json[r'mobileRedirectUri'] = this.mobileRedirectUri;
       json[r'scope'] = this.scope;
+      json[r'signingAlgorithm'] = this.signingAlgorithm;
       json[r'storageLabelClaim'] = this.storageLabelClaim;
     return json;
   }
@@ -114,6 +120,7 @@ class SystemConfigOAuthDto {
         mobileOverrideEnabled: mapValueOfType<bool>(json, r'mobileOverrideEnabled')!,
         mobileRedirectUri: mapValueOfType<String>(json, r'mobileRedirectUri')!,
         scope: mapValueOfType<String>(json, r'scope')!,
+        signingAlgorithm: mapValueOfType<String>(json, r'signingAlgorithm')!,
         storageLabelClaim: mapValueOfType<String>(json, r'storageLabelClaim')!,
       );
     }
@@ -172,6 +179,7 @@ class SystemConfigOAuthDto {
     'mobileOverrideEnabled',
     'mobileRedirectUri',
     'scope',
+    'signingAlgorithm',
     'storageLabelClaim',
   };
 }

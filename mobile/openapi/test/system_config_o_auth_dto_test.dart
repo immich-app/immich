@@ -66,6 +66,11 @@ void main() {
       // TODO
     });
 
+    // String signingAlgorithm
+    test('to test the property `signingAlgorithm`', () async {
+      // TODO
+    });
+
     // String storageLabelClaim
     test('to test the property `storageLabelClaim`', () async {
       // TODO

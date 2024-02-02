@@ -45,8 +45,10 @@ export const oauth = {
       const redirectUri = location.href.split('?')[0];
       const { data } = await api.oauthApi.startOAuth({ oAuthConfigDto: { redirectUri } });
       window.location.href = data.url;
+      return true;
     } catch (error) {
       handleError(error, 'Unable to login with OAuth');
+      return false;
     }
   },
   login: (location: Location) => {
