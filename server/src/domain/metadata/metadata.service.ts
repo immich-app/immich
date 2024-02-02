@@ -12,7 +12,6 @@ import { IBaseJob, IEntityJob, ISidecarWriteJob, JOBS_ASSET_PAGINATION_SIZE, Job
 import {
   ClientEvent,
   DatabaseLock,
-  ExifDuration,
   IAlbumRepository,
   IAssetRepository,
   ICommunicationRepository,
