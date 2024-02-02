@@ -1,4 +1,4 @@
-import package_ from '../package.json';
+import { version } from '../package.json';
 
 export interface ICliVersion {
   major: number;
@@ -34,4 +34,4 @@ export class CliVersion implements ICliVersion {
   }
 }
 
-export const cliVersion = CliVersion.fromString(package_.version);
+export const cliVersion = CliVersion.fromString(version);

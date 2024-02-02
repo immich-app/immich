@@ -112,7 +112,6 @@ export const CLIP_MODEL_INFO: Record<string, ModelInfo> = {
 
 export function cleanModelName(modelName: string): string {
   const token = modelName.split('/').at(-1);
-
   if (!token) {
     throw new Error(`Invalid model name: ${modelName}`);
   }

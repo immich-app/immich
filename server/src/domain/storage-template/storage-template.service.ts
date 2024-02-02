@@ -110,9 +110,9 @@ export class StorageTemplateService {
 
   async handleMigration() {
     this.logger.log('Starting storage template migration');
-    const config = await this.configCore.getConfig();
-    const storageTemplateEnabled = config.storageTemplate.enabled;
-    if (!storageTemplateEnabled) {
+    const { storageTemplate } = await this.configCore.getConfig();
+    const { enabled } = storageTemplate;
+    if (!enabled) {
       this.logger.log('Storage template migration disabled, skipping');
       return true;
     }

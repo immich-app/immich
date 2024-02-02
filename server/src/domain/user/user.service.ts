@@ -188,6 +188,7 @@ export class UserService {
       return false;
     }
 
+    // TODO use luxon for date calculation
     const msInDay = 86_400_000;
     const msDeleteWait = msInDay * 7;
     const msSinceDelete = Date.now() - (Date.parse(user.deletedAt.toString()) || 0);

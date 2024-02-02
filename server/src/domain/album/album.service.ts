@@ -69,13 +69,11 @@ export class AlbumService {
 
     // Get asset count for each album. Then map the result to an object:
     // { [albumId]: assetCount }
-    const albumMetadataForIds = await this.albumRepository.getMetadataForIds(albums.map((album) => album.id));
-
-    const albumMetadataForIdsObject: Record<string, AlbumAssetCount> = {};
-
-    for (const metadata of albumMetadataForIds) {
+    const results = await this.albumRepository.getMetadataForIds(albums.map((album) => album.id));
+    const albumMetadata: Record<string, AlbumAssetCount> = {};
+    for (const metadata of results) {
       const { albumId, assetCount, startDate, endDate } = metadata;
-      albumMetadataForIdsObject[albumId] = {
+      albumMetadata[albumId] = {
         albumId,
         assetCount,
         startDate,
@@ -89,9 +87,9 @@ export class AlbumService {
         return {
           ...mapAlbumWithoutAssets(album),
           sharedLinks: undefined,
-          startDate: albumMetadataForIdsObject[album.id].startDate,
-          endDate: albumMetadataForIdsObject[album.id].endDate,
-          assetCount: albumMetadataForIdsObject[album.id].assetCount,
+          startDate: albumMetadata[album.id].startDate,
+          endDate: albumMetadata[album.id].endDate,
+          assetCount: albumMetadata[album.id].assetCount,
           lastModifiedAssetTimestamp: lastModifiedAsset?.fileModifiedAt,
         };
       }),

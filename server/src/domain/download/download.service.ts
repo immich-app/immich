@@ -73,10 +73,7 @@ export class DownloadService {
       totalSize += archive.size;
     }
 
-    return {
-      totalSize,
-      archives,
-    };
+    return { totalSize, archives };
   }
 
   async downloadArchive(auth: AuthDto, dto: AssetIdsDto): Promise<ImmichReadStream> {

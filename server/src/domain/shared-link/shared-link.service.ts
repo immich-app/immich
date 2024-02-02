@@ -175,9 +175,7 @@ export class SharedLinkService {
 
     const sharedLink = await this.findOrFail(auth.sharedLink.userId, auth.sharedLink.id);
     const assetId = sharedLink.album?.albumThumbnailAssetId || sharedLink.assets[0]?.id;
-
-    /* eslint-disable-next-line unicorn/explicit-length-check */
-    const assetCount = sharedLink.assets.length || sharedLink.album?.assets.length || 0;
+    const assetCount = sharedLink.assets.length ?? sharedLink.album?.assets.length ?? 0;
 
     return {
       title: sharedLink.album ? sharedLink.album.albumName : 'Public Share',

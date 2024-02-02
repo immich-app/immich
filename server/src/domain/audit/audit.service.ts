@@ -129,7 +129,9 @@ export class AuditService {
     }
   }
 
-  private fullPath = (filename: string) => resolve(filename);
+  private fullPath(filename: string) {
+    return resolve(filename);
+  }
 
   async getFileReport() {
     const hasFile = (items: Set<string>, filename: string) => items.has(filename) || items.has(this.fullPath(filename));

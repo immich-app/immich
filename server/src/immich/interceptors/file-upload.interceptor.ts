@@ -40,9 +40,9 @@ interface Callback<T> {
   (error: null, result: T): void;
 }
 
-const callbackify = async <T>(function_: (...arguments_: any[]) => T, callback: Callback<T>) => {
+const callbackify = async <T>(target: (...arguments_: any[]) => T, callback: Callback<T>) => {
   try {
-    return callback(null, await function_());
+    return callback(null, await target());
   } catch (error: Error | any) {
     return callback(error);
   }

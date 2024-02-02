@@ -3,8 +3,6 @@ import { Duration } from 'luxon';
 import { readFileSync } from 'node:fs';
 import { extname, join } from 'node:path';
 
-const package_ = JSON.parse(readFileSync('./package.json', 'utf8'));
-
 export const AUDIT_LOG_MAX_DURATION = Duration.fromObject({ days: 100 });
 export const ONE_HOUR = Duration.fromObject({ hours: 1 });
 
@@ -68,7 +66,8 @@ export class Version implements IVersion {
 export const envName = (process.env.NODE_ENV || 'development').toUpperCase();
 export const isDev = process.env.NODE_ENV === 'development';
 
-export const serverVersion = Version.fromString(package_.version);
+const { version } = JSON.parse(readFileSync('./package.json', 'utf8'));
+export const serverVersion = Version.fromString(version);
 
 export const APP_MEDIA_LOCATION = process.env.IMMICH_MEDIA_LOCATION || './upload';
 

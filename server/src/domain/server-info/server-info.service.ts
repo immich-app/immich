@@ -2,7 +2,7 @@ import { SystemMetadataKey } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
 import { Inject, Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
-import { Version, isDev as isDevelopment, mimeTypes, serverVersion } from '../domain.constant';
+import { Version, isDev, mimeTypes, serverVersion } from '../domain.constant';
 import { asHumanReadable } from '../domain.util';
 import {
   ClientEvent,
@@ -139,7 +139,7 @@ export class ServerInfoService {
 
   async handleVersionCheck(): Promise<boolean> {
     try {
-      if (isDevelopment) {
+      if (isDev) {
         return true;
       }
 

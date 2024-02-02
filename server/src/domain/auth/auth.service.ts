@@ -154,13 +154,13 @@ export class AuthService {
     return mapUser(admin);
   }
 
-  async validate(headers: IncomingHttpHeaders, parameters: Record<string, string>): Promise<AuthDto> {
-    const shareKey = (headers['x-immich-share-key'] || parameters.key) as string;
+  async validate(headers: IncomingHttpHeaders, params: Record<string, string>): Promise<AuthDto> {
+    const shareKey = (headers['x-immich-share-key'] || params.key) as string;
     const userToken = (headers['x-immich-user-token'] ||
-      parameters.userToken ||
+      params.userToken ||
       this.getBearerToken(headers) ||
       this.getCookieToken(headers)) as string;
-    const apiKey = (headers[IMMICH_API_KEY_HEADER] || parameters.apiKey) as string;
+    const apiKey = (headers[IMMICH_API_KEY_HEADER] || params.apiKey) as string;
 
     if (shareKey) {
       return this.validateSharedLink(shareKey);
@@ -317,8 +317,8 @@ export class AuthService {
   private async getOAuthProfile(config: SystemConfig, url: string): Promise<OAuthProfile> {
     const redirectUri = this.normalize(config, url.split('?')[0]);
     const client = await this.getOAuthClient(config);
-    const parameters = client.callbackParams(url);
-    const tokens = await client.callback(redirectUri, parameters, { state: parameters.state });
+    const params = client.callbackParams(url);
+    const tokens = await client.callback(redirectUri, params, { state: params.state });
     return client.userinfo<OAuthProfile>(tokens.access_token || '');
   }
 

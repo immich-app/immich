@@ -29,8 +29,7 @@ export const mapAlbum = (entity: AlbumEntity, withAssets: boolean): AlbumRespons
 
   if (entity.sharedUsers) {
     for (const user of entity.sharedUsers) {
-      const userDto = mapUser(user);
-      sharedUsers.push(userDto);
+      sharedUsers.push(mapUser(user));
     }
   }
 
@@ -43,9 +42,7 @@ export const mapAlbum = (entity: AlbumEntity, withAssets: boolean): AlbumRespons
   let endDate = assets.at(-1)?.fileCreatedAt || undefined;
   // Swap dates if start date is greater than end date.
   if (startDate && endDate && startDate > endDate) {
-    const temporary = startDate;
-    startDate = endDate;
-    endDate = temporary;
+    [startDate, endDate] = [endDate, startDate];
   }
 
   return {

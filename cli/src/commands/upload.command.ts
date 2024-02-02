@@ -164,8 +164,7 @@ export class UploadCommand extends BaseCommand {
       }
     }
 
-    const allAlbums = await this.immichApi.albumApi.getAllAlbums();
-    const existingAlbums = allAlbums.data;
+    const { data: existingAlbums } = await this.immichApi.albumApi.getAllAlbums();
 
     uploadProgress.start(totalSize, 0);
     uploadProgress.update({ value_formatted: 0, total_formatted: byteSize(totalSize) });
@@ -201,8 +200,8 @@ export class UploadCommand extends BaseCommand {
         if (!skipAsset && !options.dryRun) {
           if (!skipUpload) {
             const formData = await asset.getUploadFormData();
-            const response = await this.uploadAsset(formData);
-            existingAssetId = response.data.id;
+            const { data } = await this.uploadAsset(formData);
+            existingAssetId = data.id;
             uploadCounter++;
             totalSizeUploaded += asset.fileSize;
           }
@@ -210,10 +209,10 @@ export class UploadCommand extends BaseCommand {
           if ((options.album || options.albumName) && asset.albumName !== undefined) {
             let album = existingAlbums.find((album) => album.albumName === asset.albumName);
             if (!album) {
-              const response = await this.immichApi.albumApi.createAlbum({
+              const { data } = await this.immichApi.albumApi.createAlbum({
                 createAlbumDto: { albumName: asset.albumName },
               });
-              album = response.data;
+              album = data;
               existingAlbums.push(album);
             }
 
@@ -277,6 +276,6 @@ export class UploadCommand extends BaseCommand {
       data,
     };
 
-    return await axios(config);
+    return axios(config);
   }
 }

@@ -2,6 +2,7 @@ import { getAuthUser } from '$lib/utils/auth';
 import { api, ThumbnailFormat } from '@api';
 import type { AxiosError } from 'axios';
 import type { PageLoad } from './$types';
+import { error as throwError } from '@sveltejs/kit';
 
 export const load = (async ({ params }) => {
   const { key } = params;
@@ -36,7 +37,7 @@ export const load = (async ({ params }) => {
       };
     }
 
-    error(404, {
+    throwError(404, {
       message: 'Invalid shared link',
     });
   }

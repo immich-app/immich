@@ -2,8 +2,8 @@ import path from 'node:path';
 import { PostgreSqlContainer } from '@testcontainers/postgresql';
 import { access } from 'node:fs/promises';
 
-export const directoryExists = async (directory: string) =>
-  await access(directory)
+export const directoryExists = (directory: string) =>
+  access(directory)
     .then(() => true)
     .catch(() => false);
 
@@ -12,7 +12,6 @@ export default async () => {
 
   if (process.env.IMMICH_TEST_ASSET_PATH === undefined) {
     IMMICH_TEST_ASSET_PATH = path.normalize(`${__dirname}/../../../server/test/assets/`);
-
     process.env.IMMICH_TEST_ASSET_PATH = IMMICH_TEST_ASSET_PATH;
   } else {
     IMMICH_TEST_ASSET_PATH = process.env.IMMICH_TEST_ASSET_PATH;

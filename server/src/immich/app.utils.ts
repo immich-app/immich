@@ -96,15 +96,15 @@ export const asStreamableFile = ({ stream, type, length }: ImmichReadStream) => 
   return new StreamableFile(stream, { type, length });
 };
 
-function sortKeys<T>(object: T): T {
-  if (!object || typeof object !== 'object' || Array.isArray(object)) {
-    return object;
+function sortKeys<T>(target: T): T {
+  if (!target || typeof target !== 'object' || Array.isArray(target)) {
+    return target;
   }
 
   const result: Partial<T> = {};
-  const keys = Object.keys(object).sort() as Array<keyof T>;
+  const keys = Object.keys(target).sort() as Array<keyof T>;
   for (const key of keys) {
-    result[key] = sortKeys(object[key]);
+    result[key] = sortKeys(target[key]);
   }
   return result as T;
 }
@@ -205,7 +205,7 @@ export const useSwagger = (app: INestApplication, isDevelopment: boolean) => {
     operationIdFactory: (controllerKey: string, methodKey: string) => methodKey,
   };
 
-  const document = SwaggerModule.createDocument(app, config, options);
+  const specification = SwaggerModule.createDocument(app, config, options);
 
   const customOptions: SwaggerCustomOptions = {
     swaggerOptions: {
@@ -214,11 +214,11 @@ export const useSwagger = (app: INestApplication, isDevelopment: boolean) => {
     customSiteTitle: 'Immich API Documentation',
   };
 
-  SwaggerModule.setup('doc', app, document, customOptions);
+  SwaggerModule.setup('doc', app, specification, customOptions);
 
   if (isDevelopment) {
     // Generate API Documentation only in development mode
     const outputPath = path.resolve(process.cwd(), '../open-api/immich-openapi-specs.json');
-    writeFileSync(outputPath, JSON.stringify(patchOpenAPI(document), null, 2), { encoding: 'utf8' });
+    writeFileSync(outputPath, JSON.stringify(patchOpenAPI(specification), null, 2), { encoding: 'utf8' });
   }
 };
