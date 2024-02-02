@@ -18,12 +18,6 @@
   let notInAlbum = false;
   let inArchive = false;
   let inFavorite = false;
-
-  let peopleCount = 1;
-
-  const addPeopleHandler = () => {
-    peopleCount += 1;
-  };
 </script>
 
 <div
