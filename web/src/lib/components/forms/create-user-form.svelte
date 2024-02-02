@@ -69,11 +69,10 @@
           error = 'Error create user account';
           isCreatingUser = false;
         }
-      } catch (error_) {
-        error = 'Error create user account';
+      } catch (error) {
         isCreatingUser = false;
 
-        console.log('[ERROR] registerUser', error_);
+        console.log('[ERROR] registerUser', error);
 
         notificationController.show({
           message: `Error create new user, check console for more detail`,

@@ -1,6 +1,5 @@
 import { getAuthUser } from '$lib/utils/auth';
 import { api, ThumbnailFormat } from '@api';
-import { error } from '@sveltejs/kit';
 import type { AxiosError } from 'axios';
 import type { PageLoad } from './$types';
 
@@ -24,10 +23,10 @@ export const load = (async ({ params }) => {
           : '/feature-panel.png',
       },
     };
-  } catch (error_) {
+  } catch (error) {
     // handle unauthorized error
     // TODO this doesn't allow for 404 shared links anymore
-    if ((error_ as AxiosError).response?.status === 401) {
+    if ((error as AxiosError).response?.status === 401) {
       return {
         passwordRequired: true,
         sharedLinkKey: key,
