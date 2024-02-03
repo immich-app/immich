@@ -8,5 +8,10 @@ export default defineConfig({
         dir: 'dist',
       },
     },
+    ssr: true,
+  },
+  ssr: {
+    // bundle everything except for Node built-ins
+    noExternal: /^(?!node:).*$/,
   },
 });
