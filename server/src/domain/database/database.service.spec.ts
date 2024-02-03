@@ -28,10 +28,12 @@ describe(DatabaseService.name, () => {
     [{ vectorExt: DatabaseExtension.VECTOR, extName: 'pgvector', minVersion: new Version(0, 5, 0) }],
   ] as const)('init', ({ vectorExt, extName, minVersion }) => {
     let fatalLog: jest.SpyInstance;
+    let errorLog: jest.SpyInstance;
     let warnLog: jest.SpyInstance;
 
     beforeEach(async () => {
       fatalLog = jest.spyOn(ImmichLogger.prototype, 'fatal');
+      errorLog = jest.spyOn(ImmichLogger.prototype, 'error');
       warnLog = jest.spyOn(ImmichLogger.prototype, 'warn');
       databaseMock.getPreferredVectorExtension.mockReturnValue(vectorExt);
 
@@ -179,6 +181,22 @@ describe(DatabaseService.name, () => {
       databaseMock.getExtensionVersion.mockResolvedValue(minVersion);
       databaseMock.getAvailableExtensionVersion.mockResolvedValue(version);
       databaseMock.updateVectorExtension.mockRejectedValue(new Error('Failed to update extension'));
+
+      await expect(sut.init()).resolves.toBeUndefined();
+
+      expect(warnLog).toHaveBeenCalledTimes(1);
+      expect(warnLog.mock.calls[0][0]).toContain(extName);
+      expect(errorLog).toHaveBeenCalledTimes(1);
+      expect(fatalLog).not.toHaveBeenCalled();
+      expect(databaseMock.updateVectorExtension).toHaveBeenCalledWith(vectorExt, version);
+      expect(databaseMock.runMigrations).toHaveBeenCalledTimes(1);
+    });
+
+    it(`should warn if ${extName} update requires restart`, async () => {
+      const version = new Version(minVersion.major, minVersion.minor, minVersion.patch + 1);
+      databaseMock.getExtensionVersion.mockResolvedValue(minVersion);
+      databaseMock.getAvailableExtensionVersion.mockResolvedValue(version);
+      databaseMock.updateVectorExtension.mockResolvedValue({ restartRequired: true });
 
       await expect(sut.init()).resolves.toBeUndefined();
 
