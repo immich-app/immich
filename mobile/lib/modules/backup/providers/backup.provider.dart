@@ -243,11 +243,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
           availableAlbum =
               availableAlbum.copyWith(thumbnailData: thumbnailData);
         } catch (e, stack) {
-          log.severe(
-            "Failed to get thumbnail for album ${album.name}",
-            e.toString(),
-            stack,
-          );
+          log.severe("Failed to get thumbnail for album ${album.name}", e, stack);
         }
 
         availableAlbums.add(availableAlbum);

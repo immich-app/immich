@@ -39,7 +39,8 @@ class ImageViewerService {
           final failedResponse =
               imageResponse.statusCode != 200 ? imageResponse : motionReponse;
           _log.severe(
-            "Motion asset download failed with status - ${failedResponse.statusCode} and response - ${failedResponse.body}",
+            "Motion asset download failed",
+            "Status: ${failedResponse.statusCode}\nResponse: ${failedResponse.body}",
           );
           return false;
         }
@@ -76,7 +77,8 @@ class ImageViewerService {
 
         if (res.statusCode != 200) {
           _log.severe(
-            "Asset download failed with status - ${res.statusCode} and response - ${res.body}",
+            "Asset download failed",
+            "Status: ${res.statusCode}\nResponse: ${res.body}",
           );
           return false;
         }
@@ -98,7 +100,7 @@ class ImageViewerService {
         return entity != null;
       }
     } catch (error, stack) {
-      _log.severe("Error saving file ${error.toString()}", error, stack);
+      _log.severe("Error saving downloaded asset", error, stack);
       return false;
     } finally {
       // Clear temp files

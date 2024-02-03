@@ -41,7 +41,8 @@ class ShareService {
 
           if (res.statusCode != 200) {
             _log.severe(
-              "Asset download failed with status - ${res.statusCode} and response - ${res.body}",
+              "Asset download for ${asset.fileName} failed",
+              "Status: ${res.statusCode}\nResponse: ${res.body}",
             );
             continue;
           }
@@ -68,7 +69,7 @@ class ShareService {
       );
       return true;
     } catch (error) {
-      _log.severe("Share failed with error $error");
+      _log.severe("Share failed", error);
     }
     return false;
   }

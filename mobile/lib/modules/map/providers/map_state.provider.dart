@@ -51,7 +51,8 @@ class MapStateNotifier extends _$MapStateNotifier {
         lightStyleFetched: AsyncError(lightResponse.body, StackTrace.current),
       );
       _log.severe(
-        "Cannot fetch map light style with status - ${lightResponse.statusCode} and response - ${lightResponse.body}",
+        "Cannot fetch map light style",
+        "Status: ${lightResponse.statusCode}\nResponse: ${lightResponse.body}",
       );
       return;
     }
@@ -78,7 +79,8 @@ class MapStateNotifier extends _$MapStateNotifier {
         darkStyleFetched: AsyncError(darkResponse.body, StackTrace.current),
       );
       _log.severe(
-        "Cannot fetch map dark style with status - ${darkResponse.statusCode} and response - ${darkResponse.body}",
+        "Cannot fetch map dark style",
+        "Status: ${darkResponse.statusCode}\nResponse: ${darkResponse.body}",
       );
       return;
     }
