@@ -36,6 +36,7 @@ describe(DatabaseService.name, () => {
       errorLog = jest.spyOn(ImmichLogger.prototype, 'error');
       warnLog = jest.spyOn(ImmichLogger.prototype, 'warn');
       databaseMock.getPreferredVectorExtension.mockReturnValue(vectorExt);
+      databaseMock.getExtensionVersion.mockResolvedValue(minVersion);
 
       sut = new DatabaseService(databaseMock);
 
@@ -52,7 +53,6 @@ describe(DatabaseService.name, () => {
 
     it(`should resolve successfully if minimum supported PostgreSQL and ${extName} version are installed`, async () => {
       databaseMock.getPostgresVersion.mockResolvedValueOnce(new Version(14, 0, 0));
-      databaseMock.getExtensionVersion.mockResolvedValue(minVersion);
 
       await expect(sut.init()).resolves.toBeUndefined();
 
@@ -67,14 +67,12 @@ describe(DatabaseService.name, () => {
     it('should throw an error if PostgreSQL version is below minimum supported version', async () => {
       databaseMock.getPostgresVersion.mockResolvedValueOnce(new Version(13, 0, 0));
 
-      await expect(sut.init()).rejects.toThrow(/PostgreSQL version is 13/s);
+      await expect(sut.init()).rejects.toThrow("PostgreSQL version is 13");
 
       expect(databaseMock.getPostgresVersion).toHaveBeenCalledTimes(1);
     });
 
     it(`should resolve successfully if minimum supported ${extName} version is installed`, async () => {
-      databaseMock.getExtensionVersion.mockResolvedValue(minVersion);
-
       await expect(sut.init()).resolves.toBeUndefined();
 
       expect(databaseMock.createExtension).toHaveBeenCalledWith(vectorExt);
@@ -97,10 +95,8 @@ describe(DatabaseService.name, () => {
         new Version(minVersion.major, minVersion.minor - 1, minVersion.patch),
       );
 
-      await expect(sut.init()).rejects.toThrow();
+      await expect(sut.init()).rejects.toThrow(extName);
 
-      expect(fatalLog).toHaveBeenCalledTimes(1);
-      expect(fatalLog.mock.calls[0][0]).toContain(extName);
       expect(databaseMock.runMigrations).not.toHaveBeenCalled();
     });
 
@@ -122,10 +118,8 @@ describe(DatabaseService.name, () => {
           sut.vectorsVersionPin = type;
         }
 
-        await expect(sut.init()).rejects.toThrow();
+        await expect(sut.init()).rejects.toThrow(extName);
 
-        expect(fatalLog).toHaveBeenCalledTimes(1);
-        expect(fatalLog.mock.calls[0][0]).toContain(extName);
         expect(databaseMock.runMigrations).not.toHaveBeenCalled();
       },
     );
@@ -133,10 +127,8 @@ describe(DatabaseService.name, () => {
     it(`should throw an error if ${extName} version is a nightly`, async () => {
       databaseMock.getExtensionVersion.mockResolvedValue(new Version(0, 0, 0));
 
-      await expect(sut.init()).rejects.toThrow();
+      await expect(sut.init()).rejects.toThrow(extName);
 
-      expect(fatalLog).toHaveBeenCalledTimes(1);
-      expect(fatalLog.mock.calls[0][0]).toContain(extName);
       expect(databaseMock.createExtension).toHaveBeenCalledTimes(1);
       expect(databaseMock.runMigrations).not.toHaveBeenCalled();
     });
@@ -153,7 +145,6 @@ describe(DatabaseService.name, () => {
 
     it(`should update ${extName} if a newer version is available`, async () => {
       const version = new Version(minVersion.major, minVersion.minor + 1, minVersion.patch);
-      databaseMock.getExtensionVersion.mockResolvedValue(minVersion);
       databaseMock.getAvailableExtensionVersion.mockResolvedValue(version);
 
       await expect(sut.init()).resolves.toBeUndefined();
@@ -166,7 +157,6 @@ describe(DatabaseService.name, () => {
 
     it(`should not update ${extName} if a newer version is higher than the maximum`, async () => {
       const version = new Version(minVersion.major + 1, minVersion.minor, minVersion.patch);
-      databaseMock.getExtensionVersion.mockResolvedValue(minVersion);
       databaseMock.getAvailableExtensionVersion.mockResolvedValue(version);
 
       await expect(sut.init()).resolves.toBeUndefined();
@@ -178,7 +168,6 @@ describe(DatabaseService.name, () => {
 
     it(`should warn if attempted to update ${extName} and failed`, async () => {
       const version = new Version(minVersion.major, minVersion.minor, minVersion.patch + 1);
-      databaseMock.getExtensionVersion.mockResolvedValue(minVersion);
       databaseMock.getAvailableExtensionVersion.mockResolvedValue(version);
       databaseMock.updateVectorExtension.mockRejectedValue(new Error('Failed to update extension'));
 
@@ -194,7 +183,6 @@ describe(DatabaseService.name, () => {
 
     it(`should warn if ${extName} update requires restart`, async () => {
       const version = new Version(minVersion.major, minVersion.minor, minVersion.patch + 1);
-      databaseMock.getExtensionVersion.mockResolvedValue(minVersion);
       databaseMock.getAvailableExtensionVersion.mockResolvedValue(version);
       databaseMock.updateVectorExtension.mockResolvedValue({ restartRequired: true });
 
@@ -210,7 +198,6 @@ describe(DatabaseService.name, () => {
     it.each([{ index: VectorIndex.CLIP }, { index: VectorIndex.FACE }])(
       `should reindex $index if necessary`,
       async ({ index }) => {
-        databaseMock.getExtensionVersion.mockResolvedValue(minVersion);
         databaseMock.shouldReindex.mockImplementation((indexArg) => Promise.resolve(indexArg === index));
 
         await expect(sut.init()).resolves.toBeUndefined();
@@ -227,7 +214,6 @@ describe(DatabaseService.name, () => {
     it.each([{ index: VectorIndex.CLIP }, { index: VectorIndex.FACE }])(
       `should not reindex $index if not necessary`,
       async () => {
-        databaseMock.getExtensionVersion.mockResolvedValue(minVersion);
         databaseMock.shouldReindex.mockResolvedValue(false);
 
         await expect(sut.init()).resolves.toBeUndefined();

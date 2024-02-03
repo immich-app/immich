@@ -61,7 +61,7 @@ export class SmartInfoRepository implements ISmartInfoRepository {
 
     let results: AssetEntity[] = [];
     await this.assetRepository.manager.transaction(async (manager) => {
-      let query = manager
+      const query = manager
         .createQueryBuilder(AssetEntity, 'a')
         .innerJoin('a.smartSearch', 's')
         .leftJoinAndSelect('a.exifInfo', 'e')
@@ -108,7 +108,7 @@ export class SmartInfoRepository implements ISmartInfoRepository {
 
     let results: Array<AssetFaceEntity & { distance: number }> = [];
     await this.assetRepository.manager.transaction(async (manager) => {
-      let cte = manager
+      const cte = manager
         .createQueryBuilder(AssetFaceEntity, 'faces')
         .select('faces.embedding <=> :embedding', 'distance')
         .innerJoin('faces.asset', 'asset')

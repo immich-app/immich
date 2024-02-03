@@ -107,7 +107,7 @@ export class DatabaseRepository implements IDatabaseRepository {
   async reindex(index: VectorIndex): Promise<void> {
     try {
       await this.dataSource.query(`REINDEX INDEX ${index}`);
-    } catch (err) {
+    } catch (error) {
       if (vectorExt === DatabaseExtension.VECTORS) {
         this.logger.warn(`Could not reindex index ${index}. Attempting to auto-fix.`);
         const table = index === VectorIndex.CLIP ? 'smart_search' : 'asset_faces';
@@ -117,7 +117,7 @@ export class DatabaseRepository implements IDatabaseRepository {
           await manager.query(`REINDEX INDEX ${index}`);
         });
       } else {
-        throw err;
+        throw error;
       }
     }
   }
@@ -136,11 +136,11 @@ export class DatabaseRepository implements IDatabaseRepository {
         [name],
       );
       return res[0]?.['idx_status'] === 'UPGRADE';
-    } catch (err) {
-      if ((err as any).message.includes('index is not existing')) {
+    } catch (error) {
+      if ((error as any).message.includes('index is not existing')) {
         return true;
       }
-      throw err;
+      throw error;
     }
   }
 

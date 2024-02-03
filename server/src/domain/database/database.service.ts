@@ -41,11 +41,11 @@ export class DatabaseService {
         if (await this.databaseRepository.shouldReindex(VectorIndex.FACE)) {
           await this.databaseRepository.reindex(VectorIndex.FACE);
         }
-      } catch (err) {
+      } catch (error) {
         this.logger.warn(
           'Could not run vector reindexing checks. If the extension was updated, please restart the Postgres instance.',
         );
-        throw err;
+        throw error;
       }
 
       await this.databaseRepository.runMigrations();
@@ -62,7 +62,7 @@ export class DatabaseService {
   }
 
   private async createVectorExtension() {
-    await this.databaseRepository.createExtension(this.vectorExt).catch(async (err: QueryFailedError) => {
+    await this.databaseRepository.createExtension(this.vectorExt).catch(async (error: QueryFailedError) => {
       const otherExt =
         this.vectorExt === DatabaseExtension.VECTORS ? DatabaseExtension.VECTOR : DatabaseExtension.VECTORS;
       this.logger.fatal(`
@@ -78,7 +78,7 @@ export class DatabaseService {
         The exception is if your version of Immich prior to upgrading was 1.90.2 or earlier.
         In this case, you may set either extension now, but you will not be able to switch to the other extension following a successful startup.
       `);
-      throw err;
+      throw error;
     });
   }
 
@@ -109,7 +109,7 @@ export class DatabaseService {
           The ${extName[this.vectorExt]} extension has been updated to ${availableVersion}.
           Please restart the Postgres instance to complete the update.`);
       }
-    } catch (err) {
+    } catch (error) {
       this.logger.warn(`
         The ${extName[this.vectorExt]} extension version is ${version}, but ${availableVersion} is available.
         Immich attempted to update the extension, but failed to do so.
@@ -117,7 +117,7 @@ export class DatabaseService {
 
         Please run 'ALTER EXTENSION ${this.vectorExt} UPDATE' manually as a superuser.
         See https://immich.app/docs/guides/database-queries for how to query the database.`);
-      this.logger.error(err);
+      this.logger.error(error);
     }
   }
 
@@ -128,25 +128,24 @@ export class DatabaseService {
     }
 
     if (version.isEqual(new Version(0, 0, 0))) {
-      this.logger.fatal(`
+      throw new Error(`
         The ${extName[this.vectorExt]} extension version is ${version}, which means it is a nightly release.
 
         Please run 'DROP EXTENSION IF EXISTS ${this.vectorExt}' and switch to a release version.
         See https://immich.app/docs/guides/database-queries for how to query the database.`);
-      throw new Error();
     }
 
     const minVersion = this.vectorExt === DatabaseExtension.VECTOR ? this.minVectorVersion : this.minVectorsVersion;
     const maxVersion = this.vectorExt === DatabaseExtension.VECTOR ? this.vectorVersionPin : this.vectorsVersionPin;
 
     if (version.isOlderThan(minVersion) || version.isNewerThan(minVersion) > maxVersion) {
-      const allowedReleaseType = maxVersion !== VersionType.MAJOR ? ` ${VersionType[maxVersion].toLowerCase()}` : '';
+      const allowedReleaseType = maxVersion === VersionType.MAJOR ? '' : ` ${VersionType[maxVersion].toLowerCase()}`;
       const releases =
-        maxVersion !== VersionType.EQUAL
-          ? `${minVersion} and later${allowedReleaseType} releases`
-          : minVersion.toString();
+        maxVersion === VersionType.EQUAL
+          ? minVersion.toString()
+          : `${minVersion} and later${allowedReleaseType} releases`;
 
-      this.logger.fatal(`
+      throw new Error(`
         The ${extName[this.vectorExt]} extension version is ${version}, but Immich only supports ${releases}.
 
         If the Postgres instance already has a compatible version installed, Immich may not have the necessary permissions to activate it.
@@ -154,7 +153,6 @@ export class DatabaseService {
         See https://immich.app/docs/guides/database-queries for how to query the database.
 
         Otherwise, please update the version of ${extName[this.vectorExt]} in the Postgres instance to a compatible version.`);
-      throw new Error();
     }
   }
 }
