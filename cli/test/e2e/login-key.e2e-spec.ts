@@ -1,6 +1,6 @@
 import { restoreTempFolder, testApp } from '@test-utils';
 import { CLI_BASE_OPTIONS, setup, spyOnConsole } from 'test/cli-test-utils';
-import { LoginCommand } from '../../src/commands/login';
+import { LoginCommand } from '../../src/commands/login.command';
 
 describe(`login-key (e2e)`, () => {
   let apiKey: string;
