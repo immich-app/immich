@@ -547,6 +547,22 @@ describe(MetadataService.name, () => {
       );
     });
 
+    it('should handle duration in ISO time string', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      metadataMock.readTags.mockResolvedValue({ Duration: '00:00:08.41' });
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id]);
+      expect(assetMock.upsertExif).toHaveBeenCalled();
+      expect(assetMock.save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: assetStub.image.id,
+          duration: '00:00:08.410',
+        }),
+      );
+    });
+
     it('should handle duration as an object without Scale', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
       metadataMock.readTags.mockResolvedValue({ Duration: { Value: 6.2 } });

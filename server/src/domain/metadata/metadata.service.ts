@@ -12,7 +12,6 @@ import { IBaseJob, IEntityJob, ISidecarWriteJob, JOBS_ASSET_PAGINATION_SIZE, Job
 import {
   ClientEvent,
   DatabaseLock,
-  ExifDuration,
   IAlbumRepository,
   IAssetRepository,
   ICommunicationRepository,
@@ -555,11 +554,15 @@ export class MetadataService {
     return bitsPerSample;
   }
 
-  private getDuration(seconds?: number | ExifDuration): string {
+  private getDuration(seconds?: ImmichTags['Duration']): string {
     let _seconds = seconds as number;
+
     if (typeof seconds === 'object') {
       _seconds = seconds.Value * (seconds?.Scale || 1);
+    } else if (typeof seconds === 'string') {
+      _seconds = Duration.fromISOTime(seconds).as('seconds');
     }
+
     return Duration.fromObject({ seconds: _seconds }).toFormat('hh:mm:ss.SSS');
   }
 }

@@ -26,7 +26,7 @@ export interface ImmichTags extends Omit<Tags, 'FocalLength' | 'Duration'> {
   MediaGroupUUID?: string;
   ImagePixelDepth?: string;
   FocalLength?: number;
-  Duration?: number | ExifDuration;
+  Duration?: number | string | ExifDuration;
   EmbeddedVideoType?: string;
   EmbeddedVideoFile?: BinaryField;
   MotionPhotoVideo?: BinaryField;
