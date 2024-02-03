@@ -16,11 +16,11 @@ You can see the list of all users by running [list-users](/docs/administration/s
 
 ### What is the difference between the cloud icons on the mobile app?
 
-| Icon                               | Description                                                                                                                                     |
-| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| ![cloud](/img/cloud.svg)           | Asset is only available on the server and was uploaded from some other device (like the web client) or was deleted from this device after upload|
-| ![cloud-cross](/img/cloud-off.svg) | Asset is only available locally and has not yet been backed up                                                                                  |
-| ![cloud-done](/img/cloud-done.svg) | Asset was uploaded from this device and is now backed up to the server; the original file is still on the device                                |
+| Icon                               | Description                                                                                                                                      |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| ![cloud](/img/cloud.svg)           | Asset is only available on the server and was uploaded from some other device (like the web client) or was deleted from this device after upload |
+| ![cloud-cross](/img/cloud-off.svg) | Asset is only available locally and has not yet been backed up                                                                                   |
+| ![cloud-done](/img/cloud-done.svg) | Asset was uploaded from this device and is now backed up to the server; the original file is still on the device                                 |
 
 ### I cannot log into the application after an update. What can I do?
 
@@ -92,7 +92,7 @@ Immich uses a player with known HDR color display issues. We are experimenting w
 
 ### Why does Immich transcode my videos to a lower quality?
 
-Immich always keeps your original files. Alongside that, it generates a transcoded version for compatibility and performance reasons. 
+Immich always keeps your original files. Alongside that, it generates a transcoded version for compatibility and performance reasons.
 
 ### How can I delete transcoded videos without deleting the original?
 
@@ -210,7 +210,7 @@ Feel free to make a feature request if there's a model you want to use that isn'
 
 ### Does Immich support Facial Recognition for videos ?
 
-Immich's machine learning feature operate on the generated thumbnail. If a face is visible in the video's thumbnail it will be picked up by facial recognition. 
+Immich's machine learning feature operate on the generated thumbnail. If a face is visible in the video's thumbnail it will be picked up by facial recognition.
 Scanning the entire video for faces may be implemented in the future.
 
 ### Does Immich have animal recognition?
@@ -262,7 +262,7 @@ You can look at the [original docker docs](https://docs.docker.com/config/contai
 This advice improves throughput, not latency. This is to say that it will make Smart Search jobs process more quickly, but it won't make searching faster.
 :::
 
-You can increase throughput by increasing the job concurrency for machine learning jobs (Smart Search, Face Detection). With higher concurrency, the host will work on more assets in parallel. You can do this by navigating to Administration > Settings > Job Settings and increasing concurrency as needed. 
+You can increase throughput by increasing the job concurrency for machine learning jobs (Smart Search, Face Detection). With higher concurrency, the host will work on more assets in parallel. You can do this by navigating to Administration > Settings > Job Settings and increasing concurrency as needed.
 
 :::danger
 On a normal machine, 2 or 3 concurrent jobs can probably max the CPU. Beyond this, note that storage speed and latency may quickly become the limiting factor; particularly when using HDDs.
@@ -274,7 +274,7 @@ More detail can be found [here](https://discord.com/channels/979116623879368755/
 
 ### Why is Immich using so much of my CPU?
 
-When a large amount of assets are uploaded to Immich it makes sense that the CPU and RAM will be heavily used due to machine learning work and creating image thumbnails. 
+When a large amount of assets are uploaded to Immich it makes sense that the CPU and RAM will be heavily used due to machine learning work and creating image thumbnails.
 Once this process completes, the percentage of CPU usage will drop to around 3-5% usage
 
 ---
