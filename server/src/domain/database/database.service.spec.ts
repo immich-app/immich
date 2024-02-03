@@ -67,7 +67,7 @@ describe(DatabaseService.name, () => {
     it('should throw an error if PostgreSQL version is below minimum supported version', async () => {
       databaseMock.getPostgresVersion.mockResolvedValueOnce(new Version(13, 0, 0));
 
-      await expect(sut.init()).rejects.toThrow("PostgreSQL version is 13");
+      await expect(sut.init()).rejects.toThrow('PostgreSQL version is 13');
 
       expect(databaseMock.getPostgresVersion).toHaveBeenCalledTimes(1);
     });
