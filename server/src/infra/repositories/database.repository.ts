@@ -14,7 +14,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import AsyncLock from 'async-lock';
 import { DataSource, EntityManager, QueryRunner } from 'typeorm';
-import { isValidInteger } from '../infra.utils';
 import { ImmichLogger } from '../logger';
 
 @Injectable()
@@ -143,17 +142,6 @@ export class DatabaseRepository implements IDatabaseRepository {
       }
       throw err;
     }
-  }
-
-  private async createVectorIndex(manager: EntityManager, indexName: string, table: string): Promise<void> {
-    if (vectorExt === DatabaseExtension.VECTORS) {
-      await manager.query(`SET vectors.pgvector_compatibility=on`);
-    }
-
-    await manager.query(`
-      CREATE INDEX IF NOT EXISTS ${indexName} ON ${table}
-      USING hnsw (embedding vector_cosine_ops)
-      WITH (ef_construction = 300, m = 16)`);
   }
 
   private async updateVectorsSchema(manager: EntityManager, curVersion: Version): Promise<void> {

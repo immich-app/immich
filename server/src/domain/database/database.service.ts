@@ -2,7 +2,14 @@ import { ImmichLogger } from '@app/infra/logger';
 import { Inject, Injectable } from '@nestjs/common';
 import { QueryFailedError } from 'typeorm';
 import { Version, VersionType } from '../domain.constant';
-import { DatabaseExtension, DatabaseLock, IDatabaseRepository, VectorExtension, VectorIndex, extName } from '../repositories';
+import {
+  DatabaseExtension,
+  DatabaseLock,
+  IDatabaseRepository,
+  VectorExtension,
+  VectorIndex,
+  extName,
+} from '../repositories';
 
 @Injectable()
 export class DatabaseService {
@@ -34,8 +41,10 @@ export class DatabaseService {
         if (await this.databaseRepository.shouldReindex(VectorIndex.FACE)) {
           await this.databaseRepository.reindex(VectorIndex.FACE);
         }
-      } catch(err) {
-        this.logger.warn('Could not run vector reindexing checks. If the extension was updated, please restart the Postgres instance.');
+      } catch (err) {
+        this.logger.warn(
+          'Could not run vector reindexing checks. If the extension was updated, please restart the Postgres instance.',
+        );
         throw err;
       }
 
@@ -93,7 +102,7 @@ export class DatabaseService {
     }
 
     try {
-      this.logger.warn(`Updating ${extName[this.vectorExt]} extension to ${availableVersion}`);
+      this.logger.log(`Updating ${extName[this.vectorExt]} extension to ${availableVersion}`);
       const { restartRequired } = await this.databaseRepository.updateVectorExtension(this.vectorExt, availableVersion);
       if (restartRequired) {
         this.logger.warn(`
@@ -131,9 +140,10 @@ export class DatabaseService {
     const maxVersion = this.vectorExt === DatabaseExtension.VECTOR ? this.vectorVersionPin : this.vectorsVersionPin;
 
     if (version.isOlderThan(minVersion) || version.isNewerThan(minVersion) > maxVersion) {
+      const allowedReleaseType = maxVersion !== VersionType.MAJOR ? ` ${VersionType[maxVersion].toLowerCase()}` : '';
       const releases =
         maxVersion !== VersionType.EQUAL
-          ? `${minVersion} and later ${VersionType[maxVersion - 1].toLowerCase()} releases`
+          ? `${minVersion} and later${allowedReleaseType} releases`
           : minVersion.toString();
 
       this.logger.fatal(`
