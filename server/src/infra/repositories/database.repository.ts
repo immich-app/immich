@@ -86,7 +86,7 @@ export class DatabaseRepository implements IDatabaseRepository {
       await this.updateVectorsSchema(manager, curVersion);
     }
 
-    await manager.query(`ALTER EXTENSION ${extension} UPDATE${version ? ` TO '${version}-alpha.2'` : ''}`);
+    await manager.query(`ALTER EXTENSION ${extension} UPDATE${version ? ` TO '${version}'` : ''}`);
 
     if (!minorOrMajor) {
       return { restartRequired };
