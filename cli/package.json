@@ -33,8 +33,6 @@
     "glob": "^10.3.1",
     "immich": "file:../server",
     "mock-fs": "^5.2.0",
-    "ts-node": "^10.9.1",
-    "tslib": "^2.5.3",
     "typescript": "^5.3.3",
     "vite": "^5.0.12",
     "vitest": "^1.2.1",
