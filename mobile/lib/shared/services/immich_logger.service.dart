@@ -12,7 +12,7 @@ import 'package:share_plus/share_plus.dart';
 /// [ImmichLogger] is a custom logger that is built on top of the [logging] package.
 /// The logs are written to the database and onto console, using `debugPrint` method.
 ///
-/// The logs are deleted when exceeding the `maxLogEntries` (default 200) property
+/// The logs are deleted when exceeding the `maxLogEntries` (default 500) property
 /// in the class.
 ///
 /// Logs can be shared by calling the `shareLogs` method, which will open a share dialog
@@ -58,6 +58,7 @@ class ImmichLogger {
     debugPrint('[${record.level.name}] [${record.time}] ${record.message}');
     final lm = LoggerMessage(
       message: record.message,
+      details: record.error?.toString(),
       level: record.level.toLogLevel(),
       createdAt: record.time,
       context1: record.loggerName,
