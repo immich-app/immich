@@ -12,7 +12,6 @@ from huggingface_hub import snapshot_download
 from onnx.shape_inference import infer_shapes_path
 from onnx.tools.update_model_dims import update_inputs_outputs_dims
 from typing_extensions import Buffer
-
 import ann.ann
 from app.models.constants import STATIC_INPUT_PROVIDERS, SUPPORTED_PROVIDERS
 
@@ -146,7 +145,7 @@ class InferenceModel(ABC):
         # check_model gets called in update_inputs_outputs_dims
         check_model = onnx.checker.check_model
         try:
-
+            
             def check_model_stub(*args: Any, **kwargs: Any) -> None:
                 pass
 
