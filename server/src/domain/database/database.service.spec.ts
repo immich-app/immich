@@ -101,11 +101,11 @@ describe(DatabaseService.name, () => {
     });
 
     it.each([
-      { type: VersionType.EQUAL, max: 'pinned to min', actual: 'patch' },
+      { type: VersionType.EQUAL, max: 'no', actual: 'patch' },
       { type: VersionType.PATCH, max: 'patch', actual: 'minor' },
       { type: VersionType.MINOR, max: 'minor', actual: 'major' },
     ] as const)(
-      `should throw an error if max upgrade from the min version is $max and ${extName} version is $actual`,
+      `should throw an error if $max upgrade from min version is allowed and ${extName} version is $actual`,
       async ({ type, actual }) => {
         const version = new Version(minVersion.major, minVersion.minor, minVersion.patch);
         version[actual] = minVersion[actual] + 1;
