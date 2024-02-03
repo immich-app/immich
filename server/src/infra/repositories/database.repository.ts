@@ -134,8 +134,11 @@ export class DatabaseRepository implements IDatabaseRepository {
       );
       return res[0]?.['idx_status'] === 'UPGRADE';
     } catch (error) {
-      if ((error as any).message.includes('index is not existing')) {
+      const message: string = (error as any).message;
+      if (message.includes('index is not existing')) {
         return true;
+      } else if (message.includes('relation "pg_vector_index_stat" does not exist')) {
+        return false;
       }
       throw error;
     }
