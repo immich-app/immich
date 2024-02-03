@@ -1,7 +1,7 @@
 import { PostgreSqlContainer } from '@testcontainers/postgresql';
 
 export default async () => {
-  const pg = await new PostgreSqlContainer('tensorchord/pgvecto-rs:pg14-v0.1.11')
+  const pg = await new PostgreSqlContainer('tensorchord/pgvecto-rs:pg14-v0.2.0')
     .withDatabase('immich')
     .withUsername('postgres')
     .withPassword('postgres')
