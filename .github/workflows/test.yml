@@ -103,6 +103,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
       - name: Run setup typescript-sdk
         run: npm ci && npm run build
         working-directory: ./open-api/typescript-sdk
@@ -142,6 +147,11 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: "recursive"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
 
       - name: Run setup typescript-sdk
         run: npm ci && npm run build
