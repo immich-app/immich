@@ -14,8 +14,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import AsyncLock from 'async-lock';
 import { DataSource, EntityManager, QueryRunner } from 'typeorm';
-import { ImmichLogger } from '../logger';
 import { isValidInteger } from '../infra.utils';
+import { ImmichLogger } from '../logger';
 
 @Injectable()
 export class DatabaseRepository implements IDatabaseRepository {
