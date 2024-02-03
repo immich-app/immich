@@ -143,6 +143,7 @@ class InferenceModel(ABC):
         inputs = self._get_static_dims(inferred.graph.input)
         outputs = self._get_static_dims(inferred.graph.output)
 
+        # check_model gets called in update_inputs_outputs_dims and doesn't work for large models
         check_model = onnx.checker.check_model
         try:
             onnx.checker.check_model = lambda _: None
