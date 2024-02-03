@@ -67,10 +67,6 @@ export class DatabaseRepository implements IDatabaseRepository {
     await this.dataSource.query(`ALTER EXTENSION ${extension} UPDATE${version ? ` TO '${version}'` : ''}`);
   }
 
-  async setSearchPath(): Promise<void> {
-    await this.dataSource.query(`ALTER DATABASE immich SET search_path TO "$user", public, vectors`);
-  }
-
   async updateVectorExtension(extension: VectorExtension, version?: Version): Promise<VectorUpdateResult> {
     const curVersion = await this.getExtensionVersion(extension);
     if (!curVersion) {
@@ -80,26 +76,26 @@ export class DatabaseRepository implements IDatabaseRepository {
     const minorOrMajor = version && curVersion.isOlderThan(version) >= VersionType.MINOR;
     const isVectors = extension === DatabaseExtension.VECTORS;
     let restartRequired = false;
-    // await this.dataSource.manager.transaction(async (manager) => {
-    const manager = this.dataSource.manager;
-    if (minorOrMajor && isVectors) {
-      await this.updateVectorsSchema(manager, curVersion);
-    }
+    await this.dataSource.manager.transaction(async (manager) => {
+      await this.setSearchPath(manager);
+      if (minorOrMajor && isVectors) {
+        await this.updateVectorsSchema(manager, curVersion);
+      }
 
-    await manager.query(`ALTER EXTENSION ${extension} UPDATE${version ? ` TO '${version}'` : ''}`);
+      await manager.query(`ALTER EXTENSION ${extension} UPDATE${version ? ` TO '${version}'` : ''}`);
 
-    if (!minorOrMajor) {
-      return { restartRequired };
-    }
+      if (!minorOrMajor) {
+        return;
+      }
 
-    if (isVectors) {
-      await manager.query('SELECT pgvectors_upgrade()');
-      restartRequired = true;
-    } else {
-      await this.reindex(VectorIndex.CLIP);
-      await this.reindex(VectorIndex.FACE);
-    }
-    // });
+      if (isVectors) {
+        await manager.query('SELECT pgvectors_upgrade()');
+        restartRequired = true;
+      } else {
+        await this.reindex(VectorIndex.CLIP);
+        await this.reindex(VectorIndex.FACE);
+      }
+    });
 
     return { restartRequired };
   }
@@ -112,6 +108,7 @@ export class DatabaseRepository implements IDatabaseRepository {
         this.logger.warn(`Could not reindex index ${index}. Attempting to auto-fix.`);
         const table = index === VectorIndex.CLIP ? 'smart_search' : 'asset_faces';
         await this.dataSource.manager.transaction(async (manager) => {
+          await this.setSearchPath(manager);
           await manager.query(`ALTER TABLE ${table} ALTER COLUMN embedding SET DATA TYPE real[]`);
           await manager.query(`ALTER TABLE ${table} ALTER COLUMN embedding SET DATA TYPE vector`);
           await manager.query(`REINDEX INDEX ${index}`);
@@ -142,6 +139,10 @@ export class DatabaseRepository implements IDatabaseRepository {
       }
       throw error;
     }
+  }
+
+  private async setSearchPath(manager: EntityManager): Promise<void> {
+    await manager.query(`SET search_path TO "$user", public, vectors`);
   }
 
   private async updateVectorsSchema(manager: EntityManager, curVersion: Version): Promise<void> {

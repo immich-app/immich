@@ -9,6 +9,7 @@ export class AddFaceEmbeddingIndex1700714033632 implements MigrationInterface {
     if (vectorExt === DatabaseExtension.VECTORS) {
       await queryRunner.query(`SET vectors.pgvector_compatibility=on`);
     }
+    await queryRunner.query(`SET search_path TO "$user", public, vectors`);
 
     await queryRunner.query(`
       CREATE INDEX IF NOT EXISTS face_index ON asset_faces

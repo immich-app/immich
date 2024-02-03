@@ -27,7 +27,6 @@ export class DatabaseService {
 
   async init() {
     await this.assertPostgresql();
-    await this.databaseRepository.setSearchPath();
     await this.databaseRepository.withLock(DatabaseLock.Migrations, async () => {
       await this.createVectorExtension();
       await this.updateVectorExtension();

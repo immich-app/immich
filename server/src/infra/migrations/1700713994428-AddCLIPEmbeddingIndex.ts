@@ -9,6 +9,7 @@ export class AddCLIPEmbeddingIndex1700713994428 implements MigrationInterface {
     if (vectorExt === DatabaseExtension.VECTORS) {
       await queryRunner.query(`SET vectors.pgvector_compatibility=on`);
     }
+    await queryRunner.query(`SET search_path TO "$user", public, vectors`);
 
     await queryRunner.query(`
       CREATE INDEX IF NOT EXISTS clip_index ON smart_search

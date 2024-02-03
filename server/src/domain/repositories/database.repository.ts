@@ -42,7 +42,6 @@ export interface IDatabaseRepository {
   createExtension(extension: DatabaseExtension): Promise<void>;
   updateExtension(extension: DatabaseExtension, version?: Version): Promise<void>;
   updateVectorExtension(extension: VectorExtension, version?: Version): Promise<VectorUpdateResult>;
-  setSearchPath(): Promise<void>;
   reindex(index: VectorIndex): Promise<void>;
   shouldReindex(name: VectorIndex): Promise<boolean>;
   runMigrations(options?: { transaction?: 'all' | 'none' | 'each' }): Promise<void>;

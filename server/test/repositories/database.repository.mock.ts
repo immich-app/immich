@@ -9,7 +9,6 @@ export const newDatabaseRepositoryMock = (): jest.Mocked<IDatabaseRepository> =>
     createExtension: jest.fn().mockImplementation(() => Promise.resolve()),
     updateExtension: jest.fn(),
     updateVectorExtension: jest.fn(),
-    setSearchPath: jest.fn(),
     reindex: jest.fn(),
     shouldReindex: jest.fn(),
     runMigrations: jest.fn(),
