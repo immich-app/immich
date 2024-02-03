@@ -1,4 +1,11 @@
-import { DatabaseExtension, DatabaseService, IDatabaseRepository, Version, VersionType } from '@app/domain';
+import {
+  DatabaseExtension,
+  DatabaseService,
+  IDatabaseRepository,
+  VectorIndex,
+  Version,
+  VersionType,
+} from '@app/domain';
 import { ImmichLogger } from '@app/infra/logger';
 import { newDatabaseRepositoryMock } from '@test';
 
@@ -181,5 +188,37 @@ describe(DatabaseService.name, () => {
       expect(databaseMock.runMigrations).toHaveBeenCalledTimes(1);
       expect(fatalLog).not.toHaveBeenCalled();
     });
+
+    it.each([{ index: VectorIndex.CLIP }, { index: VectorIndex.FACE }])(
+      `should reindex $index if necessary`,
+      async ({ index }) => {
+        databaseMock.getExtensionVersion.mockResolvedValue(minVersion);
+        databaseMock.shouldReindex.mockImplementation((indexArg) => Promise.resolve(indexArg === index));
+
+        await expect(sut.init()).resolves.toBeUndefined();
+
+        expect(databaseMock.shouldReindex).toHaveBeenCalledWith(index);
+        expect(databaseMock.shouldReindex).toHaveBeenCalledTimes(2);
+        expect(databaseMock.reindex).toHaveBeenCalledWith(index);
+        expect(databaseMock.reindex).toHaveBeenCalledTimes(1);
+        expect(databaseMock.runMigrations).toHaveBeenCalledTimes(1);
+        expect(fatalLog).not.toHaveBeenCalled();
+      },
+    );
+
+    it.each([{ index: VectorIndex.CLIP }, { index: VectorIndex.FACE }])(
+      `should not reindex $index if not necessary`,
+      async () => {
+        databaseMock.getExtensionVersion.mockResolvedValue(minVersion);
+        databaseMock.shouldReindex.mockResolvedValue(false);
+
+        await expect(sut.init()).resolves.toBeUndefined();
+
+        expect(databaseMock.shouldReindex).toHaveBeenCalledTimes(2);
+        expect(databaseMock.reindex).not.toHaveBeenCalled();
+        expect(databaseMock.runMigrations).toHaveBeenCalledTimes(1);
+        expect(fatalLog).not.toHaveBeenCalled();
+      },
+    );
   });
 });
