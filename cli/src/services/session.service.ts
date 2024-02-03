@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs';
 import { access, constants, mkdir, readFile, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import yaml from 'yaml';
-import { ImmichApi } from './api.service';
+import { ImmichApi } from './api.service.js';
 
 class LoginError extends Error {
   constructor(message: string) {

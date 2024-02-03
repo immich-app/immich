@@ -1,5 +1,5 @@
 import mockfs from 'mock-fs';
-import { CrawlService, CrawlOptions } from './crawl.service';
+import { CrawlService, CrawlOptions } from './crawl.service.js';
 
 interface Test {
   test: string;

@@ -1,4 +1,4 @@
-import { SessionService } from './session.service';
+import { SessionService } from './session.service.js';
 import fs from 'node:fs';
 import yaml from 'yaml';
 import {
@@ -10,7 +10,7 @@ import {
   deleteAuthFile,
   readTestAuthFile,
   spyOnConsole,
-} from '../../test/cli-test-utils';
+} from '../../test/cli-test-utils.js';
 
 const mockPingServer = vi.fn(() => Promise.resolve({ data: { res: 'pong' } }));
 const mockUserInfo = vi.fn(() => Promise.resolve({ data: { email: 'admin@example.com' } }));

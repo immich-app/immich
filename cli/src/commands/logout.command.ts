@@ -1,4 +1,4 @@
-import { BaseCommand } from './base-command';
+import { BaseCommand } from './base-command.js';
 
 export class LogoutCommand extends BaseCommand {
   public static readonly description = 'Logout and remove persisted credentials';

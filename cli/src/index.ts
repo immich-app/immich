@@ -3,10 +3,10 @@ import { Command, Option } from 'commander';
 import path from 'node:path';
 import os from 'node:os';
 import { version } from '../package.json';
-import { LoginCommand } from './commands/login';
-import { LogoutCommand } from './commands/logout.command';
-import { ServerInfoCommand } from './commands/server-info.command';
-import { UploadCommand } from './commands/upload.command';
+import { LoginCommand } from './commands/login.js';
+import { LogoutCommand } from './commands/logout.command.js';
+import { ServerInfoCommand } from './commands/server-info.command.js';
+import { UploadCommand } from './commands/upload.command.js';
 
 const homeDirectory = os.homedir();
 const configDirectory = path.join(homeDirectory, '.config/immich/');

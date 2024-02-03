@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { ImmichApi } from '../src/services/api.service';
+import { ImmichApi } from '../src/services/api.service.js';
 
 export const TEST_CONFIG_DIR = '/tmp/immich/';
 export const TEST_AUTH_FILE = path.join(TEST_CONFIG_DIR, 'auth.yml');

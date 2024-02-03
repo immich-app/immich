@@ -1,6 +1,6 @@
 import { restoreTempFolder, testApp } from '@test-utils';
-import { CLI_BASE_OPTIONS, setup, spyOnConsole } from 'test/cli-test-utils';
-import { ServerInfoCommand } from '../../src/commands/server-info.command';
+import { CLI_BASE_OPTIONS, setup, spyOnConsole } from 'test/cli-test-utils.js';
+import { ServerInfoCommand } from '../../src/commands/server-info.command.js';
 
 describe(`server-info (e2e)`, () => {
   const consoleSpy = spyOnConsole();

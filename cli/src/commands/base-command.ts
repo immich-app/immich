@@ -1,6 +1,6 @@
 import { ServerVersionResponseDto, UserResponseDto } from '@immich/sdk';
-import { ImmichApi } from '../services/api.service';
-import { SessionService } from '../services/session.service';
+import { ImmichApi } from '../services/api.service.js';
+import { SessionService } from '../services/session.service.js';
 
 export abstract class BaseCommand {
   protected sessionService!: SessionService;
