@@ -15,6 +15,7 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import AsyncLock from 'async-lock';
 import { DataSource, EntityManager, QueryRunner } from 'typeorm';
 import { ImmichLogger } from '../logger';
+import { isValidInteger } from '../infra.utils';
 
 @Injectable()
 export class DatabaseRepository implements IDatabaseRepository {
@@ -107,11 +108,12 @@ export class DatabaseRepository implements IDatabaseRepository {
       if (vectorExt === DatabaseExtension.VECTORS) {
         this.logger.warn(`Could not reindex index ${index}. Attempting to auto-fix.`);
         const table = index === VectorIndex.CLIP ? 'smart_search' : 'asset_faces';
+        const dimSize = await this.getDimSize(table);
         await this.dataSource.manager.transaction(async (manager) => {
           await this.setSearchPath(manager);
           await manager.query(`DROP INDEX IF EXISTS ${index}`);
           await manager.query(`ALTER TABLE ${table} ALTER COLUMN embedding SET DATA TYPE real[]`);
-          await manager.query(`ALTER TABLE ${table} ALTER COLUMN embedding SET DATA TYPE vector(512)`);
+          await manager.query(`ALTER TABLE ${table} ALTER COLUMN embedding SET DATA TYPE vector(${dimSize})`);
           await manager.query(`SET vectors.pgvector_compatibility=on`);
           await manager.query(`
             CREATE INDEX IF NOT EXISTS ${index} ON ${table}
@@ -166,6 +168,23 @@ export class DatabaseRepository implements IDatabaseRepository {
     await manager.query('UPDATE pg_catalog.pg_extension SET extrelocatable = false WHERE extname = $1', [
       DatabaseExtension.VECTORS,
     ]);
+  }
+
+  private async getDimSize(table: string, column = 'embedding'): Promise<number> {
+    const res = await this.dataSource.query(`
+      SELECT atttypmod as dimsize
+      FROM pg_attribute f
+        JOIN pg_class c ON c.oid = f.attrelid
+      WHERE c.relkind = 'r'::char
+        AND f.attnum > 0
+        AND c.relname = '${table}'
+        AND f.attname = '${column}'`);
+
+    const dimSize = res[0]['dimsize'];
+    if (!isValidInteger(dimSize, { min: 1, max: 2 ** 16 })) {
+      throw new Error(`Could not retrieve dimension size`);
+    }
+    return dimSize;
   }
 
   async runMigrations(options?: { transaction?: 'all' | 'none' | 'each' }): Promise<void> {
