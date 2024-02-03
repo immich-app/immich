@@ -109,9 +109,14 @@ export class DatabaseRepository implements IDatabaseRepository {
         const table = index === VectorIndex.CLIP ? 'smart_search' : 'asset_faces';
         await this.dataSource.manager.transaction(async (manager) => {
           await this.setSearchPath(manager);
+          await manager.query(`DROP INDEX IF EXISTS ${index}`);
           await manager.query(`ALTER TABLE ${table} ALTER COLUMN embedding SET DATA TYPE real[]`);
-          await manager.query(`ALTER TABLE ${table} ALTER COLUMN embedding SET DATA TYPE vector`);
-          await manager.query(`REINDEX INDEX ${index}`);
+          await manager.query(`ALTER TABLE ${table} ALTER COLUMN embedding SET DATA TYPE vector(512)`);
+          await manager.query(`SET vectors.pgvector_compatibility=on`);
+          await manager.query(`
+            CREATE INDEX IF NOT EXISTS ${index} ON ${table}
+            USING hnsw (embedding vector_cosine_ops)
+            WITH (ef_construction = 300, m = 16)`);
         });
       } else {
         throw error;
