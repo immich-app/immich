@@ -39,10 +39,11 @@
     "ts-node": "^10.9.1",
     "tslib": "^2.5.3",
     "typescript": "^5.3.3",
+    "vite": "^5.0.12",
     "vitest": "^1.2.1"
   },
   "scripts": {
-    "build": "tsc --project tsconfig.build.json",
+    "build": "vite build --ssr",
     "lint": "eslint \"src/**/*.ts\" \"test/**/*.ts\" --max-warnings 0",
     "lint:fix": "npm run lint -- --fix",
     "prepack": "npm run build",
