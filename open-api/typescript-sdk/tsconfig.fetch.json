@@ -1,0 +1,12 @@
+{
+  "include": ["fetch.ts", "fetch-client/**/*"],
+  "compilerOptions": {
+    "strict": true,
+    "skipLibCheck": true,
+    "declaration": true,
+    "outDir": "build/fetch",
+    "module": "esnext",
+    "moduleResolution": "Bundler",
+    "lib": ["esnext", "dom"]
+  }
+}

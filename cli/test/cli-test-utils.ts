@@ -14,10 +14,10 @@ export const setup = async () => {
   await api.authenticationApi.signUpAdmin({
     signUpDto: { email: 'cli@immich.app', password: 'password', name: 'Administrator' },
   });
-  const { data: admin } = await api.authenticationApi.login({
+  const admin = await api.authenticationApi.login({
     loginCredentialDto: { email: 'cli@immich.app', password: 'password' },
   });
-  const { data: apiKey } = await api.keyApi.createApiKey(
+  const apiKey = await api.keyApi.createApiKey(
     { aPIKeyCreateDto: { name: 'CLI Test' } },
     { headers: { Authorization: `Bearer ${admin.accessToken}` } },
   );
