@@ -1,4 +1,4 @@
-import 'package:immich_mobile/shared/models/album.dart';
+import 'package:immich_mobile/modules/album/models/album.model.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/etag.dart';
 import 'package:immich_mobile/shared/models/exif_info.dart';
@@ -11,7 +11,8 @@ Future<void> clearAssetsAndAlbums(Isar db) async {
   await db.writeTxn(() async {
     await db.assets.clear();
     await db.exifInfos.clear();
-    await db.albums.clear();
+    await db.localAlbums.clear();
+    await db.remoteAlbums.clear();
     await db.eTags.clear();
     await db.users.clear();
   });

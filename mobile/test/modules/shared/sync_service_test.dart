@@ -8,7 +8,6 @@ import 'package:immich_mobile/shared/services/sync.service.dart';
 import 'package:isar/isar.dart';
 
 import '../../test_utils.dart';
-import 'shared_mocks.dart';
 
 void main() {
   Asset makeAsset({
@@ -38,7 +37,6 @@ void main() {
 
   group('Test SyncService grouped', () {
     late final Isar db;
-    final MockHashService hs = MockHashService();
     final owner = User(
       id: "1",
       updatedAt: DateTime.now(),
@@ -68,7 +66,7 @@ void main() {
       });
     });
     test('test inserting existing assets', () async {
-      SyncService s = SyncService(db, hs);
+      SyncService s = SyncService(db);
       final List<Asset> remoteAssets = [
         makeAsset(checksum: "a", remoteId: "0-1"),
         makeAsset(checksum: "b", remoteId: "2-1"),
@@ -82,7 +80,7 @@ void main() {
     });
 
     test('test inserting new assets', () async {
-      SyncService s = SyncService(db, hs);
+      SyncService s = SyncService(db);
       final List<Asset> remoteAssets = [
         makeAsset(checksum: "a", remoteId: "0-1"),
         makeAsset(checksum: "b", remoteId: "2-1"),
@@ -99,7 +97,7 @@ void main() {
     });
 
     test('test syncing duplicate assets', () async {
-      SyncService s = SyncService(db, hs);
+      SyncService s = SyncService(db);
       final List<Asset> remoteAssets = [
         makeAsset(checksum: "a", remoteId: "0-1"),
         makeAsset(checksum: "b", remoteId: "1-1"),
@@ -131,7 +129,7 @@ void main() {
     });
 
     test('test efficient sync', () async {
-      SyncService s = SyncService(db, hs);
+      SyncService s = SyncService(db);
       final List<Asset> toUpsert = [
         makeAsset(checksum: "a", remoteId: "0-1"), // changed
         makeAsset(checksum: "f", remoteId: "0-2"), // new

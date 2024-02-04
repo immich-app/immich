@@ -8,9 +8,9 @@ import 'package:immich_mobile/modules/activities/providers/activity.provider.dar
 import 'package:immich_mobile/modules/activities/views/activities_page.dart';
 import 'package:immich_mobile/modules/activities/widgets/activity_text_field.dart';
 import 'package:immich_mobile/modules/activities/widgets/dismissible_activity.dart';
+import 'package:immich_mobile/modules/album/models/album.model.dart';
 import 'package:immich_mobile/modules/album/providers/current_album.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/current_asset.provider.dart';
-import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/models/user.dart';
@@ -82,7 +82,7 @@ void main() {
     activityMock = MockAlbumActivity(_activities);
     overrides = [
       albumActivityProvider(
-        AlbumStub.twoAsset.remoteId!,
+        AlbumStub.twoAsset.id,
         AssetStub.image1.remoteId!,
       ).overrideWith(() => activityMock),
       currentAlbumProvider.overrideWith(() => mockCurrentAlbumProvider),
@@ -94,11 +94,11 @@ void main() {
       // Save all assets
       await db.users.put(UserStub.admin);
       await db.assets.putAll([AssetStub.image1, AssetStub.image2]);
-      await db.albums.put(AlbumStub.twoAsset);
+      await db.remoteAlbums.put(AlbumStub.twoAsset);
       await AlbumStub.twoAsset.owner.save();
       await AlbumStub.twoAsset.assets.save();
     });
-    expect(db.albums.countSync(), 1);
+    expect(db.remoteAlbums.countSync(), 1);
     expect(db.assets.countSync(), 2);
     expect(db.users.countSync(), 1);
   });

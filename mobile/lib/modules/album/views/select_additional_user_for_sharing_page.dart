@@ -5,14 +5,14 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/modules/album/models/album.model.dart';
 import 'package:immich_mobile/modules/album/providers/suggested_shared_users.provider.dart';
-import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
 
 @RoutePage<List<String>?>()
 class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
-  final Album album;
+  final RemoteAlbum album;
 
   const SelectAdditionalUserForSharingPage({super.key, required this.album});
 

@@ -40,7 +40,7 @@ void main() {
     activityMock = MockAlbumActivity();
     overrides = [
       currentAlbumProvider.overrideWith(() => mockCurrentAlbumProvider),
-      albumActivityProvider(AlbumStub.twoAsset.remoteId!)
+      albumActivityProvider(AlbumStub.twoAsset.id)
           .overrideWith(() => activityMock),
     ];
   });

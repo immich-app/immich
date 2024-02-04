@@ -1,7 +1,7 @@
 import 'package:collection/collection.dart';
+import 'package:immich_mobile/modules/album/models/album.model.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
-import 'package:immich_mobile/shared/models/album.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'album_sort_by_options.provider.g.dart';
@@ -11,9 +11,13 @@ typedef AlbumSortFn = List<Album> Function(List<Album> albums, bool isReverse);
 class _AlbumSortHandlers {
   const _AlbumSortHandlers._();
 
+  /// Sorts a List<Album> based on their created date.
+  ///
+  /// ! This is not support for LocalAlbums and they are filtered out from the result
   static const AlbumSortFn created = _sortByCreated;
   static List<Album> _sortByCreated(List<Album> albums, bool isReverse) {
-    final sorted = albums.sortedBy((album) => album.createdAt);
+    final sorted =
+        albums.whereType<RemoteAlbum>().sortedBy((album) => album.createdAt);
     return (isReverse ? sorted.reversed : sorted).toList();
   }
 
@@ -36,9 +40,12 @@ class _AlbumSortHandlers {
     return (isReverse ? sorted.reversed : sorted).toList();
   }
 
+  /// Sorts a List<Album> based on the most recent assets.
+  ///
+  /// ! This is not support for LocalAlbums and they are filtered out from the result
   static const AlbumSortFn mostRecent = _sortByMostRecent;
   static List<Album> _sortByMostRecent(List<Album> albums, bool isReverse) {
-    final sorted = albums.sorted((a, b) {
+    final sorted = albums.whereType<RemoteAlbum>().sorted((a, b) {
       if (a.endDate != null && b.endDate != null) {
         return a.endDate!.compareTo(b.endDate!);
       }
@@ -49,9 +56,12 @@ class _AlbumSortHandlers {
     return (isReverse ? sorted.reversed : sorted).toList();
   }
 
+  /// Sorts a List<Album> based on the most oldest assets.
+  ///
+  /// ! This is not support for LocalAlbums and they are filtered out from the result
   static const AlbumSortFn mostOldest = _sortByMostOldest;
   static List<Album> _sortByMostOldest(List<Album> albums, bool isReverse) {
-    final sorted = albums.sorted((a, b) {
+    final sorted = albums.whereType<RemoteAlbum>().sorted((a, b) {
       if (a.startDate != null && b.startDate != null) {
         return a.startDate!.compareTo(b.startDate!);
       }

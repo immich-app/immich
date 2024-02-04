@@ -10,6 +10,7 @@ import 'package:immich_mobile/modules/activities/providers/activity.provider.dar
 import 'package:immich_mobile/modules/activities/widgets/activity_text_field.dart';
 import 'package:immich_mobile/modules/activities/widgets/activity_tile.dart';
 import 'package:immich_mobile/modules/activities/widgets/dismissible_activity.dart';
+import 'package:immich_mobile/modules/album/models/album.model.dart';
 import 'package:immich_mobile/modules/album/providers/current_album.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/current_asset.provider.dart';
 import 'package:immich_mobile/shared/providers/user.provider.dart';
@@ -22,15 +23,15 @@ class ActivitiesPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Album has to be set in the provider before reaching this page
-    final album = ref.watch(currentAlbumProvider)!;
+    // Album has to be set in the provider before reaching this page and has to be a RemoteAlbum
+    final album = ref.watch(currentAlbumProvider)! as RemoteAlbum;
     final asset = ref.watch(currentAssetProvider);
     final user = ref.watch(currentUserProvider);
 
-    final activityNotifier = ref
-        .read(albumActivityProvider(album.remoteId!, asset?.remoteId).notifier);
+    final activityNotifier =
+        ref.read(albumActivityProvider(album.id, asset?.remoteId).notifier);
     final activities =
-        ref.watch(albumActivityProvider(album.remoteId!, asset?.remoteId));
+        ref.watch(albumActivityProvider(album.id, asset?.remoteId));
 
     final listViewScrollController = useScrollController();
 

@@ -1,15 +1,15 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/album/models/album.model.dart';
 import 'package:immich_mobile/modules/album/providers/album_sort_by_options.provider.dart';
 import 'package:immich_mobile/modules/album/ui/album_thumbnail_listtile.dart';
-import 'package:immich_mobile/shared/models/album.dart';
 
 class AddToAlbumSliverList extends HookConsumerWidget {
   /// The asset to add to an album
-  final List<Album> albums;
-  final List<Album> sharedAlbums;
-  final void Function(Album) onAddToAlbum;
+  final List<RemoteAlbum> albums;
+  final List<RemoteAlbum> sharedAlbums;
+  final void Function(RemoteAlbum) onAddToAlbum;
   final bool enabled;
 
   const AddToAlbumSliverList({
@@ -46,9 +46,11 @@ class AddToAlbumSliverList extends HookConsumerWidget {
                   physics: const ClampingScrollPhysics(),
                   itemCount: sortedSharedAlbums.length,
                   itemBuilder: (context, index) => AlbumThumbnailListTile(
-                    album: sortedSharedAlbums[index],
+                    album: sortedSharedAlbums[index] as RemoteAlbum,
                     onTap: enabled
-                        ? () => onAddToAlbum(sortedSharedAlbums[index])
+                        ? () => onAddToAlbum(
+                              sortedSharedAlbums[index] as RemoteAlbum,
+                            )
                         : () {},
                   ),
                 ),
@@ -59,7 +61,7 @@ class AddToAlbumSliverList extends HookConsumerWidget {
 
         // Build albums list
         final offset = index - (sharedAlbums.isNotEmpty ? 1 : 0);
-        final album = sortedAlbums[offset];
+        final album = sortedAlbums[offset] as RemoteAlbum;
         return AlbumThumbnailListTile(
           album: album,
           onTap: enabled ? () => onAddToAlbum(album) : () {},

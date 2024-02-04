@@ -7,7 +7,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/modules/album/providers/album.provider.dart';
+import 'package:immich_mobile/extensions/object_extensions.dart';
+import 'package:immich_mobile/modules/album/providers/local_album.provider.dart';
+import 'package:immich_mobile/modules/backup/providers/backup_album.provider.dart';
 import 'package:immich_mobile/modules/backup/providers/error_backup_list.provider.dart';
 import 'package:immich_mobile/modules/backup/providers/ios_background_settings.provider.dart';
 import 'package:immich_mobile/modules/backup/providers/manual_upload.provider.dart';
@@ -25,16 +27,18 @@ class BackupControllerPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     BackUpState backupState = ref.watch(backupProvider);
-    final hasAnyAlbum = backupState.selectedBackupAlbums.isNotEmpty;
+    final backupAlbums = ref.watch(backupAlbumsProvider);
+    final hasAnyAlbum =
+        backupAlbums.valueOrNull?.selectedBackupAlbums.isNotEmpty ?? false;
 
     bool hasExclusiveAccess =
         backupState.backupProgress != BackUpProgressEnum.inBackground;
-    bool shouldBackup = backupState.allUniqueAssets.length -
-                    backupState.selectedAlbumsBackupAssetsIds.length ==
-                0 ||
-            !hasExclusiveAccess
-        ? false
-        : true;
+    bool shouldBackup =
+        backupState.allUniqueAssets.length - backupState.backedUpAssetsCount ==
+                    0 ||
+                !hasExclusiveAccess
+            ? false
+            : true;
 
     useEffect(
       () {
@@ -60,7 +64,7 @@ class BackupControllerPage extends HookConsumerWidget {
 
     Widget buildSelectedAlbumName() {
       var text = "backup_controller_page_backup_selected".tr();
-      var albums = ref.watch(backupProvider).selectedBackupAlbums;
+      var albums = backupAlbums.valueOrNull?.selectedBackupAlbums ?? [];
 
       if (albums.isNotEmpty) {
         for (var album in albums) {
@@ -95,7 +99,7 @@ class BackupControllerPage extends HookConsumerWidget {
 
     Widget buildExcludedAlbumName() {
       var text = "backup_controller_page_excluded".tr();
-      var albums = ref.watch(backupProvider).excludedBackupAlbums;
+      var albums = backupAlbums.valueOrNull?.excludedBackupAlbums ?? [];
 
       if (albums.isNotEmpty) {
         for (var album in albums) {
@@ -121,7 +125,7 @@ class BackupControllerPage extends HookConsumerWidget {
         padding: const EdgeInsets.only(top: 8.0),
         child: Card(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: const BorderRadius.all(Radius.circular(20)),
             side: BorderSide(
               color: context.isDarkTheme
                   ? const Color.fromARGB(255, 56, 56, 56)
@@ -152,15 +156,8 @@ class BackupControllerPage extends HookConsumerWidget {
               ),
             ),
             trailing: ElevatedButton(
-              onPressed: () async {
-                await context.pushRoute(const BackupAlbumSelectionRoute());
-                // waited until returning from selection
-                await ref
-                    .read(backupProvider.notifier)
-                    .backupAlbumSelectionDone();
-                // waited until backup albums are stored in DB
-                ref.read(albumProvider.notifier).getDeviceAlbums();
-              },
+              onPressed: () =>
+                  context.pushRoute(const BackupAlbumSelectionRoute()),
               child: const Text(
                 "backup_controller_page_select",
                 style: TextStyle(
@@ -274,23 +271,28 @@ class BackupControllerPage extends HookConsumerWidget {
                   BackupInfoCard(
                     title: "backup_controller_page_total".tr(),
                     subtitle: "backup_controller_page_total_sub".tr(),
-                    info: ref.watch(backupProvider).availableAlbums.isEmpty
-                        ? "..."
-                        : "${backupState.allUniqueAssets.length}",
+                    info:
+                        ref.watch(localAlbumsProvider).valueOrNull.isNullOrEmpty
+                            ? "..."
+                            : "${backupState.allUniqueAssets.length}",
                   ),
                   BackupInfoCard(
                     title: "backup_controller_page_backup".tr(),
                     subtitle: "backup_controller_page_backup_sub".tr(),
-                    info: ref.watch(backupProvider).availableAlbums.isEmpty
-                        ? "..."
-                        : "${backupState.selectedAlbumsBackupAssetsIds.length}",
+                    info:
+                        ref.watch(localAlbumsProvider).valueOrNull.isNullOrEmpty
+                            ? "..."
+                            : "${backupState.backedUpAssetsCount}",
                   ),
                   BackupInfoCard(
                     title: "backup_controller_page_remainder".tr(),
                     subtitle: "backup_controller_page_remainder_sub".tr(),
-                    info: ref.watch(backupProvider).availableAlbums.isEmpty
+                    info: ref
+                            .watch(localAlbumsProvider)
+                            .valueOrNull
+                            .isNullOrEmpty
                         ? "..."
-                        : "${max(0, backupState.allUniqueAssets.length - backupState.selectedAlbumsBackupAssetsIds.length)}",
+                        : "${max(0, backupState.allUniqueAssets.length - backupState.backedUpAssetsCount)}",
                   ),
                   const Divider(),
                   const CurrentUploadingAssetInfoBox(),

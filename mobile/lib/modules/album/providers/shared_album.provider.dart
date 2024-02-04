@@ -2,16 +2,17 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/album/models/album.model.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
-import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:isar/isar.dart';
 
-class SharedAlbumNotifier extends StateNotifier<List<Album>> {
+class SharedAlbumNotifier extends StateNotifier<List<RemoteAlbum>> {
   SharedAlbumNotifier(this._albumService, Isar db) : super([]) {
-    final query = db.albums.filter().sharedEqualTo(true).sortByCreatedAtDesc();
+    final query =
+        db.remoteAlbums.filter().sharedEqualTo(true).sortByCreatedAtDesc();
     query.findAll().then((value) {
       if (mounted) {
         state = value;
@@ -21,9 +22,9 @@ class SharedAlbumNotifier extends StateNotifier<List<Album>> {
   }
 
   final AlbumService _albumService;
-  late final StreamSubscription<List<Album>> _streamSub;
+  late final StreamSubscription<List<RemoteAlbum>> _streamSub;
 
-  Future<Album?> createSharedAlbum(
+  Future<RemoteAlbum?> createSharedAlbum(
     String albumName,
     Iterable<Asset> assets,
     Iterable<User> sharedUsers,
@@ -43,9 +44,10 @@ class SharedAlbumNotifier extends StateNotifier<List<Album>> {
   Future<void> getAllSharedAlbums() =>
       _albumService.refreshRemoteAlbums(isShared: true);
 
-  Future<bool> deleteAlbum(Album album) => _albumService.deleteAlbum(album);
+  Future<bool> deleteAlbum(RemoteAlbum album) =>
+      _albumService.deleteAlbum(album);
 
-  Future<bool> leaveAlbum(Album album) async {
+  Future<bool> leaveAlbum(RemoteAlbum album) async {
     var res = await _albumService.leaveAlbum(album);
 
     if (res) {
@@ -56,11 +58,11 @@ class SharedAlbumNotifier extends StateNotifier<List<Album>> {
     }
   }
 
-  Future<bool> removeAssetFromAlbum(Album album, Iterable<Asset> assets) {
+  Future<bool> removeAssetFromAlbum(RemoteAlbum album, Iterable<Asset> assets) {
     return _albumService.removeAssetFromAlbum(album, assets);
   }
 
-  Future<bool> removeUserFromAlbum(Album album, User user) async {
+  Future<bool> removeUserFromAlbum(RemoteAlbum album, User user) async {
     final result = await _albumService.removeUserFromAlbum(album, user);
 
     if (result && album.sharedUsers.isEmpty) {
@@ -70,7 +72,7 @@ class SharedAlbumNotifier extends StateNotifier<List<Album>> {
     return result;
   }
 
-  Future<bool> setActivityEnabled(Album album, bool activityEnabled) {
+  Future<bool> setActivityEnabled(RemoteAlbum album, bool activityEnabled) {
     return _albumService.setActivityEnabled(album, activityEnabled);
   }
 
@@ -82,7 +84,8 @@ class SharedAlbumNotifier extends StateNotifier<List<Album>> {
 }
 
 final sharedAlbumProvider =
-    StateNotifierProvider.autoDispose<SharedAlbumNotifier, List<Album>>((ref) {
+    StateNotifierProvider.autoDispose<SharedAlbumNotifier, List<RemoteAlbum>>(
+        (ref) {
   return SharedAlbumNotifier(
     ref.watch(albumServiceProvider),
     ref.watch(dbProvider),

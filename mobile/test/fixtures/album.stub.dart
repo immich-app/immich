@@ -1,4 +1,4 @@
-import 'package:immich_mobile/shared/models/album.dart';
+import 'package:immich_mobile/modules/album/models/album.model.dart';
 
 import 'asset.stub.dart';
 import 'user.stub.dart';
@@ -6,10 +6,9 @@ import 'user.stub.dart';
 final class AlbumStub {
   const AlbumStub._();
 
-  static final emptyAlbum = Album(
+  static final emptyAlbum = RemoteAlbum(
     name: "empty-album",
-    localId: "empty-album-local",
-    remoteId: "empty-album-remote",
+    id: "empty-album-remote",
     createdAt: DateTime(2000),
     modifiedAt: DateTime(2023),
     shared: false,
@@ -17,10 +16,9 @@ final class AlbumStub {
     startDate: DateTime(2020),
   );
 
-  static final sharedWithUser = Album(
+  static final sharedWithUser = RemoteAlbum(
     name: "empty-album-shared-with-user",
-    localId: "empty-album-shared-with-user-local",
-    remoteId: "empty-album-shared-with-user-remote",
+    id: "empty-album-shared-with-user-remote",
     createdAt: DateTime(2023),
     modifiedAt: DateTime(2023),
     shared: true,
@@ -28,10 +26,9 @@ final class AlbumStub {
     endDate: DateTime(2020),
   )..sharedUsers.addAll([UserStub.admin]);
 
-  static final oneAsset = Album(
+  static final oneAsset = RemoteAlbum(
     name: "album-with-single-asset",
-    localId: "album-with-single-asset-local",
-    remoteId: "album-with-single-asset-remote",
+    id: "album-with-single-asset-remote",
     createdAt: DateTime(2022),
     modifiedAt: DateTime(2023),
     shared: false,
@@ -40,18 +37,16 @@ final class AlbumStub {
     endDate: DateTime(2023),
   )..assets.addAll([AssetStub.image1]);
 
-  static final twoAsset = Album(
+  static final twoAsset = RemoteAlbum(
     name: "album-with-two-assets",
-    localId: "album-with-two-assets-local",
-    remoteId: "album-with-two-assets-remote",
+    id: "album-with-two-assets-remote",
     createdAt: DateTime(2001),
     modifiedAt: DateTime(2010),
     shared: false,
-    activityEnabled: false,
+    activityEnabled: true,
     startDate: DateTime(2019),
     endDate: DateTime(2020),
   )
     ..assets.addAll([AssetStub.image1, AssetStub.image2])
-    ..activityEnabled = true
     ..owner.value = UserStub.admin;
 }

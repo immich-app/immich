@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/album/models/album.model.dart';
 import 'package:immich_mobile/modules/album/providers/album_sort_by_options.provider.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
-import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:isar/isar.dart';
 import 'package:mocktail/mocktail.dart';
@@ -34,13 +34,13 @@ void main() {
         db.clearSync();
         // Save all assets
         db.assets.putAllSync([AssetStub.image1, AssetStub.image2]);
-        db.albums.putAllSync(albums);
+        db.remoteAlbums.putAllSync(albums);
         for (final album in albums) {
           album.sharedUsers.saveSync();
           album.assets.saveSync();
         }
       });
-      expect(db.albums.countSync(), 4);
+      expect(db.remoteAlbums.countSync(), 4);
       expect(db.assets.countSync(), 2);
     });
 

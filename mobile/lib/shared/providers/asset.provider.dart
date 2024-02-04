@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/album/services/album.service.dart';
+import 'package:immich_mobile/modules/album/providers/local_album_service.provider.dart';
+import 'package:immich_mobile/modules/album/services/local_album.service.dart';
 import 'package:immich_mobile/shared/models/exif_info.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/models/user.dart';
@@ -19,7 +20,7 @@ import 'package:photo_manager/photo_manager.dart';
 
 class AssetNotifier extends StateNotifier<bool> {
   final AssetService _assetService;
-  final AlbumService _albumService;
+  final LocalAlbumService _albumService;
   final UserService _userService;
   final SyncService _syncService;
   final Isar _db;
@@ -47,13 +48,14 @@ class AssetNotifier extends StateNotifier<bool> {
       state = true;
       if (clear) {
         await clearAssetsAndAlbums(_db);
+        await _userService.refreshUsers();
         log.info("Manual refresh requested, cleared assets and albums from db");
       }
       final bool newRemote = await _assetService.refreshRemoteAssets();
       final bool newLocal = await _albumService.refreshDeviceAlbums();
       debugPrint("newRemote: $newRemote, newLocal: $newLocal");
 
-      log.info("Load assets: ${stopwatch.elapsedMilliseconds}ms");
+      log.fine("Load assets: ${stopwatch.elapsedMilliseconds}ms");
     } finally {
       _getAllAssetInProgress = false;
       state = false;
@@ -75,7 +77,7 @@ class AssetNotifier extends StateNotifier<bool> {
       } else {
         await _assetService.refreshRemoteAssets(partner);
       }
-      log.info("Load partner assets: ${stopwatch.elapsedMilliseconds}ms");
+      log.fine("Load partner assets: ${stopwatch.elapsedMilliseconds}ms");
     } finally {
       _getPartnerAssetsInProgress = false;
     }
@@ -317,7 +319,7 @@ class AssetNotifier extends StateNotifier<bool> {
 final assetProvider = StateNotifierProvider<AssetNotifier, bool>((ref) {
   return AssetNotifier(
     ref.watch(assetServiceProvider),
-    ref.watch(albumServiceProvider),
+    ref.watch(localAlbumServiceProvider),
     ref.watch(userServiceProvider),
     ref.watch(syncServiceProvider),
     ref.watch(dbProvider),

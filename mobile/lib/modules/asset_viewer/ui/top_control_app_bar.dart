@@ -1,7 +1,9 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/object_extensions.dart';
 import 'package:immich_mobile/modules/activities/providers/activity_statistics.provider.dart';
+import 'package:immich_mobile/modules/album/models/album.model.dart';
 import 'package:immich_mobile/modules/album/providers/current_album.provider.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
@@ -39,11 +41,15 @@ class TopControlAppBar extends HookConsumerWidget {
     const double iconSize = 22.0;
     final a = ref.watch(assetWatcher(asset)).value ?? asset;
     final album = ref.watch(currentAlbumProvider);
-    final comments = album != null &&
-            album.remoteId != null &&
-            asset.remoteId != null
-        ? ref.watch(activityStatisticsProvider(album.remoteId!, asset.remoteId))
-        : 0;
+    final comments =
+        album != null && album is RemoteAlbum && asset.remoteId != null
+            ? ref.watch(
+                activityStatisticsProvider(
+                  album.tryCast<RemoteAlbum>()!.id,
+                  asset.remoteId,
+                ),
+              )
+            : 0;
 
     Widget buildFavoriteButton(a) {
       return IconButton(
@@ -171,7 +177,8 @@ class TopControlAppBar extends HookConsumerWidget {
         if (asset.isRemote && !asset.isLocal && !asset.isOffline && isOwner)
           buildDownloadButton(),
         if (asset.isRemote && (isOwner || isPartner)) buildAddToAlbumButtom(),
-        if (album != null && album.shared) buildActivitiesButton(),
+        if (album != null && album is RemoteAlbum && album.shared)
+          buildActivitiesButton(),
         buildMoreInfoButton(),
       ],
     );

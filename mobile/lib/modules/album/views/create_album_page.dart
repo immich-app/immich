@@ -5,8 +5,8 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/album/models/asset_selection_page_result.model.dart';
-import 'package:immich_mobile/modules/album/providers/album.provider.dart';
 import 'package:immich_mobile/modules/album/providers/album_title.provider.dart';
+import 'package:immich_mobile/modules/album/providers/remote_album.provider.dart';
 import 'package:immich_mobile/modules/album/ui/album_action_outlined_button.dart';
 import 'package:immich_mobile/modules/album/ui/album_title_text_field.dart';
 import 'package:immich_mobile/modules/album/ui/shared_album_thumbnail_image.dart';
@@ -194,17 +194,17 @@ class CreateAlbumPage extends HookConsumerWidget {
     }
 
     createNonSharedAlbum() async {
-      var newAlbum = await ref.watch(albumProvider.notifier).createAlbum(
+      var newAlbum = await ref.watch(remoteAlbumsProvider.notifier).createAlbum(
             ref.watch(albumTitleProvider),
             selectedAssets.value,
           );
 
       if (newAlbum != null) {
-        ref.watch(albumProvider.notifier).getAllAlbums();
+        ref.watch(remoteAlbumsProvider.notifier).getRemoteAlbums();
         selectedAssets.value = {};
         ref.watch(albumTitleProvider.notifier).clearAlbumTitle();
 
-        context.replaceRoute(AlbumViewerRoute(albumId: newAlbum.id));
+        context.replaceRoute(RemoteAlbumViewerRoute(albumId: newAlbum.isarId));
       }
     }
 

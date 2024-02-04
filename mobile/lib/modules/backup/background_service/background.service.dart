@@ -10,8 +10,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/main.dart';
+import 'package:immich_mobile/modules/album/models/album.model.dart';
 import 'package:immich_mobile/modules/backup/background_service/localization.dart';
-import 'package:immich_mobile/modules/backup/models/backup_album.model.dart';
 import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/error_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/services/backup.service.dart';
@@ -367,26 +367,27 @@ class BackgroundService {
         final backupAlbums = [...selectedAlbums, ...excludedAlbums];
         backupAlbums.sortBy((e) => e.id);
         db.writeTxnSync(() {
-          final dbAlbums = db.backupAlbums.where().sortById().findAllSync();
+          final dbAlbums = db.localAlbums.where().sortById().findAllSync();
           final List<int> toDelete = [];
-          final List<BackupAlbum> toUpsert = [];
+          final List<LocalAlbum> toUpsert = [];
           // stores the most recent `lastBackup` per album but always keeps the `selection` from the most recent DB state
           diffSortedListsSync(
             dbAlbums,
             backupAlbums,
-            compare: (BackupAlbum a, BackupAlbum b) => a.id.compareTo(b.id),
-            both: (BackupAlbum a, BackupAlbum b) {
+            compare: (LocalAlbum a, LocalAlbum b) =>
+                a.isarId.compareTo(b.isarId),
+            both: (LocalAlbum a, LocalAlbum b) {
               a.lastBackup = a.lastBackup.isAfter(b.lastBackup)
                   ? a.lastBackup
                   : b.lastBackup;
               toUpsert.add(a);
               return true;
             },
-            onlyFirst: (BackupAlbum a) => toUpsert.add(a),
-            onlySecond: (BackupAlbum b) => toDelete.add(b.isarId),
+            onlyFirst: (LocalAlbum a) => toUpsert.add(a),
+            onlySecond: (LocalAlbum b) => toDelete.add(b.isarId),
           );
-          db.backupAlbums.deleteAllSync(toDelete);
-          db.backupAlbums.putAllSync(toUpsert);
+          db.localAlbums.deleteAllSync(toDelete);
+          db.localAlbums.putAllSync(toUpsert);
         });
       } else if (Store.tryGet(StoreKey.backupFailedSince) == null) {
         Store.put(StoreKey.backupFailedSince, DateTime.now());
@@ -402,8 +403,8 @@ class BackgroundService {
   Future<bool> _runBackup(
     BackupService backupService,
     AppSettingsService settingsService,
-    List<BackupAlbum> selectedAlbums,
-    List<BackupAlbum> excludedAlbums,
+    List<LocalAlbum> selectedAlbums,
+    List<LocalAlbum> excludedAlbums,
   ) async {
     _errorGracePeriodExceeded = _isErrorGracePeriodExceeded(settingsService);
     final bool notifyTotalProgress = settingsService

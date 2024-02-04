@@ -65,7 +65,7 @@ class BackupOptionsPage extends HookConsumerWidget {
       try {
         checkInProgress.value = true;
         if (backupState.allUniqueAssets.length >
-            backupState.selectedAlbumsBackupAssetsIds.length) {
+            backupState.backedUpAssetsCount) {
           ImmichToast.show(
             context: context,
             msg: "Backup all assets before starting this check!",

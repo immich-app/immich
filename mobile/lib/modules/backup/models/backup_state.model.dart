@@ -2,9 +2,9 @@
 
 import 'package:cancellation_token_http/http.dart';
 import 'package:collection/collection.dart';
-import 'package:photo_manager/photo_manager.dart';
+import 'package:immich_mobile/modules/album/models/album.model.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
 
-import 'package:immich_mobile/modules/backup/models/available_album.model.dart';
 import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
 import 'package:immich_mobile/shared/models/server_info/server_disk_info.model.dart';
 
@@ -30,16 +30,11 @@ class BackUpState {
   final bool backupRequireCharging;
   final int backupTriggerDelay;
 
-  /// All available albums on the device
-  final List<AvailableAlbum> availableAlbums;
-  final Set<AvailableAlbum> selectedBackupAlbums;
-  final Set<AvailableAlbum> excludedBackupAlbums;
-
   /// Assets that are not overlapping in selected backup albums and excluded backup albums
-  final Set<AssetEntity> allUniqueAssets;
+  final Set<Asset> allUniqueAssets;
 
   /// All assets from the selected albums that have been backup
-  final Set<String> selectedAlbumsBackupAssetsIds;
+  final int backedUpAssetsCount;
 
   // Current Backup Asset
   final CurrentUploadAsset currentUploadAsset;
@@ -56,11 +51,8 @@ class BackUpState {
     required this.backupRequireWifi,
     required this.backupRequireCharging,
     required this.backupTriggerDelay,
-    required this.availableAlbums,
-    required this.selectedBackupAlbums,
-    required this.excludedBackupAlbums,
     required this.allUniqueAssets,
-    required this.selectedAlbumsBackupAssetsIds,
+    required this.backedUpAssetsCount,
     required this.currentUploadAsset,
   });
 
@@ -76,11 +68,10 @@ class BackUpState {
     bool? backupRequireWifi,
     bool? backupRequireCharging,
     int? backupTriggerDelay,
-    List<AvailableAlbum>? availableAlbums,
-    Set<AvailableAlbum>? selectedBackupAlbums,
-    Set<AvailableAlbum>? excludedBackupAlbums,
-    Set<AssetEntity>? allUniqueAssets,
-    Set<String>? selectedAlbumsBackupAssetsIds,
+    Set<LocalAlbum>? selectedBackupAlbums,
+    Set<LocalAlbum>? excludedBackupAlbums,
+    Set<Asset>? allUniqueAssets,
+    int? backedUpAssetsCount,
     CurrentUploadAsset? currentUploadAsset,
   }) {
     return BackUpState(
@@ -97,19 +88,15 @@ class BackUpState {
       backupRequireCharging:
           backupRequireCharging ?? this.backupRequireCharging,
       backupTriggerDelay: backupTriggerDelay ?? this.backupTriggerDelay,
-      availableAlbums: availableAlbums ?? this.availableAlbums,
-      selectedBackupAlbums: selectedBackupAlbums ?? this.selectedBackupAlbums,
-      excludedBackupAlbums: excludedBackupAlbums ?? this.excludedBackupAlbums,
       allUniqueAssets: allUniqueAssets ?? this.allUniqueAssets,
-      selectedAlbumsBackupAssetsIds:
-          selectedAlbumsBackupAssetsIds ?? this.selectedAlbumsBackupAssetsIds,
+      backedUpAssetsCount: backedUpAssetsCount ?? this.backedUpAssetsCount,
       currentUploadAsset: currentUploadAsset ?? this.currentUploadAsset,
     );
   }
 
   @override
   String toString() {
-    return 'BackUpState(backupProgress: $backupProgress, allAssetsInDatabase: $allAssetsInDatabase, progressInPercentage: $progressInPercentage, iCloudDownloadProgress: $iCloudDownloadProgress, cancelToken: $cancelToken, serverInfo: $serverInfo, autoBackup: $autoBackup, backgroundBackup: $backgroundBackup, backupRequireWifi: $backupRequireWifi, backupRequireCharging: $backupRequireCharging, backupTriggerDelay: $backupTriggerDelay, availableAlbums: $availableAlbums, selectedBackupAlbums: $selectedBackupAlbums, excludedBackupAlbums: $excludedBackupAlbums, allUniqueAssets: $allUniqueAssets, selectedAlbumsBackupAssetsIds: $selectedAlbumsBackupAssetsIds, currentUploadAsset: $currentUploadAsset)';
+    return 'BackUpState(backupProgress: $backupProgress, allAssetsInDatabase: $allAssetsInDatabase, progressInPercentage: $progressInPercentage, iCloudDownloadProgress: $iCloudDownloadProgress, cancelToken: $cancelToken, serverInfo: $serverInfo, autoBackup: $autoBackup, backgroundBackup: $backgroundBackup, backupRequireWifi: $backupRequireWifi, backupRequireCharging: $backupRequireCharging, backupTriggerDelay: $backupTriggerDelay, allUniqueAssets: $allUniqueAssets, backedUpAssetsCount: $backedUpAssetsCount, currentUploadAsset: $currentUploadAsset)';
   }
 
   @override
@@ -128,14 +115,8 @@ class BackUpState {
         other.backupRequireWifi == backupRequireWifi &&
         other.backupRequireCharging == backupRequireCharging &&
         other.backupTriggerDelay == backupTriggerDelay &&
-        collectionEquals(other.availableAlbums, availableAlbums) &&
-        collectionEquals(other.selectedBackupAlbums, selectedBackupAlbums) &&
-        collectionEquals(other.excludedBackupAlbums, excludedBackupAlbums) &&
         collectionEquals(other.allUniqueAssets, allUniqueAssets) &&
-        collectionEquals(
-          other.selectedAlbumsBackupAssetsIds,
-          selectedAlbumsBackupAssetsIds,
-        ) &&
+        other.backedUpAssetsCount == backedUpAssetsCount &&
         other.currentUploadAsset == currentUploadAsset;
   }
 
@@ -152,11 +133,8 @@ class BackUpState {
         backupRequireWifi.hashCode ^
         backupRequireCharging.hashCode ^
         backupTriggerDelay.hashCode ^
-        availableAlbums.hashCode ^
-        selectedBackupAlbums.hashCode ^
-        excludedBackupAlbums.hashCode ^
         allUniqueAssets.hashCode ^
-        selectedAlbumsBackupAssetsIds.hashCode ^
+        backedUpAssetsCount.hashCode ^
         currentUploadAsset.hashCode;
   }
 }

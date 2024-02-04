@@ -2,9 +2,10 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/activities/views/activities_page.dart';
+import 'package:immich_mobile/modules/album/models/album.model.dart';
 import 'package:immich_mobile/modules/album/models/asset_selection_page_result.model.dart';
-import 'package:immich_mobile/modules/album/views/album_options_part.dart';
-import 'package:immich_mobile/modules/album/views/album_viewer_page.dart';
+import 'package:immich_mobile/modules/album/views/album_options_page.dart';
+import 'package:immich_mobile/modules/album/views/remote_album_viewer_page.dart';
 import 'package:immich_mobile/modules/album/views/asset_selection_page.dart';
 import 'package:immich_mobile/modules/album/views/create_album_page.dart';
 import 'package:immich_mobile/modules/album/views/library_page.dart';
@@ -21,7 +22,7 @@ import 'package:immich_mobile/modules/album/views/sharing_page.dart';
 import 'package:immich_mobile/modules/archive/views/archive_page.dart';
 import 'package:immich_mobile/modules/asset_viewer/views/gallery_viewer.dart';
 import 'package:immich_mobile/modules/asset_viewer/views/video_viewer_page.dart';
-import 'package:immich_mobile/modules/backup/views/album_preview_page.dart';
+import 'package:immich_mobile/modules/album/views/local_album_viewer_page.dart';
 import 'package:immich_mobile/modules/backup/views/backup_album_selection_page.dart';
 import 'package:immich_mobile/modules/backup/views/backup_controller_page.dart';
 import 'package:immich_mobile/modules/backup/views/failed_backup_status_page.dart';
@@ -49,7 +50,6 @@ import 'package:immich_mobile/routing/custom_transition_builders.dart';
 import 'package:immich_mobile/routing/duplicate_guard.dart';
 import 'package:immich_mobile/routing/backup_permission_guard.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/logger_message.model.dart';
 import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
@@ -60,7 +60,6 @@ import 'package:immich_mobile/shared/views/splash_screen.dart';
 import 'package:immich_mobile/shared/views/tab_controller_page.dart';
 import 'package:isar/isar.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
-import 'package:photo_manager/photo_manager.dart' hide LatLng;
 
 part 'router.gr.dart';
 
@@ -157,7 +156,7 @@ class AppRouter extends _$AppRouter {
       transitionsBuilder: TransitionsBuilders.slideBottom,
     ),
     AutoRoute(
-      page: AlbumViewerRoute.page,
+      page: RemoteAlbumViewerRoute.page,
       guards: [_authGuard, _duplicateGuard],
     ),
     CustomRoute(
@@ -170,7 +169,7 @@ class AppRouter extends _$AppRouter {
       guards: [_authGuard, _duplicateGuard],
     ),
     AutoRoute(
-      page: AlbumPreviewRoute.page,
+      page: LocalAlbumViewerRoute.page,
       guards: [_authGuard, _duplicateGuard],
     ),
     CustomRoute(

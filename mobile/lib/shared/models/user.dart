@@ -1,6 +1,6 @@
 import 'dart:ui';
 
-import 'package:immich_mobile/shared/models/album.dart';
+import 'package:immich_mobile/modules/album/models/album.model.dart';
 import 'package:immich_mobile/utils/hash.dart';
 import 'package:isar/isar.dart';
 import 'package:openapi/api.dart';
@@ -92,9 +92,9 @@ class User {
 
   bool get hasQuota => quotaSizeInBytes > 0;
   @Backlink(to: 'owner')
-  final IsarLinks<Album> albums = IsarLinks<Album>();
+  final IsarLinks<RemoteAlbum> albums = IsarLinks<RemoteAlbum>();
   @Backlink(to: 'sharedUsers')
-  final IsarLinks<Album> sharedAlbums = IsarLinks<Album>();
+  final IsarLinks<RemoteAlbum> sharedAlbums = IsarLinks<RemoteAlbum>();
 
   @override
   bool operator ==(other) {

@@ -1,4 +1,4 @@
-import 'package:immich_mobile/shared/models/album.dart';
+import 'package:immich_mobile/modules/album/models/album.model.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:isar/isar.dart';
@@ -33,11 +33,11 @@ String getAlbumThumbnailUrl(
   final Album album, {
   ThumbnailFormat type = ThumbnailFormat.WEBP,
 }) {
-  if (album.thumbnail.value?.remoteId == null) {
+  if (album.thumbnail?.remoteId == null) {
     return '';
   }
   return getThumbnailUrlForRemoteId(
-    album.thumbnail.value!.remoteId!,
+    album.thumbnail!.remoteId!,
     type: type,
   );
 }
@@ -46,11 +46,11 @@ String getAlbumThumbNailCacheKey(
   final Album album, {
   ThumbnailFormat type = ThumbnailFormat.WEBP,
 }) {
-  if (album.thumbnail.value?.remoteId == null) {
+  if (album.thumbnail?.remoteId == null) {
     return '';
   }
   return getThumbnailCacheKeyForRemoteId(
-    album.thumbnail.value!.remoteId!,
+    album.thumbnail!.remoteId!,
     type: type,
   );
 }

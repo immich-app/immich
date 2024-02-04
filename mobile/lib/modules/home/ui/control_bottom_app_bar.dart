@@ -2,7 +2,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/modules/album/providers/album.provider.dart';
+import 'package:immich_mobile/modules/album/models/album.model.dart';
+import 'package:immich_mobile/modules/album/providers/remote_album.provider.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/album/ui/add_to_album_sliverlist.dart';
 import 'package:immich_mobile/modules/home/models/selection_state.dart';
@@ -10,7 +11,6 @@ import 'package:immich_mobile/modules/home/ui/delete_dialog.dart';
 import 'package:immich_mobile/modules/home/ui/upload_dialog.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/ui/drag_sheet.dart';
-import 'package:immich_mobile/shared/models/album.dart';
 
 class ControlBottomAppBar extends ConsumerWidget {
   final void Function(bool shareLocal) onShare;
@@ -19,7 +19,7 @@ class ControlBottomAppBar extends ConsumerWidget {
   final void Function([bool force])? onDelete;
   final void Function([bool force])? onDeleteServer;
   final void Function(bool onlyBackedUp)? onDeleteLocal;
-  final Function(Album album) onAddToAlbum;
+  final Function(RemoteAlbum album) onAddToAlbum;
   final void Function() onCreateNewAlbum;
   final void Function() onUpload;
   final void Function()? onStack;
@@ -61,7 +61,7 @@ class ControlBottomAppBar extends ConsumerWidget {
         selectionAssetState.hasLocal || selectionAssetState.hasMerged;
     final trashEnabled =
         ref.watch(serverInfoProvider.select((v) => v.serverFeatures.trash));
-    final albums = ref.watch(albumProvider).where((a) => a.isRemote).toList();
+    final albums = ref.watch(remoteAlbumsProvider).valueOrNull ?? [];
     final sharedAlbums = ref.watch(sharedAlbumProvider);
     const bottomPadding = 0.20;
 

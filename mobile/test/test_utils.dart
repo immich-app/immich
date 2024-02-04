@@ -3,9 +3,8 @@ import 'dart:io';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/backup/models/backup_album.model.dart';
+import 'package:immich_mobile/modules/album/models/album.model.dart';
 import 'package:immich_mobile/modules/backup/models/duplicated_asset.model.dart';
-import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/android_device_asset.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/etag.dart';
@@ -41,9 +40,9 @@ final class TestUtils {
         StoreValueSchema,
         ExifInfoSchema,
         AssetSchema,
-        AlbumSchema,
+        LocalAlbumSchema,
+        RemoteAlbumSchema,
         UserSchema,
-        BackupAlbumSchema,
         DuplicatedAssetSchema,
         LoggerMessageSchema,
         ETagSchema,

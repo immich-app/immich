@@ -8,7 +8,9 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/collection_extensions.dart';
-import 'package:immich_mobile/modules/album/providers/album.provider.dart';
+import 'package:immich_mobile/modules/album/models/album.model.dart';
+import 'package:immich_mobile/modules/album/providers/local_album.provider.dart';
+import 'package:immich_mobile/modules/album/providers/remote_album.provider.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
 import 'package:immich_mobile/modules/asset_viewer/services/asset_stack.service.dart';
@@ -19,7 +21,6 @@ import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structu
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/modules/home/ui/control_bottom_app_bar.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/user.provider.dart';
@@ -43,6 +44,7 @@ class MultiselectGrid extends HookConsumerWidget {
     this.editEnabled = false,
     this.unarchive = false,
     this.unfavorite = false,
+    this.selectedEnabled = true,
   });
 
   final ProviderListenable<AsyncValue<RenderList>> renderListProvider;
@@ -57,6 +59,7 @@ class MultiselectGrid extends HookConsumerWidget {
   final bool favoriteEnabled;
   final bool unfavorite;
   final bool editEnabled;
+  final bool selectedEnabled;
 
   Widget buildDefaultLoadingIndicator() =>
       const Center(child: ImmichLoadingIndicator());
@@ -94,7 +97,7 @@ class MultiselectGrid extends HookConsumerWidget {
       bool multiselect,
       Set<Asset> selectedAssets,
     ) {
-      selectionEnabledHook.value = multiselect;
+      selectionEnabledHook.value = selectedEnabled && multiselect;
       selection.value = selectedAssets;
       selectionAssetState.value =
           SelectionAssetState.fromSelection(selectedAssets);
@@ -277,7 +280,7 @@ class MultiselectGrid extends HookConsumerWidget {
       }
     }
 
-    void onAddToAlbum(Album album) async {
+    void onAddToAlbum(RemoteAlbum album) async {
       processing.value = true;
       try {
         final Iterable<Asset> assets = remoteSelection(
@@ -337,11 +340,12 @@ class MultiselectGrid extends HookConsumerWidget {
             .createAlbumWithGeneratedName(assets);
 
         if (result != null) {
-          ref.watch(albumProvider.notifier).getAllAlbums();
+          ref.watch(remoteAlbumsProvider.notifier).getRemoteAlbums();
+          ref.watch(localAlbumsProvider.notifier).getDeviceAlbums();
           ref.watch(sharedAlbumProvider.notifier).getAllSharedAlbums();
           selectionEnabledHook.value = false;
 
-          context.pushRoute(AlbumViewerRoute(albumId: result.id));
+          context.pushRoute(RemoteAlbumViewerRoute(albumId: result.isarId));
         }
       } finally {
         processing.value = false;

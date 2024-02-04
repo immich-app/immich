@@ -1,5 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/album/providers/album.provider.dart';
+import 'package:immich_mobile/modules/album/providers/local_album.provider.dart';
+import 'package:immich_mobile/modules/album/providers/remote_album.provider.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/backup/background_service/background.service.dart';
 import 'package:immich_mobile/modules/backup/models/backup_state.model.dart';
@@ -63,7 +64,8 @@ class AppStateNotiifer extends StateNotifier<AppStateEnum> {
           _ref.read(assetProvider.notifier).getPartnerAssets();
           _ref.read(sharedAlbumProvider.notifier).getAllSharedAlbums();
         case TabEnum.library:
-          _ref.read(albumProvider.notifier).getAllAlbums();
+          _ref.read(remoteAlbumsProvider.notifier).getRemoteAlbums();
+          _ref.read(localAlbumsProvider.notifier).getDeviceAlbums();
       }
     }
 

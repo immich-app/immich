@@ -5,17 +5,17 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/activities/providers/activity_statistics.provider.dart';
-import 'package:immich_mobile/modules/album/providers/album.provider.dart';
+import 'package:immich_mobile/modules/album/models/album.model.dart';
 import 'package:immich_mobile/modules/album/providers/album_viewer.provider.dart';
+import 'package:immich_mobile/modules/album/providers/remote_album.provider.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 
-class AlbumViewerAppbar extends HookConsumerWidget
+class RemoteAlbumViewerAppbar extends HookConsumerWidget
     implements PreferredSizeWidget {
-  const AlbumViewerAppbar({
+  const RemoteAlbumViewerAppbar({
     super.key,
     required this.album,
     required this.userId,
@@ -25,21 +25,20 @@ class AlbumViewerAppbar extends HookConsumerWidget
     required this.onActivities,
   });
 
-  final Album album;
+  final RemoteAlbum album;
   final String userId;
   final FocusNode titleFocusNode;
-  final Function(Album album)? onAddPhotos;
-  final Function(Album album)? onAddUsers;
-  final Function(Album album) onActivities;
+  final Function(RemoteAlbum album)? onAddPhotos;
+  final Function(RemoteAlbum album)? onAddUsers;
+  final Function() onActivities;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final newAlbumTitle = ref.watch(albumViewerProvider).editTitleText;
     final isEditAlbum = ref.watch(albumViewerProvider).isEditAlbum;
     final isProcessing = useProcessingOverlay();
-    final comments = album.shared
-        ? ref.watch(activityStatisticsProvider(album.remoteId!))
-        : 0;
+    final comments =
+        album.shared ? ref.watch(activityStatisticsProvider(album.id)) : 0;
 
     deleteAlbum() async {
       isProcessing.value = true;
@@ -51,7 +50,8 @@ class AlbumViewerAppbar extends HookConsumerWidget
         context
             .navigateTo(const TabControllerRoute(children: [SharingRoute()]));
       } else {
-        success = await ref.watch(albumProvider.notifier).deleteAlbum(album);
+        success =
+            await ref.watch(remoteAlbumsProvider.notifier).deleteAlbum(album);
         context
             .navigateTo(const TabControllerRoute(children: [LibraryRoute()]));
       }
@@ -172,7 +172,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
         ListTile(
           leading: const Icon(Icons.share_rounded),
           onTap: () {
-            context.pushRoute(SharedLinkEditRoute(albumId: album.remoteId));
+            context.pushRoute(SharedLinkEditRoute(albumId: album.id));
             context.pop();
           },
           title: const Text(
@@ -228,9 +228,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
 
     Widget buildActivitiesButton() {
       return IconButton(
-        onPressed: () {
-          onActivities(album);
-        },
+        onPressed: () => onActivities(),
         icon: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -291,12 +289,11 @@ class AlbumViewerAppbar extends HookConsumerWidget
       actions: [
         if (album.shared && (album.activityEnabled || comments != 0))
           buildActivitiesButton(),
-        if (album.isRemote)
-          IconButton(
-            splashRadius: 25,
-            onPressed: buildBottomSheet,
-            icon: const Icon(Icons.more_horiz_rounded),
-          ),
+        IconButton(
+          splashRadius: 25,
+          onPressed: buildBottomSheet,
+          icon: const Icon(Icons.more_horiz_rounded),
+        ),
       ],
     );
   }

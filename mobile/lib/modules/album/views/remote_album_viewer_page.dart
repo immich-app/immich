@@ -8,6 +8,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/modules/album/models/album.model.dart';
 import 'package:immich_mobile/modules/album/models/asset_selection_page_result.model.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
 import 'package:immich_mobile/modules/album/providers/current_album.provider.dart';
@@ -17,9 +18,8 @@ import 'package:immich_mobile/modules/album/ui/album_action_outlined_button.dart
 import 'package:immich_mobile/modules/album/ui/album_viewer_editable_title.dart';
 import 'package:immich_mobile/modules/home/providers/multiselect.provider.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
-import 'package:immich_mobile/modules/album/ui/album_viewer_appbar.dart';
+import 'package:immich_mobile/modules/album/ui/remote_album_viewer_appbar.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/ui/asset_grid/multiselect_grid.dart';
@@ -28,15 +28,15 @@ import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 
 @RoutePage()
-class AlbumViewerPage extends HookConsumerWidget {
+class RemoteAlbumViewerPage extends HookConsumerWidget {
   final int albumId;
 
-  const AlbumViewerPage({super.key, required this.albumId});
+  const RemoteAlbumViewerPage({super.key, required this.albumId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     FocusNode titleFocusNode = useFocusNode();
-    final album = ref.watch(albumWatcher(albumId));
+    final album = ref.watch(remoteAlbumWatcher(albumId));
     // Listen provider to prevent autoDispose when navigating to other routes from within the viewer page
     ref.listen(currentAlbumProvider, (_, __) {});
     album.whenData(
@@ -67,7 +67,7 @@ class AlbumViewerPage extends HookConsumerWidget {
 
     /// Find out if the assets in album exist on the device
     /// If they exist, add to selected asset state to show they are already selected.
-    void onAddPhotosPressed(Album albumInfo) async {
+    void onAddPhotosPressed(RemoteAlbum albumInfo) async {
       AssetSelectionPageResult? returnPayload =
           await context.pushRoute<AssetSelectionPageResult?>(
         AssetSelectionRoute(
@@ -90,7 +90,7 @@ class AlbumViewerPage extends HookConsumerWidget {
       }
     }
 
-    void onAddUsersPressed(Album album) async {
+    void onAddUsersPressed(RemoteAlbum album) async {
       List<String>? sharedUserIds = await context.pushRoute<List<String>?>(
         SelectAdditionalUserForSharingRoute(album: album),
       );
@@ -106,7 +106,7 @@ class AlbumViewerPage extends HookConsumerWidget {
       }
     }
 
-    Widget buildControlButton(Album album) {
+    Widget buildControlButton(RemoteAlbum album) {
       return Padding(
         padding: const EdgeInsets.only(left: 16.0, top: 8, bottom: 16),
         child: SizedBox(
@@ -131,16 +131,16 @@ class AlbumViewerPage extends HookConsumerWidget {
       );
     }
 
-    Widget buildTitle(Album album) {
+    Widget buildTitle(RemoteAlbum album) {
       return Padding(
         padding: const EdgeInsets.only(left: 8, right: 8, top: 24),
-        child: userId == album.ownerId && album.isRemote
+        child: userId == album.ownerId
             ? AlbumViewerEditableTitle(
                 album: album,
                 titleFocusNode: titleFocusNode,
               )
             : Padding(
-                padding: const EdgeInsets.only(left: 8.0),
+                padding: const EdgeInsets.only(left: 8.0, bottom: 24),
                 child: Text(
                   album.name,
                   style: context.textTheme.headlineMedium,
@@ -149,7 +149,7 @@ class AlbumViewerPage extends HookConsumerWidget {
       );
     }
 
-    Widget buildAlbumDateRange(Album album) {
+    Widget buildAlbumDateRange(RemoteAlbum album) {
       final DateTime? startDate = album.startDate;
       final DateTime? endDate = album.endDate;
 
@@ -183,7 +183,7 @@ class AlbumViewerPage extends HookConsumerWidget {
       );
     }
 
-    Widget buildSharedUserIconsRow(Album album) {
+    Widget buildSharedUserIconsRow(RemoteAlbum album) {
       return GestureDetector(
         onTap: () => context.pushRoute(AlbumOptionsRoute(album: album)),
         child: SizedBox(
@@ -207,7 +207,7 @@ class AlbumViewerPage extends HookConsumerWidget {
       );
     }
 
-    Widget buildHeader(Album album) {
+    Widget buildHeader(RemoteAlbum album) {
       return Column(
         mainAxisAlignment: MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -219,37 +219,29 @@ class AlbumViewerPage extends HookConsumerWidget {
       );
     }
 
-    onActivitiesPressed(Album album) {
-      if (album.remoteId != null) {
-        context.pushRoute(
-          const ActivitiesRoute(),
-        );
-      }
-    }
-
     return Scaffold(
       appBar: ref.watch(multiselectProvider)
           ? null
           : album.when(
-              data: (data) => AlbumViewerAppbar(
+              data: (data) => RemoteAlbumViewerAppbar(
                 titleFocusNode: titleFocusNode,
                 album: data,
                 userId: userId,
                 onAddPhotos: onAddPhotosPressed,
                 onAddUsers: onAddUsersPressed,
-                onActivities: onActivitiesPressed,
+                onActivities: () => context.pushRoute(const ActivitiesRoute()),
               ),
               error: (error, stackTrace) => AppBar(title: const Text("Error")),
               loading: () => AppBar(),
             ),
       body: album.widgetWhen(
         onData: (data) => MultiselectGrid(
-          renderListProvider: albumRenderlistProvider(albumId),
+          renderListProvider: remoteAlbumRenderlistProvider(albumId),
           topWidget: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               buildHeader(data),
-              if (data.isRemote) buildControlButton(data),
+              buildControlButton(data),
             ],
           ),
           onRemoveFromAlbum: onRemoveFromAlbumPressed,

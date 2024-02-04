@@ -31,26 +31,6 @@ abstract class _$AppRouter extends RootStackRouter {
         ),
       );
     },
-    AlbumPreviewRoute.name: (routeData) {
-      final args = routeData.argsAs<AlbumPreviewRouteArgs>();
-      return AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: AlbumPreviewPage(
-          key: args.key,
-          album: args.album,
-        ),
-      );
-    },
-    AlbumViewerRoute.name: (routeData) {
-      final args = routeData.argsAs<AlbumViewerRouteArgs>();
-      return AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: AlbumViewerPage(
-          key: args.key,
-          albumId: args.albumId,
-        ),
-      );
-    },
     AllMotionPhotosRoute.name: (routeData) {
       return AutoRoutePage<dynamic>(
         routeData: routeData,
@@ -182,6 +162,17 @@ abstract class _$AppRouter extends RootStackRouter {
         child: const LibraryPage(),
       );
     },
+    LocalAlbumViewerRoute.name: (routeData) {
+      final args = routeData.argsAs<LocalAlbumViewerRouteArgs>();
+      return AutoRoutePage<dynamic>(
+        routeData: routeData,
+        child: LocalAlbumViewerPage(
+          key: args.key,
+          album: args.album,
+          selectEnabled: args.selectEnabled,
+        ),
+      );
+    },
     LoginRoute.name: (routeData) {
       return AutoRoutePage<dynamic>(
         routeData: routeData,
@@ -253,6 +244,16 @@ abstract class _$AppRouter extends RootStackRouter {
       return AutoRoutePage<dynamic>(
         routeData: routeData,
         child: const RecentlyAddedPage(),
+      );
+    },
+    RemoteAlbumViewerRoute.name: (routeData) {
+      final args = routeData.argsAs<RemoteAlbumViewerRouteArgs>();
+      return AutoRoutePage<dynamic>(
+        routeData: routeData,
+        child: RemoteAlbumViewerPage(
+          key: args.key,
+          albumId: args.albumId,
+        ),
       );
     },
     SearchRoute.name: (routeData) {
@@ -379,7 +380,7 @@ class ActivitiesRoute extends PageRouteInfo<void> {
 class AlbumOptionsRoute extends PageRouteInfo<AlbumOptionsRouteArgs> {
   AlbumOptionsRoute({
     Key? key,
-    required Album album,
+    required RemoteAlbum album,
     List<PageRouteInfo>? children,
   }) : super(
           AlbumOptionsRoute.name,
@@ -404,87 +405,11 @@ class AlbumOptionsRouteArgs {
 
   final Key? key;
 
-  final Album album;
+  final RemoteAlbum album;
 
   @override
   String toString() {
     return 'AlbumOptionsRouteArgs{key: $key, album: $album}';
-  }
-}
-
-/// generated route for
-/// [AlbumPreviewPage]
-class AlbumPreviewRoute extends PageRouteInfo<AlbumPreviewRouteArgs> {
-  AlbumPreviewRoute({
-    Key? key,
-    required AssetPathEntity album,
-    List<PageRouteInfo>? children,
-  }) : super(
-          AlbumPreviewRoute.name,
-          args: AlbumPreviewRouteArgs(
-            key: key,
-            album: album,
-          ),
-          initialChildren: children,
-        );
-
-  static const String name = 'AlbumPreviewRoute';
-
-  static const PageInfo<AlbumPreviewRouteArgs> page =
-      PageInfo<AlbumPreviewRouteArgs>(name);
-}
-
-class AlbumPreviewRouteArgs {
-  const AlbumPreviewRouteArgs({
-    this.key,
-    required this.album,
-  });
-
-  final Key? key;
-
-  final AssetPathEntity album;
-
-  @override
-  String toString() {
-    return 'AlbumPreviewRouteArgs{key: $key, album: $album}';
-  }
-}
-
-/// generated route for
-/// [AlbumViewerPage]
-class AlbumViewerRoute extends PageRouteInfo<AlbumViewerRouteArgs> {
-  AlbumViewerRoute({
-    Key? key,
-    required int albumId,
-    List<PageRouteInfo>? children,
-  }) : super(
-          AlbumViewerRoute.name,
-          args: AlbumViewerRouteArgs(
-            key: key,
-            albumId: albumId,
-          ),
-          initialChildren: children,
-        );
-
-  static const String name = 'AlbumViewerRoute';
-
-  static const PageInfo<AlbumViewerRouteArgs> page =
-      PageInfo<AlbumViewerRouteArgs>(name);
-}
-
-class AlbumViewerRouteArgs {
-  const AlbumViewerRouteArgs({
-    this.key,
-    required this.albumId,
-  });
-
-  final Key? key;
-
-  final int albumId;
-
-  @override
-  String toString() {
-    return 'AlbumViewerRouteArgs{key: $key, albumId: $albumId}';
   }
 }
 
@@ -872,6 +797,49 @@ class LibraryRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [LocalAlbumViewerPage]
+class LocalAlbumViewerRoute extends PageRouteInfo<LocalAlbumViewerRouteArgs> {
+  LocalAlbumViewerRoute({
+    Key? key,
+    required LocalAlbum album,
+    bool selectEnabled = true,
+    List<PageRouteInfo>? children,
+  }) : super(
+          LocalAlbumViewerRoute.name,
+          args: LocalAlbumViewerRouteArgs(
+            key: key,
+            album: album,
+            selectEnabled: selectEnabled,
+          ),
+          initialChildren: children,
+        );
+
+  static const String name = 'LocalAlbumViewerRoute';
+
+  static const PageInfo<LocalAlbumViewerRouteArgs> page =
+      PageInfo<LocalAlbumViewerRouteArgs>(name);
+}
+
+class LocalAlbumViewerRouteArgs {
+  const LocalAlbumViewerRouteArgs({
+    this.key,
+    required this.album,
+    this.selectEnabled = true,
+  });
+
+  final Key? key;
+
+  final LocalAlbum album;
+
+  final bool selectEnabled;
+
+  @override
+  String toString() {
+    return 'LocalAlbumViewerRouteArgs{key: $key, album: $album, selectEnabled: $selectEnabled}';
+  }
+}
+
+/// generated route for
 /// [LoginPage]
 class LoginRoute extends PageRouteInfo<void> {
   const LoginRoute({List<PageRouteInfo>? children})
@@ -1103,6 +1071,44 @@ class RecentlyAddedRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [RemoteAlbumViewerPage]
+class RemoteAlbumViewerRoute extends PageRouteInfo<RemoteAlbumViewerRouteArgs> {
+  RemoteAlbumViewerRoute({
+    Key? key,
+    required int albumId,
+    List<PageRouteInfo>? children,
+  }) : super(
+          RemoteAlbumViewerRoute.name,
+          args: RemoteAlbumViewerRouteArgs(
+            key: key,
+            albumId: albumId,
+          ),
+          initialChildren: children,
+        );
+
+  static const String name = 'RemoteAlbumViewerRoute';
+
+  static const PageInfo<RemoteAlbumViewerRouteArgs> page =
+      PageInfo<RemoteAlbumViewerRouteArgs>(name);
+}
+
+class RemoteAlbumViewerRouteArgs {
+  const RemoteAlbumViewerRouteArgs({
+    this.key,
+    required this.albumId,
+  });
+
+  final Key? key;
+
+  final int albumId;
+
+  @override
+  String toString() {
+    return 'RemoteAlbumViewerRouteArgs{key: $key, albumId: $albumId}';
+  }
+}
+
+/// generated route for
 /// [SearchPage]
 class SearchRoute extends PageRouteInfo<SearchRouteArgs> {
   SearchRoute({
@@ -1174,7 +1180,7 @@ class SelectAdditionalUserForSharingRoute
     extends PageRouteInfo<SelectAdditionalUserForSharingRouteArgs> {
   SelectAdditionalUserForSharingRoute({
     Key? key,
-    required Album album,
+    required RemoteAlbum album,
     List<PageRouteInfo>? children,
   }) : super(
           SelectAdditionalUserForSharingRoute.name,
@@ -1199,7 +1205,7 @@ class SelectAdditionalUserForSharingRouteArgs {
 
   final Key? key;
 
-  final Album album;
+  final RemoteAlbum album;
 
   @override
   String toString() {

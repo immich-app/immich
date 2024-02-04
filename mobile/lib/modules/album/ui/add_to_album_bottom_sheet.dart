@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/modules/album/providers/album.provider.dart';
+import 'package:immich_mobile/modules/album/models/album.model.dart';
+import 'package:immich_mobile/modules/album/providers/remote_album.provider.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
 import 'package:immich_mobile/modules/album/ui/add_to_album_sliverlist.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/drag_sheet.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
@@ -25,14 +25,14 @@ class AddToAlbumBottomSheet extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final albums = ref.watch(albumProvider).where((a) => a.isRemote).toList();
+    final albums = ref.watch(remoteAlbumsProvider).valueOrNull ?? [];
     final albumService = ref.watch(albumServiceProvider);
     final sharedAlbums = ref.watch(sharedAlbumProvider);
 
     useEffect(
       () {
         // Fetch album updates, e.g., cover image
-        ref.read(albumProvider.notifier).getAllAlbums();
+        ref.read(remoteAlbumsProvider.notifier).getRemoteAlbums();
         ref.read(sharedAlbumProvider.notifier).getAllSharedAlbums();
 
         return null;
@@ -40,7 +40,7 @@ class AddToAlbumBottomSheet extends HookConsumerWidget {
       [],
     );
 
-    void addToAlbum(Album album) async {
+    void addToAlbum(RemoteAlbum album) async {
       final result = await albumService.addAdditionalAssetToAlbum(
         assets,
         album,

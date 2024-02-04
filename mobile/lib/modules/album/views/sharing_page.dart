@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/modules/album/models/album.model.dart';
 import 'package:immich_mobile/modules/album/providers/album_sort_by_options.provider.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/album/ui/album_thumbnail_card.dart';
@@ -51,7 +52,9 @@ class SharingPage extends HookConsumerWidget {
                 album: sharedAlbums[index],
                 showOwner: true,
                 onTap: () => context.pushRoute(
-                  AlbumViewerRoute(albumId: sharedAlbums[index].id),
+                  RemoteAlbumViewerRoute(
+                    albumId: sharedAlbums[index].modifiedAt.minute,
+                  ),
                 ),
               );
             },
@@ -65,7 +68,7 @@ class SharingPage extends HookConsumerWidget {
       return SliverList(
         delegate: SliverChildBuilderDelegate(
           (BuildContext context, int index) {
-            final album = sharedAlbums[index];
+            final album = sharedAlbums[index] as RemoteAlbum;
             final isOwner = album.ownerId == userId;
 
             return ListTile(
@@ -73,7 +76,7 @@ class SharingPage extends HookConsumerWidget {
               leading: ClipRRect(
                 borderRadius: const BorderRadius.all(Radius.circular(8)),
                 child: ImmichImage(
-                  album.thumbnail.value,
+                  album.thumbnail,
                   width: 60,
                   height: 60,
                 ),
@@ -99,8 +102,11 @@ class SharingPage extends HookConsumerWidget {
                           style: context.textTheme.bodyMedium,
                         )
                       : null,
-              onTap: () => context
-                  .pushRoute(AlbumViewerRoute(albumId: sharedAlbums[index].id)),
+              onTap: () => context.pushRoute(
+                RemoteAlbumViewerRoute(
+                  albumId: sharedAlbums[index].modifiedAt.second,
+                ),
+              ),
             );
           },
           childCount: sharedAlbums.length,

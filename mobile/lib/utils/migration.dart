@@ -15,6 +15,8 @@ Future<void> migrateDatabaseIfNeeded(Isar db) async {
       await _migrateTo(db, 4);
     case 4:
       await _migrateTo(db, 5);
+    case 5:
+      await _migrateTo(db, 6);
   }
 }
 

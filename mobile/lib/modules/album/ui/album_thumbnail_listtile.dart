@@ -3,8 +3,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/modules/album/models/album.model.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:openapi/api.dart';
@@ -16,7 +16,7 @@ class AlbumThumbnailListTile extends StatelessWidget {
     this.onTap,
   });
 
-  final Album album;
+  final RemoteAlbum album;
   final void Function()? onTap;
 
   @override
@@ -61,7 +61,7 @@ class AlbumThumbnailListTile extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       onTap: onTap ??
           () {
-            context.pushRoute(AlbumViewerRoute(albumId: album.id));
+            context.pushRoute(RemoteAlbumViewerRoute(albumId: album.isarId));
           },
       child: Padding(
         padding: const EdgeInsets.only(bottom: 12.0),
@@ -70,7 +70,7 @@ class AlbumThumbnailListTile extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: const BorderRadius.all(Radius.circular(8)),
-              child: album.thumbnail.value == null
+              child: album.thumbnail == null
                   ? buildEmptyThumbnail()
                   : buildAlbumThumbnail(),
             ),

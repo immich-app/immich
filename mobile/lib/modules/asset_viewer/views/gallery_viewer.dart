@@ -9,6 +9,7 @@ import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/modules/album/models/album.model.dart';
 import 'package:immich_mobile/modules/album/providers/current_album.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/asset_stack.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/current_asset.provider.dart';
@@ -387,7 +388,7 @@ class GalleryViewerPage extends HookConsumerWidget {
     }
 
     handleActivities() {
-      if (album != null && album.shared && album.remoteId != null) {
+      if (album != null && album is RemoteAlbum && album.shared) {
         context.pushRoute(const ActivitiesRoute());
       }
     }
