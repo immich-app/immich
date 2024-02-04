@@ -7,8 +7,11 @@ class MemoryProgressIndicator extends StatelessWidget {
   /// The current value of the indicator
   final double value;
 
-  const MemoryProgressIndicator(
-      {super.key, required this.ticks, required this.value});
+  const MemoryProgressIndicator({
+    super.key,
+    required this.ticks,
+    required this.value,
+  });
 
   @override
   Widget build(BuildContext context) {
