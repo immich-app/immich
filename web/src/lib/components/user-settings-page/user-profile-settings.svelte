@@ -9,9 +9,9 @@
   import SettingInputField, { SettingInputFieldType } from '../admin-page/settings/setting-input-field.svelte';
   import Button from '../elements/buttons/button.svelte';
   import { user } from '$lib/stores/user.store';
+  import { cloneDeep } from 'lodash-es';
 
-  // deep clone user
-  let editedUser = JSON.parse(JSON.stringify($user)) as typeof $user;
+  let editedUser = cloneDeep($user);
 
   const handleSaveProfile = async () => {
     try {
