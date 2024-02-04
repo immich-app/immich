@@ -27,7 +27,7 @@ class MemoryPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final currentMemory = useState(memories[memoryIndex]);
     final currentAssetPage = useState(0);
-    final currentMemoryIndex = useState(0);
+    final currentMemoryIndex = useState(memoryIndex);
     final assetProgress = useState(
       "${currentAssetPage.value + 1}|${currentMemory.value.assets.length}",
     );
@@ -41,9 +41,6 @@ class MemoryPage extends HookConsumerWidget {
     final memoryPageController = usePageController(initialPage: memoryIndex);
 
     // The Page Controller that scrolls horizontally with all of the assets
-    PageController currentMemoryAssetPageController =
-        memoryAssetPageControllers[currentMemoryIndex.value];
-
     useEffect(() {
       // Memories is an immersive activity
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
@@ -60,7 +57,10 @@ class MemoryPage extends HookConsumerWidget {
     toNextAsset(int currentAssetIndex) {
       if (currentAssetIndex + 1 < currentMemory.value.assets.length) {
         // Go to the next asset
-        currentMemoryAssetPageController.nextPage(
+        PageController controller =
+            memoryAssetPageControllers[currentMemoryIndex.value];
+
+        controller.nextPage(
           curve: Curves.easeInOut,
           duration: const Duration(milliseconds: 500),
         );
@@ -207,6 +207,7 @@ class MemoryPage extends HookConsumerWidget {
                   );
                 }
                 // Build horizontal page
+                final assetController = memoryAssetPageControllers[mIndex];
                 return Column(
                   children: [
                     Padding(
@@ -217,12 +218,12 @@ class MemoryPage extends HookConsumerWidget {
                         bottom: 2.0,
                       ),
                       child: AnimatedBuilder(
-                        animation: currentMemoryAssetPageController,
+                        animation: assetController,
                         builder: (context, child) {
                           double value = 0.0;
-                          if (currentMemoryAssetPageController.hasClients) {
+                          if (assetController.hasClients) {
                             // We can only access [page] if this has clients
-                            value = currentMemoryAssetPageController.page ?? 0;
+                            value = assetController.page ?? 0;
                           }
                           return MemoryProgressIndicator(
                             ticks: memories[mIndex].assets.length,
@@ -238,7 +239,7 @@ class MemoryPage extends HookConsumerWidget {
                             physics: const BouncingScrollPhysics(
                               parent: AlwaysScrollableScrollPhysics(),
                             ),
-                            controller: memoryAssetPageControllers[mIndex],
+                            controller: assetController,
                             onPageChanged: onAssetChanged,
                             scrollDirection: Axis.horizontal,
                             itemCount: memories[mIndex].assets.length,

@@ -77,13 +77,16 @@ class MemoryCard extends StatelessWidget {
                   }
                 }
 
-                return ImmichImage(
-                  asset,
-                  fit: fit,
-                  height: double.infinity,
-                  width: double.infinity,
-                  type: ThumbnailFormat.JPEG,
-                  preferredLocalAssetSize: 2048,
+                return Hero(
+                  tag: 'memory-${asset.id}',
+                  child: ImmichImage(
+                    asset,
+                    fit: fit,
+                    height: double.infinity,
+                    width: double.infinity,
+                    type: ThumbnailFormat.JPEG,
+                    preferredLocalAssetSize: 2048,
+                  ),
                 );
               },
             ),

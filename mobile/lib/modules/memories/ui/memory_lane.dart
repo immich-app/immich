@@ -55,7 +55,7 @@ class MemoryLane extends HookConsumerWidget {
                                   BlendMode.darken,
                                 ),
                                 child: Hero(
-                                  tag: memory.assets[0].id,
+                                  tag: 'memory-${memory.assets[0].id}',
                                   child: ImmichImage(
                                     memory.assets[0],
                                     fit: BoxFit.cover,
