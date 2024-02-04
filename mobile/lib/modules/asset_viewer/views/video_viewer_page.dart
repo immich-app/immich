@@ -21,40 +21,45 @@ class VideoViewerPage extends HookConsumerWidget {
   final Asset asset;
   final bool isMotionVideo;
   final Widget? placeholder;
-  final VoidCallback onVideoEnded;
+  final VoidCallback? onVideoEnded;
   final VoidCallback? onPlaying;
   final VoidCallback? onPaused;
+  final Duration hideControlsTimer;
+  final bool showControls;
+  final bool showDownloadingIndicator;
 
   const VideoViewerPage({
     super.key,
     required this.asset,
-    required this.isMotionVideo,
-    required this.onVideoEnded,
+    this.isMotionVideo = false,
+    this.onVideoEnded,
     this.onPlaying,
     this.onPaused,
     this.placeholder,
+    this.showControls = true,
+    this.hideControlsTimer = const Duration(seconds: 5),
+    this.showDownloadingIndicator = true,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (asset.isLocal && asset.livePhotoVideoId == null) {
       final AsyncValue<File> videoFile = ref.watch(_fileFamily(asset.local!));
-      return videoFile.when(
-        data: (data) => VideoPlayer(
-          file: data,
-          isMotionVideo: false,
-          onVideoEnded: () {},
-        ),
-        error: (error, stackTrace) => Icon(
-          Icons.image_not_supported_outlined,
-          color: context.primaryColor,
-        ),
-        loading: () => const Center(
-          child: SizedBox(
-            width: 75,
-            height: 75,
-            child: CircularProgressIndicator.adaptive(),
+      return AnimatedSwitcher(
+        duration: const Duration(milliseconds: 200),
+        child: videoFile.when(
+          data: (data) => VideoPlayer(
+            file: data,
+            isMotionVideo: false,
+            onVideoEnded: () {},
           ),
+          error: (error, stackTrace) => Icon(
+            Icons.image_not_supported_outlined,
+            color: context.primaryColor,
+          ),
+          loading: () => showDownloadingIndicator
+              ? const Center(child: ImmichLoadingIndicator())
+              : Container(),
         ),
       );
     }
@@ -74,15 +79,24 @@ class VideoViewerPage extends HookConsumerWidget {
           onPaused: onPaused,
           onPlaying: onPlaying,
           placeholder: placeholder,
+          hideControlsTimer: hideControlsTimer,
+          showControls: showControls,
+          showDownloadingIndicator: showDownloadingIndicator,
         ),
-        if (downloadAssetStatus == DownloadAssetStatus.loading)
-          SizedBox(
+        AnimatedOpacity(
+          duration: const Duration(milliseconds: 400),
+          opacity: (downloadAssetStatus == DownloadAssetStatus.loading &&
+                  showDownloadingIndicator)
+              ? 1.0
+              : 0.0,
+          child: SizedBox(
             height: context.height,
             width: context.width,
             child: const Center(
               child: ImmichLoadingIndicator(),
             ),
           ),
+        ),
       ],
     );
   }
@@ -102,7 +116,9 @@ class VideoPlayer extends StatefulWidget {
   final String? accessToken;
   final File? file;
   final bool isMotionVideo;
-  final VoidCallback onVideoEnded;
+  final VoidCallback? onVideoEnded;
+  final Duration hideControlsTimer;
+  final bool showControls;
 
   final Function()? onPlaying;
   final Function()? onPaused;
@@ -111,16 +127,23 @@ class VideoPlayer extends StatefulWidget {
   /// usually, a thumbnail of the video
   final Widget? placeholder;
 
+  final bool showDownloadingIndicator;
+
   const VideoPlayer({
     super.key,
     this.url,
     this.accessToken,
     this.file,
-    required this.onVideoEnded,
+    this.onVideoEnded,
     required this.isMotionVideo,
     this.onPlaying,
     this.onPaused,
     this.placeholder,
+    this.hideControlsTimer = const Duration(
+      seconds: 5,
+    ),
+    this.showControls = true,
+    this.showDownloadingIndicator = true,
   });
 
   @override
@@ -149,7 +172,7 @@ class _VideoPlayerState extends State<VideoPlayer> {
         if (videoPlayerController.value.position ==
             videoPlayerController.value.duration) {
           WakelockPlus.disable();
-          widget.onVideoEnded();
+          widget.onVideoEnded?.call();
         }
       }
     });
@@ -184,9 +207,9 @@ class _VideoPlayerState extends State<VideoPlayer> {
       autoInitialize: true,
       allowFullScreen: false,
       allowedScreenSleep: false,
-      showControls: !widget.isMotionVideo,
+      showControls: widget.showControls && !widget.isMotionVideo,
       customControls: const VideoPlayerControls(),
-      hideControlsTimer: const Duration(seconds: 5),
+      hideControlsTimer: widget.hideControlsTimer,
     );
   }
 
@@ -216,9 +239,10 @@ class _VideoPlayerState extends State<VideoPlayer> {
           child: Stack(
             children: [
               if (widget.placeholder != null) widget.placeholder!,
-              const Center(
-                child: ImmichLoadingIndicator(),
-              ),
+              if (widget.showDownloadingIndicator)
+                const Center(
+                  child: ImmichLoadingIndicator(),
+                ),
             ],
           ),
         ),

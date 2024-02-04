@@ -245,13 +245,25 @@ class MemoryPage extends HookConsumerWidget {
                             itemCount: memories[mIndex].assets.length,
                             itemBuilder: (context, index) {
                               final asset = memories[mIndex].assets[index];
-                              return Container(
-                                color: Colors.black,
-                                child: MemoryCard(
-                                  asset: asset,
-                                  onTap: () => toNextAsset(index),
-                                  title: memories[mIndex].title,
-                                  showTitle: index == 0,
+                              return GestureDetector(
+                                behavior: HitTestBehavior.translucent,
+                                onTap: () {
+                                  toNextAsset(index);
+                                },
+                                child: Container(
+                                  color: Colors.black,
+                                  child: MemoryCard(
+                                    asset: asset,
+                                    title: memories[mIndex].title,
+                                    showTitle: index == 0,
+                                    //onVideoEnded: () {
+                                      // TODO: At the end of the video, advance to the next asset automatically. If this is a live photo, don't go to
+                                      // next asset
+                                      //if (asset.livePhotoVideoId == null) {
+                                        //toNextAsset(index);
+                                      //}
+                                    //},
+                                  ),
                                 ),
                               );
                             },
