@@ -27,7 +27,7 @@ class MemoryCard extends StatelessWidget {
     super.key,
   });
 
-  String get authToken => 'Bearer ${Store.get(StoreKey.accessToken)}';
+  String get accessToken => Store.get(StoreKey.accessToken);
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +55,7 @@ class MemoryCard extends StatelessWidget {
                     cacheKey: getThumbnailCacheKey(
                       asset,
                     ),
-                    headers: {"Authorization": authToken},
+                    headers: {"x-immich-user-token": accessToken},
                   ),
                   fit: BoxFit.cover,
                 ),
