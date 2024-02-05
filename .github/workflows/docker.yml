@@ -44,7 +44,7 @@ jobs:
             platforms: linux/amd64
             device: openvino
             suffix: -openvino
-          
+
           - image: immich-machine-learning
             context: machine-learning
             file: machine-learning/Dockerfile
@@ -55,6 +55,12 @@ jobs:
           - image: immich-server
             context: .
             file: server/Dockerfile
+            platforms: linux/amd64,linux/arm64
+            device: cpu
+
+          - image: immich-cli
+            context: .
+            file: cli/Dockerfile
             platforms: linux/amd64,linux/arm64
             device: cpu
     steps:
