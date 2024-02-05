@@ -19,6 +19,7 @@ import { StorageCore, StorageFolder } from '../storage';
 import { CreateUserDto, UpdateUserDto } from './dto';
 import { CreateProfileImageResponseDto, UserResponseDto, mapCreateProfileImageResponse, mapUser } from './response-dto';
 import { UserCore } from './user.core';
+import { DateTime } from 'luxon';
 
 @Injectable()
 export class UserService {
@@ -189,9 +190,9 @@ export class UserService {
     }
 
     // TODO use luxon for date calculation
-    const msInDay = 86_400_000;
-    const msDeleteWait = msInDay * 7;
-    const msSinceDelete = Date.now() - (Date.parse(user.deletedAt.toString()) || 0);
+    const msDeleteWait = 7 * 24 * 60 * 60 * 1000; // milliseconds in a week
+    const deletedAt  = DateTime.fromJSDate(user.deletedAt || new Date(0));
+    const msSinceDelete = DateTime.now().diff(deletedAt).as('milliseconds');
 
     return msSinceDelete >= msDeleteWait;
   }
