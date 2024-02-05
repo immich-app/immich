@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:immich_mobile/constants/immich_colors.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 
 class MemoryProgressIndicator extends StatelessWidget {
   /// The number of ticks in the progress indicator
@@ -24,6 +26,8 @@ class MemoryProgressIndicator extends StatelessWidget {
             children: [
               LinearProgressIndicator(
                 value: value,
+                backgroundColor: Colors.grey[600],
+                color: immichDarkThemePrimaryColor,
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -37,8 +41,7 @@ class MemoryProgressIndicator extends StatelessWidget {
                           ? null
                           : Border(
                               left: BorderSide(
-                                color:
-                                    Theme.of(context).scaffoldBackgroundColor,
+                                color: context.colorScheme.onSecondaryContainer,
                                 width: 1,
                               ),
                             ),
