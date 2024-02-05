@@ -14,7 +14,7 @@ export class UsePgVectors1700713871511 implements MigrationInterface {
 
     const clipModelNameQuery = await queryRunner.query(`SELECT value FROM system_config WHERE key = 'machineLearning.clip.modelName'`);
     const clipModelName: string = clipModelNameQuery?.[0]?.['value'] ?? 'ViT-B-32__openai';
-    const clipDimSize = getCLIPModelInfo(clipModelName.replace(/"/g, '')).dimSize;
+    const clipDimSize = getCLIPModelInfo(clipModelName.replaceAll('"', '')).dimSize;
 
     await queryRunner.query(`
         ALTER TABLE asset_faces 

@@ -110,7 +110,7 @@
   />
 {/if}
 
-{#if editImportPath != null}
+{#if editImportPath != undefined}
   <LibraryImportPathForm
     title="Edit Import Path"
     submitText="Save"

@@ -15,11 +15,11 @@ import { ImmichLogger } from '@app/infra/logger';
 import { Inject } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DefaultReadTaskOptions, exiftool, Tags } from 'exiftool-vendored';
-import { createReadStream, existsSync } from 'fs';
-import { readFile } from 'fs/promises';
 import * as geotz from 'geo-tz';
 import { getName } from 'i18n-iso-countries';
-import * as readLine from 'readline';
+import { createReadStream, existsSync } from 'node:fs';
+import { readFile } from 'node:fs/promises';
+import * as readLine from 'node:readline';
 import { DataSource, DeepPartial, QueryRunner, Repository } from 'typeorm';
 
 type GeoEntity = GeodataPlacesEntity | GeodataAdmin1Entity | GeodataAdmin2Entity;
@@ -69,10 +69,10 @@ export class MetadataRepository implements IMetadataRepository {
       await this.loadAdmin2(queryRunner);
 
       await queryRunner.commitTransaction();
-    } catch (e) {
-      this.logger.fatal('Error importing geodata', e);
+    } catch (error) {
+      this.logger.fatal('Error importing geodata', error);
       await queryRunner.rollbackTransaction();
-      throw e;
+      throw error;
     } finally {
       await queryRunner.release();
     }
@@ -110,10 +110,10 @@ export class MetadataRepository implements IMetadataRepository {
       queryRunner,
       (lineSplit: string[]) =>
         this.geodataPlacesRepository.create({
-          id: parseInt(lineSplit[0]),
+          id: Number.parseInt(lineSplit[0]),
           name: lineSplit[1],
-          latitude: parseFloat(lineSplit[4]),
-          longitude: parseFloat(lineSplit[5]),
+          latitude: Number.parseFloat(lineSplit[4]),
+          longitude: Number.parseFloat(lineSplit[5]),
           countryCode: lineSplit[8],
           admin1Code: lineSplit[10],
           admin2Code: lineSplit[11],
@@ -192,7 +192,8 @@ export class MetadataRepository implements IMetadataRepository {
         backfillTimezones: true,
         inferTimezoneFromDatestamps: true,
         useMWG: true,
-        numericTags: DefaultReadTaskOptions.numericTags.concat(['FocalLength']),
+        numericTags: [...DefaultReadTaskOptions.numericTags, 'FocalLength'],
+        /* eslint unicorn/no-array-callback-reference: off, unicorn/no-array-method-this-argument: off */
         geoTz: (lat, lon) => geotz.find(lat, lon)[0],
       })
       .catch((error) => {

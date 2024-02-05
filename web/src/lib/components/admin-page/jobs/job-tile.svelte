@@ -18,7 +18,7 @@
   } from '@mdi/js';
 
   export let title: string;
-  export let subtitle: string | undefined = undefined;
+  export let subtitle: string | undefined;
   export let jobCounts: JobCountsDto;
   export let queueStatus: QueueStatusDto;
   export let allowForceCommand = true;

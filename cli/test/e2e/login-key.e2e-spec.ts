@@ -10,10 +10,10 @@ describe(`login-key (e2e)`, () => {
 
   beforeAll(async () => {
     await testApp.create();
-    if (!process.env.IMMICH_INSTANCE_URL) {
-      throw new Error('IMMICH_INSTANCE_URL environment variable not set');
-    } else {
+    if (process.env.IMMICH_INSTANCE_URL) {
       instanceUrl = process.env.IMMICH_INSTANCE_URL;
+    } else {
+      throw new Error('IMMICH_INSTANCE_URL environment variable not set');
     }
   });
 

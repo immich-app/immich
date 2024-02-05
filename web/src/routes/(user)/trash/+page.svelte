@@ -43,8 +43,8 @@
         message: `Empty trash initiated. Refresh the page to see the changes`,
         type: NotificationType.Info,
       });
-    } catch (e) {
-      handleError(e, 'Error emptying trash');
+    } catch (error) {
+      handleError(error, 'Error emptying trash');
     }
   };
 
@@ -56,8 +56,8 @@
         message: `Restore trash initiated. Refresh the page to see the changes`,
         type: NotificationType.Info,
       });
-    } catch (e) {
-      handleError(e, 'Error restoring trash');
+    } catch (error) {
+      handleError(error, 'Error restoring trash');
     }
   };
 </script>

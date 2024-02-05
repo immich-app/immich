@@ -22,16 +22,14 @@
 
     // exclude partners from the list of users available for selection
     const { data: partners } = await api.partnerApi.getPartners({ direction: 'shared-by' });
-    const partnerIds = partners.map((partner) => partner.id);
-    availableUsers = users.filter((user) => !partnerIds.includes(user.id));
+    const partnerIds = new Set(partners.map((partner) => partner.id));
+    availableUsers = users.filter((user) => !partnerIds.has(user.id));
   });
 
   const selectUser = (user: UserResponseDto) => {
-    if (selectedUsers.includes(user)) {
-      selectedUsers = selectedUsers.filter((selectedUser) => selectedUser.id !== user.id);
-    } else {
-      selectedUsers = [...selectedUsers, user];
-    }
+    selectedUsers = selectedUsers.includes(user)
+      ? selectedUsers.filter((selectedUser) => selectedUser.id !== user.id)
+      : [...selectedUsers, user];
   };
 </script>
 

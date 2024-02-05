@@ -1,4 +1,4 @@
-import pkg from '../package.json';
+import { version } from '../package.json';
 
 export interface ICliVersion {
   major: number;
@@ -23,7 +23,7 @@ export class CliVersion implements ICliVersion {
   }
 
   static fromString(version: string): CliVersion {
-    const regex = /(?:v)?(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)/i;
+    const regex = /v?(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)/i;
     const matchResult = version.match(regex);
     if (matchResult) {
       const [, major, minor, patch] = matchResult.map(Number);
@@ -34,4 +34,4 @@ export class CliVersion implements ICliVersion {
   }
 }
 
-export const cliVersion = CliVersion.fromString(pkg.version);
+export const cliVersion = CliVersion.fromString(version);

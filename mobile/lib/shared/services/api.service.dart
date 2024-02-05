@@ -31,12 +31,12 @@ class ApiService {
       setEndpoint(endpoint);
     }
   }
-  String? _authToken;
+  String? _accessToken;
 
   setEndpoint(String endpoint) {
     _apiClient = ApiClient(basePath: endpoint);
-    if (_authToken != null) {
-      setAccessToken(_authToken!);
+    if (_accessToken != null) {
+      setAccessToken(_accessToken!);
     }
     userApi = UserApi(_apiClient);
     authenticationApi = AuthenticationApi(_apiClient);
@@ -134,8 +134,8 @@ class ApiService {
   }
 
   setAccessToken(String accessToken) {
-    _authToken = accessToken;
-    _apiClient.addDefaultHeader('Authorization', 'Bearer $accessToken');
+    _accessToken = accessToken;
+    _apiClient.addDefaultHeader('x-immich-user-token', accessToken);
   }
 
   ApiClient get apiClient => _apiClient;

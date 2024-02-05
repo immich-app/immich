@@ -3,7 +3,7 @@ import { ImmichLogger } from '@app/infra/logger';
 import { BadRequestException, Inject } from '@nestjs/common';
 import _ from 'lodash';
 import { DateTime, Duration } from 'luxon';
-import { extname } from 'path';
+import { extname } from 'node:path';
 import sanitize from 'sanitize-filename';
 import { AccessCore, Permission } from '../access';
 import { AuthDto } from '../auth';
@@ -93,7 +93,7 @@ export class AssetService {
   }
 
   search(auth: AuthDto, dto: AssetSearchDto) {
-    let checksum: Buffer | undefined = undefined;
+    let checksum: Buffer | undefined;
 
     if (dto.checksum) {
       const encoding = dto.checksum.length === 28 ? 'base64' : 'hex';
@@ -126,29 +126,33 @@ export class AssetService {
     const filename = file.originalName;
 
     switch (fieldName) {
-      case UploadFieldName.ASSET_DATA:
+      case UploadFieldName.ASSET_DATA: {
         if (mimeTypes.isAsset(filename)) {
           return true;
         }
         break;
+      }
 
-      case UploadFieldName.LIVE_PHOTO_DATA:
+      case UploadFieldName.LIVE_PHOTO_DATA: {
         if (mimeTypes.isVideo(filename)) {
           return true;
         }
         break;
+      }
 
-      case UploadFieldName.SIDECAR_DATA:
+      case UploadFieldName.SIDECAR_DATA: {
         if (mimeTypes.isSidecar(filename)) {
           return true;
         }
         break;
+      }
 
-      case UploadFieldName.PROFILE_DATA:
+      case UploadFieldName.PROFILE_DATA: {
         if (mimeTypes.isProfile(filename)) {
           return true;
         }
         break;
+      }
     }
 
     this.logger.error(`Unsupported file type ${filename}`);
@@ -158,13 +162,13 @@ export class AssetService {
   getUploadFilename({ auth, fieldName, file }: UploadRequest): string {
     this.access.requireUploadAccess(auth);
 
-    const originalExt = extname(file.originalName);
+    const originalExtension = extname(file.originalName);
 
     const lookup = {
-      [UploadFieldName.ASSET_DATA]: originalExt,
+      [UploadFieldName.ASSET_DATA]: originalExtension,
       [UploadFieldName.LIVE_PHOTO_DATA]: '.mov',
       [UploadFieldName.SIDECAR_DATA]: '.xmp',
-      [UploadFieldName.PROFILE_DATA]: originalExt,
+      [UploadFieldName.PROFILE_DATA]: originalExtension,
     };
 
     return sanitize(`${file.uuid}${lookup[fieldName]}`);
@@ -247,11 +251,9 @@ export class AssetService {
     await this.timeBucketChecks(auth, dto);
     const timeBucketOptions = await this.buildTimeBucketOptions(auth, dto);
     const assets = await this.assetRepository.getTimeBucket(dto.timeBucket, timeBucketOptions);
-    if (!auth.sharedLink || auth.sharedLink?.showExif) {
-      return assets.map((asset) => mapAsset(asset, { withStack: true }));
-    } else {
-      return assets.map((asset) => mapAsset(asset, { stripMetadata: true }));
-    }
+    return !auth.sharedLink || auth.sharedLink?.showExif
+      ? assets.map((asset) => mapAsset(asset, { withStack: true }))
+      : assets.map((asset) => mapAsset(asset, { stripMetadata: true }));
   }
 
   async buildTimeBucketOptions(auth: AuthDto, dto: TimeBucketDto): Promise<TimeBucketOptions> {
@@ -371,14 +373,14 @@ export class AssetService {
       const assetsWithChildren = assets.filter((a) => a.stack && a.stack.assets.length > 0);
       ids.push(...assetsWithChildren.flatMap((child) => child.stack!.assets.map((gChild) => gChild.id)));
 
-      if (!stack) {
-        stack = await this.assetStackRepository.create({
+      if (stack) {
+        await this.assetStackRepository.update({
+          id: stack.id,
           primaryAssetId: primaryAsset.id,
           assets: ids.map((id) => ({ id }) as AssetEntity),
         });
       } else {
-        await this.assetStackRepository.update({
-          id: stack.id,
+        stack = await this.assetStackRepository.create({
           primaryAssetId: primaryAsset.id,
           assets: ids.map((id) => ({ id }) as AssetEntity),
         });
@@ -394,9 +396,10 @@ export class AssetService {
     }
 
     await this.assetRepository.updateAll(ids, options);
-    const stacksToDelete = (
-      await Promise.all(stackIdsToCheckForDelete.map((id) => this.assetStackRepository.getById(id)))
-    )
+    const stackIdsToDelete = await Promise.all(
+      stackIdsToCheckForDelete.map((id) => this.assetStackRepository.getById(id)),
+    );
+    const stacksToDelete = stackIdsToDelete
       .flatMap((stack) => (stack ? [stack] : []))
       .filter((stack) => stack.assets.length < 2);
     await Promise.all(stacksToDelete.map((as) => this.assetStackRepository.delete(as.id)));
@@ -510,9 +513,8 @@ export class AssetService {
       throw new Error('Asset not found or not in a stack');
     }
     if (oldParent != null) {
-      childIds.push(oldParent.id);
       // Get all children of old parent
-      childIds.push(...(oldParent.stack?.assets.map((a) => a.id) ?? []));
+      childIds.push(oldParent.id, ...(oldParent.stack?.assets.map((a) => a.id) ?? []));
     }
     await this.assetStackRepository.update({
       id: oldParent.stackId,
@@ -530,17 +532,20 @@ export class AssetService {
 
     for (const id of dto.assetIds) {
       switch (dto.name) {
-        case AssetJobName.REFRESH_METADATA:
+        case AssetJobName.REFRESH_METADATA: {
           jobs.push({ name: JobName.METADATA_EXTRACTION, data: { id } });
           break;
+        }
 
-        case AssetJobName.REGENERATE_THUMBNAIL:
+        case AssetJobName.REGENERATE_THUMBNAIL: {
           jobs.push({ name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id } });
           break;
+        }
 
-        case AssetJobName.TRANSCODE_VIDEO:
+        case AssetJobName.TRANSCODE_VIDEO: {
           jobs.push({ name: JobName.VIDEO_CONVERSION, data: { id } });
           break;
+        }
       }
     }
 

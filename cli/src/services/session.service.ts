@@ -1,4 +1,4 @@
-import { existsSync } from 'fs';
+import { existsSync } from 'node:fs';
 import { access, constants, mkdir, readFile, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import yaml from 'yaml';
@@ -15,12 +15,12 @@ class LoginError extends Error {
 }
 
 export class SessionService {
-  readonly configDir!: string;
+  readonly configDirectory!: string;
   readonly authPath!: string;
 
-  constructor(configDir: string) {
-    this.configDir = configDir;
-    this.authPath = path.join(configDir, '/auth.yml');
+  constructor(configDirectory: string) {
+    this.configDirectory = configDirectory;
+    this.authPath = path.join(configDirectory, '/auth.yml');
   }
 
   async connect(): Promise<ImmichApi> {
@@ -74,11 +74,11 @@ export class SessionService {
 
     console.log(`Logged in as ${userInfo.email}`);
 
-    if (!existsSync(this.configDir)) {
+    if (!existsSync(this.configDirectory)) {
       // Create config folder if it doesn't exist
-      const created = await mkdir(this.configDir, { recursive: true });
+      const created = await mkdir(this.configDirectory, { recursive: true });
       if (!created) {
-        throw new Error(`Failed to create config folder ${this.configDir}`);
+        throw new Error(`Failed to create config folder ${this.configDirectory}`);
       }
     }
 

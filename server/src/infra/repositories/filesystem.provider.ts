@@ -10,10 +10,10 @@ import {
 import { ImmichLogger } from '@app/infra/logger';
 import archiver from 'archiver';
 import chokidar, { WatchOptions } from 'chokidar';
-import { constants, createReadStream, existsSync, mkdirSync } from 'fs';
-import fs, { copyFile, readdir, rename, writeFile } from 'fs/promises';
 import { glob } from 'glob';
-import path from 'path';
+import { constants, createReadStream, existsSync, mkdirSync } from 'node:fs';
+import fs, { copyFile, readdir, rename, writeFile } from 'node:fs/promises';
+import path from 'node:path';
 
 export class FilesystemProvider implements IStorageRepository {
   private logger = new ImmichLogger(FilesystemProvider.name);
@@ -60,7 +60,7 @@ export class FilesystemProvider implements IStorageRepository {
     try {
       await fs.access(filepath, mode);
       return true;
-    } catch (_) {
+    } catch {
       return false;
     }
   }
@@ -68,11 +68,11 @@ export class FilesystemProvider implements IStorageRepository {
   async unlink(file: string) {
     try {
       await fs.unlink(file);
-    } catch (err) {
-      if ((err as NodeJS.ErrnoException)?.code === 'ENOENT') {
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException)?.code === 'ENOENT') {
         this.logger.warn(`File ${file} does not exist.`);
       } else {
-        throw err;
+        throw error;
       }
     }
   }

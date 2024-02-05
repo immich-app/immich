@@ -227,11 +227,8 @@
   };
 
   const handleChangeListMode = () => {
-    if ($albumViewSettings.view === AlbumViewMode.Cover) {
-      $albumViewSettings.view = AlbumViewMode.List;
-    } else {
-      $albumViewSettings.view = AlbumViewMode.Cover;
-    }
+    $albumViewSettings.view =
+      $albumViewSettings.view === AlbumViewMode.Cover ? AlbumViewMode.List : AlbumViewMode.Cover;
   };
 </script>
 
@@ -285,14 +282,14 @@
       </div>
     </LinkButton>
   </div>
-  {#if $albums.length !== 0}
+  {#if $albums.length > 0}
     <!-- Album Card -->
     {#if $albumViewSettings.view === AlbumViewMode.Cover}
       <div class="grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))]">
-        {#each $albums as album, idx (album.id)}
+        {#each $albums as album, index (album.id)}
           <a data-sveltekit-preload-data="hover" href="{AppRoute.ALBUMS}/{album.id}" animate:flip={{ duration: 200 }}>
             <AlbumCard
-              preload={idx < 20}
+              preload={index < 20}
               {album}
               on:showalbumcontextmenu={(e) => showAlbumContextMenu(e.detail, album)}
             />

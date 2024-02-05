@@ -2,6 +2,7 @@
   import { onMount, tick } from 'svelte';
   import { fade } from 'svelte/transition';
   import { thumbHashToDataURL } from 'thumbhash';
+  // eslint-disable-next-line unicorn/prefer-node-protocol
   import { Buffer } from 'buffer';
   import { mdiEyeOffOutline } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';

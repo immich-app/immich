@@ -34,7 +34,7 @@
 
   const calculateSegments = (buckets: AssetBucket[]) => {
     let height = 0;
-    let prev: Segment;
+    let previous: Segment;
     return buckets.map((bucket) => {
       const segment = new Segment();
       segment.count = bucket.assets.length;
@@ -42,13 +42,13 @@
       segment.timeGroup = bucket.bucketDate;
       segment.date = fromLocalDateTime(segment.timeGroup);
 
-      if (prev?.date.year !== segment.date.year && height > MIN_YEAR_LABEL_DISTANCE) {
-        prev.hasLabel = true;
+      if (previous?.date.year !== segment.date.year && height > MIN_YEAR_LABEL_DISTANCE) {
+        previous.hasLabel = true;
         height = 0;
       }
 
       height += segment.height;
-      prev = segment;
+      previous = segment;
       return segment;
     });
   };

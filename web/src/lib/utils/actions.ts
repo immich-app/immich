@@ -19,7 +19,7 @@ export const deleteAssets = async (force: boolean, onAssetDelete: OnDelete, ids:
       message: `${force ? 'Permanently deleted' : 'Trashed'} ${ids.length} assets`,
       type: NotificationType.Info,
     });
-  } catch (e) {
-    handleError(e, 'Error deleting assets');
+  } catch (error) {
+    handleError(error, 'Error deleting assets');
   }
 };

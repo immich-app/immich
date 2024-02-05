@@ -98,6 +98,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     mobileOverrideEnabled: false,
     mobileRedirectUri: '',
     scope: 'openid email profile',
+    signingAlgorithm: 'RS256',
     storageLabelClaim: 'preferred_username',
   },
   passwordLogin: {
@@ -136,7 +137,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     watch: {
       enabled: false,
       usePolling: false,
-      interval: 10000,
+      interval: 10_000,
     },
   },
 });

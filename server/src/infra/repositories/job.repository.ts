@@ -15,7 +15,7 @@ import { ModuleRef } from '@nestjs/core';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { Job, JobsOptions, Processor, Queue, Worker, WorkerOptions } from 'bullmq';
 import { CronJob, CronTime } from 'cron';
-import { setTimeout } from 'timers/promises';
+import { setTimeout } from 'node:timers/promises';
 import { bullConfig } from '../infra.config';
 
 @Injectable()
@@ -24,7 +24,7 @@ export class JobRepository implements IJobRepository {
   private logger = new ImmichLogger(JobRepository.name);
 
   constructor(
-    private moduleRef: ModuleRef,
+    private moduleReference: ModuleRef,
     private schedulerReqistry: SchedulerRegistry,
   ) {}
 
@@ -118,7 +118,7 @@ export class JobRepository implements IJobRepository {
   }
 
   async queueAll(items: JobItem[]): Promise<void> {
-    if (!items.length) {
+    if (items.length === 0) {
       return;
     }
 
@@ -167,19 +167,23 @@ export class JobRepository implements IJobRepository {
 
   private getJobOptions(item: JobItem): JobsOptions | null {
     switch (item.name) {
-      case JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE:
+      case JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE: {
         return { jobId: item.data.id };
-      case JobName.GENERATE_PERSON_THUMBNAIL:
+      }
+      case JobName.GENERATE_PERSON_THUMBNAIL: {
         return { priority: 1 };
-      case JobName.QUEUE_FACIAL_RECOGNITION:
+      }
+      case JobName.QUEUE_FACIAL_RECOGNITION: {
         return { jobId: JobName.QUEUE_FACIAL_RECOGNITION };
+      }
 
-      default:
+      default: {
         return null;
+      }
     }
   }
 
   private getQueue(queue: QueueName): Queue {
-    return this.moduleRef.get<Queue>(getQueueToken(queue), { strict: false });
+    return this.moduleReference.get<Queue>(getQueueToken(queue), { strict: false });
   }
 }

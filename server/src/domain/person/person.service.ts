@@ -122,7 +122,7 @@ export class PersonService {
     }
     if (changeFeaturePhoto.length > 0) {
       // Remove duplicates
-      await this.createNewFeaturePhoto(Array.from(new Set(changeFeaturePhoto)));
+      await this.createNewFeaturePhoto([...new Set(changeFeaturePhoto)]);
     }
     return result;
   }
@@ -332,7 +332,7 @@ export class PersonService {
     this.logger.debug(`${faces.length} faces detected in ${asset.resizePath}`);
     this.logger.verbose(faces.map((face) => ({ ...face, embedding: `vector(${face.embedding.length})` })));
 
-    if (faces.length) {
+    if (faces.length > 0) {
       await this.jobRepository.queue({ name: JobName.QUEUE_FACIAL_RECOGNITION, data: { force: false } });
 
       const mappedFaces = faces.map((face) => ({
@@ -417,7 +417,7 @@ export class PersonService {
       numResults: machineLearning.facialRecognition.minFaces,
     });
 
-    this.logger.debug(`Face ${id} has ${matches.length} match${matches.length != 1 ? 'es' : ''}`);
+    this.logger.debug(`Face ${id} has ${matches.length} match${matches.length == 1 ? '' : 'es'}`);
 
     const isCore = matches.length >= machineLearning.facialRecognition.minFaces;
     if (!isCore && !deferred) {

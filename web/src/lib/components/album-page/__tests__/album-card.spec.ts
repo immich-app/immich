@@ -122,10 +122,10 @@ describe('AlbumCard component', () => {
       const onClickHandler = vi.fn();
       sut.component.$on('showalbumcontextmenu', onClickHandler);
 
-      const contextMenuBtnParent = sut.getByTestId('context-button-parent');
+      const contextMenuButtonParent = sut.getByTestId('context-button-parent');
 
       // Mock getBoundingClientRect to return a bounding rectangle that will result in the expected position
-      contextMenuBtnParent.getBoundingClientRect = () => ({
+      contextMenuButtonParent.getBoundingClientRect = () => ({
         x: 123,
         y: 456,
         width: 0,
@@ -138,7 +138,7 @@ describe('AlbumCard component', () => {
       });
 
       await fireEvent(
-        contextMenuBtnParent,
+        contextMenuButtonParent,
         new MouseEvent('click', {
           clientX: 123,
           clientY: 456,

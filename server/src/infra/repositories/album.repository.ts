@@ -71,7 +71,7 @@ export class AlbumRepository implements IAlbumRepository {
   @ChunkedArray()
   async getMetadataForIds(ids: string[]): Promise<AlbumAssetCount[]> {
     // Guard against running invalid query when ids list is empty.
-    if (!ids.length) {
+    if (ids.length === 0) {
       return [];
     }
 
