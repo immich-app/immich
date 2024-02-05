@@ -1,10 +1,15 @@
 import { restoreTempFolder, testApp } from '@test-utils';
-import { CLI_BASE_OPTIONS, TEST_AUTH_FILE, TEST_CONFIG_DIR, setup, spyOnConsole } from 'test/cli-test-utils';
+import {
+  CLI_BASE_OPTIONS,
+  TEST_AUTH_FILE,
+  TEST_CONFIG_DIR,
+  deleteAuthFile,
+  setup,
+  spyOnConsole,
+} from 'test/cli-test-utils';
 import { readFile, stat, unlink } from 'node:fs/promises';
 import { LoginCommand } from '../../src/commands/login';
-import path from 'node:path';
 import yaml from 'yaml';
-import { convert } from 'unix-permissions';
 
 describe(`login-key (e2e)`, () => {
   let apiKey: string;
@@ -24,6 +29,7 @@ describe(`login-key (e2e)`, () => {
   afterAll(async () => {
     await testApp.teardown();
     await restoreTempFolder();
+    deleteAuthFile();
   });
 
   beforeEach(async () => {
@@ -33,11 +39,7 @@ describe(`login-key (e2e)`, () => {
     const api = await setup();
     apiKey = api.apiKey;
 
-    await unlink(TEST_AUTH_FILE).catch(() => {});
-  });
-
-  afterEach(async () => {
-    await unlink(TEST_AUTH_FILE).catch(() => {});
+    deleteAuthFile();
   });
 
   it('should error when providing an invalid API key', async () => {
@@ -62,14 +64,10 @@ describe(`login-key (e2e)`, () => {
   it('should create an auth file with chmod 600', async () => {
     await new LoginCommand(CLI_BASE_OPTIONS).run(instanceUrl, apiKey);
 
-    const data = await stat(TEST_AUTH_FILE);
+    const stats = await stat(TEST_AUTH_FILE);
 
-    expect(convert.object(data.mode)).toEqual(
-      expect.objectContaining({
-        user: expect.objectContaining({ read: true, write: true }),
-        group: expect.objectContaining({ read: false, write: false }),
-        others: expect.objectContaining({ read: false, write: false }),
-      }),
-    );
+    const mode = (stats.mode & 0o777).toString(8);
+
+    expect(mode).toEqual('600');
   });
 });

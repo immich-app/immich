@@ -33,7 +33,6 @@
     "immich": "file:../server",
     "mock-fs": "^5.2.0",
     "typescript": "^5.3.3",
-    "unix-permissions": "^6.0.0",
     "vite": "^5.0.12",
     "vitest": "^1.2.1",
     "yaml": "^2.3.1"
