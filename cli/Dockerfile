@@ -15,7 +15,5 @@ COPY cli .
 RUN npm run build
 RUN npm install -g .
 
-RUN ls
-
 WORKDIR /import
 ENTRYPOINT [ "immich" ]
