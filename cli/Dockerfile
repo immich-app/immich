@@ -1,4 +1,4 @@
-FROM node:20-alpine3.18 as core
+FROM node:20-alpine3.19 as core
 
 ENV IMMICH_CONFIG_DIR=/tmp
 
