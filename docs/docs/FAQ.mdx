@@ -16,18 +16,18 @@ You can see the list of all users by running [list-users](/docs/administration/s
 
 ### What is the difference between the cloud icons on the mobile app?
 
-| Icon                               | Description                                                                                                                                     |
-| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| ![cloud](/img/cloud.svg)           | Asset is only available in the cloud and was uploaded from some other device (like the web client) or was deleted from this device after upload |
-| ![cloud-cross](/img/cloud-off.svg) | Asset is only available locally and has not yet been backed up                                                                                  |
-| ![cloud-done](/img/cloud-done.svg) | Asset was uploaded from this device and is now backed up to the server; the original file is still on the device                                |
+| Icon                               | Description                                                                                                                                      |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| ![cloud](/img/cloud.svg)           | Asset is only available on the server and was uploaded from some other device (like the web client) or was deleted from this device after upload |
+| ![cloud-cross](/img/cloud-off.svg) | Asset is only available locally and has not yet been backed up                                                                                   |
+| ![cloud-done](/img/cloud-done.svg) | Asset was uploaded from this device and is now backed up to the server; the original file is still on the device                                 |
 
 ### I cannot log into the application after an update. What can I do?
 
 First, verify that the mobile app and server are both running the same version (major and minor).
 
 :::note
-App store updates sometimes take longer because the stores (play store; Google and app store; Apple)
+App store updates sometimes take longer because the stores (Google play store and Apple app store)
 need to approve the update first which may take some time.
 :::
 
@@ -54,7 +54,7 @@ This often happens when using a reverse proxy (such as nginx or Cloudflare tunne
 
 ### Why are some photos stored in the file system with the wrong date?
 
-There are a few different scenarios that can lead to this situation. The solution is to simply run the storage migration job again. The job is only _automatically_ run once per asset, after upload. If metadata extraction originally failed, the jobs were cleared/cancelled, etc. the job may not have run automatically the first time.
+There are a few different scenarios that can lead to this situation. The solution is to run the storage migration job again. The job is only _automatically_ run once per asset, after upload. If metadata extraction originally failed, the jobs were cleared/cancelled, etc. the job may not have run automatically the first time.
 
 ### How can I hide photos from the timeline?
 
@@ -66,11 +66,11 @@ See [Backup and Restore](/docs/administration/backup-and-restore.md).
 
 ### Does Immich support reading existing face tag metadata?
 
-No, it currently does not.
+No, it currently does not. There is an [open feature request on GitHub](https://github.com/immich-app/immich/discussions/4348).
 
 ### Does Immich support filtering of NSFW images?
 
-No, it currently does not, but there is an [open discussion about it On Github](https://github.com/immich-app/immich/discussions/2451). You can submit a pull request or vote for the discussion.
+No, it currently does not. There is an [open feature request on Github](https://github.com/immich-app/immich/discussions/2451).
 
 ### Why are there so many thumbnail generation jobs?
 
@@ -90,9 +90,13 @@ There are no requirements for assets to be unique across users. If multiple user
 
 Immich uses a player with known HDR color display issues. We are experimenting with a different player that provides better color profiles for HDR content for future improvements.
 
+### Why does Immich transcode my videos to a lower quality?
+
+Immich always keeps your original files. Alongside that, it generates a transcoded version for compatibility and performance reasons.
+
 ### How can I delete transcoded videos without deleting the original?
 
-The transcode of an asset can be deleted by setting a transcode policy that makes it unnecessary, then running a transcoding job for that asset. This can be done on a per-asset basis by starting a transcoding job for an asset (with the _Refresh encoded videos_ button in the asset viewer options. Or, for all assets by running transcoding jobs for all assets.
+The transcoded version of an asset can be deleted by setting a transcode policy that makes it unnecessary, then running a transcoding job for that asset. This can be done on a per-asset basis by starting a transcoding job for a single asset with the _Refresh encoded videos_ button in the asset viewer options, or for all assets by running transcoding jobs for all assets from the administration page.
 
 To update the transcode policy, navigate to Administration > Video Transcoding Settings > Transcoding Policy and select a policy from the drop-down. This policy will determine whether an existing transcode will be deleted or overwritten in the transcoding job. If a video should be transcoded according to this policy, an existing transcode is overwritten. If not, then it is deleted.
 
@@ -143,19 +147,19 @@ UPDATE assets SET "ownerId" = '<destinationId>' WHERE "ownerId" = '<sourceId>'
 
 ### Can I keep my existing album structure while importing assets into Immich?
 
-Yes. You can by use [Immich CLI](/docs/features/command-line-interface) along with the `--album` flag.
+Yes, by using the [Immich CLI](/docs/features/command-line-interface) along with the `--album` flag.
 
 ### Is there a way to reorder photos within an album?
 
-No, not yet. For updates on this planned feature, follow the [GitHub discussion](https://github.com/immich-app/immich/discussions/1689),
+No, not yet. For updates on this planned feature, follow the [GitHub discussion](https://github.com/immich-app/immich/discussions/1689).
 
 ---
 
 ## External Library
 
-### Can I add an external library while keeping the existing albums structure?
+### Can I add an external library while keeping the existing album structure?
 
-We haven't put in an official mechanism to create albums from external libraries at the moment., but there are some [workarounds from the community](https://github.com/immich-app/immich/discussions/4279) which you can find here to help you achieve that.
+We haven't put in an official mechanism to create albums from external libraries at the moment, but there are some [workarounds from the community](https://github.com/immich-app/immich/discussions/4279) to help you achieve that.
 
 ### What happens to duplicates in external libraries?
 
@@ -185,7 +189,7 @@ However, disabling all jobs will not disable the machine learning service itself
 
 ### I'm getting errors about models being corrupt or failing to download. What do I do?
 
-You can delete the model cache volume, which is where models are downloaded to. This will give the service a clean environment to download the model again.
+You can delete the model cache volume, which is where models are downloaded to. This will give the service a clean environment to download the model again. If models are failing to download entirely, you can manually download them from [Huggingface](https://huggingface.co/immich-app) and place them in the cache folder.
 
 ### Why did Immich decide to remove object detection?
 
@@ -194,7 +198,7 @@ For more info see [here](https://github.com/immich-app/immich/pull/5903)
 
 ### Can I use a custom CLIP model?
 
-No, this is not supported. Only models listed in the [Huggingface](https://huggingface.co/immich-app) are compatible. Feel free to make a feature request if there's a model not listed here that you think should be added.
+No, this is not supported. Only models listed in the [Huggingface](https://huggingface.co/immich-app) page are compatible. Feel free to make a feature request if there's a model not listed here that you think should be added.
 
 ### I want to be able to search in other languages besides English. How can I do that?
 
@@ -206,9 +210,8 @@ Feel free to make a feature request if there's a model you want to use that isn'
 
 ### Does Immich support Facial Recognition for videos ?
 
-This is not currently implemented, but may be in the future.
-
-On the other hand, Immich does scan video thumbnails for faces, so it can perform recognition if the face is clear in the video thumbnail.
+Immich's machine learning feature operate on the generated thumbnail. If a face is visible in the video's thumbnail it will be picked up by facial recognition.
+Scanning the entire video for faces may be implemented in the future.
 
 ### Does Immich have animal recognition?
 
@@ -216,7 +219,7 @@ No.
 
 ### I'm getting a lot of "faces" that aren't faces, what can I do?
 
-You can increase the MIN DETECTION SCORE to 0.8 to help prevent bad thumbnails. However, a score of 0.9 might filter out too many real faces depending on the library used. If you just want to hide specific faces, you can adjust the 'MIN FACES DETECTED' setting in the administration panel  
+You can increase the MIN DETECTION SCORE to 0.8 to help prevent bad thumbnails. Setting the score too high (above 0.9) might filter out too many real faces depending on the library used. If you just want to hide specific faces, you can adjust the 'MIN FACES DETECTED' setting in the administration panel  
 to increase the bar for what the algorithm considers a "core face" for that person, reducing the chance of bad thumbnails being chosen.
 
 ### The immich_model-cache volume takes up a lot of space, what could be the problem?
@@ -236,7 +239,7 @@ To do this you can run:
 
 ### Why is Immich slow on low-memory systems like the Raspberry Pi?
 
-Immich optionally uses machine learning for several features. However, it can be too heavy to run on a Raspberry Pi. You can [mitigate](/docs/FAQ#can-i-lower-cpu-and-ram-usage) this or transfer to host Immich's machine-learning container on a [more powerful system](/docs/guides/remote-machine-learning) ,or [disable](/docs/FAQ#how-can-i-disable-machine-learning) machine learning entirely.
+Immich optionally uses machine learning for several features. However, it can be too heavy to run on a Raspberry Pi. You can [mitigate](/docs/FAQ#can-i-lower-cpu-and-ram-usage) this or host Immich's machine-learning container on a [more powerful system](/docs/guides/remote-machine-learning), or [disable](/docs/FAQ#how-can-i-disable-machine-learning) machine learning entirely.
 
 ### Can I lower CPU and RAM usage?
 
@@ -251,9 +254,9 @@ The initial backup is the most intensive due to the number of jobs running. The 
 ### Can I limit the amount of CPU and RAM usage?
 
 By default, a container has no resource constraints and can use as much of a given resource as the host's kernel scheduler allows.
-You can look at the [original docker docs](https://docs.docker.com/config/containers/resource_constraints/) or use this [guide](https://www.baeldung.com/ops/docker-memory-limit) to learn how to do this.
+You can look at the [original docker docs](https://docs.docker.com/config/containers/resource_constraints/) or use this [guide](https://www.baeldung.com/ops/docker-memory-limit) to learn how to limit this.
 
-### How an I boost machine learning speed?
+### How can I boost machine learning speed?
 
 :::note
 This advice improves throughput, not latency. This is to say that it will make Smart Search jobs process more quickly, but it won't make searching faster.
@@ -262,17 +265,17 @@ This advice improves throughput, not latency. This is to say that it will make S
 You can increase throughput by increasing the job concurrency for machine learning jobs (Smart Search, Face Detection). With higher concurrency, the host will work on more assets in parallel. You can do this by navigating to Administration > Settings > Job Settings and increasing concurrency as needed.
 
 :::danger
-On a normal machine, 2 or 3 concurrent jobs can probably max the CPU, so if you're not hitting those maximums with, say, 30 jobs.
-Note that storage speed and latency may quickly become the limiting factor; particularly when using HDDs.
+On a normal machine, 2 or 3 concurrent jobs can probably max the CPU. Beyond this, note that storage speed and latency may quickly become the limiting factor; particularly when using HDDs.
 
 Do not exaggerate with the amount of jobs because you're probably thoroughly overloading the server.
 
-more info [here](https://discord.com/channels/979116623879368755/994044917355663450/1174711719994605708)
+More detail can be found [here](https://discord.com/channels/979116623879368755/994044917355663450/1174711719994605708)
 :::
 
 ### Why is Immich using so much of my CPU?
 
-When a large amount of assets are uploaded to Immich it makes sense that the CPU and RAM will be heavily used due to machine learning work and creating image thumbnails after that, the percentage of CPU usage will drop to around 3-5% usage
+When a large amount of assets are uploaded to Immich it makes sense that the CPU and RAM will be heavily used due to machine learning work and creating image thumbnails.
+Once this process completes, the percentage of CPU usage will drop to around 3-5% usage
 
 ---
 
@@ -280,13 +283,12 @@ When a large amount of assets are uploaded to Immich it makes sense that the CPU
 
 ### How can I see Immich logs?
 
-Most Immich components are typically deployed using docker. To see logs for deployed docker containers, you can use the [Docker CLI](https://docs.docker.com/engine/reference/commandline/cli/), specifically the `docker logs` command. For examples, see [Docker Help](/docs/guides/docker-help.md).
+Immich components are typically deployed using docker. To see logs for deployed docker containers, you can use the [Docker CLI](https://docs.docker.com/engine/reference/commandline/cli/), specifically the `docker logs` command. For examples, see [Docker Help](/docs/guides/docker-help.md).
 
 ### How can I run Immich as a non-root user?
 
-1. Set the `PUID`/`PGID` environment variables (in `.env`).
-2. Set the corresponding `user` argument in `docker-compose` for each service.
-3. Add an additional volume to `immich-microservices` that mounts internally to `/usr/src/app/.reverse-geocoding-dump`.
+You can change the user in the container by setting the `user` argument in `docker-compose.yml` for each service.
+You may need to add an additional volume to `immich-microservices` that mounts internally to `/usr/src/app/.reverse-geocoding-dump`.
 
 The non-root user/group needs read/write access to the volume mounts, including `UPLOAD_LOCATION`.
 
@@ -299,6 +301,10 @@ Data for Immich comes in two forms:
 
 To remove the **Metadata** you can stop Immich and delete the volume.
 
+:::warning
+This will destroy your database and reset your instance, meaning that you start from scratch.
+:::
+
 ```bash title="Remove Immich (containers and volumes)"
 docker compose down -v
 ```
@@ -308,7 +314,7 @@ If you use portainer, bring down the stack in portainer. Go into the volumes sec
 and remove all the volumes related to immcih then restart the stack.
 :::
 
-After removing the containers and volumes, the **Files** can be cleaned up (if necessary) from the `UPLOAD_LOCATION` by simply deleting any unwanted files or folders.
+After removing the containers and volumes, the **Files** should be removed from the `UPLOAD_LOCATION` to provide a clean start.
 
 ### Why does the machine learning service report workers crashing?
 
@@ -324,6 +330,6 @@ If it mentions SIGILL (note the lack of a K) or error code 132, it most likely m
 
 If your version of Immich is below 1.92.0 and the crash occurs after logs about tracing or exporting a model, consider either upgrading or disabling the Tag Objects job.
 
-### Why do I get the error "duplicate key value violates unique constraint" in the log files?
+### Why does Immich log migration errors on startup?
 
-Because of Immich's container structure, this error can be seen when both immich and immich-microservices start at the same time and attempt to migrate or create the database structure. Since the database migration is run sequentially and inside of transactions, this error message does not cause harm to your installation of Immich and can safely be ignored. If needed, you can manually restart Immich by running `docker restart immich immich-microservices`.
+Sometimes Immich logs errors such as "duplicate key value violates unique constraint" or "column (...) of relation (...) already exists". Because of Immich's container structure, this error can be seen when both immich and immich-microservices start at the same time and attempt to migrate or create the database structure. Since the database migration is run sequentially and inside of transactions, this error message does not cause harm to your installation of Immich and can safely be ignored. If needed, you can manually restart Immich by running `docker restart immich immich-microservices`.

@@ -49,7 +49,7 @@ class AlbumThumbnailListTile extends StatelessWidget {
           type: ThumbnailFormat.WEBP,
         ),
         httpHeaders: {
-          "Authorization": "Bearer ${Store.get(StoreKey.accessToken)}",
+          "x-immich-user-token": Store.get(StoreKey.accessToken),
         },
         cacheKey: getAlbumThumbNailCacheKey(album, type: ThumbnailFormat.WEBP),
         errorWidget: (context, url, error) =>

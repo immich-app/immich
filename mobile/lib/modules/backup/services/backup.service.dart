@@ -302,8 +302,7 @@ class BackupService {
             onProgress: ((bytes, totalBytes) =>
                 uploadProgressCb(bytes, totalBytes)),
           );
-          req.headers["Authorization"] =
-              "Bearer ${Store.get(StoreKey.accessToken)}";
+          req.headers["x-immich-user-token"] = Store.get(StoreKey.accessToken);
           req.headers["Transfer-Encoding"] = "chunked";
 
           req.fields['deviceAssetId'] = entity.id;

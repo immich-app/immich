@@ -123,8 +123,7 @@ class PersonResultPage extends HookConsumerWidget {
                 backgroundImage: NetworkImage(
                   getFaceThumbnailUrl(personId),
                   headers: {
-                    "Authorization":
-                        "Bearer ${Store.get(StoreKey.accessToken)}",
+                    "x-immich-user-token": Store.get(StoreKey.accessToken),
                   },
                 ),
               ),
