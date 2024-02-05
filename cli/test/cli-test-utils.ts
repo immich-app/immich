@@ -7,7 +7,7 @@ export const TEST_AUTH_FILE = path.join(TEST_CONFIG_DIR, 'auth.yml');
 export const TEST_IMMICH_INSTANCE_URL = 'https://test/api';
 export const TEST_IMMICH_API_KEY = 'pNussssKSYo5WasdgalvKJ1n9kdvaasdfbluPg';
 
-export const CLI_BASE_OPTIONS = { config: TEST_CONFIG_DIR };
+export const CLI_BASE_OPTIONS = { configDirectory: TEST_CONFIG_DIR };
 
 export const setup = async () => {
   const api = new ImmichApi(process.env.IMMICH_INSTANCE_URL as string, '');

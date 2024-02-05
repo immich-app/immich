@@ -82,7 +82,7 @@ export class SessionService {
       }
     }
 
-    await writeFile(this.authPath, yaml.stringify({ instanceUrl, apiKey }));
+    await writeFile(this.authPath, yaml.stringify({ instanceUrl, apiKey }), { mode: 0o600 });
 
     console.log('Wrote auth info to ' + this.authPath);
 
