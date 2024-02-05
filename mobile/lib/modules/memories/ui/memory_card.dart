@@ -66,7 +66,7 @@ class MemoryCard extends StatelessWidget {
                 // Determine the fit using the aspect ratio
                 BoxFit fit = BoxFit.fitWidth;
                 if (asset.width != null && asset.height != null) {
-                  final aspectRatio = asset.height! / asset.width!;
+                  final aspectRatio = asset.width! / asset.height!;
                   final phoneAspectRatio =
                       constraints.maxWidth / constraints.maxHeight;
                   // Look for a 25% difference in either direction
