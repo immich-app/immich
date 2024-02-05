@@ -1,13 +1,6 @@
 import { restoreTempFolder, testApp } from '@test-utils';
-import {
-  CLI_BASE_OPTIONS,
-  TEST_AUTH_FILE,
-  TEST_CONFIG_DIR,
-  deleteAuthFile,
-  setup,
-  spyOnConsole,
-} from 'test/cli-test-utils';
-import { readFile, stat, unlink } from 'node:fs/promises';
+import { CLI_BASE_OPTIONS, TEST_AUTH_FILE, deleteAuthFile, setup, spyOnConsole } from 'test/cli-test-utils';
+import { readFile, stat } from 'node:fs/promises';
 import { LoginCommand } from '../../src/commands/login';
 import yaml from 'yaml';
 
