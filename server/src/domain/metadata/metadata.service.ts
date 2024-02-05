@@ -554,25 +554,32 @@ export class MetadataService {
   private async processSidecar(id: string, isSync: boolean) {
     const [asset] = await this.assetRepository.getByIds([id]);
 
-    if (!asset || (isSync && !asset.sidecarPath) || (!isSync && (!asset.isVisible || asset.sidecarPath))) {
+    if (!asset) {
+      return false;
+    }
+
+    if (isSync && !asset.sidecarPath) {
+      return false;
+    }
+
+    if (!isSync && (!asset.isVisible || asset.sidecarPath)) {
       return false;
     }
 
     const sidecarPath = `${asset.originalPath}.xmp`;
     const exists = await this.storageRepository.checkFileExists(sidecarPath, constants.R_OK);
 
-    if (!exists) {
-      if (isSync) {
-        this.logger.debug(`Sidecar File '${sidecarPath}' was not found, removing sidecarPath for asset ${asset.id}`);
-        await this.assetRepository.save({ id: asset.id, sidecarPath: null });
-        return true;
-      }
+    if (exists) {
+      await this.assetRepository.save({ id: asset.id, sidecarPath });
+      return true;
+    }
 
+    if (!isSync) {
       return false;
     }
 
-    await this.assetRepository.save({ id: asset.id, sidecarPath });
-
+    this.logger.debug(`Sidecar File '${sidecarPath}' was not found, removing sidecarPath for asset ${asset.id}`);
+    await this.assetRepository.save({ id: asset.id, sidecarPath: null });
     return true;
   }
 }
