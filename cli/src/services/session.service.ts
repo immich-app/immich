@@ -19,8 +19,13 @@ export class SessionService {
   readonly authPath!: string;
 
   constructor(configDirectory: string) {
-    this.configDirectory = configDirectory;
-    this.authPath = path.join(configDirectory, '/auth.yml');
+    const envDirectory = process.env.IMMICH_CONFIG_DIR;
+    if (envDirectory) {
+      this.configDirectory = envDirectory;
+    } else {
+      this.configDirectory = configDirectory;
+    }
+    this.authPath = path.join(this.configDirectory, '/auth.yml');
   }
 
   async connect(): Promise<ImmichApi> {
