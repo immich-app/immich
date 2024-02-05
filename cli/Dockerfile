@@ -13,7 +13,7 @@ RUN npm ci
 
 COPY cli .
 RUN npm run build
-RUN npm install -g .
 
 WORKDIR /import
-ENTRYPOINT [ "immich" ]
+
+ENTRYPOINT ["node", "/usr/src/app/dist"]
