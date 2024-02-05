@@ -51,7 +51,7 @@ export class SessionService {
 
     const api = new ImmichApi(instanceUrl, apiKey);
 
-    const { data: pingResponse } = await api.serverInfoApi.pingServer().catch((error) => {
+    const pingResponse = await api.serverInfoApi.pingServer().catch((error) => {
       throw new Error(`Failed to connect to server ${api.instanceUrl}: ${error.message}`);
     });
 
@@ -68,7 +68,7 @@ export class SessionService {
     const api = new ImmichApi(instanceUrl, apiKey);
 
     // Check if server and api key are valid
-    const { data: userInfo } = await api.userApi.getMyUserInfo().catch((error) => {
+    const userInfo = await api.userApi.getMyUserInfo().catch((error) => {
       throw new LoginError(`Failed to connect to server ${instanceUrl}: ${error.message}`);
     });
 

@@ -22,7 +22,6 @@
     "@typescript-eslint/eslint-plugin": "^6.4.1",
     "@typescript-eslint/parser": "^6.4.1",
     "@vitest/coverage-v8": "^1.2.2",
-    "axios": "^1.6.7",
     "byte-size": "^8.1.1",
     "cli-progress": "^3.12.0",
     "commander": "^11.0.0",

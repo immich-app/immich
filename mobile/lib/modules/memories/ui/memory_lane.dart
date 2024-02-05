@@ -16,41 +16,46 @@ class MemoryLane extends HookConsumerWidget {
     final memoryLane = memoryLaneFutureProvider
         .whenData(
           (memories) => memories != null
-              ? Container(
-                  margin: const EdgeInsets.only(top: 10, left: 10),
+              ? SizedBox(
                   height: 200,
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
                     shrinkWrap: true,
                     itemCount: memories.length,
+                    padding: const EdgeInsets.only(
+                      right: 8.0,
+                      bottom: 8,
+                      top: 10,
+                      left: 10,
+                    ),
                     itemBuilder: (context, index) {
                       final memory = memories[index];
 
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 8.0, bottom: 8),
-                        child: GestureDetector(
-                          onTap: () {
-                            HapticFeedback.heavyImpact();
-                            context.pushRoute(
-                              MemoryRoute(
-                                memories: memories,
-                                memoryIndex: index,
+                      return GestureDetector(
+                        onTap: () {
+                          HapticFeedback.heavyImpact();
+                          context.pushRoute(
+                            MemoryRoute(
+                              memories: memories,
+                              memoryIndex: index,
+                            ),
+                          );
+                        },
+                        child: Stack(
+                          children: [
+                            Card(
+                              elevation: 3,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(13.0),
                               ),
-                            );
-                          },
-                          child: Stack(
-                            children: [
-                              Card(
-                                elevation: 3,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(13.0),
+                              clipBehavior: Clip.hardEdge,
+                              child: ColorFiltered(
+                                colorFilter: ColorFilter.mode(
+                                  Colors.black.withOpacity(0.2),
+                                  BlendMode.darken,
                                 ),
-                                clipBehavior: Clip.hardEdge,
-                                child: ColorFiltered(
-                                  colorFilter: ColorFilter.mode(
-                                    Colors.black.withOpacity(0.2),
-                                    BlendMode.darken,
-                                  ),
+                                child: Hero(
+                                  tag: 'memory-${memory.assets[0].id}',
                                   child: ImmichImage(
                                     memory.assets[0],
                                     fit: BoxFit.cover,
@@ -61,25 +66,25 @@ class MemoryLane extends HookConsumerWidget {
                                   ),
                                 ),
                               ),
-                              Positioned(
-                                bottom: 16,
-                                left: 16,
-                                child: ConstrainedBox(
-                                  constraints: const BoxConstraints(
-                                    maxWidth: 114,
-                                  ),
-                                  child: Text(
-                                    memory.title,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.white,
-                                      fontSize: 15,
-                                    ),
+                            ),
+                            Positioned(
+                              bottom: 16,
+                              left: 16,
+                              child: ConstrainedBox(
+                                constraints: const BoxConstraints(
+                                  maxWidth: 114,
+                                ),
+                                child: Text(
+                                  memory.title,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                    fontSize: 15,
                                   ),
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       );
                     },
