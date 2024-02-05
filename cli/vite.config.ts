@@ -10,12 +10,6 @@ export default defineConfig({
       external: ['@immich/sdk'],
     },
     ssr: true,
-    commonjsOptions: {
-      include: ['../open-api/', /node_modules/],
-    },
-  },
-  optimizeDeps: {
-    include: ['../open-api/'],
   },
   ssr: {
     // bundle everything except for Node built-ins
