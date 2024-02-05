@@ -5,7 +5,7 @@ import {
 } from '../lib/components/shared-components/notification/notification';
 import { handleError } from '../lib/utils/handle-error';
 import { api } from './api';
-import type { UserResponseDto } from '@immich/sdk';
+import type { UserResponseDto } from '@immich/sdk/axios';
 
 export type ApiError = AxiosError<{ message: string }>;
 

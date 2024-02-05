@@ -32,7 +32,7 @@ describe(`login-key (e2e)`, () => {
 
   it('should error when providing an invalid API key', async () => {
     await expect(new LoginCommand(CLI_BASE_OPTIONS).run(instanceUrl, 'invalid')).rejects.toThrow(
-      `Failed to connect to server ${instanceUrl}: Request failed with status code 401`,
+      `Failed to connect to server ${instanceUrl}: Response returned an error code`,
     );
   });
 
