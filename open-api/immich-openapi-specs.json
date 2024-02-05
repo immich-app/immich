@@ -4684,6 +4684,8 @@
             "name": "clip",
             "required": false,
             "in": "query",
+            "description": "@deprecated",
+            "deprecated": true,
             "schema": {
               "type": "boolean"
             }
@@ -4714,6 +4716,14 @@
           },
           {
             "name": "recent",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "smart",
             "required": false,
             "in": "query",
             "schema": {
@@ -6463,7 +6473,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.93.3",
+    "version": "1.94.1",
     "contact": {}
   },
   "tags": [],
@@ -7591,6 +7601,9 @@
           "isVisible": {
             "type": "boolean"
           },
+          "isWatched": {
+            "type": "boolean"
+          },
           "name": {
             "type": "string"
           },
@@ -8523,15 +8536,11 @@
           },
           "total": {
             "type": "integer"
-          },
-          "visible": {
-            "type": "integer"
           }
         },
         "required": [
           "people",
-          "total",
-          "visible"
+          "total"
         ],
         "type": "object"
       },
@@ -8923,9 +8932,6 @@
       },
       "ServerFeaturesDto": {
         "properties": {
-          "clipEncode": {
-            "type": "boolean"
-          },
           "configFile": {
             "type": "boolean"
           },
@@ -8953,12 +8959,14 @@
           "sidecar": {
             "type": "boolean"
           },
+          "smartSearch": {
+            "type": "boolean"
+          },
           "trash": {
             "type": "boolean"
           }
         },
         "required": [
-          "clipEncode",
           "configFile",
           "facialRecognition",
           "map",
@@ -8968,6 +8976,7 @@
           "reverseGeocoding",
           "search",
           "sidecar",
+          "smartSearch",
           "trash"
         ],
         "type": "object"
@@ -9416,6 +9425,9 @@
           "npl": {
             "type": "integer"
           },
+          "preferredHwDevice": {
+            "type": "string"
+          },
           "preset": {
             "type": "string"
           },
@@ -9457,6 +9469,7 @@
           "gopSize",
           "maxBitrate",
           "npl",
+          "preferredHwDevice",
           "preset",
           "refs",
           "targetAudioCodec",
@@ -9521,10 +9534,14 @@
         "properties": {
           "scan": {
             "$ref": "#/components/schemas/SystemConfigLibraryScanDto"
+          },
+          "watch": {
+            "$ref": "#/components/schemas/SystemConfigLibraryWatchDto"
           }
         },
         "required": [
-          "scan"
+          "scan",
+          "watch"
         ],
         "type": "object"
       },
@@ -9540,6 +9557,25 @@
         "required": [
           "cronExpression",
           "enabled"
+        ],
+        "type": "object"
+      },
+      "SystemConfigLibraryWatchDto": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "interval": {
+            "type": "integer"
+          },
+          "usePolling": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled",
+          "interval",
+          "usePolling"
         ],
         "type": "object"
       },
@@ -9643,6 +9679,9 @@
           "scope": {
             "type": "string"
           },
+          "signingAlgorithm": {
+            "type": "string"
+          },
           "storageLabelClaim": {
             "type": "string"
           }
@@ -9658,6 +9697,7 @@
           "mobileOverrideEnabled",
           "mobileRedirectUri",
           "scope",
+          "signingAlgorithm",
           "storageLabelClaim"
         ],
         "type": "object"
@@ -9913,6 +9953,7 @@
         "enum": [
           "all",
           "optimal",
+          "bitrate",
           "required",
           "disabled"
         ],

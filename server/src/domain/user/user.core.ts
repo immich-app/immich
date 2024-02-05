@@ -1,6 +1,6 @@
 import { LibraryType, UserEntity } from '@app/infra/entities';
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
-import path from 'path';
+import path from 'node:path';
 import sanitize from 'sanitize-filename';
 import { ICryptoRepository, ILibraryRepository, IUserRepository } from '../repositories';
 import { UserResponseDto } from './response-dto';
@@ -97,7 +97,7 @@ export class UserCore {
       payload.password = await this.cryptoRepository.hashBcrypt(payload.password, SALT_ROUNDS);
     }
     if (payload.storageLabel) {
-      payload.storageLabel = sanitize(payload.storageLabel.replace(/\./g, ''));
+      payload.storageLabel = sanitize(payload.storageLabel.replaceAll('.', ''));
     }
     const userEntity = await this.userRepository.create(payload);
     await this.libraryRepository.create({

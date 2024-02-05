@@ -61,6 +61,11 @@ void main() {
       // TODO
     });
 
+    // String preferredHwDevice
+    test('to test the property `preferredHwDevice`', () async {
+      // TODO
+    });
+
     // String preset
     test('to test the property `preset`', () async {
       // TODO

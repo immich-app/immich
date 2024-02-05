@@ -7,7 +7,7 @@ Keep in mind that mucking around in the database might set the moon on fire. Avo
 :::tip
 Run `docker exec -it immich_postgres psql immich <DB_USERNAME>` to connect to the database via the container directly.
 
-(Replace `<DB_USERNAME>` wit the value from your [`.env` file](/docs/install/environment-variables#database)).
+(Replace `<DB_USERNAME>` with the value from your [`.env` file](/docs/install/environment-variables#database)).
 :::
 
 ## Assets

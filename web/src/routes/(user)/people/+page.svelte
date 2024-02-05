@@ -6,7 +6,13 @@
   import Button from '$lib/components/elements/buttons/button.svelte';
   import { api, type PeopleUpdateItem, type PersonResponseDto } from '@api';
   import { goto } from '$app/navigation';
-  import { AppRoute } from '$lib/constants';
+  import {
+    ActionQueryParameterValue,
+    AppRoute,
+    QueryParameter,
+    maximumLengthSearchPeople,
+    timeBeforeShowLoadingSpinner,
+  } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
   import {
     NotificationType,
@@ -22,16 +28,23 @@
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
   import { mdiAccountOff, mdiEyeOutline } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
+  import { searchNameLocal } from '$lib/utils/person';
+  import SearchBar from '$lib/components/faces-page/search-bar.svelte';
+  import { page } from '$app/stores';
 
   export let data: PageData;
-  let selectHidden = false;
-  let initialHiddenValues: Record<string, boolean> = {};
-
-  let eyeColorMap: Record<string, 'black' | 'white'> = {};
 
   let people = data.people.people;
   let countTotalPeople = data.people.total;
-  let countVisiblePeople = data.people.visible;
+
+  let selectHidden = false;
+  let initialHiddenValues: Record<string, boolean> = {};
+  let eyeColorMap: Record<string, 'black' | 'white'> = {};
+
+  let searchedPeople: PersonResponseDto[] = [];
+  let searchName = '';
+  let searchWord: string;
+  let isSearchingPeople = false;
 
   let showLoadingSpinner = false;
   let toggleVisibility = false;
@@ -47,14 +60,23 @@
 
   let innerHeight: number;
 
-  people.forEach((person: PersonResponseDto) => {
+  for (const person of people) {
     initialHiddenValues[person.id] = person.isHidden;
-  });
+  }
+
+  $: searchedPeopleLocal = searchName ? searchNameLocal(searchName, searchedPeople, maximumLengthSearchPeople) : [];
+
+  $: countVisiblePeople = people.filter((person) => !person.isHidden).length;
 
   const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
 
   onMount(() => {
     document.addEventListener('keydown', onKeyboardPress);
+    const getSearchedPeople = $page.url.searchParams.get(QueryParameter.SEARCHED_PEOPLE);
+    if (getSearchedPeople) {
+      searchName = getSearchedPeople;
+      searchPeople(true);
+    }
   });
 
   onDestroy(() => {
@@ -68,10 +90,17 @@
       return;
     }
     switch (event.key) {
-      case 'Escape':
+      case 'Escape': {
         handleCloseClick();
         return;
+      }
     }
+  };
+
+  const handleSearch = (force: boolean) => {
+    $page.url.searchParams.set(QueryParameter.SEARCHED_PEOPLE, searchName);
+    goto($page.url);
+    searchPeople(force);
   };
 
   const handleCloseClick = () => {
@@ -117,9 +146,6 @@
 
           // Update the initial hidden values
           initialHiddenValues[person.id] = person.isHidden;
-
-          // Update the count of hidden/visible people
-          countVisiblePeople += person.isHidden ? -1 : 1;
         }
       }
 
@@ -188,6 +214,7 @@
        */
       try {
         await api.personApi.updatePerson({ id: personToBeMergedIn.id, personUpdateDto: { name: personName } });
+
         for (const person of people) {
           if (person.id === personToBeMergedIn.id) {
             person.name = personName;
@@ -233,11 +260,9 @@
         return person;
       });
 
-      people.forEach((person: PersonResponseDto) => {
+      for (const person of people) {
         initialHiddenValues[person.id] = person.isHidden;
-      });
-
-      countVisiblePeople--;
+      }
 
       showChangeNameModal = false;
 
@@ -251,7 +276,36 @@
   };
 
   const handleMergePeople = (detail: PersonResponseDto) => {
-    goto(`${AppRoute.PEOPLE}/${detail.id}?action=merge&previousRoute=${AppRoute.PEOPLE}`);
+    goto(
+      `${AppRoute.PEOPLE}/${detail.id}?${QueryParameter.ACTION}=${ActionQueryParameterValue.MERGE}&${QueryParameter.PREVIOUS_ROUTE}=${AppRoute.PEOPLE}`,
+    );
+  };
+
+  const searchPeople = async (force: boolean) => {
+    if (searchName === '') {
+      if ($page.url.searchParams.has(QueryParameter.SEARCHED_PEOPLE)) {
+        $page.url.searchParams.delete(QueryParameter.SEARCHED_PEOPLE);
+        goto($page.url);
+      }
+      return;
+    }
+    if (!force && people.length < maximumLengthSearchPeople && searchName.startsWith(searchWord)) {
+      return;
+    }
+
+    const timeout = setTimeout(() => (isSearchingPeople = true), timeBeforeShowLoadingSpinner);
+    try {
+      const { data } = await api.searchApi.searchPerson({ name: searchName, withHidden: false });
+
+      searchedPeople = data;
+      searchWord = searchName;
+    } catch (error) {
+      handleError(error, "Can't search people");
+    } finally {
+      clearTimeout(timeout);
+    }
+
+    isSearchingPeople = false;
   };
 
   const submitNameChange = async () => {
@@ -310,7 +364,6 @@
         }
         return person;
       });
-
       notificationController.show({
         message: 'Date of birth saved succesfully',
         type: NotificationType.Info,
@@ -332,14 +385,12 @@
         id: edittingPerson.id,
         personUpdateDto: { name: personName },
       });
-
       people = people.map((person: PersonResponseDto) => {
         if (person.id === updatedPerson.id) {
           return updatedPerson;
         }
         return person;
       });
-
       notificationController.show({
         message: 'Change name succesfully',
         type: NotificationType.Info,
@@ -365,25 +416,39 @@
   </FullScreenModal>
 {/if}
 
-<UserPageLayout title="People">
+<UserPageLayout title="People" description={countTotalPeople === 0 ? undefined : `(${countTotalPeople.toString()})`}>
   <svelte:fragment slot="buttons">
     {#if countTotalPeople > 0}
-      <IconButton on:click={() => (selectHidden = !selectHidden)}>
-        <div class="flex flex-wrap place-items-center justify-center gap-x-1 text-sm">
-          <Icon path={mdiEyeOutline} size="18" />
-          <p class="ml-2">Show & hide people</p>
+      <div class="flex gap-2 items-center justify-center">
+        <div class="hidden sm:block">
+          <div class="w-40 lg:w-80 h-10">
+            <SearchBar
+              bind:name={searchName}
+              {isSearchingPeople}
+              on:reset={() => {
+                searchedPeople = [];
+              }}
+              on:search={({ detail }) => handleSearch(detail.force ?? false)}
+            />
+          </div>
         </div>
-      </IconButton>
+        <IconButton on:click={() => (selectHidden = !selectHidden)}>
+          <div class="flex flex-wrap place-items-center justify-center gap-x-1 text-sm">
+            <Icon path={mdiEyeOutline} size="18" />
+            <p class="ml-2">Show & hide people</p>
+          </div>
+        </IconButton>
+      </div>
     {/if}
   </svelte:fragment>
 
   {#if countVisiblePeople > 0}
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-7 2xl:grid-cols-9 gap-1">
-      {#each people as person, idx (person.id)}
-        {#if !person.isHidden}
+      {#each people as person, index (person.id)}
+        {#if !person.isHidden && (searchName ? searchedPeopleLocal.some((searchedPerson) => searchedPerson.id === person.id) : true)}
           <PeopleCard
             {person}
-            preload={idx < 20}
+            preload={index < 20}
             on:change-name={() => handleChangeName(person)}
             on:set-birth-date={() => handleSetBirthDate(person)}
             on:merge-people={() => handleMergePeople(person)}
@@ -453,7 +518,7 @@
     screenHeight={innerHeight}
   >
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-7 2xl:grid-cols-9 gap-1">
-      {#each people as person, idx (person.id)}
+      {#each people as person, index (person.id)}
         <button
           class="relative"
           on:click={() => (person.isHidden = !person.isHidden)}
@@ -461,7 +526,7 @@
           on:mouseleave={() => (eyeColorMap[person.id] = 'white')}
         >
           <ImageThumbnail
-            preload={idx < 20}
+            preload={searchName !== '' || index < 20}
             bind:hidden={person.isHidden}
             shadow
             url={api.getPeopleThumbnailUrl(person.id)}

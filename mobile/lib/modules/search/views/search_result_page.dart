@@ -11,17 +11,17 @@ import 'package:immich_mobile/shared/ui/asset_grid/multiselect_grid.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 
 class SearchType {
-  SearchType({required this.isClip, required this.searchTerm});
+  SearchType({required this.isSmart, required this.searchTerm});
 
-  final bool isClip;
+  final bool isSmart;
   final String searchTerm;
 }
 
 SearchType _getSearchType(String searchTerm) {
   if (searchTerm.startsWith('m:')) {
-    return SearchType(isClip: false, searchTerm: searchTerm.substring(2));
+    return SearchType(isSmart: false, searchTerm: searchTerm.substring(2));
   } else {
-    return SearchType(isClip: true, searchTerm: searchTerm);
+    return SearchType(isSmart: true, searchTerm: searchTerm);
   }
 }
 
@@ -52,7 +52,7 @@ class SearchResultPage extends HookConsumerWidget {
           Duration.zero,
           () => ref
               .read(searchResultPageProvider.notifier)
-              .search(searchType.searchTerm, clipEnable: searchType.isClip),
+              .search(searchType.searchTerm, smartSearch: searchType.isSmart),
         );
         return () => searchFocusNode?.dispose();
       },
@@ -67,7 +67,7 @@ class SearchResultPage extends HookConsumerWidget {
       var searchType = _getSearchType(newSearchTerm);
       return ref
           .watch(searchResultPageProvider.notifier)
-          .search(searchType.searchTerm, clipEnable: searchType.isClip);
+          .search(searchType.searchTerm, smartSearch: searchType.isSmart);
     }
 
     buildTextField() {

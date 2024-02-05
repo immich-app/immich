@@ -11,7 +11,7 @@
   export let data: PageData;
 
   afterNavigate(async ({ from }) => {
-    if (from?.url.pathname === AppRoute.AUTH_CHANGE_PASSWORD) {
+    if (from?.url?.pathname === AppRoute.AUTH_CHANGE_PASSWORD) {
       resetSavedUser();
       await api.authenticationApi.logout();
     }

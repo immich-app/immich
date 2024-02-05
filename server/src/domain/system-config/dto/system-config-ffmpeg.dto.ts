@@ -78,6 +78,9 @@ export class SystemConfigFFmpegDto {
   @IsBoolean()
   twoPass!: boolean;
 
+  @IsString()
+  preferredHwDevice!: string;
+
   @IsEnum(TranscodePolicy)
   @ApiProperty({ enumName: 'TranscodePolicy', enum: TranscodePolicy })
   transcode!: TranscodePolicy;

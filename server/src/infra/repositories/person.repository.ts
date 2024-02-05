@@ -28,12 +28,7 @@ export class PersonRepository implements IPersonRepository {
       .createQueryBuilder()
       .update()
       .set({ personId: newPersonId })
-      .where(
-        _.omitBy(
-          { personId: oldPersonId ? oldPersonId : undefined, id: faceIds ? In(faceIds) : undefined },
-          _.isUndefined,
-        ),
-      )
+      .where(_.omitBy({ personId: oldPersonId ?? undefined, id: faceIds ? In(faceIds) : undefined }, _.isUndefined))
       .execute();
 
     return result.affected ?? 0;
@@ -209,6 +204,18 @@ export class PersonRepository implements IPersonRepository {
       // TODO: remove after either (1) pagination or (2) time bucket is implemented for this query
       take: 1000,
     });
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getNumberOfPeople(userId: string): Promise<number> {
+    return this.personRepository
+      .createQueryBuilder('person')
+      .leftJoin('person.faces', 'face')
+      .where('person.ownerId = :userId', { userId })
+      .having('COUNT(face.assetId) != 0')
+      .groupBy('person.id')
+      .withDeleted()
+      .getCount();
   }
 
   create(entity: Partial<PersonEntity>): Promise<PersonEntity> {

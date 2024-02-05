@@ -19,6 +19,7 @@
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import { getAssetType } from '$lib/utils/asset-utils';
   import * as luxon from 'luxon';
+  import { timeBeforeShowLoadingSpinner } from '$lib/constants';
   import { autoGrowHeight } from '$lib/utils/autogrow';
 
   const units: Intl.RelativeTimeFormatUnit[] = ['year', 'month', 'week', 'day', 'hour', 'minute', 'second'];
@@ -65,7 +66,7 @@
     close: void;
   }>();
 
-  $: showDeleteReaction = Array(reactions.length).fill(false);
+  $: showDeleteReaction = Array.from({ length: reactions.length }).fill(false);
   $: {
     if (innerHeight && activityHeight) {
       divHeight = innerHeight - activityHeight;
@@ -132,7 +133,7 @@
     if (!message) {
       return;
     }
-    const timeout = setTimeout(() => (isSendingMessage = true), 100);
+    const timeout = setTimeout(() => (isSendingMessage = true), timeBeforeShowLoadingSpinner);
     try {
       const { data } = await api.activityApi.createActivity({
         activityCreateDto: { albumId, assetId, type: ReactionType.Comment, comment: message },
@@ -197,7 +198,7 @@
               {/if}
               {#if reaction.user.id === user.id || albumOwnerId === user.id}
                 <div class="flex items-start w-fit pt-[5px]" title="Delete comment">
-                  <button on:click={() => (!showDeleteReaction[index] ? showOptionsMenu(index) : '')}>
+                  <button on:click={() => (showDeleteReaction[index] ? '' : showOptionsMenu(index))}>
                     <Icon path={mdiDotsVertical} />
                   </button>
                 </div>
@@ -243,7 +244,7 @@
                 {/if}
                 {#if reaction.user.id === user.id || albumOwnerId === user.id}
                   <div class="flex items-start w-fit" title="Delete like">
-                    <button on:click={() => (!showDeleteReaction[index] ? showOptionsMenu(index) : '')}>
+                    <button on:click={() => (showDeleteReaction[index] ? '' : showOptionsMenu(index))}>
                       <Icon path={mdiDotsVertical} />
                     </button>
                   </div>

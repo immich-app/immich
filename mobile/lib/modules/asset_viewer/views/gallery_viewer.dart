@@ -78,8 +78,7 @@ class GalleryViewerPage extends HookConsumerWidget {
     final isPlayingMotionVideo = useState(false);
     final isPlayingVideo = useState(false);
     Offset? localPosition;
-    final authToken = 'Bearer ${Store.get(StoreKey.accessToken)}';
-    final header = {"Authorization": authToken};
+    final header = {"x-immich-user-token": Store.get(StoreKey.accessToken)};
     final currentIndex = useState(initialIndex);
     final currentAsset = loadAsset(currentIndex.value);
     final isTrashEnabled =
@@ -161,7 +160,7 @@ class GalleryViewerPage extends HookConsumerWidget {
 
     Iterable<ImageProvider> allImageProviders(Asset asset) sync* {
       if (ImmichImage.useLocal(asset)) {
-        yield ImmichImage.localThumbnailProvider(asset);
+        yield ImmichImage.localImageProvider(asset);
         yield localOriginalProvider(asset);
       } else {
         yield ImmichImage.remoteThumbnailProvider(asset, webp, header);
@@ -524,8 +523,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                     imageUrl:
                         '${Store.get(StoreKey.serverEndpoint)}/asset/thumbnail/$assetId',
                     httpHeaders: {
-                      "Authorization":
-                          "Bearer ${Store.get(StoreKey.accessToken)}",
+                      "x-immich-user-token": Store.get(StoreKey.accessToken),
                     },
                     errorWidget: (context, url, error) =>
                         const Icon(Icons.image_not_supported_outlined),
@@ -787,7 +785,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                 final a = loadAsset(index);
                 if (ImmichImage.useLocal(a)) {
                   return Image(
-                    image: ImmichImage.localThumbnailProvider(a),
+                    image: ImmichImage.localImageProvider(a),
                     fit: BoxFit.contain,
                   );
                 }

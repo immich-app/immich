@@ -1,18 +1,12 @@
-import { APIKeyCreateResponseDto } from '@app/domain';
-import { api } from '@api';
-import { restoreTempFolder, testApp } from '@test/../e2e/jobs/utils';
-import { LoginResponseDto } from '@immich/sdk';
-import { ServerInfo } from 'src/commands/server-info';
-import { CLI_BASE_OPTIONS, spyOnConsole } from 'test/cli-test-utils';
+import { restoreTempFolder, testApp } from '@test-utils';
+import { CLI_BASE_OPTIONS, setup, spyOnConsole } from 'test/cli-test-utils';
+import { ServerInfoCommand } from '../../src/commands/server-info.command';
 
 describe(`server-info (e2e)`, () => {
-  let server: any;
-  let admin: LoginResponseDto;
-  let apiKey: APIKeyCreateResponseDto;
   const consoleSpy = spyOnConsole();
 
   beforeAll(async () => {
-    server = (await testApp.create()).getHttpServer();
+    await testApp.create();
   });
 
   afterAll(async () => {
@@ -23,20 +17,18 @@ describe(`server-info (e2e)`, () => {
   beforeEach(async () => {
     await testApp.reset();
     await restoreTempFolder();
-    await api.authApi.adminSignUp(server);
-    admin = await api.authApi.adminLogin(server);
-    apiKey = await api.apiKeyApi.createApiKey(server, admin.accessToken);
-    process.env.IMMICH_API_KEY = apiKey.secret;
+    const api = await setup();
+    process.env.IMMICH_API_KEY = api.apiKey;
   });
 
   it('should show server version', async () => {
-    await new ServerInfo(CLI_BASE_OPTIONS).run();
+    await new ServerInfoCommand(CLI_BASE_OPTIONS).run();
 
     expect(consoleSpy.mock.calls).toEqual([
-      [expect.stringMatching(new RegExp('Server is running version \\d+.\\d+.\\d+'))],
-      [expect.stringMatching('Supported image types: .*')],
-      [expect.stringMatching('Supported video types: .*')],
-      ['Images: 0, Videos: 0, Total: 0'],
+      [expect.stringMatching(new RegExp('Server Version: \\d+.\\d+.\\d+'))],
+      [expect.stringMatching('Image Types: .*')],
+      [expect.stringMatching('Video Types: .*')],
+      ['Statistics:\n  Images: 0\n  Videos: 0\n  Total: 0'],
     ]);
   });
 });

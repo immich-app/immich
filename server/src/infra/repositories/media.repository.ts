@@ -2,10 +2,10 @@ import { CropOptions, IMediaRepository, ResizeOptions, TranscodeOptions, VideoIn
 import { Colorspace } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
-import fs from 'fs/promises';
+import fs from 'node:fs/promises';
+import { Writable } from 'node:stream';
+import { promisify } from 'node:util';
 import sharp from 'sharp';
-import { Writable } from 'stream';
-import { promisify } from 'util';
 
 const probe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
 sharp.concurrency(0);
@@ -47,6 +47,7 @@ export class MediaRepository implements IMediaRepository {
         formatName: results.format.format_name,
         formatLongName: results.format.format_long_name,
         duration: results.format.duration || 0,
+        bitrate: results.format.bit_rate ?? 0,
       },
       videoStreams: results.streams
         .filter((stream) => stream.codec_type === 'video')
@@ -90,7 +91,7 @@ export class MediaRepository implements IMediaRepository {
     }
 
     if (typeof output !== 'string') {
-      throw new Error('Two-pass transcoding does not support writing to a stream');
+      throw new TypeError('Two-pass transcoding does not support writing to a stream');
     }
 
     // two-pass allows for precise control of bitrate at the cost of running twice
@@ -123,12 +124,12 @@ export class MediaRepository implements IMediaRepository {
       .inputOptions(options.inputOptions)
       .outputOptions(options.outputOptions)
       .output(output)
-      .on('error', (err, stdout, stderr) => this.logger.error(stderr || err));
+      .on('error', (error, stdout, stderr) => this.logger.error(stderr || error));
   }
 
   chainPath(existing: string, path: string) {
-    const sep = existing.endsWith(':') ? '' : ':';
-    return `${existing}${sep}${path}`;
+    const separator = existing.endsWith(':') ? '' : ':';
+    return `${existing}${separator}${path}`;
   }
 
   async generateThumbhash(imagePath: string): Promise<Buffer> {

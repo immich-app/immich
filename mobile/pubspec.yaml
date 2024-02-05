@@ -2,7 +2,7 @@ name: immich_mobile
 description: Immich - selfhosted backup media file on mobile phone
 
 publish_to: "none"
-version: 1.93.3+119
+version: 1.94.1+121
 isar_version: &isar_version 3.1.0+1
 
 environment:
@@ -29,9 +29,9 @@ dependencies:
   socket_io_client: ^2.0.3+1
   # TODO: Update it to tag once next stable release
   maplibre_gl:
-      git:
-        url: https://github.com/maplibre/flutter-maplibre-gl.git
-        ref: acb428a005efd9832a0a8e7ef0945f899dfb3ca5
+    git:
+      url: https://github.com/maplibre/flutter-maplibre-gl.git
+      ref: acb428a005efd9832a0a8e7ef0945f899dfb3ca5
   geolocator: ^10.1.0 # used to move to current location in map view
   flutter_udid: ^2.1.1
   package_info_plus: ^5.0.1

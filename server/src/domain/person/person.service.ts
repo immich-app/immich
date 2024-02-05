@@ -82,6 +82,7 @@ export class PersonService {
       minimumFaceCount: machineLearning.facialRecognition.minFaces,
       withHidden: dto.withHidden || false,
     });
+    const total = await this.repository.getNumberOfPeople(auth.user.id);
     const persons: PersonResponseDto[] = people
       // with thumbnails
       .filter((person) => !!person.thumbnailPath)
@@ -89,8 +90,7 @@ export class PersonService {
 
     return {
       people: persons.filter((person) => dto.withHidden || !person.isHidden),
-      total: persons.length,
-      visible: persons.filter((person: PersonResponseDto) => !person.isHidden).length,
+      total,
     };
   }
 
@@ -122,7 +122,7 @@ export class PersonService {
     }
     if (changeFeaturePhoto.length > 0) {
       // Remove duplicates
-      await this.createNewFeaturePhoto(Array.from(new Set(changeFeaturePhoto)));
+      await this.createNewFeaturePhoto([...new Set(changeFeaturePhoto)]);
     }
     return result;
   }
@@ -258,7 +258,7 @@ export class PersonService {
 
   private async deleteAllPeople() {
     const personPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
-      this.repository.getAll(pagination),
+      this.repository.getAll({ ...pagination, skip: 0 }),
     );
 
     for await (const people of personPagination) {
@@ -332,7 +332,7 @@ export class PersonService {
     this.logger.debug(`${faces.length} faces detected in ${asset.resizePath}`);
     this.logger.verbose(faces.map((face) => ({ ...face, embedding: `vector(${face.embedding.length})` })));
 
-    if (faces.length) {
+    if (faces.length > 0) {
       await this.jobRepository.queue({ name: JobName.QUEUE_FACIAL_RECOGNITION, data: { force: false } });
 
       const mappedFaces = faces.map((face) => ({
@@ -400,7 +400,7 @@ export class PersonService {
       { person: true, asset: true },
       { id: true, personId: true, embedding: true },
     );
-    if (!face) {
+    if (!face || !face.asset) {
       this.logger.warn(`Face ${id} not found`);
       return false;
     }
@@ -417,7 +417,7 @@ export class PersonService {
       numResults: machineLearning.facialRecognition.minFaces,
     });
 
-    this.logger.debug(`Face ${id} has ${matches.length} match${matches.length != 1 ? 'es' : ''}`);
+    this.logger.debug(`Face ${id} has ${matches.length} match${matches.length == 1 ? '' : 'es'}`);
 
     const isCore = matches.length >= machineLearning.facialRecognition.minFaces;
     if (!isCore && !deferred) {

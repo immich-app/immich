@@ -4,9 +4,9 @@ import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nes
 import { PATH_METADATA } from '@nestjs/common/constants';
 import { Reflector } from '@nestjs/core';
 import { transformException } from '@nestjs/platform-express/multer/multer/multer.utils';
-import { createHash, randomUUID } from 'crypto';
 import { NextFunction, RequestHandler } from 'express';
 import multer, { StorageEngine, diskStorage } from 'multer';
+import { createHash, randomUUID } from 'node:crypto';
 import { Observable } from 'rxjs';
 import { AuthRequest } from '../app.guard';
 
@@ -40,17 +40,17 @@ interface Callback<T> {
   (error: null, result: T): void;
 }
 
-const callbackify = async <T>(fn: (...args: any[]) => T, callback: Callback<T>) => {
+const callbackify = async <T>(target: (...arguments_: any[]) => T, callback: Callback<T>) => {
   try {
-    return callback(null, await fn());
+    return callback(null, await target());
   } catch (error: Error | any) {
     return callback(error);
   }
 };
 
-const asRequest = (req: AuthRequest, file: Express.Multer.File) => {
+const asRequest = (request: AuthRequest, file: Express.Multer.File) => {
   return {
-    auth: req.user || null,
+    auth: request.user || null,
     fieldName: file.fieldname as UploadFieldName,
     file: mapToUploadFile(file as ImmichFile),
   };
@@ -94,14 +94,14 @@ export class FileUploadInterceptor implements NestInterceptor {
   }
 
   async intercept(context: ExecutionContext, next: CallHandler<any>): Promise<Observable<any>> {
-    const ctx = context.switchToHttp();
+    const context_ = context.switchToHttp();
     const route = this.reflect.get<string>(PATH_METADATA, context.getClass());
 
     const handler: RequestHandler | null = this.getHandler(route as Route);
     if (handler) {
       await new Promise<void>((resolve, reject) => {
         const next: NextFunction = (error) => (error ? reject(transformException(error)) : resolve());
-        handler(ctx.getRequest(), ctx.getResponse(), next);
+        handler(context_.getRequest(), context_.getResponse(), next);
       });
     } else {
       this.logger.warn(`Skipping invalid file upload route: ${route}`);
@@ -110,28 +110,31 @@ export class FileUploadInterceptor implements NestInterceptor {
     return next.handle();
   }
 
-  private fileFilter(req: AuthRequest, file: Express.Multer.File, callback: multer.FileFilterCallback) {
-    return callbackify(() => this.assetService.canUploadFile(asRequest(req, file)), callback);
+  private fileFilter(request: AuthRequest, file: Express.Multer.File, callback: multer.FileFilterCallback) {
+    return callbackify(() => this.assetService.canUploadFile(asRequest(request, file)), callback);
   }
 
-  private filename(req: AuthRequest, file: Express.Multer.File, callback: DiskStorageCallback) {
-    return callbackify(() => this.assetService.getUploadFilename(asRequest(req, file)), callback as Callback<string>);
+  private filename(request: AuthRequest, file: Express.Multer.File, callback: DiskStorageCallback) {
+    return callbackify(
+      () => this.assetService.getUploadFilename(asRequest(request, file)),
+      callback as Callback<string>,
+    );
   }
 
-  private destination(req: AuthRequest, file: Express.Multer.File, callback: DiskStorageCallback) {
-    return callbackify(() => this.assetService.getUploadFolder(asRequest(req, file)), callback as Callback<string>);
+  private destination(request: AuthRequest, file: Express.Multer.File, callback: DiskStorageCallback) {
+    return callbackify(() => this.assetService.getUploadFolder(asRequest(request, file)), callback as Callback<string>);
   }
 
-  private handleFile(req: AuthRequest, file: Express.Multer.File, callback: Callback<Partial<ImmichFile>>) {
+  private handleFile(request: AuthRequest, file: Express.Multer.File, callback: Callback<Partial<ImmichFile>>) {
     (file as ImmichMulterFile).uuid = randomUUID();
     if (!this.isAssetUploadFile(file)) {
-      this.defaultStorage._handleFile(req, file, callback);
+      this.defaultStorage._handleFile(request, file, callback);
       return;
     }
 
     const hash = createHash('sha1');
     file.stream.on('data', (chunk) => hash.update(chunk));
-    this.defaultStorage._handleFile(req, file, (error, info) => {
+    this.defaultStorage._handleFile(request, file, (error, info) => {
       if (error) {
         hash.destroy();
         callback(error);
@@ -141,15 +144,16 @@ export class FileUploadInterceptor implements NestInterceptor {
     });
   }
 
-  private removeFile(req: AuthRequest, file: Express.Multer.File, callback: (error: Error | null) => void) {
-    this.defaultStorage._removeFile(req, file, callback);
+  private removeFile(request: AuthRequest, file: Express.Multer.File, callback: (error: Error | null) => void) {
+    this.defaultStorage._removeFile(request, file, callback);
   }
 
   private isAssetUploadFile(file: Express.Multer.File) {
     switch (file.fieldname as UploadFieldName) {
       case UploadFieldName.ASSET_DATA:
-      case UploadFieldName.LIVE_PHOTO_DATA:
+      case UploadFieldName.LIVE_PHOTO_DATA: {
         return true;
+      }
     }
 
     return false;
@@ -157,14 +161,17 @@ export class FileUploadInterceptor implements NestInterceptor {
 
   private getHandler(route: Route) {
     switch (route) {
-      case Route.ASSET:
+      case Route.ASSET: {
         return this.handlers.assetUpload;
+      }
 
-      case Route.USER:
+      case Route.USER: {
         return this.handlers.userProfile;
+      }
 
-      default:
+      default: {
         return null;
+      }
     }
   }
 }

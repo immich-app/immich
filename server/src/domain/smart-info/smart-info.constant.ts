@@ -111,8 +111,12 @@ export const CLIP_MODEL_INFO: Record<string, ModelInfo> = {
 };
 
 export function cleanModelName(modelName: string): string {
-  const tokens = modelName.split('/');
-  return tokens[tokens.length - 1].replace(/:/g, '_');
+  const token = modelName.split('/').at(-1);
+  if (!token) {
+    throw new Error(`Invalid model name: ${modelName}`);
+  }
+
+  return token.replaceAll(':', '_');
 }
 
 export function getCLIPModelInfo(modelName: string): ModelInfo {

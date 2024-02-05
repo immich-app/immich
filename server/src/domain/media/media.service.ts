@@ -181,13 +181,14 @@ export class MediaService {
     this.storageCore.ensureFolders(path);
 
     switch (asset.type) {
-      case AssetType.IMAGE:
+      case AssetType.IMAGE: {
         const colorspace = this.isSRGB(asset) ? Colorspace.SRGB : thumbnail.colorspace;
         const thumbnailOptions = { format, size, colorspace, quality: thumbnail.quality };
         await this.mediaRepository.resize(asset.originalPath, path, thumbnailOptions);
         break;
+      }
 
-      case AssetType.VIDEO:
+      case AssetType.VIDEO: {
         const { audioStreams, videoStreams } = await this.mediaRepository.probe(asset.originalPath);
         const mainVideoStream = this.getMainStream(videoStreams);
         if (!mainVideoStream) {
@@ -199,9 +200,11 @@ export class MediaService {
         const options = new ThumbnailConfig(config).getOptions(mainVideoStream, mainAudioStream);
         await this.mediaRepository.transcode(asset.originalPath, path, options);
         break;
+      }
 
-      default:
+      default: {
         throw new UnsupportedMediaTypeException(`Unsupported asset type for thumbnail generation: ${asset.type}`);
+      }
     }
     this.logger.log(
       `Successfully generated ${format.toUpperCase()} ${asset.type.toLowerCase()} thumbnail for asset ${asset.id}`,
@@ -264,6 +267,7 @@ export class MediaService {
     const mainVideoStream = this.getMainStream(videoStreams);
     const mainAudioStream = this.getMainStream(audioStreams);
     const containerExtension = format.formatName;
+    const bitrate = format.bitrate;
     if (!mainVideoStream || !containerExtension) {
       return false;
     }
@@ -275,7 +279,14 @@ export class MediaService {
 
     const { ffmpeg: config } = await this.configCore.getConfig();
 
-    const required = this.isTranscodeRequired(asset, mainVideoStream, mainAudioStream, containerExtension, config);
+    const required = this.isTranscodeRequired(
+      asset,
+      mainVideoStream,
+      mainAudioStream,
+      containerExtension,
+      config,
+      bitrate,
+    );
     if (!required) {
       if (asset.encodedVideoPath) {
         this.logger.log(`Transcoded video exists for asset ${asset.id}, but is no longer required. Deleting...`);
@@ -289,16 +300,16 @@ export class MediaService {
     let transcodeOptions;
     try {
       transcodeOptions = await this.getCodecConfig(config).then((c) => c.getOptions(mainVideoStream, mainAudioStream));
-    } catch (err) {
-      this.logger.error(`An error occurred while configuring transcoding options: ${err}`);
+    } catch (error) {
+      this.logger.error(`An error occurred while configuring transcoding options: ${error}`);
       return false;
     }
 
     this.logger.log(`Start encoding video ${asset.id} ${JSON.stringify(transcodeOptions)}`);
     try {
       await this.mediaRepository.transcode(input, output, transcodeOptions);
-    } catch (err) {
-      this.logger.error(err);
+    } catch (error) {
+      this.logger.error(error);
       if (config.accel !== TranscodeHWAccel.DISABLED) {
         this.logger.error(
           `Error occurred during transcoding. Retrying with ${config.accel.toUpperCase()} acceleration disabled.`,
@@ -326,6 +337,7 @@ export class MediaService {
     audioStream: AudioStreamInfo | null,
     containerExtension: string,
     ffmpegConfig: SystemConfigFFmpegDto,
+    bitrate: number,
   ): boolean {
     const isTargetVideoCodec = ffmpegConfig.acceptedVideoCodecs.includes(videoStream.codecName as VideoCodec);
     const isTargetContainer = ['mov,mp4,m4a,3gp,3g2,mj2', 'mp4', 'mov'].includes(containerExtension);
@@ -342,22 +354,32 @@ export class MediaService {
     const scalingEnabled = ffmpegConfig.targetResolution !== 'original';
     const targetRes = Number.parseInt(ffmpegConfig.targetResolution);
     const isLargerThanTargetRes = scalingEnabled && Math.min(videoStream.height, videoStream.width) > targetRes;
+    const isLargerThanTargetBitrate = bitrate > this.parseBitrateToBps(ffmpegConfig.maxBitrate);
 
     switch (ffmpegConfig.transcode) {
-      case TranscodePolicy.DISABLED:
+      case TranscodePolicy.DISABLED: {
         return false;
+      }
 
-      case TranscodePolicy.ALL:
+      case TranscodePolicy.ALL: {
         return true;
+      }
 
-      case TranscodePolicy.REQUIRED:
+      case TranscodePolicy.REQUIRED: {
         return !allTargetsMatching || videoStream.isHDR;
+      }
 
-      case TranscodePolicy.OPTIMAL:
+      case TranscodePolicy.OPTIMAL: {
         return !allTargetsMatching || isLargerThanTargetRes || videoStream.isHDR;
+      }
 
-      default:
+      case TranscodePolicy.BITRATE: {
+        return !allTargetsMatching || isLargerThanTargetBitrate || videoStream.isHDR;
+      }
+
+      default: {
         return false;
+      }
     }
   }
 
@@ -370,14 +392,18 @@ export class MediaService {
 
   private getSWCodecConfig(config: SystemConfigFFmpegDto) {
     switch (config.targetVideoCodec) {
-      case VideoCodec.H264:
+      case VideoCodec.H264: {
         return new H264Config(config);
-      case VideoCodec.HEVC:
+      }
+      case VideoCodec.HEVC: {
         return new HEVCConfig(config);
-      case VideoCodec.VP9:
+      }
+      case VideoCodec.VP9: {
         return new VP9Config(config);
-      default:
+      }
+      default: {
         throw new UnsupportedMediaTypeException(`Codec '${config.targetVideoCodec}' is unsupported`);
+      }
     }
   }
 
@@ -385,23 +411,28 @@ export class MediaService {
     let handler: VideoCodecHWConfig;
     let devices: string[];
     switch (config.accel) {
-      case TranscodeHWAccel.NVENC:
+      case TranscodeHWAccel.NVENC: {
         handler = new NVENCConfig(config);
         break;
-      case TranscodeHWAccel.QSV:
+      }
+      case TranscodeHWAccel.QSV: {
         devices = await this.storageRepository.readdir('/dev/dri');
         handler = new QSVConfig(config, devices);
         break;
-      case TranscodeHWAccel.VAAPI:
+      }
+      case TranscodeHWAccel.VAAPI: {
         devices = await this.storageRepository.readdir('/dev/dri');
         handler = new VAAPIConfig(config, devices);
         break;
-      case TranscodeHWAccel.RKMPP:
+      }
+      case TranscodeHWAccel.RKMPP: {
         devices = await this.storageRepository.readdir('/dev/dri');
         handler = new RKMPPConfig(config, devices);
         break;
-      default:
+      }
+      default: {
         throw new UnsupportedMediaTypeException(`${config.accel.toUpperCase()} acceleration is unsupported`);
+      }
     }
     if (!handler.getSupportedCodecs().includes(config.targetVideoCodec)) {
       throw new UnsupportedMediaTypeException(
@@ -422,6 +453,22 @@ export class MediaService {
     } else {
       // assume sRGB for images with no relevant metadata
       return true;
+    }
+  }
+
+  parseBitrateToBps(bitrateString: string) {
+    const bitrateValue = Number.parseInt(bitrateString);
+
+    if (Number.isNaN(bitrateValue)) {
+      return 0;
+    }
+
+    if (bitrateString.toLowerCase().endsWith('k')) {
+      return bitrateValue * 1000; // Kilobits per second to bits per second
+    } else if (bitrateString.toLowerCase().endsWith('m')) {
+      return bitrateValue * 1_000_000; // Megabits per second to bits per second
+    } else {
+      return bitrateValue;
     }
   }
 }

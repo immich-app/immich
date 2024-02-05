@@ -1,19 +1,22 @@
 import 'dart:collection';
+import 'dart:developer';
 import 'dart:math';
 
 import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/collection_extensions.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/scroll_notifier.provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/thumbnail_image.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:immich_mobile/extensions/collection_extensions.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+
 import 'asset_grid_data_structure.dart';
-import 'group_divider_title.dart';
 import 'disable_multi_select_button.dart';
 import 'draggable_scrollbar_custom.dart';
+import 'group_divider_title.dart';
 
 typedef ImmichAssetGridSelectionListener = void Function(
   bool,
@@ -72,6 +75,9 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
   final ItemPositionsListener _itemPositionsListener =
       ItemPositionsListener.create();
 
+  /// The timestamp when the haptic feedback was last invoked
+  int _hapticFeedbackTS = 0;
+  DateTime? _prevItemTime;
   bool _scrolling = false;
   final Set<Asset> _selectedAssets =
       LinkedHashSet(equals: (a, b) => a.id == b.id, hashCode: (a) => a.id);
@@ -399,6 +405,8 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
     if (widget.preselectedAssets != null) {
       _selectedAssets.addAll(widget.preselectedAssets!);
     }
+
+    _itemPositionsListener.itemPositions.addListener(_hapticsListener);
   }
 
   @override
@@ -413,6 +421,41 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
   void _positionListener() {
     final values = _itemPositionsListener.itemPositions.value;
     widget.visibleItemsListener?.call(values);
+  }
+
+  void _hapticsListener() {
+    /// throttle interval for the haptic feedback in microseconds.
+    /// Currently set to 100ms.
+    const feedbackInterval = 100000;
+
+    final values = _itemPositionsListener.itemPositions.value;
+    final start = values.firstOrNull;
+
+    if (start != null) {
+      final pos = start.index;
+      final maxLength = widget.renderList.elements.length;
+      if (pos < 0 || pos >= maxLength) {
+        return;
+      }
+
+      final date = widget.renderList.elements[pos].date;
+
+      // only provide the feedback if the prev. date is known.
+      // Otherwise the app would provide the haptic feedback
+      // on startup.
+      if (_prevItemTime == null) {
+        _prevItemTime = date;
+      } else if (_prevItemTime?.year != date.year ||
+          _prevItemTime?.month != date.month) {
+        _prevItemTime = date;
+
+        final now = Timeline.now;
+        if (now > (_hapticFeedbackTS + feedbackInterval)) {
+          _hapticFeedbackTS = now;
+          HapticFeedback.heavyImpact();
+        }
+      }
+    }
   }
 
   void _scrollToTop() {

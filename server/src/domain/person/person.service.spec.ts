@@ -116,9 +116,9 @@ describe(PersonService.name, () => {
   describe('getAll', () => {
     it('should get all people with thumbnails', async () => {
       personMock.getAllForUser.mockResolvedValue([personStub.withName, personStub.noThumbnail]);
+      personMock.getNumberOfPeople.mockResolvedValue(1);
       await expect(sut.getAll(authStub.admin, { withHidden: undefined })).resolves.toEqual({
         total: 1,
-        visible: 1,
         people: [responseDto],
       });
       expect(personMock.getAllForUser).toHaveBeenCalledWith(authStub.admin.user.id, {
@@ -128,9 +128,9 @@ describe(PersonService.name, () => {
     });
     it('should get all visible people with thumbnails', async () => {
       personMock.getAllForUser.mockResolvedValue([personStub.withName, personStub.hidden]);
+      personMock.getNumberOfPeople.mockResolvedValue(2);
       await expect(sut.getAll(authStub.admin, { withHidden: false })).resolves.toEqual({
         total: 2,
-        visible: 1,
         people: [responseDto],
       });
       expect(personMock.getAllForUser).toHaveBeenCalledWith(authStub.admin.user.id, {
@@ -140,9 +140,9 @@ describe(PersonService.name, () => {
     });
     it('should get all hidden and visible people with thumbnails', async () => {
       personMock.getAllForUser.mockResolvedValue([personStub.withName, personStub.hidden]);
+      personMock.getNumberOfPeople.mockResolvedValue(2);
       await expect(sut.getAll(authStub.admin, { withHidden: true })).resolves.toEqual({
         total: 2,
-        visible: 1,
         people: [
           responseDto,
           {
@@ -787,6 +787,17 @@ describe(PersonService.name, () => {
       expect(personMock.createFaces).not.toHaveBeenCalled();
     });
 
+    it('should return false if face does not have asset', async () => {
+      const face = { ...faceStub.face1, asset: null } as AssetFaceEntity & { asset: null };
+      personMock.getFaceByIdWithAssets.mockResolvedValue(face);
+
+      expect(await sut.handleRecognizeFaces({ id: faceStub.face1.id })).toBe(false);
+
+      expect(personMock.reassignFaces).not.toHaveBeenCalled();
+      expect(personMock.create).not.toHaveBeenCalled();
+      expect(personMock.createFaces).not.toHaveBeenCalled();
+    });
+
     it('should return true if face already has an assigned person', async () => {
       personMock.getFaceByIdWithAssets.mockResolvedValue(faceStub.face1);
 
@@ -803,7 +814,7 @@ describe(PersonService.name, () => {
       }
 
       const faces = [
-        { face: faceStub.noPerson1, distance: 0.0 },
+        { face: faceStub.noPerson1, distance: 0 },
         { face: faceStub.primaryFace1, distance: 0.2 },
         { face: faceStub.noPerson2, distance: 0.3 },
         { face: faceStub.face1, distance: 0.4 },
@@ -832,7 +843,7 @@ describe(PersonService.name, () => {
 
     it('should create a new person if the face is a core point with no person', async () => {
       const faces = [
-        { face: faceStub.noPerson1, distance: 0.0 },
+        { face: faceStub.noPerson1, distance: 0 },
         { face: faceStub.noPerson2, distance: 0.3 },
       ] as FaceSearchResult[];
 
@@ -856,7 +867,7 @@ describe(PersonService.name, () => {
     });
 
     it('should defer non-core faces to end of queue', async () => {
-      const faces = [{ face: faceStub.noPerson1, distance: 0.0 }] as FaceSearchResult[];
+      const faces = [{ face: faceStub.noPerson1, distance: 0 }] as FaceSearchResult[];
 
       configMock.load.mockResolvedValue([
         { key: SystemConfigKey.MACHINE_LEARNING_FACIAL_RECOGNITION_MIN_FACES, value: 2 },
@@ -877,7 +888,7 @@ describe(PersonService.name, () => {
     });
 
     it('should not assign person to non-core face with no matching person', async () => {
-      const faces = [{ face: faceStub.noPerson1, distance: 0.0 }] as FaceSearchResult[];
+      const faces = [{ face: faceStub.noPerson1, distance: 0 }] as FaceSearchResult[];
 
       configMock.load.mockResolvedValue([
         { key: SystemConfigKey.MACHINE_LEARNING_FACIAL_RECOGNITION_MIN_FACES, value: 2 },

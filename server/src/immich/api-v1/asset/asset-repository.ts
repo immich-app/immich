@@ -3,8 +3,8 @@ import { AssetEntity, ExifEntity } from '@app/infra/entities';
 import { OptionalBetween } from '@app/infra/infra.utils';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In } from 'typeorm/find-options/operator/In';
-import { Repository } from 'typeorm/repository/Repository';
+import { In } from 'typeorm/find-options/operator/In.js';
+import { Repository } from 'typeorm/repository/Repository.js';
 import { AssetSearchDto } from './dto/asset-search.dto';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 import { SearchPropertiesDto } from './dto/search-properties.dto';
@@ -108,7 +108,7 @@ export class AssetRepositoryV1 implements IAssetRepositoryV1 {
       relations: {
         exifInfo: true,
         tags: true,
-        stack: true,
+        stack: { assets: true },
       },
       skip: dto.skip || 0,
       take: dto.take,

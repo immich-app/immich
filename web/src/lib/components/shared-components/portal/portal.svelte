@@ -4,21 +4,21 @@
   /**
    * Usage: <div use:portal={'css selector'}> or <div use:portal={document.body}>
    */
-  export function portal(el: HTMLElement, target: HTMLElement | string = 'body') {
-    let targetEl;
+  export function portal(element: HTMLElement, target: HTMLElement | string = 'body') {
+    let targetElement;
     async function update(newTarget: HTMLElement | string) {
       target = newTarget;
       if (typeof target === 'string') {
-        targetEl = document.querySelector(target);
-        if (targetEl === null) {
+        targetElement = document.querySelector(target);
+        if (targetElement === null) {
           await tick();
-          targetEl = document.querySelector(target);
+          targetElement = document.querySelector(target);
         }
-        if (targetEl === null) {
+        if (targetElement === null) {
           throw new Error(`No element found matching css selector: "${target}"`);
         }
       } else if (target instanceof HTMLElement) {
-        targetEl = target;
+        targetElement = target;
       } else {
         throw new TypeError(
           `Unknown portal target type: ${
@@ -26,13 +26,13 @@
           }. Allowed types: string (CSS selector) or HTMLElement.`,
         );
       }
-      targetEl.appendChild(el);
-      el.hidden = false;
+      targetElement.append(element);
+      element.hidden = false;
     }
 
     function destroy() {
-      if (el.parentNode) {
-        el.parentNode.removeChild(el);
+      if (element.parentNode) {
+        element.remove();
       }
     }
 

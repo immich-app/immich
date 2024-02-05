@@ -184,6 +184,10 @@
               text: 'Videos higher than target resolution or not in an accepted format',
             },
             {
+              value: TranscodePolicy.Bitrate,
+              text: 'Videos higher than max bitrate or not in an accepted format',
+            },
+            {
               value: TranscodePolicy.Required,
               text: 'Only videos not in an accepted format',
             },
@@ -281,6 +285,13 @@
               subtitle="Applies only to NVENC. Increases quality of high-detail, low-motion scenes. May not be compatible with older devices."
               bind:checked={config.ffmpeg.temporalAQ}
               isEdited={config.ffmpeg.temporalAQ !== savedConfig.ffmpeg.temporalAQ}
+            />
+            <SettingInputField
+              inputType={SettingInputFieldType.TEXT}
+              label="PREFERRED HARDWARE DEVICE FOR TRANSCODING"
+              desc="Applies only to VAAPI and QSV. Sets the dri node used for hardware transcoding. Set to 'auto' to let immich decide for you"
+              bind:value={config.ffmpeg.preferredHwDevice}
+              isEdited={config.ffmpeg.preferredHwDevice !== savedConfig.ffmpeg.preferredHwDevice}
             />
           </div>
         </SettingAccordion>

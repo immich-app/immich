@@ -3,6 +3,7 @@ import {
   AuditService,
   DatabaseService,
   IDeleteFilesJob,
+  IStorageRepository,
   JobName,
   JobService,
   LibraryService,
@@ -15,7 +16,7 @@ import {
   SystemConfigService,
   UserService,
 } from '@app/domain';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 
 @Injectable()
 export class AppService {
@@ -33,6 +34,7 @@ export class AppService {
     private storageService: StorageService,
     private userService: UserService,
     private databaseService: DatabaseService,
+    @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {}
 
   async init() {
@@ -46,8 +48,8 @@ export class AppService {
       [JobName.USER_DELETE_CHECK]: () => this.userService.handleUserDeleteCheck(),
       [JobName.USER_DELETION]: (data) => this.userService.handleUserDelete(data),
       [JobName.USER_SYNC_USAGE]: () => this.userService.handleUserSyncUsage(),
-      [JobName.QUEUE_ENCODE_CLIP]: (data) => this.smartInfoService.handleQueueEncodeClip(data),
-      [JobName.ENCODE_CLIP]: (data) => this.smartInfoService.handleEncodeClip(data),
+      [JobName.QUEUE_SMART_SEARCH]: (data) => this.smartInfoService.handleQueueEncodeClip(data),
+      [JobName.SMART_SEARCH]: (data) => this.smartInfoService.handleEncodeClip(data),
       [JobName.STORAGE_TEMPLATE_MIGRATION]: () => this.storageTemplateService.handleMigration(),
       [JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE]: (data) => this.storageTemplateService.handleMigrationSingle(data),
       [JobName.QUEUE_MIGRATION]: () => this.mediaService.handleQueueMigration(),

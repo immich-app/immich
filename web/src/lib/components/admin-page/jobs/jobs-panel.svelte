@@ -85,7 +85,7 @@
       icon: mdiImageSearch,
       title: api.getJobName(JobName.SmartSearch),
       subtitle: 'Run machine learning on assets to support smart search',
-      disabled: !$featureFlags.clipEncode,
+      disabled: !$featureFlags.smartSearch,
     },
     [JobName.FaceDetection]: {
       icon: mdiFaceRecognition,
@@ -131,12 +131,13 @@
       jobs[jobId] = data;
 
       switch (jobCommand.command) {
-        case JobCommand.Empty:
+        case JobCommand.Empty: {
           notificationController.show({
             message: `Cleared jobs for: ${title}`,
             type: NotificationType.Info,
           });
           break;
+        }
       }
     } catch (error) {
       handleError(error, `Command '${jobCommand.command}' failed for job: ${title}`);

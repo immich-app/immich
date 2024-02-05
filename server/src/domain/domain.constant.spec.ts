@@ -108,9 +108,9 @@ describe('mimeTypes', () => {
       expect(keys).toEqual([...keys].sort());
     });
 
-    for (const [ext, v] of Object.entries(mimeTypes.profile)) {
-      it(`should lookup ${ext}`, () => {
-        expect(mimeTypes.lookup(`test.${ext}`)).toEqual(v[0]);
+    for (const [extension, v] of Object.entries(mimeTypes.profile)) {
+      it(`should lookup ${extension}`, () => {
+        expect(mimeTypes.lookup(`test.${extension}`)).toEqual(v[0]);
       });
     }
   });
@@ -135,9 +135,9 @@ describe('mimeTypes', () => {
       expect(values).toEqual(values.filter((mimeType) => mimeType.startsWith('image/')));
     });
 
-    for (const [ext, v] of Object.entries(mimeTypes.image)) {
-      it(`should lookup ${ext}`, () => {
-        expect(mimeTypes.lookup(`test.${ext}`)).toEqual(v[0]);
+    for (const [extension, v] of Object.entries(mimeTypes.image)) {
+      it(`should lookup ${extension}`, () => {
+        expect(mimeTypes.lookup(`test.${extension}`)).toEqual(v[0]);
       });
     }
   });
@@ -162,9 +162,9 @@ describe('mimeTypes', () => {
       expect(values).toEqual(values.filter((mimeType) => mimeType.startsWith('video/')));
     });
 
-    for (const [ext, v] of Object.entries(mimeTypes.video)) {
-      it(`should lookup ${ext}`, () => {
-        expect(mimeTypes.lookup(`test.${ext}`)).toEqual(v[0]);
+    for (const [extension, v] of Object.entries(mimeTypes.video)) {
+      it(`should lookup ${extension}`, () => {
+        expect(mimeTypes.lookup(`test.${extension}`)).toEqual(v[0]);
       });
     }
   });
@@ -188,9 +188,9 @@ describe('mimeTypes', () => {
       expect(Object.values(mimeTypes.sidecar).flat()).toEqual(['application/xml', 'text/xml']);
     });
 
-    for (const [ext, v] of Object.entries(mimeTypes.sidecar)) {
-      it(`should lookup ${ext}`, () => {
-        expect(mimeTypes.lookup(`it.${ext}`)).toEqual(v[0]);
+    for (const [extension, v] of Object.entries(mimeTypes.sidecar)) {
+      it(`should lookup ${extension}`, () => {
+        expect(mimeTypes.lookup(`it.${extension}`)).toEqual(v[0]);
       });
     }
   });

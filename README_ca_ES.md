@@ -106,8 +106,8 @@ Si creieu que aquesta és una causa justa i l'aplicació és alguna cosa que us 
 
 ## Donació
 
-- [Donació mensual](https://github.com/sponsors/alextran1502) a través de GitHub Sponsors
-- [Donació única](https://github.com/sponsors/alextran1502?frequency=one-time&sponsor=alextran1502) a través de GitHub Sponsors
+- [Donació mensual](https://github.com/sponsors/immich-app) a través de GitHub Sponsors
+- [Donació única](https://github.com/sponsors/immich-app?frequency=one-time&sponsor=alextran1502) a través de GitHub Sponsors
 - [Librepay](https://liberapay.com/alex.tran1502/)
 - [buymeacoffee](https://www.buymeacoffee.com/altran1502)
 - Bitcoin: 1FvEp6P6NM8EZEkpGUFAN2LqJ1gxusNxZX

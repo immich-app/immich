@@ -72,16 +72,25 @@ For security purposes, each Immich user is disallowed to add external files by d
 
 With the `external path` set, a user is restricted to accessing external files to files or directories within that path. The Immich admin should still be careful not set the external path too generously. For example, `user1` wants to read their photos in to `/home/user1`. A lazy admin sets that user's external path to `/home/` since it "gets the job done". However, that user will then be able to read all photos in `/home/user2/private-photos`, too! Please set the external path as specific as possible. If multiple folders must be added, do this using the docker volume mount feature described below.
 
-### Exclusion Patterns and Scan Settings
+### Exclusion Patterns
 
 By default, all files in the import paths will be added to the library. If there are files that should not be added, exclusion patterns can be used to exclude them. Exclusion patterns are glob patterns are matched against the full file path. If a file matches an exclusion pattern, it will not be added to the library. Exclusion patterns can be added in the Scan Settings page for each library. Under the hood, Immich uses the [glob](https://www.npmjs.com/package/glob) package to match patterns, so please refer to [their documentation](https://github.com/isaacs/node-glob#glob-primer) to see what patterns are supported.
 
 Some basic examples:
 
-- `*.tif` will exclude all files with the extension `.tif`
-- `hidden.jpg` will exclude all files named `hidden.jpg`
+- `**/*.tif` will exclude all files with the extension `.tif`
+- `**/hidden.jpg` will exclude all files named `hidden.jpg`
 - `**/Raw/**` will exclude all files in any directory named `Raw`
-- `*.{tif,jpg}` will exclude all files with the extension `.tif` or `.jpg`
+- `**/*.{tif,jpg}` will exclude all files with the extension `.tif` or `.jpg`
+
+### Automatic watching (EXPERIMENTAL)
+
+This feature - currently hidden in the config file - is considered experimental and for advanced users only. If enabled, it will allow automatic watching of the filesystem which means new assets are automatically imported to Immich without needing to rescan. Deleted assets are, as always, marked as offline and can be removed with the "Remove offline files" button.
+
+If your photos are on a network drive you will likely have to enable filesystem polling. The performance hit for polling large libraries is currently unknown, feel free to test this feature and report back. In addition to the boolean feature flag, the configuration file allows customization of the following parameters, please see the [chokidar documentation](https://github.com/paulmillr/chokidar?tab=readme-ov-file#performance) for reference.
+
+- `usePolling` (default: `false`).
+- `interval`. (default: 10000). When using polling, this is how often (in milliseconds) the filesystem is polled.
 
 ### Nightly job
 

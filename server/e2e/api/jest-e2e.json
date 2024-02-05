@@ -5,7 +5,6 @@
   "globalSetup": "<rootDir>/e2e/api/setup.ts",
   "testEnvironment": "node",
   "testMatch": ["**/e2e/api/specs/*.e2e-spec.[tj]s"],
-  "testTimeout": 60000,
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
   },

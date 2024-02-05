@@ -29,10 +29,10 @@
   };
 
   const handleConfirm = () => {
-    if (!point) {
-      dispatch('cancel');
-    } else {
+    if (point) {
       dispatch('confirm', point);
+    } else {
+      dispatch('cancel');
     }
   };
 </script>

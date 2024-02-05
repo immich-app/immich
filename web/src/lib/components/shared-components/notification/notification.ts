@@ -7,7 +7,7 @@ export enum NotificationType {
 }
 
 export class ImmichNotification {
-  id = new Date().getTime() + Math.random();
+  id = Date.now() + Math.random();
   type!: NotificationType;
   message!: string;
   action!: NotificationAction;

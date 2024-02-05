@@ -35,7 +35,7 @@ export class ActivityService {
       isLiked: dto.type && dto.type === ReactionType.LIKE,
     });
 
-    return activities.map(mapActivity);
+    return activities.map((activity) => mapActivity(activity));
   }
 
   async getStatistics(auth: AuthDto, dto: ActivityDto): Promise<ActivityStatisticsResponseDto> {

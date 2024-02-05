@@ -418,7 +418,7 @@ describe(UserService.name, () => {
 
     it('should default to a random password', async () => {
       userMock.getAdmin.mockResolvedValue(userStub.admin);
-      const ask = jest.fn().mockResolvedValue(undefined);
+      const ask = jest.fn().mockImplementation(() => {});
 
       const response = await sut.resetAdminPassword(ask);
 

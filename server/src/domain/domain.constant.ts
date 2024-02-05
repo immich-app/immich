@@ -1,7 +1,7 @@
 import { AssetType } from '@app/infra/entities';
 import { Duration } from 'luxon';
+import { readFileSync } from 'node:fs';
 import { extname, join } from 'node:path';
-import pkg from 'src/../../package.json';
 
 export const AUDIT_LOG_MAX_DURATION = Duration.fromObject({ days: 100 });
 export const ONE_HOUR = Duration.fromObject({ hours: 1 });
@@ -29,7 +29,7 @@ export class Version implements IVersion {
   }
 
   static fromString(version: string): Version {
-    const regex = /(?:v)?(?<major>\d+)(?:\.(?<minor>\d+))?(?:[\.-](?<patch>\d+))?/i;
+    const regex = /v?(?<major>\d+)(?:\.(?<minor>\d+))?(?:[.-](?<patch>\d+))?/i;
     const matchResult = version.match(regex);
     if (matchResult) {
       const { major, minor = '0', patch = '0' } = matchResult.groups as { [K in keyof IVersion]: string };
@@ -66,7 +66,8 @@ export class Version implements IVersion {
 export const envName = (process.env.NODE_ENV || 'development').toUpperCase();
 export const isDev = process.env.NODE_ENV === 'development';
 
-export const serverVersion = Version.fromString(pkg.version);
+const { version } = JSON.parse(readFileSync('./package.json', 'utf8'));
+export const serverVersion = Version.fromString(version);
 
 export const APP_MEDIA_LOCATION = process.env.IMMICH_MEDIA_LOCATION || './upload';
 
@@ -127,9 +128,9 @@ const image: Record<string, string[]> = {
   '.x3f': ['image/x3f', 'image/x-sigma-x3f'],
 };
 
-const profileExtensions = ['.avif', '.dng', '.heic', '.heif', '.jpeg', '.jpg', '.png', '.webp'];
+const profileExtensions = new Set(['.avif', '.dng', '.heic', '.heif', '.jpeg', '.jpg', '.png', '.webp']);
 const profile: Record<string, string[]> = Object.fromEntries(
-  Object.entries(image).filter(([key]) => profileExtensions.includes(key)),
+  Object.entries(image).filter(([key]) => profileExtensions.has(key)),
 );
 
 const video: Record<string, string[]> = {
@@ -178,5 +179,5 @@ export const mimeTypes = {
     }
     return AssetType.OTHER;
   },
-  getSupportedFileExtensions: () => Object.keys(image).concat(Object.keys(video)),
+  getSupportedFileExtensions: () => [...Object.keys(image), ...Object.keys(video)],
 };

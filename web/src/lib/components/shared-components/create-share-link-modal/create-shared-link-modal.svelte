@@ -66,7 +66,7 @@
 
   const handleCreateSharedLink = async () => {
     const expirationTime = getExpirationTimeInMillisecond();
-    const currentTime = new Date().getTime();
+    const currentTime = Date.now();
     const expirationDate = expirationTime ? new Date(currentTime + expirationTime).toISOString() : undefined;
 
     try {
@@ -84,8 +84,8 @@
         },
       });
       sharedLink = makeSharedLinkUrl($serverConfig.externalDomain, data.key);
-    } catch (e) {
-      handleError(e, 'Failed to create shared link');
+    } catch (error) {
+      handleError(error, 'Failed to create shared link');
     }
   };
 
@@ -99,20 +99,27 @@
 
   const getExpirationTimeInMillisecond = () => {
     switch (expirationTime) {
-      case '30 minutes':
+      case '30 minutes': {
         return 30 * 60 * 1000;
-      case '1 hour':
+      }
+      case '1 hour': {
         return 60 * 60 * 1000;
-      case '6 hours':
+      }
+      case '6 hours': {
         return 6 * 60 * 60 * 1000;
-      case '1 day':
+      }
+      case '1 day': {
         return 24 * 60 * 60 * 1000;
-      case '7 days':
+      }
+      case '7 days': {
         return 7 * 24 * 60 * 60 * 1000;
-      case '30 days':
+      }
+      case '30 days': {
         return 30 * 24 * 60 * 60 * 1000;
-      default:
+      }
+      default: {
         return 0;
+      }
     }
   };
 
@@ -123,7 +130,7 @@
 
     try {
       const expirationTime = getExpirationTimeInMillisecond();
-      const currentTime = new Date().getTime();
+      const currentTime = Date.now();
       const expirationDate: string | null = expirationTime
         ? new Date(currentTime + expirationTime).toISOString()
         : null;
@@ -146,8 +153,8 @@
       });
 
       dispatch('close');
-    } catch (e) {
-      handleError(e, 'Failed to edit shared link');
+    } catch (error) {
+      handleError(error, 'Failed to edit shared link');
     }
   };
 </script>

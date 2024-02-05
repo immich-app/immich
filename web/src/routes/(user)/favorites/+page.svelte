@@ -26,7 +26,7 @@
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
-  $: isAllArchive = Array.from($selectedAssets).every((asset) => asset.isArchived);
+  $: isAllArchive = [...$selectedAssets].every((asset) => asset.isArchived);
 </script>
 
 <!-- Multiselection mode app bar -->

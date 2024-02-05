@@ -93,7 +93,7 @@ export class ServerConfigDto {
 }
 
 export class ServerFeaturesDto implements FeatureFlags {
-  clipEncode!: boolean;
+  smartSearch!: boolean;
   configFile!: boolean;
   facialRecognition!: boolean;
   map!: boolean;

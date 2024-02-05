@@ -34,9 +34,9 @@
       <Icon path={mdiAndroid} size="40" />
     {:else if device.deviceOS === 'iOS' || device.deviceOS === 'Mac OS'}
       <Icon path={mdiApple} size="40" />
-    {:else if device.deviceOS.indexOf('Safari') !== -1}
+    {:else if device.deviceOS.includes('Safari')}
       <Icon path={mdiAppleSafari} size="40" />
-    {:else if device.deviceOS.indexOf('Windows') !== -1}
+    {:else if device.deviceOS.includes('Windows')}
       <Icon path={mdiMicrosoftWindows} size="40" />
     {:else if device.deviceOS === 'Linux'}
       <Icon path={mdiLinux} size="40" />

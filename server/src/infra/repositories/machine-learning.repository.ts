@@ -10,7 +10,7 @@ import {
   VisionModelInput,
 } from '@app/domain';
 import { Injectable } from '@nestjs/common';
-import { readFile } from 'fs/promises';
+import { readFile } from 'node:fs/promises';
 
 const errorPrefix = 'Machine learning request';
 

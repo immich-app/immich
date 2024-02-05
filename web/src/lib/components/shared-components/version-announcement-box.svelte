@@ -26,8 +26,8 @@
       }
 
       showModal = true;
-    } catch (err) {
-      console.error('Error [VersionAnnouncementBox]:', err);
+    } catch (error) {
+      console.error('Error [VersionAnnouncementBox]:', error);
     }
   };
 </script>

@@ -28,8 +28,8 @@
       }
 
       selecting = false;
-    } catch (e) {
-      handleError(e, 'Error selecting all assets');
+    } catch (error) {
+      handleError(error, 'Error selecting all assets');
     }
   };
 </script>

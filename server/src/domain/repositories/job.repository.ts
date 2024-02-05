@@ -71,14 +71,14 @@ export type JobItem =
   | { name: JobName.FACIAL_RECOGNITION; data: IDeferrableJob }
   | { name: JobName.GENERATE_PERSON_THUMBNAIL; data: IEntityJob }
 
-  // Clip Embedding
-  | { name: JobName.QUEUE_ENCODE_CLIP; data: IBaseJob }
-  | { name: JobName.ENCODE_CLIP; data: IEntityJob }
+  // Smart Search
+  | { name: JobName.QUEUE_SMART_SEARCH; data: IBaseJob }
+  | { name: JobName.SMART_SEARCH; data: IEntityJob }
 
   // Filesystem
   | { name: JobName.DELETE_FILES; data: IDeleteFilesJob }
 
-  // Audit log cleanup
+  // Audit Log Cleanup
   | { name: JobName.CLEAN_OLD_AUDIT_LOGS; data?: IBaseJob }
 
   // Asset Deletion

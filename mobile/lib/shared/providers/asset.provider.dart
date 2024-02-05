@@ -301,7 +301,7 @@ class AssetNotifier extends StateNotifier<bool> {
   }
 
   Future<void> toggleArchive(List<Asset> assets, [bool? status]) async {
-    status ??= assets.every((a) => a.isArchived);
+    status ??= !assets.every((a) => a.isArchived);
     final newAssets = await _assetService.changeArchiveStatus(assets, status);
     int i = 0;
     for (Asset oldAsset in assets) {

@@ -1,7 +1,5 @@
+import { format } from 'sql-formatter';
 import { Logger } from 'typeorm';
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const { format } = require('sql-formatter');
 
 export class SqlLogger implements Logger {
   queries: string[] = [];
