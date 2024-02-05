@@ -1,7 +1,5 @@
 FROM node:20-alpine3.19 as core
 
-ENV IMMICH_CONFIG_DIR=/tmp
-
 WORKDIR /usr/src/open-api/typescript-sdk
 COPY open-api/typescript-sdk/package*.json open-api/typescript-sdk/tsconfig*.json ./
 RUN npm ci
