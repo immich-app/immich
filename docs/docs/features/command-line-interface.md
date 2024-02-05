@@ -18,6 +18,8 @@ If you are looking to import your Google Photos takeout, we recommend this commu
 - Node.js 20 or above
 - Npm
 
+If you can't install node, there is also a docker version available.
+
 ## Installation (NPM)
 
 ```bash
