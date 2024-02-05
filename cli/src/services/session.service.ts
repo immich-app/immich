@@ -19,12 +19,8 @@ export class SessionService {
   readonly authPath!: string;
 
   constructor(configDirectory: string) {
-    const envDirectory = process.env.IMMICH_CONFIG_DIR;
-    if (envDirectory) {
-      this.configDirectory = envDirectory;
-    } else {
-      this.configDirectory = configDirectory;
-    }
+    const environmentDirectory = process.env.IMMICH_CONFIG_DIR;
+    this.configDirectory = environmentDirectory ?? configDirectory;
     this.authPath = path.join(this.configDirectory, '/auth.yml');
   }
 
