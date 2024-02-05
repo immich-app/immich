@@ -7,7 +7,6 @@ export default defineConfig({
       output: {
         dir: 'dist',
       },
-      external: ['@immich/sdk'],
     },
     ssr: true,
   },
