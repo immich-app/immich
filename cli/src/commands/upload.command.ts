@@ -49,7 +49,7 @@ class Asset {
     let sidecarData: Blob | undefined = undefined;
     try {
       await access(sideCarPath, constants.R_OK);
-      sidecarData = await fs.openAsBlob(sideCarPath);
+      sidecarData = new File([await fs.openAsBlob(sideCarPath)], basename(sideCarPath));
     } catch {}
 
     return {
