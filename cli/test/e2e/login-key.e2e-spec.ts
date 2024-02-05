@@ -1,6 +1,9 @@
 import { restoreTempFolder, testApp } from '@test-utils';
-import { CLI_BASE_OPTIONS, setup, spyOnConsole } from 'test/cli-test-utils';
+import { CLI_BASE_OPTIONS, TEST_CONFIG_DIR, setup, spyOnConsole } from 'test/cli-test-utils';
+import { readFile } from 'node:fs/promises';
 import { LoginCommand } from '../../src/commands/login';
+import path from 'node:path';
+import yaml from 'yaml';
 
 describe(`login-key (e2e)`, () => {
   let apiKey: string;
@@ -38,5 +41,14 @@ describe(`login-key (e2e)`, () => {
 
   it('should log in when providing the correct API key', async () => {
     await new LoginCommand(CLI_BASE_OPTIONS).run(instanceUrl, apiKey);
+  });
+
+  it('should create an auth file when logging in', async () => {
+    await new LoginCommand(CLI_BASE_OPTIONS).run(instanceUrl, apiKey);
+
+    const data: string = await readFile(path.join(TEST_CONFIG_DIR, 'auth.json'), 'utf8');
+    const parsedConfig = yaml.parse(data);
+
+    expect(parsedConfig).toBe(expect.objectContaining({ instanceUrl, apiKey }));
   });
 });

@@ -10,7 +10,6 @@ import {
   SystemConfigApi,
   UserApi,
 } from '@immich/sdk';
-import FormData from 'form-data';
 
 export class ImmichApi {
   public userApi: UserApi;
