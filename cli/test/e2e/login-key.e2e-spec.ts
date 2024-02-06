@@ -1,7 +1,7 @@
 import { restoreTempFolder, testApp } from '@test-utils';
-import { LoginCommand } from '../../src/commands/login.command';
 import { CLI_BASE_OPTIONS, TEST_AUTH_FILE, deleteAuthFile, setup, spyOnConsole } from 'test/cli-test-utils';
 import { readFile, stat } from 'node:fs/promises';
+import { LoginCommand } from '../../src/commands/login.command';
 import yaml from 'yaml';
 
 describe(`login-key (e2e)`, () => {
