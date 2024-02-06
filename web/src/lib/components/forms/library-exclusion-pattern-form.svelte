@@ -4,10 +4,21 @@
   import FullScreenModal from '../shared-components/full-screen-modal.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import { mdiFolderRemove } from '@mdi/js';
+  import { onMount } from 'svelte';
 
   export let exclusionPattern: string;
-  export let canDelete = false;
+  export let exclusionPatterns: string[] = [];
+  export let isEditing = false;
   export let submitText = 'Submit';
+
+  onMount(() => {
+    if (isEditing) {
+      exclusionPatterns = exclusionPatterns.filter((pattern) => pattern !== exclusionPattern);
+    }
+  });
+
+  $: isDuplicate = exclusionPattern !== null && exclusionPatterns.includes(exclusionPattern);
+  $: canSubmit = exclusionPattern !== '' && exclusionPattern !== null && !exclusionPatterns.includes(exclusionPattern);
 
   const dispatch = createEventDispatcher<{
     cancel: void;
@@ -49,11 +60,16 @@
       </div>
       <div class="mt-8 flex w-full gap-4 px-4">
         <Button color="gray" fullwidth on:click={() => handleCancel()}>Cancel</Button>
-        {#if canDelete}
+        {#if isEditing}
           <Button color="red" fullwidth on:click={() => dispatch('delete')}>Delete</Button>
         {/if}
 
-        <Button type="submit" fullwidth>{submitText}</Button>
+        <Button type="submit" disabled={!canSubmit} fullwidth>{submitText}</Button>
+      </div>
+      <div class="mt-8 flex w-full gap-4 px-4">
+        {#if isDuplicate}
+          <p class="text-red-500 text-sm">This exclusion pattern already exists.</p>
+        {/if}
       </div>
     </form>
   </div>

@@ -48,12 +48,8 @@
     }
 
     try {
-      if (library.importPaths.includes(importPathToAdd)) {
-        // If the import path already exists, don't add it again
-        importPathToAdd = null;
-        addImportPath = false;
-      } else {
-        // Add import path
+      // Check so that import path isn't duplicated
+      if (!library.importPaths.includes(importPathToAdd)) {
         library.importPaths.push(importPathToAdd);
         importPaths = library.importPaths;
       }
@@ -75,10 +71,9 @@
     }
 
     try {
-      if (library.importPaths.includes(editedImportPath)) {
-        // If the import path already exists, ignore the edit
-        return;
-      } else {
+      // Check so that import path isn't duplicated
+
+      if (!library.importPaths.includes(editedImportPath)) {
         // Update import path
         library.importPaths[editImportPath] = editedImportPath;
         importPaths = library.importPaths;
