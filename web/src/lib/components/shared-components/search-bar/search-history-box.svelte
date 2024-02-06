@@ -18,21 +18,21 @@
 >
   <div class="flex px-5 pt-5 text-left text-sm">
     <p>
-      Smart search is enabled by default, to search for metadata use the syntax <span
+      La recherche par IA est activée par défaut, pour rechercher dans le contexte du fichier, utilisez la syntaxe <span
         class="rounded-lg bg-gray-100 p-2 font-mono font-semibold leading-7 text-immich-primary dark:bg-gray-900 dark:text-immich-dark-primary"
-        >m:your-search-term</span
+        >m:nom-du-dossier</span
       >
     </p>
   </div>
 
   {#if $savedSearchTerms.length > 0}
     <div class="flex items-center justify-between px-5 pt-5 text-xs">
-      <p>RECENT SEARCHES</p>
+      <p>RECHERCHES RÉCENTES</p>
       <div class="flex w-18 items-center justify-center">
         <button
           type="button"
           class="rounded-lg p-2 font-semibold text-immich-primary hover:bg-immich-primary/25 dark:text-immich-dark-primary"
-          on:click={() => dispatch('clearAllSearchTerms')}>Clear all</button
+          on:click={() => dispatch('clearAllSearchTerms')}>Tout effacer</button
         >
       </div>
     </div>

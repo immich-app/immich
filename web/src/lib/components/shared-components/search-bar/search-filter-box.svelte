@@ -23,25 +23,25 @@
   transition:fly={{ y: 25, duration: 250 }}
   class="absolute w-full rounded-b-3xl border border-gray-200 bg-white pb-5 shadow-2xl transition-all dark:border-gray-800 dark:bg-immich-dark-gray dark:text-gray-300 p-6"
 >
-  <p class="text-xs py-2">FILTERS</p>
+  <p class="text-xs py-2">FILTRES</p>
   <hr class="py-2" />
 
   <form id="search-filter-form" autocomplete="off">
     <div class="py-3">
-      <label class="immich-form-label" for="context">CONTEXT</label>
+      <label class="immich-form-label" for="context">CONTEXTE</label>
       <input
         class="immich-form-input hover:cursor-text w-full mt-3"
         type="text"
         id="context"
         name="context"
-        placeholder="Sunrise on the beach"
+        placeholder="Par exemple : Cravan"
       />
     </div>
 
     <div class="py-3 grid grid-cols-2">
       <!-- MEDIA TYPE -->
       <div id="media-type-selection">
-        <p class="immich-form-label">MEDIA TYPE</p>
+        <p class="immich-form-label">TYPE DE MEDIA</p>
 
         <div class="flex gap-5 mt-3">
           <label
@@ -54,7 +54,7 @@
               type="radio"
               name="radio-type"
               id="type-all"
-            />All</label
+            />TOUS</label
           >
 
           <label
@@ -80,19 +80,19 @@
               type="radio"
               name="radio-type"
               id="type-video"
-            />Video</label
+            />Vidéo</label
           >
         </div>
       </div>
 
       <!-- DISPLAY OPTIONS -->
       <div id="display-options-selection">
-        <p class="immich-form-label">DISPLAY OPTIONS</p>
+        <p class="immich-form-label">OPTIONS D'AFFICHAGE</p>
 
         <div class="flex gap-5 mt-3">
           <label class="flex items-center mb-2">
             <input type="checkbox" class="form-checkbox h-5 w-5 color" bind:checked={notInAlbum} />
-            <span class="ml-2 text-sm text-black dark:text-white pt-1">Not in any album</span>
+            <span class="ml-2 text-sm text-black dark:text-white pt-1">Dans aucun album</span>
           </label>
 
           <label class="flex items-center mb-2">
@@ -102,7 +102,7 @@
 
           <label class="flex items-center mb-2">
             <input type="checkbox" class="form-checkbox h-5 w-5 color" bind:checked={inFavorite} />
-            <span class="ml-2 text-sm text-black dark:text-white pt-1">Favorite</span>
+            <span class="ml-2 text-sm text-black dark:text-white pt-1">Favoris</span>
           </label>
         </div>
       </div>
@@ -114,11 +114,11 @@
     <div id="people-selection" class="my-4">
       <div class="flex justify-between place-items-center gap-6">
         <div class="flex-1">
-          <p class="immich-form-label">PEOPLE</p>
+          <p class="immich-form-label">PERSONNES</p>
         </div>
 
         <div class="flex-1">
-          <Combobox options={[]} selectedOption={selectedCountry} placeholder="Search people..." />
+          <Combobox options={[]} selectedOption={selectedCountry} placeholder="Rechercher une personne..." />
         </div>
       </div>
     </div>
@@ -126,22 +126,22 @@
     <hr />
     <!-- LOCATION -->
     <div id="location-selection" class="my-4">
-      <p class="immich-form-label">PLACE</p>
+      <p class="immich-form-label">LIEU</p>
 
       <div class="flex justify-between gap-5 mt-3">
         <div class="w-full">
-          <p class="text-sm text-black dark:text-white">Country</p>
-          <Combobox options={[]} selectedOption={selectedCountry} placeholder="Search country..." />
+          <p class="text-sm text-black dark:text-white">Pays</p>
+          <Combobox options={[]} selectedOption={selectedCountry} placeholder="Rechercher par pays..." />
         </div>
 
         <div class="w-full">
-          <p class="text-sm text-black dark:text-white">State</p>
-          <Combobox options={[]} selectedOption={selectedState} placeholder="Search state..." />
+          <p class="text-sm text-black dark:text-white">Région</p>
+          <Combobox options={[]} selectedOption={selectedState} placeholder="Rechercher par région..." />
         </div>
 
         <div class="w-full">
-          <p class="text-sm text-black dark:text-white">City</p>
-          <Combobox options={[]} selectedOption={selectedCity} placeholder="Search city..." />
+          <p class="text-sm text-black dark:text-white">Ville</p>
+          <Combobox options={[]} selectedOption={selectedCity} placeholder="Rechercher par ville..." />
         </div>
       </div>
     </div>
@@ -154,12 +154,12 @@
       <div class="flex justify-between gap-5 mt-3">
         <div class="w-full">
           <p class="text-sm text-black dark:text-white">Make</p>
-          <Combobox options={[]} selectedOption={selectedCountry} placeholder="Search country..." />
+          <Combobox options={[]} selectedOption={selectedCountry} placeholder="Rechercher par pays..." />
         </div>
 
         <div class="w-full">
           <p class="text-sm text-black dark:text-white">Model</p>
-          <Combobox options={[]} selectedOption={selectedState} placeholder="Search state..." />
+          <Combobox options={[]} selectedOption={selectedState} placeholder="Rechercher par région..." />
         </div>
       </div>
     </div>
@@ -169,7 +169,7 @@
     <!-- DATE RANGE -->
     <div id="date-range-selection" class="my-4 flex justify-between gap-5">
       <div class="mb-3 flex-1 mt">
-        <label class="immich-form-label" for="start-date">START DATE</label>
+        <label class="immich-form-label" for="start-date">DATE DE DÉBUT</label>
         <input
           class="immich-form-input w-full mt-3 hover:cursor-pointer"
           type="date"
@@ -179,7 +179,7 @@
       </div>
 
       <div class="mb-3 flex-1">
-        <label class="immich-form-label" for="end-date">END DATE</label>
+        <label class="immich-form-label" for="end-date">DATE DE FIN</label>
         <input
           class="immich-form-input w-full mt-3 hover:cursor-pointer"
           type="date"
@@ -191,8 +191,8 @@
     </div>
 
     <div id="button-row" class="flex justify-end gap-4 mt-5">
-      <Button color="gray">CLEAR ALL</Button>
-      <Button type="submit">SEARCH</Button>
+      <Button color="gray">TOUT EFFACER</Button>
+      <Button type="submit">RECHERCHER</Button>
     </div>
   </form>
 </div>
