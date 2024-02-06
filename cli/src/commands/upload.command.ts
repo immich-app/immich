@@ -11,6 +11,8 @@ import { BaseCommand } from './base-command';
 import { chunk, zip } from 'lodash';
 import { AssetBulkUploadCheckResult } from '@immich/sdk';
 
+const zipDefined = zip as <T, U>(a: T[], b: U[]) => [T, U][];
+
 enum CheckResponseStatus {
   ACCEPT = 'accept',
   REJECT = 'reject',
@@ -119,22 +121,52 @@ export class UploadOptionsDto {
 export class UploadCommand extends BaseCommand {
   uploadLength!: number;
 
-  private async getStatus(assets: Asset[]): Promise<{ asset: Asset; status: CheckResponseStatus }[]> {
-    const checkResponse = await this.checkHashes(assets);
+  public async run(paths: string[], options: UploadOptionsDto): Promise<void> {
+    await this.connect();
 
-    const res = [];
-    for (const [check, asset] of zip(checkResponse)) {
-      if (check.action === 'reject') {
-        res.push({ asset, status: CheckResponseStatus.REJECT });
-      } else if (check.reason === 'duplicate') {
-        asset.id = check.assetId;
-        res.push({ asset, status: CheckResponseStatus.DUPLICATE });
-      } else {
-        res.push({ asset, status: CheckResponseStatus.ACCEPT });
-      }
+    console.log('Crawling for assets...')
+    const files = await this.getFiles(paths, options);
+
+    if (files.length === 0) {
+      console.log('No assets found, exiting');
+      return;
     }
 
-    return res;
+    const assetsToCheck = files.map((path) => new Asset(path));
+
+    const { newAssets, duplicateAssets } = await this.checkAssets(assetsToCheck, options.concurrency);
+
+    const totalSizeUploaded = await this.upload(newAssets, options);
+    const messageStart = options.dryRun ? 'Would have' : 'Successfully';
+    if (newAssets.length === 0) {
+      console.log('All assets were already uploaded, nothing to do.');
+    } else {
+      console.log(`${messageStart} uploaded ${newAssets.length} assets (${byteSize(totalSizeUploaded)})`);
+    }
+
+    if (!options.album && !options.albumName) {
+      return;
+    }
+
+    const { createdAlbumCount, updatedAssetCount } = await this.updateAlbums(
+      [...newAssets, ...duplicateAssets],
+      options,
+    );
+    console.log(`${messageStart} created ${createdAlbumCount} new albums`);
+    console.log(`${messageStart} updated ${updatedAssetCount} assets`);
+
+    if (!options.delete) {
+      return;
+    }
+
+    if (options.dryRun) {
+      console.log(`Would now have deleted assets, but skipped due to dry run`);
+      return;
+    }
+
+    console.log('Deleting assets that have been uploaded...');
+
+    await this.deleteAssets(newAssets, options);
   }
 
   public async checkAssets(
@@ -146,9 +178,7 @@ export class UploadCommand extends BaseCommand {
     }
 
     const checkProgress = new cliProgress.SingleBar(
-      {
-        format: '{bar} | {percentage}% | ETA: {eta_formatted} | {value_formatted}/{total_formatted}: {filename}',
-      },
+      { format: 'Checking assets | {bar} | {percentage}% | ETA: {eta}s | {value}/{total} assets' },
       cliProgress.Presets.shades_classic,
     );
     checkProgress.start(assetsToCheck.length, 0);
@@ -188,7 +218,7 @@ export class UploadCommand extends BaseCommand {
 
     const uploadProgress = new cliProgress.SingleBar(
       {
-        format: '{bar} | {percentage}% | ETA: {eta_formatted} | {value_formatted}/{total_formatted}: {filename}',
+        format: 'Uploading assets | {bar} | {percentage}% | ETA: {eta_formatted} | {value_formatted}/{total_formatted}',
       },
       cliProgress.Presets.shades_classic,
     );
@@ -196,16 +226,18 @@ export class UploadCommand extends BaseCommand {
     uploadProgress.update({ value_formatted: 0, total_formatted: byteSize(totalSize) });
 
     let totalSizeUploaded = 0;
-    let uploadCounter = 0;
     try {
       for (const assets of chunk(assetsToUpload, options.concurrency)) {
         const ids = await this.uploadAssets(assets);
-        for (const [asset, id] of zip(assets, ids)) {
+        for (const [asset, id] of zipDefined(assets, ids)) {
           asset.id = id;
+          if (asset.fileSize) {
+            totalSizeUploaded += asset.fileSize ?? 0;
+          } else {
+            console.log(`Could not determine file size for ${asset.path}`);
+          }
         }
-        uploadCounter += assets.length;
-        totalSizeUploaded += assets.reduce((acc: number, asset: Asset) => acc + (asset.fileSize ?? 0), 0);
-        uploadProgress.update({ value_formatted: totalSizeUploaded, total_formatted: byteSize(totalSizeUploaded) });
+        uploadProgress.update(totalSizeUploaded, { value_formatted: byteSize(totalSizeUploaded) });
       }
     } finally {
       uploadProgress.stop();
@@ -239,7 +271,10 @@ export class UploadCommand extends BaseCommand {
     return albumMapping;
   }
 
-  public async updateAlbums(assets: Asset[], options: UploadOptionsDto): Promise<{createdAlbumCount: number, updatedAssetCount: number}> {
+  public async updateAlbums(
+    assets: Asset[],
+    options: UploadOptionsDto,
+  ): Promise<{ createdAlbumCount: number; updatedAssetCount: number }> {
     if (options.albumName) {
       for (const asset of assets) {
         asset.albumName = options.albumName;
@@ -255,12 +290,12 @@ export class UploadCommand extends BaseCommand {
       .filter((albumName) => !existingAlbums.has(albumName));
 
     if (options.dryRun) {
-      return {createdAlbumCount: newAlbums.length, updatedAssetCount: assetsToUpdate.length};
+      return { createdAlbumCount: newAlbums.length, updatedAssetCount: assetsToUpdate.length };
     }
 
     const albumCreationProgress = new cliProgress.SingleBar(
       {
-        format: '{bar} | {percentage}% | ETA: {eta_formatted} | {value_formatted}/{total_formatted}: {filename}',
+        format: 'Creating albums | {bar} | {percentage}% | ETA: {eta}s | {value}/{total} albums',
       },
       cliProgress.Presets.shades_classic,
     );
@@ -274,7 +309,7 @@ export class UploadCommand extends BaseCommand {
           ),
         );
 
-        for (const [albumName, albumId] of zip(albumNames, newAlbumIds)) {
+        for (const [albumName, albumId] of zipDefined(albumNames, newAlbumIds)) {
           existingAlbums.set(albumName, albumId);
         }
 
@@ -297,7 +332,7 @@ export class UploadCommand extends BaseCommand {
 
     const albumUpdateProgress = new cliProgress.SingleBar(
       {
-        format: '{bar} | {percentage}% | ETA: {eta_formatted} | {value_formatted}/{total_formatted}: {filename}',
+        format: 'Adding assets to albums | {bar} | {percentage}% | ETA: {eta}s | {value}/{total} assets',
       },
       cliProgress.Presets.shades_classic,
     );
@@ -317,11 +352,16 @@ export class UploadCommand extends BaseCommand {
       albumUpdateProgress.stop();
     }
 
-    return {createdAlbumCount: newAlbums.length, updatedAssetCount: assetsToUpdate.length};
+    return { createdAlbumCount: newAlbums.length, updatedAssetCount: assetsToUpdate.length };
   }
 
   public async deleteAssets(assets: Asset[], options: UploadOptionsDto): Promise<void> {
-    const deletionProgress = new cliProgress.SingleBar(cliProgress.Presets.shades_classic);
+    const deletionProgress = new cliProgress.SingleBar(
+      {
+        format: 'Deleting local assets | {bar} | {percentage}% | ETA: {eta}s | {value}/{total} assets',
+      },
+      cliProgress.Presets.shades_classic,
+    );
     deletionProgress.start(assets.length, 0);
 
     try {
@@ -334,62 +374,32 @@ export class UploadCommand extends BaseCommand {
     }
   }
 
-  public async run(paths: string[], options: UploadOptionsDto): Promise<void> {
-    await this.connect();
+  private async getStatus(assets: Asset[]): Promise<{ asset: Asset; status: CheckResponseStatus }[]> {
+    const checkResponse = await this.checkHashes(assets);
 
-    const files = await this.getFiles(paths, options);
-
-    if (files.length === 0) {
-      console.log('No assets found, exiting');
-      return;
+    const res = [];
+    for (const [check, asset] of zipDefined(checkResponse, assets)) {
+      if (check.action === 'reject') {
+        res.push({ asset, status: CheckResponseStatus.REJECT });
+      } else if (check.reason === 'duplicate') {
+        if (check.assetId) {
+          asset.id = check.assetId;
+        }
+        res.push({ asset, status: CheckResponseStatus.DUPLICATE });
+      } else {
+        res.push({ asset, status: CheckResponseStatus.ACCEPT });
+      }
     }
 
-    const assetsToCheck = files.map((path) => new Asset(path));
-
-    const { newAssets, duplicateAssets } = await this.checkAssets(assetsToCheck, options.concurrency);
-
-    const totalSizeUploaded = await this.upload(newAssets, options);
-
-    const messageStart = options.dryRun ? 'Would have' : 'Successfully';
-
-    if (newAssets.length === 0) {
-      console.log('All assets were already uploaded, nothing to do.');
-    } else {
-      console.log(`${messageStart} uploaded ${newAssets.length} assets (${byteSize(totalSizeUploaded)})`);
-    }
-
-    if (!options.album && !options.albumName) {
-      return;
-    }
-
-    const { createdAlbumCount, updatedAssetCount } = await this.updateAlbums([...newAssets, ...duplicateAssets], options);
-    console.log(`${messageStart} created ${createdAlbumCount} new albums`);
-    console.log(`${messageStart} updated ${updatedAssetCount} assets`);
-
-    if (!options.delete) {
-      return;
-    }
-
-    if (options.dryRun) {
-      console.log(`Would now have deleted assets, but skipped due to dry run`);
-      return;
-    }
-
-    console.log('Deleting assets that have been uploaded...');
-    
-    await this.deleteAssets(newAssets, options);
+    return res;
   }
 
-  private async checkHashes(assets: Asset[]): Promise<AssetBulkUploadCheckResult[]> {
-    const checksums = await Promise.all(assets.map((asset) => asset.hash()));
-    const assetBulkUploadCheckDto = zip(assets, checksums).map(([asset, checksum]) => ({
-      assets: [{ id: asset.path, checksum }],
-    }));
-
-    const checkResponse = await this.immichApi.assetApi.checkBulkUpload({
-      assetBulkUploadCheckDto,
-    });
-
+  private async checkHashes(assetsToCheck: Asset[]): Promise<AssetBulkUploadCheckResult[]> {
+    const checksums = await Promise.all(assetsToCheck.map((asset) => asset.hash()));
+    const assetBulkUploadCheckDto = {
+      assets: zipDefined(assetsToCheck, checksums).map(([asset, checksum]) => ({ id: asset.path, checksum })),
+    };
+    const checkResponse = await this.immichApi.assetApi.checkBulkUpload({ assetBulkUploadCheckDto });
     return checkResponse.data.results;
   }
 
