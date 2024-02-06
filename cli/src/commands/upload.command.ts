@@ -8,16 +8,24 @@ import { basename } from 'node:path';
 import { ImmichApi } from 'src/services/api.service';
 import { CrawlService } from '../services/crawl.service';
 import { BaseCommand } from './base-command';
+import { chunk, zip } from 'lodash';
+import { AssetBulkUploadCheckResult } from '@immich/sdk';
+
+enum CheckResponseStatus {
+  ACCEPT = 'accept',
+  REJECT = 'reject',
+  DUPLICATE = 'duplicate',
+}
 
 class Asset {
   readonly path: string;
-  readonly deviceId!: string;
 
+  id?: string;
   deviceAssetId?: string;
   fileCreatedAt?: Date;
   fileModifiedAt?: Date;
   sidecarPath?: string;
-  fileSize!: number;
+  fileSize?: number;
   albumName?: string;
 
   constructor(path: string) {
@@ -97,25 +105,116 @@ class Asset {
 }
 
 export class UploadOptionsDto {
-  recursive? = false;
-  exclusionPatterns?: string[] = [];
-  dryRun? = false;
-  skipHash? = false;
-  delete? = false;
-  album? = false;
-  albumName? = '';
-  includeHidden? = false;
+  recursive = false;
+  exclusionPatterns: string[] = [];
+  dryRun = false;
+  skipHash = false;
+  delete = false;
+  album = false;
+  albumName = '';
+  includeHidden = false;
+  concurrency = 4;
 }
 
 export class UploadCommand extends BaseCommand {
   uploadLength!: number;
 
-  public async run(paths: string[], options: UploadOptionsDto): Promise<void> {
-    const api = await this.connect();
+  private async getStatus(assets: Asset[]): Promise<{ asset: Asset; status: CheckResponseStatus }[]> {
+    const checkResponse = await this.checkHashes(assets);
 
-    const formatResponse = await api.getSupportedMediaTypes();
-    const crawlService = new CrawlService(formatResponse.image, formatResponse.video);
+    const res = [];
+    for (const [check, asset] of zip(checkResponse)) {
+      if (check.action === 'reject') {
+        res.push({ asset, status: CheckResponseStatus.REJECT });
+      } else if (check.reason === 'duplicate') {
+        asset.id = check.assetId;
+        res.push({ asset, status: CheckResponseStatus.DUPLICATE });
+      } else {
+        res.push({ asset, status: CheckResponseStatus.ACCEPT });
+      }
+    }
 
+    return res;
+  }
+
+  public async checkAssets(
+    assetsToCheck: Asset[],
+    concurrency: number,
+  ): Promise<{ newAssets: Asset[]; duplicateAssets: Asset[] }> {
+    for (const assets of chunk(assetsToCheck, concurrency)) {
+      await Promise.all(assets.map((asset: Asset) => asset.prepare()));
+    }
+
+    const checkProgress = new cliProgress.SingleBar(
+      {
+        format: '{bar} | {percentage}% | ETA: {eta_formatted} | {value_formatted}/{total_formatted}: {filename}',
+      },
+      cliProgress.Presets.shades_classic,
+    );
+    checkProgress.start(assetsToCheck.length, 0);
+
+    const newAssets = [];
+    const duplicateAssets = [];
+    try {
+      for (const assets of chunk(assetsToCheck, concurrency)) {
+        const checkedAssets = await this.getStatus(assets);
+        for (const checked of checkedAssets) {
+          if (checked.status === CheckResponseStatus.ACCEPT) {
+            newAssets.push(checked.asset);
+          } else if (checked.status === CheckResponseStatus.DUPLICATE) {
+            duplicateAssets.push(checked.asset);
+          }
+          checkProgress.increment();
+        }
+      }
+    } finally {
+      checkProgress.stop();
+    }
+
+    return { newAssets, duplicateAssets };
+  }
+
+  public async upload(assetsToUpload: Asset[], options: UploadOptionsDto): Promise<number> {
+    let totalSize = 0;
+
+    // Compute total size first
+    for (const asset of assetsToUpload) {
+      totalSize += asset.fileSize ?? 0;
+    }
+
+    if (options.dryRun) {
+      return totalSize;
+    }
+
+    const uploadProgress = new cliProgress.SingleBar(
+      {
+        format: '{bar} | {percentage}% | ETA: {eta_formatted} | {value_formatted}/{total_formatted}: {filename}',
+      },
+      cliProgress.Presets.shades_classic,
+    );
+    uploadProgress.start(totalSize, 0);
+    uploadProgress.update({ value_formatted: 0, total_formatted: byteSize(totalSize) });
+
+    let totalSizeUploaded = 0;
+    let uploadCounter = 0;
+    try {
+      for (const assets of chunk(assetsToUpload, options.concurrency)) {
+        const ids = await this.uploadAssets(assets);
+        for (const [asset, id] of zip(assets, ids)) {
+          asset.id = id;
+        }
+        uploadCounter += assets.length;
+        totalSizeUploaded += assets.reduce((acc: number, asset: Asset) => acc + (asset.fileSize ?? 0), 0);
+        uploadProgress.update({ value_formatted: totalSizeUploaded, total_formatted: byteSize(totalSizeUploaded) });
+      }
+    } finally {
+      uploadProgress.stop();
+    }
+
+    return totalSizeUploaded;
+  }
+
+  public async getFiles(paths: string[], options: UploadOptionsDto): Promise<string[]> {
     const inputFiles: string[] = [];
     for (const pathArgument of paths) {
       const fileStat = await fs.promises.lstat(pathArgument);
@@ -124,135 +223,191 @@ export class UploadCommand extends BaseCommand {
       }
     }
 
-    const files: string[] = await crawlService.crawl({
-      pathsToCrawl: paths,
-      recursive: options.recursive,
-      exclusionPatterns: options.exclusionPatterns,
-      includeHidden: options.includeHidden,
-    });
-
+    const files: string[] = await this.crawl(paths, options);
     files.push(...inputFiles);
+    return files;
+  }
+
+  public async getAlbums(): Promise<Map<string, string>> {
+    const { data: existingAlbums } = await this.immichApi.albumApi.getAllAlbums();
+
+    const albumMapping = new Map<string, string>();
+    for (const album of existingAlbums) {
+      albumMapping.set(album.albumName, album.id);
+    }
+
+    return albumMapping;
+  }
+
+  public async updateAlbums(assets: Asset[], options: UploadOptionsDto): Promise<{createdAlbumCount: number, updatedAssetCount: number}> {
+    if (options.albumName) {
+      for (const asset of assets) {
+        asset.albumName = options.albumName;
+      }
+    }
+
+    const existingAlbums = await this.getAlbums();
+    const assetsToUpdate = assets.filter(
+      (asset): asset is Asset & { albumName: string; id: string } => !!(asset.albumName && asset.id),
+    );
+    const newAlbums = assetsToUpdate
+      .map((asset) => asset.albumName)
+      .filter((albumName) => !existingAlbums.has(albumName));
+
+    if (options.dryRun) {
+      return {createdAlbumCount: newAlbums.length, updatedAssetCount: assetsToUpdate.length};
+    }
+
+    const albumCreationProgress = new cliProgress.SingleBar(
+      {
+        format: '{bar} | {percentage}% | ETA: {eta_formatted} | {value_formatted}/{total_formatted}: {filename}',
+      },
+      cliProgress.Presets.shades_classic,
+    );
+    albumCreationProgress.start(newAlbums.length, 0);
+
+    try {
+      for (const albumNames of chunk(newAlbums, options.concurrency)) {
+        const newAlbumIds = await Promise.all(
+          albumNames.map((albumName: string) =>
+            this.immichApi.albumApi.createAlbum({ createAlbumDto: { albumName } }).then((r) => r.data.id),
+          ),
+        );
+
+        for (const [albumName, albumId] of zip(albumNames, newAlbumIds)) {
+          existingAlbums.set(albumName, albumId);
+        }
+
+        albumCreationProgress.increment(albumNames.length);
+      }
+    } finally {
+      albumCreationProgress.stop();
+    }
+
+    const albumToAssets = new Map<string, string[]>();
+    for (const asset of assetsToUpdate) {
+      const albumId = existingAlbums.get(asset.albumName);
+      if (albumId) {
+        if (!albumToAssets.has(albumId)) {
+          albumToAssets.set(albumId, []);
+        }
+        albumToAssets.get(albumId)?.push(asset.id);
+      }
+    }
+
+    const albumUpdateProgress = new cliProgress.SingleBar(
+      {
+        format: '{bar} | {percentage}% | ETA: {eta_formatted} | {value_formatted}/{total_formatted}: {filename}',
+      },
+      cliProgress.Presets.shades_classic,
+    );
+    albumUpdateProgress.start(assetsToUpdate.length, 0);
+
+    try {
+      for (const [albumId, assets] of albumToAssets.entries()) {
+        for (const assetBatch of chunk(assets, Math.min(1000 * options.concurrency, 65000))) {
+          await this.immichApi.albumApi.addAssetsToAlbum({
+            id: albumId,
+            bulkIdsDto: { ids: assetBatch },
+          });
+          albumUpdateProgress.increment(assetBatch.length);
+        }
+      }
+    } finally {
+      albumUpdateProgress.stop();
+    }
+
+    return {createdAlbumCount: newAlbums.length, updatedAssetCount: assetsToUpdate.length};
+  }
+
+  public async deleteAssets(assets: Asset[], options: UploadOptionsDto): Promise<void> {
+    const deletionProgress = new cliProgress.SingleBar(cliProgress.Presets.shades_classic);
+    deletionProgress.start(assets.length, 0);
+
+    try {
+      for (const assetBatch of chunk(assets, options.concurrency)) {
+        await Promise.all(assetBatch.map((asset: Asset) => asset.delete()));
+        deletionProgress.update(assetBatch.length);
+      }
+    } finally {
+      deletionProgress.stop();
+    }
+  }
+
+  public async run(paths: string[], options: UploadOptionsDto): Promise<void> {
+    await this.connect();
+
+    const files = await this.getFiles(paths, options);
 
     if (files.length === 0) {
       console.log('No assets found, exiting');
       return;
     }
 
-    const assetsToUpload = files.map((path) => new Asset(path));
+    const assetsToCheck = files.map((path) => new Asset(path));
 
-    const uploadProgress = new cliProgress.SingleBar(
-      {
-        format: '{bar} | {percentage}% | ETA: {eta_formatted} | {value_formatted}/{total_formatted}: {filename}',
-      },
-      cliProgress.Presets.shades_classic,
-    );
+    const { newAssets, duplicateAssets } = await this.checkAssets(assetsToCheck, options.concurrency);
 
-    let totalSize = 0;
-    let sizeSoFar = 0;
-
-    let totalSizeUploaded = 0;
-    let uploadCounter = 0;
-
-    for (const asset of assetsToUpload) {
-      // Compute total size first
-      await asset.prepare();
-      totalSize += asset.fileSize;
-
-      if (options.albumName) {
-        asset.albumName = options.albumName;
-      }
-    }
-
-    const existingAlbums = await api.getAllAlbums();
-
-    uploadProgress.start(totalSize, 0);
-    uploadProgress.update({ value_formatted: 0, total_formatted: byteSize(totalSize) });
-
-    try {
-      for (const asset of assetsToUpload) {
-        uploadProgress.update({
-          filename: asset.path,
-        });
-
-        let skipUpload = false;
-
-        let skipAsset = false;
-        let existingAssetId: string | undefined = undefined;
-
-        if (!options.skipHash) {
-          const assetBulkUploadCheckDto = { assets: [{ id: asset.path, checksum: await asset.hash() }] };
-
-          const checkResponse = await api.checkBulkUpload(assetBulkUploadCheckDto);
-
-          skipUpload = checkResponse.results[0].action === 'reject';
-
-          const isDuplicate = checkResponse.results[0].reason === 'duplicate';
-          if (isDuplicate) {
-            existingAssetId = checkResponse.results[0].assetId;
-          }
-
-          skipAsset = skipUpload && !isDuplicate;
-        }
-
-        if (!skipAsset && !options.dryRun) {
-          if (!skipUpload) {
-            const formData = await asset.getUploadFormData();
-            const response = await this.uploadAsset(api, formData);
-            const json = await response.json();
-            existingAssetId = json.id;
-            uploadCounter++;
-            totalSizeUploaded += asset.fileSize;
-          }
-
-          if ((options.album || options.albumName) && asset.albumName !== undefined) {
-            let album = existingAlbums.find((album) => album.albumName === asset.albumName);
-            if (!album) {
-              const response = await api.createAlbum({ albumName: asset.albumName });
-              album = response;
-              existingAlbums.push(album);
-            }
-
-            if (existingAssetId) {
-              await api.addAssetsToAlbum(album.id, {
-                ids: [existingAssetId],
-              });
-            }
-          }
-        }
-
-        sizeSoFar += asset.fileSize;
-
-        uploadProgress.update(sizeSoFar, { value_formatted: byteSize(sizeSoFar) });
-      }
-    } finally {
-      uploadProgress.stop();
-    }
+    const totalSizeUploaded = await this.upload(newAssets, options);
 
     const messageStart = options.dryRun ? 'Would have' : 'Successfully';
 
-    if (uploadCounter === 0) {
+    if (newAssets.length === 0) {
       console.log('All assets were already uploaded, nothing to do.');
     } else {
-      console.log(`${messageStart} uploaded ${uploadCounter} assets (${byteSize(totalSizeUploaded)})`);
+      console.log(`${messageStart} uploaded ${newAssets.length} assets (${byteSize(totalSizeUploaded)})`);
     }
-    if (options.delete) {
-      if (options.dryRun) {
-        console.log(`Would now have deleted assets, but skipped due to dry run`);
-      } else {
-        console.log('Deleting assets that have been uploaded...');
-        const deletionProgress = new cliProgress.SingleBar(cliProgress.Presets.shades_classic);
-        deletionProgress.start(files.length, 0);
 
-        for (const asset of assetsToUpload) {
-          if (!options.dryRun) {
-            await asset.delete();
-          }
-          deletionProgress.increment();
-        }
-        deletionProgress.stop();
-        console.log('Deletion complete');
-      }
+    if (!options.album && !options.albumName) {
+      return;
     }
+
+    const { createdAlbumCount, updatedAssetCount } = await this.updateAlbums([...newAssets, ...duplicateAssets], options);
+    console.log(`${messageStart} created ${createdAlbumCount} new albums`);
+    console.log(`${messageStart} updated ${updatedAssetCount} assets`);
+
+    if (!options.delete) {
+      return;
+    }
+
+    if (options.dryRun) {
+      console.log(`Would now have deleted assets, but skipped due to dry run`);
+      return;
+    }
+
+    console.log('Deleting assets that have been uploaded...');
+    
+    await this.deleteAssets(newAssets, options);
+  }
+
+  private async checkHashes(assets: Asset[]): Promise<AssetBulkUploadCheckResult[]> {
+    const checksums = await Promise.all(assets.map((asset) => asset.hash()));
+    const assetBulkUploadCheckDto = zip(assets, checksums).map(([asset, checksum]) => ({
+      assets: [{ id: asset.path, checksum }],
+    }));
+
+    const checkResponse = await this.immichApi.assetApi.checkBulkUpload({
+      assetBulkUploadCheckDto,
+    });
+
+    return checkResponse.data.results;
+  }
+
+  private async uploadAssets(assets: Asset[]): Promise<string[]> {
+    const fileRequests = await Promise.all(assets.map((asset) => asset.getUploadFileRequest()));
+    return Promise.all(fileRequests.map((req) => this.immichApi.assetApi.uploadFile(req).then((res) => res.id)));
+  }
+
+  private async crawl(paths: string[], options: UploadOptionsDto): Promise<string[]> {
+    const formatResponse = await this.immichApi.serverInfoApi.getSupportedMediaTypes();
+    const crawlService = new CrawlService(formatResponse.data.image, formatResponse.data.video);
+
+    return crawlService.crawl({
+      pathsToCrawl: paths,
+      recursive: options.recursive,
+      exclusionPatterns: options.exclusionPatterns,
+      includeHidden: options.includeHidden,
+    });
   }
 
   private async uploadAsset(api: ImmichApi, data: FormData): Promise<Response> {
