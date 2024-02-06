@@ -13,7 +13,7 @@
   let addImportPath = false;
   let editImportPath: number | null = null;
 
-  let importPathToAdd: string;
+  let importPathToAdd: string | null = null;
   let editedImportPath: string;
 
   let importPaths: string[] = [];
@@ -39,7 +39,7 @@
   };
 
   const handleAddImportPath = async () => {
-    if (!addImportPath) {
+    if (!addImportPath || !importPathToAdd) {
       return;
     }
 
@@ -47,18 +47,21 @@
       library.importPaths = [];
     }
 
-    if (library.importPaths.includes(importPathToAdd)) {
-      // If the import path already exists, don't add it again
-      return;
-    }
-
     try {
-      library.importPaths.push(importPathToAdd);
-      importPaths = library.importPaths;
+      if (library.importPaths.includes(importPathToAdd)) {
+        // If the import path already exists, don't add it again
+        importPathToAdd = null;
+        addImportPath = false;
+      } else {
+        // Add import path
+        library.importPaths.push(importPathToAdd);
+        importPaths = library.importPaths;
+      }
     } catch (error) {
-      handleError(error, 'Unable to remove import path');
+      handleError(error, 'Unable to add import path');
     } finally {
       addImportPath = false;
+      importPathToAdd = null;
     }
   };
 
@@ -72,8 +75,14 @@
     }
 
     try {
-      library.importPaths[editImportPath] = editedImportPath;
-      importPaths = library.importPaths;
+      if (library.importPaths.includes(editedImportPath)) {
+        // If the import path already exists, ignore the edit
+        return;
+      } else {
+        // Update import path
+        library.importPaths[editImportPath] = editedImportPath;
+        importPaths = library.importPaths;
+      }
     } catch (error) {
       editImportPath = null;
       handleError(error, 'Unable to edit import path');
@@ -108,9 +117,11 @@
     title="Add Import Path"
     submitText="Add"
     bind:importPath={importPathToAdd}
+    {importPaths}
     on:submit={handleAddImportPath}
     on:cancel={() => {
       addImportPath = false;
+      importPathToAdd = null;
     }}
   />
 {/if}
@@ -119,8 +130,9 @@
   <LibraryImportPathForm
     title="Edit Import Path"
     submitText="Save"
-    canDelete={true}
+    isEditing={true}
     bind:importPath={editedImportPath}
+    {importPaths}
     on:submit={handleEditImportPath}
     on:delete={handleDeleteImportPath}
     on:cancel={() => {
@@ -162,7 +174,11 @@
             : 'bg-immich-bg dark:bg-immich-dark-gray/50'
         }`}
       >
-        <td class="w-4/5 text-ellipsis px-4 text-sm" />
+        <td class="w-4/5 text-ellipsis px-4 text-sm">
+          {#if importPaths.length === 0}
+            No paths added
+          {/if}</td
+        >
         <td class="w-1/5 text-ellipsis px-4 text-sm"
           ><Button
             type="button"
