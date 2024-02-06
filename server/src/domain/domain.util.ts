@@ -178,23 +178,25 @@ export function Optional({ nullable, ...validationOptions }: OptionalOptions = {
 }
 
 /**
- * Chunks an array or set into smaller arrays of the specified size.
+ * Chunks an array or set into smaller collections of the same type and specified size.
  *
  * @param collection The collection to chunk.
  * @param size The size of each chunk.
  */
-export function chunks<T>(collection: Array<T> | Set<T>, size: number): T[][] {
+export function chunks<T>(collection: Array<T>, size: number): Array<Array<T>>;
+export function chunks<T>(collection: Set<T>, size: number): Array<Set<T>>;
+export function chunks<T>(collection: Array<T> | Set<T>, size: number): Array<Array<T>> | Array<Set<T>> {
   if (collection instanceof Set) {
     const result = [];
-    let chunk = [];
+    let chunk = new Set<T>();
     for (const element of collection) {
-      chunk.push(element);
-      if (chunk.length === size) {
+      chunk.add(element);
+      if (chunk.size === size) {
         result.push(chunk);
-        chunk = [];
+        chunk = new Set<T>();
       }
     }
-    if (chunk.length > 0) {
+    if (chunk.size > 0) {
       result.push(chunk);
     }
     return result;
