@@ -13,7 +13,7 @@ export class ResetAdminPasswordCommand extends CommandRunner {
     super();
   }
 
-  ask = (admin: UserResponseDto) => {
+  ask = async (admin: UserResponseDto) => {
     const { id, oauthId, email, name } = admin;
     console.log(`Found Admin:
 - ID=${id}
@@ -21,18 +21,15 @@ export class ResetAdminPasswordCommand extends CommandRunner {
 - Email=${email}
 - Name=${name}`);
 
-    return this.inquirer.ask<{ password: string }>('prompt-password', {}).then(({ password }) => password);
+    const { password } = await this.inquirer.ask<{ password: string }>('prompt-password', {});
+    return password;
   };
 
   async run(): Promise<void> {
     try {
-      const { password, provided } = await this.userService.resetAdminPassword(this.ask);
+      await this.userService.resetAdminPassword(this.ask);
 
-      if (provided) {
-        console.log(`The admin password has been updated.`);
-      } else {
-        console.log(`The admin password has been updated to:\n${password}`);
-      }
+      console.log(`The admin password has been updated.`);
     } catch (error) {
       console.error(error);
       console.error('Unable to reset admin password');
