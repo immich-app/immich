@@ -34,7 +34,7 @@ class ModelType {
 
   static ModelType? fromJson(dynamic value) => ModelTypeTypeTransformer().decode(value);
 
-  static List<ModelType>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<ModelType> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <ModelType>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {

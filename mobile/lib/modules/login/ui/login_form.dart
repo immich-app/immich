@@ -22,7 +22,7 @@ import 'package:openapi/api.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class LoginForm extends HookConsumerWidget {
-  const LoginForm({Key? key}) : super(key: key);
+  const LoginForm({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -426,11 +426,11 @@ class ServerEndpointInput extends StatelessWidget {
   final Function()? onSubmit;
 
   const ServerEndpointInput({
-    Key? key,
+    super.key,
     required this.controller,
     required this.focusNode,
     this.onSubmit,
-  }) : super(key: key);
+  });
 
   String? _validateInput(String? url) {
     if (url == null || url.isEmpty) return null;
@@ -474,11 +474,11 @@ class EmailInput extends StatelessWidget {
   final Function()? onSubmit;
 
   const EmailInput({
-    Key? key,
+    super.key,
     required this.controller,
     this.focusNode,
     this.onSubmit,
-  }) : super(key: key);
+  });
 
   String? _validateInput(String? email) {
     if (email == null || email == '') return null;
@@ -515,22 +515,24 @@ class EmailInput extends StatelessWidget {
   }
 }
 
-class PasswordInput extends StatelessWidget {
+class PasswordInput extends HookConsumerWidget {
   final TextEditingController controller;
   final FocusNode? focusNode;
   final Function()? onSubmit;
 
   const PasswordInput({
-    Key? key,
+    super.key,
     required this.controller,
     this.focusNode,
     this.onSubmit,
-  }) : super(key: key);
+  });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isPasswordVisible = useState<bool>(false);
+
     return TextFormField(
-      obscureText: true,
+      obscureText: !isPasswordVisible.value,
       controller: controller,
       decoration: InputDecoration(
         labelText: 'login_form_label_password'.tr(),
@@ -539,6 +541,14 @@ class PasswordInput extends StatelessWidget {
         hintStyle: const TextStyle(
           fontWeight: FontWeight.normal,
           fontSize: 14,
+        ),
+        suffixIcon: IconButton(
+          onPressed: () => isPasswordVisible.value = !isPasswordVisible.value,
+          icon: Icon(
+            isPasswordVisible.value
+                ? Icons.visibility_off_sharp
+                : Icons.visibility_sharp,
+          ),
         ),
       ),
       autofillHints: const [AutofillHints.password],
@@ -554,9 +564,9 @@ class LoginButton extends ConsumerWidget {
   final Function() onPressed;
 
   const LoginButton({
-    Key? key,
+    super.key,
     required this.onPressed,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -581,12 +591,12 @@ class OAuthLoginButton extends ConsumerWidget {
   final Function() onPressed;
 
   const OAuthLoginButton({
-    Key? key,
+    super.key,
     required this.serverEndpointController,
     required this.isLoading,
     required this.buttonLabel,
     required this.onPressed,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -606,7 +616,7 @@ class OAuthLoginButton extends ConsumerWidget {
 }
 
 class LoadingIcon extends StatelessWidget {
-  const LoadingIcon({Key? key}) : super(key: key);
+  const LoadingIcon({super.key});
 
   @override
   Widget build(BuildContext context) {

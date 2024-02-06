@@ -20,7 +20,7 @@
 
 {#if showModal}
   <CreateSharedLinkModal
-    assetIds={Array.from(getAssets()).map(({ id }) => id)}
+    assetIds={[...getAssets()].map(({ id }) => id)}
     on:close={() => (showModal = false)}
     on:escape={escape}
   />

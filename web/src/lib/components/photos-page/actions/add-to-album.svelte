@@ -26,7 +26,7 @@
   const handleAddToNewAlbum = (albumName: string) => {
     showAlbumPicker = false;
 
-    const assetIds = Array.from(getAssets()).map((asset) => asset.id);
+    const assetIds = [...getAssets()].map((asset) => asset.id);
     api.albumApi.createAlbum({ createAlbumDto: { albumName, assetIds } }).then((response) => {
       const { id, albumName } = response.data;
 
@@ -43,7 +43,7 @@
 
   const handleAddToAlbum = async (album: AlbumResponseDto) => {
     showAlbumPicker = false;
-    const assetIds = Array.from(getAssets()).map((asset) => asset.id);
+    const assetIds = [...getAssets()].map((asset) => asset.id);
     await addAssetsToAlbum(album.id, assetIds);
     clearSelect();
   };

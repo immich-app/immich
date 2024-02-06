@@ -23,7 +23,7 @@ import { JobService } from './job.service';
 
 const makeMockHandlers = (success: boolean) => {
   const mock = jest.fn().mockResolvedValue(success);
-  return Object.values(JobName).reduce((map, jobName) => ({ ...map, [jobName]: mock }), {}) as Record<
+  return Object.fromEntries(Object.values(JobName).map((jobName) => [jobName, mock])) as unknown as Record<
     JobName,
     JobHandler
   >;
@@ -61,6 +61,7 @@ describe(JobService.name, () => {
         { name: JobName.QUEUE_GENERATE_THUMBNAILS, data: { force: false } },
         { name: JobName.CLEAN_OLD_AUDIT_LOGS },
         { name: JobName.USER_SYNC_USAGE },
+        { name: JobName.QUEUE_FACIAL_RECOGNITION, data: { force: false } },
       ]);
     });
   });
@@ -158,12 +159,12 @@ describe(JobService.name, () => {
       expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.STORAGE_TEMPLATE_MIGRATION });
     });
 
-    it('should handle a start clip encoding command', async () => {
+    it('should handle a start smart search command', async () => {
       jobMock.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: false });
 
       await sut.handleCommand(QueueName.SMART_SEARCH, { command: JobCommand.START, force: false });
 
-      expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.QUEUE_ENCODE_CLIP, data: { force: false } });
+      expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.QUEUE_SMART_SEARCH, data: { force: false } });
     });
 
     it('should handle a start metadata extraction command', async () => {
@@ -288,7 +289,7 @@ describe(JobService.name, () => {
         jobs: [
           JobName.GENERATE_WEBP_THUMBNAIL,
           JobName.GENERATE_THUMBHASH_THUMBNAIL,
-          JobName.ENCODE_CLIP,
+          JobName.SMART_SEARCH,
           JobName.FACE_DETECTION,
         ],
       },
@@ -297,7 +298,7 @@ describe(JobService.name, () => {
         jobs: [
           JobName.GENERATE_WEBP_THUMBNAIL,
           JobName.GENERATE_THUMBHASH_THUMBNAIL,
-          JobName.ENCODE_CLIP,
+          JobName.SMART_SEARCH,
           JobName.FACE_DETECTION,
           JobName.VIDEO_CONVERSION,
         ],
@@ -307,18 +308,18 @@ describe(JobService.name, () => {
         jobs: [
           JobName.GENERATE_WEBP_THUMBNAIL,
           JobName.GENERATE_THUMBHASH_THUMBNAIL,
-          JobName.ENCODE_CLIP,
+          JobName.SMART_SEARCH,
           JobName.FACE_DETECTION,
           JobName.VIDEO_CONVERSION,
         ],
       },
       {
-        item: { name: JobName.ENCODE_CLIP, data: { id: 'asset-1' } },
+        item: { name: JobName.SMART_SEARCH, data: { id: 'asset-1' } },
         jobs: [],
       },
       {
         item: { name: JobName.FACE_DETECTION, data: { id: 'asset-1' } },
-        jobs: [JobName.QUEUE_FACIAL_RECOGNITION],
+        jobs: [],
       },
       {
         item: { name: JobName.FACIAL_RECOGNITION, data: { id: 'asset-1' } },
@@ -364,7 +365,7 @@ describe(JobService.name, () => {
     const featureTests: Array<{ queue: QueueName; feature: FeatureFlag; configKey: SystemConfigKey }> = [
       {
         queue: QueueName.SMART_SEARCH,
-        feature: FeatureFlag.CLIP_ENCODE,
+        feature: FeatureFlag.SMART_SEARCH,
         configKey: SystemConfigKey.MACHINE_LEARNING_CLIP_ENABLED,
       },
       {

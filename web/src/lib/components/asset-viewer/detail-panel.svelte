@@ -27,7 +27,7 @@
   import Map from '../shared-components/map/map.svelte';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { websocketStore } from '$lib/stores/websocket';
-  import { AppRoute } from '$lib/constants';
+  import { AppRoute, QueryParameter } from '$lib/constants';
   import ChangeLocation from '../shared-components/change-location.svelte';
   import { handleError } from '../../utils/handle-error';
   import { user } from '$lib/stores/user.store';
@@ -62,7 +62,7 @@
 
     // Get latest description from server
     if (newAsset.id && !api.isSharedLink) {
-      const { data } = await api.assetApi.getAssetById({ id: asset.id });
+      const { data } = await api.assetApi.getAssetInfo({ id: asset.id });
       people = data?.people || [];
 
       description = data.exifInfo?.description || '';
@@ -108,10 +108,11 @@
     }
     const ctrl = event.ctrlKey;
     switch (event.key) {
-      case 'Enter':
+      case 'Enter': {
         if (ctrl && event.target === textArea) {
           handleFocusOut();
         }
+      }
     }
   };
 
@@ -126,7 +127,7 @@
   };
 
   const handleRefreshPeople = async () => {
-    await api.assetApi.getAssetById({ id: asset.id }).then((res) => {
+    await api.assetApi.getAssetInfo({ id: asset.id }).then((res) => {
       people = res.data?.people || [];
       textArea.value = res.data?.exifInfo?.description || '';
     });
@@ -222,7 +223,7 @@
           bind:this={textArea}
           class="max-h-[500px]
       w-full resize-none overflow-hidden border-b border-gray-500 bg-transparent text-base text-black outline-none transition-all focus:border-b-2 focus:border-immich-primary disabled:border-none dark:text-white dark:focus:border-immich-dark-primary"
-          placeholder={!isOwner ? '' : 'Add a description'}
+          placeholder={isOwner ? 'Add a description' : ''}
           on:focusin={handleFocusIn}
           on:focusout={handleFocusOut}
           on:input={() => autoGrowHeight(textArea)}
@@ -234,7 +235,7 @@
       {/key}
     </section>
   {:else if description}
-    <p class="break-words whitespace-pre-line w-full text-black dark:text-white text-base">{description}</p>
+    <p class="px-4 break-words whitespace-pre-line w-full text-black dark:text-white text-base">{description}</p>
   {/if}
 
   {#if !api.isSharedLink && people.length > 0}
@@ -274,7 +275,7 @@
               on:mouseleave={() => ($boundingBoxesArray = [])}
             >
               <a
-                href="{AppRoute.PEOPLE}/{person.id}?previousRoute={albumId
+                href="{AppRoute.PEOPLE}/{person.id}?{QueryParameter.PREVIOUS_ROUTE}={albumId
                   ? `${AppRoute.ALBUMS}/${albumId}`
                   : AppRoute.PHOTOS}"
                 on:click={() => dispatch('closeViewer')}

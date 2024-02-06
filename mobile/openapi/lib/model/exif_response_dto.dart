@@ -80,27 +80,27 @@ class ExifResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ExifResponseDto &&
-     other.city == city &&
-     other.country == country &&
-     other.dateTimeOriginal == dateTimeOriginal &&
-     other.description == description &&
-     other.exifImageHeight == exifImageHeight &&
-     other.exifImageWidth == exifImageWidth &&
-     other.exposureTime == exposureTime &&
-     other.fNumber == fNumber &&
-     other.fileSizeInByte == fileSizeInByte &&
-     other.focalLength == focalLength &&
-     other.iso == iso &&
-     other.latitude == latitude &&
-     other.lensModel == lensModel &&
-     other.longitude == longitude &&
-     other.make == make &&
-     other.model == model &&
-     other.modifyDate == modifyDate &&
-     other.orientation == orientation &&
-     other.projectionType == projectionType &&
-     other.state == state &&
-     other.timeZone == timeZone;
+    other.city == city &&
+    other.country == country &&
+    other.dateTimeOriginal == dateTimeOriginal &&
+    other.description == description &&
+    other.exifImageHeight == exifImageHeight &&
+    other.exifImageWidth == exifImageWidth &&
+    other.exposureTime == exposureTime &&
+    other.fNumber == fNumber &&
+    other.fileSizeInByte == fileSizeInByte &&
+    other.focalLength == focalLength &&
+    other.iso == iso &&
+    other.latitude == latitude &&
+    other.lensModel == lensModel &&
+    other.longitude == longitude &&
+    other.make == make &&
+    other.model == model &&
+    other.modifyDate == modifyDate &&
+    other.orientation == orientation &&
+    other.projectionType == projectionType &&
+    other.state == state &&
+    other.timeZone == timeZone;
 
   @override
   int get hashCode =>
@@ -250,35 +250,35 @@ class ExifResponseDto {
       return ExifResponseDto(
         city: mapValueOfType<String>(json, r'city'),
         country: mapValueOfType<String>(json, r'country'),
-        dateTimeOriginal: mapDateTime(json, r'dateTimeOriginal', ''),
+        dateTimeOriginal: mapDateTime(json, r'dateTimeOriginal', r''),
         description: mapValueOfType<String>(json, r'description'),
         exifImageHeight: json[r'exifImageHeight'] == null
             ? null
-            : num.parse(json[r'exifImageHeight'].toString()),
+            : num.parse('${json[r'exifImageHeight']}'),
         exifImageWidth: json[r'exifImageWidth'] == null
             ? null
-            : num.parse(json[r'exifImageWidth'].toString()),
+            : num.parse('${json[r'exifImageWidth']}'),
         exposureTime: mapValueOfType<String>(json, r'exposureTime'),
         fNumber: json[r'fNumber'] == null
             ? null
-            : num.parse(json[r'fNumber'].toString()),
+            : num.parse('${json[r'fNumber']}'),
         fileSizeInByte: mapValueOfType<int>(json, r'fileSizeInByte'),
         focalLength: json[r'focalLength'] == null
             ? null
-            : num.parse(json[r'focalLength'].toString()),
+            : num.parse('${json[r'focalLength']}'),
         iso: json[r'iso'] == null
             ? null
-            : num.parse(json[r'iso'].toString()),
+            : num.parse('${json[r'iso']}'),
         latitude: json[r'latitude'] == null
             ? null
-            : num.parse(json[r'latitude'].toString()),
+            : num.parse('${json[r'latitude']}'),
         lensModel: mapValueOfType<String>(json, r'lensModel'),
         longitude: json[r'longitude'] == null
             ? null
-            : num.parse(json[r'longitude'].toString()),
+            : num.parse('${json[r'longitude']}'),
         make: mapValueOfType<String>(json, r'make'),
         model: mapValueOfType<String>(json, r'model'),
-        modifyDate: mapDateTime(json, r'modifyDate', ''),
+        modifyDate: mapDateTime(json, r'modifyDate', r''),
         orientation: mapValueOfType<String>(json, r'orientation'),
         projectionType: mapValueOfType<String>(json, r'projectionType'),
         state: mapValueOfType<String>(json, r'state'),

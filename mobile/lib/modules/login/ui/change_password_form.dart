@@ -13,7 +13,7 @@ import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 
 class ChangePasswordForm extends HookConsumerWidget {
-  const ChangePasswordForm({Key? key}) : super(key: key);
+  const ChangePasswordForm({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -128,7 +128,7 @@ class ChangePasswordForm extends HookConsumerWidget {
 class PasswordInput extends StatelessWidget {
   final TextEditingController controller;
 
-  const PasswordInput({Key? key, required this.controller}) : super(key: key);
+  const PasswordInput({super.key, required this.controller});
 
   @override
   Widget build(BuildContext context) {
@@ -149,10 +149,10 @@ class ConfirmPasswordInput extends StatelessWidget {
   final TextEditingController confirmController;
 
   const ConfirmPasswordInput({
-    Key? key,
+    super.key,
     required this.originalController,
     required this.confirmController,
-  }) : super(key: key);
+  });
 
   String? _validateInput(String? email) {
     if (confirmController.value != originalController.value) {
@@ -181,10 +181,10 @@ class ChangePasswordButton extends ConsumerWidget {
   final TextEditingController passwordController;
   final VoidCallback onPressed;
   const ChangePasswordButton({
-    Key? key,
+    super.key,
     required this.passwordController,
     required this.onPressed,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

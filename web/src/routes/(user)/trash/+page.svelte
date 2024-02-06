@@ -37,27 +37,27 @@
   const handleEmptyTrash = async () => {
     isShowEmptyConfirmation = false;
     try {
-      await api.assetApi.emptyTrash();
+      await api.trashApi.emptyTrash();
 
       notificationController.show({
         message: `Vidage de la corbeille lancé. Actualisez la page pour voir les modifications`,
         type: NotificationType.Info,
       });
-    } catch (e) {
-      handleError(e, 'Error emptying trash');
+    } catch (error) {
+      handleError(error, 'Error emptying trash');
     }
   };
 
   const handleRestoreTrash = async () => {
     try {
-      await api.assetApi.restoreTrash();
+      await api.trashApi.restoreTrash();
 
       notificationController.show({
         message: `Vidage de la corbeille lancé. Actualisez la page pour voir les modifications`,
         type: NotificationType.Info,
       });
-    } catch (e) {
-      handleError(e, 'Error restoring trash');
+    } catch (error) {
+      handleError(error, 'Error restoring trash');
     }
   };
 </script>

@@ -38,11 +38,9 @@
   const handleUploadAssets = async (files: File[] = []) => {
     try {
       let results: (string | undefined)[] = [];
-      if (!files || files.length === 0 || !Array.isArray(files)) {
-        results = await openFileUploadDialog(undefined);
-      } else {
-        results = await fileUploadHandler(files, undefined);
-      }
+      results = await (!files || files.length === 0 || !Array.isArray(files)
+        ? openFileUploadDialog()
+        : fileUploadHandler(files));
       const { data } = await api.sharedLinkApi.addSharedLinkAssets({
         id: sharedLink.id,
         assetIdsDto: {
@@ -57,8 +55,8 @@
         message: `Ajouté ${added} ressources`,
         type: NotificationType.Info,
       });
-    } catch (e) {
-      await handleError(e, "Impossible d'ajouter les ressources au lien partagé");
+    } catch (error) {
+      await handleError(error, "Impossible d'ajouter les ressources au lien partagé");
     }
   };
 

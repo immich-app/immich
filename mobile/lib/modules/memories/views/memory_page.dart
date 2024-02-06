@@ -4,10 +4,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/memories/models/memory.dart';
+import 'package:immich_mobile/modules/memories/ui/memory_bottom_info.dart';
 import 'package:immich_mobile/modules/memories/ui/memory_card.dart';
+import 'package:immich_mobile/modules/memories/ui/memory_epilogue.dart';
+import 'package:immich_mobile/modules/memories/ui/memory_progress_indicator.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
-import 'package:intl/intl.dart';
 import 'package:openapi/api.dart' as api;
 
 @RoutePage()
@@ -23,15 +25,27 @@ class MemoryPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final memoryPageController = usePageController(initialPage: memoryIndex);
-    final memoryAssetPageController = usePageController();
     final currentMemory = useState(memories[memoryIndex]);
-    final previousMemoryIndex = useState(memoryIndex);
     final currentAssetPage = useState(0);
+    final currentMemoryIndex = useState(memoryIndex);
     final assetProgress = useState(
       "${currentAssetPage.value + 1}|${currentMemory.value.assets.length}",
     );
     const bgColor = Colors.black;
+
+    /// The list of all of the asset page controllers
+    final memoryAssetPageControllers =
+        List.generate(memories.length, (i) => usePageController());
+
+    /// The main vertically scrolling page controller with each list of memories
+    final memoryPageController = usePageController(initialPage: memoryIndex);
+
+    // The Page Controller that scrolls horizontally with all of the assets
+    useEffect(() {
+      // Memories is an immersive activity
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
+      return null;
+    });
 
     toNextMemory() {
       memoryPageController.nextPage(
@@ -43,7 +57,10 @@ class MemoryPage extends HookConsumerWidget {
     toNextAsset(int currentAssetIndex) {
       if (currentAssetIndex + 1 < currentMemory.value.assets.length) {
         // Go to the next asset
-        memoryAssetPageController.nextPage(
+        PageController controller =
+            memoryAssetPageControllers[currentMemoryIndex.value];
+
+        controller.nextPage(
           curve: Curves.easeInOut,
           duration: const Duration(milliseconds: 500),
         );
@@ -101,6 +118,7 @@ class MemoryPage extends HookConsumerWidget {
           asset,
           context,
           type: api.ThumbnailFormat.WEBP,
+          size: 2048,
         ),
       );
       precaches.add(
@@ -108,6 +126,7 @@ class MemoryPage extends HookConsumerWidget {
           asset,
           context,
           type: api.ThumbnailFormat.JPEG,
+          size: 2048,
         ),
       );
 
@@ -127,39 +146,6 @@ class MemoryPage extends HookConsumerWidget {
       updateProgressText();
     }
 
-    buildBottomInfo(Memory memory) {
-      return Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  memory.title,
-                  style: TextStyle(
-                    color: Colors.grey[400],
-                    fontSize: 13.0,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                Text(
-                  DateFormat.yMMMMd().format(
-                    memory.assets[0].fileCreatedAt,
-                  ),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 15.0,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      );
-    }
-
     /* Notification listener is used instead of OnPageChanged callback since OnPageChanged is called
      * when the page in the **center** of the viewer changes. We want to reset currentAssetPage only when the final
      * page during the end of scroll is different than the current page
@@ -170,94 +156,137 @@ class MemoryPage extends HookConsumerWidget {
         // maxScrollExtend contains the sum of horizontal pixels of all assets for depth = 1
         // or sum of vertical pixels of all memories for depth = 0
         if (notification is ScrollUpdateNotification) {
+          final isEpiloguePage =
+              (memoryPageController.page?.floor() ?? 0) >= memories.length;
+
           final offset = notification.metrics.pixels;
-          final isLastMemory =
-              (memories.indexOf(currentMemory.value) + 1) >= memories.length;
-          if (isLastMemory) {
-            // Vertical scroll handling only at the last asset.
-            // Tapping on the last asset instead of swiping will trigger the scroll
-            // implicitly which will trigger the below handling and thereby closes the
-            // memory lane as well
-            if (notification.depth == 0) {
-              final isLastAsset = (currentAssetPage.value + 1) ==
-                  currentMemory.value.assets.length;
-              if (isLastAsset &&
-                  (offset > notification.metrics.maxScrollExtent + 150)) {
-                context.popRoute();
-                return true;
-              }
-            }
-            // Horizontal scroll handling
-            if (notification.depth == 1 &&
-                (offset > notification.metrics.maxScrollExtent + 100)) {
-              context.popRoute();
-              return true;
-            }
+          if (isEpiloguePage &&
+              (offset > notification.metrics.maxScrollExtent + 150)) {
+            context.popRoute();
+            return true;
           }
         }
 
-        if (notification.depth == 0) {
-          if (notification is ScrollStartNotification) {
-            assetProgress.value = "";
-            return true;
-          }
-          var currentPageNumber = memoryPageController.page!.toInt();
-          currentMemory.value = memories[currentPageNumber];
-          if (notification is ScrollEndNotification) {
-            HapticFeedback.mediumImpact();
-            if (currentPageNumber != previousMemoryIndex.value) {
-              currentAssetPage.value = 0;
-              previousMemoryIndex.value = currentPageNumber;
-            }
-            updateProgressText();
-            return true;
-          }
-        }
         return false;
       },
       child: Scaffold(
         backgroundColor: bgColor,
-        body: SafeArea(
-          child: PageView.builder(
-            physics: const BouncingScrollPhysics(
-              parent: AlwaysScrollableScrollPhysics(),
-            ),
-            scrollDirection: Axis.vertical,
-            controller: memoryPageController,
-            itemCount: memories.length,
-            itemBuilder: (context, mIndex) {
-              // Build horizontal page
-              return Column(
-                children: [
-                  Expanded(
-                    child: PageView.builder(
-                      physics: const BouncingScrollPhysics(
-                        parent: AlwaysScrollableScrollPhysics(),
-                      ),
-                      controller: memoryAssetPageController,
-                      onPageChanged: onAssetChanged,
-                      scrollDirection: Axis.horizontal,
-                      itemCount: memories[mIndex].assets.length,
-                      itemBuilder: (context, index) {
-                        final asset = memories[mIndex].assets[index];
-                        return Container(
-                          color: Colors.black,
-                          child: MemoryCard(
-                            asset: asset,
-                            onTap: () => toNextAsset(index),
-                            onClose: () => context.popRoute(),
-                            rightCornerText: assetProgress.value,
-                            title: memories[mIndex].title,
-                            showTitle: index == 0,
-                          ),
-                        );
-                      },
+        body: PopScope(
+          onPopInvoked: (didPop) {
+            // Remove immersive mode and go back to normal mode
+            SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+          },
+          child: SafeArea(
+            child: PageView.builder(
+              physics: const BouncingScrollPhysics(
+                parent: AlwaysScrollableScrollPhysics(),
+              ),
+              scrollDirection: Axis.vertical,
+              controller: memoryPageController,
+              onPageChanged: (pageNumber) {
+                HapticFeedback.mediumImpact();
+                if (pageNumber < memories.length) {
+                  currentMemoryIndex.value = pageNumber;
+                  currentMemory.value = memories[pageNumber];
+                }
+
+                currentAssetPage.value = 0;
+
+                updateProgressText();
+              },
+              itemCount: memories.length + 1,
+              itemBuilder: (context, mIndex) {
+                // Build last page
+                if (mIndex == memories.length) {
+                  return MemoryEpilogue(
+                    onStartOver: () => memoryPageController.animateToPage(
+                      0,
+                      duration: const Duration(seconds: 1),
+                      curve: Curves.easeInOut,
                     ),
-                  ),
-                  buildBottomInfo(memories[mIndex]),
-                ],
-              );
-            },
+                  );
+                }
+                // Build horizontal page
+                final assetController = memoryAssetPageControllers[mIndex];
+                return Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        left: 24.0,
+                        right: 24.0,
+                        top: 8.0,
+                        bottom: 2.0,
+                      ),
+                      child: AnimatedBuilder(
+                        animation: assetController,
+                        builder: (context, child) {
+                          double value = 0.0;
+                          if (assetController.hasClients) {
+                            // We can only access [page] if this has clients
+                            value = assetController.page ?? 0;
+                          }
+                          return MemoryProgressIndicator(
+                            ticks: memories[mIndex].assets.length,
+                            value: (value + 1) / memories[mIndex].assets.length,
+                          );
+                        },
+                      ),
+                    ),
+                    Expanded(
+                      child: Stack(
+                        children: [
+                          PageView.builder(
+                            physics: const BouncingScrollPhysics(
+                              parent: AlwaysScrollableScrollPhysics(),
+                            ),
+                            controller: assetController,
+                            onPageChanged: onAssetChanged,
+                            scrollDirection: Axis.horizontal,
+                            itemCount: memories[mIndex].assets.length,
+                            itemBuilder: (context, index) {
+                              final asset = memories[mIndex].assets[index];
+                              return Container(
+                                color: Colors.black,
+                                child: MemoryCard(
+                                  asset: asset,
+                                  onTap: () => toNextAsset(index),
+                                  title: memories[mIndex].title,
+                                  showTitle: index == 0,
+                                ),
+                              );
+                            },
+                          ),
+                          Positioned(
+                            top: 8,
+                            left: 8,
+                            child: MaterialButton(
+                              minWidth: 0,
+                              onPressed: () {
+                                // auto_route doesn't invoke pop scope, so
+                                // turn off full screen mode here
+                                // https://github.com/Milad-Akarie/auto_route_library/issues/1799
+                                context.popRoute();
+                                SystemChrome.setEnabledSystemUIMode(
+                                  SystemUiMode.edgeToEdge,
+                                );
+                              },
+                              shape: const CircleBorder(),
+                              color: Colors.white.withOpacity(0.2),
+                              elevation: 0,
+                              child: const Icon(
+                                Icons.close_rounded,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    MemoryBottomInfo(memory: memories[mIndex]),
+                  ],
+                );
+              },
+            ),
           ),
         ),
       ),

@@ -1,48 +1,66 @@
-import { APIKeyCreateResponseDto } from '@app/domain';
-import { api } from '@test/../e2e/api/client';
-import { restoreTempFolder, testApp } from '@test/../e2e/jobs/utils';
-import { LoginResponseDto } from '@immich/sdk';
-import { LoginKey } from 'src/commands/login/key';
-import { LoginError } from 'src/cores/errors/login-error';
-import { CLI_BASE_OPTIONS, spyOnConsole } from 'test/cli-test-utils';
+import { restoreTempFolder, testApp } from '@test-utils';
+import { CLI_BASE_OPTIONS, TEST_AUTH_FILE, deleteAuthFile, setup, spyOnConsole } from 'test/cli-test-utils';
+import { readFile, stat } from 'node:fs/promises';
+import { LoginCommand } from '../../src/commands/login';
+import yaml from 'yaml';
 
 describe(`login-key (e2e)`, () => {
-  let server: any;
-  let admin: LoginResponseDto;
-  let apiKey: APIKeyCreateResponseDto;
+  let apiKey: string;
   let instanceUrl: string;
+
   spyOnConsole();
 
   beforeAll(async () => {
-    server = (await testApp.create()).getHttpServer();
-    if (!process.env.IMMICH_INSTANCE_URL) {
-      throw new Error('IMMICH_INSTANCE_URL environment variable not set');
-    } else {
+    await testApp.create();
+    if (process.env.IMMICH_INSTANCE_URL) {
       instanceUrl = process.env.IMMICH_INSTANCE_URL;
+    } else {
+      throw new Error('IMMICH_INSTANCE_URL environment variable not set');
     }
   });
 
   afterAll(async () => {
     await testApp.teardown();
     await restoreTempFolder();
+    deleteAuthFile();
   });
 
   beforeEach(async () => {
     await testApp.reset();
     await restoreTempFolder();
-    await api.authApi.adminSignUp(server);
-    admin = await api.authApi.adminLogin(server);
-    apiKey = await api.apiKeyApi.createApiKey(server, admin.accessToken);
-    process.env.IMMICH_API_KEY = apiKey.secret;
+
+    const api = await setup();
+    apiKey = api.apiKey;
+
+    deleteAuthFile();
   });
 
   it('should error when providing an invalid API key', async () => {
-    await expect(async () => await new LoginKey(CLI_BASE_OPTIONS).run(instanceUrl, 'invalid')).rejects.toThrow(
-      new LoginError(`Failed to connect to server ${instanceUrl}: Request failed with status code 401`),
+    await expect(new LoginCommand(CLI_BASE_OPTIONS).run(instanceUrl, 'invalid')).rejects.toThrow(
+      `Failed to connect to server ${instanceUrl}: Response returned an error code`,
     );
   });
 
   it('should log in when providing the correct API key', async () => {
-    await new LoginKey(CLI_BASE_OPTIONS).run(instanceUrl, apiKey.secret);
+    await new LoginCommand(CLI_BASE_OPTIONS).run(instanceUrl, apiKey);
+  });
+
+  it('should create an auth file when logging in', async () => {
+    await new LoginCommand(CLI_BASE_OPTIONS).run(instanceUrl, apiKey);
+
+    const data: string = await readFile(TEST_AUTH_FILE, 'utf8');
+    const parsedConfig = yaml.parse(data);
+
+    expect(parsedConfig).toEqual(expect.objectContaining({ instanceUrl, apiKey }));
+  });
+
+  it('should create an auth file with chmod 600', async () => {
+    await new LoginCommand(CLI_BASE_OPTIONS).run(instanceUrl, apiKey);
+
+    const stats = await stat(TEST_AUTH_FILE);
+
+    const mode = (stats.mode & 0o777).toString(8);
+
+    expect(mode).toEqual('600');
   });
 });

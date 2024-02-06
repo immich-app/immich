@@ -58,6 +58,7 @@ doc/CreateTagDto.md
 doc/CreateUserDto.md
 doc/CuratedLocationsResponseDto.md
 doc/CuratedObjectsResponseDto.md
+doc/DownloadApi.md
 doc/DownloadArchiveInfo.md
 doc/DownloadInfoDto.md
 doc/DownloadResponseDto.md
@@ -142,6 +143,7 @@ doc/SystemConfigFFmpegDto.md
 doc/SystemConfigJobDto.md
 doc/SystemConfigLibraryDto.md
 doc/SystemConfigLibraryScanDto.md
+doc/SystemConfigLibraryWatchDto.md
 doc/SystemConfigLoggingDto.md
 doc/SystemConfigMachineLearningDto.md
 doc/SystemConfigMapDto.md
@@ -164,6 +166,7 @@ doc/TimeBucketSize.md
 doc/ToneMapping.md
 doc/TranscodeHWAccel.md
 doc/TranscodePolicy.md
+doc/TrashApi.md
 doc/UpdateAlbumDto.md
 doc/UpdateAssetDto.md
 doc/UpdateLibraryDto.md
@@ -186,6 +189,7 @@ lib/api/api_key_api.dart
 lib/api/asset_api.dart
 lib/api/audit_api.dart
 lib/api/authentication_api.dart
+lib/api/download_api.dart
 lib/api/face_api.dart
 lib/api/job_api.dart
 lib/api/library_api.dart
@@ -197,6 +201,7 @@ lib/api/server_info_api.dart
 lib/api/shared_link_api.dart
 lib/api/system_config_api.dart
 lib/api/tag_api.dart
+lib/api/trash_api.dart
 lib/api/user_api.dart
 lib/api_client.dart
 lib/api_exception.dart
@@ -329,6 +334,7 @@ lib/model/system_config_f_fmpeg_dto.dart
 lib/model/system_config_job_dto.dart
 lib/model/system_config_library_dto.dart
 lib/model/system_config_library_scan_dto.dart
+lib/model/system_config_library_watch_dto.dart
 lib/model/system_config_logging_dto.dart
 lib/model/system_config_machine_learning_dto.dart
 lib/model/system_config_map_dto.dart
@@ -419,6 +425,7 @@ test/create_tag_dto_test.dart
 test/create_user_dto_test.dart
 test/curated_locations_response_dto_test.dart
 test/curated_objects_response_dto_test.dart
+test/download_api_test.dart
 test/download_archive_info_test.dart
 test/download_info_dto_test.dart
 test/download_response_dto_test.dart
@@ -503,6 +510,7 @@ test/system_config_f_fmpeg_dto_test.dart
 test/system_config_job_dto_test.dart
 test/system_config_library_dto_test.dart
 test/system_config_library_scan_dto_test.dart
+test/system_config_library_watch_dto_test.dart
 test/system_config_logging_dto_test.dart
 test/system_config_machine_learning_dto_test.dart
 test/system_config_map_dto_test.dart
@@ -525,6 +533,7 @@ test/time_bucket_size_test.dart
 test/tone_mapping_test.dart
 test/transcode_hw_accel_test.dart
 test/transcode_policy_test.dart
+test/trash_api_test.dart
 test/update_album_dto_test.dart
 test/update_asset_dto_test.dart
 test/update_library_dto_test.dart

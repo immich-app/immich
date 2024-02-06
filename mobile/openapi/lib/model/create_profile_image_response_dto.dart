@@ -23,8 +23,8 @@ class CreateProfileImageResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is CreateProfileImageResponseDto &&
-     other.profileImagePath == profileImagePath &&
-     other.userId == userId;
+    other.profileImagePath == profileImagePath &&
+    other.userId == userId;
 
   @override
   int get hashCode =>

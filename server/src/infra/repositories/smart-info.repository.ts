@@ -31,11 +31,11 @@ export class SmartInfoRepository implements ISmartInfoRepository {
       throw new Error(`Invalid CLIP model name: ${modelName}`);
     }
 
-    const curDimSize = await this.getDimSize();
-    this.logger.verbose(`Current database CLIP dimension size is ${curDimSize}`);
+    const currentDimSize = await this.getDimSize();
+    this.logger.verbose(`Current database CLIP dimension size is ${currentDimSize}`);
 
-    if (dimSize != curDimSize) {
-      this.logger.log(`Dimension size of model ${modelName} is ${dimSize}, but database expects ${curDimSize}.`);
+    if (dimSize != currentDimSize) {
+      this.logger.log(`Dimension size of model ${modelName} is ${dimSize}, but database expects ${currentDimSize}.`);
       await this.updateDimSize(dimSize);
     }
   }
@@ -119,7 +119,9 @@ export class SmartInfoRepository implements ISmartInfoRepository {
         cte = cte.andWhere('faces."personId" IS NOT NULL');
       }
 
-      this.faceColumns.forEach((col) => cte.addSelect(`faces.${col}`, col));
+      for (const col of this.faceColumns) {
+        cte.addSelect(`faces.${col}`, col);
+      }
 
       results = await manager
         .createQueryBuilder()
@@ -157,8 +159,8 @@ export class SmartInfoRepository implements ISmartInfoRepository {
       throw new Error(`Invalid CLIP dimension size: ${dimSize}`);
     }
 
-    const curDimSize = await this.getDimSize();
-    if (curDimSize === dimSize) {
+    const currentDimSize = await this.getDimSize();
+    if (currentDimSize === dimSize) {
       return;
     }
 
@@ -181,7 +183,7 @@ export class SmartInfoRepository implements ISmartInfoRepository {
           $$)`);
     });
 
-    this.logger.log(`Successfully updated database CLIP dimension size from ${curDimSize} to ${dimSize}.`);
+    this.logger.log(`Successfully updated database CLIP dimension size from ${currentDimSize} to ${dimSize}.`);
   }
 
   private async getDimSize(): Promise<number> {

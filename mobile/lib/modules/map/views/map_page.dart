@@ -41,6 +41,7 @@ class MapPage extends HookConsumerWidget {
     final bottomSheetStreamController = useStreamController<MapEvent>();
     final selectedMarker = useValueNotifier<_AssetMarkerMeta?>(null);
     final assetsDebouncer = useDebouncer();
+    final layerDebouncer = useDebouncer(interval: const Duration(seconds: 1));
     final isLoading = useProcessingOverlay();
     final scrollController = useScrollController();
     final markerDebouncer =
@@ -77,7 +78,9 @@ class MapPage extends HookConsumerWidget {
     // removes all sources and layers and re-adds them with the updated markers
     Future<void> reloadLayers() async {
       if (mapController.value != null) {
-        mapController.value!.reloadAllLayersForMarkers(markers.value);
+        layerDebouncer.run(
+          () => mapController.value!.reloadAllLayersForMarkers(markers.value),
+        );
       }
     }
 

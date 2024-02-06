@@ -28,9 +28,9 @@
     users = data.filter((user) => !(user.deletedAt || user.id === album.ownerId));
 
     // Remove the existed shared users from the album
-    album.sharedUsers.forEach((sharedUser) => {
+    for (const sharedUser of album.sharedUsers) {
       users = users.filter((user) => user.id !== sharedUser.id);
-    });
+    }
   });
 
   const getSharedLinks = async () => {
@@ -40,11 +40,9 @@
   };
 
   const handleSelect = (user: UserResponseDto) => {
-    if (selectedUsers.includes(user)) {
-      selectedUsers = selectedUsers.filter((selectedUser) => selectedUser.id !== user.id);
-    } else {
-      selectedUsers = [...selectedUsers, user];
-    }
+    selectedUsers = selectedUsers.includes(user)
+      ? selectedUsers.filter((selectedUser) => selectedUser.id !== user.id)
+      : [...selectedUsers, user];
   };
 
   const handleUnselect = (user: UserResponseDto) => {
@@ -122,7 +120,7 @@
         size="sm"
         fullwidth
         rounded="full"
-        disabled={!selectedUsers.length}
+        disabled={selectedUsers.length === 0}
         on:click={() => dispatch('select', selectedUsers)}>Add</Button
       >
     </div>

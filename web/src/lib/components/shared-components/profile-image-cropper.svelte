@@ -26,18 +26,18 @@
     const canvas = document.createElement('canvas');
     canvas.width = img.width;
     canvas.height = img.height;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) {
+    const context = canvas.getContext('2d');
+    if (!context) {
       throw new Error("Impossible d'obtenir le contexte du canevas.");
     }
-    ctx.drawImage(img, 0, 0);
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    context.drawImage(img, 0, 0);
+    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
     const data = imageData?.data;
     if (!data) {
       throw new Error("Impossible d'obtenir les données de l'image.");
     }
-    for (let i = 0; i < data.length; i += 4) {
-      if (data[i + 3] < 255) {
+    for (let index = 0; index < data.length; index += 4) {
+      if (data[index + 3] < 255) {
         return true;
       }
     }
@@ -62,8 +62,8 @@
         message: "Photo de profil définie.",
         timeout: 3000,
       });
-    } catch (err) {
-      handleError(err, "Erreur lors de la définition de la photo de profil.");
+    } catch (error) {
+      handleError(error, "Erreur lors de la définition de la photo de profil.");
     }
     dispatch('close');
   };

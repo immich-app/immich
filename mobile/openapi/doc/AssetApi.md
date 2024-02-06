@@ -12,25 +12,26 @@ Method | HTTP request | Description
 [**checkBulkUpload**](AssetApi.md#checkbulkupload) | **POST** /asset/bulk-upload-check | 
 [**checkExistingAssets**](AssetApi.md#checkexistingassets) | **POST** /asset/exist | 
 [**deleteAssets**](AssetApi.md#deleteassets) | **DELETE** /asset | 
-[**downloadArchive**](AssetApi.md#downloadarchive) | **POST** /asset/download/archive | 
-[**downloadFile**](AssetApi.md#downloadfile) | **POST** /asset/download/{id} | 
-[**emptyTrash**](AssetApi.md#emptytrash) | **POST** /asset/trash/empty | 
+[**downloadArchiveOld**](AssetApi.md#downloadarchiveold) | **POST** /asset/download/archive | 
+[**downloadFileOld**](AssetApi.md#downloadfileold) | **POST** /asset/download/{id} | 
+[**emptyTrashOld**](AssetApi.md#emptytrashold) | **POST** /asset/trash/empty | 
 [**getAllAssets**](AssetApi.md#getallassets) | **GET** /asset | 
 [**getAllUserAssetsByDeviceId**](AssetApi.md#getalluserassetsbydeviceid) | **GET** /asset/device/{deviceId} | 
 [**getAssetById**](AssetApi.md#getassetbyid) | **GET** /asset/assetById/{id} | 
+[**getAssetInfo**](AssetApi.md#getassetinfo) | **GET** /asset/{id} | 
 [**getAssetSearchTerms**](AssetApi.md#getassetsearchterms) | **GET** /asset/search-terms | 
 [**getAssetStatistics**](AssetApi.md#getassetstatistics) | **GET** /asset/statistics | 
 [**getAssetThumbnail**](AssetApi.md#getassetthumbnail) | **GET** /asset/thumbnail/{id} | 
 [**getCuratedLocations**](AssetApi.md#getcuratedlocations) | **GET** /asset/curated-locations | 
 [**getCuratedObjects**](AssetApi.md#getcuratedobjects) | **GET** /asset/curated-objects | 
-[**getDownloadInfo**](AssetApi.md#getdownloadinfo) | **POST** /asset/download/info | 
+[**getDownloadInfoOld**](AssetApi.md#getdownloadinfoold) | **POST** /asset/download/info | 
 [**getMapMarkers**](AssetApi.md#getmapmarkers) | **GET** /asset/map-marker | 
 [**getMemoryLane**](AssetApi.md#getmemorylane) | **GET** /asset/memory-lane | 
 [**getRandom**](AssetApi.md#getrandom) | **GET** /asset/random | 
 [**getTimeBucket**](AssetApi.md#gettimebucket) | **GET** /asset/time-bucket | 
 [**getTimeBuckets**](AssetApi.md#gettimebuckets) | **GET** /asset/time-buckets | 
-[**restoreAssets**](AssetApi.md#restoreassets) | **POST** /asset/restore | 
-[**restoreTrash**](AssetApi.md#restoretrash) | **POST** /asset/trash/restore | 
+[**restoreAssetsOld**](AssetApi.md#restoreassetsold) | **POST** /asset/restore | 
+[**restoreTrashOld**](AssetApi.md#restoretrashold) | **POST** /asset/trash/restore | 
 [**runAssetJobs**](AssetApi.md#runassetjobs) | **POST** /asset/jobs | 
 [**searchAssets**](AssetApi.md#searchassets) | **GET** /assets | 
 [**serveFile**](AssetApi.md#servefile) | **GET** /asset/file/{id} | 
@@ -208,8 +209,8 @@ void (empty response body)
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **downloadArchive**
-> MultipartFile downloadArchive(assetIdsDto, key)
+# **downloadArchiveOld**
+> MultipartFile downloadArchiveOld(assetIdsDto, key)
 
 
 
@@ -236,10 +237,10 @@ final assetIdsDto = AssetIdsDto(); // AssetIdsDto |
 final key = key_example; // String | 
 
 try {
-    final result = api_instance.downloadArchive(assetIdsDto, key);
+    final result = api_instance.downloadArchiveOld(assetIdsDto, key);
     print(result);
 } catch (e) {
-    print('Exception when calling AssetApi->downloadArchive: $e\n');
+    print('Exception when calling AssetApi->downloadArchiveOld: $e\n');
 }
 ```
 
@@ -265,8 +266,8 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **downloadFile**
-> MultipartFile downloadFile(id, key)
+# **downloadFileOld**
+> MultipartFile downloadFileOld(id, key)
 
 
 
@@ -293,10 +294,10 @@ final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
 final key = key_example; // String | 
 
 try {
-    final result = api_instance.downloadFile(id, key);
+    final result = api_instance.downloadFileOld(id, key);
     print(result);
 } catch (e) {
-    print('Exception when calling AssetApi->downloadFile: $e\n');
+    print('Exception when calling AssetApi->downloadFileOld: $e\n');
 }
 ```
 
@@ -322,8 +323,8 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **emptyTrash**
-> emptyTrash()
+# **emptyTrashOld**
+> emptyTrashOld()
 
 
 
@@ -348,9 +349,9 @@ import 'package:openapi/api.dart';
 final api_instance = AssetApi();
 
 try {
-    api_instance.emptyTrash();
+    api_instance.emptyTrashOld();
 } catch (e) {
-    print('Exception when calling AssetApi->emptyTrash: $e\n');
+    print('Exception when calling AssetApi->emptyTrashOld: $e\n');
 }
 ```
 
@@ -534,6 +535,63 @@ try {
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->getAssetById: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **id** | **String**|  | 
+ **key** | **String**|  | [optional] 
+
+### Return type
+
+[**AssetResponseDto**](AssetResponseDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **getAssetInfo**
+> AssetResponseDto getAssetInfo(id, key)
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
+// TODO Configure API key authorization: api_key
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+
+final api_instance = AssetApi();
+final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final key = key_example; // String | 
+
+try {
+    final result = api_instance.getAssetInfo(id, key);
+    print(result);
+} catch (e) {
+    print('Exception when calling AssetApi->getAssetInfo: $e\n');
 }
 ```
 
@@ -830,8 +888,8 @@ This endpoint does not need any parameter.
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **getDownloadInfo**
-> DownloadResponseDto getDownloadInfo(downloadInfoDto, key)
+# **getDownloadInfoOld**
+> DownloadResponseDto getDownloadInfoOld(downloadInfoDto, key)
 
 
 
@@ -858,10 +916,10 @@ final downloadInfoDto = DownloadInfoDto(); // DownloadInfoDto |
 final key = key_example; // String | 
 
 try {
-    final result = api_instance.getDownloadInfo(downloadInfoDto, key);
+    final result = api_instance.getDownloadInfoOld(downloadInfoDto, key);
     print(result);
 } catch (e) {
-    print('Exception when calling AssetApi->getDownloadInfo: $e\n');
+    print('Exception when calling AssetApi->getDownloadInfoOld: $e\n');
 }
 ```
 
@@ -1208,8 +1266,8 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **restoreAssets**
-> restoreAssets(bulkIdsDto)
+# **restoreAssetsOld**
+> restoreAssetsOld(bulkIdsDto)
 
 
 
@@ -1235,9 +1293,9 @@ final api_instance = AssetApi();
 final bulkIdsDto = BulkIdsDto(); // BulkIdsDto | 
 
 try {
-    api_instance.restoreAssets(bulkIdsDto);
+    api_instance.restoreAssetsOld(bulkIdsDto);
 } catch (e) {
-    print('Exception when calling AssetApi->restoreAssets: $e\n');
+    print('Exception when calling AssetApi->restoreAssetsOld: $e\n');
 }
 ```
 
@@ -1262,8 +1320,8 @@ void (empty response body)
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **restoreTrash**
-> restoreTrash()
+# **restoreTrashOld**
+> restoreTrashOld()
 
 
 
@@ -1288,9 +1346,9 @@ import 'package:openapi/api.dart';
 final api_instance = AssetApi();
 
 try {
-    api_instance.restoreTrash();
+    api_instance.restoreTrashOld();
 } catch (e) {
-    print('Exception when calling AssetApi->restoreTrash: $e\n');
+    print('Exception when calling AssetApi->restoreTrashOld: $e\n');
 }
 ```
 

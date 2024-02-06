@@ -9,6 +9,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import type { SettingsEventType } from './admin-settings';
   import { createEventDispatcher, onMount } from 'svelte';
+  import { cloneDeep } from 'lodash-es';
 
   export let config: SystemConfigDto;
 
@@ -18,23 +19,20 @@
   const dispatch = createEventDispatcher<{ save: void }>();
 
   const handleReset = async (detail: SettingsEventType['reset']) => {
-    if (detail.default) {
-      await resetToDefault(detail.configKeys);
-    } else {
-      await reset(detail.configKeys);
-    }
+    await (detail.default ? resetToDefault(detail.configKeys) : reset(detail.configKeys));
   };
 
-  const handleSave = async (config: Partial<SystemConfigDto>) => {
+  const handleSave = async (update: Partial<SystemConfigDto>) => {
     try {
-      const result = await api.systemConfigApi.updateConfig({
+      const { data: newConfig } = await api.systemConfigApi.updateConfig({
         systemConfigDto: {
           ...savedConfig,
-          ...config,
+          ...update,
         },
       });
 
-      savedConfig = { ...result.data };
+      config = cloneDeep(newConfig);
+      savedConfig = cloneDeep(newConfig);
       notificationController.show({ message: 'Settings saved', type: NotificationType.Info });
 
       dispatch('save');
@@ -45,7 +43,10 @@
 
   const reset = async (configKeys: Array<keyof SystemConfigDto>) => {
     const { data: resetConfig } = await api.systemConfigApi.getConfig();
-    config = configKeys.reduce((acc, key) => ({ ...acc, [key]: resetConfig[key] }), config);
+
+    for (const key of configKeys) {
+      config = { ...config, [key]: resetConfig[key] };
+    }
 
     notificationController.show({
       message: 'Reset settings to the recent saved settings',
@@ -54,7 +55,9 @@
   };
 
   const resetToDefault = async (configKeys: Array<keyof SystemConfigDto>) => {
-    config = configKeys.reduce((acc, key) => ({ ...acc, [key]: defaultConfig[key] }), config);
+    for (const key of configKeys) {
+      config = { ...config, [key]: defaultConfig[key] };
+    }
 
     notificationController.show({
       message: 'Reset settings to default',

@@ -77,11 +77,11 @@ class FaceRecognizer(InferenceModel):
 
     @property
     def det_file(self) -> Path:
-        return self.cache_dir / "detection" / "model.onnx"
+        return self.cache_dir / "detection" / f"model.{self.preferred_runtime}"
 
     @property
     def rec_file(self) -> Path:
-        return self.cache_dir / "recognition" / "model.onnx"
+        return self.cache_dir / "recognition" / f"model.{self.preferred_runtime}"
 
     def configure(self, **model_kwargs: Any) -> None:
         self.det_model.det_thresh = model_kwargs.pop("minScore", self.det_model.det_thresh)

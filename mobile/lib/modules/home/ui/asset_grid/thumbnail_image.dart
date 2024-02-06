@@ -23,7 +23,7 @@ class ThumbnailImage extends StatelessWidget {
   final int heroOffset;
 
   const ThumbnailImage({
-    Key? key,
+    super.key,
     required this.asset,
     required this.index,
     required this.loadAsset,
@@ -36,7 +36,7 @@ class ThumbnailImage extends StatelessWidget {
     this.onDeselect,
     this.onSelect,
     this.heroOffset = 0,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

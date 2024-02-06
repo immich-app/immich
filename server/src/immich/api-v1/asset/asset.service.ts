@@ -3,31 +3,30 @@ import {
   AssetResponseDto,
   AuthDto,
   CacheControl,
-  getLivePhotoMotionFilename,
   IAccessRepository,
+  IAssetRepository,
   IJobRepository,
   ILibraryRepository,
-  ImmichFileResponse,
   IUserRepository,
+  ImmichFileResponse,
   JobName,
+  Permission,
+  UploadFile,
+  getLivePhotoMotionFilename,
   mapAsset,
   mimeTypes,
-  Permission,
-  SanitizedAssetResponseDto,
-  UploadFile,
 } from '@app/domain';
 import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType, LibraryType } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
 import { Inject, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { QueryFailedError } from 'typeorm';
-import { IAssetRepository } from './asset-repository';
+import { IAssetRepositoryV1 } from './asset-repository';
 import { AssetCore } from './asset.core';
 import { AssetBulkUploadCheckDto } from './dto/asset-check.dto';
 import { AssetSearchDto } from './dto/asset-search.dto';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { GetAssetThumbnailDto, GetAssetThumbnailFormatEnum } from './dto/get-asset-thumbnail.dto';
-import { SearchPropertiesDto } from './dto/search-properties.dto';
 import { ServeFileDto } from './dto/serve-file.dto';
 import {
   AssetBulkUploadCheckResponseDto,
@@ -47,12 +46,13 @@ export class AssetService {
 
   constructor(
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
-    @Inject(IAssetRepository) private _assetRepository: IAssetRepository,
+    @Inject(IAssetRepositoryV1) private assetRepositoryV1: IAssetRepositoryV1,
+    @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ILibraryRepository) private libraryRepository: ILibraryRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
   ) {
-    this.assetCore = new AssetCore(_assetRepository, jobRepository);
+    this.assetCore = new AssetCore(assetRepositoryV1, jobRepository);
     this.access = AccessCore.create(accessRepository);
   }
 
@@ -102,7 +102,7 @@ export class AssetService {
       // handle duplicates with a success response
       if (error instanceof QueryFailedError && (error as any).constraint === ASSET_CHECKSUM_CONSTRAINT) {
         const checksums = [file.checksum, livePhotoFile?.checksum].filter((checksum): checksum is Buffer => !!checksum);
-        const [duplicate] = await this._assetRepository.getAssetsByChecksums(auth.user.id, checksums);
+        const [duplicate] = await this.assetRepositoryV1.getAssetsByChecksums(auth.user.id, checksums);
         return { id: duplicate.id, duplicate: true };
       }
 
@@ -114,35 +114,14 @@ export class AssetService {
   public async getAllAssets(auth: AuthDto, dto: AssetSearchDto): Promise<AssetResponseDto[]> {
     const userId = dto.userId || auth.user.id;
     await this.access.requirePermission(auth, Permission.TIMELINE_READ, userId);
-    const assets = await this._assetRepository.getAllByUserId(userId, dto);
+    const assets = await this.assetRepositoryV1.getAllByUserId(userId, dto);
     return assets.map((asset) => mapAsset(asset));
-  }
-
-  public async getAssetById(auth: AuthDto, assetId: string): Promise<AssetResponseDto | SanitizedAssetResponseDto> {
-    await this.access.requirePermission(auth, Permission.ASSET_READ, assetId);
-
-    const asset = await this._assetRepository.getById(assetId);
-    if (!auth.sharedLink || auth.sharedLink?.showExif) {
-      const data = mapAsset(asset, { withStack: true });
-
-      if (data.ownerId !== auth.user.id) {
-        data.people = [];
-      }
-
-      if (auth.sharedLink) {
-        delete data.owner;
-      }
-
-      return data;
-    } else {
-      return mapAsset(asset, { stripMetadata: true, withStack: true });
-    }
   }
 
   async serveThumbnail(auth: AuthDto, assetId: string, dto: GetAssetThumbnailDto): Promise<ImmichFileResponse> {
     await this.access.requirePermission(auth, Permission.ASSET_VIEW, assetId);
 
-    const asset = await this._assetRepository.get(assetId);
+    const asset = await this.assetRepositoryV1.get(assetId);
     if (!asset) {
       throw new NotFoundException('Asset not found');
     }
@@ -160,7 +139,7 @@ export class AssetService {
     // this is not quite right as sometimes this returns the original still
     await this.access.requirePermission(auth, Permission.ASSET_VIEW, assetId);
 
-    const asset = await this._assetRepository.getById(assetId);
+    const asset = await this.assetRepository.getById(assetId);
     if (!asset) {
       throw new NotFoundException('Asset does not exist');
     }
@@ -182,8 +161,9 @@ export class AssetService {
   async getAssetSearchTerm(auth: AuthDto): Promise<string[]> {
     const possibleSearchTerm = new Set<string>();
 
-    const rows = await this._assetRepository.getSearchPropertiesByUserId(auth.user.id);
-    rows.forEach((row: SearchPropertiesDto) => {
+    const rows = await this.assetRepositoryV1.getSearchPropertiesByUserId(auth.user.id);
+
+    for (const row of rows) {
       // tags
       row.tags?.map((tag: string) => possibleSearchTerm.add(tag?.toLowerCase()));
 
@@ -207,17 +187,17 @@ export class AssetService {
       possibleSearchTerm.add(row.city?.toLowerCase() || '');
       possibleSearchTerm.add(row.state?.toLowerCase() || '');
       possibleSearchTerm.add(row.country?.toLowerCase() || '');
-    });
+    }
 
-    return Array.from(possibleSearchTerm).filter((x) => x != null && x != '');
+    return [...possibleSearchTerm].filter((x) => x != null && x != '');
   }
 
   async getCuratedLocation(auth: AuthDto): Promise<CuratedLocationsResponseDto[]> {
-    return this._assetRepository.getLocationsByUserId(auth.user.id);
+    return this.assetRepositoryV1.getLocationsByUserId(auth.user.id);
   }
 
   async getCuratedObject(auth: AuthDto): Promise<CuratedObjectsResponseDto[]> {
-    return this._assetRepository.getDetectedObjectsByUserId(auth.user.id);
+    return this.assetRepositoryV1.getDetectedObjectsByUserId(auth.user.id);
   }
 
   async checkExistingAssets(
@@ -225,7 +205,7 @@ export class AssetService {
     checkExistingAssetsDto: CheckExistingAssetsDto,
   ): Promise<CheckExistingAssetsResponseDto> {
     return {
-      existingIds: await this._assetRepository.getExistingAssets(auth.user.id, checkExistingAssetsDto),
+      existingIds: await this.assetRepositoryV1.getExistingAssets(auth.user.id, checkExistingAssetsDto),
     };
   }
 
@@ -238,7 +218,7 @@ export class AssetService {
     }
 
     const checksums: Buffer[] = dto.assets.map((asset) => Buffer.from(asset.checksum, 'hex'));
-    const results = await this._assetRepository.getAssetsByChecksums(auth.user.id, checksums);
+    const results = await this.assetRepositoryV1.getAssetsByChecksums(auth.user.id, checksums);
     const checksumMap: Record<string, string> = {};
 
     for (const { id, checksum } of results) {
@@ -269,18 +249,18 @@ export class AssetService {
 
   private getThumbnailPath(asset: AssetEntity, format: GetAssetThumbnailFormatEnum) {
     switch (format) {
-      case GetAssetThumbnailFormatEnum.WEBP:
+      case GetAssetThumbnailFormatEnum.WEBP: {
         if (asset.webpPath) {
           return asset.webpPath;
         }
         this.logger.warn(`WebP thumbnail requested but not found for asset ${asset.id}, falling back to JPEG`);
-
-      case GetAssetThumbnailFormatEnum.JPEG:
-      default:
+      }
+      case GetAssetThumbnailFormatEnum.JPEG: {
         if (!asset.resizePath) {
           throw new NotFoundException(`No thumbnail found for asset ${asset.id}`);
         }
         return asset.resizePath;
+      }
     }
   }
 

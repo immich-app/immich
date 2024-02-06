@@ -47,16 +47,16 @@ class SystemConfigJobDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigJobDto &&
-     other.backgroundTask == backgroundTask &&
-     other.faceDetection == faceDetection &&
-     other.library_ == library_ &&
-     other.metadataExtraction == metadataExtraction &&
-     other.migration == migration &&
-     other.search == search &&
-     other.sidecar == sidecar &&
-     other.smartSearch == smartSearch &&
-     other.thumbnailGeneration == thumbnailGeneration &&
-     other.videoConversion == videoConversion;
+    other.backgroundTask == backgroundTask &&
+    other.faceDetection == faceDetection &&
+    other.library_ == library_ &&
+    other.metadataExtraction == metadataExtraction &&
+    other.migration == migration &&
+    other.search == search &&
+    other.sidecar == sidecar &&
+    other.smartSearch == smartSearch &&
+    other.thumbnailGeneration == thumbnailGeneration &&
+    other.videoConversion == videoConversion;
 
   @override
   int get hashCode =>

@@ -28,8 +28,8 @@
       }
 
       selecting = false;
-    } catch (e) {
-      handleError(e, 'Impossible de sélectionner toutes les ressources');
+    } catch (error) {
+      handleError(error, 'Impossible de sélectionner toutes les ressources');
     }
   };
 </script>

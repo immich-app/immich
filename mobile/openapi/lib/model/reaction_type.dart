@@ -34,7 +34,7 @@ class ReactionType {
 
   static ReactionType? fromJson(dynamic value) => ReactionTypeTypeTransformer().decode(value);
 
-  static List<ReactionType>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<ReactionType> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <ReactionType>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {

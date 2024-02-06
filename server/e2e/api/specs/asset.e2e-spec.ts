@@ -10,13 +10,13 @@ import {
   usePagination,
 } from '@app/domain';
 import { AssetController } from '@app/immich';
-import { AssetEntity, AssetType, SharedLinkType } from '@app/infra/entities';
+import { AssetEntity, AssetStackEntity, AssetType, SharedLinkType } from '@app/infra/entities';
 import { AssetRepository } from '@app/infra/repositories';
 import { INestApplication } from '@nestjs/common';
 import { errorStub, userDto, uuidStub } from '@test/fixtures';
 import { randomBytes } from 'crypto';
 import request from 'supertest';
-import { api } from '../client';
+import { api } from '../../client';
 import { generateAsset, testApp, today, yesterday } from '../utils';
 
 const makeUploadDto = (options?: { omit: string }): Record<string, any> => {
@@ -94,32 +94,7 @@ describe(`${AssetController.name} (e2e)`, () => {
   });
 
   beforeEach(async () => {
-    await testApp.reset({ entities: [AssetEntity] });
-
-    [asset1, asset2, asset3, asset4, asset5] = await Promise.all([
-      createAsset(user1, new Date('1970-01-01')),
-      createAsset(user1, new Date('1970-02-10')),
-      createAsset(user1, new Date('1970-02-11'), {
-        isFavorite: true,
-        isArchived: true,
-        isExternal: true,
-        isReadOnly: true,
-        type: AssetType.VIDEO,
-        fileCreatedAt: yesterday.toJSDate(),
-        fileModifiedAt: yesterday.toJSDate(),
-        createdAt: yesterday.toJSDate(),
-        updatedAt: yesterday.toJSDate(),
-        localDateTime: yesterday.toJSDate(),
-      }),
-      createAsset(user2, new Date('1970-01-01')),
-      createAsset(user1, new Date('1970-01-01'), {
-        deletedAt: yesterday.toJSDate(),
-      }),
-    ]);
-  });
-
-  beforeEach(async () => {
-    await testApp.reset({ entities: [AssetEntity] });
+    await testApp.reset({ entities: [AssetEntity, AssetStackEntity] });
 
     [asset1, asset2, asset3, asset4, asset5] = await Promise.all([
       createAsset(user1, new Date('1970-01-01')),
@@ -542,6 +517,134 @@ describe(`${AssetController.name} (e2e)`, () => {
     }
   });
 
+  // TODO remove with deprecated endpoint
+  describe('GET /asset/assetById/:id', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(server).get(`/asset/assetById/${uuidStub.notFound}`);
+      expect(body).toEqual(errorStub.unauthorized);
+      expect(status).toBe(401);
+    });
+
+    it('should require a valid id', async () => {
+      const { status, body } = await request(server)
+        .get(`/asset/assetById/${uuidStub.invalid}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+      expect(status).toBe(400);
+      expect(body).toEqual(errorStub.badRequest(['id must be a UUID']));
+    });
+
+    it('should require access', async () => {
+      const { status, body } = await request(server)
+        .get(`/asset/assetById/${asset4.id}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+      expect(status).toBe(400);
+      expect(body).toEqual(errorStub.noPermission);
+    });
+
+    it('should get the asset info', async () => {
+      const { status, body } = await request(server)
+        .get(`/asset/assetById/${asset1.id}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+      expect(status).toBe(200);
+      expect(body).toMatchObject({ id: asset1.id });
+    });
+
+    it('should work with a shared link', async () => {
+      const sharedLink = await api.sharedLinkApi.create(server, user1.accessToken, {
+        type: SharedLinkType.INDIVIDUAL,
+        assetIds: [asset1.id],
+      });
+
+      const { status, body } = await request(server).get(`/asset/assetById/${asset1.id}?key=${sharedLink.key}`);
+      expect(status).toBe(200);
+      expect(body).toMatchObject({ id: asset1.id });
+    });
+
+    it('should not send people data for shared links for un-authenticated users', async () => {
+      const personRepository = app.get<IPersonRepository>(IPersonRepository);
+      const person = await personRepository.create({ ownerId: asset1.ownerId, name: 'Test Person' });
+
+      await personRepository.createFaces([
+        {
+          assetId: asset1.id,
+          personId: person.id,
+          embedding: Array.from({ length: 512 }, Math.random),
+        },
+      ]);
+
+      const { status, body } = await request(server)
+        .put(`/asset/${asset1.id}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ isFavorite: true });
+      expect(status).toEqual(200);
+      expect(body).toMatchObject({
+        id: asset1.id,
+        isFavorite: true,
+        people: [
+          {
+            birthDate: null,
+            id: expect.any(String),
+            isHidden: false,
+            name: 'Test Person',
+            thumbnailPath: '',
+          },
+        ],
+      });
+
+      const sharedLink = await api.sharedLinkApi.create(server, user1.accessToken, {
+        type: SharedLinkType.INDIVIDUAL,
+        assetIds: [asset1.id],
+      });
+
+      const data = await request(server).get(`/asset/assetById/${asset1.id}?key=${sharedLink.key}`);
+      expect(data.status).toBe(200);
+      expect(data.body).toMatchObject({ people: [] });
+    });
+  });
+
+  describe('GET /asset/:id', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(server).get(`/asset/${uuidStub.notFound}`);
+      expect(body).toEqual(errorStub.unauthorized);
+      expect(status).toBe(401);
+    });
+
+    it('should require a valid id', async () => {
+      const { status, body } = await request(server)
+        .get(`/asset/${uuidStub.invalid}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+      expect(status).toBe(400);
+      expect(body).toEqual(errorStub.badRequest(['id must be a UUID']));
+    });
+
+    it('should require access', async () => {
+      const { status, body } = await request(server)
+        .get(`/asset/${asset4.id}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+      expect(status).toBe(400);
+      expect(body).toEqual(errorStub.noPermission);
+    });
+
+    it('should get the asset info', async () => {
+      const { status, body } = await request(server)
+        .get(`/asset/${asset1.id}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+      expect(status).toBe(200);
+      expect(body).toMatchObject({ id: asset1.id });
+    });
+
+    it('should work with a shared link', async () => {
+      const sharedLink = await api.sharedLinkApi.create(server, user1.accessToken, {
+        type: SharedLinkType.INDIVIDUAL,
+        assetIds: [asset1.id],
+      });
+
+      const { status, body } = await request(server).get(`/asset/${asset1.id}?key=${sharedLink.key}`);
+      expect(status).toBe(200);
+      expect(body).toMatchObject({ id: asset1.id });
+    });
+  });
+
   describe('POST /asset/upload', () => {
     it('should require authentication', async () => {
       const { status, body } = await request(server)
@@ -788,11 +891,13 @@ describe(`${AssetController.name} (e2e)`, () => {
       const personRepository = app.get<IPersonRepository>(IPersonRepository);
       const person = await personRepository.create({ ownerId: asset1.ownerId, name: 'Test Person' });
 
-      await personRepository.createFace({
-        assetId: asset1.id,
-        personId: person.id,
-        embedding: Array.from({ length: 512 }, Math.random),
-      });
+      await personRepository.createFaces([
+        {
+          assetId: asset1.id,
+          personId: person.id,
+          embedding: Array.from({ length: 512 }, Math.random),
+        },
+      ]);
 
       const { status, body } = await request(server)
         .put(`/asset/${asset1.id}`)
@@ -1266,7 +1371,7 @@ describe(`${AssetController.name} (e2e)`, () => {
       expect(status).toBe(204);
 
       const asset = await api.assetApi.get(server, user1.accessToken, asset1.id);
-      expect(asset.stack).toHaveLength(0);
+      expect(asset.stack).toBeUndefined();
     });
 
     it('should merge stack children', async () => {
@@ -1377,11 +1482,13 @@ describe(`${AssetController.name} (e2e)`, () => {
           beforeEach(async () => {
             const personRepository = app.get<IPersonRepository>(IPersonRepository);
             const person = await personRepository.create({ ownerId: asset1.ownerId, name: 'Test Person' });
-            await personRepository.createFace({
-              assetId: asset1.id,
-              personId: person.id,
-              embedding: Array.from({ length: 512 }, Math.random),
-            });
+            await personRepository.createFaces([
+              {
+                assetId: asset1.id,
+                personId: person.id,
+                embedding: Array.from({ length: 512 }, Math.random),
+              },
+            ]);
           });
 
           it('should not return asset with facesRecognizedAt unset', async () => {

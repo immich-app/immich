@@ -20,7 +20,7 @@ class OAuthCallbackDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is OAuthCallbackDto &&
-     other.url == url;
+    other.url == url;
 
   @override
   int get hashCode =>

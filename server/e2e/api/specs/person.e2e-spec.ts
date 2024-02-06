@@ -4,7 +4,7 @@ import { PersonEntity } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
 import { errorStub, uuidStub } from '@test/fixtures';
 import request from 'supertest';
-import { api } from '../client';
+import { api } from '../../client';
 import { testApp } from '../utils';
 
 describe(`${PersonController.name}`, () => {
@@ -38,11 +38,13 @@ describe(`${PersonController.name}`, () => {
       name: 'visible_person',
       thumbnailPath: '/thumbnail/face_asset',
     });
-    await personRepository.createFace({
-      assetId: faceAsset.id,
-      personId: visiblePerson.id,
-      embedding: Array.from({ length: 512 }, Math.random),
-    });
+    await personRepository.createFaces([
+      {
+        assetId: faceAsset.id,
+        personId: visiblePerson.id,
+        embedding: Array.from({ length: 512 }, Math.random),
+      },
+    ]);
 
     hiddenPerson = await personRepository.create({
       ownerId: loginResponse.userId,
@@ -50,11 +52,13 @@ describe(`${PersonController.name}`, () => {
       isHidden: true,
       thumbnailPath: '/thumbnail/face_asset',
     });
-    await personRepository.createFace({
-      assetId: faceAsset.id,
-      personId: hiddenPerson.id,
-      embedding: Array.from({ length: 512 }, Math.random),
-    });
+    await personRepository.createFaces([
+      {
+        assetId: faceAsset.id,
+        personId: hiddenPerson.id,
+        embedding: Array.from({ length: 512 }, Math.random),
+      },
+    ]);
   });
 
   describe('GET /person', () => {
@@ -76,7 +80,6 @@ describe(`${PersonController.name}`, () => {
       expect(status).toBe(200);
       expect(body).toEqual({
         total: 2,
-        visible: 1,
         people: [
           expect.objectContaining({ name: 'visible_person' }),
           expect.objectContaining({ name: 'hidden_person' }),
@@ -89,8 +92,7 @@ describe(`${PersonController.name}`, () => {
 
       expect(status).toBe(200);
       expect(body).toEqual({
-        total: 1,
-        visible: 1,
+        total: 2,
         people: [expect.objectContaining({ name: 'visible_person' })],
       });
     });

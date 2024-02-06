@@ -13,7 +13,7 @@ Widget userAvatar(BuildContext context, User u, {double? radius}) {
     backgroundColor: context.primaryColor.withAlpha(50),
     foregroundImage: CachedNetworkImageProvider(
       url,
-      headers: {"Authorization": "Bearer ${Store.get(StoreKey.accessToken)}"},
+      headers: {"x-immich-user-token": Store.get(StoreKey.accessToken)},
       cacheKey: "user-${u.id}-profile",
     ),
     // silence errors if user has no profile image, use initials as fallback

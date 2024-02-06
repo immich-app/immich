@@ -38,13 +38,13 @@ class AssetFaceWithoutPersonResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetFaceWithoutPersonResponseDto &&
-     other.boundingBoxX1 == boundingBoxX1 &&
-     other.boundingBoxX2 == boundingBoxX2 &&
-     other.boundingBoxY1 == boundingBoxY1 &&
-     other.boundingBoxY2 == boundingBoxY2 &&
-     other.id == id &&
-     other.imageHeight == imageHeight &&
-     other.imageWidth == imageWidth;
+    other.boundingBoxX1 == boundingBoxX1 &&
+    other.boundingBoxX2 == boundingBoxX2 &&
+    other.boundingBoxY1 == boundingBoxY1 &&
+    other.boundingBoxY2 == boundingBoxY2 &&
+    other.id == id &&
+    other.imageHeight == imageHeight &&
+    other.imageWidth == imageWidth;
 
   @override
   int get hashCode =>

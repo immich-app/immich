@@ -26,14 +26,14 @@ class VideoViewerPage extends HookConsumerWidget {
   final VoidCallback? onPaused;
 
   const VideoViewerPage({
-    Key? key,
+    super.key,
     required this.asset,
     required this.isMotionVideo,
     required this.onVideoEnded,
     this.onPlaying,
     this.onPaused,
     this.placeholder,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -68,7 +68,7 @@ class VideoViewerPage extends HookConsumerWidget {
       children: [
         VideoPlayer(
           url: videoUrl,
-          jwtToken: Store.get(StoreKey.accessToken),
+          accessToken: Store.get(StoreKey.accessToken),
           isMotionVideo: isMotionVideo,
           onVideoEnded: onVideoEnded,
           onPaused: onPaused,
@@ -99,7 +99,7 @@ final _fileFamily =
 
 class VideoPlayer extends StatefulWidget {
   final String? url;
-  final String? jwtToken;
+  final String? accessToken;
   final File? file;
   final bool isMotionVideo;
   final VoidCallback onVideoEnded;
@@ -112,16 +112,16 @@ class VideoPlayer extends StatefulWidget {
   final Widget? placeholder;
 
   const VideoPlayer({
-    Key? key,
+    super.key,
     this.url,
-    this.jwtToken,
+    this.accessToken,
     this.file,
     required this.onVideoEnded,
     required this.isMotionVideo,
     this.onPlaying,
     this.onPaused,
     this.placeholder,
-  }) : super(key: key);
+  });
 
   @override
   State<VideoPlayer> createState() => _VideoPlayerState();
@@ -160,7 +160,7 @@ class _VideoPlayerState extends State<VideoPlayer> {
       videoPlayerController = widget.file == null
           ? VideoPlayerController.networkUrl(
               Uri.parse(widget.url!),
-              httpHeaders: {"Authorization": "Bearer ${widget.jwtToken}"},
+              httpHeaders: {"x-immich-user-token": widget.accessToken ?? ""},
             )
           : VideoPlayerController.file(widget.file!);
 
@@ -202,6 +202,8 @@ class _VideoPlayerState extends State<VideoPlayer> {
   Widget build(BuildContext context) {
     if (chewieController?.videoPlayerController.value.isInitialized == true) {
       return SizedBox(
+        height: context.height,
+        width: context.width,
         child: Chewie(
           controller: chewieController!,
         ),

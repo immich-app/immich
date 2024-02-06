@@ -31,7 +31,9 @@ export const defaults = Object.freeze<SystemConfig>({
     threads: 0,
     preset: 'ultrafast',
     targetVideoCodec: VideoCodec.H264,
+    acceptedVideoCodecs: [VideoCodec.H264],
     targetAudioCodec: AudioCodec.AAC,
+    acceptedAudioCodecs: [AudioCodec.AAC],
     targetResolution: '720',
     maxBitrate: '0',
     bframes: -1,
@@ -41,6 +43,7 @@ export const defaults = Object.freeze<SystemConfig>({
     temporalAQ: false,
     cqMode: CQMode.AUTO,
     twoPass: false,
+    preferredHwDevice: 'auto',
     transcode: TranscodePolicy.REQUIRED,
     tonemap: ToneMapping.HABLE,
     accel: TranscodeHWAccel.DISABLED,
@@ -85,17 +88,18 @@ export const defaults = Object.freeze<SystemConfig>({
     enabled: true,
   },
   oauth: {
-    enabled: false,
-    issuerUrl: '',
+    autoLaunch: false,
+    autoRegister: true,
+    buttonText: 'Login with OAuth',
     clientId: '',
     clientSecret: '',
+    enabled: false,
+    issuerUrl: '',
     mobileOverrideEnabled: false,
     mobileRedirectUri: '',
     scope: 'openid email profile',
+    signingAlgorithm: 'RS256',
     storageLabelClaim: 'preferred_username',
-    buttonText: 'Login with OAuth',
-    autoRegister: true,
-    autoLaunch: false,
   },
   passwordLogin: {
     enabled: true,
@@ -126,6 +130,11 @@ export const defaults = Object.freeze<SystemConfig>({
       enabled: true,
       cronExpression: CronExpression.EVERY_DAY_AT_MIDNIGHT,
     },
+    watch: {
+      enabled: false,
+      usePolling: false,
+      interval: 10_000,
+    },
   },
   server: {
     externalDomain: '',
@@ -134,7 +143,7 @@ export const defaults = Object.freeze<SystemConfig>({
 });
 
 export enum FeatureFlag {
-  CLIP_ENCODE = 'clipEncode',
+  SMART_SEARCH = 'smartSearch',
   FACIAL_RECOGNITION = 'facialRecognition',
   MAP = 'map',
   REVERSE_GEOCODING = 'reverseGeocoding',
@@ -176,22 +185,30 @@ export class SystemConfigCore {
     const hasFeature = await this.hasFeature(feature);
     if (!hasFeature) {
       switch (feature) {
-        case FeatureFlag.CLIP_ENCODE:
-          throw new BadRequestException('Clip encoding is not enabled');
-        case FeatureFlag.FACIAL_RECOGNITION:
+        case FeatureFlag.SMART_SEARCH: {
+          throw new BadRequestException('Smart search is not enabled');
+        }
+        case FeatureFlag.FACIAL_RECOGNITION: {
           throw new BadRequestException('Facial recognition is not enabled');
-        case FeatureFlag.SIDECAR:
+        }
+        case FeatureFlag.SIDECAR: {
           throw new BadRequestException('Sidecar is not enabled');
-        case FeatureFlag.SEARCH:
+        }
+        case FeatureFlag.SEARCH: {
           throw new BadRequestException('Search is not enabled');
-        case FeatureFlag.OAUTH:
+        }
+        case FeatureFlag.OAUTH: {
           throw new BadRequestException('OAuth is not enabled');
-        case FeatureFlag.PASSWORD_LOGIN:
+        }
+        case FeatureFlag.PASSWORD_LOGIN: {
           throw new BadRequestException('Password login is not enabled');
-        case FeatureFlag.CONFIG_FILE:
+        }
+        case FeatureFlag.CONFIG_FILE: {
           throw new BadRequestException('Config file is not set');
-        default:
+        }
+        default: {
           throw new ForbiddenException(`Missing required feature: ${feature}`);
+        }
       }
     }
   }
@@ -206,7 +223,7 @@ export class SystemConfigCore {
     const mlEnabled = config.machineLearning.enabled;
 
     return {
-      [FeatureFlag.CLIP_ENCODE]: mlEnabled && config.machineLearning.clip.enabled,
+      [FeatureFlag.SMART_SEARCH]: mlEnabled && config.machineLearning.clip.enabled,
       [FeatureFlag.FACIAL_RECOGNITION]: mlEnabled && config.machineLearning.facialRecognition.enabled,
       [FeatureFlag.MAP]: config.map.enabled,
       [FeatureFlag.REVERSE_GEOCODING]: config.reverseGeocoding.enabled,
@@ -248,6 +265,14 @@ export class SystemConfigCore {
       }
     }
 
+    if (!config.ffmpeg.acceptedVideoCodecs.includes(config.ffmpeg.targetVideoCodec)) {
+      config.ffmpeg.acceptedVideoCodecs.unshift(config.ffmpeg.targetVideoCodec);
+    }
+
+    if (!config.ffmpeg.acceptedAudioCodecs.includes(config.ffmpeg.targetAudioCodec)) {
+      config.ffmpeg.acceptedAudioCodecs.unshift(config.ffmpeg.targetAudioCodec);
+    }
+
     return config;
   }
 
@@ -262,9 +287,9 @@ export class SystemConfigCore {
       for (const validator of this.validators) {
         await validator(newConfig, oldConfig);
       }
-    } catch (e) {
-      this.logger.warn(`Unable to save system config due to a validation error: ${e}`);
-      throw new BadRequestException(e instanceof Error ? e.message : e);
+    } catch (error) {
+      this.logger.warn(`Unable to save system config due to a validation error: ${error}`);
+      throw new BadRequestException(error instanceof Error ? error.message : error);
     }
 
     const updates: SystemConfigEntity[] = [];
@@ -314,19 +339,20 @@ export class SystemConfigCore {
   private async loadFromFile(filepath: string, force = false) {
     if (force || !this.configCache) {
       try {
-        const file = JSON.parse((await this.repository.readFile(filepath)).toString());
+        const file = await this.repository.readFile(filepath);
+        const json = JSON.parse(file.toString());
         const overrides: SystemConfigEntity<SystemConfigValue>[] = [];
 
         for (const key of Object.values(SystemConfigKey)) {
-          const value = _.get(file, key);
-          this.unsetDeep(file, key);
+          const value = _.get(json, key);
+          this.unsetDeep(json, key);
           if (value !== undefined) {
             overrides.push({ key, value });
           }
         }
 
-        if (!_.isEmpty(file)) {
-          this.logger.warn(`Unknown keys found: ${JSON.stringify(file, null, 2)}`);
+        if (!_.isEmpty(json)) {
+          this.logger.warn(`Unknown keys found: ${JSON.stringify(json, null, 2)}`);
         }
 
         this.configCache = overrides;

@@ -30,8 +30,8 @@
     try {
       const { data } = await api.userApi.getMyUserInfo();
       currentUser = data;
-    } catch (e) {
-      handleError(e, 'Unable to refresh user');
+    } catch (error) {
+      handleError(error, 'Unable to refresh user');
     }
   });
 
@@ -58,8 +58,8 @@
       dispatch('remove', userId);
       const message = userId === 'me' ? `Restant ${album.albumName}` : `Retiré ${selectedRemoveUser.name}`;
       notificationController.show({ type: NotificationType.Info, message });
-    } catch (e) {
-      handleError(e, "Impossible de retirer l'utilisateur");
+    } catch (error) {
+      handleError(error, "Impossible de retirer l'utilisateur");
     } finally {
       selectedRemoveUser = null;
     }

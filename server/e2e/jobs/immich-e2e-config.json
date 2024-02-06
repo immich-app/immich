@@ -6,6 +6,7 @@
     "enabled": false
   },
   "logging": {
-    "enabled": false
+    "enabled": false,
+    "level": "debug"
   }
 }

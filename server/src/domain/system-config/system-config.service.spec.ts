@@ -43,8 +43,10 @@ const updatedConfig = Object.freeze<SystemConfig>({
     threads: 0,
     preset: 'ultrafast',
     targetAudioCodec: AudioCodec.AAC,
+    acceptedAudioCodecs: [AudioCodec.AAC],
     targetResolution: '720',
     targetVideoCodec: VideoCodec.H264,
+    acceptedVideoCodecs: [VideoCodec.H264],
     maxBitrate: '0',
     bframes: -1,
     refs: 0,
@@ -53,6 +55,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     temporalAQ: false,
     cqMode: CQMode.AUTO,
     twoPass: false,
+    preferredHwDevice: 'auto',
     transcode: TranscodePolicy.REQUIRED,
     accel: TranscodeHWAccel.DISABLED,
     tonemap: ToneMapping.HABLE,
@@ -95,6 +98,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     mobileOverrideEnabled: false,
     mobileRedirectUri: '',
     scope: 'openid email profile',
+    signingAlgorithm: 'RS256',
     storageLabelClaim: 'preferred_username',
   },
   passwordLogin: {
@@ -129,6 +133,11 @@ const updatedConfig = Object.freeze<SystemConfig>({
     scan: {
       enabled: true,
       cronExpression: '0 0 * * *',
+    },
+    watch: {
+      enabled: false,
+      usePolling: false,
+      interval: 10_000,
     },
   },
 });

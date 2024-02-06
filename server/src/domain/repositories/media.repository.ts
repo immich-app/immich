@@ -1,5 +1,5 @@
 import { VideoCodec } from '@app/infra/entities';
-import { Writable } from 'stream';
+import { Writable } from 'node:stream';
 
 export const IMediaRepository = 'IMediaRepository';
 
@@ -32,6 +32,7 @@ export interface VideoFormat {
   formatName?: string;
   formatLongName?: string;
   duration: number;
+  bitrate: number;
 }
 
 export interface VideoInfo {

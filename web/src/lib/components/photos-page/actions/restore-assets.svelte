@@ -11,7 +11,7 @@
   import { mdiHistory } from '@mdi/js';
   import type { OnRestore } from '$lib/utils/actions';
 
-  export let onRestore: OnRestore | undefined = undefined;
+  export let onRestore: OnRestore | undefined;
 
   const { getAssets, clearSelect } = getAssetControlContext();
 
@@ -21,8 +21,8 @@
     loading = true;
 
     try {
-      const ids = Array.from(getAssets()).map((a) => a.id);
-      await api.assetApi.restoreAssets({ bulkIdsDto: { ids } });
+      const ids = [...getAssets()].map((a) => a.id);
+      await api.trashApi.restoreAssets({ bulkIdsDto: { ids } });
       onRestore?.(ids);
 
       notificationController.show({
@@ -31,8 +31,8 @@
       });
 
       clearSelect();
-    } catch (e) {
-      handleError(e, 'Erreur lors de la restauration des ressources');
+    } catch (error) {
+      handleError(error, 'Erreur lors de la restauration des ressources');
     } finally {
       loading = false;
     }

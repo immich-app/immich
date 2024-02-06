@@ -22,4 +22,6 @@ export const systemConfigStub: Record<string, SystemConfigEntity[]> = {
     { key: SystemConfigKey.OAUTH_MOBILE_REDIRECT_URI, value: 'http://mobile-redirect' },
     { key: SystemConfigKey.OAUTH_BUTTON_TEXT, value: 'OAuth' },
   ],
+  libraryWatchEnabled: [{ key: SystemConfigKey.LIBRARY_WATCH_ENABLED, value: true }],
+  libraryWatchDisabled: [{ key: SystemConfigKey.LIBRARY_WATCH_ENABLED, value: false }],
 };

@@ -28,13 +28,13 @@
       });
 
       goto(`${AppRoute.ALBUMS}/${newAlbum.id}`);
-    } catch (e) {
+    } catch (error) {
       notificationController.show({
         message: 'Error creating album, check console for more details',
         type: NotificationType.Error,
       });
 
-      console.log('Error [createAlbum] ', e);
+      console.log('Error [createAlbum]', error);
     }
   };
 </script>
@@ -94,9 +94,9 @@
       <div>
         <!-- Share Album List -->
         <div class="grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))]">
-          {#each data.sharedAlbums as album, idx (album.id)}
+          {#each data.sharedAlbums as album, index (album.id)}
             <a data-sveltekit-preload-data="hover" href={`albums/${album.id}`} animate:flip={{ duration: 200 }}>
-              <AlbumCard preload={idx < 20} {album} isSharingView showContextMenu={false} />
+              <AlbumCard preload={index < 20} {album} isSharingView showContextMenu={false} />
             </a>
           {/each}
         </div>

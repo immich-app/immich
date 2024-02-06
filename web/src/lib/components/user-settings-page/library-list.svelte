@@ -56,8 +56,8 @@
     updateLibraryIndex = null;
     showContextMenu = false;
 
-    for (let i = 0; i < dropdownOpen.length; i++) {
-      dropdownOpen[i] = false;
+    for (let index = 0; index < dropdownOpen.length; index++) {
+      dropdownOpen[index] = false;
     }
   };
 
@@ -87,9 +87,9 @@
 
     dropdownOpen.length = libraries.length;
 
-    for (let i = 0; i < libraries.length; i++) {
-      await refreshStats(i);
-      dropdownOpen[i] = false;
+    for (let index = 0; index < libraries.length; index++) {
+      await refreshStats(index);
+      dropdownOpen[index] = false;
     }
   }
 

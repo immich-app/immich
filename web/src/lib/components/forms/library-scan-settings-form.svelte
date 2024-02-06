@@ -109,7 +109,7 @@
   />
 {/if}
 
-{#if editExclusionPattern != null}
+{#if editExclusionPattern != undefined}
   <LibraryExclusionPatternForm
     submitText="Sauvegarder"
     canDelete={true}

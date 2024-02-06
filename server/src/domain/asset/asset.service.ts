@@ -3,25 +3,24 @@ import { ImmichLogger } from '@app/infra/logger';
 import { BadRequestException, Inject } from '@nestjs/common';
 import _ from 'lodash';
 import { DateTime, Duration } from 'luxon';
-import { extname } from 'path';
+import { extname } from 'node:path';
 import sanitize from 'sanitize-filename';
 import { AccessCore, Permission } from '../access';
 import { AuthDto } from '../auth';
 import { mimeTypes } from '../domain.constant';
-import { CacheControl, HumanReadableSize, ImmichFileResponse, usePagination } from '../domain.util';
+import { usePagination } from '../domain.util';
 import { IAssetDeletionJob, ISidecarWriteJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
 import {
   ClientEvent,
   IAccessRepository,
   IAssetRepository,
+  IAssetStackRepository,
   ICommunicationRepository,
-  ICryptoRepository,
   IJobRepository,
   IPartnerRepository,
   IStorageRepository,
   ISystemConfigRepository,
   IUserRepository,
-  ImmichReadStream,
   JobItem,
   TimeBucketOptions,
 } from '../repositories';
@@ -30,27 +29,21 @@ import { SystemConfigCore } from '../system-config';
 import {
   AssetBulkDeleteDto,
   AssetBulkUpdateDto,
-  AssetIdsDto,
   AssetJobName,
   AssetJobsDto,
   AssetOrder,
   AssetSearchDto,
   AssetStatsDto,
-  DownloadArchiveInfo,
-  DownloadInfoDto,
-  DownloadResponseDto,
   MapMarkerDto,
   MemoryLaneDto,
   TimeBucketAssetDto,
   TimeBucketDto,
-  TrashAction,
   UpdateAssetDto,
   UpdateStackParentDto,
   mapStats,
 } from './dto';
 import {
   AssetResponseDto,
-  BulkIdsDto,
   MapMarkerResponseDto,
   MemoryLaneResponseDto,
   SanitizedAssetResponseDto,
@@ -87,20 +80,20 @@ export class AssetService {
   constructor(
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
-    @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(ICommunicationRepository) private communicationRepository: ICommunicationRepository,
     @Inject(IPartnerRepository) private partnerRepository: IPartnerRepository,
+    @Inject(IAssetStackRepository) private assetStackRepository: IAssetStackRepository,
   ) {
     this.access = AccessCore.create(accessRepository);
     this.configCore = SystemConfigCore.create(configRepository);
   }
 
   search(auth: AuthDto, dto: AssetSearchDto) {
-    let checksum: Buffer | undefined = undefined;
+    let checksum: Buffer | undefined;
 
     if (dto.checksum) {
       const encoding = dto.checksum.length === 28 ? 'base64' : 'hex';
@@ -133,29 +126,33 @@ export class AssetService {
     const filename = file.originalName;
 
     switch (fieldName) {
-      case UploadFieldName.ASSET_DATA:
+      case UploadFieldName.ASSET_DATA: {
         if (mimeTypes.isAsset(filename)) {
           return true;
         }
         break;
+      }
 
-      case UploadFieldName.LIVE_PHOTO_DATA:
+      case UploadFieldName.LIVE_PHOTO_DATA: {
         if (mimeTypes.isVideo(filename)) {
           return true;
         }
         break;
+      }
 
-      case UploadFieldName.SIDECAR_DATA:
+      case UploadFieldName.SIDECAR_DATA: {
         if (mimeTypes.isSidecar(filename)) {
           return true;
         }
         break;
+      }
 
-      case UploadFieldName.PROFILE_DATA:
+      case UploadFieldName.PROFILE_DATA: {
         if (mimeTypes.isProfile(filename)) {
           return true;
         }
         break;
+      }
     }
 
     this.logger.error(`Unsupported file type ${filename}`);
@@ -165,13 +162,13 @@ export class AssetService {
   getUploadFilename({ auth, fieldName, file }: UploadRequest): string {
     this.access.requireUploadAccess(auth);
 
-    const originalExt = extname(file.originalName);
+    const originalExtension = extname(file.originalName);
 
     const lookup = {
-      [UploadFieldName.ASSET_DATA]: originalExt,
+      [UploadFieldName.ASSET_DATA]: originalExtension,
       [UploadFieldName.LIVE_PHOTO_DATA]: '.mov',
       [UploadFieldName.SIDECAR_DATA]: '.xmp',
-      [UploadFieldName.PROFILE_DATA]: originalExt,
+      [UploadFieldName.PROFILE_DATA]: originalExtension,
     };
 
     return sanitize(`${file.uuid}${lookup[fieldName]}`);
@@ -254,11 +251,9 @@ export class AssetService {
     await this.timeBucketChecks(auth, dto);
     const timeBucketOptions = await this.buildTimeBucketOptions(auth, dto);
     const assets = await this.assetRepository.getTimeBucket(dto.timeBucket, timeBucketOptions);
-    if (!auth.sharedLink || auth.sharedLink?.showExif) {
-      return assets.map((asset) => mapAsset(asset, { withStack: true }));
-    } else {
-      return assets.map((asset) => mapAsset(asset, { stripMetadata: true }));
-    }
+    return !auth.sharedLink || auth.sharedLink?.showExif
+      ? assets.map((asset) => mapAsset(asset, { withStack: true }))
+      : assets.map((asset) => mapAsset(asset, { stripMetadata: true }));
   }
 
   async buildTimeBucketOptions(auth: AuthDto, dto: TimeBucketDto): Promise<TimeBucketOptions> {
@@ -280,111 +275,6 @@ export class AssetService {
 
     return { ...options, userIds };
   }
-  async downloadFile(auth: AuthDto, id: string): Promise<ImmichFileResponse> {
-    await this.access.requirePermission(auth, Permission.ASSET_DOWNLOAD, id);
-
-    const [asset] = await this.assetRepository.getByIds([id]);
-    if (!asset) {
-      throw new BadRequestException('Asset not found');
-    }
-
-    if (asset.isOffline) {
-      throw new BadRequestException('Asset is offline');
-    }
-
-    return new ImmichFileResponse({
-      path: asset.originalPath,
-      contentType: mimeTypes.lookup(asset.originalPath),
-      cacheControl: CacheControl.NONE,
-    });
-  }
-
-  async getDownloadInfo(auth: AuthDto, dto: DownloadInfoDto): Promise<DownloadResponseDto> {
-    const targetSize = dto.archiveSize || HumanReadableSize.GiB * 4;
-    const archives: DownloadArchiveInfo[] = [];
-    let archive: DownloadArchiveInfo = { size: 0, assetIds: [] };
-
-    const assetPagination = await this.getDownloadAssets(auth, dto);
-    for await (const assets of assetPagination) {
-      // motion part of live photos
-      const motionIds = assets.map((asset) => asset.livePhotoVideoId).filter<string>((id): id is string => !!id);
-      if (motionIds.length > 0) {
-        assets.push(...(await this.assetRepository.getByIds(motionIds)));
-      }
-
-      for (const asset of assets) {
-        archive.size += Number(asset.exifInfo?.fileSizeInByte || 0);
-        archive.assetIds.push(asset.id);
-
-        if (archive.size > targetSize) {
-          archives.push(archive);
-          archive = { size: 0, assetIds: [] };
-        }
-      }
-
-      if (archive.assetIds.length > 0) {
-        archives.push(archive);
-      }
-    }
-
-    return {
-      totalSize: archives.reduce((total, item) => (total += item.size), 0),
-      archives,
-    };
-  }
-
-  async downloadArchive(auth: AuthDto, dto: AssetIdsDto): Promise<ImmichReadStream> {
-    await this.access.requirePermission(auth, Permission.ASSET_DOWNLOAD, dto.assetIds);
-
-    const zip = this.storageRepository.createZipStream();
-    const assets = await this.assetRepository.getByIds(dto.assetIds);
-    const paths: Record<string, number> = {};
-
-    for (const { originalPath, originalFileName } of assets) {
-      const ext = extname(originalPath);
-      let filename = `${originalFileName}${ext}`;
-      const count = paths[filename] || 0;
-      paths[filename] = count + 1;
-      if (count !== 0) {
-        filename = `${originalFileName}+${count}${ext}`;
-      }
-
-      zip.addFile(originalPath, filename);
-    }
-
-    void zip.finalize();
-
-    return { stream: zip.stream };
-  }
-
-  private async getDownloadAssets(auth: AuthDto, dto: DownloadInfoDto): Promise<AsyncGenerator<AssetEntity[]>> {
-    const PAGINATION_SIZE = 2500;
-
-    if (dto.assetIds) {
-      const assetIds = dto.assetIds;
-      await this.access.requirePermission(auth, Permission.ASSET_DOWNLOAD, assetIds);
-      const assets = await this.assetRepository.getByIds(assetIds);
-      return (async function* () {
-        yield assets;
-      })();
-    }
-
-    if (dto.albumId) {
-      const albumId = dto.albumId;
-      await this.access.requirePermission(auth, Permission.ALBUM_DOWNLOAD, albumId);
-      return usePagination(PAGINATION_SIZE, (pagination) => this.assetRepository.getByAlbumId(pagination, albumId));
-    }
-
-    if (dto.userId) {
-      const userId = dto.userId;
-      await this.access.requirePermission(auth, Permission.TIMELINE_DOWNLOAD, userId);
-      return usePagination(PAGINATION_SIZE, (pagination) =>
-        this.assetRepository.getByUserId(pagination, userId, { isVisible: true }),
-      );
-    }
-
-    throw new BadRequestException('assetIds, albumId, or userId is required');
-  }
 
   async getStatistics(auth: AuthDto, dto: AssetStatsDto) {
     const stats = await this.assetRepository.getStatistics(auth.user.id, dto);
@@ -398,6 +288,46 @@ export class AssetService {
 
   async getUserAssetsByDeviceId(auth: AuthDto, deviceId: string) {
     return this.assetRepository.getAllByDeviceId(auth.user.id, deviceId);
+  }
+
+  async get(auth: AuthDto, id: string): Promise<AssetResponseDto | SanitizedAssetResponseDto> {
+    await this.access.requirePermission(auth, Permission.ASSET_READ, id);
+
+    const asset = await this.assetRepository.getById(id, {
+      exifInfo: true,
+      tags: true,
+      sharedLinks: true,
+      smartInfo: true,
+      owner: true,
+      faces: {
+        person: true,
+      },
+      stack: {
+        assets: {
+          exifInfo: true,
+        },
+      },
+    });
+
+    if (!asset) {
+      throw new BadRequestException('Asset not found');
+    }
+
+    if (auth.sharedLink && !auth.sharedLink.showExif) {
+      return mapAsset(asset, { stripMetadata: true, withStack: true });
+    }
+
+    const data = mapAsset(asset, { withStack: true });
+
+    if (auth.sharedLink) {
+      delete data.owner;
+    }
+
+    if (data.ownerId !== auth.user.id || auth.sharedLink) {
+      data.people = [];
+    }
+
+    return data;
   }
 
   async update(auth: AuthDto, id: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {
@@ -414,25 +344,51 @@ export class AssetService {
     const { ids, removeParent, dateTimeOriginal, latitude, longitude, ...options } = dto;
     await this.access.requirePermission(auth, Permission.ASSET_UPDATE, ids);
 
+    // TODO: refactor this logic into separate API calls POST /stack, PUT /stack, etc.
+    const stackIdsToCheckForDelete: string[] = [];
     if (removeParent) {
-      (options as Partial<AssetEntity>).stackParentId = null;
+      (options as Partial<AssetEntity>).stack = null;
       const assets = await this.assetRepository.getByIds(ids);
+      stackIdsToCheckForDelete.push(...new Set(assets.filter((a) => !!a.stackId).map((a) => a.stackId!)));
       // This updates the updatedAt column of the parents to indicate that one of its children is removed
       // All the unique parent's -> parent is set to null
-      ids.push(...new Set(assets.filter((a) => !!a.stackParentId).map((a) => a.stackParentId!)));
+      await this.assetRepository.updateAll(
+        assets.filter((a) => !!a.stack?.primaryAssetId).map((a) => a.stack!.primaryAssetId!),
+        { updatedAt: new Date() },
+      );
     } else if (options.stackParentId) {
+      //Creating new stack if parent doesn't have one already. If it does, then we add to the existing stack
       await this.access.requirePermission(auth, Permission.ASSET_UPDATE, options.stackParentId);
+      const primaryAsset = await this.assetRepository.getById(options.stackParentId, { stack: { assets: true } });
+      if (!primaryAsset) {
+        throw new BadRequestException('Asset not found for given stackParentId');
+      }
+      let stack = primaryAsset.stack;
+
+      ids.push(options.stackParentId);
+      const assets = await this.assetRepository.getByIds(ids, { stack: { assets: true } });
+      stackIdsToCheckForDelete.push(
+        ...new Set(assets.filter((a) => !!a.stackId && stack?.id !== a.stackId).map((a) => a.stackId!)),
+      );
+      const assetsWithChildren = assets.filter((a) => a.stack && a.stack.assets.length > 0);
+      ids.push(...assetsWithChildren.flatMap((child) => child.stack!.assets.map((gChild) => gChild.id)));
+
+      if (stack) {
+        await this.assetStackRepository.update({
+          id: stack.id,
+          primaryAssetId: primaryAsset.id,
+          assets: ids.map((id) => ({ id }) as AssetEntity),
+        });
+      } else {
+        stack = await this.assetStackRepository.create({
+          primaryAssetId: primaryAsset.id,
+          assets: ids.map((id) => ({ id }) as AssetEntity),
+        });
+      }
+
       // Merge stacks
-      const assets = await this.assetRepository.getByIds(ids);
-      const assetsWithChildren = assets.filter((a) => a.stack && a.stack.length > 0);
-      ids.push(...assetsWithChildren.flatMap((child) => child.stack!.map((gChild) => gChild.id)));
-
-      // This updates the updatedAt column of the parent to indicate that a new child has been added
-      await this.assetRepository.updateAll([options.stackParentId], { stackParentId: null });
-    }
-
-    for (const id of ids) {
-      await this.updateMetadata({ id, dateTimeOriginal, latitude, longitude });
+      options.stackParentId = undefined;
+      (options as Partial<AssetEntity>).updatedAt = new Date();
     }
 
     for (const id of ids) {
@@ -440,6 +396,13 @@ export class AssetService {
     }
 
     await this.assetRepository.updateAll(ids, options);
+    const stackIdsToDelete = await Promise.all(
+      stackIdsToCheckForDelete.map((id) => this.assetStackRepository.getById(id)),
+    );
+    const stacksToDelete = stackIdsToDelete
+      .flatMap((stack) => (stack ? [stack] : []))
+      .filter((stack) => stack.assets.length < 2);
+    await Promise.all(stacksToDelete.map((as) => this.assetStackRepository.delete(as.id)));
     this.communicationRepository.send(ClientEvent.ASSET_UPDATE, auth.user.id, ids);
   }
 
@@ -470,7 +433,7 @@ export class AssetService {
         person: true,
       },
       library: true,
-      stack: true,
+      stack: { assets: true },
       exifInfo: true,
     });
 
@@ -484,11 +447,17 @@ export class AssetService {
     }
 
     // Replace the parent of the stack children with a new asset
-    if (asset.stack && asset.stack.length != 0) {
-      const stackIds = asset.stack.map((a) => a.id);
-      const newParentId = stackIds[0];
-      await this.assetRepository.updateAll(stackIds.slice(1), { stackParentId: newParentId });
-      await this.assetRepository.updateAll([newParentId], { stackParentId: null });
+    if (asset.stack?.primaryAssetId === id) {
+      const stackAssetIds = asset.stack.assets.map((a) => a.id);
+      if (stackAssetIds.length > 2) {
+        const newPrimaryAssetId = stackAssetIds.find((a) => a !== id)!;
+        await this.assetStackRepository.update({
+          id: asset.stack.id,
+          primaryAssetId: newPrimaryAssetId,
+        });
+      } else {
+        await this.assetStackRepository.delete(asset.stack.id);
+      }
     }
 
     await this.assetRepository.remove(asset);
@@ -525,37 +494,6 @@ export class AssetService {
     }
   }
 
-  async handleTrashAction(auth: AuthDto, action: TrashAction): Promise<void> {
-    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
-      this.assetRepository.getByUserId(pagination, auth.user.id, { trashedBefore: DateTime.now().toJSDate() }),
-    );
-
-    if (action == TrashAction.RESTORE_ALL) {
-      for await (const assets of assetPagination) {
-        const ids = assets.map((a) => a.id);
-        await this.assetRepository.restoreAll(ids);
-        this.communicationRepository.send(ClientEvent.ASSET_RESTORE, auth.user.id, ids);
-      }
-      return;
-    }
-
-    if (action == TrashAction.EMPTY_ALL) {
-      for await (const assets of assetPagination) {
-        await this.jobRepository.queueAll(
-          assets.map((asset) => ({ name: JobName.ASSET_DELETION, data: { id: asset.id } })),
-        );
-      }
-      return;
-    }
-  }
-
-  async restoreAll(auth: AuthDto, dto: BulkIdsDto): Promise<void> {
-    const { ids } = dto;
-    await this.access.requirePermission(auth, Permission.ASSET_RESTORE, ids);
-    await this.assetRepository.restoreAll(ids);
-    this.communicationRepository.send(ClientEvent.ASSET_RESTORE, auth.user.id, ids);
-  }
-
   async updateStackParent(auth: AuthDto, dto: UpdateStackParentDto): Promise<void> {
     const { oldParentId, newParentId } = dto;
     await this.access.requirePermission(auth, Permission.ASSET_READ, oldParentId);
@@ -567,18 +505,24 @@ export class AssetService {
         person: true,
       },
       library: true,
-      stack: true,
+      stack: {
+        assets: true,
+      },
     });
-    if (oldParent != null) {
-      childIds.push(oldParent.id);
-      // Get all children of old parent
-      childIds.push(...(oldParent.stack?.map((a) => a.id) ?? []));
+    if (!oldParent?.stackId) {
+      throw new Error('Asset not found or not in a stack');
     }
+    if (oldParent != null) {
+      // Get all children of old parent
+      childIds.push(oldParent.id, ...(oldParent.stack?.assets.map((a) => a.id) ?? []));
+    }
+    await this.assetStackRepository.update({
+      id: oldParent.stackId,
+      primaryAssetId: newParentId,
+    });
 
-    this.communicationRepository.send(ClientEvent.ASSET_UPDATE, auth.user.id, [...childIds, newParentId]);
-    await this.assetRepository.updateAll(childIds, { stackParentId: newParentId });
-    // Remove ParentId of new parent if this was previously a child of some other asset
-    return this.assetRepository.updateAll([newParentId], { stackParentId: null });
+    this.communicationRepository.send(ClientEvent.ASSET_UPDATE, auth.user.id, [...childIds, newParentId, oldParentId]);
+    await this.assetRepository.updateAll([oldParentId, newParentId, ...childIds], { updatedAt: new Date() });
   }
 
   async run(auth: AuthDto, dto: AssetJobsDto) {
@@ -588,17 +532,20 @@ export class AssetService {
 
     for (const id of dto.assetIds) {
       switch (dto.name) {
-        case AssetJobName.REFRESH_METADATA:
+        case AssetJobName.REFRESH_METADATA: {
           jobs.push({ name: JobName.METADATA_EXTRACTION, data: { id } });
           break;
+        }
 
-        case AssetJobName.REGENERATE_THUMBNAIL:
+        case AssetJobName.REGENERATE_THUMBNAIL: {
           jobs.push({ name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id } });
           break;
+        }
 
-        case AssetJobName.TRANSCODE_VIDEO:
+        case AssetJobName.TRANSCODE_VIDEO: {
           jobs.push({ name: JobName.VIDEO_CONVERSION, data: { id } });
           break;
+        }
       }
     }
 

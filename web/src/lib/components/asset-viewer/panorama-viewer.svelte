@@ -20,9 +20,9 @@
         dataUrl = URL.createObjectURL(data);
         return dataUrl;
       } else {
-        throw new Error('Format de données invalide');
+        throw new TypeError('Format de donnée invalide');
       }
-    } catch (error) {
+    } catch {
       errorMessage = 'Échec du chargement de la ressource';
       return '';
     }

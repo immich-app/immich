@@ -10,22 +10,28 @@
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { convertFromBytes, convertToBytes } from '$lib/utils/byte-converter';
+  import { serverInfo } from '$lib/stores/server-info.store';
 
   export let user: UserResponseDto;
   export let canResetPassword = true;
 
   let error: string;
   let success: string;
-
   let isShowResetPasswordConfirmation = false;
+  let quotaSize = user.quotaSizeInBytes ? convertFromBytes(user.quotaSizeInBytes, 'GiB') : null;
+
+  const previousQutoa = user.quotaSizeInBytes;
+
+  $: quotaSizeWarning =
+    previousQutoa !== convertToBytes(Number(quotaSize), 'GiB') &&
+    !!quotaSize &&
+    convertToBytes(Number(quotaSize), 'GiB') > $serverInfo.diskSizeRaw;
 
   const dispatch = createEventDispatcher<{
     close: void;
     resetPasswordSuccess: void;
     editSuccess: void;
   }>();
-
-  let quotaSize = user.quotaSizeInBytes ? convertFromBytes(user.quotaSizeInBytes, 'GiB') : null;
 
   const editUser = async () => {
     try {
@@ -64,8 +70,8 @@
       if (status == 200) {
         dispatch('resetPasswordSuccess');
       }
-    } catch (e) {
-      console.error("Erreur lors de la réinitialisation du mot de passe de l'utilisateur", e);
+    } catch (error) {
+      console.error("Erreur lors de la réinitialisation du mot de passe de l'utilisateur", error);
       notificationController.show({
         message: "Erreur lors de la réinitialisation du mot de passe de l'utilisateur, contactez votre admnistrateur",
         type: NotificationType.Error,
@@ -102,7 +108,11 @@
     </div>
 
     <div class="m-4 flex flex-col gap-2">
-      <label class="immich-form-label" for="quotaSize">Taille du Quota (Go)</label>
+      <label class="flex items-center gap-2 immich-form-label" for="quotaSize"
+        >Taille du quota (GiB) {#if quotaSizeWarning}
+          <p class="text-red-400 text-sm">Votre quota est supérieur à la taille du disque</p>
+        {/if}</label
+      >
       <input class="immich-form-input" id="quotaSize" name="quotaSize" type="number" min="0" bind:value={quotaSize} />
       <p>Note: Entrer 0 pour un quota illimité</p>
     </div>

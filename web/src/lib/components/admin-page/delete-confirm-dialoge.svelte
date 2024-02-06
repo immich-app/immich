@@ -14,10 +14,10 @@
   const deleteUser = async () => {
     try {
       const deletedUser = await api.userApi.deleteUser({ id: user.id });
-      if (deletedUser.data.deletedAt != null) {
-        dispatch('success');
-      } else {
+      if (deletedUser.data.deletedAt == undefined) {
         dispatch('fail');
+      } else {
+        dispatch('success');
       }
     } catch (error) {
       handleError(error, 'Unable to delete user');

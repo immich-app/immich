@@ -18,7 +18,9 @@ export enum SystemConfigKey {
   FFMPEG_THREADS = 'ffmpeg.threads',
   FFMPEG_PRESET = 'ffmpeg.preset',
   FFMPEG_TARGET_VIDEO_CODEC = 'ffmpeg.targetVideoCodec',
+  FFMPEG_ACCEPTED_VIDEO_CODECS = 'ffmpeg.acceptedVideoCodecs',
   FFMPEG_TARGET_AUDIO_CODEC = 'ffmpeg.targetAudioCodec',
+  FFMPEG_ACCEPTED_AUDIO_CODECS = 'ffmpeg.acceptedAudioCodecs',
   FFMPEG_TARGET_RESOLUTION = 'ffmpeg.targetResolution',
   FFMPEG_MAX_BITRATE = 'ffmpeg.maxBitrate',
   FFMPEG_BFRAMES = 'ffmpeg.bframes',
@@ -28,6 +30,7 @@ export enum SystemConfigKey {
   FFMPEG_TEMPORAL_AQ = 'ffmpeg.temporalAQ',
   FFMPEG_CQ_MODE = 'ffmpeg.cqMode',
   FFMPEG_TWO_PASS = 'ffmpeg.twoPass',
+  FFMPEG_PREFERRED_HW_DEVICE = 'ffmpeg.preferredHwDevice',
   FFMPEG_TRANSCODE = 'ffmpeg.transcode',
   FFMPEG_ACCEL = 'ffmpeg.accel',
   FFMPEG_TONEMAP = 'ffmpeg.tonemap',
@@ -46,6 +49,10 @@ export enum SystemConfigKey {
 
   LIBRARY_SCAN_ENABLED = 'library.scan.enabled',
   LIBRARY_SCAN_CRON_EXPRESSION = 'library.scan.cronExpression',
+
+  LIBRARY_WATCH_ENABLED = 'library.watch.enabled',
+  LIBRARY_WATCH_USE_POLLING = 'library.watch.usePolling',
+  LIBRARY_WATCH_INTERVAL = 'library.watch.interval',
 
   LOGGING_ENABLED = 'logging.enabled',
   LOGGING_LEVEL = 'logging.level',
@@ -70,17 +77,18 @@ export enum SystemConfigKey {
 
   NEW_VERSION_CHECK_ENABLED = 'newVersionCheck.enabled',
 
-  OAUTH_ENABLED = 'oauth.enabled',
-  OAUTH_ISSUER_URL = 'oauth.issuerUrl',
+  OAUTH_AUTO_LAUNCH = 'oauth.autoLaunch',
+  OAUTH_AUTO_REGISTER = 'oauth.autoRegister',
+  OAUTH_BUTTON_TEXT = 'oauth.buttonText',
   OAUTH_CLIENT_ID = 'oauth.clientId',
   OAUTH_CLIENT_SECRET = 'oauth.clientSecret',
-  OAUTH_SCOPE = 'oauth.scope',
-  OAUTH_STORAGE_LABEL_CLAIM = 'oauth.storageLabelClaim',
-  OAUTH_AUTO_LAUNCH = 'oauth.autoLaunch',
-  OAUTH_BUTTON_TEXT = 'oauth.buttonText',
-  OAUTH_AUTO_REGISTER = 'oauth.autoRegister',
+  OAUTH_ENABLED = 'oauth.enabled',
+  OAUTH_ISSUER_URL = 'oauth.issuerUrl',
   OAUTH_MOBILE_OVERRIDE_ENABLED = 'oauth.mobileOverrideEnabled',
   OAUTH_MOBILE_REDIRECT_URI = 'oauth.mobileRedirectUri',
+  OAUTH_SCOPE = 'oauth.scope',
+  OAUTH_SIGNING_ALGORITHM = 'oauth.signingAlgorithm',
+  OAUTH_STORAGE_LABEL_CLAIM = 'oauth.storageLabelClaim',
 
   PASSWORD_LOGIN_ENABLED = 'passwordLogin.enabled',
 
@@ -105,6 +113,7 @@ export enum SystemConfigKey {
 export enum TranscodePolicy {
   ALL = 'all',
   OPTIMAL = 'optimal',
+  BITRATE = 'bitrate',
   REQUIRED = 'required',
   DISABLED = 'disabled',
 }
@@ -162,7 +171,9 @@ export interface SystemConfig {
     threads: number;
     preset: string;
     targetVideoCodec: VideoCodec;
+    acceptedVideoCodecs: VideoCodec[];
     targetAudioCodec: AudioCodec;
+    acceptedAudioCodecs: AudioCodec[];
     targetResolution: string;
     maxBitrate: string;
     bframes: number;
@@ -172,6 +183,7 @@ export interface SystemConfig {
     temporalAQ: boolean;
     cqMode: CQMode;
     twoPass: boolean;
+    preferredHwDevice: string;
     transcode: TranscodePolicy;
     accel: TranscodeHWAccel;
     tonemap: ToneMapping;
@@ -205,17 +217,18 @@ export interface SystemConfig {
     enabled: boolean;
   };
   oauth: {
-    enabled: boolean;
-    issuerUrl: string;
+    autoLaunch: boolean;
+    autoRegister: boolean;
+    buttonText: string;
     clientId: string;
     clientSecret: string;
-    scope: string;
-    storageLabelClaim: string;
-    buttonText: string;
-    autoRegister: boolean;
-    autoLaunch: boolean;
+    enabled: boolean;
+    issuerUrl: string;
     mobileOverrideEnabled: boolean;
     mobileRedirectUri: string;
+    scope: string;
+    signingAlgorithm: string;
+    storageLabelClaim: string;
   };
   passwordLogin: {
     enabled: boolean;
@@ -245,6 +258,11 @@ export interface SystemConfig {
     scan: {
       enabled: boolean;
       cronExpression: string;
+    };
+    watch: {
+      enabled: boolean;
+      usePolling: boolean;
+      interval: number;
     };
   };
   server: {

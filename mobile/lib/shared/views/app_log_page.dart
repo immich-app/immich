@@ -11,8 +11,8 @@ import 'package:intl/intl.dart';
 @RoutePage()
 class AppLogPage extends HookConsumerWidget {
   const AppLogPage({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

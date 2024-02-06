@@ -4,6 +4,7 @@ const probeStubDefaultFormat: VideoFormat = {
   formatName: 'mov,mp4,m4a,3gp,3g2,mj2',
   formatLongName: 'QuickTime / MOV',
   duration: 0,
+  bitrate: 0,
 };
 
 const probeStubDefaultVideoStream: VideoStreamInfo[] = [
@@ -87,6 +88,15 @@ export const probeStub = {
       },
     ],
   }),
+  videoStream40Mbps: Object.freeze<VideoInfo>({
+    ...probeStubDefault,
+    format: {
+      formatName: 'mov,mp4,m4a,3gp,3g2,mj2',
+      formatLongName: 'QuickTime / MOV',
+      duration: 0,
+      bitrate: 40_000_000,
+    },
+  }),
   videoStreamHDR: Object.freeze<VideoInfo>({
     ...probeStubDefault,
     videoStreams: [
@@ -157,6 +167,7 @@ export const probeStub = {
       formatName: 'matroska,webm',
       formatLongName: 'Matroska / WebM',
       duration: 0,
+      bitrate: 0,
     },
   }),
 };

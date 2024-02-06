@@ -35,15 +35,15 @@
 
   const selectAssetHandler = (event: CustomEvent) => {
     const { asset }: { asset: AssetResponseDto } = event.detail;
-    let temp = new Set(selectedAssets);
+    let temporary = new Set(selectedAssets);
 
     if (selectedAssets.has(asset)) {
-      temp.delete(asset);
+      temporary.delete(asset);
     } else {
-      temp.add(asset);
+      temporary.add(asset);
     }
 
-    selectedAssets = temp;
+    selectedAssets = temporary;
   };
 
   const navigateAssetForward = () => {
@@ -53,8 +53,8 @@
         selectedAsset = assets[currentViewAssetIndex];
         pushState(selectedAsset.id);
       }
-    } catch (e) {
-      handleError(e, 'Impossible de naviguer vers la ressource suivante');
+    } catch (error) {
+      handleError(error, 'Impossible de naviguer vers la ressource suivante');
     }
   };
 
@@ -65,8 +65,8 @@
         selectedAsset = assets[currentViewAssetIndex];
         pushState(selectedAsset.id);
       }
-    } catch (e) {
-      handleError(e, 'Impossible de naviguer vers la ressource précédente');
+    } catch (error) {
+      handleError(error, 'Impossible de naviguer vers la ressource précédente');
     }
   };
 

@@ -25,7 +25,7 @@
   const dispatchShowContextMenu = createEventDispatcher<OnShowContextMenu>();
 
   const loadHighQualityThumbnail = async (thubmnailId: string | null) => {
-    if (thubmnailId == null) {
+    if (thubmnailId == undefined) {
       return;
     }
 
@@ -60,7 +60,7 @@
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
-  class="group relative mt-4 rounded-3xl border-[3px] border-transparent p-5 hover:cursor-pointer hover:border-immich-primary/75 dark:hover:border-immich-dark-primary/75"
+  class="group relative mt-4 rounded-2xl border-[1px] border-transparent p-5 hover:cursor-pointer hover:bg-gray-100 hover:border-gray-200 dark:hover:border-gray-800 dark:hover:bg-gray-900"
   on:click={() => dispatchClick('click', album)}
   on:keydown={() => dispatchClick('click', album)}
   on:mouseenter={() => (showVerticalDots = true)}
@@ -87,20 +87,16 @@
       loading={preload ? 'eager' : 'lazy'}
       src={imageData}
       alt={album.id}
-      class={`z-0 h-full w-full rounded-3xl object-cover transition-all duration-300 hover:shadow-lg`}
+      class={`z-0 h-full w-full rounded-xl object-cover transition-all duration-300 hover:shadow-lg`}
       data-testid="album-image"
       draggable="false"
     />
-    <div
-      class="absolute top-0 h-full w-full rounded-3xl {isSharingView
-        ? 'group-hover:bg-yellow-800/25'
-        : 'group-hover:bg-indigo-800/25'} "
-    />
+    <div class="absolute top-0 h-full w-full rounded-3xl" />
   </div>
 
   <div class="mt-4">
     <p
-      class="w-full truncate text-lg font-semibold text-immich-primary dark:text-immich-dark-primary"
+      class="w-full truncate text-lg font-semibold text-black dark:text-white group-hover:text-immich-primary dark:group-hover:text-immich-dark-primary"
       data-testid="album-name"
       title={album.albumName}
     >

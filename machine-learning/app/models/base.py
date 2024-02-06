@@ -6,15 +6,18 @@ from pathlib import Path
 from shutil import rmtree
 from typing import Any
 
+import onnx
 import onnxruntime as ort
 from huggingface_hub import snapshot_download
+from onnx.shape_inference import infer_shapes
+from onnx.tools.update_model_dims import update_inputs_outputs_dims
 from typing_extensions import Buffer
 
 import ann.ann
-from app.models.constants import SUPPORTED_PROVIDERS
+from app.models.constants import STATIC_INPUT_PROVIDERS, SUPPORTED_PROVIDERS
 
 from ..config import get_cache_dir, get_hf_model_name, log, settings
-from ..schemas import ModelType
+from ..schemas import ModelRuntime, ModelType
 from .ann import AnnSession
 
 
@@ -28,6 +31,7 @@ class InferenceModel(ABC):
         providers: list[str] | None = None,
         provider_options: list[dict[str, Any]] | None = None,
         sess_options: ort.SessionOptions | None = None,
+        preferred_runtime: ModelRuntime | None = None,
         **model_kwargs: Any,
     ) -> None:
         self.loaded = False
@@ -36,6 +40,7 @@ class InferenceModel(ABC):
         self.providers = providers if providers is not None else self.providers_default
         self.provider_options = provider_options if provider_options is not None else self.provider_options_default
         self.sess_options = sess_options if sess_options is not None else self.sess_options_default
+        self.preferred_runtime = preferred_runtime if preferred_runtime is not None else self.preferred_runtime_default
 
     def download(self) -> None:
         if not self.cached:
@@ -66,11 +71,13 @@ class InferenceModel(ABC):
         pass
 
     def _download(self) -> None:
+        ignore_patterns = [] if self.preferred_runtime == ModelRuntime.ARMNN else ["*.armnn"]
         snapshot_download(
             get_hf_model_name(self.model_name),
             cache_dir=self.cache_dir,
             local_dir=self.cache_dir,
             local_dir_use_symlinks=False,
+            ignore_patterns=ignore_patterns,
         )
 
     @abstractmethod
@@ -100,19 +107,72 @@ class InferenceModel(ABC):
         self.cache_dir.mkdir(parents=True, exist_ok=True)
 
     def _make_session(self, model_path: Path) -> AnnSession | ort.InferenceSession:
-        armnn_path = model_path.with_suffix(".armnn")
-        if settings.ann and ann.ann.is_available and armnn_path.is_file():
-            session = AnnSession(armnn_path)
-        elif model_path.is_file():
-            session = ort.InferenceSession(
-                model_path.as_posix(),
-                sess_options=self.sess_options,
-                providers=self.providers,
-                provider_options=self.provider_options,
+        if not model_path.is_file():
+            onnx_path = model_path.with_suffix(".onnx")
+            if not onnx_path.is_file():
+                raise ValueError(f"Model path '{model_path}' does not exist")
+
+            log.warning(
+                f"Could not find model path '{model_path}'. " f"Falling back to ONNX model path '{onnx_path}' instead.",
             )
-        else:
-            raise ValueError(f"the file model_path='{model_path}' does not exist")
+            model_path = onnx_path
+
+        if any(provider in STATIC_INPUT_PROVIDERS for provider in self.providers):
+            static_path = model_path.parent / "static_1" / "model.onnx"
+            static_path.parent.mkdir(parents=True, exist_ok=True)
+            if not static_path.is_file():
+                self._convert_to_static(model_path, static_path)
+            model_path = static_path
+
+        match model_path.suffix:
+            case ".armnn":
+                session = AnnSession(model_path)
+            case ".onnx":
+                session = ort.InferenceSession(
+                    model_path.as_posix(),
+                    sess_options=self.sess_options,
+                    providers=self.providers,
+                    provider_options=self.provider_options,
+                )
+            case _:
+                raise ValueError(f"Unsupported model file type: {model_path.suffix}")
         return session
+
+    def _convert_to_static(self, source_path: Path, target_path: Path) -> None:
+        inferred = infer_shapes(onnx.load(source_path))
+        inputs = self._get_static_dims(inferred.graph.input)
+        outputs = self._get_static_dims(inferred.graph.output)
+
+        # check_model gets called in update_inputs_outputs_dims and doesn't work for large models
+        check_model = onnx.checker.check_model
+        try:
+
+            def check_model_stub(*args: Any, **kwargs: Any) -> None:
+                pass
+
+            onnx.checker.check_model = check_model_stub
+            updated_model = update_inputs_outputs_dims(inferred, inputs, outputs)
+        finally:
+            onnx.checker.check_model = check_model
+
+        onnx.save(
+            updated_model,
+            target_path,
+            save_as_external_data=True,
+            all_tensors_to_one_file=False,
+            size_threshold=1048576,
+        )
+
+    def _get_static_dims(self, graph_io: Any, dim_size: int = 1) -> dict[str, list[int]]:
+        return {
+            field.name: [
+                d.dim_value if d.HasField("dim_value") else dim_size
+                for shape in field.type.ListFields()
+                if (dim := shape[1].shape.dim)
+                for d in dim
+            ]
+            for field in graph_io
+        }
 
     @property
     def model_type(self) -> ModelType:
@@ -132,7 +192,7 @@ class InferenceModel(ABC):
 
     @property
     def cached(self) -> bool:
-        return self.cache_dir.exists() and any(self.cache_dir.iterdir())
+        return self.cache_dir.is_dir() and any(self.cache_dir.iterdir())
 
     @property
     def providers(self) -> list[str]:
@@ -214,6 +274,19 @@ class InferenceModel(ABC):
             sess_options.execution_mode = ort.ExecutionMode.ORT_PARALLEL
 
         return sess_options
+
+    @property
+    def preferred_runtime(self) -> ModelRuntime:
+        return self._preferred_runtime
+
+    @preferred_runtime.setter
+    def preferred_runtime(self, preferred_runtime: ModelRuntime) -> None:
+        log.debug(f"Setting preferred runtime to {preferred_runtime}")
+        self._preferred_runtime = preferred_runtime
+
+    @property
+    def preferred_runtime_default(self) -> ModelRuntime:
+        return ModelRuntime.ARMNN if ann.ann.is_available and settings.ann else ModelRuntime.ONNX
 
 
 # HF deep copies configs, so we need to make session options picklable

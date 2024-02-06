@@ -145,11 +145,7 @@
           albumId: album.id,
           type: ReactionType.Like,
         });
-        if (data.length > 0) {
-          isLiked = data[0];
-        } else {
-          isLiked = null;
-        }
+        isLiked = data.length > 0 ? data[0] : null;
       } catch (error) {
         handleError(error, "Impossible d'obtenir les favoris");
       }
@@ -238,8 +234,8 @@
     try {
       const { data } = await api.albumApi.getAllAlbums({ assetId: asset.id });
       appearsInAlbums = data;
-    } catch (e) {
-      console.error("Erreur lors de la récupération de l'album auquel appartient la ressource", e);
+    } catch (error) {
+      console.error("Erreur lors de la récupération de l'album auquel appartient la ressource", error);
     }
   };
 
@@ -260,40 +256,48 @@
 
     switch (key) {
       case 'a':
-      case 'A':
+      case 'A': {
         if (shiftKey) {
           toggleArchive();
         }
         return;
-      case 'ArrowLeft':
+      }
+      case 'ArrowLeft': {
         navigateAssetBackward();
         return;
-      case 'ArrowRight':
+      }
+      case 'ArrowRight': {
         navigateAssetForward();
         return;
+      }
       case 'd':
-      case 'D':
+      case 'D': {
         if (shiftKey) {
           downloadFile(asset);
         }
         return;
-      case 'Delete':
+      }
+      case 'Delete': {
         trashOrDelete(shiftKey);
         return;
-      case 'Escape':
+      }
+      case 'Escape': {
         if (isShowDeleteConfirmation) {
           isShowDeleteConfirmation = false;
           return;
         }
         closeViewer();
         return;
-      case 'f':
+      }
+      case 'f': {
         toggleFavorite();
         return;
-      case 'i':
+      }
+      case 'i': {
         isShowActivity = false;
         $isShowDetail = !$isShowDetail;
         return;
+      }
     }
   };
 
@@ -383,8 +387,8 @@
         message: 'Déplacé dans la corbeille',
         type: NotificationType.Info,
       });
-    } catch (e) {
-      handleError(e, 'Impossible de mettre la ressource à la corbeille');
+    } catch (error) {
+      handleError(error, 'Impossible de mettre la ressource à la corbeille');
     }
   };
 
@@ -398,8 +402,8 @@
         message: 'Ressource définitivement supprimée',
         type: NotificationType.Info,
       });
-    } catch (e) {
-      handleError(e, 'Impossible de supprimer la ressource');
+    } catch (error) {
+      handleError(error, 'Impossible de supprimer la ressource');
     } finally {
       isShowDeleteConfirmation = false;
     }
@@ -537,11 +541,7 @@
   const handleStackedAssetMouseEvent = (e: CustomEvent<{ isMouseOver: boolean }>, asset: AssetResponseDto) => {
     const { isMouseOver } = e.detail;
 
-    if (isMouseOver) {
-      previewStackedAsset = asset;
-    } else {
-      previewStackedAsset = undefined;
-    }
+    previewStackedAsset = isMouseOver ? asset : undefined;
   };
 
   const handleUnstack = async () => {

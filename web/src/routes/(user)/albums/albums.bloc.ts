@@ -3,10 +3,10 @@ import { notificationController, NotificationType } from '$lib/components/shared
 import { type AlbumResponseDto, api } from '@api';
 import { derived, get, writable } from 'svelte/store';
 
-type AlbumsProps = { albums: AlbumResponseDto[] };
+type AlbumsProperties = { albums: AlbumResponseDto[] };
 
-export const useAlbums = (props: AlbumsProps) => {
-  const albums = writable([...props.albums]);
+export const useAlbums = (properties: AlbumsProperties) => {
+  const albums = writable([...properties.albums]);
   const contextMenuPosition = writable<OnShowContextMenuDetail>({ x: 0, y: 0 });
   const contextMenuTargetAlbum = writable<AlbumResponseDto | undefined>();
   const isShowContextMenu = derived(contextMenuTargetAlbum, ($selectedAlbum) => !!$selectedAlbum);

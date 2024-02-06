@@ -24,7 +24,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import _ from 'lodash';
 import { DateTime } from 'luxon';
-import path from 'path';
+import path from 'node:path';
 import {
   And,
   Brackets,
@@ -138,7 +138,7 @@ export class AssetRepository implements IAssetRepository {
 
     const withExif = Object.keys(exifWhere).length > 0 || _withExif;
 
-    const where = _.omitBy(
+    const where: FindOptionsWhere<AssetEntity> = _.omitBy(
       {
         ownerId,
         id,
@@ -182,10 +182,6 @@ export class AssetRepository implements IAssetRepository {
       builder.leftJoinAndSelect('faces.person', 'person');
     }
 
-    if (withStacked) {
-      builder.leftJoinAndSelect('asset.stack', 'stack');
-    }
-
     if (withSmartInfo) {
       builder.leftJoinAndSelect('asset.smartInfo', 'smartInfo');
     }
@@ -194,13 +190,20 @@ export class AssetRepository implements IAssetRepository {
       builder.withDeleted();
     }
 
-    builder
-      .where(where)
+    builder.where(where);
+
+    if (withStacked) {
+      builder
+        .leftJoinAndSelect('asset.stack', 'stack')
+        .leftJoinAndSelect('stack.assets', 'stackedAssets')
+        .andWhere(new Brackets((qb) => qb.where('stack.primaryAssetId = asset.id').orWhere('asset.stackId IS NULL')));
+    }
+
+    return builder
       .skip(size * (page - 1))
       .take(size)
-      .orderBy('asset.fileCreatedAt', order ?? 'DESC');
-
-    return builder.getMany();
+      .orderBy('asset.fileCreatedAt', order ?? 'DESC')
+      .getMany();
   }
 
   create(asset: AssetCreate): Promise<AssetEntity> {
@@ -279,7 +282,9 @@ export class AssetRepository implements IAssetRepository {
         faces: {
           person: true,
         },
-        stack: true,
+        stack: {
+          assets: true,
+        },
       };
     }
 
@@ -466,7 +471,7 @@ export class AssetRepository implements IAssetRepository {
     let where: FindOptionsWhere<AssetEntity> | FindOptionsWhere<AssetEntity>[] = {};
 
     switch (property) {
-      case WithoutProperty.THUMBNAIL:
+      case WithoutProperty.THUMBNAIL: {
         where = [
           { resizePath: IsNull(), isVisible: true },
           { resizePath: '', isVisible: true },
@@ -475,15 +480,17 @@ export class AssetRepository implements IAssetRepository {
           { thumbhash: IsNull(), isVisible: true },
         ];
         break;
+      }
 
-      case WithoutProperty.ENCODED_VIDEO:
+      case WithoutProperty.ENCODED_VIDEO: {
         where = [
           { type: AssetType.VIDEO, encodedVideoPath: IsNull() },
           { type: AssetType.VIDEO, encodedVideoPath: '' },
         ];
         break;
+      }
 
-      case WithoutProperty.EXIF:
+      case WithoutProperty.EXIF: {
         relations = {
           exifInfo: true,
           jobStatus: true,
@@ -495,8 +502,9 @@ export class AssetRepository implements IAssetRepository {
           },
         };
         break;
+      }
 
-      case WithoutProperty.CLIP_ENCODING:
+      case WithoutProperty.SMART_SEARCH: {
         relations = {
           smartSearch: true,
         };
@@ -508,8 +516,9 @@ export class AssetRepository implements IAssetRepository {
           },
         };
         break;
+      }
 
-      case WithoutProperty.OBJECT_TAGS:
+      case WithoutProperty.OBJECT_TAGS: {
         relations = {
           smartInfo: true,
         };
@@ -521,8 +530,9 @@ export class AssetRepository implements IAssetRepository {
           },
         };
         break;
+      }
 
-      case WithoutProperty.FACES:
+      case WithoutProperty.FACES: {
         relations = {
           faces: true,
           jobStatus: true,
@@ -539,8 +549,9 @@ export class AssetRepository implements IAssetRepository {
           },
         };
         break;
+      }
 
-      case WithoutProperty.PERSON:
+      case WithoutProperty.PERSON: {
         relations = {
           faces: true,
         };
@@ -553,16 +564,19 @@ export class AssetRepository implements IAssetRepository {
           },
         };
         break;
+      }
 
-      case WithoutProperty.SIDECAR:
+      case WithoutProperty.SIDECAR: {
         where = [
           { sidecarPath: IsNull(), isVisible: true },
           { sidecarPath: '', isVisible: true },
         ];
         break;
+      }
 
-      default:
+      default: {
         throw new Error(`Invalid getWithout property: ${property}`);
+      }
     }
 
     return paginate(this.repository, pagination, {
@@ -579,18 +593,21 @@ export class AssetRepository implements IAssetRepository {
     let where: FindOptionsWhere<AssetEntity> | FindOptionsWhere<AssetEntity>[] = {};
 
     switch (property) {
-      case WithProperty.SIDECAR:
+      case WithProperty.SIDECAR: {
         where = [{ sidecarPath: Not(IsNull()), isVisible: true }];
         break;
-      case WithProperty.IS_OFFLINE:
+      }
+      case WithProperty.IS_OFFLINE: {
         if (!libraryId) {
           throw new Error('Library id is required when finding offline assets');
         }
         where = [{ isOffline: true, libraryId: libraryId }];
         break;
+      }
 
-      default:
+      default: {
         throw new Error(`Invalid getWith property: ${property}`);
+      }
     }
 
     return paginate(this.repository, pagination, {
@@ -797,8 +814,14 @@ export class AssetRepository implements IAssetRepository {
       builder = builder.andWhere('asset.type = :assetType', { assetType });
     }
 
+    let stackJoined = false;
+
     if (exifInfo !== false) {
-      builder = builder.leftJoinAndSelect('asset.exifInfo', 'exifInfo').leftJoinAndSelect('asset.stack', 'stack');
+      stackJoined = true;
+      builder = builder
+        .leftJoinAndSelect('asset.exifInfo', 'exifInfo')
+        .leftJoinAndSelect('asset.stack', 'stack')
+        .leftJoinAndSelect('stack.assets', 'stackedAssets');
     }
 
     if (albumId) {
@@ -829,7 +852,12 @@ export class AssetRepository implements IAssetRepository {
     }
 
     if (withStacked) {
-      builder = builder.andWhere('asset.stackParentId IS NULL');
+      if (!stackJoined) {
+        builder = builder.leftJoinAndSelect('asset.stack', 'stack').leftJoinAndSelect('stack.assets', 'stackedAssets');
+      }
+      builder = builder.andWhere(
+        new Brackets((qb) => qb.where('stack.primaryAssetId = asset.id').orWhere('asset.stackId IS NULL')),
+      );
     }
 
     return builder;

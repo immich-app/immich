@@ -33,9 +33,9 @@
         await oauth.login(window.location);
         dispatch('success');
         return;
-      } catch (e) {
-        console.error('Error [login-form] [oauth.callback]', e);
-        oauthError = (await getServerErrorMessage(e)) || 'Impossible de terminer la connexion OAuth';
+      } catch (error) {
+        console.error('Error [login-form] [oauth.callback]', error);
+        oauthError = (await getServerErrorMessage(error)) || 'Impossible de terminer la connexion OAuth';
         oauthLoading = false;
       }
     }
@@ -89,7 +89,11 @@
   const handleOAuthLogin = async () => {
     oauthLoading = true;
     oauthError = '';
-    await oauth.authorize(window.location);
+    const success = await oauth.authorize(window.location);
+    if (!success) {
+      oauthLoading = false;
+      oauthError = 'Unable to login with OAuth';
+    }
   };
 </script>
 

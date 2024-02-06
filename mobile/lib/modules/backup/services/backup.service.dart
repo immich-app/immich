@@ -302,8 +302,7 @@ class BackupService {
             onProgress: ((bytes, totalBytes) =>
                 uploadProgressCb(bytes, totalBytes)),
           );
-          req.headers["Authorization"] =
-              "Bearer ${Store.get(StoreKey.accessToken)}";
+          req.headers["x-immich-user-token"] = Store.get(StoreKey.accessToken);
           req.headers["Transfer-Encoding"] = "chunked";
 
           req.fields['deviceAssetId'] = entity.id;
@@ -429,10 +428,10 @@ class BackupService {
 class MultipartRequest extends http.MultipartRequest {
   /// Creates a new [MultipartRequest].
   MultipartRequest(
-    String method,
-    Uri url, {
+    super.method,
+    super.url, {
     required this.onProgress,
-  }) : super(method, url);
+  });
 
   final void Function(int bytes, int totalBytes) onProgress;
 

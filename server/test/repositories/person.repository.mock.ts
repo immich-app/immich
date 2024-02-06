@@ -22,10 +22,11 @@ export const newPersonRepositoryMock = (): jest.Mocked<IPersonRepository> => {
     getRandomFace: jest.fn(),
 
     reassignFaces: jest.fn(),
-    createFace: jest.fn(),
+    createFaces: jest.fn(),
     getFaces: jest.fn(),
     reassignFace: jest.fn(),
     getFaceById: jest.fn(),
     getFaceByIdWithAssets: jest.fn(),
+    getNumberOfPeople: jest.fn(),
   };
 };

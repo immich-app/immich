@@ -33,10 +33,10 @@ export class SharedLinkController {
   async getMySharedLink(
     @Auth() auth: AuthDto,
     @Query() dto: SharedLinkPasswordDto,
-    @Req() req: Request,
+    @Req() request: Request,
     @Res({ passthrough: true }) res: Response,
   ): Promise<SharedLinkResponseDto> {
-    const sharedLinkToken = req.cookies?.[IMMICH_SHARED_LINK_ACCESS_COOKIE];
+    const sharedLinkToken = request.cookies?.[IMMICH_SHARED_LINK_ACCESS_COOKIE];
     if (sharedLinkToken) {
       dto.token = sharedLinkToken;
     }

@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
+    "module": "esnext",
+    "moduleResolution": "bundler",
     "strict": true,
     "declaration": true,
     "removeComments": true,
@@ -8,7 +9,7 @@
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
-    "target": "es2021",
+    "target": "es2022",
     "sourceMap": true,
     "outDir": "./dist",
     "incremental": true,
@@ -19,13 +20,15 @@
     "paths": {
       "@test": ["../server/test"],
       "@test/*": ["../server/test/*"],
+      "@test-utils": ["../server/src/test-utils/utils"],
       "@app/immich": ["../server/src/immich"],
       "@app/immich/*": ["../server/src/immich/*"],
       "@app/infra": ["../server/src/infra"],
       "@app/infra/*": ["../server/src/infra/*"],
       "@app/domain": ["../server/src/domain"],
       "@app/domain/*": ["../server/src/domain/*"]
-    }
+    },
+    "types": ["vitest/globals"]
   },
-  "exclude": ["dist", "node_modules", "upload"]
+  "exclude": ["dist", "node_modules"]
 }

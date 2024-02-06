@@ -11,8 +11,8 @@
   import { user } from '$lib/stores/user.store';
 
   export let data: PageData;
-  let { sharedLink, passwordRequired, sharedLinkKey: key } = data;
-  let { title, description } = data.meta;
+  let { sharedLink, passwordRequired, sharedLinkKey: key, meta } = data;
+  let { title, description } = meta;
   let isOwned = $user ? $user.id === sharedLink?.userId : false;
   let password = '';
 

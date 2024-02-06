@@ -23,8 +23,8 @@ class FileReportDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is FileReportDto &&
-     other.extras == extras &&
-     other.orphans == orphans;
+    _deepEquality.equals(other.extras, extras) &&
+    _deepEquality.equals(other.orphans, orphans);
 
   @override
   int get hashCode =>
@@ -50,8 +50,8 @@ class FileReportDto {
       final json = value.cast<String, dynamic>();
 
       return FileReportDto(
-        extras: json[r'extras'] is List
-            ? (json[r'extras'] as List).cast<String>()
+        extras: json[r'extras'] is Iterable
+            ? (json[r'extras'] as Iterable).cast<String>().toList(growable: false)
             : const [],
         orphans: FileReportItemDto.listFromJson(json[r'orphans']),
       );

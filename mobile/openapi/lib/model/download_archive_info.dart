@@ -23,8 +23,8 @@ class DownloadArchiveInfo {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is DownloadArchiveInfo &&
-     other.assetIds == assetIds &&
-     other.size == size;
+    _deepEquality.equals(other.assetIds, assetIds) &&
+    other.size == size;
 
   @override
   int get hashCode =>
@@ -50,8 +50,8 @@ class DownloadArchiveInfo {
       final json = value.cast<String, dynamic>();
 
       return DownloadArchiveInfo(
-        assetIds: json[r'assetIds'] is List
-            ? (json[r'assetIds'] as List).cast<String>()
+        assetIds: json[r'assetIds'] is Iterable
+            ? (json[r'assetIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
         size: mapValueOfType<int>(json, r'size')!,
       );

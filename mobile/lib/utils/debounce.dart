@@ -38,8 +38,8 @@ Debouncer useDebouncer({
 class _DebouncerHook extends Hook<Debouncer> {
   const _DebouncerHook({
     required this.interval,
-    List<Object?>? keys,
-  }) : super(keys: keys);
+    super.keys,
+  });
 
   final Duration interval;
 

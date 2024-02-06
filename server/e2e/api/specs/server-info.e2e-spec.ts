@@ -2,7 +2,7 @@ import { LoginResponseDto } from '@app/domain';
 import { ServerInfoController } from '@app/immich';
 import { errorStub, userDto } from '@test/fixtures';
 import request from 'supertest';
-import { api } from '../client';
+import { api } from '../../client';
 import { testApp } from '../utils';
 
 describe(`${ServerInfoController.name} (e2e)`, () => {
@@ -73,7 +73,7 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
       const { status, body } = await request(server).get('/server-info/features');
       expect(status).toBe(200);
       expect(body).toEqual({
-        clipEncode: true,
+        smartSearch: true,
         configFile: false,
         facialRecognition: true,
         map: true,

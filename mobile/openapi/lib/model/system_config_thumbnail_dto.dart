@@ -29,10 +29,10 @@ class SystemConfigThumbnailDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigThumbnailDto &&
-     other.colorspace == colorspace &&
-     other.jpegSize == jpegSize &&
-     other.quality == quality &&
-     other.webpSize == webpSize;
+    other.colorspace == colorspace &&
+    other.jpegSize == jpegSize &&
+    other.quality == quality &&
+    other.webpSize == webpSize;
 
   @override
   int get hashCode =>

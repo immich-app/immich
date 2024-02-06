@@ -50,11 +50,11 @@ class OAuthConfigResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is OAuthConfigResponseDto &&
-     other.autoLaunch == autoLaunch &&
-     other.buttonText == buttonText &&
-     other.enabled == enabled &&
-     other.passwordLoginEnabled == passwordLoginEnabled &&
-     other.url == url;
+    other.autoLaunch == autoLaunch &&
+    other.buttonText == buttonText &&
+    other.enabled == enabled &&
+    other.passwordLoginEnabled == passwordLoginEnabled &&
+    other.url == url;
 
   @override
   int get hashCode =>

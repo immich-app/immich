@@ -201,7 +201,7 @@ class PersonApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<AssetResponseDto>') as List)
         .cast<AssetResponseDto>()
-        .toList();
+        .toList(growable: false);
 
     }
     return null;
@@ -352,7 +352,7 @@ class PersonApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<BulkIdResponseDto>') as List)
         .cast<BulkIdResponseDto>()
-        .toList();
+        .toList(growable: false);
 
     }
     return null;
@@ -407,7 +407,7 @@ class PersonApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<PersonResponseDto>') as List)
         .cast<PersonResponseDto>()
-        .toList();
+        .toList(growable: false);
 
     }
     return null;
@@ -457,7 +457,7 @@ class PersonApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<BulkIdResponseDto>') as List)
         .cast<BulkIdResponseDto>()
-        .toList();
+        .toList(growable: false);
 
     }
     return null;

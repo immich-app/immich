@@ -20,7 +20,9 @@ describe('Albums BLoC', () => {
   afterEach(() => {
     const notifications = get(notificationController.notificationList);
 
-    notifications.forEach((notification) => notificationController.removeNotificationById(notification.id));
+    for (const notification of notifications) {
+      notificationController.removeNotificationById(notification.id);
+    }
   });
 
   it('inits with provided albums', () => {

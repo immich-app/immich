@@ -28,12 +28,7 @@ export class PersonRepository implements IPersonRepository {
       .createQueryBuilder()
       .update()
       .set({ personId: newPersonId })
-      .where(
-        _.omitBy(
-          { personId: oldPersonId ? oldPersonId : undefined, id: faceIds ? In(faceIds) : undefined },
-          _.isUndefined,
-        ),
-      )
+      .where(_.omitBy({ personId: oldPersonId ?? undefined, id: faceIds ? In(faceIds) : undefined }, _.isUndefined))
       .execute();
 
     return result.affected ?? 0;
@@ -211,15 +206,27 @@ export class PersonRepository implements IPersonRepository {
     });
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getNumberOfPeople(userId: string): Promise<number> {
+    return this.personRepository
+      .createQueryBuilder('person')
+      .leftJoin('person.faces', 'face')
+      .where('person.ownerId = :userId', { userId })
+      .having('COUNT(face.assetId) != 0')
+      .groupBy('person.id')
+      .withDeleted()
+      .getCount();
+  }
+
   create(entity: Partial<PersonEntity>): Promise<PersonEntity> {
     return this.personRepository.save(entity);
   }
 
-  async createFace(entity: AssetFaceEntity): Promise<void> {
-    if (!entity.embedding) {
-      throw new Error('Embedding is required to create a face');
-    }
-    await this.assetFaceRepository.insert({ ...entity, embedding: () => asVector(entity.embedding, true) });
+  async createFaces(entities: AssetFaceEntity[]): Promise<string[]> {
+    const res = await this.assetFaceRepository.insert(
+      entities.map((entity) => ({ ...entity, embedding: () => asVector(entity.embedding, true) })),
+    );
+    return res.identifiers.map((row) => row.id);
   }
 
   async update(entity: Partial<PersonEntity>): Promise<PersonEntity> {

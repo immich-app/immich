@@ -12,6 +12,7 @@
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
   import PeopleList from './people-list.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
+  import { timeBeforeShowLoadingSpinner } from '$lib/constants';
 
   export let assetIds: string[];
   export let personAssets: PersonResponseDto;
@@ -63,7 +64,7 @@
   };
 
   const handleCreate = async () => {
-    const timeout = setTimeout(() => (showLoadingSpinnerCreate = true), 100);
+    const timeout = setTimeout(() => (showLoadingSpinnerCreate = true), timeBeforeShowLoadingSpinner);
 
     try {
       disableButtons = true;
@@ -88,7 +89,7 @@
   };
 
   const handleReassign = async () => {
-    const timeout = setTimeout(() => (showLoadingSpinnerReassign = true), 100);
+    const timeout = setTimeout(() => (showLoadingSpinnerReassign = true), timeBeforeShowLoadingSpinner);
     try {
       disableButtons = true;
       if (selectedPerson) {
