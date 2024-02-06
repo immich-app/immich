@@ -40,7 +40,7 @@ If npm is not available on your system you can try the Docker version
 docker run -it -v "$(pwd)":/import:ro -e IMMICH_API_KEY=https://your-immich-instance/api -e IMMICH_API_KEY=your-api-key ghcr.io/immich-app/immich-cli:latest
 ```
 
-Please modify the `IMMICH_INSTANCE_URL` and `IMMICH_API_KEY` environment variables as suitable. You can also use a docker env file to store your sensitive API key.
+Please modify the `IMMICH_INSTANCE_URL` and `IMMICH_API_KEY` environment variables as suitable. You can also use a Docker env file to store your sensitive API key.
 
 ## Usage
 
