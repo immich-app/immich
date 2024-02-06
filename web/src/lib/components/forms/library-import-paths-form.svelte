@@ -47,6 +47,11 @@
       library.importPaths = [];
     }
 
+    if (library.importPaths.includes(importPathToAdd)) {
+      // If the import path already exists, don't add it again
+      return;
+    }
+
     try {
       library.importPaths.push(importPathToAdd);
       importPaths = library.importPaths;
