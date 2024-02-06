@@ -5,7 +5,7 @@
   "type": "module",
   "exports": "./dist/index.js",
   "bin": {
-    "immich": "./dist/src/index.js"
+    "immich": "./dist/index.js"
   },
   "license": "MIT",
   "keywords": [
@@ -24,7 +24,7 @@
     "@vitest/coverage-v8": "^1.2.2",
     "byte-size": "^8.1.1",
     "cli-progress": "^3.12.0",
-    "commander": "^11.0.0",
+    "commander": "^12.0.0",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.1.3",

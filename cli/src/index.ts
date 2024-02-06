@@ -3,19 +3,22 @@ import { Command, Option } from 'commander';
 import path from 'node:path';
 import os from 'node:os';
 import { version } from '../package.json';
-import { LoginCommand } from './commands/login';
+import { LoginCommand } from './commands/login.command';
 import { LogoutCommand } from './commands/logout.command';
 import { ServerInfoCommand } from './commands/server-info.command';
 import { UploadCommand } from './commands/upload.command';
 
-const homeDirectory = os.homedir();
-const configDirectory = path.join(homeDirectory, '.config/immich/');
+const defaultConfigDirectory = path.join(os.homedir(), '.config/immich/');
 
 const program = new Command()
   .name('immich')
   .version(version)
   .description('Command line interface for Immich')
-  .addOption(new Option('-d, --config', 'Configuration directory').env('IMMICH_CONFIG_DIR').default(configDirectory));
+  .addOption(
+    new Option('-d, --config-directory', 'Configuration directory where auth.yml will be stored')
+      .env('IMMICH_CONFIG_DIR')
+      .default(defaultConfigDirectory),
+  );
 
 program
   .command('upload')

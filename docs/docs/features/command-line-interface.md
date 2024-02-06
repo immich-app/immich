@@ -15,10 +15,12 @@ If you are looking to import your Google Photos takeout, we recommend this commu
 
 ## Requirements
 
-- Node.js 20.0 or above
+- Node.js 20 or above
 - Npm
 
-## Installation
+If you can't install node/npm, there is also a Docker version available below.
+
+## Installation (NPM)
 
 ```bash
 npm i -g @immich/cli
@@ -29,6 +31,16 @@ NOTE: if you previously installed the legacy CLI, you will need to uninstall it 
 ```bash
 npm uninstall -g immich
 ```
+
+## Installation (Docker)
+
+If npm is not available on your system you can try the Docker version
+
+```bash
+docker run -it -v "$(pwd)":/import:ro -e IMMICH_API_KEY=https://your-immich-instance/api -e IMMICH_API_KEY=your-api-key ghcr.io/immich-app/immich-cli:latest
+```
+
+Please modify the `IMMICH_INSTANCE_URL` and `IMMICH_API_KEY` environment variables as suitable. You can also use a Docker env file to store your sensitive API key.
 
 ## Usage
 

@@ -1,7 +1,7 @@
 import { restoreTempFolder, testApp } from '@test-utils';
 import { CLI_BASE_OPTIONS, TEST_AUTH_FILE, deleteAuthFile, setup, spyOnConsole } from 'test/cli-test-utils';
 import { readFile, stat } from 'node:fs/promises';
-import { LoginCommand } from '../../src/commands/login';
+import { LoginCommand } from '../../src/commands/login.command';
 import yaml from 'yaml';
 
 describe(`login-key (e2e)`, () => {
@@ -58,7 +58,6 @@ describe(`login-key (e2e)`, () => {
     await new LoginCommand(CLI_BASE_OPTIONS).run(instanceUrl, apiKey);
 
     const stats = await stat(TEST_AUTH_FILE);
-
     const mode = (stats.mode & 0o777).toString(8);
 
     expect(mode).toEqual('600');
