@@ -58,11 +58,6 @@ jobs:
             platforms: linux/amd64,linux/arm64
             device: cpu
 
-          - image: immich-cli
-            context: .
-            file: cli/Dockerfile
-            platforms: linux/amd64,linux/arm64
-            device: cpu
     steps:
       - name: Checkout
         uses: actions/checkout@v4
