@@ -7,14 +7,15 @@ import { basename } from 'node:path';
 import { access, constants, stat, unlink } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import os from 'node:os';
+import { UploadFileRequest } from '@immich/sdk';
 
 class Asset {
   readonly path: string;
   readonly deviceId!: string;
 
   deviceAssetId?: string;
-  fileCreatedAt?: string;
-  fileModifiedAt?: string;
+  fileCreatedAt?: Date;
+  fileModifiedAt?: Date;
   sidecarPath?: string;
   fileSize!: number;
   albumName?: string;
@@ -26,13 +27,13 @@ class Asset {
   async prepare() {
     const stats = await stat(this.path);
     this.deviceAssetId = `${basename(this.path)}-${stats.size}`.replaceAll(/\s+/g, '');
-    this.fileCreatedAt = stats.mtime.toISOString();
-    this.fileModifiedAt = stats.mtime.toISOString();
+    this.fileCreatedAt = stats.mtime;
+    this.fileModifiedAt = stats.mtime;
     this.fileSize = stats.size;
     this.albumName = this.extractAlbumName();
   }
 
-  async getUploadFormData(): Promise<FormData> {
+  async getUploadFileRequest(): Promise<UploadFileRequest> {
     if (!this.deviceAssetId) {
       throw new Error('Device asset id not set');
     }
@@ -51,25 +52,15 @@ class Asset {
       sidecarData = new File([await fs.openAsBlob(sideCarPath)], basename(sideCarPath));
     } catch {}
 
-    const data: any = {
+    return {
       assetData: new File([await fs.openAsBlob(this.path)], basename(this.path)),
       deviceAssetId: this.deviceAssetId,
       deviceId: 'CLI',
       fileCreatedAt: this.fileCreatedAt,
       fileModifiedAt: this.fileModifiedAt,
-      isFavorite: String(false),
+      isFavorite: false,
+      sidecarData,
     };
-    const formData = new FormData();
-
-    for (const property in data) {
-      formData.append(property, data[property]);
-    }
-
-    if (sidecarData) {
-      formData.append('sidecarData', sidecarData);
-    }
-
-    return formData;
   }
 
   async delete(): Promise<void> {
@@ -197,10 +188,9 @@ export class UploadCommand extends BaseCommand {
 
         if (!skipAsset && !options.dryRun) {
           if (!skipUpload) {
-            const formData = await asset.getUploadFormData();
-            const response = await this.uploadAsset(formData);
-            const json = await response.json();
-            existingAssetId = json.id;
+            const fileRequest = await asset.getUploadFileRequest();
+            const response = await this.immichApi.assetApi.uploadFile(fileRequest);
+            existingAssetId = response.id;
             uploadCounter++;
             totalSizeUploaded += asset.fileSize;
           }
@@ -257,22 +247,5 @@ export class UploadCommand extends BaseCommand {
         console.log('Deletion complete');
       }
     }
-  }
-
-  private async uploadAsset(data: FormData): Promise<Response> {
-    const url = this.immichApi.instanceUrl + '/asset/upload';
-
-    const response = await fetch(url, {
-      method: 'post',
-      redirect: 'error',
-      headers: {
-        'x-api-key': this.immichApi.apiKey,
-      },
-      body: data,
-    });
-    if (response.status !== 200 && response.status !== 201) {
-      throw new Error(await response.text());
-    }
-    return response;
   }
 }
