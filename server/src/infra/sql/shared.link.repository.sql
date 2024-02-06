@@ -184,8 +184,8 @@ FROM
       )
     WHERE
       (
-        "SharedLinkEntity"."id" = $1
-        AND "SharedLinkEntity"."userId" = $2
+        ("SharedLinkEntity"."id" = $1)
+        AND ("SharedLinkEntity"."userId" = $2)
       )
   ) "distinctAlias"
 ORDER BY
@@ -280,7 +280,7 @@ FROM
     "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."deletedAt" IS NULL
   )
 WHERE
-  ("SharedLinkEntity"."userId" = $1)
+  (("SharedLinkEntity"."userId" = $1))
 ORDER BY
   "SharedLinkEntity"."createdAt" DESC
 
@@ -325,7 +325,7 @@ FROM
         "SharedLinkEntity__SharedLinkEntity_user"."deletedAt" IS NULL
       )
     WHERE
-      ("SharedLinkEntity"."key" = $1)
+      (("SharedLinkEntity"."key" = $1))
   ) "distinctAlias"
 ORDER BY
   "SharedLinkEntity_id" ASC
