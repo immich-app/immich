@@ -65,11 +65,11 @@ FROM
 WHERE
   (
     (
-      "AssetEntity"."ownerId" = $1
-      AND "AssetEntity"."isVisible" = $2
-      AND "AssetEntity"."isArchived" = $3
-      AND NOT ("AssetEntity"."resizePath" IS NULL)
-      AND "AssetEntity"."fileCreatedAt" BETWEEN $4 AND $5
+      ("AssetEntity"."ownerId" = $1)
+      AND ("AssetEntity"."isVisible" = $2)
+      AND ("AssetEntity"."isArchived" = $3)
+      AND (NOT ("AssetEntity"."resizePath" IS NULL))
+      AND ("AssetEntity"."fileCreatedAt" BETWEEN $4 AND $5)
     )
   )
   AND ("AssetEntity"."deletedAt" IS NULL)
@@ -286,7 +286,7 @@ FROM
   LEFT JOIN "asset_stack" "AssetEntity__AssetEntity_stack" ON "AssetEntity__AssetEntity_stack"."id" = "AssetEntity"."stackId"
   LEFT JOIN "assets" "bd93d5747511a4dad4923546c51365bf1a803774" ON "bd93d5747511a4dad4923546c51365bf1a803774"."stackId" = "AssetEntity__AssetEntity_stack"."id"
 WHERE
-  ("AssetEntity"."id" IN ($1))
+  (("AssetEntity"."id" IN ($1)))
 
 -- AssetRepository.deleteAll
 DELETE FROM "assets"
@@ -331,7 +331,13 @@ FROM
     "AssetEntity__AssetEntity_library"."deletedAt" IS NULL
   )
 WHERE
-  (("AssetEntity__AssetEntity_library"."id" IN ($1)))
+  (
+    (
+      (
+        (("AssetEntity__AssetEntity_library"."id" IN ($1)))
+      )
+    )
+  )
   AND ("AssetEntity"."deletedAt" IS NULL)
 
 -- AssetRepository.getByLibraryIdAndOriginalPath
@@ -378,8 +384,8 @@ FROM
     WHERE
       (
         (
-          "AssetEntity__AssetEntity_library"."id" = $1
-          AND "AssetEntity"."originalPath" = $2
+          ((("AssetEntity__AssetEntity_library"."id" = $1)))
+          AND ("AssetEntity"."originalPath" = $2)
         )
       )
       AND ("AssetEntity"."deletedAt" IS NULL)
@@ -397,9 +403,9 @@ FROM
   "assets" "AssetEntity"
 WHERE
   (
-    "AssetEntity"."ownerId" = $1
-    AND "AssetEntity"."deviceId" = $2
-    AND "AssetEntity"."isVisible" = $3
+    ("AssetEntity"."ownerId" = $1)
+    AND ("AssetEntity"."deviceId" = $2)
+    AND ("AssetEntity"."isVisible" = $3)
   )
 
 -- AssetRepository.getById
@@ -436,7 +442,7 @@ SELECT
 FROM
   "assets" "AssetEntity"
 WHERE
-  ("AssetEntity"."id" = $1)
+  (("AssetEntity"."id" = $1))
 LIMIT
   1
 
@@ -484,8 +490,8 @@ FROM
 WHERE
   (
     (
-      "AssetEntity"."ownerId" = $1
-      AND "AssetEntity"."checksum" = $2
+      ("AssetEntity"."ownerId" = $1)
+      AND ("AssetEntity"."checksum" = $2)
     )
   )
   AND ("AssetEntity"."deletedAt" IS NULL)
@@ -529,12 +535,16 @@ WHERE
   (
     (
       (
-        "AssetEntity"."sidecarPath" IS NULL
-        AND "AssetEntity"."isVisible" = $1
+        (
+          ("AssetEntity"."sidecarPath" IS NULL)
+          AND ("AssetEntity"."isVisible" = $1)
+        )
       )
       OR (
-        "AssetEntity"."sidecarPath" = $2
-        AND "AssetEntity"."isVisible" = $3
+        (
+          ("AssetEntity"."sidecarPath" = $2)
+          AND ("AssetEntity"."isVisible" = $3)
+        )
       )
     )
   )

@@ -72,7 +72,7 @@ FROM
       )
       LEFT JOIN "shared_links" "AlbumEntity__AlbumEntity_sharedLinks" ON "AlbumEntity__AlbumEntity_sharedLinks"."albumId" = "AlbumEntity"."id"
     WHERE
-      (("AlbumEntity"."id" = $1))
+      ((("AlbumEntity"."id" = $1)))
       AND ("AlbumEntity"."deletedAt" IS NULL)
   ) "distinctAlias"
 ORDER BY
@@ -135,7 +135,7 @@ FROM
     "AlbumEntity__AlbumEntity_sharedUsers"."deletedAt" IS NULL
   )
 WHERE
-  (("AlbumEntity"."id" IN ($1)))
+  ((("AlbumEntity"."id" IN ($1))))
   AND ("AlbumEntity"."deletedAt" IS NULL)
 
 -- AlbumRepository.getByAssetId
@@ -201,12 +201,20 @@ WHERE
   (
     (
       (
-        "AlbumEntity"."ownerId" = $1
-        AND "AlbumEntity__AlbumEntity_assets"."id" = $2
+        (
+          ("AlbumEntity"."ownerId" = $1)
+          AND ((("AlbumEntity__AlbumEntity_assets"."id" = $2)))
+        )
       )
       OR (
-        "AlbumEntity__AlbumEntity_sharedUsers"."id" = $3
-        AND "AlbumEntity__AlbumEntity_assets"."id" = $4
+        (
+          (
+            (
+              ("AlbumEntity__AlbumEntity_sharedUsers"."id" = $3)
+            )
+          )
+          AND ((("AlbumEntity__AlbumEntity_assets"."id" = $4)))
+        )
       )
     )
   )
@@ -328,7 +336,7 @@ FROM
     "AlbumEntity__AlbumEntity_owner"."deletedAt" IS NULL
   )
 WHERE
-  (("AlbumEntity"."ownerId" = $1))
+  ((("AlbumEntity"."ownerId" = $1)))
   AND ("AlbumEntity"."deletedAt" IS NULL)
 ORDER BY
   "AlbumEntity"."createdAt" DESC
@@ -403,14 +411,38 @@ FROM
 WHERE
   (
     (
-      ("AlbumEntity__AlbumEntity_sharedUsers"."id" = $1)
-      OR (
-        "AlbumEntity__AlbumEntity_sharedLinks"."userId" = $2
+      (
+        (
+          (
+            (
+              ("AlbumEntity__AlbumEntity_sharedUsers"."id" = $1)
+            )
+          )
+        )
       )
       OR (
-        "AlbumEntity"."ownerId" = $3
-        AND NOT (
-          "AlbumEntity__AlbumEntity_sharedUsers"."id" IS NULL
+        (
+          (
+            (
+              (
+                "AlbumEntity__AlbumEntity_sharedLinks"."userId" = $2
+              )
+            )
+          )
+        )
+      )
+      OR (
+        (
+          ("AlbumEntity"."ownerId" = $3)
+          AND (
+            (
+              (
+                NOT (
+                  "AlbumEntity__AlbumEntity_sharedUsers"."id" IS NULL
+                )
+              )
+            )
+          )
         )
       )
     )
@@ -489,9 +521,21 @@ FROM
 WHERE
   (
     (
-      "AlbumEntity"."ownerId" = $1
-      AND "AlbumEntity__AlbumEntity_sharedUsers"."id" IS NULL
-      AND "AlbumEntity__AlbumEntity_sharedLinks"."id" IS NULL
+      ("AlbumEntity"."ownerId" = $1)
+      AND (
+        (
+          (
+            "AlbumEntity__AlbumEntity_sharedUsers"."id" IS NULL
+          )
+        )
+      )
+      AND (
+        (
+          (
+            "AlbumEntity__AlbumEntity_sharedLinks"."id" IS NULL
+          )
+        )
+      )
     )
   )
   AND ("AlbumEntity"."deletedAt" IS NULL)
@@ -586,8 +630,8 @@ WHERE
     WHERE
       (
         (
-          "AlbumEntity"."id" = $1
-          AND "AlbumEntity__AlbumEntity_assets"."id" = $2
+          ("AlbumEntity"."id" = $1)
+          AND ((("AlbumEntity__AlbumEntity_assets"."id" = $2)))
         )
       )
       AND ("AlbumEntity"."deletedAt" IS NULL)

@@ -11,8 +11,8 @@ FROM
   "move_history" "MoveEntity"
 WHERE
   (
-    "MoveEntity"."entityId" = $1
-    AND "MoveEntity"."pathType" = $2
+    ("MoveEntity"."entityId" = $1)
+    AND ("MoveEntity"."pathType" = $2)
   )
 LIMIT
   1
