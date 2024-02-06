@@ -34,7 +34,7 @@ npm uninstall -g immich
 
 ## Installation (Docker)
 
-If npm is not available on your system you can try the docker version
+If npm is not available on your system you can try the Docker version
 
 ```bash
 docker run -it -v "$(pwd)":/import:ro -e IMMICH_API_KEY=https://your-immich-instance/api -e IMMICH_API_KEY=your-api-key ghcr.io/immich-app/immich-cli:latest
