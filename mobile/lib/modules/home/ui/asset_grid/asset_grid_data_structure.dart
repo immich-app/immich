@@ -56,24 +56,6 @@ class RenderList {
   RenderList(this.elements, this.query, this.allAssets)
       : totalAssets = allAssets?.length ?? query!.countSync();
 
-  /// Creates a new render list from assets
-  factory RenderList.fromAssetsOnly(List<Asset> assets) {
-    // Guard empty assets
-    if (assets.isEmpty) {
-      return RenderList([], null, []);
-    }
-
-    final elements = assets
-        .map(
-          (a) => RenderAssetGridElement(
-            RenderAssetGridElementType.assets,
-            date: a.fileCreatedAt,
-          ),
-        )
-        .toList();
-    return RenderList(elements, null, assets);
-  }
-
   bool get isEmpty => totalAssets == 0;
 
   /// Loads the requested assets from the database to an internal buffer if not cached
@@ -332,7 +314,7 @@ class RenderList {
 
   /// Deletes an asset from the render list and clears the buffer
   /// This is only a workaround for deleted images still appearing in the gallery
-  Future<void> deleteAsset(Asset deleteAsset) async{
+  Future<void> deleteAsset(Asset deleteAsset) async {
     allAssets?.remove(deleteAsset);
     _buf.clear();
   }
