@@ -24,5 +24,6 @@ export const immichAppConfig: ConfigModuleOptions = {
     MACHINE_LEARNING_PORT: Joi.number().optional(),
     MICROSERVICES_PORT: Joi.number().optional(),
     SERVER_PORT: Joi.number().optional(),
+    VECTOR_EXTENSION: Joi.string().optional().valid('pgvector', 'pgvecto.rs').default('pgvecto.rs'),
   }),
 };
