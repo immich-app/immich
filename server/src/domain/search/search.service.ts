@@ -1,12 +1,14 @@
 import { AssetEntity } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
 import { Inject, Injectable } from '@nestjs/common';
+import { IsNull, Not } from 'typeorm';
 import { AssetResponseDto, mapAsset } from '../asset';
 import { AuthDto } from '../auth';
-import { PersonResponseDto } from '../person';
+import { PersonResponseDto, mapPerson } from '../person';
 import {
   IAssetRepository,
   IMachineLearningRepository,
+  IMetadataRepository,
   IPartnerRepository,
   IPersonRepository,
   ISmartInfoRepository,
@@ -16,6 +18,7 @@ import {
 } from '../repositories';
 import { FeatureFlag, SystemConfigCore } from '../system-config';
 import { SearchDto, SearchPeopleDto } from './dto';
+import { SearchSuggestionRequestDto, SearchSuggestionResponseDto } from './dto/search-suggestion.dto';
 import { SearchResponseDto } from './response-dto';
 
 @Injectable()
@@ -30,6 +33,7 @@ export class SearchService {
     @Inject(ISmartInfoRepository) private smartInfoRepository: ISmartInfoRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IPartnerRepository) private partnerRepository: IPartnerRepository,
+    @Inject(IMetadataRepository) private metadataRepository: IMetadataRepository,
   ) {
     this.configCore = SystemConfigCore.create(configRepository);
   }
@@ -123,27 +127,51 @@ export class SearchService {
     return userIds;
   }
 
-  getPeopleSuggestions(auth: AuthDto): Promise<PersonResponseDto[]> {
-    throw new Error('Method not implemented.');
-  }
+  async getSearchSuggestions(auth: AuthDto, dto: SearchSuggestionRequestDto): Promise<SearchSuggestionResponseDto> {
+    let response: SearchSuggestionResponseDto = { people: [], data: [] };
 
-  getCountrySuggestions(auth: AuthDto): Promise<string[]> {
-    throw new Error('Method not implemented.');
-  }
+    if (dto.isPeople) {
+      const people = await this.personRepository.getAllWithName(auth.user.id);
+      response = {
+        people: people.map((person) => mapPerson(person)),
+      };
+    }
 
-  getStateSuggestions(auth: AuthDto): Promise<string[]> {
-    throw new Error('Method not implemented.');
-  }
+    if (dto.isCountry) {
+      const country = await this.metadataRepository.getCountries(auth.user.id);
+      response = {
+        data: country,
+      };
+    }
 
-  getCitySuggestions(auth: AuthDto): Promise<string[]> {
-    throw new Error('Method not implemented.');
-  }
+    if (dto.isState) {
+      const states = await this.metadataRepository.getStates(auth.user.id, dto.country);
+      response = {
+        data: states,
+      };
+    }
 
-  getCameraModelSuggestions(auth: AuthDto): Promise<string[]> {
-    throw new Error('Method not implemented.');
-  }
+    if (dto.isCity) {
+      const cities = await this.metadataRepository.getCities(auth.user.id, dto.country, dto.state);
+      response = {
+        data: cities,
+      };
+    }
 
-  getCameraMakeSuggestions(auth: AuthDto): Promise<string[]> {
-    throw new Error('Method not implemented.');
+    if (dto.isCameraMake) {
+      const makes = await this.metadataRepository.getCameraMakes(auth.user.id, dto.model);
+      response = {
+        data: makes,
+      };
+    }
+
+    if (dto.isCameraModel) {
+      const model = await this.metadataRepository.getCameraModels(auth.user.id, dto.make);
+      response = {
+        data: model,
+      };
+    }
+
+    return response;
   }
 }
