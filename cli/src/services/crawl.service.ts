@@ -86,7 +86,7 @@ function findMatchingFiles(matcher: pm.Matcher, directory: string): string[] {
       matchingFiles = [...matchingFiles, ...findMatchingFiles(matcher, filePath)];
     } else {
       // Check if the file matches the pattern
-      if (matcher(file)) {
+      if (matcher(filePath)) {
         matchingFiles.push(filePath);
       }
     }
