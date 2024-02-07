@@ -33,6 +33,7 @@ import 'package:immich_mobile/modules/settings/providers/app_settings.provider.d
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/providers/user.provider.dart';
+import 'package:immich_mobile/shared/ui/delayed_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/shared/ui/photo_view/photo_view_gallery.dart';
@@ -796,7 +797,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                   cacheKey: getThumbnailCacheKey(a, type: webp),
                   httpHeaders: header,
                   progressIndicatorBuilder: (_, __, ___) => const Center(
-                    child: ImmichLoadingIndicator(),
+                    child: DelayedLoadingIndicator(),
                   ),
                   fadeInDuration: const Duration(milliseconds: 0),
                   fit: BoxFit.contain,

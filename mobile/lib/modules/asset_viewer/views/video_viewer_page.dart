@@ -10,7 +10,7 @@ import 'package:immich_mobile/modules/asset_viewer/providers/image_viewer_page_s
 import 'package:immich_mobile/modules/asset_viewer/ui/video_player_controls.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/store.dart';
-import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
+import 'package:immich_mobile/shared/ui/delayed_loading_indicator.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:video_player/video_player.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
@@ -27,6 +27,7 @@ class VideoViewerPage extends HookConsumerWidget {
   final Duration hideControlsTimer;
   final bool showControls;
   final bool showDownloadingIndicator;
+  final Duration delayedLoadingDuration;
 
   const VideoViewerPage({
     super.key,
@@ -39,28 +40,35 @@ class VideoViewerPage extends HookConsumerWidget {
     this.showControls = true,
     this.hideControlsTimer = const Duration(seconds: 5),
     this.showDownloadingIndicator = true,
+    this.delayedLoadingDuration = const Duration(seconds: 3),
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (asset.isLocal && asset.livePhotoVideoId == null) {
       final AsyncValue<File> videoFile = ref.watch(_fileFamily(asset.local!));
-      return AnimatedSwitcher(
-        duration: const Duration(milliseconds: 200),
-        child: videoFile.when(
-          data: (data) => VideoPlayer(
-            file: data,
-            isMotionVideo: false,
-            onVideoEnded: () {},
-          ),
-          error: (error, stackTrace) => Icon(
-            Icons.image_not_supported_outlined,
-            color: context.primaryColor,
-          ),
-          loading: () => showDownloadingIndicator
-              ? const Center(child: ImmichLoadingIndicator())
-              : Container(),
+      return videoFile.when(
+        data: (data) => VideoPlayer(
+          file: data,
+          isMotionVideo: false,
+          onVideoEnded: () {},
         ),
+        error: (error, stackTrace) => Icon(
+          Icons.image_not_supported_outlined,
+          color: context.primaryColor,
+        ),
+        loading: () {
+          print('loading');
+          return Center(
+          child: SizedBox(
+            width: 75,
+            height: 75,
+            child: DelayedLoadingIndicator(
+              delay: delayedLoadingDuration,
+            ),
+          ),
+        );
+        },
       );
     }
     final downloadAssetStatus =
@@ -83,17 +91,12 @@ class VideoViewerPage extends HookConsumerWidget {
           showControls: showControls,
           showDownloadingIndicator: showDownloadingIndicator,
         ),
-        AnimatedOpacity(
-          duration: const Duration(milliseconds: 400),
-          opacity: (downloadAssetStatus == DownloadAssetStatus.loading &&
-                  showDownloadingIndicator)
-              ? 1.0
-              : 0.0,
-          child: SizedBox(
-            height: context.height,
-            width: context.width,
-            child: const Center(
-              child: ImmichLoadingIndicator(),
+        if (downloadAssetStatus == DownloadAssetStatus.loading)
+          Positioned.fill(
+            child: Center(
+              child: DelayedLoadingIndicator(
+                delay: delayedLoadingDuration,
+              ),
             ),
           ),
         ),
@@ -119,6 +122,8 @@ class VideoPlayer extends StatefulWidget {
   final VoidCallback? onVideoEnded;
   final Duration hideControlsTimer;
   final bool showControls;
+  final VoidCallback onVideoEnded;
+  final Duration delayedLoadingDuration;
 
   final Function()? onPlaying;
   final Function()? onPaused;
@@ -144,6 +149,7 @@ class VideoPlayer extends StatefulWidget {
     ),
     this.showControls = true,
     this.showDownloadingIndicator = true,
+    this.delayedLoadingDuration = const Duration(seconds: 3),
   });
 
   @override
@@ -243,6 +249,11 @@ class _VideoPlayerState extends State<VideoPlayer> {
                 const Center(
                   child: ImmichLoadingIndicator(),
                 ),
+              Center(
+                child: DelayedLoadingIndicator(
+                  delay: widget.delayedLoadingDuration,
+                ),
+              ),
             ],
           ),
         ),

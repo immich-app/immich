@@ -5,6 +5,7 @@ import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/store.dart';
+import 'package:immich_mobile/shared/ui/delayed_loading_indicator.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:openapi/api.dart' as api;
@@ -72,7 +73,7 @@ class ImmichImage extends StatelessWidget {
                 ),
               if (useProgressIndicator)
                 const Center(
-                  child: CircularProgressIndicator(),
+                  child: DelayedLoadingIndicator(),
                 ),
             ],
           );
