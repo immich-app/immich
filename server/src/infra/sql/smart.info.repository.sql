@@ -6,7 +6,7 @@ SET
   LOCAL vectors.enable_prefilter = on;
 
 SET
-  LOCAL vectors.search_mode = basic;
+  LOCAL vectors.search_mode = vbase;
 
 SET
   LOCAL vectors.hnsw_ef_search = 100;
@@ -92,7 +92,7 @@ SET
   LOCAL vectors.enable_prefilter = on;
 
 SET
-  LOCAL vectors.search_mode = basic;
+  LOCAL vectors.search_mode = vbase;
 
 SET
   LOCAL vectors.hnsw_ef_search = 100;
