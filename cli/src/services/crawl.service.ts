@@ -69,7 +69,10 @@ export class CrawlService {
   }
 }
 
-const normalize = (s: string) => path.normalize(s.endsWith('/') ? s.slice(0, -1) : s);
+const normalize = (s: string) => {
+  const resolved = path.resolve(s);
+  return resolved.endsWith('/') ? resolved.slice(0, -1) : resolved;
+};
 
 function findMatchingFiles(matcher: pm.Matcher, directory: string): string[] {
   let matchingFiles: string[] = [];
