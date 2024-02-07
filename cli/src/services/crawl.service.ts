@@ -30,9 +30,9 @@ export class CrawlService {
       try {
         const stats = await fs.promises.stat(currentPath);
         if (stats.isFile() || stats.isSymbolicLink()) {
-          crawledFiles.push(stripTrailingSlash(currentPath));
+          crawledFiles.push(normalize(currentPath));
         } else {
-          patterns.push(stripTrailingSlash(currentPath));
+          patterns.push(normalize(currentPath));
         }
       } catch (error: any) {
         if (error.code === 'ENOENT') {
@@ -69,9 +69,7 @@ export class CrawlService {
   }
 }
 
-function stripTrailingSlash(s: string) {
-  return s.endsWith('/') ? s.slice(0, -1) : s;
-}
+const normalize = (s: string) => path.normalize(s.endsWith('/') ? s.slice(0, -1) : s);
 
 function findMatchingFiles(matcher: pm.Matcher, directory: string): string[] {
   let matchingFiles: string[] = [];
