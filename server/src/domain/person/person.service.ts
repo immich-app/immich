@@ -417,7 +417,12 @@ export class PersonService {
       numResults: machineLearning.facialRecognition.minFaces,
     });
 
-    this.logger.debug(`Face ${id} has ${matches.length} match${matches.length == 1 ? '' : 'es'}`);
+    if (matches.length <= 1) {
+      this.logger.debug(`Face ${id} has no matches`);
+      return true;
+    }
+
+    this.logger.debug(`Face ${id} has ${matches.length} matches`);
 
     const isCore = matches.length >= machineLearning.facialRecognition.minFaces;
     if (!isCore && !deferred) {
