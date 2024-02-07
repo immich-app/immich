@@ -3,9 +3,9 @@ import { BaseCommand } from './base-command';
 export class ServerInfoCommand extends BaseCommand {
   public async run() {
     await this.connect();
-    const { data: versionInfo } = await this.immichApi.serverInfoApi.getServerVersion();
-    const { data: mediaTypes } = await this.immichApi.serverInfoApi.getSupportedMediaTypes();
-    const { data: statistics } = await this.immichApi.assetApi.getAssetStatistics();
+    const versionInfo = await this.immichApi.serverInfoApi.getServerVersion();
+    const mediaTypes = await this.immichApi.serverInfoApi.getSupportedMediaTypes();
+    const statistics = await this.immichApi.assetApi.getAssetStatistics();
 
     console.log(`Server Version: ${versionInfo.major}.${versionInfo.minor}.${versionInfo.patch}`);
     console.log(`Image Types: ${mediaTypes.image.map((extension) => extension.replace('.', ''))}`);

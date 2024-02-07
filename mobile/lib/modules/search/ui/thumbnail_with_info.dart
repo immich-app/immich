@@ -46,8 +46,7 @@ class ThumbnailWithInfo extends StatelessWidget {
                       fit: BoxFit.cover,
                       imageUrl: imageUrl!,
                       httpHeaders: {
-                        "Authorization":
-                            "Bearer ${Store.get(StoreKey.accessToken)}",
+                        "x-immich-user-token": Store.get(StoreKey.accessToken),
                       },
                       errorWidget: (context, url, error) =>
                           const Icon(Icons.image_not_supported_outlined),

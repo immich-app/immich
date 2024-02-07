@@ -10,7 +10,6 @@ import {
   SystemConfigApi,
   UserApi,
 } from '@immich/sdk';
-import FormData from 'form-data';
 
 export class ImmichApi {
   public userApi: UserApi;
@@ -31,12 +30,9 @@ export class ImmichApi {
   ) {
     this.config = new Configuration({
       basePath: instanceUrl,
-      baseOptions: {
-        headers: {
-          'x-api-key': apiKey,
-        },
+      headers: {
+        'x-api-key': apiKey,
       },
-      formDataCtor: FormData,
     });
 
     this.userApi = new UserApi(this.config);
@@ -52,6 +48,9 @@ export class ImmichApi {
 
   setApiKey(apiKey: string) {
     this.apiKey = apiKey;
-    this.config.baseOptions.headers['x-api-key'] = apiKey;
+    if (!this.config.headers) {
+      throw new Error('missing headers');
+    }
+    this.config.headers['x-api-key'] = apiKey;
   }
 }

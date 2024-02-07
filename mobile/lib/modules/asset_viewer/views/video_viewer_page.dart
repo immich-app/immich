@@ -68,7 +68,7 @@ class VideoViewerPage extends HookConsumerWidget {
       children: [
         VideoPlayer(
           url: videoUrl,
-          jwtToken: Store.get(StoreKey.accessToken),
+          accessToken: Store.get(StoreKey.accessToken),
           isMotionVideo: isMotionVideo,
           onVideoEnded: onVideoEnded,
           onPaused: onPaused,
@@ -99,7 +99,7 @@ final _fileFamily =
 
 class VideoPlayer extends StatefulWidget {
   final String? url;
-  final String? jwtToken;
+  final String? accessToken;
   final File? file;
   final bool isMotionVideo;
   final VoidCallback onVideoEnded;
@@ -114,7 +114,7 @@ class VideoPlayer extends StatefulWidget {
   const VideoPlayer({
     super.key,
     this.url,
-    this.jwtToken,
+    this.accessToken,
     this.file,
     required this.onVideoEnded,
     required this.isMotionVideo,
@@ -160,7 +160,7 @@ class _VideoPlayerState extends State<VideoPlayer> {
       videoPlayerController = widget.file == null
           ? VideoPlayerController.networkUrl(
               Uri.parse(widget.url!),
-              httpHeaders: {"Authorization": "Bearer ${widget.jwtToken}"},
+              httpHeaders: {"x-immich-user-token": widget.accessToken ?? ""},
             )
           : VideoPlayerController.file(widget.file!);
 

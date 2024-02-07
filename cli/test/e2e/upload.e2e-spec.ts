@@ -26,13 +26,13 @@ describe(`upload (e2e)`, () => {
 
   it('should upload a folder recursively', async () => {
     await new UploadCommand(CLI_BASE_OPTIONS).run([`${IMMICH_TEST_ASSET_PATH}/albums/nature/`], { recursive: true });
-    const { data: assets } = await api.assetApi.getAllAssets({}, { headers: { 'x-api-key': api.apiKey } });
+    const assets = await api.assetApi.getAllAssets({}, { headers: { 'x-api-key': api.apiKey } });
     expect(assets.length).toBeGreaterThan(4);
   });
 
   it('should not create a new album', async () => {
     await new UploadCommand(CLI_BASE_OPTIONS).run([`${IMMICH_TEST_ASSET_PATH}/albums/nature/`], { recursive: true });
-    const { data: albums } = await api.albumApi.getAllAlbums({}, { headers: { 'x-api-key': api.apiKey } });
+    const albums = await api.albumApi.getAllAlbums({}, { headers: { 'x-api-key': api.apiKey } });
     expect(albums.length).toEqual(0);
   });
 
@@ -42,7 +42,7 @@ describe(`upload (e2e)`, () => {
       album: true,
     });
 
-    const { data: albums } = await api.albumApi.getAllAlbums({}, { headers: { 'x-api-key': api.apiKey } });
+    const albums = await api.albumApi.getAllAlbums({}, { headers: { 'x-api-key': api.apiKey } });
     expect(albums.length).toEqual(1);
     const natureAlbum = albums[0];
     expect(natureAlbum.albumName).toEqual('nature');
@@ -59,7 +59,7 @@ describe(`upload (e2e)`, () => {
       album: true,
     });
 
-    const { data: albums } = await api.albumApi.getAllAlbums({}, { headers: { 'x-api-key': api.apiKey } });
+    const albums = await api.albumApi.getAllAlbums({}, { headers: { 'x-api-key': api.apiKey } });
     expect(albums.length).toEqual(1);
     const natureAlbum = albums[0];
     expect(natureAlbum.albumName).toEqual('nature');
@@ -71,7 +71,7 @@ describe(`upload (e2e)`, () => {
       albumName: 'testAlbum',
     });
 
-    const { data: albums } = await api.albumApi.getAllAlbums({}, { headers: { 'x-api-key': api.apiKey } });
+    const albums = await api.albumApi.getAllAlbums({}, { headers: { 'x-api-key': api.apiKey } });
     expect(albums.length).toEqual(1);
     const testAlbum = albums[0];
     expect(testAlbum.albumName).toEqual('testAlbum');

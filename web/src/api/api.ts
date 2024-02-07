@@ -25,7 +25,7 @@ import {
   base,
   common,
   configuration,
-} from '@immich/sdk';
+} from '@immich/sdk/axios';
 import type { ApiParams as ApiParameters } from './types';
 
 class ImmichApi {

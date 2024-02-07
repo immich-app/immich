@@ -12,8 +12,8 @@ import {
   spyOnConsole,
 } from '../../test/cli-test-utils';
 
-const mockPingServer = vi.fn(() => Promise.resolve({ data: { res: 'pong' } }));
-const mockUserInfo = vi.fn(() => Promise.resolve({ data: { email: 'admin@example.com' } }));
+const mockPingServer = vi.fn(() => Promise.resolve({ res: 'pong' }));
+const mockUserInfo = vi.fn(() => Promise.resolve({ email: 'admin@example.com' }));
 
 vi.mock('@immich/sdk', async () => ({
   ...(await vi.importActual('@immich/sdk')),

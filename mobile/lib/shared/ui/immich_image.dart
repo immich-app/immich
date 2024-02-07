@@ -95,11 +95,11 @@ class ImmichImage extends StatelessWidget {
         },
       );
     }
-    final String? token = Store.get(StoreKey.accessToken);
+    final String? accessToken = Store.get(StoreKey.accessToken);
     final String thumbnailRequestUrl = getThumbnailUrl(asset, type: type);
     return CachedNetworkImage(
       imageUrl: thumbnailRequestUrl,
-      httpHeaders: {"Authorization": "Bearer $token"},
+      httpHeaders: {"x-immich-user-token": accessToken ?? ""},
       cacheKey: getThumbnailCacheKey(asset, type: type),
       width: width,
       height: height,
@@ -177,7 +177,7 @@ class ImmichImage extends StatelessWidget {
         getThumbnailUrlForRemoteId(assetId, type: type),
         cacheKey: getThumbnailCacheKeyForRemoteId(assetId, type: type),
         headers: {
-          "Authorization": 'Bearer ${Store.get(StoreKey.accessToken)}',
+          "x-immich-user-token": Store.get(StoreKey.accessToken),
         },
       );
 
@@ -195,10 +195,10 @@ class ImmichImage extends StatelessWidget {
         context,
       );
     } else {
-      final authToken = 'Bearer ${Store.get(StoreKey.accessToken)}';
+      final accessToken = Store.get(StoreKey.accessToken);
       // Precache the remote image since we are not using local images
       return precacheImage(
-        remoteThumbnailProvider(asset, type, {"Authorization": authToken}),
+        remoteThumbnailProvider(asset, type, {"x-immich-user-token": accessToken}),
         context,
       );
     }

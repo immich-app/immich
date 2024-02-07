@@ -1,22 +1,21 @@
-import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import byteSize from 'byte-size';
 import cliProgress from 'cli-progress';
-import FormData from 'form-data';
-import fs, { ReadStream, createReadStream } from 'node:fs';
+import fs, { createReadStream } from 'node:fs';
 import { CrawlService } from '../services/crawl.service';
 import { BaseCommand } from './base-command';
 import { basename } from 'node:path';
 import { access, constants, stat, unlink } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import os from 'node:os';
+import { UploadFileRequest } from '@immich/sdk';
 
 class Asset {
   readonly path: string;
   readonly deviceId!: string;
 
   deviceAssetId?: string;
-  fileCreatedAt?: string;
-  fileModifiedAt?: string;
+  fileCreatedAt?: Date;
+  fileModifiedAt?: Date;
   sidecarPath?: string;
   fileSize!: number;
   albumName?: string;
@@ -28,13 +27,13 @@ class Asset {
   async prepare() {
     const stats = await stat(this.path);
     this.deviceAssetId = `${basename(this.path)}-${stats.size}`.replaceAll(/\s+/g, '');
-    this.fileCreatedAt = stats.mtime.toISOString();
-    this.fileModifiedAt = stats.mtime.toISOString();
+    this.fileCreatedAt = stats.mtime;
+    this.fileModifiedAt = stats.mtime;
     this.fileSize = stats.size;
     this.albumName = this.extractAlbumName();
   }
 
-  async getUploadFormData(): Promise<FormData> {
+  async getUploadFileRequest(): Promise<UploadFileRequest> {
     if (!this.deviceAssetId) {
       throw new Error('Device asset id not set');
     }
@@ -47,31 +46,21 @@ class Asset {
 
     // TODO: doesn't xmp replace the file extension? Will need investigation
     const sideCarPath = `${this.path}.xmp`;
-    let sidecarData: ReadStream | undefined = undefined;
+    let sidecarData: Blob | undefined = undefined;
     try {
       await access(sideCarPath, constants.R_OK);
-      sidecarData = createReadStream(sideCarPath);
+      sidecarData = new File([await fs.openAsBlob(sideCarPath)], basename(sideCarPath));
     } catch {}
 
-    const data: any = {
-      assetData: createReadStream(this.path),
+    return {
+      assetData: new File([await fs.openAsBlob(this.path)], basename(this.path)),
       deviceAssetId: this.deviceAssetId,
       deviceId: 'CLI',
       fileCreatedAt: this.fileCreatedAt,
       fileModifiedAt: this.fileModifiedAt,
-      isFavorite: String(false),
+      isFavorite: false,
+      sidecarData,
     };
-    const formData = new FormData();
-
-    for (const property in data) {
-      formData.append(property, data[property]);
-    }
-
-    if (sidecarData) {
-      formData.append('sidecarData', sidecarData);
-    }
-
-    return formData;
   }
 
   async delete(): Promise<void> {
@@ -115,7 +104,7 @@ export class UploadCommand extends BaseCommand {
     await this.connect();
 
     const formatResponse = await this.immichApi.serverInfoApi.getSupportedMediaTypes();
-    const crawlService = new CrawlService(formatResponse.data.image, formatResponse.data.video);
+    const crawlService = new CrawlService(formatResponse.image, formatResponse.video);
 
     const inputFiles: string[] = [];
     for (const pathArgument of paths) {
@@ -164,7 +153,7 @@ export class UploadCommand extends BaseCommand {
       }
     }
 
-    const { data: existingAlbums } = await this.immichApi.albumApi.getAllAlbums();
+    const existingAlbums = await this.immichApi.albumApi.getAllAlbums();
 
     uploadProgress.start(totalSize, 0);
     uploadProgress.update({ value_formatted: 0, total_formatted: byteSize(totalSize) });
@@ -187,11 +176,11 @@ export class UploadCommand extends BaseCommand {
             assetBulkUploadCheckDto,
           });
 
-          skipUpload = checkResponse.data.results[0].action === 'reject';
+          skipUpload = checkResponse.results[0].action === 'reject';
 
-          const isDuplicate = checkResponse.data.results[0].reason === 'duplicate';
+          const isDuplicate = checkResponse.results[0].reason === 'duplicate';
           if (isDuplicate) {
-            existingAssetId = checkResponse.data.results[0].assetId;
+            existingAssetId = checkResponse.results[0].assetId;
           }
 
           skipAsset = skipUpload && !isDuplicate;
@@ -199,9 +188,9 @@ export class UploadCommand extends BaseCommand {
 
         if (!skipAsset && !options.dryRun) {
           if (!skipUpload) {
-            const formData = await asset.getUploadFormData();
-            const { data } = await this.uploadAsset(formData);
-            existingAssetId = data.id;
+            const fileRequest = await asset.getUploadFileRequest();
+            const response = await this.immichApi.assetApi.uploadFile(fileRequest);
+            existingAssetId = response.id;
             uploadCounter++;
             totalSizeUploaded += asset.fileSize;
           }
@@ -209,10 +198,10 @@ export class UploadCommand extends BaseCommand {
           if ((options.album || options.albumName) && asset.albumName !== undefined) {
             let album = existingAlbums.find((album) => album.albumName === asset.albumName);
             if (!album) {
-              const { data } = await this.immichApi.albumApi.createAlbum({
+              const response = await this.immichApi.albumApi.createAlbum({
                 createAlbumDto: { albumName: asset.albumName },
               });
-              album = data;
+              album = response;
               existingAlbums.push(album);
             }
 
@@ -258,24 +247,5 @@ export class UploadCommand extends BaseCommand {
         console.log('Deletion complete');
       }
     }
-  }
-
-  private async uploadAsset(data: FormData): Promise<AxiosResponse> {
-    const url = this.immichApi.instanceUrl + '/asset/upload';
-
-    const config: AxiosRequestConfig = {
-      method: 'post',
-      maxRedirects: 0,
-      url,
-      headers: {
-        'x-api-key': this.immichApi.apiKey,
-        ...data.getHeaders(),
-      },
-      maxContentLength: Number.POSITIVE_INFINITY,
-      maxBodyLength: Number.POSITIVE_INFINITY,
-      data,
-    };
-
-    return axios(config);
   }
 }

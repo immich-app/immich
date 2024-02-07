@@ -35,7 +35,7 @@ FROM
         "UserTokenEntity__UserTokenEntity_user"."deletedAt" IS NULL
       )
     WHERE
-      ("UserTokenEntity"."token" = $1)
+      (("UserTokenEntity"."token" = $1))
   ) "distinctAlias"
 ORDER BY
   "UserTokenEntity_id" ASC

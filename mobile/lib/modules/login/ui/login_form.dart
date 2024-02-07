@@ -515,7 +515,7 @@ class EmailInput extends StatelessWidget {
   }
 }
 
-class PasswordInput extends StatelessWidget {
+class PasswordInput extends HookConsumerWidget {
   final TextEditingController controller;
   final FocusNode? focusNode;
   final Function()? onSubmit;
@@ -528,9 +528,11 @@ class PasswordInput extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isPasswordVisible = useState<bool>(false);
+
     return TextFormField(
-      obscureText: true,
+      obscureText: !isPasswordVisible.value,
       controller: controller,
       decoration: InputDecoration(
         labelText: 'login_form_label_password'.tr(),
@@ -539,6 +541,14 @@ class PasswordInput extends StatelessWidget {
         hintStyle: const TextStyle(
           fontWeight: FontWeight.normal,
           fontSize: 14,
+        ),
+        suffixIcon: IconButton(
+          onPressed: () => isPasswordVisible.value = !isPasswordVisible.value,
+          icon: Icon(
+            isPasswordVisible.value
+                ? Icons.visibility_off_sharp
+                : Icons.visibility_sharp,
+          ),
         ),
       ),
       autofillHints: const [AutofillHints.password],

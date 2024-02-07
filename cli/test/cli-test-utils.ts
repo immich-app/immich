@@ -7,17 +7,17 @@ export const TEST_AUTH_FILE = path.join(TEST_CONFIG_DIR, 'auth.yml');
 export const TEST_IMMICH_INSTANCE_URL = 'https://test/api';
 export const TEST_IMMICH_API_KEY = 'pNussssKSYo5WasdgalvKJ1n9kdvaasdfbluPg';
 
-export const CLI_BASE_OPTIONS = { config: TEST_CONFIG_DIR };
+export const CLI_BASE_OPTIONS = { configDirectory: TEST_CONFIG_DIR };
 
 export const setup = async () => {
   const api = new ImmichApi(process.env.IMMICH_INSTANCE_URL as string, '');
   await api.authenticationApi.signUpAdmin({
     signUpDto: { email: 'cli@immich.app', password: 'password', name: 'Administrator' },
   });
-  const { data: admin } = await api.authenticationApi.login({
+  const admin = await api.authenticationApi.login({
     loginCredentialDto: { email: 'cli@immich.app', password: 'password' },
   });
-  const { data: apiKey } = await api.keyApi.createApiKey(
+  const apiKey = await api.keyApi.createApiKey(
     { aPIKeyCreateDto: { name: 'CLI Test' } },
     { headers: { Authorization: `Bearer ${admin.accessToken}` } },
   );
