@@ -282,12 +282,12 @@ export class MetadataService {
     return true;
   }
 
-  async handleSidecarSync({ id }: IEntityJob) {
-    return await this.processSidecar(id, true);
+  handleSidecarSync({ id }: IEntityJob) {
+    return this.processSidecar(id, true);
   }
 
-  async handleSidecarDiscovery({ id }: IEntityJob) {
-    return await this.processSidecar(id, false);
+  handleSidecarDiscovery({ id }: IEntityJob) {
+    return this.processSidecar(id, false);
   }
 
   async handleSidecarWrite(job: ISidecarWriteJob) {
@@ -568,7 +568,6 @@ export class MetadataService {
 
     const sidecarPath = `${asset.originalPath}.xmp`;
     const exists = await this.storageRepository.checkFileExists(sidecarPath, constants.R_OK);
-
     if (exists) {
       await this.assetRepository.save({ id: asset.id, sidecarPath });
       return true;
@@ -580,6 +579,7 @@ export class MetadataService {
 
     this.logger.debug(`Sidecar File '${sidecarPath}' was not found, removing sidecarPath for asset ${asset.id}`);
     await this.assetRepository.save({ id: asset.id, sidecarPath: null });
+
     return true;
   }
 }
