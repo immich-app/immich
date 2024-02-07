@@ -3,10 +3,14 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ["cli/**"]
+    paths: 
+      - 'cli/**'
+      - '.github/workflows/cli.yml'
   pull_request:
     branches: [main]
-    paths: ["cli/**"]
+    paths: 
+      - 'cli/**'
+      - '.github/workflows/cli.yml'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
