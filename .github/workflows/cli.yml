@@ -1,4 +1,4 @@
-name: CLI Release
+name: CLI Build
 on:
   workflow_dispatch:
   push:
