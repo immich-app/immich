@@ -30,9 +30,9 @@ export class CrawlService {
       try {
         const stats = await fs.promises.stat(currentPath);
         if (stats.isFile() || stats.isSymbolicLink()) {
-          crawledFiles.push(currentPath);
+          crawledFiles.push(stripTrailingSlash(currentPath));
         } else {
-          patterns.push(currentPath);
+          patterns.push(stripTrailingSlash(currentPath));
         }
       } catch (error: any) {
         if (error.code === 'ENOENT') {
@@ -53,7 +53,7 @@ export class CrawlService {
     }
 
     if (recursive) {
-      searchPattern = searchPattern + '/**/';
+      searchPattern = searchPattern + '/**';
     }
 
     searchPattern = `${searchPattern}/*.{${this.extensions.join(',')}}`;
@@ -63,10 +63,14 @@ export class CrawlService {
       dot: includeHidden,
       ignore: exclusionPatterns,
     });
-    const globbedFiles = findMatchingFiles(matcher, process.cwd());
+    const globbedFiles = findMatchingFiles(matcher, '/');
 
     return [...crawledFiles, ...globbedFiles].sort();
   }
+}
+
+function stripTrailingSlash(s: string) {
+  return s.endsWith('/') ? s.slice(0, -1) : s;
 }
 
 function findMatchingFiles(matcher: pm.Matcher, directory: string): string[] {
