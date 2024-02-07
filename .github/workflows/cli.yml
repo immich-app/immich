@@ -71,7 +71,6 @@ jobs:
         with:
           file: cli/Dockerfile
           platforms: linux/amd64,linux/arm64
-          # Skip pushing when PR from a fork
           push: ${{ !github.event.pull_request.head.repo.fork }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
