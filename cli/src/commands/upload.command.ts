@@ -261,7 +261,7 @@ export class UploadCommand extends BaseCommand {
   }
 
   public async getAlbums(): Promise<Map<string, string>> {
-    const { data: existingAlbums } = await this.immichApi.albumApi.getAllAlbums();
+    const existingAlbums = await this.immichApi.albumApi.getAllAlbums();
 
     const albumMapping = new Map<string, string>();
     for (const album of existingAlbums) {
@@ -305,7 +305,7 @@ export class UploadCommand extends BaseCommand {
       for (const albumNames of chunk(newAlbums, options.concurrency)) {
         const newAlbumIds = await Promise.all(
           albumNames.map((albumName: string) =>
-            this.immichApi.albumApi.createAlbum({ createAlbumDto: { albumName } }).then((r) => r.data.id),
+            this.immichApi.albumApi.createAlbum({ createAlbumDto: { albumName } }).then((r) => r.id),
           ),
         );
 
@@ -400,7 +400,7 @@ export class UploadCommand extends BaseCommand {
       assets: zipDefined(assetsToCheck, checksums).map(([asset, checksum]) => ({ id: asset.path, checksum })),
     };
     const checkResponse = await this.immichApi.assetApi.checkBulkUpload({ assetBulkUploadCheckDto });
-    return checkResponse.data.results;
+    return checkResponse.results;
   }
 
   private async uploadAssets(assets: Asset[]): Promise<string[]> {
@@ -410,7 +410,7 @@ export class UploadCommand extends BaseCommand {
 
   private async crawl(paths: string[], options: UploadOptionsDto): Promise<string[]> {
     const formatResponse = await this.immichApi.serverInfoApi.getSupportedMediaTypes();
-    const crawlService = new CrawlService(formatResponse.data.image, formatResponse.data.video);
+    const crawlService = new CrawlService(formatResponse.image, formatResponse.video);
 
     return crawlService.crawl({
       pathsToCrawl: paths,
