@@ -92,29 +92,35 @@ const AssetSchema = CollectionSchema(
       name: r'remoteId',
       type: IsarType.string,
     ),
-    r'stackCount': PropertySchema(
+    r'selectedForBackup': PropertySchema(
       id: 15,
+      name: r'selectedForBackup',
+      type: IsarType.byte,
+      enumMap: _AssetselectedForBackupEnumValueMap,
+    ),
+    r'stackCount': PropertySchema(
+      id: 16,
       name: r'stackCount',
       type: IsarType.long,
     ),
     r'stackParentId': PropertySchema(
-      id: 16,
+      id: 17,
       name: r'stackParentId',
       type: IsarType.string,
     ),
     r'type': PropertySchema(
-      id: 17,
+      id: 18,
       name: r'type',
       type: IsarType.byte,
       enumMap: _AssettypeEnumValueMap,
     ),
     r'updatedAt': PropertySchema(
-      id: 18,
+      id: 19,
       name: r'updatedAt',
       type: IsarType.dateTime,
     ),
     r'width': PropertySchema(
-      id: 19,
+      id: 20,
       name: r'width',
       type: IsarType.int,
     )
@@ -170,7 +176,15 @@ const AssetSchema = CollectionSchema(
       ],
     )
   },
-  links: {},
+  links: {
+    r'localAlbums': LinkSchema(
+      id: -2567960701398498831,
+      name: r'localAlbums',
+      target: r'LocalAlbum',
+      single: false,
+      linkName: r'assets',
+    )
+  },
   embeddedSchemas: {},
   getId: _assetGetId,
   getLinks: _assetGetLinks,
@@ -234,11 +248,12 @@ void _assetSerialize(
   writer.writeString(offsets[12], object.localId);
   writer.writeLong(offsets[13], object.ownerId);
   writer.writeString(offsets[14], object.remoteId);
-  writer.writeLong(offsets[15], object.stackCount);
-  writer.writeString(offsets[16], object.stackParentId);
-  writer.writeByte(offsets[17], object.type.index);
-  writer.writeDateTime(offsets[18], object.updatedAt);
-  writer.writeInt(offsets[19], object.width);
+  writer.writeByte(offsets[15], object.selectedForBackup.index);
+  writer.writeLong(offsets[16], object.stackCount);
+  writer.writeString(offsets[17], object.stackParentId);
+  writer.writeByte(offsets[18], object.type.index);
+  writer.writeDateTime(offsets[19], object.updatedAt);
+  writer.writeInt(offsets[20], object.width);
 }
 
 Asset _assetDeserialize(
@@ -264,12 +279,15 @@ Asset _assetDeserialize(
     localId: reader.readStringOrNull(offsets[12]),
     ownerId: reader.readLong(offsets[13]),
     remoteId: reader.readStringOrNull(offsets[14]),
-    stackCount: reader.readLongOrNull(offsets[15]),
-    stackParentId: reader.readStringOrNull(offsets[16]),
-    type: _AssettypeValueEnumMap[reader.readByteOrNull(offsets[17])] ??
+    selectedForBackup: _AssetselectedForBackupValueEnumMap[
+            reader.readByteOrNull(offsets[15])] ??
+        BackupSelection.none,
+    stackCount: reader.readLongOrNull(offsets[16]),
+    stackParentId: reader.readStringOrNull(offsets[17]),
+    type: _AssettypeValueEnumMap[reader.readByteOrNull(offsets[18])] ??
         AssetType.other,
-    updatedAt: reader.readDateTime(offsets[18]),
-    width: reader.readIntOrNull(offsets[19]),
+    updatedAt: reader.readDateTime(offsets[19]),
+    width: reader.readIntOrNull(offsets[20]),
   );
   return object;
 }
@@ -312,21 +330,35 @@ P _assetDeserializeProp<P>(
     case 14:
       return (reader.readStringOrNull(offset)) as P;
     case 15:
-      return (reader.readLongOrNull(offset)) as P;
+      return (_AssetselectedForBackupValueEnumMap[
+              reader.readByteOrNull(offset)] ??
+          BackupSelection.none) as P;
     case 16:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readLongOrNull(offset)) as P;
     case 17:
+      return (reader.readStringOrNull(offset)) as P;
+    case 18:
       return (_AssettypeValueEnumMap[reader.readByteOrNull(offset)] ??
           AssetType.other) as P;
-    case 18:
-      return (reader.readDateTime(offset)) as P;
     case 19:
+      return (reader.readDateTime(offset)) as P;
+    case 20:
       return (reader.readIntOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
 }
 
+const _AssetselectedForBackupEnumValueMap = {
+  'none': 0,
+  'select': 1,
+  'exclude': 2,
+};
+const _AssetselectedForBackupValueEnumMap = {
+  0: BackupSelection.none,
+  1: BackupSelection.select,
+  2: BackupSelection.exclude,
+};
 const _AssettypeEnumValueMap = {
   'other': 0,
   'image': 1,
@@ -345,11 +377,13 @@ Id _assetGetId(Asset object) {
 }
 
 List<IsarLinkBase<dynamic>> _assetGetLinks(Asset object) {
-  return [];
+  return [object.localAlbums];
 }
 
 void _assetAttach(IsarCollection<dynamic> col, Id id, Asset object) {
   object.id = id;
+  object.localAlbums
+      .attach(col, col.isar.collection<LocalAlbum>(), r'localAlbums', id);
 }
 
 extension AssetByIndex on IsarCollection<Asset> {
@@ -1863,6 +1897,60 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> selectedForBackupEqualTo(
+      BackupSelection value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'selectedForBackup',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterFilterCondition>
+      selectedForBackupGreaterThan(
+    BackupSelection value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'selectedForBackup',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> selectedForBackupLessThan(
+    BackupSelection value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'selectedForBackup',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> selectedForBackupBetween(
+    BackupSelection lower,
+    BackupSelection upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'selectedForBackup',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
   QueryBuilder<Asset, Asset, QAfterFilterCondition> stackCountIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
@@ -2255,7 +2343,64 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
 
 extension AssetQueryObject on QueryBuilder<Asset, Asset, QFilterCondition> {}
 
-extension AssetQueryLinks on QueryBuilder<Asset, Asset, QFilterCondition> {}
+extension AssetQueryLinks on QueryBuilder<Asset, Asset, QFilterCondition> {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> localAlbums(
+      FilterQuery<LocalAlbum> q) {
+    return QueryBuilder.apply(this, (query) {
+      return query.link(q, r'localAlbums');
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> localAlbumsLengthEqualTo(
+      int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'localAlbums', length, true, length, true);
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> localAlbumsIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'localAlbums', 0, true, 0, true);
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> localAlbumsIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'localAlbums', 0, false, 999999, true);
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> localAlbumsLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'localAlbums', 0, true, length, include);
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterFilterCondition>
+      localAlbumsLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'localAlbums', length, include, 999999, true);
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> localAlbumsLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(
+          r'localAlbums', lower, includeLower, upper, includeUpper);
+    });
+  }
+}
 
 extension AssetQuerySortBy on QueryBuilder<Asset, Asset, QSortBy> {
   QueryBuilder<Asset, Asset, QAfterSortBy> sortByChecksum() {
@@ -2435,6 +2580,18 @@ extension AssetQuerySortBy on QueryBuilder<Asset, Asset, QSortBy> {
   QueryBuilder<Asset, Asset, QAfterSortBy> sortByRemoteIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'remoteId', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterSortBy> sortBySelectedForBackup() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'selectedForBackup', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterSortBy> sortBySelectedForBackupDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'selectedForBackup', Sort.desc);
     });
   }
 
@@ -2692,6 +2849,18 @@ extension AssetQuerySortThenBy on QueryBuilder<Asset, Asset, QSortThenBy> {
     });
   }
 
+  QueryBuilder<Asset, Asset, QAfterSortBy> thenBySelectedForBackup() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'selectedForBackup', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterSortBy> thenBySelectedForBackupDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'selectedForBackup', Sort.desc);
+    });
+  }
+
   QueryBuilder<Asset, Asset, QAfterSortBy> thenByStackCount() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'stackCount', Sort.asc);
@@ -2850,6 +3019,12 @@ extension AssetQueryWhereDistinct on QueryBuilder<Asset, Asset, QDistinct> {
     });
   }
 
+  QueryBuilder<Asset, Asset, QDistinct> distinctBySelectedForBackup() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'selectedForBackup');
+    });
+  }
+
   QueryBuilder<Asset, Asset, QDistinct> distinctByStackCount() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'stackCount');
@@ -2977,6 +3152,13 @@ extension AssetQueryProperty on QueryBuilder<Asset, Asset, QQueryProperty> {
   QueryBuilder<Asset, String?, QQueryOperations> remoteIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'remoteId');
+    });
+  }
+
+  QueryBuilder<Asset, BackupSelection, QQueryOperations>
+      selectedForBackupProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'selectedForBackup');
     });
   }
 

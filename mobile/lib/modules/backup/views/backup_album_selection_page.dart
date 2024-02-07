@@ -24,8 +24,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
     useEffect(
       () {
         ref.read(localAlbumsProvider.notifier).getDeviceAlbums();
-        ref.read(backupProvider.notifier).getBackupInfo();
-        return null;
+        return ref.read(backupProvider.notifier).getBackupInfo;
       },
       [],
     );
@@ -64,7 +63,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                           return Wrap(
                             children: [
                               ...chips.map(
-                                (c) => BackupAlbumSelectionChip(album: c),
+                                (c) => BackupAlbumSelectionChip(backupAlbum: c),
                               ),
                             ],
                           );

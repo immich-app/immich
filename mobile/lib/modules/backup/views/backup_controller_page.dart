@@ -62,31 +62,43 @@ class BackupControllerPage extends HookConsumerWidget {
       [],
     );
 
-    Widget buildSelectedAlbumName() {
+    Future<String> getSelectedAlbumNames() async {
       var text = "backup_controller_page_backup_selected".tr();
-      var selectedAlbums = backupAlbums.valueOrNull?.selectedBackupAlbums ?? [];
+      final selectedAlbums =
+          backupAlbums.valueOrNull?.selectedBackupAlbums ?? [];
+      for (final selected in selectedAlbums) {
+        await selected.album.load();
+        final album = selected.album.value;
+        if (album == null) {
+          continue;
+        }
+        if (album.name == "Recent" || album.name == "Recents") {
+          text += "${album.name} (${'backup_all'.tr()}), ";
+        } else {
+          text += "${album.name}, ";
+        }
+      }
+      return text;
+    }
+
+    Widget buildSelectedAlbumName() {
+      final selectedAlbums =
+          backupAlbums.valueOrNull?.selectedBackupAlbums ?? [];
 
       if (selectedAlbums.isNotEmpty) {
-        for (var selected in selectedAlbums) {
-          final album = selected.album.value;
-          if (album == null) {
-            continue;
-          }
-          if (album.name == "Recent" || album.name == "Recents") {
-            text += "${album.name} (${'backup_all'.tr()}), ";
-          } else {
-            text += "${album.name}, ";
-          }
-        }
-
-        return Padding(
-          padding: const EdgeInsets.only(top: 8.0),
-          child: Text(
-            text.trim().substring(0, text.length - 2),
-            style: context.textTheme.labelLarge?.copyWith(
-              color: context.primaryColor,
-            ),
-          ),
+        return FutureBuilder(
+          future: getSelectedAlbumNames(),
+          builder: (_, data) => data.hasData
+              ? Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Text(
+                    data.data!.trim().substring(0, data.data!.length - 2),
+                    style: context.textTheme.labelLarge?.copyWith(
+                      color: context.primaryColor,
+                    ),
+                  ),
+                )
+              : const SizedBox.shrink(),
         );
       } else {
         return Padding(
@@ -101,27 +113,39 @@ class BackupControllerPage extends HookConsumerWidget {
       }
     }
 
-    Widget buildExcludedAlbumName() {
+    Future<String> getExcludedAlbumNames() async {
       var text = "backup_controller_page_excluded".tr();
-      var excludedAlbums = backupAlbums.valueOrNull?.excludedBackupAlbums ?? [];
+      final excludedAlbums =
+          backupAlbums.valueOrNull?.excludedBackupAlbums ?? [];
+      for (final excluded in excludedAlbums) {
+        excluded.album.loadSync();
+        final album = excluded.album.value;
+        if (album == null) {
+          continue;
+        }
+        text += "${album.name}, ";
+      }
+      return text;
+    }
+
+    Widget buildExcludedAlbumName() {
+      final excludedAlbums =
+          backupAlbums.valueOrNull?.excludedBackupAlbums ?? [];
 
       if (excludedAlbums.isNotEmpty) {
-        for (var excluded in excludedAlbums) {
-          final album = excluded.album.value;
-          if (album == null) {
-            continue;
-          }
-          text += "${album.name}, ";
-        }
-
-        return Padding(
-          padding: const EdgeInsets.only(top: 8.0),
-          child: Text(
-            text.trim().substring(0, text.length - 2),
-            style: context.textTheme.labelLarge?.copyWith(
-              color: Colors.red[300],
-            ),
-          ),
+        return FutureBuilder(
+          future: getExcludedAlbumNames(),
+          builder: (_, data) => data.hasData
+              ? Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Text(
+                    data.data!.trim().substring(0, data.data!.length - 2),
+                    style: context.textTheme.labelLarge?.copyWith(
+                      color: Colors.red[300],
+                    ),
+                  ),
+                )
+              : const SizedBox.shrink(),
         );
       } else {
         return const SizedBox();

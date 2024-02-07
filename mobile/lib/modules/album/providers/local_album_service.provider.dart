@@ -12,4 +12,5 @@ LocalAlbumService localAlbumService(LocalAlbumServiceRef ref) =>
       ref.watch(dbProvider),
       ref.read(hashServiceProvider),
       ref.read(syncServiceProvider),
+      ref,
     );

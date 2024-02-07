@@ -1,5 +1,4 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -7,7 +6,6 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/album/models/album.model.dart';
-import 'package:immich_mobile/modules/album/providers/local_album.provider.dart';
 import 'package:immich_mobile/modules/backup/models/backup_album.model.dart';
 import 'package:immich_mobile/modules/backup/providers/backup_album.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -40,47 +38,20 @@ class BackupAlbumInfoListItem extends ConsumerWidget {
     void onTap() {
       HapticFeedback.selectionClick();
 
-      final backupAlbum = backupAlbums.value?.selectedBackupAlbums
-          .firstWhereOrNull((a) => a.id == album.id);
-      if (backupAlbum == null) {
-        return backupAlbumNotifier.addAlbumForBackup(
-          album,
-          BackupSelection.select,
-        );
-      }
-
-      if (isSelected) {
-        backupAlbumNotifier.updateAlbumSelection(
-          backupAlbum,
-          BackupSelection.none,
-        );
+      if (isSelected || isExcluded) {
+        backupAlbumNotifier.deSelectAlbum(album);
       } else {
-        backupAlbumNotifier.updateAlbumSelection(
-          backupAlbum,
-          BackupSelection.select,
-        );
+        backupAlbumNotifier.selectAlbumForBackup(album);
       }
     }
 
     void onDoubleTap() {
       HapticFeedback.selectionClick();
 
-      final backupAlbum = backupAlbums.value?.excludedBackupAlbums
-          .firstWhereOrNull((a) => a.id == album.id);
-      if (backupAlbum == null) {
-        return backupAlbumNotifier.addAlbumForBackup(
-          album,
-          BackupSelection.exclude,
-        );
-      }
-
       if (isExcluded) {
-        backupAlbumNotifier.updateAlbumSelection(
-          backupAlbum,
-          BackupSelection.none,
-        );
+        backupAlbumNotifier.deSelectAlbum(album);
       } else {
-        if (album.id == LocalAlbums.isAllId || album.name == 'Recents') {
+        if (album.id == LocalAlbum.isAllId || album.name == 'Recents') {
           ImmichToast.show(
             context: context,
             msg: 'Cannot exclude album contains all assets',
@@ -90,10 +61,7 @@ class BackupAlbumInfoListItem extends ConsumerWidget {
           return;
         }
 
-        backupAlbumNotifier.updateAlbumSelection(
-          backupAlbum,
-          BackupSelection.exclude,
-        );
+        backupAlbumNotifier.excludeAlbumFromBackup(album);
       }
     }
 

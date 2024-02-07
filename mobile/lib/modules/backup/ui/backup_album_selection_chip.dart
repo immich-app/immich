@@ -6,24 +6,22 @@ import 'package:immich_mobile/modules/backup/models/backup_album.model.dart';
 import 'package:immich_mobile/modules/backup/providers/backup_album.provider.dart';
 
 class BackupAlbumSelectionChip extends ConsumerWidget {
-  final BackupAlbum album;
+  final BackupAlbum backupAlbum;
 
   const BackupAlbumSelectionChip({
-    required this.album,
+    required this.backupAlbum,
     super.key,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final localAlbum = album.album.value;
+    final localAlbum = backupAlbum.album.value;
     if (localAlbum == null) {
       return const SizedBox.shrink();
     }
 
     void onTap() {
-      return ref
-          .read(backupAlbumsProvider.notifier)
-          .updateAlbumSelection(album, BackupSelection.none);
+      ref.read(backupAlbumsProvider.notifier).deSelectAlbum(localAlbum);
     }
 
     return GestureDetector(
@@ -39,7 +37,7 @@ class BackupAlbumSelectionChip extends ConsumerWidget {
               fontWeight: FontWeight.bold,
             ),
           ),
-          backgroundColor: switch (album.selection) {
+          backgroundColor: switch (backupAlbum.selection) {
             BackupSelection.select => context.primaryColor,
             BackupSelection.exclude => Colors.red[300],
             BackupSelection.none => Colors.transparent

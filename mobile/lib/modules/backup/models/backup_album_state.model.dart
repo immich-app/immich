@@ -27,10 +27,10 @@ class BackupAlbumState {
   @override
   bool operator ==(covariant BackupAlbumState other) {
     if (identical(this, other)) return true;
-    final setEquals = const DeepCollectionEquality().equals;
+    final listEquals = const DeepCollectionEquality().equals;
 
-    return setEquals(other.selectedBackupAlbums, selectedBackupAlbums) &&
-        setEquals(other.excludedBackupAlbums, excludedBackupAlbums);
+    return listEquals(other.selectedBackupAlbums, selectedBackupAlbums) &&
+        listEquals(other.excludedBackupAlbums, excludedBackupAlbums);
   }
 
   @override

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/providers/local_album_service.provider.dart';
 import 'package:immich_mobile/modules/album/services/local_album.service.dart';
+import 'package:immich_mobile/modules/backup/models/backup_album.model.dart';
 import 'package:immich_mobile/shared/models/exif_info.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/models/user.dart';
@@ -388,5 +389,11 @@ QueryBuilder<Asset, Asset, QAfterSortBy> _commonFilterAndSort(
       .isArchivedEqualTo(false)
       .isTrashedEqualTo(false)
       .stackParentIdIsNull()
+      .group(
+        (q) => q
+            .remoteIdIsNotNull()
+            .or()
+            .selectedForBackupEqualTo(BackupSelection.select),
+      )
       .sortByFileCreatedAtDesc();
 }

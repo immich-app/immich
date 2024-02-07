@@ -187,7 +187,7 @@ class _SilverLibraryLocalAlbumGrid extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final localAlbums = ref.watch(localAlbumsProvider).valueOrNull ?? [];
     final localWithoutRecents =
-        localAlbums.where((e) => e.id != LocalAlbums.isAllId).toList();
+        localAlbums.where((e) => e.id != LocalAlbum.isAllId).toList();
 
     return SliverPadding(
       padding: const EdgeInsets.all(12),
