@@ -8,7 +8,7 @@ import { basename } from 'node:path';
 import { ImmichApi } from 'src/services/api.service';
 import { CrawlService } from '../services/crawl.service';
 import { BaseCommand } from './base-command';
-import { chunk, zip } from 'lodash';
+import { chunk, zip } from 'lodash-es';
 import { AssetBulkUploadCheckResult } from '@immich/sdk';
 
 const zipDefined = zip as <T, U>(a: T[], b: U[]) => [T, U][];
