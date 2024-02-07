@@ -86,7 +86,7 @@ function findMatchingFiles(matcher: pm.Matcher, directory: string): string[] {
         matchingFiles.push(filePath);
       }
     }
-  };
+  }
 
   return matchingFiles;
 }
