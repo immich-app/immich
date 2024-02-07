@@ -417,6 +417,7 @@ export class PersonService {
       numResults: machineLearning.facialRecognition.minFaces,
     });
 
+    // `matches` also includes the face itself
     if (matches.length <= 1) {
       this.logger.debug(`Face ${id} has no matches`);
       return true;
@@ -431,7 +432,7 @@ export class PersonService {
       return true;
     }
 
-    let personId = matches.find((match) => match.face.personId)?.face.personId; // `matches` also includes the face itself
+    let personId = matches.find((match) => match.face.personId)?.face.personId;
     if (!personId) {
       const matchWithPerson = await this.smartInfoRepository.searchFaces({
         userIds: [face.asset.ownerId],
