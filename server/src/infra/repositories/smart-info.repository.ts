@@ -212,7 +212,7 @@ export class SmartInfoRepository implements ISmartInfoRepository {
       return 'SET LOCAL hnsw.ef_search = 1000;'; // mitigate post-filter recall
     }
 
-    let runtimeConfig = 'SET LOCAL vectors.enable_prefilter=on; SET LOCAL vectors.search_mode=basic;';
+    let runtimeConfig = 'SET LOCAL vectors.enable_prefilter=on; SET LOCAL vectors.search_mode=vbase;';
     if (numResults) {
       runtimeConfig += ` SET LOCAL vectors.hnsw_ef_search = ${numResults};`;
     }
