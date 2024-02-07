@@ -314,8 +314,9 @@ class RenderList {
 
   /// Deletes an asset from the render list and clears the buffer
   /// This is only a workaround for deleted images still appearing in the gallery
-  Future<void> deleteAsset(Asset deleteAsset) async {
+  void deleteAsset(Asset deleteAsset) {
     allAssets?.remove(deleteAsset);
     _buf.clear();
+    _bufOffset = 0;
   }
 }
