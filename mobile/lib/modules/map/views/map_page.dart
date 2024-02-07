@@ -11,6 +11,7 @@ import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/latlngbounds_extension.dart';
 import 'package:immich_mobile/extensions/maplibrecontroller_extensions.dart';
+import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/modules/map/models/map_event.model.dart';
 import 'package:immich_mobile/modules/map/models/map_marker.dart';
 import 'package:immich_mobile/modules/map/providers/map_marker.provider.dart';
@@ -181,8 +182,7 @@ class MapPage extends HookConsumerWidget {
       context.pushRoute(
         GalleryViewerRoute(
           initialIndex: 0,
-          loadAsset: (index) => asset,
-          totalAssets: 1,
+          renderList: RenderList.fromAssetsOnly([asset]),
           heroOffset: 0,
         ),
       );

@@ -9,6 +9,7 @@ import 'package:immich_mobile/modules/album/views/asset_selection_page.dart';
 import 'package:immich_mobile/modules/album/views/create_album_page.dart';
 import 'package:immich_mobile/modules/album/views/library_page.dart';
 import 'package:immich_mobile/modules/backup/views/backup_options_page.dart';
+import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/modules/map/views/map_location_picker_page.dart';
 import 'package:immich_mobile/modules/map/views/map_page.dart';
 import 'package:immich_mobile/modules/memories/models/memory.dart';

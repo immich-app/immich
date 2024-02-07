@@ -1,8 +1,5 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
 import 'package:immich_mobile/utils/storage_indicator.dart';
@@ -10,30 +7,26 @@ import 'package:isar/isar.dart';
 
 class ThumbnailImage extends StatelessWidget {
   final Asset asset;
-  final int index;
-  final Asset Function(int index) loadAsset;
-  final int totalAssets;
   final bool showStorageIndicator;
   final bool showStack;
   final bool isSelected;
   final bool multiselectEnabled;
-  final Function? onSelect;
-  final Function? onDeselect;
+  final bool canDeselect;
   final int heroOffset;
+  final Function()? onTap;
+  final Function()? onLongPress;
 
   const ThumbnailImage({
     super.key,
     required this.asset,
-    required this.index,
-    required this.loadAsset,
-    required this.totalAssets,
     this.showStorageIndicator = true,
     this.showStack = false,
     this.isSelected = false,
     this.multiselectEnabled = false,
-    this.onDeselect,
-    this.onSelect,
     this.heroOffset = 0,
+    this.canDeselect = true,
+    this.onTap,
+    this.onLongPress,
   });
 
   @override
@@ -146,11 +139,7 @@ class ThumbnailImage extends StatelessWidget {
       }
       return Container(
         decoration: BoxDecoration(
-          border: Border.all(
-            width: 0,
-            color: onDeselect == null ? Colors.grey : assetContainerColor,
-          ),
-          color: onDeselect == null ? Colors.grey : assetContainerColor,
+          color: canDeselect ? assetContainerColor : Colors.grey,
         ),
         child: ClipRRect(
           borderRadius: const BorderRadius.only(
@@ -165,29 +154,8 @@ class ThumbnailImage extends StatelessWidget {
     }
 
     return GestureDetector(
-      onTap: () {
-        if (multiselectEnabled) {
-          if (isSelected) {
-            onDeselect?.call();
-          } else {
-            onSelect?.call();
-          }
-        } else {
-          context.pushRoute(
-            GalleryViewerRoute(
-              initialIndex: index,
-              loadAsset: loadAsset,
-              totalAssets: totalAssets,
-              heroOffset: heroOffset,
-              showStack: showStack,
-            ),
-          );
-        }
-      },
-      onLongPress: () {
-        onSelect?.call();
-        HapticFeedback.heavyImpact();
-      },
+      onTap: onTap,
+      onLongPress: onLongPress,
       child: Stack(
         children: [
           AnimatedContainer(
@@ -196,9 +164,7 @@ class ThumbnailImage extends StatelessWidget {
             decoration: BoxDecoration(
               border: multiselectEnabled && isSelected
                   ? Border.all(
-                      color: onDeselect == null
-                          ? Colors.grey
-                          : assetContainerColor,
+                      color: canDeselect ? assetContainerColor : Colors.grey,
                       width: 8,
                     )
                   : const Border(),

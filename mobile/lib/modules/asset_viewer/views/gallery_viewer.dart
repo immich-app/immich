@@ -23,6 +23,7 @@ import 'package:immich_mobile/modules/asset_viewer/ui/exif_bottom_sheet.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/top_control_app_bar.dart';
 import 'package:immich_mobile/modules/asset_viewer/views/video_viewer_page.dart';
 import 'package:immich_mobile/modules/backup/providers/manual_upload.provider.dart';
+import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/modules/home/ui/upload_dialog.dart';
 import 'package:immich_mobile/modules/partner/providers/partner.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -46,17 +47,15 @@ import 'package:openapi/api.dart' show ThumbnailFormat;
 @RoutePage()
 // ignore: must_be_immutable
 class GalleryViewerPage extends HookConsumerWidget {
-  final Asset Function(int index) loadAsset;
-  final int totalAssets;
   final int initialIndex;
   final int heroOffset;
   final bool showStack;
+  final RenderList renderList;
 
   GalleryViewerPage({
     super.key,
-    required this.initialIndex,
-    required this.loadAsset,
-    required this.totalAssets,
+    required this.renderList,
+    this.initialIndex = 0,
     this.heroOffset = 0,
     this.showStack = false,
   }) : controller = PageController(initialPage: initialIndex);
@@ -69,6 +68,8 @@ class GalleryViewerPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(appSettingsServiceProvider);
+    final loadAsset = renderList.loadAsset;
+    final totalAssets = useState(renderList.totalAssets);
     final isLoadPreview = useState(AppSettingsEnum.loadPreview.defaultValue);
     final isLoadOriginal = useState(AppSettingsEnum.loadOriginal.defaultValue);
     final isZoomed = useState<bool>(false);
@@ -136,8 +137,7 @@ class GalleryViewerPage extends HookConsumerWidget {
         // swallow error silently
         debugPrint('Error precaching next image: $exception, $stackTrace');
       }
-
-      if (index < totalAssets && index >= 0) {
+      if (index < totalAssets.value && index >= 0) {
         final asset = loadAsset(index);
         precacheImage(
           ImmichImage.imageProvider(asset: asset),
@@ -199,16 +199,14 @@ class GalleryViewerPage extends HookConsumerWidget {
           force: force,
         );
         if (isDeleted && isParent) {
-          if (totalAssets == 1) {
+          // Workaround for asset remaining in the gallery
+          renderList.deleteAsset(deleteAsset);
+          if (totalAssets.value == 1) {
             // Handle only one asset
             context.popRoute();
-          } else {
-            // Go to next page otherwise
-            controller.nextPage(
-              duration: const Duration(milliseconds: 100),
-              curve: Curves.fastLinearToSlowEaseIn,
-            );
           }
+
+          totalAssets.value -= 1;
         }
         return isDeleted;
       }
@@ -751,7 +749,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                       ? const ScrollPhysics() // Use bouncing physics for iOS
                       : const ClampingScrollPhysics() // Use heavy physics for Android
                   ),
-              itemCount: totalAssets,
+              itemCount: totalAssets.value,
               scrollDirection: Axis.horizontal,
               onPageChanged: (value) {
                 final next = currentIndex.value < value ? value + 1 : value - 1;
