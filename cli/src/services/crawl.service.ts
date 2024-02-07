@@ -1,5 +1,6 @@
-import { glob } from 'glob';
+import pm from 'picomatch';
 import * as fs from 'node:fs';
+import * as path from 'node:path';
 
 export class CrawlOptions {
   pathsToCrawl!: string[];
@@ -57,14 +58,35 @@ export class CrawlService {
 
     searchPattern = `${searchPattern}/*.{${this.extensions.join(',')}}`;
 
-    const globbedFiles = await glob(searchPattern, {
-      absolute: true,
+    const matcher = pm(searchPattern, {
       nocase: true,
-      nodir: true,
       dot: includeHidden,
       ignore: exclusionPatterns,
     });
+    const globbedFiles = findMatchingFiles(matcher, process.cwd());
 
     return [...crawledFiles, ...globbedFiles].sort();
   }
+}
+
+function findMatchingFiles(matcher: pm.Matcher, directory: string): string[] {
+  let matchingFiles: string[] = [];
+
+  const files = fs.readdirSync(directory);
+  for (const file of files) {
+    const filePath = path.join(directory, file);
+    const isDirectory = fs.statSync(filePath).isDirectory();
+
+    if (isDirectory) {
+      // Recursively search in sub-directories
+      matchingFiles = [...matchingFiles, ...findMatchingFiles(matcher, filePath)];
+    } else {
+      // Check if the file matches the pattern
+      if (matcher(file)) {
+        matchingFiles.push(filePath);
+      }
+    }
+  };
+
+  return matchingFiles;
 }
