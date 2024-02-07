@@ -1,6 +1,12 @@
 name: CLI Release
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ["cli/**"]
+  pull_request:
+    branches: [main]
+    paths: ["cli/**"]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -26,6 +32,7 @@ jobs:
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
+        if: ${{ github.event_name == 'workflow_dispatch' }}
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
@@ -41,18 +48,27 @@ jobs:
         id: metadata
         uses: docker/metadata-action@v5
         with:
+          flavor: |
+            # Disable latest tag
+            latest=false
           images: |
             name=ghcr.io/${{ github.repository_owner }}/immich-cli
           tags: |
+            # Tag with branch name
+            type=ref,event=branch,suffix=${{ matrix.suffix }}
+            # Tag with pr-number
+            type=ref,event=pr,suffix=${{ matrix.suffix }}
             # Tag with version on release
             type=raw,value=${{ steps.package-version.outputs.version }},enable=${{ github.event_name == 'workflow_dispatch' }}
+            type=raw,value=release,enable=${{ github.event_name == 'workflow_dispatch' }}
 
       - name: Build and push image
         uses: docker/build-push-action@v5.1.0
         with:
           context: cli/
           platforms: linux/amd64,linux/arm64
-          push: true
+          # Skip pushing when PR from a fork
+          push: ${{ !github.event.pull_request.head.repo.fork }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           tags: ${{ steps.metadata.outputs.tags }}
@@ -75,5 +91,6 @@ jobs:
           registry-url: "https://registry.npmjs.org"
       - run: npm ci
       - run: npm publish
+        if: ${{ github.event_name == 'workflow_dispatch' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
