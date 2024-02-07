@@ -21,9 +21,10 @@
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.11.0",
+    "oazapfts": "^5.1.4",
     "typescript": "^5.3.3"
   },
-  "peerDependencies": { 
+  "peerDependencies": {
     "axios": "^1.6.7"
   },
   "peerDependenciesMeta": {

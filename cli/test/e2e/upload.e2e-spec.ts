@@ -1,7 +1,7 @@
 import { IMMICH_TEST_ASSET_PATH, restoreTempFolder, testApp } from '@test-utils';
 import { CLI_BASE_OPTIONS, setup, spyOnConsole } from 'test/cli-test-utils';
 import { UploadCommand } from '../../src/commands/upload.command';
-import { ImmichApi } from '../../src/services/api.service';
+import { ImmichApi } from 'src/services/api.service';
 
 describe(`upload (e2e)`, () => {
   let api: ImmichApi;
@@ -26,13 +26,13 @@ describe(`upload (e2e)`, () => {
 
   it('should upload a folder recursively', async () => {
     await new UploadCommand(CLI_BASE_OPTIONS).run([`${IMMICH_TEST_ASSET_PATH}/albums/nature/`], { recursive: true });
-    const assets = await api.assetApi.getAllAssets({}, { headers: { 'x-api-key': api.apiKey } });
+    const assets = await api.getAllAssets();
     expect(assets.length).toBeGreaterThan(4);
   });
 
   it('should not create a new album', async () => {
     await new UploadCommand(CLI_BASE_OPTIONS).run([`${IMMICH_TEST_ASSET_PATH}/albums/nature/`], { recursive: true });
-    const albums = await api.albumApi.getAllAlbums({}, { headers: { 'x-api-key': api.apiKey } });
+    const albums = await api.getAllAlbums();
     expect(albums.length).toEqual(0);
   });
 
@@ -42,7 +42,7 @@ describe(`upload (e2e)`, () => {
       album: true,
     });
 
-    const albums = await api.albumApi.getAllAlbums({}, { headers: { 'x-api-key': api.apiKey } });
+    const albums = await api.getAllAlbums();
     expect(albums.length).toEqual(1);
     const natureAlbum = albums[0];
     expect(natureAlbum.albumName).toEqual('nature');
@@ -59,7 +59,7 @@ describe(`upload (e2e)`, () => {
       album: true,
     });
 
-    const albums = await api.albumApi.getAllAlbums({}, { headers: { 'x-api-key': api.apiKey } });
+    const albums = await api.getAllAlbums();
     expect(albums.length).toEqual(1);
     const natureAlbum = albums[0];
     expect(natureAlbum.albumName).toEqual('nature');
@@ -71,7 +71,7 @@ describe(`upload (e2e)`, () => {
       albumName: 'testAlbum',
     });
 
-    const albums = await api.albumApi.getAllAlbums({}, { headers: { 'x-api-key': api.apiKey } });
+    const albums = await api.getAllAlbums();
     expect(albums.length).toEqual(1);
     const testAlbum = albums[0];
     expect(testAlbum.albumName).toEqual('testAlbum');

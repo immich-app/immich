@@ -12,18 +12,20 @@ import {
   spyOnConsole,
 } from '../../test/cli-test-utils';
 
-const mockPingServer = vi.fn(() => Promise.resolve({ res: 'pong' }));
-const mockUserInfo = vi.fn(() => Promise.resolve({ email: 'admin@example.com' }));
+const mocks = vi.hoisted(() => {
+  return {
+    getMyUserInfo: vi.fn(() => Promise.resolve({ email: 'admin@example.com' })),
+    pingServer: vi.fn(() => Promise.resolve({ res: 'pong' })),
+  };
+});
 
-vi.mock('@immich/sdk', async () => ({
-  ...(await vi.importActual('@immich/sdk')),
-  UserApi: vi.fn().mockImplementation(() => {
-    return { getMyUserInfo: mockUserInfo };
-  }),
-  ServerInfoApi: vi.fn().mockImplementation(() => {
-    return { pingServer: mockPingServer };
-  }),
-}));
+vi.mock('./api.service', async (importOriginal) => {
+  const module = await importOriginal<typeof import('./api.service')>();
+  // @ts-expect-error this is only a partial implementation of the return value
+  module.ImmichApi.prototype.getMyUserInfo = mocks.getMyUserInfo;
+  module.ImmichApi.prototype.pingServer = mocks.pingServer;
+  return module;
+});
 
 describe('SessionService', () => {
   let sessionService: SessionService;
@@ -46,7 +48,7 @@ describe('SessionService', () => {
     );
 
     await sessionService.connect();
-    expect(mockPingServer).toHaveBeenCalledTimes(1);
+    expect(mocks.pingServer).toHaveBeenCalledTimes(1);
   });
 
   it('should error if no auth file exists', async () => {

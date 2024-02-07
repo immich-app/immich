@@ -1,56 +1,106 @@
 import {
-  AlbumApi,
-  APIKeyApi,
-  AssetApi,
-  AuthenticationApi,
-  Configuration,
-  JobApi,
-  OAuthApi,
-  ServerInfoApi,
-  SystemConfigApi,
-  UserApi,
+  addAssetsToAlbum,
+  checkBulkUpload,
+  createAlbum,
+  createApiKey,
+  getAllAlbums,
+  getAllAssets,
+  getAssetStatistics,
+  getMyUserInfo,
+  getServerVersion,
+  getSupportedMediaTypes,
+  login,
+  pingServer,
+  signUpAdmin,
+  uploadFile,
+  ApiKeyCreateDto,
+  AssetBulkUploadCheckDto,
+  BulkIdsDto,
+  CreateAlbumDto,
+  CreateAssetDto,
+  LoginCredentialDto,
+  SignUpDto,
 } from '@immich/sdk';
 
+/**
+ * Wraps the underlying API to abstract away the options and make API calls mockable for testing.
+ */
 export class ImmichApi {
-  public userApi: UserApi;
-  public albumApi: AlbumApi;
-  public assetApi: AssetApi;
-  public authenticationApi: AuthenticationApi;
-  public oauthApi: OAuthApi;
-  public serverInfoApi: ServerInfoApi;
-  public jobApi: JobApi;
-  public keyApi: APIKeyApi;
-  public systemConfigApi: SystemConfigApi;
-
-  private readonly config;
+  private readonly options;
 
   constructor(
     public instanceUrl: string,
     public apiKey: string,
   ) {
-    this.config = new Configuration({
-      basePath: instanceUrl,
+    this.options = {
+      baseUrl: instanceUrl,
       headers: {
         'x-api-key': apiKey,
       },
-    });
-
-    this.userApi = new UserApi(this.config);
-    this.albumApi = new AlbumApi(this.config);
-    this.assetApi = new AssetApi(this.config);
-    this.authenticationApi = new AuthenticationApi(this.config);
-    this.oauthApi = new OAuthApi(this.config);
-    this.serverInfoApi = new ServerInfoApi(this.config);
-    this.jobApi = new JobApi(this.config);
-    this.keyApi = new APIKeyApi(this.config);
-    this.systemConfigApi = new SystemConfigApi(this.config);
+    };
   }
 
   setApiKey(apiKey: string) {
     this.apiKey = apiKey;
-    if (!this.config.headers) {
+    if (!this.options.headers) {
       throw new Error('missing headers');
     }
-    this.config.headers['x-api-key'] = apiKey;
+    this.options.headers['x-api-key'] = apiKey;
+  }
+
+  async addAssetsToAlbum(id: string, bulkIdsDto: BulkIdsDto) {
+    return await addAssetsToAlbum({ id, bulkIdsDto }, this.options);
+  }
+
+  async checkBulkUpload(assetBulkUploadCheckDto: AssetBulkUploadCheckDto) {
+    return await checkBulkUpload({ assetBulkUploadCheckDto }, this.options);
+  }
+
+  async createAlbum(createAlbumDto: CreateAlbumDto) {
+    return await createAlbum({ createAlbumDto }, this.options);
+  }
+
+  async createApiKey(apiKeyCreateDto: ApiKeyCreateDto, options: { headers: { Authorization: string } }) {
+    return await createApiKey({ apiKeyCreateDto }, { ...this.options, ...options });
+  }
+
+  async getAllAlbums() {
+    return await getAllAlbums({}, this.options);
+  }
+
+  async getAllAssets() {
+    return await getAllAssets({}, this.options);
+  }
+
+  async getAssetStatistics() {
+    return await getAssetStatistics({}, this.options);
+  }
+
+  async getMyUserInfo() {
+    return await getMyUserInfo(this.options);
+  }
+
+  async getServerVersion() {
+    return await getServerVersion(this.options);
+  }
+
+  async getSupportedMediaTypes() {
+    return await getSupportedMediaTypes(this.options);
+  }
+
+  async login(loginCredentialDto: LoginCredentialDto) {
+    return await login({ loginCredentialDto }, this.options);
+  }
+
+  async pingServer() {
+    return await pingServer(this.options);
+  }
+
+  async signUpAdmin(signUpDto: SignUpDto) {
+    return await signUpAdmin({ signUpDto }, this.options);
+  }
+
+  async uploadFile(createAssetDto: CreateAssetDto) {
+    return await uploadFile({ createAssetDto }, this.options);
   }
 }
