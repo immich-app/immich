@@ -122,4 +122,28 @@ export class SearchService {
     userIds.push(...partnersIds);
     return userIds;
   }
+
+  getPeopleSuggestions(auth: AuthDto): Promise<PersonResponseDto[]> {
+    throw new Error('Method not implemented.');
+  }
+
+  getCountrySuggestions(auth: AuthDto): Promise<string[]> {
+    throw new Error('Method not implemented.');
+  }
+
+  getStateSuggestions(auth: AuthDto): Promise<string[]> {
+    throw new Error('Method not implemented.');
+  }
+
+  getCitySuggestions(auth: AuthDto): Promise<string[]> {
+    throw new Error('Method not implemented.');
+  }
+
+  getCameraModelSuggestions(auth: AuthDto): Promise<string[]> {
+    throw new Error('Method not implemented.');
+  }
+
+  getCameraMakeSuggestions(auth: AuthDto): Promise<string[]> {
+    throw new Error('Method not implemented.');
+  }
 }
