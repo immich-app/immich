@@ -64,7 +64,7 @@ jobs:
             type=ref,event=pr
             # Tag with version on release
             type=raw,value=${{ steps.package-version.outputs.version }},enable=${{ github.event_name == 'workflow_dispatch' }}
-            type=raw,value=release,enable=${{ github.event_name == 'workflow_dispatch' }}
+            type=raw,value=latest,enable=${{ github.event_name == 'workflow_dispatch' }}
 
       - name: Build and push image
         uses: docker/build-push-action@v5.1.0
