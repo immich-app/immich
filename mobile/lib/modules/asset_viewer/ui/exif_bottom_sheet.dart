@@ -264,21 +264,24 @@ class ExifBottomSheet extends HookConsumerWidget {
               ),
               SizedBox(
                 height: imageSize,
-                child: CuratedPeopleRow(
-                  content: curatedPeople,
-                  onTap: (content, index) {
-                    context
-                        .pushRoute(
-                          PersonResultRoute(
-                            personId: content.id,
-                            personName: content.label,
-                          ),
-                        )
-                        .then((_) => peopleProvider.refresh());
-                  },
-                  onNameTap: (person, index) => {
-                    showPersonNameEditModel(person.id, person.label),
-                  },
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: CuratedPeopleRow(
+                    content: curatedPeople,
+                    onTap: (content, index) {
+                      context
+                          .pushRoute(
+                            PersonResultRoute(
+                              personId: content.id,
+                              personName: content.label,
+                            ),
+                          )
+                          .then((_) => peopleProvider.refresh());
+                    },
+                    onNameTap: (person, index) => {
+                      showPersonNameEditModel(person.id, person.label),
+                    },
+                  ),
                 ),
               ),
             ],
@@ -425,6 +428,12 @@ class ExifBottomSheet extends HookConsumerWidget {
                           child: buildLocation(),
                         ),
                       ),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.only(right: 8.0),
+                          child: buildPeople(),
+                        ),
+                      ),
                       ConstrainedBox(
                         constraints: const BoxConstraints(maxWidth: 300),
                         child: Padding(
@@ -457,6 +466,8 @@ class ExifBottomSheet extends HookConsumerWidget {
                     child: CircularProgressIndicator.adaptive(),
                   ),
                 ),
+                const SizedBox(height: 16),
+                buildPeople(),
                 buildLocation(),
                 SizedBox(height: hasCoordinates() ? 16.0 : 6.0),
                 buildDetail(),
