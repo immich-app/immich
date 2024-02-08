@@ -256,13 +256,9 @@ class MemoryPage extends HookConsumerWidget {
                                     asset: asset,
                                     title: memories[mIndex].title,
                                     showTitle: index == 0,
-                                    //onVideoEnded: () {
-                                      // TODO: At the end of the video, advance to the next asset automatically. If this is a live photo, don't go to
-                                      // next asset
-                                      //if (asset.livePhotoVideoId == null) {
-                                        //toNextAsset(index);
-                                      //}
-                                    //},
+                                    onVideoEnded: () {
+                                      toNextAsset(index);
+                                    },
                                   ),
                                 ),
                               );
