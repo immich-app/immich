@@ -5,7 +5,7 @@
   "type": "module",
   "exports": "./dist/index.js",
   "bin": {
-    "immich": "./dist/index.js"
+    "immich": "dist/index.js"
   },
   "license": "MIT",
   "keywords": [
@@ -51,7 +51,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "github:immich-app/immich",
+    "url": "git+https://github.com/immich-app/immich.git",
     "directory": "cli"
   },
   "engines": {
