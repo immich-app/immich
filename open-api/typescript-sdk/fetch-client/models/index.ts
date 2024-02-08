@@ -104,6 +104,8 @@ export * from './SearchExploreResponseDto';
 export * from './SearchFacetCountResponseDto';
 export * from './SearchFacetResponseDto';
 export * from './SearchResponseDto';
+export * from './SearchSuggestionResponseDto';
+export * from './SearchSuggestionType';
 export * from './ServerConfigDto';
 export * from './ServerFeaturesDto';
 export * from './ServerInfoResponseDto';

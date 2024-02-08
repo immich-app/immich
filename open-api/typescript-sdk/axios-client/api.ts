@@ -3029,6 +3029,43 @@ export interface SearchResponseDto {
 /**
  * 
  * @export
+ * @interface SearchSuggestionResponseDto
+ */
+export interface SearchSuggestionResponseDto {
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof SearchSuggestionResponseDto
+     */
+    'data'?: Array<string>;
+    /**
+     * 
+     * @type {Array<PersonResponseDto>}
+     * @memberof SearchSuggestionResponseDto
+     */
+    'people'?: Array<PersonResponseDto>;
+}
+/**
+ * 
+ * @export
+ * @enum {string}
+ */
+
+export const SearchSuggestionType = {
+    People: 'people',
+    Country: 'country',
+    State: 'state',
+    City: 'city',
+    CameraMake: 'camera-make',
+    CameraModel: 'camera-model'
+} as const;
+
+export type SearchSuggestionType = typeof SearchSuggestionType[keyof typeof SearchSuggestionType];
+
+
+/**
+ * 
+ * @export
  * @interface ServerConfigDto
  */
 export interface ServerConfigDto {
@@ -15256,6 +15293,71 @@ export const SearchApiAxiosParamCreator = function (configuration?: Configuratio
         },
         /**
          * 
+         * @param {SearchSuggestionType} type 
+         * @param {string} [country] 
+         * @param {string} [make] 
+         * @param {string} [model] 
+         * @param {string} [state] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getSearchSuggestions: async (type: SearchSuggestionType, country?: string, make?: string, model?: string, state?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'type' is not null or undefined
+            assertParamExists('getSearchSuggestions', 'type', type)
+            const localVarPath = `/search/suggestions`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (country !== undefined) {
+                localVarQueryParameter['country'] = country;
+            }
+
+            if (make !== undefined) {
+                localVarQueryParameter['make'] = make;
+            }
+
+            if (model !== undefined) {
+                localVarQueryParameter['model'] = model;
+            }
+
+            if (state !== undefined) {
+                localVarQueryParameter['state'] = state;
+            }
+
+            if (type !== undefined) {
+                localVarQueryParameter['type'] = type;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @param {boolean} [clip] @deprecated
          * @param {boolean} [motion] 
          * @param {string} [q] 
@@ -15405,6 +15507,22 @@ export const SearchApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {SearchSuggestionType} type 
+         * @param {string} [country] 
+         * @param {string} [make] 
+         * @param {string} [model] 
+         * @param {string} [state] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getSearchSuggestions(type: SearchSuggestionType, country?: string, make?: string, model?: string, state?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SearchSuggestionResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getSearchSuggestions(type, country, make, model, state, options);
+            const index = configuration?.serverIndex ?? 0;
+            const operationBasePath = operationServerMap['SearchApi.getSearchSuggestions']?.[index]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, operationBasePath || basePath);
+        },
+        /**
+         * 
          * @param {boolean} [clip] @deprecated
          * @param {boolean} [motion] 
          * @param {string} [q] 
@@ -15455,6 +15573,15 @@ export const SearchApiFactory = function (configuration?: Configuration, basePat
         },
         /**
          * 
+         * @param {SearchApiGetSearchSuggestionsRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getSearchSuggestions(requestParameters: SearchApiGetSearchSuggestionsRequest, options?: RawAxiosRequestConfig): AxiosPromise<SearchSuggestionResponseDto> {
+            return localVarFp.getSearchSuggestions(requestParameters.type, requestParameters.country, requestParameters.make, requestParameters.model, requestParameters.state, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @param {SearchApiSearchRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -15473,6 +15600,48 @@ export const SearchApiFactory = function (configuration?: Configuration, basePat
         },
     };
 };
+
+/**
+ * Request parameters for getSearchSuggestions operation in SearchApi.
+ * @export
+ * @interface SearchApiGetSearchSuggestionsRequest
+ */
+export interface SearchApiGetSearchSuggestionsRequest {
+    /**
+     * 
+     * @type {SearchSuggestionType}
+     * @memberof SearchApiGetSearchSuggestions
+     */
+    readonly type: SearchSuggestionType
+
+    /**
+     * 
+     * @type {string}
+     * @memberof SearchApiGetSearchSuggestions
+     */
+    readonly country?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof SearchApiGetSearchSuggestions
+     */
+    readonly make?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof SearchApiGetSearchSuggestions
+     */
+    readonly model?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof SearchApiGetSearchSuggestions
+     */
+    readonly state?: string
+}
 
 /**
  * Request parameters for search operation in SearchApi.
@@ -15573,6 +15742,17 @@ export class SearchApi extends BaseAPI {
      */
     public getExploreData(options?: RawAxiosRequestConfig) {
         return SearchApiFp(this.configuration).getExploreData(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {SearchApiGetSearchSuggestionsRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SearchApi
+     */
+    public getSearchSuggestions(requestParameters: SearchApiGetSearchSuggestionsRequest, options?: RawAxiosRequestConfig) {
+        return SearchApiFp(this.configuration).getSearchSuggestions(requestParameters.type, requestParameters.country, requestParameters.make, requestParameters.model, requestParameters.state, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

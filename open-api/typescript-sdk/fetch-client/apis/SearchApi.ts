@@ -18,6 +18,8 @@ import type {
   PersonResponseDto,
   SearchExploreResponseDto,
   SearchResponseDto,
+  SearchSuggestionResponseDto,
+  SearchSuggestionType,
 } from '../models/index';
 import {
     PersonResponseDtoFromJSON,
@@ -26,7 +28,19 @@ import {
     SearchExploreResponseDtoToJSON,
     SearchResponseDtoFromJSON,
     SearchResponseDtoToJSON,
+    SearchSuggestionResponseDtoFromJSON,
+    SearchSuggestionResponseDtoToJSON,
+    SearchSuggestionTypeFromJSON,
+    SearchSuggestionTypeToJSON,
 } from '../models/index';
+
+export interface GetSearchSuggestionsRequest {
+    type: SearchSuggestionType;
+    country?: string;
+    make?: string;
+    model?: string;
+    state?: string;
+}
 
 export interface SearchRequest {
     clip?: boolean;
@@ -82,6 +96,66 @@ export class SearchApi extends runtime.BaseAPI {
      */
     async getExploreData(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<SearchExploreResponseDto>> {
         const response = await this.getExploreDataRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     */
+    async getSearchSuggestionsRaw(requestParameters: GetSearchSuggestionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSuggestionResponseDto>> {
+        if (requestParameters.type === null || requestParameters.type === undefined) {
+            throw new runtime.RequiredError('type','Required parameter requestParameters.type was null or undefined when calling getSearchSuggestions.');
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters.country !== undefined) {
+            queryParameters['country'] = requestParameters.country;
+        }
+
+        if (requestParameters.make !== undefined) {
+            queryParameters['make'] = requestParameters.make;
+        }
+
+        if (requestParameters.model !== undefined) {
+            queryParameters['model'] = requestParameters.model;
+        }
+
+        if (requestParameters.state !== undefined) {
+            queryParameters['state'] = requestParameters.state;
+        }
+
+        if (requestParameters.type !== undefined) {
+            queryParameters['type'] = requestParameters.type;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["x-api-key"] = this.configuration.apiKey("x-api-key"); // api_key authentication
+        }
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/search/suggestions`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SearchSuggestionResponseDtoFromJSON(jsonValue));
+    }
+
+    /**
+     */
+    async getSearchSuggestions(requestParameters: GetSearchSuggestionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSuggestionResponseDto> {
+        const response = await this.getSearchSuggestionsRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

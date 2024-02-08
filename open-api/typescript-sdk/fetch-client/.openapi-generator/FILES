@@ -124,6 +124,8 @@ models/SearchExploreResponseDto.ts
 models/SearchFacetCountResponseDto.ts
 models/SearchFacetResponseDto.ts
 models/SearchResponseDto.ts
+models/SearchSuggestionResponseDto.ts
+models/SearchSuggestionType.ts
 models/ServerConfigDto.ts
 models/ServerFeaturesDto.ts
 models/ServerInfoResponseDto.ts

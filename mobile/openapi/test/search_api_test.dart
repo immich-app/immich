@@ -22,6 +22,11 @@ void main() {
       // TODO
     });
 
+    //Future<SearchSuggestionResponseDto> getSearchSuggestions(SearchSuggestionType type, { String country, String make, String model, String state }) async
+    test('test getSearchSuggestions', () async {
+      // TODO
+    });
+
     //Future<SearchResponseDto> search({ bool clip, bool motion, String q, String query, bool recent, bool smart, String type, bool withArchived }) async
     test('test search', () async {
       // TODO

@@ -4881,54 +4881,6 @@
             }
           },
           {
-            "name": "isCameraMake",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "isCameraModel",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "isCity",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "isCountry",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "isPeople",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "isState",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
             "name": "make",
             "required": false,
             "in": "query",
@@ -4950,6 +4902,14 @@
             "in": "query",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/SearchSuggestionType"
             }
           }
         ],
@@ -9028,6 +8988,17 @@
           }
         },
         "type": "object"
+      },
+      "SearchSuggestionType": {
+        "enum": [
+          "people",
+          "country",
+          "state",
+          "city",
+          "camera-make",
+          "camera-model"
+        ],
+        "type": "string"
       },
       "ServerConfigDto": {
         "properties": {

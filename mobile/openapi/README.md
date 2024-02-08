@@ -169,6 +169,7 @@ Class | Method | HTTP request | Description
 *PersonApi* | [**updatePeople**](doc//PersonApi.md#updatepeople) | **PUT** /person | 
 *PersonApi* | [**updatePerson**](doc//PersonApi.md#updateperson) | **PUT** /person/{id} | 
 *SearchApi* | [**getExploreData**](doc//SearchApi.md#getexploredata) | **GET** /search/explore | 
+*SearchApi* | [**getSearchSuggestions**](doc//SearchApi.md#getsearchsuggestions) | **GET** /search/suggestions | 
 *SearchApi* | [**search**](doc//SearchApi.md#search) | **GET** /search | 
 *SearchApi* | [**searchPerson**](doc//SearchApi.md#searchperson) | **GET** /search/person | 
 *ServerInfoApi* | [**getServerConfig**](doc//ServerInfoApi.md#getserverconfig) | **GET** /server-info/config | 
@@ -322,6 +323,8 @@ Class | Method | HTTP request | Description
  - [SearchFacetCountResponseDto](doc//SearchFacetCountResponseDto.md)
  - [SearchFacetResponseDto](doc//SearchFacetResponseDto.md)
  - [SearchResponseDto](doc//SearchResponseDto.md)
+ - [SearchSuggestionResponseDto](doc//SearchSuggestionResponseDto.md)
+ - [SearchSuggestionType](doc//SearchSuggestionType.md)
  - [ServerConfigDto](doc//ServerConfigDto.md)
  - [ServerFeaturesDto](doc//ServerFeaturesDto.md)
  - [ServerInfoResponseDto](doc//ServerInfoResponseDto.md)
