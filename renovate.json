@@ -83,10 +83,7 @@
   "ignorePaths": ["mobile/openapi/pubspec.yaml"],
   "ignoreDeps": [
     "http",
-    "latlong2",
-    "vector_map_tiles",
-    "flutter_map",
-    "flutter_map_heatmap"
+    "intl"
   ],
   "labels": ["dependencies", "renovate"]
 }
