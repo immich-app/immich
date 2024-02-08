@@ -1,7 +1,6 @@
 import {
   AssetBulkDeleteDto,
   AssetBulkUpdateDto,
-  AssetIdsDto,
   AssetJobsDto,
   AssetResponseDto,
   AssetSearchDto,
@@ -9,10 +8,7 @@ import {
   AssetStatsDto,
   AssetStatsResponseDto,
   AuthDto,
-  BulkIdsDto,
   DeviceIdDto,
-  DownloadInfoDto,
-  DownloadResponseDto,
   DownloadService,
   MapMarkerDto,
   MapMarkerResponseDto,
@@ -26,25 +22,10 @@ import {
   UpdateAssetDto as UpdateDto,
   UpdateStackParentDto,
 } from '@app/domain';
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Next,
-  Param,
-  Post,
-  Put,
-  Query,
-  Res,
-  StreamableFile,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { NextFunction, Response } from 'express';
-import { Auth, Authenticated, FileResponse, SharedLinkRoute } from '../app.guard';
-import { UseValidation, asStreamableFile, sendFile } from '../app.utils';
+import { Auth, Authenticated, SharedLinkRoute } from '../app.guard';
+import { UseValidation } from '../app.utils';
 import { Route } from '../interceptors';
 import { UUIDParamDto } from './dto/uuid-param.dto';
 
@@ -88,42 +69,6 @@ export class AssetController {
   }
 
   /**
-   * @deprecated use `/download/info`
-   */
-  @SharedLinkRoute()
-  @Post('download/info')
-  getDownloadInfoOld(@Auth() auth: AuthDto, @Body() dto: DownloadInfoDto): Promise<DownloadResponseDto> {
-    return this.downloadService.getDownloadInfo(auth, dto);
-  }
-
-  /**
-   * @deprecated use `/download/archive`
-   */
-  @SharedLinkRoute()
-  @Post('download/archive')
-  @HttpCode(HttpStatus.OK)
-  @FileResponse()
-  downloadArchiveOld(@Auth() auth: AuthDto, @Body() dto: AssetIdsDto): Promise<StreamableFile> {
-    return this.downloadService.downloadArchive(auth, dto).then(asStreamableFile);
-  }
-
-  /**
-   * @deprecated use `/download/:id`
-   */
-  @SharedLinkRoute()
-  @Post('download/:id')
-  @HttpCode(HttpStatus.OK)
-  @FileResponse()
-  async downloadFileOld(
-    @Res() res: Response,
-    @Next() next: NextFunction,
-    @Auth() auth: AuthDto,
-    @Param() { id }: UUIDParamDto,
-  ) {
-    await sendFile(res, next, () => this.downloadService.downloadFile(auth, id));
-  }
-
-  /**
    * Get all asset of a device that are in the database, ID only.
    */
   @Get('/device/:deviceId')
@@ -164,33 +109,6 @@ export class AssetController {
   @HttpCode(HttpStatus.NO_CONTENT)
   deleteAssets(@Auth() auth: AuthDto, @Body() dto: AssetBulkDeleteDto): Promise<void> {
     return this.service.deleteAll(auth, dto);
-  }
-
-  /**
-   * @deprecated  use `POST /trash/restore/assets`
-   */
-  @Post('restore')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  restoreAssetsOld(@Auth() auth: AuthDto, @Body() dto: BulkIdsDto): Promise<void> {
-    return this.trashService.restoreAssets(auth, dto);
-  }
-
-  /**
-   * @deprecated  use `POST /trash/empty`
-   */
-  @Post('trash/empty')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  emptyTrashOld(@Auth() auth: AuthDto): Promise<void> {
-    return this.trashService.empty(auth);
-  }
-
-  /**
-   * @deprecated  use `POST /trash/restore`
-   */
-  @Post('trash/restore')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  restoreTrashOld(@Auth() auth: AuthDto): Promise<void> {
-    return this.trashService.restore(auth);
   }
 
   @Put('stack/parent')

@@ -230,8 +230,6 @@ export class SystemConfigCore {
       [FeatureFlag.SIDECAR]: true,
       [FeatureFlag.SEARCH]: true,
       [FeatureFlag.TRASH]: config.trash.enabled,
-
-      // TODO: use these instead of `POST oauth/config`
       [FeatureFlag.OAUTH]: config.oauth.enabled,
       [FeatureFlag.OAUTH_AUTO_LAUNCH]: config.oauth.autoLaunch,
       [FeatureFlag.PASSWORD_LOGIN]: config.passwordLogin.enabled,
