@@ -1,4 +1,3 @@
-import { AssetCreate } from '@app/domain';
 import { AssetEntity, ExifEntity } from '@app/infra/entities';
 import { OptionalBetween } from '@app/infra/infra.utils';
 import { Injectable } from '@nestjs/common';
@@ -22,8 +21,6 @@ export interface AssetOwnerCheck extends AssetCheck {
 
 export interface IAssetRepositoryV1 {
   get(id: string): Promise<AssetEntity | null>;
-  create(asset: AssetCreate): Promise<AssetEntity>;
-  upsertExif(exif: Partial<ExifEntity>): Promise<void>;
   getAllByUserId(userId: string, dto: AssetSearchDto): Promise<AssetEntity[]>;
   getLocationsByUserId(userId: string): Promise<CuratedLocationsResponseDto[]>;
   getDetectedObjectsByUserId(userId: string): Promise<CuratedObjectsResponseDto[]>;
@@ -130,14 +127,6 @@ export class AssetRepositoryV1 implements IAssetRepositoryV1 {
       },
       withDeleted: true,
     });
-  }
-
-  create(asset: AssetCreate): Promise<AssetEntity> {
-    return this.assetRepository.save(asset);
-  }
-
-  async upsertExif(exif: Partial<ExifEntity>): Promise<void> {
-    await this.exifRepository.upsert(exif, { conflictPaths: ['assetId'] });
   }
 
   /**
