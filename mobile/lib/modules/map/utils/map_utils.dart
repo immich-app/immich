@@ -19,17 +19,17 @@ class MapUtils {
       ["linear"],
       ["heatmap-density"],
       0.0,
-      "rgba(246,239,247,0.0)",
-      0.2,
-      "rgb(208,209,230)",
-      0.4,
-      "rgb(166,189,219)",
-      0.6,
-      "rgb(103,169,207)",
-      0.8,
-      "rgb(28,144,153)",
+      "rgba(103,58,183,0.0)",
+      0.3,
+      "rgb(103,58,183)",
+      0.5,
+      "rgb(33,149,243)",
+      0.7,
+      "rgb(76,175,79)",
+      0.95,
+      "rgb(255,235,59)",
       1.0,
-      "rgb(1,108,89)",
+      "rgb(255,86,34)",
     ],
     heatmapIntensity: [
       Expressions.interpolate, ["linear"], //
@@ -44,6 +44,7 @@ class MapUtils {
       4, 8,
       9, 16,
     ],
+    heatmapOpacity: 0.7,
   );
 
   static Map<String, dynamic> _addFeature(MapMarker marker) => {

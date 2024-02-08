@@ -1,3 +1,4 @@
+import { DatabaseExtension } from '@app/domain/repositories/database.repository';
 import { DataSource } from 'typeorm';
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions.js';
 
@@ -27,3 +28,6 @@ export const databaseConfig: PostgresConnectionOptions = {
 
 // this export is used by TypeORM commands in package.json#scripts
 export const dataSource = new DataSource(databaseConfig);
+
+export const vectorExt =
+  process.env.VECTOR_EXTENSION === 'pgvector' ? DatabaseExtension.VECTOR : DatabaseExtension.VECTORS;

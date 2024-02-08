@@ -40,7 +40,7 @@ FROM
         "LibraryEntity__LibraryEntity_owner"."deletedAt" IS NULL
       )
     WHERE
-      (("LibraryEntity"."id" = $1))
+      ((("LibraryEntity"."id" = $1)))
       AND ("LibraryEntity"."deletedAt" IS NULL)
   ) "distinctAlias"
 ORDER BY
@@ -63,7 +63,7 @@ WHERE
     FROM
       "libraries" "LibraryEntity"
     WHERE
-      (("LibraryEntity"."name" = $1))
+      ((("LibraryEntity"."name" = $1)))
       AND ("LibraryEntity"."deletedAt" IS NULL)
   )
 LIMIT
@@ -75,7 +75,7 @@ SELECT
 FROM
   "libraries" "LibraryEntity"
 WHERE
-  (("LibraryEntity"."ownerId" = $1))
+  ((("LibraryEntity"."ownerId" = $1)))
   AND ("LibraryEntity"."deletedAt" IS NULL)
 
 -- LibraryRepository.getDefaultUploadLibrary
@@ -96,8 +96,8 @@ FROM
 WHERE
   (
     (
-      "LibraryEntity"."ownerId" = $1
-      AND "LibraryEntity"."type" = $2
+      ("LibraryEntity"."ownerId" = $1)
+      AND ("LibraryEntity"."type" = $2)
     )
   )
   AND ("LibraryEntity"."deletedAt" IS NULL)
@@ -114,8 +114,8 @@ FROM
 WHERE
   (
     (
-      "LibraryEntity"."ownerId" = $1
-      AND "LibraryEntity"."type" = $2
+      ("LibraryEntity"."ownerId" = $1)
+      AND ("LibraryEntity"."type" = $2)
     )
   )
   AND ("LibraryEntity"."deletedAt" IS NULL)
@@ -158,8 +158,8 @@ FROM
 WHERE
   (
     (
-      "LibraryEntity"."ownerId" = $1
-      AND "LibraryEntity"."isVisible" = $2
+      ("LibraryEntity"."ownerId" = $1)
+      AND ("LibraryEntity"."isVisible" = $2)
     )
   )
   AND ("LibraryEntity"."deletedAt" IS NULL)
@@ -240,8 +240,8 @@ FROM
   LEFT JOIN "users" "LibraryEntity__LibraryEntity_owner" ON "LibraryEntity__LibraryEntity_owner"."id" = "LibraryEntity"."ownerId"
 WHERE
   (
-    "LibraryEntity"."isVisible" = $1
-    AND NOT ("LibraryEntity"."deletedAt" IS NULL)
+    ("LibraryEntity"."isVisible" = $1)
+    AND (NOT ("LibraryEntity"."deletedAt" IS NULL))
   )
 ORDER BY
   "LibraryEntity"."createdAt" ASC

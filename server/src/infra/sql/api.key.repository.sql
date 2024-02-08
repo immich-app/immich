@@ -32,7 +32,7 @@ FROM
         "APIKeyEntity__APIKeyEntity_user"."deletedAt" IS NULL
       )
     WHERE
-      ("APIKeyEntity"."key" = $1)
+      (("APIKeyEntity"."key" = $1))
   ) "distinctAlias"
 ORDER BY
   "APIKeyEntity_id" ASC
@@ -50,8 +50,8 @@ FROM
   "api_keys" "APIKeyEntity"
 WHERE
   (
-    "APIKeyEntity"."userId" = $1
-    AND "APIKeyEntity"."id" = $2
+    ("APIKeyEntity"."userId" = $1)
+    AND ("APIKeyEntity"."id" = $2)
   )
 LIMIT
   1
@@ -66,6 +66,6 @@ SELECT
 FROM
   "api_keys" "APIKeyEntity"
 WHERE
-  ("APIKeyEntity"."userId" = $1)
+  (("APIKeyEntity"."userId" = $1))
 ORDER BY
   "APIKeyEntity"."createdAt" DESC
