@@ -388,6 +388,7 @@ class _MapWithMarker extends StatelessWidget {
                 dragEnabled: false,
                 myLocationEnabled: false,
                 attributionButtonPosition: AttributionButtonPosition.TopRight,
+                rotateGesturesEnabled: false,
               ),
             ),
             ValueListenableBuilder(
