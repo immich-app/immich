@@ -3,14 +3,14 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: 
-      - 'cli/**'
-      - '.github/workflows/cli.yml'
+    paths:
+      - "cli/**"
+      - ".github/workflows/cli.yml"
   pull_request:
     branches: [main]
-    paths: 
-      - 'cli/**'
-      - '.github/workflows/cli.yml'
+    paths:
+      - "cli/**"
+      - ".github/workflows/cli.yml"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -34,6 +34,9 @@ jobs:
         with:
           node-version: "20.x"
           registry-url: "https://registry.npmjs.org"
+      - name: Prepare SDK
+        run: npm ci
+        working-directory: ./open-api/typescript-sdk/
       - run: npm ci
       - run: npm publish
         if: ${{ github.event_name == 'workflow_dispatch' }}
@@ -62,7 +65,7 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      
+
       - name: Get package version
         id: package-version
         run: |
