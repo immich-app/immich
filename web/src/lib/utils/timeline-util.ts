@@ -1,5 +1,5 @@
 import type { AssetResponseDto } from '@api';
-import lodash from 'lodash-es';
+import { chain } from 'lodash-es';
 import { DateTime, Interval } from 'luxon';
 
 export const fromLocalDateTime = (localDateTime: string) => DateTime.fromISO(localDateTime, { zone: 'UTC' });
@@ -45,8 +45,7 @@ export function splitBucketIntoDateGroups(
   assets: AssetResponseDto[],
   locale: string | undefined,
 ): AssetResponseDto[][] {
-  return lodash
-    .chain(assets)
+  return chain(assets)
     .groupBy((asset) => fromLocalDateTime(asset.localDateTime).toLocaleString(groupDateFormat, { locale }))
     .sortBy((group) => assets.indexOf(group[0]))
     .value();
