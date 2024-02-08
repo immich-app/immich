@@ -20,9 +20,30 @@ permissions:
   packages: write
 
 jobs:
+  publish:
+    name: Publish
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./cli
+
+    steps:
+      - uses: actions/checkout@v4
+      # Setup .npmrc file to publish to npm
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          registry-url: "https://registry.npmjs.org"
+      - run: npm ci
+      - run: npm publish
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
   docker:
     name: Docker
     runs-on: ubuntu-latest
+    needs: publish
 
     steps:
       - name: Checkout
@@ -67,24 +88,3 @@ jobs:
           cache-to: type=gha,mode=max
           tags: ${{ steps.metadata.outputs.tags }}
           labels: ${{ steps.metadata.outputs.labels }}
-
-
-  publish:
-    name: Publish
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./cli
-
-    steps:
-      - uses: actions/checkout@v4
-      # Setup .npmrc file to publish to npm
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "20.x"
-          registry-url: "https://registry.npmjs.org"
-      - run: npm ci
-      - run: npm publish
-        if: ${{ github.event_name == 'workflow_dispatch' }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
