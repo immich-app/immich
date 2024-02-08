@@ -69,7 +69,7 @@ You can add this to the `immich-machine-learning` service instead of extending f
 ```yaml
 immich-machine-learning:
   container_name: immich_machine_learning
-  image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-release}
+  image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-release}-cuda
   # Note the lack of an `extends` section
   deploy:
     resources:
