@@ -28,10 +28,13 @@ export default defineConfig({
       '/custom.css': upstream,
     },
   },
-  plugins: [sveltekit(), visualizer({
-    emitFile: true,
-    filename: 'stats.html',
-  })],
+  plugins: [
+    sveltekit(),
+    visualizer({
+      emitFile: true,
+      filename: 'stats.html',
+    }),
+  ],
   optimizeDeps: {
     entries: ['src/**/*.{svelte,ts,html}'],
   },
@@ -44,5 +47,5 @@ export default defineConfig({
       hooks: 'list',
     },
     alias: [{ find: /^svelte$/, replacement: 'svelte/internal' }],
-  }
-})
+  },
+});
