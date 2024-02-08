@@ -131,7 +131,6 @@ part 'model/model_type.dart';
 part 'model/o_auth_authorize_response_dto.dart';
 part 'model/o_auth_callback_dto.dart';
 part 'model/o_auth_config_dto.dart';
-part 'model/o_auth_config_response_dto.dart';
 part 'model/partner_response_dto.dart';
 part 'model/path_entity_type.dart';
 part 'model/path_type.dart';

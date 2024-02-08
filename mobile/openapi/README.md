@@ -94,26 +94,19 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**checkBulkUpload**](doc//AssetApi.md#checkbulkupload) | **POST** /asset/bulk-upload-check | 
 *AssetApi* | [**checkExistingAssets**](doc//AssetApi.md#checkexistingassets) | **POST** /asset/exist | 
 *AssetApi* | [**deleteAssets**](doc//AssetApi.md#deleteassets) | **DELETE** /asset | 
-*AssetApi* | [**downloadArchiveOld**](doc//AssetApi.md#downloadarchiveold) | **POST** /asset/download/archive | 
-*AssetApi* | [**downloadFileOld**](doc//AssetApi.md#downloadfileold) | **POST** /asset/download/{id} | 
-*AssetApi* | [**emptyTrashOld**](doc//AssetApi.md#emptytrashold) | **POST** /asset/trash/empty | 
 *AssetApi* | [**getAllAssets**](doc//AssetApi.md#getallassets) | **GET** /asset | 
 *AssetApi* | [**getAllUserAssetsByDeviceId**](doc//AssetApi.md#getalluserassetsbydeviceid) | **GET** /asset/device/{deviceId} | 
-*AssetApi* | [**getAssetById**](doc//AssetApi.md#getassetbyid) | **GET** /asset/assetById/{id} | 
 *AssetApi* | [**getAssetInfo**](doc//AssetApi.md#getassetinfo) | **GET** /asset/{id} | 
 *AssetApi* | [**getAssetSearchTerms**](doc//AssetApi.md#getassetsearchterms) | **GET** /asset/search-terms | 
 *AssetApi* | [**getAssetStatistics**](doc//AssetApi.md#getassetstatistics) | **GET** /asset/statistics | 
 *AssetApi* | [**getAssetThumbnail**](doc//AssetApi.md#getassetthumbnail) | **GET** /asset/thumbnail/{id} | 
 *AssetApi* | [**getCuratedLocations**](doc//AssetApi.md#getcuratedlocations) | **GET** /asset/curated-locations | 
 *AssetApi* | [**getCuratedObjects**](doc//AssetApi.md#getcuratedobjects) | **GET** /asset/curated-objects | 
-*AssetApi* | [**getDownloadInfoOld**](doc//AssetApi.md#getdownloadinfoold) | **POST** /asset/download/info | 
 *AssetApi* | [**getMapMarkers**](doc//AssetApi.md#getmapmarkers) | **GET** /asset/map-marker | 
 *AssetApi* | [**getMemoryLane**](doc//AssetApi.md#getmemorylane) | **GET** /asset/memory-lane | 
 *AssetApi* | [**getRandom**](doc//AssetApi.md#getrandom) | **GET** /asset/random | 
 *AssetApi* | [**getTimeBucket**](doc//AssetApi.md#gettimebucket) | **GET** /asset/time-bucket | 
 *AssetApi* | [**getTimeBuckets**](doc//AssetApi.md#gettimebuckets) | **GET** /asset/time-buckets | 
-*AssetApi* | [**restoreAssetsOld**](doc//AssetApi.md#restoreassetsold) | **POST** /asset/restore | 
-*AssetApi* | [**restoreTrashOld**](doc//AssetApi.md#restoretrashold) | **POST** /asset/trash/restore | 
 *AssetApi* | [**runAssetJobs**](doc//AssetApi.md#runassetjobs) | **POST** /asset/jobs | 
 *AssetApi* | [**searchAssets**](doc//AssetApi.md#searchassets) | **GET** /assets | 
 *AssetApi* | [**serveFile**](doc//AssetApi.md#servefile) | **GET** /asset/file/{id} | 
@@ -149,7 +142,6 @@ Class | Method | HTTP request | Description
 *LibraryApi* | [**scanLibrary**](doc//LibraryApi.md#scanlibrary) | **POST** /library/{id}/scan | 
 *LibraryApi* | [**updateLibrary**](doc//LibraryApi.md#updatelibrary) | **PUT** /library/{id} | 
 *OAuthApi* | [**finishOAuth**](doc//OAuthApi.md#finishoauth) | **POST** /oauth/callback | 
-*OAuthApi* | [**generateOAuthConfig**](doc//OAuthApi.md#generateoauthconfig) | **POST** /oauth/config | 
 *OAuthApi* | [**linkOAuthAccount**](doc//OAuthApi.md#linkoauthaccount) | **POST** /oauth/link | 
 *OAuthApi* | [**redirectOAuthToMobile**](doc//OAuthApi.md#redirectoauthtomobile) | **GET** /oauth/mobile-redirect | 
 *OAuthApi* | [**startOAuth**](doc//OAuthApi.md#startoauth) | **POST** /oauth/authorize | 
@@ -299,7 +291,6 @@ Class | Method | HTTP request | Description
  - [OAuthAuthorizeResponseDto](doc//OAuthAuthorizeResponseDto.md)
  - [OAuthCallbackDto](doc//OAuthCallbackDto.md)
  - [OAuthConfigDto](doc//OAuthConfigDto.md)
- - [OAuthConfigResponseDto](doc//OAuthConfigResponseDto.md)
  - [PartnerResponseDto](doc//PartnerResponseDto.md)
  - [PathEntityType](doc//PathEntityType.md)
  - [PathType](doc//PathType.md)

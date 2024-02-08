@@ -24,6 +24,8 @@ class ApiService {
   late SharedLinkApi sharedLinkApi;
   late SystemConfigApi systemConfigApi;
   late ActivityApi activityApi;
+  late DownloadApi downloadApi;
+  late TrashApi trashApi;
 
   ApiService() {
     final endpoint = Store.tryGet(StoreKey.serverEndpoint);
@@ -51,6 +53,8 @@ class ApiService {
     sharedLinkApi = SharedLinkApi(_apiClient);
     systemConfigApi = SystemConfigApi(_apiClient);
     activityApi = ActivityApi(_apiClient);
+    downloadApi = DownloadApi(_apiClient);
+    trashApi = TrashApi(_apiClient);
   }
 
   Future<String> resolveAndSetEndpoint(String serverUrl) async {

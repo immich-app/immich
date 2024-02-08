@@ -95,7 +95,6 @@ doc/OAuthApi.md
 doc/OAuthAuthorizeResponseDto.md
 doc/OAuthCallbackDto.md
 doc/OAuthConfigDto.md
-doc/OAuthConfigResponseDto.md
 doc/PartnerApi.md
 doc/PartnerResponseDto.md
 doc/PathEntityType.md
@@ -292,7 +291,6 @@ lib/model/model_type.dart
 lib/model/o_auth_authorize_response_dto.dart
 lib/model/o_auth_callback_dto.dart
 lib/model/o_auth_config_dto.dart
-lib/model/o_auth_config_response_dto.dart
 lib/model/partner_response_dto.dart
 lib/model/path_entity_type.dart
 lib/model/path_type.dart
@@ -462,7 +460,6 @@ test/o_auth_api_test.dart
 test/o_auth_authorize_response_dto_test.dart
 test/o_auth_callback_dto_test.dart
 test/o_auth_config_dto_test.dart
-test/o_auth_config_response_dto_test.dart
 test/partner_api_test.dart
 test/partner_response_dto_test.dart
 test/path_entity_type_test.dart
