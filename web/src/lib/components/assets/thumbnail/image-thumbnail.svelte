@@ -47,6 +47,7 @@
   class:rounded-xl={curve}
   class:shadow-lg={shadow}
   class:rounded-full={circle}
+  class:aspect-square={circle || !heightStyle}
   class:opacity-0={!thumbhash && !complete}
   draggable="false"
 />
