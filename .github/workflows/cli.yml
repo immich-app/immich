@@ -52,26 +52,17 @@ jobs:
         id: metadata
         uses: docker/metadata-action@v5
         with:
-          flavor: |
-            # Disable latest tag
-            latest=false
           images: |
             name=ghcr.io/${{ github.repository_owner }}/immich-cli
           tags: |
-            # Tag with branch name
-            type=ref,event=branch
-            # Tag with pr-number
-            type=ref,event=pr
-            # Tag with version on release
             type=raw,value=${{ steps.package-version.outputs.version }},enable=${{ github.event_name == 'workflow_dispatch' }}
-            type=raw,value=latest,enable=${{ github.event_name == 'workflow_dispatch' }}
 
       - name: Build and push image
         uses: docker/build-push-action@v5.1.0
         with:
           file: cli/Dockerfile
           platforms: linux/amd64,linux/arm64
-          push: ${{ !github.event.pull_request.head.repo.fork }}
+          push: ${{ github.event_name == 'workflow_dispatch' }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           tags: ${{ steps.metadata.outputs.tags }}
