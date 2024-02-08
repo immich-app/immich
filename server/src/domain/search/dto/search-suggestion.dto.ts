@@ -1,49 +1,31 @@
 import { PeopleResponseDto, PersonResponseDto } from '@app/domain';
 import { toBoolean } from '@app/domain/domain.util';
+import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsArray, IsBoolean, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+
+export enum SearchSuggestionType {
+  People = 'people',
+  Country = 'country',
+  State = 'state',
+  City = 'city',
+  CameraMake = 'camera-make',
+  CameraModel = 'camera-model',
+}
 
 export class SearchSuggestionRequestDto {
-  // People
-  @IsBoolean()
-  @Transform(toBoolean)
-  @IsOptional()
-  isPeople?: boolean;
-
-  // Location
-  @IsBoolean()
-  @Transform(toBoolean)
-  @IsOptional()
-  isCountry?: boolean;
+  @IsEnum(SearchSuggestionType)
+  @IsNotEmpty()
+  @ApiProperty({ enumName: 'SearchSuggestionType', enum: SearchSuggestionType })
+  type!: SearchSuggestionType;
 
   @IsString()
   @IsOptional()
   country?: string;
 
-  @IsBoolean()
-  @Transform(toBoolean)
-  @IsOptional()
-  isState?: boolean;
-
   @IsString()
   @IsOptional()
   state?: string;
-
-  @IsBoolean()
-  @Transform(toBoolean)
-  @IsOptional()
-  isCity?: boolean;
-
-  // Camera
-  @IsBoolean()
-  @Transform(toBoolean)
-  @IsOptional()
-  isCameraMake?: boolean;
-
-  @IsBoolean()
-  @Transform(toBoolean)
-  @IsOptional()
-  isCameraModel?: boolean;
 
   @IsString()
   @IsOptional()

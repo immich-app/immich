@@ -18,7 +18,11 @@ import {
 } from '../repositories';
 import { FeatureFlag, SystemConfigCore } from '../system-config';
 import { SearchDto, SearchPeopleDto } from './dto';
-import { SearchSuggestionRequestDto, SearchSuggestionResponseDto } from './dto/search-suggestion.dto';
+import {
+  SearchSuggestionRequestDto,
+  SearchSuggestionResponseDto,
+  SearchSuggestionType,
+} from './dto/search-suggestion.dto';
 import { SearchResponseDto } from './response-dto';
 
 @Injectable()
@@ -130,42 +134,42 @@ export class SearchService {
   async getSearchSuggestions(auth: AuthDto, dto: SearchSuggestionRequestDto): Promise<SearchSuggestionResponseDto> {
     let response: SearchSuggestionResponseDto = { people: [], data: [] };
 
-    if (dto.isPeople) {
+    if ((dto.type = SearchSuggestionType.People)) {
       const people = await this.personRepository.getAllWithName(auth.user.id);
       response = {
         people: people.map((person) => mapPerson(person)),
       };
     }
 
-    if (dto.isCountry) {
+    if ((dto.type = SearchSuggestionType.Country)) {
       const country = await this.metadataRepository.getCountries(auth.user.id);
       response = {
         data: country,
       };
     }
 
-    if (dto.isState) {
+    if ((dto.type = SearchSuggestionType.State)) {
       const states = await this.metadataRepository.getStates(auth.user.id, dto.country);
       response = {
         data: states,
       };
     }
 
-    if (dto.isCity) {
+    if ((dto.type = SearchSuggestionType.City)) {
       const cities = await this.metadataRepository.getCities(auth.user.id, dto.country, dto.state);
       response = {
         data: cities,
       };
     }
 
-    if (dto.isCameraMake) {
+    if ((dto.type = SearchSuggestionType.CameraMake)) {
       const makes = await this.metadataRepository.getCameraMakes(auth.user.id, dto.model);
       response = {
         data: makes,
       };
     }
 
-    if (dto.isCameraModel) {
+    if ((dto.type = SearchSuggestionType.CameraModel)) {
       const model = await this.metadataRepository.getCameraModels(auth.user.id, dto.make);
       response = {
         data: model,
