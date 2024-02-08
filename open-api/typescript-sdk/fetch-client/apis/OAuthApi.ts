@@ -19,7 +19,6 @@ import type {
   OAuthAuthorizeResponseDto,
   OAuthCallbackDto,
   OAuthConfigDto,
-  OAuthConfigResponseDto,
   UserResponseDto,
 } from '../models/index';
 import {
@@ -31,18 +30,12 @@ import {
     OAuthCallbackDtoToJSON,
     OAuthConfigDtoFromJSON,
     OAuthConfigDtoToJSON,
-    OAuthConfigResponseDtoFromJSON,
-    OAuthConfigResponseDtoToJSON,
     UserResponseDtoFromJSON,
     UserResponseDtoToJSON,
 } from '../models/index';
 
 export interface FinishOAuthRequest {
     oAuthCallbackDto: OAuthCallbackDto;
-}
-
-export interface GenerateOAuthConfigRequest {
-    oAuthConfigDto: OAuthConfigDto;
 }
 
 export interface LinkOAuthAccountRequest {
@@ -86,41 +79,6 @@ export class OAuthApi extends runtime.BaseAPI {
      */
     async finishOAuth(requestParameters: FinishOAuthRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<LoginResponseDto> {
         const response = await this.finishOAuthRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * @deprecated use feature flags and /oauth/authorize
-     * @deprecated
-     */
-    async generateOAuthConfigRaw(requestParameters: GenerateOAuthConfigRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<OAuthConfigResponseDto>> {
-        if (requestParameters.oAuthConfigDto === null || requestParameters.oAuthConfigDto === undefined) {
-            throw new runtime.RequiredError('oAuthConfigDto','Required parameter requestParameters.oAuthConfigDto was null or undefined when calling generateOAuthConfig.');
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        const response = await this.request({
-            path: `/oauth/config`,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: OAuthConfigDtoToJSON(requestParameters.oAuthConfigDto),
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => OAuthConfigResponseDtoFromJSON(jsonValue));
-    }
-
-    /**
-     * @deprecated use feature flags and /oauth/authorize
-     * @deprecated
-     */
-    async generateOAuthConfig(requestParameters: GenerateOAuthConfigRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<OAuthConfigResponseDto> {
-        const response = await this.generateOAuthConfigRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
