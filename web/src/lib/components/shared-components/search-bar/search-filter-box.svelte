@@ -2,6 +2,11 @@
   import Button from '$lib/components/elements/buttons/button.svelte';
   import { fly } from 'svelte/transition';
   import Combobox, { type ComboBoxOption } from '../combobox.svelte';
+  import { SearchSuggestionType, api, type PersonResponseDto } from '@api';
+  import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
+  import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
+  import { mdiClose } from '@mdi/js';
 
   enum MediaType {
     All = 'all',
@@ -17,6 +22,37 @@
   let notInAlbum = false;
   let inArchive = false;
   let inFavorite = false;
+
+  let peopleSuggestions: PersonResponseDto[] = [];
+  let peopleComboboxOptions: ComboBoxOption[] = [];
+  let peopleSelected: PersonResponseDto[] = [];
+
+  const getPeopleSuggestion = async () => {
+    if (peopleSuggestions.length > 0) return;
+
+    const { data } = await api.searchApi.getSearchSuggestions({ type: SearchSuggestionType.People });
+
+    data.people?.forEach((person) => {
+      peopleComboboxOptions = [...peopleComboboxOptions, { label: person.name, value: person.id }];
+      peopleSuggestions = [...peopleSuggestions, person];
+    });
+  };
+
+  const onPeopleSelected = (option: ComboBoxOption) => {
+    const selectedPerson = peopleSuggestions.find((person) => person.id === option.value);
+    if (selectedPerson) {
+      peopleSelected = [...peopleSelected, selectedPerson];
+    }
+    peopleComboboxOptions = peopleComboboxOptions.filter((person) => person.value !== option.value);
+  };
+
+  const onDeselectPerson = (id: string) => {
+    peopleSelected = peopleSelected.filter((person) => person.id !== id);
+    const person = peopleSuggestions.find((person) => person.id === id);
+    if (person) {
+      peopleComboboxOptions = [...peopleComboboxOptions, { label: person.name, value: person.id }];
+    }
+  };
 </script>
 
 <div
@@ -118,8 +154,35 @@
         </div>
 
         <div class="flex-1">
-          <Combobox options={[]} selectedOption={selectedCountry} placeholder="Search people..." />
+          <Combobox
+            noLabel
+            options={peopleComboboxOptions}
+            placeholder="Search people..."
+            on:click={getPeopleSuggestion}
+            on:select={({ detail }) => onPeopleSelected(detail)}
+          />
         </div>
+      </div>
+
+      <div class="flex gap-4 mt-4">
+        {#each peopleSelected as person (person.id)}
+          <button
+            class="flex gap-2 place-items-center place-content-center rounded-full bg-immich-primary/20 dark:bg-immich-dark-primary/75 px-2 py-1 text-black hover:bg-immich-primary/40 dark:hover:dark:bg-immich-dark-primary transition-all"
+            on:click={() => onDeselectPerson(person.id)}
+          >
+            <ImageThumbnail
+              circle
+              shadow
+              url={api.getPeopleThumbnailUrl(person.id)}
+              altText={person.name}
+              widthStyle="36px"
+            />
+
+            <p>{person.name}</p>
+
+            <Icon path={mdiClose} class="hover:cursor-pointer" />
+          </button>
+        {/each}
       </div>
     </div>
 

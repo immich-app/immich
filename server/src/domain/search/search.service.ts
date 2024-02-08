@@ -134,42 +134,42 @@ export class SearchService {
   async getSearchSuggestions(auth: AuthDto, dto: SearchSuggestionRequestDto): Promise<SearchSuggestionResponseDto> {
     let response: SearchSuggestionResponseDto = { people: [], data: [] };
 
-    if ((dto.type = SearchSuggestionType.People)) {
+    if (dto.type === SearchSuggestionType.People) {
       const people = await this.personRepository.getAllWithName(auth.user.id);
       response = {
         people: people.map((person) => mapPerson(person)),
       };
     }
 
-    if ((dto.type = SearchSuggestionType.Country)) {
+    if (dto.type === SearchSuggestionType.Country) {
       const country = await this.metadataRepository.getCountries(auth.user.id);
       response = {
         data: country,
       };
     }
 
-    if ((dto.type = SearchSuggestionType.State)) {
+    if (dto.type === SearchSuggestionType.State) {
       const states = await this.metadataRepository.getStates(auth.user.id, dto.country);
       response = {
         data: states,
       };
     }
 
-    if ((dto.type = SearchSuggestionType.City)) {
+    if (dto.type === SearchSuggestionType.City) {
       const cities = await this.metadataRepository.getCities(auth.user.id, dto.country, dto.state);
       response = {
         data: cities,
       };
     }
 
-    if ((dto.type = SearchSuggestionType.CameraMake)) {
+    if (dto.type === SearchSuggestionType.CameraMake) {
       const makes = await this.metadataRepository.getCameraMakes(auth.user.id, dto.model);
       response = {
         data: makes,
       };
     }
 
-    if ((dto.type = SearchSuggestionType.CameraModel)) {
+    if (dto.type === SearchSuggestionType.CameraModel) {
       const model = await this.metadataRepository.getCameraModels(auth.user.id, dto.make);
       response = {
         data: model,
