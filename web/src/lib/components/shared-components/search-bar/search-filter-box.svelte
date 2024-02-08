@@ -173,7 +173,7 @@
   <p class="text-xs py-2">FILTERS</p>
   <hr class="py-2" />
 
-  <form id="search-filter-form" autocomplete="off">
+  <form id="search-filter-form" autocomplete="off" class="hover:cursor-auto">
     <div class="py-3">
       <label class="immich-form-label" for="context">CONTEXT</label>
       <input
