@@ -1,4 +1,6 @@
 import { sveltekit } from '@sveltejs/kit/vite';
+import { visualizer } from 'rollup-plugin-visualizer';
+import { defineConfig } from 'vite';
 import path from 'node:path';
 
 const upstream = {
@@ -9,8 +11,7 @@ const upstream = {
   ws: true,
 };
 
-/** @type {import('vite').UserConfig} */
-const config = {
+export default defineConfig({
   resolve: {
     alias: {
       'xmlhttprequest-ssl': './node_modules/engine.io-client/lib/xmlhttprequest.js',
@@ -27,22 +28,24 @@ const config = {
       '/custom.css': upstream,
     },
   },
-  plugins: [sveltekit()],
+  plugins: [
+    sveltekit(),
+    visualizer({
+      emitFile: true,
+      filename: 'stats.html',
+    }),
+  ],
   optimizeDeps: {
     entries: ['src/**/*.{svelte,ts,html}'],
   },
-};
-
-/** @type {import('vitest').UserConfig} */
-const test = {
-  include: ['src/**/*.{test,spec}.{js,ts}'],
-  globals: true,
-  environment: 'jsdom',
-  setupFiles: ['./src/test-data/setup.ts'],
-  sequence: {
-    hooks: 'list',
+  test: {
+    include: ['src/**/*.{test,spec}.{js,ts}'],
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: ['./src/test-data/setup.ts'],
+    sequence: {
+      hooks: 'list',
+    },
+    alias: [{ find: /^svelte$/, replacement: 'svelte/internal' }],
   },
-  alias: [{ find: /^svelte$/, replacement: 'svelte/internal' }],
-};
-
-export default { ...config, test };
+});

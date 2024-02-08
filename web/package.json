@@ -45,6 +45,7 @@
     "postcss": "^8.4.21",
     "prettier": "^3.1.0",
     "prettier-plugin-svelte": "^3.1.2",
+    "rollup-plugin-visualizer": "^5.12.0",
     "svelte": "^4.0.5",
     "svelte-check": "^3.4.3",
     "svelte-preprocess": "^5.0.3",
