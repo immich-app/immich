@@ -14,15 +14,15 @@
     Video = 'video',
   }
 
-  let selectedCountry: ComboBoxOption = { label: '', value: '' };
-  let selectedState: ComboBoxOption = { label: '', value: '' };
-  let selectedCity: ComboBoxOption = { label: '', value: '' };
+  let startDate: Date | undefined = undefined;
+  let endDate: Date | undefined = undefined;
 
   let mediaType: MediaType = MediaType.All;
   let notInAlbum = false;
   let inArchive = false;
   let inFavorite = false;
 
+  // People Suggestion
   let peopleSuggestions: PersonResponseDto[] = [];
   let peopleComboboxOptions: ComboBoxOption[] = [];
   let peopleSelected: PersonResponseDto[] = [];
@@ -52,6 +52,117 @@
     if (person) {
       peopleComboboxOptions = [...peopleComboboxOptions, { label: person.name, value: person.id }];
     }
+  };
+
+  // Country Suggestions
+  let countrySuggestions: ComboBoxOption[] = [];
+  let stateSuggestions: ComboBoxOption[] = [];
+  let citySuggestions: ComboBoxOption[] = [];
+
+  let selectedCountry: ComboBoxOption = { label: '', value: '' };
+  let selectedState: ComboBoxOption = { label: '', value: '' };
+  let selectedCity: ComboBoxOption = { label: '', value: '' };
+
+  const getLocationSuggestions = async (type: SearchSuggestionType) => {
+    countrySuggestions = [];
+    stateSuggestions = [];
+    citySuggestions = [];
+
+    const { data } = await api.searchApi.getSearchSuggestions({
+      type: type,
+      country: selectedCountry.value,
+      state: selectedState.value,
+    });
+
+    data.data?.forEach((item) => {
+      if (type === SearchSuggestionType.Country) {
+        countrySuggestions = [...countrySuggestions, { label: item, value: item }];
+      } else if (type === SearchSuggestionType.State) {
+        stateSuggestions = [...stateSuggestions, { label: item, value: item }];
+      } else if (type === SearchSuggestionType.City) {
+        citySuggestions = [...citySuggestions, { label: item, value: item }];
+      }
+    });
+  };
+
+  const onCountrySelected = (option: ComboBoxOption) => {
+    console.log(option.value, selectedCountry.value);
+    if (option.value != selectedCountry.value) {
+      selectedState = { label: '', value: '' };
+      selectedCity = { label: '', value: '' };
+    }
+
+    selectedCountry = option;
+  };
+
+  const onStateSelected = (option: ComboBoxOption) => {
+    selectedState = option;
+  };
+
+  const onCitySelected = (option: ComboBoxOption) => {
+    selectedCity = option;
+  };
+
+  // Camera Suggestion
+  let cameraMakeSuggestions: ComboBoxOption[] = [];
+  let cameraModelSuggestions: ComboBoxOption[] = [];
+  let selectedMake: ComboBoxOption = { label: '', value: '' };
+  let selectedModel: ComboBoxOption = { label: '', value: '' };
+
+  const getCameraSuggestions = async (type: SearchSuggestionType) => {
+    cameraMakeSuggestions = [];
+    cameraModelSuggestions = [];
+
+    console.log(selectedMake, selectedModel, type)
+    const { data } = await api.searchApi.getSearchSuggestions({
+      type,
+      make: selectedMake.value,
+      model: selectedModel.value,
+    });
+
+    data.data?.forEach((item) => {
+      if (type === SearchSuggestionType.CameraMake) {
+        cameraMakeSuggestions = [...cameraMakeSuggestions, { label: item, value: item }];
+      } else if (type === SearchSuggestionType.CameraModel) {
+        cameraModelSuggestions = [...cameraModelSuggestions, { label: item, value: item }];
+      }
+    });
+  };
+
+  const onMakeSelected = (option: ComboBoxOption) => {
+    console.log(option);
+    selectedMake = option;
+  };
+
+  const onModelSelected = (option: ComboBoxOption) => {
+    selectedModel = option;
+  };
+
+  const resetForm = () => {
+    mediaType = MediaType.All;
+
+    notInAlbum = false;
+    inArchive = false;
+    inFavorite = false;
+
+    peopleSelected = [];
+    peopleComboboxOptions = [];
+    peopleSuggestions = [];
+
+    countrySuggestions = [];
+    stateSuggestions = [];
+    citySuggestions = [];
+    selectedCountry = { label: '', value: '' };
+    selectedState = { label: '', value: '' };
+    selectedCity = { label: '', value: '' };
+
+    cameraMakeSuggestions = [];
+    cameraModelSuggestions = [];
+    selectedMake = { label: '', value: '' };
+    selectedModel = { label: '', value: '' };
+
+    startDate = undefined;
+    endDate = undefined;
   };
 </script>
 
@@ -84,13 +195,7 @@
             for="type-all"
             class="text-base flex place-items-center gap-1 hover:cursor-pointer text-black dark:text-white"
           >
-            <input
-              bind:group={mediaType}
-              value={MediaType.All}
-              type="radio"
-              name="radio-type"
-              id="type-all"
-            />All</label
+            <input bind:group={mediaType} value={mediaType} type="radio" name="radio-type" id="type-all" />All</label
           >
 
           <label
@@ -101,7 +206,7 @@
               bind:group={mediaType}
               value={MediaType.Image}
               type="radio"
-              name="radio-type"
+              name="media-type"
               id="type-image"
             />Image</label
           >
@@ -194,17 +299,35 @@
       <div class="flex justify-between gap-5 mt-3">
         <div class="w-full">
           <p class="text-sm text-black dark:text-white">Country</p>
-          <Combobox options={[]} selectedOption={selectedCountry} placeholder="Search country..." />
+          <Combobox
+            options={countrySuggestions}
+            selectedOption={selectedCountry}
+            placeholder="Search country..."
+            on:click={() => getLocationSuggestions(SearchSuggestionType.Country)}
+            on:select={({ detail }) => onCountrySelected(detail)}
+          />
         </div>
 
         <div class="w-full">
           <p class="text-sm text-black dark:text-white">State</p>
-          <Combobox options={[]} selectedOption={selectedState} placeholder="Search state..." />
+          <Combobox
+            options={stateSuggestions}
+            selectedOption={selectedState}
+            placeholder="Search state..."
+            on:click={() => getLocationSuggestions(SearchSuggestionType.State)}
+            on:select={({ detail }) => onStateSelected(detail)}
+          />
         </div>
 
         <div class="w-full">
           <p class="text-sm text-black dark:text-white">City</p>
-          <Combobox options={[]} selectedOption={selectedCity} placeholder="Search city..." />
+          <Combobox
+            options={citySuggestions}
+            selectedOption={selectedCity}
+            placeholder="Search city..."
+            on:click={() => getLocationSuggestions(SearchSuggestionType.City)}
+            on:select={({ detail }) => onCitySelected(detail)}
+          />
         </div>
       </div>
     </div>
@@ -217,12 +340,24 @@
       <div class="flex justify-between gap-5 mt-3">
         <div class="w-full">
           <p class="text-sm text-black dark:text-white">Make</p>
-          <Combobox options={[]} selectedOption={selectedCountry} placeholder="Search country..." />
+          <Combobox
+            options={cameraMakeSuggestions}
+            selectedOption={selectedMake}
+            placeholder="Search camera make..."
+            on:click={() => getCameraSuggestions(SearchSuggestionType.CameraMake)}
+            on:select={({ detail }) => onMakeSelected(detail)}
+          />
         </div>
 
         <div class="w-full">
           <p class="text-sm text-black dark:text-white">Model</p>
-          <Combobox options={[]} selectedOption={selectedState} placeholder="Search state..." />
+          <Combobox
+            options={cameraModelSuggestions}
+            selectedOption={selectedModel}
+            placeholder="Search camera model..."
+            on:click={() => getCameraSuggestions(SearchSuggestionType.CameraModel)}
+            on:select={({ detail }) => onModelSelected(detail)}
+          />
         </div>
       </div>
     </div>
@@ -238,6 +373,7 @@
           type="date"
           id="start-date"
           name="start-date"
+          bind:value={startDate}
         />
       </div>
 
@@ -249,12 +385,13 @@
           id="end-date"
           name="end-date"
           placeholder=""
+          bind:value={endDate}
         />
       </div>
     </div>
 
     <div id="button-row" class="flex justify-end gap-4 mt-5">
-      <Button color="gray">CLEAR ALL</Button>
+      <Button color="gray" on:click={resetForm}>CLEAR ALL</Button>
       <Button type="submit">SEARCH</Button>
     </div>
   </form>
