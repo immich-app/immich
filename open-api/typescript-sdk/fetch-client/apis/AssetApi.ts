@@ -20,19 +20,15 @@ import type {
   AssetBulkUploadCheckDto,
   AssetBulkUploadCheckResponseDto,
   AssetFileUploadResponseDto,
-  AssetIdsDto,
   AssetJobsDto,
   AssetOrder,
   AssetResponseDto,
   AssetStatsResponseDto,
   AssetTypeEnum,
-  BulkIdsDto,
   CheckExistingAssetsDto,
   CheckExistingAssetsResponseDto,
   CuratedLocationsResponseDto,
   CuratedObjectsResponseDto,
-  DownloadInfoDto,
-  DownloadResponseDto,
   MapMarkerResponseDto,
   MemoryLaneResponseDto,
   ThumbnailFormat,
@@ -52,8 +48,6 @@ import {
     AssetBulkUploadCheckResponseDtoToJSON,
     AssetFileUploadResponseDtoFromJSON,
     AssetFileUploadResponseDtoToJSON,
-    AssetIdsDtoFromJSON,
-    AssetIdsDtoToJSON,
     AssetJobsDtoFromJSON,
     AssetJobsDtoToJSON,
     AssetOrderFromJSON,
@@ -64,8 +58,6 @@ import {
     AssetStatsResponseDtoToJSON,
     AssetTypeEnumFromJSON,
     AssetTypeEnumToJSON,
-    BulkIdsDtoFromJSON,
-    BulkIdsDtoToJSON,
     CheckExistingAssetsDtoFromJSON,
     CheckExistingAssetsDtoToJSON,
     CheckExistingAssetsResponseDtoFromJSON,
@@ -74,10 +66,6 @@ import {
     CuratedLocationsResponseDtoToJSON,
     CuratedObjectsResponseDtoFromJSON,
     CuratedObjectsResponseDtoToJSON,
-    DownloadInfoDtoFromJSON,
-    DownloadInfoDtoToJSON,
-    DownloadResponseDtoFromJSON,
-    DownloadResponseDtoToJSON,
     MapMarkerResponseDtoFromJSON,
     MapMarkerResponseDtoToJSON,
     MemoryLaneResponseDtoFromJSON,
@@ -106,16 +94,6 @@ export interface DeleteAssetsRequest {
     assetBulkDeleteDto: AssetBulkDeleteDto;
 }
 
-export interface DownloadArchiveOldRequest {
-    assetIdsDto: AssetIdsDto;
-    key?: string;
-}
-
-export interface DownloadFileOldRequest {
-    id: string;
-    key?: string;
-}
-
 export interface GetAllAssetsRequest {
     ifNoneMatch?: string;
     isArchived?: boolean;
@@ -129,11 +107,6 @@ export interface GetAllAssetsRequest {
 
 export interface GetAllUserAssetsByDeviceIdRequest {
     deviceId: string;
-}
-
-export interface GetAssetByIdRequest {
-    id: string;
-    key?: string;
 }
 
 export interface GetAssetInfoRequest {
@@ -150,11 +123,6 @@ export interface GetAssetStatisticsRequest {
 export interface GetAssetThumbnailRequest {
     id: string;
     format?: ThumbnailFormat;
-    key?: string;
-}
-
-export interface GetDownloadInfoOldRequest {
-    downloadInfoDto: DownloadInfoDto;
     key?: string;
 }
 
@@ -199,10 +167,6 @@ export interface GetTimeBucketsRequest {
     userId?: string;
     withPartners?: boolean;
     withStacked?: boolean;
-}
-
-export interface RestoreAssetsOldRequest {
-    bulkIdsDto: BulkIdsDto;
 }
 
 export interface RunAssetJobsRequest {
@@ -429,132 +393,6 @@ export class AssetApi extends runtime.BaseAPI {
     }
 
     /**
-     */
-    async downloadArchiveOldRaw(requestParameters: DownloadArchiveOldRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Blob>> {
-        if (requestParameters.assetIdsDto === null || requestParameters.assetIdsDto === undefined) {
-            throw new runtime.RequiredError('assetIdsDto','Required parameter requestParameters.assetIdsDto was null or undefined when calling downloadArchiveOld.');
-        }
-
-        const queryParameters: any = {};
-
-        if (requestParameters.key !== undefined) {
-            queryParameters['key'] = requestParameters.key;
-        }
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        if (this.configuration && this.configuration.apiKey) {
-            headerParameters["x-api-key"] = this.configuration.apiKey("x-api-key"); // api_key authentication
-        }
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("bearer", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-        const response = await this.request({
-            path: `/asset/download/archive`,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: AssetIdsDtoToJSON(requestParameters.assetIdsDto),
-        }, initOverrides);
-
-        return new runtime.BlobApiResponse(response);
-    }
-
-    /**
-     */
-    async downloadArchiveOld(requestParameters: DownloadArchiveOldRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Blob> {
-        const response = await this.downloadArchiveOldRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     */
-    async downloadFileOldRaw(requestParameters: DownloadFileOldRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Blob>> {
-        if (requestParameters.id === null || requestParameters.id === undefined) {
-            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling downloadFileOld.');
-        }
-
-        const queryParameters: any = {};
-
-        if (requestParameters.key !== undefined) {
-            queryParameters['key'] = requestParameters.key;
-        }
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        if (this.configuration && this.configuration.apiKey) {
-            headerParameters["x-api-key"] = this.configuration.apiKey("x-api-key"); // api_key authentication
-        }
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("bearer", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-        const response = await this.request({
-            path: `/asset/download/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.BlobApiResponse(response);
-    }
-
-    /**
-     */
-    async downloadFileOld(requestParameters: DownloadFileOldRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Blob> {
-        const response = await this.downloadFileOldRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     */
-    async emptyTrashOldRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        if (this.configuration && this.configuration.apiKey) {
-            headerParameters["x-api-key"] = this.configuration.apiKey("x-api-key"); // api_key authentication
-        }
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("bearer", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-        const response = await this.request({
-            path: `/asset/trash/empty`,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.VoidApiResponse(response);
-    }
-
-    /**
-     */
-    async emptyTrashOld(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.emptyTrashOldRaw(initOverrides);
-    }
-
-    /**
      * Get all AssetEntity belong to the user
      */
     async getAllAssetsRaw(requestParameters: GetAllAssetsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<AssetResponseDto>>> {
@@ -663,54 +501,6 @@ export class AssetApi extends runtime.BaseAPI {
      */
     async getAllUserAssetsByDeviceId(requestParameters: GetAllUserAssetsByDeviceIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<string>> {
         const response = await this.getAllUserAssetsByDeviceIdRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Get a single asset\'s information
-     * @deprecated
-     */
-    async getAssetByIdRaw(requestParameters: GetAssetByIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AssetResponseDto>> {
-        if (requestParameters.id === null || requestParameters.id === undefined) {
-            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getAssetById.');
-        }
-
-        const queryParameters: any = {};
-
-        if (requestParameters.key !== undefined) {
-            queryParameters['key'] = requestParameters.key;
-        }
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        if (this.configuration && this.configuration.apiKey) {
-            headerParameters["x-api-key"] = this.configuration.apiKey("x-api-key"); // api_key authentication
-        }
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("bearer", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-        const response = await this.request({
-            path: `/asset/assetById/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => AssetResponseDtoFromJSON(jsonValue));
-    }
-
-    /**
-     * Get a single asset\'s information
-     * @deprecated
-     */
-    async getAssetById(requestParameters: GetAssetByIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AssetResponseDto> {
-        const response = await this.getAssetByIdRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -959,53 +749,6 @@ export class AssetApi extends runtime.BaseAPI {
      */
     async getCuratedObjects(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<CuratedObjectsResponseDto>> {
         const response = await this.getCuratedObjectsRaw(initOverrides);
-        return await response.value();
-    }
-
-    /**
-     */
-    async getDownloadInfoOldRaw(requestParameters: GetDownloadInfoOldRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DownloadResponseDto>> {
-        if (requestParameters.downloadInfoDto === null || requestParameters.downloadInfoDto === undefined) {
-            throw new runtime.RequiredError('downloadInfoDto','Required parameter requestParameters.downloadInfoDto was null or undefined when calling getDownloadInfoOld.');
-        }
-
-        const queryParameters: any = {};
-
-        if (requestParameters.key !== undefined) {
-            queryParameters['key'] = requestParameters.key;
-        }
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        if (this.configuration && this.configuration.apiKey) {
-            headerParameters["x-api-key"] = this.configuration.apiKey("x-api-key"); // api_key authentication
-        }
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("bearer", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-        const response = await this.request({
-            path: `/asset/download/info`,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: DownloadInfoDtoToJSON(requestParameters.downloadInfoDto),
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => DownloadResponseDtoFromJSON(jsonValue));
-    }
-
-    /**
-     */
-    async getDownloadInfoOld(requestParameters: GetDownloadInfoOldRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DownloadResponseDto> {
-        const response = await this.getDownloadInfoOldRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -1319,83 +1062,6 @@ export class AssetApi extends runtime.BaseAPI {
     async getTimeBuckets(requestParameters: GetTimeBucketsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<TimeBucketResponseDto>> {
         const response = await this.getTimeBucketsRaw(requestParameters, initOverrides);
         return await response.value();
-    }
-
-    /**
-     */
-    async restoreAssetsOldRaw(requestParameters: RestoreAssetsOldRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
-        if (requestParameters.bulkIdsDto === null || requestParameters.bulkIdsDto === undefined) {
-            throw new runtime.RequiredError('bulkIdsDto','Required parameter requestParameters.bulkIdsDto was null or undefined when calling restoreAssetsOld.');
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        if (this.configuration && this.configuration.apiKey) {
-            headerParameters["x-api-key"] = this.configuration.apiKey("x-api-key"); // api_key authentication
-        }
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("bearer", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-        const response = await this.request({
-            path: `/asset/restore`,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: BulkIdsDtoToJSON(requestParameters.bulkIdsDto),
-        }, initOverrides);
-
-        return new runtime.VoidApiResponse(response);
-    }
-
-    /**
-     */
-    async restoreAssetsOld(requestParameters: RestoreAssetsOldRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.restoreAssetsOldRaw(requestParameters, initOverrides);
-    }
-
-    /**
-     */
-    async restoreTrashOldRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        if (this.configuration && this.configuration.apiKey) {
-            headerParameters["x-api-key"] = this.configuration.apiKey("x-api-key"); // api_key authentication
-        }
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("bearer", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-        const response = await this.request({
-            path: `/asset/trash/restore`,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.VoidApiResponse(response);
-    }
-
-    /**
-     */
-    async restoreTrashOld(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.restoreTrashOldRaw(initOverrides);
     }
 
     /**

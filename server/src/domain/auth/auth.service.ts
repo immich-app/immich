@@ -42,7 +42,6 @@ import {
   OAuthAuthorizeResponseDto,
   OAuthCallbackDto,
   OAuthConfigDto,
-  OAuthConfigResponseDto,
   SignUpDto,
   mapLoginResponse,
   mapUserToken,
@@ -199,28 +198,6 @@ export class AuthService {
 
   getMobileRedirect(url: string) {
     return `${MOBILE_REDIRECT}?${url.split('?')[1] || ''}`;
-  }
-
-  async generateConfig(dto: OAuthConfigDto): Promise<OAuthConfigResponseDto> {
-    const config = await this.configCore.getConfig();
-    const response = {
-      enabled: config.oauth.enabled,
-      passwordLoginEnabled: config.passwordLogin.enabled,
-    };
-
-    if (!response.enabled) {
-      return response;
-    }
-
-    const { scope, buttonText, autoLaunch } = config.oauth;
-    const oauthClient = await this.getOAuthClient(config);
-    const url = oauthClient.authorizationUrl({
-      redirect_uri: this.normalize(config, dto.redirectUri),
-      scope,
-      state: generators.state(),
-    });
-
-    return { ...response, buttonText, url, autoLaunch };
   }
 
   async authorize(dto: OAuthConfigDto): Promise<OAuthAuthorizeResponseDto> {

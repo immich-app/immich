@@ -36,21 +36,6 @@ void main() {
       // TODO
     });
 
-    //Future<MultipartFile> downloadArchiveOld(AssetIdsDto assetIdsDto, { String key }) async
-    test('test downloadArchiveOld', () async {
-      // TODO
-    });
-
-    //Future<MultipartFile> downloadFileOld(String id, { String key }) async
-    test('test downloadFileOld', () async {
-      // TODO
-    });
-
-    //Future emptyTrashOld() async
-    test('test emptyTrashOld', () async {
-      // TODO
-    });
-
     // Get all AssetEntity belong to the user
     //
     //Future<List<AssetResponseDto>> getAllAssets({ String ifNoneMatch, bool isArchived, bool isFavorite, int skip, int take, DateTime updatedAfter, DateTime updatedBefore, String userId }) async
@@ -62,13 +47,6 @@ void main() {
     //
     //Future<List<String>> getAllUserAssetsByDeviceId(String deviceId) async
     test('test getAllUserAssetsByDeviceId', () async {
-      // TODO
-    });
-
-    // Get a single asset's information
-    //
-    //Future<AssetResponseDto> getAssetById(String id, { String key }) async
-    test('test getAssetById', () async {
       // TODO
     });
 
@@ -102,11 +80,6 @@ void main() {
       // TODO
     });
 
-    //Future<DownloadResponseDto> getDownloadInfoOld(DownloadInfoDto downloadInfoDto, { String key }) async
-    test('test getDownloadInfoOld', () async {
-      // TODO
-    });
-
     //Future<List<MapMarkerResponseDto>> getMapMarkers({ DateTime fileCreatedAfter, DateTime fileCreatedBefore, bool isArchived, bool isFavorite }) async
     test('test getMapMarkers', () async {
       // TODO
@@ -129,16 +102,6 @@ void main() {
 
     //Future<List<TimeBucketResponseDto>> getTimeBuckets(TimeBucketSize size, { String albumId, bool isArchived, bool isFavorite, bool isTrashed, String key, String personId, String userId, bool withPartners, bool withStacked }) async
     test('test getTimeBuckets', () async {
-      // TODO
-    });
-
-    //Future restoreAssetsOld(BulkIdsDto bulkIdsDto) async
-    test('test restoreAssetsOld', () async {
-      // TODO
-    });
-
-    //Future restoreTrashOld() async
-    test('test restoreTrashOld', () async {
       // TODO
     });
 

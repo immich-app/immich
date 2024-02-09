@@ -36,7 +36,7 @@ class AssetDescriptionService {
 
   Future<String> readLatest(String assetRemoteId, int localExifId) async {
     final latestAssetFromServer =
-        await _api.assetApi.getAssetById(assetRemoteId);
+        await _api.assetApi.getAssetInfo(assetRemoteId);
     final localExifInfo = await _db.exifInfos.get(localExifId);
 
     if (latestAssetFromServer != null && localExifInfo != null) {

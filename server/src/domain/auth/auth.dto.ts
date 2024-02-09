@@ -106,15 +106,6 @@ export class OAuthConfigDto {
   redirectUri!: string;
 }
 
-/** @deprecated use oauth authorize */
-export class OAuthConfigResponseDto {
-  enabled!: boolean;
-  passwordLoginEnabled!: boolean;
-  url?: string;
-  buttonText?: string;
-  autoLaunch?: boolean;
-}
-
 export class OAuthAuthorizeResponseDto {
   url!: string;
 }

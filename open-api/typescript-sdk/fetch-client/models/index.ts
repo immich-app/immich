@@ -81,7 +81,6 @@ export * from './ModelType';
 export * from './OAuthAuthorizeResponseDto';
 export * from './OAuthCallbackDto';
 export * from './OAuthConfigDto';
-export * from './OAuthConfigResponseDto';
 export * from './PartnerResponseDto';
 export * from './PathEntityType';
 export * from './PathType';

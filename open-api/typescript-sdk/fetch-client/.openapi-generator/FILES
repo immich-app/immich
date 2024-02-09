@@ -101,7 +101,6 @@ models/ModelType.ts
 models/OAuthAuthorizeResponseDto.ts
 models/OAuthCallbackDto.ts
 models/OAuthConfigDto.ts
-models/OAuthConfigResponseDto.ts
 models/PartnerResponseDto.ts
 models/PathEntityType.ts
 models/PathType.ts

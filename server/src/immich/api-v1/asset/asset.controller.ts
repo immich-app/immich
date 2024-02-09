@@ -1,4 +1,4 @@
-import { AssetResponseDto, AssetService, AuthDto } from '@app/domain';
+import { AssetResponseDto, AuthDto } from '@app/domain';
 import {
   Body,
   Controller,
@@ -18,7 +18,7 @@ import {
 import { ApiBody, ApiConsumes, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
 import { Auth, Authenticated, FileResponse, SharedLinkRoute } from '../../app.guard';
-import { UseValidation, sendFile } from '../../app.utils';
+import { sendFile } from '../../app.utils';
 import { UUIDParamDto } from '../../controllers/dto/uuid-param.dto';
 import { FileUploadInterceptor, ImmichFile, Route, mapToUploadFile } from '../../interceptors';
 import FileNotEmptyValidator from '../validation/file-not-empty-validator';
@@ -45,10 +45,7 @@ interface UploadFiles {
 @Controller(Route.ASSET)
 @Authenticated()
 export class AssetController {
-  constructor(
-    private serviceV1: AssetServiceV1,
-    private service: AssetService,
-  ) {}
+  constructor(private serviceV1: AssetServiceV1) {}
 
   @SharedLinkRoute()
   @Post('upload')
@@ -141,17 +138,6 @@ export class AssetController {
     @Query(new ValidationPipe({ transform: true })) dto: AssetSearchDto,
   ): Promise<AssetResponseDto[]> {
     return this.serviceV1.getAllAssets(auth, dto);
-  }
-
-  /**
-   * Get a single asset's information
-   * @deprecated Use `/asset/:id`
-   */
-  @SharedLinkRoute()
-  @UseValidation()
-  @Get('/assetById/:id')
-  getAssetById(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AssetResponseDto> {
-    return this.service.get(auth, id) as Promise<AssetResponseDto>;
   }
 
   /**
