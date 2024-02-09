@@ -357,7 +357,6 @@ abstract class _$AppRouter extends RootStackRouter {
           showControls: args.showControls,
           hideControlsTimer: args.hideControlsTimer,
           showDownloadingIndicator: args.showDownloadingIndicator,
-          delayedLoadingDuration: args.delayedLoadingDuration,
         ),
       );
     },

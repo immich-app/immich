@@ -7,7 +7,7 @@ import 'package:immich_mobile/modules/asset_viewer/providers/show_controls.provi
 import 'package:immich_mobile/modules/asset_viewer/providers/video_player_controls_provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/video_player_value_provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/center_play_button.dart';
-import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
+import 'package:immich_mobile/shared/ui/delayed_loading_indicator.dart';
 import 'package:video_player/video_player.dart';
 
 class VideoPlayerControls extends ConsumerStatefulWidget {
@@ -66,7 +66,9 @@ class VideoPlayerControlsState extends ConsumerState<VideoPlayerControls>
           children: [
             if (_displayBufferingIndicator)
               const Center(
-                child: ImmichLoadingIndicator(),
+                child: DelayedLoadingIndicator(
+                  fadeInDuration: Duration(milliseconds: 400),
+                ),
               )
             else
               _buildHitArea(),
@@ -79,6 +81,7 @@ class VideoPlayerControlsState extends ConsumerState<VideoPlayerControls>
   @override
   void dispose() {
     _dispose();
+
     super.dispose();
   }
 
@@ -92,6 +95,7 @@ class VideoPlayerControlsState extends ConsumerState<VideoPlayerControls>
     final oldController = _chewieController;
     _chewieController = ChewieController.of(context);
     controller = chewieController.videoPlayerController;
+    _latestValue = controller.value;
 
     if (oldController != chewieController) {
       _dispose();
@@ -134,8 +138,8 @@ class VideoPlayerControlsState extends ConsumerState<VideoPlayerControls>
     ref.read(showControlsProvider.notifier).show = false;
     _mute(ref.read(videoPlayerControlsProvider.select((value) => value.mute)));
 
-    controller.addListener(_updateState);
     _latestValue = controller.value;
+    controller.addListener(_updateState);
 
     if (controller.value.isPlaying || chewieController.autoPlay) {
       _startHideTimer();
@@ -168,9 +172,8 @@ class VideoPlayerControlsState extends ConsumerState<VideoPlayerControls>
   }
 
   void _startHideTimer() {
-    final hideControlsTimer = chewieController.hideControlsTimer.isNegative
-        ? ChewieController.defaultHideControlsTimer
-        : chewieController.hideControlsTimer;
+    final hideControlsTimer = chewieController.hideControlsTimer;
+    _hideTimer?.cancel();
     _hideTimer = Timer(hideControlsTimer, () {
       ref.read(showControlsProvider.notifier).show = false;
     });

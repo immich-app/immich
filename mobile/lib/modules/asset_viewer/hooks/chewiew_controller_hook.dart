@@ -26,7 +26,7 @@ ChewieController? useChewieController(
   bool showControls = true,
   Widget? customControls,
   Widget? placeholder,
-  Duration hideControlsTimer = const Duration(seconds: 3),
+  Duration hideControlsTimer = const Duration(seconds: 1),
   VoidCallback? onPlaying,
   VoidCallback? onPaused,
   VoidCallback? onVideoEnded,

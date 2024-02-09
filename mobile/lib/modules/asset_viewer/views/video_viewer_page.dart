@@ -19,7 +19,6 @@ class VideoViewerPage extends HookWidget {
   final Duration hideControlsTimer;
   final bool showControls;
   final bool showDownloadingIndicator;
-  final Duration delayedLoadingDuration;
 
   const VideoViewerPage({
     super.key,
@@ -30,9 +29,8 @@ class VideoViewerPage extends HookWidget {
     this.onPaused,
     this.placeholder,
     this.showControls = true,
-    this.hideControlsTimer = const Duration(seconds: 5),
+    this.hideControlsTimer = const Duration(milliseconds: 1500),
     this.showDownloadingIndicator = true,
-    this.delayedLoadingDuration = const Duration(seconds: 3),
   });
 
   @override
@@ -60,7 +58,9 @@ class VideoViewerPage extends HookWidget {
             return Stack(
               children: [
                 if (placeholder != null) placeholder!,
-                const DelayedLoadingIndicator(),
+                const DelayedLoadingIndicator(
+                  fadeInDuration: Duration(milliseconds: 500),
+                ),
               ],
             );
           }
