@@ -168,6 +168,11 @@ class Asset {
 
   int? stackCount;
 
+  /// Aspect ratio of the asset
+  @ignore
+  double? get aspectRatio =>
+      width == null || height == null ? 0 : width! / height!;
+
   /// `true` if this [Asset] is present on the device
   @ignore
   bool get isLocal => localId != null;
@@ -431,17 +436,17 @@ class Asset {
   "remoteId": "${remoteId ?? "N/A"}",
   "localId": "${localId ?? "N/A"}",
   "checksum": "$checksum",
-  "ownerId": $ownerId, 
+  "ownerId": $ownerId,
   "livePhotoVideoId": "${livePhotoVideoId ?? "N/A"}",
   "stackCount": "$stackCount",
   "stackParentId": "${stackParentId ?? "N/A"}",
   "fileCreatedAt": "$fileCreatedAt",
-  "fileModifiedAt": "$fileModifiedAt", 
-  "updatedAt": "$updatedAt", 
-  "durationInSeconds": $durationInSeconds, 
+  "fileModifiedAt": "$fileModifiedAt",
+  "updatedAt": "$updatedAt",
+  "durationInSeconds": $durationInSeconds,
   "type": "$type",
-  "fileName": "$fileName", 
-  "isFavorite": $isFavorite, 
+  "fileName": "$fileName",
+  "isFavorite": $isFavorite,
   "isRemote": $isRemote,
   "storage": "$storage",
   "width": ${width ?? "N/A"},
