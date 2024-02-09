@@ -1,6 +1,6 @@
 import { LibraryEntity, LibraryType } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { ArrayUnique, IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { ValidateUUID } from '../domain.util';
 
 export class CreateLibraryDto {
@@ -20,11 +20,13 @@ export class CreateLibraryDto {
   @IsOptional()
   @IsString({ each: true })
   @IsNotEmpty({ each: true })
+  @ArrayUnique()
   importPaths?: string[];
 
   @IsOptional()
   @IsString({ each: true })
   @IsNotEmpty({ each: true })
+  @ArrayUnique()
   exclusionPatterns?: string[];
 
   @IsOptional()
@@ -45,11 +47,13 @@ export class UpdateLibraryDto {
   @IsOptional()
   @IsString({ each: true })
   @IsNotEmpty({ each: true })
+  @ArrayUnique()
   importPaths?: string[];
 
   @IsOptional()
   @IsNotEmpty({ each: true })
   @IsString({ each: true })
+  @ArrayUnique()
   exclusionPatterns?: string[];
 }
 
