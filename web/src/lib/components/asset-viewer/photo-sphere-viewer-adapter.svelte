@@ -13,7 +13,7 @@
       panorama,
       touchmoveTwoFingers: true,
       mousewheelCtrlKey: false,
-      navbar: false 
+      navbar: false,
     });
   });
 

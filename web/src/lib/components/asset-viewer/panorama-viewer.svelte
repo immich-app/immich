@@ -33,7 +33,7 @@
     <LoadingSpinner />
   {:then assetData}
     {#if assetData}
-      <PhotoSphere panorama={assetData}/>
+      <PhotoSphere panorama={assetData} />
     {:else}
       <p>{errorMessage}</p>
     {/if}
