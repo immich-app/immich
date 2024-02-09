@@ -1,7 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:chewie/chewie.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:immich_mobile/modules/asset_viewer/hooks/chewiew_controller_hook.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/video_player_controls.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
@@ -50,30 +50,32 @@ class VideoViewerPage extends HookWidget {
     );
 
     // Loading
-    return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 400),
-      child: Builder(
-        builder: (context) {
-          if (controller == null) {
-            return Stack(
-              children: [
-                if (placeholder != null) placeholder!,
-                const DelayedLoadingIndicator(
-                  fadeInDuration: Duration(milliseconds: 500),
-                ),
-              ],
-            );
-          }
+    return PopScope(
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 400),
+        child: Builder(
+          builder: (context) {
+            if (controller == null) {
+              return Stack(
+                children: [
+                  if (placeholder != null) placeholder!,
+                  const DelayedLoadingIndicator(
+                    fadeInDuration: Duration(milliseconds: 500),
+                  ),
+                ],
+              );
+            }
 
-          final size = MediaQuery.of(context).size;
-          return SizedBox(
-            height: size.height,
-            width: size.width,
-            child: Chewie(
-              controller: controller,
-            ),
-          );
-        },
+            final size = MediaQuery.of(context).size;
+            return SizedBox(
+              height: size.height,
+              width: size.width,
+              child: Chewie(
+                controller: controller,
+              ),
+            );
+          },
+        ),
       ),
     );
   }

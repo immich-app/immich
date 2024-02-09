@@ -1393,9 +1393,8 @@ class VideoViewerRoute extends PageRouteInfo<VideoViewerRouteArgs> {
     void Function()? onPaused,
     Widget? placeholder,
     bool showControls = true,
-    Duration hideControlsTimer = const Duration(seconds: 5),
+    Duration hideControlsTimer = const Duration(milliseconds: 1500),
     bool showDownloadingIndicator = true,
-    Duration delayedLoadingDuration = const Duration(seconds: 3),
     List<PageRouteInfo>? children,
   }) : super(
           VideoViewerRoute.name,
@@ -1410,7 +1409,6 @@ class VideoViewerRoute extends PageRouteInfo<VideoViewerRouteArgs> {
             showControls: showControls,
             hideControlsTimer: hideControlsTimer,
             showDownloadingIndicator: showDownloadingIndicator,
-            delayedLoadingDuration: delayedLoadingDuration,
           ),
           initialChildren: children,
         );
@@ -1431,9 +1429,8 @@ class VideoViewerRouteArgs {
     this.onPaused,
     this.placeholder,
     this.showControls = true,
-    this.hideControlsTimer = const Duration(seconds: 5),
+    this.hideControlsTimer = const Duration(milliseconds: 1500),
     this.showDownloadingIndicator = true,
-    this.delayedLoadingDuration = const Duration(seconds: 3),
   });
 
   final Key? key;
@@ -1456,10 +1453,8 @@ class VideoViewerRouteArgs {
 
   final bool showDownloadingIndicator;
 
-  final Duration delayedLoadingDuration;
-
   @override
   String toString() {
-    return 'VideoViewerRouteArgs{key: $key, asset: $asset, isMotionVideo: $isMotionVideo, onVideoEnded: $onVideoEnded, onPlaying: $onPlaying, onPaused: $onPaused, placeholder: $placeholder, showControls: $showControls, hideControlsTimer: $hideControlsTimer, showDownloadingIndicator: $showDownloadingIndicator, delayedLoadingDuration: $delayedLoadingDuration}';
+    return 'VideoViewerRouteArgs{key: $key, asset: $asset, isMotionVideo: $isMotionVideo, onVideoEnded: $onVideoEnded, onPlaying: $onPlaying, onPaused: $onPaused, placeholder: $placeholder, showControls: $showControls, hideControlsTimer: $hideControlsTimer, showDownloadingIndicator: $showDownloadingIndicator}';
   }
 }

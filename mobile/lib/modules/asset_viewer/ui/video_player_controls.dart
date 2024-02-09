@@ -110,12 +110,10 @@ class VideoPlayerControlsState extends ConsumerState<VideoPlayerControls>
 
     return GestureDetector(
       onTap: () {
-        if (_latestValue.isPlaying) {
-          ref.read(showControlsProvider.notifier).show = false;
-        } else {
+        if (!_latestValue.isPlaying) {
           _playPause();
-          ref.read(showControlsProvider.notifier).show = false;
         }
+        ref.read(showControlsProvider.notifier).show = false;
       },
       child: CenterPlayButton(
         backgroundColor: Colors.black54,
