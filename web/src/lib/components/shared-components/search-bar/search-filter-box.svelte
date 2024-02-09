@@ -5,8 +5,9 @@
   import { SearchSuggestionType, api, type PersonResponseDto, type PeopleResponseDto } from '@api';
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { mdiClose } from '@mdi/js';
+  import { mdiArrowRight, mdiClose } from '@mdi/js';
   import { handleError } from '$lib/utils/handle-error';
+  import { onMount } from 'svelte';
 
   enum MediaType {
     All = 'all',
@@ -87,6 +88,38 @@
     inFavorite: undefined,
     notInAlbum: undefined,
     mediaType: MediaType.All,
+  };
+
+  onMount(() => {
+    getPeople();
+  });
+
+  const getPeople = async () => {
+    try {
+      const { data } = await api.personApi.getAllPeople({ withHidden: false });
+      suggestions.people = data.people;
+    } catch (error) {
+      handleError(error, 'Failed to get people');
+    }
+  };
+
+  const handlePeopleSelection = (id: string) => {
+    if (filter.people.find((p) => p.id === id)) {
+      filter.people = filter.people.filter((p) => p.id !== id);
+      return;
+    }
+
+    const person = suggestions.people.find((p) => p.id === id);
+    if (person) {
+      filter.people = [...filter.people, person];
+
+      suggestions.people.sort((a, b) => {
+        if (filter.people.find((p) => p.id === a.id)) {
+          return -1;
+        }
+        return 1;
+      });
+    }
   };
 
   const updateSuggestion = async (type: SearchSuggestionType, params: SearchParams) => {
@@ -271,38 +304,40 @@
         <div class="flex-1">
           <p class="immich-form-label">PEOPLE</p>
         </div>
-
-        <!-- <div class="flex-1">
-          <Combobox
-            noLabel
-            options={peopleComboboxOptions}
-            placeholder="Search people..."
-            on:click={getPeopleSuggestion}
-            on:select={({ detail }) => onPeopleSelected(detail)}
-          />
-        </div> -->
       </div>
 
-      <div class="flex gap-4 mt-4">
-        <!-- {#each peopleSelected as person (person.id)}
-          <button
-            class="flex gap-2 place-items-center place-content-center rounded-full bg-immich-primary/20 dark:bg-immich-dark-primary/75 px-2 py-1 text-black hover:bg-immich-primary/40 dark:hover:dark:bg-immich-dark-primary transition-all"
-            on:click={() => onDeselectPerson(person.id)}
+      {#if suggestions.people.length > 0}
+        {@const subPeopleList = suggestions.people.slice(0, 10)}
+        <div class="flex gap-4 mt-4 flex-wrap">
+          {#each subPeopleList as person (person.id)}
+            <button
+              type="button"
+              class="w-20 text-center rounded-3xl border-2 border-transparent hover:bg-immich-gray dark:hover:bg-immich-dark-primary/20 p-2 flex-col place-items-center transition-all {filter.people.find(
+                (p) => p.id === person.id,
+              )
+                ? 'dark:border-slate-500 border-slate-300'
+                : ''}"
+              on:click={() => handlePeopleSelection(person.id)}
+            >
+              <ImageThumbnail
+                circle
+                shadow
+                url={api.getPeopleThumbnailUrl(person.id)}
+                altText={person.name}
+                widthStyle="100%"
+              />
+              <p class="mt-2 text-ellipsis text-sm font-medium dark:text-white">{person.name}</p>
+            </button>
+          {/each}
+        </div>
+
+        <div class="flex justify-center mt-2">
+          <Button shadow={false} color="text-primary" type="button" class="flex gap-2 place-items-center">
+            <span><Icon path={mdiArrowRight} /></span>
+            See all People</Button
           >
-            <ImageThumbnail
-              circle
-              shadow
-              url={api.getPeopleThumbnailUrl(person.id)}
-              altText={person.name}
-              widthStyle="36px"
-            />
-
-            <p>{person.name}</p>
-
-            <Icon path={mdiClose} class="hover:cursor-pointer" />
-          </button>
-        {/each} -->
-      </div>
+        </div>
+      {/if}
     </div>
 
     <hr />

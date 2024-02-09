@@ -23,7 +23,6 @@ class SearchSuggestionType {
 
   String toJson() => value;
 
-  static const people = SearchSuggestionType._(r'people');
   static const country = SearchSuggestionType._(r'country');
   static const state = SearchSuggestionType._(r'state');
   static const city = SearchSuggestionType._(r'city');
@@ -32,7 +31,6 @@ class SearchSuggestionType {
 
   /// List of all possible values in this [enum][SearchSuggestionType].
   static const values = <SearchSuggestionType>[
-    people,
     country,
     state,
     city,
@@ -76,7 +74,6 @@ class SearchSuggestionTypeTypeTransformer {
   SearchSuggestionType? decode(dynamic data, {bool allowNull = true}) {
     if (data != null) {
       switch (data) {
-        case r'people': return SearchSuggestionType.people;
         case r'country': return SearchSuggestionType.country;
         case r'state': return SearchSuggestionType.state;
         case r'city': return SearchSuggestionType.city;

@@ -5,7 +5,6 @@ import { Transform } from 'class-transformer';
 import { IsArray, IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export enum SearchSuggestionType {
-  People = 'people',
   Country = 'country',
   State = 'state',
   City = 'city',
@@ -37,6 +36,5 @@ export class SearchSuggestionRequestDto {
 }
 
 export class SearchSuggestionResponseDto {
-  people?: PersonResponseDto[];
   data?: string[];
 }

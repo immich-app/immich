@@ -13,13 +13,6 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { PersonResponseDto } from './PersonResponseDto';
-import {
-    PersonResponseDtoFromJSON,
-    PersonResponseDtoFromJSONTyped,
-    PersonResponseDtoToJSON,
-} from './PersonResponseDto';
-
 /**
  * 
  * @export
@@ -32,12 +25,6 @@ export interface SearchSuggestionResponseDto {
      * @memberof SearchSuggestionResponseDto
      */
     data?: Array<string>;
-    /**
-     * 
-     * @type {Array<PersonResponseDto>}
-     * @memberof SearchSuggestionResponseDto
-     */
-    people?: Array<PersonResponseDto>;
 }
 
 /**
@@ -60,7 +47,6 @@ export function SearchSuggestionResponseDtoFromJSONTyped(json: any, ignoreDiscri
     return {
         
         'data': !exists(json, 'data') ? undefined : json['data'],
-        'people': !exists(json, 'people') ? undefined : ((json['people'] as Array<any>).map(PersonResponseDtoFromJSON)),
     };
 }
 
@@ -74,7 +60,6 @@ export function SearchSuggestionResponseDtoToJSON(value?: SearchSuggestionRespon
     return {
         
         'data': value.data,
-        'people': value.people === undefined ? undefined : ((value.people as Array<any>).map(PersonResponseDtoToJSON)),
     };
 }
 

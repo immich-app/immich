@@ -14,31 +14,25 @@ class SearchSuggestionResponseDto {
   /// Returns a new [SearchSuggestionResponseDto] instance.
   SearchSuggestionResponseDto({
     this.data = const [],
-    this.people = const [],
   });
 
   List<String> data;
 
-  List<PersonResponseDto> people;
-
   @override
   bool operator ==(Object other) => identical(this, other) || other is SearchSuggestionResponseDto &&
-    _deepEquality.equals(other.data, data) &&
-    _deepEquality.equals(other.people, people);
+    _deepEquality.equals(other.data, data);
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (data.hashCode) +
-    (people.hashCode);
+    (data.hashCode);
 
   @override
-  String toString() => 'SearchSuggestionResponseDto[data=$data, people=$people]';
+  String toString() => 'SearchSuggestionResponseDto[data=$data]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'data'] = this.data;
-      json[r'people'] = this.people;
     return json;
   }
 
@@ -53,7 +47,6 @@ class SearchSuggestionResponseDto {
         data: json[r'data'] is Iterable
             ? (json[r'data'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        people: PersonResponseDto.listFromJson(json[r'people']),
       );
     }
     return null;

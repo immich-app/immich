@@ -8631,19 +8631,12 @@
               "type": "string"
             },
             "type": "array"
-          },
-          "people": {
-            "items": {
-              "$ref": "#/components/schemas/PersonResponseDto"
-            },
-            "type": "array"
           }
         },
         "type": "object"
       },
       "SearchSuggestionType": {
         "enum": [
-          "people",
           "country",
           "state",
           "city",

@@ -3001,12 +3001,6 @@ export interface SearchSuggestionResponseDto {
      * @memberof SearchSuggestionResponseDto
      */
     'data'?: Array<string>;
-    /**
-     * 
-     * @type {Array<PersonResponseDto>}
-     * @memberof SearchSuggestionResponseDto
-     */
-    'people'?: Array<PersonResponseDto>;
 }
 /**
  * 
@@ -3015,7 +3009,6 @@ export interface SearchSuggestionResponseDto {
  */
 
 export const SearchSuggestionType = {
-    People: 'people',
     Country: 'country',
     State: 'state',
     City: 'city',

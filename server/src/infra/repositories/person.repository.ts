@@ -90,16 +90,6 @@ export class PersonRepository implements IPersonRepository {
       .getMany();
   }
 
-  @GenerateSql()
-  getAllWithName(ownerId: string): Promise<PersonEntity[]> {
-    return this.personRepository.find({
-      where: {
-        name: Not(''),
-        ownerId,
-      },
-    });
-  }
-
   @GenerateSql({ params: [DummyValue.UUID] })
   getFaces(assetId: string): Promise<AssetFaceEntity[]> {
     return this.assetFaceRepository.find({

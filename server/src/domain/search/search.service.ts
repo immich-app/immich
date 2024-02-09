@@ -132,14 +132,7 @@ export class SearchService {
   }
 
   async getSearchSuggestions(auth: AuthDto, dto: SearchSuggestionRequestDto): Promise<SearchSuggestionResponseDto> {
-    let response: SearchSuggestionResponseDto = { people: [], data: [] };
-
-    if (dto.type === SearchSuggestionType.People) {
-      const people = await this.personRepository.getAllWithName(auth.user.id);
-      response = {
-        people: people.map((person) => mapPerson(person)),
-      };
-    }
+    let response: SearchSuggestionResponseDto = { data: [] };
 
     if (dto.type === SearchSuggestionType.Country) {
       const country = await this.metadataRepository.getCountries(auth.user.id);

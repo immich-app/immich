@@ -18,7 +18,6 @@
  * @export
  */
 export const SearchSuggestionType = {
-    People: 'people',
     Country: 'country',
     State: 'state',
     City: 'city',
