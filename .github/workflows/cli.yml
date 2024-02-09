@@ -78,10 +78,13 @@ jobs:
         id: metadata
         uses: docker/metadata-action@v5
         with:
+          flavor: |
+            latest=false
           images: |
             name=ghcr.io/${{ github.repository_owner }}/immich-cli
           tags: |
             type=raw,value=${{ steps.package-version.outputs.version }},enable=${{ github.event_name == 'workflow_dispatch' }}
+            type=raw,value=latest,enable=${{ github.event_name == 'workflow_dispatch' }}
 
       - name: Build and push image
         uses: docker/build-push-action@v5.1.0
