@@ -35,8 +35,9 @@ jobs:
           node-version: "20.x"
           registry-url: "https://registry.npmjs.org"
       - name: Prepare SDK
-        run: npm ci
-        working-directory: ./open-api/typescript-sdk/
+        run: npm ci --prefix ../open-api/typescript-sdk/
+      - name: Build SDK
+        run: npm run build --prefix ../open-api/typescript-sdk/
       - run: npm ci
       - run: npm publish
         if: ${{ github.event_name == 'workflow_dispatch' }}
