@@ -57,9 +57,9 @@
   },
   "type": "module",
   "dependencies": {
-    "@egjs/svelte-view360": "^4.0.0-beta.7",
     "@immich/sdk": "file:../open-api/typescript-sdk",
     "@mdi/js": "^7.3.67",
+    "@photo-sphere-viewer/core": "^5.7.0",
     "@zoom-image/svelte": "^0.2.0",
     "axios": "^1.6.7",
     "buffer": "^6.0.3",

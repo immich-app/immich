@@ -2,8 +2,7 @@
   import { fade } from 'svelte/transition';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { api, type AssetResponseDto } from '@api';
-  import View360, { EquirectProjection } from '@egjs/svelte-view360';
-  import './panorama-viewer.css';
+  import PhotoSphere from './photo-sphere-viewer-adapter.svelte';
 
   export let asset: AssetResponseDto;
 
@@ -34,7 +33,7 @@
     <LoadingSpinner />
   {:then assetData}
     {#if assetData}
-      <View360 autoResize={true} initialZoom={0.5} projection={new EquirectProjection({ src: assetData })} />
+      <PhotoSphere panorama={assetData} />
     {:else}
       <p>{errorMessage}</p>
     {/if}
