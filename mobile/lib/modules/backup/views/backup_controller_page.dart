@@ -64,10 +64,14 @@ class BackupControllerPage extends HookConsumerWidget {
 
     Widget buildSelectedAlbumName() {
       var text = "backup_controller_page_backup_selected".tr();
-      var albums = backupAlbums.valueOrNull?.selectedBackupAlbums ?? [];
+      var selectedAlbums = backupAlbums.valueOrNull?.selectedBackupAlbums ?? [];
 
-      if (albums.isNotEmpty) {
-        for (var album in albums) {
+      if (selectedAlbums.isNotEmpty) {
+        for (var selected in selectedAlbums) {
+          final album = selected.album.value;
+          if (album == null) {
+            continue;
+          }
           if (album.name == "Recent" || album.name == "Recents") {
             text += "${album.name} (${'backup_all'.tr()}), ";
           } else {
@@ -99,10 +103,14 @@ class BackupControllerPage extends HookConsumerWidget {
 
     Widget buildExcludedAlbumName() {
       var text = "backup_controller_page_excluded".tr();
-      var albums = backupAlbums.valueOrNull?.excludedBackupAlbums ?? [];
+      var excludedAlbums = backupAlbums.valueOrNull?.excludedBackupAlbums ?? [];
 
-      if (albums.isNotEmpty) {
-        for (var album in albums) {
+      if (excludedAlbums.isNotEmpty) {
+        for (var excluded in excludedAlbums) {
+          final album = excluded.album.value;
+          if (album == null) {
+            continue;
+          }
           text += "${album.name}, ";
         }
 

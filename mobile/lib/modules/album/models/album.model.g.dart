@@ -17,29 +17,18 @@ const LocalAlbumSchema = CollectionSchema(
   name: r'LocalAlbum',
   id: -6998504736398460068,
   properties: {
-    r'backupSelection': PropertySchema(
-      id: 0,
-      name: r'backupSelection',
-      type: IsarType.byte,
-      enumMap: _LocalAlbumbackupSelectionEnumValueMap,
-    ),
     r'id': PropertySchema(
-      id: 1,
+      id: 0,
       name: r'id',
       type: IsarType.string,
     ),
-    r'lastBackup': PropertySchema(
-      id: 2,
-      name: r'lastBackup',
-      type: IsarType.dateTime,
-    ),
     r'modifiedAt': PropertySchema(
-      id: 3,
+      id: 1,
       name: r'modifiedAt',
       type: IsarType.dateTime,
     ),
     r'name': PropertySchema(
-      id: 4,
+      id: 2,
       name: r'name',
       type: IsarType.string,
     )
@@ -65,6 +54,13 @@ const LocalAlbumSchema = CollectionSchema(
     )
   },
   links: {
+    r'backup': LinkSchema(
+      id: -7205700651592530347,
+      name: r'backup',
+      target: r'BackupAlbum',
+      single: true,
+      linkName: r'album',
+    ),
     r'thumb': LinkSchema(
       id: 5843495776199463484,
       name: r'thumb',
@@ -102,11 +98,9 @@ void _localAlbumSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeByte(offsets[0], object.backupSelection.index);
-  writer.writeString(offsets[1], object.id);
-  writer.writeDateTime(offsets[2], object.lastBackup);
-  writer.writeDateTime(offsets[3], object.modifiedAt);
-  writer.writeString(offsets[4], object.name);
+  writer.writeString(offsets[0], object.id);
+  writer.writeDateTime(offsets[1], object.modifiedAt);
+  writer.writeString(offsets[2], object.name);
 }
 
 LocalAlbum _localAlbumDeserialize(
@@ -116,13 +110,9 @@ LocalAlbum _localAlbumDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = LocalAlbum(
-    backupSelection: _LocalAlbumbackupSelectionValueEnumMap[
-            reader.readByteOrNull(offsets[0])] ??
-        BackupSelection.none,
-    id: reader.readString(offsets[1]),
-    lastBackup: reader.readDateTime(offsets[2]),
-    modifiedAt: reader.readDateTime(offsets[3]),
-    name: reader.readString(offsets[4]),
+    id: reader.readString(offsets[0]),
+    modifiedAt: reader.readDateTime(offsets[1]),
+    name: reader.readString(offsets[2]),
   );
   return object;
 }
@@ -135,42 +125,26 @@ P _localAlbumDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (_LocalAlbumbackupSelectionValueEnumMap[
-              reader.readByteOrNull(offset)] ??
-          BackupSelection.none) as P;
-    case 1:
       return (reader.readString(offset)) as P;
+    case 1:
+      return (reader.readDateTime(offset)) as P;
     case 2:
-      return (reader.readDateTime(offset)) as P;
-    case 3:
-      return (reader.readDateTime(offset)) as P;
-    case 4:
       return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
 }
 
-const _LocalAlbumbackupSelectionEnumValueMap = {
-  'none': 0,
-  'select': 1,
-  'exclude': 2,
-};
-const _LocalAlbumbackupSelectionValueEnumMap = {
-  0: BackupSelection.none,
-  1: BackupSelection.select,
-  2: BackupSelection.exclude,
-};
-
 Id _localAlbumGetId(LocalAlbum object) {
   return object.isarId;
 }
 
 List<IsarLinkBase<dynamic>> _localAlbumGetLinks(LocalAlbum object) {
-  return [object.thumb, object.assets];
+  return [object.backup, object.thumb, object.assets];
 }
 
 void _localAlbumAttach(IsarCollection<dynamic> col, Id id, LocalAlbum object) {
+  object.backup.attach(col, col.isar.collection<BackupAlbum>(), r'backup', id);
   object.thumb.attach(col, col.isar.collection<Asset>(), r'thumb', id);
   object.assets.attach(col, col.isar.collection<Asset>(), r'assets', id);
 }
@@ -356,62 +330,6 @@ extension LocalAlbumQueryWhere
 
 extension LocalAlbumQueryFilter
     on QueryBuilder<LocalAlbum, LocalAlbum, QFilterCondition> {
-  QueryBuilder<LocalAlbum, LocalAlbum, QAfterFilterCondition>
-      backupSelectionEqualTo(BackupSelection value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'backupSelection',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<LocalAlbum, LocalAlbum, QAfterFilterCondition>
-      backupSelectionGreaterThan(
-    BackupSelection value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'backupSelection',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<LocalAlbum, LocalAlbum, QAfterFilterCondition>
-      backupSelectionLessThan(
-    BackupSelection value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'backupSelection',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<LocalAlbum, LocalAlbum, QAfterFilterCondition>
-      backupSelectionBetween(
-    BackupSelection lower,
-    BackupSelection upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'backupSelection',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
-    });
-  }
-
   QueryBuilder<LocalAlbum, LocalAlbum, QAfterFilterCondition> idEqualTo(
     String value, {
     bool caseSensitive = true,
@@ -587,61 +505,6 @@ extension LocalAlbumQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
         property: r'isarId',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
-    });
-  }
-
-  QueryBuilder<LocalAlbum, LocalAlbum, QAfterFilterCondition> lastBackupEqualTo(
-      DateTime value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'lastBackup',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<LocalAlbum, LocalAlbum, QAfterFilterCondition>
-      lastBackupGreaterThan(
-    DateTime value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'lastBackup',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<LocalAlbum, LocalAlbum, QAfterFilterCondition>
-      lastBackupLessThan(
-    DateTime value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'lastBackup',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<LocalAlbum, LocalAlbum, QAfterFilterCondition> lastBackupBetween(
-    DateTime lower,
-    DateTime upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'lastBackup',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -841,6 +704,19 @@ extension LocalAlbumQueryObject
 
 extension LocalAlbumQueryLinks
     on QueryBuilder<LocalAlbum, LocalAlbum, QFilterCondition> {
+  QueryBuilder<LocalAlbum, LocalAlbum, QAfterFilterCondition> backup(
+      FilterQuery<BackupAlbum> q) {
+    return QueryBuilder.apply(this, (query) {
+      return query.link(q, r'backup');
+    });
+  }
+
+  QueryBuilder<LocalAlbum, LocalAlbum, QAfterFilterCondition> backupIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'backup', 0, true, 0, true);
+    });
+  }
+
   QueryBuilder<LocalAlbum, LocalAlbum, QAfterFilterCondition> thumb(
       FilterQuery<Asset> q) {
     return QueryBuilder.apply(this, (query) {
@@ -917,19 +793,6 @@ extension LocalAlbumQueryLinks
 
 extension LocalAlbumQuerySortBy
     on QueryBuilder<LocalAlbum, LocalAlbum, QSortBy> {
-  QueryBuilder<LocalAlbum, LocalAlbum, QAfterSortBy> sortByBackupSelection() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'backupSelection', Sort.asc);
-    });
-  }
-
-  QueryBuilder<LocalAlbum, LocalAlbum, QAfterSortBy>
-      sortByBackupSelectionDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'backupSelection', Sort.desc);
-    });
-  }
-
   QueryBuilder<LocalAlbum, LocalAlbum, QAfterSortBy> sortById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
@@ -939,18 +802,6 @@ extension LocalAlbumQuerySortBy
   QueryBuilder<LocalAlbum, LocalAlbum, QAfterSortBy> sortByIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.desc);
-    });
-  }
-
-  QueryBuilder<LocalAlbum, LocalAlbum, QAfterSortBy> sortByLastBackup() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'lastBackup', Sort.asc);
-    });
-  }
-
-  QueryBuilder<LocalAlbum, LocalAlbum, QAfterSortBy> sortByLastBackupDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'lastBackup', Sort.desc);
     });
   }
 
@@ -981,19 +832,6 @@ extension LocalAlbumQuerySortBy
 
 extension LocalAlbumQuerySortThenBy
     on QueryBuilder<LocalAlbum, LocalAlbum, QSortThenBy> {
-  QueryBuilder<LocalAlbum, LocalAlbum, QAfterSortBy> thenByBackupSelection() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'backupSelection', Sort.asc);
-    });
-  }
-
-  QueryBuilder<LocalAlbum, LocalAlbum, QAfterSortBy>
-      thenByBackupSelectionDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'backupSelection', Sort.desc);
-    });
-  }
-
   QueryBuilder<LocalAlbum, LocalAlbum, QAfterSortBy> thenById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
@@ -1015,18 +853,6 @@ extension LocalAlbumQuerySortThenBy
   QueryBuilder<LocalAlbum, LocalAlbum, QAfterSortBy> thenByIsarIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isarId', Sort.desc);
-    });
-  }
-
-  QueryBuilder<LocalAlbum, LocalAlbum, QAfterSortBy> thenByLastBackup() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'lastBackup', Sort.asc);
-    });
-  }
-
-  QueryBuilder<LocalAlbum, LocalAlbum, QAfterSortBy> thenByLastBackupDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'lastBackup', Sort.desc);
     });
   }
 
@@ -1057,22 +883,10 @@ extension LocalAlbumQuerySortThenBy
 
 extension LocalAlbumQueryWhereDistinct
     on QueryBuilder<LocalAlbum, LocalAlbum, QDistinct> {
-  QueryBuilder<LocalAlbum, LocalAlbum, QDistinct> distinctByBackupSelection() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'backupSelection');
-    });
-  }
-
   QueryBuilder<LocalAlbum, LocalAlbum, QDistinct> distinctById(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'id', caseSensitive: caseSensitive);
-    });
-  }
-
-  QueryBuilder<LocalAlbum, LocalAlbum, QDistinct> distinctByLastBackup() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'lastBackup');
     });
   }
 
@@ -1098,22 +912,9 @@ extension LocalAlbumQueryProperty
     });
   }
 
-  QueryBuilder<LocalAlbum, BackupSelection, QQueryOperations>
-      backupSelectionProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'backupSelection');
-    });
-  }
-
   QueryBuilder<LocalAlbum, String, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'id');
-    });
-  }
-
-  QueryBuilder<LocalAlbum, DateTime, QQueryOperations> lastBackupProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'lastBackup');
     });
   }
 

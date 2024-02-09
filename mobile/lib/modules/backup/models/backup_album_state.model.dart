@@ -1,9 +1,9 @@
 import 'package:collection/collection.dart';
-import 'package:immich_mobile/modules/album/models/album.model.dart';
+import 'package:immich_mobile/modules/backup/models/backup_album.model.dart';
 
 class BackupAlbumState {
-  final List<LocalAlbum> selectedBackupAlbums;
-  final List<LocalAlbum> excludedBackupAlbums;
+  final List<BackupAlbum> selectedBackupAlbums;
+  final List<BackupAlbum> excludedBackupAlbums;
 
   const BackupAlbumState({
     required this.selectedBackupAlbums,
@@ -11,8 +11,8 @@ class BackupAlbumState {
   });
 
   BackupAlbumState copyWith({
-    List<LocalAlbum>? selectedBackupAlbums,
-    List<LocalAlbum>? excludedBackupAlbums,
+    List<BackupAlbum>? selectedBackupAlbums,
+    List<BackupAlbum>? excludedBackupAlbums,
   }) {
     return BackupAlbumState(
       selectedBackupAlbums: selectedBackupAlbums ?? this.selectedBackupAlbums,

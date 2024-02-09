@@ -1,4 +1,5 @@
 import 'package:immich_mobile/modules/album/models/album.model.dart';
+import 'package:immich_mobile/modules/backup/models/backup_album.model.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:isar/isar.dart';
 import 'package:openapi/api.dart';
@@ -19,6 +20,13 @@ extension RemoteAlbumIsarHelper on IsarCollection<RemoteAlbum> {
     await a.thumb.save();
     await a.sharedUsers.save();
     await a.assets.save();
+  }
+}
+
+extension BackupAlbumIsarHelper on IsarCollection<BackupAlbum> {
+  Future<void> store(BackupAlbum a) async {
+    await put(a);
+    await a.album.save();
   }
 }
 

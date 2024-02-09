@@ -10,6 +10,7 @@ import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/album/models/album.model.dart';
+import 'package:immich_mobile/modules/backup/models/backup_album.model.dart';
 import 'package:timezone/data/latest.dart';
 import 'package:immich_mobile/constants/locales.dart';
 import 'package:immich_mobile/modules/backup/background_service/background.service.dart';
@@ -94,6 +95,7 @@ Future<Isar> loadDb() async {
       StoreValueSchema,
       ExifInfoSchema,
       AssetSchema,
+      BackupAlbumSchema,
       LocalAlbumSchema,
       RemoteAlbumSchema,
       UserSchema,

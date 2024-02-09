@@ -5,7 +5,7 @@ import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/album/models/album.model.dart';
+import 'package:immich_mobile/modules/backup/models/backup_album.model.dart';
 import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/duplicated_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/error_upload_asset.model.dart';
@@ -62,19 +62,17 @@ class BackupService {
     return duplicates.map((e) => e.id).toSet();
   }
 
-  QueryBuilder<LocalAlbum, LocalAlbum, QAfterFilterCondition>
-      selectedAlbumsQuery() => _db.localAlbums
-          .filter()
-          .backupSelectionEqualTo(BackupSelection.select);
-  QueryBuilder<LocalAlbum, LocalAlbum, QAfterFilterCondition>
-      excludedAlbumsQuery() => _db.localAlbums
-          .filter()
-          .backupSelectionEqualTo(BackupSelection.exclude);
+  QueryBuilder<BackupAlbum, BackupAlbum, QAfterFilterCondition>
+      selectedAlbumsQuery() =>
+          _db.backupAlbums.filter().selectionEqualTo(BackupSelection.select);
+  QueryBuilder<BackupAlbum, BackupAlbum, QAfterFilterCondition>
+      excludedAlbumsQuery() =>
+          _db.backupAlbums.filter().selectionEqualTo(BackupSelection.exclude);
 
   /// Returns all assets newer than the last successful backup per album
   Future<List<AssetEntity>> buildUploadCandidates(
-    List<LocalAlbum> selectedBackupAlbums,
-    List<LocalAlbum> excludedBackupAlbums,
+    List<BackupAlbum> selectedBackupAlbums,
+    List<BackupAlbum> excludedBackupAlbums,
   ) async {
     final filter = FilterOptionGroup(
       containsPathModified: true,
@@ -114,12 +112,12 @@ class BackupService {
   }
 
   Future<List<AssetPathEntity?>> _loadAlbumsWithTimeFilter(
-    List<LocalAlbum> albums,
+    List<BackupAlbum> albums,
     FilterOptionGroup filter,
     DateTime now,
   ) async {
     List<AssetPathEntity?> result = [];
-    for (LocalAlbum a in albums) {
+    for (BackupAlbum a in albums) {
       try {
         final AssetPathEntity album =
             await AssetPathEntity.obtainPathFromProperties(
@@ -143,7 +141,7 @@ class BackupService {
 
   Future<List<AssetEntity>> _fetchAssetsAndUpdateLastBackup(
     List<AssetPathEntity?> albums,
-    List<LocalAlbum> backupAlbums,
+    List<BackupAlbum> backupAlbums,
     DateTime now,
   ) async {
     List<AssetEntity> result = [];

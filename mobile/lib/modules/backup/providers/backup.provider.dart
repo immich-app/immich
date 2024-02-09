@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:cancellation_token_http/http.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/album/models/album.model.dart';
+import 'package:immich_mobile/modules/backup/models/backup_album.model.dart';
 import 'package:immich_mobile/modules/backup/models/backup_state.model.dart';
 import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/error_upload_asset.model.dart';
@@ -146,22 +146,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   }
 
   ///
-  /// Get all album on the device
-  /// Get all selected and excluded album from the user's persistent storage
-  ///
-  Future<void> _getBackupAlbumsInfo() async {
-    final List<LocalAlbum> excludedBackupAlbums =
-        await _backupService.excludedAlbumsQuery().findAll();
-    final List<LocalAlbum> selectedBackupAlbums =
-        await _backupService.selectedAlbumsQuery().findAll();
-
-    state = state.copyWith(
-      selectedBackupAlbums: selectedBackupAlbums.toSet(),
-      excludedBackupAlbums: excludedBackupAlbums.toSet(),
-    );
-  }
-
-  ///
   /// From all the selected and albums assets
   /// Find the assets that are not overlapping between the two sets
   /// Those assets are unique and are used as the total assets
@@ -172,12 +156,12 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     final Set<Asset> assetsFromSelectedAlbums = {};
     final Set<Asset> assetsFromExcludedAlbums = {};
 
-    for (final album in backupAlbums.selectedBackupAlbums) {
-      assetsFromSelectedAlbums.addAll(album.assets);
+    for (final selected in backupAlbums.selectedBackupAlbums) {
+      assetsFromSelectedAlbums.addAll(selected.album.value?.assets ?? []);
     }
 
-    for (final album in backupAlbums.excludedBackupAlbums) {
-      assetsFromExcludedAlbums.addAll(album.assets);
+    for (final excluded in backupAlbums.excludedBackupAlbums) {
+      assetsFromExcludedAlbums.addAll(excluded.album.value?.assets ?? []);
     }
 
     final Set<Asset> allUniqueAssets =
@@ -228,7 +212,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     }
 
     if (state.backupProgress != BackUpProgressEnum.inBackground) {
-      await _getBackupAlbumsInfo();
       await updateServerInfo();
       await _updateBackupAssetCount();
     } else {
@@ -382,36 +365,19 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   }
 
   Future<void> resumeBackup() async {
-    final List<LocalAlbum> selectedBackupAlbums = await _db.localAlbums
-        .filter()
-        .backupSelectionEqualTo(BackupSelection.select)
-        .findAll();
-    final List<LocalAlbum> excludedBackupAlbums = await _db.localAlbums
-        .filter()
-        .backupSelectionEqualTo(BackupSelection.exclude)
-        .findAll();
-    final backupAlbums = await ref.read(backupAlbumsProvider.future);
-    Set<LocalAlbum> selectedAlbums = backupAlbums.selectedBackupAlbums.toSet();
-    Set<LocalAlbum> excludedAlbums = backupAlbums.excludedBackupAlbums.toSet();
-    if (selectedAlbums.isNotEmpty) {
-      selectedAlbums = _updateAlbumsBackupTime(
-        selectedAlbums,
-        selectedBackupAlbums,
-      );
-    }
-
-    if (excludedAlbums.isNotEmpty) {
-      excludedAlbums = _updateAlbumsBackupTime(
-        excludedAlbums,
-        excludedBackupAlbums,
-      );
-    }
     final BackUpProgressEnum previous = state.backupProgress;
-    state = state.copyWith(
-      backupProgress: BackUpProgressEnum.inBackground,
-      selectedBackupAlbums: selectedAlbums,
-      excludedBackupAlbums: excludedAlbums,
-    );
+    state = state.copyWith(backupProgress: BackUpProgressEnum.inBackground);
+
+    // TODO: update album specific last backup time
+    final backupAlbums = await ref.read(backupAlbumsProvider.future);
+    List<BackupAlbum> selectedAlbums = backupAlbums.selectedBackupAlbums
+        .followedBy(backupAlbums.excludedBackupAlbums)
+        .map((e) {
+      e.lastBackup = DateTime.now();
+      return e;
+    }).toList();
+    await _db.writeTxn(() => _db.backupAlbums.putAll(selectedAlbums));
+
     // assumes the background service is currently running
     // if true, waits until it has stopped to start the backup
     final bool hasLock = await _backgroundService.acquireLock();
@@ -419,27 +385,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       state = state.copyWith(backupProgress: previous);
     }
     return _resumeBackup();
-  }
-
-  Set<LocalAlbum> _updateAlbumsBackupTime(
-    Set<LocalAlbum> albums,
-    List<LocalAlbum> backupAlbums,
-  ) {
-    Set<LocalAlbum> result = {};
-    for (LocalAlbum ba in backupAlbums) {
-      try {
-        LocalAlbum a = albums.firstWhere((e) => e.isarId == ba.isarId);
-        a.lastBackup = ba.lastBackup;
-        result.add(a);
-      } on StateError {
-        log.severe(
-          "[_updateAlbumBackupTime] failed to find album in state",
-          "State Error",
-          StackTrace.current,
-        );
-      }
-    }
-    return result;
   }
 
   Future<void> notifyBackgroundServiceCanRun() async {

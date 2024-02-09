@@ -4,6 +4,7 @@ import 'package:collection/collection.dart';
 import 'package:immich_mobile/extensions/collection_extensions.dart';
 import 'package:immich_mobile/modules/album/models/album.model.dart';
 import 'package:immich_mobile/extensions/album_extensions.dart';
+import 'package:immich_mobile/modules/backup/models/backup_album.model.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/etag.dart';
 import 'package:immich_mobile/shared/models/exif_info.dart';
@@ -102,9 +103,14 @@ class LocalAlbumService {
     deleteCandidates.addAll(
       await album.assets.filter().remoteIdIsNull().findAll(),
     );
+    await album.backup.load();
+    final backupAlbum = album.backup.value;
     try {
-      final bool ok =
-          await _db.writeTxn(() => _db.localAlbums.delete(album.isarId));
+      final ok = await _db.writeTxn(() async {
+        return await _db.localAlbums.delete(album.isarId) &&
+            (backupAlbum == null ||
+                await _db.backupAlbums.delete(album.isarId));
+      });
       assert(ok);
       _log.info("Removed local album $album from DB");
     } catch (e, stack) {
@@ -240,6 +246,7 @@ class LocalAlbumService {
     } on IsarError catch (e, stack) {
       _log.severe("Failed to add new local album ${ape.name} to DB: $e", stack);
     }
+    _linkWithBackupAlbumFromDB(a);
   }
 
   /// fast path for common case: only new assets were added to device album
@@ -301,6 +308,26 @@ class LocalAlbumService {
         ETag(id: ape.eTagKeyAssetCount, assetCount: assetCountOnDevice),
       ),
     );
+  }
+
+  Future<void> _linkWithBackupAlbumFromDB(LocalAlbum album) async {
+    final backupAlbum =
+        await _db.backupAlbums.filter().idEqualTo(album.id).findFirst();
+    if (backupAlbum == null) {
+      return;
+    }
+    backupAlbum.album.value = album;
+    try {
+      await _db.writeTxn(() async {
+        await _db.backupAlbums.store(backupAlbum);
+      });
+      _log.fine("Merged with backup album ${album.name} from DB");
+    } on IsarError catch (e, stack) {
+      _log.severe(
+        "Failed to merge with backup album ${album.name} from DB: $e",
+        stack,
+      );
+    }
   }
 
   List<Asset> _removeDuplicates(List<Asset> assets) {

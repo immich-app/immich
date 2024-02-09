@@ -1,4 +1,6 @@
+import 'package:immich_mobile/extensions/album_extensions.dart';
 import 'package:immich_mobile/modules/album/models/album.model.dart';
+import 'package:immich_mobile/modules/backup/models/backup_album.model.dart';
 import 'package:immich_mobile/modules/backup/models/backup_album_state.model.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:isar/isar.dart';
@@ -12,50 +14,41 @@ class BackupAlbums extends _$BackupAlbums {
   Future<BackupAlbumState> build() async {
     final db = ref.read(dbProvider);
     return BackupAlbumState(
-      selectedBackupAlbums: await db.localAlbums
+      selectedBackupAlbums: await db.backupAlbums
           .filter()
-          .backupSelectionEqualTo(BackupSelection.select)
+          .selectionEqualTo(BackupSelection.select)
           .findAll(),
-      excludedBackupAlbums: await db.localAlbums
+      excludedBackupAlbums: await db.backupAlbums
           .filter()
-          .backupSelectionEqualTo(BackupSelection.exclude)
+          .selectionEqualTo(BackupSelection.exclude)
           .findAll(),
     );
   }
 
-  void addSelectedAlbumForBackup(LocalAlbum album) async {
-    if (state.valueOrNull?.selectedBackupAlbums.any((a) => a.id == album.id) ??
-        false) {
-      removeAlbumForBackup(album);
-    }
-
-    album.backupSelection = BackupSelection.select;
-    await ref
-        .read(dbProvider)
-        .writeTxn(() => ref.read(dbProvider).localAlbums.put(album));
-
-    ref.invalidateSelf();
-  }
-
-  void addExcludedAlbumForBackup(LocalAlbum album) async {
-    if (state.valueOrNull?.selectedBackupAlbums.any((a) => a.id == album.id) ??
-        false) {
-      removeAlbumForBackup(album);
-    }
-
-    album.backupSelection = BackupSelection.exclude;
-    await ref
-        .read(dbProvider)
-        .writeTxn(() => ref.read(dbProvider).localAlbums.put(album));
+  void addAlbumForBackup(LocalAlbum album, BackupSelection selection) async {
+    final db = ref.read(dbProvider);
+    final albumInDB =
+        await db.backupAlbums.filter().idEqualTo(album.id).findFirst();
+    albumInDB?.selection = selection;
+    final backupAlbum = albumInDB ??
+        BackupAlbum(
+          id: album.id,
+          lastBackup: DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
+          selection: selection,
+        );
+    backupAlbum.album.value = album;
+    await db.writeTxn(() => db.backupAlbums.store(backupAlbum));
 
     ref.invalidateSelf();
   }
 
-  void removeAlbumForBackup(LocalAlbum album) async {
-    album.backupSelection = BackupSelection.none;
-    await ref
-        .read(dbProvider)
-        .writeTxn(() => ref.read(dbProvider).localAlbums.put(album));
+  void updateAlbumSelection(
+    BackupAlbum album,
+    BackupSelection selection,
+  ) async {
+    final db = ref.read(dbProvider);
+    album.selection = selection;
+    await db.writeTxn(() => db.backupAlbums.put(album));
 
     ref.invalidateSelf();
   }

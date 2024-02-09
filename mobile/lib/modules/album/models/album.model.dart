@@ -1,5 +1,6 @@
 // ignore_for_file: add-copy-with
 
+import 'package:immich_mobile/modules/backup/models/backup_album.model.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/utils/hash.dart';
@@ -59,42 +60,21 @@ sealed class Album {
   }
 }
 
-enum BackupSelection {
-  none,
-  select,
-  exclude;
-}
-
 @Collection()
 class LocalAlbum extends Album {
-  DateTime lastBackup;
-  @enumerated
-  BackupSelection backupSelection;
+  @Backlink(to: BackupAlbum.albumLinkId)
+  final IsarLink<BackupAlbum> backup = IsarLink<BackupAlbum>();
 
   LocalAlbum({
     required super.id,
     required super.name,
     required super.modifiedAt,
-    required this.lastBackup,
-    this.backupSelection = BackupSelection.none,
   });
 
   @override
   String toString() {
-    return 'LocalAlbum(id: $id, name: $name, assetCount: $assetCount, backupSelection: $backupSelection)';
+    return 'LocalAlbum(id: $id, name: $name, assetCount: $assetCount)';
   }
-
-  @override
-  bool operator ==(covariant LocalAlbum other) {
-    return super == other &&
-        lastBackup.isAtSameMomentAs(other.lastBackup) &&
-        backupSelection == other.backupSelection;
-  }
-
-  @override
-  @ignore
-  int get hashCode =>
-      super.hashCode ^ lastBackup.hashCode ^ backupSelection.hashCode;
 
   static LocalAlbum fromAssetPathEntity(
     AssetPathEntity ape, {
@@ -105,7 +85,6 @@ class LocalAlbum extends Album {
       id: ape.id,
       name: ape.name,
       modifiedAt: ape.lastModified?.toUtc() ?? DateTime.now().toUtc(),
-      lastBackup: DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
     );
 
     if (assets != null) {

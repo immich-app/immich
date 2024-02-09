@@ -139,7 +139,6 @@ class _SilverLibraryRemoteAlbumGrid extends ConsumerWidget {
               id: 'Placeholder',
               name: 'library_page_new_album'.tr(),
               modifiedAt: DateTime.now(),
-              lastBackup: DateTime.now(),
             );
             return AlbumThumbnailCard(
               album: placeholder,

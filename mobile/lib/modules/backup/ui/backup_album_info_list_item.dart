@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -7,6 +8,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/album/models/album.model.dart';
 import 'package:immich_mobile/modules/album/providers/local_album.provider.dart';
+import 'package:immich_mobile/modules/backup/models/backup_album.model.dart';
 import 'package:immich_mobile/modules/backup/providers/backup_album.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
@@ -21,36 +23,62 @@ class BackupAlbumInfoListItem extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isSelected = ref
-            .watch(backupAlbumsProvider)
-            .valueOrNull
-            ?.selectedBackupAlbums
-            .any((a) => a.id == album.id) ??
-        false;
-    final isExcluded = ref
-            .watch(backupAlbumsProvider)
-            .valueOrNull
-            ?.excludedBackupAlbums
-            .any((a) => a.id == album.id) ??
-        false;
+    final backupAlbums = ref.watch(backupAlbumsProvider);
+    final backupAlbumNotifier = ref.read(backupAlbumsProvider.notifier);
+    final isSelected =
+        backupAlbums.value?.selectedBackupAlbums.any((a) => a.id == album.id) ??
+            false;
+    final isExcluded =
+        backupAlbums.value?.excludedBackupAlbums.any((a) => a.id == album.id) ??
+            false;
+    final backupSelection = isSelected
+        ? BackupSelection.select
+        : isExcluded
+            ? BackupSelection.exclude
+            : BackupSelection.none;
 
     void onTap() {
       HapticFeedback.selectionClick();
 
+      final backupAlbum = backupAlbums.value?.selectedBackupAlbums
+          .firstWhereOrNull((a) => a.id == album.id);
+      if (backupAlbum == null) {
+        return backupAlbumNotifier.addAlbumForBackup(
+          album,
+          BackupSelection.select,
+        );
+      }
+
       if (isSelected) {
-        ref.read(backupAlbumsProvider.notifier).removeAlbumForBackup(album);
+        backupAlbumNotifier.updateAlbumSelection(
+          backupAlbum,
+          BackupSelection.none,
+        );
       } else {
-        ref
-            .read(backupAlbumsProvider.notifier)
-            .addSelectedAlbumForBackup(album);
+        backupAlbumNotifier.updateAlbumSelection(
+          backupAlbum,
+          BackupSelection.select,
+        );
       }
     }
 
     void onDoubleTap() {
       HapticFeedback.selectionClick();
 
+      final backupAlbum = backupAlbums.value?.excludedBackupAlbums
+          .firstWhereOrNull((a) => a.id == album.id);
+      if (backupAlbum == null) {
+        return backupAlbumNotifier.addAlbumForBackup(
+          album,
+          BackupSelection.exclude,
+        );
+      }
+
       if (isExcluded) {
-        ref.read(backupAlbumsProvider.notifier).removeAlbumForBackup(album);
+        backupAlbumNotifier.updateAlbumSelection(
+          backupAlbum,
+          BackupSelection.none,
+        );
       } else {
         if (album.id == LocalAlbums.isAllId || album.name == 'Recents') {
           ImmichToast.show(
@@ -62,9 +90,10 @@ class BackupAlbumInfoListItem extends ConsumerWidget {
           return;
         }
 
-        ref
-            .read(backupAlbumsProvider.notifier)
-            .addExcludedAlbumForBackup(album);
+        backupAlbumNotifier.updateAlbumSelection(
+          backupAlbum,
+          BackupSelection.exclude,
+        );
       }
     }
 
@@ -72,8 +101,8 @@ class BackupAlbumInfoListItem extends ConsumerWidget {
       onTap: onTap,
       onDoubleTap: onDoubleTap,
       child: context.isMobile
-          ? _AlbumDetailListTile(album)
-          : _AlbumDetailCard(album),
+          ? _AlbumDetailListTile(album, backupSelection)
+          : _AlbumDetailCard(album, backupSelection),
     );
   }
 }
@@ -112,8 +141,9 @@ class _AlbumFilteredThumbnail extends StatelessWidget {
 
 class _AlbumDetailListTile extends StatelessWidget {
   final LocalAlbum album;
+  final BackupSelection selection;
 
-  const _AlbumDetailListTile(this.album);
+  const _AlbumDetailListTile(this.album, this.selection);
 
   @override
   Widget build(BuildContext context) {
@@ -122,7 +152,7 @@ class _AlbumDetailListTile extends StatelessWidget {
     return Material(
       type: MaterialType.transparency,
       child: ListTile(
-        tileColor: switch (album.backupSelection) {
+        tileColor: switch (selection) {
           BackupSelection.select => context.isDarkTheme
               ? context.primaryColor.withAlpha(100)
               : context.primaryColor.withAlpha(25),
@@ -137,8 +167,7 @@ class _AlbumDetailListTile extends StatelessWidget {
           child: SizedBox(
             height: 80,
             width: 80,
-            child:
-                _AlbumFilteredThumbnail(album.thumbnail, album.backupSelection),
+            child: _AlbumFilteredThumbnail(album.thumbnail, selection),
           ),
         ),
         title: Text(
@@ -159,8 +188,9 @@ class _AlbumDetailListTile extends StatelessWidget {
 
 class _AlbumDetailCard extends StatelessWidget {
   final LocalAlbum album;
+  final BackupSelection selection;
 
-  const _AlbumDetailCard(this.album);
+  const _AlbumDetailCard(this.album, this.selection);
 
   @override
   Widget build(BuildContext context) {
@@ -188,12 +218,12 @@ class _AlbumDetailCard extends StatelessWidget {
               children: [
                 _AlbumFilteredThumbnail(
                   album.thumbnail,
-                  album.backupSelection,
+                  selection,
                 ),
                 Positioned(
                   bottom: 10,
                   right: 25,
-                  child: _AlbumDetailCardChip(album.backupSelection),
+                  child: _AlbumDetailCardChip(selection),
                 ),
               ],
             ),
