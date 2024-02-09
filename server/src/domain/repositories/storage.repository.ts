@@ -42,4 +42,5 @@ export interface IStorageRepository {
   copyFile(source: string, target: string): Promise<void>;
   rename(source: string, target: string): Promise<void>;
   watch(paths: string[], options: WatchOptions): ImmichWatcher;
+  utimes(filepath: string, atime: Date, mtime: Date): Promise<void>;
 }
