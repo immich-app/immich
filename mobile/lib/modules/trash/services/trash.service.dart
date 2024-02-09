@@ -22,7 +22,7 @@ class TrashService {
     try {
       List<String> remoteIds =
           assetList.where((a) => a.isRemote).map((e) => e.remoteId!).toList();
-      await _apiService.assetApi.restoreAssetsOld(BulkIdsDto(ids: remoteIds));
+      await _apiService.trashApi.restoreAssets(BulkIdsDto(ids: remoteIds));
       return true;
     } catch (error, stack) {
       _log.severe("Cannot restore assets ${error.toString()}", error, stack);
@@ -32,7 +32,7 @@ class TrashService {
 
   Future<void> emptyTrash() async {
     try {
-      await _apiService.assetApi.emptyTrashOld();
+      await _apiService.trashApi.emptyTrash();
     } catch (error, stack) {
       _log.severe("Cannot empty trash ${error.toString()}", error, stack);
     }
@@ -40,7 +40,7 @@ class TrashService {
 
   Future<void> restoreTrash() async {
     try {
-      await _apiService.assetApi.restoreTrashOld();
+      await _apiService.trashApi.restoreTrash();
     } catch (error, stack) {
       _log.severe("Cannot restore trash ${error.toString()}", error, stack);
     }

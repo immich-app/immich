@@ -68,9 +68,6 @@ describe('AssetService', () => {
   beforeEach(() => {
     assetRepositoryMockV1 = {
       get: jest.fn(),
-      create: jest.fn(),
-      upsertExif: jest.fn(),
-
       getAllByUserId: jest.fn(),
       getDetectedObjectsByUserId: jest.fn(),
       getLocationsByUserId: jest.fn(),
@@ -109,12 +106,12 @@ describe('AssetService', () => {
       };
       const dto = _getCreateAssetDto();
 
-      assetRepositoryMockV1.create.mockResolvedValue(assetEntity);
+      assetMock.create.mockResolvedValue(assetEntity);
       accessMock.library.checkOwnerAccess.mockResolvedValue(new Set([dto.libraryId!]));
 
       await expect(sut.uploadFile(authStub.user1, dto, file)).resolves.toEqual({ duplicate: false, id: 'id_1' });
 
-      expect(assetRepositoryMockV1.create).toHaveBeenCalled();
+      expect(assetMock.create).toHaveBeenCalled();
       expect(userMock.updateUsage).toHaveBeenCalledWith(authStub.user1.user.id, file.size);
     });
 
@@ -131,7 +128,7 @@ describe('AssetService', () => {
       const error = new QueryFailedError('', [], new Error('unique key violation'));
       (error as any).constraint = ASSET_CHECKSUM_CONSTRAINT;
 
-      assetRepositoryMockV1.create.mockRejectedValue(error);
+      assetMock.create.mockRejectedValue(error);
       assetRepositoryMockV1.getAssetsByChecksums.mockResolvedValue([_getAsset_1()]);
       accessMock.library.checkOwnerAccess.mockResolvedValue(new Set([dto.libraryId!]));
 
@@ -149,8 +146,8 @@ describe('AssetService', () => {
       const error = new QueryFailedError('', [], new Error('unique key violation'));
       (error as any).constraint = ASSET_CHECKSUM_CONSTRAINT;
 
-      assetRepositoryMockV1.create.mockResolvedValueOnce(assetStub.livePhotoMotionAsset);
-      assetRepositoryMockV1.create.mockResolvedValueOnce(assetStub.livePhotoStillAsset);
+      assetMock.create.mockResolvedValueOnce(assetStub.livePhotoMotionAsset);
+      assetMock.create.mockResolvedValueOnce(assetStub.livePhotoStillAsset);
       accessMock.library.checkOwnerAccess.mockResolvedValue(new Set([dto.libraryId!]));
 
       await expect(

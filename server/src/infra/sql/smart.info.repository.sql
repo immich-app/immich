@@ -3,9 +3,13 @@
 -- SmartInfoRepository.searchCLIP
 START TRANSACTION
 SET
-  LOCAL vectors.enable_prefilter = on
+  LOCAL vectors.enable_prefilter = on;
+
 SET
-  LOCAL vectors.k = '100'
+  LOCAL vectors.search_mode = vbase;
+
+SET
+  LOCAL vectors.hnsw_ef_search = 100;
 SELECT
   "a"."id" AS "a_id",
   "a"."deviceAssetId" AS "a_deviceAssetId",
@@ -85,9 +89,13 @@ COMMIT
 -- SmartInfoRepository.searchFaces
 START TRANSACTION
 SET
-  LOCAL vectors.enable_prefilter = on
+  LOCAL vectors.enable_prefilter = on;
+
 SET
-  LOCAL vectors.k = '100'
+  LOCAL vectors.search_mode = vbase;
+
+SET
+  LOCAL vectors.hnsw_ef_search = 100;
 WITH
   "cte" AS (
     SELECT
@@ -100,7 +108,7 @@ WITH
       "faces"."boundingBoxY1" AS "boundingBoxY1",
       "faces"."boundingBoxX2" AS "boundingBoxX2",
       "faces"."boundingBoxY2" AS "boundingBoxY2",
-      1 + ("faces"."embedding" <= > $1) AS "distance"
+      "faces"."embedding" <= > $1 AS "distance"
     FROM
       "asset_faces" "faces"
       INNER JOIN "assets" "asset" ON "asset"."id" = "faces"."assetId"
@@ -108,7 +116,7 @@ WITH
     WHERE
       "asset"."ownerId" IN ($2)
     ORDER BY
-      1 + ("faces"."embedding" <= > $1) ASC
+      "faces"."embedding" <= > $1 ASC
     LIMIT
       100
   )

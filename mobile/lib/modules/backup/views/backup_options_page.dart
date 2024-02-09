@@ -264,7 +264,7 @@ class BackupOptionsPage extends HookConsumerWidget {
                       "backup_controller_page_background_description",
                     ).tr(),
                   ),
-                if (isBackgroundEnabled && Platform.isAndroid)
+                if (isBackgroundEnabled)
                   SwitchListTile.adaptive(
                     title: const Text("backup_controller_page_background_wifi")
                         .tr(),

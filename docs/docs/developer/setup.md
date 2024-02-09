@@ -58,12 +58,13 @@ Please refer to the [Flutter's official documentation](https://flutter.dev/docs/
 
 If you only want to do web development connected to an existing, remote backend, follow these steps:
 
-1. Enter the web directory - `cd web/`
-2. Install web dependencies - `npm i`
-3. Start the web development server
+1. Build the Immich SDK - `cd open-api/typescript-sdk && npm i && npm run build && cd -`
+2. Enter the web directory - `cd web/`
+3. Install web dependencies - `npm i`
+4. Start the web development server
 
-```
-IMMICH_SERVER_URL=https://demo.immich.app/api npm run dev
+```bash
+IMMICH_SERVER_URL=https://demo.immich.app/ npm run dev
 ```
 
 ## IDE setup

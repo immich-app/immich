@@ -25,7 +25,6 @@ import {
   IStorageRepository,
   ISystemConfigRepository,
   ImmichTags,
-  WithProperty,
   WithoutProperty,
 } from '../repositories';
 import { StorageCore } from '../storage';
@@ -267,7 +266,7 @@ export class MetadataService {
     const { force } = job;
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
       return force
-        ? this.assetRepository.getWith(pagination, WithProperty.SIDECAR)
+        ? this.assetRepository.getAll(pagination)
         : this.assetRepository.getWithout(pagination, WithoutProperty.SIDECAR);
     });
 
@@ -283,26 +282,12 @@ export class MetadataService {
     return true;
   }
 
-  async handleSidecarSync() {
-    // TODO: optimize to only queue assets with recent xmp changes
-    return true;
+  handleSidecarSync({ id }: IEntityJob) {
+    return this.processSidecar(id, true);
   }
 
-  async handleSidecarDiscovery({ id }: IEntityJob) {
-    const [asset] = await this.assetRepository.getByIds([id]);
-    if (!asset || !asset.isVisible || asset.sidecarPath) {
-      return false;
-    }
-
-    const sidecarPath = `${asset.originalPath}.xmp`;
-    const exists = await this.storageRepository.checkFileExists(sidecarPath, constants.R_OK);
-    if (!exists) {
-      return false;
-    }
-
-    await this.assetRepository.save({ id: asset.id, sidecarPath });
-
-    return true;
+  handleSidecarDiscovery({ id }: IEntityJob) {
+    return this.processSidecar(id, false);
   }
 
   async handleSidecarWrite(job: ISidecarWriteJob) {
@@ -564,5 +549,37 @@ export class MetadataService {
     }
 
     return Duration.fromObject({ seconds: _seconds }).toFormat('hh:mm:ss.SSS');
+  }
+
+  private async processSidecar(id: string, isSync: boolean) {
+    const [asset] = await this.assetRepository.getByIds([id]);
+
+    if (!asset) {
+      return false;
+    }
+
+    if (isSync && !asset.sidecarPath) {
+      return false;
+    }
+
+    if (!isSync && (!asset.isVisible || asset.sidecarPath)) {
+      return false;
+    }
+
+    const sidecarPath = `${asset.originalPath}.xmp`;
+    const exists = await this.storageRepository.checkFileExists(sidecarPath, constants.R_OK);
+    if (exists) {
+      await this.assetRepository.save({ id: asset.id, sidecarPath });
+      return true;
+    }
+
+    if (!isSync) {
+      return false;
+    }
+
+    this.logger.debug(`Sidecar File '${sidecarPath}' was not found, removing sidecarPath for asset ${asset.id}`);
+    await this.assetRepository.save({ id: asset.id, sidecarPath: null });
+
+    return true;
   }
 }

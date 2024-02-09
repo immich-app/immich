@@ -5,7 +5,7 @@ import { LogLevel } from './entities';
 const LOG_LEVELS = [LogLevel.VERBOSE, LogLevel.DEBUG, LogLevel.LOG, LogLevel.WARN, LogLevel.ERROR, LogLevel.FATAL];
 
 export class ImmichLogger extends ConsoleLogger {
-  private static logLevels: LogLevel[] = [LogLevel.WARN, LogLevel.ERROR, LogLevel.FATAL];
+  private static logLevels: LogLevel[] = [LogLevel.LOG, LogLevel.WARN, LogLevel.ERROR, LogLevel.FATAL];
 
   constructor(context: string) {
     super(context);

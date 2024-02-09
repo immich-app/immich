@@ -1,11 +1,13 @@
 import { getCLIPModelInfo } from '@app/domain/smart-info/smart-info.constant';
 import { MigrationInterface, QueryRunner } from 'typeorm';
+import { vectorExt } from '@app/infra/database.config';
 
 export class UsePgVectors1700713871511 implements MigrationInterface {
   name = 'UsePgVectors1700713871511';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`CREATE EXTENSION IF NOT EXISTS vectors`);
+    await queryRunner.query(`SET search_path TO "$user", public, vectors`);
+    await queryRunner.query(`CREATE EXTENSION IF NOT EXISTS ${vectorExt}`);
     const faceDimQuery = await queryRunner.query(`
         SELECT CARDINALITY(embedding::real[]) as dimsize
         FROM asset_faces

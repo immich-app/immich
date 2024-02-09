@@ -1,6 +1,7 @@
 import { UserEntity } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
 import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { DateTime } from 'luxon';
 import { randomBytes } from 'node:crypto';
 import { AuthDto } from '../auth';
 import { CacheControl, ImmichFileResponse } from '../domain.util';
@@ -188,12 +189,7 @@ export class UserService {
       return false;
     }
 
-    // TODO use luxon for date calculation
-    const msInDay = 86_400_000;
-    const msDeleteWait = msInDay * 7;
-    const msSinceDelete = Date.now() - (Date.parse(user.deletedAt.toString()) || 0);
-
-    return msSinceDelete >= msDeleteWait;
+    return DateTime.now().minus({ days: 7 }) > DateTime.fromJSDate(user.deletedAt);
   }
 
   private async findOrFail(id: string, options: UserFindOptions) {

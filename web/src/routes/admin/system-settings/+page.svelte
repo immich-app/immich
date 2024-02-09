@@ -24,7 +24,6 @@
   import LibrarySettings from '$lib/components/admin-page/settings/library-settings/library-settings.svelte';
   import LoggingSettings from '$lib/components/admin-page/settings/logging-settings/logging-settings.svelte';
   import { mdiAlert, mdiContentCopy, mdiDownload } from '@mdi/js';
-  import _ from 'lodash';
   import AdminSettings from '$lib/components/admin-page/settings/admin-settings.svelte';
 
   export let data: PageData;
