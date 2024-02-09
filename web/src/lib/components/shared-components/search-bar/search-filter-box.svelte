@@ -90,6 +90,9 @@
     mediaType: MediaType.All,
   };
 
+  let showAllPeople = false;
+  $: subPeopleList = showAllPeople ? suggestions.people : suggestions.people.slice(0, 12);
+
   onMount(() => {
     getPeople();
   });
@@ -145,11 +148,6 @@
       });
 
       switch (type) {
-        case SearchSuggestionType.People:
-          response.people?.forEach((person) => {
-            suggestions.people = [...suggestions.people, person];
-          });
-          break;
         case SearchSuggestionType.Country:
           response.data?.forEach((country) => {
             suggestions.country = [...suggestions.country, { label: country, value: country }];
@@ -208,7 +206,7 @@
 
 <div
   transition:fly={{ y: 25, duration: 250 }}
-  class="absolute w-full rounded-b-3xl border border-gray-200 bg-white pb-5 shadow-2xl transition-all dark:border-gray-800 dark:bg-immich-dark-gray dark:text-gray-300 p-6"
+  class="absolute w-full rounded-b-3xl border border-gray-200 bg-white pb-5 shadow-2xl transition-all dark:border-gray-800 dark:bg-immich-dark-gray dark:text-gray-300 p-6 overflow-y-auto max-h-[90vh]"
 >
   <p class="text-xs py-2">FILTERS</p>
   <hr class="py-2" />
@@ -307,12 +305,11 @@
       </div>
 
       {#if suggestions.people.length > 0}
-        {@const subPeopleList = suggestions.people.slice(0, 10)}
-        <div class="flex gap-4 mt-4 flex-wrap">
+        <div class="flex gap-2 mt-4 flex-wrap max-h-[300px] overflow-y-auto transition-all">
           {#each subPeopleList as person (person.id)}
             <button
               type="button"
-              class="w-20 text-center rounded-3xl border-2 border-transparent hover:bg-immich-gray dark:hover:bg-immich-dark-primary/20 p-2 flex-col place-items-center transition-all {filter.people.find(
+              class="w-18 text-center rounded-3xl border-2 border-transparent hover:bg-immich-gray dark:hover:bg-immich-dark-primary/20 p-2 flex-col place-items-center transition-all {filter.people.find(
                 (p) => p.id === person.id,
               )
                 ? 'dark:border-slate-500 border-slate-300'
@@ -332,10 +329,22 @@
         </div>
 
         <div class="flex justify-center mt-2">
-          <Button shadow={false} color="text-primary" type="button" class="flex gap-2 place-items-center">
-            <span><Icon path={mdiArrowRight} /></span>
-            See all People</Button
+          <Button
+            shadow={false}
+            color="text-primary"
+            type="button"
+            class="flex gap-2 place-items-center"
+            on:click={() => (showAllPeople = !showAllPeople)}
           >
+            {#if showAllPeople}
+              <span><Icon path={mdiClose} /></span>
+              Close
+            {:else}
+              <span><Icon path={mdiArrowRight} /></span>
+
+              See all People
+            {/if}
+          </Button>
         </div>
       {/if}
     </div>
