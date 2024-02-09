@@ -22,11 +22,12 @@ export const updateParamList = async ({ param, value, add }: UpdateParamAction) 
     values.delete(value);
   }
 
-  get(page).url.searchParams.set(param, [...values.values()].join(' '));
+  const searchParams = new URLSearchParams(get(page).url.searchParams);
+  searchParams.set(param, [...values.values()].join(' '));
 
   if (values.size === 0) {
-    get(page).url.searchParams.delete(param);
+    searchParams.delete(param);
   }
 
-  await goto(get(page).url, { replaceState: true, noScroll: true, keepFocus: true });
+  await goto(`?${searchParams.toString()}`, { replaceState: true, noScroll: true, keepFocus: true });
 };
