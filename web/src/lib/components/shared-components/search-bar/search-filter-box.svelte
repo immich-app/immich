@@ -6,6 +6,7 @@
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import { mdiClose } from '@mdi/js';
+  import { handleError } from '$lib/utils/handle-error';
 
   enum MediaType {
     All = 'all',
@@ -101,45 +102,49 @@
       suggestions = { ...suggestions, cameraMake: [], cameraModel: [] };
     }
 
-    const { data: response } = await api.searchApi.getSearchSuggestions({
-      type: type,
-      country: params.country,
-      state: params.state,
-      make: params.cameraMake,
-      model: params.cameraModel,
-    });
+    try {
+      const { data: response } = await api.searchApi.getSearchSuggestions({
+        type: type,
+        country: params.country,
+        state: params.state,
+        make: params.cameraMake,
+        model: params.cameraModel,
+      });
 
-    switch (type) {
-      case SearchSuggestionType.People:
-        response.people?.forEach((person) => {
-          suggestions.people = [...suggestions.people, person];
-        });
-        break;
-      case SearchSuggestionType.Country:
-        response.data?.forEach((country) => {
-          suggestions.country = [...suggestions.country, { label: country, value: country }];
-        });
-        break;
-      case SearchSuggestionType.State:
-        response.data?.forEach((state) => {
-          suggestions.state = [...suggestions.state, { label: state, value: state }];
-        });
-        break;
-      case SearchSuggestionType.City:
-        response.data?.forEach((city) => {
-          suggestions.city = [...suggestions.city, { label: city, value: city }];
-        });
-        break;
-      case SearchSuggestionType.CameraMake:
-        response.data?.forEach((make) => {
-          suggestions.cameraMake = [...suggestions.cameraMake, { label: make, value: make }];
-        });
-        break;
-      case SearchSuggestionType.CameraModel:
-        response.data?.forEach((model) => {
-          suggestions.cameraModel = [...suggestions.cameraModel, { label: model, value: model }];
-        });
-        break;
+      switch (type) {
+        case SearchSuggestionType.People:
+          response.people?.forEach((person) => {
+            suggestions.people = [...suggestions.people, person];
+          });
+          break;
+        case SearchSuggestionType.Country:
+          response.data?.forEach((country) => {
+            suggestions.country = [...suggestions.country, { label: country, value: country }];
+          });
+          break;
+        case SearchSuggestionType.State:
+          response.data?.forEach((state) => {
+            suggestions.state = [...suggestions.state, { label: state, value: state }];
+          });
+          break;
+        case SearchSuggestionType.City:
+          response.data?.forEach((city) => {
+            suggestions.city = [...suggestions.city, { label: city, value: city }];
+          });
+          break;
+        case SearchSuggestionType.CameraMake:
+          response.data?.forEach((make) => {
+            suggestions.cameraMake = [...suggestions.cameraMake, { label: make, value: make }];
+          });
+          break;
+        case SearchSuggestionType.CameraModel:
+          response.data?.forEach((model) => {
+            suggestions.cameraModel = [...suggestions.cameraModel, { label: model, value: model }];
+          });
+          break;
+      }
+    } catch (error) {
+      handleError(error, 'Failed to get search suggestions');
     }
   };
 
