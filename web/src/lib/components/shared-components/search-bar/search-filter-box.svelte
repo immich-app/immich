@@ -212,6 +212,59 @@
   <hr class="py-2" />
 
   <form id="search-filter-form" autocomplete="off" class="hover:cursor-auto">
+    <!-- PEOPLE -->
+    <div id="people-selection" class="my-4">
+      <div class="flex justify-between place-items-center gap-6">
+        <div class="flex-1">
+          <p class="immich-form-label">PEOPLE</p>
+        </div>
+      </div>
+
+      {#if suggestions.people.length > 0}
+        <div class="flex gap-2 mt-4 flex-wrap max-h-[300px] overflow-y-auto transition-all">
+          {#each subPeopleList as person (person.id)}
+            <button
+              type="button"
+              class="w-18 text-center rounded-3xl border-2 border-transparent hover:bg-immich-gray dark:hover:bg-immich-dark-primary/20 p-2 flex-col place-items-center transition-all {filter.people.find(
+                (p) => p.id === person.id,
+              )
+                ? 'dark:border-slate-500 border-slate-300'
+                : ''}"
+              on:click={() => handlePeopleSelection(person.id)}
+            >
+              <ImageThumbnail
+                circle
+                shadow
+                url={api.getPeopleThumbnailUrl(person.id)}
+                altText={person.name}
+                widthStyle="100%"
+              />
+              <p class="mt-2 text-ellipsis text-sm font-medium dark:text-white">{person.name}</p>
+            </button>
+          {/each}
+        </div>
+
+        <div class="flex justify-center mt-2">
+          <Button
+            shadow={false}
+            color="text-primary"
+            type="button"
+            class="flex gap-2 place-items-center place-content-center"
+            on:click={() => (showAllPeople = !showAllPeople)}
+          >
+            {#if showAllPeople}
+              <span><Icon path={mdiClose} /></span>
+              Collapse
+            {:else}
+              <span><Icon path={mdiArrowRight} /></span>
+              See all People
+            {/if}
+          </Button>
+        </div>
+      {/if}
+    </div>
+    <hr />
+    <!-- CONTEXT -->
     <div class="py-3">
       <label class="immich-form-label" for="context">CONTEXT</label>
       <input
@@ -292,61 +345,6 @@
           </label>
         </div>
       </div>
-    </div>
-
-    <hr />
-
-    <!-- PEOPLE -->
-    <div id="people-selection" class="my-4">
-      <div class="flex justify-between place-items-center gap-6">
-        <div class="flex-1">
-          <p class="immich-form-label">PEOPLE</p>
-        </div>
-      </div>
-
-      {#if suggestions.people.length > 0}
-        <div class="flex gap-2 mt-4 flex-wrap max-h-[300px] overflow-y-auto transition-all">
-          {#each subPeopleList as person (person.id)}
-            <button
-              type="button"
-              class="w-18 text-center rounded-3xl border-2 border-transparent hover:bg-immich-gray dark:hover:bg-immich-dark-primary/20 p-2 flex-col place-items-center transition-all {filter.people.find(
-                (p) => p.id === person.id,
-              )
-                ? 'dark:border-slate-500 border-slate-300'
-                : ''}"
-              on:click={() => handlePeopleSelection(person.id)}
-            >
-              <ImageThumbnail
-                circle
-                shadow
-                url={api.getPeopleThumbnailUrl(person.id)}
-                altText={person.name}
-                widthStyle="100%"
-              />
-              <p class="mt-2 text-ellipsis text-sm font-medium dark:text-white">{person.name}</p>
-            </button>
-          {/each}
-        </div>
-
-        <div class="flex justify-center mt-2">
-          <Button
-            shadow={false}
-            color="text-primary"
-            type="button"
-            class="flex gap-2 place-items-center"
-            on:click={() => (showAllPeople = !showAllPeople)}
-          >
-            {#if showAllPeople}
-              <span><Icon path={mdiClose} /></span>
-              Close
-            {:else}
-              <span><Icon path={mdiArrowRight} /></span>
-
-              See all People
-            {/if}
-          </Button>
-        </div>
-      {/if}
     </div>
 
     <hr />
