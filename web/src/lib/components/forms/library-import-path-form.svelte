@@ -4,7 +4,6 @@
   import Button from '../elements/buttons/button.svelte';
   import FullScreenModal from '../shared-components/full-screen-modal.svelte';
   import { mdiFolderSync } from '@mdi/js';
-
   import { onMount } from 'svelte';
 
   export let importPath: string | null;
