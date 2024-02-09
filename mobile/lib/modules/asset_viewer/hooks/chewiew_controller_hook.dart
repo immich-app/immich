@@ -7,6 +7,7 @@ import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:video_player/video_player.dart';
 import 'package:immich_mobile/shared/models/store.dart' as store;
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 /// Provides the initialized video player controller
 /// If the asset is local, use the local file
@@ -17,7 +18,6 @@ ChewieController? useChewieController(
     bottom: 100,
   ),
   bool showOptions = true,
-  double? aspectRatio,
   bool showControlsOnInitialize = false,
   bool autoPlay = true,
   bool autoInitialize = true,
@@ -27,6 +27,9 @@ ChewieController? useChewieController(
   Widget? customControls,
   Widget? placeholder,
   Duration hideControlsTimer = const Duration(seconds: 3),
+  VoidCallback? onPlaying,
+  VoidCallback? onPaused,
+  VoidCallback? onVideoEnded,
 }) {
   return use(
     _ChewieControllerHook(
@@ -42,6 +45,9 @@ ChewieController? useChewieController(
       showControls: showControls,
       autoInitialize: autoInitialize,
       allowedScreenSleep: allowedScreenSleep,
+      onPlaying: onPlaying,
+      onPaused: onPaused,
+      onVideoEnded: onVideoEnded,
     ),
   );
 }
@@ -59,6 +65,9 @@ class _ChewieControllerHook extends Hook<ChewieController?> {
   final Widget? customControls;
   final Widget? placeholder;
   final Duration hideControlsTimer;
+  final VoidCallback? onPlaying;
+  final VoidCallback? onPaused;
+  final VoidCallback? onVideoEnded;
 
   const _ChewieControllerHook({
     required this.asset,
@@ -75,6 +84,9 @@ class _ChewieControllerHook extends Hook<ChewieController?> {
     this.customControls,
     this.placeholder,
     this.hideControlsTimer = const Duration(seconds: 3),
+    this.onPlaying,
+    this.onPaused,
+    this.onVideoEnded,
   });
 
   @override
@@ -128,6 +140,24 @@ class _ChewieControllerHookState
         httpHeaders: {"x-immich-user-token": accessToken},
       );
     }
+
+    videoPlayerController!.addListener(() {
+      final value = videoPlayerController!.value;
+      if (value.isPlaying) {
+        WakelockPlus.enable();
+        hook.onPlaying?.call();
+      } else if (!value.isPlaying) {
+        WakelockPlus.disable();
+        hook.onPaused?.call();
+      }
+
+      if (value.position == value.duration) {
+        WakelockPlus.disable();
+        hook.onVideoEnded?.call();
+      }
+    });
+
+    await videoPlayerController!.initialize();
 
     setState(() {
       chewieController = ChewieController(

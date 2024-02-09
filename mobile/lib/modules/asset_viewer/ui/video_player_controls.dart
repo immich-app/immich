@@ -131,6 +131,7 @@ class VideoPlayerControlsState extends ConsumerState<VideoPlayerControls>
   }
 
   Future<void> _initialize() async {
+    ref.read(showControlsProvider.notifier).show = false;
     _mute(ref.read(videoPlayerControlsProvider.select((value) => value.mute)));
 
     controller.addListener(_updateState);

@@ -44,26 +44,36 @@ class VideoViewerPage extends HookWidget {
       ),
       placeholder: placeholder,
       showControls: showControls && !isMotionVideo,
-      customControls: VideoPlayerControls(key: ValueKey(asset.id)),
       hideControlsTimer: hideControlsTimer,
+      customControls: const VideoPlayerControls(),
+      onPlaying: onPlaying,
+      onPaused: onPaused,
+      onVideoEnded: onVideoEnded,
     );
 
     // Loading
-    if (controller == null) {
-      return Stack(
-        children: [
-          if (placeholder != null) placeholder!,
-          const DelayedLoadingIndicator(),
-        ],
-      );
-    }
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 400),
+      child: Builder(
+        builder: (context) {
+          if (controller == null) {
+            return Stack(
+              children: [
+                if (placeholder != null) placeholder!,
+                const DelayedLoadingIndicator(),
+              ],
+            );
+          }
 
-    final size = MediaQuery.of(context).size;
-    return SizedBox(
-      height: size.height,
-      width: size.width,
-      child: Chewie(
-        controller: controller,
+          final size = MediaQuery.of(context).size;
+          return SizedBox(
+            height: size.height,
+            width: size.width,
+            child: Chewie(
+              controller: controller,
+            ),
+          );
+        },
       ),
     );
   }
