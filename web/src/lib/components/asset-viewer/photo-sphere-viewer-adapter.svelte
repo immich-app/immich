@@ -24,12 +24,4 @@
   });
 </script>
 
-<div bind:this={container} />
-
-<style>
-  div {
-    width: 100%;
-    height: 100%;
-    margin-bottom: 0;
-  }
-</style>
+<div class="h-full w-full mb-0" bind:this={container} />
