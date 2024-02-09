@@ -16,7 +16,7 @@
   import { downloadManager } from '$lib/stores/download';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { downloadBlob } from '$lib/utils/asset-utils';
-  import { type SystemConfigDto, copyToClipboard } from '@api';
+  import { copyToClipboard } from '@api';
   import Icon from '$lib/components/elements/icon.svelte';
   import type { PageData } from './$types';
   import NewVersionCheckSettings from '$lib/components/admin-page/settings/new-version-check-settings/new-version-check-settings.svelte';
@@ -59,7 +59,7 @@
     item: Settings;
     title: string;
     subtitle: string;
-    key: keyof SystemConfigDto | Array<keyof SystemConfigDto>;
+    key: string;
   }> = [
     {
       item: JobSettings,
@@ -83,13 +83,13 @@
       item: MachineLearningSettings,
       title: 'Machine Learning Settings',
       subtitle: 'Manage machine learning features and settings',
-      key: 'machineLearning',
+      key: 'machine-learning',
     },
     {
       item: MapSettings,
       title: 'Map & GPS Settings',
       subtitle: 'Manage map related features and setting',
-      key: ['map', 'reverseGeocoding'],
+      key: 'location',
     },
     {
       item: OAuthSettings,
@@ -101,7 +101,7 @@
       item: PasswordLoginSettings,
       title: 'Password Authentication',
       subtitle: 'Manage the login with password settings',
-      key: 'passwordLogin',
+      key: 'password',
     },
     {
       item: ServerSettings,
@@ -113,7 +113,7 @@
       item: StorageTemplateSettings,
       title: 'Storage Template',
       subtitle: 'Manage the folder structure and file name of the upload asset',
-      key: 'storageTemplate',
+      key: 'storage-template',
     },
     {
       item: ThemeSettings,
@@ -137,13 +137,13 @@
       item: NewVersionCheckSettings,
       title: 'Version Check',
       subtitle: 'Enable/disable the new version notification',
-      key: 'newVersionCheck',
+      key: 'version-check',
     },
     {
       item: FFmpegSettings,
       title: 'Video Transcoding Settings',
       subtitle: 'Manage the resolution and encoding information of the video files',
-      key: 'ffmpeg',
+      key: 'video-transcoding',
     },
   ];
 </script>

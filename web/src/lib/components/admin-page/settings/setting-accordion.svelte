@@ -1,37 +1,22 @@
-<script lang="ts" context="module">
-  type T = string;
-</script>
-
-<script lang="ts" generics="T extends string">
-  import { slide } from 'svelte/transition';
+<script lang="ts">
   import { page } from '$app/stores';
-  import { SearchParams } from '$lib/stores/search-params.store';
-  import { onMount } from 'svelte';
+  import { hasParamValue, updateParamList } from '$lib/utils';
+  import { slide } from 'svelte/transition';
+
   export let title: string;
   export let subtitle = '';
-  export let key: T | Array<T> | undefined = undefined;
+  export let key: string;
   export let isOpen = false;
 
-  let searchParams = SearchParams.get<T>('isOpen');
+  const syncFromUrl = () => (isOpen = hasParamValue('isOpen', key));
+  const syncToUrl = (isOpen: boolean) => updateParamList({ param: 'isOpen', value: key, add: isOpen });
 
-  onMount(() => {
-    if (key) {
-      searchParams.set($page.url.searchParams.get('isOpen'));
-      searchParams.hasValue(key).subscribe((hasValue) => (isOpen = hasValue));
-    }
-  });
+  isOpen ? syncToUrl(true) : syncFromUrl();
+  $: $page.url && syncFromUrl();
 
   const toggle = () => {
-    if (!key) {
-      isOpen = !isOpen;
-      return;
-    }
-
-    if (isOpen) {
-      searchParams.removeValue(key);
-    } else {
-      searchParams.addValue(key);
-    }
+    isOpen = !isOpen;
+    syncToUrl(isOpen);
   };
 </script>
 
