@@ -34,7 +34,7 @@
     "mock-fs": "^5.2.0",
     "typescript": "^5.3.3",
     "vite": "^5.0.12",
-    "vitest": "^1.2.1",
+    "vitest": "^1.2.2",
     "yaml": "^2.3.1"
   },
   "scripts": {
