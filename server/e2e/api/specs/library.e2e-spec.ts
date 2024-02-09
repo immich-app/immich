@@ -98,6 +98,36 @@ describe(`${LibraryController.name} (e2e)`, () => {
       );
     });
 
+    it('should not create an external library with duplicate import paths', async () => {
+      const { status, body } = await request(server)
+        .post('/library')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({
+          type: LibraryType.EXTERNAL,
+          name: 'My Awesome Library',
+          importPaths: ['/path', '/path'],
+          exclusionPatterns: ['**/Raw/**'],
+        });
+
+      expect(status).toBe(400);
+      expect(body).toEqual(errorStub.badRequest(["All importPaths's elements must be unique"]));
+    });
+
+    it('should not create an external library with duplicate exclusion patterns', async () => {
+      const { status, body } = await request(server)
+        .post('/library')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({
+          type: LibraryType.EXTERNAL,
+          name: 'My Awesome Library',
+          importPaths: ['/path/to/import'],
+          exclusionPatterns: ['**/Raw/**', '**/Raw/**'],
+        });
+
+      expect(status).toBe(400);
+      expect(body).toEqual(errorStub.badRequest(["All exclusionPatterns's elements must be unique"]));
+    });
+
     it('should create an upload library with defaults', async () => {
       const { status, body } = await request(server)
         .post('/library')
@@ -229,7 +259,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
         );
       });
 
-      it('should not allow an empty import path', async () => {
+      it('should reject an empty import path', async () => {
         const { status, body } = await request(server)
           .put(`/library/${library.id}`)
           .set('Authorization', `Bearer ${admin.accessToken}`)
@@ -237,6 +267,16 @@ describe(`${LibraryController.name} (e2e)`, () => {
 
         expect(status).toBe(400);
         expect(body).toEqual(errorStub.badRequest(['each value in importPaths should not be empty']));
+      });
+
+      it('should reject duplicate import paths', async () => {
+        const { status, body } = await request(server)
+          .put(`/library/${library.id}`)
+          .set('Authorization', `Bearer ${admin.accessToken}`)
+          .send({ importPaths: ['/path', '/path'] });
+
+        expect(status).toBe(400);
+        expect(body).toEqual(errorStub.badRequest(["All importPaths's elements must be unique"]));
       });
 
       it('should change the exclusion pattern', async () => {
@@ -253,7 +293,17 @@ describe(`${LibraryController.name} (e2e)`, () => {
         );
       });
 
-      it('should not allow an empty exclusion pattern', async () => {
+      it('should reject duplicate exclusion patterns', async () => {
+        const { status, body } = await request(server)
+          .put(`/library/${library.id}`)
+          .set('Authorization', `Bearer ${admin.accessToken}`)
+          .send({ exclusionPatterns: ['**/*.jpg', '**/*.jpg'] });
+
+        expect(status).toBe(400);
+        expect(body).toEqual(errorStub.badRequest(["All exclusionPatterns's elements must be unique"]));
+      });
+
+      it('should reject an empty exclusion pattern', async () => {
         const { status, body } = await request(server)
           .put(`/library/${library.id}`)
           .set('Authorization', `Bearer ${admin.accessToken}`)
