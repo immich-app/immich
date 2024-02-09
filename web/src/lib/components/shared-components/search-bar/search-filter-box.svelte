@@ -2,8 +2,7 @@
   import Button from '$lib/components/elements/buttons/button.svelte';
   import { fly } from 'svelte/transition';
   import Combobox, { type ComboBoxOption } from '../combobox.svelte';
-  import { SearchSuggestionType, api, type PersonResponseDto } from '@api';
-  import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
+  import { SearchSuggestionType, api, type PersonResponseDto, type PeopleResponseDto } from '@api';
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import { mdiClose } from '@mdi/js';
@@ -14,155 +13,158 @@
     Video = 'video',
   }
 
-  let startDate: Date | undefined = undefined;
-  let endDate: Date | undefined = undefined;
-
-  let mediaType: MediaType = MediaType.All;
-  let notInAlbum = false;
-  let inArchive = false;
-  let inFavorite = false;
-
-  // People Suggestion
-  let peopleSuggestions: PersonResponseDto[] = [];
-  let peopleComboboxOptions: ComboBoxOption[] = [];
-  let peopleSelected: PersonResponseDto[] = [];
-
-  const getPeopleSuggestion = async () => {
-    if (peopleSuggestions.length > 0) return;
-
-    const { data } = await api.searchApi.getSearchSuggestions({ type: SearchSuggestionType.People });
-
-    data.people?.forEach((person) => {
-      peopleComboboxOptions = [...peopleComboboxOptions, { label: person.name, value: person.id }];
-      peopleSuggestions = [...peopleSuggestions, person];
-    });
+  type SearchSuggestion = {
+    people: PersonResponseDto[];
+    country: ComboBoxOption[];
+    state: ComboBoxOption[];
+    city: ComboBoxOption[];
+    cameraMake: ComboBoxOption[];
+    cameraModel: ComboBoxOption[];
   };
 
-  const onPeopleSelected = (option: ComboBoxOption) => {
-    const selectedPerson = peopleSuggestions.find((person) => person.id === option.value);
-    if (selectedPerson) {
-      peopleSelected = [...peopleSelected, selectedPerson];
+  type SearchParams = {
+    state?: string;
+    country?: string;
+    city?: string;
+    cameraMake?: string;
+    cameraModel?: string;
+  };
+
+  type SearchFilter = {
+    context: string | undefined;
+    people: PersonResponseDto[];
+
+    location: {
+      country: ComboBoxOption | undefined;
+      state: ComboBoxOption | undefined;
+      city: ComboBoxOption | undefined;
+    };
+
+    camera: {
+      make: ComboBoxOption | undefined;
+      model: ComboBoxOption | undefined;
+    };
+
+    dateRange: {
+      startDate: Date | undefined;
+      endDate: Date | undefined;
+    };
+
+    inArchive: boolean | undefined;
+    inFavorite: boolean | undefined;
+    notInAlbum: boolean | undefined;
+
+    mediaType: MediaType;
+  };
+
+  let suggestions: SearchSuggestion = {
+    people: [],
+    country: [],
+    state: [],
+    city: [],
+    cameraMake: [],
+    cameraModel: [],
+  };
+
+  let filter: SearchFilter = {
+    context: undefined,
+    people: [],
+    location: {
+      country: undefined,
+      state: undefined,
+      city: undefined,
+    },
+    camera: {
+      make: undefined,
+      model: undefined,
+    },
+    dateRange: {
+      startDate: undefined,
+      endDate: undefined,
+    },
+    inArchive: undefined,
+    inFavorite: undefined,
+    notInAlbum: undefined,
+    mediaType: MediaType.All,
+  };
+
+  const updateSuggestion = async (type: SearchSuggestionType, params: SearchParams) => {
+    if (
+      type === SearchSuggestionType.City ||
+      type === SearchSuggestionType.State ||
+      type === SearchSuggestionType.Country
+    ) {
+      suggestions = { ...suggestions, city: [], state: [], country: [] };
     }
-    peopleComboboxOptions = peopleComboboxOptions.filter((person) => person.value !== option.value);
-  };
 
-  const onDeselectPerson = (id: string) => {
-    peopleSelected = peopleSelected.filter((person) => person.id !== id);
-    const person = peopleSuggestions.find((person) => person.id === id);
-    if (person) {
-      peopleComboboxOptions = [...peopleComboboxOptions, { label: person.name, value: person.id }];
+    if (type === SearchSuggestionType.CameraMake || type === SearchSuggestionType.CameraModel) {
+      suggestions = { ...suggestions, cameraMake: [], cameraModel: [] };
     }
-  };
 
-  // Country Suggestions
-  let countrySuggestions: ComboBoxOption[] = [];
-  let stateSuggestions: ComboBoxOption[] = [];
-  let citySuggestions: ComboBoxOption[] = [];
-
-  let selectedCountry: ComboBoxOption = { label: '', value: '' };
-  let selectedState: ComboBoxOption = { label: '', value: '' };
-  let selectedCity: ComboBoxOption = { label: '', value: '' };
-
-  const getLocationSuggestions = async (type: SearchSuggestionType) => {
-    countrySuggestions = [];
-    stateSuggestions = [];
-    citySuggestions = [];
-
-    const { data } = await api.searchApi.getSearchSuggestions({
+    const { data: response } = await api.searchApi.getSearchSuggestions({
       type: type,
-      country: selectedCountry.value,
-      state: selectedState.value,
+      country: params.country,
+      state: params.state,
+      make: params.cameraMake,
+      model: params.cameraModel,
     });
 
-    data.data?.forEach((item) => {
-      if (type === SearchSuggestionType.Country) {
-        countrySuggestions = [...countrySuggestions, { label: item, value: item }];
-      } else if (type === SearchSuggestionType.State) {
-        stateSuggestions = [...stateSuggestions, { label: item, value: item }];
-      } else if (type === SearchSuggestionType.City) {
-        citySuggestions = [...citySuggestions, { label: item, value: item }];
-      }
-    });
-  };
-
-  const onCountrySelected = (option: ComboBoxOption) => {
-    console.log(option.value, selectedCountry.value);
-    if (option.value != selectedCountry.value) {
-      selectedState = { label: '', value: '' };
-      selectedCity = { label: '', value: '' };
+    switch (type) {
+      case SearchSuggestionType.People:
+        response.people?.forEach((person) => {
+          suggestions.people = [...suggestions.people, person];
+        });
+        break;
+      case SearchSuggestionType.Country:
+        response.data?.forEach((country) => {
+          suggestions.country = [...suggestions.country, { label: country, value: country }];
+        });
+        break;
+      case SearchSuggestionType.State:
+        response.data?.forEach((state) => {
+          suggestions.state = [...suggestions.state, { label: state, value: state }];
+        });
+        break;
+      case SearchSuggestionType.City:
+        response.data?.forEach((city) => {
+          suggestions.city = [...suggestions.city, { label: city, value: city }];
+        });
+        break;
+      case SearchSuggestionType.CameraMake:
+        response.data?.forEach((make) => {
+          suggestions.cameraMake = [...suggestions.cameraMake, { label: make, value: make }];
+        });
+        break;
+      case SearchSuggestionType.CameraModel:
+        response.data?.forEach((model) => {
+          suggestions.cameraModel = [...suggestions.cameraModel, { label: model, value: model }];
+        });
+        break;
     }
-
-    selectedCountry = option;
-  };
-
-  const onStateSelected = (option: ComboBoxOption) => {
-    selectedState = option;
-  };
-
-  const onCitySelected = (option: ComboBoxOption) => {
-    selectedCity = option;
-  };
-
-  // Camera Suggestion
-  let cameraMakeSuggestions: ComboBoxOption[] = [];
-  let cameraModelSuggestions: ComboBoxOption[] = [];
-  let selectedMake: ComboBoxOption = { label: '', value: '' };
-  let selectedModel: ComboBoxOption = { label: '', value: '' };
-
-  const getCameraSuggestions = async (type: SearchSuggestionType) => {
-    cameraMakeSuggestions = [];
-    cameraModelSuggestions = [];
-
-    console.log(selectedMake, selectedModel, type)
-    const { data } = await api.searchApi.getSearchSuggestions({
-      type,
-      make: selectedMake.value,
-      model: selectedModel.value,
-    });
-
-    data.data?.forEach((item) => {
-      if (type === SearchSuggestionType.CameraMake) {
-        cameraMakeSuggestions = [...cameraMakeSuggestions, { label: item, value: item }];
-      } else if (type === SearchSuggestionType.CameraModel) {
-        cameraModelSuggestions = [...cameraModelSuggestions, { label: item, value: item }];
-      }
-    });
-  };
-
-  const onMakeSelected = (option: ComboBoxOption) => {
-    console.log(option);
-    selectedMake = option;
-  };
-
-  const onModelSelected = (option: ComboBoxOption) => {
-    selectedModel = option;
   };
 
   const resetForm = () => {
-    mediaType = MediaType.All;
-
-    notInAlbum = false;
-    inArchive = false;
-    inFavorite = false;
-
-    peopleSelected = [];
-    peopleComboboxOptions = [];
-    peopleSuggestions = [];
-
-    countrySuggestions = [];
-    stateSuggestions = [];
-    citySuggestions = [];
-    selectedCountry = { label: '', value: '' };
-    selectedState = { label: '', value: '' };
-    selectedCity = { label: '', value: '' };
-
-    cameraMakeSuggestions = [];
-    cameraModelSuggestions = [];
-    selectedMake = { label: '', value: '' };
-    selectedModel = { label: '', value: '' };
-
-    startDate = undefined;
-    endDate = undefined;
+    filter = {
+      context: undefined,
+      people: [],
+      location: {
+        country: undefined,
+        state: undefined,
+        city: undefined,
+      },
+      camera: {
+        make: undefined,
+        model: undefined,
+      },
+      dateRange: {
+        startDate: undefined,
+        endDate: undefined,
+      },
+      inArchive: undefined,
+      inFavorite: undefined,
+      notInAlbum: undefined,
+      mediaType: MediaType.All,
+    };
   };
 </script>
 
@@ -182,6 +184,7 @@
         id="context"
         name="context"
         placeholder="Sunrise on the beach"
+        bind:value={filter.context}
       />
     </div>
 
@@ -195,7 +198,13 @@
             for="type-all"
             class="text-base flex place-items-center gap-1 hover:cursor-pointer text-black dark:text-white"
           >
-            <input bind:group={mediaType} value={mediaType} type="radio" name="radio-type" id="type-all" />All</label
+            <input
+              bind:group={filter.mediaType}
+              value={filter.mediaType}
+              type="radio"
+              name="radio-type"
+              id="type-all"
+            />All</label
           >
 
           <label
@@ -203,7 +212,7 @@
             class="text-base flex place-items-center gap-1 hover:cursor-pointer text-black dark:text-white"
           >
             <input
-              bind:group={mediaType}
+              bind:group={filter.mediaType}
               value={MediaType.Image}
               type="radio"
               name="media-type"
@@ -216,7 +225,7 @@
             class="text-base flex place-items-center gap-1 hover:cursor-pointer text-black dark:text-white"
           >
             <input
-              bind:group={mediaType}
+              bind:group={filter.mediaType}
               value={MediaType.Video}
               type="radio"
               name="radio-type"
@@ -232,17 +241,17 @@
 
         <div class="flex gap-5 mt-3">
           <label class="flex items-center mb-2">
-            <input type="checkbox" class="form-checkbox h-5 w-5 color" bind:checked={notInAlbum} />
+            <input type="checkbox" class="form-checkbox h-5 w-5 color" bind:checked={filter.notInAlbum} />
             <span class="ml-2 text-sm text-black dark:text-white pt-1">Not in any album</span>
           </label>
 
           <label class="flex items-center mb-2">
-            <input type="checkbox" class="form-checkbox h-5 w-5 color" bind:checked={inArchive} />
+            <input type="checkbox" class="form-checkbox h-5 w-5 color" bind:checked={filter.inArchive} />
             <span class="ml-2 text-sm text-black dark:text-white pt-1">Archive</span>
           </label>
 
           <label class="flex items-center mb-2">
-            <input type="checkbox" class="form-checkbox h-5 w-5 color" bind:checked={inFavorite} />
+            <input type="checkbox" class="form-checkbox h-5 w-5 color" bind:checked={filter.inFavorite} />
             <span class="ml-2 text-sm text-black dark:text-white pt-1">Favorite</span>
           </label>
         </div>
@@ -258,7 +267,7 @@
           <p class="immich-form-label">PEOPLE</p>
         </div>
 
-        <div class="flex-1">
+        <!-- <div class="flex-1">
           <Combobox
             noLabel
             options={peopleComboboxOptions}
@@ -266,11 +275,11 @@
             on:click={getPeopleSuggestion}
             on:select={({ detail }) => onPeopleSelected(detail)}
           />
-        </div>
+        </div> -->
       </div>
 
       <div class="flex gap-4 mt-4">
-        {#each peopleSelected as person (person.id)}
+        <!-- {#each peopleSelected as person (person.id)}
           <button
             class="flex gap-2 place-items-center place-content-center rounded-full bg-immich-primary/20 dark:bg-immich-dark-primary/75 px-2 py-1 text-black hover:bg-immich-primary/40 dark:hover:dark:bg-immich-dark-primary transition-all"
             on:click={() => onDeselectPerson(person.id)}
@@ -287,7 +296,7 @@
 
             <Icon path={mdiClose} class="hover:cursor-pointer" />
           </button>
-        {/each}
+        {/each} -->
       </div>
     </div>
 
@@ -300,33 +309,34 @@
         <div class="w-full">
           <p class="text-sm text-black dark:text-white">Country</p>
           <Combobox
-            options={countrySuggestions}
-            selectedOption={selectedCountry}
+            options={suggestions.country}
+            bind:selectedOption={filter.location.country}
             placeholder="Search country..."
-            on:click={() => getLocationSuggestions(SearchSuggestionType.Country)}
-            on:select={({ detail }) => onCountrySelected(detail)}
+            on:click={() => updateSuggestion(SearchSuggestionType.Country, {})}
           />
         </div>
 
         <div class="w-full">
           <p class="text-sm text-black dark:text-white">State</p>
           <Combobox
-            options={stateSuggestions}
-            selectedOption={selectedState}
+            options={suggestions.state}
+            bind:selectedOption={filter.location.state}
             placeholder="Search state..."
-            on:click={() => getLocationSuggestions(SearchSuggestionType.State)}
-            on:select={({ detail }) => onStateSelected(detail)}
+            on:click={() => updateSuggestion(SearchSuggestionType.State, { country: filter.location.country?.value })}
           />
         </div>
 
         <div class="w-full">
           <p class="text-sm text-black dark:text-white">City</p>
           <Combobox
-            options={citySuggestions}
-            selectedOption={selectedCity}
+            options={suggestions.city}
+            bind:selectedOption={filter.location.city}
             placeholder="Search city..."
-            on:click={() => getLocationSuggestions(SearchSuggestionType.City)}
-            on:select={({ detail }) => onCitySelected(detail)}
+            on:click={() =>
+              updateSuggestion(SearchSuggestionType.City, {
+                country: filter.location.country?.value,
+                state: filter.location.state?.value,
+              })}
           />
         </div>
       </div>
@@ -341,22 +351,22 @@
         <div class="w-full">
           <p class="text-sm text-black dark:text-white">Make</p>
           <Combobox
-            options={cameraMakeSuggestions}
-            selectedOption={selectedMake}
+            options={suggestions.cameraMake}
+            bind:selectedOption={filter.camera.make}
             placeholder="Search camera make..."
-            on:click={() => getCameraSuggestions(SearchSuggestionType.CameraMake)}
-            on:select={({ detail }) => onMakeSelected(detail)}
+            on:click={() =>
+              updateSuggestion(SearchSuggestionType.CameraMake, { cameraModel: filter.camera.model?.value })}
           />
         </div>
 
         <div class="w-full">
           <p class="text-sm text-black dark:text-white">Model</p>
           <Combobox
-            options={cameraModelSuggestions}
-            selectedOption={selectedModel}
+            options={suggestions.cameraModel}
+            bind:selectedOption={filter.camera.model}
             placeholder="Search camera model..."
-            on:click={() => getCameraSuggestions(SearchSuggestionType.CameraModel)}
-            on:select={({ detail }) => onModelSelected(detail)}
+            on:click={() =>
+              updateSuggestion(SearchSuggestionType.CameraModel, { cameraMake: filter.camera.make?.value })}
           />
         </div>
       </div>
@@ -373,7 +383,7 @@
           type="date"
           id="start-date"
           name="start-date"
-          bind:value={startDate}
+          bind:value={filter.dateRange.startDate}
         />
       </div>
 
@@ -385,7 +395,7 @@
           id="end-date"
           name="end-date"
           placeholder=""
-          bind:value={endDate}
+          bind:value={filter.dateRange.endDate}
         />
       </div>
     </div>
