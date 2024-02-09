@@ -10,7 +10,7 @@ import {
 } from '@app/domain';
 import { InjectRepository } from '@nestjs/typeorm';
 import _ from 'lodash';
-import { FindManyOptions, FindOptionsRelations, FindOptionsSelect, In, Not, Repository } from 'typeorm';
+import { FindManyOptions, FindOptionsRelations, FindOptionsSelect, In, Repository } from 'typeorm';
 import { AssetEntity, AssetFaceEntity, PersonEntity } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';
 import { ChunkedArray, asVector, paginate } from '../infra.utils';
