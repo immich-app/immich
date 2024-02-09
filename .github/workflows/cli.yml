@@ -39,6 +39,7 @@ jobs:
       - name: Build SDK
         run: npm run build --prefix ../open-api/typescript-sdk/
       - run: npm ci
+      - run: npm run build
       - run: npm publish --dry-run
         if: ${{ github.event_name == 'workflow_dispatch' }}
         env:
