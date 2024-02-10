@@ -89,7 +89,7 @@ export class AssetService {
     @Inject(IPartnerRepository) private partnerRepository: IPartnerRepository,
     @Inject(IAssetStackRepository) private assetStackRepository: IAssetStackRepository,
     @Inject(ISearchRepository) private searchRepository: ISearchRepository,
-    ) {
+  ) {
     this.access = AccessCore.create(accessRepository);
     this.configCore = SystemConfigCore.create(configRepository);
   }
@@ -104,17 +104,19 @@ export class AssetService {
 
     const enumToOrder = { [AssetOrder.ASC]: 'ASC', [AssetOrder.DESC]: 'DESC' } as const;
     const order = dto.order ? { direction: enumToOrder[dto.order] } : undefined;
-    const { items } = await this.searchRepository
-      .searchAssets(
-        { page: 0, size: 250 },
-        {
-          id: { checksum, ownerId: auth.user.id },
-          order,
-        });
-    return items.map((asset) => mapAsset(asset, {
-      stripMetadata: false,
-      withStack: true,
-    }));
+    const { items } = await this.searchRepository.searchAssets(
+      { page: 0, size: 250 },
+      {
+        id: { checksum, ownerId: auth.user.id },
+        order,
+      },
+    );
+    return items.map((asset) =>
+      mapAsset(asset, {
+        stripMetadata: false,
+        withStack: true,
+      }),
+    );
   }
 
   canUploadFile({ auth, fieldName, file }: UploadRequest): true {

@@ -59,7 +59,7 @@ export class SearchRepository implements ISearchRepository {
         id: { ownerId: DummyValue.UUID },
         relation: { withStacked: true },
         status: { isFavorite: true },
-      }
+      },
     ],
   })
   async searchAssets(pagination: SearchPaginationOptions, options: AssetSearchOptions): Paginated<AssetEntity> {
