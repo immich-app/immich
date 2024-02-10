@@ -103,6 +103,8 @@ class _ActivityAssetThumbnail extends StatelessWidget {
     return Container(
       width: 40,
       height: 30,
+      // TODO: fix this
+      /*
       decoration: BoxDecoration(
         borderRadius: const BorderRadius.all(Radius.circular(4)),
         image: DecorationImage(
@@ -110,6 +112,7 @@ class _ActivityAssetThumbnail extends StatelessWidget {
           fit: BoxFit.cover,
         ),
       ),
+      */
       child: const SizedBox.shrink(),
     );
   }

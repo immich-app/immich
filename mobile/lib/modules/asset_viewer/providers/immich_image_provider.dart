@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:ui' as ui;
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:openapi/api.dart' as api;
 
 import 'package:flutter/foundation.dart';
@@ -27,11 +28,19 @@ class ImmichImageProvider extends ImageProvider<Asset> {
   @override
   ImageStreamCompleter loadImage(Asset key, ImageDecoderCallback decode) {
     final chunkEvents = StreamController<ImageChunkEvent>();
-    return MultiFrameImageStreamCompleter(
+    return MultiImageStreamCompleter(
       codec: _codec(key, decode, chunkEvents),
       scale: 1.0,
       chunkEvents: chunkEvents.stream,
     );
+  }
+
+  ImageStream? _stream;
+
+  @override
+  ImageStream createStream(ImageConfiguration configuration) {
+    _stream = ImageStream();
+    return _stream!;
   }
 
   bool get _useLocal =>
@@ -41,30 +50,42 @@ class ImmichImageProvider extends ImageProvider<Asset> {
   bool get _useOriginal => AppSettingsEnum.loadOriginal.defaultValue;
   bool get _loadPreview => AppSettingsEnum.loadPreview.defaultValue;
 
-  Future<ui.Codec> _codec(
+  // Streams in each stage of the image as we ask for it
+  Stream<ui.Codec> _codec(
     Asset key,
     ImageDecoderCallback decode,
     StreamController<ImageChunkEvent> chunkEvents,
-  ) async {
+  ) async* {
     if (_useLocal) {
-      return _loadLocalCodec(key, decode, chunkEvents);
+      if (_loadPreview) {
+        // Use local preview
+      }
+      yield await _loadLocalCodec(key, decode, chunkEvents);
     }
 
     // Load a preview to the chunk events
     if (_loadPreview) {
       final preview = getThumbnailUrl(asset, type: api.ThumbnailFormat.WEBP);
-      unawaited(_loadFromUri(Uri.parse(preview), decode, chunkEvents));
+      yield await _loadFromUri(
+        Uri.parse(preview),
+        decode,
+        chunkEvents,
+      );
     }
 
     // Load the final remote image
     if (_useOriginal) {
       // Load the original image
       final url = getImageUrl(asset);
-      return _loadFromUri(Uri.parse(url), decode, chunkEvents);
+      final codec = await _loadFromUri(Uri.parse(url), decode, chunkEvents);
+      await chunkEvents.close();
+      yield codec;
     } else {
       // Load a webp version of the image
       final url = getThumbnailUrl(asset, type: api.ThumbnailFormat.JPEG);
-      return _loadFromUri(Uri.parse(url), decode, chunkEvents);
+      final codec = await _loadFromUri(Uri.parse(url), decode, chunkEvents);
+      await chunkEvents.close();
+      yield codec;
     }
   }
 
@@ -93,8 +114,7 @@ class ImmichImageProvider extends ImageProvider<Asset> {
       },
     );
 
-    // Close the stream and decode it
-    await chunkEvents.close();
+    // Decode the response
     final buffer = await ui.ImmutableBuffer.fromUint8List(data);
     return decode(buffer);
   }

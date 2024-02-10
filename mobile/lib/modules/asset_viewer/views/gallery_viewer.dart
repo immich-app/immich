@@ -136,53 +136,17 @@ class GalleryViewerPage extends HookConsumerWidget {
     void toggleFavorite(Asset asset) =>
         ref.read(assetProvider.notifier).toggleFavorite([asset]);
 
-    /// Original (large) image of a remote asset. Required asset.isRemote
-    ImageProvider remoteOriginalProvider(Asset asset) =>
-        CachedNetworkImageProvider(
-          getImageUrl(asset),
-          cacheKey: getImageCacheKey(asset),
-          headers: header,
-        );
-
-    /// Original (large) image of a local asset. Required asset.isLocal
-    ImageProvider localOriginalProvider(Asset asset) =>
-        OriginalImageProvider(asset);
-
-    ImageProvider finalImageProvider(Asset asset) {
-      if (ImmichImage.useLocal(asset)) {
-        return localOriginalProvider(asset);
-      } else if (isLoadOriginal.value) {
-        return remoteOriginalProvider(asset);
-      } else if (isLoadPreview.value) {
-        return ImmichImage.remoteThumbnailProvider(asset, jpeg, header);
-      }
-      return ImmichImage.remoteThumbnailProvider(asset, webp, header);
-    }
-
-    Iterable<ImageProvider> allImageProviders(Asset asset) sync* {
-      if (ImmichImage.useLocal(asset)) {
-        yield ImmichImage.localImageProvider(asset);
-        yield localOriginalProvider(asset);
-      } else {
-        yield ImmichImage.remoteThumbnailProvider(asset, webp, header);
-        if (isLoadPreview.value) {
-          yield ImmichImage.remoteThumbnailProvider(asset, jpeg, header);
-        }
-        if (isLoadOriginal.value) {
-          yield remoteOriginalProvider(asset);
-        }
-      }
-    }
-
     void precacheNextImage(int index) {
       void onError(Object exception, StackTrace? stackTrace) {
         // swallow error silently
       }
       if (index < totalAssets && index >= 0) {
         final asset = loadAsset(index);
-        for (final imageProvider in allImageProviders(asset)) {
-          precacheImage(imageProvider, context, onError: onError);
-        }
+        precacheImage(
+          ImmichImageProvider(asset: asset),
+          context,
+          onError: onError,
+        );
       }
     }
 
