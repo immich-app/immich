@@ -40,8 +40,8 @@ export interface IMetadataRepository {
   writeTags(path: string, tags: Partial<Tags>): Promise<void>;
   extractBinaryTag(tagName: string, path: string): Promise<Buffer>;
   getCountries(userId: string): Promise<string[]>;
-  getStates(userId: string, country: string | undefined): Promise<string[]>;
-  getCities(userId: string, country: string | undefined, state: string | undefined): Promise<string[]>;
-  getCameraMakes(userId: string, model: string | undefined): Promise<string[]>;
-  getCameraModels(userId: string, make: string | undefined): Promise<string[]>;
+  getStates(userId: string, country?: string): Promise<string[]>;
+  getCities(userId: string, country?: string, state?: string): Promise<string[]>;
+  getCameraMakes(userId: string, model?: string): Promise<string[]>;
+  getCameraModels(userId: string, make?: string): Promise<string[]>;
 }
