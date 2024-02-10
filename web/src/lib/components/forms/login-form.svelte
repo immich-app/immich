@@ -3,8 +3,9 @@
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { AppRoute } from '$lib/constants';
   import { featureFlags, serverConfig } from '$lib/stores/server-config.store';
+  import { oauth } from '$lib/utils';
   import { getServerErrorMessage, handleError } from '$lib/utils/handle-error';
-  import { api, oauth } from '@api';
+  import { getServerConfig, login } from '@immich/sdk';
   import { createEventDispatcher, onMount } from 'svelte';
   import { fade } from 'svelte/transition';
   import Button from '../elements/buttons/button.svelte';
@@ -53,19 +54,13 @@
     oauthLoading = false;
   });
 
-  const login = async () => {
+  const handleLogin = async () => {
     try {
       errorMessage = '';
       loading = true;
 
-      const { data: user } = await api.authenticationApi.login({
-        loginCredentialDto: {
-          email,
-          password,
-        },
-      });
-
-      const { data: serverConfig } = await api.serverInfoApi.getServerConfig();
+      const user = await login({ loginCredentialDto: { email, password } });
+      const serverConfig = await getServerConfig();
 
       if (user.isAdmin && !serverConfig.isOnboarded) {
         dispatch('onboarding');
@@ -76,7 +71,6 @@
         dispatch('firstLogin');
         return;
       }
-
       dispatch('success');
       return;
     } catch (error) {
@@ -98,7 +92,7 @@
 </script>
 
 {#if !oauthLoading && $featureFlags.passwordLogin}
-  <form on:submit|preventDefault={login} class="mt-5 flex flex-col gap-5">
+  <form on:submit|preventDefault={handleLogin} class="mt-5 flex flex-col gap-5">
     {#if errorMessage}
       <p class="text-red-400" transition:fade>
         {errorMessage}

@@ -1,6 +1,7 @@
 {
   "name": "immich-web",
   "version": "1.0.0",
+  "license": "GNU Affero General Public License version 3",
   "scripts": {
     "dev": "vite dev --host 0.0.0.0 --port 3000",
     "build": "vite build",
@@ -44,6 +45,7 @@
     "identity-obj-proxy": "^3.0.0",
     "postcss": "^8.4.21",
     "prettier": "^3.1.0",
+    "prettier-plugin-organize-imports": "^3.2.4",
     "prettier-plugin-svelte": "^3.1.2",
     "rollup-plugin-visualizer": "^5.12.0",
     "svelte": "^4.0.5",
@@ -52,14 +54,14 @@
     "tailwindcss": "^3.2.7",
     "tslib": "^2.5.0",
     "typescript": "^5.3.3",
-    "vite": "^5.0.10",
+    "vite": "^5.1.1",
     "vitest": "^1.0.4"
   },
   "type": "module",
   "dependencies": {
-    "@egjs/svelte-view360": "^4.0.0-beta.7",
     "@immich/sdk": "file:../open-api/typescript-sdk",
     "@mdi/js": "^7.3.67",
+    "@photo-sphere-viewer/core": "^5.7.0",
     "@zoom-image/svelte": "^0.2.0",
     "axios": "^1.6.7",
     "buffer": "^6.0.3",

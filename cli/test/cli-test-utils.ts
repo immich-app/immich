@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { ImmichApi } from '../src/services/api.service';
+import { ImmichApi } from 'src/services/api.service';
 
 export const TEST_CONFIG_DIR = '/tmp/immich/';
 export const TEST_AUTH_FILE = path.join(TEST_CONFIG_DIR, 'auth.yml');
@@ -11,14 +11,10 @@ export const CLI_BASE_OPTIONS = { configDirectory: TEST_CONFIG_DIR };
 
 export const setup = async () => {
   const api = new ImmichApi(process.env.IMMICH_INSTANCE_URL as string, '');
-  await api.authenticationApi.signUpAdmin({
-    signUpDto: { email: 'cli@immich.app', password: 'password', name: 'Administrator' },
-  });
-  const admin = await api.authenticationApi.login({
-    loginCredentialDto: { email: 'cli@immich.app', password: 'password' },
-  });
-  const apiKey = await api.keyApi.createApiKey(
-    { aPIKeyCreateDto: { name: 'CLI Test' } },
+  await api.signUpAdmin({ email: 'cli@immich.app', password: 'password', name: 'Administrator' });
+  const admin = await api.login({ email: 'cli@immich.app', password: 'password' });
+  const apiKey = await api.createApiKey(
+    { name: 'CLI Test' },
     { headers: { Authorization: `Bearer ${admin.accessToken}` } },
   );
 

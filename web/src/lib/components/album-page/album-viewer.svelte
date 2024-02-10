@@ -5,7 +5,7 @@
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
   import { locale } from '$lib/stores/preferences.store';
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
-  import type { AlbumResponseDto, SharedLinkResponseDto, UserResponseDto } from '@api';
+  import type { AlbumResponseDto, SharedLinkResponseDto, UserResponseDto } from '@immich/sdk';
   import { onDestroy, onMount } from 'svelte';
   import { dateFormats } from '../../constants';
   import { createAssetInteractionStore } from '../../stores/asset-interaction.store';

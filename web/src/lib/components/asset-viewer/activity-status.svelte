@@ -1,8 +1,8 @@
 <script lang="ts">
+  import type { ActivityResponseDto } from '@immich/sdk';
   import { mdiCommentOutline, mdiHeart, mdiHeartOutline } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
   import Icon from '../elements/icon.svelte';
-  import type { ActivityResponseDto } from '@api';
 
   export let isLiked: ActivityResponseDto | null;
   export let numberOfComments: number | undefined;

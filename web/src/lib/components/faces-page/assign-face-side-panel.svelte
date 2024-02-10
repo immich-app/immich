@@ -1,16 +1,23 @@
 <script lang="ts">
-  import { api, AssetTypeEnum, type AssetFaceResponseDto, type PersonResponseDto, ThumbnailFormat } from '@api';
+  import { maximumLengthSearchPeople, timeBeforeShowLoadingSpinner } from '$lib/constants';
+  import { photoViewer } from '$lib/stores/assets.store';
+  import { getAssetThumbnailUrl, getPeopleThumbnailUrl } from '$lib/utils';
+  import { handleError } from '$lib/utils/handle-error';
+  import { getPersonNameWithHiddenValue, searchNameLocal } from '$lib/utils/person';
+  import {
+    AssetTypeEnum,
+    ThumbnailFormat,
+    searchPerson,
+    type AssetFaceResponseDto,
+    type PersonResponseDto,
+  } from '@immich/sdk';
+  import { mdiArrowLeftThin, mdiClose, mdiMagnify, mdiPlus } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
   import { linear } from 'svelte/easing';
   import { fly } from 'svelte/transition';
-  import Icon from '../elements/icon.svelte';
-  import { mdiArrowLeftThin, mdiClose, mdiMagnify, mdiPlus } from '@mdi/js';
-  import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
-  import { getPersonNameWithHiddenValue, searchNameLocal } from '$lib/utils/person';
-  import { handleError } from '$lib/utils/handle-error';
-  import { photoViewer } from '$lib/stores/assets.store';
-  import { maximumLengthSearchPeople, timeBeforeShowLoadingSpinner } from '$lib/constants';
+  import Icon from '../elements/icon.svelte';
+  import LoadingSpinner from '../shared-components/loading-spinner.svelte';
 
   export let peopleWithFaces: AssetFaceResponseDto[];
   export let allPeople: PersonResponseDto[];
@@ -42,7 +49,7 @@
     if (assetType === AssetTypeEnum.Image) {
       image = $photoViewer;
     } else if (assetType === AssetTypeEnum.Video) {
-      const data = await api.getAssetThumbnailUrl(assetId, ThumbnailFormat.Webp);
+      const data = await getAssetThumbnailUrl(assetId, ThumbnailFormat.Webp);
       const img: HTMLImageElement = new Image();
       img.src = data;
 
@@ -116,7 +123,7 @@
     }
     const timeout = setTimeout(() => (isShowLoadingSearch = true), timeBeforeShowLoadingSpinner);
     try {
-      const { data } = await api.searchApi.searchPerson({ name: searchName });
+      const data = await searchPerson({ name: searchName });
       searchedPeople = data;
       searchedPeopleCopy = data;
       searchWord = searchName;
@@ -229,7 +236,7 @@
                   <ImageThumbnail
                     curve
                     shadow
-                    url={api.getPeopleThumbnailUrl(person.id)}
+                    url={getPeopleThumbnailUrl(person.id)}
                     altText={getPersonNameWithHiddenValue(person.name, person.isHidden)}
                     title={getPersonNameWithHiddenValue(person.name, person.isHidden)}
                     widthStyle="90px"
@@ -255,7 +262,7 @@
                   <ImageThumbnail
                     curve
                     shadow
-                    url={api.getPeopleThumbnailUrl(person.id)}
+                    url={getPeopleThumbnailUrl(person.id)}
                     altText={getPersonNameWithHiddenValue(person.name, person.isHidden)}
                     title={getPersonNameWithHiddenValue(person.name, person.isHidden)}
                     widthStyle="90px"

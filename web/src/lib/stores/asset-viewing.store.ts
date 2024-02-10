@@ -1,12 +1,13 @@
+import { getKey } from '$lib/utils';
+import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
 import { writable } from 'svelte/store';
-import { api, type AssetResponseDto } from '@api';
 
 function createAssetViewingStore() {
   const viewingAssetStoreState = writable<AssetResponseDto>();
   const viewState = writable<boolean>(false);
 
   const setAssetId = async (id: string) => {
-    const { data } = await api.assetApi.getAssetInfo({ id, key: api.getKey() });
+    const data = await getAssetInfo({ id, key: getKey() });
     viewingAssetStoreState.set(data);
     viewState.set(true);
   };

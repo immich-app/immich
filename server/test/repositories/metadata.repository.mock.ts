@@ -8,5 +8,10 @@ export const newMetadataRepositoryMock = (): jest.Mocked<IMetadataRepository> =>
     readTags: jest.fn(),
     writeTags: jest.fn(),
     extractBinaryTag: jest.fn(),
+    getCameraMakes: jest.fn(),
+    getCameraModels: jest.fn(),
+    getCities: jest.fn(),
+    getCountries: jest.fn(),
+    getStates: jest.fn(),
   };
 };

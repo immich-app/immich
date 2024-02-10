@@ -60,6 +60,7 @@ export class MediaRepository implements IMediaRepository {
           frameCount: Number.parseInt(stream.nb_frames ?? '0'),
           rotation: Number.parseInt(`${stream.rotation ?? 0}`),
           isHDR: stream.color_transfer === 'smpte2084' || stream.color_transfer === 'arib-std-b67',
+          bitrate: Number.parseInt(stream.bit_rate ?? '0'),
         })),
       audioStreams: results.streams
         .filter((stream) => stream.codec_type === 'audio')

@@ -1,8 +1,8 @@
-import type { AssetResponseDto, ServerVersionResponseDto } from '@api';
-import { Socket, io } from 'socket.io-client';
-import { writable } from 'svelte/store';
+import type { AssetResponseDto, ServerVersionResponseDto } from '@immich/sdk';
+import { io, type Socket } from 'socket.io-client';
+import { get, writable } from 'svelte/store';
 import { loadConfig } from './server-config.store';
-import { getAuthUser } from '$lib/utils/auth';
+import { user } from './user.store';
 
 export interface ReleaseEvent {
   isAvailable: boolean;
@@ -30,8 +30,7 @@ export const openWebsocketConnection = async () => {
       return;
     }
 
-    const user = await getAuthUser();
-    if (!user) {
+    if (!get(user)) {
       return;
     }
 

@@ -1,6 +1,10 @@
 <script lang="ts">
+  import { browser } from '$app/environment';
   import { afterNavigate, goto } from '$app/navigation';
   import { page } from '$app/stores';
+  import AlbumCard from '$lib/components/album-page/album-card.svelte';
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
   import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
   import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
   import ChangeDate from '$lib/components/photos-page/actions/change-date-action.svelte';
@@ -14,28 +18,27 @@
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
   import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
-  import type { AssetResponseDto } from '@api';
-  import type { PageData } from './$types';
-  import Icon from '$lib/components/elements/icon.svelte';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
-  import AlbumCard from '$lib/components/album-page/album-card.svelte';
-  import { flip } from 'svelte/animate';
-  import { onDestroy, onMount } from 'svelte';
-  import { browser } from '$app/environment';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { preventRaceConditionSearchBar } from '$lib/stores/search.store';
+  import { authenticate } from '$lib/utils/auth';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
+  import { search, type AssetResponseDto, type SearchResponseDto } from '@immich/sdk';
   import { mdiArrowLeft, mdiDotsVertical, mdiImageOffOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
+  import { onDestroy, onMount } from 'svelte';
+  import { flip } from 'svelte/animate';
+  import type { PageData } from './$types';
 
   export let data: PageData;
 
+  const MAX_ASSET_COUNT = 5000;
   let { isViewing: showAssetViewer } = assetViewingStore;
 
   // The GalleryViewer pushes it's own history state, which causes weird
   // behavior for history.back(). To prevent that we store the previous page
   // manually and navigate back to that.
   let previousRoute = AppRoute.EXPLORE as string;
+  $: curPage = data.results?.assets.nextPage;
   $: albums = data.results?.albums.items;
 
   const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
@@ -107,6 +110,33 @@
   const handleSelectAll = () => {
     selectedAssets = new Set(searchResultAssets);
   };
+
+  export const loadNextPage = async () => {
+    if (curPage == null || !term || (searchResultAssets && searchResultAssets.length >= MAX_ASSET_COUNT)) {
+      return;
+    }
+
+    await authenticate();
+    let results: SearchResponseDto | null = null;
+    $page.url.searchParams.set('page', curPage.toString());
+    const res = await search({ ...$page.url.searchParams });
+    if (searchResultAssets) {
+      searchResultAssets.push(...res.assets.items);
+    } else {
+      searchResultAssets = res.assets.items;
+    }
+
+    const assets = {
+      ...res.assets,
+      items: searchResultAssets,
+    };
+    results = {
+      assets,
+      albums: res.albums,
+    };
+
+    data.results = results;
+  };
 </script>
 
 <section>
@@ -164,7 +194,12 @@
     <section id="search-content" class="relative bg-immich-bg dark:bg-immich-dark-bg">
       {#if searchResultAssets && searchResultAssets.length > 0}
         <div class="pl-4">
-          <GalleryViewer assets={searchResultAssets} bind:selectedAssets showArchiveIcon={true} />
+          <GalleryViewer
+            assets={searchResultAssets}
+            bind:selectedAssets
+            on:intersected={loadNextPage}
+            showArchiveIcon={true}
+          />
         </div>
       {:else}
         <div class="flex min-h-[calc(66vh_-_11rem)] w-full place-content-center items-center dark:text-white">

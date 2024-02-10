@@ -46,6 +46,7 @@ export interface MapSettings {
   allowDarkMode: boolean;
   includeArchived: boolean;
   onlyFavorites: boolean;
+  withPartners: boolean;
   relativeDate: string;
   dateAfter: string;
   dateBefore: string;
@@ -55,6 +56,7 @@ export const mapSettings = persisted<MapSettings>('map-settings', {
   allowDarkMode: true,
   includeArchived: false,
   onlyFavorites: false,
+  withPartners: false,
   relativeDate: '',
   dateAfter: '',
   dateBefore: '',
@@ -92,3 +94,5 @@ export const albumViewSettings = persisted<AlbumViewSettings>('album-view-settin
 });
 
 export const showDeleteModal = persisted<boolean>('delete-confirm-dialog', true, {});
+
+export const alwaysLoadOriginalFile = persisted<boolean>('always-load-original-file', false, {});

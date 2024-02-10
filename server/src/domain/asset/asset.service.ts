@@ -31,8 +31,6 @@ import {
   AssetBulkUpdateDto,
   AssetJobName,
   AssetJobsDto,
-  AssetOrder,
-  AssetSearchDto,
   AssetStatsDto,
   MapMarkerDto,
   MemoryLaneDto,
@@ -90,34 +88,6 @@ export class AssetService {
   ) {
     this.access = AccessCore.create(accessRepository);
     this.configCore = SystemConfigCore.create(configRepository);
-  }
-
-  search(auth: AuthDto, dto: AssetSearchDto) {
-    let checksum: Buffer | undefined;
-
-    if (dto.checksum) {
-      const encoding = dto.checksum.length === 28 ? 'base64' : 'hex';
-      checksum = Buffer.from(dto.checksum, encoding);
-    }
-
-    const enumToOrder = { [AssetOrder.ASC]: 'ASC', [AssetOrder.DESC]: 'DESC' } as const;
-    const order = dto.order ? enumToOrder[dto.order] : undefined;
-
-    return this.assetRepository
-      .search({
-        ...dto,
-        order,
-        checksum,
-        ownerId: auth.user.id,
-      })
-      .then((assets) =>
-        assets.map((asset) =>
-          mapAsset(asset, {
-            stripMetadata: false,
-            withStack: true,
-          }),
-        ),
-      );
   }
 
   canUploadFile({ auth, fieldName, file }: UploadRequest): true {
@@ -187,8 +157,16 @@ export class AssetService {
     return folder;
   }
 
-  getMapMarkers(auth: AuthDto, options: MapMarkerDto): Promise<MapMarkerResponseDto[]> {
-    return this.assetRepository.getMapMarkers(auth.user.id, options);
+  async getMapMarkers(auth: AuthDto, options: MapMarkerDto): Promise<MapMarkerResponseDto[]> {
+    const userIds: string[] = [auth.user.id];
+    if (options.withPartners) {
+      const partners = await this.partnerRepository.getAll(auth.user.id);
+      const partnersIds = partners
+        .filter((partner) => partner.sharedBy && partner.sharedWith && partner.sharedById != auth.user.id)
+        .map((partner) => partner.sharedById);
+      userIds.push(...partnersIds);
+    }
+    return this.assetRepository.getMapMarkers(userIds, options);
   }
 
   async getMemoryLane(auth: AuthDto, dto: MemoryLaneDto): Promise<MemoryLaneResponseDto[]> {

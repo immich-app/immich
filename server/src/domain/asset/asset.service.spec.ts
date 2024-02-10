@@ -286,6 +286,7 @@ describe(AssetService.name, () => {
 
   describe('getMapMarkers', () => {
     it('should get geo information of assets', async () => {
+      partnerMock.getAll.mockResolvedValue([]);
       assetMock.getMapMarkers.mockResolvedValue(
         [assetStub.withLocation].map((asset) => ({
           id: asset.id,

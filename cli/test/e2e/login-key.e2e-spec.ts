@@ -1,8 +1,8 @@
 import { restoreTempFolder, testApp } from '@test-utils';
-import { CLI_BASE_OPTIONS, TEST_AUTH_FILE, deleteAuthFile, setup, spyOnConsole } from 'test/cli-test-utils';
 import { readFile, stat } from 'node:fs/promises';
-import { LoginCommand } from '../../src/commands/login.command';
+import { CLI_BASE_OPTIONS, TEST_AUTH_FILE, deleteAuthFile, setup, spyOnConsole } from 'test/cli-test-utils';
 import yaml from 'yaml';
+import { LoginCommand } from '../../src/commands/login.command';
 
 describe(`login-key (e2e)`, () => {
   let apiKey: string;
@@ -37,7 +37,7 @@ describe(`login-key (e2e)`, () => {
 
   it('should error when providing an invalid API key', async () => {
     await expect(new LoginCommand(CLI_BASE_OPTIONS).run(instanceUrl, 'invalid')).rejects.toThrow(
-      `Failed to connect to server ${instanceUrl}: Response returned an error code`,
+      `Failed to connect to server ${instanceUrl}: Error: 401`,
     );
   });
 

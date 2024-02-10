@@ -1,19 +1,19 @@
 <script lang="ts">
-  import { locale } from '$lib/stores/preferences.store';
-  import type { AuthDeviceResponseDto } from '@api';
-  import { DateTime, type ToRelativeCalendarOptions } from 'luxon';
-  import { createEventDispatcher } from 'svelte';
   import Icon from '$lib/components/elements/icon.svelte';
+  import { locale } from '$lib/stores/preferences.store';
+  import type { AuthDeviceResponseDto } from '@immich/sdk';
   import {
     mdiAndroid,
     mdiApple,
     mdiAppleSafari,
-    mdiMicrosoftWindows,
-    mdiLinux,
     mdiGoogleChrome,
-    mdiTrashCanOutline,
     mdiHelp,
+    mdiLinux,
+    mdiMicrosoftWindows,
+    mdiTrashCanOutline,
   } from '@mdi/js';
+  import { DateTime, type ToRelativeCalendarOptions } from 'luxon';
+  import { createEventDispatcher } from 'svelte';
 
   export let device: AuthDeviceResponseDto;
 

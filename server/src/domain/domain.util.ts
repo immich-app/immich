@@ -137,6 +137,17 @@ export interface PaginationOptions {
   skip?: number;
 }
 
+export enum PaginationMode {
+  LIMIT_OFFSET = 'limit-offset',
+  SKIP_TAKE = 'skip-take',
+}
+
+export interface PaginatedBuilderOptions {
+  take: number;
+  skip?: number;
+  mode?: PaginationMode;
+}
+
 export interface PaginationResult<T> {
   items: T[];
   hasNextPage: boolean;

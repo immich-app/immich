@@ -704,8 +704,35 @@ describe(MediaService.name, () => {
       );
     });
 
-    it('should transcode when audio doesnt match target', async () => {
-      mediaMock.probe.mockResolvedValue(probeStub.audioStreamMp3);
+    it('should copy video stream when video matches target', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
+      configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_TARGET_VIDEO_CODEC, value: VideoCodec.HEVC }]);
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        {
+          inputOptions: [],
+          outputOptions: [
+            '-c:v copy',
+            '-c:a aac',
+            '-movflags faststart',
+            '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-tag:v hvc1',
+            '-v verbose',
+            '-preset ultrafast',
+            '-crf 23',
+          ],
+          twoPass: false,
+        },
+      );
+    });
+
+    it('should copy audio stream when audio matches target', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.audioStreamAac);
       configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_TRANSCODE, value: TranscodePolicy.OPTIMAL }]);
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
@@ -716,7 +743,7 @@ describe(MediaService.name, () => {
           inputOptions: [],
           outputOptions: [
             '-c:v h264',
-            '-c:a aac',
+            '-c:a copy',
             '-movflags faststart',
             '-fps_mode passthrough',
             '-map 0:0',
@@ -758,11 +785,11 @@ describe(MediaService.name, () => {
       );
     });
 
-    it('should not transcode an invalid transcode value', async () => {
+    it('should throw an exception if transcode value is invalid', async () => {
       mediaMock.probe.mockResolvedValue(probeStub.videoStream2160p);
       configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_TRANSCODE, value: 'invalid' }]);
-      assetMock.getByIds.mockResolvedValue([assetStub.video]);
-      await sut.handleVideoConversion({ id: assetStub.video.id });
+
+      await expect(sut.handleVideoConversion({ id: assetStub.video.id })).rejects.toThrow();
       expect(mediaMock.transcode).not.toHaveBeenCalled();
     });
 
@@ -1106,7 +1133,7 @@ describe(MediaService.name, () => {
     });
 
     it('should disable thread pooling for hevc if thread limit is above 0', async () => {
-      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
+      mediaMock.probe.mockResolvedValue(probeStub.videoStreamVp9);
       configMock.load.mockResolvedValue([
         { key: SystemConfigKey.FFMPEG_THREADS, value: 2 },
         { key: SystemConfigKey.FFMPEG_TARGET_VIDEO_CODEC, value: VideoCodec.HEVC },
@@ -1140,7 +1167,7 @@ describe(MediaService.name, () => {
     });
 
     it('should omit thread flags for hevc if thread limit is at or below 0', async () => {
-      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
+      mediaMock.probe.mockResolvedValue(probeStub.videoStreamVp9);
       configMock.load.mockResolvedValue([
         { key: SystemConfigKey.FFMPEG_THREADS, value: 0 },
         { key: SystemConfigKey.FFMPEG_TARGET_VIDEO_CODEC, value: VideoCodec.HEVC },
@@ -1756,7 +1783,7 @@ describe(MediaService.name, () => {
 
     it('should set vbr options for rkmpp when max bitrate is enabled', async () => {
       storageMock.readdir.mockResolvedValue(['renderD128']);
-      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
+      mediaMock.probe.mockResolvedValue(probeStub.videoStreamVp9);
       configMock.load.mockResolvedValue([
         { key: SystemConfigKey.FFMPEG_ACCEL, value: TranscodeHWAccel.RKMPP },
         { key: SystemConfigKey.FFMPEG_MAX_BITRATE, value: '10000k' },

@@ -1,25 +1,25 @@
 <script lang="ts">
+  import Icon from '$lib/components/elements/icon.svelte';
   import {
     AudioCodec,
     CQMode,
-    type SystemConfigDto,
     ToneMapping,
     TranscodeHWAccel,
     TranscodePolicy,
     VideoCodec,
-  } from '@api';
+    type SystemConfigDto,
+  } from '@immich/sdk';
+  import { mdiHelpCircleOutline } from '@mdi/js';
+  import { isEqual, sortBy } from 'lodash-es';
+  import { createEventDispatcher } from 'svelte';
+  import { fade } from 'svelte/transition';
+  import type { SettingsEventType } from '../admin-settings';
+  import SettingAccordion from '../setting-accordion.svelte';
   import SettingButtonsRow from '../setting-buttons-row.svelte';
+  import SettingCheckboxes from '../setting-checkboxes.svelte';
   import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
   import SettingSelect from '../setting-select.svelte';
   import SettingSwitch from '../setting-switch.svelte';
-  import SettingCheckboxes from '../setting-checkboxes.svelte';
-  import { isEqual, sortBy } from 'lodash-es';
-  import { fade } from 'svelte/transition';
-  import SettingAccordion from '../setting-accordion.svelte';
-  import { mdiHelpCircleOutline } from '@mdi/js';
-  import Icon from '$lib/components/elements/icon.svelte';
-  import { createEventDispatcher } from 'svelte';
-  import type { SettingsEventType } from '../admin-settings';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
@@ -235,6 +235,7 @@
         />
 
         <SettingAccordion
+          key="hardware-acceleration"
           title="Hardware Acceleration"
           subtitle="Experimental; much faster, but will have lower quality at the same bitrate"
         >
@@ -296,7 +297,11 @@
           </div>
         </SettingAccordion>
 
-        <SettingAccordion title="Advanced" subtitle="Options most users should not need to change">
+        <SettingAccordion
+          key="advanced-options"
+          title="Advanced"
+          subtitle="Options most users should not need to change"
+        >
           <div class="ml-4 mt-4 flex flex-col gap-4">
             <SettingInputField
               inputType={SettingInputFieldType.NUMBER}

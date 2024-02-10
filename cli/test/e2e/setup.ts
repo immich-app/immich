@@ -1,6 +1,6 @@
-import path from 'node:path';
 import { PostgreSqlContainer } from '@testcontainers/postgresql';
 import { access } from 'node:fs/promises';
+import path from 'node:path';
 
 export const directoryExists = (directory: string) =>
   access(directory)

@@ -7,8 +7,11 @@
   import { BucketPosition, type AssetStore, type Viewport } from '$lib/stores/assets.store';
   import { locale, showDeleteModal } from '$lib/stores/preferences.store';
   import { isSearchEnabled } from '$lib/stores/search.store';
+  import { featureFlags } from '$lib/stores/server-config.store';
+  import { deleteAssets } from '$lib/utils/actions';
+  import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
   import { formatGroupTitle, splitBucketIntoDateGroups } from '$lib/utils/timeline-util';
-  import type { AlbumResponseDto, AssetResponseDto } from '@api';
+  import type { AlbumResponseDto, AssetResponseDto } from '@immich/sdk';
   import { DateTime } from 'luxon';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import AssetViewer from '../asset-viewer/asset-viewer.svelte';
@@ -17,9 +20,6 @@
   import Scrollbar from '../shared-components/scrollbar/scrollbar.svelte';
   import ShowShortcuts from '../shared-components/show-shortcuts.svelte';
   import AssetDateGroup from './asset-date-group.svelte';
-  import { featureFlags } from '$lib/stores/server-config.store';
-  import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
-  import { deleteAssets } from '$lib/utils/actions';
   import DeleteAssetDialog from './delete-asset-dialog.svelte';
 
   export let isSelectionMode = false;

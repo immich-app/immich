@@ -34,7 +34,10 @@ class Asset {
         isTrashed = remote.isTrashed,
         isReadOnly = remote.isReadOnly,
         isOffline = remote.isOffline,
-        stackParentId = remote.stackParentId,
+        // workaround to nullify stackParentId for the parent asset until we refactor the mobile app
+        // stack handling to properly handle it
+        stackParentId =
+            remote.stackParentId == remote.id ? null : remote.stackParentId,
         stackCount = remote.stackCount;
 
   Asset.local(AssetEntity local, List<int> hash)
@@ -295,7 +298,6 @@ class Asset {
           width: a.width ?? width,
           height: a.height ?? height,
           exifInfo: a.exifInfo?.copyWith(id: id) ?? exifInfo,
-          stackCount: a.stackCount ?? stackCount,
         );
       } else if (isRemote) {
         return _copyWith(
@@ -310,7 +312,9 @@ class Asset {
           id: id,
           remoteId: remoteId,
           livePhotoVideoId: livePhotoVideoId,
-          stackParentId: stackParentId,
+          // workaround to nullify stackParentId for the parent asset until we refactor the mobile app
+          // stack handling to properly handle it
+          stackParentId: stackParentId == remoteId ? null : stackParentId,
           stackCount: stackCount,
           isFavorite: isFavorite,
           isArchived: isArchived,
@@ -328,8 +332,10 @@ class Asset {
           width: a.width,
           height: a.height,
           livePhotoVideoId: a.livePhotoVideoId,
-          stackParentId: a.stackParentId,
-          stackCount: a.stackCount ?? stackCount,
+          // workaround to nullify stackParentId for the parent asset until we refactor the mobile app
+          // stack handling to properly handle it
+          stackParentId: a.stackParentId == a.remoteId ? null : a.stackParentId,
+          stackCount: a.stackCount,
           // isFavorite + isArchived are not set by device-only assets
           isFavorite: a.isFavorite,
           isArchived: a.isArchived,

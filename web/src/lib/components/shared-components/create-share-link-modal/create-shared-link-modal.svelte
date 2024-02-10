@@ -4,16 +4,17 @@
   } from '$lib/components/admin-page/settings/setting-input-field.svelte';
   import SettingSwitch from '$lib/components/admin-page/settings/setting-switch.svelte';
   import Button from '$lib/components/elements/buttons/button.svelte';
-  import { handleError } from '$lib/utils/handle-error';
-  import { api, copyToClipboard, makeSharedLinkUrl, type SharedLinkResponseDto, SharedLinkType } from '@api';
-  import { createEventDispatcher, onMount } from 'svelte';
   import Icon from '$lib/components/elements/icon.svelte';
+  import { serverConfig } from '$lib/stores/server-config.store';
+  import { copyToClipboard, makeSharedLinkUrl } from '$lib/utils';
+  import { handleError } from '$lib/utils/handle-error';
+  import { SharedLinkType, createSharedLink, updateSharedLink, type SharedLinkResponseDto } from '@immich/sdk';
+  import { mdiLink } from '@mdi/js';
+  import { createEventDispatcher, onMount } from 'svelte';
   import BaseModal from '../base-modal.svelte';
   import type { ImmichDropDownOption } from '../dropdown-button.svelte';
   import DropdownButton from '../dropdown-button.svelte';
-  import { notificationController, NotificationType } from '../notification/notification';
-  import { mdiLink } from '@mdi/js';
-  import { serverConfig } from '$lib/stores/server-config.store';
+  import { NotificationType, notificationController } from '../notification/notification';
 
   export let albumId: string | undefined = undefined;
   export let assetIds: string[] = [];
@@ -70,7 +71,7 @@
     const expirationDate = expirationTime ? new Date(currentTime + expirationTime).toISOString() : undefined;
 
     try {
-      const { data } = await api.sharedLinkApi.createSharedLink({
+      const data = await createSharedLink({
         sharedLinkCreateDto: {
           type: shareType,
           albumId,
@@ -135,7 +136,7 @@
         ? new Date(currentTime + expirationTime).toISOString()
         : null;
 
-      await api.sharedLinkApi.updateSharedLink({
+      await updateSharedLink({
         id: editingLink.id,
         sharedLinkEditDto: {
           description,
