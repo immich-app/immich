@@ -1,6 +1,5 @@
 import { ISystemConfigRepository } from '@app/domain';
 import { InjectRepository } from '@nestjs/typeorm';
-import axios from 'axios';
 import { readFile } from 'node:fs/promises';
 import { In, Repository } from 'typeorm';
 import { SystemConfigEntity } from '../entities';
@@ -13,7 +12,11 @@ export class SystemConfigRepository implements ISystemConfigRepository {
     private repository: Repository<SystemConfigEntity>,
   ) {}
   async fetchStyle(url: string) {
-    return axios.get(url).then((response) => response.data);
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch data from ${url}`);
+    }
+    return response.json();
   }
 
   @GenerateSql()
