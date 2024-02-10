@@ -3,7 +3,7 @@ import { ImmichLogger } from '@app/infra/logger';
 import { Inject, Injectable } from '@nestjs/common';
 import { AssetResponseDto, mapAsset } from '../asset';
 import { AuthDto } from '../auth';
-import { PersonResponseDto, mapPerson } from '../person';
+import { PersonResponseDto } from '../person';
 import {
   IAssetRepository,
   IMachineLearningRepository,
