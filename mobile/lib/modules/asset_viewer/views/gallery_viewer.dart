@@ -12,6 +12,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/album/providers/current_album.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/asset_stack.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/current_asset.provider.dart';
+import 'package:immich_mobile/modules/asset_viewer/providers/immich_image_provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/show_controls.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/video_player_controls_provider.dart';
 import 'package:immich_mobile/modules/album/ui/add_to_album_bottom_sheet.dart';
@@ -821,7 +822,7 @@ class GalleryViewerPage extends HookConsumerWidget {
               builder: (context, index) {
                 final a =
                     index == currentIndex.value ? asset() : loadAsset(index);
-                final ImageProvider provider = finalImageProvider(a);
+                final ImageProvider provider = ImmichImageProvider(asset: a);
 
                 if (a.isImage && !isPlayingMotionVideo.value) {
                   return PhotoViewGalleryPageOptions(
