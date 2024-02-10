@@ -235,6 +235,7 @@
         />
 
         <SettingAccordion
+          key="hardware-acceleration"
           title="Hardware Acceleration"
           subtitle="Experimental; much faster, but will have lower quality at the same bitrate"
         >
@@ -296,7 +297,11 @@
           </div>
         </SettingAccordion>
 
-        <SettingAccordion title="Advanced" subtitle="Options most users should not need to change">
+        <SettingAccordion
+          key="advanced-options"
+          title="Advanced"
+          subtitle="Options most users should not need to change"
+        >
           <div class="ml-4 mt-4 flex flex-col gap-4">
             <SettingInputField
               inputType={SettingInputFieldType.NUMBER}
