@@ -65,7 +65,7 @@
 
   {#if isOpen}
     <div
-      transition:fly={{ y: 25, duration: 250 }}
+      transition:fly={{ y: -25, duration: 250 }}
       class="absolute w-full top-full mt-2 bg-white dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-900 z-10"
     >
       <div class="relative border-b flex">

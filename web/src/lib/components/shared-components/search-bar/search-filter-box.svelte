@@ -91,7 +91,7 @@
   };
 
   let showAllPeople = false;
-  $: subPeopleList = showAllPeople ? suggestions.people : suggestions.people.slice(0, 12);
+  $: subPeopleList = showAllPeople ? suggestions.people : suggestions.people.slice(0, 11);
 
   onMount(() => {
     getPeople();
@@ -210,12 +210,12 @@
 
 <div
   transition:fly={{ y: 25, duration: 250 }}
-  class="absolute w-full rounded-b-3xl border border-gray-200 bg-white pb-5 shadow-2xl transition-all dark:border-gray-800 dark:bg-immich-dark-gray dark:text-gray-300 p-6 overflow-y-auto max-h-[90vh]"
+  class="absolute w-full rounded-b-3xl border border-gray-200 bg-white shadow-2xl transition-all dark:border-gray-800 dark:bg-immich-dark-gray dark:text-gray-300 px-6 pt-6 overflow-y-auto max-h-[90vh] immich-scrollbar"
 >
   <p class="text-xs py-2">FILTERS</p>
-  <hr class="py-2" />
+  <hr class="border-slate-300 dark:border-slate-700 py-2" />
 
-  <form id="search-filter-form" autocomplete="off" class="hover:cursor-auto">
+  <form id="search-filter-form relative" autocomplete="off" class="hover:cursor-auto">
     <!-- PEOPLE -->
     <div id="people-selection" class="my-4">
       <div class="flex justify-between place-items-center gap-6">
@@ -225,14 +225,14 @@
       </div>
 
       {#if suggestions.people.length > 0}
-        <div class="flex gap-2 mt-4 flex-wrap max-h-[300px] overflow-y-auto transition-all">
+        <div class="flex gap-1 mt-4 flex-wrap max-h-[300px] overflow-y-auto immich-scrollbar transition-all">
           {#each subPeopleList as person (person.id)}
             <button
               type="button"
-              class="w-18 text-center rounded-3xl border-2 border-transparent hover:bg-immich-gray dark:hover:bg-immich-dark-primary/20 p-2 flex-col place-items-center transition-all {filter.people.find(
+              class="w-20 text-center rounded-3xl border-2 border-transparent hover:bg-immich-gray dark:hover:bg-immich-dark-primary/20 p-2 flex-col place-items-center transition-all {filter.people.find(
                 (p) => p.id === person.id,
               )
-                ? 'dark:border-slate-500 border-slate-300'
+                ? 'dark:border-slate-500 border-slate-300 bg-slate-200 dark:bg-slate-800 dark:text-white'
                 : ''}"
               on:click={() => handlePeopleSelection(person.id)}
             >
@@ -241,7 +241,7 @@
                 shadow
                 url={api.getPeopleThumbnailUrl(person.id)}
                 altText={person.name}
-                widthStyle="100%"
+                widthStyle="100px"
               />
               <p class="mt-2 text-ellipsis text-sm font-medium dark:text-white">{person.name}</p>
             </button>
@@ -261,15 +261,16 @@
               Collapse
             {:else}
               <span><Icon path={mdiArrowRight} /></span>
-              See all People
+              See all people
             {/if}
           </Button>
         </div>
       {/if}
     </div>
-    <hr />
+
+    <hr class="border-slate-300 dark:border-slate-700" />
     <!-- CONTEXT -->
-    <div class="py-3">
+    <div class="my-4">
       <label class="immich-form-label" for="context">CONTEXT</label>
       <input
         class="immich-form-input hover:cursor-text w-full mt-3"
@@ -281,6 +282,107 @@
       />
     </div>
 
+    <hr class="border-slate-300 dark:border-slate-700" />
+    <!-- LOCATION -->
+    <div id="location-selection" class="my-4">
+      <p class="immich-form-label">PLACE</p>
+
+      <div class="flex justify-between gap-5 mt-3">
+        <div class="w-full">
+          <p class="text-sm text-black dark:text-white">Country</p>
+          <Combobox
+            options={suggestions.country}
+            bind:selectedOption={filter.location.country}
+            placeholder="Search country..."
+            on:click={() => updateSuggestion(SearchSuggestionType.Country, {})}
+          />
+        </div>
+
+        <div class="w-full">
+          <p class="text-sm text-black dark:text-white">State</p>
+          <Combobox
+            options={suggestions.state}
+            bind:selectedOption={filter.location.state}
+            placeholder="Search state..."
+            on:click={() => updateSuggestion(SearchSuggestionType.State, { country: filter.location.country?.value })}
+          />
+        </div>
+
+        <div class="w-full">
+          <p class="text-sm text-black dark:text-white">City</p>
+          <Combobox
+            options={suggestions.city}
+            bind:selectedOption={filter.location.city}
+            placeholder="Search city..."
+            on:click={() =>
+              updateSuggestion(SearchSuggestionType.City, {
+                country: filter.location.country?.value,
+                state: filter.location.state?.value,
+              })}
+          />
+        </div>
+      </div>
+    </div>
+
+    <hr class="border-slate-300 dark:border-slate-700" />
+    <!-- CAMERA MODEL -->
+    <div id="camera-selection" class="my-4">
+      <p class="immich-form-label">CAMERA</p>
+
+      <div class="flex justify-between gap-5 mt-3">
+        <div class="w-full">
+          <p class="text-sm text-black dark:text-white">Make</p>
+          <Combobox
+            options={suggestions.cameraMake}
+            bind:selectedOption={filter.camera.make}
+            placeholder="Search camera make..."
+            on:click={() =>
+              updateSuggestion(SearchSuggestionType.CameraMake, { cameraModel: filter.camera.model?.value })}
+          />
+        </div>
+
+        <div class="w-full">
+          <p class="text-sm text-black dark:text-white">Model</p>
+          <Combobox
+            options={suggestions.cameraModel}
+            bind:selectedOption={filter.camera.model}
+            placeholder="Search camera model..."
+            on:click={() =>
+              updateSuggestion(SearchSuggestionType.CameraModel, { cameraMake: filter.camera.make?.value })}
+          />
+        </div>
+      </div>
+    </div>
+
+    <hr class="border-slate-300 dark:border-slate-700" />
+
+    <!-- DATE RANGE -->
+    <div id="date-range-selection" class="my-4 flex justify-between gap-5">
+      <div class="mb-3 flex-1 mt">
+        <label class="immich-form-label" for="start-date">START DATE</label>
+        <input
+          class="immich-form-input w-full mt-3 hover:cursor-pointer"
+          type="date"
+          id="start-date"
+          name="start-date"
+          bind:value={filter.dateRange.startDate}
+        />
+      </div>
+
+      <div class="mb-3 flex-1">
+        <label class="immich-form-label" for="end-date">END DATE</label>
+        <input
+          class="immich-form-input w-full mt-3 hover:cursor-pointer"
+          type="date"
+          id="end-date"
+          name="end-date"
+          placeholder=""
+          bind:value={filter.dateRange.endDate}
+        />
+      </div>
+    </div>
+
+    <hr class="border-slate-300 dark:border-slate-700" />
     <div class="py-3 grid grid-cols-2">
       <!-- MEDIA TYPE -->
       <div id="media-type-selection">
@@ -293,7 +395,7 @@
           >
             <input
               bind:group={filter.mediaType}
-              value={filter.mediaType}
+              value={MediaType.All}
               type="radio"
               name="radio-type"
               id="type-all"
@@ -351,107 +453,10 @@
       </div>
     </div>
 
-    <hr />
-    <!-- LOCATION -->
-    <div id="location-selection" class="my-4">
-      <p class="immich-form-label">PLACE</p>
-
-      <div class="flex justify-between gap-5 mt-3">
-        <div class="w-full">
-          <p class="text-sm text-black dark:text-white">Country</p>
-          <Combobox
-            options={suggestions.country}
-            bind:selectedOption={filter.location.country}
-            placeholder="Search country..."
-            on:click={() => updateSuggestion(SearchSuggestionType.Country, {})}
-          />
-        </div>
-
-        <div class="w-full">
-          <p class="text-sm text-black dark:text-white">State</p>
-          <Combobox
-            options={suggestions.state}
-            bind:selectedOption={filter.location.state}
-            placeholder="Search state..."
-            on:click={() => updateSuggestion(SearchSuggestionType.State, { country: filter.location.country?.value })}
-          />
-        </div>
-
-        <div class="w-full">
-          <p class="text-sm text-black dark:text-white">City</p>
-          <Combobox
-            options={suggestions.city}
-            bind:selectedOption={filter.location.city}
-            placeholder="Search city..."
-            on:click={() =>
-              updateSuggestion(SearchSuggestionType.City, {
-                country: filter.location.country?.value,
-                state: filter.location.state?.value,
-              })}
-          />
-        </div>
-      </div>
-    </div>
-
-    <hr />
-    <!-- CAMERA MODEL -->
-    <div id="camera-selection" class="my-4">
-      <p class="immich-form-label">CAMERA</p>
-
-      <div class="flex justify-between gap-5 mt-3">
-        <div class="w-full">
-          <p class="text-sm text-black dark:text-white">Make</p>
-          <Combobox
-            options={suggestions.cameraMake}
-            bind:selectedOption={filter.camera.make}
-            placeholder="Search camera make..."
-            on:click={() =>
-              updateSuggestion(SearchSuggestionType.CameraMake, { cameraModel: filter.camera.model?.value })}
-          />
-        </div>
-
-        <div class="w-full">
-          <p class="text-sm text-black dark:text-white">Model</p>
-          <Combobox
-            options={suggestions.cameraModel}
-            bind:selectedOption={filter.camera.model}
-            placeholder="Search camera model..."
-            on:click={() =>
-              updateSuggestion(SearchSuggestionType.CameraModel, { cameraMake: filter.camera.make?.value })}
-          />
-        </div>
-      </div>
-    </div>
-
-    <hr />
-
-    <!-- DATE RANGE -->
-    <div id="date-range-selection" class="my-4 flex justify-between gap-5">
-      <div class="mb-3 flex-1 mt">
-        <label class="immich-form-label" for="start-date">START DATE</label>
-        <input
-          class="immich-form-input w-full mt-3 hover:cursor-pointer"
-          type="date"
-          id="start-date"
-          name="start-date"
-          bind:value={filter.dateRange.startDate}
-        />
-      </div>
-
-      <div class="mb-3 flex-1">
-        <label class="immich-form-label" for="end-date">END DATE</label>
-        <input
-          class="immich-form-input w-full mt-3 hover:cursor-pointer"
-          type="date"
-          id="end-date"
-          name="end-date"
-          placeholder=""
-          bind:value={filter.dateRange.endDate}
-        />
-      </div>
-    </div>
-
-    <div id="button-row" class="flex justify-end gap-4 mt-5">
+    <div
+      id="button-row"
+      class="flex justify-end gap-4 py-4 sticky bottom-0 dark:border-gray-800 dark:bg-immich-dark-gray"
+    >
       <Button color="gray" on:click={resetForm}>CLEAR ALL</Button>
       <Button type="submit">SEARCH</Button>
     </div>
