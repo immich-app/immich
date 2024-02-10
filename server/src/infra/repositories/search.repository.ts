@@ -50,6 +50,20 @@ export class SearchRepository implements ISearchRepository {
     }
   }
 
+  @GenerateSql({
+    params: [
+      {
+        pagination: { page: 0, size: 100 },
+        options: {
+          date: { takenAfter: DummyValue.DATE },
+          exif: { cameraModel: DummyValue.STRING },
+          id: { ownerId: DummyValue.UUID },
+          relation: { withStacked: true },
+          status: { isFavorite: true },
+        },
+      },
+    ],
+  })
   async searchAssets(pagination: SearchPaginationOptions, options: AssetSearchOptions): Paginated<AssetEntity> {
     let builder = this.assetRepository.createQueryBuilder('asset');
     builder = searchAssetBuilder(builder, options);
