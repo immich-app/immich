@@ -4595,7 +4595,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "type": "object"
+                    "type": "string"
                   },
                   "type": "array"
                 }

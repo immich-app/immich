@@ -36,7 +36,7 @@ export class SearchController {
   }
 
   @Get('suggestions')
-  getSearchSuggestions(@Auth() auth: AuthDto, @Query() dto: SearchSuggestionRequestDto): Promise<String[]> {
+  getSearchSuggestions(@Auth() auth: AuthDto, @Query() dto: SearchSuggestionRequestDto): Promise<string[]> {
     return this.service.getSearchSuggestions(auth, dto);
   }
 }

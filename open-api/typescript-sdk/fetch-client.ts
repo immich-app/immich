@@ -2105,7 +2105,7 @@ export function getSearchSuggestions({ country, make, model, state, $type }: {
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: object[];
+        data: string[];
     }>(`/search/suggestions${QS.query(QS.explode({
         country,
         make,
