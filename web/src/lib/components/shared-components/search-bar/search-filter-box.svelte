@@ -206,6 +206,10 @@
       mediaType: MediaType.All,
     };
   };
+
+  const search = () => {
+    console.log(filter);
+  };
 </script>
 
 <div
@@ -458,7 +462,7 @@
       class="flex justify-end gap-4 py-4 sticky bottom-0 dark:border-gray-800 dark:bg-immich-dark-gray"
     >
       <Button color="gray" on:click={resetForm}>CLEAR ALL</Button>
-      <Button type="submit">SEARCH</Button>
+      <Button type="button" on:click={search}>SEARCH</Button>
     </div>
   </form>
 </div>
