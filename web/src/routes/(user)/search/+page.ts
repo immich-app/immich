@@ -11,7 +11,7 @@ export const load = (async (data) => {
   let results: SearchResponseDto | null = null;
   if (term) {
     const res = await api.searchApi.search({}, { params: data.url.searchParams });
-    const assetItems: Array<AssetResponseDto> = (data as any).results?.assets.items;
+    const assetItems: AssetResponseDto[] = (data as unknown as { results: SearchResponseDto }).results?.assets.items;
     console.log('assetItems', assetItems);
     const assets = {
       ...res.data.assets,
