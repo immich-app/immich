@@ -8,13 +8,10 @@
   import { mdiArrowLeft, mdiClose, mdiMerge } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
 
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-
   export let personMerge1: PersonResponseDto;
   export let personMerge2: PersonResponseDto;
   export let potentialMergePeople: PersonResponseDto[];
 
-  let { isViewing: showAssetViewer } = assetViewingStore;
   let choosePersonToMerge = false;
 
   const title = personMerge2.name;
@@ -26,12 +23,10 @@
   }>();
 
   const handleKeyboardPress = (event: KeyboardEvent) => {
-    if (!$showAssetViewer) {
-      switch (event.key) {
-        case 'Escape': {
-          dispatch('close');
-          return;
-        }
+    switch (event.key) {
+      case 'Escape': {
+        dispatch('close');
+        return;
       }
     }
   };
