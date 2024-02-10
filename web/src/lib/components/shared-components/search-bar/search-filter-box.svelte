@@ -97,7 +97,7 @@
     getPeople();
   });
 
-  const sortPeople = () => {
+  const showSelectedPeopleFirst = () => {
     suggestions.people.sort((a, _) => {
       if (filter.people.some((p) => p.id === a.id)) {
         return -1;
@@ -118,14 +118,14 @@
   const handlePeopleSelection = (id: string) => {
     if (filter.people.some((p) => p.id === id)) {
       filter.people = filter.people.filter((p) => p.id !== id);
-      sortPeople();
+      showSelectedPeopleFirst();
       return;
     }
 
     const person = suggestions.people.find((p) => p.id === id);
     if (person) {
       filter.people = [...filter.people, person];
-      sortPeople();
+      showSelectedPeopleFirst();
     }
   };
 
