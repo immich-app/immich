@@ -25,5 +25,3 @@ export const supportedPresetTokens = [
   '{{y}}/{{y}}-{{WW}}/{{assetId}}',
   '{{album}}/{{filename}}',
 ];
-
-export const INITIAL_SYSTEM_CONFIG = 'INITIAL_SYSTEM_CONFIG';

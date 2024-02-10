@@ -1,18 +1,21 @@
 <script lang="ts">
-  import { api, UserResponseDto } from '@api';
+  import { api, type UserResponseDto } from '@api';
   import { createEventDispatcher } from 'svelte';
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
 
   export let user: UserResponseDto;
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    success: void;
+    fail: void;
+  }>();
 
   const restoreUser = async () => {
     const restoredUser = await api.userApi.restoreUser({ id: user.id });
-    if (restoredUser.data.deletedAt == null) {
-      dispatch('user-restore-success');
+    if (restoredUser.data.deletedAt == undefined) {
+      dispatch('success');
     } else {
-      dispatch('user-restore-fail');
+      dispatch('fail');
     }
   };
 </script>

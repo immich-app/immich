@@ -2,7 +2,7 @@
   import { goto } from '$app/navigation';
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
   import { downloadArchive } from '$lib/utils/asset-utils';
-  import { api, AssetResponseDto, SharedLinkResponseDto } from '@api';
+  import { api, type AssetResponseDto, type SharedLinkResponseDto } from '@api';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import DownloadAction from '../photos-page/actions/download-action.svelte';
@@ -14,6 +14,7 @@
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
   import { handleError } from '$lib/utils/handle-error';
   import { mdiArrowLeft, mdiFileImagePlusOutline, mdiFolderDownloadOutline, mdiSelectAll } from '@mdi/js';
+  import { AppRoute } from '$lib/constants';
 
   export let sharedLink: SharedLinkResponseDto;
   export let isOwned: boolean;
@@ -37,11 +38,9 @@
   const handleUploadAssets = async (files: File[] = []) => {
     try {
       let results: (string | undefined)[] = [];
-      if (!files || files.length === 0 || !Array.isArray(files)) {
-        results = await openFileUploadDialog(undefined);
-      } else {
-        results = await fileUploadHandler(files, undefined);
-      }
+      results = await (!files || files.length === 0 || !Array.isArray(files)
+        ? openFileUploadDialog()
+        : fileUploadHandler(files));
       const { data } = await api.sharedLinkApi.addSharedLinkAssets({
         id: sharedLink.id,
         assetIdsDto: {
@@ -56,8 +55,8 @@
         message: `Added ${added} assets`,
         type: NotificationType.Info,
       });
-    } catch (e) {
-      await handleError(e, 'Unable to add assets to shared link');
+    } catch (error) {
+      await handleError(error, 'Unable to add assets to shared link');
     }
   };
 
@@ -78,13 +77,9 @@
       {/if}
     </AssetSelectControlBar>
   {:else}
-    <ControlAppBar on:close-button-click={() => goto('/photos')} backIcon={mdiArrowLeft} showBackButton={false}>
+    <ControlAppBar on:close={() => goto(AppRoute.PHOTOS)} backIcon={mdiArrowLeft} showBackButton={false}>
       <svelte:fragment slot="leading">
-        <a
-          data-sveltekit-preload-data="hover"
-          class="ml-6 flex place-items-center gap-2 hover:cursor-pointer"
-          href="https://immich.app"
-        >
+        <a data-sveltekit-preload-data="hover" class="ml-6 flex place-items-center gap-2 hover:cursor-pointer" href="/">
           <ImmichLogo height="30" width="30" />
           <h1 class="font-immich-title text-lg text-immich-primary dark:text-immich-dark-primary">IMMICH</h1>
         </a>

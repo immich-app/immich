@@ -1,6 +1,7 @@
-import { Stats } from 'fs';
-import { FileReadOptions } from 'fs/promises';
-import { Readable } from 'stream';
+import { FSWatcher, WatchOptions } from 'chokidar';
+import { Stats } from 'node:fs';
+import { FileReadOptions } from 'node:fs/promises';
+import { Readable } from 'node:stream';
 import { CrawlOptionsDto } from '../library';
 
 export interface ImmichReadStream {
@@ -22,6 +23,8 @@ export interface DiskUsage {
 
 export const IStorageRepository = 'IStorageRepository';
 
+export interface ImmichWatcher extends FSWatcher {}
+
 export interface IStorageRepository {
   createZipStream(): ImmichZipStream;
   createReadStream(filepath: string, mimeType?: string | null): Promise<ImmichReadStream>;
@@ -30,11 +33,13 @@ export interface IStorageRepository {
   unlink(filepath: string): Promise<void>;
   unlinkDir(folder: string, options?: { recursive?: boolean; force?: boolean }): Promise<void>;
   removeEmptyDirs(folder: string, self?: boolean): Promise<void>;
-  moveFile(source: string, target: string): Promise<void>;
   checkFileExists(filepath: string, mode?: number): Promise<boolean>;
   mkdirSync(filepath: string): void;
   checkDiskUsage(folder: string): Promise<DiskUsage>;
   readdir(folder: string): Promise<string[]>;
   stat(filepath: string): Promise<Stats>;
   crawl(crawlOptions: CrawlOptionsDto): Promise<string[]>;
+  copyFile(source: string, target: string): Promise<void>;
+  rename(source: string, target: string): Promise<void>;
+  watch(paths: string[], options: WatchOptions): ImmichWatcher;
 }

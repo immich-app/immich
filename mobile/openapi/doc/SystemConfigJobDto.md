@@ -9,15 +9,13 @@ import 'package:openapi/api.dart';
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **backgroundTask** | [**JobSettingsDto**](JobSettingsDto.md) |  | 
-**clipEncoding** | [**JobSettingsDto**](JobSettingsDto.md) |  | 
+**faceDetection** | [**JobSettingsDto**](JobSettingsDto.md) |  | 
 **library_** | [**JobSettingsDto**](JobSettingsDto.md) |  | 
 **metadataExtraction** | [**JobSettingsDto**](JobSettingsDto.md) |  | 
 **migration** | [**JobSettingsDto**](JobSettingsDto.md) |  | 
-**objectTagging** | [**JobSettingsDto**](JobSettingsDto.md) |  | 
-**recognizeFaces** | [**JobSettingsDto**](JobSettingsDto.md) |  | 
 **search** | [**JobSettingsDto**](JobSettingsDto.md) |  | 
 **sidecar** | [**JobSettingsDto**](JobSettingsDto.md) |  | 
-**storageTemplateMigration** | [**JobSettingsDto**](JobSettingsDto.md) |  | 
+**smartSearch** | [**JobSettingsDto**](JobSettingsDto.md) |  | 
 **thumbnailGeneration** | [**JobSettingsDto**](JobSettingsDto.md) |  | 
 **videoConversion** | [**JobSettingsDto**](JobSettingsDto.md) |  | 
 

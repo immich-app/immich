@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { AlbumResponseDto, api } from '@api';
+  import { type AlbumResponseDto, api } from '@api';
   import { createEventDispatcher } from 'svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import Button from '../elements/buttons/button.svelte';
@@ -8,7 +8,10 @@
 
   export let album: AlbumResponseDto;
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    editSuccess: void;
+    cancel: void;
+  }>();
 
   const editUser = async () => {
     try {
@@ -21,7 +24,7 @@
       });
 
       if (status === 200) {
-        dispatch('edit-success');
+        dispatch('editSuccess');
       }
     } catch (error) {
       handleError(error, 'Unable to update user');

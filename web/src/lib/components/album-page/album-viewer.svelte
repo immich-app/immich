@@ -83,11 +83,12 @@
     }
     if (!$showAssetViewer) {
       switch (event.key) {
-        case 'Escape':
+        case 'Escape': {
           if ($isMultiSelectState) {
             assetInteractionStore.clearMultiselect();
           }
           return;
+        }
       }
     }
   };
@@ -112,11 +113,7 @@
   {:else}
     <ControlAppBar showBackButton={false}>
       <svelte:fragment slot="leading">
-        <a
-          data-sveltekit-preload-data="hover"
-          class="ml-6 flex place-items-center gap-2 hover:cursor-pointer"
-          href="https://immich.app"
-        >
+        <a data-sveltekit-preload-data="hover" class="ml-6 flex place-items-center gap-2 hover:cursor-pointer" href="/">
           <ImmichLogo height={30} width={30} />
           <h1 class="font-immich-title text-lg text-immich-primary dark:text-immich-dark-primary">IMMICH</h1>
         </a>
@@ -141,9 +138,7 @@
   {/if}
 </header>
 
-<main
-  class="relative h-screen overflow-hidden bg-immich-bg px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg sm:px-12 md:px-24 lg:px-40"
->
+<main class="relative h-screen overflow-hidden bg-immich-bg px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg">
   <AssetGrid {album} {assetStore} {assetInteractionStore}>
     <section class="pt-24">
       <!-- ALBUM TITLE -->
@@ -163,9 +158,13 @@
       {/if}
 
       <!-- ALBUM DESCRIPTION -->
-      <p class="mb-12 mt-6 w-full pb-2 text-left text-lg font-medium dark:text-gray-300">
-        {album.description}
-      </p>
+      {#if album.description}
+        <p
+          class="whitespace-pre-line mb-12 mt-6 w-full pb-2 text-left font-medium text-base text-black dark:text-gray-300"
+        >
+          {album.description}
+        </p>
+      {/if}
     </section>
   </AssetGrid>
   <UpdatePanel {assetStore} />

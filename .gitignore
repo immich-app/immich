@@ -1,3 +1,5 @@
+**/node_modules/**
+
 .DS_Store
 .vscode/*
 !.vscode/launch.json
@@ -11,3 +13,8 @@ coverage
 mobile/gradle.properties
 mobile/openapi/pubspec.lock
 mobile/*.jks
+mobile/libisar.dylib
+
+open-api/typescript-sdk/build
+mobile/android/fastlane/report.xml
+mobile/ios/fastlane/report.xml

@@ -11,7 +11,7 @@
   import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { goto } from '$app/navigation';
-  import { AppRoute } from '$lib/constants';
+  import { ActionQueryParameterValue, AppRoute, QueryParameter } from '$lib/constants';
   import { mdiCallMerge, mdiMerge, mdiSwapHorizontal } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
@@ -24,7 +24,10 @@
   let screenHeight: number;
   let isShowConfirmation = false;
 
-  let dispatch = createEventDispatcher();
+  let dispatch = createEventDispatcher<{
+    back: void;
+    merge: PersonResponseDto;
+  }>();
 
   $: hasSelection = selectedPeople.length > 0;
   $: unselectedPeople = people.filter(
@@ -37,12 +40,12 @@
   });
 
   const onClose = () => {
-    dispatch('go-back');
+    dispatch('back');
   };
 
   const handleSwapPeople = () => {
     [person, selectedPeople[0]] = [selectedPeople[0], person];
-    $page.url.searchParams.set('action', 'merge');
+    $page.url.searchParams.set(QueryParameter.ACTION, ActionQueryParameterValue.MERGE);
     goto(`${AppRoute.PEOPLE}/${person.id}?${$page.url.searchParams.toString()}`);
   };
 
@@ -65,16 +68,17 @@
 
   const handleMerge = async () => {
     try {
-      const { data: results } = await api.personApi.mergePerson({
+      let { data: results } = await api.personApi.mergePerson({
         id: person.id,
         mergePersonDto: { ids: selectedPeople.map(({ id }) => id) },
       });
+      const { data: mergedPerson } = await api.personApi.getPerson({ id: person.id });
       const count = results.filter(({ success }) => success).length;
       notificationController.show({
         message: `Merged ${count} ${count === 1 ? 'person' : 'people'}`,
         type: NotificationType.Info,
       });
-      dispatch('merge');
+      dispatch('merge', mergedPerson);
     } catch (error) {
       handleError(error, 'Cannot merge people');
     } finally {
@@ -89,7 +93,7 @@
   transition:fly={{ y: 500, duration: 100, easing: quintOut }}
   class="absolute left-0 top-0 z-[9999] h-full w-full bg-immich-bg dark:bg-immich-dark-bg"
 >
-  <ControlAppBar on:close-button-click={onClose}>
+  <ControlAppBar on:close={onClose}>
     <svelte:fragment slot="leading">
       {#if hasSelection}
         Selected {selectedPeople.length}

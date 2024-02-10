@@ -1,5 +1,5 @@
 import { SearchResult } from '@app/domain';
-import { AssetEntity } from '@app/infra/entities';
+import { AssetEntity, ExifEntity, SmartInfoEntity } from '@app/infra/entities';
 import { assetStub } from '.';
 
 export const searchStub = {
@@ -20,4 +20,17 @@ export const searchStub = {
     facets: [],
     distances: [],
   }),
+
+  exif: Object.freeze<Partial<ExifEntity>>({
+    latitude: 90,
+    longitude: 90,
+    city: 'Immich',
+    state: 'Nebraska',
+    country: 'United States',
+    make: 'Canon',
+    model: 'EOS Rebel T7',
+    lensModel: 'Fancy lens',
+  }),
+
+  smartInfo: Object.freeze<Partial<SmartInfoEntity>>({ objects: ['car', 'tree'], tags: ['accident'] }),
 };

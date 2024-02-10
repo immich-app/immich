@@ -21,7 +21,7 @@ describe(APIKeyService.name, () => {
       expect(keyMock.create).toHaveBeenCalledWith({
         key: 'cmFuZG9tLWJ5dGVz (hashed)',
         name: 'Test Key',
-        userId: authStub.admin.id,
+        userId: authStub.admin.user.id,
       });
       expect(cryptoMock.randomBytes).toHaveBeenCalled();
       expect(cryptoMock.hashSha256).toHaveBeenCalled();
@@ -35,7 +35,7 @@ describe(APIKeyService.name, () => {
       expect(keyMock.create).toHaveBeenCalledWith({
         key: 'cmFuZG9tLWJ5dGVz (hashed)',
         name: 'API Key',
-        userId: authStub.admin.id,
+        userId: authStub.admin.user.id,
       });
       expect(cryptoMock.randomBytes).toHaveBeenCalled();
       expect(cryptoMock.hashSha256).toHaveBeenCalled();
@@ -59,7 +59,7 @@ describe(APIKeyService.name, () => {
 
       await sut.update(authStub.admin, 'random-guid', { name: 'New Name' });
 
-      expect(keyMock.update).toHaveBeenCalledWith(authStub.admin.id, 'random-guid', { name: 'New Name' });
+      expect(keyMock.update).toHaveBeenCalledWith(authStub.admin.user.id, 'random-guid', { name: 'New Name' });
     });
   });
 
@@ -77,7 +77,7 @@ describe(APIKeyService.name, () => {
 
       await sut.delete(authStub.admin, 'random-guid');
 
-      expect(keyMock.delete).toHaveBeenCalledWith(authStub.admin.id, 'random-guid');
+      expect(keyMock.delete).toHaveBeenCalledWith(authStub.admin.user.id, 'random-guid');
     });
   });
 
@@ -87,7 +87,7 @@ describe(APIKeyService.name, () => {
 
       await expect(sut.getById(authStub.admin, 'random-guid')).rejects.toBeInstanceOf(BadRequestException);
 
-      expect(keyMock.getById).toHaveBeenCalledWith(authStub.admin.id, 'random-guid');
+      expect(keyMock.getById).toHaveBeenCalledWith(authStub.admin.user.id, 'random-guid');
     });
 
     it('should get a key by id', async () => {
@@ -95,7 +95,7 @@ describe(APIKeyService.name, () => {
 
       await sut.getById(authStub.admin, 'random-guid');
 
-      expect(keyMock.getById).toHaveBeenCalledWith(authStub.admin.id, 'random-guid');
+      expect(keyMock.getById).toHaveBeenCalledWith(authStub.admin.user.id, 'random-guid');
     });
   });
 
@@ -105,7 +105,7 @@ describe(APIKeyService.name, () => {
 
       await expect(sut.getAll(authStub.admin)).resolves.toHaveLength(1);
 
-      expect(keyMock.getByUserId).toHaveBeenCalledWith(authStub.admin.id);
+      expect(keyMock.getByUserId).toHaveBeenCalledWith(authStub.admin.user.id);
     });
   });
 });

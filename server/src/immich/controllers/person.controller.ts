@@ -1,9 +1,8 @@
 import {
   AssetFaceUpdateDto,
   AssetResponseDto,
-  AuthUserDto,
+  AuthDto,
   BulkIdResponseDto,
-  ImmichReadStream,
   MergePersonDto,
   PeopleResponseDto,
   PeopleUpdateDto,
@@ -13,15 +12,12 @@ import {
   PersonStatisticsResponseDto,
   PersonUpdateDto,
 } from '@app/domain';
-import { Body, Controller, Get, Param, Post, Put, Query, StreamableFile } from '@nestjs/common';
-import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { AuthUser, Authenticated } from '../app.guard';
-import { UseValidation } from '../app.utils';
+import { Body, Controller, Get, Next, Param, Post, Put, Query, Res } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+import { NextFunction, Response } from 'express';
+import { Auth, Authenticated, FileResponse } from '../app.guard';
+import { UseValidation, sendFile } from '../app.utils';
 import { UUIDParamDto } from './dto/uuid-param.dto';
-
-function asStreamableFile({ stream, type, length }: ImmichReadStream) {
-  return new StreamableFile(stream, { type, length });
-}
 
 @ApiTags('Person')
 @Controller('person')
@@ -31,72 +27,70 @@ export class PersonController {
   constructor(private service: PersonService) {}
 
   @Get()
-  getAllPeople(@AuthUser() authUser: AuthUserDto, @Query() withHidden: PersonSearchDto): Promise<PeopleResponseDto> {
-    return this.service.getAll(authUser, withHidden);
+  getAllPeople(@Auth() auth: AuthDto, @Query() withHidden: PersonSearchDto): Promise<PeopleResponseDto> {
+    return this.service.getAll(auth, withHidden);
   }
 
   @Post()
-  createPerson(@AuthUser() authUser: AuthUserDto): Promise<PersonResponseDto> {
-    return this.service.createPerson(authUser);
+  createPerson(@Auth() auth: AuthDto): Promise<PersonResponseDto> {
+    return this.service.createPerson(auth);
   }
 
   @Put(':id/reassign')
   reassignFaces(
-    @AuthUser() authUser: AuthUserDto,
+    @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
     @Body() dto: AssetFaceUpdateDto,
   ): Promise<PersonResponseDto[]> {
-    return this.service.reassignFaces(authUser, id, dto);
+    return this.service.reassignFaces(auth, id, dto);
   }
 
   @Put()
-  updatePeople(@AuthUser() authUser: AuthUserDto, @Body() dto: PeopleUpdateDto): Promise<BulkIdResponseDto[]> {
-    return this.service.updatePeople(authUser, dto);
+  updatePeople(@Auth() auth: AuthDto, @Body() dto: PeopleUpdateDto): Promise<BulkIdResponseDto[]> {
+    return this.service.updatePeople(auth, dto);
   }
 
   @Get(':id')
-  getPerson(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<PersonResponseDto> {
-    return this.service.getById(authUser, id);
+  getPerson(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<PersonResponseDto> {
+    return this.service.getById(auth, id);
   }
 
   @Put(':id')
   updatePerson(
-    @AuthUser() authUser: AuthUserDto,
+    @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
     @Body() dto: PersonUpdateDto,
   ): Promise<PersonResponseDto> {
-    return this.service.update(authUser, id, dto);
+    return this.service.update(auth, id, dto);
   }
 
   @Get(':id/statistics')
-  getPersonStatistics(
-    @AuthUser() authUser: AuthUserDto,
-    @Param() { id }: UUIDParamDto,
-  ): Promise<PersonStatisticsResponseDto> {
-    return this.service.getStatistics(authUser, id);
+  getPersonStatistics(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<PersonStatisticsResponseDto> {
+    return this.service.getStatistics(auth, id);
   }
 
   @Get(':id/thumbnail')
-  @ApiOkResponse({
-    content: {
-      'image/jpeg': { schema: { type: 'string', format: 'binary' } },
-    },
-  })
-  getPersonThumbnail(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto) {
-    return this.service.getThumbnail(authUser, id).then(asStreamableFile);
+  @FileResponse()
+  async getPersonThumbnail(
+    @Res() res: Response,
+    @Next() next: NextFunction,
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+  ) {
+    await sendFile(res, next, () => this.service.getThumbnail(auth, id));
   }
 
   @Get(':id/assets')
-  getPersonAssets(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<AssetResponseDto[]> {
-    return this.service.getAssets(authUser, id);
+  getPersonAssets(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AssetResponseDto[]> {
+    return this.service.getAssets(auth, id);
   }
 
   @Post(':id/merge')
   mergePerson(
-    @AuthUser() authUser: AuthUserDto,
+    @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
     @Body() dto: MergePersonDto,
   ): Promise<BulkIdResponseDto[]> {
-    return this.service.mergePerson(authUser, id, dto);
+    return this.service.mergePerson(auth, id, dto);
   }
 }

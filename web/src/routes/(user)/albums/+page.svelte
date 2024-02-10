@@ -22,7 +22,7 @@
   import { flip } from 'svelte/animate';
   import Dropdown from '$lib/components/elements/dropdown.svelte';
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
-  import { dateFormats } from '$lib/constants';
+  import { AppRoute, dateFormats } from '$lib/constants';
   import { locale, AlbumViewMode } from '$lib/stores/preferences.store';
   import {
     notificationController,
@@ -46,6 +46,7 @@
   } from '@mdi/js';
 
   export let data: PageData;
+
   let shouldShowEditUserForm = false;
   let selectedAlbum: AlbumResponseDto;
 
@@ -180,7 +181,7 @@
     }
   }
 
-  const test = (searched: string): Sort => {
+  const searchSort = (searched: string): Sort => {
     for (const key in sortByOptions) {
       if (sortByOptions[key].title === searched) {
         return sortByOptions[key];
@@ -192,7 +193,7 @@
   const handleCreateAlbum = async () => {
     const newAlbum = await createAlbum();
     if (newAlbum) {
-      goto('/albums/' + newAlbum.id);
+      goto(`${AppRoute.ALBUMS}/${newAlbum.id}`);
     }
   };
 
@@ -226,11 +227,8 @@
   };
 
   const handleChangeListMode = () => {
-    if ($albumViewSettings.view === AlbumViewMode.Cover) {
-      $albumViewSettings.view = AlbumViewMode.List;
-    } else {
-      $albumViewSettings.view = AlbumViewMode.Cover;
-    }
+    $albumViewSettings.view =
+      $albumViewSettings.view === AlbumViewMode.Cover ? AlbumViewMode.List : AlbumViewMode.Cover;
   };
 </script>
 
@@ -238,13 +236,13 @@
   <FullScreenModal on:clickOutside={() => (shouldShowEditUserForm = false)}>
     <EditAlbumForm
       album={selectedAlbum}
-      on:edit-success={() => successModifyAlbum()}
+      on:editSuccess={() => successModifyAlbum()}
       on:cancel={() => (shouldShowEditUserForm = false)}
     />
   </FullScreenModal>
 {/if}
 
-<UserPageLayout user={data.user} title={data.meta.title}>
+<UserPageLayout title={data.meta.title}>
   <div class="flex place-items-center gap-2" slot="buttons">
     <LinkButton on:click={handleCreateAlbum}>
       <div class="flex place-items-center gap-2 text-sm">
@@ -255,7 +253,7 @@
 
     <Dropdown
       options={Object.values(sortByOptions)}
-      selectedOption={test($albumViewSettings.sortBy)}
+      selectedOption={searchSort($albumViewSettings.sortBy)}
       render={(option) => {
         return {
           title: option.title,
@@ -284,16 +282,16 @@
       </div>
     </LinkButton>
   </div>
-  {#if $albums.length !== 0}
+  {#if $albums.length > 0}
     <!-- Album Card -->
     {#if $albumViewSettings.view === AlbumViewMode.Cover}
       <div class="grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))]">
-        {#each $albums as album (album.id)}
-          <a data-sveltekit-preload-data="hover" href={`albums/${album.id}`} animate:flip={{ duration: 200 }}>
+        {#each $albums as album, index (album.id)}
+          <a data-sveltekit-preload-data="hover" href="{AppRoute.ALBUMS}/{album.id}" animate:flip={{ duration: 200 }}>
             <AlbumCard
+              preload={index < 20}
               {album}
               on:showalbumcontextmenu={(e) => showAlbumContextMenu(e.detail, album)}
-              user={data.user}
             />
           </a>
         {/each}
@@ -316,47 +314,49 @@
           {#each $albums as album (album.id)}
             <tr
               class="flex h-[50px] w-full place-items-center border-[3px] border-transparent p-2 text-center odd:bg-immich-gray even:bg-immich-bg hover:cursor-pointer hover:border-immich-primary/75 odd:dark:bg-immich-dark-gray/75 even:dark:bg-immich-dark-gray/50 dark:hover:border-immich-dark-primary/75 md:p-5"
-              on:click={() => goto(`albums/${album.id}`)}
-              on:keydown={(event) => event.key === 'Enter' && goto(`albums/${album.id}`)}
+              on:click={() => goto(`${AppRoute.ALBUMS}/${album.id}`)}
+              on:keydown={(event) => event.key === 'Enter' && goto(`${AppRoute.ALBUMS}/${album.id}`)}
               tabindex="0"
             >
-              <td class="text-md text-ellipsis text-left w-8/12 sm:w-4/12 md:w-4/12 xl:w-[30%] 2xl:w-[40%]"
-                >{album.albumName}</td
-              >
-              <td class="text-md text-ellipsis text-center sm:w-2/12 md:w-2/12 xl:w-[15%] 2xl:w-[12%]">
-                {album.assetCount}
-                {album.assetCount > 1 ? `items` : `item`}
-              </td>
-              <td class="text-md hidden text-ellipsis text-center sm:block w-3/12 xl:w-[15%] 2xl:w-[12%]"
-                >{dateLocaleString(album.updatedAt)}
-              </td>
-              <td class="text-md hidden text-ellipsis text-center sm:block w-3/12 xl:w-[15%] 2xl:w-[12%]"
-                >{dateLocaleString(album.createdAt)}</td
-              >
-              <td class="text-md text-ellipsis text-center hidden xl:block xl:w-[15%] 2xl:w-[12%]">
-                {#if album.endDate}
-                  {dateLocaleString(album.endDate)}
-                {:else}
-                  &#10060;
-                {/if}</td
-              >
-              <td class="text-md text-ellipsis text-center hidden xl:block xl:w-[15%] 2xl:w-[12%]"
-                >{#if album.startDate}
-                  {dateLocaleString(album.startDate)}
-                {:else}
-                  &#10060;
-                {/if}</td
-              >
+              <a data-sveltekit-preload-data="hover" class="flex w-full" href="{AppRoute.ALBUMS}/{album.id}">
+                <td class="text-md text-ellipsis text-left w-8/12 sm:w-4/12 md:w-4/12 xl:w-[30%] 2xl:w-[40%]"
+                  >{album.albumName}</td
+                >
+                <td class="text-md text-ellipsis text-center sm:w-2/12 md:w-2/12 xl:w-[15%] 2xl:w-[12%]">
+                  {album.assetCount}
+                  {album.assetCount > 1 ? `items` : `item`}
+                </td>
+                <td class="text-md hidden text-ellipsis text-center sm:block w-3/12 xl:w-[15%] 2xl:w-[12%]"
+                  >{dateLocaleString(album.updatedAt)}
+                </td>
+                <td class="text-md hidden text-ellipsis text-center sm:block w-3/12 xl:w-[15%] 2xl:w-[12%]"
+                  >{dateLocaleString(album.createdAt)}</td
+                >
+                <td class="text-md text-ellipsis text-center hidden xl:block xl:w-[15%] 2xl:w-[12%]">
+                  {#if album.endDate}
+                    {dateLocaleString(album.endDate)}
+                  {:else}
+                    &#10060;
+                  {/if}</td
+                >
+                <td class="text-md text-ellipsis text-center hidden xl:block xl:w-[15%] 2xl:w-[12%]"
+                  >{#if album.startDate}
+                    {dateLocaleString(album.startDate)}
+                  {:else}
+                    &#10060;
+                  {/if}</td
+                >
+              </a>
               <td class="text-md hidden text-ellipsis text-center 2xl:block xl:w-[15%] 2xl:w-[12%]">
                 <button
                   on:click|stopPropagation={() => handleEdit(album)}
-                  class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
+                  class="rounded-full z-1 bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
                 >
                   <Icon path={mdiPencilOutline} size="16" />
                 </button>
                 <button
                   on:click|stopPropagation={() => chooseAlbumToDelete(album)}
-                  class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
+                  class="rounded-full z-1 bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
                 >
                   <Icon path={mdiTrashCanOutline} size="16" />
                 </button>

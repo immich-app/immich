@@ -7,7 +7,7 @@
     ControlButton,
     Control,
     ControlGroup,
-    Map,
+    type Map,
     FullscreenControl,
     GeolocateControl,
     NavigationControl,
@@ -15,13 +15,14 @@
     Popup,
   } from 'svelte-maplibre';
   import { colorTheme, mapSettings } from '$lib/stores/preferences.store';
-  import { MapMarkerResponseDto, api } from '@api';
+  import { type MapMarkerResponseDto, api } from '@api';
   import maplibregl from 'maplibre-gl';
   import type { GeoJSONSource, LngLatLike, StyleSpecification } from 'maplibre-gl';
   import type { Feature, Geometry, GeoJsonProperties, Point } from 'geojson';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { mdiCog } from '@mdi/js';
+  import { mdiCog, mdiMapMarker } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
+  import { Theme } from '$lib/constants';
 
   export let mapMarkers: MapMarkerResponseDto[];
   export let showSettingsModal: boolean | undefined = undefined;
@@ -29,13 +30,15 @@
   export let center: LngLatLike | undefined = undefined;
   export let simplified = false;
   export let clickable = false;
+  export let useLocationPin = false;
 
   let map: maplibregl.Map;
   let marker: maplibregl.Marker | null = null;
 
+  // eslint-disable-next-line unicorn/prefer-top-level-await
   $: style = (async () => {
     const { data } = await api.systemConfigApi.getMapStyle({
-      theme: $mapSettings.allowDarkMode ? $colorTheme : 'light',
+      theme: $mapSettings.allowDarkMode ? $colorTheme.value : Theme.LIGHT,
     });
     return data as StyleSpecification;
   })();
@@ -58,7 +61,7 @@
     }
 
     const mapSource = map?.getSource('geojson') as GeoJSONSource;
-    mapSource.getClusterLeaves(clusterId, 10000, 0, (error, leaves) => {
+    mapSource.getClusterLeaves(clusterId, 10_000, 0, (error, leaves) => {
       if (error) {
         return;
       }
@@ -115,7 +118,7 @@
     attributionControl={false}
     diffStyleUpdates={true}
     let:map
-    on:load={(event) => event.detail.setMaxZoom(14)}
+    on:load={(event) => event.detail.setMaxZoom(18)}
     on:load={(event) => event.detail.on('click', handleMapClick)}
     bind:map
   >
@@ -141,7 +144,7 @@
         }),
       }}
       id="geojson"
-      cluster={{ radius: 500 }}
+      cluster={{ radius: 500, maxZoom: 24 }}
     >
       <MarkerLayer
         applyToClusters
@@ -165,17 +168,31 @@
           $$slots.popup || handleAssetClick(event.detail.feature.properties.id, map);
         }}
       >
-        <img
-          src={api.getAssetThumbnailUrl(feature.properties?.id)}
-          class="rounded-full w-[60px] h-[60px] border-2 border-immich-primary shadow-lg hover:border-immich-dark-primary transition-all duration-200 hover:scale-150"
-          alt={`Image with id ${feature.properties?.id}`}
-        />
+        {#if useLocationPin}
+          <Icon
+            path={mdiMapMarker}
+            size="50px"
+            class="location-pin dark:text-immich-dark-primary text-immich-primary"
+          />
+        {:else}
+          <img
+            src={api.getAssetThumbnailUrl(feature.properties?.id)}
+            class="rounded-full w-[60px] h-[60px] border-2 border-immich-primary shadow-lg hover:border-immich-dark-primary transition-all duration-200 hover:scale-150 object-cover bg-immich-primary"
+            alt={`Image with id ${feature.properties?.id}`}
+          />
+        {/if}
         {#if $$slots.popup}
-          <Popup openOn="click" closeOnClickOutside>
+          <Popup offset={[0, -30]} openOn="click" closeOnClickOutside>
             <slot name="popup" marker={asMarker(feature)} />
           </Popup>
         {/if}
       </MarkerLayer>
     </GeoJSON>
   </MapLibre>
+  <style>
+    .location-pin {
+      transform: translate(0, -50%);
+      filter: drop-shadow(0 3px 3px rgb(0 0 0 / 0.3));
+    }
+  </style>
 {/await}

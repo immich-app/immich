@@ -3,11 +3,12 @@
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
-  import { api, UserResponseDto } from '@api';
+  import { api, type UserResponseDto } from '@api';
   import { fade } from 'svelte/transition';
   import { handleError } from '../../utils/handle-error';
   import SettingInputField, { SettingInputFieldType } from '../admin-page/settings/setting-input-field.svelte';
   import Button from '../elements/buttons/button.svelte';
+  import { setUser } from '$lib/stores/user.store';
 
   export let user: UserResponseDto;
 
@@ -22,6 +23,7 @@
       });
 
       Object.assign(user, data);
+      setUser(data);
 
       notificationController.show({
         message: 'Saved profile',

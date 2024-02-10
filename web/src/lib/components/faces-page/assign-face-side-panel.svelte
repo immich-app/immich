@@ -10,6 +10,7 @@
   import { getPersonNameWithHiddenValue, searchNameLocal } from '$lib/utils/person';
   import { handleError } from '$lib/utils/handle-error';
   import { photoViewer } from '$lib/stores/assets.store';
+  import { maximumLengthSearchPeople, timeBeforeShowLoadingSpinner } from '$lib/constants';
 
   export let peopleWithFaces: AssetFaceResponseDto[];
   export let allPeople: PersonResponseDto[];
@@ -28,7 +29,11 @@
   let searchFaces = false;
   let searchName = '';
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    close: void;
+    createPerson: string | null;
+    reassign: PersonResponseDto;
+  }>();
   const handleBackButton = () => {
     dispatch('close');
   };
@@ -42,8 +47,8 @@
       img.src = data;
 
       await new Promise<void>((resolve) => {
-        img.onload = () => resolve();
-        img.onerror = () => resolve();
+        img.addEventListener('load', () => resolve());
+        img.addEventListener('error', () => resolve());
       });
 
       image = img;
@@ -51,13 +56,20 @@
     if (image === null) {
       return null;
     }
-    const { boundingBoxX1: x1, boundingBoxX2: x2, boundingBoxY1: y1, boundingBoxY2: y2 } = face;
+    const {
+      boundingBoxX1: x1,
+      boundingBoxX2: x2,
+      boundingBoxY1: y1,
+      boundingBoxY2: y2,
+      imageWidth,
+      imageHeight,
+    } = face;
 
     const coordinates = {
-      x1: (image.naturalWidth / face.imageWidth) * x1,
-      x2: (image.naturalWidth / face.imageWidth) * x2,
-      y1: (image.naturalHeight / face.imageHeight) * y1,
-      y2: (image.naturalHeight / face.imageHeight) * y2,
+      x1: (image.naturalWidth / imageWidth) * x1,
+      x2: (image.naturalWidth / imageWidth) * x2,
+      y1: (image.naturalHeight / imageHeight) * y1,
+      y2: (image.naturalHeight / imageHeight) * y2,
     };
 
     const faceWidth = coordinates.x2 - coordinates.x1;
@@ -67,17 +79,17 @@
     faceImage.src = image.src;
 
     await new Promise((resolve) => {
-      faceImage.onload = resolve;
-      faceImage.onerror = () => resolve(null);
+      faceImage.addEventListener('load', resolve);
+      faceImage.addEventListener('error', () => resolve(null));
     });
 
     const canvas = document.createElement('canvas');
     canvas.width = faceWidth;
     canvas.height = faceHeight;
 
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      ctx.drawImage(faceImage, coordinates.x1, coordinates.y1, faceWidth, faceHeight, 0, 0, faceWidth, faceHeight);
+    const context = canvas.getContext('2d');
+    if (context) {
+      context.drawImage(faceImage, coordinates.x1, coordinates.y1, faceWidth, faceHeight, 0, 0, faceWidth, faceHeight);
 
       return canvas.toDataURL();
     } else {
@@ -86,7 +98,7 @@
   };
 
   const handleCreatePerson = async () => {
-    const timeout = setTimeout(() => (isShowLoadingNewPerson = true), 100);
+    const timeout = setTimeout(() => (isShowLoadingNewPerson = true), timeBeforeShowLoadingSpinner);
     const personToUpdate = peopleWithFaces.find((person) => person.id === peopleWithFaces[editedPersonIndex].id);
 
     const newFeaturePhoto = personToUpdate ? await zoomImageToBase64(personToUpdate) : null;
@@ -99,10 +111,10 @@
   };
 
   const searchPeople = async () => {
-    if ((searchedPeople.length < 20 && searchName.startsWith(searchWord)) || searchName === '') {
+    if ((searchedPeople.length < maximumLengthSearchPeople && searchName.startsWith(searchWord)) || searchName === '') {
       return;
     }
-    const timeout = setTimeout(() => (isShowLoadingSearch = true), 100);
+    const timeout = setTimeout(() => (isShowLoadingSearch = true), timeBeforeShowLoadingSpinner);
     try {
       const { data } = await api.searchApi.searchPerson({ name: searchName });
       searchedPeople = data;
@@ -118,7 +130,7 @@
   };
 
   $: {
-    searchedPeople = searchNameLocal(searchName, searchedPeopleCopy, 10);
+    searchedPeople = searchNameLocal(searchName, searchedPeopleCopy, 20);
   }
 
   const initInput = (element: HTMLInputElement) => {

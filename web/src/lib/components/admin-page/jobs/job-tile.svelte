@@ -1,7 +1,7 @@
 <script lang="ts">
   import { locale } from '$lib/stores/preferences.store';
   import { createEventDispatcher } from 'svelte';
-  import { JobCommand, JobCommandDto, JobCountsDto, QueueStatusDto } from '@api';
+  import { JobCommand, type JobCommandDto, type JobCountsDto, type QueueStatusDto } from '@api';
   import Badge from '$lib/components/elements/badge.svelte';
   import JobTileButton from './job-tile-button.svelte';
   import JobTileStatus from './job-tile-status.svelte';
@@ -18,7 +18,7 @@
   } from '@mdi/js';
 
   export let title: string;
-  export let subtitle: string | undefined = undefined;
+  export let subtitle: string | undefined;
   export let jobCounts: JobCountsDto;
   export let queueStatus: QueueStatusDto;
   export let allowForceCommand = true;
@@ -68,7 +68,7 @@
               </Button>
             </Badge>
           {/if}
-          {#if jobCounts.delayed > 0 || true}
+          {#if jobCounts.delayed > 0}
             <Badge color="secondary">
               <span class="text-sm">
                 {jobCounts.delayed.toLocaleString($locale)} delayed

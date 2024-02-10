@@ -102,14 +102,14 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 
 私はこのプロジェクトにコミットしてきました。ドキュメントを更新し、新しい機能を追加し、バグを修正し続けるつもりですが、私ひとりではできません。だから、続けるためのモチベーションをさらに高めてくれる皆さんの助けが必要なのです。
 
-[selfhosted.show - In the episode 'The-organization-must-いいえt-be-name is a Hostile Actor'](https://selfhosted.show/79?t=1418) のホストが言ったように、これはチームと私がやっていることの大規模な事業だ。そしていつの日か、フルタイムでこの仕事ができるようになりたいと思っています。
+[selfhosted.show - In the episode 'The-organization-must-not-be-name is a Hostile Actor'](https://selfhosted.show/79?t=1418) のホストが言ったように、これはチームと私がやっていることの大規模な事業だ。そしていつの日か、フルタイムでこの仕事ができるようになりたいと思っています。
 
 もし、あなたがこのプロジェクトに賛同し、このアプリを長く使い続けたいと思われるのであれば、以下のオプションから支援をご検討ください。
 
 ## 寄付
 
-- GitHub スポンサー経由の[毎月の寄付](https://github.com/sponsors/alextran1502)
-- GitHub スポンサー経由の[一回寄付](https://github.com/sponsors/alextran1502?frequency=one-time&sponsor=alextran1502)
+- GitHub スポンサー経由の[毎月の寄付](https://github.com/sponsors/immich-app)
+- GitHub スポンサー経由の[一回寄付](https://github.com/sponsors/immich-app?frequency=one-time&sponsor=alextran1502)
 - [Librepay](https://liberapay.com/alex.tran1502/)
 - [buymeacoffee](https://www.buymeacoffee.com/altran1502)
 - Bitcoin: 1FvEp6P6NM8EZEkpGUFAN2LqJ1gxusNxZX

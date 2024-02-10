@@ -1,8 +1,9 @@
 extension TimeAgoExtension on DateTime {
+  /// Displays the time difference of this [DateTime] object to the current time as a [String]
   String timeAgo({bool numericDates = true}) {
     DateTime date = toLocal();
-    final date2 = DateTime.now().toLocal();
-    final difference = date2.difference(date);
+    final now = DateTime.now().toLocal();
+    final difference = now.difference(date);
 
     if (difference.inSeconds < 5) {
       return 'Just now';

@@ -1,5 +1,5 @@
 import {
-  AuthUserDto,
+  AuthDto,
   CreateUserDto as CreateDto,
   CreateProfileImageDto,
   CreateProfileImageResponseDto,
@@ -12,19 +12,21 @@ import {
   Controller,
   Delete,
   Get,
-  Header,
   HttpCode,
   HttpStatus,
+  Next,
   Param,
   Post,
   Put,
   Query,
+  Res,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
-import { AdminRoute, AuthUser, Authenticated } from '../app.guard';
-import { UseValidation, asStreamableFile } from '../app.utils';
+import { NextFunction, Response } from 'express';
+import { AdminRoute, Auth, Authenticated, FileResponse } from '../app.guard';
+import { UseValidation, sendFile } from '../app.utils';
 import { FileUploadInterceptor, Route } from '../interceptors';
 import { UUIDParamDto } from './dto/uuid-param.dto';
 
@@ -36,8 +38,8 @@ export class UserController {
   constructor(private service: UserService) {}
 
   @Get()
-  getAllUsers(@AuthUser() authUser: AuthUserDto, @Query('isAll') isAll: boolean): Promise<UserResponseDto[]> {
-    return this.service.getAll(authUser, isAll);
+  getAllUsers(@Auth() auth: AuthDto, @Query('isAll') isAll: boolean): Promise<UserResponseDto[]> {
+    return this.service.getAll(auth, isAll);
   }
 
   @Get('info/:id')
@@ -46,8 +48,8 @@ export class UserController {
   }
 
   @Get('me')
-  getMyUserInfo(@AuthUser() authUser: AuthUserDto): Promise<UserResponseDto> {
-    return this.service.getMe(authUser);
+  getMyUserInfo(@Auth() auth: AuthDto): Promise<UserResponseDto> {
+    return this.service.getMe(auth);
   }
 
   @AdminRoute()
@@ -58,26 +60,26 @@ export class UserController {
 
   @Delete('profile-image')
   @HttpCode(HttpStatus.NO_CONTENT)
-  deleteProfileImage(@AuthUser() authUser: AuthUserDto): Promise<void> {
-    return this.service.deleteProfileImage(authUser);
+  deleteProfileImage(@Auth() auth: AuthDto): Promise<void> {
+    return this.service.deleteProfileImage(auth);
   }
 
   @AdminRoute()
   @Delete(':id')
-  deleteUser(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<UserResponseDto> {
-    return this.service.delete(authUser, id);
+  deleteUser(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<UserResponseDto> {
+    return this.service.delete(auth, id);
   }
 
   @AdminRoute()
   @Post(':id/restore')
-  restoreUser(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<UserResponseDto> {
-    return this.service.restore(authUser, id);
+  restoreUser(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<UserResponseDto> {
+    return this.service.restore(auth, id);
   }
 
   // TODO: replace with @Put(':id')
   @Put()
-  updateUser(@AuthUser() authUser: AuthUserDto, @Body() updateUserDto: UpdateDto): Promise<UserResponseDto> {
-    return this.service.update(authUser, updateUserDto);
+  updateUser(@Auth() auth: AuthDto, @Body() updateUserDto: UpdateDto): Promise<UserResponseDto> {
+    return this.service.update(auth, updateUserDto);
   }
 
   @UseInterceptors(FileUploadInterceptor)
@@ -85,15 +87,15 @@ export class UserController {
   @ApiBody({ description: 'A new avatar for the user', type: CreateProfileImageDto })
   @Post('profile-image')
   createProfileImage(
-    @AuthUser() authUser: AuthUserDto,
+    @Auth() auth: AuthDto,
     @UploadedFile() fileInfo: Express.Multer.File,
   ): Promise<CreateProfileImageResponseDto> {
-    return this.service.createProfileImage(authUser, fileInfo);
+    return this.service.createProfileImage(auth, fileInfo);
   }
 
   @Get('profile-image/:id')
-  @Header('Cache-Control', 'private, no-cache, no-transform')
-  getProfileImage(@Param() { id }: UUIDParamDto): Promise<any> {
-    return this.service.getProfileImage(id).then(asStreamableFile);
+  @FileResponse()
+  async getProfileImage(@Res() res: Response, @Next() next: NextFunction, @Param() { id }: UUIDParamDto) {
+    await sendFile(res, next, () => this.service.getProfileImage(id));
   }
 }

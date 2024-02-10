@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -8,6 +9,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/home/providers/multiselect.provider.dart';
+import 'package:immich_mobile/modules/memories/ui/memory_lane.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/providers/user.provider.dart';
@@ -16,8 +18,9 @@ import 'package:immich_mobile/shared/ui/asset_grid/multiselect_grid.dart';
 import 'package:immich_mobile/shared/ui/immich_app_bar.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 
+@RoutePage()
 class HomePage extends HookConsumerWidget {
-  const HomePage({Key? key}) : super(key: key);
+  const HomePage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -95,8 +98,12 @@ class HomePage extends HookConsumerWidget {
       }
     }
 
-    Widget buildBody() {
-      return MultiselectGrid(
+    return Scaffold(
+      appBar: ref.watch(multiselectProvider) ? null : const ImmichAppBar(),
+      body: MultiselectGrid(
+        topWidget: (currentUser != null && currentUser.memoryEnabled)
+            ? const MemoryLane()
+            : const SizedBox(),
         renderListProvider: timelineUsers.length > 1
             ? multiUserAssetsProvider(timelineUsers)
             : assetsProvider(currentUser?.isarId),
@@ -105,12 +112,7 @@ class HomePage extends HookConsumerWidget {
         stackEnabled: true,
         archiveEnabled: true,
         editEnabled: true,
-      );
-    }
-
-    return Scaffold(
-      appBar: ref.watch(multiselectProvider) ? null : const ImmichAppBar(),
-      body: buildBody(),
+      ),
     );
   }
 }

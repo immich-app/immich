@@ -72,7 +72,16 @@ export const CLIP_MODEL_INFO: Record<string, ModelInfo> = {
   'ViT-L-14-336__openai': {
     dimSize: 768,
   },
+  'ViT-L-14-quickgelu__dfn2b': {
+    dimSize: 768,
+  },
   'ViT-H-14__laion2b-s32b-b79k': {
+    dimSize: 1024,
+  },
+  'ViT-H-14-quickgelu__dfn5b': {
+    dimSize: 1024,
+  },
+  'ViT-H-14-378-quickgelu__dfn5b': {
     dimSize: 1024,
   },
   'ViT-g-14__laion2b-s12b-b42k': {
@@ -90,11 +99,24 @@ export const CLIP_MODEL_INFO: Record<string, ModelInfo> = {
   'XLM-Roberta-Large-Vit-L-14': {
     dimSize: 768,
   },
+  'XLM-Roberta-Large-ViT-H-14__frozen_laion5b_s13b_b90k': {
+    dimSize: 1024,
+  },
+  'nllb-clip-base-siglip__v1': {
+    dimSize: 768,
+  },
+  'nllb-clip-large-siglip__v1': {
+    dimSize: 1152,
+  },
 };
 
 export function cleanModelName(modelName: string): string {
-  const tokens = modelName.split('/');
-  return tokens[tokens.length - 1].replace(/:/g, '_');
+  const token = modelName.split('/').at(-1);
+  if (!token) {
+    throw new Error(`Invalid model name: ${modelName}`);
+  }
+
+  return token.replaceAll(':', '_');
 }
 
 export function getCLIPModelInfo(modelName: string): ModelInfo {

@@ -5,7 +5,7 @@
   import SettingSwitch from '$lib/components/admin-page/settings/setting-switch.svelte';
   import Button from '$lib/components/elements/buttons/button.svelte';
   import { handleError } from '$lib/utils/handle-error';
-  import { api, copyToClipboard, SharedLinkResponseDto, SharedLinkType } from '@api';
+  import { api, copyToClipboard, makeSharedLinkUrl, type SharedLinkResponseDto, SharedLinkType } from '@api';
   import { createEventDispatcher, onMount } from 'svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import BaseModal from '../base-modal.svelte';
@@ -13,6 +13,7 @@
   import DropdownButton from '../dropdown-button.svelte';
   import { notificationController, NotificationType } from '../notification/notification';
   import { mdiLink } from '@mdi/js';
+  import { serverConfig } from '$lib/stores/server-config.store';
 
   export let albumId: string | undefined = undefined;
   export let assetIds: string[] = [];
@@ -29,7 +30,10 @@
   let canCopyImagesToClipboard = true;
   let enablePassword = false;
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    close: void;
+    escape: void;
+  }>();
 
   const expiredDateOption: ImmichDropDownOption = {
     default: 'Never',
@@ -62,7 +66,7 @@
 
   const handleCreateSharedLink = async () => {
     const expirationTime = getExpirationTimeInMillisecond();
-    const currentTime = new Date().getTime();
+    const currentTime = Date.now();
     const expirationDate = expirationTime ? new Date(currentTime + expirationTime).toISOString() : undefined;
 
     try {
@@ -79,9 +83,9 @@
           showMetadata,
         },
       });
-      sharedLink = `${window.location.origin}/share/${data.key}`;
-    } catch (e) {
-      handleError(e, 'Failed to create shared link');
+      sharedLink = makeSharedLinkUrl($serverConfig.externalDomain, data.key);
+    } catch (error) {
+      handleError(error, 'Failed to create shared link');
     }
   };
 
@@ -90,25 +94,32 @@
       return;
     }
 
-    await copyToClipboard(password ? `Link: ${sharedLink}\nPassword: ${password}` : sharedLink);
+    await copyToClipboard(sharedLink);
   };
 
   const getExpirationTimeInMillisecond = () => {
     switch (expirationTime) {
-      case '30 minutes':
+      case '30 minutes': {
         return 30 * 60 * 1000;
-      case '1 hour':
+      }
+      case '1 hour': {
         return 60 * 60 * 1000;
-      case '6 hours':
+      }
+      case '6 hours': {
         return 6 * 60 * 60 * 1000;
-      case '1 day':
+      }
+      case '1 day': {
         return 24 * 60 * 60 * 1000;
-      case '7 days':
+      }
+      case '7 days': {
         return 7 * 24 * 60 * 60 * 1000;
-      case '30 days':
+      }
+      case '30 days': {
         return 30 * 24 * 60 * 60 * 1000;
-      default:
+      }
+      default: {
         return 0;
+      }
     }
   };
 
@@ -119,7 +130,7 @@
 
     try {
       const expirationTime = getExpirationTimeInMillisecond();
-      const currentTime = new Date().getTime();
+      const currentTime = Date.now();
       const expirationDate: string | null = expirationTime
         ? new Date(currentTime + expirationTime).toISOString()
         : null;
@@ -142,8 +153,8 @@
       });
 
       dispatch('close');
-    } catch (e) {
-      handleError(e, 'Failed to edit shared link');
+    } catch (error) {
+      handleError(error, 'Failed to edit shared link');
     }
   };
 </script>
@@ -179,7 +190,7 @@
       {:else}
         <div class="text-sm">
           Individual shared | <span class="text-immich-primary dark:text-immich-dark-primary"
-            >{editingLink.description}</span
+            >{editingLink.description || ''}</span
           >
         </div>
       {/if}

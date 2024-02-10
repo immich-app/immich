@@ -1,14 +1,14 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import {
-    ActivityResponseDto,
-    AlbumResponseDto,
+    type ActivityResponseDto,
+    type AlbumResponseDto,
     api,
     AssetJobName,
-    AssetResponseDto,
+    type AssetResponseDto,
     AssetTypeEnum,
     ReactionType,
-    SharedLinkResponseDto,
+    type SharedLinkResponseDto,
   } from '@api';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import { fly } from 'svelte/transition';
@@ -19,11 +19,10 @@
   import PhotoViewer from './photo-viewer.svelte';
   import VideoViewer from './video-viewer.svelte';
   import PanoramaViewer from './panorama-viewer.svelte';
-  import { AssetAction, ProjectionType } from '$lib/constants';
-  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
+  import { AppRoute, AssetAction, ProjectionType } from '$lib/constants';
   import ProfileImageCropper from '../shared-components/profile-image-cropper.svelte';
-  import { isShowDetail } from '$lib/stores/preferences.store';
-  import { addAssetsToAlbum, downloadFile, getAssetType } from '$lib/utils/asset-utils';
+  import { isShowDetail, showDeleteModal } from '$lib/stores/preferences.store';
+  import { addAssetsToAlbum, downloadFile } from '$lib/utils/asset-utils';
   import NavigationArea from './navigation-area.svelte';
   import { browser } from '$app/environment';
   import { handleError } from '$lib/utils/handle-error';
@@ -42,13 +41,13 @@
   import { SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import SlideshowBar from './slideshow-bar.svelte';
   import { user } from '$lib/stores/user.store';
+  import DeleteAssetDialog from '../photos-page/delete-asset-dialog.svelte';
 
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
   export let showNavigation = true;
   export let sharedLink: SharedLinkResponseDto | undefined = undefined;
   $: isTrashEnabled = $featureFlags.trash;
-  export let force = false;
   export let withStacked = false;
   export let isShared = false;
   export let album: AlbumResponseDto | null = null;
@@ -146,11 +145,7 @@
           albumId: album.id,
           type: ReactionType.Like,
         });
-        if (data.length > 0) {
-          isLiked = data[0];
-        } else {
-          isLiked = null;
-        }
+        isLiked = data.length > 0 ? data[0] : null;
       } catch (error) {
         handleError(error, "Can't get Favorite");
       }
@@ -239,8 +234,8 @@
     try {
       const { data } = await api.albumApi.getAllAlbums({ assetId: asset.id });
       appearsInAlbums = data;
-    } catch (e) {
-      console.error('Error getting album that asset belong to', e);
+    } catch (error) {
+      console.error('Error getting album that asset belong to', error);
     }
   };
 
@@ -261,40 +256,48 @@
 
     switch (key) {
       case 'a':
-      case 'A':
+      case 'A': {
         if (shiftKey) {
           toggleArchive();
         }
         return;
-      case 'ArrowLeft':
+      }
+      case 'ArrowLeft': {
         navigateAssetBackward();
         return;
-      case 'ArrowRight':
+      }
+      case 'ArrowRight': {
         navigateAssetForward();
         return;
+      }
       case 'd':
-      case 'D':
+      case 'D': {
         if (shiftKey) {
           downloadFile(asset);
         }
         return;
-      case 'Delete':
-        trashOrDelete();
+      }
+      case 'Delete': {
+        trashOrDelete(shiftKey);
         return;
-      case 'Escape':
+      }
+      case 'Escape': {
         if (isShowDeleteConfirmation) {
           isShowDeleteConfirmation = false;
           return;
         }
         closeViewer();
         return;
-      case 'f':
+      }
+      case 'f': {
         toggleFavorite();
         return;
-      case 'i':
+      }
+      case 'i': {
         isShowActivity = false;
         $isShowDetail = !$isShowDetail;
         return;
+      }
     }
   };
 
@@ -360,11 +363,19 @@
     $isShowDetail = !$isShowDetail;
   };
 
-  $: trashOrDelete = !(force || !isTrashEnabled)
-    ? trashAsset
-    : () => {
+  const trashOrDelete = (force: boolean = false) => {
+    if (force || !isTrashEnabled) {
+      if ($showDeleteModal) {
         isShowDeleteConfirmation = true;
-      };
+        return;
+      }
+      deleteAsset();
+      return;
+    }
+
+    trashAsset();
+    return;
+  };
 
   const trashAsset = async () => {
     try {
@@ -376,8 +387,8 @@
         message: 'Moved to trash',
         type: NotificationType.Info,
       });
-    } catch (e) {
-      handleError(e, 'Unable to trash asset');
+    } catch (error) {
+      handleError(error, 'Unable to trash asset');
     }
   };
 
@@ -391,8 +402,8 @@
         message: 'Permanently deleted asset',
         type: NotificationType.Info,
       });
-    } catch (e) {
-      handleError(e, 'Unable to delete asset');
+    } catch (error) {
+      handleError(error, 'Unable to delete asset');
     } finally {
       isShowDeleteConfirmation = false;
     }
@@ -424,19 +435,17 @@
     addToSharedAlbum = shared;
   };
 
-  const handleAddToNewAlbum = (event: CustomEvent) => {
+  const handleAddToNewAlbum = (albumName: string) => {
     isShowAlbumPicker = false;
 
-    const { albumName }: { albumName: string } = event.detail;
     api.albumApi.createAlbum({ createAlbumDto: { albumName, assetIds: [asset.id] } }).then((response) => {
       const album = response.data;
-      goto('/albums/' + album.id);
+      goto(`${AppRoute.ALBUMS}/${album.id}`);
     });
   };
 
-  const handleAddToAlbum = async (event: CustomEvent<{ album: AlbumResponseDto }>) => {
+  const handleAddToAlbum = async (album: AlbumResponseDto) => {
     isShowAlbumPicker = false;
-    const album = event.detail.album;
 
     await addAssetsToAlbum(album.id, [asset.id]);
     await getAllAlbums();
@@ -532,11 +541,7 @@
   const handleStackedAssetMouseEvent = (e: CustomEvent<{ isMouseOver: boolean }>, asset: AssetResponseDto) => {
     const { isMouseOver } = e.detail;
 
-    if (isMouseOver) {
-      previewStackedAsset = asset;
-    } else {
-      previewStackedAsset = undefined;
-    }
+    previewStackedAsset = isMouseOver ? asset : undefined;
   };
 
   const handleUnstack = async () => {
@@ -575,10 +580,10 @@
         showDetailButton={shouldShowDetailButton}
         showSlideshow={!!assetStore}
         hasStackChildren={$stackAssetsStore.length > 0}
-        on:goBack={closeViewer}
+        on:back={closeViewer}
         on:showDetail={showDetailInfoHandler}
         on:download={() => downloadFile(asset)}
-        on:delete={trashOrDelete}
+        on:delete={() => trashOrDelete()}
         on:favorite={toggleFavorite}
         on:addToAlbum={() => openAlbumPicker(false)}
         on:addToSharedAlbum={() => openAlbumPicker(true)}
@@ -676,7 +681,7 @@
         id="stack-slideshow"
         class="z-[1005] flex place-item-center place-content-center absolute bottom-0 w-full col-span-4 col-start-1 mb-1 overflow-x-auto horizontal-scrollbar"
       >
-        <div class="relative whitespace-nowrap transition-all">
+        <div class="relative w-full whitespace-nowrap transition-all">
           {#each $stackAssetsStore as stackedAsset (stackedAsset.id)}
             <div
               class="{stackedAsset.id == asset.id
@@ -725,9 +730,9 @@
         albumId={album?.id}
         albums={appearsInAlbums}
         on:close={() => ($isShowDetail = false)}
-        on:close-viewer={handleCloseViewer}
-        on:description-focus-in={disableKeyDownEvent}
-        on:description-focus-out={enableKeyDownEvent}
+        on:closeViewer={handleCloseViewer}
+        on:descriptionFocusIn={disableKeyDownEvent}
+        on:descriptionFocusOut={enableKeyDownEvent}
       />
     </div>
   {/if}
@@ -736,7 +741,7 @@
     <div
       transition:fly={{ duration: 150 }}
       id="activity-panel"
-      class="z-[1002] row-start-1 row-span-5 w-[360px] md:w-[460px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg pl-4"
+      class="z-[1002] row-start-1 row-span-5 w-[360px] md:w-[460px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg"
       translate="yes"
     >
       <ActivityViewer
@@ -759,36 +764,23 @@
   {#if isShowAlbumPicker}
     <AlbumSelectionModal
       shared={addToSharedAlbum}
-      on:newAlbum={handleAddToNewAlbum}
-      on:newSharedAlbum={handleAddToNewAlbum}
-      on:album={handleAddToAlbum}
+      on:newAlbum={({ detail }) => handleAddToNewAlbum(detail)}
+      on:album={({ detail }) => handleAddToAlbum(detail)}
       on:close={() => (isShowAlbumPicker = false)}
     />
   {/if}
 
   {#if isShowDeleteConfirmation}
-    <ConfirmDialogue
-      title="Delete {getAssetType(asset.type)}"
-      confirmText="Delete"
-      on:confirm={deleteAsset}
+    <DeleteAssetDialog
+      size={1}
       on:cancel={() => (isShowDeleteConfirmation = false)}
-    >
-      <svelte:fragment slot="prompt">
-        <p>
-          Are you sure you want to delete this {getAssetType(asset.type).toLowerCase()}? This will also remove it from
-          its album(s).
-        </p>
-        <p><b>You cannot undo this action!</b></p>
-      </svelte:fragment>
-    </ConfirmDialogue>
+      on:escape={() => (isShowDeleteConfirmation = false)}
+      on:confirm={() => deleteAsset()}
+    />
   {/if}
 
   {#if isShowProfileImageCrop}
-    <ProfileImageCropper
-      {asset}
-      on:close={() => (isShowProfileImageCrop = false)}
-      on:close-viewer={handleCloseViewer}
-    />
+    <ProfileImageCropper {asset} on:close={() => (isShowProfileImageCrop = false)} />
   {/if}
 </section>
 

@@ -1,33 +1,38 @@
 import {
   AccessCore,
   AssetResponseDto,
-  AuthUserDto,
-  getLivePhotoMotionFilename,
+  AuthDto,
+  CacheControl,
   IAccessRepository,
+  IAssetRepository,
   IJobRepository,
   ILibraryRepository,
+  IUserRepository,
+  ImmichFileResponse,
   JobName,
+  Permission,
+  UploadFile,
+  getLivePhotoMotionFilename,
   mapAsset,
   mimeTypes,
-  Permission,
-  SanitizedAssetResponseDto,
-  UploadFile,
 } from '@app/domain';
 import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType, LibraryType } from '@app/infra/entities';
-import { Inject, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
-import { Response as Res, Response } from 'express';
-import { constants } from 'fs';
-import fs from 'fs/promises';
-import path from 'path';
+import { ImmichLogger } from '@app/infra/logger';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
+import { parse } from 'node:path';
 import { QueryFailedError } from 'typeorm';
-import { IAssetRepository } from './asset-repository';
-import { AssetCore } from './asset.core';
+import { IAssetRepositoryV1 } from './asset-repository';
 import { AssetBulkUploadCheckDto } from './dto/asset-check.dto';
 import { AssetSearchDto } from './dto/asset-search.dto';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { GetAssetThumbnailDto, GetAssetThumbnailFormatEnum } from './dto/get-asset-thumbnail.dto';
-import { SearchPropertiesDto } from './dto/search-properties.dto';
 import { ServeFileDto } from './dto/serve-file.dto';
 import {
   AssetBulkUploadCheckResponseDto,
@@ -39,27 +44,24 @@ import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-as
 import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
 
-type SendFile = Parameters<Response['sendFile']>;
-type SendFileOptions = SendFile[1];
-
 @Injectable()
 export class AssetService {
-  readonly logger = new Logger(AssetService.name);
-  private assetCore: AssetCore;
+  readonly logger = new ImmichLogger(AssetService.name);
   private access: AccessCore;
 
   constructor(
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
-    @Inject(IAssetRepository) private _assetRepository: IAssetRepository,
+    @Inject(IAssetRepositoryV1) private assetRepositoryV1: IAssetRepositoryV1,
+    @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ILibraryRepository) private libraryRepository: ILibraryRepository,
+    @Inject(IUserRepository) private userRepository: IUserRepository,
   ) {
-    this.assetCore = new AssetCore(_assetRepository, jobRepository);
     this.access = AccessCore.create(accessRepository);
   }
 
   public async uploadFile(
-    authUser: AuthUserDto,
+    auth: AuthDto,
     dto: CreateAssetDto,
     file: UploadFile,
     livePhotoFile?: UploadFile,
@@ -75,20 +77,17 @@ export class AssetService {
     let livePhotoAsset: AssetEntity | null = null;
 
     try {
-      const libraryId = await this.getLibraryId(authUser, dto.libraryId);
-      await this.access.requirePermission(authUser, Permission.ASSET_UPLOAD, libraryId);
+      const libraryId = await this.getLibraryId(auth, dto.libraryId);
+      await this.access.requirePermission(auth, Permission.ASSET_UPLOAD, libraryId);
+      this.requireQuota(auth, file.size);
       if (livePhotoFile) {
         const livePhotoDto = { ...dto, assetType: AssetType.VIDEO, isVisible: false, libraryId };
-        livePhotoAsset = await this.assetCore.create(authUser, livePhotoDto, livePhotoFile);
+        livePhotoAsset = await this.create(auth, livePhotoDto, livePhotoFile);
       }
 
-      const asset = await this.assetCore.create(
-        authUser,
-        { ...dto, libraryId },
-        file,
-        livePhotoAsset?.id,
-        sidecarFile?.originalPath,
-      );
+      const asset = await this.create(auth, { ...dto, libraryId }, file, livePhotoAsset?.id, sidecarFile?.originalPath);
+
+      await this.userRepository.updateUsage(auth.user.id, (livePhotoFile?.size || 0) + file.size);
 
       return { id: asset.id, duplicate: false };
     } catch (error: any) {
@@ -101,7 +100,7 @@ export class AssetService {
       // handle duplicates with a success response
       if (error instanceof QueryFailedError && (error as any).constraint === ASSET_CHECKSUM_CONSTRAINT) {
         const checksums = [file.checksum, livePhotoFile?.checksum].filter((checksum): checksum is Buffer => !!checksum);
-        const [duplicate] = await this._assetRepository.getAssetsByChecksums(authUser.id, checksums);
+        const [duplicate] = await this.assetRepositoryV1.getAssetsByChecksums(auth.user.id, checksums);
         return { id: duplicate.id, duplicate: true };
       }
 
@@ -110,86 +109,59 @@ export class AssetService {
     }
   }
 
-  public async getUserAssetsByDeviceId(authUser: AuthUserDto, deviceId: string) {
-    return this._assetRepository.getAllByDeviceId(authUser.id, deviceId);
+  public async getAllAssets(auth: AuthDto, dto: AssetSearchDto): Promise<AssetResponseDto[]> {
+    const userId = dto.userId || auth.user.id;
+    await this.access.requirePermission(auth, Permission.TIMELINE_READ, userId);
+    const assets = await this.assetRepositoryV1.getAllByUserId(userId, dto);
+    return assets.map((asset) => mapAsset(asset, { withStack: true }));
   }
 
-  public async getAllAssets(authUser: AuthUserDto, dto: AssetSearchDto): Promise<AssetResponseDto[]> {
-    const userId = dto.userId || authUser.id;
-    await this.access.requirePermission(authUser, Permission.TIMELINE_READ, userId);
-    const assets = await this._assetRepository.getAllByUserId(userId, dto);
-    return assets.map((asset) => mapAsset(asset));
-  }
+  async serveThumbnail(auth: AuthDto, assetId: string, dto: GetAssetThumbnailDto): Promise<ImmichFileResponse> {
+    await this.access.requirePermission(auth, Permission.ASSET_VIEW, assetId);
 
-  public async getAssetById(
-    authUser: AuthUserDto,
-    assetId: string,
-  ): Promise<AssetResponseDto | SanitizedAssetResponseDto> {
-    await this.access.requirePermission(authUser, Permission.ASSET_READ, assetId);
-
-    const includeMetadata = this.getExifPermission(authUser);
-    const asset = await this._assetRepository.getById(assetId);
-    if (includeMetadata) {
-      const data = mapAsset(asset, { withStack: true });
-
-      if (data.ownerId !== authUser.id) {
-        data.people = [];
-      }
-
-      if (authUser.isPublicUser) {
-        delete data.owner;
-      }
-
-      return data;
-    } else {
-      return mapAsset(asset, { stripMetadata: true, withStack: true });
-    }
-  }
-
-  async serveThumbnail(authUser: AuthUserDto, assetId: string, query: GetAssetThumbnailDto, res: Res) {
-    await this.access.requirePermission(authUser, Permission.ASSET_VIEW, assetId);
-
-    const asset = await this._assetRepository.get(assetId);
+    const asset = await this.assetRepositoryV1.get(assetId);
     if (!asset) {
       throw new NotFoundException('Asset not found');
     }
 
-    try {
-      await this.sendFile(res, this.getThumbnailPath(asset, query.format));
-    } catch (e) {
-      res.header('Cache-Control', 'none');
-      this.logger.error(`Cannot create read stream for asset ${asset.id}`, 'getAssetThumbnail');
-      throw new InternalServerErrorException(
-        `Cannot read thumbnail file for asset ${asset.id} - contact your administrator`,
-        { cause: e as Error },
-      );
-    }
+    const filepath = this.getThumbnailPath(asset, dto.format);
+
+    return new ImmichFileResponse({
+      path: filepath,
+      contentType: mimeTypes.lookup(filepath),
+      cacheControl: CacheControl.PRIVATE_WITH_CACHE,
+    });
   }
 
-  public async serveFile(authUser: AuthUserDto, assetId: string, query: ServeFileDto, res: Res) {
+  public async serveFile(auth: AuthDto, assetId: string, dto: ServeFileDto): Promise<ImmichFileResponse> {
     // this is not quite right as sometimes this returns the original still
-    await this.access.requirePermission(authUser, Permission.ASSET_VIEW, assetId);
+    await this.access.requirePermission(auth, Permission.ASSET_VIEW, assetId);
 
-    const asset = await this._assetRepository.getById(assetId);
+    const asset = await this.assetRepository.getById(assetId);
     if (!asset) {
       throw new NotFoundException('Asset does not exist');
     }
 
-    const allowOriginalFile = !!(!authUser.isPublicUser || authUser.isAllowDownload);
+    const allowOriginalFile = !!(!auth.sharedLink || auth.sharedLink?.allowDownload);
 
     const filepath =
       asset.type === AssetType.IMAGE
-        ? this.getServePath(asset, query, allowOriginalFile)
+        ? this.getServePath(asset, dto, allowOriginalFile)
         : asset.encodedVideoPath || asset.originalPath;
 
-    await this.sendFile(res, filepath);
+    return new ImmichFileResponse({
+      path: filepath,
+      contentType: mimeTypes.lookup(filepath),
+      cacheControl: CacheControl.PRIVATE_WITH_CACHE,
+    });
   }
 
-  async getAssetSearchTerm(authUser: AuthUserDto): Promise<string[]> {
+  async getAssetSearchTerm(auth: AuthDto): Promise<string[]> {
     const possibleSearchTerm = new Set<string>();
 
-    const rows = await this._assetRepository.getSearchPropertiesByUserId(authUser.id);
-    rows.forEach((row: SearchPropertiesDto) => {
+    const rows = await this.assetRepositoryV1.getSearchPropertiesByUserId(auth.user.id);
+
+    for (const row of rows) {
       // tags
       row.tags?.map((tag: string) => possibleSearchTerm.add(tag?.toLowerCase()));
 
@@ -213,29 +185,29 @@ export class AssetService {
       possibleSearchTerm.add(row.city?.toLowerCase() || '');
       possibleSearchTerm.add(row.state?.toLowerCase() || '');
       possibleSearchTerm.add(row.country?.toLowerCase() || '');
-    });
+    }
 
-    return Array.from(possibleSearchTerm).filter((x) => x != null && x != '');
+    return [...possibleSearchTerm].filter((x) => x != null && x != '');
   }
 
-  async getCuratedLocation(authUser: AuthUserDto): Promise<CuratedLocationsResponseDto[]> {
-    return this._assetRepository.getLocationsByUserId(authUser.id);
+  async getCuratedLocation(auth: AuthDto): Promise<CuratedLocationsResponseDto[]> {
+    return this.assetRepositoryV1.getLocationsByUserId(auth.user.id);
   }
 
-  async getCuratedObject(authUser: AuthUserDto): Promise<CuratedObjectsResponseDto[]> {
-    return this._assetRepository.getDetectedObjectsByUserId(authUser.id);
+  async getCuratedObject(auth: AuthDto): Promise<CuratedObjectsResponseDto[]> {
+    return this.assetRepositoryV1.getDetectedObjectsByUserId(auth.user.id);
   }
 
   async checkExistingAssets(
-    authUser: AuthUserDto,
+    auth: AuthDto,
     checkExistingAssetsDto: CheckExistingAssetsDto,
   ): Promise<CheckExistingAssetsResponseDto> {
     return {
-      existingIds: await this._assetRepository.getExistingAssets(authUser.id, checkExistingAssetsDto),
+      existingIds: await this.assetRepositoryV1.getExistingAssets(auth.user.id, checkExistingAssetsDto),
     };
   }
 
-  async bulkUploadCheck(authUser: AuthUserDto, dto: AssetBulkUploadCheckDto): Promise<AssetBulkUploadCheckResponseDto> {
+  async bulkUploadCheck(auth: AuthDto, dto: AssetBulkUploadCheckDto): Promise<AssetBulkUploadCheckResponseDto> {
     // support base64 and hex checksums
     for (const asset of dto.assets) {
       if (asset.checksum.length === 28) {
@@ -244,7 +216,7 @@ export class AssetService {
     }
 
     const checksums: Buffer[] = dto.assets.map((asset) => Buffer.from(asset.checksum, 'hex'));
-    const results = await this._assetRepository.getAssetsByChecksums(authUser.id, checksums);
+    const results = await this.assetRepositoryV1.getAssetsByChecksums(auth.user.id, checksums);
     const checksumMap: Record<string, string> = {};
 
     for (const { id, checksum } of results) {
@@ -273,34 +245,30 @@ export class AssetService {
     };
   }
 
-  getExifPermission(authUser: AuthUserDto) {
-    return !authUser.isPublicUser || authUser.isShowMetadata;
-  }
-
   private getThumbnailPath(asset: AssetEntity, format: GetAssetThumbnailFormatEnum) {
     switch (format) {
-      case GetAssetThumbnailFormatEnum.WEBP:
+      case GetAssetThumbnailFormatEnum.WEBP: {
         if (asset.webpPath) {
           return asset.webpPath;
         }
         this.logger.warn(`WebP thumbnail requested but not found for asset ${asset.id}, falling back to JPEG`);
-
-      case GetAssetThumbnailFormatEnum.JPEG:
-      default:
+      }
+      case GetAssetThumbnailFormatEnum.JPEG: {
         if (!asset.resizePath) {
           throw new NotFoundException(`No thumbnail found for asset ${asset.id}`);
         }
         return asset.resizePath;
+      }
     }
   }
 
-  private getServePath(asset: AssetEntity, query: ServeFileDto, allowOriginalFile: boolean): string {
+  private getServePath(asset: AssetEntity, dto: ServeFileDto, allowOriginalFile: boolean): string {
     const mimeType = mimeTypes.lookup(asset.originalPath);
 
     /**
      * Serve file viewer on the web
      */
-    if (query.isWeb && mimeType != 'image/gif') {
+    if (dto.isWeb && mimeType != 'image/gif') {
       if (!asset.resizePath) {
         this.logger.error('Error serving IMAGE asset for web');
         throw new InternalServerErrorException(`Failed to serve image asset for web`, 'ServeFile');
@@ -312,7 +280,7 @@ export class AssetService {
     /**
      * Serve thumbnail image for both web and mobile app
      */
-    if ((!query.isThumb && allowOriginalFile) || (query.isWeb && mimeType === 'image/gif')) {
+    if ((!dto.isThumb && allowOriginalFile) || (dto.isWeb && mimeType === 'image/gif')) {
       return asset.originalPath;
     }
 
@@ -327,39 +295,15 @@ export class AssetService {
     return asset.resizePath;
   }
 
-  private async sendFile(res: Res, filepath: string): Promise<void> {
-    await fs.access(filepath, constants.R_OK);
-    const options: SendFileOptions = { dotfiles: 'allow' };
-    if (!path.isAbsolute(filepath)) {
-      options.root = process.cwd();
-    }
-
-    res.set('Cache-Control', 'private, max-age=86400, no-transform');
-    res.header('Content-Type', mimeTypes.lookup(filepath));
-    return new Promise((resolve, reject) => {
-      res.sendFile(filepath, options, (error: Error) => {
-        if (!error) {
-          resolve();
-          return;
-        }
-
-        if (error.message !== 'Request aborted') {
-          this.logger.error(`Unable to send file: ${error.name}`, error.stack);
-        }
-        reject(error);
-      });
-    });
-  }
-
-  private async getLibraryId(authUser: AuthUserDto, libraryId?: string) {
+  private async getLibraryId(auth: AuthDto, libraryId?: string) {
     if (libraryId) {
       return libraryId;
     }
 
-    let library = await this.libraryRepository.getDefaultUploadLibrary(authUser.id);
+    let library = await this.libraryRepository.getDefaultUploadLibrary(auth.user.id);
     if (!library) {
       library = await this.libraryRepository.create({
-        ownerId: authUser.id,
+        ownerId: auth.user.id,
         name: 'Default Library',
         assets: [],
         type: LibraryType.UPLOAD,
@@ -370,5 +314,59 @@ export class AssetService {
     }
 
     return library.id;
+  }
+
+  private async create(
+    auth: AuthDto,
+    dto: CreateAssetDto & { libraryId: string },
+    file: UploadFile,
+    livePhotoAssetId?: string,
+    sidecarPath?: string,
+  ): Promise<AssetEntity> {
+    const asset = await this.assetRepository.create({
+      ownerId: auth.user.id,
+      libraryId: dto.libraryId,
+
+      checksum: file.checksum,
+      originalPath: file.originalPath,
+
+      deviceAssetId: dto.deviceAssetId,
+      deviceId: dto.deviceId,
+
+      fileCreatedAt: dto.fileCreatedAt,
+      fileModifiedAt: dto.fileModifiedAt,
+      localDateTime: dto.fileCreatedAt,
+      deletedAt: null,
+
+      type: mimeTypes.assetType(file.originalPath),
+      isFavorite: dto.isFavorite,
+      isArchived: dto.isArchived ?? false,
+      duration: dto.duration || null,
+      isVisible: dto.isVisible ?? true,
+      livePhotoVideo: livePhotoAssetId === null ? null : ({ id: livePhotoAssetId } as AssetEntity),
+      resizePath: null,
+      webpPath: null,
+      thumbhash: null,
+      encodedVideoPath: null,
+      tags: [],
+      sharedLinks: [],
+      originalFileName: parse(file.originalName).name,
+      faces: [],
+      sidecarPath: sidecarPath || null,
+      isReadOnly: dto.isReadOnly ?? false,
+      isExternal: dto.isExternal ?? false,
+      isOffline: dto.isOffline ?? false,
+    });
+
+    await this.assetRepository.upsertExif({ assetId: asset.id, fileSizeInByte: file.size });
+    await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: asset.id, source: 'upload' } });
+
+    return asset;
+  }
+
+  private requireQuota(auth: AuthDto, size: number) {
+    if (auth.user.quotaSizeInBytes && auth.user.quotaSizeInBytes < auth.user.quotaUsageInBytes + size) {
+      throw new BadRequestException('Quota has been exceeded!');
+    }
   }
 }

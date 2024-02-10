@@ -52,7 +52,7 @@ export class SharedLinkEntity {
   @Column({ type: 'boolean', default: true })
   showExif!: boolean;
 
-  @ManyToMany(() => AssetEntity, (asset) => asset.sharedLinks)
+  @ManyToMany(() => AssetEntity, (asset) => asset.sharedLinks, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   assets!: AssetEntity[];
 
   @Index('IDX_sharedlink_albumId')

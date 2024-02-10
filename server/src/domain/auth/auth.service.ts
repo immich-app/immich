@@ -1,15 +1,15 @@
 import { SystemConfig, UserEntity } from '@app/infra/entities';
+import { ImmichLogger } from '@app/infra/logger';
 import {
   BadRequestException,
   Inject,
   Injectable,
   InternalServerErrorException,
-  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import cookieParser from 'cookie';
-import { IncomingHttpHeaders } from 'http';
 import { DateTime } from 'luxon';
+import { IncomingHttpHeaders } from 'node:http';
 import { ClientMetadata, Issuer, UserinfoResponse, custom, generators } from 'openid-client';
 import { AccessCore, Permission } from '../access';
 import {
@@ -34,7 +34,7 @@ import {
 } from './auth.constant';
 import {
   AuthDeviceResponseDto,
-  AuthUserDto,
+  AuthDto,
   ChangePasswordDto,
   LoginCredentialDto,
   LoginResponseDto,
@@ -42,7 +42,6 @@ import {
   OAuthAuthorizeResponseDto,
   OAuthCallbackDto,
   OAuthConfigDto,
-  OAuthConfigResponseDto,
   SignUpDto,
   mapLoginResponse,
   mapUserToken,
@@ -68,7 +67,7 @@ interface OAuthProfile extends UserinfoResponse {
 export class AuthService {
   private access: AccessCore;
   private configCore: SystemConfigCore;
-  private logger = new Logger(AuthService.name);
+  private logger = new ImmichLogger(AuthService.name);
   private userCore: UserCore;
 
   constructor(
@@ -85,7 +84,7 @@ export class AuthService {
     this.configCore = SystemConfigCore.create(configRepository);
     this.userCore = UserCore.create(cryptoRepository, libraryRepository, userRepository);
 
-    custom.setHttpOptionsDefaults({ timeout: 30000 });
+    custom.setHttpOptionsDefaults({ timeout: 30_000 });
   }
 
   async login(dto: LoginCredentialDto, details: LoginDetails): Promise<LoginResponse> {
@@ -110,9 +109,9 @@ export class AuthService {
     return this.createLoginResponse(user, AuthType.PASSWORD, details);
   }
 
-  async logout(authUser: AuthUserDto, authType: AuthType): Promise<LogoutResponseDto> {
-    if (authUser.accessTokenId) {
-      await this.userTokenRepository.delete(authUser.accessTokenId);
+  async logout(auth: AuthDto, authType: AuthType): Promise<LogoutResponseDto> {
+    if (auth.userToken) {
+      await this.userTokenRepository.delete(auth.userToken.id);
     }
 
     return {
@@ -121,9 +120,9 @@ export class AuthService {
     };
   }
 
-  async changePassword(authUser: AuthUserDto, dto: ChangePasswordDto) {
+  async changePassword(auth: AuthDto, dto: ChangePasswordDto) {
     const { password, newPassword } = dto;
-    const user = await this.userRepository.getByEmail(authUser.email, true);
+    const user = await this.userRepository.getByEmail(auth.user.email, true);
     if (!user) {
       throw new UnauthorizedException();
     }
@@ -133,7 +132,7 @@ export class AuthService {
       throw new BadRequestException('Wrong password');
     }
 
-    return this.userCore.updateUser(authUser, authUser.id, { password: newPassword });
+    return this.userCore.updateUser(auth.user, auth.user.id, { password: newPassword });
   }
 
   async adminSignUp(dto: SignUpDto): Promise<UserResponseDto> {
@@ -154,7 +153,7 @@ export class AuthService {
     return mapUser(admin);
   }
 
-  async validate(headers: IncomingHttpHeaders, params: Record<string, string>): Promise<AuthUserDto> {
+  async validate(headers: IncomingHttpHeaders, params: Record<string, string>): Promise<AuthDto> {
     const shareKey = (headers['x-immich-share-key'] || params.key) as string;
     const userToken = (headers['x-immich-user-token'] ||
       params.userToken ||
@@ -177,20 +176,20 @@ export class AuthService {
     throw new UnauthorizedException('Authentication required');
   }
 
-  async getDevices(authUser: AuthUserDto): Promise<AuthDeviceResponseDto[]> {
-    const userTokens = await this.userTokenRepository.getAll(authUser.id);
-    return userTokens.map((userToken) => mapUserToken(userToken, authUser.accessTokenId));
+  async getDevices(auth: AuthDto): Promise<AuthDeviceResponseDto[]> {
+    const userTokens = await this.userTokenRepository.getAll(auth.user.id);
+    return userTokens.map((userToken) => mapUserToken(userToken, auth.userToken?.id));
   }
 
-  async logoutDevice(authUser: AuthUserDto, id: string): Promise<void> {
-    await this.access.requirePermission(authUser, Permission.AUTH_DEVICE_DELETE, id);
+  async logoutDevice(auth: AuthDto, id: string): Promise<void> {
+    await this.access.requirePermission(auth, Permission.AUTH_DEVICE_DELETE, id);
     await this.userTokenRepository.delete(id);
   }
 
-  async logoutDevices(authUser: AuthUserDto): Promise<void> {
-    const devices = await this.userTokenRepository.getAll(authUser.id);
+  async logoutDevices(auth: AuthDto): Promise<void> {
+    const devices = await this.userTokenRepository.getAll(auth.user.id);
     for (const device of devices) {
-      if (device.id === authUser.accessTokenId) {
+      if (device.id === auth.userToken?.id) {
         continue;
       }
       await this.userTokenRepository.delete(device.id);
@@ -199,27 +198,6 @@ export class AuthService {
 
   getMobileRedirect(url: string) {
     return `${MOBILE_REDIRECT}?${url.split('?')[1] || ''}`;
-  }
-
-  async generateConfig(dto: OAuthConfigDto): Promise<OAuthConfigResponseDto> {
-    const config = await this.configCore.getConfig();
-    const response = {
-      enabled: config.oauth.enabled,
-      passwordLoginEnabled: config.passwordLogin.enabled,
-    };
-
-    if (!response.enabled) {
-      return response;
-    }
-
-    const { scope, buttonText, autoLaunch } = config.oauth;
-    const url = (await this.getOAuthClient(config)).authorizationUrl({
-      redirect_uri: this.normalize(config, dto.redirectUri),
-      scope,
-      state: generators.state(),
-    });
-
-    return { ...response, buttonText, url, autoLaunch };
   }
 
   async authorize(dto: OAuthConfigDto): Promise<OAuthAuthorizeResponseDto> {
@@ -284,19 +262,19 @@ export class AuthService {
     return this.createLoginResponse(user, AuthType.OAUTH, loginDetails);
   }
 
-  async link(user: AuthUserDto, dto: OAuthCallbackDto): Promise<UserResponseDto> {
+  async link(auth: AuthDto, dto: OAuthCallbackDto): Promise<UserResponseDto> {
     const config = await this.configCore.getConfig();
     const { sub: oauthId } = await this.getOAuthProfile(config, dto.url);
     const duplicate = await this.userRepository.getByOAuthId(oauthId);
-    if (duplicate && duplicate.id !== user.id) {
+    if (duplicate && duplicate.id !== auth.user.id) {
       this.logger.warn(`OAuth link account failed: sub is already linked to another user (${duplicate.email}).`);
       throw new BadRequestException('This OAuth account has already been linked to another user.');
     }
-    return mapUser(await this.userRepository.update(user.id, { oauthId }));
+    return mapUser(await this.userRepository.update(auth.user.id, { oauthId }));
   }
 
-  async unlink(user: AuthUserDto): Promise<UserResponseDto> {
-    return mapUser(await this.userRepository.update(user.id, { oauthId: '' }));
+  async unlink(auth: AuthDto): Promise<UserResponseDto> {
+    return mapUser(await this.userRepository.update(auth.user.id, { oauthId: '' }));
   }
 
   private async getLogoutEndpoint(authType: AuthType): Promise<string> {
@@ -317,12 +295,25 @@ export class AuthService {
     const redirectUri = this.normalize(config, url.split('?')[0]);
     const client = await this.getOAuthClient(config);
     const params = client.callbackParams(url);
-    const tokens = await client.callback(redirectUri, params, { state: params.state });
-    return client.userinfo<OAuthProfile>(tokens.access_token || '');
+    try {
+      const tokens = await client.callback(redirectUri, params, { state: params.state });
+      return client.userinfo<OAuthProfile>(tokens.access_token || '');
+    } catch (error: Error | any) {
+      if (error.message.includes('unexpected JWT alg received')) {
+        this.logger.warn(
+          [
+            'Algorithm mismatch. Make sure the signing algorithm is set correctly in the OAuth settings.',
+            'Or, that you have specified a signing key in your OAuth provider.',
+          ].join(' '),
+        );
+      }
+
+      throw error;
+    }
   }
 
   private async getOAuthClient(config: SystemConfig) {
-    const { enabled, clientId, clientSecret, issuerUrl } = config.oauth;
+    const { enabled, clientId, clientSecret, issuerUrl, signingAlgorithm } = config.oauth;
 
     if (!enabled) {
       throw new BadRequestException('OAuth2 is not enabled');
@@ -336,10 +327,7 @@ export class AuthService {
 
     try {
       const issuer = await Issuer.discover(issuerUrl);
-      const algorithms = (issuer.id_token_signing_alg_values_supported || []) as string[];
-      if (algorithms[0] === 'HS256') {
-        metadata.id_token_signed_response_alg = algorithms[0];
-      }
+      metadata.id_token_signed_response_alg = signingAlgorithm;
 
       return new issuer.Client(metadata);
     } catch (error: any | AggregateError) {
@@ -371,45 +359,25 @@ export class AuthService {
     return cookies[IMMICH_ACCESS_COOKIE] || null;
   }
 
-  private async validateSharedLink(key: string | string[]): Promise<AuthUserDto> {
+  async validateSharedLink(key: string | string[]): Promise<AuthDto> {
     key = Array.isArray(key) ? key[0] : key;
 
     const bytes = Buffer.from(key, key.length === 100 ? 'hex' : 'base64url');
-    const link = await this.sharedLinkRepository.getByKey(bytes);
-    if (link) {
-      if (!link.expiresAt || new Date(link.expiresAt) > new Date()) {
-        const user = link.user;
-        if (user) {
-          return {
-            id: user.id,
-            email: user.email,
-            isAdmin: user.isAdmin,
-            isPublicUser: true,
-            sharedLinkId: link.id,
-            isAllowUpload: link.allowUpload,
-            isAllowDownload: link.allowDownload,
-            isShowMetadata: link.showExif,
-          };
-        }
+    const sharedLink = await this.sharedLinkRepository.getByKey(bytes);
+    if (sharedLink && (!sharedLink.expiresAt || new Date(sharedLink.expiresAt) > new Date())) {
+      const user = sharedLink.user;
+      if (user) {
+        return { user, sharedLink };
       }
     }
     throw new UnauthorizedException('Invalid share key');
   }
 
-  private async validateApiKey(key: string): Promise<AuthUserDto> {
+  private async validateApiKey(key: string): Promise<AuthDto> {
     const hashedKey = this.cryptoRepository.hashSha256(key);
-    const keyEntity = await this.keyRepository.getKey(hashedKey);
-    if (keyEntity?.user) {
-      const user = keyEntity.user;
-
-      return {
-        id: user.id,
-        email: user.email,
-        isAdmin: user.isAdmin,
-        isPublicUser: false,
-        isAllowUpload: true,
-        externalPath: user.externalPath,
-      };
+    const apiKey = await this.keyRepository.getKey(hashedKey);
+    if (apiKey?.user) {
+      return { user: apiKey.user, apiKey };
     }
 
     throw new UnauthorizedException('Invalid API key');
@@ -422,33 +390,26 @@ export class AuthService {
     return this.cryptoRepository.compareBcrypt(inputPassword, user.password);
   }
 
-  private async validateUserToken(tokenValue: string): Promise<AuthUserDto> {
+  private async validateUserToken(tokenValue: string): Promise<AuthDto> {
     const hashedToken = this.cryptoRepository.hashSha256(tokenValue);
-    let token = await this.userTokenRepository.getByToken(hashedToken);
+    let userToken = await this.userTokenRepository.getByToken(hashedToken);
 
-    if (token?.user) {
+    if (userToken?.user) {
       const now = DateTime.now();
-      const updatedAt = DateTime.fromJSDate(token.updatedAt);
+      const updatedAt = DateTime.fromJSDate(userToken.updatedAt);
       const diff = now.diff(updatedAt, ['hours']);
       if (diff.hours > 1) {
-        token = await this.userTokenRepository.save({ ...token, updatedAt: new Date() });
+        userToken = await this.userTokenRepository.save({ ...userToken, updatedAt: new Date() });
       }
 
-      return {
-        ...token.user,
-        isPublicUser: false,
-        isAllowUpload: true,
-        isAllowDownload: true,
-        isShowMetadata: true,
-        accessTokenId: token.id,
-      };
+      return { user: userToken.user, userToken };
     }
 
     throw new UnauthorizedException('Invalid user token');
   }
 
   private async createLoginResponse(user: UserEntity, authType: AuthType, loginDetails: LoginDetails) {
-    const key = this.cryptoRepository.randomBytes(32).toString('base64').replace(/\W/g, '');
+    const key = this.cryptoRepository.randomBytes(32).toString('base64').replaceAll(/\W/g, '');
     const token = this.cryptoRepository.hashSha256(key);
 
     await this.userTokenRepository.create({

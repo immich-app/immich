@@ -1,14 +1,17 @@
 <script lang="ts">
   import { mdiClose } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
-  import { UserAvatarColor, UserResponseDto } from '@api';
+  import { UserAvatarColor, type UserResponseDto } from '@api';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import FullScreenModal from '../full-screen-modal.svelte';
   import UserAvatar from '../user-avatar.svelte';
 
   export let user: UserResponseDto;
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    close: void;
+    choose: UserAvatarColor;
+  }>();
   const colors: UserAvatarColor[] = Object.values(UserAvatarColor);
 </script>
 

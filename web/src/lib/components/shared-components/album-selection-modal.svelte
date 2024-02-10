@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { AlbumResponseDto, api } from '@api';
+  import { type AlbumResponseDto, api } from '@api';
   import { createEventDispatcher, onMount } from 'svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import BaseModal from './base-modal.svelte';
@@ -12,7 +12,11 @@
   let loading = true;
   let search = '';
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    newAlbum: string;
+    album: AlbumResponseDto;
+    close: void;
+  }>();
 
   export let shared: boolean;
 
@@ -26,25 +30,20 @@
   });
 
   $: {
-    if (search.length > 0 && albums.length > 0) {
-      filteredAlbums = albums.filter((album) => {
-        return album.albumName.toLowerCase().includes(search.toLowerCase());
-      });
-    } else {
-      filteredAlbums = albums;
-    }
+    filteredAlbums =
+      search.length > 0 && albums.length > 0
+        ? albums.filter((album) => {
+            return album.albumName.toLowerCase().includes(search.toLowerCase());
+          })
+        : albums;
   }
 
   const handleSelect = (album: AlbumResponseDto) => {
-    dispatch('album', { album });
+    dispatch('album', album);
   };
 
   const handleNew = () => {
-    if (shared) {
-      dispatch('newAlbum', { albumName: search.length > 0 ? search : '' });
-    } else {
-      dispatch('newSharedAlbum', { albumName: search.length > 0 ? search : '' });
-    }
+    dispatch('newAlbum', search.length > 0 ? search : '');
   };
 </script>
 

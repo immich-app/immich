@@ -1,0 +1,13 @@
+#!/usr/bin/env sh
+
+TYPESCRIPT_SDK=/usr/src/open-api/typescript-sdk
+
+if [ ! -d "$TYPESCRIPT_SDK/build" ]; then
+  echo "$TYPESCRIPT_SDK/build does not exist, building"
+  npm --prefix "$TYPESCRIPT_SDK" install
+  npm --prefix "$TYPESCRIPT_SDK" run build
+else
+  echo "$TYPESCRIPT_SDK/build exists, skipping"
+fi
+
+node ./node_modules/.bin/vite dev --host 0.0.0.0 --port 3000

@@ -1,4 +1,5 @@
 import {
+  Check,
   Column,
   CreateDateColumn,
   Entity,
@@ -11,6 +12,7 @@ import { AssetFaceEntity } from './asset-face.entity';
 import { UserEntity } from './user.entity';
 
 @Entity('person')
+@Check(`"birthDate" <= CURRENT_DATE`)
 export class PersonEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;

@@ -21,7 +21,9 @@ const responseDto = {
     externalPath: null,
     memoriesEnabled: true,
     avatarColor: UserAvatarColor.PRIMARY,
+    quotaSizeInBytes: null,
     inTimeline: true,
+    quotaUsageInBytes: 0,
   },
   user1: <PartnerResponseDto>{
     email: 'immich@test.com',
@@ -39,6 +41,8 @@ const responseDto = {
     memoriesEnabled: true,
     avatarColor: UserAvatarColor.PRIMARY,
     inTimeline: true,
+    quotaSizeInBytes: null,
+    quotaUsageInBytes: 0,
   },
 };
 
@@ -60,13 +64,13 @@ describe(PartnerService.name, () => {
     it("should return a list of partners with whom I've shared my library", async () => {
       partnerMock.getAll.mockResolvedValue([partnerStub.adminToUser1, partnerStub.user1ToAdmin1]);
       await expect(sut.getAll(authStub.user1, PartnerDirection.SharedBy)).resolves.toEqual([responseDto.admin]);
-      expect(partnerMock.getAll).toHaveBeenCalledWith(authStub.user1.id);
+      expect(partnerMock.getAll).toHaveBeenCalledWith(authStub.user1.user.id);
     });
 
     it('should return a list of partners who have shared their libraries with me', async () => {
       partnerMock.getAll.mockResolvedValue([partnerStub.adminToUser1, partnerStub.user1ToAdmin1]);
       await expect(sut.getAll(authStub.user1, PartnerDirection.SharedWith)).resolves.toEqual([responseDto.admin]);
-      expect(partnerMock.getAll).toHaveBeenCalledWith(authStub.user1.id);
+      expect(partnerMock.getAll).toHaveBeenCalledWith(authStub.user1.user.id);
     });
   });
 
@@ -75,18 +79,18 @@ describe(PartnerService.name, () => {
       partnerMock.get.mockResolvedValue(null);
       partnerMock.create.mockResolvedValue(partnerStub.adminToUser1);
 
-      await expect(sut.create(authStub.admin, authStub.user1.id)).resolves.toEqual(responseDto.user1);
+      await expect(sut.create(authStub.admin, authStub.user1.user.id)).resolves.toEqual(responseDto.user1);
 
       expect(partnerMock.create).toHaveBeenCalledWith({
-        sharedById: authStub.admin.id,
-        sharedWithId: authStub.user1.id,
+        sharedById: authStub.admin.user.id,
+        sharedWithId: authStub.user1.user.id,
       });
     });
 
     it('should throw an error when the partner already exists', async () => {
       partnerMock.get.mockResolvedValue(partnerStub.adminToUser1);
 
-      await expect(sut.create(authStub.admin, authStub.user1.id)).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.create(authStub.admin, authStub.user1.user.id)).rejects.toBeInstanceOf(BadRequestException);
 
       expect(partnerMock.create).not.toHaveBeenCalled();
     });
@@ -96,7 +100,7 @@ describe(PartnerService.name, () => {
     it('should remove a partner', async () => {
       partnerMock.get.mockResolvedValue(partnerStub.adminToUser1);
 
-      await sut.remove(authStub.admin, authStub.user1.id);
+      await sut.remove(authStub.admin, authStub.user1.user.id);
 
       expect(partnerMock.remove).toHaveBeenCalledWith(partnerStub.adminToUser1);
     });
@@ -104,7 +108,7 @@ describe(PartnerService.name, () => {
     it('should throw an error when the partner does not exist', async () => {
       partnerMock.get.mockResolvedValue(null);
 
-      await expect(sut.remove(authStub.admin, authStub.user1.id)).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.remove(authStub.admin, authStub.user1.user.id)).rejects.toBeInstanceOf(BadRequestException);
 
       expect(partnerMock.remove).not.toHaveBeenCalled();
     });

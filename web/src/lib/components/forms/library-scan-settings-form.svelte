@@ -26,13 +26,16 @@
     }
   });
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    cancel: void;
+    submit: { library: Partial<LibraryResponseDto>; type: LibraryType };
+  }>();
   const handleCancel = () => {
     dispatch('cancel');
   };
 
   const handleSubmit = () => {
-    dispatch('submit', { ...library, libraryType: LibraryType.External });
+    dispatch('submit', { library, type: LibraryType.External });
   };
 
   const handleAddExclusionPattern = async () => {
@@ -45,13 +48,16 @@
     }
 
     try {
-      library.exclusionPatterns.push(exclusionPatternToAdd);
-      exclusionPatternToAdd = '';
-
-      exclusionPatterns = library.exclusionPatterns;
-      addExclusionPattern = false;
+      // Check so that exclusion pattern isn't duplicated
+      if (!library.exclusionPatterns.includes(exclusionPatternToAdd)) {
+        library.exclusionPatterns.push(exclusionPatternToAdd);
+        exclusionPatterns = library.exclusionPatterns;
+      }
     } catch (error) {
-      handleError(error, 'Unable to add exclude pattern');
+      handleError(error, 'Unable to add exclusion pattern');
+    } finally {
+      exclusionPatternToAdd = '';
+      addExclusionPattern = false;
     }
   };
 
@@ -99,6 +105,7 @@
   <LibraryExclusionPatternForm
     submitText="Add"
     bind:exclusionPattern={exclusionPatternToAdd}
+    {exclusionPatterns}
     on:submit={handleAddExclusionPattern}
     on:cancel={() => {
       addExclusionPattern = false;
@@ -106,11 +113,12 @@
   />
 {/if}
 
-{#if editExclusionPattern != null}
+{#if editExclusionPattern != undefined}
   <LibraryExclusionPatternForm
     submitText="Save"
-    canDelete={true}
+    isEditing={true}
     bind:exclusionPattern={editedExclusionPattern}
+    {exclusionPatterns}
     on:submit={handleEditExclusionPattern}
     on:delete={handleDeleteExclusionPattern}
     on:cancel={() => {

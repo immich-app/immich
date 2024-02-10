@@ -1,31 +1,32 @@
-import { AssetResponseDto, AuthUserDto } from '@app/domain';
+import { AssetResponseDto, AuthDto } from '@app/domain';
 import {
   Body,
   Controller,
   Get,
   HttpCode,
   HttpStatus,
+  Next,
   Param,
   ParseFilePipe,
   Post,
   Query,
-  Response,
+  Res,
   UploadedFiles,
   UseInterceptors,
   ValidationPipe,
 } from '@nestjs/common';
-import { ApiBody, ApiConsumes, ApiHeader, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { Response as Res } from 'express';
-import { AuthUser, Authenticated, SharedLinkRoute } from '../../app.guard';
+import { ApiBody, ApiConsumes, ApiHeader, ApiTags } from '@nestjs/swagger';
+import { NextFunction, Response } from 'express';
+import { Auth, Authenticated, FileResponse, SharedLinkRoute } from '../../app.guard';
+import { sendFile } from '../../app.utils';
 import { UUIDParamDto } from '../../controllers/dto/uuid-param.dto';
 import { FileUploadInterceptor, ImmichFile, Route, mapToUploadFile } from '../../interceptors';
 import FileNotEmptyValidator from '../validation/file-not-empty-validator';
-import { AssetService } from './asset.service';
+import { AssetService as AssetServiceV1 } from './asset.service';
 import { AssetBulkUploadCheckDto } from './dto/asset-check.dto';
 import { AssetSearchDto } from './dto/asset-search.dto';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 import { CreateAssetDto } from './dto/create-asset.dto';
-import { DeviceIdDto } from './dto/device-id.dto';
 import { GetAssetThumbnailDto } from './dto/get-asset-thumbnail.dto';
 import { ServeFileDto } from './dto/serve-file.dto';
 import { AssetBulkUploadCheckResponseDto } from './response-dto/asset-check-response.dto';
@@ -44,7 +45,7 @@ interface UploadFiles {
 @Controller(Route.ASSET)
 @Authenticated()
 export class AssetController {
-  constructor(private assetService: AssetService) {}
+  constructor(private serviceV1: AssetServiceV1) {}
 
   @SharedLinkRoute()
   @Post('upload')
@@ -55,10 +56,10 @@ export class AssetController {
     type: CreateAssetDto,
   })
   async uploadFile(
-    @AuthUser() authUser: AuthUserDto,
+    @Auth() auth: AuthDto,
     @UploadedFiles(new ParseFilePipe({ validators: [new FileNotEmptyValidator(['assetData'])] })) files: UploadFiles,
     @Body(new ValidationPipe({ transform: true })) dto: CreateAssetDto,
-    @Response({ passthrough: true }) res: Res,
+    @Res({ passthrough: true }) res: Response,
   ): Promise<AssetFileUploadResponseDto> {
     const file = mapToUploadFile(files.assetData[0]);
     const _livePhotoFile = files.livePhotoData?.[0];
@@ -73,7 +74,7 @@ export class AssetController {
       sidecarFile = mapToUploadFile(_sidecarFile);
     }
 
-    const responseDto = await this.assetService.uploadFile(authUser, dto, file, livePhotoFile, sidecarFile);
+    const responseDto = await this.serviceV1.uploadFile(auth, dto, file, livePhotoFile, sidecarFile);
     if (responseDto.duplicate) {
       res.status(HttpStatus.OK);
     }
@@ -83,50 +84,43 @@ export class AssetController {
 
   @SharedLinkRoute()
   @Get('/file/:id')
-  @ApiOkResponse({
-    content: {
-      'application/octet-stream': { schema: { type: 'string', format: 'binary' } },
-    },
-  })
+  @FileResponse()
   async serveFile(
-    @AuthUser() authUser: AuthUserDto,
-    @Response() res: Res,
-    @Query(new ValidationPipe({ transform: true })) query: ServeFileDto,
+    @Res() res: Response,
+    @Next() next: NextFunction,
+    @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
+    @Query(new ValidationPipe({ transform: true })) dto: ServeFileDto,
   ) {
-    await this.assetService.serveFile(authUser, id, query, res);
+    await sendFile(res, next, () => this.serviceV1.serveFile(auth, id, dto));
   }
 
   @SharedLinkRoute()
   @Get('/thumbnail/:id')
-  @ApiOkResponse({
-    content: {
-      'image/jpeg': { schema: { type: 'string', format: 'binary' } },
-      'image/webp': { schema: { type: 'string', format: 'binary' } },
-    },
-  })
+  @FileResponse()
   async getAssetThumbnail(
-    @AuthUser() authUser: AuthUserDto,
-    @Response() res: Res,
+    @Res() res: Response,
+    @Next() next: NextFunction,
+    @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
-    @Query(new ValidationPipe({ transform: true })) query: GetAssetThumbnailDto,
+    @Query(new ValidationPipe({ transform: true })) dto: GetAssetThumbnailDto,
   ) {
-    await this.assetService.serveThumbnail(authUser, id, query, res);
+    await sendFile(res, next, () => this.serviceV1.serveThumbnail(auth, id, dto));
   }
 
   @Get('/curated-objects')
-  getCuratedObjects(@AuthUser() authUser: AuthUserDto): Promise<CuratedObjectsResponseDto[]> {
-    return this.assetService.getCuratedObject(authUser);
+  getCuratedObjects(@Auth() auth: AuthDto): Promise<CuratedObjectsResponseDto[]> {
+    return this.serviceV1.getCuratedObject(auth);
   }
 
   @Get('/curated-locations')
-  getCuratedLocations(@AuthUser() authUser: AuthUserDto): Promise<CuratedLocationsResponseDto[]> {
-    return this.assetService.getCuratedLocation(authUser);
+  getCuratedLocations(@Auth() auth: AuthDto): Promise<CuratedLocationsResponseDto[]> {
+    return this.serviceV1.getCuratedLocation(auth);
   }
 
   @Get('/search-terms')
-  getAssetSearchTerms(@AuthUser() authUser: AuthUserDto): Promise<string[]> {
-    return this.assetService.getAssetSearchTerm(authUser);
+  getAssetSearchTerms(@Auth() auth: AuthDto): Promise<string[]> {
+    return this.serviceV1.getAssetSearchTerm(auth);
   }
 
   /**
@@ -140,28 +134,10 @@ export class AssetController {
     schema: { type: 'string' },
   })
   getAllAssets(
-    @AuthUser() authUser: AuthUserDto,
+    @Auth() auth: AuthDto,
     @Query(new ValidationPipe({ transform: true })) dto: AssetSearchDto,
   ): Promise<AssetResponseDto[]> {
-    return this.assetService.getAllAssets(authUser, dto);
-  }
-
-  /**
-   * @deprecated Use /asset/device/:deviceId instead - Remove at 1.92 release
-   */
-  @Get('/:deviceId')
-  @ApiOperation({ deprecated: true, summary: 'Use /asset/device/:deviceId instead - Remove in 1.92 release' })
-  getUserAssetsByDeviceId(@AuthUser() authUser: AuthUserDto, @Param() { deviceId }: DeviceIdDto) {
-    return this.assetService.getUserAssetsByDeviceId(authUser, deviceId);
-  }
-
-  /**
-   * Get a single asset's information
-   */
-  @SharedLinkRoute()
-  @Get('/assetById/:id')
-  getAssetById(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<AssetResponseDto> {
-    return this.assetService.getAssetById(authUser, id) as Promise<AssetResponseDto>;
+    return this.serviceV1.getAllAssets(auth, dto);
   }
 
   /**
@@ -170,10 +146,10 @@ export class AssetController {
   @Post('/exist')
   @HttpCode(HttpStatus.OK)
   checkExistingAssets(
-    @AuthUser() authUser: AuthUserDto,
+    @Auth() auth: AuthDto,
     @Body(ValidationPipe) dto: CheckExistingAssetsDto,
   ): Promise<CheckExistingAssetsResponseDto> {
-    return this.assetService.checkExistingAssets(authUser, dto);
+    return this.serviceV1.checkExistingAssets(auth, dto);
   }
 
   /**
@@ -182,9 +158,9 @@ export class AssetController {
   @Post('/bulk-upload-check')
   @HttpCode(HttpStatus.OK)
   checkBulkUpload(
-    @AuthUser() authUser: AuthUserDto,
+    @Auth() auth: AuthDto,
     @Body(ValidationPipe) dto: AssetBulkUploadCheckDto,
   ): Promise<AssetBulkUploadCheckResponseDto> {
-    return this.assetService.bulkUploadCheck(authUser, dto);
+    return this.serviceV1.bulkUploadCheck(auth, dto);
   }
 }

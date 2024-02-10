@@ -5,10 +5,7 @@ import { IsEnum } from 'class-validator';
 export const getRandomAvatarColor = (user: UserEntity): UserAvatarColor => {
   const values = Object.values(UserAvatarColor);
   const randomIndex = Math.floor(
-    user.email
-      .split('')
-      .map((letter) => letter.charCodeAt(0))
-      .reduce((a, b) => a + b, 0) % values.length,
+    [...user.email].map((letter) => letter.codePointAt(0) ?? 0).reduce((a, b) => a + b, 0) % values.length,
   );
   return values[randomIndex] as UserAvatarColor;
 };
@@ -33,6 +30,10 @@ export class UserResponseDto extends UserDto {
   updatedAt!: Date;
   oauthId!: string;
   memoriesEnabled?: boolean;
+  @ApiProperty({ type: 'integer', format: 'int64' })
+  quotaSizeInBytes!: number | null;
+  @ApiProperty({ type: 'integer', format: 'int64' })
+  quotaUsageInBytes!: number | null;
 }
 
 export const mapSimpleUser = (entity: UserEntity): UserDto => {
@@ -57,5 +58,7 @@ export function mapUser(entity: UserEntity): UserResponseDto {
     updatedAt: entity.updatedAt,
     oauthId: entity.oauthId,
     memoriesEnabled: entity.memoriesEnabled,
+    quotaSizeInBytes: entity.quotaSizeInBytes,
+    quotaUsageInBytes: entity.quotaUsageInBytes,
   };
 }

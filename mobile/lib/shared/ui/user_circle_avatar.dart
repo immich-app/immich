@@ -42,7 +42,7 @@ class UserCircleAvatar extends ConsumerWidget {
       child: user.profileImagePath.isEmpty
           ? textIcon
           : ClipRRect(
-              borderRadius: BorderRadius.circular(50),
+              borderRadius: const BorderRadius.all(Radius.circular(50)),
               child: CachedNetworkImage(
                 fit: BoxFit.cover,
                 cacheKey: user.profileImagePath,
@@ -51,7 +51,7 @@ class UserCircleAvatar extends ConsumerWidget {
                 placeholder: (_, __) => Image.memory(kTransparentImage),
                 imageUrl: profileImageUrl,
                 httpHeaders: {
-                  "Authorization": "Bearer ${Store.get(StoreKey.accessToken)}",
+                  "x-immich-user-token": Store.get(StoreKey.accessToken),
                 },
                 fadeInDuration: const Duration(milliseconds: 300),
                 errorWidget: (context, error, stackTrace) => textIcon,

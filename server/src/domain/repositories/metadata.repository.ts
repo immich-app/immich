@@ -1,4 +1,4 @@
-import { Tags } from 'exiftool-vendored';
+import { BinaryField, Tags } from 'exiftool-vendored';
 
 export const IMetadataRepository = 'IMetadataRepository';
 
@@ -26,7 +26,10 @@ export interface ImmichTags extends Omit<Tags, 'FocalLength' | 'Duration'> {
   MediaGroupUUID?: string;
   ImagePixelDepth?: string;
   FocalLength?: number;
-  Duration?: number | ExifDuration;
+  Duration?: number | string | ExifDuration;
+  EmbeddedVideoType?: string;
+  EmbeddedVideoFile?: BinaryField;
+  MotionPhotoVideo?: BinaryField;
 }
 
 export interface IMetadataRepository {
@@ -35,4 +38,5 @@ export interface IMetadataRepository {
   reverseGeocode(point: GeoPoint): Promise<ReverseGeocodeResult | null>;
   readTags(path: string): Promise<ImmichTags | null>;
   writeTags(path: string, tags: Partial<Tags>): Promise<void>;
+  extractBinaryTag(tagName: string, path: string): Promise<Buffer>;
 }

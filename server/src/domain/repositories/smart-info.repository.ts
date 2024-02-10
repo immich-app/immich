@@ -5,15 +5,25 @@ export const ISmartInfoRepository = 'ISmartInfoRepository';
 export type Embedding = number[];
 
 export interface EmbeddingSearch {
-  ownerId: string;
+  userIds: string[];
   embedding: Embedding;
   numResults: number;
+  withArchived?: boolean;
+}
+
+export interface FaceEmbeddingSearch extends EmbeddingSearch {
   maxDistance?: number;
+  hasPerson?: boolean;
+}
+
+export interface FaceSearchResult {
+  face: AssetFaceEntity;
+  distance: number;
 }
 
 export interface ISmartInfoRepository {
   init(modelName: string): Promise<void>;
   searchCLIP(search: EmbeddingSearch): Promise<AssetEntity[]>;
-  searchFaces(search: EmbeddingSearch): Promise<AssetFaceEntity[]>;
+  searchFaces(search: FaceEmbeddingSearch): Promise<FaceSearchResult[]>;
   upsert(smartInfo: Partial<SmartInfoEntity>, embedding?: Embedding): Promise<void>;
 }

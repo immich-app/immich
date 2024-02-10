@@ -3,7 +3,13 @@
 -- SmartInfoRepository.searchCLIP
 START TRANSACTION
 SET
-  LOCAL vectors.k = '100'
+  LOCAL vectors.enable_prefilter = on;
+
+SET
+  LOCAL vectors.search_mode = vbase;
+
+SET
+  LOCAL vectors.hnsw_ef_search = 100;
 SELECT
   "a"."id" AS "a_id",
   "a"."deviceAssetId" AS "a_deviceAssetId",
@@ -33,7 +39,7 @@ SELECT
   "a"."livePhotoVideoId" AS "a_livePhotoVideoId",
   "a"."originalFileName" AS "a_originalFileName",
   "a"."sidecarPath" AS "a_sidecarPath",
-  "a"."stackParentId" AS "a_stackParentId",
+  "a"."stackId" AS "a_stackId",
   "e"."assetId" AS "e_assetId",
   "e"."description" AS "e_description",
   "e"."exifImageWidth" AS "e_exifImageWidth",
@@ -48,6 +54,7 @@ SELECT
   "e"."projectionType" AS "e_projectionType",
   "e"."city" AS "e_city",
   "e"."livePhotoCID" AS "e_livePhotoCID",
+  "e"."autoStackId" AS "e_autoStackId",
   "e"."state" AS "e_state",
   "e"."country" AS "e_country",
   "e"."make" AS "e_make",
@@ -66,7 +73,12 @@ FROM
   INNER JOIN "smart_search" "s" ON "s"."assetId" = "a"."id"
   LEFT JOIN "exif" "e" ON "e"."assetId" = "a"."id"
 WHERE
-  ("a"."ownerId" = $1)
+  (
+    "a"."ownerId" IN ($1)
+    AND "a"."isArchived" = false
+    AND "a"."isVisible" = true
+    AND "a"."fileCreatedAt" < NOW()
+  )
   AND ("a"."deletedAt" IS NULL)
 ORDER BY
   "s"."embedding" <= > $2 ASC
@@ -77,28 +89,34 @@ COMMIT
 -- SmartInfoRepository.searchFaces
 START TRANSACTION
 SET
-  LOCAL vectors.k = '100'
+  LOCAL vectors.enable_prefilter = on;
+
+SET
+  LOCAL vectors.search_mode = vbase;
+
+SET
+  LOCAL vectors.hnsw_ef_search = 100;
 WITH
   "cte" AS (
     SELECT
-      "faces"."id" AS "faces_id",
-      "faces"."assetId" AS "faces_assetId",
-      "faces"."personId" AS "faces_personId",
-      "faces"."imageWidth" AS "faces_imageWidth",
-      "faces"."imageHeight" AS "faces_imageHeight",
-      "faces"."boundingBoxX1" AS "faces_boundingBoxX1",
-      "faces"."boundingBoxY1" AS "faces_boundingBoxY1",
-      "faces"."boundingBoxX2" AS "faces_boundingBoxX2",
-      "faces"."boundingBoxY2" AS "faces_boundingBoxY2",
-      1 + ("faces"."embedding" <= > $1) AS "distance"
+      "faces"."id" AS "id",
+      "faces"."assetId" AS "assetId",
+      "faces"."personId" AS "personId",
+      "faces"."imageWidth" AS "imageWidth",
+      "faces"."imageHeight" AS "imageHeight",
+      "faces"."boundingBoxX1" AS "boundingBoxX1",
+      "faces"."boundingBoxY1" AS "boundingBoxY1",
+      "faces"."boundingBoxX2" AS "boundingBoxX2",
+      "faces"."boundingBoxY2" AS "boundingBoxY2",
+      "faces"."embedding" <= > $1 AS "distance"
     FROM
       "asset_faces" "faces"
       INNER JOIN "assets" "asset" ON "asset"."id" = "faces"."assetId"
       AND ("asset"."deletedAt" IS NULL)
     WHERE
-      "asset"."ownerId" = $2
+      "asset"."ownerId" IN ($2)
     ORDER BY
-      "faces"."embedding" <= > $3 ASC
+      "faces"."embedding" <= > $1 ASC
     LIMIT
       100
   )
@@ -107,5 +125,5 @@ SELECT
 FROM
   "cte" "res"
 WHERE
-  res.distance <= $4
+  res.distance <= $3
 COMMIT

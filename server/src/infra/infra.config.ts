@@ -4,10 +4,6 @@ import { QueueOptions } from 'bullmq';
 import { RedisOptions } from 'ioredis';
 
 function parseRedisConfig(): RedisOptions {
-  if (process.env.IMMICH_TEST_ENV == 'true') {
-    return {};
-  }
-
   const redisUrl = process.env.REDIS_URL;
   if (redisUrl && redisUrl.startsWith('ioredis://')) {
     try {
@@ -19,19 +15,17 @@ function parseRedisConfig(): RedisOptions {
   }
   return {
     host: process.env.REDIS_HOSTNAME || 'immich_redis',
-    port: parseInt(process.env.REDIS_PORT || '6379'),
-    db: parseInt(process.env.REDIS_DBINDEX || '0'),
+    port: Number.parseInt(process.env.REDIS_PORT || '6379'),
+    db: Number.parseInt(process.env.REDIS_DBINDEX || '0'),
     username: process.env.REDIS_USERNAME || undefined,
     password: process.env.REDIS_PASSWORD || undefined,
     path: process.env.REDIS_SOCKET || undefined,
   };
 }
 
-export const redisConfig: RedisOptions = parseRedisConfig();
-
 export const bullConfig: QueueOptions = {
   prefix: 'immich_bull',
-  connection: redisConfig,
+  connection: parseRedisConfig(),
   defaultJobOptions: {
     attempts: 3,
     removeOnComplete: true,

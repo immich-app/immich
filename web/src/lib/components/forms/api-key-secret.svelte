@@ -8,7 +8,9 @@
 
   export let secret = '';
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    done: void;
+  }>();
   const handleDone = () => dispatch('done');
   let canCopyImagesToClipboard = true;
 

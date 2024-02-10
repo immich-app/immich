@@ -2,7 +2,7 @@
   import { browser } from '$app/environment';
   import { page } from '$app/stores';
   import { featureFlags } from '$lib/stores/server-config.store';
-  import { APIKeyResponseDto, AuthDeviceResponseDto, oauth, UserResponseDto } from '@api';
+  import { type APIKeyResponseDto, type AuthDeviceResponseDto, oauth } from '@api';
   import SettingAccordion from '../admin-page/settings/setting-accordion.svelte';
   import ChangePasswordSettings from './change-password-settings.svelte';
   import DeviceList from './device-list.svelte';
@@ -13,8 +13,10 @@
   import SidebarSettings from './sidebar-settings.svelte';
   import UserAPIKeyList from './user-api-key-list.svelte';
   import UserProfileSettings from './user-profile-settings.svelte';
-
-  export let user: UserResponseDto;
+  import { user } from '$lib/stores/user.store';
+  import { OpenSettingQueryParameterValue, QueryParameter } from '$lib/constants';
+  import AppearanceSettings from './appearance-settings.svelte';
+  import TrashSettings from './trash-settings.svelte';
 
   export let keys: APIKeyResponseDto[] = [];
   export let devices: AuthDeviceResponseDto[] = [];
@@ -25,8 +27,12 @@
   }
 </script>
 
+<SettingAccordion title="Appearance" subtitle="Manage your Immich appearance">
+  <AppearanceSettings />
+</SettingAccordion>
+
 <SettingAccordion title="Account" subtitle="Manage your account">
-  <UserProfileSettings {user} />
+  <UserProfileSettings user={$user} />
 </SettingAccordion>
 
 <SettingAccordion title="API Keys" subtitle="Manage your API keys">
@@ -42,16 +48,17 @@
 </SettingAccordion>
 
 <SettingAccordion title="Memories" subtitle="Manage what you see in your memories.">
-  <MemoriesSettings {user} />
+  <MemoriesSettings user={$user} />
 </SettingAccordion>
 
 {#if $featureFlags.loaded && $featureFlags.oauth}
   <SettingAccordion
     title="OAuth"
     subtitle="Manage your OAuth connection"
-    isOpen={oauthOpen || $page.url.searchParams.get('open') === 'oauth'}
+    isOpen={oauthOpen ||
+      $page.url.searchParams.get(QueryParameter.OPEN_SETTING) === OpenSettingQueryParameterValue.OAUTH}
   >
-    <OAuthSettings {user} />
+    <OAuthSettings user={$user} />
   </SettingAccordion>
 {/if}
 
@@ -60,9 +67,13 @@
 </SettingAccordion>
 
 <SettingAccordion title="Sharing" subtitle="Manage sharing with partners">
-  <PartnerSettings {user} />
+  <PartnerSettings user={$user} />
 </SettingAccordion>
 
 <SettingAccordion title="Sidebar" subtitle="Manage sidebar settings">
   <SidebarSettings />
+</SettingAccordion>
+
+<SettingAccordion title="Trash" subtitle="Manage trash settings">
+  <TrashSettings />
 </SettingAccordion>

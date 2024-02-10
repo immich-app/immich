@@ -1,4 +1,6 @@
 **/*.spec.js
+test/**
+upload/**
 .editorconfig
 .eslintignore
 .eslintrc.js

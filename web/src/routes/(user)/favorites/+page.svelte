@@ -26,7 +26,7 @@
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
-  $: isAllArchive = Array.from($selectedAssets).every((asset) => asset.isArchived);
+  $: isAllArchive = [...$selectedAssets].every((asset) => asset.isArchived);
 </script>
 
 <!-- Multiselection mode app bar -->
@@ -49,7 +49,7 @@
   </AssetSelectControlBar>
 {/if}
 
-<UserPageLayout user={data.user} hideNavbar={$isMultiSelectState} title={data.meta.title} scrollbar={false}>
+<UserPageLayout hideNavbar={$isMultiSelectState} title={data.meta.title} scrollbar={false}>
   <AssetGrid {assetStore} {assetInteractionStore} removeAction={AssetAction.UNFAVORITE}>
     <EmptyPlaceholder
       text="Add favorites to quickly find your best pictures and videos"

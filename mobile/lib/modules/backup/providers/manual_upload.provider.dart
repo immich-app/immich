@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cancellation_token_http/http.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/widgets.dart';
@@ -208,7 +210,7 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
                 state.totalAssetsToUpload == 1;
         state =
             state.copyWith(showDetailedNotification: showDetailedNotification);
-        final pmProgressHandler = PMProgressHandler();
+        final pmProgressHandler = Platform.isIOS ? PMProgressHandler() : null;
 
         final bool ok = await ref.read(backupServiceProvider).backupAsset(
               allUploadAssets,

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { locale } from '$lib/stores/preferences.store';
   import type { AuthDeviceResponseDto } from '@api';
-  import { DateTime, ToRelativeCalendarOptions } from 'luxon';
+  import { DateTime, type ToRelativeCalendarOptions } from 'luxon';
   import { createEventDispatcher } from 'svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import {
@@ -17,7 +17,9 @@
 
   export let device: AuthDeviceResponseDto;
 
-  const dispatcher = createEventDispatcher();
+  const dispatcher = createEventDispatcher<{
+    delete: void;
+  }>();
 
   const options: ToRelativeCalendarOptions = {
     unit: 'days',
@@ -32,9 +34,9 @@
       <Icon path={mdiAndroid} size="40" />
     {:else if device.deviceOS === 'iOS' || device.deviceOS === 'Mac OS'}
       <Icon path={mdiApple} size="40" />
-    {:else if device.deviceOS.indexOf('Safari') !== -1}
+    {:else if device.deviceOS.includes('Safari')}
       <Icon path={mdiAppleSafari} size="40" />
-    {:else if device.deviceOS.indexOf('Windows') !== -1}
+    {:else if device.deviceOS.includes('Windows')}
       <Icon path={mdiMicrosoftWindows} size="40" />
     {:else if device.deviceOS === 'Linux'}
       <Icon path={mdiLinux} size="40" />

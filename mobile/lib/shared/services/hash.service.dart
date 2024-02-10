@@ -1,7 +1,5 @@
-import 'dart:convert';
 import 'dart:io';
 
-import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/backup/background_service/background.service.dart';
@@ -119,37 +117,12 @@ class HashService {
   /// Hashes the given files and returns a list of the same length
   /// files that could not be hashed have a `null` value
   Future<List<Uint8List?>> _hashFiles(List<String> paths) async {
-    if (Platform.isAndroid) {
-      final List<Uint8List?>? hashes =
-          await _backgroundService.digestFiles(paths);
-      if (hashes == null) {
-        throw Exception("Hashing ${paths.length} files failed");
-      }
-      return hashes;
-    } else if (Platform.isIOS) {
-      final List<Uint8List?> result = List.filled(paths.length, null);
-      for (int i = 0; i < paths.length; i++) {
-        result[i] = await _hashAssetDart(File(paths[i]));
-      }
-      return result;
-    } else {
-      throw Exception("_hashFiles implementation missing");
+    final List<Uint8List?>? hashes =
+        await _backgroundService.digestFiles(paths);
+    if (hashes == null) {
+      throw Exception("Hashing ${paths.length} files failed");
     }
-  }
-
-  /// Hashes a single file using Dart's crypto package
-  Future<Uint8List?> _hashAssetDart(File f) async {
-    late Digest output;
-    final sink = sha1.startChunkedConversion(
-      ChunkedConversionSink<Digest>.withCallback((accumulated) {
-        output = accumulated.first;
-      }),
-    );
-    await for (final chunk in f.openRead()) {
-      sink.add(chunk);
-    }
-    sink.close();
-    return Uint8List.fromList(output.bytes);
+    return hashes;
   }
 
   /// Converts [AssetEntity]s that were successfully hashed to [Asset]s

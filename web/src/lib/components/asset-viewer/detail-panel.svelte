@@ -1,9 +1,8 @@
 <script lang="ts">
-  import { page } from '$app/stores';
   import { locale } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { getAssetFilename } from '$lib/utils/asset-utils';
-  import { AlbumResponseDto, AssetResponseDto, ThumbnailFormat, api } from '@api';
+  import { type AlbumResponseDto, type AssetResponseDto, ThumbnailFormat, api } from '@api';
   import { DateTime } from 'luxon';
   import { createEventDispatcher, onDestroy } from 'svelte';
   import { slide } from 'svelte/transition';
@@ -28,18 +27,21 @@
   import Map from '../shared-components/map/map.svelte';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { websocketStore } from '$lib/stores/websocket';
-  import { AppRoute } from '$lib/constants';
+  import { AppRoute, QueryParameter } from '$lib/constants';
   import ChangeLocation from '../shared-components/change-location.svelte';
   import { handleError } from '../../utils/handle-error';
   import { user } from '$lib/stores/user.store';
+  import { autoGrowHeight } from '$lib/utils/autogrow';
+  import { clickOutside } from '$lib/utils/click-outside';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
   export let albumId: string | null = null;
 
   let showAssetPath = false;
-  let textarea: HTMLTextAreaElement;
+  let textArea: HTMLTextAreaElement;
   let description: string;
+  let originalDescription: string;
   let showEditFaces = false;
   let previousId: string;
 
@@ -53,17 +55,22 @@
     }
   }
 
-  $: isOwner = $page?.data?.user?.id === asset.ownerId;
+  $: isOwner = $user?.id === asset.ownerId;
 
-  $: {
+  const handleNewAsset = async (newAsset: AssetResponseDto) => {
+    description = newAsset?.exifInfo?.description || '';
+
     // Get latest description from server
-    if (asset.id && !api.isSharedLink) {
-      api.assetApi.getAssetById({ id: asset.id }).then((res) => {
-        people = res.data?.people || [];
-        textarea.value = res.data?.exifInfo?.description || '';
-      });
+    if (newAsset.id && !api.isSharedLink) {
+      const { data } = await api.assetApi.getAssetInfo({ id: asset.id });
+      people = data?.people || [];
+
+      description = data.exifInfo?.description || '';
     }
-  }
+    originalDescription = description;
+  };
+
+  $: handleNewAsset(asset);
 
   $: latlng = (() => {
     const lat = asset.exifInfo?.latitude;
@@ -87,7 +94,27 @@
     unsubscribe();
   });
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    close: void;
+    descriptionFocusIn: void;
+    descriptionFocusOut: void;
+    click: AlbumResponseDto;
+    closeViewer: void;
+  }>();
+
+  const handleKeypress = async (event: KeyboardEvent) => {
+    if (event.target !== textArea) {
+      return;
+    }
+    const ctrl = event.ctrlKey;
+    switch (event.key) {
+      case 'Enter': {
+        if (ctrl && event.target === textArea) {
+          handleFocusOut();
+        }
+      }
+    }
+  };
 
   const getMegapixel = (width: number, height: number): number | undefined => {
     const megapixel = Math.round((height * width) / 1_000_000);
@@ -100,32 +127,31 @@
   };
 
   const handleRefreshPeople = async () => {
-    await api.assetApi.getAssetById({ id: asset.id }).then((res) => {
+    await api.assetApi.getAssetInfo({ id: asset.id }).then((res) => {
       people = res.data?.people || [];
-      textarea.value = res.data?.exifInfo?.description || '';
+      textArea.value = res.data?.exifInfo?.description || '';
     });
     showEditFaces = false;
   };
 
-  const autoGrowHeight = (e: Event) => {
-    const target = e.target as HTMLTextAreaElement;
-    target.style.height = 'auto';
-    target.style.height = `${target.scrollHeight}px`;
-  };
-
   const handleFocusIn = () => {
-    dispatch('description-focus-in');
+    dispatch('descriptionFocusIn');
   };
 
   const handleFocusOut = async () => {
-    dispatch('description-focus-out');
+    textArea.blur();
+    if (description === originalDescription) {
+      return;
+    }
+    originalDescription = description;
+    dispatch('descriptionFocusOut');
     try {
       await api.assetApi.updateAsset({
         id: asset.id,
         updateAssetDto: { description },
       });
     } catch (error) {
-      console.error(error);
+      handleError(error, 'Cannot update the description');
     }
   };
 
@@ -161,6 +187,8 @@
   }
 </script>
 
+<svelte:window on:keydown={handleKeypress} />
+
 <section class="relative p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
   <div class="flex place-items-center gap-2">
     <button
@@ -187,19 +215,28 @@
     </section>
   {/if}
 
-  <section class="mx-4 mt-10" style:display={!isOwner && textarea?.value == '' ? 'none' : 'block'}>
-    <textarea
-      bind:this={textarea}
-      class="max-h-[500px]
+  {#if isOwner}
+    <section class="px-4 mt-10">
+      {#key asset.id}
+        <textarea
+          disabled={!isOwner || api.isSharedLink}
+          bind:this={textArea}
+          class="max-h-[500px]
       w-full resize-none overflow-hidden border-b border-gray-500 bg-transparent text-base text-black outline-none transition-all focus:border-b-2 focus:border-immich-primary disabled:border-none dark:text-white dark:focus:border-immich-dark-primary"
-      placeholder={!isOwner ? '' : 'Add a description'}
-      on:focusin={handleFocusIn}
-      on:focusout={handleFocusOut}
-      on:input={autoGrowHeight}
-      bind:value={description}
-      disabled={!isOwner}
-    />
-  </section>
+          placeholder={isOwner ? 'Add a description' : ''}
+          on:focusin={handleFocusIn}
+          on:focusout={handleFocusOut}
+          on:input={() => autoGrowHeight(textArea)}
+          bind:value={description}
+          use:autoGrowHeight
+          use:clickOutside
+          on:outclick={handleFocusOut}
+        />
+      {/key}
+    </section>
+  {:else if description}
+    <p class="px-4 break-words whitespace-pre-line w-full text-black dark:text-white text-base">{description}</p>
+  {/if}
 
   {#if !api.isSharedLink && people.length > 0}
     <section class="px-4 py-4 text-sm">
@@ -238,8 +275,10 @@
               on:mouseleave={() => ($boundingBoxesArray = [])}
             >
               <a
-                href="/people/{person.id}?previousRoute={albumId ? `${AppRoute.ALBUMS}/${albumId}` : AppRoute.PHOTOS}"
-                on:click={() => dispatch('close-viewer')}
+                href="{AppRoute.PEOPLE}/{person.id}?{QueryParameter.PREVIOUS_ROUTE}={albumId
+                  ? `${AppRoute.ALBUMS}/${albumId}`
+                  : AppRoute.PHOTOS}"
+                on:click={() => dispatch('closeViewer')}
               >
                 <div class="relative">
                   <ImageThumbnail
@@ -257,19 +296,29 @@
                 <p class="mt-1 truncate font-medium" title={person.name}>{person.name}</p>
                 {#if person.birthDate}
                   {@const personBirthDate = DateTime.fromISO(person.birthDate)}
-                  <p
-                    class="font-light"
-                    title={personBirthDate.toLocaleString(
-                      {
-                        month: 'long',
-                        day: 'numeric',
-                        year: 'numeric',
-                      },
-                      { locale: $locale },
-                    )}
-                  >
-                    Age {Math.floor(DateTime.fromISO(asset.fileCreatedAt).diff(personBirthDate, 'years').years)}
-                  </p>
+                  {@const age = Math.floor(DateTime.fromISO(asset.fileCreatedAt).diff(personBirthDate, 'years').years)}
+                  {@const ageInMonths = Math.floor(
+                    DateTime.fromISO(asset.fileCreatedAt).diff(personBirthDate, 'months').months,
+                  )}
+                  {#if age >= 0}
+                    <p
+                      class="font-light"
+                      title={personBirthDate.toLocaleString(
+                        {
+                          month: 'long',
+                          day: 'numeric',
+                          year: 'numeric',
+                        },
+                        { locale: $locale },
+                      )}
+                    >
+                      {#if ageInMonths <= 11}
+                        Age {ageInMonths} months
+                      {:else}
+                        Age {age}
+                      {/if}
+                    </p>
+                  {/if}
                 {/if}
               </a>
             </div>
@@ -291,7 +340,9 @@
         </div>
       </div>
     {:else}
-      <p class="text-sm">DETAILS</p>
+      <div class="flex h-10 w-full items-center justify-between text-sm">
+        <h2>DETAILS</h2>
+      </div>
     {/if}
 
     {#if asset.exifInfo?.dateTimeOriginal && !asset.isReadOnly}
@@ -346,7 +397,7 @@
           </button>
         {/if}
       </div>
-    {:else if !asset.exifInfo?.dateTimeOriginal && !asset.isReadOnly && $user && asset.ownerId === $user.id}
+    {:else if !asset.exifInfo?.dateTimeOriginal && !asset.isReadOnly && isOwner}
       <div class="flex justify-between place-items-start gap-4 py-4">
         <div class="flex gap-4">
           <div>
@@ -509,7 +560,7 @@
           </div>
         {/if}
       </div>
-    {:else if !asset.exifInfo?.city && !asset.isReadOnly && $user && asset.ownerId === $user.id}
+    {:else if !asset.exifInfo?.city && !asset.isReadOnly && isOwner}
       <div
         class="flex justify-between place-items-start gap-4 py-4 rounded-lg hover:dark:text-immich-dark-primary hover:text-immich-primary"
         on:click={() => (isShowChangeLocation = true)}
@@ -562,7 +613,13 @@
 
 {#if latlng && $featureFlags.loaded && $featureFlags.map}
   <div class="h-[360px]">
-    <Map mapMarkers={[{ lat: latlng.lat, lon: latlng.lng, id: asset.id }]} center={latlng} zoom={14} simplified>
+    <Map
+      mapMarkers={[{ lat: latlng.lat, lon: latlng.lng, id: asset.id }]}
+      center={latlng}
+      zoom={15}
+      simplified
+      useLocationPin
+    >
       <svelte:fragment slot="popup" let:marker>
         {@const { lat, lon } = marker}
         <div class="flex flex-col items-center gap-1">

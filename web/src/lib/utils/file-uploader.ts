@@ -1,9 +1,9 @@
 import { uploadAssetsStore } from '$lib/stores/upload';
 import { addAssetsToAlbum } from '$lib/utils/asset-utils';
-import { api, AssetFileUploadResponseDto } from '@api';
-import { notificationController, NotificationType } from './../components/shared-components/notification/notification';
+import { api, type AssetFileUploadResponseDto } from '@api';
 import { UploadState } from '$lib/models/upload-asset';
 import { ExecutorQueue } from '$lib/utils/executor-queue';
+import { getServerErrorMessage, handleError } from './handle-error';
 
 let _extensions: string[];
 
@@ -17,7 +17,7 @@ const getExtensions = async () => {
   return _extensions;
 };
 
-export const openFileUploadDialog = async (albumId: string | undefined = undefined) => {
+export const openFileUploadDialog = async (albumId?: string | undefined) => {
   const extensions = await getExtensions();
 
   return new Promise<(string | undefined)[]>((resolve, reject) => {
@@ -27,7 +27,7 @@ export const openFileUploadDialog = async (albumId: string | undefined = undefin
       fileSelector.type = 'file';
       fileSelector.multiple = true;
       fileSelector.accept = extensions.join(',');
-      fileSelector.onchange = async (e: Event) => {
+      fileSelector.addEventListener('change', async (e: Event) => {
         const target = e.target as HTMLInputElement;
         if (!target.files) {
           return;
@@ -35,12 +35,12 @@ export const openFileUploadDialog = async (albumId: string | undefined = undefin
         const files = Array.from(target.files);
 
         resolve(fileUploadHandler(files, albumId));
-      };
+      });
 
       fileSelector.click();
-    } catch (e) {
-      console.log('Error selecting file', e);
-      reject(e);
+    } catch (error) {
+      console.log('Error selecting file', error);
+      reject(error);
     }
   });
 };
@@ -50,7 +50,7 @@ export const fileUploadHandler = async (files: File[], albumId: string | undefin
   const promises = [];
   for (const file of files) {
     const name = file.name.toLowerCase();
-    if (extensions.some((ext) => name.endsWith(ext))) {
+    if (extensions.some((extension) => name.endsWith(extension))) {
       uploadAssetsStore.addNewUploadAsset({ id: getDeviceAssetId(file), file, albumId });
       promises.push(uploadExecutionQueue.addTask(() => fileUploader(file, albumId)));
     }
@@ -83,7 +83,8 @@ async function fileUploader(asset: File, albumId: string | undefined = undefined
           key: api.getKey(),
         },
         {
-          onUploadProgress: ({ loaded, total }) => {
+          onUploadProgress: ({ event }) => {
+            const { loaded, total } = event;
             uploadAssetsStore.updateProgress(deviceAssetId, loaded, total);
           },
         },
@@ -115,25 +116,10 @@ async function fileUploader(asset: File, albumId: string | undefined = undefined
         return res.id;
       }
     })
-    .catch((reason) => {
-      console.log('error uploading file ', reason);
+    .catch(async (error) => {
+      await handleError(error, 'Unable to upload file');
+      const reason = (await getServerErrorMessage(error)) || error;
       uploadAssetsStore.updateAsset(deviceAssetId, { state: UploadState.ERROR, error: reason });
-      handleUploadError(asset, JSON.stringify(reason));
       return undefined;
     });
-}
-
-function handleUploadError(asset: File, respBody = '{}', extraMessage?: string) {
-  try {
-    const res = JSON.parse(respBody);
-    const extraMsg = res ? ' ' + res?.message : '';
-
-    notificationController.show({
-      type: NotificationType.Error,
-      message: `Cannot upload file ${asset.name} ${extraMsg}${extraMessage}`,
-      timeout: 5000,
-    });
-  } catch (e) {
-    console.error('ERROR parsing data JSON in handleUploadError');
-  }
 }

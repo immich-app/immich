@@ -29,10 +29,10 @@ class APIKeyResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is APIKeyResponseDto &&
-     other.createdAt == createdAt &&
-     other.id == id &&
-     other.name == name &&
-     other.updatedAt == updatedAt;
+    other.createdAt == createdAt &&
+    other.id == id &&
+    other.name == name &&
+    other.updatedAt == updatedAt;
 
   @override
   int get hashCode =>
@@ -62,10 +62,10 @@ class APIKeyResponseDto {
       final json = value.cast<String, dynamic>();
 
       return APIKeyResponseDto(
-        createdAt: mapDateTime(json, r'createdAt', '')!,
+        createdAt: mapDateTime(json, r'createdAt', r'')!,
         id: mapValueOfType<String>(json, r'id')!,
         name: mapValueOfType<String>(json, r'name')!,
-        updatedAt: mapDateTime(json, r'updatedAt', '')!,
+        updatedAt: mapDateTime(json, r'updatedAt', r'')!,
       );
     }
     return null;

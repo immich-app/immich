@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { api, UpdateLibraryDto, LibraryResponseDto, LibraryType, LibraryStatsResponseDto } from '@api';
+  import { api, type LibraryResponseDto, LibraryType, type LibraryStatsResponseDto } from '@api';
   import { onMount } from 'svelte';
   import Button from '../elements/buttons/button.svelte';
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
@@ -7,7 +7,6 @@
   import { handleError } from '$lib/utils/handle-error';
   import { fade } from 'svelte/transition';
   import Icon from '$lib/components/elements/icon.svelte';
-  import Pulse from 'svelte-loading-spinners/Pulse.svelte';
   import { slide } from 'svelte/transition';
   import LibraryImportPathsForm from '../forms/library-import-paths-form.svelte';
   import LibraryScanSettingsForm from '../forms/library-scan-settings-form.svelte';
@@ -18,6 +17,7 @@
   import MenuOption from '../shared-components/context-menu/menu-option.svelte';
   import { getContextMenuPosition } from '$lib/utils/context-menu';
   import { mdiDatabase, mdiDotsVertical, mdiUpload } from '@mdi/js';
+  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
 
   let libraries: LibraryResponseDto[] = [];
 
@@ -56,8 +56,8 @@
     updateLibraryIndex = null;
     showContextMenu = false;
 
-    for (let i = 0; i < dropdownOpen.length; i++) {
-      dropdownOpen[i] = false;
+    for (let index = 0; index < dropdownOpen.length; index++) {
+      dropdownOpen[index] = false;
     }
   };
 
@@ -87,9 +87,9 @@
 
     dropdownOpen.length = libraries.length;
 
-    for (let i = 0; i < libraries.length; i++) {
-      await refreshStats(i);
-      dropdownOpen[i] = false;
+    for (let index = 0; index < libraries.length; index++) {
+      await refreshStats(index);
+      dropdownOpen[index] = false;
     }
   }
 
@@ -112,16 +112,14 @@
     }
   };
 
-  const handleUpdate = async (event: CustomEvent<UpdateLibraryDto>) => {
+  const handleUpdate = async (event: Partial<LibraryResponseDto>) => {
     if (updateLibraryIndex === null) {
       return;
     }
 
     try {
-      const dto = event.detail;
       const libraryId = libraries[updateLibraryIndex].id;
-
-      await api.libraryApi.updateLibrary({ id: libraryId, updateLibraryDto: dto });
+      await api.libraryApi.updateLibrary({ id: libraryId, updateLibraryDto: { ...event } });
     } catch (error) {
       handleError(error, 'Unable to update library');
     } finally {
@@ -325,7 +323,7 @@
               <td class="w-1/3 text-ellipsis px-4 text-sm">{library.name}</td>
               {#if totalCount[index] == undefined}
                 <td colspan="2" class="flex w-1/3 items-center justify-center text-ellipsis px-4 text-sm">
-                  <Pulse color="gray" size="40" unit="px" />
+                  <LoadingSpinner size="40" />
                 </td>
               {:else}
                 <td class="w-1/6 text-ellipsis px-4 text-sm">
@@ -375,19 +373,27 @@
             </tr>
             {#if renameLibrary === index}
               <div transition:slide={{ duration: 250 }}>
-                <LibraryRenameForm {library} on:submit={handleUpdate} on:cancel={() => (renameLibrary = null)} />
+                <LibraryRenameForm
+                  {library}
+                  on:submit={({ detail }) => handleUpdate(detail)}
+                  on:cancel={() => (renameLibrary = null)}
+                />
               </div>
             {/if}
             {#if editImportPaths === index}
               <div transition:slide={{ duration: 250 }}>
-                <LibraryImportPathsForm {library} on:submit={handleUpdate} on:cancel={() => (editImportPaths = null)} />
+                <LibraryImportPathsForm
+                  {library}
+                  on:submit={({ detail }) => handleUpdate(detail)}
+                  on:cancel={() => (editImportPaths = null)}
+                />
               </div>
             {/if}
             {#if editScanSettings === index}
               <div transition:slide={{ duration: 250 }} class="mb-4 ml-4 mr-4">
                 <LibraryScanSettingsForm
                   {library}
-                  on:submit={handleUpdate}
+                  on:submit={({ detail }) => handleUpdate(detail.library)}
                   on:cancel={() => (editScanSettings = null)}
                 />
               </div>

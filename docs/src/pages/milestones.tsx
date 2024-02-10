@@ -1,4 +1,5 @@
 import {
+  mdiEyeRefreshOutline,
   mdiAccountGroup,
   mdiAndroid,
   mdiAppleIos,
@@ -11,6 +12,7 @@ import {
   mdiCollage,
   mdiContentCopy,
   mdiDevices,
+  mdiExpansionCard,
   mdiFaceMan,
   mdiFaceManOutline,
   mdiFile,
@@ -26,12 +28,14 @@ import {
   mdiMagnify,
   mdiMap,
   mdiMaterialDesign,
+  mdiMatrix,
   mdiMerge,
   mdiMonitor,
   mdiMotionPlayOutline,
   mdiPalette,
   mdiPanVertical,
   mdiPartyPopper,
+  mdiPencil,
   mdiRaw,
   mdiRotate360,
   mdiSecurity,
@@ -52,6 +56,42 @@ import React from 'react';
 import Timeline, { DateType, Item } from '../components/timeline';
 
 const items: Item[] = [
+  {
+    icon: mdiEyeRefreshOutline,
+    description: 'Automatically import files in external libraries when the operating system detects changes.',
+    title: 'Library watching',
+    release: 'v1.94.0',
+    tag: 'v1.94.0',
+    date: new Date(2024, 0, 31),
+    dateType: DateType.RELEASE,
+  },
+  {
+    icon: mdiExpansionCard,
+    description: 'Hardware acceleration support for Nvidia and Intel devices through CUDA and OpenVINO.',
+    title: 'GPU acceleration for machine-learning',
+    release: 'v1.94.0',
+    tag: 'v1.94.0',
+    date: new Date(2024, 0, 31),
+    dateType: DateType.RELEASE,
+  },
+  {
+    icon: mdiMatrix,
+    description: 'Moved the search from typesense to pgvecto.rs',
+    title: 'Search improvement with pgvecto.rs',
+    release: 'v1.91.0',
+    tag: 'v1.91.0',
+    date: new Date(2023, 11, 15),
+    dateType: DateType.RELEASE,
+  },
+  {
+    icon: mdiPencil,
+    description: "Edit a photo or video's date, time, hours, timezone, and GPS information",
+    title: 'Edit metadata',
+    release: 'v1.90.0',
+    tag: 'v1.90.0',
+    date: new Date(2023, 11, 7),
+    dateType: DateType.RELEASE,
+  },
   {
     icon: mdiVectorCombine,
     description:

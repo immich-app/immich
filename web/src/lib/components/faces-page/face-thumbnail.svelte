@@ -10,7 +10,9 @@
   export let circle = false;
   export let border = false;
 
-  let dispatch = createEventDispatcher();
+  let dispatch = createEventDispatcher<{
+    click: PersonResponseDto;
+  }>();
 
   const handleOnClicked = () => {
     dispatch('click', person);

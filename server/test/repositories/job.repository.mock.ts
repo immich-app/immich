@@ -11,8 +11,10 @@ export const newJobRepositoryMock = (): jest.Mocked<IJobRepository> => {
     pause: jest.fn(),
     resume: jest.fn(),
     queue: jest.fn().mockImplementation(() => Promise.resolve()),
+    queueAll: jest.fn().mockImplementation(() => Promise.resolve()),
     getQueueStatus: jest.fn(),
     getJobCounts: jest.fn(),
     clear: jest.fn(),
+    waitForQueueCompletion: jest.fn(),
   };
 };

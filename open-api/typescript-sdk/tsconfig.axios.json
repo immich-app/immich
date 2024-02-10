@@ -1,0 +1,13 @@
+{
+  "include": ["axios.ts", "axios-client/**/*"],
+  "compilerOptions": {
+    "target": "esnext",
+    "strict": true,
+    "skipLibCheck": true,
+    "declaration": true,
+    "outDir": "build/axios",
+    "module": "esnext",
+    "moduleResolution": "Bundler",
+    "lib": ["esnext"]
+  }
+}

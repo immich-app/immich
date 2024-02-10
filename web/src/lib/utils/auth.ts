@@ -1,6 +1,8 @@
 import { api } from '@api';
 import { redirect } from '@sveltejs/kit';
 import { AppRoute } from '../constants';
+import { getSavedUser, setUser } from '$lib/stores/user.store';
+import { serverInfo } from '$lib/stores/server-info.store';
 
 export interface AuthOptions {
   admin?: true;
@@ -15,20 +17,37 @@ export const getAuthUser = async () => {
   }
 };
 
-// TODO: re-use already loaded user (once) instead of fetching on each page navigation
 export const authenticate = async (options?: AuthOptions) => {
   options = options || {};
 
-  const user = await getAuthUser();
+  const savedUser = getSavedUser();
+  const user = savedUser || (await getAuthUser());
+
   if (!user) {
-    throw redirect(302, AppRoute.AUTH_LOGIN);
+    redirect(302, AppRoute.AUTH_LOGIN);
   }
 
   if (options.admin && !user.isAdmin) {
-    throw redirect(302, AppRoute.PHOTOS);
+    redirect(302, AppRoute.PHOTOS);
   }
 
-  return user;
+  if (!savedUser) {
+    setUser(user);
+  }
 };
 
-export const isLoggedIn = async () => getAuthUser().then((user) => !!user);
+export const requestServerInfo = async () => {
+  if (getSavedUser()) {
+    const { data } = await api.serverInfoApi.getServerInfo();
+    serverInfo.set(data);
+  }
+};
+
+export const isLoggedIn = async () => {
+  const savedUser = getSavedUser();
+  const user = savedUser || (await getAuthUser());
+  if (!savedUser) {
+    setUser(user);
+  }
+  return user;
+};

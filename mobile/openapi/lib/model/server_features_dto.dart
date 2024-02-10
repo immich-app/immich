@@ -13,7 +13,6 @@ part of openapi.api;
 class ServerFeaturesDto {
   /// Returns a new [ServerFeaturesDto] instance.
   ServerFeaturesDto({
-    required this.clipEncode,
     required this.configFile,
     required this.facialRecognition,
     required this.map,
@@ -23,11 +22,9 @@ class ServerFeaturesDto {
     required this.reverseGeocoding,
     required this.search,
     required this.sidecar,
-    required this.tagImage,
+    required this.smartSearch,
     required this.trash,
   });
-
-  bool clipEncode;
 
   bool configFile;
 
@@ -47,29 +44,27 @@ class ServerFeaturesDto {
 
   bool sidecar;
 
-  bool tagImage;
+  bool smartSearch;
 
   bool trash;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ServerFeaturesDto &&
-     other.clipEncode == clipEncode &&
-     other.configFile == configFile &&
-     other.facialRecognition == facialRecognition &&
-     other.map == map &&
-     other.oauth == oauth &&
-     other.oauthAutoLaunch == oauthAutoLaunch &&
-     other.passwordLogin == passwordLogin &&
-     other.reverseGeocoding == reverseGeocoding &&
-     other.search == search &&
-     other.sidecar == sidecar &&
-     other.tagImage == tagImage &&
-     other.trash == trash;
+    other.configFile == configFile &&
+    other.facialRecognition == facialRecognition &&
+    other.map == map &&
+    other.oauth == oauth &&
+    other.oauthAutoLaunch == oauthAutoLaunch &&
+    other.passwordLogin == passwordLogin &&
+    other.reverseGeocoding == reverseGeocoding &&
+    other.search == search &&
+    other.sidecar == sidecar &&
+    other.smartSearch == smartSearch &&
+    other.trash == trash;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (clipEncode.hashCode) +
     (configFile.hashCode) +
     (facialRecognition.hashCode) +
     (map.hashCode) +
@@ -79,15 +74,14 @@ class ServerFeaturesDto {
     (reverseGeocoding.hashCode) +
     (search.hashCode) +
     (sidecar.hashCode) +
-    (tagImage.hashCode) +
+    (smartSearch.hashCode) +
     (trash.hashCode);
 
   @override
-  String toString() => 'ServerFeaturesDto[clipEncode=$clipEncode, configFile=$configFile, facialRecognition=$facialRecognition, map=$map, oauth=$oauth, oauthAutoLaunch=$oauthAutoLaunch, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, search=$search, sidecar=$sidecar, tagImage=$tagImage, trash=$trash]';
+  String toString() => 'ServerFeaturesDto[configFile=$configFile, facialRecognition=$facialRecognition, map=$map, oauth=$oauth, oauthAutoLaunch=$oauthAutoLaunch, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, trash=$trash]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'clipEncode'] = this.clipEncode;
       json[r'configFile'] = this.configFile;
       json[r'facialRecognition'] = this.facialRecognition;
       json[r'map'] = this.map;
@@ -97,7 +91,7 @@ class ServerFeaturesDto {
       json[r'reverseGeocoding'] = this.reverseGeocoding;
       json[r'search'] = this.search;
       json[r'sidecar'] = this.sidecar;
-      json[r'tagImage'] = this.tagImage;
+      json[r'smartSearch'] = this.smartSearch;
       json[r'trash'] = this.trash;
     return json;
   }
@@ -110,7 +104,6 @@ class ServerFeaturesDto {
       final json = value.cast<String, dynamic>();
 
       return ServerFeaturesDto(
-        clipEncode: mapValueOfType<bool>(json, r'clipEncode')!,
         configFile: mapValueOfType<bool>(json, r'configFile')!,
         facialRecognition: mapValueOfType<bool>(json, r'facialRecognition')!,
         map: mapValueOfType<bool>(json, r'map')!,
@@ -120,7 +113,7 @@ class ServerFeaturesDto {
         reverseGeocoding: mapValueOfType<bool>(json, r'reverseGeocoding')!,
         search: mapValueOfType<bool>(json, r'search')!,
         sidecar: mapValueOfType<bool>(json, r'sidecar')!,
-        tagImage: mapValueOfType<bool>(json, r'tagImage')!,
+        smartSearch: mapValueOfType<bool>(json, r'smartSearch')!,
         trash: mapValueOfType<bool>(json, r'trash')!,
       );
     }
@@ -169,7 +162,6 @@ class ServerFeaturesDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'clipEncode',
     'configFile',
     'facialRecognition',
     'map',
@@ -179,7 +171,7 @@ class ServerFeaturesDto {
     'reverseGeocoding',
     'search',
     'sidecar',
-    'tagImage',
+    'smartSearch',
     'trash',
   };
 }

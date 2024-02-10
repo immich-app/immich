@@ -99,7 +99,7 @@ class AlbumSortByOptions extends _$AlbumSortByOptions {
         .watch(appSettingsServiceProvider)
         .getSetting(AppSettingsEnum.selectedAlbumSortOrder);
     return AlbumSortMode.values.firstWhere(
-      (e) => e.index == sortOpt,
+      (e) => e.storeIndex == sortOpt,
       orElse: () => AlbumSortMode.title,
     );
   }

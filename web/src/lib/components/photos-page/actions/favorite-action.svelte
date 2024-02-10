@@ -7,8 +7,9 @@
   } from '$lib/components/shared-components/notification/notification';
   import { handleError } from '$lib/utils/handle-error';
   import { api } from '@api';
-  import { OnFavorite, getAssetControlContext } from '../asset-select-control-bar.svelte';
+  import { getAssetControlContext } from '../asset-select-control-bar.svelte';
   import { mdiHeartMinusOutline, mdiHeartOutline, mdiTimerSand } from '@mdi/js';
+  import type { OnFavorite } from '$lib/utils/actions';
 
   export let onFavorite: OnFavorite | undefined = undefined;
 
@@ -27,7 +28,7 @@
     loading = true;
 
     try {
-      const assets = Array.from(getOwnedAssets()).filter((asset) => asset.isFavorite !== isFavorite);
+      const assets = [...getOwnedAssets()].filter((asset) => asset.isFavorite !== isFavorite);
 
       const ids = assets.map(({ id }) => id);
 

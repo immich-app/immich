@@ -8,6 +8,8 @@
 import Flutter
 import BackgroundTasks
 import path_provider_foundation
+import CryptoKit
+import Network
 
 class BackgroundServicePlugin: NSObject, FlutterPlugin {
     
@@ -102,9 +104,59 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
             case "backgroundAppRefreshEnabled":
                 handleBackgroundRefreshStatus(call: call, result: result)
                 break
+            case "digestFiles":
+                handleDigestFiles(call: call, result: result)
+                break
             default:
                 result(FlutterMethodNotImplemented)
                 break
+        }
+    }
+    
+    // Calculates the SHA-1 hash of each file from the list of paths provided
+    func handleDigestFiles(call: FlutterMethodCall, result: @escaping FlutterResult) {
+        
+        let bufsize = 2 * 1024 * 1024
+        // Private error to throw if file cannot be read
+        enum DigestError: String, LocalizedError {
+            case NoFileHandle = "Cannot Open File Handle"
+
+            public var errorDescription: String? { self.rawValue }
+        }
+        
+        // Parse the arguments or else fail
+        guard let args = call.arguments as? Array<String> else {
+            print("Cannot parse args as array: \(String(describing: call.arguments))")
+            result(FlutterError(code: "Malformed",
+                                message: "Received args is not an Array<String>",
+                                details: nil))
+            return
+        }
+        
+        // Compute hash in background thread
+        DispatchQueue.global(qos: .background).async {
+            var hashes: [FlutterStandardTypedData?] = Array(repeating: nil, count: args.count)
+            for i in (0 ..< args.count) {
+                do {
+                    guard let file = FileHandle(forReadingAtPath: args[i]) else { throw DigestError.NoFileHandle }
+                    var hasher = Insecure.SHA1.init();
+                    while autoreleasepool(invoking: {
+                        let chunk = file.readData(ofLength: bufsize)
+                        guard !chunk.isEmpty else { return false } // EOF
+                        hasher.update(data: chunk)
+                        return true // continue
+                    }) { }
+                    let digest = hasher.finalize()
+                    hashes[i] = FlutterStandardTypedData(bytes: Data(Array(digest.makeIterator())))
+                } catch {
+                    print("Cannot calculate the digest of the file \(args[i]) due to \(error.localizedDescription)")
+                }
+            }
+            
+            // Return result in main thread
+            DispatchQueue.main.async {
+                result(Array(hashes))
+            }
         }
     }
     
@@ -284,13 +336,27 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
         defaults.set(Date().timeIntervalSince1970, forKey: "last_background_fetch_run_time")
         
         // If we have required charging, we should check the charging status
-        let requireCharging = defaults.value(forKey: "require_charging") as? Bool
-        if (requireCharging ?? false) {
+        let requireCharging = defaults.value(forKey: "require_charging") as? Bool ?? false
+        if (requireCharging) {
             UIDevice.current.isBatteryMonitoringEnabled = true
             if (UIDevice.current.batteryState == .unplugged) {
                 // The device is unplugged and we have required charging
                 // Therefore, we will simply complete the task without
                 // running it.
+                task.setTaskCompleted(success: true)
+                return
+            }
+        }
+        
+        // If we have required Wi-Fi, we can check the isExpensive property
+        let requireWifi = defaults.value(forKey: "require_wifi") as? Bool ?? false
+        if (requireWifi) {
+            let wifiMonitor = NWPathMonitor(requiredInterfaceType: .wifi)
+            let isExpensive = wifiMonitor.currentPath.isExpensive
+            if (isExpensive) {
+                // The network is expensive and we have required Wi-Fi
+                // Therfore, we will simply complete the task without
+                // running it
                 task.setTaskCompleted(success: true)
                 return
             }

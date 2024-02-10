@@ -18,7 +18,7 @@
   import type { PageData } from './$types';
   import Icon from '$lib/components/elements/icon.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import { AppRoute } from '$lib/constants';
+  import { AppRoute, QueryParameter } from '$lib/constants';
   import AlbumCard from '$lib/components/album-page/album-card.svelte';
   import { flip } from 'svelte/animate';
   import { onDestroy, onMount } from 'svelte';
@@ -36,7 +36,7 @@
   // behavior for history.back(). To prevent that we store the previous page
   // manually and navigate back to that.
   let previousRoute = AppRoute.EXPLORE as string;
-  $: albums = data.results.albums.items;
+  $: albums = data.results?.albums.items;
 
   const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
 
@@ -56,7 +56,7 @@
     }
     if (!$showAssetViewer) {
       switch (event.key) {
-        case 'Escape':
+        case 'Escape': {
           if (isMultiSelectionMode) {
             selectedAssets = new Set();
             return;
@@ -66,6 +66,7 @@
           }
           $preventRaceConditionSearchBar = false;
           return;
+        }
       }
     }
   };
@@ -76,14 +77,18 @@
       previousRoute = from.url.href;
     }
 
+    if (from?.route.id === '/(user)/people/[personId]') {
+      previousRoute = AppRoute.PHOTOS;
+    }
+
     if (from?.route.id === '/(user)/albums/[albumId]') {
       previousRoute = AppRoute.EXPLORE;
     }
   });
 
   $: term = (() => {
-    let term = $page.url.searchParams.get('q') || data.term || '';
-    const isMetadataSearch = $page.url.searchParams.get('clip') === 'false';
+    let term = $page.url.searchParams.get(QueryParameter.SEARCH_TERM) || data.term || '';
+    const isMetadataSearch = $page.url.searchParams.get(QueryParameter.SMART_SEARCH) === 'false';
     if (isMetadataSearch && term !== '') {
       term = `m:${term}`;
     }
@@ -92,12 +97,12 @@
 
   let selectedAssets: Set<AssetResponseDto> = new Set();
   $: isMultiSelectionMode = selectedAssets.size > 0;
-  $: isAllArchived = Array.from(selectedAssets).every((asset) => asset.isArchived);
-  $: isAllFavorite = Array.from(selectedAssets).every((asset) => asset.isFavorite);
-  $: searchResultAssets = data.results.assets.items;
+  $: isAllArchived = [...selectedAssets].every((asset) => asset.isArchived);
+  $: isAllFavorite = [...selectedAssets].every((asset) => asset.isFavorite);
+  $: searchResultAssets = data.results?.assets.items;
 
   const onAssetDelete = (assetId: string) => {
-    searchResultAssets = searchResultAssets.filter((a: AssetResponseDto) => a.id !== assetId);
+    searchResultAssets = searchResultAssets?.filter((a: AssetResponseDto) => a.id !== assetId);
   };
   const handleSelectAll = () => {
     selectedAssets = new Set(searchResultAssets);
@@ -126,7 +131,7 @@
       </AssetSelectControlBar>
     </div>
   {:else}
-    <ControlAppBar on:close-button-click={() => goto(previousRoute)} backIcon={mdiArrowLeft}>
+    <ControlAppBar on:close={() => goto(previousRoute)} backIcon={mdiArrowLeft}>
       <div class="w-full flex-1 pl-4">
         <SearchBar grayTheme={false} value={term} />
       </div>
@@ -136,13 +141,19 @@
 
 <section class="relative mb-12 bg-immich-bg pt-32 dark:bg-immich-dark-bg">
   <section class="immich-scrollbar relative overflow-y-auto">
-    {#if albums.length}
+    {#if albums && albums.length > 0}
       <section>
         <div class="ml-6 text-4xl font-medium text-black/70 dark:text-white/80">ALBUMS</div>
         <div class="grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))]">
-          {#each albums as album (album.id)}
+          {#each albums as album, index (album.id)}
             <a data-sveltekit-preload-data="hover" href={`albums/${album.id}`} animate:flip={{ duration: 200 }}>
-              <AlbumCard {album} user={data.user} isSharingView={false} showItemCount={false} showContextMenu={false} />
+              <AlbumCard
+                preload={index < 20}
+                {album}
+                isSharingView={false}
+                showItemCount={false}
+                showContextMenu={false}
+              />
             </a>
           {/each}
         </div>
@@ -151,7 +162,7 @@
       </section>
     {/if}
     <section id="search-content" class="relative bg-immich-bg dark:bg-immich-dark-bg">
-      {#if searchResultAssets.length > 0}
+      {#if searchResultAssets && searchResultAssets.length > 0}
         <div class="pl-4">
           <GalleryViewer assets={searchResultAssets} bind:selectedAssets showArchiveIcon={true} />
         </div>

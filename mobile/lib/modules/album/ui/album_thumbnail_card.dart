@@ -13,11 +13,11 @@ class AlbumThumbnailCard extends StatelessWidget {
   final bool showOwner;
 
   const AlbumThumbnailCard({
-    Key? key,
+    super.key,
     required this.album,
     this.onTap,
     this.showOwner = false,
-  }) : super(key: key);
+  });
 
   final Album album;
 

@@ -48,13 +48,16 @@
   $: geometry = (() => {
     const geometry = [];
     for (let group of assetsGroupByDate) {
-      const justifiedLayoutResult = justifiedLayout(group.map(getAssetRatio), {
-        boxSpacing: 2,
-        containerWidth: Math.floor(viewport.width),
-        containerPadding: 0,
-        targetRowHeightTolerance: 0.15,
-        targetRowHeight: 235,
-      });
+      const justifiedLayoutResult = justifiedLayout(
+        group.map((assetGroup) => getAssetRatio(assetGroup)),
+        {
+          boxSpacing: 2,
+          containerWidth: Math.floor(viewport.width),
+          containerPadding: 0,
+          targetRowHeightTolerance: 0.15,
+          targetRowHeight: 235,
+        },
+      );
       geometry.push({
         ...justifiedLayoutResult,
         containerWidth: calculateWidth(justifiedLayoutResult.boxes),

@@ -26,9 +26,9 @@ class JobName {
   static const thumbnailGeneration = JobName._(r'thumbnailGeneration');
   static const metadataExtraction = JobName._(r'metadataExtraction');
   static const videoConversion = JobName._(r'videoConversion');
-  static const objectTagging = JobName._(r'objectTagging');
-  static const recognizeFaces = JobName._(r'recognizeFaces');
-  static const clipEncoding = JobName._(r'clipEncoding');
+  static const faceDetection = JobName._(r'faceDetection');
+  static const facialRecognition = JobName._(r'facialRecognition');
+  static const smartSearch = JobName._(r'smartSearch');
   static const backgroundTask = JobName._(r'backgroundTask');
   static const storageTemplateMigration = JobName._(r'storageTemplateMigration');
   static const migration = JobName._(r'migration');
@@ -41,9 +41,9 @@ class JobName {
     thumbnailGeneration,
     metadataExtraction,
     videoConversion,
-    objectTagging,
-    recognizeFaces,
-    clipEncoding,
+    faceDetection,
+    facialRecognition,
+    smartSearch,
     backgroundTask,
     storageTemplateMigration,
     migration,
@@ -54,7 +54,7 @@ class JobName {
 
   static JobName? fromJson(dynamic value) => JobNameTypeTransformer().decode(value);
 
-  static List<JobName>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<JobName> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <JobName>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -91,9 +91,9 @@ class JobNameTypeTransformer {
         case r'thumbnailGeneration': return JobName.thumbnailGeneration;
         case r'metadataExtraction': return JobName.metadataExtraction;
         case r'videoConversion': return JobName.videoConversion;
-        case r'objectTagging': return JobName.objectTagging;
-        case r'recognizeFaces': return JobName.recognizeFaces;
-        case r'clipEncoding': return JobName.clipEncoding;
+        case r'faceDetection': return JobName.faceDetection;
+        case r'facialRecognition': return JobName.facialRecognition;
+        case r'smartSearch': return JobName.smartSearch;
         case r'backgroundTask': return JobName.backgroundTask;
         case r'storageTemplateMigration': return JobName.storageTemplateMigration;
         case r'migration': return JobName.migration;

@@ -2,6 +2,7 @@ import type { AssetResponseDto, ServerVersionResponseDto } from '@api';
 import { Socket, io } from 'socket.io-client';
 import { writable } from 'svelte/store';
 import { loadConfig } from './server-config.store';
+import { getAuthUser } from '$lib/utils/auth';
 
 export interface ReleaseEvent {
   isAvailable: boolean;
@@ -23,14 +24,20 @@ export const websocketStore = {
 
 let websocket: Socket | null = null;
 
-export const openWebsocketConnection = () => {
+export const openWebsocketConnection = async () => {
   try {
     if (websocket) {
       return;
     }
 
+    const user = await getAuthUser();
+    if (!user) {
+      return;
+    }
+
     websocket = io('', {
       path: '/api/socket.io',
+      transports: ['websocket'],
       reconnection: true,
       forceNew: true,
       autoConnect: true,
@@ -48,8 +55,8 @@ export const openWebsocketConnection = () => {
       .on('on_config_update', () => loadConfig())
       .on('on_new_release', (data) => websocketStore.onRelease.set(data))
       .on('error', (e) => console.log('Websocket Error', e));
-  } catch (e) {
-    console.log('Cannot connect to websocket ', e);
+  } catch (error) {
+    console.log('Cannot connect to websocket', error);
   }
 };
 

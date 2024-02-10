@@ -1,22 +1,31 @@
 import { AssetType } from '@app/infra/entities';
 import { Duration } from 'luxon';
-import { extname } from 'node:path';
-import pkg from 'src/../../package.json';
+import { readFileSync } from 'node:fs';
+import { extname, join } from 'node:path';
 
 export const AUDIT_LOG_MAX_DURATION = Duration.fromObject({ days: 100 });
 export const ONE_HOUR = Duration.fromObject({ hours: 1 });
 
-export interface IServerVersion {
+export interface IVersion {
   major: number;
   minor: number;
   patch: number;
 }
 
-export class ServerVersion implements IServerVersion {
+export enum VersionType {
+  EQUAL = 0,
+  PATCH = 1,
+  MINOR = 2,
+  MAJOR = 3,
+}
+
+export class Version implements IVersion {
+  public readonly types = ['major', 'minor', 'patch'] as const;
+
   constructor(
-    public readonly major: number,
-    public readonly minor: number,
-    public readonly patch: number,
+    public major: number,
+    public minor: number = 0,
+    public patch: number = 0,
   ) {}
 
   toString() {
@@ -28,35 +37,61 @@ export class ServerVersion implements IServerVersion {
     return { major, minor, patch };
   }
 
-  static fromString(version: string): ServerVersion {
-    const regex = /(?:v)?(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)/i;
+  static fromString(version: string): Version {
+    const regex = /v?(?<major>\d+)(?:\.(?<minor>\d+))?(?:[.-](?<patch>\d+))?/i;
     const matchResult = version.match(regex);
     if (matchResult) {
-      const [, major, minor, patch] = matchResult.map(Number);
-      return new ServerVersion(major, minor, patch);
+      const { major, minor = '0', patch = '0' } = matchResult.groups as { [K in keyof IVersion]: string };
+      return new Version(Number(major), Number(minor), Number(patch));
     } else {
       throw new Error(`Invalid version format: ${version}`);
     }
   }
 
-  isNewerThan(version: ServerVersion): boolean {
-    const equalMajor = this.major === version.major;
-    const equalMinor = this.minor === version.minor;
+  private compare(version: Version): [number, VersionType] {
+    for (const [i, key] of this.types.entries()) {
+      const diff = this[key] - version[key];
+      if (diff !== 0) {
+        return [diff > 0 ? 1 : -1, (VersionType.MAJOR - i) as VersionType];
+      }
+    }
 
-    return (
-      this.major > version.major ||
-      (equalMajor && this.minor > version.minor) ||
-      (equalMajor && equalMinor && this.patch > version.patch)
-    );
+    return [0, VersionType.EQUAL];
+  }
+
+  isOlderThan(version: Version): VersionType {
+    const [bool, type] = this.compare(version);
+    return bool < 0 ? type : VersionType.EQUAL;
+  }
+
+  isEqual(version: Version): boolean {
+    const [bool] = this.compare(version);
+    return bool === 0;
+  }
+
+  isNewerThan(version: Version): VersionType {
+    const [bool, type] = this.compare(version);
+    return bool > 0 ? type : VersionType.EQUAL;
   }
 }
 
 export const envName = (process.env.NODE_ENV || 'development').toUpperCase();
 export const isDev = process.env.NODE_ENV === 'development';
 
-export const serverVersion = ServerVersion.fromString(pkg.version);
+const { version } = JSON.parse(readFileSync('./package.json', 'utf8'));
+export const serverVersion = Version.fromString(version);
 
 export const APP_MEDIA_LOCATION = process.env.IMMICH_MEDIA_LOCATION || './upload';
+
+export const WEB_ROOT_PATH = join(process.env.IMMICH_WEB_ROOT || '/usr/src/app/www', 'index.html');
+
+const GEODATA_ROOT_PATH = process.env.IMMICH_REVERSE_GEOCODING_ROOT || '/usr/src/resources';
+
+export const citiesFile = 'cities500.txt';
+export const geodataDatePath = join(GEODATA_ROOT_PATH, 'geodata-date.txt');
+export const geodataAdmin1Path = join(GEODATA_ROOT_PATH, 'admin1CodesASCII.txt');
+export const geodataAdmin2Path = join(GEODATA_ROOT_PATH, 'admin2Codes.txt');
+export const geodataCitites500Path = join(GEODATA_ROOT_PATH, citiesFile);
 
 const image: Record<string, string[]> = {
   '.3fr': ['image/3fr', 'image/x-hasselblad-3fr'],
@@ -76,6 +111,7 @@ const image: Record<string, string[]> = {
   '.gif': ['image/gif'],
   '.heic': ['image/heic'],
   '.heif': ['image/heif'],
+  '.hif': ['image/hif'],
   '.iiq': ['image/iiq', 'image/x-phaseone-iiq'],
   '.insp': ['image/jpeg'],
   '.jpe': ['image/jpeg'],
@@ -93,6 +129,7 @@ const image: Record<string, string[]> = {
   '.psd': ['image/psd', 'image/vnd.adobe.photoshop'],
   '.raf': ['image/raf', 'image/x-fuji-raf'],
   '.raw': ['image/raw', 'image/x-panasonic-raw'],
+  '.rw2': ['image/rw2', 'image/x-panasonic-rw2'],
   '.rwl': ['image/rwl', 'image/x-leica-rwl'],
   '.sr2': ['image/sr2', 'image/x-sony-sr2'],
   '.srf': ['image/srf', 'image/x-sony-srf'],
@@ -103,9 +140,9 @@ const image: Record<string, string[]> = {
   '.x3f': ['image/x3f', 'image/x-sigma-x3f'],
 };
 
-const profileExtensions = ['.avif', '.dng', '.heic', '.heif', '.jpeg', '.jpg', '.png', '.webp'];
+const profileExtensions = new Set(['.avif', '.dng', '.heic', '.heif', '.jpeg', '.jpg', '.png', '.webp']);
 const profile: Record<string, string[]> = Object.fromEntries(
-  Object.entries(image).filter(([key]) => profileExtensions.includes(key)),
+  Object.entries(image).filter(([key]) => profileExtensions.has(key)),
 );
 
 const video: Record<string, string[]> = {
@@ -154,5 +191,5 @@ export const mimeTypes = {
     }
     return AssetType.OTHER;
   },
-  getSupportedFileExtensions: () => Object.keys(image).concat(Object.keys(video)),
+  getSupportedFileExtensions: () => [...Object.keys(image), ...Object.keys(video)],
 };

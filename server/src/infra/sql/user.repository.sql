@@ -15,11 +15,13 @@ SELECT
   "UserEntity"."createdAt" AS "UserEntity_createdAt",
   "UserEntity"."deletedAt" AS "UserEntity_deletedAt",
   "UserEntity"."updatedAt" AS "UserEntity_updatedAt",
-  "UserEntity"."memoriesEnabled" AS "UserEntity_memoriesEnabled"
+  "UserEntity"."memoriesEnabled" AS "UserEntity_memoriesEnabled",
+  "UserEntity"."quotaSizeInBytes" AS "UserEntity_quotaSizeInBytes",
+  "UserEntity"."quotaUsageInBytes" AS "UserEntity_quotaUsageInBytes"
 FROM
   "users" "UserEntity"
 WHERE
-  (("UserEntity"."isAdmin" = $1))
+  ((("UserEntity"."isAdmin" = $1)))
   AND ("UserEntity"."deletedAt" IS NULL)
 LIMIT
   1
@@ -39,7 +41,7 @@ WHERE
     FROM
       "users" "UserEntity"
     WHERE
-      (("UserEntity"."isAdmin" = $1))
+      ((("UserEntity"."isAdmin" = $1)))
       AND ("UserEntity"."deletedAt" IS NULL)
   )
 LIMIT
@@ -60,7 +62,9 @@ SELECT
   "user"."createdAt" AS "user_createdAt",
   "user"."deletedAt" AS "user_deletedAt",
   "user"."updatedAt" AS "user_updatedAt",
-  "user"."memoriesEnabled" AS "user_memoriesEnabled"
+  "user"."memoriesEnabled" AS "user_memoriesEnabled",
+  "user"."quotaSizeInBytes" AS "user_quotaSizeInBytes",
+  "user"."quotaUsageInBytes" AS "user_quotaUsageInBytes"
 FROM
   "users" "user"
 WHERE
@@ -82,11 +86,13 @@ SELECT
   "UserEntity"."createdAt" AS "UserEntity_createdAt",
   "UserEntity"."deletedAt" AS "UserEntity_deletedAt",
   "UserEntity"."updatedAt" AS "UserEntity_updatedAt",
-  "UserEntity"."memoriesEnabled" AS "UserEntity_memoriesEnabled"
+  "UserEntity"."memoriesEnabled" AS "UserEntity_memoriesEnabled",
+  "UserEntity"."quotaSizeInBytes" AS "UserEntity_quotaSizeInBytes",
+  "UserEntity"."quotaUsageInBytes" AS "UserEntity_quotaUsageInBytes"
 FROM
   "users" "UserEntity"
 WHERE
-  (("UserEntity"."storageLabel" = $1))
+  ((("UserEntity"."storageLabel" = $1)))
   AND ("UserEntity"."deletedAt" IS NULL)
 LIMIT
   1
@@ -106,11 +112,13 @@ SELECT
   "UserEntity"."createdAt" AS "UserEntity_createdAt",
   "UserEntity"."deletedAt" AS "UserEntity_deletedAt",
   "UserEntity"."updatedAt" AS "UserEntity_updatedAt",
-  "UserEntity"."memoriesEnabled" AS "UserEntity_memoriesEnabled"
+  "UserEntity"."memoriesEnabled" AS "UserEntity_memoriesEnabled",
+  "UserEntity"."quotaSizeInBytes" AS "UserEntity_quotaSizeInBytes",
+  "UserEntity"."quotaUsageInBytes" AS "UserEntity_quotaUsageInBytes"
 FROM
   "users" "UserEntity"
 WHERE
-  (("UserEntity"."oauthId" = $1))
+  ((("UserEntity"."oauthId" = $1)))
   AND ("UserEntity"."deletedAt" IS NULL)
 LIMIT
   1
@@ -119,6 +127,7 @@ LIMIT
 SELECT
   "users"."id" AS "userId",
   "users"."name" AS "userName",
+  "users"."quotaSizeInBytes" AS "quotaSizeInBytes",
   COUNT("assets"."id") FILTER (
     WHERE
       "assets"."type" = 'IMAGE'
@@ -141,3 +150,20 @@ GROUP BY
   "users"."id"
 ORDER BY
   "users"."createdAt" ASC
+
+-- UserRepository.syncUsage
+UPDATE "users"
+SET
+  "quotaUsageInBytes" = (
+    SELECT
+      COALESCE(SUM(exif."fileSizeInByte"), 0)
+    FROM
+      "assets" "assets"
+      LEFT JOIN "exif" "exif" ON "exif"."assetId" = "assets"."id"
+    WHERE
+      "assets"."ownerId" = users.id
+      AND NOT "assets"."isExternal"
+  ),
+  "updatedAt" = CURRENT_TIMESTAMP
+WHERE
+  users.id = $1

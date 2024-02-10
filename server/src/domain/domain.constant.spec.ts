@@ -1,4 +1,4 @@
-import { ServerVersion, mimeTypes } from './domain.constant';
+import { Version, VersionType, mimeTypes } from './domain.constant';
 
 describe('mimeTypes', () => {
   for (const { mimetype, extension } of [
@@ -20,6 +20,7 @@ describe('mimeTypes', () => {
     { mimetype: 'image/gif', extension: '.gif' },
     { mimetype: 'image/heic', extension: '.heic' },
     { mimetype: 'image/heif', extension: '.heif' },
+    { mimetype: 'image/hif', extension: '.hif' },
     { mimetype: 'image/iiq', extension: '.iiq' },
     { mimetype: 'image/jpeg', extension: '.jpe' },
     { mimetype: 'image/jpeg', extension: '.jpeg' },
@@ -107,9 +108,9 @@ describe('mimeTypes', () => {
       expect(keys).toEqual([...keys].sort());
     });
 
-    for (const [ext, v] of Object.entries(mimeTypes.profile)) {
-      it(`should lookup ${ext}`, () => {
-        expect(mimeTypes.lookup(`test.${ext}`)).toEqual(v[0]);
+    for (const [extension, v] of Object.entries(mimeTypes.profile)) {
+      it(`should lookup ${extension}`, () => {
+        expect(mimeTypes.lookup(`test.${extension}`)).toEqual(v[0]);
       });
     }
   });
@@ -134,9 +135,9 @@ describe('mimeTypes', () => {
       expect(values).toEqual(values.filter((mimeType) => mimeType.startsWith('image/')));
     });
 
-    for (const [ext, v] of Object.entries(mimeTypes.image)) {
-      it(`should lookup ${ext}`, () => {
-        expect(mimeTypes.lookup(`test.${ext}`)).toEqual(v[0]);
+    for (const [extension, v] of Object.entries(mimeTypes.image)) {
+      it(`should lookup ${extension}`, () => {
+        expect(mimeTypes.lookup(`test.${extension}`)).toEqual(v[0]);
       });
     }
   });
@@ -161,9 +162,9 @@ describe('mimeTypes', () => {
       expect(values).toEqual(values.filter((mimeType) => mimeType.startsWith('video/')));
     });
 
-    for (const [ext, v] of Object.entries(mimeTypes.video)) {
-      it(`should lookup ${ext}`, () => {
-        expect(mimeTypes.lookup(`test.${ext}`)).toEqual(v[0]);
+    for (const [extension, v] of Object.entries(mimeTypes.video)) {
+      it(`should lookup ${extension}`, () => {
+        expect(mimeTypes.lookup(`test.${extension}`)).toEqual(v[0]);
       });
     }
   });
@@ -187,73 +188,77 @@ describe('mimeTypes', () => {
       expect(Object.values(mimeTypes.sidecar).flat()).toEqual(['application/xml', 'text/xml']);
     });
 
-    for (const [ext, v] of Object.entries(mimeTypes.sidecar)) {
-      it(`should lookup ${ext}`, () => {
-        expect(mimeTypes.lookup(`it.${ext}`)).toEqual(v[0]);
+    for (const [extension, v] of Object.entries(mimeTypes.sidecar)) {
+      it(`should lookup ${extension}`, () => {
+        expect(mimeTypes.lookup(`it.${extension}`)).toEqual(v[0]);
       });
     }
   });
 });
 
-describe('ServerVersion', () => {
+describe('Version', () => {
+  const tests = [
+    { this: new Version(0, 0, 1), other: new Version(0, 0, 0), compare: 1, type: VersionType.PATCH },
+    { this: new Version(0, 1, 0), other: new Version(0, 0, 0), compare: 1, type: VersionType.MINOR },
+    { this: new Version(1, 0, 0), other: new Version(0, 0, 0), compare: 1, type: VersionType.MAJOR },
+    { this: new Version(0, 0, 0), other: new Version(0, 0, 1), compare: -1, type: VersionType.PATCH },
+    { this: new Version(0, 0, 0), other: new Version(0, 1, 0), compare: -1, type: VersionType.MINOR },
+    { this: new Version(0, 0, 0), other: new Version(1, 0, 0), compare: -1, type: VersionType.MAJOR },
+    { this: new Version(0, 0, 0), other: new Version(0, 0, 0), compare: 0, type: VersionType.EQUAL },
+    { this: new Version(0, 0, 1), other: new Version(0, 0, 1), compare: 0, type: VersionType.EQUAL },
+    { this: new Version(0, 1, 0), other: new Version(0, 1, 0), compare: 0, type: VersionType.EQUAL },
+    { this: new Version(1, 0, 0), other: new Version(1, 0, 0), compare: 0, type: VersionType.EQUAL },
+    { this: new Version(1, 0), other: new Version(1, 0, 0), compare: 0, type: VersionType.EQUAL },
+    { this: new Version(1, 0), other: new Version(1, 0, 1), compare: -1, type: VersionType.PATCH },
+    { this: new Version(1, 1), other: new Version(1, 0, 1), compare: 1, type: VersionType.MINOR },
+    { this: new Version(1), other: new Version(1, 0, 0), compare: 0, type: VersionType.EQUAL },
+    { this: new Version(1), other: new Version(1, 0, 1), compare: -1, type: VersionType.PATCH },
+  ];
+
+  describe('isOlderThan', () => {
+    for (const { this: thisVersion, other: otherVersion, compare, type } of tests) {
+      const expected = compare < 0 ? type : VersionType.EQUAL;
+      it(`should return '${expected}' when comparing ${thisVersion} to ${otherVersion}`, () => {
+        expect(thisVersion.isOlderThan(otherVersion)).toEqual(expected);
+      });
+    }
+  });
+
+  describe('isEqual', () => {
+    for (const { this: thisVersion, other: otherVersion, compare } of tests) {
+      const bool = compare === 0;
+      it(`should return ${bool} when comparing ${thisVersion} to ${otherVersion}`, () => {
+        expect(thisVersion.isEqual(otherVersion)).toEqual(bool);
+      });
+    }
+  });
+
   describe('isNewerThan', () => {
-    it('should work on patch versions', () => {
-      expect(new ServerVersion(0, 0, 1).isNewerThan(new ServerVersion(0, 0, 0))).toBe(true);
-      expect(new ServerVersion(1, 72, 1).isNewerThan(new ServerVersion(1, 72, 0))).toBe(true);
-
-      expect(new ServerVersion(0, 0, 0).isNewerThan(new ServerVersion(0, 0, 1))).toBe(false);
-      expect(new ServerVersion(1, 72, 0).isNewerThan(new ServerVersion(1, 72, 1))).toBe(false);
-    });
-
-    it('should work on minor versions', () => {
-      expect(new ServerVersion(0, 1, 0).isNewerThan(new ServerVersion(0, 0, 0))).toBe(true);
-      expect(new ServerVersion(1, 72, 0).isNewerThan(new ServerVersion(1, 71, 0))).toBe(true);
-      expect(new ServerVersion(1, 72, 0).isNewerThan(new ServerVersion(1, 71, 9))).toBe(true);
-
-      expect(new ServerVersion(0, 0, 0).isNewerThan(new ServerVersion(0, 1, 0))).toBe(false);
-      expect(new ServerVersion(1, 71, 0).isNewerThan(new ServerVersion(1, 72, 0))).toBe(false);
-      expect(new ServerVersion(1, 71, 9).isNewerThan(new ServerVersion(1, 72, 0))).toBe(false);
-    });
-
-    it('should work on major versions', () => {
-      expect(new ServerVersion(1, 0, 0).isNewerThan(new ServerVersion(0, 0, 0))).toBe(true);
-      expect(new ServerVersion(2, 0, 0).isNewerThan(new ServerVersion(1, 71, 0))).toBe(true);
-
-      expect(new ServerVersion(0, 0, 0).isNewerThan(new ServerVersion(1, 0, 0))).toBe(false);
-      expect(new ServerVersion(1, 71, 0).isNewerThan(new ServerVersion(2, 0, 0))).toBe(false);
-    });
-
-    it('should work on equal', () => {
-      for (const version of [
-        new ServerVersion(0, 0, 0),
-        new ServerVersion(0, 0, 1),
-        new ServerVersion(0, 1, 1),
-        new ServerVersion(0, 1, 0),
-        new ServerVersion(1, 1, 1),
-        new ServerVersion(1, 0, 0),
-        new ServerVersion(1, 72, 1),
-        new ServerVersion(1, 72, 0),
-        new ServerVersion(1, 73, 9),
-      ]) {
-        expect(version.isNewerThan(version)).toBe(false);
-      }
-    });
+    for (const { this: thisVersion, other: otherVersion, compare, type } of tests) {
+      const expected = compare > 0 ? type : VersionType.EQUAL;
+      it(`should return ${expected} when comparing ${thisVersion} to ${otherVersion}`, () => {
+        expect(thisVersion.isNewerThan(otherVersion)).toEqual(expected);
+      });
+    }
   });
 
   describe('fromString', () => {
     const tests = [
-      { scenario: 'leading v', value: 'v1.72.2', expected: new ServerVersion(1, 72, 2) },
-      { scenario: 'uppercase v', value: 'V1.72.2', expected: new ServerVersion(1, 72, 2) },
-      { scenario: 'missing v', value: '1.72.2', expected: new ServerVersion(1, 72, 2) },
-      { scenario: 'large patch', value: '1.72.123', expected: new ServerVersion(1, 72, 123) },
-      { scenario: 'large minor', value: '1.123.0', expected: new ServerVersion(1, 123, 0) },
-      { scenario: 'large major', value: '123.0.0', expected: new ServerVersion(123, 0, 0) },
-      { scenario: 'major bump', value: 'v2.0.0', expected: new ServerVersion(2, 0, 0) },
+      { scenario: 'leading v', value: 'v1.72.2', expected: new Version(1, 72, 2) },
+      { scenario: 'uppercase v', value: 'V1.72.2', expected: new Version(1, 72, 2) },
+      { scenario: 'missing v', value: '1.72.2', expected: new Version(1, 72, 2) },
+      { scenario: 'large patch', value: '1.72.123', expected: new Version(1, 72, 123) },
+      { scenario: 'large minor', value: '1.123.0', expected: new Version(1, 123, 0) },
+      { scenario: 'large major', value: '123.0.0', expected: new Version(123, 0, 0) },
+      { scenario: 'major bump', value: 'v2.0.0', expected: new Version(2, 0, 0) },
+      { scenario: 'has dash', value: '14.10-1', expected: new Version(14, 10, 1) },
+      { scenario: 'missing patch', value: '14.10', expected: new Version(14, 10, 0) },
+      { scenario: 'only major', value: '14', expected: new Version(14, 0, 0) },
     ];
 
     for (const { scenario, value, expected } of tests) {
       it(`should correctly parse ${scenario}`, () => {
-        const actual = ServerVersion.fromString(value);
+        const actual = Version.fromString(value);
         expect(actual.major).toEqual(expected.major);
         expect(actual.minor).toEqual(expected.minor);
         expect(actual.patch).toEqual(expected.patch);

@@ -35,12 +35,12 @@ class ActivityResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ActivityResponseDto &&
-     other.assetId == assetId &&
-     other.comment == comment &&
-     other.createdAt == createdAt &&
-     other.id == id &&
-     other.type == type &&
-     other.user == user;
+    other.assetId == assetId &&
+    other.comment == comment &&
+    other.createdAt == createdAt &&
+    other.id == id &&
+    other.type == type &&
+    other.user == user;
 
   @override
   int get hashCode =>
@@ -84,7 +84,7 @@ class ActivityResponseDto {
       return ActivityResponseDto(
         assetId: mapValueOfType<String>(json, r'assetId'),
         comment: mapValueOfType<String>(json, r'comment'),
-        createdAt: mapDateTime(json, r'createdAt', '')!,
+        createdAt: mapDateTime(json, r'createdAt', r'')!,
         id: mapValueOfType<String>(json, r'id')!,
         type: ActivityResponseDtoTypeEnum.fromJson(json[r'type'])!,
         user: UserDto.fromJson(json[r'user'])!,
@@ -167,7 +167,7 @@ class ActivityResponseDtoTypeEnum {
 
   static ActivityResponseDtoTypeEnum? fromJson(dynamic value) => ActivityResponseDtoTypeEnumTypeTransformer().decode(value);
 
-  static List<ActivityResponseDtoTypeEnum>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<ActivityResponseDtoTypeEnum> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <ActivityResponseDtoTypeEnum>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {

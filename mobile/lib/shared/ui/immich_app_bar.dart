@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -106,7 +107,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
       final badgeBackground = isDarkTheme ? Colors.blueGrey[800] : Colors.white;
 
       return InkWell(
-        onTap: () => context.autoPush(const BackupControllerRoute()),
+        onTap: () => context.pushRoute(const BackupControllerRoute()),
         borderRadius: BorderRadius.circular(12),
         child: Badge(
           label: Container(

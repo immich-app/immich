@@ -5,7 +5,10 @@
 
   export let library: Partial<LibraryResponseDto>;
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    cancel: void;
+    submit: Partial<LibraryResponseDto>;
+  }>();
   const handleCancel = () => {
     dispatch('cancel');
   };

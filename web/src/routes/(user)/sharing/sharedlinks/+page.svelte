@@ -1,6 +1,6 @@
 <script lang="ts">
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
-  import { api, copyToClipboard, SharedLinkResponseDto } from '@api';
+  import { api, copyToClipboard, makeSharedLinkUrl, type SharedLinkResponseDto } from '@api';
   import { goto } from '$app/navigation';
   import SharedLinkCard from '$lib/components/sharedlinks-page/shared-link-card.svelte';
   import {
@@ -13,6 +13,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { AppRoute } from '$lib/constants';
   import { mdiArrowLeft } from '@mdi/js';
+  import { serverConfig } from '$lib/stores/server-config.store';
 
   let sharedLinks: SharedLinkResponseDto[] = [];
   let editSharedLink: SharedLinkResponseDto | null = null;
@@ -49,11 +50,11 @@
   };
 
   const handleCopyLink = async (key: string) => {
-    await copyToClipboard(`${window.location.origin}/share/${key}`);
+    await copyToClipboard(makeSharedLinkUrl($serverConfig.externalDomain, key));
   };
 </script>
 
-<ControlAppBar backIcon={mdiArrowLeft} on:close-button-click={() => goto(AppRoute.SHARING)}>
+<ControlAppBar backIcon={mdiArrowLeft} on:close={() => goto(AppRoute.SHARING)}>
   <svelte:fragment slot="leading">Shared links</svelte:fragment>
 </ControlAppBar>
 
@@ -62,7 +63,9 @@
     <p>Manage shared links</p>
   </div>
   {#if sharedLinks.length === 0}
-    <div class="m-auto flex w-[50%] place-content-center place-items-center rounded-lg bg-gray-100 p-12">
+    <div
+      class="m-auto flex w-[50%] place-content-center place-items-center rounded-lg bg-gray-100 dark:bg-immich-dark-gray dark:text-immich-gray p-12"
+    >
       <p>You don't have any shared links</p>
     </div>
   {:else}

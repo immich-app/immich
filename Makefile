@@ -16,8 +16,11 @@ stage:
 pull-stage:
 	docker compose -f ./docker/docker-compose.staging.yml pull
 
-test-e2e:
-	docker compose -f ./docker/docker-compose.test.yml up --renew-anon-volumes --abort-on-container-exit --exit-code-from immich-server --remove-orphans --build
+server-e2e-jobs:
+	docker compose -f ./server/e2e/docker-compose.server-e2e.yml up --renew-anon-volumes --abort-on-container-exit --exit-code-from immich-server --remove-orphans --build
+
+server-e2e-api:
+	npm run e2e:api --prefix server
 
 prod:
 	docker compose -f ./docker/docker-compose.prod.yml up --build -V --remove-orphans
@@ -25,8 +28,15 @@ prod:
 prod-scale:
 	docker compose -f ./docker/docker-compose.prod.yml up --build -V --scale immich-server=3 --scale immich-microservices=3 --remove-orphans
 
-api:
-	npm --prefix server run api:generate
+.PHONY: open-api
+open-api:
+	cd ./open-api && bash ./bin/generate-open-api.sh
+
+open-api-dart:
+	cd ./open-api && bash ./bin/generate-open-api.sh dart
+
+open-api-typescript:
+	cd ./open-api && bash ./bin/generate-open-api.sh typescript
 
 sql:
 	npm --prefix server run sql:generate

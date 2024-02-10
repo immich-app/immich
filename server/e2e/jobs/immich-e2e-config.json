@@ -1,0 +1,12 @@
+{
+  "reverseGeocoding": {
+    "enabled": false
+  },
+  "machineLearning": {
+    "enabled": false
+  },
+  "logging": {
+    "enabled": false,
+    "level": "debug"
+  }
+}

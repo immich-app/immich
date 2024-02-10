@@ -1,15 +1,17 @@
 import {
-  AlbumApi,
-  LibraryApi,
   APIKeyApi,
+  ActivityApi,
+  AlbumApi,
   AssetApi,
   AssetApiFp,
   AssetJobName,
+  AuditApi,
   AuthenticationApi,
-  Configuration,
-  ConfigurationParameters,
+  DownloadApi,
+  FaceApi,
   JobApi,
   JobName,
+  LibraryApi,
   OAuthApi,
   PartnerApi,
   PersonApi,
@@ -17,19 +19,19 @@ import {
   ServerInfoApi,
   SharedLinkApi,
   SystemConfigApi,
+  TrashApi,
   UserApi,
   UserApiFp,
-  AuditApi,
-  ActivityApi,
-  FaceApi,
-} from './open-api';
-import { BASE_PATH } from './open-api/base';
-import { DUMMY_BASE_URL, toPathString } from './open-api/common';
-import type { ApiParams } from './types';
+  base,
+  common,
+  configuration,
+} from '@immich/sdk/axios';
+import type { ApiParams as ApiParameters } from './types';
 
 class ImmichApi {
   public activityApi: ActivityApi;
   public albumApi: AlbumApi;
+  public downloadApi: DownloadApi;
   public libraryApi: LibraryApi;
   public assetApi: AssetApi;
   public auditApi: AuditApi;
@@ -45,20 +47,22 @@ class ImmichApi {
   public personApi: PersonApi;
   public systemConfigApi: SystemConfigApi;
   public userApi: UserApi;
+  public trashApi: TrashApi;
 
-  private config: Configuration;
+  private config: configuration.Configuration;
   private key?: string;
 
   get isSharedLink() {
     return !!this.key;
   }
 
-  constructor(params: ConfigurationParameters) {
-    this.config = new Configuration(params);
+  constructor(parameters: configuration.ConfigurationParameters) {
+    this.config = new configuration.Configuration(parameters);
 
     this.activityApi = new ActivityApi(this.config);
     this.albumApi = new AlbumApi(this.config);
     this.auditApi = new AuditApi(this.config);
+    this.downloadApi = new DownloadApi(this.config);
     this.libraryApi = new LibraryApi(this.config);
     this.assetApi = new AssetApi(this.config);
     this.authenticationApi = new AuthenticationApi(this.config);
@@ -73,21 +77,22 @@ class ImmichApi {
     this.personApi = new PersonApi(this.config);
     this.systemConfigApi = new SystemConfigApi(this.config);
     this.userApi = new UserApi(this.config);
+    this.trashApi = new TrashApi(this.config);
   }
 
-  private createUrl(path: string, params?: Record<string, unknown>) {
-    const searchParams = new URLSearchParams();
-    for (const key in params) {
-      const value = params[key];
+  private createUrl(path: string, parameters?: Record<string, unknown>) {
+    const searchParameters = new URLSearchParams();
+    for (const key in parameters) {
+      const value = parameters[key];
       if (value !== undefined && value !== null) {
-        searchParams.set(key, value.toString());
+        searchParameters.set(key, value.toString());
       }
     }
 
-    const url = new URL(path, DUMMY_BASE_URL);
-    url.search = searchParams.toString();
+    const url = new URL(path, common.DUMMY_BASE_URL);
+    url.search = searchParameters.toString();
 
-    return (this.config.basePath || BASE_PATH) + toPathString(url);
+    return (this.config.basePath || base.BASE_PATH) + common.toPathString(url);
   }
 
   public setKey(key: string) {
@@ -110,17 +115,17 @@ class ImmichApi {
     this.config.basePath = baseUrl;
   }
 
-  public getAssetFileUrl(...[assetId, isThumb, isWeb]: ApiParams<typeof AssetApiFp, 'serveFile'>) {
+  public getAssetFileUrl(...[assetId, isThumb, isWeb]: ApiParameters<typeof AssetApiFp, 'serveFile'>) {
     const path = `/asset/file/${assetId}`;
     return this.createUrl(path, { isThumb, isWeb, key: this.getKey() });
   }
 
-  public getAssetThumbnailUrl(...[assetId, format]: ApiParams<typeof AssetApiFp, 'getAssetThumbnail'>) {
+  public getAssetThumbnailUrl(...[assetId, format]: ApiParameters<typeof AssetApiFp, 'getAssetThumbnail'>) {
     const path = `/asset/thumbnail/${assetId}`;
     return this.createUrl(path, { format, key: this.getKey() });
   }
 
-  public getProfileImageUrl(...[userId]: ApiParams<typeof UserApiFp, 'getProfileImage'>) {
+  public getProfileImageUrl(...[userId]: ApiParameters<typeof UserApiFp, 'getProfileImage'>) {
     const path = `/user/profile-image/${userId}`;
     return this.createUrl(path);
   }
@@ -135,9 +140,9 @@ class ImmichApi {
       [JobName.ThumbnailGeneration]: 'Generate Thumbnails',
       [JobName.MetadataExtraction]: 'Extract Metadata',
       [JobName.Sidecar]: 'Sidecar Metadata',
-      [JobName.ObjectTagging]: 'Tag Objects',
-      [JobName.ClipEncoding]: 'Encode Clip',
-      [JobName.RecognizeFaces]: 'Recognize Faces',
+      [JobName.SmartSearch]: 'Smart Search',
+      [JobName.FaceDetection]: 'Face Detection',
+      [JobName.FacialRecognition]: 'Facial Recognition',
       [JobName.VideoConversion]: 'Transcode Videos',
       [JobName.StorageTemplateMigration]: 'Storage Template Migration',
       [JobName.Migration]: 'Migration',

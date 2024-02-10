@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -24,18 +27,22 @@ import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 
+@RoutePage()
 class AlbumViewerPage extends HookConsumerWidget {
   final int albumId;
 
-  const AlbumViewerPage({Key? key, required this.albumId}) : super(key: key);
+  const AlbumViewerPage({super.key, required this.albumId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     FocusNode titleFocusNode = useFocusNode();
     final album = ref.watch(albumWatcher(albumId));
+    // Listen provider to prevent autoDispose when navigating to other routes from within the viewer page
+    ref.listen(currentAlbumProvider, (_, __) {});
     album.whenData(
-      (value) =>
-          Future((() => ref.read(currentAlbumProvider.notifier).state = value)),
+      (value) => Future.microtask(
+        () => ref.read(currentAlbumProvider.notifier).set(value),
+      ),
     );
     final userId = ref.watch(authenticationProvider).userId;
     final isProcessing = useProcessingOverlay();
@@ -62,7 +69,7 @@ class AlbumViewerPage extends HookConsumerWidget {
     /// If they exist, add to selected asset state to show they are already selected.
     void onAddPhotosPressed(Album albumInfo) async {
       AssetSelectionPageResult? returnPayload =
-          await context.autoPush<AssetSelectionPageResult?>(
+          await context.pushRoute<AssetSelectionPageResult?>(
         AssetSelectionRoute(
           existingAssets: albumInfo.assets,
           canDeselect: false,
@@ -84,7 +91,7 @@ class AlbumViewerPage extends HookConsumerWidget {
     }
 
     void onAddUsersPressed(Album album) async {
-      List<String>? sharedUserIds = await context.autoPush<List<String>?>(
+      List<String>? sharedUserIds = await context.pushRoute<List<String>?>(
         SelectAdditionalUserForSharingRoute(album: album),
       );
 
@@ -178,7 +185,7 @@ class AlbumViewerPage extends HookConsumerWidget {
 
     Widget buildSharedUserIconsRow(Album album) {
       return GestureDetector(
-        onTap: () => context.autoPush(AlbumOptionsRoute(album: album)),
+        onTap: () => context.pushRoute(AlbumOptionsRoute(album: album)),
         child: SizedBox(
           height: 50,
           child: ListView.builder(
@@ -214,13 +221,8 @@ class AlbumViewerPage extends HookConsumerWidget {
 
     onActivitiesPressed(Album album) {
       if (album.remoteId != null) {
-        context.autoPush(
-          ActivitiesRoute(
-            albumId: album.remoteId!,
-            appBarTitle: album.name,
-            isOwner: userId == album.ownerId,
-            isReadOnly: !album.activityEnabled,
-          ),
+        context.pushRoute(
+          const ActivitiesRoute(),
         );
       }
     }

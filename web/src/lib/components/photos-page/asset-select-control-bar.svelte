@@ -1,12 +1,6 @@
 <script lang="ts" context="module">
   import { createContext } from '$lib/utils/context';
 
-  export type OnAssetDelete = (assetId: string) => void;
-  export type OnRestore = (ids: string[]) => void;
-  export type OnArchive = (ids: string[], isArchived: boolean) => void;
-  export type OnFavorite = (ids: string[], favorite: boolean) => void;
-  export type OnStack = (ids: string[]) => void;
-
   export interface AssetControlContext {
     // Wrap assets in a function, because context isn't reactive.
     getAssets: () => Set<AssetResponseDto>; // All assets includes partners' assets
@@ -31,12 +25,12 @@
   setContext({
     getAssets: () => assets,
     getOwnedAssets: () =>
-      ownerId !== undefined ? new Set(Array.from(assets).filter((asset) => asset.ownerId === ownerId)) : assets,
+      ownerId === undefined ? assets : new Set([...assets].filter((asset) => asset.ownerId === ownerId)),
     clearSelect,
   });
 </script>
 
-<ControlAppBar on:close-button-click={clearSelect} backIcon={mdiClose} tailwindClasses="bg-white shadow-md">
+<ControlAppBar on:close={clearSelect} backIcon={mdiClose} tailwindClasses="bg-white shadow-md">
   <p class="font-medium text-immich-primary dark:text-immich-dark-primary" slot="leading">
     Selected {assets.size.toLocaleString($locale)}
   </p>

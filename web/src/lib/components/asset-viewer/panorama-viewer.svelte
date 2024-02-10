@@ -1,9 +1,8 @@
 <script lang="ts">
   import { fade } from 'svelte/transition';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
-  import { api, AssetResponseDto } from '@api';
-  import View360, { EquirectProjection } from '@egjs/svelte-view360';
-  import './panorama-viewer.css';
+  import { api, type AssetResponseDto } from '@api';
+  import PhotoSphere from './photo-sphere-viewer-adapter.svelte';
 
   export let asset: AssetResponseDto;
 
@@ -20,9 +19,9 @@
         dataUrl = URL.createObjectURL(data);
         return dataUrl;
       } else {
-        throw new Error('Invalid data format');
+        throw new TypeError('Invalid data format');
       }
-    } catch (error) {
+    } catch {
       errorMessage = 'Failed to load asset';
       return '';
     }
@@ -34,7 +33,7 @@
     <LoadingSpinner />
   {:then assetData}
     {#if assetData}
-      <View360 autoResize={true} initialZoom={0.5} projection={new EquirectProjection({ src: assetData })} />
+      <PhotoSphere panorama={assetData} />
     {:else}
       <p>{errorMessage}</p>
     {/if}

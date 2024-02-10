@@ -1,15 +1,14 @@
 import json
-from pathlib import Path
 from typing import Any, Iterator
 from unittest import mock
 
 import numpy as np
 import pytest
 from fastapi.testclient import TestClient
+from numpy.typing import NDArray
 from PIL import Image
 
-from .main import app, init_state
-from .schemas import ndarray_f32
+from .main import app
 
 
 @pytest.fixture
@@ -18,7 +17,7 @@ def pil_image() -> Image.Image:
 
 
 @pytest.fixture
-def cv_image(pil_image: Image.Image) -> ndarray_f32:
+def cv_image(pil_image: Image.Image) -> NDArray[np.float32]:
     return np.asarray(pil_image)[:, :, ::-1]  # PIL uses RGB while cv2 uses BGR
 
 
@@ -29,9 +28,9 @@ def mock_get_model() -> Iterator[mock.Mock]:
 
 
 @pytest.fixture(scope="session")
-def deployed_app() -> TestClient:
-    init_state()
-    return TestClient(app)
+def deployed_app() -> Iterator[TestClient]:
+    with TestClient(app) as client:
+        yield client
 
 
 @pytest.fixture(scope="session")
@@ -60,3 +59,49 @@ def clip_preprocess_cfg() -> dict[str, Any]:
         "resize_mode": "shortest",
         "fill_color": 0,
     }
+
+
+@pytest.fixture(scope="session")
+def clip_tokenizer_cfg() -> dict[str, Any]:
+    return {
+        "add_prefix_space": False,
+        "added_tokens_decoder": {
+            "49406": {
+                "content": "<|startoftext|>",
+                "lstrip": False,
+                "normalized": True,
+                "rstrip": False,
+                "single_word": False,
+                "special": True,
+            },
+            "49407": {
+                "content": "<|endoftext|>",
+                "lstrip": False,
+                "normalized": True,
+                "rstrip": False,
+                "single_word": False,
+                "special": True,
+            },
+        },
+        "bos_token": "<|startoftext|>",
+        "clean_up_tokenization_spaces": True,
+        "do_lower_case": True,
+        "eos_token": "<|endoftext|>",
+        "errors": "replace",
+        "model_max_length": 77,
+        "pad_token": "<|endoftext|>",
+        "tokenizer_class": "CLIPTokenizer",
+        "unk_token": "<|endoftext|>",
+    }
+
+
+@pytest.fixture(scope="function")
+def providers(request: pytest.FixtureRequest) -> Iterator[dict[str, Any]]:
+    marker = request.node.get_closest_marker("providers")
+    if marker is None:
+        raise ValueError("Missing marker 'providers'")
+
+    providers = marker.args[0]
+    with mock.patch("app.models.base.ort.get_available_providers") as mocked:
+        mocked.return_value = providers
+        yield providers

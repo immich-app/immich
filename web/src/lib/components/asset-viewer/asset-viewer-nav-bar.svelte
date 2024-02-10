@@ -1,10 +1,9 @@
 <script lang="ts">
-  import { page } from '$app/stores';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
   import { clickOutside } from '$lib/utils/click-outside';
   import { getContextMenuPosition } from '$lib/utils/context-menu';
-  import { AssetJobName, AssetResponseDto, AssetTypeEnum, api } from '@api';
+  import { AssetJobName, type AssetResponseDto, AssetTypeEnum, api } from '@api';
   import {
     mdiAlertOutline,
     mdiArrowLeft,
@@ -23,6 +22,7 @@
   import { createEventDispatcher } from 'svelte';
   import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
   import MenuOption from '../shared-components/context-menu/menu-option.svelte';
+  import { user } from '$lib/stores/user.store';
 
   export let asset: AssetResponseDto;
   export let showCopyButton: boolean;
@@ -34,12 +34,12 @@
   export let showSlideshow = false;
   export let hasStackChildren = false;
 
-  $: isOwner = asset.ownerId === $page.data.user?.id;
+  $: isOwner = asset.ownerId === $user?.id;
 
   type MenuItemEvent = 'addToAlbum' | 'addToSharedAlbum' | 'asProfileImage' | 'runJob' | 'playSlideShow' | 'unstack';
 
   const dispatch = createEventDispatcher<{
-    goBack: void;
+    back: void;
     stopMotionPhoto: void;
     playMotionPhoto: void;
     download: void;
@@ -78,7 +78,7 @@
   class="z-[1001] flex h-16 place-items-center justify-between bg-gradient-to-b from-black/40 px-3 transition-transform duration-200"
 >
   <div class="text-white">
-    <CircleIconButton isOpacity={true} icon={mdiArrowLeft} on:click={() => dispatch('goBack')} />
+    <CircleIconButton isOpacity={true} icon={mdiArrowLeft} on:click={() => dispatch('back')} />
   </div>
   <div class="flex w-[calc(100%-3rem)] justify-end gap-2 overflow-hidden text-white">
     {#if asset.isOffline}
@@ -151,7 +151,7 @@
         isOpacity={true}
         icon={asset.isFavorite ? mdiHeart : mdiHeartOutline}
         on:click={() => dispatch('favorite')}
-        title="Favorite"
+        title={asset.isFavorite ? 'Unfavorite' : 'Favorite'}
       />
     {/if}
 

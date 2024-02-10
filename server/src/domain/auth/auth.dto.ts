@@ -1,19 +1,14 @@
-import { UserEntity, UserTokenEntity } from '@app/infra/entities';
+import { APIKeyEntity, SharedLinkEntity, UserEntity, UserTokenEntity } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
 
-export class AuthUserDto {
-  id!: string;
-  email!: string;
-  isAdmin!: boolean;
-  isPublicUser?: boolean;
-  sharedLinkId?: string;
-  isAllowUpload?: boolean;
-  isAllowDownload?: boolean;
-  isShowMetadata?: boolean;
-  accessTokenId?: string;
-  externalPath?: string | null;
+export class AuthDto {
+  user!: UserEntity;
+
+  apiKey?: APIKeyEntity;
+  sharedLink?: SharedLinkEntity;
+  userToken?: UserTokenEntity;
 }
 
 export class LoginCredentialDto {
@@ -109,15 +104,6 @@ export class OAuthConfigDto {
   @IsNotEmpty()
   @IsString()
   redirectUri!: string;
-}
-
-/** @deprecated use oauth authorize */
-export class OAuthConfigResponseDto {
-  enabled!: boolean;
-  passwordLoginEnabled!: boolean;
-  url?: string;
-  buttonText?: string;
-  autoLaunch?: boolean;
 }
 
 export class OAuthAuthorizeResponseDto {

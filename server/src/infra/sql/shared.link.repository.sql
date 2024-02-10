@@ -49,7 +49,7 @@ FROM
       "SharedLinkEntity__SharedLinkEntity_assets"."livePhotoVideoId" AS "SharedLinkEntity__SharedLinkEntity_assets_livePhotoVideoId",
       "SharedLinkEntity__SharedLinkEntity_assets"."originalFileName" AS "SharedLinkEntity__SharedLinkEntity_assets_originalFileName",
       "SharedLinkEntity__SharedLinkEntity_assets"."sidecarPath" AS "SharedLinkEntity__SharedLinkEntity_assets_sidecarPath",
-      "SharedLinkEntity__SharedLinkEntity_assets"."stackParentId" AS "SharedLinkEntity__SharedLinkEntity_assets_stackParentId",
+      "SharedLinkEntity__SharedLinkEntity_assets"."stackId" AS "SharedLinkEntity__SharedLinkEntity_assets_stackId",
       "9b1d35b344d838023994a3233afd6ffe098be6d8"."assetId" AS "9b1d35b344d838023994a3233afd6ffe098be6d8_assetId",
       "9b1d35b344d838023994a3233afd6ffe098be6d8"."description" AS "9b1d35b344d838023994a3233afd6ffe098be6d8_description",
       "9b1d35b344d838023994a3233afd6ffe098be6d8"."exifImageWidth" AS "9b1d35b344d838023994a3233afd6ffe098be6d8_exifImageWidth",
@@ -64,6 +64,7 @@ FROM
       "9b1d35b344d838023994a3233afd6ffe098be6d8"."projectionType" AS "9b1d35b344d838023994a3233afd6ffe098be6d8_projectionType",
       "9b1d35b344d838023994a3233afd6ffe098be6d8"."city" AS "9b1d35b344d838023994a3233afd6ffe098be6d8_city",
       "9b1d35b344d838023994a3233afd6ffe098be6d8"."livePhotoCID" AS "9b1d35b344d838023994a3233afd6ffe098be6d8_livePhotoCID",
+      "9b1d35b344d838023994a3233afd6ffe098be6d8"."autoStackId" AS "9b1d35b344d838023994a3233afd6ffe098be6d8_autoStackId",
       "9b1d35b344d838023994a3233afd6ffe098be6d8"."state" AS "9b1d35b344d838023994a3233afd6ffe098be6d8_state",
       "9b1d35b344d838023994a3233afd6ffe098be6d8"."country" AS "9b1d35b344d838023994a3233afd6ffe098be6d8_country",
       "9b1d35b344d838023994a3233afd6ffe098be6d8"."make" AS "9b1d35b344d838023994a3233afd6ffe098be6d8_make",
@@ -114,7 +115,7 @@ FROM
       "4a35f463ae8c5544ede95c4b6d9ce8c686b6bfe6"."livePhotoVideoId" AS "4a35f463ae8c5544ede95c4b6d9ce8c686b6bfe6_livePhotoVideoId",
       "4a35f463ae8c5544ede95c4b6d9ce8c686b6bfe6"."originalFileName" AS "4a35f463ae8c5544ede95c4b6d9ce8c686b6bfe6_originalFileName",
       "4a35f463ae8c5544ede95c4b6d9ce8c686b6bfe6"."sidecarPath" AS "4a35f463ae8c5544ede95c4b6d9ce8c686b6bfe6_sidecarPath",
-      "4a35f463ae8c5544ede95c4b6d9ce8c686b6bfe6"."stackParentId" AS "4a35f463ae8c5544ede95c4b6d9ce8c686b6bfe6_stackParentId",
+      "4a35f463ae8c5544ede95c4b6d9ce8c686b6bfe6"."stackId" AS "4a35f463ae8c5544ede95c4b6d9ce8c686b6bfe6_stackId",
       "d9f2f4dd8920bad1d6907cdb1d699732daff3c2f"."assetId" AS "d9f2f4dd8920bad1d6907cdb1d699732daff3c2f_assetId",
       "d9f2f4dd8920bad1d6907cdb1d699732daff3c2f"."description" AS "d9f2f4dd8920bad1d6907cdb1d699732daff3c2f_description",
       "d9f2f4dd8920bad1d6907cdb1d699732daff3c2f"."exifImageWidth" AS "d9f2f4dd8920bad1d6907cdb1d699732daff3c2f_exifImageWidth",
@@ -129,6 +130,7 @@ FROM
       "d9f2f4dd8920bad1d6907cdb1d699732daff3c2f"."projectionType" AS "d9f2f4dd8920bad1d6907cdb1d699732daff3c2f_projectionType",
       "d9f2f4dd8920bad1d6907cdb1d699732daff3c2f"."city" AS "d9f2f4dd8920bad1d6907cdb1d699732daff3c2f_city",
       "d9f2f4dd8920bad1d6907cdb1d699732daff3c2f"."livePhotoCID" AS "d9f2f4dd8920bad1d6907cdb1d699732daff3c2f_livePhotoCID",
+      "d9f2f4dd8920bad1d6907cdb1d699732daff3c2f"."autoStackId" AS "d9f2f4dd8920bad1d6907cdb1d699732daff3c2f_autoStackId",
       "d9f2f4dd8920bad1d6907cdb1d699732daff3c2f"."state" AS "d9f2f4dd8920bad1d6907cdb1d699732daff3c2f_state",
       "d9f2f4dd8920bad1d6907cdb1d699732daff3c2f"."country" AS "d9f2f4dd8920bad1d6907cdb1d699732daff3c2f_country",
       "d9f2f4dd8920bad1d6907cdb1d699732daff3c2f"."make" AS "d9f2f4dd8920bad1d6907cdb1d699732daff3c2f_make",
@@ -155,7 +157,9 @@ FROM
       "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."createdAt" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_createdAt",
       "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."deletedAt" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_deletedAt",
       "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."updatedAt" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_updatedAt",
-      "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."memoriesEnabled" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_memoriesEnabled"
+      "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."memoriesEnabled" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_memoriesEnabled",
+      "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."quotaSizeInBytes" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_quotaSizeInBytes",
+      "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."quotaUsageInBytes" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_quotaUsageInBytes"
     FROM
       "shared_links" "SharedLinkEntity"
       LEFT JOIN "shared_link__asset" "SharedLinkEntity__SharedLinkEntity_assets_SharedLinkEntity" ON "SharedLinkEntity__SharedLinkEntity_assets_SharedLinkEntity"."sharedLinksId" = "SharedLinkEntity"."id"
@@ -180,8 +184,8 @@ FROM
       )
     WHERE
       (
-        "SharedLinkEntity"."id" = $1
-        AND "SharedLinkEntity"."userId" = $2
+        ("SharedLinkEntity"."id" = $1)
+        AND ("SharedLinkEntity"."userId" = $2)
       )
   ) "distinctAlias"
 ORDER BY
@@ -234,7 +238,7 @@ SELECT
   "SharedLinkEntity__SharedLinkEntity_assets"."livePhotoVideoId" AS "SharedLinkEntity__SharedLinkEntity_assets_livePhotoVideoId",
   "SharedLinkEntity__SharedLinkEntity_assets"."originalFileName" AS "SharedLinkEntity__SharedLinkEntity_assets_originalFileName",
   "SharedLinkEntity__SharedLinkEntity_assets"."sidecarPath" AS "SharedLinkEntity__SharedLinkEntity_assets_sidecarPath",
-  "SharedLinkEntity__SharedLinkEntity_assets"."stackParentId" AS "SharedLinkEntity__SharedLinkEntity_assets_stackParentId",
+  "SharedLinkEntity__SharedLinkEntity_assets"."stackId" AS "SharedLinkEntity__SharedLinkEntity_assets_stackId",
   "SharedLinkEntity__SharedLinkEntity_album"."id" AS "SharedLinkEntity__SharedLinkEntity_album_id",
   "SharedLinkEntity__SharedLinkEntity_album"."ownerId" AS "SharedLinkEntity__SharedLinkEntity_album_ownerId",
   "SharedLinkEntity__SharedLinkEntity_album"."albumName" AS "SharedLinkEntity__SharedLinkEntity_album_albumName",
@@ -257,7 +261,9 @@ SELECT
   "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."createdAt" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_createdAt",
   "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."deletedAt" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_deletedAt",
   "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."updatedAt" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_updatedAt",
-  "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."memoriesEnabled" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_memoriesEnabled"
+  "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."memoriesEnabled" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_memoriesEnabled",
+  "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."quotaSizeInBytes" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_quotaSizeInBytes",
+  "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."quotaUsageInBytes" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_quotaUsageInBytes"
 FROM
   "shared_links" "SharedLinkEntity"
   LEFT JOIN "shared_link__asset" "SharedLinkEntity__SharedLinkEntity_assets_SharedLinkEntity" ON "SharedLinkEntity__SharedLinkEntity_assets_SharedLinkEntity"."sharedLinksId" = "SharedLinkEntity"."id"
@@ -274,7 +280,7 @@ FROM
     "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."deletedAt" IS NULL
   )
 WHERE
-  ("SharedLinkEntity"."userId" = $1)
+  (("SharedLinkEntity"."userId" = $1))
 ORDER BY
   "SharedLinkEntity"."createdAt" DESC
 
@@ -309,7 +315,9 @@ FROM
       "SharedLinkEntity__SharedLinkEntity_user"."createdAt" AS "SharedLinkEntity__SharedLinkEntity_user_createdAt",
       "SharedLinkEntity__SharedLinkEntity_user"."deletedAt" AS "SharedLinkEntity__SharedLinkEntity_user_deletedAt",
       "SharedLinkEntity__SharedLinkEntity_user"."updatedAt" AS "SharedLinkEntity__SharedLinkEntity_user_updatedAt",
-      "SharedLinkEntity__SharedLinkEntity_user"."memoriesEnabled" AS "SharedLinkEntity__SharedLinkEntity_user_memoriesEnabled"
+      "SharedLinkEntity__SharedLinkEntity_user"."memoriesEnabled" AS "SharedLinkEntity__SharedLinkEntity_user_memoriesEnabled",
+      "SharedLinkEntity__SharedLinkEntity_user"."quotaSizeInBytes" AS "SharedLinkEntity__SharedLinkEntity_user_quotaSizeInBytes",
+      "SharedLinkEntity__SharedLinkEntity_user"."quotaUsageInBytes" AS "SharedLinkEntity__SharedLinkEntity_user_quotaUsageInBytes"
     FROM
       "shared_links" "SharedLinkEntity"
       LEFT JOIN "users" "SharedLinkEntity__SharedLinkEntity_user" ON "SharedLinkEntity__SharedLinkEntity_user"."id" = "SharedLinkEntity"."userId"
@@ -317,7 +325,7 @@ FROM
         "SharedLinkEntity__SharedLinkEntity_user"."deletedAt" IS NULL
       )
     WHERE
-      ("SharedLinkEntity"."key" = $1)
+      (("SharedLinkEntity"."key" = $1))
   ) "distinctAlias"
 ORDER BY
   "SharedLinkEntity_id" ASC

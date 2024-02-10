@@ -1,22 +1,22 @@
+import { getCLIPModelInfo } from '@app/domain/smart-info/smart-info.constant';
 import { MigrationInterface, QueryRunner } from 'typeorm';
+import { vectorExt } from '@app/infra/database.config';
 
 export class UsePgVectors1700713871511 implements MigrationInterface {
   name = 'UsePgVectors1700713871511';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`SET search_path TO "$user", public, vectors`);
+    await queryRunner.query(`CREATE EXTENSION IF NOT EXISTS ${vectorExt}`);
     const faceDimQuery = await queryRunner.query(`
         SELECT CARDINALITY(embedding::real[]) as dimsize
         FROM asset_faces
         LIMIT 1`);
-    const clipDimQuery = await queryRunner.query(`
-        SELECT CARDINALITY("clipEmbedding"::real[]) as dimsize
-        FROM smart_info
-        LIMIT 1`);
-
     const faceDimSize = faceDimQuery?.[0]?.['dimsize'] ?? 512;
-    const clipDimSize = clipDimQuery?.[0]?.['dimsize'] ?? 512;
 
-    await queryRunner.query('CREATE EXTENSION IF NOT EXISTS vectors');
+    const clipModelNameQuery = await queryRunner.query(`SELECT value FROM system_config WHERE key = 'machineLearning.clip.modelName'`);
+    const clipModelName: string = clipModelNameQuery?.[0]?.['value'] ?? 'ViT-B-32__openai';
+    const clipDimSize = getCLIPModelInfo(clipModelName.replaceAll('"', '')).dimSize;
 
     await queryRunner.query(`
         ALTER TABLE asset_faces 
@@ -32,7 +32,9 @@ export class UsePgVectors1700713871511 implements MigrationInterface {
         INSERT INTO smart_search("assetId", embedding)
         SELECT si."assetId", si."clipEmbedding"
         FROM smart_info si
-        WHERE "clipEmbedding" IS NOT NULL`);
+        WHERE "clipEmbedding" IS NOT NULL
+        AND CARDINALITY("clipEmbedding"::real[]) = ${clipDimSize}
+        AND array_position(si."clipEmbedding", NULL) IS NULL`);
 
     await queryRunner.query(`ALTER TABLE smart_info DROP COLUMN IF EXISTS "clipEmbedding"`);
     }

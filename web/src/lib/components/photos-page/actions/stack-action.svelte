@@ -1,20 +1,21 @@
 <script lang="ts">
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { api } from '@api';
-  import { OnStack, getAssetControlContext } from '../asset-select-control-bar.svelte';
+  import { getAssetControlContext } from '../asset-select-control-bar.svelte';
   import {
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import { handleError } from '$lib/utils/handle-error';
+  import type { OnStack } from '$lib/utils/actions';
 
-  export let onStack: OnStack | undefined = undefined;
+  export let onStack: OnStack | undefined;
 
   const { clearSelect, getOwnedAssets } = getAssetControlContext();
 
   const handleStack = async () => {
     try {
-      const assets = Array.from(getOwnedAssets());
+      const assets = [...getOwnedAssets()];
       const parent = assets.at(0);
 
       if (parent == undefined) {
@@ -32,7 +33,7 @@
       for (const asset of children) {
         asset.stackParentId = parent?.id;
         // Add grand-children's count to new parent
-        childrenCount += asset.stackCount == null ? 1 : asset.stackCount + 1;
+        childrenCount += asset.stackCount == undefined ? 1 : asset.stackCount + 1;
         // Reset children stack info
         asset.stackCount = null;
         asset.stack = [];

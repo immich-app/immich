@@ -16,7 +16,11 @@
   let loading = false;
   let oauthLoading = true;
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    success: void;
+    firstLogin: void;
+    onboarding: void;
+  }>();
 
   onMount(async () => {
     if (!$featureFlags.oauth) {
@@ -29,9 +33,9 @@
         await oauth.login(window.location);
         dispatch('success');
         return;
-      } catch (e) {
-        console.error('Error [login-form] [oauth.callback]', e);
-        oauthError = (await getServerErrorMessage(e)) || 'Unable to complete OAuth login';
+      } catch (error) {
+        console.error('Error [login-form] [oauth.callback]', error);
+        oauthError = (await getServerErrorMessage(error)) || 'Unable to complete OAuth login';
         oauthLoading = false;
       }
     }
@@ -54,15 +58,22 @@
       errorMessage = '';
       loading = true;
 
-      const { data } = await api.authenticationApi.login({
+      const { data: user } = await api.authenticationApi.login({
         loginCredentialDto: {
           email,
           password,
         },
       });
 
-      if (!data.isAdmin && data.shouldChangePassword) {
-        dispatch('first-login');
+      const { data: serverConfig } = await api.serverInfoApi.getServerConfig();
+
+      if (user.isAdmin && !serverConfig.isOnboarded) {
+        dispatch('onboarding');
+        return;
+      }
+
+      if (!user.isAdmin && user.shouldChangePassword) {
+        dispatch('firstLogin');
         return;
       }
 
@@ -78,7 +89,11 @@
   const handleOAuthLogin = async () => {
     oauthLoading = true;
     oauthError = '';
-    await oauth.authorize(window.location);
+    const success = await oauth.authorize(window.location);
+    if (!success) {
+      oauthLoading = false;
+      oauthError = 'Unable to login with OAuth';
+    }
   };
 </script>
 

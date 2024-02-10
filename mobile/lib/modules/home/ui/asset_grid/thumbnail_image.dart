@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -22,7 +23,7 @@ class ThumbnailImage extends StatelessWidget {
   final int heroOffset;
 
   const ThumbnailImage({
-    Key? key,
+    super.key,
     required this.asset,
     required this.index,
     required this.loadAsset,
@@ -35,7 +36,7 @@ class ThumbnailImage extends StatelessWidget {
     this.onDeselect,
     this.onSelect,
     this.heroOffset = 0,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -174,7 +175,7 @@ class ThumbnailImage extends StatelessWidget {
             onSelect?.call();
           }
         } else {
-          context.autoPush(
+          context.pushRoute(
             GalleryViewerRoute(
               initialIndex: index,
               loadAsset: loadAsset,

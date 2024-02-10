@@ -132,6 +132,7 @@ class BackgroundService {
     }
   }
 
+  // Yet to be implemented
   Future<Uint8List?> digestFile(String path) {
     return _foregroundChannel.invokeMethod<Uint8List>("digestFile", [path]);
   }
@@ -453,7 +454,7 @@ class BackgroundService {
     );
 
     _cancellationToken = CancellationToken();
-    final pmProgressHandler = PMProgressHandler();
+    final pmProgressHandler = Platform.isIOS ? PMProgressHandler() : null;
 
     final bool ok = await backupService.backupAsset(
       toUpload,
