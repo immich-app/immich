@@ -67,7 +67,7 @@ This endpoint does not need any parameter.
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getSearchSuggestions**
-> List<String> getSearchSuggestions(type, country, make, model, state)
+> List<Object> getSearchSuggestions(type, country, make, model, state)
 
 
 
@@ -116,7 +116,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-**List<String>**
+[**List<Object>**](Object.md)
 
 ### Authorization
 
