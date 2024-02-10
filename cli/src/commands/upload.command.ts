@@ -7,7 +7,7 @@ import { basename } from 'node:path';
 import { access, constants, stat, unlink } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import os from 'node:os';
-import { UploadFileRequest } from '@immich/sdk';
+import { ImmichApi } from 'src/services/api.service';
 
 class Asset {
   readonly path: string;
@@ -33,7 +33,7 @@ class Asset {
     this.albumName = this.extractAlbumName();
   }
 
-  async getUploadFileRequest(): Promise<UploadFileRequest> {
+  async getUploadFormData(): Promise<FormData> {
     if (!this.deviceAssetId) {
       throw new Error('Device asset id not set');
     }
@@ -52,15 +52,25 @@ class Asset {
       sidecarData = new File([await fs.openAsBlob(sideCarPath)], basename(sideCarPath));
     } catch {}
 
-    return {
+    const data: any = {
       assetData: new File([await fs.openAsBlob(this.path)], basename(this.path)),
       deviceAssetId: this.deviceAssetId,
       deviceId: 'CLI',
       fileCreatedAt: this.fileCreatedAt,
       fileModifiedAt: this.fileModifiedAt,
-      isFavorite: false,
-      sidecarData,
+      isFavorite: String(false),
     };
+    const formData = new FormData();
+
+    for (const property in data) {
+      formData.append(property, data[property]);
+    }
+
+    if (sidecarData) {
+      formData.append('sidecarData', sidecarData);
+    }
+
+    return formData;
   }
 
   async delete(): Promise<void> {
@@ -101,9 +111,9 @@ export class UploadCommand extends BaseCommand {
   uploadLength!: number;
 
   public async run(paths: string[], options: UploadOptionsDto): Promise<void> {
-    await this.connect();
+    const api = await this.connect();
 
-    const formatResponse = await this.immichApi.serverInfoApi.getSupportedMediaTypes();
+    const formatResponse = await api.getSupportedMediaTypes();
     const crawlService = new CrawlService(formatResponse.image, formatResponse.video);
 
     const inputFiles: string[] = [];
@@ -153,7 +163,7 @@ export class UploadCommand extends BaseCommand {
       }
     }
 
-    const existingAlbums = await this.immichApi.albumApi.getAllAlbums();
+    const existingAlbums = await api.getAllAlbums();
 
     uploadProgress.start(totalSize, 0);
     uploadProgress.update({ value_formatted: 0, total_formatted: byteSize(totalSize) });
@@ -172,9 +182,7 @@ export class UploadCommand extends BaseCommand {
         if (!options.skipHash) {
           const assetBulkUploadCheckDto = { assets: [{ id: asset.path, checksum: await asset.hash() }] };
 
-          const checkResponse = await this.immichApi.assetApi.checkBulkUpload({
-            assetBulkUploadCheckDto,
-          });
+          const checkResponse = await api.checkBulkUpload(assetBulkUploadCheckDto);
 
           skipUpload = checkResponse.results[0].action === 'reject';
 
@@ -188,9 +196,10 @@ export class UploadCommand extends BaseCommand {
 
         if (!skipAsset && !options.dryRun) {
           if (!skipUpload) {
-            const fileRequest = await asset.getUploadFileRequest();
-            const response = await this.immichApi.assetApi.uploadFile(fileRequest);
-            existingAssetId = response.id;
+            const formData = await asset.getUploadFormData();
+            const response = await this.uploadAsset(api, formData);
+            const json = await response.json();
+            existingAssetId = json.id;
             uploadCounter++;
             totalSizeUploaded += asset.fileSize;
           }
@@ -198,17 +207,14 @@ export class UploadCommand extends BaseCommand {
           if ((options.album || options.albumName) && asset.albumName !== undefined) {
             let album = existingAlbums.find((album) => album.albumName === asset.albumName);
             if (!album) {
-              const response = await this.immichApi.albumApi.createAlbum({
-                createAlbumDto: { albumName: asset.albumName },
-              });
+              const response = await api.createAlbum({ albumName: asset.albumName });
               album = response;
               existingAlbums.push(album);
             }
 
             if (existingAssetId) {
-              await this.immichApi.albumApi.addAssetsToAlbum({
-                id: album.id,
-                bulkIdsDto: { ids: [existingAssetId] },
+              await api.addAssetsToAlbum(album.id, {
+                ids: [existingAssetId],
               });
             }
           }
@@ -247,5 +253,22 @@ export class UploadCommand extends BaseCommand {
         console.log('Deletion complete');
       }
     }
+  }
+
+  private async uploadAsset(api: ImmichApi, data: FormData): Promise<Response> {
+    const url = api.instanceUrl + '/asset/upload';
+
+    const response = await fetch(url, {
+      method: 'post',
+      redirect: 'error',
+      headers: {
+        'x-api-key': api.apiKey,
+      },
+      body: data,
+    });
+    if (response.status !== 200 && response.status !== 201) {
+      throw new Error(await response.text());
+    }
+    return response;
   }
 }

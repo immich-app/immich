@@ -1,56 +1,106 @@
 import {
-  AlbumApi,
-  APIKeyApi,
-  AssetApi,
-  AuthenticationApi,
-  Configuration,
-  JobApi,
-  OAuthApi,
-  ServerInfoApi,
-  SystemConfigApi,
-  UserApi,
+  addAssetsToAlbum,
+  checkBulkUpload,
+  createAlbum,
+  createApiKey,
+  getAllAlbums,
+  getAllAssets,
+  getAssetStatistics,
+  getMyUserInfo,
+  getServerVersion,
+  getSupportedMediaTypes,
+  login,
+  pingServer,
+  signUpAdmin,
+  uploadFile,
+  ApiKeyCreateDto,
+  AssetBulkUploadCheckDto,
+  BulkIdsDto,
+  CreateAlbumDto,
+  CreateAssetDto,
+  LoginCredentialDto,
+  SignUpDto,
 } from '@immich/sdk';
 
+/**
+ * Wraps the underlying API to abstract away the options and make API calls mockable for testing.
+ */
 export class ImmichApi {
-  public userApi: UserApi;
-  public albumApi: AlbumApi;
-  public assetApi: AssetApi;
-  public authenticationApi: AuthenticationApi;
-  public oauthApi: OAuthApi;
-  public serverInfoApi: ServerInfoApi;
-  public jobApi: JobApi;
-  public keyApi: APIKeyApi;
-  public systemConfigApi: SystemConfigApi;
-
-  private readonly config;
+  private readonly options;
 
   constructor(
     public instanceUrl: string,
     public apiKey: string,
   ) {
-    this.config = new Configuration({
-      basePath: instanceUrl,
+    this.options = {
+      baseUrl: instanceUrl,
       headers: {
         'x-api-key': apiKey,
       },
-    });
-
-    this.userApi = new UserApi(this.config);
-    this.albumApi = new AlbumApi(this.config);
-    this.assetApi = new AssetApi(this.config);
-    this.authenticationApi = new AuthenticationApi(this.config);
-    this.oauthApi = new OAuthApi(this.config);
-    this.serverInfoApi = new ServerInfoApi(this.config);
-    this.jobApi = new JobApi(this.config);
-    this.keyApi = new APIKeyApi(this.config);
-    this.systemConfigApi = new SystemConfigApi(this.config);
+    };
   }
 
   setApiKey(apiKey: string) {
     this.apiKey = apiKey;
-    if (!this.config.headers) {
+    if (!this.options.headers) {
       throw new Error('missing headers');
     }
-    this.config.headers['x-api-key'] = apiKey;
+    this.options.headers['x-api-key'] = apiKey;
+  }
+
+  addAssetsToAlbum(id: string, bulkIdsDto: BulkIdsDto) {
+    return addAssetsToAlbum({ id, bulkIdsDto }, this.options);
+  }
+
+  checkBulkUpload(assetBulkUploadCheckDto: AssetBulkUploadCheckDto) {
+    return checkBulkUpload({ assetBulkUploadCheckDto }, this.options);
+  }
+
+  createAlbum(createAlbumDto: CreateAlbumDto) {
+    return createAlbum({ createAlbumDto }, this.options);
+  }
+
+  createApiKey(apiKeyCreateDto: ApiKeyCreateDto, options: { headers: { Authorization: string } }) {
+    return createApiKey({ apiKeyCreateDto }, { ...this.options, ...options });
+  }
+
+  getAllAlbums() {
+    return getAllAlbums({}, this.options);
+  }
+
+  getAllAssets() {
+    return getAllAssets({}, this.options);
+  }
+
+  getAssetStatistics() {
+    return getAssetStatistics({}, this.options);
+  }
+
+  getMyUserInfo() {
+    return getMyUserInfo(this.options);
+  }
+
+  getServerVersion() {
+    return getServerVersion(this.options);
+  }
+
+  getSupportedMediaTypes() {
+    return getSupportedMediaTypes(this.options);
+  }
+
+  login(loginCredentialDto: LoginCredentialDto) {
+    return login({ loginCredentialDto }, this.options);
+  }
+
+  pingServer() {
+    return pingServer(this.options);
+  }
+
+  signUpAdmin(signUpDto: SignUpDto) {
+    return signUpAdmin({ signUpDto }, this.options);
+  }
+
+  uploadFile(createAssetDto: CreateAssetDto) {
+    return uploadFile({ createAssetDto }, this.options);
   }
 }

@@ -19,7 +19,7 @@ function dart {
 function typescript {
   rm -rf ./typescript-sdk/client
   npx --yes @openapitools/openapi-generator-cli generate -g typescript-axios -i ./immich-openapi-specs.json -o ./typescript-sdk/axios-client --additional-properties=useSingleRequestParameter=true,supportsES6=true
-  npx --yes @openapitools/openapi-generator-cli generate -g typescript-fetch -i ./immich-openapi-specs.json -o ./typescript-sdk/fetch-client --additional-properties=useSingleRequestParameter=true,supportsES6=true
+  npx oazapfts --optimistic --argumentStyle=object immich-openapi-specs.json typescript-sdk/fetch-client.ts
   npm --prefix typescript-sdk ci && npm --prefix typescript-sdk run build
 }
 
