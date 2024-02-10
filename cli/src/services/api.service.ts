@@ -48,59 +48,59 @@ export class ImmichApi {
     this.options.headers['x-api-key'] = apiKey;
   }
 
-  async addAssetsToAlbum(id: string, bulkIdsDto: BulkIdsDto) {
-    return await addAssetsToAlbum({ id, bulkIdsDto }, this.options);
+  addAssetsToAlbum(id: string, bulkIdsDto: BulkIdsDto) {
+    return addAssetsToAlbum({ id, bulkIdsDto }, this.options);
   }
 
-  async checkBulkUpload(assetBulkUploadCheckDto: AssetBulkUploadCheckDto) {
-    return await checkBulkUpload({ assetBulkUploadCheckDto }, this.options);
+  checkBulkUpload(assetBulkUploadCheckDto: AssetBulkUploadCheckDto) {
+    return checkBulkUpload({ assetBulkUploadCheckDto }, this.options);
   }
 
-  async createAlbum(createAlbumDto: CreateAlbumDto) {
-    return await createAlbum({ createAlbumDto }, this.options);
+  createAlbum(createAlbumDto: CreateAlbumDto) {
+    return createAlbum({ createAlbumDto }, this.options);
   }
 
-  async createApiKey(apiKeyCreateDto: ApiKeyCreateDto, options: { headers: { Authorization: string } }) {
-    return await createApiKey({ apiKeyCreateDto }, { ...this.options, ...options });
+  createApiKey(apiKeyCreateDto: ApiKeyCreateDto, options: { headers: { Authorization: string } }) {
+    return createApiKey({ apiKeyCreateDto }, { ...this.options, ...options });
   }
 
-  async getAllAlbums() {
-    return await getAllAlbums({}, this.options);
+  getAllAlbums() {
+    return getAllAlbums({}, this.options);
   }
 
-  async getAllAssets() {
-    return await getAllAssets({}, this.options);
+  getAllAssets() {
+    return getAllAssets({}, this.options);
   }
 
-  async getAssetStatistics() {
-    return await getAssetStatistics({}, this.options);
+  getAssetStatistics() {
+    return getAssetStatistics({}, this.options);
   }
 
-  async getMyUserInfo() {
-    return await getMyUserInfo(this.options);
+  getMyUserInfo() {
+    return getMyUserInfo(this.options);
   }
 
-  async getServerVersion() {
-    return await getServerVersion(this.options);
+  getServerVersion() {
+    return getServerVersion(this.options);
   }
 
-  async getSupportedMediaTypes() {
-    return await getSupportedMediaTypes(this.options);
+  getSupportedMediaTypes() {
+    return getSupportedMediaTypes(this.options);
   }
 
-  async login(loginCredentialDto: LoginCredentialDto) {
-    return await login({ loginCredentialDto }, this.options);
+  login(loginCredentialDto: LoginCredentialDto) {
+    return login({ loginCredentialDto }, this.options);
   }
 
-  async pingServer() {
-    return await pingServer(this.options);
+  pingServer() {
+    return pingServer(this.options);
   }
 
-  async signUpAdmin(signUpDto: SignUpDto) {
-    return await signUpAdmin({ signUpDto }, this.options);
+  signUpAdmin(signUpDto: SignUpDto) {
+    return signUpAdmin({ signUpDto }, this.options);
   }
 
-  async uploadFile(createAssetDto: CreateAssetDto) {
-    return await uploadFile({ createAssetDto }, this.options);
+  uploadFile(createAssetDto: CreateAssetDto) {
+    return uploadFile({ createAssetDto }, this.options);
   }
 }
