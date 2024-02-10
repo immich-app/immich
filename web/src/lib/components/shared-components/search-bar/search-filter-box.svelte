@@ -97,6 +97,15 @@
     getPeople();
   });
 
+  const sortPeople = () => {
+    suggestions.people.sort((a, b) => {
+      if (filter.people.find((p) => p.id === a.id)) {
+        return -1;
+      }
+      return 1;
+    });
+  };
+
   const getPeople = async () => {
     try {
       const { data } = await api.personApi.getAllPeople({ withHidden: false });
@@ -109,19 +118,14 @@
   const handlePeopleSelection = (id: string) => {
     if (filter.people.find((p) => p.id === id)) {
       filter.people = filter.people.filter((p) => p.id !== id);
+      sortPeople();
       return;
     }
 
     const person = suggestions.people.find((p) => p.id === id);
     if (person) {
       filter.people = [...filter.people, person];
-
-      suggestions.people.sort((a, b) => {
-        if (filter.people.find((p) => p.id === a.id)) {
-          return -1;
-        }
-        return 1;
-      });
+      sortPeople();
     }
   };
 
