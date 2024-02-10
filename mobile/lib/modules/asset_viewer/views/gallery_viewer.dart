@@ -782,43 +782,6 @@ class GalleryViewerPage extends HookConsumerWidget {
                 stackIndex.value = -1;
                 HapticFeedback.selectionClick();
               },
-              loadingBuilder: (context, event, index) {
-                final a = loadAsset(index);
-                if (ImmichImage.useLocal(a)) {
-                  return Image(
-                    image: ImmichImage.localImageProvider(a),
-                    fit: BoxFit.contain,
-                  );
-                }
-                // Use the WEBP Thumbnail as a placeholder for the JPEG thumbnail to achieve
-                // Three-Stage Loading (WEBP -> JPEG -> Original)
-                final webPThumbnail = CachedNetworkImage(
-                  imageUrl: getThumbnailUrl(a, type: webp),
-                  cacheKey: getThumbnailCacheKey(a, type: webp),
-                  httpHeaders: header,
-                  progressIndicatorBuilder: (_, __, ___) => const Center(
-                    child: ImmichLoadingIndicator(),
-                  ),
-                  fadeInDuration: const Duration(milliseconds: 0),
-                  fit: BoxFit.contain,
-                  errorWidget: (context, url, error) =>
-                      const Icon(Icons.image_not_supported_outlined),
-                );
-
-                // loading the preview in the loadingBuilder only
-                // makes sense if the original is loaded in the builder
-                return isLoadPreview.value && isLoadOriginal.value
-                    ? CachedNetworkImage(
-                        imageUrl: getThumbnailUrl(a, type: jpeg),
-                        cacheKey: getThumbnailCacheKey(a, type: jpeg),
-                        httpHeaders: header,
-                        fit: BoxFit.contain,
-                        fadeInDuration: const Duration(milliseconds: 0),
-                        placeholder: (_, __) => webPThumbnail,
-                        errorWidget: (_, __, ___) => webPThumbnail,
-                      )
-                    : webPThumbnail;
-              },
               builder: (context, index) {
                 final a =
                     index == currentIndex.value ? asset() : loadAsset(index);

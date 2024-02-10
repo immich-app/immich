@@ -13,6 +13,7 @@ import 'package:immich_mobile/utils/image_url_builder.dart';
 
 class ImmichImageProvider extends ImageProvider<Asset> {
   final Asset asset;
+  final _httpClient = HttpClient()..autoUncompress = false;
 
   ImmichImageProvider({required this.asset});
 
@@ -50,9 +51,10 @@ class ImmichImageProvider extends ImageProvider<Asset> {
     }
 
     // Load a preview to the chunk events
-    //if (_loadPreview) {
-    //unawaited(_loadPreview(key, decode, chunkEvents));
-    //}
+    if (_loadPreview) {
+      final preview = getThumbnailUrl(asset, type: api.ThumbnailFormat.WEBP);
+      unawaited(_loadFromUri(Uri.parse(preview), decode, chunkEvents));
+    }
 
     // Load the final remote image
     if (_useOriginal) {
@@ -61,13 +63,12 @@ class ImmichImageProvider extends ImageProvider<Asset> {
       return _loadFromUri(Uri.parse(url), decode, chunkEvents);
     } else {
       // Load a webp version of the image
-      final url = getThumbnailUrl(asset, type: api.ThumbnailFormat.WEBP);
+      final url = getThumbnailUrl(asset, type: api.ThumbnailFormat.JPEG);
       return _loadFromUri(Uri.parse(url), decode, chunkEvents);
     }
   }
 
-  final _httpClient = HttpClient()..autoUncompress = false;
-
+  // Loads the codec from the URI and sends the events to the [chunkEvents] stream
   Future<ui.Codec> _loadFromUri(
     Uri uri,
     ImageDecoderCallback decode,
@@ -80,17 +81,21 @@ class ImmichImageProvider extends ImageProvider<Asset> {
     );
     final response = await request.close();
     // Chunks of the completed image can be shown
-    await consolidateHttpClientResponseBytes(
+    final data = await consolidateHttpClientResponseBytes(
       response,
       onBytesReceived: (cumulative, total) {
-        chunkEvents.add(ImageChunkEvent(
-            cumulativeBytesLoaded: cumulative, expectedTotalBytes: total));
+        chunkEvents.add(
+          ImageChunkEvent(
+            cumulativeBytesLoaded: cumulative,
+            expectedTotalBytes: total,
+          ),
+        );
       },
     );
 
     // Close the stream and decode it
-    final events = await chunkEvents.close();
-    final buffer = await ui.ImmutableBuffer.fromUint8List(events);
+    await chunkEvents.close();
+    final buffer = await ui.ImmutableBuffer.fromUint8List(data);
     return decode(buffer);
   }
 
