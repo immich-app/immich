@@ -33,28 +33,28 @@
   };
 
   type SearchFilter = {
-    context: string | undefined;
+    context?: string;
     people: PersonResponseDto[];
 
     location: {
-      country: ComboBoxOption | undefined;
-      state: ComboBoxOption | undefined;
-      city: ComboBoxOption | undefined;
+      country?: ComboBoxOption;
+      state?: ComboBoxOption;
+      city?: ComboBoxOption;
     };
 
     camera: {
-      make: ComboBoxOption | undefined;
-      model: ComboBoxOption | undefined;
+      make?: ComboBoxOption;
+      model?: ComboBoxOption;
     };
 
     dateRange: {
-      startDate: Date | undefined;
-      endDate: Date | undefined;
+      startDate?: Date;
+      endDate?: Date;
     };
 
-    inArchive: boolean | undefined;
-    inFavorite: boolean | undefined;
-    notInAlbum: boolean | undefined;
+    inArchive?: boolean;
+    inFavorite?: boolean;
+    notInAlbum?: boolean;
 
     mediaType: MediaType;
   };
@@ -91,7 +91,7 @@
   };
 
   let showAllPeople = false;
-  $: subPeopleList = showAllPeople ? suggestions.people : suggestions.people.slice(0, 11);
+  $: peopleList = showAllPeople ? suggestions.people : suggestions.people.slice(0, 11);
 
   onMount(() => {
     getPeople();
@@ -217,9 +217,7 @@
     };
   };
 
-  const search = () => {
-    console.log(filter);
-  };
+  const search = () => {};
 </script>
 
 <div
@@ -240,7 +238,7 @@
 
       {#if suggestions.people.length > 0}
         <div class="flex gap-1 mt-4 flex-wrap max-h-[300px] overflow-y-auto immich-scrollbar transition-all">
-          {#each subPeopleList as person (person.id)}
+          {#each peopleList as person (person.id)}
             <button
               type="button"
               class="w-20 text-center rounded-3xl border-2 border-transparent hover:bg-immich-gray dark:hover:bg-immich-dark-primary/20 p-2 flex-col place-items-center transition-all {filter.people.some(
