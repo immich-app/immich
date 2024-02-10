@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/modules/asset_viewer/providers/immich_image_provider.dart';
+import 'package:immich_mobile/modules/asset_viewer/image_providers/immich_local_image_provider.dart';
+import 'package:immich_mobile/modules/asset_viewer/image_providers/immich_remote_image_provider.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/models/store.dart';
 import 'package:openapi/api.dart' as api;
 
 /// Renders an Asset using local data if available, else remote data
@@ -45,7 +47,7 @@ class ImmichImage extends StatelessWidget {
     }
     final Asset asset = this.asset!;
     return Image(
-      image: ImmichImageProvider(asset: asset),
+      image: ImmichImage.imageProvider(asset: asset),
       width: width,
       height: height,
       fit: fit,
@@ -90,16 +92,48 @@ class ImmichImage extends StatelessWidget {
     );
   }
 
+  static bool useLocal(Asset asset) =>
+      !asset.isRemote ||
+      asset.isLocal && !Store.get(StoreKey.preferRemoteImage, false);
+
+  /// A helper function to use the correct image loader based on
+  /// whether the asset should be local or remote
   /// Precaches this asset for instant load the next time it is shown
-  static Future<void> precacheAsset(
+  static Future<void> precacheAssetImageProvider(
     Asset asset,
     BuildContext context, {
-    type = api.ThumbnailFormat.WEBP,
-    size = 250,
+    api.ThumbnailFormat type = api.ThumbnailFormat.WEBP,
+    int size = 250,
+    ImageErrorListener? onError,
   }) {
-    return precacheImage(
-      ImmichImageProvider(asset: asset),
-      context,
-    );
+    if (useLocal(asset)) {
+      return precacheImage(
+        ImmichLocalImageProvider(asset: asset),
+        context,
+        onError: onError,
+      );
+    } else {
+      return precacheImage(
+        ImmichRemoteImageProvider(assetId: asset.remoteId!),
+        context,
+        onError: onError,
+      );
+    }
+  }
+
+  // Helper function to return the image provider for the asset
+  // either by using the asset ID or the asset itself
+  static ImageProvider imageProvider({Asset? asset, String? assetId}) {
+    if (asset == null && assetId == null) {
+      throw Exception('Must supply either asset or assetId');
+    }
+
+    if (asset == null) {
+      return ImmichRemoteImageProvider(assetId: assetId!);
+    } else if (useLocal(asset)) {
+      return ImmichLocalImageProvider(asset: asset);
+    } else {
+      return ImmichRemoteImageProvider(assetId: asset.remoteId!);
+    }
   }
 }

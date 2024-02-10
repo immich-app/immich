@@ -59,6 +59,10 @@ String getImageUrl(final Asset asset) {
   return '${Store.get(StoreKey.serverEndpoint)}/asset/file/${asset.remoteId}?isThumb=false';
 }
 
+String getImageUrlFromId(final String id) {
+  return '${Store.get(StoreKey.serverEndpoint)}/asset/file/$id?isThumb=false';
+}
+
 String getImageCacheKey(final Asset asset) {
   // Assets from response DTOs do not have an isar id, querying which would give us the default autoIncrement id
   final isFromDto = asset.id == Isar.autoIncrement;

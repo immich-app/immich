@@ -12,21 +12,25 @@ import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 
-class ImmichImageProvider extends ImageProvider<Asset> {
-  final Asset asset;
+/// The remote image provider
+class ImmichRemoteImageProvider extends ImageProvider<String> {
+  /// The [Asset.remoteId] of the asset to fetch
+  final String assetId;
+
+  /// Our HTTP client to make the request
   final _httpClient = HttpClient()..autoUncompress = false;
 
-  ImmichImageProvider({required this.asset});
+  ImmichRemoteImageProvider({required this.assetId});
 
   /// Converts an [ImageProvider]'s settings plus an [ImageConfiguration] to a key
   /// that describes the precise image to load.
   @override
-  Future<Asset> obtainKey(ImageConfiguration configuration) {
-    return SynchronousFuture(asset);
+  Future<String> obtainKey(ImageConfiguration configuration) {
+    return SynchronousFuture(assetId);
   }
 
   @override
-  ImageStreamCompleter loadImage(Asset key, ImageDecoderCallback decode) {
+  ImageStreamCompleter loadImage(String key, ImageDecoderCallback decode) {
     final chunkEvents = StreamController<ImageChunkEvent>();
     return MultiImageStreamCompleter(
       codec: _codec(key, decode, chunkEvents),
@@ -35,37 +39,25 @@ class ImmichImageProvider extends ImageProvider<Asset> {
     );
   }
 
-  ImageStream? _stream;
-
-  @override
-  ImageStream createStream(ImageConfiguration configuration) {
-    _stream = ImageStream();
-    return _stream!;
-  }
-
-  bool get _useLocal =>
-      !asset.isRemote ||
-      asset.isLocal && !Store.get(StoreKey.preferRemoteImage, false);
-
+  /// Whether to show the original file or load a compressed version
   bool get _useOriginal => AppSettingsEnum.loadOriginal.defaultValue;
+
+  /// Whether to load the preview thumbnail first or not
   bool get _loadPreview => AppSettingsEnum.loadPreview.defaultValue;
 
   // Streams in each stage of the image as we ask for it
   Stream<ui.Codec> _codec(
-    Asset key,
+    String key,
     ImageDecoderCallback decode,
     StreamController<ImageChunkEvent> chunkEvents,
   ) async* {
-    if (_useLocal) {
-      if (_loadPreview) {
-        // Use local preview
-      }
-      yield await _loadLocalCodec(key, decode, chunkEvents);
-    }
-
     // Load a preview to the chunk events
     if (_loadPreview) {
-      final preview = getThumbnailUrl(asset, type: api.ThumbnailFormat.WEBP);
+      final preview = getThumbnailUrlForRemoteId(
+        assetId,
+        type: api.ThumbnailFormat.WEBP,
+      );
+
       yield await _loadFromUri(
         Uri.parse(preview),
         decode,
@@ -73,16 +65,19 @@ class ImmichImageProvider extends ImageProvider<Asset> {
       );
     }
 
+    // Load a webp version of the image
+    final url = getThumbnailUrlForRemoteId(
+      assetId,
+      type: api.ThumbnailFormat.JPEG,
+    );
+    final codec = await _loadFromUri(Uri.parse(url), decode, chunkEvents);
+    await chunkEvents.close();
+    yield codec;
+
     // Load the final remote image
     if (_useOriginal) {
       // Load the original image
-      final url = getImageUrl(asset);
-      final codec = await _loadFromUri(Uri.parse(url), decode, chunkEvents);
-      await chunkEvents.close();
-      yield codec;
-    } else {
-      // Load a webp version of the image
-      final url = getThumbnailUrl(asset, type: api.ThumbnailFormat.JPEG);
+      final url = getImageUrlFromId(assetId);
       final codec = await _loadFromUri(Uri.parse(url), decode, chunkEvents);
       await chunkEvents.close();
       yield codec;
@@ -119,46 +114,13 @@ class ImmichImageProvider extends ImageProvider<Asset> {
     return decode(buffer);
   }
 
-  /// The local codec for local images
-  Future<ui.Codec> _loadLocalCodec(
-    Asset key,
-    ImageDecoderCallback decode,
-    StreamController<ImageChunkEvent> chunkEvents,
-  ) async {
-    final ui.ImmutableBuffer buffer;
-    if (asset.isImage) {
-      final File? file = await asset.local?.originFile;
-      if (file == null) {
-        throw StateError("Opening file for asset ${asset.fileName} failed");
-      }
-      try {
-        buffer = await ui.ImmutableBuffer.fromFilePath(file.path);
-      } catch (error) {
-        throw StateError("Loading asset ${asset.fileName} failed");
-      }
-    } else {
-      final thumbBytes = await asset.local?.thumbnailData;
-      if (thumbBytes == null) {
-        throw StateError("Loading thumb for video ${asset.fileName} failed");
-      }
-      buffer = await ui.ImmutableBuffer.fromUint8List(thumbBytes);
-    }
-    try {
-      final codec = await decode(buffer);
-      debugPrint("Decoded image ${asset.fileName}");
-      return codec;
-    } catch (error) {
-      throw StateError("Decoding asset ${asset.fileName} failed");
-    }
-  }
-
   @override
   bool operator ==(Object other) {
-    if (other is! ImmichImageProvider) return false;
+    if (other is! ImmichRemoteImageProvider) return false;
     if (identical(this, other)) return true;
-    return asset == other.asset;
+    return assetId == other.assetId;
   }
 
   @override
-  int get hashCode => asset.hashCode;
+  int get hashCode => assetId.hashCode;
 }

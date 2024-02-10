@@ -114,7 +114,7 @@ class MemoryPage extends HookConsumerWidget {
       final precaches = <Future<dynamic>>[];
 
       precaches.add(
-        ImmichImage.precacheAsset(
+        ImmichImage.precacheAssetImageProvider(
           asset,
           context,
           type: api.ThumbnailFormat.WEBP,
@@ -122,7 +122,7 @@ class MemoryPage extends HookConsumerWidget {
         ),
       );
       precaches.add(
-        ImmichImage.precacheAsset(
+        ImmichImage.precacheAssetImageProvider(
           asset,
           context,
           type: api.ThumbnailFormat.JPEG,
