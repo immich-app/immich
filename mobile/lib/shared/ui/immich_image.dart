@@ -199,7 +199,8 @@ class ImmichImage extends StatelessWidget {
       final accessToken = Store.get(StoreKey.accessToken);
       // Precache the remote image since we are not using local images
       return precacheImage(
-        remoteThumbnailProvider(asset, type, {"x-immich-user-token": accessToken}),
+        remoteThumbnailProvider(
+            asset, type, {"x-immich-user-token": accessToken}),
         context,
       );
     }
