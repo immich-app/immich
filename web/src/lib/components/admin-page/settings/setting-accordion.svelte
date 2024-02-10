@@ -1,5 +1,6 @@
 <script lang="ts">
   import { page } from '$app/stores';
+  import { QueryParameter } from '$lib/constants';
   import { hasParamValue, updateParamList } from '$lib/utils';
   import { slide } from 'svelte/transition';
 
@@ -8,8 +9,8 @@
   export let key: string;
   export let isOpen = false;
 
-  const syncFromUrl = () => (isOpen = hasParamValue('isOpen', key));
-  const syncToUrl = (isOpen: boolean) => updateParamList({ param: 'isOpen', value: key, add: isOpen });
+  const syncFromUrl = () => (isOpen = hasParamValue(QueryParameter.IS_OPEN, key));
+  const syncToUrl = (isOpen: boolean) => updateParamList({ param: QueryParameter.IS_OPEN, value: key, add: isOpen });
 
   isOpen ? syncToUrl(true) : syncFromUrl();
   $: $page.url && syncFromUrl();
