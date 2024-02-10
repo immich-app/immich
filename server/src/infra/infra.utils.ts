@@ -13,8 +13,8 @@ import {
   SelectQueryBuilder,
 } from 'typeorm';
 import { PaginatedBuilderOptions, PaginationMode, PaginationResult, chunks, setUnion } from '../domain/domain.util';
-import { DATABASE_PARAMETER_CHUNK_SIZE } from './infra.util';
 import { AssetEntity } from './entities';
+import { DATABASE_PARAMETER_CHUNK_SIZE } from './infra.util';
 
 /**
  * Allows optional values unlike the regular Between and uses MoreThanOrEqual
@@ -127,17 +127,12 @@ export function searchAssetBuilder(
   { date, id, exif, path, relation, status }: AssetSearchBuilderOptions,
 ): SelectQueryBuilder<AssetEntity> {
   if (date) {
-    builder.andWhere(
-      _.omitBy(
-        {
-          createdAt: OptionalBetween(date.createdAfter, date.createdBefore),
-          updatedAt: OptionalBetween(date.updatedAfter, date.updatedBefore),
-          deletedAt: OptionalBetween(date.trashedAfter, date.trashedBefore),
-          fileCreatedAt: OptionalBetween(date.takenAfter, date.takenBefore),
-        },
-        _.isUndefined,
-      ),
-    );
+    builder.andWhere({
+      createdAt: OptionalBetween(date.createdAfter, date.createdBefore),
+      updatedAt: OptionalBetween(date.updatedAfter, date.updatedBefore),
+      deletedAt: OptionalBetween(date.trashedAfter, date.trashedBefore),
+      fileCreatedAt: OptionalBetween(date.takenAfter, date.takenBefore),
+    });
   }
 
   if (exif) {
@@ -192,7 +187,9 @@ export function searchAssetBuilder(
       builder
         .leftJoinAndSelect(`${builder.alias}.stack`, 'stack')
         .leftJoinAndSelect('stack.assets', 'stackedAssets')
-        .andWhere(new Brackets((qb) => qb.where(`stack.primaryAssetId = ${builder.alias}.id`).orWhere('asset.stackId IS NULL')));
+        .andWhere(
+          new Brackets((qb) => qb.where(`stack.primaryAssetId = ${builder.alias}.id`).orWhere('asset.stackId IS NULL')),
+        );
     }
   }
 
