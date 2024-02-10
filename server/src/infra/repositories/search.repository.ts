@@ -66,9 +66,7 @@ export class SearchRepository implements ISearchRepository {
     let builder = this.assetRepository.createQueryBuilder('asset');
     builder = searchAssetBuilder(builder, options);
 
-    if (options.order) {
-      builder.orderBy('asset.fileCreatedAt', options.order.direction);
-    }
+    builder.orderBy('asset.fileCreatedAt', options.order?.direction ? options.order.direction : 'DESC');
 
     return paginatedBuilder<AssetEntity>(builder, {
       mode: PaginationMode.SKIP_TAKE,

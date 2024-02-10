@@ -127,19 +127,24 @@ export function searchAssetBuilder(
   { date, id, exif, path, relation, status }: AssetSearchBuilderOptions,
 ): SelectQueryBuilder<AssetEntity> {
   if (date) {
-    builder.andWhere({
-      createdAt: OptionalBetween(date.createdAfter, date.createdBefore),
-      updatedAt: OptionalBetween(date.updatedAfter, date.updatedBefore),
-      deletedAt: OptionalBetween(date.trashedAfter, date.trashedBefore),
-      fileCreatedAt: OptionalBetween(date.takenAfter, date.takenBefore),
-    });
+    builder.andWhere(
+      _.omitBy(
+        {
+          createdAt: OptionalBetween(date.createdAfter, date.createdBefore),
+          updatedAt: OptionalBetween(date.updatedAfter, date.updatedBefore),
+          deletedAt: OptionalBetween(date.trashedAfter, date.trashedBefore),
+          fileCreatedAt: OptionalBetween(date.takenAfter, date.takenBefore),
+        },
+        _.isUndefined,
+      ),
+    );
   }
 
   if (exif) {
     const exifWhere = _.omitBy(exif, _.isUndefined);
     if (Object.keys(exifWhere).length > 0) {
       builder.leftJoin(`${builder.alias}.exifInfo`, 'exifInfo');
-      builder.andWhere(Object.entries(exifWhere).map(([key, value]) => ({ [`exifInfo.${key}`]: value })));
+      builder.andWhere({ exifInfo: exifWhere });
     }
   }
 
@@ -153,7 +158,9 @@ export function searchAssetBuilder(
 
   if (status) {
     const { isEncoded, isMotion, withArchived, withDeleted, ...otherStatuses } = status;
-    otherStatuses.isArchived ??= !!withArchived;
+    if (withArchived != null) {
+      otherStatuses.isArchived ??= withArchived;
+    }
 
     builder.andWhere(_.omitBy(otherStatuses, _.isUndefined));
 

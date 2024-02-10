@@ -105,10 +105,59 @@ export class AssetService {
     const enumToOrder = { [AssetOrder.ASC]: 'ASC', [AssetOrder.DESC]: 'DESC' } as const;
     const order = dto.order ? { direction: enumToOrder[dto.order] } : undefined;
     const { items } = await this.searchRepository.searchAssets(
-      { page: 0, size: 250 },
+      { page: dto.page ? dto.page - 1 : 0, size: dto.size ?? 250 },
       {
-        id: { checksum, ownerId: auth.user.id },
+        date: {
+          createdAfter: dto.createdAfter,
+          createdBefore: dto.createdBefore,
+          takenAfter: dto.takenAfter,
+          takenBefore: dto.takenBefore,
+          trashedAfter: dto.trashedAfter,
+          trashedBefore: dto.trashedBefore,
+          updatedAfter: dto.updatedAfter,
+          updatedBefore: dto.updatedBefore,
+        },
+        exif: {
+          city: dto.city,
+          country: dto.country,
+          lensModel: dto.lensModel,
+          make: dto.make,
+          model: dto.model,
+          state: dto.state,
+        },
+        id: {
+          checksum,
+          deviceAssetId: dto.deviceAssetId,
+          deviceId: dto.deviceId,
+          id: dto.id,
+          libraryId: dto.libraryId,
+          ownerId: auth.user.id,
+        },
         order,
+        path: {
+          encodedVideoPath: dto.encodedVideoPath,
+          originalFileName: dto.originalFileName,
+          originalPath: dto.originalPath,
+          resizePath: dto.resizePath,
+          webpPath: dto.webpPath,
+        },
+        relation: {
+          withExif: dto.withExif,
+          withPeople: dto.withPeople,
+          withStacked: dto.withStacked,
+        },
+        status: {
+          isArchived: dto.isArchived,
+          isEncoded: dto.isArchived,
+          isExternal: dto.isExternal,
+          isFavorite: dto.isFavorite,
+          isMotion: dto.isMotion,
+          isOffline: dto.isOffline,
+          isReadOnly: dto.isReadOnly,
+          isVisible: dto.isVisible,
+          type: dto.type,
+          withDeleted: dto.withDeleted,
+        },
       },
     );
     return items.map((asset) =>

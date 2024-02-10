@@ -138,8 +138,8 @@ export interface SearchPaginationOptions {
 
 export interface AssetSearchOptions {
   date?: SearchDateOptions;
-  id?: SearchIDOptions;
   exif?: SearchExifOptions;
+  id?: SearchIDOptions;
   order?: SearchOrderOptions;
   path?: SearchPathOptions;
   relation?: SearchRelationOptions;

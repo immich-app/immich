@@ -478,7 +478,7 @@ describe(`${AssetController.name} (e2e)`, () => {
         }),
       },
       {
-        should: 'sohuld search by make',
+        should: 'should search by make',
         deferred: () => ({
           query: { make: 'Cannon' },
           assets: [asset3],
