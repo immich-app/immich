@@ -807,7 +807,6 @@ class GalleryViewerPage extends HookConsumerWidget {
                     basePosition: Alignment.center,
                     child: VideoViewerPage(
                       onPlaying: () {
-                        ref.read(showControlsProvider.notifier).show = false;
                         isPlayingVideo.value = true;
                       },
                       onPaused: () =>

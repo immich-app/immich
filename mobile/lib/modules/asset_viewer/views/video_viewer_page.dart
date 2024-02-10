@@ -29,7 +29,7 @@ class VideoViewerPage extends HookWidget {
     this.onPaused,
     this.placeholder,
     this.showControls = true,
-    this.hideControlsTimer = const Duration(milliseconds: 1500),
+    this.hideControlsTimer = const Duration(seconds: 5),
     this.showDownloadingIndicator = true,
   });
 
