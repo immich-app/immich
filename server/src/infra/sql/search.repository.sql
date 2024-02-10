@@ -95,13 +95,19 @@ FROM
   ) "distinctAlias"
 ORDER BY
   "asset_id" ASC
-OFFSET
+LIMIT
   101
 
 -- SearchRepository.searchCLIP
 START TRANSACTION
 SET
-  LOCAL hnsw.ef_search = 1000;
+  LOCAL vectors.enable_prefilter = on;
+
+SET
+  LOCAL vectors.search_mode = vbase;
+
+SET
+  LOCAL vectors.hnsw_ef_search = 100;
 SELECT
   "asset"."id" AS "asset_id",
   "asset"."deviceAssetId" AS "asset_deviceAssetId",

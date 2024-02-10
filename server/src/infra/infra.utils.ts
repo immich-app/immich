@@ -69,7 +69,7 @@ export async function paginatedBuilder<Entity extends ObjectLiteral>(
   if (mode === PaginationMode.LIMIT_OFFSET) {
     qb.limit(take + 1).offset(skip);
   } else {
-    qb.skip(take + 1).take(skip);
+    qb.take(take + 1).skip(skip);
   }
 
   const items = await qb.getMany();
