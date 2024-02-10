@@ -411,7 +411,7 @@ describe(MediaService.name, () => {
 
       await sut.handleQueueVideoConversion({ force: true });
 
-      expect(assetMock.getAll).toHaveBeenCalledWith({ skip: 0, take: 1000 }, { type: AssetType.VIDEO });
+      expect(assetMock.getAll).toHaveBeenCalledWith({ skip: 0, take: 1000 }, { status: { type: AssetType.VIDEO } });
       expect(assetMock.getWithout).not.toHaveBeenCalled();
       expect(jobMock.queueAll).toHaveBeenCalledWith([
         {
