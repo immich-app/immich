@@ -1,7 +1,6 @@
 import { AssetEntity } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
 import { Inject, Injectable } from '@nestjs/common';
-import { IsNull, Not } from 'typeorm';
 import { AssetResponseDto, mapAsset } from '../asset';
 import { AuthDto } from '../auth';
 import { PersonResponseDto, mapPerson } from '../person';
