@@ -85,7 +85,7 @@ describe(SearchService.name, () => {
 
   describe('search', () => {
     it('should throw an error if query is missing', async () => {
-      await expect(sut.search(authStub.user1, { q: '' })).rejects.toThrow('Missing query');
+      await expect(sut.searchSmart(authStub.user1, { q: '' })).rejects.toThrow('Missing query');
     });
 
     it('should search by metadata if `clip` option is false', async () => {
@@ -108,17 +108,17 @@ describe(SearchService.name, () => {
         },
       };
 
-      const result = await sut.search(authStub.user1, dto);
+      const result = await sut.searchSmart(authStub.user1, dto);
 
       expect(result).toEqual(expectedResponse);
       expect(assetMock.searchMetadata).toHaveBeenCalledWith(dto.q, [authStub.user1.user.id], { numResults: 250 });
-      expect(searchMock.searchCLIP).not.toHaveBeenCalled();
+      expect(searchMock.searchSmart).not.toHaveBeenCalled();
     });
 
     it('should search archived photos if `withArchived` option is true', async () => {
       const dto: SearchDto = { q: 'test query', clip: true, withArchived: true };
       const embedding = [1, 2, 3];
-      searchMock.searchCLIP.mockResolvedValueOnce({ items: [assetStub.image], hasNextPage: false });
+      searchMock.searchSmart.mockResolvedValueOnce({ items: [assetStub.image], hasNextPage: false });
       machineMock.encodeText.mockResolvedValueOnce(embedding);
       partnerMock.getAll.mockResolvedValueOnce([]);
       const expectedResponse = {
@@ -137,10 +137,10 @@ describe(SearchService.name, () => {
         },
       };
 
-      const result = await sut.search(authStub.user1, dto);
+      const result = await sut.searchSmart(authStub.user1, dto);
 
       expect(result).toEqual(expectedResponse);
-      expect(searchMock.searchCLIP).toHaveBeenCalledWith(
+      expect(searchMock.searchSmart).toHaveBeenCalledWith(
         { page: 0, size: 100 },
         {
           userIds: [authStub.user1.user.id],
@@ -154,7 +154,7 @@ describe(SearchService.name, () => {
     it('should search by CLIP if `clip` option is true', async () => {
       const dto: SearchDto = { q: 'test query', clip: true };
       const embedding = [1, 2, 3];
-      searchMock.searchCLIP.mockResolvedValueOnce({ items: [assetStub.image], hasNextPage: false });
+      searchMock.searchSmart.mockResolvedValueOnce({ items: [assetStub.image], hasNextPage: false });
       machineMock.encodeText.mockResolvedValueOnce(embedding);
       partnerMock.getAll.mockResolvedValueOnce([]);
       const expectedResponse = {
@@ -173,10 +173,10 @@ describe(SearchService.name, () => {
         },
       };
 
-      const result = await sut.search(authStub.user1, dto);
+      const result = await sut.searchSmart(authStub.user1, dto);
 
       expect(result).toEqual(expectedResponse);
-      expect(searchMock.searchCLIP).toHaveBeenCalledWith(
+      expect(searchMock.searchSmart).toHaveBeenCalledWith(
         { page: 0, size: 100 },
         {
           userIds: [authStub.user1.user.id],
@@ -194,7 +194,7 @@ describe(SearchService.name, () => {
       const dto: SearchDto = { q: 'test query', clip: true };
       configMock.load.mockResolvedValue([{ key, value: false }]);
 
-      await expect(sut.search(authStub.user1, dto)).rejects.toThrow('Smart search is not enabled');
+      await expect(sut.searchSmart(authStub.user1, dto)).rejects.toThrow('Smart search is not enabled');
     });
   });
 });

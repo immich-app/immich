@@ -60,14 +60,19 @@ export interface SearchExploreItem<T> {
 
 export type Embedding = number[];
 
-export interface SearchIDOptions {
+export interface SearchAssetIDOptions {
   checksum?: Buffer;
   deviceAssetId?: string;
-  deviceId?: string;
   id?: string;
+}
+
+export interface SearchUserIDOptions {
+  deviceId?: string;
   libraryId?: string;
   ownerId?: string;
 }
+
+export type SearchIDOptions = SearchAssetIDOptions & SearchUserIDOptions;
 
 export interface SearchStatusOptions {
   isArchived?: boolean;
@@ -146,11 +151,12 @@ export type AssetSearchOptions = SearchDateOptions &
 
 export type AssetSearchBuilderOptions = Omit<AssetSearchOptions, 'orderDirection'>;
 
-export type SmartSearchOptions = SearchEmbeddingOptions &
-  SearchDateOptions &
+export type SmartSearchOptions = SearchDateOptions &
+  SearchEmbeddingOptions &
   SearchExifOptions &
-  SearchRelationOptions &
-  SearchStatusOptions;
+  SearchOneToOneRelationOptions &
+  SearchStatusOptions & 
+  SearchUserIDOptions;
 
 export interface FaceEmbeddingSearch extends SearchEmbeddingOptions {
   hasPerson?: boolean;
@@ -165,8 +171,8 @@ export interface FaceSearchResult {
 
 export interface ISearchRepository {
   init(modelName: string): Promise<void>;
-  searchAssets(pagination: SearchPaginationOptions, options: AssetSearchOptions): Paginated<AssetEntity>;
-  searchCLIP(pagination: SearchPaginationOptions, options: SmartSearchOptions): Paginated<AssetEntity>;
+  searchMetadata(pagination: SearchPaginationOptions, options: AssetSearchOptions): Paginated<AssetEntity>;
+  searchSmart(pagination: SearchPaginationOptions, options: SmartSearchOptions): Paginated<AssetEntity>;
   searchFaces(search: FaceEmbeddingSearch): Promise<FaceSearchResult[]>;
   upsert(smartInfo: Partial<SmartInfoEntity>, embedding?: Embedding): Promise<void>;
 }

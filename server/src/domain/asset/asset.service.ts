@@ -88,36 +88,9 @@ export class AssetService {
     @Inject(ICommunicationRepository) private communicationRepository: ICommunicationRepository,
     @Inject(IPartnerRepository) private partnerRepository: IPartnerRepository,
     @Inject(IAssetStackRepository) private assetStackRepository: IAssetStackRepository,
-    @Inject(ISearchRepository) private searchRepository: ISearchRepository,
   ) {
     this.access = AccessCore.create(accessRepository);
     this.configCore = SystemConfigCore.create(configRepository);
-  }
-
-  async search(auth: AuthDto, dto: AssetSearchDto) {
-    let checksum: Buffer | undefined;
-
-    if (dto.checksum) {
-      const encoding = dto.checksum.length === 28 ? 'base64' : 'hex';
-      checksum = Buffer.from(dto.checksum, encoding);
-    }
-
-    const enumToOrder = { [AssetOrder.ASC]: 'ASC', [AssetOrder.DESC]: 'DESC' } as const;
-    const { items } = await this.searchRepository.searchAssets(
-      { page: dto.page ? dto.page - 1 : 0, size: dto.size ?? 250 },
-      {
-        ...dto,
-        checksum,
-        ownerId: auth.user.id,
-        orderDirection: dto.order ? enumToOrder[dto.order] : 'DESC',
-      },
-    );
-    return items.map((asset) =>
-      mapAsset(asset, {
-        stripMetadata: false,
-        withStack: true,
-      }),
-    );
   }
 
   canUploadFile({ auth, fieldName, file }: UploadRequest): true {

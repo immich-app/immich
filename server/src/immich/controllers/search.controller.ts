@@ -21,7 +21,7 @@ export class SearchController {
 
   @Get()
   search(@Auth() auth: AuthDto, @Query() dto: SearchDto): Promise<SearchResponseDto> {
-    return this.service.search(auth, dto);
+    return this.service.searchSmart(auth, dto);
   }
 
   @Get('explore')

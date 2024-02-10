@@ -62,7 +62,7 @@ export class SearchRepository implements ISearchRepository {
       },
     ],
   })
-  async searchAssets(pagination: SearchPaginationOptions, options: AssetSearchOptions): Paginated<AssetEntity> {
+  async searchMetadata(pagination: SearchPaginationOptions, options: AssetSearchOptions): Paginated<AssetEntity> {
     let builder = this.assetRepository.createQueryBuilder('asset');
     builder = searchAssetBuilder(builder, options);
 
@@ -88,7 +88,7 @@ export class SearchRepository implements ISearchRepository {
       },
     ],
   })
-  async searchCLIP(
+  async searchSmart(
     pagination: SearchPaginationOptions,
     { embedding, userIds, ...options }: SmartSearchOptions,
   ): Paginated<AssetEntity> {

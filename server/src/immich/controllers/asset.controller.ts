@@ -15,6 +15,7 @@ import {
   MemoryLaneDto,
   MemoryLaneResponseDto,
   RandomAssetsDto,
+  SearchService,
   TimeBucketAssetDto,
   TimeBucketDto,
   TimeBucketResponseDto,
@@ -23,7 +24,7 @@ import {
   UpdateStackParentDto,
 } from '@app/domain';
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Auth, Authenticated, SharedLinkRoute } from '../app.guard';
 import { UseValidation } from '../app.utils';
 import { Route } from '../interceptors';
@@ -34,11 +35,12 @@ import { UUIDParamDto } from './dto/uuid-param.dto';
 @Authenticated()
 @UseValidation()
 export class AssetsController {
-  constructor(private service: AssetService) {}
+  constructor(private searchService: SearchService) {}
 
   @Get()
+  @ApiOperation({deprecated: true})
   searchAssets(@Auth() auth: AuthDto, @Query() dto: AssetSearchDto): Promise<AssetResponseDto[]> {
-    return this.service.search(auth, dto);
+    return this.searchService.searchMetadata(auth, dto);
   }
 }
 
