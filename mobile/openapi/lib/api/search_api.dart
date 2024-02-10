@@ -122,7 +122,7 @@ class SearchApi {
   /// * [String] model:
   ///
   /// * [String] state:
-  Future<SearchSuggestionResponseDto?> getSearchSuggestions(SearchSuggestionType type, { String? country, String? make, String? model, String? state, }) async {
+  Future<List<String>?> getSearchSuggestions(SearchSuggestionType type, { String? country, String? make, String? model, String? state, }) async {
     final response = await getSearchSuggestionsWithHttpInfo(type,  country: country, make: make, model: model, state: state, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -131,8 +131,11 @@ class SearchApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'SearchSuggestionResponseDto',) as SearchSuggestionResponseDto;
-    
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<String>') as List)
+        .cast<String>()
+        .toList(growable: false);
+
     }
     return null;
   }

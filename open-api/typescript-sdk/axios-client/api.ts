@@ -2992,19 +2992,6 @@ export interface SearchResponseDto {
 /**
  * 
  * @export
- * @interface SearchSuggestionResponseDto
- */
-export interface SearchSuggestionResponseDto {
-    /**
-     * 
-     * @type {Array<string>}
-     * @memberof SearchSuggestionResponseDto
-     */
-    'data'?: Array<string>;
-}
-/**
- * 
- * @export
  * @enum {string}
  */
 
@@ -14750,7 +14737,7 @@ export const SearchApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getSearchSuggestions(type: SearchSuggestionType, country?: string, make?: string, model?: string, state?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SearchSuggestionResponseDto>> {
+        async getSearchSuggestions(type: SearchSuggestionType, country?: string, make?: string, model?: string, state?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<string>>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getSearchSuggestions(type, country, make, model, state, options);
             const index = configuration?.serverIndex ?? 0;
             const operationBasePath = operationServerMap['SearchApi.getSearchSuggestions']?.[index]?.url;
@@ -14812,7 +14799,7 @@ export const SearchApiFactory = function (configuration?: Configuration, basePat
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getSearchSuggestions(requestParameters: SearchApiGetSearchSuggestionsRequest, options?: RawAxiosRequestConfig): AxiosPromise<SearchSuggestionResponseDto> {
+        getSearchSuggestions(requestParameters: SearchApiGetSearchSuggestionsRequest, options?: RawAxiosRequestConfig): AxiosPromise<Array<string>> {
             return localVarFp.getSearchSuggestions(requestParameters.type, requestParameters.country, requestParameters.make, requestParameters.model, requestParameters.state, options).then((request) => request(axios, basePath));
         },
         /**

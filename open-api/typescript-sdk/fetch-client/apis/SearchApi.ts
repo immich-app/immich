@@ -18,7 +18,6 @@ import type {
   PersonResponseDto,
   SearchExploreResponseDto,
   SearchResponseDto,
-  SearchSuggestionResponseDto,
   SearchSuggestionType,
 } from '../models/index';
 import {
@@ -28,8 +27,6 @@ import {
     SearchExploreResponseDtoToJSON,
     SearchResponseDtoFromJSON,
     SearchResponseDtoToJSON,
-    SearchSuggestionResponseDtoFromJSON,
-    SearchSuggestionResponseDtoToJSON,
     SearchSuggestionTypeFromJSON,
     SearchSuggestionTypeToJSON,
 } from '../models/index';
@@ -101,7 +98,7 @@ export class SearchApi extends runtime.BaseAPI {
 
     /**
      */
-    async getSearchSuggestionsRaw(requestParameters: GetSearchSuggestionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSuggestionResponseDto>> {
+    async getSearchSuggestionsRaw(requestParameters: GetSearchSuggestionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<string>>> {
         if (requestParameters.type === null || requestParameters.type === undefined) {
             throw new runtime.RequiredError('type','Required parameter requestParameters.type was null or undefined when calling getSearchSuggestions.');
         }
@@ -149,12 +146,12 @@ export class SearchApi extends runtime.BaseAPI {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => SearchSuggestionResponseDtoFromJSON(jsonValue));
+        return new runtime.JSONApiResponse<any>(response);
     }
 
     /**
      */
-    async getSearchSuggestions(requestParameters: GetSearchSuggestionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSuggestionResponseDto> {
+    async getSearchSuggestions(requestParameters: GetSearchSuggestionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<string>> {
         const response = await this.getSearchSuggestionsRaw(requestParameters, initOverrides);
         return await response.value();
     }

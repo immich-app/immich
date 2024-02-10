@@ -1,15 +1,12 @@
-import { PeopleResponseDto, PersonResponseDto } from '@app/domain';
-import { toBoolean } from '@app/domain/domain.util';
 import { ApiProperty } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
-import { IsArray, IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export enum SearchSuggestionType {
-  Country = 'country',
-  State = 'state',
-  City = 'city',
-  CameraMake = 'camera-make',
-  CameraModel = 'camera-model',
+  COUNTRY = 'country',
+  STATE = 'state',
+  CITY = 'city',
+  CAMERA_MAKE = 'camera-make',
+  CAMERA_MODEL = 'camera-model',
 }
 
 export class SearchSuggestionRequestDto {
@@ -33,8 +30,4 @@ export class SearchSuggestionRequestDto {
   @IsString()
   @IsOptional()
   model?: string;
-}
-
-export class SearchSuggestionResponseDto {
-  data?: string[];
 }

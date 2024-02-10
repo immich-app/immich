@@ -143,7 +143,7 @@
     }
 
     try {
-      const { data: response } = await api.searchApi.getSearchSuggestions({
+      const { data } = await api.searchApi.getSearchSuggestions({
         type: type,
         country: params.country,
         state: params.state,
@@ -153,27 +153,27 @@
 
       switch (type) {
         case SearchSuggestionType.Country:
-          response.data?.forEach((country) => {
+          data?.forEach((country) => {
             suggestions.country = [...suggestions.country, { label: country, value: country }];
           });
           break;
         case SearchSuggestionType.State:
-          response.data?.forEach((state) => {
+          data?.forEach((state) => {
             suggestions.state = [...suggestions.state, { label: state, value: state }];
           });
           break;
         case SearchSuggestionType.City:
-          response.data?.forEach((city) => {
+          data?.forEach((city) => {
             suggestions.city = [...suggestions.city, { label: city, value: city }];
           });
           break;
         case SearchSuggestionType.CameraMake:
-          response.data?.forEach((make) => {
+          data?.forEach((make) => {
             suggestions.cameraMake = [...suggestions.cameraMake, { label: make, value: make }];
           });
           break;
         case SearchSuggestionType.CameraModel:
-          response.data?.forEach((model) => {
+          data?.forEach((model) => {
             suggestions.cameraModel = [...suggestions.cameraModel, { label: model, value: model }];
           });
           break;

@@ -7,7 +7,7 @@ import {
   SearchResponseDto,
   SearchService,
 } from '@app/domain';
-import { SearchSuggestionRequestDto, SearchSuggestionResponseDto } from '@app/domain/search/dto/search-suggestion.dto';
+import { SearchSuggestionRequestDto } from '@app/domain/search/dto/search-suggestion.dto';
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Auth, Authenticated } from '../app.guard';
@@ -36,10 +36,7 @@ export class SearchController {
   }
 
   @Get('suggestions')
-  getSearchSuggestions(
-    @Auth() auth: AuthDto,
-    @Query() dto: SearchSuggestionRequestDto,
-  ): Promise<SearchSuggestionResponseDto> {
+  getSearchSuggestions(@Auth() auth: AuthDto, @Query() dto: SearchSuggestionRequestDto): Promise<string[]> {
     return this.service.getSearchSuggestions(auth, dto);
   }
 }

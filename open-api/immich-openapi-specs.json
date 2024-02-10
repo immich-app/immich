@@ -4594,7 +4594,10 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SearchSuggestionResponseDto"
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
                 }
               }
             },
@@ -8622,17 +8625,6 @@
           "albums",
           "assets"
         ],
-        "type": "object"
-      },
-      "SearchSuggestionResponseDto": {
-        "properties": {
-          "data": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          }
-        },
         "type": "object"
       },
       "SearchSuggestionType": {
