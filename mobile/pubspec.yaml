@@ -90,7 +90,7 @@ dev_dependencies:
   isar_generator: *isar_version
   integration_test:
     sdk: flutter
-  custom_lint: ^0.5.8
+  custom_lint: ^0.6.0
   riverpod_lint: ^2.3.7
   riverpod_generator: ^2.3.9
   mocktail: ^1.0.3
