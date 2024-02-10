@@ -1,6 +1,5 @@
 import 'package:flutter/painting.dart';
-
-import 'original_image_provider.dart';
+import 'package:immich_mobile/modules/asset_viewer/image_providers/original_image_provider.dart';
 
 /// [ImageCache] that uses two caches for small and large images
 /// so that a single large image does not evict all small iamges

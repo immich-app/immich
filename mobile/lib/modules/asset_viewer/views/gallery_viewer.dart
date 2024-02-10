@@ -25,7 +25,6 @@ import 'package:immich_mobile/modules/asset_viewer/views/video_viewer_page.dart'
 import 'package:immich_mobile/modules/backup/providers/manual_upload.provider.dart';
 import 'package:immich_mobile/modules/home/ui/upload_dialog.dart';
 import 'package:immich_mobile/modules/partner/providers/partner.provider.dart';
-import 'package:immich_mobile/shared/cache/original_image_provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/modules/home/ui/delete_dialog.dart';
@@ -41,8 +40,6 @@ import 'package:immich_mobile/shared/ui/photo_view/src/photo_view_scale_state.da
 import 'package:immich_mobile/shared/ui/photo_view/src/utils/photo_view_hero_attributes.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
-import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
-import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:isar/isar.dart';
 import 'package:openapi/api.dart' show ThumbnailFormat;
 
@@ -78,7 +75,6 @@ class GalleryViewerPage extends HookConsumerWidget {
     final isPlayingMotionVideo = useState(false);
     final isPlayingVideo = useState(false);
     Offset? localPosition;
-    final header = {"x-immich-user-token": Store.get(StoreKey.accessToken)};
     final currentIndex = useState(initialIndex);
     final currentAsset = loadAsset(currentIndex.value);
     final isTrashEnabled =
@@ -729,6 +725,10 @@ class GalleryViewerPage extends HookConsumerWidget {
                 isZoomed.value = state != PhotoViewScaleState.initial;
                 ref.read(showControlsProvider.notifier).show = !isZoomed.value;
               },
+              loadingBuilder: (context, event, index) => ImmichImage.thumbnail(
+                asset(),
+                fit: BoxFit.contain,
+              ),
               pageController: controller,
               scrollPhysics: isZoomed.value
                   ? const NeverScrollableScrollPhysics() // Don't allow paging while scrolled in
@@ -748,7 +748,8 @@ class GalleryViewerPage extends HookConsumerWidget {
               builder: (context, index) {
                 final a =
                     index == currentIndex.value ? asset() : loadAsset(index);
-                final ImageProvider provider = ImmichImage.imageProvider(asset: a);
+                final ImageProvider provider =
+                    ImmichImage.imageProvider(asset: a);
 
                 if (a.isImage && !isPlayingMotionVideo.value) {
                   return PhotoViewGalleryPageOptions(

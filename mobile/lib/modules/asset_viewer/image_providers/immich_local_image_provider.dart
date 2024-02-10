@@ -3,20 +3,20 @@ import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:openapi/api.dart' as api;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:immich_mobile/shared/models/store.dart';
-import 'package:immich_mobile/utils/image_url_builder.dart';
 
+/// The local image provider for an asset
+/// Only viable
 class ImmichLocalImageProvider extends ImageProvider<Asset> {
   final Asset asset;
-  final _httpClient = HttpClient()..autoUncompress = false;
 
-  ImmichLocalImageProvider({required this.asset});
+  ImmichLocalImageProvider({
+    required this.asset,
+  }) : assert(asset.local != null, 'Only usable when asset.local is set');
 
   /// Converts an [ImageProvider]'s settings plus an [ImageConfiguration] to a key
   /// that describes the precise image to load.
@@ -47,11 +47,11 @@ class ImmichLocalImageProvider extends ImageProvider<Asset> {
     if (_loadPreview) {
       // TODO: Use local preview
     }
-    yield await _loadLocalCodec(key, decode, chunkEvents);
+    yield await _loadOriginalCodec(key, decode, chunkEvents);
   }
 
   /// The local codec for local images
-  Future<ui.Codec> _loadLocalCodec(
+  Future<ui.Codec> _loadOriginalCodec(
     Asset key,
     ImageDecoderCallback decode,
     StreamController<ImageChunkEvent> chunkEvents,

@@ -6,6 +6,8 @@ import 'package:immich_mobile/modules/asset_viewer/image_providers/immich_remote
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:openapi/api.dart' as api;
+import 'package:photo_manager/photo_manager.dart';
+import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
 
 /// Renders an Asset using local data if available, else remote data
 class ImmichImage extends StatelessWidget {
@@ -16,8 +18,7 @@ class ImmichImage extends StatelessWidget {
     this.fit = BoxFit.cover,
     this.useGrayBoxPlaceholder = false,
     this.useProgressIndicator = false,
-    this.type = api.ThumbnailFormat.WEBP,
-    this.preferredLocalAssetSize = 250,
+    this.isThumbnail = false,
     super.key,
   });
   final Asset? asset;
@@ -26,8 +27,19 @@ class ImmichImage extends StatelessWidget {
   final double? width;
   final double? height;
   final BoxFit fit;
-  final api.ThumbnailFormat type;
-  final int preferredLocalAssetSize;
+  final bool isThumbnail;
+
+  /// Factory constructor to use the thumbnail variant
+  factory ImmichImage.thumbnail(
+    Asset asset, {
+    BoxFit fit = BoxFit.cover,
+  }) {
+    return ImmichImage(
+      asset,
+      isThumbnail: true,
+      fit: fit,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,9 +57,14 @@ class ImmichImage extends StatelessWidget {
         ),
       );
     }
+
     final Asset asset = this.asset!;
+
     return Image(
-      image: ImmichImage.imageProvider(asset: asset),
+      image: ImmichImage.imageProvider(
+        asset: asset,
+        isThumbnail: isThumbnail,
+      ),
       width: width,
       height: height,
       fit: fit,
@@ -123,17 +140,37 @@ class ImmichImage extends StatelessWidget {
 
   // Helper function to return the image provider for the asset
   // either by using the asset ID or the asset itself
-  static ImageProvider imageProvider({Asset? asset, String? assetId}) {
+  static ImageProvider imageProvider({
+    Asset? asset,
+    String? assetId,
+    bool isThumbnail = false,
+  }) {
     if (asset == null && assetId == null) {
       throw Exception('Must supply either asset or assetId');
     }
 
     if (asset == null) {
-      return ImmichRemoteImageProvider(assetId: assetId!);
-    } else if (useLocal(asset)) {
-      return ImmichLocalImageProvider(asset: asset);
+      return ImmichRemoteImageProvider(
+        assetId: assetId!,
+        isThumbnail: isThumbnail,
+      );
+    }
+
+    if (useLocal(asset) && isThumbnail) {
+      return AssetEntityImageProvider(
+        asset.local!,
+        isOriginal: false,
+        thumbnailSize: const ThumbnailSize.square(250),
+      );
+    } else if (useLocal(asset) && !isThumbnail) {
+      return ImmichLocalImageProvider(
+        asset: asset,
+      );
     } else {
-      return ImmichRemoteImageProvider(assetId: asset.remoteId!);
+      return ImmichRemoteImageProvider(
+        assetId: asset.remoteId!,
+        isThumbnail: isThumbnail,
+      );
     }
   }
 }

@@ -17,23 +17,31 @@ class ImmichRemoteImageProvider extends ImageProvider<String> {
   /// The [Asset.remoteId] of the asset to fetch
   final String assetId;
 
+  // If this is a thumbnail, we stop at loading the
+  // smallest version of the remote image
+  final bool isThumbnail;
+
   /// Our HTTP client to make the request
   final _httpClient = HttpClient()..autoUncompress = false;
 
-  ImmichRemoteImageProvider({required this.assetId});
+  ImmichRemoteImageProvider({
+    required this.assetId,
+    this.isThumbnail = false,
+  });
 
   /// Converts an [ImageProvider]'s settings plus an [ImageConfiguration] to a key
   /// that describes the precise image to load.
   @override
   Future<String> obtainKey(ImageConfiguration configuration) {
-    return SynchronousFuture(assetId);
+    return SynchronousFuture('$assetId,$isThumbnail');
   }
 
   @override
   ImageStreamCompleter loadImage(String key, ImageDecoderCallback decode) {
+    final id = key.split(',').first;
     final chunkEvents = StreamController<ImageChunkEvent>();
     return MultiImageStreamCompleter(
-      codec: _codec(key, decode, chunkEvents),
+      codec: _codec(id, decode, chunkEvents),
       scale: 1.0,
       chunkEvents: chunkEvents.stream,
     );
@@ -52,7 +60,7 @@ class ImmichRemoteImageProvider extends ImageProvider<String> {
     StreamController<ImageChunkEvent> chunkEvents,
   ) async* {
     // Load a preview to the chunk events
-    if (_loadPreview) {
+    if (_loadPreview || isThumbnail) {
       final preview = getThumbnailUrlForRemoteId(
         assetId,
         type: api.ThumbnailFormat.WEBP,
@@ -65,13 +73,17 @@ class ImmichRemoteImageProvider extends ImageProvider<String> {
       );
     }
 
-    // Load a webp version of the image
+    // Guard thumnbail rendering
+    if (isThumbnail) {
+      return;
+    }
+
+    // Load the higher resolution version of the image
     final url = getThumbnailUrlForRemoteId(
       assetId,
       type: api.ThumbnailFormat.JPEG,
     );
     final codec = await _loadFromUri(Uri.parse(url), decode, chunkEvents);
-    await chunkEvents.close();
     yield codec;
 
     // Load the final remote image
@@ -79,9 +91,9 @@ class ImmichRemoteImageProvider extends ImageProvider<String> {
       // Load the original image
       final url = getImageUrlFromId(assetId);
       final codec = await _loadFromUri(Uri.parse(url), decode, chunkEvents);
-      await chunkEvents.close();
       yield codec;
     }
+    await chunkEvents.close();
   }
 
   // Loads the codec from the URI and sends the events to the [chunkEvents] stream
