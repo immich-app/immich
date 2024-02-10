@@ -23,7 +23,7 @@ final syncServiceProvider = Provider(
 
 class SyncService {
   final Isar _db;
-  final AsyncMutex _lock = AsyncMutex();
+  static final AsyncMutex lock = AsyncMutex();
   final Logger _log = Logger('SyncService');
 
   SyncService(this._db);
@@ -33,7 +33,7 @@ class SyncService {
   /// Syncs users from the server to the local database
   /// Returns `true`if there were any changes
   Future<bool> syncUsersFromServer(List<User> users) =>
-      _lock.run(() => _syncUsersFromServer(users));
+      lock.run(() => _syncUsersFromServer(users));
 
   /// Syncs remote assets owned by the logged-in user to the DB
   /// Returns `true` if there were any changes
@@ -45,7 +45,7 @@ class SyncService {
     ) getChangedAssets,
     FutureOr<List<Asset>?> Function(User user) loadAssets,
   ) =>
-      _lock.run(
+      lock.run(
         () async =>
             await _syncRemoteAssetChanges(user, getChangedAssets) ??
             await _syncRemoteAssetsFull(user, loadAssets),
@@ -58,7 +58,7 @@ class SyncService {
     required bool isShared,
     required FutureOr<AlbumResponseDto> Function(AlbumResponseDto) loadDetails,
   }) =>
-      _lock.run(() => _syncRemoteAlbumsToDb(remote, isShared, loadDetails));
+      lock.run(() => _syncRemoteAlbumsToDb(remote, isShared, loadDetails));
 
   /// returns all Asset IDs that are not contained in the existing list
   List<int> sharedAssetsToRemove(
@@ -78,7 +78,7 @@ class SyncService {
 
   /// Syncs a new asset to the db. Returns `true` if successful
   Future<bool> syncNewAssetToDb(Asset newAsset) =>
-      _lock.run(() => _syncNewAssetToDb(newAsset));
+      lock.run(() => _syncNewAssetToDb(newAsset));
 
   // private methods:
 

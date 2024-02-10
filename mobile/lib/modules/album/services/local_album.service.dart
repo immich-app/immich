@@ -26,9 +26,12 @@ class LocalAlbumService {
 
   LocalAlbumService(this._db, this._hashService, this._syncService);
 
+  Future<bool> refreshDeviceAlbums() async =>
+      SyncService.lock.run(_refreshDeviceAlbums);
+
   /// Checks all selected device albums for changes of albums and their assets
   /// Updates the local database and returns `true` if there were any changes
-  Future<bool> refreshDeviceAlbums() async {
+  Future<bool> _refreshDeviceAlbums() async {
     if (!_localCompleter.isCompleted) {
       // guard against concurrent calls
       _log.info("refreshDeviceAlbums is already in progress");
