@@ -137,9 +137,9 @@ export function searchAssetBuilder(
 
   if (exif) {
     const exifWhere = _.omitBy(exif, _.isUndefined);
-    builder.andWhere(exifWhere);
     if (Object.keys(exifWhere).length > 0) {
       builder.leftJoin(`${builder.alias}.exifInfo`, 'exifInfo');
+      builder.andWhere(Object.entries(exifWhere).map(([key, value]) => ({ [`exifInfo.${key}`]: value })));
     }
   }
 
@@ -152,7 +152,9 @@ export function searchAssetBuilder(
   }
 
   if (status) {
-    const { isEncoded, isMotion, ...otherStatuses } = status;
+    const { isEncoded, isMotion, withArchived, withDeleted, ...otherStatuses } = status;
+    otherStatuses.isArchived ??= !!withArchived;
+
     builder.andWhere(_.omitBy(otherStatuses, _.isUndefined));
 
     if (isEncoded && !path?.encodedVideoPath) {

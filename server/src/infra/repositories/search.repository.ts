@@ -52,16 +52,14 @@ export class SearchRepository implements ISearchRepository {
 
   @GenerateSql({
     params: [
+      { page: 0, size: 100 },
       {
-        pagination: { page: 0, size: 100 },
-        options: {
-          date: { takenAfter: DummyValue.DATE },
-          exif: { cameraModel: DummyValue.STRING },
-          id: { ownerId: DummyValue.UUID },
-          relation: { withStacked: true },
-          status: { isFavorite: true },
-        },
-      },
+        date: { takenAfter: DummyValue.DATE },
+        exif: { lensModel: DummyValue.STRING },
+        id: { ownerId: DummyValue.UUID },
+        relation: { withStacked: true },
+        status: { isFavorite: true },
+      }
     ],
   })
   async searchAssets(pagination: SearchPaginationOptions, options: AssetSearchOptions): Paginated<AssetEntity> {
@@ -81,16 +79,14 @@ export class SearchRepository implements ISearchRepository {
 
   @GenerateSql({
     params: [
+      { page: 0, size: 100 },
       {
-        pagination: { page: 0, size: 100 },
-        options: {
-          date: { takenAfter: DummyValue.DATE },
-          embedding: Array.from({ length: 512 }, Math.random),
-          exif: { cameraModel: DummyValue.STRING },
-          relation: { withStacked: true },
-          status: { isFavorite: true },
-          userIds: [DummyValue.UUID],
-        },
+        date: { takenAfter: DummyValue.DATE },
+        embedding: Array.from({ length: 512 }, Math.random),
+        exif: { lensModel: DummyValue.STRING },
+        relation: { withStacked: true },
+        status: { isFavorite: true },
+        userIds: [DummyValue.UUID],
       },
     ],
   })
