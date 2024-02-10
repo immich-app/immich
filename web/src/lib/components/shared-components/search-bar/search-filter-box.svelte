@@ -2,7 +2,7 @@
   import Button from '$lib/components/elements/buttons/button.svelte';
   import { fly } from 'svelte/transition';
   import Combobox, { type ComboBoxOption } from '../combobox.svelte';
-  import { SearchSuggestionType, api, type PersonResponseDto, type PeopleResponseDto } from '@api';
+  import { SearchSuggestionType, api, type PersonResponseDto } from '@api';
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import { mdiArrowRight, mdiClose } from '@mdi/js';
@@ -98,8 +98,8 @@
   });
 
   const sortPeople = () => {
-    suggestions.people.sort((a, b) => {
-      if (filter.people.find((p) => p.id === a.id)) {
+    suggestions.people.sort((a, _) => {
+      if (filter.people.some((p) => p.id === a.id)) {
         return -1;
       }
       return 1;
@@ -116,7 +116,7 @@
   };
 
   const handlePeopleSelection = (id: string) => {
-    if (filter.people.find((p) => p.id === id)) {
+    if (filter.people.some((p) => p.id === id)) {
       filter.people = filter.people.filter((p) => p.id !== id);
       sortPeople();
       return;
@@ -152,31 +152,41 @@
       });
 
       switch (type) {
-        case SearchSuggestionType.Country:
-          data?.forEach((country) => {
+        case SearchSuggestionType.Country: {
+          for (const country of data) {
             suggestions.country = [...suggestions.country, { label: country, value: country }];
-          });
+          }
           break;
-        case SearchSuggestionType.State:
-          data?.forEach((state) => {
+        }
+
+        case SearchSuggestionType.State: {
+          for (const state of data) {
             suggestions.state = [...suggestions.state, { label: state, value: state }];
-          });
+          }
+
           break;
-        case SearchSuggestionType.City:
-          data?.forEach((city) => {
+        }
+
+        case SearchSuggestionType.City: {
+          for (const city of data) {
             suggestions.city = [...suggestions.city, { label: city, value: city }];
-          });
+          }
           break;
-        case SearchSuggestionType.CameraMake:
-          data?.forEach((make) => {
+        }
+
+        case SearchSuggestionType.CameraMake: {
+          for (const make of data) {
             suggestions.cameraMake = [...suggestions.cameraMake, { label: make, value: make }];
-          });
+          }
           break;
-        case SearchSuggestionType.CameraModel:
-          data?.forEach((model) => {
+        }
+
+        case SearchSuggestionType.CameraModel: {
+          for (const model of data) {
             suggestions.cameraModel = [...suggestions.cameraModel, { label: model, value: model }];
-          });
+          }
           break;
+        }
       }
     } catch (error) {
       handleError(error, 'Failed to get search suggestions');
@@ -233,7 +243,7 @@
           {#each subPeopleList as person (person.id)}
             <button
               type="button"
-              class="w-20 text-center rounded-3xl border-2 border-transparent hover:bg-immich-gray dark:hover:bg-immich-dark-primary/20 p-2 flex-col place-items-center transition-all {filter.people.find(
+              class="w-20 text-center rounded-3xl border-2 border-transparent hover:bg-immich-gray dark:hover:bg-immich-dark-primary/20 p-2 flex-col place-items-center transition-all {filter.people.some(
                 (p) => p.id === person.id,
               )
                 ? 'dark:border-slate-500 border-slate-300 bg-slate-200 dark:bg-slate-800 dark:text-white'
