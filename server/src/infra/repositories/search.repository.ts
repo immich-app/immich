@@ -1,6 +1,6 @@
 import {
-  AssetSearchBuilderOptions,
   AssetSearchOptions,
+  DatabaseExtension,
   Embedding,
   FaceEmbeddingSearch,
   FaceSearchResult,
@@ -20,6 +20,7 @@ import _ from 'lodash';
 import { Repository } from 'typeorm';
 import { DummyValue, GenerateSql } from '../infra.util';
 import { asVector, isValidInteger, paginatedBuilder, searchAssetBuilder } from '../infra.utils';
+import { vectorExt } from '../database.config';
 
 @Injectable()
 export class SearchRepository implements ISearchRepository {
@@ -84,8 +85,9 @@ export class SearchRepository implements ISearchRepository {
         .orderBy('s.embedding <=> :embedding')
         .setParameters({ userIds: options.userIds, embedding: asVector(options.embedding) });
 
+      await manager.query(this.getRuntimeConfig(pagination.size));
       return paginatedBuilder<AssetEntity>(builder, {
-        mode: PaginationMode.SKIP_TAKE,
+        mode: PaginationMode.LIMIT_OFFSET,
         skip: pagination.page * pagination.size,
         take: pagination.size,
       });
@@ -217,5 +219,18 @@ export class SearchRepository implements ISearchRepository {
       throw new Error(`Could not retrieve CLIP dimension size`);
     }
     return dimSize;
+  }
+
+  private getRuntimeConfig(numResults?: number): string {
+    if (vectorExt === DatabaseExtension.VECTOR) {
+      return 'SET LOCAL hnsw.ef_search = 1000;'; // mitigate post-filter recall
+    }
+
+    let runtimeConfig = 'SET LOCAL vectors.enable_prefilter=on; SET LOCAL vectors.search_mode=vbase;';
+    if (numResults) {
+      runtimeConfig += ` SET LOCAL vectors.hnsw_ef_search = ${numResults};`;
+    }
+
+    return runtimeConfig;
   }
 }
