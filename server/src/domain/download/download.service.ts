@@ -122,7 +122,7 @@ export class DownloadService {
       const userId = dto.userId;
       await this.access.requirePermission(auth, Permission.TIMELINE_DOWNLOAD, userId);
       return usePagination(PAGINATION_SIZE, (pagination) =>
-        this.assetRepository.getByUserId(pagination, userId, { isVisible: true }),
+        this.assetRepository.getByUserId(pagination, userId, { status: { isVisible: true } }),
       );
     }
 

@@ -124,10 +124,8 @@ export function ChunkedSet(options?: { paramIndex?: number }): MethodDecorator {
 
 export function searchAssetBuilder(
   builder: SelectQueryBuilder<AssetEntity>,
-  options: AssetSearchBuilderOptions,
+  { date, id, exif, path, relation, status }: AssetSearchBuilderOptions,
 ): SelectQueryBuilder<AssetEntity> {
-  const { date, id, exif, path, relation, status } = options;
-
   if (date) {
     builder.andWhere(
       _.omitBy(

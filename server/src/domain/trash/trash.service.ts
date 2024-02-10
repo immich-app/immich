@@ -33,7 +33,7 @@ export class TrashService {
 
   async restore(auth: AuthDto): Promise<void> {
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
-      this.assetRepository.getByUserId(pagination, auth.user.id, { trashedBefore: DateTime.now().toJSDate() }),
+      this.assetRepository.getByUserId(pagination, auth.user.id, { date: { trashedBefore: DateTime.now().toJSDate() } }),
     );
 
     for await (const assets of assetPagination) {
@@ -44,7 +44,7 @@ export class TrashService {
 
   async empty(auth: AuthDto): Promise<void> {
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
-      this.assetRepository.getByUserId(pagination, auth.user.id, { trashedBefore: DateTime.now().toJSDate() }),
+      this.assetRepository.getByUserId(pagination, auth.user.id, { date: { trashedBefore: DateTime.now().toJSDate() } }),
     );
 
     for await (const assets of assetPagination) {

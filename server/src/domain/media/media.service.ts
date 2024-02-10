@@ -240,7 +240,7 @@ export class MediaService {
 
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
       return force
-        ? this.assetRepository.getAll(pagination, { type: AssetType.VIDEO })
+        ? this.assetRepository.getAll(pagination, { status: { type: AssetType.VIDEO } })
         : this.assetRepository.getWithout(pagination, WithoutProperty.ENCODED_VIDEO);
     });
 

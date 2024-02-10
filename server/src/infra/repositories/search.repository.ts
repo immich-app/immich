@@ -18,9 +18,9 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import _ from 'lodash';
 import { Repository } from 'typeorm';
+import { vectorExt } from '../database.config';
 import { DummyValue, GenerateSql } from '../infra.util';
 import { asVector, isValidInteger, paginatedBuilder, searchAssetBuilder } from '../infra.utils';
-import { vectorExt } from '../database.config';
 
 @Injectable()
 export class SearchRepository implements ISearchRepository {
@@ -70,23 +70,37 @@ export class SearchRepository implements ISearchRepository {
   }
 
   @GenerateSql({
-    params: [{ userIds: [DummyValue.UUID], embedding: Array.from({ length: 512 }, Math.random), numResults: 100 }],
+    params: [
+      {
+        pagination: { page: 0, size: 100 },
+        options: {
+          date: { takenAfter: DummyValue.DATE },
+          embedding: Array.from({ length: 512 }, Math.random),
+          exif: { cameraModel: DummyValue.STRING },
+          relation: { withStacked: true },
+          status: { isFavorite: true },
+          userIds: [DummyValue.UUID],
+        },
+      },
+    ],
   })
-  async searchCLIP(pagination: SearchPaginationOptions, options: SmartSearchOptions): Paginated<AssetEntity> {
+  async searchCLIP(
+    pagination: SearchPaginationOptions,
+    { embedding, userIds, ...options }: SmartSearchOptions,
+  ): Paginated<AssetEntity> {
     let results: PaginationResult<AssetEntity> = { items: [], hasNextPage: false };
 
     await this.assetRepository.manager.transaction(async (manager) => {
-      await manager.query(`SET LOCAL vectors.search_mode=vbase`);
       let builder = manager.createQueryBuilder(AssetEntity, 'asset');
       builder = searchAssetBuilder(builder, options);
       builder
-        .innerJoin('a.smartSearch', 's')
-        .andWhere('a.ownerId IN (:...userIds )')
-        .orderBy('s.embedding <=> :embedding')
-        .setParameters({ userIds: options.userIds, embedding: asVector(options.embedding) });
+        .innerJoin('asset.smartSearch', 'search')
+        .andWhere('asset.ownerId IN (:...userIds )')
+        .orderBy('search.embedding <=> :embedding')
+        .setParameters({ userIds, embedding: asVector(embedding) });
 
       await manager.query(this.getRuntimeConfig(pagination.size));
-      return paginatedBuilder<AssetEntity>(builder, {
+      results = await paginatedBuilder<AssetEntity>(builder, {
         mode: PaginationMode.LIMIT_OFFSET,
         skip: pagination.page * pagination.size,
         take: pagination.size,
