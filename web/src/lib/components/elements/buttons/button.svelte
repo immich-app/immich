@@ -27,11 +27,7 @@
   export let fullwidth = false;
   export let border = false;
   export let title: string | undefined = '';
-  export const focus = () => {
-    ref.focus;
-  };
 
-  let ref: HTMLButtonElement;
   let className = '';
   export { className as class };
 
@@ -66,7 +62,6 @@
 </script>
 
 <button
-  bind:this={ref}
   {type}
   {disabled}
   {title}

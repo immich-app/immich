@@ -88,9 +88,7 @@
    **/
   let searchWord: string;
   let isSearchingPeople = false;
-  let focusedElements: (HTMLButtonElement | null)[] = Array(20)
-    .fill(null)
-    .map(() => null);
+  let focusedElements: (HTMLButtonElement | null)[] = Array.from({ length: maximumLengthSearchPeople }, () => null);
   let indexFocus: number | null = null;
 
   const searchPeople = async () => {
@@ -142,8 +140,7 @@
     if (!$showAssetViewer) {
       event.stopPropagation();
       switch (event.key) {
-        case 'Tab':
-        case 'ArrowDown':
+        case 'ArrowDown': {
           event.preventDefault();
           if (indexFocus === null) {
             indexFocus = 0;
@@ -154,7 +151,8 @@
           }
           focusedElements[indexFocus]?.focus();
           return;
-        case 'ArrowUp':
+        }
+        case 'ArrowUp': {
           if (indexFocus === null) {
             indexFocus = 0;
             return;
@@ -167,32 +165,14 @@
           focusedElements[indexFocus]?.focus();
 
           return;
-        case 'Enter':
+        }
+        case 'Enter': {
           if (indexFocus !== null) {
             handleSuggestPeople(suggestedPeople[indexFocus]);
           }
+        }
       }
     }
-  };
-
-  const searchPeople = async () => {
-    if ((people.length < 20 && name.startsWith(searchWord)) || name === '') {
-      return;
-    }
-    const timeout = setTimeout(() => (isSearchingPeople = true), 100);
-    try {
-      const { data } = await api.searchApi.searchPerson({ name });
-      indexFocus = null;
-      people = data;
-      searchWord = name;
-    } catch (error) {
-      people = [];
-      handleError(error, "Can't search people");
-    } finally {
-      clearTimeout(timeout);
-    }
-
-    isSearchingPeople = false;
   };
 
   const handleEscape = () => {
