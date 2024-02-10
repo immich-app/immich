@@ -145,7 +145,7 @@ describe(SearchService.name, () => {
         {
           userIds: [authStub.user1.user.id],
           embedding,
-          status: { withArchived: true },
+          withArchived: true,
         },
       );
       expect(assetMock.searchMetadata).not.toHaveBeenCalled();
@@ -181,7 +181,7 @@ describe(SearchService.name, () => {
         {
           userIds: [authStub.user1.user.id],
           embedding,
-          status: { withArchived: false },
+          withArchived: false,
         },
       );
       expect(assetMock.searchMetadata).not.toHaveBeenCalled();

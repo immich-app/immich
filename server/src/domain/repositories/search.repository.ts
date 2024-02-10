@@ -128,7 +128,7 @@ export interface SearchEmbeddingOptions {
 }
 
 export interface SearchOrderOptions {
-  direction: 'ASC' | 'DESC';
+  orderDirection?: 'ASC' | 'DESC';
 }
 
 export interface SearchPaginationOptions {
@@ -136,24 +136,21 @@ export interface SearchPaginationOptions {
   size: number;
 }
 
-export interface AssetSearchOptions {
-  date?: SearchDateOptions;
-  exif?: SearchExifOptions;
-  id?: SearchIDOptions;
-  order?: SearchOrderOptions;
-  path?: SearchPathOptions;
-  relation?: SearchRelationOptions;
-  status?: SearchStatusOptions;
-}
+export type AssetSearchOptions = SearchDateOptions &
+  SearchIDOptions &
+  SearchExifOptions &
+  SearchOrderOptions &
+  SearchPathOptions &
+  SearchRelationOptions &
+  SearchStatusOptions;
 
-export type AssetSearchBuilderOptions = Omit<AssetSearchOptions, 'order'>;
+export type AssetSearchBuilderOptions = Omit<AssetSearchOptions, 'orderDirection'>;
 
-export interface SmartSearchOptions extends SearchEmbeddingOptions {
-  date?: SearchDateOptions;
-  exif?: SearchExifOptions;
-  relation?: SearchRelationOptions;
-  status?: SearchStatusOptions;
-}
+export type SmartSearchOptions = SearchEmbeddingOptions &
+  SearchDateOptions &
+  SearchExifOptions &
+  SearchRelationOptions &
+  SearchStatusOptions;
 
 export interface FaceEmbeddingSearch extends SearchEmbeddingOptions {
   hasPerson?: boolean;

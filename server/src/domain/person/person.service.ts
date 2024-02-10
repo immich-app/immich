@@ -285,10 +285,7 @@ export class PersonService {
 
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
       return force
-        ? this.assetRepository.getAll(pagination, {
-            order: { direction: 'DESC' },
-            relation: { withFaces: true },
-          })
+        ? this.assetRepository.getAll(pagination, { orderDirection: 'DESC', withFaces: true })
         : this.assetRepository.getWithout(pagination, WithoutProperty.FACES);
     });
 

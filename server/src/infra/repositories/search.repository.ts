@@ -54,11 +54,11 @@ export class SearchRepository implements ISearchRepository {
     params: [
       { page: 0, size: 100 },
       {
-        date: { takenAfter: DummyValue.DATE },
-        exif: { lensModel: DummyValue.STRING },
-        id: { ownerId: DummyValue.UUID },
-        relation: { withStacked: true },
-        status: { isFavorite: true },
+        takenAfter: DummyValue.DATE,
+        lensModel: DummyValue.STRING,
+        ownerId: DummyValue.UUID,
+        withStacked: true,
+        isFavorite: true,
       },
     ],
   })
@@ -66,7 +66,7 @@ export class SearchRepository implements ISearchRepository {
     let builder = this.assetRepository.createQueryBuilder('asset');
     builder = searchAssetBuilder(builder, options);
 
-    builder.orderBy('asset.fileCreatedAt', options.order?.direction ? options.order.direction : 'DESC');
+    builder.orderBy('asset.fileCreatedAt', options.orderDirection ?? 'DESC');
 
     return paginatedBuilder<AssetEntity>(builder, {
       mode: PaginationMode.SKIP_TAKE,
@@ -79,11 +79,11 @@ export class SearchRepository implements ISearchRepository {
     params: [
       { page: 0, size: 100 },
       {
-        date: { takenAfter: DummyValue.DATE },
+        takenAfter: DummyValue.DATE,
         embedding: Array.from({ length: 512 }, Math.random),
-        exif: { lensModel: DummyValue.STRING },
-        relation: { withStacked: true },
-        status: { isFavorite: true },
+        lensModel: DummyValue.STRING,
+        withStacked: true,
+        isFavorite: true,
         userIds: [DummyValue.UUID],
       },
     ],

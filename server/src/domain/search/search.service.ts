@@ -88,7 +88,7 @@ export class SearchService {
           {
             userIds,
             embedding,
-            status: { withArchived: !!dto.withArchived },
+            withArchived: !!dto.withArchived,
           },
         );
         if (hasNextPage) {

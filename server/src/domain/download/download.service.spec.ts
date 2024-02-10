@@ -163,9 +163,7 @@ describe(DownloadService.name, () => {
       );
 
       expect(assetMock.getByUserId).toHaveBeenCalledWith({ take: 2500, skip: 0 }, authStub.admin.user.id, {
-        status: {
-          isVisible: true,
-        },
+        isVisible: true,
       });
     });
 

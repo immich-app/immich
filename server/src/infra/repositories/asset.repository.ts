@@ -179,7 +179,7 @@ export class AssetRepository implements IAssetRepository {
   }
 
   getByUserId(pagination: PaginationOptions, userId: string, options: AssetSearchOptions = {}): Paginated<AssetEntity> {
-    return this.getAll(pagination, { ...options, id: { ...options.id, id: userId } });
+    return this.getAll(pagination, { ...options, id: userId });
   }
 
   @GenerateSql({ params: [[DummyValue.UUID]] })
@@ -200,7 +200,7 @@ export class AssetRepository implements IAssetRepository {
   getAll(pagination: PaginationOptions, options: AssetSearchOptions = {}): Paginated<AssetEntity> {
     let builder = this.repository.createQueryBuilder('asset');
     builder = searchAssetBuilder(builder, options);
-    builder.orderBy('asset.createdAt', options.order?.direction ?? 'ASC');
+    builder.orderBy('asset.createdAt', options.orderDirection ?? 'ASC');
     return paginatedBuilder<AssetEntity>(builder, {
       mode: PaginationMode.SKIP_TAKE,
       skip: pagination.skip,

@@ -1,5 +1,17 @@
-import { AssetSearchBuilderOptions, Paginated, PaginationOptions } from '@app/domain';
+import {
+  AssetSearchBuilderOptions,
+  Paginated,
+  PaginationOptions,
+  SearchDateOptions,
+  SearchExifOptions,
+  SearchIDOptions,
+  SearchPathOptions,
+  SearchRelationOptions,
+  SearchStatusOptions,
+} from '@app/domain';
+import { date } from 'joi';
 import _ from 'lodash';
+import path from 'node:path';
 import {
   Between,
   Brackets,
@@ -124,85 +136,73 @@ export function ChunkedSet(options?: { paramIndex?: number }): MethodDecorator {
 
 export function searchAssetBuilder(
   builder: SelectQueryBuilder<AssetEntity>,
-  { date, id, exif, path, relation, status }: AssetSearchBuilderOptions,
+  options: AssetSearchBuilderOptions,
 ): SelectQueryBuilder<AssetEntity> {
-  if (date) {
-    builder.andWhere(
-      _.omitBy(
-        {
-          createdAt: OptionalBetween(date.createdAfter, date.createdBefore),
-          updatedAt: OptionalBetween(date.updatedAfter, date.updatedBefore),
-          deletedAt: OptionalBetween(date.trashedAfter, date.trashedBefore),
-          fileCreatedAt: OptionalBetween(date.takenAfter, date.takenBefore),
-        },
-        _.isUndefined,
-      ),
-    );
+  builder.andWhere(
+    _.omitBy(
+      {
+        createdAt: OptionalBetween(options.createdAfter, options.createdBefore),
+        updatedAt: OptionalBetween(options.updatedAfter, options.updatedBefore),
+        deletedAt: OptionalBetween(options.trashedAfter, options.trashedBefore),
+        fileCreatedAt: OptionalBetween(options.takenAfter, options.takenBefore),
+      },
+      _.isUndefined,
+    ),
+  );
+
+  const exifInfo = _.omitBy(_.pick(options, ['city', 'country', 'lensModel', 'make', 'model', 'state']), _.isUndefined);
+  if (Object.keys(exifInfo).length > 0) {
+    builder.leftJoin(`${builder.alias}.exifInfo`, 'exifInfo');
+    builder.andWhere({ exifInfo });
   }
 
-  if (exif) {
-    const exifWhere = _.omitBy(exif, _.isUndefined);
-    if (Object.keys(exifWhere).length > 0) {
-      builder.leftJoin(`${builder.alias}.exifInfo`, 'exifInfo');
-      builder.andWhere({ exifInfo: exifWhere });
-    }
+  const id = _.pick(options, ['checksum', 'deviceAssetId', 'deviceId', 'id', 'libraryId', 'ownerId']);
+  builder.andWhere(_.omitBy(id, _.isUndefined));
+
+  const path = _.pick(options, ['encodedVideoPath', 'originalFileName', 'originalPath', 'resizePath', 'webpPath']);
+  builder.andWhere(_.omitBy(path, _.isUndefined));
+
+  const status = _.pick(options, ['isExternal', 'isFavorite', 'isOffline', 'isReadOnly', 'isVisible', 'type']);
+  const { isArchived, isEncoded, isMotion, withArchived } = options;
+  builder.andWhere(
+    _.omitBy(
+      {
+        ...status,
+        isArchived: isArchived ?? withArchived,
+        encodedVideoPath: isEncoded ? Not(IsNull()) : undefined,
+        livePhotoVideoId: isMotion ? Not(IsNull()) : undefined,
+      },
+      _.isUndefined,
+    ),
+  );
+
+  if (options.withExif) {
+    builder.leftJoinAndSelect(`${builder.alias}.exifInfo`, 'exifInfo');
   }
 
-  if (id) {
-    builder.andWhere(_.omitBy(id, _.isUndefined));
+  if (options.withFaces || options.withPeople) {
+    builder.leftJoinAndSelect(`${builder.alias}.faces`, 'faces');
   }
 
-  if (path) {
-    builder.andWhere(_.omitBy(path, _.isUndefined));
+  if (options.withPeople) {
+    builder.leftJoinAndSelect(`${builder.alias}.person`, 'person');
   }
 
-  if (status) {
-    const { isEncoded, isMotion, withArchived, withDeleted, ...otherStatuses } = status;
-    if (withArchived != null) {
-      otherStatuses.isArchived ??= withArchived;
-    }
-
-    builder.andWhere(_.omitBy(otherStatuses, _.isUndefined));
-
-    if (isEncoded && !path?.encodedVideoPath) {
-      builder.andWhere({ encodedVideoPath: Not(IsNull()) });
-    }
-
-    if (isMotion) {
-      builder.andWhere({ livePhotoVideoId: Not(IsNull()) });
-    }
+  if (options.withSmartInfo) {
+    builder.leftJoinAndSelect(`${builder.alias}.smartInfo`, 'smartInfo');
   }
 
-  if (relation) {
-    const { withExif, withFaces, withPeople, withSmartInfo, withStacked } = relation;
-
-    if (withExif) {
-      builder.leftJoinAndSelect(`${builder.alias}.exifInfo`, 'exifInfo');
-    }
-
-    if (withFaces || withPeople) {
-      builder.leftJoinAndSelect(`${builder.alias}.faces`, 'faces');
-    }
-
-    if (withPeople) {
-      builder.leftJoinAndSelect(`${builder.alias}.person`, 'person');
-    }
-
-    if (withSmartInfo) {
-      builder.leftJoinAndSelect(`${builder.alias}.smartInfo`, 'smartInfo');
-    }
-
-    if (withStacked) {
-      builder
-        .leftJoinAndSelect(`${builder.alias}.stack`, 'stack')
-        .leftJoinAndSelect('stack.assets', 'stackedAssets')
-        .andWhere(
-          new Brackets((qb) => qb.where(`stack.primaryAssetId = ${builder.alias}.id`).orWhere('asset.stackId IS NULL')),
-        );
-    }
+  if (options.withStacked) {
+    builder
+      .leftJoinAndSelect(`${builder.alias}.stack`, 'stack')
+      .leftJoinAndSelect('stack.assets', 'stackedAssets')
+      .andWhere(
+        new Brackets((qb) => qb.where(`stack.primaryAssetId = ${builder.alias}.id`).orWhere('asset.stackId IS NULL')),
+      );
   }
 
-  const withDeleted = status?.withDeleted ?? (date?.trashedAfter !== undefined || date?.trashedBefore !== undefined);
+  const withDeleted =
+    options.withDeleted ?? (options.trashedAfter !== undefined || options.trashedBefore !== undefined);
   if (withDeleted) {
     builder.withDeleted();
   }
