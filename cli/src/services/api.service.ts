@@ -56,7 +56,7 @@ export class ImmichApi {
     return checkBulkUpload({ assetBulkUploadCheckDto }, this.options);
   }
 
- createAlbum(createAlbumDto: CreateAlbumDto) {
+  createAlbum(createAlbumDto: CreateAlbumDto) {
     return createAlbum({ createAlbumDto }, this.options);
   }
 
