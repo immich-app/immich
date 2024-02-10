@@ -41,10 +41,6 @@ export class SearchRepository implements ISearchRepository {
 
   async init(modelName: string): Promise<void> {
     const { dimSize } = getCLIPModelInfo(modelName);
-    if (dimSize == null) {
-      throw new Error(`Invalid CLIP model name: ${modelName}`);
-    }
-
     const curDimSize = await this.getDimSize();
     this.logger.verbose(`Current database CLIP dimension size is ${curDimSize}`);
 
