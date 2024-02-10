@@ -32,10 +32,13 @@ class ImmichLocalImageProvider extends ImageProvider<Asset> {
       codec: _codec(key, decode, chunkEvents),
       scale: 1.0,
       chunkEvents: chunkEvents.stream,
+      informationCollector: () sync* {
+        yield ErrorDescription(asset.fileName);
+      },
     );
   }
 
-  bool get _useOriginal => AppSettingsEnum.loadOriginal.defaultValue;
+  //bool get _useOriginal => AppSettingsEnum.loadOriginal.defaultValue;
   bool get _loadPreview => AppSettingsEnum.loadPreview.defaultValue;
 
   // Streams in each stage of the image as we ask for it
