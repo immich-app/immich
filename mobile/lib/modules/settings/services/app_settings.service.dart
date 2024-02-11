@@ -57,6 +57,11 @@ enum AppSettingsEnum<T> {
     null,
     false,
   ),
+  autoPlayMotionPhotos<bool>(
+    StoreKey.autoPlayMotionPhotos,
+    "autoPlayMotionPhotos",
+    false,
+  ),
   ;
 
   const AppSettingsEnum(this.storeKey, this.hiveKey, this.defaultValue);

@@ -126,7 +126,8 @@ class GalleryViewerPage extends HookConsumerWidget {
             settings.getSetting<bool>(AppSettingsEnum.loadPreview);
         isLoadOriginal.value =
             settings.getSetting<bool>(AppSettingsEnum.loadOriginal);
-        isPlayingMotionVideo.value = false;
+        var autoPlayMotionPhotos = settings.getSetting<bool>(AppSettingsEnum.autoPlayMotionPhotos);
+        isPlayingMotionVideo.value = asset().livePhotoVideoId != null && autoPlayMotionPhotos;
         return null;
       },
       [],

@@ -26,6 +26,9 @@ class AdvancedSettings extends HookConsumerWidget {
     final allowSelfSignedSSLCert =
         useState(AppSettingsEnum.allowSelfSignedSSLCert.defaultValue);
 
+    final autoPlayMotionPhotos =
+        useState(AppSettingsEnum.autoPlayMotionPhotos.defaultValue);
+
     useEffect(
       () {
         isEnabled.value = appSettingService.getSetting<bool>(
@@ -36,6 +39,8 @@ class AdvancedSettings extends HookConsumerWidget {
             appSettingService.getSetting(AppSettingsEnum.preferRemoteImage);
         allowSelfSignedSSLCert.value = appSettingService
             .getSetting(AppSettingsEnum.allowSelfSignedSSLCert);
+        autoPlayMotionPhotos.value = appSettingService
+            .getSetting(AppSettingsEnum.autoPlayMotionPhotos);
         return null;
       },
       [],
@@ -101,6 +106,13 @@ class AdvancedSettings extends HookConsumerWidget {
           onChanged: (value) {
             HttpOverrides.global = HttpSSLCertOverride();
           },
+        ),
+        SettingsSwitchListTile(
+          appSettingService: appSettingService,
+          valueNotifier: autoPlayMotionPhotos,
+          settingsEnum: AppSettingsEnum.autoPlayMotionPhotos,
+          title: "advanced_settings_auto_play_motion_photos_title".tr(),
+          subtitle: "advanced_settings_auto_play_motion_photos_subtitle".tr(),
         ),
       ],
     );

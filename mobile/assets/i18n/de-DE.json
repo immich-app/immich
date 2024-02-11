@@ -3,6 +3,8 @@
   "action_common_update": "Aktualisieren",
   "add_to_album_bottom_sheet_added": "Zu {album} hinzugefügt",
   "add_to_album_bottom_sheet_already_exists": "Bereits in {album}",
+  "advanced_settings_auto_play_motion_photos_subtitle": "Live-Fotos werden automatisch abgespielt, wenn sie in der Detailansicht geöffnet werden. Deaktivieren, um Live-Fotos manuell abzuspielen.",
+  "advanced_settings_auto_play_motion_photos_title": "Live-Fotos automatisch abspielen",
   "advanced_settings_log_level_title": "Log-Level: {}",
   "advanced_settings_prefer_remote_subtitle": "Manche Endgeräte laden Vorschaubilder lokaler Bilder sehr langsam. Durch diese Einstellung werden diese stattdessen direkt vom Server geladen.",
   "advanced_settings_prefer_remote_title": "Server-Bilder bevorzugen",
