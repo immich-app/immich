@@ -1,17 +1,5 @@
-import {
-  AssetSearchBuilderOptions,
-  Paginated,
-  PaginationOptions,
-  SearchDateOptions,
-  SearchExifOptions,
-  SearchIDOptions,
-  SearchPathOptions,
-  SearchRelationOptions,
-  SearchStatusOptions,
-} from '@app/domain';
-import { date } from 'joi';
+import { AssetSearchBuilderOptions, Paginated, PaginationOptions } from '@app/domain';
 import _ from 'lodash';
-import path from 'node:path';
 import {
   Between,
   Brackets,

@@ -12,7 +12,6 @@ import {
   newCommunicationRepositoryMock,
   newJobRepositoryMock,
   newPartnerRepositoryMock,
-  newSearchRepositoryMock,
   newStorageRepositoryMock,
   newSystemConfigRepositoryMock,
   newUserRepositoryMock,
@@ -27,7 +26,6 @@ import {
   ICommunicationRepository,
   IJobRepository,
   IPartnerRepository,
-  ISearchRepository,
   IStorageRepository,
   ISystemConfigRepository,
   IUserRepository,
@@ -166,7 +164,6 @@ describe(AssetService.name, () => {
   let configMock: jest.Mocked<ISystemConfigRepository>;
   let partnerMock: jest.Mocked<IPartnerRepository>;
   let assetStackMock: jest.Mocked<IAssetStackRepository>;
-  let searchMock: jest.Mocked<ISearchRepository>;
 
   it('should work', () => {
     expect(sut).toBeDefined();
@@ -182,7 +179,6 @@ describe(AssetService.name, () => {
     configMock = newSystemConfigRepositoryMock();
     partnerMock = newPartnerRepositoryMock();
     assetStackMock = newAssetStackRepositoryMock();
-    searchMock = newSearchRepositoryMock();
 
     sut = new AssetService(
       accessMock,

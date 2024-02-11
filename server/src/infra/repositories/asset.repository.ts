@@ -23,18 +23,15 @@ import {
 } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import _ from 'lodash';
 import { DateTime } from 'luxon';
 import path from 'node:path';
 import {
-  And,
   Brackets,
   FindOptionsRelations,
   FindOptionsSelect,
   FindOptionsWhere,
   In,
   IsNull,
-  LessThan,
   Not,
   Repository,
 } from 'typeorm';

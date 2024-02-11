@@ -142,7 +142,7 @@ class SqlGenerator {
         this.sqlLogger.clear();
 
         // errors still generate sql, which is all we care about
-        await target.apply(instance, params).catch((err: Error) => console.error(`${queryLabel} error: ${err}`));
+        await target.apply(instance, params).catch((error: Error) => console.error(`${queryLabel} error: ${error}`));
 
         if (this.sqlLogger.queries.length === 0) {
           console.warn(`No queries recorded for ${queryLabel}`);

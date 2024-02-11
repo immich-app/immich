@@ -1,5 +1,4 @@
 import { AssetEntity, AssetFaceEntity, AssetType, SmartInfoEntity } from '@app/infra/entities';
-import { SearchDto } from '..';
 import { Paginated } from '../domain.util';
 
 export const ISearchRepository = 'ISearchRepository';
@@ -161,7 +160,7 @@ export type SmartSearchOptions = SearchDateOptions &
 
 export interface FaceEmbeddingSearch extends SearchEmbeddingOptions {
   hasPerson?: boolean;
-  numResults?: number;
+  numResults: number;
   maxDistance?: number;
 }
 

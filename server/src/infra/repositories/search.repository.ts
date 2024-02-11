@@ -16,7 +16,6 @@ import { AssetEntity, AssetFaceEntity, SmartInfoEntity, SmartSearchEntity } from
 import { ImmichLogger } from '@app/infra/logger';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import _ from 'lodash';
 import { Repository } from 'typeorm';
 import { vectorExt } from '../database.config';
 import { DummyValue, GenerateSql } from '../infra.util';
@@ -131,9 +130,16 @@ export class SearchRepository implements ISearchRepository {
     maxDistance,
     hasPerson,
   }: FaceEmbeddingSearch): Promise<FaceSearchResult[]> {
+    if (!isValidInteger(numResults, { min: 1 })) {
+      throw new Error(`Invalid value for 'numResults': ${numResults}`);
+    }
+
+    // setting this too low messes with prefilter recall
+    numResults = Math.max(numResults, 64);
+
     let results: Array<AssetFaceEntity & { distance: number }> = [];
     await this.assetRepository.manager.transaction(async (manager) => {
-      let cte = manager
+      const cte = manager
         .createQueryBuilder(AssetFaceEntity, 'faces')
         .select('faces.embedding <=> :embedding', 'distance')
         .innerJoin('faces.asset', 'asset')
@@ -141,24 +147,17 @@ export class SearchRepository implements ISearchRepository {
         .orderBy('faces.embedding <=> :embedding')
         .setParameters({ userIds, embedding: asVector(embedding) });
 
-      let runtimeConfig = 'SET LOCAL vectors.enable_prefilter=on; SET LOCAL vectors.search_mode=basic;';
-      if (numResults) {
-        if (!isValidInteger(numResults, { min: 1 })) {
-          throw new Error(`Invalid value for 'numResults': ${numResults}`);
-        }
-        const limit = Math.max(numResults, 64);
-        cte = cte.limit(limit);
-        // setting this too low messes with prefilter recall
-        runtimeConfig += ` SET LOCAL vectors.hnsw_ef_search = ${limit}`;
-      }
+      cte.limit(numResults);
 
       if (hasPerson) {
-        cte = cte.andWhere('faces."personId" IS NOT NULL');
+        cte.andWhere('faces."personId" IS NOT NULL');
       }
 
-      this.faceColumns.forEach((col) => cte.addSelect(`faces.${col}`, col));
+      for (const col of this.faceColumns) {
+        cte.addSelect(`faces.${col}`, col);
+      }
 
-      await manager.query(runtimeConfig);
+      await manager.query(this.getRuntimeConfig(numResults));
       results = await manager
         .createQueryBuilder()
         .select('res.*')
@@ -167,7 +166,6 @@ export class SearchRepository implements ISearchRepository {
         .where('res.distance <= :maxDistance', { maxDistance })
         .getRawMany();
     });
-
     return results.map((row) => ({
       face: this.assetFaceRepository.create(row),
       distance: row.distance,
