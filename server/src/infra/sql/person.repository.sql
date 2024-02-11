@@ -7,7 +7,7 @@ SET
 WHERE
   "personId" = $2
 
--- PersonRepository.getAllForUser
+-- PersonRepository.getAllForUsers
 SELECT
   "person"."id" AS "person_id",
   "person"."createdAt" AS "person_createdAt",
@@ -24,7 +24,7 @@ FROM
   INNER JOIN "assets" "asset" ON "asset"."id" = "face"."assetId"
   AND ("asset"."deletedAt" IS NULL)
 WHERE
-  "person"."ownerId" = $1
+  "person"."ownerId" IN ($1)
   AND "asset"."isArchived" = false
   AND "person"."isHidden" = false
 GROUP BY
@@ -349,7 +349,7 @@ FROM
   "person" "person"
   LEFT JOIN "asset_faces" "face" ON "face"."personId" = "person"."id"
 WHERE
-  "person"."ownerId" = $1
+  "person"."ownerId" IN ($1)
 HAVING
   COUNT("face"."assetId") != 0
 

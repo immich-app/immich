@@ -276,7 +276,9 @@ export class AccessCore {
       }
 
       case Permission.PERSON_READ: {
-        return await this.repository.person.checkOwnerAccess(auth.user.id, ids);
+        const isOwner = await this.repository.person.checkOwnerAccess(auth.user.id, ids);
+        const isPartner = await this.repository.person.checkPartnerAccess(auth.user.id, setDifference(ids, isOwner));
+        return setUnion(isOwner, isPartner);
       }
 
       case Permission.PERSON_WRITE: {

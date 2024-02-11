@@ -57,12 +57,12 @@ export class PersonRepository implements IPersonRepository {
     return paginate(this.personRepository, pagination, options);
   }
 
-  @GenerateSql({ params: [DummyValue.UUID] })
-  getAllForUser(userId: string, options?: PersonSearchOptions): Promise<PersonEntity[]> {
+  @GenerateSql({ params: [[DummyValue.UUID]] })
+  getAllForUsers(userIds: string[], options?: PersonSearchOptions): Promise<PersonEntity[]> {
     const queryBuilder = this.personRepository
       .createQueryBuilder('person')
       .leftJoin('person.faces', 'face')
-      .where('person.ownerId = :userId', { userId })
+      .where('person.ownerId IN (:...userIds)', { userIds })
       .innerJoin('face.asset', 'asset')
       .andWhere('asset.isArchived = false')
       .orderBy('person.isHidden', 'ASC')
@@ -206,12 +206,12 @@ export class PersonRepository implements IPersonRepository {
     });
   }
 
-  @GenerateSql({ params: [DummyValue.UUID] })
-  async getNumberOfPeople(userId: string): Promise<number> {
+  @GenerateSql({ params: [[DummyValue.UUID]] })
+  async getNumberOfPeople(userIds: string[]): Promise<number> {
     return this.personRepository
       .createQueryBuilder('person')
       .leftJoin('person.faces', 'face')
-      .where('person.ownerId = :userId', { userId })
+      .where('person.ownerId IN (:...userIds)', { userIds })
       .having('COUNT(face.assetId) != 0')
       .groupBy('person.id')
       .withDeleted()

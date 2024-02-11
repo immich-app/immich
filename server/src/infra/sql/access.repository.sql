@@ -206,6 +206,16 @@ WHERE
   "partner"."sharedById" IN ($1)
   AND "partner"."sharedWithId" = $2
 
+-- AccessRepository.person.checkPartnerAccess
+SELECT
+  "person"."id" AS "personId"
+FROM
+  "partners" "partner"
+  INNER JOIN "person" "person" ON "person"."ownerId" = "partner"."sharedById"
+WHERE
+  "partner"."sharedWithId" = $1
+  AND "person"."id" IN ($2)
+
 -- AccessRepository.person.checkOwnerAccess
 SELECT
   "PersonEntity"."id" AS "PersonEntity_id"

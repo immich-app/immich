@@ -368,8 +368,26 @@ class TimelineAccess implements ITimelineAccess {
 class PersonAccess implements IPersonAccess {
   constructor(
     private assetFaceRepository: Repository<AssetFaceEntity>,
+    private partnerRepository: Repository<PartnerEntity>,
     private personRepository: Repository<PersonEntity>,
   ) {}
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
+  @ChunkedSet({ paramIndex: 1 })
+  async checkPartnerAccess(userId: string, personIds: Set<string>): Promise<Set<string>> {
+    if (personIds.size === 0) {
+      return new Set();
+    }
+
+    return this.partnerRepository
+      .createQueryBuilder('partner')
+      .innerJoinAndMapOne('sharedBy.persons', 'person', "person", "person.ownerId = partner.sharedById") //TODO: gives the correct SQL, but somehow feels wrong...
+      .select('person.id', 'personId')
+      .where('partner.sharedWithId = :userId', { userId })
+      .andWhere('person.id IN (:...personIds)', { personIds: [...personIds] })
+      .getRawMany()
+      .then((rows) => new Set(rows.map((row) => row.personId)));
+  }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
@@ -456,7 +474,7 @@ export class AccessRepository implements IAccessRepository {
     this.asset = new AssetAccess(albumRepository, assetRepository, partnerRepository, sharedLinkRepository);
     this.authDevice = new AuthDeviceAccess(tokenRepository);
     this.library = new LibraryAccess(libraryRepository, partnerRepository);
-    this.person = new PersonAccess(assetFaceRepository, personRepository);
+    this.person = new PersonAccess(assetFaceRepository, partnerRepository, personRepository);
     this.partner = new PartnerAccess(partnerRepository);
     this.timeline = new TimelineAccess(partnerRepository);
   }
