@@ -512,7 +512,7 @@ class TestCache:
 
 
 @pytest.mark.skipif(
-    settings.test_full,
+    not settings.test_full,
     reason="More time-consuming since it deploys the app and loads models.",
 )
 class TestEndpoints:
