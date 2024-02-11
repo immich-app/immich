@@ -217,7 +217,7 @@ class InferenceModel(ABC):
 
     @provider_options.setter
     def provider_options(self, provider_options: list[dict[str, Any]]) -> None:
-        log.debug(f"Setting execution provider options to {provider_options}")
+        log.info(f"Setting execution provider options to {provider_options}")
         self._provider_options = provider_options
 
     @property
