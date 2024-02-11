@@ -40,7 +40,7 @@ export const authenticate = async (options?: AuthOptions) => {
   options = options || {};
   const user = await loadUser();
 
-  if (options.public && !user) {
+  if (options.public) {
     return;
   }
 
