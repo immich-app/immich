@@ -9,8 +9,9 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { onDestroy } from 'svelte';
   import { createEventDispatcher } from 'svelte';
+  import type { BucketPosition } from '$lib/stores/assets.store';
 
-  const dispatch = createEventDispatcher<{ intersect: void }>();
+  const dispatch = createEventDispatcher<{ intersected: { container: HTMLDivElement; position: BucketPosition } }>();
 
   export let assets: AssetResponseDto[];
   export let selectedAssets: Set<AssetResponseDto> = new Set();
