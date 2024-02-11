@@ -1462,7 +1462,7 @@ export function updateAsset({ id, updateAssetDto }: {
         body: updateAssetDto
     })));
 }
-export function searchAssets({ checksum, city, country, createdAfter, createdBefore, deviceAssetId, deviceId, encodedVideoPath, id, isArchived, isEncoded, isExternal, isFavorite, isMotion, isOffline, isReadOnly, isVisible, lensModel, libraryId, make, model, order, originalFileName, originalPath, page, resizePath, size, state, takenAfter, takenBefore, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, webpPath, withDeleted, withExif, withPeople, withStacked }: {
+export function searchAssets({ checksum, city, country, createdAfter, createdBefore, deviceAssetId, deviceId, encodedVideoPath, id, isArchived, isEncoded, isExternal, isFavorite, isMotion, isOffline, isReadOnly, isVisible, lensModel, libraryId, make, model, order, originalFileName, originalPath, page, resizePath, size, state, takenAfter, takenBefore, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, webpPath, withArchived, withDeleted, withExif, withPeople, withStacked }: {
     checksum?: string;
     city?: string;
     country?: string;
@@ -1499,6 +1499,7 @@ export function searchAssets({ checksum, city, country, createdAfter, createdBef
     updatedAfter?: string;
     updatedBefore?: string;
     webpPath?: string;
+    withArchived?: boolean;
     withDeleted?: boolean;
     withExif?: boolean;
     withPeople?: boolean;
@@ -1544,6 +1545,7 @@ export function searchAssets({ checksum, city, country, createdAfter, createdBef
         updatedAfter,
         updatedBefore,
         webpPath,
+        withArchived,
         withDeleted,
         withExif,
         withPeople,
@@ -2048,17 +2050,17 @@ export function getPersonThumbnail({ id }: {
         ...opts
     }));
 }
-export function search({ clip, motion, q, query, recent, smart, $type, withArchived, take, page }: {
+export function search({ clip, motion, page, q, query, recent, size, smart, $type, withArchived }: {
     clip?: boolean;
     motion?: boolean;
+    page?: number;
     q?: string;
     query?: string;
     recent?: boolean;
+    size?: number;
     smart?: boolean;
     $type?: "IMAGE" | "VIDEO" | "AUDIO" | "OTHER";
     withArchived?: boolean;
-    take?: number;
-    page?: number;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -2066,14 +2068,14 @@ export function search({ clip, motion, q, query, recent, smart, $type, withArchi
     }>(`/search${QS.query(QS.explode({
         clip,
         motion,
+        page,
         q,
         query,
         recent,
+        size,
         smart,
         "type": $type,
-        withArchived,
-        take,
-        page
+        withArchived
     }))}`, {
         ...opts
     }));
@@ -2083,6 +2085,98 @@ export function getExploreData(opts?: Oazapfts.RequestOpts) {
         status: 200;
         data: SearchExploreResponseDto[];
     }>("/search/explore", {
+        ...opts
+    }));
+}
+export function searchMetadata({ checksum, city, country, createdAfter, createdBefore, deviceAssetId, deviceId, encodedVideoPath, id, isArchived, isEncoded, isExternal, isFavorite, isMotion, isOffline, isReadOnly, isVisible, lensModel, libraryId, make, model, order, originalFileName, originalPath, page, resizePath, size, state, takenAfter, takenBefore, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, webpPath, withArchived, withDeleted, withExif, withPeople, withStacked }: {
+    checksum?: string;
+    city?: string;
+    country?: string;
+    createdAfter?: string;
+    createdBefore?: string;
+    deviceAssetId?: string;
+    deviceId?: string;
+    encodedVideoPath?: string;
+    id?: string;
+    isArchived?: boolean;
+    isEncoded?: boolean;
+    isExternal?: boolean;
+    isFavorite?: boolean;
+    isMotion?: boolean;
+    isOffline?: boolean;
+    isReadOnly?: boolean;
+    isVisible?: boolean;
+    lensModel?: string;
+    libraryId?: string;
+    make?: string;
+    model?: string;
+    order?: AssetOrder;
+    originalFileName?: string;
+    originalPath?: string;
+    page?: number;
+    resizePath?: string;
+    size?: number;
+    state?: string;
+    takenAfter?: string;
+    takenBefore?: string;
+    trashedAfter?: string;
+    trashedBefore?: string;
+    $type?: AssetTypeEnum;
+    updatedAfter?: string;
+    updatedBefore?: string;
+    webpPath?: string;
+    withArchived?: boolean;
+    withDeleted?: boolean;
+    withExif?: boolean;
+    withPeople?: boolean;
+    withStacked?: boolean;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: SearchResponseDto;
+    }>(`/search/metadata${QS.query(QS.explode({
+        checksum,
+        city,
+        country,
+        createdAfter,
+        createdBefore,
+        deviceAssetId,
+        deviceId,
+        encodedVideoPath,
+        id,
+        isArchived,
+        isEncoded,
+        isExternal,
+        isFavorite,
+        isMotion,
+        isOffline,
+        isReadOnly,
+        isVisible,
+        lensModel,
+        libraryId,
+        make,
+        model,
+        order,
+        originalFileName,
+        originalPath,
+        page,
+        resizePath,
+        size,
+        state,
+        takenAfter,
+        takenBefore,
+        trashedAfter,
+        trashedBefore,
+        "type": $type,
+        updatedAfter,
+        updatedBefore,
+        webpPath,
+        withArchived,
+        withDeleted,
+        withExif,
+        withPeople,
+        withStacked
+    }))}`, {
         ...opts
     }));
 }
@@ -2096,6 +2190,78 @@ export function searchPerson({ name, withHidden }: {
     }>(`/search/person${QS.query(QS.explode({
         name,
         withHidden
+    }))}`, {
+        ...opts
+    }));
+}
+export function searchSmart({ city, country, createdAfter, createdBefore, deviceId, isArchived, isEncoded, isExternal, isFavorite, isMotion, isOffline, isReadOnly, isVisible, lensModel, libraryId, make, model, page, query, size, state, takenAfter, takenBefore, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, withArchived, withDeleted, withExif }: {
+    city?: string;
+    country?: string;
+    createdAfter?: string;
+    createdBefore?: string;
+    deviceId?: string;
+    isArchived?: boolean;
+    isEncoded?: boolean;
+    isExternal?: boolean;
+    isFavorite?: boolean;
+    isMotion?: boolean;
+    isOffline?: boolean;
+    isReadOnly?: boolean;
+    isVisible?: boolean;
+    lensModel?: string;
+    libraryId?: string;
+    make?: string;
+    model?: string;
+    page?: number;
+    query: string;
+    size?: number;
+    state?: string;
+    takenAfter?: string;
+    takenBefore?: string;
+    trashedAfter?: string;
+    trashedBefore?: string;
+    $type?: AssetTypeEnum;
+    updatedAfter?: string;
+    updatedBefore?: string;
+    withArchived?: boolean;
+    withDeleted?: boolean;
+    withExif?: boolean;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: SearchResponseDto;
+    }>(`/search/smart${QS.query(QS.explode({
+        city,
+        country,
+        createdAfter,
+        createdBefore,
+        deviceId,
+        isArchived,
+        isEncoded,
+        isExternal,
+        isFavorite,
+        isMotion,
+        isOffline,
+        isReadOnly,
+        isVisible,
+        lensModel,
+        libraryId,
+        make,
+        model,
+        page,
+        query,
+        size,
+        state,
+        takenAfter,
+        takenBefore,
+        trashedAfter,
+        trashedBefore,
+        "type": $type,
+        updatedAfter,
+        updatedBefore,
+        withArchived,
+        withDeleted,
+        withExif
     }))}`, {
         ...opts
     }));
