@@ -1,3 +1,4 @@
+import { AssetEntity } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
 import { Inject, Injectable } from '@nestjs/common';
 import { AssetOrder, AssetResponseDto, mapAsset } from '../asset';
@@ -11,9 +12,10 @@ import {
   ISearchRepository,
   ISystemConfigRepository,
   SearchExploreItem,
+  SearchStrategy,
 } from '../repositories';
 import { FeatureFlag, SystemConfigCore } from '../system-config';
-import { MetadataSearchDto, SearchPeopleDto, SmartSearchDto } from './dto';
+import { MetadataSearchDto, SearchDto, SearchPeopleDto, SmartSearchDto } from './dto';
 import { SearchResponseDto } from './response-dto';
 
 @Injectable()
@@ -74,16 +76,7 @@ export class SearchService {
       },
     );
 
-    return {
-      albums: { total: 0, count: 0, items: [], facets: [] },
-      assets: {
-        total: items.length,
-        count: items.length,
-        items: items.map((asset) => mapAsset(asset)),
-        facets: [],
-        nextPage: hasNextPage ? (page + 1).toString() : null,
-      },
-    };
+    return this.mapResponse(items, hasNextPage ? (page + 1).toString() : null);
   }
 
   async searchSmart(auth: AuthDto, dto: SmartSearchDto): Promise<SearchResponseDto> {
@@ -105,16 +98,61 @@ export class SearchService {
       { ...dto, userIds, embedding },
     );
 
-    return {
-      albums: { total: 0, count: 0, items: [], facets: [] },
-      assets: {
-        total: items.length,
-        count: items.length,
-        items: items.map((asset) => mapAsset(asset)),
-        facets: [],
-        nextPage: hasNextPage ? (page + 1).toString() : null,
-      },
-    };
+    return this.mapResponse(items, hasNextPage ? (page + 1).toString() : null);
+  }
+
+  // TODO: remove after implementing new search filters
+  /** @deprecated */
+  async search(auth: AuthDto, dto: SearchDto): Promise<SearchResponseDto> {
+    await this.configCore.requireFeature(FeatureFlag.SEARCH);
+    const { machineLearning } = await this.configCore.getConfig();
+    const query = dto.q || dto.query;
+    if (!query) {
+      throw new Error('Missing query');
+    }
+
+    let strategy = SearchStrategy.TEXT;
+    if (dto.smart || dto.clip) {
+      await this.configCore.requireFeature(FeatureFlag.SMART_SEARCH);
+      strategy = SearchStrategy.SMART;
+    }
+
+    const userIds = await this.getUserIdsToSearch(auth);
+    const page = dto.page ?? 1;
+
+    let nextPage: string | null = null;
+    let assets: AssetEntity[] = [];
+    switch (strategy) {
+      case SearchStrategy.SMART: {
+        const embedding = await this.machineLearning.encodeText(
+          machineLearning.url,
+          { text: query },
+          machineLearning.clip,
+        );
+
+        const { hasNextPage, items } = await this.searchRepository.searchSmart(
+          { page, size: dto.size || 100 },
+          {
+            userIds,
+            embedding,
+            withArchived: !!dto.withArchived,
+          },
+        );
+        if (hasNextPage) {
+          nextPage = (page + 1).toString();
+        }
+        assets = items;
+        break;
+      }
+      case SearchStrategy.TEXT: {
+        assets = await this.assetRepository.searchMetadata(query, userIds, { numResults: dto.size || 250 });
+      }
+      default: {
+        break;
+      }
+    }
+
+    return this.mapResponse(assets, nextPage);
   }
 
   private async getUserIdsToSearch(auth: AuthDto): Promise<string[]> {
@@ -125,5 +163,18 @@ export class SearchService {
       .map((partner) => partner.sharedById);
     userIds.push(...partnersIds);
     return userIds;
+  }
+
+  private async mapResponse(assets: AssetEntity[], nextPage: string | null): Promise<SearchResponseDto> {
+    return {
+      albums: { total: 0, count: 0, items: [], facets: [] },
+      assets: {
+        total: assets.length,
+        count: assets.length,
+        items: assets.map((asset) => mapAsset(asset)),
+        facets: [],
+        nextPage,
+      },
+    };
   }
 }

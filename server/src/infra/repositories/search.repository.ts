@@ -52,7 +52,7 @@ export class SearchRepository implements ISearchRepository {
 
   @GenerateSql({
     params: [
-      { page: 0, size: 100 },
+      { page: 1, size: 100 },
       {
         takenAfter: DummyValue.DATE,
         lensModel: DummyValue.STRING,
@@ -70,14 +70,14 @@ export class SearchRepository implements ISearchRepository {
 
     return paginatedBuilder<AssetEntity>(builder, {
       mode: PaginationMode.SKIP_TAKE,
-      skip: pagination.page * pagination.size,
+      skip: (pagination.page - 1) * pagination.size,
       take: pagination.size,
     });
   }
 
   @GenerateSql({
     params: [
-      { page: 0, size: 100 },
+      { page: 1, size: 100 },
       {
         takenAfter: DummyValue.DATE,
         embedding: Array.from({ length: 512 }, Math.random),
@@ -106,7 +106,7 @@ export class SearchRepository implements ISearchRepository {
       await manager.query(this.getRuntimeConfig(pagination.size));
       results = await paginatedBuilder<AssetEntity>(builder, {
         mode: PaginationMode.LIMIT_OFFSET,
-        skip: pagination.page * pagination.size,
+        skip: (pagination.page - 1) * pagination.size,
         take: pagination.size,
       });
     });

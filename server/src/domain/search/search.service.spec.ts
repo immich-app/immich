@@ -85,7 +85,7 @@ describe(SearchService.name, () => {
 
   describe('search', () => {
     it('should throw an error if query is missing', async () => {
-      await expect(sut.searchSmart(authStub.user1, { q: '' })).rejects.toThrow('Missing query');
+      await expect(sut.search(authStub.user1, { q: '' })).rejects.toThrow('Missing query');
     });
 
     it('should search by metadata if `clip` option is false', async () => {
@@ -108,7 +108,7 @@ describe(SearchService.name, () => {
         },
       };
 
-      const result = await sut.searchSmart(authStub.user1, dto);
+      const result = await sut.search(authStub.user1, dto);
 
       expect(result).toEqual(expectedResponse);
       expect(assetMock.searchMetadata).toHaveBeenCalledWith(dto.q, [authStub.user1.user.id], { numResults: 250 });
@@ -137,11 +137,11 @@ describe(SearchService.name, () => {
         },
       };
 
-      const result = await sut.searchSmart(authStub.user1, dto);
+      const result = await sut.search(authStub.user1, dto);
 
       expect(result).toEqual(expectedResponse);
       expect(searchMock.searchSmart).toHaveBeenCalledWith(
-        { page: 0, size: 100 },
+        { page: 1, size: 100 },
         {
           userIds: [authStub.user1.user.id],
           embedding,
@@ -173,11 +173,11 @@ describe(SearchService.name, () => {
         },
       };
 
-      const result = await sut.searchSmart(authStub.user1, dto);
+      const result = await sut.search(authStub.user1, dto);
 
       expect(result).toEqual(expectedResponse);
       expect(searchMock.searchSmart).toHaveBeenCalledWith(
-        { page: 0, size: 100 },
+        { page: 1, size: 100 },
         {
           userIds: [authStub.user1.user.id],
           embedding,
@@ -194,7 +194,7 @@ describe(SearchService.name, () => {
       const dto: SearchDto = { q: 'test query', clip: true };
       configMock.load.mockResolvedValue([{ key, value: false }]);
 
-      await expect(sut.searchSmart(authStub.user1, dto)).rejects.toThrow('Smart search is not enabled');
+      await expect(sut.search(authStub.user1, dto)).rejects.toThrow('Smart search is not enabled');
     });
   });
 });

@@ -194,7 +194,6 @@ describe(AssetService.name, () => {
       communicationMock,
       partnerMock,
       assetStackMock,
-      searchMock,
     );
 
     when(assetMock.getById)

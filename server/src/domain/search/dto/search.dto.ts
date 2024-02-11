@@ -176,6 +176,63 @@ export class SmartSearchDto extends BaseSearchDto {
   query!: string;
 }
 
+// TODO: remove after implementing new search filters
+/** @deprecated */
+export class SearchDto {
+  @IsString()
+  @IsNotEmpty()
+  @Optional()
+  q?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @Optional()
+  query?: string;
+
+  @IsBoolean()
+  @Optional()
+  @Transform(toBoolean)
+  smart?: boolean;
+
+  /** @deprecated */
+  @IsBoolean()
+  @Optional()
+  @Transform(toBoolean)
+  clip?: boolean;
+
+  @IsEnum(AssetType)
+  @Optional()
+  type?: AssetType;
+
+  @IsBoolean()
+  @Optional()
+  @Transform(toBoolean)
+  recent?: boolean;
+
+  @IsBoolean()
+  @Optional()
+  @Transform(toBoolean)
+  motion?: boolean;
+
+  @IsBoolean()
+  @Optional()
+  @Transform(toBoolean)
+  withArchived?: boolean;
+
+  @IsInt()
+  @Min(1)
+  @Type(() => Number)
+  @Optional()
+  page?: number;
+
+  @IsInt()
+  @Min(1)
+  @Max(1000)
+  @Type(() => Number)
+  @Optional()
+  size?: number;
+}
+
 export class SearchPeopleDto {
   @IsString()
   @IsNotEmpty()

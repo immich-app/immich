@@ -3,7 +3,6 @@ import {
   AssetBulkUpdateDto,
   AssetJobsDto,
   AssetResponseDto,
-  MetadataSearchDto,
   AssetService,
   AssetStatsDto,
   AssetStatsResponseDto,
@@ -14,6 +13,7 @@ import {
   MapMarkerResponseDto,
   MemoryLaneDto,
   MemoryLaneResponseDto,
+  MetadataSearchDto,
   RandomAssetsDto,
   SearchService,
   TimeBucketAssetDto,
@@ -38,10 +38,12 @@ export class AssetsController {
   constructor(private searchService: SearchService) {}
 
   @Get()
-  @ApiOperation({deprecated: true})
+  @ApiOperation({ deprecated: true })
   async searchAssets(@Auth() auth: AuthDto, @Query() dto: MetadataSearchDto): Promise<AssetResponseDto[]> {
-    const { assets } = await this.searchService.searchMetadata(auth, dto);
-    return assets.items;
+    const {
+      assets: { items },
+    } = await this.searchService.searchMetadata(auth, dto);
+    return items;
   }
 }
 
