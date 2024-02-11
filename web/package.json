@@ -52,7 +52,7 @@
     "tailwindcss": "^3.2.7",
     "tslib": "^2.5.0",
     "typescript": "^5.3.3",
-    "vite": "^5.0.10",
+    "vite": "^5.1.1",
     "vitest": "^1.0.4"
   },
   "type": "module",
