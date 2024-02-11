@@ -10,7 +10,6 @@ Below is an example config for nginx. Make sure to include `client_max_body_size
 server {
     server_name <snip>
 
-    # https://github.com/immich-app/immich/blob/main/nginx/templates/default.conf.template#L28
     client_max_body_size 50000M;
 
     location / {
