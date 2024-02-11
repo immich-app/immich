@@ -2,6 +2,8 @@ import json
 import pickle
 from io import BytesIO
 from pathlib import Path
+from random import randint
+from types import SimpleNamespace
 from typing import Any, Callable
 from unittest import mock
 
@@ -16,7 +18,7 @@ from pytest_mock import MockerFixture
 from .config import log, settings
 from .models.base import InferenceModel, PicklableSessionOptions
 from .models.cache import ModelCache
-from .models.clip import OpenCLIPEncoder
+from .models.clip import MCLIPEncoder, OpenCLIPEncoder
 from .models.facial_recognition import FaceRecognizer
 from .schemas import ModelRuntime, ModelType
 
@@ -348,6 +350,60 @@ class TestCLIP:
         assert embedding.dtype == np.float32
         mocked.run.assert_called_once()
 
+    def test_openclip_tokenizer(
+        self,
+        mocker: MockerFixture,
+        clip_model_cfg: dict[str, Any],
+        clip_preprocess_cfg: Callable[[Path], dict[str, Any]],
+        clip_tokenizer_cfg: Callable[[Path], dict[str, Any]],
+    ) -> None:
+        mocker.patch.object(OpenCLIPEncoder, "download")
+        mocker.patch.object(OpenCLIPEncoder, "model_cfg", clip_model_cfg)
+        mocker.patch.object(OpenCLIPEncoder, "preprocess_cfg", clip_preprocess_cfg)
+        mocker.patch.object(OpenCLIPEncoder, "tokenizer_cfg", clip_tokenizer_cfg)
+        mock_tokenizer = mocker.patch("app.models.clip.Tokenizer.from_file", autospec=True).return_value
+        mock_ids = [randint(0, 50000) for _ in range(77)]
+        mock_tokenizer.encode.return_value = SimpleNamespace(ids=mock_ids)
+
+        clip_encoder = OpenCLIPEncoder("ViT-B-32__openai", cache_dir="test_cache", mode="text")
+        clip_encoder._load_tokenizer()
+        tokens = clip_encoder.tokenize("test search query")
+
+        assert "text" in tokens
+        assert isinstance(tokens["text"], np.ndarray)
+        assert tokens["text"].shape == (1, 77)
+        assert tokens["text"].dtype == np.int32
+        assert np.allclose(tokens["text"], np.array([mock_ids], dtype=np.int32), atol=0)
+
+    def test_mclip_tokenizer(
+        self,
+        mocker: MockerFixture,
+        clip_model_cfg: dict[str, Any],
+        clip_preprocess_cfg: Callable[[Path], dict[str, Any]],
+        clip_tokenizer_cfg: Callable[[Path], dict[str, Any]],
+    ) -> None:
+        mocker.patch.object(OpenCLIPEncoder, "download")
+        mocker.patch.object(OpenCLIPEncoder, "model_cfg", clip_model_cfg)
+        mocker.patch.object(OpenCLIPEncoder, "preprocess_cfg", clip_preprocess_cfg)
+        mocker.patch.object(OpenCLIPEncoder, "tokenizer_cfg", clip_tokenizer_cfg)
+        mock_tokenizer = mocker.patch("app.models.clip.Tokenizer.from_file", autospec=True).return_value
+        mock_ids = [randint(0, 50000) for _ in range(77)]
+        mock_attention_mask = [randint(0, 1) for _ in range(77)]
+        mock_tokenizer.encode.return_value = SimpleNamespace(ids=mock_ids, attention_mask=mock_attention_mask)
+
+        clip_encoder = MCLIPEncoder("ViT-B-32__openai", cache_dir="test_cache", mode="text")
+        clip_encoder._load_tokenizer()
+        tokens = clip_encoder.tokenize("test search query")
+
+        assert "input_ids" in tokens
+        assert "attention_mask" in tokens
+        assert isinstance(tokens["input_ids"], np.ndarray)
+        assert isinstance(tokens["attention_mask"], np.ndarray)
+        assert tokens["input_ids"].shape == (1, 77)
+        assert tokens["attention_mask"].shape == (1, 77)
+        assert np.allclose(tokens["input_ids"], np.array([mock_ids], dtype=np.int32), atol=0)
+        assert np.allclose(tokens["attention_mask"], np.array([mock_attention_mask], dtype=np.int32), atol=0)
+
 
 class TestFaceRecognition:
     def test_set_min_score(self, mocker: MockerFixture) -> None:
@@ -438,20 +494,20 @@ class TestEndpoints:
         byte_image = BytesIO()
         pil_image.save(byte_image, format="jpeg")
         expected = responses["clip"]["image"]
-        
+
         response = deployed_app.post(
             "http://localhost:3003/predict",
             data={"modelName": "ViT-B-32__openai", "modelType": "clip", "options": json.dumps({"mode": "vision"})},
             files={"image": byte_image.getvalue()},
         )
-        
+
         actual = response.json()
         assert response.status_code == 200
         assert np.allclose(expected, actual)
 
     def test_clip_text_endpoint(self, responses: dict[str, Any], deployed_app: TestClient) -> None:
         expected = responses["clip"]["text"]
-        
+
         response = deployed_app.post(
             "http://localhost:3003/predict",
             data={
@@ -461,7 +517,7 @@ class TestEndpoints:
                 "options": json.dumps({"mode": "text"}),
             },
         )
-        
+
         actual = response.json()
         assert response.status_code == 200
         assert np.allclose(expected, actual)

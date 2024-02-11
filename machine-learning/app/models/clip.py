@@ -162,6 +162,20 @@ class OpenCLIPEncoder(BaseCLIPEncoder):
         self.tokenizer.enable_truncation(max_length=context_length)
         log.debug(f"Loaded tokenizer for CLIP model '{self.model_name}'")
 
+    def _load_tokenizer(self) -> Tokenizer:
+        log.debug(f"Loading tokenizer for CLIP model '{self.model_name}'")
+        text_cfg: dict[str, Any] = self.model_cfg["text_cfg"]
+        context_length: int = text_cfg.get("context_length", 77)
+        pad_token: int = self.tokenizer_cfg["pad_token"]
+
+        tokenizer: Tokenizer = Tokenizer.from_file(self.tokenizer_file_path.as_posix())
+        pad_token: str = self.tokenizer_cfg["pad_token"]
+        pad_id: int = tokenizer.token_to_id(pad_token)
+        tokenizer.enable_padding(length=context_length, pad_token=pad_token, pad_id=pad_id)
+        tokenizer.enable_truncation(max_length=context_length)
+        self.tokenizer = tokenizer
+        log.debug(f"Loaded tokenizer for CLIP model '{self.model_name}'")
+
     def tokenize(self, text: str) -> dict[str, NDArray[np.int32]]:
         tokens: Encoding = self.tokenizer.encode(text)
         return {"text": np.array([tokens.ids], dtype=np.int32)}
