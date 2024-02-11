@@ -12,6 +12,9 @@ const upstream = {
 };
 
 export default defineConfig({
+  build: {
+    chunkSizeWarningLimit: 2_000_000,
+  },
   resolve: {
     alias: {
       'xmlhttprequest-ssl': './node_modules/engine.io-client/lib/xmlhttprequest.js',
