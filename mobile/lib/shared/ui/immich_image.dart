@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -8,9 +10,10 @@ import 'package:immich_mobile/shared/models/store.dart';
 import 'package:openapi/api.dart' as api;
 import 'package:photo_manager/photo_manager.dart';
 import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
+import 'package:thumbhash/thumbhash.dart' as thumbhash;
 
 /// Renders an Asset using local data if available, else remote data
-class ImmichImage extends StatelessWidget {
+class ImmichImage extends StatefulWidget {
   const ImmichImage(
     this.asset, {
     this.width,
@@ -42,72 +45,7 @@ class ImmichImage extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
-    if (this.asset == null) {
-      return Container(
-        decoration: const BoxDecoration(
-          color: Colors.grey,
-        ),
-        child: SizedBox(
-          width: width,
-          height: height,
-          child: const Center(
-            child: Icon(Icons.no_photography),
-          ),
-        ),
-      );
-    }
-
-    final Asset asset = this.asset!;
-
-    return Image(
-      image: ImmichImage.imageProvider(
-        asset: asset,
-        isThumbnail: isThumbnail,
-      ),
-      width: width,
-      height: height,
-      fit: fit,
-      frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
-        if (wasSynchronouslyLoaded || frame != null) {
-          return child;
-        }
-
-        // Show loading if desired
-        return Stack(
-          children: [
-            if (useGrayBoxPlaceholder)
-              const SizedBox.square(
-                dimension: 250,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(color: Colors.grey),
-                ),
-              ),
-            if (useProgressIndicator)
-              const Center(
-                child: CircularProgressIndicator(),
-              ),
-          ],
-        );
-      },
-      errorBuilder: (context, error, stackTrace) {
-        if (error is PlatformException &&
-            error.code == "The asset not found!") {
-          debugPrint(
-            "Asset ${asset.localId} does not exist anymore on device!",
-          );
-        } else {
-          debugPrint(
-            "Error getting thumb for assetId=${asset.localId}: $error",
-          );
-        }
-        return Icon(
-          Icons.image_not_supported_outlined,
-          color: context.primaryColor,
-        );
-      },
-    );
-  }
+  State<ImmichImage> createState() => _ImmichImageState();
 
   static bool useLocal(Asset asset) =>
       !asset.isRemote ||
@@ -172,5 +110,107 @@ class ImmichImage extends StatelessWidget {
         isThumbnail: isThumbnail,
       );
     }
+  }
+}
+
+class _ImmichImageState extends State<ImmichImage> {
+  Uint8List? thumbHash;
+  static const _placeholderDimension = 300.0;
+
+  void decodeThumbHash(String hash) {
+    final hashBytes = base64.decode(base64.normalize(hash));
+    final rgbaImage = thumbhash.thumbHashToRGBA(hashBytes);
+    thumbHash = thumbhash.rgbaToBmp(rgbaImage);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.asset?.thumbhash != null) {
+      decodeThumbHash(widget.asset!.thumbhash!);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.asset == null) {
+      return Container(
+        decoration: const BoxDecoration(
+          color: Colors.grey,
+        ),
+        child: SizedBox(
+          width: widget.width,
+          height: widget.height,
+          child: const Center(
+            child: Icon(Icons.no_photography),
+          ),
+        ),
+      );
+    }
+
+    final Asset asset = widget.asset!;
+
+    return Image(
+      image: ImmichImage.imageProvider(
+        asset: asset,
+        isThumbnail: widget.isThumbnail,
+      ),
+      width: widget.width,
+      height: widget.height,
+      fit: widget.fit,
+      loadingBuilder: (_, child, loadingProgress) {
+        return AnimatedOpacity(
+          opacity: loadingProgress != null ? 0 : 1,
+          duration: const Duration(seconds: 1),
+          curve: Curves.easeOut,
+          child: child,
+        );
+      },
+      frameBuilder: (_, child, frame, wasSynchronouslyLoaded) {
+        if (wasSynchronouslyLoaded || frame != null) {
+          return child;
+        }
+
+        return Stack(
+          alignment: Alignment.center,
+          children: [
+            if (widget.useGrayBoxPlaceholder)
+              const SizedBox.square(
+                dimension: _placeholderDimension,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(color: Colors.grey),
+                ),
+              ),
+            if (thumbHash != null)
+              Image.memory(
+                thumbHash!,
+                width: _placeholderDimension,
+                height: _placeholderDimension,
+                fit: BoxFit.cover,
+              ),
+            if (widget.useProgressIndicator)
+              const Center(
+                child: CircularProgressIndicator(),
+              ),
+          ],
+        );
+      },
+      errorBuilder: (context, error, stackTrace) {
+        if (error is PlatformException &&
+            error.code == "The asset not found!") {
+          debugPrint(
+            "Asset ${asset.localId} does not exist anymore on device!",
+          );
+        } else {
+          debugPrint(
+            "Error getting thumb for assetId=${asset.localId}: $error",
+          );
+        }
+        return Icon(
+          Icons.image_not_supported_outlined,
+          color: context.primaryColor,
+        );
+      },
+    );
   }
 }
