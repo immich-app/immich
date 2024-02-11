@@ -35,7 +35,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.22.11",
-    "@immich/cli": "^2.0.3",
+    "@immich/cli": "^2.0.7",
     "@nestjs/bullmq": "^10.0.1",
     "@nestjs/common": "^10.2.2",
     "@nestjs/config": "^3.0.0",
@@ -50,7 +50,6 @@
     "@types/picomatch": "^2.3.3",
     "archiver": "^6.0.0",
     "async-lock": "^1.4.0",
-    "axios": "^1.5.0",
     "bcrypt": "^5.1.1",
     "bullmq": "^4.8.0",
     "chokidar": "^3.5.3",
