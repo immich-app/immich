@@ -80,7 +80,6 @@ export class SearchService {
   }
 
   async searchSmart(auth: AuthDto, dto: SmartSearchDto): Promise<SearchResponseDto> {
-    await this.configCore.requireFeature(FeatureFlag.SEARCH);
     await this.configCore.requireFeature(FeatureFlag.SMART_SEARCH);
     const { machineLearning } = await this.configCore.getConfig();
     const userIds = await this.getUserIdsToSearch(auth);

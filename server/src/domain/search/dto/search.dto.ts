@@ -10,6 +10,7 @@ class BaseSearchDto {
   libraryId?: string;
 
   @IsString()
+  @IsNotEmpty()
   @Optional()
   deviceId?: string;
 

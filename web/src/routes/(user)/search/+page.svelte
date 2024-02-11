@@ -112,7 +112,6 @@
   };
 
   export const loadNextPage = async () => {
-    console.log('loadPage', curPage, term);
     if (curPage == null || !term) {
       return;
     }
@@ -120,9 +119,7 @@
     await authenticate();
     let results: SearchResponseDto | null = null;
     $page.url.searchParams.set('page', curPage.toString());
-    console.log('searchParams', $page.url.searchParams.toString());
     const res = await api.searchApi.search({}, { params: $page.url.searchParams });
-    console.log('searchResultAssets', searchResultAssets);
     if (searchResultAssets) {
       searchResultAssets.push(...res.data.assets.items);
     } else {
