@@ -16,7 +16,7 @@ from PIL import Image
 from pytest_mock import MockerFixture
 
 from .config import log, settings
-from .models.base import InferenceModel, PicklableSessionOptions
+from .models.base import InferenceModel
 from .models.cache import ModelCache
 from .models.clip import MCLIPEncoder, OpenCLIPEncoder
 from .models.facial_recognition import FaceRecognizer
@@ -476,11 +476,39 @@ class TestCache:
         mock_lock_cls.return_value.__aenter__.return_value.cas.assert_called_with(mock.ANY, ttl=100)
 
     @mock.patch("app.models.cache.SimpleMemoryCache.expire")
-    async def test_revalidate(self, mock_cache_expire: mock.Mock, mock_get_model: mock.Mock) -> None:
+    async def test_revalidate_get(self, mock_cache_expire: mock.Mock, mock_get_model: mock.Mock) -> None:
         model_cache = ModelCache(ttl=100, revalidate=True)
         await model_cache.get("test_model_name", ModelType.FACIAL_RECOGNITION)
         await model_cache.get("test_model_name", ModelType.FACIAL_RECOGNITION)
         mock_cache_expire.assert_called_once_with(mock.ANY, 100)
+    
+    async def test_profiling(self, mock_get_model: mock.Mock) -> None:
+        model_cache = ModelCache(ttl=100, profiling=True)
+        await model_cache.get("test_model_name", ModelType.FACIAL_RECOGNITION)
+        profiling = await model_cache.get_profiling()
+        assert isinstance(profiling, dict)
+        assert profiling == model_cache.cache.profiling
+    
+    async def test_loads_mclip(self) -> None:
+        model_cache = ModelCache()
+        
+        model = await model_cache.get("XLM-Roberta-Large-Vit-B-32", ModelType.CLIP, mode="text")
+        
+        assert isinstance(model, MCLIPEncoder)
+        assert model.model_name == "XLM-Roberta-Large-Vit-B-32"
+    
+    async def test_raises_exception_if_invalid_model_type(self) -> None:
+        invalid = SimpleNamespace(value="invalid")
+        model_cache = ModelCache()
+        
+        with pytest.raises(ValueError):
+            await model_cache.get("XLM-Roberta-Large-Vit-B-32", invalid, mode="text")
+    
+    async def test_raises_exception_if_unknown_model_name(self) -> None:
+        model_cache = ModelCache()
+        
+        with pytest.raises(ValueError):
+            await model_cache.get("test_model_name", ModelType.CLIP, mode="text")
 
 
 @pytest.mark.skipif(
@@ -546,13 +574,3 @@ class TestEndpoints:
             assert expected_face["boundingBox"] == actual_face["boundingBox"]
             assert np.allclose(expected_face["embedding"], actual_face["embedding"])
             assert np.allclose(expected_face["score"], actual_face["score"])
-
-
-def test_sess_options() -> None:
-    sess_options = PicklableSessionOptions()
-    sess_options.intra_op_num_threads = 1
-    sess_options.inter_op_num_threads = 1
-    pickled = pickle.dumps(sess_options)
-    unpickled = pickle.loads(pickled)
-    assert unpickled.intra_op_num_threads == 1
-    assert unpickled.inter_op_num_threads == 1
