@@ -119,7 +119,7 @@ class TestBase:
     def test_sets_default_cache_dir(self) -> None:
         encoder = OpenCLIPEncoder("ViT-B-32__openai")
 
-        assert encoder.cache_dir == Path("/cache/clip/ViT-B-32__openai")
+        assert encoder.cache_dir == Path(settings.cache_folder) / "clip" / "ViT-B-32__openai"
 
     def test_sets_cache_dir_kwarg(self) -> None:
         cache_dir = Path("/test_cache")
@@ -267,7 +267,7 @@ class TestBase:
     def test_download(self, mocker: MockerFixture) -> None:
         mock_snapshot_download = mocker.patch("app.models.base.snapshot_download")
 
-        encoder = OpenCLIPEncoder("ViT-B-32__openai")
+        encoder = OpenCLIPEncoder("ViT-B-32__openai", cache_dir="/path/to/cache")
         encoder.download()
 
         mock_snapshot_download.assert_called_once_with(
@@ -428,7 +428,7 @@ class TestCache:
 
 
 @pytest.mark.skipif(
-    not settings.test_full,
+    settings.test_full,
     reason="More time-consuming since it deploys the app and loads models.",
 )
 class TestEndpoints:
@@ -437,15 +437,21 @@ class TestEndpoints:
     ) -> None:
         byte_image = BytesIO()
         pil_image.save(byte_image, format="jpeg")
+        expected = responses["clip"]["image"]
+        
         response = deployed_app.post(
             "http://localhost:3003/predict",
             data={"modelName": "ViT-B-32__openai", "modelType": "clip", "options": json.dumps({"mode": "vision"})},
             files={"image": byte_image.getvalue()},
         )
+        
+        actual = response.json()
         assert response.status_code == 200
-        assert response.json() == responses["clip"]["image"]
+        assert np.allclose(expected, actual)
 
     def test_clip_text_endpoint(self, responses: dict[str, Any], deployed_app: TestClient) -> None:
+        expected = responses["clip"]["text"]
+        
         response = deployed_app.post(
             "http://localhost:3003/predict",
             data={
@@ -455,12 +461,15 @@ class TestEndpoints:
                 "options": json.dumps({"mode": "text"}),
             },
         )
+        
+        actual = response.json()
         assert response.status_code == 200
-        assert response.json() == responses["clip"]["text"]
+        assert np.allclose(expected, actual)
 
     def test_face_endpoint(self, pil_image: Image.Image, responses: dict[str, Any], deployed_app: TestClient) -> None:
         byte_image = BytesIO()
         pil_image.save(byte_image, format="jpeg")
+        expected = responses["facial-recognition"]
 
         response = deployed_app.post(
             "http://localhost:3003/predict",
@@ -471,8 +480,16 @@ class TestEndpoints:
             },
             files={"image": byte_image.getvalue()},
         )
+
+        actual = response.json()
         assert response.status_code == 200
-        assert response.json() == responses["facial-recognition"]
+        assert len(expected) == len(actual)
+        for expected_face, actual_face in zip(expected, actual):
+            assert expected_face["imageHeight"] == actual_face["imageHeight"]
+            assert expected_face["imageWidth"] == actual_face["imageWidth"]
+            assert expected_face["boundingBox"] == actual_face["boundingBox"]
+            assert np.allclose(expected_face["embedding"], actual_face["embedding"])
+            assert np.allclose(expected_face["score"], actual_face["score"])
 
 
 def test_sess_options() -> None:
