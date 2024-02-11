@@ -2,7 +2,7 @@ import { AssetOrder } from '@app/domain/asset/dto/asset.dto';
 import { AssetType } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
-import { IsBoolean, IsEnum, IsInt, IsNotEmpty, IsString, Min } from 'class-validator';
+import { IsBoolean, IsEnum, IsInt, IsNotEmpty, IsString, Max, Min } from 'class-validator';
 import { Optional, QueryBoolean, QueryDate, ValidateUUID, toBoolean } from '../../domain.util';
 
 class BaseSearchDto {
@@ -113,12 +113,13 @@ class BaseSearchDto {
 
   @IsInt()
   @Min(1)
+  @Max(1000)
   @Type(() => Number)
   @Optional()
   size?: number;
 }
 
-export class AssetSearchDto extends BaseSearchDto {
+export class MetadataSearchDto extends BaseSearchDto {
   @ValidateUUID({ optional: true })
   id?: string;
 

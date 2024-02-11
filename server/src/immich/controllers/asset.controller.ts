@@ -3,7 +3,7 @@ import {
   AssetBulkUpdateDto,
   AssetJobsDto,
   AssetResponseDto,
-  AssetSearchDto,
+  MetadataSearchDto,
   AssetService,
   AssetStatsDto,
   AssetStatsResponseDto,
@@ -39,8 +39,9 @@ export class AssetsController {
 
   @Get()
   @ApiOperation({deprecated: true})
-  searchAssets(@Auth() auth: AuthDto, @Query() dto: AssetSearchDto): Promise<AssetResponseDto[]> {
-    return this.searchService.searchMetadata(auth, dto);
+  async searchAssets(@Auth() auth: AuthDto, @Query() dto: MetadataSearchDto): Promise<AssetResponseDto[]> {
+    const { assets } = await this.searchService.searchMetadata(auth, dto);
+    return assets.items;
   }
 }
 

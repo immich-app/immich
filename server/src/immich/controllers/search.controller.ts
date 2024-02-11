@@ -1,11 +1,12 @@
 import {
+  MetadataSearchDto,
   AuthDto,
   PersonResponseDto,
-  SearchDto,
   SearchExploreResponseDto,
   SearchPeopleDto,
   SearchResponseDto,
   SearchService,
+  SmartSearchDto,
 } from '@app/domain';
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
@@ -20,7 +21,12 @@ export class SearchController {
   constructor(private service: SearchService) {}
 
   @Get()
-  search(@Auth() auth: AuthDto, @Query() dto: SearchDto): Promise<SearchResponseDto> {
+  searchMetadata(@Auth() auth: AuthDto, @Query() dto: MetadataSearchDto): Promise<SearchResponseDto> {
+    return this.service.searchMetadata(auth, dto);
+  }
+
+  @Get()
+  searchSmart(@Auth() auth: AuthDto, @Query() dto: SmartSearchDto): Promise<SearchResponseDto> {
     return this.service.searchSmart(auth, dto);
   }
 
