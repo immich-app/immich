@@ -12,11 +12,17 @@ export class SystemConfigRepository implements ISystemConfigRepository {
     private repository: Repository<SystemConfigEntity>,
   ) {}
   async fetchStyle(url: string) {
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch data from ${url}`);
+    try {
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch data from ${url} with status ${response.status}: ${await response.text()}`);
+      }
+
+      return response.json();
+    } catch (error) {
+      throw new Error(`Failed to fetch data from ${url}: ${error}`);
     }
-    return response.json();
   }
 
   @GenerateSql()
