@@ -9,7 +9,7 @@
 
   import { mdiCheck } from '@mdi/js';
 
-  import _ from 'lodash';
+  import { isEqual } from 'lodash-es';
   import LinkButton from './buttons/link-button.svelte';
   import { clickOutside } from '$lib/utils/click-outside';
   import { fly } from 'svelte/transition';
@@ -26,7 +26,7 @@
   export let options: T[];
   export let selectedOption = options[0];
 
-  export let render: (item: T) => string | RenderedOption = (item) => String(item);
+  export let render: (item: T) => string | RenderedOption = String;
 
   type RenderedOption = {
     title: string;
@@ -54,13 +54,15 @@
   const renderOption = (option: T): RenderedOption => {
     const renderedOption = render(option);
     switch (typeof renderedOption) {
-      case 'string':
+      case 'string': {
         return { title: renderedOption };
-      default:
+      }
+      default: {
         return {
           title: renderedOption.title,
           icon: renderedOption.icon,
         };
+      }
     }
   };
 
@@ -90,7 +92,7 @@
           class="grid grid-cols-[20px,1fr] place-items-center p-2 transition-all hover:bg-gray-300 dark:hover:bg-gray-800"
           on:click={() => handleSelectOption(option)}
         >
-          {#if _.isEqual(selectedOption, option)}
+          {#if isEqual(selectedOption, option)}
             <div class="text-immich-primary dark:text-immich-dark-primary">
               <Icon path={mdiCheck} size="18" />
             </div>

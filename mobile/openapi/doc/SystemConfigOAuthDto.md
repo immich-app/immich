@@ -18,6 +18,7 @@ Name | Type | Description | Notes
 **mobileOverrideEnabled** | **bool** |  | 
 **mobileRedirectUri** | **String** |  | 
 **scope** | **String** |  | 
+**signingAlgorithm** | **String** |  | 
 **storageLabelClaim** | **String** |  | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

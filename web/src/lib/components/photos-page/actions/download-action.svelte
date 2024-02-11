@@ -11,7 +11,7 @@
   const { getAssets, clearSelect } = getAssetControlContext();
 
   const handleDownloadFiles = async () => {
-    const assets = Array.from(getAssets());
+    const assets = [...getAssets()];
     if (assets.length === 1) {
       clearSelect();
       await downloadFile(assets[0]);

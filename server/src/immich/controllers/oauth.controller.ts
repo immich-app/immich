@@ -6,7 +6,6 @@ import {
   OAuthAuthorizeResponseDto,
   OAuthCallbackDto,
   OAuthConfigDto,
-  OAuthConfigResponseDto,
   UserResponseDto,
 } from '@app/domain';
 import { Body, Controller, Get, HttpStatus, Post, Redirect, Req, Res } from '@nestjs/common';
@@ -25,18 +24,11 @@ export class OAuthController {
   @PublicRoute()
   @Get('mobile-redirect')
   @Redirect()
-  redirectOAuthToMobile(@Req() req: Request) {
+  redirectOAuthToMobile(@Req() request: Request) {
     return {
-      url: this.service.getMobileRedirect(req.url),
+      url: this.service.getMobileRedirect(request.url),
       statusCode: HttpStatus.TEMPORARY_REDIRECT,
     };
-  }
-
-  /** @deprecated use feature flags and /oauth/authorize */
-  @PublicRoute()
-  @Post('config')
-  generateOAuthConfig(@Body() dto: OAuthConfigDto): Promise<OAuthConfigResponseDto> {
-    return this.service.generateConfig(dto);
   }
 
   @PublicRoute()

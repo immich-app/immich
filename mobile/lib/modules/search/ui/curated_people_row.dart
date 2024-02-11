@@ -51,7 +51,7 @@ class CuratedPeopleRow extends StatelessWidget {
       itemBuilder: (context, index) {
         final person = content[index];
         final headers = {
-          "Authorization": "Bearer ${Store.get(StoreKey.accessToken)}",
+          "x-immich-user-token": Store.get(StoreKey.accessToken),
         };
         return Padding(
           padding: const EdgeInsets.only(right: 18.0),

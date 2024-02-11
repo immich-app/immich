@@ -91,40 +91,50 @@ export class AuditService {
       }
 
       switch (pathType) {
-        case AssetPathType.ENCODED_VIDEO:
+        case AssetPathType.ENCODED_VIDEO: {
           await this.assetRepository.save({ id, encodedVideoPath: pathValue });
           break;
+        }
 
-        case AssetPathType.JPEG_THUMBNAIL:
+        case AssetPathType.JPEG_THUMBNAIL: {
           await this.assetRepository.save({ id, resizePath: pathValue });
           break;
+        }
 
-        case AssetPathType.WEBP_THUMBNAIL:
+        case AssetPathType.WEBP_THUMBNAIL: {
           await this.assetRepository.save({ id, webpPath: pathValue });
           break;
+        }
 
-        case AssetPathType.ORIGINAL:
+        case AssetPathType.ORIGINAL: {
           await this.assetRepository.save({ id, originalPath: pathValue });
           break;
+        }
 
-        case AssetPathType.SIDECAR:
+        case AssetPathType.SIDECAR: {
           await this.assetRepository.save({ id, sidecarPath: pathValue });
           break;
+        }
 
-        case PersonPathType.FACE:
+        case PersonPathType.FACE: {
           await this.personRepository.update({ id, thumbnailPath: pathValue });
           break;
+        }
 
-        case UserPathType.PROFILE:
+        case UserPathType.PROFILE: {
           await this.userRepository.update(id, { profileImagePath: pathValue });
           break;
+        }
       }
     }
   }
 
+  private fullPath(filename: string) {
+    return resolve(filename);
+  }
+
   async getFileReport() {
-    const fullPath = (filename: string) => resolve(filename);
-    const hasFile = (items: Set<string>, filename: string) => items.has(filename) || items.has(fullPath(filename));
+    const hasFile = (items: Set<string>, filename: string) => items.has(filename) || items.has(this.fullPath(filename));
     const crawl = async (folder: StorageFolder) =>
       new Set(
         await this.storageRepository.crawl({
@@ -150,7 +160,7 @@ export class AuditService {
         return;
       }
       allFiles.delete(filename);
-      allFiles.delete(fullPath(filename));
+      allFiles.delete(this.fullPath(filename));
     };
 
     this.logger.log(
@@ -204,16 +214,20 @@ export class AuditService {
       }
     }
 
-    const people = await this.personRepository.getAll();
-    for (const { id, thumbnailPath } of people) {
-      track(thumbnailPath);
-      const entity = { entityId: id, entityType: PathEntityType.PERSON };
-      if (thumbnailPath && !hasFile(thumbFiles, thumbnailPath)) {
-        orphans.push({ ...entity, pathType: PersonPathType.FACE, pathValue: thumbnailPath });
+    const personPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
+      this.personRepository.getAll(pagination),
+    );
+    for await (const people of personPagination) {
+      for (const { id, thumbnailPath } of people) {
+        track(thumbnailPath);
+        const entity = { entityId: id, entityType: PathEntityType.PERSON };
+        if (thumbnailPath && !hasFile(thumbFiles, thumbnailPath)) {
+          orphans.push({ ...entity, pathType: PersonPathType.FACE, pathValue: thumbnailPath });
+        }
       }
-    }
 
-    this.logger.log(`Found ${assetCount} assets, ${users.length} users, ${people.length} people`);
+      this.logger.log(`Found ${assetCount} assets, ${users.length} users, ${people.length} people`);
+    }
 
     const extras: string[] = [];
     for (const file of allFiles) {
@@ -222,7 +236,7 @@ export class AuditService {
 
     // send as absolute paths
     for (const orphan of orphans) {
-      orphan.pathValue = fullPath(orphan.pathValue);
+      orphan.pathValue = this.fullPath(orphan.pathValue);
     }
 
     return { orphans, extras };

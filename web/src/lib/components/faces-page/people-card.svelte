@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { PersonResponseDto, api } from '@api';
+  import { type PersonResponseDto, api } from '@api';
   import { getContextMenuPosition } from '$lib/utils/context-menu';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import IconButton from '../elements/buttons/icon-button.svelte';
@@ -7,7 +7,7 @@
   import MenuOption from '../shared-components/context-menu/menu-option.svelte';
   import Portal from '../shared-components/portal/portal.svelte';
   import { createEventDispatcher } from 'svelte';
-  import { AppRoute } from '$lib/constants';
+  import { AppRoute, QueryParameter } from '$lib/constants';
   import { mdiDotsVertical } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
 
@@ -45,8 +45,8 @@
   on:mouseleave={() => (showVerticalDots = false)}
   role="group"
 >
-  <a href="{AppRoute.PEOPLE}/{person.id}?previousRoute={AppRoute.PEOPLE}" draggable="false">
-    <div class="h-48 w-48 rounded-xl brightness-95 filter">
+  <a href="{AppRoute.PEOPLE}/{person.id}?{QueryParameter.PREVIOUS_ROUTE}={AppRoute.PEOPLE}" draggable="false">
+    <div class="w-full h-full rounded-xl brightness-95 filter">
       <ImageThumbnail
         shadow
         {preload}

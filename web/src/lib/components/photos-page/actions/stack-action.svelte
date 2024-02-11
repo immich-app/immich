@@ -3,12 +3,12 @@
   import { OnStack, getAssetControlContext } from '../asset-select-control-bar.svelte';
   import { stackAssets } from '$lib/utils/asset-utils';
 
-  export let onStack: OnStack | undefined = undefined;
+  export let onStack: OnStack | undefined;
 
   const { clearSelect, getOwnedAssets } = getAssetControlContext();
 
   const handleStack = () => {
-    stackAssets(Array.from(getOwnedAssets()), (ids) => {
+    stackAssets([...getOwnedAssets()], (ids) => {
       onStack?.(ids);
       clearSelect();
     });

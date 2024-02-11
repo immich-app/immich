@@ -21,8 +21,10 @@ export enum AppRoute {
   ARCHIVE = '/archive',
   FAVORITES = '/favorites',
   PEOPLE = '/people',
+  PLACES = '/places',
   PHOTOS = '/photos',
   EXPLORE = '/explore',
+  SHARE = '/share',
   SHARING = '/sharing',
   SHARED_LINKS = '/sharing/sharedlinks',
   SEARCH = '/search',
@@ -36,6 +38,7 @@ export enum AppRoute {
   AUTH_LOGOUT = '/auth/logout',
   AUTH_REGISTER = '/auth/register',
   AUTH_CHANGE_PASSWORD = '/auth/change-password',
+  AUTH_ONBOARDING = '/auth/onboarding',
 }
 
 export enum ProjectionType {
@@ -56,3 +59,36 @@ export const dateFormats = {
     year: 'numeric',
   },
 };
+
+export enum QueryParameter {
+  ACTION = 'action',
+  ASSET_INDEX = 'assetIndex',
+  IS_OPEN = 'isOpen',
+  MEMORY_INDEX = 'memoryIndex',
+  ONBOARDING_STEP = 'step',
+  OPEN_SETTING = 'openSetting',
+  PREVIOUS_ROUTE = 'previousRoute',
+  QUERY = 'query',
+  SEARCHED_PEOPLE = 'searchedPeople',
+  SEARCH_TERM = 'q',
+  SMART_SEARCH = 'smartSearch',
+}
+
+export enum OpenSettingQueryParameterValue {
+  OAUTH = 'oauth',
+  JOB = 'job',
+  STORAGE_TEMPLATE = 'storageTemplate',
+}
+
+export enum ActionQueryParameterValue {
+  MERGE = 'merge',
+}
+
+export const maximumLengthSearchPeople: number = 20;
+
+export const timeBeforeShowLoadingSpinner: number = 100;
+// should be the same values as the ones in the app.html
+export enum Theme {
+  LIGHT = 'light',
+  DARK = 'dark',
+}

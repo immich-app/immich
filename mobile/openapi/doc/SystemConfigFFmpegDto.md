@@ -9,12 +9,15 @@ import 'package:openapi/api.dart';
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **accel** | [**TranscodeHWAccel**](TranscodeHWAccel.md) |  | 
+**acceptedAudioCodecs** | [**List<AudioCodec>**](AudioCodec.md) |  | [default to const []]
+**acceptedVideoCodecs** | [**List<VideoCodec>**](VideoCodec.md) |  | [default to const []]
 **bframes** | **int** |  | 
 **cqMode** | [**CQMode**](CQMode.md) |  | 
 **crf** | **int** |  | 
 **gopSize** | **int** |  | 
 **maxBitrate** | **String** |  | 
 **npl** | **int** |  | 
+**preferredHwDevice** | **String** |  | 
 **preset** | **String** |  | 
 **refs** | **int** |  | 
 **targetAudioCodec** | [**AudioCodec**](AudioCodec.md) |  | 

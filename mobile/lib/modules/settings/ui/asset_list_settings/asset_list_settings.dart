@@ -7,8 +7,8 @@ import 'asset_list_tiles_per_row.dart';
 
 class AssetListSettings extends StatelessWidget {
   const AssetListSettings({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {

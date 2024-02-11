@@ -15,6 +15,7 @@ import { ModuleRef } from '@nestjs/core';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { Job, JobsOptions, Processor, Queue, Worker, WorkerOptions } from 'bullmq';
 import { CronJob, CronTime } from 'cron';
+import { setTimeout } from 'node:timers/promises';
 import { bullConfig } from '../infra.config';
 
 @Injectable()
@@ -23,7 +24,7 @@ export class JobRepository implements IJobRepository {
   private logger = new ImmichLogger(JobRepository.name);
 
   constructor(
-    private moduleRef: ModuleRef,
+    private moduleReference: ModuleRef,
     private schedulerReqistry: SchedulerRegistry,
   ) {}
 
@@ -34,7 +35,7 @@ export class JobRepository implements IJobRepository {
   }
 
   addCronJob(name: string, expression: string, onTick: () => void, start = true): void {
-    const job = new CronJob(
+    const job = new CronJob<null, null>(
       expression,
       onTick,
       // function to run onComplete
@@ -116,27 +117,73 @@ export class JobRepository implements IJobRepository {
     ) as unknown as Promise<JobCounts>;
   }
 
-  async queue(item: JobItem): Promise<void> {
-    const jobName = item.name;
-    const jobData = (item as { data?: any })?.data || {};
-    const jobOptions = this.getJobOptions(item) || undefined;
+  async queueAll(items: JobItem[]): Promise<void> {
+    if (items.length === 0) {
+      return;
+    }
 
-    await this.getQueue(JOBS_TO_QUEUE[jobName]).add(jobName, jobData, jobOptions);
+    const promises = [];
+    const itemsByQueue = {} as Record<string, (JobItem & { data: any; options: JobsOptions | undefined })[]>;
+    for (const item of items) {
+      const queueName = JOBS_TO_QUEUE[item.name];
+      const job = {
+        name: item.name,
+        data: item.data || {},
+        options: this.getJobOptions(item) || undefined,
+      } as JobItem & { data: any; options: JobsOptions | undefined };
+
+      if (job.options?.jobId) {
+        // need to use add() instead of addBulk() for jobId deduplication
+        promises.push(this.getQueue(queueName).add(item.name, item.data, job.options));
+      } else {
+        itemsByQueue[queueName] = itemsByQueue[queueName] || [];
+        itemsByQueue[queueName].push(job);
+      }
+    }
+
+    for (const [queueName, jobs] of Object.entries(itemsByQueue)) {
+      const queue = this.getQueue(queueName as QueueName);
+      promises.push(queue.addBulk(jobs));
+    }
+
+    await Promise.all(promises);
+  }
+
+  async queue(item: JobItem): Promise<void> {
+    return this.queueAll([item]);
+  }
+
+  async waitForQueueCompletion(...queues: QueueName[]): Promise<void> {
+    let activeQueue: QueueStatus | undefined;
+    do {
+      const statuses = await Promise.all(queues.map((name) => this.getQueueStatus(name)));
+      activeQueue = statuses.find((status) => status.isActive);
+    } while (activeQueue);
+    {
+      this.logger.verbose(`Waiting for ${activeQueue} queue to stop...`);
+      await setTimeout(1000);
+    }
   }
 
   private getJobOptions(item: JobItem): JobsOptions | null {
     switch (item.name) {
-      case JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE:
+      case JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE: {
         return { jobId: item.data.id };
-      case JobName.GENERATE_PERSON_THUMBNAIL:
+      }
+      case JobName.GENERATE_PERSON_THUMBNAIL: {
         return { priority: 1 };
+      }
+      case JobName.QUEUE_FACIAL_RECOGNITION: {
+        return { jobId: JobName.QUEUE_FACIAL_RECOGNITION };
+      }
 
-      default:
+      default: {
         return null;
+      }
     }
   }
 
   private getQueue(queue: QueueName): Queue {
-    return this.moduleRef.get<Queue>(getQueueToken(queue), { strict: false });
+    return this.moduleReference.get<Queue>(getQueueToken(queue), { strict: false });
   }
 }

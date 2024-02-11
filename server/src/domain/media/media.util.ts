@@ -15,16 +15,14 @@ class BaseConfig implements VideoCodecSWConfig {
   getOptions(videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
     const options = {
       inputOptions: this.getBaseInputOptions(),
-      outputOptions: this.getBaseOutputOptions(videoStream, audioStream).concat('-v verbose'),
+      outputOptions: [...this.getBaseOutputOptions(videoStream, audioStream), '-v verbose'],
       twoPass: this.eligibleForTwoPass(),
     } as TranscodeOptions;
     const filters = this.getFilterOptions(videoStream);
     if (filters.length > 0) {
       options.outputOptions.push(`-vf ${filters.join(',')}`);
     }
-    options.outputOptions.push(...this.getPresetOptions());
-    options.outputOptions.push(...this.getThreadOptions());
-    options.outputOptions.push(...this.getBitrateOptions());
+    options.outputOptions.push(...this.getPresetOptions(), ...this.getThreadOptions(), ...this.getBitrateOptions());
 
     return options;
   }
@@ -44,6 +42,7 @@ class BaseConfig implements VideoCodecSWConfig {
       // explicitly selects the video stream instead of leaving it up to FFmpeg
       `-map 0:${videoStream.index}`,
     ];
+
     if (audioStream) {
       options.push(`-map 0:${audioStream.index}`);
     }
@@ -56,6 +55,11 @@ class BaseConfig implements VideoCodecSWConfig {
     if (this.getGopSize() > 0) {
       options.push(`-g ${this.getGopSize()}`);
     }
+
+    if (this.config.targetVideoCodec === VideoCodec.HEVC) {
+      options.push('-tag:v hvc1');
+    }
+
     return options;
   }
 
@@ -122,15 +126,23 @@ class BaseConfig implements VideoCodecSWConfig {
   }
 
   getTargetResolution(videoStream: VideoStreamInfo) {
-    if (this.config.targetResolution === 'original') {
-      return Math.min(videoStream.height, videoStream.width);
+    let target;
+    target =
+      this.config.targetResolution === 'original'
+        ? Math.min(videoStream.height, videoStream.width)
+        : Number.parseInt(this.config.targetResolution);
+
+    if (target % 2 !== 0) {
+      target -= 1;
     }
 
-    return Number.parseInt(this.config.targetResolution);
+    return target;
   }
 
   shouldScale(videoStream: VideoStreamInfo) {
-    return Math.min(videoStream.height, videoStream.width) > this.getTargetResolution(videoStream);
+    const oddDimensions = videoStream.height % 2 !== 0 || videoStream.width % 2 !== 0;
+    const largerThanTarget = Math.min(videoStream.height, videoStream.width) > this.getTargetResolution(videoStream);
+    return oddDimensions || largerThanTarget;
   }
 
   shouldToneMap(videoStream: VideoStreamInfo) {
@@ -146,7 +158,10 @@ class BaseConfig implements VideoCodecSWConfig {
   getSize(videoStream: VideoStreamInfo) {
     const smaller = this.getTargetResolution(videoStream);
     const factor = Math.max(videoStream.height, videoStream.width) / Math.min(videoStream.height, videoStream.width);
-    const larger = Math.round(smaller * factor);
+    let larger = Math.round(smaller * factor);
+    if (larger % 2 !== 0) {
+      larger -= 1;
+    }
     return this.isVideoVertical(videoStream) ? { width: smaller, height: larger } : { width: larger, height: smaller };
   }
 
@@ -164,7 +179,7 @@ class BaseConfig implements VideoCodecSWConfig {
 
   getBitrateUnit() {
     const maxBitrate = this.getMaxBitrateValue();
-    return this.config.maxBitrate.trim().substring(maxBitrate.toString().length); // use inputted unit if provided
+    return this.config.maxBitrate.trim().slice(maxBitrate.toString().length); // use inputted unit if provided
   }
 
   getMaxBitrateValue() {
@@ -267,6 +282,20 @@ export class BaseHWConfig extends BaseConfig implements VideoCodecHWConfig {
     }
     return this.config.gopSize;
   }
+
+  getPreferredHardwareDevice(): string | null {
+    const device = this.config.preferredHwDevice;
+    if (device === 'auto') {
+      return null;
+    }
+
+    const deviceName = device.replace('/dev/dri/', '');
+    if (!this.devices.includes(deviceName)) {
+      throw new Error(`Device '${device}' does not exist`);
+    }
+
+    return device;
+  }
 }
 
 export class ThumbnailConfig extends BaseConfig {
@@ -344,7 +373,7 @@ export class VP9Config extends BaseConfig {
 
   getBitrateOptions() {
     const bitrates = this.getBitrateDistribution();
-    if (this.eligibleForTwoPass()) {
+    if (bitrates.max > 0 && this.eligibleForTwoPass()) {
       return [
         `-b:v ${bitrates.target}${bitrates.unit}`,
         `-minrate ${bitrates.min}${bitrates.unit}`,
@@ -379,8 +408,7 @@ export class NVENCConfig extends BaseHWConfig {
       ...super.getBaseOutputOptions(videoStream, audioStream),
     ];
     if (this.getBFrames() > 0) {
-      options.push('-b_ref_mode middle');
-      options.push('-b_qfactor 1.1');
+      options.push('-b_ref_mode middle', '-b_qfactor 1.1');
     }
     if (this.config.temporalAQ) {
       options.push('-temporal-aq 1');
@@ -442,10 +470,17 @@ export class NVENCConfig extends BaseHWConfig {
 
 export class QSVConfig extends BaseHWConfig {
   getBaseInputOptions() {
-    if (!this.devices.length) {
-      throw Error('No QSV device found');
+    if (this.devices.length === 0) {
+      throw new Error('No QSV device found');
     }
-    return ['-init_hw_device qsv=hw', '-filter_hw_device hw'];
+
+    let qsvString = '';
+    const hwDevice = this.getPreferredHardwareDevice();
+    if (hwDevice !== null) {
+      qsvString = `,child_device=${hwDevice}`;
+    }
+
+    return [`-init_hw_device qsv=hw${qsvString}`, '-filter_hw_device hw'];
   }
 
   getBaseOutputOptions(videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
@@ -480,8 +515,7 @@ export class QSVConfig extends BaseHWConfig {
     options.push(`-${this.useCQP() ? 'q:v' : 'global_quality'} ${this.config.crf}`);
     const bitrates = this.getBitrateDistribution();
     if (bitrates.max > 0) {
-      options.push(`-maxrate ${bitrates.max}${bitrates.unit}`);
-      options.push(`-bufsize ${bitrates.max * 2}${bitrates.unit}`);
+      options.push(`-maxrate ${bitrates.max}${bitrates.unit}`, `-bufsize ${bitrates.max * 2}${bitrates.unit}`);
     }
     return options;
   }
@@ -509,9 +543,15 @@ export class QSVConfig extends BaseHWConfig {
 export class VAAPIConfig extends BaseHWConfig {
   getBaseInputOptions() {
     if (this.devices.length === 0) {
-      throw Error('No VAAPI device found');
+      throw new Error('No VAAPI device found');
     }
-    return [`-init_hw_device vaapi=accel:/dev/dri/${this.devices[0]}`, '-filter_hw_device accel'];
+
+    let hwDevice = this.getPreferredHardwareDevice();
+    if (hwDevice === null) {
+      hwDevice = `/dev/dri/${this.devices[0]}`;
+    }
+
+    return [`-init_hw_device vaapi=accel:${hwDevice}`, '-filter_hw_device accel'];
   }
 
   getFilterOptions(videoStream: VideoStreamInfo) {
@@ -578,7 +618,7 @@ export class RKMPPConfig extends BaseHWConfig {
 
   getBaseInputOptions() {
     if (this.devices.length === 0) {
-      throw Error('No RKMPP device found');
+      throw new Error('No RKMPP device found');
     }
     return [];
   }
@@ -597,14 +637,17 @@ export class RKMPPConfig extends BaseHWConfig {
 
   getPresetOptions() {
     switch (this.config.targetVideoCodec) {
-      case VideoCodec.H264:
+      case VideoCodec.H264: {
         // from ffmpeg_mpp help, commonly referred to as H264 level 5.1
         return ['-level 51'];
-      case VideoCodec.HEVC:
+      }
+      case VideoCodec.HEVC: {
         // from ffmpeg_mpp help, commonly referred to as HEVC level 5.1
         return ['-level 153'];
-      default:
-        throw Error(`Incompatible video codec for RKMPP: ${this.config.targetVideoCodec}`);
+      }
+      default: {
+        throw new Error(`Incompatible video codec for RKMPP: ${this.config.targetVideoCodec}`);
+      }
     }
   }
 

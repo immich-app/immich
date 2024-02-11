@@ -2,7 +2,8 @@ export enum QueueName {
   THUMBNAIL_GENERATION = 'thumbnailGeneration',
   METADATA_EXTRACTION = 'metadataExtraction',
   VIDEO_CONVERSION = 'videoConversion',
-  RECOGNIZE_FACES = 'recognizeFaces',
+  FACE_DETECTION = 'faceDetection',
+  FACIAL_RECOGNITION = 'facialRecognition',
   SMART_SEARCH = 'smartSearch',
   BACKGROUND_TASK = 'backgroundTask',
   STORAGE_TEMPLATE_MIGRATION = 'storageTemplateMigration',
@@ -11,6 +12,11 @@ export enum QueueName {
   SIDECAR = 'sidecar',
   LIBRARY = 'library',
 }
+
+export type ConcurrentQueueName = Exclude<
+  QueueName,
+  QueueName.STORAGE_TEMPLATE_MIGRATION | QueueName.FACIAL_RECOGNITION
+>;
 
 export enum JobCommand {
   START = 'start',
@@ -37,9 +43,10 @@ export enum JobName {
   METADATA_EXTRACTION = 'metadata-extraction',
   LINK_LIVE_PHOTOS = 'link-live-photos',
 
-  // user deletion
+  // user
   USER_DELETION = 'user-deletion',
   USER_DELETE_CHECK = 'user-delete-check',
+  USER_SYNC_USAGE = 'user-sync-usage',
 
   // asset
   ASSET_DELETION = 'asset-deletion',
@@ -56,9 +63,10 @@ export enum JobName {
 
   // facial recognition
   PERSON_CLEANUP = 'person-cleanup',
-  PERSON_DELETE = 'person-delete',
-  QUEUE_RECOGNIZE_FACES = 'queue-recognize-faces',
-  RECOGNIZE_FACES = 'recognize-faces',
+  QUEUE_FACE_DETECTION = 'queue-face-detection',
+  FACE_DETECTION = 'face-detection',
+  QUEUE_FACIAL_RECOGNITION = 'queue-facial-recognition',
+  FACIAL_RECOGNITION = 'facial-recognition',
 
   // library managment
   LIBRARY_SCAN = 'library-refresh',
@@ -72,9 +80,9 @@ export enum JobName {
   DELETE_FILES = 'delete-files',
   CLEAN_OLD_AUDIT_LOGS = 'clean-old-audit-logs',
 
-  // clip
-  QUEUE_ENCODE_CLIP = 'queue-clip-encode',
-  ENCODE_CLIP = 'clip-encode',
+  // smart search
+  QUEUE_SMART_SEARCH = 'queue-smart-search',
+  SMART_SEARCH = 'smart-search',
 
   // XMP sidecars
   QUEUE_SIDECAR = 'queue-sidecar',
@@ -94,7 +102,7 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   [JobName.DELETE_FILES]: QueueName.BACKGROUND_TASK,
   [JobName.CLEAN_OLD_AUDIT_LOGS]: QueueName.BACKGROUND_TASK,
   [JobName.PERSON_CLEANUP]: QueueName.BACKGROUND_TASK,
-  [JobName.PERSON_DELETE]: QueueName.BACKGROUND_TASK,
+  [JobName.USER_SYNC_USAGE]: QueueName.BACKGROUND_TASK,
 
   // conversion
   [JobName.QUEUE_VIDEO_CONVERSION]: QueueName.VIDEO_CONVERSION,
@@ -122,12 +130,14 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   [JobName.MIGRATE_PERSON]: QueueName.MIGRATION,
 
   // facial recognition
-  [JobName.QUEUE_RECOGNIZE_FACES]: QueueName.RECOGNIZE_FACES,
-  [JobName.RECOGNIZE_FACES]: QueueName.RECOGNIZE_FACES,
+  [JobName.QUEUE_FACE_DETECTION]: QueueName.FACE_DETECTION,
+  [JobName.FACE_DETECTION]: QueueName.FACE_DETECTION,
+  [JobName.QUEUE_FACIAL_RECOGNITION]: QueueName.FACIAL_RECOGNITION,
+  [JobName.FACIAL_RECOGNITION]: QueueName.FACIAL_RECOGNITION,
 
-  // clip
-  [JobName.QUEUE_ENCODE_CLIP]: QueueName.SMART_SEARCH,
-  [JobName.ENCODE_CLIP]: QueueName.SMART_SEARCH,
+  // smart search
+  [JobName.QUEUE_SMART_SEARCH]: QueueName.SMART_SEARCH,
+  [JobName.SMART_SEARCH]: QueueName.SMART_SEARCH,
 
   // XMP sidecars
   [JobName.QUEUE_SIDECAR]: QueueName.SIDECAR,

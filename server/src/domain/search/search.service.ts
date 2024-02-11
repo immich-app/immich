@@ -7,6 +7,7 @@ import { PersonResponseDto } from '../person';
 import {
   IAssetRepository,
   IMachineLearningRepository,
+  IPartnerRepository,
   IPersonRepository,
   ISmartInfoRepository,
   ISystemConfigRepository,
@@ -28,6 +29,7 @@ export class SearchService {
     @Inject(IPersonRepository) private personRepository: IPersonRepository,
     @Inject(ISmartInfoRepository) private smartInfoRepository: ISmartInfoRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
+    @Inject(IPartnerRepository) private partnerRepository: IPartnerRepository,
   ) {
     this.configCore = SystemConfigCore.create(configRepository);
   }
@@ -44,7 +46,7 @@ export class SearchService {
       this.assetRepository.getAssetIdByTag(auth.user.id, options),
     ]);
     const assetIds = new Set<string>(results.flatMap((field) => field.items.map((item) => item.data)));
-    const assets = await this.assetRepository.getByIds(Array.from(assetIds));
+    const assets = await this.assetRepository.getByIds([...assetIds]);
     const assetMap = new Map<string, AssetResponseDto>(assets.map((asset) => [asset.id, mapAsset(asset)]));
 
     return results.map(({ fieldName, items }) => ({
@@ -54,32 +56,45 @@ export class SearchService {
   }
 
   async search(auth: AuthDto, dto: SearchDto): Promise<SearchResponseDto> {
+    await this.configCore.requireFeature(FeatureFlag.SEARCH);
     const { machineLearning } = await this.configCore.getConfig();
     const query = dto.q || dto.query;
     if (!query) {
       throw new Error('Missing query');
     }
-    const hasClip = machineLearning.enabled && machineLearning.clip.enabled;
-    if (dto.clip && !hasClip) {
-      throw new Error('CLIP is not enabled');
+
+    let strategy = SearchStrategy.TEXT;
+    if (dto.smart || dto.clip) {
+      await this.configCore.requireFeature(FeatureFlag.SMART_SEARCH);
+      strategy = SearchStrategy.SMART;
     }
-    const strategy = dto.clip ? SearchStrategy.CLIP : SearchStrategy.TEXT;
+
+    const userIds = await this.getUserIdsToSearch(auth);
+    const withArchived = dto.withArchived || false;
 
     let assets: AssetEntity[] = [];
 
     switch (strategy) {
-      case SearchStrategy.CLIP:
+      case SearchStrategy.SMART: {
         const embedding = await this.machineLearning.encodeText(
           machineLearning.url,
           { text: query },
           machineLearning.clip,
         );
-        assets = await this.smartInfoRepository.searchCLIP({ ownerId: auth.user.id, embedding, numResults: 100 });
+        assets = await this.smartInfoRepository.searchCLIP({
+          userIds: userIds,
+          embedding,
+          numResults: 100,
+          withArchived,
+        });
         break;
-      case SearchStrategy.TEXT:
-        assets = await this.assetRepository.searchMetadata(query, auth.user.id, { numResults: 250 });
-      default:
+      }
+      case SearchStrategy.TEXT: {
+        assets = await this.assetRepository.searchMetadata(query, userIds, { numResults: 250 });
+      }
+      default: {
         break;
+      }
     }
 
     return {
@@ -96,5 +111,15 @@ export class SearchService {
         facets: [],
       },
     };
+  }
+
+  private async getUserIdsToSearch(auth: AuthDto): Promise<string[]> {
+    const userIds: string[] = [auth.user.id];
+    const partners = await this.partnerRepository.getAll(auth.user.id);
+    const partnersIds = partners
+      .filter((partner) => partner.sharedBy && partner.inTimeline)
+      .map((partner) => partner.sharedById);
+    userIds.push(...partnersIds);
+    return userIds;
   }
 }

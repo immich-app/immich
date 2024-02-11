@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { AlbumResponseDto, api } from '@api';
+  import { type AlbumResponseDto, api } from '@api';
   import { createEventDispatcher, onMount } from 'svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import BaseModal from './base-modal.svelte';
@@ -30,13 +30,12 @@
   });
 
   $: {
-    if (search.length > 0 && albums.length > 0) {
-      filteredAlbums = albums.filter((album) => {
-        return album.albumName.toLowerCase().includes(search.toLowerCase());
-      });
-    } else {
-      filteredAlbums = albums;
-    }
+    filteredAlbums =
+      search.length > 0 && albums.length > 0
+        ? albums.filter((album) => {
+            return album.albumName.toLowerCase().includes(search.toLowerCase());
+          })
+        : albums;
   }
 
   const handleSelect = (album: AlbumResponseDto) => {

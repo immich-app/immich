@@ -1,6 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte';
-  import { AlbumResponseDto, api, UserResponseDto } from '@api';
+  import { type AlbumResponseDto, api, type UserResponseDto } from '@api';
   import BaseModal from '../shared-components/base-modal.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
@@ -30,8 +30,8 @@
     try {
       const { data } = await api.userApi.getMyUserInfo();
       currentUser = data;
-    } catch (e) {
-      handleError(e, 'Unable to refresh user');
+    } catch (error) {
+      handleError(error, 'Unable to refresh user');
     }
   });
 
@@ -58,8 +58,8 @@
       dispatch('remove', userId);
       const message = userId === 'me' ? `Left ${album.albumName}` : `Removed ${selectedRemoveUser.name}`;
       notificationController.show({ type: NotificationType.Info, message });
-    } catch (e) {
-      handleError(e, 'Unable to remove user');
+    } catch (error) {
+      handleError(error, 'Unable to remove user');
     } finally {
       selectedRemoveUser = null;
     }

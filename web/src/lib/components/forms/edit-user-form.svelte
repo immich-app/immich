@@ -1,22 +1,31 @@
 <script lang="ts">
-  import { api, UserResponseDto } from '@api';
+  import { api, type UserResponseDto } from '@api';
   import { createEventDispatcher } from 'svelte';
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
   import Button from '../elements/buttons/button.svelte';
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
-  import { handleError } from '../../utils/handle-error';
   import Icon from '$lib/components/elements/icon.svelte';
   import { mdiAccountEditOutline, mdiClose } from '@mdi/js';
   import { AppRoute } from '$lib/constants';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
+  import { handleError } from '$lib/utils/handle-error';
+  import { convertFromBytes, convertToBytes } from '$lib/utils/byte-converter';
+  import { serverInfo } from '$lib/stores/server-info.store';
 
   export let user: UserResponseDto;
   export let canResetPassword = true;
 
   let error: string;
   let success: string;
-
   let isShowResetPasswordConfirmation = false;
+  let quotaSize = user.quotaSizeInBytes ? convertFromBytes(user.quotaSizeInBytes, 'GiB') : null;
+
+  const previousQutoa = user.quotaSizeInBytes;
+
+  $: quotaSizeWarning =
+    previousQutoa !== convertToBytes(Number(quotaSize), 'GiB') &&
+    !!quotaSize &&
+    convertToBytes(Number(quotaSize), 'GiB') > $serverInfo.diskSizeRaw;
 
   const dispatch = createEventDispatcher<{
     close: void;
@@ -34,6 +43,7 @@
           name,
           storageLabel: storageLabel || '',
           externalPath: externalPath || '',
+          quotaSizeInBytes: quotaSize ? convertToBytes(Number(quotaSize), 'GiB') : null,
         },
       });
 
@@ -60,8 +70,8 @@
       if (status == 200) {
         dispatch('resetPasswordSuccess');
       }
-    } catch (e) {
-      console.error('Error reseting user password', e);
+    } catch (error) {
+      console.error('Error reseting user password', error);
       notificationController.show({
         message: 'Error reseting user password, check console for more details',
         type: NotificationType.Error,
@@ -95,6 +105,16 @@
     <div class="m-4 flex flex-col gap-2">
       <label class="immich-form-label" for="name">Name</label>
       <input class="immich-form-input" id="name" name="name" type="text" required bind:value={user.name} />
+    </div>
+
+    <div class="m-4 flex flex-col gap-2">
+      <label class="flex items-center gap-2 immich-form-label" for="quotaSize"
+        >Quota Size (GiB) {#if quotaSizeWarning}
+          <p class="text-red-400 text-sm">You set a quota higher than the disk size</p>
+        {/if}</label
+      >
+      <input class="immich-form-input" id="quotaSize" name="quotaSize" type="number" min="0" bind:value={quotaSize} />
+      <p>Note: Enter 0 for unlimited quota</p>
     </div>
 
     <div class="m-4 flex flex-col gap-2">

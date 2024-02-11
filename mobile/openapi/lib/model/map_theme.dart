@@ -34,7 +34,7 @@ class MapTheme {
 
   static MapTheme? fromJson(dynamic value) => MapThemeTypeTransformer().decode(value);
 
-  static List<MapTheme>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<MapTheme> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <MapTheme>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {

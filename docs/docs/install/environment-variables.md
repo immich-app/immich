@@ -30,15 +30,15 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 
 ## General
 
-| Variable                    | Description                                  |       Default       | Services                                     |
-| :-------------------------- | :------------------------------------------- | :-----------------: | :------------------------------------------- |
-| `TZ`                        | Timezone                                     |                     | microservices                                |
-| `NODE_ENV`                  | Environment (production, development)        |    `production`     | server, microservices, machine learning, web |
-| `LOG_LEVEL`                 | Log Level (verbose, debug, log, warn, error) |        `log`        | server, microservices                        |
-| `IMMICH_MEDIA_LOCATION`     | Media Location                               |     `./upload`      | server, microservices                        |
-| `PUBLIC_LOGIN_PAGE_MESSAGE` | Public Login Page Message                    |                     | web                                          |
-| `IMMICH_CONFIG_FILE`        | Path to config file                          |                     | server                                       |
-| `IMMICH_WEB_ROOT`           | Path of root index.html                      | `/usr/src/app/www'` | server                                       |
+| Variable                        | Description                                  |       Default        | Services                                     |
+| :------------------------------ | :------------------------------------------- | :------------------: | :------------------------------------------- |
+| `TZ`                            | Timezone                                     |                      | microservices                                |
+| `NODE_ENV`                      | Environment (production, development)        |     `production`     | server, microservices, machine learning, web |
+| `LOG_LEVEL`                     | Log Level (verbose, debug, log, warn, error) |        `log`         | server, microservices                        |
+| `IMMICH_MEDIA_LOCATION`         | Media Location                               |      `./upload`      | server, microservices                        |
+| `IMMICH_CONFIG_FILE`            | Path to config file                          |                      | server                                       |
+| `IMMICH_WEB_ROOT`               | Path of root index.html                      |  `/usr/src/app/www`  | server                                       |
+| `IMMICH_REVERSE_GEOCODING_ROOT` | Path of reverse geocoding dump directory     | `/usr/src/resources` | microservices                                |
 
 :::tip
 
@@ -47,12 +47,6 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 `exiftool` is only present in the microservices container.
 
 :::
-
-## Geocoding
-
-| Variable                           | Description                      |           Default            | Services      |
-| :--------------------------------- | :------------------------------- | :--------------------------: | :------------ |
-| `REVERSE_GEOCODING_DUMP_DIRECTORY` | Reverse Geocoding Dump Directory | `./.reverse-geocoding-dump/` | microservices |
 
 ## Ports
 
@@ -127,16 +121,16 @@ Redis (Sentinel) URL example JSON before encoding:
 
 ## Machine Learning
 
-| Variable                                         | Description                                                       |       Default       | Services         |
-| :----------------------------------------------- | :---------------------------------------------------------------- | :-----------------: | :--------------- |
-| `MACHINE_LEARNING_MODEL_TTL`                     | Inactivity time (s) before a model is unloaded (disabled if <= 0) |        `300`        | machine learning |
-| `MACHINE_LEARNING_MODEL_TTL_POLL_S`              | Interval (s) between checks for the model TTL (disabled if <= 0)  |        `10`         | machine learning |
-| `MACHINE_LEARNING_CACHE_FOLDER`                  | Directory where models are downloaded                             |      `/cache`       | machine learning |
-| `MACHINE_LEARNING_REQUEST_THREADS`<sup>\*1</sup> | Thread count of the request thread pool (disabled if <= 0)        | number of CPU cores | machine learning |
-| `MACHINE_LEARNING_MODEL_INTER_OP_THREADS`        | Number of parallel model operations                               |         `1`         | machine learning |
-| `MACHINE_LEARNING_MODEL_INTRA_OP_THREADS`        | Number of threads for each model operation                        |         `2`         | machine learning |
-| `MACHINE_LEARNING_WORKERS`<sup>\*2</sup>         | Number of worker processes to spawn                               |         `1`         | machine learning |
-| `MACHINE_LEARNING_WORKER_TIMEOUT`                | Maximum time (s) of unresponsiveness before a worker is killed    |        `120`        | machine learning |
+| Variable                                         | Description                                                        |       Default       | Services         |
+| :----------------------------------------------- | :----------------------------------------------------------------- | :-----------------: | :--------------- |
+| `MACHINE_LEARNING_MODEL_TTL`                     | Inactivity time (s) before a model is unloaded (disabled if \<= 0) |        `300`        | machine learning |
+| `MACHINE_LEARNING_MODEL_TTL_POLL_S`              | Interval (s) between checks for the model TTL (disabled if \<= 0)  |        `10`         | machine learning |
+| `MACHINE_LEARNING_CACHE_FOLDER`                  | Directory where models are downloaded                              |      `/cache`       | machine learning |
+| `MACHINE_LEARNING_REQUEST_THREADS`<sup>\*1</sup> | Thread count of the request thread pool (disabled if \<= 0)        | number of CPU cores | machine learning |
+| `MACHINE_LEARNING_MODEL_INTER_OP_THREADS`        | Number of parallel model operations                                |         `1`         | machine learning |
+| `MACHINE_LEARNING_MODEL_INTRA_OP_THREADS`        | Number of threads for each model operation                         |         `2`         | machine learning |
+| `MACHINE_LEARNING_WORKERS`<sup>\*2</sup>         | Number of worker processes to spawn                                |         `1`         | machine learning |
+| `MACHINE_LEARNING_WORKER_TIMEOUT`                | Maximum time (s) of unresponsiveness before a worker is killed     |        `120`        | machine learning |
 
 \*1: It is recommended to begin with this parameter when changing the concurrency levels of the machine learning service and then tune the other ones.
 

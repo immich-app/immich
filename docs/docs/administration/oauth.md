@@ -66,8 +66,10 @@ Once you have a new OAuth client application configured, Immich can be configure
 | Client ID                                            | string  | (required)           | Required. Client ID (from previous step)                                            |
 | Client Secret                                        | string  | (required)           | Required. Client Secret (previous step)                                             |
 | Scope                                                | string  | openid email profile | Full list of scopes to send with the request (space delimited)                      |
+| Signing Algorithm                                    | string  | RS256                | The algorithm used to sign the id token (examples: RS256, HS256)                    |
 | Button Text                                          | string  | Login with OAuth     | Text for the OAuth button on the web                                                |
 | Auto Register                                        | boolean | true                 | When true, will automatically register a user the first time they sign in           |
+| Storage Claim                                        | string  | preferred_username   | Claim mapping for the user's storage label                                          |
 | [Auto Launch](#auto-launch)                          | boolean | false                | When true, will skip the login page and automatically start the OAuth login process |
 | [Mobile Redirect URI Override](#mobile-redirect-uri) | URL     | (empty)              | Http(s) alternative mobile redirect URI                                             |
 

@@ -1,6 +1,8 @@
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
+import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
+import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -9,13 +11,14 @@ part 'person.service.g.dart';
 
 @riverpod
 PersonService personService(PersonServiceRef ref) =>
-    PersonService(ref.read(apiServiceProvider));
+    PersonService(ref.read(apiServiceProvider), ref.read(dbProvider));
 
 class PersonService {
   final Logger _log = Logger("PersonService");
   final ApiService _apiService;
+  final Isar _db;
 
-  PersonService(this._apiService);
+  PersonService(this._apiService, this._db);
 
   Future<List<PersonResponseDto>> getCuratedPeople() async {
     try {
@@ -30,7 +33,8 @@ class PersonService {
   Future<List<Asset>?> getPersonAssets(String id) async {
     try {
       final assets = await _apiService.personApi.getPersonAssets(id);
-      return assets?.map((e) => Asset.remote(e)).toList();
+      if (assets == null) return null;
+      return await _db.assets.getAllByRemoteId(assets.map((e) => e.id));
     } catch (error, stack) {
       _log.severe("Error while fetching person assets", error, stack);
     }

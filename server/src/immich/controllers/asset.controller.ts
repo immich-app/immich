@@ -1,7 +1,6 @@
 import {
   AssetBulkDeleteDto,
   AssetBulkUpdateDto,
-  AssetIdsDto,
   AssetJobsDto,
   AssetResponseDto,
   AssetSearchDto,
@@ -9,9 +8,8 @@ import {
   AssetStatsDto,
   AssetStatsResponseDto,
   AuthDto,
-  BulkIdsDto,
-  DownloadInfoDto,
-  DownloadResponseDto,
+  DeviceIdDto,
+  DownloadService,
   MapMarkerDto,
   MapMarkerResponseDto,
   MemoryLaneDto,
@@ -20,30 +18,14 @@ import {
   TimeBucketAssetDto,
   TimeBucketDto,
   TimeBucketResponseDto,
-  TrashAction,
+  TrashService,
   UpdateAssetDto as UpdateDto,
   UpdateStackParentDto,
 } from '@app/domain';
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Next,
-  Param,
-  Post,
-  Put,
-  Query,
-  Res,
-  StreamableFile,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { NextFunction, Response } from 'express';
-import { DeviceIdDto } from '../api-v1/asset/dto/device-id.dto';
-import { Auth, Authenticated, FileResponse, SharedLinkRoute } from '../app.guard';
-import { UseValidation, asStreamableFile, sendFile } from '../app.utils';
+import { Auth, Authenticated, SharedLinkRoute } from '../app.guard';
+import { UseValidation } from '../app.utils';
 import { Route } from '../interceptors';
 import { UUIDParamDto } from './dto/uuid-param.dto';
 
@@ -65,7 +47,11 @@ export class AssetsController {
 @Authenticated()
 @UseValidation()
 export class AssetController {
-  constructor(private service: AssetService) {}
+  constructor(
+    private service: AssetService,
+    private downloadService: DownloadService,
+    private trashService: TrashService,
+  ) {}
 
   @Get('map-marker')
   getMapMarkers(@Auth() auth: AuthDto, @Query() options: MapMarkerDto): Promise<MapMarkerResponseDto[]> {
@@ -80,33 +66,6 @@ export class AssetController {
   @Get('random')
   getRandom(@Auth() auth: AuthDto, @Query() dto: RandomAssetsDto): Promise<AssetResponseDto[]> {
     return this.service.getRandom(auth, dto.count ?? 1);
-  }
-
-  @SharedLinkRoute()
-  @Post('download/info')
-  getDownloadInfo(@Auth() auth: AuthDto, @Body() dto: DownloadInfoDto): Promise<DownloadResponseDto> {
-    return this.service.getDownloadInfo(auth, dto);
-  }
-
-  @SharedLinkRoute()
-  @Post('download/archive')
-  @HttpCode(HttpStatus.OK)
-  @FileResponse()
-  downloadArchive(@Auth() auth: AuthDto, @Body() dto: AssetIdsDto): Promise<StreamableFile> {
-    return this.service.downloadArchive(auth, dto).then(asStreamableFile);
-  }
-
-  @SharedLinkRoute()
-  @Post('download/:id')
-  @HttpCode(HttpStatus.OK)
-  @FileResponse()
-  async downloadFile(
-    @Res() res: Response,
-    @Next() next: NextFunction,
-    @Auth() auth: AuthDto,
-    @Param() { id }: UUIDParamDto,
-  ) {
-    await sendFile(res, next, () => this.service.downloadFile(auth, id));
   }
 
   /**
@@ -152,28 +111,16 @@ export class AssetController {
     return this.service.deleteAll(auth, dto);
   }
 
-  @Post('restore')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  restoreAssets(@Auth() auth: AuthDto, @Body() dto: BulkIdsDto): Promise<void> {
-    return this.service.restoreAll(auth, dto);
-  }
-
-  @Post('trash/empty')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  emptyTrash(@Auth() auth: AuthDto): Promise<void> {
-    return this.service.handleTrashAction(auth, TrashAction.EMPTY_ALL);
-  }
-
-  @Post('trash/restore')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  restoreTrash(@Auth() auth: AuthDto): Promise<void> {
-    return this.service.handleTrashAction(auth, TrashAction.RESTORE_ALL);
-  }
-
   @Put('stack/parent')
   @HttpCode(HttpStatus.OK)
   updateStackParent(@Auth() auth: AuthDto, @Body() dto: UpdateStackParentDto): Promise<void> {
     return this.service.updateStackParent(auth, dto);
+  }
+
+  @SharedLinkRoute()
+  @Get(':id')
+  getAssetInfo(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AssetResponseDto> {
+    return this.service.get(auth, id) as Promise<AssetResponseDto>;
   }
 
   @Put(':id')

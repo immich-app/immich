@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { api, UserResponseDto } from '@api';
+  import { api, type UserResponseDto } from '@api';
   import { createEventDispatcher } from 'svelte';
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import { handleError } from '../../utils/handle-error';
@@ -14,10 +14,10 @@
   const deleteUser = async () => {
     try {
       const deletedUser = await api.userApi.deleteUser({ id: user.id });
-      if (deletedUser.data.deletedAt != null) {
-        dispatch('success');
-      } else {
+      if (deletedUser.data.deletedAt == undefined) {
         dispatch('fail');
+      } else {
+        dispatch('success');
       }
     } catch (error) {
       handleError(error, 'Unable to delete user');

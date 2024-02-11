@@ -10,9 +10,26 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  e2e-tests:
-    name: Server (e2e)
-    runs-on: ubuntu-latest
+  server-e2e-api:
+    name: Server (e2e-api)
+    runs-on: mich
+    defaults:
+      run:
+        working-directory: ./server
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run npm install
+        run: npm ci
+
+      - name: Run e2e tests
+        run: npm run e2e:api
+
+  server-e2e-jobs:
+    name: Server (e2e-jobs)
+    runs-on: mich
 
     steps:
       - name: Checkout code
@@ -21,7 +38,7 @@ jobs:
           submodules: "recursive"
 
       - name: Run e2e tests
-        run: make test-server-e2e
+        run: make server-e2e-jobs
 
   doc-tests:
     name: Docs
@@ -39,10 +56,6 @@ jobs:
 
       - name: Run formatter
         run: npm run format
-        if: ${{ !cancelled() }}
-
-      - name: Run tsc
-        run: npm run check
         if: ${{ !cancelled() }}
 
       - name: Run build
@@ -90,10 +103,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Run npm install in cli
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Run setup typescript-sdk
+        run: npm ci && npm run build
+        working-directory: ./open-api/typescript-sdk
+
+      - name: Run npm install (cli)
         run: npm ci
 
-      - name: Run npm install in server
+      - name: Run npm install (server)
         run: npm ci
         working-directory: ./server
 
@@ -126,11 +148,20 @@ jobs:
         with:
           submodules: "recursive"
 
-      - name: Run npm install in cli
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Run setup typescript-sdk
+        run: npm ci && npm run build
+        working-directory: ./open-api/typescript-sdk
+
+      - name: Run npm install (cli)
         run: npm ci
 
-      - name: Run npm install in server
-        run: npm ci
+      - name: Run npm install (server)
+        run: npm ci && npm run build
         working-directory: ./server
 
       - name: Run e2e tests
@@ -146,6 +177,10 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Run setup typescript-sdk
+        run: npm ci && npm run build
+        working-directory: ./open-api/typescript-sdk
 
       - name: Run npm install
         run: npm ci
@@ -166,9 +201,9 @@ jobs:
         run: npm run check:typescript
         if: ${{ !cancelled() }}
 
-      # - name: Run unit tests & coverage
-      #   run: npm run test:cov
-      #   if: ${{ !cancelled() }}
+      - name: Run unit tests & coverage
+        run: npm run test:cov
+        if: ${{ !cancelled() }}
 
   mobile-unit-tests:
     name: Mobile
@@ -179,7 +214,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: "stable"
-          flutter-version: "3.13.6"
+          flutter-version: "3.16.9"
       - name: Run tests
         working-directory: ./mobile
         run: flutter test -j 1
@@ -200,7 +235,7 @@ jobs:
           cache: "poetry"
       - name: Install dependencies
         run: |
-          poetry install --with dev
+          poetry install --with dev --with cpu
       - name: Lint with ruff
         run: |
           poetry run ruff check --output-format=github app export
@@ -220,14 +255,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Run API generation
-        run: npm --prefix server run api:generate
+        run: make open-api
       - name: Find file changes
         uses: tj-actions/verify-changed-files@v13.1
         id: verify-changed-files
         with:
           files: |
             mobile/openapi
-            web/src/api/open-api
+            open-api/typescript-sdk
       - name: Verify files have not changed
         if: steps.verify-changed-files.outputs.files_changed == 'true'
         run: |
@@ -240,7 +275,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: tensorchord/pgvecto-rs:pg14-v0.1.11@sha256:0335a1a22f8c5dd1b697f14f079934f5152eaaa216c09b61e293be285491f8ee
+        image: tensorchord/pgvecto-rs:pg14-v0.2.0
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_USER: postgres
@@ -268,6 +303,9 @@ jobs:
 
       - name: Run existing migrations
         run: npm run typeorm:migrations:run
+
+      - name: Test npm run schema:reset command works
+        run: npm run typeorm:schema:reset
 
       - name: Generate new migrations
         continue-on-error: true

@@ -16,6 +16,7 @@ Name | Type | Description | Notes
 **memoriesEnabled** | **bool** |  | [optional] 
 **name** | **String** |  | [optional] 
 **password** | **String** |  | [optional] 
+**quotaSizeInBytes** | **int** |  | [optional] 
 **shouldChangePassword** | **bool** |  | [optional] 
 **storageLabel** | **String** |  | [optional] 
 

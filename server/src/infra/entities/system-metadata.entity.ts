@@ -11,8 +11,10 @@ export class SystemMetadataEntity {
 
 export enum SystemMetadataKey {
   REVERSE_GEOCODING_STATE = 'reverse-geocoding-state',
+  ADMIN_ONBOARDING = 'admin-onboarding',
 }
 
 export interface SystemMetadata extends Record<SystemMetadataKey, { [key: string]: unknown }> {
   [SystemMetadataKey.REVERSE_GEOCODING_STATE]: { lastUpdate?: string; lastImportFileName?: string };
+  [SystemMetadataKey.ADMIN_ONBOARDING]: { isOnboarded: boolean };
 }

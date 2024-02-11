@@ -222,10 +222,8 @@
   "login_form_server_error": "No se pudo conectar al servidor.",
   "login_password_changed_error": "Hubo un error al actualizar tu contraseña",
   "login_password_changed_success": "Contraseña actualizada exitosamente",
-  "map_assets_in_bounds": {
-    "one": "{} foto",
-    "other": "{} fotos"
-  },
+  "map_assets_in_bound": "{} foto",
+  "map_assets_in_bounds": "{} fotos",
   "map_cannot_get_user_location": "No se puede obtener la ubicación del usuario",
   "map_location_dialog_cancel": "Cancelar",
   "map_location_dialog_yes": "Sí",
@@ -236,14 +234,10 @@
   "map_no_location_permission_title": "Permiso de ubicación denegado",
   "map_settings_dark_mode": "Modo oscuro",
   "map_settings_date_range_option_all": "Todo",
-  "map_settings_date_range_option_days": {
-    "one": "Últimas 24 horas",
-    "other": "Últimos {} días"
-  },
-  "map_settings_date_range_option_years": {
-    "one": "Último año",
-    "other": "Últimos {} años"
-  },
+  "map_settings_date_range_option_day": "Últimas 24 horas",
+  "map_settings_date_range_option_days": "Últimos {} días",
+  "map_settings_date_range_option_year": "Último año",
+  "map_settings_date_range_option_years": "Últimos {} años",
   "map_settings_dialog_cancel": "Cancelar",
   "map_settings_dialog_save": "Guardar",
   "map_settings_dialog_title": "Configuración del mapa",
@@ -372,18 +366,12 @@
   "shared_link_edit_description": "Descripción",
   "shared_link_edit_description_hint": "Introduce la descripción del enlace",
   "shared_link_edit_expire_after": "Expirar después de",
-  "shared_link_edit_expire_after_option_days": {
-    "one": "{} día",
-    "other": "{} días"
-  },
-  "shared_link_edit_expire_after_option_hours": {
-    "one": "{} hora",
-    "other": "{} horas"
-  },
-  "shared_link_edit_expire_after_option_minutes": {
-    "one": "{} minuto",
-    "other": "{} minutos"
-  },
+  "shared_link_edit_expire_after_option_day": "{} día",
+  "shared_link_edit_expire_after_option_days": "{} días",
+  "shared_link_edit_expire_after_option_hour": "{} hora",
+  "shared_link_edit_expire_after_option_hours": "{} horas",
+  "shared_link_edit_expire_after_option_minute": "{} minuto",
+  "shared_link_edit_expire_after_option_minutes": "{} minutos",
   "shared_link_edit_expire_after_option_never": "Nunca",
   "shared_link_edit_password": "Contraseña",
   "shared_link_edit_password_hint": "Introduce la contraseña del enlace",
@@ -392,22 +380,14 @@
   "shared_link_empty": "No tienes ningún enlace compartido",
   "shared_link_error_server_url_fetch": "No se puede obtener la URL del servidor",
   "shared_link_expired": "Expirado",
-  "shared_link_expires_days": {
-    "one": "Expira en {} día",
-    "other": "Expira en {} días"
-  },
-  "shared_link_expires_hours": {
-    "one": "Expira en {} hora",
-    "other": "Expira en {} horas"
-  },
-  "shared_link_expires_minutes": {
-    "one": "Expira en {} minuto",
-    "other": "Expira en {} minutos"
-  },
-  "shared_link_expires_seconds": {
-    "one": "Expira en {} segundo",
-    "other": "Expira en {} segundos"
-  },
+  "shared_link_expires_day": "Expira en {} día",
+  "shared_link_expires_days": "Expira en {} días",
+  "shared_link_expires_hour": "Expira en {} hora",
+  "shared_link_expires_hours": "Expira en {} horas",
+  "shared_link_expires_minute": "Expira en {} minuto",
+  "shared_link_expires_minutes": "Expira en {} minutos",
+  "shared_link_expires_second": "Expira en {} segundo",
+  "shared_link_expires_seconds": "Expira en {} segundos",
   "shared_link_expires_never": "Sin expiración",
   "shared_link_info_chip_download": "Descargar",
   "shared_link_info_chip_metadata": "EXIF",

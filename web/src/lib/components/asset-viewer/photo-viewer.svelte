@@ -2,7 +2,7 @@
   import { fade } from 'svelte/transition';
   import { onDestroy, onMount } from 'svelte';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
-  import { api, AssetResponseDto } from '@api';
+  import { api, type AssetResponseDto } from '@api';
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
   import { useZoomImageWheel } from '@zoom-image/svelte';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
@@ -20,7 +20,7 @@
   let assetData: string;
   let abortController: AbortController;
   let hasZoomed = false;
-  let copyImageToClipboard: (src: string) => Promise<Blob>;
+  let copyImageToClipboard: (source: string) => Promise<Blob>;
   let canCopyImagesToClipboard: () => boolean;
 
   $: if (imgElement) {
@@ -90,8 +90,8 @@
         message: 'Copied image to clipboard.',
         timeout: 3000,
       });
-    } catch (err) {
-      console.error('Error [photo-viewer]:', err);
+    } catch (error) {
+      console.error('Error [photo-viewer]:', error);
       notificationController.show({
         type: NotificationType.Error,
         message: 'Copying image to clipboard failed.',

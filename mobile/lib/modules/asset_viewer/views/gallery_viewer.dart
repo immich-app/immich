@@ -11,6 +11,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/album/providers/current_album.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/asset_stack.provider.dart';
+import 'package:immich_mobile/modules/asset_viewer/providers/current_asset.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/show_controls.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/video_player_controls_provider.dart';
 import 'package:immich_mobile/modules/album/ui/add_to_album_bottom_sheet.dart';
@@ -45,6 +46,7 @@ import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:isar/isar.dart';
 import 'package:openapi/api.dart' show ThumbnailFormat;
 
+@RoutePage()
 // ignore: must_be_immutable
 class GalleryViewerPage extends HookConsumerWidget {
   final Asset Function(int index) loadAsset;
@@ -76,8 +78,7 @@ class GalleryViewerPage extends HookConsumerWidget {
     final isPlayingMotionVideo = useState(false);
     final isPlayingVideo = useState(false);
     Offset? localPosition;
-    final authToken = 'Bearer ${Store.get(StoreKey.accessToken)}';
-    final header = {"Authorization": authToken};
+    final header = {"x-immich-user-token": Store.get(StoreKey.accessToken)};
     final currentIndex = useState(initialIndex);
     final currentAsset = loadAsset(currentIndex.value);
     final isTrashEnabled =
@@ -105,6 +106,19 @@ class GalleryViewerPage extends HookConsumerWidget {
         .contains(asset().ownerId);
 
     bool isParent = stackIndex.value == -1 || stackIndex.value == 0;
+
+    // Listen provider to prevent autoDispose when navigating to other routes from within the gallery page
+    ref.listen(currentAssetProvider, (_, __) {});
+    useEffect(
+      () {
+        // Delay state update to after the execution of build method
+        Future.microtask(
+          () => ref.read(currentAssetProvider.notifier).set(asset()),
+        );
+        return null;
+      },
+      [asset()],
+    );
 
     useEffect(
       () {
@@ -146,7 +160,7 @@ class GalleryViewerPage extends HookConsumerWidget {
 
     Iterable<ImageProvider> allImageProviders(Asset asset) sync* {
       if (ImmichImage.useLocal(asset)) {
-        yield ImmichImage.localThumbnailProvider(asset);
+        yield ImmichImage.localImageProvider(asset);
         yield localOriginalProvider(asset);
       } else {
         yield ImmichImage.remoteThumbnailProvider(asset, webp, header);
@@ -173,8 +187,8 @@ class GalleryViewerPage extends HookConsumerWidget {
 
     void showInfo() {
       showModalBottomSheet(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15.0),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(15.0)),
         ),
         barrierColor: Colors.transparent,
         backgroundColor: Colors.transparent,
@@ -206,6 +220,16 @@ class GalleryViewerPage extends HookConsumerWidget {
     }
 
     void handleDelete(Asset deleteAsset) async {
+      // Cannot delete readOnly / external assets. They are handled through library offline jobs
+      if (asset().isReadOnly) {
+        ImmichToast.show(
+          durationInSecond: 1,
+          context: context,
+          msg: 'asset_action_delete_err_read_only'.tr(),
+          gravity: ToastGravity.BOTTOM,
+        );
+        return;
+      }
       Future<bool> onDelete(bool force) async {
         final isDeleted = await ref.read(assetProvider.notifier).deleteAssets(
           {deleteAsset},
@@ -214,7 +238,7 @@ class GalleryViewerPage extends HookConsumerWidget {
         if (isDeleted && isParent) {
           if (totalAssets == 1) {
             // Handle only one asset
-            context.autoPop();
+            context.popRoute();
           } else {
             // Go to next page otherwise
             controller.nextPage(
@@ -298,20 +322,29 @@ class GalleryViewerPage extends HookConsumerWidget {
 
       final ratio = d.dy / max(d.dx.abs(), 1);
       if (d.dy > sensitivity && ratio > ratioThreshold) {
-        context.autoPop();
+        context.popRoute();
       } else if (d.dy < -sensitivity && ratio < -ratioThreshold) {
         showInfo();
       }
     }
 
     shareAsset() {
-      ref.watch(imageViewerStateProvider.notifier).shareAsset(asset(), context);
+      if (asset().isOffline) {
+        ImmichToast.show(
+          durationInSecond: 1,
+          context: context,
+          msg: 'asset_action_share_err_offline'.tr(),
+          gravity: ToastGravity.BOTTOM,
+        );
+        return;
+      }
+      ref.read(imageViewerStateProvider.notifier).shareAsset(asset(), context);
     }
 
     handleArchive(Asset asset) {
-      ref.watch(assetProvider.notifier).toggleArchive([asset]);
+      ref.read(assetProvider.notifier).toggleArchive([asset]);
       if (isParent) {
-        context.autoPop();
+        context.popRoute();
         return;
       }
       removeAssetFromStack();
@@ -332,16 +365,29 @@ class GalleryViewerPage extends HookConsumerWidget {
       );
     }
 
+    handleDownload() {
+      if (asset().isLocal) {
+        return;
+      }
+      if (asset().isOffline) {
+        ImmichToast.show(
+          durationInSecond: 1,
+          context: context,
+          msg: 'asset_action_share_err_offline'.tr(),
+          gravity: ToastGravity.BOTTOM,
+        );
+        return;
+      }
+
+      ref.read(imageViewerStateProvider.notifier).downloadAsset(
+            asset(),
+            context,
+          );
+    }
+
     handleActivities() {
       if (album != null && album.shared && album.remoteId != null) {
-        context.autoPush(
-          ActivitiesRoute(
-            albumId: album.remoteId!,
-            assetId: asset().remoteId,
-            withAssetThumbs: false,
-            isOwner: isOwner,
-          ),
-        );
+        context.pushRoute(const ActivitiesRoute());
       }
     }
 
@@ -364,12 +410,11 @@ class GalleryViewerPage extends HookConsumerWidget {
                   asset().isLocal ? () => handleUpload(asset()) : null,
               onDownloadPressed: asset().isLocal
                   ? null
-                  : () => ref
-                      .watch(imageViewerStateProvider.notifier)
-                      .downloadAsset(
-                        asset(),
-                        context,
-                      ),
+                  : () =>
+                      ref.read(imageViewerStateProvider.notifier).downloadAsset(
+                            asset(),
+                            context,
+                          ),
               onToggleMotionVideo: (() {
                 isPlayingMotionVideo.value = !isPlayingMotionVideo.value;
               }),
@@ -478,8 +523,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                     imageUrl:
                         '${Store.get(StoreKey.serverEndpoint)}/asset/thumbnail/$assetId',
                     httpHeaders: {
-                      "Authorization":
-                          "Bearer ${Store.get(StoreKey.accessToken)}",
+                      "x-immich-user-token": Store.get(StoreKey.accessToken),
                     },
                     errorWidget: (context, url, error) =>
                         const Icon(Icons.image_not_supported_outlined),
@@ -517,7 +561,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                               stackElements.elementAt(stackIndex.value),
                             );
                         ctx.pop();
-                        context.autoPop();
+                        context.popRoute();
                       },
                       title: const Text(
                         "viewer_stack_use_as_main_asset",
@@ -544,7 +588,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                           childrenToRemove: [currentAsset],
                         );
                         ctx.pop();
-                        context.autoPop();
+                        context.popRoute();
                       } else {
                         await ref.read(assetStackServiceProvider).updateStack(
                           currentAsset,
@@ -572,7 +616,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                             childrenToRemove: stack,
                           );
                       ctx.pop();
-                      context.autoPop();
+                      context.popRoute();
                     },
                     title: const Text(
                       "viewer_unstack",
@@ -587,6 +631,7 @@ class GalleryViewerPage extends HookConsumerWidget {
       );
     }
 
+    // TODO: Migrate to a custom bottom bar and handle long press to delete
     Widget buildBottomBar() {
       // !!!! itemsList and actionlist should always be in sync
       final itemsList = [
@@ -634,13 +679,7 @@ class GalleryViewerPage extends HookConsumerWidget {
         if (isOwner) (_) => handleArchive(asset()),
         if (isOwner && stack.isNotEmpty) (_) => showStackActionItems(),
         if (isOwner) (_) => handleDelete(asset()),
-        if (!isOwner)
-          (_) => asset().isLocal
-              ? null
-              : ref.watch(imageViewerStateProvider.notifier).downloadAsset(
-                    asset(),
-                    context,
-                  ),
+        if (!isOwner) (_) => handleDownload(),
       ];
 
       return IgnorePointer(
@@ -710,15 +749,16 @@ class GalleryViewerPage extends HookConsumerWidget {
       }
     });
 
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: WillPopScope(
-        onWillPop: () async {
-          // Change immersive mode back to normal "edgeToEdge" mode
-          await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-          return true;
-        },
-        child: Stack(
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (_) {
+        // Change immersive mode back to normal "edgeToEdge" mode
+        SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+        context.pop();
+      },
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        body: Stack(
           children: [
             PhotoViewGallery.builder(
               scaleStateChangedCallback: (state) {
@@ -745,7 +785,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                 final a = loadAsset(index);
                 if (ImmichImage.useLocal(a)) {
                   return Image(
-                    image: ImmichImage.localThumbnailProvider(a),
+                    image: ImmichImage.localImageProvider(a),
                     fit: BoxFit.contain,
                   );
                 }

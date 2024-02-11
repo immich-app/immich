@@ -25,12 +25,12 @@
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
-  import { AppRoute } from '$lib/constants';
+  import { AppRoute, QueryParameter, maximumLengthSearchPeople, timeBeforeShowLoadingSpinner } from '$lib/constants';
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { AssetStore } from '$lib/stores/assets.store';
   import { websocketStore } from '$lib/stores/websocket';
   import { handleError } from '$lib/utils/handle-error';
-  import { AssetResponseDto, PersonResponseDto, api } from '@api';
+  import { type AssetResponseDto, type PersonResponseDto, api } from '@api';
   import { onMount } from 'svelte';
   import type { PageData } from './$types';
   import { clickOutside } from '$lib/utils/click-outside';
@@ -90,10 +90,10 @@
   let isSearchingPeople = false;
 
   const searchPeople = async () => {
-    if ((people.length < 20 && name.startsWith(searchWord)) || name === '') {
+    if ((people.length < maximumLengthSearchPeople && name.startsWith(searchWord)) || name === '') {
       return;
     }
-    const timeout = setTimeout(() => (isSearchingPeople = true), 100);
+    const timeout = setTimeout(() => (isSearchingPeople = true), timeBeforeShowLoadingSpinner);
     try {
       const { data } = await api.searchApi.searchPerson({ name });
       people = data;
@@ -108,20 +108,20 @@
     isSearchingPeople = false;
   };
 
-  $: isAllArchive = Array.from($selectedAssets).every((asset) => asset.isArchived);
-  $: isAllFavorite = Array.from($selectedAssets).every((asset) => asset.isFavorite);
+  $: isAllArchive = [...$selectedAssets].every((asset) => asset.isArchived);
+  $: isAllFavorite = [...$selectedAssets].every((asset) => asset.isFavorite);
   $: $onPersonThumbnail === data.person.id &&
     (thumbnailData = api.getPeopleThumbnailUrl(data.person.id) + `?now=${Date.now()}`);
 
   $: {
     if (people) {
-      suggestedPeople = !name ? [] : searchNameLocal(name, people, 5, data.person.id);
+      suggestedPeople = name ? searchNameLocal(name, people, 5, data.person.id) : [];
     }
   }
 
   onMount(() => {
-    const action = $page.url.searchParams.get('action');
-    const getPreviousRoute = $page.url.searchParams.get('previousRoute');
+    const action = $page.url.searchParams.get(QueryParameter.ACTION);
+    const getPreviousRoute = $page.url.searchParams.get(QueryParameter.PREVIOUS_ROUTE);
     if (getPreviousRoute && !isExternalUrl(getPreviousRoute)) {
       previousRoute = getPreviousRoute;
     }
@@ -158,7 +158,7 @@
   });
 
   const handleUnmerge = () => {
-    $assetStore.removeAssets(Array.from($selectedAssets).map((a) => a.id));
+    $assetStore.removeAssets([...$selectedAssets].map((a) => a.id));
     assetInteractionStore.clearMultiselect();
     viewMode = ViewMode.VIEW_ASSETS;
   };
@@ -185,8 +185,13 @@
     }
   };
 
-  const handleMerge = () => {
+  const handleMerge = async (person: PersonResponseDto) => {
+    const { data: statistics } = await api.personApi.getPersonStatistics({ id: person.id });
+    numberOfAssets = statistics.assets;
     handleGoBack();
+
+    data.person = person;
+
     refreshAssetGrid = !refreshAssetGrid;
   };
 
@@ -338,8 +343,8 @@
 
   const handleGoBack = () => {
     viewMode = ViewMode.VIEW_ASSETS;
-    if ($page.url.searchParams.has('action')) {
-      $page.url.searchParams.delete('action');
+    if ($page.url.searchParams.has(QueryParameter.ACTION)) {
+      $page.url.searchParams.delete(QueryParameter.ACTION);
       goto($page.url);
     }
   };
@@ -347,7 +352,7 @@
 
 {#if viewMode === ViewMode.UNASSIGN_ASSETS}
   <UnMergeFaceSelector
-    assetIds={Array.from($selectedAssets).map((a) => a.id)}
+    assetIds={[...$selectedAssets].map((a) => a.id)}
     personAssets={data.person}
     on:close={() => (viewMode = ViewMode.VIEW_ASSETS)}
     on:confirm={handleUnmerge}
@@ -374,7 +379,7 @@
 {/if}
 
 {#if viewMode === ViewMode.MERGE_PEOPLE}
-  <MergeFaceSelector person={data.person} on:back={handleGoBack} on:merge={handleMerge} />
+  <MergeFaceSelector person={data.person} on:back={handleGoBack} on:merge={({ detail }) => handleMerge(detail)} />
 {/if}
 
 <header>
@@ -448,6 +453,7 @@
                 bind:name
                 on:change={(event) => handleNameChange(event.detail)}
                 on:input={searchPeople}
+                {thumbnailData}
               />
             {:else}
               <div class="relative">

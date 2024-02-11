@@ -1,6 +1,6 @@
 <script lang="ts">
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import { SharedLinkResponseDto, api } from '@api';
+  import { type SharedLinkResponseDto, api } from '@api';
   import ConfirmDialogue from '../../shared-components/confirm-dialogue.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
   import { NotificationType, notificationController } from '../../shared-components/notification/notification';
@@ -18,7 +18,7 @@
       const { data: results } = await api.sharedLinkApi.removeSharedLinkAssets({
         id: sharedLink.id,
         assetIdsDto: {
-          assetIds: Array.from(getAssets()).map((asset) => asset.id),
+          assetIds: [...getAssets()].map((asset) => asset.id),
         },
         key: api.getKey(),
       });

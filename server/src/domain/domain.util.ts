@@ -13,6 +13,7 @@ import {
   ValidationOptions,
 } from 'class-validator';
 import { CronJob } from 'cron';
+import _ from 'lodash';
 import { basename, extname } from 'node:path';
 import sanitize from 'sanitize-filename';
 
@@ -45,7 +46,8 @@ export type Options = {
 
 export const isConnectionAborted = (error: Error | any) => error.code === 'ECONNABORTED';
 
-export function ValidateUUID({ optional, each }: Options = { optional: false, each: false }) {
+export function ValidateUUID(options?: Options) {
+  const { optional, each } = { optional: false, each: false, ...options };
   return applyDecorators(
     IsUUID('4', { each }),
     ApiProperty({ format: 'uuid' }),
@@ -57,7 +59,7 @@ export function ValidateUUID({ optional, each }: Options = { optional: false, ea
 export function validateCronExpression(expression: string) {
   try {
     new CronJob(expression, () => {});
-  } catch (error) {
+  } catch {
     return false;
   }
 
@@ -95,7 +97,7 @@ export const toBoolean = ({ value }: IValue) => {
 
 export const toEmail = ({ value }: IValue) => value?.toLowerCase();
 
-export const toSanitized = ({ value }: IValue) => sanitize((value || '').replace(/\./g, ''));
+export const toSanitized = ({ value }: IValue) => sanitize((value || '').replaceAll('.', ''));
 
 export function getFileNameWithoutExtension(path: string): string {
   return basename(path, extname(path));
@@ -172,7 +174,35 @@ export function Optional({ nullable, ...validationOptions }: OptionalOptions = {
     return IsOptional(validationOptions);
   }
 
-  return ValidateIf((obj: any, v: any) => v !== undefined, validationOptions);
+  return ValidateIf((object: any, v: any) => v !== undefined, validationOptions);
+}
+
+/**
+ * Chunks an array or set into smaller collections of the same type and specified size.
+ *
+ * @param collection The collection to chunk.
+ * @param size The size of each chunk.
+ */
+export function chunks<T>(collection: Array<T>, size: number): Array<Array<T>>;
+export function chunks<T>(collection: Set<T>, size: number): Array<Set<T>>;
+export function chunks<T>(collection: Array<T> | Set<T>, size: number): Array<Array<T>> | Array<Set<T>> {
+  if (collection instanceof Set) {
+    const result = [];
+    let chunk = new Set<T>();
+    for (const element of collection) {
+      chunk.add(element);
+      if (chunk.size === size) {
+        result.push(chunk);
+        chunk = new Set<T>();
+      }
+    }
+    if (chunk.size > 0) {
+      result.push(chunk);
+    }
+    return result;
+  } else {
+    return _.chunk(collection, size);
+  }
 }
 
 // NOTE: The following Set utils have been added here, to easily determine where they are used.
@@ -182,8 +212,8 @@ export function Optional({ nullable, ...validationOptions }: OptionalOptions = {
 export const setUnion = <T>(...sets: Set<T>[]): Set<T> => {
   const union = new Set(sets[0]);
   for (const set of sets.slice(1)) {
-    for (const elem of set) {
-      union.add(elem);
+    for (const element of set) {
+      union.add(element);
     }
   }
   return union;
@@ -192,16 +222,16 @@ export const setUnion = <T>(...sets: Set<T>[]): Set<T> => {
 export const setDifference = <T>(setA: Set<T>, ...sets: Set<T>[]): Set<T> => {
   const difference = new Set(setA);
   for (const set of sets) {
-    for (const elem of set) {
-      difference.delete(elem);
+    for (const element of set) {
+      difference.delete(element);
     }
   }
   return difference;
 };
 
 export const setIsSuperset = <T>(set: Set<T>, subset: Set<T>): boolean => {
-  for (const elem of subset) {
-    if (!set.has(elem)) {
+  for (const element of subset) {
+    if (!set.has(element)) {
       return false;
     }
   }

@@ -11,8 +11,8 @@
   import { user } from '$lib/stores/user.store';
 
   export let data: PageData;
-  let { sharedLink, passwordRequired, sharedLinkKey: key } = data;
-  let { title, description } = data.meta;
+  let { sharedLink, passwordRequired, sharedLinkKey: key, meta } = data;
+  let { title, description } = meta;
   let isOwned = $user ? $user.id === sharedLink?.userId : false;
   let password = '';
 
@@ -58,8 +58,10 @@
         Please enter the password to view this page.
       </div>
       <div class="mt-4">
-        <input type="password" class="immich-form-input mr-2" placeholder="Password" bind:value={password} />
-        <Button on:click={handlePasswordSubmit}>Submit</Button>
+        <form novalidate autocomplete="off" on:submit|preventDefault={handlePasswordSubmit}>
+          <input type="password" class="immich-form-input mr-2" placeholder="Password" bind:value={password} />
+          <Button type="submit">Submit</Button>
+        </form>
       </div>
     </div>
   </main>

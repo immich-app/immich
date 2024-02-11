@@ -38,7 +38,7 @@ class ToneMapping {
 
   static ToneMapping? fromJson(dynamic value) => ToneMappingTypeTransformer().decode(value);
 
-  static List<ToneMapping>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<ToneMapping> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <ToneMapping>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {

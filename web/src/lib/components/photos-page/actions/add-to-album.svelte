@@ -7,7 +7,7 @@
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import { addAssetsToAlbum } from '$lib/utils/asset-utils';
-  import { AlbumResponseDto, api } from '@api';
+  import { type AlbumResponseDto, api } from '@api';
   import { getMenuContext } from '../asset-select-context-menu.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
   import { AppRoute } from '$lib/constants';
@@ -26,7 +26,7 @@
   const handleAddToNewAlbum = (albumName: string) => {
     showAlbumPicker = false;
 
-    const assetIds = Array.from(getAssets()).map((asset) => asset.id);
+    const assetIds = [...getAssets()].map((asset) => asset.id);
     api.albumApi.createAlbum({ createAlbumDto: { albumName, assetIds } }).then((response) => {
       const { id, albumName } = response.data;
 
@@ -43,7 +43,7 @@
 
   const handleAddToAlbum = async (album: AlbumResponseDto) => {
     showAlbumPicker = false;
-    const assetIds = Array.from(getAssets()).map((asset) => asset.id);
+    const assetIds = [...getAssets()].map((asset) => asset.id);
     await addAssetsToAlbum(album.id, assetIds);
     clearSelect();
   };

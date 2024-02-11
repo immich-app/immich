@@ -18,12 +18,14 @@ import {
   SwaggerModule,
 } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
-import { writeFileSync } from 'fs';
-import { access, constants } from 'fs/promises';
-import path, { isAbsolute } from 'path';
-import { promisify } from 'util';
+import _ from 'lodash';
+import { writeFileSync } from 'node:fs';
+import { access, constants } from 'node:fs/promises';
+import path, { isAbsolute } from 'node:path';
+import { promisify } from 'node:util';
 
 import { applyDecorators, UsePipes, ValidationPipe } from '@nestjs/common';
+import { SchemaObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
 import { Metadata } from './app.guard';
 
 export function UseValidation() {
@@ -53,13 +55,15 @@ export const sendFile = async (
   try {
     const file = await handler();
     switch (file.cacheControl) {
-      case CacheControl.PRIVATE_WITH_CACHE:
+      case CacheControl.PRIVATE_WITH_CACHE: {
         res.set('Cache-Control', 'private, max-age=86400, no-transform');
         break;
+      }
 
-      case CacheControl.PRIVATE_WITHOUT_CACHE:
+      case CacheControl.PRIVATE_WITHOUT_CACHE: {
         res.set('Cache-Control', 'private, no-cache, no-transform');
         break;
+      }
     }
 
     res.header('Content-Type', file.contentType);
@@ -92,26 +96,39 @@ export const asStreamableFile = ({ stream, type, length }: ImmichReadStream) => 
   return new StreamableFile(stream, { type, length });
 };
 
-function sortKeys<T>(obj: T): T {
-  if (!obj || typeof obj !== 'object' || Array.isArray(obj)) {
-    return obj;
+function sortKeys<T>(target: T): T {
+  if (!target || typeof target !== 'object' || Array.isArray(target)) {
+    return target;
   }
 
   const result: Partial<T> = {};
-  const keys = Object.keys(obj).sort() as Array<keyof T>;
+  const keys = Object.keys(target).sort() as Array<keyof T>;
   for (const key of keys) {
-    result[key] = sortKeys(obj[key]);
+    result[key] = sortKeys(target[key]);
   }
   return result as T;
 }
 
 export const routeToErrorMessage = (methodName: string) =>
-  'Failed to ' + methodName.replace(/[A-Z]+/g, (letter) => ` ${letter.toLowerCase()}`);
+  'Failed to ' + methodName.replaceAll(/[A-Z]+/g, (letter) => ` ${letter.toLowerCase()}`);
 
 const patchOpenAPI = (document: OpenAPIObject) => {
   document.paths = sortKeys(document.paths);
+
   if (document.components?.schemas) {
-    document.components.schemas = sortKeys(document.components.schemas);
+    const schemas = document.components.schemas as Record<string, SchemaObject>;
+
+    document.components.schemas = sortKeys(schemas);
+
+    for (const schema of Object.values(schemas)) {
+      if (schema.properties) {
+        schema.properties = sortKeys(schema.properties);
+      }
+
+      if (schema.required) {
+        schema.required = schema.required.sort();
+      }
+    }
   }
 
   for (const [key, value] of Object.entries(document.paths)) {
@@ -137,7 +154,7 @@ const patchOpenAPI = (document: OpenAPIObject) => {
         continue;
       }
 
-      if ((operation.security || []).find((item) => !!item[Metadata.PUBLIC_SECURITY])) {
+      if ((operation.security || []).some((item) => !!item[Metadata.PUBLIC_SECURITY])) {
         delete operation.security;
       }
 
@@ -152,13 +169,17 @@ const patchOpenAPI = (document: OpenAPIObject) => {
       if (operation.description === '') {
         delete operation.description;
       }
+
+      if (operation.parameters) {
+        operation.parameters = _.orderBy(operation.parameters, 'name');
+      }
     }
   }
 
   return document;
 };
 
-export const useSwagger = (app: INestApplication, isDev: boolean) => {
+export const useSwagger = (app: INestApplication, isDevelopment: boolean) => {
   const config = new DocumentBuilder()
     .setTitle('Immich')
     .setDescription('Immich API')
@@ -184,7 +205,7 @@ export const useSwagger = (app: INestApplication, isDev: boolean) => {
     operationIdFactory: (controllerKey: string, methodKey: string) => methodKey,
   };
 
-  const doc = SwaggerModule.createDocument(app, config, options);
+  const specification = SwaggerModule.createDocument(app, config, options);
 
   const customOptions: SwaggerCustomOptions = {
     swaggerOptions: {
@@ -193,11 +214,11 @@ export const useSwagger = (app: INestApplication, isDev: boolean) => {
     customSiteTitle: 'Immich API Documentation',
   };
 
-  SwaggerModule.setup('doc', app, doc, customOptions);
+  SwaggerModule.setup('doc', app, specification, customOptions);
 
-  if (isDev) {
+  if (isDevelopment) {
     // Generate API Documentation only in development mode
-    const outputPath = path.resolve(process.cwd(), 'immich-openapi-specs.json');
-    writeFileSync(outputPath, JSON.stringify(patchOpenAPI(doc), null, 2), { encoding: 'utf8' });
+    const outputPath = path.resolve(process.cwd(), '../open-api/immich-openapi-specs.json');
+    writeFileSync(outputPath, JSON.stringify(patchOpenAPI(specification), null, 2), { encoding: 'utf8' });
   }
 };

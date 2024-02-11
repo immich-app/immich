@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:auto_route/auto_route.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -22,8 +23,9 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
+@RoutePage()
 class BackupOptionsPage extends HookConsumerWidget {
-  const BackupOptionsPage({Key? key}) : super(key: key);
+  const BackupOptionsPage({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     BackUpState backupState = ref.watch(backupProvider);
@@ -262,7 +264,7 @@ class BackupOptionsPage extends HookConsumerWidget {
                       "backup_controller_page_background_description",
                     ).tr(),
                   ),
-                if (isBackgroundEnabled && Platform.isAndroid)
+                if (isBackgroundEnabled)
                   SwitchListTile.adaptive(
                     title: const Text("backup_controller_page_background_wifi")
                         .tr(),
@@ -487,9 +489,7 @@ class BackupOptionsPage extends HookConsumerWidget {
           "Backup options",
         ),
         leading: IconButton(
-          onPressed: () {
-            context.autoPop(true);
-          },
+          onPressed: () => context.popRoute(true),
           splashRadius: 24,
           icon: const Icon(
             Icons.arrow_back_ios_rounded,

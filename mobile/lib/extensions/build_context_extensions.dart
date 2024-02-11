@@ -1,15 +1,14 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 
 extension ContextHelper on BuildContext {
-  // Returns the current size from MediaQuery
-  Size get size => MediaQuery.sizeOf(this);
+  // Returns the current padding from MediaQuery
+  EdgeInsets get padding => MediaQuery.paddingOf(this);
 
   // Returns the current width from MediaQuery
-  double get width => size.width;
+  double get width => MediaQuery.sizeOf(this).width;
 
   // Returns the current height from MediaQuery
-  double get height => size.height;
+  double get height => MediaQuery.sizeOf(this).height;
 
   // Returns true if the app is running on a mobile device (!tablets)
   bool get isMobile => width < 550;
@@ -34,21 +33,4 @@ extension ContextHelper on BuildContext {
 
   // Pop-out from the current context with optional result
   void pop<T>([T? result]) => Navigator.of(this).pop(result);
-
-  // Auto-Push new route from the current context
-  Future<T?> autoPush<T extends Object?>(PageRouteInfo<dynamic> route) =>
-      AutoRouter.of(this).push(route);
-
-  // Auto-Push navigate route from the current context
-  Future<dynamic> autoNavigate<T extends Object?>(
-    PageRouteInfo<dynamic> route,
-  ) =>
-      AutoRouter.of(this).navigate(route);
-
-  // Auto-Push replace route from the current context
-  Future<T?> autoReplace<T extends Object?>(PageRouteInfo<dynamic> route) =>
-      AutoRouter.of(this).replace(route);
-
-  // Auto-Pop from the current context
-  Future<bool> autoPop<T>([T? result]) => AutoRouter.of(this).pop(result);
 }

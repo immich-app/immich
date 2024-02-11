@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:immich_mobile/shared/models/user.dart';
 import 'package:isar/isar.dart';
+import 'package:logging/logging.dart';
 
 part 'store.g.dart';
 
@@ -8,6 +9,7 @@ part 'store.g.dart';
 /// Supports String, int and JSON-serializable Objects
 /// Can be used concurrently from multiple isolates
 class Store {
+  static final Logger _log = Logger("Store");
   static late final Isar _db;
   static final List<dynamic> _cache =
       List.filled(StoreKey.values.map((e) => e.id).max + 1, null);
@@ -72,8 +74,12 @@ class Store {
   static void _onChangeListener(List<StoreValue>? data) {
     if (data != null) {
       for (StoreValue value in data) {
-        _cache[value.id] =
-            value._extract(StoreKey.values.firstWhere((e) => e.id == value.id));
+        final key = StoreKey.values.firstWhereOrNull((e) => e.id == value.id);
+        if (key != null) {
+          _cache[value.id] = value._extract(key);
+        } else {
+          _log.warning("No key available for value id - ${value.id}");
+        }
       }
     }
   }
@@ -89,15 +95,15 @@ class StoreValue {
 
   T? _extract<T>(StoreKey<T> key) {
     switch (key.type) {
-      case int:
+      case const (int):
         return intValue as T?;
-      case bool:
+      case const (bool):
         return intValue == null ? null : (intValue! == 1) as T;
-      case DateTime:
+      case const (DateTime):
         return intValue == null
             ? null
             : DateTime.fromMicrosecondsSinceEpoch(intValue!) as T;
-      case String:
+      case const (String):
         return strValue as T?;
       default:
         if (key.fromDb != null) {
@@ -111,16 +117,16 @@ class StoreValue {
     int? i;
     String? s;
     switch (key.type) {
-      case int:
+      case const (int):
         i = value as int?;
         break;
-      case bool:
+      case const (bool):
         i = value == null ? null : (value == true ? 1 : 0);
         break;
-      case DateTime:
+      case const (DateTime):
         i = value == null ? null : (value as DateTime).microsecondsSinceEpoch;
         break;
-      case String:
+      case const (String):
         s = value as String?;
         break;
       default:
@@ -177,13 +183,13 @@ enum StoreKey<T> {
   logLevel<int>(115, type: int),
   preferRemoteImage<bool>(116, type: bool),
   // map related settings
-  mapThemeMode<bool>(117, type: bool),
   mapShowFavoriteOnly<bool>(118, type: bool),
   mapRelativeDate<int>(119, type: int),
   selfSignedCert<bool>(120, type: bool),
   mapIncludeArchived<bool>(121, type: bool),
   ignoreIcloudAssets<bool>(122, type: bool),
   selectedAlbumSortReverse<bool>(123, type: bool),
+  mapThemeMode<int>(124, type: int),
   ;
 
   const StoreKey(

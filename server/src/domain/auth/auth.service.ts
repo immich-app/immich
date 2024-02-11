@@ -8,8 +8,8 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import cookieParser from 'cookie';
-import { IncomingHttpHeaders } from 'http';
 import { DateTime } from 'luxon';
+import { IncomingHttpHeaders } from 'node:http';
 import { ClientMetadata, Issuer, UserinfoResponse, custom, generators } from 'openid-client';
 import { AccessCore, Permission } from '../access';
 import {
@@ -42,7 +42,6 @@ import {
   OAuthAuthorizeResponseDto,
   OAuthCallbackDto,
   OAuthConfigDto,
-  OAuthConfigResponseDto,
   SignUpDto,
   mapLoginResponse,
   mapUserToken,
@@ -85,7 +84,7 @@ export class AuthService {
     this.configCore = SystemConfigCore.create(configRepository);
     this.userCore = UserCore.create(cryptoRepository, libraryRepository, userRepository);
 
-    custom.setHttpOptionsDefaults({ timeout: 30000 });
+    custom.setHttpOptionsDefaults({ timeout: 30_000 });
   }
 
   async login(dto: LoginCredentialDto, details: LoginDetails): Promise<LoginResponse> {
@@ -201,27 +200,6 @@ export class AuthService {
     return `${MOBILE_REDIRECT}?${url.split('?')[1] || ''}`;
   }
 
-  async generateConfig(dto: OAuthConfigDto): Promise<OAuthConfigResponseDto> {
-    const config = await this.configCore.getConfig();
-    const response = {
-      enabled: config.oauth.enabled,
-      passwordLoginEnabled: config.passwordLogin.enabled,
-    };
-
-    if (!response.enabled) {
-      return response;
-    }
-
-    const { scope, buttonText, autoLaunch } = config.oauth;
-    const url = (await this.getOAuthClient(config)).authorizationUrl({
-      redirect_uri: this.normalize(config, dto.redirectUri),
-      scope,
-      state: generators.state(),
-    });
-
-    return { ...response, buttonText, url, autoLaunch };
-  }
-
   async authorize(dto: OAuthConfigDto): Promise<OAuthAuthorizeResponseDto> {
     const config = await this.configCore.getConfig();
     if (!config.oauth.enabled) {
@@ -317,12 +295,25 @@ export class AuthService {
     const redirectUri = this.normalize(config, url.split('?')[0]);
     const client = await this.getOAuthClient(config);
     const params = client.callbackParams(url);
-    const tokens = await client.callback(redirectUri, params, { state: params.state });
-    return client.userinfo<OAuthProfile>(tokens.access_token || '');
+    try {
+      const tokens = await client.callback(redirectUri, params, { state: params.state });
+      return client.userinfo<OAuthProfile>(tokens.access_token || '');
+    } catch (error: Error | any) {
+      if (error.message.includes('unexpected JWT alg received')) {
+        this.logger.warn(
+          [
+            'Algorithm mismatch. Make sure the signing algorithm is set correctly in the OAuth settings.',
+            'Or, that you have specified a signing key in your OAuth provider.',
+          ].join(' '),
+        );
+      }
+
+      throw error;
+    }
   }
 
   private async getOAuthClient(config: SystemConfig) {
-    const { enabled, clientId, clientSecret, issuerUrl } = config.oauth;
+    const { enabled, clientId, clientSecret, issuerUrl, signingAlgorithm } = config.oauth;
 
     if (!enabled) {
       throw new BadRequestException('OAuth2 is not enabled');
@@ -336,10 +327,7 @@ export class AuthService {
 
     try {
       const issuer = await Issuer.discover(issuerUrl);
-      const algorithms = (issuer.id_token_signing_alg_values_supported || []) as string[];
-      if (algorithms[0] === 'HS256') {
-        metadata.id_token_signed_response_alg = algorithms[0];
-      }
+      metadata.id_token_signed_response_alg = signingAlgorithm;
 
       return new issuer.Client(metadata);
     } catch (error: any | AggregateError) {
@@ -376,12 +364,10 @@ export class AuthService {
 
     const bytes = Buffer.from(key, key.length === 100 ? 'hex' : 'base64url');
     const sharedLink = await this.sharedLinkRepository.getByKey(bytes);
-    if (sharedLink) {
-      if (!sharedLink.expiresAt || new Date(sharedLink.expiresAt) > new Date()) {
-        const user = sharedLink.user;
-        if (user) {
-          return { user, sharedLink };
-        }
+    if (sharedLink && (!sharedLink.expiresAt || new Date(sharedLink.expiresAt) > new Date())) {
+      const user = sharedLink.user;
+      if (user) {
+        return { user, sharedLink };
       }
     }
     throw new UnauthorizedException('Invalid share key');
@@ -423,7 +409,7 @@ export class AuthService {
   }
 
   private async createLoginResponse(user: UserEntity, authType: AuthType, loginDetails: LoginDetails) {
-    const key = this.cryptoRepository.randomBytes(32).toString('base64').replace(/\W/g, '');
+    const key = this.cryptoRepository.randomBytes(32).toString('base64').replaceAll(/\W/g, '');
     const token = this.cryptoRepository.hashSha256(key);
 
     await this.userTokenRepository.create({

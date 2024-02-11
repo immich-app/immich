@@ -32,7 +32,12 @@ class Asset {
         isFavorite = remote.isFavorite,
         isArchived = remote.isArchived,
         isTrashed = remote.isTrashed,
-        stackParentId = remote.stackParentId,
+        isReadOnly = remote.isReadOnly,
+        isOffline = remote.isOffline,
+        // workaround to nullify stackParentId for the parent asset until we refactor the mobile app
+        // stack handling to properly handle it
+        stackParentId =
+            remote.stackParentId == remote.id ? null : remote.stackParentId,
         stackCount = remote.stackCount;
 
   Asset.local(AssetEntity local, List<int> hash)
@@ -49,6 +54,8 @@ class Asset {
         isFavorite = local.isFavorite,
         isArchived = false,
         isTrashed = false,
+        isReadOnly = false,
+        isOffline = false,
         stackCount = 0,
         fileCreatedAt = local.createDateTime {
     if (fileCreatedAt.year == 1970) {
@@ -77,11 +84,13 @@ class Asset {
     required this.fileName,
     this.livePhotoVideoId,
     this.exifInfo,
-    required this.isFavorite,
-    required this.isArchived,
-    required this.isTrashed,
+    this.isFavorite = false,
+    this.isArchived = false,
+    this.isTrashed = false,
     this.stackParentId,
-    required this.stackCount,
+    this.stackCount = 0,
+    this.isReadOnly = false,
+    this.isOffline = false,
   });
 
   @ignore
@@ -147,6 +156,10 @@ class Asset {
   bool isArchived;
 
   bool isTrashed;
+
+  bool isReadOnly;
+
+  bool isOffline;
 
   @ignore
   ExifInfo? exifInfo;
@@ -256,6 +269,8 @@ class Asset {
         isFavorite != a.isFavorite ||
         isArchived != a.isArchived ||
         isTrashed != a.isTrashed ||
+        isReadOnly != a.isReadOnly ||
+        isOffline != a.isOffline ||
         a.exifInfo?.latitude != exifInfo?.latitude ||
         a.exifInfo?.longitude != exifInfo?.longitude ||
         // no local stack count or different count from remote
@@ -278,7 +293,6 @@ class Asset {
           width: a.width ?? width,
           height: a.height ?? height,
           exifInfo: a.exifInfo?.copyWith(id: id) ?? exifInfo,
-          stackCount: a.stackCount ?? stackCount,
         );
       } else if (isRemote) {
         return _copyWith(
@@ -288,15 +302,20 @@ class Asset {
           exifInfo: exifInfo ?? a.exifInfo?.copyWith(id: id),
         );
       } else {
+        // TODO: Revisit this and remove all bool field assignments
         return a._copyWith(
           id: id,
           remoteId: remoteId,
           livePhotoVideoId: livePhotoVideoId,
-          stackParentId: stackParentId,
+          // workaround to nullify stackParentId for the parent asset until we refactor the mobile app
+          // stack handling to properly handle it
+          stackParentId: stackParentId == remoteId ? null : stackParentId,
           stackCount: stackCount,
           isFavorite: isFavorite,
           isArchived: isArchived,
           isTrashed: isTrashed,
+          isReadOnly: isReadOnly,
+          isOffline: isOffline,
         );
       }
     } else {
@@ -308,12 +327,16 @@ class Asset {
           width: a.width,
           height: a.height,
           livePhotoVideoId: a.livePhotoVideoId,
-          stackParentId: a.stackParentId,
-          stackCount: a.stackCount ?? stackCount,
+          // workaround to nullify stackParentId for the parent asset until we refactor the mobile app
+          // stack handling to properly handle it
+          stackParentId: a.stackParentId == a.remoteId ? null : a.stackParentId,
+          stackCount: a.stackCount,
           // isFavorite + isArchived are not set by device-only assets
           isFavorite: a.isFavorite,
           isArchived: a.isArchived,
           isTrashed: a.isTrashed,
+          isReadOnly: a.isReadOnly,
+          isOffline: a.isOffline,
           exifInfo: a.exifInfo?.copyWith(id: id) ?? exifInfo,
         );
       } else {
@@ -346,6 +369,8 @@ class Asset {
     bool? isFavorite,
     bool? isArchived,
     bool? isTrashed,
+    bool? isReadOnly,
+    bool? isOffline,
     ExifInfo? exifInfo,
     String? stackParentId,
     int? stackCount,
@@ -368,6 +393,8 @@ class Asset {
         isFavorite: isFavorite ?? this.isFavorite,
         isArchived: isArchived ?? this.isArchived,
         isTrashed: isTrashed ?? this.isTrashed,
+        isReadOnly: isReadOnly ?? this.isReadOnly,
+        isOffline: isOffline ?? this.isOffline,
         exifInfo: exifInfo ?? this.exifInfo,
         stackParentId: stackParentId ?? this.stackParentId,
         stackCount: stackCount ?? this.stackCount,
@@ -426,7 +453,9 @@ class Asset {
   "width": ${width ?? "N/A"},
   "height": ${height ?? "N/A"},
   "isArchived": $isArchived,
-  "isTrashed": $isTrashed
+  "isTrashed": $isTrashed,
+  "isReadOnly": $isReadOnly,
+  "isOffline": $isOffline,
 }""";
   }
 }
@@ -472,6 +501,8 @@ extension AssetsHelper on IsarCollection<Asset> {
       ids.isEmpty ? Future.value([]) : remote(ids).findAll();
   Future<List<Asset>> getAllByLocalId(Iterable<String> ids) =>
       ids.isEmpty ? Future.value([]) : local(ids).findAll();
+  Future<Asset?> getByRemoteId(String id) =>
+      where().remoteIdEqualTo(id).findFirst();
 
   QueryBuilder<Asset, Asset, QAfterWhereClause> remote(Iterable<String> ids) =>
       where().anyOf(ids, (q, String e) => q.remoteIdEqualTo(e));

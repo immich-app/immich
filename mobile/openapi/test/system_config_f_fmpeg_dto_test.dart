@@ -21,6 +21,16 @@ void main() {
       // TODO
     });
 
+    // List<AudioCodec> acceptedAudioCodecs (default value: const [])
+    test('to test the property `acceptedAudioCodecs`', () async {
+      // TODO
+    });
+
+    // List<VideoCodec> acceptedVideoCodecs (default value: const [])
+    test('to test the property `acceptedVideoCodecs`', () async {
+      // TODO
+    });
+
     // int bframes
     test('to test the property `bframes`', () async {
       // TODO
@@ -48,6 +58,11 @@ void main() {
 
     // int npl
     test('to test the property `npl`', () async {
+      // TODO
+    });
+
+    // String preferredHwDevice
+    test('to test the property `preferredHwDevice`', () async {
       // TODO
     });
 

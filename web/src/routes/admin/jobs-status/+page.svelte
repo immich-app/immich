@@ -3,7 +3,7 @@
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import { AppRoute } from '$lib/constants';
-  import { AllJobStatusResponseDto, api } from '@api';
+  import { type AllJobStatusResponseDto, api } from '@api';
   import { onDestroy, onMount } from 'svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import type { PageData } from './$types';
@@ -22,7 +22,7 @@
 
   onMount(async () => {
     await load();
-    timer = setInterval(load, 5_000);
+    timer = setInterval(load, 5000);
   });
 
   onDestroy(() => {
@@ -32,7 +32,7 @@
 
 <UserPageLayout title={data.meta.title} admin>
   <div class="flex justify-end" slot="buttons">
-    <a href="{AppRoute.ADMIN_SETTINGS}?open=job-settings">
+    <a href="{AppRoute.ADMIN_SETTINGS}?open=job">
       <LinkButton>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiCog} size="18" />

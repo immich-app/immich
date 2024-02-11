@@ -1,5 +1,4 @@
 import type { AssetResponseDto } from '@api';
-import { describe, expect, it } from '@jest/globals';
 import { getAssetFilename, getFilenameExtension } from './asset-utils';
 
 describe('get file extension from filename', () => {
@@ -30,7 +29,7 @@ describe('get file extension from filename', () => {
 
 describe('get asset filename', () => {
   it('returns the filename including file extension', () => {
-    [
+    for (const { asset, result } of [
       {
         asset: {
           originalFileName: 'filename',
@@ -52,8 +51,8 @@ describe('get asset filename', () => {
         },
         result: 'new-filename.txt.jpg',
       },
-    ].forEach(({ asset, result }) => {
+    ]) {
       expect(getAssetFilename(asset as AssetResponseDto)).toEqual(result);
-    });
+    }
   });
 });

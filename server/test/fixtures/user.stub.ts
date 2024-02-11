@@ -17,6 +17,12 @@ export const userDto = {
     password: 'Password123',
     name: 'User 3',
   },
+  userWithQuota: {
+    email: 'quota-user@immich.app',
+    password: 'Password123',
+    name: 'User with quota',
+    quotaSizeInBytes: 42,
+  },
 };
 
 export const userStub = {
@@ -36,6 +42,8 @@ export const userStub = {
     assets: [],
     memoriesEnabled: true,
     avatarColor: UserAvatarColor.PRIMARY,
+    quotaSizeInBytes: null,
+    quotaUsageInBytes: 0,
   }),
   user1: Object.freeze<UserEntity>({
     ...authStub.user1.user,
@@ -53,6 +61,8 @@ export const userStub = {
     assets: [],
     memoriesEnabled: true,
     avatarColor: UserAvatarColor.PRIMARY,
+    quotaSizeInBytes: null,
+    quotaUsageInBytes: 0,
   }),
   user2: Object.freeze<UserEntity>({
     ...authStub.user2.user,
@@ -70,6 +80,8 @@ export const userStub = {
     assets: [],
     memoriesEnabled: true,
     avatarColor: UserAvatarColor.PRIMARY,
+    quotaSizeInBytes: null,
+    quotaUsageInBytes: 0,
   }),
   storageLabel: Object.freeze<UserEntity>({
     ...authStub.user1.user,
@@ -87,6 +99,8 @@ export const userStub = {
     assets: [],
     memoriesEnabled: true,
     avatarColor: UserAvatarColor.PRIMARY,
+    quotaSizeInBytes: null,
+    quotaUsageInBytes: 0,
   }),
   externalPath1: Object.freeze<UserEntity>({
     ...authStub.user1.user,
@@ -104,6 +118,8 @@ export const userStub = {
     assets: [],
     memoriesEnabled: true,
     avatarColor: UserAvatarColor.PRIMARY,
+    quotaSizeInBytes: null,
+    quotaUsageInBytes: 0,
   }),
   externalPath2: Object.freeze<UserEntity>({
     ...authStub.user1.user,
@@ -121,6 +137,8 @@ export const userStub = {
     assets: [],
     memoriesEnabled: true,
     avatarColor: UserAvatarColor.PRIMARY,
+    quotaSizeInBytes: null,
+    quotaUsageInBytes: 0,
   }),
   profilePath: Object.freeze<UserEntity>({
     ...authStub.user1.user,
@@ -138,5 +156,7 @@ export const userStub = {
     assets: [],
     memoriesEnabled: true,
     avatarColor: UserAvatarColor.PRIMARY,
+    quotaSizeInBytes: null,
+    quotaUsageInBytes: 0,
   }),
 };

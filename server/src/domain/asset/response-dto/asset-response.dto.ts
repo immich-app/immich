@@ -26,7 +26,6 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   libraryId!: string;
   originalPath!: string;
   originalFileName!: string;
-  resized!: boolean;
   fileCreatedAt!: Date;
   fileModifiedAt!: Date;
   updatedAt!: Date;
@@ -56,7 +55,7 @@ export type AssetMapOptions = {
 const peopleWithFaces = (faces: AssetFaceEntity[]): PersonWithFacesResponseDto[] => {
   const result: PersonWithFacesResponseDto[] = [];
   if (faces) {
-    faces.forEach((face) => {
+    for (const face of faces) {
       if (face.person) {
         const existingPersonEntry = result.find((item) => item.id === face.person!.id);
         if (existingPersonEntry) {
@@ -65,7 +64,7 @@ const peopleWithFaces = (faces: AssetFaceEntity[]): PersonWithFacesResponseDto[]
           result.push({ ...mapPerson(face.person!), faces: [mapFacesWithoutPerson(face)] });
         }
       }
-    });
+    }
   }
 
   return result;
@@ -116,9 +115,13 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
     tags: entity.tags?.map(mapTag),
     people: peopleWithFaces(entity.faces),
     checksum: entity.checksum.toString('base64'),
-    stackParentId: entity.stackParentId,
-    stack: withStack ? entity.stack?.map((a) => mapAsset(a, { stripMetadata })) ?? undefined : undefined,
-    stackCount: entity.stack?.length ?? null,
+    stackParentId: withStack ? entity.stack?.primaryAssetId : undefined,
+    stack: withStack
+      ? entity.stack?.assets
+          .filter((a) => a.id !== entity.stack?.primaryAssetId)
+          .map((a) => mapAsset(a, { stripMetadata }))
+      : undefined,
+    stackCount: entity.stack?.assets?.length ?? null,
     isExternal: entity.isExternal,
     isOffline: entity.isOffline,
     isReadOnly: entity.isReadOnly,

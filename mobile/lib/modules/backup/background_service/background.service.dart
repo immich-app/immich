@@ -132,6 +132,7 @@ class BackgroundService {
     }
   }
 
+  // Yet to be implemented
   Future<Uint8List?> digestFile(String path) {
     return _foregroundChannel.invokeMethod<Uint8List>("digestFile", [path]);
   }

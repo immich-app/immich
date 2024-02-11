@@ -21,6 +21,8 @@ class User {
     this.avatarColor = AvatarColorEnum.primary,
     this.memoryEnabled = true,
     this.inTimeline = false,
+    this.quotaUsageInBytes = 0,
+    this.quotaSizeInBytes = 0,
   });
 
   Id get isarId => fastHash(id);
@@ -36,7 +38,9 @@ class User {
         isAdmin = dto.isAdmin,
         memoryEnabled = dto.memoriesEnabled ?? false,
         avatarColor = dto.avatarColor.toAvatarColor(),
-        inTimeline = false;
+        inTimeline = false,
+        quotaUsageInBytes = dto.quotaUsageInBytes ?? 0,
+        quotaSizeInBytes = dto.quotaSizeInBytes ?? 0;
 
   User.fromPartnerDto(PartnerResponseDto dto)
       : id = dto.id,
@@ -49,7 +53,26 @@ class User {
         isAdmin = dto.isAdmin,
         memoryEnabled = dto.memoriesEnabled ?? false,
         avatarColor = dto.avatarColor.toAvatarColor(),
-        inTimeline = dto.inTimeline ?? false;
+        inTimeline = dto.inTimeline ?? false,
+        quotaUsageInBytes = dto.quotaUsageInBytes ?? 0,
+        quotaSizeInBytes = dto.quotaSizeInBytes ?? 0;
+
+  /// Base user dto used where the complete user object is not required
+  User.fromSimpleUserDto(UserDto dto)
+      : id = dto.id,
+        email = dto.email,
+        name = dto.name,
+        profileImagePath = dto.profileImagePath,
+        avatarColor = dto.avatarColor.toAvatarColor(),
+        // Fill the remaining fields with placeholders
+        isAdmin = false,
+        inTimeline = false,
+        memoryEnabled = false,
+        isPartnerSharedBy = false,
+        isPartnerSharedWith = false,
+        updatedAt = DateTime.now(),
+        quotaUsageInBytes = 0,
+        quotaSizeInBytes = 0;
 
   @Index(unique: true, replace: false, type: IndexType.hash)
   String id;
@@ -64,7 +87,10 @@ class User {
   AvatarColorEnum avatarColor;
   bool memoryEnabled;
   bool inTimeline;
+  int quotaUsageInBytes;
+  int quotaSizeInBytes;
 
+  bool get hasQuota => quotaSizeInBytes > 0;
   @Backlink(to: 'owner')
   final IsarLinks<Album> albums = IsarLinks<Album>();
   @Backlink(to: 'sharedUsers')
@@ -83,7 +109,9 @@ class User {
         profileImagePath == other.profileImagePath &&
         isAdmin == other.isAdmin &&
         memoryEnabled == other.memoryEnabled &&
-        inTimeline == other.inTimeline;
+        inTimeline == other.inTimeline &&
+        quotaUsageInBytes == other.quotaUsageInBytes &&
+        quotaSizeInBytes == other.quotaSizeInBytes;
   }
 
   @override
@@ -99,7 +127,9 @@ class User {
       avatarColor.hashCode ^
       isAdmin.hashCode ^
       memoryEnabled.hashCode ^
-      inTimeline.hashCode;
+      inTimeline.hashCode ^
+      quotaUsageInBytes.hashCode ^
+      quotaSizeInBytes.hashCode;
 }
 
 enum AvatarColorEnum {

@@ -14,6 +14,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart';
 import 'package:intl/intl.dart';
@@ -34,6 +35,7 @@ part 'api/album_api.dart';
 part 'api/asset_api.dart';
 part 'api/audit_api.dart';
 part 'api/authentication_api.dart';
+part 'api/download_api.dart';
 part 'api/face_api.dart';
 part 'api/job_api.dart';
 part 'api/library_api.dart';
@@ -45,6 +47,7 @@ part 'api/server_info_api.dart';
 part 'api/shared_link_api.dart';
 part 'api/system_config_api.dart';
 part 'api/tag_api.dart';
+part 'api/trash_api.dart';
 part 'api/user_api.dart';
 
 part 'model/api_key_create_dto.dart';
@@ -128,7 +131,6 @@ part 'model/model_type.dart';
 part 'model/o_auth_authorize_response_dto.dart';
 part 'model/o_auth_callback_dto.dart';
 part 'model/o_auth_config_dto.dart';
-part 'model/o_auth_config_response_dto.dart';
 part 'model/partner_response_dto.dart';
 part 'model/path_entity_type.dart';
 part 'model/path_type.dart';
@@ -170,6 +172,7 @@ part 'model/system_config_f_fmpeg_dto.dart';
 part 'model/system_config_job_dto.dart';
 part 'model/system_config_library_dto.dart';
 part 'model/system_config_library_scan_dto.dart';
+part 'model/system_config_library_watch_dto.dart';
 part 'model/system_config_logging_dto.dart';
 part 'model/system_config_machine_learning_dto.dart';
 part 'model/system_config_map_dto.dart';
@@ -177,6 +180,7 @@ part 'model/system_config_new_version_check_dto.dart';
 part 'model/system_config_o_auth_dto.dart';
 part 'model/system_config_password_login_dto.dart';
 part 'model/system_config_reverse_geocoding_dto.dart';
+part 'model/system_config_server_dto.dart';
 part 'model/system_config_storage_template_dto.dart';
 part 'model/system_config_template_storage_option_dto.dart';
 part 'model/system_config_theme_dto.dart';
@@ -205,11 +209,16 @@ part 'model/validate_access_token_response_dto.dart';
 part 'model/video_codec.dart';
 
 
+/// An [ApiClient] instance that uses the default values obtained from
+/// the OpenAPI specification file.
+var defaultApiClient = ApiClient();
+
 const _delimiters = {'csv': ',', 'ssv': ' ', 'tsv': '\t', 'pipes': '|'};
 const _dateEpochMarker = 'epoch';
+const _deepEquality = DeepCollectionEquality();
 final _dateFormatter = DateFormat('yyyy-MM-dd');
 final _regList = RegExp(r'^List<(.*)>$');
 final _regSet = RegExp(r'^Set<(.*)>$');
 final _regMap = RegExp(r'^Map<String,(.*)>$');
 
-ApiClient defaultApiClient = ApiClient();
+bool _isEpochMarker(String? pattern) => pattern == _dateEpochMarker || pattern == '/$_dateEpochMarker/';

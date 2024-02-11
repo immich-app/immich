@@ -16,7 +16,11 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
-@WebSocketGateway({ cors: true, path: '/api/socket.io' })
+@WebSocketGateway({
+  cors: true,
+  path: '/api/socket.io',
+  transports: ['websocket'],
+})
 export class CommunicationRepository
   implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, ICommunicationRepository
 {
@@ -47,13 +51,15 @@ export class CommunicationRepository
 
   on(event: 'connect' | ServerEvent, callback: OnConnectCallback | OnServerEventCallback) {
     switch (event) {
-      case 'connect':
+      case 'connect': {
         this.onConnectCallbacks.push(callback);
         break;
+      }
 
-      default:
+      default: {
         this.onServerEventCallbacks[event].push(callback as OnServerEventCallback);
         break;
+      }
     }
   }
 

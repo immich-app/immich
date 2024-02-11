@@ -1,11 +1,11 @@
 import { DomainModule } from '@app/domain';
 import { InfraModule } from '@app/infra';
-import { AssetEntity } from '@app/infra/entities';
+import { AssetEntity, ExifEntity } from '@app/infra/entities';
 import { Module, OnModuleInit } from '@nestjs/common';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AssetRepository, IAssetRepository } from './api-v1/asset/asset-repository';
+import { AssetRepositoryV1, IAssetRepositoryV1 } from './api-v1/asset/asset-repository';
 import { AssetController as AssetControllerV1 } from './api-v1/asset/asset.controller';
 import { AssetService } from './api-v1/asset/asset.service';
 import { AppGuard } from './app.guard';
@@ -19,6 +19,7 @@ import {
   AssetsController,
   AuditController,
   AuthController,
+  DownloadController,
   FaceController,
   JobController,
   LibraryController,
@@ -30,6 +31,7 @@ import {
   SharedLinkController,
   SystemConfigController,
   TagController,
+  TrashController,
   UserController,
 } from './controllers';
 import { ErrorInterceptor, FileUploadInterceptor } from './interceptors';
@@ -37,20 +39,22 @@ import { ErrorInterceptor, FileUploadInterceptor } from './interceptors';
 @Module({
   imports: [
     //
-    DomainModule.register({ imports: [InfraModule] }),
+    InfraModule,
+    DomainModule,
     ScheduleModule.forRoot(),
-    TypeOrmModule.forFeature([AssetEntity]),
+    TypeOrmModule.forFeature([AssetEntity, ExifEntity]),
   ],
   controllers: [
     ActivityController,
     AssetsController,
-    AssetController,
     AssetControllerV1,
+    AssetController,
     AppController,
     AlbumController,
     APIKeyController,
     AuditController,
     AuthController,
+    DownloadController,
     FaceController,
     JobController,
     LibraryController,
@@ -61,13 +65,14 @@ import { ErrorInterceptor, FileUploadInterceptor } from './interceptors';
     SharedLinkController,
     SystemConfigController,
     TagController,
+    TrashController,
     UserController,
     PersonController,
   ],
   providers: [
     { provide: APP_INTERCEPTOR, useClass: ErrorInterceptor },
     { provide: APP_GUARD, useClass: AppGuard },
-    { provide: IAssetRepository, useClass: AssetRepository },
+    { provide: IAssetRepositoryV1, useClass: AssetRepositoryV1 },
     AppService,
     AssetService,
     FileUploadInterceptor,

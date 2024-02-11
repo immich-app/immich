@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsInt, IsObject, IsPositive, ValidateNested } from 'class-validator';
-import { QueueName } from '../../job';
+import { ConcurrentQueueName, QueueName } from '../../job';
 
 export class JobSettingsDto {
   @IsInt()
@@ -10,7 +10,7 @@ export class JobSettingsDto {
   concurrency!: number;
 }
 
-export class SystemConfigJobDto implements Record<QueueName, JobSettingsDto> {
+export class SystemConfigJobDto implements Record<ConcurrentQueueName, JobSettingsDto> {
   @ApiProperty({ type: JobSettingsDto })
   @ValidateNested()
   @IsObject()
@@ -39,12 +39,6 @@ export class SystemConfigJobDto implements Record<QueueName, JobSettingsDto> {
   @ValidateNested()
   @IsObject()
   @Type(() => JobSettingsDto)
-  [QueueName.STORAGE_TEMPLATE_MIGRATION]!: JobSettingsDto;
-
-  @ApiProperty({ type: JobSettingsDto })
-  @ValidateNested()
-  @IsObject()
-  @Type(() => JobSettingsDto)
   [QueueName.MIGRATION]!: JobSettingsDto;
 
   @ApiProperty({ type: JobSettingsDto })
@@ -63,7 +57,7 @@ export class SystemConfigJobDto implements Record<QueueName, JobSettingsDto> {
   @ValidateNested()
   @IsObject()
   @Type(() => JobSettingsDto)
-  [QueueName.RECOGNIZE_FACES]!: JobSettingsDto;
+  [QueueName.FACE_DETECTION]!: JobSettingsDto;
 
   @ApiProperty({ type: JobSettingsDto })
   @ValidateNested()

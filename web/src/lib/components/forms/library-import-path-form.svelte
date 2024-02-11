@@ -4,16 +4,27 @@
   import Button from '../elements/buttons/button.svelte';
   import FullScreenModal from '../shared-components/full-screen-modal.svelte';
   import { mdiFolderSync } from '@mdi/js';
+  import { onMount } from 'svelte';
 
-  export let importPath: string;
+  export let importPath: string | null;
+  export let importPaths: string[] = [];
   export let title = 'Import path';
   export let cancelText = 'Cancel';
   export let submitText = 'Save';
-  export let canDelete = false;
+  export let isEditing = false;
+
+  onMount(() => {
+    if (isEditing) {
+      importPaths = importPaths.filter((path) => path !== importPath);
+    }
+  });
+
+  $: isDuplicate = importPath !== null && importPaths.includes(importPath);
+  $: canSubmit = importPath !== '' && importPath !== null && !importPaths.includes(importPath);
 
   const dispatch = createEventDispatcher<{
     cancel: void;
-    submit: { importPath: string };
+    submit: { importPath: string | null };
     delete: void;
   }>();
   const handleCancel = () => dispatch('cancel');
@@ -47,11 +58,17 @@
 
       <div class="mt-8 flex w-full gap-4 px-4">
         <Button color="gray" fullwidth on:click={() => handleCancel()}>{cancelText}</Button>
-        {#if canDelete}
+        {#if isEditing}
           <Button color="red" fullwidth on:click={() => dispatch('delete')}>Delete</Button>
         {/if}
 
-        <Button type="submit" fullwidth>{submitText}</Button>
+        <Button type="submit" disabled={!canSubmit} fullwidth>{submitText}</Button>
+      </div>
+
+      <div class="mt-8 flex w-full gap-4 px-4">
+        {#if isDuplicate}
+          <p class="text-red-500 text-sm">This import path already exists.</p>
+        {/if}
       </div>
     </form>
   </div>

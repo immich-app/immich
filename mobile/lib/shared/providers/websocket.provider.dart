@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
@@ -94,7 +96,8 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
 
   final _log = Logger('WebsocketNotifier');
   final Ref _ref;
-  final Debounce _debounce = Debounce(const Duration(milliseconds: 500));
+  final Debouncer _debounce =
+      Debouncer(interval: const Duration(milliseconds: 500));
 
   /// Connects websocket to server unless already connected
   void connect() {
@@ -105,6 +108,10 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
       final accessToken = Store.get(StoreKey.accessToken);
       try {
         final endpoint = Uri.parse(Store.get(StoreKey.serverEndpoint));
+        final headers = {"x-immich-user-token": accessToken};
+        if (endpoint.userInfo.isNotEmpty) {
+          headers["Authorization"] = "Basic ${base64.encode(utf8.encode(endpoint.userInfo))}";
+        }
 
         debugPrint("Attempting to connect to websocket");
         // Configure socket transports must be specified
@@ -117,7 +124,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
               .enableForceNew()
               .enableForceNewConnection()
               .enableAutoConnect()
-              .setExtraHeaders({"Authorization": "Bearer $accessToken"})
+              .setExtraHeaders(headers)
               .build(),
         );
 
@@ -194,7 +201,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
         PendingChange(now.millisecondsSinceEpoch.toString(), action, value),
       ],
     );
-    _debounce(handlePendingChanges);
+    _debounce.run(handlePendingChanges);
   }
 
   Future<void> _handlePendingDeletes() async {

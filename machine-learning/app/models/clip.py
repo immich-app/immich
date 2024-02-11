@@ -6,13 +6,13 @@ from pathlib import Path
 from typing import Any, Literal
 
 import numpy as np
-import onnxruntime as ort
+from numpy.typing import NDArray
 from PIL import Image
 from tokenizers import Encoding, Tokenizer
 
 from app.config import clean_name, log
 from app.models.transforms import crop, get_pil_resampling, normalize, resize, to_numpy
-from app.schemas import ModelType, ndarray_f32, ndarray_i32
+from app.schemas import ModelType
 
 from .base import InferenceModel
 
@@ -23,7 +23,7 @@ class BaseCLIPEncoder(InferenceModel):
     def __init__(
         self,
         model_name: str,
-        cache_dir: str | None = None,
+        cache_dir: Path | str | None = None,
         mode: Literal["text", "vision"] | None = None,
         **model_kwargs: Any,
     ) -> None:
@@ -33,27 +33,15 @@ class BaseCLIPEncoder(InferenceModel):
     def _load(self) -> None:
         if self.mode == "text" or self.mode is None:
             log.debug(f"Loading clip text model '{self.model_name}'")
-
-            self.text_model = ort.InferenceSession(
-                self.textual_path.as_posix(),
-                sess_options=self.sess_options,
-                providers=self.providers,
-                provider_options=self.provider_options,
-            )
+            self.text_model = self._make_session(self.textual_path)
             log.debug(f"Loaded clip text model '{self.model_name}'")
 
         if self.mode == "vision" or self.mode is None:
             log.debug(f"Loading clip vision model '{self.model_name}'")
-
-            self.vision_model = ort.InferenceSession(
-                self.visual_path.as_posix(),
-                sess_options=self.sess_options,
-                providers=self.providers,
-                provider_options=self.provider_options,
-            )
+            self.vision_model = self._make_session(self.visual_path)
             log.debug(f"Loaded clip vision model '{self.model_name}'")
 
-    def _predict(self, image_or_text: Image.Image | str) -> ndarray_f32:
+    def _predict(self, image_or_text: Image.Image | str) -> NDArray[np.float32]:
         if isinstance(image_or_text, bytes):
             image_or_text = Image.open(BytesIO(image_or_text))
 
@@ -61,12 +49,10 @@ class BaseCLIPEncoder(InferenceModel):
             case Image.Image():
                 if self.mode == "text":
                     raise TypeError("Cannot encode image as text-only model")
-
-                outputs: ndarray_f32 = self.vision_model.run(None, self.transform(image_or_text))[0][0]
+                outputs: NDArray[np.float32] = self.vision_model.run(None, self.transform(image_or_text))[0][0]
             case str():
                 if self.mode == "vision":
                     raise TypeError("Cannot encode text as vision-only model")
-
                 outputs = self.text_model.run(None, self.tokenize(image_or_text))[0][0]
             case _:
                 raise TypeError(f"Expected Image or str, but got: {type(image_or_text)}")
@@ -74,11 +60,11 @@ class BaseCLIPEncoder(InferenceModel):
         return outputs
 
     @abstractmethod
-    def tokenize(self, text: str) -> dict[str, ndarray_i32]:
+    def tokenize(self, text: str) -> dict[str, NDArray[np.int32]]:
         pass
 
     @abstractmethod
-    def transform(self, image: Image.Image) -> dict[str, ndarray_f32]:
+    def transform(self, image: Image.Image) -> dict[str, NDArray[np.float32]]:
         pass
 
     @property
@@ -95,11 +81,11 @@ class BaseCLIPEncoder(InferenceModel):
 
     @property
     def textual_path(self) -> Path:
-        return self.textual_dir / "model.onnx"
+        return self.textual_dir / f"model.{self.preferred_runtime}"
 
     @property
     def visual_path(self) -> Path:
-        return self.visual_dir / "model.onnx"
+        return self.visual_dir / f"model.{self.preferred_runtime}"
 
     @property
     def tokenizer_file_path(self) -> Path:
@@ -150,7 +136,7 @@ class OpenCLIPEncoder(BaseCLIPEncoder):
     def __init__(
         self,
         model_name: str,
-        cache_dir: str | None = None,
+        cache_dir: Path | str | None = None,
         mode: Literal["text", "vision"] | None = None,
         **model_kwargs: Any,
     ) -> None:
@@ -158,11 +144,11 @@ class OpenCLIPEncoder(BaseCLIPEncoder):
 
     def _load(self) -> None:
         super()._load()
+        text_cfg: dict[str, Any] = self.model_cfg["text_cfg"]
+        context_length: int = text_cfg.get("context_length", 77)
+        pad_token: int = self.tokenizer_cfg["pad_token"]
 
-        context_length = self.model_cfg["text_cfg"]["context_length"]
-        pad_token = self.tokenizer_cfg["pad_token"]
-
-        size = self.preprocess_cfg["size"]
+        size: list[int] | int = self.preprocess_cfg["size"]
         self.size = size[0] if isinstance(size, list) else size
 
         self.resampling = get_pil_resampling(self.preprocess_cfg["interpolation"])
@@ -171,16 +157,16 @@ class OpenCLIPEncoder(BaseCLIPEncoder):
 
         log.debug(f"Loading tokenizer for CLIP model '{self.model_name}'")
         self.tokenizer: Tokenizer = Tokenizer.from_file(self.tokenizer_file_path.as_posix())
-        pad_id = self.tokenizer.token_to_id(pad_token)
+        pad_id: int = self.tokenizer.token_to_id(pad_token)
         self.tokenizer.enable_padding(length=context_length, pad_token=pad_token, pad_id=pad_id)
         self.tokenizer.enable_truncation(max_length=context_length)
         log.debug(f"Loaded tokenizer for CLIP model '{self.model_name}'")
 
-    def tokenize(self, text: str) -> dict[str, ndarray_i32]:
+    def tokenize(self, text: str) -> dict[str, NDArray[np.int32]]:
         tokens: Encoding = self.tokenizer.encode(text)
         return {"text": np.array([tokens.ids], dtype=np.int32)}
 
-    def transform(self, image: Image.Image) -> dict[str, ndarray_f32]:
+    def transform(self, image: Image.Image) -> dict[str, NDArray[np.float32]]:
         image = resize(image, self.size)
         image = crop(image, self.size)
         image_np = to_numpy(image)
@@ -189,7 +175,7 @@ class OpenCLIPEncoder(BaseCLIPEncoder):
 
 
 class MCLIPEncoder(OpenCLIPEncoder):
-    def tokenize(self, text: str) -> dict[str, ndarray_i32]:
+    def tokenize(self, text: str) -> dict[str, NDArray[np.int32]]:
         tokens: Encoding = self.tokenizer.encode(text)
         return {
             "input_ids": np.array([tokens.ids], dtype=np.int32),
