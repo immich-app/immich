@@ -12,20 +12,6 @@ const upstream = {
 };
 
 export default defineConfig({
-  build: {
-    // largest chunk size is maplibre-gl
-    chunkSizeWarningLimit: 800,
-    rollupOptions: {
-      output: {
-        // optimize chunks size https://github.com/vitejs/vite/discussions/9440
-        manualChunks(id) {
-          if (id.includes('node_modules')) {
-            return id.toString().split('node_modules/')[1].split('/')[0].toString();
-          }
-        },
-      },
-    },
-  },
   resolve: {
     alias: {
       'xmlhttprequest-ssl': './node_modules/engine.io-client/lib/xmlhttprequest.js',
