@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/utils/db.dart';
 import 'package:timezone/data/latest.dart';
 import 'package:immich_mobile/constants/locales.dart';
 import 'package:immich_mobile/modules/backup/background_service/background.service.dart';
@@ -32,7 +33,6 @@ import 'package:immich_mobile/shared/services/immich_logger.service.dart';
 import 'package:immich_mobile/shared/services/local_notification.service.dart';
 import 'package:immich_mobile/utils/http_ssl_cert_override.dart';
 import 'package:immich_mobile/utils/immich_app_theme.dart';
-import 'package:immich_mobile/utils/migration.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:path_provider/path_provider.dart';
@@ -42,7 +42,7 @@ void main() async {
 
   final db = await loadDb();
   await initApp();
-  await migrateDatabaseIfNeeded(db);
+  await DBUtils.migrateDatabaseIfNeeded(db);
   HttpOverrides.global = HttpSSLCertOverride();
 
   runApp(
