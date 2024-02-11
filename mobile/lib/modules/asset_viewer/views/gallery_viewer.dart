@@ -134,11 +134,12 @@ class GalleryViewerPage extends HookConsumerWidget {
     void precacheNextImage(int index) {
       void onError(Object exception, StackTrace? stackTrace) {
         // swallow error silently
+        debugPrint('Error precaching next image: $exception, $stackTrace');
       }
       if (index < totalAssets && index >= 0) {
         final asset = loadAsset(index);
-        ImmichImage.precacheAssetImageProvider(
-          asset,
+        precacheImage(
+          ImmichImage.imageProvider(asset: asset),
           context,
           onError: onError,
         );

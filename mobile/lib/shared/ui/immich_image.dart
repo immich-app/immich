@@ -5,7 +5,6 @@ import 'package:immich_mobile/modules/asset_viewer/image_providers/immich_local_
 import 'package:immich_mobile/modules/asset_viewer/image_providers/immich_remote_image_provider.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/store.dart';
-import 'package:openapi/api.dart' as api;
 import 'package:photo_manager/photo_manager.dart';
 import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
 
@@ -19,6 +18,7 @@ class ImmichImage extends StatelessWidget {
     this.useGrayBoxPlaceholder = false,
     this.useProgressIndicator = false,
     this.isThumbnail = false,
+    this.thumbnailSize = 250,
     super.key,
   });
   final Asset? asset;
@@ -28,16 +28,21 @@ class ImmichImage extends StatelessWidget {
   final double? height;
   final BoxFit fit;
   final bool isThumbnail;
+  final int thumbnailSize;
 
   /// Factory constructor to use the thumbnail variant
   factory ImmichImage.thumbnail(
-    Asset asset, {
+    Asset? asset, {
     BoxFit fit = BoxFit.cover,
+    double? width,
+    double? height,
   }) {
     return ImmichImage(
       asset,
       isThumbnail: true,
       fit: fit,
+      width: width,
+      height: height,
     );
   }
 
@@ -64,6 +69,7 @@ class ImmichImage extends StatelessWidget {
       image: ImmichImage.imageProvider(
         asset: asset,
         isThumbnail: isThumbnail,
+        thumbnailSize: thumbnailSize,
       ),
       width: width,
       height: height,
@@ -113,37 +119,19 @@ class ImmichImage extends StatelessWidget {
       !asset.isRemote ||
       asset.isLocal && !Store.get(StoreKey.preferRemoteImage, false);
 
-  /// A helper function to use the correct image loader based on
-  /// whether the asset should be local or remote
-  /// Precaches this asset for instant load the next time it is shown
-  static Future<void> precacheAssetImageProvider(
-    Asset asset,
-    BuildContext context, {
-    api.ThumbnailFormat type = api.ThumbnailFormat.WEBP,
-    int size = 250,
-    ImageErrorListener? onError,
-  }) {
-    if (useLocal(asset)) {
-      return precacheImage(
-        ImmichLocalImageProvider(asset: asset),
-        context,
-        onError: onError,
-      );
-    } else {
-      return precacheImage(
-        ImmichRemoteImageProvider(assetId: asset.remoteId!),
-        context,
-        onError: onError,
-      );
-    }
-  }
-
   // Helper function to return the image provider for the asset
   // either by using the asset ID or the asset itself
+  /// [asset] is the Asset to request, or else use [assetId] to get a remote
+  /// image provider
+  /// Use [isThumbnail] and [thumbnailSize] if you'd like to request a thumbnail
+  /// The size of the square thumbnail to request. Ignored if isThumbnail
+  /// is not true
+
   static ImageProvider imageProvider({
     Asset? asset,
     String? assetId,
     bool isThumbnail = false,
+    int thumbnailSize = 250,
   }) {
     if (asset == null && assetId == null) {
       throw Exception('Must supply either asset or assetId');
@@ -160,7 +148,7 @@ class ImmichImage extends StatelessWidget {
       return AssetEntityImageProvider(
         asset.local!,
         isOriginal: false,
-        thumbnailSize: const ThumbnailSize.square(250),
+        thumbnailSize: ThumbnailSize.square(thumbnailSize),
       );
     } else if (useLocal(asset) && !isThumbnail) {
       return ImmichLocalImageProvider(
