@@ -2,6 +2,7 @@ import { sveltekit } from '@sveltejs/kit/vite';
 import { visualizer } from 'rollup-plugin-visualizer';
 import { defineConfig } from 'vite';
 import path from 'node:path';
+import { splitVendorChunkPlugin } from 'vite';
 
 const upstream = {
   target: process.env.IMMICH_SERVER_URL || 'http://immich-server:3001/',
@@ -13,7 +14,18 @@ const upstream = {
 
 export default defineConfig({
   build: {
-    chunkSizeWarningLimit: 2_000_000,
+    // largest chunk size is maplibre-gl
+    chunkSizeWarningLimit: 800,
+    rollupOptions: {
+      output: {
+        // optimize chunks size https://github.com/vitejs/vite/discussions/9440
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            return id.toString().split('node_modules/')[1].split('/')[0].toString();
+          }
+        },
+      },
+    },
   },
   resolve: {
     alias: {
@@ -37,6 +49,7 @@ export default defineConfig({
       emitFile: true,
       filename: 'stats.html',
     }),
+    splitVendorChunkPlugin(),
   ],
   optimizeDeps: {
     entries: ['src/**/*.{svelte,ts,html}'],
