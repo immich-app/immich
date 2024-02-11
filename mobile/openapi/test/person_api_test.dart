@@ -22,7 +22,7 @@ void main() {
       // TODO
     });
 
-    //Future<PeopleResponseDto> getAllPeople({ bool withHidden }) async
+    //Future<PeopleResponseDto> getAllPeople({ bool withHidden, bool withPartners }) async
     test('test getAllPeople', () async {
       // TODO
     });

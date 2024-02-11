@@ -61,7 +61,9 @@ class PersonApi {
   /// Parameters:
   ///
   /// * [bool] withHidden:
-  Future<Response> getAllPeopleWithHttpInfo({ bool? withHidden, }) async {
+  ///
+  /// * [bool] withPartners:
+  Future<Response> getAllPeopleWithHttpInfo({ bool? withHidden, bool? withPartners, }) async {
     // ignore: prefer_const_declarations
     final path = r'/person';
 
@@ -74,6 +76,9 @@ class PersonApi {
 
     if (withHidden != null) {
       queryParams.addAll(_queryParams('', 'withHidden', withHidden));
+    }
+    if (withPartners != null) {
+      queryParams.addAll(_queryParams('', 'withPartners', withPartners));
     }
 
     const contentTypes = <String>[];
@@ -93,8 +98,10 @@ class PersonApi {
   /// Parameters:
   ///
   /// * [bool] withHidden:
-  Future<PeopleResponseDto?> getAllPeople({ bool? withHidden, }) async {
-    final response = await getAllPeopleWithHttpInfo( withHidden: withHidden, );
+  ///
+  /// * [bool] withPartners:
+  Future<PeopleResponseDto?> getAllPeople({ bool? withHidden, bool? withPartners, }) async {
+    final response = await getAllPeopleWithHttpInfo( withHidden: withHidden, withPartners: withPartners, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

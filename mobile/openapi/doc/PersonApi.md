@@ -73,7 +73,7 @@ This endpoint does not need any parameter.
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getAllPeople**
-> PeopleResponseDto getAllPeople(withHidden)
+> PeopleResponseDto getAllPeople(withHidden, withPartners)
 
 
 
@@ -97,9 +97,10 @@ import 'package:openapi/api.dart';
 
 final api_instance = PersonApi();
 final withHidden = true; // bool | 
+final withPartners = true; // bool | 
 
 try {
-    final result = api_instance.getAllPeople(withHidden);
+    final result = api_instance.getAllPeople(withHidden, withPartners);
     print(result);
 } catch (e) {
     print('Exception when calling PersonApi->getAllPeople: $e\n');
@@ -111,6 +112,7 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **withHidden** | **bool**|  | [optional] [default to false]
+ **withPartners** | **bool**|  | [optional] [default to false]
 
 ### Return type
 

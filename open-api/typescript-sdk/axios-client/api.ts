@@ -14256,10 +14256,11 @@ export const PersonApiAxiosParamCreator = function (configuration?: Configuratio
         /**
          * 
          * @param {boolean} [withHidden] 
+         * @param {boolean} [withPartners] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAllPeople: async (withHidden?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getAllPeople: async (withHidden?: boolean, withPartners?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/person`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -14283,6 +14284,10 @@ export const PersonApiAxiosParamCreator = function (configuration?: Configuratio
 
             if (withHidden !== undefined) {
                 localVarQueryParameter['withHidden'] = withHidden;
+            }
+
+            if (withPartners !== undefined) {
+                localVarQueryParameter['withPartners'] = withPartners;
             }
 
 
@@ -14676,11 +14681,12 @@ export const PersonApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @param {boolean} [withHidden] 
+         * @param {boolean} [withPartners] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getAllPeople(withHidden?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PeopleResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllPeople(withHidden, options);
+        async getAllPeople(withHidden?: boolean, withPartners?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PeopleResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllPeople(withHidden, withPartners, options);
             const index = configuration?.serverIndex ?? 0;
             const operationBasePath = operationServerMap['PersonApi.getAllPeople']?.[index]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, operationBasePath || basePath);
@@ -14809,7 +14815,7 @@ export const PersonApiFactory = function (configuration?: Configuration, basePat
          * @throws {RequiredError}
          */
         getAllPeople(requestParameters: PersonApiGetAllPeopleRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<PeopleResponseDto> {
-            return localVarFp.getAllPeople(requestParameters.withHidden, options).then((request) => request(axios, basePath));
+            return localVarFp.getAllPeople(requestParameters.withHidden, requestParameters.withPartners, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -14898,6 +14904,13 @@ export interface PersonApiGetAllPeopleRequest {
      * @memberof PersonApiGetAllPeople
      */
     readonly withHidden?: boolean
+
+    /**
+     * 
+     * @type {boolean}
+     * @memberof PersonApiGetAllPeople
+     */
+    readonly withPartners?: boolean
 }
 
 /**
@@ -15058,7 +15071,7 @@ export class PersonApi extends BaseAPI {
      * @memberof PersonApi
      */
     public getAllPeople(requestParameters: PersonApiGetAllPeopleRequest = {}, options?: RawAxiosRequestConfig) {
-        return PersonApiFp(this.configuration).getAllPeople(requestParameters.withHidden, options).then((request) => request(this.axios, this.basePath));
+        return PersonApiFp(this.configuration).getAllPeople(requestParameters.withHidden, requestParameters.withPartners, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
