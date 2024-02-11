@@ -4,7 +4,7 @@ import type { PageLoad } from './$types';
 
 export const load = (async () => {
   await authenticate();
-  const [items, response] = await Promise.all([getExploreData(), getAllPeople({ withHidden: false })]);
+  const [items, response] = await Promise.all([getExploreData(), getAllPeople({ withHidden: false, withPartners: true })]);
 
   return {
     items,
