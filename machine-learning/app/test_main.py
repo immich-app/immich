@@ -170,7 +170,7 @@ class TestBase:
         encoder.clear_cache()
 
         mock_rmtree.assert_called_once_with(encoder.cache_dir)
-        info.assert_called_once()
+        assert info.call_count == 2
 
     def test_clear_cache_warns_if_path_does_not_exist(self, mocker: MockerFixture) -> None:
         mock_rmtree = mocker.patch("app.models.base.rmtree", autospec=True)
