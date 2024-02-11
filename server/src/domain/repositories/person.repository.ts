@@ -11,6 +11,7 @@ export interface PersonSearchOptions {
 
 export interface PersonNameSearchOptions {
   withHidden?: boolean;
+  withPartners?: boolean;
 }
 
 export interface AssetFaceId {
@@ -30,7 +31,7 @@ export interface PersonStatistics {
 
 export interface IPersonRepository {
   getAll(pagination: PaginationOptions, options?: FindManyOptions<PersonEntity>): Paginated<PersonEntity>;
-  getAllForUser(userId: string, options: PersonSearchOptions): Promise<PersonEntity[]>;
+  getAllForUsers(userIds: string[], options: PersonSearchOptions): Promise<PersonEntity[]>;
   getAllWithoutFaces(): Promise<PersonEntity[]>;
   getById(personId: string): Promise<PersonEntity | null>;
   getByName(userId: string, personName: string, options: PersonNameSearchOptions): Promise<PersonEntity[]>;
@@ -54,7 +55,7 @@ export interface IPersonRepository {
   getRandomFace(personId: string): Promise<AssetFaceEntity | null>;
   getStatistics(personId: string): Promise<PersonStatistics>;
   reassignFace(assetFaceId: string, newPersonId: string): Promise<number>;
-  getNumberOfPeople(userId: string): Promise<number>;
+  getNumberOfPeople(userIds: string[]): Promise<number>;
   reassignFaces(data: UpdateFacesData): Promise<number>;
   update(entity: Partial<PersonEntity>): Promise<PersonEntity>;
 }

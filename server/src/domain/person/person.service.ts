@@ -19,6 +19,7 @@ import {
   IMachineLearningRepository,
   IMediaRepository,
   IMoveRepository,
+  IPartnerRepository,
   IPersonRepository,
   ISearchRepository,
   IStorageRepository,
@@ -57,6 +58,7 @@ export class PersonService {
     @Inject(IMachineLearningRepository) private machineLearningRepository: IMachineLearningRepository,
     @Inject(IMoveRepository) moveRepository: IMoveRepository,
     @Inject(IMediaRepository) private mediaRepository: IMediaRepository,
+    @Inject(IPartnerRepository) private partnerRepository: IPartnerRepository,
     @Inject(IPersonRepository) private repository: IPersonRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
@@ -78,11 +80,20 @@ export class PersonService {
 
   async getAll(auth: AuthDto, dto: PersonSearchDto): Promise<PeopleResponseDto> {
     const { machineLearning } = await this.configCore.getConfig();
-    const people = await this.repository.getAllForUser(auth.user.id, {
+    let userIds: string[];
+    userIds = [auth.user.id];
+    if (dto.withPartners) {
+        const partners = await this.partnerRepository.getAll(auth.user.id);
+        const partnersIds = partners
+        .filter((partner) => partner.sharedBy && partner.sharedWith && partner.sharedById != auth.user.id)  //TODO should && partner.inTimeline be included, as in assets?
+        .map((partner) => partner.sharedById);
+        userIds.push(...partnersIds);
+    }
+    const people = await this.repository.getAllForUsers(userIds, {
       minimumFaceCount: machineLearning.facialRecognition.minFaces,
       withHidden: dto.withHidden || false,
     });
-    const total = await this.repository.getNumberOfPeople(auth.user.id);
+    const total = await this.repository.getNumberOfPeople(userIds);
     const persons: PersonResponseDto[] = people
       // with thumbnails
       .filter((person) => !!person.thumbnailPath)

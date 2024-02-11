@@ -142,4 +142,18 @@ export const personStub = {
     faceAsset: null,
     isHidden: false,
   }),
+  partnerPerson: Object.freeze<PersonEntity>({
+    id: 'person-4',
+    createdAt: new Date('2021-01-01'),
+    updatedAt: new Date('2021-01-01'),
+    ownerId: userStub.user1.id,
+    owner: userStub.user1,
+    name: 'Person 4',
+    birthDate: null,
+    thumbnailPath: '/path/to/thumbnail',
+    faces: [],
+    faceAssetId: null,
+    faceAsset: null,
+    isHidden: false,
+  }),
 };

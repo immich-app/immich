@@ -63,6 +63,11 @@ export class PersonSearchDto {
   @IsBoolean()
   @Transform(toBoolean)
   withHidden?: boolean = false;
+
+  @Optional()
+  @IsBoolean()
+  @Transform(toBoolean)
+  withPartners?: boolean = false;
 }
 
 export class PersonResponseDto {
