@@ -7,6 +7,7 @@
   import PhotoViewer from '../asset-viewer/photo-viewer.svelte';
   import BaseModal from './base-modal.svelte';
   import Button from '../elements/buttons/button.svelte';
+  import { user } from '$lib/stores/user.store';
 
   export let asset: AssetResponseDto;
 
@@ -56,12 +57,13 @@
         return;
       }
       const file = new File([blob], 'profile-picture.png', { type: 'image/png' });
-      await api.userApi.createProfileImage({ file });
+      const { data } = await api.userApi.createProfileImage({ file });
       notificationController.show({
         type: NotificationType.Info,
         message: 'Profile picture set.',
         timeout: 3000,
       });
+      $user.profileImagePath = data.profileImagePath;
     } catch (error) {
       handleError(error, 'Error setting profile picture.');
     }
