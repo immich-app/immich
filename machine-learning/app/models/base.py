@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import pickle
 from abc import ABC, abstractmethod
 from pathlib import Path
 from shutil import rmtree

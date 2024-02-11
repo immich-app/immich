@@ -1,5 +1,4 @@
 import json
-import pickle
 from io import BytesIO
 from pathlib import Path
 from random import randint
@@ -14,6 +13,8 @@ import pytest
 from fastapi.testclient import TestClient
 from PIL import Image
 from pytest_mock import MockerFixture
+
+from app.main import load
 
 from .config import log, settings
 from .models.base import InferenceModel
@@ -71,6 +72,17 @@ class TestBase:
 
         assert encoder.provider_options == [
             {},
+            {"arena_extend_strategy": "kSameAsRequested"},
+        ]
+
+    def test_sets_openvino_device_id_if_possible(self, mocker: MockerFixture) -> None:
+        mocked = mocker.patch("app.models.base.ort.capi._pybind_state")
+        mocked.get_available_openvino_device_ids.return_value = ["GPU.0", "CPU"]
+
+        encoder = OpenCLIPEncoder("ViT-B-32__openai", providers=["OpenVINOExecutionProvider", "CPUExecutionProvider"])
+
+        assert encoder.provider_options == [
+            {"device_id": "GPU.0"},
             {"arena_extend_strategy": "kSameAsRequested"},
         ]
 
@@ -481,34 +493,69 @@ class TestCache:
         await model_cache.get("test_model_name", ModelType.FACIAL_RECOGNITION)
         await model_cache.get("test_model_name", ModelType.FACIAL_RECOGNITION)
         mock_cache_expire.assert_called_once_with(mock.ANY, 100)
-    
+
     async def test_profiling(self, mock_get_model: mock.Mock) -> None:
         model_cache = ModelCache(ttl=100, profiling=True)
         await model_cache.get("test_model_name", ModelType.FACIAL_RECOGNITION)
         profiling = await model_cache.get_profiling()
         assert isinstance(profiling, dict)
         assert profiling == model_cache.cache.profiling
-    
+
     async def test_loads_mclip(self) -> None:
         model_cache = ModelCache()
-        
+
         model = await model_cache.get("XLM-Roberta-Large-Vit-B-32", ModelType.CLIP, mode="text")
-        
+
         assert isinstance(model, MCLIPEncoder)
         assert model.model_name == "XLM-Roberta-Large-Vit-B-32"
-    
+
     async def test_raises_exception_if_invalid_model_type(self) -> None:
-        invalid = SimpleNamespace(value="invalid")
+        invalid: Any = SimpleNamespace(value="invalid")
         model_cache = ModelCache()
-        
+
         with pytest.raises(ValueError):
             await model_cache.get("XLM-Roberta-Large-Vit-B-32", invalid, mode="text")
-    
+
     async def test_raises_exception_if_unknown_model_name(self) -> None:
         model_cache = ModelCache()
-        
+
         with pytest.raises(ValueError):
             await model_cache.get("test_model_name", ModelType.CLIP, mode="text")
+
+
+@pytest.mark.asyncio
+class TestLoad:
+    async def test_load(self) -> None:
+        mock_model = mock.Mock(spec=InferenceModel)
+        mock_model.loaded = False
+
+        res = await load(mock_model)
+
+        assert res is mock_model
+        mock_model.load.assert_called_once()
+        mock_model.clear_cache.assert_not_called()
+
+    async def test_load_returns_model_if_loaded(self) -> None:
+        mock_model = mock.Mock(spec=InferenceModel)
+        mock_model.loaded = True
+
+        res = await load(mock_model)
+
+        assert res is mock_model
+        mock_model.load.assert_not_called()
+
+    async def test_load_clears_cache_and_retries_if_os_error(self) -> None:
+        mock_model = mock.Mock(spec=InferenceModel)
+        mock_model.model_name = "test_model_name"
+        mock_model.model_type = ModelType.CLIP
+        mock_model.load.side_effect = [OSError, None]
+        mock_model.loaded = False
+
+        res = await load(mock_model)
+
+        assert res is mock_model
+        mock_model.clear_cache.assert_called_once()
+        assert mock_model.load.call_count == 2
 
 
 @pytest.mark.skipif(
