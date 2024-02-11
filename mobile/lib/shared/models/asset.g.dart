@@ -105,7 +105,7 @@ const AssetSchema = CollectionSchema(
     r'thumbhash': PropertySchema(
       id: 17,
       name: r'thumbhash',
-      type: IsarType.string,
+      type: IsarType.byteList,
     ),
     r'type': PropertySchema(
       id: 18,
@@ -218,7 +218,7 @@ int _assetEstimateSize(
   {
     final value = object.thumbhash;
     if (value != null) {
-      bytesCount += 3 + value.length * 3;
+      bytesCount += 3 + value.length;
     }
   }
   return bytesCount;
@@ -247,7 +247,7 @@ void _assetSerialize(
   writer.writeString(offsets[14], object.remoteId);
   writer.writeLong(offsets[15], object.stackCount);
   writer.writeString(offsets[16], object.stackParentId);
-  writer.writeString(offsets[17], object.thumbhash);
+  writer.writeByteList(offsets[17], object.thumbhash);
   writer.writeByte(offsets[18], object.type.index);
   writer.writeDateTime(offsets[19], object.updatedAt);
   writer.writeInt(offsets[20], object.width);
@@ -278,7 +278,7 @@ Asset _assetDeserialize(
     remoteId: reader.readStringOrNull(offsets[14]),
     stackCount: reader.readLongOrNull(offsets[15]),
     stackParentId: reader.readStringOrNull(offsets[16]),
-    thumbhash: reader.readStringOrNull(offsets[17]),
+    thumbhash: reader.readByteList(offsets[17]),
     type: _AssettypeValueEnumMap[reader.readByteOrNull(offsets[18])] ??
         AssetType.other,
     updatedAt: reader.readDateTime(offsets[19]),
@@ -329,7 +329,7 @@ P _assetDeserializeProp<P>(
     case 16:
       return (reader.readStringOrNull(offset)) as P;
     case 17:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readByteList(offset)) as P;
     case 18:
       return (_AssettypeValueEnumMap[reader.readByteOrNull(offset)] ??
           AssetType.other) as P;
@@ -2109,55 +2109,47 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> thumbhashEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> thumbhashElementEqualTo(
+      int value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'thumbhash',
         value: value,
-        caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> thumbhashGreaterThan(
-    String? value, {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> thumbhashElementGreaterThan(
+    int value, {
     bool include = false,
-    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
         property: r'thumbhash',
         value: value,
-        caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> thumbhashLessThan(
-    String? value, {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> thumbhashElementLessThan(
+    int value, {
     bool include = false,
-    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
         property: r'thumbhash',
         value: value,
-        caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> thumbhashBetween(
-    String? lower,
-    String? upper, {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> thumbhashElementBetween(
+    int lower,
+    int upper, {
     bool includeLower = true,
     bool includeUpper = true,
-    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
@@ -2166,76 +2158,91 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
         includeLower: includeLower,
         upper: upper,
         includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> thumbhashStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> thumbhashLengthEqualTo(
+      int length) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'thumbhash',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> thumbhashEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'thumbhash',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> thumbhashContains(
-      String value,
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'thumbhash',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> thumbhashMatches(
-      String pattern,
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'thumbhash',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.listLength(
+        r'thumbhash',
+        length,
+        true,
+        length,
+        true,
+      );
     });
   }
 
   QueryBuilder<Asset, Asset, QAfterFilterCondition> thumbhashIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'thumbhash',
-        value: '',
-      ));
+      return query.listLength(
+        r'thumbhash',
+        0,
+        true,
+        0,
+        true,
+      );
     });
   }
 
   QueryBuilder<Asset, Asset, QAfterFilterCondition> thumbhashIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'thumbhash',
-        value: '',
-      ));
+      return query.listLength(
+        r'thumbhash',
+        0,
+        false,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> thumbhashLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'thumbhash',
+        0,
+        true,
+        length,
+        include,
+      );
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> thumbhashLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'thumbhash',
+        length,
+        include,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> thumbhashLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'thumbhash',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
     });
   }
 
@@ -2623,18 +2630,6 @@ extension AssetQuerySortBy on QueryBuilder<Asset, Asset, QSortBy> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterSortBy> sortByThumbhash() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'thumbhash', Sort.asc);
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterSortBy> sortByThumbhashDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'thumbhash', Sort.desc);
-    });
-  }
-
   QueryBuilder<Asset, Asset, QAfterSortBy> sortByType() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'type', Sort.asc);
@@ -2889,18 +2884,6 @@ extension AssetQuerySortThenBy on QueryBuilder<Asset, Asset, QSortThenBy> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterSortBy> thenByThumbhash() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'thumbhash', Sort.asc);
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterSortBy> thenByThumbhashDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'thumbhash', Sort.desc);
-    });
-  }
-
   QueryBuilder<Asset, Asset, QAfterSortBy> thenByType() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'type', Sort.asc);
@@ -3049,10 +3032,9 @@ extension AssetQueryWhereDistinct on QueryBuilder<Asset, Asset, QDistinct> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QDistinct> distinctByThumbhash(
-      {bool caseSensitive = true}) {
+  QueryBuilder<Asset, Asset, QDistinct> distinctByThumbhash() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'thumbhash', caseSensitive: caseSensitive);
+      return query.addDistinctBy(r'thumbhash');
     });
   }
 
@@ -3184,7 +3166,7 @@ extension AssetQueryProperty on QueryBuilder<Asset, Asset, QQueryProperty> {
     });
   }
 
-  QueryBuilder<Asset, String?, QQueryOperations> thumbhashProperty() {
+  QueryBuilder<Asset, List<int>?, QQueryOperations> thumbhashProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'thumbhash');
     });

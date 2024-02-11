@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -114,20 +112,18 @@ class ImmichImage extends StatefulWidget {
 }
 
 class _ImmichImageState extends State<ImmichImage> {
-  Uint8List? thumbHash;
+  // Creating the Uint8List from the List<bytes> during each build results in flickers during
+  // the fade transition. Calculate the hash in the initState and cache it for further builds
+  Uint8List? thumbHashBytes;
   static const _placeholderDimension = 300.0;
-
-  void decodeThumbHash(String hash) {
-    final hashBytes = base64.decode(base64.normalize(hash));
-    final rgbaImage = thumbhash.thumbHashToRGBA(hashBytes);
-    thumbHash = thumbhash.rgbaToBmp(rgbaImage);
-  }
 
   @override
   void initState() {
     super.initState();
     if (widget.asset?.thumbhash != null) {
-      decodeThumbHash(widget.asset!.thumbhash!);
+      final bytes = Uint8List.fromList(widget.asset!.thumbhash!);
+      final rgbaImage = thumbhash.thumbHashToRGBA(bytes);
+      thumbHashBytes = thumbhash.rgbaToBmp(rgbaImage);
     }
   }
 
@@ -181,9 +177,9 @@ class _ImmichImageState extends State<ImmichImage> {
                   decoration: BoxDecoration(color: Colors.grey),
                 ),
               ),
-            if (thumbHash != null)
+            if (thumbHashBytes != null)
               Image.memory(
-                thumbHash!,
+                thumbHashBytes!,
                 width: _placeholderDimension,
                 height: _placeholderDimension,
                 fit: BoxFit.cover,

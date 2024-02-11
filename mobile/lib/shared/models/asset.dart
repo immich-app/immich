@@ -36,7 +36,7 @@ class Asset {
         isOffline = remote.isOffline,
         stackParentId = remote.stackParentId,
         stackCount = remote.stackCount,
-        thumbhash = remote.thumbhash;
+        thumbhash = _decodeThumbhash(remote.thumbhash);
 
   Asset.local(AssetEntity local, List<int> hash)
       : localId = local.id,
@@ -118,7 +118,7 @@ class Asset {
   /// because Isar cannot sort lists of byte arrays
   String checksum;
 
-  String? thumbhash;
+  List<byte>? thumbhash;
 
   @Index(unique: false, replace: false, type: IndexType.hash)
   String? remoteId;
@@ -374,7 +374,7 @@ class Asset {
     ExifInfo? exifInfo,
     String? stackParentId,
     int? stackCount,
-    String? thumbhash,
+    List<byte>? thumbhash,
   }) =>
       Asset(
         id: id ?? this.id,
@@ -511,4 +511,11 @@ extension AssetsHelper on IsarCollection<Asset> {
   QueryBuilder<Asset, Asset, QAfterWhereClause> local(Iterable<String> ids) {
     return where().anyOf(ids, (q, String e) => q.localIdEqualTo(e));
   }
+}
+
+List<byte>? _decodeThumbhash(String? hash) {
+  if (hash == null) {
+    return null;
+  }
+  return base64.decode(base64.normalize(hash)).toList();
 }
