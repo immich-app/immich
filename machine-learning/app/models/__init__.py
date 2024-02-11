@@ -21,4 +21,4 @@ def from_model_type(model_type: ModelType, model_name: str, **model_kwargs: Any)
         case _:
             raise ValueError(f"Unknown model type {model_type}")
 
-    raise ValueError(f"Unknown ${model_type} model {model_name}")
+    raise ValueError(f"Unknown {model_type} model {model_name}")
