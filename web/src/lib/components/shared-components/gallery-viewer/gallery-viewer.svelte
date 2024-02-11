@@ -8,6 +8,9 @@
   import { getThumbnailSize } from '$lib/utils/thumbnail-util';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { onDestroy } from 'svelte';
+  import { createEventDispatcher } from 'svelte';
+
+  const dispatch = createEventDispatcher<{ intersect: void }>();
 
   export let assets: AssetResponseDto[];
   export let selectedAssets: Set<AssetResponseDto> = new Set();
@@ -87,7 +90,7 @@
 
 {#if assets.length > 0}
   <div class="flex w-full flex-wrap gap-1 pb-20" bind:clientWidth={viewWidth}>
-    {#each assets.slice(0, -1) as asset (asset.id)}
+    {#each assets as asset, i (asset.id)}
       <div animate:flip={{ duration: 500 }}>
         <Thumbnail
           {asset}
@@ -96,22 +99,8 @@
           format={assets.length < 7 ? ThumbnailFormat.Jpeg : ThumbnailFormat.Webp}
           on:click={(e) => (isMultiSelectionMode ? selectAssetHandler(e) : viewAssetHandler(e))}
           on:select={selectAssetHandler}
-          selected={selectedAssets.has(asset)}
-          {showArchiveIcon}
-        />
-      </div>
-    {/each}
-
-    {#each assets.slice(-1) as asset (asset.id)}
-      <div animate:flip={{ duration: 500 }}>
-        <Thumbnail
-          {asset}
-          {thumbnailSize}
-          readonly={disableAssetSelect}
-          format={assets.length < 7 ? ThumbnailFormat.Jpeg : ThumbnailFormat.Webp}
-          on:click={(e) => (isMultiSelectionMode ? selectAssetHandler(e) : viewAssetHandler(e))}
-          on:select={selectAssetHandler}
-          on:intersected
+          on:intersected={(event) =>
+            i === Math.max(1, assets.length - 7) ? dispatch('intersected', event.detail) : undefined}
           selected={selectedAssets.has(asset)}
           {showArchiveIcon}
         />
