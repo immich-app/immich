@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -5,7 +7,6 @@ import 'package:immich_mobile/modules/asset_viewer/image_providers/immich_local_
 import 'package:immich_mobile/modules/asset_viewer/image_providers/immich_remote_image_provider.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/store.dart';
-import 'package:immich_mobile/shared/ui/transparent_image.dart';
 import 'package:octo_image/octo_image.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
@@ -18,7 +19,6 @@ class ImmichImage extends StatefulWidget {
     this.height,
     this.fit = BoxFit.cover,
     this.useGrayBoxPlaceholder = false,
-    this.useProgressIndicator = false,
     this.isThumbnail = false,
     this.thumbnailSize = 250,
     super.key,
@@ -26,7 +26,6 @@ class ImmichImage extends StatefulWidget {
 
   final Asset? asset;
   final bool useGrayBoxPlaceholder;
-  final bool useProgressIndicator;
   final double? width;
   final double? height;
   final BoxFit fit;
@@ -40,6 +39,9 @@ class ImmichImage extends StatefulWidget {
     double? width,
     double? height,
   }) {
+    // Use the width and height to derive thumbnail size
+    final thumbnailSize = max(width ?? 250, height ?? 250).toInt();
+
     return ImmichImage(
       asset,
       isThumbnail: true,
@@ -47,6 +49,7 @@ class ImmichImage extends StatefulWidget {
       width: width,
       height: height,
       useGrayBoxPlaceholder: true,
+      thumbnailSize: thumbnailSize,
     );
   }
 
@@ -136,8 +139,8 @@ class _ImmichImageState extends State<ImmichImage> {
     final Asset asset = widget.asset!;
 
     return OctoImage(
-      fadeInDuration: const Duration(milliseconds: 200),
-      fadeOutDuration: const Duration(milliseconds: 200),
+      fadeInDuration: const Duration(milliseconds: 0),
+      fadeOutDuration: const Duration(milliseconds: 400),
       placeholderBuilder: (context) {
         if (thumbHashBytes != null && widget.isThumbnail) {
           // Use the blurhash placeholder

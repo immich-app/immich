@@ -16,7 +16,11 @@ class SharedAlbumThumbnailImage extends HookConsumerWidget {
       },
       child: Stack(
         children: [
-          ImmichImage(asset, width: 500, height: 500),
+          ImmichImage.thumbnail(
+            asset,
+            width: 500,
+            height: 500,
+          ),
         ],
       ),
     );

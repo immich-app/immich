@@ -48,10 +48,16 @@ class ImmichRemoteImageProvider extends ImageProvider<String> {
   }
 
   /// Whether to show the original file or load a compressed version
-  bool get _useOriginal => AppSettingsEnum.loadOriginal.defaultValue;
+  bool get _useOriginal => Store.get(
+        AppSettingsEnum.loadOriginal.storeKey,
+        AppSettingsEnum.loadOriginal.defaultValue,
+      );
 
   /// Whether to load the preview thumbnail first or not
-  bool get _loadPreview => AppSettingsEnum.loadPreview.defaultValue;
+  bool get _loadPreview => Store.get(
+        AppSettingsEnum.loadPreview.storeKey,
+        AppSettingsEnum.loadPreview.defaultValue,
+      );
 
   // Streams in each stage of the image as we ask for it
   Stream<ui.Codec> _codec(

@@ -106,7 +106,10 @@ class _ActivityAssetThumbnail extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: const BorderRadius.all(Radius.circular(4)),
         image: DecorationImage(
-          image: ImmichRemoteImageProvider(assetId: assetId),
+          image: ImmichRemoteImageProvider(
+            assetId: assetId,
+            isThumbnail: true,
+          ),
           fit: BoxFit.cover,
         ),
       ),
