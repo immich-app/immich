@@ -14,6 +14,7 @@
   import { onDestroy, onMount } from 'svelte';
   import type { PageData } from './$types';
   import Map from '$lib/components/shared-components/map/map.svelte';
+  import type { MapSettings } from '$lib/stores/preferences.store';
 
   export let data: PageData;
 
