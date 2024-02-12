@@ -6,7 +6,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
-import 'package:flutter/services.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:photo_manager/photo_manager.dart';
