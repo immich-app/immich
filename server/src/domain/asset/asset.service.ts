@@ -241,7 +241,7 @@ export class AssetService {
     if (userId) {
       userIds = [userId];
 
-      if (dto.withPartners) {
+      if (dto.withPartners || dto.personId !== undefined) {
         const partners = await this.partnerRepository.getAll(auth.user.id);
         const partnersIds = partners
           .filter((partner) => partner.sharedBy && partner.sharedWith && partner.inTimeline)
