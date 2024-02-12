@@ -4,7 +4,7 @@
   "description": "",
   "author": "",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "GNU Affero General Public License version 3",
   "scripts": {
     "build": "nest build",
     "format": "prettier --check .",
