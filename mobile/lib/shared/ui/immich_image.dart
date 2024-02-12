@@ -160,17 +160,17 @@ class ImmichImage extends StatefulWidget {
   }
 }
 
+/// Renders an Asset using local data if available, else remote data
 class _ImmichImageState extends State<ImmichImage> {
   // Creating the Uint8List from the List<bytes> during each build results in flickers during
   // the fade transition. Calculate the hash in the initState and cache it for further builds
   Uint8List? thumbHashBytes;
-  static const _placeholderDimension = 300.0;
 
   @override
   void initState() {
     super.initState();
-    if (widget.asset?.thumbhash != null) {
-      final bytes = Uint8List.fromList(widget.asset!.thumbhash!);
+    if (widget.isThumbnail && widget.asset?.thumbhash != null) {
+      final bytes = widget.asset!.thumbhash! as Uint8List;
       final rgbaImage = thumbhash.thumbHashToRGBA(bytes);
       thumbHashBytes = thumbhash.rgbaToBmp(rgbaImage);
     }
@@ -195,7 +195,27 @@ class _ImmichImageState extends State<ImmichImage> {
 
     final Asset asset = widget.asset!;
 
-    return Image(
+    return OctoImage(
+      fadeInDuration: const Duration(milliseconds: 200),
+      fadeOutDuration: const Duration(milliseconds: 200),
+      placeholderBuilder: (context) {
+        if (thumbHashBytes != null && widget.isThumbnail) {
+          // Use the blurhash placeholder
+          return Image.memory(
+            thumbHashBytes!,
+            fit: BoxFit.cover,
+          );
+        } else if (widget.useGrayBoxPlaceholder) {
+          // Use the gray box placeholder
+          return const SizedBox.expand(
+            child: DecoratedBox(
+              decoration: BoxDecoration(color: Colors.grey),
+            ),
+          );
+        }
+        // No placeholder
+        return const SizedBox();
+      },
       image: ImmichImage.imageProvider(
         asset: asset,
         isThumbnail: widget.isThumbnail,
@@ -203,43 +223,6 @@ class _ImmichImageState extends State<ImmichImage> {
       width: widget.width,
       height: widget.height,
       fit: widget.fit,
-      loadingBuilder: (_, child, loadingProgress) {
-        return AnimatedOpacity(
-          opacity: loadingProgress != null ? 0 : 1,
-          duration: const Duration(seconds: 1),
-          curve: Curves.easeOut,
-          child: child,
-        );
-      },
-      frameBuilder: (_, child, frame, wasSynchronouslyLoaded) {
-        if (wasSynchronouslyLoaded || frame != null) {
-          return child;
-        }
-
-        return Stack(
-          alignment: Alignment.center,
-          children: [
-            if (widget.useGrayBoxPlaceholder)
-              const SizedBox.square(
-                dimension: _placeholderDimension,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(color: Colors.grey),
-                ),
-              ),
-            if (thumbHashBytes != null)
-              Image.memory(
-                thumbHashBytes!,
-                width: _placeholderDimension,
-                height: _placeholderDimension,
-                fit: BoxFit.cover,
-              ),
-            if (widget.useProgressIndicator)
-              const Center(
-                child: CircularProgressIndicator(),
-              ),
-          ],
-        );
-      },
       errorBuilder: (context, error, stackTrace) {
         if (error is PlatformException &&
             error.code == "The asset not found!") {

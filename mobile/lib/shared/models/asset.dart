@@ -523,5 +523,5 @@ List<byte>? _decodeThumbhash(String? hash) {
   if (hash == null) {
     return null;
   }
-  return base64.decode(base64.normalize(hash)).toList();
+  return base64.decode(hash);
 }
