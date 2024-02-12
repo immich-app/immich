@@ -88,7 +88,7 @@ class ImmichLocalImageProvider extends ImageProvider<Asset> {
           yield codec;
           if (Platform.isIOS) {
             // Clean up this file
-            file.delete();
+            await file.delete();
           }
         } catch (error) {
           throw StateError("Loading asset ${asset.fileName} failed");
