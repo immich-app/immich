@@ -30,6 +30,9 @@ import {
   LibraryStatsResponseDto,
   ScanLibraryDto,
   UpdateLibraryDto,
+  ValidateLibraryDto,
+  ValidateLibraryImportPathResponseDto,
+  ValidateLibraryResponseDto,
   mapLibrary,
 } from './library.dto';
 
@@ -278,6 +281,62 @@ export class LibraryService extends EventEmitter {
     );
   }
 
+  public async validate(auth: AuthDto, id: string, dto: ValidateLibraryDto): Promise<ValidateLibraryResponseDto> {
+    await this.access.requirePermission(auth, Permission.LIBRARY_UPDATE, id);
+
+    if (!auth.user.externalPath) {
+      throw new BadRequestException('User has no external path set');
+    }
+
+    const checkPath = async (importPath: string): Promise<ValidateLibraryImportPathResponseDto> => {
+      const validation = new ValidateLibraryImportPathResponseDto();
+      validation.importPath = importPath;
+      const normalizedPath = path.normalize(importPath);
+      if (!this.isInExternalPath(normalizedPath, auth.user.externalPath)) {
+        validation.message = `Not contained in user's external path`;
+        return validation;
+      }
+
+      try {
+        const stat = await this.storageRepository.stat(importPath);
+
+        if (!stat.isDirectory) {
+          validation.message = 'Not a directory';
+          return validation;
+        }
+      } catch (error: any) {
+        if (error.code === 'ENOENT') {
+          validation.message = 'Path does not exist (ENOENT)';
+          return validation;
+        }
+        validation.message = error;
+        return validation;
+      }
+
+      const access = await this.storageRepository.checkFileExists(importPath, R_OK);
+
+      if (!access) {
+        validation.message = 'Lacking read permission for folder';
+        return validation;
+      }
+
+      validation.valid = true;
+      return validation;
+    };
+
+    const response = new ValidateLibraryResponseDto();
+
+    if (dto.importPaths) {
+      response.importPaths = await Promise.all(
+        dto.importPaths.map(async (importPath) => {
+          return await checkPath(importPath);
+        }),
+      );
+    }
+
+    return response;
+  }
+
   async update(auth: AuthDto, id: string, dto: UpdateLibraryDto): Promise<LibraryResponseDto> {
     await this.access.requirePermission(auth, Permission.LIBRARY_UPDATE, id);
     const library = await this.repository.update({ id, ...dto });
@@ -517,6 +576,14 @@ export class LibraryService extends EventEmitter {
     return true;
   }
 
+  // Check if a given path is in a user's external path. Both arguments are assumed to be normalized
+  private isInExternalPath(filePath: string, externalPath: string | null): boolean {
+    if (externalPath === null) {
+      return false;
+    }
+    return filePath.match(new RegExp(`^${externalPath}`)) !== null;
+  }
+
   async handleQueueAssetRefresh(job: ILibraryRefreshJob): Promise<boolean> {
     const library = await this.repository.get(job.id);
     if (!library || library.type !== LibraryType.EXTERNAL) {
@@ -537,11 +604,10 @@ export class LibraryService extends EventEmitter {
     });
 
     const crawledAssetPaths = rawPaths
+      // Normalize file paths. This is important to prevent security issues like path traversal
       .map((filePath) => path.normalize(filePath))
-      .filter((assetPath) =>
-        // Filter out paths that are not within the user's external path
-        assetPath.match(new RegExp(`^${user.externalPath}`)),
-      ) as string[];
+      // Filter out paths that are not within the user's external path
+      .filter((assetPath) => this.isInExternalPath(assetPath, user.externalPath)) as string[];
 
     this.logger.debug(`Found ${crawledAssetPaths.length} asset(s) when crawling import paths ${library.importPaths}`);
     const assetsInLibrary = await this.assetRepository.getByLibraryId([job.id]);

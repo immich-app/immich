@@ -63,6 +63,32 @@ export class CrawlOptionsDto {
   exclusionPatterns?: string[];
 }
 
+export class ValidateLibraryDto {
+  @IsOptional()
+  @IsString({ each: true })
+  @IsNotEmpty({ each: true })
+  @ArrayUnique()
+  importPaths?: string[];
+
+  @IsOptional()
+  @IsNotEmpty({ each: true })
+  @IsString({ each: true })
+  @ArrayUnique()
+  exclusionPatterns?: string[];
+}
+
+export class ValidateLibraryResponseDto {
+  importPaths?: ValidateLibraryImportPathResponseDto[];
+}
+
+export class ValidateLibraryImportPathResponseDto {
+  importPath!: string;
+
+  valid = false;
+
+  message?: string;
+}
+
 export class LibrarySearchDto {
   @ValidateUUID({ optional: true })
   userId?: string;
