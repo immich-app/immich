@@ -1,5 +1,5 @@
 import type { AssetResponseDto, ServerVersionResponseDto } from '@api';
-import { Socket, io } from 'socket.io-client';
+import { type Socket, io } from 'socket.io-client';
 import { writable } from 'svelte/store';
 import { loadConfig } from './server-config.store';
 import { getAuthUser } from '$lib/utils/auth';
