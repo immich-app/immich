@@ -7,7 +7,7 @@
   "bin": {
     "immich": "dist/index.js"
   },
-  "license": "MIT",
+  "license": "GNU Affero General Public License version 3",
   "keywords": [
     "immich",
     "cli"
