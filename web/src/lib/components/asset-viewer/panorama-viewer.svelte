@@ -22,8 +22,8 @@
   <!-- the photo sphere viewer is quite large, so lazy load it in parallel with loading the data -->
   {#await Promise.all([loadAssetData(), import('./photo-sphere-viewer-adapter.svelte')])}
     <LoadingSpinner />
-  {:then result}
-    <svelte:component this={result[1].default} panorama={result[0]} />
+  {:then [data, module]}
+    <svelte:component this={module.default} panorama={data} />
   {:catch}
     Failed to load asset
   {/await}
