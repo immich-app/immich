@@ -49,10 +49,17 @@ class ImmichLocalImageProvider extends ImageProvider<Asset> {
     StreamController<ImageChunkEvent> chunkEvents,
   ) async* {
     if (_loadPreview) {
-      // TODO: Use local preview
+      final thumbBytes = await asset.local?.thumbnailDataWithSize(
+        const ThumbnailSize.square(2000),
+        quality: 100,
+      );
+      if (thumbBytes == null) {
+        throw StateError("Loading thumb for ${asset.fileName} failed");
+      }
+      final buffer = await ui.ImmutableBuffer.fromUint8List(thumbBytes);
+      final codec = await decode(buffer);
+      yield codec;
     }
-    yield await _loadOriginalCodec(key, decode, chunkEvents);
-  }
 
   /// The local codec for local images
   Future<ui.Codec> _loadOriginalCodec(
@@ -84,20 +91,9 @@ class ImmichLocalImageProvider extends ImageProvider<Asset> {
           throw StateError("Loading asset ${asset.fileName} failed");
         }
       }
-    } else {
-      final thumbBytes = await asset.local?.thumbnailData;
-      if (thumbBytes == null) {
-        throw StateError("Loading thumb for video ${asset.fileName} failed");
-      }
-      buffer = await ui.ImmutableBuffer.fromUint8List(thumbBytes);
     }
-    try {
-      final codec = await decode(buffer);
-      debugPrint("Decoded image ${asset.fileName}");
-      return codec;
-    } catch (error) {
-      throw StateError("Decoding asset ${asset.fileName} failed");
-    }
+
+    chunkEvents.close();
   }
 
   @override
