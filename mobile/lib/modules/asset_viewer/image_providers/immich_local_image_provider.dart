@@ -49,18 +49,19 @@ class ImmichLocalImageProvider extends ImageProvider<Asset> {
     StreamController<ImageChunkEvent> chunkEvents,
   ) async* {
     if (_loadPreview) {
-      // TODO: Use local preview
+      // Load a small thumbnail
+      final thumbBytes = await asset.local?.thumbnailDataWithSize(
+        const ThumbnailSize.square(256),
+        quality: 80,
+      );
+      if (thumbBytes != null) {
+        final buffer = await ui.ImmutableBuffer.fromUint8List(thumbBytes);
+        final codec = await decode(buffer);
+        yield codec;
+      } else {
+        debugPrint("Loading thumb for ${asset.fileName} failed");
+      }
     }
-    yield await _loadOriginalCodec(key, decode, chunkEvents);
-  }
-
-  /// The local codec for local images
-  Future<ui.Codec> _loadOriginalCodec(
-    Asset key,
-    ImageDecoderCallback decode,
-    StreamController<ImageChunkEvent> chunkEvents,
-  ) async {
-    final ui.ImmutableBuffer buffer;
 
     if (asset.isImage) {
       /// Using 2K thumbnail for local iOS image to avoid double swiping issue
@@ -72,32 +73,30 @@ class ImmichLocalImageProvider extends ImageProvider<Asset> {
             "Loading thumb for local photo ${asset.fileName} failed",
           );
         }
-        buffer = await ui.ImmutableBuffer.fromUint8List(largeImageBytes);
+        final buffer = await ui.ImmutableBuffer.fromUint8List(largeImageBytes);
+        final codec = await decode(buffer);
+        yield codec;
       } else {
+        // Use the original file for Android
         final File? file = await asset.local?.originFile;
         if (file == null) {
           throw StateError("Opening file for asset ${asset.fileName} failed");
         }
         try {
-          buffer = await ui.ImmutableBuffer.fromFilePath(file.path);
+          final buffer = await ui.ImmutableBuffer.fromFilePath(file.path);
+          final codec = await decode(buffer);
+          yield codec;
+          if (Platform.isIOS) {
+            // Clean up this file
+            await file.delete();
+          }
         } catch (error) {
           throw StateError("Loading asset ${asset.fileName} failed");
         }
       }
-    } else {
-      final thumbBytes = await asset.local?.thumbnailData;
-      if (thumbBytes == null) {
-        throw StateError("Loading thumb for video ${asset.fileName} failed");
-      }
-      buffer = await ui.ImmutableBuffer.fromUint8List(thumbBytes);
     }
-    try {
-      final codec = await decode(buffer);
-      debugPrint("Decoded image ${asset.fileName}");
-      return codec;
-    } catch (error) {
-      throw StateError("Decoding asset ${asset.fileName} failed");
-    }
+
+    chunkEvents.close();
   }
 
   @override
