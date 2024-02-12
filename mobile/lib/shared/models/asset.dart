@@ -368,7 +368,6 @@ class Asset {
     ExifInfo? exifInfo,
     String? stackParentId,
     int? stackCount,
-    List<byte>? thumbhash,
   }) =>
       Asset(
         id: id ?? this.id,
