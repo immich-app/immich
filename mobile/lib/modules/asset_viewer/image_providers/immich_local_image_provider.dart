@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:photo_manager/photo_manager.dart';
 
 /// The local image provider for an asset
 /// Only viable
@@ -60,15 +61,28 @@ class ImmichLocalImageProvider extends ImageProvider<Asset> {
     StreamController<ImageChunkEvent> chunkEvents,
   ) async {
     final ui.ImmutableBuffer buffer;
+
     if (asset.isImage) {
-      final File? file = await asset.local?.originFile;
-      if (file == null) {
-        throw StateError("Opening file for asset ${asset.fileName} failed");
-      }
-      try {
-        buffer = await ui.ImmutableBuffer.fromFilePath(file.path);
-      } catch (error) {
-        throw StateError("Loading asset ${asset.fileName} failed");
+      /// Using 2K thumbnail for local iOS image to avoid double swiping issue
+      if (Platform.isIOS) {
+        final largeImageBytes = await asset.local
+            ?.thumbnailDataWithSize(const ThumbnailSize(3840, 2160));
+        if (largeImageBytes == null) {
+          throw StateError(
+            "Loading thumb for local photo ${asset.fileName} failed",
+          );
+        }
+        buffer = await ui.ImmutableBuffer.fromUint8List(largeImageBytes);
+      } else {
+        final File? file = await asset.local?.originFile;
+        if (file == null) {
+          throw StateError("Opening file for asset ${asset.fileName} failed");
+        }
+        try {
+          buffer = await ui.ImmutableBuffer.fromFilePath(file.path);
+        } catch (error) {
+          throw StateError("Loading asset ${asset.fileName} failed");
+        }
       }
     } else {
       final thumbBytes = await asset.local?.thumbnailData;
