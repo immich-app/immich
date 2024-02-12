@@ -495,6 +495,18 @@ export type LibraryStatsResponseDto = {
     usage: number;
     videos: number;
 };
+export type ValidateLibraryDto = {
+    exclusionPatterns?: string[];
+    importPaths?: string[];
+};
+export type ValidateLibraryImportPathResponseDto = {
+    importPath: string;
+    message?: string;
+    valid?: boolean;
+};
+export type ValidateLibraryResponseDto = {
+    importPaths?: ValidateLibraryImportPathResponseDto[];
+};
 export type OAuthConfigDto = {
     redirectUri: string;
 };
@@ -1840,6 +1852,19 @@ export function getLibraryStatistics({ id }: {
     }>(`/library/${encodeURIComponent(id)}/statistics`, {
         ...opts
     }));
+}
+export function validate({ id, validateLibraryDto }: {
+    id: string;
+    validateLibraryDto: ValidateLibraryDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: ValidateLibraryResponseDto;
+    }>(`/library/${encodeURIComponent(id)}/validate`, oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: validateLibraryDto
+    })));
 }
 export function startOAuth({ oAuthConfigDto }: {
     oAuthConfigDto: OAuthConfigDto;
