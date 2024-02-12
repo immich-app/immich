@@ -52,7 +52,8 @@ ENV LD_LIBRARY_PATH=/opt/armnn
 RUN apt-get update && apt-get install -y --no-install-recommends ocl-icd-libopencl1 mesa-opencl-icd && \
     rm -rf /var/lib/apt/lists/* && \
     mkdir --parents /etc/OpenCL/vendors && \
-    echo "/usr/lib/libmali.so" > /etc/OpenCL/vendors/mali.icd
+    echo "/usr/lib/libmali.so" > /etc/OpenCL/vendors/mali.icd && \
+    mkdir /opt/armnn
 
 COPY --from=builder-armnn \
       /opt/armnn/libarmnn.so.?? \
