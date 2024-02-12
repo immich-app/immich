@@ -187,8 +187,19 @@ export class AssetService {
     return folder;
   }
 
-  getMapMarkers(auth: AuthDto, options: MapMarkerDto): Promise<MapMarkerResponseDto[]> {
-    return this.assetRepository.getMapMarkers(auth.user.id, options);
+  async getMapMarkers(auth: AuthDto, options: MapMarkerDto): Promise<MapMarkerResponseDto[]> {
+    const userIds: string[] = [auth.user.id];
+    if (1) {
+      const partners = await this.partnerRepository.getAll(auth.user.id);
+      const partnersIds = partners
+        .filter(
+          (partner) =>
+            partner.sharedBy && partner.sharedWith && partner.sharedById != auth.user.id && partner.inTimeline,
+        )
+        .map((partner) => partner.sharedById);
+      userIds.push(...partnersIds);
+    }
+    return this.assetRepository.getMapMarkers(userIds, options);
   }
 
   async getMemoryLane(auth: AuthDto, dto: MemoryLaneDto): Promise<MemoryLaneResponseDto[]> {
