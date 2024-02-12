@@ -38,7 +38,8 @@ class Asset {
         // stack handling to properly handle it
         stackParentId =
             remote.stackParentId == remote.id ? null : remote.stackParentId,
-        stackCount = remote.stackCount;
+        stackCount = remote.stackCount,
+        thumbhash = _decodeThumbhash(remote.thumbhash);
 
   Asset.local(AssetEntity local, List<int> hash)
       : localId = local.id,
@@ -91,6 +92,7 @@ class Asset {
     this.stackCount = 0,
     this.isReadOnly = false,
     this.isOffline = false,
+    this.thumbhash,
   });
 
   @ignore
@@ -118,6 +120,8 @@ class Asset {
   /// stores the raw SHA1 bytes as a base64 String
   /// because Isar cannot sort lists of byte arrays
   String checksum;
+
+  List<byte>? thumbhash;
 
   @Index(unique: false, replace: false, type: IndexType.hash)
   String? remoteId;
@@ -274,6 +278,7 @@ class Asset {
         a.exifInfo?.latitude != exifInfo?.latitude ||
         a.exifInfo?.longitude != exifInfo?.longitude ||
         // no local stack count or different count from remote
+        a.thumbhash != thumbhash ||
         ((stackCount == null && a.stackCount != null) ||
             (stackCount != null &&
                 a.stackCount != null &&
@@ -338,6 +343,7 @@ class Asset {
           isReadOnly: a.isReadOnly,
           isOffline: a.isOffline,
           exifInfo: a.exifInfo?.copyWith(id: id) ?? exifInfo,
+          thumbhash: a.thumbhash,
         );
       } else {
         // add only missing values (and set isLocal to true)
@@ -374,6 +380,7 @@ class Asset {
     ExifInfo? exifInfo,
     String? stackParentId,
     int? stackCount,
+    List<byte>? thumbhash,
   }) =>
       Asset(
         id: id ?? this.id,
@@ -398,6 +405,7 @@ class Asset {
         exifInfo: exifInfo ?? this.exifInfo,
         stackParentId: stackParentId ?? this.stackParentId,
         stackCount: stackCount ?? this.stackCount,
+        thumbhash: thumbhash ?? this.thumbhash,
       );
 
   Future<void> put(Isar db) async {
@@ -509,4 +517,11 @@ extension AssetsHelper on IsarCollection<Asset> {
   QueryBuilder<Asset, Asset, QAfterWhereClause> local(Iterable<String> ids) {
     return where().anyOf(ids, (q, String e) => q.localIdEqualTo(e));
   }
+}
+
+List<byte>? _decodeThumbhash(String? hash) {
+  if (hash == null) {
+    return null;
+  }
+  return base64.decode(base64.normalize(hash)).toList();
 }

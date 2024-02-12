@@ -11,8 +11,9 @@ import 'package:immich_mobile/shared/models/store.dart';
 import 'package:octo_image/octo_image.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
+import 'package:thumbhash/thumbhash.dart' as thumbhash;
 
-class ImmichImage extends StatelessWidget {
+class ImmichImage extends StatefulWidget {
   const ImmichImage(
     this.asset, {
     this.width,
@@ -55,6 +56,9 @@ class ImmichImage extends StatelessWidget {
       thumbnailSize: thumbnailSize,
     );
   }
+
+  @override
+  State<ImmichImage> createState() => _ImmichImageState();
 
   // Helper function to return the image provider for the asset
   // either by using the asset ID or the asset itself
@@ -145,6 +149,106 @@ class ImmichImage extends StatelessWidget {
         } else {
           debugPrint(
             "Error getting thumb for assetId=${asset?.localId}: $error",
+          );
+        }
+        return Icon(
+          Icons.image_not_supported_outlined,
+          color: context.primaryColor,
+        );
+      },
+    );
+  }
+}
+
+class _ImmichImageState extends State<ImmichImage> {
+  // Creating the Uint8List from the List<bytes> during each build results in flickers during
+  // the fade transition. Calculate the hash in the initState and cache it for further builds
+  Uint8List? thumbHashBytes;
+  static const _placeholderDimension = 300.0;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.asset?.thumbhash != null) {
+      final bytes = Uint8List.fromList(widget.asset!.thumbhash!);
+      final rgbaImage = thumbhash.thumbHashToRGBA(bytes);
+      thumbHashBytes = thumbhash.rgbaToBmp(rgbaImage);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.asset == null) {
+      return Container(
+        decoration: const BoxDecoration(
+          color: Colors.grey,
+        ),
+        child: SizedBox(
+          width: widget.width,
+          height: widget.height,
+          child: const Center(
+            child: Icon(Icons.no_photography),
+          ),
+        ),
+      );
+    }
+
+    final Asset asset = widget.asset!;
+
+    return Image(
+      image: ImmichImage.imageProvider(
+        asset: asset,
+        isThumbnail: widget.isThumbnail,
+      ),
+      width: widget.width,
+      height: widget.height,
+      fit: widget.fit,
+      loadingBuilder: (_, child, loadingProgress) {
+        return AnimatedOpacity(
+          opacity: loadingProgress != null ? 0 : 1,
+          duration: const Duration(seconds: 1),
+          curve: Curves.easeOut,
+          child: child,
+        );
+      },
+      frameBuilder: (_, child, frame, wasSynchronouslyLoaded) {
+        if (wasSynchronouslyLoaded || frame != null) {
+          return child;
+        }
+
+        return Stack(
+          alignment: Alignment.center,
+          children: [
+            if (widget.useGrayBoxPlaceholder)
+              const SizedBox.square(
+                dimension: _placeholderDimension,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(color: Colors.grey),
+                ),
+              ),
+            if (thumbHashBytes != null)
+              Image.memory(
+                thumbHashBytes!,
+                width: _placeholderDimension,
+                height: _placeholderDimension,
+                fit: BoxFit.cover,
+              ),
+            if (widget.useProgressIndicator)
+              const Center(
+                child: CircularProgressIndicator(),
+              ),
+          ],
+        );
+      },
+      errorBuilder: (context, error, stackTrace) {
+        if (error is PlatformException &&
+            error.code == "The asset not found!") {
+          debugPrint(
+            "Asset ${asset.localId} does not exist anymore on device!",
+          );
+        } else {
+          debugPrint(
+            "Error getting thumb for assetId=${asset.localId}: $error",
           );
         }
         return Icon(
