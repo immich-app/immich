@@ -222,6 +222,9 @@ export class StorageCore {
           return;
         }
 
+        const { atime, mtime } = await this.repository.stat(move.oldPath);
+        await this.repository.utimes(newPath, atime, mtime);
+
         try {
           await this.repository.unlink(move.oldPath);
         } catch (error: any) {
