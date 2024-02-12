@@ -52,15 +52,16 @@ class ImmichLocalImageProvider extends ImageProvider<Asset> {
     if (_loadPreview) {
       // Load a small thumbnail
       final thumbBytes = await asset.local?.thumbnailDataWithSize(
-        const ThumbnailSize.square(2000),
-        quality: 100,
+        const ThumbnailSize.square(256),
+        quality: 80,
       );
-      if (thumbBytes == null) {
-        throw StateError("Loading thumb for ${asset.fileName} failed");
+      if (thumbBytes != null) {
+        final buffer = await ui.ImmutableBuffer.fromUint8List(thumbBytes);
+        final codec = await decode(buffer);
+        yield codec;
+      } else {
+        debugPrint("Loading thumb for ${asset.fileName} failed");
       }
-      final buffer = await ui.ImmutableBuffer.fromUint8List(thumbBytes);
-      final codec = await decode(buffer);
-      yield codec;
     }
 
     if (asset.isImage) {
