@@ -10,9 +10,8 @@ import 'package:immich_mobile/shared/models/store.dart';
 import 'package:octo_image/octo_image.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
-import 'package:thumbhash/thumbhash.dart' as thumbhash;
 
-class ImmichImage extends StatefulWidget {
+class ImmichImage extends StatelessWidget {
   const ImmichImage(
     this.asset, {
     this.width,
@@ -98,37 +97,17 @@ class ImmichImage extends StatefulWidget {
   static bool useLocal(Asset asset) =>
       !asset.isRemote ||
       asset.isLocal && !Store.get(StoreKey.preferRemoteImage, false);
-
-  @override
-  createState() => _ImmichImageState();
-}
-
-/// Renders an Asset using local data if available, else remote data
-class _ImmichImageState extends State<ImmichImage> {
-  // Creating the Uint8List from the List<bytes> during each build results in flickers during
-  // the fade transition. Calculate the hash in the initState and cache it for further builds
-  Uint8List? thumbHashBytes;
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.isThumbnail && widget.asset?.thumbhash != null) {
-      final bytes = widget.asset!.thumbhash! as Uint8List;
-      final rgbaImage = thumbhash.thumbHashToRGBA(bytes);
-      thumbHashBytes = thumbhash.rgbaToBmp(rgbaImage);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    if (widget.asset == null) {
+
+    if (asset == null) {
       return Container(
         decoration: const BoxDecoration(
           color: Colors.grey,
         ),
         child: SizedBox(
-          width: widget.width,
-          height: widget.height,
+          width: width,
+          height: height,
           child: const Center(
             child: Icon(Icons.no_photography),
           ),
@@ -136,19 +115,11 @@ class _ImmichImageState extends State<ImmichImage> {
       );
     }
 
-    final Asset asset = widget.asset!;
-
     return OctoImage(
       fadeInDuration: const Duration(milliseconds: 0),
       fadeOutDuration: const Duration(milliseconds: 400),
       placeholderBuilder: (context) {
-        if (thumbHashBytes != null && widget.isThumbnail) {
-          // Use the blurhash placeholder
-          return Image.memory(
-            thumbHashBytes!,
-            fit: BoxFit.cover,
-          );
-        } else if (widget.useGrayBoxPlaceholder) {
+        if (useGrayBoxPlaceholder) {
           // Use the gray box placeholder
           return const SizedBox.expand(
             child: DecoratedBox(
@@ -161,20 +132,20 @@ class _ImmichImageState extends State<ImmichImage> {
       },
       image: ImmichImage.imageProvider(
         asset: asset,
-        isThumbnail: widget.isThumbnail,
+        isThumbnail: isThumbnail,
       ),
-      width: widget.width,
-      height: widget.height,
-      fit: widget.fit,
+      width: width,
+      height: height,
+      fit: fit,
       errorBuilder: (context, error, stackTrace) {
         if (error is PlatformException &&
             error.code == "The asset not found!") {
           debugPrint(
-            "Asset ${asset.localId} does not exist anymore on device!",
+            "Asset ${asset?.localId} does not exist anymore on device!",
           );
         } else {
           debugPrint(
-            "Error getting thumb for assetId=${asset.localId}: $error",
+            "Error getting thumb for assetId=${asset?.localId}: $error",
           );
         }
         return Icon(
