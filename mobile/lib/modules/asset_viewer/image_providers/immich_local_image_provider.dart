@@ -86,12 +86,13 @@ class ImmichLocalImageProvider extends ImageProvider<Asset> {
           final buffer = await ui.ImmutableBuffer.fromFilePath(file.path);
           final codec = await decode(buffer);
           yield codec;
+        } catch (error) {
+          throw StateError("Loading asset ${asset.fileName} failed");
+        } finally {
           if (Platform.isIOS) {
             // Clean up this file
             await file.delete();
           }
-        } catch (error) {
-          throw StateError("Loading asset ${asset.fileName} failed");
         }
       }
     }

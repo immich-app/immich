@@ -12,6 +12,9 @@ import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 
+/// Our Image Provider HTTP client to make the request
+final _httpClient = HttpClient()..autoUncompress = false;
+
 /// The remote image provider
 class ImmichRemoteImageProvider extends ImageProvider<String> {
   /// The [Asset.remoteId] of the asset to fetch
@@ -20,9 +23,6 @@ class ImmichRemoteImageProvider extends ImageProvider<String> {
   // If this is a thumbnail, we stop at loading the
   // smallest version of the remote image
   final bool isThumbnail;
-
-  /// Our HTTP client to make the request
-  final _httpClient = HttpClient()..autoUncompress = false;
 
   ImmichRemoteImageProvider({
     required this.assetId,
