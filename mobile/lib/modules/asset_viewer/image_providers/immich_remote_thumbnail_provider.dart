@@ -3,55 +3,43 @@ import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:immich_mobile/modules/asset_viewer/image_providers/immich_remote_image_provider.dart';
 import 'package:openapi/api.dart' as api;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
-import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 
 /// The remote image provider
-class ImmichRemoteImageProvider extends ImageProvider<String> {
+class ImmichRemoteThumbnailProvider extends ImageProvider<String> {
   /// The [Asset.remoteId] of the asset to fetch
   final String assetId;
-
-  // If this is a thumbnail, we stop at loading the
-  // smallest version of the remote image
-  final bool isThumbnail;
 
   /// Our HTTP client to make the request
   final _httpClient = HttpClient()..autoUncompress = false;
 
-  ImmichRemoteImageProvider({
+  ImmichRemoteThumbnailProvider({
     required this.assetId,
-    this.isThumbnail = false,
   });
 
   /// Converts an [ImageProvider]'s settings plus an [ImageConfiguration] to a key
   /// that describes the precise image to load.
   @override
   Future<String> obtainKey(ImageConfiguration configuration) {
-    return SynchronousFuture('$assetId,$isThumbnail');
+    return SynchronousFuture(assetId);
   }
 
   @override
   ImageStreamCompleter loadImage(String key, ImageDecoderCallback decode) {
-    final id = key.split(',').first;
     final chunkEvents = StreamController<ImageChunkEvent>();
     return MultiImageStreamCompleter(
-      codec: _codec(id, decode, chunkEvents),
+      codec: _codec(key, decode, chunkEvents),
       scale: 1.0,
       chunkEvents: chunkEvents.stream,
     );
   }
-
-  /// Whether to show the original file or load a compressed version
-  bool get _useOriginal => AppSettingsEnum.loadOriginal.defaultValue;
-
-  /// Whether to load the preview thumbnail first or not
-  bool get _loadPreview => AppSettingsEnum.loadPreview.defaultValue;
 
   // Streams in each stage of the image as we ask for it
   Stream<ui.Codec> _codec(
@@ -60,40 +48,17 @@ class ImmichRemoteImageProvider extends ImageProvider<String> {
     StreamController<ImageChunkEvent> chunkEvents,
   ) async* {
     // Load a preview to the chunk events
-    if (_loadPreview || isThumbnail) {
-      final preview = getThumbnailUrlForRemoteId(
-        assetId,
-        type: api.ThumbnailFormat.WEBP,
-      );
-
-      yield await _loadFromUri(
-        Uri.parse(preview),
-        decode,
-        chunkEvents,
-      );
-    }
-
-    // Guard thumnbail rendering
-    if (isThumbnail) {
-      await chunkEvents.close();
-      return;
-    }
-
-    // Load the higher resolution version of the image
-    final url = getThumbnailUrlForRemoteId(
+    final preview = getThumbnailUrlForRemoteId(
       assetId,
-      type: api.ThumbnailFormat.JPEG,
+      type: api.ThumbnailFormat.WEBP,
     );
-    final codec = await _loadFromUri(Uri.parse(url), decode, chunkEvents);
-    yield codec;
 
-    // Load the final remote image
-    if (_useOriginal) {
-      // Load the original image
-      final url = getImageUrlFromId(assetId);
-      final codec = await _loadFromUri(Uri.parse(url), decode, chunkEvents);
-      yield codec;
-    }
+    yield await _loadFromUri(
+      Uri.parse(preview),
+      decode,
+      chunkEvents,
+    );
+
     await chunkEvents.close();
   }
 

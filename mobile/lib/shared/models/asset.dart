@@ -439,17 +439,17 @@ class Asset {
   "remoteId": "${remoteId ?? "N/A"}",
   "localId": "${localId ?? "N/A"}",
   "checksum": "$checksum",
-  "ownerId": $ownerId, 
+  "ownerId": $ownerId,
   "livePhotoVideoId": "${livePhotoVideoId ?? "N/A"}",
   "stackCount": "$stackCount",
   "stackParentId": "${stackParentId ?? "N/A"}",
   "fileCreatedAt": "$fileCreatedAt",
-  "fileModifiedAt": "$fileModifiedAt", 
-  "updatedAt": "$updatedAt", 
-  "durationInSeconds": $durationInSeconds, 
+  "fileModifiedAt": "$fileModifiedAt",
+  "updatedAt": "$updatedAt",
+  "durationInSeconds": $durationInSeconds,
   "type": "$type",
-  "fileName": "$fileName", 
-  "isFavorite": $isFavorite, 
+  "fileName": "$fileName",
+  "isFavorite": $isFavorite,
   "isRemote": $isRemote,
   "storage": "$storage",
   "width": ${width ?? "N/A"},
@@ -517,5 +517,5 @@ List<byte>? _decodeThumbhash(String? hash) {
   if (hash == null) {
     return null;
   }
-  return base64.decode(base64.normalize(hash)).toList();
+  return base64.decode(hash);
 }

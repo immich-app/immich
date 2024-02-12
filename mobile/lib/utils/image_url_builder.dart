@@ -56,7 +56,7 @@ String getAlbumThumbNailCacheKey(
 }
 
 String getImageUrl(final Asset asset) {
-  return '${Store.get(StoreKey.serverEndpoint)}/asset/file/${asset.remoteId}?isThumb=false';
+  return getImageUrlFromId(asset.remoteId!);
 }
 
 String getImageUrlFromId(final String id) {
