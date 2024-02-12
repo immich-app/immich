@@ -6,6 +6,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
+import 'package:flutter/services.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:photo_manager/photo_manager.dart';
@@ -49,6 +50,7 @@ class ImmichLocalImageProvider extends ImageProvider<Asset> {
     StreamController<ImageChunkEvent> chunkEvents,
   ) async* {
     if (_loadPreview) {
+      // Load a small thumbnail
       final thumbBytes = await asset.local?.thumbnailDataWithSize(
         const ThumbnailSize.square(2000),
         quality: 100,
@@ -61,14 +63,6 @@ class ImmichLocalImageProvider extends ImageProvider<Asset> {
       yield codec;
     }
 
-  /// The local codec for local images
-  Future<ui.Codec> _loadOriginalCodec(
-    Asset key,
-    ImageDecoderCallback decode,
-    StreamController<ImageChunkEvent> chunkEvents,
-  ) async {
-    final ui.ImmutableBuffer buffer;
-
     if (asset.isImage) {
       /// Using 2K thumbnail for local iOS image to avoid double swiping issue
       if (Platform.isIOS) {
@@ -79,14 +73,19 @@ class ImmichLocalImageProvider extends ImageProvider<Asset> {
             "Loading thumb for local photo ${asset.fileName} failed",
           );
         }
-        buffer = await ui.ImmutableBuffer.fromUint8List(largeImageBytes);
+        final buffer = await ui.ImmutableBuffer.fromUint8List(largeImageBytes);
+        final codec = await decode(buffer);
+        yield codec;
       } else {
+        // Use the original file for Android
         final File? file = await asset.local?.originFile;
         if (file == null) {
           throw StateError("Opening file for asset ${asset.fileName} failed");
         }
         try {
-          buffer = await ui.ImmutableBuffer.fromFilePath(file.path);
+          final buffer = await ui.ImmutableBuffer.fromFilePath(file.path);
+          final codec = await decode(buffer);
+          yield codec;
         } catch (error) {
           throw StateError("Loading asset ${asset.fileName} failed");
         }
