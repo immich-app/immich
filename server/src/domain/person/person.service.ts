@@ -80,14 +80,13 @@ export class PersonService {
 
   async getAll(auth: AuthDto, dto: PersonSearchDto): Promise<PeopleResponseDto> {
     const { machineLearning } = await this.configCore.getConfig();
-    let userIds: string[];
-    userIds = [auth.user.id];
+    const userIds: string[] = [auth.user.id];
     if (dto.withPartners) {
-        const partners = await this.partnerRepository.getAll(auth.user.id);
-        const partnersIds = partners
-        .filter((partner) => partner.sharedBy && partner.sharedWith && partner.sharedById != auth.user.id)  //TODO should && partner.inTimeline be included, as in assets?
+      const partners = await this.partnerRepository.getAll(auth.user.id);
+      const partnersIds = partners
+        .filter((partner) => partner.sharedBy && partner.sharedWith && partner.sharedById != auth.user.id) //TODO should && partner.inTimeline be included, as in assets?
         .map((partner) => partner.sharedById);
-        userIds.push(...partnersIds);
+      userIds.push(...partnersIds);
     }
     const people = await this.repository.getAllForUsers(userIds, {
       minimumFaceCount: machineLearning.facialRecognition.minFaces,

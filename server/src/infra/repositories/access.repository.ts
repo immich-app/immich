@@ -381,7 +381,7 @@ class PersonAccess implements IPersonAccess {
 
     return this.partnerRepository
       .createQueryBuilder('partner')
-      .innerJoinAndMapOne('sharedBy.persons', 'person', "person", "person.ownerId = partner.sharedById") //TODO: gives the correct SQL, but somehow feels wrong...
+      .innerJoinAndMapOne('sharedBy.persons', 'person', 'person', 'person.ownerId = partner.sharedById') //TODO: gives the correct SQL, but somehow feels wrong...
       .select('person.id', 'personId')
       .where('partner.sharedWithId = :userId', { userId })
       .andWhere('person.id IN (:...personIds)', { personIds: [...personIds] })

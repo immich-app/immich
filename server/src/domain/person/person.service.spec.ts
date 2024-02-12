@@ -132,7 +132,7 @@ describe(PersonService.name, () => {
         withHidden: false,
       });
     });
-    it('should get partner\'s people when requested ', async () => {
+    it("should get partner's people when requested ", async () => {
       personMock.getAllForUsers.mockResolvedValue([personStub.withName, personStub.partnerPerson]);
       personMock.getNumberOfPeople.mockResolvedValue(2);
       partnerMock.getAll.mockResolvedValue([partnerStub.adminToUser1, partnerStub.user1ToAdmin1]);
@@ -146,7 +146,7 @@ describe(PersonService.name, () => {
             birthDate: null,
             thumbnailPath: '/path/to/thumbnail',
             isHidden: false,
-          }
+          },
         ],
       });
       expect(personMock.getAllForUsers).toHaveBeenCalledWith([authStub.admin.user.id, authStub.user1.user.id], {
