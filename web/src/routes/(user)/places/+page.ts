@@ -4,8 +4,7 @@ import type { PageLoad } from './$types';
 
 export const load = (async () => {
   await authenticate();
-  const { data: items } = await api.searchApi.getExploreData();
-
+  const { data: items } = await api.searchApi.getExploreData({ params: { size: -1 }});
   return {
     items,
     meta: {

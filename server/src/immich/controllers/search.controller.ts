@@ -2,6 +2,7 @@ import {
   AuthDto,
   PersonResponseDto,
   SearchDto,
+  SearchExploreDto,
   SearchExploreResponseDto,
   SearchPeopleDto,
   SearchResponseDto,
@@ -25,8 +26,8 @@ export class SearchController {
   }
 
   @Get('explore')
-  getExploreData(@Auth() auth: AuthDto): Promise<SearchExploreResponseDto[]> {
-    return this.service.getExploreData(auth) as Promise<SearchExploreResponseDto[]>;
+  getExploreData(@Auth() auth: AuthDto, @Query() dto: SearchExploreDto): Promise<SearchExploreResponseDto[]> {
+    return this.service.getExploreData(auth, dto) as Promise<SearchExploreResponseDto[]>;
   }
 
   @Get('person')

@@ -1,4 +1,5 @@
 <script lang="ts">
+
   import type { SearchExploreResponseDto } from '@api';
   import type { PageData } from './$types';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
