@@ -1,5 +1,7 @@
 <script lang="ts" context="module">
   import { type ComboBoxOption } from '../combobox.svelte';
+  import type { PersonResponseDto } from '@api';
+
   export enum MediaType {
     All = 'all',
     Image = 'image',
@@ -58,7 +60,7 @@
   import IconButton from '$lib/components/elements/buttons/icon-button.svelte';
   import SearchHistoryBox from './search-history-box.svelte';
   import SearchFilterBox from './search-filter-box.svelte';
-  import type { PersonResponseDto } from '@api';
+
   export let value = '';
   export let grayTheme: boolean;
 

@@ -8,13 +8,7 @@
   import { mdiArrowRight, mdiClose } from '@mdi/js';
   import { handleError } from '$lib/utils/handle-error';
   import { onMount } from 'svelte';
-  import type { Search } from './search-bar.svelte';
-
-  enum MediaType {
-    All = 'all',
-    Image = 'image',
-    Video = 'video',
-  }
+  import { MediaType, type Search } from './search-bar.svelte';
 
   type SearchParams = {
     state?: string;
