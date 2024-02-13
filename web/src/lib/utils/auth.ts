@@ -13,43 +13,47 @@ export interface AuthOptions {
 
 export const loadUser = async () => {
   try {
-    if (!get(user) && hasAuthCookie()) {
+    let loaded = get(user);
+    if (!loaded && hasAuthCookie()) {
       const { data } = await api.userApi.getMyUserInfo();
-      user.set(data);
+      loaded = data;
+      user.set(loaded);
     }
-    return get(user);
+    return loaded;
   } catch {
-    return undefined;
+    return null;
   }
 };
 
 const hasAuthCookie = (): boolean => {
-  if (browser) {
-    const cookies = document.cookie.split('; ');
-    for (const cookie of cookies) {
-      const [name] = cookie.split('=');
-      if (name === 'immich_is_authenticated') {
-        return true;
-      }
+  if (!browser) {
+    return false;
+  }
+
+  for (const cookie of document.cookie.split('; ')) {
+    const [name] = cookie.split('=');
+    if (name === 'immich_is_authenticated') {
+      return true;
     }
   }
+
   return false;
 };
 
 export const authenticate = async (options?: AuthOptions) => {
-  options = options || {};
+  const { public: publicRoute, admin: adminRoute } = options || {};
   const user = await loadUser();
 
-  if (options.public) {
+  if (publicRoute) {
     return;
   }
 
-  if (options.admin && user && !user.isAdmin) {
-    redirect(302, AppRoute.PHOTOS);
+  if (!user) {
+    redirect(302, AppRoute.AUTH_LOGIN);
   }
 
-  if (!options.public && !user) {
-    redirect(302, AppRoute.AUTH_LOGIN);
+  if (adminRoute && !user.isAdmin) {
+    redirect(302, AppRoute.PHOTOS);
   }
 };
 
