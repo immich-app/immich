@@ -39,7 +39,7 @@
 
 @font-face {
   font-family: 'Snowburst One';
-  src: url('@assets/fonts/SnowburstOne-Regular.ttf') format('truetype');
+  src: url('$lib/assets/fonts/SnowburstOne-Regular.ttf') format('truetype');
 }
 
 :root {
