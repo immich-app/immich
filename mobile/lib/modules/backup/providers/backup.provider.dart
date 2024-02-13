@@ -40,8 +40,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
             allAssetsInDatabase: const [],
             progressInPercentage: 0,
             cancelToken: CancellationToken(),
-            allUniqueAssets: const {},
-            backedUpAssetsCount: 0,
             currentUploadAsset: CurrentUploadAsset(
               id: '...',
               fileCreatedAt: DateTime.parse('2020-10-04'),
@@ -62,99 +60,32 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   final Isar _db;
   final Ref ref;
 
-  ///
-  /// From all the selected and albums assets
-  /// Find the assets that are not overlapping between the two sets
-  /// Those assets are unique and are used as the total assets
-  ///
-  Future<void> _updateBackupAssetCount() async {
-    final duplicatedAssetIds = await _backupService.getDuplicatedAssetIds();
-    final backupAlbums = await ref.read(backupAlbumsProvider.future);
-    final Set<Asset> assetsFromSelectedAlbums = {};
-    final Set<Asset> assetsFromExcludedAlbums = {};
-
-    for (final selected in backupAlbums.selectedBackupAlbums) {
-      assetsFromSelectedAlbums.addAll(selected.album.value?.assets ?? []);
-    }
-
-    for (final excluded in backupAlbums.excludedBackupAlbums) {
-      assetsFromExcludedAlbums.addAll(excluded.album.value?.assets ?? []);
-    }
-
-    final Set<Asset> allUniqueAssets =
-        assetsFromSelectedAlbums.difference(assetsFromExcludedAlbums);
-    final allAssetsInDatabase = await _backupService.getDeviceBackupAsset();
-
-    if (allAssetsInDatabase == null) {
-      return;
-    }
-
-    // Find asset that were backup from selected albums
-    final Set<String> selectedAlbumsBackupAssets =
-        allUniqueAssets.map((e) => e.localId).nonNulls.toSet();
-
-    selectedAlbumsBackupAssets
-        .removeWhere((assetId) => !allAssetsInDatabase.contains(assetId));
-
-    // Remove duplicated asset from all unique assets
-    allUniqueAssets
-        .removeWhere((asset) => duplicatedAssetIds.contains(asset.localId));
-
-    if (allUniqueAssets.isEmpty) {
-      log.fine("No assets are selected for back up");
-      state = state.copyWith(
-        backupProgress: BackUpProgressEnum.idle,
-        allAssetsInDatabase: allAssetsInDatabase,
-        allUniqueAssets: {},
-        backedUpAssetsCount: selectedAlbumsBackupAssets.length,
-      );
-    } else {
-      state = state.copyWith(
-        allAssetsInDatabase: allAssetsInDatabase,
-        allUniqueAssets: allUniqueAssets,
-        backedUpAssetsCount: selectedAlbumsBackupAssets.length,
-      );
-    }
-  }
-
-  /// Get all necessary information for calculating the available albums,
-  /// which albums are selected or excluded
-  /// and then update the UI according to those information
-  Future<void> getBackupInfo() async {
-    final isEnabled = await _backgroundService.isBackgroundBackupEnabled();
-    // TODO: Check this
-    // state = state.copyWith(backgroundBackup: isEnabled);
-    if (isEnabled != Store.get(StoreKey.backgroundBackup, !isEnabled)) {
-      Store.put(StoreKey.backgroundBackup, isEnabled);
-    }
-
-    if (state.backupProgress != BackUpProgressEnum.inBackground) {
-      await _serverInfoNotifier.getServerDiskInfo();
-      await _updateBackupAssetCount();
-    } else {
-      log.warning("cannot get backup info - background backup is in progress!");
-    }
-  }
-
   /// Invoke backup process
   Future<void> startBackupProcess() async {
     debugPrint("Start backup process");
     assert(state.backupProgress == BackUpProgressEnum.idle);
     state = state.copyWith(backupProgress: BackUpProgressEnum.inProgress);
 
-    await getBackupInfo();
+    await _serverInfoNotifier.getServerDiskInfo();
 
     final hasPermission = _galleryPermissionNotifier.hasPermission;
     if (hasPermission) {
       await PhotoManager.clearFileCache();
 
-      if (state.allUniqueAssets.isEmpty) {
+      final localAssetsToBackup = await _db.assets
+          .where()
+          .remoteIdIsNull()
+          .filter()
+          .localIdIsNotNull()
+          .selectedForBackupEqualTo(BackupSelection.select)
+          .findAll();
+      if (localAssetsToBackup.isEmpty) {
         log.info("No Asset On Device - Abort Backup Process");
         state = state.copyWith(backupProgress: BackUpProgressEnum.idle);
         return;
       }
 
-      Set<AssetEntity> assetsWillBeBackup = Set.from(state.allUniqueAssets);
+      Set<AssetEntity> assetsWillBeBackup = Set.from(localAssetsToBackup);
       // Remove item that has already been backed up
       for (final assetId in state.allAssetsInDatabase) {
         assetsWillBeBackup.removeWhere((e) => e.id == assetId);
@@ -213,20 +144,15 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     String deviceId,
     bool isDuplicated,
   ) {
-    if (isDuplicated) {
-      state = state.copyWith(
-        allUniqueAssets: state.allUniqueAssets
-            .where((asset) => asset.localId != deviceAssetId)
-            .toSet(),
-      );
-    } else {
-      state = state.copyWith(
-        backedUpAssetsCount: state.backedUpAssetsCount + 1,
-        allAssetsInDatabase: [...state.allAssetsInDatabase, deviceAssetId],
-      );
-    }
+    if (!isDuplicated) {
+      {
+        state = state.copyWith(
+          allAssetsInDatabase: [...state.allAssetsInDatabase, deviceAssetId],
+        );
+      }
 
-    _serverInfoNotifier.getServerDiskInfo();
+      _serverInfoNotifier.getServerDiskInfo();
+    }
   }
 
   void _onUploadProgress(int sent, int total) {

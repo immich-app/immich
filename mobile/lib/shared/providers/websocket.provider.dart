@@ -183,16 +183,6 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
     }
   }
 
-  void stopListenToEvent(String eventName) {
-    debugPrint("Stop listening to event $eventName");
-    state.socket?.off(eventName);
-  }
-
-  void listenUploadEvent() {
-    debugPrint("Start listening to event on_upload_success");
-    state.socket?.on('on_upload_success', _handleOnUploadSuccess);
-  }
-
   void addPendingChange(PendingAction action, dynamic value) {
     final now = DateTime.now();
     state = state.copyWith(

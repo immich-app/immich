@@ -6,7 +6,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/album/models/album.model.dart';
 import 'package:immich_mobile/modules/album/providers/local_album.provider.dart';
-import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/modules/backup/ui/backup_album_info_list_item.dart';
 import 'package:immich_mobile/shared/ui/immich_app_bar.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
@@ -22,7 +21,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
     useEffect(
       () {
         ref.read(localAlbumsProvider.notifier).getDeviceAlbums();
-        return ref.read(backupProvider.notifier).getBackupInfo;
+        return null;
       },
       [],
     );

@@ -8,8 +8,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/backup/background_service/background.service.dart';
-import 'package:immich_mobile/modules/backup/models/backup_state.model.dart';
-import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
+import 'package:immich_mobile/modules/backup/providers/backup_album.provider.dart';
 import 'package:immich_mobile/modules/backup/providers/backup_settings.provider.dart';
 import 'package:immich_mobile/modules/backup/providers/ios_background_settings.provider.dart';
 import 'package:immich_mobile/modules/backup/services/backup_verification.service.dart';
@@ -29,7 +28,7 @@ class BackupOptionsPage extends HookConsumerWidget {
   const BackupOptionsPage({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    BackUpState backupState = ref.watch(backupProvider);
+    final backupAlbums = ref.watch(backupAlbumsProvider);
     final backupSettings = ref.watch(backupSettingsProvider);
     final settings = ref.watch(iOSBackgroundSettingsProvider.notifier).settings;
     final settingsService = ref.watch(appSettingsServiceProvider);
@@ -66,8 +65,7 @@ class BackupOptionsPage extends HookConsumerWidget {
     void performBackupCheck() async {
       try {
         checkInProgress.value = true;
-        if (backupState.allUniqueAssets.length >
-            backupState.backedUpAssetsCount) {
+        if (backupAlbums.valueOrNull?.assetsRemaining != 0) {
           ImmichToast.show(
             context: context,
             msg: "Backup all assets before starting this check!",
