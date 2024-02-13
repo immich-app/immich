@@ -71,7 +71,7 @@
     "node-addon-api": "^7.0.0",
     "openid-client": "^5.4.3",
     "pg": "^8.11.3",
-    "picomatch": "^3.0.1",
+    "picomatch": "^4.0.0",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
     "sanitize-filename": "^1.6.3",
