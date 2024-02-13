@@ -1397,6 +1397,14 @@
             "schema": {
               "type": "boolean"
             }
+          },
+          {
+            "name": "withPartners",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "responses": {

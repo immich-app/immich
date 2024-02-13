@@ -189,13 +189,10 @@ export class AssetService {
 
   async getMapMarkers(auth: AuthDto, options: MapMarkerDto): Promise<MapMarkerResponseDto[]> {
     const userIds: string[] = [auth.user.id];
-    if (1) {
+    if (options.withPartners) {
       const partners = await this.partnerRepository.getAll(auth.user.id);
       const partnersIds = partners
-        .filter(
-          (partner) =>
-            partner.sharedBy && partner.sharedWith && partner.sharedById != auth.user.id && partner.inTimeline,
-        )
+        .filter((partner) => partner.sharedBy && partner.sharedWith && partner.sharedById != auth.user.id)
         .map((partner) => partner.sharedById);
       userIds.push(...partnersIds);
     }
