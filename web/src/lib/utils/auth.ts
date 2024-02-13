@@ -1,53 +1,65 @@
 import { api } from '@api';
 import { redirect } from '@sveltejs/kit';
 import { AppRoute } from '../constants';
-import { getSavedUser, setUser } from '$lib/stores/user.store';
+import { get } from 'svelte/store';
 import { serverInfo } from '$lib/stores/server-info.store';
+import { browser } from '$app/environment';
+import { user } from '$lib/stores/user.store';
 
 export interface AuthOptions {
   admin?: true;
+  public?: true;
 }
 
-export const getAuthUser = async () => {
+export const loadUser = async () => {
   try {
-    const { data: user } = await api.userApi.getMyUserInfo();
-    return user;
+    let loaded = get(user);
+    if (!loaded && hasAuthCookie()) {
+      const { data } = await api.userApi.getMyUserInfo();
+      loaded = data;
+      user.set(loaded);
+    }
+    return loaded;
   } catch {
     return null;
   }
 };
 
-export const authenticate = async (options?: AuthOptions) => {
-  options = options || {};
+const hasAuthCookie = (): boolean => {
+  if (!browser) {
+    return false;
+  }
 
-  const savedUser = getSavedUser();
-  const user = savedUser || (await getAuthUser());
+  for (const cookie of document.cookie.split('; ')) {
+    const [name] = cookie.split('=');
+    if (name === 'immich_is_authenticated') {
+      return true;
+    }
+  }
+
+  return false;
+};
+
+export const authenticate = async (options?: AuthOptions) => {
+  const { public: publicRoute, admin: adminRoute } = options || {};
+  const user = await loadUser();
+
+  if (publicRoute) {
+    return;
+  }
 
   if (!user) {
     redirect(302, AppRoute.AUTH_LOGIN);
   }
 
-  if (options.admin && !user.isAdmin) {
+  if (adminRoute && !user.isAdmin) {
     redirect(302, AppRoute.PHOTOS);
-  }
-
-  if (!savedUser) {
-    setUser(user);
   }
 };
 
 export const requestServerInfo = async () => {
-  if (getSavedUser()) {
+  if (get(user)) {
     const { data } = await api.serverInfoApi.getServerInfo();
     serverInfo.set(data);
   }
-};
-
-export const isLoggedIn = async () => {
-  const savedUser = getSavedUser();
-  const user = savedUser || (await getAuthUser());
-  if (!savedUser) {
-    setUser(user);
-  }
-  return user;
 };

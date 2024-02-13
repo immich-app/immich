@@ -3,27 +3,28 @@
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
-  import { api, type UserResponseDto } from '@api';
+  import { api } from '@api';
   import { fade } from 'svelte/transition';
   import { handleError } from '../../utils/handle-error';
   import SettingInputField, { SettingInputFieldType } from '../admin-page/settings/setting-input-field.svelte';
   import Button from '../elements/buttons/button.svelte';
-  import { setUser } from '$lib/stores/user.store';
+  import { user } from '$lib/stores/user.store';
+  import { cloneDeep } from 'lodash-es';
 
-  export let user: UserResponseDto;
+  let editedUser = cloneDeep($user);
 
   const handleSaveProfile = async () => {
     try {
       const { data } = await api.userApi.updateUser({
         updateUserDto: {
-          id: user.id,
-          email: user.email,
-          name: user.name,
+          id: editedUser.id,
+          email: editedUser.email,
+          name: editedUser.name,
         },
       });
 
-      Object.assign(user, data);
-      setUser(data);
+      Object.assign(editedUser, data);
+      $user = data;
 
       notificationController.show({
         message: 'Saved profile',
@@ -42,19 +43,24 @@
         <SettingInputField
           inputType={SettingInputFieldType.TEXT}
           label="USER ID"
-          bind:value={user.id}
+          bind:value={editedUser.id}
           disabled={true}
         />
 
-        <SettingInputField inputType={SettingInputFieldType.EMAIL} label="EMAIL" bind:value={user.email} />
+        <SettingInputField inputType={SettingInputFieldType.EMAIL} label="EMAIL" bind:value={editedUser.email} />
 
-        <SettingInputField inputType={SettingInputFieldType.TEXT} label="NAME" bind:value={user.name} required={true} />
+        <SettingInputField
+          inputType={SettingInputFieldType.TEXT}
+          label="NAME"
+          bind:value={editedUser.name}
+          required={true}
+        />
 
         <SettingInputField
           inputType={SettingInputFieldType.TEXT}
           label="STORAGE LABEL"
           disabled={true}
-          value={user.storageLabel || ''}
+          value={editedUser.storageLabel || ''}
           required={false}
         />
 
@@ -62,7 +68,7 @@
           inputType={SettingInputFieldType.TEXT}
           label="EXTERNAL PATH"
           disabled={true}
-          value={user.externalPath || ''}
+          value={editedUser.externalPath || ''}
           required={false}
         />
 

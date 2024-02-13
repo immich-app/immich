@@ -5,6 +5,7 @@ import {
   ChangePasswordDto,
   IMMICH_ACCESS_COOKIE,
   IMMICH_AUTH_TYPE_COOKIE,
+  IMMICH_IS_AUTHENTICATED,
   LoginCredentialDto,
   LoginDetails,
   LoginResponseDto,
@@ -84,6 +85,7 @@ export class AuthController {
   ): Promise<LogoutResponseDto> {
     res.clearCookie(IMMICH_ACCESS_COOKIE);
     res.clearCookie(IMMICH_AUTH_TYPE_COOKIE);
+    res.clearCookie(IMMICH_IS_AUTHENTICATED);
 
     return this.service.logout(auth, (request.cookies || {})[IMMICH_AUTH_TYPE_COOKIE]);
   }

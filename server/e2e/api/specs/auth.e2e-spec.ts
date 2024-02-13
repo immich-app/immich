@@ -153,9 +153,10 @@ describe(`${AuthController.name} (e2e)`, () => {
       expect(token).toBeDefined();
 
       const cookies = headers['set-cookie'];
-      expect(cookies).toHaveLength(2);
+      expect(cookies).toHaveLength(3);
       expect(cookies[0]).toEqual(`immich_access_token=${token}; HttpOnly; Path=/; Max-Age=34560000; SameSite=Lax;`);
       expect(cookies[1]).toEqual('immich_auth_type=password; HttpOnly; Path=/; Max-Age=34560000; SameSite=Lax;');
+      expect(cookies[2]).toEqual('immich_is_authenticated=true; Path=/; Max-Age=34560000; SameSite=Lax;');
     });
   });
 
