@@ -1,24 +1,50 @@
 <script lang="ts" context="module">
   import { type ComboBoxOption } from '../combobox.svelte';
-
   export enum MediaType {
     All = 'all',
     Image = 'image',
     Video = 'video',
   }
 
-  export type Search = {
-    selectedCountry: ComboBoxOption;
-    selectedState: ComboBoxOption;
-    selectedCity: ComboBoxOption;
+  export type SearchSuggestion = {
+    people: PersonResponseDto[];
+    country: ComboBoxOption[];
+    state: ComboBoxOption[];
+    city: ComboBoxOption[];
+    cameraMake: ComboBoxOption[];
+    cameraModel: ComboBoxOption[];
+  };
 
-    selectedMake: ComboBoxOption;
-    selectedModel: ComboBoxOption;
+  export type SearchFilter = {
+    context?: string;
+    people: PersonResponseDto[];
+
+    location: {
+      country?: ComboBoxOption;
+      state?: ComboBoxOption;
+      city?: ComboBoxOption;
+    };
+
+    camera: {
+      make?: ComboBoxOption;
+      model?: ComboBoxOption;
+    };
+
+    dateRange: {
+      startDate?: Date;
+      endDate?: Date;
+    };
+
+    inArchive?: boolean;
+    inFavorite?: boolean;
+    notInAlbum?: boolean;
 
     mediaType: MediaType;
-    notInAlbum: boolean;
-    inArchive: boolean;
-    inFavorite: boolean;
+  };
+
+  export type Search = {
+    filter: SearchFilter;
+    suggestions: SearchSuggestion;
   };
 </script>
 
@@ -32,23 +58,42 @@
   import IconButton from '$lib/components/elements/buttons/icon-button.svelte';
   import SearchHistoryBox from './search-history-box.svelte';
   import SearchFilterBox from './search-filter-box.svelte';
+  import type { PersonResponseDto } from '@api';
   export let value = '';
   export let grayTheme: boolean;
 
   let input: HTMLInputElement;
 
-  let search: Search = {
-    selectedCountry: { label: '', value: '' },
-    selectedState: { label: '', value: '' },
-    selectedCity: { label: '', value: '' },
-
-    selectedMake: { label: '', value: '' },
-    selectedModel: { label: '', value: '' },
-
-    mediaType: MediaType.All,
-    notInAlbum: false,
-    inArchive: false,
-    inFavorite: false,
+  let searchData: Search = {
+    filter: {
+      context: undefined,
+      people: [],
+      location: {
+        country: undefined,
+        state: undefined,
+        city: undefined,
+      },
+      camera: {
+        make: undefined,
+        model: undefined,
+      },
+      dateRange: {
+        startDate: undefined,
+        endDate: undefined,
+      },
+      inArchive: undefined,
+      inFavorite: undefined,
+      notInAlbum: undefined,
+      mediaType: MediaType.All,
+    },
+    suggestions: {
+      people: [],
+      country: [],
+      state: [],
+      city: [],
+      cameraMake: [],
+      cameraModel: [],
+    },
   };
 
   let showHistory = false;
@@ -178,7 +223,7 @@
     {/if}
 
     {#if showFilter}
-      <SearchFilterBox bind:search />
+      <SearchFilterBox bind:searchData />
     {/if}
   </form>
 </div>

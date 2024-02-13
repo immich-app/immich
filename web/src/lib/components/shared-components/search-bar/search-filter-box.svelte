@@ -1,28 +1,20 @@
 <script lang="ts">
   import Button from '$lib/components/elements/buttons/button.svelte';
   import { fly } from 'svelte/transition';
-  import Combobox, { type ComboBoxOption } from '../combobox.svelte';
-  import { SearchSuggestionType, api, type PersonResponseDto } from '@api';
+  import Combobox from '../combobox.svelte';
+  import { SearchSuggestionType, api } from '@api';
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import { mdiArrowRight, mdiClose } from '@mdi/js';
   import { handleError } from '$lib/utils/handle-error';
   import { onMount } from 'svelte';
+  import type { Search } from './search-bar.svelte';
 
   enum MediaType {
     All = 'all',
     Image = 'image',
     Video = 'video',
   }
-
-  type SearchSuggestion = {
-    people: PersonResponseDto[];
-    country: ComboBoxOption[];
-    state: ComboBoxOption[];
-    city: ComboBoxOption[];
-    cameraMake: ComboBoxOption[];
-    cameraModel: ComboBoxOption[];
-  };
 
   type SearchParams = {
     state?: string;
@@ -32,74 +24,18 @@
     cameraModel?: string;
   };
 
-  type SearchFilter = {
-    context?: string;
-    people: PersonResponseDto[];
-
-    location: {
-      country?: ComboBoxOption;
-      state?: ComboBoxOption;
-      city?: ComboBoxOption;
-    };
-
-    camera: {
-      make?: ComboBoxOption;
-      model?: ComboBoxOption;
-    };
-
-    dateRange: {
-      startDate?: Date;
-      endDate?: Date;
-    };
-
-    inArchive?: boolean;
-    inFavorite?: boolean;
-    notInAlbum?: boolean;
-
-    mediaType: MediaType;
-  };
-
-  let suggestions: SearchSuggestion = {
-    people: [],
-    country: [],
-    state: [],
-    city: [],
-    cameraMake: [],
-    cameraModel: [],
-  };
-
-  let filter: SearchFilter = {
-    context: undefined,
-    people: [],
-    location: {
-      country: undefined,
-      state: undefined,
-      city: undefined,
-    },
-    camera: {
-      make: undefined,
-      model: undefined,
-    },
-    dateRange: {
-      startDate: undefined,
-      endDate: undefined,
-    },
-    inArchive: undefined,
-    inFavorite: undefined,
-    notInAlbum: undefined,
-    mediaType: MediaType.All,
-  };
+  export let searchData: Search;
 
   let showAllPeople = false;
-  $: peopleList = showAllPeople ? suggestions.people : suggestions.people.slice(0, 11);
+  $: peopleList = showAllPeople ? searchData.suggestions.people : searchData.suggestions.people.slice(0, 11);
 
   onMount(() => {
     getPeople();
   });
 
   const showSelectedPeopleFirst = () => {
-    suggestions.people.sort((a, _) => {
-      if (filter.people.some((p) => p.id === a.id)) {
+    searchData.suggestions.people.sort((a, _) => {
+      if (searchData.filter.people.some((p) => p.id === a.id)) {
         return -1;
       }
       return 1;
@@ -109,22 +45,22 @@
   const getPeople = async () => {
     try {
       const { data } = await api.personApi.getAllPeople({ withHidden: false });
-      suggestions.people = data.people;
+      searchData.suggestions.people = data.people;
     } catch (error) {
       handleError(error, 'Failed to get people');
     }
   };
 
   const handlePeopleSelection = (id: string) => {
-    if (filter.people.some((p) => p.id === id)) {
-      filter.people = filter.people.filter((p) => p.id !== id);
+    if (searchData.filter.people.some((p) => p.id === id)) {
+      searchData.filter.people = searchData.filter.people.filter((p) => p.id !== id);
       showSelectedPeopleFirst();
       return;
     }
 
-    const person = suggestions.people.find((p) => p.id === id);
+    const person = searchData.suggestions.people.find((p) => p.id === id);
     if (person) {
-      filter.people = [...filter.people, person];
+      searchData.filter.people = [...searchData.filter.people, person];
       showSelectedPeopleFirst();
     }
   };
@@ -135,11 +71,11 @@
       type === SearchSuggestionType.State ||
       type === SearchSuggestionType.Country
     ) {
-      suggestions = { ...suggestions, city: [], state: [], country: [] };
+      searchData.suggestions = { ...searchData.suggestions, city: [], state: [], country: [] };
     }
 
     if (type === SearchSuggestionType.CameraMake || type === SearchSuggestionType.CameraModel) {
-      suggestions = { ...suggestions, cameraMake: [], cameraModel: [] };
+      searchData.suggestions = { ...searchData.suggestions, cameraMake: [], cameraModel: [] };
     }
 
     try {
@@ -154,14 +90,14 @@
       switch (type) {
         case SearchSuggestionType.Country: {
           for (const country of data) {
-            suggestions.country = [...suggestions.country, { label: country, value: country }];
+            searchData.suggestions.country = [...searchData.suggestions.country, { label: country, value: country }];
           }
           break;
         }
 
         case SearchSuggestionType.State: {
           for (const state of data) {
-            suggestions.state = [...suggestions.state, { label: state, value: state }];
+            searchData.suggestions.state = [...searchData.suggestions.state, { label: state, value: state }];
           }
 
           break;
@@ -169,21 +105,24 @@
 
         case SearchSuggestionType.City: {
           for (const city of data) {
-            suggestions.city = [...suggestions.city, { label: city, value: city }];
+            searchData.suggestions.city = [...searchData.suggestions.city, { label: city, value: city }];
           }
           break;
         }
 
         case SearchSuggestionType.CameraMake: {
           for (const make of data) {
-            suggestions.cameraMake = [...suggestions.cameraMake, { label: make, value: make }];
+            searchData.suggestions.cameraMake = [...searchData.suggestions.cameraMake, { label: make, value: make }];
           }
           break;
         }
 
         case SearchSuggestionType.CameraModel: {
           for (const model of data) {
-            suggestions.cameraModel = [...suggestions.cameraModel, { label: model, value: model }];
+            searchData.suggestions.cameraModel = [
+              ...searchData.suggestions.cameraModel,
+              { label: model, value: model },
+            ];
           }
           break;
         }
@@ -194,7 +133,7 @@
   };
 
   const resetForm = () => {
-    filter = {
+    searchData.filter = {
       context: undefined,
       people: [],
       location: {
@@ -236,12 +175,12 @@
         </div>
       </div>
 
-      {#if suggestions.people.length > 0}
+      {#if searchData.suggestions.people.length > 0}
         <div class="flex gap-1 mt-4 flex-wrap max-h-[300px] overflow-y-auto immich-scrollbar transition-all">
           {#each peopleList as person (person.id)}
             <button
               type="button"
-              class="w-20 text-center rounded-3xl border-2 border-transparent hover:bg-immich-gray dark:hover:bg-immich-dark-primary/20 p-2 flex-col place-items-center transition-all {filter.people.some(
+              class="w-20 text-center rounded-3xl border-2 border-transparent hover:bg-immich-gray dark:hover:bg-immich-dark-primary/20 p-2 flex-col place-items-center transition-all {searchData.filter.people.some(
                 (p) => p.id === person.id,
               )
                 ? 'dark:border-slate-500 border-slate-300 bg-slate-200 dark:bg-slate-800 dark:text-white'
@@ -290,7 +229,7 @@
         id="context"
         name="context"
         placeholder="Sunrise on the beach"
-        bind:value={filter.context}
+        bind:value={searchData.filter.context}
       />
     </div>
 
@@ -303,8 +242,8 @@
         <div class="w-full">
           <p class="text-sm text-black dark:text-white">Country</p>
           <Combobox
-            options={suggestions.country}
-            bind:selectedOption={filter.location.country}
+            options={searchData.suggestions.country}
+            bind:selectedOption={searchData.filter.location.country}
             placeholder="Search country..."
             on:click={() => updateSuggestion(SearchSuggestionType.Country, {})}
           />
@@ -313,23 +252,24 @@
         <div class="w-full">
           <p class="text-sm text-black dark:text-white">State</p>
           <Combobox
-            options={suggestions.state}
-            bind:selectedOption={filter.location.state}
+            options={searchData.suggestions.state}
+            bind:selectedOption={searchData.filter.location.state}
             placeholder="Search state..."
-            on:click={() => updateSuggestion(SearchSuggestionType.State, { country: filter.location.country?.value })}
+            on:click={() =>
+              updateSuggestion(SearchSuggestionType.State, { country: searchData.filter.location.country?.value })}
           />
         </div>
 
         <div class="w-full">
           <p class="text-sm text-black dark:text-white">City</p>
           <Combobox
-            options={suggestions.city}
-            bind:selectedOption={filter.location.city}
+            options={searchData.suggestions.city}
+            bind:selectedOption={searchData.filter.location.city}
             placeholder="Search city..."
             on:click={() =>
               updateSuggestion(SearchSuggestionType.City, {
-                country: filter.location.country?.value,
-                state: filter.location.state?.value,
+                country: searchData.filter.location.country?.value,
+                state: searchData.filter.location.state?.value,
               })}
           />
         </div>
@@ -345,22 +285,22 @@
         <div class="w-full">
           <p class="text-sm text-black dark:text-white">Make</p>
           <Combobox
-            options={suggestions.cameraMake}
-            bind:selectedOption={filter.camera.make}
+            options={searchData.suggestions.cameraMake}
+            bind:selectedOption={searchData.filter.camera.make}
             placeholder="Search camera make..."
             on:click={() =>
-              updateSuggestion(SearchSuggestionType.CameraMake, { cameraModel: filter.camera.model?.value })}
+              updateSuggestion(SearchSuggestionType.CameraMake, { cameraModel: searchData.filter.camera.model?.value })}
           />
         </div>
 
         <div class="w-full">
           <p class="text-sm text-black dark:text-white">Model</p>
           <Combobox
-            options={suggestions.cameraModel}
-            bind:selectedOption={filter.camera.model}
+            options={searchData.suggestions.cameraModel}
+            bind:selectedOption={searchData.filter.camera.model}
             placeholder="Search camera model..."
             on:click={() =>
-              updateSuggestion(SearchSuggestionType.CameraModel, { cameraMake: filter.camera.make?.value })}
+              updateSuggestion(SearchSuggestionType.CameraModel, { cameraMake: searchData.filter.camera.make?.value })}
           />
         </div>
       </div>
@@ -377,7 +317,7 @@
           type="date"
           id="start-date"
           name="start-date"
-          bind:value={filter.dateRange.startDate}
+          bind:value={searchData.filter.dateRange.startDate}
         />
       </div>
 
@@ -389,7 +329,7 @@
           id="end-date"
           name="end-date"
           placeholder=""
-          bind:value={filter.dateRange.endDate}
+          bind:value={searchData.filter.dateRange.endDate}
         />
       </div>
     </div>
@@ -406,7 +346,7 @@
             class="text-base flex place-items-center gap-1 hover:cursor-pointer text-black dark:text-white"
           >
             <input
-              bind:group={filter.mediaType}
+              bind:group={searchData.filter.mediaType}
               value={MediaType.All}
               type="radio"
               name="radio-type"
@@ -419,7 +359,7 @@
             class="text-base flex place-items-center gap-1 hover:cursor-pointer text-black dark:text-white"
           >
             <input
-              bind:group={filter.mediaType}
+              bind:group={searchData.filter.mediaType}
               value={MediaType.Image}
               type="radio"
               name="media-type"
@@ -432,7 +372,7 @@
             class="text-base flex place-items-center gap-1 hover:cursor-pointer text-black dark:text-white"
           >
             <input
-              bind:group={filter.mediaType}
+              bind:group={searchData.filter.mediaType}
               value={MediaType.Video}
               type="radio"
               name="radio-type"
@@ -448,17 +388,17 @@
 
         <div class="flex gap-5 mt-3">
           <label class="flex items-center mb-2">
-            <input type="checkbox" class="form-checkbox h-5 w-5 color" bind:checked={filter.notInAlbum} />
+            <input type="checkbox" class="form-checkbox h-5 w-5 color" bind:checked={searchData.filter.notInAlbum} />
             <span class="ml-2 text-sm text-black dark:text-white pt-1">Not in any album</span>
           </label>
 
           <label class="flex items-center mb-2">
-            <input type="checkbox" class="form-checkbox h-5 w-5 color" bind:checked={filter.inArchive} />
+            <input type="checkbox" class="form-checkbox h-5 w-5 color" bind:checked={searchData.filter.inArchive} />
             <span class="ml-2 text-sm text-black dark:text-white pt-1">Archive</span>
           </label>
 
           <label class="flex items-center mb-2">
-            <input type="checkbox" class="form-checkbox h-5 w-5 color" bind:checked={filter.inFavorite} />
+            <input type="checkbox" class="form-checkbox h-5 w-5 color" bind:checked={searchData.filter.inFavorite} />
             <span class="ml-2 text-sm text-black dark:text-white pt-1">Favorite</span>
           </label>
         </div>
