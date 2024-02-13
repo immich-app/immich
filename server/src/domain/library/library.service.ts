@@ -38,10 +38,8 @@ export class LibraryService extends EventEmitter {
   readonly logger = new ImmichLogger(LibraryService.name);
   private access: AccessCore;
   private configCore: SystemConfigCore;
-
   private watchLibraries = false;
-
-  private watchers: Record<string, () => Promise<void>> = {};
+  private watchers: Record<string, () => void> = {};
 
   constructor(
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
@@ -116,63 +114,57 @@ export class LibraryService extends EventEmitter {
 
     this.logger.debug(`Settings for watcher: usePolling: ${usePolling}, interval: ${interval}`);
 
-    const watcher = this.storageRepository.watch(library.importPaths, {
-      usePolling,
-      interval,
-      binaryInterval: interval,
-      ignoreInitial: true,
-    });
+    let _resolve: () => void;
+    const ready$ = new Promise<void>((resolve) => (_resolve = resolve));
 
-    this.watchers[id] = async () => {
-      await watcher.close();
-    };
-
-    watcher.on('add', async (path) => {
-      this.logger.debug(`File add event received for ${path} in library ${library.id}}`);
-      if (matcher(path)) {
-        await this.scanAssets(library.id, [path], library.ownerId, false);
-      }
-      this.emit('add', path);
-    });
-
-    watcher.on('change', async (path) => {
-      this.logger.debug(`Detected file change for ${path} in library ${library.id}`);
-
-      if (matcher(path)) {
-        // Note: if the changed file was not previously imported, it will be imported now.
-        await this.scanAssets(library.id, [path], library.ownerId, false);
-      }
-      this.emit('change', path);
-    });
-
-    watcher.on('unlink', async (path) => {
-      this.logger.debug(`Detected deleted file at ${path} in library ${library.id}`);
-      const existingAssetEntity = await this.assetRepository.getByLibraryIdAndOriginalPath(library.id, path);
-
-      if (existingAssetEntity && matcher(path)) {
-        await this.assetRepository.save({ id: existingAssetEntity.id, isOffline: true });
-      }
-
-      this.emit('unlink', path);
-    });
-
-    watcher.on('error', async (error) => {
-      // TODO: should we log, or throw an exception?
-      this.logger.error(`Library watcher for library ${library.id} encountered error: ${error}`);
-    });
+    this.watchers[id] = this.storageRepository.watch(
+      library.importPaths,
+      {
+        usePolling,
+        interval,
+        binaryInterval: interval,
+        ignoreInitial: true,
+      },
+      {
+        onReady: () => _resolve(),
+        onAdd: async (path) => {
+          this.logger.debug(`File add event received for ${path} in library ${library.id}}`);
+          if (matcher(path)) {
+            await this.scanAssets(library.id, [path], library.ownerId, false);
+          }
+          this.emit('add', path);
+        },
+        onChange: async (path) => {
+          this.logger.debug(`Detected file change for ${path} in library ${library.id}`);
+          if (matcher(path)) {
+            // Note: if the changed file was not previously imported, it will be imported now.
+            await this.scanAssets(library.id, [path], library.ownerId, false);
+          }
+          this.emit('change', path);
+        },
+        onUnlink: async (path) => {
+          this.logger.debug(`Detected deleted file at ${path} in library ${library.id}`);
+          const asset = await this.assetRepository.getByLibraryIdAndOriginalPath(library.id, path);
+          if (asset && matcher(path)) {
+            await this.assetRepository.save({ id: asset.id, isOffline: true });
+          }
+          this.emit('unlink', path);
+        },
+        onError: (error) => {
+          // TODO: should we log, or throw an exception?
+          this.logger.error(`Library watcher for library ${library.id} encountered error: ${error}`);
+        },
+      },
+    );
 
     // Wait for the watcher to initialize before returning
-    await new Promise<void>((resolve) => {
-      watcher.on('ready', async () => {
-        resolve();
-      });
-    });
+    await ready$;
 
     return true;
   }
 
   async unwatch(id: string) {
-    if (this.watchers.hasOwnProperty(id)) {
+    if (this.watchers[id]) {
       await this.watchers[id]();
       delete this.watchers[id];
     }
