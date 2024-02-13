@@ -9,11 +9,12 @@
   import { mapSettings } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { type MapMarkerResponseDto, api } from '@api';
-  import { isEqual, omit } from 'lodash-es';
+  import { isEqual } from 'lodash-es';
   import { DateTime, Duration } from 'luxon';
   import { onDestroy, onMount } from 'svelte';
   import type { PageData } from './$types';
   import Map from '$lib/components/shared-components/map/map.svelte';
+  import type { MapSettings } from '$lib/stores/preferences.store';
 
   export let data: PageData;
 
@@ -35,6 +36,9 @@
   });
 
   $: $featureFlags.map || goto(AppRoute.PHOTOS);
+  const omit = (obj: MapSettings, key: string) => {
+    return Object.fromEntries(Object.entries(obj).filter(([k]) => k !== key));
+  };
 
   async function loadMapMarkers() {
     if (abortController) {

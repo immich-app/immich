@@ -1,7 +1,7 @@
 <script lang="ts">
   import Button from '$lib/components/elements/buttons/button.svelte';
   import { AppRoute } from '$lib/constants';
-  import { api, UserAvatarColor, type UserResponseDto } from '@api';
+  import { api, UserAvatarColor } from '@api';
   import { createEventDispatcher } from 'svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import { fade } from 'svelte/transition';
@@ -10,9 +10,7 @@
   import { notificationController, NotificationType } from '../notification/notification';
   import { handleError } from '$lib/utils/handle-error';
   import AvatarSelector from './avatar-selector.svelte';
-  import { setUser } from '$lib/stores/user.store';
-
-  export let user: UserResponseDto;
+  import { user } from '$lib/stores/user.store';
 
   let isShowSelectAvatar = false;
 
@@ -23,21 +21,20 @@
 
   const handleSaveProfile = async (color: UserAvatarColor) => {
     try {
-      if (user.profileImagePath !== '') {
+      if ($user.profileImagePath !== '') {
         await api.userApi.deleteProfileImage();
       }
 
       const { data } = await api.userApi.updateUser({
         updateUserDto: {
-          id: user.id,
-          email: user.email,
-          name: user.name,
+          id: $user.id,
+          email: $user.email,
+          name: $user.name,
           avatarColor: color,
         },
       });
 
-      user = data;
-      setUser(user);
+      $user = data;
       isShowSelectAvatar = false;
 
       notificationController.show({
@@ -60,8 +57,8 @@
     class="mx-4 mt-4 flex flex-col items-center justify-center gap-4 rounded-3xl bg-white p-4 dark:bg-immich-dark-primary/10"
   >
     <div class="relative">
-      {#key user}
-        <UserAvatar {user} size="xl" />
+      {#key $user}
+        <UserAvatar user={$user} size="xl" />
 
         <div
           class="absolute z-10 bottom-0 right-0 rounded-full w-6 h-6 border dark:border-immich-dark-primary bg-immich-primary"
@@ -77,9 +74,9 @@
     </div>
     <div>
       <p class="text-center text-lg font-medium text-immich-primary dark:text-immich-dark-primary">
-        {user.name}
+        {$user.name}
       </p>
-      <p class="text-sm text-gray-500 dark:text-immich-dark-fg">{user.email}</p>
+      <p class="text-sm text-gray-500 dark:text-immich-dark-fg">{$user.email}</p>
     </div>
 
     <a href={AppRoute.USER_SETTINGS} on:click={() => dispatch('close')}>
@@ -104,7 +101,7 @@
 </div>
 {#if isShowSelectAvatar}
   <AvatarSelector
-    {user}
+    user={$user}
     on:close={() => (isShowSelectAvatar = false)}
     on:choose={({ detail: color }) => handleSaveProfile(color)}
   />

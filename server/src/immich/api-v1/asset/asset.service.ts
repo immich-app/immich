@@ -7,6 +7,7 @@ import {
   IAssetRepository,
   IJobRepository,
   ILibraryRepository,
+  IStorageRepository,
   IUserRepository,
   ImmichFileResponse,
   JobName,
@@ -55,6 +56,7 @@ export class AssetService {
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ILibraryRepository) private libraryRepository: ILibraryRepository,
+    @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
   ) {
     this.access = AccessCore.create(accessRepository);
@@ -113,7 +115,7 @@ export class AssetService {
     const userId = dto.userId || auth.user.id;
     await this.access.requirePermission(auth, Permission.TIMELINE_READ, userId);
     const assets = await this.assetRepositoryV1.getAllByUserId(userId, dto);
-    return assets.map((asset) => mapAsset(asset));
+    return assets.map((asset) => mapAsset(asset, { withStack: true }));
   }
 
   async serveThumbnail(auth: AuthDto, assetId: string, dto: GetAssetThumbnailDto): Promise<ImmichFileResponse> {
@@ -358,6 +360,10 @@ export class AssetService {
       isOffline: dto.isOffline ?? false,
     });
 
+    if (sidecarPath) {
+      await this.storageRepository.utimes(sidecarPath, new Date(), new Date(dto.fileModifiedAt));
+    }
+    await this.storageRepository.utimes(file.originalPath, new Date(), new Date(dto.fileModifiedAt));
     await this.assetRepository.upsertExif({ assetId: asset.id, fileSizeInByte: file.size });
     await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: asset.id, source: 'upload' } });
 

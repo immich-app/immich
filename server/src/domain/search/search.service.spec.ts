@@ -7,7 +7,7 @@ import {
   newMetadataRepositoryMock,
   newPartnerRepositoryMock,
   newPersonRepositoryMock,
-  newSmartInfoRepositoryMock,
+  newSearchRepositoryMock,
   newSystemConfigRepositoryMock,
   personStub,
 } from '@test';
@@ -18,7 +18,7 @@ import {
   IMetadataRepository,
   IPartnerRepository,
   IPersonRepository,
-  ISmartInfoRepository,
+  ISearchRepository,
   ISystemConfigRepository,
 } from '../repositories';
 import { SearchDto } from './dto';
@@ -32,7 +32,7 @@ describe(SearchService.name, () => {
   let configMock: jest.Mocked<ISystemConfigRepository>;
   let machineMock: jest.Mocked<IMachineLearningRepository>;
   let personMock: jest.Mocked<IPersonRepository>;
-  let smartInfoMock: jest.Mocked<ISmartInfoRepository>;
+  let searchMock: jest.Mocked<ISearchRepository>;
   let partnerMock: jest.Mocked<IPartnerRepository>;
   let metadataMock: jest.Mocked<IMetadataRepository>;
 
@@ -41,11 +41,11 @@ describe(SearchService.name, () => {
     configMock = newSystemConfigRepositoryMock();
     machineMock = newMachineLearningRepositoryMock();
     personMock = newPersonRepositoryMock();
-    smartInfoMock = newSmartInfoRepositoryMock();
+    searchMock = newSearchRepositoryMock();
     partnerMock = newPartnerRepositoryMock();
     metadataMock = newMetadataRepositoryMock();
 
-    sut = new SearchService(configMock, machineMock, personMock, smartInfoMock, assetMock, partnerMock, metadataMock);
+    sut = new SearchService(configMock, machineMock, personMock, searchMock, assetMock, partnerMock, metadataMock);
   });
 
   it('should work', () => {
@@ -109,6 +109,7 @@ describe(SearchService.name, () => {
           count: 1,
           items: [mapAsset(assetStub.image)],
           facets: [],
+          nextPage: null,
         },
       };
 
@@ -116,13 +117,13 @@ describe(SearchService.name, () => {
 
       expect(result).toEqual(expectedResponse);
       expect(assetMock.searchMetadata).toHaveBeenCalledWith(dto.q, [authStub.user1.user.id], { numResults: 250 });
-      expect(smartInfoMock.searchCLIP).not.toHaveBeenCalled();
+      expect(searchMock.searchSmart).not.toHaveBeenCalled();
     });
 
     it('should search archived photos if `withArchived` option is true', async () => {
       const dto: SearchDto = { q: 'test query', clip: true, withArchived: true };
       const embedding = [1, 2, 3];
-      smartInfoMock.searchCLIP.mockResolvedValueOnce([assetStub.image]);
+      searchMock.searchSmart.mockResolvedValueOnce({ items: [assetStub.image], hasNextPage: false });
       machineMock.encodeText.mockResolvedValueOnce(embedding);
       partnerMock.getAll.mockResolvedValueOnce([]);
       const expectedResponse = {
@@ -137,25 +138,28 @@ describe(SearchService.name, () => {
           count: 1,
           items: [mapAsset(assetStub.image)],
           facets: [],
+          nextPage: null,
         },
       };
 
       const result = await sut.search(authStub.user1, dto);
 
       expect(result).toEqual(expectedResponse);
-      expect(smartInfoMock.searchCLIP).toHaveBeenCalledWith({
-        userIds: [authStub.user1.user.id],
-        embedding,
-        numResults: 100,
-        withArchived: true,
-      });
+      expect(searchMock.searchSmart).toHaveBeenCalledWith(
+        { page: 1, size: 100 },
+        {
+          userIds: [authStub.user1.user.id],
+          embedding,
+          withArchived: true,
+        },
+      );
       expect(assetMock.searchMetadata).not.toHaveBeenCalled();
     });
 
     it('should search by CLIP if `clip` option is true', async () => {
       const dto: SearchDto = { q: 'test query', clip: true };
       const embedding = [1, 2, 3];
-      smartInfoMock.searchCLIP.mockResolvedValueOnce([assetStub.image]);
+      searchMock.searchSmart.mockResolvedValueOnce({ items: [assetStub.image], hasNextPage: false });
       machineMock.encodeText.mockResolvedValueOnce(embedding);
       partnerMock.getAll.mockResolvedValueOnce([]);
       const expectedResponse = {
@@ -170,18 +174,21 @@ describe(SearchService.name, () => {
           count: 1,
           items: [mapAsset(assetStub.image)],
           facets: [],
+          nextPage: null,
         },
       };
 
       const result = await sut.search(authStub.user1, dto);
 
       expect(result).toEqual(expectedResponse);
-      expect(smartInfoMock.searchCLIP).toHaveBeenCalledWith({
-        userIds: [authStub.user1.user.id],
-        embedding,
-        numResults: 100,
-        withArchived: false,
-      });
+      expect(searchMock.searchSmart).toHaveBeenCalledWith(
+        { page: 1, size: 100 },
+        {
+          userIds: [authStub.user1.user.id],
+          embedding,
+          withArchived: false,
+        },
+      );
       expect(assetMock.searchMetadata).not.toHaveBeenCalled();
     });
 

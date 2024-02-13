@@ -1,5 +1,5 @@
 {
-  "include": ["fetch.ts", "fetch-client/**/*"],
+  "include": ["fetch.ts"],
   "compilerOptions": {
     "target": "esnext",
     "strict": true,

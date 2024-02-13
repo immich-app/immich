@@ -1,6 +1,7 @@
 {
   "name": "immich-web",
   "version": "1.0.0",
+  "license": "GNU Affero General Public License version 3",
   "scripts": {
     "dev": "vite dev --host 0.0.0.0 --port 3000",
     "build": "vite build",
@@ -52,7 +53,7 @@
     "tailwindcss": "^3.2.7",
     "tslib": "^2.5.0",
     "typescript": "^5.3.3",
-    "vite": "^5.0.10",
+    "vite": "^5.1.1",
     "vitest": "^1.0.4"
   },
   "type": "module",

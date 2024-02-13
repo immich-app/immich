@@ -76,7 +76,6 @@
         dispatch('firstLogin');
         return;
       }
-
       dispatch('success');
       return;
     } catch (error) {

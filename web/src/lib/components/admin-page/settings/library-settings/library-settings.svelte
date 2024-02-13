@@ -26,7 +26,12 @@
 
 <div>
   <div in:fade={{ duration: 500 }}>
-    <SettingAccordion title="Library watching (EXPERIMENTAL)" subtitle="Automatically watch for changed files" isOpen>
+    <SettingAccordion
+      key="library-watching"
+      title="Library watching (EXPERIMENTAL)"
+      subtitle="Automatically watch for changed files"
+      isOpen
+    >
       <form autocomplete="off" on:submit|preventDefault>
         <div class="ml-4 mt-4 flex flex-col gap-4">
           <SettingSwitch
@@ -70,7 +75,12 @@
       </form>
     </SettingAccordion>
 
-    <SettingAccordion title="Periodic Scanning" subtitle="Configure periodic library scanning" isOpen>
+    <SettingAccordion
+      key="library-scanning"
+      title="Periodic Scanning"
+      subtitle="Configure periodic library scanning"
+      isOpen
+    >
       <form autocomplete="off" on:submit|preventDefault>
         <div class="ml-4 mt-4 flex flex-col gap-4">
           <SettingSwitch

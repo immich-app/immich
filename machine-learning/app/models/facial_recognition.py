@@ -28,7 +28,10 @@ class FaceRecognizer(InferenceModel):
 
     def _load(self) -> None:
         self.det_model = RetinaFace(session=self._make_session(self.det_file))
-        self.rec_model = ArcFaceONNX(self.rec_file.as_posix(), session=self._make_session(self.rec_file))
+        self.rec_model = ArcFaceONNX(
+            self.rec_file.with_suffix(".onnx").as_posix(),
+            session=self._make_session(self.rec_file),
+        )
 
         self.det_model.prepare(
             ctx_id=0,

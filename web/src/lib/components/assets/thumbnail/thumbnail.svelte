@@ -37,6 +37,7 @@
   export let readonly = false;
   export let showArchiveIcon = false;
   export let showStackedIcon = true;
+  export let intersecting = false;
 
   let className = '';
   export { className as class };
@@ -85,7 +86,7 @@
   };
 </script>
 
-<IntersectionObserver once={false} let:intersecting>
+<IntersectionObserver once={false} on:intersected bind:intersecting>
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div
     style:width="{width}px"
@@ -95,8 +96,8 @@
       : 'bg-immich-primary/20 dark:bg-immich-dark-primary/20'}"
     class:cursor-not-allowed={disabled}
     class:hover:cursor-pointer={!disabled}
-    on:mouseenter={() => onMouseEnter()}
-    on:mouseleave={() => onMouseLeave()}
+    on:mouseenter={onMouseEnter}
+    on:mouseleave={onMouseLeave}
     on:click={thumbnailClickedHandler}
     on:keydown={thumbnailKeyDownHandler}
   >

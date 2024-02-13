@@ -42,7 +42,11 @@
         />
       </div>
 
-      <SettingAccordion title="Smart Search" subtitle="Search for images semantically using CLIP embeddings">
+      <SettingAccordion
+        key="smart-search"
+        title="Smart Search"
+        subtitle="Search for images semantically using CLIP embeddings"
+      >
         <div class="ml-4 mt-4 flex flex-col gap-4">
           <SettingSwitch
             title="ENABLED"
@@ -69,7 +73,11 @@
         </div>
       </SettingAccordion>
 
-      <SettingAccordion title="Facial Recognition" subtitle="Detect, recognize and group faces in images">
+      <SettingAccordion
+        key="facial-recognition"
+        title="Facial Recognition"
+        subtitle="Detect, recognize and group faces in images"
+      >
         <div class="ml-4 mt-4 flex flex-col gap-4">
           <SettingSwitch
             title="ENABLED"
