@@ -32,9 +32,8 @@
 
   export let data: PageData;
 
-  const MAX_PAGE_COUNT = 50;
+  const MAX_ASSET_COUNT = 1000;
   let { isViewing: showAssetViewer } = assetViewingStore;
-  let pageCount = 1;
 
   // The GalleryViewer pushes it's own history state, which causes weird
   // behavior for history.back(). To prevent that we store the previous page
@@ -114,7 +113,7 @@
   };
 
   export const loadNextPage = async () => {
-    if (curPage == null || !term || pageCount >= MAX_PAGE_COUNT) {
+    if (curPage == null || !term || (searchResultAssets && searchResultAssets.length >= MAX_ASSET_COUNT)) {
       return;
     }
 
@@ -138,7 +137,6 @@
     };
 
     data.results = results;
-    pageCount++;
   };
 </script>
 
