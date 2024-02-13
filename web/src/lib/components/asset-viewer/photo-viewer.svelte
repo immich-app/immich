@@ -11,6 +11,7 @@
   import { photoViewer } from '$lib/stores/assets.store';
   import { getBoundingBox } from '$lib/utils/people-utils';
   import { boundingBoxesArray } from '$lib/stores/people.store';
+  import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
 
   export let asset: AssetResponseDto;
   export let element: HTMLDivElement | undefined = undefined;
@@ -114,7 +115,7 @@
   zoomImageWheelState.subscribe((state) => {
     photoZoomState.set(state);
 
-    if (state.currentZoom > 1 && isWebCompatibleImage(asset) && !hasZoomed) {
+    if (state.currentZoom > 1 && isWebCompatibleImage(asset) && !hasZoomed && !$alwaysLoadOriginalFile) {
       hasZoomed = true;
 
       loadAssetData({ loadOriginal: true });
@@ -129,7 +130,7 @@
   transition:fade={{ duration: haveFadeTransition ? 150 : 0 }}
   class="flex h-full select-none place-content-center place-items-center"
 >
-  {#await loadAssetData({ loadOriginal: false })}
+  {#await loadAssetData({ loadOriginal: $alwaysLoadOriginalFile ? isWebCompatibleImage(asset) : false })}
     <LoadingSpinner />
   {:then}
     <div bind:this={imgElement} class="h-full w-full">
