@@ -1,7 +1,8 @@
 <script lang="ts">
-  import { api, type UserResponseDto } from '@api';
-  import { createEventDispatcher } from 'svelte';
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
+  import { type UserResponseDto } from '@api';
+  import { restoreUser } from '@immich/sdk';
+  import { createEventDispatcher } from 'svelte';
 
   export let user: UserResponseDto;
 
@@ -10,9 +11,9 @@
     fail: void;
   }>();
 
-  const restoreUser = async () => {
-    const restoredUser = await api.userApi.restoreUser({ id: user.id });
-    if (restoredUser.data.deletedAt == undefined) {
+  const handleRestoreUser = async () => {
+    const { deletedAt } = await restoreUser({ id: user.id });
+    if (deletedAt == undefined) {
       dispatch('success');
     } else {
       dispatch('fail');
@@ -20,7 +21,13 @@
   };
 </script>
 
-<ConfirmDialogue title="Restore User" confirmText="Continue" confirmColor="green" on:confirm={restoreUser} on:cancel>
+<ConfirmDialogue
+  title="Restore User"
+  confirmText="Continue"
+  confirmColor="green"
+  on:confirm={handleRestoreUser}
+  on:cancel
+>
   <svelte:fragment slot="prompt">
     <p><b>{user.name}</b>'s account will be restored.</p>
   </svelte:fragment>

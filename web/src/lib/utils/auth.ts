@@ -1,8 +1,7 @@
 import { browser } from '$app/environment';
 import { serverInfo } from '$lib/stores/server-info.store';
 import { user } from '$lib/stores/user.store';
-import { api } from '@api';
-import { getServerInfo } from '@immich/sdk';
+import { getMyUserInfo, getServerInfo } from '@immich/sdk';
 import { redirect } from '@sveltejs/kit';
 import { get } from 'svelte/store';
 import { AppRoute } from '../constants';
@@ -16,8 +15,7 @@ export const loadUser = async () => {
   try {
     let loaded = get(user);
     if (!loaded && hasAuthCookie()) {
-      const { data } = await api.userApi.getMyUserInfo();
-      loaded = data;
+      loaded = await getMyUserInfo();
       user.set(loaded);
     }
     return loaded;

@@ -3,6 +3,7 @@
   import { createEventDispatcher } from 'svelte';
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import { handleError } from '../../utils/handle-error';
+  import { deleteUser } from '@immich/sdk';
 
   export let user: UserResponseDto;
 
@@ -11,10 +12,10 @@
     fail: void;
   }>();
 
-  const deleteUser = async () => {
+  const handleDeleteUser = async () => {
     try {
-      const deletedUser = await api.userApi.deleteUser({ id: user.id });
-      if (deletedUser.data.deletedAt == undefined) {
+      const { deletedAt } = await deleteUser({ id: user.id });
+      if (deletedAt == undefined) {
         dispatch('fail');
       } else {
         dispatch('success');
@@ -26,7 +27,7 @@
   };
 </script>
 
-<ConfirmDialogue title="Delete User" confirmText="Delete" on:confirm={deleteUser} on:cancel>
+<ConfirmDialogue title="Delete User" confirmText="Delete" on:confirm={handleDeleteUser} on:cancel>
   <svelte:fragment slot="prompt">
     <div class="flex flex-col gap-4">
       <p>

@@ -6,6 +6,8 @@
   import Button from '../elements/buttons/button.svelte';
   import { convertToBytes } from '$lib/utils/byte-converter';
   import { serverInfo } from '$lib/stores/server-info.store';
+  import { createUser } from '@immich/sdk';
+  import { handleError } from '../../utils/handle-error';
 
   let error: string;
   let success: string;
@@ -49,7 +51,7 @@
       const quotaSize = form.get('quotaSize');
 
       try {
-        const { status } = await api.userApi.createUser({
+        await createUser({
           createUserDto: {
             email: String(email),
             password: String(password),
@@ -58,26 +60,15 @@
           },
         });
 
-        if (status === 201) {
-          success = 'New user created';
+        success = 'New user created';
 
-          dispatch('submit');
+        dispatch('submit');
 
-          isCreatingUser = false;
-          return;
-        } else {
-          error = 'Error create user account';
-          isCreatingUser = false;
-        }
+        return;
       } catch (error) {
+        handleError(error, 'Unable to create user');
+      } finally {
         isCreatingUser = false;
-
-        console.log('[ERROR] registerUser', error);
-
-        notificationController.show({
-          message: `Error create new user, check console for more detail`,
-          type: NotificationType.Error,
-        });
       }
     }
   }

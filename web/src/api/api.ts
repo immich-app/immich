@@ -8,7 +8,6 @@ import {
   PersonApi,
   SearchApi,
   SharedLinkApi,
-  UserApi,
   UserApiFp,
   base,
   common,
@@ -23,7 +22,6 @@ class ImmichApi {
   public searchApi: SearchApi;
   public sharedLinkApi: SharedLinkApi;
   public personApi: PersonApi;
-  public userApi: UserApi;
 
   private config: configuration.Configuration;
   private key?: string;
@@ -41,7 +39,6 @@ class ImmichApi {
     this.searchApi = new SearchApi(this.config);
     this.sharedLinkApi = new SharedLinkApi(this.config);
     this.personApi = new PersonApi(this.config);
-    this.userApi = new UserApi(this.config);
   }
 
   private createUrl(path: string, parameters?: Record<string, unknown>) {
