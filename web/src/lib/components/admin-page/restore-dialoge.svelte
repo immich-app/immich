@@ -1,7 +1,6 @@
 <script lang="ts">
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
-  import { type UserResponseDto } from '@api';
-  import { restoreUser } from '@immich/sdk';
+  import { restoreUser, type UserResponseDto } from '@immich/sdk';
   import { createEventDispatcher } from 'svelte';
 
   export let user: UserResponseDto;

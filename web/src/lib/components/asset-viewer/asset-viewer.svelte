@@ -25,7 +25,14 @@
     type AssetResponseDto,
     type SharedLinkResponseDto,
   } from '@api';
-  import { createActivity, deleteActivity, getActivities, getActivityStatistics } from '@immich/sdk';
+  import {
+    createActivity,
+    createAlbum,
+    deleteActivity,
+    getActivities,
+    getActivityStatistics,
+    getAllAlbums,
+  } from '@immich/sdk';
   import { mdiChevronLeft, mdiChevronRight, mdiImageBrokenVariant } from '@mdi/js';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import { fly } from 'svelte/transition';
@@ -193,7 +200,7 @@
     });
 
     if (!sharedLink) {
-      await getAllAlbums();
+      await handleGetAllAlbums();
     }
 
     // Import hack :( see https://github.com/vadimkorr/svelte-carousel/issues/27#issuecomment-851022295
@@ -225,16 +232,15 @@
     }
   });
 
-  $: asset.id && !sharedLink && getAllAlbums(); // Update the album information when the asset ID changes
+  $: asset.id && !sharedLink && handleGetAllAlbums(); // Update the album information when the asset ID changes
 
-  const getAllAlbums = async () => {
+  const handleGetAllAlbums = async () => {
     if (api.isSharedLink) {
       return;
     }
 
     try {
-      const { data } = await api.albumApi.getAllAlbums({ assetId: asset.id });
-      appearsInAlbums = data;
+      appearsInAlbums = await getAllAlbums({ assetId: asset.id });
     } catch (error) {
       console.error('Error getting album that asset belong to', error);
     }
@@ -436,20 +442,18 @@
     addToSharedAlbum = shared;
   };
 
-  const handleAddToNewAlbum = (albumName: string) => {
+  const handleAddToNewAlbum = async (albumName: string) => {
     isShowAlbumPicker = false;
 
-    api.albumApi.createAlbum({ createAlbumDto: { albumName, assetIds: [asset.id] } }).then((response) => {
-      const album = response.data;
-      goto(`${AppRoute.ALBUMS}/${album.id}`);
-    });
+    const album = await createAlbum({ createAlbumDto: { albumName, assetIds: [asset.id] } });
+    await goto(`${AppRoute.ALBUMS}/${album.id}`);
   };
 
   const handleAddToAlbum = async (album: AlbumResponseDto) => {
     isShowAlbumPicker = false;
 
     await addAssetsToAlbum(album.id, [asset.id]);
-    await getAllAlbums();
+    await handleGetAllAlbums();
   };
 
   const disableKeyDownEvent = () => {

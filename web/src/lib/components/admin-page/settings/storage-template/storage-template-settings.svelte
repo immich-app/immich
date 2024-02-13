@@ -2,8 +2,11 @@
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { AppRoute } from '$lib/constants';
   import { user } from '$lib/stores/user.store';
-  import { type SystemConfigDto, type SystemConfigTemplateStorageOptionDto } from '@api';
-  import { getStorageTemplateOptions } from '@immich/sdk';
+  import {
+    getStorageTemplateOptions,
+    type SystemConfigDto,
+    type SystemConfigTemplateStorageOptionDto,
+  } from '@immich/sdk';
   import handlebar from 'handlebars';
   import { isEqual } from 'lodash-es';
   import * as luxon from 'luxon';

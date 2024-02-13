@@ -1,9 +1,8 @@
 <script lang="ts">
-  import { api, type UserResponseDto } from '@api';
-  import { createEventDispatcher } from 'svelte';
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
-  import { handleError } from '../../utils/handle-error';
-  import { deleteUser } from '@immich/sdk';
+  import { handleError } from '$lib/utils/handle-error';
+  import { deleteUser, type UserResponseDto } from '@immich/sdk';
+  import { createEventDispatcher } from 'svelte';
 
   export let user: UserResponseDto;
 

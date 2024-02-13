@@ -46,8 +46,18 @@
   import { getContextMenuPosition } from '$lib/utils/context-menu';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
-  import { ReactionLevel, ReactionType, api, type ActivityResponseDto, type UserResponseDto } from '@api';
-  import { createActivity, deleteActivity, getActivities, getActivityStatistics } from '@immich/sdk';
+  import { ReactionLevel, ReactionType, type ActivityResponseDto, type UserResponseDto } from '@api';
+  import {
+    addAssetsToAlbum,
+    addUsersToAlbum,
+    createActivity,
+    deleteActivity,
+    deleteAlbum,
+    getActivities,
+    getActivityStatistics,
+    getAlbumInfo,
+    updateAlbumInfo,
+  } from '@immich/sdk';
   import {
     mdiArrowLeft,
     mdiDeleteOutline,
@@ -142,13 +152,12 @@
 
   const handleToggleEnableActivity = async () => {
     try {
-      const { data } = await api.albumApi.updateAlbumInfo({
+      album = await updateAlbumInfo({
         id: album.id,
         updateAlbumDto: {
           isActivityEnabled: !album.isActivityEnabled,
         },
       });
-      album = data;
       notificationController.show({
         type: NotificationType.Info,
         message: `Activity is ${album.isActivityEnabled ? 'enabled' : 'disabled'}`,
@@ -269,8 +278,7 @@
   };
 
   const refreshAlbum = async () => {
-    const { data } = await api.albumApi.getAlbumInfo({ id: album.id, withoutAssets: true });
-    album = data;
+    album = await getAlbumInfo({ id: album.id, withoutAssets: true });
   };
 
   const getDateRange = () => {
@@ -302,7 +310,7 @@
     const assetIds = [...$timelineSelected].map((asset) => asset.id);
 
     try {
-      const { data: results } = await api.albumApi.addAssetsToAlbum({
+      const results = await addAssetsToAlbum({
         id: album.id,
         bulkIdsDto: { ids: assetIds },
       });
@@ -346,14 +354,12 @@
 
   const handleAddUsers = async (users: UserResponseDto[]) => {
     try {
-      const { data } = await api.albumApi.addUsersToAlbum({
+      album = await addUsersToAlbum({
         id: album.id,
         addUsersDto: {
           sharedUserIds: [...users].map(({ id }) => id),
         },
       });
-
-      album = data;
 
       viewMode = ViewMode.VIEW;
     } catch (error) {
@@ -381,7 +387,7 @@
 
   const handleRemoveAlbum = async () => {
     try {
-      await api.albumApi.deleteAlbum({ id: album.id });
+      await deleteAlbum({ id: album.id });
       goto(backUrl);
     } catch (error) {
       handleError(error, 'Unable to delete album');
@@ -399,7 +405,7 @@
     assetInteractionStore.clearMultiselect();
 
     try {
-      await api.albumApi.updateAlbumInfo({
+      await updateAlbumInfo({
         id: album.id,
         updateAlbumDto: {
           albumThumbnailAssetId: assetId,
@@ -418,7 +424,7 @@
     }
 
     try {
-      await api.albumApi.updateAlbumInfo({
+      await updateAlbumInfo({
         id: album.id,
         updateAlbumDto: {
           albumName: album.albumName,
@@ -436,7 +442,7 @@
       return;
     }
     try {
-      await api.albumApi.updateAlbumInfo({
+      await updateAlbumInfo({
         id: album.id,
         updateAlbumDto: {
           description,

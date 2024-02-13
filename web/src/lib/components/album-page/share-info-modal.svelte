@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { api, type AlbumResponseDto, type UserResponseDto } from '@api';
-  import { getMyUserInfo } from '@immich/sdk';
+  import { type AlbumResponseDto, type UserResponseDto } from '@api';
+  import { getMyUserInfo, removeUserFromAlbum } from '@immich/sdk';
   import { mdiDotsVertical } from '@mdi/js';
   import { createEventDispatcher, onMount } from 'svelte';
   import { getContextMenuPosition } from '../../utils/context-menu';
@@ -54,7 +54,7 @@
     const userId = selectedRemoveUser.id === currentUser?.id ? 'me' : selectedRemoveUser.id;
 
     try {
-      await api.albumApi.removeUserFromAlbum({ id: album.id, userId });
+      await removeUserFromAlbum({ id: album.id, userId });
       dispatch('remove', userId);
       const message = userId === 'me' ? `Left ${album.albumName}` : `Removed ${selectedRemoveUser.name}`;
       notificationController.show({ type: NotificationType.Info, message });

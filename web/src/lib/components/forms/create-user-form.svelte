@@ -1,13 +1,11 @@
 <script lang="ts">
-  import { api } from '@api';
-  import { createEventDispatcher } from 'svelte';
-  import ImmichLogo from '../shared-components/immich-logo.svelte';
-  import { notificationController, NotificationType } from '../shared-components/notification/notification';
-  import Button from '../elements/buttons/button.svelte';
-  import { convertToBytes } from '$lib/utils/byte-converter';
   import { serverInfo } from '$lib/stores/server-info.store';
+  import { convertToBytes } from '$lib/utils/byte-converter';
+  import { handleError } from '$lib/utils/handle-error';
   import { createUser } from '@immich/sdk';
-  import { handleError } from '../../utils/handle-error';
+  import { createEventDispatcher } from 'svelte';
+  import Button from '../elements/buttons/button.svelte';
+  import ImmichLogo from '../shared-components/immich-logo.svelte';
 
   let error: string;
   let success: string;

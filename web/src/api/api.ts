@@ -1,5 +1,4 @@
 import {
-  AlbumApi,
   AssetApi,
   AssetApiFp,
   AssetJobName,
@@ -16,7 +15,6 @@ import {
 import type { ApiParams as ApiParameters } from './types';
 
 class ImmichApi {
-  public albumApi: AlbumApi;
   public downloadApi: DownloadApi;
   public assetApi: AssetApi;
   public searchApi: SearchApi;
@@ -33,7 +31,6 @@ class ImmichApi {
   constructor(parameters: configuration.ConfigurationParameters) {
     this.config = new configuration.Configuration(parameters);
 
-    this.albumApi = new AlbumApi(this.config);
     this.downloadApi = new DownloadApi(this.config);
     this.assetApi = new AssetApi(this.config);
     this.searchApi = new SearchApi(this.config);

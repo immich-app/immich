@@ -5,8 +5,7 @@
   import { serverInfo } from '$lib/stores/server-info.store';
   import { convertFromBytes, convertToBytes } from '$lib/utils/byte-converter';
   import { handleError } from '$lib/utils/handle-error';
-  import { api, type UserResponseDto } from '@api';
-  import { updateUser } from '@immich/sdk';
+  import { updateUser, type UserResponseDto } from '@immich/sdk';
   import { mdiAccountEditOutline, mdiClose } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
   import Button from '../elements/buttons/button.svelte';
