@@ -483,7 +483,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
 
           expect(pathResponse).toEqual({
             importPath: pathToTest,
-            valid: false,
+            isValid: false,
             message: `Not contained in user's external path`,
           });
         });
@@ -500,7 +500,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
 
           expect(pathResponse).toEqual({
             importPath: pathToTest,
-            valid: false,
+            isValid: false,
             message: `Path does not exist (ENOENT)`,
           });
         });
@@ -517,7 +517,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
 
           expect(pathResponse).toEqual({
             importPath: pathToTest,
-            valid: false,
+            isValid: false,
             message: `Path does not exist (ENOENT)`,
           });
         });
