@@ -1,4 +1,36 @@
-import { IStorageRepository, StorageCore } from '@app/domain';
+import { IStorageRepository, StorageCore, WatchEvents } from '@app/domain';
+import { WatchOptions } from 'chokidar';
+
+interface MockWatcherOptions {
+  items?: Array<{ event: 'change' | 'add' | 'unlink' | 'error'; value: string }>;
+  close?: () => void;
+}
+
+export const makeMockWatcher =
+  ({ items, close }: MockWatcherOptions) =>
+  (paths: string[], options: WatchOptions, events: Partial<WatchEvents>) => {
+    events.onReady?.();
+    for (const item of items || []) {
+      switch (item.event) {
+        case 'add': {
+          events.onAdd?.(item.value);
+          break;
+        }
+        case 'change': {
+          events.onChange?.(item.value);
+          break;
+        }
+        case 'unlink': {
+          events.onUnlink?.(item.value);
+          break;
+        }
+        case 'error': {
+          events.onError?.(new Error(item.value));
+        }
+      }
+    }
+    return () => close?.();
+  };
 
 export const newStorageRepositoryMock = (reset = true): jest.Mocked<IStorageRepository> => {
   if (reset) {
@@ -21,7 +53,7 @@ export const newStorageRepositoryMock = (reset = true): jest.Mocked<IStorageRepo
     crawl: jest.fn(),
     rename: jest.fn(),
     copyFile: jest.fn(),
-    watch: jest.fn(),
     utimes: jest.fn(),
+    watch: jest.fn().mockImplementation(makeMockWatcher({})),
   };
 };
