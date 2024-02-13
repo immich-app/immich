@@ -23,6 +23,7 @@
   export let selectedOption: ComboBoxOption | undefined = undefined;
   export let placeholder = '';
   export const label = '';
+  export let noLabel = false;
 
   let isOpen = false;
   let searchQuery = '';
@@ -31,11 +32,13 @@
 
   const dispatch = createEventDispatcher<{
     select: ComboBoxOption;
+    click: void;
   }>();
 
   let handleClick = () => {
     searchQuery = '';
     isOpen = !isOpen;
+    dispatch('click');
   };
 
   let handleOutClick = () => {
@@ -52,7 +55,9 @@
 
 <div class="relative" use:clickOutside on:outclick={handleOutClick}>
   <button {type} class="immich-form-input text-sm text-left w-full min-h-[48px] transition-all" on:click={handleClick}
-    >{selectedOption?.label}
+    >{#if !noLabel}
+      {selectedOption?.label || ''}
+    {/if}
     <div class="absolute right-0 top-0 h-full flex px-4 justify-center items-center content-between">
       <Icon path={mdiUnfoldMoreHorizontal} />
     </div>
@@ -60,7 +65,7 @@
 
   {#if isOpen}
     <div
-      transition:fly={{ y: 25, duration: 250 }}
+      transition:fly={{ y: -25, duration: 250 }}
       class="absolute w-full top-full mt-2 bg-white dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-900 z-10"
     >
       <div class="relative border-b flex">
@@ -80,8 +85,8 @@
           <button
             {type}
             class="block text-left w-full px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-all
-             ${option.label === selectedOption?.label ? 'bg-gray-300 dark:bg-gray-600' : ''}
-            "
+           ${option.label === selectedOption?.label ? 'bg-gray-300 dark:bg-gray-600' : ''}
+          "
             class:bg-gray-300={option.label === selectedOption?.label}
             on:click={() => handleSelect(option)}
           >
