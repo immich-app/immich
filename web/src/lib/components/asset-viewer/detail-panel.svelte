@@ -614,7 +614,7 @@
 {#if latlng && $featureFlags.loaded && $featureFlags.map}
   <div class="h-[360px]">
     {#await import('../shared-components/map/map.svelte')}
-      {#await !delay(timeToLoadTheMap)}
+      {#await delay(timeToLoadTheMap) then}
         <!-- show the loading spinner only if loading the map takes too much time -->
         <div class="flex items-center justify-center h-full w-full">
           <LoadingSpinner />

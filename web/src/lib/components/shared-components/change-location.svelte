@@ -52,7 +52,7 @@
     <label for="datetime">Pick a location</label>
     <div class="h-[500px] min-h-[300px] w-full">
       {#await import('../shared-components/map/map.svelte')}
-        {#await !delay(timeToLoadTheMap)}
+        {#await delay(timeToLoadTheMap) then}
           <!-- show the loading spinner only if loading the map takes too much time -->
           <div class="flex items-center justify-center h-full w-full">
             <LoadingSpinner />
