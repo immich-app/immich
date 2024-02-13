@@ -46,6 +46,7 @@ export interface MapSettings {
   allowDarkMode: boolean;
   includeArchived: boolean;
   onlyFavorites: boolean;
+  withPartners: boolean;
   relativeDate: string;
   dateAfter: string;
   dateBefore: string;
@@ -55,6 +56,7 @@ export const mapSettings = persisted<MapSettings>('map-settings', {
   allowDarkMode: true,
   includeArchived: false,
   onlyFavorites: false,
+  withPartners: false,
   relativeDate: '',
   dateAfter: '',
   dateBefore: '',
