@@ -5,6 +5,7 @@
   import ImmichLogo from '../shared-components/immich-logo.svelte';
   import Button from '../elements/buttons/button.svelte';
   import { createEventDispatcher, onMount } from 'svelte';
+  import { getPartners } from '@immich/sdk';
 
   export let user: UserResponseDto;
 
@@ -21,7 +22,7 @@
     users = users.filter((_user) => !(_user.deletedAt || _user.id === user.id));
 
     // exclude partners from the list of users available for selection
-    const { data: partners } = await api.partnerApi.getPartners({ direction: 'shared-by' });
+    const partners = await getPartners({ direction: 'shared-by' });
     const partnerIds = new Set(partners.map((partner) => partner.id));
     availableUsers = users.filter((user) => !partnerIds.has(user.id));
   });

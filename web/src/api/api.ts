@@ -8,13 +8,10 @@ import {
   JobApi,
   JobName,
   LibraryApi,
-  OAuthApi,
-  PartnerApi,
   PersonApi,
   SearchApi,
   SharedLinkApi,
   SystemConfigApi,
-  TrashApi,
   UserApi,
   UserApiFp,
   base,
@@ -30,14 +27,11 @@ class ImmichApi {
   public assetApi: AssetApi;
   public faceApi: FaceApi;
   public jobApi: JobApi;
-  public oauthApi: OAuthApi;
-  public partnerApi: PartnerApi;
   public searchApi: SearchApi;
   public sharedLinkApi: SharedLinkApi;
   public personApi: PersonApi;
   public systemConfigApi: SystemConfigApi;
   public userApi: UserApi;
-  public trashApi: TrashApi;
 
   private config: configuration.Configuration;
   private key?: string;
@@ -55,14 +49,11 @@ class ImmichApi {
     this.assetApi = new AssetApi(this.config);
     this.faceApi = new FaceApi(this.config);
     this.jobApi = new JobApi(this.config);
-    this.oauthApi = new OAuthApi(this.config);
-    this.partnerApi = new PartnerApi(this.config);
     this.searchApi = new SearchApi(this.config);
     this.sharedLinkApi = new SharedLinkApi(this.config);
     this.personApi = new PersonApi(this.config);
     this.systemConfigApi = new SystemConfigApi(this.config);
     this.userApi = new UserApi(this.config);
-    this.trashApi = new TrashApi(this.config);
   }
 
   private createUrl(path: string, parameters?: Record<string, unknown>) {

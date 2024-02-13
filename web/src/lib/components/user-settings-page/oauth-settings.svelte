@@ -18,8 +18,7 @@
       try {
         loading = true;
 
-        const { data } = await oauth.link(window.location);
-        user = data;
+        user = await oauth.link(window.location);
 
         notificationController.show({
           message: 'Linked OAuth account',
@@ -37,8 +36,7 @@
 
   const handleUnlink = async () => {
     try {
-      const { data } = await oauth.unlink();
-      user = data;
+      user = await oauth.unlink();
       notificationController.show({
         message: 'Unlinked OAuth account',
         type: NotificationType.Info,

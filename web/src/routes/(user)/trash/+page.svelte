@@ -1,29 +1,29 @@
 <script lang="ts">
+  import { goto } from '$app/navigation';
+  import empty3Url from '$lib/assets/empty-3.svg';
+  import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
   import RestoreAssets from '$lib/components/photos-page/actions/restore-assets.svelte';
   import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
   import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
+  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
-  import { AppRoute } from '$lib/constants';
-  import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
-  import { handleError } from '$lib/utils/handle-error';
   import {
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
-  import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
-  import { AssetStore } from '$lib/stores/assets.store';
-  import { api } from '@api';
-  import Icon from '$lib/components/elements/icon.svelte';
-  import type { PageData } from './$types';
-  import { featureFlags, serverConfig } from '$lib/stores/server-config.store';
-  import { goto } from '$app/navigation';
-  import empty3Url from '$lib/assets/empty-3.svg';
-  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
-  import { mdiDeleteOutline, mdiHistory } from '@mdi/js';
   import UpdatePanel from '$lib/components/shared-components/update-panel.svelte';
+  import { AppRoute } from '$lib/constants';
+  import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
+  import { AssetStore } from '$lib/stores/assets.store';
+  import { featureFlags, serverConfig } from '$lib/stores/server-config.store';
+  import { handleError } from '$lib/utils/handle-error';
+  import { emptyTrash, restoreTrash } from '@immich/sdk';
+  import { mdiDeleteOutline, mdiHistory } from '@mdi/js';
+  import type { PageData } from './$types';
 
   export let data: PageData;
 
@@ -37,7 +37,7 @@
   const handleEmptyTrash = async () => {
     isShowEmptyConfirmation = false;
     try {
-      await api.trashApi.emptyTrash();
+      await emptyTrash();
 
       notificationController.show({
         message: `Empty trash initiated. Refresh the page to see the changes`,
@@ -50,7 +50,7 @@
 
   const handleRestoreTrash = async () => {
     try {
-      await api.trashApi.restoreTrash();
+      await restoreTrash();
 
       notificationController.show({
         message: `Restore trash initiated. Refresh the page to see the changes`,
