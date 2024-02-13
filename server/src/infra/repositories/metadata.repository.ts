@@ -10,7 +10,13 @@ import {
   ISystemMetadataRepository,
   ReverseGeocodeResult,
 } from '@app/domain';
-import { GeodataAdmin1Entity, GeodataAdmin2Entity, GeodataPlacesEntity, SystemMetadataKey } from '@app/infra/entities';
+import {
+  ExifEntity,
+  GeodataAdmin1Entity,
+  GeodataAdmin2Entity,
+  GeodataPlacesEntity,
+  SystemMetadataKey,
+} from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
 import { Inject } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
@@ -21,12 +27,14 @@ import { createReadStream, existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import * as readLine from 'node:readline';
 import { DataSource, DeepPartial, QueryRunner, Repository } from 'typeorm';
+import { DummyValue, GenerateSql } from '../infra.util';
 
 type GeoEntity = GeodataPlacesEntity | GeodataAdmin1Entity | GeodataAdmin2Entity;
 type GeoEntityClass = typeof GeodataPlacesEntity | typeof GeodataAdmin1Entity | typeof GeodataAdmin2Entity;
 
 export class MetadataRepository implements IMetadataRepository {
   constructor(
+    @InjectRepository(ExifEntity) private exifRepository: Repository<ExifEntity>,
     @InjectRepository(GeodataPlacesEntity) private readonly geodataPlacesRepository: Repository<GeodataPlacesEntity>,
     @InjectRepository(GeodataAdmin1Entity) private readonly geodataAdmin1Repository: Repository<GeodataAdmin1Entity>,
     @InjectRepository(GeodataAdmin2Entity) private readonly geodataAdmin2Repository: Repository<GeodataAdmin2Entity>,
@@ -212,5 +220,107 @@ export class MetadataRepository implements IMetadataRepository {
     } catch (error) {
       this.logger.warn(`Error writing exif data (${path}): ${error}`);
     }
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getCountries(userId: string): Promise<string[]> {
+    const entity = await this.exifRepository
+      .createQueryBuilder('exif')
+      .leftJoin('exif.asset', 'asset')
+      .where('asset.ownerId = :userId', { userId })
+      .andWhere('exif.country IS NOT NULL')
+      .select('exif.country')
+      .distinctOn(['exif.country'])
+      .getMany();
+
+    return entity.map((e) => e.country ?? '').filter((c) => c !== '');
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
+  async getStates(userId: string, country: string | undefined): Promise<string[]> {
+    let result: ExifEntity[] = [];
+
+    const query = this.exifRepository
+      .createQueryBuilder('exif')
+      .leftJoin('exif.asset', 'asset')
+      .where('asset.ownerId = :userId', { userId })
+      .andWhere('exif.state IS NOT NULL')
+      .select('exif.state')
+      .distinctOn(['exif.state']);
+
+    if (country) {
+      query.andWhere('exif.country = :country', { country });
+    }
+
+    result = await query.getMany();
+
+    return result.map((entity) => entity.state ?? '').filter((s) => s !== '');
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING, DummyValue.STRING] })
+  async getCities(userId: string, country: string | undefined, state: string | undefined): Promise<string[]> {
+    let result: ExifEntity[] = [];
+
+    const query = this.exifRepository
+      .createQueryBuilder('exif')
+      .leftJoin('exif.asset', 'asset')
+      .where('asset.ownerId = :userId', { userId })
+      .andWhere('exif.city IS NOT NULL')
+      .select('exif.city')
+      .distinctOn(['exif.city']);
+
+    if (country) {
+      query.andWhere('exif.country = :country', { country });
+    }
+
+    if (state) {
+      query.andWhere('exif.state = :state', { state });
+    }
+
+    result = await query.getMany();
+
+    return result.map((entity) => entity.city ?? '').filter((c) => c !== '');
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
+  async getCameraMakes(userId: string, model: string | undefined): Promise<string[]> {
+    let result: ExifEntity[] = [];
+
+    const query = this.exifRepository
+      .createQueryBuilder('exif')
+      .leftJoin('exif.asset', 'asset')
+      .where('asset.ownerId = :userId', { userId })
+      .andWhere('exif.make IS NOT NULL')
+      .select('exif.make')
+      .distinctOn(['exif.make']);
+
+    if (model) {
+      query.andWhere('exif.model = :model', { model });
+    }
+
+    result = await query.getMany();
+
+    return result.map((entity) => entity.make ?? '').filter((m) => m !== '');
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
+  async getCameraModels(userId: string, make: string | undefined): Promise<string[]> {
+    let result: ExifEntity[] = [];
+
+    const query = this.exifRepository
+      .createQueryBuilder('exif')
+      .leftJoin('exif.asset', 'asset')
+      .where('asset.ownerId = :userId', { userId })
+      .andWhere('exif.model IS NOT NULL')
+      .select('exif.model')
+      .distinctOn(['exif.model']);
+
+    if (make) {
+      query.andWhere('exif.make = :make', { make });
+    }
+
+    result = await query.getMany();
+
+    return result.map((entity) => entity.model ?? '').filter((m) => m !== '');
   }
 }

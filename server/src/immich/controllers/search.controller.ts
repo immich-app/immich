@@ -9,6 +9,7 @@ import {
   SearchService,
   SmartSearchDto,
 } from '@app/domain';
+import { SearchSuggestionRequestDto } from '@app/domain/search/dto/search-suggestion.dto';
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Auth, Authenticated } from '../app.guard';
@@ -45,5 +46,10 @@ export class SearchController {
   @Get('person')
   searchPerson(@Auth() auth: AuthDto, @Query() dto: SearchPeopleDto): Promise<PersonResponseDto[]> {
     return this.service.searchPerson(auth, dto);
+  }
+
+  @Get('suggestions')
+  getSearchSuggestions(@Auth() auth: AuthDto, @Query() dto: SearchSuggestionRequestDto): Promise<string[]> {
+    return this.service.getSearchSuggestions(auth, dto);
   }
 }

@@ -4,6 +4,7 @@ import {
   authStub,
   newAssetRepositoryMock,
   newMachineLearningRepositoryMock,
+  newMetadataRepositoryMock,
   newPartnerRepositoryMock,
   newPersonRepositoryMock,
   newSearchRepositoryMock,
@@ -14,6 +15,7 @@ import { mapAsset } from '../asset';
 import {
   IAssetRepository,
   IMachineLearningRepository,
+  IMetadataRepository,
   IPartnerRepository,
   IPersonRepository,
   ISearchRepository,
@@ -32,6 +34,7 @@ describe(SearchService.name, () => {
   let personMock: jest.Mocked<IPersonRepository>;
   let searchMock: jest.Mocked<ISearchRepository>;
   let partnerMock: jest.Mocked<IPartnerRepository>;
+  let metadataMock: jest.Mocked<IMetadataRepository>;
 
   beforeEach(() => {
     assetMock = newAssetRepositoryMock();
@@ -40,7 +43,9 @@ describe(SearchService.name, () => {
     personMock = newPersonRepositoryMock();
     searchMock = newSearchRepositoryMock();
     partnerMock = newPartnerRepositoryMock();
-    sut = new SearchService(configMock, machineMock, personMock, searchMock, assetMock, partnerMock);
+    metadataMock = newMetadataRepositoryMock();
+
+    sut = new SearchService(configMock, machineMock, personMock, searchMock, assetMock, partnerMock, metadataMock);
   });
 
   it('should work', () => {
