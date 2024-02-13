@@ -1,16 +1,17 @@
+import { getAssetThumbnailUrl } from '$lib/utils';
 import { authenticate } from '$lib/utils/auth';
-import { api, ThumbnailFormat } from '@api';
+import { ThumbnailFormat } from '@api';
+import { getMySharedLink } from '@immich/sdk';
+import { error as throwError } from '@sveltejs/kit';
 import type { AxiosError } from 'axios';
 import type { PageLoad } from './$types';
-import { error as throwError } from '@sveltejs/kit';
 
 export const load = (async ({ params }) => {
   const { key } = params;
   await authenticate({ public: true });
 
   try {
-    const { data: sharedLink } = await api.sharedLinkApi.getMySharedLink({ key });
-
+    const sharedLink = await getMySharedLink({ key });
     const assetCount = sharedLink.assets.length;
     const assetId = sharedLink.album?.albumThumbnailAssetId || sharedLink.assets[0]?.id;
 
@@ -19,9 +20,7 @@ export const load = (async ({ params }) => {
       meta: {
         title: sharedLink.album ? sharedLink.album.albumName : 'Public Share',
         description: sharedLink.description || `${assetCount} shared photos & videos.`,
-        imageUrl: assetId
-          ? api.getAssetThumbnailUrl(assetId, ThumbnailFormat.Webp, sharedLink.key)
-          : '/feature-panel.png',
+        imageUrl: assetId ? getAssetThumbnailUrl(assetId, ThumbnailFormat.Webp) : '/feature-panel.png',
       },
     };
   } catch (error) {

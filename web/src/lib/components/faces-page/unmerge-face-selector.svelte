@@ -2,8 +2,13 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { timeBeforeShowLoadingSpinner } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
-  import { api, type AssetFaceUpdateItem, type PersonResponseDto } from '@api';
-  import { createPerson, getAllPeople, reassignFaces } from '@immich/sdk';
+  import {
+    createPerson,
+    getAllPeople,
+    reassignFaces,
+    type AssetFaceUpdateItem,
+    type PersonResponseDto,
+  } from '@immich/sdk';
   import { mdiMerge, mdiPlus } from '@mdi/js';
   import { createEventDispatcher, onMount } from 'svelte';
   import { quintOut } from 'svelte/easing';

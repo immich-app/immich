@@ -1,11 +1,12 @@
 <script lang="ts">
-  import { api, type PersonResponseDto } from '@api';
-  import FaceThumbnail from './face-thumbnail.svelte';
-  import { createEventDispatcher } from 'svelte';
+  import { maximumLengthSearchPeople, timeBeforeShowLoadingSpinner } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
   import { searchNameLocal } from '$lib/utils/person';
+  import { type PersonResponseDto } from '@api';
+  import { searchPerson } from '@immich/sdk';
+  import { createEventDispatcher } from 'svelte';
+  import FaceThumbnail from './face-thumbnail.svelte';
   import SearchBar from './search-bar.svelte';
-  import { maximumLengthSearchPeople, timeBeforeShowLoadingSpinner } from '$lib/constants';
 
   export let screenHeight: number;
   export let people: PersonResponseDto[];
@@ -40,8 +41,7 @@
 
     const timeout = setTimeout(() => (isSearchingPeople = true), timeBeforeShowLoadingSpinner);
     try {
-      const { data } = await api.searchApi.searchPerson({ name });
-      people = data;
+      people = await searchPerson({ name });
       searchWord = name;
     } catch (error) {
       handleError(error, "Can't search people");

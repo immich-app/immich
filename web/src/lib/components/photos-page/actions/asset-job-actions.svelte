@@ -4,8 +4,10 @@
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
+  import { getAssetJobMessage, getAssetJobName } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { AssetJobName, AssetTypeEnum, api } from '@api';
+  import { AssetJobName, AssetTypeEnum } from '@api';
+  import { runAssetJobs } from '@immich/sdk';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
 
   export let jobs: AssetJobName[] = [
@@ -21,8 +23,8 @@
   const handleRunJob = async (name: AssetJobName) => {
     try {
       const ids = [...getOwnedAssets()].map(({ id }) => id);
-      await api.assetApi.runAssetJobs({ assetJobsDto: { assetIds: ids, name } });
-      notificationController.show({ message: api.getAssetJobMessage(name), type: NotificationType.Info });
+      await runAssetJobs({ assetJobsDto: { assetIds: ids, name } });
+      notificationController.show({ message: getAssetJobMessage(name), type: NotificationType.Info });
       clearSelect();
     } catch (error) {
       handleError(error, 'Unable to submit job');
@@ -32,6 +34,6 @@
 
 {#each jobs as job}
   {#if isAllVideos || job !== AssetJobName.TranscodeVideo}
-    <MenuOption text={api.getAssetJobName(job)} on:click={() => handleRunJob(job)} />
+    <MenuOption text={getAssetJobName(job)} on:click={() => handleRunJob(job)} />
   {/if}
 {/each}

@@ -24,11 +24,12 @@
     QueryParameter,
     timeBeforeShowLoadingSpinner,
   } from '$lib/constants';
+  import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { searchNameLocal } from '$lib/utils/person';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
-  import { api, type PeopleUpdateItem, type PersonResponseDto } from '@api';
-  import { getPerson, mergePerson, updatePeople, updatePerson } from '@immich/sdk';
+  import { type PeopleUpdateItem, type PersonResponseDto } from '@api';
+  import { getPerson, mergePerson, searchPerson, updatePeople, updatePerson } from '@immich/sdk';
   import { mdiAccountOff, mdiEyeOutline } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
   import type { PageData } from './$types';
@@ -76,7 +77,7 @@
     const getSearchedPeople = $page.url.searchParams.get(QueryParameter.SEARCHED_PEOPLE);
     if (getSearchedPeople) {
       searchName = getSearchedPeople;
-      searchPeople(true);
+      handleSearchPeople(true);
     }
   });
 
@@ -101,7 +102,7 @@
   const handleSearch = (force: boolean) => {
     $page.url.searchParams.set(QueryParameter.SEARCHED_PEOPLE, searchName);
     goto($page.url);
-    searchPeople(force);
+    handleSearchPeople(force);
   };
 
   const handleCloseClick = () => {
@@ -282,7 +283,7 @@
     );
   };
 
-  const searchPeople = async (force: boolean) => {
+  const handleSearchPeople = async (force: boolean) => {
     if (searchName === '') {
       if ($page.url.searchParams.has(QueryParameter.SEARCHED_PEOPLE)) {
         $page.url.searchParams.delete(QueryParameter.SEARCHED_PEOPLE);
@@ -296,9 +297,7 @@
 
     const timeout = setTimeout(() => (isSearchingPeople = true), timeBeforeShowLoadingSpinner);
     try {
-      const { data } = await api.searchApi.searchPerson({ name: searchName, withHidden: false });
-
-      searchedPeople = data;
+      searchedPeople = await searchPerson({ name: searchName, withHidden: false });
       searchWord = searchName;
     } catch (error) {
       handleError(error, "Can't search people");
@@ -319,7 +318,7 @@
       changeName();
       return;
     }
-    const { data } = await api.searchApi.searchPerson({ name: personName, withHidden: true });
+    const data = await searchPerson({ name: personName, withHidden: true });
 
     // We check if another person has the same name as the name entered by the user
 
@@ -530,7 +529,7 @@
             preload={searchName !== '' || index < 20}
             bind:hidden={person.isHidden}
             shadow
-            url={api.getPeopleThumbnailUrl(person.id)}
+            url={getPeopleThumbnailUrl(person.id)}
             altText={person.name}
             widthStyle="100%"
             bind:eyeColor={eyeColorMap[person.id]}

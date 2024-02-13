@@ -26,9 +26,8 @@
   import { preventRaceConditionSearchBar } from '$lib/stores/search.store';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
   import { mdiArrowLeft, mdiDotsVertical, mdiImageOffOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
-  import type { AssetResponseDto, SearchResponseDto } from '@immich/sdk';
+  import { search, type AssetResponseDto, type SearchResponseDto } from '@immich/sdk';
   import { authenticate } from '$lib/utils/auth';
-  import { api } from '@api';
 
   export let data: PageData;
 
@@ -120,20 +119,20 @@
     await authenticate();
     let results: SearchResponseDto | null = null;
     $page.url.searchParams.set('page', curPage.toString());
-    const res = await api.searchApi.search({}, { params: $page.url.searchParams });
+    const res = await search({ ...$page.url.searchParams });
     if (searchResultAssets) {
-      searchResultAssets.push(...res.data.assets.items);
+      searchResultAssets.push(...res.assets.items);
     } else {
-      searchResultAssets = res.data.assets.items;
+      searchResultAssets = res.assets.items;
     }
 
     const assets = {
-      ...res.data.assets,
+      ...res.assets,
       items: searchResultAssets,
     };
     results = {
       assets,
-      albums: res.data.albums,
+      albums: res.albums,
     };
 
     data.results = results;

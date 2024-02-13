@@ -1,10 +1,10 @@
 import { authenticate } from '$lib/utils/auth';
-import { api } from '@api';
+import { getExploreData } from '@immich/sdk';
 import type { PageLoad } from './$types';
 
 export const load = (async () => {
   await authenticate();
-  const { data: items } = await api.searchApi.getExploreData();
+  const items = await getExploreData();
 
   return {
     items,

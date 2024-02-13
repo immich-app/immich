@@ -1,5 +1,6 @@
 import { UploadState } from '$lib/models/upload-asset';
 import { uploadAssetsStore } from '$lib/stores/upload';
+import { getKey } from '$lib/utils';
 import { addAssetsToAlbum } from '$lib/utils/asset-utils';
 import { ExecutorQueue } from '$lib/utils/executor-queue';
 import { api, type AssetFileUploadResponseDto } from '@api';
@@ -81,7 +82,7 @@ async function fileUploader(asset: File, albumId: string | undefined = undefined
           isFavorite: false,
           duration: '0:00:00.000000',
           assetData: new File([asset], asset.name),
-          key: api.getKey(),
+          key: getKey(),
         },
         {
           onUploadProgress: ({ event }) => {

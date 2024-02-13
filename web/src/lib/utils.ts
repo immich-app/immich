@@ -1,6 +1,7 @@
 import { goto } from '$app/navigation';
 import { page } from '$app/stores';
-import { JobName } from '@immich/sdk/axios';
+import { defaults } from '@immich/sdk';
+import { AssetJobName, JobName, ThumbnailFormat, common } from '@immich/sdk/axios';
 import { get } from 'svelte/store';
 
 interface UpdateParamAction {
@@ -50,4 +51,73 @@ export const getJobName = (jobName: JobName) => {
   };
 
   return names[jobName];
+};
+
+let _key: string | undefined;
+
+export const setKey = (key: string) => {
+  _key = key;
+};
+
+export const getKey = (): string | undefined => {
+  return _key;
+};
+
+export const isSharedLink = () => {
+  return !!_key;
+};
+
+const createUrl = (path: string, parameters?: Record<string, unknown>) => {
+  const searchParameters = new URLSearchParams();
+  for (const key in parameters) {
+    const value = parameters[key];
+    if (value !== undefined && value !== null) {
+      searchParameters.set(key, value.toString());
+    }
+  }
+
+  const url = new URL(path, 'https://example.com');
+  url.search = searchParameters.toString();
+
+  return defaults.baseUrl + common.toPathString(url);
+};
+
+export const getAssetFileUrl = (...[assetId, isWeb, isThumb]: [string, boolean, boolean]) => {
+  const path = `/asset/file/${assetId}`;
+  return createUrl(path, { isThumb, isWeb, key: getKey() });
+};
+
+export const getAssetThumbnailUrl = (...[assetId, format]: [string, ThumbnailFormat | undefined]) => {
+  const path = `/asset/thumbnail/${assetId}`;
+  return createUrl(path, { format, key: getKey() });
+};
+
+export const getProfileImageUrl = (...[userId]: [string]) => {
+  const path = `/user/profile-image/${userId}`;
+  return createUrl(path);
+};
+
+export const getPeopleThumbnailUrl = (personId: string) => {
+  const path = `/person/${personId}/thumbnail`;
+  return createUrl(path);
+};
+
+export const getAssetJobName = (job: AssetJobName) => {
+  const names: Record<AssetJobName, string> = {
+    [AssetJobName.RefreshMetadata]: 'Refresh metadata',
+    [AssetJobName.RegenerateThumbnail]: 'Refresh thumbnails',
+    [AssetJobName.TranscodeVideo]: 'Refresh encoded videos',
+  };
+
+  return names[job];
+};
+
+export const getAssetJobMessage = (job: AssetJobName) => {
+  const messages: Record<AssetJobName, string> = {
+    [AssetJobName.RefreshMetadata]: 'Refreshing metadata',
+    [AssetJobName.RegenerateThumbnail]: `Regenerating thumbnails`,
+    [AssetJobName.TranscodeVideo]: `Refreshing encoded video`,
+  };
+
+  return messages[job];
 };

@@ -3,7 +3,7 @@
 </script>
 
 <script lang="ts">
-  import { api } from '@api';
+  import { getProfileImageUrl } from '$lib/utils';
   import { type UserAvatarColor } from '@immich/sdk';
   import { onMount, tick } from 'svelte';
 
@@ -75,7 +75,7 @@
   {#if showProfileImage && user.profileImagePath}
     <img
       bind:this={img}
-      src={api.getProfileImageUrl(user.id)}
+      src={getProfileImageUrl(user.id)}
       alt="Profile image of {title}"
       class="h-full w-full object-cover"
       class:hidden={showFallback}

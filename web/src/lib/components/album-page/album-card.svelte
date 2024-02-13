@@ -3,6 +3,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { user } from '$lib/stores/user.store';
+  import { getAssetThumbnailUrl } from '$lib/utils';
   import { ThumbnailFormat, api, type AlbumResponseDto } from '@api';
   import { getUserById } from '@immich/sdk';
   import { mdiDotsVertical } from '@mdi/js';
@@ -19,7 +20,7 @@
   let showVerticalDots = false;
 
   $: imageData = album.albumThumbnailAssetId
-    ? api.getAssetThumbnailUrl(album.albumThumbnailAssetId, ThumbnailFormat.Webp)
+    ? getAssetThumbnailUrl(album.albumThumbnailAssetId, ThumbnailFormat.Webp)
     : noThumbnailUrl;
 
   const dispatchClick = createEventDispatcher<OnClick>();

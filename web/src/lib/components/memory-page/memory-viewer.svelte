@@ -8,8 +8,8 @@
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
   import { memoryStore } from '$lib/stores/memory.store';
+  import { getAssetThumbnailUrl } from '$lib/utils';
   import { fromLocalDateTime } from '$lib/utils/timeline-util';
-  import { api } from '@api';
   import { getMemoryLane } from '@immich/sdk';
   import { mdiChevronDown, mdiChevronLeft, mdiChevronRight, mdiChevronUp, mdiPause, mdiPlay } from '@mdi/js';
   import { DateTime } from 'luxon';
@@ -168,7 +168,7 @@
           <button class="relative h-full w-full rounded-2xl" disabled={!previousMemory} on:click={toPreviousMemory}>
             <img
               class="h-full w-full rounded-2xl object-cover"
-              src={previousMemory ? api.getAssetThumbnailUrl(previousMemory.assets[0].id, 'JPEG') : noThumbnailUrl}
+              src={previousMemory ? getAssetThumbnailUrl(previousMemory.assets[0].id, 'JPEG') : noThumbnailUrl}
               alt=""
               draggable="false"
             />
@@ -191,7 +191,7 @@
               <img
                 transition:fade
                 class="h-full w-full rounded-2xl object-contain transition-all"
-                src={api.getAssetThumbnailUrl(currentAsset.id, 'JPEG')}
+                src={getAssetThumbnailUrl(currentAsset.id, 'JPEG')}
                 alt=""
                 draggable="false"
               />
@@ -231,7 +231,7 @@
           <button class="relative h-full w-full rounded-2xl" on:click={toNextMemory} disabled={!nextMemory}>
             <img
               class="h-full w-full rounded-2xl object-cover"
-              src={nextMemory ? api.getAssetThumbnailUrl(nextMemory.assets[0].id, 'JPEG') : noThumbnailUrl}
+              src={nextMemory ? getAssetThumbnailUrl(nextMemory.assets[0].id, 'JPEG') : noThumbnailUrl}
               alt=""
               draggable="false"
             />

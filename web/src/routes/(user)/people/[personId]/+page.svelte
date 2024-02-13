@@ -35,7 +35,6 @@
   import { handleError } from '$lib/utils/handle-error';
   import { isExternalUrl } from '$lib/utils/navigation';
   import { searchNameLocal } from '$lib/utils/person';
-  import { api } from '@api';
   import {
     getPersonStatistics,
     mergePerson,
@@ -47,6 +46,7 @@
   import { mdiArrowLeft, mdiDotsVertical, mdiPlus } from '@mdi/js';
   import { onMount } from 'svelte';
   import type { PageData } from './$types';
+  import { getPeopleThumbnailUrl } from '$lib/utils';
 
   export let data: PageData;
 
@@ -82,7 +82,7 @@
   let refreshAssetGrid = false;
 
   let personName = '';
-  $: thumbnailData = api.getPeopleThumbnailUrl(data.person.id);
+  $: thumbnailData = getPeopleThumbnailUrl(data.person.id);
 
   let name: string = data.person.name;
   let suggestedPeople: PersonResponseDto[] = [];
@@ -120,7 +120,7 @@
   $: isAllArchive = [...$selectedAssets].every((asset) => asset.isArchived);
   $: isAllFavorite = [...$selectedAssets].every((asset) => asset.isFavorite);
   $: $onPersonThumbnail === data.person.id &&
-    (thumbnailData = api.getPeopleThumbnailUrl(data.person.id) + `?now=${Date.now()}`);
+    (thumbnailData = getPeopleThumbnailUrl(data.person.id) + `?now=${Date.now()}`);
 
   $: {
     if (people) {
@@ -559,7 +559,7 @@
                     <ImageThumbnail
                       circle
                       shadow
-                      url={api.getPeopleThumbnailUrl(person.id)}
+                      url={getPeopleThumbnailUrl(person.id)}
                       altText={person.name}
                       widthStyle="2rem"
                       heightStyle="2rem"

@@ -1,13 +1,13 @@
 <script lang="ts">
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
-  import { api } from '@api';
-  import { getAssetControlContext } from '../asset-select-control-bar.svelte';
   import {
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
-  import { handleError } from '$lib/utils/handle-error';
   import type { OnStack } from '$lib/utils/actions';
+  import { handleError } from '$lib/utils/handle-error';
+  import { updateAssets } from '@immich/sdk';
+  import { getAssetControlContext } from '../asset-select-control-bar.svelte';
 
   export let onStack: OnStack | undefined;
 
@@ -26,7 +26,7 @@
       const ids = children.map(({ id }) => id);
 
       if (children.length > 0) {
-        await api.assetApi.updateAssets({ assetBulkUpdateDto: { ids, stackParentId: parent.id } });
+        await updateAssets({ assetBulkUpdateDto: { ids, stackParentId: parent.id } });
       }
 
       let childrenCount = parent.stackCount ?? 0;

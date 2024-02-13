@@ -3,7 +3,8 @@
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import { AppRoute } from '$lib/constants';
-  import { type SearchExploreResponseDto, api } from '@api';
+  import { getPeopleThumbnailUrl } from '$lib/utils';
+  import type { SearchExploreResponseDto } from '@immich/sdk';
   import type { PageData } from './$types';
 
   export let data: PageData;
@@ -58,7 +59,7 @@
               <ImageThumbnail
                 circle
                 shadow
-                url={api.getPeopleThumbnailUrl(person.id)}
+                url={getPeopleThumbnailUrl(person.id)}
                 altText={person.name}
                 widthStyle="100%"
               />

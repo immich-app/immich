@@ -1,12 +1,12 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
   import { timeBeforeShowLoadingSpinner } from '$lib/constants';
+  import { getAssetThumbnailUrl } from '$lib/utils';
   import { getAssetType } from '$lib/utils/asset-utils';
   import { autoGrowHeight } from '$lib/utils/autogrow';
   import { clickOutside } from '$lib/utils/click-outside';
   import { handleError } from '$lib/utils/handle-error';
   import { isTenMinutesApart } from '$lib/utils/timesince';
-  import { api } from '@api';
   import {
     createActivity,
     deleteActivity,
@@ -192,7 +192,7 @@
                 <div class="aspect-square w-[75px] h-[75px]">
                   <img
                     class="rounded-lg w-[75px] h-[75px] object-cover"
-                    src={api.getAssetThumbnailUrl(reaction.assetId, ThumbnailFormat.Webp)}
+                    src={getAssetThumbnailUrl(reaction.assetId, ThumbnailFormat.Webp)}
                     alt="comment-thumbnail"
                   />
                 </div>
@@ -238,7 +238,7 @@
                   <div class="aspect-square w-[75px] h-[75px]">
                     <img
                       class="rounded-lg w-[75px] h-[75px] object-cover"
-                      src={api.getAssetThumbnailUrl(reaction.assetId, ThumbnailFormat.Webp)}
+                      src={getAssetThumbnailUrl(reaction.assetId, ThumbnailFormat.Webp)}
                       alt="like-thumbnail"
                     />
                   </div>

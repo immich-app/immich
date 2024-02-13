@@ -2,8 +2,8 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { Theme } from '$lib/constants';
   import { colorTheme, mapSettings } from '$lib/stores/preferences.store';
-  import { api, type MapMarkerResponseDto } from '@api';
-  import { getMapStyle } from '@immich/sdk';
+  import { getAssetThumbnailUrl } from '$lib/utils';
+  import { getMapStyle, type MapMarkerResponseDto } from '@immich/sdk';
   import { mdiCog, mdiMapMarker } from '@mdi/js';
   import type { Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
   import type { GeoJSONSource, LngLatLike, StyleSpecification } from 'maplibre-gl';
@@ -174,7 +174,7 @@
           />
         {:else}
           <img
-            src={api.getAssetThumbnailUrl(feature.properties?.id)}
+            src={getAssetThumbnailUrl(feature.properties?.id, undefined)}
             class="rounded-full w-[60px] h-[60px] border-2 border-immich-primary shadow-lg hover:border-immich-dark-primary transition-all duration-200 hover:scale-150 object-cover bg-immich-primary"
             alt={`Image with id ${feature.properties?.id}`}
           />
