@@ -501,8 +501,8 @@ export type ValidateLibraryDto = {
 };
 export type ValidateLibraryImportPathResponseDto = {
     importPath: string;
+    isValid?: boolean;
     message?: string;
-    valid?: boolean;
 };
 export type ValidateLibraryResponseDto = {
     importPaths?: ValidateLibraryImportPathResponseDto[];

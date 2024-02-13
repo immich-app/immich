@@ -5,10 +5,10 @@
   import LibraryImportPathForm from './library-import-path-form.svelte';
   import { onMount } from 'svelte';
   import Icon from '$lib/components/elements/icon.svelte';
-  import type { LibraryResponseDto } from '@api';
-  import { mdiPencilOutline } from '@mdi/js';
+  import { api, type LibraryResponseDto, type ValidateLibraryImportPathResponseDto } from '@api';
+  import { mdiAlertOutline, mdiPencilOutline } from '@mdi/js';
 
-  export let library: Partial<LibraryResponseDto>;
+  export let library: LibraryResponseDto;
 
   let addImportPath = false;
   let editImportPath: number | null = null;
@@ -16,11 +16,18 @@
   let importPathToAdd: string | null = null;
   let editedImportPath: string;
 
-  let importPaths: string[] = [];
+  let validatedPaths: ValidateLibraryImportPathResponseDto[] = [];
 
-  onMount(() => {
+  $: importPaths = validatedPaths.map((validatedPath) => validatedPath.importPath);
+
+  onMount(async () => {
     if (library.importPaths) {
-      importPaths = library.importPaths;
+      const { data } = await api.libraryApi.validate({
+        id: library.id,
+        validateLibraryDto: { importPaths: library.importPaths },
+      });
+
+      validatedPaths = data.importPaths ?? [];
     } else {
       library.importPaths = [];
     }
@@ -51,7 +58,12 @@
       // Check so that import path isn't duplicated
       if (!library.importPaths.includes(importPathToAdd)) {
         library.importPaths.push(importPathToAdd);
-        importPaths = library.importPaths;
+        const { data } = await api.libraryApi.validate({
+          id: library.id,
+          validateLibraryDto: { importPaths: library.importPaths },
+        });
+
+        validatedPaths = data.importPaths ?? [];
       }
     } catch (error) {
       handleError(error, 'Unable to add import path');
@@ -76,7 +88,12 @@
       if (!library.importPaths.includes(editedImportPath)) {
         // Update import path
         library.importPaths[editImportPath] = editedImportPath;
-        importPaths = library.importPaths;
+        const { data } = await api.libraryApi.validate({
+          id: library.id,
+          validateLibraryDto: { importPaths: library.importPaths },
+        });
+
+        validatedPaths = data.importPaths ?? [];
       }
     } catch (error) {
       editImportPath = null;
@@ -98,7 +115,12 @@
 
       const pathToDelete = library.importPaths[editImportPath];
       library.importPaths = library.importPaths.filter((path) => path != pathToDelete);
-      importPaths = library.importPaths;
+      const { data } = await api.libraryApi.validate({
+        id: library.id,
+        validateLibraryDto: { importPaths: library.importPaths },
+      });
+
+      validatedPaths = data.importPaths ?? [];
     } catch (error) {
       handleError(error, 'Unable to delete import path');
     } finally {
@@ -139,7 +161,7 @@
 <form on:submit|preventDefault={() => handleSubmit()} autocomplete="off" class="m-4 flex flex-col gap-4">
   <table class="text-left">
     <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
-      {#each importPaths as importPath, listIndex}
+      {#each validatedPaths as validatedPath, listIndex}
         <tr
           class={`flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
             listIndex % 2 == 0
@@ -147,13 +169,16 @@
               : 'bg-immich-bg dark:bg-immich-dark-gray/50'
           }`}
         >
-          <td class="w-4/5 text-ellipsis px-4 text-sm">{importPath}</td>
+          <td class="w-4/5 text-ellipsis px-4 text-sm"> {validatedPath.importPath}</td>
           <td class="w-1/5 text-ellipsis px-4 text-sm">
+            {#if !validatedPath.isValid}
+              <Icon path={mdiAlertOutline} size="40" title={validatedPath.message} />
+            {/if}
             <button
               type="button"
               on:click={() => {
                 editImportPath = listIndex;
-                editedImportPath = importPath;
+                editedImportPath = validatedPath.importPath;
               }}
               class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
             >

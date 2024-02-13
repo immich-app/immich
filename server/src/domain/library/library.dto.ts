@@ -83,7 +83,7 @@ export class ValidateLibraryResponseDto {
 
 export class ValidateLibraryImportPathResponseDto {
   importPath!: string;
-  valid?: boolean = false;
+  isValid?: boolean = false;
   message?: string;
 }
 

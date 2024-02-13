@@ -300,7 +300,7 @@ export class LibraryService extends EventEmitter {
       try {
         const stat = await this.storageRepository.stat(importPath);
 
-        if (!stat.isDirectory) {
+        if (!stat.isDirectory()) {
           validation.message = 'Not a directory';
           return validation;
         }
@@ -320,7 +320,7 @@ export class LibraryService extends EventEmitter {
         return validation;
       }
 
-      validation.valid = true;
+      validation.isValid = true;
       return validation;
     };
 

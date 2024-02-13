@@ -14,11 +14,13 @@ class ValidateLibraryImportPathResponseDto {
   /// Returns a new [ValidateLibraryImportPathResponseDto] instance.
   ValidateLibraryImportPathResponseDto({
     required this.importPath,
+    this.isValid = false,
     this.message,
-    this.valid = false,
   });
 
   String importPath;
+
+  bool isValid;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -28,33 +30,31 @@ class ValidateLibraryImportPathResponseDto {
   ///
   String? message;
 
-  bool valid;
-
   @override
   bool operator ==(Object other) => identical(this, other) || other is ValidateLibraryImportPathResponseDto &&
     other.importPath == importPath &&
-    other.message == message &&
-    other.valid == valid;
+    other.isValid == isValid &&
+    other.message == message;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (importPath.hashCode) +
-    (message == null ? 0 : message!.hashCode) +
-    (valid.hashCode);
+    (isValid.hashCode) +
+    (message == null ? 0 : message!.hashCode);
 
   @override
-  String toString() => 'ValidateLibraryImportPathResponseDto[importPath=$importPath, message=$message, valid=$valid]';
+  String toString() => 'ValidateLibraryImportPathResponseDto[importPath=$importPath, isValid=$isValid, message=$message]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'importPath'] = this.importPath;
+      json[r'isValid'] = this.isValid;
     if (this.message != null) {
       json[r'message'] = this.message;
     } else {
     //  json[r'message'] = null;
     }
-      json[r'valid'] = this.valid;
     return json;
   }
 
@@ -67,8 +67,8 @@ class ValidateLibraryImportPathResponseDto {
 
       return ValidateLibraryImportPathResponseDto(
         importPath: mapValueOfType<String>(json, r'importPath')!,
+        isValid: mapValueOfType<bool>(json, r'isValid') ?? false,
         message: mapValueOfType<String>(json, r'message'),
-        valid: mapValueOfType<bool>(json, r'valid')!,
       );
     }
     return null;
@@ -117,7 +117,6 @@ class ValidateLibraryImportPathResponseDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'importPath',
-    'valid',
   };
 }
 

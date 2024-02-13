@@ -9996,12 +9996,12 @@
           "importPath": {
             "type": "string"
           },
-          "message": {
-            "type": "string"
-          },
-          "valid": {
+          "isValid": {
             "default": false,
             "type": "boolean"
+          },
+          "message": {
+            "type": "string"
           }
         },
         "required": [

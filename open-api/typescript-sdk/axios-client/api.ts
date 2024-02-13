@@ -4864,16 +4864,16 @@ export interface ValidateLibraryImportPathResponseDto {
     'importPath': string;
     /**
      * 
+     * @type {boolean}
+     * @memberof ValidateLibraryImportPathResponseDto
+     */
+    'isValid'?: boolean;
+    /**
+     * 
      * @type {string}
      * @memberof ValidateLibraryImportPathResponseDto
      */
     'message'?: string;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof ValidateLibraryImportPathResponseDto
-     */
-    'valid'?: boolean;
 }
 /**
  * 

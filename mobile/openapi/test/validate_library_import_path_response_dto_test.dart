@@ -21,13 +21,13 @@ void main() {
       // TODO
     });
 
-    // String message
-    test('to test the property `message`', () async {
+    // bool isValid (default value: false)
+    test('to test the property `isValid`', () async {
       // TODO
     });
 
-    // bool valid (default value: false)
-    test('to test the property `valid`', () async {
+    // String message
+    test('to test the property `message`', () async {
       // TODO
     });
 
