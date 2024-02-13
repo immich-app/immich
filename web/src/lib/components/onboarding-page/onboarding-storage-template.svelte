@@ -1,14 +1,15 @@
 <script lang="ts">
-  import OnboardingCard from './onboarding-card.svelte';
-  import { createEventDispatcher, onMount } from 'svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
-  import StorageTemplateSettings from '../admin-page/settings/storage-template/storage-template-settings.svelte';
-  import { type SystemConfigDto, api } from '@api';
   import { user } from '$lib/stores/user.store';
-  import AdminSettings from '../admin-page/settings/admin-settings.svelte';
+  import { type SystemConfigDto } from '@api';
+  import { getConfig } from '@immich/sdk';
   import { mdiArrowLeft, mdiCheck } from '@mdi/js';
+  import { createEventDispatcher, onMount } from 'svelte';
+  import AdminSettings from '../admin-page/settings/admin-settings.svelte';
+  import StorageTemplateSettings from '../admin-page/settings/storage-template/storage-template-settings.svelte';
   import Button from '../elements/buttons/button.svelte';
   import Icon from '../elements/icon.svelte';
+  import OnboardingCard from './onboarding-card.svelte';
 
   const dispatch = createEventDispatcher<{
     done: void;
@@ -18,8 +19,7 @@
   let config: SystemConfigDto | null = null;
 
   onMount(async () => {
-    const { data } = await api.systemConfigApi.getConfig();
-    config = data;
+    config = await getConfig();
   });
 </script>
 

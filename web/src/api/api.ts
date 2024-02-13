@@ -4,13 +4,10 @@ import {
   AssetApiFp,
   AssetJobName,
   DownloadApi,
-  FaceApi,
   JobName,
-  LibraryApi,
   PersonApi,
   SearchApi,
   SharedLinkApi,
-  SystemConfigApi,
   UserApi,
   UserApiFp,
   base,
@@ -22,13 +19,10 @@ import type { ApiParams as ApiParameters } from './types';
 class ImmichApi {
   public albumApi: AlbumApi;
   public downloadApi: DownloadApi;
-  public libraryApi: LibraryApi;
   public assetApi: AssetApi;
-  public faceApi: FaceApi;
   public searchApi: SearchApi;
   public sharedLinkApi: SharedLinkApi;
   public personApi: PersonApi;
-  public systemConfigApi: SystemConfigApi;
   public userApi: UserApi;
 
   private config: configuration.Configuration;
@@ -43,13 +37,10 @@ class ImmichApi {
 
     this.albumApi = new AlbumApi(this.config);
     this.downloadApi = new DownloadApi(this.config);
-    this.libraryApi = new LibraryApi(this.config);
     this.assetApi = new AssetApi(this.config);
-    this.faceApi = new FaceApi(this.config);
     this.searchApi = new SearchApi(this.config);
     this.sharedLinkApi = new SharedLinkApi(this.config);
     this.personApi = new PersonApi(this.config);
-    this.systemConfigApi = new SystemConfigApi(this.config);
     this.userApi = new UserApi(this.config);
   }
 
