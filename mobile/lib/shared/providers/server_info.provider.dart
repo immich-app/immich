@@ -52,6 +52,7 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
     await getServerVersion();
     await getServerFeatures();
     await getServerConfig();
+    await getServerDiskInfo();
   }
 
   getServerVersion() async {
@@ -150,6 +151,14 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
       return;
     }
     state = state.copyWith(serverConfig: serverConfig);
+  }
+
+  getServerDiskInfo() async {
+    final serverInfo = await _serverInfoService.getServerInfo();
+    if (serverInfo == null) {
+      return;
+    }
+    state = state.copyWith(serverDiskInfo: serverInfo);
   }
 
   Map<String, int> _getDetailVersion(String version) {

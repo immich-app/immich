@@ -2,7 +2,6 @@ import 'package:cancellation_token_http/http.dart';
 import 'package:collection/collection.dart';
 import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:immich_mobile/shared/models/server_info/server_disk_info.model.dart';
 
 enum BackUpProgressEnum {
   idle,
@@ -19,7 +18,6 @@ class BackUpState {
   final double progressInPercentage;
   final double iCloudDownloadProgress;
   final CancellationToken cancelToken;
-  final ServerDiskInfo serverInfo;
 
   /// Assets that are not overlapping in selected backup albums and excluded backup albums
   final Set<Asset> allUniqueAssets;
@@ -36,7 +34,6 @@ class BackUpState {
     required this.progressInPercentage,
     required this.iCloudDownloadProgress,
     required this.cancelToken,
-    required this.serverInfo,
     required this.allUniqueAssets,
     required this.backedUpAssetsCount,
     required this.currentUploadAsset,
@@ -48,7 +45,6 @@ class BackUpState {
     double? progressInPercentage,
     double? iCloudDownloadProgress,
     CancellationToken? cancelToken,
-    ServerDiskInfo? serverInfo,
     Set<Asset>? allUniqueAssets,
     int? backedUpAssetsCount,
     CurrentUploadAsset? currentUploadAsset,
@@ -60,7 +56,6 @@ class BackUpState {
       iCloudDownloadProgress:
           iCloudDownloadProgress ?? this.iCloudDownloadProgress,
       cancelToken: cancelToken ?? this.cancelToken,
-      serverInfo: serverInfo ?? this.serverInfo,
       allUniqueAssets: allUniqueAssets ?? this.allUniqueAssets,
       backedUpAssetsCount: backedUpAssetsCount ?? this.backedUpAssetsCount,
       currentUploadAsset: currentUploadAsset ?? this.currentUploadAsset,
@@ -69,7 +64,7 @@ class BackUpState {
 
   @override
   String toString() {
-    return 'BackUpState(backupProgress: $backupProgress, allAssetsInDatabase: $allAssetsInDatabase, progressInPercentage: $progressInPercentage, iCloudDownloadProgress: $iCloudDownloadProgress, cancelToken: $cancelToken, serverInfo: $serverInfo, allUniqueAssets: $allUniqueAssets, backedUpAssetsCount: $backedUpAssetsCount, currentUploadAsset: $currentUploadAsset)';
+    return 'BackUpState(backupProgress: $backupProgress, allAssetsInDatabase: $allAssetsInDatabase, progressInPercentage: $progressInPercentage, iCloudDownloadProgress: $iCloudDownloadProgress, cancelToken: $cancelToken, allUniqueAssets: $allUniqueAssets, backedUpAssetsCount: $backedUpAssetsCount, currentUploadAsset: $currentUploadAsset)';
   }
 
   @override
@@ -82,7 +77,6 @@ class BackUpState {
         other.progressInPercentage == progressInPercentage &&
         other.iCloudDownloadProgress == iCloudDownloadProgress &&
         other.cancelToken == cancelToken &&
-        other.serverInfo == serverInfo &&
         collectionEquals(other.allUniqueAssets, allUniqueAssets) &&
         other.backedUpAssetsCount == backedUpAssetsCount &&
         other.currentUploadAsset == currentUploadAsset;
@@ -95,7 +89,6 @@ class BackUpState {
         progressInPercentage.hashCode ^
         iCloudDownloadProgress.hashCode ^
         cancelToken.hashCode ^
-        serverInfo.hashCode ^
         allUniqueAssets.hashCode ^
         backedUpAssetsCount.hashCode ^
         currentUploadAsset.hashCode;

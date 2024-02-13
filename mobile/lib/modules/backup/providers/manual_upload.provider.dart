@@ -18,6 +18,7 @@ import 'package:immich_mobile/modules/settings/providers/app_settings.provider.d
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/app_state.provider.dart';
+import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/services/local_notification.service.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/utils/backup_progress.dart';
@@ -115,7 +116,7 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
     bool isDuplicated,
   ) {
     state = state.copyWith(successfulUploads: state.successfulUploads + 1);
-    _backupProvider.updateServerInfo();
+    ref.read(serverInfoProvider.notifier).getServerDiskInfo();
   }
 
   void _onAssetUploadError(ErrorUploadAsset errorAssetInfo) {

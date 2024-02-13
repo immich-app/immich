@@ -10,6 +10,7 @@ import 'package:immich_mobile/modules/backup/providers/manual_upload.provider.da
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
+import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/providers/user.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 import 'package:immich_mobile/shared/ui/app_bar_dialog/app_bar_profile_info.dart';
@@ -31,7 +32,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
 
     useEffect(
       () {
-        ref.read(backupProvider.notifier).updateServerInfo();
+        ref.read(serverInfoProvider.notifier).getServerDiskInfo();
         ref.read(currentUserProvider.notifier).refresh();
         return null;
       },

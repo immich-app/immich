@@ -16,11 +16,10 @@ import 'package:immich_mobile/modules/login/models/authentication_state.model.da
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/modules/onboarding/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:immich_mobile/shared/models/server_info/server_disk_info.model.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/providers/app_state.provider.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
-import 'package:immich_mobile/shared/services/server_info.service.dart';
+import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -29,7 +28,7 @@ import 'package:photo_manager/photo_manager.dart';
 class BackupNotifier extends StateNotifier<BackUpState> {
   BackupNotifier(
     this._backupService,
-    this._serverInfoService,
+    this._serverInfoNotifier,
     this._authState,
     this._backgroundService,
     this._galleryPermissionNotifier,
@@ -41,12 +40,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
             allAssetsInDatabase: const [],
             progressInPercentage: 0,
             cancelToken: CancellationToken(),
-            serverInfo: const ServerDiskInfo(
-              diskAvailable: "0",
-              diskSize: "0",
-              diskUse: "0",
-              diskUsagePercentage: 0,
-            ),
             allUniqueAssets: const {},
             backedUpAssetsCount: 0,
             currentUploadAsset: CurrentUploadAsset(
@@ -62,7 +55,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
   final log = Logger('BackupNotifier');
   final BackupService _backupService;
-  final ServerInfoService _serverInfoService;
+  final ServerInfoNotifier _serverInfoNotifier;
   final AuthenticationState _authState;
   final BackgroundService _backgroundService;
   final GalleryPermissionNotifier _galleryPermissionNotifier;
@@ -136,7 +129,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     }
 
     if (state.backupProgress != BackUpProgressEnum.inBackground) {
-      await updateServerInfo();
+      await _serverInfoNotifier.getServerDiskInfo();
       await _updateBackupAssetCount();
     } else {
       log.warning("cannot get backup info - background backup is in progress!");
@@ -233,24 +226,13 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       );
     }
 
-    updateServerInfo();
+    _serverInfoNotifier.getServerDiskInfo();
   }
 
   void _onUploadProgress(int sent, int total) {
     state = state.copyWith(
       progressInPercentage: (sent.toDouble() / total.toDouble() * 100),
     );
-  }
-
-  Future<void> updateServerInfo() async {
-    final serverInfo = await _serverInfoService.getServerInfo();
-
-    // Update server info
-    if (serverInfo != null) {
-      state = state.copyWith(
-        serverInfo: serverInfo,
-      );
-    }
   }
 
   Future<void> _resumeBackup() async {
@@ -332,7 +314,7 @@ final backupProvider =
     StateNotifierProvider<BackupNotifier, BackUpState>((ref) {
   return BackupNotifier(
     ref.watch(backupServiceProvider),
-    ref.watch(serverInfoServiceProvider),
+    ref.watch(serverInfoProvider.notifier),
     ref.watch(authenticationProvider),
     ref.watch(backgroundServiceProvider),
     ref.watch(galleryPermissionNotifier.notifier),
