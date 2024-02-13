@@ -205,6 +205,34 @@ jobs:
         run: npm run test:cov
         if: ${{ !cancelled() }}
 
+  web-e2e-tests:
+    name: Web (e2e)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./e2e
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run setup typescript-sdk
+        run: npm ci && npm run build
+        working-directory: ./open-api/typescript-sdk
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
+      - name: Docker build
+        run: docker compose -f docker/docker-compose.e2e.yml build
+        working-directory: ./
+
+      - name: Run e2e tests
+        run: npx playwright test
+
   mobile-unit-tests:
     name: Mobile
     runs-on: ubuntu-latest

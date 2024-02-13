@@ -1,0 +1,22 @@
+{
+  "name": "immich-e2e",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "npx playwright test",
+    "build": "tsc"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "GNU Affero General Public License version 3",
+  "devDependencies": {
+    "@immich/sdk": "file:../open-api/typescript-sdk",
+    "@playwright/test": "^1.41.2",
+    "@types/node": "^20.11.17",
+    "@types/pg": "^8.11.0",
+    "pg": "^8.11.3",
+    "typescript": "^5.3.3"
+  }
+}
