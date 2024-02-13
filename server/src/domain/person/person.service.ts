@@ -84,7 +84,7 @@ export class PersonService {
     if (dto.withPartners) {
       const partners = await this.partnerRepository.getAll(auth.user.id);
       const partnersIds = partners
-        .filter((partner) => partner.sharedBy && partner.sharedWith && partner.sharedById != auth.user.id) //TODO should && partner.inTimeline be included, as in assets?
+        .filter((partner) => partner.sharedBy && partner.sharedWith && partner.sharedById != auth.user.id)
         .map((partner) => partner.sharedById);
       userIds.push(...partnersIds);
     }
