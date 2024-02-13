@@ -62,8 +62,7 @@ class InferenceModel(ABC):
         return self._predict(inputs)
 
     @abstractmethod
-    def _predict(self, inputs: Any) -> Any:
-        ...
+    def _predict(self, inputs: Any) -> Any: ...
 
     def configure(self, **model_kwargs: Any) -> None:
         pass
@@ -79,8 +78,7 @@ class InferenceModel(ABC):
         )
 
     @abstractmethod
-    def _load(self) -> None:
-        ...
+    def _load(self) -> None: ...
 
     def clear_cache(self) -> None:
         if not self.cache_dir.exists():
