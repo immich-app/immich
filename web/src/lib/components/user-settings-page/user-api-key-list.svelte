@@ -1,15 +1,16 @@
 <script lang="ts">
-  import { api, type APIKeyResponseDto } from '@api';
   import Icon from '$lib/components/elements/icon.svelte';
+  import { locale } from '$lib/stores/preferences.store';
+  import { type APIKeyResponseDto } from '@api';
+  import { createApiKey, deleteApiKey, getApiKeys, updateApiKey } from '@immich/sdk';
+  import { mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
   import { fade } from 'svelte/transition';
   import { handleError } from '../../utils/handle-error';
+  import Button from '../elements/buttons/button.svelte';
   import APIKeyForm from '../forms/api-key-form.svelte';
   import APIKeySecret from '../forms/api-key-secret.svelte';
   import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
-  import { notificationController, NotificationType } from '../shared-components/notification/notification';
-  import { locale } from '$lib/stores/preferences.store';
-  import Button from '../elements/buttons/button.svelte';
-  import { mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
+  import { NotificationType, notificationController } from '../shared-components/notification/notification';
 
   export let keys: APIKeyResponseDto[];
 
@@ -25,13 +26,12 @@
   };
 
   async function refreshKeys() {
-    const { data } = await api.keyApi.getApiKeys();
-    keys = data;
+    keys = await getApiKeys();
   }
 
   const handleCreate = async (detail: Partial<APIKeyResponseDto>) => {
     try {
-      const { data } = await api.keyApi.createApiKey({ aPIKeyCreateDto: detail });
+      const data = await createApiKey({ apiKeyCreateDto: detail });
       secret = data.secret;
     } catch (error) {
       handleError(error, 'Unable to create a new API Key');
@@ -47,7 +47,7 @@
     }
 
     try {
-      await api.keyApi.updateApiKey({ id: editKey.id, aPIKeyUpdateDto: { name: detail.name } });
+      await updateApiKey({ id: editKey.id, apiKeyUpdateDto: { name: detail.name } });
       notificationController.show({
         message: `Saved API Key`,
         type: NotificationType.Info,
@@ -66,7 +66,7 @@
     }
 
     try {
-      await api.keyApi.deleteApiKey({ id: deleteKey.id });
+      await deleteApiKey({ id: deleteKey.id });
       notificationController.show({
         message: `Removed API Key: ${deleteKey.name}`,
         type: NotificationType.Info,

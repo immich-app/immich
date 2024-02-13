@@ -1,13 +1,14 @@
 <script lang="ts">
   import JobsPanel from '$lib/components/admin-page/jobs/jobs-panel.svelte';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import { AppRoute } from '$lib/constants';
-  import { type AllJobStatusResponseDto, api } from '@api';
-  import { onDestroy, onMount } from 'svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
-  import type { PageData } from './$types';
+  import { type AllJobStatusResponseDto } from '@api';
+  import { getAllJobsStatus } from '@immich/sdk';
   import { mdiCog } from '@mdi/js';
+  import { onDestroy, onMount } from 'svelte';
+  import type { PageData } from './$types';
 
   export let data: PageData;
 
@@ -16,8 +17,7 @@
   let jobs: AllJobStatusResponseDto;
 
   const load = async () => {
-    const { data } = await api.jobApi.getAllJobsStatus();
-    jobs = data;
+    jobs = await getAllJobsStatus();
   };
 
   onMount(async () => {
