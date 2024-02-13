@@ -1,7 +1,7 @@
 <script lang="ts">
   import { locale } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
-  import { getAssetFilename } from '$lib/utils/asset-utils';
+  import { delay, getAssetFilename } from '$lib/utils/asset-utils';
   import { type AlbumResponseDto, type AssetResponseDto, ThumbnailFormat, api } from '@api';
   import { DateTime } from 'luxon';
   import { createEventDispatcher, onDestroy } from 'svelte';
@@ -26,7 +26,7 @@
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { websocketStore } from '$lib/stores/websocket';
-  import { AppRoute, QueryParameter } from '$lib/constants';
+  import { AppRoute, QueryParameter, timeToLoadTheMap } from '$lib/constants';
   import ChangeLocation from '../shared-components/change-location.svelte';
   import { handleError } from '../../utils/handle-error';
   import { user } from '$lib/stores/user.store';
@@ -614,9 +614,14 @@
 {#if latlng && $featureFlags.loaded && $featureFlags.map}
   <div class="h-[360px]">
     {#await import('../shared-components/map/map.svelte')}
-      <div class="flex items-center justify-center h-full w-full">
-        <LoadingSpinner />
-      </div>
+      <!-- svelte-ignore empty-block -->
+      {#await delay(timeToLoadTheMap)}
+        <!-- show the loading spinner only if loading the map takes too much time -->
+      {:then}
+        <div class="flex items-center justify-center h-full w-full">
+          <LoadingSpinner />
+        </div>
+      {/await}
     {:then component}
       <svelte:component
         this={component.default}

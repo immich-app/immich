@@ -3,6 +3,9 @@
   import { createEventDispatcher } from 'svelte';
   import ConfirmDialogue from './confirm-dialogue.svelte';
   import LoadingSpinner from './loading-spinner.svelte';
+  import { delay } from '$lib/utils/asset-utils';
+  import { timeToLoadTheMap } from '$lib/constants';
+
   export const title = 'Change Location';
   export let asset: AssetResponseDto | undefined = undefined;
 
@@ -49,9 +52,14 @@
     <label for="datetime">Pick a location</label>
     <div class="h-[500px] min-h-[300px] w-full">
       {#await import('../shared-components/map/map.svelte')}
-        <div class="flex items-center justify-center w-full h-full">
-          <LoadingSpinner />
-        </div>
+        <!-- svelte-ignore empty-block -->
+        {#await delay(timeToLoadTheMap)}
+          <!-- show the loading spinner only if loading the map takes too much time -->
+        {:then}
+          <div class="flex items-center justify-center h-full w-full">
+            <LoadingSpinner />
+          </div>
+        {/await}
       {:then component}
         <svelte:component
           this={component.default}
