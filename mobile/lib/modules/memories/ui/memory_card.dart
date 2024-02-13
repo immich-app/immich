@@ -8,7 +8,6 @@ import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
-import 'package:openapi/api.dart';
 
 class MemoryCard extends StatelessWidget {
   final Asset asset;
@@ -84,8 +83,6 @@ class MemoryCard extends StatelessWidget {
                     fit: fit,
                     height: double.infinity,
                     width: double.infinity,
-                    type: ThumbnailFormat.JPEG,
-                    preferredLocalAssetSize: 2048,
                   ),
                 );
               } else {
@@ -97,8 +94,6 @@ class MemoryCard extends StatelessWidget {
                     placeholder: ImmichImage(
                       asset,
                       fit: fit,
-                      type: ThumbnailFormat.JPEG,
-                      preferredLocalAssetSize: 2048,
                     ),
                     hideControlsTimer: const Duration(seconds: 2),
                     onVideoEnded: onVideoEnded,
