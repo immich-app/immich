@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/modules/backup/providers/backup_settings.provider.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/ui/app_bar_dialog/app_bar_dialog.dart';
 import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
@@ -21,9 +22,10 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final BackUpState backupState = ref.watch(backupProvider);
+    final backupState = ref.watch(backupProvider);
+    final backupSettings = ref.watch(backupSettingsProvider);
     final bool isEnableAutoBackup =
-        backupState.backgroundBackup || backupState.autoBackup;
+        backupSettings.backgroundBackup || backupSettings.autoBackup;
     final ServerInfo serverInfoState = ref.watch(serverInfoProvider);
     final user = Store.tryGet(StoreKey.currentUser);
     final isDarkTheme = context.isDarkTheme;

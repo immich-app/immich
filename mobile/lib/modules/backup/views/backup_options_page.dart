@@ -10,6 +10,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/backup/background_service/background.service.dart';
 import 'package:immich_mobile/modules/backup/models/backup_state.model.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
+import 'package:immich_mobile/modules/backup/providers/backup_settings.provider.dart';
 import 'package:immich_mobile/modules/backup/providers/ios_background_settings.provider.dart';
 import 'package:immich_mobile/modules/backup/services/backup_verification.service.dart';
 import 'package:immich_mobile/modules/backup/ui/ios_debug_info_tile.dart';
@@ -29,6 +30,7 @@ class BackupOptionsPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     BackUpState backupState = ref.watch(backupProvider);
+    final backupSettings = ref.watch(backupSettingsProvider);
     final settings = ref.watch(iOSBackgroundSettingsProvider.notifier).settings;
     final settingsService = ref.watch(appSettingsServiceProvider);
     final showBackupFix = Platform.isAndroid &&
@@ -194,9 +196,9 @@ class BackupOptionsPage extends HookConsumerWidget {
     }
 
     Widget buildBackgroundBackupController() {
-      final bool isBackgroundEnabled = backupState.backgroundBackup;
-      final bool isWifiRequired = backupState.backupRequireWifi;
-      final bool isChargingRequired = backupState.backupRequireCharging;
+      final bool isBackgroundEnabled = backupSettings.backgroundBackup;
+      final bool isWifiRequired = backupSettings.backupRequireWifi;
+      final bool isChargingRequired = backupSettings.backupRequireCharging;
       final Color activeColor = context.primaryColor;
 
       String formatBackupDelaySliderValue(double v) {
@@ -236,7 +238,7 @@ class BackupOptionsPage extends HookConsumerWidget {
       }
 
       final triggerDelay =
-          useState(backupDelayToSliderValue(backupState.backupTriggerDelay));
+          useState(backupDelayToSliderValue(backupSettings.backupTriggerDelay));
 
       return Column(
         children: [
@@ -276,7 +278,7 @@ class BackupOptionsPage extends HookConsumerWidget {
                     activeColor: activeColor,
                     value: isWifiRequired,
                     onChanged: (isChecked) => ref
-                        .read(backupProvider.notifier)
+                        .read(backupSettingsProvider.notifier)
                         .configureBackgroundBackup(
                           requireWifi: isChecked,
                           onError: showErrorToUser,
@@ -296,7 +298,7 @@ class BackupOptionsPage extends HookConsumerWidget {
                     activeColor: activeColor,
                     value: isChargingRequired,
                     onChanged: (isChecked) => ref
-                        .read(backupProvider.notifier)
+                        .read(backupSettingsProvider.notifier)
                         .configureBackgroundBackup(
                           requireCharging: isChecked,
                           onError: showErrorToUser,
@@ -319,7 +321,7 @@ class BackupOptionsPage extends HookConsumerWidget {
                       value: triggerDelay.value,
                       onChanged: (double v) => triggerDelay.value = v,
                       onChangeEnd: (double v) => ref
-                          .read(backupProvider.notifier)
+                          .read(backupSettingsProvider.notifier)
                           .configureBackgroundBackup(
                             triggerDelay: backupDelayToMilliseconds(v),
                             onError: showErrorToUser,
@@ -333,7 +335,7 @@ class BackupOptionsPage extends HookConsumerWidget {
                   ),
                 ElevatedButton(
                   onPressed: () => ref
-                      .read(backupProvider.notifier)
+                      .read(backupSettingsProvider.notifier)
                       .configureBackgroundBackup(
                         enabled: !isBackgroundEnabled,
                         onError: showErrorToUser,
@@ -411,7 +413,7 @@ class BackupOptionsPage extends HookConsumerWidget {
     }
 
     ListTile buildAutoBackupController() {
-      final isAutoBackup = backupState.autoBackup;
+      final isAutoBackup = backupSettings.autoBackup;
       final backUpOption = isAutoBackup
           ? "backup_controller_page_status_on".tr()
           : "backup_controller_page_status_off".tr();
@@ -443,7 +445,7 @@ class BackupOptionsPage extends HookConsumerWidget {
                 padding: const EdgeInsets.only(top: 8.0),
                 child: ElevatedButton(
                   onPressed: () => ref
-                      .read(backupProvider.notifier)
+                      .read(backupSettingsProvider.notifier)
                       .setAutoBackup(!isAutoBackup),
                   child: Text(
                     backupBtnText,

@@ -8,6 +8,7 @@ import 'package:immich_mobile/modules/backup/models/backup_state.model.dart';
 import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/error_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/providers/backup_album.provider.dart';
+import 'package:immich_mobile/modules/backup/providers/backup_settings.provider.dart';
 import 'package:immich_mobile/modules/backup/providers/error_backup_list.provider.dart';
 import 'package:immich_mobile/modules/backup/background_service/background.service.dart';
 import 'package:immich_mobile/modules/backup/services/backup.service.dart';
@@ -40,12 +41,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
             allAssetsInDatabase: const [],
             progressInPercentage: 0,
             cancelToken: CancellationToken(),
-            autoBackup: Store.get(StoreKey.autoBackup, false),
-            backgroundBackup: Store.get(StoreKey.backgroundBackup, false),
-            backupRequireWifi: Store.get(StoreKey.backupRequireWifi, true),
-            backupRequireCharging:
-                Store.get(StoreKey.backupRequireCharging, false),
-            backupTriggerDelay: Store.get(StoreKey.backupTriggerDelay, 5000),
             serverInfo: const ServerDiskInfo(
               diskAvailable: "0",
               diskSize: "0",
@@ -73,77 +68,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   final GalleryPermissionNotifier _galleryPermissionNotifier;
   final Isar _db;
   final Ref ref;
-
-  void setAutoBackup(bool enabled) {
-    Store.put(StoreKey.autoBackup, enabled);
-    state = state.copyWith(autoBackup: enabled);
-  }
-
-  void configureBackgroundBackup({
-    bool? enabled,
-    bool? requireWifi,
-    bool? requireCharging,
-    int? triggerDelay,
-    required void Function(String msg) onError,
-    required void Function() onBatteryInfo,
-  }) async {
-    assert(
-      enabled != null ||
-          requireWifi != null ||
-          requireCharging != null ||
-          triggerDelay != null,
-    );
-    final bool wasEnabled = state.backgroundBackup;
-    final bool wasWifi = state.backupRequireWifi;
-    final bool wasCharging = state.backupRequireCharging;
-    final int oldTriggerDelay = state.backupTriggerDelay;
-    state = state.copyWith(
-      backgroundBackup: enabled,
-      backupRequireWifi: requireWifi,
-      backupRequireCharging: requireCharging,
-      backupTriggerDelay: triggerDelay,
-    );
-
-    if (state.backgroundBackup) {
-      bool success = true;
-      if (!wasEnabled) {
-        if (!await _backgroundService.isIgnoringBatteryOptimizations()) {
-          onBatteryInfo();
-        }
-        success &= await _backgroundService.enableService(immediate: true);
-      }
-      success &= success &&
-          await _backgroundService.configureService(
-            requireUnmetered: state.backupRequireWifi,
-            requireCharging: state.backupRequireCharging,
-            triggerUpdateDelay: state.backupTriggerDelay,
-            triggerMaxDelay: state.backupTriggerDelay * 10,
-          );
-      if (success) {
-        await Store.put(StoreKey.backupRequireWifi, state.backupRequireWifi);
-        await Store.put(
-          StoreKey.backupRequireCharging,
-          state.backupRequireCharging,
-        );
-        await Store.put(StoreKey.backupTriggerDelay, state.backupTriggerDelay);
-        await Store.put(StoreKey.backgroundBackup, state.backgroundBackup);
-      } else {
-        state = state.copyWith(
-          backgroundBackup: wasEnabled,
-          backupRequireWifi: wasWifi,
-          backupRequireCharging: wasCharging,
-          backupTriggerDelay: oldTriggerDelay,
-        );
-        onError("backup_controller_page_background_configure_error");
-      }
-    } else {
-      final bool success = await _backgroundService.disableService();
-      if (!success) {
-        state = state.copyWith(backgroundBackup: wasEnabled);
-        onError("backup_controller_page_background_configure_error");
-      }
-    }
-  }
 
   ///
   /// From all the selected and albums assets
@@ -205,8 +129,8 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   /// and then update the UI according to those information
   Future<void> getBackupInfo() async {
     final isEnabled = await _backgroundService.isBackgroundBackupEnabled();
-
-    state = state.copyWith(backgroundBackup: isEnabled);
+    // TODO: Check this
+    // state = state.copyWith(backgroundBackup: isEnabled);
     if (isEnabled != Store.get(StoreKey.backgroundBackup, !isEnabled)) {
       Store.put(StoreKey.backgroundBackup, isEnabled);
     }
@@ -340,7 +264,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     }
 
     // Check if this device is enable backup by the user
-    if (state.autoBackup) {
+    if (ref.read(backupSettingsProvider).autoBackup) {
       // check if backup is already in process - then return
       if (state.backupProgress == BackUpProgressEnum.inProgress) {
         log.info("[_resumeBackup] Auto Backup is already in progress - abort");

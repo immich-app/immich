@@ -1,10 +1,7 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
-
 import 'package:cancellation_token_http/http.dart';
 import 'package:collection/collection.dart';
-import 'package:immich_mobile/shared/models/asset.dart';
-
 import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/server_info/server_disk_info.model.dart';
 
 enum BackUpProgressEnum {
@@ -23,11 +20,6 @@ class BackUpState {
   final double iCloudDownloadProgress;
   final CancellationToken cancelToken;
   final ServerDiskInfo serverInfo;
-  final bool autoBackup;
-  final bool backgroundBackup;
-  final bool backupRequireWifi;
-  final bool backupRequireCharging;
-  final int backupTriggerDelay;
 
   /// Assets that are not overlapping in selected backup albums and excluded backup albums
   final Set<Asset> allUniqueAssets;
@@ -45,11 +37,6 @@ class BackUpState {
     required this.iCloudDownloadProgress,
     required this.cancelToken,
     required this.serverInfo,
-    required this.autoBackup,
-    required this.backgroundBackup,
-    required this.backupRequireWifi,
-    required this.backupRequireCharging,
-    required this.backupTriggerDelay,
     required this.allUniqueAssets,
     required this.backedUpAssetsCount,
     required this.currentUploadAsset,
@@ -62,11 +49,6 @@ class BackUpState {
     double? iCloudDownloadProgress,
     CancellationToken? cancelToken,
     ServerDiskInfo? serverInfo,
-    bool? autoBackup,
-    bool? backgroundBackup,
-    bool? backupRequireWifi,
-    bool? backupRequireCharging,
-    int? backupTriggerDelay,
     Set<Asset>? allUniqueAssets,
     int? backedUpAssetsCount,
     CurrentUploadAsset? currentUploadAsset,
@@ -79,12 +61,6 @@ class BackUpState {
           iCloudDownloadProgress ?? this.iCloudDownloadProgress,
       cancelToken: cancelToken ?? this.cancelToken,
       serverInfo: serverInfo ?? this.serverInfo,
-      autoBackup: autoBackup ?? this.autoBackup,
-      backgroundBackup: backgroundBackup ?? this.backgroundBackup,
-      backupRequireWifi: backupRequireWifi ?? this.backupRequireWifi,
-      backupRequireCharging:
-          backupRequireCharging ?? this.backupRequireCharging,
-      backupTriggerDelay: backupTriggerDelay ?? this.backupTriggerDelay,
       allUniqueAssets: allUniqueAssets ?? this.allUniqueAssets,
       backedUpAssetsCount: backedUpAssetsCount ?? this.backedUpAssetsCount,
       currentUploadAsset: currentUploadAsset ?? this.currentUploadAsset,
@@ -93,7 +69,7 @@ class BackUpState {
 
   @override
   String toString() {
-    return 'BackUpState(backupProgress: $backupProgress, allAssetsInDatabase: $allAssetsInDatabase, progressInPercentage: $progressInPercentage, iCloudDownloadProgress: $iCloudDownloadProgress, cancelToken: $cancelToken, serverInfo: $serverInfo, autoBackup: $autoBackup, backgroundBackup: $backgroundBackup, backupRequireWifi: $backupRequireWifi, backupRequireCharging: $backupRequireCharging, backupTriggerDelay: $backupTriggerDelay, allUniqueAssets: $allUniqueAssets, backedUpAssetsCount: $backedUpAssetsCount, currentUploadAsset: $currentUploadAsset)';
+    return 'BackUpState(backupProgress: $backupProgress, allAssetsInDatabase: $allAssetsInDatabase, progressInPercentage: $progressInPercentage, iCloudDownloadProgress: $iCloudDownloadProgress, cancelToken: $cancelToken, serverInfo: $serverInfo, allUniqueAssets: $allUniqueAssets, backedUpAssetsCount: $backedUpAssetsCount, currentUploadAsset: $currentUploadAsset)';
   }
 
   @override
@@ -107,11 +83,6 @@ class BackUpState {
         other.iCloudDownloadProgress == iCloudDownloadProgress &&
         other.cancelToken == cancelToken &&
         other.serverInfo == serverInfo &&
-        other.autoBackup == autoBackup &&
-        other.backgroundBackup == backgroundBackup &&
-        other.backupRequireWifi == backupRequireWifi &&
-        other.backupRequireCharging == backupRequireCharging &&
-        other.backupTriggerDelay == backupTriggerDelay &&
         collectionEquals(other.allUniqueAssets, allUniqueAssets) &&
         other.backedUpAssetsCount == backedUpAssetsCount &&
         other.currentUploadAsset == currentUploadAsset;
@@ -125,11 +96,6 @@ class BackUpState {
         iCloudDownloadProgress.hashCode ^
         cancelToken.hashCode ^
         serverInfo.hashCode ^
-        autoBackup.hashCode ^
-        backgroundBackup.hashCode ^
-        backupRequireWifi.hashCode ^
-        backupRequireCharging.hashCode ^
-        backupTriggerDelay.hashCode ^
         allUniqueAssets.hashCode ^
         backedUpAssetsCount.hashCode ^
         currentUploadAsset.hashCode;
