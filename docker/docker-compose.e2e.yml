@@ -1,0 +1,49 @@
+version: "3.8"
+
+name: immich-e2e
+
+x-server-build: &server-common
+  image: immich-server:latest
+  build:
+    context: ../
+    dockerfile: server/Dockerfile
+  environment:
+    - DB_HOSTNAME=database
+    - DB_USERNAME=postgres
+    - DB_PASSWORD=postgres
+    - DB_DATABASE_NAME=immich
+    - REDIS_HOSTNAME=redis
+  volumes:
+    - upload:/usr/src/app/upload
+  depends_on:
+    - redis
+    - database
+
+services:
+  immich-server:
+    command: [ "./start.sh", "immich" ]
+    <<: *server-common
+    ports:
+      - 2283:3001
+
+  immich-microservices:
+    command: [ "./start.sh", "microservices" ]
+    <<: *server-common
+
+
+  redis:
+    image: redis:6.2-alpine@sha256:51d6c56749a4243096327e3fb964a48ed92254357108449cb6e23999c37773c5
+    restart: always
+
+  database:
+    image: tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:90724186f0a3517cf6914295b5ab410db9ce23190a2d9d0b9dd6463e3fa298f0
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: immich
+    ports:
+      - 5432:5432
+
+volumes:
+  model-cache:
+  upload:
