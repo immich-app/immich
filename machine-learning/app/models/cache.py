@@ -80,20 +80,3 @@ class RevalidationPlugin(BasePlugin):  # type: ignore[misc]
             key = client.build_key(key, namespace)
         if key in client._handlers:
             await client.expire(key, client.ttl)
-
-    async def post_multi_get(
-        self,
-        client: SimpleMemoryCache,
-        keys: list[str],
-        ret: list[Any] | None = None,
-        namespace: str | None = None,
-        **kwargs: Any,
-    ) -> None:
-        if ret is None:
-            return
-
-        for key, val in zip(keys, ret):
-            if namespace is not None:
-                key = client.build_key(key, namespace)
-            if val is not None and key in client._handlers:
-                await client.expire(key, client.ttl)

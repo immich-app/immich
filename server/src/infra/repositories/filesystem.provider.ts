@@ -12,7 +12,7 @@ import archiver from 'archiver';
 import chokidar, { WatchOptions } from 'chokidar';
 import { glob } from 'glob';
 import { constants, createReadStream, existsSync, mkdirSync } from 'node:fs';
-import fs, { copyFile, readdir, rename, stat, writeFile } from 'node:fs/promises';
+import fs, { copyFile, readdir, rename, stat, utimes, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 export class FilesystemProvider implements IStorageRepository {
@@ -20,13 +20,15 @@ export class FilesystemProvider implements IStorageRepository {
 
   readdir = readdir;
 
+  copyFile = copyFile;
+
+  stat = stat;
+
   writeFile = writeFile;
 
   rename = rename;
 
-  copyFile = copyFile;
-
-  stat = stat;
+  utimes = utimes;
 
   createZipStream(): ImmichZipStream {
     const archive = archiver('zip', { store: true });

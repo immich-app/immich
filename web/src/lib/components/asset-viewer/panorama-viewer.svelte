@@ -2,40 +2,29 @@
   import { fade } from 'svelte/transition';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { api, type AssetResponseDto } from '@api';
-  import PhotoSphere from './photo-sphere-viewer-adapter.svelte';
 
   export let asset: AssetResponseDto;
 
-  let dataUrl = '';
-  let errorMessage = '';
-
   const loadAssetData = async () => {
-    try {
-      const { data } = await api.assetApi.serveFile(
-        { id: asset.id, isThumb: false, isWeb: false, key: api.getKey() },
-        { responseType: 'blob' },
-      );
-      if (data instanceof Blob) {
-        dataUrl = URL.createObjectURL(data);
-        return dataUrl;
-      } else {
-        throw new TypeError('Invalid data format');
-      }
-    } catch {
-      errorMessage = 'Failed to load asset';
-      return '';
+    const { data } = await api.assetApi.serveFile(
+      { id: asset.id, isThumb: false, isWeb: false, key: api.getKey() },
+      { responseType: 'blob' },
+    );
+    if (data instanceof Blob) {
+      return URL.createObjectURL(data);
+    } else {
+      throw new TypeError('Invalid data format');
     }
   };
 </script>
 
 <div transition:fade={{ duration: 150 }} class="flex h-full select-none place-content-center place-items-center">
-  {#await loadAssetData()}
+  <!-- the photo sphere viewer is quite large, so lazy load it in parallel with loading the data -->
+  {#await Promise.all([loadAssetData(), import('./photo-sphere-viewer-adapter.svelte')])}
     <LoadingSpinner />
-  {:then assetData}
-    {#if assetData}
-      <PhotoSphere panorama={assetData} />
-    {:else}
-      <p>{errorMessage}</p>
-    {/if}
+  {:then [data, module]}
+    <svelte:component this={module.default} panorama={data} />
+  {:catch}
+    Failed to load asset
   {/await}
 </div>

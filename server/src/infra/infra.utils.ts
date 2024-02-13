@@ -1,7 +1,19 @@
-import { Paginated, PaginationOptions } from '@app/domain';
+import { AssetSearchBuilderOptions, Paginated, PaginationOptions } from '@app/domain';
 import _ from 'lodash';
-import { Between, FindManyOptions, LessThanOrEqual, MoreThanOrEqual, ObjectLiteral, Repository } from 'typeorm';
-import { chunks, setUnion } from '../domain/domain.util';
+import {
+  Between,
+  Brackets,
+  FindManyOptions,
+  IsNull,
+  LessThanOrEqual,
+  MoreThanOrEqual,
+  Not,
+  ObjectLiteral,
+  Repository,
+  SelectQueryBuilder,
+} from 'typeorm';
+import { PaginatedBuilderOptions, PaginationMode, PaginationResult, chunks, setUnion } from '../domain/domain.util';
+import { AssetEntity } from './entities';
 import { DATABASE_PARAMETER_CHUNK_SIZE } from './infra.util';
 
 /**
@@ -18,9 +30,21 @@ export function OptionalBetween<T>(from?: T, to?: T) {
   }
 }
 
+export const isValidInteger = (value: number, options: { min?: number; max?: number }): value is number => {
+  const { min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER } = options;
+  return Number.isInteger(value) && value >= min && value <= max;
+};
+
+function paginationHelper<Entity extends ObjectLiteral>(items: Entity[], take: number): PaginationResult<Entity> {
+  const hasNextPage = items.length > take;
+  items.splice(take);
+
+  return { items, hasNextPage };
+}
+
 export async function paginate<Entity extends ObjectLiteral>(
   repository: Repository<Entity>,
-  paginationOptions: PaginationOptions,
+  { take, skip }: PaginationOptions,
   searchOptions?: FindManyOptions<Entity>,
 ): Paginated<Entity> {
   const items = await repository.find(
@@ -28,26 +52,32 @@ export async function paginate<Entity extends ObjectLiteral>(
       {
         ...searchOptions,
         // Take one more item to check if there's a next page
-        take: paginationOptions.take + 1,
-        skip: paginationOptions.skip,
+        take: take + 1,
+        skip,
       },
       _.isUndefined,
     ),
   );
 
-  const hasNextPage = items.length > paginationOptions.take;
-  items.splice(paginationOptions.take);
+  return paginationHelper(items, take);
+}
 
-  return { items, hasNextPage };
+export async function paginatedBuilder<Entity extends ObjectLiteral>(
+  qb: SelectQueryBuilder<Entity>,
+  { take, skip, mode }: PaginatedBuilderOptions,
+): Paginated<Entity> {
+  if (mode === PaginationMode.LIMIT_OFFSET) {
+    qb.limit(take + 1).offset(skip);
+  } else {
+    qb.take(take + 1).skip(skip);
+  }
+
+  const items = await qb.getMany();
+  return paginationHelper(items, take);
 }
 
 export const asVector = (embedding: number[], quote = false) =>
   quote ? `'[${embedding.join(',')}]'` : `[${embedding.join(',')}]`;
-
-export const isValidInteger = (value: number, options: { min?: number; max?: number }): value is number => {
-  const { min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER } = options;
-  return Number.isInteger(value) && value >= min && value <= max;
-};
 
 /**
  * Wraps a method that takes a collection of parameters and sequentially calls it with chunks of the collection,
@@ -90,4 +120,80 @@ export function ChunkedArray(options?: { paramIndex?: number }): MethodDecorator
 
 export function ChunkedSet(options?: { paramIndex?: number }): MethodDecorator {
   return Chunked({ ...options, mergeFn: setUnion });
+}
+
+export function searchAssetBuilder(
+  builder: SelectQueryBuilder<AssetEntity>,
+  options: AssetSearchBuilderOptions,
+): SelectQueryBuilder<AssetEntity> {
+  builder.andWhere(
+    _.omitBy(
+      {
+        createdAt: OptionalBetween(options.createdAfter, options.createdBefore),
+        updatedAt: OptionalBetween(options.updatedAfter, options.updatedBefore),
+        deletedAt: OptionalBetween(options.trashedAfter, options.trashedBefore),
+        fileCreatedAt: OptionalBetween(options.takenAfter, options.takenBefore),
+      },
+      _.isUndefined,
+    ),
+  );
+
+  const exifInfo = _.omitBy(_.pick(options, ['city', 'country', 'lensModel', 'make', 'model', 'state']), _.isUndefined);
+  if (Object.keys(exifInfo).length > 0) {
+    builder.leftJoin(`${builder.alias}.exifInfo`, 'exifInfo');
+    builder.andWhere({ exifInfo });
+  }
+
+  const id = _.pick(options, ['checksum', 'deviceAssetId', 'deviceId', 'id', 'libraryId', 'ownerId']);
+  builder.andWhere(_.omitBy(id, _.isUndefined));
+
+  const path = _.pick(options, ['encodedVideoPath', 'originalFileName', 'originalPath', 'resizePath', 'webpPath']);
+  builder.andWhere(_.omitBy(path, _.isUndefined));
+
+  const status = _.pick(options, ['isExternal', 'isFavorite', 'isOffline', 'isReadOnly', 'isVisible', 'type']);
+  const { isArchived, isEncoded, isMotion, withArchived } = options;
+  builder.andWhere(
+    _.omitBy(
+      {
+        ...status,
+        isArchived: isArchived ?? withArchived,
+        encodedVideoPath: isEncoded ? Not(IsNull()) : undefined,
+        livePhotoVideoId: isMotion ? Not(IsNull()) : undefined,
+      },
+      _.isUndefined,
+    ),
+  );
+
+  if (options.withExif) {
+    builder.leftJoinAndSelect(`${builder.alias}.exifInfo`, 'exifInfo');
+  }
+
+  if (options.withFaces || options.withPeople) {
+    builder.leftJoinAndSelect(`${builder.alias}.faces`, 'faces');
+  }
+
+  if (options.withPeople) {
+    builder.leftJoinAndSelect(`${builder.alias}.person`, 'person');
+  }
+
+  if (options.withSmartInfo) {
+    builder.leftJoinAndSelect(`${builder.alias}.smartInfo`, 'smartInfo');
+  }
+
+  if (options.withStacked) {
+    builder
+      .leftJoinAndSelect(`${builder.alias}.stack`, 'stack')
+      .leftJoinAndSelect('stack.assets', 'stackedAssets')
+      .andWhere(
+        new Brackets((qb) => qb.where(`stack.primaryAssetId = ${builder.alias}.id`).orWhere('asset.stackId IS NULL')),
+      );
+  }
+
+  const withDeleted =
+    options.withDeleted ?? (options.trashedAfter !== undefined || options.trashedBefore !== undefined);
+  if (withDeleted) {
+    builder.withDeleted();
+  }
+
+  return builder;
 }

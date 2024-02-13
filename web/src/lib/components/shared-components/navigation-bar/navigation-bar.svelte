@@ -146,7 +146,7 @@
           {/if}
 
           {#if shouldShowAccountInfoPanel}
-            <AccountInfoPanel user={$user} on:logout={logOut} />
+            <AccountInfoPanel on:logout={logOut} />
           {/if}
         </div>
       </section>

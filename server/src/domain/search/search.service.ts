@@ -1,7 +1,7 @@
 import { AssetEntity } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
 import { Inject, Injectable } from '@nestjs/common';
-import { AssetResponseDto, mapAsset } from '../asset';
+import { AssetOrder, AssetResponseDto, mapAsset } from '../asset';
 import { AuthDto } from '../auth';
 import { PersonResponseDto } from '../person';
 import {
@@ -9,13 +9,13 @@ import {
   IMachineLearningRepository,
   IPartnerRepository,
   IPersonRepository,
-  ISmartInfoRepository,
+  ISearchRepository,
   ISystemConfigRepository,
   SearchExploreItem,
   SearchStrategy,
 } from '../repositories';
 import { FeatureFlag, SystemConfigCore } from '../system-config';
-import { SearchDto, SearchPeopleDto } from './dto';
+import { MetadataSearchDto, SearchDto, SearchPeopleDto, SmartSearchDto } from './dto';
 import { SearchResponseDto } from './response-dto';
 
 @Injectable()
@@ -27,7 +27,7 @@ export class SearchService {
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IMachineLearningRepository) private machineLearning: IMachineLearningRepository,
     @Inject(IPersonRepository) private personRepository: IPersonRepository,
-    @Inject(ISmartInfoRepository) private smartInfoRepository: ISmartInfoRepository,
+    @Inject(ISearchRepository) private searchRepository: ISearchRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IPartnerRepository) private partnerRepository: IPartnerRepository,
   ) {
@@ -55,6 +55,53 @@ export class SearchService {
     }));
   }
 
+  async searchMetadata(auth: AuthDto, dto: MetadataSearchDto): Promise<SearchResponseDto> {
+    let checksum: Buffer | undefined;
+
+    if (dto.checksum) {
+      const encoding = dto.checksum.length === 28 ? 'base64' : 'hex';
+      checksum = Buffer.from(dto.checksum, encoding);
+    }
+
+    const page = dto.page ?? 1;
+    const size = dto.size || 250;
+    const enumToOrder = { [AssetOrder.ASC]: 'ASC', [AssetOrder.DESC]: 'DESC' } as const;
+    const { hasNextPage, items } = await this.searchRepository.searchMetadata(
+      { page, size },
+      {
+        ...dto,
+        checksum,
+        ownerId: auth.user.id,
+        orderDirection: dto.order ? enumToOrder[dto.order] : 'DESC',
+      },
+    );
+
+    return this.mapResponse(items, hasNextPage ? (page + 1).toString() : null);
+  }
+
+  async searchSmart(auth: AuthDto, dto: SmartSearchDto): Promise<SearchResponseDto> {
+    await this.configCore.requireFeature(FeatureFlag.SMART_SEARCH);
+    const { machineLearning } = await this.configCore.getConfig();
+    const userIds = await this.getUserIdsToSearch(auth);
+
+    const embedding = await this.machineLearning.encodeText(
+      machineLearning.url,
+      { text: dto.query },
+      machineLearning.clip,
+    );
+
+    const page = dto.page ?? 1;
+    const size = dto.size || 100;
+    const { hasNextPage, items } = await this.searchRepository.searchSmart(
+      { page, size },
+      { ...dto, userIds, embedding },
+    );
+
+    return this.mapResponse(items, hasNextPage ? (page + 1).toString() : null);
+  }
+
+  // TODO: remove after implementing new search filters
+  /** @deprecated */
   async search(auth: AuthDto, dto: SearchDto): Promise<SearchResponseDto> {
     await this.configCore.requireFeature(FeatureFlag.SEARCH);
     const { machineLearning } = await this.configCore.getConfig();
@@ -70,10 +117,10 @@ export class SearchService {
     }
 
     const userIds = await this.getUserIdsToSearch(auth);
-    const withArchived = dto.withArchived || false;
+    const page = dto.page ?? 1;
 
+    let nextPage: string | null = null;
     let assets: AssetEntity[] = [];
-
     switch (strategy) {
       case SearchStrategy.SMART: {
         const embedding = await this.machineLearning.encodeText(
@@ -81,36 +128,30 @@ export class SearchService {
           { text: query },
           machineLearning.clip,
         );
-        assets = await this.smartInfoRepository.searchCLIP({
-          userIds: userIds,
-          embedding,
-          numResults: 100,
-          withArchived,
-        });
+
+        const { hasNextPage, items } = await this.searchRepository.searchSmart(
+          { page, size: dto.size || 100 },
+          {
+            userIds,
+            embedding,
+            withArchived: !!dto.withArchived,
+          },
+        );
+        if (hasNextPage) {
+          nextPage = (page + 1).toString();
+        }
+        assets = items;
         break;
       }
       case SearchStrategy.TEXT: {
-        assets = await this.assetRepository.searchMetadata(query, userIds, { numResults: 250 });
+        assets = await this.assetRepository.searchMetadata(query, userIds, { numResults: dto.size || 250 });
       }
       default: {
         break;
       }
     }
 
-    return {
-      albums: {
-        total: 0,
-        count: 0,
-        items: [],
-        facets: [],
-      },
-      assets: {
-        total: assets.length,
-        count: assets.length,
-        items: assets.map((asset) => mapAsset(asset)),
-        facets: [],
-      },
-    };
+    return this.mapResponse(assets, nextPage);
   }
 
   private async getUserIdsToSearch(auth: AuthDto): Promise<string[]> {
@@ -121,5 +162,18 @@ export class SearchService {
       .map((partner) => partner.sharedById);
     userIds.push(...partnersIds);
     return userIds;
+  }
+
+  private async mapResponse(assets: AssetEntity[], nextPage: string | null): Promise<SearchResponseDto> {
+    return {
+      albums: { total: 0, count: 0, items: [], facets: [] },
+      assets: {
+        total: assets.length,
+        count: assets.length,
+        items: assets.map((asset) => mapAsset(asset)),
+        facets: [],
+        nextPage,
+      },
+    };
   }
 }

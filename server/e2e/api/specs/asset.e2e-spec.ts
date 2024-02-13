@@ -169,7 +169,11 @@ describe(`${AssetController.name} (e2e)`, () => {
       {
         should: 'should reject size as a string',
         query: { size: 'abc' },
-        expected: ['size must not be less than 1', 'size must be an integer number'],
+        expected: [
+          'size must not be greater than 1000',
+          'size must not be less than 1',
+          'size must be an integer number',
+        ],
       },
       {
         should: 'should reject an invalid size',
@@ -478,7 +482,7 @@ describe(`${AssetController.name} (e2e)`, () => {
         }),
       },
       {
-        should: 'sohuld search by make',
+        should: 'should search by make',
         deferred: () => ({
           query: { make: 'Cannon' },
           assets: [asset3],

@@ -534,6 +534,12 @@ describe(StorageTemplateService.name, () => {
         .mockResolvedValue({
           size: 5000,
         } as Stats);
+      when(storageMock.stat)
+        .calledWith(assetStub.image.originalPath)
+        .mockResolvedValue({
+          atime: new Date(),
+          mtime: new Date(),
+        } as Stats);
       when(cryptoMock.hashFile).calledWith(newPath).mockResolvedValue(assetStub.image.checksum);
 
       await sut.handleMigration();
@@ -542,6 +548,8 @@ describe(StorageTemplateService.name, () => {
       expect(storageMock.rename).toHaveBeenCalledWith('/original/path.jpg', newPath);
       expect(storageMock.copyFile).toHaveBeenCalledWith('/original/path.jpg', newPath);
       expect(storageMock.stat).toHaveBeenCalledWith(newPath);
+      expect(storageMock.stat).toHaveBeenCalledWith(assetStub.image.originalPath);
+      expect(storageMock.utimes).toHaveBeenCalledWith(newPath, expect.any(Date), expect.any(Date));
       expect(storageMock.unlink).toHaveBeenCalledWith(assetStub.image.originalPath);
       expect(storageMock.unlink).toHaveBeenCalledTimes(1);
       expect(assetMock.save).toHaveBeenCalledWith({
