@@ -652,7 +652,9 @@ class AssetApi {
   /// * [bool] isArchived:
   ///
   /// * [bool] isFavorite:
-  Future<Response> getMapMarkersWithHttpInfo({ DateTime? fileCreatedAfter, DateTime? fileCreatedBefore, bool? isArchived, bool? isFavorite, }) async {
+  ///
+  /// * [bool] withPartners:
+  Future<Response> getMapMarkersWithHttpInfo({ DateTime? fileCreatedAfter, DateTime? fileCreatedBefore, bool? isArchived, bool? isFavorite, bool? withPartners, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/map-marker';
 
@@ -674,6 +676,9 @@ class AssetApi {
     }
     if (isFavorite != null) {
       queryParams.addAll(_queryParams('', 'isFavorite', isFavorite));
+    }
+    if (withPartners != null) {
+      queryParams.addAll(_queryParams('', 'withPartners', withPartners));
     }
 
     const contentTypes = <String>[];
@@ -699,8 +704,10 @@ class AssetApi {
   /// * [bool] isArchived:
   ///
   /// * [bool] isFavorite:
-  Future<List<MapMarkerResponseDto>?> getMapMarkers({ DateTime? fileCreatedAfter, DateTime? fileCreatedBefore, bool? isArchived, bool? isFavorite, }) async {
-    final response = await getMapMarkersWithHttpInfo( fileCreatedAfter: fileCreatedAfter, fileCreatedBefore: fileCreatedBefore, isArchived: isArchived, isFavorite: isFavorite, );
+  ///
+  /// * [bool] withPartners:
+  Future<List<MapMarkerResponseDto>?> getMapMarkers({ DateTime? fileCreatedAfter, DateTime? fileCreatedBefore, bool? isArchived, bool? isFavorite, bool? withPartners, }) async {
+    final response = await getMapMarkersWithHttpInfo( fileCreatedAfter: fileCreatedAfter, fileCreatedBefore: fileCreatedBefore, isArchived: isArchived, isFavorite: isFavorite, withPartners: withPartners, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
