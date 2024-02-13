@@ -28,7 +28,7 @@
   import { mdiArrowLeft, mdiDotsVertical, mdiImageOffOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
   import type { AssetResponseDto, SearchResponseDto } from '@immich/sdk';
   import { authenticate } from '$lib/utils/auth';
-  import { api } from '../../../api/api';
+  import { api } from '@api';
 
   export let data: PageData;
 
