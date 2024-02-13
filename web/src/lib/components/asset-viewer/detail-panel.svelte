@@ -614,7 +614,9 @@
 {#if latlng && $featureFlags.loaded && $featureFlags.map}
   <div class="h-[360px]">
     {#await import('../shared-components/map/map.svelte')}
-      <LoadingSpinner />
+      <div class="flex items-center justify-center h-full w-full">
+        <LoadingSpinner />
+      </div>
     {:then component}
       <svelte:component
         this={component.default}
@@ -623,7 +625,21 @@
         zoom={15}
         simplified
         useLocationPin
-      />
+      >
+        <svelte:fragment slot="popup" let:marker>
+          {@const { lat, lon } = marker}
+          <div class="flex flex-col items-center gap-1">
+            <p class="font-bold">{lat.toPrecision(6)}, {lon.toPrecision(6)}</p>
+            <a
+              href="https://www.openstreetmap.org/?mlat={lat}&mlon={lon}&zoom=15#map=15/{lat}/{lon}"
+              target="_blank"
+              class="font-medium text-immich-primary"
+            >
+              Open in OpenStreetMap
+            </a>
+          </div>
+        </svelte:fragment>
+      </svelte:component>
     {/await}
   </div>
 {/if}

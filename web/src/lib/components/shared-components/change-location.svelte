@@ -47,9 +47,11 @@
 >
   <div slot="prompt" class="flex flex-col w-full h-full gap-2">
     <label for="datetime">Pick a location</label>
-    <div class="flex items-center justify-center h-[500px] min-h-[300px] w-full">
+    <div class="h-[500px] min-h-[300px] w-full">
       {#await import('../shared-components/map/map.svelte')}
-        <LoadingSpinner />
+        <div class="flex items-center justify-center w-full h-full">
+          <LoadingSpinner />
+        </div>
       {:then component}
         <svelte:component
           this={component.default}

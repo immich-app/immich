@@ -5,7 +5,7 @@
   import OnboardingCard from './onboarding-card.svelte';
   import { createEventDispatcher } from 'svelte';
   import { colorTheme } from '$lib/stores/preferences.store';
-  import { moonPath, moonViewBox, sunPath, sunViewBox } from '@assets/svg-paths';
+  import { moonPath, moonViewBox, sunPath, sunViewBox } from '$lib/assets/svg-paths';
   import { Theme } from '$lib/constants';
 
   const dispatch = createEventDispatcher<{
