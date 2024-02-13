@@ -146,7 +146,13 @@ class _AlbumDetailListTile extends StatelessWidget {
           ),
         ),
         subtitle: Text(album.assetCount.toString()),
-        trailing: _AlbumPreviewButton(album),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _AlbumDetailCardChip(selection),
+            _AlbumPreviewButton(album),
+          ],
+        ),
       ),
     );
   }
@@ -188,11 +194,12 @@ class _AlbumDetailCard extends StatelessWidget {
                   album.thumbnail,
                   selection,
                 ),
-                Positioned(
-                  bottom: 10,
-                  right: 25,
-                  child: _AlbumDetailCardChip(selection),
-                ),
+                if (selection != BackupSelection.none)
+                  Positioned(
+                    bottom: 10,
+                    right: 25,
+                    child: _AlbumDetailCardChip(selection),
+                  ),
               ],
             ),
           ),
@@ -223,7 +230,9 @@ class _AlbumDetailCardChip extends StatelessWidget {
         borderRadius: BorderRadius.all(Radius.circular(5)),
       ),
       label: Text(
-        "album_info_card_backup_album_included",
+        selection == BackupSelection.select
+            ? "album_info_card_backup_album_included"
+            : "album_info_card_backup_album_excluded",
         style: TextStyle(
           fontSize: 10,
           color: context.isDarkTheme ? Colors.black : Colors.white,
