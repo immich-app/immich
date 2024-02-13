@@ -170,7 +170,7 @@
           }`}
         >
           <td class="w-4/5 text-ellipsis px-4 text-sm"> {validatedPath.importPath}</td>
-          <td class="w-1/5 text-ellipsis px-4 text-sm">
+          <td class="w-1/5 text-ellipsis px-4 text-sm flex flex-row">
             {#if !validatedPath.isValid}
               <Icon path={mdiAlertOutline} size="40" title={validatedPath.message} />
             {/if}
