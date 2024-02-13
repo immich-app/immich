@@ -1,7 +1,7 @@
 import {
   AssetResponseDto,
   IAssetRepository,
-  ISmartInfoRepository,
+  ISearchRepository,
   LibraryResponseDto,
   LoginResponseDto,
   mapAsset,
@@ -20,14 +20,14 @@ describe(`${SearchController.name}`, () => {
   let accessToken: string;
   let libraries: LibraryResponseDto[];
   let assetRepository: IAssetRepository;
-  let smartInfoRepository: ISmartInfoRepository;
+  let smartInfoRepository: ISearchRepository;
   let asset1: AssetResponseDto;
 
   beforeAll(async () => {
     app = await testApp.create();
     server = app.getHttpServer();
     assetRepository = app.get<IAssetRepository>(IAssetRepository);
-    smartInfoRepository = app.get<ISmartInfoRepository>(ISmartInfoRepository);
+    smartInfoRepository = app.get<ISearchRepository>(ISearchRepository);
   });
 
   afterAll(async () => {

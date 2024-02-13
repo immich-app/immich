@@ -1,14 +1,16 @@
 import {
   AuthDto,
+  MetadataSearchDto,
   PersonResponseDto,
   SearchDto,
   SearchExploreResponseDto,
   SearchPeopleDto,
   SearchResponseDto,
   SearchService,
+  SmartSearchDto,
 } from '@app/domain';
 import { Controller, Get, Query } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Auth, Authenticated } from '../app.guard';
 import { UseValidation } from '../app.utils';
 
@@ -19,7 +21,18 @@ import { UseValidation } from '../app.utils';
 export class SearchController {
   constructor(private service: SearchService) {}
 
+  @Get('metadata')
+  searchMetadata(@Auth() auth: AuthDto, @Query() dto: MetadataSearchDto): Promise<SearchResponseDto> {
+    return this.service.searchMetadata(auth, dto);
+  }
+
+  @Get('smart')
+  searchSmart(@Auth() auth: AuthDto, @Query() dto: SmartSearchDto): Promise<SearchResponseDto> {
+    return this.service.searchSmart(auth, dto);
+  }
+
   @Get()
+  @ApiOperation({ deprecated: true })
   search(@Auth() auth: AuthDto, @Query() dto: SearchDto): Promise<SearchResponseDto> {
     return this.service.search(auth, dto);
   }

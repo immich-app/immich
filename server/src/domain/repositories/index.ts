@@ -19,7 +19,6 @@ export * from './person.repository';
 export * from './search.repository';
 export * from './server-info.repository';
 export * from './shared-link.repository';
-export * from './smart-info.repository';
 export * from './storage.repository';
 export * from './system-config.repository';
 export * from './system-metadata.repository';

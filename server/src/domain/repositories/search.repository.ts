@@ -1,4 +1,7 @@
-import { AssetType } from '@app/infra/entities';
+import { AssetEntity, AssetFaceEntity, AssetType, SmartInfoEntity } from '@app/infra/entities';
+import { Paginated } from '../domain.util';
+
+export const ISearchRepository = 'ISearchRepository';
 
 export enum SearchStrategy {
   SMART = 'SMART',
@@ -53,4 +56,123 @@ export type SearchExploreItemSet<T> = Array<{
 export interface SearchExploreItem<T> {
   fieldName: string;
   items: SearchExploreItemSet<T>;
+}
+
+export type Embedding = number[];
+
+export interface SearchAssetIDOptions {
+  checksum?: Buffer;
+  deviceAssetId?: string;
+  id?: string;
+}
+
+export interface SearchUserIDOptions {
+  deviceId?: string;
+  libraryId?: string;
+  ownerId?: string;
+}
+
+export type SearchIDOptions = SearchAssetIDOptions & SearchUserIDOptions;
+
+export interface SearchStatusOptions {
+  isArchived?: boolean;
+  isEncoded?: boolean;
+  isExternal?: boolean;
+  isFavorite?: boolean;
+  isMotion?: boolean;
+  isOffline?: boolean;
+  isReadOnly?: boolean;
+  isVisible?: boolean;
+  type?: AssetType;
+  withArchived?: boolean;
+  withDeleted?: boolean;
+}
+
+export interface SearchOneToOneRelationOptions {
+  withExif?: boolean;
+  withSmartInfo?: boolean;
+}
+
+export interface SearchRelationOptions extends SearchOneToOneRelationOptions {
+  withFaces?: boolean;
+  withPeople?: boolean;
+  withStacked?: boolean;
+}
+
+export interface SearchDateOptions {
+  createdBefore?: Date;
+  createdAfter?: Date;
+  takenBefore?: Date;
+  takenAfter?: Date;
+  trashedBefore?: Date;
+  trashedAfter?: Date;
+  updatedBefore?: Date;
+  updatedAfter?: Date;
+}
+
+export interface SearchPathOptions {
+  encodedVideoPath?: string;
+  originalFileName?: string;
+  originalPath?: string;
+  resizePath?: string;
+  webpPath?: string;
+}
+
+export interface SearchExifOptions {
+  city?: string;
+  country?: string;
+  lensModel?: string;
+  make?: string;
+  model?: string;
+  state?: string;
+}
+
+export interface SearchEmbeddingOptions {
+  embedding: Embedding;
+  userIds: string[];
+}
+
+export interface SearchOrderOptions {
+  orderDirection?: 'ASC' | 'DESC';
+}
+
+export interface SearchPaginationOptions {
+  page: number;
+  size: number;
+}
+
+export type AssetSearchOptions = SearchDateOptions &
+  SearchIDOptions &
+  SearchExifOptions &
+  SearchOrderOptions &
+  SearchPathOptions &
+  SearchRelationOptions &
+  SearchStatusOptions;
+
+export type AssetSearchBuilderOptions = Omit<AssetSearchOptions, 'orderDirection'>;
+
+export type SmartSearchOptions = SearchDateOptions &
+  SearchEmbeddingOptions &
+  SearchExifOptions &
+  SearchOneToOneRelationOptions &
+  SearchStatusOptions &
+  SearchUserIDOptions;
+
+export interface FaceEmbeddingSearch extends SearchEmbeddingOptions {
+  hasPerson?: boolean;
+  numResults: number;
+  maxDistance?: number;
+}
+
+export interface FaceSearchResult {
+  distance: number;
+  face: AssetFaceEntity;
+}
+
+export interface ISearchRepository {
+  init(modelName: string): Promise<void>;
+  searchMetadata(pagination: SearchPaginationOptions, options: AssetSearchOptions): Paginated<AssetEntity>;
+  searchSmart(pagination: SearchPaginationOptions, options: SmartSearchOptions): Paginated<AssetEntity>;
+  searchFaces(search: FaceEmbeddingSearch): Promise<FaceSearchResult[]>;
+  upsert(smartInfo: Partial<SmartInfoEntity>, embedding?: Embedding): Promise<void>;
 }
