@@ -5,7 +5,6 @@ import {
   AssetJobName,
   DownloadApi,
   FaceApi,
-  JobApi,
   JobName,
   LibraryApi,
   PersonApi,
@@ -26,7 +25,6 @@ class ImmichApi {
   public libraryApi: LibraryApi;
   public assetApi: AssetApi;
   public faceApi: FaceApi;
-  public jobApi: JobApi;
   public searchApi: SearchApi;
   public sharedLinkApi: SharedLinkApi;
   public personApi: PersonApi;
@@ -48,7 +46,6 @@ class ImmichApi {
     this.libraryApi = new LibraryApi(this.config);
     this.assetApi = new AssetApi(this.config);
     this.faceApi = new FaceApi(this.config);
-    this.jobApi = new JobApi(this.config);
     this.searchApi = new SearchApi(this.config);
     this.sharedLinkApi = new SharedLinkApi(this.config);
     this.personApi = new PersonApi(this.config);

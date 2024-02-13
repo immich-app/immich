@@ -21,6 +21,7 @@
   import ConfirmDialogue from '../../shared-components/confirm-dialogue.svelte';
   import JobTile from './job-tile.svelte';
   import StorageMigrationDescription from './storage-migration-description.svelte';
+  import { sendJobCommand } from '@immich/sdk';
 
   export let jobs: AllJobStatusResponseDto;
 
@@ -127,8 +128,7 @@
     const title = jobDetails[jobId]?.title;
 
     try {
-      const { data } = await api.jobApi.sendJobCommand({ id: jobId, jobCommandDto: jobCommand });
-      jobs[jobId] = data;
+      jobs[jobId] = await sendJobCommand({ id: jobId, jobCommandDto: jobCommand });
 
       switch (jobCommand.command) {
         case JobCommand.Empty: {
