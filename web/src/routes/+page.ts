@@ -1,6 +1,6 @@
 import { AppRoute } from '$lib/constants';
+import { getServerConfig } from '@immich/sdk';
 import { redirect } from '@sveltejs/kit';
-import { api } from '../api';
 import { loadUser } from '../lib/utils/auth';
 import type { PageLoad } from './$types';
 
@@ -13,8 +13,8 @@ export const load = (async () => {
     redirect(302, AppRoute.PHOTOS);
   }
 
-  const { data } = await api.serverInfoApi.getServerConfig();
-  if (data.isInitialized) {
+  const { isInitialized } = await getServerConfig();
+  if (isInitialized) {
     // Redirect to login page if there exists an admin account (i.e. server is initialized)
     redirect(302, AppRoute.AUTH_LOGIN);
   }

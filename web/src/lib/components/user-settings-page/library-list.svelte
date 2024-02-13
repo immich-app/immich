@@ -1,23 +1,31 @@
 <script lang="ts">
-  import { api, type LibraryResponseDto, LibraryType, type LibraryStatsResponseDto } from '@api';
-  import { onMount } from 'svelte';
-  import Button from '../elements/buttons/button.svelte';
-  import { notificationController, NotificationType } from '../shared-components/notification/notification';
-  import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
-  import { handleError } from '$lib/utils/handle-error';
-  import { fade } from 'svelte/transition';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { slide } from 'svelte/transition';
-  import LibraryImportPathsForm from '../forms/library-import-paths-form.svelte';
-  import LibraryScanSettingsForm from '../forms/library-scan-settings-form.svelte';
-  import LibraryRenameForm from '../forms/library-rename-form.svelte';
+  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { getBytesWithUnit } from '$lib/utils/byte-units';
-  import Portal from '../shared-components/portal/portal.svelte';
+  import { getContextMenuPosition } from '$lib/utils/context-menu';
+  import { handleError } from '$lib/utils/handle-error';
+  import { LibraryType, type LibraryResponseDto, type LibraryStatsResponseDto } from '@api';
+  import {
+    createLibrary,
+    deleteLibrary,
+    getLibraries,
+    getLibraryStatistics,
+    removeOfflineFiles,
+    scanLibrary,
+    updateLibrary,
+  } from '@immich/sdk';
+  import { mdiDatabase, mdiDotsVertical, mdiUpload } from '@mdi/js';
+  import { onMount } from 'svelte';
+  import { fade, slide } from 'svelte/transition';
+  import Button from '../elements/buttons/button.svelte';
+  import LibraryImportPathsForm from '../forms/library-import-paths-form.svelte';
+  import LibraryRenameForm from '../forms/library-rename-form.svelte';
+  import LibraryScanSettingsForm from '../forms/library-scan-settings-form.svelte';
+  import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
   import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
   import MenuOption from '../shared-components/context-menu/menu-option.svelte';
-  import { getContextMenuPosition } from '$lib/utils/context-menu';
-  import { mdiDatabase, mdiDotsVertical, mdiUpload } from '@mdi/js';
-  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
+  import { NotificationType, notificationController } from '../shared-components/notification/notification';
+  import Portal from '../shared-components/portal/portal.svelte';
 
   let libraries: LibraryResponseDto[] = [];
 
@@ -29,7 +37,7 @@
   let diskUsageUnit: string[] = [];
 
   let confirmDeleteLibrary: LibraryResponseDto | null = null;
-  let deleteLibrary: LibraryResponseDto | null = null;
+  let deletedLibrary: LibraryResponseDto | null = null;
 
   let editImportPaths: number | null;
   let editScanSettings: number | null;
@@ -73,8 +81,7 @@
     showContextMenu = false;
   };
   const refreshStats = async (listIndex: number) => {
-    const { data } = await api.libraryApi.getLibraryStatistics({ id: libraries[listIndex].id });
-    stats[listIndex] = data;
+    stats[listIndex] = await getLibraryStatistics({ id: libraries[listIndex].id });
     photos[listIndex] = stats[listIndex].photos;
     videos[listIndex] = stats[listIndex].videos;
     totalCount[listIndex] = stats[listIndex].total;
@@ -82,8 +89,7 @@
   };
 
   async function readLibraryList() {
-    const { data } = await api.libraryApi.getLibraries();
-    libraries = data;
+    libraries = await getLibraries();
 
     dropdownOpen.length = libraries.length;
 
@@ -95,11 +101,9 @@
 
   const handleCreate = async (libraryType: LibraryType) => {
     try {
-      const { data } = await api.libraryApi.createLibrary({
+      const createdLibrary = await createLibrary({
         createLibraryDto: { type: libraryType },
       });
-
-      const createdLibrary = data;
 
       notificationController.show({
         message: `Created library: ${createdLibrary.name}`,
@@ -119,7 +123,7 @@
 
     try {
       const libraryId = libraries[updateLibraryIndex].id;
-      await api.libraryApi.updateLibrary({ id: libraryId, updateLibraryDto: { ...event } });
+      await updateLibrary({ id: libraryId, updateLibraryDto: { ...event } });
     } catch (error) {
       handleError(error, 'Unable to update library');
     } finally {
@@ -130,15 +134,15 @@
 
   const handleDelete = async () => {
     if (confirmDeleteLibrary) {
-      deleteLibrary = confirmDeleteLibrary;
+      deletedLibrary = confirmDeleteLibrary;
     }
 
-    if (!deleteLibrary) {
+    if (!deletedLibrary) {
       return;
     }
 
     try {
-      await api.libraryApi.deleteLibrary({ id: deleteLibrary.id });
+      await deleteLibrary({ id: deletedLibrary.id });
       notificationController.show({
         message: `Library deleted`,
         type: NotificationType.Info,
@@ -147,7 +151,7 @@
       handleError(error, 'Unable to remove library');
     } finally {
       confirmDeleteLibrary = null;
-      deleteLibrary = null;
+      deletedLibrary = null;
       await readLibraryList();
     }
   };
@@ -156,7 +160,7 @@
     try {
       for (const library of libraries) {
         if (library.type === LibraryType.External) {
-          await api.libraryApi.scanLibrary({ id: library.id, scanLibraryDto: {} });
+          await scanLibrary({ id: library.id, scanLibraryDto: {} });
         }
       }
       notificationController.show({
@@ -170,7 +174,7 @@
 
   const handleScan = async (libraryId: string) => {
     try {
-      await api.libraryApi.scanLibrary({ id: libraryId, scanLibraryDto: {} });
+      await scanLibrary({ id: libraryId, scanLibraryDto: {} });
       notificationController.show({
         message: `Scanning library for new files`,
         type: NotificationType.Info,
@@ -182,7 +186,7 @@
 
   const handleScanChanges = async (libraryId: string) => {
     try {
-      await api.libraryApi.scanLibrary({ id: libraryId, scanLibraryDto: { refreshModifiedFiles: true } });
+      await scanLibrary({ id: libraryId, scanLibraryDto: { refreshModifiedFiles: true } });
       notificationController.show({
         message: `Scanning library for changed files`,
         type: NotificationType.Info,
@@ -194,7 +198,7 @@
 
   const handleForceScan = async (libraryId: string) => {
     try {
-      await api.libraryApi.scanLibrary({ id: libraryId, scanLibraryDto: { refreshAllFiles: true } });
+      await scanLibrary({ id: libraryId, scanLibraryDto: { refreshAllFiles: true } });
       notificationController.show({
         message: `Forcing refresh of all library files`,
         type: NotificationType.Info,
@@ -206,7 +210,7 @@
 
   const handleRemoveOffline = async (libraryId: string) => {
     try {
-      await api.libraryApi.removeOfflineFiles({ id: libraryId });
+      await removeOfflineFiles({ id: libraryId });
       notificationController.show({
         message: `Removing Offline Files`,
         type: NotificationType.Info,
@@ -272,7 +276,7 @@
         deleteAssetCount = totalCount[selectedLibraryIndex];
         confirmDeleteLibrary = selectedLibrary;
       } else {
-        deleteLibrary = selectedLibrary;
+        deletedLibrary = selectedLibrary;
         handleDelete();
       }
     }

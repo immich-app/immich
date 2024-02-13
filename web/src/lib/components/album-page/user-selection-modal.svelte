@@ -1,14 +1,15 @@
 <script lang="ts">
-  import { createEventDispatcher, onMount } from 'svelte';
-  import { type AlbumResponseDto, api, type SharedLinkResponseDto, type UserResponseDto } from '@api';
-  import BaseModal from '../shared-components/base-modal.svelte';
-  import UserAvatar from '../shared-components/user-avatar.svelte';
   import { goto } from '$app/navigation';
-  import ImmichLogo from '../shared-components/immich-logo.svelte';
-  import Button from '../elements/buttons/button.svelte';
-  import { AppRoute } from '$lib/constants';
-  import { mdiCheck, mdiLink, mdiShareCircle } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
+  import { AppRoute } from '$lib/constants';
+  import { api, type AlbumResponseDto, type SharedLinkResponseDto, type UserResponseDto } from '@api';
+  import { getAllUsers } from '@immich/sdk';
+  import { mdiCheck, mdiLink, mdiShareCircle } from '@mdi/js';
+  import { createEventDispatcher, onMount } from 'svelte';
+  import Button from '../elements/buttons/button.svelte';
+  import BaseModal from '../shared-components/base-modal.svelte';
+  import ImmichLogo from '../shared-components/immich-logo.svelte';
+  import UserAvatar from '../shared-components/user-avatar.svelte';
 
   export let album: AlbumResponseDto;
   let users: UserResponseDto[] = [];
@@ -22,7 +23,7 @@
   let sharedLinks: SharedLinkResponseDto[] = [];
   onMount(async () => {
     await getSharedLinks();
-    const { data } = await api.userApi.getAllUsers({ isAll: false });
+    const data = await getAllUsers({ isAll: false });
 
     // remove invalid users
     users = data.filter((user) => !(user.deletedAt || user.id === album.ownerId));

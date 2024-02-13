@@ -1,11 +1,11 @@
-import type { AxiosError, AxiosPromise } from 'axios';
+import { finishOAuth, linkOAuthAccount, startOAuth, unlinkOAuthAccount } from '@immich/sdk';
+import type { UserResponseDto } from '@immich/sdk/axios';
+import type { AxiosError } from 'axios';
 import {
-  notificationController,
   NotificationType,
+  notificationController,
 } from '../lib/components/shared-components/notification/notification';
 import { handleError } from '../lib/utils/handle-error';
-import { api } from './api';
-import type { UserResponseDto } from '@immich/sdk/axios';
 
 export type ApiError = AxiosError<{ message: string }>;
 
@@ -43,8 +43,8 @@ export const oauth = {
   authorize: async (location: Location) => {
     try {
       const redirectUri = location.href.split('?')[0];
-      const { data } = await api.oauthApi.startOAuth({ oAuthConfigDto: { redirectUri } });
-      window.location.href = data.url;
+      const { url } = await startOAuth({ oAuthConfigDto: { redirectUri } });
+      window.location.href = url;
       return true;
     } catch (error) {
       handleError(error, 'Unable to login with OAuth');
@@ -52,12 +52,12 @@ export const oauth = {
     }
   },
   login: (location: Location) => {
-    return api.oauthApi.finishOAuth({ oAuthCallbackDto: { url: location.href } });
+    return finishOAuth({ oAuthCallbackDto: { url: location.href } });
   },
-  link: (location: Location): AxiosPromise<UserResponseDto> => {
-    return api.oauthApi.linkOAuthAccount({ oAuthCallbackDto: { url: location.href } });
+  link: (location: Location): Promise<UserResponseDto> => {
+    return linkOAuthAccount({ oAuthCallbackDto: { url: location.href } });
   },
   unlink: () => {
-    return api.oauthApi.unlinkOAuthAccount();
+    return unlinkOAuthAccount();
   },
 };

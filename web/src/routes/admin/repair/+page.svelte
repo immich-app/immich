@@ -11,10 +11,11 @@
   import { downloadManager } from '$lib/stores/download';
   import { downloadBlob } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { type FileReportItemDto, api, copyToClipboard } from '@api';
+  import { type FileReportItemDto, copyToClipboard } from '@api';
   import Icon from '$lib/components/elements/icon.svelte';
   import type { PageData } from './$types';
   import { mdiWrench, mdiCheckAll, mdiDownload, mdiRefresh, mdiContentCopy } from '@mdi/js';
+  import { fixAuditFiles, getAuditFiles, getFileChecksums } from '@immich/sdk';
 
   export let data: PageData;
 
@@ -65,7 +66,7 @@
     repairing = true;
 
     try {
-      await api.auditApi.fixAuditFiles({
+      await fixAuditFiles({
         fileReportFixDto: {
           items: matches.map(({ orphan, extra }) => ({
             entityId: orphan.entityId,
@@ -101,7 +102,7 @@
     extras = [];
 
     try {
-      const { data: report } = await api.auditApi.getAuditFiles();
+      const report = await getAuditFiles();
 
       orphans = report.orphans;
       extras = normalize(report.extras);
@@ -144,7 +145,7 @@
   };
 
   const loadAndMatch = async (filenames: string[]) => {
-    const { data: items } = await api.auditApi.getFileChecksums({
+    const items = await getFileChecksums({
       fileChecksumDto: { filenames },
     });
 

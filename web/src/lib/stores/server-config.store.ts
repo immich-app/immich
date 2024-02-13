@@ -1,4 +1,5 @@
-import { api, type ServerConfigDto, type ServerFeaturesDto } from '@api';
+import { type ServerConfigDto, type ServerFeaturesDto } from '@api';
+import { getServerConfig, getServerFeatures } from '@immich/sdk';
 import { writable } from 'svelte/store';
 
 export type FeatureFlags = ServerFeaturesDto & { loaded: boolean };
@@ -31,10 +32,7 @@ export const serverConfig = writable<ServerConfig>({
 });
 
 export const loadConfig = async () => {
-  const [{ data: flags }, { data: config }] = await Promise.all([
-    api.serverInfoApi.getServerFeatures(),
-    api.serverInfoApi.getServerConfig(),
-  ]);
+  const [flags, config] = await Promise.all([getServerFeatures(), getServerConfig()]);
 
   featureFlags.update(() => ({ ...flags, loaded: true }));
   serverConfig.update(() => ({ ...config, loaded: true }));

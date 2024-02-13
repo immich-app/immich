@@ -1,8 +1,9 @@
+import { UploadState } from '$lib/models/upload-asset';
 import { uploadAssetsStore } from '$lib/stores/upload';
 import { addAssetsToAlbum } from '$lib/utils/asset-utils';
-import { api, type AssetFileUploadResponseDto } from '@api';
-import { UploadState } from '$lib/models/upload-asset';
 import { ExecutorQueue } from '$lib/utils/executor-queue';
+import { api, type AssetFileUploadResponseDto } from '@api';
+import { getSupportedMediaTypes } from '@immich/sdk';
 import { getServerErrorMessage, handleError } from './handle-error';
 
 let _extensions: string[];
@@ -11,8 +12,8 @@ export const uploadExecutionQueue = new ExecutorQueue({ concurrency: 2 });
 
 const getExtensions = async () => {
   if (!_extensions) {
-    const { data } = await api.serverInfoApi.getSupportedMediaTypes();
-    _extensions = [...data.image, ...data.video];
+    const { image, video } = await getSupportedMediaTypes();
+    _extensions = [...image, ...video];
   }
   return _extensions;
 };

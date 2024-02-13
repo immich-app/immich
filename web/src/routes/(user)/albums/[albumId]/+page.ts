@@ -1,10 +1,10 @@
 import { authenticate } from '$lib/utils/auth';
-import { api } from '@api';
+import { getAlbumInfo } from '@immich/sdk';
 import type { PageLoad } from './$types';
 
 export const load = (async ({ params }) => {
   await authenticate();
-  const { data: album } = await api.albumApi.getAlbumInfo({ id: params.albumId, withoutAssets: true });
+  const album = await getAlbumInfo({ id: params.albumId, withoutAssets: true });
 
   return {
     album,

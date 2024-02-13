@@ -1,16 +1,17 @@
 <script lang="ts">
   import Button from '$lib/components/elements/buttons/button.svelte';
-  import { AppRoute } from '$lib/constants';
-  import { api, UserAvatarColor } from '@api';
-  import { createEventDispatcher } from 'svelte';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { fade } from 'svelte/transition';
-  import UserAvatar from '../user-avatar.svelte';
-  import { mdiCog, mdiLogout, mdiPencil } from '@mdi/js';
-  import { notificationController, NotificationType } from '../notification/notification';
-  import { handleError } from '$lib/utils/handle-error';
-  import AvatarSelector from './avatar-selector.svelte';
+  import { AppRoute } from '$lib/constants';
   import { user } from '$lib/stores/user.store';
+  import { handleError } from '$lib/utils/handle-error';
+  import { UserAvatarColor } from '@api';
+  import { deleteProfileImage, updateUser } from '@immich/sdk';
+  import { mdiCog, mdiLogout, mdiPencil } from '@mdi/js';
+  import { createEventDispatcher } from 'svelte';
+  import { fade } from 'svelte/transition';
+  import { notificationController, NotificationType } from '../notification/notification';
+  import UserAvatar from '../user-avatar.svelte';
+  import AvatarSelector from './avatar-selector.svelte';
 
   let isShowSelectAvatar = false;
 
@@ -22,10 +23,10 @@
   const handleSaveProfile = async (color: UserAvatarColor) => {
     try {
       if ($user.profileImagePath !== '') {
-        await api.userApi.deleteProfileImage();
+        await deleteProfileImage();
       }
 
-      const { data } = await api.userApi.updateUser({
+      $user = await updateUser({
         updateUserDto: {
           id: $user.id,
           email: $user.email,
@@ -34,7 +35,6 @@
         },
       });
 
-      $user = data;
       isShowSelectAvatar = false;
 
       notificationController.show({

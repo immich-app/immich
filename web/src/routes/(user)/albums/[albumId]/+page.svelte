@@ -1,17 +1,21 @@
 <script lang="ts">
   import { afterNavigate, goto } from '$app/navigation';
+  import AlbumOptions from '$lib/components/album-page/album-options.svelte';
   import ShareInfoModal from '$lib/components/album-page/share-info-modal.svelte';
   import UserSelectionModal from '$lib/components/album-page/user-selection-modal.svelte';
+  import ActivityStatus from '$lib/components/asset-viewer/activity-status.svelte';
+  import ActivityViewer from '$lib/components/asset-viewer/activity-viewer.svelte';
   import Button from '$lib/components/elements/buttons/button.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
   import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
   import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
+  import ChangeDate from '$lib/components/photos-page/actions/change-date-action.svelte';
+  import ChangeLocation from '$lib/components/photos-page/actions/change-location-action.svelte';
   import CreateSharedLink from '$lib/components/photos-page/actions/create-shared-link.svelte';
   import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
   import DownloadAction from '$lib/components/photos-page/actions/download-action.svelte';
   import FavoriteAction from '$lib/components/photos-page/actions/favorite-action.svelte';
-  import ChangeDate from '$lib/components/photos-page/actions/change-date-action.svelte';
-  import ChangeLocation from '$lib/components/photos-page/actions/change-location-action.svelte';
   import RemoveFromAlbum from '$lib/components/photos-page/actions/remove-from-album.svelte';
   import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
   import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
@@ -26,40 +30,47 @@
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
+  import UpdatePanel from '$lib/components/shared-components/update-panel.svelte';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
   import { AppRoute, dateFormats } from '$lib/constants';
+  import { numberOfComments, setNumberOfComments, updateNumberOfComments } from '$lib/stores/activity.store';
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { AssetStore } from '$lib/stores/assets.store';
   import { locale } from '$lib/stores/preferences.store';
+  import { SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
+  import { user } from '$lib/stores/user.store';
   import { downloadArchive } from '$lib/utils/asset-utils';
-  import { openFileUploadDialog } from '$lib/utils/file-uploader';
-  import { handleError } from '$lib/utils/handle-error';
-  import { type ActivityResponseDto, ReactionLevel, ReactionType, type UserResponseDto, api } from '@api';
-  import Icon from '$lib/components/elements/icon.svelte';
-  import type { PageData } from './$types';
+  import { autoGrowHeight } from '$lib/utils/autogrow';
   import { clickOutside } from '$lib/utils/click-outside';
   import { getContextMenuPosition } from '$lib/utils/context-menu';
+  import { openFileUploadDialog } from '$lib/utils/file-uploader';
+  import { handleError } from '$lib/utils/handle-error';
+  import { ReactionLevel, ReactionType, type ActivityResponseDto, type UserResponseDto } from '@api';
   import {
-    mdiPlus,
-    mdiDotsVertical,
+    addAssetsToAlbum,
+    addUsersToAlbum,
+    createActivity,
+    deleteActivity,
+    deleteAlbum,
+    getActivities,
+    getActivityStatistics,
+    getAlbumInfo,
+    updateAlbumInfo,
+  } from '@immich/sdk';
+  import {
     mdiArrowLeft,
+    mdiDeleteOutline,
+    mdiDotsVertical,
     mdiFileImagePlusOutline,
     mdiFolderDownloadOutline,
     mdiLink,
+    mdiPlus,
     mdiShareVariantOutline,
-    mdiDeleteOutline,
   } from '@mdi/js';
   import { onMount } from 'svelte';
   import { fly } from 'svelte/transition';
-  import ActivityViewer from '$lib/components/asset-viewer/activity-viewer.svelte';
-  import ActivityStatus from '$lib/components/asset-viewer/activity-status.svelte';
-  import { numberOfComments, setNumberOfComments, updateNumberOfComments } from '$lib/stores/activity.store';
-  import AlbumOptions from '$lib/components/album-page/album-options.svelte';
-  import UpdatePanel from '$lib/components/shared-components/update-panel.svelte';
-  import { user } from '$lib/stores/user.store';
-  import { autoGrowHeight } from '$lib/utils/autogrow';
+  import type { PageData } from './$types';
 
   export let data: PageData;
 
@@ -141,13 +152,12 @@
 
   const handleToggleEnableActivity = async () => {
     try {
-      const { data } = await api.albumApi.updateAlbumInfo({
+      album = await updateAlbumInfo({
         id: album.id,
         updateAlbumDto: {
           isActivityEnabled: !album.isActivityEnabled,
         },
       });
-      album = data;
       notificationController.show({
         type: NotificationType.Info,
         message: `Activity is ${album.isActivityEnabled ? 'enabled' : 'disabled'}`,
@@ -161,14 +171,13 @@
     try {
       if (isLiked) {
         const activityId = isLiked.id;
-        await api.activityApi.deleteActivity({ id: activityId });
+        await deleteActivity({ id: activityId });
         reactions = reactions.filter((reaction) => reaction.id !== activityId);
         isLiked = null;
       } else {
-        const { data } = await api.activityApi.createActivity({
+        isLiked = await createActivity({
           activityCreateDto: { albumId: album.id, type: ReactionType.Like },
         });
-        isLiked = data;
         reactions = [...reactions, isLiked];
       }
     } catch (error) {
@@ -179,10 +188,10 @@
   const getFavorite = async () => {
     if ($user) {
       try {
-        const { data } = await api.activityApi.getActivities({
+        const data = await getActivities({
           userId: $user.id,
           albumId: album.id,
-          type: ReactionType.Like,
+          $type: ReactionType.Like,
           level: ReactionLevel.Album,
         });
         if (data.length > 0) {
@@ -196,8 +205,8 @@
 
   const getNumberOfComments = async () => {
     try {
-      const { data } = await api.activityApi.getActivityStatistics({ albumId: album.id });
-      setNumberOfComments(data.comments);
+      const { comments } = await getActivityStatistics({ albumId: album.id });
+      setNumberOfComments(comments);
     } catch (error) {
       handleError(error, "Can't get number of comments");
     }
@@ -269,8 +278,7 @@
   };
 
   const refreshAlbum = async () => {
-    const { data } = await api.albumApi.getAlbumInfo({ id: album.id, withoutAssets: true });
-    album = data;
+    album = await getAlbumInfo({ id: album.id, withoutAssets: true });
   };
 
   const getDateRange = () => {
@@ -302,7 +310,7 @@
     const assetIds = [...$timelineSelected].map((asset) => asset.id);
 
     try {
-      const { data: results } = await api.albumApi.addAssetsToAlbum({
+      const results = await addAssetsToAlbum({
         id: album.id,
         bulkIdsDto: { ids: assetIds },
       });
@@ -346,14 +354,12 @@
 
   const handleAddUsers = async (users: UserResponseDto[]) => {
     try {
-      const { data } = await api.albumApi.addUsersToAlbum({
+      album = await addUsersToAlbum({
         id: album.id,
         addUsersDto: {
           sharedUserIds: [...users].map(({ id }) => id),
         },
       });
-
-      album = data;
 
       viewMode = ViewMode.VIEW;
     } catch (error) {
@@ -381,7 +387,7 @@
 
   const handleRemoveAlbum = async () => {
     try {
-      await api.albumApi.deleteAlbum({ id: album.id });
+      await deleteAlbum({ id: album.id });
       goto(backUrl);
     } catch (error) {
       handleError(error, 'Unable to delete album');
@@ -399,7 +405,7 @@
     assetInteractionStore.clearMultiselect();
 
     try {
-      await api.albumApi.updateAlbumInfo({
+      await updateAlbumInfo({
         id: album.id,
         updateAlbumDto: {
           albumThumbnailAssetId: assetId,
@@ -418,7 +424,7 @@
     }
 
     try {
-      await api.albumApi.updateAlbumInfo({
+      await updateAlbumInfo({
         id: album.id,
         updateAlbumDto: {
           albumName: album.albumName,
@@ -436,7 +442,7 @@
       return;
     }
     try {
-      await api.albumApi.updateAlbumInfo({
+      await updateAlbumInfo({
         id: album.id,
         updateAlbumDto: {
           description,

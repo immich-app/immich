@@ -1,13 +1,14 @@
 <script lang="ts">
-  import { type AssetResponseDto, api } from '@api';
-  import { createEventDispatcher, onMount } from 'svelte';
-  import { notificationController, NotificationType } from './notification/notification';
-  import { handleError } from '$lib/utils/handle-error';
-  import domtoimage from 'dom-to-image';
-  import PhotoViewer from '../asset-viewer/photo-viewer.svelte';
-  import BaseModal from './base-modal.svelte';
-  import Button from '../elements/buttons/button.svelte';
   import { user } from '$lib/stores/user.store';
+  import { handleError } from '$lib/utils/handle-error';
+  import { type AssetResponseDto } from '@api';
+  import { createProfileImage } from '@immich/sdk';
+  import domtoimage from 'dom-to-image';
+  import { createEventDispatcher, onMount } from 'svelte';
+  import PhotoViewer from '../asset-viewer/photo-viewer.svelte';
+  import Button from '../elements/buttons/button.svelte';
+  import BaseModal from './base-modal.svelte';
+  import { NotificationType, notificationController } from './notification/notification';
 
   export let asset: AssetResponseDto;
 
@@ -57,13 +58,13 @@
         return;
       }
       const file = new File([blob], 'profile-picture.png', { type: 'image/png' });
-      const { data } = await api.userApi.createProfileImage({ file });
+      const { profileImagePath } = await createProfileImage({ createProfileImageDto: { file } });
       notificationController.show({
         type: NotificationType.Info,
         message: 'Profile picture set.',
         timeout: 3000,
       });
-      $user.profileImagePath = data.profileImagePath;
+      $user.profileImagePath = profileImagePath;
     } catch (error) {
       handleError(error, 'Error setting profile picture.');
     }

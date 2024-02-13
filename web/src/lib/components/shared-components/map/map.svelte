@@ -1,28 +1,29 @@
 <script lang="ts">
-  import {
-    MapLibre,
-    GeoJSON,
-    MarkerLayer,
-    AttributionControl,
-    ControlButton,
-    Control,
-    ControlGroup,
-    type Map,
-    FullscreenControl,
-    GeolocateControl,
-    NavigationControl,
-    ScaleControl,
-    Popup,
-  } from 'svelte-maplibre';
-  import { colorTheme, mapSettings } from '$lib/stores/preferences.store';
-  import { type MapMarkerResponseDto, api } from '@api';
-  import maplibregl from 'maplibre-gl';
-  import type { GeoJSONSource, LngLatLike, StyleSpecification } from 'maplibre-gl';
-  import type { Feature, Geometry, GeoJsonProperties, Point } from 'geojson';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { mdiCog, mdiMapMarker } from '@mdi/js';
-  import { createEventDispatcher } from 'svelte';
   import { Theme } from '$lib/constants';
+  import { colorTheme, mapSettings } from '$lib/stores/preferences.store';
+  import { api, type MapMarkerResponseDto } from '@api';
+  import { getMapStyle } from '@immich/sdk';
+  import { mdiCog, mdiMapMarker } from '@mdi/js';
+  import type { Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
+  import type { GeoJSONSource, LngLatLike, StyleSpecification } from 'maplibre-gl';
+  import maplibregl from 'maplibre-gl';
+  import { createEventDispatcher } from 'svelte';
+  import {
+    AttributionControl,
+    Control,
+    ControlButton,
+    ControlGroup,
+    FullscreenControl,
+    GeoJSON,
+    GeolocateControl,
+    MapLibre,
+    MarkerLayer,
+    NavigationControl,
+    Popup,
+    ScaleControl,
+    type Map,
+  } from 'svelte-maplibre';
 
   export let mapMarkers: MapMarkerResponseDto[];
   export let showSettingsModal: boolean | undefined = undefined;
@@ -35,13 +36,10 @@
   let map: maplibregl.Map;
   let marker: maplibregl.Marker | null = null;
 
-  // eslint-disable-next-line unicorn/prefer-top-level-await
-  $: style = (async () => {
-    const { data } = await api.systemConfigApi.getMapStyle({
+  $: style = (() =>
+    getMapStyle({
       theme: $mapSettings.allowDarkMode ? $colorTheme.value : Theme.LIGHT,
-    });
-    return data as StyleSpecification;
-  })();
+    }) as Promise<StyleSpecification>)();
 
   const dispatch = createEventDispatcher<{
     selected: string[];

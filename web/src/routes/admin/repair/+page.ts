@@ -1,12 +1,10 @@
 import { authenticate } from '$lib/utils/auth';
-import { api } from '@api';
+import { getAuditFiles } from '@immich/sdk';
 import type { PageLoad } from './$types';
 
 export const load = (async () => {
   await authenticate({ admin: true });
-  const {
-    data: { orphans, extras },
-  } = await api.auditApi.getAuditFiles();
+  const { orphans, extras } = await getAuditFiles();
 
   return {
     orphans,
