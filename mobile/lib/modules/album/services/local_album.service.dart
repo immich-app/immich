@@ -47,7 +47,13 @@ class LocalAlbumService {
     try {
       final List<AssetPathEntity> onDevice =
           await PhotoManager.getAssetPathList(
-        filterOption: FilterOptionGroup(containsPathModified: true),
+        filterOption: FilterOptionGroup(
+          containsPathModified: true,
+          orders: [const OrderOption(type: OrderOptionType.updateDate)],
+          // title is needed to create Assets
+          imageOption: const FilterOption(needTitle: true),
+          videoOption: const FilterOption(needTitle: true),
+        ),
       );
       _log.fine("Found ${onDevice.length} device albums");
       changes = await _syncLocalAlbumAssetsToDb(onDevice);

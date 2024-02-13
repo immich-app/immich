@@ -37,7 +37,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   ) : super(
           BackUpState(
             backupProgress: BackUpProgressEnum.idle,
-            allAssetsInDatabase: const [],
             progressInPercentage: 0,
             cancelToken: CancellationToken(),
             currentUploadAsset: CurrentUploadAsset(
@@ -69,55 +68,55 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     await _serverInfoNotifier.getServerDiskInfo();
 
     final hasPermission = _galleryPermissionNotifier.hasPermission;
-    if (hasPermission) {
-      await PhotoManager.clearFileCache();
-
-      final localAssetsToBackup = await _db.assets
-          .where()
-          .remoteIdIsNull()
-          .filter()
-          .localIdIsNotNull()
-          .selectedForBackupEqualTo(BackupSelection.select)
-          .findAll();
-      if (localAssetsToBackup.isEmpty) {
-        log.info("No Asset On Device - Abort Backup Process");
-        state = state.copyWith(backupProgress: BackUpProgressEnum.idle);
-        return;
-      }
-
-      Set<AssetEntity> assetsWillBeBackup = Set.from(localAssetsToBackup);
-      // Remove item that has already been backed up
-      for (final assetId in state.allAssetsInDatabase) {
-        assetsWillBeBackup.removeWhere((e) => e.id == assetId);
-      }
-
-      if (assetsWillBeBackup.isEmpty) {
-        state = state.copyWith(backupProgress: BackUpProgressEnum.idle);
-      }
-
-      // Perform Backup
-      state = state.copyWith(cancelToken: CancellationToken());
-
-      final pmProgressHandler = Platform.isIOS ? PMProgressHandler() : null;
-
-      pmProgressHandler?.stream.listen((event) {
-        final double progress = event.progress;
-        state = state.copyWith(iCloudDownloadProgress: progress);
-      });
-
-      await _backupService.backupAsset(
-        assetsWillBeBackup,
-        state.cancelToken,
-        pmProgressHandler,
-        _onAssetUploaded,
-        _onUploadProgress,
-        _onSetCurrentBackupAsset,
-        _onBackupError,
-      );
-      await notifyBackgroundServiceCanRun();
-    } else {
+    if (!hasPermission) {
       openAppSettings();
+      return;
     }
+
+    await PhotoManager.clearFileCache();
+
+    final localAssetsToBackup = await _db.assets
+        .where()
+        .remoteIdIsNull()
+        .filter()
+        .localIdIsNotNull()
+        .selectedForBackupEqualTo(BackupSelection.select)
+        .findAll();
+
+    final assetsToBackup =
+        await _backupService.remoteAlreadyUploaded(localAssetsToBackup);
+    if (assetsToBackup.isEmpty) {
+      log.info("No Asset On Device - Abort Backup Process");
+      state = state.copyWith(backupProgress: BackUpProgressEnum.idle);
+      return;
+    }
+
+    // Perform Backup
+    state = state.copyWith(cancelToken: CancellationToken());
+
+    final pmProgressHandler = Platform.isIOS ? PMProgressHandler() : null;
+
+    pmProgressHandler?.stream.listen((event) {
+      final double progress = event.progress;
+      state = state.copyWith(iCloudDownloadProgress: progress);
+    });
+
+    await _backupService.backupAsset(
+      assetsToBackup,
+      state.cancelToken,
+      pmProgressHandler,
+      _onAssetUploaded,
+      _onUploadProgress,
+      _onSetCurrentBackupAsset,
+      _onBackupError,
+    );
+
+    state.cancelToken.cancel();
+    state = state.copyWith(
+      backupProgress: BackUpProgressEnum.idle,
+      progressInPercentage: 0.0,
+    );
+    await notifyBackgroundServiceCanRun();
   }
 
   void _onBackupError(ErrorUploadAsset errorAssetInfo) {
@@ -144,15 +143,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     String deviceId,
     bool isDuplicated,
   ) {
-    if (!isDuplicated) {
-      {
-        state = state.copyWith(
-          allAssetsInDatabase: [...state.allAssetsInDatabase, deviceAssetId],
-        );
-      }
-
-      _serverInfoNotifier.getServerDiskInfo();
-    }
+    _serverInfoNotifier.getServerDiskInfo();
   }
 
   void _onUploadProgress(int sent, int total) {

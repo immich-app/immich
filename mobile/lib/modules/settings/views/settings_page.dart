@@ -5,7 +5,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/settings/ui/advanced_settings/advanced_settings.dart';
 import 'package:immich_mobile/modules/settings/ui/asset_list_settings/asset_list_settings.dart';
-import 'package:immich_mobile/modules/settings/ui/local_storage_settings/local_storage_settings.dart';
 import 'package:immich_mobile/modules/settings/ui/image_viewer_quality_setting/image_viewer_quality_setting.dart';
 import 'package:immich_mobile/modules/settings/ui/notification_setting/notification_setting.dart';
 import 'package:immich_mobile/modules/settings/ui/theme_setting/theme_setting.dart';
@@ -40,7 +39,6 @@ class SettingsPage extends HookConsumerWidget {
               const AssetListSettings(),
               const NotificationSetting(),
               // const ExperimentalSettings(),
-              const LocalStorageSettings(),
               const AdvancedSettings(),
             ],
           ),

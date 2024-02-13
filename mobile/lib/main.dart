@@ -15,7 +15,6 @@ import 'package:immich_mobile/shared/models/device_asset.dart';
 import 'package:timezone/data/latest.dart';
 import 'package:immich_mobile/constants/locales.dart';
 import 'package:immich_mobile/modules/backup/background_service/background.service.dart';
-import 'package:immich_mobile/modules/backup/models/duplicated_asset.model.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/routing/tab_navigation_observer.dart';
 import 'package:immich_mobile/shared/cache/widgets_binding.dart';
@@ -98,7 +97,6 @@ Future<Isar> loadDb() async {
       LocalAlbumSchema,
       RemoteAlbumSchema,
       UserSchema,
-      DuplicatedAssetSchema,
       LoggerMessageSchema,
       ETagSchema,
       DeviceAssetSchema,

@@ -1,5 +1,4 @@
 import 'package:cancellation_token_http/http.dart';
-import 'package:collection/collection.dart';
 import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
 
 enum BackUpProgressEnum {
@@ -13,7 +12,6 @@ enum BackUpProgressEnum {
 class BackUpState {
   // enum
   final BackUpProgressEnum backupProgress;
-  final List<String> allAssetsInDatabase;
   final double progressInPercentage;
   final double iCloudDownloadProgress;
   final CancellationToken cancelToken;
@@ -23,7 +21,6 @@ class BackUpState {
 
   const BackUpState({
     required this.backupProgress,
-    required this.allAssetsInDatabase,
     required this.progressInPercentage,
     required this.iCloudDownloadProgress,
     required this.cancelToken,
@@ -32,7 +29,6 @@ class BackUpState {
 
   BackUpState copyWith({
     BackUpProgressEnum? backupProgress,
-    List<String>? allAssetsInDatabase,
     double? progressInPercentage,
     double? iCloudDownloadProgress,
     CancellationToken? cancelToken,
@@ -40,7 +36,6 @@ class BackUpState {
   }) {
     return BackUpState(
       backupProgress: backupProgress ?? this.backupProgress,
-      allAssetsInDatabase: allAssetsInDatabase ?? this.allAssetsInDatabase,
       progressInPercentage: progressInPercentage ?? this.progressInPercentage,
       iCloudDownloadProgress:
           iCloudDownloadProgress ?? this.iCloudDownloadProgress,
@@ -51,17 +46,14 @@ class BackUpState {
 
   @override
   String toString() {
-    return 'BackUpState(backupProgress: $backupProgress, allAssetsInDatabase: $allAssetsInDatabase, progressInPercentage: $progressInPercentage, iCloudDownloadProgress: $iCloudDownloadProgress, cancelToken: $cancelToken, currentUploadAsset: $currentUploadAsset)';
+    return 'BackUpState(backupProgress: $backupProgress, progressInPercentage: $progressInPercentage, iCloudDownloadProgress: $iCloudDownloadProgress, cancelToken: $cancelToken, currentUploadAsset: $currentUploadAsset)';
   }
 
   @override
-  bool operator ==(Object other) {
+  bool operator ==(covariant BackUpState other) {
     if (identical(this, other)) return true;
-    final listEquals = const DeepCollectionEquality().equals;
 
-    return other is BackUpState &&
-        other.backupProgress == backupProgress &&
-        listEquals(other.allAssetsInDatabase, allAssetsInDatabase) &&
+    return other.backupProgress == backupProgress &&
         other.progressInPercentage == progressInPercentage &&
         other.iCloudDownloadProgress == iCloudDownloadProgress &&
         other.cancelToken == cancelToken &&
@@ -71,7 +63,6 @@ class BackUpState {
   @override
   int get hashCode {
     return backupProgress.hashCode ^
-        allAssetsInDatabase.hashCode ^
         progressInPercentage.hashCode ^
         iCloudDownloadProgress.hashCode ^
         cancelToken.hashCode ^
