@@ -1,7 +1,8 @@
 <script lang="ts">
   import Button from '$lib/components/elements/buttons/button.svelte';
   import { fly } from 'svelte/transition';
-  import Combobox, { type ComboBoxOption } from '../combobox.svelte';
+  import Combobox from '../combobox.svelte';
+  import type { Search } from './search-bar.svelte';
 
   enum MediaType {
     All = 'all',
@@ -9,14 +10,7 @@
     Video = 'video',
   }
 
-  let selectedCountry: ComboBoxOption = { label: '', value: '' };
-  let selectedState: ComboBoxOption = { label: '', value: '' };
-  let selectedCity: ComboBoxOption = { label: '', value: '' };
-
-  let mediaType: MediaType = MediaType.All;
-  let notInAlbum = false;
-  let inArchive = false;
-  let inFavorite = false;
+  export let search: Search;
 </script>
 
 <div
@@ -49,7 +43,7 @@
             class="text-base flex place-items-center gap-1 hover:cursor-pointer text-black dark:text-white"
           >
             <input
-              bind:group={mediaType}
+              bind:group={search.mediaType}
               value={MediaType.All}
               type="radio"
               name="radio-type"
@@ -62,7 +56,7 @@
             class="text-base flex place-items-center gap-1 hover:cursor-pointer text-black dark:text-white"
           >
             <input
-              bind:group={mediaType}
+              bind:group={search.mediaType}
               value={MediaType.Image}
               type="radio"
               name="radio-type"
@@ -75,7 +69,7 @@
             class="text-base flex place-items-center gap-1 hover:cursor-pointer text-black dark:text-white"
           >
             <input
-              bind:group={mediaType}
+              bind:group={search.mediaType}
               value={MediaType.Video}
               type="radio"
               name="radio-type"
@@ -91,17 +85,17 @@
 
         <div class="flex gap-5 mt-3">
           <label class="flex items-center mb-2">
-            <input type="checkbox" class="form-checkbox h-5 w-5 color" bind:checked={notInAlbum} />
+            <input type="checkbox" class="form-checkbox h-5 w-5 color" bind:checked={search.notInAlbum} />
             <span class="ml-2 text-sm text-black dark:text-white pt-1">Not in any album</span>
           </label>
 
           <label class="flex items-center mb-2">
-            <input type="checkbox" class="form-checkbox h-5 w-5 color" bind:checked={inArchive} />
+            <input type="checkbox" class="form-checkbox h-5 w-5 color" bind:checked={search.inArchive} />
             <span class="ml-2 text-sm text-black dark:text-white pt-1">Archive</span>
           </label>
 
           <label class="flex items-center mb-2">
-            <input type="checkbox" class="form-checkbox h-5 w-5 color" bind:checked={inFavorite} />
+            <input type="checkbox" class="form-checkbox h-5 w-5 color" bind:checked={search.inFavorite} />
             <span class="ml-2 text-sm text-black dark:text-white pt-1">Favorite</span>
           </label>
         </div>
@@ -118,7 +112,7 @@
         </div>
 
         <div class="flex-1">
-          <Combobox options={[]} selectedOption={selectedCountry} placeholder="Search people..." />
+          <Combobox options={[]} selectedOption={search.selectedCountry} placeholder="Search people..." />
         </div>
       </div>
     </div>
@@ -131,17 +125,17 @@
       <div class="flex justify-between gap-5 mt-3">
         <div class="w-full">
           <p class="text-sm text-black dark:text-white">Country</p>
-          <Combobox options={[]} selectedOption={selectedCountry} placeholder="Search country..." />
+          <Combobox options={[]} selectedOption={search.selectedCountry} placeholder="Search country..." />
         </div>
 
         <div class="w-full">
           <p class="text-sm text-black dark:text-white">State</p>
-          <Combobox options={[]} selectedOption={selectedState} placeholder="Search state..." />
+          <Combobox options={[]} selectedOption={search.selectedState} placeholder="Search state..." />
         </div>
 
         <div class="w-full">
           <p class="text-sm text-black dark:text-white">City</p>
-          <Combobox options={[]} selectedOption={selectedCity} placeholder="Search city..." />
+          <Combobox options={[]} selectedOption={search.selectedCity} placeholder="Search city..." />
         </div>
       </div>
     </div>
@@ -154,12 +148,12 @@
       <div class="flex justify-between gap-5 mt-3">
         <div class="w-full">
           <p class="text-sm text-black dark:text-white">Make</p>
-          <Combobox options={[]} selectedOption={selectedCountry} placeholder="Search country..." />
+          <Combobox options={[]} selectedOption={search.selectedMake} placeholder="Search make..." />
         </div>
 
         <div class="w-full">
           <p class="text-sm text-black dark:text-white">Model</p>
-          <Combobox options={[]} selectedOption={selectedState} placeholder="Search state..." />
+          <Combobox options={[]} selectedOption={search.selectedModel} placeholder="Search model..." />
         </div>
       </div>
     </div>

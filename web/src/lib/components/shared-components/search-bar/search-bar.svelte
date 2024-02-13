@@ -1,3 +1,27 @@
+<script lang="ts" context="module">
+  import { type ComboBoxOption } from '../combobox.svelte';
+
+  export enum MediaType {
+    All = 'all',
+    Image = 'image',
+    Video = 'video',
+  }
+
+  export type Search = {
+    selectedCountry: ComboBoxOption;
+    selectedState: ComboBoxOption;
+    selectedCity: ComboBoxOption;
+
+    selectedMake: ComboBoxOption;
+    selectedModel: ComboBoxOption;
+
+    mediaType: MediaType;
+    notInAlbum: boolean;
+    inArchive: boolean;
+    inFavorite: boolean;
+  };
+</script>
+
 <script lang="ts">
   import { AppRoute } from '$lib/constants';
   import Icon from '$lib/components/elements/icon.svelte';
@@ -12,6 +36,20 @@
   export let grayTheme: boolean;
 
   let input: HTMLInputElement;
+
+  let search: Search = {
+    selectedCountry: { label: '', value: '' },
+    selectedState: { label: '', value: '' },
+    selectedCity: { label: '', value: '' },
+
+    selectedMake: { label: '', value: '' },
+    selectedModel: { label: '', value: '' },
+
+    mediaType: MediaType.All,
+    notInAlbum: false,
+    inArchive: false,
+    inFavorite: false,
+  };
 
   let showHistory = false;
   let showFilter = false;
@@ -140,7 +178,7 @@
     {/if}
 
     {#if showFilter}
-      <SearchFilterBox />
+      <SearchFilterBox bind:search />
     {/if}
   </form>
 </div>
