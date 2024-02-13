@@ -8,7 +8,7 @@
   import { fromLocalDateTime } from '$lib/utils/timeline-util';
   import { AppRoute, QueryParameter } from '$lib/constants';
   import { page } from '$app/stores';
-  import noThumbnailUrl from '$lib/assets/no-thumbnail.png';
+  import noThumbnailUrl from '@assets/no-thumbnail.png?enhanced';
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import IntersectionObserver from '$lib/components/asset-viewer/intersection-observer.svelte';
@@ -166,12 +166,21 @@
           class:hover:opacity-70={previousMemory}
         >
           <button class="relative h-full w-full rounded-2xl" disabled={!previousMemory} on:click={toPreviousMemory}>
-            <img
-              class="h-full w-full rounded-2xl object-cover"
-              src={previousMemory ? api.getAssetThumbnailUrl(previousMemory.assets[0].id, 'JPEG') : noThumbnailUrl}
-              alt=""
-              draggable="false"
-            />
+            {#if previousMemory}
+              <img
+                class="h-full w-full rounded-2xl object-cover"
+                src={api.getAssetThumbnailUrl(previousMemory.assets[0].id, 'JPEG')}
+                alt=""
+                draggable="false"
+              />
+            {:else}
+              <enhanced:img
+                class="h-full w-full rounded-2xl object-cover"
+                src={noThumbnailUrl}
+                alt=""
+                draggable="false"
+              />
+            {/if}
 
             {#if previousMemory}
               <div class="absolute bottom-4 right-4 text-left text-white">
@@ -229,12 +238,21 @@
           class:hover:opacity-70={nextMemory}
         >
           <button class="relative h-full w-full rounded-2xl" on:click={toNextMemory} disabled={!nextMemory}>
-            <img
-              class="h-full w-full rounded-2xl object-cover"
-              src={nextMemory ? api.getAssetThumbnailUrl(nextMemory.assets[0].id, 'JPEG') : noThumbnailUrl}
-              alt=""
-              draggable="false"
-            />
+            {#if nextMemory}
+              <img
+                class="h-full w-full rounded-2xl object-cover"
+                src={api.getAssetThumbnailUrl(nextMemory.assets[0].id, 'JPEG')}
+                alt=""
+                draggable="false"
+              />
+            {:else}
+              <enhanced:img
+                class="h-full w-full rounded-2xl object-cover"
+                src={noThumbnailUrl}
+                alt=""
+                draggable="false"
+              />
+            {/if}
 
             {#if nextMemory}
               <div class="absolute bottom-4 left-4 text-left text-white">

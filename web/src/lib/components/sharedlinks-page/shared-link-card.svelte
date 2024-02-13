@@ -7,7 +7,7 @@
   import { createEventDispatcher } from 'svelte';
   import { goto } from '$app/navigation';
   import { mdiCircleEditOutline, mdiContentCopy, mdiDelete, mdiOpenInNew } from '@mdi/js';
-  import noThumbnailUrl from '$lib/assets/no-thumbnail.png';
+  import noThumbnailUrl from '@assets/no-thumbnail.png?enhanced';
   import { AppRoute } from '$lib/constants';
 
   export let link: SharedLinkResponseDto;
@@ -80,7 +80,7 @@
         />
       {/await}
     {:else}
-      <img
+      <enhanced:img
         src={noThumbnailUrl}
         alt={'Album without assets'}
         class="h-[100px] w-[100px] rounded-lg object-cover"

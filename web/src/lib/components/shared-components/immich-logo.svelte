@@ -1,5 +1,5 @@
 <script lang="ts">
-  import immichLogoUrl from '$lib/assets/immich-logo.svg';
+  import immichLogoUrl from '@assets/immich-logo.svg';
 
   export let draggable = false;
 </script>

@@ -24,7 +24,6 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import PersonSidePanel from '../faces-page/person-side-panel.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
-  import Map from '../shared-components/map/map.svelte';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { websocketStore } from '$lib/stores/websocket';
   import { AppRoute, QueryParameter } from '$lib/constants';
@@ -33,6 +32,7 @@
   import { user } from '$lib/stores/user.store';
   import { autoGrowHeight } from '$lib/utils/autogrow';
   import { clickOutside } from '$lib/utils/click-outside';
+  import LoadingSpinner from '../shared-components/loading-spinner.svelte';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
@@ -613,27 +613,18 @@
 
 {#if latlng && $featureFlags.loaded && $featureFlags.map}
   <div class="h-[360px]">
-    <Map
-      mapMarkers={[{ lat: latlng.lat, lon: latlng.lng, id: asset.id }]}
-      center={latlng}
-      zoom={15}
-      simplified
-      useLocationPin
-    >
-      <svelte:fragment slot="popup" let:marker>
-        {@const { lat, lon } = marker}
-        <div class="flex flex-col items-center gap-1">
-          <p class="font-bold">{lat.toPrecision(6)}, {lon.toPrecision(6)}</p>
-          <a
-            href="https://www.openstreetmap.org/?mlat={lat}&mlon={lon}&zoom=15#map=15/{lat}/{lon}"
-            target="_blank"
-            class="font-medium text-immich-primary"
-          >
-            Open in OpenStreetMap
-          </a>
-        </div>
-      </svelte:fragment>
-    </Map>
+    {#await import('../shared-components/map/map.svelte')}
+      <LoadingSpinner />
+    {:then component}
+      <svelte:component
+        this={component.default}
+        mapMarkers={[{ lat: latlng.lat, lon: latlng.lng, id: asset.id }]}
+        center={latlng}
+        zoom={15}
+        simplified
+        useLocationPin
+      />
+    {/await}
   </div>
 {/if}
 

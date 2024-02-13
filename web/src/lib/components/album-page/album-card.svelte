@@ -1,5 +1,5 @@
 <script lang="ts">
-  import noThumbnailUrl from '$lib/assets/no-thumbnail.png';
+  import noThumbnailUrl from '@assets/no-thumbnail.png?enhanced';
   import { locale } from '$lib/stores/preferences.store';
   import { type AlbumResponseDto, api, ThumbnailFormat, type UserResponseDto } from '@api';
   import { createEventDispatcher, onMount } from 'svelte';
@@ -19,7 +19,7 @@
 
   $: imageData = album.albumThumbnailAssetId
     ? api.getAssetThumbnailUrl(album.albumThumbnailAssetId, ThumbnailFormat.Webp)
-    : noThumbnailUrl;
+    : null;
 
   const dispatchClick = createEventDispatcher<OnClick>();
   const dispatchShowContextMenu = createEventDispatcher<OnShowContextMenu>();
@@ -48,7 +48,7 @@
     dispatchShowContextMenu('showalbumcontextmenu', getContextMenuPosition(e));
 
   onMount(async () => {
-    imageData = (await loadHighQualityThumbnail(album.albumThumbnailAssetId)) || noThumbnailUrl;
+    imageData = (await loadHighQualityThumbnail(album.albumThumbnailAssetId)) || null;
   });
 
   const getAlbumOwnerInfo = async (): Promise<UserResponseDto> => {
@@ -83,14 +83,25 @@
   {/if}
 
   <div class={`relative aspect-square`}>
-    <img
-      loading={preload ? 'eager' : 'lazy'}
-      src={imageData}
-      alt={album.id}
-      class={`z-0 h-full w-full rounded-xl object-cover transition-all duration-300 hover:shadow-lg`}
-      data-testid="album-image"
-      draggable="false"
-    />
+    {#if album.albumThumbnailAssetId}
+      <img
+        loading={preload ? 'eager' : 'lazy'}
+        src={imageData}
+        alt={album.id}
+        class={`z-0 h-full w-full rounded-xl object-cover transition-all duration-300 hover:shadow-lg`}
+        data-testid="album-image"
+        draggable="false"
+      />
+    {:else}
+      <enhanced:img
+        loading={preload ? 'eager' : 'lazy'}
+        src={noThumbnailUrl}
+        alt={album.id}
+        class={`z-0 h-full w-full rounded-xl object-cover transition-all duration-300 hover:shadow-lg`}
+        data-testid="album-image"
+        draggable="false"
+      />
+    {/if}
     <div class="absolute top-0 h-full w-full rounded-3xl" />
   </div>
 

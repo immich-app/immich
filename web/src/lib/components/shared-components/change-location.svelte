@@ -2,7 +2,7 @@
   import type { AssetResponseDto } from '@api';
   import { createEventDispatcher } from 'svelte';
   import ConfirmDialogue from './confirm-dialogue.svelte';
-  import Map from './map/map.svelte';
+  import LoadingSpinner from './loading-spinner.svelte';
   export const title = 'Change Location';
   export let asset: AssetResponseDto | undefined = undefined;
 
@@ -47,15 +47,20 @@
 >
   <div slot="prompt" class="flex flex-col w-full h-full gap-2">
     <label for="datetime">Pick a location</label>
-    <div class="h-[500px] min-h-[300px] w-full">
-      <Map
-        mapMarkers={lat && lng && asset ? [{ id: asset.id, lat, lon: lng }] : []}
-        {zoom}
-        center={lat && lng ? { lat, lng } : undefined}
-        simplified={true}
-        clickable={true}
-        on:clickedPoint={({ detail: point }) => handleSelect(point)}
-      />
+    <div class="flex items-center justify-center h-[500px] min-h-[300px] w-full">
+      {#await import('../shared-components/map/map.svelte')}
+        <LoadingSpinner />
+      {:then component}
+        <svelte:component
+          this={component.default}
+          mapMarkers={lat && lng && asset ? [{ id: asset.id, lat, lon: lng }] : []}
+          {zoom}
+          center={lat && lng ? { lat, lng } : undefined}
+          simplified={true}
+          clickable={true}
+          on:clickedPoint={({ detail: point }) => handleSelect(point)}
+        />
+      {/await}
     </div>
   </div>
 </ConfirmDialogue>
