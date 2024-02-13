@@ -1,5 +1,5 @@
 <script lang="ts">
-  import empty4Url from '@assets/empty-4.svg';
+  import empty4Url from '$lib/assets/empty-4.svg';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import empty1Url from '@assets/empty-1.svg';
+  import empty1Url from '$lib/assets/empty-1.svg';
 
   export let actionHandler: undefined | (() => unknown) = undefined;
   export let text = '';

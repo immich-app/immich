@@ -1,10 +1,10 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import empty2Url from '@assets/empty-2.svg';
+  import empty2Url from '$lib/assets/empty-2.svg';
   import AlbumCard from '$lib/components/album-page/album-card.svelte';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import EmptyPlaceHolder from '$lib/components/shared-components/empty-placeholder.svelte';
+  import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import {
     notificationController,
     NotificationType,
@@ -103,7 +103,7 @@
 
         <!-- Empty List -->
         {#if data.sharedAlbums.length === 0}
-          <EmptyPlaceHolder
+          <EmptyPlaceholder
             text="Create a shared album to share photos and videos with people in your network"
             alt="Empty album list"
             src={empty2Url}

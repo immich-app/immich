@@ -18,7 +18,6 @@ export default defineConfig({
       'xmlhttprequest-ssl': './node_modules/engine.io-client/lib/xmlhttprequest.js',
       // eslint-disable-next-line unicorn/prefer-module
       '@test-data': path.resolve(__dirname, './src/test-data'),
-      '@assets': path.resolve('./src/lib/assets'),
       '@api': path.resolve('./src/api'),
     },
   },

@@ -7,7 +7,7 @@
   import { createEventDispatcher } from 'svelte';
   import { goto } from '$app/navigation';
   import { mdiCircleEditOutline, mdiContentCopy, mdiDelete, mdiOpenInNew } from '@mdi/js';
-  import noThumbnailUrl from '@assets/no-thumbnail.png?enhanced';
+  import noThumbnailUrl from '$lib/assets/no-thumbnail.png?enhanced';
   import { AppRoute } from '$lib/constants';
 
   export let link: SharedLinkResponseDto;

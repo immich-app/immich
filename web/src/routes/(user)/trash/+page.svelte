@@ -20,7 +20,7 @@
   import type { PageData } from './$types';
   import { featureFlags, serverConfig } from '$lib/stores/server-config.store';
   import { goto } from '$app/navigation';
-  import empty3Url from '@assets/empty-3.svg';
+  import empty3Url from '$lib/assets/empty-3.svg';
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import { mdiDeleteOutline, mdiHistory } from '@mdi/js';
   import UpdatePanel from '$lib/components/shared-components/update-panel.svelte';

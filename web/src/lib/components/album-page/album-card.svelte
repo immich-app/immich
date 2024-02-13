@@ -1,5 +1,4 @@
 <script lang="ts">
-  import noThumbnailUrl from '@assets/no-thumbnail.png?enhanced';
   import { locale } from '$lib/stores/preferences.store';
   import { type AlbumResponseDto, api, ThumbnailFormat, type UserResponseDto } from '@api';
   import { createEventDispatcher, onMount } from 'svelte';
@@ -88,21 +87,21 @@
         loading={preload ? 'eager' : 'lazy'}
         src={imageData}
         alt={album.id}
-        class={`z-0 h-full w-full rounded-xl object-cover transition-all duration-300 hover:shadow-lg`}
+        class="z-0 h-full w-full rounded-xl object-cover transition-all duration-300 hover:shadow-lg"
         data-testid="album-image"
         draggable="false"
       />
     {:else}
       <enhanced:img
         loading={preload ? 'eager' : 'lazy'}
-        src={noThumbnailUrl}
+        src="$lib/assets/no-thumbnail.png"
+        sizes="min(271px,186px)"
         alt={album.id}
-        class={`z-0 h-full w-full rounded-xl object-cover transition-all duration-300 hover:shadow-lg`}
+        class="z-0 h-full w-full rounded-xl object-cover transition-all duration-300 hover:shadow-lg"
         data-testid="album-image"
         draggable="false"
       />
     {/if}
-    <div class="absolute top-0 h-full w-full rounded-3xl" />
   </div>
 
   <div class="mt-4">

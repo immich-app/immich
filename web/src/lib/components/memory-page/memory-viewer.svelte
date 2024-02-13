@@ -8,7 +8,7 @@
   import { fromLocalDateTime } from '$lib/utils/timeline-util';
   import { AppRoute, QueryParameter } from '$lib/constants';
   import { page } from '$app/stores';
-  import noThumbnailUrl from '@assets/no-thumbnail.png?enhanced';
+  import noThumbnailUrl from '$lib/assets/no-thumbnail.png?enhanced';
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import IntersectionObserver from '$lib/components/asset-viewer/intersection-observer.svelte';
@@ -177,6 +177,7 @@
               <enhanced:img
                 class="h-full w-full rounded-2xl object-cover"
                 src={noThumbnailUrl}
+                sizes="min(271px,186px)"
                 alt=""
                 draggable="false"
               />
@@ -249,6 +250,7 @@
               <enhanced:img
                 class="h-full w-full rounded-2xl object-cover"
                 src={noThumbnailUrl}
+                sizes="min(271px,186px)"
                 alt=""
                 draggable="false"
               />
