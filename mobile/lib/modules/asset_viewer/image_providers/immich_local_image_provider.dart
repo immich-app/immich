@@ -39,28 +39,23 @@ class ImmichLocalImageProvider extends ImageProvider<Asset> {
     );
   }
 
-  //bool get _useOriginal => AppSettingsEnum.loadOriginal.defaultValue;
-  bool get _loadPreview => AppSettingsEnum.loadPreview.defaultValue;
-
   // Streams in each stage of the image as we ask for it
   Stream<ui.Codec> _codec(
     Asset key,
     ImageDecoderCallback decode,
     StreamController<ImageChunkEvent> chunkEvents,
   ) async* {
-    if (_loadPreview) {
-      // Load a small thumbnail
-      final thumbBytes = await asset.local?.thumbnailDataWithSize(
-        const ThumbnailSize.square(256),
-        quality: 80,
-      );
-      if (thumbBytes != null) {
-        final buffer = await ui.ImmutableBuffer.fromUint8List(thumbBytes);
-        final codec = await decode(buffer);
-        yield codec;
-      } else {
-        debugPrint("Loading thumb for ${asset.fileName} failed");
-      }
+    // Load a small thumbnail
+    final thumbBytes = await asset.local?.thumbnailDataWithSize(
+      const ThumbnailSize.square(256),
+      quality: 80,
+    );
+    if (thumbBytes != null) {
+      final buffer = await ui.ImmutableBuffer.fromUint8List(thumbBytes);
+      final codec = await decode(buffer);
+      yield codec;
+    } else {
+      debugPrint("Loading thumb for ${asset.fileName} failed");
     }
 
     if (asset.isImage) {
