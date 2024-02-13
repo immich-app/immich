@@ -32,7 +32,7 @@
 
   export let data: PageData;
 
-  const MAX_ASSET_COUNT = 1000;
+  const MAX_ASSET_COUNT = 5000;
   let { isViewing: showAssetViewer } = assetViewingStore;
 
   // The GalleryViewer pushes it's own history state, which causes weird
