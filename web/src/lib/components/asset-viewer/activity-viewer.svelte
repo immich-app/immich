@@ -6,15 +6,16 @@
   import { clickOutside } from '$lib/utils/click-outside';
   import { handleError } from '$lib/utils/handle-error';
   import { isTenMinutesApart } from '$lib/utils/timesince';
+  import { api } from '@api';
   import {
-    AssetTypeEnum,
-    ReactionType,
-    ThumbnailFormat,
-    api,
+    createActivity,
+    deleteActivity,
+    getActivities,
     type ActivityResponseDto,
+    type AssetTypeEnum,
     type UserResponseDto,
-  } from '@api';
-  import { createActivity, deleteActivity, getActivities } from '@immich/sdk';
+  } from '@immich/sdk';
+  import { ReactionType, ThumbnailFormat } from '@immich/sdk/axios';
   import { mdiClose, mdiDotsVertical, mdiHeart, mdiSend } from '@mdi/js';
   import * as luxon from 'luxon';
   import { createEventDispatcher, onMount } from 'svelte';

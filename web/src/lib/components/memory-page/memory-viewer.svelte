@@ -1,20 +1,21 @@
 <script lang="ts">
-  import { memoryStore } from '$lib/stores/memory.store';
-  import { DateTime } from 'luxon';
-  import { onMount } from 'svelte';
-  import { api } from '@api';
   import { goto } from '$app/navigation';
-  import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
-  import { fromLocalDateTime } from '$lib/utils/timeline-util';
-  import { AppRoute, QueryParameter } from '$lib/constants';
   import { page } from '$app/stores';
   import noThumbnailUrl from '$lib/assets/no-thumbnail.png';
-  import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import IntersectionObserver from '$lib/components/asset-viewer/intersection-observer.svelte';
-  import { fade } from 'svelte/transition';
-  import { tweened } from 'svelte/motion';
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
+  import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
+  import { AppRoute, QueryParameter } from '$lib/constants';
+  import { memoryStore } from '$lib/stores/memory.store';
+  import { fromLocalDateTime } from '$lib/utils/timeline-util';
+  import { api } from '@api';
+  import { getMemoryLane } from '@immich/sdk';
   import { mdiChevronDown, mdiChevronLeft, mdiChevronRight, mdiChevronUp, mdiPause, mdiPlay } from '@mdi/js';
+  import { DateTime } from 'luxon';
+  import { onMount } from 'svelte';
+  import { tweened } from 'svelte/motion';
+  import { fade } from 'svelte/transition';
 
   const parseIndex = (s: string | null, max: number | null) =>
     Math.max(Math.min(Number.parseInt(s ?? '') || 0, max ?? 0), 0);
@@ -87,11 +88,10 @@
   onMount(async () => {
     if (!$memoryStore) {
       const localTime = new Date();
-      const { data } = await api.assetApi.getMemoryLane({
+      $memoryStore = await getMemoryLane({
         month: localTime.getMonth() + 1,
         day: localTime.getDate(),
       });
-      $memoryStore = data;
     }
   });
 

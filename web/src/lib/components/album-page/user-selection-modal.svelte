@@ -2,8 +2,13 @@
   import { goto } from '$app/navigation';
   import Icon from '$lib/components/elements/icon.svelte';
   import { AppRoute } from '$lib/constants';
-  import { api, type AlbumResponseDto, type SharedLinkResponseDto, type UserResponseDto } from '@api';
-  import { getAllUsers } from '@immich/sdk';
+  import {
+    getAllSharedLinks,
+    getAllUsers,
+    type AlbumResponseDto,
+    type SharedLinkResponseDto,
+    type UserResponseDto,
+  } from '@immich/sdk';
   import { mdiCheck, mdiLink, mdiShareCircle } from '@mdi/js';
   import { createEventDispatcher, onMount } from 'svelte';
   import Button from '../elements/buttons/button.svelte';
@@ -35,8 +40,7 @@
   });
 
   const getSharedLinks = async () => {
-    const { data } = await api.sharedLinkApi.getAllSharedLinks();
-
+    const data = await getAllSharedLinks();
     sharedLinks = data.filter((link) => link.album?.id === album.id);
   };
 

@@ -14,7 +14,7 @@
   import AssignFaceSidePanel from './assign-face-side-panel.svelte';
   import { getPersonNameWithHiddenValue } from '$lib/utils/person';
   import { timeBeforeShowLoadingSpinner } from '$lib/constants';
-  import { getFaces, reassignFacesById } from '@immich/sdk';
+  import { createPerson, getAllPeople, getFaces, reassignFacesById } from '@immich/sdk';
 
   export let assetId: string;
   export let assetType: AssetTypeEnum;
@@ -69,8 +69,8 @@
   onMount(async () => {
     const timeout = setTimeout(() => (isShowLoadingPeople = true), timeBeforeShowLoadingSpinner);
     try {
-      const { data } = await api.personApi.getAllPeople({ withHidden: true });
-      allPeople = data.people;
+      const { people } = await getAllPeople({ withHidden: true });
+      allPeople = people;
       peopleWithFaces = await getFaces({ id: assetId });
       selectedPersonToCreate = Array.from({ length: peopleWithFaces.length });
       selectedPersonToReassign = Array.from({ length: peopleWithFaces.length });
@@ -115,7 +115,7 @@
               faceDto: { id: peopleWithFace.id },
             });
           } else if (selectedPersonToCreate[index]) {
-            const { data } = await api.personApi.createPerson();
+            const data = await createPerson();
             numberOfPersonToCreate.push(data.id);
             await reassignFacesById({
               id: data.id,

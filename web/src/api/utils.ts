@@ -1,5 +1,5 @@
 import { finishOAuth, linkOAuthAccount, startOAuth, unlinkOAuthAccount } from '@immich/sdk';
-import type { UserResponseDto } from '@immich/sdk/axios';
+import { type UserResponseDto } from '@immich/sdk/axios';
 import type { AxiosError } from 'axios';
 import {
   NotificationType,

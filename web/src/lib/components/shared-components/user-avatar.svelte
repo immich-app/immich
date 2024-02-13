@@ -3,8 +3,9 @@
 </script>
 
 <script lang="ts">
+  import { api } from '@api';
+  import { type UserAvatarColor } from '@immich/sdk';
   import { onMount, tick } from 'svelte';
-  import { UserAvatarColor, api } from '@api';
 
   interface User {
     id: string;

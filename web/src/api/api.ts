@@ -3,8 +3,6 @@ import {
   AssetApiFp,
   AssetJobName,
   DownloadApi,
-  JobName,
-  PersonApi,
   SearchApi,
   SharedLinkApi,
   UserApiFp,
@@ -19,7 +17,6 @@ class ImmichApi {
   public assetApi: AssetApi;
   public searchApi: SearchApi;
   public sharedLinkApi: SharedLinkApi;
-  public personApi: PersonApi;
 
   private config: configuration.Configuration;
   private key?: string;
@@ -35,7 +32,6 @@ class ImmichApi {
     this.assetApi = new AssetApi(this.config);
     this.searchApi = new SearchApi(this.config);
     this.sharedLinkApi = new SharedLinkApi(this.config);
-    this.personApi = new PersonApi(this.config);
   }
 
   private createUrl(path: string, parameters?: Record<string, unknown>) {
@@ -91,25 +87,6 @@ class ImmichApi {
   public getPeopleThumbnailUrl(personId: string) {
     const path = `/person/${personId}/thumbnail`;
     return this.createUrl(path);
-  }
-
-  public getJobName(jobName: JobName) {
-    const names: Record<JobName, string> = {
-      [JobName.ThumbnailGeneration]: 'Generate Thumbnails',
-      [JobName.MetadataExtraction]: 'Extract Metadata',
-      [JobName.Sidecar]: 'Sidecar Metadata',
-      [JobName.SmartSearch]: 'Smart Search',
-      [JobName.FaceDetection]: 'Face Detection',
-      [JobName.FacialRecognition]: 'Facial Recognition',
-      [JobName.VideoConversion]: 'Transcode Videos',
-      [JobName.StorageTemplateMigration]: 'Storage Template Migration',
-      [JobName.Migration]: 'Migration',
-      [JobName.BackgroundTask]: 'Background Tasks',
-      [JobName.Search]: 'Search',
-      [JobName.Library]: 'Library',
-    };
-
-    return names[jobName];
   }
 
   public getAssetJobName(job: AssetJobName) {

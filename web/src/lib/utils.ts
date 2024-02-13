@@ -1,5 +1,6 @@
 import { goto } from '$app/navigation';
 import { page } from '$app/stores';
+import { JobName } from '@immich/sdk/axios';
 import { get } from 'svelte/store';
 
 interface UpdateParamAction {
@@ -30,4 +31,23 @@ export const updateParamList = async ({ param, value, add }: UpdateParamAction) 
   }
 
   await goto(`?${searchParams.toString()}`, { replaceState: true, noScroll: true, keepFocus: true });
+};
+
+export const getJobName = (jobName: JobName) => {
+  const names: Record<JobName, string> = {
+    [JobName.ThumbnailGeneration]: 'Generate Thumbnails',
+    [JobName.MetadataExtraction]: 'Extract Metadata',
+    [JobName.Sidecar]: 'Sidecar Metadata',
+    [JobName.SmartSearch]: 'Smart Search',
+    [JobName.FaceDetection]: 'Face Detection',
+    [JobName.FacialRecognition]: 'Facial Recognition',
+    [JobName.VideoConversion]: 'Transcode Videos',
+    [JobName.StorageTemplateMigration]: 'Storage Template Migration',
+    [JobName.Migration]: 'Migration',
+    [JobName.BackgroundTask]: 'Background Tasks',
+    [JobName.Search]: 'Search',
+    [JobName.Library]: 'Library',
+  };
+
+  return names[jobName];
 };

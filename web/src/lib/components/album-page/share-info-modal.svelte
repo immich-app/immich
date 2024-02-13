@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { type AlbumResponseDto, type UserResponseDto } from '@api';
+  import { type AlbumResponseDto, type UserResponseDto } from '@immich/sdk';
   import { getMyUserInfo, removeUserFromAlbum } from '@immich/sdk';
   import { mdiDotsVertical } from '@mdi/js';
   import { createEventDispatcher, onMount } from 'svelte';

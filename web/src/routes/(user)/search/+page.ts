@@ -1,5 +1,5 @@
 import { authenticate } from '$lib/utils/auth';
-import { type AssetResponseDto, type SearchResponseDto, api } from '@api';
+import { search, type AssetResponseDto, type SearchResponseDto } from '@immich/sdk';
 import type { PageLoad } from './$types';
 import { QueryParameter } from '$lib/constants';
 
@@ -10,17 +10,17 @@ export const load = (async (data) => {
     url.searchParams.get(QueryParameter.SEARCH_TERM) || url.searchParams.get(QueryParameter.QUERY) || undefined;
   let results: SearchResponseDto | null = null;
   if (term) {
-    const res = await api.searchApi.search({}, { params: data.url.searchParams });
+    const response = await search({ ...data.url.searchParams });
     let items: AssetResponseDto[] = (data as unknown as { results: SearchResponseDto }).results?.assets.items;
     if (items) {
-      items.push(...res.data.assets.items);
+      items.push(...response.assets.items);
     } else {
-      items = res.data.assets.items;
+      items = response.assets.items;
     }
-    const assets = { ...res.data.assets, items };
+    const assets = { ...response.assets, items };
     results = {
       assets,
-      albums: res.data.albums,
+      albums: response.albums,
     };
   }
 

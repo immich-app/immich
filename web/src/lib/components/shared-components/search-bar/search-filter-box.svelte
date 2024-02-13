@@ -8,6 +8,7 @@
   import { mdiArrowRight, mdiClose } from '@mdi/js';
   import { handleError } from '$lib/utils/handle-error';
   import { onMount } from 'svelte';
+  import { getAllPeople } from '@immich/sdk';
 
   enum MediaType {
     All = 'all',
@@ -108,8 +109,8 @@
 
   const getPeople = async () => {
     try {
-      const { data } = await api.personApi.getAllPeople({ withHidden: false });
-      suggestions.people = data.people;
+      const { people } = await getAllPeople({ withHidden: false });
+      suggestions.people = people;
     } catch (error) {
       handleError(error, 'Failed to get people');
     }
