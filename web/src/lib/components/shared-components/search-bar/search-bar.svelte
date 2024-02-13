@@ -70,6 +70,7 @@
 
     showHistory = false;
     $isSearchEnabled = false;
+    showFilter = false;
   };
 </script>
 
