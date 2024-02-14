@@ -1,5 +1,5 @@
-import { notificationController, NotificationType } from '../components/shared-components/notification/notification';
 import type { HttpError } from '@sveltejs/kit';
+import { notificationController, NotificationType } from '../components/shared-components/notification/notification';
 
 export async function getServerErrorMessage(error: unknown) {
   let data = (error as HttpError)?.body;
