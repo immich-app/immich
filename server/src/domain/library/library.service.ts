@@ -273,6 +273,37 @@ export class LibraryService extends EventEmitter {
     );
   }
 
+  private async validateImportPath(importPath: string): Promise<ValidateLibraryImportPathResponseDto> {
+    const validation = new ValidateLibraryImportPathResponseDto();
+    validation.importPath = importPath;
+
+    try {
+      const stat = await this.storageRepository.stat(importPath);
+
+      if (!stat.isDirectory()) {
+        validation.message = 'Not a directory';
+        return validation;
+      }
+    } catch (error: any) {
+      if (error.code === 'ENOENT') {
+        validation.message = 'Path does not exist (ENOENT)';
+        return validation;
+      }
+      validation.message = error;
+      return validation;
+    }
+
+    const access = await this.storageRepository.checkFileExists(importPath, R_OK);
+
+    if (!access) {
+      validation.message = 'Lacking read permission for folder';
+      return validation;
+    }
+
+    validation.isValid = true;
+    return validation;
+  }
+
   public async validate(auth: AuthDto, id: string, dto: ValidateLibraryDto): Promise<ValidateLibraryResponseDto> {
     await this.access.requirePermission(auth, Permission.LIBRARY_UPDATE, id);
 
@@ -280,48 +311,21 @@ export class LibraryService extends EventEmitter {
       throw new BadRequestException('User has no external path set');
     }
 
-    const checkPath = async (importPath: string): Promise<ValidateLibraryImportPathResponseDto> => {
-      const validation = new ValidateLibraryImportPathResponseDto();
-      validation.importPath = importPath;
-      const normalizedPath = path.normalize(importPath);
-      if (!this.isInExternalPath(normalizedPath, auth.user.externalPath)) {
-        validation.message = `Not contained in user's external path`;
-        return validation;
-      }
-
-      try {
-        const stat = await this.storageRepository.stat(importPath);
-
-        if (!stat.isDirectory()) {
-          validation.message = 'Not a directory';
-          return validation;
-        }
-      } catch (error: any) {
-        if (error.code === 'ENOENT') {
-          validation.message = 'Path does not exist (ENOENT)';
-          return validation;
-        }
-        validation.message = error;
-        return validation;
-      }
-
-      const access = await this.storageRepository.checkFileExists(importPath, R_OK);
-
-      if (!access) {
-        validation.message = 'Lacking read permission for folder';
-        return validation;
-      }
-
-      validation.isValid = true;
-      return validation;
-    };
-
     const response = new ValidateLibraryResponseDto();
 
     if (dto.importPaths) {
       response.importPaths = await Promise.all(
         dto.importPaths.map(async (importPath) => {
-          return await checkPath(importPath);
+          const normalizedPath = path.normalize(importPath);
+
+          if (!this.isInExternalPath(normalizedPath, auth.user.externalPath)) {
+            const validation = new ValidateLibraryImportPathResponseDto();
+            validation.importPath = importPath;
+            validation.message = `Not contained in user's external path`;
+            return validation;
+          }
+
+          return await this.validateImportPath(importPath);
         }),
       );
     }
