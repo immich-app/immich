@@ -3,7 +3,8 @@
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
-  import { api, type ApiError } from '@api';
+  import { type ApiError } from '@api';
+  import { changePassword } from '@immich/sdk';
   import { fade } from 'svelte/transition';
   import SettingInputField, { SettingInputFieldType } from '../admin-page/settings/setting-input-field.svelte';
   import Button from '../elements/buttons/button.svelte';
@@ -14,12 +15,7 @@
 
   const handleChangePassword = async () => {
     try {
-      await api.authenticationApi.changePassword({
-        changePasswordDto: {
-          password,
-          newPassword,
-        },
-      });
+      await changePassword({ changePasswordDto: { password, newPassword } });
 
       notificationController.show({
         message: 'Updated password',

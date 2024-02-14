@@ -159,150 +159,6 @@ class AssetApi {
     }
   }
 
-  /// Performs an HTTP 'POST /asset/download/archive' operation and returns the [Response].
-  /// Parameters:
-  ///
-  /// * [AssetIdsDto] assetIdsDto (required):
-  ///
-  /// * [String] key:
-  Future<Response> downloadArchiveOldWithHttpInfo(AssetIdsDto assetIdsDto, { String? key, }) async {
-    // ignore: prefer_const_declarations
-    final path = r'/asset/download/archive';
-
-    // ignore: prefer_final_locals
-    Object? postBody = assetIdsDto;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    if (key != null) {
-      queryParams.addAll(_queryParams('', 'key', key));
-    }
-
-    const contentTypes = <String>['application/json'];
-
-
-    return apiClient.invokeAPI(
-      path,
-      'POST',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Parameters:
-  ///
-  /// * [AssetIdsDto] assetIdsDto (required):
-  ///
-  /// * [String] key:
-  Future<MultipartFile?> downloadArchiveOld(AssetIdsDto assetIdsDto, { String? key, }) async {
-    final response = await downloadArchiveOldWithHttpInfo(assetIdsDto,  key: key, );
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'MultipartFile',) as MultipartFile;
-    
-    }
-    return null;
-  }
-
-  /// Performs an HTTP 'POST /asset/download/{id}' operation and returns the [Response].
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  ///
-  /// * [String] key:
-  Future<Response> downloadFileOldWithHttpInfo(String id, { String? key, }) async {
-    // ignore: prefer_const_declarations
-    final path = r'/asset/download/{id}'
-      .replaceAll('{id}', id);
-
-    // ignore: prefer_final_locals
-    Object? postBody;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    if (key != null) {
-      queryParams.addAll(_queryParams('', 'key', key));
-    }
-
-    const contentTypes = <String>[];
-
-
-    return apiClient.invokeAPI(
-      path,
-      'POST',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  ///
-  /// * [String] key:
-  Future<MultipartFile?> downloadFileOld(String id, { String? key, }) async {
-    final response = await downloadFileOldWithHttpInfo(id,  key: key, );
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'MultipartFile',) as MultipartFile;
-    
-    }
-    return null;
-  }
-
-  /// Performs an HTTP 'POST /asset/trash/empty' operation and returns the [Response].
-  Future<Response> emptyTrashOldWithHttpInfo() async {
-    // ignore: prefer_const_declarations
-    final path = r'/asset/trash/empty';
-
-    // ignore: prefer_final_locals
-    Object? postBody;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>[];
-
-
-    return apiClient.invokeAPI(
-      path,
-      'POST',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  Future<void> emptyTrashOld() async {
-    final response = await emptyTrashOldWithHttpInfo();
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-  }
-
   /// Get all AssetEntity belong to the user
   ///
   /// Note: This method returns the HTTP [Response].
@@ -466,67 +322,6 @@ class AssetApi {
         .cast<String>()
         .toList(growable: false);
 
-    }
-    return null;
-  }
-
-  /// Get a single asset's information
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  ///
-  /// * [String] key:
-  Future<Response> getAssetByIdWithHttpInfo(String id, { String? key, }) async {
-    // ignore: prefer_const_declarations
-    final path = r'/asset/assetById/{id}'
-      .replaceAll('{id}', id);
-
-    // ignore: prefer_final_locals
-    Object? postBody;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    if (key != null) {
-      queryParams.addAll(_queryParams('', 'key', key));
-    }
-
-    const contentTypes = <String>[];
-
-
-    return apiClient.invokeAPI(
-      path,
-      'GET',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Get a single asset's information
-  ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  ///
-  /// * [String] key:
-  Future<AssetResponseDto?> getAssetById(String id, { String? key, }) async {
-    final response = await getAssetByIdWithHttpInfo(id,  key: key, );
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AssetResponseDto',) as AssetResponseDto;
-    
     }
     return null;
   }
@@ -843,61 +638,6 @@ class AssetApi {
         .cast<CuratedObjectsResponseDto>()
         .toList(growable: false);
 
-    }
-    return null;
-  }
-
-  /// Performs an HTTP 'POST /asset/download/info' operation and returns the [Response].
-  /// Parameters:
-  ///
-  /// * [DownloadInfoDto] downloadInfoDto (required):
-  ///
-  /// * [String] key:
-  Future<Response> getDownloadInfoOldWithHttpInfo(DownloadInfoDto downloadInfoDto, { String? key, }) async {
-    // ignore: prefer_const_declarations
-    final path = r'/asset/download/info';
-
-    // ignore: prefer_final_locals
-    Object? postBody = downloadInfoDto;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    if (key != null) {
-      queryParams.addAll(_queryParams('', 'key', key));
-    }
-
-    const contentTypes = <String>['application/json'];
-
-
-    return apiClient.invokeAPI(
-      path,
-      'POST',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Parameters:
-  ///
-  /// * [DownloadInfoDto] downloadInfoDto (required):
-  ///
-  /// * [String] key:
-  Future<DownloadResponseDto?> getDownloadInfoOld(DownloadInfoDto downloadInfoDto, { String? key, }) async {
-    final response = await getDownloadInfoOldWithHttpInfo(downloadInfoDto,  key: key, );
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'DownloadResponseDto',) as DownloadResponseDto;
-    
     }
     return null;
   }
@@ -1323,78 +1063,6 @@ class AssetApi {
     return null;
   }
 
-  /// Performs an HTTP 'POST /asset/restore' operation and returns the [Response].
-  /// Parameters:
-  ///
-  /// * [BulkIdsDto] bulkIdsDto (required):
-  Future<Response> restoreAssetsOldWithHttpInfo(BulkIdsDto bulkIdsDto,) async {
-    // ignore: prefer_const_declarations
-    final path = r'/asset/restore';
-
-    // ignore: prefer_final_locals
-    Object? postBody = bulkIdsDto;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>['application/json'];
-
-
-    return apiClient.invokeAPI(
-      path,
-      'POST',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Parameters:
-  ///
-  /// * [BulkIdsDto] bulkIdsDto (required):
-  Future<void> restoreAssetsOld(BulkIdsDto bulkIdsDto,) async {
-    final response = await restoreAssetsOldWithHttpInfo(bulkIdsDto,);
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-  }
-
-  /// Performs an HTTP 'POST /asset/trash/restore' operation and returns the [Response].
-  Future<Response> restoreTrashOldWithHttpInfo() async {
-    // ignore: prefer_const_declarations
-    final path = r'/asset/trash/restore';
-
-    // ignore: prefer_final_locals
-    Object? postBody;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>[];
-
-
-    return apiClient.invokeAPI(
-      path,
-      'POST',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  Future<void> restoreTrashOld() async {
-    final response = await restoreTrashOldWithHttpInfo();
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-  }
-
   /// Performs an HTTP 'POST /asset/jobs' operation and returns the [Response].
   /// Parameters:
   ///
@@ -1509,6 +1177,8 @@ class AssetApi {
   ///
   /// * [String] webpPath:
   ///
+  /// * [bool] withArchived:
+  ///
   /// * [bool] withDeleted:
   ///
   /// * [bool] withExif:
@@ -1516,7 +1186,7 @@ class AssetApi {
   /// * [bool] withPeople:
   ///
   /// * [bool] withStacked:
-  Future<Response> searchAssetsWithHttpInfo({ String? checksum, String? city, String? country, DateTime? createdAfter, DateTime? createdBefore, String? deviceAssetId, String? deviceId, String? encodedVideoPath, String? id, bool? isArchived, bool? isEncoded, bool? isExternal, bool? isFavorite, bool? isMotion, bool? isOffline, bool? isReadOnly, bool? isVisible, String? lensModel, String? libraryId, String? make, String? model, AssetOrder? order, String? originalFileName, String? originalPath, num? page, String? resizePath, num? size, String? state, DateTime? takenAfter, DateTime? takenBefore, DateTime? trashedAfter, DateTime? trashedBefore, AssetTypeEnum? type, DateTime? updatedAfter, DateTime? updatedBefore, String? webpPath, bool? withDeleted, bool? withExif, bool? withPeople, bool? withStacked, }) async {
+  Future<Response> searchAssetsWithHttpInfo({ String? checksum, String? city, String? country, DateTime? createdAfter, DateTime? createdBefore, String? deviceAssetId, String? deviceId, String? encodedVideoPath, String? id, bool? isArchived, bool? isEncoded, bool? isExternal, bool? isFavorite, bool? isMotion, bool? isOffline, bool? isReadOnly, bool? isVisible, String? lensModel, String? libraryId, String? make, String? model, AssetOrder? order, String? originalFileName, String? originalPath, num? page, String? resizePath, num? size, String? state, DateTime? takenAfter, DateTime? takenBefore, DateTime? trashedAfter, DateTime? trashedBefore, AssetTypeEnum? type, DateTime? updatedAfter, DateTime? updatedBefore, String? webpPath, bool? withArchived, bool? withDeleted, bool? withExif, bool? withPeople, bool? withStacked, }) async {
     // ignore: prefer_const_declarations
     final path = r'/assets';
 
@@ -1635,6 +1305,9 @@ class AssetApi {
     if (webpPath != null) {
       queryParams.addAll(_queryParams('', 'webpPath', webpPath));
     }
+    if (withArchived != null) {
+      queryParams.addAll(_queryParams('', 'withArchived', withArchived));
+    }
     if (withDeleted != null) {
       queryParams.addAll(_queryParams('', 'withDeleted', withDeleted));
     }
@@ -1736,6 +1409,8 @@ class AssetApi {
   ///
   /// * [String] webpPath:
   ///
+  /// * [bool] withArchived:
+  ///
   /// * [bool] withDeleted:
   ///
   /// * [bool] withExif:
@@ -1743,8 +1418,8 @@ class AssetApi {
   /// * [bool] withPeople:
   ///
   /// * [bool] withStacked:
-  Future<List<AssetResponseDto>?> searchAssets({ String? checksum, String? city, String? country, DateTime? createdAfter, DateTime? createdBefore, String? deviceAssetId, String? deviceId, String? encodedVideoPath, String? id, bool? isArchived, bool? isEncoded, bool? isExternal, bool? isFavorite, bool? isMotion, bool? isOffline, bool? isReadOnly, bool? isVisible, String? lensModel, String? libraryId, String? make, String? model, AssetOrder? order, String? originalFileName, String? originalPath, num? page, String? resizePath, num? size, String? state, DateTime? takenAfter, DateTime? takenBefore, DateTime? trashedAfter, DateTime? trashedBefore, AssetTypeEnum? type, DateTime? updatedAfter, DateTime? updatedBefore, String? webpPath, bool? withDeleted, bool? withExif, bool? withPeople, bool? withStacked, }) async {
-    final response = await searchAssetsWithHttpInfo( checksum: checksum, city: city, country: country, createdAfter: createdAfter, createdBefore: createdBefore, deviceAssetId: deviceAssetId, deviceId: deviceId, encodedVideoPath: encodedVideoPath, id: id, isArchived: isArchived, isEncoded: isEncoded, isExternal: isExternal, isFavorite: isFavorite, isMotion: isMotion, isOffline: isOffline, isReadOnly: isReadOnly, isVisible: isVisible, lensModel: lensModel, libraryId: libraryId, make: make, model: model, order: order, originalFileName: originalFileName, originalPath: originalPath, page: page, resizePath: resizePath, size: size, state: state, takenAfter: takenAfter, takenBefore: takenBefore, trashedAfter: trashedAfter, trashedBefore: trashedBefore, type: type, updatedAfter: updatedAfter, updatedBefore: updatedBefore, webpPath: webpPath, withDeleted: withDeleted, withExif: withExif, withPeople: withPeople, withStacked: withStacked, );
+  Future<List<AssetResponseDto>?> searchAssets({ String? checksum, String? city, String? country, DateTime? createdAfter, DateTime? createdBefore, String? deviceAssetId, String? deviceId, String? encodedVideoPath, String? id, bool? isArchived, bool? isEncoded, bool? isExternal, bool? isFavorite, bool? isMotion, bool? isOffline, bool? isReadOnly, bool? isVisible, String? lensModel, String? libraryId, String? make, String? model, AssetOrder? order, String? originalFileName, String? originalPath, num? page, String? resizePath, num? size, String? state, DateTime? takenAfter, DateTime? takenBefore, DateTime? trashedAfter, DateTime? trashedBefore, AssetTypeEnum? type, DateTime? updatedAfter, DateTime? updatedBefore, String? webpPath, bool? withArchived, bool? withDeleted, bool? withExif, bool? withPeople, bool? withStacked, }) async {
+    final response = await searchAssetsWithHttpInfo( checksum: checksum, city: city, country: country, createdAfter: createdAfter, createdBefore: createdBefore, deviceAssetId: deviceAssetId, deviceId: deviceId, encodedVideoPath: encodedVideoPath, id: id, isArchived: isArchived, isEncoded: isEncoded, isExternal: isExternal, isFavorite: isFavorite, isMotion: isMotion, isOffline: isOffline, isReadOnly: isReadOnly, isVisible: isVisible, lensModel: lensModel, libraryId: libraryId, make: make, model: model, order: order, originalFileName: originalFileName, originalPath: originalPath, page: page, resizePath: resizePath, size: size, state: state, takenAfter: takenAfter, takenBefore: takenBefore, trashedAfter: trashedAfter, trashedBefore: trashedBefore, type: type, updatedAfter: updatedAfter, updatedBefore: updatedBefore, webpPath: webpPath, withArchived: withArchived, withDeleted: withDeleted, withExif: withExif, withPeople: withPeople, withStacked: withStacked, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

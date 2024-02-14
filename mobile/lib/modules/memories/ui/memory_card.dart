@@ -3,31 +3,27 @@ import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/modules/asset_viewer/views/video_viewer_page.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
-import 'package:openapi/api.dart';
 
 class MemoryCard extends StatelessWidget {
   final Asset asset;
-  final void Function() onTap;
-  final void Function() onClose;
   final String title;
-  final String? rightCornerText;
   final bool showTitle;
+  final Function()? onVideoEnded;
 
   const MemoryCard({
     required this.asset,
-    required this.onTap,
-    required this.onClose,
     required this.title,
     required this.showTitle,
-    this.rightCornerText,
+    this.onVideoEnded,
     super.key,
   });
 
-  String get authToken => 'Bearer ${Store.get(StoreKey.accessToken)}';
+  String get accessToken => Store.get(StoreKey.accessToken);
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +51,7 @@ class MemoryCard extends StatelessWidget {
                     cacheKey: getThumbnailCacheKey(
                       asset,
                     ),
-                    headers: {"Authorization": authToken},
+                    headers: {"x-immich-user-token": accessToken},
                   ),
                   fit: BoxFit.cover,
                 ),
@@ -63,37 +59,49 @@ class MemoryCard extends StatelessWidget {
               child: Container(color: Colors.black.withOpacity(0.2)),
             ),
           ),
-          GestureDetector(
-            onTap: onTap,
-            child: ImmichImage(
-              asset,
-              fit: BoxFit.fitWidth,
-              height: double.infinity,
-              width: double.infinity,
-              type: ThumbnailFormat.JPEG,
-              preferredLocalAssetSize: 2048,
-            ),
-          ),
-          Positioned(
-            top: 2.0,
-            left: 2.0,
-            child: IconButton(
-              onPressed: onClose,
-              icon: const Icon(Icons.close_rounded),
-              color: Colors.grey[400],
-            ),
-          ),
-          Positioned(
-            right: 18.0,
-            top: 18.0,
-            child: Text(
-              rightCornerText ?? "",
-              style: TextStyle(
-                color: Colors.grey[200],
-                fontSize: 12.0,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              // Determine the fit using the aspect ratio
+              BoxFit fit = BoxFit.fitWidth;
+              if (asset.width != null && asset.height != null) {
+                final aspectRatio = asset.height! / asset.width!;
+                final phoneAspectRatio =
+                    constraints.maxWidth / constraints.maxHeight;
+                // Look for a 25% difference in either direction
+                if (phoneAspectRatio * .75 < aspectRatio &&
+                    phoneAspectRatio * 1.25 > aspectRatio) {
+                  // Cover to look nice if we have nearly the same aspect ratio
+                  fit = BoxFit.cover;
+                }
+              }
+
+              if (asset.isImage) {
+                return Hero(
+                  tag: 'memory-${asset.id}',
+                  child: ImmichImage(
+                    asset,
+                    fit: fit,
+                    height: double.infinity,
+                    width: double.infinity,
+                  ),
+                );
+              } else {
+                return Hero(
+                  tag: 'memory-${asset.id}',
+                  child: VideoViewerPage(
+                    asset: asset,
+                    showDownloadingIndicator: false,
+                    placeholder: ImmichImage(
+                      asset,
+                      fit: fit,
+                    ),
+                    hideControlsTimer: const Duration(seconds: 2),
+                    onVideoEnded: onVideoEnded,
+                    showControls: false,
+                  ),
+                );
+              }
+            },
           ),
           if (showTitle)
             Positioned(

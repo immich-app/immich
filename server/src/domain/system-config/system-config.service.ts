@@ -6,7 +6,7 @@ import _ from 'lodash';
 import {
   ClientEvent,
   ICommunicationRepository,
-  ISmartInfoRepository,
+  ISearchRepository,
   ISystemConfigRepository,
   ServerEvent,
 } from '../repositories';
@@ -32,7 +32,7 @@ export class SystemConfigService {
   constructor(
     @Inject(ISystemConfigRepository) private repository: ISystemConfigRepository,
     @Inject(ICommunicationRepository) private communicationRepository: ICommunicationRepository,
-    @Inject(ISmartInfoRepository) private smartInfoRepository: ISmartInfoRepository,
+    @Inject(ISearchRepository) private smartInfoRepository: ISearchRepository,
   ) {
     this.core = SystemConfigCore.create(repository);
     this.communicationRepository.on(ServerEvent.CONFIG_UPDATE, () => this.handleConfigUpdate());

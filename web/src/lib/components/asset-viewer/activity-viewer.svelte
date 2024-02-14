@@ -1,26 +1,27 @@
 <script lang="ts">
-  import { createEventDispatcher, onMount } from 'svelte';
-  import UserAvatar from '../shared-components/user-avatar.svelte';
-  import { mdiClose, mdiHeart, mdiSend, mdiDotsVertical } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
+  import { timeBeforeShowLoadingSpinner } from '$lib/constants';
+  import { getAssetType } from '$lib/utils/asset-utils';
+  import { autoGrowHeight } from '$lib/utils/autogrow';
+  import { clickOutside } from '$lib/utils/click-outside';
+  import { handleError } from '$lib/utils/handle-error';
+  import { isTenMinutesApart } from '$lib/utils/timesince';
   import {
-    type ActivityResponseDto,
-    api,
     AssetTypeEnum,
     ReactionType,
     ThumbnailFormat,
+    api,
+    type ActivityResponseDto,
     type UserResponseDto,
   } from '@api';
-  import { handleError } from '$lib/utils/handle-error';
-  import { isTenMinutesApart } from '$lib/utils/timesince';
-  import { clickOutside } from '$lib/utils/click-outside';
+  import { createActivity, deleteActivity, getActivities } from '@immich/sdk';
+  import { mdiClose, mdiDotsVertical, mdiHeart, mdiSend } from '@mdi/js';
+  import * as luxon from 'luxon';
+  import { createEventDispatcher, onMount } from 'svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
-  import { getAssetType } from '$lib/utils/asset-utils';
-  import * as luxon from 'luxon';
-  import { timeBeforeShowLoadingSpinner } from '$lib/constants';
-  import { autoGrowHeight } from '$lib/utils/autogrow';
+  import UserAvatar from '../shared-components/user-avatar.svelte';
 
   const units: Intl.RelativeTimeFormatUnit[] = ['year', 'month', 'week', 'day', 'hour', 'minute', 'second'];
 
@@ -85,8 +86,7 @@
 
   const getReactions = async () => {
     try {
-      const { data } = await api.activityApi.getActivities({ assetId, albumId });
-      reactions = data;
+      reactions = await getActivities({ assetId, albumId });
     } catch (error) {
       handleError(error, 'Error when fetching reactions');
     }
@@ -111,7 +111,7 @@
 
   const handleDeleteReaction = async (reaction: ActivityResponseDto, index: number) => {
     try {
-      await api.activityApi.deleteActivity({ id: reaction.id });
+      await deleteActivity({ id: reaction.id });
       reactions.splice(index, 1);
       showDeleteReaction.splice(index, 1);
       reactions = reactions;
@@ -135,7 +135,7 @@
     }
     const timeout = setTimeout(() => (isSendingMessage = true), timeBeforeShowLoadingSpinner);
     try {
-      const { data } = await api.activityApi.createActivity({
+      const data = await createActivity({
         activityCreateDto: { albumId, assetId, type: ReactionType.Comment, comment: message },
       });
       reactions.push(data);

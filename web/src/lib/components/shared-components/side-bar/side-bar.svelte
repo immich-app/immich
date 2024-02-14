@@ -2,7 +2,8 @@
   import { page } from '$app/stores';
   import { locale, sidebarSettings } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
-  import { type AssetApiGetAssetStatisticsRequest, api } from '@api';
+  import { api, type AssetApiGetAssetStatisticsRequest } from '@api';
+  import { getAlbumCount } from '@immich/sdk';
   import {
     mdiAccount,
     mdiAccountMultiple,
@@ -28,10 +29,9 @@
     return stats;
   };
 
-  const getAlbumCount = async () => {
+  const handleAlbumCount = async () => {
     try {
-      const { data: albumCount } = await api.albumApi.getAlbumCount();
-      return albumCount;
+      return await getAlbumCount();
     } catch {
       return { owned: 0, shared: 0, notShared: 0 };
     }
@@ -85,7 +85,7 @@
         isSelected={isSharingSelected}
       >
         <svelte:fragment slot="moreInformation">
-          {#await getAlbumCount()}
+          {#await handleAlbumCount()}
             <LoadingSpinner />
           {:then data}
             <div>
@@ -127,7 +127,7 @@
       isSelected={$page.route.id === '/(user)/albums'}
     >
       <svelte:fragment slot="moreInformation">
-        {#await getAlbumCount()}
+        {#await handleAlbumCount()}
           <LoadingSpinner />
         {:then data}
           <div>

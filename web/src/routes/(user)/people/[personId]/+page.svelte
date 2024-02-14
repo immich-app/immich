@@ -88,6 +88,8 @@
    **/
   let searchWord: string;
   let isSearchingPeople = false;
+  let focusedElements: (HTMLButtonElement | null)[] = Array.from({ length: maximumLengthSearchPeople }, () => null);
+  let indexFocus: number | null = null;
 
   const searchPeople = async () => {
     if ((people.length < maximumLengthSearchPeople && name.startsWith(searchWord)) || name === '') {
@@ -116,6 +118,7 @@
   $: {
     if (people) {
       suggestedPeople = name ? searchNameLocal(name, people, 5, data.person.id) : [];
+      indexFocus = null;
     }
   }
 
@@ -129,8 +132,51 @@
       viewMode = ViewMode.MERGE_PEOPLE;
     }
   });
+
+  const handleKeyboardPress = (event: KeyboardEvent) => {
+    if (suggestedPeople.length === 0) {
+      return;
+    }
+    if (!$showAssetViewer) {
+      event.stopPropagation();
+      switch (event.key) {
+        case 'ArrowDown': {
+          event.preventDefault();
+          if (indexFocus === null) {
+            indexFocus = 0;
+          } else if (indexFocus === suggestedPeople.length - 1) {
+            indexFocus = 0;
+          } else {
+            indexFocus++;
+          }
+          focusedElements[indexFocus]?.focus();
+          return;
+        }
+        case 'ArrowUp': {
+          if (indexFocus === null) {
+            indexFocus = 0;
+            return;
+          }
+          if (indexFocus === 0) {
+            indexFocus = suggestedPeople.length - 1;
+          } else {
+            indexFocus--;
+          }
+          focusedElements[indexFocus]?.focus();
+
+          return;
+        }
+        case 'Enter': {
+          if (indexFocus !== null) {
+            handleSuggestPeople(suggestedPeople[indexFocus]);
+          }
+        }
+      }
+    }
+  };
+
   const handleEscape = () => {
-    if ($showAssetViewer) {
+    if ($showAssetViewer || viewMode === ViewMode.SUGGEST_MERGE) {
       return;
     }
     if ($isMultiSelectState) {
@@ -350,6 +396,7 @@
   };
 </script>
 
+<svelte:document on:keydown={handleKeyboardPress} />
 {#if viewMode === ViewMode.UNASSIGN_ASSETS}
   <UnMergeFaceSelector
     assetIds={[...$selectedAssets].map((a) => a.id)}
@@ -499,24 +546,24 @@
                 </div>
               {:else}
                 {#each suggestedPeople as person, index (person.id)}
-                  <div
-                    class="flex border-t border-x border-gray-400 dark:border-immich-dark-gray h-14 place-items-center bg-gray-200 p-2 dark:bg-gray-700 hover:bg-gray-300 hover:dark:bg-[#232932] {index ===
+                  <button
+                    bind:this={focusedElements[index]}
+                    class="flex w-full border-t border-gray-400 dark:border-immich-dark-gray h-14 place-items-center bg-gray-200 p-2 dark:bg-gray-700 hover:bg-gray-300 hover:dark:bg-[#232932] focus:bg-gray-300 focus:dark:bg-[#232932] {index ===
                     suggestedPeople.length - 1
                       ? 'rounded-b-lg border-b'
                       : ''}"
+                    on:click={() => handleSuggestPeople(person)}
                   >
-                    <button class="flex w-full place-items-center" on:click={() => handleSuggestPeople(person)}>
-                      <ImageThumbnail
-                        circle
-                        shadow
-                        url={api.getPeopleThumbnailUrl(person.id)}
-                        altText={person.name}
-                        widthStyle="2rem"
-                        heightStyle="2rem"
-                      />
-                      <p class="ml-4 text-gray-700 dark:text-gray-100">{person.name}</p>
-                    </button>
-                  </div>
+                    <ImageThumbnail
+                      circle
+                      shadow
+                      url={api.getPeopleThumbnailUrl(person.id)}
+                      altText={person.name}
+                      widthStyle="2rem"
+                      heightStyle="2rem"
+                    />
+                    <p class="ml-4 text-gray-700 dark:text-gray-100">{person.name}</p>
+                  </button>
                 {/each}
               {/if}
             </div>

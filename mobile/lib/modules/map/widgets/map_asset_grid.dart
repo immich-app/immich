@@ -231,7 +231,14 @@ class _MapSheetDragRegion extends StatelessWidget {
       physics: const ClampingScrollPhysics(),
       child: Card(
         margin: EdgeInsets.zero,
-        shape: context.isMobile ? null : const BeveledRectangleBorder(),
+        shape: context.isMobile
+            ? const RoundedRectangleBorder(
+                borderRadius: BorderRadius.only(
+                  topRight: Radius.circular(20),
+                  topLeft: Radius.circular(20),
+                ),
+              )
+            : const BeveledRectangleBorder(),
         elevation: 0.0,
         child: Stack(
           children: [

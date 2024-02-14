@@ -7,14 +7,11 @@
   import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
   import NotificationList from '$lib/components/shared-components/notification/notification-list.svelte';
   import VersionAnnouncementBox from '$lib/components/shared-components/version-announcement-box.svelte';
-  import { fileUploadHandler } from '$lib/utils/file-uploader';
-  import UploadCover from '$lib/components/shared-components/drag-and-drop-upload-overlay.svelte';
   import FullscreenContainer from '$lib/components/shared-components/fullscreen-container.svelte';
   import AppleHeader from '$lib/components/shared-components/apple-header.svelte';
   import { onDestroy, onMount } from 'svelte';
   import { loadConfig } from '$lib/stores/server-config.store';
   import { handleError } from '$lib/utils/handle-error';
-  import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
   import { api } from '@api';
   import { closeWebsocketConnection, openWebsocketConnection } from '$lib/stores/websocket';
   import { user } from '$lib/stores/user.store';
@@ -91,23 +88,6 @@
       handleError(error, 'Unable to connect to server');
     }
   });
-
-  const dropHandler = async ({ dataTransfer }: DragEvent) => {
-    const files = dataTransfer?.files;
-    if (!files) {
-      return;
-    }
-
-    const filesArray: File[] = Array.from<File>(files);
-    albumId = ($page.route.id === '/(user)/albums/[albumId]' || undefined) && $page.params.albumId;
-
-    const isShare = $page.route.id === '/(user)/share/[key]' || undefined;
-    if (isShare) {
-      dragAndDropFilesStore.set({ isDragging: true, files: filesArray });
-    } else {
-      await fileUploadHandler(filesArray, albumId);
-    }
-  };
 </script>
 
 <svelte:head>
@@ -153,8 +133,4 @@
 
 {#if $user?.isAdmin}
   <VersionAnnouncementBox />
-{/if}
-
-{#if $page.route.id?.includes('(user)')}
-  <UploadCover {dropHandler} />
 {/if}

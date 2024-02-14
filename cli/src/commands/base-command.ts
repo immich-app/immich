@@ -1,21 +1,20 @@
 import { ServerVersionResponseDto, UserResponseDto } from '@immich/sdk';
-import { ImmichApi } from '../services/api.service';
 import { SessionService } from '../services/session.service';
+import { ImmichApi } from 'src/services/api.service';
 
 export abstract class BaseCommand {
   protected sessionService!: SessionService;
-  protected immichApi!: ImmichApi;
   protected user!: UserResponseDto;
   protected serverVersion!: ServerVersionResponseDto;
 
-  constructor(options: { config?: string }) {
-    if (!options.config) {
+  constructor(options: { configDirectory?: string }) {
+    if (!options.configDirectory) {
       throw new Error('Config directory is required');
     }
-    this.sessionService = new SessionService(options.config);
+    this.sessionService = new SessionService(options.configDirectory);
   }
 
-  public async connect(): Promise<void> {
-    this.immichApi = await this.sessionService.connect();
+  public async connect(): Promise<ImmichApi> {
+    return await this.sessionService.connect();
   }
 }

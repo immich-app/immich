@@ -103,6 +103,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
       - name: Run setup typescript-sdk
         run: npm ci && npm run build
         working-directory: ./open-api/typescript-sdk
@@ -142,6 +147,11 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: "recursive"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
 
       - name: Run setup typescript-sdk
         run: npm ci && npm run build
@@ -195,6 +205,34 @@ jobs:
         run: npm run test:cov
         if: ${{ !cancelled() }}
 
+  web-e2e-tests:
+    name: Web (e2e)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./e2e
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run setup typescript-sdk
+        run: npm ci && npm run build
+        working-directory: ./open-api/typescript-sdk
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
+      - name: Docker build
+        run: docker compose -f docker/docker-compose.e2e.yml build
+        working-directory: ./
+
+      - name: Run e2e tests
+        run: npx playwright test
+
   mobile-unit-tests:
     name: Mobile
     runs-on: ubuntu-latest
@@ -237,7 +275,7 @@ jobs:
           poetry run mypy --install-types --non-interactive --strict app/
       - name: Run tests and coverage
         run: |
-          poetry run pytest --cov app
+          poetry run pytest app --cov=app --cov-report term-missing
 
   generated-api-up-to-date:
     name: OpenAPI Clients
@@ -265,7 +303,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: tensorchord/pgvecto-rs:pg14-v0.1.11@sha256:0335a1a22f8c5dd1b697f14f079934f5152eaaa216c09b61e293be285491f8ee
+        image: tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:90724186f0a3517cf6914295b5ab410db9ce23190a2d9d0b9dd6463e3fa298f0
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_USER: postgres

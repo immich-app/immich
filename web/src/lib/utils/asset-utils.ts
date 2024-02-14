@@ -1,33 +1,32 @@
 import { notificationController, NotificationType } from '$lib/components/shared-components/notification/notification';
 import { downloadManager } from '$lib/stores/download';
+import { api } from '@api';
 import {
-  api,
-  type BulkIdResponseDto,
+  addAssetsToAlbum as addAssets,
   type AssetResponseDto,
-  type DownloadResponseDto,
+  type AssetTypeEnum,
+  type BulkIdResponseDto,
   type DownloadInfoDto,
-  AssetTypeEnum,
+  type DownloadResponseDto,
   type UserResponseDto,
-} from '@api';
-import { handleError } from './handle-error';
+} from '@immich/sdk';
 import { DateTime } from 'luxon';
+import { handleError } from './handle-error';
 
 export const addAssetsToAlbum = async (albumId: string, assetIds: Array<string>): Promise<BulkIdResponseDto[]> =>
-  api.albumApi
-    .addAssetsToAlbum({
-      id: albumId,
-      bulkIdsDto: { ids: assetIds },
-      key: api.getKey(),
-    })
-    .then(({ data: results }) => {
-      const count = results.filter(({ success }) => success).length;
-      notificationController.show({
-        type: NotificationType.Info,
-        message: `Added ${count} asset${count === 1 ? '' : 's'}`,
-      });
-
-      return results;
+  addAssets({
+    id: albumId,
+    bulkIdsDto: { ids: assetIds },
+    key: api.getKey(),
+  }).then((results) => {
+    const count = results.filter(({ success }) => success).length;
+    notificationController.show({
+      type: NotificationType.Info,
+      message: `Added ${count} asset${count === 1 ? '' : 's'}`,
     });
+
+    return results;
+  });
 
 export const downloadBlob = (data: Blob, filename: string) => {
   const url = URL.createObjectURL(data);

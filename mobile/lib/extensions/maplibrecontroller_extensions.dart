@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/services.dart';
@@ -6,6 +7,8 @@ import 'package:immich_mobile/modules/map/utils/map_utils.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
 extension MapMarkers on MaplibreMapController {
+  static var _completer = Completer()..complete();
+
   Future<void> addGeoJSONSourceForMarkers(List<MapMarker> markers) async {
     return addSource(
       MapUtils.defaultSourceId,
@@ -16,6 +19,12 @@ extension MapMarkers on MaplibreMapController {
   }
 
   Future<void> reloadAllLayersForMarkers(List<MapMarker> markers) async {
+    // Wait for previous reload to complete
+    if (!_completer.isCompleted) {
+      return _completer.future;
+    }
+    _completer = Completer();
+
     // !! Make sure to remove layers before sources else the native
     // maplibre library would crash when removing the source saying that
     // the source is still in use
@@ -36,6 +45,8 @@ extension MapMarkers on MaplibreMapController {
       MapUtils.defaultHeatMapLayerId,
       MapUtils.defaultHeatMapLayerProperties,
     );
+
+    _completer.complete();
   }
 
   Future<Symbol?> addMarkerAtLatLng(LatLng centre) async {

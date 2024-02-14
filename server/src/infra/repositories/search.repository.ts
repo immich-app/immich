@@ -1,16 +1,29 @@
-import { Embedding, EmbeddingSearch, FaceEmbeddingSearch, FaceSearchResult, ISmartInfoRepository } from '@app/domain';
+import {
+  AssetSearchOptions,
+  DatabaseExtension,
+  Embedding,
+  FaceEmbeddingSearch,
+  FaceSearchResult,
+  ISearchRepository,
+  Paginated,
+  PaginationMode,
+  PaginationResult,
+  SearchPaginationOptions,
+  SmartSearchOptions,
+} from '@app/domain';
 import { getCLIPModelInfo } from '@app/domain/smart-info/smart-info.constant';
 import { AssetEntity, AssetFaceEntity, SmartInfoEntity, SmartSearchEntity } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { vectorExt } from '../database.config';
 import { DummyValue, GenerateSql } from '../infra.util';
-import { asVector, isValidInteger } from '../infra.utils';
+import { asVector, isValidInteger, paginatedBuilder, searchAssetBuilder } from '../infra.utils';
 
 @Injectable()
-export class SmartInfoRepository implements ISmartInfoRepository {
-  private logger = new ImmichLogger(SmartInfoRepository.name);
+export class SearchRepository implements ISearchRepository {
+  private logger = new ImmichLogger(SearchRepository.name);
   private faceColumns: string[];
 
   constructor(
@@ -27,50 +40,74 @@ export class SmartInfoRepository implements ISmartInfoRepository {
 
   async init(modelName: string): Promise<void> {
     const { dimSize } = getCLIPModelInfo(modelName);
-    if (dimSize == null) {
-      throw new Error(`Invalid CLIP model name: ${modelName}`);
-    }
+    const curDimSize = await this.getDimSize();
+    this.logger.verbose(`Current database CLIP dimension size is ${curDimSize}`);
 
-    const currentDimSize = await this.getDimSize();
-    this.logger.verbose(`Current database CLIP dimension size is ${currentDimSize}`);
-
-    if (dimSize != currentDimSize) {
-      this.logger.log(`Dimension size of model ${modelName} is ${dimSize}, but database expects ${currentDimSize}.`);
+    if (dimSize != curDimSize) {
+      this.logger.log(`Dimension size of model ${modelName} is ${dimSize}, but database expects ${curDimSize}.`);
       await this.updateDimSize(dimSize);
     }
   }
 
   @GenerateSql({
-    params: [{ userIds: [DummyValue.UUID], embedding: Array.from({ length: 512 }, Math.random), numResults: 100 }],
+    params: [
+      { page: 1, size: 100 },
+      {
+        takenAfter: DummyValue.DATE,
+        lensModel: DummyValue.STRING,
+        ownerId: DummyValue.UUID,
+        withStacked: true,
+        isFavorite: true,
+      },
+    ],
   })
-  async searchCLIP({ userIds, embedding, numResults, withArchived }: EmbeddingSearch): Promise<AssetEntity[]> {
-    let results: AssetEntity[] = [];
+  async searchMetadata(pagination: SearchPaginationOptions, options: AssetSearchOptions): Paginated<AssetEntity> {
+    let builder = this.assetRepository.createQueryBuilder('asset');
+    builder = searchAssetBuilder(builder, options);
+
+    builder.orderBy('asset.fileCreatedAt', options.orderDirection ?? 'DESC');
+
+    return paginatedBuilder<AssetEntity>(builder, {
+      mode: PaginationMode.SKIP_TAKE,
+      skip: (pagination.page - 1) * pagination.size,
+      take: pagination.size,
+    });
+  }
+
+  @GenerateSql({
+    params: [
+      { page: 1, size: 100 },
+      {
+        takenAfter: DummyValue.DATE,
+        embedding: Array.from({ length: 512 }, Math.random),
+        lensModel: DummyValue.STRING,
+        withStacked: true,
+        isFavorite: true,
+        userIds: [DummyValue.UUID],
+      },
+    ],
+  })
+  async searchSmart(
+    pagination: SearchPaginationOptions,
+    { embedding, userIds, ...options }: SmartSearchOptions,
+  ): Paginated<AssetEntity> {
+    let results: PaginationResult<AssetEntity> = { items: [], hasNextPage: false };
+
     await this.assetRepository.manager.transaction(async (manager) => {
-      await manager.query(`SET LOCAL vectors.enable_prefilter = on`);
-
-      let query = manager
-        .createQueryBuilder(AssetEntity, 'a')
-        .innerJoin('a.smartSearch', 's')
-        .leftJoinAndSelect('a.exifInfo', 'e')
-        .where('a.ownerId IN (:...userIds )')
-
-        .orderBy('s.embedding <=> :embedding')
+      let builder = manager.createQueryBuilder(AssetEntity, 'asset');
+      builder = searchAssetBuilder(builder, options);
+      builder
+        .innerJoin('asset.smartSearch', 'search')
+        .andWhere('asset.ownerId IN (:...userIds )')
+        .orderBy('search.embedding <=> :embedding')
         .setParameters({ userIds, embedding: asVector(embedding) });
 
-      if (!withArchived) {
-        query.andWhere('a.isArchived = false');
-      }
-      query.andWhere('a.isVisible = true').andWhere('a.fileCreatedAt < NOW()');
-
-      if (numResults) {
-        if (!isValidInteger(numResults, { min: 1 })) {
-          throw new Error(`Invalid value for 'numResults': ${numResults}`);
-        }
-        query = query.limit(numResults);
-        await manager.query(`SET LOCAL vectors.k = '${numResults}'`);
-      }
-
-      results = await query.getMany();
+      await manager.query(this.getRuntimeConfig(pagination.size));
+      results = await paginatedBuilder<AssetEntity>(builder, {
+        mode: PaginationMode.LIMIT_OFFSET,
+        skip: (pagination.page - 1) * pagination.size,
+        take: pagination.size,
+      });
     });
 
     return results;
@@ -93,36 +130,34 @@ export class SmartInfoRepository implements ISmartInfoRepository {
     maxDistance,
     hasPerson,
   }: FaceEmbeddingSearch): Promise<FaceSearchResult[]> {
+    if (!isValidInteger(numResults, { min: 1 })) {
+      throw new Error(`Invalid value for 'numResults': ${numResults}`);
+    }
+
+    // setting this too low messes with prefilter recall
+    numResults = Math.max(numResults, 64);
+
     let results: Array<AssetFaceEntity & { distance: number }> = [];
     await this.assetRepository.manager.transaction(async (manager) => {
-      await manager.query(`SET LOCAL vectors.enable_prefilter = on`);
-      let cte = manager
+      const cte = manager
         .createQueryBuilder(AssetFaceEntity, 'faces')
-        .select('1 + (faces.embedding <=> :embedding)', 'distance')
+        .select('faces.embedding <=> :embedding', 'distance')
         .innerJoin('faces.asset', 'asset')
         .where('asset.ownerId IN (:...userIds )')
-        .orderBy('1 + (faces.embedding <=> :embedding)')
+        .orderBy('faces.embedding <=> :embedding')
         .setParameters({ userIds, embedding: asVector(embedding) });
 
-      if (numResults) {
-        if (!isValidInteger(numResults, { min: 1 })) {
-          throw new Error(`Invalid value for 'numResults': ${numResults}`);
-        }
-        cte = cte.limit(numResults);
-        if (numResults > 64) {
-          // setting k too low messes with prefilter recall
-          await manager.query(`SET LOCAL vectors.k = '${numResults}'`);
-        }
-      }
+      cte.limit(numResults);
 
       if (hasPerson) {
-        cte = cte.andWhere('faces."personId" IS NOT NULL');
+        cte.andWhere('faces."personId" IS NOT NULL');
       }
 
       for (const col of this.faceColumns) {
         cte.addSelect(`faces.${col}`, col);
       }
 
+      await manager.query(this.getRuntimeConfig(numResults));
       results = await manager
         .createQueryBuilder()
         .select('res.*')
@@ -131,7 +166,6 @@ export class SmartInfoRepository implements ISmartInfoRepository {
         .where('res.distance <= :maxDistance', { maxDistance })
         .getRawMany();
     });
-
     return results.map((row) => ({
       face: this.assetFaceRepository.create(row),
       distance: row.distance,
@@ -159,8 +193,8 @@ export class SmartInfoRepository implements ISmartInfoRepository {
       throw new Error(`Invalid CLIP dimension size: ${dimSize}`);
     }
 
-    const currentDimSize = await this.getDimSize();
-    if (currentDimSize === dimSize) {
+    const curDimSize = await this.getDimSize();
+    if (curDimSize === dimSize) {
       return;
     }
 
@@ -176,14 +210,14 @@ export class SmartInfoRepository implements ISmartInfoRepository {
 
       await manager.query(`
         CREATE INDEX clip_index ON smart_search
-          USING vectors (embedding cosine_ops) WITH (options = $$
+          USING vectors (embedding vector_cos_ops) WITH (options = $$
           [indexing.hnsw]
           m = 16
           ef_construction = 300
           $$)`);
     });
 
-    this.logger.log(`Successfully updated database CLIP dimension size from ${currentDimSize} to ${dimSize}.`);
+    this.logger.log(`Successfully updated database CLIP dimension size from ${curDimSize} to ${dimSize}.`);
   }
 
   private async getDimSize(): Promise<number> {
@@ -201,5 +235,18 @@ export class SmartInfoRepository implements ISmartInfoRepository {
       throw new Error(`Could not retrieve CLIP dimension size`);
     }
     return dimSize;
+  }
+
+  private getRuntimeConfig(numResults?: number): string {
+    if (vectorExt === DatabaseExtension.VECTOR) {
+      return 'SET LOCAL hnsw.ef_search = 1000;'; // mitigate post-filter recall
+    }
+
+    let runtimeConfig = 'SET LOCAL vectors.enable_prefilter=on; SET LOCAL vectors.search_mode=vbase;';
+    if (numResults) {
+      runtimeConfig += ` SET LOCAL vectors.hnsw_ef_search = ${numResults};`;
+    }
+
+    return runtimeConfig;
   }
 }

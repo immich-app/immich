@@ -125,6 +125,19 @@ class ControlBottomAppBar extends ConsumerWidget {
                 .tr(),
             onPressed: enabled ? onFavorite : null,
           ),
+        if (hasLocal && hasRemote && onDelete != null)
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 90),
+            child: ControlBoxButton(
+              iconData: Icons.delete_sweep_outlined,
+              label: "control_bottom_app_bar_delete".tr(),
+              onPressed: enabled
+                  ? () => handleRemoteDelete(!trashEnabled, onDelete!)
+                  : null,
+              onLongPressed:
+                  enabled ? () => showForceDeleteDialog(onDelete!) : null,
+            ),
+          ),
         if (hasRemote && onDeleteServer != null)
           ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 85),
@@ -170,19 +183,6 @@ class ControlBottomAppBar extends ConsumerWidget {
                       );
                     }
                   : null,
-            ),
-          ),
-        if (hasLocal && hasRemote && onDelete != null)
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 90),
-            child: ControlBoxButton(
-              iconData: Icons.delete_sweep_outlined,
-              label: "control_bottom_app_bar_delete".tr(),
-              onPressed: enabled
-                  ? () => handleRemoteDelete(!trashEnabled, onDelete!)
-                  : null,
-              onLongPressed:
-                  enabled ? () => showForceDeleteDialog(onDelete!) : null,
             ),
           ),
         if (hasRemote && onEditTime != null)

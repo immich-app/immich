@@ -29,6 +29,7 @@ import {
   IMMICH_ACCESS_COOKIE,
   IMMICH_API_KEY_HEADER,
   IMMICH_AUTH_TYPE_COOKIE,
+  IMMICH_IS_AUTHENTICATED,
   LOGIN_URL,
   MOBILE_REDIRECT,
 } from './auth.constant';
@@ -42,7 +43,6 @@ import {
   OAuthAuthorizeResponseDto,
   OAuthCallbackDto,
   OAuthConfigDto,
-  OAuthConfigResponseDto,
   SignUpDto,
   mapLoginResponse,
   mapUserToken,
@@ -199,28 +199,6 @@ export class AuthService {
 
   getMobileRedirect(url: string) {
     return `${MOBILE_REDIRECT}?${url.split('?')[1] || ''}`;
-  }
-
-  async generateConfig(dto: OAuthConfigDto): Promise<OAuthConfigResponseDto> {
-    const config = await this.configCore.getConfig();
-    const response = {
-      enabled: config.oauth.enabled,
-      passwordLoginEnabled: config.passwordLogin.enabled,
-    };
-
-    if (!response.enabled) {
-      return response;
-    }
-
-    const { scope, buttonText, autoLaunch } = config.oauth;
-    const oauthClient = await this.getOAuthClient(config);
-    const url = oauthClient.authorizationUrl({
-      redirect_uri: this.normalize(config, dto.redirectUri),
-      scope,
-      state: generators.state(),
-    });
-
-    return { ...response, buttonText, url, autoLaunch };
   }
 
   async authorize(dto: OAuthConfigDto): Promise<OAuthAuthorizeResponseDto> {
@@ -452,14 +430,17 @@ export class AuthService {
 
     let authTypeCookie = '';
     let accessTokenCookie = '';
+    let isAuthenticatedCookie = '';
 
     if (isSecure) {
       accessTokenCookie = `${IMMICH_ACCESS_COOKIE}=${loginResponse.accessToken}; HttpOnly; Secure; Path=/; Max-Age=${maxAge}; SameSite=Lax;`;
       authTypeCookie = `${IMMICH_AUTH_TYPE_COOKIE}=${authType}; HttpOnly; Secure; Path=/; Max-Age=${maxAge}; SameSite=Lax;`;
+      isAuthenticatedCookie = `${IMMICH_IS_AUTHENTICATED}=true; Secure; Path=/; Max-Age=${maxAge}; SameSite=Lax;`;
     } else {
       accessTokenCookie = `${IMMICH_ACCESS_COOKIE}=${loginResponse.accessToken}; HttpOnly; Path=/; Max-Age=${maxAge}; SameSite=Lax;`;
       authTypeCookie = `${IMMICH_AUTH_TYPE_COOKIE}=${authType}; HttpOnly; Path=/; Max-Age=${maxAge}; SameSite=Lax;`;
+      isAuthenticatedCookie = `${IMMICH_IS_AUTHENTICATED}=true; Path=/; Max-Age=${maxAge}; SameSite=Lax;`;
     }
-    return [accessTokenCookie, authTypeCookie];
+    return [accessTokenCookie, authTypeCookie, isAuthenticatedCookie];
   }
 }

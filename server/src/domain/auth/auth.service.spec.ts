@@ -429,27 +429,6 @@ describe('AuthService', () => {
     });
   });
 
-  describe('generateConfig', () => {
-    it('should work when oauth is not configured', async () => {
-      configMock.load.mockResolvedValue(systemConfigStub.disabled);
-      await expect(sut.generateConfig({ redirectUri: 'http://callback' })).resolves.toEqual({
-        enabled: false,
-        passwordLoginEnabled: false,
-      });
-    });
-
-    it('should generate the config', async () => {
-      configMock.load.mockResolvedValue(systemConfigStub.enabled);
-      await expect(sut.generateConfig({ redirectUri: 'http://redirect' })).resolves.toEqual({
-        enabled: true,
-        buttonText: 'OAuth',
-        url: 'http://authorization-url',
-        autoLaunch: false,
-        passwordLoginEnabled: true,
-      });
-    });
-  });
-
   describe('callback', () => {
     it('should throw an error if OAuth is not enabled', async () => {
       await expect(sut.callback({ url: '' }, loginDetails)).rejects.toBeInstanceOf(BadRequestException);

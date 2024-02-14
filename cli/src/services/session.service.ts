@@ -3,7 +3,6 @@ import { access, constants, mkdir, readFile, unlink, writeFile } from 'node:fs/p
 import path from 'node:path';
 import yaml from 'yaml';
 import { ImmichApi } from './api.service';
-
 class LoginError extends Error {
   constructor(message: string) {
     super(message);
@@ -51,12 +50,12 @@ export class SessionService {
 
     const api = new ImmichApi(instanceUrl, apiKey);
 
-    const { data: pingResponse } = await api.serverInfoApi.pingServer().catch((error) => {
-      throw new Error(`Failed to connect to server ${api.instanceUrl}: ${error.message}`);
+    const pingResponse = await api.pingServer().catch((error) => {
+      throw new Error(`Failed to connect to server ${instanceUrl}: ${error.message}`, error);
     });
 
     if (pingResponse.res !== 'pong') {
-      throw new Error(`Could not parse response. Is Immich listening on ${api.instanceUrl}?`);
+      throw new Error(`Could not parse response. Is Immich listening on ${instanceUrl}?`);
     }
 
     return api;
@@ -68,7 +67,7 @@ export class SessionService {
     const api = new ImmichApi(instanceUrl, apiKey);
 
     // Check if server and api key are valid
-    const { data: userInfo } = await api.userApi.getMyUserInfo().catch((error) => {
+    const userInfo = await api.getMyUserInfo().catch((error) => {
       throw new LoginError(`Failed to connect to server ${instanceUrl}: ${error.message}`);
     });
 
@@ -82,7 +81,7 @@ export class SessionService {
       }
     }
 
-    await writeFile(this.authPath, yaml.stringify({ instanceUrl, apiKey }));
+    await writeFile(this.authPath, yaml.stringify({ instanceUrl, apiKey }), { mode: 0o600 });
 
     console.log('Wrote auth info to ' + this.authPath);
 

@@ -75,7 +75,7 @@ class SharingPage extends HookConsumerWidget {
               contentPadding: const EdgeInsets.symmetric(horizontal: 12),
               leading: ClipRRect(
                 borderRadius: const BorderRadius.all(Radius.circular(8)),
-                child: ImmichImage(
+                child: ImmichImage.thumbnail(
                   album.thumbnail,
                   width: 60,
                   height: 60,

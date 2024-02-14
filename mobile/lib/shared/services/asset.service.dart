@@ -129,7 +129,7 @@ class AssetService {
     // fileSize is always filled on the server but not set on client
     if (a.exifInfo?.fileSize == null) {
       if (a.isRemote) {
-        final dto = await _apiService.assetApi.getAssetById(a.remoteId!);
+        final dto = await _apiService.assetApi.getAssetInfo(a.remoteId!);
         if (dto != null && dto.exifInfo != null) {
           final newExif = Asset.remote(dto).exifInfo!.copyWith(id: a.id);
           if (newExif != a.exifInfo) {

@@ -8,12 +8,6 @@
   import { mdiArrowLeft, mdiClose, mdiMerge } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
 
-  const dispatch = createEventDispatcher<{
-    reject: void;
-    confirm: [PersonResponseDto, PersonResponseDto];
-    close: void;
-  }>();
-
   export let personMerge1: PersonResponseDto;
   export let personMerge2: PersonResponseDto;
   export let potentialMergePeople: PersonResponseDto[];
@@ -22,12 +16,29 @@
 
   const title = personMerge2.name;
 
+  const dispatch = createEventDispatcher<{
+    reject: void;
+    confirm: [PersonResponseDto, PersonResponseDto];
+    close: void;
+  }>();
+
+  const handleKeyboardPress = (event: KeyboardEvent) => {
+    switch (event.key) {
+      case 'Escape': {
+        dispatch('close');
+        return;
+      }
+    }
+  };
+
   const changePersonToMerge = (newperson: PersonResponseDto) => {
     const index = potentialMergePeople.indexOf(newperson);
     [potentialMergePeople[index], personMerge2] = [personMerge2, potentialMergePeople[index]];
     choosePersonToMerge = false;
   };
 </script>
+
+<svelte:document on:keypress={handleKeyboardPress} />
 
 <FullScreenModal on:clickOutside={() => dispatch('close')}>
   <div class="flex h-full w-full place-content-center place-items-center overflow-hidden">
@@ -114,7 +125,7 @@
         <p class="text-sm text-gray-500 dark:text-gray-300">They will be merged together</p>
       </div>
       <div class="mt-8 flex w-full gap-4 px-4 pb-4">
-        <Button color="gray" fullwidth on:click={() => dispatch('reject')}>No</Button>
+        <Button fullwidth color="gray" on:click={() => dispatch('reject')}>No</Button>
         <Button fullwidth on:click={() => dispatch('confirm', [personMerge1, personMerge2])}>Yes</Button>
       </div>
     </div>

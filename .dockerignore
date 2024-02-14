@@ -24,5 +24,7 @@ cli/.reverse-geocoding-dump/
 cli/upload/
 cli/dist/
 
+e2e/
+
 open-api/typescript-sdk/node_modules/
 open-api/typescript-sdk/build/

@@ -63,14 +63,15 @@ export const dateFormats = {
 export enum QueryParameter {
   ACTION = 'action',
   ASSET_INDEX = 'assetIndex',
-  SMART_SEARCH = 'smartSearch',
+  IS_OPEN = 'isOpen',
   MEMORY_INDEX = 'memoryIndex',
   ONBOARDING_STEP = 'step',
   OPEN_SETTING = 'openSetting',
-  QUERY = 'query',
   PREVIOUS_ROUTE = 'previousRoute',
+  QUERY = 'query',
   SEARCHED_PEOPLE = 'searchedPeople',
   SEARCH_TERM = 'q',
+  SMART_SEARCH = 'smartSearch',
 }
 
 export enum OpenSettingQueryParameterValue {

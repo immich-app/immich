@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { api } from '@api';
-  import { createEventDispatcher } from 'svelte';
-  import ImmichLogo from '../shared-components/immich-logo.svelte';
-  import { notificationController, NotificationType } from '../shared-components/notification/notification';
-  import Button from '../elements/buttons/button.svelte';
-  import { convertToBytes } from '$lib/utils/byte-converter';
   import { serverInfo } from '$lib/stores/server-info.store';
+  import { convertToBytes } from '$lib/utils/byte-converter';
+  import { handleError } from '$lib/utils/handle-error';
+  import { createUser } from '@immich/sdk';
+  import { createEventDispatcher } from 'svelte';
+  import Button from '../elements/buttons/button.svelte';
+  import ImmichLogo from '../shared-components/immich-logo.svelte';
 
   let error: string;
   let success: string;
@@ -49,7 +49,7 @@
       const quotaSize = form.get('quotaSize');
 
       try {
-        const { status } = await api.userApi.createUser({
+        await createUser({
           createUserDto: {
             email: String(email),
             password: String(password),
@@ -58,26 +58,15 @@
           },
         });
 
-        if (status === 201) {
-          success = 'New user created';
+        success = 'New user created';
 
-          dispatch('submit');
+        dispatch('submit');
 
-          isCreatingUser = false;
-          return;
-        } else {
-          error = 'Error create user account';
-          isCreatingUser = false;
-        }
+        return;
       } catch (error) {
+        handleError(error, 'Unable to create user');
+      } finally {
         isCreatingUser = false;
-
-        console.log('[ERROR] registerUser', error);
-
-        notificationController.show({
-          message: `Error create new user, check console for more detail`,
-          type: NotificationType.Error,
-        });
       }
     }
   }

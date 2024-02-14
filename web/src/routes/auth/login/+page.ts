@@ -1,11 +1,11 @@
 import { AppRoute } from '$lib/constants';
-import { api } from '@api';
+import { getServerConfig } from '@immich/sdk';
 import { redirect } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
 
 export const load = (async () => {
-  const { data } = await api.serverInfoApi.getServerConfig();
-  if (!data.isInitialized) {
+  const { isInitialized } = await getServerConfig();
+  if (!isInitialized) {
     // Admin not registered
     redirect(302, AppRoute.AUTH_REGISTER);
   }

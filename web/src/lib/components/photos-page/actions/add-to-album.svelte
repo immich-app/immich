@@ -6,11 +6,12 @@
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
+  import { AppRoute } from '$lib/constants';
   import { addAssetsToAlbum } from '$lib/utils/asset-utils';
-  import { type AlbumResponseDto, api } from '@api';
+  import { type AlbumResponseDto } from '@api';
+  import { createAlbum } from '@immich/sdk';
   import { getMenuContext } from '../asset-select-context-menu.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
-  import { AppRoute } from '$lib/constants';
 
   export let shared = false;
   let showAlbumPicker = false;
@@ -27,8 +28,8 @@
     showAlbumPicker = false;
 
     const assetIds = [...getAssets()].map((asset) => asset.id);
-    api.albumApi.createAlbum({ createAlbumDto: { albumName, assetIds } }).then((response) => {
-      const { id, albumName } = response.data;
+    createAlbum({ createAlbumDto: { albumName, assetIds } }).then((response) => {
+      const { id, albumName } = response;
 
       notificationController.show({
         message: `Added ${assetIds.length} to ${albumName}`,

@@ -1,4 +1,4 @@
-import type { Configuration } from '@immich/sdk';
+import type { Configuration } from '@immich/sdk/axios';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export type ApiFp = (configuration: Configuration) => Record<any, (...arguments_: any) => any>;

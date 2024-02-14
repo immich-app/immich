@@ -1,6 +1,6 @@
 ARG DEVICE=cpu
 
-FROM python:3.11-bookworm@sha256:8d773321add21be41f1f891b43177a41aaae0d1b83f3638872ec84636179594a as builder-cpu
+FROM python:3.11-bookworm@sha256:8e697181d24bd77cc4251fdd37e4cdd6d725c5de2ed63b9bc8db77357400c5e2 as builder-cpu
 
 FROM openvino/ubuntu22_runtime:2023.1.0@sha256:002842a9005ba01543b7169ff6f14ecbec82287f09c4d1dd37717f0a8e8754a7 as builder-openvino
 USER root
@@ -34,7 +34,7 @@ RUN python3 -m venv /opt/venv
 COPY poetry.lock pyproject.toml ./
 RUN poetry install --sync --no-interaction --no-ansi --no-root --with ${DEVICE} --without dev
 
-FROM python:3.11-slim-bookworm@sha256:d11b9bd5e49ea7401753d78f4d3b56f3aec952b85b49bcae88981f0452818e0b as prod-cpu
+FROM python:3.11-slim-bookworm@sha256:ce81dc539f0aedc9114cae640f8352fad83d37461c24a3615b01f081d0c0583a as prod-cpu
 
 FROM openvino/ubuntu22_runtime:2023.1.0@sha256:002842a9005ba01543b7169ff6f14ecbec82287f09c4d1dd37717f0a8e8754a7 as prod-openvino
 USER root
@@ -52,7 +52,8 @@ ENV LD_LIBRARY_PATH=/opt/armnn
 RUN apt-get update && apt-get install -y --no-install-recommends ocl-icd-libopencl1 mesa-opencl-icd && \
     rm -rf /var/lib/apt/lists/* && \
     mkdir --parents /etc/OpenCL/vendors && \
-    echo "/usr/lib/libmali.so" > /etc/OpenCL/vendors/mali.icd
+    echo "/usr/lib/libmali.so" > /etc/OpenCL/vendors/mali.icd && \
+    mkdir /opt/armnn
 
 COPY --from=builder-armnn \
       /opt/armnn/libarmnn.so.?? \

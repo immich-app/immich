@@ -36,21 +36,6 @@ void main() {
       // TODO
     });
 
-    //Future<MultipartFile> downloadArchiveOld(AssetIdsDto assetIdsDto, { String key }) async
-    test('test downloadArchiveOld', () async {
-      // TODO
-    });
-
-    //Future<MultipartFile> downloadFileOld(String id, { String key }) async
-    test('test downloadFileOld', () async {
-      // TODO
-    });
-
-    //Future emptyTrashOld() async
-    test('test emptyTrashOld', () async {
-      // TODO
-    });
-
     // Get all AssetEntity belong to the user
     //
     //Future<List<AssetResponseDto>> getAllAssets({ String ifNoneMatch, bool isArchived, bool isFavorite, int skip, int take, DateTime updatedAfter, DateTime updatedBefore, String userId }) async
@@ -62,13 +47,6 @@ void main() {
     //
     //Future<List<String>> getAllUserAssetsByDeviceId(String deviceId) async
     test('test getAllUserAssetsByDeviceId', () async {
-      // TODO
-    });
-
-    // Get a single asset's information
-    //
-    //Future<AssetResponseDto> getAssetById(String id, { String key }) async
-    test('test getAssetById', () async {
       // TODO
     });
 
@@ -102,11 +80,6 @@ void main() {
       // TODO
     });
 
-    //Future<DownloadResponseDto> getDownloadInfoOld(DownloadInfoDto downloadInfoDto, { String key }) async
-    test('test getDownloadInfoOld', () async {
-      // TODO
-    });
-
     //Future<List<MapMarkerResponseDto>> getMapMarkers({ DateTime fileCreatedAfter, DateTime fileCreatedBefore, bool isArchived, bool isFavorite }) async
     test('test getMapMarkers', () async {
       // TODO
@@ -132,22 +105,12 @@ void main() {
       // TODO
     });
 
-    //Future restoreAssetsOld(BulkIdsDto bulkIdsDto) async
-    test('test restoreAssetsOld', () async {
-      // TODO
-    });
-
-    //Future restoreTrashOld() async
-    test('test restoreTrashOld', () async {
-      // TODO
-    });
-
     //Future runAssetJobs(AssetJobsDto assetJobsDto) async
     test('test runAssetJobs', () async {
       // TODO
     });
 
-    //Future<List<AssetResponseDto>> searchAssets({ String checksum, String city, String country, DateTime createdAfter, DateTime createdBefore, String deviceAssetId, String deviceId, String encodedVideoPath, String id, bool isArchived, bool isEncoded, bool isExternal, bool isFavorite, bool isMotion, bool isOffline, bool isReadOnly, bool isVisible, String lensModel, String libraryId, String make, String model, AssetOrder order, String originalFileName, String originalPath, num page, String resizePath, num size, String state, DateTime takenAfter, DateTime takenBefore, DateTime trashedAfter, DateTime trashedBefore, AssetTypeEnum type, DateTime updatedAfter, DateTime updatedBefore, String webpPath, bool withDeleted, bool withExif, bool withPeople, bool withStacked }) async
+    //Future<List<AssetResponseDto>> searchAssets({ String checksum, String city, String country, DateTime createdAfter, DateTime createdBefore, String deviceAssetId, String deviceId, String encodedVideoPath, String id, bool isArchived, bool isEncoded, bool isExternal, bool isFavorite, bool isMotion, bool isOffline, bool isReadOnly, bool isVisible, String lensModel, String libraryId, String make, String model, AssetOrder order, String originalFileName, String originalPath, num page, String resizePath, num size, String state, DateTime takenAfter, DateTime takenBefore, DateTime trashedAfter, DateTime trashedBefore, AssetTypeEnum type, DateTime updatedAfter, DateTime updatedBefore, String webpPath, bool withArchived, bool withDeleted, bool withExif, bool withPeople, bool withStacked }) async
     test('test searchAssets', () async {
       // TODO
     });

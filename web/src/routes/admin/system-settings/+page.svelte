@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { page } from '$app/stores';
   import FFmpegSettings from '$lib/components/admin-page/settings/ffmpeg/ffmpeg-settings.svelte';
   import JobSettings from '$lib/components/admin-page/settings/job-settings/job-settings.svelte';
   import MachineLearningSettings from '$lib/components/admin-page/settings/machine-learning-settings/machine-learning-settings.svelte';
@@ -17,20 +16,34 @@
   import { downloadManager } from '$lib/stores/download';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { downloadBlob } from '$lib/utils/asset-utils';
-  import { type SystemConfigDto, copyToClipboard } from '@api';
+  import { copyToClipboard } from '@api';
   import Icon from '$lib/components/elements/icon.svelte';
   import type { PageData } from './$types';
   import NewVersionCheckSettings from '$lib/components/admin-page/settings/new-version-check-settings/new-version-check-settings.svelte';
   import LibrarySettings from '$lib/components/admin-page/settings/library-settings/library-settings.svelte';
   import LoggingSettings from '$lib/components/admin-page/settings/logging-settings/logging-settings.svelte';
   import { mdiAlert, mdiContentCopy, mdiDownload } from '@mdi/js';
-  import _ from 'lodash';
   import AdminSettings from '$lib/components/admin-page/settings/admin-settings.svelte';
 
   export let data: PageData;
 
   let config = data.configs;
-  let openSettings = ($page.url.searchParams.get('open')?.split(',') || []) as Array<keyof SystemConfigDto>;
+
+  type Settings =
+    | typeof JobSettings
+    | typeof LibrarySettings
+    | typeof LoggingSettings
+    | typeof MachineLearningSettings
+    | typeof MapSettings
+    | typeof OAuthSettings
+    | typeof PasswordLoginSettings
+    | typeof ServerSettings
+    | typeof StorageTemplateSettings
+    | typeof ThemeSettings
+    | typeof ThumbnailSettings
+    | typeof TrashSettings
+    | typeof NewVersionCheckSettings
+    | typeof FFmpegSettings;
 
   const downloadConfig = () => {
     const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
@@ -41,90 +54,95 @@
     setTimeout(() => downloadManager.clear(downloadKey), 5000);
   };
 
-  const settings = [
+  const settings: Array<{
+    item: Settings;
+    title: string;
+    subtitle: string;
+    key: string;
+  }> = [
     {
       item: JobSettings,
       title: 'Job Settings',
       subtitle: 'Manage job concurrency',
-      isOpen: openSettings.includes('job'),
+      key: 'job',
     },
     {
       item: LibrarySettings,
       title: 'Library',
       subtitle: 'Manage library settings',
-      isOpen: openSettings.includes('library'),
+      key: 'library',
     },
     {
       item: LoggingSettings,
       title: 'Logging',
       subtitle: 'Manage log settings',
-      isOpen: openSettings.includes('logging'),
+      key: 'logging',
     },
     {
       item: MachineLearningSettings,
       title: 'Machine Learning Settings',
       subtitle: 'Manage machine learning features and settings',
-      isOpen: openSettings.includes('machineLearning'),
+      key: 'machine-learning',
     },
     {
       item: MapSettings,
       title: 'Map & GPS Settings',
       subtitle: 'Manage map related features and setting',
-      isOpen: openSettings.some((key) => ['map', 'reverseGeocoding'].includes(key)),
+      key: 'location',
     },
     {
       item: OAuthSettings,
       title: 'OAuth Authentication',
       subtitle: 'Manage the login with OAuth settings',
-      isOpen: openSettings.includes('oauth'),
+      key: 'oauth',
     },
     {
       item: PasswordLoginSettings,
       title: 'Password Authentication',
       subtitle: 'Manage the login with password settings',
-      isOpen: openSettings.includes('passwordLogin'),
+      key: 'password',
     },
     {
       item: ServerSettings,
       title: 'Server Settings',
       subtitle: 'Manage server settings',
-      isOpen: openSettings.includes('server'),
+      key: 'server',
     },
     {
       item: StorageTemplateSettings,
       title: 'Storage Template',
       subtitle: 'Manage the folder structure and file name of the upload asset',
-      isOpen: openSettings.includes('storageTemplate'),
+      key: 'storage-template',
     },
     {
       item: ThemeSettings,
       title: 'Theme Settings',
       subtitle: 'Manage customization of the Immich web interface',
-      isOpen: openSettings.includes('theme'),
+      key: 'theme',
     },
     {
       item: ThumbnailSettings,
       title: 'Thumbnail Settings',
       subtitle: 'Manage the resolution of thumbnail sizes',
-      isOpen: openSettings.includes('thumbnail'),
+      key: 'thumbnail',
     },
     {
       item: TrashSettings,
       title: 'Trash Settings',
       subtitle: 'Manage trash settings',
-      isOpen: openSettings.includes('trash'),
+      key: 'trash',
     },
     {
       item: NewVersionCheckSettings,
       title: 'Version Check',
       subtitle: 'Enable/disable the new version notification',
-      isOpen: openSettings.includes('newVersionCheck'),
+      key: 'version-check',
     },
     {
       item: FFmpegSettings,
       title: 'Video Transcoding Settings',
       subtitle: 'Manage the resolution and encoding information of the video files',
-      isOpen: openSettings.includes('ffmpeg'),
+      key: 'video-transcoding',
     },
   ];
 </script>
@@ -158,8 +176,8 @@
     <AdminSettings bind:config let:handleReset let:handleSave let:savedConfig let:defaultConfig>
       <section id="setting-content" class="flex place-content-center sm:mx-4">
         <section class="w-full pb-28 sm:w-5/6 md:w-[850px]">
-          {#each settings as { item, title, subtitle, isOpen }}
-            <SettingAccordion {title} {subtitle} {isOpen}>
+          {#each settings as { item, title, subtitle, key }}
+            <SettingAccordion {title} {subtitle} {key}>
               <svelte:component
                 this={item}
                 on:save={({ detail }) => handleSave(detail)}

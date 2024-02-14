@@ -1,4 +1,4 @@
-import { SearchExploreItem } from '@app/domain';
+import { AssetSearchOptions, SearchExploreItem } from '@app/domain';
 import { AssetEntity, AssetJobStatusEntity, AssetType, ExifEntity } from '@app/infra/entities';
 import { FindOptionsRelations, FindOptionsSelect } from 'typeorm';
 import { Paginated, PaginationOptions } from '../domain.util';
@@ -9,64 +9,6 @@ export interface AssetStatsOptions {
   isFavorite?: boolean;
   isArchived?: boolean;
   isTrashed?: boolean;
-}
-
-export interface AssetSearchOptions {
-  id?: string;
-  libraryId?: string;
-  deviceAssetId?: string;
-  deviceId?: string;
-  ownerId?: string;
-  type?: AssetType;
-  checksum?: Buffer;
-
-  isArchived?: boolean;
-  isEncoded?: boolean;
-  isExternal?: boolean;
-  isFavorite?: boolean;
-  isMotion?: boolean;
-  isOffline?: boolean;
-  isReadOnly?: boolean;
-  isVisible?: boolean;
-
-  withDeleted?: boolean;
-  withStacked?: boolean;
-  withExif?: boolean;
-  withPeople?: boolean;
-  withSmartInfo?: boolean;
-  withSmartSearch?: boolean;
-  withFaces?: boolean;
-
-  createdBefore?: Date;
-  createdAfter?: Date;
-  updatedBefore?: Date;
-  updatedAfter?: Date;
-  trashedBefore?: Date;
-  trashedAfter?: Date;
-  takenBefore?: Date;
-  takenAfter?: Date;
-
-  originalFileName?: string;
-  originalPath?: string;
-  resizePath?: string;
-  webpPath?: string;
-  encodedVideoPath?: string;
-
-  city?: string;
-  state?: string;
-  country?: string;
-  make?: string;
-  model?: string;
-  lensModel?: string;
-
-  /** defaults to 'DESC' */
-  order?: 'ASC' | 'DESC';
-
-  /** defaults to 1 */
-  page?: number;
-
-  /** defaults to 250 */
-  size?: number;
 }
 
 export interface LivePhotoSearchOptions {
@@ -204,7 +146,6 @@ export interface IAssetRepository {
   getTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]>;
   upsertExif(exif: Partial<ExifEntity>): Promise<void>;
   upsertJobStatus(jobStatus: Partial<AssetJobStatusEntity>): Promise<void>;
-  search(options: AssetSearchOptions): Promise<AssetEntity[]>;
   getAssetIdByCity(userId: string, options: AssetExploreFieldOptions): Promise<SearchExploreItem<string>>;
   getAssetIdByTag(userId: string, options: AssetExploreFieldOptions): Promise<SearchExploreItem<string>>;
   searchMetadata(query: string, userIds: string[], options: MetadataSearchOptions): Promise<AssetEntity[]>;

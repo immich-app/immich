@@ -1,22 +1,21 @@
-import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import byteSize from 'byte-size';
 import cliProgress from 'cli-progress';
-import FormData from 'form-data';
-import fs, { ReadStream, createReadStream } from 'node:fs';
+import fs, { createReadStream } from 'node:fs';
 import { CrawlService } from '../services/crawl.service';
 import { BaseCommand } from './base-command';
 import { basename } from 'node:path';
 import { access, constants, stat, unlink } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import os from 'node:os';
+import { ImmichApi } from 'src/services/api.service';
 
 class Asset {
   readonly path: string;
   readonly deviceId!: string;
 
   deviceAssetId?: string;
-  fileCreatedAt?: string;
-  fileModifiedAt?: string;
+  fileCreatedAt?: Date;
+  fileModifiedAt?: Date;
   sidecarPath?: string;
   fileSize!: number;
   albumName?: string;
@@ -28,8 +27,8 @@ class Asset {
   async prepare() {
     const stats = await stat(this.path);
     this.deviceAssetId = `${basename(this.path)}-${stats.size}`.replaceAll(/\s+/g, '');
-    this.fileCreatedAt = stats.mtime.toISOString();
-    this.fileModifiedAt = stats.mtime.toISOString();
+    this.fileCreatedAt = stats.mtime;
+    this.fileModifiedAt = stats.mtime;
     this.fileSize = stats.size;
     this.albumName = this.extractAlbumName();
   }
@@ -47,14 +46,14 @@ class Asset {
 
     // TODO: doesn't xmp replace the file extension? Will need investigation
     const sideCarPath = `${this.path}.xmp`;
-    let sidecarData: ReadStream | undefined = undefined;
+    let sidecarData: Blob | undefined = undefined;
     try {
       await access(sideCarPath, constants.R_OK);
-      sidecarData = createReadStream(sideCarPath);
+      sidecarData = new File([await fs.openAsBlob(sideCarPath)], basename(sideCarPath));
     } catch {}
 
     const data: any = {
-      assetData: createReadStream(this.path),
+      assetData: new File([await fs.openAsBlob(this.path)], basename(this.path)),
       deviceAssetId: this.deviceAssetId,
       deviceId: 'CLI',
       fileCreatedAt: this.fileCreatedAt,
@@ -112,10 +111,10 @@ export class UploadCommand extends BaseCommand {
   uploadLength!: number;
 
   public async run(paths: string[], options: UploadOptionsDto): Promise<void> {
-    await this.connect();
+    const api = await this.connect();
 
-    const formatResponse = await this.immichApi.serverInfoApi.getSupportedMediaTypes();
-    const crawlService = new CrawlService(formatResponse.data.image, formatResponse.data.video);
+    const formatResponse = await api.getSupportedMediaTypes();
+    const crawlService = new CrawlService(formatResponse.image, formatResponse.video);
 
     const inputFiles: string[] = [];
     for (const pathArgument of paths) {
@@ -164,7 +163,7 @@ export class UploadCommand extends BaseCommand {
       }
     }
 
-    const { data: existingAlbums } = await this.immichApi.albumApi.getAllAlbums();
+    const existingAlbums = await api.getAllAlbums();
 
     uploadProgress.start(totalSize, 0);
     uploadProgress.update({ value_formatted: 0, total_formatted: byteSize(totalSize) });
@@ -183,15 +182,13 @@ export class UploadCommand extends BaseCommand {
         if (!options.skipHash) {
           const assetBulkUploadCheckDto = { assets: [{ id: asset.path, checksum: await asset.hash() }] };
 
-          const checkResponse = await this.immichApi.assetApi.checkBulkUpload({
-            assetBulkUploadCheckDto,
-          });
+          const checkResponse = await api.checkBulkUpload(assetBulkUploadCheckDto);
 
-          skipUpload = checkResponse.data.results[0].action === 'reject';
+          skipUpload = checkResponse.results[0].action === 'reject';
 
-          const isDuplicate = checkResponse.data.results[0].reason === 'duplicate';
+          const isDuplicate = checkResponse.results[0].reason === 'duplicate';
           if (isDuplicate) {
-            existingAssetId = checkResponse.data.results[0].assetId;
+            existingAssetId = checkResponse.results[0].assetId;
           }
 
           skipAsset = skipUpload && !isDuplicate;
@@ -200,8 +197,9 @@ export class UploadCommand extends BaseCommand {
         if (!skipAsset && !options.dryRun) {
           if (!skipUpload) {
             const formData = await asset.getUploadFormData();
-            const { data } = await this.uploadAsset(formData);
-            existingAssetId = data.id;
+            const response = await this.uploadAsset(api, formData);
+            const json = await response.json();
+            existingAssetId = json.id;
             uploadCounter++;
             totalSizeUploaded += asset.fileSize;
           }
@@ -209,17 +207,14 @@ export class UploadCommand extends BaseCommand {
           if ((options.album || options.albumName) && asset.albumName !== undefined) {
             let album = existingAlbums.find((album) => album.albumName === asset.albumName);
             if (!album) {
-              const { data } = await this.immichApi.albumApi.createAlbum({
-                createAlbumDto: { albumName: asset.albumName },
-              });
-              album = data;
+              const response = await api.createAlbum({ albumName: asset.albumName });
+              album = response;
               existingAlbums.push(album);
             }
 
             if (existingAssetId) {
-              await this.immichApi.albumApi.addAssetsToAlbum({
-                id: album.id,
-                bulkIdsDto: { ids: [existingAssetId] },
+              await api.addAssetsToAlbum(album.id, {
+                ids: [existingAssetId],
               });
             }
           }
@@ -260,22 +255,20 @@ export class UploadCommand extends BaseCommand {
     }
   }
 
-  private async uploadAsset(data: FormData): Promise<AxiosResponse> {
-    const url = this.immichApi.instanceUrl + '/asset/upload';
+  private async uploadAsset(api: ImmichApi, data: FormData): Promise<Response> {
+    const url = api.instanceUrl + '/asset/upload';
 
-    const config: AxiosRequestConfig = {
+    const response = await fetch(url, {
       method: 'post',
-      maxRedirects: 0,
-      url,
+      redirect: 'error',
       headers: {
-        'x-api-key': this.immichApi.apiKey,
-        ...data.getHeaders(),
+        'x-api-key': api.apiKey,
       },
-      maxContentLength: Number.POSITIVE_INFINITY,
-      maxBodyLength: Number.POSITIVE_INFINITY,
-      data,
-    };
-
-    return axios(config);
+      body: data,
+    });
+    if (response.status !== 200 && response.status !== 201) {
+      throw new Error(await response.text());
+    }
+    return response;
   }
 }

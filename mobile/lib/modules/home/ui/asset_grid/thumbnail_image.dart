@@ -136,10 +136,8 @@ class ThumbnailImage extends StatelessWidget {
           tag: isFromDto
               ? '${asset.remoteId}-$heroOffset'
               : asset.id + heroOffset,
-          child: ImmichImage(
+          child: ImmichImage.thumbnail(
             asset,
-            useGrayBoxPlaceholder: useGrayBoxPlaceholder,
-            fit: BoxFit.cover,
           ),
         ),
       );

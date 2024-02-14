@@ -3,19 +3,22 @@ import { Command, Option } from 'commander';
 import path from 'node:path';
 import os from 'node:os';
 import { version } from '../package.json';
-import { LoginCommand } from './commands/login';
+import { LoginCommand } from './commands/login.command';
 import { LogoutCommand } from './commands/logout.command';
 import { ServerInfoCommand } from './commands/server-info.command';
 import { UploadCommand } from './commands/upload.command';
 
-const homeDirectory = os.homedir();
-const configDirectory = path.join(homeDirectory, '.config/immich/');
+const defaultConfigDirectory = path.join(os.homedir(), '.config/immich/');
 
 const program = new Command()
   .name('immich')
   .version(version)
   .description('Command line interface for Immich')
-  .addOption(new Option('-d, --config', 'Configuration directory').env('IMMICH_CONFIG_DIR').default(configDirectory));
+  .addOption(
+    new Option('-d, --config-directory', 'Configuration directory where auth.yml will be stored')
+      .env('IMMICH_CONFIG_DIR')
+      .default(defaultConfigDirectory),
+  );
 
 program
   .command('upload')
@@ -24,7 +27,7 @@ program
   .addOption(new Option('-r, --recursive', 'Recursive').env('IMMICH_RECURSIVE').default(false))
   .addOption(new Option('-i, --ignore [paths...]', 'Paths to ignore').env('IMMICH_IGNORE_PATHS'))
   .addOption(new Option('-h, --skip-hash', "Don't hash files before upload").env('IMMICH_SKIP_HASH').default(false))
-  .addOption(new Option('-i, --include-hidden', 'Include hidden folders').env('IMMICH_INCLUDE_HIDDEN').default(false))
+  .addOption(new Option('-H, --include-hidden', 'Include hidden folders').env('IMMICH_INCLUDE_HIDDEN').default(false))
   .addOption(
     new Option('-a, --album', 'Automatically create albums based on folder name')
       .env('IMMICH_AUTO_CREATE_ALBUM')

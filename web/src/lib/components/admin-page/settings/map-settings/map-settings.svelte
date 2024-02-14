@@ -21,7 +21,7 @@
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" on:submit|preventDefault>
       <div class="flex flex-col gap-4">
-        <SettingAccordion title="Map Settings" subtitle="Manage map settings">
+        <SettingAccordion key="map" title="Map Settings" subtitle="Manage map settings">
           <div class="ml-4 mt-4 flex flex-col gap-4">
             <SettingSwitch
               title="ENABLED"
@@ -51,7 +51,7 @@
           </div></SettingAccordion
         >
 
-        <SettingAccordion title="Reverse Geocoding Settings">
+        <SettingAccordion key="reverse-geocoding" title="Reverse Geocoding Settings">
           <svelte:fragment slot="subtitle">
             <p class="text-sm dark:text-immich-dark-fg">
               Manage <a

@@ -20,7 +20,7 @@ import {
   IMediaRepository,
   IMoveRepository,
   IPersonRepository,
-  ISmartInfoRepository,
+  ISearchRepository,
   IStorageRepository,
   ISystemConfigRepository,
   JobItem,
@@ -61,7 +61,7 @@ export class PersonService {
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
-    @Inject(ISmartInfoRepository) private smartInfoRepository: ISmartInfoRepository,
+    @Inject(ISearchRepository) private smartInfoRepository: ISearchRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
   ) {
     this.access = AccessCore.create(accessRepository);
@@ -285,15 +285,7 @@ export class PersonService {
 
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
       return force
-        ? this.assetRepository.getAll(pagination, {
-            order: 'DESC',
-            withFaces: true,
-            withPeople: false,
-            withSmartInfo: false,
-            withSmartSearch: false,
-            withExif: false,
-            withStacked: false,
-          })
+        ? this.assetRepository.getAll(pagination, { orderDirection: 'DESC', withFaces: true })
         : this.assetRepository.getWithout(pagination, WithoutProperty.FACES);
     });
 
@@ -417,7 +409,13 @@ export class PersonService {
       numResults: machineLearning.facialRecognition.minFaces,
     });
 
-    this.logger.debug(`Face ${id} has ${matches.length} match${matches.length == 1 ? '' : 'es'}`);
+    // `matches` also includes the face itself
+    if (matches.length <= 1) {
+      this.logger.debug(`Face ${id} has no matches`);
+      return true;
+    }
+
+    this.logger.debug(`Face ${id} has ${matches.length} matches`);
 
     const isCore = matches.length >= machineLearning.facialRecognition.minFaces;
     if (!isCore && !deferred) {
@@ -426,7 +424,7 @@ export class PersonService {
       return true;
     }
 
-    let personId = matches.find((match) => match.face.personId)?.face.personId; // `matches` also includes the face itself
+    let personId = matches.find((match) => match.face.personId)?.face.personId;
     if (!personId) {
       const matchWithPerson = await this.smartInfoRepository.searchFaces({
         userIds: [face.asset.ownerId],

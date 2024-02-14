@@ -3,38 +3,25 @@
   import empty2Url from '$lib/assets/empty-2.svg';
   import AlbumCard from '$lib/components/album-page/album-card.svelte';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
-  import {
-    notificationController,
-    NotificationType,
-  } from '$lib/components/shared-components/notification/notification';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
   import { AppRoute } from '$lib/constants';
-  import { api } from '@api';
-  import { flip } from 'svelte/animate';
-  import type { PageData } from './$types';
+  import { createAlbum } from '@immich/sdk';
   import { mdiLink, mdiPlusBoxOutline } from '@mdi/js';
-  import Icon from '$lib/components/elements/icon.svelte';
+  import { flip } from 'svelte/animate';
+  import { handleError } from '../../../lib/utils/handle-error';
+  import type { PageData } from './$types';
 
   export let data: PageData;
 
   const createSharedAlbum = async () => {
     try {
-      const { data: newAlbum } = await api.albumApi.createAlbum({
-        createAlbumDto: {
-          albumName: '',
-        },
-      });
-
+      const newAlbum = await createAlbum({ createAlbumDto: { albumName: '' } });
       goto(`${AppRoute.ALBUMS}/${newAlbum.id}`);
     } catch (error) {
-      notificationController.show({
-        message: 'Error creating album, check console for more details',
-        type: NotificationType.Error,
-      });
-
-      console.log('Error [createAlbum]', error);
+      handleError(error, 'Unable to create album');
     }
   };
 </script>

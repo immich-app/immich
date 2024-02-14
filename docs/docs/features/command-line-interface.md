@@ -15,10 +15,12 @@ If you are looking to import your Google Photos takeout, we recommend this commu
 
 ## Requirements
 
-- Node.js 20.0 or above
+- Node.js 20 or above
 - Npm
 
-## Installation
+If you can't install node/npm, there is also a Docker version available below.
+
+## Installation (NPM)
 
 ```bash
 npm i -g @immich/cli
@@ -30,6 +32,16 @@ NOTE: if you previously installed the legacy CLI, you will need to uninstall it 
 npm uninstall -g immich
 ```
 
+## Installation (Docker)
+
+If npm is not available on your system you can try the Docker version
+
+```bash
+docker run -it -v "$(pwd)":/import:ro -e IMMICH_INSTANCE_URL=https://your-immich-instance/api -e IMMICH_API_KEY=your-api-key ghcr.io/immich-app/immich-cli:latest
+```
+
+Please modify the `IMMICH_INSTANCE_URL` and `IMMICH_API_KEY` environment variables as suitable. You can also use a Docker env file to store your sensitive API key.
+
 ## Usage
 
 ```
@@ -39,10 +51,11 @@ immich
 ```
 Usage: immich [options] [command]
 
-Immich command line interface
+Command line interface for Immich
 
 Options:
   -V, --version                     output the version number
+  -d, --config                      Configuration directory (env: IMMICH_CONFIG_DIR)
   -h, --help                        display help for command
 
 Commands:
@@ -69,7 +82,9 @@ Options:
   -r, --recursive          Recursive (default: false, env: IMMICH_RECURSIVE)
   -i, --ignore [paths...]  Paths to ignore (env: IMMICH_IGNORE_PATHS)
   -h, --skip-hash          Don't hash files before upload (default: false, env: IMMICH_SKIP_HASH)
+  -H, --include-hidden     Include hidden folders (default: false, env: IMMICH_INCLUDE_HIDDEN)
   -a, --album              Automatically create albums based on folder name (default: false, env: IMMICH_AUTO_CREATE_ALBUM)
+  -A, --album-name <name>  Add all assets to specified album (env: IMMICH_ALBUM_NAME)
   -n, --dry-run            Don't perform any actions, just show what will be done (default: false, env: IMMICH_DRY_RUN)
   --delete                 Delete local assets after upload (env: IMMICH_DELETE_ASSETS)
   --help                   display help for command
@@ -91,7 +106,7 @@ For instance,
 immich login-key http://192.168.1.216:2283/api HFEJ38DNSDUEG
 ```
 
-This will store your credentials in a file in your home directory. Please keep the file secure, either by performing the logout command after you are done, or deleting it manually.
+This will store your credentials in a `auth.yml` file in the configuration directory which defaults to `~/.config/`. The directory can be set with the `-d` option or the environment variable `IMMICH_CONFIG_DIR`. Please keep the file secure, either by performing the logout command after you are done, or deleting it manually.
 
 Once you are authenticated, you can upload assets to your Immich server.
 
@@ -123,6 +138,12 @@ You can automatically create albums based on the folder name by passing the `--a
 immich upload --album --recursive directory/
 ```
 
+You can also choose to upload all assets to a specific album with the `--album-name` option.
+
+```bash
+immich upload --album-name "My summer holiday" --recursive directory/
+```
+
 It is possible to skip assets matching a glob pattern by passing the `--ignore` option. See [the library documentation](docs/features/libraries.md) on how to use glob patterns. You can add several exclusion patterns if needed.
 
 ```bash
@@ -131,6 +152,12 @@ immich upload --ignore **/Raw/** --recursive directory/
 
 ```bash
 immich upload --ignore **/Raw/** **/*.tif --recursive directory/
+```
+
+By default, hidden files are skipped. If you want to include hidden files, use the `--include-hidden` option:
+
+```bash
+immich upload --include-hidden --recursive directory/
 ```
 
 ### Obtain the API Key

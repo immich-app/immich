@@ -355,6 +355,9 @@ abstract class _$AppRouter extends RootStackRouter {
           onPlaying: args.onPlaying,
           onPaused: args.onPaused,
           placeholder: args.placeholder,
+          showControls: args.showControls,
+          hideControlsTimer: args.hideControlsTimer,
+          showDownloadingIndicator: args.showDownloadingIndicator,
         ),
       );
     },
@@ -1390,11 +1393,14 @@ class VideoViewerRoute extends PageRouteInfo<VideoViewerRouteArgs> {
   VideoViewerRoute({
     Key? key,
     required Asset asset,
-    required bool isMotionVideo,
-    required void Function() onVideoEnded,
+    bool isMotionVideo = false,
+    void Function()? onVideoEnded,
     void Function()? onPlaying,
     void Function()? onPaused,
     Widget? placeholder,
+    bool showControls = true,
+    Duration hideControlsTimer = const Duration(seconds: 5),
+    bool showDownloadingIndicator = true,
     List<PageRouteInfo>? children,
   }) : super(
           VideoViewerRoute.name,
@@ -1406,6 +1412,9 @@ class VideoViewerRoute extends PageRouteInfo<VideoViewerRouteArgs> {
             onPlaying: onPlaying,
             onPaused: onPaused,
             placeholder: placeholder,
+            showControls: showControls,
+            hideControlsTimer: hideControlsTimer,
+            showDownloadingIndicator: showDownloadingIndicator,
           ),
           initialChildren: children,
         );
@@ -1420,11 +1429,14 @@ class VideoViewerRouteArgs {
   const VideoViewerRouteArgs({
     this.key,
     required this.asset,
-    required this.isMotionVideo,
-    required this.onVideoEnded,
+    this.isMotionVideo = false,
+    this.onVideoEnded,
     this.onPlaying,
     this.onPaused,
     this.placeholder,
+    this.showControls = true,
+    this.hideControlsTimer = const Duration(seconds: 5),
+    this.showDownloadingIndicator = true,
   });
 
   final Key? key;
@@ -1433,7 +1445,7 @@ class VideoViewerRouteArgs {
 
   final bool isMotionVideo;
 
-  final void Function() onVideoEnded;
+  final void Function()? onVideoEnded;
 
   final void Function()? onPlaying;
 
@@ -1441,8 +1453,14 @@ class VideoViewerRouteArgs {
 
   final Widget? placeholder;
 
+  final bool showControls;
+
+  final Duration hideControlsTimer;
+
+  final bool showDownloadingIndicator;
+
   @override
   String toString() {
-    return 'VideoViewerRouteArgs{key: $key, asset: $asset, isMotionVideo: $isMotionVideo, onVideoEnded: $onVideoEnded, onPlaying: $onPlaying, onPaused: $onPaused, placeholder: $placeholder}';
+    return 'VideoViewerRouteArgs{key: $key, asset: $asset, isMotionVideo: $isMotionVideo, onVideoEnded: $onVideoEnded, onPlaying: $onPlaying, onPaused: $onPaused, placeholder: $placeholder, showControls: $showControls, hideControlsTimer: $hideControlsTimer, showDownloadingIndicator: $showDownloadingIndicator}';
   }
 }

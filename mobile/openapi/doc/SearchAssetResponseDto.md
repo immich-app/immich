@@ -11,6 +11,7 @@ Name | Type | Description | Notes
 **count** | **int** |  | 
 **facets** | [**List<SearchFacetResponseDto>**](SearchFacetResponseDto.md) |  | [default to const []]
 **items** | [**List<AssetResponseDto>**](AssetResponseDto.md) |  | [default to const []]
+**nextPage** | **String** |  | 
 **total** | **int** |  | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

@@ -1,47 +1,55 @@
 <script lang="ts">
+  import { browser } from '$app/environment';
   import { goto } from '$app/navigation';
+  import Icon from '$lib/components/elements/icon.svelte';
+  import { AppRoute, AssetAction, ProjectionType } from '$lib/constants';
+  import { updateNumberOfComments } from '$lib/stores/activity.store';
+  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import type { AssetStore } from '$lib/stores/assets.store';
+  import { isShowDetail, showDeleteModal } from '$lib/stores/preferences.store';
+  import { featureFlags } from '$lib/stores/server-config.store';
+  import { SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
+  import { stackAssetsStore } from '$lib/stores/stacked-asset.store';
+  import { user } from '$lib/stores/user.store';
+  import { addAssetsToAlbum, downloadFile } from '$lib/utils/asset-utils';
+  import { handleError } from '$lib/utils/handle-error';
+  import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
+  import { SlideshowHistory } from '$lib/utils/slideshow-history';
   import {
-    type ActivityResponseDto,
-    type AlbumResponseDto,
-    api,
     AssetJobName,
-    type AssetResponseDto,
     AssetTypeEnum,
     ReactionType,
+    api,
+    type ActivityResponseDto,
+    type AlbumResponseDto,
+    type AssetResponseDto,
     type SharedLinkResponseDto,
   } from '@api';
+  import {
+    createActivity,
+    createAlbum,
+    deleteActivity,
+    getActivities,
+    getActivityStatistics,
+    getAllAlbums,
+  } from '@immich/sdk';
+  import { mdiChevronLeft, mdiChevronRight, mdiImageBrokenVariant } from '@mdi/js';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import { fly } from 'svelte/transition';
+  import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
+  import DeleteAssetDialog from '../photos-page/delete-asset-dialog.svelte';
   import AlbumSelectionModal from '../shared-components/album-selection-modal.svelte';
-  import { notificationController, NotificationType } from '../shared-components/notification/notification';
+  import { NotificationType, notificationController } from '../shared-components/notification/notification';
+  import ProfileImageCropper from '../shared-components/profile-image-cropper.svelte';
+  import ActivityStatus from './activity-status.svelte';
+  import ActivityViewer from './activity-viewer.svelte';
   import AssetViewerNavBar from './asset-viewer-nav-bar.svelte';
   import DetailPanel from './detail-panel.svelte';
-  import PhotoViewer from './photo-viewer.svelte';
-  import VideoViewer from './video-viewer.svelte';
-  import PanoramaViewer from './panorama-viewer.svelte';
-  import { AppRoute, AssetAction, ProjectionType } from '$lib/constants';
-  import ProfileImageCropper from '../shared-components/profile-image-cropper.svelte';
-  import { isShowDetail, showDeleteModal } from '$lib/stores/preferences.store';
-  import { addAssetsToAlbum, downloadFile } from '$lib/utils/asset-utils';
   import NavigationArea from './navigation-area.svelte';
-  import { browser } from '$app/environment';
-  import { handleError } from '$lib/utils/handle-error';
-  import type { AssetStore } from '$lib/stores/assets.store';
-  import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { SlideshowHistory } from '$lib/utils/slideshow-history';
-  import { featureFlags } from '$lib/stores/server-config.store';
-  import { mdiChevronLeft, mdiChevronRight, mdiImageBrokenVariant } from '@mdi/js';
-  import Icon from '$lib/components/elements/icon.svelte';
-  import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
-  import { stackAssetsStore } from '$lib/stores/stacked-asset.store';
-  import ActivityViewer from './activity-viewer.svelte';
-  import ActivityStatus from './activity-status.svelte';
-  import { updateNumberOfComments } from '$lib/stores/activity.store';
-  import { SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
+  import PanoramaViewer from './panorama-viewer.svelte';
+  import PhotoViewer from './photo-viewer.svelte';
   import SlideshowBar from './slideshow-bar.svelte';
-  import { user } from '$lib/stores/user.store';
-  import DeleteAssetDialog from '../photos-page/delete-asset-dialog.svelte';
+  import VideoViewer from './video-viewer.svelte';
 
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
@@ -119,11 +127,11 @@
       try {
         if (isLiked) {
           const activityId = isLiked.id;
-          await api.activityApi.deleteActivity({ id: activityId });
+          await deleteActivity({ id: activityId });
           reactions = reactions.filter((reaction) => reaction.id !== activityId);
           isLiked = null;
         } else {
-          const { data } = await api.activityApi.createActivity({
+          const data = await createActivity({
             activityCreateDto: { albumId: album.id, assetId: asset.id, type: ReactionType.Like },
           });
 
@@ -139,11 +147,11 @@
   const getFavorite = async () => {
     if (album && $user) {
       try {
-        const { data } = await api.activityApi.getActivities({
+        const data = await getActivities({
           userId: $user.id,
           assetId: asset.id,
           albumId: album.id,
-          type: ReactionType.Like,
+          $type: ReactionType.Like,
         });
         isLiked = data.length > 0 ? data[0] : null;
       } catch (error) {
@@ -155,8 +163,8 @@
   const getNumberOfComments = async () => {
     if (album) {
       try {
-        const { data } = await api.activityApi.getActivityStatistics({ assetId: asset.id, albumId: album.id });
-        numberOfComments = data.comments;
+        const { comments } = await getActivityStatistics({ assetId: asset.id, albumId: album.id });
+        numberOfComments = comments;
       } catch (error) {
         handleError(error, "Can't get number of comments");
       }
@@ -192,7 +200,7 @@
     });
 
     if (!sharedLink) {
-      await getAllAlbums();
+      await handleGetAllAlbums();
     }
 
     // Import hack :( see https://github.com/vadimkorr/svelte-carousel/issues/27#issuecomment-851022295
@@ -224,16 +232,15 @@
     }
   });
 
-  $: asset.id && !sharedLink && getAllAlbums(); // Update the album information when the asset ID changes
+  $: asset.id && !sharedLink && handleGetAllAlbums(); // Update the album information when the asset ID changes
 
-  const getAllAlbums = async () => {
+  const handleGetAllAlbums = async () => {
     if (api.isSharedLink) {
       return;
     }
 
     try {
-      const { data } = await api.albumApi.getAllAlbums({ assetId: asset.id });
-      appearsInAlbums = data;
+      appearsInAlbums = await getAllAlbums({ assetId: asset.id });
     } catch (error) {
       console.error('Error getting album that asset belong to', error);
     }
@@ -435,20 +442,18 @@
     addToSharedAlbum = shared;
   };
 
-  const handleAddToNewAlbum = (albumName: string) => {
+  const handleAddToNewAlbum = async (albumName: string) => {
     isShowAlbumPicker = false;
 
-    api.albumApi.createAlbum({ createAlbumDto: { albumName, assetIds: [asset.id] } }).then((response) => {
-      const album = response.data;
-      goto(`${AppRoute.ALBUMS}/${album.id}`);
-    });
+    const album = await createAlbum({ createAlbumDto: { albumName, assetIds: [asset.id] } });
+    await goto(`${AppRoute.ALBUMS}/${album.id}`);
   };
 
   const handleAddToAlbum = async (album: AlbumResponseDto) => {
     isShowAlbumPicker = false;
 
     await addAssetsToAlbum(album.id, [asset.id]);
-    await getAllAlbums();
+    await handleGetAllAlbums();
   };
 
   const disableKeyDownEvent = () => {
