@@ -1,7 +1,7 @@
+import { QueryParameter } from '$lib/constants';
 import { authenticate } from '$lib/utils/auth';
 import { search, type AssetResponseDto, type SearchResponseDto } from '@immich/sdk';
 import type { PageLoad } from './$types';
-import { QueryParameter } from '$lib/constants';
 
 export const load = (async (data) => {
   await authenticate();
