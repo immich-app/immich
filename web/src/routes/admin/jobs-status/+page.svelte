@@ -4,8 +4,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import { AppRoute } from '$lib/constants';
-  import { type AllJobStatusResponseDto } from '@api';
-  import { getAllJobsStatus } from '@immich/sdk';
+  import { getAllJobsStatus, type AllJobStatusResponseDto } from '@immich/sdk';
   import { mdiCog } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
   import type { PageData } from './$types';

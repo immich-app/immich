@@ -1,14 +1,15 @@
 <script lang="ts">
   import AlbumViewer from '$lib/components/album-page/album-viewer.svelte';
+  import Button from '$lib/components/elements/buttons/button.svelte';
   import IndividualSharedViewer from '$lib/components/share-page/individual-shared-viewer.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
   import ThemeButton from '$lib/components/shared-components/theme-button.svelte';
-  import Button from '$lib/components/elements/buttons/button.svelte';
-  import { api, SharedLinkType } from '@api';
-  import type { PageData } from './$types';
-  import { handleError } from '$lib/utils/handle-error';
   import { user } from '$lib/stores/user.store';
+  import { handleError } from '$lib/utils/handle-error';
+  import { SharedLinkType } from '@api';
+  import { getMySharedLink } from '@immich/sdk';
+  import type { PageData } from './$types';
 
   export let data: PageData;
   let { sharedLink, passwordRequired, sharedLinkKey: key, meta } = data;
@@ -18,9 +19,8 @@
 
   const handlePasswordSubmit = async () => {
     try {
-      const result = await api.sharedLinkApi.getMySharedLink({ password, key });
+      sharedLink = await getMySharedLink({ password, key });
       passwordRequired = false;
-      sharedLink = result.data;
       isOwned = $user ? $user.id === sharedLink.userId : false;
       title = (sharedLink.album ? sharedLink.album.albumName : 'Public Share') + ' - Immich';
       description = sharedLink.description || `${sharedLink.assets.length} shared photos & videos.`;

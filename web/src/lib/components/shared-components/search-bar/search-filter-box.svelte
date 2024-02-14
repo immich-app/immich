@@ -1,13 +1,15 @@
 <script lang="ts">
+  import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import Button from '$lib/components/elements/buttons/button.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
+  import { getPeopleThumbnailUrl } from '$lib/utils';
+  import { handleError } from '$lib/utils/handle-error';
+  import { SearchSuggestionType, type PersonResponseDto } from '@api';
+  import { getAllPeople, getSearchSuggestions } from '@immich/sdk';
+  import { mdiArrowRight, mdiClose } from '@mdi/js';
+  import { onMount } from 'svelte';
   import { fly } from 'svelte/transition';
   import Combobox, { type ComboBoxOption } from '../combobox.svelte';
-  import { SearchSuggestionType, api, type PersonResponseDto } from '@api';
-  import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
-  import { mdiArrowRight, mdiClose } from '@mdi/js';
-  import { handleError } from '$lib/utils/handle-error';
-  import { onMount } from 'svelte';
 
   enum MediaType {
     All = 'all',
@@ -108,8 +110,8 @@
 
   const getPeople = async () => {
     try {
-      const { data } = await api.personApi.getAllPeople({ withHidden: false });
-      suggestions.people = data.people;
+      const { people } = await getAllPeople({ withHidden: false });
+      suggestions.people = people;
     } catch (error) {
       handleError(error, 'Failed to get people');
     }
@@ -143,8 +145,8 @@
     }
 
     try {
-      const { data } = await api.searchApi.getSearchSuggestions({
-        type: type,
+      const data = await getSearchSuggestions({
+        $type: type,
         country: params.country,
         state: params.state,
         make: params.cameraMake,
@@ -251,7 +253,7 @@
               <ImageThumbnail
                 circle
                 shadow
-                url={api.getPeopleThumbnailUrl(person.id)}
+                url={getPeopleThumbnailUrl(person.id)}
                 altText={person.name}
                 widthStyle="100px"
               />

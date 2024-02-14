@@ -1,7 +1,9 @@
-import { api, type AssetApiGetTimeBucketsRequest, type AssetResponseDto, TimeBucketSize } from '@api';
+import { getKey } from '$lib/utils';
+import { getTimeBucket, getTimeBuckets, type AssetResponseDto } from '@immich/sdk';
+import { TimeBucketSize, type AssetApiGetTimeBucketsRequest } from '@immich/sdk/axios';
 import { throttle } from 'lodash-es';
 import { DateTime } from 'luxon';
-import { type Unsubscriber, writable } from 'svelte/store';
+import { writable, type Unsubscriber } from 'svelte/store';
 import { handleError } from '../utils/handle-error';
 import { websocketStore } from './websocket';
 
@@ -155,9 +157,9 @@ export class AssetStore {
     this.assetToBucket = {};
     this.albumAssets = new Set();
 
-    const { data: buckets } = await api.assetApi.getTimeBuckets({
+    const buckets = await getTimeBuckets({
       ...this.options,
-      key: api.getKey(),
+      key: getKey(),
     });
 
     this.initialized = true;
@@ -209,22 +211,22 @@ export class AssetStore {
 
       bucket.cancelToken = new AbortController();
 
-      const { data: assets } = await api.assetApi.getTimeBucket(
+      const assets = await getTimeBucket(
         {
           ...this.options,
           timeBucket: bucketDate,
-          key: api.getKey(),
+          key: getKey(),
         },
         { signal: bucket.cancelToken.signal },
       );
 
       if (this.albumId) {
-        const { data: albumAssets } = await api.assetApi.getTimeBucket(
+        const albumAssets = await getTimeBucket(
           {
             albumId: this.albumId,
             timeBucket: bucketDate,
             size: this.options.size,
-            key: api.getKey(),
+            key: getKey(),
           },
           { signal: bucket.cancelToken.signal },
         );

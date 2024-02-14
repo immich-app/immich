@@ -4,9 +4,9 @@
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import EditNameInput from '$lib/components/faces-page/edit-name-input.svelte';
   import MergeFaceSelector from '$lib/components/faces-page/merge-face-selector.svelte';
-  import UnMergeFaceSelector from '$lib/components/faces-page/unmerge-face-selector.svelte';
   import MergeSuggestionModal from '$lib/components/faces-page/merge-suggestion-modal.svelte';
   import SetBirthDateModal from '$lib/components/faces-page/set-birth-date-modal.svelte';
+  import UnMergeFaceSelector from '$lib/components/faces-page/unmerge-face-selector.svelte';
   import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
   import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
   import ChangeDate from '$lib/components/photos-page/actions/change-date-action.svelte';
@@ -21,24 +21,32 @@
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
+  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import {
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import { AppRoute, QueryParameter, maximumLengthSearchPeople, timeBeforeShowLoadingSpinner } from '$lib/constants';
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
+  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { AssetStore } from '$lib/stores/assets.store';
   import { websocketStore } from '$lib/stores/websocket';
-  import { handleError } from '$lib/utils/handle-error';
-  import { type AssetResponseDto, type PersonResponseDto, api } from '@api';
-  import { onMount } from 'svelte';
-  import type { PageData } from './$types';
   import { clickOutside } from '$lib/utils/click-outside';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
-  import { mdiPlus, mdiDotsVertical, mdiArrowLeft } from '@mdi/js';
+  import { handleError } from '$lib/utils/handle-error';
   import { isExternalUrl } from '$lib/utils/navigation';
   import { searchNameLocal } from '$lib/utils/person';
+  import {
+    getPersonStatistics,
+    mergePerson,
+    searchPerson,
+    updatePerson,
+    type AssetResponseDto,
+    type PersonResponseDto,
+  } from '@immich/sdk';
+  import { mdiArrowLeft, mdiDotsVertical, mdiPlus } from '@mdi/js';
+  import { onMount } from 'svelte';
+  import type { PageData } from './$types';
+  import { getPeopleThumbnailUrl } from '$lib/utils';
 
   export let data: PageData;
 
@@ -74,7 +82,7 @@
   let refreshAssetGrid = false;
 
   let personName = '';
-  $: thumbnailData = api.getPeopleThumbnailUrl(data.person.id);
+  $: thumbnailData = getPeopleThumbnailUrl(data.person.id);
 
   let name: string = data.person.name;
   let suggestedPeople: PersonResponseDto[] = [];
@@ -97,8 +105,7 @@
     }
     const timeout = setTimeout(() => (isSearchingPeople = true), timeBeforeShowLoadingSpinner);
     try {
-      const { data } = await api.searchApi.searchPerson({ name });
-      people = data;
+      people = await searchPerson({ name });
       searchWord = name;
     } catch (error) {
       people = [];
@@ -113,7 +120,7 @@
   $: isAllArchive = [...$selectedAssets].every((asset) => asset.isArchived);
   $: isAllFavorite = [...$selectedAssets].every((asset) => asset.isFavorite);
   $: $onPersonThumbnail === data.person.id &&
-    (thumbnailData = api.getPeopleThumbnailUrl(data.person.id) + `?now=${Date.now()}`);
+    (thumbnailData = getPeopleThumbnailUrl(data.person.id) + `?now=${Date.now()}`);
 
   $: {
     if (people) {
@@ -215,7 +222,7 @@
 
   const toggleHidePerson = async () => {
     try {
-      await api.personApi.updatePerson({
+      await updatePerson({
         id: data.person.id,
         personUpdateDto: { isHidden: !data.person.isHidden },
       });
@@ -232,8 +239,8 @@
   };
 
   const handleMerge = async (person: PersonResponseDto) => {
-    const { data: statistics } = await api.personApi.getPersonStatistics({ id: person.id });
-    numberOfAssets = statistics.assets;
+    const { assets } = await getPersonStatistics({ id: person.id });
+    numberOfAssets = assets;
     handleGoBack();
 
     data.person = person;
@@ -246,7 +253,7 @@
       return;
     }
 
-    await api.personApi.updatePerson({ id: data.person.id, personUpdateDto: { featureFaceAssetId: asset.id } });
+    await updatePerson({ id: data.person.id, personUpdateDto: { featureFaceAssetId: asset.id } });
 
     notificationController.show({ message: 'Feature photo updated', type: NotificationType.Info });
     assetInteractionStore.clearMultiselect();
@@ -256,10 +263,8 @@
 
   const updateAssetCount = async () => {
     try {
-      const { data: statistics } = await api.personApi.getPersonStatistics({
-        id: data.person.id,
-      });
-      numberOfAssets = statistics.assets;
+      const { assets } = await getPersonStatistics({ id: data.person.id });
+      numberOfAssets = assets;
     } catch (error) {
       handleError(error, "Can't update the asset count");
     }
@@ -270,7 +275,7 @@
     viewMode = ViewMode.VIEW_ASSETS;
     isEditingName = false;
     try {
-      await api.personApi.mergePerson({
+      await mergePerson({
         id: personToBeMergedIn.id,
         mergePersonDto: { ids: [personToMerge.id] },
       });
@@ -305,10 +310,7 @@
     try {
       isEditingName = false;
 
-      await api.personApi.updatePerson({
-        id: data.person.id,
-        personUpdateDto: { name: personName },
-      });
+      await updatePerson({ id: data.person.id, personUpdateDto: { name: personName } });
 
       notificationController.show({
         message: 'Change name successfully',
@@ -340,16 +342,16 @@
       return;
     }
 
-    const result = await api.searchApi.searchPerson({ name: personName, withHidden: true });
+    const result = await searchPerson({ name: personName, withHidden: true });
 
-    const existingPerson = result.data.find(
+    const existingPerson = result.find(
       (person: PersonResponseDto) =>
         person.name.toLowerCase() === personName.toLowerCase() && person.id !== data.person.id && person.name,
     );
     if (existingPerson) {
       personMerge2 = existingPerson;
       personMerge1 = data.person;
-      potentialMergePeople = result.data
+      potentialMergePeople = result
         .filter(
           (person: PersonResponseDto) =>
             personMerge2.name.toLowerCase() === person.name.toLowerCase() &&
@@ -369,7 +371,7 @@
       viewMode = ViewMode.VIEW_ASSETS;
       data.person.birthDate = birthDate;
 
-      const { data: updatedPerson } = await api.personApi.updatePerson({
+      const updatedPerson = await updatePerson({
         id: data.person.id,
         personUpdateDto: { birthDate: birthDate.length > 0 ? birthDate : null },
       });
@@ -557,7 +559,7 @@
                     <ImageThumbnail
                       circle
                       shadow
-                      url={api.getPeopleThumbnailUrl(person.id)}
+                      url={getPeopleThumbnailUrl(person.id)}
                       altText={person.name}
                       widthStyle="2rem"
                       heightStyle="2rem"

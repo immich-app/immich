@@ -3,6 +3,7 @@ import { downloadManager } from '$lib/stores/download';
 import { api } from '@api';
 import {
   addAssetsToAlbum as addAssets,
+  getDownloadInfo,
   type AssetResponseDto,
   type AssetTypeEnum,
   type BulkIdResponseDto,
@@ -11,13 +12,14 @@ import {
   type UserResponseDto,
 } from '@immich/sdk';
 import { DateTime } from 'luxon';
+import { getKey } from '../utils';
 import { handleError } from './handle-error';
 
 export const addAssetsToAlbum = async (albumId: string, assetIds: Array<string>): Promise<BulkIdResponseDto[]> =>
   addAssets({
     id: albumId,
     bulkIdsDto: { ids: assetIds },
-    key: api.getKey(),
+    key: getKey(),
   }).then((results) => {
     const count = results.filter(({ success }) => success).length;
     notificationController.show({
@@ -46,8 +48,7 @@ export const downloadArchive = async (fileName: string, options: DownloadInfoDto
   let downloadInfo: DownloadResponseDto | null = null;
 
   try {
-    const { data } = await api.downloadApi.getDownloadInfo({ downloadInfoDto: options, key: api.getKey() });
-    downloadInfo = data;
+    downloadInfo = await getDownloadInfo({ downloadInfoDto: options, key: getKey() });
   } catch (error) {
     handleError(error, 'Unable to download files');
     return;
@@ -71,7 +72,7 @@ export const downloadArchive = async (fileName: string, options: DownloadInfoDto
 
     try {
       const { data } = await api.downloadApi.downloadArchive(
-        { assetIdsDto: { assetIds: archive.assetIds }, key: api.getKey() },
+        { assetIdsDto: { assetIds: archive.assetIds }, key: getKey() },
         {
           responseType: 'blob',
           signal: abort.signal,
@@ -121,7 +122,7 @@ export const downloadFile = async (asset: AssetResponseDto) => {
       downloadManager.add(downloadKey, size, abort);
 
       const { data } = await api.downloadApi.downloadFile(
-        { id, key: api.getKey() },
+        { id, key: getKey() },
         {
           responseType: 'blob',
           onDownloadProgress: ({ event }) => {

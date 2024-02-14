@@ -1,9 +1,11 @@
 <script lang="ts">
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import { user } from '$lib/stores/user.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
+  import { getAssetJobName } from '$lib/utils';
   import { clickOutside } from '$lib/utils/click-outside';
   import { getContextMenuPosition } from '$lib/utils/context-menu';
-  import { AssetJobName, type AssetResponseDto, AssetTypeEnum, api } from '@api';
+  import { AssetJobName, AssetTypeEnum, type AssetResponseDto } from '@api';
   import {
     mdiAlertOutline,
     mdiArrowLeft,
@@ -22,7 +24,6 @@
   import { createEventDispatcher } from 'svelte';
   import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
   import MenuOption from '../shared-components/context-menu/menu-option.svelte';
-  import { user } from '$lib/stores/user.store';
 
   export let asset: AssetResponseDto;
   export let showCopyButton: boolean;
@@ -182,16 +183,16 @@
 
               <MenuOption
                 on:click={() => onJobClick(AssetJobName.RefreshMetadata)}
-                text={api.getAssetJobName(AssetJobName.RefreshMetadata)}
+                text={getAssetJobName(AssetJobName.RefreshMetadata)}
               />
               <MenuOption
                 on:click={() => onJobClick(AssetJobName.RegenerateThumbnail)}
-                text={api.getAssetJobName(AssetJobName.RegenerateThumbnail)}
+                text={getAssetJobName(AssetJobName.RegenerateThumbnail)}
               />
               {#if asset.type === AssetTypeEnum.Video}
                 <MenuOption
                   on:click={() => onJobClick(AssetJobName.TranscodeVideo)}
-                  text={api.getAssetJobName(AssetJobName.TranscodeVideo)}
+                  text={getAssetJobName(AssetJobName.TranscodeVideo)}
                 />
               {/if}
             {/if}

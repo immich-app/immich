@@ -1,7 +1,8 @@
 <script lang="ts">
   import SettingButtonsRow from '$lib/components/admin-page/settings/setting-buttons-row.svelte';
   import SettingSelect from '$lib/components/admin-page/settings/setting-select.svelte';
-  import { Colorspace, type SystemConfigDto } from '@api';
+  import { type SystemConfigDto } from '@immich/sdk';
+  import { Colorspace } from '@immich/sdk/axios';
   import { isEqual } from 'lodash-es';
   import { createEventDispatcher } from 'svelte';
   import { fade } from 'svelte/transition';
