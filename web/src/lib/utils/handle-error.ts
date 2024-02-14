@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { notificationController, NotificationType } from '../components/shared-components/notification/notification';
 import type { HttpError } from '@sveltejs/kit';
 
@@ -17,7 +16,7 @@ export async function getServerErrorMessage(error: unknown) {
 }
 
 export async function handleError(error: unknown, message: string) {
-  if (axios.isCancel(error)) {
+  if ((error as Error)?.name === 'AbortError') {
     return;
   }
 
