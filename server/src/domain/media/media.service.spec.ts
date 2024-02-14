@@ -788,7 +788,8 @@ describe(MediaService.name, () => {
     it('should throw an exception if transcode value is invalid', async () => {
       mediaMock.probe.mockResolvedValue(probeStub.videoStream2160p);
       configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_TRANSCODE, value: 'invalid' }]);
-      expect(sut.handleVideoConversion({ id: assetStub.video.id })).rejects.toThrow();
+
+      await expect(sut.handleVideoConversion({ id: assetStub.video.id })).rejects.toThrow();
       expect(mediaMock.transcode).not.toHaveBeenCalled();
     });
 
