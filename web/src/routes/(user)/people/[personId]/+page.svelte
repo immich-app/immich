@@ -221,7 +221,7 @@
       });
 
       notificationController.show({
-        message: 'Changed visibility succesfully',
+        message: 'Changed visibility successfully',
         type: NotificationType.Info,
       });
 
@@ -275,7 +275,7 @@
         mergePersonDto: { ids: [personToMerge.id] },
       });
       notificationController.show({
-        message: 'Merge people succesfully',
+        message: 'Merge people successfully',
         type: NotificationType.Info,
       });
       people = people.filter((person: PersonResponseDto) => person.id !== personToMerge.id);
@@ -311,7 +311,7 @@
       });
 
       notificationController.show({
-        message: 'Change name succesfully',
+        message: 'Change name successfully',
         type: NotificationType.Info,
       });
     } catch (error) {

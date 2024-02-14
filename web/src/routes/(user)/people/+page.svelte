@@ -199,7 +199,7 @@
       people = people.map((person: PersonResponseDto) => (person.id === personToBeMergedIn.id ? mergedPerson : person));
 
       notificationController.show({
-        message: 'Merge people succesfully',
+        message: 'Merge people successfully',
         type: NotificationType.Info,
       });
     } catch (error) {
@@ -222,7 +222,7 @@
           }
         }
         notificationController.show({
-          message: 'Change name succesfully',
+          message: 'Change name successfully',
           type: NotificationType.Info,
         });
 
@@ -267,7 +267,7 @@
       showChangeNameModal = false;
 
       notificationController.show({
-        message: 'Changed visibility succesfully',
+        message: 'Changed visibility successfully',
         type: NotificationType.Info,
       });
     } catch (error) {
@@ -365,7 +365,7 @@
         return person;
       });
       notificationController.show({
-        message: 'Date of birth saved succesfully',
+        message: 'Date of birth saved successfully',
         type: NotificationType.Info,
       });
     } catch (error) {
@@ -392,7 +392,7 @@
         return person;
       });
       notificationController.show({
-        message: 'Change name succesfully',
+        message: 'Change name successfully',
         type: NotificationType.Info,
       });
     } catch (error) {
