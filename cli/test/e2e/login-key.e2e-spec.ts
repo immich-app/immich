@@ -1,8 +1,8 @@
 import { restoreTempFolder, testApp } from '@test-utils';
-import { CLI_BASE_OPTIONS, TEST_AUTH_FILE, deleteAuthFile, setup, spyOnConsole } from 'test/cli-test-utils';
 import { readFile, stat } from 'node:fs/promises';
-import { LoginCommand } from '../../src/commands/login.command';
+import { CLI_BASE_OPTIONS, TEST_AUTH_FILE, deleteAuthFile, setup, spyOnConsole } from 'test/cli-test-utils';
 import yaml from 'yaml';
+import { LoginCommand } from '../../src/commands/login.command';
 
 describe(`login-key (e2e)`, () => {
   let apiKey: string;
