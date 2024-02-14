@@ -4,7 +4,7 @@
   import { ProjectionType } from '$lib/constants';
   import { getAssetFileUrl, getAssetThumbnailUrl, isSharedLink } from '$lib/utils';
   import { timeToSeconds } from '$lib/utils/time-to-seconds';
-  import { AssetTypeEnum, ThumbnailFormat, type AssetResponseDto } from '@api';
+  import { AssetTypeEnum, ThumbnailFormat, type AssetResponseDto } from '@immich/sdk';
   import {
     mdiArchiveArrowDownOutline,
     mdiCameraBurst,

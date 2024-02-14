@@ -4,8 +4,13 @@
   import { getAssetThumbnailUrl, getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { getPersonNameWithHiddenValue, searchNameLocal } from '$lib/utils/person';
-  import { AssetTypeEnum, ThumbnailFormat, type AssetFaceResponseDto, type PersonResponseDto } from '@api';
-  import { searchPerson } from '@immich/sdk';
+  import {
+    AssetTypeEnum,
+    ThumbnailFormat,
+    searchPerson,
+    type AssetFaceResponseDto,
+    type PersonResponseDto,
+  } from '@immich/sdk';
   import { mdiArrowLeftThin, mdiClose, mdiMagnify, mdiPlus } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
   import { linear } from 'svelte/easing';

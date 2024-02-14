@@ -3,7 +3,7 @@
   import { AppRoute, QueryParameter } from '$lib/constants';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { getContextMenuPosition } from '$lib/utils/context-menu';
-  import { type PersonResponseDto } from '@api';
+  import { type PersonResponseDto } from '@immich/sdk';
   import { mdiDotsVertical } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';

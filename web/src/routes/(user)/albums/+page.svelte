@@ -8,42 +8,41 @@
 </script>
 
 <script lang="ts">
-  import { albumViewSettings } from '$lib/stores/preferences.store';
-  import AlbumCard from '$lib/components/album-page/album-card.svelte';
   import { goto } from '$app/navigation';
+  import AlbumCard from '$lib/components/album-page/album-card.svelte';
+  import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
+  import Dropdown from '$lib/components/elements/dropdown.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
+  import TableHeader from '$lib/components/elements/table-header.svelte';
+  import EditAlbumForm from '$lib/components/forms/edit-album-form.svelte';
+  import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
+  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
-  import type { PageData } from './$types';
-  import { useAlbums } from './albums.bloc';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
-  import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
-  import { onMount } from 'svelte';
-  import { flip } from 'svelte/animate';
-  import Dropdown from '$lib/components/elements/dropdown.svelte';
-  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
-  import { AppRoute, dateFormats } from '$lib/constants';
-  import { locale, AlbumViewMode } from '$lib/stores/preferences.store';
-  import {
-    notificationController,
-    NotificationType,
-  } from '$lib/components/shared-components/notification/notification';
-  import type { AlbumResponseDto } from '@api';
-  import TableHeader from '$lib/components/elements/table-header.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
-  import EditAlbumForm from '$lib/components/forms/edit-album-form.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
-  import { orderBy } from 'lodash-es';
   import {
-    mdiPlusBoxOutline,
+    NotificationType,
+    notificationController,
+  } from '$lib/components/shared-components/notification/notification';
+  import { AppRoute, dateFormats } from '$lib/constants';
+  import { AlbumViewMode, albumViewSettings, locale } from '$lib/stores/preferences.store';
+  import type { AlbumResponseDto } from '@immich/sdk';
+  import {
     mdiArrowDownThin,
     mdiArrowUpThin,
+    mdiDeleteOutline,
     mdiFormatListBulletedSquare,
     mdiPencilOutline,
+    mdiPlusBoxOutline,
     mdiTrashCanOutline,
     mdiViewGridOutline,
-    mdiDeleteOutline,
   } from '@mdi/js';
+  import { orderBy } from 'lodash-es';
+  import { onMount } from 'svelte';
+  import { flip } from 'svelte/animate';
+  import type { PageData } from './$types';
+  import { useAlbums } from './albums.bloc';
 
   export let data: PageData;
 

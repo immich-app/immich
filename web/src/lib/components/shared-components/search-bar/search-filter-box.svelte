@@ -4,7 +4,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { SearchSuggestionType, type PersonResponseDto } from '@api';
+  import { SearchSuggestionType, type PersonResponseDto } from '@immich/sdk';
   import { getAllPeople, getSearchSuggestions } from '@immich/sdk';
   import { mdiArrowRight, mdiClose } from '@mdi/js';
   import { onMount } from 'svelte';

@@ -1,11 +1,11 @@
 <script lang="ts">
-  import type { SearchExploreResponseDto } from '@api';
-  import type { PageData } from './$types';
-  import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import { mdiMapMarkerOff } from '@mdi/js';
-  import Icon from '$lib/components/elements/icon.svelte';
-  import { AppRoute } from '$lib/constants';
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
+  import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
+  import { AppRoute } from '$lib/constants';
+  import type { SearchExploreResponseDto } from '@immich/sdk';
+  import { mdiMapMarkerOff } from '@mdi/js';
+  import type { PageData } from './$types';
 
   export let data: PageData;
 

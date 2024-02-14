@@ -1,6 +1,5 @@
 import { getKey } from '$lib/utils';
-import { getTimeBucket, getTimeBuckets, type AssetResponseDto } from '@immich/sdk';
-import { TimeBucketSize, type AssetApiGetTimeBucketsRequest } from '@immich/sdk/axios';
+import { TimeBucketSize, getTimeBucket, getTimeBuckets, type AssetResponseDto } from '@immich/sdk';
 import { throttle } from 'lodash-es';
 import { DateTime } from 'luxon';
 import { writable, type Unsubscriber } from 'svelte/store';
@@ -13,7 +12,7 @@ export enum BucketPosition {
   Visible = 'visible',
   Unknown = 'unknown',
 }
-
+type AssetApiGetTimeBucketsRequest = Parameters<typeof getTimeBuckets>[0];
 export type AssetStoreOptions = Omit<AssetApiGetTimeBucketsRequest, 'size'>;
 
 export interface Viewport {
@@ -157,10 +156,7 @@ export class AssetStore {
     this.assetToBucket = {};
     this.albumAssets = new Set();
 
-    const buckets = await getTimeBuckets({
-      ...this.options,
-      key: getKey(),
-    });
+    const buckets = await getTimeBuckets({ ...this.options, key: getKey() });
 
     this.initialized = true;
 

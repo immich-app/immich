@@ -1,6 +1,6 @@
 <script lang="ts">
   import { getPeopleThumbnailUrl } from '$lib/utils';
-  import { type PersonResponseDto } from '@api';
+  import { type PersonResponseDto } from '@immich/sdk';
   import { createEventDispatcher } from 'svelte';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
 

@@ -2,7 +2,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import { getPeopleThumbnailUrl } from '$lib/utils';
-  import { type PersonResponseDto } from '@api';
+  import { type PersonResponseDto } from '@immich/sdk';
   import { mdiArrowLeft, mdiClose, mdiMerge } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';

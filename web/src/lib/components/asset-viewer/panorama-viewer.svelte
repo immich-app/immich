@@ -1,8 +1,9 @@
 <script lang="ts">
+  import { api } from '$lib/api';
+  import { getKey } from '$lib/utils';
+  import { type AssetResponseDto } from '@immich/sdk';
   import { fade } from 'svelte/transition';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
-  import { api, type AssetResponseDto } from '@api';
-  import { getKey } from '$lib/utils';
 
   export let asset: AssetResponseDto;
 

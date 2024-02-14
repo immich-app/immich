@@ -20,12 +20,6 @@
     AssetJobName,
     AssetTypeEnum,
     ReactionType,
-    type ActivityResponseDto,
-    type AlbumResponseDto,
-    type AssetResponseDto,
-    type SharedLinkResponseDto,
-  } from '@api';
-  import {
     createActivity,
     createAlbum,
     deleteActivity,
@@ -36,6 +30,10 @@
     runAssetJobs,
     updateAsset,
     updateAssets,
+    type ActivityResponseDto,
+    type AlbumResponseDto,
+    type AssetResponseDto,
+    type SharedLinkResponseDto,
   } from '@immich/sdk';
   import { mdiChevronLeft, mdiChevronRight, mdiImageBrokenVariant } from '@mdi/js';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';

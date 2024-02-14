@@ -6,8 +6,7 @@
   import { featureFlags } from '$lib/stores/server-config.store';
   import { getJobName } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { sendJobCommand, type AllJobStatusResponseDto, type JobCommandDto } from '@immich/sdk';
-  import { JobCommand, JobName } from '@immich/sdk/axios';
+  import { JobCommand, JobName, sendJobCommand, type AllJobStatusResponseDto, type JobCommandDto } from '@immich/sdk';
   import {
     mdiFaceRecognition,
     mdiFileJpgBox,

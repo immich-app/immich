@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type { ServerVersionResponseDto } from '@api';
   import { websocketStore } from '$lib/stores/websocket';
+  import type { ServerVersionResponseDto } from '@immich/sdk';
   import Button from '../elements/buttons/button.svelte';
   import FullScreenModal from './full-screen-modal.svelte';
 

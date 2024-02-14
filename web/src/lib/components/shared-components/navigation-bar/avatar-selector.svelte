@@ -1,8 +1,8 @@
 <script lang="ts">
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import { UserAvatarColor, type UserResponseDto } from '@immich/sdk';
   import { mdiClose } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
-  import { UserAvatarColor, type UserResponseDto } from '@api';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import FullScreenModal from '../full-screen-modal.svelte';
   import UserAvatar from '../user-avatar.svelte';
 

@@ -6,9 +6,9 @@
   import Button from '$lib/components/elements/buttons/button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import { serverConfig } from '$lib/stores/server-config.store';
+  import { copyToClipboard, makeSharedLinkUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { SharedLinkType, copyToClipboard, makeSharedLinkUrl, type SharedLinkResponseDto } from '@api';
-  import { createSharedLink, updateSharedLink } from '@immich/sdk';
+  import { SharedLinkType, createSharedLink, updateSharedLink, type SharedLinkResponseDto } from '@immich/sdk';
   import { mdiLink } from '@mdi/js';
   import { createEventDispatcher, onMount } from 'svelte';
   import BaseModal from '../base-modal.svelte';

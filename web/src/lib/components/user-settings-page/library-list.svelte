@@ -4,8 +4,8 @@
   import { getBytesWithUnit } from '$lib/utils/byte-units';
   import { getContextMenuPosition } from '$lib/utils/context-menu';
   import { handleError } from '$lib/utils/handle-error';
-  import { LibraryType, type LibraryResponseDto, type LibraryStatsResponseDto } from '@api';
   import {
+    LibraryType,
     createLibrary,
     deleteLibrary,
     getLibraries,
@@ -13,6 +13,8 @@
     removeOfflineFiles,
     scanLibrary,
     updateLibrary,
+    type LibraryResponseDto,
+    type LibraryStatsResponseDto,
   } from '@immich/sdk';
   import { mdiDatabase, mdiDotsVertical, mdiUpload } from '@mdi/js';
   import { onMount } from 'svelte';

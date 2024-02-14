@@ -31,6 +31,7 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { AssetStore } from '$lib/stores/assets.store';
   import { websocketStore } from '$lib/stores/websocket';
+  import { getPeopleThumbnailUrl } from '$lib/utils';
   import { clickOutside } from '$lib/utils/click-outside';
   import { handleError } from '$lib/utils/handle-error';
   import { isExternalUrl } from '$lib/utils/navigation';
@@ -46,7 +47,6 @@
   import { mdiArrowLeft, mdiDotsVertical, mdiPlus } from '@mdi/js';
   import { onMount } from 'svelte';
   import type { PageData } from './$types';
-  import { getPeopleThumbnailUrl } from '$lib/utils';
 
   export let data: PageData;
 

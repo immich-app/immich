@@ -10,8 +10,7 @@
   import type { MapSettings } from '$lib/stores/preferences.store';
   import { mapSettings } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
-  import { type MapMarkerResponseDto } from '@api';
-  import { getMapMarkers } from '@immich/sdk';
+  import { getMapMarkers, type MapMarkerResponseDto } from '@immich/sdk';
   import { isEqual } from 'lodash-es';
   import { DateTime, Duration } from 'luxon';
   import { onDestroy, onMount } from 'svelte';

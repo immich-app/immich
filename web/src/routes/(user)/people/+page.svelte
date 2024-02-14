@@ -28,8 +28,15 @@
   import { handleError } from '$lib/utils/handle-error';
   import { searchNameLocal } from '$lib/utils/person';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
-  import { type PeopleUpdateItem, type PersonResponseDto } from '@api';
-  import { getPerson, mergePerson, searchPerson, updatePeople, updatePerson } from '@immich/sdk';
+  import {
+    getPerson,
+    mergePerson,
+    searchPerson,
+    updatePeople,
+    updatePerson,
+    type PeopleUpdateItem,
+    type PersonResponseDto,
+  } from '@immich/sdk';
   import { mdiAccountOff, mdiEyeOutline } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
   import type { PageData } from './$types';

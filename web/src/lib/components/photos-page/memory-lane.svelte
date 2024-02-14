@@ -4,7 +4,7 @@
   import { AppRoute, QueryParameter } from '$lib/constants';
   import { memoryStore } from '$lib/stores/memory.store';
   import { getAssetThumbnailUrl } from '$lib/utils';
-  import { getMemoryLane } from '@immich/sdk';
+  import { ThumbnailFormat, getMemoryLane } from '@immich/sdk';
   import { mdiChevronLeft, mdiChevronRight } from '@mdi/js';
   import { onMount } from 'svelte';
   import { fade } from 'svelte/transition';
@@ -73,7 +73,7 @@
         >
           <img
             class="h-full w-full rounded-xl object-cover"
-            src={getAssetThumbnailUrl(memory.assets[0].id, 'JPEG')}
+            src={getAssetThumbnailUrl(memory.assets[0].id, ThumbnailFormat.Jpeg)}
             alt={memory.title}
             draggable="false"
           />

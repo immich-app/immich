@@ -11,8 +11,13 @@
   import { getAssetFilename } from '$lib/utils/asset-utils';
   import { autoGrowHeight } from '$lib/utils/autogrow';
   import { clickOutside } from '$lib/utils/click-outside';
-  import { ThumbnailFormat, type AlbumResponseDto, type AssetResponseDto } from '@api';
-  import { getAssetInfo, updateAsset } from '@immich/sdk';
+  import {
+    ThumbnailFormat,
+    getAssetInfo,
+    updateAsset,
+    type AlbumResponseDto,
+    type AssetResponseDto,
+  } from '@immich/sdk';
   import {
     mdiCalendar,
     mdiCameraIris,

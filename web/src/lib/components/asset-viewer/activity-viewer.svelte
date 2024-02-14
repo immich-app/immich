@@ -8,6 +8,8 @@
   import { handleError } from '$lib/utils/handle-error';
   import { isTenMinutesApart } from '$lib/utils/timesince';
   import {
+    ReactionType,
+    ThumbnailFormat,
     createActivity,
     deleteActivity,
     getActivities,
@@ -15,7 +17,6 @@
     type AssetTypeEnum,
     type UserResponseDto,
   } from '@immich/sdk';
-  import { ReactionType, ThumbnailFormat } from '@immich/sdk/axios';
   import { mdiClose, mdiDotsVertical, mdiHeart, mdiSend } from '@mdi/js';
   import * as luxon from 'luxon';
   import { createEventDispatcher, onMount } from 'svelte';

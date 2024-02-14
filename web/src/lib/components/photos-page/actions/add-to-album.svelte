@@ -8,8 +8,7 @@
   } from '$lib/components/shared-components/notification/notification';
   import { AppRoute } from '$lib/constants';
   import { addAssetsToAlbum } from '$lib/utils/asset-utils';
-  import { type AlbumResponseDto } from '@api';
-  import { createAlbum } from '@immich/sdk';
+  import { createAlbum, type AlbumResponseDto } from '@immich/sdk';
   import { getMenuContext } from '../asset-select-context-menu.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
 
