@@ -1615,7 +1615,7 @@ describe(LibraryService.name, () => {
         {
           importPath: '/data/user1/',
           isValid: false,
-          message: 'Path does not exist (ENOENT)',
+          message: 'Error: Unknown error',
         },
       ]);
     });

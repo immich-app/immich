@@ -289,7 +289,7 @@ export class LibraryService extends EventEmitter {
         validation.message = 'Path does not exist (ENOENT)';
         return validation;
       }
-      validation.message = error;
+      validation.message = String(error);
       return validation;
     }
 
