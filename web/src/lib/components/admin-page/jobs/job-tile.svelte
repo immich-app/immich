@@ -3,8 +3,7 @@
   import Button from '$lib/components/elements/buttons/button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import { locale } from '$lib/stores/preferences.store';
-  import { type JobCommandDto, type JobCountsDto, type QueueStatusDto } from '@immich/sdk';
-  import { JobCommand } from '@immich/sdk/axios';
+  import { JobCommand, type JobCommandDto, type JobCountsDto, type QueueStatusDto } from '@immich/sdk';
   import {
     mdiAlertCircle,
     mdiAllInclusive,
