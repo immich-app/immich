@@ -1,4 +1,3 @@
-import { SessionService } from './session.service';
 import fs from 'node:fs';
 import yaml from 'yaml';
 import {
@@ -11,6 +10,7 @@ import {
   readTestAuthFile,
   spyOnConsole,
 } from '../../test/cli-test-utils';
+import { SessionService } from './session.service';
 
 const mocks = vi.hoisted(() => {
   return {

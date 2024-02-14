@@ -1,5 +1,5 @@
-import type { AlbumResponseDto } from '@api';
 import { faker } from '@faker-js/faker';
+import type { AlbumResponseDto } from '@immich/sdk';
 import { Sync } from 'factory.ts';
 import { userFactory } from './user-factory';
 

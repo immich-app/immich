@@ -1,10 +1,10 @@
-import { api } from '@api';
-import { redirect } from '@sveltejs/kit';
-import { AppRoute } from '../constants';
-import { get } from 'svelte/store';
-import { serverInfo } from '$lib/stores/server-info.store';
 import { browser } from '$app/environment';
+import { serverInfo } from '$lib/stores/server-info.store';
 import { user } from '$lib/stores/user.store';
+import { getMyUserInfo, getServerInfo } from '@immich/sdk';
+import { redirect } from '@sveltejs/kit';
+import { get } from 'svelte/store';
+import { AppRoute } from '../constants';
 
 export interface AuthOptions {
   admin?: true;
@@ -15,8 +15,7 @@ export const loadUser = async () => {
   try {
     let loaded = get(user);
     if (!loaded && hasAuthCookie()) {
-      const { data } = await api.userApi.getMyUserInfo();
-      loaded = data;
+      loaded = await getMyUserInfo();
       user.set(loaded);
     }
     return loaded;
@@ -59,7 +58,7 @@ export const authenticate = async (options?: AuthOptions) => {
 
 export const requestServerInfo = async () => {
   if (get(user)) {
-    const { data } = await api.serverInfoApi.getServerInfo();
+    const data = await getServerInfo();
     serverInfo.set(data);
   }
 };

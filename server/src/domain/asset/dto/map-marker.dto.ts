@@ -25,4 +25,10 @@ export class MapMarkerDto {
   @IsDate()
   @Type(() => Date)
   fileCreatedBefore?: Date;
+
+  @ApiProperty()
+  @Optional()
+  @IsBoolean()
+  @Transform(toBoolean)
+  withPartners?: boolean;
 }

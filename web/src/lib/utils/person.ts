@@ -1,4 +1,4 @@
-import type { PersonResponseDto } from '@api';
+import type { PersonResponseDto } from '@immich/sdk';
 
 export const searchNameLocal = (
   name: string,

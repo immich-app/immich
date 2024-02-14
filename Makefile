@@ -22,6 +22,10 @@ server-e2e-jobs:
 server-e2e-api:
 	npm run e2e:api --prefix server
 
+.PHONY: e2e
+e2e:
+	docker compose -f ./docker/docker-compose.e2e.yml up --build -V --remove-orphans
+
 prod:
 	docker compose -f ./docker/docker-compose.prod.yml up --build -V --remove-orphans
 

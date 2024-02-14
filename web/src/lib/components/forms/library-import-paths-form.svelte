@@ -1,12 +1,12 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
-  import Button from '../elements/buttons/button.svelte';
+  import { createEventDispatcher, onMount } from 'svelte';
   import { handleError } from '../../utils/handle-error';
+  import Button from '../elements/buttons/button.svelte';
   import LibraryImportPathForm from './library-import-path-form.svelte';
-  import { onMount } from 'svelte';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { api, type LibraryResponseDto, type ValidateLibraryImportPathResponseDto } from '@api';
   import { mdiAlertOutline, mdiPencilOutline } from '@mdi/js';
+  import { validate, type LibraryResponseDto } from '@immich/sdk';
+  import type { ValidateLibraryImportPathResponseDto } from '@immich/sdk/axios';
 
   export let library: LibraryResponseDto;
 
@@ -22,12 +22,12 @@
 
   onMount(async () => {
     if (library.importPaths) {
-      const { data } = await api.libraryApi.validate({
+      const validation = await validate({
         id: library.id,
         validateLibraryDto: { importPaths: library.importPaths },
       });
 
-      validatedPaths = data.importPaths ?? [];
+      validatedPaths = validation.importPaths ?? [];
     } else {
       library.importPaths = [];
     }
@@ -58,12 +58,12 @@
       // Check so that import path isn't duplicated
       if (!library.importPaths.includes(importPathToAdd)) {
         library.importPaths.push(importPathToAdd);
-        const { data } = await api.libraryApi.validate({
+        const validation = await validate({
           id: library.id,
           validateLibraryDto: { importPaths: library.importPaths },
         });
 
-        validatedPaths = data.importPaths ?? [];
+        validatedPaths = validation.importPaths ?? [];
       }
     } catch (error) {
       handleError(error, 'Unable to add import path');
@@ -88,12 +88,12 @@
       if (!library.importPaths.includes(editedImportPath)) {
         // Update import path
         library.importPaths[editImportPath] = editedImportPath;
-        const { data } = await api.libraryApi.validate({
+        const validation = await validate({
           id: library.id,
           validateLibraryDto: { importPaths: library.importPaths },
         });
 
-        validatedPaths = data.importPaths ?? [];
+        validatedPaths = validation.importPaths ?? [];
       }
     } catch (error) {
       editImportPath = null;
@@ -115,12 +115,12 @@
 
       const pathToDelete = library.importPaths[editImportPath];
       library.importPaths = library.importPaths.filter((path) => path != pathToDelete);
-      const { data } = await api.libraryApi.validate({
+      const validation = await validate({
         id: library.id,
         validateLibraryDto: { importPaths: library.importPaths },
       });
 
-      validatedPaths = data.importPaths ?? [];
+      validatedPaths = validation.importPaths ?? [];
     } catch (error) {
       handleError(error, 'Unable to delete import path');
     } finally {

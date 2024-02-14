@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { SystemConfigDto } from '@api';
+  import type { SystemConfigDto } from '@immich/sdk';
   import { isEqual } from 'lodash-es';
   import { createEventDispatcher } from 'svelte';
   import { fade } from 'svelte/transition';

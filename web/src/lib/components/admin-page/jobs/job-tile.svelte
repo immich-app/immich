@@ -1,12 +1,9 @@
 <script lang="ts">
-  import { locale } from '$lib/stores/preferences.store';
-  import { createEventDispatcher } from 'svelte';
-  import { JobCommand, type JobCommandDto, type JobCountsDto, type QueueStatusDto } from '@api';
   import Badge from '$lib/components/elements/badge.svelte';
-  import JobTileButton from './job-tile-button.svelte';
-  import JobTileStatus from './job-tile-status.svelte';
   import Button from '$lib/components/elements/buttons/button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
+  import { locale } from '$lib/stores/preferences.store';
+  import { JobCommand, type JobCommandDto, type JobCountsDto, type QueueStatusDto } from '@immich/sdk';
   import {
     mdiAlertCircle,
     mdiAllInclusive,
@@ -16,6 +13,9 @@
     mdiPlay,
     mdiSelectionSearch,
   } from '@mdi/js';
+  import { createEventDispatcher } from 'svelte';
+  import JobTileButton from './job-tile-button.svelte';
+  import JobTileStatus from './job-tile-status.svelte';
 
   export let title: string;
   export let subtitle: string | undefined;

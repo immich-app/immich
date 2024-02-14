@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { type AlbumResponseDto, api } from '@api';
-  import { createEventDispatcher, onMount } from 'svelte';
   import Icon from '$lib/components/elements/icon.svelte';
-  import BaseModal from './base-modal.svelte';
-  import AlbumListItem from '../asset-viewer/album-list-item.svelte';
+  import { getAllAlbums, type AlbumResponseDto } from '@immich/sdk';
   import { mdiPlus } from '@mdi/js';
+  import { createEventDispatcher, onMount } from 'svelte';
+  import AlbumListItem from '../asset-viewer/album-list-item.svelte';
+  import BaseModal from './base-modal.svelte';
 
   let albums: AlbumResponseDto[] = [];
   let recentAlbums: AlbumResponseDto[] = [];
@@ -21,11 +21,8 @@
   export let shared: boolean;
 
   onMount(async () => {
-    const { data } = await api.albumApi.getAllAlbums({ shared: shared || undefined });
-    albums = data;
-
+    albums = await getAllAlbums({ shared: shared || undefined });
     recentAlbums = albums.sort((a, b) => (new Date(a.createdAt) > new Date(b.createdAt) ? -1 : 1)).slice(0, 3);
-
     loading = false;
   });
 

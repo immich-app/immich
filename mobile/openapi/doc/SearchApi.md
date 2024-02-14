@@ -10,6 +10,7 @@ All URIs are relative to */api*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**getExploreData**](SearchApi.md#getexploredata) | **GET** /search/explore | 
+[**getSearchSuggestions**](SearchApi.md#getsearchsuggestions) | **GET** /search/suggestions | 
 [**search**](SearchApi.md#search) | **GET** /search | 
 [**searchMetadata**](SearchApi.md#searchmetadata) | **GET** /search/metadata | 
 [**searchPerson**](SearchApi.md#searchperson) | **GET** /search/person | 
@@ -55,6 +56,69 @@ This endpoint does not need any parameter.
 ### Return type
 
 [**List<SearchExploreResponseDto>**](SearchExploreResponseDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **getSearchSuggestions**
+> List<String> getSearchSuggestions(type, country, make, model, state)
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
+// TODO Configure API key authorization: api_key
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+
+final api_instance = SearchApi();
+final type = ; // SearchSuggestionType | 
+final country = country_example; // String | 
+final make = make_example; // String | 
+final model = model_example; // String | 
+final state = state_example; // String | 
+
+try {
+    final result = api_instance.getSearchSuggestions(type, country, make, model, state);
+    print(result);
+} catch (e) {
+    print('Exception when calling SearchApi->getSearchSuggestions: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **type** | [**SearchSuggestionType**](.md)|  | 
+ **country** | **String**|  | [optional] 
+ **make** | **String**|  | [optional] 
+ **model** | **String**|  | [optional] 
+ **state** | **String**|  | [optional] 
+
+### Return type
+
+**List<String>**
 
 ### Authorization
 

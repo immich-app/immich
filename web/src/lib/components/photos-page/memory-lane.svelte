@@ -1,22 +1,19 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { api } from '@api';
-  import Icon from '$lib/components/elements/icon.svelte';
-  import { memoryStore } from '$lib/stores/memory.store';
   import { goto } from '$app/navigation';
-  import { fade } from 'svelte/transition';
-  import { mdiChevronLeft, mdiChevronRight } from '@mdi/js';
+  import Icon from '$lib/components/elements/icon.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
+  import { memoryStore } from '$lib/stores/memory.store';
+  import { getAssetThumbnailUrl } from '$lib/utils';
+  import { ThumbnailFormat, getMemoryLane } from '@immich/sdk';
+  import { mdiChevronLeft, mdiChevronRight } from '@mdi/js';
+  import { onMount } from 'svelte';
+  import { fade } from 'svelte/transition';
 
   $: shouldRender = $memoryStore?.length > 0;
 
   onMount(async () => {
     const localTime = new Date();
-    const { data } = await api.assetApi.getMemoryLane({
-      month: localTime.getMonth() + 1,
-      day: localTime.getDate(),
-    });
-    $memoryStore = data;
+    $memoryStore = await getMemoryLane({ month: localTime.getMonth() + 1, day: localTime.getDate() });
   });
 
   let memoryLaneElement: HTMLElement;
@@ -76,7 +73,7 @@
         >
           <img
             class="h-full w-full rounded-xl object-cover"
-            src={api.getAssetThumbnailUrl(memory.assets[0].id, 'JPEG')}
+            src={getAssetThumbnailUrl(memory.assets[0].id, ThumbnailFormat.Jpeg)}
             alt={memory.title}
             draggable="false"
           />

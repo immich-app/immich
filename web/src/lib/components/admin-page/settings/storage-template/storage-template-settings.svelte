@@ -1,7 +1,12 @@
 <script lang="ts">
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
+  import { AppRoute } from '$lib/constants';
   import { user } from '$lib/stores/user.store';
-  import { api, type SystemConfigDto, type SystemConfigTemplateStorageOptionDto } from '@api';
+  import {
+    getStorageTemplateOptions,
+    type SystemConfigDto,
+    type SystemConfigTemplateStorageOptionDto,
+  } from '@immich/sdk';
   import handlebar from 'handlebars';
   import { isEqual } from 'lodash-es';
   import * as luxon from 'luxon';
@@ -13,7 +18,6 @@
   import SettingSwitch from '../setting-switch.svelte';
   import SupportedDatetimePanel from './supported-datetime-panel.svelte';
   import SupportedVariablesPanel from './supported-variables-panel.svelte';
-  import { AppRoute } from '$lib/constants';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
@@ -26,14 +30,11 @@
   let selectedPreset = '';
 
   const getTemplateOptions = async () => {
-    templateOptions = await api.systemConfigApi.getStorageTemplateOptions().then((res) => res.data);
+    templateOptions = await getStorageTemplateOptions();
     selectedPreset = savedConfig.storageTemplate.template;
   };
 
-  const getSupportDateTimeFormat = async () => {
-    const { data } = await api.systemConfigApi.getStorageTemplateOptions();
-    return data;
-  };
+  const getSupportDateTimeFormat = () => getStorageTemplateOptions();
 
   $: parsedTemplate = () => {
     try {

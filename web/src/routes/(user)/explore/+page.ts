@@ -1,11 +1,11 @@
 import { authenticate } from '$lib/utils/auth';
-import { api } from '@api';
+import { getAllPeople, getExploreData } from '@immich/sdk';
 import type { PageLoad } from './$types';
 
 export const load = (async () => {
   await authenticate();
-  const { data: items } = await api.searchApi.getExploreData();
-  const { data: response } = await api.personApi.getAllPeople({ withHidden: false });
+  const [items, response] = await Promise.all([getExploreData(), getAllPeople({ withHidden: false })]);
+
   return {
     items,
     response,

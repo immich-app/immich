@@ -1,6 +1,5 @@
 import 'package:flutter/painting.dart';
-
-import 'original_image_provider.dart';
+import 'package:immich_mobile/modules/asset_viewer/image_providers/immich_local_image_provider.dart';
 
 /// [ImageCache] that uses two caches for small and large images
 /// so that a single large image does not evict all small iamges
@@ -34,7 +33,7 @@ final class CustomImageCache implements ImageCache {
 
   @override
   bool containsKey(Object key) =>
-      (key is OriginalImageProvider ? _large : _small).containsKey(key);
+      (key is ImmichLocalImageProvider ? _large : _small).containsKey(key);
 
   @override
   int get currentSize => _small.currentSize + _large.currentSize;
@@ -44,7 +43,7 @@ final class CustomImageCache implements ImageCache {
 
   @override
   bool evict(Object key, {bool includeLive = true}) =>
-      (key is OriginalImageProvider ? _large : _small)
+      (key is ImmichLocalImageProvider ? _large : _small)
           .evict(key, includeLive: includeLive);
 
   @override
@@ -60,10 +59,10 @@ final class CustomImageCache implements ImageCache {
     ImageStreamCompleter Function() loader, {
     ImageErrorListener? onError,
   }) =>
-      (key is OriginalImageProvider ? _large : _small)
+      (key is ImmichLocalImageProvider ? _large : _small)
           .putIfAbsent(key, loader, onError: onError);
 
   @override
   ImageCacheStatus statusForKey(Object key) =>
-      (key is OriginalImageProvider ? _large : _small).statusForKey(key);
+      (key is ImmichLocalImageProvider ? _large : _small).statusForKey(key);
 }

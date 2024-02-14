@@ -1,11 +1,11 @@
 import { authenticate } from '$lib/utils/auth';
-import { api } from '@api';
+import { getAllPeople } from '@immich/sdk';
 import type { PageLoad } from './$types';
 
 export const load = (async () => {
   await authenticate();
 
-  const { data: people } = await api.personApi.getAllPeople({ withHidden: true });
+  const people = await getAllPeople({ withHidden: true });
   return {
     people,
     meta: {

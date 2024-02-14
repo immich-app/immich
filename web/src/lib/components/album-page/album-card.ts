@@ -1,4 +1,4 @@
-import type { AlbumResponseDto } from '@api';
+import type { AlbumResponseDto } from '@immich/sdk';
 
 export type OnShowContextMenu = {
   showalbumcontextmenu: OnShowContextMenuDetail;

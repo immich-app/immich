@@ -1,4 +1,4 @@
-import { VideoCodec } from '@app/infra/entities';
+import { TranscodeTarget, VideoCodec } from '@app/infra/entities';
 import { Writable } from 'node:stream';
 
 export const IMediaRepository = 'IMediaRepository';
@@ -16,15 +16,14 @@ export interface VideoStreamInfo {
   width: number;
   rotation: number;
   codecName?: string;
-  codecType?: string;
   frameCount: number;
   isHDR: boolean;
+  bitrate: number;
 }
 
 export interface AudioStreamInfo {
   index: number;
   codecName?: string;
-  codecType?: string;
   frameCount: number;
 }
 
@@ -64,7 +63,7 @@ export interface BitrateDistribution {
 }
 
 export interface VideoCodecSWConfig {
-  getOptions(videoStream: VideoStreamInfo, audioStream: AudioStreamInfo): TranscodeOptions;
+  getOptions(target: TranscodeTarget, videoStream: VideoStreamInfo, audioStream: AudioStreamInfo): TranscodeOptions;
 }
 
 export interface VideoCodecHWConfig extends VideoCodecSWConfig {

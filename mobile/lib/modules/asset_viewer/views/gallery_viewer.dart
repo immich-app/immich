@@ -25,7 +25,6 @@ import 'package:immich_mobile/modules/asset_viewer/views/video_viewer_page.dart'
 import 'package:immich_mobile/modules/backup/providers/manual_upload.provider.dart';
 import 'package:immich_mobile/modules/home/ui/upload_dialog.dart';
 import 'package:immich_mobile/modules/partner/providers/partner.provider.dart';
-import 'package:immich_mobile/shared/cache/original_image_provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/modules/home/ui/delete_dialog.dart';
@@ -41,8 +40,6 @@ import 'package:immich_mobile/shared/ui/photo_view/src/photo_view_scale_state.da
 import 'package:immich_mobile/shared/ui/photo_view/src/utils/photo_view_hero_attributes.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
-import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
-import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:isar/isar.dart';
 import 'package:openapi/api.dart' show ThumbnailFormat;
 
@@ -78,7 +75,6 @@ class GalleryViewerPage extends HookConsumerWidget {
     final isPlayingMotionVideo = useState(false);
     final isPlayingVideo = useState(false);
     Offset? localPosition;
-    final header = {"x-immich-user-token": Store.get(StoreKey.accessToken)};
     final currentIndex = useState(initialIndex);
     final currentAsset = loadAsset(currentIndex.value);
     final isTrashEnabled =
@@ -135,53 +131,18 @@ class GalleryViewerPage extends HookConsumerWidget {
     void toggleFavorite(Asset asset) =>
         ref.read(assetProvider.notifier).toggleFavorite([asset]);
 
-    /// Original (large) image of a remote asset. Required asset.isRemote
-    ImageProvider remoteOriginalProvider(Asset asset) =>
-        CachedNetworkImageProvider(
-          getImageUrl(asset),
-          cacheKey: getImageCacheKey(asset),
-          headers: header,
-        );
-
-    /// Original (large) image of a local asset. Required asset.isLocal
-    ImageProvider localOriginalProvider(Asset asset) =>
-        OriginalImageProvider(asset);
-
-    ImageProvider finalImageProvider(Asset asset) {
-      if (ImmichImage.useLocal(asset)) {
-        return localOriginalProvider(asset);
-      } else if (isLoadOriginal.value) {
-        return remoteOriginalProvider(asset);
-      } else if (isLoadPreview.value) {
-        return ImmichImage.remoteThumbnailProvider(asset, jpeg, header);
-      }
-      return ImmichImage.remoteThumbnailProvider(asset, webp, header);
-    }
-
-    Iterable<ImageProvider> allImageProviders(Asset asset) sync* {
-      if (ImmichImage.useLocal(asset)) {
-        yield ImmichImage.localImageProvider(asset);
-        yield localOriginalProvider(asset);
-      } else {
-        yield ImmichImage.remoteThumbnailProvider(asset, webp, header);
-        if (isLoadPreview.value) {
-          yield ImmichImage.remoteThumbnailProvider(asset, jpeg, header);
-        }
-        if (isLoadOriginal.value) {
-          yield remoteOriginalProvider(asset);
-        }
-      }
-    }
-
     void precacheNextImage(int index) {
       void onError(Object exception, StackTrace? stackTrace) {
         // swallow error silently
+        debugPrint('Error precaching next image: $exception, $stackTrace');
       }
       if (index < totalAssets && index >= 0) {
         final asset = loadAsset(index);
-        for (final imageProvider in allImageProviders(asset)) {
-          precacheImage(imageProvider, context, onError: onError);
-        }
+        precacheImage(
+          ImmichImage.imageProvider(asset: asset),
+          context,
+          onError: onError,
+        );
       }
     }
 
@@ -765,6 +726,10 @@ class GalleryViewerPage extends HookConsumerWidget {
                 isZoomed.value = state != PhotoViewScaleState.initial;
                 ref.read(showControlsProvider.notifier).show = !isZoomed.value;
               },
+              loadingBuilder: (context, event, index) => ImmichImage.thumbnail(
+                asset(),
+                fit: BoxFit.contain,
+              ),
               pageController: controller,
               scrollPhysics: isZoomed.value
                   ? const NeverScrollableScrollPhysics() // Don't allow paging while scrolled in
@@ -781,47 +746,11 @@ class GalleryViewerPage extends HookConsumerWidget {
                 stackIndex.value = -1;
                 HapticFeedback.selectionClick();
               },
-              loadingBuilder: (context, event, index) {
-                final a = loadAsset(index);
-                if (ImmichImage.useLocal(a)) {
-                  return Image(
-                    image: ImmichImage.localImageProvider(a),
-                    fit: BoxFit.contain,
-                  );
-                }
-                // Use the WEBP Thumbnail as a placeholder for the JPEG thumbnail to achieve
-                // Three-Stage Loading (WEBP -> JPEG -> Original)
-                final webPThumbnail = CachedNetworkImage(
-                  imageUrl: getThumbnailUrl(a, type: webp),
-                  cacheKey: getThumbnailCacheKey(a, type: webp),
-                  httpHeaders: header,
-                  progressIndicatorBuilder: (_, __, ___) => const Center(
-                    child: ImmichLoadingIndicator(),
-                  ),
-                  fadeInDuration: const Duration(milliseconds: 0),
-                  fit: BoxFit.contain,
-                  errorWidget: (context, url, error) =>
-                      const Icon(Icons.image_not_supported_outlined),
-                );
-
-                // loading the preview in the loadingBuilder only
-                // makes sense if the original is loaded in the builder
-                return isLoadPreview.value && isLoadOriginal.value
-                    ? CachedNetworkImage(
-                        imageUrl: getThumbnailUrl(a, type: jpeg),
-                        cacheKey: getThumbnailCacheKey(a, type: jpeg),
-                        httpHeaders: header,
-                        fit: BoxFit.contain,
-                        fadeInDuration: const Duration(milliseconds: 0),
-                        placeholder: (_, __) => webPThumbnail,
-                        errorWidget: (_, __, ___) => webPThumbnail,
-                      )
-                    : webPThumbnail;
-              },
               builder: (context, index) {
                 final a =
                     index == currentIndex.value ? asset() : loadAsset(index);
-                final ImageProvider provider = finalImageProvider(a);
+                final ImageProvider provider =
+                    ImmichImage.imageProvider(asset: a);
 
                 if (a.isImage && !isPlayingMotionVideo.value) {
                   return PhotoViewGalleryPageOptions(

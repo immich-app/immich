@@ -59,7 +59,7 @@ start_docker_compose() {
 }
 
 show_friendly_message() {
-  echo "Succesfully deployed Immich!"
+  echo "Successfully deployed Immich!"
   echo "You can access the website at http://$ip_address:2283 and the server URL for the mobile app is http://$ip_address:2283/api"
   echo "The library location is $upload_location"
   echo "---------------------------------------------------"
