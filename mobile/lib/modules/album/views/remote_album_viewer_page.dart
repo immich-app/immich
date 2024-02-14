@@ -213,8 +213,9 @@ class RemoteAlbumViewerPage extends HookConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           buildTitle(album),
-          if (album.assets.isNotEmpty == true) buildAlbumDateRange(album),
-          if (album.shared) buildSharedUserIconsRow(album),
+          if (album.assets.isNotEmpty) buildAlbumDateRange(album),
+          if (album.shared && album.sharedUsers.isNotEmpty)
+            buildSharedUserIconsRow(album),
         ],
       );
     }

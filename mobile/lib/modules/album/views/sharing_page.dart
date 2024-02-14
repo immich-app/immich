@@ -53,7 +53,7 @@ class SharingPage extends HookConsumerWidget {
                 showOwner: true,
                 onTap: () => context.pushRoute(
                   RemoteAlbumViewerRoute(
-                    albumId: sharedAlbums[index].modifiedAt.minute,
+                    albumId: sharedAlbums[index].isarId,
                   ),
                 ),
               );
@@ -104,7 +104,7 @@ class SharingPage extends HookConsumerWidget {
                       : null,
               onTap: () => context.pushRoute(
                 RemoteAlbumViewerRoute(
-                  albumId: sharedAlbums[index].modifiedAt.second,
+                  albumId: sharedAlbums[index].isarId,
                 ),
               ),
             );
