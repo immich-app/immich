@@ -14,7 +14,6 @@ import {
   type UserResponseDto,
 } from '@immich/sdk';
 import { common } from '@immich/sdk/axios';
-import type { AxiosError } from 'axios';
 import { get } from 'svelte/store';
 
 interface UpdateParamAction {
@@ -134,8 +133,6 @@ export const getAssetJobMessage = (job: AssetJobName) => {
 
   return messages[job];
 };
-
-export type ApiError = AxiosError<{ message: string }>;
 
 export const copyToClipboard = async (secret: string) => {
   try {

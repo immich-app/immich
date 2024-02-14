@@ -1,9 +1,9 @@
-import type { ApiError } from '$lib/utils';
 import axios from 'axios';
 import { notificationController, NotificationType } from '../components/shared-components/notification/notification';
+import type { HttpError } from '@sveltejs/kit';
 
 export async function getServerErrorMessage(error: unknown) {
-  let data = (error as ApiError)?.response?.data;
+  let data = (error as HttpError)?.body;
   if (data instanceof Blob) {
     const response = await data.text();
     try {
