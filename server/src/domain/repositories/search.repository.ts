@@ -158,6 +158,8 @@ export type SmartSearchOptions = SearchDateOptions &
   SearchStatusOptions &
   SearchUserIDOptions;
 
+export type HybridSearchOptions = SearchDateOptions & SearchEmbeddingOptions & SearchExifOptions;
+
 export interface FaceEmbeddingSearch extends SearchEmbeddingOptions {
   hasPerson?: boolean;
   numResults: number;
@@ -173,6 +175,7 @@ export interface ISearchRepository {
   init(modelName: string): Promise<void>;
   searchMetadata(pagination: SearchPaginationOptions, options: AssetSearchOptions): Paginated<AssetEntity>;
   searchSmart(pagination: SearchPaginationOptions, options: SmartSearchOptions): Paginated<AssetEntity>;
+  searchHybrid(pagination: SearchPaginationOptions, options: HybridSearchOptions): Paginated<AssetEntity>;
   searchFaces(search: FaceEmbeddingSearch): Promise<FaceSearchResult[]>;
   upsert(smartInfo: Partial<SmartInfoEntity>, embedding?: Embedding): Promise<void>;
 }

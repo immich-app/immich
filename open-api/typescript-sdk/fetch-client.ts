@@ -2063,6 +2063,80 @@ export function getExploreData(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
+export function searchHybrid({ city, context, country, createdAfter, createdBefore, deviceId, isArchived, isEncoded, isExternal, isFavorite, isMotion, isNotInAlbum, isOffline, isReadOnly, isVisible, lensModel, libraryId, make, model, page, size, state, takenAfter, takenBefore, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, withArchived, withDeleted, withExif }: {
+    city?: string;
+    context: string;
+    country?: string;
+    createdAfter?: string;
+    createdBefore?: string;
+    deviceId?: string;
+    isArchived?: boolean;
+    isEncoded?: boolean;
+    isExternal?: boolean;
+    isFavorite?: boolean;
+    isMotion?: boolean;
+    isNotInAlbum?: boolean;
+    isOffline?: boolean;
+    isReadOnly?: boolean;
+    isVisible?: boolean;
+    lensModel?: string;
+    libraryId?: string;
+    make?: string;
+    model?: string;
+    page?: number;
+    size?: number;
+    state?: string;
+    takenAfter?: string;
+    takenBefore?: string;
+    trashedAfter?: string;
+    trashedBefore?: string;
+    $type?: AssetTypeEnum;
+    updatedAfter?: string;
+    updatedBefore?: string;
+    withArchived?: boolean;
+    withDeleted?: boolean;
+    withExif?: boolean;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: SearchResponseDto;
+    }>(`/search/hybrid${QS.query(QS.explode({
+        city,
+        context,
+        country,
+        createdAfter,
+        createdBefore,
+        deviceId,
+        isArchived,
+        isEncoded,
+        isExternal,
+        isFavorite,
+        isMotion,
+        isNotInAlbum,
+        isOffline,
+        isReadOnly,
+        isVisible,
+        lensModel,
+        libraryId,
+        make,
+        model,
+        page,
+        size,
+        state,
+        takenAfter,
+        takenBefore,
+        trashedAfter,
+        trashedBefore,
+        "type": $type,
+        updatedAfter,
+        updatedBefore,
+        withArchived,
+        withDeleted,
+        withExif
+    }))}`, {
+        ...opts
+    }));
+}
 export function searchMetadata({ checksum, city, country, createdAfter, createdBefore, deviceAssetId, deviceId, encodedVideoPath, id, isArchived, isEncoded, isExternal, isFavorite, isMotion, isOffline, isReadOnly, isVisible, lensModel, libraryId, make, model, order, originalFileName, originalPath, page, resizePath, size, state, takenAfter, takenBefore, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, webpPath, withArchived, withDeleted, withExif, withPeople, withStacked }: {
     checksum?: string;
     city?: string;

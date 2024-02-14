@@ -1,5 +1,6 @@
 import {
   AuthDto,
+  HybridSearchDto,
   MetadataSearchDto,
   PersonResponseDto,
   SearchDto,
@@ -30,6 +31,11 @@ export class SearchController {
   @Get('smart')
   searchSmart(@Auth() auth: AuthDto, @Query() dto: SmartSearchDto): Promise<SearchResponseDto> {
     return this.service.searchSmart(auth, dto);
+  }
+
+  @Get('hybrid')
+  searchHybrid(@Auth() auth: AuthDto, @Query() dto: HybridSearchDto): Promise<SearchResponseDto> {
+    return this.service.searchHybrid(auth, dto);
   }
 
   @Get()

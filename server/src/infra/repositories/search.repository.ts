@@ -4,6 +4,7 @@ import {
   Embedding,
   FaceEmbeddingSearch,
   FaceSearchResult,
+  HybridSearchOptions,
   ISearchRepository,
   Paginated,
   PaginationMode,
@@ -248,5 +249,31 @@ export class SearchRepository implements ISearchRepository {
     }
 
     return runtimeConfig;
+  }
+
+  async searchHybrid(
+    pagination: SearchPaginationOptions,
+    { embedding, userIds, ...options }: HybridSearchOptions,
+  ): Paginated<AssetEntity> {
+    let results: PaginationResult<AssetEntity> = { items: [], hasNextPage: false };
+
+    await this.assetRepository.manager.transaction(async (manager) => {
+      let builder = manager.createQueryBuilder(AssetEntity, 'asset');
+      builder = searchAssetBuilder(builder, options);
+      builder
+        .innerJoin('asset.smartSearch', 'search')
+        .andWhere('asset.ownerId IN (:...userIds )')
+        .orderBy('search.embedding <=> :embedding')
+        .setParameters({ userIds, embedding: asVector(embedding) });
+
+      await manager.query(this.getRuntimeConfig(pagination.size));
+      results = await paginatedBuilder<AssetEntity>(builder, {
+        mode: PaginationMode.LIMIT_OFFSET,
+        skip: (pagination.page - 1) * pagination.size,
+        take: pagination.size,
+      });
+    });
+
+    return results;
   }
 }

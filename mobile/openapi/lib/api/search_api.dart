@@ -254,6 +254,272 @@ class SearchApi {
     return null;
   }
 
+  /// Performs an HTTP 'GET /search/hybrid' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [String] context (required):
+  ///
+  /// * [String] city:
+  ///
+  /// * [String] country:
+  ///
+  /// * [DateTime] createdAfter:
+  ///
+  /// * [DateTime] createdBefore:
+  ///
+  /// * [String] deviceId:
+  ///
+  /// * [bool] isArchived:
+  ///
+  /// * [bool] isEncoded:
+  ///
+  /// * [bool] isExternal:
+  ///
+  /// * [bool] isFavorite:
+  ///
+  /// * [bool] isMotion:
+  ///
+  /// * [bool] isNotInAlbum:
+  ///
+  /// * [bool] isOffline:
+  ///
+  /// * [bool] isReadOnly:
+  ///
+  /// * [bool] isVisible:
+  ///
+  /// * [String] lensModel:
+  ///
+  /// * [String] libraryId:
+  ///
+  /// * [String] make:
+  ///
+  /// * [String] model:
+  ///
+  /// * [num] page:
+  ///
+  /// * [num] size:
+  ///
+  /// * [String] state:
+  ///
+  /// * [DateTime] takenAfter:
+  ///
+  /// * [DateTime] takenBefore:
+  ///
+  /// * [DateTime] trashedAfter:
+  ///
+  /// * [DateTime] trashedBefore:
+  ///
+  /// * [AssetTypeEnum] type:
+  ///
+  /// * [DateTime] updatedAfter:
+  ///
+  /// * [DateTime] updatedBefore:
+  ///
+  /// * [bool] withArchived:
+  ///
+  /// * [bool] withDeleted:
+  ///
+  /// * [bool] withExif:
+  Future<Response> searchHybridWithHttpInfo(String context, { String? city, String? country, DateTime? createdAfter, DateTime? createdBefore, String? deviceId, bool? isArchived, bool? isEncoded, bool? isExternal, bool? isFavorite, bool? isMotion, bool? isNotInAlbum, bool? isOffline, bool? isReadOnly, bool? isVisible, String? lensModel, String? libraryId, String? make, String? model, num? page, num? size, String? state, DateTime? takenAfter, DateTime? takenBefore, DateTime? trashedAfter, DateTime? trashedBefore, AssetTypeEnum? type, DateTime? updatedAfter, DateTime? updatedBefore, bool? withArchived, bool? withDeleted, bool? withExif, }) async {
+    // ignore: prefer_const_declarations
+    final path = r'/search/hybrid';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    if (city != null) {
+      queryParams.addAll(_queryParams('', 'city', city));
+    }
+      queryParams.addAll(_queryParams('', 'context', context));
+    if (country != null) {
+      queryParams.addAll(_queryParams('', 'country', country));
+    }
+    if (createdAfter != null) {
+      queryParams.addAll(_queryParams('', 'createdAfter', createdAfter));
+    }
+    if (createdBefore != null) {
+      queryParams.addAll(_queryParams('', 'createdBefore', createdBefore));
+    }
+    if (deviceId != null) {
+      queryParams.addAll(_queryParams('', 'deviceId', deviceId));
+    }
+    if (isArchived != null) {
+      queryParams.addAll(_queryParams('', 'isArchived', isArchived));
+    }
+    if (isEncoded != null) {
+      queryParams.addAll(_queryParams('', 'isEncoded', isEncoded));
+    }
+    if (isExternal != null) {
+      queryParams.addAll(_queryParams('', 'isExternal', isExternal));
+    }
+    if (isFavorite != null) {
+      queryParams.addAll(_queryParams('', 'isFavorite', isFavorite));
+    }
+    if (isMotion != null) {
+      queryParams.addAll(_queryParams('', 'isMotion', isMotion));
+    }
+    if (isNotInAlbum != null) {
+      queryParams.addAll(_queryParams('', 'isNotInAlbum', isNotInAlbum));
+    }
+    if (isOffline != null) {
+      queryParams.addAll(_queryParams('', 'isOffline', isOffline));
+    }
+    if (isReadOnly != null) {
+      queryParams.addAll(_queryParams('', 'isReadOnly', isReadOnly));
+    }
+    if (isVisible != null) {
+      queryParams.addAll(_queryParams('', 'isVisible', isVisible));
+    }
+    if (lensModel != null) {
+      queryParams.addAll(_queryParams('', 'lensModel', lensModel));
+    }
+    if (libraryId != null) {
+      queryParams.addAll(_queryParams('', 'libraryId', libraryId));
+    }
+    if (make != null) {
+      queryParams.addAll(_queryParams('', 'make', make));
+    }
+    if (model != null) {
+      queryParams.addAll(_queryParams('', 'model', model));
+    }
+    if (page != null) {
+      queryParams.addAll(_queryParams('', 'page', page));
+    }
+    if (size != null) {
+      queryParams.addAll(_queryParams('', 'size', size));
+    }
+    if (state != null) {
+      queryParams.addAll(_queryParams('', 'state', state));
+    }
+    if (takenAfter != null) {
+      queryParams.addAll(_queryParams('', 'takenAfter', takenAfter));
+    }
+    if (takenBefore != null) {
+      queryParams.addAll(_queryParams('', 'takenBefore', takenBefore));
+    }
+    if (trashedAfter != null) {
+      queryParams.addAll(_queryParams('', 'trashedAfter', trashedAfter));
+    }
+    if (trashedBefore != null) {
+      queryParams.addAll(_queryParams('', 'trashedBefore', trashedBefore));
+    }
+    if (type != null) {
+      queryParams.addAll(_queryParams('', 'type', type));
+    }
+    if (updatedAfter != null) {
+      queryParams.addAll(_queryParams('', 'updatedAfter', updatedAfter));
+    }
+    if (updatedBefore != null) {
+      queryParams.addAll(_queryParams('', 'updatedBefore', updatedBefore));
+    }
+    if (withArchived != null) {
+      queryParams.addAll(_queryParams('', 'withArchived', withArchived));
+    }
+    if (withDeleted != null) {
+      queryParams.addAll(_queryParams('', 'withDeleted', withDeleted));
+    }
+    if (withExif != null) {
+      queryParams.addAll(_queryParams('', 'withExif', withExif));
+    }
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [String] context (required):
+  ///
+  /// * [String] city:
+  ///
+  /// * [String] country:
+  ///
+  /// * [DateTime] createdAfter:
+  ///
+  /// * [DateTime] createdBefore:
+  ///
+  /// * [String] deviceId:
+  ///
+  /// * [bool] isArchived:
+  ///
+  /// * [bool] isEncoded:
+  ///
+  /// * [bool] isExternal:
+  ///
+  /// * [bool] isFavorite:
+  ///
+  /// * [bool] isMotion:
+  ///
+  /// * [bool] isNotInAlbum:
+  ///
+  /// * [bool] isOffline:
+  ///
+  /// * [bool] isReadOnly:
+  ///
+  /// * [bool] isVisible:
+  ///
+  /// * [String] lensModel:
+  ///
+  /// * [String] libraryId:
+  ///
+  /// * [String] make:
+  ///
+  /// * [String] model:
+  ///
+  /// * [num] page:
+  ///
+  /// * [num] size:
+  ///
+  /// * [String] state:
+  ///
+  /// * [DateTime] takenAfter:
+  ///
+  /// * [DateTime] takenBefore:
+  ///
+  /// * [DateTime] trashedAfter:
+  ///
+  /// * [DateTime] trashedBefore:
+  ///
+  /// * [AssetTypeEnum] type:
+  ///
+  /// * [DateTime] updatedAfter:
+  ///
+  /// * [DateTime] updatedBefore:
+  ///
+  /// * [bool] withArchived:
+  ///
+  /// * [bool] withDeleted:
+  ///
+  /// * [bool] withExif:
+  Future<SearchResponseDto?> searchHybrid(String context, { String? city, String? country, DateTime? createdAfter, DateTime? createdBefore, String? deviceId, bool? isArchived, bool? isEncoded, bool? isExternal, bool? isFavorite, bool? isMotion, bool? isNotInAlbum, bool? isOffline, bool? isReadOnly, bool? isVisible, String? lensModel, String? libraryId, String? make, String? model, num? page, num? size, String? state, DateTime? takenAfter, DateTime? takenBefore, DateTime? trashedAfter, DateTime? trashedBefore, AssetTypeEnum? type, DateTime? updatedAfter, DateTime? updatedBefore, bool? withArchived, bool? withDeleted, bool? withExif, }) async {
+    final response = await searchHybridWithHttpInfo(context,  city: city, country: country, createdAfter: createdAfter, createdBefore: createdBefore, deviceId: deviceId, isArchived: isArchived, isEncoded: isEncoded, isExternal: isExternal, isFavorite: isFavorite, isMotion: isMotion, isNotInAlbum: isNotInAlbum, isOffline: isOffline, isReadOnly: isReadOnly, isVisible: isVisible, lensModel: lensModel, libraryId: libraryId, make: make, model: model, page: page, size: size, state: state, takenAfter: takenAfter, takenBefore: takenBefore, trashedAfter: trashedAfter, trashedBefore: trashedBefore, type: type, updatedAfter: updatedAfter, updatedBefore: updatedBefore, withArchived: withArchived, withDeleted: withDeleted, withExif: withExif, );
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'SearchResponseDto',) as SearchResponseDto;
+    
+    }
+    return null;
+  }
+
   /// Performs an HTTP 'GET /search/metadata' operation and returns the [Response].
   /// Parameters:
   ///

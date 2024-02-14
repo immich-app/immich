@@ -244,3 +244,14 @@ export class SearchPeopleDto {
   @Optional()
   withHidden?: boolean;
 }
+
+export class HybridSearchDto extends BaseSearchDto {
+  @IsString()
+  @IsNotEmpty()
+  context!: string;
+
+  @IsBoolean()
+  @Optional()
+  @Transform(toBoolean)
+  isNotInAlbum?: boolean;
+}

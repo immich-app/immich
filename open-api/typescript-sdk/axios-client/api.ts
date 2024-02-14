@@ -14705,6 +14705,222 @@ export const SearchApiAxiosParamCreator = function (configuration?: Configuratio
         },
         /**
          * 
+         * @param {string} context 
+         * @param {string} [city] 
+         * @param {string} [country] 
+         * @param {string} [createdAfter] 
+         * @param {string} [createdBefore] 
+         * @param {string} [deviceId] 
+         * @param {boolean} [isArchived] 
+         * @param {boolean} [isEncoded] 
+         * @param {boolean} [isExternal] 
+         * @param {boolean} [isFavorite] 
+         * @param {boolean} [isMotion] 
+         * @param {boolean} [isNotInAlbum] 
+         * @param {boolean} [isOffline] 
+         * @param {boolean} [isReadOnly] 
+         * @param {boolean} [isVisible] 
+         * @param {string} [lensModel] 
+         * @param {string} [libraryId] 
+         * @param {string} [make] 
+         * @param {string} [model] 
+         * @param {number} [page] 
+         * @param {number} [size] 
+         * @param {string} [state] 
+         * @param {string} [takenAfter] 
+         * @param {string} [takenBefore] 
+         * @param {string} [trashedAfter] 
+         * @param {string} [trashedBefore] 
+         * @param {AssetTypeEnum} [type] 
+         * @param {string} [updatedAfter] 
+         * @param {string} [updatedBefore] 
+         * @param {boolean} [withArchived] 
+         * @param {boolean} [withDeleted] 
+         * @param {boolean} [withExif] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        searchHybrid: async (context: string, city?: string, country?: string, createdAfter?: string, createdBefore?: string, deviceId?: string, isArchived?: boolean, isEncoded?: boolean, isExternal?: boolean, isFavorite?: boolean, isMotion?: boolean, isNotInAlbum?: boolean, isOffline?: boolean, isReadOnly?: boolean, isVisible?: boolean, lensModel?: string, libraryId?: string, make?: string, model?: string, page?: number, size?: number, state?: string, takenAfter?: string, takenBefore?: string, trashedAfter?: string, trashedBefore?: string, type?: AssetTypeEnum, updatedAfter?: string, updatedBefore?: string, withArchived?: boolean, withDeleted?: boolean, withExif?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'context' is not null or undefined
+            assertParamExists('searchHybrid', 'context', context)
+            const localVarPath = `/search/hybrid`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (city !== undefined) {
+                localVarQueryParameter['city'] = city;
+            }
+
+            if (context !== undefined) {
+                localVarQueryParameter['context'] = context;
+            }
+
+            if (country !== undefined) {
+                localVarQueryParameter['country'] = country;
+            }
+
+            if (createdAfter !== undefined) {
+                localVarQueryParameter['createdAfter'] = (createdAfter as any instanceof Date) ?
+                    (createdAfter as any).toISOString() :
+                    createdAfter;
+            }
+
+            if (createdBefore !== undefined) {
+                localVarQueryParameter['createdBefore'] = (createdBefore as any instanceof Date) ?
+                    (createdBefore as any).toISOString() :
+                    createdBefore;
+            }
+
+            if (deviceId !== undefined) {
+                localVarQueryParameter['deviceId'] = deviceId;
+            }
+
+            if (isArchived !== undefined) {
+                localVarQueryParameter['isArchived'] = isArchived;
+            }
+
+            if (isEncoded !== undefined) {
+                localVarQueryParameter['isEncoded'] = isEncoded;
+            }
+
+            if (isExternal !== undefined) {
+                localVarQueryParameter['isExternal'] = isExternal;
+            }
+
+            if (isFavorite !== undefined) {
+                localVarQueryParameter['isFavorite'] = isFavorite;
+            }
+
+            if (isMotion !== undefined) {
+                localVarQueryParameter['isMotion'] = isMotion;
+            }
+
+            if (isNotInAlbum !== undefined) {
+                localVarQueryParameter['isNotInAlbum'] = isNotInAlbum;
+            }
+
+            if (isOffline !== undefined) {
+                localVarQueryParameter['isOffline'] = isOffline;
+            }
+
+            if (isReadOnly !== undefined) {
+                localVarQueryParameter['isReadOnly'] = isReadOnly;
+            }
+
+            if (isVisible !== undefined) {
+                localVarQueryParameter['isVisible'] = isVisible;
+            }
+
+            if (lensModel !== undefined) {
+                localVarQueryParameter['lensModel'] = lensModel;
+            }
+
+            if (libraryId !== undefined) {
+                localVarQueryParameter['libraryId'] = libraryId;
+            }
+
+            if (make !== undefined) {
+                localVarQueryParameter['make'] = make;
+            }
+
+            if (model !== undefined) {
+                localVarQueryParameter['model'] = model;
+            }
+
+            if (page !== undefined) {
+                localVarQueryParameter['page'] = page;
+            }
+
+            if (size !== undefined) {
+                localVarQueryParameter['size'] = size;
+            }
+
+            if (state !== undefined) {
+                localVarQueryParameter['state'] = state;
+            }
+
+            if (takenAfter !== undefined) {
+                localVarQueryParameter['takenAfter'] = (takenAfter as any instanceof Date) ?
+                    (takenAfter as any).toISOString() :
+                    takenAfter;
+            }
+
+            if (takenBefore !== undefined) {
+                localVarQueryParameter['takenBefore'] = (takenBefore as any instanceof Date) ?
+                    (takenBefore as any).toISOString() :
+                    takenBefore;
+            }
+
+            if (trashedAfter !== undefined) {
+                localVarQueryParameter['trashedAfter'] = (trashedAfter as any instanceof Date) ?
+                    (trashedAfter as any).toISOString() :
+                    trashedAfter;
+            }
+
+            if (trashedBefore !== undefined) {
+                localVarQueryParameter['trashedBefore'] = (trashedBefore as any instanceof Date) ?
+                    (trashedBefore as any).toISOString() :
+                    trashedBefore;
+            }
+
+            if (type !== undefined) {
+                localVarQueryParameter['type'] = type;
+            }
+
+            if (updatedAfter !== undefined) {
+                localVarQueryParameter['updatedAfter'] = (updatedAfter as any instanceof Date) ?
+                    (updatedAfter as any).toISOString() :
+                    updatedAfter;
+            }
+
+            if (updatedBefore !== undefined) {
+                localVarQueryParameter['updatedBefore'] = (updatedBefore as any instanceof Date) ?
+                    (updatedBefore as any).toISOString() :
+                    updatedBefore;
+            }
+
+            if (withArchived !== undefined) {
+                localVarQueryParameter['withArchived'] = withArchived;
+            }
+
+            if (withDeleted !== undefined) {
+                localVarQueryParameter['withDeleted'] = withDeleted;
+            }
+
+            if (withExif !== undefined) {
+                localVarQueryParameter['withExif'] = withExif;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @param {string} [checksum] 
          * @param {string} [city] 
          * @param {string} [country] 
@@ -15284,6 +15500,49 @@ export const SearchApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {string} context 
+         * @param {string} [city] 
+         * @param {string} [country] 
+         * @param {string} [createdAfter] 
+         * @param {string} [createdBefore] 
+         * @param {string} [deviceId] 
+         * @param {boolean} [isArchived] 
+         * @param {boolean} [isEncoded] 
+         * @param {boolean} [isExternal] 
+         * @param {boolean} [isFavorite] 
+         * @param {boolean} [isMotion] 
+         * @param {boolean} [isNotInAlbum] 
+         * @param {boolean} [isOffline] 
+         * @param {boolean} [isReadOnly] 
+         * @param {boolean} [isVisible] 
+         * @param {string} [lensModel] 
+         * @param {string} [libraryId] 
+         * @param {string} [make] 
+         * @param {string} [model] 
+         * @param {number} [page] 
+         * @param {number} [size] 
+         * @param {string} [state] 
+         * @param {string} [takenAfter] 
+         * @param {string} [takenBefore] 
+         * @param {string} [trashedAfter] 
+         * @param {string} [trashedBefore] 
+         * @param {AssetTypeEnum} [type] 
+         * @param {string} [updatedAfter] 
+         * @param {string} [updatedBefore] 
+         * @param {boolean} [withArchived] 
+         * @param {boolean} [withDeleted] 
+         * @param {boolean} [withExif] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async searchHybrid(context: string, city?: string, country?: string, createdAfter?: string, createdBefore?: string, deviceId?: string, isArchived?: boolean, isEncoded?: boolean, isExternal?: boolean, isFavorite?: boolean, isMotion?: boolean, isNotInAlbum?: boolean, isOffline?: boolean, isReadOnly?: boolean, isVisible?: boolean, lensModel?: string, libraryId?: string, make?: string, model?: string, page?: number, size?: number, state?: string, takenAfter?: string, takenBefore?: string, trashedAfter?: string, trashedBefore?: string, type?: AssetTypeEnum, updatedAfter?: string, updatedBefore?: string, withArchived?: boolean, withDeleted?: boolean, withExif?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SearchResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.searchHybrid(context, city, country, createdAfter, createdBefore, deviceId, isArchived, isEncoded, isExternal, isFavorite, isMotion, isNotInAlbum, isOffline, isReadOnly, isVisible, lensModel, libraryId, make, model, page, size, state, takenAfter, takenBefore, trashedAfter, trashedBefore, type, updatedAfter, updatedBefore, withArchived, withDeleted, withExif, options);
+            const index = configuration?.serverIndex ?? 0;
+            const operationBasePath = operationServerMap['SearchApi.searchHybrid']?.[index]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, operationBasePath || basePath);
+        },
+        /**
+         * 
          * @param {string} [checksum] 
          * @param {string} [city] 
          * @param {string} [country] 
@@ -15425,6 +15684,15 @@ export const SearchApiFactory = function (configuration?: Configuration, basePat
          */
         search(requestParameters: SearchApiSearchRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<SearchResponseDto> {
             return localVarFp.search(requestParameters.clip, requestParameters.motion, requestParameters.page, requestParameters.q, requestParameters.query, requestParameters.recent, requestParameters.size, requestParameters.smart, requestParameters.type, requestParameters.withArchived, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {SearchApiSearchHybridRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        searchHybrid(requestParameters: SearchApiSearchHybridRequest, options?: RawAxiosRequestConfig): AxiosPromise<SearchResponseDto> {
+            return localVarFp.searchHybrid(requestParameters.context, requestParameters.city, requestParameters.country, requestParameters.createdAfter, requestParameters.createdBefore, requestParameters.deviceId, requestParameters.isArchived, requestParameters.isEncoded, requestParameters.isExternal, requestParameters.isFavorite, requestParameters.isMotion, requestParameters.isNotInAlbum, requestParameters.isOffline, requestParameters.isReadOnly, requestParameters.isVisible, requestParameters.lensModel, requestParameters.libraryId, requestParameters.make, requestParameters.model, requestParameters.page, requestParameters.size, requestParameters.state, requestParameters.takenAfter, requestParameters.takenBefore, requestParameters.trashedAfter, requestParameters.trashedBefore, requestParameters.type, requestParameters.updatedAfter, requestParameters.updatedBefore, requestParameters.withArchived, requestParameters.withDeleted, requestParameters.withExif, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -15573,6 +15841,237 @@ export interface SearchApiSearchRequest {
      * @memberof SearchApiSearch
      */
     readonly withArchived?: boolean
+}
+
+/**
+ * Request parameters for searchHybrid operation in SearchApi.
+ * @export
+ * @interface SearchApiSearchHybridRequest
+ */
+export interface SearchApiSearchHybridRequest {
+    /**
+     * 
+     * @type {string}
+     * @memberof SearchApiSearchHybrid
+     */
+    readonly context: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof SearchApiSearchHybrid
+     */
+    readonly city?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof SearchApiSearchHybrid
+     */
+    readonly country?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof SearchApiSearchHybrid
+     */
+    readonly createdAfter?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof SearchApiSearchHybrid
+     */
+    readonly createdBefore?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof SearchApiSearchHybrid
+     */
+    readonly deviceId?: string
+
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SearchApiSearchHybrid
+     */
+    readonly isArchived?: boolean
+
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SearchApiSearchHybrid
+     */
+    readonly isEncoded?: boolean
+
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SearchApiSearchHybrid
+     */
+    readonly isExternal?: boolean
+
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SearchApiSearchHybrid
+     */
+    readonly isFavorite?: boolean
+
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SearchApiSearchHybrid
+     */
+    readonly isMotion?: boolean
+
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SearchApiSearchHybrid
+     */
+    readonly isNotInAlbum?: boolean
+
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SearchApiSearchHybrid
+     */
+    readonly isOffline?: boolean
+
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SearchApiSearchHybrid
+     */
+    readonly isReadOnly?: boolean
+
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SearchApiSearchHybrid
+     */
+    readonly isVisible?: boolean
+
+    /**
+     * 
+     * @type {string}
+     * @memberof SearchApiSearchHybrid
+     */
+    readonly lensModel?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof SearchApiSearchHybrid
+     */
+    readonly libraryId?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof SearchApiSearchHybrid
+     */
+    readonly make?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof SearchApiSearchHybrid
+     */
+    readonly model?: string
+
+    /**
+     * 
+     * @type {number}
+     * @memberof SearchApiSearchHybrid
+     */
+    readonly page?: number
+
+    /**
+     * 
+     * @type {number}
+     * @memberof SearchApiSearchHybrid
+     */
+    readonly size?: number
+
+    /**
+     * 
+     * @type {string}
+     * @memberof SearchApiSearchHybrid
+     */
+    readonly state?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof SearchApiSearchHybrid
+     */
+    readonly takenAfter?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof SearchApiSearchHybrid
+     */
+    readonly takenBefore?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof SearchApiSearchHybrid
+     */
+    readonly trashedAfter?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof SearchApiSearchHybrid
+     */
+    readonly trashedBefore?: string
+
+    /**
+     * 
+     * @type {AssetTypeEnum}
+     * @memberof SearchApiSearchHybrid
+     */
+    readonly type?: AssetTypeEnum
+
+    /**
+     * 
+     * @type {string}
+     * @memberof SearchApiSearchHybrid
+     */
+    readonly updatedAfter?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof SearchApiSearchHybrid
+     */
+    readonly updatedBefore?: string
+
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SearchApiSearchHybrid
+     */
+    readonly withArchived?: boolean
+
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SearchApiSearchHybrid
+     */
+    readonly withDeleted?: boolean
+
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SearchApiSearchHybrid
+     */
+    readonly withExif?: boolean
 }
 
 /**
@@ -16152,6 +16651,17 @@ export class SearchApi extends BaseAPI {
      */
     public search(requestParameters: SearchApiSearchRequest = {}, options?: RawAxiosRequestConfig) {
         return SearchApiFp(this.configuration).search(requestParameters.clip, requestParameters.motion, requestParameters.page, requestParameters.q, requestParameters.query, requestParameters.recent, requestParameters.size, requestParameters.smart, requestParameters.type, requestParameters.withArchived, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {SearchApiSearchHybridRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SearchApi
+     */
+    public searchHybrid(requestParameters: SearchApiSearchHybridRequest, options?: RawAxiosRequestConfig) {
+        return SearchApiFp(this.configuration).searchHybrid(requestParameters.context, requestParameters.city, requestParameters.country, requestParameters.createdAfter, requestParameters.createdBefore, requestParameters.deviceId, requestParameters.isArchived, requestParameters.isEncoded, requestParameters.isExternal, requestParameters.isFavorite, requestParameters.isMotion, requestParameters.isNotInAlbum, requestParameters.isOffline, requestParameters.isReadOnly, requestParameters.isVisible, requestParameters.lensModel, requestParameters.libraryId, requestParameters.make, requestParameters.model, requestParameters.page, requestParameters.size, requestParameters.state, requestParameters.takenAfter, requestParameters.takenBefore, requestParameters.trashedAfter, requestParameters.trashedBefore, requestParameters.type, requestParameters.updatedAfter, requestParameters.updatedBefore, requestParameters.withArchived, requestParameters.withDeleted, requestParameters.withExif, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
