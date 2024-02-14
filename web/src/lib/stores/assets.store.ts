@@ -232,6 +232,10 @@ export class AssetStore {
         }
       }
 
+      if (bucket.cancelToken.signal.aborted) {
+        return;
+      }
+
       bucket.assets = assets;
 
       this.emit(true);
