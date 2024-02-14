@@ -36,8 +36,8 @@ class HomePage extends HookConsumerWidget {
         Future(() => ref.read(assetProvider.notifier).getAllAsset());
         ref.read(assetProvider.notifier).getPartnerAssets();
         ref.read(remoteAlbumsProvider.notifier).getRemoteAlbums();
-        ref.read(localAlbumsProvider.notifier).getDeviceAlbums();
         ref.read(sharedAlbumProvider.notifier).getAllSharedAlbums();
+        ref.read(localAlbumsProvider.notifier).getDeviceAlbums();
         ref.read(serverInfoProvider.notifier).getServerInfo();
         return;
       },
