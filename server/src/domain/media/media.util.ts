@@ -1,4 +1,4 @@
-import { CQMode, ToneMapping, TranscodeHWAccel, VideoCodec } from '@app/infra/entities';
+import { CQMode, ToneMapping, TranscodeHWAccel, TranscodeTarget, VideoCodec } from '@app/infra/entities';
 import {
   AudioStreamInfo,
   BitrateDistribution,
@@ -12,16 +12,19 @@ class BaseConfig implements VideoCodecSWConfig {
   presets = ['veryslow', 'slower', 'slow', 'medium', 'fast', 'faster', 'veryfast', 'superfast', 'ultrafast'];
   constructor(protected config: SystemConfigFFmpegDto) {}
 
-  getOptions(videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
+  getOptions(target: TranscodeTarget, videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
     const options = {
       inputOptions: this.getBaseInputOptions(),
-      outputOptions: [...this.getBaseOutputOptions(videoStream, audioStream), '-v verbose'],
+      outputOptions: [...this.getBaseOutputOptions(target, videoStream, audioStream), '-v verbose'],
       twoPass: this.eligibleForTwoPass(),
     } as TranscodeOptions;
-    const filters = this.getFilterOptions(videoStream);
-    if (filters.length > 0) {
-      options.outputOptions.push(`-vf ${filters.join(',')}`);
+    if ([TranscodeTarget.ALL, TranscodeTarget.VIDEO].includes(target)) {
+      const filters = this.getFilterOptions(videoStream);
+      if (filters.length > 0) {
+        options.outputOptions.push(`-vf ${filters.join(',')}`);
+      }
     }
+
     options.outputOptions.push(...this.getPresetOptions(), ...this.getThreadOptions(), ...this.getBitrateOptions());
 
     return options;
@@ -31,10 +34,10 @@ class BaseConfig implements VideoCodecSWConfig {
     return [];
   }
 
-  getBaseOutputOptions(videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
+  getBaseOutputOptions(target: TranscodeTarget, videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
     const options = [
-      `-c:v ${this.getVideoCodec()}`,
-      `-c:a ${this.getAudioCodec()}`,
+      `-c:v ${[TranscodeTarget.ALL, TranscodeTarget.VIDEO].includes(target) ? this.getVideoCodec() : 'copy'}`,
+      `-c:a ${[TranscodeTarget.ALL, TranscodeTarget.AUDIO].includes(target) ? this.getAudioCodec() : 'copy'}`,
       // Makes a second pass moving the moov atom to the
       // beginning of the file for improved playback speed.
       '-movflags faststart',
@@ -398,14 +401,14 @@ export class NVENCConfig extends BaseHWConfig {
     return ['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda'];
   }
 
-  getBaseOutputOptions(videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
+  getBaseOutputOptions(target: TranscodeTarget, videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
     const options = [
       // below settings recommended from https://docs.nvidia.com/video-technologies/video-codec-sdk/12.0/ffmpeg-with-nvidia-gpu/index.html#command-line-for-latency-tolerant-high-quality-transcoding
       '-tune hq',
       '-qmin 0',
       '-rc-lookahead 20',
       '-i_qfactor 0.75',
-      ...super.getBaseOutputOptions(videoStream, audioStream),
+      ...super.getBaseOutputOptions(target, videoStream, audioStream),
     ];
     if (this.getBFrames() > 0) {
       options.push('-b_ref_mode middle', '-b_qfactor 1.1');
@@ -483,8 +486,8 @@ export class QSVConfig extends BaseHWConfig {
     return [`-init_hw_device qsv=hw${qsvString}`, '-filter_hw_device hw'];
   }
 
-  getBaseOutputOptions(videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
-    const options = super.getBaseOutputOptions(videoStream, audioStream);
+  getBaseOutputOptions(target: TranscodeTarget, videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
+    const options = super.getBaseOutputOptions(target, videoStream, audioStream);
     // VP9 requires enabling low power mode https://git.ffmpeg.org/gitweb/ffmpeg.git/commit/33583803e107b6d532def0f9d949364b01b6ad5a
     if (this.config.targetVideoCodec === VideoCodec.VP9) {
       options.push('-low_power 1');
@@ -604,11 +607,13 @@ export class VAAPIConfig extends BaseHWConfig {
 }
 
 export class RKMPPConfig extends BaseHWConfig {
-  getOptions(videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo): TranscodeOptions {
-    const options = super.getOptions(videoStream, audioStream);
+  getOptions(target: TranscodeTarget, videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo): TranscodeOptions {
+    const options = super.getOptions(target, videoStream, audioStream);
     options.ffmpegPath = 'ffmpeg_mpp';
     options.ldLibraryPath = '/lib/aarch64-linux-gnu:/lib/ffmpeg-mpp';
-    options.outputOptions.push(...this.getSizeOptions(videoStream));
+    if ([TranscodeTarget.ALL, TranscodeTarget.VIDEO].includes(target)) {
+      options.outputOptions.push(...this.getSizeOptions(videoStream));
+    }
     return options;
   }
 
