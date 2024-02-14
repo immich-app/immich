@@ -220,7 +220,6 @@
   };
 
   const search = async () => {
-    console.log('filter search');
     const { assets } = await searchHybrid({
       context: filter.context,
       country: filter.location.country?.value,

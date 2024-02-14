@@ -260,6 +260,8 @@ export class SearchRepository implements ISearchRepository {
     await this.assetRepository.manager.transaction(async (manager) => {
       let builder = manager.createQueryBuilder(AssetEntity, 'asset');
 
+      builder.leftJoinAndSelect('asset.exifInfo', 'exif');
+
       if (embedding) {
         builder
           .innerJoin('asset.smartSearch', 'search')
@@ -268,12 +270,32 @@ export class SearchRepository implements ISearchRepository {
           .setParameters({ userIds, embedding: asVector(embedding) });
       }
 
-      if (options.city || options.country || options.state) {
-        builder
-          .innerJoin('asset.exifInfo', 'location')
-          .andWhere('location.city = :city', { city: options.city })
-          .andWhere('location.state = :state', { state: options.state })
-          .andWhere('location.country = :country', { country: options.country });
+      if (options.state) {
+        builder.andWhere('exif.state = :state', { state: options.state });
+      }
+
+      if (options.country) {
+        builder.andWhere('exif.country = :country', { country: options.country });
+      }
+
+      if (options.city) {
+        builder.andWhere('exif.city = :city', { city: options.city });
+      }
+
+      if (options.make) {
+        builder.andWhere('exif.make = :make', { make: options.make });
+      }
+
+      if (options.model) {
+        builder.andWhere('exif.model = :model', { model: options.model });
+      }
+
+      if (options.takenAfter) {
+        builder.andWhere('exif.dateTimeOriginal > :takenAfter', { takenAfter: options.takenAfter });
+      }
+
+      if (options.takenBefore) {
+        builder.andWhere('exif.dateTimeOriginal < :takenBefore', { takenBefore: options.takenBefore });
       }
 
       await manager.query(this.getRuntimeConfig(pagination.size));
