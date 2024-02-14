@@ -14705,8 +14705,8 @@ export const SearchApiAxiosParamCreator = function (configuration?: Configuratio
         },
         /**
          * 
-         * @param {string} context 
          * @param {string} [city] 
+         * @param {string} [context] 
          * @param {string} [country] 
          * @param {string} [createdAfter] 
          * @param {string} [createdBefore] 
@@ -14725,6 +14725,7 @@ export const SearchApiAxiosParamCreator = function (configuration?: Configuratio
          * @param {string} [make] 
          * @param {string} [model] 
          * @param {number} [page] 
+         * @param {Array<string>} [people] 
          * @param {number} [size] 
          * @param {string} [state] 
          * @param {string} [takenAfter] 
@@ -14740,9 +14741,7 @@ export const SearchApiAxiosParamCreator = function (configuration?: Configuratio
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        searchHybrid: async (context: string, city?: string, country?: string, createdAfter?: string, createdBefore?: string, deviceId?: string, isArchived?: boolean, isEncoded?: boolean, isExternal?: boolean, isFavorite?: boolean, isMotion?: boolean, isNotInAlbum?: boolean, isOffline?: boolean, isReadOnly?: boolean, isVisible?: boolean, lensModel?: string, libraryId?: string, make?: string, model?: string, page?: number, size?: number, state?: string, takenAfter?: string, takenBefore?: string, trashedAfter?: string, trashedBefore?: string, type?: AssetTypeEnum, updatedAfter?: string, updatedBefore?: string, withArchived?: boolean, withDeleted?: boolean, withExif?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'context' is not null or undefined
-            assertParamExists('searchHybrid', 'context', context)
+        searchHybrid: async (city?: string, context?: string, country?: string, createdAfter?: string, createdBefore?: string, deviceId?: string, isArchived?: boolean, isEncoded?: boolean, isExternal?: boolean, isFavorite?: boolean, isMotion?: boolean, isNotInAlbum?: boolean, isOffline?: boolean, isReadOnly?: boolean, isVisible?: boolean, lensModel?: string, libraryId?: string, make?: string, model?: string, page?: number, people?: Array<string>, size?: number, state?: string, takenAfter?: string, takenBefore?: string, trashedAfter?: string, trashedBefore?: string, type?: AssetTypeEnum, updatedAfter?: string, updatedBefore?: string, withArchived?: boolean, withDeleted?: boolean, withExif?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/search/hybrid`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -14846,6 +14845,10 @@ export const SearchApiAxiosParamCreator = function (configuration?: Configuratio
 
             if (page !== undefined) {
                 localVarQueryParameter['page'] = page;
+            }
+
+            if (people) {
+                localVarQueryParameter['people'] = people;
             }
 
             if (size !== undefined) {
@@ -15500,8 +15503,8 @@ export const SearchApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {string} context 
          * @param {string} [city] 
+         * @param {string} [context] 
          * @param {string} [country] 
          * @param {string} [createdAfter] 
          * @param {string} [createdBefore] 
@@ -15520,6 +15523,7 @@ export const SearchApiFp = function(configuration?: Configuration) {
          * @param {string} [make] 
          * @param {string} [model] 
          * @param {number} [page] 
+         * @param {Array<string>} [people] 
          * @param {number} [size] 
          * @param {string} [state] 
          * @param {string} [takenAfter] 
@@ -15535,8 +15539,8 @@ export const SearchApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async searchHybrid(context: string, city?: string, country?: string, createdAfter?: string, createdBefore?: string, deviceId?: string, isArchived?: boolean, isEncoded?: boolean, isExternal?: boolean, isFavorite?: boolean, isMotion?: boolean, isNotInAlbum?: boolean, isOffline?: boolean, isReadOnly?: boolean, isVisible?: boolean, lensModel?: string, libraryId?: string, make?: string, model?: string, page?: number, size?: number, state?: string, takenAfter?: string, takenBefore?: string, trashedAfter?: string, trashedBefore?: string, type?: AssetTypeEnum, updatedAfter?: string, updatedBefore?: string, withArchived?: boolean, withDeleted?: boolean, withExif?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SearchResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.searchHybrid(context, city, country, createdAfter, createdBefore, deviceId, isArchived, isEncoded, isExternal, isFavorite, isMotion, isNotInAlbum, isOffline, isReadOnly, isVisible, lensModel, libraryId, make, model, page, size, state, takenAfter, takenBefore, trashedAfter, trashedBefore, type, updatedAfter, updatedBefore, withArchived, withDeleted, withExif, options);
+        async searchHybrid(city?: string, context?: string, country?: string, createdAfter?: string, createdBefore?: string, deviceId?: string, isArchived?: boolean, isEncoded?: boolean, isExternal?: boolean, isFavorite?: boolean, isMotion?: boolean, isNotInAlbum?: boolean, isOffline?: boolean, isReadOnly?: boolean, isVisible?: boolean, lensModel?: string, libraryId?: string, make?: string, model?: string, page?: number, people?: Array<string>, size?: number, state?: string, takenAfter?: string, takenBefore?: string, trashedAfter?: string, trashedBefore?: string, type?: AssetTypeEnum, updatedAfter?: string, updatedBefore?: string, withArchived?: boolean, withDeleted?: boolean, withExif?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SearchResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.searchHybrid(city, context, country, createdAfter, createdBefore, deviceId, isArchived, isEncoded, isExternal, isFavorite, isMotion, isNotInAlbum, isOffline, isReadOnly, isVisible, lensModel, libraryId, make, model, page, people, size, state, takenAfter, takenBefore, trashedAfter, trashedBefore, type, updatedAfter, updatedBefore, withArchived, withDeleted, withExif, options);
             const index = configuration?.serverIndex ?? 0;
             const operationBasePath = operationServerMap['SearchApi.searchHybrid']?.[index]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, operationBasePath || basePath);
@@ -15691,8 +15695,8 @@ export const SearchApiFactory = function (configuration?: Configuration, basePat
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        searchHybrid(requestParameters: SearchApiSearchHybridRequest, options?: RawAxiosRequestConfig): AxiosPromise<SearchResponseDto> {
-            return localVarFp.searchHybrid(requestParameters.context, requestParameters.city, requestParameters.country, requestParameters.createdAfter, requestParameters.createdBefore, requestParameters.deviceId, requestParameters.isArchived, requestParameters.isEncoded, requestParameters.isExternal, requestParameters.isFavorite, requestParameters.isMotion, requestParameters.isNotInAlbum, requestParameters.isOffline, requestParameters.isReadOnly, requestParameters.isVisible, requestParameters.lensModel, requestParameters.libraryId, requestParameters.make, requestParameters.model, requestParameters.page, requestParameters.size, requestParameters.state, requestParameters.takenAfter, requestParameters.takenBefore, requestParameters.trashedAfter, requestParameters.trashedBefore, requestParameters.type, requestParameters.updatedAfter, requestParameters.updatedBefore, requestParameters.withArchived, requestParameters.withDeleted, requestParameters.withExif, options).then((request) => request(axios, basePath));
+        searchHybrid(requestParameters: SearchApiSearchHybridRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<SearchResponseDto> {
+            return localVarFp.searchHybrid(requestParameters.city, requestParameters.context, requestParameters.country, requestParameters.createdAfter, requestParameters.createdBefore, requestParameters.deviceId, requestParameters.isArchived, requestParameters.isEncoded, requestParameters.isExternal, requestParameters.isFavorite, requestParameters.isMotion, requestParameters.isNotInAlbum, requestParameters.isOffline, requestParameters.isReadOnly, requestParameters.isVisible, requestParameters.lensModel, requestParameters.libraryId, requestParameters.make, requestParameters.model, requestParameters.page, requestParameters.people, requestParameters.size, requestParameters.state, requestParameters.takenAfter, requestParameters.takenBefore, requestParameters.trashedAfter, requestParameters.trashedBefore, requestParameters.type, requestParameters.updatedAfter, requestParameters.updatedBefore, requestParameters.withArchived, requestParameters.withDeleted, requestParameters.withExif, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -15854,14 +15858,14 @@ export interface SearchApiSearchHybridRequest {
      * @type {string}
      * @memberof SearchApiSearchHybrid
      */
-    readonly context: string
+    readonly city?: string
 
     /**
      * 
      * @type {string}
      * @memberof SearchApiSearchHybrid
      */
-    readonly city?: string
+    readonly context?: string
 
     /**
      * 
@@ -15988,6 +15992,13 @@ export interface SearchApiSearchHybridRequest {
      * @memberof SearchApiSearchHybrid
      */
     readonly page?: number
+
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof SearchApiSearchHybrid
+     */
+    readonly people?: Array<string>
 
     /**
      * 
@@ -16660,8 +16671,8 @@ export class SearchApi extends BaseAPI {
      * @throws {RequiredError}
      * @memberof SearchApi
      */
-    public searchHybrid(requestParameters: SearchApiSearchHybridRequest, options?: RawAxiosRequestConfig) {
-        return SearchApiFp(this.configuration).searchHybrid(requestParameters.context, requestParameters.city, requestParameters.country, requestParameters.createdAfter, requestParameters.createdBefore, requestParameters.deviceId, requestParameters.isArchived, requestParameters.isEncoded, requestParameters.isExternal, requestParameters.isFavorite, requestParameters.isMotion, requestParameters.isNotInAlbum, requestParameters.isOffline, requestParameters.isReadOnly, requestParameters.isVisible, requestParameters.lensModel, requestParameters.libraryId, requestParameters.make, requestParameters.model, requestParameters.page, requestParameters.size, requestParameters.state, requestParameters.takenAfter, requestParameters.takenBefore, requestParameters.trashedAfter, requestParameters.trashedBefore, requestParameters.type, requestParameters.updatedAfter, requestParameters.updatedBefore, requestParameters.withArchived, requestParameters.withDeleted, requestParameters.withExif, options).then((request) => request(this.axios, this.basePath));
+    public searchHybrid(requestParameters: SearchApiSearchHybridRequest = {}, options?: RawAxiosRequestConfig) {
+        return SearchApiFp(this.configuration).searchHybrid(requestParameters.city, requestParameters.context, requestParameters.country, requestParameters.createdAfter, requestParameters.createdBefore, requestParameters.deviceId, requestParameters.isArchived, requestParameters.isEncoded, requestParameters.isExternal, requestParameters.isFavorite, requestParameters.isMotion, requestParameters.isNotInAlbum, requestParameters.isOffline, requestParameters.isReadOnly, requestParameters.isVisible, requestParameters.lensModel, requestParameters.libraryId, requestParameters.make, requestParameters.model, requestParameters.page, requestParameters.people, requestParameters.size, requestParameters.state, requestParameters.takenAfter, requestParameters.takenBefore, requestParameters.trashedAfter, requestParameters.trashedBefore, requestParameters.type, requestParameters.updatedAfter, requestParameters.updatedBefore, requestParameters.withArchived, requestParameters.withDeleted, requestParameters.withExif, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

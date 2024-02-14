@@ -246,12 +246,14 @@ export class SearchPeopleDto {
 }
 
 export class HybridSearchDto extends BaseSearchDto {
-  @IsString()
-  @IsNotEmpty()
-  context!: string;
+  @Optional()
+  context?: string;
 
   @IsBoolean()
   @Optional()
   @Transform(toBoolean)
   isNotInAlbum?: boolean;
+
+  @Optional()
+  people?: string[];
 }

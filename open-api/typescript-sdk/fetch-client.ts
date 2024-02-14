@@ -2063,9 +2063,9 @@ export function getExploreData(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
-export function searchHybrid({ city, context, country, createdAfter, createdBefore, deviceId, isArchived, isEncoded, isExternal, isFavorite, isMotion, isNotInAlbum, isOffline, isReadOnly, isVisible, lensModel, libraryId, make, model, page, size, state, takenAfter, takenBefore, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, withArchived, withDeleted, withExif }: {
+export function searchHybrid({ city, context, country, createdAfter, createdBefore, deviceId, isArchived, isEncoded, isExternal, isFavorite, isMotion, isNotInAlbum, isOffline, isReadOnly, isVisible, lensModel, libraryId, make, model, page, people, size, state, takenAfter, takenBefore, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, withArchived, withDeleted, withExif }: {
     city?: string;
-    context: string;
+    context?: string;
     country?: string;
     createdAfter?: string;
     createdBefore?: string;
@@ -2084,6 +2084,7 @@ export function searchHybrid({ city, context, country, createdAfter, createdBefo
     make?: string;
     model?: string;
     page?: number;
+    people?: string[];
     size?: number;
     state?: string;
     takenAfter?: string;
@@ -2121,6 +2122,7 @@ export function searchHybrid({ city, context, country, createdAfter, createdBefo
         make,
         model,
         page,
+        people,
         size,
         state,
         takenAfter,

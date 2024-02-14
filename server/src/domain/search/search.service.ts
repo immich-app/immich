@@ -107,12 +107,15 @@ export class SearchService {
     await this.configCore.requireFeature(FeatureFlag.SMART_SEARCH);
     const { machineLearning } = await this.configCore.getConfig();
     const userIds = await this.getUserIdsToSearch(auth);
+    let embedding: number[] = [];
 
-    const embedding = await this.machineLearning.encodeText(
-      machineLearning.url,
-      { text: dto.context },
-      machineLearning.clip,
-    );
+    if (dto.context) {
+      embedding = await this.machineLearning.encodeText(
+        machineLearning.url,
+        { text: dto.context },
+        machineLearning.clip,
+      );
+    }
 
     const page = dto.page ?? 1;
     const size = dto.size || 100;

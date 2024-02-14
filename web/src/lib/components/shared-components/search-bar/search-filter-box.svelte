@@ -4,7 +4,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { SearchSuggestionType, type PersonResponseDto } from '@immich/sdk';
+  import { SearchSuggestionType, type PersonResponseDto, searchHybrid } from '@immich/sdk';
   import { getAllPeople, getSearchSuggestions } from '@immich/sdk';
   import { mdiArrowRight, mdiClose } from '@mdi/js';
   import { onMount } from 'svelte';
@@ -219,7 +219,26 @@
     };
   };
 
-  const search = () => {};
+  const search = async () => {
+    console.log('filter search');
+    const { assets } = await searchHybrid({
+      context: filter.context,
+      country: filter.location.country?.value,
+      state: filter.location.state?.value,
+      city: filter.location.city?.value,
+      make: filter.camera.make?.value,
+      model: filter.camera.model?.value,
+      createdAfter: filter.dateRange.startDate ? filter.dateRange.startDate.toISOString() : undefined,
+      createdBefore: filter.dateRange.endDate ? filter.dateRange.endDate.toISOString() : undefined,
+      isArchived: filter.inArchive,
+      isFavorite: filter.inFavorite,
+      isNotInAlbum: filter.notInAlbum,
+      // mediaType: filter.mediaType,
+      // people: filter.people.map((p) => p.id),
+    });
+
+    console.log('search result', assets);
+  };
 </script>
 
 <div

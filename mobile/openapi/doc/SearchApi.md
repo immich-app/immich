@@ -206,7 +206,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **searchHybrid**
-> SearchResponseDto searchHybrid(context, city, country, createdAfter, createdBefore, deviceId, isArchived, isEncoded, isExternal, isFavorite, isMotion, isNotInAlbum, isOffline, isReadOnly, isVisible, lensModel, libraryId, make, model, page, size, state, takenAfter, takenBefore, trashedAfter, trashedBefore, type, updatedAfter, updatedBefore, withArchived, withDeleted, withExif)
+> SearchResponseDto searchHybrid(city, context, country, createdAfter, createdBefore, deviceId, isArchived, isEncoded, isExternal, isFavorite, isMotion, isNotInAlbum, isOffline, isReadOnly, isVisible, lensModel, libraryId, make, model, page, people, size, state, takenAfter, takenBefore, trashedAfter, trashedBefore, type, updatedAfter, updatedBefore, withArchived, withDeleted, withExif)
 
 
 
@@ -229,8 +229,8 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = SearchApi();
-final context = context_example; // String | 
 final city = city_example; // String | 
+final context = context_example; // String | 
 final country = country_example; // String | 
 final createdAfter = 2013-10-20T19:20:30+01:00; // DateTime | 
 final createdBefore = 2013-10-20T19:20:30+01:00; // DateTime | 
@@ -249,6 +249,7 @@ final libraryId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
 final make = make_example; // String | 
 final model = model_example; // String | 
 final page = 8.14; // num | 
+final people = []; // List<String> | 
 final size = 8.14; // num | 
 final state = state_example; // String | 
 final takenAfter = 2013-10-20T19:20:30+01:00; // DateTime | 
@@ -263,7 +264,7 @@ final withDeleted = true; // bool |
 final withExif = true; // bool | 
 
 try {
-    final result = api_instance.searchHybrid(context, city, country, createdAfter, createdBefore, deviceId, isArchived, isEncoded, isExternal, isFavorite, isMotion, isNotInAlbum, isOffline, isReadOnly, isVisible, lensModel, libraryId, make, model, page, size, state, takenAfter, takenBefore, trashedAfter, trashedBefore, type, updatedAfter, updatedBefore, withArchived, withDeleted, withExif);
+    final result = api_instance.searchHybrid(city, context, country, createdAfter, createdBefore, deviceId, isArchived, isEncoded, isExternal, isFavorite, isMotion, isNotInAlbum, isOffline, isReadOnly, isVisible, lensModel, libraryId, make, model, page, people, size, state, takenAfter, takenBefore, trashedAfter, trashedBefore, type, updatedAfter, updatedBefore, withArchived, withDeleted, withExif);
     print(result);
 } catch (e) {
     print('Exception when calling SearchApi->searchHybrid: $e\n');
@@ -274,8 +275,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **context** | **String**|  | 
  **city** | **String**|  | [optional] 
+ **context** | **String**|  | [optional] 
  **country** | **String**|  | [optional] 
  **createdAfter** | **DateTime**|  | [optional] 
  **createdBefore** | **DateTime**|  | [optional] 
@@ -294,6 +295,7 @@ Name | Type | Description  | Notes
  **make** | **String**|  | [optional] 
  **model** | **String**|  | [optional] 
  **page** | **num**|  | [optional] 
+ **people** | [**List<String>**](String.md)|  | [optional] [default to const []]
  **size** | **num**|  | [optional] 
  **state** | **String**|  | [optional] 
  **takenAfter** | **DateTime**|  | [optional] 

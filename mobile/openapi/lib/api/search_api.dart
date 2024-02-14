@@ -257,9 +257,9 @@ class SearchApi {
   /// Performs an HTTP 'GET /search/hybrid' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [String] context (required):
-  ///
   /// * [String] city:
+  ///
+  /// * [String] context:
   ///
   /// * [String] country:
   ///
@@ -297,6 +297,8 @@ class SearchApi {
   ///
   /// * [num] page:
   ///
+  /// * [List<String>] people:
+  ///
   /// * [num] size:
   ///
   /// * [String] state:
@@ -320,7 +322,7 @@ class SearchApi {
   /// * [bool] withDeleted:
   ///
   /// * [bool] withExif:
-  Future<Response> searchHybridWithHttpInfo(String context, { String? city, String? country, DateTime? createdAfter, DateTime? createdBefore, String? deviceId, bool? isArchived, bool? isEncoded, bool? isExternal, bool? isFavorite, bool? isMotion, bool? isNotInAlbum, bool? isOffline, bool? isReadOnly, bool? isVisible, String? lensModel, String? libraryId, String? make, String? model, num? page, num? size, String? state, DateTime? takenAfter, DateTime? takenBefore, DateTime? trashedAfter, DateTime? trashedBefore, AssetTypeEnum? type, DateTime? updatedAfter, DateTime? updatedBefore, bool? withArchived, bool? withDeleted, bool? withExif, }) async {
+  Future<Response> searchHybridWithHttpInfo({ String? city, String? context, String? country, DateTime? createdAfter, DateTime? createdBefore, String? deviceId, bool? isArchived, bool? isEncoded, bool? isExternal, bool? isFavorite, bool? isMotion, bool? isNotInAlbum, bool? isOffline, bool? isReadOnly, bool? isVisible, String? lensModel, String? libraryId, String? make, String? model, num? page, List<String>? people, num? size, String? state, DateTime? takenAfter, DateTime? takenBefore, DateTime? trashedAfter, DateTime? trashedBefore, AssetTypeEnum? type, DateTime? updatedAfter, DateTime? updatedBefore, bool? withArchived, bool? withDeleted, bool? withExif, }) async {
     // ignore: prefer_const_declarations
     final path = r'/search/hybrid';
 
@@ -334,7 +336,9 @@ class SearchApi {
     if (city != null) {
       queryParams.addAll(_queryParams('', 'city', city));
     }
+    if (context != null) {
       queryParams.addAll(_queryParams('', 'context', context));
+    }
     if (country != null) {
       queryParams.addAll(_queryParams('', 'country', country));
     }
@@ -389,6 +393,9 @@ class SearchApi {
     if (page != null) {
       queryParams.addAll(_queryParams('', 'page', page));
     }
+    if (people != null) {
+      queryParams.addAll(_queryParams('multi', 'people', people));
+    }
     if (size != null) {
       queryParams.addAll(_queryParams('', 'size', size));
     }
@@ -442,9 +449,9 @@ class SearchApi {
 
   /// Parameters:
   ///
-  /// * [String] context (required):
-  ///
   /// * [String] city:
+  ///
+  /// * [String] context:
   ///
   /// * [String] country:
   ///
@@ -482,6 +489,8 @@ class SearchApi {
   ///
   /// * [num] page:
   ///
+  /// * [List<String>] people:
+  ///
   /// * [num] size:
   ///
   /// * [String] state:
@@ -505,8 +514,8 @@ class SearchApi {
   /// * [bool] withDeleted:
   ///
   /// * [bool] withExif:
-  Future<SearchResponseDto?> searchHybrid(String context, { String? city, String? country, DateTime? createdAfter, DateTime? createdBefore, String? deviceId, bool? isArchived, bool? isEncoded, bool? isExternal, bool? isFavorite, bool? isMotion, bool? isNotInAlbum, bool? isOffline, bool? isReadOnly, bool? isVisible, String? lensModel, String? libraryId, String? make, String? model, num? page, num? size, String? state, DateTime? takenAfter, DateTime? takenBefore, DateTime? trashedAfter, DateTime? trashedBefore, AssetTypeEnum? type, DateTime? updatedAfter, DateTime? updatedBefore, bool? withArchived, bool? withDeleted, bool? withExif, }) async {
-    final response = await searchHybridWithHttpInfo(context,  city: city, country: country, createdAfter: createdAfter, createdBefore: createdBefore, deviceId: deviceId, isArchived: isArchived, isEncoded: isEncoded, isExternal: isExternal, isFavorite: isFavorite, isMotion: isMotion, isNotInAlbum: isNotInAlbum, isOffline: isOffline, isReadOnly: isReadOnly, isVisible: isVisible, lensModel: lensModel, libraryId: libraryId, make: make, model: model, page: page, size: size, state: state, takenAfter: takenAfter, takenBefore: takenBefore, trashedAfter: trashedAfter, trashedBefore: trashedBefore, type: type, updatedAfter: updatedAfter, updatedBefore: updatedBefore, withArchived: withArchived, withDeleted: withDeleted, withExif: withExif, );
+  Future<SearchResponseDto?> searchHybrid({ String? city, String? context, String? country, DateTime? createdAfter, DateTime? createdBefore, String? deviceId, bool? isArchived, bool? isEncoded, bool? isExternal, bool? isFavorite, bool? isMotion, bool? isNotInAlbum, bool? isOffline, bool? isReadOnly, bool? isVisible, String? lensModel, String? libraryId, String? make, String? model, num? page, List<String>? people, num? size, String? state, DateTime? takenAfter, DateTime? takenBefore, DateTime? trashedAfter, DateTime? trashedBefore, AssetTypeEnum? type, DateTime? updatedAfter, DateTime? updatedBefore, bool? withArchived, bool? withDeleted, bool? withExif, }) async {
+    final response = await searchHybridWithHttpInfo( city: city, context: context, country: country, createdAfter: createdAfter, createdBefore: createdBefore, deviceId: deviceId, isArchived: isArchived, isEncoded: isEncoded, isExternal: isExternal, isFavorite: isFavorite, isMotion: isMotion, isNotInAlbum: isNotInAlbum, isOffline: isOffline, isReadOnly: isReadOnly, isVisible: isVisible, lensModel: lensModel, libraryId: libraryId, make: make, model: model, page: page, people: people, size: size, state: state, takenAfter: takenAfter, takenBefore: takenBefore, trashedAfter: trashedAfter, trashedBefore: trashedBefore, type: type, updatedAfter: updatedAfter, updatedBefore: updatedBefore, withArchived: withArchived, withDeleted: withDeleted, withExif: withExif, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

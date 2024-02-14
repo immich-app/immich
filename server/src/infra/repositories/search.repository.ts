@@ -259,12 +259,22 @@ export class SearchRepository implements ISearchRepository {
 
     await this.assetRepository.manager.transaction(async (manager) => {
       let builder = manager.createQueryBuilder(AssetEntity, 'asset');
-      builder = searchAssetBuilder(builder, options);
-      builder
-        .innerJoin('asset.smartSearch', 'search')
-        .andWhere('asset.ownerId IN (:...userIds )')
-        .orderBy('search.embedding <=> :embedding')
-        .setParameters({ userIds, embedding: asVector(embedding) });
+
+      if (embedding) {
+        builder
+          .innerJoin('asset.smartSearch', 'search')
+          .andWhere('asset.ownerId IN (:...userIds )')
+          .orderBy('search.embedding <=> :embedding')
+          .setParameters({ userIds, embedding: asVector(embedding) });
+      }
+
+      if (options.city || options.country || options.state) {
+        builder
+          .innerJoin('asset.exifInfo', 'location')
+          .andWhere('location.city = :city', { city: options.city })
+          .andWhere('location.state = :state', { state: options.state })
+          .andWhere('location.country = :country', { country: options.country });
+      }
 
       await manager.query(this.getRuntimeConfig(pagination.size));
       results = await paginatedBuilder<AssetEntity>(builder, {
