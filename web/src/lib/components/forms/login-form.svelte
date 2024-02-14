@@ -3,8 +3,8 @@
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { AppRoute } from '$lib/constants';
   import { featureFlags, serverConfig } from '$lib/stores/server-config.store';
+  import { oauth } from '$lib/utils';
   import { getServerErrorMessage, handleError } from '$lib/utils/handle-error';
-  import { oauth } from '@api';
   import { getServerConfig, login } from '@immich/sdk';
   import { createEventDispatcher, onMount } from 'svelte';
   import { fade } from 'svelte/transition';

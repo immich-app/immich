@@ -1,11 +1,11 @@
 <script lang="ts">
+  import { api } from '$lib/api';
   import noThumbnailUrl from '$lib/assets/no-thumbnail.png';
   import Icon from '$lib/components/elements/icon.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { user } from '$lib/stores/user.store';
   import { getAssetThumbnailUrl } from '$lib/utils';
-  import { ThumbnailFormat, api, type AlbumResponseDto } from '@api';
-  import { getUserById } from '@immich/sdk';
+  import { ThumbnailFormat, getUserById, type AlbumResponseDto } from '@immich/sdk';
   import { mdiDotsVertical } from '@mdi/js';
   import { createEventDispatcher, onMount } from 'svelte';
   import { getContextMenuPosition } from '../../utils/context-menu';

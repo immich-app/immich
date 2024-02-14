@@ -4,12 +4,10 @@ class ImmichApi {
   public downloadApi: DownloadApi;
   public assetApi: AssetApi;
 
-  private config: configuration.Configuration;
-
   constructor(parameters: configuration.ConfigurationParameters) {
-    this.config = new configuration.Configuration(parameters);
-    this.downloadApi = new DownloadApi(this.config);
-    this.assetApi = new AssetApi(this.config);
+    const config = new configuration.Configuration(parameters);
+    this.downloadApi = new DownloadApi(config);
+    this.assetApi = new AssetApi(config);
   }
 }
 

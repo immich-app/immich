@@ -1,6 +1,12 @@
 <script lang="ts">
-  import { type PartnerResponseDto, type UserResponseDto } from '@api';
-  import { createPartner, getPartners, removePartner, updatePartner } from '@immich/sdk';
+  import {
+    createPartner,
+    getPartners,
+    removePartner,
+    updatePartner,
+    type PartnerResponseDto,
+    type UserResponseDto,
+  } from '@immich/sdk';
   import { mdiCheck, mdiClose } from '@mdi/js';
   import { onMount } from 'svelte';
   import { handleError } from '../../utils/handle-error';

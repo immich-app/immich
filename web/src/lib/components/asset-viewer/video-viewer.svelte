@@ -2,7 +2,7 @@
   import { videoViewerVolume } from '$lib/stores/preferences.store';
   import { getAssetFileUrl, getAssetThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { ThumbnailFormat } from '@api';
+  import { ThumbnailFormat } from '@immich/sdk';
   import { createEventDispatcher } from 'svelte';
   import { fade } from 'svelte/transition';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';

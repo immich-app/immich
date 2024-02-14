@@ -1,4 +1,4 @@
-import type { AssetResponseDto } from '@api';
+import type { AssetResponseDto } from '@immich/sdk';
 import { groupBy, sortBy } from 'lodash-es';
 import { DateTime, Interval } from 'luxon';
 

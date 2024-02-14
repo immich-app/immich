@@ -7,8 +7,7 @@
   import ThemeButton from '$lib/components/shared-components/theme-button.svelte';
   import { user } from '$lib/stores/user.store';
   import { handleError } from '$lib/utils/handle-error';
-  import { SharedLinkType } from '@api';
-  import { getMySharedLink } from '@immich/sdk';
+  import { getMySharedLink, SharedLinkType } from '@immich/sdk';
   import type { PageData } from './$types';
 
   export let data: PageData;

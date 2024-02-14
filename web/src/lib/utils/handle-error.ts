@@ -1,4 +1,4 @@
-import type { ApiError } from '@api';
+import type { ApiError } from '$lib/utils';
 import axios from 'axios';
 import { notificationController, NotificationType } from '../components/shared-components/notification/notification';
 

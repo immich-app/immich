@@ -8,7 +8,7 @@
   import { mdiCog, mdiLogout, mdiPencil } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
   import { fade } from 'svelte/transition';
-  import { NotificationType, notificationController } from '../notification/notification';
+  import { notificationController, NotificationType } from '../notification/notification';
   import UserAvatar from '../user-avatar.svelte';
   import AvatarSelector from './avatar-selector.svelte';
 

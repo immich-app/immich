@@ -4,8 +4,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { ActionQueryParameterValue, AppRoute, QueryParameter } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
-  import { type PersonResponseDto } from '@api';
-  import { getAllPeople, getPerson, mergePerson } from '@immich/sdk';
+  import { getAllPeople, getPerson, mergePerson, type PersonResponseDto } from '@immich/sdk';
   import { mdiCallMerge, mdiMerge, mdiSwapHorizontal } from '@mdi/js';
   import { createEventDispatcher, onMount } from 'svelte';
   import { flip } from 'svelte/animate';

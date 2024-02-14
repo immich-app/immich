@@ -10,9 +10,9 @@
   import SharedLinkCard from '$lib/components/sharedlinks-page/shared-link-card.svelte';
   import { AppRoute } from '$lib/constants';
   import { serverConfig } from '$lib/stores/server-config.store';
+  import { copyToClipboard, makeSharedLinkUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { copyToClipboard, makeSharedLinkUrl, type SharedLinkResponseDto } from '@api';
-  import { getAllSharedLinks, removeSharedLink } from '@immich/sdk';
+  import { getAllSharedLinks, removeSharedLink, type SharedLinkResponseDto } from '@immich/sdk';
   import { mdiArrowLeft } from '@mdi/js';
   import { onMount } from 'svelte';
 

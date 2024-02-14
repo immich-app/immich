@@ -3,7 +3,7 @@
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
-  import { type ApiError } from '@api';
+  import { type ApiError } from '$lib/utils';
   import { changePassword } from '@immich/sdk';
   import { fade } from 'svelte/transition';
   import SettingInputField, { SettingInputFieldType } from '../admin-page/settings/setting-input-field.svelte';

@@ -46,8 +46,9 @@
   import { getContextMenuPosition } from '$lib/utils/context-menu';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
-  import { ReactionLevel, ReactionType, type ActivityResponseDto, type UserResponseDto } from '@api';
   import {
+    ReactionLevel,
+    ReactionType,
     addAssetsToAlbum,
     addUsersToAlbum,
     createActivity,
@@ -57,6 +58,8 @@
     getActivityStatistics,
     getAlbumInfo,
     updateAlbumInfo,
+    type ActivityResponseDto,
+    type UserResponseDto,
   } from '@immich/sdk';
   import {
     mdiArrowLeft,

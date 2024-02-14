@@ -1,25 +1,26 @@
 <script lang="ts">
   import { browser } from '$app/environment';
   import { page } from '$app/stores';
+  import { OpenSettingQueryParameterValue, QueryParameter } from '$lib/constants';
   import { featureFlags } from '$lib/stores/server-config.store';
-  import { type APIKeyResponseDto, type AuthDeviceResponseDto, oauth } from '@api';
+  import { user } from '$lib/stores/user.store';
+  import { oauth } from '$lib/utils';
+  import { type ApiKeyResponseDto, type AuthDeviceResponseDto } from '@immich/sdk';
   import SettingAccordion from '../admin-page/settings/setting-accordion.svelte';
+  import AppearanceSettings from './appearance-settings.svelte';
   import ChangePasswordSettings from './change-password-settings.svelte';
   import DeviceList from './device-list.svelte';
   import LibraryList from './library-list.svelte';
   import MemoriesSettings from './memories-settings.svelte';
   import OAuthSettings from './oauth-settings.svelte';
   import PartnerSettings from './partner-settings.svelte';
+  import QualitySettings from './quality-settings.svelte';
   import SidebarSettings from './sidebar-settings.svelte';
+  import TrashSettings from './trash-settings.svelte';
   import UserAPIKeyList from './user-api-key-list.svelte';
   import UserProfileSettings from './user-profile-settings.svelte';
-  import { user } from '$lib/stores/user.store';
-  import { OpenSettingQueryParameterValue, QueryParameter } from '$lib/constants';
-  import AppearanceSettings from './appearance-settings.svelte';
-  import TrashSettings from './trash-settings.svelte';
-  import QualitySettings from './quality-settings.svelte';
 
-  export let keys: APIKeyResponseDto[] = [];
+  export let keys: ApiKeyResponseDto[] = [];
   export let devices: AuthDeviceResponseDto[] = [];
 
   let oauthOpen = false;

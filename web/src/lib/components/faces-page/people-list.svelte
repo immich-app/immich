@@ -2,8 +2,7 @@
   import { maximumLengthSearchPeople, timeBeforeShowLoadingSpinner } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
   import { searchNameLocal } from '$lib/utils/person';
-  import { type PersonResponseDto } from '@api';
-  import { searchPerson } from '@immich/sdk';
+  import { searchPerson, type PersonResponseDto } from '@immich/sdk';
   import { createEventDispatcher } from 'svelte';
   import FaceThumbnail from './face-thumbnail.svelte';
   import SearchBar from './search-bar.svelte';

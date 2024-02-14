@@ -1,29 +1,29 @@
 <script lang="ts">
+  import AdminSettings from '$lib/components/admin-page/settings/admin-settings.svelte';
   import FFmpegSettings from '$lib/components/admin-page/settings/ffmpeg/ffmpeg-settings.svelte';
   import JobSettings from '$lib/components/admin-page/settings/job-settings/job-settings.svelte';
+  import LibrarySettings from '$lib/components/admin-page/settings/library-settings/library-settings.svelte';
+  import LoggingSettings from '$lib/components/admin-page/settings/logging-settings/logging-settings.svelte';
   import MachineLearningSettings from '$lib/components/admin-page/settings/machine-learning-settings/machine-learning-settings.svelte';
   import MapSettings from '$lib/components/admin-page/settings/map-settings/map-settings.svelte';
+  import NewVersionCheckSettings from '$lib/components/admin-page/settings/new-version-check-settings/new-version-check-settings.svelte';
   import OAuthSettings from '$lib/components/admin-page/settings/oauth/oauth-settings.svelte';
   import PasswordLoginSettings from '$lib/components/admin-page/settings/password-login/password-login-settings.svelte';
+  import ServerSettings from '$lib/components/admin-page/settings/server/server-settings.svelte';
   import SettingAccordion from '$lib/components/admin-page/settings/setting-accordion.svelte';
   import StorageTemplateSettings from '$lib/components/admin-page/settings/storage-template/storage-template-settings.svelte';
-  import ThumbnailSettings from '$lib/components/admin-page/settings/thumbnail/thumbnail-settings.svelte';
-  import ServerSettings from '$lib/components/admin-page/settings/server/server-settings.svelte';
-  import TrashSettings from '$lib/components/admin-page/settings/trash-settings/trash-settings.svelte';
   import ThemeSettings from '$lib/components/admin-page/settings/theme/theme-settings.svelte';
+  import ThumbnailSettings from '$lib/components/admin-page/settings/thumbnail/thumbnail-settings.svelte';
+  import TrashSettings from '$lib/components/admin-page/settings/trash-settings/trash-settings.svelte';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import { downloadManager } from '$lib/stores/download';
   import { featureFlags } from '$lib/stores/server-config.store';
+  import { copyToClipboard } from '$lib/utils';
   import { downloadBlob } from '$lib/utils/asset-utils';
-  import { copyToClipboard } from '@api';
-  import Icon from '$lib/components/elements/icon.svelte';
-  import type { PageData } from './$types';
-  import NewVersionCheckSettings from '$lib/components/admin-page/settings/new-version-check-settings/new-version-check-settings.svelte';
-  import LibrarySettings from '$lib/components/admin-page/settings/library-settings/library-settings.svelte';
-  import LoggingSettings from '$lib/components/admin-page/settings/logging-settings/logging-settings.svelte';
   import { mdiAlert, mdiContentCopy, mdiDownload } from '@mdi/js';
-  import AdminSettings from '$lib/components/admin-page/settings/admin-settings.svelte';
+  import type { PageData } from './$types';
 
   export let data: PageData;
 

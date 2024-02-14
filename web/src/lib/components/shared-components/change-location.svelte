@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { AssetResponseDto } from '@api';
+  import type { AssetResponseDto } from '@immich/sdk';
   import { createEventDispatcher } from 'svelte';
   import ConfirmDialogue from './confirm-dialogue.svelte';
   import Map from './map/map.svelte';

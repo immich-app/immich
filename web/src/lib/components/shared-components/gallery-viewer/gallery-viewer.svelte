@@ -1,15 +1,14 @@
 <script lang="ts">
   import { page } from '$app/stores';
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
-  import { handleError } from '$lib/utils/handle-error';
-  import { type AssetResponseDto, ThumbnailFormat } from '@api';
-  import AssetViewer from '../../asset-viewer/asset-viewer.svelte';
-  import { flip } from 'svelte/animate';
-  import { getThumbnailSize } from '$lib/utils/thumbnail-util';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { onDestroy } from 'svelte';
-  import { createEventDispatcher } from 'svelte';
   import type { BucketPosition } from '$lib/stores/assets.store';
+  import { handleError } from '$lib/utils/handle-error';
+  import { getThumbnailSize } from '$lib/utils/thumbnail-util';
+  import { ThumbnailFormat, type AssetResponseDto } from '@immich/sdk';
+  import { createEventDispatcher, onDestroy } from 'svelte';
+  import { flip } from 'svelte/animate';
+  import AssetViewer from '../../asset-viewer/asset-viewer.svelte';
 
   const dispatch = createEventDispatcher<{ intersected: { container: HTMLDivElement; position: BucketPosition } }>();
 

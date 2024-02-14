@@ -4,8 +4,13 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { AppRoute } from '$lib/constants';
   import { getAssetThumbnailUrl } from '$lib/utils';
-  import { SharedLinkType, ThumbnailFormat, type AssetResponseDto, type SharedLinkResponseDto } from '@api';
-  import { getAssetInfo } from '@immich/sdk';
+  import {
+    SharedLinkType,
+    ThumbnailFormat,
+    getAssetInfo,
+    type AssetResponseDto,
+    type SharedLinkResponseDto,
+  } from '@immich/sdk';
   import { mdiCircleEditOutline, mdiContentCopy, mdiDelete, mdiOpenInNew } from '@mdi/js';
   import * as luxon from 'luxon';
   import { createEventDispatcher } from 'svelte';

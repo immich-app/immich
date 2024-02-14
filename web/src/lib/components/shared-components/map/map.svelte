@@ -3,7 +3,7 @@
   import { Theme } from '$lib/constants';
   import { colorTheme, mapSettings } from '$lib/stores/preferences.store';
   import { getAssetThumbnailUrl } from '$lib/utils';
-  import { getMapStyle, type MapMarkerResponseDto } from '@immich/sdk';
+  import { getMapStyle, MapTheme, type MapMarkerResponseDto } from '@immich/sdk';
   import { mdiCog, mdiMapMarker } from '@mdi/js';
   import type { Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
   import type { GeoJSONSource, LngLatLike, StyleSpecification } from 'maplibre-gl';
@@ -38,7 +38,7 @@
 
   $: style = (() =>
     getMapStyle({
-      theme: $mapSettings.allowDarkMode ? $colorTheme.value : Theme.LIGHT,
+      theme: ($mapSettings.allowDarkMode ? $colorTheme.value : Theme.LIGHT) as unknown as MapTheme,
     }) as Promise<StyleSpecification>)();
 
   const dispatch = createEventDispatcher<{

@@ -1,8 +1,7 @@
 <script lang="ts">
   import { user } from '$lib/stores/user.store';
   import { handleError } from '$lib/utils/handle-error';
-  import { type AssetResponseDto } from '@api';
-  import { createProfileImage } from '@immich/sdk';
+  import { createProfileImage, type AssetResponseDto } from '@immich/sdk';
   import domtoimage from 'dom-to-image';
   import { createEventDispatcher, onMount } from 'svelte';
   import PhotoViewer from '../asset-viewer/photo-viewer.svelte';

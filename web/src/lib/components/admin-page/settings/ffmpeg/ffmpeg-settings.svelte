@@ -1,7 +1,14 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
-  import { type SystemConfigDto } from '@immich/sdk';
-  import { AudioCodec, CQMode, ToneMapping, TranscodeHWAccel, TranscodePolicy, VideoCodec } from '@immich/sdk/axios';
+  import {
+    AudioCodec,
+    CQMode,
+    ToneMapping,
+    TranscodeHWAccel,
+    TranscodePolicy,
+    VideoCodec,
+    type SystemConfigDto,
+  } from '@immich/sdk';
   import { mdiHelpCircleOutline } from '@mdi/js';
   import { isEqual, sortBy } from 'lodash-es';
   import { createEventDispatcher } from 'svelte';

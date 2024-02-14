@@ -1,7 +1,6 @@
 import { getAssetThumbnailUrl } from '$lib/utils';
 import { authenticate } from '$lib/utils/auth';
-import { ThumbnailFormat } from '@api';
-import { getMySharedLink } from '@immich/sdk';
+import { ThumbnailFormat, getMySharedLink } from '@immich/sdk';
 import { error as throwError } from '@sveltejs/kit';
 import type { AxiosError } from 'axios';
 import type { PageLoad } from './$types';

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { api } from '$lib/api';
   import { photoViewer } from '$lib/stores/assets.store';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
@@ -7,7 +8,7 @@
   import { isWebCompatibleImage } from '$lib/utils/asset-utils';
   import { getBoundingBox } from '$lib/utils/people-utils';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
-  import { api, type AssetResponseDto } from '@api';
+  import { type AssetResponseDto } from '@immich/sdk';
   import { useZoomImageWheel } from '@zoom-image/svelte';
   import { onDestroy, onMount } from 'svelte';
   import { fade } from 'svelte/transition';

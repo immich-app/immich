@@ -1,6 +1,6 @@
+import { api } from '$lib/api';
 import { notificationController, NotificationType } from '$lib/components/shared-components/notification/notification';
 import { downloadManager } from '$lib/stores/download';
-import { api } from '@api';
 import {
   addAssetsToAlbum as addAssets,
   getDownloadInfo,

@@ -6,8 +6,15 @@
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { getPersonNameWithHiddenValue } from '$lib/utils/person';
-  import { AssetTypeEnum, type AssetFaceResponseDto, type PersonResponseDto } from '@api';
-  import { createPerson, getAllPeople, getFaces, reassignFacesById } from '@immich/sdk';
+  import {
+    AssetTypeEnum,
+    createPerson,
+    getAllPeople,
+    getFaces,
+    reassignFacesById,
+    type AssetFaceResponseDto,
+    type PersonResponseDto,
+  } from '@immich/sdk';
   import { mdiArrowLeftThin, mdiRestart } from '@mdi/js';
   import { createEventDispatcher, onMount } from 'svelte';
   import { linear } from 'svelte/easing';
