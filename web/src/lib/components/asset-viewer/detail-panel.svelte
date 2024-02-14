@@ -38,7 +38,7 @@
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
-  export let albumId: string | null = null;
+  export let currentAlbum: AlbumResponseDto | null = null;
 
   let showAssetPath = false;
   let textArea: HTMLTextAreaElement;
@@ -268,8 +268,8 @@
               on:mouseleave={() => ($boundingBoxesArray = [])}
             >
               <a
-                href="{AppRoute.PEOPLE}/{person.id}?{QueryParameter.PREVIOUS_ROUTE}={albumId
-                  ? `${AppRoute.ALBUMS}/${albumId}`
+                href="{AppRoute.PEOPLE}/{person.id}?{QueryParameter.PREVIOUS_ROUTE}={currentAlbum?.id
+                  ? `${AppRoute.ALBUMS}/${currentAlbum?.id}`
                   : AppRoute.PHOTOS}"
                 on:click={() => dispatch('closeViewer')}
               >
@@ -630,8 +630,8 @@
   </div>
 {/if}
 
-{#if asset.owner && !isOwner}
-  <section class="px-6 pt-6 dark:text-immich-dark-fg">
+{#if currentAlbum && currentAlbum.sharedUsers.length > 0 && asset.owner}
+  <section class="px-6 dark:text-immich-dark-fg">
     <p class="text-sm">SHARED BY</p>
     <div class="flex gap-4 pt-4">
       <div>
