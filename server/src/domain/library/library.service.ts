@@ -594,8 +594,18 @@ export class LibraryService extends EventEmitter {
     }
 
     this.logger.verbose(`Refreshing library: ${job.id}`);
+
+    const pathValidation = await Promise.all(library.importPaths.map((async (importPath) => await this.validateImportPath(importPath))));
+
+    const validImportPaths= pathValidation.map((validation) =>  {
+      if (!validation.isValid) {
+        this.logger.error(`Invalid import path: ${validation.importPath}. Reason: ${validation.message}`);
+      }
+      return validation;
+  }).filter((validation) => validation.isValid).map((validation) => validation.importPath);
+
     const rawPaths = await this.storageRepository.crawl({
-      pathsToCrawl: library.importPaths,
+      pathsToCrawl: validImportPaths,
       exclusionPatterns: library.exclusionPatterns,
     });
 
