@@ -33,6 +33,7 @@
   <a href="README_nl_NL.md">Nederlands</a>
   <a href="README_tr_TR.md">Türkçe</a>
   <a href="README_ru_RU.md">Русский</a>
+  <a href="README_pt_BR.md">Português Brasileiro</a>
 </p>
 
 ## 免责声明
