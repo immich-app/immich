@@ -158,7 +158,7 @@ export type SmartSearchOptions = SearchDateOptions &
   SearchStatusOptions &
   SearchUserIDOptions;
 
-export type HybridSearchOptions = SearchDateOptions & SearchEmbeddingOptions & SearchExifOptions;
+export type HybridSearchOptions = SearchDateOptions & SearchEmbeddingOptions & SearchExifOptions & SearchStatusOptions;
 
 export interface FaceEmbeddingSearch extends SearchEmbeddingOptions {
   hasPerson?: boolean;
