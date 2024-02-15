@@ -18,8 +18,8 @@ class DeviceAssets extends _$DeviceAssets {
         .backupSelectionEqualTo(BackupSelection.select)
         .idProperty()
         .findAll();
+
     return DeviceAssetState(
-      assetIdsForBackup: idsToBackup,
       uniqueAssetsToBackup: await db.assets
           .filter()
           .anyOf(idsToBackup, (q, id) => q.localIdEqualTo(id))

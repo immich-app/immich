@@ -46,6 +46,8 @@ class BackupControllerPage extends HookConsumerWidget {
         if (Platform.isIOS) {
           ref.watch(iOSBackgroundSettingsProvider.notifier).refresh();
         }
+        ref.read(backupAlbumsProvider.notifier).refreshAlbumAssetsState();
+        ref.invalidate(deviceAssetsProvider);
         return null;
       },
       [],

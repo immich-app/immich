@@ -30,18 +30,14 @@ class BackupAlbumService {
     final backupAlbum = albumInDB ??
         BackupAlbum(
           id: album.id,
-          lastBackup: DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
           selection: selection,
         );
 
     backupAlbum.selection = selection;
     backupAlbum.album.value = album;
 
-    final assets = await _updateDeviceAssetsToSelection(album, selection);
-
     await _db.writeTxn(() async {
       await _db.backupAlbums.store(backupAlbum);
-      await _db.deviceAssets.putAll(assets);
     });
   }
 
@@ -54,13 +50,19 @@ class BackupAlbumService {
     }
     albumInDB.album.value = album;
 
-    final assets =
-        await _updateDeviceAssetsToSelection(album, albumInDB.selection);
-
     await _db.writeTxn(() async {
       await _db.backupAlbums.store(albumInDB);
-      await _db.deviceAssets.putAll(assets);
     });
+  }
+
+  Future<void> refreshAlbumAssetsState() async {
+    final backupAlbums = await _db.backupAlbums.where().findAll();
+    for (final album in backupAlbums) {
+      final localAlbum = album.album.value;
+      if (localAlbum != null) {
+        await updateAlbumAssetsState(localAlbum, album.selection);
+      }
+    }
   }
 
   Future<void> updateAlbumSelection(
@@ -75,11 +77,8 @@ class BackupAlbumService {
     }
     backupAlbum.selection = selection;
 
-    final assets = await _updateDeviceAssetsToSelection(localAlbum, selection);
-
     await _db.writeTxn(() async {
       await _db.backupAlbums.store(backupAlbum);
-      await _db.deviceAssets.putAll(assets);
     });
   }
 
@@ -88,6 +87,23 @@ class BackupAlbumService {
         .filter()
         .assets((q) => q.idEqualTo(asset.id))
         .findAll();
+  }
+
+  Future<bool> updateAlbumAssetsState(
+    LocalAlbum album,
+    BackupSelection selection,
+  ) async {
+    final assets = await _updateDeviceAssetsToSelection(album, selection);
+
+    if (assets.isEmpty) {
+      return false;
+    }
+
+    await _db.writeTxn(() async {
+      await _db.deviceAssets.putAll(assets);
+    });
+
+    return true;
   }
 
   Future<List<DeviceAsset>> _updateDeviceAssetsToSelection(
@@ -103,12 +119,17 @@ class BackupAlbumService {
         _log.warning("Local id not available for asset ID - ${asset.id}");
         continue;
       }
+
       final deviceAsset =
           await _db.deviceAssets.where().idEqualTo(asset.localId!).findFirst();
       if (deviceAsset == null) {
         _log.warning(
           "Device asset not available for local asset ID - ${asset.id}",
         );
+        continue;
+      }
+
+      if (deviceAsset.backupSelection == selection) {
         continue;
       }
 

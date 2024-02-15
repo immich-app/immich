@@ -4,6 +4,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/backup/providers/device_assets.provider.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/server_info/server_version.model.dart';
@@ -110,7 +111,8 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
         final endpoint = Uri.parse(Store.get(StoreKey.serverEndpoint));
         final headers = {"x-immich-user-token": accessToken};
         if (endpoint.userInfo.isNotEmpty) {
-          headers["Authorization"] = "Basic ${base64.encode(utf8.encode(endpoint.userInfo))}";
+          headers["Authorization"] =
+              "Basic ${base64.encode(utf8.encode(endpoint.userInfo))}";
         }
 
         debugPrint("Attempting to connect to websocket");
@@ -229,6 +231,9 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
             .whereNot((c) => uploadedChanges.contains(c))
             .toList(),
       );
+
+      // Reload backup state
+      _ref.invalidate(deviceAssetsProvider);
     }
   }
 

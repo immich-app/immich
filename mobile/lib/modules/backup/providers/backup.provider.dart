@@ -7,7 +7,6 @@ import 'package:immich_mobile/modules/backup/models/backup_album.model.dart';
 import 'package:immich_mobile/modules/backup/models/backup_state.model.dart';
 import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/error_upload_asset.model.dart';
-import 'package:immich_mobile/modules/backup/providers/backup_album.provider.dart';
 import 'package:immich_mobile/modules/backup/providers/backup_settings.provider.dart';
 import 'package:immich_mobile/modules/backup/providers/device_assets.provider.dart';
 import 'package:immich_mobile/modules/backup/providers/error_backup_list.provider.dart';
@@ -17,6 +16,7 @@ import 'package:immich_mobile/modules/login/models/authentication_state.model.da
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/modules/onboarding/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/models/device_asset.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/providers/app_state.provider.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
@@ -76,12 +76,16 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
     await PhotoManager.clearFileCache();
 
-    final idsForBackup = await ref.read(deviceAssetsProvider.future);
+    final idsForBackup = await _db.deviceAssets
+        .filter()
+        .backupSelectionEqualTo(BackupSelection.select)
+        .idProperty()
+        .findAll();
     final localAssetsToBackup = await _db.assets
         .where()
         .remoteIdIsNull()
         .filter()
-        .anyOf(idsForBackup.assetIdsForBackup, (q, id) => q.localIdEqualTo(id))
+        .anyOf(idsForBackup, (q, id) => q.localIdEqualTo(id))
         .findAll();
 
     final assetsToBackup =
@@ -117,6 +121,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       backupProgress: BackUpProgressEnum.idle,
       progressInPercentage: 0.0,
     );
+    ref.invalidate(deviceAssetsProvider);
     await notifyBackgroundServiceCanRun();
   }
 
@@ -191,16 +196,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   Future<void> resumeBackup() async {
     final BackUpProgressEnum previous = state.backupProgress;
     state = state.copyWith(backupProgress: BackUpProgressEnum.inBackground);
-
-    // TODO: update album specific last backup time
-    final backupAlbums = await ref.read(backupAlbumsProvider.future);
-    List<BackupAlbum> selectedAlbums = backupAlbums.selectedBackupAlbums
-        .followedBy(backupAlbums.excludedBackupAlbums)
-        .map((e) {
-      e.lastBackup = DateTime.now();
-      return e;
-    }).toList();
-    await _db.writeTxn(() => _db.backupAlbums.putAll(selectedAlbums));
 
     // assumes the background service is currently running
     // if true, waits until it has stopped to start the backup

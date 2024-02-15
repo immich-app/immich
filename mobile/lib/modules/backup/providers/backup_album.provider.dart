@@ -26,9 +26,17 @@ class BackupAlbums extends _$BackupAlbums {
     );
   }
 
-  void _reloadProviders() {
+  Future<void> _reloadProviders(
+    LocalAlbum album,
+    BackupSelection selection,
+  ) async {
+    final shouldReload = await ref
+        .read(backupAlbumServiceProvider)
+        .updateAlbumAssetsState(album, selection);
+    if (shouldReload) {
+      ref.invalidate(deviceAssetsProvider);
+    }
     ref.invalidateSelf();
-    ref.invalidate(deviceAssetsProvider);
   }
 
   Future<void> addBackupAlbum(
@@ -36,12 +44,20 @@ class BackupAlbums extends _$BackupAlbums {
     BackupSelection selection,
   ) async {
     await ref.read(backupAlbumServiceProvider).addBackupAlbum(album, selection);
-    _reloadProviders();
+    _reloadProviders(album, selection);
   }
 
   Future<void> syncWithLocalAlbum(LocalAlbum album) async {
     await ref.read(backupAlbumServiceProvider).syncWithLocalAlbum(album);
-    _reloadProviders();
+    final albumInDB = await ref
+        .read(dbProvider)
+        .backupAlbums
+        .filter()
+        .idEqualTo(album.id)
+        .findFirst();
+    if (albumInDB?.selection != null) {
+      _reloadProviders(album, albumInDB!.selection);
+    }
   }
 
   Future<void> _updateAlbumSelection(
@@ -51,8 +67,11 @@ class BackupAlbums extends _$BackupAlbums {
     await ref
         .read(backupAlbumServiceProvider)
         .updateAlbumSelection(localAlbum, selection);
-    _reloadProviders();
+    _reloadProviders(localAlbum, selection);
   }
+
+  Future<void> refreshAlbumAssetsState() async =>
+      ref.read(backupAlbumServiceProvider).refreshAlbumAssetsState();
 
   Future<void> selectAlbumForBackup(LocalAlbum album) =>
       _updateAlbumSelection(album, BackupSelection.select);

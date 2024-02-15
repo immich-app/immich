@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/providers/local_album_service.provider.dart';
 import 'package:immich_mobile/modules/album/services/local_album.service.dart';
-import 'package:immich_mobile/modules/backup/providers/device_assets.provider.dart';
+import 'package:immich_mobile/modules/backup/models/backup_album.model.dart';
+import 'package:immich_mobile/shared/models/device_asset.dart';
 import 'package:immich_mobile/shared/models/exif_info.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/models/user.dart';
@@ -345,8 +346,10 @@ final assetWatcher =
   return db.assets.watchObject(asset.id, fireImmediately: true);
 });
 
-@riverpod
-Stream<RenderList> assets(AssetsRef ref, int? userId) {
+Stream<RenderList> _assetsProvider(
+  AutoDisposeStreamProviderRef<RenderList> ref,
+  int? userId,
+) {
   if (userId == null) return const Stream.empty();
   final query = _commonFilterAndSort(
     ref,
@@ -356,7 +359,22 @@ Stream<RenderList> assets(AssetsRef ref, int? userId) {
 }
 
 @riverpod
-Stream<RenderList> multiUserAssets(MultiUserAssetsRef ref, List<int> userIds) {
+Stream<RenderList> assets(AssetsRef ref, int? userId) {
+  final listener = ref
+      .read(dbProvider)
+      .deviceAssets
+      .filter()
+      .backupSelectionEqualTo(BackupSelection.select)
+      .watchLazy()
+      .listen((_) => ref.invalidateSelf());
+  ref.onDispose(listener.cancel);
+  return _assetsProvider(ref, userId);
+}
+
+Stream<RenderList> _multiUserAssets(
+  AutoDisposeStreamProviderRef<RenderList> ref,
+  List<int> userIds,
+) {
   if (userIds.isEmpty) return const Stream.empty();
   final query = _commonFilterAndSort(
     ref,
@@ -365,6 +383,19 @@ Stream<RenderList> multiUserAssets(MultiUserAssetsRef ref, List<int> userIds) {
         .anyOf(userIds, (q, u) => q.ownerIdEqualToAnyChecksum(u)),
   );
   return renderListGeneratorAutoDispose(query, ref);
+}
+
+@riverpod
+Stream<RenderList> multiUserAssets(MultiUserAssetsRef ref, List<int> userIds) {
+  final listener = ref
+      .read(dbProvider)
+      .deviceAssets
+      .filter()
+      .backupSelectionEqualTo(BackupSelection.select)
+      .watchLazy()
+      .listen((_) => ref.invalidateSelf());
+  ref.onDispose(listener.cancel);
+  return _multiUserAssets(ref, userIds);
 }
 
 QueryBuilder<Asset, Asset, QAfterSortBy>? getRemoteAssetQuery(WidgetRef ref) {
@@ -391,9 +422,13 @@ QueryBuilder<Asset, Asset, QAfterSortBy> _commonFilterAndSort(
   AutoDisposeStreamProviderRef<RenderList> ref,
   QueryBuilder<Asset, Asset, QAfterWhereClause> query,
 ) {
-  final localIds =
-      ref.watch(deviceAssetsProvider).valueOrNull?.assetIdsForBackup ??
-          <String>[];
+  final localIds = ref
+      .read(dbProvider)
+      .deviceAssets
+      .filter()
+      .backupSelectionEqualTo(BackupSelection.select)
+      .idProperty()
+      .findAllSync();
 
   return query
       .filter()

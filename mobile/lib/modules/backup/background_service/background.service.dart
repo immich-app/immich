@@ -387,17 +387,6 @@ class BackgroundService {
       );
       if (backupOk) {
         await Store.delete(StoreKey.backupFailedSince);
-        // TODO: update album specific last backup time
-        final backupAlbums = await db.backupAlbums
-            .filter()
-            .not()
-            .selectionEqualTo(BackupSelection.none)
-            .findAll();
-        List<BackupAlbum> selectedAlbums = backupAlbums.map((e) {
-          e.lastBackup = DateTime.now();
-          return e;
-        }).toList();
-        await db.writeTxn(() => db.backupAlbums.putAll(selectedAlbums));
       } else if (Store.tryGet(StoreKey.backupFailedSince) == null) {
         Store.put(StoreKey.backupFailedSince, DateTime.now());
         return false;

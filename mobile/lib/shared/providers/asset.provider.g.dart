@@ -6,7 +6,7 @@ part of 'asset.provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$assetsHash() => r'04c89e5af379ea61478631e41c273c264efdb0ea';
+String _$assetsHash() => r'89d151eead499747703a2361efd178ba89e87be8';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -154,7 +154,7 @@ class _AssetsProviderElement
   int? get userId => (origin as AssetsProvider).userId;
 }
 
-String _$multiUserAssetsHash() => r'4212e042ecfa53eaf54f7e26db2a106b5f6f16f4';
+String _$multiUserAssetsHash() => r'63a9506e21d34e66af2af93946930016d51b0b43';
 
 /// See also [multiUserAssets].
 @ProviderFor(multiUserAssets)

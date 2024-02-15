@@ -27,13 +27,8 @@ const BackupAlbumSchema = CollectionSchema(
       name: r'id',
       type: IsarType.string,
     ),
-    r'lastBackup': PropertySchema(
-      id: 2,
-      name: r'lastBackup',
-      type: IsarType.dateTime,
-    ),
     r'selection': PropertySchema(
-      id: 3,
+      id: 2,
       name: r'selection',
       type: IsarType.byte,
       enumMap: _BackupAlbumselectionEnumValueMap,
@@ -78,8 +73,7 @@ void _backupAlbumSerialize(
 ) {
   writer.writeLong(offsets[0], object.hashCode);
   writer.writeString(offsets[1], object.id);
-  writer.writeDateTime(offsets[2], object.lastBackup);
-  writer.writeByte(offsets[3], object.selection.index);
+  writer.writeByte(offsets[2], object.selection.index);
 }
 
 BackupAlbum _backupAlbumDeserialize(
@@ -90,9 +84,8 @@ BackupAlbum _backupAlbumDeserialize(
 ) {
   final object = BackupAlbum(
     id: reader.readString(offsets[1]),
-    lastBackup: reader.readDateTime(offsets[2]),
     selection:
-        _BackupAlbumselectionValueEnumMap[reader.readByteOrNull(offsets[3])] ??
+        _BackupAlbumselectionValueEnumMap[reader.readByteOrNull(offsets[2])] ??
             BackupSelection.none,
   );
   return object;
@@ -110,8 +103,6 @@ P _backupAlbumDeserializeProp<P>(
     case 1:
       return (reader.readString(offset)) as P;
     case 2:
-      return (reader.readDateTime(offset)) as P;
-    case 3:
       return (_BackupAlbumselectionValueEnumMap[
               reader.readByteOrNull(offset)] ??
           BackupSelection.none) as P;
@@ -467,62 +458,6 @@ extension BackupAlbumQueryFilter
   }
 
   QueryBuilder<BackupAlbum, BackupAlbum, QAfterFilterCondition>
-      lastBackupEqualTo(DateTime value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'lastBackup',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<BackupAlbum, BackupAlbum, QAfterFilterCondition>
-      lastBackupGreaterThan(
-    DateTime value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'lastBackup',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<BackupAlbum, BackupAlbum, QAfterFilterCondition>
-      lastBackupLessThan(
-    DateTime value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'lastBackup',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<BackupAlbum, BackupAlbum, QAfterFilterCondition>
-      lastBackupBetween(
-    DateTime lower,
-    DateTime upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'lastBackup',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
-    });
-  }
-
-  QueryBuilder<BackupAlbum, BackupAlbum, QAfterFilterCondition>
       selectionEqualTo(BackupSelection value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
@@ -624,18 +559,6 @@ extension BackupAlbumQuerySortBy
     });
   }
 
-  QueryBuilder<BackupAlbum, BackupAlbum, QAfterSortBy> sortByLastBackup() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'lastBackup', Sort.asc);
-    });
-  }
-
-  QueryBuilder<BackupAlbum, BackupAlbum, QAfterSortBy> sortByLastBackupDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'lastBackup', Sort.desc);
-    });
-  }
-
   QueryBuilder<BackupAlbum, BackupAlbum, QAfterSortBy> sortBySelection() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'selection', Sort.asc);
@@ -687,18 +610,6 @@ extension BackupAlbumQuerySortThenBy
     });
   }
 
-  QueryBuilder<BackupAlbum, BackupAlbum, QAfterSortBy> thenByLastBackup() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'lastBackup', Sort.asc);
-    });
-  }
-
-  QueryBuilder<BackupAlbum, BackupAlbum, QAfterSortBy> thenByLastBackupDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'lastBackup', Sort.desc);
-    });
-  }
-
   QueryBuilder<BackupAlbum, BackupAlbum, QAfterSortBy> thenBySelection() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'selection', Sort.asc);
@@ -727,12 +638,6 @@ extension BackupAlbumQueryWhereDistinct
     });
   }
 
-  QueryBuilder<BackupAlbum, BackupAlbum, QDistinct> distinctByLastBackup() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'lastBackup');
-    });
-  }
-
   QueryBuilder<BackupAlbum, BackupAlbum, QDistinct> distinctBySelection() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'selection');
@@ -757,12 +662,6 @@ extension BackupAlbumQueryProperty
   QueryBuilder<BackupAlbum, String, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'id');
-    });
-  }
-
-  QueryBuilder<BackupAlbum, DateTime, QQueryOperations> lastBackupProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'lastBackup');
     });
   }
 
