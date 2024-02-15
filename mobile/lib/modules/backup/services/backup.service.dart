@@ -5,7 +5,6 @@ import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/extensions/collection_extensions.dart';
 import 'package:immich_mobile/modules/backup/models/backup_album.model.dart';
 import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/error_upload_asset.model.dart';
@@ -125,7 +124,7 @@ class BackupService {
           )
         : assetList.toList();
 
-    for (var asset in assetsToUpload) {
+    for (final asset in assetsToUpload) {
       if (!asset.isLocal) {
         _log.severe("Asset - ${asset.id} is not a local asset");
         continue;

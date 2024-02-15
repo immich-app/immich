@@ -6,7 +6,7 @@ part of 'backup_album.provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$backupAlbumsHash() => r'b4fcbf7b0bb6c6ee3323165470cf8d4758185487';
+String _$backupAlbumsHash() => r'8b20e057633b73aef6d0a9ac877763e047097061';
 
 /// See also [BackupAlbums].
 @ProviderFor(BackupAlbums)

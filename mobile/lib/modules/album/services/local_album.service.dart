@@ -1,12 +1,11 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:collection/collection.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/collection_extensions.dart';
 import 'package:immich_mobile/modules/album/models/album.model.dart';
 import 'package:immich_mobile/extensions/album_extensions.dart';
 import 'package:immich_mobile/modules/backup/models/backup_album.model.dart';
-import 'package:immich_mobile/modules/backup/providers/backup_album.provider.dart';
+import 'package:immich_mobile/modules/backup/services/backup_album.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/etag.dart';
 import 'package:immich_mobile/shared/models/exif_info.dart';
@@ -23,11 +22,16 @@ class LocalAlbumService {
   final Logger _log = Logger('LocalAlbumService');
 
   final Isar _db;
-  final Ref _ref;
   final HashService _hashService;
   final SyncService _syncService;
+  final BackupAlbumService _backupAlbumService;
 
-  LocalAlbumService(this._db, this._hashService, this._syncService, this._ref);
+  LocalAlbumService(
+    this._db,
+    this._hashService,
+    this._syncService,
+    this._backupAlbumService,
+  );
 
   Future<bool> refreshDeviceAlbums() async =>
       SyncService.lock.run(_refreshDeviceAlbums);
@@ -258,7 +262,7 @@ class LocalAlbumService {
     } on IsarError catch (e, stack) {
       _log.severe("Failed to add new local album ${ape.name} to DB: $e", stack);
     }
-    await _ref.read(backupAlbumsProvider.notifier).syncWithLocalAlbum(a);
+    await _backupAlbumService.syncWithLocalAlbum(a);
   }
 
   /// fast path for common case: only new assets were added to device album

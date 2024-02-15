@@ -293,7 +293,6 @@ class Asset {
           width: a.width ?? width,
           height: a.height ?? height,
           exifInfo: a.exifInfo?.copyWith(id: id) ?? exifInfo,
-          stackCount: a.stackCount ?? stackCount,
         );
       } else if (isRemote) {
         return _copyWith(

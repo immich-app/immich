@@ -9,18 +9,20 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/main.dart';
-import 'package:immich_mobile/modules/album/providers/local_album_service.provider.dart';
 import 'package:immich_mobile/modules/album/services/local_album.service.dart';
 import 'package:immich_mobile/modules/backup/background_service/localization.dart';
 import 'package:immich_mobile/modules/backup/models/backup_album.model.dart';
 import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/error_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/services/backup.service.dart';
+import 'package:immich_mobile/modules/backup/services/backup_album.service.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/device_asset.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
+import 'package:immich_mobile/shared/services/hash.service.dart';
+import 'package:immich_mobile/shared/services/sync.service.dart';
 import 'package:immich_mobile/utils/backup_progress.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider_ios/path_provider_ios.dart';
@@ -348,9 +350,11 @@ class BackgroundService {
     AppSettingsService settingService = AppSettingsService();
     BackupService backupService = BackupService(apiService, db, settingService);
     AppSettingsService settingsService = AppSettingsService();
-    final container = ProviderContainer();
+    HashService hashService = HashService(db, this);
+    SyncService syncService = SyncService(db);
+    BackupAlbumService backupAlbumService = BackupAlbumService(db);
     LocalAlbumService localAlbumService =
-        container.read(localAlbumServiceProvider);
+        LocalAlbumService(db, hashService, syncService, backupAlbumService);
 
     await PhotoManager.setIgnorePermissionCheck(true);
 

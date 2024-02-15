@@ -1,4 +1,5 @@
 import 'package:immich_mobile/modules/album/services/local_album.service.dart';
+import 'package:immich_mobile/modules/backup/services/backup_album.service.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/services/hash.service.dart';
 import 'package:immich_mobile/shared/services/sync.service.dart';
@@ -12,5 +13,5 @@ LocalAlbumService localAlbumService(LocalAlbumServiceRef ref) =>
       ref.watch(dbProvider),
       ref.read(hashServiceProvider),
       ref.read(syncServiceProvider),
-      ref,
+      ref.read(backupAlbumServiceProvider),
     );
