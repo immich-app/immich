@@ -10,8 +10,11 @@ export const load = (async (data) => {
     url.searchParams.get(QueryParameter.SEARCH_TERM) || url.searchParams.get(QueryParameter.QUERY) || undefined;
   let results: SearchResponseDto | null = null;
   if (term) {
-    console.log('term', ...data.url.searchParams)
-    const response = await search({ ...data.url.searchParams });
+    let params = {};
+    for (const [key, value] of data.url.searchParams) {
+      params = { ...params, [key]: value };
+    }
+    const response = await search({ ...params });
     let items: AssetResponseDto[] = (data as unknown as { results: SearchResponseDto }).results?.assets.items;
     if (items) {
       items.push(...response.assets.items);
