@@ -1,13 +1,15 @@
 <script lang="ts">
+  import { api } from '$lib/api';
+  import { getKey } from '$lib/utils';
+  import { type AssetResponseDto } from '@immich/sdk';
   import { fade } from 'svelte/transition';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
-  import { api, type AssetResponseDto } from '@api';
 
   export let asset: AssetResponseDto;
 
   const loadAssetData = async () => {
     const { data } = await api.assetApi.serveFile(
-      { id: asset.id, isThumb: false, isWeb: false, key: api.getKey() },
+      { id: asset.id, isThumb: false, isWeb: false, key: getKey() },
       { responseType: 'blob' },
     );
     if (data instanceof Blob) {

@@ -7,6 +7,7 @@ import { PersonResponseDto } from '../person';
 import {
   IAssetRepository,
   IMachineLearningRepository,
+  IMetadataRepository,
   IPartnerRepository,
   IPersonRepository,
   ISearchRepository,
@@ -16,6 +17,7 @@ import {
 } from '../repositories';
 import { FeatureFlag, SystemConfigCore } from '../system-config';
 import { MetadataSearchDto, SearchDto, SearchPeopleDto, SmartSearchDto } from './dto';
+import { SearchSuggestionRequestDto, SearchSuggestionType } from './dto/search-suggestion.dto';
 import { SearchResponseDto } from './response-dto';
 
 @Injectable()
@@ -30,6 +32,7 @@ export class SearchService {
     @Inject(ISearchRepository) private searchRepository: ISearchRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IPartnerRepository) private partnerRepository: IPartnerRepository,
+    @Inject(IMetadataRepository) private metadataRepository: IMetadataRepository,
   ) {
     this.configCore = SystemConfigCore.create(configRepository);
   }
@@ -175,5 +178,29 @@ export class SearchService {
         nextPage,
       },
     };
+  }
+
+  async getSearchSuggestions(auth: AuthDto, dto: SearchSuggestionRequestDto): Promise<string[]> {
+    if (dto.type === SearchSuggestionType.COUNTRY) {
+      return this.metadataRepository.getCountries(auth.user.id);
+    }
+
+    if (dto.type === SearchSuggestionType.STATE) {
+      return this.metadataRepository.getStates(auth.user.id, dto.country);
+    }
+
+    if (dto.type === SearchSuggestionType.CITY) {
+      return this.metadataRepository.getCities(auth.user.id, dto.country, dto.state);
+    }
+
+    if (dto.type === SearchSuggestionType.CAMERA_MAKE) {
+      return this.metadataRepository.getCameraMakes(auth.user.id, dto.model);
+    }
+
+    if (dto.type === SearchSuggestionType.CAMERA_MODEL) {
+      return this.metadataRepository.getCameraModels(auth.user.id, dto.make);
+    }
+
+    return [];
   }
 }

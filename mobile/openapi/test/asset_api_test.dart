@@ -80,7 +80,7 @@ void main() {
       // TODO
     });
 
-    //Future<List<MapMarkerResponseDto>> getMapMarkers({ DateTime fileCreatedAfter, DateTime fileCreatedBefore, bool isArchived, bool isFavorite }) async
+    //Future<List<MapMarkerResponseDto>> getMapMarkers({ DateTime fileCreatedAfter, DateTime fileCreatedBefore, bool isArchived, bool isFavorite, bool withPartners }) async
     test('test getMapMarkers', () async {
       // TODO
     });

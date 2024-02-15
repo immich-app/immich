@@ -3,19 +3,19 @@
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
-  import { api } from '@api';
   import { fade } from 'svelte/transition';
   import { handleError } from '../../utils/handle-error';
   import SettingInputField, { SettingInputFieldType } from '../admin-page/settings/setting-input-field.svelte';
   import Button from '../elements/buttons/button.svelte';
   import { user } from '$lib/stores/user.store';
   import { cloneDeep } from 'lodash-es';
+  import { updateUser } from '@immich/sdk';
 
   let editedUser = cloneDeep($user);
 
   const handleSaveProfile = async () => {
     try {
-      const { data } = await api.userApi.updateUser({
+      const data = await updateUser({
         updateUserDto: {
           id: editedUser.id,
           email: editedUser.email,

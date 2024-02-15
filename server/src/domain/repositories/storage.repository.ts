@@ -1,4 +1,4 @@
-import { FSWatcher, WatchOptions } from 'chokidar';
+import { WatchOptions } from 'chokidar';
 import { Stats } from 'node:fs';
 import { FileReadOptions } from 'node:fs/promises';
 import { Readable } from 'node:stream';
@@ -23,7 +23,13 @@ export interface DiskUsage {
 
 export const IStorageRepository = 'IStorageRepository';
 
-export interface ImmichWatcher extends FSWatcher {}
+export interface WatchEvents {
+  onReady(): void;
+  onAdd(path: string): void;
+  onChange(path: string): void;
+  onUnlink(path: string): void;
+  onError(error: Error): void;
+}
 
 export interface IStorageRepository {
   createZipStream(): ImmichZipStream;
@@ -41,6 +47,6 @@ export interface IStorageRepository {
   crawl(crawlOptions: CrawlOptionsDto): Promise<string[]>;
   copyFile(source: string, target: string): Promise<void>;
   rename(source: string, target: string): Promise<void>;
-  watch(paths: string[], options: WatchOptions): ImmichWatcher;
+  watch(paths: string[], options: WatchOptions, events: Partial<WatchEvents>): () => void;
   utimes(filepath: string, atime: Date, mtime: Date): Promise<void>;
 }

@@ -1,14 +1,21 @@
 <script lang="ts">
-  import { api, type AssetResponseDto, type SharedLinkResponseDto, SharedLinkType, ThumbnailFormat } from '@api';
-  import LoadingSpinner from '../shared-components/loading-spinner.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
-  import * as luxon from 'luxon';
-  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
-  import { createEventDispatcher } from 'svelte';
   import { goto } from '$app/navigation';
-  import { mdiCircleEditOutline, mdiContentCopy, mdiDelete, mdiOpenInNew } from '@mdi/js';
   import noThumbnailUrl from '$lib/assets/no-thumbnail.png';
+  import Icon from '$lib/components/elements/icon.svelte';
   import { AppRoute } from '$lib/constants';
+  import { getAssetThumbnailUrl } from '$lib/utils';
+  import {
+    SharedLinkType,
+    ThumbnailFormat,
+    getAssetInfo,
+    type AssetResponseDto,
+    type SharedLinkResponseDto,
+  } from '@immich/sdk';
+  import { mdiCircleEditOutline, mdiContentCopy, mdiDelete, mdiOpenInNew } from '@mdi/js';
+  import * as luxon from 'luxon';
+  import { createEventDispatcher } from 'svelte';
+  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
+  import LoadingSpinner from '../shared-components/loading-spinner.svelte';
 
   export let link: SharedLinkResponseDto;
 
@@ -28,9 +35,7 @@
       assetId = link.assets[0].id;
     }
 
-    const { data } = await api.assetApi.getAssetInfo({ id: assetId });
-
-    return data;
+    return getAssetInfo({ id: assetId });
   };
 
   const getCountDownExpirationDate = () => {
@@ -72,7 +77,7 @@
       {:then asset}
         <img
           id={asset.id}
-          src={api.getAssetThumbnailUrl(asset.id, ThumbnailFormat.Webp)}
+          src={getAssetThumbnailUrl(asset.id, ThumbnailFormat.Webp)}
           alt={asset.id}
           class="h-[100px] w-[100px] rounded-lg object-cover"
           loading="lazy"

@@ -11,7 +11,8 @@ describe(`${LibraryController.name} (e2e)`, () => {
   let admin: LoginResponseDto;
 
   beforeAll(async () => {
-    server = (await testApp.create()).getHttpServer();
+    const app = await testApp.create();
+    server = app.getHttpServer();
   });
 
   afterAll(async () => {

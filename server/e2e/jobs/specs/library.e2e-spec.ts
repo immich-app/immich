@@ -2,7 +2,7 @@ import { LibraryResponseDto, LoginResponseDto } from '@app/domain';
 import { LibraryController } from '@app/immich';
 import { AssetType, LibraryType } from '@app/infra/entities';
 import { errorStub, uuidStub } from '@test/fixtures';
-import * as fs from 'fs';
+import * as fs from 'node:fs';
 import request from 'supertest';
 import { utimes } from 'utimes';
 import {
@@ -18,7 +18,8 @@ describe(`${LibraryController.name} (e2e)`, () => {
   let admin: LoginResponseDto;
 
   beforeAll(async () => {
-    server = (await testApp.create()).getHttpServer();
+    const app = await testApp.create();
+    server = app.getHttpServer();
   });
 
   beforeEach(async () => {
@@ -264,7 +265,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
           `${IMMICH_TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`,
         );
 
-        await utimes(`${IMMICH_TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`, 447775200000);
+        await utimes(`${IMMICH_TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`, 447_775_200_000);
 
         await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
 
@@ -273,7 +274,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
           `${IMMICH_TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`,
         );
 
-        await utimes(`${IMMICH_TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`, 447775200001);
+        await utimes(`${IMMICH_TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`, 447_775_200_001);
 
         await api.libraryApi.scanLibrary(server, admin.accessToken, library.id, { refreshModifiedFiles: true });
 
@@ -289,7 +290,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
               exifImageWidth: 800,
               exposureTime: '1/15',
               fNumber: 22,
-              fileSizeInByte: 114225,
+              fileSizeInByte: 114_225,
               focalLength: 35,
               iso: 1000,
               make: 'NIKON CORPORATION',
@@ -311,7 +312,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
           `${IMMICH_TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`,
         );
 
-        await utimes(`${IMMICH_TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`, 447775200000);
+        await utimes(`${IMMICH_TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`, 447_775_200_000);
 
         await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
 
@@ -320,7 +321,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
           `${IMMICH_TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`,
         );
 
-        await utimes(`${IMMICH_TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`, 447775200000);
+        await utimes(`${IMMICH_TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`, 447_775_200_000);
 
         await api.libraryApi.scanLibrary(server, admin.accessToken, library.id, { refreshModifiedFiles: true });
 
@@ -351,7 +352,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
           `${IMMICH_TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`,
         );
 
-        await utimes(`${IMMICH_TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`, 447775200000);
+        await utimes(`${IMMICH_TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`, 447_775_200_000);
 
         await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
 
@@ -360,7 +361,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
           `${IMMICH_TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`,
         );
 
-        await utimes(`${IMMICH_TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`, 447775200000);
+        await utimes(`${IMMICH_TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`, 447_775_200_000);
 
         await api.libraryApi.scanLibrary(server, admin.accessToken, library.id, { refreshAllFiles: true });
 
@@ -375,7 +376,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
               exifImageWidth: 800,
               exposureTime: '1/15',
               fNumber: 22,
-              fileSizeInByte: 114225,
+              fileSizeInByte: 114_225,
               focalLength: 35,
               iso: 1000,
               make: 'NIKON CORPORATION',

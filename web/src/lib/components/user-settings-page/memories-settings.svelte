@@ -3,7 +3,7 @@
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
-  import { api, type UserResponseDto } from '@api';
+  import { updateUser, type UserResponseDto } from '@immich/sdk';
   import { fade } from 'svelte/transition';
   import { handleError } from '../../utils/handle-error';
   import SettingSwitch from '../admin-page/settings/setting-switch.svelte';
@@ -13,7 +13,7 @@
 
   const handleSave = async () => {
     try {
-      const { data } = await api.userApi.updateUser({
+      const data = await updateUser({
         updateUserDto: {
           id: user.id,
           memoriesEnabled: user.memoriesEnabled,

@@ -1,19 +1,28 @@
 <script lang="ts">
-  import { fly } from 'svelte/transition';
-  import { linear } from 'svelte/easing';
-  import { api, type PersonResponseDto, type AssetFaceResponseDto, AssetTypeEnum } from '@api';
-  import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
-  import { handleError } from '$lib/utils/handle-error';
-  import { createEventDispatcher, onMount } from 'svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
-  import { NotificationType, notificationController } from '../shared-components/notification/notification';
-  import { mdiArrowLeftThin, mdiRestart } from '@mdi/js';
-  import Icon from '../elements/icon.svelte';
+  import { timeBeforeShowLoadingSpinner } from '$lib/constants';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { websocketStore } from '$lib/stores/websocket';
-  import AssignFaceSidePanel from './assign-face-side-panel.svelte';
+  import { getPeopleThumbnailUrl } from '$lib/utils';
+  import { handleError } from '$lib/utils/handle-error';
   import { getPersonNameWithHiddenValue } from '$lib/utils/person';
-  import { timeBeforeShowLoadingSpinner } from '$lib/constants';
+  import {
+    AssetTypeEnum,
+    createPerson,
+    getAllPeople,
+    getFaces,
+    reassignFacesById,
+    type AssetFaceResponseDto,
+    type PersonResponseDto,
+  } from '@immich/sdk';
+  import { mdiArrowLeftThin, mdiRestart } from '@mdi/js';
+  import { createEventDispatcher, onMount } from 'svelte';
+  import { linear } from 'svelte/easing';
+  import { fly } from 'svelte/transition';
+  import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
+  import Icon from '../elements/icon.svelte';
+  import { NotificationType, notificationController } from '../shared-components/notification/notification';
+  import AssignFaceSidePanel from './assign-face-side-panel.svelte';
 
   export let assetId: string;
   export let assetType: AssetTypeEnum;
@@ -68,10 +77,9 @@
   onMount(async () => {
     const timeout = setTimeout(() => (isShowLoadingPeople = true), timeBeforeShowLoadingSpinner);
     try {
-      const { data } = await api.personApi.getAllPeople({ withHidden: true });
-      allPeople = data.people;
-      const result = await api.faceApi.getFaces({ id: assetId });
-      peopleWithFaces = result.data;
+      const { people } = await getAllPeople({ withHidden: true });
+      allPeople = people;
+      peopleWithFaces = await getFaces({ id: assetId });
       selectedPersonToCreate = Array.from({ length: peopleWithFaces.length });
       selectedPersonToReassign = Array.from({ length: peopleWithFaces.length });
     } catch (error) {
@@ -110,14 +118,14 @@
           const personId = selectedPersonToReassign[index]?.id;
 
           if (personId) {
-            await api.faceApi.reassignFacesById({
+            await reassignFacesById({
               id: personId,
               faceDto: { id: peopleWithFace.id },
             });
           } else if (selectedPersonToCreate[index]) {
-            const { data } = await api.personApi.createPerson();
+            const data = await createPerson();
             numberOfPersonToCreate.push(data.id);
-            await api.faceApi.reassignFacesById({
+            await reassignFacesById({
               id: data.id,
               faceDto: { id: peopleWithFace.id },
             });
@@ -214,7 +222,7 @@
                     curve
                     shadow
                     url={selectedPersonToCreate[index] ||
-                      api.getPeopleThumbnailUrl(selectedPersonToReassign[index]?.id || face.person.id)}
+                      getPeopleThumbnailUrl(selectedPersonToReassign[index]?.id || face.person.id)}
                     altText={selectedPersonToReassign[index]
                       ? selectedPersonToReassign[index]?.name || ''
                       : selectedPersonToCreate[index]

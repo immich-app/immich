@@ -33,10 +33,10 @@ linter:
 # https://dart.dev/guides/language/analysis-options
 analyzer:
   exclude:
-    - openapi/
-    - openapi/test/
+    - openapi/**
+    - openapi/test/**
     - lib/generated_plugin_registrant.dart
-  
+
 plugins:
   - custom_lint
 

@@ -1,13 +1,13 @@
 import byteSize from 'byte-size';
 import cliProgress from 'cli-progress';
+import { createHash } from 'node:crypto';
 import fs, { createReadStream } from 'node:fs';
+import { access, constants, stat, unlink } from 'node:fs/promises';
+import os from 'node:os';
+import { basename } from 'node:path';
+import { ImmichApi } from 'src/services/api.service';
 import { CrawlService } from '../services/crawl.service';
 import { BaseCommand } from './base-command';
-import { basename } from 'node:path';
-import { access, constants, stat, unlink } from 'node:fs/promises';
-import { createHash } from 'node:crypto';
-import os from 'node:os';
-import { ImmichApi } from 'src/services/api.service';
 
 class Asset {
   readonly path: string;

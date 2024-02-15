@@ -1,8 +1,10 @@
-import { uploadAssetsStore } from '$lib/stores/upload';
-import { addAssetsToAlbum } from '$lib/utils/asset-utils';
-import { api, type AssetFileUploadResponseDto } from '@api';
+import { api } from '$lib/api';
 import { UploadState } from '$lib/models/upload-asset';
+import { uploadAssetsStore } from '$lib/stores/upload';
+import { getKey } from '$lib/utils';
+import { addAssetsToAlbum } from '$lib/utils/asset-utils';
 import { ExecutorQueue } from '$lib/utils/executor-queue';
+import { getSupportedMediaTypes, type AssetFileUploadResponseDto } from '@immich/sdk';
 import { getServerErrorMessage, handleError } from './handle-error';
 
 let _extensions: string[];
@@ -11,8 +13,8 @@ export const uploadExecutionQueue = new ExecutorQueue({ concurrency: 2 });
 
 const getExtensions = async () => {
   if (!_extensions) {
-    const { data } = await api.serverInfoApi.getSupportedMediaTypes();
-    _extensions = [...data.image, ...data.video];
+    const { image, video } = await getSupportedMediaTypes();
+    _extensions = [...image, ...video];
   }
   return _extensions;
 };
@@ -80,7 +82,7 @@ async function fileUploader(asset: File, albumId: string | undefined = undefined
           isFavorite: false,
           duration: '0:00:00.000000',
           assetData: new File([asset], asset.name),
-          key: api.getKey(),
+          key: getKey(),
         },
         {
           onUploadProgress: ({ event }) => {

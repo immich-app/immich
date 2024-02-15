@@ -1,12 +1,11 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
-  import Button from '../elements/buttons/button.svelte';
-  import { LibraryType, type LibraryResponseDto } from '@api';
-  import { handleError } from '../../utils/handle-error';
-  import { onMount } from 'svelte';
   import Icon from '$lib/components/elements/icon.svelte';
-  import LibraryExclusionPatternForm from './library-exclusion-pattern-form.svelte';
+  import { LibraryType, type LibraryResponseDto } from '@immich/sdk';
   import { mdiPencilOutline } from '@mdi/js';
+  import { createEventDispatcher, onMount } from 'svelte';
+  import { handleError } from '../../utils/handle-error';
+  import Button from '../elements/buttons/button.svelte';
+  import LibraryExclusionPatternForm from './library-exclusion-pattern-form.svelte';
 
   export let library: Partial<LibraryResponseDto>;
 

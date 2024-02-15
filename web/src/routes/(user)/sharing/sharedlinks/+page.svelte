@@ -1,19 +1,20 @@
 <script lang="ts">
-  import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
-  import { api, copyToClipboard, makeSharedLinkUrl, type SharedLinkResponseDto } from '@api';
   import { goto } from '$app/navigation';
-  import SharedLinkCard from '$lib/components/sharedlinks-page/shared-link-card.svelte';
+  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
+  import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
+  import CreateSharedLinkModal from '$lib/components/shared-components/create-share-link-modal/create-shared-link-modal.svelte';
   import {
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
-  import { onMount } from 'svelte';
-  import CreateSharedLinkModal from '$lib/components/shared-components/create-share-link-modal/create-shared-link-modal.svelte';
-  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
-  import { handleError } from '$lib/utils/handle-error';
+  import SharedLinkCard from '$lib/components/sharedlinks-page/shared-link-card.svelte';
   import { AppRoute } from '$lib/constants';
-  import { mdiArrowLeft } from '@mdi/js';
   import { serverConfig } from '$lib/stores/server-config.store';
+  import { copyToClipboard, makeSharedLinkUrl } from '$lib/utils';
+  import { handleError } from '$lib/utils/handle-error';
+  import { getAllSharedLinks, removeSharedLink, type SharedLinkResponseDto } from '@immich/sdk';
+  import { mdiArrowLeft } from '@mdi/js';
+  import { onMount } from 'svelte';
 
   let sharedLinks: SharedLinkResponseDto[] = [];
   let editSharedLink: SharedLinkResponseDto | null = null;
@@ -21,8 +22,7 @@
   let deleteLinkId: string | null = null;
 
   const refresh = async () => {
-    const { data } = await api.sharedLinkApi.getAllSharedLinks();
-    sharedLinks = data;
+    sharedLinks = await getAllSharedLinks();
   };
 
   onMount(async () => {
@@ -35,7 +35,7 @@
     }
 
     try {
-      await api.sharedLinkApi.removeSharedLink({ id: deleteLinkId });
+      await removeSharedLink({ id: deleteLinkId });
       notificationController.show({ message: 'Deleted shared link', type: NotificationType.Info });
       deleteLinkId = null;
       await refresh();

@@ -1,10 +1,10 @@
 import { authenticate } from '$lib/utils/auth';
-import { api } from '@api';
+import { getServerStatistics } from '@immich/sdk';
 import type { PageLoad } from './$types';
 
 export const load = (async () => {
   await authenticate({ admin: true });
-  const { data: stats } = await api.serverInfoApi.getServerStatistics();
+  const stats = await getServerStatistics();
 
   return {
     stats,

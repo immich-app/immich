@@ -1,4 +1,4 @@
-import type { AssetResponseDto } from '@api';
+import type { AssetResponseDto } from '@immich/sdk';
 import { getAssetFilename, getFilenameExtension } from './asset-utils';
 
 describe('get file extension from filename', () => {

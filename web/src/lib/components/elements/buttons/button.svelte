@@ -27,6 +27,7 @@
   export let fullwidth = false;
   export let border = false;
   export let title: string | undefined = '';
+
   let className = '';
   export { className as class };
 

@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom';
-import { render, type RenderResult, waitFor } from '@testing-library/svelte';
+import { render, waitFor, type RenderResult } from '@testing-library/svelte';
 import { get } from 'svelte/store';
-import { notificationController, NotificationType } from '../notification';
+import { NotificationType, notificationController } from '../notification';
 import NotificationList from '../notification-list.svelte';
 
 function _getNotificationListElement(sut: RenderResult<NotificationList>): HTMLAnchorElement | null {

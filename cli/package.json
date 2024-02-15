@@ -32,6 +32,8 @@
     "glob": "^10.3.1",
     "immich": "file:../server",
     "mock-fs": "^5.2.0",
+    "prettier": "^3.2.5",
+    "prettier-plugin-organize-imports": "^3.2.4",
     "typescript": "^5.3.3",
     "vite": "^5.0.12",
     "vitest": "^1.2.2",
