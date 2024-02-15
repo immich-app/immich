@@ -164,6 +164,10 @@ export function searchAssetBuilder(
     ),
   );
 
+  if (options.isNotInAlbum) {
+    builder.leftJoin(`${builder.alias}.albums`, 'albums').andWhere('albums.id IS NULL');
+  }
+
   if (options.withExif) {
     builder.leftJoinAndSelect(`${builder.alias}.exifInfo`, 'exifInfo');
   }
@@ -178,6 +182,12 @@ export function searchAssetBuilder(
 
   if (options.withSmartInfo) {
     builder.leftJoinAndSelect(`${builder.alias}.smartInfo`, 'smartInfo');
+  }
+
+  if (options.personIds && options.personIds.length > 0) {
+    builder
+      .leftJoin(`${builder.alias}.faces`, 'faces')
+      .andWhere('faces.personId IN (:...personIds)', { personIds: options.personIds });
   }
 
   if (options.withStacked) {

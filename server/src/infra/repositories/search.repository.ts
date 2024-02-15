@@ -4,7 +4,6 @@ import {
   Embedding,
   FaceEmbeddingSearch,
   FaceSearchResult,
-  HybridSearchOptions,
   ISearchRepository,
   Paginated,
   PaginationMode,
@@ -38,7 +37,6 @@ export class SearchRepository implements ISearchRepository {
       .ownColumns.map((column) => column.propertyName)
       .filter((propertyName) => propertyName !== 'embedding');
   }
-
   async init(modelName: string): Promise<void> {
     const { dimSize } = getCLIPModelInfo(modelName);
     const curDimSize = await this.getDimSize();
@@ -65,6 +63,10 @@ export class SearchRepository implements ISearchRepository {
   async searchMetadata(pagination: SearchPaginationOptions, options: AssetSearchOptions): Paginated<AssetEntity> {
     let builder = this.assetRepository.createQueryBuilder('asset');
     builder = searchAssetBuilder(builder, options);
+
+    if (options.userIds) {
+      builder.andWhere('asset.ownerId IN (:...userIds)', { userIds: options.userIds });
+    }
 
     builder.orderBy('asset.fileCreatedAt', options.orderDirection ?? 'DESC');
     return paginatedBuilder<AssetEntity>(builder, {
@@ -248,87 +250,5 @@ export class SearchRepository implements ISearchRepository {
     }
 
     return runtimeConfig;
-  }
-
-  async searchHybrid(
-    pagination: SearchPaginationOptions,
-    { embedding, userIds, ...options }: HybridSearchOptions,
-  ): Paginated<AssetEntity> {
-    let results: PaginationResult<AssetEntity> = { items: [], hasNextPage: false };
-
-    await this.assetRepository.manager.transaction(async (manager) => {
-      let builder = manager.createQueryBuilder(AssetEntity, 'asset');
-
-      builder.where('asset.ownerId IN (:...userIds )', { userIds }).leftJoinAndSelect('asset.exifInfo', 'exif');
-
-      if (embedding && embedding.length > 0) {
-        builder
-          .innerJoin('asset.smartSearch', 'search')
-          .orderBy('search.embedding <=> :embedding')
-          .setParameters({ embedding: asVector(embedding) });
-      }
-
-      if (options.state) {
-        builder.andWhere('exif.state = :state', { state: options.state });
-      }
-
-      if (options.country) {
-        builder.andWhere('exif.country = :country', { country: options.country });
-      }
-
-      if (options.city) {
-        builder.andWhere('exif.city = :city', { city: options.city });
-      }
-
-      if (options.make) {
-        builder.andWhere('exif.make = :make', { make: options.make });
-      }
-
-      if (options.model) {
-        builder.andWhere('exif.model = :model', { model: options.model });
-      }
-
-      if (options.createdAfter) {
-        builder.andWhere('exif.dateTimeOriginal >= :createdAfter::date', { createdAfter: options.createdAfter });
-      }
-
-      if (options.createdBefore) {
-        builder.andWhere('exif.dateTimeOriginal <= :createdBefore::date', { createdBefore: options.createdBefore });
-      }
-
-      if (options.isArchived) {
-        builder.andWhere('asset.isArchived = :isArchived', { isArchived: options.isArchived });
-      }
-
-      if (options.isFavorite) {
-        builder.andWhere('asset.isFavorite = :isFavorite', { isFavorite: options.isFavorite });
-      }
-
-      if (options.isNotInAlbum) {
-        builder.leftJoin('asset.albums', 'albums').andWhere('albums.id IS NULL');
-      }
-
-      if (options.type) {
-        builder.andWhere('asset.type = :type', { type: options.type });
-      }
-
-      if (options.personIds && options.personIds.length > 0) {
-        builder
-          .leftJoin('asset.faces', 'faces')
-          .andWhere('faces.personId IN (:...personIds)', { personIds: options.personIds });
-      }
-
-      builder.orderBy('asset.fileCreatedAt', 'DESC');
-
-      await manager.query(this.getRuntimeConfig(pagination.size));
-
-      results = await paginatedBuilder<AssetEntity>(builder, {
-        mode: PaginationMode.LIMIT_OFFSET,
-        skip: (pagination.page - 1) * pagination.size,
-        take: pagination.size,
-      });
-    });
-
-    return results;
   }
 }

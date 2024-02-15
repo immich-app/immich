@@ -70,6 +70,7 @@ export interface SearchUserIDOptions {
   deviceId?: string;
   libraryId?: string;
   ownerId?: string;
+  userIds?: string[];
 }
 
 export type SearchIDOptions = SearchAssetIDOptions & SearchUserIDOptions;
@@ -152,7 +153,9 @@ export type AssetSearchOptions = SearchDateOptions &
   SearchOrderOptions &
   SearchPathOptions &
   SearchRelationOptions &
-  SearchStatusOptions;
+  SearchStatusOptions &
+  SearchUserIDOptions &
+  SearchPeopleOptions;
 
 export type AssetSearchBuilderOptions = Omit<AssetSearchOptions, 'orderDirection'>;
 
@@ -161,12 +164,7 @@ export type SmartSearchOptions = SearchDateOptions &
   SearchExifOptions &
   SearchOneToOneRelationOptions &
   SearchStatusOptions &
-  SearchUserIDOptions;
-
-export type HybridSearchOptions = SearchDateOptions &
-  SearchEmbeddingOptions &
-  SearchExifOptions &
-  SearchStatusOptions &
+  SearchUserIDOptions &
   SearchPeopleOptions;
 
 export interface FaceEmbeddingSearch extends SearchEmbeddingOptions {
@@ -184,7 +182,6 @@ export interface ISearchRepository {
   init(modelName: string): Promise<void>;
   searchMetadata(pagination: SearchPaginationOptions, options: AssetSearchOptions): Paginated<AssetEntity>;
   searchSmart(pagination: SearchPaginationOptions, options: SmartSearchOptions): Paginated<AssetEntity>;
-  searchHybrid(pagination: SearchPaginationOptions, options: HybridSearchOptions): Paginated<AssetEntity>;
   searchFaces(search: FaceEmbeddingSearch): Promise<FaceSearchResult[]>;
   upsert(smartInfo: Partial<SmartInfoEntity>, embedding?: Embedding): Promise<void>;
 }
