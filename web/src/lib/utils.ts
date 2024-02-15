@@ -13,7 +13,6 @@ import {
   unlinkOAuthAccount,
   type UserResponseDto,
 } from '@immich/sdk';
-import { common } from '@immich/sdk/axios';
 import { get } from 'svelte/store';
 
 interface UpdateParamAction {
@@ -91,7 +90,7 @@ const createUrl = (path: string, parameters?: Record<string, unknown>) => {
   const url = new URL(path, 'https://example.com');
   url.search = searchParameters.toString();
 
-  return defaults.baseUrl + common.toPathString(url);
+  return defaults.baseUrl + url.pathname + url.search + url.hash;
 };
 
 export const getAssetFileUrl = (...[assetId, isWeb, isThumb]: [string, boolean, boolean]) => {
