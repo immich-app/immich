@@ -187,7 +187,9 @@ export function searchAssetBuilder(
   if (options.personIds && options.personIds.length > 0) {
     builder
       .leftJoin(`${builder.alias}.faces`, 'faces')
-      .andWhere('faces.personId IN (:...personIds)', { personIds: options.personIds });
+      .andWhere('faces.personId IN (:...personIds)', { personIds: options.personIds })
+      .groupBy(`${builder.alias}.id`)
+      .having('COUNT(faces.id) = :personCount', { personCount: options.personIds.length });
   }
 
   if (options.withStacked) {

@@ -10,12 +10,15 @@
     type PersonResponseDto,
     searchSmart,
     searchMetadata,
+    type SmartSearchDto,
+    type MetadataSearchDto,
   } from '@immich/sdk';
   import { getAllPeople, getSearchSuggestions } from '@immich/sdk';
   import { mdiArrowRight, mdiClose } from '@mdi/js';
   import { onMount } from 'svelte';
   import { fly } from 'svelte/transition';
   import Combobox, { type ComboBoxOption } from '../combobox.svelte';
+  import { DateTime } from 'luxon';
 
   enum MediaType {
     All = 'all',
@@ -56,8 +59,8 @@
     };
 
     date: {
-      createdAfter?: string;
-      createdBefore?: string;
+      takenAfter?: string;
+      takenBefore?: string;
     };
 
     isArchive?: boolean;
@@ -89,8 +92,8 @@
       model: undefined,
     },
     date: {
-      createdAfter: undefined,
-      createdBefore: undefined,
+      takenAfter: undefined,
+      takenBefore: undefined,
     },
     isArchive: undefined,
     isFavorite: undefined,
@@ -215,8 +218,8 @@
         model: undefined,
       },
       date: {
-        createdAfter: undefined,
-        createdBefore: undefined,
+        takenAfter: undefined,
+        takenBefore: undefined,
       },
       isArchive: undefined,
       isFavorite: undefined,
@@ -234,31 +237,20 @@
       type = AssetTypeEnum.Video;
     }
 
-    // const { assets } = await searchHybrid({
-    //   hybridSearchDto: {
-    //     context: filter.context,
-    //     country: filter.location.country?.value,
-    //     state: filter.location.state?.value,
-    //     city: filter.location.city?.value,
-    //     make: filter.camera.make?.value,
-    //     model: filter.camera.model?.value,
-    //     createdAfter: filter.date.createdAfter ? new Date(filter.date.createdAfter).toISOString() : undefined,
-    //     createdBefore: filter.date.createdBefore ? new Date(filter.date.createdBefore).toISOString() : undefined,
-    //     isArchived: filter.isArchive,
-    //     isFavorite: filter.isFavorite,
-    //     isNotInAlbum: filter.isNotInAlbum,
-    //     personIds: filter.people ? filter.people.map((p) => p.id) : undefined,
-    //     type,
-    //   },
-    // });
-    let payload = {
+    console.log(filter.date);
+
+    let payload: SmartSearchDto | MetadataSearchDto = {
       country: filter.location.country?.value,
       state: filter.location.state?.value,
       city: filter.location.city?.value,
       make: filter.camera.make?.value,
       model: filter.camera.model?.value,
-      createdAfter: filter.date.createdAfter ? new Date(filter.date.createdAfter).toISOString() : undefined,
-      createdBefore: filter.date.createdBefore ? new Date(filter.date.createdBefore).toISOString() : undefined,
+      takenAfter: filter.date.takenAfter
+        ? DateTime.fromFormat(filter.date.takenAfter, 'yyyy-MM-dd').toUTC().startOf('day').toString()
+        : undefined,
+      takenBefore: filter.date.takenBefore
+        ? DateTime.fromFormat(filter.date.takenBefore, 'yyyy-MM-dd').toUTC().endOf('day').toString()
+        : undefined,
       isArchived: filter.isArchive,
       isFavorite: filter.isFavorite,
       isNotInAlbum: filter.isNotInAlbum,
@@ -433,7 +425,7 @@
           type="date"
           id="start-date"
           name="start-date"
-          bind:value={filter.date.createdAfter}
+          bind:value={filter.date.takenAfter}
         />
       </div>
 
@@ -445,7 +437,7 @@
           id="end-date"
           name="end-date"
           placeholder=""
-          bind:value={filter.date.createdBefore}
+          bind:value={filter.date.takenBefore}
         />
       </div>
     </div>
