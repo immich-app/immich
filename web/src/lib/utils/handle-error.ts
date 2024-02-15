@@ -1,9 +1,8 @@
-import type { ApiError } from '@api';
-import axios from 'axios';
+import type { HttpError } from '@sveltejs/kit';
 import { notificationController, NotificationType } from '../components/shared-components/notification/notification';
 
 export async function getServerErrorMessage(error: unknown) {
-  let data = (error as ApiError)?.response?.data;
+  let data = (error as HttpError)?.body;
   if (data instanceof Blob) {
     const response = await data.text();
     try {
@@ -17,7 +16,7 @@ export async function getServerErrorMessage(error: unknown) {
 }
 
 export async function handleError(error: unknown, message: string) {
-  if (axios.isCancel(error)) {
+  if ((error as Error)?.name === 'AbortError') {
     return;
   }
 

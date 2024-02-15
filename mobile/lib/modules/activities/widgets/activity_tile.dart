@@ -3,8 +3,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/datetime_extensions.dart';
 import 'package:immich_mobile/modules/activities/models/activity.model.dart';
+import 'package:immich_mobile/modules/asset_viewer/image_providers/immich_remote_image_provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/current_asset.provider.dart';
-import 'package:immich_mobile/shared/ui/immich_image.dart';
 import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
 
 class ActivityTile extends HookConsumerWidget {
@@ -106,7 +106,10 @@ class _ActivityAssetThumbnail extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: const BorderRadius.all(Radius.circular(4)),
         image: DecorationImage(
-          image: ImmichImage.remoteThumbnailProviderForId(assetId),
+          image: ImmichRemoteImageProvider(
+            assetId: assetId,
+            isThumbnail: true,
+          ),
           fit: BoxFit.cover,
         ),
       ),

@@ -45,7 +45,7 @@ class AlbumThumbnailCard extends StatelessWidget {
           );
         }
 
-        buildAlbumThumbnail() => ImmichImage(
+        buildAlbumThumbnail() => ImmichImage.thumbnail(
               album.thumbnail.value,
               width: cardSize,
               height: cardSize,

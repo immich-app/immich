@@ -118,6 +118,13 @@ export enum TranscodePolicy {
   DISABLED = 'disabled',
 }
 
+export enum TranscodeTarget {
+  NONE,
+  AUDIO,
+  VIDEO,
+  ALL,
+}
+
 export enum VideoCodec {
   H264 = 'h264',
   HEVC = 'hevc',

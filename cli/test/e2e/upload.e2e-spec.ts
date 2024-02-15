@@ -1,7 +1,7 @@
 import { IMMICH_TEST_ASSET_PATH, restoreTempFolder, testApp } from '@test-utils';
+import { ImmichApi } from 'src/services/api.service';
 import { CLI_BASE_OPTIONS, setup, spyOnConsole } from 'test/cli-test-utils';
 import { UploadCommand } from '../../src/commands/upload.command';
-import { ImmichApi } from 'src/services/api.service';
 
 describe(`upload (e2e)`, () => {
   let api: ImmichApi;

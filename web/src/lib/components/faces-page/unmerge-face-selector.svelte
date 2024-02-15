@@ -1,18 +1,24 @@
 <script lang="ts">
-  import { createEventDispatcher, onMount } from 'svelte';
-  import FaceThumbnail from './face-thumbnail.svelte';
-  import { quintOut } from 'svelte/easing';
-  import { fly } from 'svelte/transition';
-  import { api, type AssetFaceUpdateItem, type PersonResponseDto } from '@api';
-  import ControlAppBar from '../shared-components/control-app-bar.svelte';
-  import Button from '../elements/buttons/button.svelte';
-  import { mdiPlus, mdiMerge } from '@mdi/js';
-  import LoadingSpinner from '../shared-components/loading-spinner.svelte';
-  import { handleError } from '$lib/utils/handle-error';
-  import { notificationController, NotificationType } from '../shared-components/notification/notification';
-  import PeopleList from './people-list.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import { timeBeforeShowLoadingSpinner } from '$lib/constants';
+  import { handleError } from '$lib/utils/handle-error';
+  import {
+    createPerson,
+    getAllPeople,
+    reassignFaces,
+    type AssetFaceUpdateItem,
+    type PersonResponseDto,
+  } from '@immich/sdk';
+  import { mdiMerge, mdiPlus } from '@mdi/js';
+  import { createEventDispatcher, onMount } from 'svelte';
+  import { quintOut } from 'svelte/easing';
+  import { fly } from 'svelte/transition';
+  import Button from '../elements/buttons/button.svelte';
+  import ControlAppBar from '../shared-components/control-app-bar.svelte';
+  import LoadingSpinner from '../shared-components/loading-spinner.svelte';
+  import { NotificationType, notificationController } from '../shared-components/notification/notification';
+  import FaceThumbnail from './face-thumbnail.svelte';
+  import PeopleList from './people-list.svelte';
 
   export let assetIds: string[];
   export let personAssets: PersonResponseDto;
@@ -41,7 +47,7 @@
   }
 
   onMount(async () => {
-    const { data } = await api.personApi.getAllPeople({ withHidden: false });
+    const data = await getAllPeople({ withHidden: false });
     people = data.people;
   });
 
@@ -68,11 +74,8 @@
 
     try {
       disableButtons = true;
-      const { data } = await api.personApi.createPerson();
-      await api.personApi.reassignFaces({
-        id: data.id,
-        assetFaceUpdateDto: { data: selectedPeople },
-      });
+      const data = await createPerson();
+      await reassignFaces({ id: data.id, assetFaceUpdateDto: { data: selectedPeople } });
 
       notificationController.show({
         message: `Re-assigned ${assetIds.length} asset${assetIds.length > 1 ? 's' : ''} to a new person`,
@@ -93,10 +96,7 @@
     try {
       disableButtons = true;
       if (selectedPerson) {
-        await api.personApi.reassignFaces({
-          id: selectedPerson.id,
-          assetFaceUpdateDto: { data: selectedPeople },
-        });
+        await reassignFaces({ id: selectedPerson.id, assetFaceUpdateDto: { data: selectedPeople } });
         notificationController.show({
           message: `Re-assigned ${assetIds.length} asset${assetIds.length > 1 ? 's' : ''} to ${
             selectedPerson.name || 'an existing person'

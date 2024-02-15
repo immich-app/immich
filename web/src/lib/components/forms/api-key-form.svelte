@@ -1,13 +1,13 @@
 <script lang="ts">
-  import type { APIKeyResponseDto } from '@api';
+  import Icon from '$lib/components/elements/icon.svelte';
+  import type { ApiKeyResponseDto } from '@immich/sdk';
+  import { mdiKeyVariant } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
   import Button from '../elements/buttons/button.svelte';
   import FullScreenModal from '../shared-components/full-screen-modal.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
-  import { mdiKeyVariant } from '@mdi/js';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
 
-  export let apiKey: Partial<APIKeyResponseDto>;
+  export let apiKey: Partial<ApiKeyResponseDto>;
   export let title = 'API Key';
   export let cancelText = 'Cancel';
   export let submitText = 'Save';
@@ -15,7 +15,7 @@
 
   const dispatch = createEventDispatcher<{
     cancel: void;
-    submit: Partial<APIKeyResponseDto>;
+    submit: Partial<ApiKeyResponseDto>;
   }>();
   const handleCancel = () => dispatch('cancel');
   const handleSubmit = () => {

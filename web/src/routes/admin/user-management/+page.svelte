@@ -1,20 +1,20 @@
 <script lang="ts">
-  import { api, type UserResponseDto } from '@api';
-  import { onMount } from 'svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
-  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
-  import CreateUserForm from '$lib/components/forms/create-user-form.svelte';
-  import EditUserForm from '$lib/components/forms/edit-user-form.svelte';
+  import { page } from '$app/stores';
   import DeleteConfirmDialog from '$lib/components/admin-page/delete-confirm-dialoge.svelte';
   import RestoreDialogue from '$lib/components/admin-page/restore-dialoge.svelte';
-  import { page } from '$app/stores';
-  import { locale } from '$lib/stores/preferences.store';
   import Button from '$lib/components/elements/buttons/button.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
+  import CreateUserForm from '$lib/components/forms/create-user-form.svelte';
+  import EditUserForm from '$lib/components/forms/edit-user-form.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import type { PageData } from './$types';
-  import { mdiCheck, mdiClose, mdiDeleteRestore, mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
+  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
+  import { locale } from '$lib/stores/preferences.store';
   import { user } from '$lib/stores/user.store';
   import { asByteUnitString } from '$lib/utils/byte-units';
+  import { getAllUsers, type UserResponseDto } from '@immich/sdk';
+  import { mdiCheck, mdiClose, mdiDeleteRestore, mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
+  import { onMount } from 'svelte';
+  import type { PageData } from './$types';
 
   export let data: PageData;
 
@@ -47,8 +47,7 @@
   };
 
   const onUserCreated = async () => {
-    const getAllUsersRes = await api.userApi.getAllUsers({ isAll: false });
-    allUsers = getAllUsersRes.data;
+    allUsers = await getAllUsers({ isAll: false });
     shouldShowCreateUserForm = false;
   };
 
@@ -58,14 +57,12 @@
   };
 
   const onEditUserSuccess = async () => {
-    const getAllUsersRes = await api.userApi.getAllUsers({ isAll: false });
-    allUsers = getAllUsersRes.data;
+    allUsers = await getAllUsers({ isAll: false });
     shouldShowEditUserForm = false;
   };
 
   const onEditPasswordSuccess = async () => {
-    const getAllUsersRes = await api.userApi.getAllUsers({ isAll: false });
-    allUsers = getAllUsersRes.data;
+    allUsers = await getAllUsers({ isAll: false });
     shouldShowEditUserForm = false;
     shouldShowInfoPanel = true;
   };
@@ -76,14 +73,12 @@
   };
 
   const onUserDeleteSuccess = async () => {
-    const getAllUsersRes = await api.userApi.getAllUsers({ isAll: false });
-    allUsers = getAllUsersRes.data;
+    allUsers = await getAllUsers({ isAll: false });
     shouldShowDeleteConfirmDialog = false;
   };
 
   const onUserDeleteFail = async () => {
-    const getAllUsersRes = await api.userApi.getAllUsers({ isAll: false });
-    allUsers = getAllUsersRes.data;
+    allUsers = await getAllUsers({ isAll: false });
     shouldShowDeleteConfirmDialog = false;
   };
 
@@ -93,15 +88,13 @@
   };
 
   const onUserRestoreSuccess = async () => {
-    const getAllUsersRes = await api.userApi.getAllUsers({ isAll: false });
-    allUsers = getAllUsersRes.data;
+    allUsers = await getAllUsers({ isAll: false });
     shouldShowRestoreDialog = false;
   };
 
   const onUserRestoreFail = async () => {
     // show fail dialog
-    const getAllUsersRes = await api.userApi.getAllUsers({ isAll: false });
-    allUsers = getAllUsersRes.data;
+    allUsers = await getAllUsers({ isAll: false });
     shouldShowRestoreDialog = false;
   };
 </script>

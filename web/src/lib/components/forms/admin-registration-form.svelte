@@ -1,27 +1,28 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { AppRoute } from '$lib/constants';
-  import { api } from '@api';
+  import { signUpAdmin } from '@immich/sdk';
+  import { handleError } from '../../utils/handle-error';
   import Button from '../elements/buttons/button.svelte';
 
-  let error: string;
+  let errorMessage: string;
   let password = '';
   let confirmPassowrd = '';
   let canRegister = false;
 
   $: {
     if (password !== confirmPassowrd && confirmPassowrd.length > 0) {
-      error = 'Password does not match';
+      errorMessage = 'Password does not match';
       canRegister = false;
     } else {
-      error = '';
+      errorMessage = '';
       canRegister = true;
     }
   }
 
   async function registerAdmin(event: SubmitEvent & { currentTarget: HTMLFormElement }) {
     if (canRegister) {
-      error = '';
+      errorMessage = '';
 
       const form = new FormData(event.currentTarget);
 
@@ -29,20 +30,19 @@
       const password = form.get('password');
       const name = form.get('name');
 
-      const { status } = await api.authenticationApi.signUpAdmin({
-        signUpDto: {
-          email: String(email),
-          password: String(password),
-          name: String(name),
-        },
-      });
+      try {
+        await signUpAdmin({
+          signUpDto: {
+            email: String(email),
+            password: String(password),
+            name: String(name),
+          },
+        });
 
-      if (status === 201) {
         await goto(AppRoute.AUTH_LOGIN);
-        return;
-      } else {
-        error = 'Error create admin account';
-        return;
+      } catch (error) {
+        handleError(error, 'Unable to create admin account');
+        errorMessage = 'Error create admin account';
       }
     }
   }
@@ -85,8 +85,8 @@
     <input class="immich-form-input" id="name" name="name" type="text" autocomplete="name" required />
   </div>
 
-  {#if error}
-    <p class="text-red-400">{error}</p>
+  {#if errorMessage}
+    <p class="text-red-400">{errorMessage}</p>
   {/if}
 
   <div class="my-5 flex w-full">

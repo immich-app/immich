@@ -5,7 +5,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/memories/providers/memory.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
-import 'package:openapi/api.dart';
 
 class MemoryLane extends HookConsumerWidget {
   const MemoryLane({super.key});
@@ -62,7 +61,6 @@ class MemoryLane extends HookConsumerWidget {
                                     width: 130,
                                     height: 200,
                                     useGrayBoxPlaceholder: true,
-                                    type: ThumbnailFormat.JPEG,
                                   ),
                                 ),
                               ),

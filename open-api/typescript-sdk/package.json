@@ -20,8 +20,8 @@
   },
   "license": "GNU Affero General Public License version 3",
   "devDependencies": {
+    "@oazapfts/runtime": "^1.0.0",
     "@types/node": "^20.11.0",
-    "oazapfts": "^5.1.4",
     "typescript": "^5.3.3"
   },
   "peerDependencies": {

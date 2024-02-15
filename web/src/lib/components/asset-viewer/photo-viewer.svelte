@@ -1,17 +1,19 @@
 <script lang="ts">
-  import { fade } from 'svelte/transition';
-  import { onDestroy, onMount } from 'svelte';
-  import LoadingSpinner from '../shared-components/loading-spinner.svelte';
-  import { api, type AssetResponseDto } from '@api';
-  import { notificationController, NotificationType } from '../shared-components/notification/notification';
-  import { useZoomImageWheel } from '@zoom-image/svelte';
-  import { photoZoomState } from '$lib/stores/zoom-image.store';
-  import { isWebCompatibleImage } from '$lib/utils/asset-utils';
-  import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
+  import { api } from '$lib/api';
   import { photoViewer } from '$lib/stores/assets.store';
-  import { getBoundingBox } from '$lib/utils/people-utils';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
+  import { photoZoomState } from '$lib/stores/zoom-image.store';
+  import { getKey } from '$lib/utils';
+  import { isWebCompatibleImage } from '$lib/utils/asset-utils';
+  import { getBoundingBox } from '$lib/utils/people-utils';
+  import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
+  import { type AssetResponseDto } from '@immich/sdk';
+  import { useZoomImageWheel } from '@zoom-image/svelte';
+  import { onDestroy, onMount } from 'svelte';
+  import { fade } from 'svelte/transition';
+  import LoadingSpinner from '../shared-components/loading-spinner.svelte';
+  import { NotificationType, notificationController } from '../shared-components/notification/notification';
 
   export let asset: AssetResponseDto;
   export let element: HTMLDivElement | undefined = undefined;
@@ -50,7 +52,7 @@
       abortController = new AbortController();
 
       const { data } = await api.assetApi.serveFile(
-        { id: asset.id, isThumb: false, isWeb: !loadOriginal, key: api.getKey() },
+        { id: asset.id, isThumb: false, isWeb: !loadOriginal, key: getKey() },
         {
           responseType: 'blob',
           signal: abortController.signal,

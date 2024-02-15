@@ -1,12 +1,13 @@
 <script lang="ts">
+  import Icon from '$lib/components/elements/icon.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
-  import { api, type PersonResponseDto } from '@api';
+  import { getPeopleThumbnailUrl } from '$lib/utils';
+  import { type PersonResponseDto } from '@immich/sdk';
+  import { mdiArrowLeft, mdiClose, mdiMerge } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import Button from '../elements/buttons/button.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
-  import { mdiArrowLeft, mdiClose, mdiMerge } from '@mdi/js';
-  import Icon from '$lib/components/elements/icon.svelte';
 
   export let personMerge1: PersonResponseDto;
   export let personMerge2: PersonResponseDto;
@@ -60,7 +61,7 @@
             <ImageThumbnail
               circle
               shadow
-              url={api.getPeopleThumbnailUrl(personMerge1.id)}
+              url={getPeopleThumbnailUrl(personMerge1.id)}
               altText={personMerge1.name}
               widthStyle="100%"
             />
@@ -85,7 +86,7 @@
               border={potentialMergePeople.length > 0}
               circle
               shadow
-              url={api.getPeopleThumbnailUrl(personMerge2.id)}
+              url={getPeopleThumbnailUrl(personMerge2.id)}
               altText={personMerge2.name}
               widthStyle="100%"
             />
@@ -104,7 +105,7 @@
                         border={true}
                         circle
                         shadow
-                        url={api.getPeopleThumbnailUrl(person.id)}
+                        url={getPeopleThumbnailUrl(person.id)}
                         altText={person.name}
                         widthStyle="100%"
                         on:click={() => changePersonToMerge(person)}

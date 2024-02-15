@@ -1,12 +1,14 @@
 import { authenticate } from '$lib/utils/auth';
-import { api } from '@api';
+import { getPerson, getPersonStatistics } from '@immich/sdk';
 import type { PageLoad } from './$types';
 
 export const load = (async ({ params }) => {
   await authenticate();
 
-  const { data: person } = await api.personApi.getPerson({ id: params.personId });
-  const { data: statistics } = await api.personApi.getPersonStatistics({ id: params.personId });
+  const [person, statistics] = await Promise.all([
+    getPerson({ id: params.personId }),
+    getPersonStatistics({ id: params.personId }),
+  ]);
 
   return {
     person,

@@ -57,7 +57,7 @@ services:
     image: immich-web-dev:latest
     build:
       context: ../web
-    command: "/usr/src/app/bin/immich-web"
+    command: [ "/usr/src/app/bin/immich-web" ]
     env_file:
       - .env
     ports:

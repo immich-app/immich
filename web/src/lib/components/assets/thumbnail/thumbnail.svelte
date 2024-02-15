@@ -1,12 +1,10 @@
 <script lang="ts">
-  import { ProjectionType } from '$lib/constants';
   import IntersectionObserver from '$lib/components/asset-viewer/intersection-observer.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
+  import { ProjectionType } from '$lib/constants';
+  import { getAssetFileUrl, getAssetThumbnailUrl, isSharedLink } from '$lib/utils';
   import { timeToSeconds } from '$lib/utils/time-to-seconds';
-  import { api, type AssetResponseDto, AssetTypeEnum, ThumbnailFormat } from '@api';
-  import { createEventDispatcher } from 'svelte';
-  import { fade } from 'svelte/transition';
-  import ImageThumbnail from './image-thumbnail.svelte';
-  import VideoThumbnail from './video-thumbnail.svelte';
+  import { AssetTypeEnum, ThumbnailFormat, type AssetResponseDto } from '@immich/sdk';
   import {
     mdiArchiveArrowDownOutline,
     mdiCameraBurst,
@@ -17,7 +15,10 @@
     mdiMotionPlayOutline,
     mdiRotate360,
   } from '@mdi/js';
-  import Icon from '$lib/components/elements/icon.svelte';
+  import { createEventDispatcher } from 'svelte';
+  import { fade } from 'svelte/transition';
+  import ImageThumbnail from './image-thumbnail.svelte';
+  import VideoThumbnail from './video-thumbnail.svelte';
 
   const dispatch = createEventDispatcher<{
     click: { asset: AssetResponseDto };
@@ -138,13 +139,13 @@
         />
 
         <!-- Favorite asset star -->
-        {#if !api.isSharedLink && asset.isFavorite}
+        {#if !isSharedLink() && asset.isFavorite}
           <div class="absolute bottom-2 left-2 z-10">
             <Icon path={mdiHeart} size="24" class="text-white" />
           </div>
         {/if}
 
-        {#if !api.isSharedLink && showArchiveIcon && asset.isArchived}
+        {#if !isSharedLink() && showArchiveIcon && asset.isArchived}
           <div class="absolute {asset.isFavorite ? 'bottom-10' : 'bottom-2'} left-2 z-10">
             <Icon path={mdiArchiveArrowDownOutline} size="24" class="text-white" />
           </div>
@@ -175,7 +176,7 @@
 
         {#if asset.resized}
           <ImageThumbnail
-            url={api.getAssetThumbnailUrl(asset.id, format)}
+            url={getAssetThumbnailUrl(asset.id, format)}
             altText={asset.originalFileName}
             widthStyle="{width}px"
             heightStyle="{height}px"
@@ -191,7 +192,7 @@
         {#if asset.type === AssetTypeEnum.Video}
           <div class="absolute top-0 h-full w-full">
             <VideoThumbnail
-              url={api.getAssetFileUrl(asset.id, false, true)}
+              url={getAssetFileUrl(asset.id, false, true)}
               enablePlayback={mouseOver}
               curve={selected}
               durationInSeconds={timeToSeconds(asset.duration)}
@@ -202,7 +203,7 @@
         {#if asset.type === AssetTypeEnum.Image && asset.livePhotoVideoId}
           <div class="absolute top-0 h-full w-full">
             <VideoThumbnail
-              url={api.getAssetFileUrl(asset.livePhotoVideoId, false, true)}
+              url={getAssetFileUrl(asset.livePhotoVideoId, false, true)}
               pauseIcon={mdiMotionPauseOutline}
               playIcon={mdiMotionPlayOutline}
               showTime={false}

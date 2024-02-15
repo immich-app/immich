@@ -1,36 +1,45 @@
 <script lang="ts">
-  import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import type { PageData } from './$types';
-  import PeopleCard from '$lib/components/faces-page/people-card.svelte';
-  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
-  import Button from '$lib/components/elements/buttons/button.svelte';
-  import { api, type PeopleUpdateItem, type PersonResponseDto } from '@api';
+  import { browser } from '$app/environment';
   import { goto } from '$app/navigation';
+  import { page } from '$app/stores';
+  import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
+  import Button from '$lib/components/elements/buttons/button.svelte';
+  import IconButton from '$lib/components/elements/buttons/icon-button.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
+  import MergeSuggestionModal from '$lib/components/faces-page/merge-suggestion-modal.svelte';
+  import PeopleCard from '$lib/components/faces-page/people-card.svelte';
+  import SearchBar from '$lib/components/faces-page/search-bar.svelte';
+  import SetBirthDateModal from '$lib/components/faces-page/set-birth-date-modal.svelte';
+  import ShowHide from '$lib/components/faces-page/show-hide.svelte';
+  import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
+  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
+  import {
+    notificationController,
+    NotificationType,
+  } from '$lib/components/shared-components/notification/notification';
   import {
     ActionQueryParameterValue,
     AppRoute,
-    QueryParameter,
     maximumLengthSearchPeople,
+    QueryParameter,
     timeBeforeShowLoadingSpinner,
   } from '$lib/constants';
+  import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
-  import {
-    NotificationType,
-    notificationController,
-  } from '$lib/components/shared-components/notification/notification';
-  import ShowHide from '$lib/components/faces-page/show-hide.svelte';
-  import IconButton from '$lib/components/elements/buttons/icon-button.svelte';
-  import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
-  import { onDestroy, onMount } from 'svelte';
-  import { browser } from '$app/environment';
-  import MergeSuggestionModal from '$lib/components/faces-page/merge-suggestion-modal.svelte';
-  import SetBirthDateModal from '$lib/components/faces-page/set-birth-date-modal.svelte';
-  import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
-  import { mdiAccountOff, mdiEyeOutline } from '@mdi/js';
-  import Icon from '$lib/components/elements/icon.svelte';
   import { searchNameLocal } from '$lib/utils/person';
-  import SearchBar from '$lib/components/faces-page/search-bar.svelte';
-  import { page } from '$app/stores';
+  import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
+  import {
+    getPerson,
+    mergePerson,
+    searchPerson,
+    updatePeople,
+    updatePerson,
+    type PeopleUpdateItem,
+    type PersonResponseDto,
+  } from '@immich/sdk';
+  import { mdiAccountOff, mdiEyeOutline } from '@mdi/js';
+  import { onDestroy, onMount } from 'svelte';
+  import type { PageData } from './$types';
 
   export let data: PageData;
 
@@ -75,7 +84,7 @@
     const getSearchedPeople = $page.url.searchParams.get(QueryParameter.SEARCHED_PEOPLE);
     if (getSearchedPeople) {
       searchName = getSearchedPeople;
-      searchPeople(true);
+      handleSearchPeople(true);
     }
   });
 
@@ -100,7 +109,7 @@
   const handleSearch = (force: boolean) => {
     $page.url.searchParams.set(QueryParameter.SEARCHED_PEOPLE, searchName);
     goto($page.url);
-    searchPeople(force);
+    handleSearchPeople(force);
   };
 
   const handleCloseClick = () => {
@@ -150,7 +159,7 @@
       }
 
       if (changed.length > 0) {
-        const { data: results } = await api.personApi.updatePeople({
+        const results = await updatePeople({
           peopleUpdateDto: { people: changed },
         });
         const count = results.filter(({ success }) => success).length;
@@ -187,19 +196,19 @@
       return;
     }
     try {
-      await api.personApi.mergePerson({
+      await mergePerson({
         id: personToBeMergedIn.id,
         mergePersonDto: { ids: [personToMerge.id] },
       });
 
-      const { data: mergedPerson } = await api.personApi.getPerson({ id: personToBeMergedIn.id });
+      const mergedPerson = await getPerson({ id: personToBeMergedIn.id });
 
       countVisiblePeople--;
       people = people.filter((person: PersonResponseDto) => person.id !== personToMerge.id);
       people = people.map((person: PersonResponseDto) => (person.id === personToBeMergedIn.id ? mergedPerson : person));
 
       notificationController.show({
-        message: 'Merge people succesfully',
+        message: 'Merge people successfully',
         type: NotificationType.Info,
       });
     } catch (error) {
@@ -213,7 +222,7 @@
        *
        */
       try {
-        await api.personApi.updatePerson({ id: personToBeMergedIn.id, personUpdateDto: { name: personName } });
+        await updatePerson({ id: personToBeMergedIn.id, personUpdateDto: { name: personName } });
 
         for (const person of people) {
           if (person.id === personToBeMergedIn.id) {
@@ -222,7 +231,7 @@
           }
         }
         notificationController.show({
-          message: 'Change name succesfully',
+          message: 'Change name successfully',
           type: NotificationType.Info,
         });
 
@@ -248,7 +257,7 @@
 
   const handleHidePerson = async (detail: PersonResponseDto) => {
     try {
-      const { data: updatedPerson } = await api.personApi.updatePerson({
+      const updatedPerson = await updatePerson({
         id: detail.id,
         personUpdateDto: { isHidden: true },
       });
@@ -267,7 +276,7 @@
       showChangeNameModal = false;
 
       notificationController.show({
-        message: 'Changed visibility succesfully',
+        message: 'Changed visibility successfully',
         type: NotificationType.Info,
       });
     } catch (error) {
@@ -281,7 +290,7 @@
     );
   };
 
-  const searchPeople = async (force: boolean) => {
+  const handleSearchPeople = async (force: boolean) => {
     if (searchName === '') {
       if ($page.url.searchParams.has(QueryParameter.SEARCHED_PEOPLE)) {
         $page.url.searchParams.delete(QueryParameter.SEARCHED_PEOPLE);
@@ -295,9 +304,7 @@
 
     const timeout = setTimeout(() => (isSearchingPeople = true), timeBeforeShowLoadingSpinner);
     try {
-      const { data } = await api.searchApi.searchPerson({ name: searchName, withHidden: false });
-
-      searchedPeople = data;
+      searchedPeople = await searchPerson({ name: searchName, withHidden: false });
       searchWord = searchName;
     } catch (error) {
       handleError(error, "Can't search people");
@@ -318,7 +325,7 @@
       changeName();
       return;
     }
-    const { data } = await api.searchApi.searchPerson({ name: personName, withHidden: true });
+    const data = await searchPerson({ name: personName, withHidden: true });
 
     // We check if another person has the same name as the name entered by the user
 
@@ -353,7 +360,7 @@
     }
 
     try {
-      const { data: updatedPerson } = await api.personApi.updatePerson({
+      const updatedPerson = await updatePerson({
         id: edittingPerson.id,
         personUpdateDto: { birthDate: value.length > 0 ? value : null },
       });
@@ -365,7 +372,7 @@
         return person;
       });
       notificationController.show({
-        message: 'Date of birth saved succesfully',
+        message: 'Date of birth saved successfully',
         type: NotificationType.Info,
       });
     } catch (error) {
@@ -381,7 +388,7 @@
       return;
     }
     try {
-      const { data: updatedPerson } = await api.personApi.updatePerson({
+      const updatedPerson = await updatePerson({
         id: edittingPerson.id,
         personUpdateDto: { name: personName },
       });
@@ -392,7 +399,7 @@
         return person;
       });
       notificationController.show({
-        message: 'Change name succesfully',
+        message: 'Change name successfully',
         type: NotificationType.Info,
       });
     } catch (error) {
@@ -529,7 +536,7 @@
             preload={searchName !== '' || index < 20}
             bind:hidden={person.isHidden}
             shadow
-            url={api.getPeopleThumbnailUrl(person.id)}
+            url={getPeopleThumbnailUrl(person.id)}
             altText={person.name}
             widthStyle="100%"
             bind:eyeColor={eyeColorMap[person.id]}

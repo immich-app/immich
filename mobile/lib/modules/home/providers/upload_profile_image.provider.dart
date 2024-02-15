@@ -88,7 +88,7 @@ class UploadProfileImageNotifier
     var res = await _userSErvice.uploadProfileImage(file);
 
     if (res != null) {
-      debugPrint("Succesfully upload profile image");
+      debugPrint("Successfully upload profile image");
       state = state.copyWith(
         status: UploadProfileStatus.success,
         profileImagePath: res.profileImagePath,

@@ -1,12 +1,12 @@
 <script lang="ts">
+  import Icon from '$lib/components/elements/icon.svelte';
+  import type { AlbumResponseDto, UserResponseDto } from '@immich/sdk';
   import { mdiClose, mdiPlus } from '@mdi/js';
+  import { createEventDispatcher } from 'svelte';
   import SettingSwitch from '../admin-page/settings/setting-switch.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import FullScreenModal from '../shared-components/full-screen-modal.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
-  import { createEventDispatcher } from 'svelte';
-  import type { AlbumResponseDto, UserResponseDto } from '@api';
-  import Icon from '$lib/components/elements/icon.svelte';
 
   export let album: AlbumResponseDto;
   export let user: UserResponseDto;

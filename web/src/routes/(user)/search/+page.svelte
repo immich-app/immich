@@ -1,6 +1,10 @@
 <script lang="ts">
+  import { browser } from '$app/environment';
   import { afterNavigate, goto } from '$app/navigation';
   import { page } from '$app/stores';
+  import AlbumCard from '$lib/components/album-page/album-card.svelte';
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
   import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
   import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
   import ChangeDate from '$lib/components/photos-page/actions/change-date-action.svelte';
@@ -14,21 +18,16 @@
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
   import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
-  import type { PageData } from './$types';
-  import Icon from '$lib/components/elements/icon.svelte';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
-  import AlbumCard from '$lib/components/album-page/album-card.svelte';
-  import { flip } from 'svelte/animate';
-  import { onDestroy, onMount } from 'svelte';
-  import { browser } from '$app/environment';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { preventRaceConditionSearchBar } from '$lib/stores/search.store';
-  import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
-  import { mdiArrowLeft, mdiDotsVertical, mdiImageOffOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
-  import type { AssetResponseDto, SearchResponseDto } from '@immich/sdk';
   import { authenticate } from '$lib/utils/auth';
-  import { api } from '@api';
+  import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
+  import { search, type AssetResponseDto, type SearchResponseDto } from '@immich/sdk';
+  import { mdiArrowLeft, mdiDotsVertical, mdiImageOffOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
+  import { onDestroy, onMount } from 'svelte';
+  import { flip } from 'svelte/animate';
+  import type { PageData } from './$types';
 
   export let data: PageData;
 
@@ -120,20 +119,20 @@
     await authenticate();
     let results: SearchResponseDto | null = null;
     $page.url.searchParams.set('page', curPage.toString());
-    const res = await api.searchApi.search({}, { params: $page.url.searchParams });
+    const res = await search({ ...$page.url.searchParams });
     if (searchResultAssets) {
-      searchResultAssets.push(...res.data.assets.items);
+      searchResultAssets.push(...res.assets.items);
     } else {
-      searchResultAssets = res.data.assets.items;
+      searchResultAssets = res.assets.items;
     }
 
     const assets = {
-      ...res.data.assets,
+      ...res.assets,
       items: searchResultAssets,
     };
     results = {
       assets,
-      albums: res.data.albums,
+      albums: res.albums,
     };
 
     data.results = results;

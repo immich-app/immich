@@ -1,5 +1,5 @@
-import type { AssetResponseDto, ServerVersionResponseDto } from '@api';
-import { type Socket, io } from 'socket.io-client';
+import type { AssetResponseDto, ServerVersionResponseDto } from '@immich/sdk';
+import { io, type Socket } from 'socket.io-client';
 import { get, writable } from 'svelte/store';
 import { loadConfig } from './server-config.store';
 import { user } from './user.store';

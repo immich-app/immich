@@ -3,18 +3,18 @@
   import AssetViewer from '$lib/components/asset-viewer/asset-viewer.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import MapSettingsModal from '$lib/components/map-page/map-settings-modal.svelte';
+  import Map from '$lib/components/shared-components/map/map.svelte';
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
   import { AppRoute } from '$lib/constants';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import type { MapSettings } from '$lib/stores/preferences.store';
   import { mapSettings } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
-  import { type MapMarkerResponseDto, api } from '@api';
+  import { getMapMarkers, type MapMarkerResponseDto } from '@immich/sdk';
   import { isEqual } from 'lodash-es';
   import { DateTime, Duration } from 'luxon';
   import { onDestroy, onMount } from 'svelte';
   import type { PageData } from './$types';
-  import Map from '$lib/components/shared-components/map/map.svelte';
-  import type { MapSettings } from '$lib/stores/preferences.store';
 
   export let data: PageData;
 
@@ -46,21 +46,21 @@
     }
     abortController = new AbortController();
 
-    const { includeArchived, onlyFavorites } = $mapSettings;
+    const { includeArchived, onlyFavorites, withPartners } = $mapSettings;
     const { fileCreatedAfter, fileCreatedBefore } = getFileCreatedDates();
 
-    const { data } = await api.assetApi.getMapMarkers(
+    return await getMapMarkers(
       {
         isArchived: includeArchived && undefined,
         isFavorite: onlyFavorites || undefined,
         fileCreatedAfter: fileCreatedAfter || undefined,
         fileCreatedBefore,
+        withPartners: withPartners || undefined,
       },
       {
         signal: abortController.signal,
       },
     );
-    return data;
   }
 
   function getFileCreatedDates() {
