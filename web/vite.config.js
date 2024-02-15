@@ -1,8 +1,8 @@
+import { enhancedImages } from '@sveltejs/enhanced-img';
 import { sveltekit } from '@sveltejs/kit/vite';
 import path from 'node:path';
 import { visualizer } from 'rollup-plugin-visualizer';
 import { defineConfig } from 'vite';
-import { enhancedImages } from '@sveltejs/enhanced-img';
 
 const upstream = {
   target: process.env.IMMICH_SERVER_URL || 'http://immich-server:3001/',

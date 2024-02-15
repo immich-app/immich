@@ -1,14 +1,14 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
   import ChangeDate from '$lib/components/shared-components/change-date.svelte';
-  import { AppRoute, QueryParameter } from '$lib/constants';
+  import { AppRoute, QueryParameter, timeToLoadTheMap } from '$lib/constants';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { locale } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
   import { websocketStore } from '$lib/stores/websocket';
   import { getAssetThumbnailUrl, getPeopleThumbnailUrl, isSharedLink } from '$lib/utils';
-  import { getAssetFilename } from '$lib/utils/asset-utils';
+  import { delay, getAssetFilename } from '$lib/utils/asset-utils';
   import { autoGrowHeight } from '$lib/utils/autogrow';
   import { clickOutside } from '$lib/utils/click-outside';
   import {
@@ -38,8 +38,8 @@
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import PersonSidePanel from '../faces-page/person-side-panel.svelte';
   import ChangeLocation from '../shared-components/change-location.svelte';
-  import Map from '../shared-components/map/map.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
+  import LoadingSpinner from '../shared-components/loading-spinner.svelte';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
