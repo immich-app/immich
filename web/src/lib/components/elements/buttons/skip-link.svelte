@@ -14,7 +14,7 @@
   };
 </script>
 
-<div class="skip-link {isFocused ? 'focused' : 'sr-only'}">
+<div class="absolute top-2 left-2 transition-transform {isFocused ? 'translate-y-0' : '-translate-y-10 sr-only'}">
   <Button
     size={'sm'}
     rounded={false}
@@ -25,17 +25,3 @@
     <slot />
   </Button>
 </div>
-
-<style>
-  .skip-link {
-    position: absolute;
-    top: 5px;
-    left: 5px;
-    transition: transform 0.2s;
-    transform: translateY(-40%);
-  }
-
-  .skip-link.focused {
-    transform: translateY(0%);
-  }
-</style>
