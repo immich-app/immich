@@ -109,7 +109,6 @@ export class SearchService {
     } else {
       await this.configCore.requireFeature(FeatureFlag.SEARCH);
     }
-
     const { machineLearning } = await this.configCore.getConfig();
     const userIds = await this.getUserIdsToSearch(auth);
     let embedding: number[] = [];

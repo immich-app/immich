@@ -50,8 +50,8 @@
     };
 
     date: {
-      createdAfter?: Date;
-      createdBefore?: Date;
+      createdAfter?: string;
+      createdBefore?: string;
     };
 
     isArchive?: boolean;
@@ -236,12 +236,12 @@
         city: filter.location.city?.value,
         make: filter.camera.make?.value,
         model: filter.camera.model?.value,
-        createdAfter: filter.date.createdAfter?.toISOString(),
-        createdBefore: filter.date.createdBefore?.toISOString(),
+        createdAfter: filter.date.createdAfter ? new Date(filter.date.createdAfter).toISOString() : undefined,
+        createdBefore: filter.date.createdBefore ? new Date(filter.date.createdBefore).toISOString() : undefined,
         isArchived: filter.isArchive,
         isFavorite: filter.isFavorite,
         isNotInAlbum: filter.isNotInAlbum,
-        personIds: filter.people.map((p) => p.id),
+        personIds: filter.people ? filter.people.map((p) => p.id) : undefined,
         type,
       },
     });

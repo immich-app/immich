@@ -290,12 +290,12 @@ export class SearchRepository implements ISearchRepository {
         builder.andWhere('exif.model = :model', { model: options.model });
       }
 
-      if (options.takenAfter) {
-        builder.andWhere('exif.dateTimeOriginal > :takenAfter', { takenAfter: options.takenAfter });
+      if (options.createdAfter) {
+        builder.andWhere('exif.dateTimeOriginal >= :createdAfter::date', { createdAfter: options.createdAfter });
       }
 
-      if (options.takenBefore) {
-        builder.andWhere('exif.dateTimeOriginal < :takenBefore', { takenBefore: options.takenBefore });
+      if (options.createdBefore) {
+        builder.andWhere('exif.dateTimeOriginal <= :createdBefore::date', { createdBefore: options.createdBefore });
       }
 
       if (options.isArchived) {
@@ -314,7 +314,7 @@ export class SearchRepository implements ISearchRepository {
         builder.andWhere('asset.type = :type', { type: options.type });
       }
 
-      if (options.personIds) {
+      if (options.personIds && options.personIds.length > 0) {
         builder
           .leftJoin('asset.faces', 'faces')
           .andWhere('faces.personId IN (:...personIds)', { personIds: options.personIds });
