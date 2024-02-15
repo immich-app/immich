@@ -12,7 +12,7 @@ export const load = (async (data) => {
   if (term) {
     let params = {};
     for (const [key, value] of data.url.searchParams) {
-      params = {...params, [key]:value};
+      params = { ...params, [key]: value };
     }
     const response = await search({ ...params });
     let items: AssetResponseDto[] = (data as unknown as { results: SearchResponseDto }).results?.assets.items;
