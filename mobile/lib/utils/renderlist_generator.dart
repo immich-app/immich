@@ -5,9 +5,20 @@ import 'package:immich_mobile/modules/settings/services/app_settings.service.dar
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:isar/isar.dart';
 
+// TODO: Remove this after migrating all providers to generator based
 Stream<RenderList> renderListGenerator(
   QueryBuilder<Asset, Asset, QAfterSortBy> query,
   StreamProviderRef<RenderList> ref,
+) {
+  final settings = ref.watch(appSettingsServiceProvider);
+  final groupBy =
+      GroupAssetsBy.values[settings.getSetting(AppSettingsEnum.groupAssetsBy)];
+  return renderListGeneratorWithGroupBy(query, groupBy);
+}
+
+Stream<RenderList> renderListGeneratorAutoDispose(
+  QueryBuilder<Asset, Asset, QAfterSortBy> query,
+  AutoDisposeStreamProviderRef<RenderList> ref,
 ) {
   final settings = ref.watch(appSettingsServiceProvider);
   final groupBy =

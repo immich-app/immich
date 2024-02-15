@@ -1,7 +1,5 @@
 import 'dart:convert';
 
-import 'package:immich_mobile/modules/album/models/album.model.dart';
-import 'package:immich_mobile/modules/backup/models/backup_album.model.dart';
 import 'package:immich_mobile/shared/models/exif_info.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/utils/hash.dart';
@@ -40,8 +38,7 @@ class Asset {
         // stack handling to properly handle it
         stackParentId =
             remote.stackParentId == remote.id ? null : remote.stackParentId,
-        stackCount = remote.stackCount,
-        selectedForBackup = BackupSelection.none;
+        stackCount = remote.stackCount;
 
   Asset.local(AssetEntity local, List<int> hash)
       : localId = local.id,
@@ -60,7 +57,6 @@ class Asset {
         isReadOnly = false,
         isOffline = false,
         stackCount = 0,
-        selectedForBackup = BackupSelection.none,
         fileCreatedAt = local.createDateTime {
     if (fileCreatedAt.year == 1970) {
       fileCreatedAt = fileModifiedAt;
@@ -95,7 +91,6 @@ class Asset {
     this.stackCount = 0,
     this.isReadOnly = false,
     this.isOffline = false,
-    this.selectedForBackup = BackupSelection.none,
   });
 
   @ignore
@@ -193,12 +188,6 @@ class Asset {
   @ignore
   bool get isImage => type == AssetType.image;
 
-  @enumerated
-  BackupSelection selectedForBackup;
-
-  @Backlink(to: Album.assetsLinkId)
-  final IsarLinks<LocalAlbum> localAlbums = IsarLinks<LocalAlbum>();
-
   @ignore
   AssetState get storage {
     if (isRemote && isLocal) {
@@ -238,8 +227,7 @@ class Asset {
         isArchived == other.isArchived &&
         isTrashed == other.isTrashed &&
         stackCount == other.stackCount &&
-        stackParentId == other.stackParentId &&
-        selectedForBackup == other.selectedForBackup;
+        stackParentId == other.stackParentId;
   }
 
   @override
@@ -264,8 +252,7 @@ class Asset {
       isArchived.hashCode ^
       isTrashed.hashCode ^
       stackCount.hashCode ^
-      stackParentId.hashCode ^
-      selectedForBackup.hashCode;
+      stackParentId.hashCode;
 
   /// Returns `true` if this [Asset] can updated with values from parameter [a]
   bool canUpdate(Asset a) {
@@ -469,7 +456,6 @@ class Asset {
   "isTrashed": $isTrashed,
   "isReadOnly": $isReadOnly,
   "isOffline": $isOffline,
-  "backupSelection": $selectedForBackup,
 }""";
   }
 }
