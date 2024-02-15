@@ -12,7 +12,15 @@ import {
   SmartSearchOptions,
 } from '@app/domain';
 import { getCLIPModelInfo } from '@app/domain/smart-info/smart-info.constant';
-import { AssetEntity, AssetFaceEntity, SmartInfoEntity, SmartSearchEntity } from '@app/infra/entities';
+import {
+  AssetEntity,
+  AssetFaceEntity,
+  GeodataAdmin1Entity,
+  GeodataAdmin2Entity,
+  GeodataPlacesEntity,
+  SmartInfoEntity,
+  SmartSearchEntity,
+} from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -31,6 +39,9 @@ export class SearchRepository implements ISearchRepository {
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
     @InjectRepository(AssetFaceEntity) private assetFaceRepository: Repository<AssetFaceEntity>,
     @InjectRepository(SmartSearchEntity) private smartSearchRepository: Repository<SmartSearchEntity>,
+    @InjectRepository(GeodataPlacesEntity) private readonly geodataPlacesRepository: Repository<GeodataPlacesEntity>,
+    @InjectRepository(GeodataAdmin1Entity) private readonly geodataAdmin1Repository: Repository<GeodataAdmin1Entity>,
+    @InjectRepository(GeodataAdmin2Entity) private readonly geodataAdmin2Repository: Repository<GeodataAdmin2Entity>,
   ) {
     this.faceColumns = this.assetFaceRepository.manager.connection
       .getMetadata(AssetFaceEntity)
@@ -248,5 +259,21 @@ export class SearchRepository implements ISearchRepository {
     }
 
     return runtimeConfig;
+  }
+
+  @GenerateSql({ params: [DummyValue.STRING] })
+  async searchPlaces(placeName: string): Promise<GeodataPlacesEntity[]> {
+    return await this.geodataPlacesRepository
+      .createQueryBuilder('geoplaces')
+      .leftJoinAndSelect('geoplaces.admin1', 'admin1')
+      .leftJoinAndSelect('geoplaces.admin2', 'admin2')
+      .where(
+        '(LOWER(geoplaces.name) LIKE :nameStart OR LOWER(geoplaces.name) LIKE :nameAnywhere OR LOWER(admin1.name) LIKE :nameStart OR LOWER(admin1.name) LIKE :nameAnywhere OR LOWER(admin2.name) LIKE :nameStart OR LOWER(admin2.name) LIKE :nameAnywhere)',
+        { nameStart: `${placeName.toLowerCase()}%`, nameAnywhere: `% ${placeName.toLowerCase()}%` },
+      )
+      .orderBy('admin1.name')
+      .addOrderBy('admin2.name')
+      .limit(20)
+      .getMany();
   }
 }

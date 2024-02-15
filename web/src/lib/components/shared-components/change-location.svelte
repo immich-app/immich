@@ -1,8 +1,12 @@
 <script lang="ts">
-  import type { AssetResponseDto } from '@immich/sdk';
+  import { searchPlaces, type AssetResponseDto, type PlacesReponseDto } from '@immich/sdk';
   import { createEventDispatcher } from 'svelte';
   import ConfirmDialogue from './confirm-dialogue.svelte';
   import Map from './map/map.svelte';
+  import { maximumLengthSearchPeople } from '$lib/constants';
+  import { handleError } from '$lib/utils/handle-error';
+  import SearchBar from '../faces-page/search-bar.svelte';
+
   export const title = 'Change Location';
   export let asset: AssetResponseDto | undefined = undefined;
 
@@ -10,6 +14,15 @@
     lng: number;
     lat: number;
   }
+
+  let places: PlacesReponseDto[] = [];
+  let suggestedPlaces: PlacesReponseDto[] = [];
+  let searchWord: string;
+  let isSearchingPlaces = false;
+  let focusedElements: (HTMLButtonElement | null)[] = Array.from({ length: maximumLengthSearchPeople }, () => null);
+  let indexFocus: number | null = null;
+  let hideSuggestion = false;
+  let addClipMapMarker: (long: number, lat: number) => void;
 
   const dispatch = createEventDispatcher<{
     cancel: void;
@@ -19,6 +32,16 @@
   $: lat = asset?.exifInfo?.latitude || 0;
   $: lng = asset?.exifInfo?.longitude || 0;
   $: zoom = lat && lng ? 15 : 1;
+
+  $: {
+    if (places) {
+      suggestedPlaces = places.slice(0, 5);
+      indexFocus = null;
+    }
+    if (searchWord === '') {
+      suggestedPlaces = [];
+    }
+  }
 
   let point: Point | null = null;
 
@@ -35,7 +58,79 @@
       dispatch('cancel');
     }
   };
+
+  const showLocation = (name: string, admin1Name?: string, admin2Name?: string): string => {
+    return `${name}${admin1Name ? ', ' + admin1Name : ''}${admin2Name ? ', ' + admin2Name : ''}`;
+  };
+
+  const handleSearchPlaces = async () => {
+    if (searchWord === '') {
+      return;
+    }
+
+    const timeout = setTimeout(() => (isSearchingPlaces = true), 1000);
+    try {
+      places = await searchPlaces({ name: searchWord });
+    } catch (error) {
+      places = [];
+      handleError(error, "Can't search places");
+    } finally {
+      clearTimeout(timeout);
+    }
+
+    isSearchingPlaces = false;
+  };
+
+  const handleUseSuggested = (latitude: number, longitude: number) => {
+    hideSuggestion = true;
+    point = { lng: longitude, lat: latitude };
+    addClipMapMarker(longitude, latitude);
+  };
+
+  const handleKeyboardPress = (event: KeyboardEvent) => {
+    if (suggestedPlaces.length === 0) {
+      return;
+    }
+
+    event.stopPropagation();
+    switch (event.key) {
+      case 'ArrowDown': {
+        event.preventDefault();
+        if (indexFocus === null) {
+          indexFocus = 0;
+        } else if (indexFocus === suggestedPlaces.length - 1) {
+          indexFocus = 0;
+        } else {
+          indexFocus++;
+        }
+        focusedElements[indexFocus]?.focus();
+        return;
+      }
+      case 'ArrowUp': {
+        if (indexFocus === null) {
+          indexFocus = 0;
+          return;
+        }
+        if (indexFocus === 0) {
+          indexFocus = suggestedPlaces.length - 1;
+        } else {
+          indexFocus--;
+        }
+        focusedElements[indexFocus]?.focus();
+
+        return;
+      }
+      case 'Enter': {
+        if (indexFocus !== null) {
+          hideSuggestion = true;
+          handleUseSuggested(suggestedPlaces[indexFocus].latitude, suggestedPlaces[indexFocus].longitude);
+        }
+      }
+    }
+  };
 </script>
+
+<svelte:document on:keydown={handleKeyboardPress} />
 
 <ConfirmDialogue
   confirmColor="primary"
@@ -46,11 +141,43 @@
   on:cancel={handleCancel}
 >
   <div slot="prompt" class="flex flex-col w-full h-full gap-2">
+    <div class="relative w-64 sm:w-96">
+      <button class="w-full" on:click={() => (hideSuggestion = false)}>
+        <SearchBar
+          bind:name={searchWord}
+          isSearchingPeople={isSearchingPlaces}
+          on:reset={() => {
+            suggestedPlaces = [];
+          }}
+          on:search={handleSearchPlaces}
+          roundedBottom={suggestedPlaces.length === 0 || hideSuggestion}
+        />
+      </button>
+      <div class="absolute z-[99] w-full" id="suggestion">
+        {#if !hideSuggestion}
+          {#each suggestedPlaces as place, index}
+            <button
+              bind:this={focusedElements[index]}
+              class=" flex w-full border-t border-gray-400 dark:border-immich-dark-gray h-14 place-items-center bg-gray-200 p-2 dark:bg-gray-700 hover:bg-gray-300 hover:dark:bg-[#232932] focus:bg-gray-300 focus:dark:bg-[#232932] {index ===
+              suggestedPlaces.length - 1
+                ? 'rounded-b-lg border-b'
+                : ''}"
+              on:click={() => handleUseSuggested(place.latitude, place.longitude)}
+            >
+              <p class="ml-4 text-sm text-gray-700 dark:text-gray-100 truncate">
+                {showLocation(place.name, place.admin1name, place.admin2name)}
+              </p>
+            </button>
+          {/each}
+        {/if}
+      </div>
+    </div>
     <label for="datetime">Pick a location</label>
     <div class="h-[500px] min-h-[300px] w-full">
       <Map
         mapMarkers={lat && lng && asset ? [{ id: asset.id, lat, lon: lng }] : []}
         {zoom}
+        bind:addClipMapMarker
         center={lat && lng ? { lat, lng } : undefined}
         simplified={true}
         clickable={true}

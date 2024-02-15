@@ -232,3 +232,38 @@ FROM
 WHERE
   res.distance <= $3
 COMMIT
+
+-- SearchRepository.searchPlaces
+SELECT
+  "geoplaces"."id" AS "geoplaces_id",
+  "geoplaces"."name" AS "geoplaces_name",
+  "geoplaces"."longitude" AS "geoplaces_longitude",
+  "geoplaces"."latitude" AS "geoplaces_latitude",
+  "geoplaces"."countryCode" AS "geoplaces_countryCode",
+  "geoplaces"."admin1Code" AS "geoplaces_admin1Code",
+  "geoplaces"."admin2Code" AS "geoplaces_admin2Code",
+  "geoplaces"."admin1Key" AS "geoplaces_admin1Key",
+  "geoplaces"."admin2Key" AS "geoplaces_admin2Key",
+  "geoplaces"."modificationDate" AS "geoplaces_modificationDate",
+  "admin1"."key" AS "admin1_key",
+  "admin1"."name" AS "admin1_name",
+  "admin2"."key" AS "admin2_key",
+  "admin2"."name" AS "admin2_name"
+FROM
+  "geodata_places" "geoplaces"
+  LEFT JOIN "geodata_admin1" "admin1" ON "admin1"."key" = "geoplaces"."admin1Key"
+  LEFT JOIN "geodata_admin2" "admin2" ON "admin2"."key" = "geoplaces"."admin2Key"
+WHERE
+  (
+    LOWER("geoplaces"."name") LIKE $1
+    OR LOWER("geoplaces"."name") LIKE $2
+    OR LOWER("admin1"."name") LIKE $1
+    OR LOWER("admin1"."name") LIKE $2
+    OR LOWER("admin2"."name") LIKE $1
+    OR LOWER("admin2"."name") LIKE $2
+  )
+ORDER BY
+  "admin1"."name" ASC,
+  "admin2"."name" ASC
+LIMIT
+  20
