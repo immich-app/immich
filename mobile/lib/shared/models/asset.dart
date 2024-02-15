@@ -273,7 +273,6 @@ class Asset {
         isOffline != a.isOffline ||
         a.exifInfo?.latitude != exifInfo?.latitude ||
         a.exifInfo?.longitude != exifInfo?.longitude ||
-        a.selectedForBackup != selectedForBackup ||
         // no local stack count or different count from remote
         ((stackCount == null && a.stackCount != null) ||
             (stackCount != null &&
@@ -302,7 +301,6 @@ class Asset {
           width: width ?? a.width,
           height: height ?? a.height,
           exifInfo: exifInfo ?? a.exifInfo?.copyWith(id: id),
-          selectedForBackup: selectedForBackup,
         );
       } else {
         // TODO: Revisit this and remove all bool field assignments
@@ -349,7 +347,6 @@ class Asset {
           width: width ?? a.width,
           height: height ?? a.height,
           exifInfo: exifInfo ?? a.exifInfo?.copyWith(id: id),
-          selectedForBackup: selectedForBackup,
         );
       }
     }
@@ -378,7 +375,6 @@ class Asset {
     ExifInfo? exifInfo,
     String? stackParentId,
     int? stackCount,
-    BackupSelection? selectedForBackup,
   }) =>
       Asset(
         id: id ?? this.id,
@@ -403,7 +399,6 @@ class Asset {
         exifInfo: exifInfo ?? this.exifInfo,
         stackParentId: stackParentId ?? this.stackParentId,
         stackCount: stackCount ?? this.stackCount,
-        selectedForBackup: selectedForBackup ?? this.selectedForBackup,
       );
 
   Future<void> put(Isar db) async {

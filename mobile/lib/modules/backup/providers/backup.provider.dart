@@ -9,6 +9,7 @@ import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.d
 import 'package:immich_mobile/modules/backup/models/error_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/providers/backup_album.provider.dart';
 import 'package:immich_mobile/modules/backup/providers/backup_settings.provider.dart';
+import 'package:immich_mobile/modules/backup/providers/device_assets.provider.dart';
 import 'package:immich_mobile/modules/backup/providers/error_backup_list.provider.dart';
 import 'package:immich_mobile/modules/backup/background_service/background.service.dart';
 import 'package:immich_mobile/modules/backup/services/backup.service.dart';
@@ -75,12 +76,12 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
     await PhotoManager.clearFileCache();
 
+    final idsForBackup = await ref.read(deviceAssetsProvider.future);
     final localAssetsToBackup = await _db.assets
         .where()
         .remoteIdIsNull()
         .filter()
-        .localIdIsNotNull()
-        .selectedForBackupEqualTo(BackupSelection.select)
+        .anyOf(idsForBackup.assetIdsForBackup, (q, id) => q.localIdEqualTo(id))
         .findAll();
 
     final assetsToBackup =

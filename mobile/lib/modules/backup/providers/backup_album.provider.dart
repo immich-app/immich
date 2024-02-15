@@ -28,17 +28,12 @@ class BackupAlbums extends _$BackupAlbums {
           .filter()
           .selectionEqualTo(BackupSelection.exclude)
           .findAll(),
-      uniqueAssetsToBackup: await db.assets
-          .filter()
-          .localIdIsNotNull()
-          .selectedForBackupEqualTo(BackupSelection.select)
-          .count(),
+      uniqueAssetsToBackup: await db.assets.filter().localIdIsNotNull().count(),
       backedUpAssets: await db.assets
           .where()
           .remoteIdIsNotNull()
           .filter()
           .localIdIsNotNull()
-          .selectedForBackupEqualTo(BackupSelection.select)
           .count(),
     );
   }
