@@ -8,17 +8,16 @@
     AssetTypeEnum,
     SearchSuggestionType,
     type PersonResponseDto,
-    searchSmart,
-    searchMetadata,
     type SmartSearchDto,
     type MetadataSearchDto,
   } from '@immich/sdk';
   import { getAllPeople, getSearchSuggestions } from '@immich/sdk';
   import { mdiArrowRight, mdiClose } from '@mdi/js';
-  import { onMount } from 'svelte';
+  import { createEventDispatcher, onMount } from 'svelte';
   import { fly } from 'svelte/transition';
   import Combobox, { type ComboBoxOption } from '../combobox.svelte';
   import { DateTime } from 'luxon';
+  import _ from 'lodash-es';
 
   enum MediaType {
     All = 'all',
@@ -101,6 +100,7 @@
     mediaType: MediaType.All,
   };
 
+  const dispatch = createEventDispatcher<{ search: SmartSearchDto | MetadataSearchDto }>();
   let showAllPeople = false;
   $: peopleList = showAllPeople ? suggestions.people : suggestions.people.slice(0, 11);
 
@@ -237,8 +237,6 @@
       type = AssetTypeEnum.Video;
     }
 
-    console.log(filter.date);
-
     let payload: SmartSearchDto | MetadataSearchDto = {
       country: filter.location.country?.value,
       state: filter.location.state?.value,
@@ -254,17 +252,26 @@
       isArchived: filter.isArchive,
       isFavorite: filter.isFavorite,
       isNotInAlbum: filter.isNotInAlbum,
-      personIds: filter.people ? filter.people.map((p) => p.id) : undefined,
+      personIds: filter.people && filter.people.length > 0 ? filter.people.map((p) => p.id) : undefined,
       type,
     };
 
     if (filter.context) {
-      const { assets } = await searchSmart({ smartSearchDto: { query: filter.context, ...payload } });
-      console.log('Smart search', assets);
-    } else {
-      const { assets } = await searchMetadata({ metadataSearchDto: { ...payload } });
-      console.log('Metadata search', assets);
+      if (payload.personIds && payload.personIds.length > 0) {
+        handleError(
+          new Error('Context search does not support people filter'),
+          'Context search does not support people filter',
+        );
+        return;
+      }
+
+      payload = {
+        ...payload,
+        query: filter.context,
+      };
     }
+
+    dispatch('search', payload);
   };
 </script>
 

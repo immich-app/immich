@@ -1,6 +1,13 @@
 import { QueryParameter } from '$lib/constants';
+import { searchPayload } from '$lib/stores/search.store';
 import { authenticate } from '$lib/utils/auth';
-import { search, type AssetResponseDto, type SearchResponseDto } from '@immich/sdk';
+import {
+  searchMetadata,
+  searchSmart,
+  type MetadataSearchDto,
+  type SearchResponseDto,
+  type SmartSearchDto,
+} from '@immich/sdk';
 import type { PageLoad } from './$types';
 
 export const load = (async (data) => {
@@ -9,23 +16,16 @@ export const load = (async (data) => {
   const term =
     url.searchParams.get(QueryParameter.SEARCH_TERM) || url.searchParams.get(QueryParameter.QUERY) || undefined;
   let results: SearchResponseDto | null = null;
+
   if (term) {
-    let params = {};
-    for (const [key, value] of data.url.searchParams) {
-      params = { ...params, [key]: value };
-    }
-    const response = await search({ ...params });
-    let items: AssetResponseDto[] = (data as unknown as { results: SearchResponseDto }).results?.assets.items;
-    if (items) {
-      items.push(...response.assets.items);
+    const payload = JSON.parse(term) as SmartSearchDto | MetadataSearchDto;
+    searchPayload.set(payload);
+
+    if (payload && 'query' in payload) {
+      results = await searchSmart({ smartSearchDto: { ...payload } });
     } else {
-      items = response.assets.items;
+      results = await searchMetadata({ metadataSearchDto: { ...payload } });
     }
-    const assets = { ...response.assets, items };
-    results = {
-      assets,
-      albums: response.albums,
-    };
   }
 
   return {

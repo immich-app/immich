@@ -8,6 +8,7 @@
   import IconButton from '$lib/components/elements/buttons/icon-button.svelte';
   import SearchHistoryBox from './search-history-box.svelte';
   import SearchFilterBox from './search-filter-box.svelte';
+  import type { MetadataSearchDto, SmartSearchDto } from '@immich/sdk';
   export let value = '';
   export let grayTheme: boolean;
 
@@ -17,28 +18,19 @@
   let showFilter = false;
   $: showClearIcon = value.length > 0;
 
-  function onSearch() {
-    let smartSearch = 'true';
-    let searchValue = value;
+  function onSearch() {}
 
-    if (value.slice(0, 2) == 'm:') {
-      smartSearch = 'false';
-      searchValue = value.slice(2);
-    }
-
-    $savedSearchTerms = $savedSearchTerms.filter((item) => item !== value);
-    saveSearchTerm(value);
-
+  const onSearchNew = (payload: SmartSearchDto | MetadataSearchDto) => {
     const parameters = new URLSearchParams({
-      q: searchValue,
-      smart: smartSearch,
-      take: '100',
+      q: JSON.stringify(payload),
     });
 
     showHistory = false;
+    showFilter = false;
     $isSearchEnabled = false;
+
     goto(`${AppRoute.SEARCH}?${parameters}`, { invalidateAll: true });
-  }
+  };
 
   const clearSearchTerm = (searchTerm: string) => {
     input.focus();
@@ -139,7 +131,7 @@
     {/if}
 
     {#if showFilter}
-      <SearchFilterBox />
+      <SearchFilterBox on:search={({ detail }) => onSearchNew(detail)} />
     {/if}
   </form>
 </div>

@@ -20,10 +20,10 @@
   import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { preventRaceConditionSearchBar } from '$lib/stores/search.store';
+  import { preventRaceConditionSearchBar, searchPayload } from '$lib/stores/search.store';
   import { authenticate } from '$lib/utils/auth';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
-  import { search, type AssetResponseDto, type SearchResponseDto } from '@immich/sdk';
+  import { search, type AssetResponseDto, type SearchResponseDto, searchSmart, searchMetadata } from '@immich/sdk';
   import { mdiArrowLeft, mdiDotsVertical, mdiImageOffOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
   import { flip } from 'svelte/animate';
@@ -38,7 +38,7 @@
   // behavior for history.back(). To prevent that we store the previous page
   // manually and navigate back to that.
   let previousRoute = AppRoute.EXPLORE as string;
-  $: curPage = data.results?.assets.nextPage;
+  $: currentPage = data.results?.assets.nextPage;
   $: albums = data.results?.albums.items;
 
   const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
@@ -112,27 +112,35 @@
   };
 
   export const loadNextPage = async () => {
-    if (curPage == null || !term || (searchResultAssets && searchResultAssets.length >= MAX_ASSET_COUNT)) {
+    if (currentPage == null || !term || (searchResultAssets && searchResultAssets.length >= MAX_ASSET_COUNT)) {
       return;
     }
 
     await authenticate();
     let results: SearchResponseDto | null = null;
-    $page.url.searchParams.set('page', curPage.toString());
-    const res = await search({ ...$page.url.searchParams });
-    if (searchResultAssets) {
-      searchResultAssets.push(...res.assets.items);
+    $page.url.searchParams.set('page', currentPage.toString());
+    const payload = $searchPayload;
+    let reponses: SearchResponseDto;
+
+    if (payload && 'query' in payload) {
+      reponses = await searchSmart({ smartSearchDto: { ...payload, page: parseInt(currentPage) } });
     } else {
-      searchResultAssets = res.assets.items;
+      reponses = await searchMetadata({ metadataSearchDto: { ...payload, page: parseInt(currentPage) } });
+    }
+
+    if (searchResultAssets) {
+      searchResultAssets.push(...reponses.assets.items);
+    } else {
+      searchResultAssets = reponses.assets.items;
     }
 
     const assets = {
-      ...res.assets,
+      ...reponses.assets,
       items: searchResultAssets,
     };
     results = {
       assets,
-      albums: res.albums,
+      albums: reponses.albums,
     };
 
     data.results = results;
