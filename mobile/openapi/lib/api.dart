@@ -110,6 +110,7 @@ part 'model/file_checksum_response_dto.dart';
 part 'model/file_report_dto.dart';
 part 'model/file_report_fix_dto.dart';
 part 'model/file_report_item_dto.dart';
+part 'model/hybrid_search_dto.dart';
 part 'model/job_command.dart';
 part 'model/job_command_dto.dart';
 part 'model/job_counts_dto.dart';

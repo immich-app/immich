@@ -17,6 +17,7 @@ import { AssetEntity, AssetFaceEntity, SmartInfoEntity, SmartSearchEntity } from
 import { ImmichLogger } from '@app/infra/logger';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { build } from 'joi';
 import { Repository } from 'typeorm';
 import { vectorExt } from '../database.config';
 import { DummyValue, GenerateSql } from '../infra.util';
@@ -260,14 +261,13 @@ export class SearchRepository implements ISearchRepository {
     await this.assetRepository.manager.transaction(async (manager) => {
       let builder = manager.createQueryBuilder(AssetEntity, 'asset');
 
-      builder.leftJoinAndSelect('asset.exifInfo', 'exif');
+      builder.where('asset.ownerId IN (:...userIds )', { userIds }).leftJoinAndSelect('asset.exifInfo', 'exif');
 
-      if (embedding) {
+      if (embedding && embedding.length > 0) {
         builder
           .innerJoin('asset.smartSearch', 'search')
-          .andWhere('asset.ownerId IN (:...userIds )')
           .orderBy('search.embedding <=> :embedding')
-          .setParameters({ userIds, embedding: asVector(embedding) });
+          .setParameters({ embedding: asVector(embedding) });
       }
 
       if (options.state) {
@@ -298,7 +298,30 @@ export class SearchRepository implements ISearchRepository {
         builder.andWhere('exif.dateTimeOriginal < :takenBefore', { takenBefore: options.takenBefore });
       }
 
+      if (options.isArchived) {
+        builder.andWhere('asset.isArchived = :isArchived', { isArchived: options.isArchived });
+      }
+
+      if (options.isFavorite) {
+        builder.andWhere('asset.isFavorite = :isFavorite', { isFavorite: options.isFavorite });
+      }
+
+      if (options.isNotInAlbum) {
+        builder.leftJoin('asset.albums', 'albums').andWhere('albums.id IS NULL');
+      }
+
+      if (options.type) {
+        builder.andWhere('asset.type = :type', { type: options.type });
+      }
+
+      if (options.personIds) {
+        builder
+          .leftJoin('asset.faces', 'faces')
+          .andWhere('faces.personId IN (:...personIds)', { personIds: options.personIds });
+      }
+
       await manager.query(this.getRuntimeConfig(pagination.size));
+
       results = await paginatedBuilder<AssetEntity>(builder, {
         mode: PaginationMode.LIMIT_OFFSET,
         skip: (pagination.page - 1) * pagination.size,

@@ -4,7 +4,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { SearchSuggestionType, type PersonResponseDto, searchHybrid } from '@immich/sdk';
+  import { AssetTypeEnum, SearchSuggestionType, type PersonResponseDto, searchHybrid } from '@immich/sdk';
   import { getAllPeople, getSearchSuggestions } from '@immich/sdk';
   import { mdiArrowRight, mdiClose } from '@mdi/js';
   import { onMount } from 'svelte';
@@ -22,8 +22,8 @@
     country: ComboBoxOption[];
     state: ComboBoxOption[];
     city: ComboBoxOption[];
-    cameraMake: ComboBoxOption[];
-    cameraModel: ComboBoxOption[];
+    make: ComboBoxOption[];
+    model: ComboBoxOption[];
   };
 
   type SearchParams = {
@@ -49,14 +49,14 @@
       model?: ComboBoxOption;
     };
 
-    dateRange: {
-      startDate?: Date;
-      endDate?: Date;
+    date: {
+      createdAfter?: Date;
+      createdBefore?: Date;
     };
 
-    inArchive?: boolean;
-    inFavorite?: boolean;
-    notInAlbum?: boolean;
+    isArchive?: boolean;
+    isFavorite?: boolean;
+    isNotInAlbum?: boolean;
 
     mediaType: MediaType;
   };
@@ -66,8 +66,8 @@
     country: [],
     state: [],
     city: [],
-    cameraMake: [],
-    cameraModel: [],
+    make: [],
+    model: [],
   };
 
   let filter: SearchFilter = {
@@ -82,13 +82,13 @@
       make: undefined,
       model: undefined,
     },
-    dateRange: {
-      startDate: undefined,
-      endDate: undefined,
+    date: {
+      createdAfter: undefined,
+      createdBefore: undefined,
     },
-    inArchive: undefined,
-    inFavorite: undefined,
-    notInAlbum: undefined,
+    isArchive: undefined,
+    isFavorite: undefined,
+    isNotInAlbum: undefined,
     mediaType: MediaType.All,
   };
 
@@ -141,7 +141,7 @@
     }
 
     if (type === SearchSuggestionType.CameraMake || type === SearchSuggestionType.CameraModel) {
-      suggestions = { ...suggestions, cameraMake: [], cameraModel: [] };
+      suggestions = { ...suggestions, make: [], model: [] };
     }
 
     try {
@@ -178,14 +178,14 @@
 
         case SearchSuggestionType.CameraMake: {
           for (const make of data) {
-            suggestions.cameraMake = [...suggestions.cameraMake, { label: make, value: make }];
+            suggestions.make = [...suggestions.make, { label: make, value: make }];
           }
           break;
         }
 
         case SearchSuggestionType.CameraModel: {
           for (const model of data) {
-            suggestions.cameraModel = [...suggestions.cameraModel, { label: model, value: model }];
+            suggestions.model = [...suggestions.model, { label: model, value: model }];
           }
           break;
         }
@@ -208,32 +208,42 @@
         make: undefined,
         model: undefined,
       },
-      dateRange: {
-        startDate: undefined,
-        endDate: undefined,
+      date: {
+        createdAfter: undefined,
+        createdBefore: undefined,
       },
-      inArchive: undefined,
-      inFavorite: undefined,
-      notInAlbum: undefined,
+      isArchive: undefined,
+      isFavorite: undefined,
+      isNotInAlbum: undefined,
       mediaType: MediaType.All,
     };
   };
 
   const search = async () => {
+    let type: AssetTypeEnum | undefined = undefined;
+
+    if (filter.mediaType === MediaType.Image) {
+      type = AssetTypeEnum.Image;
+    } else if (filter.mediaType === MediaType.Video) {
+      type = AssetTypeEnum.Video;
+    }
+
     const { assets } = await searchHybrid({
-      context: filter.context,
-      country: filter.location.country?.value,
-      state: filter.location.state?.value,
-      city: filter.location.city?.value,
-      make: filter.camera.make?.value,
-      model: filter.camera.model?.value,
-      createdAfter: filter.dateRange.startDate ? filter.dateRange.startDate.toISOString() : undefined,
-      createdBefore: filter.dateRange.endDate ? filter.dateRange.endDate.toISOString() : undefined,
-      isArchived: filter.inArchive,
-      isFavorite: filter.inFavorite,
-      isNotInAlbum: filter.notInAlbum,
-      // mediaType: filter.mediaType,
-      // people: filter.people.map((p) => p.id),
+      hybridSearchDto: {
+        context: filter.context,
+        country: filter.location.country?.value,
+        state: filter.location.state?.value,
+        city: filter.location.city?.value,
+        make: filter.camera.make?.value,
+        model: filter.camera.model?.value,
+        createdAfter: filter.date.createdAfter?.toISOString(),
+        createdBefore: filter.date.createdBefore?.toISOString(),
+        isArchived: filter.isArchive,
+        isFavorite: filter.isFavorite,
+        isNotInAlbum: filter.isNotInAlbum,
+        personIds: filter.people.map((p) => p.id),
+        type,
+      },
     });
 
     console.log('search result', assets);
@@ -365,7 +375,7 @@
         <div class="w-full">
           <p class="text-sm text-black dark:text-white">Make</p>
           <Combobox
-            options={suggestions.cameraMake}
+            options={suggestions.make}
             bind:selectedOption={filter.camera.make}
             placeholder="Search camera make..."
             on:click={() =>
@@ -376,7 +386,7 @@
         <div class="w-full">
           <p class="text-sm text-black dark:text-white">Model</p>
           <Combobox
-            options={suggestions.cameraModel}
+            options={suggestions.model}
             bind:selectedOption={filter.camera.model}
             placeholder="Search camera model..."
             on:click={() =>
@@ -397,7 +407,7 @@
           type="date"
           id="start-date"
           name="start-date"
-          bind:value={filter.dateRange.startDate}
+          bind:value={filter.date.createdAfter}
         />
       </div>
 
@@ -409,7 +419,7 @@
           id="end-date"
           name="end-date"
           placeholder=""
-          bind:value={filter.dateRange.endDate}
+          bind:value={filter.date.createdBefore}
         />
       </div>
     </div>
@@ -468,17 +478,17 @@
 
         <div class="flex gap-5 mt-3">
           <label class="flex items-center mb-2">
-            <input type="checkbox" class="form-checkbox h-5 w-5 color" bind:checked={filter.notInAlbum} />
+            <input type="checkbox" class="form-checkbox h-5 w-5 color" bind:checked={filter.isNotInAlbum} />
             <span class="ml-2 text-sm text-black dark:text-white pt-1">Not in any album</span>
           </label>
 
           <label class="flex items-center mb-2">
-            <input type="checkbox" class="form-checkbox h-5 w-5 color" bind:checked={filter.inArchive} />
+            <input type="checkbox" class="form-checkbox h-5 w-5 color" bind:checked={filter.isArchive} />
             <span class="ml-2 text-sm text-black dark:text-white pt-1">Archive</span>
           </label>
 
           <label class="flex items-center mb-2">
-            <input type="checkbox" class="form-checkbox h-5 w-5 color" bind:checked={filter.inFavorite} />
+            <input type="checkbox" class="form-checkbox h-5 w-5 color" bind:checked={filter.isFavorite} />
             <span class="ml-2 text-sm text-black dark:text-white pt-1">Favorite</span>
           </label>
         </div>

@@ -32,7 +32,7 @@ void main() {
       // TODO
     });
 
-    //Future<SearchResponseDto> searchHybrid({ String city, String context, String country, DateTime createdAfter, DateTime createdBefore, String deviceId, bool isArchived, bool isEncoded, bool isExternal, bool isFavorite, bool isMotion, bool isNotInAlbum, bool isOffline, bool isReadOnly, bool isVisible, String lensModel, String libraryId, String make, String model, num page, List<String> people, num size, String state, DateTime takenAfter, DateTime takenBefore, DateTime trashedAfter, DateTime trashedBefore, AssetTypeEnum type, DateTime updatedAfter, DateTime updatedBefore, bool withArchived, bool withDeleted, bool withExif }) async
+    //Future<SearchResponseDto> searchHybrid(HybridSearchDto hybridSearchDto) async
     test('test searchHybrid', () async {
       // TODO
     });

@@ -71,6 +71,7 @@ doc/FileChecksumResponseDto.md
 doc/FileReportDto.md
 doc/FileReportFixDto.md
 doc/FileReportItemDto.md
+doc/HybridSearchDto.md
 doc/JobApi.md
 doc/JobCommand.md
 doc/JobCommandDto.md
@@ -271,6 +272,7 @@ lib/model/file_checksum_response_dto.dart
 lib/model/file_report_dto.dart
 lib/model/file_report_fix_dto.dart
 lib/model/file_report_item_dto.dart
+lib/model/hybrid_search_dto.dart
 lib/model/job_command.dart
 lib/model/job_command_dto.dart
 lib/model/job_counts_dto.dart
@@ -438,6 +440,7 @@ test/file_checksum_response_dto_test.dart
 test/file_report_dto_test.dart
 test/file_report_fix_dto_test.dart
 test/file_report_item_dto_test.dart
+test/hybrid_search_dto_test.dart
 test/job_api_test.dart
 test/job_command_dto_test.dart
 test/job_command_test.dart

@@ -104,7 +104,12 @@ export class SearchService {
   }
 
   async searchHybrid(auth: AuthDto, dto: HybridSearchDto): Promise<SearchResponseDto> {
-    await this.configCore.requireFeature(FeatureFlag.SMART_SEARCH);
+    if (dto.context) {
+      await this.configCore.requireFeature(FeatureFlag.SMART_SEARCH);
+    } else {
+      await this.configCore.requireFeature(FeatureFlag.SEARCH);
+    }
+
     const { machineLearning } = await this.configCore.getConfig();
     const userIds = await this.getUserIdsToSearch(auth);
     let embedding: number[] = [];

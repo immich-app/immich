@@ -254,191 +254,27 @@ class SearchApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /search/hybrid' operation and returns the [Response].
+  /// Performs an HTTP 'POST /search/hybrid' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [String] city:
-  ///
-  /// * [String] context:
-  ///
-  /// * [String] country:
-  ///
-  /// * [DateTime] createdAfter:
-  ///
-  /// * [DateTime] createdBefore:
-  ///
-  /// * [String] deviceId:
-  ///
-  /// * [bool] isArchived:
-  ///
-  /// * [bool] isEncoded:
-  ///
-  /// * [bool] isExternal:
-  ///
-  /// * [bool] isFavorite:
-  ///
-  /// * [bool] isMotion:
-  ///
-  /// * [bool] isNotInAlbum:
-  ///
-  /// * [bool] isOffline:
-  ///
-  /// * [bool] isReadOnly:
-  ///
-  /// * [bool] isVisible:
-  ///
-  /// * [String] lensModel:
-  ///
-  /// * [String] libraryId:
-  ///
-  /// * [String] make:
-  ///
-  /// * [String] model:
-  ///
-  /// * [num] page:
-  ///
-  /// * [List<String>] people:
-  ///
-  /// * [num] size:
-  ///
-  /// * [String] state:
-  ///
-  /// * [DateTime] takenAfter:
-  ///
-  /// * [DateTime] takenBefore:
-  ///
-  /// * [DateTime] trashedAfter:
-  ///
-  /// * [DateTime] trashedBefore:
-  ///
-  /// * [AssetTypeEnum] type:
-  ///
-  /// * [DateTime] updatedAfter:
-  ///
-  /// * [DateTime] updatedBefore:
-  ///
-  /// * [bool] withArchived:
-  ///
-  /// * [bool] withDeleted:
-  ///
-  /// * [bool] withExif:
-  Future<Response> searchHybridWithHttpInfo({ String? city, String? context, String? country, DateTime? createdAfter, DateTime? createdBefore, String? deviceId, bool? isArchived, bool? isEncoded, bool? isExternal, bool? isFavorite, bool? isMotion, bool? isNotInAlbum, bool? isOffline, bool? isReadOnly, bool? isVisible, String? lensModel, String? libraryId, String? make, String? model, num? page, List<String>? people, num? size, String? state, DateTime? takenAfter, DateTime? takenBefore, DateTime? trashedAfter, DateTime? trashedBefore, AssetTypeEnum? type, DateTime? updatedAfter, DateTime? updatedBefore, bool? withArchived, bool? withDeleted, bool? withExif, }) async {
+  /// * [HybridSearchDto] hybridSearchDto (required):
+  Future<Response> searchHybridWithHttpInfo(HybridSearchDto hybridSearchDto,) async {
     // ignore: prefer_const_declarations
     final path = r'/search/hybrid';
 
     // ignore: prefer_final_locals
-    Object? postBody;
+    Object? postBody = hybridSearchDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-    if (city != null) {
-      queryParams.addAll(_queryParams('', 'city', city));
-    }
-    if (context != null) {
-      queryParams.addAll(_queryParams('', 'context', context));
-    }
-    if (country != null) {
-      queryParams.addAll(_queryParams('', 'country', country));
-    }
-    if (createdAfter != null) {
-      queryParams.addAll(_queryParams('', 'createdAfter', createdAfter));
-    }
-    if (createdBefore != null) {
-      queryParams.addAll(_queryParams('', 'createdBefore', createdBefore));
-    }
-    if (deviceId != null) {
-      queryParams.addAll(_queryParams('', 'deviceId', deviceId));
-    }
-    if (isArchived != null) {
-      queryParams.addAll(_queryParams('', 'isArchived', isArchived));
-    }
-    if (isEncoded != null) {
-      queryParams.addAll(_queryParams('', 'isEncoded', isEncoded));
-    }
-    if (isExternal != null) {
-      queryParams.addAll(_queryParams('', 'isExternal', isExternal));
-    }
-    if (isFavorite != null) {
-      queryParams.addAll(_queryParams('', 'isFavorite', isFavorite));
-    }
-    if (isMotion != null) {
-      queryParams.addAll(_queryParams('', 'isMotion', isMotion));
-    }
-    if (isNotInAlbum != null) {
-      queryParams.addAll(_queryParams('', 'isNotInAlbum', isNotInAlbum));
-    }
-    if (isOffline != null) {
-      queryParams.addAll(_queryParams('', 'isOffline', isOffline));
-    }
-    if (isReadOnly != null) {
-      queryParams.addAll(_queryParams('', 'isReadOnly', isReadOnly));
-    }
-    if (isVisible != null) {
-      queryParams.addAll(_queryParams('', 'isVisible', isVisible));
-    }
-    if (lensModel != null) {
-      queryParams.addAll(_queryParams('', 'lensModel', lensModel));
-    }
-    if (libraryId != null) {
-      queryParams.addAll(_queryParams('', 'libraryId', libraryId));
-    }
-    if (make != null) {
-      queryParams.addAll(_queryParams('', 'make', make));
-    }
-    if (model != null) {
-      queryParams.addAll(_queryParams('', 'model', model));
-    }
-    if (page != null) {
-      queryParams.addAll(_queryParams('', 'page', page));
-    }
-    if (people != null) {
-      queryParams.addAll(_queryParams('multi', 'people', people));
-    }
-    if (size != null) {
-      queryParams.addAll(_queryParams('', 'size', size));
-    }
-    if (state != null) {
-      queryParams.addAll(_queryParams('', 'state', state));
-    }
-    if (takenAfter != null) {
-      queryParams.addAll(_queryParams('', 'takenAfter', takenAfter));
-    }
-    if (takenBefore != null) {
-      queryParams.addAll(_queryParams('', 'takenBefore', takenBefore));
-    }
-    if (trashedAfter != null) {
-      queryParams.addAll(_queryParams('', 'trashedAfter', trashedAfter));
-    }
-    if (trashedBefore != null) {
-      queryParams.addAll(_queryParams('', 'trashedBefore', trashedBefore));
-    }
-    if (type != null) {
-      queryParams.addAll(_queryParams('', 'type', type));
-    }
-    if (updatedAfter != null) {
-      queryParams.addAll(_queryParams('', 'updatedAfter', updatedAfter));
-    }
-    if (updatedBefore != null) {
-      queryParams.addAll(_queryParams('', 'updatedBefore', updatedBefore));
-    }
-    if (withArchived != null) {
-      queryParams.addAll(_queryParams('', 'withArchived', withArchived));
-    }
-    if (withDeleted != null) {
-      queryParams.addAll(_queryParams('', 'withDeleted', withDeleted));
-    }
-    if (withExif != null) {
-      queryParams.addAll(_queryParams('', 'withExif', withExif));
-    }
-
-    const contentTypes = <String>[];
+    const contentTypes = <String>['application/json'];
 
 
     return apiClient.invokeAPI(
       path,
-      'GET',
+      'POST',
       queryParams,
       postBody,
       headerParams,
@@ -449,73 +285,9 @@ class SearchApi {
 
   /// Parameters:
   ///
-  /// * [String] city:
-  ///
-  /// * [String] context:
-  ///
-  /// * [String] country:
-  ///
-  /// * [DateTime] createdAfter:
-  ///
-  /// * [DateTime] createdBefore:
-  ///
-  /// * [String] deviceId:
-  ///
-  /// * [bool] isArchived:
-  ///
-  /// * [bool] isEncoded:
-  ///
-  /// * [bool] isExternal:
-  ///
-  /// * [bool] isFavorite:
-  ///
-  /// * [bool] isMotion:
-  ///
-  /// * [bool] isNotInAlbum:
-  ///
-  /// * [bool] isOffline:
-  ///
-  /// * [bool] isReadOnly:
-  ///
-  /// * [bool] isVisible:
-  ///
-  /// * [String] lensModel:
-  ///
-  /// * [String] libraryId:
-  ///
-  /// * [String] make:
-  ///
-  /// * [String] model:
-  ///
-  /// * [num] page:
-  ///
-  /// * [List<String>] people:
-  ///
-  /// * [num] size:
-  ///
-  /// * [String] state:
-  ///
-  /// * [DateTime] takenAfter:
-  ///
-  /// * [DateTime] takenBefore:
-  ///
-  /// * [DateTime] trashedAfter:
-  ///
-  /// * [DateTime] trashedBefore:
-  ///
-  /// * [AssetTypeEnum] type:
-  ///
-  /// * [DateTime] updatedAfter:
-  ///
-  /// * [DateTime] updatedBefore:
-  ///
-  /// * [bool] withArchived:
-  ///
-  /// * [bool] withDeleted:
-  ///
-  /// * [bool] withExif:
-  Future<SearchResponseDto?> searchHybrid({ String? city, String? context, String? country, DateTime? createdAfter, DateTime? createdBefore, String? deviceId, bool? isArchived, bool? isEncoded, bool? isExternal, bool? isFavorite, bool? isMotion, bool? isNotInAlbum, bool? isOffline, bool? isReadOnly, bool? isVisible, String? lensModel, String? libraryId, String? make, String? model, num? page, List<String>? people, num? size, String? state, DateTime? takenAfter, DateTime? takenBefore, DateTime? trashedAfter, DateTime? trashedBefore, AssetTypeEnum? type, DateTime? updatedAfter, DateTime? updatedBefore, bool? withArchived, bool? withDeleted, bool? withExif, }) async {
-    final response = await searchHybridWithHttpInfo( city: city, context: context, country: country, createdAfter: createdAfter, createdBefore: createdBefore, deviceId: deviceId, isArchived: isArchived, isEncoded: isEncoded, isExternal: isExternal, isFavorite: isFavorite, isMotion: isMotion, isNotInAlbum: isNotInAlbum, isOffline: isOffline, isReadOnly: isReadOnly, isVisible: isVisible, lensModel: lensModel, libraryId: libraryId, make: make, model: model, page: page, people: people, size: size, state: state, takenAfter: takenAfter, takenBefore: takenBefore, trashedAfter: trashedAfter, trashedBefore: trashedBefore, type: type, updatedAfter: updatedAfter, updatedBefore: updatedBefore, withArchived: withArchived, withDeleted: withDeleted, withExif: withExif, );
+  /// * [HybridSearchDto] hybridSearchDto (required):
+  Future<SearchResponseDto?> searchHybrid(HybridSearchDto hybridSearchDto,) async {
+    final response = await searchHybridWithHttpInfo(hybridSearchDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

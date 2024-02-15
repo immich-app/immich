@@ -11,7 +11,7 @@ import {
   SmartSearchDto,
 } from '@app/domain';
 import { SearchSuggestionRequestDto } from '@app/domain/search/dto/search-suggestion.dto';
-import { Controller, Get, Query } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Auth, Authenticated } from '../app.guard';
 import { UseValidation } from '../app.utils';
@@ -33,8 +33,8 @@ export class SearchController {
     return this.service.searchSmart(auth, dto);
   }
 
-  @Get('hybrid')
-  searchHybrid(@Auth() auth: AuthDto, @Query() dto: HybridSearchDto): Promise<SearchResponseDto> {
+  @Post('hybrid')
+  searchHybrid(@Auth() auth: AuthDto, @Body() dto: HybridSearchDto): Promise<SearchResponseDto> {
     return this.service.searchHybrid(auth, dto);
   }
 

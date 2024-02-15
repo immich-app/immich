@@ -2,7 +2,7 @@ import { AssetOrder } from '@app/domain/asset/dto/asset.dto';
 import { AssetType } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
-import { IsBoolean, IsEnum, IsInt, IsNotEmpty, IsString, Max, Min } from 'class-validator';
+import { IsArray, IsBoolean, IsEnum, IsInt, IsNotEmpty, IsString, Max, Min } from 'class-validator';
 import { Optional, QueryBoolean, QueryDate, ValidateUUID, toBoolean } from '../../domain.util';
 
 class BaseSearchDto {
@@ -255,5 +255,5 @@ export class HybridSearchDto extends BaseSearchDto {
   isNotInAlbum?: boolean;
 
   @Optional()
-  people?: string[];
+  personIds?: string[];
 }

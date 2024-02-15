@@ -163,7 +163,7 @@ Class | Method | HTTP request | Description
 *SearchApi* | [**getExploreData**](doc//SearchApi.md#getexploredata) | **GET** /search/explore | 
 *SearchApi* | [**getSearchSuggestions**](doc//SearchApi.md#getsearchsuggestions) | **GET** /search/suggestions | 
 *SearchApi* | [**search**](doc//SearchApi.md#search) | **GET** /search | 
-*SearchApi* | [**searchHybrid**](doc//SearchApi.md#searchhybrid) | **GET** /search/hybrid | 
+*SearchApi* | [**searchHybrid**](doc//SearchApi.md#searchhybrid) | **POST** /search/hybrid | 
 *SearchApi* | [**searchMetadata**](doc//SearchApi.md#searchmetadata) | **GET** /search/metadata | 
 *SearchApi* | [**searchPerson**](doc//SearchApi.md#searchperson) | **GET** /search/person | 
 *SearchApi* | [**searchSmart**](doc//SearchApi.md#searchsmart) | **GET** /search/smart | 
@@ -274,6 +274,7 @@ Class | Method | HTTP request | Description
  - [FileReportDto](doc//FileReportDto.md)
  - [FileReportFixDto](doc//FileReportFixDto.md)
  - [FileReportItemDto](doc//FileReportItemDto.md)
+ - [HybridSearchDto](doc//HybridSearchDto.md)
  - [JobCommand](doc//JobCommand.md)
  - [JobCommandDto](doc//JobCommandDto.md)
  - [JobCountsDto](doc//JobCountsDto.md)

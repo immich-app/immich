@@ -83,6 +83,7 @@ export interface SearchStatusOptions {
   isOffline?: boolean;
   isReadOnly?: boolean;
   isVisible?: boolean;
+  isNotInAlbum?: boolean;
   type?: AssetType;
   withArchived?: boolean;
   withDeleted?: boolean;
@@ -132,6 +133,10 @@ export interface SearchEmbeddingOptions {
   userIds: string[];
 }
 
+export interface SearchPeopleOptions {
+  personIds?: string[];
+}
+
 export interface SearchOrderOptions {
   orderDirection?: 'ASC' | 'DESC';
 }
@@ -158,7 +163,11 @@ export type SmartSearchOptions = SearchDateOptions &
   SearchStatusOptions &
   SearchUserIDOptions;
 
-export type HybridSearchOptions = SearchDateOptions & SearchEmbeddingOptions & SearchExifOptions & SearchStatusOptions;
+export type HybridSearchOptions = SearchDateOptions &
+  SearchEmbeddingOptions &
+  SearchExifOptions &
+  SearchStatusOptions &
+  SearchPeopleOptions;
 
 export interface FaceEmbeddingSearch extends SearchEmbeddingOptions {
   hasPerson?: boolean;
