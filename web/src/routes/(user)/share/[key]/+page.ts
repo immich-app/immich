@@ -1,8 +1,7 @@
 import { getAssetThumbnailUrl } from '$lib/utils';
 import { authenticate } from '$lib/utils/auth';
 import { ThumbnailFormat, getMySharedLink } from '@immich/sdk';
-import { error as throwError } from '@sveltejs/kit';
-import type { AxiosError } from 'axios';
+import { error as throwError, type HttpError } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
 
 export const load = (async ({ params }) => {
@@ -25,7 +24,7 @@ export const load = (async ({ params }) => {
   } catch (error) {
     // handle unauthorized error
     // TODO this doesn't allow for 404 shared links anymore
-    if ((error as AxiosError).response?.status === 401) {
+    if ((error as HttpError).status === 401) {
       return {
         passwordRequired: true,
         sharedLinkKey: key,
