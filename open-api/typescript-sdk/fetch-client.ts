@@ -588,9 +588,53 @@ export type SearchExploreResponseDto = {
     fieldName: string;
     items: SearchExploreItem[];
 };
-export type HybridSearchDto = {
+export type MetadataSearchDto = {
+    checksum?: string;
     city?: string;
-    context?: string;
+    country?: string;
+    createdAfter?: string;
+    createdBefore?: string;
+    deviceAssetId?: string;
+    deviceId?: string;
+    encodedVideoPath?: string;
+    id?: string;
+    isArchived?: boolean;
+    isEncoded?: boolean;
+    isExternal?: boolean;
+    isFavorite?: boolean;
+    isMotion?: boolean;
+    isNotInAlbum?: boolean;
+    isOffline?: boolean;
+    isReadOnly?: boolean;
+    isVisible?: boolean;
+    lensModel?: string;
+    libraryId?: string;
+    make?: string;
+    model?: string;
+    order?: AssetOrder;
+    originalFileName?: string;
+    originalPath?: string;
+    page?: number;
+    personIds?: string[];
+    resizePath?: string;
+    size?: number;
+    state?: string;
+    takenAfter?: string;
+    takenBefore?: string;
+    trashedAfter?: string;
+    trashedBefore?: string;
+    "type"?: AssetTypeEnum;
+    updatedAfter?: string;
+    updatedBefore?: string;
+    webpPath?: string;
+    withArchived?: boolean;
+    withDeleted?: boolean;
+    withExif?: boolean;
+    withPeople?: boolean;
+    withStacked?: boolean;
+};
+export type SmartSearchDto = {
+    city?: string;
     country?: string;
     createdAfter?: string;
     createdBefore?: string;
@@ -609,7 +653,7 @@ export type HybridSearchDto = {
     make?: string;
     model?: string;
     page?: number;
-    personIds?: string[];
+    query: string;
     size?: number;
     state?: string;
     takenAfter?: string;
@@ -1472,7 +1516,7 @@ export function updateAsset({ id, updateAssetDto }: {
         body: updateAssetDto
     })));
 }
-export function searchAssets({ checksum, city, country, createdAfter, createdBefore, deviceAssetId, deviceId, encodedVideoPath, id, isArchived, isEncoded, isExternal, isFavorite, isMotion, isOffline, isReadOnly, isVisible, lensModel, libraryId, make, model, order, originalFileName, originalPath, page, resizePath, size, state, takenAfter, takenBefore, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, webpPath, withArchived, withDeleted, withExif, withPeople, withStacked }: {
+export function searchAssets({ checksum, city, country, createdAfter, createdBefore, deviceAssetId, deviceId, encodedVideoPath, id, isArchived, isEncoded, isExternal, isFavorite, isMotion, isNotInAlbum, isOffline, isReadOnly, isVisible, lensModel, libraryId, make, model, order, originalFileName, originalPath, page, personIds, resizePath, size, state, takenAfter, takenBefore, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, webpPath, withArchived, withDeleted, withExif, withPeople, withStacked }: {
     checksum?: string;
     city?: string;
     country?: string;
@@ -1487,6 +1531,7 @@ export function searchAssets({ checksum, city, country, createdAfter, createdBef
     isExternal?: boolean;
     isFavorite?: boolean;
     isMotion?: boolean;
+    isNotInAlbum?: boolean;
     isOffline?: boolean;
     isReadOnly?: boolean;
     isVisible?: boolean;
@@ -1498,6 +1543,7 @@ export function searchAssets({ checksum, city, country, createdAfter, createdBef
     originalFileName?: string;
     originalPath?: string;
     page?: number;
+    personIds?: string[];
     resizePath?: string;
     size?: number;
     state?: string;
@@ -1533,6 +1579,7 @@ export function searchAssets({ checksum, city, country, createdAfter, createdBef
         isExternal,
         isFavorite,
         isMotion,
+        isNotInAlbum,
         isOffline,
         isReadOnly,
         isVisible,
@@ -1544,6 +1591,7 @@ export function searchAssets({ checksum, city, country, createdAfter, createdBef
         originalFileName,
         originalPath,
         page,
+        personIds,
         resizePath,
         size,
         state,
@@ -2098,109 +2146,17 @@ export function getExploreData(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
-export function searchHybrid({ hybridSearchDto }: {
-    hybridSearchDto: HybridSearchDto;
+export function searchMetadata({ metadataSearchDto }: {
+    metadataSearchDto: MetadataSearchDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 201;
         data: SearchResponseDto;
-    }>("/search/hybrid", oazapfts.json({
+    }>("/search/metadata", oazapfts.json({
         ...opts,
         method: "POST",
-        body: hybridSearchDto
+        body: metadataSearchDto
     })));
-}
-export function searchMetadata({ checksum, city, country, createdAfter, createdBefore, deviceAssetId, deviceId, encodedVideoPath, id, isArchived, isEncoded, isExternal, isFavorite, isMotion, isOffline, isReadOnly, isVisible, lensModel, libraryId, make, model, order, originalFileName, originalPath, page, resizePath, size, state, takenAfter, takenBefore, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, webpPath, withArchived, withDeleted, withExif, withPeople, withStacked }: {
-    checksum?: string;
-    city?: string;
-    country?: string;
-    createdAfter?: string;
-    createdBefore?: string;
-    deviceAssetId?: string;
-    deviceId?: string;
-    encodedVideoPath?: string;
-    id?: string;
-    isArchived?: boolean;
-    isEncoded?: boolean;
-    isExternal?: boolean;
-    isFavorite?: boolean;
-    isMotion?: boolean;
-    isOffline?: boolean;
-    isReadOnly?: boolean;
-    isVisible?: boolean;
-    lensModel?: string;
-    libraryId?: string;
-    make?: string;
-    model?: string;
-    order?: AssetOrder;
-    originalFileName?: string;
-    originalPath?: string;
-    page?: number;
-    resizePath?: string;
-    size?: number;
-    state?: string;
-    takenAfter?: string;
-    takenBefore?: string;
-    trashedAfter?: string;
-    trashedBefore?: string;
-    $type?: AssetTypeEnum;
-    updatedAfter?: string;
-    updatedBefore?: string;
-    webpPath?: string;
-    withArchived?: boolean;
-    withDeleted?: boolean;
-    withExif?: boolean;
-    withPeople?: boolean;
-    withStacked?: boolean;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: SearchResponseDto;
-    }>(`/search/metadata${QS.query(QS.explode({
-        checksum,
-        city,
-        country,
-        createdAfter,
-        createdBefore,
-        deviceAssetId,
-        deviceId,
-        encodedVideoPath,
-        id,
-        isArchived,
-        isEncoded,
-        isExternal,
-        isFavorite,
-        isMotion,
-        isOffline,
-        isReadOnly,
-        isVisible,
-        lensModel,
-        libraryId,
-        make,
-        model,
-        order,
-        originalFileName,
-        originalPath,
-        page,
-        resizePath,
-        size,
-        state,
-        takenAfter,
-        takenBefore,
-        trashedAfter,
-        trashedBefore,
-        "type": $type,
-        updatedAfter,
-        updatedBefore,
-        webpPath,
-        withArchived,
-        withDeleted,
-        withExif,
-        withPeople,
-        withStacked
-    }))}`, {
-        ...opts
-    }));
 }
 export function searchPerson({ name, withHidden }: {
     name: string;
@@ -2216,77 +2172,17 @@ export function searchPerson({ name, withHidden }: {
         ...opts
     }));
 }
-export function searchSmart({ city, country, createdAfter, createdBefore, deviceId, isArchived, isEncoded, isExternal, isFavorite, isMotion, isOffline, isReadOnly, isVisible, lensModel, libraryId, make, model, page, query, size, state, takenAfter, takenBefore, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, withArchived, withDeleted, withExif }: {
-    city?: string;
-    country?: string;
-    createdAfter?: string;
-    createdBefore?: string;
-    deviceId?: string;
-    isArchived?: boolean;
-    isEncoded?: boolean;
-    isExternal?: boolean;
-    isFavorite?: boolean;
-    isMotion?: boolean;
-    isOffline?: boolean;
-    isReadOnly?: boolean;
-    isVisible?: boolean;
-    lensModel?: string;
-    libraryId?: string;
-    make?: string;
-    model?: string;
-    page?: number;
-    query: string;
-    size?: number;
-    state?: string;
-    takenAfter?: string;
-    takenBefore?: string;
-    trashedAfter?: string;
-    trashedBefore?: string;
-    $type?: AssetTypeEnum;
-    updatedAfter?: string;
-    updatedBefore?: string;
-    withArchived?: boolean;
-    withDeleted?: boolean;
-    withExif?: boolean;
+export function searchSmart({ smartSearchDto }: {
+    smartSearchDto: SmartSearchDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
+        status: 201;
         data: SearchResponseDto;
-    }>(`/search/smart${QS.query(QS.explode({
-        city,
-        country,
-        createdAfter,
-        createdBefore,
-        deviceId,
-        isArchived,
-        isEncoded,
-        isExternal,
-        isFavorite,
-        isMotion,
-        isOffline,
-        isReadOnly,
-        isVisible,
-        lensModel,
-        libraryId,
-        make,
-        model,
-        page,
-        query,
-        size,
-        state,
-        takenAfter,
-        takenBefore,
-        trashedAfter,
-        trashedBefore,
-        "type": $type,
-        updatedAfter,
-        updatedBefore,
-        withArchived,
-        withDeleted,
-        withExif
-    }))}`, {
-        ...opts
-    }));
+    }>("/search/smart", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: smartSearchDto
+    })));
 }
 export function getSearchSuggestions({ country, make, model, state, $type }: {
     country?: string;

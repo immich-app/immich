@@ -17,7 +17,6 @@ import { AssetEntity, AssetFaceEntity, SmartInfoEntity, SmartSearchEntity } from
 import { ImmichLogger } from '@app/infra/logger';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { build } from 'joi';
 import { Repository } from 'typeorm';
 import { vectorExt } from '../database.config';
 import { DummyValue, GenerateSql } from '../infra.util';
@@ -68,7 +67,6 @@ export class SearchRepository implements ISearchRepository {
     builder = searchAssetBuilder(builder, options);
 
     builder.orderBy('asset.fileCreatedAt', options.orderDirection ?? 'DESC');
-
     return paginatedBuilder<AssetEntity>(builder, {
       mode: PaginationMode.SKIP_TAKE,
       skip: (pagination.page - 1) * pagination.size,

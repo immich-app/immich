@@ -4,7 +4,13 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { AssetTypeEnum, SearchSuggestionType, type PersonResponseDto, searchHybrid } from '@immich/sdk';
+  import {
+    AssetTypeEnum,
+    SearchSuggestionType,
+    type PersonResponseDto,
+    searchSmart,
+    searchMetadata,
+  } from '@immich/sdk';
   import { getAllPeople, getSearchSuggestions } from '@immich/sdk';
   import { mdiArrowRight, mdiClose } from '@mdi/js';
   import { onMount } from 'svelte';
@@ -228,25 +234,45 @@
       type = AssetTypeEnum.Video;
     }
 
-    const { assets } = await searchHybrid({
-      hybridSearchDto: {
-        context: filter.context,
-        country: filter.location.country?.value,
-        state: filter.location.state?.value,
-        city: filter.location.city?.value,
-        make: filter.camera.make?.value,
-        model: filter.camera.model?.value,
-        createdAfter: filter.date.createdAfter ? new Date(filter.date.createdAfter).toISOString() : undefined,
-        createdBefore: filter.date.createdBefore ? new Date(filter.date.createdBefore).toISOString() : undefined,
-        isArchived: filter.isArchive,
-        isFavorite: filter.isFavorite,
-        isNotInAlbum: filter.isNotInAlbum,
-        personIds: filter.people ? filter.people.map((p) => p.id) : undefined,
-        type,
-      },
-    });
+    // const { assets } = await searchHybrid({
+    //   hybridSearchDto: {
+    //     context: filter.context,
+    //     country: filter.location.country?.value,
+    //     state: filter.location.state?.value,
+    //     city: filter.location.city?.value,
+    //     make: filter.camera.make?.value,
+    //     model: filter.camera.model?.value,
+    //     createdAfter: filter.date.createdAfter ? new Date(filter.date.createdAfter).toISOString() : undefined,
+    //     createdBefore: filter.date.createdBefore ? new Date(filter.date.createdBefore).toISOString() : undefined,
+    //     isArchived: filter.isArchive,
+    //     isFavorite: filter.isFavorite,
+    //     isNotInAlbum: filter.isNotInAlbum,
+    //     personIds: filter.people ? filter.people.map((p) => p.id) : undefined,
+    //     type,
+    //   },
+    // });
+    let payload = {
+      country: filter.location.country?.value,
+      state: filter.location.state?.value,
+      city: filter.location.city?.value,
+      make: filter.camera.make?.value,
+      model: filter.camera.model?.value,
+      createdAfter: filter.date.createdAfter ? new Date(filter.date.createdAfter).toISOString() : undefined,
+      createdBefore: filter.date.createdBefore ? new Date(filter.date.createdBefore).toISOString() : undefined,
+      isArchived: filter.isArchive,
+      isFavorite: filter.isFavorite,
+      isNotInAlbum: filter.isNotInAlbum,
+      personIds: filter.people ? filter.people.map((p) => p.id) : undefined,
+      type,
+    };
 
-    console.log('search result', assets);
+    if (filter.context) {
+      const { assets } = await searchSmart({ smartSearchDto: { query: filter.context, ...payload } });
+      console.log('Smart search', assets);
+    } else {
+      const { assets } = await searchMetadata({ metadataSearchDto: { ...payload } });
+      console.log('Metadata search', assets);
+    }
   };
 </script>
 

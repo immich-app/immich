@@ -47,6 +47,9 @@ class BaseSearchDto {
   isVisible?: boolean;
 
   @QueryBoolean({ optional: true })
+  isNotInAlbum?: boolean;
+
+  @QueryBoolean({ optional: true })
   withDeleted?: boolean;
 
   @QueryBoolean({ optional: true })
@@ -169,6 +172,9 @@ export class MetadataSearchDto extends BaseSearchDto {
   @Optional()
   @ApiProperty({ enumName: 'AssetOrder', enum: AssetOrder })
   order?: AssetOrder;
+
+  @Optional()
+  personIds?: string[];
 }
 
 export class SmartSearchDto extends BaseSearchDto {
@@ -243,17 +249,4 @@ export class SearchPeopleDto {
   @Transform(toBoolean)
   @Optional()
   withHidden?: boolean;
-}
-
-export class HybridSearchDto extends BaseSearchDto {
-  @Optional()
-  context?: string;
-
-  @IsBoolean()
-  @Optional()
-  @Transform(toBoolean)
-  isNotInAlbum?: boolean;
-
-  @Optional()
-  personIds?: string[];
 }

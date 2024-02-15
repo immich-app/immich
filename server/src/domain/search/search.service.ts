@@ -16,7 +16,7 @@ import {
   SearchStrategy,
 } from '../repositories';
 import { FeatureFlag, SystemConfigCore } from '../system-config';
-import { HybridSearchDto, MetadataSearchDto, SearchDto, SearchPeopleDto, SmartSearchDto } from './dto';
+import { MetadataSearchDto, SearchDto, SearchPeopleDto, SmartSearchDto } from './dto';
 import { SearchSuggestionRequestDto, SearchSuggestionType } from './dto/search-suggestion.dto';
 import { SearchResponseDto } from './response-dto';
 
@@ -96,34 +96,6 @@ export class SearchService {
     const page = dto.page ?? 1;
     const size = dto.size || 100;
     const { hasNextPage, items } = await this.searchRepository.searchSmart(
-      { page, size },
-      { ...dto, userIds, embedding },
-    );
-
-    return this.mapResponse(items, hasNextPage ? (page + 1).toString() : null);
-  }
-
-  async searchHybrid(auth: AuthDto, dto: HybridSearchDto): Promise<SearchResponseDto> {
-    if (dto.context) {
-      await this.configCore.requireFeature(FeatureFlag.SMART_SEARCH);
-    } else {
-      await this.configCore.requireFeature(FeatureFlag.SEARCH);
-    }
-    const { machineLearning } = await this.configCore.getConfig();
-    const userIds = await this.getUserIdsToSearch(auth);
-    let embedding: number[] = [];
-
-    if (dto.context) {
-      embedding = await this.machineLearning.encodeText(
-        machineLearning.url,
-        { text: dto.context },
-        machineLearning.clip,
-      );
-    }
-
-    const page = dto.page ?? 1;
-    const size = dto.size || 100;
-    const { hasNextPage, items } = await this.searchRepository.searchHybrid(
       { page, size },
       { ...dto, userIds, embedding },
     );

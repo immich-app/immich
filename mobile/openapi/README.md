@@ -163,10 +163,9 @@ Class | Method | HTTP request | Description
 *SearchApi* | [**getExploreData**](doc//SearchApi.md#getexploredata) | **GET** /search/explore | 
 *SearchApi* | [**getSearchSuggestions**](doc//SearchApi.md#getsearchsuggestions) | **GET** /search/suggestions | 
 *SearchApi* | [**search**](doc//SearchApi.md#search) | **GET** /search | 
-*SearchApi* | [**searchHybrid**](doc//SearchApi.md#searchhybrid) | **POST** /search/hybrid | 
-*SearchApi* | [**searchMetadata**](doc//SearchApi.md#searchmetadata) | **GET** /search/metadata | 
+*SearchApi* | [**searchMetadata**](doc//SearchApi.md#searchmetadata) | **POST** /search/metadata | 
 *SearchApi* | [**searchPerson**](doc//SearchApi.md#searchperson) | **GET** /search/person | 
-*SearchApi* | [**searchSmart**](doc//SearchApi.md#searchsmart) | **GET** /search/smart | 
+*SearchApi* | [**searchSmart**](doc//SearchApi.md#searchsmart) | **POST** /search/smart | 
 *ServerInfoApi* | [**getServerConfig**](doc//ServerInfoApi.md#getserverconfig) | **GET** /server-info/config | 
 *ServerInfoApi* | [**getServerFeatures**](doc//ServerInfoApi.md#getserverfeatures) | **GET** /server-info/features | 
 *ServerInfoApi* | [**getServerInfo**](doc//ServerInfoApi.md#getserverinfo) | **GET** /server-info | 
@@ -274,7 +273,6 @@ Class | Method | HTTP request | Description
  - [FileReportDto](doc//FileReportDto.md)
  - [FileReportFixDto](doc//FileReportFixDto.md)
  - [FileReportItemDto](doc//FileReportItemDto.md)
- - [HybridSearchDto](doc//HybridSearchDto.md)
  - [JobCommand](doc//JobCommand.md)
  - [JobCommandDto](doc//JobCommandDto.md)
  - [JobCountsDto](doc//JobCountsDto.md)
@@ -292,6 +290,7 @@ Class | Method | HTTP request | Description
  - [MapTheme](doc//MapTheme.md)
  - [MemoryLaneResponseDto](doc//MemoryLaneResponseDto.md)
  - [MergePersonDto](doc//MergePersonDto.md)
+ - [MetadataSearchDto](doc//MetadataSearchDto.md)
  - [ModelType](doc//ModelType.md)
  - [OAuthAuthorizeResponseDto](doc//OAuthAuthorizeResponseDto.md)
  - [OAuthCallbackDto](doc//OAuthCallbackDto.md)
@@ -333,6 +332,7 @@ Class | Method | HTTP request | Description
  - [SharedLinkType](doc//SharedLinkType.md)
  - [SignUpDto](doc//SignUpDto.md)
  - [SmartInfoResponseDto](doc//SmartInfoResponseDto.md)
+ - [SmartSearchDto](doc//SmartSearchDto.md)
  - [SystemConfigDto](doc//SystemConfigDto.md)
  - [SystemConfigFFmpegDto](doc//SystemConfigFFmpegDto.md)
  - [SystemConfigJobDto](doc//SystemConfigJobDto.md)

@@ -1,6 +1,5 @@
 import {
   AuthDto,
-  HybridSearchDto,
   MetadataSearchDto,
   PersonResponseDto,
   SearchDto,
@@ -23,19 +22,14 @@ import { UseValidation } from '../app.utils';
 export class SearchController {
   constructor(private service: SearchService) {}
 
-  @Get('metadata')
-  searchMetadata(@Auth() auth: AuthDto, @Query() dto: MetadataSearchDto): Promise<SearchResponseDto> {
+  @Post('metadata')
+  searchMetadata(@Auth() auth: AuthDto, @Body() dto: MetadataSearchDto): Promise<SearchResponseDto> {
     return this.service.searchMetadata(auth, dto);
   }
 
-  @Get('smart')
-  searchSmart(@Auth() auth: AuthDto, @Query() dto: SmartSearchDto): Promise<SearchResponseDto> {
+  @Post('smart')
+  searchSmart(@Auth() auth: AuthDto, @Body() dto: SmartSearchDto): Promise<SearchResponseDto> {
     return this.service.searchSmart(auth, dto);
-  }
-
-  @Post('hybrid')
-  searchHybrid(@Auth() auth: AuthDto, @Body() dto: HybridSearchDto): Promise<SearchResponseDto> {
-    return this.service.searchHybrid(auth, dto);
   }
 
   @Get()
