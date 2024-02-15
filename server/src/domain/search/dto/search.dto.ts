@@ -109,6 +109,9 @@ class BaseSearchDto {
   @Optional()
   lensModel?: string;
 
+  @Optional()
+  personIds?: string[];
+
   @IsInt()
   @Min(1)
   @Type(() => Number)
@@ -172,9 +175,6 @@ export class MetadataSearchDto extends BaseSearchDto {
   @Optional()
   @ApiProperty({ enumName: 'AssetOrder', enum: AssetOrder })
   order?: AssetOrder;
-
-  @Optional()
-  personIds?: string[];
 }
 
 export class SmartSearchDto extends BaseSearchDto {

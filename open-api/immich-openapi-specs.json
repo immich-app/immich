@@ -9411,6 +9411,12 @@
           "page": {
             "type": "number"
           },
+          "personIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
           "query": {
             "type": "string"
           },

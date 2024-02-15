@@ -653,6 +653,7 @@ export type SmartSearchDto = {
     make?: string;
     model?: string;
     page?: number;
+    personIds?: string[];
     query: string;
     size?: number;
     state?: string;
