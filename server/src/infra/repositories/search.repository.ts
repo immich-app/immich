@@ -320,6 +320,8 @@ export class SearchRepository implements ISearchRepository {
           .andWhere('faces.personId IN (:...personIds)', { personIds: options.personIds });
       }
 
+      builder.orderBy('asset.fileCreatedAt', 'DESC');
+
       await manager.query(this.getRuntimeConfig(pagination.size));
 
       results = await paginatedBuilder<AssetEntity>(builder, {
