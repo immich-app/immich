@@ -96,6 +96,7 @@
 {#if editKey}
   <APIKeyForm
     submitText="Save"
+    apiKeyName={editKey.name}
     apiKey={editKey}
     on:submit={({ detail }) => handleUpdate(detail)}
     on:cancel={() => (editKey = null)}
