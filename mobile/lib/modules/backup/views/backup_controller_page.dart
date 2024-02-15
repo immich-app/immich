@@ -9,6 +9,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/object_extensions.dart';
 import 'package:immich_mobile/modules/album/providers/local_album.provider.dart';
 import 'package:immich_mobile/modules/backup/providers/backup_album.provider.dart';
+import 'package:immich_mobile/modules/backup/providers/device_assets.provider.dart';
 import 'package:immich_mobile/modules/backup/providers/error_backup_list.provider.dart';
 import 'package:immich_mobile/modules/backup/providers/ios_background_settings.provider.dart';
 import 'package:immich_mobile/modules/backup/providers/manual_upload.provider.dart';
@@ -26,15 +27,16 @@ class BackupControllerPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final backupState = ref.watch(backupProvider);
     final backupAlbums = ref.watch(backupAlbumsProvider);
+    final deviceAssetState = ref.watch(deviceAssetsProvider);
     final hasAnyAlbum =
         backupAlbums.valueOrNull?.selectedBackupAlbums.isNotEmpty ?? false;
 
     bool hasExclusiveAccess =
         backupState.backupProgress != BackUpProgressEnum.inBackground;
-    bool shouldBackup =
-        backupAlbums.valueOrNull?.assetsRemaining == 0 || !hasExclusiveAccess
-            ? false
-            : true;
+    bool shouldBackup = deviceAssetState.valueOrNull?.assetsRemaining == 0 ||
+            !hasExclusiveAccess
+        ? false
+        : true;
 
     useEffect(
       () {
@@ -292,7 +294,7 @@ class BackupControllerPage extends HookConsumerWidget {
                             .valueOrNull
                             .isNullOrEmpty
                         ? "..."
-                        : "${backupAlbums.valueOrNull?.uniqueAssetsToBackup ?? 0}",
+                        : "${deviceAssetState.valueOrNull?.uniqueAssetsToBackup ?? 0}",
                   ),
                   BackupInfoCard(
                     title: "backup_controller_page_backup".tr(),
@@ -302,7 +304,7 @@ class BackupControllerPage extends HookConsumerWidget {
                             .valueOrNull
                             .isNullOrEmpty
                         ? "..."
-                        : "${backupAlbums.valueOrNull?.backedUpAssets ?? 0}",
+                        : "${deviceAssetState.valueOrNull?.backedUpAssets ?? 0}",
                   ),
                   BackupInfoCard(
                     title: "backup_controller_page_remainder".tr(),
@@ -312,7 +314,7 @@ class BackupControllerPage extends HookConsumerWidget {
                             .valueOrNull
                             .isNullOrEmpty
                         ? "..."
-                        : "${backupAlbums.valueOrNull?.assetsRemaining ?? 0}",
+                        : "${deviceAssetState.valueOrNull?.assetsRemaining ?? 0}",
                   ),
                   const Divider(),
                   const CurrentUploadingAssetInfoBox(),
