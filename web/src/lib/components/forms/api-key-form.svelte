@@ -11,7 +11,7 @@
   export let title = 'API Key';
   export let cancelText = 'Cancel';
   export let submitText = 'Save';
-  export let apiKeyName = 'API Key';
+  let apiKeyName = apiKey.name ?? 'API Key';
 
   const dispatch = createEventDispatcher<{
     cancel: void;
