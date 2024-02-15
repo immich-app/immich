@@ -169,7 +169,7 @@
             {#if previousMemory}
               <img
                 class="h-full w-full rounded-2xl object-cover"
-                src={getAssetThumbnailUrl(previousMemory.assets[0].id, 'JPEG')}
+                src={getAssetThumbnailUrl(previousMemory.assets[0].id, ThumbnailFormat.Jpeg)}
                 alt=""
                 draggable="false"
               />
@@ -242,7 +242,7 @@
             {#if nextMemory}
               <img
                 class="h-full w-full rounded-2xl object-cover"
-                src={getAssetThumbnailUrl(nextMemory.assets[0].id, 'JPEG')}
+                src={getAssetThumbnailUrl(nextMemory.assets[0].id, ThumbnailFormat.Jpeg)}
                 alt=""
                 draggable="false"
               />
