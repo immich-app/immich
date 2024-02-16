@@ -253,7 +253,7 @@ export class SearchPeopleDto extends SearchPlacesDto {
   withHidden?: boolean;
 }
 
-export class PlacesReponseDto {
+export class PlacesResponseDto {
   name!: string;
   latitude!: number;
   longitude!: number;
