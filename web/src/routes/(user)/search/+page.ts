@@ -16,7 +16,6 @@ export const load = (async (data) => {
   const term =
     url.searchParams.get(QueryParameter.SEARCH_TERM) || url.searchParams.get(QueryParameter.QUERY) || undefined;
   let results: SearchResponseDto | null = null;
-
   if (term) {
     const payload = JSON.parse(term) as SmartSearchDto | MetadataSearchDto;
     searchPayload.set(payload);

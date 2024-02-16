@@ -22,7 +22,7 @@
 
   const onSearchNew = (payload: SmartSearchDto | MetadataSearchDto) => {
     const parameters = new URLSearchParams({
-      q: JSON.stringify(payload),
+      query: JSON.stringify(payload),
     });
 
     showHistory = false;
