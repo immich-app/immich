@@ -57,6 +57,7 @@ export class SearchRepository implements ISearchRepository {
         ownerId: DummyValue.UUID,
         withStacked: true,
         isFavorite: true,
+        ownerIds: [DummyValue.UUID],
       },
     ],
   })
