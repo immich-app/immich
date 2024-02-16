@@ -246,7 +246,11 @@ export class SearchPlacesDto {
   name!: string;
 }
 
-export class SearchPeopleDto extends SearchPlacesDto {
+export class SearchPeopleDto {
+  @IsString()
+  @IsNotEmpty()
+  name!: string;
+
   @IsBoolean()
   @Transform(toBoolean)
   @Optional()
@@ -261,7 +265,7 @@ export class PlacesResponseDto {
   admin2name?: string;
 }
 
-export function mapPlaces(place: GeodataPlacesEntity): PlacesReponseDto {
+export function mapPlaces(place: GeodataPlacesEntity): PlacesResponseDto {
   return {
     name: place.name,
     latitude: place.latitude,

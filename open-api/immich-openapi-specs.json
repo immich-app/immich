@@ -4665,7 +4665,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "$ref": "#/components/schemas/PlacesReponseDto"
+                    "$ref": "#/components/schemas/PlacesResponseDto"
                   },
                   "type": "array"
                 }
@@ -8750,7 +8750,7 @@
         ],
         "type": "object"
       },
-      "PlacesReponseDto": {
+      "PlacesResponseDto": {
         "properties": {
           "admin1name": {
             "type": "string"

@@ -18,7 +18,7 @@ import {
 import { FeatureFlag, SystemConfigCore } from '../system-config';
 import {
   MetadataSearchDto,
-  PlacesReponseDto,
+  PlacesResponseDto,
   SearchDto,
   SearchPeopleDto,
   SearchPlacesDto,
@@ -49,7 +49,7 @@ export class SearchService {
     return this.personRepository.getByName(auth.user.id, dto.name, { withHidden: dto.withHidden });
   }
 
-  async searchPlaces(dto: SearchPlacesDto): Promise<PlacesReponseDto[]> {
+  async searchPlaces(dto: SearchPlacesDto): Promise<PlacesResponseDto[]> {
     const places = await this.searchRepository.searchPlaces(dto.name);
     return places.map((place) => mapPlaces(place));
   }

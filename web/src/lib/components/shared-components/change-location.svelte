@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { searchPlaces, type AssetResponseDto, type PlacesReponseDto } from '@immich/sdk';
+  import { searchPlaces, type AssetResponseDto, type PlacesResponseDto } from '@immich/sdk';
   import { createEventDispatcher } from 'svelte';
   import ConfirmDialogue from './confirm-dialogue.svelte';
   import Map from './map/map.svelte';
@@ -16,8 +16,8 @@
     lat: number;
   }
 
-  let places: PlacesReponseDto[] = [];
-  let suggestedPlaces: PlacesReponseDto[] = [];
+  let places: PlacesResponseDto[] = [];
+  let suggestedPlaces: PlacesResponseDto[] = [];
   let searchWord: string;
   let isSearchingPlaces = false;
   let focusedElements: (HTMLButtonElement | null)[] = Array.from({ length: maximumLengthSearchPeople }, () => null);

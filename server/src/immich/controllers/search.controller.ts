@@ -2,7 +2,7 @@ import {
   AuthDto,
   MetadataSearchDto,
   PersonResponseDto,
-  PlacesReponseDto,
+  PlacesResponseDto,
   SearchDto,
   SearchExploreResponseDto,
   SearchPeopleDto,
@@ -50,7 +50,7 @@ export class SearchController {
   }
 
   @Get('places')
-  searchPlaces(@Query() dto: SearchPeopleDto): Promise<PlacesReponseDto[]> {
+  searchPlaces(@Query() dto: SearchPeopleDto): Promise<PlacesResponseDto[]> {
     return this.service.searchPlaces(dto);
   }
 
