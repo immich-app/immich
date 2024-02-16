@@ -23,7 +23,14 @@
   import { preventRaceConditionSearchBar, searchQuery } from '$lib/stores/search.store';
   import { authenticate } from '$lib/utils/auth';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
-  import { type AssetResponseDto, type SearchResponseDto, searchSmart, searchMetadata } from '@immich/sdk';
+  import {
+    type AssetResponseDto,
+    type SearchResponseDto,
+    searchSmart,
+    searchMetadata,
+    type SmartSearchDto,
+    type MetadataSearchDto,
+  } from '@immich/sdk';
   import { mdiArrowLeft, mdiDotsVertical, mdiImageOffOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
   import { flip } from 'svelte/animate';
@@ -40,6 +47,7 @@
   // behavior for history.back(). To prevent that we store the previous page
   // manually and navigate back to that.
   let previousRoute = AppRoute.EXPLORE as string;
+  let terms: any;
   $: currentPage = data.results?.assets.nextPage;
   $: albums = data.results?.albums.items;
 
@@ -89,16 +97,9 @@
     if (from?.route.id === '/(user)/albums/[albumId]') {
       previousRoute = AppRoute.EXPLORE;
     }
-  });
 
-  $: term = (() => {
-    let term = $page.url.searchParams.get(QueryParameter.SEARCH_TERM) || data.term || '';
-    const isMetadataSearch = $page.url.searchParams.get(QueryParameter.SMART_SEARCH) === 'false';
-    if (isMetadataSearch && term !== '') {
-      term = `m:${term}`;
-    }
-    return term;
-  })();
+    updateInformationChip();
+  });
 
   let selectedAssets: Set<AssetResponseDto> = new Set();
   $: isMultiSelectionMode = selectedAssets.size > 0;
@@ -113,8 +114,13 @@
     selectedAssets = new Set(searchResultAssets);
   };
 
+  function updateInformationChip() {
+    let query = $page.url.searchParams.get(QueryParameter.SEARCH_TERM) || data.term || '';
+    terms = JSON.parse(query);
+  }
+
   export const loadNextPage = async () => {
-    if (currentPage == null || !term || (searchResultAssets && searchResultAssets.length >= MAX_ASSET_COUNT)) {
+    if (currentPage == null || !terms || (searchResultAssets && searchResultAssets.length >= MAX_ASSET_COUNT)) {
       return;
     }
 
@@ -150,6 +156,46 @@
 
     data.results = results;
   };
+
+  function getHumanReadableDate(date: string) {
+    const d = new Date(date);
+    return d.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  }
+
+  function getHumanReadableSearchKey(key: string): string {
+    switch (key) {
+      case 'takenAfter':
+        return 'Start date';
+      case 'takenBefore':
+        return 'End date';
+      case 'isArchived':
+        return 'In archive';
+      case 'isFavorite':
+        return 'Favorite';
+      case 'isNotInAlbum':
+        return 'Not in any album';
+      case 'type':
+        return 'Media type';
+      case 'query':
+        return 'Context';
+      case 'city':
+        return 'City';
+      case 'country':
+        return 'Country';
+      case 'state':
+        return 'State';
+      case 'make':
+        return 'Camera brand';
+      case 'model':
+        return 'Camera model';
+      default:
+        return key;
+    }
+  }
 </script>
 
 <section>
@@ -184,8 +230,33 @@
   {/if}
 </section>
 
+{#if terms}
+  <section
+    id="search-chips"
+    class="mt-24 text-center w-full flex gap-5 place-content-center place-items-center flex-wrap px-24"
+  >
+    {#each Object.keys(terms) as key, index (index)}
+      <div class="flex place-content-center place-items-center text-xs">
+        <div
+          class="bg-immich-primary py-2 px-4 text-white dark:text-black dark:bg-immich-dark-primary rounded-tl-full rounded-bl-full"
+        >
+          {getHumanReadableSearchKey(key)}
+        </div>
+
+        <div class="bg-gray-300 py-2 px-4 dark:bg-gray-800 dark:text-white rounded-tr-full rounded-br-full">
+          {#if key === 'takenAfter' || key === 'takenBefore'}
+            {getHumanReadableDate(terms[key])}
+          {:else}
+            {terms[key]}
+          {/if}
+        </div>
+      </div>
+    {/each}
+  </section>
+{/if}
+
 <section
-  class="relative mb-12 bg-immich-bg pt-32 dark:bg-immich-dark-bg m-4"
+  class="relative mb-12 bg-immich-bg pt-4 dark:bg-immich-dark-bg m-4"
   bind:clientHeight={viewport.height}
   bind:clientWidth={viewport.width}
 >

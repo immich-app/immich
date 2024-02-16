@@ -251,9 +251,9 @@
       takenBefore: filter.date.takenBefore
         ? DateTime.fromFormat(filter.date.takenBefore, 'yyyy-MM-dd').toUTC().endOf('day').toString()
         : undefined,
-      isArchived: filter.isArchive,
-      isFavorite: filter.isFavorite,
-      isNotInAlbum: filter.isNotInAlbum,
+      isArchived: filter.isArchive ? filter.isArchive : undefined,
+      isFavorite: filter.isFavorite ? filter.isFavorite : undefined,
+      isNotInAlbum: filter.isNotInAlbum ? filter.isNotInAlbum : undefined,
       personIds: filter.people && filter.people.length > 0 ? filter.people.map((p) => p.id) : undefined,
       type,
     };
@@ -277,7 +277,6 @@
   };
 
   function populateExistingFilters() {
-    console.log($searchQuery?.takenAfter);
     if ($searchQuery) {
       filter = {
         context: 'query' in $searchQuery ? $searchQuery.query : '',
