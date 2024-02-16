@@ -35,7 +35,6 @@ export enum AppRoute {
   PARTNERS = '/partners',
 
   AUTH_LOGIN = '/auth/login',
-  AUTH_LOGOUT = '/auth/logout',
   AUTH_REGISTER = '/auth/register',
   AUTH_CHANGE_PASSWORD = '/auth/change-password',
   AUTH_ONBOARDING = '/auth/onboarding',

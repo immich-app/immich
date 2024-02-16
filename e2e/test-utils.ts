@@ -63,17 +63,26 @@ export const app = {
     return response;
   },
   reset: async () => {
-    if (!connected) {
-      await client.connect();
-    }
+    try {
+      if (!connected) {
+        await client.connect();
+        connected = true;
+      }
 
-    for (const table of ['users', 'system_metadata']) {
-      await client.query(`DELETE FROM ${table} CASCADE;`);
+      for (const table of ['user_token', 'users', 'system_metadata']) {
+        await client.query(`DELETE FROM ${table} CASCADE;`);
+      }
+    } catch (error) {
+      console.error('Failed to reset database', error);
     }
   },
   teardown: async () => {
-    if (connected) {
-      await client.end();
+    try {
+      if (connected) {
+        await client.end();
+      }
+    } catch (error) {
+      console.error('Failed to teardown database', error);
     }
   },
 };
