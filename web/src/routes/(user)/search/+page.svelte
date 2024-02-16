@@ -238,18 +238,21 @@
     {#each Object.keys(terms) as key, index (index)}
       <div class="flex place-content-center place-items-center text-xs">
         <div
-          class="bg-immich-primary py-2 px-4 text-white dark:text-black dark:bg-immich-dark-primary rounded-tl-full rounded-bl-full"
+          class="bg-immich-primary py-2 px-4 text-white dark:text-black dark:bg-immich-dark-primary
+          {terms[key] === true ? 'rounded-full' : 'rounded-tl-full rounded-bl-full'}"
         >
           {getHumanReadableSearchKey(key)}
         </div>
 
-        <div class="bg-gray-300 py-2 px-4 dark:bg-gray-800 dark:text-white rounded-tr-full rounded-br-full">
-          {#if key === 'takenAfter' || key === 'takenBefore'}
-            {getHumanReadableDate(terms[key])}
-          {:else}
-            {terms[key]}
-          {/if}
-        </div>
+        {#if terms[key] !== true}
+          <div class="bg-gray-300 py-2 px-4 dark:bg-gray-800 dark:text-white rounded-tr-full rounded-br-full">
+            {#if key === 'takenAfter' || key === 'takenBefore'}
+              {getHumanReadableDate(terms[key])}
+            {:else}
+              {terms[key]}
+            {/if}
+          </div>
+        {/if}
       </div>
     {/each}
   </section>
