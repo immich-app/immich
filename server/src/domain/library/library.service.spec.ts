@@ -264,6 +264,39 @@ describe(LibraryService.name, () => {
 
       await expect(sut.handleQueueAssetRefresh(mockLibraryJob)).resolves.toBe(false);
     });
+
+    it('should ignore import paths that do not exist', async () => {
+      storageMock.stat.mockImplementation((path): Promise<Stats> => {
+        if (path === libraryStub.externalLibraryWithImportPaths1.importPaths[0]) {
+          const error = { code: 'ENOENT' } as any;
+          throw error;
+        }
+        return Promise.resolve({
+          isDirectory: () => true,
+        } as Stats);
+      });
+
+      storageMock.checkFileExists.mockResolvedValue(true);
+
+      const mockLibraryJob: ILibraryRefreshJob = {
+        id: libraryStub.externalLibraryWithImportPaths1.id,
+        refreshModifiedFiles: false,
+        refreshAllFiles: false,
+      };
+
+      libraryMock.get.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
+      storageMock.crawl.mockResolvedValue([]);
+      assetMock.getByLibraryId.mockResolvedValue([]);
+      libraryMock.getOnlineAssetPaths.mockResolvedValue([]);
+      userMock.get.mockResolvedValue(userStub.externalPathRoot);
+
+      await sut.handleQueueAssetRefresh(mockLibraryJob);
+
+      expect(storageMock.crawl).toHaveBeenCalledWith({
+        pathsToCrawl: [libraryStub.externalLibraryWithImportPaths1.importPaths[1]],
+        exclusionPatterns: [],
+      });
+    });
   });
 
   describe('handleAssetRefresh', () => {
