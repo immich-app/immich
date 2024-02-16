@@ -6,6 +6,7 @@
   import { maximumLengthSearchPeople } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
   import SearchBar from '../faces-page/search-bar.svelte';
+  import { clickOutside } from '$lib/utils/click-outside';
 
   export const title = 'Change Location';
   export let asset: AssetResponseDto | undefined = undefined;
@@ -141,7 +142,7 @@
   on:cancel={handleCancel}
 >
   <div slot="prompt" class="flex flex-col w-full h-full gap-2">
-    <div class="relative w-64 sm:w-96">
+    <div class="relative w-64 sm:w-96" use:clickOutside on:outclick={() => (hideSuggestion = true)}>
       <button class="w-full" on:click={() => (hideSuggestion = false)}>
         <SearchBar
           bind:name={searchWord}
