@@ -39,6 +39,9 @@ You do not need to redo any machine learning jobs after enabling hardware accele
 - You must have the official NVIDIA driver installed on the server.
 - On Linux (except for WSL2), you also need to have [NVIDIA Container Runtime][nvcr] installed.
 
+### OpenVINO
+- Make sure you have the appropriate linux kernel [driver](https://docs.openvino.ai/2023.3/openvino_docs_install_guides_installing_openvino_linux_header.html) installed
+
 ## Setup
 
 1. If you do not already have it, download the latest [`hwaccel.ml.yml`][hw-file] file and ensure it's in the same folder as the `docker-compose.yml`.
