@@ -410,8 +410,8 @@ export class PersonService {
     });
 
     // `matches` also includes the face itself
-    if (matches.length === 0) {
-      this.logger.debug(`Face ${id} has no matches`);
+    if (machineLearning.facialRecognition.minFaces > 1 && matches.length <= 1) {
+      this.logger.debug(`Face ${id} has fewer matches than required`);
       return true;
     }
 

@@ -867,7 +867,9 @@ describe(PersonService.name, () => {
     });
 
     it('should not queue face with no matches', async () => {
-      searchMock.searchFaces.mockResolvedValue([]);
+      const faces = [{ face: faceStub.noPerson1, distance: 0 }] as FaceSearchResult[];
+
+      searchMock.searchFaces.mockResolvedValue(faces);
       personMock.getFaceByIdWithAssets.mockResolvedValue(faceStub.noPerson1);
       personMock.create.mockResolvedValue(personStub.withName);
 
