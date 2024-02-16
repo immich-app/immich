@@ -621,7 +621,7 @@ class _AssetRow extends StatelessWidget {
           ),
           child: ThumbnailImage(
             asset: asset,
-            index: index,
+            index: absoluteOffset + index,
             loadAsset: renderList.loadAsset,
             totalAssets: renderList.totalAssets,
             multiselectEnabled: selectionActive,
