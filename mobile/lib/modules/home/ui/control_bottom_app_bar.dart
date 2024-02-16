@@ -186,30 +186,42 @@ class ControlBottomAppBar extends ConsumerWidget {
             ),
           ),
         if (hasRemote && onEditTime != null)
-          ControlBoxButton(
-            iconData: Icons.edit_calendar_outlined,
-            label: "control_bottom_app_bar_edit_time".tr(),
-            onPressed: enabled ? onEditTime : null,
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 95),
+            child: ControlBoxButton(
+              iconData: Icons.edit_calendar_outlined,
+              label: "control_bottom_app_bar_edit_time".tr(),
+              onPressed: enabled ? onEditTime : null,
+            ),
           ),
         if (hasRemote && onEditLocation != null)
-          ControlBoxButton(
-            iconData: Icons.edit_location_alt_outlined,
-            label: "control_bottom_app_bar_edit_location".tr(),
-            onPressed: enabled ? onEditLocation : null,
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 90),
+            child: ControlBoxButton(
+              iconData: Icons.edit_location_alt_outlined,
+              label: "control_bottom_app_bar_edit_location".tr(),
+              onPressed: enabled ? onEditLocation : null,
+            ),
           ),
         if (!selectionAssetState.hasLocal &&
             selectionAssetState.selectedCount > 1 &&
             onStack != null)
-          ControlBoxButton(
-            iconData: Icons.filter_none_rounded,
-            label: "control_bottom_app_bar_stack".tr(),
-            onPressed: enabled ? onStack : null,
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 90),
+            child: ControlBoxButton(
+              iconData: Icons.filter_none_rounded,
+              label: "control_bottom_app_bar_stack".tr(),
+              onPressed: enabled ? onStack : null,
+            ),
           ),
         if (onRemoveFromAlbum != null)
-          ControlBoxButton(
-            iconData: Icons.delete_sweep_rounded,
-            label: 'album_viewer_appbar_share_remove'.tr(),
-            onPressed: enabled ? onRemoveFromAlbum : null,
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 90),
+            child: ControlBoxButton(
+              iconData: Icons.delete_sweep_rounded,
+              label: 'album_viewer_appbar_share_remove'.tr(),
+              onPressed: enabled ? onRemoveFromAlbum : null,
+            ),
           ),
         if (selectionAssetState.hasLocal)
           ControlBoxButton(
@@ -230,9 +242,9 @@ class ControlBottomAppBar extends ConsumerWidget {
     }
 
     return DraggableScrollableSheet(
-      initialChildSize: hasRemote ? 0.30 : bottomPadding,
+      initialChildSize: hasRemote ? 0.35 : bottomPadding,
       minChildSize: bottomPadding,
-      maxChildSize: hasRemote ? 0.60 : bottomPadding,
+      maxChildSize: hasRemote ? 0.65 : bottomPadding,
       snap: true,
       builder: (
         BuildContext context,
@@ -257,9 +269,9 @@ class ControlBottomAppBar extends ConsumerWidget {
                   children: <Widget>[
                     const SizedBox(height: 12),
                     const CustomDraggingHandle(),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 12),
                     SizedBox(
-                      height: 90,
+                      height: 100,
                       child: ListView(
                         shrinkWrap: true,
                         scrollDirection: Axis.horizontal,

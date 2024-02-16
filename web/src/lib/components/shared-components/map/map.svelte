@@ -53,22 +53,15 @@
     dispatch('selected', [assetId]);
   }
 
-  function handleClusterClick(clusterId: number, map: Map | null) {
+  async function handleClusterClick(clusterId: number, map: Map | null) {
     if (!map) {
       return;
     }
 
     const mapSource = map?.getSource('geojson') as GeoJSONSource;
-    mapSource.getClusterLeaves(clusterId, 10_000, 0, (error, leaves) => {
-      if (error) {
-        return;
-      }
-
-      if (leaves) {
-        const ids = leaves.map((leaf) => leaf.properties?.id);
-        dispatch('selected', ids);
-      }
-    });
+    const leaves = await mapSource.getClusterLeaves(clusterId, 10_000, 0);
+    const ids = leaves.map((leaf) => leaf.properties?.id);
+    dispatch('selected', ids);
   }
 
   function handleMapClick(event: maplibregl.MapMouseEvent) {

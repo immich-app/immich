@@ -2,7 +2,7 @@
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { timeBeforeShowLoadingSpinner } from '$lib/constants';
   import { boundingBoxesArray } from '$lib/stores/people.store';
-  import { websocketStore } from '$lib/stores/websocket';
+  import { websocketEvents } from '$lib/stores/websocket';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { getPersonNameWithHiddenValue } from '$lib/utils/person';
@@ -49,32 +49,12 @@
   let loaderLoadingDoneTimeout: NodeJS.Timeout;
   let automaticRefreshTimeout: NodeJS.Timeout;
 
-  const { onPersonThumbnail } = websocketStore;
   const dispatch = createEventDispatcher<{
     close: void;
     refresh: void;
   }>();
 
-  // Reset value
-  $onPersonThumbnail = '';
-
-  $: {
-    if ($onPersonThumbnail) {
-      numberOfAssetFaceGenerated.push($onPersonThumbnail);
-      if (
-        isEqual(numberOfAssetFaceGenerated, numberOfPersonToCreate) &&
-        loaderLoadingDoneTimeout &&
-        automaticRefreshTimeout &&
-        selectedPersonToCreate.filter((person) => person !== null).length === numberOfPersonToCreate.length
-      ) {
-        clearTimeout(loaderLoadingDoneTimeout);
-        clearTimeout(automaticRefreshTimeout);
-        dispatch('refresh');
-      }
-    }
-  }
-
-  onMount(async () => {
+  async function loadPeople() {
     const timeout = setTimeout(() => (isShowLoadingPeople = true), timeBeforeShowLoadingSpinner);
     try {
       const { people } = await getAllPeople({ withHidden: true });
@@ -88,6 +68,25 @@
       clearTimeout(timeout);
     }
     isShowLoadingPeople = false;
+  }
+
+  const onPersonThumbnail = (personId: string) => {
+    numberOfAssetFaceGenerated.push(personId);
+    if (
+      isEqual(numberOfAssetFaceGenerated, numberOfPersonToCreate) &&
+      loaderLoadingDoneTimeout &&
+      automaticRefreshTimeout &&
+      selectedPersonToCreate.filter((person) => person !== null).length === numberOfPersonToCreate.length
+    ) {
+      clearTimeout(loaderLoadingDoneTimeout);
+      clearTimeout(automaticRefreshTimeout);
+      dispatch('refresh');
+    }
+  };
+
+  onMount(() => {
+    loadPeople();
+    return websocketEvents.on('on_person_thumbnail', onPersonThumbnail);
   });
 
   const isEqual = (a: string[], b: string[]): boolean => {

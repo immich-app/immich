@@ -24,6 +24,7 @@
   "devDependencies": {
     "@faker-js/faker": "^8.0.0",
     "@floating-ui/dom": "^1.5.1",
+    "@socket.io/component-emitter": "^3.1.0",
     "@sveltejs/adapter-static": "^3.0.1",
     "@sveltejs/kit": "^2.0.6",
     "@sveltejs/vite-plugin-svelte": "^3.0.0",
@@ -73,7 +74,7 @@
     "luxon": "^3.2.1",
     "socket.io-client": "^4.6.1",
     "svelte-local-storage-store": "^0.6.0",
-    "svelte-maplibre": "^0.7.0",
+    "svelte-maplibre": "^0.8.0",
     "thumbhash": "^0.1.1"
   }
 }
