@@ -243,7 +243,6 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
     if (widget.preselectedAssets != null) {
       _selectedAssets.addAll(widget.preselectedAssets!);
     }
-
     _itemPositionsListener.itemPositions.addListener(_hapticsListener);
   }
 
@@ -253,6 +252,7 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
     if (widget.visibleItemsListener != null) {
       _itemPositionsListener.itemPositions.removeListener(_positionListener);
     }
+    _itemPositionsListener.itemPositions.removeListener(_hapticsListener);
     super.dispose();
   }
 
@@ -423,37 +423,50 @@ class _Section extends StatelessWidget {
                 deselectAssets: deselectAssets,
               ),
             for (int i = 0; i < rows; i++)
-              scrolling
-                  ? _PlaceholderRow(
-                      key: ValueKey(i),
-                      number: i + 1 == rows
-                          ? section.count - i * assetsPerRow
-                          : assetsPerRow,
-                      width: width,
-                      height: width,
-                      margin: margin,
-                    )
-                  : _AssetRow(
-                      key: ValueKey(i),
-                      assets: assetsToRender.nestedSlice(
-                        i * assetsPerRow,
-                        min((i + 1) * assetsPerRow, section.count),
-                      ),
-                      absoluteOffset: section.offset + i * assetsPerRow,
-                      width: width,
-                      assetsPerRow: assetsPerRow,
-                      margin: margin,
-                      dynamicLayout: dynamicLayout,
-                      renderList: renderList,
-                      selectedAssets: selectedAssets,
-                      isSelectionActive: selectionActive,
-                      showStack: showStack,
-                      heroOffset: heroOffset,
-                      showStorageIndicator: showStorageIndicator,
-                      selectionActive: selectionActive,
-                      onSelect: (asset) => selectAssets([asset]),
-                      onDeselect: (asset) => deselectAssets([asset]),
-                    ),
+              // Workaround for https://github.com/flutter/flutter/issues/80075
+              ColorFiltered(
+                colorFilter: const ColorFilter.matrix(<double>[
+                  1, 0, 0, 0, 0, // R
+                  0, 1, 0, 0, 0, // G
+                  0, 0, 1, 0, 0, // B
+                  0, 0, 0, 255, 0, // A
+                ]),
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 400),
+                  switchOutCurve: Curves.fastOutSlowIn,
+                  child: scrolling
+                      ? _PlaceholderRow(
+                          key: ValueKey(i),
+                          number: i + 1 == rows
+                              ? section.count - i * assetsPerRow
+                              : assetsPerRow,
+                          width: width,
+                          height: width,
+                          margin: margin,
+                        )
+                      : _AssetRow(
+                          key: ValueKey(i),
+                          assets: assetsToRender.nestedSlice(
+                            i * assetsPerRow,
+                            min((i + 1) * assetsPerRow, section.count),
+                          ),
+                          absoluteOffset: section.offset + i * assetsPerRow,
+                          width: width,
+                          assetsPerRow: assetsPerRow,
+                          margin: margin,
+                          dynamicLayout: dynamicLayout,
+                          renderList: renderList,
+                          selectedAssets: selectedAssets,
+                          isSelectionActive: selectionActive,
+                          showStack: showStack,
+                          heroOffset: heroOffset,
+                          showStorageIndicator: showStorageIndicator,
+                          selectionActive: selectionActive,
+                          onSelect: (asset) => selectAssets([asset]),
+                          onDeselect: (asset) => deselectAssets([asset]),
+                        ),
+                ),
+              ),
           ],
         );
       },

@@ -105,59 +105,6 @@ class ImmichImage extends StatefulWidget {
   static bool useLocal(Asset asset) =>
       !asset.isRemote ||
       asset.isLocal && !Store.get(StoreKey.preferRemoteImage, false);
-  @override
-  Widget build(BuildContext context) {
-    if (asset == null) {
-      return Container(
-        decoration: const BoxDecoration(
-          color: Colors.grey,
-        ),
-        child: SizedBox(
-          width: width,
-          height: height,
-          child: const Center(
-            child: Icon(Icons.no_photography),
-          ),
-        ),
-      );
-    }
-
-    return OctoImage(
-      fadeInDuration: const Duration(milliseconds: 0),
-      fadeOutDuration: const Duration(milliseconds: 200),
-      placeholderBuilder: (context) {
-        if (placeholder != null) {
-          // Use the gray box placeholder
-          return placeholder!;
-        }
-        // No placeholder
-        return const SizedBox();
-      },
-      image: ImmichImage.imageProvider(
-        asset: asset,
-        isThumbnail: isThumbnail,
-      ),
-      width: width,
-      height: height,
-      fit: fit,
-      errorBuilder: (context, error, stackTrace) {
-        if (error is PlatformException &&
-            error.code == "The asset not found!") {
-          debugPrint(
-            "Asset ${asset?.localId} does not exist anymore on device!",
-          );
-        } else {
-          debugPrint(
-            "Error getting thumb for assetId=${asset?.localId}: $error",
-          );
-        }
-        return Icon(
-          Icons.image_not_supported_outlined,
-          color: context.primaryColor,
-        );
-      },
-    );
-  }
 }
 
 /// Renders an Asset using local data if available, else remote data
@@ -196,8 +143,8 @@ class _ImmichImageState extends State<ImmichImage> {
     final Asset asset = widget.asset!;
 
     return OctoImage(
-      fadeInDuration: const Duration(milliseconds: 200),
-      fadeOutDuration: const Duration(milliseconds: 200),
+      fadeInDuration: const Duration(milliseconds: 0),
+      fadeOutDuration: const Duration(milliseconds: 400),
       placeholderBuilder: (context) {
         if (thumbHashBytes != null && widget.isThumbnail) {
           // Use the blurhash placeholder
@@ -205,13 +152,9 @@ class _ImmichImageState extends State<ImmichImage> {
             thumbHashBytes!,
             fit: BoxFit.cover,
           );
-        } else if (widget.useGrayBoxPlaceholder) {
+        } else if (widget.placeholder != null) {
           // Use the gray box placeholder
-          return const SizedBox.expand(
-            child: DecoratedBox(
-              decoration: BoxDecoration(color: Colors.grey),
-            ),
-          );
+          return widget.placeholder!;
         }
         // No placeholder
         return const SizedBox();
