@@ -15,8 +15,6 @@ import { getCLIPModelInfo } from '@app/domain/smart-info/smart-info.constant';
 import {
   AssetEntity,
   AssetFaceEntity,
-  GeodataAdmin1Entity,
-  GeodataAdmin2Entity,
   GeodataPlacesEntity,
   SmartInfoEntity,
   SmartSearchEntity,
@@ -40,8 +38,6 @@ export class SearchRepository implements ISearchRepository {
     @InjectRepository(AssetFaceEntity) private assetFaceRepository: Repository<AssetFaceEntity>,
     @InjectRepository(SmartSearchEntity) private smartSearchRepository: Repository<SmartSearchEntity>,
     @InjectRepository(GeodataPlacesEntity) private readonly geodataPlacesRepository: Repository<GeodataPlacesEntity>,
-    @InjectRepository(GeodataAdmin1Entity) private readonly geodataAdmin1Repository: Repository<GeodataAdmin1Entity>,
-    @InjectRepository(GeodataAdmin2Entity) private readonly geodataAdmin2Repository: Repository<GeodataAdmin2Entity>,
   ) {
     this.faceColumns = this.assetFaceRepository.manager.connection
       .getMetadata(AssetFaceEntity)
@@ -183,6 +179,20 @@ export class SearchRepository implements ISearchRepository {
     }));
   }
 
+  @GenerateSql({ params: [DummyValue.STRING] })
+  async searchPlaces(placeName: string): Promise<GeodataPlacesEntity[]> {
+    return await this.geodataPlacesRepository
+      .createQueryBuilder('geoplaces')
+      .where(`f_unaccent(name) ~* :placeName`)
+      .orWhere(`f_unaccent("admin1Name") ~* :placeName`)
+      .orWhere(`f_unaccent("admin2Name") ~* :placeName`)
+      .setParameters({ placeName: `\m${placeName}` })
+      .orderBy('admin1Name')
+      .addOrderBy('admin2Name')
+      .limit(20)
+      .getMany();
+  }
+
   async upsert(smartInfo: Partial<SmartInfoEntity>, embedding?: Embedding): Promise<void> {
     await this.repository.upsert(smartInfo, { conflictPaths: ['assetId'] });
     if (!smartInfo.assetId || !embedding) {
@@ -259,21 +269,5 @@ export class SearchRepository implements ISearchRepository {
     }
 
     return runtimeConfig;
-  }
-
-  @GenerateSql({ params: [DummyValue.STRING] })
-  async searchPlaces(placeName: string): Promise<GeodataPlacesEntity[]> {
-    return await this.geodataPlacesRepository
-      .createQueryBuilder('geoplaces')
-      .leftJoinAndSelect('geoplaces.admin1', 'admin1')
-      .leftJoinAndSelect('geoplaces.admin2', 'admin2')
-      .where(
-        '(LOWER(geoplaces.name) LIKE :nameStart OR LOWER(geoplaces.name) LIKE :nameAnywhere OR LOWER(admin1.name) LIKE :nameStart OR LOWER(admin1.name) LIKE :nameAnywhere OR LOWER(admin2.name) LIKE :nameStart OR LOWER(admin2.name) LIKE :nameAnywhere)',
-        { nameStart: `${placeName.toLowerCase()}%`, nameAnywhere: `% ${placeName.toLowerCase()}%` },
-      )
-      .orderBy('admin1.name')
-      .addOrderBy('admin2.name')
-      .limit(20)
-      .getMany();
   }
 }
