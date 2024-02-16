@@ -108,6 +108,15 @@
       />
 
       <div class="absolute inset-y-0 right-5 flex items-center pl-6">
+        {#if showClearIcon}
+          <button
+            type="reset"
+            class="rounded-full p-2 hover:bg-immich-primary/5 active:bg-immich-primary/10 dark:text-immich-dark-fg/75 dark:hover:bg-immich-dark-primary/25 dark:active:bg-immich-dark-primary/[.35]"
+          >
+            <Icon path={mdiClose} size="1.5em" />
+          </button>
+        {/if}
+
         <div class="dark:text-immich-dark-fg/75">
           <IconButton on:click={() => (showFilter = !showFilter)} title="Show search options">
             <Icon path={mdiTune} size="1.5em" />
@@ -115,16 +124,6 @@
         </div>
       </div>
     </label>
-    {#if showClearIcon}
-      <div class="absolute inset-y-0 right-0 flex items-center pr-4">
-        <button
-          type="reset"
-          class="rounded-full p-2 hover:bg-immich-primary/5 active:bg-immich-primary/10 dark:text-immich-dark-fg/75 dark:hover:bg-immich-dark-primary/25 dark:active:bg-immich-dark-primary/[.35]"
-        >
-          <Icon path={mdiClose} size="1.5em" />
-        </button>
-      </div>
-    {/if}
 
     <!-- SEARCH HISTORY BOX -->
     {#if showHistory}
