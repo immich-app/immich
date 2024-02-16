@@ -73,7 +73,7 @@
     "luxon": "^3.2.1",
     "socket.io-client": "^4.6.1",
     "svelte-local-storage-store": "^0.6.0",
-    "svelte-maplibre": "^0.7.0",
+    "svelte-maplibre": "^0.8.0",
     "thumbhash": "^0.1.1"
   }
 }
