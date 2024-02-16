@@ -7,6 +7,7 @@
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
+  import type { Viewport } from '$lib/stores/assets.store';
   import { memoryStore } from '$lib/stores/memory.store';
   import { getAssetThumbnailUrl } from '$lib/utils';
   import { fromLocalDateTime } from '$lib/utils/timeline-util';
@@ -34,6 +35,7 @@
   $: canGoForward = !!(nextMemory || nextAsset);
   $: canGoBack = !!(previousMemory || previousAsset);
 
+  const viewport: Viewport = { width: 0, height: 0 };
   const toNextMemory = () => goto(`?${QueryParameter.MEMORY_INDEX}=${memoryIndex + 1}`);
   const toPreviousMemory = () => goto(`?${QueryParameter.MEMORY_INDEX}=${memoryIndex - 1}`);
 
@@ -251,7 +253,7 @@
 
     <!-- GALERY VIEWER -->
 
-    <section class="bg-immich-dark-gray pl-4">
+    <section class="bg-immich-dark-gray m-4">
       <div
         class="sticky mb-10 mt-4 flex place-content-center place-items-center transition-all"
         class:opacity-0={galleryInView}
@@ -268,8 +270,13 @@
         on:hidden={() => (galleryInView = false)}
         bottom={-200}
       >
-        <div id="gallery-memory" bind:this={memoryGallery}>
-          <GalleryViewer assets={currentMemory.assets} />
+        <div
+          id="gallery-memory"
+          bind:this={memoryGallery}
+          bind:clientHeight={viewport.height}
+          bind:clientWidth={viewport.width}
+        >
+          <GalleryViewer assets={currentMemory.assets} {viewport} />
         </div>
       </IntersectionObserver>
     </section>

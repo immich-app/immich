@@ -99,11 +99,7 @@
       </svelte:fragment>
     </ControlAppBar>
   {/if}
-  <section
-    class="my-[160px] flex flex-col px-6 sm:px-12 md:px-24 lg:px-40"
-    bind:clientHeight={viewport.height}
-    bind:clientWidth={viewport.width}
-  >
+  <section class="my-[160px] mx-4" bind:clientHeight={viewport.height} bind:clientWidth={viewport.width}>
     <GalleryViewer {assets} bind:selectedAssets {viewport} />
   </section>
 </section>
