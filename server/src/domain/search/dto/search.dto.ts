@@ -266,7 +266,7 @@ export function mapPlaces(place: GeodataPlacesEntity): PlacesReponseDto {
     name: place.name,
     latitude: place.latitude,
     longitude: place.longitude,
-    admin1name: place.admin1?.name ?? undefined,
-    admin2name: place.admin2?.name ?? undefined,
+    admin1name: place.admin1Name,
+    admin2name: place.admin2Name,
   };
 }
