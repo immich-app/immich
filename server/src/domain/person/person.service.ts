@@ -410,7 +410,7 @@ export class PersonService {
     });
 
     // `matches` also includes the face itself
-    if (matches.length <= 1) {
+    if (matches.length === 0) {
       this.logger.debug(`Face ${id} has no matches`);
       return true;
     }
