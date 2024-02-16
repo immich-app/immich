@@ -4,9 +4,8 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import type { BucketPosition, Viewport } from '$lib/stores/assets.store';
   import { handleError } from '$lib/utils/handle-error';
-  import { ThumbnailFormat, type AssetResponseDto } from '@immich/sdk';
+  import { type AssetResponseDto } from '@immich/sdk';
   import { createEventDispatcher, onDestroy } from 'svelte';
-  import { flip } from 'svelte/animate';
   import AssetViewer from '../../asset-viewer/asset-viewer.svelte';
   import justifiedLayout from 'justified-layout';
   import { getAssetRatio } from '$lib/utils/asset-utils';

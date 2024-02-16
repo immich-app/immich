@@ -20,11 +20,10 @@ export const load = (async (data) => {
     const payload = JSON.parse(term) as SmartSearchDto | MetadataSearchDto;
     searchQuery.set(payload);
 
-    if (payload && 'query' in payload) {
-      results = await searchSmart({ smartSearchDto: { ...payload, withExif: true } });
-    } else {
-      results = await searchMetadata({ metadataSearchDto: { ...payload, withExif: true } });
-    }
+    results =
+      payload && 'query' in payload
+        ? await searchSmart({ smartSearchDto: { ...payload, withExif: true } })
+        : await searchMetadata({ metadataSearchDto: { ...payload, withExif: true } });
   }
 
   return {

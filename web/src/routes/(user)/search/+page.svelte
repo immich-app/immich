@@ -23,7 +23,7 @@
   import { preventRaceConditionSearchBar, searchQuery } from '$lib/stores/search.store';
   import { authenticate } from '$lib/utils/auth';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
-  import { search, type AssetResponseDto, type SearchResponseDto, searchSmart, searchMetadata } from '@immich/sdk';
+  import { type AssetResponseDto, type SearchResponseDto, searchSmart, searchMetadata } from '@immich/sdk';
   import { mdiArrowLeft, mdiDotsVertical, mdiImageOffOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
   import { flip } from 'svelte/animate';
@@ -124,13 +124,14 @@
     const payload = $searchQuery;
     let responses: SearchResponseDto;
 
-    if (payload && 'query' in payload) {
-      responses = await searchSmart({ smartSearchDto: { ...payload, page: parseInt(currentPage), withExif: true } });
-    } else {
-      responses = await searchMetadata({
-        metadataSearchDto: { ...payload, page: parseInt(currentPage), withExif: true },
-      });
-    }
+    responses =
+      payload && 'query' in payload
+        ? await searchSmart({
+            smartSearchDto: { ...payload, page: Number.parseInt(currentPage), withExif: true },
+          })
+        : await searchMetadata({
+            metadataSearchDto: { ...payload, page: Number.parseInt(currentPage), withExif: true },
+          });
 
     if (searchResultAssets) {
       searchResultAssets.push(...responses.assets.items);
