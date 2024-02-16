@@ -188,9 +188,10 @@ export class SearchRepository implements ISearchRepository {
       .orWhere(`f_unaccent("admin1Name") %>> f_unaccent(:placeName)`)
       .orderBy(
         `
-        (f_unaccent(name) <->>> f_unaccent(:placeName)) + 
-        (f_unaccent("admin2Name") <->>> f_unaccent(:placeName)) + 
-        (f_unaccent("admin1Name") <->>> f_unaccent(:placeName))`,
+        COALESCE(f_unaccent(name) <->>> f_unaccent(:placeName), 0) +
+        COALESCE(f_unaccent("admin2Name") <->>> f_unaccent(:placeName), 0) +
+        COALESCE(f_unaccent("admin1Name") <->>> f_unaccent(:placeName), 0)
+        `,
       )
       .setParameters({ placeName })
       .limit(20)
