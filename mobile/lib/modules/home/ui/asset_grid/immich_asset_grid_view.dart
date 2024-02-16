@@ -10,6 +10,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/collection_extensions.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/scroll_notifier.provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/thumbnail_image.dart';
+import 'package:immich_mobile/modules/home/ui/asset_grid/thumbnail_placeholder.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
@@ -323,32 +324,6 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
   }
 }
 
-/// An individual placeholder widget for the asset thumbnails to load into
-class _Placeholder extends StatelessWidget {
-  final EdgeInsets margin;
-  final double width;
-  final double height;
-
-  const _Placeholder({
-    super.key,
-    required this.margin,
-    required this.width,
-    required this.height,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: width,
-      height: height,
-      margin: margin,
-      decoration: const BoxDecoration(
-        color: Colors.grey,
-      ),
-    );
-  }
-}
-
 /// A single row of all placeholder widgets
 class _PlaceholderRow extends StatelessWidget {
   final int number;
@@ -369,7 +344,7 @@ class _PlaceholderRow extends StatelessWidget {
     return Row(
       children: [
         for (int i = 0; i < number; i++)
-          _Placeholder(
+          ThumbnailPlaceholder(
             key: ValueKey(i),
             width: width,
             height: height,
@@ -628,7 +603,6 @@ class _AssetRow extends StatelessWidget {
             isSelected: isSelectionActive && selectedAssets.contains(asset),
             onSelect: () => onSelect?.call(asset),
             onDeselect: () => onDeselect?.call(asset),
-            useGrayBoxPlaceholder: true,
             showStorageIndicator: showStorageIndicator,
             heroOffset: heroOffset,
             showStack: showStack,
