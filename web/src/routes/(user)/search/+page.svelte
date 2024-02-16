@@ -28,11 +28,13 @@
   import { onDestroy, onMount } from 'svelte';
   import { flip } from 'svelte/animate';
   import type { PageData } from './$types';
+  import type { Viewport } from '$lib/stores/assets.store';
 
   export let data: PageData;
 
   const MAX_ASSET_COUNT = 5000;
   let { isViewing: showAssetViewer } = assetViewingStore;
+  const viewport: Viewport = { width: 0, height: 0 };
 
   // The GalleryViewer pushes it's own history state, which causes weird
   // behavior for history.back(). To prevent that we store the previous page
@@ -120,27 +122,29 @@
     let results: SearchResponseDto | null = null;
     $page.url.searchParams.set('page', currentPage.toString());
     const payload = $searchPayload;
-    let reponses: SearchResponseDto;
+    let responses: SearchResponseDto;
 
     if (payload && 'query' in payload) {
-      reponses = await searchSmart({ smartSearchDto: { ...payload, page: parseInt(currentPage) } });
+      responses = await searchSmart({ smartSearchDto: { ...payload, page: parseInt(currentPage), withExif: true } });
     } else {
-      reponses = await searchMetadata({ metadataSearchDto: { ...payload, page: parseInt(currentPage) } });
+      responses = await searchMetadata({
+        metadataSearchDto: { ...payload, page: parseInt(currentPage), withExif: true },
+      });
     }
 
     if (searchResultAssets) {
-      searchResultAssets.push(...reponses.assets.items);
+      searchResultAssets.push(...responses.assets.items);
     } else {
-      searchResultAssets = reponses.assets.items;
+      searchResultAssets = responses.assets.items;
     }
 
     const assets = {
-      ...reponses.assets,
+      ...responses.assets,
       items: searchResultAssets,
     };
     results = {
       assets,
-      albums: reponses.albums,
+      albums: responses.albums,
     };
 
     data.results = results;
@@ -169,15 +173,21 @@
       </AssetSelectControlBar>
     </div>
   {:else}
-    <ControlAppBar on:close={() => goto(previousRoute)} backIcon={mdiArrowLeft}>
-      <div class="w-full flex-1 pl-4">
-        <SearchBar grayTheme={false} value={term} />
-      </div>
-    </ControlAppBar>
+    <div class="fixed z-[100] top-0 left-0 w-full">
+      <ControlAppBar on:close={() => goto(previousRoute)} backIcon={mdiArrowLeft}>
+        <div class="w-full flex-1 pl-4">
+          <SearchBar grayTheme={false} value={term} />
+        </div>
+      </ControlAppBar>
+    </div>
   {/if}
 </section>
 
-<section class="relative mb-12 bg-immich-bg pt-32 dark:bg-immich-dark-bg">
+<section
+  class="relative mb-12 bg-immich-bg pt-32 dark:bg-immich-dark-bg m-4"
+  bind:clientHeight={viewport.height}
+  bind:clientWidth={viewport.width}
+>
   <section class="immich-scrollbar relative overflow-y-auto">
     {#if albums && albums.length > 0}
       <section>
@@ -201,14 +211,13 @@
     {/if}
     <section id="search-content" class="relative bg-immich-bg dark:bg-immich-dark-bg">
       {#if searchResultAssets && searchResultAssets.length > 0}
-        <div class="pl-4">
-          <GalleryViewer
-            assets={searchResultAssets}
-            bind:selectedAssets
-            on:intersected={loadNextPage}
-            showArchiveIcon={true}
-          />
-        </div>
+        <GalleryViewer
+          assets={searchResultAssets}
+          bind:selectedAssets
+          on:intersected={loadNextPage}
+          showArchiveIcon={true}
+          {viewport}
+        />
       {:else}
         <div class="flex min-h-[calc(66vh_-_11rem)] w-full place-content-center items-center dark:text-white">
           <div class="flex flex-col content-center items-center text-center">

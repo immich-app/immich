@@ -1,3 +1,4 @@
+import type { LayoutBox } from '$lib/components/photos-page/asset-date-group.svelte';
 import type { AssetResponseDto } from '@immich/sdk';
 import { groupBy, sortBy } from 'lodash-es';
 import { DateTime, Interval } from 'luxon';
@@ -49,4 +50,15 @@ export function splitBucketIntoDateGroups(
     fromLocalDateTime(asset.localDateTime).toLocaleString(groupDateFormat, { locale }),
   );
   return sortBy(grouped, (group) => assets.indexOf(group[0]));
+}
+
+export function calculateWidth(boxes: LayoutBox[]): number {
+  let width = 0;
+  for (const box of boxes) {
+    if (box.top < 100) {
+      width = box.left + box.width;
+    }
+  }
+
+  return width;
 }
