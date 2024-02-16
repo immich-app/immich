@@ -1,9 +1,9 @@
 <script context="module" lang="ts">
-  export interface LayoutBox {
+  export type LayoutBox = {
     top: number;
     left: number;
     width: number;
-  }
+  };
 </script>
 
 <script lang="ts">
@@ -13,12 +13,7 @@
   import type { AssetStore, Viewport } from '$lib/stores/assets.store';
   import { locale } from '$lib/stores/preferences.store';
   import { getAssetRatio } from '$lib/utils/asset-utils';
-  import {
-    calculateWidth,
-    formatGroupTitle,
-    fromLocalDateTime,
-    splitBucketIntoDateGroups,
-  } from '$lib/utils/timeline-util';
+  import { formatGroupTitle, fromLocalDateTime, splitBucketIntoDateGroups } from '$lib/utils/timeline-util';
   import type { AssetResponseDto } from '@immich/sdk';
   import { mdiCheckCircle, mdiCircleOutline } from '@mdi/js';
   import justifiedLayout from 'justified-layout';
@@ -71,6 +66,17 @@
     }
     return geometry;
   })();
+
+  function calculateWidth(boxes: LayoutBox[]): number {
+    let width = 0;
+    for (const box of boxes) {
+      if (box.top < 100) {
+        width = box.left + box.width;
+      }
+    }
+
+    return width;
+  }
 
   $: {
     if (actualBucketHeight && actualBucketHeight !== 0 && actualBucketHeight != bucketHeight) {
