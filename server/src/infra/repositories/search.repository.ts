@@ -184,8 +184,8 @@ export class SearchRepository implements ISearchRepository {
     return await this.geodataPlacesRepository
       .createQueryBuilder('geoplaces')
       .where(`f_unaccent(name) ~* ('\\m' || f_unaccent(:placeName))`)
-      .orWhere(`f_unaccent("admin1Name") ~* ('\\m' || f_unaccent(:placeName))`)
       .orWhere(`f_unaccent("admin2Name") ~* ('\\m' || f_unaccent(:placeName))`)
+      .orWhere(`f_unaccent("admin1Name") ~* ('\\m' || f_unaccent(:placeName))`)
       .orderBy('f_unaccent(name) <->>> f_unaccent(:placeName)')
       .addOrderBy('f_unaccent("admin2Name") <->>> f_unaccent(:placeName)')
       .addOrderBy('f_unaccent("admin1Name") <->>> f_unaccent(:placeName)')

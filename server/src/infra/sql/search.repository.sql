@@ -242,28 +242,18 @@ SELECT
   "geoplaces"."countryCode" AS "geoplaces_countryCode",
   "geoplaces"."admin1Code" AS "geoplaces_admin1Code",
   "geoplaces"."admin2Code" AS "geoplaces_admin2Code",
-  "geoplaces"."admin1Key" AS "geoplaces_admin1Key",
-  "geoplaces"."admin2Key" AS "geoplaces_admin2Key",
-  "geoplaces"."modificationDate" AS "geoplaces_modificationDate",
-  "admin1"."key" AS "admin1_key",
-  "admin1"."name" AS "admin1_name",
-  "admin2"."key" AS "admin2_key",
-  "admin2"."name" AS "admin2_name"
+  "geoplaces"."admin1Name" AS "geoplaces_admin1Name",
+  "geoplaces"."admin2Name" AS "geoplaces_admin2Name",
+  "geoplaces"."modificationDate" AS "geoplaces_modificationDate"
 FROM
   "geodata_places" "geoplaces"
-  LEFT JOIN "geodata_admin1" "admin1" ON "admin1"."key" = "geoplaces"."admin1Key"
-  LEFT JOIN "geodata_admin2" "admin2" ON "admin2"."key" = "geoplaces"."admin2Key"
 WHERE
-  (
-    LOWER("geoplaces"."name") LIKE $1
-    OR LOWER("geoplaces"."name") LIKE $2
-    OR LOWER("admin1"."name") LIKE $1
-    OR LOWER("admin1"."name") LIKE $2
-    OR LOWER("admin2"."name") LIKE $1
-    OR LOWER("admin2"."name") LIKE $2
-  )
+  f_unaccent (name) ~* ('\m' || f_unaccent ($1))
+  OR f_unaccent ("admin2Name") ~* ('\m' || f_unaccent ($1))
+  OR f_unaccent ("admin1Name") ~* ('\m' || f_unaccent ($1))
 ORDER BY
-  "admin1"."name" ASC,
-  "admin2"."name" ASC
+  f_unaccent (name) <->>> f_unaccent ($1) ASC,
+  f_unaccent ("admin2Name") <->>> f_unaccent ($1) ASC,
+  f_unaccent ("admin1Name") <->>> f_unaccent ($1) ASC
 LIMIT
   20
