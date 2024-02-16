@@ -137,10 +137,8 @@ class ThumbnailImage extends StatelessWidget {
               : asset.id + heroOffset,
           child: ImmichImage.thumbnail(
             asset,
-            placeholder: const ThumbnailPlaceholder(
-              width: 300,
-              height: 300,
-            ),
+            height: 300,
+            width: 300,
           ),
         ),
       );

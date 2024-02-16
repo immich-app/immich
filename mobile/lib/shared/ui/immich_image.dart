@@ -38,7 +38,6 @@ class ImmichImage extends StatelessWidget {
     BoxFit fit = BoxFit.cover,
     double? width,
     double? height,
-    Widget? placeholder,
   }) {
     // Use the width and height to derive thumbnail size
     final thumbnailSize = max(width ?? 250, height ?? 250).toInt();
@@ -49,7 +48,10 @@ class ImmichImage extends StatelessWidget {
       fit: fit,
       width: width,
       height: height,
-      placeholder: placeholder,
+      placeholder: ThumbnailPlaceholder(
+        height: thumbnailSize.toDouble(),
+        width: thumbnailSize.toDouble(),
+      ),
       thumbnailSize: thumbnailSize,
     );
   }
