@@ -1,5 +1,5 @@
 import { QueryParameter } from '$lib/constants';
-import { searchPayload } from '$lib/stores/search.store';
+import { searchQuery } from '$lib/stores/search.store';
 import { authenticate } from '$lib/utils/auth';
 import {
   searchMetadata,
@@ -18,7 +18,7 @@ export const load = (async (data) => {
   let results: SearchResponseDto | null = null;
   if (term) {
     const payload = JSON.parse(term) as SmartSearchDto | MetadataSearchDto;
-    searchPayload.set(payload);
+    searchQuery.set(payload);
 
     if (payload && 'query' in payload) {
       results = await searchSmart({ smartSearchDto: { ...payload, withExif: true } });

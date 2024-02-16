@@ -20,7 +20,7 @@
   import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { preventRaceConditionSearchBar, searchPayload } from '$lib/stores/search.store';
+  import { preventRaceConditionSearchBar, searchQuery } from '$lib/stores/search.store';
   import { authenticate } from '$lib/utils/auth';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
   import { search, type AssetResponseDto, type SearchResponseDto, searchSmart, searchMetadata } from '@immich/sdk';
@@ -121,7 +121,7 @@
     await authenticate();
     let results: SearchResponseDto | null = null;
     $page.url.searchParams.set('page', currentPage.toString());
-    const payload = $searchPayload;
+    const payload = $searchQuery;
     let responses: SearchResponseDto;
 
     if (payload && 'query' in payload) {

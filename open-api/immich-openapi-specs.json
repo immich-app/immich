@@ -9383,9 +9383,6 @@
           "isMotion": {
             "type": "boolean"
           },
-          "isNotInAlbum": {
-            "type": "boolean"
-          },
           "isOffline": {
             "type": "boolean"
           },
@@ -9410,12 +9407,6 @@
           },
           "page": {
             "type": "number"
-          },
-          "personIds": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
           },
           "query": {
             "type": "string"

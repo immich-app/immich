@@ -18,6 +18,7 @@
   import Combobox, { type ComboBoxOption } from '../combobox.svelte';
   import { DateTime } from 'luxon';
   import _ from 'lodash-es';
+  import { searchQuery } from '$lib/stores/search.store';
 
   enum MediaType {
     All = 'all',
@@ -106,6 +107,7 @@
 
   onMount(() => {
     getPeople();
+    populateExistingFilters();
   });
 
   const showSelectedPeopleFirst = () => {
@@ -273,6 +275,43 @@
 
     dispatch('search', payload);
   };
+
+  function populateExistingFilters() {
+    console.log($searchQuery?.takenAfter);
+    if ($searchQuery) {
+      filter = {
+        context: 'query' in $searchQuery ? $searchQuery.query : '',
+        people:
+          'personIds' in $searchQuery ? ($searchQuery.personIds?.map((id) => ({ id })) as PersonResponseDto[]) : [],
+        location: {
+          country: $searchQuery.country ? { label: $searchQuery.country, value: $searchQuery.country } : undefined,
+          state: $searchQuery.state ? { label: $searchQuery.state, value: $searchQuery.state } : undefined,
+          city: $searchQuery.city ? { label: $searchQuery.city, value: $searchQuery.city } : undefined,
+        },
+        camera: {
+          make: $searchQuery.make ? { label: $searchQuery.make, value: $searchQuery.make } : undefined,
+          model: $searchQuery.model ? { label: $searchQuery.model, value: $searchQuery.model } : undefined,
+        },
+        date: {
+          takenAfter: $searchQuery.takenAfter
+            ? DateTime.fromISO($searchQuery.takenAfter).toUTC().toFormat('yyyy-MM-dd')
+            : undefined,
+          takenBefore: $searchQuery.takenBefore
+            ? DateTime.fromISO($searchQuery.takenBefore).toUTC().toFormat('yyyy-MM-dd')
+            : undefined,
+        },
+        isArchive: $searchQuery.isArchived,
+        isFavorite: $searchQuery.isFavorite,
+        isNotInAlbum: 'isNotInAlbum' in $searchQuery ? $searchQuery.isNotInAlbum : undefined,
+        mediaType:
+          $searchQuery.type === AssetTypeEnum.Image
+            ? MediaType.Image
+            : $searchQuery.type === AssetTypeEnum.Video
+              ? MediaType.Video
+              : MediaType.All,
+      };
+    }
+  }
 </script>
 
 <div

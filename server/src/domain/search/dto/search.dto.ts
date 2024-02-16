@@ -2,7 +2,7 @@ import { AssetOrder } from '@app/domain/asset/dto/asset.dto';
 import { AssetType } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
-import { IsArray, IsBoolean, IsEnum, IsInt, IsNotEmpty, IsString, Max, Min } from 'class-validator';
+import { IsBoolean, IsEnum, IsInt, IsNotEmpty, IsString, Max, Min } from 'class-validator';
 import { Optional, QueryBoolean, QueryDate, ValidateUUID, toBoolean } from '../../domain.util';
 
 class BaseSearchDto {
@@ -45,9 +45,6 @@ class BaseSearchDto {
 
   @QueryBoolean({ optional: true })
   isVisible?: boolean;
-
-  @QueryBoolean({ optional: true })
-  isNotInAlbum?: boolean;
 
   @QueryBoolean({ optional: true })
   withDeleted?: boolean;
@@ -108,9 +105,6 @@ class BaseSearchDto {
   @IsNotEmpty()
   @Optional()
   lensModel?: string;
-
-  @Optional()
-  personIds?: string[];
 
   @IsInt()
   @Min(1)
@@ -175,6 +169,12 @@ export class MetadataSearchDto extends BaseSearchDto {
   @Optional()
   @ApiProperty({ enumName: 'AssetOrder', enum: AssetOrder })
   order?: AssetOrder;
+
+  @QueryBoolean({ optional: true })
+  isNotInAlbum?: boolean;
+
+  @Optional()
+  personIds?: string[];
 }
 
 export class SmartSearchDto extends BaseSearchDto {

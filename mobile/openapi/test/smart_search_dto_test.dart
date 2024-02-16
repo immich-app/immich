@@ -66,11 +66,6 @@ void main() {
       // TODO
     });
 
-    // bool isNotInAlbum
-    test('to test the property `isNotInAlbum`', () async {
-      // TODO
-    });
-
     // bool isOffline
     test('to test the property `isOffline`', () async {
       // TODO
@@ -108,11 +103,6 @@ void main() {
 
     // num page
     test('to test the property `page`', () async {
-      // TODO
-    });
-
-    // List<String> personIds (default value: const [])
-    test('to test the property `personIds`', () async {
       // TODO
     });
 

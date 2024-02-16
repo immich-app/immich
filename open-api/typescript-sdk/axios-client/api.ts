@@ -3885,12 +3885,6 @@ export interface SmartSearchDto {
      * @type {boolean}
      * @memberof SmartSearchDto
      */
-    'isNotInAlbum'?: boolean;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof SmartSearchDto
-     */
     'isOffline'?: boolean;
     /**
      * 
@@ -3934,12 +3928,6 @@ export interface SmartSearchDto {
      * @memberof SmartSearchDto
      */
     'page'?: number;
-    /**
-     * 
-     * @type {Array<string>}
-     * @memberof SmartSearchDto
-     */
-    'personIds'?: Array<string>;
     /**
      * 
      * @type {string}

@@ -644,7 +644,6 @@ export type SmartSearchDto = {
     isExternal?: boolean;
     isFavorite?: boolean;
     isMotion?: boolean;
-    isNotInAlbum?: boolean;
     isOffline?: boolean;
     isReadOnly?: boolean;
     isVisible?: boolean;
@@ -653,7 +652,6 @@ export type SmartSearchDto = {
     make?: string;
     model?: string;
     page?: number;
-    personIds?: string[];
     query: string;
     size?: number;
     state?: string;

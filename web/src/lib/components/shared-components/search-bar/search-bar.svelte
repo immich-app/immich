@@ -6,7 +6,7 @@
     isSearchEnabled,
     preventRaceConditionSearchBar,
     savedSearchTerms,
-    searchPayload,
+    searchQuery,
   } from '$lib/stores/search.store';
   import { clickOutside } from '$lib/utils/click-outside';
   import { mdiClose, mdiMagnify, mdiTune } from '@mdi/js';
@@ -31,7 +31,7 @@
     showHistory = false;
     showFilter = false;
     $isSearchEnabled = false;
-
+    $searchQuery = payload;
     goto(`${AppRoute.SEARCH}?${parameters}`, { invalidateAll: true });
   };
 
@@ -76,6 +76,10 @@
   const onFilterClick = () => {
     showFilter = !showFilter;
     value = '';
+
+    if (showFilter) {
+      showHistory = false;
+    }
   };
 
   const onSubmit = () => {

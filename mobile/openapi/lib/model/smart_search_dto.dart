@@ -23,7 +23,6 @@ class SmartSearchDto {
     this.isExternal,
     this.isFavorite,
     this.isMotion,
-    this.isNotInAlbum,
     this.isOffline,
     this.isReadOnly,
     this.isVisible,
@@ -32,7 +31,6 @@ class SmartSearchDto {
     this.make,
     this.model,
     this.page,
-    this.personIds = const [],
     required this.query,
     this.size,
     this.state,
@@ -134,14 +132,6 @@ class SmartSearchDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  bool? isNotInAlbum;
-
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
   bool? isOffline;
 
   ///
@@ -199,8 +189,6 @@ class SmartSearchDto {
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
   num? page;
-
-  List<String> personIds;
 
   String query;
 
@@ -312,7 +300,6 @@ class SmartSearchDto {
     other.isExternal == isExternal &&
     other.isFavorite == isFavorite &&
     other.isMotion == isMotion &&
-    other.isNotInAlbum == isNotInAlbum &&
     other.isOffline == isOffline &&
     other.isReadOnly == isReadOnly &&
     other.isVisible == isVisible &&
@@ -321,7 +308,6 @@ class SmartSearchDto {
     other.make == make &&
     other.model == model &&
     other.page == page &&
-    _deepEquality.equals(other.personIds, personIds) &&
     other.query == query &&
     other.size == size &&
     other.state == state &&
@@ -349,7 +335,6 @@ class SmartSearchDto {
     (isExternal == null ? 0 : isExternal!.hashCode) +
     (isFavorite == null ? 0 : isFavorite!.hashCode) +
     (isMotion == null ? 0 : isMotion!.hashCode) +
-    (isNotInAlbum == null ? 0 : isNotInAlbum!.hashCode) +
     (isOffline == null ? 0 : isOffline!.hashCode) +
     (isReadOnly == null ? 0 : isReadOnly!.hashCode) +
     (isVisible == null ? 0 : isVisible!.hashCode) +
@@ -358,7 +343,6 @@ class SmartSearchDto {
     (make == null ? 0 : make!.hashCode) +
     (model == null ? 0 : model!.hashCode) +
     (page == null ? 0 : page!.hashCode) +
-    (personIds.hashCode) +
     (query.hashCode) +
     (size == null ? 0 : size!.hashCode) +
     (state == null ? 0 : state!.hashCode) +
@@ -374,7 +358,7 @@ class SmartSearchDto {
     (withExif == null ? 0 : withExif!.hashCode);
 
   @override
-  String toString() => 'SmartSearchDto[city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, deviceId=$deviceId, isArchived=$isArchived, isEncoded=$isEncoded, isExternal=$isExternal, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, isReadOnly=$isReadOnly, isVisible=$isVisible, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, page=$page, personIds=$personIds, query=$query, size=$size, state=$state, takenAfter=$takenAfter, takenBefore=$takenBefore, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, withArchived=$withArchived, withDeleted=$withDeleted, withExif=$withExif]';
+  String toString() => 'SmartSearchDto[city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, deviceId=$deviceId, isArchived=$isArchived, isEncoded=$isEncoded, isExternal=$isExternal, isFavorite=$isFavorite, isMotion=$isMotion, isOffline=$isOffline, isReadOnly=$isReadOnly, isVisible=$isVisible, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, page=$page, query=$query, size=$size, state=$state, takenAfter=$takenAfter, takenBefore=$takenBefore, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, withArchived=$withArchived, withDeleted=$withDeleted, withExif=$withExif]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -428,11 +412,6 @@ class SmartSearchDto {
     } else {
     //  json[r'isMotion'] = null;
     }
-    if (this.isNotInAlbum != null) {
-      json[r'isNotInAlbum'] = this.isNotInAlbum;
-    } else {
-    //  json[r'isNotInAlbum'] = null;
-    }
     if (this.isOffline != null) {
       json[r'isOffline'] = this.isOffline;
     } else {
@@ -473,7 +452,6 @@ class SmartSearchDto {
     } else {
     //  json[r'page'] = null;
     }
-      json[r'personIds'] = this.personIds;
       json[r'query'] = this.query;
     if (this.size != null) {
       json[r'size'] = this.size;
@@ -556,7 +534,6 @@ class SmartSearchDto {
         isExternal: mapValueOfType<bool>(json, r'isExternal'),
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
         isMotion: mapValueOfType<bool>(json, r'isMotion'),
-        isNotInAlbum: mapValueOfType<bool>(json, r'isNotInAlbum'),
         isOffline: mapValueOfType<bool>(json, r'isOffline'),
         isReadOnly: mapValueOfType<bool>(json, r'isReadOnly'),
         isVisible: mapValueOfType<bool>(json, r'isVisible'),
@@ -565,9 +542,6 @@ class SmartSearchDto {
         make: mapValueOfType<String>(json, r'make'),
         model: mapValueOfType<String>(json, r'model'),
         page: num.parse('${json[r'page']}'),
-        personIds: json[r'personIds'] is Iterable
-            ? (json[r'personIds'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
         query: mapValueOfType<String>(json, r'query')!,
         size: num.parse('${json[r'size']}'),
         state: mapValueOfType<String>(json, r'state'),
