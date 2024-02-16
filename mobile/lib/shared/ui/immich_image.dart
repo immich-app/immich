@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/asset_viewer/image_providers/immich_local_image_provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/image_providers/immich_remote_image_provider.dart';
+import 'package:immich_mobile/modules/home/ui/asset_grid/thumbnail_placeholder.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:octo_image/octo_image.dart';
@@ -17,14 +18,14 @@ class ImmichImage extends StatelessWidget {
     this.width,
     this.height,
     this.fit = BoxFit.cover,
-    this.useGrayBoxPlaceholder = false,
+    this.placeholder = const ThumbnailPlaceholder(),
     this.isThumbnail = false,
     this.thumbnailSize = 250,
     super.key,
   });
 
   final Asset? asset;
-  final bool useGrayBoxPlaceholder;
+  final Widget? placeholder;
   final double? width;
   final double? height;
   final BoxFit fit;
@@ -37,6 +38,7 @@ class ImmichImage extends StatelessWidget {
     BoxFit fit = BoxFit.cover,
     double? width,
     double? height,
+    Widget? placeholder,
   }) {
     // Use the width and height to derive thumbnail size
     final thumbnailSize = max(width ?? 250, height ?? 250).toInt();
@@ -47,7 +49,7 @@ class ImmichImage extends StatelessWidget {
       fit: fit,
       width: width,
       height: height,
-      useGrayBoxPlaceholder: true,
+      placeholder: placeholder,
       thumbnailSize: thumbnailSize,
     );
   }
@@ -99,7 +101,6 @@ class ImmichImage extends StatelessWidget {
       asset.isLocal && !Store.get(StoreKey.preferRemoteImage, false);
   @override
   Widget build(BuildContext context) {
-
     if (asset == null) {
       return Container(
         decoration: const BoxDecoration(
@@ -119,13 +120,9 @@ class ImmichImage extends StatelessWidget {
       fadeInDuration: const Duration(milliseconds: 0),
       fadeOutDuration: const Duration(milliseconds: 400),
       placeholderBuilder: (context) {
-        if (useGrayBoxPlaceholder) {
+        if (placeholder != null) {
           // Use the gray box placeholder
-          return const SizedBox.expand(
-            child: DecoratedBox(
-              decoration: BoxDecoration(color: Colors.grey),
-            ),
-          );
+          return placeholder!;
         }
         // No placeholder
         return const SizedBox();
