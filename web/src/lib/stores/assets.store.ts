@@ -4,7 +4,7 @@ import { throttle } from 'lodash-es';
 import { DateTime } from 'luxon';
 import { writable, type Unsubscriber } from 'svelte/store';
 import { handleError } from '../utils/handle-error';
-import { websocketStore } from './websocket';
+import { websocketEvents } from './websocket';
 
 export enum BucketPosition {
   Above = 'above',
@@ -96,22 +96,14 @@ export class AssetStore {
 
   connect() {
     this.unsubscribers.push(
-      websocketStore.onUploadSuccess.subscribe((value) => {
-        if (value) {
-          this.addPendingChanges({ type: 'add', value });
-        }
+      websocketEvents.on('on_upload_success', (asset) => {
+        this.addPendingChanges({ type: 'add', value: asset });
       }),
-
-      websocketStore.onAssetTrash.subscribe((ids) => {
-        if (ids) {
-          this.addPendingChanges(...ids.map((id) => ({ type: 'trash', value: id }) as PendingChange));
-        }
+      websocketEvents.on('on_asset_trash', (ids) => {
+        this.addPendingChanges(...ids.map((id): TrashAsset => ({ type: 'trash', value: id })));
       }),
-
-      websocketStore.onAssetDelete.subscribe((value) => {
-        if (value) {
-          this.addPendingChanges({ type: 'delete', value });
-        }
+      websocketEvents.on('on_asset_delete', (id: string) => {
+        this.addPendingChanges({ type: 'delete', value: id });
       }),
     );
   }
