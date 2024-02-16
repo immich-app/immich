@@ -29,9 +29,7 @@ class SearchAssetResponseDto {
   count!: number;
   items!: AssetResponseDto[];
   facets!: SearchFacetResponseDto[];
-
-  @ApiProperty({ type: 'integer' })
-  nextPage!: number | null;
+  nextPage!: string | null;
 }
 
 export class SearchResponseDto {
