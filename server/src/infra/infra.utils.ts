@@ -139,13 +139,23 @@ export function searchAssetBuilder(
   );
 
   const exifInfo = _.omitBy(_.pick(options, ['city', 'country', 'lensModel', 'make', 'model', 'state']), _.isUndefined);
-  if (Object.keys(exifInfo).length > 0) {
-    builder.leftJoin(`${builder.alias}.exifInfo`, 'exifInfo');
+  const hasExifQuery = Object.keys(exifInfo).length > 0;
+
+  if (options.withExif && !hasExifQuery) {
+    builder.leftJoinAndSelect(`${builder.alias}.exifInfo`, 'exifInfo');
+  }
+
+  if (hasExifQuery) {
+    options.withExif
+      ? builder.leftJoinAndSelect(`${builder.alias}.exifInfo`, 'exifInfo')
+      : builder.leftJoin(`${builder.alias}.exifInfo`, 'exifInfo');
+
     builder.andWhere({ exifInfo });
   }
 
-  const id = _.pick(options, ['checksum', 'deviceAssetId', 'deviceId', 'id', 'libraryId', 'ownerId']);
+  const id = _.pick(options, ['checksum', 'deviceAssetId', 'deviceId', 'id', 'libraryId']);
   builder.andWhere(_.omitBy(id, _.isUndefined));
+  builder.andWhere(`${builder.alias}.ownerId IN (:...userIds)`, { userIds: options.userIds });
 
   const path = _.pick(options, ['encodedVideoPath', 'originalFileName', 'originalPath', 'resizePath', 'webpPath']);
   builder.andWhere(_.omitBy(path, _.isUndefined));
@@ -168,10 +178,6 @@ export function searchAssetBuilder(
     builder.leftJoin(`${builder.alias}.albums`, 'albums').andWhere('albums.id IS NULL');
   }
 
-  if (options.withExif) {
-    builder.leftJoinAndSelect(`${builder.alias}.exifInfo`, 'exifInfo');
-  }
-
   if (options.withFaces || options.withPeople) {
     builder.leftJoinAndSelect(`${builder.alias}.faces`, 'faces');
   }
@@ -188,8 +194,12 @@ export function searchAssetBuilder(
     builder
       .leftJoin(`${builder.alias}.faces`, 'faces')
       .andWhere('faces.personId IN (:...personIds)', { personIds: options.personIds })
-      .groupBy(`${builder.alias}.id`)
+      .addGroupBy(`${builder.alias}.id`)
       .having('COUNT(faces.id) = :personCount', { personCount: options.personIds.length });
+
+    if (options.withExif) {
+      builder.addGroupBy('exifInfo.assetId');
+    }
   }
 
   if (options.withStacked) {

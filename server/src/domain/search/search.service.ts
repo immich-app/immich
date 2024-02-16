@@ -75,7 +75,6 @@ export class SearchService {
       {
         ...dto,
         checksum,
-        ownerId: auth.user.id,
         userIds,
         orderDirection: dto.order ? enumToOrder[dto.order] : 'DESC',
       },
