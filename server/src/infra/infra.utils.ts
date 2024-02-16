@@ -155,7 +155,10 @@ export function searchAssetBuilder(
 
   const id = _.pick(options, ['checksum', 'deviceAssetId', 'deviceId', 'id', 'libraryId']);
   builder.andWhere(_.omitBy(id, _.isUndefined));
-  builder.andWhere(`${builder.alias}.ownerId IN (:...userIds)`, { userIds: options.userIds });
+
+  if (options.userIds) {
+    builder.andWhere(`${builder.alias}.ownerId IN (:...userIds)`, { userIds: options.userIds });
+  }
 
   const path = _.pick(options, ['encodedVideoPath', 'originalFileName', 'originalPath', 'resizePath', 'webpPath']);
   builder.andWhere(_.omitBy(path, _.isUndefined));
