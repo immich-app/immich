@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:immich_mobile/extensions/response_extensions.dart';
 import 'package:immich_mobile/modules/map/models/map_state.model.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
@@ -50,10 +51,7 @@ class MapStateNotifier extends _$MapStateNotifier {
       state = state.copyWith(
         lightStyleFetched: AsyncError(lightResponse.body, StackTrace.current),
       );
-      _log.severe(
-        "Cannot fetch map light style",
-        "Status: ${lightResponse.statusCode}\nResponse: ${lightResponse.body}",
-      );
+      _log.severe("Cannot fetch map light style", lightResponse.toLoggerString());
       return;
     }
 
@@ -78,10 +76,7 @@ class MapStateNotifier extends _$MapStateNotifier {
       state = state.copyWith(
         darkStyleFetched: AsyncError(darkResponse.body, StackTrace.current),
       );
-      _log.severe(
-        "Cannot fetch map dark style",
-        "Status: ${darkResponse.statusCode}\nResponse: ${darkResponse.body}",
-      );
+      _log.severe("Cannot fetch map dark style", darkResponse.toLoggerString());
       return;
     }
 

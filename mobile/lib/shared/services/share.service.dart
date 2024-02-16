@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/response_extensions.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:logging/logging.dart';
@@ -40,10 +41,7 @@ class ShareService {
               .downloadFileWithHttpInfo(asset.remoteId!);
 
           if (res.statusCode != 200) {
-            _log.severe(
-              "Asset download for ${asset.fileName} failed",
-              "Status: ${res.statusCode}\nResponse: ${res.body}",
-            );
+            _log.severe("Asset download for ${asset.fileName} failed", res.toLoggerString());
             continue;
           }
 
