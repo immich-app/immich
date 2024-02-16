@@ -10,7 +10,7 @@ import {
   ISystemMetadataRepository,
   ReverseGeocodeResult,
 } from '@app/domain';
-import { ExifEntity, GeodataPlacesEntity, SystemMetadataKey } from '@app/infra/entities';
+import { ExifEntity, GeodataAlternateNameEntity, GeodataPlacesEntity, SystemMetadataKey } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
 import { Inject } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
@@ -27,6 +27,8 @@ export class MetadataRepository implements IMetadataRepository {
   constructor(
     @InjectRepository(ExifEntity) private exifRepository: Repository<ExifEntity>,
     @InjectRepository(GeodataPlacesEntity) private readonly geodataPlacesRepository: Repository<GeodataPlacesEntity>,
+    @InjectRepository(GeodataAlternateNameEntity)
+    private readonly alternateNameRepository: Repository<GeodataAlternateNameEntity>,
     @Inject(ISystemMetadataRepository) private readonly systemMetadataRepository: ISystemMetadataRepository,
     @InjectDataSource() private dataSource: DataSource,
   ) {}
@@ -79,7 +81,10 @@ export class MetadataRepository implements IMetadataRepository {
 
   private async loadGeodataToTableFromFile(
     queryRunner: QueryRunner,
-    lineToEntityMapper: (lineSplit: string[]) => GeodataPlacesEntity,
+    lineToEntityMapper: (lineSplit: string[]) => {
+      geoData: GeodataPlacesEntity;
+      alternateNamesData?: GeodataAlternateNameEntity[];
+    },
     filePath: string,
   ) {
     if (!existsSync(filePath)) {
@@ -88,25 +93,37 @@ export class MetadataRepository implements IMetadataRepository {
     }
 
     const input = createReadStream(filePath);
-    let buffer: DeepPartial<GeodataPlacesEntity>[] = [];
+    let bufferGeodata: DeepPartial<GeodataPlacesEntity>[] = [];
+    let bufferAlternateNames: DeepPartial<GeodataAlternateNameEntity>[] = [];
     const lineReader = readLine.createInterface({ input: input });
 
     for await (const line of lineReader) {
       const lineSplit = line.split('\t');
-      buffer.push(lineToEntityMapper(lineSplit));
-      if (buffer.length > 1000) {
-        await queryRunner.manager.save(buffer);
-        buffer = [];
+      const test = lineToEntityMapper(lineSplit);
+      bufferGeodata.push(test.geoData);
+      if (test.alternateNamesData) {
+        bufferAlternateNames.push(...test.alternateNamesData);
+      }
+      if (bufferGeodata.length > 1000) {
+        await queryRunner.manager.save(bufferGeodata);
+        bufferGeodata = [];
+      }
+      if (bufferAlternateNames.length > 1000) {
+        await queryRunner.manager.save(bufferGeodata);
+        await queryRunner.manager.save(bufferAlternateNames);
+        bufferAlternateNames = [];
+        bufferGeodata = [];
       }
     }
-    await queryRunner.manager.save(buffer);
+    await queryRunner.manager.save(bufferGeodata);
+    await queryRunner.manager.save(bufferAlternateNames);
   }
 
   private async loadCities500(queryRunner: QueryRunner) {
     await this.loadGeodataToTableFromFile(
       queryRunner,
-      (lineSplit: string[]) =>
-        this.geodataPlacesRepository.create({
+      (lineSplit: string[]) => {
+        const geoData = this.geodataPlacesRepository.create({
           id: Number.parseInt(lineSplit[0]),
           name: lineSplit[1],
           latitude: Number.parseFloat(lineSplit[4]),
@@ -115,7 +132,22 @@ export class MetadataRepository implements IMetadataRepository {
           admin1Code: lineSplit[10],
           admin2Code: lineSplit[11],
           modificationDate: lineSplit[18],
-        }),
+        });
+        const alternateNames = lineSplit[3].split(',');
+        const alternateNamesData = [];
+        for (const alternateName of alternateNames) {
+          if (alternateName) {
+            alternateNamesData.push(
+              this.alternateNameRepository.create({
+                name: alternateName,
+                geodata: geoData,
+              }),
+            );
+          }
+        }
+
+        return { geoData, alternateNamesData };
+      },
       geodataCitites500Path,
     );
   }
@@ -123,7 +155,9 @@ export class MetadataRepository implements IMetadataRepository {
   private async loadAdmin1(queryRunner: QueryRunner) {
     await this.loadGeodataToTableFromFile(
       queryRunner,
-      (lineSplit: string[]) => this.geodataPlacesRepository.create({ admin1Name: lineSplit[1] }),
+      (lineSplit: string[]) => {
+        return { geoData: this.geodataPlacesRepository.create({ admin1Name: lineSplit[1] }) };
+      },
       geodataAdmin1Path,
     );
   }
@@ -131,7 +165,9 @@ export class MetadataRepository implements IMetadataRepository {
   private async loadAdmin2(queryRunner: QueryRunner) {
     await this.loadGeodataToTableFromFile(
       queryRunner,
-      (lineSplit: string[]) => this.geodataPlacesRepository.create({ admin2Name: lineSplit[1] }),
+      (lineSplit: string[]) => {
+        return { geoData: this.geodataPlacesRepository.create({ admin1Name: lineSplit[1] }) };
+      },
       geodataAdmin2Path,
     );
   }

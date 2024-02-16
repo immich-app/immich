@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
+import { GeodataAlternateNameEntity } from './alternate-names.entity';
 
 @Entity('geodata_places', { synchronize: false })
 export class GeodataPlacesEntity {
@@ -38,4 +39,7 @@ export class GeodataPlacesEntity {
 
   @Column({ type: 'date' })
   modificationDate!: Date;
+
+  @OneToMany(() => GeodataAlternateNameEntity, (name) => name.geodata)
+  altnernateNames!: GeodataAlternateNameEntity[];
 }

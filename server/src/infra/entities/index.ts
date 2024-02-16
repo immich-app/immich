@@ -1,5 +1,6 @@
 import { ActivityEntity } from './activity.entity';
 import { AlbumEntity } from './album.entity';
+import { GeodataAlternateNameEntity } from './alternate-names.entity';
 import { APIKeyEntity } from './api-key.entity';
 import { AssetFaceEntity } from './asset-face.entity';
 import { AssetJobStatusEntity } from './asset-job-status.entity';
@@ -23,6 +24,7 @@ import { UserEntity } from './user.entity';
 
 export * from './activity.entity';
 export * from './album.entity';
+export * from './alternate-names.entity';
 export * from './api-key.entity';
 export * from './asset-face.entity';
 export * from './asset-job-status.entity';
@@ -54,6 +56,7 @@ export const databaseEntities = [
   AssetJobStatusEntity,
   AuditEntity,
   ExifEntity,
+  GeodataAlternateNameEntity,
   GeodataPlacesEntity,
   MoveEntity,
   PartnerEntity,
