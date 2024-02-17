@@ -23,7 +23,7 @@
   import { preventRaceConditionSearchBar, searchQuery } from '$lib/stores/search.store';
   import { authenticate } from '$lib/utils/auth';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
-  import { type AssetResponseDto, type SearchResponseDto, searchSmart, searchMetadata } from '@immich/sdk';
+  import { type AssetResponseDto, type SearchResponseDto, searchSmart, searchMetadata, getPerson } from '@immich/sdk';
   import { mdiArrowLeft, mdiDotsVertical, mdiImageOffOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
   import { flip } from 'svelte/animate';
@@ -199,10 +199,29 @@
       case 'model': {
         return 'Camera model';
       }
+      case 'personIds': {
+        return 'People';
+      }
       default: {
         return key;
       }
     }
+  }
+
+  async function getPersonName(personIds: string[]) {
+    const personNames = await Promise.all(
+      personIds.map(async (personId) => {
+        const person = await getPerson({ id: personId });
+
+        if (person.name == '') {
+          return 'No Name';
+        }
+
+        return person.name;
+      }),
+    );
+
+    return personNames.join(', ');
   }
 </script>
 
@@ -256,6 +275,10 @@
           <div class="bg-gray-300 py-2 px-4 dark:bg-gray-800 dark:text-white rounded-tr-full rounded-br-full">
             {#if key === 'takenAfter' || key === 'takenBefore'}
               {getHumanReadableDate(terms[key])}
+            {:else if key === 'personIds'}
+              {#await getPersonName(terms[key]) then personName}
+                {personName}
+              {/await}
             {:else}
               {terms[key]}
             {/if}
@@ -267,7 +290,7 @@
 {/if}
 
 <section
-  class="relative mb-12 bg-immich-bg pt-4 dark:bg-immich-dark-bg m-4"
+  class="relative mb-12 bg-immich-bg dark:bg-immich-dark-bg m-4"
   bind:clientHeight={viewport.height}
   bind:clientWidth={viewport.width}
 >
