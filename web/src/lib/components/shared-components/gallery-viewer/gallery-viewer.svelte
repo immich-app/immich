@@ -9,7 +9,7 @@
   import AssetViewer from '../../asset-viewer/asset-viewer.svelte';
   import justifiedLayout from 'justified-layout';
   import { getAssetRatio } from '$lib/utils/asset-utils';
-  import type { LayoutBox } from '$lib/components/photos-page/asset-date-group.svelte';
+  import { calculateWidth } from '$lib/utils/timeline-util';
 
   const dispatch = createEventDispatcher<{ intersected: { container: HTMLDivElement; position: BucketPosition } }>();
 
@@ -103,17 +103,6 @@
       containerWidth: calculateWidth(justifiedLayoutResult.boxes),
     };
   })();
-
-  function calculateWidth(boxes: LayoutBox[]): number {
-    let width = 0;
-    for (const box of boxes) {
-      if (box.top < 100) {
-        width = box.left + box.width;
-      }
-    }
-
-    return width;
-  }
 </script>
 
 {#if assets.length > 0}

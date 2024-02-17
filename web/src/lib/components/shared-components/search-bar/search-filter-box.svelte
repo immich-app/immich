@@ -17,7 +17,6 @@
   import { fly } from 'svelte/transition';
   import Combobox, { type ComboBoxOption } from '../combobox.svelte';
   import { DateTime } from 'luxon';
-  import _ from 'lodash-es';
   import { searchQuery } from '$lib/stores/search.store';
 
   enum MediaType {
