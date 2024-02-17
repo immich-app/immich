@@ -250,6 +250,7 @@
       takenBefore: filter.date.takenBefore
         ? DateTime.fromFormat(filter.date.takenBefore, 'yyyy-MM-dd').toUTC().endOf('day').toString()
         : undefined,
+      /* eslint-disable unicorn/prefer-logical-operator-over-ternary */
       isArchived: filter.isArchive ? filter.isArchive : undefined,
       isFavorite: filter.isFavorite ? filter.isFavorite : undefined,
       isNotInAlbum: filter.isNotInAlbum ? filter.isNotInAlbum : undefined,

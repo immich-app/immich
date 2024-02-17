@@ -23,14 +23,7 @@
   import { preventRaceConditionSearchBar, searchQuery } from '$lib/stores/search.store';
   import { authenticate } from '$lib/utils/auth';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
-  import {
-    type AssetResponseDto,
-    type SearchResponseDto,
-    searchSmart,
-    searchMetadata,
-    type SmartSearchDto,
-    type MetadataSearchDto,
-  } from '@immich/sdk';
+  import { type AssetResponseDto, type SearchResponseDto, searchSmart, searchMetadata } from '@immich/sdk';
   import { mdiArrowLeft, mdiDotsVertical, mdiImageOffOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
   import { flip } from 'svelte/animate';
@@ -47,6 +40,7 @@
   // behavior for history.back(). To prevent that we store the previous page
   // manually and navigate back to that.
   let previousRoute = AppRoute.EXPLORE as string;
+  /* eslint-disable @typescript-eslint/no-explicit-any */
   let terms: any;
   $: currentPage = data.results?.assets.nextPage;
   $: albums = data.results?.albums.items;
@@ -168,32 +162,45 @@
 
   function getHumanReadableSearchKey(key: string): string {
     switch (key) {
-      case 'takenAfter':
+      case 'takenAfter': {
         return 'Start date';
-      case 'takenBefore':
+      }
+      case 'takenBefore': {
         return 'End date';
-      case 'isArchived':
+      }
+      case 'isArchived': {
         return 'In archive';
-      case 'isFavorite':
+      }
+      case 'isFavorite': {
         return 'Favorite';
-      case 'isNotInAlbum':
+      }
+      case 'isNotInAlbum': {
         return 'Not in any album';
-      case 'type':
+      }
+      case 'type': {
         return 'Media type';
-      case 'query':
+      }
+      case 'query': {
         return 'Context';
-      case 'city':
+      }
+      case 'city': {
         return 'City';
-      case 'country':
+      }
+      case 'country': {
         return 'Country';
-      case 'state':
+      }
+      case 'state': {
         return 'State';
-      case 'make':
+      }
+      case 'make': {
         return 'Camera brand';
-      case 'model':
+      }
+      case 'model': {
         return 'Camera model';
-      default:
+      }
+      default: {
         return key;
+      }
     }
   }
 </script>
