@@ -29,6 +29,7 @@
   import { flip } from 'svelte/animate';
   import type { PageData } from './$types';
   import type { Viewport } from '$lib/stores/assets.store';
+  import { locale } from '$lib/stores/preferences.store';
 
   export let data: PageData;
 
@@ -120,7 +121,7 @@
 
     await authenticate();
     let results: SearchResponseDto | null = null;
-    $page.url.searchParams.set('page', currentPage.toString());
+    $page.url.searchParams.set(QueryParameter.PAGE, currentPage.toString());
     const payload = $searchQuery;
     let responses: SearchResponseDto;
 
@@ -153,7 +154,7 @@
 
   function getHumanReadableDate(date: string) {
     const d = new Date(date);
-    return d.toLocaleDateString('en-US', {
+    return d.toLocaleDateString($locale, {
       year: 'numeric',
       month: 'long',
       day: 'numeric',

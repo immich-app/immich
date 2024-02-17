@@ -72,6 +72,7 @@ export enum QueryParameter {
   SEARCHED_PEOPLE = 'searchedPeople',
   SEARCH_TERM = 'q',
   SMART_SEARCH = 'smartSearch',
+  PAGE = 'page',
 }
 
 export enum OpenSettingQueryParameterValue {
