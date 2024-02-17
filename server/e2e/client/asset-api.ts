@@ -1,4 +1,4 @@
-import { AssetResponseDto } from '@app/domain';
+import { AssetBulkDeleteDto, AssetResponseDto } from '@app/domain';
 import { CreateAssetDto } from '@app/immich/api-v1/asset/dto/create-asset.dto';
 import { AssetFileUploadResponseDto } from '@app/immich/api-v1/asset/response-dto/asset-file-upload-response.dto';
 import { randomBytes } from 'node:crypto';
@@ -73,5 +73,9 @@ export const assetApi = {
       .set('Authorization', `Bearer ${accessToken}`);
     expect(status).toBe(200);
     return body;
+  },
+  delete: async (server: any, accessToken: string, dto: AssetBulkDeleteDto) => {
+    const { status } = await request(server).delete('/asset').set('Authorization', `Bearer ${accessToken}`).send(dto);
+    expect(status).toBe(204);
   },
 };
