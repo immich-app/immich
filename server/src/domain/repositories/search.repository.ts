@@ -66,14 +66,14 @@ export interface SearchAssetIDOptions {
   id?: string;
 }
 
-export interface SearchUserIDOptions {
+export interface SearchUserIdOptions {
   deviceId?: string;
   libraryId?: string;
   ownerId?: string;
   userIds?: string[];
 }
 
-export type SearchIDOptions = SearchAssetIDOptions & SearchUserIDOptions;
+export type SearchIdOptions = SearchAssetIDOptions & SearchUserIdOptions;
 
 export interface SearchStatusOptions {
   isArchived?: boolean;
@@ -148,13 +148,13 @@ export interface SearchPaginationOptions {
 }
 
 export type AssetSearchOptions = SearchDateOptions &
-  SearchIDOptions &
+  SearchIdOptions &
   SearchExifOptions &
   SearchOrderOptions &
   SearchPathOptions &
   SearchRelationOptions &
   SearchStatusOptions &
-  SearchUserIDOptions &
+  SearchUserIdOptions &
   SearchPeopleOptions;
 
 export type AssetSearchBuilderOptions = Omit<AssetSearchOptions, 'orderDirection'>;
@@ -164,7 +164,7 @@ export type SmartSearchOptions = SearchDateOptions &
   SearchExifOptions &
   SearchOneToOneRelationOptions &
   SearchStatusOptions &
-  SearchUserIDOptions &
+  SearchUserIdOptions &
   SearchPeopleOptions;
 
 export interface FaceEmbeddingSearch extends SearchEmbeddingOptions {
