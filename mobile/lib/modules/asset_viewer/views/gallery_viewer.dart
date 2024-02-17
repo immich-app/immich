@@ -154,6 +154,7 @@ class GalleryViewerPage extends HookConsumerWidget {
         barrierColor: Colors.transparent,
         backgroundColor: Colors.transparent,
         isScrollControlled: true,
+        enableDrag: true,
         useSafeArea: true,
         context: context,
         builder: (context) {

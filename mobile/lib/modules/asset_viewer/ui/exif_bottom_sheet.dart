@@ -341,11 +341,11 @@ class ExifBottomSheet extends HookConsumerWidget {
       );
     }
 
-    return GestureDetector(
-      onTap: () {
-        // FocusScope.of(context).unfocus();
-      },
-      child: SingleChildScrollView(
+    return SingleChildScrollView(
+      child: GestureDetector(
+        onTap: () {
+          // FocusScope.of(context).unfocus();
+        },
         child: Card(
           shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.only(
@@ -369,18 +369,17 @@ class ExifBottomSheet extends HookConsumerWidget {
                         buildDate(),
                         if (asset.isRemote) DescriptionInput(asset: asset),
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          mainAxisAlignment: MainAxisAlignment.start,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Flexible(
-                              flex: hasCoordinates() ? 5 : 0,
+                            Expanded(
                               child: Padding(
                                 padding: const EdgeInsets.only(right: 8.0),
                                 child: buildLocation(),
                               ),
                             ),
-                            Flexible(
-                              flex: 5,
+                            ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 300),
                               child: Padding(
                                 padding: const EdgeInsets.only(left: 8.0),
                                 child: buildDetail(),
