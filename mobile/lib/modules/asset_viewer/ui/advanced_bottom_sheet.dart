@@ -62,9 +62,11 @@ class AdvancedBottomSheet extends HookConsumerWidget {
                                 child: IconButton(
                                   onPressed: () {
                                     Clipboard.setData(
-                                      ClipboardData(text: assetDetail.toString()),
+                                      ClipboardData(
+                                          text: assetDetail.toString()),
                                     ).then((_) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
                                         SnackBar(
                                           content: Text(
                                             "Copied to clipboard",
