@@ -20,25 +20,30 @@
   import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { preventRaceConditionSearchBar } from '$lib/stores/search.store';
+  import { preventRaceConditionSearchBar, searchQuery } from '$lib/stores/search.store';
   import { authenticate } from '$lib/utils/auth';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
-  import { search, type AssetResponseDto, type SearchResponseDto } from '@immich/sdk';
+  import { type AssetResponseDto, type SearchResponseDto, searchSmart, searchMetadata, getPerson } from '@immich/sdk';
   import { mdiArrowLeft, mdiDotsVertical, mdiImageOffOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
   import { flip } from 'svelte/animate';
   import type { PageData } from './$types';
+  import type { Viewport } from '$lib/stores/assets.store';
+  import { locale } from '$lib/stores/preferences.store';
 
   export let data: PageData;
 
   const MAX_ASSET_COUNT = 5000;
   let { isViewing: showAssetViewer } = assetViewingStore;
+  const viewport: Viewport = { width: 0, height: 0 };
 
   // The GalleryViewer pushes it's own history state, which causes weird
   // behavior for history.back(). To prevent that we store the previous page
   // manually and navigate back to that.
   let previousRoute = AppRoute.EXPLORE as string;
-  $: curPage = data.results?.assets.nextPage;
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  let terms: any;
+  $: currentPage = data.results?.assets.nextPage;
   $: albums = data.results?.albums.items;
 
   const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
@@ -87,16 +92,9 @@
     if (from?.route.id === '/(user)/albums/[albumId]') {
       previousRoute = AppRoute.EXPLORE;
     }
-  });
 
-  $: term = (() => {
-    let term = $page.url.searchParams.get(QueryParameter.SEARCH_TERM) || data.term || '';
-    const isMetadataSearch = $page.url.searchParams.get(QueryParameter.SMART_SEARCH) === 'false';
-    if (isMetadataSearch && term !== '') {
-      term = `m:${term}`;
-    }
-    return term;
-  })();
+    updateInformationChip();
+  });
 
   let selectedAssets: Set<AssetResponseDto> = new Set();
   $: isMultiSelectionMode = selectedAssets.size > 0;
@@ -111,32 +109,120 @@
     selectedAssets = new Set(searchResultAssets);
   };
 
+  function updateInformationChip() {
+    let query = $page.url.searchParams.get(QueryParameter.SEARCH_TERM) || data.term || '';
+    terms = JSON.parse(query);
+  }
+
   export const loadNextPage = async () => {
-    if (curPage == null || !term || (searchResultAssets && searchResultAssets.length >= MAX_ASSET_COUNT)) {
+    if (currentPage == null || !terms || (searchResultAssets && searchResultAssets.length >= MAX_ASSET_COUNT)) {
       return;
     }
 
     await authenticate();
     let results: SearchResponseDto | null = null;
-    $page.url.searchParams.set('page', curPage.toString());
-    const res = await search({ ...$page.url.searchParams });
+    $page.url.searchParams.set(QueryParameter.PAGE, currentPage.toString());
+    const payload = $searchQuery;
+    let responses: SearchResponseDto;
+
+    responses =
+      payload && 'query' in payload
+        ? await searchSmart({
+            smartSearchDto: { ...payload, page: Number.parseInt(currentPage), withExif: true },
+          })
+        : await searchMetadata({
+            metadataSearchDto: { ...payload, page: Number.parseInt(currentPage), withExif: true },
+          });
+
     if (searchResultAssets) {
-      searchResultAssets.push(...res.assets.items);
+      searchResultAssets.push(...responses.assets.items);
     } else {
-      searchResultAssets = res.assets.items;
+      searchResultAssets = responses.assets.items;
     }
 
     const assets = {
-      ...res.assets,
+      ...responses.assets,
       items: searchResultAssets,
     };
     results = {
       assets,
-      albums: res.albums,
+      albums: responses.albums,
     };
 
     data.results = results;
   };
+
+  function getHumanReadableDate(date: string) {
+    const d = new Date(date);
+    return d.toLocaleDateString($locale, {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  }
+
+  function getHumanReadableSearchKey(key: string): string {
+    switch (key) {
+      case 'takenAfter': {
+        return 'Start date';
+      }
+      case 'takenBefore': {
+        return 'End date';
+      }
+      case 'isArchived': {
+        return 'In archive';
+      }
+      case 'isFavorite': {
+        return 'Favorite';
+      }
+      case 'isNotInAlbum': {
+        return 'Not in any album';
+      }
+      case 'type': {
+        return 'Media type';
+      }
+      case 'query': {
+        return 'Context';
+      }
+      case 'city': {
+        return 'City';
+      }
+      case 'country': {
+        return 'Country';
+      }
+      case 'state': {
+        return 'State';
+      }
+      case 'make': {
+        return 'Camera brand';
+      }
+      case 'model': {
+        return 'Camera model';
+      }
+      case 'personIds': {
+        return 'People';
+      }
+      default: {
+        return key;
+      }
+    }
+  }
+
+  async function getPersonName(personIds: string[]) {
+    const personNames = await Promise.all(
+      personIds.map(async (personId) => {
+        const person = await getPerson({ id: personId });
+
+        if (person.name == '') {
+          return 'No Name';
+        }
+
+        return person.name;
+      }),
+    );
+
+    return personNames.join(', ');
+  }
 </script>
 
 <section>
@@ -161,15 +247,53 @@
       </AssetSelectControlBar>
     </div>
   {:else}
-    <ControlAppBar on:close={() => goto(previousRoute)} backIcon={mdiArrowLeft}>
-      <div class="w-full flex-1 pl-4">
-        <SearchBar grayTheme={false} value={term} />
-      </div>
-    </ControlAppBar>
+    <div class="fixed z-[100] top-0 left-0 w-full">
+      <ControlAppBar on:close={() => goto(previousRoute)} backIcon={mdiArrowLeft}>
+        <div class="w-full flex-1 pl-4">
+          <SearchBar grayTheme={false} />
+        </div>
+      </ControlAppBar>
+    </div>
   {/if}
 </section>
 
-<section class="relative mb-12 bg-immich-bg pt-32 dark:bg-immich-dark-bg">
+{#if terms}
+  <section
+    id="search-chips"
+    class="mt-24 text-center w-full flex gap-5 place-content-center place-items-center flex-wrap px-24"
+  >
+    {#each Object.keys(terms) as key, index (index)}
+      <div class="flex place-content-center place-items-center text-xs">
+        <div
+          class="bg-immich-primary py-2 px-4 text-white dark:text-black dark:bg-immich-dark-primary
+          {terms[key] === true ? 'rounded-full' : 'rounded-tl-full rounded-bl-full'}"
+        >
+          {getHumanReadableSearchKey(key)}
+        </div>
+
+        {#if terms[key] !== true}
+          <div class="bg-gray-300 py-2 px-4 dark:bg-gray-800 dark:text-white rounded-tr-full rounded-br-full">
+            {#if key === 'takenAfter' || key === 'takenBefore'}
+              {getHumanReadableDate(terms[key])}
+            {:else if key === 'personIds'}
+              {#await getPersonName(terms[key]) then personName}
+                {personName}
+              {/await}
+            {:else}
+              {terms[key]}
+            {/if}
+          </div>
+        {/if}
+      </div>
+    {/each}
+  </section>
+{/if}
+
+<section
+  class="relative mb-12 bg-immich-bg dark:bg-immich-dark-bg m-4"
+  bind:clientHeight={viewport.height}
+  bind:clientWidth={viewport.width}
+>
   <section class="immich-scrollbar relative overflow-y-auto">
     {#if albums && albums.length > 0}
       <section>
@@ -193,14 +317,13 @@
     {/if}
     <section id="search-content" class="relative bg-immich-bg dark:bg-immich-dark-bg">
       {#if searchResultAssets && searchResultAssets.length > 0}
-        <div class="pl-4">
-          <GalleryViewer
-            assets={searchResultAssets}
-            bind:selectedAssets
-            on:intersected={loadNextPage}
-            showArchiveIcon={true}
-          />
-        </div>
+        <GalleryViewer
+          assets={searchResultAssets}
+          bind:selectedAssets
+          on:intersected={loadNextPage}
+          showArchiveIcon={true}
+          {viewport}
+        />
       {:else}
         <div class="flex min-h-[calc(66vh_-_11rem)] w-full place-content-center items-center dark:text-white">
           <div class="flex flex-col content-center items-center text-center">
