@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 
 class ThumbnailPlaceholder extends StatelessWidget {
   final EdgeInsets margin;
@@ -24,14 +25,13 @@ class ThumbnailPlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final brightness = MediaQuery.platformBrightnessOf(context);
     return Container(
       width: width,
       height: height,
       margin: margin,
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: brightness == Brightness.light ? _brightColors : _darkColors,
+          colors: context.isDarkTheme ? _darkColors : _brightColors,
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
         ),

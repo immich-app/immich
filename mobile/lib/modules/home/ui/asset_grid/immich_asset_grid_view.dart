@@ -370,7 +370,7 @@ class _Section extends StatelessWidget {
   final bool dynamicLayout;
   final Function(List<Asset>) selectAssets;
   final Function(List<Asset>) deselectAssets;
-  final Function(List<Asset>) allAssetsSelected;
+  final bool Function(List<Asset>) allAssetsSelected;
   final bool showStack;
   final int heroOffset;
   final bool showStorageIndicator;
