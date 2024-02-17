@@ -37,6 +37,7 @@ export class SearchRepository implements ISearchRepository {
       .ownColumns.map((column) => column.propertyName)
       .filter((propertyName) => propertyName !== 'embedding');
   }
+
   async init(modelName: string): Promise<void> {
     const { dimSize } = getCLIPModelInfo(modelName);
     const curDimSize = await this.getDimSize();
