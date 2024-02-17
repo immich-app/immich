@@ -3,7 +3,6 @@ description: Immich - selfhosted backup media file on mobile phone
 
 publish_to: "none"
 version: 1.94.1+121
-isar_version: &isar_version 3.1.0+1
 
 environment:
   sdk: ">=3.0.0 <4.0.0"
@@ -32,12 +31,12 @@ dependencies:
     git:
       url: https://github.com/maplibre/flutter-maplibre-gl.git
       ref: acb428a005efd9832a0a8e7ef0945f899dfb3ca5
-  geolocator: ^10.1.0 # used to move to current location in map view
-  flutter_udid: ^2.1.1
+  geolocator: ^11.0.0 # used to move to current location in map view
+  flutter_udid: ^3.0.0
   package_info_plus: ^5.0.1
   url_launcher: ^6.2.4
-  http: 0.13.5
-  cancellation_token_http: ^1.1.0
+  http: ^0.13.6
+  cancellation_token_http: ^2.0.0
   easy_localization: ^3.0.3
   share_plus: ^7.2.1
   flutter_displaymode: ^0.6.0
@@ -48,8 +47,8 @@ dependencies:
   http_parser: ^4.0.2
   flutter_web_auth: ^0.5.0
   easy_image_viewer: ^1.4.0
-  isar: *isar_version
-  isar_flutter_libs: *isar_version # contains Isar Core
+  isar: ^3.1.0+1
+  isar_flutter_libs: ^3.1.0+1
   permission_handler: ^11.2.0
   device_info_plus: ^9.1.1
   connectivity_plus: ^5.0.2
@@ -88,10 +87,10 @@ dev_dependencies:
   auto_route_generator: ^7.3.2
   flutter_launcher_icons: ^0.13.1
   flutter_native_splash: ^2.3.9
-  isar_generator: *isar_version
+  isar_generator: ^3.1.0+1
   integration_test:
     sdk: flutter
-  custom_lint: ^0.5.8
+  custom_lint: ^0.6.0
   riverpod_lint: ^2.3.7
   riverpod_generator: ^2.3.9
   mocktail: ^1.0.3
