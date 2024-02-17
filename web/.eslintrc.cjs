@@ -38,6 +38,7 @@ module.exports = {
     'unicorn/prevent-abbreviations': 'off',
     'unicorn/no-nested-ternary': 'off',
     'unicorn/consistent-function-scoping': 'off',
+    'unicorn/prefer-top-level-await': 'off',
     '@typescript-eslint/no-unused-vars': [
       'warn',
       {
