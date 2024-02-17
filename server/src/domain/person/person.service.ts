@@ -411,7 +411,7 @@ export class PersonService {
 
     // `matches` also includes the face itself
     if (machineLearning.facialRecognition.minFaces > 1 && matches.length <= 1) {
-      this.logger.debug(`Face ${id} has fewer matches than required`);
+      this.logger.debug(`Face ${id} only matched the face itself, skipping`);
       return true;
     }
 
