@@ -143,7 +143,7 @@ class AppLogPage extends HookConsumerWidget {
               ),
             ),
             subtitle: Text(
-              "[${logMessage.context1}] Logged on ${DateFormat("HH:mm:ss.SSS").format(logMessage.createdAt)}",
+              "at ${DateFormat("HH:mm:ss.SSS").format(logMessage.createdAt)} in ${logMessage.context1}",
               style: TextStyle(
                 fontSize: 12.0,
                 color: Colors.grey[600],
