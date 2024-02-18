@@ -151,7 +151,6 @@ type BaseAssetSearchOptions = SearchDateOptions &
   SearchExifOptions &
   SearchOrderOptions &
   SearchPathOptions &
-  SearchRelationOptions &
   SearchStatusOptions &
   SearchUserIdOptions &
   SearchPeopleOptions;
