@@ -58,8 +58,8 @@
 {#if showAlbumPicker}
   <AlbumSelectionModal
     {shared}
-    on:newAlbum={({ detail }) => handleAddToNewAlbum(detail)}
-    on:album={({ detail }) => handleAddToAlbum(detail)}
-    on:close={handleHideAlbumPicker}
+    onNewAlbum={handleAddToNewAlbum}
+    onAlbum={handleAddToAlbum}
+    onClose={handleHideAlbumPicker}
   />
 {/if}

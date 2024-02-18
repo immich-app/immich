@@ -21,7 +21,9 @@
 {#if showModal}
   <CreateSharedLinkModal
     assetIds={[...getAssets()].map(({ id }) => id)}
-    on:close={() => (showModal = false)}
-    on:escape={escape}
+    onClose={() => {
+      showModal = false;
+    }}
+    onEscape={escape}
   />
 {/if}

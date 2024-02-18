@@ -756,9 +756,9 @@
   {#if isShowAlbumPicker}
     <AlbumSelectionModal
       shared={addToSharedAlbum}
-      on:newAlbum={({ detail }) => handleAddToNewAlbum(detail)}
-      on:album={({ detail }) => handleAddToAlbum(detail)}
-      on:close={() => (isShowAlbumPicker = false)}
+      onNewAlbum={handleAddToNewAlbum}
+      onAlbum={handleAddToAlbum}
+      onClose={() => (isShowAlbumPicker = false)}
     />
   {/if}
 
@@ -772,7 +772,7 @@
   {/if}
 
   {#if isShowProfileImageCrop}
-    <ProfileImageCropper {asset} on:close={() => (isShowProfileImageCrop = false)} />
+    <ProfileImageCropper {asset} onClose={() => (isShowProfileImageCrop = false)} />
   {/if}
 </section>
 

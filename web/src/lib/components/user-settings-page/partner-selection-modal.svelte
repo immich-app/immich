@@ -1,17 +1,17 @@
 <script lang="ts">
   import { getAllUsers, getPartners, type UserResponseDto } from '@immich/sdk';
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { onMount } from 'svelte';
   import Button from '../elements/buttons/button.svelte';
   import BaseModal from '../shared-components/base-modal.svelte';
   import ImmichLogo from '../shared-components/immich-logo.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
 
   export let user: UserResponseDto;
+  export let onClose: () => void;
+  export let onAddUsers: (dtos: UserResponseDto[]) => void | Promise<void>;
 
   let availableUsers: UserResponseDto[] = [];
   let selectedUsers: UserResponseDto[] = [];
-
-  const dispatch = createEventDispatcher<{ close: void; 'add-users': UserResponseDto[] }>();
 
   onMount(async () => {
     // TODO: update endpoint to have a query param for deleted users
@@ -33,7 +33,7 @@
   };
 </script>
 
-<BaseModal on:close={() => dispatch('close')}>
+<BaseModal {onClose}>
   <svelte:fragment slot="title">
     <span class="flex place-items-center gap-2">
       <ImmichLogo width={24} />
@@ -75,7 +75,7 @@
 
     {#if selectedUsers.length > 0}
       <div class="flex place-content-end p-5">
-        <Button size="sm" rounded="lg" on:click={() => dispatch('add-users', selectedUsers)}>Add</Button>
+        <Button size="sm" rounded="lg" on:click={() => onAddUsers(selectedUsers)}>Add</Button>
       </div>
     {/if}
   </div>

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { getMyUserInfo, removeUserFromAlbum, type AlbumResponseDto, type UserResponseDto } from '@immich/sdk';
   import { mdiDotsVertical } from '@mdi/js';
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { onMount } from 'svelte';
   import { getContextMenuPosition } from '../../utils/context-menu';
   import { handleError } from '../../utils/handle-error';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
@@ -13,11 +13,8 @@
   import UserAvatar from '../shared-components/user-avatar.svelte';
 
   export let album: AlbumResponseDto;
-
-  const dispatch = createEventDispatcher<{
-    remove: string;
-    close: void;
-  }>();
+  export let onRemove: (userId: string) => void;
+  export let onClose: () => void;
 
   let currentUser: UserResponseDto;
   let position = { x: 0, y: 0 };
@@ -54,7 +51,7 @@
 
     try {
       await removeUserFromAlbum({ id: album.id, userId });
-      dispatch('remove', userId);
+      onRemove(userId);
       const message = userId === 'me' ? `Left ${album.albumName}` : `Removed ${selectedRemoveUser.name}`;
       notificationController.show({ type: NotificationType.Info, message });
     } catch (error) {
@@ -66,7 +63,7 @@
 </script>
 
 {#if !selectedRemoveUser}
-  <BaseModal on:close={() => dispatch('close')}>
+  <BaseModal {onClose}>
     <svelte:fragment slot="title">
       <span class="flex place-items-center gap-2">
         <p class="font-medium text-immich-fg dark:text-immich-dark-fg">Options</p>

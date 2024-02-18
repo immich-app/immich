@@ -2,23 +2,20 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { getAllAlbums, type AlbumResponseDto } from '@immich/sdk';
   import { mdiPlus } from '@mdi/js';
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { onMount } from 'svelte';
   import AlbumListItem from '../asset-viewer/album-list-item.svelte';
   import BaseModal from './base-modal.svelte';
+
+  export let onNewAlbum: (search: string) => void;
+  export let onAlbum: (dto: AlbumResponseDto) => void;
+  export let onClose: () => void;
+  export let shared: boolean;
 
   let albums: AlbumResponseDto[] = [];
   let recentAlbums: AlbumResponseDto[] = [];
   let filteredAlbums: AlbumResponseDto[] = [];
   let loading = true;
   let search = '';
-
-  const dispatch = createEventDispatcher<{
-    newAlbum: string;
-    album: AlbumResponseDto;
-    close: void;
-  }>();
-
-  export let shared: boolean;
 
   onMount(async () => {
     albums = await getAllAlbums({ shared: shared || undefined });
@@ -36,15 +33,15 @@
   }
 
   const handleSelect = (album: AlbumResponseDto) => {
-    dispatch('album', album);
+    onAlbum(album);
   };
 
   const handleNew = () => {
-    dispatch('newAlbum', search.length > 0 ? search : '');
+    onNewAlbum(search.length > 0 ? search : '');
   };
 </script>
 
-<BaseModal on:close={() => dispatch('close')}>
+<BaseModal {onClose}>
   <svelte:fragment slot="title">
     <span class="flex place-items-center gap-2">
       <p class="font-medium">

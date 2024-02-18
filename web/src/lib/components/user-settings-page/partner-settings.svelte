@@ -179,11 +179,7 @@
 </section>
 
 {#if createPartnerFlag}
-  <PartnerSelectionModal
-    {user}
-    on:close={() => (createPartnerFlag = false)}
-    on:add-users={(event) => handleCreatePartners(event.detail)}
-  />
+  <PartnerSelectionModal {user} onClose={() => (createPartnerFlag = false)} onAddUsers={handleCreatePartners} />
 {/if}
 
 {#if removePartnerDto}

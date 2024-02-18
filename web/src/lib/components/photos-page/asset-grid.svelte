@@ -136,8 +136,8 @@
     }
   }
 
-  function handleScrollTimeline(event: CustomEvent) {
-    element.scrollBy(0, event.detail.heightDelta);
+  function handleScrollTimeline({ heightDelta }: { heightDelta: number }) {
+    element.scrollBy(0, heightDelta);
   }
 
   const handlePrevious = async () => {
@@ -432,10 +432,10 @@
                 {assetInteractionStore}
                 {isSelectionMode}
                 {singleSelect}
-                on:select={({ detail: group }) => handleGroupSelect(group.title, group.assets)}
-                on:shift={handleScrollTimeline}
-                on:selectAssetCandidates={({ detail: asset }) => handleSelectAssetCandidates(asset)}
-                on:selectAssets={({ detail: asset }) => handleSelectAssets(asset)}
+                onSelect={(group) => handleGroupSelect(group.title, group.assets)}
+                onShift={handleScrollTimeline}
+                onSelectAssetCandidates={(asset) => handleSelectAssetCandidates(asset)}
+                onSelectAssets={(asset) => handleSelectAssets(asset)}
                 assets={bucket.assets}
                 bucketDate={bucket.bucketDate}
                 bucketHeight={bucket.bucketHeight}

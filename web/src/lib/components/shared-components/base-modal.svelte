@@ -1,16 +1,14 @@
 <script lang="ts">
   import { fade } from 'svelte/transition';
   import { quintOut } from 'svelte/easing';
-  import { createEventDispatcher, onMount, onDestroy } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
   import { browser } from '$app/environment';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import { clickOutside } from '$lib/utils/click-outside';
   import { mdiClose } from '@mdi/js';
 
-  const dispatch = createEventDispatcher<{
-    escape: void;
-    close: void;
-  }>();
+  export let onEscape: (() => void) | undefined = undefined;
+  export let onClose: (() => void | Promise<void>) | undefined = undefined;
   export let zIndex = 9999;
   export let ignoreClickOutside = false;
 
@@ -42,8 +40,8 @@
 >
   <div
     use:clickOutside
-    on:outclick={() => !ignoreClickOutside && dispatch('close')}
-    on:escape={() => dispatch('escape')}
+    on:outclick={() => !ignoreClickOutside && onClose && onClose()}
+    on:escape={() => onEscape && onEscape()}
     class="max-h-[800px] min-h-[200px] w-[450px] overflow-y-auto rounded-lg bg-immich-bg shadow-md dark:bg-immich-dark-gray dark:text-immich-dark-fg immich-scrollbar"
   >
     <div class="flex place-items-center justify-between px-5 py-3">
@@ -53,7 +51,7 @@
         </slot>
       </div>
 
-      <CircleIconButton on:click={() => dispatch('close')} icon={mdiClose} size={'20'} />
+      <CircleIconButton on:click={() => onClose && onClose()} icon={mdiClose} size={'20'} />
     </div>
 
     <div>
