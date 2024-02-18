@@ -277,6 +277,19 @@ jobs:
         run: |
           poetry run pytest app --cov=app --cov-report term-missing
 
+  shellcheck:
+    name: ShellCheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run ShellCheck
+        uses: ludeeus/action-shellcheck@master
+        with:
+          ignore_paths: >-
+            **/open-api/**
+            **/openapi/**
+            **/node_modules/**
+
   generated-api-up-to-date:
     name: OpenAPI Clients
     runs-on: ubuntu-latest
