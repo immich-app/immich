@@ -1,3 +1,4 @@
+import { browser } from '$app/environment';
 import { goto } from '$app/navigation';
 import { page } from '$app/stores';
 import Locales from '$lib/assets/locales.json';
@@ -191,7 +192,7 @@ export const oauth = {
 export const findLocale = (code: string | undefined) => {
   const language = Locales.find((lang) => lang.code === code);
   return {
-    code: language?.code || fallbackLocale.code,
-    name: language?.name || fallbackLocale.name,
+    code: language?.code || browser ? navigator.language : fallbackLocale.code,
+    name: language?.name || browser ? navigator.language : fallbackLocale.name,
   };
 };
