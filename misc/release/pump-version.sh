@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 #
 # Pump one or both of the server/mobile versions in appropriate files
