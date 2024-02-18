@@ -1,10 +1,8 @@
-import { AssetEntity, ExifEntity } from '@app/infra/entities';
-import { OptionalBetween } from '@app/infra/infra.utils';
+import { AssetEntity } from '@app/infra/entities';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In } from 'typeorm/find-options/operator/In.js';
 import { Repository } from 'typeorm/repository/Repository.js';
-import { AssetSearchDto } from './dto/asset-search.dto';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 import { SearchPropertiesDto } from './dto/search-properties.dto';
 import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
@@ -21,7 +19,6 @@ export interface AssetOwnerCheck extends AssetCheck {
 
 export interface IAssetRepositoryV1 {
   get(id: string): Promise<AssetEntity | null>;
-  getAllByUserId(userId: string, dto: AssetSearchDto): Promise<AssetEntity[]>;
   getLocationsByUserId(userId: string): Promise<CuratedLocationsResponseDto[]>;
   getDetectedObjectsByUserId(userId: string): Promise<CuratedObjectsResponseDto[]>;
   getSearchPropertiesByUserId(userId: string): Promise<SearchPropertiesDto[]>;
@@ -34,10 +31,7 @@ export const IAssetRepositoryV1 = 'IAssetRepositoryV1';
 
 @Injectable()
 export class AssetRepositoryV1 implements IAssetRepositoryV1 {
-  constructor(
-    @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
-    @InjectRepository(ExifEntity) private exifRepository: Repository<ExifEntity>,
-  ) {}
+  constructor(@InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>) {}
 
   getSearchPropertiesByUserId(userId: string): Promise<SearchPropertiesDto[]> {
     return this.assetRepository
@@ -87,33 +81,6 @@ export class AssetRepositoryV1 implements IAssetRepositoryV1 {
       `,
       [userId],
     );
-  }
-
-  /**
-   * Get all assets belong to the user on the database
-   * @param ownerId
-   */
-  getAllByUserId(ownerId: string, dto: AssetSearchDto): Promise<AssetEntity[]> {
-    return this.assetRepository.find({
-      where: {
-        ownerId,
-        isVisible: true,
-        isFavorite: dto.isFavorite,
-        isArchived: dto.isArchived,
-        updatedAt: OptionalBetween(dto.updatedAfter, dto.updatedBefore),
-      },
-      relations: {
-        exifInfo: true,
-        tags: true,
-        stack: { assets: true },
-      },
-      skip: dto.skip || 0,
-      take: dto.take,
-      order: {
-        fileCreatedAt: 'DESC',
-      },
-      withDeleted: true,
-    });
   }
 
   get(id: string): Promise<AssetEntity | null> {

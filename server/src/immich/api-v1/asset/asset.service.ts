@@ -114,8 +114,11 @@ export class AssetService {
   public async getAllAssets(auth: AuthDto, dto: AssetSearchDto): Promise<AssetResponseDto[]> {
     const userId = dto.userId || auth.user.id;
     await this.access.requirePermission(auth, Permission.TIMELINE_READ, userId);
-    const assets = await this.assetRepositoryV1.getAllByUserId(userId, dto);
-    return assets.map((asset) => mapAsset(asset, { withStack: true }));
+    const assets = await this.assetRepository.getAllByFileCreationDate(
+      { take: dto.take ?? 1000, skip: dto.skip },
+      { ...dto, userIds: [userId], withDeleted: true, orderDirection: 'DESC', withExif: true },
+    );
+    return assets.items.map((asset) => mapAsset(asset));
   }
 
   async serveThumbnail(auth: AuthDto, assetId: string, dto: GetAssetThumbnailDto): Promise<ImmichFileResponse> {

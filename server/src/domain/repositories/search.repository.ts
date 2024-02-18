@@ -69,7 +69,6 @@ export interface SearchAssetIDOptions {
 export interface SearchUserIdOptions {
   deviceId?: string;
   libraryId?: string;
-  ownerId?: string;
   userIds?: string[];
 }
 
@@ -147,15 +146,18 @@ export interface SearchPaginationOptions {
   size: number;
 }
 
-export type AssetSearchOptions = SearchDateOptions &
+type BaseAssetSearchOptions = SearchDateOptions &
   SearchIdOptions &
   SearchExifOptions &
   SearchOrderOptions &
   SearchPathOptions &
-  SearchRelationOptions &
   SearchStatusOptions &
   SearchUserIdOptions &
   SearchPeopleOptions;
+
+export type AssetSearchOptions = BaseAssetSearchOptions & SearchRelationOptions;
+
+export type AssetSearchOneToOneRelationOptions = BaseAssetSearchOptions & SearchOneToOneRelationOptions;
 
 export type AssetSearchBuilderOptions = Omit<AssetSearchOptions, 'orderDirection'>;
 
