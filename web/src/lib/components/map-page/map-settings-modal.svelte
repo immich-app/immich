@@ -4,10 +4,10 @@
   import { Duration } from 'luxon';
   import { createEventDispatcher } from 'svelte';
   import { fly } from 'svelte/transition';
-  import SettingSelect from '../admin-page/settings/setting-select.svelte';
-  import SettingSwitch from '../admin-page/settings/setting-switch.svelte';
   import Button from '../elements/buttons/button.svelte';
   import LinkButton from '../elements/buttons/link-button.svelte';
+  import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
+  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
 
   export let settings: MapSettings;
   let customDateRange = !!settings.dateAfter || !!settings.dateBefore;

@@ -15,11 +15,13 @@
   import { fade } from 'svelte/transition';
   import type { SettingsEventType } from '../admin-settings';
   import SettingAccordion from '../../../shared-components/settings/setting-accordion.svelte';
-  import SettingButtonsRow from '../setting-buttons-row.svelte';
-  import SettingCheckboxes from '../setting-checkboxes.svelte';
-  import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
-  import SettingSelect from '../setting-select.svelte';
-  import SettingSwitch from '../setting-switch.svelte';
+  import SettingInputField, {
+    SettingInputFieldType,
+  } from '$lib/components/shared-components/settings/setting-input-field.svelte';
+  import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
+  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
+  import SettingCheckboxes from '$lib/components/shared-components/settings/setting-checkboxes.svelte';
+  import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
