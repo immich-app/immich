@@ -7,6 +7,7 @@
   import type { ComboBoxOption } from '../shared-components/combobox.svelte';
   import { onMount } from 'svelte';
   import { findLocale } from '$lib/utils';
+  import { fallbackLocale } from '$lib/constants';
 
   let time = new Date();
 
@@ -23,8 +24,8 @@
   $: selectedDate = `${formattedDate} ${timePortion}`;
   $: editedLocale = findLocale($locale).code;
   $: selectedOption = {
-    value: findLocale(editedLocale).code,
-    label: findLocale(editedLocale).name,
+    value: findLocale(editedLocale).code || fallbackLocale.code,
+    label: findLocale(editedLocale).name || fallbackLocale.name,
   };
 
   onMount(() => {
@@ -54,8 +55,12 @@
     });
   };
 
-  const handleToggle = () => {
+  const handleToggleColorTheme = () => {
     $colorTheme.system = !$colorTheme.system;
+  };
+
+  const handleToggleLocaleBrowser = () => {
+    $locale = $locale ? undefined : fallbackLocale.code;
   };
 
   const handleLocaleChange = (newLocale: string) => {
@@ -71,21 +76,31 @@
           title="Theme selection"
           subtitle="Automatically set the theme to light or dark based on your browser's system preference"
           bind:checked={$colorTheme.system}
-          on:toggle={handleToggle}
+          on:toggle={handleToggleColorTheme}
         />
       </div>
       <div class="ml-4">
-        <SettingCombobox
-          comboboxPlaceholder="Searching locales..."
-          {selectedOption}
-          options={getAllLanguages()}
-          title="Locale"
-          subtitle="Format dates and numbers based on your language and your region"
-          on:select={({ detail }) => handleLocaleChange(detail.value)}
+        <SettingSwitch
+          title="Default Locale"
+          subtitle="Format dates and numbers based on your browser locale"
+          checked={$locale == undefined}
+          on:toggle={handleToggleLocaleBrowser}
         >
           <p class="mt-2">{selectedDate}</p>
-        </SettingCombobox>
+        </SettingSwitch>
       </div>
+      {#if $locale !== undefined}
+        <div class="ml-4">
+          <SettingCombobox
+            comboboxPlaceholder="Searching locales..."
+            {selectedOption}
+            options={getAllLanguages()}
+            title="Custom Locale"
+            subtitle="Format dates and numbers based on the language and the region"
+            on:select={({ detail }) => handleLocaleChange(detail.value)}
+          />
+        </div>
+      {/if}
     </div>
   </div>
 </section>

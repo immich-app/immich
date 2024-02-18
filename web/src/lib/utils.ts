@@ -15,7 +15,6 @@ import {
   type UserResponseDto,
 } from '@immich/sdk';
 import { get } from 'svelte/store';
-import { fallbackLocale } from './constants';
 
 interface UpdateParamAction {
   param: string;
@@ -191,7 +190,7 @@ export const oauth = {
 export const findLocale = (code: string | undefined) => {
   const language = Locales.find((lang) => lang.code === code);
   return {
-    code: language?.code || fallbackLocale.code,
-    name: language?.name || fallbackLocale.name,
+    code: language?.code,
+    name: language?.name,
   };
 };

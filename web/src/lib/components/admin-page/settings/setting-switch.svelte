@@ -30,6 +30,7 @@
     </div>
 
     <p class="text-sm dark:text-immich-dark-fg">{subtitle}</p>
+    <slot />
   </div>
 
   <label class="relative inline-block h-[10px] w-[36px] flex-none">

@@ -34,7 +34,7 @@
 
     <p class="text-sm dark:text-immich-dark-fg">{subtitle}</p>
   </div>
-  <div class="w-full">
+  <div class="flex items-center">
     <Combobox
       {selectedOption}
       {options}
