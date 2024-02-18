@@ -178,7 +178,10 @@ export function searchAssetBuilder(
   );
 
   if (options.isNotInAlbum) {
-    builder.leftJoin(`${builder.alias}.albums`, 'albums').andWhere('albums.id IS NULL');
+    builder
+      .leftJoin(`${builder.alias}.albums`, 'albums')
+      .andWhere('albums.id IS NULL')
+      .andWhere(`${builder.alias}.isVisible = true`);
   }
 
   if (options.withFaces || options.withPeople) {
