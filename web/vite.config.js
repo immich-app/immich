@@ -1,3 +1,4 @@
+import { enhancedImages } from '@sveltejs/enhanced-img';
 import { sveltekit } from '@sveltejs/kit/vite';
 import path from 'node:path';
 import { visualizer } from 'rollup-plugin-visualizer';
@@ -33,6 +34,7 @@ export default defineConfig({
       emitFile: true,
       filename: 'stats.html',
     }),
+    enhancedImages(),
   ],
   optimizeDeps: {
     entries: ['src/**/*.{svelte,ts,html}'],

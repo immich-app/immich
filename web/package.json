@@ -26,6 +26,7 @@
     "@floating-ui/dom": "^1.5.1",
     "@socket.io/component-emitter": "^3.1.0",
     "@sveltejs/adapter-static": "^3.0.1",
+    "@sveltejs/enhanced-img": "^0.1.8",
     "@sveltejs/kit": "^2.5.0",
     "@sveltejs/vite-plugin-svelte": "^3.0.2",
     "@testing-library/jest-dom": "^6.1.5",

@@ -1,14 +1,14 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
   import ChangeDate from '$lib/components/shared-components/change-date.svelte';
-  import { AppRoute, QueryParameter } from '$lib/constants';
+  import { AppRoute, QueryParameter, timeToLoadTheMap } from '$lib/constants';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { locale } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
   import { websocketEvents } from '$lib/stores/websocket';
   import { getAssetThumbnailUrl, getPeopleThumbnailUrl, isSharedLink } from '$lib/utils';
-  import { getAssetFilename } from '$lib/utils/asset-utils';
+  import { delay, getAssetFilename } from '$lib/utils/asset-utils';
   import { autoGrowHeight } from '$lib/utils/autogrow';
   import { clickOutside } from '$lib/utils/click-outside';
   import {
@@ -38,8 +38,8 @@
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import PersonSidePanel from '../faces-page/person-side-panel.svelte';
   import ChangeLocation from '../shared-components/change-location.svelte';
-  import Map from '../shared-components/map/map.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
+  import LoadingSpinner from '../shared-components/loading-spinner.svelte';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
@@ -609,27 +609,37 @@
 
 {#if latlng && $featureFlags.loaded && $featureFlags.map}
   <div class="h-[360px]">
-    <Map
-      mapMarkers={[{ lat: latlng.lat, lon: latlng.lng, id: asset.id }]}
-      center={latlng}
-      zoom={15}
-      simplified
-      useLocationPin
-    >
-      <svelte:fragment slot="popup" let:marker>
-        {@const { lat, lon } = marker}
-        <div class="flex flex-col items-center gap-1">
-          <p class="font-bold">{lat.toPrecision(6)}, {lon.toPrecision(6)}</p>
-          <a
-            href="https://www.openstreetmap.org/?mlat={lat}&mlon={lon}&zoom=15#map=15/{lat}/{lon}"
-            target="_blank"
-            class="font-medium text-immich-primary"
-          >
-            Open in OpenStreetMap
-          </a>
+    {#await import('../shared-components/map/map.svelte')}
+      {#await delay(timeToLoadTheMap) then}
+        <!-- show the loading spinner only if loading the map takes too much time -->
+        <div class="flex items-center justify-center h-full w-full">
+          <LoadingSpinner />
         </div>
-      </svelte:fragment>
-    </Map>
+      {/await}
+    {:then component}
+      <svelte:component
+        this={component.default}
+        mapMarkers={[{ lat: latlng.lat, lon: latlng.lng, id: asset.id }]}
+        center={latlng}
+        zoom={15}
+        simplified
+        useLocationPin
+      >
+        <svelte:fragment slot="popup" let:marker>
+          {@const { lat, lon } = marker}
+          <div class="flex flex-col items-center gap-1">
+            <p class="font-bold">{lat.toPrecision(6)}, {lon.toPrecision(6)}</p>
+            <a
+              href="https://www.openstreetmap.org/?mlat={lat}&mlon={lon}&zoom=15#map=15/{lat}/{lon}"
+              target="_blank"
+              class="font-medium text-immich-primary"
+            >
+              Open in OpenStreetMap
+            </a>
+          </div>
+        </svelte:fragment>
+      </svelte:component>
+    {/await}
   </div>
 {/if}
 
