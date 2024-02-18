@@ -118,7 +118,7 @@ export class AssetService {
       { take: dto.take ?? 1000, skip: dto.skip },
       { ...dto, withDeleted: true, orderDirection: 'DESC', withExif: true, withStacked: true },
     );
-    return assets.items.map((asset) => mapAsset(asset));
+    return assets.items.map((asset) => mapAsset(asset, { withStack: true }));
   }
 
   async serveThumbnail(auth: AuthDto, assetId: string, dto: GetAssetThumbnailDto): Promise<ImmichFileResponse> {
