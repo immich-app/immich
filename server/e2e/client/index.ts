@@ -7,6 +7,7 @@ import { libraryApi } from './library-api';
 import { partnerApi } from './partner-api';
 import { serverInfoApi } from './server-info-api';
 import { sharedLinkApi } from './shared-link-api';
+import { trashApi } from './trash-api';
 import { userApi } from './user-api';
 
 export const api = {
@@ -17,6 +18,7 @@ export const api = {
   libraryApi,
   serverInfoApi,
   sharedLinkApi,
+  trashApi,
   albumApi,
   userApi,
   partnerApi,

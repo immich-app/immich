@@ -2,12 +2,18 @@
   import { AppRoute } from '$lib/constants';
   import Icon from '$lib/components/elements/icon.svelte';
   import { goto } from '$app/navigation';
-  import { isSearchEnabled, preventRaceConditionSearchBar, savedSearchTerms } from '$lib/stores/search.store';
+  import {
+    isSearchEnabled,
+    preventRaceConditionSearchBar,
+    savedSearchTerms,
+    searchQuery,
+  } from '$lib/stores/search.store';
   import { clickOutside } from '$lib/utils/click-outside';
   import { mdiClose, mdiMagnify, mdiTune } from '@mdi/js';
   import IconButton from '$lib/components/elements/buttons/icon-button.svelte';
   import SearchHistoryBox from './search-history-box.svelte';
   import SearchFilterBox from './search-filter-box.svelte';
+  import type { MetadataSearchDto, SmartSearchDto } from '@immich/sdk';
   export let value = '';
   export let grayTheme: boolean;
 
@@ -17,28 +23,17 @@
   let showFilter = false;
   $: showClearIcon = value.length > 0;
 
-  function onSearch() {
-    let smartSearch = 'true';
-    let searchValue = value;
-
-    if (value.slice(0, 2) == 'm:') {
-      smartSearch = 'false';
-      searchValue = value.slice(2);
-    }
-
-    $savedSearchTerms = $savedSearchTerms.filter((item) => item !== value);
-    saveSearchTerm(value);
-
+  const onSearch = (payload: SmartSearchDto | MetadataSearchDto) => {
     const parameters = new URLSearchParams({
-      q: searchValue,
-      smart: smartSearch,
-      take: '100',
+      query: JSON.stringify(payload),
     });
 
     showHistory = false;
+    showFilter = false;
     $isSearchEnabled = false;
+    $searchQuery = payload;
     goto(`${AppRoute.SEARCH}?${parameters}`, { invalidateAll: true });
-  }
+  };
 
   const clearSearchTerm = (searchTerm: string) => {
     input.focus();
@@ -70,6 +65,26 @@
 
     showHistory = false;
     $isSearchEnabled = false;
+    showFilter = false;
+  };
+
+  const onHistoryTermClick = (searchTerm: string) => {
+    const searchPayload = { query: searchTerm };
+    onSearch(searchPayload);
+  };
+
+  const onFilterClick = () => {
+    showFilter = !showFilter;
+    value = '';
+
+    if (showFilter) {
+      showHistory = false;
+    }
+  };
+
+  const onSubmit = () => {
+    onSearch({ query: value });
+    saveSearchTerm(value);
   };
 </script>
 
@@ -80,7 +95,7 @@
     class="relative select-text text-sm"
     action={AppRoute.SEARCH}
     on:reset={() => (value = '')}
-    on:submit|preventDefault={() => onSearch()}
+    on:submit|preventDefault={onSubmit}
   >
     <label>
       <div class="absolute inset-y-0 left-0 flex items-center pl-6">
@@ -107,9 +122,9 @@
         disabled={showFilter}
       />
 
-      <div class="absolute inset-y-0 right-5 flex items-center pl-6">
+      <div class="absolute inset-y-0 {showClearIcon ? 'right-14' : 'right-5'} flex items-center pl-6 transition-all">
         <div class="dark:text-immich-dark-fg/75">
-          <IconButton on:click={() => (showFilter = !showFilter)} title="Show search options">
+          <IconButton on:click={onFilterClick} title="Show search options">
             <Icon path={mdiTune} size="1.5em" />
           </IconButton>
         </div>
@@ -131,15 +146,12 @@
       <SearchHistoryBox
         on:clearAllSearchTerms={clearAllSearchTerms}
         on:clearSearchTerm={({ detail: searchTerm }) => clearSearchTerm(searchTerm)}
-        on:selectSearchTerm={({ detail: searchTerm }) => {
-          value = searchTerm;
-          onSearch();
-        }}
+        on:selectSearchTerm={({ detail: searchTerm }) => onHistoryTermClick(searchTerm)}
       />
     {/if}
 
     {#if showFilter}
-      <SearchFilterBox />
+      <SearchFilterBox on:search={({ detail }) => onSearch(detail)} />
     {/if}
   </form>
 </div>

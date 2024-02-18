@@ -1,15 +1,18 @@
 <script lang="ts">
-  import { websocketStore } from '$lib/stores/websocket';
+  import { websocketEvents } from '$lib/stores/websocket';
   import type { AssetStore } from '$lib/stores/assets.store';
+  import { onMount } from 'svelte';
 
   export let assetStore: AssetStore | null;
 
-  websocketStore.onAssetUpdate.subscribe((asset) => {
-    if (asset && asset.originalFileName && assetStore) {
-      assetStore.updateAsset(asset, true);
+  onMount(() => {
+    return websocketEvents.on('on_asset_update', (asset) => {
+      if (asset.originalFileName && assetStore) {
+        assetStore.updateAsset(asset, true);
 
-      assetStore.removeAsset(asset.id); // Update timeline
-      assetStore.addAsset(asset);
-    }
+        assetStore.removeAsset(asset.id); // Update timeline
+        assetStore.addAsset(asset);
+      }
+    });
   });
 </script>

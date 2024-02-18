@@ -32,7 +32,7 @@ void main() {
       // TODO
     });
 
-    //Future<SearchResponseDto> searchMetadata({ String checksum, String city, String country, DateTime createdAfter, DateTime createdBefore, String deviceAssetId, String deviceId, String encodedVideoPath, String id, bool isArchived, bool isEncoded, bool isExternal, bool isFavorite, bool isMotion, bool isOffline, bool isReadOnly, bool isVisible, String lensModel, String libraryId, String make, String model, AssetOrder order, String originalFileName, String originalPath, num page, String resizePath, num size, String state, DateTime takenAfter, DateTime takenBefore, DateTime trashedAfter, DateTime trashedBefore, AssetTypeEnum type, DateTime updatedAfter, DateTime updatedBefore, String webpPath, bool withArchived, bool withDeleted, bool withExif, bool withPeople, bool withStacked }) async
+    //Future<SearchResponseDto> searchMetadata(MetadataSearchDto metadataSearchDto) async
     test('test searchMetadata', () async {
       // TODO
     });
@@ -42,7 +42,7 @@ void main() {
       // TODO
     });
 
-    //Future<SearchResponseDto> searchSmart(String query, { String city, String country, DateTime createdAfter, DateTime createdBefore, String deviceId, bool isArchived, bool isEncoded, bool isExternal, bool isFavorite, bool isMotion, bool isOffline, bool isReadOnly, bool isVisible, String lensModel, String libraryId, String make, String model, num page, num size, String state, DateTime takenAfter, DateTime takenBefore, DateTime trashedAfter, DateTime trashedBefore, AssetTypeEnum type, DateTime updatedAfter, DateTime updatedBefore, bool withArchived, bool withDeleted, bool withExif }) async
+    //Future<SearchResponseDto> searchSmart(SmartSearchDto smartSearchDto) async
     test('test searchSmart', () async {
       // TODO
     });

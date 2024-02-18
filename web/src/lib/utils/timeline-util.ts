@@ -50,3 +50,20 @@ export function splitBucketIntoDateGroups(
   );
   return sortBy(grouped, (group) => assets.indexOf(group[0]));
 }
+
+export type LayoutBox = {
+  top: number;
+  left: number;
+  width: number;
+};
+
+export function calculateWidth(boxes: LayoutBox[]): number {
+  let width = 0;
+  for (const box of boxes) {
+    if (box.top < 100) {
+      width = box.left + box.width;
+    }
+  }
+
+  return width;
+}

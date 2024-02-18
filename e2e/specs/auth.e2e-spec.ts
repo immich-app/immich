@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { app } from '../test-utils';
 
 test.describe('Registration', () => {
-  test.beforeAll(async () => {
+  test.beforeEach(async () => {
     await app.reset();
   });
 

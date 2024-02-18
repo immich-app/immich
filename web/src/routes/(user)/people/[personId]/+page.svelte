@@ -30,7 +30,7 @@
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { AssetStore } from '$lib/stores/assets.store';
-  import { websocketStore } from '$lib/stores/websocket';
+  import { websocketEvents } from '$lib/stores/websocket';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { clickOutside } from '$lib/utils/click-outside';
   import { handleError } from '$lib/utils/handle-error';
@@ -68,7 +68,6 @@
   });
   const assetInteractionStore = createAssetInteractionStore();
   const { selectedAssets, isMultiSelectState } = assetInteractionStore;
-  const { onPersonThumbnail } = websocketStore;
 
   let viewMode: ViewMode = ViewMode.VIEW_ASSETS;
   let isEditingName = false;
@@ -119,8 +118,6 @@
 
   $: isAllArchive = [...$selectedAssets].every((asset) => asset.isArchived);
   $: isAllFavorite = [...$selectedAssets].every((asset) => asset.isFavorite);
-  $: $onPersonThumbnail === data.person.id &&
-    (thumbnailData = getPeopleThumbnailUrl(data.person.id) + `?now=${Date.now()}`);
 
   $: {
     if (people) {
@@ -138,6 +135,12 @@
     if (action == 'merge') {
       viewMode = ViewMode.MERGE_PEOPLE;
     }
+
+    return websocketEvents.on('on_person_thumbnail', (personId: string) => {
+      if (data.person.id === personId) {
+        thumbnailData = getPeopleThumbnailUrl(data.person.id) + `?now=${Date.now()}`;
+      }
+    });
   });
 
   const handleKeyboardPress = (event: KeyboardEvent) => {
