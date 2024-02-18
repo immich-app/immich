@@ -28,8 +28,8 @@ import { getName } from 'i18n-iso-countries';
 import { createReadStream, existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import * as readLine from 'node:readline';
-import { DataSource, DeepPartial, QueryRunner, Repository } from 'typeorm';
 import { Subscription } from 'rxjs';
+import { DataSource, DeepPartial, QueryRunner, Repository } from 'typeorm';
 import { DummyValue, GenerateSql } from '../infra.util';
 
 type GeoEntity = GeodataPlacesEntity | GeodataAdmin1Entity | GeodataAdmin2Entity;
@@ -49,7 +49,7 @@ export class MetadataRepository implements IMetadataRepository {
     @InjectDataSource() private dataSource: DataSource,
   ) {
     this.configCore = SystemConfigCore.create(configRepository);
-   }
+  }
 
   private logger = new ImmichLogger(MetadataRepository.name);
   private exiftool: ExifTool;
@@ -85,11 +85,13 @@ export class MetadataRepository implements IMetadataRepository {
     const { exiftool: exiftoolCfg } = await this.configCore.getConfig();
 
     let exiftoolArgs = DefaultExiftoolArgs;
-    if (exiftoolCfg.lfs) { exiftoolArgs =  ["-api", "largefilesupport=1", ...exiftoolArgs]; }
+    if (exiftoolCfg.lfs) {
+      exiftoolArgs = ['-api', 'largefilesupport=1', ...exiftoolArgs];
+    }
 
     this.exiftool = new ExifTool({
-      exiftoolArgs
-    })
+      exiftoolArgs,
+    });
   }
 
   private async importGeodata() {
