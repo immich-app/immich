@@ -1,6 +1,5 @@
 <script lang="ts">
   import { api } from '$lib/api';
-  import noThumbnailUrl from '$lib/assets/no-thumbnail.png';
   import Icon from '$lib/components/elements/icon.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { user } from '$lib/stores/user.store';
@@ -21,7 +20,7 @@
 
   $: imageData = album.albumThumbnailAssetId
     ? getAssetThumbnailUrl(album.albumThumbnailAssetId, ThumbnailFormat.Webp)
-    : noThumbnailUrl;
+    : null;
 
   const dispatchClick = createEventDispatcher<OnClick>();
   const dispatchShowContextMenu = createEventDispatcher<OnShowContextMenu>();
@@ -50,7 +49,7 @@
     dispatchShowContextMenu('showalbumcontextmenu', getContextMenuPosition(e));
 
   onMount(async () => {
-    imageData = (await loadHighQualityThumbnail(album.albumThumbnailAssetId)) || noThumbnailUrl;
+    imageData = (await loadHighQualityThumbnail(album.albumThumbnailAssetId)) || null;
   });
 
   const getAlbumOwnerInfo = () => getUserById({ id: album.ownerId });
@@ -81,15 +80,26 @@
   {/if}
 
   <div class={`relative aspect-square`}>
-    <img
-      loading={preload ? 'eager' : 'lazy'}
-      src={imageData}
-      alt={album.id}
-      class={`z-0 h-full w-full rounded-xl object-cover transition-all duration-300 hover:shadow-lg`}
-      data-testid="album-image"
-      draggable="false"
-    />
-    <div class="absolute top-0 h-full w-full rounded-3xl" />
+    {#if album.albumThumbnailAssetId}
+      <img
+        loading={preload ? 'eager' : 'lazy'}
+        src={imageData}
+        alt={album.id}
+        class="z-0 h-full w-full rounded-xl object-cover transition-all duration-300 hover:shadow-lg"
+        data-testid="album-image"
+        draggable="false"
+      />
+    {:else}
+      <enhanced:img
+        loading={preload ? 'eager' : 'lazy'}
+        src="$lib/assets/no-thumbnail.png"
+        sizes="min(271px,186px)"
+        alt={album.id}
+        class="z-0 h-full w-full rounded-xl object-cover transition-all duration-300 hover:shadow-lg"
+        data-testid="album-image"
+        draggable="false"
+      />
+    {/if}
   </div>
 
   <div class="mt-4">

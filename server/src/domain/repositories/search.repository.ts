@@ -66,13 +66,13 @@ export interface SearchAssetIDOptions {
   id?: string;
 }
 
-export interface SearchUserIDOptions {
+export interface SearchUserIdOptions {
   deviceId?: string;
   libraryId?: string;
-  ownerId?: string;
+  userIds?: string[];
 }
 
-export type SearchIDOptions = SearchAssetIDOptions & SearchUserIDOptions;
+export type SearchIdOptions = SearchAssetIDOptions & SearchUserIdOptions;
 
 export interface SearchStatusOptions {
   isArchived?: boolean;
@@ -83,6 +83,7 @@ export interface SearchStatusOptions {
   isOffline?: boolean;
   isReadOnly?: boolean;
   isVisible?: boolean;
+  isNotInAlbum?: boolean;
   type?: AssetType;
   withArchived?: boolean;
   withDeleted?: boolean;
@@ -132,6 +133,10 @@ export interface SearchEmbeddingOptions {
   userIds: string[];
 }
 
+export interface SearchPeopleOptions {
+  personIds?: string[];
+}
+
 export interface SearchOrderOptions {
   orderDirection?: 'ASC' | 'DESC';
 }
@@ -141,13 +146,18 @@ export interface SearchPaginationOptions {
   size: number;
 }
 
-export type AssetSearchOptions = SearchDateOptions &
-  SearchIDOptions &
+type BaseAssetSearchOptions = SearchDateOptions &
+  SearchIdOptions &
   SearchExifOptions &
   SearchOrderOptions &
   SearchPathOptions &
-  SearchRelationOptions &
-  SearchStatusOptions;
+  SearchStatusOptions &
+  SearchUserIdOptions &
+  SearchPeopleOptions;
+
+export type AssetSearchOptions = BaseAssetSearchOptions & SearchRelationOptions;
+
+export type AssetSearchOneToOneRelationOptions = BaseAssetSearchOptions & SearchOneToOneRelationOptions;
 
 export type AssetSearchBuilderOptions = Omit<AssetSearchOptions, 'orderDirection'>;
 
@@ -156,7 +166,8 @@ export type SmartSearchOptions = SearchDateOptions &
   SearchExifOptions &
   SearchOneToOneRelationOptions &
   SearchStatusOptions &
-  SearchUserIDOptions;
+  SearchUserIdOptions &
+  SearchPeopleOptions;
 
 export interface FaceEmbeddingSearch extends SearchEmbeddingOptions {
   hasPerson?: boolean;

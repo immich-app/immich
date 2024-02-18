@@ -85,7 +85,7 @@
         />
       {/await}
     {:else}
-      <img
+      <enhanced:img
         src={noThumbnailUrl}
         alt={'Album without assets'}
         class="h-[100px] w-[100px] rounded-lg object-cover"

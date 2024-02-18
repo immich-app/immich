@@ -136,6 +136,7 @@ class GalleryViewerPage extends HookConsumerWidget {
         // swallow error silently
         debugPrint('Error precaching next image: $exception, $stackTrace');
       }
+
       if (index < totalAssets && index >= 0) {
         final asset = loadAsset(index);
         precacheImage(
@@ -152,10 +153,11 @@ class GalleryViewerPage extends HookConsumerWidget {
           borderRadius: BorderRadius.all(Radius.circular(15.0)),
         ),
         barrierColor: Colors.transparent,
-        backgroundColor: Colors.transparent,
         isScrollControlled: true,
-        useSafeArea: true,
+        showDragHandle: true,
+        enableDrag: true,
         context: context,
+        useSafeArea: true,
         builder: (context) {
           return Padding(
             padding: EdgeInsets.only(

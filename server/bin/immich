@@ -1,2 +1,3 @@
 #!/usr/bin/env bash
+
 node /usr/src/app/node_modules/.bin/immich "$@"

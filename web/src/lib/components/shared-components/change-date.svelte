@@ -1,11 +1,3 @@
-<script lang="ts" context="module">
-  // eslint-disable-next-line @typescript-eslint/no-namespace
-  declare namespace Intl {
-    type Key = 'calendar' | 'collation' | 'currency' | 'numberingSystem' | 'timeZone' | 'unit';
-    function supportedValuesOf(input: Key): string[];
-  }
-</script>
-
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import { DateTime } from 'luxon';
@@ -42,7 +34,9 @@
   };
 
   let selectedDate = initialDate.toFormat("yyyy-MM-dd'T'HH:mm");
-  let disabled = false;
+
+  // Keep local time if not it's really confusing
+  $: date = DateTime.fromISO(selectedDate).setZone(selectedOption.value, { keepLocalTime: true });
 
   const dispatch = createEventDispatcher<{
     cancel: void;
@@ -52,13 +46,8 @@
   const handleCancel = () => dispatch('cancel');
 
   const handleConfirm = () => {
-    let date = DateTime.fromISO(selectedDate);
-
-    date = date.setZone(selectedOption.value, { keepLocalTime: true }); // Keep local time if not it's really confusing
-
     const value = date.toISO();
     if (value) {
-      disabled = true;
       dispatch('confirm', value);
     }
   };
@@ -76,7 +65,7 @@
     cancelColor="secondary"
     title="Edit date & time"
     prompt="Please select a new date:"
-    {disabled}
+    disabled={!date.isValid}
     on:confirm={handleConfirm}
     on:cancel={handleCancel}
   >

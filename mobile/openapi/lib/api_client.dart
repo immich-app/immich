@@ -336,6 +336,8 @@ class ApiClient {
           return MemoryLaneResponseDto.fromJson(value);
         case 'MergePersonDto':
           return MergePersonDto.fromJson(value);
+        case 'MetadataSearchDto':
+          return MetadataSearchDto.fromJson(value);
         case 'ModelType':
           return ModelTypeTypeTransformer().decode(value);
         case 'OAuthAuthorizeResponseDto':
@@ -418,6 +420,8 @@ class ApiClient {
           return SignUpDto.fromJson(value);
         case 'SmartInfoResponseDto':
           return SmartInfoResponseDto.fromJson(value);
+        case 'SmartSearchDto':
+          return SmartSearchDto.fromJson(value);
         case 'SystemConfigDto':
           return SystemConfigDto.fromJson(value);
         case 'SystemConfigFFmpegDto':

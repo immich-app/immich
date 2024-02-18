@@ -60,6 +60,7 @@ export class SearchService {
 
   async searchMetadata(auth: AuthDto, dto: MetadataSearchDto): Promise<SearchResponseDto> {
     let checksum: Buffer | undefined;
+    const userIds = await this.getUserIdsToSearch(auth);
 
     if (dto.checksum) {
       const encoding = dto.checksum.length === 28 ? 'base64' : 'hex';
@@ -74,7 +75,7 @@ export class SearchService {
       {
         ...dto,
         checksum,
-        ownerId: auth.user.id,
+        userIds,
         orderDirection: dto.order ? enumToOrder[dto.order] : 'DESC',
       },
     );
