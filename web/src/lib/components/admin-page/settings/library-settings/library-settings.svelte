@@ -4,7 +4,7 @@
   import { createEventDispatcher } from 'svelte';
   import { fade } from 'svelte/transition';
   import type { SettingsEventType } from '../admin-settings';
-  import SettingAccordion from '../../../shared-components/settings/setting-accordion.svelte';
+  import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
   import SettingInputField, {
     SettingInputFieldType,
   } from '$lib/components/shared-components/settings/setting-input-field.svelte';

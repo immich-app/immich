@@ -10,7 +10,6 @@
   import { mdiCheck, mdiClose } from '@mdi/js';
   import { onMount } from 'svelte';
   import { handleError } from '../../utils/handle-error';
-
   import Button from '../elements/buttons/button.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import Icon from '../elements/icon.svelte';
