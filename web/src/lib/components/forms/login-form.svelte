@@ -6,9 +6,13 @@
   import { oauth } from '$lib/utils';
   import { getServerErrorMessage, handleError } from '$lib/utils/handle-error';
   import { getServerConfig, login } from '@immich/sdk';
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { onMount } from 'svelte';
   import { fade } from 'svelte/transition';
   import Button from '../elements/buttons/button.svelte';
+
+  export let onSuccess: () => unknown | Promise<unknown>;
+  export let onFirstLogin: () => unknown | Promise<unknown>;
+  export let onOnboarding: () => unknown | Promise<unknown>;
 
   let errorMessage: string;
   let email = '';
@@ -16,12 +20,6 @@
   let oauthError = '';
   let loading = false;
   let oauthLoading = true;
-
-  const dispatch = createEventDispatcher<{
-    success: void;
-    firstLogin: void;
-    onboarding: void;
-  }>();
 
   onMount(async () => {
     if (!$featureFlags.oauth) {
@@ -32,7 +30,7 @@
     if (oauth.isCallback(window.location)) {
       try {
         await oauth.login(window.location);
-        dispatch('success');
+        await onSuccess();
         return;
       } catch (error) {
         console.error('Error [login-form] [oauth.callback]', error);
@@ -63,15 +61,15 @@
       const serverConfig = await getServerConfig();
 
       if (user.isAdmin && !serverConfig.isOnboarded) {
-        dispatch('onboarding');
+        await onOnboarding();
         return;
       }
 
       if (!user.isAdmin && user.shouldChangePassword) {
-        dispatch('firstLogin');
+        await onFirstLogin();
         return;
       }
-      dispatch('success');
+      await onSuccess();
       return;
     } catch (error) {
       errorMessage = (await getServerErrorMessage(error)) || 'Incorrect email or password';
