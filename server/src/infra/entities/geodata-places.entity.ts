@@ -1,5 +1,4 @@
-import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
-import { GeodataAlternateNameEntity } from './alternate-names.entity';
+import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity('geodata_places', { synchronize: false })
 export class GeodataPlacesEntity {
@@ -20,7 +19,7 @@ export class GeodataPlacesEntity {
   //   asExpression: 'll_to_earth((latitude)::double precision, (longitude)::double precision)',
   //   type: 'earth',
   // })
-  earthCoord!: unknown;
+  // earthCoord!: unknown;
 
   @Column({ type: 'char', length: 2 })
   countryCode!: string;
@@ -37,9 +36,9 @@ export class GeodataPlacesEntity {
   @Column({ type: 'varchar', nullable: true })
   admin2Name!: string;
 
+  @Column({ type: 'varchar', nullable: true })
+  alternateNames!: string;
+
   @Column({ type: 'date' })
   modificationDate!: Date;
-
-  @OneToMany(() => GeodataAlternateNameEntity, (name) => name.geodata)
-  altnernateNames!: GeodataAlternateNameEntity[];
 }

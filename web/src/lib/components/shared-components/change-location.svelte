@@ -3,7 +3,7 @@
   import { createEventDispatcher } from 'svelte';
   import ConfirmDialogue from './confirm-dialogue.svelte';
   import Map from './map/map.svelte';
-  import { maximumLengthSearchPeople } from '$lib/constants';
+  import { maximumLengthSearchPeople, timeBeforeShowLoadingSpinner } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
   import SearchBar from '../faces-page/search-bar.svelte';
   import { clickOutside } from '$lib/utils/click-outside';
@@ -19,7 +19,8 @@
   let places: PlacesResponseDto[] = [];
   let suggestedPlaces: PlacesResponseDto[] = [];
   let searchWord: string;
-  let isSearchingPlaces = false;
+  let isSearching = false;
+  let showSpinner = false;
   let focusedElements: (HTMLButtonElement | null)[] = Array.from({ length: maximumLengthSearchPeople }, () => null);
   let indexFocus: number | null = null;
   let hideSuggestion = false;
@@ -65,11 +66,13 @@
   };
 
   const handleSearchPlaces = async () => {
-    if (searchWord === '') {
+    if (searchWord === '' || isSearching) {
       return;
     }
 
-    const timeout = setTimeout(() => (isSearchingPlaces = true), 1000);
+    // TODO: refactor setTimeout/clearTimeout logic - there are no less than 12 places that duplicate this code
+    isSearching = true;
+    const timeout = setTimeout(() => (showSpinner = true), timeBeforeShowLoadingSpinner);
     try {
       places = await searchPlaces({ name: searchWord });
     } catch (error) {
@@ -77,9 +80,9 @@
       handleError(error, "Can't search places");
     } finally {
       clearTimeout(timeout);
+      isSearching = false;
+      showSpinner = false;
     }
-
-    isSearchingPlaces = false;
   };
 
   const handleUseSuggested = (latitude: number, longitude: number) => {
@@ -146,7 +149,7 @@
       <button class="w-full" on:click={() => (hideSuggestion = false)}>
         <SearchBar
           bind:name={searchWord}
-          isSearchingPeople={isSearchingPlaces}
+          {showSpinner}
           on:reset={() => {
             suggestedPlaces = [];
           }}

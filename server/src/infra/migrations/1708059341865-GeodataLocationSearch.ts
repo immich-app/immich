@@ -103,7 +103,8 @@ export class GeodataLocationSearch1708059341865 implements MigrationInterface {
         SELECT DISTINCT
             "admin1Key" AS "key",
             "admin1Name" AS "name"
-        FROM geodata_places`,
+        FROM geodata_places
+        WHERE "admin1Name" IS NOT NULL`,
     );
 
     await queryRunner.query(
@@ -112,7 +113,8 @@ export class GeodataLocationSearch1708059341865 implements MigrationInterface {
           SELECT DISTINCT
               "admin2Key" AS "key",
               "admin2Name" AS "name"
-          FROM geodata_places`,
+          FROM geodata_places
+          WHERE "admin2Name" IS NOT NULL`,
     );
 
     await queryRunner.query(`

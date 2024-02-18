@@ -2,7 +2,7 @@ import {
   citiesFile,
   geodataAdmin1Path,
   geodataAdmin2Path,
-  geodataCitites500Path,
+  geodataCities500Path,
   geodataDatePath,
   GeoPoint,
   IMetadataRepository,
@@ -10,7 +10,7 @@ import {
   ISystemMetadataRepository,
   ReverseGeocodeResult,
 } from '@app/domain';
-import { ExifEntity, GeodataAlternateNameEntity, GeodataPlacesEntity, SystemMetadataKey } from '@app/infra/entities';
+import { ExifEntity, GeodataPlacesEntity, SystemMetadataKey } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
 import { Inject } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
@@ -20,16 +20,16 @@ import { getName } from 'i18n-iso-countries';
 import { createReadStream, existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import * as readLine from 'node:readline';
-import { DataSource, DeepPartial, QueryRunner, Repository } from 'typeorm';
+import { DataSource, QueryRunner, Repository } from 'typeorm';
+import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity.js';
 import { DummyValue, GenerateSql } from '../infra.util';
 
 export class MetadataRepository implements IMetadataRepository {
   constructor(
     @InjectRepository(ExifEntity) private exifRepository: Repository<ExifEntity>,
     @InjectRepository(GeodataPlacesEntity) private readonly geodataPlacesRepository: Repository<GeodataPlacesEntity>,
-    @InjectRepository(GeodataAlternateNameEntity)
-    private readonly alternateNameRepository: Repository<GeodataAlternateNameEntity>,
-    @Inject(ISystemMetadataRepository) private readonly systemMetadataRepository: ISystemMetadataRepository,
+    @Inject(ISystemMetadataRepository)
+    private readonly systemMetadataRepository: ISystemMetadataRepository,
     @InjectDataSource() private dataSource: DataSource,
   ) {}
 
@@ -45,7 +45,6 @@ export class MetadataRepository implements IMetadataRepository {
       return;
     }
 
-    this.logger.log('Importing geodata to database from file');
     await this.importGeodata();
 
     await this.systemMetadataRepository.set(SystemMetadataKey.REVERSE_GEOCODING_STATE, {
@@ -60,14 +59,14 @@ export class MetadataRepository implements IMetadataRepository {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
 
+    const admin1 = await this.loadAdmin(geodataAdmin1Path);
+    const admin2 = await this.loadAdmin(geodataAdmin2Path);
+
     try {
       await queryRunner.startTransaction();
 
       await queryRunner.manager.clear(GeodataPlacesEntity);
-      await this.loadCities500(queryRunner);
-      await this.loadAdmin1(queryRunner);
-      await this.loadAdmin2(queryRunner);
-      await queryRunner.query('VACUUM FULL geodata_places');
+      await this.loadCities500(queryRunner, admin1, admin2);
 
       await queryRunner.commitTransaction();
     } catch (error) {
@@ -81,10 +80,7 @@ export class MetadataRepository implements IMetadataRepository {
 
   private async loadGeodataToTableFromFile(
     queryRunner: QueryRunner,
-    lineToEntityMapper: (lineSplit: string[]) => {
-      geoData: GeodataPlacesEntity;
-      alternateNamesData?: GeodataAlternateNameEntity[];
-    },
+    lineToEntityMapper: (lineSplit: string[]) => GeodataPlacesEntity,
     filePath: string,
   ) {
     if (!existsSync(filePath)) {
@@ -93,83 +89,62 @@ export class MetadataRepository implements IMetadataRepository {
     }
 
     const input = createReadStream(filePath);
-    let bufferGeodata: DeepPartial<GeodataPlacesEntity>[] = [];
-    let bufferAlternateNames: DeepPartial<GeodataAlternateNameEntity>[] = [];
-    const lineReader = readLine.createInterface({ input: input });
+    let bufferGeodata: QueryDeepPartialEntity<GeodataPlacesEntity>[] = [];
+    const lineReader = readLine.createInterface({ input });
 
     for await (const line of lineReader) {
       const lineSplit = line.split('\t');
-      const test = lineToEntityMapper(lineSplit);
-      bufferGeodata.push(test.geoData);
-      if (test.alternateNamesData) {
-        bufferAlternateNames.push(...test.alternateNamesData);
-      }
+      const geoData = lineToEntityMapper(lineSplit);
+      bufferGeodata.push(geoData);
       if (bufferGeodata.length > 1000) {
-        await queryRunner.manager.save(bufferGeodata);
-        bufferGeodata = [];
-      }
-      if (bufferAlternateNames.length > 1000) {
-        await queryRunner.manager.save(bufferGeodata);
-        await queryRunner.manager.save(bufferAlternateNames);
-        bufferAlternateNames = [];
+        await queryRunner.manager.upsert(GeodataPlacesEntity, bufferGeodata, ['id']);
         bufferGeodata = [];
       }
     }
-    await queryRunner.manager.save(bufferGeodata);
-    await queryRunner.manager.save(bufferAlternateNames);
+    await queryRunner.manager.upsert(GeodataPlacesEntity, bufferGeodata, ['id']);
   }
 
-  private async loadCities500(queryRunner: QueryRunner) {
+  private async loadCities500(
+    queryRunner: QueryRunner,
+    admin1Map: Map<string, string>,
+    admin2Map: Map<string, string>,
+  ) {
     await this.loadGeodataToTableFromFile(
       queryRunner,
-      (lineSplit: string[]) => {
-        const geoData = this.geodataPlacesRepository.create({
+      (lineSplit: string[]) =>
+        this.geodataPlacesRepository.create({
           id: Number.parseInt(lineSplit[0]),
           name: lineSplit[1],
+          alternateNames: lineSplit[3],
           latitude: Number.parseFloat(lineSplit[4]),
           longitude: Number.parseFloat(lineSplit[5]),
           countryCode: lineSplit[8],
           admin1Code: lineSplit[10],
           admin2Code: lineSplit[11],
           modificationDate: lineSplit[18],
-        });
-        const alternateNames = lineSplit[3].split(',');
-        const alternateNamesData = [];
-        for (const alternateName of alternateNames) {
-          if (alternateName) {
-            alternateNamesData.push(
-              this.alternateNameRepository.create({
-                name: alternateName,
-                geodata: geoData,
-              }),
-            );
-          }
-        }
-
-        return { geoData, alternateNamesData };
-      },
-      geodataCitites500Path,
+          admin1Name: admin1Map.get(`${lineSplit[8]}.${lineSplit[10]}`),
+          admin2Name: admin2Map.get(`${lineSplit[8]}.${lineSplit[10]}.${lineSplit[11]}`),
+        }),
+      geodataCities500Path,
     );
   }
 
-  private async loadAdmin1(queryRunner: QueryRunner) {
-    await this.loadGeodataToTableFromFile(
-      queryRunner,
-      (lineSplit: string[]) => {
-        return { geoData: this.geodataPlacesRepository.create({ admin1Name: lineSplit[1] }) };
-      },
-      geodataAdmin1Path,
-    );
-  }
+  private async loadAdmin(filePath: string) {
+    if (!existsSync(filePath)) {
+      this.logger.error(`Geodata file ${filePath} not found`);
+      throw new Error(`Geodata file ${filePath} not found`);
+    }
 
-  private async loadAdmin2(queryRunner: QueryRunner) {
-    await this.loadGeodataToTableFromFile(
-      queryRunner,
-      (lineSplit: string[]) => {
-        return { geoData: this.geodataPlacesRepository.create({ admin1Name: lineSplit[1] }) };
-      },
-      geodataAdmin2Path,
-    );
+    const input = createReadStream(filePath);
+    const lineReader = readLine.createInterface({ input: input });
+
+    const adminMap = new Map<string, string>();
+    for await (const line of lineReader) {
+      const lineSplit = line.split('\t');
+      adminMap.set(lineSplit[0], lineSplit[1]);
+    }
+
+    return adminMap;
   }
 
   async teardown() {

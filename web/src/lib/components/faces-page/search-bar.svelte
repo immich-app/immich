@@ -6,7 +6,7 @@
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
 
   export let name: string;
-  export let isSearchingPeople: boolean;
+  export let showSpinner: boolean;
   export let roundedBottom = true;
 
   const dispatch = createEventDispatcher<{ search: SearchOptions; reset: void }>();
@@ -36,7 +36,7 @@
     bind:value={name}
     on:input={() => dispatch('search', { force: false })}
   />
-  {#if isSearchingPeople}
+  {#if showSpinner}
     <div class="flex place-items-center">
       <LoadingSpinner />
     </div>

@@ -431,7 +431,7 @@
           <div class="w-40 lg:w-80 h-10">
             <SearchBar
               bind:name={searchName}
-              {isSearchingPeople}
+              showSpinner={isSearchingPeople}
               on:reset={() => {
                 searchedPeople = [];
               }}
