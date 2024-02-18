@@ -210,6 +210,15 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
+  @GenerateSql({
+    params: [
+      { skip: 20000, take: 10000 },
+      {
+        takenBefore: DummyValue.DATE,
+        userIds: [DummyValue.UUID],
+      },
+    ],
+  })
   getAllByFileCreationDate(
     pagination: PaginationOptions,
     options: AssetSearchOneToOneRelationOptions = {},
