@@ -70,7 +70,7 @@
           {selectedOption}
           options={getAllLanguages()}
           title="Locale"
-          subtitle="Format dates based on your language and your region"
+          subtitle="Format dates and numbers based on your language and your region"
           on:select={({ detail }) => handleLocaleChange(detail.value)}
         >
           <p class="mt-2">{selectedDate}</p>
