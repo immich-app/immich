@@ -39,14 +39,17 @@ export const colorTheme = persisted<ThemeSetting>('color-theme', initialTheme, {
 export const locale = persisted<string | undefined>('locale', fallbackLocale.code, {
   serializer: {
     parse: (text) => {
-      const test = 10;
-      try {
-        test.toLocaleString(text);
-      } catch (error) {
-        handleError(error, `Locale ${text} is not supported`);
-        locale.set(fallbackLocale.code);
-        return fallbackLocale.code;
+      if (text) {
+        const test = 10;
+        try {
+          test.toLocaleString(text);
+        } catch (error) {
+          handleError(error, `Locale ${text} is not supported`);
+          locale.set(fallbackLocale.code);
+          return fallbackLocale.code;
+        }
       }
+
       return text;
     },
     stringify: (object) => object ?? '',

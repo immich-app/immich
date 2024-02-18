@@ -39,6 +39,7 @@
 
   const getAllLanguages = (): ComboBoxOption[] => {
     const testNumber = 10;
+    // test locales supported by the browser
     return Locales.map((locale) => ({
       label: locale.name,
       value: locale.code,
