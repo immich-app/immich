@@ -31,9 +31,7 @@ export const IAssetRepositoryV1 = 'IAssetRepositoryV1';
 
 @Injectable()
 export class AssetRepositoryV1 implements IAssetRepositoryV1 {
-  constructor(
-    @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
-  ) {}
+  constructor(@InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>) {}
 
   getSearchPropertiesByUserId(userId: string): Promise<SearchPropertiesDto[]> {
     return this.assetRepository
