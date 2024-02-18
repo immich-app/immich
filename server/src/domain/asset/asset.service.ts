@@ -381,7 +381,7 @@ export class AssetService {
       .flatMap((stack) => (stack ? [stack] : []))
       .filter((stack) => stack.assets.length < 2);
     await Promise.all(stacksToDelete.map((as) => this.assetStackRepository.delete(as.id)));
-    this.communicationRepository.send(ClientEvent.ASSET_UPDATE, auth.user.id, ids);
+    this.communicationRepository.send(ClientEvent.ASSET_STACK_UPDATE, auth.user.id, ids);
   }
 
   async handleAssetDeletionCheck() {
@@ -499,7 +499,11 @@ export class AssetService {
       primaryAssetId: newParentId,
     });
 
-    this.communicationRepository.send(ClientEvent.ASSET_UPDATE, auth.user.id, [...childIds, newParentId, oldParentId]);
+    this.communicationRepository.send(ClientEvent.ASSET_STACK_UPDATE, auth.user.id, [
+      ...childIds,
+      newParentId,
+      oldParentId,
+    ]);
     await this.assetRepository.updateAll([oldParentId, newParentId, ...childIds], { updatedAt: new Date() });
   }
 
