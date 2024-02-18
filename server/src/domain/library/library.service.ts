@@ -337,6 +337,15 @@ export class LibraryService extends EventEmitter {
     await this.access.requirePermission(auth, Permission.LIBRARY_UPDATE, id);
     const library = await this.repository.update({ id, ...dto });
 
+    if (dto.importPaths) {
+      const validation = await this.validate(auth, id, { importPaths: dto.importPaths });
+      validation.importPaths?.forEach((path) => {
+        if (!path.isValid) {
+          throw new BadRequestException('Invalid import path(s)');
+        }
+      });
+    }
+
     if (dto.importPaths || dto.exclusionPatterns) {
       // Re-watch library to use new paths and/or exclusion patterns
       await this.watch(id);
@@ -602,7 +611,7 @@ export class LibraryService extends EventEmitter {
     const validImportPaths = pathValidation
       .map((validation) => {
         if (!validation.isValid) {
-          this.logger.error(`Invalid import path: ${validation.importPath}. Reason: ${validation.message}`);
+          this.logger.error(`Skipping invalid import path: ${validation.importPath}. Reason: ${validation.message}`);
         }
         return validation;
       })

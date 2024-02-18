@@ -4,7 +4,7 @@
   import Button from '../elements/buttons/button.svelte';
   import LibraryImportPathForm from './library-import-path-form.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { mdiAlertOutline, mdiPencilOutline } from '@mdi/js';
+  import { mdiAlertOutline, mdiCheckCircleOutline, mdiPencilOutline } from '@mdi/js';
   import { validate, type LibraryResponseDto } from '@immich/sdk';
   import type { ValidateLibraryImportPathResponseDto } from '@immich/sdk/axios';
 
@@ -22,16 +22,22 @@
 
   onMount(async () => {
     if (library.importPaths) {
+      await handleValidation();
+    } else {
+      library.importPaths = [];
+    }
+  });
+
+  const handleValidation = async () => {
+    if (library.importPaths) {
       const validation = await validate({
         id: library.id,
         validateLibraryDto: { importPaths: library.importPaths },
       });
 
       validatedPaths = validation.importPaths ?? [];
-    } else {
-      library.importPaths = [];
     }
-  });
+  };
 
   const dispatch = createEventDispatcher<{
     cancel: void;
@@ -58,12 +64,7 @@
       // Check so that import path isn't duplicated
       if (!library.importPaths.includes(importPathToAdd)) {
         library.importPaths.push(importPathToAdd);
-        const validation = await validate({
-          id: library.id,
-          validateLibraryDto: { importPaths: library.importPaths },
-        });
-
-        validatedPaths = validation.importPaths ?? [];
+        await handleValidation();
       }
     } catch (error) {
       handleError(error, 'Unable to add import path');
@@ -88,12 +89,7 @@
       if (!library.importPaths.includes(editedImportPath)) {
         // Update import path
         library.importPaths[editImportPath] = editedImportPath;
-        const validation = await validate({
-          id: library.id,
-          validateLibraryDto: { importPaths: library.importPaths },
-        });
-
-        validatedPaths = validation.importPaths ?? [];
+        await handleValidation();
       }
     } catch (error) {
       editImportPath = null;
@@ -115,12 +111,7 @@
 
       const pathToDelete = library.importPaths[editImportPath];
       library.importPaths = library.importPaths.filter((path) => path != pathToDelete);
-      const validation = await validate({
-        id: library.id,
-        validateLibraryDto: { importPaths: library.importPaths },
-      });
-
-      validatedPaths = validation.importPaths ?? [];
+      await handleValidation();
     } catch (error) {
       handleError(error, 'Unable to delete import path');
     } finally {
@@ -169,11 +160,16 @@
               : 'bg-immich-bg dark:bg-immich-dark-gray/50'
           }`}
         >
-          <td class="w-4/5 text-ellipsis px-4 text-sm"> {validatedPath.importPath}</td>
-          <td class="w-1/5 text-ellipsis px-4 text-sm flex flex-row">
-            {#if !validatedPath.isValid}
+          <td class="w-1/8 text-ellipsis px-4 text-sm">
+            {#if validatedPath.isValid}
+              <Icon path={mdiCheckCircleOutline} size="40" title={validatedPath.message} />
+            {:else}
               <Icon path={mdiAlertOutline} size="40" title={validatedPath.message} />
             {/if}
+          </td>
+
+          <td class="w-4/5 text-ellipsis px-4 text-sm">{validatedPath.importPath}</td>
+          <td class="w-1/5 text-ellipsis px-4 text-sm flex flex-row">
             <button
               type="button"
               on:click={() => {
@@ -213,6 +209,7 @@
   </table>
 
   <div class="flex w-full justify-end gap-2">
+    <Button size="sm" on:click={handleValidation}>Test</Button>
     <Button size="sm" color="gray" on:click={() => handleCancel()}>Cancel</Button>
     <Button size="sm" type="submit">Save</Button>
   </div>
