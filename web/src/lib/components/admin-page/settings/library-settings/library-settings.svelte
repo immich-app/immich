@@ -4,7 +4,7 @@
   import { createEventDispatcher } from 'svelte';
   import { fade } from 'svelte/transition';
   import type { SettingsEventType } from '../admin-settings';
-  import SettingAccordion from '../setting-accordion.svelte';
+  import SettingAccordion from '../../../shared-components/settings/setting-accordion.svelte';
   import SettingButtonsRow from '../setting-buttons-row.svelte';
   import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
   import SettingSwitch from '../setting-switch.svelte';
