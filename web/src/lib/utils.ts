@@ -1,4 +1,3 @@
-import { browser } from '$app/environment';
 import { goto } from '$app/navigation';
 import { page } from '$app/stores';
 import Locales from '$lib/assets/locales.json';

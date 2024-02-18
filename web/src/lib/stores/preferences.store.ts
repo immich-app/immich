@@ -1,5 +1,5 @@
 import { browser } from '$app/environment';
-import { Theme, fallbackLocale } from '$lib/constants';
+import { Theme } from '$lib/constants';
 import { handleError } from '$lib/utils/handle-error';
 import { persisted } from 'svelte-local-storage-store';
 import { get } from 'svelte/store';
