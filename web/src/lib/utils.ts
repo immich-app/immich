@@ -192,7 +192,7 @@ export const oauth = {
 export const findLocale = (code: string | undefined) => {
   const language = Locales.find((lang) => lang.code === code);
   return {
-    code: language?.code || browser ? navigator.language : fallbackLocale.code,
-    name: language?.name || browser ? navigator.language : fallbackLocale.name,
+    code: language?.code || fallbackLocale.code,
+    name: language?.name || fallbackLocale.name,
   };
 };

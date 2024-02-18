@@ -36,7 +36,7 @@ export const colorTheme = persisted<ThemeSetting>('color-theme', initialTheme, {
 });
 
 // Locale to use for formatting dates, numbers, etc.
-export const locale = persisted<string | undefined>('locale', fallbackLocale.code, {
+export const locale = persisted<string | undefined>('locale', undefined, {
   serializer: {
     parse: (text) => {
       if (text) {
@@ -45,8 +45,8 @@ export const locale = persisted<string | undefined>('locale', fallbackLocale.cod
           test.toLocaleString(text);
         } catch (error) {
           handleError(error, `Locale ${text} is not supported`);
-          locale.set(fallbackLocale.code);
-          return fallbackLocale.code;
+          locale.set(undefined);
+          return undefined;
         }
       }
 
