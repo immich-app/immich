@@ -1,4 +1,4 @@
-import { AssetEntity, ExifEntity } from '@app/infra/entities';
+import { AssetEntity } from '@app/infra/entities';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In } from 'typeorm/find-options/operator/In.js';
