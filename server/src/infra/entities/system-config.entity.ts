@@ -14,6 +14,8 @@ export type SystemConfigValue = string | number | boolean;
 
 // dot notation matches path in `SystemConfig`
 export enum SystemConfigKey {
+  EXIFTOOL_LFS = 'exiftool.lfs', // largefilesupport
+
   FFMPEG_CRF = 'ffmpeg.crf',
   FFMPEG_THREADS = 'ffmpeg.threads',
   FFMPEG_PRESET = 'ffmpeg.preset',
@@ -173,6 +175,9 @@ export enum LogLevel {
 }
 
 export interface SystemConfig {
+  exiftool: {
+    lfs: boolean;
+  };
   ffmpeg: {
     crf: number;
     threads: number;

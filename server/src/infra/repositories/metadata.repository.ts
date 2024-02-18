@@ -7,8 +7,10 @@ import {
   GeoPoint,
   IMetadataRepository,
   ImmichTags,
+  ISystemConfigRepository,
   ISystemMetadataRepository,
   ReverseGeocodeResult,
+  SystemConfigCore,
 } from '@app/domain';
 import {
   ExifEntity,
@@ -27,25 +29,36 @@ import { createReadStream, existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import * as readLine from 'node:readline';
 import { DataSource, DeepPartial, QueryRunner, Repository } from 'typeorm';
+import { Subscription } from 'rxjs';
 import { DummyValue, GenerateSql } from '../infra.util';
 
 type GeoEntity = GeodataPlacesEntity | GeodataAdmin1Entity | GeodataAdmin2Entity;
 type GeoEntityClass = typeof GeodataPlacesEntity | typeof GeodataAdmin1Entity | typeof GeodataAdmin2Entity;
 
 export class MetadataRepository implements IMetadataRepository {
+  private configCore: SystemConfigCore;
+  private subscription: Subscription | null = null;
+
   constructor(
     @InjectRepository(ExifEntity) private exifRepository: Repository<ExifEntity>,
     @InjectRepository(GeodataPlacesEntity) private readonly geodataPlacesRepository: Repository<GeodataPlacesEntity>,
     @InjectRepository(GeodataAdmin1Entity) private readonly geodataAdmin1Repository: Repository<GeodataAdmin1Entity>,
     @InjectRepository(GeodataAdmin2Entity) private readonly geodataAdmin2Repository: Repository<GeodataAdmin2Entity>,
+    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(ISystemMetadataRepository) private readonly systemMetadataRepository: ISystemMetadataRepository,
     @InjectDataSource() private dataSource: DataSource,
-  ) {}
+  ) {
+    this.configCore = SystemConfigCore.create(configRepository);
+   }
 
   private logger = new ImmichLogger(MetadataRepository.name);
   private exiftool: ExifTool;
 
   async init(): Promise<void> {
+    if (!this.subscription) {
+      this.subscription = this.configCore.config$.subscribe(() => this.init());
+    }
+
     await this.initExiftool();
 
     this.logger.log('Initializing metadata repository');
@@ -69,8 +82,13 @@ export class MetadataRepository implements IMetadataRepository {
   }
 
   private async initExiftool() {
-    this.exiftool  = new ExifTool({
-      exiftoolArgs: ["-api", "largefilesupport=1", ...DefaultExiftoolArgs]
+    const { exiftool: exiftoolCfg } = await this.configCore.getConfig();
+
+    let exiftoolArgs = DefaultExiftoolArgs;
+    if (exiftoolCfg.lfs) { exiftoolArgs =  ["-api", "largefilesupport=1", ...exiftoolArgs]; }
+
+    this.exiftool = new ExifTool({
+      exiftoolArgs
     })
   }
 
