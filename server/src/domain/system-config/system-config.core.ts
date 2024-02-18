@@ -140,6 +140,12 @@ export const defaults = Object.freeze<SystemConfig>({
     externalDomain: '',
     loginPageMessage: '',
   },
+  storage: {
+    kind: 'local',
+    options: {
+      path: process.env.UPLOAD_LOCATION ?? '',
+    }
+  }
 });
 
 export enum FeatureFlag {
@@ -168,7 +174,7 @@ export class SystemConfigCore {
 
   public config$ = new Subject<SystemConfig>();
 
-  private constructor(private repository: ISystemConfigRepository) {}
+  private constructor(private repository: ISystemConfigRepository) { }
 
   static create(repository: ISystemConfigRepository) {
     if (!instance) {

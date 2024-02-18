@@ -34,6 +34,8 @@
     "sql:generate": "node ./dist/infra/sql-generator/"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.515.0",
+    "@aws-sdk/lib-storage": "^3.515.0",
     "@babel/runtime": "^7.22.11",
     "@immich/cli": "^2.0.7",
     "@nestjs/bullmq": "^10.0.1",

@@ -172,6 +172,18 @@ export enum LogLevel {
   FATAL = 'fatal',
 }
 
+export interface StorageOptionsLocal {
+  path: string;
+}
+
+export interface StorageOptionsS3 {
+  bucket: string;
+  region: string;
+  endpoint: string;
+  accessKeyId: string;
+  secretAccessKey: string;
+}
+
 export interface SystemConfig {
   ffmpeg: {
     crf: number;
@@ -276,4 +288,10 @@ export interface SystemConfig {
     externalDomain: string;
     loginPageMessage: string;
   };
+  // TODO(uhthomas): Is this definitely the approach we want to take for
+  // configuring storage?
+  storage: {
+    kind: string;
+    options: StorageOptionsLocal | StorageOptionsS3;
+  }
 }
