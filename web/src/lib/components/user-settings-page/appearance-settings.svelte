@@ -39,20 +39,18 @@
 
   const getAllLanguages = (): ComboBoxOption[] => {
     const testNumber = 10;
-    return Locales
-      .map((locale) => ({
-        label: locale.name,
-        value: locale.code,
-      }))
-      .filter((locale) => {
-        try {
-          if (testNumber.toLocaleString(locale.value)) {
-            return locale;
-          }
-        } catch (error) {
-          // do nothing
+    return Locales.map((locale) => ({
+      label: locale.name,
+      value: locale.code,
+    })).filter((locale) => {
+      try {
+        if (testNumber.toLocaleString(locale.value)) {
+          return locale;
         }
-      });
+      } catch {
+        // do nothing
+      }
+    });
   };
 
   const handleToggle = () => {
