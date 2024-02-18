@@ -33,7 +33,6 @@ export const IAssetRepositoryV1 = 'IAssetRepositoryV1';
 export class AssetRepositoryV1 implements IAssetRepositoryV1 {
   constructor(
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
-    @InjectRepository(ExifEntity) private exifRepository: Repository<ExifEntity>,
   ) {}
 
   getSearchPropertiesByUserId(userId: string): Promise<SearchPropertiesDto[]> {
