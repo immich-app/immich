@@ -2991,6 +2991,43 @@ export interface PersonWithFacesResponseDto {
 /**
  * 
  * @export
+ * @interface PlacesResponseDto
+ */
+export interface PlacesResponseDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof PlacesResponseDto
+     */
+    'admin1name'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof PlacesResponseDto
+     */
+    'admin2name'?: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof PlacesResponseDto
+     */
+    'latitude': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof PlacesResponseDto
+     */
+    'longitude': number;
+    /**
+     * 
+     * @type {string}
+     * @memberof PlacesResponseDto
+     */
+    'name': string;
+}
+/**
+ * 
+ * @export
  * @interface QueueStatusDto
  */
 export interface QueueStatusDto {
@@ -15287,6 +15324,56 @@ export const SearchApiAxiosParamCreator = function (configuration?: Configuratio
         },
         /**
          * 
+         * @param {string} name 
+         * @param {boolean} [withHidden] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        searchPlaces: async (name: string, withHidden?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'name' is not null or undefined
+            assertParamExists('searchPlaces', 'name', name)
+            const localVarPath = `/search/places`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (name !== undefined) {
+                localVarQueryParameter['name'] = name;
+            }
+
+            if (withHidden !== undefined) {
+                localVarQueryParameter['withHidden'] = withHidden;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @param {SmartSearchDto} smartSearchDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -15415,6 +15502,19 @@ export const SearchApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {string} name 
+         * @param {boolean} [withHidden] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async searchPlaces(name: string, withHidden?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<PlacesResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.searchPlaces(name, withHidden, options);
+            const index = configuration?.serverIndex ?? 0;
+            const operationBasePath = operationServerMap['SearchApi.searchPlaces']?.[index]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, operationBasePath || basePath);
+        },
+        /**
+         * 
          * @param {SmartSearchDto} smartSearchDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -15479,6 +15579,15 @@ export const SearchApiFactory = function (configuration?: Configuration, basePat
          */
         searchPerson(requestParameters: SearchApiSearchPersonRequest, options?: RawAxiosRequestConfig): AxiosPromise<Array<PersonResponseDto>> {
             return localVarFp.searchPerson(requestParameters.name, requestParameters.withHidden, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {SearchApiSearchPlacesRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        searchPlaces(requestParameters: SearchApiSearchPlacesRequest, options?: RawAxiosRequestConfig): AxiosPromise<Array<PlacesResponseDto>> {
+            return localVarFp.searchPlaces(requestParameters.name, requestParameters.withHidden, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -15647,6 +15756,27 @@ export interface SearchApiSearchPersonRequest {
 }
 
 /**
+ * Request parameters for searchPlaces operation in SearchApi.
+ * @export
+ * @interface SearchApiSearchPlacesRequest
+ */
+export interface SearchApiSearchPlacesRequest {
+    /**
+     * 
+     * @type {string}
+     * @memberof SearchApiSearchPlaces
+     */
+    readonly name: string
+
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SearchApiSearchPlaces
+     */
+    readonly withHidden?: boolean
+}
+
+/**
  * Request parameters for searchSmart operation in SearchApi.
  * @export
  * @interface SearchApiSearchSmartRequest
@@ -15720,6 +15850,17 @@ export class SearchApi extends BaseAPI {
      */
     public searchPerson(requestParameters: SearchApiSearchPersonRequest, options?: RawAxiosRequestConfig) {
         return SearchApiFp(this.configuration).searchPerson(requestParameters.name, requestParameters.withHidden, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {SearchApiSearchPlacesRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SearchApi
+     */
+    public searchPlaces(requestParameters: SearchApiSearchPlacesRequest, options?: RawAxiosRequestConfig) {
+        return SearchApiFp(this.configuration).searchPlaces(requestParameters.name, requestParameters.withHidden, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

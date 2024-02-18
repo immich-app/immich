@@ -360,6 +360,65 @@ class SearchApi {
     return null;
   }
 
+  /// Performs an HTTP 'GET /search/places' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [String] name (required):
+  ///
+  /// * [bool] withHidden:
+  Future<Response> searchPlacesWithHttpInfo(String name, { bool? withHidden, }) async {
+    // ignore: prefer_const_declarations
+    final path = r'/search/places';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+      queryParams.addAll(_queryParams('', 'name', name));
+    if (withHidden != null) {
+      queryParams.addAll(_queryParams('', 'withHidden', withHidden));
+    }
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [String] name (required):
+  ///
+  /// * [bool] withHidden:
+  Future<List<PlacesResponseDto>?> searchPlaces(String name, { bool? withHidden, }) async {
+    final response = await searchPlacesWithHttpInfo(name,  withHidden: withHidden, );
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<PlacesResponseDto>') as List)
+        .cast<PlacesResponseDto>()
+        .toList(growable: false);
+
+    }
+    return null;
+  }
+
   /// Performs an HTTP 'POST /search/smart' operation and returns the [Response].
   /// Parameters:
   ///
