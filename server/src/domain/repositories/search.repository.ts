@@ -146,7 +146,8 @@ export interface SearchPaginationOptions {
   size: number;
 }
 
-type BaseAssetSearchOptions = SearchIdOptions &
+type BaseAssetSearchOptions = SearchDateOptions &
+  SearchIdOptions &
   SearchExifOptions &
   SearchOrderOptions &
   SearchPathOptions &
