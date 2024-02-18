@@ -20,7 +20,7 @@ import {
 import { ImmichLogger } from '@app/infra/logger';
 import { Inject } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DefaultReadTaskOptions, exiftool, Tags } from 'exiftool-vendored';
+import { DefaultExiftoolArgs, DefaultReadTaskOptions, ExifTool, Tags } from 'exiftool-vendored';
 import * as geotz from 'geo-tz';
 import { getName } from 'i18n-iso-countries';
 import { createReadStream, existsSync } from 'node:fs';
@@ -43,8 +43,11 @@ export class MetadataRepository implements IMetadataRepository {
   ) {}
 
   private logger = new ImmichLogger(MetadataRepository.name);
+  private exiftool: ExifTool;
 
   async init(): Promise<void> {
+    await this.initExiftool();
+
     this.logger.log('Initializing metadata repository');
     const geodataDate = await readFile(geodataDatePath, 'utf8');
 
@@ -63,6 +66,12 @@ export class MetadataRepository implements IMetadataRepository {
     });
 
     this.logger.log('Geodata import completed');
+  }
+
+  private async initExiftool() {
+    this.exiftool  = new ExifTool({
+      exiftoolArgs: ["-api", "largefilesupport=1", ...DefaultExiftoolArgs]
+    })
   }
 
   private async importGeodata() {
@@ -159,7 +168,7 @@ export class MetadataRepository implements IMetadataRepository {
   }
 
   async teardown() {
-    await exiftool.end();
+    await this.exiftool.end();
   }
 
   async reverseGeocode(point: GeoPoint): Promise<ReverseGeocodeResult | null> {
@@ -192,7 +201,7 @@ export class MetadataRepository implements IMetadataRepository {
   }
 
   readTags(path: string): Promise<ImmichTags | null> {
-    return exiftool
+    return this.exiftool
       .read(path, undefined, {
         ...DefaultReadTaskOptions,
 
@@ -211,12 +220,12 @@ export class MetadataRepository implements IMetadataRepository {
   }
 
   extractBinaryTag(path: string, tagName: string): Promise<Buffer> {
-    return exiftool.extractBinaryTagToBuffer(tagName, path);
+    return this.exiftool.extractBinaryTagToBuffer(tagName, path);
   }
 
   async writeTags(path: string, tags: Partial<Tags>): Promise<void> {
     try {
-      await exiftool.write(path, tags, ['-overwrite_original']);
+      await this.exiftool.write(path, tags, ['-overwrite_original']);
     } catch (error) {
       this.logger.warn(`Error writing exif data (${path}): ${error}`);
     }
