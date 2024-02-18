@@ -6,7 +6,7 @@
   import { locale } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
-  import { websocketStore } from '$lib/stores/websocket';
+  import { websocketEvents } from '$lib/stores/websocket';
   import { getAssetThumbnailUrl, getPeopleThumbnailUrl, isSharedLink } from '$lib/utils';
   import { getAssetFilename } from '$lib/utils/asset-utils';
   import { autoGrowHeight } from '$lib/utils/autogrow';
@@ -30,7 +30,7 @@
     mdiPencil,
   } from '@mdi/js';
   import { DateTime } from 'luxon';
-  import { createEventDispatcher, onDestroy } from 'svelte';
+  import { createEventDispatcher, onMount } from 'svelte';
   import { slide } from 'svelte/transition';
   import { asByteUnitString } from '../../utils/byte-units';
   import { handleError } from '../../utils/handle-error';
@@ -91,14 +91,12 @@
   $: people = asset.people || [];
   $: showingHiddenPeople = false;
 
-  const unsubscribe = websocketStore.onAssetUpdate.subscribe((assetUpdate) => {
-    if (assetUpdate && assetUpdate.id === asset.id) {
-      asset = assetUpdate;
-    }
-  });
-
-  onDestroy(() => {
-    unsubscribe();
+  onMount(() => {
+    return websocketEvents.on('on_asset_update', (assetUpdate) => {
+      if (assetUpdate.id === asset.id) {
+        asset = assetUpdate;
+      }
+    });
   });
 
   const dispatch = createEventDispatcher<{

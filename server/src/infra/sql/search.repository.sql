@@ -77,9 +77,9 @@ FROM
       (
         "asset"."fileCreatedAt" >= $1
         AND "exifInfo"."lensModel" = $2
-        AND "asset"."ownerId" = $3
         AND 1 = 1
-        AND "asset"."isFavorite" = $4
+        AND 1 = 1
+        AND "asset"."isFavorite" = $3
         AND (
           "stack"."primaryAssetId" = "asset"."id"
           OR "asset"."stackId" IS NULL

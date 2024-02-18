@@ -4,12 +4,20 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { SearchSuggestionType, type PersonResponseDto } from '@immich/sdk';
+  import {
+    AssetTypeEnum,
+    SearchSuggestionType,
+    type PersonResponseDto,
+    type SmartSearchDto,
+    type MetadataSearchDto,
+  } from '@immich/sdk';
   import { getAllPeople, getSearchSuggestions } from '@immich/sdk';
   import { mdiArrowRight, mdiClose } from '@mdi/js';
-  import { onMount } from 'svelte';
+  import { createEventDispatcher, onMount } from 'svelte';
   import { fly } from 'svelte/transition';
   import Combobox, { type ComboBoxOption } from '../combobox.svelte';
+  import { DateTime } from 'luxon';
+  import { searchQuery } from '$lib/stores/search.store';
 
   enum MediaType {
     All = 'all',
@@ -22,8 +30,8 @@
     country: ComboBoxOption[];
     state: ComboBoxOption[];
     city: ComboBoxOption[];
-    cameraMake: ComboBoxOption[];
-    cameraModel: ComboBoxOption[];
+    make: ComboBoxOption[];
+    model: ComboBoxOption[];
   };
 
   type SearchParams = {
@@ -49,14 +57,14 @@
       model?: ComboBoxOption;
     };
 
-    dateRange: {
-      startDate?: Date;
-      endDate?: Date;
+    date: {
+      takenAfter?: string;
+      takenBefore?: string;
     };
 
-    inArchive?: boolean;
-    inFavorite?: boolean;
-    notInAlbum?: boolean;
+    isArchive?: boolean;
+    isFavorite?: boolean;
+    isNotInAlbum?: boolean;
 
     mediaType: MediaType;
   };
@@ -66,8 +74,8 @@
     country: [],
     state: [],
     city: [],
-    cameraMake: [],
-    cameraModel: [],
+    make: [],
+    model: [],
   };
 
   let filter: SearchFilter = {
@@ -82,21 +90,23 @@
       make: undefined,
       model: undefined,
     },
-    dateRange: {
-      startDate: undefined,
-      endDate: undefined,
+    date: {
+      takenAfter: undefined,
+      takenBefore: undefined,
     },
-    inArchive: undefined,
-    inFavorite: undefined,
-    notInAlbum: undefined,
+    isArchive: undefined,
+    isFavorite: undefined,
+    isNotInAlbum: undefined,
     mediaType: MediaType.All,
   };
 
+  const dispatch = createEventDispatcher<{ search: SmartSearchDto | MetadataSearchDto }>();
   let showAllPeople = false;
   $: peopleList = showAllPeople ? suggestions.people : suggestions.people.slice(0, 11);
 
   onMount(() => {
     getPeople();
+    populateExistingFilters();
   });
 
   const showSelectedPeopleFirst = () => {
@@ -141,7 +151,7 @@
     }
 
     if (type === SearchSuggestionType.CameraMake || type === SearchSuggestionType.CameraModel) {
-      suggestions = { ...suggestions, cameraMake: [], cameraModel: [] };
+      suggestions = { ...suggestions, make: [], model: [] };
     }
 
     try {
@@ -178,14 +188,14 @@
 
         case SearchSuggestionType.CameraMake: {
           for (const make of data) {
-            suggestions.cameraMake = [...suggestions.cameraMake, { label: make, value: make }];
+            suggestions.make = [...suggestions.make, { label: make, value: make }];
           }
           break;
         }
 
         case SearchSuggestionType.CameraModel: {
           for (const model of data) {
-            suggestions.cameraModel = [...suggestions.cameraModel, { label: model, value: model }];
+            suggestions.model = [...suggestions.model, { label: model, value: model }];
           }
           break;
         }
@@ -208,18 +218,99 @@
         make: undefined,
         model: undefined,
       },
-      dateRange: {
-        startDate: undefined,
-        endDate: undefined,
+      date: {
+        takenAfter: undefined,
+        takenBefore: undefined,
       },
-      inArchive: undefined,
-      inFavorite: undefined,
-      notInAlbum: undefined,
+      isArchive: undefined,
+      isFavorite: undefined,
+      isNotInAlbum: undefined,
       mediaType: MediaType.All,
     };
   };
 
-  const search = () => {};
+  const search = async () => {
+    let type: AssetTypeEnum | undefined = undefined;
+
+    if (filter.mediaType === MediaType.Image) {
+      type = AssetTypeEnum.Image;
+    } else if (filter.mediaType === MediaType.Video) {
+      type = AssetTypeEnum.Video;
+    }
+
+    let payload: SmartSearchDto | MetadataSearchDto = {
+      country: filter.location.country?.value,
+      state: filter.location.state?.value,
+      city: filter.location.city?.value,
+      make: filter.camera.make?.value,
+      model: filter.camera.model?.value,
+      takenAfter: filter.date.takenAfter
+        ? DateTime.fromFormat(filter.date.takenAfter, 'yyyy-MM-dd').toUTC().startOf('day').toString()
+        : undefined,
+      takenBefore: filter.date.takenBefore
+        ? DateTime.fromFormat(filter.date.takenBefore, 'yyyy-MM-dd').toUTC().endOf('day').toString()
+        : undefined,
+      /* eslint-disable unicorn/prefer-logical-operator-over-ternary */
+      isArchived: filter.isArchive ? filter.isArchive : undefined,
+      isFavorite: filter.isFavorite ? filter.isFavorite : undefined,
+      isNotInAlbum: filter.isNotInAlbum ? filter.isNotInAlbum : undefined,
+      personIds: filter.people && filter.people.length > 0 ? filter.people.map((p) => p.id) : undefined,
+      type,
+    };
+
+    if (filter.context) {
+      if (payload.personIds && payload.personIds.length > 0) {
+        handleError(
+          new Error('Context search does not support people filter'),
+          'Context search does not support people filter',
+        );
+        return;
+      }
+
+      payload = {
+        ...payload,
+        query: filter.context,
+      };
+    }
+
+    dispatch('search', payload);
+  };
+
+  function populateExistingFilters() {
+    if ($searchQuery) {
+      filter = {
+        context: 'query' in $searchQuery ? $searchQuery.query : '',
+        people:
+          'personIds' in $searchQuery ? ($searchQuery.personIds?.map((id) => ({ id })) as PersonResponseDto[]) : [],
+        location: {
+          country: $searchQuery.country ? { label: $searchQuery.country, value: $searchQuery.country } : undefined,
+          state: $searchQuery.state ? { label: $searchQuery.state, value: $searchQuery.state } : undefined,
+          city: $searchQuery.city ? { label: $searchQuery.city, value: $searchQuery.city } : undefined,
+        },
+        camera: {
+          make: $searchQuery.make ? { label: $searchQuery.make, value: $searchQuery.make } : undefined,
+          model: $searchQuery.model ? { label: $searchQuery.model, value: $searchQuery.model } : undefined,
+        },
+        date: {
+          takenAfter: $searchQuery.takenAfter
+            ? DateTime.fromISO($searchQuery.takenAfter).toUTC().toFormat('yyyy-MM-dd')
+            : undefined,
+          takenBefore: $searchQuery.takenBefore
+            ? DateTime.fromISO($searchQuery.takenBefore).toUTC().toFormat('yyyy-MM-dd')
+            : undefined,
+        },
+        isArchive: $searchQuery.isArchived,
+        isFavorite: $searchQuery.isFavorite,
+        isNotInAlbum: 'isNotInAlbum' in $searchQuery ? $searchQuery.isNotInAlbum : undefined,
+        mediaType:
+          $searchQuery.type === AssetTypeEnum.Image
+            ? MediaType.Image
+            : $searchQuery.type === AssetTypeEnum.Video
+              ? MediaType.Video
+              : MediaType.All,
+      };
+    }
+  }
 </script>
 
 <div
@@ -347,7 +438,7 @@
         <div class="w-full">
           <p class="text-sm text-black dark:text-white">Make</p>
           <Combobox
-            options={suggestions.cameraMake}
+            options={suggestions.make}
             bind:selectedOption={filter.camera.make}
             placeholder="Search camera make..."
             on:click={() =>
@@ -358,7 +449,7 @@
         <div class="w-full">
           <p class="text-sm text-black dark:text-white">Model</p>
           <Combobox
-            options={suggestions.cameraModel}
+            options={suggestions.model}
             bind:selectedOption={filter.camera.model}
             placeholder="Search camera model..."
             on:click={() =>
@@ -379,7 +470,7 @@
           type="date"
           id="start-date"
           name="start-date"
-          bind:value={filter.dateRange.startDate}
+          bind:value={filter.date.takenAfter}
         />
       </div>
 
@@ -391,7 +482,7 @@
           id="end-date"
           name="end-date"
           placeholder=""
-          bind:value={filter.dateRange.endDate}
+          bind:value={filter.date.takenBefore}
         />
       </div>
     </div>
@@ -450,17 +541,17 @@
 
         <div class="flex gap-5 mt-3">
           <label class="flex items-center mb-2">
-            <input type="checkbox" class="form-checkbox h-5 w-5 color" bind:checked={filter.notInAlbum} />
+            <input type="checkbox" class="form-checkbox h-5 w-5 color" bind:checked={filter.isNotInAlbum} />
             <span class="ml-2 text-sm text-black dark:text-white pt-1">Not in any album</span>
           </label>
 
           <label class="flex items-center mb-2">
-            <input type="checkbox" class="form-checkbox h-5 w-5 color" bind:checked={filter.inArchive} />
+            <input type="checkbox" class="form-checkbox h-5 w-5 color" bind:checked={filter.isArchive} />
             <span class="ml-2 text-sm text-black dark:text-white pt-1">Archive</span>
           </label>
 
           <label class="flex items-center mb-2">
-            <input type="checkbox" class="form-checkbox h-5 w-5 color" bind:checked={filter.inFavorite} />
+            <input type="checkbox" class="form-checkbox h-5 w-5 color" bind:checked={filter.isFavorite} />
             <span class="ml-2 text-sm text-black dark:text-white pt-1">Favorite</span>
           </label>
         </div>

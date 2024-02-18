@@ -176,7 +176,7 @@ export class AssetRepository implements IAssetRepository {
   }
 
   getByUserId(pagination: PaginationOptions, userId: string, options: AssetSearchOptions = {}): Paginated<AssetEntity> {
-    return this.getAll(pagination, { ...options, id: userId });
+    return this.getAll(pagination, { ...options, ownerId: userId });
   }
 
   @GenerateSql({ params: [[DummyValue.UUID]] })

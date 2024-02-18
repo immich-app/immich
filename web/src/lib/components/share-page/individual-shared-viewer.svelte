@@ -16,10 +16,12 @@
   import GalleryViewer from '../shared-components/gallery-viewer/gallery-viewer.svelte';
   import ImmichLogo from '../shared-components/immich-logo.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
+  import type { Viewport } from '$lib/stores/assets.store';
 
   export let sharedLink: SharedLinkResponseDto;
   export let isOwned: boolean;
 
+  const viewport: Viewport = { width: 0, height: 0 };
   let selectedAssets: Set<AssetResponseDto> = new Set();
 
   $: assets = sharedLink.assets;
@@ -97,7 +99,7 @@
       </svelte:fragment>
     </ControlAppBar>
   {/if}
-  <section class="my-[160px] flex flex-col px-6 sm:px-12 md:px-24 lg:px-40">
-    <GalleryViewer {assets} bind:selectedAssets />
+  <section class="my-[160px] mx-4" bind:clientHeight={viewport.height} bind:clientWidth={viewport.width}>
+    <GalleryViewer {assets} bind:selectedAssets {viewport} />
   </section>
 </section>

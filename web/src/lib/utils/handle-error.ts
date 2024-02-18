@@ -20,7 +20,7 @@ export async function handleError(error: unknown, message: string) {
     return;
   }
 
-  console.error(`[handleError]: ${message}`, error);
+  console.error(`[handleError]: ${message}`, error, (error as Error)?.stack);
 
   let serverMessage = await getServerErrorMessage(error);
   if (serverMessage) {
