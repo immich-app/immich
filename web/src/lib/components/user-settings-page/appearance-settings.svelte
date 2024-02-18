@@ -97,7 +97,7 @@
             options={getAllLanguages()}
             title="Custom Locale"
             subtitle="Format dates and numbers based on the language and the region"
-            on:select={({ detail }) => handleLocaleChange(detail.value)}
+            onSelect={(combobox) => handleLocaleChange(combobox.value)}
           />
         </div>
       {/if}

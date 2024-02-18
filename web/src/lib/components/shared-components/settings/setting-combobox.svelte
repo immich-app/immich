@@ -1,7 +1,6 @@
 <script lang="ts">
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
-  import { createEventDispatcher } from 'svelte';
   import Combobox, { type ComboBoxOption } from '$lib/components/shared-components/combobox.svelte';
 
   export let title: string;
@@ -10,10 +9,7 @@
   export let isEdited = false;
   export let options: ComboBoxOption[];
   export let selectedOption: ComboBoxOption;
-
-  const dispatch = createEventDispatcher<{
-    select: ComboBoxOption;
-  }>();
+  export let onSelect: (combobox: ComboBoxOption) => void;
 </script>
 
 <div class="grid grid-cols-2">
@@ -39,7 +35,7 @@
       {selectedOption}
       {options}
       placeholder={comboboxPlaceholder}
-      on:select={({ detail }) => dispatch('select', detail)}
+      on:select={({ detail }) => onSelect(detail)}
     />
     <slot />
   </div>
