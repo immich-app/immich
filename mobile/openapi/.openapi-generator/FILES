@@ -90,6 +90,7 @@ doc/MapMarkerResponseDto.md
 doc/MapTheme.md
 doc/MemoryLaneResponseDto.md
 doc/MergePersonDto.md
+doc/MetadataSearchDto.md
 doc/ModelType.md
 doc/OAuthApi.md
 doc/OAuthAuthorizeResponseDto.md
@@ -137,6 +138,7 @@ doc/SharedLinkResponseDto.md
 doc/SharedLinkType.md
 doc/SignUpDto.md
 doc/SmartInfoResponseDto.md
+doc/SmartSearchDto.md
 doc/SystemConfigApi.md
 doc/SystemConfigDto.md
 doc/SystemConfigFFmpegDto.md
@@ -288,6 +290,7 @@ lib/model/map_marker_response_dto.dart
 lib/model/map_theme.dart
 lib/model/memory_lane_response_dto.dart
 lib/model/merge_person_dto.dart
+lib/model/metadata_search_dto.dart
 lib/model/model_type.dart
 lib/model/o_auth_authorize_response_dto.dart
 lib/model/o_auth_callback_dto.dart
@@ -329,6 +332,7 @@ lib/model/shared_link_response_dto.dart
 lib/model/shared_link_type.dart
 lib/model/sign_up_dto.dart
 lib/model/smart_info_response_dto.dart
+lib/model/smart_search_dto.dart
 lib/model/system_config_dto.dart
 lib/model/system_config_f_fmpeg_dto.dart
 lib/model/system_config_job_dto.dart
@@ -457,6 +461,7 @@ test/map_marker_response_dto_test.dart
 test/map_theme_test.dart
 test/memory_lane_response_dto_test.dart
 test/merge_person_dto_test.dart
+test/metadata_search_dto_test.dart
 test/model_type_test.dart
 test/o_auth_api_test.dart
 test/o_auth_authorize_response_dto_test.dart
@@ -504,6 +509,7 @@ test/shared_link_response_dto_test.dart
 test/shared_link_type_test.dart
 test/sign_up_dto_test.dart
 test/smart_info_response_dto_test.dart
+test/smart_search_dto_test.dart
 test/system_config_api_test.dart
 test/system_config_dto_test.dart
 test/system_config_f_fmpeg_dto_test.dart

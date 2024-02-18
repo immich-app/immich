@@ -77,7 +77,6 @@ describe('AssetService', () => {
   beforeEach(() => {
     assetRepositoryMockV1 = {
       get: jest.fn(),
-      getAllByUserId: jest.fn(),
       getDetectedObjectsByUserId: jest.fn(),
       getLocationsByUserId: jest.fn(),
       getSearchPropertiesByUserId: jest.fn(),

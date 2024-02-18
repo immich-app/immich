@@ -35,7 +35,6 @@ export enum AppRoute {
   PARTNERS = '/partners',
 
   AUTH_LOGIN = '/auth/login',
-  AUTH_LOGOUT = '/auth/logout',
   AUTH_REGISTER = '/auth/register',
   AUTH_CHANGE_PASSWORD = '/auth/change-password',
   AUTH_ONBOARDING = '/auth/onboarding',
@@ -72,6 +71,7 @@ export enum QueryParameter {
   SEARCHED_PEOPLE = 'searchedPeople',
   SEARCH_TERM = 'q',
   SMART_SEARCH = 'smartSearch',
+  PAGE = 'page',
 }
 
 export enum OpenSettingQueryParameterValue {

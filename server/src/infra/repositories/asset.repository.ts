@@ -2,6 +2,7 @@ import {
   AssetBuilderOptions,
   AssetCreate,
   AssetExploreFieldOptions,
+  AssetSearchOneToOneRelationOptions,
   AssetSearchOptions,
   AssetStats,
   AssetStatsOptions,
@@ -175,8 +176,12 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
-  getByUserId(pagination: PaginationOptions, userId: string, options: AssetSearchOptions = {}): Paginated<AssetEntity> {
-    return this.getAll(pagination, { ...options, id: userId });
+  getByUserId(
+    pagination: PaginationOptions,
+    userId: string,
+    options: Omit<AssetSearchOptions, 'userIds'> = {},
+  ): Paginated<AssetEntity> {
+    return this.getAll(pagination, { ...options, userIds: [userId] });
   }
 
   @GenerateSql({ params: [[DummyValue.UUID]] })
@@ -200,6 +205,29 @@ export class AssetRepository implements IAssetRepository {
     builder.orderBy('asset.createdAt', options.orderDirection ?? 'ASC');
     return paginatedBuilder<AssetEntity>(builder, {
       mode: PaginationMode.SKIP_TAKE,
+      skip: pagination.skip,
+      take: pagination.take,
+    });
+  }
+
+  @GenerateSql({
+    params: [
+      { skip: 20_000, take: 10_000 },
+      {
+        takenBefore: DummyValue.DATE,
+        userIds: [DummyValue.UUID],
+      },
+    ],
+  })
+  getAllByFileCreationDate(
+    pagination: PaginationOptions,
+    options: AssetSearchOneToOneRelationOptions = {},
+  ): Paginated<AssetEntity> {
+    let builder = this.repository.createQueryBuilder('asset');
+    builder = searchAssetBuilder(builder, options);
+    builder.orderBy('asset.fileCreatedAt', options.orderDirection ?? 'DESC');
+    return paginatedBuilder<AssetEntity>(builder, {
+      mode: PaginationMode.LIMIT_OFFSET,
       skip: pagination.skip,
       take: pagination.take,
     });

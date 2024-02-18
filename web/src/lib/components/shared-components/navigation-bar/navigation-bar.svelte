@@ -3,6 +3,7 @@
   import { page } from '$app/stores';
   import IconButton from '$lib/components/elements/buttons/icon-button.svelte';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
+  import SkipLink from '$lib/components/elements/buttons/skip-link.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { resetSavedUser, user } from '$lib/stores/user.store';
@@ -39,6 +40,7 @@
 </script>
 
 <section id="dashboard-navbar" class="fixed z-[900] h-[var(--navbar-height)] w-screen text-sm">
+  <SkipLink>Skip to content</SkipLink>
   <div
     class="grid h-full grid-cols-[theme(spacing.18)_auto] items-center border-b bg-immich-bg py-2 dark:border-b-immich-dark-gray dark:bg-immich-dark-bg md:grid-cols-[theme(spacing.64)_auto]"
   >

@@ -1,7 +1,7 @@
+import { createEventEmitter } from '$lib/utils/eventemitter';
 import type { AssetResponseDto, ServerVersionResponseDto } from '@immich/sdk';
 import { io, type Socket } from 'socket.io-client';
 import { get, writable } from 'svelte/store';
-import { loadConfig } from './server-config.store';
 import { user } from './user.store';
 
 export interface ReleaseEvent {
@@ -10,58 +10,54 @@ export interface ReleaseEvent {
   serverVersion: ServerVersionResponseDto;
   releaseVersion: ServerVersionResponseDto;
 }
+export interface Events {
+  on_upload_success: (asset: AssetResponseDto) => void;
+  on_asset_delete: (assetId: string) => void;
+  on_asset_trash: (assetIds: string[]) => void;
+  on_asset_update: (asset: AssetResponseDto) => void;
+  on_asset_hidden: (assetId: string) => void;
+  on_asset_restore: (assetIds: string[]) => void;
+  on_person_thumbnail: (personId: string) => void;
+  on_server_version: (serverVersion: ServerVersionResponseDto) => void;
+  on_config_update: () => void;
+  on_new_release: (newRelase: ReleaseEvent) => void;
+}
+
+const websocket: Socket<Events> = io('', {
+  path: '/api/socket.io',
+  transports: ['websocket'],
+  reconnection: true,
+  forceNew: true,
+  autoConnect: false,
+});
 
 export const websocketStore = {
-  onUploadSuccess: writable<AssetResponseDto>(),
-  onAssetDelete: writable<string>(),
-  onAssetTrash: writable<string[]>(),
-  onAssetUpdate: writable<AssetResponseDto>(),
-  onPersonThumbnail: writable<string>(),
-  serverVersion: writable<ServerVersionResponseDto>(),
   connected: writable<boolean>(false),
-  onRelease: writable<ReleaseEvent>(),
+  serverVersion: writable<ServerVersionResponseDto>(),
+  release: writable<ReleaseEvent>(),
 };
 
-let websocket: Socket | null = null;
+export const websocketEvents = createEventEmitter(websocket);
+
+websocket
+  .on('connect', () => websocketStore.connected.set(true))
+  .on('disconnect', () => websocketStore.connected.set(false))
+  .on('on_server_version', (serverVersion) => websocketStore.serverVersion.set(serverVersion))
+  .on('on_new_release', (releaseVersion) => websocketStore.release.set(releaseVersion))
+  .on('connect_error', (e) => console.log('Websocket Connect Error', e));
 
 export const openWebsocketConnection = async () => {
   try {
-    if (websocket) {
-      return;
-    }
-
     if (!get(user)) {
       return;
     }
 
-    websocket = io('', {
-      path: '/api/socket.io',
-      transports: ['websocket'],
-      reconnection: true,
-      forceNew: true,
-      autoConnect: true,
-    });
-
-    websocket
-      .on('connect', () => websocketStore.connected.set(true))
-      .on('disconnect', () => websocketStore.connected.set(false))
-      // .on('on_upload_success', (data) => websocketStore.onUploadSuccess.set(data))
-      .on('on_asset_delete', (data) => websocketStore.onAssetDelete.set(data))
-      .on('on_asset_trash', (data) => websocketStore.onAssetTrash.set(data))
-      .on('on_asset_update', (data) => websocketStore.onAssetUpdate.set(data))
-      .on('on_person_thumbnail', (data) => websocketStore.onPersonThumbnail.set(data))
-      .on('on_server_version', (data) => websocketStore.serverVersion.set(data))
-      .on('on_config_update', () => loadConfig())
-      .on('on_new_release', (data) => websocketStore.onRelease.set(data))
-      .on('error', (e) => console.log('Websocket Error', e));
+    websocket.connect();
   } catch (error) {
     console.log('Cannot connect to websocket', error);
   }
 };
 
 export const closeWebsocketConnection = () => {
-  if (websocket) {
-    websocket.close();
-  }
-  websocket = null;
+  websocket.disconnect();
 };

@@ -11,7 +11,6 @@
   export let title = 'API Key';
   export let cancelText = 'Cancel';
   export let submitText = 'Save';
-  export let apiKeyName = 'API Key';
 
   const dispatch = createEventDispatcher<{
     cancel: void;
@@ -19,8 +18,8 @@
   }>();
   const handleCancel = () => dispatch('cancel');
   const handleSubmit = () => {
-    if (apiKeyName) {
-      dispatch('submit', { ...apiKey, name: apiKeyName });
+    if (apiKey.name) {
+      dispatch('submit', apiKey);
     } else {
       notificationController.show({
         message: "Your API Key name shouldn't be empty",
@@ -46,7 +45,7 @@
     <form on:submit|preventDefault={handleSubmit} autocomplete="off">
       <div class="m-4 flex flex-col gap-2">
         <label class="immich-form-label" for="name">Name</label>
-        <input class="immich-form-input" id="name" name="name" type="text" bind:value={apiKeyName} />
+        <input class="immich-form-input" id="name" name="name" type="text" bind:value={apiKey.name} />
       </div>
 
       <div class="mt-8 flex w-full gap-4 px-4">

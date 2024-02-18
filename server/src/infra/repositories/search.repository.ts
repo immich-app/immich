@@ -58,6 +58,7 @@ export class SearchRepository implements ISearchRepository {
         ownerId: DummyValue.UUID,
         withStacked: true,
         isFavorite: true,
+        ownerIds: [DummyValue.UUID],
       },
     ],
   })
@@ -66,7 +67,6 @@ export class SearchRepository implements ISearchRepository {
     builder = searchAssetBuilder(builder, options);
 
     builder.orderBy('asset.fileCreatedAt', options.orderDirection ?? 'DESC');
-
     return paginatedBuilder<AssetEntity>(builder, {
       mode: PaginationMode.SKIP_TAKE,
       skip: (pagination.page - 1) * pagination.size,
