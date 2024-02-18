@@ -5,11 +5,10 @@
   import Combobox, { type ComboBoxOption } from '$lib/components/shared-components/combobox.svelte';
 
   export let title: string;
-  export let comboxBoxPlaceholder: string;
+  export let comboboxPlaceholder: string;
   export let subtitle = '';
-  export let textUnderComboxBox = '';
   export let isEdited = false;
-  export let list: ComboBoxOption[];
+  export let options: ComboBoxOption[];
   export let selectedOption: ComboBoxOption;
 
   const dispatch = createEventDispatcher<{
@@ -38,12 +37,10 @@
   <div class="w-full">
     <Combobox
       {selectedOption}
-      options={list}
-      placeholder={comboxBoxPlaceholder}
+      {options}
+      placeholder={comboboxPlaceholder}
       on:select={({ detail }) => dispatch('select', detail)}
     />
-    {#if textUnderComboxBox}
-      <p class="mt-2">{textUnderComboxBox}</p>
-    {/if}
+    <slot />
   </div>
 </div>

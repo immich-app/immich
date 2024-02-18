@@ -1,5 +1,6 @@
 import { goto } from '$app/navigation';
 import { page } from '$app/stores';
+import Locales from '$lib/assets/locales.json';
 import { NotificationType, notificationController } from '$lib/components/shared-components/notification/notification';
 import { handleError } from '$lib/utils/handle-error';
 import {
@@ -14,6 +15,7 @@ import {
   type UserResponseDto,
 } from '@immich/sdk';
 import { get } from 'svelte/store';
+import { fallbackLocale } from './constants';
 
 interface UpdateParamAction {
   param: string;
@@ -184,4 +186,12 @@ export const oauth = {
   unlink: () => {
     return unlinkOAuthAccount();
   },
+};
+
+export const findLocale = (code: string | undefined) => {
+  const language = Locales.find((lang) => lang.code === code);
+  return {
+    code: language?.code || fallbackLocale.code,
+    name: language?.name || fallbackLocale.name,
+  };
 };

@@ -1,5 +1,6 @@
 import { browser } from '$app/environment';
-import { Theme } from '$lib/constants';
+import { Theme, fallbackLocale } from '$lib/constants';
+import { handleError } from '$lib/utils/handle-error';
 import { persisted } from 'svelte-local-storage-store';
 import { get } from 'svelte/store';
 
@@ -35,9 +36,19 @@ export const colorTheme = persisted<ThemeSetting>('color-theme', initialTheme, {
 });
 
 // Locale to use for formatting dates, numbers, etc.
-export const locale = persisted<string | undefined>('locale', undefined, {
+export const locale = persisted<string | undefined>('locale', fallbackLocale.code, {
   serializer: {
-    parse: (text) => text,
+    parse: (text) => {
+      const test = 10;
+      try {
+        test.toLocaleString(text);
+      } catch (error) {
+        handleError(error, `Locale ${text} is not supported`);
+        locale.set(fallbackLocale.code);
+        return fallbackLocale.code;
+      }
+      return text;
+    },
     stringify: (object) => object ?? '',
   },
 });

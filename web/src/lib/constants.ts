@@ -95,3 +95,8 @@ export enum Theme {
   LIGHT = 'light',
   DARK = 'dark',
 }
+
+export const fallbackLocale = {
+  code: 'en-US',
+  name: 'English (US)',
+};

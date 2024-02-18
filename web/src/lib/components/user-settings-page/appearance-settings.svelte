@@ -6,11 +6,9 @@
   import SettingCombobox from '../admin-page/settings/setting-combobox.svelte';
   import type { ComboBoxOption } from '../shared-components/combobox.svelte';
   import { onMount } from 'svelte';
+  import { findLocale } from '$lib/utils';
 
   let time = new Date();
-
-  const fallbackLocaleCode = 'en-US';
-  const fallbackLocaleName = 'English (US)';
 
   $: formattedDate = time.toLocaleString(editedLocale, {
     year: 'numeric',
@@ -23,10 +21,10 @@
     second: '2-digit',
   });
   $: selectedDate = `${formattedDate} ${timePortion}`;
-  $: editedLocale = $locale || fallbackLocaleCode;
+  $: editedLocale = findLocale($locale).code;
   $: selectedOption = {
-    value: editedLocale,
-    label: findLanguageName(editedLocale),
+    value: findLocale(editedLocale).code,
+    label: findLocale(editedLocale).name,
   };
 
   onMount(() => {
@@ -38,14 +36,6 @@
       clearInterval(interval);
     };
   });
-
-  function findLanguageName(code: string | undefined): string | never {
-    const language = Locales.find((lang) => lang.code === code);
-    if (!language) {
-      return fallbackLocaleName;
-    }
-    return language.name;
-  }
 
   const getAllLanguages = (): ComboBoxOption[] => {
     return Locales.map((locale) => ({
@@ -76,14 +66,15 @@
       </div>
       <div class="ml-4">
         <SettingCombobox
-          comboxBoxPlaceholder="Searching locales..."
+          comboboxPlaceholder="Searching locales..."
           {selectedOption}
-          list={getAllLanguages()}
+          options={getAllLanguages()}
           title="Locale"
           subtitle="Format dates based on your language and your region"
-          textUnderComboxBox={selectedDate}
           on:select={({ detail }) => handleLocaleChange(detail.value)}
-        />
+        >
+          <p class="mt-2">{selectedDate}</p>
+        </SettingCombobox>
       </div>
     </div>
   </div>
