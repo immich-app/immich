@@ -63,7 +63,7 @@ class AssetService {
 
   /// Returns `null` if the server state did not change, else list of assets
   Future<List<Asset>?> _getRemoteAssets(User user) async {
-    const int chunkSize = 5000;
+    const int chunkSize = 10000;
     try {
       final DateTime now = DateTime.now().toUtc();
       final List<Asset> allAssets = [];

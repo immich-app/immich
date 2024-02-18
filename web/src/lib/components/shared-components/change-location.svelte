@@ -1,12 +1,14 @@
 <script lang="ts">
-  import { searchPlaces, type AssetResponseDto, type PlacesResponseDto } from '@immich/sdk';
   import { createEventDispatcher } from 'svelte';
   import ConfirmDialogue from './confirm-dialogue.svelte';
-  import Map from './map/map.svelte';
   import { maximumLengthSearchPeople, timeBeforeShowLoadingSpinner } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
   import SearchBar from '../faces-page/search-bar.svelte';
   import { clickOutside } from '$lib/utils/click-outside';
+  import LoadingSpinner from './loading-spinner.svelte';
+  import { delay } from '$lib/utils/asset-utils';
+  import { timeToLoadTheMap } from '$lib/constants';
+  import { searchPlaces, type AssetResponseDto, type PlacesResponseDto } from '@immich/sdk';
 
   export const title = 'Change Location';
   export let asset: AssetResponseDto | undefined = undefined;
@@ -178,15 +180,25 @@
     </div>
     <label for="datetime">Pick a location</label>
     <div class="h-[500px] min-h-[300px] w-full">
-      <Map
-        mapMarkers={lat && lng && asset ? [{ id: asset.id, lat, lon: lng }] : []}
-        {zoom}
-        bind:addClipMapMarker
-        center={lat && lng ? { lat, lng } : undefined}
-        simplified={true}
-        clickable={true}
-        on:clickedPoint={({ detail: point }) => handleSelect(point)}
-      />
+      {#await import('../shared-components/map/map.svelte')}
+        {#await delay(timeToLoadTheMap) then}
+          <!-- show the loading spinner only if loading the map takes too much time -->
+          <div class="flex items-center justify-center h-full w-full">
+            <LoadingSpinner />
+          </div>
+        {/await}
+      {:then component}
+        <svelte:component
+          this={component.default}
+          mapMarkers={lat && lng && asset ? [{ id: asset.id, lat, lon: lng }] : []}
+          {zoom}
+          bind:addClipMapMarker
+          center={lat && lng ? { lat, lng } : undefined}
+          simplified={true}
+          clickable={true}
+          on:clickedPoint={({ detail: point }) => handleSelect(point)}
+        />
+      {/await}
     </div>
   </div>
 </ConfirmDialogue>

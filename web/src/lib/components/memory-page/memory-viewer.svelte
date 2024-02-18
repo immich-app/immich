@@ -168,14 +168,22 @@
           class:hover:opacity-70={previousMemory}
         >
           <button class="relative h-full w-full rounded-2xl" disabled={!previousMemory} on:click={toPreviousMemory}>
-            <img
-              class="h-full w-full rounded-2xl object-cover"
-              src={previousMemory
-                ? getAssetThumbnailUrl(previousMemory.assets[0].id, ThumbnailFormat.Jpeg)
-                : noThumbnailUrl}
-              alt=""
-              draggable="false"
-            />
+            {#if previousMemory}
+              <img
+                class="h-full w-full rounded-2xl object-cover"
+                src={getAssetThumbnailUrl(previousMemory.assets[0].id, ThumbnailFormat.Jpeg)}
+                alt=""
+                draggable="false"
+              />
+            {:else}
+              <enhanced:img
+                class="h-full w-full rounded-2xl object-cover"
+                src={noThumbnailUrl}
+                sizes="min(271px,186px)"
+                alt=""
+                draggable="false"
+              />
+            {/if}
 
             {#if previousMemory}
               <div class="absolute bottom-4 right-4 text-left text-white">
@@ -233,12 +241,22 @@
           class:hover:opacity-70={nextMemory}
         >
           <button class="relative h-full w-full rounded-2xl" on:click={toNextMemory} disabled={!nextMemory}>
-            <img
-              class="h-full w-full rounded-2xl object-cover"
-              src={nextMemory ? getAssetThumbnailUrl(nextMemory.assets[0].id, ThumbnailFormat.Jpeg) : noThumbnailUrl}
-              alt=""
-              draggable="false"
-            />
+            {#if nextMemory}
+              <img
+                class="h-full w-full rounded-2xl object-cover"
+                src={getAssetThumbnailUrl(nextMemory.assets[0].id, ThumbnailFormat.Jpeg)}
+                alt=""
+                draggable="false"
+              />
+            {:else}
+              <enhanced:img
+                class="h-full w-full rounded-2xl object-cover"
+                src={noThumbnailUrl}
+                sizes="min(271px,186px)"
+                alt=""
+                draggable="false"
+              />
+            {/if}
 
             {#if nextMemory}
               <div class="absolute bottom-4 left-4 text-left text-white">

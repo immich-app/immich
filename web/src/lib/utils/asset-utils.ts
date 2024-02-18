@@ -226,3 +226,7 @@ export const getSelectedAssets = (assets: Set<AssetResponseDto>, user: UserRespo
   }
   return ids;
 };
+
+export const delay = async (ms: number) => {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+};
