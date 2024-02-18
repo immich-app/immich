@@ -212,7 +212,7 @@ export class AssetRepository implements IAssetRepository {
 
   @GenerateSql({
     params: [
-      { skip: 20000, take: 10000 },
+      { skip: 20_000, take: 10_000 },
       {
         takenBefore: DummyValue.DATE,
         userIds: [DummyValue.UUID],
