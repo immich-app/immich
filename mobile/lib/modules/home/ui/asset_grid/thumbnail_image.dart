@@ -5,16 +5,29 @@ import 'package:immich_mobile/shared/ui/immich_image.dart';
 import 'package:immich_mobile/utils/storage_indicator.dart';
 import 'package:isar/isar.dart';
 
+/// Shows the thumbnail images in the asset grid view
 class ThumbnailImage extends StatelessWidget {
+
+  /// The asset to show the thumbnail image for
   final Asset asset;
+
+  /// Whether to show the storage indicator icont over the image or not
   final bool showStorageIndicator;
+
+  /// Whether to show the show stack icon over the image or not
   final bool showStack;
+
+  /// Whether to show the checkmark indicating that this image is selected
   final bool isSelected;
+
+  /// Can override [isSelected] and never show the selection indicator
   final bool multiselectEnabled;
+
+  /// If we are allowed to deselect this image
   final bool canDeselect;
+
+  /// The offset index to apply to this hero tag for animation
   final int heroOffset;
-  final Function()? onTap;
-  final Function()? onLongPress;
 
   const ThumbnailImage({
     super.key,
@@ -25,8 +38,6 @@ class ThumbnailImage extends StatelessWidget {
     this.multiselectEnabled = false,
     this.heroOffset = 0,
     this.canDeselect = true,
-    this.onTap,
-    this.onLongPress,
   });
 
   @override
@@ -153,56 +164,52 @@ class ThumbnailImage extends StatelessWidget {
       );
     }
 
-    return GestureDetector(
-      onTap: onTap,
-      onLongPress: onLongPress,
-      child: Stack(
-        children: [
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.decelerate,
-            decoration: BoxDecoration(
-              border: multiselectEnabled && isSelected
-                  ? Border.all(
-                      color: canDeselect ? assetContainerColor : Colors.grey,
-                      width: 8,
-                    )
-                  : const Border(),
-            ),
-            child: buildImage(),
+    return Stack(
+      children: [
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.decelerate,
+          decoration: BoxDecoration(
+            border: multiselectEnabled && isSelected
+                ? Border.all(
+                    color: canDeselect ? assetContainerColor : Colors.grey,
+                    width: 8,
+                  )
+                : const Border(),
           ),
-          if (multiselectEnabled)
-            Padding(
-              padding: const EdgeInsets.all(3.0),
-              child: Align(
-                alignment: Alignment.topLeft,
-                child: buildSelectionIcon(asset),
-              ),
+          child: buildImage(),
+        ),
+        if (multiselectEnabled)
+          Padding(
+            padding: const EdgeInsets.all(3.0),
+            child: Align(
+              alignment: Alignment.topLeft,
+              child: buildSelectionIcon(asset),
             ),
-          if (showStorageIndicator)
-            Positioned(
-              right: 8,
-              bottom: 5,
-              child: Icon(
-                storageIcon(asset),
-                color: Colors.white,
-                size: 18,
-              ),
+          ),
+        if (showStorageIndicator)
+          Positioned(
+            right: 8,
+            bottom: 5,
+            child: Icon(
+              storageIcon(asset),
+              color: Colors.white,
+              size: 18,
             ),
-          if (asset.isFavorite)
-            const Positioned(
-              left: 8,
-              bottom: 5,
-              child: Icon(
-                Icons.favorite,
-                color: Colors.white,
-                size: 18,
-              ),
+          ),
+        if (asset.isFavorite)
+          const Positioned(
+            left: 8,
+            bottom: 5,
+            child: Icon(
+              Icons.favorite,
+              color: Colors.white,
+              size: 18,
             ),
-          if (!asset.isImage) buildVideoIcon(),
-          if (asset.stackChildrenCount > 0) buildStackIcon(),
-        ],
-      ),
+          ),
+        if (!asset.isImage) buildVideoIcon(),
+        if (asset.stackChildrenCount > 0) buildStackIcon(),
+      ],
     );
   }
 }

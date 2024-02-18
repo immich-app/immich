@@ -11,6 +11,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/collection_extensions.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/scroll_notifier.provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/thumbnail_image.dart';
+import 'package:immich_mobile/modules/home/ui/asset_grid/thumbnail_placeholder.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
@@ -588,6 +589,7 @@ class _AssetRow extends StatelessWidget {
       key: key,
       children: assets.mapIndexed((int index, Asset asset) {
         final bool last = index + 1 == assetsPerRow;
+        final isSelected = isSelectionActive && selectedAssets.contains(asset);
         return Container(
           width: width * widthDistribution[index],
           height: width,
@@ -595,18 +597,37 @@ class _AssetRow extends StatelessWidget {
             bottom: margin,
             right: last ? 0.0 : margin,
           ),
-          child: ThumbnailImage(
-            asset: asset,
-            index: absoluteOffset + index,
-            loadAsset: renderList.loadAsset,
-            totalAssets: renderList.totalAssets,
-            multiselectEnabled: selectionActive,
-            isSelected: isSelectionActive && selectedAssets.contains(asset),
-            onSelect: () => onSelect?.call(asset),
-            onDeselect: () => onDeselect?.call(asset),
-            showStorageIndicator: showStorageIndicator,
-            heroOffset: heroOffset,
-            showStack: showStack,
+          child: GestureDetector(
+            onTap: () {
+              if (selectionActive) {
+                if (isSelected) {
+                  onDeselect?.call(asset);
+                } else {
+                  onSelect?.call(asset);
+                }
+              } else {
+                context.pushRoute(
+                  GalleryViewerRoute(
+                    renderList: renderList,
+                    initialIndex: absoluteOffset + index,
+                    heroOffset: heroOffset,
+                    showStack: showStack,
+                  ),
+                );
+              }
+            },
+            onLongPress: () {
+              onSelect?.call(asset);
+              HapticFeedback.heavyImpact();
+            },
+            child: ThumbnailImage(
+              asset: asset,
+              multiselectEnabled: selectionActive,
+              isSelected: isSelected,
+              showStorageIndicator: showStorageIndicator,
+              heroOffset: heroOffset,
+              showStack: showStack,
+            ),
           ),
         );
       }).toList(),
