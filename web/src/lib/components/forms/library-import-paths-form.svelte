@@ -247,10 +247,13 @@
       >
     </tbody>
   </table>
-
-  <div class="flex w-full justify-end gap-2">
-    <Button size="sm" color="gray" on:click={() => revalidate()}><Icon path={mdiRefresh} size={20} />Validate</Button>
-    <Button size="sm" color="gray" on:click={() => handleCancel()}>Cancel</Button>
-    <Button size="sm" type="submit">Save</Button>
+  <div class="flex justify-between">
+    <div class="w-full justify-end gap-2">
+      <Button size="sm" color="gray" on:click={() => revalidate()}><Icon path={mdiRefresh} size={20} />Validate</Button>
+    </div>
+    <div class="w-full justify-end gap-2">
+      <Button size="sm" color="gray" on:click={() => handleCancel()}>Cancel</Button>
+      <Button size="sm" type="submit">Save</Button>
+    </div>
   </div>
 </form>
