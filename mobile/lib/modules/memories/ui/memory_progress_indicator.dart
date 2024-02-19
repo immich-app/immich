@@ -39,9 +39,9 @@ class MemoryProgressIndicator extends StatelessWidget {
                     decoration: BoxDecoration(
                       border: i == 0
                           ? null
-                          : Border(
+                          : const Border(
                               left: BorderSide(
-                                color: context.colorScheme.onSecondaryContainer,
+                                color: Colors.black,
                                 width: 1,
                               ),
                             ),
