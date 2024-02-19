@@ -102,7 +102,10 @@
 
   const dispatch = createEventDispatcher<{ search: SmartSearchDto | MetadataSearchDto }>();
   let showAllPeople = false;
-  $: peopleList = showAllPeople ? suggestions.people : suggestions.people.slice(0, 11);
+
+  let filterBoxWidth = 0;
+  $: numberOfPeople = (filterBoxWidth - 80) / 85;
+  $: peopleList = showAllPeople ? suggestions.people : suggestions.people.slice(0, numberOfPeople);
 
   onMount(() => {
     getPeople();
@@ -314,6 +317,7 @@
 </script>
 
 <div
+  bind:clientWidth={filterBoxWidth}
   transition:fly={{ y: 25, duration: 250 }}
   class="absolute w-full rounded-b-3xl border border-gray-200 bg-white shadow-2xl transition-all dark:border-gray-800 dark:bg-immich-dark-gray dark:text-gray-300 px-6 pt-6 overflow-y-auto max-h-[90vh] immich-scrollbar"
 >
