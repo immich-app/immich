@@ -39,20 +39,10 @@
   });
 
   const getAllLanguages = (): ComboBoxOption[] => {
-    const testNumber = 10;
-    // test locales supported by the browser
-    return Locales.map((locale) => ({
+    return Locales.filter(({ code }) => Intl.NumberFormat.supportedLocalesOf(code).length > 0).map((locale) => ({
       label: locale.name,
       value: locale.code,
-    })).filter((locale) => {
-      try {
-        if (testNumber.toLocaleString(locale.value)) {
-          return locale;
-        }
-      } catch {
-        // do nothing
-      }
-    });
+    }));
   };
 
   const handleToggleColorTheme = () => {
