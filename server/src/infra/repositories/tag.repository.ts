@@ -3,6 +3,7 @@ import { AssetEntity, TagEntity } from '@app/infra/entities';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { Span } from 'nestjs-otel';
 
 @Injectable()
 export class TagRepository implements ITagRepository {
@@ -11,6 +12,7 @@ export class TagRepository implements ITagRepository {
     @InjectRepository(TagEntity) private repository: Repository<TagEntity>,
   ) {}
 
+  @Span()
   getById(userId: string, id: string): Promise<TagEntity | null> {
     return this.repository.findOne({
       where: {
@@ -23,22 +25,27 @@ export class TagRepository implements ITagRepository {
     });
   }
 
+  @Span()
   getAll(userId: string): Promise<TagEntity[]> {
     return this.repository.find({ where: { userId } });
   }
 
+  @Span()
   create(tag: Partial<TagEntity>): Promise<TagEntity> {
     return this.save(tag);
   }
 
+  @Span()
   update(tag: Partial<TagEntity>): Promise<TagEntity> {
     return this.save(tag);
   }
 
+  @Span()
   async remove(tag: TagEntity): Promise<void> {
     await this.repository.remove(tag);
   }
 
+  @Span()
   async getAssets(userId: string, tagId: string): Promise<AssetEntity[]> {
     return this.assetRepository.find({
       where: {
@@ -60,6 +67,7 @@ export class TagRepository implements ITagRepository {
     });
   }
 
+  @Span()
   async addAssets(userId: string, id: string, assetIds: string[]): Promise<void> {
     for (const assetId of assetIds) {
       const asset = await this.assetRepository.findOneOrFail({
@@ -76,6 +84,7 @@ export class TagRepository implements ITagRepository {
     }
   }
 
+  @Span()
   async removeAssets(userId: string, id: string, assetIds: string[]): Promise<void> {
     for (const assetId of assetIds) {
       const asset = await this.assetRepository.findOneOrFail({
@@ -92,6 +101,7 @@ export class TagRepository implements ITagRepository {
     }
   }
 
+  @Span()
   hasAsset(userId: string, tagId: string, assetId: string): Promise<boolean> {
     return this.repository.exist({
       where: {
@@ -107,6 +117,7 @@ export class TagRepository implements ITagRepository {
     });
   }
 
+  @Span()
   hasName(userId: string, name: string): Promise<boolean> {
     return this.repository.exist({
       where: {

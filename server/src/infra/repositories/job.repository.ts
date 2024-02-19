@@ -17,6 +17,7 @@ import { Job, JobsOptions, Processor, Queue, Worker, WorkerOptions } from 'bullm
 import { CronJob, CronTime } from 'cron';
 import { setTimeout } from 'node:timers/promises';
 import { bullConfig } from '../infra.config';
+import { Span } from 'nestjs-otel';
 
 @Injectable()
 export class JobRepository implements IJobRepository {
@@ -28,12 +29,14 @@ export class JobRepository implements IJobRepository {
     private schedulerReqistry: SchedulerRegistry,
   ) {}
 
+  @Span()
   addHandler(queueName: QueueName, concurrency: number, handler: (item: JobItem) => Promise<void>) {
     const workerHandler: Processor = async (job: Job) => handler(job as JobItem);
     const workerOptions: WorkerOptions = { ...bullConfig, concurrency };
     this.workers[queueName] = new Worker(queueName, workerHandler, workerOptions);
   }
 
+  @Span()
   addCronJob(name: string, expression: string, onTick: () => void, start = true): void {
     const job = new CronJob<null, null>(
       expression,
@@ -57,6 +60,7 @@ export class JobRepository implements IJobRepository {
     this.schedulerReqistry.addCronJob(name, job);
   }
 
+  @Span()
   updateCronJob(name: string, expression?: string, start?: boolean): void {
     const job = this.schedulerReqistry.getCronJob(name);
     if (expression) {
@@ -67,10 +71,12 @@ export class JobRepository implements IJobRepository {
     }
   }
 
+  @Span()
   deleteCronJob(name: string): void {
     this.schedulerReqistry.deleteCronJob(name);
   }
 
+  @Span()
   setConcurrency(queueName: QueueName, concurrency: number) {
     const worker = this.workers[queueName];
     if (!worker) {
@@ -81,6 +87,7 @@ export class JobRepository implements IJobRepository {
     worker.concurrency = concurrency;
   }
 
+  @Span()
   async getQueueStatus(name: QueueName): Promise<QueueStatus> {
     const queue = this.getQueue(name);
 
@@ -90,22 +97,27 @@ export class JobRepository implements IJobRepository {
     };
   }
 
+  @Span()
   pause(name: QueueName) {
     return this.getQueue(name).pause();
   }
 
+  @Span()
   resume(name: QueueName) {
     return this.getQueue(name).resume();
   }
 
+  @Span()
   empty(name: QueueName) {
     return this.getQueue(name).drain();
   }
 
+  @Span()
   clear(name: QueueName, type: QueueCleanType) {
     return this.getQueue(name).clean(0, 1000, type);
   }
 
+  @Span()
   getJobCounts(name: QueueName): Promise<JobCounts> {
     return this.getQueue(name).getJobCounts(
       'active',
@@ -117,6 +129,7 @@ export class JobRepository implements IJobRepository {
     ) as unknown as Promise<JobCounts>;
   }
 
+  @Span()
   async queueAll(items: JobItem[]): Promise<void> {
     if (items.length === 0) {
       return;
@@ -149,10 +162,12 @@ export class JobRepository implements IJobRepository {
     await Promise.all(promises);
   }
 
+  @Span()
   async queue(item: JobItem): Promise<void> {
     return this.queueAll([item]);
   }
 
+  @Span()
   async waitForQueueCompletion(...queues: QueueName[]): Promise<void> {
     let activeQueue: QueueStatus | undefined;
     do {

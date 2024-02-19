@@ -14,6 +14,7 @@ import {
 } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';
 import { ChunkedSet } from '../infra.utils';
+import { Span } from 'nestjs-otel';
 
 type IActivityAccess = IAccessRepository['activity'];
 type IAlbumAccess = IAccessRepository['album'];
@@ -30,6 +31,7 @@ class ActivityAccess implements IActivityAccess {
     private albumRepository: Repository<AlbumEntity>,
   ) {}
 
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
   async checkOwnerAccess(userId: string, activityIds: Set<string>): Promise<Set<string>> {
@@ -48,6 +50,7 @@ class ActivityAccess implements IActivityAccess {
       .then((activities) => new Set(activities.map((activity) => activity.id)));
   }
 
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
   async checkAlbumOwnerAccess(userId: string, activityIds: Set<string>): Promise<Set<string>> {
@@ -68,6 +71,7 @@ class ActivityAccess implements IActivityAccess {
       .then((activities) => new Set(activities.map((activity) => activity.id)));
   }
 
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
   async checkCreateAccess(userId: string, albumIds: Set<string>): Promise<Set<string>> {
@@ -97,6 +101,7 @@ class AlbumAccess implements IAlbumAccess {
     private sharedLinkRepository: Repository<SharedLinkEntity>,
   ) {}
 
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
   async checkOwnerAccess(userId: string, albumIds: Set<string>): Promise<Set<string>> {
@@ -115,6 +120,7 @@ class AlbumAccess implements IAlbumAccess {
       .then((albums) => new Set(albums.map((album) => album.id)));
   }
 
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
   async checkSharedAlbumAccess(userId: string, albumIds: Set<string>): Promise<Set<string>> {
@@ -135,6 +141,7 @@ class AlbumAccess implements IAlbumAccess {
       .then((albums) => new Set(albums.map((album) => album.id)));
   }
 
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
   async checkSharedLinkAccess(sharedLinkId: string, albumIds: Set<string>): Promise<Set<string>> {
@@ -164,6 +171,7 @@ class AssetAccess implements IAssetAccess {
     private sharedLinkRepository: Repository<SharedLinkEntity>,
   ) {}
 
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
   async checkAlbumAccess(userId: string, assetIds: Set<string>): Promise<Set<string>> {
@@ -200,6 +208,7 @@ class AssetAccess implements IAssetAccess {
       });
   }
 
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
   async checkOwnerAccess(userId: string, assetIds: Set<string>): Promise<Set<string>> {
@@ -219,6 +228,7 @@ class AssetAccess implements IAssetAccess {
       .then((assets) => new Set(assets.map((asset) => asset.id)));
   }
 
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
   async checkPartnerAccess(userId: string, assetIds: Set<string>): Promise<Set<string>> {
@@ -237,6 +247,7 @@ class AssetAccess implements IAssetAccess {
       .then((rows) => new Set(rows.map((row) => row.assetId)));
   }
 
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
   async checkSharedLinkAccess(sharedLinkId: string, assetIds: Set<string>): Promise<Set<string>> {
@@ -285,6 +296,7 @@ class AssetAccess implements IAssetAccess {
 class AuthDeviceAccess implements IAuthDeviceAccess {
   constructor(private tokenRepository: Repository<UserTokenEntity>) {}
 
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
   async checkOwnerAccess(userId: string, deviceIds: Set<string>): Promise<Set<string>> {
@@ -310,6 +322,7 @@ class LibraryAccess implements ILibraryAccess {
     private partnerRepository: Repository<PartnerEntity>,
   ) {}
 
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
   async checkOwnerAccess(userId: string, libraryIds: Set<string>): Promise<Set<string>> {
@@ -328,6 +341,7 @@ class LibraryAccess implements ILibraryAccess {
       .then((libraries) => new Set(libraries.map((library) => library.id)));
   }
 
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
   async checkPartnerAccess(userId: string, partnerIds: Set<string>): Promise<Set<string>> {
@@ -348,6 +362,7 @@ class LibraryAccess implements ILibraryAccess {
 class TimelineAccess implements ITimelineAccess {
   constructor(private partnerRepository: Repository<PartnerEntity>) {}
 
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
   async checkPartnerAccess(userId: string, partnerIds: Set<string>): Promise<Set<string>> {
@@ -371,6 +386,7 @@ class PersonAccess implements IPersonAccess {
     private personRepository: Repository<PersonEntity>,
   ) {}
 
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
   async checkOwnerAccess(userId: string, personIds: Set<string>): Promise<Set<string>> {
@@ -389,6 +405,7 @@ class PersonAccess implements IPersonAccess {
       .then((persons) => new Set(persons.map((person) => person.id)));
   }
 
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
   async checkFaceOwnerAccess(userId: string, assetFaceIds: Set<string>): Promise<Set<string>> {
@@ -413,6 +430,7 @@ class PersonAccess implements IPersonAccess {
 class PartnerAccess implements IPartnerAccess {
   constructor(private partnerRepository: Repository<PartnerEntity>) {}
 
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
   async checkUpdateAccess(userId: string, partnerIds: Set<string>): Promise<Set<string>> {

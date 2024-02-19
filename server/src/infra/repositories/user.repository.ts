@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Not, Repository } from 'typeorm';
 import { AssetEntity, UserEntity } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';
+import { Span } from 'nestjs-otel';
 
 @Injectable()
 export class UserRepository implements IUserRepository {
@@ -12,6 +13,7 @@ export class UserRepository implements IUserRepository {
     @InjectRepository(UserEntity) private userRepository: Repository<UserEntity>,
   ) {}
 
+  @Span()
   async get(userId: string, options: UserFindOptions): Promise<UserEntity | null> {
     options = options || {};
     return this.userRepository.findOne({
@@ -20,16 +22,19 @@ export class UserRepository implements IUserRepository {
     });
   }
 
+  @Span()
   @GenerateSql()
   async getAdmin(): Promise<UserEntity | null> {
     return this.userRepository.findOne({ where: { isAdmin: true } });
   }
 
+  @Span()
   @GenerateSql()
   async hasAdmin(): Promise<boolean> {
     return this.userRepository.exist({ where: { isAdmin: true } });
   }
 
+  @Span()
   @GenerateSql({ params: [DummyValue.EMAIL] })
   async getByEmail(email: string, withPassword?: boolean): Promise<UserEntity | null> {
     let builder = this.userRepository.createQueryBuilder('user').where({ email });
@@ -41,20 +46,24 @@ export class UserRepository implements IUserRepository {
     return builder.getOne();
   }
 
+  @Span()
   @GenerateSql({ params: [DummyValue.STRING] })
   async getByStorageLabel(storageLabel: string): Promise<UserEntity | null> {
     return this.userRepository.findOne({ where: { storageLabel } });
   }
 
+  @Span()
   @GenerateSql({ params: [DummyValue.STRING] })
   async getByOAuthId(oauthId: string): Promise<UserEntity | null> {
     return this.userRepository.findOne({ where: { oauthId } });
   }
 
+  @Span()
   async getDeletedUsers(): Promise<UserEntity[]> {
     return this.userRepository.find({ withDeleted: true, where: { deletedAt: Not(IsNull()) } });
   }
 
+  @Span()
   async getList({ withDeleted }: UserListFilter = {}): Promise<UserEntity[]> {
     return this.userRepository.find({
       withDeleted,
@@ -64,19 +73,23 @@ export class UserRepository implements IUserRepository {
     });
   }
 
+  @Span()
   create(user: Partial<UserEntity>): Promise<UserEntity> {
     return this.save(user);
   }
 
   // TODO change to (user: Partial<UserEntity>)
+  @Span()
   update(id: string, user: Partial<UserEntity>): Promise<UserEntity> {
     return this.save({ ...user, id });
   }
 
+  @Span()
   async delete(user: UserEntity, hard?: boolean): Promise<UserEntity> {
     return hard ? this.userRepository.remove(user) : this.userRepository.softRemove(user);
   }
 
+  @Span()
   @GenerateSql()
   async getUserStats(): Promise<UserStatsQueryResponse[]> {
     const stats = await this.userRepository
@@ -103,10 +116,12 @@ export class UserRepository implements IUserRepository {
     return stats;
   }
 
+  @Span()
   async updateUsage(id: string, delta: number): Promise<void> {
     await this.userRepository.increment({ id }, 'quotaUsageInBytes', delta);
   }
 
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID] })
   async syncUsage(id?: string) {
     const subQuery = this.assetRepository

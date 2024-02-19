@@ -10,11 +10,13 @@ import sirv from 'sirv';
 import { AppModule } from './app.module';
 import { AppService } from './app.service';
 import { useSwagger } from './app.utils';
+import otelSDK from '@app/infra/tracing';
 
 const logger = new ImmichLogger('ImmichServer');
 const port = Number(process.env.SERVER_PORT) || 3001;
 
 export async function bootstrap() {
+  otelSDK.start();
   const app = await NestFactory.create<NestExpressApplication>(AppModule, { bufferLogs: true });
 
   app.useLogger(app.get(ImmichLogger));
@@ -47,7 +49,7 @@ export async function bootstrap() {
     );
   }
   app.use(app.get(AppService).ssr(excludePaths));
-
+  
   const server = await app.listen(port);
   server.requestTimeout = 30 * 60 * 1000;
 

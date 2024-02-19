@@ -37,6 +37,23 @@ services:
       - database
       - immich-server
 
+  immich-prometheus:
+    container_name: immich_prometheus
+    ports:
+      - 9090:9090
+    image: prom/prometheus
+    command:
+      [
+        "--config.file=/etc/prometheus/prometheus.yml",
+        "--storage.tsdb.path=/prometheus",
+        "--web.console.libraries=/usr/share/prometheus/console_libraries",
+        "--web.console.templates=/usr/share/prometheus/consoles",
+        "--enable-feature=otlp-write-receiver"
+      ]
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+
   immich-machine-learning:
     container_name: immich_machine_learning
     image: immich-machine-learning:latest
@@ -75,3 +92,4 @@ services:
 
 volumes:
   model-cache:
+  prometheus-data:

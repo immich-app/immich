@@ -3,13 +3,14 @@ import { WebSocketAdapter } from '@app/infra';
 import { ImmichLogger } from '@app/infra/logger';
 import { NestFactory } from '@nestjs/core';
 import { MicroservicesModule } from './microservices.module';
+import otelSDK from '@app/infra/tracing';
 
 const logger = new ImmichLogger('ImmichMicroservice');
 const port = Number(process.env.MICROSERVICES_PORT) || 3002;
 
 export async function bootstrap() {
+  otelSDK.start();
   const app = await NestFactory.create(MicroservicesModule, { bufferLogs: true });
-
   app.useLogger(app.get(ImmichLogger));
   app.useWebSocketAdapter(new WebSocketAdapter(app));
 

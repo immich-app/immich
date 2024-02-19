@@ -14,6 +14,7 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
+import { Span } from 'nestjs-otel';
 import { Server, Socket } from 'socket.io';
 
 @WebSocketGateway({
@@ -35,6 +36,7 @@ export class CommunicationRepository
 
   constructor(private authService: AuthService) {}
 
+  @Span()
   afterInit(server: Server) {
     this.logger.log('Initialized websocket server');
 
@@ -49,6 +51,7 @@ export class CommunicationRepository
     }
   }
 
+  @Span()
   on(event: 'connect' | ServerEvent, callback: OnConnectCallback | OnServerEventCallback) {
     switch (event) {
       case 'connect': {
@@ -63,6 +66,7 @@ export class CommunicationRepository
     }
   }
 
+  @Span()
   async handleConnection(client: Socket) {
     try {
       this.logger.log(`Websocket Connect:    ${client.id}`);
@@ -78,19 +82,23 @@ export class CommunicationRepository
     }
   }
 
+  @Span()
   async handleDisconnect(client: Socket) {
     this.logger.log(`Websocket Disconnect: ${client.id}`);
     await client.leave(client.nsp.name);
   }
 
+  @Span()
   send(event: ClientEvent, userId: string, data: any) {
     this.server?.to(userId).emit(event, data);
   }
 
+  @Span()
   broadcast(event: ClientEvent, data: any) {
     this.server?.emit(event, data);
   }
 
+  @Span()
   sendServerEvent(event: ServerEvent) {
     this.logger.debug(`Server event: ${event} (send)`);
     this.server?.serverSideEmit(event);

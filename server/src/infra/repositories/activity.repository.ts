@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
 import { ActivityEntity } from '../entities/activity.entity';
 import { DummyValue, GenerateSql } from '../infra.util';
+import { Span } from 'nestjs-otel';
 
 export interface ActivitySearch {
   albumId?: string;
@@ -16,6 +17,7 @@ export interface ActivitySearch {
 export class ActivityRepository implements IActivityRepository {
   constructor(@InjectRepository(ActivityEntity) private repository: Repository<ActivityEntity>) {}
 
+  @Span()
   @GenerateSql({ params: [{ albumId: DummyValue.UUID }] })
   search(options: ActivitySearch): Promise<ActivityEntity[]> {
     const { userId, assetId, albumId, isLiked } = options;
@@ -35,14 +37,17 @@ export class ActivityRepository implements IActivityRepository {
     });
   }
 
+  @Span()
   create(entity: Partial<ActivityEntity>): Promise<ActivityEntity> {
     return this.save(entity);
   }
 
+  @Span()
   async delete(id: string): Promise<void> {
     await this.repository.delete(id);
   }
 
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
   getStatistics(assetId: string, albumId: string): Promise<number> {
     return this.repository.count({

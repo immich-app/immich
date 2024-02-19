@@ -65,6 +65,8 @@ import {
   UserRepository,
   UserTokenRepository,
 } from './repositories';
+import { OpenTelemetryModule } from 'nestjs-otel';
+import { otelConfig } from './tracing';
 
 const providers: Provider[] = [
   { provide: IActivityRepository, useClass: ActivityRepository },
@@ -106,6 +108,7 @@ const providers: Provider[] = [
     ScheduleModule,
     BullModule.forRoot(bullConfig),
     BullModule.registerQueue(...bullQueues),
+    OpenTelemetryModule.forRoot(otelConfig),
   ],
   providers: [...providers],
   exports: [...providers, BullModule],

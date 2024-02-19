@@ -15,6 +15,7 @@ import { FindManyOptions, FindOptionsRelations, FindOptionsSelect, In, Repositor
 import { AssetEntity, AssetFaceEntity, PersonEntity } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';
 import { ChunkedArray, asVector, paginate } from '../infra.utils';
+import { Span } from 'nestjs-otel';
 
 export class PersonRepository implements IPersonRepository {
   constructor(
@@ -23,6 +24,7 @@ export class PersonRepository implements IPersonRepository {
     @InjectRepository(AssetFaceEntity) private assetFaceRepository: Repository<AssetFaceEntity>,
   ) {}
 
+  @Span()
   @GenerateSql({ params: [{ oldPersonId: DummyValue.UUID, newPersonId: DummyValue.UUID }] })
   async reassignFaces({ oldPersonId, faceIds, newPersonId }: UpdateFacesData): Promise<number> {
     const result = await this.assetFaceRepository
@@ -35,18 +37,22 @@ export class PersonRepository implements IPersonRepository {
     return result.affected ?? 0;
   }
 
+  @Span()
   async delete(entities: PersonEntity[]): Promise<void> {
     await this.personRepository.remove(entities);
   }
 
+  @Span()
   async deleteAll(): Promise<void> {
     await this.personRepository.clear();
   }
 
+  @Span()
   async deleteAllFaces(): Promise<void> {
     await this.assetFaceRepository.query('TRUNCATE TABLE asset_faces CASCADE');
   }
 
+  @Span()
   getAllFaces(
     pagination: PaginationOptions,
     options: FindManyOptions<AssetFaceEntity> = {},
@@ -54,10 +60,12 @@ export class PersonRepository implements IPersonRepository {
     return paginate(this.assetFaceRepository, pagination, options);
   }
 
+  @Span()
   getAll(pagination: PaginationOptions, options: FindManyOptions<PersonEntity> = {}): Paginated<PersonEntity> {
     return paginate(this.personRepository, pagination, options);
   }
 
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID] })
   getAllForUser(userId: string, options?: PersonSearchOptions): Promise<PersonEntity[]> {
     const queryBuilder = this.personRepository
@@ -81,6 +89,7 @@ export class PersonRepository implements IPersonRepository {
     return queryBuilder.getMany();
   }
 
+  @Span()
   @GenerateSql()
   getAllWithoutFaces(): Promise<PersonEntity[]> {
     return this.personRepository
@@ -92,6 +101,7 @@ export class PersonRepository implements IPersonRepository {
       .getMany();
   }
 
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID] })
   getFaces(assetId: string): Promise<AssetFaceEntity[]> {
     return this.assetFaceRepository.find({
@@ -102,6 +112,7 @@ export class PersonRepository implements IPersonRepository {
     });
   }
 
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID] })
   getFaceById(id: string): Promise<AssetFaceEntity> {
     return this.assetFaceRepository.findOneOrFail({
@@ -112,6 +123,7 @@ export class PersonRepository implements IPersonRepository {
     });
   }
 
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID] })
   getFaceByIdWithAssets(
     id: string,
@@ -134,6 +146,7 @@ export class PersonRepository implements IPersonRepository {
     );
   }
 
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
   async reassignFace(assetFaceId: string, newPersonId: string): Promise<number> {
     const result = await this.assetFaceRepository
@@ -146,10 +159,12 @@ export class PersonRepository implements IPersonRepository {
     return result.affected ?? 0;
   }
 
+  @Span()
   getById(personId: string): Promise<PersonEntity | null> {
     return this.personRepository.findOne({ where: { id: personId } });
   }
 
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING, { withHidden: true }] })
   getByName(userId: string, personName: string, { withHidden }: PersonNameSearchOptions): Promise<PersonEntity[]> {
     const queryBuilder = this.personRepository
@@ -169,6 +184,7 @@ export class PersonRepository implements IPersonRepository {
     return queryBuilder.getMany();
   }
 
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID] })
   async getStatistics(personId: string): Promise<PersonStatistics> {
     const items = await this.assetFaceRepository
@@ -185,6 +201,7 @@ export class PersonRepository implements IPersonRepository {
     };
   }
 
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID] })
   getAssets(personId: string): Promise<AssetEntity[]> {
     return this.assetRepository.find({
@@ -209,6 +226,7 @@ export class PersonRepository implements IPersonRepository {
     });
   }
 
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID] })
   async getNumberOfPeople(userId: string): Promise<PeopleStatistics> {
     const items = await this.personRepository
@@ -235,10 +253,12 @@ export class PersonRepository implements IPersonRepository {
     return result;
   }
 
+  @Span()
   create(entity: Partial<PersonEntity>): Promise<PersonEntity> {
     return this.personRepository.save(entity);
   }
 
+  @Span()
   async createFaces(entities: AssetFaceEntity[]): Promise<string[]> {
     const res = await this.assetFaceRepository.insert(
       entities.map((entity) => ({ ...entity, embedding: () => asVector(entity.embedding, true) })),
@@ -246,17 +266,20 @@ export class PersonRepository implements IPersonRepository {
     return res.identifiers.map((row) => row.id);
   }
 
+  @Span()
   async update(entity: Partial<PersonEntity>): Promise<PersonEntity> {
     const { id } = await this.personRepository.save(entity);
     return this.personRepository.findOneByOrFail({ id });
   }
 
+  @Span()
   @GenerateSql({ params: [[{ assetId: DummyValue.UUID, personId: DummyValue.UUID }]] })
   @ChunkedArray()
   async getFacesByIds(ids: AssetFaceId[]): Promise<AssetFaceEntity[]> {
     return this.assetFaceRepository.find({ where: ids, relations: { asset: true }, withDeleted: true });
   }
 
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID] })
   async getRandomFace(personId: string): Promise<AssetFaceEntity | null> {
     return this.assetFaceRepository.findOneBy({ personId });

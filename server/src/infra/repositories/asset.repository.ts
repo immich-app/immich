@@ -39,6 +39,7 @@ import {
 import { AssetEntity, AssetJobStatusEntity, AssetType, ExifEntity, SmartInfoEntity } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';
 import { Chunked, ChunkedArray, OptionalBetween, paginate, paginatedBuilder, searchAssetBuilder } from '../infra.utils';
+import { Span } from 'nestjs-otel';
 
 const truncateMap: Record<TimeBucketSize, string> = {
   [TimeBucketSize.DAY]: 'day',
@@ -59,18 +60,22 @@ export class AssetRepository implements IAssetRepository {
     @InjectRepository(SmartInfoEntity) private smartInfoRepository: Repository<SmartInfoEntity>,
   ) {}
 
+  @Span()
   async upsertExif(exif: Partial<ExifEntity>): Promise<void> {
     await this.exifRepository.upsert(exif, { conflictPaths: ['assetId'] });
   }
 
+  @Span()
   async upsertJobStatus(jobStatus: Partial<AssetJobStatusEntity>): Promise<void> {
     await this.jobStatusRepository.upsert(jobStatus, { conflictPaths: ['assetId'] });
   }
 
+  @Span()
   create(asset: AssetCreate): Promise<AssetEntity> {
     return this.repository.save(asset);
   }
 
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.DATE] })
   getByDate(ownerId: string, date: Date): Promise<AssetEntity[]> {
     // For reference of a correct approach although slower
@@ -106,6 +111,7 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID, { day: 1, month: 1 }] })
   getByDayOfYear(ownerId: string, { day, month }: MonthDay): Promise<AssetEntity[]> {
     return this.repository
@@ -128,6 +134,7 @@ export class AssetRepository implements IAssetRepository {
       .getMany();
   }
 
+  @Span()
   @GenerateSql({ params: [[DummyValue.UUID]] })
   @ChunkedArray()
   getByIds(
@@ -157,11 +164,13 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID] })
   async deleteAll(ownerId: string): Promise<void> {
     await this.repository.delete({ ownerId });
   }
 
+  @Span()
   getByAlbumId(pagination: PaginationOptions, albumId: string): Paginated<AssetEntity> {
     return paginate(this.repository, pagination, {
       where: {
@@ -176,6 +185,7 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
+  @Span()
   getByUserId(
     pagination: PaginationOptions,
     userId: string,
@@ -184,6 +194,7 @@ export class AssetRepository implements IAssetRepository {
     return this.getAll(pagination, { ...options, userIds: [userId] });
   }
 
+  @Span()
   @GenerateSql({ params: [[DummyValue.UUID]] })
   getLibraryAssetPaths(pagination: PaginationOptions, libraryId: string): Paginated<AssetPathEntity> {
     return paginate(this.repository, pagination, {
@@ -192,6 +203,7 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
   getByLibraryIdAndOriginalPath(libraryId: string, originalPath: string): Promise<AssetEntity | null> {
     return this.repository.findOne({
@@ -199,6 +211,7 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID, [DummyValue.STRING]] })
   @ChunkedArray({ paramIndex: 1 })
   async getPathsNotInLibrary(libraryId: string, originalPaths: string[]): Promise<string[]> {
@@ -213,6 +226,7 @@ export class AssetRepository implements IAssetRepository {
     return result.map((row: { path: string }) => row.path);
   }
 
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID, [DummyValue.STRING]] })
   @ChunkedArray({ paramIndex: 1 })
   async updateOfflineLibraryAssets(libraryId: string, originalPaths: string[]): Promise<void> {
@@ -222,6 +236,7 @@ export class AssetRepository implements IAssetRepository {
     );
   }
 
+  @Span()
   getAll(pagination: PaginationOptions, options: AssetSearchOptions = {}): Paginated<AssetEntity> {
     let builder = this.repository.createQueryBuilder('asset');
     builder = searchAssetBuilder(builder, options);
@@ -240,6 +255,7 @@ export class AssetRepository implements IAssetRepository {
    *
    * @returns Promise<string[]> - Array of assetIds belong to the device
    */
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
   async getAllByDeviceId(ownerId: string, deviceId: string): Promise<string[]> {
     const items = await this.repository.find({
@@ -255,6 +271,7 @@ export class AssetRepository implements IAssetRepository {
     return items.map((asset) => asset.deviceAssetId);
   }
 
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID] })
   getById(id: string, relations: FindOptionsRelations<AssetEntity>): Promise<AssetEntity | null> {
     return this.repository.findOne({
@@ -265,22 +282,26 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
+  @Span()
   @GenerateSql({ params: [[DummyValue.UUID], { deviceId: DummyValue.STRING }] })
   @Chunked()
   async updateAll(ids: string[], options: Partial<AssetEntity>): Promise<void> {
     await this.repository.update({ id: In(ids) }, options);
   }
 
+  @Span()
   @Chunked()
   async softDeleteAll(ids: string[]): Promise<void> {
     await this.repository.softDelete({ id: In(ids), isExternal: false });
   }
 
+  @Span()
   @Chunked()
   async restoreAll(ids: string[]): Promise<void> {
     await this.repository.restore({ id: In(ids) });
   }
 
+  @Span()
   async save(asset: Partial<AssetEntity>): Promise<AssetEntity> {
     const { id } = await this.repository.save(asset);
     return this.repository.findOneOrFail({
@@ -298,15 +319,18 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
+  @Span()
   async remove(asset: AssetEntity): Promise<void> {
     await this.repository.remove(asset);
   }
 
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.BUFFER] })
   getByChecksum(userId: string, checksum: Buffer): Promise<AssetEntity | null> {
     return this.repository.findOne({ where: { ownerId: userId, checksum } });
   }
 
+  @Span()
   findLivePhotoMatch(options: LivePhotoSearchOptions): Promise<AssetEntity | null> {
     const { ownerId, otherAssetId, livePhotoCID, type } = options;
 
@@ -325,6 +349,7 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
+  @Span()
   @GenerateSql(
     ...Object.values(WithProperty)
       .filter((property) => property !== WithProperty.IS_OFFLINE)
@@ -456,6 +481,7 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
+  @Span()
   getWith(pagination: PaginationOptions, property: WithProperty, libraryId?: string): Paginated<AssetEntity> {
     let where: FindOptionsWhere<AssetEntity> | FindOptionsWhere<AssetEntity>[] = {};
 
@@ -486,6 +512,7 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
+  @Span()
   getFirstAssetForAlbumId(albumId: string): Promise<AssetEntity | null> {
     return this.repository.findOne({
       where: { albums: { id: albumId } },
@@ -493,6 +520,7 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
+  @Span()
   getLastUpdatedAssetForAlbumId(albumId: string): Promise<AssetEntity | null> {
     return this.repository.findOne({
       where: { albums: { id: albumId } },
@@ -500,6 +528,7 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
+  @Span()
   async getMapMarkers(ownerIds: string[], options: MapMarkerSearchOptions = {}): Promise<MapMarker[]> {
     const { isArchived, isFavorite, fileCreatedAfter, fileCreatedBefore } = options;
 
@@ -543,6 +572,7 @@ export class AssetRepository implements IAssetRepository {
     }));
   }
 
+  @Span()
   async getStatistics(ownerId: string, options: AssetStatsOptions): Promise<AssetStats> {
     let builder = this.repository
       .createQueryBuilder('asset')
@@ -581,6 +611,7 @@ export class AssetRepository implements IAssetRepository {
     return result;
   }
 
+  @Span()
   getRandom(ownerId: string, count: number): Promise<AssetEntity[]> {
     // can't use queryBuilder because of custom OFFSET clause
     return this.repository.query(
@@ -592,6 +623,7 @@ export class AssetRepository implements IAssetRepository {
     );
   }
 
+  @Span()
   @GenerateSql({ params: [{ size: TimeBucketSize.MONTH }] })
   getTimeBuckets(options: TimeBucketOptions): Promise<TimeBucketItem[]> {
     const truncated = dateTrunc(options);
@@ -603,6 +635,7 @@ export class AssetRepository implements IAssetRepository {
       .getRawMany();
   }
 
+  @Span()
   @GenerateSql({ params: [DummyValue.TIME_BUCKET, { size: TimeBucketSize.MONTH }] })
   getTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]> {
     const truncated = dateTrunc(options);
@@ -617,6 +650,7 @@ export class AssetRepository implements IAssetRepository {
     );
   }
 
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID, { minAssetsPerField: 5, maxFields: 12 }] })
   async getAssetIdByCity(
     ownerId: string,
@@ -646,6 +680,7 @@ export class AssetRepository implements IAssetRepository {
     return { fieldName: 'exifInfo.city', items };
   }
 
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID, { minAssetsPerField: 5, maxFields: 12 }] })
   async getAssetIdByTag(
     ownerId: string,
@@ -732,6 +767,7 @@ export class AssetRepository implements IAssetRepository {
     return builder;
   }
 
+  @Span()
   @GenerateSql({ params: [DummyValue.STRING, [DummyValue.UUID], { numResults: 250 }] })
   async searchMetadata(
     query: string,

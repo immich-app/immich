@@ -16,6 +16,7 @@ import AsyncLock from 'async-lock';
 import { DataSource, EntityManager, QueryRunner } from 'typeorm';
 import { isValidInteger } from '../infra.utils';
 import { ImmichLogger } from '../logger';
+import { Span } from 'nestjs-otel';
 
 @Injectable()
 export class DatabaseRepository implements IDatabaseRepository {
@@ -24,6 +25,7 @@ export class DatabaseRepository implements IDatabaseRepository {
 
   constructor(@InjectDataSource() private dataSource: DataSource) {}
 
+  @Span('db.get_extension_version')
   async getExtensionVersion(extension: DatabaseExtension): Promise<Version | null> {
     const res = await this.dataSource.query(`SELECT extversion FROM pg_extension WHERE extname = $1`, [extension]);
     const extVersion = res[0]?.['extversion'];
@@ -39,6 +41,7 @@ export class DatabaseRepository implements IDatabaseRepository {
     return version;
   }
 
+  @Span()
   async getAvailableExtensionVersion(extension: DatabaseExtension): Promise<Version | null> {
     const res = await this.dataSource.query(
       `
@@ -55,19 +58,23 @@ export class DatabaseRepository implements IDatabaseRepository {
     return vectorExt;
   }
 
+  @Span()
   async getPostgresVersion(): Promise<Version> {
     const res = await this.dataSource.query(`SHOW server_version`);
     return Version.fromString(res[0]['server_version']);
   }
 
+  @Span()
   async createExtension(extension: DatabaseExtension): Promise<void> {
     await this.dataSource.query(`CREATE EXTENSION IF NOT EXISTS ${extension}`);
   }
 
+  @Span()
   async updateExtension(extension: DatabaseExtension, version?: Version): Promise<void> {
     await this.dataSource.query(`ALTER EXTENSION ${extension} UPDATE${version ? ` TO '${version}'` : ''}`);
   }
 
+  @Span()
   async updateVectorExtension(extension: VectorExtension, version?: Version): Promise<VectorUpdateResult> {
     const curVersion = await this.getExtensionVersion(extension);
     if (!curVersion) {
@@ -101,6 +108,7 @@ export class DatabaseRepository implements IDatabaseRepository {
     return { restartRequired };
   }
 
+  @Span()
   async reindex(index: VectorIndex): Promise<void> {
     try {
       await this.dataSource.query(`REINDEX INDEX ${index}`);
@@ -126,6 +134,7 @@ export class DatabaseRepository implements IDatabaseRepository {
     }
   }
 
+  @Span()
   async shouldReindex(name: VectorIndex): Promise<boolean> {
     if (vectorExt !== DatabaseExtension.VECTORS) {
       return false;
@@ -187,6 +196,7 @@ export class DatabaseRepository implements IDatabaseRepository {
     return dimSize;
   }
 
+  @Span()
   async runMigrations(options?: { transaction?: 'all' | 'none' | 'each' }): Promise<void> {
     await this.dataSource.runMigrations(options);
   }

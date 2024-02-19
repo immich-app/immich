@@ -23,6 +23,7 @@ import * as readLine from 'node:readline';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity.js';
 import { DummyValue, GenerateSql } from '../infra.util';
+import { Span } from 'nestjs-otel';
 
 export class MetadataRepository implements IMetadataRepository {
   constructor(
@@ -35,6 +36,7 @@ export class MetadataRepository implements IMetadataRepository {
 
   private logger = new ImmichLogger(MetadataRepository.name);
 
+  @Span()
   async init(): Promise<void> {
     this.logger.log('Initializing metadata repository');
     const geodataDate = await readFile(geodataDatePath, 'utf8');
@@ -151,6 +153,7 @@ export class MetadataRepository implements IMetadataRepository {
     await exiftool.end();
   }
 
+  @Span()
   async reverseGeocode(point: GeoPoint): Promise<ReverseGeocodeResult | null> {
     this.logger.debug(`Request: ${point.latitude},${point.longitude}`);
 
@@ -178,6 +181,7 @@ export class MetadataRepository implements IMetadataRepository {
     return { country, state, city };
   }
 
+  @Span()
   readTags(path: string): Promise<ImmichTags | null> {
     return exiftool
       .read(path, undefined, {
@@ -197,10 +201,12 @@ export class MetadataRepository implements IMetadataRepository {
       }) as Promise<ImmichTags | null>;
   }
 
+  @Span()
   extractBinaryTag(path: string, tagName: string): Promise<Buffer> {
     return exiftool.extractBinaryTagToBuffer(tagName, path);
   }
 
+  @Span()
   async writeTags(path: string, tags: Partial<Tags>): Promise<void> {
     try {
       await exiftool.write(path, tags, ['-overwrite_original']);
@@ -209,6 +215,7 @@ export class MetadataRepository implements IMetadataRepository {
     }
   }
 
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID] })
   async getCountries(userId: string): Promise<string[]> {
     const entity = await this.exifRepository
@@ -223,6 +230,7 @@ export class MetadataRepository implements IMetadataRepository {
     return entity.map((e) => e.country ?? '').filter((c) => c !== '');
   }
 
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
   async getStates(userId: string, country: string | undefined): Promise<string[]> {
     let result: ExifEntity[] = [];
@@ -244,6 +252,7 @@ export class MetadataRepository implements IMetadataRepository {
     return result.map((entity) => entity.state ?? '').filter((s) => s !== '');
   }
 
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING, DummyValue.STRING] })
   async getCities(userId: string, country: string | undefined, state: string | undefined): Promise<string[]> {
     let result: ExifEntity[] = [];
@@ -269,6 +278,7 @@ export class MetadataRepository implements IMetadataRepository {
     return result.map((entity) => entity.city ?? '').filter((c) => c !== '');
   }
 
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
   async getCameraMakes(userId: string, model: string | undefined): Promise<string[]> {
     let result: ExifEntity[] = [];
@@ -290,6 +300,7 @@ export class MetadataRepository implements IMetadataRepository {
     return result.map((entity) => entity.make ?? '').filter((m) => m !== '');
   }
 
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
   async getCameraModels(userId: string, make: string | undefined): Promise<string[]> {
     let result: ExifEntity[] = [];

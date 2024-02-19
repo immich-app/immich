@@ -10,6 +10,7 @@ import {
   VisionModelInput,
 } from '@app/domain';
 import { Injectable } from '@nestjs/common';
+import { Span } from 'nestjs-otel';
 import { readFile } from 'node:fs/promises';
 
 const errorPrefix = 'Machine learning request';
@@ -30,10 +31,12 @@ export class MachineLearningRepository implements IMachineLearningRepository {
     return res.json();
   }
 
+  @Span()
   detectFaces(url: string, input: VisionModelInput, config: RecognitionConfig): Promise<DetectFaceResult[]> {
     return this.predict<DetectFaceResult[]>(url, input, { ...config, modelType: ModelType.FACIAL_RECOGNITION });
   }
 
+  @Span()
   encodeImage(url: string, input: VisionModelInput, config: CLIPConfig): Promise<number[]> {
     return this.predict<number[]>(url, input, {
       ...config,
@@ -42,6 +45,7 @@ export class MachineLearningRepository implements IMachineLearningRepository {
     } as CLIPConfig);
   }
 
+  @Span()
   encodeText(url: string, input: TextModelInput, config: CLIPConfig): Promise<number[]> {
     return this.predict<number[]>(url, input, {
       ...config,
@@ -50,7 +54,7 @@ export class MachineLearningRepository implements IMachineLearningRepository {
     } as CLIPConfig);
   }
 
-  async getFormData(input: TextModelInput | VisionModelInput, config: ModelConfig): Promise<FormData> {
+  private async getFormData(input: TextModelInput | VisionModelInput, config: ModelConfig): Promise<FormData> {
     const formData = new FormData();
     const { enabled, modelName, modelType, ...options } = config;
     if (!enabled) {

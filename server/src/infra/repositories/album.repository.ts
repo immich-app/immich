@@ -8,6 +8,7 @@ import { dataSource } from '../database.config';
 import { AlbumEntity, AssetEntity } from '../entities';
 import { DATABASE_PARAMETER_CHUNK_SIZE, DummyValue, GenerateSql } from '../infra.util';
 import { Chunked, ChunkedArray } from '../infra.utils';
+import { Span } from 'nestjs-otel';
 
 @Injectable()
 export class AlbumRepository implements IAlbumRepository {
@@ -17,6 +18,7 @@ export class AlbumRepository implements IAlbumRepository {
     @InjectDataSource() private dataSource: DataSource,
   ) {}
 
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID, {}] })
   getById(id: string, options: AlbumInfoOptions): Promise<AlbumEntity | null> {
     const relations: FindOptionsRelations<AlbumEntity> = {
@@ -41,6 +43,7 @@ export class AlbumRepository implements IAlbumRepository {
     return this.repository.findOne({ where: { id }, relations, order });
   }
 
+  @Span()
   @GenerateSql({ params: [[DummyValue.UUID]] })
   @ChunkedArray()
   getByIds(ids: string[]): Promise<AlbumEntity[]> {
@@ -55,6 +58,7 @@ export class AlbumRepository implements IAlbumRepository {
     });
   }
 
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
   getByAssetId(ownerId: string, assetId: string): Promise<AlbumEntity[]> {
     return this.repository.find({
@@ -67,6 +71,7 @@ export class AlbumRepository implements IAlbumRepository {
     });
   }
 
+  @Span()
   @GenerateSql({ params: [[DummyValue.UUID]] })
   @ChunkedArray()
   async getMetadataForIds(ids: string[]): Promise<AlbumAssetCount[]> {
@@ -101,6 +106,7 @@ export class AlbumRepository implements IAlbumRepository {
    *  - Thumbnail references an asset outside the album
    *  - Empty album still has a thumbnail set
    */
+  @Span()
   @GenerateSql()
   async getInvalidThumbnail(): Promise<string[]> {
     // Using dataSource, because there is no direct access to albums_assets_assets.
@@ -124,6 +130,7 @@ export class AlbumRepository implements IAlbumRepository {
     return albums.map((album) => album.id);
   }
 
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID] })
   getOwned(ownerId: string): Promise<AlbumEntity[]> {
     return this.repository.find({
@@ -136,6 +143,7 @@ export class AlbumRepository implements IAlbumRepository {
   /**
    * Get albums shared with and shared by owner.
    */
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID] })
   getShared(ownerId: string): Promise<AlbumEntity[]> {
     return this.repository.find({
@@ -152,6 +160,7 @@ export class AlbumRepository implements IAlbumRepository {
   /**
    * Get albums of owner that are _not_ shared
    */
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID] })
   getNotShared(ownerId: string): Promise<AlbumEntity[]> {
     return this.repository.find({
@@ -161,18 +170,22 @@ export class AlbumRepository implements IAlbumRepository {
     });
   }
 
+  @Span()
   async restoreAll(userId: string): Promise<void> {
     await this.repository.restore({ ownerId: userId });
   }
 
+  @Span()
   async softDeleteAll(userId: string): Promise<void> {
     await this.repository.softDelete({ ownerId: userId });
   }
 
+  @Span()
   async deleteAll(userId: string): Promise<void> {
     await this.repository.delete({ ownerId: userId });
   }
 
+  @Span()
   @GenerateSql()
   getAll(): Promise<AlbumEntity[]> {
     return this.repository.find({
@@ -182,6 +195,7 @@ export class AlbumRepository implements IAlbumRepository {
     });
   }
 
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID] })
   async removeAsset(assetId: string): Promise<void> {
     // Using dataSource, because there is no direct access to albums_assets_assets.
@@ -193,6 +207,7 @@ export class AlbumRepository implements IAlbumRepository {
       .execute();
   }
 
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID, [DummyValue.UUID]] })
   @Chunked({ paramIndex: 1 })
   async removeAssets(albumId: string, assetIds: string[]): Promise<void> {
@@ -214,6 +229,7 @@ export class AlbumRepository implements IAlbumRepository {
    * @param assetIds Optional list of asset IDs to filter on.
    * @returns Set of Asset IDs for the given album ID.
    */
+  @Span()
   @GenerateSql({ params: [DummyValue.UUID, [DummyValue.UUID]] }, { name: 'no assets', params: [DummyValue.UUID] })
   async getAssetIds(albumId: string, assetIds?: string[]): Promise<Set<string>> {
     const query = this.dataSource
@@ -237,6 +253,7 @@ export class AlbumRepository implements IAlbumRepository {
     ).then((results) => setUnion(...results));
   }
 
+  @Span()
   @GenerateSql({ params: [{ albumId: DummyValue.UUID, assetId: DummyValue.UUID }] })
   hasAsset(asset: AlbumAsset): Promise<boolean> {
     return this.repository.exist({
@@ -252,6 +269,7 @@ export class AlbumRepository implements IAlbumRepository {
     });
   }
 
+  @Span()
   @GenerateSql({ params: [{ albumId: DummyValue.UUID, assetIds: [DummyValue.UUID] }] })
   async addAssets({ albumId, assetIds }: AlbumAssets): Promise<void> {
     await this.dataSource
@@ -262,14 +280,17 @@ export class AlbumRepository implements IAlbumRepository {
       .execute();
   }
 
+  @Span()
   async create(album: Partial<AlbumEntity>): Promise<AlbumEntity> {
     return this.save(album);
   }
 
+  @Span()
   async update(album: Partial<AlbumEntity>): Promise<AlbumEntity> {
     return this.save(album);
   }
 
+  @Span()
   async delete(album: AlbumEntity): Promise<void> {
     await this.repository.remove(album);
   }
@@ -295,6 +316,7 @@ export class AlbumRepository implements IAlbumRepository {
    *
    * @returns Amount of updated album thumbnails or undefined when unknown
    */
+  @Span()
   @GenerateSql()
   async updateThumbnails(): Promise<number | undefined> {
     // Subquery for getting a new thumbnail.
