@@ -160,11 +160,21 @@
               : 'bg-immich-bg dark:bg-immich-dark-gray/50'
           }`}
         >
-          <td class="w-1/8 text-ellipsis px-4 text-sm">
+          <td class="w-1/8 text-ellipsis pl-8 text-sm">
             {#if validatedPath.isValid}
-              <Icon path={mdiCheckCircleOutline} size="40" title={validatedPath.message} />
+              <Icon
+                path={mdiCheckCircleOutline}
+                size="24"
+                title={validatedPath.message}
+                class="text-immich-success dark:text-immich-dark-success"
+              />
             {:else}
-              <Icon path={mdiAlertOutline} size="40" title={validatedPath.message} />
+              <Icon
+                path={mdiAlertOutline}
+                size="24"
+                title={validatedPath.message}
+                class="text-immich-warning dark:text-immich-dark-warning"
+              />
             {/if}
           </td>
 
