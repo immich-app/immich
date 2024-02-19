@@ -339,11 +339,11 @@ export class LibraryService extends EventEmitter {
 
     if (dto.importPaths) {
       const validation = await this.validate(auth, id, { importPaths: dto.importPaths });
-      validation.importPaths?.forEach((path) => {
+      if (validation.importPaths) {for (const path of validation.importPaths) {
         if (!path.isValid) {
           throw new BadRequestException('Invalid import path(s)');
         }
-      });
+      }}
     }
 
     if (dto.importPaths || dto.exclusionPatterns) {

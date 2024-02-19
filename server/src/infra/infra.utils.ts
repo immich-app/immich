@@ -164,7 +164,21 @@ export function searchAssetBuilder(
   builder.andWhere(_.omitBy(path, _.isUndefined));
 
   const status = _.pick(options, ['isExternal', 'isFavorite', 'isOffline', 'isReadOnly', 'isVisible', 'type']);
-  const { isArchived, isEncoded, isMotion, withArchived } = options;
+  const {
+    isArchived,
+    isEncoded,
+    isMotion,
+    withArchived,
+    isNotInAlbum,
+    withFaces,
+    withPeople,
+    withSmartInfo,
+    personIds,
+    withExif,
+    withStacked,
+    trashedAfter,
+    trashedBefore,
+  } = options;
   builder.andWhere(
     _.omitBy(
       {
@@ -177,38 +191,38 @@ export function searchAssetBuilder(
     ),
   );
 
-  if (options.isNotInAlbum) {
+  if (isNotInAlbum) {
     builder
       .leftJoin(`${builder.alias}.albums`, 'albums')
       .andWhere('albums.id IS NULL')
       .andWhere(`${builder.alias}.isVisible = true`);
   }
 
-  if (options.withFaces || options.withPeople) {
+  if (withFaces || withPeople) {
     builder.leftJoinAndSelect(`${builder.alias}.faces`, 'faces');
   }
 
-  if (options.withPeople) {
+  if (withPeople) {
     builder.leftJoinAndSelect(`${builder.alias}.person`, 'person');
   }
 
-  if (options.withSmartInfo) {
+  if (withSmartInfo) {
     builder.leftJoinAndSelect(`${builder.alias}.smartInfo`, 'smartInfo');
   }
 
-  if (options.personIds && options.personIds.length > 0) {
+  if (personIds && personIds.length > 0) {
     builder
       .leftJoin(`${builder.alias}.faces`, 'faces')
-      .andWhere('faces.personId IN (:...personIds)', { personIds: options.personIds })
+      .andWhere('faces.personId IN (:...personIds)', { personIds: personIds })
       .addGroupBy(`${builder.alias}.id`)
-      .having('COUNT(faces.id) = :personCount', { personCount: options.personIds.length });
+      .having('COUNT(faces.id) = :personCount', { personCount: personIds.length });
 
-    if (options.withExif) {
+    if (withExif) {
       builder.addGroupBy('exifInfo.assetId');
     }
   }
 
-  if (options.withStacked) {
+  if (withStacked) {
     builder
       .leftJoinAndSelect(`${builder.alias}.stack`, 'stack')
       .leftJoinAndSelect('stack.assets', 'stackedAssets')
@@ -217,8 +231,7 @@ export function searchAssetBuilder(
       );
   }
 
-  const withDeleted =
-    options.withDeleted ?? (options.trashedAfter !== undefined || options.trashedBefore !== undefined);
+  const withDeleted = options.withDeleted ?? (trashedAfter !== undefined || trashedBefore !== undefined);
   if (withDeleted) {
     builder.withDeleted();
   }
