@@ -120,7 +120,7 @@ class ImmichImage extends StatelessWidget {
 
     return OctoImage(
       fadeInDuration: const Duration(milliseconds: 0),
-      fadeOutDuration: const Duration(milliseconds: 400),
+      fadeOutDuration: const Duration(milliseconds: 200),
       placeholderBuilder: (context) {
         if (placeholder != null) {
           // Use the gray box placeholder

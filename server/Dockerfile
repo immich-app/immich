@@ -59,4 +59,4 @@ COPY LICENSE /LICENSE
 ENV PATH="${PATH}:/usr/src/app/bin"
 VOLUME /usr/src/app/upload
 EXPOSE 3001
-ENTRYPOINT ["tini", "--", "/bin/sh"]
+ENTRYPOINT ["tini", "--", "/bin/bash"]
