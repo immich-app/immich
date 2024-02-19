@@ -8,6 +8,7 @@ import {
   testAssetDir,
 } from 'src/utils';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { mkdir, readdir, rm, symlink } from 'fs/promises';
 
 describe(`immich upload`, () => {
   let key: string;
@@ -122,6 +123,38 @@ describe(`immich upload`, () => {
       const albums = await getAllAlbums({}, { headers: asKeyAuth(key) });
       expect(albums.length).toBe(1);
       expect(albums[0].albumName).toBe('e2e');
+    });
+  });
+
+  describe('immich upload --delete', () => {
+    it('should delete local files if specified', async () => {
+      await mkdir(`/tmp/albums/nature`, { recursive: true });
+      const filesToLink = await readdir(`${testAssetDir}/albums/nature`);
+      for (const file of filesToLink) {
+        await symlink(
+          `${testAssetDir}/albums/nature/${file}`,
+          `/tmp/albums/nature/${file}`
+        );
+      }
+
+      const { stderr, stdout, exitCode } = await immichCli([
+        'upload',
+        `/tmp/albums/nature`,
+        '--delete',
+      ]);
+
+      const files = await readdir(`/tmp/albums/nature`);
+      await rm(`/tmp/albums/nature`, { recursive: true });
+      expect(files).toEqual([]);
+
+      expect(stdout.split('\n')).toEqual([
+        expect.stringContaining('Successfully uploaded 9 assets'),
+      ]);
+      expect(stderr).toBe('');
+      expect(exitCode).toBe(0);
+
+      const assets = await getAllAssets({}, { headers: asKeyAuth(key) });
+      expect(assets.length).toBe(9);
     });
   });
 });

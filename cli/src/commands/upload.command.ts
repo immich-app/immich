@@ -134,7 +134,7 @@ export class UploadCommand extends BaseCommand {
 
     const assetsToCheck = files.map((path) => new Asset(path));
 
-    const { newAssets, duplicateAssets, rejectedAssets } = await this.checkAssets(
+    const { newAssets, duplicateAssets } = await this.checkAssets(
       assetsToCheck,
       options.concurrency ?? 4,
     );
@@ -147,16 +147,14 @@ export class UploadCommand extends BaseCommand {
       console.log(`${messageStart} uploaded ${newAssets.length} assets (${byteSize(totalSizeUploaded)})`);
     }
 
-    if (!options.album && !options.albumName) {
-      return;
+    if (options.album || options.albumName) {
+      const { createdAlbumCount, updatedAssetCount } = await this.updateAlbums(
+        [...newAssets, ...duplicateAssets],
+        options,
+      );
+      console.log(`${messageStart} created ${createdAlbumCount} new albums`);
+      console.log(`${messageStart} updated ${updatedAssetCount} assets`);
     }
-
-    const { createdAlbumCount, updatedAssetCount } = await this.updateAlbums(
-      [...newAssets, ...duplicateAssets, ...rejectedAssets],
-      options,
-    );
-    console.log(`${messageStart} created ${createdAlbumCount} new albums`);
-    console.log(`${messageStart} updated ${updatedAssetCount} assets`);
 
     if (!options.delete) {
       return;
@@ -390,12 +388,12 @@ export class UploadCommand extends BaseCommand {
         asset.id = check.assetId;
       }
 
-      if (check.action === 'reject') {
-        responses.push({ asset, status: CheckResponseStatus.REJECT });
+      if (check.action === 'accept') {
+        responses.push({ asset, status: CheckResponseStatus.ACCEPT });
       } else if (check.reason === 'duplicate') {
         responses.push({ asset, status: CheckResponseStatus.DUPLICATE });
       } else {
-        responses.push({ asset, status: CheckResponseStatus.ACCEPT });
+        responses.push({ asset, status: CheckResponseStatus.REJECT });
       }
     }
 
