@@ -339,7 +339,7 @@ export class UploadCommand extends BaseCommand {
 
     try {
       for (const [albumId, assets] of albumToAssets.entries()) {
-        for (const assetBatch of chunk(assets, Math.min(1000 * options.concurrency, 65000))) {
+        for (const assetBatch of chunk(assets, Math.min(1000 * options.concurrency, 65_000))) {
           await this.api.addAssetsToAlbum(albumId, { ids: assetBatch });
           albumUpdateProgress.increment(assetBatch.length);
         }
@@ -373,21 +373,21 @@ export class UploadCommand extends BaseCommand {
   private async getStatus(assets: Asset[]): Promise<{ asset: Asset; status: CheckResponseStatus }[]> {
     const checkResponse = await this.checkHashes(assets);
 
-    const res = [];
+    const responses = [];
     for (const [check, asset] of zipDefined(checkResponse, assets)) {
       if (check.action === 'reject') {
-        res.push({ asset, status: CheckResponseStatus.REJECT });
+        responses.push({ asset, status: CheckResponseStatus.REJECT });
       } else if (check.reason === 'duplicate') {
         if (check.assetId) {
           asset.id = check.assetId;
         }
-        res.push({ asset, status: CheckResponseStatus.DUPLICATE });
+        responses.push({ asset, status: CheckResponseStatus.DUPLICATE });
       } else {
-        res.push({ asset, status: CheckResponseStatus.ACCEPT });
+        responses.push({ asset, status: CheckResponseStatus.ACCEPT });
       }
     }
 
-    return res;
+    return responses;
   }
 
   private async checkHashes(assetsToCheck: Asset[]): Promise<AssetBulkUploadCheckResult[]> {
@@ -401,7 +401,7 @@ export class UploadCommand extends BaseCommand {
 
   private async uploadAssets(assets: Asset[]): Promise<string[]> {
     const fileRequests = await Promise.all(assets.map((asset) => asset.getUploadFormData()));
-    return Promise.all(fileRequests.map((req) => this.uploadAsset(req).then((res) => res.id)));
+    return Promise.all(fileRequests.map((request) => this.uploadAsset(request).then((response) => response.id)));
   }
 
   private async crawl(paths: string[], options: UploadOptionsDto): Promise<string[]> {
