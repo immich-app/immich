@@ -21,6 +21,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
   });
 
   beforeEach(async () => {
+    await restoreTempFolder();
     await testApp.reset();
     await api.authApi.adminSignUp(server);
     admin = await api.authApi.adminLogin(server);
