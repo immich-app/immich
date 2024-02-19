@@ -4,9 +4,10 @@
   import Button from '../elements/buttons/button.svelte';
   import LibraryImportPathForm from './library-import-path-form.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { mdiAlertOutline, mdiCheckCircleOutline, mdiPencilOutline } from '@mdi/js';
+  import { mdiAlertOutline, mdiCheckCircleOutline, mdiPencilOutline, mdiRefresh } from '@mdi/js';
   import { validate, type LibraryResponseDto } from '@immich/sdk';
   import type { ValidateLibraryImportPathResponseDto } from '@immich/sdk/axios';
+  import { NotificationType, notificationController } from '../shared-components/notification/notification';
 
   export let library: LibraryResponseDto;
 
@@ -39,10 +40,39 @@
     }
   };
 
+  const revalidate = async (notifyIfSuccessful = true) => {
+    await handleValidation();
+    let failedPaths = 0;
+    for (const validatedPath of validatedPaths) {
+      if (!validatedPath.isValid) {
+        failedPaths++;
+      }
+    }
+    if (failedPaths === 0) {
+      if (notifyIfSuccessful) {
+        notificationController.show({
+          message: `All paths validated successfully`,
+          type: NotificationType.Info,
+        });
+      }
+    } else if (failedPaths === 1) {
+      notificationController.show({
+        message: `${failedPaths} path failed validation`,
+        type: NotificationType.Warning,
+      });
+    } else {
+      notificationController.show({
+        message: `${failedPaths} paths failed validation`,
+        type: NotificationType.Warning,
+      });
+    }
+  };
+
   const dispatch = createEventDispatcher<{
     cancel: void;
     submit: Partial<LibraryResponseDto>;
   }>();
+
   const handleCancel = () => {
     dispatch('cancel');
   };
@@ -64,7 +94,7 @@
       // Check so that import path isn't duplicated
       if (!library.importPaths.includes(importPathToAdd)) {
         library.importPaths.push(importPathToAdd);
-        await handleValidation();
+        await revalidate(false);
       }
     } catch (error) {
       handleError(error, 'Unable to add import path');
@@ -89,7 +119,7 @@
       if (!library.importPaths.includes(editedImportPath)) {
         // Update import path
         library.importPaths[editImportPath] = editedImportPath;
-        await handleValidation();
+        await revalidate(false);
       }
     } catch (error) {
       editImportPath = null;
@@ -219,7 +249,7 @@
   </table>
 
   <div class="flex w-full justify-end gap-2">
-    <Button size="sm" on:click={handleValidation}>Test</Button>
+    <Button size="sm" color="gray" on:click={() => revalidate()}><Icon path={mdiRefresh} size={20} />Validate</Button>
     <Button size="sm" color="gray" on:click={() => handleCancel()}>Cancel</Button>
     <Button size="sm" type="submit">Save</Button>
   </div>
