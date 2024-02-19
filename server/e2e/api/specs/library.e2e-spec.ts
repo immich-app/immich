@@ -2,7 +2,7 @@ import { LibraryResponseDto, LoginResponseDto } from '@app/domain';
 import { LibraryController } from '@app/immich';
 import { LibraryType } from '@app/infra/entities';
 import { errorStub, userDto, uuidStub } from '@test/fixtures';
-import { IMMICH_TEST_ASSET_TEMP_PATH } from 'src/test-utils/utils';
+import { IMMICH_TEST_ASSET_TEMP_PATH, restoreTempFolder } from 'src/test-utils/utils';
 import request from 'supertest';
 import { api } from '../../client';
 import { testApp } from '../utils';
