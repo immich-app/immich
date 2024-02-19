@@ -1,5 +1,7 @@
+import { AssetBulkUploadCheckResult } from '@immich/sdk';
 import byteSize from 'byte-size';
 import cliProgress from 'cli-progress';
+import { chunk, zip } from 'lodash-es';
 import { createHash } from 'node:crypto';
 import fs, { createReadStream } from 'node:fs';
 import { access, constants, stat, unlink } from 'node:fs/promises';
@@ -8,8 +10,6 @@ import { basename } from 'node:path';
 import { ImmichApi } from 'src/services/api.service';
 import { CrawlService } from '../services/crawl.service';
 import { BaseCommand } from './base-command';
-import { chunk, zip } from 'lodash-es';
-import { AssetBulkUploadCheckResult } from '@immich/sdk';
 
 const zipDefined = zip as <T, U>(a: T[], b: U[]) => [T, U][];
 
@@ -120,11 +120,12 @@ export class UploadOptionsDto {
 
 export class UploadCommand extends BaseCommand {
   uploadLength!: number;
+  api!: ImmichApi;
 
   public async run(paths: string[], options: UploadOptionsDto): Promise<void> {
-    await this.connect();
+    this.api = await this.connect();
 
-    console.log('Crawling for assets...')
+    console.log('Crawling for assets...');
     const files = await this.getFiles(paths, options);
 
     if (files.length === 0) {
@@ -261,7 +262,7 @@ export class UploadCommand extends BaseCommand {
   }
 
   public async getAlbums(): Promise<Map<string, string>> {
-    const existingAlbums = await this.immichApi.albumApi.getAllAlbums();
+    const existingAlbums = await this.api.getAllAlbums();
 
     const albumMapping = new Map<string, string>();
     for (const album of existingAlbums) {
@@ -304,9 +305,7 @@ export class UploadCommand extends BaseCommand {
     try {
       for (const albumNames of chunk(newAlbums, options.concurrency)) {
         const newAlbumIds = await Promise.all(
-          albumNames.map((albumName: string) =>
-            this.immichApi.albumApi.createAlbum({ createAlbumDto: { albumName } }).then((r) => r.id),
-          ),
+          albumNames.map((albumName: string) => this.api.createAlbum({ albumName }).then((r) => r.id)),
         );
 
         for (const [albumName, albumId] of zipDefined(albumNames, newAlbumIds)) {
@@ -341,10 +340,7 @@ export class UploadCommand extends BaseCommand {
     try {
       for (const [albumId, assets] of albumToAssets.entries()) {
         for (const assetBatch of chunk(assets, Math.min(1000 * options.concurrency, 65000))) {
-          await this.immichApi.albumApi.addAssetsToAlbum({
-            id: albumId,
-            bulkIdsDto: { ids: assetBatch },
-          });
+          await this.api.addAssetsToAlbum(albumId, { ids: assetBatch });
           albumUpdateProgress.increment(assetBatch.length);
         }
       }
@@ -399,17 +395,17 @@ export class UploadCommand extends BaseCommand {
     const assetBulkUploadCheckDto = {
       assets: zipDefined(assetsToCheck, checksums).map(([asset, checksum]) => ({ id: asset.path, checksum })),
     };
-    const checkResponse = await this.immichApi.assetApi.checkBulkUpload({ assetBulkUploadCheckDto });
+    const checkResponse = await this.api.checkBulkUpload(assetBulkUploadCheckDto);
     return checkResponse.results;
   }
 
   private async uploadAssets(assets: Asset[]): Promise<string[]> {
-    const fileRequests = await Promise.all(assets.map((asset) => asset.getUploadFileRequest()));
-    return Promise.all(fileRequests.map((req) => this.immichApi.assetApi.uploadFile(req).then((res) => res.id)));
+    const fileRequests = await Promise.all(assets.map((asset) => asset.getUploadFormData()));
+    return Promise.all(fileRequests.map((req) => this.uploadAsset(req).then((res) => res.id)));
   }
 
   private async crawl(paths: string[], options: UploadOptionsDto): Promise<string[]> {
-    const formatResponse = await this.immichApi.serverInfoApi.getSupportedMediaTypes();
+    const formatResponse = await this.api.getSupportedMediaTypes();
     const crawlService = new CrawlService(formatResponse.image, formatResponse.video);
 
     return crawlService.crawl({
@@ -420,20 +416,20 @@ export class UploadCommand extends BaseCommand {
     });
   }
 
-  private async uploadAsset(api: ImmichApi, data: FormData): Promise<Response> {
-    const url = api.instanceUrl + '/asset/upload';
+  private async uploadAsset(data: FormData): Promise<{ id: string }> {
+    const url = this.api.instanceUrl + '/asset/upload';
 
     const response = await fetch(url, {
       method: 'post',
       redirect: 'error',
       headers: {
-        'x-api-key': api.apiKey,
+        'x-api-key': this.api.apiKey,
       },
       body: data,
     });
     if (response.status !== 200 && response.status !== 201) {
       throw new Error(await response.text());
     }
-    return response;
+    return response.json();
   }
 }
