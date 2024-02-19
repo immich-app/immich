@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
-  testDir: './specs/',
+  testDir: './src/web/specs',
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
@@ -53,8 +53,7 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command:
-      'docker compose -f ../docker/docker-compose.e2e.yml up --build -V --remove-orphans',
+    command: 'docker compose up --build -V --remove-orphans',
     url: 'http://127.0.0.1:2283',
     reuseExistingServer: true,
   },
