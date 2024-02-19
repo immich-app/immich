@@ -135,38 +135,6 @@ jobs:
         run: npm run test:cov
         if: ${{ !cancelled() }}
 
-  cli-e2e-tests:
-    name: CLI (e2e)
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./cli
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          submodules: "recursive"
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Run setup typescript-sdk
-        run: npm ci && npm run build
-        working-directory: ./open-api/typescript-sdk
-
-      - name: Run npm install (cli)
-        run: npm ci
-
-      - name: Run npm install (server)
-        run: npm ci && npm run build
-        working-directory: ./server
-
-      - name: Run e2e tests
-        run: npm run test:e2e
-
   web-unit-tests:
     name: Web
     runs-on: ubuntu-latest
@@ -205,8 +173,8 @@ jobs:
         run: npm run test:cov
         if: ${{ !cancelled() }}
 
-  web-e2e-tests:
-    name: Web (e2e)
+  e2e-tests:
+    name: End-to-End Tests
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -215,10 +183,21 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          submodules: "recursive"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
 
       - name: Run setup typescript-sdk
         run: npm ci && npm run build
         working-directory: ./open-api/typescript-sdk
+
+      - name: Run setup cli
+        run: npm ci && npm run build
+        working-directory: ./cli
 
       - name: Install dependencies
         run: npm ci
@@ -229,32 +208,11 @@ jobs:
       - name: Docker build
         run: docker compose build
 
-      - name: Run e2e tests
+      - name: Run e2e tests (api & cli)
+        run: npm run test
+
+      - name: Run e2e tests (web)
         run: npx playwright test
-
-  api-e2e-tests:
-    name: API (e2e)
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./e2e
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Run setup typescript-sdk
-        run: npm ci && npm run build
-        working-directory: ./open-api/typescript-sdk
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Docker build
-        run: docker compose build
-
-      - name: Run e2e tests
-        run: npm run test:api
 
   mobile-unit-tests:
     name: Mobile

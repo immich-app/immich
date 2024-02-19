@@ -5,13 +5,15 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
+    "test": "vitest --config vitest.config.ts",
     "test:web": "npx playwright test",
-    "test:api": "vitest"
+    "start:web": "npx playwright test --ui"
   },
   "keywords": [],
   "author": "",
   "license": "GNU Affero General Public License version 3",
   "devDependencies": {
+    "@immich/cli": "file:../cli",
     "@immich/sdk": "file:../open-api/typescript-sdk",
     "@playwright/test": "^1.41.2",
     "@types/node": "^20.11.17",

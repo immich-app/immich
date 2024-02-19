@@ -13,6 +13,7 @@ x-server-build: &server-common
     - DB_PASSWORD=postgres
     - DB_DATABASE_NAME=immich
     - REDIS_HOSTNAME=redis
+    - IMMICH_MACHINE_LEARNING_ENABLED=false
   volumes:
     - upload:/usr/src/app/upload
   depends_on:
@@ -26,9 +27,9 @@ services:
     ports:
       - 2283:3001
 
-  immich-microservices:
-    command: [ "./start.sh", "microservices" ]
-    <<: *server-common
+  # immich-microservices:
+  #   command: [ "./start.sh", "microservices" ]
+  #   <<: *server-common
 
   redis:
     image: redis:6.2-alpine@sha256:51d6c56749a4243096327e3fb964a48ed92254357108449cb6e23999c37773c5

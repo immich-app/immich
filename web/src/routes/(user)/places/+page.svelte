@@ -6,6 +6,7 @@
   import type { SearchExploreResponseDto } from '@immich/sdk';
   import { mdiMapMarkerOff } from '@mdi/js';
   import type { PageData } from './$types';
+  import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
 
   export let data: PageData;
 
@@ -27,7 +28,7 @@
   {#if hasPlaces}
     <div class="flex flex-row flex-wrap gap-4">
       {#each places as item (item.data.id)}
-        <a class="relative" href="{AppRoute.SEARCH}?q={item.value}" draggable="false">
+        <a class="relative" href="{AppRoute.SEARCH}?{getMetadataSearchQuery({ city: item.value })}" draggable="false">
           <div
             class="flex w-[calc((100vw-(72px+5rem))/2)] max-w-[156px] justify-center overflow-hidden rounded-xl brightness-75 filter"
           >

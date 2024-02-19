@@ -2,7 +2,7 @@ import { spawn, exec } from 'child_process';
 
 export default async () => {
   let _resolve: () => unknown;
-  const promise = new Promise<void>((resolve, reject) => (_resolve = resolve));
+  const promise = new Promise<void>((resolve) => (_resolve = resolve));
 
   const child = spawn('docker', ['compose', 'up'], { stdio: 'pipe' });
 
