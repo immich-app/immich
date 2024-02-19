@@ -63,7 +63,7 @@
     }
   };
 
-  const showLocation = (name: string, admin1Name?: string, admin2Name?: string): string => {
+  const getLocation = (name: string, admin1Name?: string, admin2Name?: string): string => {
     return `${name}${admin1Name ? ', ' + admin1Name : ''}${admin2Name ? ', ' + admin2Name : ''}`;
   };
 
@@ -171,7 +171,7 @@
               on:click={() => handleUseSuggested(place.latitude, place.longitude)}
             >
               <p class="ml-4 text-sm text-gray-700 dark:text-gray-100 truncate">
-                {showLocation(place.name, place.admin1name, place.admin2name)}
+                {getLocation(place.name, place.admin1name, place.admin2name)}
               </p>
             </button>
           {/each}
