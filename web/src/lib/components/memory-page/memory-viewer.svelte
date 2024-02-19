@@ -1,7 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
-  import noThumbnailUrl from '$lib/assets/no-thumbnail.png';
   import IntersectionObserver from '$lib/components/asset-viewer/intersection-observer.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
@@ -178,7 +177,7 @@
             {:else}
               <enhanced:img
                 class="h-full w-full rounded-2xl object-cover"
-                src={noThumbnailUrl}
+                src="$lib/assets/no-thumbnail.png"
                 sizes="min(271px,186px)"
                 alt=""
                 draggable="false"
@@ -251,7 +250,7 @@
             {:else}
               <enhanced:img
                 class="h-full w-full rounded-2xl object-cover"
-                src={noThumbnailUrl}
+                src="$lib/assets/no-thumbnail.png"
                 sizes="min(271px,186px)"
                 alt=""
                 draggable="false"
