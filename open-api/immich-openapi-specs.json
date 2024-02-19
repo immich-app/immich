@@ -4449,7 +4449,6 @@
             "name": "clip",
             "required": false,
             "in": "query",
-            "description": "@deprecated",
             "deprecated": true,
             "schema": {
               "type": "boolean"

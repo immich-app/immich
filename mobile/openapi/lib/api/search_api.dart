@@ -144,7 +144,6 @@ class SearchApi {
   /// Parameters:
   ///
   /// * [bool] clip:
-  ///   @deprecated
   ///
   /// * [bool] motion:
   ///
@@ -222,7 +221,6 @@ class SearchApi {
   /// Parameters:
   ///
   /// * [bool] clip:
-  ///   @deprecated
   ///
   /// * [bool] motion:
   ///

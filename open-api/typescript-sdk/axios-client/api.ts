@@ -15263,7 +15263,7 @@ export const SearchApiAxiosParamCreator = function (configuration?: Configuratio
         },
         /**
          * 
-         * @param {boolean} [clip] @deprecated
+         * @param {boolean} [clip] 
          * @param {boolean} [motion] 
          * @param {number} [page] 
          * @param {string} [q] 
@@ -15527,7 +15527,7 @@ export const SearchApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {boolean} [clip] @deprecated
+         * @param {boolean} [clip] 
          * @param {boolean} [motion] 
          * @param {number} [page] 
          * @param {string} [q] 
@@ -15700,7 +15700,7 @@ export interface SearchApiGetSearchSuggestionsRequest {
  */
 export interface SearchApiSearchRequest {
     /**
-     * @deprecated
+     * 
      * @type {boolean}
      * @memberof SearchApiSearch
      */

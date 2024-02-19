@@ -155,7 +155,7 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = SearchApi();
-final clip = true; // bool | @deprecated
+final clip = true; // bool | 
 final motion = true; // bool | 
 final page = 8.14; // num | 
 final q = q_example; // String | 
@@ -178,7 +178,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **clip** | **bool**| @deprecated | [optional] 
+ **clip** | **bool**|  | [optional] 
  **motion** | **bool**|  | [optional] 
  **page** | **num**|  | [optional] 
  **q** | **String**|  | [optional] 
