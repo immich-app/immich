@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { browser } from '$app/environment';
   import { goto } from '$app/navigation';
   import Icon from '$lib/components/elements/icon.svelte';
   import { AppRoute, AssetAction, ProjectionType } from '$lib/constants';
@@ -179,11 +178,8 @@
       getNumberOfComments();
     }
   }
-  const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo);
 
   onMount(async () => {
-    document.addEventListener('keydown', onKeyboardPress);
-
     slideshowStateUnsubscribe = slideshowState.subscribe((value) => {
       if (value === SlideshowState.PlaySlideshow) {
         slideshowHistory.reset();
@@ -221,10 +217,6 @@
   });
 
   onDestroy(() => {
-    if (browser) {
-      document.removeEventListener('keydown', onKeyboardPress);
-    }
-
     if (slideshowStateUnsubscribe) {
       slideshowStateUnsubscribe();
     }
@@ -255,7 +247,7 @@
     isShowActivity = !isShowActivity;
   };
 
-  const handleKeyboardPress = (event: KeyboardEvent) => {
+  const handleKeypress = (event: KeyboardEvent) => {
     if (shouldIgnoreShortcut(event)) {
       return;
     }
@@ -458,18 +450,6 @@
     await handleGetAllAlbums();
   };
 
-  const disableKeyDownEvent = () => {
-    if (browser) {
-      document.removeEventListener('keydown', onKeyboardPress);
-    }
-  };
-
-  const enableKeyDownEvent = () => {
-    if (browser) {
-      document.addEventListener('keydown', onKeyboardPress);
-    }
-  };
-
   const toggleArchive = async () => {
     try {
       const data = await updateAsset({
@@ -569,6 +549,8 @@
     }
   };
 </script>
+
+<svelte:window on:keydown={handleKeypress} />
 
 <section
   id="immich-asset-viewer"
@@ -738,8 +720,6 @@
         albums={appearsInAlbums}
         on:close={() => ($isShowDetail = false)}
         on:closeViewer={handleCloseViewer}
-        on:descriptionFocusIn={disableKeyDownEvent}
-        on:descriptionFocusOut={enableKeyDownEvent}
       />
     </div>
   {/if}
