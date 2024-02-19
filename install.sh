@@ -38,9 +38,9 @@ populate_upload_location() {
 start_docker_compose() {
   echo "Starting Immich's docker containers"
 
-  if docker compose > /dev/null 2>&1; then
+  if docker compose >/dev/null 2>&1; then
     docker_bin="docker compose"
-  elif docker-compose > /dev/null 2>&1; then
+  elif docker-compose >/dev/null 2>&1; then
     docker_bin="docker-compose"
   else
     echo "Cannot find \`docker compose\` or \`docker-compose\`."
