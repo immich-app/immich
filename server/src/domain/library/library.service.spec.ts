@@ -1137,13 +1137,19 @@ describe(LibraryService.name, () => {
       libraryMock.update.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
       libraryMock.get.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
 
-      await expect(sut.update(authStub.admin, authStub.admin.user.id, { importPaths: ['/foo'] })).resolves.toEqual(
-        mapLibrary(libraryStub.externalLibraryWithImportPaths1),
-      );
+      storageMock.stat.mockResolvedValue({
+        isDirectory: () => true,
+      } as Stats);
+
+      storageMock.checkFileExists.mockResolvedValue(true);
+
+      await expect(
+        sut.update(authStub.external1, authStub.external1.user.id, { importPaths: ['/data/user1/foo'] }),
+      ).resolves.toEqual(mapLibrary(libraryStub.externalLibraryWithImportPaths1));
 
       expect(libraryMock.update).toHaveBeenCalledWith(
         expect.objectContaining({
-          id: authStub.admin.user.id,
+          id: authStub.external1.user.id,
         }),
       );
       expect(storageMock.watch).toHaveBeenCalledWith(
