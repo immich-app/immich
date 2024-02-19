@@ -30,8 +30,10 @@ describe(`immich upload`, () => {
         '--recursive',
       ]);
       expect(stderr).toBe('');
-      expect(stdout).toEqual(
-        expect.stringContaining('Successfully uploaded 9 assets')
+      expect(stdout.split('\n')).toEqual(
+        expect.arrayContaining(
+          [expect.stringContaining('Successfully uploaded 9 assets')]
+        )
       );
       expect(exitCode).toBe(0);
 
@@ -48,8 +50,10 @@ describe(`immich upload`, () => {
         '--recursive',
         '--album',
       ]);
-      expect(stdout).toEqual(
-        expect.stringContaining('Successfully uploaded 9 assets')
+      expect(stdout.split('\n')).toEqual(
+        expect.arrayContaining(
+          [expect.stringContaining('Successfully uploaded 9 assets')]
+        )
       );
       expect(stderr).toBe('');
       expect(exitCode).toBe(0);
@@ -68,8 +72,10 @@ describe(`immich upload`, () => {
         `${testAssetDir}/albums/nature/`,
         '--recursive',
       ]);
-      expect(response1.stdout).toEqual(
-        expect.stringContaining('Successfully uploaded 9 assets')
+      expect(response1.stdout.split('\n')).toEqual(
+        expect.arrayContaining(
+          [expect.stringContaining('Successfully uploaded 9 assets')]
+        )
       );
       expect(response1.stderr).toBe('');
       expect(response1.exitCode).toBe(0);
@@ -86,9 +92,11 @@ describe(`immich upload`, () => {
         '--recursive',
         '--album',
       ]);
-      expect(response2.stdout).toEqual(
-        expect.stringContaining(
-          'All assets were already uploaded, nothing to do.'
+      expect(response2.stdout.split('\n')).toEqual(
+        expect.arrayContaining(
+          [expect.stringContaining(
+            'All assets were already uploaded, nothing to do.'
+          )]
         )
       );
       expect(response2.stderr).toBe('');
@@ -111,8 +119,10 @@ describe(`immich upload`, () => {
         '--recursive',
         '--album-name=e2e',
       ]);
-      expect(stdout).toEqual(
-        expect.stringContaining('Successfully uploaded 9 assets')
+      expect(stdout.split('\n')).toEqual(
+        expect.arrayContaining(
+          [expect.stringContaining('Successfully uploaded 9 assets')]
+        )
       );
       expect(stderr).toBe('');
       expect(exitCode).toBe(0);
@@ -147,8 +157,10 @@ describe(`immich upload`, () => {
       await rm(`/tmp/albums/nature`, { recursive: true });
       expect(files).toEqual([]);
 
-      expect(stdout).toEqual(
-        expect.stringContaining('Successfully uploaded 9 assets')
+      expect(stdout.split('\n')).toEqual(
+        expect.arrayContaining(
+          [expect.stringContaining('Successfully uploaded 9 assets')]
+        )
       );
       expect(stderr).toBe('');
       expect(exitCode).toBe(0);
