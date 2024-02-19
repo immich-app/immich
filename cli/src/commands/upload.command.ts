@@ -119,7 +119,6 @@ export class UploadOptionsDto {
 }
 
 export class UploadCommand extends BaseCommand {
-  uploadLength!: number;
   api!: ImmichApi;
 
   public async run(paths: string[], options: UploadOptionsDto): Promise<void> {
@@ -135,7 +134,10 @@ export class UploadCommand extends BaseCommand {
 
     const assetsToCheck = files.map((path) => new Asset(path));
 
-    const { newAssets, duplicateAssets } = await this.checkAssets(assetsToCheck, options.concurrency ?? 4);
+    const { newAssets, duplicateAssets, rejectedAssets } = await this.checkAssets(
+      assetsToCheck,
+      options.concurrency ?? 4,
+    );
 
     const totalSizeUploaded = await this.upload(newAssets, options);
     const messageStart = options.dryRun ? 'Would have' : 'Successfully';
@@ -150,7 +152,7 @@ export class UploadCommand extends BaseCommand {
     }
 
     const { createdAlbumCount, updatedAssetCount } = await this.updateAlbums(
-      [...newAssets, ...duplicateAssets],
+      [...newAssets, ...duplicateAssets, ...rejectedAssets],
       options,
     );
     console.log(`${messageStart} created ${createdAlbumCount} new albums`);
@@ -173,7 +175,7 @@ export class UploadCommand extends BaseCommand {
   public async checkAssets(
     assetsToCheck: Asset[],
     concurrency: number,
-  ): Promise<{ newAssets: Asset[]; duplicateAssets: Asset[] }> {
+  ): Promise<{ newAssets: Asset[]; duplicateAssets: Asset[]; rejectedAssets: Asset[] }> {
     for (const assets of chunk(assetsToCheck, concurrency)) {
       await Promise.all(assets.map((asset: Asset) => asset.prepare()));
     }
@@ -186,6 +188,7 @@ export class UploadCommand extends BaseCommand {
 
     const newAssets = [];
     const duplicateAssets = [];
+    const rejectedAssets = [];
     try {
       for (const assets of chunk(assetsToCheck, concurrency)) {
         const checkedAssets = await this.getStatus(assets);
@@ -194,6 +197,8 @@ export class UploadCommand extends BaseCommand {
             newAssets.push(checked.asset);
           } else if (checked.status === CheckResponseStatus.DUPLICATE) {
             duplicateAssets.push(checked.asset);
+          } else {
+            rejectedAssets.push(checked.asset);
           }
           checkProgress.increment();
         }
@@ -202,7 +207,7 @@ export class UploadCommand extends BaseCommand {
       checkProgress.stop();
     }
 
-    return { newAssets, duplicateAssets };
+    return { newAssets, duplicateAssets, rejectedAssets };
   }
 
   public async upload(assetsToUpload: Asset[], options: UploadOptionsDto): Promise<number> {
@@ -286,9 +291,15 @@ export class UploadCommand extends BaseCommand {
     const assetsToUpdate = assets.filter(
       (asset): asset is Asset & { albumName: string; id: string } => !!(asset.albumName && asset.id),
     );
-    const newAlbums = assetsToUpdate
-      .map((asset) => asset.albumName)
-      .filter((albumName) => !existingAlbums.has(albumName));
+
+    const newAlbumsSet: Set<string> = new Set();
+    for (const asset of assetsToUpdate) {
+      if (!existingAlbums.has(asset.albumName)) {
+        newAlbumsSet.add(asset.albumName);
+      }
+    }
+
+    const newAlbums = [...newAlbumsSet];
 
     if (options.dryRun) {
       return { createdAlbumCount: newAlbums.length, updatedAssetCount: assetsToUpdate.length };
@@ -375,12 +386,13 @@ export class UploadCommand extends BaseCommand {
 
     const responses = [];
     for (const [check, asset] of zipDefined(checkResponse, assets)) {
+      if (check.assetId) {
+        asset.id = check.assetId;
+      }
+
       if (check.action === 'reject') {
         responses.push({ asset, status: CheckResponseStatus.REJECT });
       } else if (check.reason === 'duplicate') {
-        if (check.assetId) {
-          asset.id = check.assetId;
-        }
         responses.push({ asset, status: CheckResponseStatus.DUPLICATE });
       } else {
         responses.push({ asset, status: CheckResponseStatus.ACCEPT });
