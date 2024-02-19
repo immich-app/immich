@@ -107,15 +107,15 @@ class Asset {
 }
 
 export class UploadOptionsDto {
-  recursive = false;
-  exclusionPatterns: string[] = [];
-  dryRun = false;
-  skipHash = false;
-  delete = false;
-  album = false;
-  albumName = '';
-  includeHidden = false;
-  concurrency = 4;
+  recursive? = false;
+  exclusionPatterns?: string[] = [];
+  dryRun? = false;
+  skipHash? = false;
+  delete? = false;
+  album? = false;
+  albumName? = '';
+  includeHidden? = false;
+  concurrency? = 4;
 }
 
 export class UploadCommand extends BaseCommand {
@@ -135,7 +135,7 @@ export class UploadCommand extends BaseCommand {
 
     const assetsToCheck = files.map((path) => new Asset(path));
 
-    const { newAssets, duplicateAssets } = await this.checkAssets(assetsToCheck, options.concurrency);
+    const { newAssets, duplicateAssets } = await this.checkAssets(assetsToCheck, options.concurrency ?? 4);
 
     const totalSizeUploaded = await this.upload(newAssets, options);
     const messageStart = options.dryRun ? 'Would have' : 'Successfully';
@@ -339,7 +339,7 @@ export class UploadCommand extends BaseCommand {
 
     try {
       for (const [albumId, assets] of albumToAssets.entries()) {
-        for (const assetBatch of chunk(assets, Math.min(1000 * options.concurrency, 65_000))) {
+        for (const assetBatch of chunk(assets, Math.min(1000 * (options.concurrency ?? 4), 65_000))) {
           await this.api.addAssetsToAlbum(albumId, { ids: assetBatch });
           albumUpdateProgress.increment(assetBatch.length);
         }
