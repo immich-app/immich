@@ -11,15 +11,15 @@ import {
   loginResponseDto,
   signupResponseDto,
 } from 'src/responses';
-import { app, asAuthHeader, dbUtils } from 'src/utils';
+import { apiUtils, app, asBearerAuth, dbUtils } from 'src/utils';
 import request from 'supertest';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 const { name, email, password } = signupDto.admin;
 
-describe(`Registration`, () => {
+describe(`/auth/admin-sign-up`, () => {
   beforeAll(() => {
-    dbUtils.setup();
+    apiUtils.setup();
   });
 
   beforeEach(async () => {
@@ -96,7 +96,7 @@ describe(`Registration`, () => {
   });
 });
 
-describe('Auth', () => {
+describe('/auth/*', () => {
   let admin: LoginResponseDto;
 
   beforeEach(async () => {
@@ -177,7 +177,7 @@ describe('Auth', () => {
       }
 
       await expect(
-        getAuthDevices({ headers: asAuthHeader(admin.accessToken) })
+        getAuthDevices({ headers: asBearerAuth(admin.accessToken) })
       ).resolves.toHaveLength(6);
 
       const { status } = await request(app)
@@ -186,7 +186,7 @@ describe('Auth', () => {
       expect(status).toBe(204);
 
       await expect(
-        getAuthDevices({ headers: asAuthHeader(admin.accessToken) })
+        getAuthDevices({ headers: asBearerAuth(admin.accessToken) })
       ).resolves.toHaveLength(1);
     });
 
@@ -202,7 +202,7 @@ describe('Auth', () => {
 
     it('should logout a device', async () => {
       const [device] = await getAuthDevices({
-        headers: asAuthHeader(admin.accessToken),
+        headers: asBearerAuth(admin.accessToken),
       });
       const { status } = await request(app)
         .delete(`/auth/devices/${device.id}`)

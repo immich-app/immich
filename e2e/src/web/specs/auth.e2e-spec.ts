@@ -2,6 +2,10 @@ import { test, expect } from '@playwright/test';
 import { apiUtils, dbUtils, webUtils } from 'src/utils';
 
 test.describe('Registration', () => {
+  test.beforeAll(() => {
+    apiUtils.setup();
+  });
+
   test.beforeEach(async () => {
     await dbUtils.reset();
   });
