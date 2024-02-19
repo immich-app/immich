@@ -1918,7 +1918,7 @@ export function validate({ id, validateLibraryDto }: {
     validateLibraryDto: ValidateLibraryDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
-        status: 201;
+        status: 200;
         data: ValidateLibraryResponseDto;
     }>(`/library/${encodeURIComponent(id)}/validate`, oazapfts.json({
         ...opts,

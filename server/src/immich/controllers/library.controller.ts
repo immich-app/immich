@@ -9,7 +9,7 @@ import {
   ValidateLibraryDto,
   ValidateLibraryResponseDto,
 } from '@app/domain';
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Auth, Authenticated } from '../app.guard';
 import { UseValidation } from '../app.utils';
@@ -43,6 +43,7 @@ export class LibraryController {
   }
 
   @Post(':id/validate')
+  @HttpCode(200)
   validate(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
