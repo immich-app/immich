@@ -110,7 +110,8 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
         final endpoint = Uri.parse(Store.get(StoreKey.serverEndpoint));
         final headers = {"x-immich-user-token": accessToken};
         if (endpoint.userInfo.isNotEmpty) {
-          headers["Authorization"] = "Basic ${base64.encode(utf8.encode(endpoint.userInfo))}";
+          headers["Authorization"] =
+              "Basic ${base64.encode(utf8.encode(endpoint.userInfo))}";
         }
 
         debugPrint("Attempting to connect to websocket");
