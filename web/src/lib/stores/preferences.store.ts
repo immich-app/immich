@@ -38,20 +38,7 @@ export const colorTheme = persisted<ThemeSetting>('color-theme', initialTheme, {
 // Locale to use for formatting dates, numbers, etc.
 export const locale = persisted<string | undefined>('locale', undefined, {
   serializer: {
-    parse: (text) => {
-      if (text) {
-        const test = 10;
-        try {
-          test.toLocaleString(text);
-        } catch (error) {
-          handleError(error, `Locale ${text} is not supported`);
-          locale.set(undefined);
-          return undefined;
-        }
-      }
-
-      return text;
-    },
+    parse: (text) => text,
     stringify: (object) => object ?? '',
   },
 });
