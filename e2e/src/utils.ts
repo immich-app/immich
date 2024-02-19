@@ -1,29 +1,44 @@
 import {
   LoginResponseDto,
+  createApiKey,
   defaults,
   login,
   setAdminOnboarding,
   signUpAdmin,
 } from '@immich/sdk';
 import { BrowserContext } from '@playwright/test';
+import { spawn } from 'child_process';
+import { access } from 'node:fs/promises';
+import path from 'node:path';
 import pg from 'pg';
 import { loginDto, signupDto } from 'src/fixtures';
 
 export const app = 'http://127.0.0.1:2283/api';
 
-defaults.baseUrl = app;
+const directoryExists = (directory: string) =>
+  access(directory)
+    .then(() => true)
+    .catch(() => false);
+
+// TODO move test assets into e2e/assets
+export const testAssetDir = path.resolve(`./../server/test/assets/`);
+
+if (!(await directoryExists(`${testAssetDir}/albums`))) {
+  throw new Error(
+    `Test assets not found. Please checkout https://github.com/immich-app/test-assets into ${testAssetDir} before testing`
+  );
+}
 
 const setBaseUrl = () => (defaults.baseUrl = app);
-export const asAuthHeader = (accessToken: string) => ({
+export const asBearerAuth = (accessToken: string) => ({
   Authorization: `Bearer ${accessToken}`,
 });
+
+export const asKeyAuth = (key: string) => ({ 'x-api-key': key });
 
 let client: pg.Client | null = null;
 
 export const dbUtils = {
-  setup: () => {
-    setBaseUrl();
-  },
   reset: async () => {
     try {
       if (!client) {
@@ -33,7 +48,14 @@ export const dbUtils = {
         await client.connect();
       }
 
-      for (const table of ['user_token', 'users', 'system_metadata']) {
+      for (const table of [
+        'albums',
+        'assets',
+        'api_keys',
+        'user_token',
+        'users',
+        'system_metadata',
+      ]) {
         await client.query(`DELETE FROM ${table} CASCADE;`);
       }
     } catch (error) {
@@ -53,13 +75,60 @@ export const dbUtils = {
     }
   },
 };
+export interface CliResponse {
+  stdout: string;
+  stderr: string;
+  exitCode: number | null;
+}
+
+export const immichCli = async (args: string[]) => {
+  let _resolve: (value: CliResponse) => void;
+  const deferred = new Promise<CliResponse>((resolve) => (_resolve = resolve));
+  const _args = ['node_modules/.bin/immich', '-d', '/tmp/immich/', ...args];
+  const child = spawn('node', _args, {
+    stdio: 'pipe',
+  });
+
+  let stdout = '';
+  let stderr = '';
+
+  child.stdout.on('data', (data) => (stdout += data.toString()));
+  child.stderr.on('data', (data) => (stderr += data.toString()));
+  child.on('exit', (exitCode) => {
+    _resolve({
+      stdout: stdout.trim(),
+      stderr: stderr.trim(),
+      exitCode,
+    });
+  });
+
+  return deferred;
+};
 
 export const apiUtils = {
+  setup: () => {
+    setBaseUrl();
+  },
   adminSetup: async () => {
     await signUpAdmin({ signUpDto: signupDto.admin });
     const response = await login({ loginCredentialDto: loginDto.admin });
-    await setAdminOnboarding({ headers: asAuthHeader(response.accessToken) });
+    await setAdminOnboarding({ headers: asBearerAuth(response.accessToken) });
     return response;
+  },
+  createApiKey: (accessToken: string) => {
+    return createApiKey(
+      { apiKeyCreateDto: { name: 'e2e' } },
+      { headers: asBearerAuth(accessToken) }
+    );
+  },
+};
+
+export const cliUtils = {
+  login: async () => {
+    const admin = await apiUtils.adminSetup();
+    const key = await apiUtils.createApiKey(admin.accessToken);
+    await immichCli(['login-key', app, `${key.secret}`]);
+    return key.secret;
   },
 };
 
