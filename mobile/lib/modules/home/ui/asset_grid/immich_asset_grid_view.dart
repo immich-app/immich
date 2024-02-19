@@ -290,7 +290,7 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
         final now = Timeline.now;
         if (now > (_hapticFeedbackTS + feedbackInterval)) {
           _hapticFeedbackTS = now;
-          HapticFeedback.heavyImpact();
+          HapticFeedback.mediumImpact();
         }
       }
     }
