@@ -134,10 +134,7 @@ export class UploadCommand extends BaseCommand {
 
     const assetsToCheck = files.map((path) => new Asset(path));
 
-    const { newAssets, duplicateAssets } = await this.checkAssets(
-      assetsToCheck,
-      options.concurrency ?? 4,
-    );
+    const { newAssets, duplicateAssets } = await this.checkAssets(assetsToCheck, options.concurrency ?? 4);
 
     const totalSizeUploaded = await this.upload(newAssets, options);
     const messageStart = options.dryRun ? 'Would have' : 'Successfully';
