@@ -22,8 +22,8 @@ export const load = (async (data) => {
 
     results =
       payload && 'query' in payload
-        ? await searchSmart({ smartSearchDto: { ...payload, withExif: true } })
-        : await searchMetadata({ metadataSearchDto: { ...payload, withExif: true } });
+        ? await searchSmart({ smartSearchDto: { ...payload, withExif: true, isVisible: true } })
+        : await searchMetadata({ metadataSearchDto: { ...payload, withExif: true, isVisible: true } });
   }
 
   return {

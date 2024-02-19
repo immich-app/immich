@@ -128,10 +128,10 @@
     responses =
       payload && 'query' in payload
         ? await searchSmart({
-            smartSearchDto: { ...payload, page: Number.parseInt(currentPage), withExif: true },
+            smartSearchDto: { ...payload, page: Number.parseInt(currentPage), withExif: true, isVisible: true },
           })
         : await searchMetadata({
-            metadataSearchDto: { ...payload, page: Number.parseInt(currentPage), withExif: true },
+            metadataSearchDto: { ...payload, page: Number.parseInt(currentPage), withExif: true, isVisible: true },
           });
 
     if (searchResultAssets) {
