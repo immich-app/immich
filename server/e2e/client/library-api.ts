@@ -65,7 +65,7 @@ export const libraryApi = {
       .post(`/library/${id}/validate`)
       .set('Authorization', `Bearer ${accessToken}`)
       .send(data);
-    expect(status).toBe(201);
+    expect(status).toBe(200);
     return body as ValidateLibraryResponseDto;
   },
 };

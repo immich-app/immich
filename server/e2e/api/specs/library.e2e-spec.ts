@@ -248,15 +248,16 @@ describe(`${LibraryController.name} (e2e)`, () => {
       });
 
       it('should change the import paths', async () => {
+        await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, IMMICH_TEST_ASSET_TEMP_PATH);
         const { status, body } = await request(server)
           .put(`/library/${library.id}`)
           .set('Authorization', `Bearer ${admin.accessToken}`)
-          .send({ importPaths: ['/path/to/import'] });
+          .send({ importPaths: [IMMICH_TEST_ASSET_TEMP_PATH] });
 
         expect(status).toBe(200);
         expect(body).toEqual(
           expect.objectContaining({
-            importPaths: ['/path/to/import'],
+            importPaths: [IMMICH_TEST_ASSET_TEMP_PATH],
           }),
         );
       });
