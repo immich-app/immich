@@ -588,7 +588,7 @@ export class LibraryService extends EventEmitter {
     if (externalPath === null) {
       return false;
     }
-    return filePath.match(new RegExp(`^${externalPath}`)) !== null;
+    return filePath.startsWith(externalPath);
   }
 
   async handleQueueAssetRefresh(job: ILibraryRefreshJob): Promise<boolean> {
