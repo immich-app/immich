@@ -91,20 +91,22 @@
   <CircleIconButton buttonSize="50" icon={mdiCog} on:click={() => (showSettings = !showSettings)} title="Next" />
 
   {#if showSettings}
-    <div class="bg-black/10 rounded-lg p-2 h-fit" transition:fly={{ x: 100, duration: 100, easing: quintOut }}>
-      <div class="flex items-center gap-4 mb-1">
-        <div class="text-white items-center" title="in seconds">Slidehow Delay :</div>
+    <div class="bg-black/10 rounded-lg p-2 h-fit min-w-48" transition:fly={{ x: 100, duration: 100, easing: quintOut }}>
+      <div class="grid grid-cols-[60%_40%] gap-1">
+        <div class="text-white" title="in seconds">Slidehow Delay :</div>
         <input
           class="rounded-xl text-white bg-gray-400/20 px-3 py-3 text-sm focus:border-immich-primary h-2"
           type="number"
           min="1"
+          size="8"
           bind:value={delay}
           on:input={handleInput}
         />
-      </div>
-      <div class="flex items-center gap-2 mt-1">
-        <div class="text-white items-center">Show progress bar :</div>
-        <Slider checked={$showProgressBar} on:toggle={() => ($showProgressBar = !$showProgressBar)} />
+
+        <div class="text-white">Show progress bar :</div>
+        <div class="flex items-center">
+          <Slider checked={$showProgressBar} on:toggle={() => ($showProgressBar = !$showProgressBar)} />
+        </div>
       </div>
     </div>
   {/if}
