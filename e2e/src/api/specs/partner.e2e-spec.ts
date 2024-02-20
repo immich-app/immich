@@ -1,68 +1,63 @@
-import { LoginResponseDto, PartnerDirection } from '@app/domain';
-import { PartnerController } from '@app/immich';
-import { errorStub, userDto } from '@test/fixtures';
+import { LoginResponseDto, createPartner } from '@immich/sdk';
+import { createUserDto } from 'src/fixtures';
+import { errorDto } from 'src/responses';
+import { apiUtils, app, asBearerAuth, dbUtils } from 'src/utils';
 import request from 'supertest';
-import { api } from '../../client';
-import { testApp } from '../utils';
+import { beforeAll, describe, expect, it } from 'vitest';
 
-describe(`${PartnerController.name} (e2e)`, () => {
-  let server: any;
+describe('/partner', () => {
+  let admin: LoginResponseDto;
   let user1: LoginResponseDto;
   let user2: LoginResponseDto;
   let user3: LoginResponseDto;
 
   beforeAll(async () => {
-    server = (await testApp.create()).getHttpServer();
+    apiUtils.setup();
+    await dbUtils.reset();
 
-    await testApp.reset();
-    await api.authApi.adminSignUp(server);
-    const admin = await api.authApi.adminLogin(server);
-
-    await Promise.all([
-      api.userApi.create(server, admin.accessToken, userDto.user1),
-      api.userApi.create(server, admin.accessToken, userDto.user2),
-      api.userApi.create(server, admin.accessToken, userDto.user3),
-    ]);
+    admin = await apiUtils.adminSetup();
 
     [user1, user2, user3] = await Promise.all([
-      api.authApi.login(server, userDto.user1),
-      api.authApi.login(server, userDto.user2),
-      api.authApi.login(server, userDto.user3),
+      apiUtils.userSetup(admin.accessToken, createUserDto.user1),
+      apiUtils.userSetup(admin.accessToken, createUserDto.user2),
+      apiUtils.userSetup(admin.accessToken, createUserDto.user3),
     ]);
 
     await Promise.all([
-      api.partnerApi.create(server, user1.accessToken, user2.userId),
-      api.partnerApi.create(server, user2.accessToken, user1.userId),
+      createPartner(
+        { id: user2.userId },
+        { headers: asBearerAuth(user1.accessToken) }
+      ),
+      createPartner(
+        { id: user1.userId },
+        { headers: asBearerAuth(user2.accessToken) }
+      ),
     ]);
-  });
-
-  afterAll(async () => {
-    await testApp.teardown();
   });
 
   describe('GET /partner', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(server).get('/partner');
+      const { status, body } = await request(app).get('/partner');
 
       expect(status).toBe(401);
-      expect(body).toEqual(errorStub.unauthorized);
+      expect(body).toEqual(errorDto.unauthorized);
     });
 
     it('should get all partners shared by user', async () => {
-      const { status, body } = await request(server)
+      const { status, body } = await request(app)
         .get('/partner')
         .set('Authorization', `Bearer ${user1.accessToken}`)
-        .query({ direction: PartnerDirection.SharedBy });
+        .query({ direction: 'shared-by' });
 
       expect(status).toBe(200);
       expect(body).toEqual([expect.objectContaining({ id: user2.userId })]);
     });
 
     it('should get all partners that share with user', async () => {
-      const { status, body } = await request(server)
+      const { status, body } = await request(app)
         .get('/partner')
         .set('Authorization', `Bearer ${user1.accessToken}`)
-        .query({ direction: PartnerDirection.SharedWith });
+        .query({ direction: 'shared-with' });
 
       expect(status).toBe(200);
       expect(body).toEqual([expect.objectContaining({ id: user2.userId })]);
@@ -71,14 +66,16 @@ describe(`${PartnerController.name} (e2e)`, () => {
 
   describe('POST /partner/:id', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(server).post(`/partner/${user3.userId}`);
+      const { status, body } = await request(app).post(
+        `/partner/${user3.userId}`
+      );
 
       expect(status).toBe(401);
-      expect(body).toEqual(errorStub.unauthorized);
+      expect(body).toEqual(errorDto.unauthorized);
     });
 
     it('should share with new partner', async () => {
-      const { status, body } = await request(server)
+      const { status, body } = await request(app)
         .post(`/partner/${user3.userId}`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
 
@@ -87,44 +84,52 @@ describe(`${PartnerController.name} (e2e)`, () => {
     });
 
     it('should not share with new partner if already sharing with this partner', async () => {
-      const { status, body } = await request(server)
+      const { status, body } = await request(app)
         .post(`/partner/${user2.userId}`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
 
       expect(status).toBe(400);
-      expect(body).toEqual(expect.objectContaining({ message: 'Partner already exists' }));
+      expect(body).toEqual(
+        expect.objectContaining({ message: 'Partner already exists' })
+      );
     });
   });
 
   describe('PUT /partner/:id', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(server).put(`/partner/${user2.userId}`);
+      const { status, body } = await request(app).put(
+        `/partner/${user2.userId}`
+      );
 
       expect(status).toBe(401);
-      expect(body).toEqual(errorStub.unauthorized);
+      expect(body).toEqual(errorDto.unauthorized);
     });
 
     it('should update partner', async () => {
-      const { status, body } = await request(server)
+      const { status, body } = await request(app)
         .put(`/partner/${user2.userId}`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({ inTimeline: false });
 
       expect(status).toBe(200);
-      expect(body).toEqual(expect.objectContaining({ id: user2.userId, inTimeline: false }));
+      expect(body).toEqual(
+        expect.objectContaining({ id: user2.userId, inTimeline: false })
+      );
     });
   });
 
   describe('DELETE /partner/:id', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(server).delete(`/partner/${user3.userId}`);
+      const { status, body } = await request(app).delete(
+        `/partner/${user3.userId}`
+      );
 
       expect(status).toBe(401);
-      expect(body).toEqual(errorStub.unauthorized);
+      expect(body).toEqual(errorDto.unauthorized);
     });
 
     it('should delete partner', async () => {
-      const { status } = await request(server)
+      const { status } = await request(app)
         .delete(`/partner/${user3.userId}`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
 
@@ -132,12 +137,14 @@ describe(`${PartnerController.name} (e2e)`, () => {
     });
 
     it('should throw a bad request if partner not found', async () => {
-      const { status, body } = await request(server)
+      const { status, body } = await request(app)
         .delete(`/partner/${user3.userId}`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
 
       expect(status).toBe(400);
-      expect(body).toEqual(expect.objectContaining({ message: 'Partner not found' }));
+      expect(body).toEqual(
+        expect.objectContaining({ message: 'Partner not found' })
+      );
     });
   });
 });
