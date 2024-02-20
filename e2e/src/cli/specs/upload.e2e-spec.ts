@@ -99,6 +99,7 @@ describe(`immich upload`, () => {
           expect.stringContaining(
             'All assets were already uploaded, nothing to do.'
           ),
+          expect.stringContaining('Successfully updated 9 assets'),
         ])
       );
       expect(response2.stderr).toBe('');
