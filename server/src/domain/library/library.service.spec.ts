@@ -157,7 +157,7 @@ describe(LibraryService.name, () => {
       storageMock.crawl.mockResolvedValue(['/data/user2/photo.jpg']);
       assetMock.getByLibraryId.mockResolvedValue([]);
       libraryMock.getOnlineAssetPaths.mockResolvedValue([]);
-      userMock.get.mockResolvedValue(userStub.externalPath1);
+      userMock.get.mockResolvedValue(userStub.user1);
 
       await sut.handleQueueAssetRefresh(mockLibraryJob);
 
@@ -175,7 +175,7 @@ describe(LibraryService.name, () => {
       storageMock.crawl.mockResolvedValue(['/data/user1/photo.jpg']);
       assetMock.getByLibraryId.mockResolvedValue([]);
       libraryMock.getOnlineAssetPaths.mockResolvedValue([]);
-      userMock.get.mockResolvedValue(userStub.externalPath1);
+      userMock.get.mockResolvedValue(userStub.admin);
 
       await sut.handleQueueAssetRefresh(mockLibraryJob);
 
@@ -203,7 +203,7 @@ describe(LibraryService.name, () => {
       storageMock.crawl.mockResolvedValue(['/data/user1/photo.jpg']);
       assetMock.getByLibraryId.mockResolvedValue([]);
       libraryMock.getOnlineAssetPaths.mockResolvedValue([]);
-      userMock.get.mockResolvedValue(userStub.externalPath1);
+      userMock.get.mockResolvedValue(userStub.admin);
 
       await sut.handleQueueAssetRefresh(mockLibraryJob);
 
@@ -218,45 +218,6 @@ describe(LibraryService.name, () => {
           },
         },
       ]);
-    });
-
-    it("should mark assets outside of the user's external path as offline", async () => {
-      const mockLibraryJob: ILibraryRefreshJob = {
-        id: libraryStub.externalLibrary1.id,
-        refreshModifiedFiles: false,
-        refreshAllFiles: false,
-      };
-
-      libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
-      storageMock.crawl.mockResolvedValue(['/data/user1/photo.jpg']);
-      assetMock.getByLibraryId.mockResolvedValue([assetStub.external]);
-      libraryMock.getOnlineAssetPaths.mockResolvedValue([]);
-      userMock.get.mockResolvedValue(userStub.externalPath2);
-
-      await sut.handleQueueAssetRefresh(mockLibraryJob);
-
-      expect(assetMock.updateAll.mock.calls).toEqual([
-        [
-          [assetStub.external.id],
-          {
-            isOffline: true,
-          },
-        ],
-      ]);
-    });
-
-    it('should not scan libraries owned by user without external path', async () => {
-      const mockLibraryJob: ILibraryRefreshJob = {
-        id: libraryStub.externalLibrary1.id,
-        refreshModifiedFiles: false,
-        refreshAllFiles: false,
-      };
-
-      libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
-
-      userMock.get.mockResolvedValue(userStub.user1);
-
-      await expect(sut.handleQueueAssetRefresh(mockLibraryJob)).resolves.toBe(false);
     });
 
     it('should not scan upload libraries', async () => {
@@ -276,7 +237,7 @@ describe(LibraryService.name, () => {
     let mockUser: UserEntity;
 
     beforeEach(() => {
-      mockUser = userStub.externalPath1;
+      mockUser = userStub.admin;
       userMock.get.mockResolvedValue(mockUser);
     });
 
@@ -1142,7 +1103,7 @@ describe(LibraryService.name, () => {
     });
   });
 
-  describe('watchAll new', () => {
+  describe('watchAll', () => {
     describe('watching disabled', () => {
       beforeEach(async () => {
         configMock.load.mockResolvedValue(systemConfigStub.libraryWatchDisabled);

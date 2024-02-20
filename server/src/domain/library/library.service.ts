@@ -516,24 +516,13 @@ export class LibraryService extends EventEmitter {
       return false;
     }
 
-    const user = await this.userRepository.get(library.ownerId, {});
-    if (!user?.externalPath) {
-      this.logger.warn('User has no external path set, cannot refresh library');
-      return false;
-    }
-
     this.logger.verbose(`Refreshing library: ${job.id}`);
     const rawPaths = await this.storageRepository.crawl({
       pathsToCrawl: library.importPaths,
       exclusionPatterns: library.exclusionPatterns,
     });
 
-    const crawledAssetPaths = rawPaths
-      .map((filePath) => path.normalize(filePath))
-      .filter((assetPath) =>
-        // Filter out paths that are not within the user's external path
-        assetPath.match(new RegExp(`^${user.externalPath}`)),
-      ) as string[];
+    const crawledAssetPaths = rawPaths.map((filePath) => path.normalize(filePath));
 
     this.logger.debug(`Found ${crawledAssetPaths.length} asset(s) when crawling import paths ${library.importPaths}`);
     const assetsInLibrary = await this.assetRepository.getByLibraryId([job.id]);

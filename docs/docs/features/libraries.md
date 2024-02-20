@@ -48,7 +48,6 @@ External libraries use import paths to determine which files to scan. Each libra
 
 Sometimes, an external library will not scan correctly. This can happen if the immich_server or immich_microservices can't access the files. Here are some things to check:
 
-- Is the external path set correctly?
 - In the docker-compose file, are the volumes mounted correctly?
 - Are the volumes identical between the `server` and `microservices` container?
 - Are the import paths set correctly, and do they match the path set in docker-compose file?
@@ -59,18 +58,6 @@ Sometimes, an external library will not scan correctly. This can happen if the i
 - Are you using [spaces in the internal path](/docs/features/libraries#:~:text=can%20be%20accessed.-,NOTE,-Spaces%20in%20the)?
 
 If all else fails, you can always start a shell inside the container and check if the path is accessible. For example, `docker exec -it immich_microservices /bin/bash` will start a bash shell. If your import path, for instance, is `/data/import/photos`, you can check if the files are accessible by running `ls /data/import/photos`. Also check the `immich_server` container in the same way.
-
-### Security Considerations
-
-:::caution
-
-Please read and understand this section before setting external paths, as there are important security considerations.
-
-:::
-
-For security purposes, each Immich user is disallowed to add external files by default. This is to prevent devastating [path traversal attacks](https://owasp.org/www-community/attacks/Path_Traversal). An admin can allow individual users to use external path feature via the `external path` setting found in the admin panel. Without the external path restriction, a user can add any image or video file on the Immich host filesystem to be imported into Immich, potentially allowing sensitive data to be accessed. If you are running Immich as root in your Docker setup (which is the default), all external file reads are done with root privileges. This is particularly dangerous if the Immich host is a shared server.
-
-With the `external path` set, a user is restricted to accessing external files to files or directories within that path. The Immich admin should still be careful not set the external path too generously. For example, `user1` wants to read their photos in to `/home/user1`. A lazy admin sets that user's external path to `/home/` since it "gets the job done". However, that user will then be able to read all photos in `/home/user2/private-photos`, too! Please set the external path as specific as possible. If multiple folders must be added, do this using the docker volume mount feature described below.
 
 ### Exclusion Patterns
 
@@ -136,22 +123,6 @@ The `ro` flag at the end only gives read-only access to the volumes. While Immic
 :::info
 _Remember to bring the container `docker compose down/up` to register the changes. Make sure you can see the mounted path in the container._
 :::
-
-### Set External Path
-
-Only an admin can do this.
-
-- Navigate to `Administration > Users` page on the web.
-- Click on the user edit button.
-- Set `/mnt/media` to be the external path. This folder will only contain the three folders that we want to import, so nothing else can be accessed.
-  :::note
-  Spaces in the internal path aren't currently supported.
-
-  You must import it as:
-  `..:/mnt/media/my-media:ro`
-  instead of
-  `..:/mnt/media/my media:ro`
-  :::
 
 ### Create External Libraries
 
