@@ -15,7 +15,6 @@ FROM
       "APIKeyEntity__APIKeyEntity_user"."isAdmin" AS "APIKeyEntity__APIKeyEntity_user_isAdmin",
       "APIKeyEntity__APIKeyEntity_user"."email" AS "APIKeyEntity__APIKeyEntity_user_email",
       "APIKeyEntity__APIKeyEntity_user"."storageLabel" AS "APIKeyEntity__APIKeyEntity_user_storageLabel",
-      "APIKeyEntity__APIKeyEntity_user"."externalPath" AS "APIKeyEntity__APIKeyEntity_user_externalPath",
       "APIKeyEntity__APIKeyEntity_user"."oauthId" AS "APIKeyEntity__APIKeyEntity_user_oauthId",
       "APIKeyEntity__APIKeyEntity_user"."profileImagePath" AS "APIKeyEntity__APIKeyEntity_user_profileImagePath",
       "APIKeyEntity__APIKeyEntity_user"."shouldChangePassword" AS "APIKeyEntity__APIKeyEntity_user_shouldChangePassword",
@@ -32,7 +31,7 @@ FROM
         "APIKeyEntity__APIKeyEntity_user"."deletedAt" IS NULL
       )
     WHERE
-      (("APIKeyEntity"."key" = $1))
+      ("APIKeyEntity"."key" = $1)
   ) "distinctAlias"
 ORDER BY
   "APIKeyEntity_id" ASC
@@ -50,8 +49,8 @@ FROM
   "api_keys" "APIKeyEntity"
 WHERE
   (
-    ("APIKeyEntity"."userId" = $1)
-    AND ("APIKeyEntity"."id" = $2)
+    "APIKeyEntity"."userId" = $1
+    AND "APIKeyEntity"."id" = $2
   )
 LIMIT
   1
@@ -66,6 +65,6 @@ SELECT
 FROM
   "api_keys" "APIKeyEntity"
 WHERE
-  (("APIKeyEntity"."userId" = $1))
+  ("APIKeyEntity"."userId" = $1)
 ORDER BY
   "APIKeyEntity"."createdAt" DESC

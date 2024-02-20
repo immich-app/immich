@@ -8,7 +8,6 @@ SELECT
   "UserEntity"."isAdmin" AS "UserEntity_isAdmin",
   "UserEntity"."email" AS "UserEntity_email",
   "UserEntity"."storageLabel" AS "UserEntity_storageLabel",
-  "UserEntity"."externalPath" AS "UserEntity_externalPath",
   "UserEntity"."oauthId" AS "UserEntity_oauthId",
   "UserEntity"."profileImagePath" AS "UserEntity_profileImagePath",
   "UserEntity"."shouldChangePassword" AS "UserEntity_shouldChangePassword",
@@ -21,7 +20,7 @@ SELECT
 FROM
   "users" "UserEntity"
 WHERE
-  ((("UserEntity"."isAdmin" = $1)))
+  (("UserEntity"."isAdmin" = $1))
   AND ("UserEntity"."deletedAt" IS NULL)
 LIMIT
   1
@@ -41,7 +40,7 @@ WHERE
     FROM
       "users" "UserEntity"
     WHERE
-      ((("UserEntity"."isAdmin" = $1)))
+      (("UserEntity"."isAdmin" = $1))
       AND ("UserEntity"."deletedAt" IS NULL)
   )
 LIMIT
@@ -55,7 +54,6 @@ SELECT
   "user"."isAdmin" AS "user_isAdmin",
   "user"."email" AS "user_email",
   "user"."storageLabel" AS "user_storageLabel",
-  "user"."externalPath" AS "user_externalPath",
   "user"."oauthId" AS "user_oauthId",
   "user"."profileImagePath" AS "user_profileImagePath",
   "user"."shouldChangePassword" AS "user_shouldChangePassword",
@@ -79,7 +77,6 @@ SELECT
   "UserEntity"."isAdmin" AS "UserEntity_isAdmin",
   "UserEntity"."email" AS "UserEntity_email",
   "UserEntity"."storageLabel" AS "UserEntity_storageLabel",
-  "UserEntity"."externalPath" AS "UserEntity_externalPath",
   "UserEntity"."oauthId" AS "UserEntity_oauthId",
   "UserEntity"."profileImagePath" AS "UserEntity_profileImagePath",
   "UserEntity"."shouldChangePassword" AS "UserEntity_shouldChangePassword",
@@ -92,7 +89,7 @@ SELECT
 FROM
   "users" "UserEntity"
 WHERE
-  ((("UserEntity"."storageLabel" = $1)))
+  (("UserEntity"."storageLabel" = $1))
   AND ("UserEntity"."deletedAt" IS NULL)
 LIMIT
   1
@@ -105,7 +102,6 @@ SELECT
   "UserEntity"."isAdmin" AS "UserEntity_isAdmin",
   "UserEntity"."email" AS "UserEntity_email",
   "UserEntity"."storageLabel" AS "UserEntity_storageLabel",
-  "UserEntity"."externalPath" AS "UserEntity_externalPath",
   "UserEntity"."oauthId" AS "UserEntity_oauthId",
   "UserEntity"."profileImagePath" AS "UserEntity_profileImagePath",
   "UserEntity"."shouldChangePassword" AS "UserEntity_shouldChangePassword",
@@ -118,7 +114,7 @@ SELECT
 FROM
   "users" "UserEntity"
 WHERE
-  ((("UserEntity"."oauthId" = $1)))
+  (("UserEntity"."oauthId" = $1))
   AND ("UserEntity"."deletedAt" IS NULL)
 LIMIT
   1

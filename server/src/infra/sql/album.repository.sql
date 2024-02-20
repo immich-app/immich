@@ -21,7 +21,6 @@ FROM
       "AlbumEntity__AlbumEntity_owner"."isAdmin" AS "AlbumEntity__AlbumEntity_owner_isAdmin",
       "AlbumEntity__AlbumEntity_owner"."email" AS "AlbumEntity__AlbumEntity_owner_email",
       "AlbumEntity__AlbumEntity_owner"."storageLabel" AS "AlbumEntity__AlbumEntity_owner_storageLabel",
-      "AlbumEntity__AlbumEntity_owner"."externalPath" AS "AlbumEntity__AlbumEntity_owner_externalPath",
       "AlbumEntity__AlbumEntity_owner"."oauthId" AS "AlbumEntity__AlbumEntity_owner_oauthId",
       "AlbumEntity__AlbumEntity_owner"."profileImagePath" AS "AlbumEntity__AlbumEntity_owner_profileImagePath",
       "AlbumEntity__AlbumEntity_owner"."shouldChangePassword" AS "AlbumEntity__AlbumEntity_owner_shouldChangePassword",
@@ -37,7 +36,6 @@ FROM
       "AlbumEntity__AlbumEntity_sharedUsers"."isAdmin" AS "AlbumEntity__AlbumEntity_sharedUsers_isAdmin",
       "AlbumEntity__AlbumEntity_sharedUsers"."email" AS "AlbumEntity__AlbumEntity_sharedUsers_email",
       "AlbumEntity__AlbumEntity_sharedUsers"."storageLabel" AS "AlbumEntity__AlbumEntity_sharedUsers_storageLabel",
-      "AlbumEntity__AlbumEntity_sharedUsers"."externalPath" AS "AlbumEntity__AlbumEntity_sharedUsers_externalPath",
       "AlbumEntity__AlbumEntity_sharedUsers"."oauthId" AS "AlbumEntity__AlbumEntity_sharedUsers_oauthId",
       "AlbumEntity__AlbumEntity_sharedUsers"."profileImagePath" AS "AlbumEntity__AlbumEntity_sharedUsers_profileImagePath",
       "AlbumEntity__AlbumEntity_sharedUsers"."shouldChangePassword" AS "AlbumEntity__AlbumEntity_sharedUsers_shouldChangePassword",
@@ -72,7 +70,7 @@ FROM
       )
       LEFT JOIN "shared_links" "AlbumEntity__AlbumEntity_sharedLinks" ON "AlbumEntity__AlbumEntity_sharedLinks"."albumId" = "AlbumEntity"."id"
     WHERE
-      ((("AlbumEntity"."id" = $1)))
+      (("AlbumEntity"."id" = $1))
       AND ("AlbumEntity"."deletedAt" IS NULL)
   ) "distinctAlias"
 ORDER BY
@@ -97,7 +95,6 @@ SELECT
   "AlbumEntity__AlbumEntity_owner"."isAdmin" AS "AlbumEntity__AlbumEntity_owner_isAdmin",
   "AlbumEntity__AlbumEntity_owner"."email" AS "AlbumEntity__AlbumEntity_owner_email",
   "AlbumEntity__AlbumEntity_owner"."storageLabel" AS "AlbumEntity__AlbumEntity_owner_storageLabel",
-  "AlbumEntity__AlbumEntity_owner"."externalPath" AS "AlbumEntity__AlbumEntity_owner_externalPath",
   "AlbumEntity__AlbumEntity_owner"."oauthId" AS "AlbumEntity__AlbumEntity_owner_oauthId",
   "AlbumEntity__AlbumEntity_owner"."profileImagePath" AS "AlbumEntity__AlbumEntity_owner_profileImagePath",
   "AlbumEntity__AlbumEntity_owner"."shouldChangePassword" AS "AlbumEntity__AlbumEntity_owner_shouldChangePassword",
@@ -113,7 +110,6 @@ SELECT
   "AlbumEntity__AlbumEntity_sharedUsers"."isAdmin" AS "AlbumEntity__AlbumEntity_sharedUsers_isAdmin",
   "AlbumEntity__AlbumEntity_sharedUsers"."email" AS "AlbumEntity__AlbumEntity_sharedUsers_email",
   "AlbumEntity__AlbumEntity_sharedUsers"."storageLabel" AS "AlbumEntity__AlbumEntity_sharedUsers_storageLabel",
-  "AlbumEntity__AlbumEntity_sharedUsers"."externalPath" AS "AlbumEntity__AlbumEntity_sharedUsers_externalPath",
   "AlbumEntity__AlbumEntity_sharedUsers"."oauthId" AS "AlbumEntity__AlbumEntity_sharedUsers_oauthId",
   "AlbumEntity__AlbumEntity_sharedUsers"."profileImagePath" AS "AlbumEntity__AlbumEntity_sharedUsers_profileImagePath",
   "AlbumEntity__AlbumEntity_sharedUsers"."shouldChangePassword" AS "AlbumEntity__AlbumEntity_sharedUsers_shouldChangePassword",
@@ -135,7 +131,7 @@ FROM
     "AlbumEntity__AlbumEntity_sharedUsers"."deletedAt" IS NULL
   )
 WHERE
-  ((("AlbumEntity"."id" IN ($1))))
+  (("AlbumEntity"."id" IN ($1)))
   AND ("AlbumEntity"."deletedAt" IS NULL)
 
 -- AlbumRepository.getByAssetId
@@ -155,7 +151,6 @@ SELECT
   "AlbumEntity__AlbumEntity_owner"."isAdmin" AS "AlbumEntity__AlbumEntity_owner_isAdmin",
   "AlbumEntity__AlbumEntity_owner"."email" AS "AlbumEntity__AlbumEntity_owner_email",
   "AlbumEntity__AlbumEntity_owner"."storageLabel" AS "AlbumEntity__AlbumEntity_owner_storageLabel",
-  "AlbumEntity__AlbumEntity_owner"."externalPath" AS "AlbumEntity__AlbumEntity_owner_externalPath",
   "AlbumEntity__AlbumEntity_owner"."oauthId" AS "AlbumEntity__AlbumEntity_owner_oauthId",
   "AlbumEntity__AlbumEntity_owner"."profileImagePath" AS "AlbumEntity__AlbumEntity_owner_profileImagePath",
   "AlbumEntity__AlbumEntity_owner"."shouldChangePassword" AS "AlbumEntity__AlbumEntity_owner_shouldChangePassword",
@@ -171,7 +166,6 @@ SELECT
   "AlbumEntity__AlbumEntity_sharedUsers"."isAdmin" AS "AlbumEntity__AlbumEntity_sharedUsers_isAdmin",
   "AlbumEntity__AlbumEntity_sharedUsers"."email" AS "AlbumEntity__AlbumEntity_sharedUsers_email",
   "AlbumEntity__AlbumEntity_sharedUsers"."storageLabel" AS "AlbumEntity__AlbumEntity_sharedUsers_storageLabel",
-  "AlbumEntity__AlbumEntity_sharedUsers"."externalPath" AS "AlbumEntity__AlbumEntity_sharedUsers_externalPath",
   "AlbumEntity__AlbumEntity_sharedUsers"."oauthId" AS "AlbumEntity__AlbumEntity_sharedUsers_oauthId",
   "AlbumEntity__AlbumEntity_sharedUsers"."profileImagePath" AS "AlbumEntity__AlbumEntity_sharedUsers_profileImagePath",
   "AlbumEntity__AlbumEntity_sharedUsers"."shouldChangePassword" AS "AlbumEntity__AlbumEntity_sharedUsers_shouldChangePassword",
@@ -201,20 +195,12 @@ WHERE
   (
     (
       (
-        (
-          ("AlbumEntity"."ownerId" = $1)
-          AND ((("AlbumEntity__AlbumEntity_assets"."id" = $2)))
-        )
+        "AlbumEntity"."ownerId" = $1
+        AND "AlbumEntity__AlbumEntity_assets"."id" = $2
       )
       OR (
-        (
-          (
-            (
-              ("AlbumEntity__AlbumEntity_sharedUsers"."id" = $3)
-            )
-          )
-          AND ((("AlbumEntity__AlbumEntity_assets"."id" = $4)))
-        )
+        "AlbumEntity__AlbumEntity_sharedUsers"."id" = $3
+        AND "AlbumEntity__AlbumEntity_assets"."id" = $4
       )
     )
   )
@@ -285,7 +271,6 @@ SELECT
   "AlbumEntity__AlbumEntity_sharedUsers"."isAdmin" AS "AlbumEntity__AlbumEntity_sharedUsers_isAdmin",
   "AlbumEntity__AlbumEntity_sharedUsers"."email" AS "AlbumEntity__AlbumEntity_sharedUsers_email",
   "AlbumEntity__AlbumEntity_sharedUsers"."storageLabel" AS "AlbumEntity__AlbumEntity_sharedUsers_storageLabel",
-  "AlbumEntity__AlbumEntity_sharedUsers"."externalPath" AS "AlbumEntity__AlbumEntity_sharedUsers_externalPath",
   "AlbumEntity__AlbumEntity_sharedUsers"."oauthId" AS "AlbumEntity__AlbumEntity_sharedUsers_oauthId",
   "AlbumEntity__AlbumEntity_sharedUsers"."profileImagePath" AS "AlbumEntity__AlbumEntity_sharedUsers_profileImagePath",
   "AlbumEntity__AlbumEntity_sharedUsers"."shouldChangePassword" AS "AlbumEntity__AlbumEntity_sharedUsers_shouldChangePassword",
@@ -313,7 +298,6 @@ SELECT
   "AlbumEntity__AlbumEntity_owner"."isAdmin" AS "AlbumEntity__AlbumEntity_owner_isAdmin",
   "AlbumEntity__AlbumEntity_owner"."email" AS "AlbumEntity__AlbumEntity_owner_email",
   "AlbumEntity__AlbumEntity_owner"."storageLabel" AS "AlbumEntity__AlbumEntity_owner_storageLabel",
-  "AlbumEntity__AlbumEntity_owner"."externalPath" AS "AlbumEntity__AlbumEntity_owner_externalPath",
   "AlbumEntity__AlbumEntity_owner"."oauthId" AS "AlbumEntity__AlbumEntity_owner_oauthId",
   "AlbumEntity__AlbumEntity_owner"."profileImagePath" AS "AlbumEntity__AlbumEntity_owner_profileImagePath",
   "AlbumEntity__AlbumEntity_owner"."shouldChangePassword" AS "AlbumEntity__AlbumEntity_owner_shouldChangePassword",
@@ -336,7 +320,7 @@ FROM
     "AlbumEntity__AlbumEntity_owner"."deletedAt" IS NULL
   )
 WHERE
-  ((("AlbumEntity"."ownerId" = $1)))
+  (("AlbumEntity"."ownerId" = $1))
   AND ("AlbumEntity"."deletedAt" IS NULL)
 ORDER BY
   "AlbumEntity"."createdAt" DESC
@@ -358,7 +342,6 @@ SELECT
   "AlbumEntity__AlbumEntity_sharedUsers"."isAdmin" AS "AlbumEntity__AlbumEntity_sharedUsers_isAdmin",
   "AlbumEntity__AlbumEntity_sharedUsers"."email" AS "AlbumEntity__AlbumEntity_sharedUsers_email",
   "AlbumEntity__AlbumEntity_sharedUsers"."storageLabel" AS "AlbumEntity__AlbumEntity_sharedUsers_storageLabel",
-  "AlbumEntity__AlbumEntity_sharedUsers"."externalPath" AS "AlbumEntity__AlbumEntity_sharedUsers_externalPath",
   "AlbumEntity__AlbumEntity_sharedUsers"."oauthId" AS "AlbumEntity__AlbumEntity_sharedUsers_oauthId",
   "AlbumEntity__AlbumEntity_sharedUsers"."profileImagePath" AS "AlbumEntity__AlbumEntity_sharedUsers_profileImagePath",
   "AlbumEntity__AlbumEntity_sharedUsers"."shouldChangePassword" AS "AlbumEntity__AlbumEntity_sharedUsers_shouldChangePassword",
@@ -386,7 +369,6 @@ SELECT
   "AlbumEntity__AlbumEntity_owner"."isAdmin" AS "AlbumEntity__AlbumEntity_owner_isAdmin",
   "AlbumEntity__AlbumEntity_owner"."email" AS "AlbumEntity__AlbumEntity_owner_email",
   "AlbumEntity__AlbumEntity_owner"."storageLabel" AS "AlbumEntity__AlbumEntity_owner_storageLabel",
-  "AlbumEntity__AlbumEntity_owner"."externalPath" AS "AlbumEntity__AlbumEntity_owner_externalPath",
   "AlbumEntity__AlbumEntity_owner"."oauthId" AS "AlbumEntity__AlbumEntity_owner_oauthId",
   "AlbumEntity__AlbumEntity_owner"."profileImagePath" AS "AlbumEntity__AlbumEntity_owner_profileImagePath",
   "AlbumEntity__AlbumEntity_owner"."shouldChangePassword" AS "AlbumEntity__AlbumEntity_owner_shouldChangePassword",
@@ -411,38 +393,14 @@ FROM
 WHERE
   (
     (
-      (
-        (
-          (
-            (
-              ("AlbumEntity__AlbumEntity_sharedUsers"."id" = $1)
-            )
-          )
-        )
+      ("AlbumEntity__AlbumEntity_sharedUsers"."id" = $1)
+      OR (
+        "AlbumEntity__AlbumEntity_sharedLinks"."userId" = $2
       )
       OR (
-        (
-          (
-            (
-              (
-                "AlbumEntity__AlbumEntity_sharedLinks"."userId" = $2
-              )
-            )
-          )
-        )
-      )
-      OR (
-        (
-          ("AlbumEntity"."ownerId" = $3)
-          AND (
-            (
-              (
-                NOT (
-                  "AlbumEntity__AlbumEntity_sharedUsers"."id" IS NULL
-                )
-              )
-            )
-          )
+        "AlbumEntity"."ownerId" = $3
+        AND NOT (
+          "AlbumEntity__AlbumEntity_sharedUsers"."id" IS NULL
         )
       )
     )
@@ -468,7 +426,6 @@ SELECT
   "AlbumEntity__AlbumEntity_sharedUsers"."isAdmin" AS "AlbumEntity__AlbumEntity_sharedUsers_isAdmin",
   "AlbumEntity__AlbumEntity_sharedUsers"."email" AS "AlbumEntity__AlbumEntity_sharedUsers_email",
   "AlbumEntity__AlbumEntity_sharedUsers"."storageLabel" AS "AlbumEntity__AlbumEntity_sharedUsers_storageLabel",
-  "AlbumEntity__AlbumEntity_sharedUsers"."externalPath" AS "AlbumEntity__AlbumEntity_sharedUsers_externalPath",
   "AlbumEntity__AlbumEntity_sharedUsers"."oauthId" AS "AlbumEntity__AlbumEntity_sharedUsers_oauthId",
   "AlbumEntity__AlbumEntity_sharedUsers"."profileImagePath" AS "AlbumEntity__AlbumEntity_sharedUsers_profileImagePath",
   "AlbumEntity__AlbumEntity_sharedUsers"."shouldChangePassword" AS "AlbumEntity__AlbumEntity_sharedUsers_shouldChangePassword",
@@ -496,7 +453,6 @@ SELECT
   "AlbumEntity__AlbumEntity_owner"."isAdmin" AS "AlbumEntity__AlbumEntity_owner_isAdmin",
   "AlbumEntity__AlbumEntity_owner"."email" AS "AlbumEntity__AlbumEntity_owner_email",
   "AlbumEntity__AlbumEntity_owner"."storageLabel" AS "AlbumEntity__AlbumEntity_owner_storageLabel",
-  "AlbumEntity__AlbumEntity_owner"."externalPath" AS "AlbumEntity__AlbumEntity_owner_externalPath",
   "AlbumEntity__AlbumEntity_owner"."oauthId" AS "AlbumEntity__AlbumEntity_owner_oauthId",
   "AlbumEntity__AlbumEntity_owner"."profileImagePath" AS "AlbumEntity__AlbumEntity_owner_profileImagePath",
   "AlbumEntity__AlbumEntity_owner"."shouldChangePassword" AS "AlbumEntity__AlbumEntity_owner_shouldChangePassword",
@@ -521,21 +477,9 @@ FROM
 WHERE
   (
     (
-      ("AlbumEntity"."ownerId" = $1)
-      AND (
-        (
-          (
-            "AlbumEntity__AlbumEntity_sharedUsers"."id" IS NULL
-          )
-        )
-      )
-      AND (
-        (
-          (
-            "AlbumEntity__AlbumEntity_sharedLinks"."id" IS NULL
-          )
-        )
-      )
+      "AlbumEntity"."ownerId" = $1
+      AND "AlbumEntity__AlbumEntity_sharedUsers"."id" IS NULL
+      AND "AlbumEntity__AlbumEntity_sharedLinks"."id" IS NULL
     )
   )
   AND ("AlbumEntity"."deletedAt" IS NULL)
@@ -559,7 +503,6 @@ SELECT
   "AlbumEntity__AlbumEntity_owner"."isAdmin" AS "AlbumEntity__AlbumEntity_owner_isAdmin",
   "AlbumEntity__AlbumEntity_owner"."email" AS "AlbumEntity__AlbumEntity_owner_email",
   "AlbumEntity__AlbumEntity_owner"."storageLabel" AS "AlbumEntity__AlbumEntity_owner_storageLabel",
-  "AlbumEntity__AlbumEntity_owner"."externalPath" AS "AlbumEntity__AlbumEntity_owner_externalPath",
   "AlbumEntity__AlbumEntity_owner"."oauthId" AS "AlbumEntity__AlbumEntity_owner_oauthId",
   "AlbumEntity__AlbumEntity_owner"."profileImagePath" AS "AlbumEntity__AlbumEntity_owner_profileImagePath",
   "AlbumEntity__AlbumEntity_owner"."shouldChangePassword" AS "AlbumEntity__AlbumEntity_owner_shouldChangePassword",
@@ -630,8 +573,8 @@ WHERE
     WHERE
       (
         (
-          ("AlbumEntity"."id" = $1)
-          AND ((("AlbumEntity__AlbumEntity_assets"."id" = $2)))
+          "AlbumEntity"."id" = $1
+          AND "AlbumEntity__AlbumEntity_assets"."id" = $2
         )
       )
       AND ("AlbumEntity"."deletedAt" IS NULL)

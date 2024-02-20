@@ -83,7 +83,7 @@ FROM
   "asset_faces" "AssetFaceEntity"
   LEFT JOIN "person" "AssetFaceEntity__AssetFaceEntity_person" ON "AssetFaceEntity__AssetFaceEntity_person"."id" = "AssetFaceEntity"."personId"
 WHERE
-  (("AssetFaceEntity"."assetId" = $1))
+  ("AssetFaceEntity"."assetId" = $1)
 
 -- PersonRepository.getFaceById
 SELECT DISTINCT
@@ -113,7 +113,7 @@ FROM
       "asset_faces" "AssetFaceEntity"
       LEFT JOIN "person" "AssetFaceEntity__AssetFaceEntity_person" ON "AssetFaceEntity__AssetFaceEntity_person"."id" = "AssetFaceEntity"."personId"
     WHERE
-      (("AssetFaceEntity"."id" = $1))
+      ("AssetFaceEntity"."id" = $1)
   ) "distinctAlias"
 ORDER BY
   "AssetFaceEntity_id" ASC
@@ -181,7 +181,7 @@ FROM
         "AssetFaceEntity__AssetFaceEntity_asset"."deletedAt" IS NULL
       )
     WHERE
-      (("AssetFaceEntity"."id" = $1))
+      ("AssetFaceEntity"."id" = $1)
   ) "distinctAlias"
 ORDER BY
   "AssetFaceEntity_id" ASC
@@ -325,13 +325,9 @@ FROM
     WHERE
       (
         (
-          (
-            (
-              ("AssetEntity__AssetEntity_faces"."personId" = $1)
-            )
-          )
-          AND ("AssetEntity"."isVisible" = $2)
-          AND ("AssetEntity"."isArchived" = $3)
+          "AssetEntity__AssetEntity_faces"."personId" = $1
+          AND "AssetEntity"."isVisible" = $2
+          AND "AssetEntity"."isArchived" = $3
         )
       )
       AND ("AssetEntity"."deletedAt" IS NULL)
@@ -399,10 +395,8 @@ FROM
 WHERE
   (
     (
-      (
-        ("AssetFaceEntity"."assetId" = $1)
-        AND ("AssetFaceEntity"."personId" = $2)
-      )
+      "AssetFaceEntity"."assetId" = $1
+      AND "AssetFaceEntity"."personId" = $2
     )
   )
 
@@ -420,6 +414,6 @@ SELECT
 FROM
   "asset_faces" "AssetFaceEntity"
 WHERE
-  (("AssetFaceEntity"."personId" = $1))
+  ("AssetFaceEntity"."personId" = $1)
 LIMIT
   1

@@ -34,14 +34,13 @@
 
   const editUser = async () => {
     try {
-      const { id, email, name, storageLabel, externalPath } = user;
+      const { id, email, name, storageLabel } = user;
       await updateUser({
         updateUserDto: {
           id,
           email,
           name,
           storageLabel: storageLabel || '',
-          externalPath: externalPath || '',
           quotaSizeInBytes: quotaSize ? convertToBytes(Number(quotaSize), 'GiB') : null,
         },
       });

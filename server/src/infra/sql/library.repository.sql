@@ -23,7 +23,6 @@ FROM
       "LibraryEntity__LibraryEntity_owner"."isAdmin" AS "LibraryEntity__LibraryEntity_owner_isAdmin",
       "LibraryEntity__LibraryEntity_owner"."email" AS "LibraryEntity__LibraryEntity_owner_email",
       "LibraryEntity__LibraryEntity_owner"."storageLabel" AS "LibraryEntity__LibraryEntity_owner_storageLabel",
-      "LibraryEntity__LibraryEntity_owner"."externalPath" AS "LibraryEntity__LibraryEntity_owner_externalPath",
       "LibraryEntity__LibraryEntity_owner"."oauthId" AS "LibraryEntity__LibraryEntity_owner_oauthId",
       "LibraryEntity__LibraryEntity_owner"."profileImagePath" AS "LibraryEntity__LibraryEntity_owner_profileImagePath",
       "LibraryEntity__LibraryEntity_owner"."shouldChangePassword" AS "LibraryEntity__LibraryEntity_owner_shouldChangePassword",
@@ -40,7 +39,7 @@ FROM
         "LibraryEntity__LibraryEntity_owner"."deletedAt" IS NULL
       )
     WHERE
-      ((("LibraryEntity"."id" = $1)))
+      (("LibraryEntity"."id" = $1))
       AND ("LibraryEntity"."deletedAt" IS NULL)
   ) "distinctAlias"
 ORDER BY
@@ -63,7 +62,7 @@ WHERE
     FROM
       "libraries" "LibraryEntity"
     WHERE
-      ((("LibraryEntity"."name" = $1)))
+      (("LibraryEntity"."name" = $1))
       AND ("LibraryEntity"."deletedAt" IS NULL)
   )
 LIMIT
@@ -75,7 +74,7 @@ SELECT
 FROM
   "libraries" "LibraryEntity"
 WHERE
-  ((("LibraryEntity"."ownerId" = $1)))
+  (("LibraryEntity"."ownerId" = $1))
   AND ("LibraryEntity"."deletedAt" IS NULL)
 
 -- LibraryRepository.getDefaultUploadLibrary
@@ -96,8 +95,8 @@ FROM
 WHERE
   (
     (
-      ("LibraryEntity"."ownerId" = $1)
-      AND ("LibraryEntity"."type" = $2)
+      "LibraryEntity"."ownerId" = $1
+      AND "LibraryEntity"."type" = $2
     )
   )
   AND ("LibraryEntity"."deletedAt" IS NULL)
@@ -114,8 +113,8 @@ FROM
 WHERE
   (
     (
-      ("LibraryEntity"."ownerId" = $1)
-      AND ("LibraryEntity"."type" = $2)
+      "LibraryEntity"."ownerId" = $1
+      AND "LibraryEntity"."type" = $2
     )
   )
   AND ("LibraryEntity"."deletedAt" IS NULL)
@@ -139,7 +138,6 @@ SELECT
   "LibraryEntity__LibraryEntity_owner"."isAdmin" AS "LibraryEntity__LibraryEntity_owner_isAdmin",
   "LibraryEntity__LibraryEntity_owner"."email" AS "LibraryEntity__LibraryEntity_owner_email",
   "LibraryEntity__LibraryEntity_owner"."storageLabel" AS "LibraryEntity__LibraryEntity_owner_storageLabel",
-  "LibraryEntity__LibraryEntity_owner"."externalPath" AS "LibraryEntity__LibraryEntity_owner_externalPath",
   "LibraryEntity__LibraryEntity_owner"."oauthId" AS "LibraryEntity__LibraryEntity_owner_oauthId",
   "LibraryEntity__LibraryEntity_owner"."profileImagePath" AS "LibraryEntity__LibraryEntity_owner_profileImagePath",
   "LibraryEntity__LibraryEntity_owner"."shouldChangePassword" AS "LibraryEntity__LibraryEntity_owner_shouldChangePassword",
@@ -158,8 +156,8 @@ FROM
 WHERE
   (
     (
-      ("LibraryEntity"."ownerId" = $1)
-      AND ("LibraryEntity"."isVisible" = $2)
+      "LibraryEntity"."ownerId" = $1
+      AND "LibraryEntity"."isVisible" = $2
     )
   )
   AND ("LibraryEntity"."deletedAt" IS NULL)
@@ -185,7 +183,6 @@ SELECT
   "LibraryEntity__LibraryEntity_owner"."isAdmin" AS "LibraryEntity__LibraryEntity_owner_isAdmin",
   "LibraryEntity__LibraryEntity_owner"."email" AS "LibraryEntity__LibraryEntity_owner_email",
   "LibraryEntity__LibraryEntity_owner"."storageLabel" AS "LibraryEntity__LibraryEntity_owner_storageLabel",
-  "LibraryEntity__LibraryEntity_owner"."externalPath" AS "LibraryEntity__LibraryEntity_owner_externalPath",
   "LibraryEntity__LibraryEntity_owner"."oauthId" AS "LibraryEntity__LibraryEntity_owner_oauthId",
   "LibraryEntity__LibraryEntity_owner"."profileImagePath" AS "LibraryEntity__LibraryEntity_owner_profileImagePath",
   "LibraryEntity__LibraryEntity_owner"."shouldChangePassword" AS "LibraryEntity__LibraryEntity_owner_shouldChangePassword",
@@ -225,7 +222,6 @@ SELECT
   "LibraryEntity__LibraryEntity_owner"."isAdmin" AS "LibraryEntity__LibraryEntity_owner_isAdmin",
   "LibraryEntity__LibraryEntity_owner"."email" AS "LibraryEntity__LibraryEntity_owner_email",
   "LibraryEntity__LibraryEntity_owner"."storageLabel" AS "LibraryEntity__LibraryEntity_owner_storageLabel",
-  "LibraryEntity__LibraryEntity_owner"."externalPath" AS "LibraryEntity__LibraryEntity_owner_externalPath",
   "LibraryEntity__LibraryEntity_owner"."oauthId" AS "LibraryEntity__LibraryEntity_owner_oauthId",
   "LibraryEntity__LibraryEntity_owner"."profileImagePath" AS "LibraryEntity__LibraryEntity_owner_profileImagePath",
   "LibraryEntity__LibraryEntity_owner"."shouldChangePassword" AS "LibraryEntity__LibraryEntity_owner_shouldChangePassword",
@@ -240,8 +236,8 @@ FROM
   LEFT JOIN "users" "LibraryEntity__LibraryEntity_owner" ON "LibraryEntity__LibraryEntity_owner"."id" = "LibraryEntity"."ownerId"
 WHERE
   (
-    ("LibraryEntity"."isVisible" = $1)
-    AND (NOT ("LibraryEntity"."deletedAt" IS NULL))
+    "LibraryEntity"."isVisible" = $1
+    AND NOT ("LibraryEntity"."deletedAt" IS NULL)
   )
 ORDER BY
   "LibraryEntity"."createdAt" ASC
