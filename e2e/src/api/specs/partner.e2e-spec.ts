@@ -1,9 +1,9 @@
-import { AssetResponseDto, LoginResponseDto, createPartner } from '@immich/sdk';
+import { LoginResponseDto, createPartner } from '@immich/sdk';
+import { createUserDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
 import { apiUtils, app, asBearerAuth, dbUtils } from 'src/utils';
 import request from 'supertest';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { createUserDto } from 'src/fixtures';
 
 describe('/partner', () => {
   let admin: LoginResponseDto;

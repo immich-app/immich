@@ -111,14 +111,22 @@ export const immichCli = async (args: string[]) => {
   return deferred;
 };
 
+export interface AdminSetupOptions {
+  onboarding?: boolean;
+}
+
 export const apiUtils = {
   setup: () => {
     setBaseUrl();
   },
-  adminSetup: async () => {
+  adminSetup: async (options?: AdminSetupOptions) => {
+    options = options || { onboarding: true };
+
     await signUpAdmin({ signUpDto: signupDto.admin });
     const response = await login({ loginCredentialDto: loginDto.admin });
-    await setAdminOnboarding({ headers: asBearerAuth(response.accessToken) });
+    if (options.onboarding) {
+      await setAdminOnboarding({ headers: asBearerAuth(response.accessToken) });
+    }
     return response;
   },
   userSetup: async (accessToken: string, dto: CreateUserDto) => {
