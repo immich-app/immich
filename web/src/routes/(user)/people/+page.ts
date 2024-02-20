@@ -5,7 +5,7 @@ import type { PageLoad } from './$types';
 export const load = (async () => {
   await authenticate();
 
-  const people = await getAllPeople({ withHidden: true });
+  const people = await getAllPeople({ withHidden: true, withPartners: true });
   return {
     people,
     meta: {
