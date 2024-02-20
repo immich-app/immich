@@ -14,6 +14,8 @@ function createSlideshowStore() {
   const slideshowShuffle = persisted<boolean>('slideshow-shuffle', true);
   const slideshowState = writable<SlideshowState>(SlideshowState.None);
 
+  const slideshowDelay = persisted<number>('slideshow-delay', 5, {});
+
   return {
     restartProgress: {
       subscribe: restartState.subscribe,
@@ -39,6 +41,7 @@ function createSlideshowStore() {
     },
     slideshowShuffle,
     slideshowState,
+    slideshowDelay,
   };
 }
 

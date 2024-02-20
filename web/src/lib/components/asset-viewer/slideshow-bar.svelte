@@ -7,17 +7,21 @@
     mdiChevronLeft,
     mdiChevronRight,
     mdiClose,
+    mdiCog,
     mdiPause,
     mdiPlay,
     mdiShuffle,
     mdiShuffleDisabled,
   } from '@mdi/js';
+  import { fly } from 'svelte/transition';
+  import { quintOut } from 'svelte/easing';
 
-  const { slideshowShuffle } = slideshowStore;
+  const { slideshowShuffle, slideshowDelay } = slideshowStore;
   const { restartProgress, stopProgress } = slideshowStore;
 
   let progressBarStatus: ProgressBarStatus;
   let progressBar: ProgressBar;
+  let showSettings = false;
 
   let unsubscribeRestart: () => void;
   let unsubscribeStop: () => void;
@@ -67,12 +71,19 @@
   />
   <CircleIconButton icon={mdiChevronLeft} on:click={() => dispatch('prev')} title="Previous" />
   <CircleIconButton icon={mdiChevronRight} on:click={() => dispatch('next')} title="Next" />
+
+  <CircleIconButton icon={mdiCog} on:click={() => (showSettings = !showSettings)} title="Next" />
+  {#if showSettings}
+    <div class="flex items-center gap-2">
+      <div transition:fly={{ x: 100, duration: 100, easing: quintOut }} class="text-white w-full">Slidehow Delay :</div>
+      <input
+        class="rounded-xl bg-slate-200 px-3 py-3 text-sm focus:border-immich-primary disabled:cursor-not-allowed h-2"
+        type="number"
+        min="1"
+        bind:value={$slideshowDelay}
+      />
+    </div>
+  {/if}
 </div>
 
-<ProgressBar
-  autoplay
-  bind:this={progressBar}
-  bind:status={progressBarStatus}
-  on:done={() => dispatch('next')}
-  duration={5000}
-/>
+<ProgressBar autoplay bind:this={progressBar} bind:status={progressBarStatus} on:done={() => dispatch('next')} />
