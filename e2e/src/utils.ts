@@ -1,6 +1,10 @@
 import {
+  AssetResponseDto,
+  CreateAssetDto,
+  CreateUserDto,
   LoginResponseDto,
   createApiKey,
+  createUser,
   defaults,
   login,
   setAdminOnboarding,
@@ -8,10 +12,12 @@ import {
 } from '@immich/sdk';
 import { BrowserContext } from '@playwright/test';
 import { spawn } from 'child_process';
+import { randomBytes } from 'node:crypto';
 import { access } from 'node:fs/promises';
 import path from 'node:path';
 import pg from 'pg';
 import { loginDto, signupDto } from 'src/fixtures';
+import request from 'supertest';
 
 export const app = 'http://127.0.0.1:2283/api';
 
@@ -105,21 +111,59 @@ export const immichCli = async (args: string[]) => {
   return deferred;
 };
 
+export interface AdminSetupOptions {
+  onboarding?: boolean;
+}
+
 export const apiUtils = {
   setup: () => {
     setBaseUrl();
   },
-  adminSetup: async () => {
+  adminSetup: async (options?: AdminSetupOptions) => {
+    options = options || { onboarding: true };
+
     await signUpAdmin({ signUpDto: signupDto.admin });
     const response = await login({ loginCredentialDto: loginDto.admin });
-    await setAdminOnboarding({ headers: asBearerAuth(response.accessToken) });
+    if (options.onboarding) {
+      await setAdminOnboarding({ headers: asBearerAuth(response.accessToken) });
+    }
     return response;
+  },
+  userSetup: async (accessToken: string, dto: CreateUserDto) => {
+    await createUser(
+      { createUserDto: dto },
+      { headers: asBearerAuth(accessToken) }
+    );
+    return login({
+      loginCredentialDto: { email: dto.email, password: dto.password },
+    });
   },
   createApiKey: (accessToken: string) => {
     return createApiKey(
       { apiKeyCreateDto: { name: 'e2e' } },
       { headers: asBearerAuth(accessToken) }
     );
+  },
+  createAsset: async (
+    accessToken: string,
+    dto?: Omit<CreateAssetDto, 'assetData'>
+  ) => {
+    dto = dto || {
+      deviceAssetId: 'test-1',
+      deviceId: 'test',
+      fileCreatedAt: new Date().toISOString(),
+      fileModifiedAt: new Date().toISOString(),
+    };
+    const { body } = await request(app)
+      .post(`/asset/upload`)
+      .field('deviceAssetId', dto.deviceAssetId)
+      .field('deviceId', dto.deviceId)
+      .field('fileCreatedAt', dto.fileCreatedAt)
+      .field('fileModifiedAt', dto.fileModifiedAt)
+      .attach('assetData', randomBytes(32), 'example.jpg')
+      .set('Authorization', `Bearer ${accessToken}`);
+
+    return body as AssetResponseDto;
   },
 };
 
