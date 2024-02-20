@@ -141,6 +141,7 @@ Class | Method | HTTP request | Description
 *LibraryApi* | [**removeOfflineFiles**](doc//LibraryApi.md#removeofflinefiles) | **POST** /library/{id}/removeOffline | 
 *LibraryApi* | [**scanLibrary**](doc//LibraryApi.md#scanlibrary) | **POST** /library/{id}/scan | 
 *LibraryApi* | [**updateLibrary**](doc//LibraryApi.md#updatelibrary) | **PUT** /library/{id} | 
+*LibraryApi* | [**validate**](doc//LibraryApi.md#validate) | **POST** /library/{id}/validate | 
 *OAuthApi* | [**finishOAuth**](doc//OAuthApi.md#finishoauth) | **POST** /oauth/callback | 
 *OAuthApi* | [**linkOAuthAccount**](doc//OAuthApi.md#linkoauthaccount) | **POST** /oauth/link | 
 *OAuthApi* | [**redirectOAuthToMobile**](doc//OAuthApi.md#redirectoauthtomobile) | **GET** /oauth/mobile-redirect | 
@@ -372,6 +373,9 @@ Class | Method | HTTP request | Description
  - [UserDto](doc//UserDto.md)
  - [UserResponseDto](doc//UserResponseDto.md)
  - [ValidateAccessTokenResponseDto](doc//ValidateAccessTokenResponseDto.md)
+ - [ValidateLibraryDto](doc//ValidateLibraryDto.md)
+ - [ValidateLibraryImportPathResponseDto](doc//ValidateLibraryImportPathResponseDto.md)
+ - [ValidateLibraryResponseDto](doc//ValidateLibraryResponseDto.md)
  - [VideoCodec](doc//VideoCodec.md)
 
 

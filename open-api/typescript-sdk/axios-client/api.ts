@@ -5319,6 +5319,63 @@ export interface ValidateAccessTokenResponseDto {
 /**
  * 
  * @export
+ * @interface ValidateLibraryDto
+ */
+export interface ValidateLibraryDto {
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof ValidateLibraryDto
+     */
+    'exclusionPatterns'?: Array<string>;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof ValidateLibraryDto
+     */
+    'importPaths'?: Array<string>;
+}
+/**
+ * 
+ * @export
+ * @interface ValidateLibraryImportPathResponseDto
+ */
+export interface ValidateLibraryImportPathResponseDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof ValidateLibraryImportPathResponseDto
+     */
+    'importPath': string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof ValidateLibraryImportPathResponseDto
+     */
+    'isValid'?: boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof ValidateLibraryImportPathResponseDto
+     */
+    'message'?: string;
+}
+/**
+ * 
+ * @export
+ * @interface ValidateLibraryResponseDto
+ */
+export interface ValidateLibraryResponseDto {
+    /**
+     * 
+     * @type {Array<ValidateLibraryImportPathResponseDto>}
+     * @memberof ValidateLibraryResponseDto
+     */
+    'importPaths'?: Array<ValidateLibraryImportPathResponseDto>;
+}
+/**
+ * 
+ * @export
  * @enum {string}
  */
 
@@ -12818,6 +12875,54 @@ export const LibraryApiAxiosParamCreator = function (configuration?: Configurati
                 options: localVarRequestOptions,
             };
         },
+        /**
+         * 
+         * @param {string} id 
+         * @param {ValidateLibraryDto} validateLibraryDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        validate: async (id: string, validateLibraryDto: ValidateLibraryDto, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('validate', 'id', id)
+            // verify required parameter 'validateLibraryDto' is not null or undefined
+            assertParamExists('validate', 'validateLibraryDto', validateLibraryDto)
+            const localVarPath = `/library/{id}/validate`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(validateLibraryDto, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
     }
 };
 
@@ -12925,6 +13030,19 @@ export const LibraryApiFp = function(configuration?: Configuration) {
             const operationBasePath = operationServerMap['LibraryApi.updateLibrary']?.[index]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, operationBasePath || basePath);
         },
+        /**
+         * 
+         * @param {string} id 
+         * @param {ValidateLibraryDto} validateLibraryDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async validate(id: string, validateLibraryDto: ValidateLibraryDto, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ValidateLibraryResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.validate(id, validateLibraryDto, options);
+            const index = configuration?.serverIndex ?? 0;
+            const operationBasePath = operationServerMap['LibraryApi.validate']?.[index]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, operationBasePath || basePath);
+        },
     }
 };
 
@@ -13005,6 +13123,15 @@ export const LibraryApiFactory = function (configuration?: Configuration, basePa
          */
         updateLibrary(requestParameters: LibraryApiUpdateLibraryRequest, options?: RawAxiosRequestConfig): AxiosPromise<LibraryResponseDto> {
             return localVarFp.updateLibrary(requestParameters.id, requestParameters.updateLibraryDto, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {LibraryApiValidateRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        validate(requestParameters: LibraryApiValidateRequest, options?: RawAxiosRequestConfig): AxiosPromise<ValidateLibraryResponseDto> {
+            return localVarFp.validate(requestParameters.id, requestParameters.validateLibraryDto, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -13122,6 +13249,27 @@ export interface LibraryApiUpdateLibraryRequest {
 }
 
 /**
+ * Request parameters for validate operation in LibraryApi.
+ * @export
+ * @interface LibraryApiValidateRequest
+ */
+export interface LibraryApiValidateRequest {
+    /**
+     * 
+     * @type {string}
+     * @memberof LibraryApiValidate
+     */
+    readonly id: string
+
+    /**
+     * 
+     * @type {ValidateLibraryDto}
+     * @memberof LibraryApiValidate
+     */
+    readonly validateLibraryDto: ValidateLibraryDto
+}
+
+/**
  * LibraryApi - object-oriented interface
  * @export
  * @class LibraryApi
@@ -13213,6 +13361,17 @@ export class LibraryApi extends BaseAPI {
      */
     public updateLibrary(requestParameters: LibraryApiUpdateLibraryRequest, options?: RawAxiosRequestConfig) {
         return LibraryApiFp(this.configuration).updateLibrary(requestParameters.id, requestParameters.updateLibraryDto, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {LibraryApiValidateRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof LibraryApi
+     */
+    public validate(requestParameters: LibraryApiValidateRequest, options?: RawAxiosRequestConfig) {
+        return LibraryApiFp(this.configuration).validate(requestParameters.id, requestParameters.validateLibraryDto, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

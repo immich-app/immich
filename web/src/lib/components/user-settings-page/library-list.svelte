@@ -126,11 +126,10 @@
     try {
       const libraryId = libraries[updateLibraryIndex].id;
       await updateLibrary({ id: libraryId, updateLibraryDto: { ...event } });
-    } catch (error) {
-      handleError(error, 'Unable to update library');
-    } finally {
       closeAll();
       await readLibraryList();
+    } catch (error) {
+      handleError(error, 'Unable to update library');
     }
   };
 
