@@ -66,6 +66,11 @@ void main() {
       // TODO
     });
 
+    // bool isNotInAlbum
+    test('to test the property `isNotInAlbum`', () async {
+      // TODO
+    });
+
     // bool isOffline
     test('to test the property `isOffline`', () async {
       // TODO

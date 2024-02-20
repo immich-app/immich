@@ -23,6 +23,7 @@ class SmartSearchDto {
     this.isExternal,
     this.isFavorite,
     this.isMotion,
+    this.isNotInAlbum,
     this.isOffline,
     this.isReadOnly,
     this.isVisible,
@@ -125,6 +126,14 @@ class SmartSearchDto {
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
   bool? isMotion;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? isNotInAlbum;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -300,6 +309,7 @@ class SmartSearchDto {
     other.isExternal == isExternal &&
     other.isFavorite == isFavorite &&
     other.isMotion == isMotion &&
+    other.isNotInAlbum == isNotInAlbum &&
     other.isOffline == isOffline &&
     other.isReadOnly == isReadOnly &&
     other.isVisible == isVisible &&
@@ -335,6 +345,7 @@ class SmartSearchDto {
     (isExternal == null ? 0 : isExternal!.hashCode) +
     (isFavorite == null ? 0 : isFavorite!.hashCode) +
     (isMotion == null ? 0 : isMotion!.hashCode) +
+    (isNotInAlbum == null ? 0 : isNotInAlbum!.hashCode) +
     (isOffline == null ? 0 : isOffline!.hashCode) +
     (isReadOnly == null ? 0 : isReadOnly!.hashCode) +
     (isVisible == null ? 0 : isVisible!.hashCode) +
@@ -358,7 +369,7 @@ class SmartSearchDto {
     (withExif == null ? 0 : withExif!.hashCode);
 
   @override
-  String toString() => 'SmartSearchDto[city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, deviceId=$deviceId, isArchived=$isArchived, isEncoded=$isEncoded, isExternal=$isExternal, isFavorite=$isFavorite, isMotion=$isMotion, isOffline=$isOffline, isReadOnly=$isReadOnly, isVisible=$isVisible, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, page=$page, query=$query, size=$size, state=$state, takenAfter=$takenAfter, takenBefore=$takenBefore, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, withArchived=$withArchived, withDeleted=$withDeleted, withExif=$withExif]';
+  String toString() => 'SmartSearchDto[city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, deviceId=$deviceId, isArchived=$isArchived, isEncoded=$isEncoded, isExternal=$isExternal, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, isReadOnly=$isReadOnly, isVisible=$isVisible, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, page=$page, query=$query, size=$size, state=$state, takenAfter=$takenAfter, takenBefore=$takenBefore, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, withArchived=$withArchived, withDeleted=$withDeleted, withExif=$withExif]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -411,6 +422,11 @@ class SmartSearchDto {
       json[r'isMotion'] = this.isMotion;
     } else {
     //  json[r'isMotion'] = null;
+    }
+    if (this.isNotInAlbum != null) {
+      json[r'isNotInAlbum'] = this.isNotInAlbum;
+    } else {
+    //  json[r'isNotInAlbum'] = null;
     }
     if (this.isOffline != null) {
       json[r'isOffline'] = this.isOffline;
@@ -534,6 +550,7 @@ class SmartSearchDto {
         isExternal: mapValueOfType<bool>(json, r'isExternal'),
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
         isMotion: mapValueOfType<bool>(json, r'isMotion'),
+        isNotInAlbum: mapValueOfType<bool>(json, r'isNotInAlbum'),
         isOffline: mapValueOfType<bool>(json, r'isOffline'),
         isReadOnly: mapValueOfType<bool>(json, r'isReadOnly'),
         isVisible: mapValueOfType<bool>(json, r'isVisible'),

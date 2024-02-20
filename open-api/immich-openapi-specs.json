@@ -9435,6 +9435,9 @@
           "isMotion": {
             "type": "boolean"
           },
+          "isNotInAlbum": {
+            "type": "boolean"
+          },
           "isOffline": {
             "type": "boolean"
           },

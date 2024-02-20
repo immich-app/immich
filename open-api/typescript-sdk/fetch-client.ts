@@ -656,6 +656,7 @@ export type SmartSearchDto = {
     isExternal?: boolean;
     isFavorite?: boolean;
     isMotion?: boolean;
+    isNotInAlbum?: boolean;
     isOffline?: boolean;
     isReadOnly?: boolean;
     isVisible?: boolean;
