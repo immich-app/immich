@@ -446,7 +446,7 @@
       <DeleteAssets onAssetDelete={(assetId) => $assetStore.removeAsset(assetId)} />
       <AssetSelectContextMenu icon={mdiDotsVertical} title="Add">
         <DownloadAction menuItem filename="{data.person.name || 'immich'}.zip" />
-        <FavoriteAction menuItem removeFavorite={isAllFavorite} />
+        <FavoriteAction menuItem removeFavorite={isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
         <ArchiveAction menuItem unarchive={isAllArchive} onArchive={(ids) => $assetStore.removeAssets(ids)} />
         <MenuOption text="Fix incorrect match" on:click={handleReassignAssets} />
         <ChangeDate menuItem />

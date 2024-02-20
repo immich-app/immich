@@ -416,6 +416,10 @@ export class AssetStore {
     return nextBucket.assets[0]?.id || null;
   }
 
+  triggerUpdate() {
+    this.emit(false);
+  }
+
   private emit(recalculate: boolean) {
     if (recalculate) {
       this.assets = this.buckets.flatMap(({ assets }) => assets);

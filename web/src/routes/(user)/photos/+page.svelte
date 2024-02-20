@@ -65,7 +65,7 @@
       onAssetDelete={(assetId) => assetStore.removeAsset(assetId)}
     />
     <AssetSelectContextMenu icon={mdiDotsVertical} title="Menu">
-      <FavoriteAction menuItem removeFavorite={isAllFavorite} />
+      <FavoriteAction menuItem removeFavorite={isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
       <DownloadAction menuItem />
       <ArchiveAction menuItem onArchive={(ids) => assetStore.removeAssets(ids)} />
       {#if $selectedAssets.size > 1}
