@@ -102,7 +102,6 @@
 
   const dispatch = createEventDispatcher<{
     close: void;
-    click: AlbumResponseDto;
     closeViewer: void;
   }>();
 
@@ -148,7 +147,7 @@
       await updateAsset({ id: asset.id, updateAssetDto: { description } });
       notificationController.show({
         type: NotificationType.Info,
-        message: 'Asset description updated',
+        message: 'Asset description has been updated',
       });
     } catch (error) {
       handleError(error, 'Cannot update the description');
@@ -663,11 +662,7 @@
     {#each albums as album}
       <a data-sveltekit-preload-data="hover" href={`/albums/${album.id}`}>
         <!-- svelte-ignore a11y-no-static-element-interactions -->
-        <div
-          class="flex gap-4 py-2 hover:cursor-pointer"
-          on:click={() => dispatch('click', album)}
-          on:keydown={() => dispatch('click', album)}
-        >
+        <div class="flex gap-4 py-2 hover:cursor-pointer">
           <div>
             <img
               alt={album.albumName}
