@@ -66,7 +66,6 @@ export type UserResponseDto = {
     createdAt: string;
     deletedAt: string | null;
     email: string;
-    externalPath: string | null;
     id: string;
     isAdmin: boolean;
     memoriesEnabled?: boolean;
@@ -494,7 +493,6 @@ export type PartnerResponseDto = {
     createdAt: string;
     deletedAt: string | null;
     email: string;
-    externalPath: string | null;
     id: string;
     inTimeline?: boolean;
     isAdmin: boolean;
@@ -931,7 +929,6 @@ export type UpdateTagDto = {
 };
 export type CreateUserDto = {
     email: string;
-    externalPath?: string | null;
     memoriesEnabled?: boolean;
     name: string;
     password: string;
@@ -941,7 +938,6 @@ export type CreateUserDto = {
 export type UpdateUserDto = {
     avatarColor?: UserAvatarColor;
     email?: string;
-    externalPath?: string;
     id: string;
     isAdmin?: boolean;
     memoriesEnabled?: boolean;

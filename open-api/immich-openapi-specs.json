@@ -7551,10 +7551,6 @@
           "email": {
             "type": "string"
           },
-          "externalPath": {
-            "nullable": true,
-            "type": "string"
-          },
           "memoriesEnabled": {
             "type": "boolean"
           },
@@ -8451,10 +8447,6 @@
           "email": {
             "type": "string"
           },
-          "externalPath": {
-            "nullable": true,
-            "type": "string"
-          },
           "id": {
             "type": "string"
           },
@@ -8503,7 +8495,6 @@
           "createdAt",
           "deletedAt",
           "email",
-          "externalPath",
           "id",
           "isAdmin",
           "name",
@@ -10203,9 +10194,6 @@
           "email": {
             "type": "string"
           },
-          "externalPath": {
-            "type": "string"
-          },
           "id": {
             "format": "uuid",
             "type": "string"
@@ -10332,10 +10320,6 @@
           "email": {
             "type": "string"
           },
-          "externalPath": {
-            "nullable": true,
-            "type": "string"
-          },
           "id": {
             "type": "string"
           },
@@ -10381,7 +10365,6 @@
           "createdAt",
           "deletedAt",
           "email",
-          "externalPath",
           "id",
           "isAdmin",
           "name",

@@ -1462,12 +1462,6 @@ export interface CreateUserDto {
     'email': string;
     /**
      * 
-     * @type {string}
-     * @memberof CreateUserDto
-     */
-    'externalPath'?: string | null;
-    /**
-     * 
      * @type {boolean}
      * @memberof CreateUserDto
      */
@@ -2680,12 +2674,6 @@ export interface PartnerResponseDto {
      * @memberof PartnerResponseDto
      */
     'email': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof PartnerResponseDto
-     */
-    'externalPath': string | null;
     /**
      * 
      * @type {string}
@@ -5042,12 +5030,6 @@ export interface UpdateUserDto {
      * @type {string}
      * @memberof UpdateUserDto
      */
-    'externalPath'?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UpdateUserDto
-     */
     'id': string;
     /**
      * 
@@ -5228,12 +5210,6 @@ export interface UserResponseDto {
      * @memberof UserResponseDto
      */
     'email': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserResponseDto
-     */
-    'externalPath': string | null;
     /**
      * 
      * @type {string}

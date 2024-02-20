@@ -14,7 +14,6 @@ class CreateUserDto {
   /// Returns a new [CreateUserDto] instance.
   CreateUserDto({
     required this.email,
-    this.externalPath,
     this.memoriesEnabled,
     required this.name,
     required this.password,
@@ -23,8 +22,6 @@ class CreateUserDto {
   });
 
   String email;
-
-  String? externalPath;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -45,7 +42,6 @@ class CreateUserDto {
   @override
   bool operator ==(Object other) => identical(this, other) || other is CreateUserDto &&
     other.email == email &&
-    other.externalPath == externalPath &&
     other.memoriesEnabled == memoriesEnabled &&
     other.name == name &&
     other.password == password &&
@@ -56,7 +52,6 @@ class CreateUserDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (email.hashCode) +
-    (externalPath == null ? 0 : externalPath!.hashCode) +
     (memoriesEnabled == null ? 0 : memoriesEnabled!.hashCode) +
     (name.hashCode) +
     (password.hashCode) +
@@ -64,16 +59,11 @@ class CreateUserDto {
     (storageLabel == null ? 0 : storageLabel!.hashCode);
 
   @override
-  String toString() => 'CreateUserDto[email=$email, externalPath=$externalPath, memoriesEnabled=$memoriesEnabled, name=$name, password=$password, quotaSizeInBytes=$quotaSizeInBytes, storageLabel=$storageLabel]';
+  String toString() => 'CreateUserDto[email=$email, memoriesEnabled=$memoriesEnabled, name=$name, password=$password, quotaSizeInBytes=$quotaSizeInBytes, storageLabel=$storageLabel]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'email'] = this.email;
-    if (this.externalPath != null) {
-      json[r'externalPath'] = this.externalPath;
-    } else {
-    //  json[r'externalPath'] = null;
-    }
     if (this.memoriesEnabled != null) {
       json[r'memoriesEnabled'] = this.memoriesEnabled;
     } else {
@@ -103,7 +93,6 @@ class CreateUserDto {
 
       return CreateUserDto(
         email: mapValueOfType<String>(json, r'email')!,
-        externalPath: mapValueOfType<String>(json, r'externalPath'),
         memoriesEnabled: mapValueOfType<bool>(json, r'memoriesEnabled'),
         name: mapValueOfType<String>(json, r'name')!,
         password: mapValueOfType<String>(json, r'password')!,
