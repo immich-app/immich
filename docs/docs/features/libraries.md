@@ -38,7 +38,7 @@ Note: Either a manual or scheduled library scan must have been performed to iden
 
 In all above scan methods, Immich will check if any files are missing. This can happen if files are deleted, or if they are on a storage location that is currently unavailable, like a network drive that is not mounted, or a USB drive that has been unplugged. In order to prevent accidental deletion of assets, Immich will not immediately delete an asset from the library if the file is missing. Instead, the asset will be internally marked as offline and will still be visible in the main timeline. If the file is moved back to its original location and the library is scanned again, the asset will be restored.
 
-Finally, files can be deleted from Immich via the `Remove Offline Files` job. This job can be found by the three dots menu for the associated external storage that was configured under user account settings > libraries (the same location described at [create external libraries](#create-external-libraries)). When this job is run, any assets marked as offline will then be removed from Immich. Run this job whenever files have been deleted from the file system and you want to remove them from Immich.
+Finally, files can be deleted from Immich via the `Remove Offline Files` job. This job can be found by the three dots menu for the associated external storage that was configured under Administration > Libraries (the same location described at [create external libraries](#create-external-libraries)). When this job is run, any assets marked as offline will then be removed from Immich. Run this job whenever files have been deleted from the file system and you want to remove them from Immich.
 
 ### Import Paths
 
@@ -126,8 +126,9 @@ _Remember to bring the container `docker compose down/up` to register the change
 
 ### Create External Libraries
 
-- Click on your user name in the top right corner -> Account Settings
-- Click on Libraries
+These actions must be performed by the Immich administrator.
+
+- Click on Administration -> Libraries
 - Click on Create External Library
 - Click the drop-down menu on the newly created library
 - Click on Rename Library and rename it to "Christmas Trip"
@@ -139,7 +140,7 @@ NOTE: We have to use the `/mnt/media/christmas-trip` path and not the `/mnt/nas/
 
 Next, we'll add an exclusion pattern to filter out raw files.
 
-- Click the drop-down menu on the newly christmas library
+- Click the drop-down menu on the newly created Christmas library
 - Click on Manage
 - Click on Scan Settings
 - Click on Add Exclusion Pattern
@@ -165,4 +166,4 @@ If you get an error here, please rename the other external library to something 
 - Click Save
 - Click on Scan Library Files
 
-Within seconds, the assets from the old-pics and videos folders should show up in the main timeline.
+Within seconds, the assets from the old-pics and videos folders should show up in the main timeline. If progress is slow, check the Jobs page on the admin panel.
