@@ -22,9 +22,14 @@
   let albumId: string | undefined;
 
   const isSharedLinkRoute = (route: string | null) => route?.startsWith('/(user)/share/[key]');
-  const isAuthRoute = (route?: string) => route?.startsWith('/auth');
 
   $: changeTheme($colorTheme);
+
+  $: if ($user) {
+    openWebsocketConnection();
+  } else {
+    closeWebsocketConnection();
+  }
 
   const changeTheme = (theme: ThemeSetting) => {
     if (theme.system) {
@@ -58,18 +63,7 @@
     setKey($page.params.key);
   }
 
-  beforeNavigate(({ from, to }) => {
-    const fromRoute = from?.route?.id || '';
-    const toRoute = to?.route?.id || '';
-
-    if (isAuthRoute(fromRoute) && !isAuthRoute(toRoute)) {
-      openWebsocketConnection();
-    }
-
-    if (!isAuthRoute(fromRoute) && isAuthRoute(toRoute)) {
-      closeWebsocketConnection();
-    }
-
+  beforeNavigate(() => {
     showNavigationLoadingBar = true;
   });
 
@@ -78,10 +72,6 @@
   });
 
   onMount(async () => {
-    if ($page.route.id?.startsWith('/auth') === false) {
-      openWebsocketConnection();
-    }
-
     try {
       await loadConfig();
     } catch (error) {

@@ -29,13 +29,13 @@
   }>();
 
   const logOut = async () => {
-    resetSavedUser();
     const { redirectUri } = await logout();
     if (redirectUri.startsWith('/')) {
-      goto(redirectUri);
+      await goto(redirectUri);
     } else {
       window.location.href = redirectUri;
     }
+    resetSavedUser();
   };
 </script>
 
