@@ -62,5 +62,10 @@ void main() {
       // TODO
     });
 
+    //Future<ValidateLibraryResponseDto> validate(String id, ValidateLibraryDto validateLibraryDto) async
+    test('test validate', () async {
+      // TODO
+    });
+
   });
 }
