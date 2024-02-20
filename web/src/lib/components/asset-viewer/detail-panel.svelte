@@ -661,7 +661,6 @@
     <p class="pb-4 text-sm">APPEARS IN</p>
     {#each albums as album}
       <a data-sveltekit-preload-data="hover" href={`/albums/${album.id}`}>
-        <!-- svelte-ignore a11y-no-static-element-interactions -->
         <div class="flex gap-4 py-2 hover:cursor-pointer">
           <div>
             <img
