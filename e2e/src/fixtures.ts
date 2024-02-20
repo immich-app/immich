@@ -17,3 +17,11 @@ export const loginDto = {
 export const signupDto = {
   admin: adminSignupDto,
 };
+
+export const createUserDto = {
+  user1: {
+    email: 'user1@immich.cloud',
+    name: 'User 1',
+    password: 'password',
+  },
+};
