@@ -8,6 +8,7 @@ import {
   testAssetDir,
 } from 'src/utils';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { mkdir, readdir, rm, symlink } from 'fs/promises';
 
 describe(`immich upload`, () => {
   let key: string;
@@ -29,9 +30,11 @@ describe(`immich upload`, () => {
         '--recursive',
       ]);
       expect(stderr).toBe('');
-      expect(stdout.split('\n')).toEqual([
-        expect.stringContaining('Successfully uploaded 9 assets'),
-      ]);
+      expect(stdout.split('\n')).toEqual(
+        expect.arrayContaining([
+          expect.stringContaining('Successfully uploaded 9 assets'),
+        ])
+      );
       expect(exitCode).toBe(0);
 
       const assets = await getAllAssets({}, { headers: asKeyAuth(key) });
@@ -47,9 +50,13 @@ describe(`immich upload`, () => {
         '--recursive',
         '--album',
       ]);
-      expect(stdout.split('\n')).toEqual([
-        expect.stringContaining('Successfully uploaded 9 assets'),
-      ]);
+      expect(stdout.split('\n')).toEqual(
+        expect.arrayContaining([
+          expect.stringContaining('Successfully uploaded 9 assets'),
+          expect.stringContaining('Successfully created 1 new album'),
+          expect.stringContaining('Successfully updated 9 assets'),
+        ])
+      );
       expect(stderr).toBe('');
       expect(exitCode).toBe(0);
 
@@ -67,9 +74,11 @@ describe(`immich upload`, () => {
         `${testAssetDir}/albums/nature/`,
         '--recursive',
       ]);
-      expect(response1.stdout.split('\n')).toEqual([
-        expect.stringContaining('Successfully uploaded 9 assets'),
-      ]);
+      expect(response1.stdout.split('\n')).toEqual(
+        expect.arrayContaining([
+          expect.stringContaining('Successfully uploaded 9 assets'),
+        ])
+      );
       expect(response1.stderr).toBe('');
       expect(response1.exitCode).toBe(0);
 
@@ -85,11 +94,14 @@ describe(`immich upload`, () => {
         '--recursive',
         '--album',
       ]);
-      expect(response2.stdout.split('\n')).toEqual([
-        expect.stringContaining(
-          'All assets were already uploaded, nothing to do.'
-        ),
-      ]);
+      expect(response2.stdout.split('\n')).toEqual(
+        expect.arrayContaining([
+          expect.stringContaining(
+            'All assets were already uploaded, nothing to do.'
+          ),
+          expect.stringContaining('Successfully updated 9 assets'),
+        ])
+      );
       expect(response2.stderr).toBe('');
       expect(response2.exitCode).toBe(0);
 
@@ -110,9 +122,13 @@ describe(`immich upload`, () => {
         '--recursive',
         '--album-name=e2e',
       ]);
-      expect(stdout.split('\n')).toEqual([
-        expect.stringContaining('Successfully uploaded 9 assets'),
-      ]);
+      expect(stdout.split('\n')).toEqual(
+        expect.arrayContaining([
+          expect.stringContaining('Successfully uploaded 9 assets'),
+          expect.stringContaining('Successfully created 1 new album'),
+          expect.stringContaining('Successfully updated 9 assets'),
+        ])
+      );
       expect(stderr).toBe('');
       expect(exitCode).toBe(0);
 
@@ -122,6 +138,41 @@ describe(`immich upload`, () => {
       const albums = await getAllAlbums({}, { headers: asKeyAuth(key) });
       expect(albums.length).toBe(1);
       expect(albums[0].albumName).toBe('e2e');
+    });
+  });
+
+  describe('immich upload --delete', () => {
+    it('should delete local files if specified', async () => {
+      await mkdir(`/tmp/albums/nature`, { recursive: true });
+      const filesToLink = await readdir(`${testAssetDir}/albums/nature`);
+      for (const file of filesToLink) {
+        await symlink(
+          `${testAssetDir}/albums/nature/${file}`,
+          `/tmp/albums/nature/${file}`
+        );
+      }
+
+      const { stderr, stdout, exitCode } = await immichCli([
+        'upload',
+        `/tmp/albums/nature`,
+        '--delete',
+      ]);
+
+      const files = await readdir(`/tmp/albums/nature`);
+      await rm(`/tmp/albums/nature`, { recursive: true });
+      expect(files).toEqual([]);
+
+      expect(stdout.split('\n')).toEqual(
+        expect.arrayContaining([
+          expect.stringContaining('Successfully uploaded 9 assets'),
+          expect.stringContaining('Deleting assets that have been uploaded'),
+        ])
+      );
+      expect(stderr).toBe('');
+      expect(exitCode).toBe(0);
+
+      const assets = await getAllAssets({}, { headers: asKeyAuth(key) });
+      expect(assets.length).toBe(9);
     });
   });
 });

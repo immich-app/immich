@@ -43,6 +43,11 @@ program
       .env('IMMICH_DRY_RUN')
       .default(false),
   )
+  .addOption(
+    new Option('-c, --concurrency', 'Number of assets to upload at the same time')
+      .env('IMMICH_UPLOAD_CONCURRENCY')
+      .default(4),
+  )
   .addOption(new Option('--delete', 'Delete local assets after upload').env('IMMICH_DELETE_ASSETS'))
   .argument('[paths...]', 'One or more paths to assets to be uploaded')
   .action(async (paths, options) => {

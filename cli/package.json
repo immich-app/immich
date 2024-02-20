@@ -17,6 +17,7 @@
     "@testcontainers/postgresql": "^10.7.1",
     "@types/byte-size": "^8.1.0",
     "@types/cli-progress": "^3.11.0",
+    "@types/lodash-es": "^4.17.12",
     "@types/mock-fs": "^4.13.1",
     "@types/node": "^20.3.1",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
@@ -56,5 +57,8 @@
   },
   "engines": {
     "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "lodash-es": "^4.17.21"
   }
 }
