@@ -31,9 +31,9 @@ describe(`immich upload`, () => {
       ]);
       expect(stderr).toBe('');
       expect(stdout.split('\n')).toEqual(
-        expect.arrayContaining(
-          [expect.stringContaining('Successfully uploaded 9 assets')]
-        )
+        expect.arrayContaining([
+          expect.stringContaining('Successfully uploaded 9 assets'),
+        ])
       );
       expect(exitCode).toBe(0);
 
@@ -51,9 +51,11 @@ describe(`immich upload`, () => {
         '--album',
       ]);
       expect(stdout.split('\n')).toEqual(
-        expect.arrayContaining(
-          [expect.stringContaining('Successfully uploaded 9 assets')]
-        )
+        expect.arrayContaining([
+          expect.stringContaining('Successfully uploaded 9 assets'),
+          expect.stringContaining('Successfully created 1 new album'),
+          expect.stringContaining('Successfully updated 9 assets'),
+        ])
       );
       expect(stderr).toBe('');
       expect(exitCode).toBe(0);
@@ -73,9 +75,9 @@ describe(`immich upload`, () => {
         '--recursive',
       ]);
       expect(response1.stdout.split('\n')).toEqual(
-        expect.arrayContaining(
-          [expect.stringContaining('Successfully uploaded 9 assets')]
-        )
+        expect.arrayContaining([
+          expect.stringContaining('Successfully uploaded 9 assets'),
+        ])
       );
       expect(response1.stderr).toBe('');
       expect(response1.exitCode).toBe(0);
@@ -93,11 +95,11 @@ describe(`immich upload`, () => {
         '--album',
       ]);
       expect(response2.stdout.split('\n')).toEqual(
-        expect.arrayContaining(
-          [expect.stringContaining(
+        expect.arrayContaining([
+          expect.stringContaining(
             'All assets were already uploaded, nothing to do.'
-          )]
-        )
+          ),
+        ])
       );
       expect(response2.stderr).toBe('');
       expect(response2.exitCode).toBe(0);
@@ -120,9 +122,11 @@ describe(`immich upload`, () => {
         '--album-name=e2e',
       ]);
       expect(stdout.split('\n')).toEqual(
-        expect.arrayContaining(
-          [expect.stringContaining('Successfully uploaded 9 assets')]
-        )
+        expect.arrayContaining([
+          expect.stringContaining('Successfully uploaded 9 assets'),
+          expect.stringContaining('Successfully created 1 new album'),
+          expect.stringContaining('Successfully updated 9 assets'),
+        ])
       );
       expect(stderr).toBe('');
       expect(exitCode).toBe(0);
@@ -158,9 +162,10 @@ describe(`immich upload`, () => {
       expect(files).toEqual([]);
 
       expect(stdout.split('\n')).toEqual(
-        expect.arrayContaining(
-          [expect.stringContaining('Successfully uploaded 9 assets')]
-        )
+        expect.arrayContaining([
+          expect.stringContaining('Successfully uploaded 9 assets'),
+          expect.stringContaining('Deleting assets that have been uploaded'),
+        ])
       );
       expect(stderr).toBe('');
       expect(exitCode).toBe(0);

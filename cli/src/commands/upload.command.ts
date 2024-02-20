@@ -141,7 +141,9 @@ export class UploadCommand extends BaseCommand {
     if (newAssets.length === 0) {
       console.log('All assets were already uploaded, nothing to do.');
     } else {
-      console.log(`${messageStart} uploaded ${newAssets.length} assets (${byteSize(totalSizeUploaded)})`);
+      console.log(
+        `${messageStart} uploaded ${newAssets.length} asset${newAssets.length === 1 ? '' : 's'} (${byteSize(totalSizeUploaded)})`,
+      );
     }
 
     if (options.album || options.albumName) {
@@ -149,8 +151,8 @@ export class UploadCommand extends BaseCommand {
         [...newAssets, ...duplicateAssets],
         options,
       );
-      console.log(`${messageStart} created ${createdAlbumCount} new albums`);
-      console.log(`${messageStart} updated ${updatedAssetCount} assets`);
+      console.log(`${messageStart} created ${createdAlbumCount} new album${createdAlbumCount === 1 ? '' : 's'}`);
+      console.log(`${messageStart} updated ${updatedAssetCount} asset${updatedAssetCount === 1 ? '' : 's'}`);
     }
 
     if (!options.delete) {
