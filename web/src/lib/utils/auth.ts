@@ -14,7 +14,7 @@ export interface AuthOptions {
 export const loadUser = async () => {
   try {
     let loaded = get(user);
-    if ((!loaded || loaded?.loggedOut) && hasAuthCookie()) {
+    if (!loaded && hasAuthCookie()) {
       loaded = await getMyUserInfo();
       user.set(loaded);
     }
