@@ -2,13 +2,15 @@ import {
   AssetResponseDto,
   CreateAssetDto,
   CreateUserDto,
-  LoginResponseDto,
+  PersonUpdateDto,
   createApiKey,
+  createPerson,
   createUser,
   defaults,
   login,
   setAdminOnboarding,
   signUpAdmin,
+  updatePerson,
 } from '@immich/sdk';
 import { BrowserContext } from '@playwright/test';
 import { spawn } from 'child_process';
@@ -45,6 +47,35 @@ export const asKeyAuth = (key: string) => ({ 'x-api-key': key });
 let client: pg.Client | null = null;
 
 export const dbUtils = {
+  createFace: async ({
+    assetId,
+    personId,
+  }: {
+    assetId: string;
+    personId: string;
+  }) => {
+    if (!client) {
+      return;
+    }
+
+    const vector = Array.from({ length: 512 }, Math.random);
+    const embedding = `[${vector.join(',')}]`;
+
+    await client.query(
+      'INSERT INTO asset_faces ("assetId", "personId", "embedding") VALUES ($1, $2, $3)',
+      [assetId, personId, embedding]
+    );
+  },
+  setPersonThumbnail: async (personId: string) => {
+    if (!client) {
+      return;
+    }
+
+    await client.query(
+      `UPDATE "person" set "thumbnailPath" = '/my/awesome/thumbnail.jpg' where "id" = $1`,
+      [personId]
+    );
+  },
   reset: async (tables?: string[]) => {
     try {
       if (!client) {
@@ -55,8 +86,10 @@ export const dbUtils = {
       }
 
       tables = tables || [
+        'person',
         'albums',
         'assets',
+        'asset_faces',
         'activity',
         'api_keys',
         'user_token',
@@ -167,6 +200,15 @@ export const apiUtils = {
       .set('Authorization', `Bearer ${accessToken}`);
 
     return body as AssetResponseDto;
+  },
+  createPerson: async (accessToken: string, dto: PersonUpdateDto) => {
+    // TODO fix createPerson to accept a body
+    const { id } = await createPerson({ headers: asBearerAuth(accessToken) });
+    await dbUtils.setPersonThumbnail(id);
+    return updatePerson(
+      { id, personUpdateDto: dto },
+      { headers: asBearerAuth(accessToken) }
+    );
   },
 };
 
