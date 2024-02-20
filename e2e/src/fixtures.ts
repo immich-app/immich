@@ -22,6 +22,16 @@ export const createUserDto = {
   user1: {
     email: 'user1@immich.cloud',
     name: 'User 1',
-    password: 'password',
+    password: 'password1',
+  },
+  user2: {
+    email: 'user2@immich.cloud',
+    name: 'User 2',
+    password: 'password12',
+  },
+  user3: {
+    email: 'user3@immich.cloud',
+    name: 'User 3',
+    password: 'password123',
   },
 };
