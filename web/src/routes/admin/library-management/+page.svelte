@@ -93,17 +93,21 @@
     showContextMenu = false;
   };
 
+  const refreshStats = async (listIndex: number) => {
+    stats[listIndex] = await getLibraryStatistics({ id: libraries[listIndex].id });
+    owner[listIndex] = await getUserById({ id: libraries[listIndex].ownerId });
+    photos[listIndex] = stats[listIndex].photos;
+    videos[listIndex] = stats[listIndex].videos;
+    totalCount[listIndex] = stats[listIndex].total;
+    [diskUsage[listIndex], diskUsageUnit[listIndex]] = getBytesWithUnit(stats[listIndex].usage, 0);
+  };
+
   async function readLibraryList() {
     libraries = await getAllLibraries({ searchLibraryDto: { type: LibraryType.External } });
     dropdownOpen.length = libraries.length;
 
     for (let index = 0; index < libraries.length; index++) {
-      stats[index] = await getLibraryStatistics({ id: libraries[index].id });
-      photos[index] = stats[index].photos;
-      videos[index] = stats[index].videos;
-      totalCount[index] = stats[index].total;
-      owner[index] = await getUserById({ id: libraries[index].ownerId });
-      [diskUsage[index], diskUsageUnit[index]] = getBytesWithUnit(stats[index].usage, 0);
+      await refreshStats(index);
       dropdownOpen[index] = false;
     }
   }
