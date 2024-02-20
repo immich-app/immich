@@ -27,7 +27,12 @@ class ShareService {
       final downloadedXFiles = <XFile>[];
 
       for (var asset in assets) {
-        if (asset.isRemote) {
+        if (asset.isLocal) {
+          // Prefer local assets to share
+          File? f = await asset.local!.file;
+          downloadedXFiles.add(XFile(f!.path));
+        } else if (asset.isRemote) {
+          // Download remote asset otherwise
           final tempDir = await getTemporaryDirectory();
           final fileName = asset.fileName;
           final tempFile = await File('${tempDir.path}/$fileName').create();
@@ -43,9 +48,6 @@ class ShareService {
 
           tempFile.writeAsBytesSync(res.bodyBytes);
           downloadedXFiles.add(XFile(tempFile.path));
-        } else {
-          File? f = await asset.local!.file;
-          downloadedXFiles.add(XFile(f!.path));
         }
       }
 
