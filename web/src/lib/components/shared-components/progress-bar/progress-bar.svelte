@@ -21,7 +21,7 @@
    */
   export let status: ProgressBarStatus = ProgressBarStatus.Paused;
 
-  const { slideshowDelay } = slideshowStore;
+  const { slideshowDelay, showProgressBar } = slideshowStore;
 
   let duration = $slideshowDelay;
 
@@ -85,4 +85,6 @@
   }
 </script>
 
-<span class="absolute left-0 h-[3px] bg-immich-primary shadow-2xl" style:width={`${$progress * 100}%`} />
+{#if $showProgressBar}
+  <span class="absolute left-0 h-[3px] bg-immich-primary shadow-2xl" style:width={`${$progress * 100}%`} />
+{/if}

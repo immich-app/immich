@@ -15,13 +15,15 @@
   } from '@mdi/js';
   import { fly } from 'svelte/transition';
   import { quintOut } from 'svelte/easing';
+  import Slider from '../elements/slider.svelte';
 
-  const { slideshowShuffle, slideshowDelay } = slideshowStore;
+  const { slideshowShuffle, slideshowDelay, showProgressBar } = slideshowStore;
   const { restartProgress, stopProgress } = slideshowStore;
 
   let progressBarStatus: ProgressBarStatus;
   let progressBar: ProgressBar;
   let showSettings = false;
+  let delay = $slideshowDelay;
 
   let unsubscribeRestart: () => void;
   let unsubscribeStop: () => void;
@@ -55,33 +57,55 @@
       unsubscribeStop();
     }
   });
+
+  const handleInput = () => {
+    if (delay < 1) {
+      delay = 1;
+      $slideshowDelay = 1;
+    }
+    $slideshowDelay = delay;
+  };
 </script>
 
 <div class="m-4 flex gap-2">
-  <CircleIconButton icon={mdiClose} on:click={() => dispatch('close')} title="Exit Slideshow" />
+  <CircleIconButton buttonSize="50" icon={mdiClose} on:click={() => dispatch('close')} title="Exit Slideshow" />
   {#if $slideshowShuffle}
-    <CircleIconButton icon={mdiShuffle} on:click={() => ($slideshowShuffle = false)} title="Shuffle" />
+    <CircleIconButton buttonSize="50" icon={mdiShuffle} on:click={() => ($slideshowShuffle = false)} title="Shuffle" />
   {:else}
-    <CircleIconButton icon={mdiShuffleDisabled} on:click={() => ($slideshowShuffle = true)} title="No shuffle" />
+    <CircleIconButton
+      buttonSize="50"
+      icon={mdiShuffleDisabled}
+      on:click={() => ($slideshowShuffle = true)}
+      title="No shuffle"
+    />
   {/if}
   <CircleIconButton
+    buttonSize="50"
     icon={progressBarStatus === ProgressBarStatus.Paused ? mdiPlay : mdiPause}
     on:click={() => (progressBarStatus === ProgressBarStatus.Paused ? progressBar.play() : progressBar.pause())}
     title={progressBarStatus === ProgressBarStatus.Paused ? 'Play' : 'Pause'}
   />
-  <CircleIconButton icon={mdiChevronLeft} on:click={() => dispatch('prev')} title="Previous" />
-  <CircleIconButton icon={mdiChevronRight} on:click={() => dispatch('next')} title="Next" />
+  <CircleIconButton buttonSize="50" icon={mdiChevronLeft} on:click={() => dispatch('prev')} title="Previous" />
+  <CircleIconButton buttonSize="50" icon={mdiChevronRight} on:click={() => dispatch('next')} title="Next" />
 
-  <CircleIconButton icon={mdiCog} on:click={() => (showSettings = !showSettings)} title="Next" />
+  <CircleIconButton buttonSize="50" icon={mdiCog} on:click={() => (showSettings = !showSettings)} title="Next" />
+
   {#if showSettings}
-    <div class="flex items-center gap-2">
-      <div transition:fly={{ x: 100, duration: 100, easing: quintOut }} class="text-white w-full">Slidehow Delay :</div>
-      <input
-        class="rounded-xl bg-slate-200 px-3 py-3 text-sm focus:border-immich-primary disabled:cursor-not-allowed h-2"
-        type="number"
-        min="1"
-        bind:value={$slideshowDelay}
-      />
+    <div class="bg-black/10 rounded-lg p-2 h-fit" transition:fly={{ x: 100, duration: 100, easing: quintOut }}>
+      <div class="flex items-center gap-4 mb-1">
+        <div class="text-white items-center" title="in seconds">Slidehow Delay :</div>
+        <input
+          class="rounded-xl text-white bg-gray-400/20 px-3 py-3 text-sm focus:border-immich-primary h-2"
+          type="number"
+          min="1"
+          bind:value={delay}
+          on:input={handleInput}
+        />
+      </div>
+      <div class="flex items-center gap-2 mt-1">
+        <div class="text-white items-center">Show progress bar :</div>
+        <Slider checked={$showProgressBar} on:toggle={() => ($showProgressBar = !$showProgressBar)} />
+      </div>
     </div>
   {/if}
 </div>

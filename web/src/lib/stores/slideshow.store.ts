@@ -14,6 +14,7 @@ function createSlideshowStore() {
   const slideshowShuffle = persisted<boolean>('slideshow-shuffle', true);
   const slideshowState = writable<SlideshowState>(SlideshowState.None);
 
+  const showProgressBar = persisted<boolean>('slideshow-show-progressbar', true);
   const slideshowDelay = persisted<number>('slideshow-delay', 5, {});
 
   return {
@@ -42,6 +43,7 @@ function createSlideshowStore() {
     slideshowShuffle,
     slideshowState,
     slideshowDelay,
+    showProgressBar,
   };
 }
 
