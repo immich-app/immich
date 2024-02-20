@@ -142,11 +142,11 @@
   <AssetGrid {album} {assetStore} {assetInteractionStore}>
     <section class="pt-24">
       <!-- ALBUM TITLE -->
-      <p
+      <h1
         class="bg-immich-bg text-6xl text-immich-primary outline-none transition-all dark:bg-immich-dark-bg dark:text-immich-dark-primary"
       >
         {album.albumName}
-      </p>
+      </h1>
 
       <!-- ALBUM SUMMARY -->
       {#if album.assetCount > 0}
