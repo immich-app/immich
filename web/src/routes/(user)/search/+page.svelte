@@ -111,10 +111,7 @@
 
   function updateInformationChip() {
     let query = $page.url.searchParams.get(QueryParameter.SEARCH_TERM) || data.term || '';
-
-    try {
-      terms = JSON.parse(query);
-    } catch (e) {}
+    terms = JSON.parse(query);
   }
 
   export const loadNextPage = async () => {
