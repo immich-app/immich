@@ -25,10 +25,10 @@
 
   $: changeTheme($colorTheme);
 
-  $: if (!$user || $user?.loggedOut) {
-    closeWebsocketConnection();
-  } else if ($user) {
+  $: if ($user) {
     openWebsocketConnection();
+  } else {
+    closeWebsocketConnection();
   }
 
   const changeTheme = (theme: ThemeSetting) => {
