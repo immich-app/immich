@@ -99,9 +99,9 @@
 </script>
 
 <header>
-  {#if $isMultiSelectState && user}
+  {#if $isMultiSelectState}
     <AssetSelectControlBar
-      ownerId={user.id}
+      ownerId={user?.id}
       assets={$selectedAssets}
       clearSelect={() => assetInteractionStore.clearMultiselect()}
     >
