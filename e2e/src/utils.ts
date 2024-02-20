@@ -45,7 +45,7 @@ export const asKeyAuth = (key: string) => ({ 'x-api-key': key });
 let client: pg.Client | null = null;
 
 export const dbUtils = {
-  reset: async () => {
+  reset: async (tables?: string[]) => {
     try {
       if (!client) {
         client = new pg.Client(
@@ -54,14 +54,17 @@ export const dbUtils = {
         await client.connect();
       }
 
-      for (const table of [
+      tables = tables || [
         'albums',
         'assets',
+        'activity',
         'api_keys',
         'user_token',
         'users',
         'system_metadata',
-      ]) {
+      ];
+
+      for (const table of tables) {
         await client.query(`DELETE FROM ${table} CASCADE;`);
       }
     } catch (error) {
