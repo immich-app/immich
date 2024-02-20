@@ -4,7 +4,7 @@
   import SideBarSection from '$lib/components/shared-components/side-bar/side-bar-section.svelte';
   import StatusBox from '$lib/components/shared-components/status-box.svelte';
   import { AppRoute } from '$lib/constants';
-  import { mdiAccountMultipleOutline, mdiCog, mdiServer, mdiSync, mdiTools } from '@mdi/js';
+  import { mdiAccountMultipleOutline, mdiBookshelf, mdiCog, mdiServer, mdiSync, mdiTools } from '@mdi/js';
 </script>
 
 <SideBarSection>
@@ -13,6 +13,13 @@
       title="Users"
       icon={mdiAccountMultipleOutline}
       isSelected={$page.route.id === AppRoute.ADMIN_USER_MANAGEMENT}
+    />
+  </a>
+  <a data-sveltekit-preload-data="hover" href={AppRoute.ADMIN_LIBRARY_MANAGEMENT} draggable="false">
+    <SideBarButton
+      title="Libraries"
+      icon={mdiBookshelf}
+      isSelected={$page.route.id === AppRoute.ADMIN_LIBRARY_MANAGEMENT}
     />
   </a>
   <a data-sveltekit-preload-data="hover" href={AppRoute.ADMIN_JOBS} draggable="false">

@@ -12,7 +12,7 @@
   import { user } from '$lib/stores/user.store';
   import { asByteUnitString } from '$lib/utils/byte-units';
   import { getAllUsers, type UserResponseDto } from '@immich/sdk';
-  import { mdiCheck, mdiClose, mdiDeleteRestore, mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
+  import { mdiClose, mdiDeleteRestore, mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
   import { onMount } from 'svelte';
   import type { PageData } from './$types';
 
