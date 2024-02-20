@@ -86,6 +86,7 @@ export const dbUtils = {
       }
 
       tables = tables || [
+        'shared_links',
         'person',
         'albums',
         'assets',
