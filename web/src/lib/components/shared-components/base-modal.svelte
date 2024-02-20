@@ -18,15 +18,15 @@
     if (browser) {
       const scrollTop = document.documentElement.scrollTop;
       const scrollLeft = document.documentElement.scrollLeft;
-      window.addEventListener('scroll', function () {
+      window.onscroll = function () {
         window.scrollTo(scrollLeft, scrollTop);
-      });
+      };
     }
   });
 
   onDestroy(() => {
     if (browser) {
-      window.addEventListener('scroll', () => {});
+      window.onscroll = null;
     }
   });
 </script>
