@@ -78,6 +78,13 @@ export class ScanLibraryDto {
   refreshAllFiles?: boolean = false;
 }
 
+export class SearchLibraryDto {
+  @IsEnum(LibraryType)
+  @ApiProperty({ enumName: 'LibraryType', enum: LibraryType })
+  @IsOptional()
+  type?: LibraryType;
+}
+
 export class LibraryResponseDto {
   id!: string;
   ownerId!: string;

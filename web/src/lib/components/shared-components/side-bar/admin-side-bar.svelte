@@ -15,18 +15,18 @@
       isSelected={$page.route.id === AppRoute.ADMIN_USER_MANAGEMENT}
     />
   </a>
-  <a data-sveltekit-preload-data="hover" href={AppRoute.ADMIN_LIBRARY_MANAGEMENT} draggable="false">
-    <SideBarButton
-      title="Libraries"
-      icon={mdiBookshelf}
-      isSelected={$page.route.id === AppRoute.ADMIN_LIBRARY_MANAGEMENT}
-    />
-  </a>
   <a data-sveltekit-preload-data="hover" href={AppRoute.ADMIN_JOBS} draggable="false">
     <SideBarButton title="Jobs" icon={mdiSync} isSelected={$page.route.id === AppRoute.ADMIN_JOBS} />
   </a>
   <a data-sveltekit-preload-data="hover" href={AppRoute.ADMIN_SETTINGS} draggable="false">
     <SideBarButton title="Settings" icon={mdiCog} isSelected={$page.route.id === AppRoute.ADMIN_SETTINGS} />
+  </a>
+  <a data-sveltekit-preload-data="hover" href={AppRoute.ADMIN_LIBRARY_MANAGEMENT} draggable="false">
+    <SideBarButton
+      title="External Libraries"
+      icon={mdiBookshelf}
+      isSelected={$page.route.id === AppRoute.ADMIN_LIBRARY_MANAGEMENT}
+    />
   </a>
   <a data-sveltekit-preload-data="hover" href={AppRoute.ADMIN_STATS} draggable="false">
     <SideBarButton title="Server Stats" icon={mdiServer} isSelected={$page.route.id === AppRoute.ADMIN_STATS} />

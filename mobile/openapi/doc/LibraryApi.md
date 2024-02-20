@@ -11,9 +11,10 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**createLibrary**](LibraryApi.md#createlibrary) | **POST** /library | 
 [**deleteLibrary**](LibraryApi.md#deletelibrary) | **DELETE** /library/{id} | 
-[**getLibraries**](LibraryApi.md#getlibraries) | **GET** /library | 
+[**getAllLibraries**](LibraryApi.md#getalllibraries) | **POST** /library/all | 
 [**getLibraryInfo**](LibraryApi.md#getlibraryinfo) | **GET** /library/{id} | 
 [**getLibraryStatistics**](LibraryApi.md#getlibrarystatistics) | **GET** /library/{id}/statistics | 
+[**getUserLibraries**](LibraryApi.md#getuserlibraries) | **GET** /library | 
 [**removeOfflineFiles**](LibraryApi.md#removeofflinefiles) | **POST** /library/{id}/removeOffline | 
 [**scanLibrary**](LibraryApi.md#scanlibrary) | **POST** /library/{id}/scan | 
 [**updateLibrary**](LibraryApi.md#updatelibrary) | **PUT** /library/{id} | 
@@ -128,8 +129,8 @@ void (empty response body)
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **getLibraries**
-> List<LibraryResponseDto> getLibraries()
+# **getAllLibraries**
+> List<LibraryResponseDto> getAllLibraries(searchLibraryDto)
 
 
 
@@ -152,17 +153,21 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = LibraryApi();
+final searchLibraryDto = SearchLibraryDto(); // SearchLibraryDto | 
 
 try {
-    final result = api_instance.getLibraries();
+    final result = api_instance.getAllLibraries(searchLibraryDto);
     print(result);
 } catch (e) {
-    print('Exception when calling LibraryApi->getLibraries: $e\n');
+    print('Exception when calling LibraryApi->getAllLibraries: $e\n');
 }
 ```
 
 ### Parameters
-This endpoint does not need any parameter.
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **searchLibraryDto** | [**SearchLibraryDto**](SearchLibraryDto.md)|  | 
 
 ### Return type
 
@@ -174,7 +179,7 @@ This endpoint does not need any parameter.
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
+ - **Content-Type**: application/json
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
@@ -277,6 +282,57 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**LibraryStatsResponseDto**](LibraryStatsResponseDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **getUserLibraries**
+> List<LibraryResponseDto> getUserLibraries()
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
+// TODO Configure API key authorization: api_key
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+
+final api_instance = LibraryApi();
+
+try {
+    final result = api_instance.getUserLibraries();
+    print(result);
+} catch (e) {
+    print('Exception when calling LibraryApi->getUserLibraries: $e\n');
+}
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+[**List<LibraryResponseDto>**](LibraryResponseDto.md)
 
 ### Authorization
 

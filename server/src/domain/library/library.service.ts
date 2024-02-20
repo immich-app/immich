@@ -29,6 +29,7 @@ import {
   LibraryResponseDto,
   LibraryStatsResponseDto,
   ScanLibraryDto,
+  SearchLibraryDto,
   UpdateLibraryDto,
   mapLibrary,
 } from './library.dto';
@@ -193,15 +194,25 @@ export class LibraryService extends EventEmitter {
     return this.repository.getCountForUser(auth.user.id);
   }
 
-  async getAllForUser(auth: AuthDto): Promise<LibraryResponseDto[]> {
-    const libraries = await this.repository.getAllByUserId(auth.user.id);
+  async getAllForUser(auth: AuthDto, getAll = false): Promise<LibraryResponseDto[]> {
+    const libraries = getAll ? await this.repository.getAll() : await this.repository.getAllByUserId(auth.user.id);
     return libraries.map((library) => mapLibrary(library));
   }
 
   async get(auth: AuthDto, id: string): Promise<LibraryResponseDto> {
     await this.access.requirePermission(auth, Permission.LIBRARY_READ, id);
+
     const library = await this.findOrFail(id);
     return mapLibrary(library);
+  }
+
+  async getAll(auth: AuthDto, dto: SearchLibraryDto): Promise<LibraryResponseDto[]> {
+    if (!auth.user.isAdmin) {
+      throw new BadRequestException('Only admins can get all libraries');
+    }
+
+    const libraries = await this.repository.getAll(false, dto.type);
+    return libraries.map((library) => mapLibrary(library));
   }
 
   async handleQueueCleanup(): Promise<boolean> {

@@ -21,13 +21,15 @@
     LibraryType,
     createLibrary,
     deleteLibrary,
-    getLibraries,
     getLibraryStatistics,
     removeOfflineFiles,
     scanLibrary,
     updateLibrary,
     type LibraryResponseDto,
     type LibraryStatsResponseDto,
+    getAllLibraries,
+    type UserResponseDto,
+    getUserById,
   } from '@immich/sdk';
   import { mdiDatabase, mdiDotsVertical, mdiUpload } from '@mdi/js';
   import { onMount } from 'svelte';
@@ -39,6 +41,7 @@
   let libraries: LibraryResponseDto[] = [];
 
   let stats: LibraryStatsResponseDto[] = [];
+  let owner: UserResponseDto[] = [];
   let photos: number[] = [];
   let videos: number[] = [];
   let totalCount: number[] = [];
@@ -89,21 +92,18 @@
   const onMenuExit = () => {
     showContextMenu = false;
   };
-  const refreshStats = async (listIndex: number) => {
-    stats[listIndex] = await getLibraryStatistics({ id: libraries[listIndex].id });
-    photos[listIndex] = stats[listIndex].photos;
-    videos[listIndex] = stats[listIndex].videos;
-    totalCount[listIndex] = stats[listIndex].total;
-    [diskUsage[listIndex], diskUsageUnit[listIndex]] = getBytesWithUnit(stats[listIndex].usage, 0);
-  };
 
   async function readLibraryList() {
-    libraries = await getLibraries();
-
+    libraries = await getAllLibraries({ searchLibraryDto: { type: LibraryType.External } });
     dropdownOpen.length = libraries.length;
 
     for (let index = 0; index < libraries.length; index++) {
-      await refreshStats(index);
+      stats[index] = await getLibraryStatistics({ id: libraries[index].id });
+      photos[index] = stats[index].photos;
+      videos[index] = stats[index].videos;
+      totalCount[index] = stats[index].total;
+      owner[index] = await getUserById({ id: libraries[index].ownerId });
+      [diskUsage[index], diskUsageUnit[index]] = getBytesWithUnit(stats[index].usage, 0);
       dropdownOpen[index] = false;
     }
   }
@@ -311,6 +311,7 @@
             <tr class="flex w-full place-items-center">
               <th class="w-1/6 text-center text-sm font-medium">Type</th>
               <th class="w-1/3 text-center text-sm font-medium">Name</th>
+              <th class="w-1/3 text-center text-sm font-medium">Owner</th>
               <th class="w-1/5 text-center text-sm font-medium">Assets</th>
               <th class="w-1/6 text-center text-sm font-medium">Size</th>
               <th class="w-1/6 text-center text-sm font-medium" />
@@ -334,6 +335,12 @@
                 >
 
                 <td class="w-1/3 text-ellipsis px-4 text-sm">{library.name}</td>
+                <td class="w-1/3 text-ellipsis px-4 text-sm">
+                  {#if owner[index] == undefined}
+                    <LoadingSpinner size="40" />
+                  {:else}{owner[index].name}{/if}
+                </td>
+
                 {#if totalCount[index] == undefined}
                   <td colspan="2" class="flex w-1/3 items-center justify-center text-ellipsis px-4 text-sm">
                     <LoadingSpinner size="40" />

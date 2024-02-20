@@ -5,6 +5,7 @@ import {
   LibraryStatsResponseDto,
   LibraryResponseDto as ResponseDto,
   ScanLibraryDto,
+  SearchLibraryDto,
   UpdateLibraryDto as UpdateDto,
 } from '@app/domain';
 import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
@@ -16,22 +17,29 @@ import { UUIDParamDto } from './dto/uuid-param.dto';
 @ApiTags('Library')
 @Controller('library')
 @Authenticated()
-@AdminRoute()
 @UseValidation()
 export class LibraryController {
   constructor(private service: LibraryService) {}
 
   @Get()
-  getLibraries(@Auth() auth: AuthDto): Promise<ResponseDto[]> {
+  getUserLibraries(@Auth() auth: AuthDto): Promise<ResponseDto[]> {
     return this.service.getAllForUser(auth);
   }
 
+  @Post('/all')
+  @AdminRoute()
+  getAllLibraries(@Auth() auth: AuthDto, @Body() dto: SearchLibraryDto): Promise<ResponseDto[]> {
+    return this.service.getAll(auth, dto);
+  }
+
   @Post()
+  @AdminRoute()
   createLibrary(@Auth() auth: AuthDto, @Body() dto: CreateDto): Promise<ResponseDto> {
     return this.service.create(auth, dto);
   }
 
   @Put(':id')
+  @AdminRoute()
   updateLibrary(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto, @Body() dto: UpdateDto): Promise<ResponseDto> {
     return this.service.update(auth, id, dto);
   }
@@ -42,6 +50,7 @@ export class LibraryController {
   }
 
   @Delete(':id')
+  @AdminRoute()
   deleteLibrary(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.delete(auth, id);
   }

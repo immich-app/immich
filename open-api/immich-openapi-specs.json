@@ -3298,7 +3298,7 @@
     },
     "/library": {
       "get": {
-        "operationId": "getLibraries",
+        "operationId": "getUserLibraries",
         "parameters": [],
         "responses": {
           "200": {
@@ -3349,6 +3349,51 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/LibraryResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Library"
+        ]
+      }
+    },
+    "/library/all": {
+      "post": {
+        "operationId": "getAllLibraries",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchLibraryDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/LibraryResponseDto"
+                  },
+                  "type": "array"
                 }
               }
             },
@@ -8889,6 +8934,14 @@
           "counts",
           "fieldName"
         ],
+        "type": "object"
+      },
+      "SearchLibraryDto": {
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/LibraryType"
+          }
+        },
         "type": "object"
       },
       "SearchResponseDto": {

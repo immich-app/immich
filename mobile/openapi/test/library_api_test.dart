@@ -27,8 +27,8 @@ void main() {
       // TODO
     });
 
-    //Future<List<LibraryResponseDto>> getLibraries() async
-    test('test getLibraries', () async {
+    //Future<List<LibraryResponseDto>> getAllLibraries(SearchLibraryDto searchLibraryDto) async
+    test('test getAllLibraries', () async {
       // TODO
     });
 
@@ -39,6 +39,11 @@ void main() {
 
     //Future<LibraryStatsResponseDto> getLibraryStatistics(String id) async
     test('test getLibraryStatistics', () async {
+      // TODO
+    });
+
+    //Future<List<LibraryResponseDto>> getUserLibraries() async
+    test('test getUserLibraries', () async {
       // TODO
     });
 

@@ -10,7 +10,7 @@ export const load = (async () => {
   return {
     allUsers,
     meta: {
-      title: 'Library Management',
+      title: 'External Library Management',
     },
   };
 }) satisfies PageLoad;

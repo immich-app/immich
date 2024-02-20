@@ -3234,6 +3234,21 @@ export interface SearchFacetResponseDto {
 /**
  * 
  * @export
+ * @interface SearchLibraryDto
+ */
+export interface SearchLibraryDto {
+    /**
+     * 
+     * @type {LibraryType}
+     * @memberof SearchLibraryDto
+     */
+    'type'?: LibraryType;
+}
+
+
+/**
+ * 
+ * @export
  * @interface SearchResponseDto
  */
 export interface SearchResponseDto {
@@ -12536,11 +12551,14 @@ export const LibraryApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
+         * @param {SearchLibraryDto} searchLibraryDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getLibraries: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/library`;
+        getAllLibraries: async (searchLibraryDto: SearchLibraryDto, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'searchLibraryDto' is not null or undefined
+            assertParamExists('getAllLibraries', 'searchLibraryDto', searchLibraryDto)
+            const localVarPath = `/library/all`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -12548,7 +12566,7 @@ export const LibraryApiAxiosParamCreator = function (configuration?: Configurati
                 baseOptions = configuration.baseOptions;
             }
 
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
@@ -12563,9 +12581,12 @@ export const LibraryApiAxiosParamCreator = function (configuration?: Configurati
 
 
     
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(searchLibraryDto, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -12625,6 +12646,44 @@ export const LibraryApiAxiosParamCreator = function (configuration?: Configurati
             assertParamExists('getLibraryStatistics', 'id', id)
             const localVarPath = `/library/{id}/statistics`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getUserLibraries: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/library`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -12830,13 +12889,14 @@ export const LibraryApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {SearchLibraryDto} searchLibraryDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getLibraries(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<LibraryResponseDto>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getLibraries(options);
+        async getAllLibraries(searchLibraryDto: SearchLibraryDto, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<LibraryResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllLibraries(searchLibraryDto, options);
             const index = configuration?.serverIndex ?? 0;
-            const operationBasePath = operationServerMap['LibraryApi.getLibraries']?.[index]?.url;
+            const operationBasePath = operationServerMap['LibraryApi.getAllLibraries']?.[index]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, operationBasePath || basePath);
         },
         /**
@@ -12861,6 +12921,17 @@ export const LibraryApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getLibraryStatistics(id, options);
             const index = configuration?.serverIndex ?? 0;
             const operationBasePath = operationServerMap['LibraryApi.getLibraryStatistics']?.[index]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, operationBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getUserLibraries(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<LibraryResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getUserLibraries(options);
+            const index = configuration?.serverIndex ?? 0;
+            const operationBasePath = operationServerMap['LibraryApi.getUserLibraries']?.[index]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, operationBasePath || basePath);
         },
         /**
@@ -12931,11 +13002,12 @@ export const LibraryApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
+         * @param {LibraryApiGetAllLibrariesRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getLibraries(options?: RawAxiosRequestConfig): AxiosPromise<Array<LibraryResponseDto>> {
-            return localVarFp.getLibraries(options).then((request) => request(axios, basePath));
+        getAllLibraries(requestParameters: LibraryApiGetAllLibrariesRequest, options?: RawAxiosRequestConfig): AxiosPromise<Array<LibraryResponseDto>> {
+            return localVarFp.getAllLibraries(requestParameters.searchLibraryDto, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -12954,6 +13026,14 @@ export const LibraryApiFactory = function (configuration?: Configuration, basePa
          */
         getLibraryStatistics(requestParameters: LibraryApiGetLibraryStatisticsRequest, options?: RawAxiosRequestConfig): AxiosPromise<LibraryStatsResponseDto> {
             return localVarFp.getLibraryStatistics(requestParameters.id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getUserLibraries(options?: RawAxiosRequestConfig): AxiosPromise<Array<LibraryResponseDto>> {
+            return localVarFp.getUserLibraries(options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -13011,6 +13091,20 @@ export interface LibraryApiDeleteLibraryRequest {
      * @memberof LibraryApiDeleteLibrary
      */
     readonly id: string
+}
+
+/**
+ * Request parameters for getAllLibraries operation in LibraryApi.
+ * @export
+ * @interface LibraryApiGetAllLibrariesRequest
+ */
+export interface LibraryApiGetAllLibrariesRequest {
+    /**
+     * 
+     * @type {SearchLibraryDto}
+     * @memberof LibraryApiGetAllLibraries
+     */
+    readonly searchLibraryDto: SearchLibraryDto
 }
 
 /**
@@ -13128,12 +13222,13 @@ export class LibraryApi extends BaseAPI {
 
     /**
      * 
+     * @param {LibraryApiGetAllLibrariesRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof LibraryApi
      */
-    public getLibraries(options?: RawAxiosRequestConfig) {
-        return LibraryApiFp(this.configuration).getLibraries(options).then((request) => request(this.axios, this.basePath));
+    public getAllLibraries(requestParameters: LibraryApiGetAllLibrariesRequest, options?: RawAxiosRequestConfig) {
+        return LibraryApiFp(this.configuration).getAllLibraries(requestParameters.searchLibraryDto, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -13156,6 +13251,16 @@ export class LibraryApi extends BaseAPI {
      */
     public getLibraryStatistics(requestParameters: LibraryApiGetLibraryStatisticsRequest, options?: RawAxiosRequestConfig) {
         return LibraryApiFp(this.configuration).getLibraryStatistics(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof LibraryApi
+     */
+    public getUserLibraries(options?: RawAxiosRequestConfig) {
+        return LibraryApiFp(this.configuration).getUserLibraries(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
