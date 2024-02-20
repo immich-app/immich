@@ -11,7 +11,7 @@
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
 
-  export let onArchive: OnArchive | undefined = undefined;
+  export let onArchive: OnArchive;
 
   export let menuItem = false;
   export let unarchive = false;
@@ -39,7 +39,7 @@
         asset.isArchived = isArchived;
       }
 
-      onArchive?.(ids, isArchived);
+      onArchive(ids, isArchived);
 
       notificationController.show({
         message: `${isArchived ? 'Archived' : 'Unarchived'} ${ids.length}`,

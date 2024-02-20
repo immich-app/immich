@@ -21,11 +21,6 @@ module.exports = {
     'unicorn/prefer-module': 'off',
     curly: 2,
     'prettier/prettier': 0,
-    'unicorn/prevent-abbreviations': [
-      'error',
-      {
-        ignore: ['\\.e2e-spec$', /^ignore/i],
-      },
-    ],
+    'unicorn/prevent-abbreviations': 'error',
   },
 };

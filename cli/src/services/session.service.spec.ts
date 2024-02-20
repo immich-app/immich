@@ -1,16 +1,40 @@
 import fs from 'node:fs';
+import path from 'node:path';
 import yaml from 'yaml';
-import {
-  TEST_AUTH_FILE,
-  TEST_CONFIG_DIR,
-  TEST_IMMICH_API_KEY,
-  TEST_IMMICH_INSTANCE_URL,
-  createTestAuthFile,
-  deleteAuthFile,
-  readTestAuthFile,
-  spyOnConsole,
-} from '../../test/cli-test-utils';
 import { SessionService } from './session.service';
+
+const TEST_CONFIG_DIR = '/tmp/immich/';
+const TEST_AUTH_FILE = path.join(TEST_CONFIG_DIR, 'auth.yml');
+const TEST_IMMICH_INSTANCE_URL = 'https://test/api';
+const TEST_IMMICH_API_KEY = 'pNussssKSYo5WasdgalvKJ1n9kdvaasdfbluPg';
+
+const spyOnConsole = () => vi.spyOn(console, 'log').mockImplementation(() => {});
+
+const createTestAuthFile = async (contents: string) => {
+  if (!fs.existsSync(TEST_CONFIG_DIR)) {
+    // Create config folder if it doesn't exist
+    const created = await fs.promises.mkdir(TEST_CONFIG_DIR, { recursive: true });
+    if (!created) {
+      throw new Error(`Failed to create config folder ${TEST_CONFIG_DIR}`);
+    }
+  }
+
+  fs.writeFileSync(TEST_AUTH_FILE, contents);
+};
+
+const readTestAuthFile = async (): Promise<string> => {
+  return await fs.promises.readFile(TEST_AUTH_FILE, 'utf8');
+};
+
+const deleteAuthFile = () => {
+  try {
+    fs.unlinkSync(TEST_AUTH_FILE);
+  } catch (error: any) {
+    if (error.code !== 'ENOENT') {
+      throw error;
+    }
+  }
+};
 
 const mocks = vi.hoisted(() => {
   return {

@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.94.1
+ * 1.95.0
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -479,6 +479,18 @@ export type LibraryStatsResponseDto = {
     total: number;
     usage: number;
     videos: number;
+};
+export type ValidateLibraryDto = {
+    exclusionPatterns?: string[];
+    importPaths?: string[];
+};
+export type ValidateLibraryImportPathResponseDto = {
+    importPath: string;
+    isValid?: boolean;
+    message?: string;
+};
+export type ValidateLibraryResponseDto = {
+    importPaths?: ValidateLibraryImportPathResponseDto[];
 };
 export type OAuthConfigDto = {
     redirectUri: string;
@@ -1900,6 +1912,19 @@ export function getLibraryStatistics({ id }: {
     }>(`/library/${encodeURIComponent(id)}/statistics`, {
         ...opts
     }));
+}
+export function validate({ id, validateLibraryDto }: {
+    id: string;
+    validateLibraryDto: ValidateLibraryDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: ValidateLibraryResponseDto;
+    }>(`/library/${encodeURIComponent(id)}/validate`, oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: validateLibraryDto
+    })));
 }
 export function startOAuth({ oAuthConfigDto }: {
     oAuthConfigDto: OAuthConfigDto;

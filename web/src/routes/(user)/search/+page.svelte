@@ -223,6 +223,8 @@
 
     return personNames.join(', ');
   }
+
+  const triggerAssetUpdate = () => (searchResultAssets = searchResultAssets);
 </script>
 
 <section>
@@ -239,8 +241,8 @@
 
         <AssetSelectContextMenu icon={mdiDotsVertical} title="Add">
           <DownloadAction menuItem />
-          <FavoriteAction menuItem removeFavorite={isAllFavorite} />
-          <ArchiveAction menuItem unarchive={isAllArchived} />
+          <FavoriteAction menuItem removeFavorite={isAllFavorite} onFavorite={triggerAssetUpdate} />
+          <ArchiveAction menuItem unarchive={isAllArchived} onArchive={triggerAssetUpdate} />
           <ChangeDate menuItem />
           <ChangeLocation menuItem />
         </AssetSelectContextMenu>

@@ -28,6 +28,7 @@
   export let assetInteractionStore: AssetInteractionStore;
   export let removeAction: AssetAction | null = null;
   export let withStacked = false;
+  export let showArchiveIcon = false;
   export let isShared = false;
   export let album: AlbumResponseDto | null = null;
   export let isShowDeleteConfirmation = false;
@@ -425,6 +426,7 @@
             {#if intersecting}
               <AssetDateGroup
                 {withStacked}
+                {showArchiveIcon}
                 {assetStore}
                 {assetInteractionStore}
                 {isSelectionMode}
