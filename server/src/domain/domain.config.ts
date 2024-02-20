@@ -18,12 +18,12 @@ export const immichAppConfig: ConfigModuleOptions = {
     DB_PASSWORD: WHEN_DB_URL_SET,
     DB_DATABASE_NAME: WHEN_DB_URL_SET,
     DB_URL: Joi.string().optional(),
+    DB_VECTOR_EXTENSION: Joi.string().optional().valid('pgvector', 'pgvecto.rs').default('pgvecto.rs'),
     LOG_LEVEL: Joi.string()
       .optional()
       .valid(...Object.values(LogLevel)),
     MACHINE_LEARNING_PORT: Joi.number().optional(),
     MICROSERVICES_PORT: Joi.number().optional(),
     SERVER_PORT: Joi.number().optional(),
-    VECTOR_EXTENSION: Joi.string().optional().valid('pgvector', 'pgvecto.rs').default('pgvecto.rs'),
   }),
 };
