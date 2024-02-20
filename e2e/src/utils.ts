@@ -177,11 +177,11 @@ export const cliUtils = {
 };
 
 export const webUtils = {
-  setAuthCookies: async (context: BrowserContext, response: LoginResponseDto) =>
+  setAuthCookies: async (context: BrowserContext, accessToken: string) =>
     await context.addCookies([
       {
         name: 'immich_access_token',
-        value: response.accessToken,
+        value: accessToken,
         domain: '127.0.0.1',
         path: '/',
         expires: 1742402728,

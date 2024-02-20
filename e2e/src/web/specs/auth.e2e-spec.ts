@@ -45,8 +45,8 @@ test.describe('Registration', () => {
   });
 
   test('user registration', async ({ context, page }) => {
-    const loginResponse = await apiUtils.adminSetup();
-    await webUtils.setAuthCookies(context, loginResponse);
+    const admin = await apiUtils.adminSetup();
+    await webUtils.setAuthCookies(context, admin.accessToken);
 
     // create user
     await page.goto('/admin/user-management');
