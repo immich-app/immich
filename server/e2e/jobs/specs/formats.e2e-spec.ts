@@ -1,7 +1,7 @@
 import { LoginResponseDto } from '@app/domain';
 import { AssetType } from '@app/infra/entities';
-import { readFile } from 'fs/promises';
-import { basename, join } from 'path';
+import { readFile } from 'node:fs/promises';
+import { basename, join } from 'node:path';
 import { IMMICH_TEST_ASSET_PATH, testApp } from '../../../src/test-utils/utils';
 import { api } from '../../client';
 
@@ -19,7 +19,7 @@ const JPEG = {
     iso: 200,
     fNumber: 11,
     exposureTime: '1/160',
-    fileSizeInByte: 53493,
+    fileSizeInByte: 53_493,
     make: 'SONY',
     model: 'DSLR-A550',
     orientation: null,
@@ -42,11 +42,11 @@ const tests = [
         exifImageWidth: 4032,
         exifImageHeight: 3024,
         latitude: 41.2203,
-        longitude: -96.071625,
+        longitude: -96.071_625,
         make: 'Apple',
         model: 'iPhone 7',
         lensModel: 'iPhone 7 back camera 3.99mm f/1.8',
-        fileSizeInByte: 880703,
+        fileSizeInByte: 880_703,
         exposureTime: '1/887',
         iso: 20,
         focalLength: 3.99,
@@ -66,7 +66,7 @@ const tests = [
         exifImageHeight: 800,
         latitude: null,
         longitude: null,
-        fileSizeInByte: 25408,
+        fileSizeInByte: 25_408,
       },
     },
   },
@@ -84,7 +84,7 @@ const tests = [
         fNumber: 10,
         focalLength: 18,
         iso: 100,
-        fileSizeInByte: 9057784,
+        fileSizeInByte: 9_057_784,
         dateTimeOriginal: '2010-07-20T17:27:12.000Z',
         latitude: null,
         longitude: null,
@@ -106,7 +106,7 @@ const tests = [
         fNumber: 11,
         focalLength: 85,
         iso: 200,
-        fileSizeInByte: 15856335,
+        fileSizeInByte: 15_856_335,
         dateTimeOriginal: '2016-09-22T22:10:29.060Z',
         latitude: null,
         longitude: null,
