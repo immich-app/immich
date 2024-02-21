@@ -252,6 +252,7 @@ export class SystemConfigCore {
 
     for (const { key, value } of overrides) {
       // set via dot notation
+      console.error(`key=${key}, value=${value}`)
       _.set(config, key, value);
     }
 

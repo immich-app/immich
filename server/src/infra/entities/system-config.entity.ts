@@ -7,7 +7,7 @@ export class SystemConfigEntity<T = SystemConfigValue> {
   key!: SystemConfigKey;
 
   @Column({ type: 'varchar', nullable: true, transformer: { to: JSON.stringify, from: JSON.parse } })
-  value!: T;
+  value!: T | T[];
 }
 
 export type SystemConfigValue = string | number | boolean;
