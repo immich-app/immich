@@ -40,11 +40,13 @@
   import { mdiAccountOff, mdiEyeOutline } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
   import type { PageData } from './$types';
+  import { locale } from '$lib/stores/preferences.store';
 
   export let data: PageData;
 
   let people = data.people.people;
   let countTotalPeople = data.people.total;
+  let countHiddenPeople = data.people.hidden;
 
   let selectHidden = false;
   let initialHiddenValues: Record<string, boolean> = {};
@@ -75,7 +77,7 @@
 
   $: searchedPeopleLocal = searchName ? searchNameLocal(searchName, searchedPeople, maximumLengthSearchPeople) : [];
 
-  $: countVisiblePeople = people.filter((person) => !person.isHidden).length;
+  $: countVisiblePeople = countTotalPeople - countHiddenPeople;
 
   const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
 
@@ -152,6 +154,11 @@
       for (const person of people) {
         if (person.isHidden !== initialHiddenValues[person.id]) {
           changed.push({ id: person.id, isHidden: person.isHidden });
+          if (person.isHidden) {
+            countHiddenPeople++;
+          } else {
+            countHiddenPeople--;
+          }
 
           // Update the initial hidden values
           initialHiddenValues[person.id] = person.isHidden;
@@ -203,10 +210,10 @@
 
       const mergedPerson = await getPerson({ id: personToBeMergedIn.id });
 
-      countVisiblePeople--;
       people = people.filter((person: PersonResponseDto) => person.id !== personToMerge.id);
       people = people.map((person: PersonResponseDto) => (person.id === personToBeMergedIn.id ? mergedPerson : person));
-
+      countHiddenPeople--;
+      countTotalPeople--;
       notificationController.show({
         message: 'Merge people successfully',
         type: NotificationType.Info,
@@ -274,7 +281,7 @@
       }
 
       showChangeNameModal = false;
-
+      countHiddenPeople++;
       notificationController.show({
         message: 'Changed visibility successfully',
         type: NotificationType.Info,
@@ -423,7 +430,10 @@
   </FullScreenModal>
 {/if}
 
-<UserPageLayout title="People" description={countTotalPeople === 0 ? undefined : `(${countTotalPeople.toString()})`}>
+<UserPageLayout
+  title="People"
+  description={countVisiblePeople === 0 ? undefined : `(${countVisiblePeople.toLocaleString($locale)})`}
+>
   <svelte:fragment slot="buttons">
     {#if countTotalPeople > 0}
       <div class="flex gap-2 items-center justify-center">
@@ -522,9 +532,10 @@
     on:change={handleToggleVisibility}
     bind:showLoadingSpinner
     bind:toggleVisibility
+    {countTotalPeople}
     screenHeight={innerHeight}
   >
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-7 2xl:grid-cols-9 gap-1">
+    <div class="w-full grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-7 2xl:grid-cols-9 gap-1">
       {#each people as person, index (person.id)}
         <button
           class="relative"
