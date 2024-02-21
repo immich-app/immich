@@ -17,7 +17,7 @@ x-server-build: &server-common
 services:
   immich-server:
     container_name: immich_server
-    command: [ "./start-server.sh" ]
+    command: [ "start.sh", "immich" ]
     <<: *server-common
     ports:
       - 2283:3001
@@ -27,7 +27,7 @@ services:
 
   immich-microservices:
     container_name: immich_microservices
-    command: [ "./start-microservices.sh" ]
+    command: [ "start.sh", "microservices" ]
     <<: *server-common
     # extends:
     #   file: hwaccel.transcoding.yml

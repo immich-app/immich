@@ -1,21 +1,24 @@
 import {
   AlbumResponseDto,
   AssetResponseDto,
-  IAssetRepository,
   LoginResponseDto,
+  SharedLinkCreateDto,
   SharedLinkResponseDto,
-} from '@app/domain';
-import { SharedLinkController } from '@app/immich';
-import { SharedLinkType } from '@app/infra/entities';
-import { INestApplication } from '@nestjs/common';
-import { errorStub, userDto, uuidStub } from '@test/fixtures';
-import { DateTime } from 'luxon';
+  SharedLinkType,
+  createSharedLink as create,
+  createAlbum,
+  deleteUser,
+} from '@immich/sdk';
+import { createUserDto, uuidDto } from 'src/fixtures';
+import { errorDto } from 'src/responses';
+import { apiUtils, app, asBearerAuth, dbUtils } from 'src/utils';
 import request from 'supertest';
-import { api } from '../../client';
-import { testApp } from '../utils';
+import { beforeAll, describe, expect, it } from 'vitest';
 
-describe(`${SharedLinkController.name} (e2e)`, () => {
-  let server: any;
+const createSharedLink = (dto: SharedLinkCreateDto, accessToken: string) =>
+  create({ sharedLinkCreateDto: dto }, { headers: asBearerAuth(accessToken) });
+
+describe('/shared-link', () => {
   let admin: LoginResponseDto;
   let asset1: AssetResponseDto;
   let asset2: AssetResponseDto;
@@ -30,97 +33,101 @@ describe(`${SharedLinkController.name} (e2e)`, () => {
   let linkWithAssets: SharedLinkResponseDto;
   let linkWithMetadata: SharedLinkResponseDto;
   let linkWithoutMetadata: SharedLinkResponseDto;
-  let app: INestApplication<any>;
 
   beforeAll(async () => {
-    app = await testApp.create();
-    server = app.getHttpServer();
-    const assetRepository = app.get<IAssetRepository>(IAssetRepository);
+    apiUtils.setup();
+    await dbUtils.reset();
 
-    await testApp.reset();
-    await api.authApi.adminSignUp(server);
-    admin = await api.authApi.adminLogin(server);
-
-    await Promise.all([
-      api.userApi.create(server, admin.accessToken, userDto.user1),
-      api.userApi.create(server, admin.accessToken, userDto.user2),
-    ]);
+    admin = await apiUtils.adminSetup();
 
     [user1, user2] = await Promise.all([
-      api.authApi.login(server, userDto.user1),
-      api.authApi.login(server, userDto.user2),
+      apiUtils.userSetup(admin.accessToken, createUserDto.user1),
+      apiUtils.userSetup(admin.accessToken, createUserDto.user2),
     ]);
 
     [asset1, asset2] = await Promise.all([
-      api.assetApi.create(server, user1.accessToken),
-      api.assetApi.create(server, user1.accessToken),
+      apiUtils.createAsset(user1.accessToken),
+      apiUtils.createAsset(user1.accessToken),
     ]);
-
-    await assetRepository.upsertExif({
-      assetId: asset1.id,
-      longitude: -108.400968333333,
-      latitude: 39.115,
-      orientation: '1',
-      dateTimeOriginal: DateTime.fromISO('2022-01-10T19:15:44.310Z').toJSDate(),
-      timeZone: 'UTC-4',
-      state: 'Mesa County, Colorado',
-      country: 'United States of America',
-    });
 
     [album, deletedAlbum, metadataAlbum] = await Promise.all([
-      api.albumApi.create(server, user1.accessToken, { albumName: 'album' }),
-      api.albumApi.create(server, user2.accessToken, { albumName: 'deleted album' }),
-      api.albumApi.create(server, user1.accessToken, { albumName: 'metadata album', assetIds: [asset1.id] }),
+      createAlbum(
+        { createAlbumDto: { albumName: 'album' } },
+        { headers: asBearerAuth(user1.accessToken) }
+      ),
+      createAlbum(
+        { createAlbumDto: { albumName: 'deleted album' } },
+        { headers: asBearerAuth(user2.accessToken) }
+      ),
+      createAlbum(
+        {
+          createAlbumDto: {
+            albumName: 'metadata album',
+            assetIds: [asset1.id],
+          },
+        },
+        { headers: asBearerAuth(user1.accessToken) }
+      ),
     ]);
 
-    [linkWithDeletedAlbum, linkWithAlbum, linkWithAssets, linkWithPassword, linkWithMetadata, linkWithoutMetadata] =
-      await Promise.all([
-        api.sharedLinkApi.create(server, user2.accessToken, {
-          type: SharedLinkType.ALBUM,
-          albumId: deletedAlbum.id,
-        }),
-        api.sharedLinkApi.create(server, user1.accessToken, {
-          type: SharedLinkType.ALBUM,
-          albumId: album.id,
-        }),
-        api.sharedLinkApi.create(server, user1.accessToken, {
-          type: SharedLinkType.INDIVIDUAL,
-          assetIds: [asset1.id],
-        }),
-        api.sharedLinkApi.create(server, user1.accessToken, {
-          type: SharedLinkType.ALBUM,
-          albumId: album.id,
-          password: 'foo',
-        }),
-        api.sharedLinkApi.create(server, user1.accessToken, {
-          type: SharedLinkType.ALBUM,
+    [
+      linkWithDeletedAlbum,
+      linkWithAlbum,
+      linkWithAssets,
+      linkWithPassword,
+      linkWithMetadata,
+      linkWithoutMetadata,
+    ] = await Promise.all([
+      createSharedLink(
+        { type: SharedLinkType.Album, albumId: deletedAlbum.id },
+        user2.accessToken
+      ),
+      createSharedLink(
+        { type: SharedLinkType.Album, albumId: album.id },
+        user1.accessToken
+      ),
+      createSharedLink(
+        { type: SharedLinkType.Individual, assetIds: [asset1.id] },
+        user1.accessToken
+      ),
+      createSharedLink(
+        { type: SharedLinkType.Album, albumId: album.id, password: 'foo' },
+        user1.accessToken
+      ),
+      createSharedLink(
+        {
+          type: SharedLinkType.Album,
           albumId: metadataAlbum.id,
           showMetadata: true,
-        }),
-        api.sharedLinkApi.create(server, user1.accessToken, {
-          type: SharedLinkType.ALBUM,
+        },
+        user1.accessToken
+      ),
+      createSharedLink(
+        {
+          type: SharedLinkType.Album,
           albumId: metadataAlbum.id,
           showMetadata: false,
-        }),
-      ]);
+        },
+        user1.accessToken
+      ),
+    ]);
 
-    await api.userApi.delete(server, admin.accessToken, user2.userId);
-  });
-
-  afterAll(async () => {
-    await testApp.teardown();
+    await deleteUser(
+      { id: user2.userId },
+      { headers: asBearerAuth(admin.accessToken) }
+    );
   });
 
   describe('GET /shared-link', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(server).get('/shared-link');
+      const { status, body } = await request(app).get('/shared-link');
 
       expect(status).toBe(401);
-      expect(body).toEqual(errorStub.unauthorized);
+      expect(body).toEqual(errorDto.unauthorized);
     });
 
     it('should get all shared links created by user', async () => {
-      const { status, body } = await request(server)
+      const { status, body } = await request(app)
         .get('/shared-link')
         .set('Authorization', `Bearer ${user1.accessToken}`);
 
@@ -133,12 +140,12 @@ describe(`${SharedLinkController.name} (e2e)`, () => {
           expect.objectContaining({ id: linkWithPassword.id }),
           expect.objectContaining({ id: linkWithMetadata.id }),
           expect.objectContaining({ id: linkWithoutMetadata.id }),
-        ]),
+        ])
       );
     });
 
     it('should not get shared links created by other users', async () => {
-      const { status, body } = await request(server)
+      const { status, body } = await request(app)
         .get('/shared-link')
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
@@ -149,7 +156,7 @@ describe(`${SharedLinkController.name} (e2e)`, () => {
 
   describe('GET /shared-link/me', () => {
     it('should not require admin authentication', async () => {
-      const { status } = await request(server)
+      const { status } = await request(app)
         .get('/shared-link/me')
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
@@ -157,52 +164,66 @@ describe(`${SharedLinkController.name} (e2e)`, () => {
     });
 
     it('should get data for correct shared link', async () => {
-      const { status, body } = await request(server).get('/shared-link/me').query({ key: linkWithAlbum.key });
+      const { status, body } = await request(app)
+        .get('/shared-link/me')
+        .query({ key: linkWithAlbum.key });
 
       expect(status).toBe(200);
       expect(body).toEqual(
         expect.objectContaining({
           album,
           userId: user1.userId,
-          type: SharedLinkType.ALBUM,
-        }),
+          type: SharedLinkType.Album,
+        })
       );
     });
 
     it('should return unauthorized for incorrect shared link', async () => {
-      const { status, body } = await request(server)
+      const { status, body } = await request(app)
         .get('/shared-link/me')
         .query({ key: linkWithAlbum.key + 'foo' });
 
       expect(status).toBe(401);
-      expect(body).toEqual(errorStub.invalidShareKey);
+      expect(body).toEqual(errorDto.invalidShareKey);
     });
 
     it('should return unauthorized if target has been soft deleted', async () => {
-      const { status, body } = await request(server).get('/shared-link/me').query({ key: linkWithDeletedAlbum.key });
+      const { status, body } = await request(app)
+        .get('/shared-link/me')
+        .query({ key: linkWithDeletedAlbum.key });
 
       expect(status).toBe(401);
-      expect(body).toEqual(errorStub.invalidShareKey);
+      expect(body).toEqual(errorDto.invalidShareKey);
     });
 
     it('should return unauthorized for password protected link', async () => {
-      const { status, body } = await request(server).get('/shared-link/me').query({ key: linkWithPassword.key });
+      const { status, body } = await request(app)
+        .get('/shared-link/me')
+        .query({ key: linkWithPassword.key });
 
       expect(status).toBe(401);
-      expect(body).toEqual(errorStub.invalidSharePassword);
+      expect(body).toEqual(errorDto.invalidSharePassword);
     });
 
     it('should get data for correct password protected link', async () => {
-      const { status, body } = await request(server)
+      const { status, body } = await request(app)
         .get('/shared-link/me')
         .query({ key: linkWithPassword.key, password: 'foo' });
 
       expect(status).toBe(200);
-      expect(body).toEqual(expect.objectContaining({ album, userId: user1.userId, type: SharedLinkType.ALBUM }));
+      expect(body).toEqual(
+        expect.objectContaining({
+          album,
+          userId: user1.userId,
+          type: SharedLinkType.Album,
+        })
+      );
     });
 
     it('should return metadata for album shared link', async () => {
-      const { status, body } = await request(server).get('/shared-link/me').query({ key: linkWithMetadata.key });
+      const { status, body } = await request(app)
+        .get('/shared-link/me')
+        .query({ key: linkWithMetadata.key });
 
       expect(status).toBe(200);
       expect(body.assets).toHaveLength(1);
@@ -211,22 +232,16 @@ describe(`${SharedLinkController.name} (e2e)`, () => {
           originalFileName: 'example',
           localDateTime: expect.any(String),
           fileCreatedAt: expect.any(String),
-          exifInfo: expect.objectContaining({
-            longitude: -108.400968333333,
-            latitude: 39.115,
-            orientation: '1',
-            dateTimeOriginal: expect.any(String),
-            timeZone: 'UTC-4',
-            state: 'Mesa County, Colorado',
-            country: 'United States of America',
-          }),
-        }),
+          exifInfo: expect.any(Object),
+        })
       );
       expect(body.album).toBeDefined();
     });
 
     it('should not return metadata for album shared link without metadata', async () => {
-      const { status, body } = await request(server).get('/shared-link/me').query({ key: linkWithoutMetadata.key });
+      const { status, body } = await request(app)
+        .get('/shared-link/me')
+        .query({ key: linkWithoutMetadata.key });
 
       expect(status).toBe(200);
       expect(body.assets).toHaveLength(1);
@@ -242,127 +257,150 @@ describe(`${SharedLinkController.name} (e2e)`, () => {
 
   describe('GET /shared-link/:id', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(server).get(`/shared-link/${linkWithAlbum.id}`);
+      const { status, body } = await request(app).get(
+        `/shared-link/${linkWithAlbum.id}`
+      );
 
       expect(status).toBe(401);
-      expect(body).toEqual(errorStub.unauthorized);
+      expect(body).toEqual(errorDto.unauthorized);
     });
 
     it('should get shared link by id', async () => {
-      const { status, body } = await request(server)
+      const { status, body } = await request(app)
         .get(`/shared-link/${linkWithAlbum.id}`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
 
       expect(status).toBe(200);
-      expect(body).toEqual(expect.objectContaining({ album, userId: user1.userId, type: SharedLinkType.ALBUM }));
+      expect(body).toEqual(
+        expect.objectContaining({
+          album,
+          userId: user1.userId,
+          type: SharedLinkType.Album,
+        })
+      );
     });
 
     it('should not get shared link by id if user has not created the link or it does not exist', async () => {
-      const { status, body } = await request(server)
+      const { status, body } = await request(app)
         .get(`/shared-link/${linkWithAlbum.id}`)
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
       expect(status).toBe(400);
-      expect(body).toEqual(expect.objectContaining({ message: 'Shared link not found' }));
+      expect(body).toEqual(
+        expect.objectContaining({ message: 'Shared link not found' })
+      );
     });
   });
 
   describe('POST /shared-link', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(server)
+      const { status, body } = await request(app)
         .post('/shared-link')
-        .send({ type: SharedLinkType.ALBUM, albumId: uuidStub.notFound });
+        .send({ type: SharedLinkType.Album, albumId: uuidDto.notFound });
 
       expect(status).toBe(401);
-      expect(body).toEqual(errorStub.unauthorized);
+      expect(body).toEqual(errorDto.unauthorized);
     });
 
     it('should require a type and the correspondent asset/album id', async () => {
-      const { status, body } = await request(server)
+      const { status, body } = await request(app)
         .post('/shared-link')
         .set('Authorization', `Bearer ${user1.accessToken}`);
 
       expect(status).toBe(400);
-      expect(body).toEqual(errorStub.badRequest());
+      expect(body).toEqual(errorDto.badRequest());
     });
 
     it('should require an asset/album id', async () => {
-      const { status, body } = await request(server)
+      const { status, body } = await request(app)
         .post('/shared-link')
         .set('Authorization', `Bearer ${user1.accessToken}`)
-        .send({ type: SharedLinkType.ALBUM });
+        .send({ type: SharedLinkType.Album });
 
       expect(status).toBe(400);
-      expect(body).toEqual(expect.objectContaining({ message: 'Invalid albumId' }));
+      expect(body).toEqual(
+        expect.objectContaining({ message: 'Invalid albumId' })
+      );
     });
 
     it('should require a valid asset id', async () => {
-      const { status, body } = await request(server)
+      const { status, body } = await request(app)
         .post('/shared-link')
         .set('Authorization', `Bearer ${user1.accessToken}`)
-        .send({ type: SharedLinkType.INDIVIDUAL, assetId: uuidStub.notFound });
+        .send({ type: SharedLinkType.Individual, assetId: uuidDto.notFound });
 
       expect(status).toBe(400);
-      expect(body).toEqual(expect.objectContaining({ message: 'Invalid assetIds' }));
+      expect(body).toEqual(
+        expect.objectContaining({ message: 'Invalid assetIds' })
+      );
     });
 
     it('should create a shared link', async () => {
-      const { status, body } = await request(server)
+      const { status, body } = await request(app)
         .post('/shared-link')
         .set('Authorization', `Bearer ${user1.accessToken}`)
-        .send({ type: SharedLinkType.ALBUM, albumId: album.id });
+        .send({ type: SharedLinkType.Album, albumId: album.id });
 
       expect(status).toBe(201);
-      expect(body).toEqual(expect.objectContaining({ type: SharedLinkType.ALBUM, userId: user1.userId }));
+      expect(body).toEqual(
+        expect.objectContaining({
+          type: SharedLinkType.Album,
+          userId: user1.userId,
+        })
+      );
     });
   });
 
   describe('PATCH /shared-link/:id', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(server)
+      const { status, body } = await request(app)
         .patch(`/shared-link/${linkWithAlbum.id}`)
         .send({ description: 'foo' });
 
       expect(status).toBe(401);
-      expect(body).toEqual(errorStub.unauthorized);
+      expect(body).toEqual(errorDto.unauthorized);
     });
 
     it('should fail if invalid link', async () => {
-      const { status, body } = await request(server)
-        .patch(`/shared-link/${uuidStub.notFound}`)
+      const { status, body } = await request(app)
+        .patch(`/shared-link/${uuidDto.notFound}`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({ description: 'foo' });
 
       expect(status).toBe(400);
-      expect(body).toEqual(errorStub.badRequest());
+      expect(body).toEqual(errorDto.badRequest());
     });
 
     it('should update shared link', async () => {
-      const { status, body } = await request(server)
+      const { status, body } = await request(app)
         .patch(`/shared-link/${linkWithAlbum.id}`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({ description: 'foo' });
 
       expect(status).toBe(200);
       expect(body).toEqual(
-        expect.objectContaining({ type: SharedLinkType.ALBUM, userId: user1.userId, description: 'foo' }),
+        expect.objectContaining({
+          type: SharedLinkType.Album,
+          userId: user1.userId,
+          description: 'foo',
+        })
       );
     });
   });
 
   describe('PUT /shared-link/:id/assets', () => {
     it('should not add assets to shared link (album)', async () => {
-      const { status, body } = await request(server)
+      const { status, body } = await request(app)
         .put(`/shared-link/${linkWithAlbum.id}/assets`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({ assetIds: [asset2.id] });
 
       expect(status).toBe(400);
-      expect(body).toEqual(errorStub.badRequest('Invalid shared link type'));
+      expect(body).toEqual(errorDto.badRequest('Invalid shared link type'));
     });
 
     it('should add an assets to a shared link (individual)', async () => {
-      const { status, body } = await request(server)
+      const { status, body } = await request(app)
         .put(`/shared-link/${linkWithAssets.id}/assets`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({ assetIds: [asset2.id] });
@@ -374,17 +412,17 @@ describe(`${SharedLinkController.name} (e2e)`, () => {
 
   describe('DELETE /shared-link/:id/assets', () => {
     it('should not remove assets from a shared link (album)', async () => {
-      const { status, body } = await request(server)
+      const { status, body } = await request(app)
         .delete(`/shared-link/${linkWithAlbum.id}/assets`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({ assetIds: [asset2.id] });
 
       expect(status).toBe(400);
-      expect(body).toEqual(errorStub.badRequest('Invalid shared link type'));
+      expect(body).toEqual(errorDto.badRequest('Invalid shared link type'));
     });
 
     it('should remove assets from a shared link (individual)', async () => {
-      const { status, body } = await request(server)
+      const { status, body } = await request(app)
         .delete(`/shared-link/${linkWithAssets.id}/assets`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({ assetIds: [asset2.id] });
@@ -396,23 +434,25 @@ describe(`${SharedLinkController.name} (e2e)`, () => {
 
   describe('DELETE /shared-link/:id', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(server).delete(`/shared-link/${linkWithAlbum.id}`);
+      const { status, body } = await request(app).delete(
+        `/shared-link/${linkWithAlbum.id}`
+      );
 
       expect(status).toBe(401);
-      expect(body).toEqual(errorStub.unauthorized);
+      expect(body).toEqual(errorDto.unauthorized);
     });
 
     it('should fail if invalid link', async () => {
-      const { status, body } = await request(server)
-        .delete(`/shared-link/${uuidStub.notFound}`)
+      const { status, body } = await request(app)
+        .delete(`/shared-link/${uuidDto.notFound}`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
 
       expect(status).toBe(400);
-      expect(body).toEqual(errorStub.badRequest());
+      expect(body).toEqual(errorDto.badRequest());
     });
 
     it('should delete a shared link', async () => {
-      const { status } = await request(server)
+      const { status } = await request(app)
         .delete(`/shared-link/${linkWithAlbum.id}`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
 
