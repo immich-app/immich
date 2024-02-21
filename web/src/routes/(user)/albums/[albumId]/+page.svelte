@@ -83,8 +83,6 @@
   let album = data.album;
   let description = album.description;
 
-  $: album = data.album;
-
   $: {
     if (!album.isActivityEnabled && $numberOfComments === 0) {
       isShowActivity = false;
@@ -452,7 +450,10 @@
           description,
         },
       });
-
+      notificationController.show({
+        type: NotificationType.Info,
+        message: 'Album description has been updated',
+      });
       album.description = description;
     } catch (error) {
       handleError(error, 'Error updating album description');
@@ -672,7 +673,9 @@
                   placeholder="Add description"
                 />
               {:else if description}
-                <p class="break-words whitespace-pre-line w-full text-black dark:text-white text-base">{description}</p>
+                <p class="break-words whitespace-pre-line w-full text-black dark:text-white text-base">
+                  {description}
+                </p>
               {/if}
             </section>
           {/if}
