@@ -12,6 +12,7 @@ import 'package:immich_mobile/modules/asset_viewer/providers/scroll_notifier.pro
 import 'package:immich_mobile/modules/home/ui/asset_grid/thumbnail_image.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/thumbnail_placeholder.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/services/event.service.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 import 'asset_grid_data_structure.dart';
@@ -128,6 +129,14 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
         assets.firstWhereOrNull((e) => !_selectedAssets.contains(e)) == null;
   }
 
+  Future<void> _scrollToIndex(int index) async {
+    await _itemScrollController.scrollTo(
+      index: index,
+      alignment: 0,
+      duration: const Duration(milliseconds: 500),
+    );
+  }
+
   Widget _itemBuilder(BuildContext c, int position) {
     int index = position;
     if (widget.topWidget != null) {
@@ -138,6 +147,7 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
     }
 
     final section = widget.renderList.elements[index];
+    // debugPrint("section: ${section.date} $index");
     return _Section(
       showStorageIndicator: widget.showStorageIndicator,
       selectedAssets: _selectedAssets,
@@ -223,6 +233,22 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
         : RefreshIndicator(onRefresh: widget.onRefresh!, child: child);
   }
 
+  void _scrollToDate(DateTime? date) {
+    if (date == null) {
+      return;
+    }
+    final index = widget.renderList.elements.indexWhere(
+      (e) =>
+          e.date.year == date.year &&
+          e.date.month == date.month &&
+          e.date.day == date.day,
+    );
+    if (index != -1) {
+      // Not sure why the index is shifted, but it works. :3
+      _scrollToIndex(index + 1);
+    }
+  }
+
   @override
   void didUpdateWidget(ImmichAssetGridView oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -237,6 +263,11 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
   void initState() {
     super.initState();
     scrollToTopNotifierProvider.addListener(_scrollToTop);
+    scrollToDateEvent.subscribe((args) {
+      if (args?.value != null) {
+        _scrollToDate(args?.value);
+      }
+    });
     if (widget.visibleItemsListener != null) {
       _itemPositionsListener.itemPositions.addListener(_positionListener);
     }

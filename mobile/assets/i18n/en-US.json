@@ -208,6 +208,7 @@
   "image_viewer_page_state_provider_download_error": "Download Error",
   "image_viewer_page_state_provider_download_success": "Download Success",
   "image_viewer_page_state_provider_share_error": "Share Error",
+  "jump_to_date": "Jump to date",
   "library_page_albums": "Albums",
   "library_page_archive": "Archive",
   "library_page_device_albums": "Albums on Device",
