@@ -56,7 +56,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     cqMode: CQMode.AUTO,
     twoPass: false,
     preferredHwDevice: 'auto',
-    transcode: TranscodePolicy.OPTIMAL,
+    transcode: TranscodePolicy.REQUIRED,
     accel: TranscodeHWAccel.DISABLED,
     tonemap: ToneMapping.HABLE,
   },

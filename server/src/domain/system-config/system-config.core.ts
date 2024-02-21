@@ -44,7 +44,7 @@ export const defaults = Object.freeze<SystemConfig>({
     cqMode: CQMode.AUTO,
     twoPass: false,
     preferredHwDevice: 'auto',
-    transcode: TranscodePolicy.OPTIMAL,
+    transcode: TranscodePolicy.REQUIRED,
     tonemap: ToneMapping.HABLE,
     accel: TranscodeHWAccel.DISABLED,
   },
