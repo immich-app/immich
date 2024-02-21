@@ -103,7 +103,6 @@ export const userStub = {
     password: 'immich_password',
     name: 'immich_name',
     storageLabel: 'label-1',
-    externalPath: '/',
     oauthId: '',
     shouldChangePassword: false,
     profileImagePath: '',

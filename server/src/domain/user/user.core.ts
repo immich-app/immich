@@ -1,6 +1,5 @@
 import { LibraryType, UserEntity } from '@app/infra/entities';
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
-import path from 'node:path';
 import sanitize from 'sanitize-filename';
 import { ICryptoRepository, ILibraryRepository, IUserRepository } from '../repositories';
 import { UserResponseDto } from './response-dto';
