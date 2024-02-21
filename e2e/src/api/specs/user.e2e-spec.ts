@@ -1,26 +1,31 @@
-import {
-  LoginResponseDto,
-  UserResponseDto,
-  createUser,
-  deleteUser,
-  getUserById,
-} from '@immich/sdk';
+import { LoginResponseDto, deleteUser, getUserById } from '@immich/sdk';
 import { createUserDto, userDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
 import { apiUtils, app, asBearerAuth, dbUtils } from 'src/utils';
 import request from 'supertest';
-import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 
 describe('/server-info', () => {
   let admin: LoginResponseDto;
+  let deletedUser: LoginResponseDto;
+  let userToDelete: LoginResponseDto;
+  let nonAdmin: LoginResponseDto;
 
   beforeAll(async () => {
     apiUtils.setup();
-  });
-
-  beforeEach(async () => {
     await dbUtils.reset();
     admin = await apiUtils.adminSetup({ onboarding: false });
+
+    [deletedUser, nonAdmin, userToDelete] = await Promise.all([
+      apiUtils.userSetup(admin.accessToken, createUserDto.user1),
+      apiUtils.userSetup(admin.accessToken, createUserDto.user2),
+      apiUtils.userSetup(admin.accessToken, createUserDto.user3),
+    ]);
+
+    await deleteUser(
+      { id: deletedUser.userId },
+      { headers: asBearerAuth(admin.accessToken) }
+    );
   });
 
   describe('GET /user', () => {
@@ -30,60 +35,54 @@ describe('/server-info', () => {
       expect(body).toEqual(errorDto.unauthorized);
     });
 
-    it('should start with the admin', async () => {
+    it('should get users', async () => {
       const { status, body } = await request(app)
         .get('/user')
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toEqual(200);
-      expect(body).toHaveLength(1);
-      expect(body[0]).toMatchObject({ email: 'admin@immich.cloud' });
+      expect(body).toHaveLength(4);
+      expect(body).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ email: 'admin@immich.cloud' }),
+          expect.objectContaining({ email: 'user1@immich.cloud' }),
+          expect.objectContaining({ email: 'user2@immich.cloud' }),
+          expect.objectContaining({ email: 'user3@immich.cloud' }),
+        ])
+      );
     });
 
     it('should hide deleted users', async () => {
-      const user1 = await apiUtils.userSetup(
-        admin.accessToken,
-        createUserDto.user1
-      );
-      await deleteUser(
-        { id: user1.userId },
-        { headers: asBearerAuth(admin.accessToken) }
-      );
-
       const { status, body } = await request(app)
         .get(`/user`)
         .query({ isAll: true })
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(200);
-      expect(body).toHaveLength(1);
-      expect(body[0]).toMatchObject({ email: 'admin@immich.cloud' });
+      expect(body).toHaveLength(3);
+      expect(body).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ email: 'admin@immich.cloud' }),
+          expect.objectContaining({ email: 'user2@immich.cloud' }),
+          expect.objectContaining({ email: 'user3@immich.cloud' }),
+        ])
+      );
     });
 
     it('should include deleted users', async () => {
-      const user1 = await apiUtils.userSetup(
-        admin.accessToken,
-        createUserDto.user1
-      );
-      await deleteUser(
-        { id: user1.userId },
-        { headers: asBearerAuth(admin.accessToken) }
-      );
-
       const { status, body } = await request(app)
         .get(`/user`)
         .query({ isAll: false })
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
       expect(status).toBe(200);
-      expect(body).toHaveLength(2);
-      expect(body[0]).toMatchObject({
-        id: user1.userId,
-        email: 'user1@immich.cloud',
-        deletedAt: expect.any(String),
-      });
-      expect(body[1]).toMatchObject({
-        id: admin.userId,
-        email: 'admin@immich.cloud',
-      });
+      expect(body).toHaveLength(4);
+      expect(body).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ email: 'admin@immich.cloud' }),
+          expect.objectContaining({ email: 'user1@immich.cloud' }),
+          expect.objectContaining({ email: 'user2@immich.cloud' }),
+          expect.objectContaining({ email: 'user3@immich.cloud' }),
+        ])
+      );
     });
   });
 
@@ -149,13 +148,13 @@ describe('/server-info', () => {
         .post(`/user`)
         .send({
           isAdmin: true,
-          email: 'user1@immich.cloud',
-          password: 'Password123',
+          email: 'user4@immich.cloud',
+          password: 'password123',
           name: 'Immich',
         })
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(body).toMatchObject({
-        email: 'user1@immich.cloud',
+        email: 'user4@immich.cloud',
         isAdmin: false,
         shouldChangePassword: true,
       });
@@ -181,18 +180,9 @@ describe('/server-info', () => {
   });
 
   describe('DELETE /user/:id', () => {
-    let userToDelete: UserResponseDto;
-
-    beforeEach(async () => {
-      userToDelete = await createUser(
-        { createUserDto: createUserDto.user1 },
-        { headers: asBearerAuth(admin.accessToken) }
-      );
-    });
-
     it('should require authentication', async () => {
       const { status, body } = await request(app).delete(
-        `/user/${userToDelete.id}`
+        `/user/${userToDelete.userId}`
       );
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
@@ -200,12 +190,12 @@ describe('/server-info', () => {
 
     it('should delete user', async () => {
       const { status, body } = await request(app)
-        .delete(`/user/${userToDelete.id}`)
+        .delete(`/user/${userToDelete.userId}`)
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
       expect(status).toBe(200);
-      expect(body).toEqual({
-        ...userToDelete,
+      expect(body).toMatchObject({
+        id: userToDelete.userId,
         updatedAt: expect.any(String),
         deletedAt: expect.any(String),
       });
@@ -231,14 +221,9 @@ describe('/server-info', () => {
     }
 
     it('should not allow a non-admin to become an admin', async () => {
-      const user = await apiUtils.userSetup(
-        admin.accessToken,
-        createUserDto.user1
-      );
-
       const { status, body } = await request(app)
         .put(`/user`)
-        .send({ isAdmin: true, id: user.userId })
+        .send({ isAdmin: true, id: nonAdmin.userId })
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
       expect(status).toBe(400);
