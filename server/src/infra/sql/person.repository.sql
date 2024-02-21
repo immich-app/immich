@@ -358,6 +358,7 @@ FROM
 WHERE
   "person"."ownerId" = $1
   AND "asset"."isArchived" = false
+  AND "person"."thumbnailPath" != ''
 HAVING
   COUNT("face"."assetId") != 0
 

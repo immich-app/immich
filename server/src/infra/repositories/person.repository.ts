@@ -216,6 +216,7 @@ export class PersonRepository implements IPersonRepository {
       .where('person.ownerId = :userId', { userId })
       .innerJoin('face.asset', 'asset')
       .andWhere('asset.isArchived = false')
+      .andWhere("person.thumbnailPath != ''")
       .select('COUNT(DISTINCT(person.id))', 'total')
       .addSelect('COUNT(DISTINCT(person.id)) FILTER (WHERE person.isHidden = true)', 'hidden')
       .having('COUNT(face.assetId) != 0')
