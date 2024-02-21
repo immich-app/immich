@@ -249,7 +249,6 @@ describe(`${LibraryController.name} (e2e)`, () => {
       });
 
       it('should change the import paths', async () => {
-        await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, IMMICH_TEST_ASSET_TEMP_PATH);
         const { status, body } = await request(server)
           .put(`/library/${library.id}`)
           .set('Authorization', `Bearer ${admin.accessToken}`)
@@ -455,74 +454,42 @@ describe(`${LibraryController.name} (e2e)`, () => {
         library = await api.libraryApi.create(server, admin.accessToken, { type: LibraryType.EXTERNAL });
       });
 
-      it('should fail with no external path set', async () => {
-        const { status, body } = await request(server)
-          .post(`/library/${library.id}/validate`)
-          .set('Authorization', `Bearer ${admin.accessToken}`)
-
-          .send({ importPaths: [] });
-
-        expect(status).toBe(400);
-        expect(body).toEqual(errorStub.badRequest('User has no external path set'));
+      it('should pass with no import paths', async () => {
+        const response = await api.libraryApi.validate(server, admin.accessToken, library.id, { importPaths: [] });
+        expect(response.importPaths).toEqual([]);
       });
 
-      describe('With external path set', () => {
-        beforeEach(async () => {
-          await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, IMMICH_TEST_ASSET_TEMP_PATH);
+      it('should fail if path does not exist', async () => {
+        const pathToTest = `${IMMICH_TEST_ASSET_TEMP_PATH}/does/not/exist`;
+
+        const response = await api.libraryApi.validate(server, admin.accessToken, library.id, {
+          importPaths: [pathToTest],
         });
 
-        it('should pass with no import paths', async () => {
-          const response = await api.libraryApi.validate(server, admin.accessToken, library.id, { importPaths: [] });
-          expect(response.importPaths).toEqual([]);
+        expect(response.importPaths?.length).toEqual(1);
+        const pathResponse = response?.importPaths?.at(0);
+
+        expect(pathResponse).toEqual({
+          importPath: pathToTest,
+          isValid: false,
+          message: `Path does not exist (ENOENT)`,
+        });
+      });
+
+      it('should fail if path is a file', async () => {
+        const pathToTest = `${IMMICH_TEST_ASSET_TEMP_PATH}/does/not/exist`;
+
+        const response = await api.libraryApi.validate(server, admin.accessToken, library.id, {
+          importPaths: [pathToTest],
         });
 
-        it('should not allow paths outside of the external path', async () => {
-          const pathToTest = `${IMMICH_TEST_ASSET_TEMP_PATH}/../`;
-          const response = await api.libraryApi.validate(server, admin.accessToken, library.id, {
-            importPaths: [pathToTest],
-          });
-          expect(response.importPaths?.length).toEqual(1);
-          const pathResponse = response?.importPaths?.at(0);
+        expect(response.importPaths?.length).toEqual(1);
+        const pathResponse = response?.importPaths?.at(0);
 
-          expect(pathResponse).toEqual({
-            importPath: pathToTest,
-            isValid: false,
-            message: `Not contained in user's external path`,
-          });
-        });
-
-        it('should fail if path does not exist', async () => {
-          const pathToTest = `${IMMICH_TEST_ASSET_TEMP_PATH}/does/not/exist`;
-
-          const response = await api.libraryApi.validate(server, admin.accessToken, library.id, {
-            importPaths: [pathToTest],
-          });
-
-          expect(response.importPaths?.length).toEqual(1);
-          const pathResponse = response?.importPaths?.at(0);
-
-          expect(pathResponse).toEqual({
-            importPath: pathToTest,
-            isValid: false,
-            message: `Path does not exist (ENOENT)`,
-          });
-        });
-
-        it('should fail if path is a file', async () => {
-          const pathToTest = `${IMMICH_TEST_ASSET_TEMP_PATH}/does/not/exist`;
-
-          const response = await api.libraryApi.validate(server, admin.accessToken, library.id, {
-            importPaths: [pathToTest],
-          });
-
-          expect(response.importPaths?.length).toEqual(1);
-          const pathResponse = response?.importPaths?.at(0);
-
-          expect(pathResponse).toEqual({
-            importPath: pathToTest,
-            isValid: false,
-            message: `Path does not exist (ENOENT)`,
-          });
+        expect(pathResponse).toEqual({
+          importPath: pathToTest,
+          isValid: false,
+          message: `Path does not exist (ENOENT)`,
         });
       });
     });

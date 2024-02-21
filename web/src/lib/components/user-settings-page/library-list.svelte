@@ -6,8 +6,6 @@
   import { handleError } from '$lib/utils/handle-error';
   import {
     LibraryType,
-    createLibrary,
-    deleteLibrary,
     getUserLibraries,
     getLibraryStatistics,
     removeOfflineFiles,
@@ -23,7 +21,6 @@
   import LibraryImportPathsForm from '../forms/library-import-paths-form.svelte';
   import LibraryRenameForm from '../forms/library-rename-form.svelte';
   import LibraryScanSettingsForm from '../forms/library-scan-settings-form.svelte';
-  import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
   import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
   import MenuOption from '../shared-components/context-menu/menu-option.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
@@ -38,16 +35,11 @@
   let diskUsage: number[] = [];
   let diskUsageUnit: string[] = [];
 
-  let confirmDeleteLibrary: LibraryResponseDto | null = null;
-  let deletedLibrary: LibraryResponseDto | null = null;
-
   let editImportPaths: number | null;
   let editScanSettings: number | null;
   let renameLibrary: number | null;
 
   let updateLibraryIndex: number | null;
-
-  let deleteAssetCount = 0;
 
   let dropdownOpen: boolean[] = [];
   let showContextMenu = false;
@@ -101,23 +93,6 @@
     }
   }
 
-  const handleCreate = async (libraryType: LibraryType) => {
-    try {
-      const createdLibrary = await createLibrary({
-        createLibraryDto: { type: libraryType },
-      });
-
-      notificationController.show({
-        message: `Created library: ${createdLibrary.name}`,
-        type: NotificationType.Info,
-      });
-    } catch (error) {
-      handleError(error, 'Unable to create library');
-    } finally {
-      await readLibraryList();
-    }
-  };
-
   const handleUpdate = async (event: Partial<LibraryResponseDto>) => {
     if (updateLibraryIndex === null) {
       return;
@@ -130,30 +105,6 @@
       await readLibraryList();
     } catch (error) {
       handleError(error, 'Unable to update library');
-    }
-  };
-
-  const handleDelete = async () => {
-    if (confirmDeleteLibrary) {
-      deletedLibrary = confirmDeleteLibrary;
-    }
-
-    if (!deletedLibrary) {
-      return;
-    }
-
-    try {
-      await deleteLibrary({ id: deletedLibrary.id });
-      notificationController.show({
-        message: `Library deleted`,
-        type: NotificationType.Info,
-      });
-    } catch (error) {
-      handleError(error, 'Unable to remove library');
-    } finally {
-      confirmDeleteLibrary = null;
-      deletedLibrary = null;
-      await readLibraryList();
     }
   };
 
@@ -241,12 +192,6 @@
     }
   };
 
-  const onScanSettingClicked = () => {
-    closeAll();
-    editScanSettings = selectedLibraryIndex;
-    updateLibraryIndex = selectedLibraryIndex;
-  };
-
   const onScanAllLibraryFilesClicked = () => {
     closeAll();
     if (selectedLibrary) {
@@ -267,31 +212,7 @@
       handleRemoveOffline(selectedLibrary.id);
     }
   };
-
-  const onDeleteLibraryClicked = () => {
-    closeAll();
-
-    if (selectedLibrary && confirm(`Are you sure you want to delete ${selectedLibrary.name} library?`) == true) {
-      refreshStats(selectedLibraryIndex);
-      if (totalCount[selectedLibraryIndex] > 0) {
-        deleteAssetCount = totalCount[selectedLibraryIndex];
-        confirmDeleteLibrary = selectedLibrary;
-      } else {
-        deletedLibrary = selectedLibrary;
-        handleDelete();
-      }
-    }
-  };
 </script>
-
-{#if confirmDeleteLibrary}
-  <ConfirmDialogue
-    title="Warning!"
-    prompt="Are you sure you want to delete this library? This will DELETE all {deleteAssetCount} contained assets and cannot be undone."
-    on:confirm={handleDelete}
-    on:cancel={() => (confirmDeleteLibrary = null)}
-  />
-{/if}
 
 <section class="my-4">
   <div class="flex flex-col gap-2" in:fade={{ duration: 500 }}>

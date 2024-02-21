@@ -347,17 +347,6 @@ describe(`${LibraryController.name} (e2e)`, () => {
       });
     });
 
-    describe('External path', () => {
-      let library: LibraryResponseDto;
-
-      beforeEach(async () => {
-        library = await api.libraryApi.create(server, admin.accessToken, {
-          type: LibraryType.EXTERNAL,
-          importPaths: [`${IMMICH_TEST_ASSET_PATH}/albums/nature`],
-        });
-      });
-    });
-
     it('should not scan an upload library', async () => {
       const library = await api.libraryApi.create(server, admin.accessToken, {
         type: LibraryType.UPLOAD,

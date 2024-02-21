@@ -8,7 +8,6 @@
   import { validate, type LibraryResponseDto } from '@immich/sdk';
   import type { ValidateLibraryImportPathResponseDto } from '@immich/sdk/axios';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
-  import { user } from '$lib/stores/user.store';
 
   export let library: LibraryResponseDto;
   export let isAdmin = false;
