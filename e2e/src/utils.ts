@@ -1,10 +1,14 @@
 import {
   AssetResponseDto,
+  CreateAlbumDto,
   CreateAssetDto,
   CreateUserDto,
   PersonUpdateDto,
+  SharedLinkCreateDto,
+  createAlbum,
   createApiKey,
   createPerson,
+  createSharedLink,
   createUser,
   defaults,
   login,
@@ -181,6 +185,11 @@ export const apiUtils = {
       { headers: asBearerAuth(accessToken) }
     );
   },
+  createAlbum: (accessToken: string, dto: CreateAlbumDto) =>
+    createAlbum(
+      { createAlbumDto: dto },
+      { headers: asBearerAuth(accessToken) }
+    ),
   createAsset: async (
     accessToken: string,
     dto?: Omit<CreateAssetDto, 'assetData'>
@@ -211,6 +220,11 @@ export const apiUtils = {
       { headers: asBearerAuth(accessToken) }
     );
   },
+  createSharedLink: (accessToken: string, dto: SharedLinkCreateDto) =>
+    createSharedLink(
+      { sharedLinkCreateDto: dto },
+      { headers: asBearerAuth(accessToken) }
+    ),
 };
 
 export const cliUtils = {
