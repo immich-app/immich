@@ -40,6 +40,7 @@
   import { mdiAccountOff, mdiEyeOutline } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
   import type { PageData } from './$types';
+  import { locale } from '$lib/stores/preferences.store';
 
   export let data: PageData;
 
@@ -431,7 +432,7 @@
 
 <UserPageLayout
   title="People"
-  description={countVisiblePeople === 0 ? undefined : `(${countVisiblePeople.toString()})`}
+  description={countVisiblePeople === 0 ? undefined : `(${countVisiblePeople.toLocaleString($locale)})`}
 >
   <svelte:fragment slot="buttons">
     {#if countTotalPeople > 0}
