@@ -1,6 +1,6 @@
 import { AssetType, LibraryType } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { R_OK } from 'node:constants';
 import { EventEmitter } from 'node:events';
 import { Stats } from 'node:fs';
@@ -213,7 +213,7 @@ export class LibraryService extends EventEmitter {
 
   async getAll(auth: AuthDto, dto: SearchLibraryDto): Promise<LibraryResponseDto[]> {
     if (!auth.user.isAdmin) {
-      throw new BadRequestException('Only admins can get all libraries');
+      throw new UnauthorizedException('Only admins can get all libraries');
     }
 
     const libraries = await this.repository.getAll(false, dto.type);
@@ -258,7 +258,7 @@ export class LibraryService extends EventEmitter {
 
     if (dto.ownerId) {
       if (!auth.user.isAdmin) {
-        throw new BadRequestException('Only admins can create libraries for other users');
+        throw new UnauthorizedException('Only admins can create libraries for other users');
       }
 
       ownerId = dto.ownerId;
@@ -429,7 +429,7 @@ export class LibraryService extends EventEmitter {
         return true;
       } else {
         // File can't be accessed and does not already exist in db
-        throw new BadRequestException("Can't access file", { cause: error });
+        throw new BadRequestException('Cannot access file', { cause: error });
       }
     }
 
