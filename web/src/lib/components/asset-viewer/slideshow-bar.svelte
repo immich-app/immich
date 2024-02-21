@@ -60,8 +60,8 @@
 
   const handleInput = () => {
     if (delay < 1) {
-      delay = 1;
-      $slideshowDelay = 1;
+      delay = 5;
+      $slideshowDelay = 5;
     }
     $slideshowDelay = delay;
   };
