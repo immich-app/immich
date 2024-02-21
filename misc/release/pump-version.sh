@@ -1,4 +1,4 @@
-#/bin/bash
+#!/usr/bin/env bash
 
 #
 # Pump one or both of the server/mobile versions in appropriate files
@@ -25,10 +25,10 @@ while getopts 's:m:' flag; do
   esac
 done
 
-CURRENT_SERVER=$(cat server/package.json | jq -r '.version')
-MAJOR=$(echo $CURRENT_SERVER | cut -d '.' -f1)
-MINOR=$(echo $CURRENT_SERVER | cut -d '.' -f2)
-PATCH=$(echo $CURRENT_SERVER | cut -d '.' -f3)
+CURRENT_SERVER=$(jq -r '.version' server/package.json)
+MAJOR=$(echo "$CURRENT_SERVER" | cut -d '.' -f1)
+MINOR=$(echo "$CURRENT_SERVER" | cut -d '.' -f2)
+PATCH=$(echo "$CURRENT_SERVER" | cut -d '.' -f3)
 
 if [[ $SERVER_PUMP == "major" ]]; then
   MAJOR=$((MAJOR + 1))
@@ -48,7 +48,7 @@ fi
 
 NEXT_SERVER=$MAJOR.$MINOR.$PATCH
 
-CURRENT_MOBILE=$(cat mobile/pubspec.yaml | grep "^version: .*+[0-9]\+$" | cut -d "+" -f2)
+CURRENT_MOBILE=$(grep "^version: .*+[0-9]\+$" mobile/pubspec.yaml | cut -d "+" -f2)
 NEXT_MOBILE=$CURRENT_MOBILE
 if [[ $MOBILE_PUMP == "true" ]]; then
   set $((NEXT_MOBILE++))
@@ -61,9 +61,10 @@ fi
 
 if [ "$CURRENT_SERVER" != "$NEXT_SERVER" ]; then
   echo "Pumping Server: $CURRENT_SERVER => $NEXT_SERVER"
-  npm --prefix server version $SERVER_PUMP
+  npm --prefix server version "$SERVER_PUMP"
+  npm --prefix web version "$SERVER_PUMP"
   make open-api
-  poetry --directory machine-learning version $SERVER_PUMP
+  poetry --directory machine-learning version "$SERVER_PUMP"
 fi
 
 if [ "$CURRENT_MOBILE" != "$NEXT_MOBILE" ]; then
@@ -75,4 +76,4 @@ sed -i "s/version_number: \"$CURRENT_SERVER\"$/version_number: \"$NEXT_SERVER\"/
 sed -i "s/\"android\.injected\.version\.code\" => $CURRENT_MOBILE,/\"android\.injected\.version\.code\" => $NEXT_MOBILE,/" mobile/android/fastlane/Fastfile
 sed -i "s/^version: $CURRENT_SERVER+$CURRENT_MOBILE$/version: $NEXT_SERVER+$NEXT_MOBILE/" mobile/pubspec.yaml
 
-echo "IMMICH_VERSION=v$NEXT_SERVER" >>$GITHUB_ENV
+echo "IMMICH_VERSION=v$NEXT_SERVER" >>"$GITHUB_ENV"

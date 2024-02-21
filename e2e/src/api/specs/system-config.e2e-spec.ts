@@ -1,49 +1,47 @@
-import { LoginResponseDto } from '@app/domain';
-import { SystemConfigController } from '@app/immich';
-import { errorStub, userDto } from '@test/fixtures';
+import { LoginResponseDto } from '@immich/sdk';
+import { createUserDto } from 'src/fixtures';
+import { errorDto } from 'src/responses';
+import { apiUtils, app, dbUtils } from 'src/utils';
 import request from 'supertest';
-import { api } from '../../client';
-import { testApp } from '../utils';
+import { beforeAll, describe, expect, it } from 'vitest';
 
-describe(`${SystemConfigController.name} (e2e)`, () => {
-  let server: any;
+describe('/system-config', () => {
   let admin: LoginResponseDto;
   let nonAdmin: LoginResponseDto;
 
   beforeAll(async () => {
-    server = (await testApp.create()).getHttpServer();
-
-    await testApp.reset();
-    await api.authApi.adminSignUp(server);
-    admin = await api.authApi.adminLogin(server);
-    await api.userApi.create(server, admin.accessToken, userDto.user1);
-    nonAdmin = await api.authApi.login(server, userDto.user1);
-  });
-
-  afterAll(async () => {
-    await testApp.teardown();
+    apiUtils.setup();
+    await dbUtils.reset();
+    admin = await apiUtils.adminSetup();
+    nonAdmin = await apiUtils.userSetup(admin.accessToken, createUserDto.user1);
   });
 
   describe('GET /system-config/map/style.json', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(server).get('/system-config/map/style.json');
+      const { status, body } = await request(app).get(
+        '/system-config/map/style.json'
+      );
       expect(status).toBe(401);
-      expect(body).toEqual(errorStub.unauthorized);
+      expect(body).toEqual(errorDto.unauthorized);
     });
 
     it('should throw an error if a theme is not light or dark', async () => {
       for (const theme of ['dark1', true, 123, '', null, undefined]) {
-        const { status, body } = await request(server)
+        const { status, body } = await request(app)
           .get('/system-config/map/style.json')
           .query({ theme })
           .set('Authorization', `Bearer ${admin.accessToken}`);
         expect(status).toBe(400);
-        expect(body).toEqual(errorStub.badRequest(['theme must be one of the following values: light, dark']));
+        expect(body).toEqual(
+          errorDto.badRequest([
+            'theme must be one of the following values: light, dark',
+          ])
+        );
       }
     });
 
     it('should return the light style.json', async () => {
-      const { status, body } = await request(server)
+      const { status, body } = await request(app)
         .get('/system-config/map/style.json')
         .query({ theme: 'light' })
         .set('Authorization', `Bearer ${admin.accessToken}`);
@@ -52,7 +50,7 @@ describe(`${SystemConfigController.name} (e2e)`, () => {
     });
 
     it('should return the dark style.json', async () => {
-      const { status, body } = await request(server)
+      const { status, body } = await request(app)
         .get('/system-config/map/style.json')
         .query({ theme: 'dark' })
         .set('Authorization', `Bearer ${admin.accessToken}`);
@@ -61,7 +59,7 @@ describe(`${SystemConfigController.name} (e2e)`, () => {
     });
 
     it('should not require admin authentication', async () => {
-      const { status, body } = await request(server)
+      const { status, body } = await request(app)
         .get('/system-config/map/style.json')
         .query({ theme: 'dark' })
         .set('Authorization', `Bearer ${nonAdmin.accessToken}`);

@@ -16,8 +16,7 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     "rootDirs": ["src"],
-    "baseUrl": "./",
-    "types": ["vitest/globals"]
+    "baseUrl": "./"
   },
   "exclude": ["dist", "node_modules"]
 }

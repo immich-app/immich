@@ -14,6 +14,7 @@
   import SearchHistoryBox from './search-history-box.svelte';
   import SearchFilterBox from './search-filter-box.svelte';
   import type { MetadataSearchDto, SmartSearchDto } from '@immich/sdk';
+  import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
   export let value = '';
   export let grayTheme: boolean;
 
@@ -24,15 +25,13 @@
   $: showClearIcon = value.length > 0;
 
   const onSearch = (payload: SmartSearchDto | MetadataSearchDto) => {
-    const parameters = new URLSearchParams({
-      query: JSON.stringify(payload),
-    });
+    const params = getMetadataSearchQuery(payload);
 
     showHistory = false;
     showFilter = false;
     $isSearchEnabled = false;
     $searchQuery = payload;
-    goto(`${AppRoute.SEARCH}?${parameters}`, { invalidateAll: true });
+    goto(`${AppRoute.SEARCH}?${params}`, { invalidateAll: true });
   };
 
   const clearSearchTerm = (searchTerm: string) => {

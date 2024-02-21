@@ -73,7 +73,7 @@
 </script>
 
 <div
-  class="max-h-screen w-[500px] max-w-[95vw] overflow-y-scroll rounded-3xl border bg-immich-bg p-4 py-8 shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg"
+  class="max-h-screen w-[500px] max-w-[95vw] overflow-y-auto immich-scrollbar rounded-3xl border bg-immich-bg p-4 py-8 shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg"
 >
   <div class="flex flex-col place-content-center place-items-center gap-4 px-4">
     <ImmichLogo class="text-center" height="100" width="100" />

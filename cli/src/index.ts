@@ -15,7 +15,7 @@ const program = new Command()
   .version(version)
   .description('Command line interface for Immich')
   .addOption(
-    new Option('-d, --config-directory', 'Configuration directory where auth.yml will be stored')
+    new Option('-d, --config-directory <directory>', 'Configuration directory where auth.yml will be stored')
       .env('IMMICH_CONFIG_DIR')
       .default(defaultConfigDirectory),
   );
@@ -43,6 +43,11 @@ program
       .env('IMMICH_DRY_RUN')
       .default(false),
   )
+  .addOption(
+    new Option('-c, --concurrency', 'Number of assets to upload at the same time')
+      .env('IMMICH_UPLOAD_CONCURRENCY')
+      .default(4),
+  )
   .addOption(new Option('--delete', 'Delete local assets after upload').env('IMMICH_DELETE_ASSETS'))
   .argument('[paths...]', 'One or more paths to assets to be uploaded')
   .action(async (paths, options) => {
@@ -60,10 +65,10 @@ program
 program
   .command('login-key')
   .description('Login using an API key')
-  .argument('[instanceUrl]')
-  .argument('[apiKey]')
-  .action(async (paths, options) => {
-    await new LoginCommand(program.opts()).run(paths, options);
+  .argument('url')
+  .argument('key')
+  .action(async (url, key) => {
+    await new LoginCommand(program.opts()).run(url, key);
   });
 
 program
