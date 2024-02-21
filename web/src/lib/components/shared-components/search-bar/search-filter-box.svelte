@@ -17,7 +17,6 @@
   import { fly } from 'svelte/transition';
   import Combobox, { type ComboBoxOption } from '../combobox.svelte';
   import { DateTime } from 'luxon';
-  import { searchQuery } from '$lib/stores/search.store';
 
   enum MediaType {
     All = 'all',
@@ -44,7 +43,7 @@
 
   type SearchFilter = {
     context?: string;
-    people: PersonResponseDto[];
+    people: (PersonResponseDto | Pick<PersonResponseDto, 'id'>)[];
 
     location: {
       country?: ComboBoxOption;
@@ -68,6 +67,8 @@
 
     mediaType: MediaType;
   };
+
+  export let searchQuery: MetadataSearchDto | SmartSearchDto;
 
   let suggestions: SearchSuggestion = {
     people: [],
@@ -112,19 +113,19 @@
     populateExistingFilters();
   });
 
-  const showSelectedPeopleFirst = () => {
-    suggestions.people.sort((a, _) => {
+  function orderBySelectedPeopleFirst<T extends Pick<PersonResponseDto, 'id'>>(people: T[]) {
+    return people.sort((a, _) => {
       if (filter.people.some((p) => p.id === a.id)) {
         return -1;
       }
       return 1;
     });
-  };
+  }
 
   const getPeople = async () => {
     try {
       const { people } = await getAllPeople({ withHidden: false });
-      suggestions.people = people;
+      suggestions.people = orderBySelectedPeopleFirst(people);
     } catch (error) {
       handleError(error, 'Failed to get people');
     }
@@ -133,14 +134,12 @@
   const handlePeopleSelection = (id: string) => {
     if (filter.people.some((p) => p.id === id)) {
       filter.people = filter.people.filter((p) => p.id !== id);
-      showSelectedPeopleFirst();
       return;
     }
 
     const person = suggestions.people.find((p) => p.id === id);
     if (person) {
       filter.people = [...filter.people, person];
-      showSelectedPeopleFirst();
     }
   };
 
@@ -280,35 +279,36 @@
   };
 
   function populateExistingFilters() {
-    if ($searchQuery) {
+    if (searchQuery) {
+      const personIds = 'personIds' in searchQuery && searchQuery.personIds ? searchQuery.personIds : [];
+
       filter = {
-        context: 'query' in $searchQuery ? $searchQuery.query : '',
-        people:
-          'personIds' in $searchQuery ? ($searchQuery.personIds?.map((id) => ({ id })) as PersonResponseDto[]) : [],
+        context: 'query' in searchQuery ? searchQuery.query : '',
+        people: orderBySelectedPeopleFirst(personIds.map((id) => ({ id }))),
         location: {
-          country: $searchQuery.country ? { label: $searchQuery.country, value: $searchQuery.country } : undefined,
-          state: $searchQuery.state ? { label: $searchQuery.state, value: $searchQuery.state } : undefined,
-          city: $searchQuery.city ? { label: $searchQuery.city, value: $searchQuery.city } : undefined,
+          country: searchQuery.country ? { label: searchQuery.country, value: searchQuery.country } : undefined,
+          state: searchQuery.state ? { label: searchQuery.state, value: searchQuery.state } : undefined,
+          city: searchQuery.city ? { label: searchQuery.city, value: searchQuery.city } : undefined,
         },
         camera: {
-          make: $searchQuery.make ? { label: $searchQuery.make, value: $searchQuery.make } : undefined,
-          model: $searchQuery.model ? { label: $searchQuery.model, value: $searchQuery.model } : undefined,
+          make: searchQuery.make ? { label: searchQuery.make, value: searchQuery.make } : undefined,
+          model: searchQuery.model ? { label: searchQuery.model, value: searchQuery.model } : undefined,
         },
         date: {
-          takenAfter: $searchQuery.takenAfter
-            ? DateTime.fromISO($searchQuery.takenAfter).toUTC().toFormat('yyyy-MM-dd')
+          takenAfter: searchQuery.takenAfter
+            ? DateTime.fromISO(searchQuery.takenAfter).toUTC().toFormat('yyyy-MM-dd')
             : undefined,
-          takenBefore: $searchQuery.takenBefore
-            ? DateTime.fromISO($searchQuery.takenBefore).toUTC().toFormat('yyyy-MM-dd')
+          takenBefore: searchQuery.takenBefore
+            ? DateTime.fromISO(searchQuery.takenBefore).toUTC().toFormat('yyyy-MM-dd')
             : undefined,
         },
-        isArchive: $searchQuery.isArchived,
-        isFavorite: $searchQuery.isFavorite,
-        isNotInAlbum: 'isNotInAlbum' in $searchQuery ? $searchQuery.isNotInAlbum : undefined,
+        isArchive: searchQuery.isArchived,
+        isFavorite: searchQuery.isFavorite,
+        isNotInAlbum: 'isNotInAlbum' in searchQuery ? searchQuery.isNotInAlbum : undefined,
         mediaType:
-          $searchQuery.type === AssetTypeEnum.Image
+          searchQuery.type === AssetTypeEnum.Image
             ? MediaType.Image
-            : $searchQuery.type === AssetTypeEnum.Video
+            : searchQuery.type === AssetTypeEnum.Video
               ? MediaType.Video
               : MediaType.All,
       };
@@ -344,7 +344,7 @@
           {#each peopleList as person (person.id)}
             <button
               type="button"
-              class="w-20 text-center rounded-3xl border-2 border-transparent hover:bg-immich-gray dark:hover:bg-immich-dark-primary/20 p-2 flex-col place-items-center transition-all {filter.people.some(
+              class="w-20 text-center rounded-3xl border-2 border-transparent hover:bg-immich-gray dark:hover:bg-immich-dark-primary/20 p-2 transition-all {filter.people.some(
                 (p) => p.id === person.id,
               )
                 ? 'dark:border-slate-500 border-slate-300 bg-slate-200 dark:bg-slate-800 dark:text-white'
@@ -356,9 +356,9 @@
                 shadow
                 url={getPeopleThumbnailUrl(person.id)}
                 altText={person.name}
-                widthStyle="100px"
+                widthStyle="100%"
               />
-              <p class="mt-2 text-ellipsis text-sm font-medium dark:text-white">{person.name}</p>
+              <p class="mt-2 line-clamp-2 text-sm font-medium dark:text-white">{person.name}</p>
             </button>
           {/each}
         </div>
@@ -498,7 +498,7 @@
     </div>
 
     <hr class="border-slate-300 dark:border-slate-700" />
-    <div class="py-3 grid grid-cols-2">
+    <div class="py-3 grid grid-cols-[repeat(auto-fill,minmax(21rem,1fr))] gap-x-16 gap-y-8">
       <!-- MEDIA TYPE -->
       <div id="media-type-selection">
         <p class="immich-form-label">MEDIA TYPE</p>
