@@ -116,9 +116,17 @@ export class AssetService {
     await this.access.requirePermission(auth, Permission.TIMELINE_READ, userId);
     const assets = await this.assetRepository.getAllByFileCreationDate(
       { take: dto.take ?? 1000, skip: dto.skip },
-      { ...dto, userIds: [userId], withDeleted: true, orderDirection: 'DESC', withExif: true, isVisible: true },
+      {
+        ...dto,
+        userIds: [userId],
+        withDeleted: true,
+        orderDirection: 'DESC',
+        withExif: true,
+        isVisible: true,
+        withStacked: true,
+      },
     );
-    return assets.items.map((asset) => mapAsset(asset));
+    return assets.items.map((asset) => mapAsset(asset, { withStack: true }));
   }
 
   async serveThumbnail(auth: AuthDto, assetId: string, dto: GetAssetThumbnailDto): Promise<ImmichFileResponse> {

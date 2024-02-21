@@ -157,7 +157,9 @@ type BaseAssetSearchOptions = SearchDateOptions &
 
 export type AssetSearchOptions = BaseAssetSearchOptions & SearchRelationOptions;
 
-export type AssetSearchOneToOneRelationOptions = BaseAssetSearchOptions & SearchOneToOneRelationOptions;
+export type AssetSearchOneToOneRelationOptions = BaseAssetSearchOptions &
+  SearchOneToOneRelationOptions &
+  SearchRelationOptions;
 
 export type AssetSearchBuilderOptions = Omit<AssetSearchOptions, 'orderDirection'>;
 
