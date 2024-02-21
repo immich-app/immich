@@ -8593,6 +8593,9 @@
       },
       "PeopleResponseDto": {
         "properties": {
+          "hidden": {
+            "type": "integer"
+          },
           "people": {
             "items": {
               "$ref": "#/components/schemas/PersonResponseDto"
@@ -8604,6 +8607,7 @@
           }
         },
         "required": [
+          "hidden",
           "people",
           "total"
         ],
