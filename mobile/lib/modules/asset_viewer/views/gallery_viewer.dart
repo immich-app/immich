@@ -723,10 +723,10 @@ class GalleryViewerPage extends HookConsumerWidget {
                 isZoomed.value = state != PhotoViewScaleState.initial;
                 ref.read(showControlsProvider.notifier).show = !isZoomed.value;
               },
-              loadingBuilder: (context, event, index) => BackdropFilter(
-                filter: ui.ImageFilter.blur(
-                  sigmaX: 0.2,
-                  sigmaY: 0.2,
+              loadingBuilder: (context, event, index) => ImageFiltered(
+                imageFilter: ui.ImageFilter.blur(
+                  sigmaX: 1,
+                  sigmaY: 1,
                 ),
                 child: ImmichThumbnail(
                   asset: asset(),
