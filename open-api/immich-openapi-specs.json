@@ -2463,6 +2463,7 @@
             "required": false,
             "in": "query",
             "schema": {
+              "default": false,
               "type": "boolean"
             }
           },
@@ -8429,6 +8430,7 @@
             "type": "string"
           },
           "withArchived": {
+            "default": false,
             "type": "boolean"
           },
           "withDeleted": {
@@ -9500,6 +9502,7 @@
             "type": "string"
           },
           "withArchived": {
+            "default": false,
             "type": "boolean"
           },
           "withDeleted": {

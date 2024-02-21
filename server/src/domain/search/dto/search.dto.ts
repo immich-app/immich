@@ -23,6 +23,7 @@ class BaseSearchDto {
   isArchived?: boolean;
 
   @QueryBoolean({ optional: true })
+  @ApiProperty({ default: false })
   withArchived?: boolean;
 
   @QueryBoolean({ optional: true })

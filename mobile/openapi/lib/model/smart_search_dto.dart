@@ -42,7 +42,7 @@ class SmartSearchDto {
     this.type,
     this.updatedAfter,
     this.updatedBefore,
-    this.withArchived,
+    this.withArchived = false,
     this.withDeleted,
     this.withExif,
   });
@@ -273,13 +273,7 @@ class SmartSearchDto {
   ///
   DateTime? updatedBefore;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  bool? withArchived;
+  bool withArchived;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -364,7 +358,7 @@ class SmartSearchDto {
     (type == null ? 0 : type!.hashCode) +
     (updatedAfter == null ? 0 : updatedAfter!.hashCode) +
     (updatedBefore == null ? 0 : updatedBefore!.hashCode) +
-    (withArchived == null ? 0 : withArchived!.hashCode) +
+    (withArchived.hashCode) +
     (withDeleted == null ? 0 : withDeleted!.hashCode) +
     (withExif == null ? 0 : withExif!.hashCode);
 
@@ -514,11 +508,7 @@ class SmartSearchDto {
     } else {
     //  json[r'updatedBefore'] = null;
     }
-    if (this.withArchived != null) {
       json[r'withArchived'] = this.withArchived;
-    } else {
-    //  json[r'withArchived'] = null;
-    }
     if (this.withDeleted != null) {
       json[r'withDeleted'] = this.withDeleted;
     } else {
@@ -569,7 +559,7 @@ class SmartSearchDto {
         type: AssetTypeEnum.fromJson(json[r'type']),
         updatedAfter: mapDateTime(json, r'updatedAfter', r''),
         updatedBefore: mapDateTime(json, r'updatedBefore', r''),
-        withArchived: mapValueOfType<bool>(json, r'withArchived'),
+        withArchived: mapValueOfType<bool>(json, r'withArchived') ?? false,
         withDeleted: mapValueOfType<bool>(json, r'withDeleted'),
         withExif: mapValueOfType<bool>(json, r'withExif'),
       );

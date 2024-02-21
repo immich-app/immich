@@ -37,7 +37,7 @@ Name | Type | Description | Notes
 **type** | [**AssetTypeEnum**](AssetTypeEnum.md) |  | [optional] 
 **updatedAfter** | [**DateTime**](DateTime.md) |  | [optional] 
 **updatedBefore** | [**DateTime**](DateTime.md) |  | [optional] 
-**withArchived** | **bool** |  | [optional] 
+**withArchived** | **bool** |  | [optional] [default to false]
 **withDeleted** | **bool** |  | [optional] 
 **withExif** | **bool** |  | [optional] 
 
