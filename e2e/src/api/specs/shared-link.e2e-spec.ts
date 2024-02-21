@@ -15,9 +15,6 @@ import { apiUtils, app, asBearerAuth, dbUtils } from 'src/utils';
 import request from 'supertest';
 import { beforeAll, describe, expect, it } from 'vitest';
 
-const createSharedLink = (dto: SharedLinkCreateDto, accessToken: string) =>
-  create({ sharedLinkCreateDto: dto }, { headers: asBearerAuth(accessToken) });
-
 describe('/shared-link', () => {
   let admin: LoginResponseDto;
   let asset1: AssetResponseDto;
@@ -78,38 +75,33 @@ describe('/shared-link', () => {
       linkWithMetadata,
       linkWithoutMetadata,
     ] = await Promise.all([
-      createSharedLink(
-        { type: SharedLinkType.Album, albumId: deletedAlbum.id },
-        user2.accessToken
-      ),
-      createSharedLink(
-        { type: SharedLinkType.Album, albumId: album.id },
-        user1.accessToken
-      ),
-      createSharedLink(
-        { type: SharedLinkType.Individual, assetIds: [asset1.id] },
-        user1.accessToken
-      ),
-      createSharedLink(
-        { type: SharedLinkType.Album, albumId: album.id, password: 'foo' },
-        user1.accessToken
-      ),
-      createSharedLink(
-        {
-          type: SharedLinkType.Album,
-          albumId: metadataAlbum.id,
-          showMetadata: true,
-        },
-        user1.accessToken
-      ),
-      createSharedLink(
-        {
-          type: SharedLinkType.Album,
-          albumId: metadataAlbum.id,
-          showMetadata: false,
-        },
-        user1.accessToken
-      ),
+      apiUtils.createSharedLink(user2.accessToken, {
+        type: SharedLinkType.Album,
+        albumId: deletedAlbum.id,
+      }),
+      apiUtils.createSharedLink(user1.accessToken, {
+        type: SharedLinkType.Album,
+        albumId: album.id,
+      }),
+      apiUtils.createSharedLink(user1.accessToken, {
+        type: SharedLinkType.Individual,
+        assetIds: [asset1.id],
+      }),
+      apiUtils.createSharedLink(user1.accessToken, {
+        type: SharedLinkType.Album,
+        albumId: album.id,
+        password: 'foo',
+      }),
+      apiUtils.createSharedLink(user1.accessToken, {
+        type: SharedLinkType.Album,
+        albumId: metadataAlbum.id,
+        showMetadata: true,
+      }),
+      apiUtils.createSharedLink(user1.accessToken, {
+        type: SharedLinkType.Album,
+        albumId: metadataAlbum.id,
+        showMetadata: false,
+      }),
     ]);
 
     await deleteUser(
