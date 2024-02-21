@@ -77,6 +77,7 @@ export class SearchService {
         checksum,
         userIds,
         orderDirection: dto.order ? enumToOrder[dto.order] : 'DESC',
+        withArchived: !!dto.withArchived,
       },
     );
 
@@ -98,7 +99,7 @@ export class SearchService {
     const size = dto.size || 100;
     const { hasNextPage, items } = await this.searchRepository.searchSmart(
       { page, size },
-      { ...dto, userIds, embedding },
+      { ...dto, userIds, embedding, withArchived: !!dto.withArchived },
     );
 
     return this.mapResponse(items, hasNextPage ? (page + 1).toString() : null);
