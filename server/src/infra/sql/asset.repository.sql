@@ -434,7 +434,7 @@ WHERE
     AND 1 = 1
     AND "asset"."ownerId" IN ($2)
     AND 1 = 1
-    AND 1 = 1
+    AND "asset"."isArchived" = $3
   )
   AND ("asset"."deletedAt" IS NULL)
 ORDER BY
