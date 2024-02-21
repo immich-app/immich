@@ -90,7 +90,10 @@
           ]}
           name="acodec"
           isEdited={config.ffmpeg.targetAudioCodec !== savedConfig.ffmpeg.targetAudioCodec}
-          on:select={() => (config.ffmpeg.acceptedAudioCodecs = [config.ffmpeg.targetAudioCodec])}
+          on:select={() =>
+            config.ffmpeg.acceptedAudioCodecs.includes(config.ffmpeg.targetAudioCodec)
+              ? null
+              : config.ffmpeg.acceptedAudioCodecs.push(config.ffmpeg.targetAudioCodec)}
         />
 
         <SettingCheckboxes
