@@ -20,7 +20,7 @@ SELECT
 FROM
   "users" "UserEntity"
 WHERE
-  (("UserEntity"."isAdmin" = $1))
+  ((("UserEntity"."isAdmin" = $1)))
   AND ("UserEntity"."deletedAt" IS NULL)
 LIMIT
   1
@@ -40,7 +40,7 @@ WHERE
     FROM
       "users" "UserEntity"
     WHERE
-      (("UserEntity"."isAdmin" = $1))
+      ((("UserEntity"."isAdmin" = $1)))
       AND ("UserEntity"."deletedAt" IS NULL)
   )
 LIMIT
@@ -89,7 +89,7 @@ SELECT
 FROM
   "users" "UserEntity"
 WHERE
-  (("UserEntity"."storageLabel" = $1))
+  ((("UserEntity"."storageLabel" = $1)))
   AND ("UserEntity"."deletedAt" IS NULL)
 LIMIT
   1
@@ -114,7 +114,7 @@ SELECT
 FROM
   "users" "UserEntity"
 WHERE
-  (("UserEntity"."oauthId" = $1))
+  ((("UserEntity"."oauthId" = $1)))
   AND ("UserEntity"."deletedAt" IS NULL)
 LIMIT
   1
