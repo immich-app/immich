@@ -18,6 +18,7 @@
   import TrashSettings from './trash-settings.svelte';
   import UserAPIKeyList from './user-api-key-list.svelte';
   import UserProfileSettings from './user-profile-settings.svelte';
+  import LibraryList from './library-list.svelte';
 
   export let keys: ApiKeyResponseDto[] = [];
   export let devices: AuthDeviceResponseDto[] = [];
@@ -42,6 +43,10 @@
 
 <SettingAccordion key="authorized-devices" title="Authorized Devices" subtitle="Manage your logged-in devices">
   <DeviceList bind:devices />
+</SettingAccordion>
+
+<SettingAccordion key="libraries" title="Libraries" subtitle="Manage your asset libraries">
+  <LibraryList />
 </SettingAccordion>
 
 <SettingAccordion key="memories" title="Memories" subtitle="Manage what you see in your memories.">

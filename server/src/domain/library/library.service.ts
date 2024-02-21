@@ -333,6 +333,12 @@ export class LibraryService extends EventEmitter {
 
   async update(auth: AuthDto, id: string, dto: UpdateLibraryDto): Promise<LibraryResponseDto> {
     await this.access.requirePermission(auth, Permission.LIBRARY_UPDATE, id);
+
+    if (!auth.user.isAdmin) {
+      // Only let non-admins update the name
+      dto = { name: dto.name };
+    }
+
     const library = await this.repository.update({ id, ...dto });
 
     if (dto.importPaths) {

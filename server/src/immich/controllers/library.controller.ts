@@ -41,7 +41,6 @@ export class LibraryController {
   }
 
   @Put(':id')
-  @AdminRoute()
   updateLibrary(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto, @Body() dto: UpdateDto): Promise<ResponseDto> {
     return this.service.update(auth, id, dto);
   }

@@ -8,8 +8,10 @@
   import { validate, type LibraryResponseDto } from '@immich/sdk';
   import type { ValidateLibraryImportPathResponseDto } from '@immich/sdk/axios';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
+  import { user } from '$lib/stores/user.store';
 
   export let library: LibraryResponseDto;
+  export let isAdmin = false;
 
   let addImportPath = false;
   let editImportPath: number | null = null;
@@ -190,70 +192,85 @@
               : 'bg-immich-bg dark:bg-immich-dark-gray/50'
           }`}
         >
-          <td class="w-1/8 text-ellipsis pl-8 text-sm">
-            {#if validatedPath.isValid}
-              <Icon
-                path={mdiCheckCircleOutline}
-                size="24"
-                title={validatedPath.message}
-                class="text-immich-success dark:text-immich-dark-success"
-              />
-            {:else}
-              <Icon
-                path={mdiAlertOutline}
-                size="24"
-                title={validatedPath.message}
-                class="text-immich-warning dark:text-immich-dark-warning"
-              />
-            {/if}
-          </td>
+          {#if isAdmin}
+            <td class="w-1/8 text-ellipsis pl-8 text-sm">
+              {#if validatedPath.isValid}
+                <Icon
+                  path={mdiCheckCircleOutline}
+                  size="24"
+                  title={validatedPath.message}
+                  class="text-immich-success dark:text-immich-dark-success"
+                />
+              {:else}
+                <Icon
+                  path={mdiAlertOutline}
+                  size="24"
+                  title={validatedPath.message}
+                  class="text-immich-warning dark:text-immich-dark-warning"
+                />
+              {/if}
+            </td>{/if}
 
-          <td class="w-4/5 text-ellipsis px-4 text-sm">{validatedPath.importPath}</td>
-          <td class="w-1/5 text-ellipsis px-4 text-sm flex flex-row">
-            <button
-              type="button"
-              on:click={() => {
-                editImportPath = listIndex;
-                editedImportPath = validatedPath.importPath;
-              }}
-              class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
-            >
-              <Icon path={mdiPencilOutline} size="16" />
-            </button>
-          </td>
+          <td class={isAdmin ? 'w-4/5 text-ellipsis px-4 text-sm' : 'w-full text-ellipsis px-4 text-sm'}
+            >{validatedPath.importPath}</td
+          >
+          {#if isAdmin}
+            <td class="w-1/5 text-ellipsis px-4 text-sm flex flex-row">
+              <button
+                type="button"
+                on:click={() => {
+                  editImportPath = listIndex;
+                  editedImportPath = validatedPath.importPath;
+                }}
+                class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
+              >
+                <Icon path={mdiPencilOutline} size="16" />
+              </button>
+            </td>
+          {/if}
         </tr>
       {/each}
-      <tr
-        class={`flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
-          importPaths.length % 2 == 0
-            ? 'bg-immich-gray dark:bg-immich-dark-gray/75'
-            : 'bg-immich-bg dark:bg-immich-dark-gray/50'
-        }`}
-      >
-        <td class="w-4/5 text-ellipsis px-4 text-sm">
-          {#if importPaths.length === 0}
-            No paths added
-          {/if}</td
+      {#if isAdmin || importPaths.length === 0}
+        <tr
+          class={`flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
+            importPaths.length % 2 == 0
+              ? 'bg-immich-gray dark:bg-immich-dark-gray/75'
+              : 'bg-immich-bg dark:bg-immich-dark-gray/50'
+          }`}
         >
-        <td class="w-1/5 text-ellipsis px-4 text-sm"
-          ><Button
-            type="button"
-            size="sm"
-            on:click={() => {
-              addImportPath = true;
-            }}>Add path</Button
-          ></td
-        ></tr
-      >
+          <td class={isAdmin ? 'w-4/5 text-ellipsis px-4 text-sm' : 'w-full text-ellipsis px-4 text-sm'}>
+            {#if importPaths.length === 0}
+              No paths added
+            {/if}</td
+          >{#if isAdmin}
+            <td class="w-1/5 text-ellipsis px-4 text-sm"
+              ><Button
+                type="button"
+                size="sm"
+                on:click={() => {
+                  addImportPath = true;
+                }}>Add path</Button
+              ></td
+            >{/if}</tr
+        >
+      {/if}
     </tbody>
   </table>
-  <div class="flex justify-between w-full">
-    <div class="justify-end gap-2">
-      <Button size="sm" color="gray" on:click={() => revalidate()}><Icon path={mdiRefresh} size={20} />Validate</Button>
+  {#if isAdmin}
+    <div class="flex justify-between w-full">
+      <div class="justify-end gap-2">
+        <Button size="sm" color="gray" on:click={() => revalidate()}
+          ><Icon path={mdiRefresh} size={20} />Validate</Button
+        >
+      </div>
+      <div class="justify-end gap-2">
+        <Button size="sm" color="gray" on:click={() => handleCancel()}>Cancel</Button>
+        <Button size="sm" type="submit">Save</Button>
+      </div>
     </div>
-    <div class="justify-end gap-2">
-      <Button size="sm" color="gray" on:click={() => handleCancel()}>Cancel</Button>
-      <Button size="sm" type="submit">Save</Button>
+  {:else}
+    <div class="flex w-full justify-end gap-2">
+      <Button size="sm" color="gray" on:click={() => handleCancel()}>Close</Button>
     </div>
-  </div>
+  {/if}
 </form>
