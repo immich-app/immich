@@ -1,25 +1,24 @@
+import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/asset_viewer/image_providers/immich_local_thumbnail_provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/image_providers/immich_remote_image_provider.dart';
-import 'package:immich_mobile/modules/home/ui/asset_grid/thumbnail_placeholder.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/ui/thumbhash_placeholder.dart';
 import 'package:octo_image/octo_image.dart';
+import 'package:thumbhash/thumbhash.dart' as thumbhash;
 
-class ImmichThumbnail extends StatelessWidget {
+class ImmichThumbnail extends StatefulWidget {
   const ImmichThumbnail({
     this.asset,
     this.width = 250,
     this.height = 250,
     this.fit = BoxFit.cover,
-    this.placeholder,
     super.key,
   });
 
   final Asset? asset;
-  final Widget? placeholder;
   final double width;
   final double height;
   final BoxFit fit;
@@ -64,50 +63,46 @@ class ImmichThumbnail extends StatelessWidget {
   static bool useLocal(Asset asset) => !asset.isRemote || asset.isLocal;
 
   @override
+  State<ImmichThumbnail> createState() => _ImmichThumbnailState();
+}
+
+class _ImmichThumbnailState extends State<ImmichThumbnail> {
+  Uint8List? _decodedBlurHash;
+
+  @override
+  void initState() {
+    if (widget.asset?.thumbhash != null) {
+      final rgbaImage =
+          thumbhash.thumbHashToRGBA(base64Decode(widget.asset!.thumbhash!));
+      _decodedBlurHash = thumbhash.rgbaToBmp(rgbaImage);
+    }
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    if (asset == null) {
+    if (widget.asset == null) {
       return Container(
         color: Colors.grey,
-        width: width,
-        height: height,
+        width: widget.width,
+        height: widget.height,
         child: const Center(
           child: Icon(Icons.no_photography),
         ),
       );
     }
 
-    return OctoImage(
-      fadeInDuration: const Duration(milliseconds: 0),
+    return OctoImage.fromSet(
+      placeholderFadeInDuration: Duration.zero,
+      fadeInDuration: Duration.zero,
       fadeOutDuration: const Duration(milliseconds: 100),
-      placeholderBuilder: (context) {
-        return placeholder ??
-            ThumbnailPlaceholder(
-              height: height,
-              width: width,
-            );
-      },
+      octoSet: blurHashOrPlaceholder(_decodedBlurHash),
       image: ImmichThumbnail.imageProvider(
-        asset: asset,
+        asset: widget.asset,
       ),
-      width: width,
-      height: height,
-      fit: fit,
-      errorBuilder: (context, error, stackTrace) {
-        if (error is PlatformException &&
-            error.code == "The asset not found!") {
-          debugPrint(
-            "Asset ${asset?.localId} does not exist anymore on device!",
-          );
-        } else {
-          debugPrint(
-            "Error getting thumb for assetId=${asset?.localId}: $error",
-          );
-        }
-        return Icon(
-          Icons.image_not_supported_outlined,
-          color: context.primaryColor,
-        );
-      },
+      width: widget.width,
+      height: widget.height,
+      fit: widget.fit,
     );
   }
 }

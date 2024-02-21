@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -41,7 +40,6 @@ class ImmichImage extends StatelessWidget {
     }
 
     if (asset == null) {
-      print('using remote for $assetId');
       return ImmichRemoteImageProvider(
         assetId: assetId!,
         isThumbnail: false,
@@ -49,12 +47,10 @@ class ImmichImage extends StatelessWidget {
     }
 
     if (useLocal(asset)) {
-      print('using local for ${asset.localId}');
       return ImmichLocalImageProvider(
         asset: asset,
       );
     } else {
-      print('using remote for ${asset.localId}');
       return ImmichRemoteImageProvider(
         assetId: asset.remoteId!,
         isThumbnail: false,
