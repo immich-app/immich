@@ -5,7 +5,7 @@
   import FullScreenModal from '../shared-components/full-screen-modal.svelte';
   import { mdiFolderSync } from '@mdi/js';
   import { onMount } from 'svelte';
-  import { getAllUsers, type UserResponseDto } from '@immich/sdk';
+  import { getAllUsers } from '@immich/sdk';
   import SettingSelect from '../admin-page/settings/setting-select.svelte';
   import { user } from '$lib/stores/user.store';
 

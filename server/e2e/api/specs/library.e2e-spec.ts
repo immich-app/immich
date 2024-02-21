@@ -347,7 +347,10 @@ describe(`${LibraryController.name} (e2e)`, () => {
         api.authApi.login(server, userDto.user2),
       ]);
 
-      const library = await api.libraryApi.create(server, user1.accessToken, { type: LibraryType.EXTERNAL });
+      const library = await api.libraryApi.create(server, user1.accessToken, {
+        type: LibraryType.EXTERNAL,
+        ownerId: user1.userId,
+      });
 
       const { status, body } = await request(server)
         .get(`/library/${library.id}`)
