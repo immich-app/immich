@@ -538,7 +538,7 @@
     <div class="w-full grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-7 2xl:grid-cols-9 gap-1">
       {#each people as person, index (person.id)}
         <button
-          class="relative w-full"
+          class="relative"
           on:click={() => (person.isHidden = !person.isHidden)}
           on:mouseenter={() => (eyeColorMap[person.id] = 'black')}
           on:mouseleave={() => (eyeColorMap[person.id] = 'white')}

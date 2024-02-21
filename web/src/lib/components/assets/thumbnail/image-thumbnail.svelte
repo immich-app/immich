@@ -41,7 +41,7 @@
   src={url}
   alt={altText}
   {title}
-  class="w-full object-cover transition duration-300 {border
+  class="object-cover transition duration-300 {border
     ? 'border-[3px] border-immich-dark-primary/80 hover:border-immich-primary'
     : ''}"
   class:rounded-xl={curve}
