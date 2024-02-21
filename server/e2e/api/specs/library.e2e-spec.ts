@@ -185,7 +185,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
       expect(body).toEqual(errorStub.badRequest('Upload libraries cannot have exclusion patterns'));
     });
 
-    it('should allow a non-admin to create a library', async () => {
+    it('should not allow a non-admin to create a library', async () => {
       await api.userApi.create(server, admin.accessToken, userDto.user1);
       const user1 = await api.authApi.login(server, userDto.user1);
 
@@ -194,18 +194,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({ type: LibraryType.EXTERNAL });
 
-      expect(status).toBe(201);
-      expect(body).toEqual(
-        expect.objectContaining({
-          ownerId: user1.userId,
-          type: LibraryType.EXTERNAL,
-          name: 'New External Library',
-          refreshedAt: null,
-          assetCount: 0,
-          importPaths: [],
-          exclusionPatterns: [],
-        }),
-      );
+      expect(status).toBe(403);
     });
   });
 
