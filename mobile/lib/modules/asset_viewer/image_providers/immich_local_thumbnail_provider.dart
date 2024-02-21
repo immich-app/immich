@@ -60,8 +60,8 @@ class ImmichLocalThumbnailProvider extends ImageProvider<Asset> {
       debugPrint("Loading thumb for ${asset.fileName} failed");
     }
 
-    final normalThumbBytes = await asset.local
-        ?.thumbnailDataWithSize(ThumbnailSize(width, height));
+    final normalThumbBytes =
+        await asset.local?.thumbnailDataWithSize(ThumbnailSize(width, height));
     if (normalThumbBytes == null) {
       throw StateError(
         "Loading thumb for local photo ${asset.fileName} failed",

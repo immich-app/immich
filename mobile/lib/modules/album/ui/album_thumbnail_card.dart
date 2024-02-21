@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/store.dart';
-import 'package:immich_mobile/shared/ui/immich_image.dart';
 import 'package:immich_mobile/shared/ui/immich_thumbnail.dart';
 
 class AlbumThumbnailCard extends StatelessWidget {
@@ -46,8 +45,8 @@ class AlbumThumbnailCard extends StatelessWidget {
           );
         }
 
-        buildAlbumThumbnail() => ImmichThumbnail(asset:
-              album.thumbnail.value,
+        buildAlbumThumbnail() => ImmichThumbnail(
+              asset: album.thumbnail.value,
               width: cardSize,
               height: cardSize,
             );

@@ -13,7 +13,8 @@ import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 
 /// The remote image provider
-class ImmichRemoteThumbnailProvider extends ImageProvider<ImmichRemoteThumbnailProvider> {
+class ImmichRemoteThumbnailProvider
+    extends ImageProvider<ImmichRemoteThumbnailProvider> {
   /// The [Asset.remoteId] of the asset to fetch
   final String assetId;
 
@@ -27,12 +28,17 @@ class ImmichRemoteThumbnailProvider extends ImageProvider<ImmichRemoteThumbnailP
   /// Converts an [ImageProvider]'s settings plus an [ImageConfiguration] to a key
   /// that describes the precise image to load.
   @override
-  Future<ImmichRemoteThumbnailProvider> obtainKey(ImageConfiguration configuration) {
+  Future<ImmichRemoteThumbnailProvider> obtainKey(
+    ImageConfiguration configuration,
+  ) {
     return SynchronousFuture(this);
   }
 
   @override
-  ImageStreamCompleter loadImage(ImmichRemoteThumbnailProvider key, ImageDecoderCallback decode) {
+  ImageStreamCompleter loadImage(
+    ImmichRemoteThumbnailProvider key,
+    ImageDecoderCallback decode,
+  ) {
     final chunkEvents = StreamController<ImageChunkEvent>();
     return MultiImageStreamCompleter(
       codec: _codec(key, decode, chunkEvents),
