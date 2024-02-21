@@ -324,7 +324,13 @@
   <p class="text-xs py-2">FILTERS</p>
   <hr class="border-slate-300 dark:border-slate-700 py-2" />
 
-  <form id="search-filter-form relative" autocomplete="off" class="hover:cursor-auto">
+  <form
+    id="search-filter-form relative"
+    autocomplete="off"
+    class="hover:cursor-auto"
+    on:submit|preventDefault={search}
+    on:reset|preventDefault={resetForm}
+  >
     <!-- PEOPLE -->
     <div id="people-selection" class="my-4">
       <div class="flex justify-between place-items-center gap-6">
@@ -566,8 +572,8 @@
       id="button-row"
       class="flex justify-end gap-4 py-4 sticky bottom-0 dark:border-gray-800 dark:bg-immich-dark-gray"
     >
-      <Button color="gray" on:click={resetForm}>CLEAR ALL</Button>
-      <Button type="button" on:click={search}>SEARCH</Button>
+      <Button type="reset" color="gray">CLEAR ALL</Button>
+      <Button type="submit">SEARCH</Button>
     </div>
   </form>
 </div>
