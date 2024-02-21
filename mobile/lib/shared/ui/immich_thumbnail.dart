@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/asset_viewer/image_providers/immich_local_image_provider.dart';
+import 'package:immich_mobile/modules/asset_viewer/image_providers/immich_local_thumbnail_provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/image_providers/immich_remote_image_provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/thumbnail_placeholder.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
@@ -12,20 +13,20 @@ import 'package:octo_image/octo_image.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
 
-class ImmichImage extends StatelessWidget {
-  const ImmichImage(
-    this.asset, {
-    this.width,
-    this.height,
+class ImmichThumbnail extends StatelessWidget {
+  const ImmichThumbnail({
+    this.asset,
+    this.width = 250,
+    this.height = 250,
     this.fit = BoxFit.cover,
-    this.placeholder = const ThumbnailPlaceholder(),
+    this.placeholder,
     super.key,
   });
 
   final Asset? asset;
   final Widget? placeholder;
-  final double? width;
-  final double? height;
+  final double width;
+  final double height;
   final BoxFit fit;
 
   // Helper function to return the image provider for the asset
@@ -38,36 +39,35 @@ class ImmichImage extends StatelessWidget {
   static ImageProvider imageProvider({
     Asset? asset,
     String? assetId,
+    int thumbnailSize = 256,
   }) {
     if (asset == null && assetId == null) {
       throw Exception('Must supply either asset or assetId');
     }
 
     if (asset == null) {
-      print('using remote for $assetId');
       return ImmichRemoteImageProvider(
         assetId: assetId!,
-        isThumbnail: false,
+        isThumbnail: true,
       );
     }
 
     if (useLocal(asset)) {
-      print('using local for ${asset.localId}');
-      return ImmichLocalImageProvider(
+      return ImmichLocalThumbnailProvider(
         asset: asset,
+        height: thumbnailSize,
+        width: thumbnailSize,
       );
     } else {
-      print('using remote for ${asset.localId}');
       return ImmichRemoteImageProvider(
         assetId: asset.remoteId!,
-        isThumbnail: false,
+        isThumbnail: true,
       );
     }
   }
 
-  static bool useLocal(Asset asset) =>
-      !asset.isRemote ||
-      asset.isLocal && !Store.get(StoreKey.preferRemoteImage, false);
+  static bool useLocal(Asset asset) => !asset.isRemote || asset.isLocal;
+
   @override
   Widget build(BuildContext context) {
     if (asset == null) {
@@ -83,16 +83,15 @@ class ImmichImage extends StatelessWidget {
 
     return OctoImage(
       fadeInDuration: const Duration(milliseconds: 0),
-      fadeOutDuration: const Duration(milliseconds: 200),
+      fadeOutDuration: const Duration(milliseconds: 100),
       placeholderBuilder: (context) {
-        if (placeholder != null) {
-          // Use the gray box placeholder
-          return placeholder!;
-        }
-        // No placeholder
-        return const SizedBox();
+        return placeholder ??
+            ThumbnailPlaceholder(
+              height: height,
+              width: width,
+            );
       },
-      image: ImmichImage.imageProvider(
+      image: ImmichThumbnail.imageProvider(
         asset: asset,
       ),
       width: width,
