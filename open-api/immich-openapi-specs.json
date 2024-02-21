@@ -2463,6 +2463,7 @@
             "required": false,
             "in": "query",
             "schema": {
+              "default": false,
               "type": "boolean"
             }
           },
@@ -6458,7 +6459,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.95.0",
+    "version": "1.95.1",
     "contact": {}
   },
   "tags": [],
@@ -8474,6 +8475,7 @@
             "type": "string"
           },
           "withArchived": {
+            "default": false,
             "type": "boolean"
           },
           "withDeleted": {
@@ -9483,6 +9485,9 @@
           "isMotion": {
             "type": "boolean"
           },
+          "isNotInAlbum": {
+            "type": "boolean"
+          },
           "isOffline": {
             "type": "boolean"
           },
@@ -9545,6 +9550,7 @@
             "type": "string"
           },
           "withArchived": {
+            "default": false,
             "type": "boolean"
           },
           "withDeleted": {

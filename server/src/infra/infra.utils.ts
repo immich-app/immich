@@ -183,7 +183,7 @@ export function searchAssetBuilder(
     _.omitBy(
       {
         ...status,
-        isArchived: isArchived ?? withArchived,
+        isArchived: isArchived ?? (withArchived ? undefined : false),
         encodedVideoPath: isEncoded ? Not(IsNull()) : undefined,
         livePhotoVideoId: isMotion ? Not(IsNull()) : undefined,
       },

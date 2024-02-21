@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.95.0
+ * 1.95.1
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -658,6 +658,7 @@ export type SmartSearchDto = {
     isExternal?: boolean;
     isFavorite?: boolean;
     isMotion?: boolean;
+    isNotInAlbum?: boolean;
     isOffline?: boolean;
     isReadOnly?: boolean;
     isVisible?: boolean;
