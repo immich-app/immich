@@ -18,6 +18,7 @@ Name | Type | Description | Notes
 **isExternal** | **bool** |  | [optional] 
 **isFavorite** | **bool** |  | [optional] 
 **isMotion** | **bool** |  | [optional] 
+**isNotInAlbum** | **bool** |  | [optional] 
 **isOffline** | **bool** |  | [optional] 
 **isReadOnly** | **bool** |  | [optional] 
 **isVisible** | **bool** |  | [optional] 

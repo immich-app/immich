@@ -3885,6 +3885,12 @@ export interface SmartSearchDto {
      * @type {boolean}
      * @memberof SmartSearchDto
      */
+    'isNotInAlbum'?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SmartSearchDto
+     */
     'isOffline'?: boolean;
     /**
      * 
