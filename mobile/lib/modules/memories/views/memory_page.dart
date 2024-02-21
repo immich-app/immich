@@ -10,7 +10,6 @@ import 'package:immich_mobile/modules/memories/ui/memory_epilogue.dart';
 import 'package:immich_mobile/modules/memories/ui/memory_progress_indicator.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
-import 'package:openapi/api.dart' as api;
 
 @RoutePage()
 class MemoryPage extends HookConsumerWidget {
@@ -113,23 +112,21 @@ class MemoryPage extends HookConsumerWidget {
       // Gets the thumbnail url and precaches it
       final precaches = <Future<dynamic>>[];
 
-      precaches.add(
-        ImmichImage.precacheAsset(
-          asset,
+      precaches.addAll([
+        precacheImage(
+          ImmichImage.imageProvider(
+            asset: asset,
+          ),
           context,
-          type: api.ThumbnailFormat.WEBP,
-          size: 2048,
         ),
-      );
-      precaches.add(
-        ImmichImage.precacheAsset(
-          asset,
+        precacheImage(
+          ImmichImage.imageProvider(
+            asset: asset,
+            isThumbnail: true,
+          ),
           context,
-          type: api.ThumbnailFormat.JPEG,
-          size: 2048,
         ),
-      );
-
+      ]);
       await Future.wait(precaches);
     }
 

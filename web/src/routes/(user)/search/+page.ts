@@ -1,7 +1,14 @@
-import { authenticate } from '$lib/utils/auth';
-import { type SearchResponseDto, api } from '@api';
-import type { PageLoad } from './$types';
 import { QueryParameter } from '$lib/constants';
+import { searchQuery } from '$lib/stores/search.store';
+import { authenticate } from '$lib/utils/auth';
+import {
+  searchMetadata,
+  searchSmart,
+  type MetadataSearchDto,
+  type SearchResponseDto,
+  type SmartSearchDto,
+} from '@immich/sdk';
+import type { PageLoad } from './$types';
 
 export const load = (async (data) => {
   await authenticate();
@@ -10,8 +17,13 @@ export const load = (async (data) => {
     url.searchParams.get(QueryParameter.SEARCH_TERM) || url.searchParams.get(QueryParameter.QUERY) || undefined;
   let results: SearchResponseDto | null = null;
   if (term) {
-    const { data } = await api.searchApi.search({}, { params: url.searchParams });
-    results = data;
+    const payload = JSON.parse(term) as SmartSearchDto | MetadataSearchDto;
+    searchQuery.set(payload);
+
+    results =
+      payload && 'query' in payload
+        ? await searchSmart({ smartSearchDto: { ...payload, withExif: true, isVisible: true } })
+        : await searchMetadata({ metadataSearchDto: { ...payload, withExif: true, isVisible: true } });
   }
 
   return {

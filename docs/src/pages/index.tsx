@@ -71,7 +71,7 @@ export default function Home(): JSX.Element {
     >
       <HomepageHeader />
       <div className="flex flex-col place-items-center place-content-center">
-        <p>This project is available under MIT license.</p>
+        <p>This project is available under GNU AGPL v3 license.</p>
         <p className="text-xs">Privacy should not be a luxury</p>
       </div>
     </Layout>

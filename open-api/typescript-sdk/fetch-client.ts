@@ -4,8 +4,8 @@
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
-import * as Oazapfts from "oazapfts/lib/runtime";
-import * as QS from "oazapfts/lib/runtime/query";
+import * as Oazapfts from "@oazapfts/runtime";
+import * as QS from "@oazapfts/runtime/query";
 export const defaults: Oazapfts.Defaults<Oazapfts.CustomHeaders> = {
     headers: {},
     baseUrl: "/api",
@@ -14,9 +14,6 @@ const oazapfts = Oazapfts.runtime(defaults);
 export const servers = {
     server1: "/api"
 };
-export type ReactionLevel = "album" | "asset";
-export type ReactionType = "comment" | "like";
-export type UserAvatarColor = "primary" | "pink" | "red" | "yellow" | "blue" | "green" | "purple" | "orange" | "gray" | "amber";
 export type UserDto = {
     avatarColor: UserAvatarColor;
     email: string;
@@ -29,7 +26,7 @@ export type ActivityResponseDto = {
     comment?: string | null;
     createdAt: string;
     id: string;
-    "type": "comment" | "like";
+    "type": Type;
     user: UserDto;
 };
 export type ActivityCreateDto = {
@@ -103,14 +100,12 @@ export type SmartInfoResponseDto = {
     objects?: string[] | null;
     tags?: string[] | null;
 };
-export type TagTypeEnum = "OBJECT" | "FACE" | "CUSTOM";
 export type TagResponseDto = {
     id: string;
     name: string;
     "type": TagTypeEnum;
     userId: string;
 };
-export type AssetTypeEnum = "IMAGE" | "VIDEO" | "AUDIO" | "OTHER";
 export type AssetResponseDto = {
     /** base64 encoded sha1 hash */
     checksum: string;
@@ -186,7 +181,7 @@ export type BulkIdsDto = {
     ids: string[];
 };
 export type BulkIdResponseDto = {
-    error?: "duplicate" | "no_permission" | "not_found" | "unknown";
+    error?: Error;
     id: string;
     success: boolean;
 };
@@ -232,10 +227,10 @@ export type AssetBulkUploadCheckDto = {
     assets: AssetBulkUploadCheckItem[];
 };
 export type AssetBulkUploadCheckResult = {
-    action: "accept" | "reject";
+    action: Action;
     assetId?: string;
     id: string;
-    reason?: "duplicate" | "unsupported-format";
+    reason?: Reason;
 };
 export type AssetBulkUploadCheckResponseDto = {
     results: AssetBulkUploadCheckResult[];
@@ -261,7 +256,6 @@ export type CheckExistingAssetsDto = {
 export type CheckExistingAssetsResponseDto = {
     existingIds: string[];
 };
-export type AssetJobName = "regenerate-thumbnail" | "refresh-metadata" | "transcode-video";
 export type AssetJobsDto = {
     assetIds: string[];
     name: AssetJobName;
@@ -284,8 +278,6 @@ export type AssetStatsResponseDto = {
     total: number;
     videos: number;
 };
-export type ThumbnailFormat = "JPEG" | "WEBP";
-export type TimeBucketSize = "DAY" | "MONTH";
 export type TimeBucketResponseDto = {
     count: number;
     timeBucket: string;
@@ -319,14 +311,10 @@ export type UpdateAssetDto = {
     latitude?: number;
     longitude?: number;
 };
-export type AssetOrder = "asc" | "desc";
-export type EntityType = "ASSET" | "ALBUM";
 export type AuditDeletesResponseDto = {
     ids: string[];
     needsFullSync: boolean;
 };
-export type PathEntityType = "asset" | "person" | "user";
-export type PathType = "original" | "jpeg_thumbnail" | "webp_thumbnail" | "encoded_video" | "sidecar" | "face" | "profile";
 export type FileReportItemDto = {
     checksum?: string;
     entityId: string;
@@ -452,13 +440,10 @@ export type AllJobStatusResponseDto = {
     thumbnailGeneration: JobStatusDto;
     videoConversion: JobStatusDto;
 };
-export type JobName = "thumbnailGeneration" | "metadataExtraction" | "videoConversion" | "faceDetection" | "facialRecognition" | "smartSearch" | "backgroundTask" | "storageTemplateMigration" | "migration" | "search" | "sidecar" | "library";
-export type JobCommand = "start" | "pause" | "resume" | "empty" | "clear-failed";
 export type JobCommandDto = {
     command: JobCommand;
     force: boolean;
 };
-export type LibraryType = "UPLOAD" | "EXTERNAL";
 export type LibraryResponseDto = {
     assetCount: number;
     createdAt: string;
@@ -588,6 +573,7 @@ export type SearchAssetResponseDto = {
     count: number;
     facets: SearchFacetResponseDto[];
     items: AssetResponseDto[];
+    nextPage: string | null;
     total: number;
 };
 export type SearchResponseDto = {
@@ -601,6 +587,84 @@ export type SearchExploreItem = {
 export type SearchExploreResponseDto = {
     fieldName: string;
     items: SearchExploreItem[];
+};
+export type MetadataSearchDto = {
+    checksum?: string;
+    city?: string;
+    country?: string;
+    createdAfter?: string;
+    createdBefore?: string;
+    deviceAssetId?: string;
+    deviceId?: string;
+    encodedVideoPath?: string;
+    id?: string;
+    isArchived?: boolean;
+    isEncoded?: boolean;
+    isExternal?: boolean;
+    isFavorite?: boolean;
+    isMotion?: boolean;
+    isNotInAlbum?: boolean;
+    isOffline?: boolean;
+    isReadOnly?: boolean;
+    isVisible?: boolean;
+    lensModel?: string;
+    libraryId?: string;
+    make?: string;
+    model?: string;
+    order?: AssetOrder;
+    originalFileName?: string;
+    originalPath?: string;
+    page?: number;
+    personIds?: string[];
+    resizePath?: string;
+    size?: number;
+    state?: string;
+    takenAfter?: string;
+    takenBefore?: string;
+    trashedAfter?: string;
+    trashedBefore?: string;
+    "type"?: AssetTypeEnum;
+    updatedAfter?: string;
+    updatedBefore?: string;
+    webpPath?: string;
+    withArchived?: boolean;
+    withDeleted?: boolean;
+    withExif?: boolean;
+    withPeople?: boolean;
+    withStacked?: boolean;
+};
+export type SmartSearchDto = {
+    city?: string;
+    country?: string;
+    createdAfter?: string;
+    createdBefore?: string;
+    deviceId?: string;
+    isArchived?: boolean;
+    isEncoded?: boolean;
+    isExternal?: boolean;
+    isFavorite?: boolean;
+    isMotion?: boolean;
+    isOffline?: boolean;
+    isReadOnly?: boolean;
+    isVisible?: boolean;
+    lensModel?: string;
+    libraryId?: string;
+    make?: string;
+    model?: string;
+    page?: number;
+    query: string;
+    size?: number;
+    state?: string;
+    takenAfter?: string;
+    takenBefore?: string;
+    trashedAfter?: string;
+    trashedBefore?: string;
+    "type"?: AssetTypeEnum;
+    updatedAfter?: string;
+    updatedBefore?: string;
+    withArchived?: boolean;
+    withDeleted?: boolean;
+    withExif?: boolean;
 };
 export type ServerInfoResponseDto = {
     diskAvailable: string;
@@ -663,7 +727,6 @@ export type ServerVersionResponseDto = {
     minor: number;
     patch: number;
 };
-export type SharedLinkType = "ALBUM" | "INDIVIDUAL";
 export type SharedLinkResponseDto = {
     album?: AlbumResponseDto;
     allowDownload: boolean;
@@ -705,21 +768,15 @@ export type SharedLinkEditDto = {
 };
 export type AssetIdsResponseDto = {
     assetId: string;
-    error?: "duplicate" | "no_permission" | "not_found";
+    error?: Error2;
     success: boolean;
 };
-export type TranscodeHwAccel = "nvenc" | "qsv" | "vaapi" | "rkmpp" | "disabled";
-export type AudioCodec = "mp3" | "aac" | "libopus";
-export type VideoCodec = "h264" | "hevc" | "vp9";
-export type CqMode = "auto" | "cqp" | "icq";
-export type ToneMapping = "hable" | "mobius" | "reinhard" | "disabled";
-export type TranscodePolicy = "all" | "optimal" | "bitrate" | "required" | "disabled";
 export type SystemConfigFFmpegDto = {
-    accel: TranscodeHwAccel;
+    accel: TranscodeHWAccel;
     acceptedAudioCodecs: AudioCodec[];
     acceptedVideoCodecs: VideoCodec[];
     bframes: number;
-    cqMode: CqMode;
+    cqMode: CQMode;
     crf: number;
     gopSize: number;
     maxBitrate: string;
@@ -764,16 +821,13 @@ export type SystemConfigLibraryDto = {
     scan: SystemConfigLibraryScanDto;
     watch: SystemConfigLibraryWatchDto;
 };
-export type LogLevel = "verbose" | "debug" | "log" | "warn" | "error" | "fatal";
 export type SystemConfigLoggingDto = {
     enabled: boolean;
     level: LogLevel;
 };
-export type ClipMode = "vision" | "text";
-export type ModelType = "facial-recognition" | "clip";
 export type ClipConfig = {
     enabled: boolean;
-    mode?: ClipMode;
+    mode?: CLIPMode;
     modelName: string;
     modelType?: ModelType;
 };
@@ -831,7 +885,6 @@ export type SystemConfigStorageTemplateDto = {
 export type SystemConfigThemeDto = {
     customCss: string;
 };
-export type Colorspace = "srgb" | "p3";
 export type SystemConfigThumbnailDto = {
     colorspace: Colorspace;
     jpegSize: number;
@@ -859,7 +912,6 @@ export type SystemConfigDto = {
     thumbnail: SystemConfigThumbnailDto;
     trash: SystemConfigTrashDto;
 };
-export type MapTheme = "light" | "dark";
 export type SystemConfigTemplateStorageOptionDto = {
     dayOptions: string[];
     hourOptions: string[];
@@ -1266,11 +1318,12 @@ export function runAssetJobs({ assetJobsDto }: {
         body: assetJobsDto
     })));
 }
-export function getMapMarkers({ fileCreatedAfter, fileCreatedBefore, isArchived, isFavorite }: {
+export function getMapMarkers({ fileCreatedAfter, fileCreatedBefore, isArchived, isFavorite, withPartners }: {
     fileCreatedAfter?: string;
     fileCreatedBefore?: string;
     isArchived?: boolean;
     isFavorite?: boolean;
+    withPartners?: boolean;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -1279,7 +1332,8 @@ export function getMapMarkers({ fileCreatedAfter, fileCreatedBefore, isArchived,
         fileCreatedAfter,
         fileCreatedBefore,
         isArchived,
-        isFavorite
+        isFavorite,
+        withPartners
     }))}`, {
         ...opts
     }));
@@ -1461,7 +1515,7 @@ export function updateAsset({ id, updateAssetDto }: {
         body: updateAssetDto
     })));
 }
-export function searchAssets({ checksum, city, country, createdAfter, createdBefore, deviceAssetId, deviceId, encodedVideoPath, id, isArchived, isEncoded, isExternal, isFavorite, isMotion, isOffline, isReadOnly, isVisible, lensModel, libraryId, make, model, order, originalFileName, originalPath, page, resizePath, size, state, takenAfter, takenBefore, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, webpPath, withDeleted, withExif, withPeople, withStacked }: {
+export function searchAssets({ checksum, city, country, createdAfter, createdBefore, deviceAssetId, deviceId, encodedVideoPath, id, isArchived, isEncoded, isExternal, isFavorite, isMotion, isNotInAlbum, isOffline, isReadOnly, isVisible, lensModel, libraryId, make, model, order, originalFileName, originalPath, page, personIds, resizePath, size, state, takenAfter, takenBefore, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, webpPath, withArchived, withDeleted, withExif, withPeople, withStacked }: {
     checksum?: string;
     city?: string;
     country?: string;
@@ -1476,6 +1530,7 @@ export function searchAssets({ checksum, city, country, createdAfter, createdBef
     isExternal?: boolean;
     isFavorite?: boolean;
     isMotion?: boolean;
+    isNotInAlbum?: boolean;
     isOffline?: boolean;
     isReadOnly?: boolean;
     isVisible?: boolean;
@@ -1487,6 +1542,7 @@ export function searchAssets({ checksum, city, country, createdAfter, createdBef
     originalFileName?: string;
     originalPath?: string;
     page?: number;
+    personIds?: string[];
     resizePath?: string;
     size?: number;
     state?: string;
@@ -1498,6 +1554,7 @@ export function searchAssets({ checksum, city, country, createdAfter, createdBef
     updatedAfter?: string;
     updatedBefore?: string;
     webpPath?: string;
+    withArchived?: boolean;
     withDeleted?: boolean;
     withExif?: boolean;
     withPeople?: boolean;
@@ -1521,6 +1578,7 @@ export function searchAssets({ checksum, city, country, createdAfter, createdBef
         isExternal,
         isFavorite,
         isMotion,
+        isNotInAlbum,
         isOffline,
         isReadOnly,
         isVisible,
@@ -1532,6 +1590,7 @@ export function searchAssets({ checksum, city, country, createdAfter, createdBef
         originalFileName,
         originalPath,
         page,
+        personIds,
         resizePath,
         size,
         state,
@@ -1543,6 +1602,7 @@ export function searchAssets({ checksum, city, country, createdAfter, createdBef
         updatedAfter,
         updatedBefore,
         webpPath,
+        withArchived,
         withDeleted,
         withExif,
         withPeople,
@@ -2047,12 +2107,14 @@ export function getPersonThumbnail({ id }: {
         ...opts
     }));
 }
-export function search({ clip, motion, q, query, recent, smart, $type, withArchived }: {
+export function search({ clip, motion, page, q, query, recent, size, smart, $type, withArchived }: {
     clip?: boolean;
     motion?: boolean;
+    page?: number;
     q?: string;
     query?: string;
     recent?: boolean;
+    size?: number;
     smart?: boolean;
     $type?: "IMAGE" | "VIDEO" | "AUDIO" | "OTHER";
     withArchived?: boolean;
@@ -2063,9 +2125,11 @@ export function search({ clip, motion, q, query, recent, smart, $type, withArchi
     }>(`/search${QS.query(QS.explode({
         clip,
         motion,
+        page,
         q,
         query,
         recent,
+        size,
         smart,
         "type": $type,
         withArchived
@@ -2081,6 +2145,18 @@ export function getExploreData(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
+export function searchMetadata({ metadataSearchDto }: {
+    metadataSearchDto: MetadataSearchDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: SearchResponseDto;
+    }>("/search/metadata", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: metadataSearchDto
+    })));
+}
 export function searchPerson({ name, withHidden }: {
     name: string;
     withHidden?: boolean;
@@ -2091,6 +2167,38 @@ export function searchPerson({ name, withHidden }: {
     }>(`/search/person${QS.query(QS.explode({
         name,
         withHidden
+    }))}`, {
+        ...opts
+    }));
+}
+export function searchSmart({ smartSearchDto }: {
+    smartSearchDto: SmartSearchDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: SearchResponseDto;
+    }>("/search/smart", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: smartSearchDto
+    })));
+}
+export function getSearchSuggestions({ country, make, model, state, $type }: {
+    country?: string;
+    make?: string;
+    model?: string;
+    state?: string;
+    $type: SearchSuggestionType;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: string[];
+    }>(`/search/suggestions${QS.query(QS.explode({
+        country,
+        make,
+        model,
+        state,
+        "type": $type
     }))}`, {
         ...opts
     }));
@@ -2523,4 +2631,188 @@ export function restoreUser({ id }: {
         ...opts,
         method: "POST"
     }));
+}
+export enum ReactionLevel {
+    Album = "album",
+    Asset = "asset"
+}
+export enum ReactionType {
+    Comment = "comment",
+    Like = "like"
+}
+export enum Type {
+    Comment = "comment",
+    Like = "like"
+}
+export enum UserAvatarColor {
+    Primary = "primary",
+    Pink = "pink",
+    Red = "red",
+    Yellow = "yellow",
+    Blue = "blue",
+    Green = "green",
+    Purple = "purple",
+    Orange = "orange",
+    Gray = "gray",
+    Amber = "amber"
+}
+export enum TagTypeEnum {
+    Object = "OBJECT",
+    Face = "FACE",
+    Custom = "CUSTOM"
+}
+export enum AssetTypeEnum {
+    Image = "IMAGE",
+    Video = "VIDEO",
+    Audio = "AUDIO",
+    Other = "OTHER"
+}
+export enum Error {
+    Duplicate = "duplicate",
+    NoPermission = "no_permission",
+    NotFound = "not_found",
+    Unknown = "unknown"
+}
+export enum Action {
+    Accept = "accept",
+    Reject = "reject"
+}
+export enum Reason {
+    Duplicate = "duplicate",
+    UnsupportedFormat = "unsupported-format"
+}
+export enum AssetJobName {
+    RegenerateThumbnail = "regenerate-thumbnail",
+    RefreshMetadata = "refresh-metadata",
+    TranscodeVideo = "transcode-video"
+}
+export enum ThumbnailFormat {
+    Jpeg = "JPEG",
+    Webp = "WEBP"
+}
+export enum TimeBucketSize {
+    Day = "DAY",
+    Month = "MONTH"
+}
+export enum AssetOrder {
+    Asc = "asc",
+    Desc = "desc"
+}
+export enum EntityType {
+    Asset = "ASSET",
+    Album = "ALBUM"
+}
+export enum PathEntityType {
+    Asset = "asset",
+    Person = "person",
+    User = "user"
+}
+export enum PathType {
+    Original = "original",
+    JpegThumbnail = "jpeg_thumbnail",
+    WebpThumbnail = "webp_thumbnail",
+    EncodedVideo = "encoded_video",
+    Sidecar = "sidecar",
+    Face = "face",
+    Profile = "profile"
+}
+export enum JobName {
+    ThumbnailGeneration = "thumbnailGeneration",
+    MetadataExtraction = "metadataExtraction",
+    VideoConversion = "videoConversion",
+    FaceDetection = "faceDetection",
+    FacialRecognition = "facialRecognition",
+    SmartSearch = "smartSearch",
+    BackgroundTask = "backgroundTask",
+    StorageTemplateMigration = "storageTemplateMigration",
+    Migration = "migration",
+    Search = "search",
+    Sidecar = "sidecar",
+    Library = "library"
+}
+export enum JobCommand {
+    Start = "start",
+    Pause = "pause",
+    Resume = "resume",
+    Empty = "empty",
+    ClearFailed = "clear-failed"
+}
+export enum LibraryType {
+    Upload = "UPLOAD",
+    External = "EXTERNAL"
+}
+export enum SearchSuggestionType {
+    Country = "country",
+    State = "state",
+    City = "city",
+    CameraMake = "camera-make",
+    CameraModel = "camera-model"
+}
+export enum SharedLinkType {
+    Album = "ALBUM",
+    Individual = "INDIVIDUAL"
+}
+export enum Error2 {
+    Duplicate = "duplicate",
+    NoPermission = "no_permission",
+    NotFound = "not_found"
+}
+export enum TranscodeHWAccel {
+    Nvenc = "nvenc",
+    Qsv = "qsv",
+    Vaapi = "vaapi",
+    Rkmpp = "rkmpp",
+    Disabled = "disabled"
+}
+export enum AudioCodec {
+    Mp3 = "mp3",
+    Aac = "aac",
+    Libopus = "libopus"
+}
+export enum VideoCodec {
+    H264 = "h264",
+    Hevc = "hevc",
+    Vp9 = "vp9"
+}
+export enum CQMode {
+    Auto = "auto",
+    Cqp = "cqp",
+    Icq = "icq"
+}
+export enum ToneMapping {
+    Hable = "hable",
+    Mobius = "mobius",
+    Reinhard = "reinhard",
+    Disabled = "disabled"
+}
+export enum TranscodePolicy {
+    All = "all",
+    Optimal = "optimal",
+    Bitrate = "bitrate",
+    Required = "required",
+    Disabled = "disabled"
+}
+export enum LogLevel {
+    Verbose = "verbose",
+    Debug = "debug",
+    Log = "log",
+    Warn = "warn",
+    Error = "error",
+    Fatal = "fatal"
+}
+export enum CLIPMode {
+    Vision = "vision",
+    Text = "text"
+}
+export enum ModelType {
+    FacialRecognition = "facial-recognition",
+    Clip = "clip"
+}
+export enum Colorspace {
+    Srgb = "srgb",
+    P3 = "p3"
+}
+export enum MapTheme {
+    Light = "light",
+    Dark = "dark"
 }

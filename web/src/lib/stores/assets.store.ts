@@ -1,9 +1,10 @@
-import { api, type AssetApiGetTimeBucketsRequest, type AssetResponseDto, TimeBucketSize } from '@api';
+import { getKey } from '$lib/utils';
+import { TimeBucketSize, getTimeBucket, getTimeBuckets, type AssetResponseDto } from '@immich/sdk';
 import { throttle } from 'lodash-es';
 import { DateTime } from 'luxon';
-import { type Unsubscriber, writable } from 'svelte/store';
+import { writable, type Unsubscriber } from 'svelte/store';
 import { handleError } from '../utils/handle-error';
-import { websocketStore } from './websocket';
+import { websocketEvents } from './websocket';
 
 export enum BucketPosition {
   Above = 'above',
@@ -11,7 +12,7 @@ export enum BucketPosition {
   Visible = 'visible',
   Unknown = 'unknown',
 }
-
+type AssetApiGetTimeBucketsRequest = Parameters<typeof getTimeBuckets>[0];
 export type AssetStoreOptions = Omit<AssetApiGetTimeBucketsRequest, 'size'>;
 
 export interface Viewport {
@@ -95,22 +96,14 @@ export class AssetStore {
 
   connect() {
     this.unsubscribers.push(
-      websocketStore.onUploadSuccess.subscribe((value) => {
-        if (value) {
-          this.addPendingChanges({ type: 'add', value });
-        }
+      websocketEvents.on('on_upload_success', (asset) => {
+        this.addPendingChanges({ type: 'add', value: asset });
       }),
-
-      websocketStore.onAssetTrash.subscribe((ids) => {
-        if (ids) {
-          this.addPendingChanges(...ids.map((id) => ({ type: 'trash', value: id }) as PendingChange));
-        }
+      websocketEvents.on('on_asset_trash', (ids) => {
+        this.addPendingChanges(...ids.map((id): TrashAsset => ({ type: 'trash', value: id })));
       }),
-
-      websocketStore.onAssetDelete.subscribe((value) => {
-        if (value) {
-          this.addPendingChanges({ type: 'delete', value });
-        }
+      websocketEvents.on('on_asset_delete', (id: string) => {
+        this.addPendingChanges({ type: 'delete', value: id });
       }),
     );
   }
@@ -155,10 +148,7 @@ export class AssetStore {
     this.assetToBucket = {};
     this.albumAssets = new Set();
 
-    const { data: buckets } = await api.assetApi.getTimeBuckets({
-      ...this.options,
-      key: api.getKey(),
-    });
+    const buckets = await getTimeBuckets({ ...this.options, key: getKey() });
 
     this.initialized = true;
 
@@ -209,22 +199,22 @@ export class AssetStore {
 
       bucket.cancelToken = new AbortController();
 
-      const { data: assets } = await api.assetApi.getTimeBucket(
+      const assets = await getTimeBucket(
         {
           ...this.options,
           timeBucket: bucketDate,
-          key: api.getKey(),
+          key: getKey(),
         },
         { signal: bucket.cancelToken.signal },
       );
 
       if (this.albumId) {
-        const { data: albumAssets } = await api.assetApi.getTimeBucket(
+        const albumAssets = await getTimeBucket(
           {
             albumId: this.albumId,
             timeBucket: bucketDate,
             size: this.options.size,
-            key: api.getKey(),
+            key: getKey(),
           },
           { signal: bucket.cancelToken.signal },
         );
@@ -232,6 +222,10 @@ export class AssetStore {
         for (const asset of albumAssets) {
           this.albumAssets.add(asset.id);
         }
+      }
+
+      if (bucket.cancelToken.signal.aborted) {
+        return;
       }
 
       bucket.assets = assets;

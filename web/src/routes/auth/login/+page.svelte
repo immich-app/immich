@@ -5,7 +5,7 @@
   import { AppRoute } from '$lib/constants';
   import { featureFlags, serverConfig } from '$lib/stores/server-config.store';
   import { resetSavedUser } from '$lib/stores/user.store';
-  import { api } from '@api';
+  import { logout } from '@immich/sdk';
   import type { PageData } from './$types';
 
   export let data: PageData;
@@ -13,7 +13,7 @@
   afterNavigate(async ({ from }) => {
     if (from?.url?.pathname === AppRoute.AUTH_CHANGE_PASSWORD) {
       resetSavedUser();
-      await api.authenticationApi.logout();
+      await logout();
     }
   });
 </script>
@@ -26,9 +26,9 @@
     </p>
 
     <LoginForm
-      on:success={() => goto(AppRoute.PHOTOS, { invalidateAll: true })}
-      on:firstLogin={() => goto(AppRoute.AUTH_CHANGE_PASSWORD)}
-      on:onboarding={() => goto(AppRoute.AUTH_ONBOARDING)}
+      onSuccess={() => goto(AppRoute.PHOTOS, { invalidateAll: true })}
+      onFirstLogin={() => goto(AppRoute.AUTH_CHANGE_PASSWORD)}
+      onOnboarding={() => goto(AppRoute.AUTH_ONBOARDING)}
     />
   </FullscreenContainer>
 {/if}

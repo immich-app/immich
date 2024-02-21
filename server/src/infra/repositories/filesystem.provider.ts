@@ -2,17 +2,17 @@ import {
   CrawlOptionsDto,
   DiskUsage,
   ImmichReadStream,
-  ImmichWatcher,
   ImmichZipStream,
   IStorageRepository,
   mimeTypes,
+  WatchEvents,
 } from '@app/domain';
 import { ImmichLogger } from '@app/infra/logger';
 import archiver from 'archiver';
 import chokidar, { WatchOptions } from 'chokidar';
 import { glob } from 'glob';
 import { constants, createReadStream, existsSync, mkdirSync } from 'node:fs';
-import fs, { copyFile, readdir, rename, writeFile } from 'node:fs/promises';
+import fs, { copyFile, readdir, rename, utimes, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 export class FilesystemProvider implements IStorageRepository {
@@ -55,6 +55,8 @@ export class FilesystemProvider implements IStorageRepository {
   rename = rename;
 
   copyFile = copyFile;
+
+  utimes = utimes;
 
   async checkFileExists(filepath: string, mode = constants.F_OK): Promise<boolean> {
     try {
@@ -134,8 +136,15 @@ export class FilesystemProvider implements IStorageRepository {
     });
   }
 
-  watch(paths: string[], options: WatchOptions): ImmichWatcher {
-    return chokidar.watch(paths, options);
+  watch(paths: string[], options: WatchOptions, events: Partial<WatchEvents>) {
+    const watcher = chokidar.watch(paths, options);
+
+    watcher.on('ready', () => events.onReady?.());
+    watcher.on('add', (path) => events.onAdd?.(path));
+    watcher.on('change', (path) => events.onChange?.(path));
+    watcher.on('unlink', (path) => events.onUnlink?.(path));
+
+    return () => watcher.close();
   }
 
   readdir = readdir;

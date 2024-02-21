@@ -3,14 +3,14 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: 
-      - 'cli/**'
-      - '.github/workflows/cli.yml'
+    paths:
+      - "cli/**"
+      - ".github/workflows/cli.yml"
   pull_request:
     branches: [main]
-    paths: 
-      - 'cli/**'
-      - '.github/workflows/cli.yml'
+    paths:
+      - "cli/**"
+      - ".github/workflows/cli.yml"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -34,7 +34,12 @@ jobs:
         with:
           node-version: "20.x"
           registry-url: "https://registry.npmjs.org"
+      - name: Prepare SDK
+        run: npm ci --prefix ../open-api/typescript-sdk/
+      - name: Build SDK
+        run: npm run build --prefix ../open-api/typescript-sdk/
       - run: npm ci
+      - run: npm run build
       - run: npm publish
         if: ${{ github.event_name == 'workflow_dispatch' }}
         env:
@@ -62,7 +67,7 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      
+
       - name: Get package version
         id: package-version
         run: |
@@ -73,10 +78,13 @@ jobs:
         id: metadata
         uses: docker/metadata-action@v5
         with:
+          flavor: |
+            latest=false
           images: |
             name=ghcr.io/${{ github.repository_owner }}/immich-cli
           tags: |
             type=raw,value=${{ steps.package-version.outputs.version }},enable=${{ github.event_name == 'workflow_dispatch' }}
+            type=raw,value=latest,enable=${{ github.event_name == 'workflow_dispatch' }}
 
       - name: Build and push image
         uses: docker/build-push-action@v5.1.0

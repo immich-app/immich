@@ -3,7 +3,6 @@ import {
   AssetBulkUpdateDto,
   AssetJobsDto,
   AssetResponseDto,
-  AssetSearchDto,
   AssetService,
   AssetStatsDto,
   AssetStatsResponseDto,
@@ -14,7 +13,9 @@ import {
   MapMarkerResponseDto,
   MemoryLaneDto,
   MemoryLaneResponseDto,
+  MetadataSearchDto,
   RandomAssetsDto,
+  SearchService,
   TimeBucketAssetDto,
   TimeBucketDto,
   TimeBucketResponseDto,
@@ -23,7 +24,7 @@ import {
   UpdateStackParentDto,
 } from '@app/domain';
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Auth, Authenticated, SharedLinkRoute } from '../app.guard';
 import { UseValidation } from '../app.utils';
 import { Route } from '../interceptors';
@@ -34,11 +35,15 @@ import { UUIDParamDto } from './dto/uuid-param.dto';
 @Authenticated()
 @UseValidation()
 export class AssetsController {
-  constructor(private service: AssetService) {}
+  constructor(private searchService: SearchService) {}
 
   @Get()
-  searchAssets(@Auth() auth: AuthDto, @Query() dto: AssetSearchDto): Promise<AssetResponseDto[]> {
-    return this.service.search(auth, dto);
+  @ApiOperation({ deprecated: true })
+  async searchAssets(@Auth() auth: AuthDto, @Query() dto: MetadataSearchDto): Promise<AssetResponseDto[]> {
+    const {
+      assets: { items },
+    } = await this.searchService.searchMetadata(auth, dto);
+    return items;
   }
 }
 

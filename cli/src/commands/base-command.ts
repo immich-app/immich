@@ -1,6 +1,6 @@
 import { ServerVersionResponseDto, UserResponseDto } from '@immich/sdk';
-import { SessionService } from '../services/session.service';
 import { ImmichApi } from 'src/services/api.service';
+import { SessionService } from '../services/session.service';
 
 export abstract class BaseCommand {
   protected sessionService!: SessionService;

@@ -15,7 +15,6 @@ class ThumbnailImage extends StatelessWidget {
   final int totalAssets;
   final bool showStorageIndicator;
   final bool showStack;
-  final bool useGrayBoxPlaceholder;
   final bool isSelected;
   final bool multiselectEnabled;
   final Function? onSelect;
@@ -30,7 +29,6 @@ class ThumbnailImage extends StatelessWidget {
     required this.totalAssets,
     this.showStorageIndicator = true,
     this.showStack = false,
-    this.useGrayBoxPlaceholder = false,
     this.isSelected = false,
     this.multiselectEnabled = false,
     this.onDeselect,
@@ -136,10 +134,10 @@ class ThumbnailImage extends StatelessWidget {
           tag: isFromDto
               ? '${asset.remoteId}-$heroOffset'
               : asset.id + heroOffset,
-          child: ImmichImage(
+          child: ImmichImage.thumbnail(
             asset,
-            useGrayBoxPlaceholder: useGrayBoxPlaceholder,
-            fit: BoxFit.cover,
+            height: 300,
+            width: 300,
           ),
         ),
       );

@@ -2,7 +2,7 @@
   import { page } from '$app/stores';
   import { locale, sidebarSettings } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
-  import { type AssetApiGetAssetStatisticsRequest, api } from '@api';
+  import { getAlbumCount, getAssetStatistics } from '@immich/sdk';
   import {
     mdiAccount,
     mdiAccountMultiple,
@@ -23,15 +23,11 @@
   import SideBarButton from './side-bar-button.svelte';
   import SideBarSection from './side-bar-section.svelte';
 
-  const getStats = async (dto: AssetApiGetAssetStatisticsRequest) => {
-    const { data: stats } = await api.assetApi.getAssetStatistics(dto);
-    return stats;
-  };
+  const getStats = (dto: Parameters<typeof getAssetStatistics>[0]) => getAssetStatistics(dto);
 
-  const getAlbumCount = async () => {
+  const handleAlbumCount = async () => {
     try {
-      const { data: albumCount } = await api.albumApi.getAlbumCount();
-      return albumCount;
+      return await getAlbumCount();
     } catch {
       return { owned: 0, shared: 0, notShared: 0 };
     }
@@ -85,7 +81,7 @@
         isSelected={isSharingSelected}
       >
         <svelte:fragment slot="moreInformation">
-          {#await getAlbumCount()}
+          {#await handleAlbumCount()}
             <LoadingSpinner />
           {:then data}
             <div>
@@ -127,7 +123,7 @@
       isSelected={$page.route.id === '/(user)/albums'}
     >
       <svelte:fragment slot="moreInformation">
-        {#await getAlbumCount()}
+        {#await handleAlbumCount()}
           <LoadingSpinner />
         {:then data}
           <div>

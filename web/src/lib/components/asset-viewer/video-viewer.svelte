@@ -1,10 +1,11 @@
 <script lang="ts">
-  import { ThumbnailFormat, api } from '@api';
-  import { fade } from 'svelte/transition';
-  import { createEventDispatcher } from 'svelte';
   import { videoViewerVolume } from '$lib/stores/preferences.store';
-  import LoadingSpinner from '../shared-components/loading-spinner.svelte';
+  import { getAssetFileUrl, getAssetThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
+  import { ThumbnailFormat } from '@immich/sdk';
+  import { createEventDispatcher } from 'svelte';
+  import { fade } from 'svelte/transition';
+  import LoadingSpinner from '../shared-components/loading-spinner.svelte';
 
   export let assetId: string;
 
@@ -35,9 +36,9 @@
     on:canplay={handleCanPlay}
     on:ended={() => dispatch('onVideoEnded')}
     bind:volume={$videoViewerVolume}
-    poster={api.getAssetThumbnailUrl(assetId, ThumbnailFormat.Jpeg)}
+    poster={getAssetThumbnailUrl(assetId, ThumbnailFormat.Jpeg)}
   >
-    <source src={api.getAssetFileUrl(assetId, false, true)} type="video/mp4" />
+    <source src={getAssetFileUrl(assetId, false, true)} type="video/mp4" />
     <track kind="captions" />
   </video>
 

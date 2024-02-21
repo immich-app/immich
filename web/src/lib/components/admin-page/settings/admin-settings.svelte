@@ -1,15 +1,15 @@
 <svelte:options accessors />
 
 <script lang="ts">
-  import { type SystemConfigDto, api } from '@api';
   import {
-    notificationController,
     NotificationType,
+    notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import { handleError } from '$lib/utils/handle-error';
-  import type { SettingsEventType } from './admin-settings';
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { getConfig, getConfigDefaults, updateConfig, type SystemConfigDto } from '@immich/sdk';
   import { cloneDeep } from 'lodash-es';
+  import { createEventDispatcher, onMount } from 'svelte';
+  import type { SettingsEventType } from './admin-settings';
 
   export let config: SystemConfigDto;
 
@@ -24,7 +24,7 @@
 
   const handleSave = async (update: Partial<SystemConfigDto>) => {
     try {
-      const { data: newConfig } = await api.systemConfigApi.updateConfig({
+      const newConfig = await updateConfig({
         systemConfigDto: {
           ...savedConfig,
           ...update,
@@ -42,7 +42,7 @@
   };
 
   const reset = async (configKeys: Array<keyof SystemConfigDto>) => {
-    const { data: resetConfig } = await api.systemConfigApi.getConfig();
+    const resetConfig = await getConfig();
 
     for (const key of configKeys) {
       config = { ...config, [key]: resetConfig[key] };
@@ -66,10 +66,7 @@
   };
 
   onMount(async () => {
-    [savedConfig, defaultConfig] = await Promise.all([
-      api.systemConfigApi.getConfig().then((res) => res.data),
-      api.systemConfigApi.getConfigDefaults().then((res) => res.data),
-    ]);
+    [savedConfig, defaultConfig] = await Promise.all([getConfig(), getConfigDefaults()]);
   });
 </script>
 

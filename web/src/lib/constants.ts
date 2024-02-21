@@ -35,7 +35,6 @@ export enum AppRoute {
   PARTNERS = '/partners',
 
   AUTH_LOGIN = '/auth/login',
-  AUTH_LOGOUT = '/auth/logout',
   AUTH_REGISTER = '/auth/register',
   AUTH_CHANGE_PASSWORD = '/auth/change-password',
   AUTH_ONBOARDING = '/auth/onboarding',
@@ -72,6 +71,7 @@ export enum QueryParameter {
   SEARCHED_PEOPLE = 'searchedPeople',
   SEARCH_TERM = 'q',
   SMART_SEARCH = 'smartSearch',
+  PAGE = 'page',
 }
 
 export enum OpenSettingQueryParameterValue {
@@ -86,7 +86,11 @@ export enum ActionQueryParameterValue {
 
 export const maximumLengthSearchPeople: number = 20;
 
+// time to load the map before displaying the loading spinner
+export const timeToLoadTheMap: number = 100;
+
 export const timeBeforeShowLoadingSpinner: number = 100;
+
 // should be the same values as the ones in the app.html
 export enum Theme {
   LIGHT = 'light',

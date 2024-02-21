@@ -22,13 +22,28 @@ void main() {
       // TODO
     });
 
-    //Future<SearchResponseDto> search({ bool clip, bool motion, String q, String query, bool recent, bool smart, String type, bool withArchived }) async
+    //Future<List<String>> getSearchSuggestions(SearchSuggestionType type, { String country, String make, String model, String state }) async
+    test('test getSearchSuggestions', () async {
+      // TODO
+    });
+
+    //Future<SearchResponseDto> search({ bool clip, bool motion, num page, String q, String query, bool recent, num size, bool smart, String type, bool withArchived }) async
     test('test search', () async {
+      // TODO
+    });
+
+    //Future<SearchResponseDto> searchMetadata(MetadataSearchDto metadataSearchDto) async
+    test('test searchMetadata', () async {
       // TODO
     });
 
     //Future<List<PersonResponseDto>> searchPerson(String name, { bool withHidden }) async
     test('test searchPerson', () async {
+      // TODO
+    });
+
+    //Future<SearchResponseDto> searchSmart(SmartSearchDto smartSearchDto) async
+    test('test searchSmart', () async {
       // TODO
     });
 

@@ -1,11 +1,11 @@
 import { authenticate } from '$lib/utils/auth';
-import { api } from '@api';
+import { getUserById } from '@immich/sdk';
 import type { PageLoad } from './$types';
 
 export const load = (async ({ params }) => {
   await authenticate();
 
-  const { data: partner } = await api.userApi.getUserById({ id: params.userId });
+  const partner = await getUserById({ id: params.userId });
 
   return {
     partner,

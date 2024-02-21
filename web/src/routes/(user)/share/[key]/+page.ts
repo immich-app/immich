@@ -1,16 +1,15 @@
-import { getAuthUser } from '$lib/utils/auth';
-import { api, ThumbnailFormat } from '@api';
-import type { AxiosError } from 'axios';
+import { getAssetThumbnailUrl } from '$lib/utils';
+import { authenticate } from '$lib/utils/auth';
+import { ThumbnailFormat, getMySharedLink } from '@immich/sdk';
+import { error as throwError, type HttpError } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
-import { error as throwError } from '@sveltejs/kit';
 
 export const load = (async ({ params }) => {
   const { key } = params;
-  await getAuthUser();
+  await authenticate({ public: true });
 
   try {
-    const { data: sharedLink } = await api.sharedLinkApi.getMySharedLink({ key });
-
+    const sharedLink = await getMySharedLink({ key });
     const assetCount = sharedLink.assets.length;
     const assetId = sharedLink.album?.albumThumbnailAssetId || sharedLink.assets[0]?.id;
 
@@ -19,15 +18,13 @@ export const load = (async ({ params }) => {
       meta: {
         title: sharedLink.album ? sharedLink.album.albumName : 'Public Share',
         description: sharedLink.description || `${assetCount} shared photos & videos.`,
-        imageUrl: assetId
-          ? api.getAssetThumbnailUrl(assetId, ThumbnailFormat.Webp, sharedLink.key)
-          : '/feature-panel.png',
+        imageUrl: assetId ? getAssetThumbnailUrl(assetId, ThumbnailFormat.Webp) : '/feature-panel.png',
       },
     };
   } catch (error) {
     // handle unauthorized error
     // TODO this doesn't allow for 404 shared links anymore
-    if ((error as AxiosError).response?.status === 401) {
+    if ((error as HttpError).status === 401) {
       return {
         passwordRequired: true,
         sharedLinkKey: key,

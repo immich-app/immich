@@ -1,14 +1,15 @@
 <script lang="ts">
-  import noThumbnailUrl from '$lib/assets/no-thumbnail.png';
-  import { locale } from '$lib/stores/preferences.store';
-  import { type AlbumResponseDto, api, ThumbnailFormat, type UserResponseDto } from '@api';
-  import { createEventDispatcher, onMount } from 'svelte';
-  import IconButton from '../elements/buttons/icon-button.svelte';
+  import { api } from '$lib/api';
   import Icon from '$lib/components/elements/icon.svelte';
-  import type { OnClick, OnShowContextMenu } from './album-card';
-  import { getContextMenuPosition } from '../../utils/context-menu';
-  import { mdiDotsVertical } from '@mdi/js';
+  import { locale } from '$lib/stores/preferences.store';
   import { user } from '$lib/stores/user.store';
+  import { getAssetThumbnailUrl } from '$lib/utils';
+  import { ThumbnailFormat, getUserById, type AlbumResponseDto } from '@immich/sdk';
+  import { mdiDotsVertical } from '@mdi/js';
+  import { createEventDispatcher, onMount } from 'svelte';
+  import { getContextMenuPosition } from '../../utils/context-menu';
+  import IconButton from '../elements/buttons/icon-button.svelte';
+  import type { OnClick, OnShowContextMenu } from './album-card';
 
   export let album: AlbumResponseDto;
   export let isSharingView = false;
@@ -18,8 +19,8 @@
   let showVerticalDots = false;
 
   $: imageData = album.albumThumbnailAssetId
-    ? api.getAssetThumbnailUrl(album.albumThumbnailAssetId, ThumbnailFormat.Webp)
-    : noThumbnailUrl;
+    ? getAssetThumbnailUrl(album.albumThumbnailAssetId, ThumbnailFormat.Webp)
+    : null;
 
   const dispatchClick = createEventDispatcher<OnClick>();
   const dispatchShowContextMenu = createEventDispatcher<OnShowContextMenu>();
@@ -48,14 +49,10 @@
     dispatchShowContextMenu('showalbumcontextmenu', getContextMenuPosition(e));
 
   onMount(async () => {
-    imageData = (await loadHighQualityThumbnail(album.albumThumbnailAssetId)) || noThumbnailUrl;
+    imageData = (await loadHighQualityThumbnail(album.albumThumbnailAssetId)) || null;
   });
 
-  const getAlbumOwnerInfo = async (): Promise<UserResponseDto> => {
-    const { data } = await api.userApi.getUserById({ id: album.ownerId });
-
-    return data;
-  };
+  const getAlbumOwnerInfo = () => getUserById({ id: album.ownerId });
 </script>
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -83,15 +80,26 @@
   {/if}
 
   <div class={`relative aspect-square`}>
-    <img
-      loading={preload ? 'eager' : 'lazy'}
-      src={imageData}
-      alt={album.id}
-      class={`z-0 h-full w-full rounded-xl object-cover transition-all duration-300 hover:shadow-lg`}
-      data-testid="album-image"
-      draggable="false"
-    />
-    <div class="absolute top-0 h-full w-full rounded-3xl" />
+    {#if album.albumThumbnailAssetId}
+      <img
+        loading={preload ? 'eager' : 'lazy'}
+        src={imageData}
+        alt={album.id}
+        class="z-0 h-full w-full rounded-xl object-cover transition-all duration-300 hover:shadow-lg"
+        data-testid="album-image"
+        draggable="false"
+      />
+    {:else}
+      <enhanced:img
+        loading={preload ? 'eager' : 'lazy'}
+        src="$lib/assets/no-thumbnail.png"
+        sizes="min(271px,186px)"
+        alt={album.id}
+        class="z-0 h-full w-full rounded-xl object-cover transition-all duration-300 hover:shadow-lg"
+        data-testid="album-image"
+        draggable="false"
+      />
+    {/if}
   </div>
 
   <div class="mt-4">

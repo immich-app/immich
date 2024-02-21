@@ -1,12 +1,13 @@
 import { createObjectURLMock } from '$lib/__mocks__/jsdom-url.mock';
-import { api, ThumbnailFormat } from '@api';
+import { api } from '$lib/api';
+import { ThumbnailFormat } from '@immich/sdk';
 import { albumFactory } from '@test-data';
 import '@testing-library/jest-dom';
-import { fireEvent, render, type RenderResult, waitFor } from '@testing-library/svelte';
-import AlbumCard from '../album-card.svelte';
+import { fireEvent, render, waitFor, type RenderResult } from '@testing-library/svelte';
 import type { MockedObject } from 'vitest';
+import AlbumCard from '../album-card.svelte';
 
-vi.mock('@api');
+vi.mock('$lib/api');
 const apiMock: MockedObject<typeof api> = api as MockedObject<typeof api>;
 
 describe('AlbumCard component', () => {

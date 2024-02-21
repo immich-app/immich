@@ -32,7 +32,11 @@ jobs:
       - name: Run dart analyze
         run: dart analyze --fatal-infos
         working-directory: ./mobile
-      
+
+      - name: Run dart format
+        run: dart format lib/ --set-exit-if-changed
+        working-directory: ./mobile
+
       # Enable after riverpod generator migration is completed
       # - name: Run dart custom lint
       #   run: dart run custom_lint

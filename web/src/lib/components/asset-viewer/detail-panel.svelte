@@ -1,15 +1,23 @@
 <script lang="ts">
+  import Icon from '$lib/components/elements/icon.svelte';
+  import ChangeDate from '$lib/components/shared-components/change-date.svelte';
+  import { AppRoute, QueryParameter, timeToLoadTheMap } from '$lib/constants';
+  import { boundingBoxesArray } from '$lib/stores/people.store';
   import { locale } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
-  import { getAssetFilename } from '$lib/utils/asset-utils';
-  import { type AlbumResponseDto, type AssetResponseDto, ThumbnailFormat, api } from '@api';
-  import { DateTime } from 'luxon';
-  import { createEventDispatcher, onDestroy } from 'svelte';
-  import { slide } from 'svelte/transition';
-  import { asByteUnitString } from '../../utils/byte-units';
-  import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
-  import UserAvatar from '../shared-components/user-avatar.svelte';
-  import ChangeDate from '$lib/components/shared-components/change-date.svelte';
+  import { user } from '$lib/stores/user.store';
+  import { websocketEvents } from '$lib/stores/websocket';
+  import { getAssetThumbnailUrl, getPeopleThumbnailUrl, isSharedLink } from '$lib/utils';
+  import { delay, getAssetFilename } from '$lib/utils/asset-utils';
+  import { autoGrowHeight } from '$lib/utils/autogrow';
+  import { clickOutside } from '$lib/utils/click-outside';
+  import {
+    ThumbnailFormat,
+    getAssetInfo,
+    updateAsset,
+    type AlbumResponseDto,
+    type AssetResponseDto,
+  } from '@immich/sdk';
   import {
     mdiCalendar,
     mdiCameraIris,
@@ -17,26 +25,25 @@
     mdiEye,
     mdiEyeOff,
     mdiImageOutline,
-    mdiMapMarkerOutline,
     mdiInformationOutline,
+    mdiMapMarkerOutline,
     mdiPencil,
   } from '@mdi/js';
-  import Icon from '$lib/components/elements/icon.svelte';
-  import PersonSidePanel from '../faces-page/person-side-panel.svelte';
-  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
-  import Map from '../shared-components/map/map.svelte';
-  import { boundingBoxesArray } from '$lib/stores/people.store';
-  import { websocketStore } from '$lib/stores/websocket';
-  import { AppRoute, QueryParameter } from '$lib/constants';
-  import ChangeLocation from '../shared-components/change-location.svelte';
+  import { DateTime } from 'luxon';
+  import { createEventDispatcher, onMount } from 'svelte';
+  import { slide } from 'svelte/transition';
+  import { asByteUnitString } from '../../utils/byte-units';
   import { handleError } from '../../utils/handle-error';
-  import { user } from '$lib/stores/user.store';
-  import { autoGrowHeight } from '$lib/utils/autogrow';
-  import { clickOutside } from '$lib/utils/click-outside';
+  import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
+  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
+  import PersonSidePanel from '../faces-page/person-side-panel.svelte';
+  import ChangeLocation from '../shared-components/change-location.svelte';
+  import UserAvatar from '../shared-components/user-avatar.svelte';
+  import LoadingSpinner from '../shared-components/loading-spinner.svelte';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
-  export let albumId: string | null = null;
+  export let currentAlbum: AlbumResponseDto | null = null;
 
   let showAssetPath = false;
   let textArea: HTMLTextAreaElement;
@@ -61,8 +68,8 @@
     description = newAsset?.exifInfo?.description || '';
 
     // Get latest description from server
-    if (newAsset.id && !api.isSharedLink) {
-      const { data } = await api.assetApi.getAssetInfo({ id: asset.id });
+    if (newAsset.id && !isSharedLink()) {
+      const data = await getAssetInfo({ id: asset.id });
       people = data?.people || [];
 
       description = data.exifInfo?.description || '';
@@ -84,14 +91,12 @@
   $: people = asset.people || [];
   $: showingHiddenPeople = false;
 
-  const unsubscribe = websocketStore.onAssetUpdate.subscribe((assetUpdate) => {
-    if (assetUpdate && assetUpdate.id === asset.id) {
-      asset = assetUpdate;
-    }
-  });
-
-  onDestroy(() => {
-    unsubscribe();
+  onMount(() => {
+    return websocketEvents.on('on_asset_update', (assetUpdate) => {
+      if (assetUpdate.id === asset.id) {
+        asset = assetUpdate;
+      }
+    });
   });
 
   const dispatch = createEventDispatcher<{
@@ -127,9 +132,9 @@
   };
 
   const handleRefreshPeople = async () => {
-    await api.assetApi.getAssetInfo({ id: asset.id }).then((res) => {
-      people = res.data?.people || [];
-      textArea.value = res.data?.exifInfo?.description || '';
+    await getAssetInfo({ id: asset.id }).then((data) => {
+      people = data?.people || [];
+      textArea.value = data?.exifInfo?.description || '';
     });
     showEditFaces = false;
   };
@@ -146,10 +151,7 @@
     originalDescription = description;
     dispatch('descriptionFocusOut');
     try {
-      await api.assetApi.updateAsset({
-        id: asset.id,
-        updateAssetDto: { description },
-      });
+      await updateAsset({ id: asset.id, updateAssetDto: { description } });
     } catch (error) {
       handleError(error, 'Cannot update the description');
     }
@@ -162,7 +164,7 @@
   async function handleConfirmChangeDate(dateTimeOriginal: string) {
     isShowChangeDate = false;
     try {
-      await api.assetApi.updateAsset({ id: asset.id, updateAssetDto: { dateTimeOriginal } });
+      await updateAsset({ id: asset.id, updateAssetDto: { dateTimeOriginal } });
     } catch (error) {
       handleError(error, 'Unable to change date');
     }
@@ -174,13 +176,7 @@
     isShowChangeLocation = false;
 
     try {
-      await api.assetApi.updateAsset({
-        id: asset.id,
-        updateAssetDto: {
-          latitude: gps.lat,
-          longitude: gps.lng,
-        },
-      });
+      await updateAsset({ id: asset.id, updateAssetDto: { latitude: gps.lat, longitude: gps.lng } });
     } catch (error) {
       handleError(error, 'Unable to change location');
     }
@@ -219,7 +215,7 @@
     <section class="px-4 mt-10">
       {#key asset.id}
         <textarea
-          disabled={!isOwner || api.isSharedLink}
+          disabled={!isOwner || isSharedLink()}
           bind:this={textArea}
           class="max-h-[500px]
       w-full resize-none overflow-hidden border-b border-gray-500 bg-transparent text-base text-black outline-none transition-all focus:border-b-2 focus:border-immich-primary disabled:border-none dark:text-white dark:focus:border-immich-dark-primary"
@@ -238,7 +234,7 @@
     <p class="px-4 break-words whitespace-pre-line w-full text-black dark:text-white text-base">{description}</p>
   {/if}
 
-  {#if !api.isSharedLink && people.length > 0}
+  {#if !isSharedLink() && people.length > 0}
     <section class="px-4 py-4 text-sm">
       <div class="flex h-10 w-full items-center justify-between">
         <h2>PEOPLE</h2>
@@ -275,8 +271,8 @@
               on:mouseleave={() => ($boundingBoxesArray = [])}
             >
               <a
-                href="{AppRoute.PEOPLE}/{person.id}?{QueryParameter.PREVIOUS_ROUTE}={albumId
-                  ? `${AppRoute.ALBUMS}/${albumId}`
+                href="{AppRoute.PEOPLE}/{person.id}?{QueryParameter.PREVIOUS_ROUTE}={currentAlbum?.id
+                  ? `${AppRoute.ALBUMS}/${currentAlbum?.id}`
                   : AppRoute.PHOTOS}"
                 on:click={() => dispatch('closeViewer')}
               >
@@ -284,7 +280,7 @@
                   <ImageThumbnail
                     curve
                     shadow
-                    url={api.getPeopleThumbnailUrl(person.id)}
+                    url={getPeopleThumbnailUrl(person.id)}
                     altText={person.name}
                     title={person.name}
                     widthStyle="90px"
@@ -613,32 +609,42 @@
 
 {#if latlng && $featureFlags.loaded && $featureFlags.map}
   <div class="h-[360px]">
-    <Map
-      mapMarkers={[{ lat: latlng.lat, lon: latlng.lng, id: asset.id }]}
-      center={latlng}
-      zoom={15}
-      simplified
-      useLocationPin
-    >
-      <svelte:fragment slot="popup" let:marker>
-        {@const { lat, lon } = marker}
-        <div class="flex flex-col items-center gap-1">
-          <p class="font-bold">{lat.toPrecision(6)}, {lon.toPrecision(6)}</p>
-          <a
-            href="https://www.openstreetmap.org/?mlat={lat}&mlon={lon}&zoom=15#map=15/{lat}/{lon}"
-            target="_blank"
-            class="font-medium text-immich-primary"
-          >
-            Open in OpenStreetMap
-          </a>
+    {#await import('../shared-components/map/map.svelte')}
+      {#await delay(timeToLoadTheMap) then}
+        <!-- show the loading spinner only if loading the map takes too much time -->
+        <div class="flex items-center justify-center h-full w-full">
+          <LoadingSpinner />
         </div>
-      </svelte:fragment>
-    </Map>
+      {/await}
+    {:then component}
+      <svelte:component
+        this={component.default}
+        mapMarkers={[{ lat: latlng.lat, lon: latlng.lng, id: asset.id }]}
+        center={latlng}
+        zoom={15}
+        simplified
+        useLocationPin
+      >
+        <svelte:fragment slot="popup" let:marker>
+          {@const { lat, lon } = marker}
+          <div class="flex flex-col items-center gap-1">
+            <p class="font-bold">{lat.toPrecision(6)}, {lon.toPrecision(6)}</p>
+            <a
+              href="https://www.openstreetmap.org/?mlat={lat}&mlon={lon}&zoom=15#map=15/{lat}/{lon}"
+              target="_blank"
+              class="font-medium text-immich-primary"
+            >
+              Open in OpenStreetMap
+            </a>
+          </div>
+        </svelte:fragment>
+      </svelte:component>
+    {/await}
   </div>
 {/if}
 
-{#if asset.owner && !isOwner}
-  <section class="px-6 pt-6 dark:text-immich-dark-fg">
+{#if currentAlbum && currentAlbum.sharedUsers.length > 0 && asset.owner}
+  <section class="px-6 dark:text-immich-dark-fg">
     <p class="text-sm">SHARED BY</p>
     <div class="flex gap-4 pt-4">
       <div>
@@ -670,7 +676,7 @@
               alt={album.albumName}
               class="h-[50px] w-[50px] rounded object-cover"
               src={album.albumThumbnailAssetId &&
-                api.getAssetThumbnailUrl(album.albumThumbnailAssetId, ThumbnailFormat.Jpeg)}
+                getAssetThumbnailUrl(album.albumThumbnailAssetId, ThumbnailFormat.Jpeg)}
               draggable="false"
             />
           </div>

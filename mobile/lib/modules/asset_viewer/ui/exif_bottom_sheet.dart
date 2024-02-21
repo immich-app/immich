@@ -10,7 +10,6 @@ import 'package:immich_mobile/modules/asset_viewer/ui/description_input.dart';
 import 'package:immich_mobile/modules/map/widgets/map_thumbnail.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
-import 'package:immich_mobile/shared/ui/drag_sheet.dart';
 import 'package:immich_mobile/utils/selection_handlers.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
@@ -124,20 +123,6 @@ class ExifBottomSheet extends HookConsumerWidget {
           : "";
       String text = resolution + fileSize;
       return text.isNotEmpty ? text : null;
-    }
-
-    buildDragHeader() {
-      return const Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(height: 12),
-          Align(
-            alignment: Alignment.center,
-            child: CustomDraggingHandle(),
-          ),
-          SizedBox(height: 12),
-        ],
-      );
     }
 
     buildLocation() {
@@ -341,86 +326,69 @@ class ExifBottomSheet extends HookConsumerWidget {
       );
     }
 
-    return GestureDetector(
-      onTap: () {
-        // FocusScope.of(context).unfocus();
-      },
-      child: SingleChildScrollView(
-        child: Card(
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(15),
-              topRight: Radius.circular(15),
-            ),
-          ),
-          margin: const EdgeInsets.all(0),
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                if (constraints.maxWidth > 600) {
-                  // Two column
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        buildDragHeader(),
-                        buildDate(),
-                        if (asset.isRemote) DescriptionInput(asset: asset),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Flexible(
-                              flex: hasCoordinates() ? 5 : 0,
-                              child: Padding(
-                                padding: const EdgeInsets.only(right: 8.0),
-                                child: buildLocation(),
-                              ),
-                            ),
-                            Flexible(
-                              flex: 5,
-                              child: Padding(
-                                padding: const EdgeInsets.only(left: 8.0),
-                                child: buildDetail(),
-                              ),
-                            ),
-                          ],
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            if (constraints.maxWidth > 600) {
+              // Two column
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  buildDate(),
+                  if (asset.isRemote) DescriptionInput(asset: asset),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.only(right: 8.0),
+                          child: buildLocation(),
                         ),
-                        const SizedBox(height: 50),
-                      ],
-                    ),
-                  );
-                }
+                      ),
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 300),
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 8.0),
+                          child: buildDetail(),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 50),
+                ],
+              );
+            }
 
-                // One column
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    buildDragHeader(),
-                    buildDate(),
-                    assetWithExif.when(
-                      data: (data) => DescriptionInput(asset: data),
-                      error: (error, stackTrace) => Icon(
-                        Icons.image_not_supported_outlined,
-                        color: context.primaryColor,
-                      ),
-                      loading: () => const SizedBox(
-                        width: 75,
-                        height: 75,
-                        child: CircularProgressIndicator.adaptive(),
-                      ),
-                    ),
-                    buildLocation(),
-                    SizedBox(height: hasCoordinates() ? 16.0 : 6.0),
-                    buildDetail(),
-                    const SizedBox(height: 50),
-                  ],
-                );
-              },
-            ),
-          ),
+            // One column
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                buildDate(),
+                assetWithExif.when(
+                  data: (data) => DescriptionInput(asset: data),
+                  error: (error, stackTrace) => Icon(
+                    Icons.image_not_supported_outlined,
+                    color: context.primaryColor,
+                  ),
+                  loading: () => const SizedBox(
+                    width: 75,
+                    height: 75,
+                    child: CircularProgressIndicator.adaptive(),
+                  ),
+                ),
+                buildLocation(),
+                SizedBox(height: hasCoordinates() ? 16.0 : 6.0),
+                buildDetail(),
+                const SizedBox(height: 50),
+              ],
+            );
+          },
         ),
       ),
     );

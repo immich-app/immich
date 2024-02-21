@@ -1,27 +1,28 @@
 <script lang="ts">
   import { page } from '$app/stores';
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
-  import { handleError } from '$lib/utils/handle-error';
-  import { type AssetResponseDto, ThumbnailFormat } from '@api';
-  import AssetViewer from '../../asset-viewer/asset-viewer.svelte';
-  import { flip } from 'svelte/animate';
-  import { getThumbnailSize } from '$lib/utils/thumbnail-util';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { onDestroy } from 'svelte';
+  import type { BucketPosition, Viewport } from '$lib/stores/assets.store';
+  import { handleError } from '$lib/utils/handle-error';
+  import { type AssetResponseDto } from '@immich/sdk';
+  import { createEventDispatcher, onDestroy } from 'svelte';
+  import AssetViewer from '../../asset-viewer/asset-viewer.svelte';
+  import justifiedLayout from 'justified-layout';
+  import { getAssetRatio } from '$lib/utils/asset-utils';
+  import { calculateWidth } from '$lib/utils/timeline-util';
+
+  const dispatch = createEventDispatcher<{ intersected: { container: HTMLDivElement; position: BucketPosition } }>();
 
   export let assets: AssetResponseDto[];
   export let selectedAssets: Set<AssetResponseDto> = new Set();
   export let disableAssetSelect = false;
   export let showArchiveIcon = false;
+  export let viewport: Viewport;
 
   let { isViewing: showAssetViewer } = assetViewingStore;
 
   let selectedAsset: AssetResponseDto;
   let currentViewAssetIndex = 0;
-
-  let viewWidth: number;
-  $: thumbnailSize = getThumbnailSize(assets.length, viewWidth);
-
   $: isMultiSelectionMode = selectedAssets.size > 0;
 
   const viewAssetHandler = (event: CustomEvent) => {
@@ -84,21 +85,45 @@
   onDestroy(() => {
     $showAssetViewer = false;
   });
+
+  $: geometry = (() => {
+    const justifiedLayoutResult = justifiedLayout(
+      assets.map((asset) => getAssetRatio(asset)),
+      {
+        boxSpacing: 2,
+        containerWidth: Math.floor(viewport.width),
+        containerPadding: 0,
+        targetRowHeightTolerance: 0.15,
+        targetRowHeight: 235,
+      },
+    );
+
+    return {
+      ...justifiedLayoutResult,
+      containerWidth: calculateWidth(justifiedLayoutResult.boxes),
+    };
+  })();
 </script>
 
 {#if assets.length > 0}
-  <div class="flex w-full flex-wrap gap-1 pb-20" bind:clientWidth={viewWidth}>
-    {#each assets as asset (asset.id)}
-      <div animate:flip={{ duration: 500 }}>
+  <div class="relative" style="height: {geometry.containerHeight}px;width: {geometry.containerWidth}px ">
+    {#each assets as asset, i (i)}
+      <div
+        class="absolute"
+        style="width: {geometry.boxes[i].width}px; height: {geometry.boxes[i].height}px; top: {geometry.boxes[i]
+          .top}px; left: {geometry.boxes[i].left}px"
+      >
         <Thumbnail
           {asset}
-          {thumbnailSize}
           readonly={disableAssetSelect}
-          format={assets.length < 7 ? ThumbnailFormat.Jpeg : ThumbnailFormat.Webp}
           on:click={(e) => (isMultiSelectionMode ? selectAssetHandler(e) : viewAssetHandler(e))}
           on:select={selectAssetHandler}
+          on:intersected={(event) =>
+            i === Math.max(1, assets.length - 7) ? dispatch('intersected', event.detail) : undefined}
           selected={selectedAssets.has(asset)}
           {showArchiveIcon}
+          thumbnailWidth={geometry.boxes[i].width}
+          thumbnailHeight={geometry.boxes[i].height}
         />
       </div>
     {/each}

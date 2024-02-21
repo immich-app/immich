@@ -5,7 +5,7 @@
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
   import { locale } from '$lib/stores/preferences.store';
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
-  import type { AlbumResponseDto, SharedLinkResponseDto, UserResponseDto } from '@api';
+  import type { AlbumResponseDto, SharedLinkResponseDto, UserResponseDto } from '@immich/sdk';
   import { onDestroy, onMount } from 'svelte';
   import { dateFormats } from '../../constants';
   import { createAssetInteractionStore } from '../../stores/asset-interaction.store';
@@ -99,9 +99,9 @@
 </script>
 
 <header>
-  {#if $isMultiSelectState && user}
+  {#if $isMultiSelectState}
     <AssetSelectControlBar
-      ownerId={user.id}
+      ownerId={user?.id}
       assets={$selectedAssets}
       clearSelect={() => assetInteractionStore.clearMultiselect()}
     >
@@ -142,11 +142,11 @@
   <AssetGrid {album} {assetStore} {assetInteractionStore}>
     <section class="pt-24">
       <!-- ALBUM TITLE -->
-      <p
+      <h1
         class="bg-immich-bg text-6xl text-immich-primary outline-none transition-all dark:bg-immich-dark-bg dark:text-immich-dark-primary"
       >
         {album.albumName}
-      </p>
+      </h1>
 
       <!-- ALBUM SUMMARY -->
       {#if album.assetCount > 0}

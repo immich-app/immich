@@ -1,12 +1,19 @@
 import { GitHubRelease, IServerInfoRepository } from '@app/domain';
 import { Injectable } from '@nestjs/common';
-import axios from 'axios';
 
 @Injectable()
 export class ServerInfoRepository implements IServerInfoRepository {
-  getGitHubRelease(): Promise<GitHubRelease> {
-    return axios
-      .get<GitHubRelease>('https://api.github.com/repos/immich-app/immich/releases/latest')
-      .then((response) => response.data);
+  async getGitHubRelease(): Promise<GitHubRelease> {
+    try {
+      const response = await fetch('https://api.github.com/repos/immich-app/immich/releases/latest');
+
+      if (!response.ok) {
+        throw new Error(`GitHub API request failed with status ${response.status}: ${await response.text()}`);
+      }
+
+      return response.json();
+    } catch (error) {
+      throw new Error(`Failed to fetch GitHub release: ${error}`);
+    }
   }
 }

@@ -1,11 +1,11 @@
 import { authenticate, requestServerInfo } from '$lib/utils/auth';
-import { api } from '@api';
+import { getAllUsers } from '@immich/sdk';
 import type { PageLoad } from './$types';
 
 export const load = (async () => {
   await authenticate({ admin: true });
   await requestServerInfo();
-  const { data: allUsers } = await api.userApi.getAllUsers({ isAll: false });
+  const allUsers = await getAllUsers({ isAll: false });
 
   return {
     allUsers,

@@ -1,11 +1,11 @@
 <script lang="ts">
   import SettingButtonsRow from '$lib/components/admin-page/settings/setting-buttons-row.svelte';
-  import type { SystemConfigDto } from '@api';
+  import type { SystemConfigDto } from '@immich/sdk';
   import { isEqual } from 'lodash-es';
-  import { fade } from 'svelte/transition';
-  import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
   import { createEventDispatcher } from 'svelte';
+  import { fade } from 'svelte/transition';
   import type { SettingsEventType } from '../admin-settings';
+  import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
