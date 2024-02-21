@@ -43,11 +43,13 @@
   import { flip } from 'svelte/animate';
   import type { PageData } from './$types';
   import { useAlbums } from './albums.bloc';
+  import SearchBar from '$lib/components/elements/search-bar.svelte';
 
   export let data: PageData;
 
   let shouldShowEditUserForm = false;
   let selectedAlbum: AlbumResponseDto;
+  let searchAlbum = '';
 
   let sortByOptions: Record<string, Sort> = {
     albumTitle: {
@@ -243,6 +245,9 @@
 
 <UserPageLayout title={data.meta.title}>
   <div class="flex place-items-center gap-2" slot="buttons">
+    <div class="hidden lg:block lg:w-40 xl:w-60 2xl:w-80 h-10">
+      <SearchBar placeholder="Search albums" bind:name={searchAlbum} isSearching={false} />
+    </div>
     <LinkButton on:click={handleCreateAlbum}>
       <div class="flex place-items-center gap-2 text-sm">
         <Icon path={mdiPlusBoxOutline} size="18" />
@@ -285,7 +290,9 @@
     <!-- Album Card -->
     {#if $albumViewSettings.view === AlbumViewMode.Cover}
       <div class="grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))]">
-        {#each $albums as album, index (album.id)}
+        {#each $albums.filter((album) => searchAlbum == '' || album.albumName
+              .toLowerCase()
+              .startsWith(searchAlbum.toLowerCase())) as album, index (album.id)}
           <a data-sveltekit-preload-data="hover" href="{AppRoute.ALBUMS}/{album.id}" animate:flip={{ duration: 200 }}>
             <AlbumCard
               preload={index < 20}
@@ -310,7 +317,9 @@
         <tbody
           class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray dark:text-immich-dark-fg"
         >
-          {#each $albums as album (album.id)}
+          {#each $albums.filter((album) => searchAlbum == '' || album.albumName
+                .toLowerCase()
+                .startsWith(searchAlbum.toLowerCase())) as album (album.id)}
             <tr
               class="flex h-[50px] w-full place-items-center border-[3px] border-transparent p-2 text-center odd:bg-immich-gray even:bg-immich-bg hover:cursor-pointer hover:border-immich-primary/75 odd:dark:bg-immich-dark-gray/75 even:dark:bg-immich-dark-gray/50 dark:hover:border-immich-dark-primary/75 md:p-5"
               on:click={() => goto(`${AppRoute.ALBUMS}/${album.id}`)}
