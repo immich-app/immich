@@ -8676,6 +8676,9 @@
           "name": {
             "type": "string"
           },
+          "ownerId": {
+            "type": "string"
+          },
           "thumbnailPath": {
             "type": "string"
           }
@@ -8685,6 +8688,7 @@
           "id",
           "isHidden",
           "name",
+          "ownerId",
           "thumbnailPath"
         ],
         "type": "object"
@@ -8745,6 +8749,9 @@
           "name": {
             "type": "string"
           },
+          "ownerId": {
+            "type": "string"
+          },
           "thumbnailPath": {
             "type": "string"
           }
@@ -8755,6 +8762,7 @@
           "id",
           "isHidden",
           "name",
+          "ownerId",
           "thumbnailPath"
         ],
         "type": "object"

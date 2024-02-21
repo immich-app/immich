@@ -18,6 +18,7 @@ class PersonWithFacesResponseDto {
     required this.id,
     required this.isHidden,
     required this.name,
+    required this.ownerId,
     required this.thumbnailPath,
   });
 
@@ -31,6 +32,8 @@ class PersonWithFacesResponseDto {
 
   String name;
 
+  String ownerId;
+
   String thumbnailPath;
 
   @override
@@ -40,6 +43,7 @@ class PersonWithFacesResponseDto {
     other.id == id &&
     other.isHidden == isHidden &&
     other.name == name &&
+    other.ownerId == ownerId &&
     other.thumbnailPath == thumbnailPath;
 
   @override
@@ -50,10 +54,11 @@ class PersonWithFacesResponseDto {
     (id.hashCode) +
     (isHidden.hashCode) +
     (name.hashCode) +
+    (ownerId.hashCode) +
     (thumbnailPath.hashCode);
 
   @override
-  String toString() => 'PersonWithFacesResponseDto[birthDate=$birthDate, faces=$faces, id=$id, isHidden=$isHidden, name=$name, thumbnailPath=$thumbnailPath]';
+  String toString() => 'PersonWithFacesResponseDto[birthDate=$birthDate, faces=$faces, id=$id, isHidden=$isHidden, name=$name, ownerId=$ownerId, thumbnailPath=$thumbnailPath]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -66,6 +71,7 @@ class PersonWithFacesResponseDto {
       json[r'id'] = this.id;
       json[r'isHidden'] = this.isHidden;
       json[r'name'] = this.name;
+      json[r'ownerId'] = this.ownerId;
       json[r'thumbnailPath'] = this.thumbnailPath;
     return json;
   }
@@ -83,6 +89,7 @@ class PersonWithFacesResponseDto {
         id: mapValueOfType<String>(json, r'id')!,
         isHidden: mapValueOfType<bool>(json, r'isHidden')!,
         name: mapValueOfType<String>(json, r'name')!,
+        ownerId: mapValueOfType<String>(json, r'ownerId')!,
         thumbnailPath: mapValueOfType<String>(json, r'thumbnailPath')!,
       );
     }
@@ -136,6 +143,7 @@ class PersonWithFacesResponseDto {
     'id',
     'isHidden',
     'name',
+    'ownerId',
     'thumbnailPath',
   };
 }

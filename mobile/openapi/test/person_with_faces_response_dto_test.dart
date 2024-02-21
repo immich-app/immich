@@ -41,6 +41,11 @@ void main() {
       // TODO
     });
 
+    // String ownerId
+    test('to test the property `ownerId`', () async {
+      // TODO
+    });
+
     // String thumbnailPath
     test('to test the property `thumbnailPath`', () async {
       // TODO

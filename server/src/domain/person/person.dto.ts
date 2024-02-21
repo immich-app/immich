@@ -77,6 +77,7 @@ export class PersonResponseDto {
   birthDate!: Date | null;
   thumbnailPath!: string;
   isHidden!: boolean;
+  ownerId!: string;
 }
 
 export class PersonWithFacesResponseDto extends PersonResponseDto {
@@ -143,6 +144,7 @@ export function mapPerson(person: PersonEntity): PersonResponseDto {
     birthDate: person.birthDate,
     thumbnailPath: person.thumbnailPath,
     isHidden: person.isHidden,
+    ownerId: person.ownerId,
   };
 }
 

@@ -2899,6 +2899,12 @@ export interface PersonResponseDto {
      * @type {string}
      * @memberof PersonResponseDto
      */
+    'ownerId': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof PersonResponseDto
+     */
     'thumbnailPath': string;
 }
 /**
@@ -2981,6 +2987,12 @@ export interface PersonWithFacesResponseDto {
      * @memberof PersonWithFacesResponseDto
      */
     'name': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof PersonWithFacesResponseDto
+     */
+    'ownerId': string;
     /**
      * 
      * @type {string}

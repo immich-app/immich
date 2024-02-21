@@ -94,6 +94,7 @@ export type PersonWithFacesResponseDto = {
     id: string;
     isHidden: boolean;
     name: string;
+    ownerId: string;
     thumbnailPath: string;
 };
 export type SmartInfoResponseDto = {
@@ -395,6 +396,7 @@ export type PersonResponseDto = {
     id: string;
     isHidden: boolean;
     name: string;
+    ownerId: string;
     thumbnailPath: string;
 };
 export type AssetFaceResponseDto = {

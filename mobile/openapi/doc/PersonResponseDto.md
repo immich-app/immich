@@ -12,6 +12,7 @@ Name | Type | Description | Notes
 **id** | **String** |  | 
 **isHidden** | **bool** |  | 
 **name** | **String** |  | 
+**ownerId** | **String** |  | 
 **thumbnailPath** | **String** |  | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

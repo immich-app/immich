@@ -48,6 +48,7 @@ const responseDto: PersonResponseDto = {
   birthDate: null,
   thumbnailPath: '/path/to/thumbnail.jpg',
   isHidden: false,
+  ownerId: authStub.admin.user.id,
 };
 
 const statistics = { assets: 3 };
@@ -146,6 +147,7 @@ describe(PersonService.name, () => {
             birthDate: null,
             thumbnailPath: '/path/to/thumbnail',
             isHidden: false,
+            ownerId: authStub.user1.user.id,
           },
         ],
       });
@@ -192,6 +194,7 @@ describe(PersonService.name, () => {
             birthDate: null,
             thumbnailPath: '/path/to/thumbnail.jpg',
             isHidden: true,
+            ownerId: personStub.noName.ownerId,
           },
         ],
       });
@@ -325,6 +328,7 @@ describe(PersonService.name, () => {
         birthDate: new Date('1976-06-30'),
         thumbnailPath: '/path/to/thumbnail.jpg',
         isHidden: false,
+        ownerId: personStub.noName.ownerId,
       });
       expect(personMock.getById).toHaveBeenCalledWith('person-1');
       expect(personMock.update).toHaveBeenCalledWith({ id: 'person-1', birthDate: new Date('1976-06-30') });
@@ -525,6 +529,7 @@ describe(PersonService.name, () => {
         isHidden: personStub.noName.isHidden,
         id: personStub.noName.id,
         name: personStub.noName.name,
+        ownerId: personStub.noName.ownerId,
         thumbnailPath: personStub.noName.thumbnailPath,
       });
 
