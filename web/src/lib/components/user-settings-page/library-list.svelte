@@ -13,6 +13,7 @@
     updateLibrary,
     type LibraryResponseDto,
     type LibraryStatsResponseDto,
+    deleteLibrary,
   } from '@immich/sdk';
   import { mdiDatabase, mdiDotsVertical, mdiUpload } from '@mdi/js';
   import { onMount } from 'svelte';
@@ -25,6 +26,7 @@
   import MenuOption from '../shared-components/context-menu/menu-option.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import Portal from '../shared-components/portal/portal.svelte';
+  import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
 
   let libraries: LibraryResponseDto[] = [];
 
@@ -35,11 +37,16 @@
   let diskUsage: number[] = [];
   let diskUsageUnit: string[] = [];
 
+  let confirmDeleteLibrary: LibraryResponseDto | null = null;
+  let deletedLibrary: LibraryResponseDto | null = null;
+
   let editImportPaths: number | null;
   let editScanSettings: number | null;
   let renameLibrary: number | null;
 
   let updateLibraryIndex: number | null;
+
+  let deleteAssetCount = 0;
 
   let dropdownOpen: boolean[] = [];
   let showContextMenu = false;
@@ -66,7 +73,6 @@
   const showMenu = (event: MouseEvent, library: LibraryResponseDto, index: number) => {
     contextMenuPosition = getContextMenuPosition(event);
     showContextMenu = !showContextMenu;
-
     selectedLibraryIndex = index;
     selectedLibrary = library;
   };
@@ -74,6 +80,7 @@
   const onMenuExit = () => {
     showContextMenu = false;
   };
+
   const refreshStats = async (listIndex: number) => {
     stats[listIndex] = await getLibraryStatistics({ id: libraries[listIndex].id });
     photos[listIndex] = stats[listIndex].photos;
@@ -105,6 +112,28 @@
       await readLibraryList();
     } catch (error) {
       handleError(error, 'Unable to update library');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (confirmDeleteLibrary) {
+      deletedLibrary = confirmDeleteLibrary;
+    }
+    if (!deletedLibrary) {
+      return;
+    }
+    try {
+      await deleteLibrary({ id: deletedLibrary.id });
+      notificationController.show({
+        message: `Library deleted`,
+        type: NotificationType.Info,
+      });
+    } catch (error) {
+      handleError(error, 'Unable to remove library');
+    } finally {
+      confirmDeleteLibrary = null;
+      deletedLibrary = null;
+      await readLibraryList();
     }
   };
 
@@ -212,7 +241,30 @@
       handleRemoveOffline(selectedLibrary.id);
     }
   };
+
+  const onDeleteLibraryClicked = () => {
+    closeAll();
+    if (selectedLibrary && confirm(`Are you sure you want to delete ${selectedLibrary.name} library?`) == true) {
+      refreshStats(selectedLibraryIndex);
+      if (totalCount[selectedLibraryIndex] > 0) {
+        deleteAssetCount = totalCount[selectedLibraryIndex];
+        confirmDeleteLibrary = selectedLibrary;
+      } else {
+        deletedLibrary = selectedLibrary;
+        handleDelete();
+      }
+    }
+  };
 </script>
+
+{#if confirmDeleteLibrary}
+  <ConfirmDialogue
+    title="Warning!"
+    prompt="Are you sure you want to delete this library? This will DELETE all {deleteAssetCount} contained assets and cannot be undone."
+    on:confirm={handleDelete}
+    on:cancel={() => (confirmDeleteLibrary = null)}
+  />
+{/if}
 
 <section class="my-4">
   <div class="flex flex-col gap-2" in:fade={{ duration: 500 }}>
@@ -287,6 +339,9 @@
                         />
                         <hr />
                         <MenuOption on:click={() => onRemoveOfflineFilesClicked()} text="Remove Offline Files" />
+                        <MenuOption on:click={() => onDeleteLibraryClicked()}>
+                          <p class="text-red-600">Delete library</p>
+                        </MenuOption>
                       {/if}
                     </ContextMenu>
                   </Portal>

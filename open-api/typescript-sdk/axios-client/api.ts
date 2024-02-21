@@ -1401,6 +1401,12 @@ export interface CreateLibraryDto {
     'name'?: string;
     /**
      * 
+     * @type {string}
+     * @memberof CreateLibraryDto
+     */
+    'ownerId'?: string;
+    /**
+     * 
      * @type {LibraryType}
      * @memberof CreateLibraryDto
      */

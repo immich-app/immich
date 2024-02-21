@@ -189,7 +189,9 @@ export class LibraryService extends EventEmitter {
   }
 
   async getStatistics(auth: AuthDto, id: string): Promise<LibraryStatsResponseDto> {
-    await this.access.requirePermission(auth, Permission.LIBRARY_READ, id);
+    if (!auth.user.isAdmin) {
+      await this.access.requirePermission(auth, Permission.LIBRARY_READ, id);
+    }
     return this.repository.getStatistics(id);
   }
 
@@ -252,8 +254,18 @@ export class LibraryService extends EventEmitter {
       }
     }
 
+    let ownerId = auth.user.id;
+
+    if (dto.ownerId) {
+      if (!auth.user.isAdmin) {
+        throw new BadRequestException('Only admins can create libraries for other users');
+      }
+
+      ownerId = dto.ownerId;
+    }
+
     const library = await this.repository.create({
-      ownerId: auth.user.id,
+      ownerId,
       name: dto.name,
       type: dto.type,
       importPaths: dto.importPaths ?? [],
@@ -361,7 +373,9 @@ export class LibraryService extends EventEmitter {
   }
 
   async delete(auth: AuthDto, id: string) {
-    await this.access.requirePermission(auth, Permission.LIBRARY_DELETE, id);
+    if (!auth.user.isAdmin) {
+      await this.access.requirePermission(auth, Permission.LIBRARY_DELETE, id);
+    }
 
     const library = await this.findOrFail(id);
     const uploadCount = await this.repository.getUploadLibraryCount(auth.user.id);

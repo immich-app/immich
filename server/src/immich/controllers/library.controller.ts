@@ -61,7 +61,6 @@ export class LibraryController {
   }
 
   @Delete(':id')
-  @AdminRoute()
   deleteLibrary(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.delete(auth, id);
   }

@@ -7592,6 +7592,10 @@
           "name": {
             "type": "string"
           },
+          "ownerId": {
+            "format": "uuid",
+            "type": "string"
+          },
           "type": {
             "$ref": "#/components/schemas/LibraryType"
           }

@@ -1087,12 +1087,12 @@ describe(LibraryService.name, () => {
       storageMock.checkFileExists.mockResolvedValue(true);
 
       await expect(
-        sut.update(authStub.external1, authStub.external1.user.id, { importPaths: ['/data/user1/foo'] }),
+        sut.update(authStub.admin, authStub.admin.user.id, { importPaths: ['/data/user1/foo'] }),
       ).resolves.toEqual(mapLibrary(libraryStub.externalLibraryWithImportPaths1));
 
       expect(libraryMock.update).toHaveBeenCalledWith(
         expect.objectContaining({
-          id: authStub.external1.user.id,
+          id: authStub.admin.user.id,
         }),
       );
       expect(storageMock.watch).toHaveBeenCalledWith(

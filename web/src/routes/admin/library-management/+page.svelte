@@ -30,11 +30,13 @@
     getAllLibraries,
     type UserResponseDto,
     getUserById,
+    type CreateLibraryDto,
   } from '@immich/sdk';
   import { mdiDatabase, mdiDotsVertical, mdiUpload } from '@mdi/js';
   import { onMount } from 'svelte';
   import { fade, slide } from 'svelte/transition';
   import type { PageData } from './$types';
+  import LibraryUserPickerForm from '$lib/components/forms/library-user-picker-form.svelte';
 
   export let data: PageData;
 
@@ -64,6 +66,8 @@
   let contextMenuPosition = { x: 0, y: 0 };
   let selectedLibraryIndex = 0;
   let selectedLibrary: LibraryResponseDto | null = null;
+
+  let toCreateLibrary = false;
 
   onMount(() => {
     readLibraryList();
@@ -112,11 +116,14 @@
     }
   }
 
-  const handleCreate = async (libraryType: LibraryType) => {
+  const handleCreate = async (ownerId: string | null) => {
     try {
-      const createdLibrary = await createLibrary({
-        createLibraryDto: { type: libraryType },
-      });
+      let createLibraryDto: CreateLibraryDto = { type: LibraryType.External };
+      if (ownerId) {
+        createLibraryDto = { ...createLibraryDto, ownerId };
+      }
+
+      const createdLibrary = await createLibrary({ createLibraryDto });
 
       notificationController.show({
         message: `Created library: ${createdLibrary.name}`,
@@ -125,6 +132,7 @@
     } catch (error) {
       handleError(error, 'Unable to create library');
     } finally {
+      toCreateLibrary = false;
       await readLibraryList();
     }
   };
@@ -298,11 +306,19 @@
 {#if confirmDeleteLibrary}
   <ConfirmDialogue
     title="Warning!"
-    prompt="Are you sure you want to delete this library? This will DELETE all {deleteAssetCount} contained assets and cannot be undone."
+    prompt="Are you sure you want to delete this library? This will delete all {deleteAssetCount} contained assets from Immich and cannot be undone. Files will remain on disk."
     on:confirm={handleDelete}
     on:cancel={() => (confirmDeleteLibrary = null)}
   />
 {/if}
+
+{#if toCreateLibrary}
+  <LibraryUserPickerForm
+    on:submit={({ detail }) => handleCreate(detail.ownerId)}
+    on:cancel={() => (toCreateLibrary = false)}
+  />
+{/if}
+
 <UserPageLayout title={data.meta.title} admin>
   <section class="my-4">
     <div class="flex flex-col gap-2" in:fade={{ duration: 500 }}>
@@ -427,7 +443,7 @@
       {/if}
       <div class="my-2 flex justify-end gap-2">
         <Button size="sm" on:click={() => handleScanAll()}>Scan All Libraries</Button>
-        <Button size="sm" on:click={() => handleCreate(LibraryType.External)}>Create External Library</Button>
+        <Button size="sm" on:click={() => (toCreateLibrary = true)}>Create Library</Button>
       </div>
     </div>
   </section>
