@@ -290,7 +290,7 @@
     <!-- Album Card -->
     {#if $albumViewSettings.view === AlbumViewMode.Cover}
       <div class="grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))]">
-        {#each $albums.filter((album) => searchAlbum == '' || album.albumName
+        {#each $albums.filter((album) => searchAlbum === '' || album.albumName
               .toLowerCase()
               .includes(searchAlbum.toLowerCase())) as album, index (album.id)}
           <a data-sveltekit-preload-data="hover" href="{AppRoute.ALBUMS}/{album.id}" animate:flip={{ duration: 200 }}>
@@ -317,7 +317,7 @@
         <tbody
           class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray dark:text-immich-dark-fg"
         >
-          {#each $albums.filter((album) => searchAlbum == '' || album.albumName
+          {#each $albums.filter((album) => searchAlbum === '' || album.albumName
                 .toLowerCase()
                 .includes(searchAlbum.toLowerCase())) as album (album.id)}
             <tr
