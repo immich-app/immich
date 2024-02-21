@@ -69,7 +69,6 @@ export enum QueryParameter {
   PREVIOUS_ROUTE = 'previousRoute',
   QUERY = 'query',
   SEARCHED_PEOPLE = 'searchedPeople',
-  SEARCH_TERM = 'q',
   SMART_SEARCH = 'smartSearch',
   PAGE = 'page',
 }
