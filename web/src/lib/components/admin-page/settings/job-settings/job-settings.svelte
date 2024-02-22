@@ -5,8 +5,10 @@
   import { createEventDispatcher } from 'svelte';
   import { fade } from 'svelte/transition';
   import type { SettingsEventType } from '../admin-settings';
-  import SettingButtonsRow from '../setting-buttons-row.svelte';
-  import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
+  import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
+  import SettingInputField, {
+    SettingInputFieldType,
+  } from '$lib/components/shared-components/settings/setting-input-field.svelte';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;

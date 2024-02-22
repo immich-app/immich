@@ -3,6 +3,7 @@
   import { DateTime } from 'luxon';
   import ConfirmDialogue from './confirm-dialogue.svelte';
   import Combobox from './combobox.svelte';
+
   export let initialDate: DateTime = DateTime.now();
 
   type ZoneOption = {
@@ -28,7 +29,7 @@
 
   const initialOption = timezones.find((item) => item.value === 'UTC' + initialDate.toFormat('ZZ'));
 
-  let selectedOption = {
+  let selectedOption = initialOption && {
     label: initialOption?.label || '',
     value: initialOption?.value || '',
   };
@@ -36,7 +37,7 @@
   let selectedDate = initialDate.toFormat("yyyy-MM-dd'T'HH:mm");
 
   // Keep local time if not it's really confusing
-  $: date = DateTime.fromISO(selectedDate).setZone(selectedOption.value, { keepLocalTime: true });
+  $: date = DateTime.fromISO(selectedDate).setZone(selectedOption?.value, { keepLocalTime: true });
 
   const dispatch = createEventDispatcher<{
     cancel: void;
@@ -82,7 +83,7 @@
       </div>
       <div class="flex flex-col w-full mt-2">
         <label for="timezone">Timezone</label>
-        <Combobox bind:selectedOption options={timezones} placeholder="Search timezone..." />
+        <Combobox bind:selectedOption id="timezone" options={timezones} placeholder="Search timezone..." />
       </div>
     </div>
   </ConfirmDialogue>

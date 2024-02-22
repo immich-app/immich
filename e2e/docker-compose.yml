@@ -4,6 +4,7 @@ name: immich-e2e
 
 x-server-build: &server-common
   image: immich-server:latest
+  container_name: immich-e2e-server
   build:
     context: ../
     dockerfile: server/Dockerfile

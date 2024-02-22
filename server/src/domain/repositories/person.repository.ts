@@ -28,6 +28,11 @@ export interface PersonStatistics {
   assets: number;
 }
 
+export interface PeopleStatistics {
+  total: number;
+  hidden: number;
+}
+
 export interface IPersonRepository {
   getAll(pagination: PaginationOptions, options?: FindManyOptions<PersonEntity>): Paginated<PersonEntity>;
   getAllForUser(userId: string, options: PersonSearchOptions): Promise<PersonEntity[]>;
@@ -54,7 +59,7 @@ export interface IPersonRepository {
   getRandomFace(personId: string): Promise<AssetFaceEntity | null>;
   getStatistics(personId: string): Promise<PersonStatistics>;
   reassignFace(assetFaceId: string, newPersonId: string): Promise<number>;
-  getNumberOfPeople(userId: string): Promise<number>;
+  getNumberOfPeople(userId: string): Promise<PeopleStatistics>;
   reassignFaces(data: UpdateFacesData): Promise<number>;
   update(entity: Partial<PersonEntity>): Promise<PersonEntity>;
 }

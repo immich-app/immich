@@ -531,8 +531,8 @@ describe(`${AssetController.name} (e2e)`, () => {
 
         expect(status).toBe(200);
         expect(body.length).toBe(assets.length);
-        for (let i = 0; i < assets.length; i++) {
-          expect(body[i]).toEqual(expect.objectContaining({ id: assets[i].id }));
+        for (const [i, asset] of assets.entries()) {
+          expect(body[i]).toEqual(expect.objectContaining({ id: asset.id }));
         }
       });
     }
@@ -699,7 +699,7 @@ describe(`${AssetController.name} (e2e)`, () => {
 
     it("should not upload to another user's library", async () => {
       const content = randomBytes(32);
-      const library = (await api.libraryApi.getAll(server, user2.accessToken))[0];
+      const [library] = await api.libraryApi.getAll(server, user2.accessToken);
       await api.assetApi.upload(server, user1.accessToken, 'example-image', { content });
 
       const { body, status } = await request(server)

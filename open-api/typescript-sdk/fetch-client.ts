@@ -526,6 +526,7 @@ export type UpdatePartnerDto = {
     inTimeline: boolean;
 };
 export type PeopleResponseDto = {
+    hidden: number;
     people: PersonResponseDto[];
     total: number;
 };

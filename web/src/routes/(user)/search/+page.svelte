@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { browser } from '$app/environment';
   import { afterNavigate, goto } from '$app/navigation';
   import { page } from '$app/stores';
   import AlbumCard from '$lib/components/album-page/album-card.svelte';
@@ -20,18 +19,22 @@
   import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { preventRaceConditionSearchBar, searchQuery } from '$lib/stores/search.store';
-  import { authenticate } from '$lib/utils/auth';
+  import { preventRaceConditionSearchBar } from '$lib/stores/search.store';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
-  import { type AssetResponseDto, type SearchResponseDto, searchSmart, searchMetadata, getPerson } from '@immich/sdk';
+  import {
+    type AssetResponseDto,
+    searchSmart,
+    searchMetadata,
+    getPerson,
+    type SmartSearchDto,
+    type MetadataSearchDto,
+    type AlbumResponseDto,
+  } from '@immich/sdk';
   import { mdiArrowLeft, mdiDotsVertical, mdiImageOffOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
-  import { onDestroy, onMount } from 'svelte';
   import { flip } from 'svelte/animate';
-  import type { PageData } from './$types';
   import type { Viewport } from '$lib/stores/assets.store';
   import { locale } from '$lib/stores/preferences.store';
-
-  export let data: PageData;
+  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
 
   const MAX_ASSET_COUNT = 5000;
   let { isViewing: showAssetViewer } = assetViewingStore;
@@ -41,22 +44,13 @@
   // behavior for history.back(). To prevent that we store the previous page
   // manually and navigate back to that.
   let previousRoute = AppRoute.EXPLORE as string;
-  /* eslint-disable @typescript-eslint/no-explicit-any */
-  let terms: any;
-  $: currentPage = data.results?.assets.nextPage;
-  $: albums = data.results?.albums.items;
+
+  let nextPage: number | null = 1;
+  let searchResultAlbums: AlbumResponseDto[] = [];
+  let searchResultAssets: AssetResponseDto[] = [];
+  let isLoading = true;
 
   const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
-
-  onMount(async () => {
-    document.addEventListener('keydown', onKeyboardPress);
-  });
-
-  onDestroy(() => {
-    if (browser) {
-      document.removeEventListener('keydown', onKeyboardPress);
-    }
-  });
 
   const handleKeyboardPress = (event: KeyboardEvent) => {
     if (shouldIgnoreShortcut(event)) {
@@ -92,64 +86,61 @@
     if (from?.route.id === '/(user)/albums/[albumId]') {
       previousRoute = AppRoute.EXPLORE;
     }
-
-    updateInformationChip();
   });
 
   let selectedAssets: Set<AssetResponseDto> = new Set();
   $: isMultiSelectionMode = selectedAssets.size > 0;
   $: isAllArchived = [...selectedAssets].every((asset) => asset.isArchived);
   $: isAllFavorite = [...selectedAssets].every((asset) => asset.isFavorite);
-  $: searchResultAssets = data.results?.assets.items;
 
   const onAssetDelete = (assetId: string) => {
-    searchResultAssets = searchResultAssets?.filter((a: AssetResponseDto) => a.id !== assetId);
+    searchResultAssets = searchResultAssets.filter((a: AssetResponseDto) => a.id !== assetId);
   };
   const handleSelectAll = () => {
     selectedAssets = new Set(searchResultAssets);
   };
 
-  function updateInformationChip() {
-    let query = $page.url.searchParams.get(QueryParameter.SEARCH_TERM) || data.term || '';
-    terms = JSON.parse(query);
+  type SearchTerms = MetadataSearchDto & Pick<SmartSearchDto, 'query'>;
+
+  $: searchQuery = $page.url.searchParams.get(QueryParameter.QUERY);
+  $: terms = ((): SearchTerms => {
+    return searchQuery ? JSON.parse(searchQuery) : {};
+  })();
+
+  $: terms, onSearchQueryUpdate();
+
+  async function onSearchQueryUpdate() {
+    nextPage = 1;
+    searchResultAssets = [];
+    searchResultAlbums = [];
+    loadNextPage();
   }
 
   export const loadNextPage = async () => {
-    if (currentPage == null || !terms || (searchResultAssets && searchResultAssets.length >= MAX_ASSET_COUNT)) {
+    if (!nextPage || searchResultAssets.length >= MAX_ASSET_COUNT) {
       return;
     }
+    isLoading = true;
 
-    await authenticate();
-    let results: SearchResponseDto | null = null;
-    $page.url.searchParams.set(QueryParameter.PAGE, currentPage.toString());
-    const payload = $searchQuery;
-    let responses: SearchResponseDto;
-
-    responses =
-      payload && 'query' in payload
-        ? await searchSmart({
-            smartSearchDto: { ...payload, page: Number.parseInt(currentPage), withExif: true, isVisible: true },
-          })
-        : await searchMetadata({
-            metadataSearchDto: { ...payload, page: Number.parseInt(currentPage), withExif: true, isVisible: true },
-          });
-
-    if (searchResultAssets) {
-      searchResultAssets.push(...responses.assets.items);
-    } else {
-      searchResultAssets = responses.assets.items;
-    }
-
-    const assets = {
-      ...responses.assets,
-      items: searchResultAssets,
-    };
-    results = {
-      assets,
-      albums: responses.albums,
+    const searchDto: SearchTerms = {
+      page: nextPage,
+      withExif: true,
+      isVisible: true,
+      ...terms,
     };
 
-    data.results = results;
+    const { albums, assets } =
+      'query' in searchDto
+        ? await searchSmart({ smartSearchDto: searchDto })
+        : await searchMetadata({ metadataSearchDto: searchDto });
+
+    searchResultAlbums.push(...albums.items);
+    searchResultAssets.push(...assets.items);
+    searchResultAlbums = searchResultAlbums;
+    searchResultAssets = searchResultAssets;
+
+    nextPage = assets.nextPage ? Number(assets.nextPage) : null;
+    isLoading = false;
   };
 
   function getHumanReadableDate(date: string) {
@@ -161,51 +152,23 @@
     });
   }
 
-  function getHumanReadableSearchKey(key: string): string {
-    switch (key) {
-      case 'takenAfter': {
-        return 'Start date';
-      }
-      case 'takenBefore': {
-        return 'End date';
-      }
-      case 'isArchived': {
-        return 'In archive';
-      }
-      case 'isFavorite': {
-        return 'Favorite';
-      }
-      case 'isNotInAlbum': {
-        return 'Not in any album';
-      }
-      case 'type': {
-        return 'Media type';
-      }
-      case 'query': {
-        return 'Context';
-      }
-      case 'city': {
-        return 'City';
-      }
-      case 'country': {
-        return 'Country';
-      }
-      case 'state': {
-        return 'State';
-      }
-      case 'make': {
-        return 'Camera brand';
-      }
-      case 'model': {
-        return 'Camera model';
-      }
-      case 'personIds': {
-        return 'People';
-      }
-      default: {
-        return key;
-      }
-    }
+  function getHumanReadableSearchKey(key: keyof SearchTerms): string {
+    const keyMap: Partial<Record<keyof SearchTerms, string>> = {
+      takenAfter: 'Start date',
+      takenBefore: 'End date',
+      isArchived: 'In archive',
+      isFavorite: 'Favorite',
+      isNotInAlbum: 'Not in any album',
+      type: 'Media type',
+      query: 'Context',
+      city: 'City',
+      country: 'Country',
+      state: 'State',
+      make: 'Camera brand',
+      model: 'Camera model',
+      personIds: 'People',
+    };
+    return keyMap[key] || key;
   }
 
   async function getPersonName(personIds: string[]) {
@@ -225,7 +188,13 @@
   }
 
   const triggerAssetUpdate = () => (searchResultAssets = searchResultAssets);
+
+  function getObjectKeys<T extends object>(obj: T): (keyof T)[] {
+    return Object.keys(obj) as (keyof T)[];
+  }
 </script>
+
+<svelte:document on:keydown={onKeyboardPress} />
 
 <section>
   {#if isMultiSelectionMode}
@@ -252,44 +221,43 @@
     <div class="fixed z-[100] top-0 left-0 w-full">
       <ControlAppBar on:close={() => goto(previousRoute)} backIcon={mdiArrowLeft}>
         <div class="w-full flex-1 pl-4">
-          <SearchBar grayTheme={false} />
+          <SearchBar grayTheme={false} searchQuery={terms} />
         </div>
       </ControlAppBar>
     </div>
   {/if}
 </section>
 
-{#if terms}
-  <section
-    id="search-chips"
-    class="mt-24 text-center w-full flex gap-5 place-content-center place-items-center flex-wrap px-24"
-  >
-    {#each Object.keys(terms) as key, index (index)}
-      <div class="flex place-content-center place-items-center text-xs">
-        <div
-          class="bg-immich-primary py-2 px-4 text-white dark:text-black dark:bg-immich-dark-primary
-          {terms[key] === true ? 'rounded-full' : 'rounded-tl-full rounded-bl-full'}"
-        >
-          {getHumanReadableSearchKey(key)}
-        </div>
-
-        {#if terms[key] !== true}
-          <div class="bg-gray-300 py-2 px-4 dark:bg-gray-800 dark:text-white rounded-tr-full rounded-br-full">
-            {#if key === 'takenAfter' || key === 'takenBefore'}
-              {getHumanReadableDate(terms[key])}
-            {:else if key === 'personIds'}
-              {#await getPersonName(terms[key]) then personName}
-                {personName}
-              {/await}
-            {:else}
-              {terms[key]}
-            {/if}
-          </div>
-        {/if}
+<section
+  id="search-chips"
+  class="mt-24 text-center w-full flex gap-5 place-content-center place-items-center flex-wrap px-24"
+>
+  {#each getObjectKeys(terms) as key (key)}
+    {@const value = terms[key]}
+    <div class="flex place-content-center place-items-center text-xs">
+      <div
+        class="bg-immich-primary py-2 px-4 text-white dark:text-black dark:bg-immich-dark-primary
+          {value === true ? 'rounded-full' : 'rounded-tl-full rounded-bl-full'}"
+      >
+        {getHumanReadableSearchKey(key)}
       </div>
-    {/each}
-  </section>
-{/if}
+
+      {#if value !== true}
+        <div class="bg-gray-300 py-2 px-4 dark:bg-gray-800 dark:text-white rounded-tr-full rounded-br-full">
+          {#if (key === 'takenAfter' || key === 'takenBefore') && typeof value === 'string'}
+            {getHumanReadableDate(value)}
+          {:else if key === 'personIds' && Array.isArray(value)}
+            {#await getPersonName(value) then personName}
+              {personName}
+            {/await}
+          {:else}
+            {value}
+          {/if}
+        </div>
+      {/if}
+    </div>
+  {/each}
+</section>
 
 <section
   class="relative mb-12 bg-immich-bg dark:bg-immich-dark-bg m-4"
@@ -297,11 +265,11 @@
   bind:clientWidth={viewport.width}
 >
   <section class="immich-scrollbar relative overflow-y-auto">
-    {#if albums && albums.length > 0}
+    {#if searchResultAlbums.length > 0}
       <section>
         <div class="ml-6 text-4xl font-medium text-black/70 dark:text-white/80">ALBUMS</div>
         <div class="grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))]">
-          {#each albums as album, index (album.id)}
+          {#each searchResultAlbums as album, index (album.id)}
             <a data-sveltekit-preload-data="hover" href={`albums/${album.id}`} animate:flip={{ duration: 200 }}>
               <AlbumCard
                 preload={index < 20}
@@ -318,7 +286,11 @@
       </section>
     {/if}
     <section id="search-content" class="relative bg-immich-bg dark:bg-immich-dark-bg">
-      {#if searchResultAssets && searchResultAssets.length > 0}
+      {#if isLoading}
+        <div class="flex justify-center py-16 items-center">
+          <LoadingSpinner size="48" />
+        </div>
+      {:else if searchResultAssets.length > 0}
         <GalleryViewer
           assets={searchResultAssets}
           bind:selectedAssets

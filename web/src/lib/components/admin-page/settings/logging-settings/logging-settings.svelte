@@ -4,9 +4,9 @@
   import { createEventDispatcher } from 'svelte';
   import { fade } from 'svelte/transition';
   import type { SettingsEventType } from '../admin-settings';
-  import SettingButtonsRow from '../setting-buttons-row.svelte';
-  import SettingSelect from '../setting-select.svelte';
-  import SettingSwitch from '../setting-switch.svelte';
+  import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
+  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
+  import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;

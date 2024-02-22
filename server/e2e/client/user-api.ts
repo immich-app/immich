@@ -18,16 +18,6 @@ export const userApi = {
 
     return body as UserResponseDto;
   },
-  get: async (server: any, accessToken: string, id: string) => {
-    const { status, body } = await request(server)
-      .get(`/user/info/${id}`)
-      .set('Authorization', `Bearer ${accessToken}`);
-
-    expect(status).toBe(200);
-    expect(body).toMatchObject({ id });
-
-    return body as UserResponseDto;
-  },
   update: async (server: any, accessToken: string, dto: UpdateUserDto) => {
     const { status, body } = await request(server).put('/user').set('Authorization', `Bearer ${accessToken}`).send(dto);
 
