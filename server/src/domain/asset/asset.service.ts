@@ -326,7 +326,7 @@ export class AssetService {
     const stackIdsToCheckForDelete: string[] = [];
     if (removeParent) {
       (options as Partial<AssetEntity>).stack = null;
-      const assets = await this.assetRepository.getByIds(ids);
+      const assets = await this.assetRepository.getByIds(ids, { stack: true });
       stackIdsToCheckForDelete.push(...new Set(assets.filter((a) => !!a.stackId).map((a) => a.stackId!)));
       // This updates the updatedAt column of the parents to indicate that one of its children is removed
       // All the unique parent's -> parent is set to null
