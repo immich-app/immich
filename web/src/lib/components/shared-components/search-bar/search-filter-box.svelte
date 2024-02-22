@@ -404,8 +404,9 @@
 
       <div class="flex justify-between gap-5 mt-3">
         <div class="w-full">
-          <p class="text-sm text-black dark:text-white">Country</p>
+          <label class="text-sm text-black dark:text-white" for="search-place-country">Country</label>
           <Combobox
+            id="search-place-country"
             options={suggestions.country}
             bind:selectedOption={filter.location.country}
             placeholder="Search country..."
@@ -414,8 +415,9 @@
         </div>
 
         <div class="w-full">
-          <p class="text-sm text-black dark:text-white">State</p>
+          <label class="text-sm text-black dark:text-white" for="search-place-state">State</label>
           <Combobox
+            id="search-place-state"
             options={suggestions.state}
             bind:selectedOption={filter.location.state}
             placeholder="Search state..."
@@ -424,8 +426,9 @@
         </div>
 
         <div class="w-full">
-          <p class="text-sm text-black dark:text-white">City</p>
+          <label class="text-sm text-black dark:text-white" for="search-place-city">City</label>
           <Combobox
+            id="search-place-city"
             options={suggestions.city}
             bind:selectedOption={filter.location.city}
             placeholder="Search city..."
@@ -446,8 +449,9 @@
 
       <div class="flex justify-between gap-5 mt-3">
         <div class="w-full">
-          <p class="text-sm text-black dark:text-white">Make</p>
+          <label class="text-sm text-black dark:text-white" for="search-camera-make">Make</label>
           <Combobox
+            id="search-camera-make"
             options={suggestions.make}
             bind:selectedOption={filter.camera.make}
             placeholder="Search camera make..."
@@ -457,8 +461,9 @@
         </div>
 
         <div class="w-full">
-          <p class="text-sm text-black dark:text-white">Model</p>
+          <label class="text-sm text-black dark:text-white" for="search-camera-model">Model</label>
           <Combobox
+            id="search-camera-model"
             options={suggestions.model}
             bind:selectedOption={filter.camera.model}
             placeholder="Search camera model..."
