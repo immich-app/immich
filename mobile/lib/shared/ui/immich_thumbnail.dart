@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:immich_mobile/modules/asset_viewer/image_providers/immich_local_thumbnail_provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/image_providers/immich_remote_image_provider.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
@@ -9,7 +10,7 @@ import 'package:immich_mobile/shared/ui/thumbhash_placeholder.dart';
 import 'package:octo_image/octo_image.dart';
 import 'package:thumbhash/thumbhash.dart' as thumbhash;
 
-class ImmichThumbnail extends StatefulWidget {
+class ImmichThumbnail extends HookWidget {
   const ImmichThumbnail({
     this.asset,
     this.width = 250,
@@ -62,30 +63,22 @@ class ImmichThumbnail extends StatefulWidget {
 
   static bool useLocal(Asset asset) => !asset.isRemote || asset.isLocal;
 
-  @override
-  State<ImmichThumbnail> createState() => _ImmichThumbnailState();
-}
-
-class _ImmichThumbnailState extends State<ImmichThumbnail> {
-  Uint8List? _decodedBlurHash;
-
-  @override
-  void initState() {
-    if (widget.asset?.thumbhash != null) {
-      final rgbaImage =
-          thumbhash.thumbHashToRGBA(base64Decode(widget.asset!.thumbhash!));
-      _decodedBlurHash = thumbhash.rgbaToBmp(rgbaImage);
-    }
-    super.initState();
-  }
+  Uint8List? get _blurHash => asset?.thumbhash == null
+      ? null
+      : thumbhash.rgbaToBmp(
+          thumbhash.thumbHashToRGBA(
+            base64Decode(asset!.thumbhash!),
+          ),
+        );
 
   @override
   Widget build(BuildContext context) {
-    if (widget.asset == null) {
+    Uint8List? blurhash = useState(_blurHash).value;
+    if (asset == null) {
       return Container(
         color: Colors.grey,
-        width: widget.width,
-        height: widget.height,
+        width: width,
+        height: height,
         child: const Center(
           child: Icon(Icons.no_photography),
         ),
@@ -96,13 +89,13 @@ class _ImmichThumbnailState extends State<ImmichThumbnail> {
       placeholderFadeInDuration: Duration.zero,
       fadeInDuration: Duration.zero,
       fadeOutDuration: const Duration(milliseconds: 100),
-      octoSet: blurHashOrPlaceholder(_decodedBlurHash),
+      octoSet: blurHashOrPlaceholder(blurhash),
       image: ImmichThumbnail.imageProvider(
-        asset: widget.asset,
+        asset: asset,
       ),
-      width: widget.width,
-      height: widget.height,
-      fit: widget.fit,
+      width: width,
+      height: height,
+      fit: fit,
     );
   }
 }
