@@ -464,9 +464,6 @@ export type CreateLibraryDto = {
     ownerId?: string;
     "type": LibraryType;
 };
-export type SearchLibraryDto = {
-    "type"?: LibraryType;
-};
 export type UpdateLibraryDto = {
     exclusionPatterns?: string[];
     importPaths?: string[];
@@ -1836,11 +1833,15 @@ export function sendJobCommand({ id, jobCommandDto }: {
         body: jobCommandDto
     })));
 }
-export function getUserLibraries(opts?: Oazapfts.RequestOpts) {
+export function getAllLibraries({ $type }: {
+    $type?: LibraryType;
+}, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: LibraryResponseDto[];
-    }>("/library", {
+    }>(`/library${QS.query(QS.explode({
+        "type": $type
+    }))}`, {
         ...opts
     }));
 }
@@ -1856,18 +1857,6 @@ export function createLibrary({ createLibraryDto }: {
         body: createLibraryDto
     })));
 }
-export function getAllLibraries({ searchLibraryDto }: {
-    searchLibraryDto: SearchLibraryDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 201;
-        data: LibraryResponseDto[];
-    }>("/library/all", oazapfts.json({
-        ...opts,
-        method: "POST",
-        body: searchLibraryDto
-    })));
-}
 export function deleteLibrary({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
@@ -1876,7 +1865,7 @@ export function deleteLibrary({ id }: {
         method: "DELETE"
     }));
 }
-export function getLibraryInfo({ id }: {
+export function getLibrary({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{

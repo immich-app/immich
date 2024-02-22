@@ -43,10 +43,6 @@
   <DeviceList bind:devices />
 </SettingAccordion>
 
-<SettingAccordion key="libraries" title="Libraries" subtitle="Manage your asset libraries">
-  <LibraryList />
-</SettingAccordion>
-
 <SettingAccordion key="memories" title="Memories" subtitle="Manage what you see in your memories.">
   <MemoriesSettings user={$user} />
 </SettingAccordion>

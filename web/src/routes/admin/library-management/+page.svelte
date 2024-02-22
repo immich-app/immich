@@ -107,7 +107,7 @@
   };
 
   async function readLibraryList() {
-    libraries = await getAllLibraries({ searchLibraryDto: { type: LibraryType.External } });
+    libraries = await getAllLibraries({ $type: LibraryType.External });
     dropdownOpen.length = libraries.length;
 
     for (let index = 0; index < libraries.length; index++) {

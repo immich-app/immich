@@ -120,7 +120,6 @@ doc/SearchExploreItem.md
 doc/SearchExploreResponseDto.md
 doc/SearchFacetCountResponseDto.md
 doc/SearchFacetResponseDto.md
-doc/SearchLibraryDto.md
 doc/SearchResponseDto.md
 doc/SearchSuggestionType.md
 doc/ServerConfigDto.md
@@ -320,7 +319,6 @@ lib/model/search_explore_item.dart
 lib/model/search_explore_response_dto.dart
 lib/model/search_facet_count_response_dto.dart
 lib/model/search_facet_response_dto.dart
-lib/model/search_library_dto.dart
 lib/model/search_response_dto.dart
 lib/model/search_suggestion_type.dart
 lib/model/server_config_dto.dart
@@ -499,7 +497,6 @@ test/search_explore_item_test.dart
 test/search_explore_response_dto_test.dart
 test/search_facet_count_response_dto_test.dart
 test/search_facet_response_dto_test.dart
-test/search_library_dto_test.dart
 test/search_response_dto_test.dart
 test/search_suggestion_type_test.dart
 test/server_config_dto_test.dart

@@ -153,7 +153,6 @@ part 'model/search_explore_item.dart';
 part 'model/search_explore_response_dto.dart';
 part 'model/search_facet_count_response_dto.dart';
 part 'model/search_facet_response_dto.dart';
-part 'model/search_library_dto.dart';
 part 'model/search_response_dto.dart';
 part 'model/search_suggestion_type.dart';
 part 'model/server_config_dto.dart';

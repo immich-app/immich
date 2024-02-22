@@ -3299,8 +3299,17 @@
     },
     "/library": {
       "get": {
-        "operationId": "getUserLibraries",
-        "parameters": [],
+        "operationId": "getAllLibraries",
+        "parameters": [
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/LibraryType"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
@@ -3372,51 +3381,6 @@
         ]
       }
     },
-    "/library/all": {
-      "post": {
-        "operationId": "getAllLibraries",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SearchLibraryDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/LibraryResponseDto"
-                  },
-                  "type": "array"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Library"
-        ]
-      }
-    },
     "/library/{id}": {
       "delete": {
         "operationId": "deleteLibrary",
@@ -3452,7 +3416,7 @@
         ]
       },
       "get": {
-        "operationId": "getLibraryInfo",
+        "operationId": "getLibrary",
         "parameters": [
           {
             "name": "id",
@@ -8996,14 +8960,6 @@
           "counts",
           "fieldName"
         ],
-        "type": "object"
-      },
-      "SearchLibraryDto": {
-        "properties": {
-          "type": {
-            "$ref": "#/components/schemas/LibraryType"
-          }
-        },
         "type": "object"
       },
       "SearchResponseDto": {
