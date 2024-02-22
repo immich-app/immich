@@ -75,7 +75,6 @@ class AssetService {
 
   /// Returns `null` if the server state did not change, else list of assets
   Future<List<Asset>?> _getRemoteAssets(User user) async {
-    print("GTE REMOTE ASSETS");
     const int chunkSize = 10000;
     try {
       final DateTime now = DateTime.now().toUtc();
@@ -96,12 +95,6 @@ class AssetService {
           return null;
         }
 
-        print("get remote asset");
-        assets.map((e) {
-          if (e.stackParentId != null) {
-            print("Stack Parent Id: $e");
-          }
-        });
         allAssets.addAll(assets.map(Asset.remote));
         if (assets.length < chunkSize) {
           break;
