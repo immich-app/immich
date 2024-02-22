@@ -98,7 +98,6 @@ export interface SearchOneToOneRelationOptions {
 export interface SearchRelationOptions extends SearchOneToOneRelationOptions {
   withFaces?: boolean;
   withPeople?: boolean;
-  withStacked?: boolean;
 }
 
 export interface SearchDateOptions {
