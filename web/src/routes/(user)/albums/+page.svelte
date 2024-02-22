@@ -303,7 +303,7 @@
         {/each}
       </div>
     {:else if $albumViewSettings.view === AlbumViewMode.List}
-      <table class="mt-5 w-full text-left">
+      <table class="mt-2 w-full text-left">
         <thead
           class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
         >
