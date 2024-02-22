@@ -54,7 +54,7 @@
     $locale = $locale ? undefined : fallbackLocale.code;
   };
 
-  const handleLocaleChange = (newLocale: string) => {
+  const handleLocaleChange = (newLocale: string | undefined) => {
     $locale = newLocale;
   };
 </script>
@@ -88,7 +88,7 @@
             options={getAllLanguages()}
             title="Custom Locale"
             subtitle="Format dates and numbers based on the language and the region"
-            onSelect={(combobox) => handleLocaleChange(combobox.value)}
+            onSelect={(combobox) => handleLocaleChange(combobox?.value)}
           />
         </div>
       {/if}

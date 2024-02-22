@@ -9,7 +9,7 @@
   export let isEdited = false;
   export let options: ComboBoxOption[];
   export let selectedOption: ComboBoxOption;
-  export let onSelect: (combobox: ComboBoxOption) => void;
+  export let onSelect: (combobox: ComboBoxOption | undefined) => void;
 </script>
 
 <div class="grid grid-cols-2">
