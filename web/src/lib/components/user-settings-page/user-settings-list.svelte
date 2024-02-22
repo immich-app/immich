@@ -6,7 +6,7 @@
   import { user } from '$lib/stores/user.store';
   import { oauth } from '$lib/utils';
   import { type ApiKeyResponseDto, type AuthDeviceResponseDto } from '@immich/sdk';
-  import SettingAccordion from '../admin-page/settings/setting-accordion.svelte';
+  import SettingAccordion from '../shared-components/settings/setting-accordion.svelte';
   import AppearanceSettings from './appearance-settings.svelte';
   import ChangePasswordSettings from './change-password-settings.svelte';
   import DeviceList from './device-list.svelte';

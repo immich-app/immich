@@ -1,7 +1,7 @@
 <script lang="ts">
   import { fade } from 'svelte/transition';
   import { alwaysLoadOriginalFile } from '../../stores/preferences.store';
-  import SettingSwitch from '../admin-page/settings/setting-switch.svelte';
+  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
 
   const handleToggle = () => {
     $alwaysLoadOriginalFile = !$alwaysLoadOriginalFile;

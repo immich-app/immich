@@ -56,6 +56,7 @@ describe('/activity', () => {
       expect(status).toBe(200);
       expect(body).toEqual({
         total: 2,
+        hidden: 1,
         people: [
           expect.objectContaining({ name: 'visible_person' }),
           expect.objectContaining({ name: 'hidden_person' }),
@@ -71,6 +72,7 @@ describe('/activity', () => {
       expect(status).toBe(200);
       expect(body).toEqual({
         total: 2,
+        hidden: 1,
         people: [expect.objectContaining({ name: 'visible_person' })],
       });
     });

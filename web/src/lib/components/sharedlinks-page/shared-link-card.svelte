@@ -16,6 +16,7 @@
   import { createEventDispatcher } from 'svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
+  import { locale } from '$lib/stores/preferences.store';
 
   export let link: SharedLinkResponseDto;
 
@@ -43,7 +44,7 @@
       return;
     }
 
-    const expiresAtDate = luxon.DateTime.fromISO(new Date(link.expiresAt).toISOString());
+    const expiresAtDate = luxon.DateTime.fromISO(new Date(link.expiresAt).toISOString(), { locale: $locale });
     const now = luxon.DateTime.now();
 
     expirationCountdown = expiresAtDate.diff(now, ['days', 'hours', 'minutes', 'seconds']).toObject();
