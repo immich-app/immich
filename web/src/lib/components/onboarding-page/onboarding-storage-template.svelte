@@ -26,8 +26,7 @@
   <p class="text-xl text-immich-primary dark:text-immich-dark-primary">STORAGE TEMPLATE</p>
 
   <p>
-    The storage template is used to determine the folder structure and file name of your media files. You can use
-    variables to customize the template to your liking.
+    Let’s get your files sorted with our Storage Template Engine.<br>Turning on this feature means your files get neatly organized without any extra effort from you.<br>Not a fan of auto-organizing? You can simply switch it off and your files will chill out in the 'upload' folder.<br>It’s all about what makes sense for you. And hey, you can flip the switch anytime.<br>Need more info? Just hop over to our <a href= "https://immich.app/docs/administration/backup-and-restore/#asset-types-and-storage-locations">documentation</a>. We’re here to help!
   </p>
 
   {#if config && $user}
