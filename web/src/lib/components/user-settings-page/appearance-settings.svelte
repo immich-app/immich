@@ -1,13 +1,12 @@
 <script lang="ts">
-  import { fade } from 'svelte/transition';
-  import { colorTheme, locale } from '../../stores/preferences.store';
-  import Locales from '$lib/assets/locales.json';
   import type { ComboBoxOption } from '$lib/components/shared-components/combobox.svelte';
-  import { onMount } from 'svelte';
-  import { findLocale } from '$lib/utils';
-  import { fallbackLocale } from '$lib/constants';
   import SettingCombobox from '$lib/components/shared-components/settings/setting-combobox.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
+  import { fallbackLocale, locales } from '$lib/constants';
+  import { colorTheme, locale } from '$lib/stores/preferences.store';
+  import { findLocale } from '$lib/utils';
+  import { onMount } from 'svelte';
+  import { fade } from 'svelte/transition';
 
   let time = new Date();
 
@@ -39,10 +38,12 @@
   });
 
   const getAllLanguages = (): ComboBoxOption[] => {
-    return Locales.filter(({ code }) => Intl.NumberFormat.supportedLocalesOf(code).length > 0).map((locale) => ({
-      label: locale.name,
-      value: locale.code,
-    }));
+    return locales
+      .filter(({ code }) => Intl.NumberFormat.supportedLocalesOf(code).length > 0)
+      .map((locale) => ({
+        label: locale.name,
+        value: locale.code,
+      }));
   };
 
   const handleToggleColorTheme = () => {
