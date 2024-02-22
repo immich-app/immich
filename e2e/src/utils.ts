@@ -17,13 +17,16 @@ import {
   updatePerson,
 } from '@immich/sdk';
 import { BrowserContext } from '@playwright/test';
-import { spawn } from 'child_process';
+import { exec, spawn } from 'child_process';
 import { randomBytes } from 'node:crypto';
 import { access } from 'node:fs/promises';
 import path from 'node:path';
+import { promisify } from 'node:util';
 import pg from 'pg';
 import { loginDto, signupDto } from 'src/fixtures';
 import request from 'supertest';
+
+const execPromise = promisify(exec);
 
 export const app = 'http://127.0.0.1:2283/api';
 
@@ -34,6 +37,9 @@ const directoryExists = (directory: string) =>
 
 // TODO move test assets into e2e/assets
 export const testAssetDir = path.resolve(`./../server/test/assets/`);
+
+const serverContainerName = 'immich-e2e-server';
+const uploadMediaDir = '/usr/src/app/upload/upload';
 
 if (!(await directoryExists(`${testAssetDir}/albums`))) {
   throw new Error(
@@ -49,6 +55,14 @@ export const asBearerAuth = (accessToken: string) => ({
 export const asKeyAuth = (key: string) => ({ 'x-api-key': key });
 
 let client: pg.Client | null = null;
+
+export const fileUtils = {
+  reset: async () => {
+    await execPromise(
+      `docker exec -i "${serverContainerName}" rm -R "${uploadMediaDir}"`
+    );
+  },
+};
 
 export const dbUtils = {
   createFace: async ({
