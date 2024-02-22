@@ -28,14 +28,14 @@
   export let assetType: AssetTypeEnum;
 
   // keep track of the changes
-  let numberOfPersonToCreate: string[] = [];
-  let numberOfAssetFaceGenerated: string[] = [];
+  let peopleToCreate: string[] = [];
+  let assetFaceGenerated: string[] = [];
 
   // faces
   let peopleWithFaces: AssetFaceResponseDto[] = [];
-  let selectedPersonToReassign: (PersonResponseDto | undefined)[];
-  let selectedPersonToCreate: (string | undefined)[];
-  let editedPersonIndex: number;
+  let selectedPersonToReassign: Record<string, PersonResponseDto> = {};
+  let selectedPersonToCreate: Record<string, string> = {};
+  let editedPerson: PersonResponseDto;
 
   // loading spinners
   let isShowLoadingDone = false;
@@ -49,6 +49,8 @@
   let loaderLoadingDoneTimeout: NodeJS.Timeout;
   let automaticRefreshTimeout: NodeJS.Timeout;
 
+  const thumbnailWidth = '90px';
+
   const dispatch = createEventDispatcher<{
     close: void;
     refresh: void;
@@ -60,8 +62,6 @@
       const { people } = await getAllPeople({ withHidden: true });
       allPeople = people;
       peopleWithFaces = await getFaces({ id: assetId });
-      selectedPersonToCreate = Array.from({ length: peopleWithFaces.length });
-      selectedPersonToReassign = Array.from({ length: peopleWithFaces.length });
     } catch (error) {
       handleError(error, "Can't get faces");
     } finally {
@@ -71,12 +71,12 @@
   }
 
   const onPersonThumbnail = (personId: string) => {
-    numberOfAssetFaceGenerated.push(personId);
+    assetFaceGenerated.push(personId);
     if (
-      isEqual(numberOfAssetFaceGenerated, numberOfPersonToCreate) &&
+      isEqual(assetFaceGenerated, peopleToCreate) &&
       loaderLoadingDoneTimeout &&
       automaticRefreshTimeout &&
-      selectedPersonToCreate.filter(Boolean).length === numberOfPersonToCreate.length
+      Object.keys(selectedPersonToCreate).length === peopleToCreate.length
     ) {
       clearTimeout(loaderLoadingDoneTimeout);
       clearTimeout(automaticRefreshTimeout);
@@ -97,33 +97,38 @@
     dispatch('close');
   };
 
-  const handleReset = (index: number) => {
-    if (selectedPersonToReassign[index]) {
-      selectedPersonToReassign[index] = undefined;
+  const handleReset = (id: string) => {
+    if (selectedPersonToReassign[id]) {
+      delete selectedPersonToReassign[id];
+
+      // trigger reactivity
+      selectedPersonToReassign = selectedPersonToReassign;
     }
-    if (selectedPersonToCreate[index]) {
-      selectedPersonToCreate[index] = undefined;
+    if (selectedPersonToCreate[id]) {
+      delete selectedPersonToCreate[id];
+
+      // trigger reactivity
+      selectedPersonToCreate = selectedPersonToCreate;
     }
   };
 
   const handleEditFaces = async () => {
     loaderLoadingDoneTimeout = setTimeout(() => (isShowLoadingDone = true), timeBeforeShowLoadingSpinner);
-    const numberOfChanges =
-      selectedPersonToCreate.filter(Boolean).length + selectedPersonToReassign.filter(Boolean).length;
+    const numberOfChanges = Object.keys(selectedPersonToCreate).length + Object.keys(selectedPersonToReassign).length;
 
     if (numberOfChanges > 0) {
       try {
-        for (const [index, peopleWithFace] of peopleWithFaces.entries()) {
-          const personId = selectedPersonToReassign[index]?.id;
+        for (const peopleWithFace of peopleWithFaces) {
+          const personId = selectedPersonToReassign[peopleWithFace.id]?.id;
 
           if (personId) {
             await reassignFacesById({
               id: personId,
               faceDto: { id: peopleWithFace.id },
             });
-          } else if (selectedPersonToCreate[index]) {
+          } else if (selectedPersonToCreate[peopleWithFace.id]) {
             const data = await createPerson();
-            numberOfPersonToCreate.push(data.id);
+            peopleToCreate.push(data.id);
             await reassignFacesById({
               id: data.id,
               faceDto: { id: peopleWithFace.id },
@@ -141,7 +146,7 @@
     }
 
     isShowLoadingDone = false;
-    if (numberOfPersonToCreate.length === 0) {
+    if (peopleToCreate.length === 0) {
       clearTimeout(loaderLoadingDoneTimeout);
       dispatch('refresh');
     } else {
@@ -150,23 +155,26 @@
   };
 
   const handleCreatePerson = (newFeaturePhoto: string | null) => {
-    const personToUpdate = peopleWithFaces.find((person) => person.id === peopleWithFaces[editedPersonIndex].id);
+    const personToUpdate = peopleWithFaces.find((face) => face.person?.id === editedPerson.id);
     if (newFeaturePhoto && personToUpdate) {
-      selectedPersonToCreate[peopleWithFaces.indexOf(personToUpdate)] = newFeaturePhoto;
+      selectedPersonToCreate[personToUpdate.id] = newFeaturePhoto;
     }
     showSeletecFaces = false;
   };
 
   const handleReassignFace = (person: PersonResponseDto | null) => {
-    if (person) {
-      selectedPersonToReassign[editedPersonIndex] = person;
+    const personToUpdate = peopleWithFaces.find((face) => face.person?.id === editedPerson.id);
+    if (person && personToUpdate) {
+      selectedPersonToReassign[personToUpdate.id] = person;
       showSeletecFaces = false;
     }
   };
 
-  const handlePersonPicker = async (index: number) => {
-    editedPersonIndex = index;
-    showSeletecFaces = true;
+  const handlePersonPicker = async (person: PersonResponseDto | null) => {
+    if (person) {
+      editedPerson = person;
+      showSeletecFaces = true;
+    }
   };
 </script>
 
@@ -217,35 +225,48 @@
                 on:mouseleave={() => ($boundingBoxesArray = [])}
               >
                 <div class="relative">
-                  <ImageThumbnail
-                    curve
-                    shadow
-                    url={selectedPersonToCreate[index] ||
-                      getPeopleThumbnailUrl(selectedPersonToReassign[index]?.id || face.person.id)}
-                    altText={selectedPersonToReassign[index]
-                      ? selectedPersonToReassign[index]?.name || ''
-                      : selectedPersonToCreate[index]
-                        ? 'new person'
-                        : getPersonNameWithHiddenValue(face.person?.name, face.person?.isHidden)}
-                    title={selectedPersonToReassign[index]
-                      ? selectedPersonToReassign[index]?.name || ''
-                      : selectedPersonToCreate[index]
-                        ? 'new person'
-                        : getPersonNameWithHiddenValue(face.person?.name, face.person?.isHidden)}
-                    widthStyle="90px"
-                    heightStyle="90px"
-                    thumbhash={null}
-                    hidden={selectedPersonToReassign[index]
-                      ? selectedPersonToReassign[index]?.isHidden
-                      : selectedPersonToCreate[index]
-                        ? false
-                        : face.person?.isHidden}
-                  />
+                  {#if selectedPersonToCreate[face.id]}
+                    <ImageThumbnail
+                      curve
+                      shadow
+                      url={selectedPersonToCreate[face.id]}
+                      altText={selectedPersonToCreate[face.id]}
+                      title={'New person'}
+                      widthStyle={thumbnailWidth}
+                      heightStyle={thumbnailWidth}
+                    />
+                  {:else if selectedPersonToReassign[face.id]}
+                    <ImageThumbnail
+                      curve
+                      shadow
+                      url={getPeopleThumbnailUrl(selectedPersonToReassign[face.id].id)}
+                      altText={selectedPersonToReassign[face.id]?.name || selectedPersonToReassign[face.id].id}
+                      title={getPersonNameWithHiddenValue(
+                        selectedPersonToReassign[face.id].name,
+                        face.person?.isHidden,
+                      )}
+                      widthStyle={thumbnailWidth}
+                      heightStyle={thumbnailWidth}
+                      hidden={selectedPersonToReassign[face.id].isHidden}
+                    />
+                  {:else}
+                    <ImageThumbnail
+                      curve
+                      shadow
+                      url={getPeopleThumbnailUrl(face.person.id)}
+                      altText={face.person.name || face.person.id}
+                      title={getPersonNameWithHiddenValue(face.person.name, face.person.isHidden)}
+                      widthStyle={thumbnailWidth}
+                      heightStyle={thumbnailWidth}
+                      hidden={face.person.isHidden}
+                    />
+                  {/if}
                 </div>
-                {#if !selectedPersonToCreate[index]}
+
+                {#if !selectedPersonToCreate[face.id]}
                   <p class="relative mt-1 truncate font-medium" title={face.person?.name}>
-                    {#if selectedPersonToReassign[index]?.id}
-                      {selectedPersonToReassign[index]?.name}
+                    {#if selectedPersonToReassign[face.id]?.id}
+                      {selectedPersonToReassign[face.id]?.name}
                     {:else}
                       {face.person?.name}
                     {/if}
@@ -253,8 +274,8 @@
                 {/if}
 
                 <div class="absolute -right-[5px] -top-[5px] h-[20px] w-[20px] rounded-full bg-blue-700">
-                  {#if selectedPersonToCreate[index] || selectedPersonToReassign[index]}
-                    <button on:click={() => handleReset(index)} class="flex h-full w-full">
+                  {#if selectedPersonToCreate[face.id] || selectedPersonToReassign[face.id]}
+                    <button on:click={() => handleReset(face.id)} class="flex h-full w-full">
                       <div class="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform">
                         <div>
                           <Icon path={mdiRestart} size={18} />
@@ -262,7 +283,7 @@
                       </div>
                     </button>
                   {:else}
-                    <button on:click={() => handlePersonPicker(index)} class="flex h-full w-full">
+                    <button on:click={() => handlePersonPicker(face.person)} class="flex h-full w-full">
                       <div
                         class="absolute left-1/2 top-1/2 h-[2px] w-[14px] translate-x-[-50%] translate-y-[-50%] transform bg-white"
                       />
@@ -282,7 +303,7 @@
   <AssignFaceSidePanel
     {peopleWithFaces}
     {allPeople}
-    {editedPersonIndex}
+    {editedPerson}
     {assetType}
     {assetId}
     on:close={() => (showSeletecFaces = false)}

@@ -21,7 +21,7 @@
 
   export let peopleWithFaces: AssetFaceResponseDto[];
   export let allPeople: PersonResponseDto[];
-  export let editedPersonIndex: number;
+  export let editedPerson: PersonResponseDto;
   export let assetType: AssetTypeEnum;
   export let assetId: string;
 
@@ -106,7 +106,7 @@
 
   const handleCreatePerson = async () => {
     const timeout = setTimeout(() => (isShowLoadingNewPerson = true), timeBeforeShowLoadingSpinner);
-    const personToUpdate = peopleWithFaces.find((person) => person.id === peopleWithFaces[editedPersonIndex].id);
+    const personToUpdate = peopleWithFaces.find((face) => face.person?.id === editedPerson.id);
 
     const newFeaturePhoto = personToUpdate ? await zoomImageToBase64(personToUpdate) : null;
 
@@ -229,7 +229,7 @@
     <div class="immich-scrollbar mt-4 flex flex-wrap gap-2 overflow-y-auto">
       {#if searchName == ''}
         {#each allPeople as person (person.id)}
-          {#if person.id !== peopleWithFaces[editedPersonIndex].person?.id}
+          {#if person.id !== editedPerson.id}
             <div class="w-fit">
               <button class="w-[90px]" on:click={() => dispatch('reassign', person)}>
                 <div class="relative">
@@ -255,7 +255,7 @@
         {/each}
       {:else}
         {#each searchedPeople as person (person.id)}
-          {#if person.id !== peopleWithFaces[editedPersonIndex].person?.id}
+          {#if person.id !== editedPerson.id}
             <div class="w-fit">
               <button class="w-[90px]" on:click={() => dispatch('reassign', person)}>
                 <div class="relative">
