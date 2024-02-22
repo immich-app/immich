@@ -1,9 +1,9 @@
 <script lang="ts">
-  import SettingSwitch from '$lib/components/admin-page/settings/setting-switch.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import SettingInputField, {
     SettingInputFieldType,
-  } from '$lib/components/admin-page/settings/setting-input-field.svelte';
+  } from '$lib/components/shared-components/settings/setting-input-field.svelte';
+  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { slideshowStore } from '../stores/slideshow.store';
   import Button from './elements/buttons/button.svelte';
 
@@ -27,7 +27,7 @@
         inputType={SettingInputFieldType.NUMBER}
         label="Delay"
         desc="Number of seconds to display each image"
-        min="1"
+        min={1}
         bind:value={$slideshowDelay}
       />
 

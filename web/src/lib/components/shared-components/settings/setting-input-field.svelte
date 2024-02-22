@@ -13,8 +13,8 @@
 
   export let inputType: SettingInputFieldType;
   export let value: string | number;
-  export let min = Number.MIN_SAFE_INTEGER.toString();
-  export let max = Number.MAX_SAFE_INTEGER.toString();
+  export let min = Number.MIN_SAFE_INTEGER;
+  export let max = Number.MAX_SAFE_INTEGER;
   export let step = '1';
   export let label = '';
   export let desc = '';
@@ -25,8 +25,16 @@
 
   const handleInput = (e: Event) => {
     value = (e.target as HTMLInputElement).value;
+
     if (inputType === SettingInputFieldType.NUMBER) {
-      value = Number(value) || 0;
+      let newValue = Number(value) || 0;
+      if (newValue < min) {
+        newValue = min;
+      }
+      if (newValue > max) {
+        newValue = max;
+      }
+      value = newValue;
     }
   };
 </script>
@@ -63,8 +71,8 @@
     id={label}
     name={label}
     type={inputType}
-    {min}
-    {max}
+    min={min.toString()}
+    max={max.toString()}
     {step}
     {required}
     {value}

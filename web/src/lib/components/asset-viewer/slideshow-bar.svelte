@@ -45,14 +45,6 @@
       unsubscribeStop();
     }
   });
-
-  const handleInput = () => {
-    if (delay < 1) {
-      delay = 5;
-      $slideshowDelay = 5;
-    }
-    $slideshowDelay = delay;
-  };
 </script>
 
 <div class="m-4 flex gap-2">
