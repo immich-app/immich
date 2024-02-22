@@ -58,6 +58,18 @@ class AssetService {
     final assetDto = await _apiService.assetApi
         .getAllAssets(userId: user.id, updatedAfter: since);
     if (assetDto == null) return (null, null);
+
+    print("AssetDto length: ${assetDto.length} ");
+    for (final e in assetDto) {
+      print("AssetDto: ${e.stackParentId}");
+      var b = Asset.remote(e);
+      print("e.stackParentId ${e.stackParentId}");
+      print("e.id ${e.id}");
+      print(
+        "e.stackParentId == e.id ? null : e.stackParentId, ${e.stackParentId == e.id ? null : e.stackParentId}",
+      );
+      print("Mapped asset ${b.stackParentId}");
+    }
     return (assetDto.map(Asset.remote).toList(), deleted.ids);
   }
 
@@ -82,6 +94,7 @@ class AssetService {
         if (assets == null) {
           return null;
         }
+
         allAssets.addAll(assets.map(Asset.remote));
         if (assets.length < chunkSize) {
           break;
