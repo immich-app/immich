@@ -112,4 +112,11 @@
   {/if}
 </div>
 
-<ProgressBar autoplay bind:this={progressBar} bind:status={progressBarStatus} on:done={() => dispatch('next')} />
+<ProgressBar
+  autoplay
+  hidden={!$showProgressBar}
+  duration={$slideshowDelay}
+  bind:this={progressBar}
+  bind:status={progressBarStatus}
+  on:done={() => dispatch('next')}
+/>

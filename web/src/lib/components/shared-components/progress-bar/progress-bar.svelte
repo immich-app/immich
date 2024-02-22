@@ -8,7 +8,6 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte';
   import { tweened } from 'svelte/motion';
-  import { slideshowStore } from '$lib/stores/slideshow.store';
 
   /**
    * Autoplay on mount
@@ -21,25 +20,24 @@
    */
   export let status: ProgressBarStatus = ProgressBarStatus.Paused;
 
-  const { slideshowDelay, showProgressBar } = slideshowStore;
+  export let hidden = false;
 
-  let duration = $slideshowDelay;
+  export let duration = 5;
 
-  $: {
-    if (duration !== $slideshowDelay) {
-      duration = $slideshowDelay;
-      progress = setDuration(duration);
-      play();
-    }
-  }
+  const onChange = () => {
+    progress = setDuration(duration);
+    play();
+  };
+
+  let progress = setDuration(duration);
+
+  $: duration, onChange();
 
   $: {
     if ($progress === 1) {
       dispatch('done');
     }
   }
-
-  let progress = setDuration($slideshowDelay);
 
   const dispatch = createEventDispatcher<{
     done: void;
@@ -85,6 +83,6 @@
   }
 </script>
 
-{#if $showProgressBar}
+{#if !hidden}
   <span class="absolute left-0 h-[3px] bg-immich-primary shadow-2xl" style:width={`${$progress * 100}%`} />
 {/if}
