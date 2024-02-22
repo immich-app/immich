@@ -189,9 +189,8 @@ export class LibraryService extends EventEmitter {
   }
 
   async getStatistics(auth: AuthDto, id: string): Promise<LibraryStatsResponseDto> {
-    if (!auth.user.isAdmin) {
-      await this.access.requirePermission(auth, Permission.LIBRARY_READ, id);
-    }
+    await this.access.requirePermission(auth, Permission.LIBRARY_READ, id);
+
     return this.repository.getStatistics(id);
   }
 
@@ -212,10 +211,6 @@ export class LibraryService extends EventEmitter {
   }
 
   async getAll(auth: AuthDto, dto: SearchLibraryDto): Promise<LibraryResponseDto[]> {
-    if (!auth.user.isAdmin) {
-      throw new UnauthorizedException('Only admins can get all libraries');
-    }
-
     const libraries = await this.repository.getAll(false, dto.type);
     return libraries.map((library) => mapLibrary(library));
   }
@@ -230,6 +225,8 @@ export class LibraryService extends EventEmitter {
   }
 
   async create(auth: AuthDto, dto: CreateLibraryDto): Promise<LibraryResponseDto> {
+    await this.access.requirePermission(auth, Permission.LIBRARY_CREATE, auth.user.id);
+
     switch (dto.type) {
       case LibraryType.EXTERNAL: {
         if (!dto.name) {
@@ -257,10 +254,6 @@ export class LibraryService extends EventEmitter {
     let ownerId = auth.user.id;
 
     if (dto.ownerId) {
-      if (!auth.user.isAdmin) {
-        throw new UnauthorizedException('Only admins can create libraries for other users');
-      }
-
       ownerId = dto.ownerId;
     }
 
@@ -346,11 +339,6 @@ export class LibraryService extends EventEmitter {
   async update(auth: AuthDto, id: string, dto: UpdateLibraryDto): Promise<LibraryResponseDto> {
     await this.access.requirePermission(auth, Permission.LIBRARY_UPDATE, id);
 
-    if (!auth.user.isAdmin) {
-      // Only let non-admins update the name
-      dto = { name: dto.name };
-    }
-
     const library = await this.repository.update({ id, ...dto });
 
     if (dto.importPaths) {
@@ -373,9 +361,7 @@ export class LibraryService extends EventEmitter {
   }
 
   async delete(auth: AuthDto, id: string) {
-    if (!auth.user.isAdmin) {
-      await this.access.requirePermission(auth, Permission.LIBRARY_DELETE, id);
-    }
+    await this.access.requirePermission(auth, Permission.LIBRARY_DELETE, id);
 
     const library = await this.findOrFail(id);
     const uploadCount = await this.repository.getUploadLibraryCount(auth.user.id);

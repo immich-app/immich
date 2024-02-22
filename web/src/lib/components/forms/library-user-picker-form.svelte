@@ -6,8 +6,8 @@
   import { mdiFolderSync } from '@mdi/js';
   import { onMount } from 'svelte';
   import { getAllUsers } from '@immich/sdk';
-  import SettingSelect from '../admin-page/settings/setting-select.svelte';
   import { user } from '$lib/stores/user.store';
+  import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
 
   let ownerId: string = $user.id;
 
