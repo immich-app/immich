@@ -57,7 +57,7 @@
       </span>
       <div class="text-sm">
         <span class="">Last seen</span>
-        <span>{DateTime.fromISO(device.updatedAt).toRelativeCalendar(options)}</span>
+        <span>{DateTime.fromISO(device.updatedAt, { locale: $locale }).toRelativeCalendar(options)}</span>
       </div>
     </div>
     {#if !device.current}

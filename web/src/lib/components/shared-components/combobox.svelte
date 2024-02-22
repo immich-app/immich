@@ -52,7 +52,7 @@
   };
 </script>
 
-<div class="relative" use:clickOutside on:outclick={handleOutClick}>
+<div class="relative w-full" use:clickOutside on:outclick={handleOutClick}>
   <div>
     {#if isOpen}
       <div class="absolute inset-y-0 left-0 flex items-center pl-3">

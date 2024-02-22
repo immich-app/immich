@@ -5,9 +5,12 @@
   } from '$lib/components/shared-components/notification/notification';
   import { changePassword } from '@immich/sdk';
   import { fade } from 'svelte/transition';
-  import SettingInputField, { SettingInputFieldType } from '../admin-page/settings/setting-input-field.svelte';
-  import Button from '../elements/buttons/button.svelte';
+
+  import Button from '$lib/components/elements/buttons/button.svelte';
   import type { HttpError } from '@sveltejs/kit';
+  import SettingInputField, {
+    SettingInputFieldType,
+  } from '$lib/components/shared-components/settings/setting-input-field.svelte';
 
   let password = '';
   let newPassword = '';
