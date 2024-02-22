@@ -1,8 +1,11 @@
+import { locale } from '$lib/stores/preferences.store';
 import type { AssetResponseDto } from '@immich/sdk';
 import { groupBy, sortBy } from 'lodash-es';
 import { DateTime, Interval } from 'luxon';
+import { get } from 'svelte/store';
 
-export const fromLocalDateTime = (localDateTime: string) => DateTime.fromISO(localDateTime, { zone: 'UTC' });
+export const fromLocalDateTime = (localDateTime: string) =>
+  DateTime.fromISO(localDateTime, { zone: 'UTC', locale: get(locale) });
 
 export const groupDateFormat: Intl.DateTimeFormatOptions = {
   weekday: 'short',
