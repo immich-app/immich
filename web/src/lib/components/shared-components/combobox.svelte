@@ -52,7 +52,7 @@
   };
 </script>
 
-<div class="relative w-full" use:clickOutside on:outclick={handleOutClick}>
+<div class="relative w-full dark:text-gray-300 text-gray-700 text-base" use:clickOutside on:outclick={handleOutClick}>
   <div>
     {#if isOpen}
       <div class="absolute inset-y-0 left-0 flex items-center pl-3">
@@ -96,7 +96,7 @@
     <div
       role="listbox"
       transition:fly={{ duration: 250 }}
-      class="absolute text-left w-full max-h-64 overflow-y-auto bg-white dark:bg-gray-800 rounded-b-lg border border-t-0 border-gray-300 dark:border-gray-900 z-10"
+      class="absolute text-left text-sm w-full max-h-64 overflow-y-auto bg-white dark:bg-gray-800 rounded-b-lg border border-t-0 border-gray-300 dark:border-gray-900 z-10"
     >
       {#if filteredOptions.length === 0}
         <div class="px-4 py-2 font-medium">No results</div>
