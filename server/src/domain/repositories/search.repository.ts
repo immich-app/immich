@@ -92,6 +92,7 @@ export interface SearchStatusOptions {
 export interface SearchOneToOneRelationOptions {
   withExif?: boolean;
   withSmartInfo?: boolean;
+  withStacked?: boolean;
 }
 
 export interface SearchRelationOptions extends SearchOneToOneRelationOptions {
