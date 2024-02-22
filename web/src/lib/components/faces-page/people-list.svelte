@@ -5,7 +5,7 @@
   import { searchPerson, type PersonResponseDto } from '@immich/sdk';
   import { createEventDispatcher } from 'svelte';
   import FaceThumbnail from './face-thumbnail.svelte';
-  import SearchBar from './search-bar.svelte';
+  import SearchBar from '../elements/search-bar.svelte';
 
   export let screenHeight: number;
   export let people: PersonResponseDto[];
@@ -55,7 +55,8 @@
 <div class=" w-40 sm:w-48 md:w-96 h-14 mb-8">
   <SearchBar
     bind:name
-    {isSearchingPeople}
+    isSearching={isSearchingPeople}
+    placeholder="Search people"
     on:reset={() => {
       people = peopleCopy;
     }}

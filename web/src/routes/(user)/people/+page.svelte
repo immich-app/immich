@@ -8,7 +8,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import MergeSuggestionModal from '$lib/components/faces-page/merge-suggestion-modal.svelte';
   import PeopleCard from '$lib/components/faces-page/people-card.svelte';
-  import SearchBar from '$lib/components/faces-page/search-bar.svelte';
+  import SearchBar from '$lib/components/elements/search-bar.svelte';
   import SetBirthDateModal from '$lib/components/faces-page/set-birth-date-modal.svelte';
   import ShowHide from '$lib/components/faces-page/show-hide.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
@@ -441,7 +441,8 @@
           <div class="w-40 lg:w-80 h-10">
             <SearchBar
               bind:name={searchName}
-              {isSearchingPeople}
+              isSearching={isSearchingPeople}
+              placeholder="Search people"
               on:reset={() => {
                 searchedPeople = [];
               }}
