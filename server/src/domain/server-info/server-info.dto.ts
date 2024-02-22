@@ -1,6 +1,5 @@
-import { FeatureFlags, IVersion, type VersionType } from '@app/domain';
+import { FeatureFlags, IVersion } from '@app/domain';
 import { ApiProperty, ApiResponseProperty } from '@nestjs/swagger';
-import type { DateTime } from 'luxon';
 import { SystemConfigThemeDto } from '../system-config/dto/system-config-theme.dto';
 
 export class ServerPingResponse {
@@ -105,11 +104,4 @@ export class ServerFeaturesDto implements FeatureFlags {
   passwordLogin!: boolean;
   sidecar!: boolean;
   search!: boolean;
-}
-
-export interface ReleaseNotification {
-  isAvailable: VersionType;
-  checkedAt: DateTime<boolean> | null;
-  serverVersion: ServerVersionResponseDto;
-  releaseVersion: ServerVersionResponseDto;
 }
