@@ -290,9 +290,9 @@
     <!-- Album Card -->
     {#if $albumViewSettings.view === AlbumViewMode.Cover}
       <div class="grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))]">
-        {#each $albums.filter((album) => searchAlbum === '' || album.albumName
-              .toLowerCase()
-              .includes(searchAlbum.toLowerCase())) as album, index (album.id)}
+        {#each $albums.filter((album) => album.albumName
+            .toLowerCase()
+            .includes(searchAlbum.toLowerCase())) as album, index (album.id)}
           <a data-sveltekit-preload-data="hover" href="{AppRoute.ALBUMS}/{album.id}" animate:flip={{ duration: 200 }}>
             <AlbumCard
               preload={index < 20}
@@ -317,9 +317,9 @@
         <tbody
           class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray dark:text-immich-dark-fg"
         >
-          {#each $albums.filter((album) => searchAlbum === '' || album.albumName
-                .toLowerCase()
-                .includes(searchAlbum.toLowerCase())) as album (album.id)}
+          {#each $albums.filter((album) => album.albumName
+              .toLowerCase()
+              .includes(searchAlbum.toLowerCase())) as album (album.id)}
             <tr
               class="flex h-[50px] w-full place-items-center border-[3px] border-transparent p-2 text-center odd:bg-immich-gray even:bg-immich-bg hover:cursor-pointer hover:border-immich-primary/75 odd:dark:bg-immich-dark-gray/75 even:dark:bg-immich-dark-gray/50 dark:hover:border-immich-dark-primary/75 md:p-5"
               on:click={() => goto(`${AppRoute.ALBUMS}/${album.id}`)}
