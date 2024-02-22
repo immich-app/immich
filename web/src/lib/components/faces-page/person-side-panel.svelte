@@ -33,8 +33,8 @@
 
   // faces
   let peopleWithFaces: AssetFaceResponseDto[] = [];
-  let selectedPersonToReassign: (PersonResponseDto | null)[];
-  let selectedPersonToCreate: (string | null)[];
+  let selectedPersonToReassign: (PersonResponseDto | undefined)[];
+  let selectedPersonToCreate: (string | undefined)[];
   let editedPersonIndex: number;
 
   // loading spinners
@@ -76,7 +76,7 @@
       isEqual(numberOfAssetFaceGenerated, numberOfPersonToCreate) &&
       loaderLoadingDoneTimeout &&
       automaticRefreshTimeout &&
-      selectedPersonToCreate.filter((person) => person !== null).length === numberOfPersonToCreate.length
+      selectedPersonToCreate.filter((person) => person).length === numberOfPersonToCreate.length
     ) {
       clearTimeout(loaderLoadingDoneTimeout);
       clearTimeout(automaticRefreshTimeout);
@@ -99,18 +99,19 @@
 
   const handleReset = (index: number) => {
     if (selectedPersonToReassign[index]) {
-      selectedPersonToReassign[index] = null;
+      selectedPersonToReassign[index] = undefined;
     }
     if (selectedPersonToCreate[index]) {
-      selectedPersonToCreate[index] = null;
+      selectedPersonToCreate[index] = undefined;
     }
   };
 
   const handleEditFaces = async () => {
     loaderLoadingDoneTimeout = setTimeout(() => (isShowLoadingDone = true), timeBeforeShowLoadingSpinner);
     const numberOfChanges =
-      selectedPersonToCreate.filter((person) => person !== null).length +
-      selectedPersonToReassign.filter((person) => person !== null).length;
+      selectedPersonToCreate.filter((person) => person).length +
+      selectedPersonToReassign.filter((person) => person).length;
+
     if (numberOfChanges > 0) {
       try {
         for (const [index, peopleWithFace] of peopleWithFaces.entries()) {
