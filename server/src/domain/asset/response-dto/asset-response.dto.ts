@@ -73,23 +73,21 @@ const peopleWithFaces = (faces: AssetFaceEntity[]): PersonWithFacesResponseDto[]
 export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): AssetResponseDto {
   const { stripMetadata = false, withStack = false } = options;
 
-  const sanitizedAssetResponse: SanitizedAssetResponseDto = {
-    id: entity.id,
-    type: entity.type,
-    thumbhash: entity.thumbhash?.toString('base64') ?? null,
-    localDateTime: entity.localDateTime,
-    resized: !!entity.resizePath,
-    duration: entity.duration ?? '0:00:00.00000',
-    livePhotoVideoId: entity.livePhotoVideoId,
-    hasMetadata: false,
-  };
-
   if (stripMetadata) {
+    const sanitizedAssetResponse: SanitizedAssetResponseDto = {
+      id: entity.id,
+      type: entity.type,
+      thumbhash: entity.thumbhash?.toString('base64') ?? null,
+      localDateTime: entity.localDateTime,
+      resized: !!entity.resizePath,
+      duration: entity.duration ?? '0:00:00.00000',
+      livePhotoVideoId: entity.livePhotoVideoId,
+      hasMetadata: false,
+    };
     return sanitizedAssetResponse as AssetResponseDto;
   }
 
   return {
-    ...sanitizedAssetResponse,
     id: entity.id,
     deviceAssetId: entity.deviceAssetId,
     ownerId: entity.ownerId,
