@@ -11,7 +11,6 @@
   let progressBarStatus: ProgressBarStatus;
   let progressBar: ProgressBar;
   let showSettings = false;
-  let delay = $slideshowDelay;
 
   let unsubscribeRestart: () => void;
   let unsubscribeStop: () => void;
