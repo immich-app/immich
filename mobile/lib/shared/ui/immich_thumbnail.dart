@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -6,9 +5,9 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:immich_mobile/modules/asset_viewer/image_providers/immich_local_thumbnail_provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/image_providers/immich_remote_image_provider.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/ui/hooks/blurhash_hook.dart';
 import 'package:immich_mobile/shared/ui/thumbhash_placeholder.dart';
 import 'package:octo_image/octo_image.dart';
-import 'package:thumbhash/thumbhash.dart' as thumbhash;
 
 class ImmichThumbnail extends HookWidget {
   const ImmichThumbnail({
@@ -63,17 +62,9 @@ class ImmichThumbnail extends HookWidget {
 
   static bool useLocal(Asset asset) => !asset.isRemote || asset.isLocal;
 
-  Uint8List? get _blurHash => asset?.thumbhash == null
-      ? null
-      : thumbhash.rgbaToBmp(
-          thumbhash.thumbHashToRGBA(
-            base64Decode(asset!.thumbhash!),
-          ),
-        );
-
   @override
   Widget build(BuildContext context) {
-    Uint8List? blurhash = useState(_blurHash).value;
+    Uint8List? blurhash = useBlurHashState(asset).value;
     if (asset == null) {
       return Container(
         color: Colors.grey,
