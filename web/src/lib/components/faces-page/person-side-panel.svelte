@@ -76,7 +76,7 @@
       isEqual(numberOfAssetFaceGenerated, numberOfPersonToCreate) &&
       loaderLoadingDoneTimeout &&
       automaticRefreshTimeout &&
-      selectedPersonToCreate.filter((person) => person).length === numberOfPersonToCreate.length
+      selectedPersonToCreate.filter(Boolean).length === numberOfPersonToCreate.length
     ) {
       clearTimeout(loaderLoadingDoneTimeout);
       clearTimeout(automaticRefreshTimeout);
@@ -109,8 +109,7 @@
   const handleEditFaces = async () => {
     loaderLoadingDoneTimeout = setTimeout(() => (isShowLoadingDone = true), timeBeforeShowLoadingSpinner);
     const numberOfChanges =
-      selectedPersonToCreate.filter((person) => person).length +
-      selectedPersonToReassign.filter((person) => person).length;
+      selectedPersonToCreate.filter(Boolean).length + selectedPersonToReassign.filter(Boolean).length;
 
     if (numberOfChanges > 0) {
       try {
