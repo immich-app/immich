@@ -26,13 +26,9 @@
   <p class="text-xl text-immich-primary dark:text-immich-dark-primary">STORAGE TEMPLATE</p>
 
   <p>
-    Let’s get your files sorted with our Storage Template Engine.<br />Turning on this feature means your files get
-    neatly organized without any extra effort from you.<br />Not a fan of auto-organizing? You can simply switch it off
-    and your files will chill out in the 'upload' folder.<br />It’s all about what makes sense for you. And hey, you can
-    flip the switch anytime.<br />Need more info? Just hop over to our
-    <a href="https://immich.app/docs/administration/backup-and-restore/#asset-types-and-storage-locations"
-      >documentation</a
-    >. We’re here to help!
+    When enabled, this feature will auto-organize files based on a user-defined template. Due to stability issues the
+    feature has been turned off by default. For more information, please see the
+    <a class="underline" href="https://immich.app/docs/administration/storage-template">documentation</a>.
   </p>
 
   {#if config && $user}
