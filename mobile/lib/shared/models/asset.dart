@@ -37,7 +37,7 @@ class Asset {
         // workaround to nullify stackParentId for the parent asset until we refactor the mobile app
         // stack handling to properly handle it
         stackParentId =
-            remote.stackParentId == remote.id ? null : remote.stackParentId,
+            remote.stackParentId == remote.id ? remote.stackParentId : null,
         stackCount = remote.stackCount;
 
   Asset.local(AssetEntity local, List<int> hash)
@@ -309,7 +309,7 @@ class Asset {
           livePhotoVideoId: livePhotoVideoId,
           // workaround to nullify stackParentId for the parent asset until we refactor the mobile app
           // stack handling to properly handle it
-          stackParentId: stackParentId == remoteId ? null : stackParentId,
+          stackParentId: stackParentId == remoteId ? stackParentId : null,
           stackCount: stackCount,
           isFavorite: isFavorite,
           isArchived: isArchived,
@@ -329,7 +329,7 @@ class Asset {
           livePhotoVideoId: a.livePhotoVideoId,
           // workaround to nullify stackParentId for the parent asset until we refactor the mobile app
           // stack handling to properly handle it
-          stackParentId: a.stackParentId == a.remoteId ? null : a.stackParentId,
+          stackParentId: a.stackParentId == a.remoteId ? a.stackParentId : null,
           stackCount: a.stackCount,
           // isFavorite + isArchived are not set by device-only assets
           isFavorite: a.isFavorite,

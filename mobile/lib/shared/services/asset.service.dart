@@ -63,6 +63,11 @@ class AssetService {
     for (final e in assetDto) {
       print("AssetDto: ${e.stackParentId}");
       var b = Asset.remote(e);
+      print("e.stackParentId ${e.stackParentId}");
+      print("e.id ${e.id}");
+      print(
+        "e.stackParentId == e.id ? null : e.stackParentId, ${e.stackParentId == e.id ? null : e.stackParentId}",
+      );
       print("Mapped asset ${b.stackParentId}");
     }
     return (assetDto.map(Asset.remote).toList(), deleted.ids);
