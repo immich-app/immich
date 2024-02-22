@@ -68,7 +68,7 @@
       role="combobox"
       aria-expanded={isOpen}
       aria-controls={id}
-      class="immich-form-input text-sm text-left w-full !pr-12 transition-[border-radius]"
+      class="immich-form-input text-sm text-left w-full !pr-12 transition-all"
       class:!pl-8={isOpen}
       class:!rounded-b-none={isOpen}
       class:cursor-pointer={!isOpen}

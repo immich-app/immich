@@ -28,12 +28,10 @@
 
   const initialOption = timezones.find((item) => item.value === 'UTC' + initialDate.toFormat('ZZ'));
 
-  let selectedOption = initialOption
-    ? {
-        label: initialOption?.label || '',
-        value: initialOption?.value || '',
-      }
-    : undefined;
+  let selectedOption = initialOption && {
+    label: initialOption?.label || '',
+    value: initialOption?.value || '',
+  };
 
   let selectedDate = initialDate.toFormat("yyyy-MM-dd'T'HH:mm");
 
