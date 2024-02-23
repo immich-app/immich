@@ -121,6 +121,7 @@ export function ChunkedSet(options?: { paramIndex?: number }): MethodDecorator {
   return Chunked({ ...options, mergeFn: setUnion });
 }
 
+// https://stackoverflow.com/a/74898678
 export function DecorateAll(
   decorator: <T>(
     target: Object,
