@@ -569,10 +569,10 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_udid
-      sha256: "666412097b86d9a6f9803073d0f0ba70de9b198fe6493d89d352a1f8cd6c5c84"
+      sha256: "63384bd96203aaefccfd7137fab642edda18afede12b0e9e1a2c96fe2589fd07"
       url: "https://pub.dev"
     source: hosted
-    version: "2.1.1"
+    version: "3.0.0"
   flutter_web_auth:
     dependency: "direct main"
     description:
