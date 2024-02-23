@@ -3,12 +3,13 @@
   import ConfirmDialogue from './confirm-dialogue.svelte';
   import { maximumLengthSearchPeople, timeBeforeShowLoadingSpinner } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
-  import SearchBar from '../faces-page/search-bar.svelte';
+
   import { clickOutside } from '$lib/utils/click-outside';
   import LoadingSpinner from './loading-spinner.svelte';
   import { delay } from '$lib/utils/asset-utils';
   import { timeToLoadTheMap } from '$lib/constants';
   import { searchPlaces, type AssetResponseDto, type PlacesResponseDto } from '@immich/sdk';
+  import SearchBar from '../elements/search-bar.svelte';
 
   export const title = 'Change Location';
   export let asset: AssetResponseDto | undefined = undefined;
@@ -150,8 +151,9 @@
     <div class="relative w-64 sm:w-96" use:clickOutside on:outclick={() => (hideSuggestion = true)}>
       <button class="w-full" on:click={() => (hideSuggestion = false)}>
         <SearchBar
+          placeholder="Search places"
           bind:name={searchWord}
-          {showSpinner}
+          isSearching={showSpinner}
           on:reset={() => {
             suggestedPlaces = [];
           }}
