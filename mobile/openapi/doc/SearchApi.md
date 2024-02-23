@@ -318,7 +318,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **searchPlaces**
-> List<PlacesResponseDto> searchPlaces(name, withHidden)
+> List<PlacesResponseDto> searchPlaces(name)
 
 
 
@@ -342,10 +342,9 @@ import 'package:openapi/api.dart';
 
 final api_instance = SearchApi();
 final name = name_example; // String | 
-final withHidden = true; // bool | 
 
 try {
-    final result = api_instance.searchPlaces(name, withHidden);
+    final result = api_instance.searchPlaces(name);
     print(result);
 } catch (e) {
     print('Exception when calling SearchApi->searchPlaces: $e\n');
@@ -357,7 +356,6 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **name** | **String**|  | 
- **withHidden** | **bool**|  | [optional] 
 
 ### Return type
 

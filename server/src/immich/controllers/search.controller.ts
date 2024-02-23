@@ -6,6 +6,7 @@ import {
   SearchDto,
   SearchExploreResponseDto,
   SearchPeopleDto,
+  SearchPlacesDto,
   SearchResponseDto,
   SearchService,
   SmartSearchDto,
@@ -50,7 +51,7 @@ export class SearchController {
   }
 
   @Get('places')
-  searchPlaces(@Query() dto: SearchPeopleDto): Promise<PlacesResponseDto[]> {
+  searchPlaces(@Query() dto: SearchPlacesDto): Promise<PlacesResponseDto[]> {
     return this.service.searchPlaces(dto);
   }
 

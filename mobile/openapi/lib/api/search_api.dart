@@ -364,9 +364,7 @@ class SearchApi {
   /// Parameters:
   ///
   /// * [String] name (required):
-  ///
-  /// * [bool] withHidden:
-  Future<Response> searchPlacesWithHttpInfo(String name, { bool? withHidden, }) async {
+  Future<Response> searchPlacesWithHttpInfo(String name,) async {
     // ignore: prefer_const_declarations
     final path = r'/search/places';
 
@@ -378,9 +376,6 @@ class SearchApi {
     final formParams = <String, String>{};
 
       queryParams.addAll(_queryParams('', 'name', name));
-    if (withHidden != null) {
-      queryParams.addAll(_queryParams('', 'withHidden', withHidden));
-    }
 
     const contentTypes = <String>[];
 
@@ -399,10 +394,8 @@ class SearchApi {
   /// Parameters:
   ///
   /// * [String] name (required):
-  ///
-  /// * [bool] withHidden:
-  Future<List<PlacesResponseDto>?> searchPlaces(String name, { bool? withHidden, }) async {
-    final response = await searchPlacesWithHttpInfo(name,  withHidden: withHidden, );
+  Future<List<PlacesResponseDto>?> searchPlaces(String name,) async {
+    final response = await searchPlacesWithHttpInfo(name,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

@@ -42,7 +42,7 @@ void main() {
       // TODO
     });
 
-    //Future<List<PlacesResponseDto>> searchPlaces(String name, { bool withHidden }) async
+    //Future<List<PlacesResponseDto>> searchPlaces(String name) async
     test('test searchPlaces', () async {
       // TODO
     });
