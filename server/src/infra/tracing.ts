@@ -1,18 +1,39 @@
-import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
 import { AsyncLocalStorageContextManager } from '@opentelemetry/context-async-hooks';
+import { ExportResult } from '@opentelemetry/core';
 import { PrometheusExporter } from '@opentelemetry/exporter-prometheus';
-import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
+import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
+import { IORedisInstrumentation } from '@opentelemetry/instrumentation-ioredis';
+import { NestInstrumentation } from '@opentelemetry/instrumentation-nestjs-core';
+import { PgInstrumentation } from '@opentelemetry/instrumentation-pg';
 import { NodeSDK } from '@opentelemetry/sdk-node';
-import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base';
+import { BatchSpanProcessor, ConsoleSpanExporter, ReadableSpan } from '@opentelemetry/sdk-trace-base';
 import { OpenTelemetryModuleOptions } from 'nestjs-otel/lib/interfaces';
+
+class CustomConsoleSpanExporter extends ConsoleSpanExporter {
+  export(spans: ReadableSpan[], resultCallback: (result: ExportResult) => void) {
+    const logs = []
+    for (const span of spans) {
+      logs.push(`[${span.spanContext().traceId}] ${span.name}: ${span.duration[0] / 1e3 + span.duration[1] / 1e6}ms`);
+    }
+    console.log(logs.join('\n'));
+
+    resultCallback({ code: 0 });
+  }
+}
+const traceExporter = new CustomConsoleSpanExporter();
 
 const otelSDK = new NodeSDK({
   metricReader: new PrometheusExporter({
     port: 8081,
   }),
-  spanProcessor: new BatchSpanProcessor(new OTLPTraceExporter({ url: 'immich-prometheus:9090' })),
+  spanProcessor: new BatchSpanProcessor(traceExporter),
   contextManager: new AsyncLocalStorageContextManager(),
-  instrumentations: [getNodeAutoInstrumentations()],
+  instrumentations: [
+    new HttpInstrumentation(),
+    new IORedisInstrumentation(),
+    new NestInstrumentation(),
+    new PgInstrumentation(),
+  ],
 });
 
 export const otelConfig: OpenTelemetryModuleOptions = {
