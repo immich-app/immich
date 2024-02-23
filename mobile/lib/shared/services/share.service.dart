@@ -41,8 +41,10 @@ class ShareService {
               .downloadFileWithHttpInfo(asset.remoteId!);
 
           if (res.statusCode != 200) {
-            _log.severe("Asset download for ${asset.fileName} failed",
-                res.toLoggerString());
+            _log.severe(
+              "Asset download for ${asset.fileName} failed",
+              res.toLoggerString(),
+            );
             continue;
           }
 
