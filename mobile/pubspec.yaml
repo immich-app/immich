@@ -33,7 +33,7 @@ dependencies:
       url: https://github.com/maplibre/flutter-maplibre-gl.git
       ref: acb428a005efd9832a0a8e7ef0945f899dfb3ca5
   geolocator: ^11.0.0 # used to move to current location in map view
-  flutter_udid: ^2.1.1
+  flutter_udid: ^3.0.0
   package_info_plus: ^5.0.1
   url_launcher: ^6.2.4
   http: 0.13.5
