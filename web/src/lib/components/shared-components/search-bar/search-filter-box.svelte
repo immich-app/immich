@@ -12,7 +12,7 @@
     type MetadataSearchDto,
   } from '@immich/sdk';
   import { getAllPeople, getSearchSuggestions } from '@immich/sdk';
-  import { mdiArrowRight } from '@mdi/js';
+  import { mdiArrowRight, mdiClose } from '@mdi/js';
   import { createEventDispatcher, onMount } from 'svelte';
   import { fly } from 'svelte/transition';
   import Combobox, { type ComboBoxOption } from '../combobox.svelte';
@@ -333,25 +333,6 @@
         <div id="people-selection" class="-mb-4">
           <div class="flex items-center gap-6">
             <p class="immich-form-label">PEOPLE</p>
-
-            {#if showAllPeople || suggestions.people.length > peopleList.length}
-              <Button
-                size="sm"
-                shadow={false}
-                color="text-primary"
-                class="flex gap-2 place-items-center"
-                on:click={() => (showAllPeople = !showAllPeople)}
-              >
-                <span class="transition-transform ease-out duration-200" class:rotate-90={showAllPeople}>
-                  <Icon path={mdiArrowRight} />
-                </span>
-                {#if showAllPeople}
-                  Collapse
-                {:else}
-                  See all people
-                {/if}
-              </Button>
-            {/if}
           </div>
 
           <div class="flex -mx-1 max-h-64 gap-1 mt-2 flex-wrap overflow-y-auto immich-scrollbar">
@@ -376,6 +357,25 @@
               </button>
             {/each}
           </div>
+
+          {#if showAllPeople || suggestions.people.length > peopleList.length}
+            <div class="flex justify-center mt-2">
+              <Button
+                shadow={false}
+                color="text-primary"
+                class="flex gap-2 place-items-center"
+                on:click={() => (showAllPeople = !showAllPeople)}
+              >
+                {#if showAllPeople}
+                  <span><Icon path={mdiClose} /></span>
+                  Collapse
+                {:else}
+                  <span><Icon path={mdiArrowRight} /></span>
+                  See all people
+                {/if}
+              </Button>
+            </div>
+          {/if}
         </div>
       {/if}
 
