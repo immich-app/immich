@@ -25,9 +25,6 @@
   export let isEdited = false;
   export let passwordAutocomplete: string = 'current-password';
 
-  let showPassword = false;
-  $: fieldType = showPassword ? 'text' : 'password';
-
   const handleInput = (e: Event) => {
     value = (e.target as HTMLInputElement).value;
 
@@ -92,7 +89,6 @@
       aria-labelledby="{label}-label"
       id={label}
       name={label}
-      type={fieldType}
       autocomplete={passwordAutocomplete}
       {required}
       password={value.toString()}
