@@ -12,7 +12,7 @@ import 'package:immich_mobile/modules/asset_viewer/providers/scroll_notifier.pro
 import 'package:immich_mobile/modules/home/ui/asset_grid/thumbnail_image.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/thumbnail_placeholder.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:immich_mobile/shared/services/event.service.dart';
+import 'package:immich_mobile/modules/asset_viewer/providers/scroll_to_date_notifier.provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 import 'asset_grid_data_structure.dart';
@@ -263,11 +263,9 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
   void initState() {
     super.initState();
     scrollToTopNotifierProvider.addListener(_scrollToTop);
-    scrollToDateEvent.subscribe((args) {
-      if (args?.value != null) {
-        _scrollToDate(args?.value);
-      }
-    });
+    scrollToDateNotifierProvider
+        .addListener(() => _scrollToDate(scrollToDateNotifierProvider.value));
+
     if (widget.visibleItemsListener != null) {
       _itemPositionsListener.itemPositions.addListener(_positionListener);
     }

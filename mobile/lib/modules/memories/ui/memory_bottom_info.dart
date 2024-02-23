@@ -2,11 +2,9 @@
 
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:event/event.dart';
 import 'package:flutter/material.dart';
-import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/memories/models/memory.dart';
-import 'package:immich_mobile/shared/services/event.service.dart';
+import 'package:immich_mobile/modules/asset_viewer/providers/scroll_to_date_notifier.provider.dart';
 
 class MemoryBottomInfo extends StatelessWidget {
   final Memory memory;
@@ -42,20 +40,21 @@ class MemoryBottomInfo extends StatelessWidget {
             ),
           ],
         ),
-        TextButton(
-            onPressed: () {
-              context.popRoute();
-              scrollToDateEvent.broadcast(
-                Value(memory.assets[0].fileCreatedAt),
-              );
-            },
-            child: Text(
-              'jump_to_date',
-              style: TextStyle(
-                color: context.primaryColor,
-                fontWeight: FontWeight.bold,
-              ),
-            ).tr())
+        MaterialButton(
+          minWidth: 0,
+          onPressed: () {
+            context.popRoute();
+            scrollToDateNotifierProvider
+                .scrollToDate(memory.assets[0].fileCreatedAt);
+          },
+          shape: const CircleBorder(),
+          color: Colors.white.withOpacity(0.2),
+          elevation: 0,
+          child: const Icon(
+            Icons.open_in_new,
+            color: Colors.white,
+          ),
+        ),
       ]),
     );
   }

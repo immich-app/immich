@@ -57,7 +57,6 @@ dependencies:
   flutter_local_notifications: ^16.3.2
   timezone: ^0.9.2
   octo_image: ^2.0.0
-  event: ^2.1.2
 
   openapi:
     path: openapi
