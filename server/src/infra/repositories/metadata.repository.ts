@@ -7,8 +7,10 @@ import {
   GeoPoint,
   IMetadataRepository,
   ImmichTags,
+  ISystemConfigRepository,
   ISystemMetadataRepository,
   ReverseGeocodeResult,
+  SystemConfigCore,
 } from '@app/domain';
 import {
   ExifEntity,
@@ -20,12 +22,13 @@ import {
 import { ImmichLogger } from '@app/infra/logger';
 import { Inject } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DefaultReadTaskOptions, exiftool, Tags } from 'exiftool-vendored';
+import { DefaultExiftoolArgs, DefaultReadTaskOptions, ExifTool, Tags } from 'exiftool-vendored';
 import * as geotz from 'geo-tz';
 import { getName } from 'i18n-iso-countries';
 import { createReadStream, existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import * as readLine from 'node:readline';
+import { Subscription } from 'rxjs';
 import { DataSource, DeepPartial, QueryRunner, Repository } from 'typeorm';
 import { DummyValue, GenerateSql } from '../infra.util';
 
@@ -33,18 +36,31 @@ type GeoEntity = GeodataPlacesEntity | GeodataAdmin1Entity | GeodataAdmin2Entity
 type GeoEntityClass = typeof GeodataPlacesEntity | typeof GeodataAdmin1Entity | typeof GeodataAdmin2Entity;
 
 export class MetadataRepository implements IMetadataRepository {
+  private configCore: SystemConfigCore;
+  private subscription: Subscription | null = null;
+
   constructor(
     @InjectRepository(ExifEntity) private exifRepository: Repository<ExifEntity>,
     @InjectRepository(GeodataPlacesEntity) private readonly geodataPlacesRepository: Repository<GeodataPlacesEntity>,
     @InjectRepository(GeodataAdmin1Entity) private readonly geodataAdmin1Repository: Repository<GeodataAdmin1Entity>,
     @InjectRepository(GeodataAdmin2Entity) private readonly geodataAdmin2Repository: Repository<GeodataAdmin2Entity>,
+    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(ISystemMetadataRepository) private readonly systemMetadataRepository: ISystemMetadataRepository,
     @InjectDataSource() private dataSource: DataSource,
-  ) {}
+  ) {
+    this.configCore = SystemConfigCore.create(configRepository);
+  }
 
   private logger = new ImmichLogger(MetadataRepository.name);
+  private exiftool: ExifTool;
 
   async init(): Promise<void> {
+    if (!this.subscription) {
+      this.subscription = this.configCore.config$.subscribe(() => this.init());
+    }
+
+    await this.initExiftool();
+
     this.logger.log('Initializing metadata repository');
     const geodataDate = await readFile(geodataDatePath, 'utf8');
 
@@ -63,6 +79,19 @@ export class MetadataRepository implements IMetadataRepository {
     });
 
     this.logger.log('Geodata import completed');
+  }
+
+  private async initExiftool() {
+    const { exiftool: exiftoolCfg } = await this.configCore.getConfig();
+
+    let exiftoolArgs = DefaultExiftoolArgs;
+    if (exiftoolCfg.lfs) {
+      exiftoolArgs = ['-api', 'largefilesupport=1', ...exiftoolArgs];
+    }
+
+    this.exiftool = new ExifTool({
+      exiftoolArgs,
+    });
   }
 
   private async importGeodata() {
@@ -159,7 +188,7 @@ export class MetadataRepository implements IMetadataRepository {
   }
 
   async teardown() {
-    await exiftool.end();
+    await this.exiftool.end();
   }
 
   async reverseGeocode(point: GeoPoint): Promise<ReverseGeocodeResult | null> {
@@ -192,7 +221,7 @@ export class MetadataRepository implements IMetadataRepository {
   }
 
   readTags(path: string): Promise<ImmichTags | null> {
-    return exiftool
+    return this.exiftool
       .read(path, undefined, {
         ...DefaultReadTaskOptions,
 
@@ -211,12 +240,12 @@ export class MetadataRepository implements IMetadataRepository {
   }
 
   extractBinaryTag(path: string, tagName: string): Promise<Buffer> {
-    return exiftool.extractBinaryTagToBuffer(tagName, path);
+    return this.exiftool.extractBinaryTagToBuffer(tagName, path);
   }
 
   async writeTags(path: string, tags: Partial<Tags>): Promise<void> {
     try {
-      await exiftool.write(path, tags, ['-overwrite_original']);
+      await this.exiftool.write(path, tags, ['-overwrite_original']);
     } catch (error) {
       this.logger.warn(`Error writing exif data (${path}): ${error}`);
     }
