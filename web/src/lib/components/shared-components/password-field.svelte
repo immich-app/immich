@@ -33,7 +33,8 @@
   {#if password.length > 0}
     <button
       type="button"
-      class="absolute inset-y-0 end-0 pe-4 text-gray-700 dark:text-gray-200"
+      tabindex="-1"
+      class="absolute inset-y-0 end-0 px-4 text-gray-700 dark:text-gray-200"
       on:click={() => (showPassword = !showPassword)}
       title={showPassword ? 'Hide password' : 'Show password'}
     >
