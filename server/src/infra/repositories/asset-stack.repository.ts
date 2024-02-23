@@ -4,27 +4,25 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AssetStackEntity } from '../entities';
 import { Span } from 'nestjs-otel';
+import { DecorateAll } from '../infra.utils';
 
+@DecorateAll(Span())
 @Injectable()
 export class AssetStackRepository implements IAssetStackRepository {
   constructor(@InjectRepository(AssetStackEntity) private repository: Repository<AssetStackEntity>) {}
 
-  @Span()
   create(entity: Partial<AssetStackEntity>) {
     return this.save(entity);
   }
 
-  @Span()
   async delete(id: string): Promise<void> {
     await this.repository.delete(id);
   }
 
-  @Span()
   update(entity: Partial<AssetStackEntity>) {
     return this.save(entity);
   }
 
-  @Span()
   async getById(id: string): Promise<AssetStackEntity | null> {
     return this.repository.findOne({
       where: {

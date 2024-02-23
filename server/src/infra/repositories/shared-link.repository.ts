@@ -5,12 +5,13 @@ import { Repository } from 'typeorm';
 import { SharedLinkEntity } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';
 import { Span } from 'nestjs-otel';
+import { DecorateAll } from '../infra.utils';
 
+@DecorateAll(Span())
 @Injectable()
 export class SharedLinkRepository implements ISharedLinkRepository {
   constructor(@InjectRepository(SharedLinkEntity) private repository: Repository<SharedLinkEntity>) {}
 
-  @Span()
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
   get(userId: string, id: string): Promise<SharedLinkEntity | null> {
     return this.repository.findOne({
@@ -43,7 +44,6 @@ export class SharedLinkRepository implements ISharedLinkRepository {
     });
   }
 
-  @Span()
   @GenerateSql({ params: [DummyValue.UUID] })
   getAll(userId: string): Promise<SharedLinkEntity[]> {
     return this.repository.find({
@@ -62,7 +62,6 @@ export class SharedLinkRepository implements ISharedLinkRepository {
     });
   }
 
-  @Span()
   @GenerateSql({ params: [DummyValue.BUFFER] })
   async getByKey(key: Buffer): Promise<SharedLinkEntity | null> {
     return await this.repository.findOne({
@@ -75,17 +74,14 @@ export class SharedLinkRepository implements ISharedLinkRepository {
     });
   }
 
-  @Span()
   create(entity: Partial<SharedLinkEntity>): Promise<SharedLinkEntity> {
     return this.save(entity);
   }
 
-  @Span()
   update(entity: Partial<SharedLinkEntity>): Promise<SharedLinkEntity> {
     return this.save(entity);
   }
 
-  @Span()
   async remove(entity: SharedLinkEntity): Promise<void> {
     await this.repository.remove(entity);
   }

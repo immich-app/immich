@@ -6,12 +6,13 @@ import { Repository } from 'typeorm/repository/Repository.js';
 import { LibraryEntity, LibraryType } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';
 import { Span } from 'nestjs-otel';
+import { DecorateAll } from '../infra.utils';
 
+@DecorateAll(Span())
 @Injectable()
 export class LibraryRepository implements ILibraryRepository {
   constructor(@InjectRepository(LibraryEntity) private repository: Repository<LibraryEntity>) {}
 
-  @Span()
   @GenerateSql({ params: [DummyValue.UUID] })
   get(id: string, withDeleted = false): Promise<LibraryEntity | null> {
     return this.repository.findOneOrFail({
@@ -23,7 +24,6 @@ export class LibraryRepository implements ILibraryRepository {
     });
   }
 
-  @Span()
   @GenerateSql({ params: [DummyValue.STRING] })
   existsByName(name: string, withDeleted = false): Promise<boolean> {
     return this.repository.exist({
@@ -34,13 +34,11 @@ export class LibraryRepository implements ILibraryRepository {
     });
   }
 
-  @Span()
   @GenerateSql({ params: [DummyValue.UUID] })
   getCountForUser(ownerId: string): Promise<number> {
     return this.repository.countBy({ ownerId });
   }
 
-  @Span()
   @GenerateSql({ params: [DummyValue.UUID] })
   getDefaultUploadLibrary(ownerId: string): Promise<LibraryEntity | null> {
     return this.repository.findOne({
@@ -54,7 +52,6 @@ export class LibraryRepository implements ILibraryRepository {
     });
   }
 
-  @Span()
   @GenerateSql({ params: [DummyValue.UUID] })
   getUploadLibraryCount(ownerId: string): Promise<number> {
     return this.repository.count({
@@ -65,7 +62,6 @@ export class LibraryRepository implements ILibraryRepository {
     });
   }
 
-  @Span()
   @GenerateSql({ params: [DummyValue.UUID] })
   getAllByUserId(ownerId: string, type?: LibraryType): Promise<LibraryEntity[]> {
     return this.repository.find({
@@ -83,7 +79,6 @@ export class LibraryRepository implements ILibraryRepository {
     });
   }
 
-  @Span()
   @GenerateSql({ params: [] })
   getAll(withDeleted = false, type?: LibraryType): Promise<LibraryEntity[]> {
     return this.repository.find({
@@ -98,7 +93,6 @@ export class LibraryRepository implements ILibraryRepository {
     });
   }
 
-  @Span()
   @GenerateSql()
   getAllDeleted(): Promise<LibraryEntity[]> {
     return this.repository.find({
@@ -116,27 +110,22 @@ export class LibraryRepository implements ILibraryRepository {
     });
   }
 
-  @Span()
   create(library: Omit<LibraryEntity, 'id' | 'createdAt' | 'updatedAt' | 'ownerId'>): Promise<LibraryEntity> {
     return this.repository.save(library);
   }
 
-  @Span()
   async delete(id: string): Promise<void> {
     await this.repository.delete({ id });
   }
 
-  @Span()
   async softDelete(id: string): Promise<void> {
     await this.repository.softDelete({ id });
   }
 
-  @Span()
   async update(library: Partial<LibraryEntity>): Promise<LibraryEntity> {
     return this.save(library);
   }
 
-  @Span()
   @GenerateSql({ params: [DummyValue.UUID] })
   async getStatistics(id: string): Promise<LibraryStatsResponseDto> {
     const stats = await this.repository
@@ -158,7 +147,6 @@ export class LibraryRepository implements ILibraryRepository {
     };
   }
 
-  @Span()
   @GenerateSql({ params: [DummyValue.UUID] })
   async getOnlineAssetPaths(libraryId: string): Promise<string[]> {
     // Return all non-offline asset paths for a given library
@@ -179,7 +167,6 @@ export class LibraryRepository implements ILibraryRepository {
     return results;
   }
 
-  @Span()
   @GenerateSql({ params: [DummyValue.UUID] })
   async getAssetIds(libraryId: string, withDeleted = false): Promise<string[]> {
     let query = this.repository

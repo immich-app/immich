@@ -1,10 +1,11 @@
 import { GitHubRelease, IServerInfoRepository } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { Span } from 'nestjs-otel';
+import { DecorateAll } from '../infra.utils';
 
+@DecorateAll(Span())
 @Injectable()
 export class ServerInfoRepository implements IServerInfoRepository {
-  @Span()
   async getGitHubRelease(): Promise<GitHubRelease> {
     try {
       const response = await fetch('https://api.github.com/repos/immich-app/immich/releases/latest');
