@@ -91,11 +91,13 @@
     </div>
 
     <div class="m-4 flex flex-col gap-2">
-      <PasswordField bind:password autocomplete="new-password" label="Password" />
+      <label class="immich-form-label" for="password">Password</label>
+      <PasswordField id="password" bind:password autocomplete="new-password" />
     </div>
 
     <div class="m-4 flex flex-col gap-2">
-      <PasswordField bind:password={confirmPassword} autocomplete="new-password" label="Confirm Password" />
+      <label class="immich-form-label" for="confirmPassword">Confirm Password</label>
+      <PasswordField id="confirmPassword" bind:password={confirmPassword} autocomplete="new-password" />
     </div>
 
     <div class="m-4 flex flex-col gap-2">

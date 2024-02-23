@@ -56,11 +56,13 @@
   </div>
 
   <div class="flex flex-col gap-2">
-    <PasswordField bind:password autocomplete="new-password" label="Admin Password" />
+    <label class="immich-form-label" for="password">Admin Password</label>
+    <PasswordField id="password" bind:password autocomplete="new-password" />
   </div>
 
   <div class="flex flex-col gap-2">
-    <PasswordField bind:password={confirmPassword} autocomplete="new-password" label="Confirm Admin Password" />
+    <label class="immich-form-label" for="confirmPassword">Confirm Admin Password</label>
+    <PasswordField id="confirmPassword" bind:password={confirmPassword} autocomplete="new-password" />
   </div>
 
   <div class="flex flex-col gap-2">

@@ -112,7 +112,8 @@
     </div>
 
     <div class="flex flex-col gap-2">
-      <PasswordField bind:password label="Password" />
+      <label class="immich-form-label" for="password">Password</label>
+      <PasswordField id="password" bind:password autocomplete="current-password" />
     </div>
 
     <div class="my-5 flex w-full">

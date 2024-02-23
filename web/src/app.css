@@ -103,10 +103,6 @@ input:focus-visible {
     @apply font-medium text-gray-500 dark:text-gray-300;
   }
 
-  .immich-form-password {
-    @apply bg-slate-200 text-sm disabled:cursor-not-allowed disabled:bg-gray-400 disabled:text-gray-200 dark:bg-gray-600 dark:text-immich-dark-fg dark:disabled:bg-gray-800;
-  }
-
   /* width */
   .immich-scrollbar::-webkit-scrollbar {
     width: 8px;

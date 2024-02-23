@@ -1,50 +1,49 @@
 <script lang="ts">
-  import { mdiEyeOutline, mdiEyeClosed } from '@mdi/js';
+  import { mdiEyeOffOutline, mdiEyeOutline } from '@mdi/js';
+  import type { HTMLInputAttributes } from 'svelte/elements';
   import Icon from '../elements/icon.svelte';
 
-  export let password: string;
-  export let label: string;
-  export let autocomplete: string = 'current-password';
+  interface $$Props extends HTMLInputAttributes {
+    password: string;
+    autocomplete: string;
+    required?: boolean;
+    onInput?: (value: string) => void;
+  }
+
+  export let password: $$Props['password'];
+  export let required = true;
+  export let onInput: $$Props['onInput'] = undefined;
 
   let showPassword = false;
-  $: passwordFieldType = showPassword ? 'text' : 'password';
-
-  const handleInput = (e: Event) => {
-    password = (e.target as HTMLInputElement).value;
-  };
 </script>
 
-<label class="immich-form-label" for="password">{label}</label>
-<div class="immich-form-input">
+<div class="relative w-full">
   <input
-    class="immich-form-password"
-    id="password"
-    name="password"
-    type={passwordFieldType}
-    {autocomplete}
-    required
-    on:input={handleInput}
+    {...$$restProps}
+    class="immich-form-input w-full !pr-12"
+    type={showPassword ? 'text' : 'password'}
+    {required}
+    value={password}
+    on:input={(e) => {
+      password = e.currentTarget.value;
+      onInput?.(password);
+    }}
   />
-  <button type="button" on:click={() => (showPassword = !showPassword)}>
-    {#if showPassword}
-      <Icon path={mdiEyeOutline} size="20" color="#8f96a3" ariaLabel="Hide {label}" />
-    {:else}
-      <Icon path={mdiEyeClosed} size="20" color="#8f96a3" ariaLabel="Show {label}" />
-    {/if}
-  </button>
+
+  {#if password.length > 0}
+    <button
+      type="button"
+      class="absolute inset-y-0 end-0 pe-4 text-gray-700 dark:text-gray-200"
+      on:click={() => (showPassword = !showPassword)}
+      title={showPassword ? 'Hide password' : 'Show password'}
+    >
+      <Icon path={showPassword ? mdiEyeOffOutline : mdiEyeOutline} size="1.25em" />
+    </button>
+  {/if}
 </div>
 
 <style>
-  div {
-    display: flex;
-    flex-direction: row;
-  }
-
-  input {
-    flex-grow: 2;
-  }
-
-  button {
-    width: 25px;
+  input::-ms-reveal {
+    display: none;
   }
 </style>

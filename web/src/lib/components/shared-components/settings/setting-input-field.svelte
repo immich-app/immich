@@ -10,8 +10,7 @@
 <script lang="ts">
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
-  import { mdiEyeOutline, mdiEyeClosed } from '@mdi/js';
-  import Icon from '../../elements/icon.svelte';
+  import PasswordField from '../password-field.svelte';
 
   export let inputType: SettingInputFieldType;
   export let value: string | number;
@@ -70,7 +69,7 @@
     <slot name="desc" />
   {/if}
 
-  {#if inputType != SettingInputFieldType.PASSWORD}
+  {#if inputType !== SettingInputFieldType.PASSWORD}
     <input
       class="immich-form-input w-full pb-2"
       aria-describedby={desc ? `${label}-desc` : undefined}
@@ -88,41 +87,18 @@
       {title}
     />
   {:else}
-    <div class="immich-form-input w-full pb-2" style="display: flex; flex-direction: row;">
-      <input
-        class="immich-form-password"
-        aria-describedby={desc ? `${label}-desc` : undefined}
-        aria-labelledby="{label}-label"
-        id={label}
-        name={label}
-        type={fieldType}
-        min={min.toString()}
-        max={max.toString()}
-        autocomplete={passwordAutocomplete}
-        {step}
-        {required}
-        {value}
-        on:input={handleInput}
-        {disabled}
-        {title}
-      />
-      <button type="button" on:click={() => (showPassword = !showPassword)}>
-        {#if showPassword}
-          <Icon path={mdiEyeOutline} size="20" color="#8f96a3" ariaLabel="Hide {label}" />
-        {:else}
-          <Icon path={mdiEyeClosed} size="20" color="#8f96a3" ariaLabel="Show {label}" />
-        {/if}
-      </button>
-    </div>
+    <PasswordField
+      aria-describedby={desc ? `${label}-desc` : undefined}
+      aria-labelledby="{label}-label"
+      id={label}
+      name={label}
+      type={fieldType}
+      autocomplete={passwordAutocomplete}
+      {required}
+      password={value.toString()}
+      onInput={(passwordValue) => (value = passwordValue)}
+      {disabled}
+      {title}
+    />
   {/if}
 </div>
-
-<style>
-  input {
-    flex-grow: 2;
-  }
-
-  button {
-    width: 25px;
-  }
-</style>

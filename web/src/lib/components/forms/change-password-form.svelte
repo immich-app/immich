@@ -46,11 +46,13 @@
 
 <form on:submit|preventDefault={changePassword} method="post" class="mt-5 flex flex-col gap-5">
   <div class="flex flex-col gap-2">
-    <PasswordField bind:password autocomplete="new-password" label="New Password" />
+    <label class="immich-form-label" for="password">New Password</label>
+    <PasswordField id="password" bind:password autocomplete="new-password" />
   </div>
 
   <div class="flex flex-col gap-2">
-    <PasswordField bind:password={passwordConfirm} autocomplete="current-password" label="Confirm Password" />
+    <label class="immich-form-label" for="confirmPassword">Confirm Password</label>
+    <PasswordField id="confirmPassword" bind:password={passwordConfirm} autocomplete="new-password" />
   </div>
 
   {#if errorMessage}
