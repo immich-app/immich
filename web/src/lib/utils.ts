@@ -194,3 +194,9 @@ export const findLocale = (code: string | undefined) => {
     name: language?.name,
   };
 };
+
+export const asyncTimeout = (ms: number) => {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+};

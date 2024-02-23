@@ -29,7 +29,7 @@ export const openFileUploadDialog = async (albumId?: string | undefined) => {
       fileSelector.type = 'file';
       fileSelector.multiple = true;
       fileSelector.accept = extensions.join(',');
-      fileSelector.addEventListener('change', async (e: Event) => {
+      fileSelector.addEventListener('change', (e: Event) => {
         const target = e.target as HTMLInputElement;
         if (!target.files) {
           return;
