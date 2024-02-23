@@ -180,7 +180,10 @@ class MapPage extends HookConsumerWidget {
       }
 
       // Since we only have a single asset, we can just show GroupAssetBy.none
-      final renderList = await RenderList.fromAssets([asset], GroupAssetsBy.none,);
+      final renderList = await RenderList.fromAssets(
+        [asset],
+        GroupAssetsBy.none,
+      );
 
       context.pushRoute(
         GalleryViewerRoute(

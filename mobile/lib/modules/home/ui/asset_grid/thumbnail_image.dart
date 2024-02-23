@@ -7,7 +7,6 @@ import 'package:isar/isar.dart';
 
 /// Shows the thumbnail images in the asset grid view
 class ThumbnailImage extends StatelessWidget {
-
   /// The asset to show the thumbnail image for
   final Asset asset;
 
