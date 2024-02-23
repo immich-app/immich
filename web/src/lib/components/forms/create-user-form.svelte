@@ -92,7 +92,7 @@
 
     <div class="m-4 flex flex-col gap-2">
       <label class="immich-form-label" for="password">Password</label>
-      <PasswordField id="password" bind:password autocomplete="new-password" />
+      <PasswordField id="password" name="password" bind:password autocomplete="new-password" />
     </div>
 
     <div class="m-4 flex flex-col gap-2">
