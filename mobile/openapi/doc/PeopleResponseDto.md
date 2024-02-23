@@ -8,6 +8,7 @@ import 'package:openapi/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
+**hidden** | **int** |  | 
 **people** | [**List<PersonResponseDto>**](PersonResponseDto.md) |  | [default to const []]
 **total** | **int** |  | 
 

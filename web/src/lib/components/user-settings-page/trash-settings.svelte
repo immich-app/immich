@@ -1,7 +1,7 @@
 <script lang="ts">
-  import SettingSwitch from '../admin-page/settings/setting-switch.svelte';
   import { showDeleteModal } from '$lib/stores/preferences.store';
   import { fade } from 'svelte/transition';
+  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
 </script>
 
 <section class="my-4">

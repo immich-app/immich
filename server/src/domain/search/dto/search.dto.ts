@@ -23,6 +23,7 @@ class BaseSearchDto {
   isArchived?: boolean;
 
   @QueryBoolean({ optional: true })
+  @ApiProperty({ default: false })
   withArchived?: boolean;
 
   @QueryBoolean({ optional: true })
@@ -118,6 +119,9 @@ class BaseSearchDto {
   @Type(() => Number)
   @Optional()
   size?: number;
+
+  @QueryBoolean({ optional: true })
+  isNotInAlbum?: boolean;
 }
 
 export class MetadataSearchDto extends BaseSearchDto {
@@ -169,9 +173,6 @@ export class MetadataSearchDto extends BaseSearchDto {
   @Optional()
   @ApiProperty({ enumName: 'AssetOrder', enum: AssetOrder })
   order?: AssetOrder;
-
-  @QueryBoolean({ optional: true })
-  isNotInAlbum?: boolean;
 
   @Optional()
   personIds?: string[];

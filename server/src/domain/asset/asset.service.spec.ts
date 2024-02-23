@@ -706,7 +706,7 @@ describe(AssetService.name, () => {
         stackParentId: 'parent',
       });
 
-      expect(communicationMock.send).toHaveBeenCalledWith(ClientEvent.ASSET_UPDATE, authStub.user1.user.id, [
+      expect(communicationMock.send).toHaveBeenCalledWith(ClientEvent.ASSET_STACK_UPDATE, authStub.user1.user.id, [
         'asset-1',
         'parent',
       ]);

@@ -1,6 +1,6 @@
 {
   "name": "immich",
-  "version": "1.94.1",
+  "version": "1.95.1",
   "description": "",
   "author": "",
   "private": true,
@@ -56,8 +56,8 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
     "cookie-parser": "^1.4.6",
-    "exiftool-vendored": "~24.4.0",
-    "exiftool-vendored.pl": "12.73",
+    "exiftool-vendored": "~24.5.0",
+    "exiftool-vendored.pl": "12.76",
     "fluent-ffmpeg": "^2.1.2",
     "geo-tz": "^8.0.0",
     "glob": "^10.3.3",
@@ -161,6 +161,6 @@
     "globalSetup": "<rootDir>/test/global-setup.js"
   },
   "volta": {
-    "node": "20.11.0"
+    "node": "20.11.1"
   }
 }

@@ -1,23 +1,16 @@
 <script lang="ts">
-  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
-  import ProgressBar, { ProgressBarStatus } from '../shared-components/progress-bar/progress-bar.svelte';
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import ProgressBar, { ProgressBarStatus } from '$lib/components/shared-components/progress-bar/progress-bar.svelte';
+  import SlideshowSettings from '$lib/components/slideshow-settings.svelte';
   import { slideshowStore } from '$lib/stores/slideshow.store';
+  import { mdiChevronLeft, mdiChevronRight, mdiClose, mdiCog, mdiPause, mdiPlay } from '@mdi/js';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
-  import {
-    mdiChevronLeft,
-    mdiChevronRight,
-    mdiClose,
-    mdiPause,
-    mdiPlay,
-    mdiShuffle,
-    mdiShuffleDisabled,
-  } from '@mdi/js';
 
-  const { slideshowShuffle } = slideshowStore;
-  const { restartProgress, stopProgress } = slideshowStore;
+  const { restartProgress, stopProgress, slideshowDelay, showProgressBar } = slideshowStore;
 
   let progressBarStatus: ProgressBarStatus;
   let progressBar: ProgressBar;
+  let showSettings = false;
 
   let unsubscribeRestart: () => void;
   let unsubscribeStop: () => void;
@@ -54,25 +47,27 @@
 </script>
 
 <div class="m-4 flex gap-2">
-  <CircleIconButton icon={mdiClose} on:click={() => dispatch('close')} title="Exit Slideshow" />
-  {#if $slideshowShuffle}
-    <CircleIconButton icon={mdiShuffle} on:click={() => ($slideshowShuffle = false)} title="Shuffle" />
-  {:else}
-    <CircleIconButton icon={mdiShuffleDisabled} on:click={() => ($slideshowShuffle = true)} title="No shuffle" />
-  {/if}
+  <CircleIconButton buttonSize="50" icon={mdiClose} on:click={() => dispatch('close')} title="Exit Slideshow" />
   <CircleIconButton
+    buttonSize="50"
     icon={progressBarStatus === ProgressBarStatus.Paused ? mdiPlay : mdiPause}
     on:click={() => (progressBarStatus === ProgressBarStatus.Paused ? progressBar.play() : progressBar.pause())}
     title={progressBarStatus === ProgressBarStatus.Paused ? 'Play' : 'Pause'}
   />
-  <CircleIconButton icon={mdiChevronLeft} on:click={() => dispatch('prev')} title="Previous" />
-  <CircleIconButton icon={mdiChevronRight} on:click={() => dispatch('next')} title="Next" />
+  <CircleIconButton buttonSize="50" icon={mdiChevronLeft} on:click={() => dispatch('prev')} title="Previous" />
+  <CircleIconButton buttonSize="50" icon={mdiChevronRight} on:click={() => dispatch('next')} title="Next" />
+  <CircleIconButton buttonSize="50" icon={mdiCog} on:click={() => (showSettings = !showSettings)} title="Next" />
 </div>
+
+{#if showSettings}
+  <SlideshowSettings onClose={() => (showSettings = false)} />
+{/if}
 
 <ProgressBar
   autoplay
+  hidden={!$showProgressBar}
+  duration={$slideshowDelay}
   bind:this={progressBar}
   bind:status={progressBarStatus}
   on:done={() => dispatch('next')}
-  duration={5000}
 />

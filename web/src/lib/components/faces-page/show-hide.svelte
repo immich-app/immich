@@ -6,6 +6,7 @@
   import { createEventDispatcher } from 'svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { mdiClose, mdiEye, mdiEyeOff, mdiRestart } from '@mdi/js';
+  import { locale } from '$lib/stores/preferences.store';
 
   const dispatch = createEventDispatcher<{
     close: void;
@@ -17,6 +18,7 @@
   export let showLoadingSpinner: boolean;
   export let toggleVisibility: boolean;
   export let screenHeight: number;
+  export let countTotalPeople: number;
 </script>
 
 <section
@@ -28,7 +30,10 @@
   >
     <div class="flex items-center">
       <CircleIconButton icon={mdiClose} on:click={() => dispatch('close')} />
-      <p class="ml-4 hidden sm:block">Show & hide people</p>
+      <div class="flex gap-2 items-center">
+        <p class="ml-2">Show & hide people</p>
+        <p class="text-sm text-gray-400 dark:text-gray-600">({countTotalPeople.toLocaleString($locale)})</p>
+      </div>
     </div>
     <div class="flex items-center justify-end">
       <div class="flex items-center md:mr-8">
@@ -47,7 +52,7 @@
     </div>
   </div>
 
-  <div class="flex w-full flex-wrap gap-1 bg-immich-bg p-2 pb-8 dark:bg-immich-dark-bg md:px-8 mt-16">
+  <div class="flex flex-wrap gap-1 bg-immich-bg p-2 pb-8 dark:bg-immich-dark-bg md:px-8 mt-16">
     <slot />
   </div>
 </section>

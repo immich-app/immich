@@ -167,7 +167,7 @@ export class AuditService {
       `Found ${libraryFiles.size} original files, ${thumbFiles.size} thumbnails, ${videoFiles.size} encoded videos, ${profileFiles.size} profile files`,
     );
     const pagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (options) =>
-      this.assetRepository.getAll(options, { withDeleted: true }),
+      this.assetRepository.getAll(options, { withDeleted: true, withArchived: true }),
     );
 
     let assetCount = 0;

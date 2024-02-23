@@ -4,6 +4,8 @@ import {
   LibraryStatsResponseDto,
   ScanLibraryDto,
   UpdateLibraryDto,
+  ValidateLibraryDto,
+  ValidateLibraryResponseDto,
 } from '@app/domain';
 import request from 'supertest';
 
@@ -57,5 +59,13 @@ export const libraryApi = {
       .send(data);
     expect(status).toBe(200);
     return body as LibraryResponseDto;
+  },
+  validate: async (server: any, accessToken: string, id: string, data: ValidateLibraryDto) => {
+    const { body, status } = await request(server)
+      .post(`/library/${id}/validate`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send(data);
+    expect(status).toBe(200);
+    return body as ValidateLibraryResponseDto;
   },
 };

@@ -51,7 +51,7 @@ class MetadataSearchDto {
     this.updatedAfter,
     this.updatedBefore,
     this.webpPath,
-    this.withArchived,
+    this.withArchived = false,
     this.withDeleted,
     this.withExif,
     this.withPeople,
@@ -356,13 +356,7 @@ class MetadataSearchDto {
   ///
   String? webpPath;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  bool? withArchived;
+  bool withArchived;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -483,7 +477,7 @@ class MetadataSearchDto {
     (updatedAfter == null ? 0 : updatedAfter!.hashCode) +
     (updatedBefore == null ? 0 : updatedBefore!.hashCode) +
     (webpPath == null ? 0 : webpPath!.hashCode) +
-    (withArchived == null ? 0 : withArchived!.hashCode) +
+    (withArchived.hashCode) +
     (withDeleted == null ? 0 : withDeleted!.hashCode) +
     (withExif == null ? 0 : withExif!.hashCode) +
     (withPeople == null ? 0 : withPeople!.hashCode) +
@@ -680,11 +674,7 @@ class MetadataSearchDto {
     } else {
     //  json[r'webpPath'] = null;
     }
-    if (this.withArchived != null) {
       json[r'withArchived'] = this.withArchived;
-    } else {
-    //  json[r'withArchived'] = null;
-    }
     if (this.withDeleted != null) {
       json[r'withDeleted'] = this.withDeleted;
     } else {
@@ -756,7 +746,7 @@ class MetadataSearchDto {
         updatedAfter: mapDateTime(json, r'updatedAfter', r''),
         updatedBefore: mapDateTime(json, r'updatedBefore', r''),
         webpPath: mapValueOfType<String>(json, r'webpPath'),
-        withArchived: mapValueOfType<bool>(json, r'withArchived'),
+        withArchived: mapValueOfType<bool>(json, r'withArchived') ?? false,
         withDeleted: mapValueOfType<bool>(json, r'withDeleted'),
         withExif: mapValueOfType<bool>(json, r'withExif'),
         withPeople: mapValueOfType<bool>(json, r'withPeople'),

@@ -50,6 +50,7 @@ describe(`${AssetController.name} (e2e)`, () => {
   let asset3: AssetResponseDto;
   let asset4: AssetResponseDto;
   let asset5: AssetResponseDto;
+  let asset6: AssetResponseDto;
 
   const createAsset = async (
     loginResponse: LoginResponseDto,
@@ -96,12 +97,11 @@ describe(`${AssetController.name} (e2e)`, () => {
   beforeEach(async () => {
     await testApp.reset({ entities: [AssetEntity, AssetStackEntity] });
 
-    [asset1, asset2, asset3, asset4, asset5] = await Promise.all([
+    [asset1, asset2, asset3, asset4, asset5, asset6] = await Promise.all([
       createAsset(user1, new Date('1970-01-01')),
       createAsset(user1, new Date('1970-02-10')),
       createAsset(user1, new Date('1970-02-11'), {
         isFavorite: true,
-        isArchived: true,
         isExternal: true,
         isReadOnly: true,
         type: AssetType.VIDEO,
@@ -117,6 +117,9 @@ describe(`${AssetController.name} (e2e)`, () => {
       createAsset(user2, new Date('1970-01-01')),
       createAsset(user1, new Date('1970-01-01'), {
         deletedAt: yesterday.toJSDate(),
+      }),
+      createAsset(user1, new Date('1970-02-11'), {
+        isArchived: true,
       }),
     ]);
 
@@ -275,14 +278,14 @@ describe(`${AssetController.name} (e2e)`, () => {
         should: 'should search by isArchived (true)',
         deferred: () => ({
           query: { isArchived: true },
-          assets: [asset3],
+          assets: [asset6],
         }),
       },
       {
         should: 'should search by isArchived (false)',
         deferred: () => ({
           query: { isArchived: false },
-          assets: [asset2, asset1],
+          assets: [asset3, asset2, asset1],
         }),
       },
       {
@@ -311,6 +314,20 @@ describe(`${AssetController.name} (e2e)`, () => {
         deferred: () => ({
           query: { type: 'VIDEO' },
           assets: [asset3],
+        }),
+      },
+      {
+        should: 'should search by withArchived (true)',
+        deferred: () => ({
+          query: { withArchived: true },
+          assets: [asset3, asset6, asset2, asset1],
+        }),
+      },
+      {
+        should: 'should search by withArchived (false)',
+        deferred: () => ({
+          query: { withArchived: false },
+          assets: [asset3, asset2, asset1],
         }),
       },
       {
@@ -514,8 +531,8 @@ describe(`${AssetController.name} (e2e)`, () => {
 
         expect(status).toBe(200);
         expect(body.length).toBe(assets.length);
-        for (let i = 0; i < assets.length; i++) {
-          expect(body[i]).toEqual(expect.objectContaining({ id: assets[i].id }));
+        for (const [i, asset] of assets.entries()) {
+          expect(body[i]).toEqual(expect.objectContaining({ id: asset.id }));
         }
       });
     }
@@ -682,7 +699,7 @@ describe(`${AssetController.name} (e2e)`, () => {
 
     it("should not upload to another user's library", async () => {
       const content = randomBytes(32);
-      const library = (await api.libraryApi.getAll(server, user2.accessToken))[0];
+      const [library] = await api.libraryApi.getAll(server, user2.accessToken);
       await api.assetApi.upload(server, user1.accessToken, 'example-image', { content });
 
       const { body, status } = await request(server)
@@ -902,7 +919,7 @@ describe(`${AssetController.name} (e2e)`, () => {
         .get('/asset/statistics')
         .set('Authorization', `Bearer ${user1.accessToken}`);
 
-      expect(body).toEqual({ images: 5, videos: 1, total: 6 });
+      expect(body).toEqual({ images: 6, videos: 1, total: 7 });
       expect(status).toBe(200);
     });
 
@@ -923,7 +940,7 @@ describe(`${AssetController.name} (e2e)`, () => {
         .query({ isArchived: true });
 
       expect(status).toBe(200);
-      expect(body).toEqual({ images: 2, videos: 1, total: 3 });
+      expect(body).toEqual({ images: 3, videos: 0, total: 3 });
     });
 
     it('should return stats of all favored and archived assets', async () => {
@@ -933,7 +950,7 @@ describe(`${AssetController.name} (e2e)`, () => {
         .query({ isFavorite: true, isArchived: true });
 
       expect(status).toBe(200);
-      expect(body).toEqual({ images: 1, videos: 1, total: 2 });
+      expect(body).toEqual({ images: 1, videos: 0, total: 1 });
     });
 
     it('should return stats of all assets neither favored nor archived', async () => {
@@ -1041,7 +1058,7 @@ describe(`${AssetController.name} (e2e)`, () => {
         expect.arrayContaining([
           { count: 1, timeBucket: '2023-11-01T00:00:00.000Z' },
           { count: 1, timeBucket: '1970-01-01T00:00:00.000Z' },
-          { count: 1, timeBucket: '1970-02-01T00:00:00.000Z' },
+          { count: 2, timeBucket: '1970-02-01T00:00:00.000Z' },
         ]),
       );
     });
@@ -1198,8 +1215,13 @@ describe(`${AssetController.name} (e2e)`, () => {
         .set('Authorization', `Bearer ${user1.accessToken}`);
 
       expect(status).toBe(200);
-      expect(body).toHaveLength(1);
-      expect(body).toEqual(expect.arrayContaining([expect.objectContaining({ id: asset2.id })]));
+      expect(body).toHaveLength(2);
+      expect(body).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ id: asset2.id }),
+          expect.objectContaining({ id: asset3.id }),
+        ]),
+      );
     });
 
     it('should get all map markers', async () => {
@@ -1209,8 +1231,13 @@ describe(`${AssetController.name} (e2e)`, () => {
         .query({ isArchived: false });
 
       expect(status).toBe(200);
-      expect(body).toHaveLength(1);
-      expect(body).toEqual([expect.objectContaining({ id: asset2.id })]);
+      expect(body).toHaveLength(2);
+      expect(body).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ id: asset2.id }),
+          expect.objectContaining({ id: asset3.id }),
+        ]),
+      );
     });
   });
 

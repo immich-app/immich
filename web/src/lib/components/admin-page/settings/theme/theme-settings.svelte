@@ -4,8 +4,8 @@
   import { createEventDispatcher } from 'svelte';
   import { fade } from 'svelte/transition';
   import type { SettingsEventType } from '../admin-settings';
-  import SettingButtonsRow from '../setting-buttons-row.svelte';
-  import SettingTextarea from '../setting-textarea.svelte';
+  import SettingTextarea from '$lib/components/shared-components/settings/setting-textarea.svelte';
+  import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;

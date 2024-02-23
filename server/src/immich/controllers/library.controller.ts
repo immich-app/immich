@@ -6,8 +6,10 @@ import {
   LibraryResponseDto as ResponseDto,
   ScanLibraryDto,
   UpdateLibraryDto as UpdateDto,
+  ValidateLibraryDto,
+  ValidateLibraryResponseDto,
 } from '@app/domain';
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Auth, Authenticated } from '../app.guard';
 import { UseValidation } from '../app.utils';
@@ -38,6 +40,16 @@ export class LibraryController {
   @Get(':id')
   getLibraryInfo(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<ResponseDto> {
     return this.service.get(auth, id);
+  }
+
+  @Post(':id/validate')
+  @HttpCode(200)
+  validate(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+    @Body() dto: ValidateLibraryDto,
+  ): Promise<ValidateLibraryResponseDto> {
+    return this.service.validate(auth, id, dto);
   }
 
   @Delete(':id')
