@@ -503,7 +503,7 @@
           <p class="immich-form-label">MEDIA TYPE</p>
 
           <div class="flex gap-5 mt-1 text-base">
-            <label for="type-all" class="flex items-center gap-1 text-black dark:text-white">
+            <label for="type-all" class="flex items-center gap-1">
               <input
                 bind:group={filter.mediaType}
                 value={MediaType.All}
@@ -515,7 +515,7 @@
               <span class="pt-0.5">All</span>
             </label>
 
-            <label for="type-image" class="flex items-center gap-1 text-black dark:text-white">
+            <label for="type-image" class="flex items-center gap-1">
               <input
                 bind:group={filter.mediaType}
                 value={MediaType.Image}
@@ -527,7 +527,7 @@
               <span class="pt-0.5">Image</span>
             </label>
 
-            <label for="type-video" class="flex items-center gap-1 text-black dark:text-white">
+            <label for="type-video" class="flex items-center gap-1">
               <input
                 bind:group={filter.mediaType}
                 value={MediaType.Video}
