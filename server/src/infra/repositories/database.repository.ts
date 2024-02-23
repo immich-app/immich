@@ -26,7 +26,6 @@ export class DatabaseRepository implements IDatabaseRepository {
 
   constructor(@InjectDataSource() private dataSource: DataSource) {}
 
-  @Span('db.get_extension_version')
   async getExtensionVersion(extension: DatabaseExtension): Promise<Version | null> {
     const res = await this.dataSource.query(`SELECT extversion FROM pg_extension WHERE extname = $1`, [extension]);
     const extVersion = res[0]?.['extversion'];
