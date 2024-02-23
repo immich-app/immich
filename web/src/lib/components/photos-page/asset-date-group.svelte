@@ -80,7 +80,11 @@
     });
   }
 
-  const assetClickHandler = async (asset: AssetResponseDto, assetsInDateGroup: AssetResponseDto[], groupTitle: string) => {
+  const assetClickHandler = async (
+    asset: AssetResponseDto,
+    assetsInDateGroup: AssetResponseDto[],
+    groupTitle: string,
+  ) => {
     if (isSelectionMode || $isMultiSelectState) {
       assetSelectHandler(asset, assetsInDateGroup, groupTitle);
       return;

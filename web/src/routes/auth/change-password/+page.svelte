@@ -19,9 +19,12 @@
     enter the new password below.
   </p>
 
-  <ChangePasswordForm user={$user} on:success={async () => {
-    await goto(AppRoute.AUTH_LOGIN)
-    resetSavedUser();
-    await logout();
-  }} />
+  <ChangePasswordForm
+    user={$user}
+    on:success={async () => {
+      await goto(AppRoute.AUTH_LOGIN);
+      resetSavedUser();
+      await logout();
+    }}
+  />
 </FullscreenContainer>
