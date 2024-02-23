@@ -9,6 +9,7 @@
   import { onMount } from 'svelte';
   import { fade } from 'svelte/transition';
   import Button from '../elements/buttons/button.svelte';
+  import PasswordField from '../shared-components/password-field.svelte';
 
   export let onSuccess: () => unknown | Promise<unknown>;
   export let onFirstLogin: () => unknown | Promise<unknown>;
@@ -111,16 +112,7 @@
     </div>
 
     <div class="flex flex-col gap-2">
-      <label class="immich-form-label" for="password">Password</label>
-      <input
-        class="immich-form-input"
-        id="password"
-        name="password"
-        type="password"
-        autocomplete="current-password"
-        bind:value={password}
-        required
-      />
+      <PasswordField bind:password label="Password" />
     </div>
 
     <div class="my-5 flex w-full">
