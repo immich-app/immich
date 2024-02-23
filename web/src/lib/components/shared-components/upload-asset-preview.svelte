@@ -45,7 +45,7 @@
       />
 
       <div
-        class="relative mt-[5px] h-[15px] w-full rounded-md bg-gray-300 text-white dark:bg-immich-dark-gray dark:text-black"
+        class="relative mt-[5px] h-[15px] w-full rounded-md bg-gray-300 text-white dark:bg-immich-dark-gray"
         class:dark:text-black={uploadAsset.state === UploadState.STARTED}
       >
         {#if uploadAsset.state === UploadState.STARTED}
