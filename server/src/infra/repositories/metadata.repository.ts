@@ -17,13 +17,13 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DefaultReadTaskOptions, exiftool, Tags } from 'exiftool-vendored';
 import * as geotz from 'geo-tz';
 import { getName } from 'i18n-iso-countries';
+import { Span } from 'nestjs-otel';
 import { createReadStream, existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import * as readLine from 'node:readline';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity.js';
 import { DummyValue, GenerateSql } from '../infra.util';
-import { Span } from 'nestjs-otel';
 import { DecorateAll } from '../infra.utils';
 
 @DecorateAll(Span())

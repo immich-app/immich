@@ -11,7 +11,7 @@ import { OpenTelemetryModuleOptions } from 'nestjs-otel/lib/interfaces';
 
 class CustomConsoleSpanExporter extends ConsoleSpanExporter {
   export(spans: ReadableSpan[], resultCallback: (result: ExportResult) => void) {
-    const logs = []
+    const logs = [];
     for (const span of spans) {
       logs.push(`[${span.spanContext().traceId}] ${span.name}: ${span.duration[0] / 1e3 + span.duration[1] / 1e6}ms`);
     }
@@ -32,7 +32,7 @@ const otelSDK = new NodeSDK({
     new HttpInstrumentation(),
     new IORedisInstrumentation(),
     new NestInstrumentation(),
-    new PgInstrumentation(),
+    // new PgInstrumentation(),
   ],
 });
 

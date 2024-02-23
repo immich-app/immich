@@ -1,8 +1,8 @@
 import { AuditSearch, IAuditRepository } from '@app/domain';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Span } from 'nestjs-otel';
 import { LessThan, MoreThan, Repository } from 'typeorm';
 import { AuditEntity } from '../entities';
-import { Span } from 'nestjs-otel';
 import { DecorateAll } from '../infra.utils';
 
 @DecorateAll(Span())

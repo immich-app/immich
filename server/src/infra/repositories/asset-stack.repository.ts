@@ -1,9 +1,9 @@
 import { IAssetStackRepository } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Span } from 'nestjs-otel';
 import { Repository } from 'typeorm';
 import { AssetStackEntity } from '../entities';
-import { Span } from 'nestjs-otel';
 import { DecorateAll } from '../infra.utils';
 
 @DecorateAll(Span())

@@ -33,6 +33,7 @@ import { Global, Module, Provider } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { OpenTelemetryModule } from 'nestjs-otel';
 import { databaseConfig } from './database.config';
 import { databaseEntities } from './entities';
 import { bullConfig, bullQueues } from './infra.config';
@@ -65,7 +66,6 @@ import {
   UserRepository,
   UserTokenRepository,
 } from './repositories';
-import { OpenTelemetryModule } from 'nestjs-otel';
 import { otelConfig } from './tracing';
 
 const providers: Provider[] = [

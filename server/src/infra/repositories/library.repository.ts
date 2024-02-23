@@ -1,11 +1,11 @@
 import { ILibraryRepository, LibraryStatsResponseDto } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Span } from 'nestjs-otel';
 import { IsNull, Not } from 'typeorm';
 import { Repository } from 'typeorm/repository/Repository.js';
 import { LibraryEntity, LibraryType } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';
-import { Span } from 'nestjs-otel';
 import { DecorateAll } from '../infra.utils';
 
 @DecorateAll(Span())

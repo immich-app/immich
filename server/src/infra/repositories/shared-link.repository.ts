@@ -1,10 +1,10 @@
 import { ISharedLinkRepository } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Span } from 'nestjs-otel';
 import { Repository } from 'typeorm';
 import { SharedLinkEntity } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';
-import { Span } from 'nestjs-otel';
 import { DecorateAll } from '../infra.utils';
 
 @DecorateAll(Span())

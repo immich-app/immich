@@ -22,12 +22,11 @@ import {
 import { ImmichLogger } from '@app/infra/logger';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Span } from 'nestjs-otel';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import { vectorExt } from '../database.config';
 import { DummyValue, GenerateSql } from '../infra.util';
-import { asVector, isValidInteger, paginatedBuilder, searchAssetBuilder } from '../infra.utils';
-import { Span } from 'nestjs-otel';
-import { DecorateAll } from '../infra.utils';
+import { DecorateAll, asVector, isValidInteger, paginatedBuilder, searchAssetBuilder } from '../infra.utils';
 
 @DecorateAll(Span())
 @Injectable()

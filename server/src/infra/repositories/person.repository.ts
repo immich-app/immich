@@ -11,12 +11,11 @@ import {
 } from '@app/domain';
 import { InjectRepository } from '@nestjs/typeorm';
 import _ from 'lodash';
+import { Span } from 'nestjs-otel';
 import { FindManyOptions, FindOptionsRelations, FindOptionsSelect, In, Repository } from 'typeorm';
 import { AssetEntity, AssetFaceEntity, PersonEntity } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';
-import { ChunkedArray, asVector, paginate } from '../infra.utils';
-import { Span } from 'nestjs-otel';
-import { DecorateAll } from '../infra.utils';
+import { ChunkedArray, DecorateAll, asVector, paginate } from '../infra.utils';
 
 @DecorateAll(Span())
 export class PersonRepository implements IPersonRepository {

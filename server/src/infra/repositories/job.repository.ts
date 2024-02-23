@@ -15,9 +15,9 @@ import { ModuleRef } from '@nestjs/core';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { Job, JobsOptions, Processor, Queue, Worker, WorkerOptions } from 'bullmq';
 import { CronJob, CronTime } from 'cron';
+import { Span } from 'nestjs-otel';
 import { setTimeout } from 'node:timers/promises';
 import { bullConfig } from '../infra.config';
-import { Span } from 'nestjs-otel';
 import { DecorateAll } from '../infra.utils';
 
 @DecorateAll(Span())

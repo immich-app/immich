@@ -1,9 +1,9 @@
 import { IPartnerRepository, PartnerIds } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Span } from 'nestjs-otel';
 import { DeepPartial, Repository } from 'typeorm';
 import { PartnerEntity } from '../entities';
-import { Span } from 'nestjs-otel';
 import { DecorateAll } from '../infra.utils';
 
 @DecorateAll(Span())

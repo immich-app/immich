@@ -13,11 +13,10 @@ import { vectorExt } from '@app/infra/database.config';
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import AsyncLock from 'async-lock';
-import { DataSource, EntityManager, QueryRunner } from 'typeorm';
-import { isValidInteger } from '../infra.utils';
-import { ImmichLogger } from '../logger';
 import { Span } from 'nestjs-otel';
-import { DecorateAll } from '../infra.utils';
+import { DataSource, EntityManager, QueryRunner } from 'typeorm';
+import { DecorateAll, isValidInteger } from '../infra.utils';
+import { ImmichLogger } from '../logger';
 
 @DecorateAll(Span())
 @Injectable()

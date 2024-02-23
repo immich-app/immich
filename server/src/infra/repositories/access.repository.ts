@@ -1,5 +1,6 @@
 import { IAccessRepository } from '@app/domain';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Span } from 'nestjs-otel';
 import { Brackets, In, Repository } from 'typeorm';
 import {
   ActivityEntity,
@@ -13,9 +14,7 @@ import {
   UserTokenEntity,
 } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';
-import { ChunkedSet } from '../infra.utils';
-import { Span } from 'nestjs-otel';
-import { DecorateAll } from '../infra.utils';
+import { ChunkedSet, DecorateAll } from '../infra.utils';
 
 type IActivityAccess = IAccessRepository['activity'];
 type IAlbumAccess = IAccessRepository['album'];
@@ -25,7 +24,6 @@ type ILibraryAccess = IAccessRepository['library'];
 type ITimelineAccess = IAccessRepository['timeline'];
 type IPersonAccess = IAccessRepository['person'];
 type IPartnerAccess = IAccessRepository['partner'];
-
 
 @DecorateAll(Span())
 class ActivityAccess implements IActivityAccess {
