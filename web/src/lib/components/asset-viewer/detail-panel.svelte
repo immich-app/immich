@@ -113,7 +113,7 @@
     switch (event.key) {
       case 'Enter': {
         if (ctrl && event.target === textArea) {
-          handleFocusOut();
+          await handleFocusOut();
         }
       }
     }
@@ -150,7 +150,7 @@
         message: 'Asset description has been updated',
       });
     } catch (error) {
-      handleError(error, 'Cannot update the description');
+      await handleError(error, 'Cannot update the description');
     }
   };
 
@@ -163,7 +163,7 @@
     try {
       await updateAsset({ id: asset.id, updateAssetDto: { dateTimeOriginal } });
     } catch (error) {
-      handleError(error, 'Unable to change date');
+      await handleError(error, 'Unable to change date');
     }
   }
 
@@ -175,7 +175,7 @@
     try {
       await updateAsset({ id: asset.id, updateAssetDto: { latitude: gps.lat, longitude: gps.lng } });
     } catch (error) {
-      handleError(error, 'Unable to change location');
+      await handleError(error, 'Unable to change location');
     }
   }
 </script>

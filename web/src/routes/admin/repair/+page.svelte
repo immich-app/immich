@@ -84,7 +84,7 @@
 
       matches = [];
     } catch (error) {
-      handleError(error, 'Unable to repair items');
+      await handleError(error, 'Unable to repair items');
     } finally {
       repairing = false;
     }
@@ -109,7 +109,7 @@
 
       notificationController.show({ message: 'Refreshed', type: NotificationType.Info });
     } catch (error) {
-      handleError(error, 'Unable to load items');
+      await handleError(error, 'Unable to load items');
     }
   };
 
@@ -120,7 +120,7 @@
         notificationController.show({ message: `Matched 1 item`, type: NotificationType.Info });
       }
     } catch (error) {
-      handleError(error, 'Unable to check item');
+      await handleError(error, 'Unable to check item');
     }
   };
 
@@ -136,7 +136,7 @@
         count += await loadAndMatch(filenames.slice(index, index + chunkSize));
       }
     } catch (error) {
-      handleError(error, 'Unable to check items');
+      await handleError(error, 'Unable to check items');
     } finally {
       checking = false;
     }

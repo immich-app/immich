@@ -25,7 +25,7 @@
 
       notificationController.show({ message: 'Saved settings', type: NotificationType.Info });
     } catch (error) {
-      handleError(error, 'Unable to update settings');
+      await handleError(error, 'Unable to update settings');
     }
   };
 </script>

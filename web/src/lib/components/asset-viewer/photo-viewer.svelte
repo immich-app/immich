@@ -114,13 +114,13 @@
     setZoomImageState: setZoomImageWheelState,
   } = useZoomImageWheel();
 
-  zoomImageWheelState.subscribe((state) => {
+  zoomImageWheelState.subscribe(async (state) => {
     photoZoomState.set(state);
 
     if (state.currentZoom > 1 && isWebCompatibleImage(asset) && !hasZoomed && !$alwaysLoadOriginalFile) {
       hasZoomed = true;
 
-      loadAssetData({ loadOriginal: true });
+      await loadAssetData({ loadOriginal: true });
     }
   });
 </script>

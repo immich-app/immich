@@ -97,7 +97,7 @@
         await revalidate(false);
       }
     } catch (error) {
-      handleError(error, 'Unable to add import path');
+      await handleError(error, 'Unable to add import path');
     } finally {
       addImportPath = false;
       importPathToAdd = null;
@@ -123,7 +123,7 @@
       }
     } catch (error) {
       editImportPath = null;
-      handleError(error, 'Unable to edit import path');
+      await handleError(error, 'Unable to edit import path');
     } finally {
       editImportPath = null;
     }
@@ -143,7 +143,7 @@
       library.importPaths = library.importPaths.filter((path) => path != pathToDelete);
       await handleValidation();
     } catch (error) {
-      handleError(error, 'Unable to delete import path');
+      await handleError(error, 'Unable to delete import path');
     } finally {
       editImportPath = null;
     }

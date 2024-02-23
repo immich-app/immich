@@ -19,9 +19,9 @@
   const createSharedAlbum = async () => {
     try {
       const newAlbum = await createAlbum({ createAlbumDto: { albumName: '' } });
-      goto(`${AppRoute.ALBUMS}/${newAlbum.id}`);
+      await goto(`${AppRoute.ALBUMS}/${newAlbum.id}`);
     } catch (error) {
-      handleError(error, 'Unable to create album');
+      await handleError(error, 'Unable to create album');
     }
   };
 </script>

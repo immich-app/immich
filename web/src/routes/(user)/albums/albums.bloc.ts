@@ -37,7 +37,7 @@ export const useAlbums = (properties: AlbumsProperties) => {
     try {
       return await createAlbum({ createAlbumDto: { albumName: '' } });
     } catch (error) {
-      handleError(error, 'Unable to create album');
+      await handleError(error, 'Unable to create album');
     }
   }
 

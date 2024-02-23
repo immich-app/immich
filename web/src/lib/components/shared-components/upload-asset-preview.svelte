@@ -13,9 +13,9 @@
 
   export let uploadAsset: UploadAsset;
 
-  const handleRetry = (uploadAsset: UploadAsset) => {
+  const handleRetry = async (uploadAsset: UploadAsset) => {
     uploadAssetsStore.removeUploadAsset(uploadAsset.id);
-    fileUploadHandler([uploadAsset.file], uploadAsset.albumId);
+    await fileUploadHandler([uploadAsset.file], uploadAsset.albumId);
   };
 </script>
 

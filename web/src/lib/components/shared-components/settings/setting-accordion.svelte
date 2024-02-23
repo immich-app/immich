@@ -15,9 +15,9 @@
   isOpen ? syncToUrl(true) : syncFromUrl();
   $: $page.url && syncFromUrl();
 
-  const toggle = () => {
+  const toggle = async () => {
     isOpen = !isOpen;
-    syncToUrl(isOpen);
+    await syncToUrl(isOpen);
   };
 </script>
 

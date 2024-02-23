@@ -75,7 +75,7 @@
     assetInteractionStore.clearMultiselect();
   };
 
-  const handleKeyboardPress = (event: KeyboardEvent) => {
+  const handleKeyboardPress = async (event: KeyboardEvent) => {
     if ($isSearchEnabled || shouldIgnoreShortcut(event)) {
       return;
     }
@@ -98,7 +98,7 @@
         }
         case '/': {
           event.preventDefault();
-          goto(AppRoute.EXPLORE);
+          await goto(AppRoute.EXPLORE);
           return;
         }
         case 'Delete': {
@@ -126,12 +126,12 @@
     }
   };
 
-  function intersectedHandler(event: CustomEvent) {
+  async function intersectedHandler(event: CustomEvent) {
     const element_ = event.detail.container as HTMLElement;
     const target = element_.firstChild as HTMLElement;
     if (target) {
       const bucketDate = target.id.split('_')[1];
-      assetStore.loadBucket(bucketDate, event.detail.position);
+      await assetStore.loadBucket(bucketDate, event.detail.position);
     }
   }
 
@@ -142,7 +142,7 @@
   const handlePrevious = async () => {
     const previousAsset = await assetStore.getPreviousAssetId($viewingAsset.id);
     if (previousAsset) {
-      assetViewingStore.setAssetId(previousAsset);
+      await assetViewingStore.setAssetId(previousAsset);
     }
 
     return !!previousAsset;
@@ -151,7 +151,7 @@
   const handleNext = async () => {
     const nextAsset = await assetStore.getNextAssetId($viewingAsset.id);
     if (nextAsset) {
-      assetViewingStore.setAssetId(nextAsset);
+      await assetViewingStore.setAssetId(nextAsset);
     }
 
     return !!nextAsset;

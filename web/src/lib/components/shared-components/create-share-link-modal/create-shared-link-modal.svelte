@@ -84,7 +84,7 @@
       });
       sharedLink = makeSharedLinkUrl($serverConfig.externalDomain, data.key);
     } catch (error) {
-      handleError(error, 'Failed to create shared link');
+      await handleError(error, 'Failed to create shared link');
     }
   };
 
@@ -153,7 +153,7 @@
 
       dispatch('close');
     } catch (error) {
-      handleError(error, 'Failed to edit shared link');
+      await handleError(error, 'Failed to edit shared link');
     }
   };
 </script>

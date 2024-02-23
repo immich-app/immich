@@ -91,14 +91,14 @@
     try {
       reactions = await getActivities({ assetId, albumId });
     } catch (error) {
-      handleError(error, 'Error when fetching reactions');
+      await handleError(error, 'Error when fetching reactions');
     }
   };
 
-  const handleEnter = (event: KeyboardEvent) => {
+  const handleEnter = async (event: KeyboardEvent) => {
     if (event.key === 'Enter') {
       event.preventDefault();
-      handleSendComment();
+      await handleSendComment();
       return;
     }
   };
@@ -128,7 +128,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, `Can't remove ${reaction.type}`);
+      await handleError(error, `Can't remove ${reaction.type}`);
     }
   };
 
@@ -148,7 +148,7 @@
       // Re-render the activity feed
       reactions = reactions;
     } catch (error) {
-      handleError(error, "Can't add your comment");
+      await handleError(error, "Can't add your comment");
     } finally {
       clearTimeout(timeout);
     }

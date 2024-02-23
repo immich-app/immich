@@ -48,11 +48,11 @@
     await handleCommand(jobId, dto);
   };
 
-  const onConfirm = () => {
+  const onConfirm = async () => {
     if (!confirmJob) {
       return;
     }
-    handleCommand(confirmJob, { command: JobCommand.Start, force: true });
+    await handleCommand(confirmJob, { command: JobCommand.Start, force: true });
     confirmJob = null;
   };
 
@@ -140,7 +140,7 @@
         }
       }
     } catch (error) {
-      handleError(error, `Command '${jobCommand.command}' failed for job: ${title}`);
+      await handleError(error, `Command '${jobCommand.command}' failed for job: ${title}`);
     }
   }
 </script>

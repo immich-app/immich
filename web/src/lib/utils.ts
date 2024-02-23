@@ -139,7 +139,7 @@ export const copyToClipboard = async (secret: string) => {
     await navigator.clipboard.writeText(secret);
     notificationController.show({ message: 'Copied to clipboard!', type: NotificationType.Info });
   } catch (error) {
-    handleError(error, 'Cannot copy to clipboard, make sure you are accessing the page through https');
+    await handleError(error, 'Cannot copy to clipboard, make sure you are accessing the page through https');
   }
 };
 
@@ -172,7 +172,7 @@ export const oauth = {
       window.location.href = url;
       return true;
     } catch (error) {
-      handleError(error, 'Unable to login with OAuth');
+      await handleError(error, 'Unable to login with OAuth');
       return false;
     }
   },

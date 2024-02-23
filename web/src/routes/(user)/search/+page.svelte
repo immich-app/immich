@@ -52,7 +52,7 @@
 
   const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
 
-  const handleKeyboardPress = (event: KeyboardEvent) => {
+  const handleKeyboardPress = async (event: KeyboardEvent) => {
     if (shouldIgnoreShortcut(event)) {
       return;
     }
@@ -64,7 +64,7 @@
             return;
           }
           if (!$preventRaceConditionSearchBar) {
-            goto(previousRoute);
+            await goto(previousRoute);
           }
           $preventRaceConditionSearchBar = false;
           return;
@@ -113,7 +113,7 @@
     nextPage = 1;
     searchResultAssets = [];
     searchResultAlbums = [];
-    loadNextPage();
+    await loadNextPage();
   }
 
   export const loadNextPage = async () => {

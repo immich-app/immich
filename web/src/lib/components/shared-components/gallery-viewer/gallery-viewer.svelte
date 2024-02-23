@@ -48,7 +48,7 @@
     selectedAssets = temporary;
   };
 
-  const navigateAssetForward = () => {
+  const navigateAssetForward = async () => {
     try {
       if (currentViewAssetIndex < assets.length - 1) {
         currentViewAssetIndex++;
@@ -56,11 +56,11 @@
         updateAssetState(selectedAsset.id);
       }
     } catch (error) {
-      handleError(error, 'Cannot navigate to the next asset');
+      await handleError(error, 'Cannot navigate to the next asset');
     }
   };
 
-  const navigateAssetBackward = () => {
+  const navigateAssetBackward = async () => {
     try {
       if (currentViewAssetIndex > 0) {
         currentViewAssetIndex--;
@@ -68,7 +68,7 @@
         updateAssetState(selectedAsset.id);
       }
     } catch (error) {
-      handleError(error, 'Cannot navigate to previous asset');
+      await handleError(error, 'Cannot navigate to previous asset');
     }
   };
 

@@ -33,7 +33,7 @@
       const data = await createApiKey({ apiKeyCreateDto: detail });
       secret = data.secret;
     } catch (error) {
-      handleError(error, 'Unable to create a new API Key');
+      await handleError(error, 'Unable to create a new API Key');
     } finally {
       await refreshKeys();
       newKey = null;
@@ -52,7 +52,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to save API Key');
+      await handleError(error, 'Unable to save API Key');
     } finally {
       await refreshKeys();
       editKey = null;
@@ -71,7 +71,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to remove API Key');
+      await handleError(error, 'Unable to remove API Key');
     } finally {
       await refreshKeys();
       deleteKey = null;

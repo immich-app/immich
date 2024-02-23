@@ -73,16 +73,16 @@
   // Progress should be reset when the current memory or asset changes.
   $: memoryIndex, assetIndex, reset();
 
-  const handleKeyDown = (e: KeyboardEvent) => {
+  const handleKeyDown = async (e: KeyboardEvent) => {
     if (e.key === 'ArrowRight' && canGoForward) {
       e.preventDefault();
-      toNext();
+      await toNext();
     } else if (e.key === 'ArrowLeft' && canGoBack) {
       e.preventDefault();
-      toPrevious();
+      await toPrevious();
     } else if (e.key === 'Escape') {
       e.preventDefault();
-      goto(AppRoute.PHOTOS);
+      await goto(AppRoute.PHOTOS);
     }
   };
 

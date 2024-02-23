@@ -48,7 +48,7 @@
 
       dispatch('editSuccess');
     } catch (error) {
-      handleError(error, 'Unable to update user');
+      await handleError(error, 'Unable to update user');
     }
   };
 
@@ -66,7 +66,7 @@
 
       dispatch('resetPasswordSuccess');
     } catch (error) {
-      handleError(error, 'Unable to reset password');
+      await handleError(error, 'Unable to reset password');
     } finally {
       isShowResetPasswordConfirmation = false;
     }

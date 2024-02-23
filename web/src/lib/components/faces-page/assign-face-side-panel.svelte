@@ -128,7 +128,7 @@
       searchedPeopleCopy = data;
       searchWord = searchName;
     } catch (error) {
-      handleError(error, "Can't search people");
+      await handleError(error, "Can't search people");
     } finally {
       clearTimeout(timeout);
     }

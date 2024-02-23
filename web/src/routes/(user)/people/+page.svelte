@@ -81,12 +81,12 @@
 
   const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
 
-  onMount(() => {
+  onMount(async () => {
     document.addEventListener('keydown', onKeyboardPress);
     const getSearchedPeople = $page.url.searchParams.get(QueryParameter.SEARCHED_PEOPLE);
     if (getSearchedPeople) {
       searchName = getSearchedPeople;
-      handleSearchPeople(true);
+      await handleSearchPeople(true);
     }
   });
 
@@ -108,10 +108,10 @@
     }
   };
 
-  const handleSearch = (force: boolean) => {
+  const handleSearch = async (force: boolean) => {
     $page.url.searchParams.set(QueryParameter.SEARCHED_PEOPLE, searchName);
-    goto($page.url);
-    handleSearchPeople(force);
+    await goto($page.url);
+    await handleSearchPeople(force);
   };
 
   const handleCloseClick = () => {
@@ -184,7 +184,7 @@
         });
       }
     } catch (error) {
-      handleError(
+      await handleError(
         error,
         `Unable to change the visibility for ${changed.length} ${changed.length <= 1 ? 'person' : 'people'}`,
       );
@@ -219,7 +219,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to save name');
+      await handleError(error, 'Unable to save name');
     }
     if (personToBeMergedIn.name !== personName && edittingPerson.id === personToBeMergedIn.id) {
       /*
@@ -245,7 +245,7 @@
         // trigger reactivity
         people = people;
       } catch (error) {
-        handleError(error, 'Unable to save name');
+        await handleError(error, 'Unable to save name');
       }
     }
   };
@@ -287,12 +287,12 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to hide person');
+      await handleError(error, 'Unable to hide person');
     }
   };
 
-  const handleMergePeople = (detail: PersonResponseDto) => {
-    goto(
+  const handleMergePeople = async (detail: PersonResponseDto) => {
+    await goto(
       `${AppRoute.PEOPLE}/${detail.id}?${QueryParameter.ACTION}=${ActionQueryParameterValue.MERGE}&${QueryParameter.PREVIOUS_ROUTE}=${AppRoute.PEOPLE}`,
     );
   };
@@ -301,7 +301,7 @@
     if (searchName === '') {
       if ($page.url.searchParams.has(QueryParameter.SEARCHED_PEOPLE)) {
         $page.url.searchParams.delete(QueryParameter.SEARCHED_PEOPLE);
-        goto($page.url);
+        await goto($page.url);
       }
       return;
     }
@@ -314,7 +314,7 @@
       searchedPeople = await searchPerson({ name: searchName, withHidden: false });
       searchWord = searchName;
     } catch (error) {
-      handleError(error, "Can't search people");
+      await handleError(error, "Can't search people");
     } finally {
       clearTimeout(timeout);
     }
@@ -329,7 +329,7 @@
       return;
     }
     if (personName === '') {
-      changeName();
+      await changeName();
       return;
     }
     const data = await searchPerson({ name: personName, withHidden: true });
@@ -357,7 +357,7 @@
         .slice(0, 3);
       return;
     }
-    changeName();
+    await changeName();
   };
 
   const submitBirthDateChange = async (value: string) => {
@@ -383,7 +383,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to save name');
+      await handleError(error, 'Unable to save name');
     }
   };
 
@@ -410,7 +410,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to save name');
+      await handleError(error, 'Unable to save name');
     }
   };
 </script>

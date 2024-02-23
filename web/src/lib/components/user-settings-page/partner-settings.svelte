@@ -31,8 +31,8 @@
   let removePartnerDto: PartnerResponseDto | null = null;
   let partners: Array<PartnerSharing> = [];
 
-  onMount(() => {
-    refreshPartners();
+  onMount(async () => {
+    await refreshPartners();
   });
 
   const refreshPartners = async () => {
@@ -85,7 +85,7 @@
       removePartnerDto = null;
       await refreshPartners();
     } catch (error) {
-      handleError(error, 'Unable to remove partner');
+      await handleError(error, 'Unable to remove partner');
     }
   };
 
@@ -98,7 +98,7 @@
       await refreshPartners();
       createPartnerFlag = false;
     } catch (error) {
-      handleError(error, 'Unable to add partners');
+      await handleError(error, 'Unable to add partners');
     }
   };
 
@@ -109,7 +109,7 @@
       partner.inTimeline = inTimeline;
       partners = partners;
     } catch (error) {
-      handleError(error, 'Unable to update timeline display status');
+      await handleError(error, 'Unable to update timeline display status');
     }
   };
 </script>

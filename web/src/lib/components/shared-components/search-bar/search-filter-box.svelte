@@ -108,8 +108,8 @@
   $: numberOfPeople = (filterBoxWidth - 80) / 85;
   $: peopleList = showAllPeople ? suggestions.people : suggestions.people.slice(0, numberOfPeople);
 
-  onMount(() => {
-    getPeople();
+  onMount(async () => {
+    await getPeople();
     populateExistingFilters();
   });
 
@@ -127,7 +127,7 @@
       const { people } = await getAllPeople({ withHidden: false });
       suggestions.people = orderBySelectedPeopleFirst(people);
     } catch (error) {
-      handleError(error, 'Failed to get people');
+      await handleError(error, 'Failed to get people');
     }
   };
 
@@ -203,7 +203,7 @@
         }
       }
     } catch (error) {
-      handleError(error, 'Failed to get search suggestions');
+      await handleError(error, 'Failed to get search suggestions');
     }
   };
 
@@ -262,7 +262,7 @@
 
     if (filter.context) {
       if (payload.personIds && payload.personIds.length > 0) {
-        handleError(
+        await handleError(
           new Error('Context search does not support people filter'),
           'Context search does not support people filter',
         );

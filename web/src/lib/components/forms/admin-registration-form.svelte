@@ -41,7 +41,7 @@
 
         await goto(AppRoute.AUTH_LOGIN);
       } catch (error) {
-        handleError(error, 'Unable to create admin account');
+        await handleError(error, 'Unable to create admin account');
         errorMessage = 'Error create admin account';
       }
     }

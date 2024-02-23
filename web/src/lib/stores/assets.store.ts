@@ -175,7 +175,7 @@ export class AssetStore {
     for (const bucket of this.buckets) {
       if (height < viewport.height) {
         height += bucket.bucketHeight;
-        this.loadBucket(bucket.bucketDate, BucketPosition.Visible);
+        await this.loadBucket(bucket.bucketDate, BucketPosition.Visible);
         continue;
       }
 
@@ -232,7 +232,7 @@ export class AssetStore {
 
       this.emit(true);
     } catch (error) {
-      handleError(error, 'Failed to load assets');
+      await handleError(error, 'Failed to load assets');
     }
   }
 

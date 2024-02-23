@@ -21,13 +21,13 @@
   let showFilter = false;
   $: showClearIcon = value.length > 0;
 
-  const onSearch = (payload: SmartSearchDto | MetadataSearchDto) => {
+  const onSearch = async (payload: SmartSearchDto | MetadataSearchDto) => {
     const params = getMetadataSearchQuery(payload);
 
     showHistory = false;
     showFilter = false;
     $isSearchEnabled = false;
-    goto(`${AppRoute.SEARCH}?${params}`);
+    await goto(`${AppRoute.SEARCH}?${params}`);
   };
 
   const clearSearchTerm = (searchTerm: string) => {

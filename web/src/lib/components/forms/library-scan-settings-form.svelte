@@ -53,7 +53,7 @@
         exclusionPatterns = library.exclusionPatterns;
       }
     } catch (error) {
-      handleError(error, 'Unable to add exclusion pattern');
+      await handleError(error, 'Unable to add exclusion pattern');
     } finally {
       exclusionPatternToAdd = '';
       addExclusionPattern = false;
@@ -73,7 +73,7 @@
       library.exclusionPatterns[editExclusionPattern] = editedExclusionPattern;
       exclusionPatterns = library.exclusionPatterns;
     } catch (error) {
-      handleError(error, 'Unable to edit exclude pattern');
+      await handleError(error, 'Unable to edit exclude pattern');
     } finally {
       editExclusionPattern = null;
     }
@@ -93,7 +93,7 @@
       library.exclusionPatterns = library.exclusionPatterns.filter((path) => path != pathToDelete);
       exclusionPatterns = library.exclusionPatterns;
     } catch (error) {
-      handleError(error, 'Unable to delete exclude pattern');
+      await handleError(error, 'Unable to delete exclude pattern');
     } finally {
       editExclusionPattern = null;
     }

@@ -140,7 +140,7 @@
           reactions = [...reactions, isLiked];
         }
       } catch (error) {
-        handleError(error, "Can't change favorite for asset");
+        await handleError(error, "Can't change favorite for asset");
       }
     }
   };
@@ -156,7 +156,7 @@
         });
         isLiked = data.length > 0 ? data[0] : null;
       } catch (error) {
-        handleError(error, "Can't get Favorite");
+        await handleError(error, "Can't get Favorite");
       }
     }
   };
@@ -167,7 +167,7 @@
         const { comments } = await getActivityStatistics({ assetId: asset.id, albumId: album.id });
         numberOfComments = comments;
       } catch (error) {
-        handleError(error, "Can't get number of comments");
+        await handleError(error, "Can't get number of comments");
       }
     }
   };
@@ -180,13 +180,13 @@
   }
 
   onMount(async () => {
-    slideshowStateUnsubscribe = slideshowState.subscribe((value) => {
+    slideshowStateUnsubscribe = slideshowState.subscribe(async (value) => {
       if (value === SlideshowState.PlaySlideshow) {
         slideshowHistory.reset();
         slideshowHistory.queue(asset.id);
         handlePlaySlideshow();
       } else if (value === SlideshowState.StopSlideshow) {
-        handleStopSlideshow();
+        await handleStopSlideshow();
       }
     });
 
@@ -247,7 +247,7 @@
     isShowActivity = !isShowActivity;
   };
 
-  const handleKeypress = (event: KeyboardEvent) => {
+  const handleKeypress = async (event: KeyboardEvent) => {
     if (shouldIgnoreShortcut(event)) {
       return;
     }
@@ -264,7 +264,7 @@
       case 'a':
       case 'A': {
         if (shiftKey) {
-          toggleArchive();
+          await toggleArchive();
         }
         return;
       }
@@ -273,13 +273,13 @@
         return;
       }
       case 'ArrowRight': {
-        navigateAssetForward();
+        await navigateAssetForward();
         return;
       }
       case 'd':
       case 'D': {
         if (shiftKey) {
-          downloadFile(asset);
+          await downloadFile(asset);
         }
         return;
       }
@@ -296,7 +296,7 @@
         return;
       }
       case 'f': {
-        toggleFavorite();
+        await toggleFavorite();
         return;
       }
       case 'i': {
@@ -326,7 +326,7 @@
 
     slideshowHistory.queue(asset.id);
 
-    setAssetId(asset.id);
+    await setAssetId(asset.id);
     $restartSlideshowProgress = true;
   };
 
@@ -369,17 +369,17 @@
     $isShowDetail = !$isShowDetail;
   };
 
-  const trashOrDelete = (force: boolean = false) => {
+  const trashOrDelete = async (force: boolean = false) => {
     if (force || !isTrashEnabled) {
       if ($showDeleteModal) {
         isShowDeleteConfirmation = true;
         return;
       }
-      deleteAsset();
+      await deleteAsset();
       return;
     }
 
-    trashAsset();
+    await trashAsset();
     return;
   };
 
@@ -394,7 +394,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to trash asset');
+      await handleError(error, 'Unable to trash asset');
     }
   };
 
@@ -409,7 +409,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to delete asset');
+      await handleError(error, 'Unable to delete asset');
     } finally {
       isShowDeleteConfirmation = false;
     }
@@ -491,8 +491,8 @@
 
   let assetViewerHtmlElement: HTMLElement;
 
-  const slideshowHistory = new SlideshowHistory((assetId: string) => {
-    setAssetId(assetId);
+  const slideshowHistory = new SlideshowHistory(async (assetId: string) => {
+    await setAssetId(assetId);
     $restartSlideshowProgress = true;
   });
 

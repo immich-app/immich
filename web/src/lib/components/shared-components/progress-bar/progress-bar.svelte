@@ -42,29 +42,29 @@
     }
   });
 
-  export const play = () => {
+  export const play = async () => {
     status = ProgressBarStatus.Playing;
     dispatch('playing');
-    progress.set(1);
+    await progress.set(1);
   };
 
-  export const pause = () => {
+  export const pause = async () => {
     status = ProgressBarStatus.Paused;
     dispatch('paused');
-    progress.set($progress);
+    await progress.set($progress);
   };
 
-  export const restart = (autoplay: boolean) => {
-    progress.set(0);
+  export const restart = async (autoplay: boolean) => {
+    await progress.set(0);
 
     if (autoplay) {
       play();
     }
   };
 
-  export const reset = () => {
+  export const reset = async () => {
     status = ProgressBarStatus.Paused;
-    progress.set(0);
+    await progress.set(0);
   };
 
   export const setDuration = (newDuration: number) => {

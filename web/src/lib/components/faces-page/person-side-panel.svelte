@@ -63,7 +63,7 @@
       selectedPersonToCreate = Array.from({ length: peopleWithFaces.length });
       selectedPersonToReassign = Array.from({ length: peopleWithFaces.length });
     } catch (error) {
-      handleError(error, "Can't get faces");
+      await handleError(error, "Can't get faces");
     } finally {
       clearTimeout(timeout);
     }
@@ -136,7 +136,7 @@
           type: NotificationType.Info,
         });
       } catch (error) {
-        handleError(error, "Can't apply changes");
+        await handleError(error, "Can't apply changes");
       }
     }
 

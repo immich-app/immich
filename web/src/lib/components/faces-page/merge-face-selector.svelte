@@ -43,10 +43,10 @@
     dispatch('back');
   };
 
-  const handleSwapPeople = () => {
+  const handleSwapPeople = async () => {
     [person, selectedPeople[0]] = [selectedPeople[0], person];
     $page.url.searchParams.set(QueryParameter.ACTION, ActionQueryParameterValue.MERGE);
-    goto(`${AppRoute.PEOPLE}/${person.id}?${$page.url.searchParams.toString()}`);
+    await goto(`${AppRoute.PEOPLE}/${person.id}?${$page.url.searchParams.toString()}`);
   };
 
   const onSelect = (selected: PersonResponseDto) => {
@@ -80,7 +80,7 @@
       });
       dispatch('merge', mergedPerson);
     } catch (error) {
-      handleError(error, 'Cannot merge people');
+      await handleError(error, 'Cannot merge people');
     } finally {
       isShowConfirmation = false;
     }

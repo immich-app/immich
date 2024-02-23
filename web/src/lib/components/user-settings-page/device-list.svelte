@@ -24,7 +24,7 @@
       await logoutAuthDevice({ id: deleteDevice.id });
       notificationController.show({ message: `Logged out device`, type: NotificationType.Info });
     } catch (error) {
-      handleError(error, 'Unable to log out device');
+      await handleError(error, 'Unable to log out device');
     } finally {
       await refresh();
       deleteDevice = null;
@@ -39,7 +39,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to log out all devices');
+      await handleError(error, 'Unable to log out all devices');
     } finally {
       await refresh();
       deleteAll = false;

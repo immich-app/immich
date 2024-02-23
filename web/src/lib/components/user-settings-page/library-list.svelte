@@ -56,8 +56,8 @@
   let selectedLibraryIndex = 0;
   let selectedLibrary: LibraryResponseDto | null = null;
 
-  onMount(() => {
-    readLibraryList();
+  onMount(async () => {
+    await readLibraryList();
   });
 
   const closeAll = () => {
@@ -113,7 +113,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to create library');
+      await handleError(error, 'Unable to create library');
     } finally {
       await readLibraryList();
     }
@@ -130,7 +130,7 @@
       closeAll();
       await readLibraryList();
     } catch (error) {
-      handleError(error, 'Unable to update library');
+      await handleError(error, 'Unable to update library');
     }
   };
 
@@ -150,7 +150,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to remove library');
+      await handleError(error, 'Unable to remove library');
     } finally {
       confirmDeleteLibrary = null;
       deletedLibrary = null;
@@ -170,7 +170,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to scan libraries');
+      await handleError(error, 'Unable to scan libraries');
     }
   };
 
@@ -182,7 +182,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to scan library');
+      await handleError(error, 'Unable to scan library');
     }
   };
 
@@ -194,7 +194,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to scan library');
+      await handleError(error, 'Unable to scan library');
     }
   };
 
@@ -206,7 +206,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to scan library');
+      await handleError(error, 'Unable to scan library');
     }
   };
 
@@ -218,7 +218,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to remove offline files');
+      await handleError(error, 'Unable to remove offline files');
     }
   };
 
@@ -234,11 +234,11 @@
     updateLibraryIndex = selectedLibraryIndex;
   };
 
-  const onScanNewLibraryClicked = () => {
+  const onScanNewLibraryClicked = async () => {
     closeAll();
 
     if (selectedLibrary) {
-      handleScan(selectedLibrary.id);
+      await handleScan(selectedLibrary.id);
     }
   };
 
@@ -248,17 +248,17 @@
     updateLibraryIndex = selectedLibraryIndex;
   };
 
-  const onScanAllLibraryFilesClicked = () => {
+  const onScanAllLibraryFilesClicked = async () => {
     closeAll();
     if (selectedLibrary) {
-      handleScanChanges(selectedLibrary.id);
+      await handleScanChanges(selectedLibrary.id);
     }
   };
 
-  const onForceScanAllLibraryFilesClicked = () => {
+  const onForceScanAllLibraryFilesClicked = async () => {
     closeAll();
     if (selectedLibrary) {
-      handleForceScan(selectedLibrary.id);
+      await handleForceScan(selectedLibrary.id);
     }
   };
 
@@ -269,17 +269,17 @@
     }
   };
 
-  const onDeleteLibraryClicked = () => {
+  const onDeleteLibraryClicked = async () => {
     closeAll();
 
     if (selectedLibrary && confirm(`Are you sure you want to delete ${selectedLibrary.name} library?`) == true) {
-      refreshStats(selectedLibraryIndex);
+      await refreshStats(selectedLibraryIndex);
       if (totalCount[selectedLibraryIndex] > 0) {
         deleteAssetCount = totalCount[selectedLibraryIndex];
         confirmDeleteLibrary = selectedLibrary;
       } else {
         deletedLibrary = selectedLibrary;
-        handleDelete();
+        await handleDelete();
       }
     }
   };

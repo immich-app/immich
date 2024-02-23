@@ -82,7 +82,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to reassign assets to a new person');
+      await handleError(error, 'Unable to reassign assets to a new person');
     } finally {
       clearTimeout(timeout);
     }
@@ -105,7 +105,7 @@
         });
       }
     } catch (error) {
-      handleError(error, `Unable to reassign assets to ${selectedPerson?.name || 'an existing person'}`);
+      await handleError(error, `Unable to reassign assets to ${selectedPerson?.name || 'an existing person'}`);
     } finally {
       clearTimeout(timeout);
     }
@@ -132,9 +132,7 @@
           title={'Assign selected assets to a new person'}
           size={'sm'}
           disabled={disableButtons || hasSelection}
-          on:click={() => {
-            handleCreate();
-          }}
+          on:click={handleCreate}
         >
           {#if !showLoadingSpinnerCreate}
             <Icon path={mdiPlus} size={18} />
@@ -147,9 +145,7 @@
           size={'sm'}
           title={'Assign selected assets to an existing person'}
           disabled={disableButtons || !hasSelection}
-          on:click={() => {
-            handleReassign();
-          }}
+          on:click={handleReassign}
         >
           {#if !showLoadingSpinnerReassign}
             <div>

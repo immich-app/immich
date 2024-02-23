@@ -165,7 +165,7 @@
         message: `Activity is ${album.isActivityEnabled ? 'enabled' : 'disabled'}`,
       });
     } catch (error) {
-      handleError(error, `Can't ${album.isActivityEnabled ? 'disable' : 'enable'} activity`);
+      await handleError(error, `Can't ${album.isActivityEnabled ? 'disable' : 'enable'} activity`);
     }
   };
 
@@ -183,7 +183,7 @@
         reactions = [...reactions, isLiked];
       }
     } catch (error) {
-      handleError(error, "Can't change favorite for asset");
+      await handleError(error, "Can't change favorite for asset");
     }
   };
 
@@ -200,7 +200,7 @@
           isLiked = data[0];
         }
       } catch (error) {
-        handleError(error, "Can't get Favorite");
+        await handleError(error, "Can't get Favorite");
       }
     }
   };
@@ -210,7 +210,7 @@
       const { comments } = await getActivityStatistics({ albumId: album.id });
       setNumberOfComments(comments);
     } catch (error) {
-      handleError(error, "Can't get number of comments");
+      await handleError(error, "Can't get number of comments");
     }
   };
 
@@ -220,8 +220,8 @@
 
   onMount(async () => {
     if (album.sharedUsers.length > 0) {
-      getFavorite();
-      getNumberOfComments();
+      await getFavorite();
+      await getNumberOfComments();
     }
   });
 
@@ -242,12 +242,12 @@
   const handleStartSlideshow = async () => {
     const asset = $slideshowShuffle ? await assetStore.getRandomAsset() : assetStore.assets[0];
     if (asset) {
-      setAssetId(asset.id);
+      await setAssetId(asset.id);
       $slideshowState = SlideshowState.PlaySlideshow;
     }
   };
 
-  const handleEscape = () => {
+  const handleEscape = async () => {
     if (viewMode === ViewMode.SELECT_USERS) {
       viewMode = ViewMode.VIEW;
       return;
@@ -275,7 +275,7 @@
       assetInteractionStore.clearMultiselect();
       return;
     }
-    goto(backUrl);
+    await goto(backUrl);
     return;
   };
 
@@ -328,7 +328,7 @@
       timelineInteractionStore.clearMultiselect();
       viewMode = ViewMode.VIEW;
     } catch (error) {
-      handleError(error, 'Error adding assets to album');
+      await handleError(error, 'Error adding assets to album');
     }
   };
 
@@ -365,13 +365,13 @@
 
       viewMode = ViewMode.VIEW;
     } catch (error) {
-      handleError(error, 'Error adding users to album');
+      await handleError(error, 'Error adding users to album');
     }
   };
 
   const handleRemoveUser = async (userId: string) => {
     if (userId == 'me' || userId === $user.id) {
-      goto(backUrl);
+      await goto(backUrl);
       return;
     }
 
@@ -379,7 +379,7 @@
       await refreshAlbum();
       viewMode = album.sharedUsers.length > 1 ? ViewMode.SELECT_USERS : ViewMode.VIEW;
     } catch (error) {
-      handleError(error, 'Error deleting share users');
+      await handleError(error, 'Error deleting share users');
     }
   };
 
@@ -390,9 +390,9 @@
   const handleRemoveAlbum = async () => {
     try {
       await deleteAlbum({ id: album.id });
-      goto(backUrl);
+      await goto(backUrl);
     } catch (error) {
-      handleError(error, 'Unable to delete album');
+      await handleError(error, 'Unable to delete album');
     } finally {
       viewMode = ViewMode.VIEW;
     }
@@ -416,7 +416,7 @@
 
       notificationController.show({ type: NotificationType.Info, message: 'Updated album cover' });
     } catch (error) {
-      handleError(error, 'Unable to update album cover');
+      await handleError(error, 'Unable to update album cover');
     }
   };
 
@@ -435,7 +435,7 @@
       currentAlbumName = album.albumName;
       notificationController.show({ type: NotificationType.Info, message: 'New album name has been saved' });
     } catch (error) {
-      handleError(error, 'Unable to update album name');
+      await handleError(error, 'Unable to update album name');
     }
   };
 
@@ -456,7 +456,7 @@
       });
       album.description = description;
     } catch (error) {
-      handleError(error, 'Error updating album description');
+      await handleError(error, 'Error updating album description');
     }
   };
 </script>

@@ -108,7 +108,7 @@
       searchWord = name;
     } catch (error) {
       people = [];
-      handleError(error, "Can't search people");
+      await handleError(error, "Can't search people");
     } finally {
       clearTimeout(timeout);
     }
@@ -185,7 +185,7 @@
     }
   };
 
-  const handleEscape = () => {
+  const handleEscape = async () => {
     if ($showAssetViewer || viewMode === ViewMode.SUGGEST_MERGE) {
       return;
     }
@@ -193,7 +193,7 @@
       assetInteractionStore.clearMultiselect();
       return;
     } else {
-      goto(previousRoute);
+      await goto(previousRoute);
       return;
     }
   };
@@ -235,9 +235,9 @@
         type: NotificationType.Info,
       });
 
-      goto(previousRoute, { replaceState: true });
+      await goto(previousRoute, { replaceState: true });
     } catch (error) {
-      handleError(error, 'Unable to hide person');
+      await handleError(error, 'Unable to hide person');
     }
   };
 
@@ -269,7 +269,7 @@
       const { assets } = await getPersonStatistics({ id: data.person.id });
       numberOfAssets = assets;
     } catch (error) {
-      handleError(error, "Can't update the asset count");
+      await handleError(error, "Can't update the asset count");
     }
   };
 
@@ -292,9 +292,9 @@
         refreshAssetGrid = !refreshAssetGrid;
         return;
       }
-      goto(`${AppRoute.PEOPLE}/${personToBeMergedIn.id}`, { replaceState: true });
+      await goto(`${AppRoute.PEOPLE}/${personToBeMergedIn.id}`, { replaceState: true });
     } catch (error) {
-      handleError(error, 'Unable to save name');
+      await handleError(error, 'Unable to save name');
     }
   };
 
@@ -320,7 +320,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to save name');
+      await handleError(error, 'Unable to save name');
     }
   };
 
@@ -341,7 +341,7 @@
       return;
     }
     if (name === '') {
-      changeName();
+      await changeName();
       return;
     }
 
@@ -366,7 +366,7 @@
       viewMode = ViewMode.SUGGEST_MERGE;
       return;
     }
-    changeName();
+    await changeName();
   };
 
   const handleSetBirthDate = async (birthDate: string) => {
@@ -388,15 +388,15 @@
 
       notificationController.show({ message: 'Date of birth saved successfully', type: NotificationType.Info });
     } catch (error) {
-      handleError(error, 'Unable to save date of birth');
+      await handleError(error, 'Unable to save date of birth');
     }
   };
 
-  const handleGoBack = () => {
+  const handleGoBack = async () => {
     viewMode = ViewMode.VIEW_ASSETS;
     if ($page.url.searchParams.has(QueryParameter.ACTION)) {
       $page.url.searchParams.delete(QueryParameter.ACTION);
-      goto($page.url);
+      await goto($page.url);
     }
   };
 </script>

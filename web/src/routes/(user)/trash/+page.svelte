@@ -27,7 +27,11 @@
 
   export let data: PageData;
 
-  $: $featureFlags.trash || goto(AppRoute.PHOTOS);
+  featureFlags.subscribe(async ({ trash }) => {
+    if (!trash) {
+      await goto(AppRoute.PHOTOS);
+    }
+  });
 
   const assetStore = new AssetStore({ isTrashed: true });
   const assetInteractionStore = createAssetInteractionStore();
@@ -44,7 +48,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Error emptying trash');
+      await handleError(error, 'Error emptying trash');
     }
   };
 
@@ -57,7 +61,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Error restoring trash');
+      await handleError(error, 'Error restoring trash');
     }
   };
 </script>

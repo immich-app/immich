@@ -50,7 +50,7 @@ export const downloadArchive = async (fileName: string, options: DownloadInfoDto
   try {
     downloadInfo = await getDownloadInfo({ downloadInfoDto: options, key: getKey() });
   } catch (error) {
-    handleError(error, 'Unable to download files');
+    await handleError(error, 'Unable to download files');
     return;
   }
 
@@ -82,7 +82,7 @@ export const downloadArchive = async (fileName: string, options: DownloadInfoDto
 
       downloadBlob(data, archiveName);
     } catch (error) {
-      handleError(error, 'Unable to download files');
+      await handleError(error, 'Unable to download files');
       downloadManager.clear(downloadKey);
       return;
     } finally {
@@ -141,7 +141,7 @@ export const downloadFile = async (asset: AssetResponseDto) => {
 
       downloadBlob(data, filename);
     } catch (error) {
-      handleError(error, `Error downloading ${filename}`);
+      await handleError(error, `Error downloading ${filename}`);
       downloadManager.clear(downloadKey);
     } finally {
       setTimeout(() => downloadManager.clear(downloadKey), 5000);
