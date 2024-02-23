@@ -500,6 +500,12 @@ class ApiClient {
           return UserResponseDto.fromJson(value);
         case 'ValidateAccessTokenResponseDto':
           return ValidateAccessTokenResponseDto.fromJson(value);
+        case 'ValidateLibraryDto':
+          return ValidateLibraryDto.fromJson(value);
+        case 'ValidateLibraryImportPathResponseDto':
+          return ValidateLibraryImportPathResponseDto.fromJson(value);
+        case 'ValidateLibraryResponseDto':
+          return ValidateLibraryResponseDto.fromJson(value);
         case 'VideoCodec':
           return VideoCodecTypeTransformer().decode(value);
         default:

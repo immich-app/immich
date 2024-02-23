@@ -13,9 +13,12 @@ part of openapi.api;
 class PeopleResponseDto {
   /// Returns a new [PeopleResponseDto] instance.
   PeopleResponseDto({
+    required this.hidden,
     this.people = const [],
     required this.total,
   });
+
+  int hidden;
 
   List<PersonResponseDto> people;
 
@@ -23,20 +26,23 @@ class PeopleResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is PeopleResponseDto &&
+    other.hidden == hidden &&
     _deepEquality.equals(other.people, people) &&
     other.total == total;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (hidden.hashCode) +
     (people.hashCode) +
     (total.hashCode);
 
   @override
-  String toString() => 'PeopleResponseDto[people=$people, total=$total]';
+  String toString() => 'PeopleResponseDto[hidden=$hidden, people=$people, total=$total]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+      json[r'hidden'] = this.hidden;
       json[r'people'] = this.people;
       json[r'total'] = this.total;
     return json;
@@ -50,6 +56,7 @@ class PeopleResponseDto {
       final json = value.cast<String, dynamic>();
 
       return PeopleResponseDto(
+        hidden: mapValueOfType<int>(json, r'hidden')!,
         people: PersonResponseDto.listFromJson(json[r'people']),
         total: mapValueOfType<int>(json, r'total')!,
       );
@@ -99,6 +106,7 @@ class PeopleResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'hidden',
     'people',
     'total',
   };

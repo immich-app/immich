@@ -182,6 +182,9 @@ doc/UserAvatarColor.md
 doc/UserDto.md
 doc/UserResponseDto.md
 doc/ValidateAccessTokenResponseDto.md
+doc/ValidateLibraryDto.md
+doc/ValidateLibraryImportPathResponseDto.md
+doc/ValidateLibraryResponseDto.md
 doc/VideoCodec.md
 git_push.sh
 lib/api.dart
@@ -372,6 +375,9 @@ lib/model/user_avatar_color.dart
 lib/model/user_dto.dart
 lib/model/user_response_dto.dart
 lib/model/validate_access_token_response_dto.dart
+lib/model/validate_library_dto.dart
+lib/model/validate_library_import_path_response_dto.dart
+lib/model/validate_library_response_dto.dart
 lib/model/video_codec.dart
 pubspec.yaml
 test/activity_api_test.dart
@@ -553,4 +559,7 @@ test/user_avatar_color_test.dart
 test/user_dto_test.dart
 test/user_response_dto_test.dart
 test/validate_access_token_response_dto_test.dart
+test/validate_library_dto_test.dart
+test/validate_library_import_path_response_dto_test.dart
+test/validate_library_response_dto_test.dart
 test/video_codec_test.dart

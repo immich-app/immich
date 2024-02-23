@@ -42,7 +42,7 @@
     <DeleteAssets onAssetDelete={(assetId) => assetStore.removeAsset(assetId)} />
     <AssetSelectContextMenu icon={mdiDotsVertical} title="Menu">
       <DownloadAction menuItem />
-      <ArchiveAction menuItem unarchive={isAllArchive} />
+      <ArchiveAction menuItem unarchive={isAllArchive} onArchive={(ids) => assetStore.removeAssets(ids)} />
       <ChangeDate menuItem />
       <ChangeLocation menuItem />
     </AssetSelectContextMenu>

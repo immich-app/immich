@@ -1,13 +1,15 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
-  import type { LibraryResponseDto } from '@immich/sdk';
-  import { mdiPencilOutline } from '@mdi/js';
   import { createEventDispatcher, onMount } from 'svelte';
   import { handleError } from '../../utils/handle-error';
   import Button from '../elements/buttons/button.svelte';
   import LibraryImportPathForm from './library-import-path-form.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
+  import { mdiAlertOutline, mdiCheckCircleOutline, mdiPencilOutline, mdiRefresh } from '@mdi/js';
+  import { validate, type LibraryResponseDto } from '@immich/sdk';
+  import type { ValidateLibraryImportPathResponseDto } from '@immich/sdk/axios';
+  import { NotificationType, notificationController } from '../shared-components/notification/notification';
 
-  export let library: Partial<LibraryResponseDto>;
+  export let library: LibraryResponseDto;
 
   let addImportPath = false;
   let editImportPath: number | null = null;
@@ -15,20 +17,62 @@
   let importPathToAdd: string | null = null;
   let editedImportPath: string;
 
-  let importPaths: string[] = [];
+  let validatedPaths: ValidateLibraryImportPathResponseDto[] = [];
 
-  onMount(() => {
+  $: importPaths = validatedPaths.map((validatedPath) => validatedPath.importPath);
+
+  onMount(async () => {
     if (library.importPaths) {
-      importPaths = library.importPaths;
+      await handleValidation();
     } else {
       library.importPaths = [];
     }
   });
 
+  const handleValidation = async () => {
+    if (library.importPaths) {
+      const validation = await validate({
+        id: library.id,
+        validateLibraryDto: { importPaths: library.importPaths },
+      });
+
+      validatedPaths = validation.importPaths ?? [];
+    }
+  };
+
+  const revalidate = async (notifyIfSuccessful = true) => {
+    await handleValidation();
+    let failedPaths = 0;
+    for (const validatedPath of validatedPaths) {
+      if (!validatedPath.isValid) {
+        failedPaths++;
+      }
+    }
+    if (failedPaths === 0) {
+      if (notifyIfSuccessful) {
+        notificationController.show({
+          message: `All paths validated successfully`,
+          type: NotificationType.Info,
+        });
+      }
+    } else if (failedPaths === 1) {
+      notificationController.show({
+        message: `${failedPaths} path failed validation`,
+        type: NotificationType.Warning,
+      });
+    } else {
+      notificationController.show({
+        message: `${failedPaths} paths failed validation`,
+        type: NotificationType.Warning,
+      });
+    }
+  };
+
   const dispatch = createEventDispatcher<{
     cancel: void;
     submit: Partial<LibraryResponseDto>;
   }>();
+
   const handleCancel = () => {
     dispatch('cancel');
   };
@@ -50,7 +94,7 @@
       // Check so that import path isn't duplicated
       if (!library.importPaths.includes(importPathToAdd)) {
         library.importPaths.push(importPathToAdd);
-        importPaths = library.importPaths;
+        await revalidate(false);
       }
     } catch (error) {
       handleError(error, 'Unable to add import path');
@@ -75,7 +119,7 @@
       if (!library.importPaths.includes(editedImportPath)) {
         // Update import path
         library.importPaths[editImportPath] = editedImportPath;
-        importPaths = library.importPaths;
+        await revalidate(false);
       }
     } catch (error) {
       editImportPath = null;
@@ -97,7 +141,7 @@
 
       const pathToDelete = library.importPaths[editImportPath];
       library.importPaths = library.importPaths.filter((path) => path != pathToDelete);
-      importPaths = library.importPaths;
+      await handleValidation();
     } catch (error) {
       handleError(error, 'Unable to delete import path');
     } finally {
@@ -138,7 +182,7 @@
 <form on:submit|preventDefault={() => handleSubmit()} autocomplete="off" class="m-4 flex flex-col gap-4">
   <table class="text-left">
     <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
-      {#each importPaths as importPath, listIndex}
+      {#each validatedPaths as validatedPath, listIndex}
         <tr
           class={`flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
             listIndex % 2 == 0
@@ -146,13 +190,31 @@
               : 'bg-immich-bg dark:bg-immich-dark-gray/50'
           }`}
         >
-          <td class="w-4/5 text-ellipsis px-4 text-sm">{importPath}</td>
-          <td class="w-1/5 text-ellipsis px-4 text-sm">
+          <td class="w-1/8 text-ellipsis pl-8 text-sm">
+            {#if validatedPath.isValid}
+              <Icon
+                path={mdiCheckCircleOutline}
+                size="24"
+                title={validatedPath.message}
+                class="text-immich-success dark:text-immich-dark-success"
+              />
+            {:else}
+              <Icon
+                path={mdiAlertOutline}
+                size="24"
+                title={validatedPath.message}
+                class="text-immich-warning dark:text-immich-dark-warning"
+              />
+            {/if}
+          </td>
+
+          <td class="w-4/5 text-ellipsis px-4 text-sm">{validatedPath.importPath}</td>
+          <td class="w-1/5 text-ellipsis px-4 text-sm flex flex-row">
             <button
               type="button"
               on:click={() => {
                 editImportPath = listIndex;
-                editedImportPath = importPath;
+                editedImportPath = validatedPath.importPath;
               }}
               class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
             >
@@ -185,9 +247,13 @@
       >
     </tbody>
   </table>
-
-  <div class="flex w-full justify-end gap-2">
-    <Button size="sm" color="gray" on:click={() => handleCancel()}>Cancel</Button>
-    <Button size="sm" type="submit">Save</Button>
+  <div class="flex justify-between w-full">
+    <div class="justify-end gap-2">
+      <Button size="sm" color="gray" on:click={() => revalidate()}><Icon path={mdiRefresh} size={20} />Validate</Button>
+    </div>
+    <div class="justify-end gap-2">
+      <Button size="sm" color="gray" on:click={() => handleCancel()}>Cancel</Button>
+      <Button size="sm" type="submit">Save</Button>
+    </div>
   </div>
 </form>

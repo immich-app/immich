@@ -2,12 +2,7 @@
   import { AppRoute } from '$lib/constants';
   import Icon from '$lib/components/elements/icon.svelte';
   import { goto } from '$app/navigation';
-  import {
-    isSearchEnabled,
-    preventRaceConditionSearchBar,
-    savedSearchTerms,
-    searchQuery,
-  } from '$lib/stores/search.store';
+  import { isSearchEnabled, preventRaceConditionSearchBar, savedSearchTerms } from '$lib/stores/search.store';
   import { clickOutside } from '$lib/utils/click-outside';
   import { mdiClose, mdiMagnify, mdiTune } from '@mdi/js';
   import IconButton from '$lib/components/elements/buttons/icon-button.svelte';
@@ -15,8 +10,10 @@
   import SearchFilterBox from './search-filter-box.svelte';
   import type { MetadataSearchDto, SmartSearchDto } from '@immich/sdk';
   import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
+
   export let value = '';
   export let grayTheme: boolean;
+  export let searchQuery: MetadataSearchDto | SmartSearchDto = {};
 
   let input: HTMLInputElement;
 
@@ -30,8 +27,7 @@
     showHistory = false;
     showFilter = false;
     $isSearchEnabled = false;
-    $searchQuery = payload;
-    goto(`${AppRoute.SEARCH}?${params}`, { invalidateAll: true });
+    goto(`${AppRoute.SEARCH}?${params}`);
   };
 
   const clearSearchTerm = (searchTerm: string) => {
@@ -87,11 +83,11 @@
   };
 </script>
 
-<div role="button" class="w-full" use:clickOutside on:outclick={onFocusOut} on:escape={onFocusOut}>
+<div class="w-full relative" use:clickOutside on:outclick={onFocusOut} on:escape={onFocusOut}>
   <form
     draggable="false"
     autocomplete="off"
-    class="relative select-text text-sm"
+    class="select-text text-sm"
     action={AppRoute.SEARCH}
     on:reset={() => (value = '')}
     on:submit|preventDefault={onSubmit}
@@ -148,9 +144,9 @@
         on:selectSearchTerm={({ detail: searchTerm }) => onHistoryTermClick(searchTerm)}
       />
     {/if}
-
-    {#if showFilter}
-      <SearchFilterBox on:search={({ detail }) => onSearch(detail)} />
-    {/if}
   </form>
+
+  {#if showFilter}
+    <SearchFilterBox {searchQuery} on:search={({ detail }) => onSearch(detail)} />
+  {/if}
 </div>

@@ -11,7 +11,7 @@
   import { mdiHeartMinusOutline, mdiHeartOutline, mdiTimerSand } from '@mdi/js';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
 
-  export let onFavorite: OnFavorite | undefined = undefined;
+  export let onFavorite: OnFavorite;
 
   export let menuItem = false;
   export let removeFavorite: boolean;
@@ -40,7 +40,7 @@
         asset.isFavorite = isFavorite;
       }
 
-      onFavorite?.(ids, isFavorite);
+      onFavorite(ids, isFavorite);
 
       notificationController.show({
         message: isFavorite ? `Added ${ids.length} to favorites` : `Removed ${ids.length} from favorites`,

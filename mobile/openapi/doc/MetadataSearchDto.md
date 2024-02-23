@@ -46,7 +46,7 @@ Name | Type | Description | Notes
 **updatedAfter** | [**DateTime**](DateTime.md) |  | [optional] 
 **updatedBefore** | [**DateTime**](DateTime.md) |  | [optional] 
 **webpPath** | **String** |  | [optional] 
-**withArchived** | **bool** |  | [optional] 
+**withArchived** | **bool** |  | [optional] [default to false]
 **withDeleted** | **bool** |  | [optional] 
 **withExif** | **bool** |  | [optional] 
 **withPeople** | **bool** |  | [optional] 

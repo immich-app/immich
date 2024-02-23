@@ -1,13 +1,11 @@
 import 'dart:ui';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/asset_viewer/views/video_viewer_page.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
-import 'package:immich_mobile/utils/image_url_builder.dart';
 
 class MemoryCard extends StatelessWidget {
   final Asset asset;
@@ -44,14 +42,9 @@ class MemoryCard extends StatelessWidget {
             child: Container(
               decoration: BoxDecoration(
                 image: DecorationImage(
-                  image: CachedNetworkImageProvider(
-                    getThumbnailUrl(
-                      asset,
-                    ),
-                    cacheKey: getThumbnailCacheKey(
-                      asset,
-                    ),
-                    headers: {"x-immich-user-token": accessToken},
+                  image: ImmichImage.imageProvider(
+                    asset: asset,
+                    isThumbnail: true,
                   ),
                   fit: BoxFit.cover,
                 ),
@@ -62,9 +55,9 @@ class MemoryCard extends StatelessWidget {
           LayoutBuilder(
             builder: (context, constraints) {
               // Determine the fit using the aspect ratio
-              BoxFit fit = BoxFit.fitWidth;
+              BoxFit fit = BoxFit.contain;
               if (asset.width != null && asset.height != null) {
-                final aspectRatio = asset.height! / asset.width!;
+                final aspectRatio = asset.width! / asset.height!;
                 final phoneAspectRatio =
                     constraints.maxWidth / constraints.maxHeight;
                 // Look for a 25% difference in either direction

@@ -1,11 +1,12 @@
 <script lang="ts">
+  import { locale } from '$lib/stores/preferences.store';
   import type { SystemConfigTemplateStorageOptionDto } from '@immich/sdk';
-  import * as luxon from 'luxon';
+  import { DateTime } from 'luxon';
 
   export let options: SystemConfigTemplateStorageOptionDto;
 
   const getLuxonExample = (format: string) => {
-    return luxon.DateTime.fromISO(new Date('2022-09-04T20:03:05.250').toISOString()).toFormat(format);
+    return DateTime.fromISO('2022-09-04T20:03:05.250Z', { locale: $locale }).toFormat(format);
   };
 </script>
 

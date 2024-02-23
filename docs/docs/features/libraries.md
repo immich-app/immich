@@ -42,23 +42,24 @@ Finally, files can be deleted from Immich via the `Remove Offline Files` job. Th
 
 ### Import Paths
 
-External libraries use import paths to determine which files to scan. Each library can have multiple import paths so that files from different locations can be added to the same library. Import paths are scanned recursively, and if a file is in multiple import paths, it will only be added once. If the import paths are edited in a way that an external file is no longer in any import path, it will be removed from the library in the same way a deleted file would. If the file is moved back to an import path, it will be added again as if it was a new file.
+External libraries use import paths to determine which files to scan. Each library can have multiple import paths so that files from different locations can be added to the same library. Import paths are scanned recursively, and if a file is in multiple import paths, it will only be added once. Each import file must be a readable directory that exists on the filesystem; the import path dialog will alert you of any paths that are not accessible.
+
+If the import paths are edited in a way that an external file is no longer in any import path, it will be removed from the library in the same way a deleted file would. If the file is moved back to an import path, it will be added again as if it was a new file.
 
 ### Troubleshooting
 
-Sometimes, an external library will not scan correctly. This can happen if the immich_server or immich_microservices can't access the files. Here are some things to check:
+Sometimes, an external library will not scan correctly. This can happen if immich_server or immich_microservices can't access the files. Here are some things to check:
 
-- Is the external path set correctly?
+- Is the external path set correctly? Each import path must be contained in the external path.
+- Make sure the external path does not contain spaces
 - In the docker-compose file, are the volumes mounted correctly?
 - Are the volumes identical between the `server` and `microservices` container?
 - Are the import paths set correctly, and do they match the path set in docker-compose file?
-- Are you using symbolic link in your import library?
+- Make sure you don't use symlinks in your import libraries, and that you aren't linking across docker mounts.
 - Are the permissions set correctly?
-- Are you using forward slashes everywhere? (`/`)
-- Are you using symlink across docker mounts?
-- Are you using [spaces in the internal path](/docs/features/libraries#:~:text=can%20be%20accessed.-,NOTE,-Spaces%20in%20the)?
+- Make sure you are using forward slashes (`/`) and not backward slashes.
 
-If all else fails, you can always start a shell inside the container and check if the path is accessible. For example, `docker exec -it immich_microservices /bin/bash` will start a bash shell. If your import path, for instance, is `/data/import/photos`, you can check if the files are accessible by running `ls /data/import/photos`. Also check the `immich_server` container in the same way.
+To validate that Immich can reach your external library, start a shell inside the container. Run `docker exec -it immich_microservices /bin/bash` to a bash shell. If your import path is `/data/import/photos`, check it with `ls /data/import/photos`. Do the same check for the `immich_server` container. If you cannot access this directory in both the `microservices` and `server` containers, Immich won't be able to import files.
 
 ### Security Considerations
 

@@ -83,8 +83,6 @@
   let album = data.album;
   let description = album.description;
 
-  $: album = data.album;
-
   $: {
     if (!album.isActivityEnabled && $numberOfComments === 0) {
       isShowActivity = false;
@@ -127,6 +125,7 @@
   $: isOwned = $user.id == album.ownerId;
   $: isAllUserOwned = [...$selectedAssets].every((asset) => asset.ownerId === $user.id);
   $: isAllFavorite = [...$selectedAssets].every((asset) => asset.isFavorite);
+  $: isAllArchived = [...$selectedAssets].every((asset) => asset.isArchived);
   $: {
     assetGridWidth = isShowActivity ? globalWidth - (globalWidth < 768 ? 360 : 460) : globalWidth;
   }
@@ -451,7 +450,10 @@
           description,
         },
       });
-
+      notificationController.show({
+        type: NotificationType.Info,
+        message: 'Album description has been updated',
+      });
       album.description = description;
     } catch (error) {
       handleError(error, 'Error updating album description');
@@ -473,9 +475,9 @@
         </AssetSelectContextMenu>
         <AssetSelectContextMenu icon={mdiDotsVertical} title="Menu">
           {#if isAllUserOwned}
-            <FavoriteAction menuItem removeFavorite={isAllFavorite} />
+            <FavoriteAction menuItem removeFavorite={isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
+            <ArchiveAction menuItem unarchive={isAllArchived} onArchive={() => assetStore.triggerUpdate()} />
           {/if}
-          <ArchiveAction menuItem />
           <DownloadAction menuItem filename="{album.albumName}.zip" />
           {#if isOwned || isAllUserOwned}
             <RemoveFromAlbum menuItem bind:album onRemove={(assetIds) => handleRemoveAssets(assetIds)} />
@@ -591,6 +593,7 @@
           isShared={album.sharedUsers.length > 0}
           isSelectionMode={viewMode === ViewMode.SELECT_THUMBNAIL}
           singleSelect={viewMode === ViewMode.SELECT_THUMBNAIL}
+          showArchiveIcon
           on:select={({ detail: asset }) => handleUpdateThumbnail(asset.id)}
           on:escape={handleEscape}
         >
@@ -600,7 +603,7 @@
               <input
                 on:keydown={(e) => e.key === 'Enter' && titleInput.blur()}
                 on:blur={handleUpdateName}
-                class="w-[99%] border-b-2 border-transparent text-6xl text-immich-primary outline-none transition-all dark:text-immich-dark-primary {isOwned
+                class="w-[99%] mb-2 border-b-2 border-transparent text-6xl text-immich-primary outline-none transition-all dark:text-immich-dark-primary {isOwned
                   ? 'hover:border-gray-400'
                   : 'hover:border-transparent'} bg-immich-bg focus:border-b-2 focus:border-immich-primary focus:outline-none dark:bg-immich-dark-bg dark:focus:border-immich-dark-primary dark:focus:bg-immich-dark-gray"
                 type="text"
@@ -613,7 +616,7 @@
 
               <!-- ALBUM SUMMARY -->
               {#if album.assetCount > 0}
-                <span class="my-4 flex gap-2 text-sm font-medium text-gray-500" data-testid="album-details">
+                <span class="my-2 flex gap-2 text-sm font-medium text-gray-500" data-testid="album-details">
                   <p class="">{getDateRange()}</p>
                   <p>·</p>
                   <p>{album.assetCount} items</p>
@@ -622,7 +625,7 @@
 
               <!-- ALBUM SHARING -->
               {#if album.sharedUsers.length > 0 || (album.hasSharedLink && isOwned)}
-                <div class="my-6 flex gap-x-1">
+                <div class="my-3 flex gap-x-1">
                   <!-- link -->
                   {#if album.hasSharedLink && isOwned}
                     <CircleIconButton
@@ -661,7 +664,7 @@
               <!-- ALBUM DESCRIPTION -->
               {#if isOwned}
                 <textarea
-                  class="w-full resize-none overflow-hidden text-black dark:text-white border-b-2 border-transparent border-gray-500 bg-transparent text-base outline-none transition-all focus:border-b-2 focus:border-immich-primary disabled:border-none dark:focus:border-immich-dark-primary hover:border-gray-400"
+                  class="w-full mt-2 resize-none overflow-hidden text-black dark:text-white border-b-2 border-transparent border-gray-500 bg-transparent text-base outline-none transition-all focus:border-b-2 focus:border-immich-primary disabled:border-none dark:focus:border-immich-dark-primary hover:border-gray-400"
                   bind:this={textArea}
                   bind:value={description}
                   on:input={() => autoGrowHeight(textArea)}
@@ -670,7 +673,9 @@
                   placeholder="Add description"
                 />
               {:else if description}
-                <p class="break-words whitespace-pre-line w-full text-black dark:text-white text-base">{description}</p>
+                <p class="break-words whitespace-pre-line w-full text-black dark:text-white text-base">
+                  {description}
+                </p>
               {/if}
             </section>
           {/if}

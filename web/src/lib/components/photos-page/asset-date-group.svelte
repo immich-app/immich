@@ -25,6 +25,7 @@
   export let viewport: Viewport;
   export let singleSelect = false;
   export let withStacked = false;
+  export let showArchiveIcon = false;
 
   export let assetStore: AssetStore;
   export let assetInteractionStore: AssetInteractionStore;
@@ -170,6 +171,7 @@
           >
             <Thumbnail
               showStackedIcon={withStacked}
+              {showArchiveIcon}
               {asset}
               {groupIndex}
               on:click={() => assetClickHandler(asset, groupAssets, groupTitle)}

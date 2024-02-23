@@ -209,6 +209,9 @@ part 'model/user_avatar_color.dart';
 part 'model/user_dto.dart';
 part 'model/user_response_dto.dart';
 part 'model/validate_access_token_response_dto.dart';
+part 'model/validate_library_dto.dart';
+part 'model/validate_library_import_path_response_dto.dart';
+part 'model/validate_library_response_dto.dart';
 part 'model/video_codec.dart';
 
 

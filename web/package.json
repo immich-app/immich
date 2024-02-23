@@ -1,6 +1,6 @@
 {
   "name": "immich-web",
-  "version": "1.0.0",
+  "version": "1.1.1",
   "license": "GNU Affero General Public License version 3",
   "scripts": {
     "dev": "vite dev --host 0.0.0.0 --port 3000",
@@ -27,7 +27,7 @@
     "@socket.io/component-emitter": "^3.1.0",
     "@sveltejs/adapter-static": "^3.0.1",
     "@sveltejs/enhanced-img": "^0.1.8",
-    "@sveltejs/kit": "^2.5.0",
+    "@sveltejs/kit": "^2.5.1",
     "@sveltejs/vite-plugin-svelte": "^3.0.2",
     "@testing-library/jest-dom": "^6.1.5",
     "@testing-library/svelte": "^4.0.3",

@@ -44,7 +44,7 @@ describe(`${SearchController.name}`, () => {
 
   describe('GET /search (exif)', () => {
     beforeEach(async () => {
-      const assetId = (await assetRepository.create(generateAsset(loginResponse.userId, libraries))).id;
+      const { id: assetId } = await assetRepository.create(generateAsset(loginResponse.userId, libraries));
       await assetRepository.upsertExif({ assetId, ...searchStub.exif });
 
       const assetWithMetadata = await assetRepository.getById(assetId, { exifInfo: true });
@@ -166,7 +166,7 @@ describe(`${SearchController.name}`, () => {
 
   describe('GET /search (smart info)', () => {
     beforeEach(async () => {
-      const assetId = (await assetRepository.create(generateAsset(loginResponse.userId, libraries))).id;
+      const { id: assetId } = await assetRepository.create(generateAsset(loginResponse.userId, libraries));
       await assetRepository.upsertExif({ assetId, ...searchStub.exif });
       await smartInfoRepository.upsert({ assetId, ...searchStub.smartInfo }, Array.from({ length: 512 }, Math.random));
 
@@ -215,7 +215,7 @@ describe(`${SearchController.name}`, () => {
 
   describe('GET /search (file name)', () => {
     beforeEach(async () => {
-      const assetId = (await assetRepository.create(generateAsset(loginResponse.userId, libraries))).id;
+      const { id: assetId } = await assetRepository.create(generateAsset(loginResponse.userId, libraries));
       await assetRepository.upsertExif({ assetId, ...searchStub.exif });
 
       const assetWithMetadata = await assetRepository.getById(assetId, { exifInfo: true });

@@ -4,11 +4,13 @@
   import { createEventDispatcher } from 'svelte';
   import { fade } from 'svelte/transition';
   import type { SettingsEventType } from '../admin-settings';
-  import SettingAccordion from '../setting-accordion.svelte';
-  import SettingButtonsRow from '../setting-buttons-row.svelte';
-  import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
-  import SettingSelect from '../setting-select.svelte';
-  import SettingSwitch from '../setting-switch.svelte';
+  import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
+  import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
+  import SettingInputField, {
+    SettingInputFieldType,
+  } from '$lib/components/shared-components/settings/setting-input-field.svelte';
+  import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
+  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
@@ -110,8 +112,8 @@
             desc="Minimum confidence score for a face to be detected from 0-1. Lower values will detect more faces but may result in false positives."
             bind:value={config.machineLearning.facialRecognition.minScore}
             step="0.1"
-            min="0"
-            max="1"
+            min={0}
+            max={1}
             disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.facialRecognition.enabled}
             isEdited={config.machineLearning.facialRecognition.minScore !==
               savedConfig.machineLearning.facialRecognition.minScore}
@@ -123,8 +125,8 @@
             desc="Maximum distance between two faces to be considered the same person, ranging from 0-2. Lowering this can prevent labeling two people as the same person, while raising it can prevent labeling the same person as two different people. Note that it is easier to merge two people than to split one person in two, so err on the side of a lower threshold when possible."
             bind:value={config.machineLearning.facialRecognition.maxDistance}
             step="0.1"
-            min="0"
-            max="2"
+            min={0}
+            max={2}
             disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.facialRecognition.enabled}
             isEdited={config.machineLearning.facialRecognition.maxDistance !==
               savedConfig.machineLearning.facialRecognition.maxDistance}
@@ -136,7 +138,7 @@
             desc="The minimum number of recognized faces for a person to be created. Increasing this makes Facial Recognition more precise at the cost of increasing the chance that a face is not assigned to a person."
             bind:value={config.machineLearning.facialRecognition.minFaces}
             step="1"
-            min="1"
+            min={1}
             disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.facialRecognition.enabled}
             isEdited={config.machineLearning.facialRecognition.minFaces !==
               savedConfig.machineLearning.facialRecognition.minFaces}

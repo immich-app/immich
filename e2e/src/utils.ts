@@ -1,23 +1,32 @@
 import {
   AssetResponseDto,
+  CreateAlbumDto,
   CreateAssetDto,
   CreateUserDto,
-  LoginResponseDto,
+  PersonUpdateDto,
+  SharedLinkCreateDto,
+  createAlbum,
   createApiKey,
+  createPerson,
+  createSharedLink,
   createUser,
   defaults,
   login,
   setAdminOnboarding,
   signUpAdmin,
+  updatePerson,
 } from '@immich/sdk';
 import { BrowserContext } from '@playwright/test';
-import { spawn } from 'child_process';
+import { exec, spawn } from 'child_process';
 import { randomBytes } from 'node:crypto';
 import { access } from 'node:fs/promises';
 import path from 'node:path';
+import { promisify } from 'node:util';
 import pg from 'pg';
 import { loginDto, signupDto } from 'src/fixtures';
 import request from 'supertest';
+
+const execPromise = promisify(exec);
 
 export const app = 'http://127.0.0.1:2283/api';
 
@@ -28,6 +37,9 @@ const directoryExists = (directory: string) =>
 
 // TODO move test assets into e2e/assets
 export const testAssetDir = path.resolve(`./../server/test/assets/`);
+
+const serverContainerName = 'immich-e2e-server';
+const uploadMediaDir = '/usr/src/app/upload/upload';
 
 if (!(await directoryExists(`${testAssetDir}/albums`))) {
   throw new Error(
@@ -44,8 +56,45 @@ export const asKeyAuth = (key: string) => ({ 'x-api-key': key });
 
 let client: pg.Client | null = null;
 
-export const dbUtils = {
+export const fileUtils = {
   reset: async () => {
+    await execPromise(
+      `docker exec -i "${serverContainerName}" rm -R "${uploadMediaDir}"`
+    );
+  },
+};
+
+export const dbUtils = {
+  createFace: async ({
+    assetId,
+    personId,
+  }: {
+    assetId: string;
+    personId: string;
+  }) => {
+    if (!client) {
+      return;
+    }
+
+    const vector = Array.from({ length: 512 }, Math.random);
+    const embedding = `[${vector.join(',')}]`;
+
+    await client.query(
+      'INSERT INTO asset_faces ("assetId", "personId", "embedding") VALUES ($1, $2, $3)',
+      [assetId, personId, embedding]
+    );
+  },
+  setPersonThumbnail: async (personId: string) => {
+    if (!client) {
+      return;
+    }
+
+    await client.query(
+      `UPDATE "person" set "thumbnailPath" = '/my/awesome/thumbnail.jpg' where "id" = $1`,
+      [personId]
+    );
+  },
+  reset: async (tables?: string[]) => {
     try {
       if (!client) {
         client = new pg.Client(
@@ -54,14 +103,20 @@ export const dbUtils = {
         await client.connect();
       }
 
-      for (const table of [
+      tables = tables || [
+        'shared_links',
+        'person',
         'albums',
         'assets',
+        'asset_faces',
+        'activity',
         'api_keys',
         'user_token',
         'users',
         'system_metadata',
-      ]) {
+      ];
+
+      for (const table of tables) {
         await client.query(`DELETE FROM ${table} CASCADE;`);
       }
     } catch (error) {
@@ -144,6 +199,11 @@ export const apiUtils = {
       { headers: asBearerAuth(accessToken) }
     );
   },
+  createAlbum: (accessToken: string, dto: CreateAlbumDto) =>
+    createAlbum(
+      { createAlbumDto: dto },
+      { headers: asBearerAuth(accessToken) }
+    ),
   createAsset: async (
     accessToken: string,
     dto?: Omit<CreateAssetDto, 'assetData'>
@@ -165,6 +225,20 @@ export const apiUtils = {
 
     return body as AssetResponseDto;
   },
+  createPerson: async (accessToken: string, dto: PersonUpdateDto) => {
+    // TODO fix createPerson to accept a body
+    const { id } = await createPerson({ headers: asBearerAuth(accessToken) });
+    await dbUtils.setPersonThumbnail(id);
+    return updatePerson(
+      { id, personUpdateDto: dto },
+      { headers: asBearerAuth(accessToken) }
+    );
+  },
+  createSharedLink: (accessToken: string, dto: SharedLinkCreateDto) =>
+    createSharedLink(
+      { sharedLinkCreateDto: dto },
+      { headers: asBearerAuth(accessToken) }
+    ),
 };
 
 export const cliUtils = {

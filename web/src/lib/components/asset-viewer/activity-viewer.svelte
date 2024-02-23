@@ -24,12 +24,13 @@
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import UserAvatar from '../shared-components/user-avatar.svelte';
+  import { locale } from '$lib/stores/preferences.store';
 
   const units: Intl.RelativeTimeFormatUnit[] = ['year', 'month', 'week', 'day', 'hour', 'minute', 'second'];
 
   const shouldGroup = (currentDate: string, nextDate: string): boolean => {
-    const currentDateTime = luxon.DateTime.fromISO(currentDate);
-    const nextDateTime = luxon.DateTime.fromISO(nextDate);
+    const currentDateTime = luxon.DateTime.fromISO(currentDate, { locale: $locale });
+    const nextDateTime = luxon.DateTime.fromISO(nextDate, { locale: $locale });
 
     return currentDateTime.hasSame(nextDateTime, 'hour') || currentDateTime.toRelative() === nextDateTime.toRelative();
   };
@@ -224,7 +225,7 @@
                 class="pt-1 px-2 text-right w-full text-sm text-gray-500 dark:text-gray-300"
                 title={new Date(reaction.createdAt).toLocaleDateString(undefined, timeOptions)}
               >
-                {timeSince(luxon.DateTime.fromISO(reaction.createdAt))}
+                {timeSince(luxon.DateTime.fromISO(reaction.createdAt, { locale: $locale }))}
               </div>
             {/if}
           {:else if reaction.type === 'like'}
@@ -269,7 +270,7 @@
                   class="pt-1 px-2 text-right w-full text-sm text-gray-500 dark:text-gray-300"
                   title={new Date(reaction.createdAt).toLocaleDateString(navigator.language, timeOptions)}
                 >
-                  {timeSince(luxon.DateTime.fromISO(reaction.createdAt))}
+                  {timeSince(luxon.DateTime.fromISO(reaction.createdAt, { locale: $locale }))}
                 </div>
               {/if}
             </div>
@@ -291,8 +292,9 @@
               {disabled}
               bind:this={textArea}
               bind:value={message}
+              use:autoGrowHeight={'5px'}
               placeholder={disabled ? 'Comments are disabled' : 'Say something'}
-              on:input={() => autoGrowHeight(textArea)}
+              on:input={() => autoGrowHeight(textArea, '5px')}
               on:keypress={handleEnter}
               class="h-[18px] {disabled
                 ? 'cursor-not-allowed'
