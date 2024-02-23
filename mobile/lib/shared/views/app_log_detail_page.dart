@@ -133,7 +133,8 @@ class AppLogDetailPage extends HookConsumerWidget {
             if (logMessage.context1 != null)
               buildLogContext1(logMessage.context1.toString()),
             if (logMessage.context2 != null)
-              buildTextWithCopyButton("STACK TRACE", logMessage.context2.toString()),
+              buildTextWithCopyButton(
+                  "STACK TRACE", logMessage.context2.toString()),
           ],
         ),
       ),

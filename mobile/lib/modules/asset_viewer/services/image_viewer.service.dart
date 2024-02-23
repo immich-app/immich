@@ -39,7 +39,8 @@ class ImageViewerService {
             motionReponse.statusCode != 200) {
           final failedResponse =
               imageResponse.statusCode != 200 ? imageResponse : motionReponse;
-          _log.severe("Motion asset download failed", failedResponse.toLoggerString());
+          _log.severe(
+              "Motion asset download failed", failedResponse.toLoggerString());
           return false;
         }
 

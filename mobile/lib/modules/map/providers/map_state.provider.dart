@@ -51,7 +51,8 @@ class MapStateNotifier extends _$MapStateNotifier {
       state = state.copyWith(
         lightStyleFetched: AsyncError(lightResponse.body, StackTrace.current),
       );
-      _log.severe("Cannot fetch map light style", lightResponse.toLoggerString());
+      _log.severe(
+          "Cannot fetch map light style", lightResponse.toLoggerString());
       return;
     }
 
