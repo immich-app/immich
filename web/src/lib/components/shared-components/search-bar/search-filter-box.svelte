@@ -1,49 +1,13 @@
-<script lang="ts">
-  import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
-  import Button from '$lib/components/elements/buttons/button.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
-  import { getPeopleThumbnailUrl } from '$lib/utils';
-  import { handleError } from '$lib/utils/handle-error';
-  import {
-    AssetTypeEnum,
-    SearchSuggestionType,
-    type PersonResponseDto,
-    type SmartSearchDto,
-    type MetadataSearchDto,
-  } from '@immich/sdk';
-  import { getAllPeople, getSearchSuggestions } from '@immich/sdk';
-  import { mdiArrowRight, mdiClose } from '@mdi/js';
-  import { createEventDispatcher, onMount } from 'svelte';
-  import { fly } from 'svelte/transition';
-  import Combobox, { type ComboBoxOption } from '../combobox.svelte';
-  import { parseUtcDate } from '$lib/utils/date-time';
-
-  enum MediaType {
+<script lang="ts" context="module">
+  export enum MediaType {
     All = 'all',
     Image = 'image',
     Video = 'video',
   }
 
-  type SearchSuggestion = {
-    people: PersonResponseDto[];
-    country: ComboBoxOption[];
-    state: ComboBoxOption[];
-    city: ComboBoxOption[];
-    make: ComboBoxOption[];
-    model: ComboBoxOption[];
-  };
-
-  type SearchParams = {
-    state?: string;
-    country?: string;
-    city?: string;
-    cameraMake?: string;
-    cameraModel?: string;
-  };
-
-  type SearchFilter = {
+  export type SearchFilter = {
     context?: string;
-    people: (PersonResponseDto | Pick<PersonResponseDto, 'id'>)[];
+    people: PersonResponseDto[];
 
     location: {
       country?: ComboBoxOption;
@@ -66,6 +30,47 @@
     isNotInAlbum?: boolean;
 
     mediaType: MediaType;
+  };
+
+  export type SearchParams = {
+    state?: string;
+    country?: string;
+    city?: string;
+    cameraMake?: string;
+    cameraModel?: string;
+  };
+</script>
+
+<script lang="ts">
+  import Button from '$lib/components/elements/buttons/button.svelte';
+  import { handleError } from '$lib/utils/handle-error';
+  import {
+    AssetTypeEnum,
+    type PersonResponseDto,
+    type SmartSearchDto,
+    type MetadataSearchDto,
+    type SearchSuggestionResponseDto,
+  } from '@immich/sdk';
+  import { getAllPeople, getSearchSuggestions } from '@immich/sdk';
+  import { createEventDispatcher, onMount } from 'svelte';
+  import { fly } from 'svelte/transition';
+  import { type ComboBoxOption } from '../combobox.svelte';
+  import { DateTime } from 'luxon';
+  import SearchPeopleSection from './search-people-section.svelte';
+  import SearchLocationSection from './search-location-section.svelte';
+  import SearchCameraSection from './search-camera-section.svelte';
+  import SearchDateSection from './search-date-section.svelte';
+  import SearchMediaSection from './search-media-section.svelte';
+  import { mapValues } from 'lodash-es';
+  import { parseUtcDate } from '$lib/utils/date-time';
+
+  type SearchSuggestion = {
+    people: PersonResponseDto[];
+    country: ComboBoxOption[];
+    state: ComboBoxOption[];
+    city: ComboBoxOption[];
+    make: ComboBoxOption[];
+    model: ComboBoxOption[];
   };
 
   export let searchQuery: MetadataSearchDto | SmartSearchDto;
@@ -102,18 +107,16 @@
   };
 
   const dispatch = createEventDispatcher<{ search: SmartSearchDto | MetadataSearchDto }>();
-  let showAllPeople = false;
 
   let filterBoxWidth = 0;
-  $: numberOfPeople = (filterBoxWidth - 80) / 85;
-  $: peopleList = showAllPeople ? suggestions.people : suggestions.people.slice(0, numberOfPeople);
 
   onMount(() => {
     getPeople();
+    updateSuggestions();
     populateExistingFilters();
   });
 
-  function orderBySelectedPeopleFirst<T extends Pick<PersonResponseDto, 'id'>>(people: T[]) {
+  function orderBySelectedPeopleFirst(people: PersonResponseDto[]) {
     return people.sort((a, _) => {
       if (filter.people.some((p) => p.id === a.id)) {
         return -1;
@@ -131,80 +134,31 @@
     }
   };
 
-  const handlePeopleSelection = (id: string) => {
-    if (filter.people.some((p) => p.id === id)) {
-      filter.people = filter.people.filter((p) => p.id !== id);
-      return;
-    }
-
-    const person = suggestions.people.find((p) => p.id === id);
-    if (person) {
-      filter.people = [...filter.people, person];
-    }
-  };
-
-  const updateSuggestion = async (type: SearchSuggestionType, params: SearchParams) => {
-    if (
-      type === SearchSuggestionType.City ||
-      type === SearchSuggestionType.State ||
-      type === SearchSuggestionType.Country
-    ) {
-      suggestions = { ...suggestions, city: [], state: [], country: [] };
-    }
-
-    if (type === SearchSuggestionType.CameraMake || type === SearchSuggestionType.CameraModel) {
-      suggestions = { ...suggestions, make: [], model: [] };
-    }
-
+  const updateSuggestions = async () => {
+    let data: SearchSuggestionResponseDto;
     try {
-      const data = await getSearchSuggestions({
-        $type: type,
-        country: params.country,
-        state: params.state,
-        make: params.cameraMake,
-        model: params.cameraModel,
+      data = await getSearchSuggestions({
+        country: filter.location.country?.value,
+        state: filter.location.state?.value,
+        make: filter.camera.make?.value,
+        model: filter.camera.model?.value,
       });
-
-      switch (type) {
-        case SearchSuggestionType.Country: {
-          for (const country of data) {
-            suggestions.country = [...suggestions.country, { label: country, value: country }];
-          }
-          break;
-        }
-
-        case SearchSuggestionType.State: {
-          for (const state of data) {
-            suggestions.state = [...suggestions.state, { label: state, value: state }];
-          }
-
-          break;
-        }
-
-        case SearchSuggestionType.City: {
-          for (const city of data) {
-            suggestions.city = [...suggestions.city, { label: city, value: city }];
-          }
-          break;
-        }
-
-        case SearchSuggestionType.CameraMake: {
-          for (const make of data) {
-            suggestions.make = [...suggestions.make, { label: make, value: make }];
-          }
-          break;
-        }
-
-        case SearchSuggestionType.CameraModel: {
-          for (const model of data) {
-            suggestions.model = [...suggestions.model, { label: model, value: model }];
-          }
-          break;
-        }
-      }
     } catch (error) {
       handleError(error, 'Failed to get search suggestions');
+      return;
     }
+    const newSuggestions = mapValues(data, (items) =>
+      items.map<ComboBoxOption>((item) => ({ label: item, value: item })),
+    );
+
+    suggestions = {
+      ...suggestions,
+      city: newSuggestions.cities,
+      state: newSuggestions.states,
+      country: newSuggestions.countries,
+      make: newSuggestions.cameraMakes,
+      model: newSuggestions.cameraModels,
+    };
   };
 
   const resetForm = () => {
@@ -282,7 +236,9 @@
 
       filter = {
         context: 'query' in searchQuery ? searchQuery.query : '',
-        people: orderBySelectedPeopleFirst(personIds.map((id) => ({ id }))),
+        people: orderBySelectedPeopleFirst(
+          personIds.map((id) => suggestions.people.find((person) => person.id === id)!),
+        ),
         location: {
           country: searchQuery.country ? { label: searchQuery.country, value: searchQuery.country } : undefined,
           state: searchQuery.state ? { label: searchQuery.state, value: searchQuery.state } : undefined,
@@ -323,55 +279,11 @@
   >
     <div class="px-4 sm:px-6 py-4 space-y-10 max-h-[calc(100dvh-12rem)] overflow-y-auto immich-scrollbar">
       <!-- PEOPLE -->
-      {#if suggestions.people.length > 0}
-        <div id="people-selection" class="-mb-4">
-          <div class="flex items-center gap-6">
-            <p class="immich-form-label">PEOPLE</p>
-          </div>
-
-          <div class="flex -mx-1 max-h-64 gap-1 mt-2 flex-wrap overflow-y-auto immich-scrollbar">
-            {#each peopleList as person (person.id)}
-              <button
-                type="button"
-                class="w-20 text-center rounded-3xl border-2 border-transparent hover:bg-immich-gray dark:hover:bg-immich-dark-primary/20 p-2 transition-all {filter.people.some(
-                  (p) => p.id === person.id,
-                )
-                  ? 'dark:border-slate-500 border-slate-400 bg-slate-200 dark:bg-slate-800 dark:text-white'
-                  : ''}"
-                on:click={() => handlePeopleSelection(person.id)}
-              >
-                <ImageThumbnail
-                  circle
-                  shadow
-                  url={getPeopleThumbnailUrl(person.id)}
-                  altText={person.name}
-                  widthStyle="100%"
-                />
-                <p class="mt-2 line-clamp-2 text-sm font-medium dark:text-white">{person.name}</p>
-              </button>
-            {/each}
-          </div>
-
-          {#if showAllPeople || suggestions.people.length > peopleList.length}
-            <div class="flex justify-center mt-2">
-              <Button
-                shadow={false}
-                color="text-primary"
-                class="flex gap-2 place-items-center"
-                on:click={() => (showAllPeople = !showAllPeople)}
-              >
-                {#if showAllPeople}
-                  <span><Icon path={mdiClose} /></span>
-                  Collapse
-                {:else}
-                  <span><Icon path={mdiArrowRight} /></span>
-                  See all people
-                {/if}
-              </Button>
-            </div>
-          {/if}
-        </div>
-      {/if}
+      <SearchPeopleSection
+        width={filterBoxWidth}
+        suggestedPeople={suggestions.people}
+        bind:filteredPeople={filter.people}
+      />
 
       <!-- CONTEXT -->
       <div>
@@ -389,151 +301,28 @@
       </div>
 
       <!-- LOCATION -->
-      <div id="location-selection">
-        <p class="immich-form-label">PLACE</p>
-
-        <div class="grid grid-cols-[repeat(auto-fit,minmax(10rem,1fr))] gap-5 mt-1">
-          <div class="w-full">
-            <label class="text-sm text-black dark:text-white" for="search-place-country">Country</label>
-            <Combobox
-              id="search-place-country"
-              options={suggestions.country}
-              bind:selectedOption={filter.location.country}
-              placeholder="Search country..."
-              on:click={() => updateSuggestion(SearchSuggestionType.Country, {})}
-            />
-          </div>
-
-          <div class="w-full">
-            <label class="text-sm text-black dark:text-white" for="search-place-state">State</label>
-            <Combobox
-              id="search-place-state"
-              options={suggestions.state}
-              bind:selectedOption={filter.location.state}
-              placeholder="Search state..."
-              on:click={() => updateSuggestion(SearchSuggestionType.State, { country: filter.location.country?.value })}
-            />
-          </div>
-
-          <div class="w-full">
-            <label class="text-sm text-black dark:text-white" for="search-place-city">City</label>
-            <Combobox
-              id="search-place-city"
-              options={suggestions.city}
-              bind:selectedOption={filter.location.city}
-              placeholder="Search city..."
-              on:click={() =>
-                updateSuggestion(SearchSuggestionType.City, {
-                  country: filter.location.country?.value,
-                  state: filter.location.state?.value,
-                })}
-            />
-          </div>
-        </div>
-      </div>
+      <SearchLocationSection
+        suggestedCities={suggestions.city}
+        suggestedCountries={suggestions.country}
+        suggestedStates={suggestions.state}
+        bind:filteredLocation={filter.location}
+        {updateSuggestions}
+      />
 
       <!-- CAMERA MODEL -->
-      <div id="camera-selection">
-        <p class="immich-form-label">CAMERA</p>
-
-        <div class="grid grid-cols-[repeat(auto-fit,minmax(10rem,1fr))] gap-5 mt-1">
-          <div class="w-full">
-            <label class="text-sm text-black dark:text-white" for="search-camera-make">Make</label>
-            <Combobox
-              id="search-camera-make"
-              options={suggestions.make}
-              bind:selectedOption={filter.camera.make}
-              placeholder="Search camera make..."
-              on:click={() =>
-                updateSuggestion(SearchSuggestionType.CameraMake, { cameraModel: filter.camera.model?.value })}
-            />
-          </div>
-
-          <div class="w-full">
-            <label class="text-sm text-black dark:text-white" for="search-camera-model">Model</label>
-            <Combobox
-              id="search-camera-model"
-              options={suggestions.model}
-              bind:selectedOption={filter.camera.model}
-              placeholder="Search camera model..."
-              on:click={() =>
-                updateSuggestion(SearchSuggestionType.CameraModel, { cameraMake: filter.camera.make?.value })}
-            />
-          </div>
-        </div>
-      </div>
+      <SearchCameraSection
+        suggestedMakes={suggestions.make}
+        suggestedModels={suggestions.model}
+        bind:filteredCamera={filter.camera}
+        {updateSuggestions}
+      />
 
       <!-- DATE RANGE -->
-      <div id="date-range-selection" class="grid grid-cols-[repeat(auto-fit,minmax(10rem,1fr))] gap-5">
-        <label class="immich-form-label" for="start-date">
-          <span>START DATE</span>
-          <input
-            class="immich-form-input w-full mt-1 hover:cursor-pointer"
-            type="date"
-            id="start-date"
-            name="start-date"
-            max={filter.date.takenBefore}
-            bind:value={filter.date.takenAfter}
-          />
-        </label>
-
-        <label class="immich-form-label" for="end-date">
-          <span>END DATE</span>
-          <input
-            class="immich-form-input w-full mt-1 hover:cursor-pointer"
-            type="date"
-            id="end-date"
-            name="end-date"
-            placeholder=""
-            min={filter.date.takenAfter}
-            bind:value={filter.date.takenBefore}
-          />
-        </label>
-      </div>
+      <SearchDateSection bind:filteredDate={filter.date} />
 
       <div class="grid md:grid-cols-2 gap-x-5 gap-y-8">
         <!-- MEDIA TYPE -->
-        <div id="media-type-selection">
-          <p class="immich-form-label">MEDIA TYPE</p>
-
-          <div class="flex gap-5 mt-1 text-base">
-            <label for="type-all" class="flex items-center gap-1">
-              <input
-                bind:group={filter.mediaType}
-                value={MediaType.All}
-                type="radio"
-                name="radio-type"
-                id="type-all"
-                class="size-4"
-              />
-              <span class="pt-0.5">All</span>
-            </label>
-
-            <label for="type-image" class="flex items-center gap-1">
-              <input
-                bind:group={filter.mediaType}
-                value={MediaType.Image}
-                type="radio"
-                name="media-type"
-                id="type-image"
-                class="size-4"
-              />
-              <span class="pt-0.5">Image</span>
-            </label>
-
-            <label for="type-video" class="flex items-center gap-1">
-              <input
-                bind:group={filter.mediaType}
-                value={MediaType.Video}
-                type="radio"
-                name="radio-type"
-                id="type-video"
-                class="size-4"
-              />
-              <span class="pt-0.5">Video</span>
-            </label>
-          </div>
-        </div>
+        <SearchMediaSection bind:filteredMedia={filter.mediaType} />
 
         <!-- DISPLAY OPTIONS -->
         <div id="display-options-selection" class="text-sm">
