@@ -90,7 +90,7 @@ class AssetService {
       return allAssets;
     } catch (error, stack) {
       log.severe(
-        'Error while getting remote assets: ${error.toString()}',
+        'Error while getting remote assets',
         error,
         stack,
       );
@@ -117,7 +117,7 @@ class AssetService {
       );
       return true;
     } catch (error, stack) {
-      log.severe("Error deleteAssets  ${error.toString()}", error, stack);
+      log.severe("Error while deleting assets", error, stack);
     }
     return false;
   }
