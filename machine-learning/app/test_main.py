@@ -279,7 +279,7 @@ class TestBase:
 
         mock_ann.assert_not_called()
         mock_ort.assert_not_called()
-        
+
     def test_make_session_changes_cwd(self, mocker: MockerFixture) -> None:
         mock_model_path = mocker.Mock()
         mock_model_path.is_file.return_value = True
