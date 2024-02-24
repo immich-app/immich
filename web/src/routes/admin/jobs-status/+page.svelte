@@ -14,15 +14,11 @@
 
   let jobs: AllJobStatusResponseDto;
 
-  const load = async () => {
-    jobs = await getAllJobsStatus();
-  };
-
   let running = true;
 
   onMount(async () => {
     while (running) {
-      await load();
+      await getAllJobsStatus();
       await asyncTimeout(5000);
     }
   });
