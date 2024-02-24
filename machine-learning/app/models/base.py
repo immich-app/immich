@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+import os
 from pathlib import Path
 from shutil import rmtree
 from typing import Any
@@ -124,12 +125,15 @@ class InferenceModel(ABC):
             case ".armnn":
                 session = AnnSession(model_path)
             case ".onnx":
+                cwd = os.getcwd()
+                os.chdir(model_path.parent)
                 session = ort.InferenceSession(
                     model_path.as_posix(),
                     sess_options=self.sess_options,
                     providers=self.providers,
                     provider_options=self.provider_options,
                 )
+                os.chdir(cwd)
             case _:
                 raise ValueError(f"Unsupported model file type: {model_path.suffix}")
         return session

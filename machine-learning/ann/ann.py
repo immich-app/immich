@@ -32,8 +32,7 @@ T = TypeVar("T", covariant=True)
 
 
 class Newable(Protocol[T]):
-    def new(self) -> None:
-        ...
+    def new(self) -> None: ...
 
 
 class _Singleton(type, Newable[T]):
