@@ -49,19 +49,17 @@
     type PersonResponseDto,
     type SmartSearchDto,
     type MetadataSearchDto,
-    type SearchSuggestionResponseDto,
+    SearchSuggestionType,
   } from '@immich/sdk';
   import { getAllPeople, getSearchSuggestions } from '@immich/sdk';
   import { createEventDispatcher, onMount } from 'svelte';
   import { fly } from 'svelte/transition';
   import { type ComboBoxOption } from '../combobox.svelte';
-  import { DateTime } from 'luxon';
   import SearchPeopleSection from './search-people-section.svelte';
   import SearchLocationSection from './search-location-section.svelte';
   import SearchCameraSection from './search-camera-section.svelte';
   import SearchDateSection from './search-date-section.svelte';
   import SearchMediaSection from './search-media-section.svelte';
-  import { mapValues } from 'lodash-es';
   import { parseUtcDate } from '$lib/utils/date-time';
 
   type SearchSuggestion = {
@@ -135,29 +133,53 @@
   };
 
   const updateSuggestions = async () => {
-    let data: SearchSuggestionResponseDto;
+    let data: {
+      countries: ComboBoxOption[];
+      states: ComboBoxOption[];
+      cities: ComboBoxOption[];
+      makes: ComboBoxOption[];
+      models: ComboBoxOption[];
+    };
     try {
-      data = await getSearchSuggestions({
+      const countries = await getSearchSuggestions({
+        $type: SearchSuggestionType.State,
+      });
+      const states = await getSearchSuggestions({
+        $type: SearchSuggestionType.State,
+        country: filter.location.country?.value,
+      });
+      const cities = await getSearchSuggestions({
+        $type: SearchSuggestionType.City,
         country: filter.location.country?.value,
         state: filter.location.state?.value,
-        make: filter.camera.make?.value,
+      });
+      const makes = await getSearchSuggestions({
+        $type: SearchSuggestionType.CameraMake,
         model: filter.camera.model?.value,
       });
+      const models = await getSearchSuggestions({
+        $type: SearchSuggestionType.CameraModel,
+        make: filter.camera.make?.value,
+      });
+
+      data = {
+        countries: countries.map<ComboBoxOption>((item) => ({ label: item, value: item })),
+        states: states.map<ComboBoxOption>((item) => ({ label: item, value: item })),
+        cities: cities.map<ComboBoxOption>((item) => ({ label: item, value: item })),
+        makes: makes.map<ComboBoxOption>((item) => ({ label: item, value: item })),
+        models: models.map<ComboBoxOption>((item) => ({ label: item, value: item })),
+      };
     } catch (error) {
       handleError(error, 'Failed to get search suggestions');
       return;
     }
-    const newSuggestions = mapValues(data, (items) =>
-      items.map<ComboBoxOption>((item) => ({ label: item, value: item })),
-    );
-
     suggestions = {
       ...suggestions,
-      city: newSuggestions.cities,
-      state: newSuggestions.states,
-      country: newSuggestions.countries,
-      make: newSuggestions.cameraMakes,
-      model: newSuggestions.cameraModels,
+      city: data.cities,
+      state: data.states,
+      country: data.countries,
+      make: data.makes,
+      model: data.models,
     };
   };
 

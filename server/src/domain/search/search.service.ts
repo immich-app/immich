@@ -25,7 +25,7 @@ import {
   SmartSearchDto,
   mapPlaces,
 } from './dto';
-import { SearchSuggestionRequestDto, SearchSuggestionResponseDto } from './dto/search-suggestion.dto';
+import { SearchSuggestionRequestDto, SearchSuggestionType } from './dto/search-suggestion.dto';
 import { SearchResponseDto } from './response-dto';
 
 @Injectable()
@@ -194,13 +194,23 @@ export class SearchService {
     };
   }
 
-  async getSearchSuggestions(auth: AuthDto, dto: SearchSuggestionRequestDto): Promise<SearchSuggestionResponseDto> {
-    return {
-      countries: await this.metadataRepository.getCountries(auth.user.id),
-      states: await this.metadataRepository.getStates(auth.user.id, dto.country),
-      cities: await this.metadataRepository.getCities(auth.user.id, dto.country, dto.state),
-      cameraMakes: await this.metadataRepository.getCameraMakes(auth.user.id, dto.model),
-      cameraModels: await this.metadataRepository.getCameraModels(auth.user.id, dto.make),
-    };
+  async getSearchSuggestions(auth: AuthDto, dto: SearchSuggestionRequestDto): Promise<string[]> {
+    switch (dto.type) {
+      case SearchSuggestionType.COUNTRY: {
+        return this.metadataRepository.getCountries(auth.user.id);
+      }
+      case SearchSuggestionType.STATE: {
+        return this.metadataRepository.getStates(auth.user.id, dto.country);
+      }
+      case SearchSuggestionType.CITY: {
+        return this.metadataRepository.getCities(auth.user.id, dto.country, dto.state);
+      }
+      case SearchSuggestionType.CAMERA_MAKE: {
+        return this.metadataRepository.getCameraMakes(auth.user.id, dto.model);
+      }
+      case SearchSuggestionType.CAMERA_MODEL: {
+        return this.metadataRepository.getCameraModels(auth.user.id, dto.make);
+      }
+    }
   }
 }
