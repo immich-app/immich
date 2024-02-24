@@ -35,6 +35,7 @@
   import type { Viewport } from '$lib/stores/assets.store';
   import { locale } from '$lib/stores/preferences.store';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
+  import { parseUtcDate } from '$lib/utils/date-time';
 
   const MAX_ASSET_COUNT = 5000;
   let { isViewing: showAssetViewer } = assetViewingStore;
@@ -143,13 +144,16 @@
     isLoading = false;
   };
 
-  function getHumanReadableDate(date: string) {
-    const d = new Date(date);
-    return d.toLocaleDateString($locale, {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
+  function getHumanReadableDate(dateString: string) {
+    const date = parseUtcDate(dateString).startOf('day');
+    return date.toLocaleString(
+      {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      },
+      { locale: $locale },
+    );
   }
 
   function getHumanReadableSearchKey(key: keyof SearchTerms): string {
