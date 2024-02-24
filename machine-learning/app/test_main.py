@@ -1,6 +1,6 @@
 import json
-from io import BytesIO
 import os
+from io import BytesIO
 from pathlib import Path
 from random import randint
 from types import SimpleNamespace

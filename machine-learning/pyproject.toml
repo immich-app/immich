@@ -82,10 +82,10 @@ warn_untyped_fields = true
 [tool.ruff]
 line-length = 120
 target-version = "py311"
-select = ["E", "F", "I"]
 
-[tool.ruff.per-file-ignores]
-"test_main.py" = ["F403"]
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+per-file-ignores = { "test_main.py" = ["F403"] }
 
 [tool.black]
 line-length = 120
