@@ -13,12 +13,11 @@ import { vectorExt } from '@app/infra/database.config';
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import AsyncLock from 'async-lock';
-import { Span } from 'nestjs-otel';
 import { DataSource, EntityManager, QueryRunner } from 'typeorm';
-import { DecorateAll, isValidInteger } from '../infra.utils';
+import { DecorateAll, ExecutionTimeHistogram, isValidInteger } from '../infra.utils';
 import { ImmichLogger } from '../logger';
 
-@DecorateAll(Span())
+@DecorateAll(ExecutionTimeHistogram())
 @Injectable()
 export class DatabaseRepository implements IDatabaseRepository {
   private logger = new ImmichLogger(DatabaseRepository.name);

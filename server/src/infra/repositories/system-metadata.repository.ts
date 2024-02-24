@@ -1,11 +1,10 @@
 import { ISystemMetadataRepository } from '@app/domain/repositories/system-metadata.repository';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Span } from 'nestjs-otel';
 import { Repository } from 'typeorm';
 import { SystemMetadata, SystemMetadataEntity } from '../entities';
-import { DecorateAll } from '../infra.utils';
+import { DecorateAll, ExecutionTimeHistogram } from '../infra.utils';
 
-@DecorateAll(Span())
+@DecorateAll(ExecutionTimeHistogram())
 export class SystemMetadataRepository implements ISystemMetadataRepository {
   constructor(
     @InjectRepository(SystemMetadataEntity)

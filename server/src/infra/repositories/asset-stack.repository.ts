@@ -1,12 +1,11 @@
 import { IAssetStackRepository } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Span } from 'nestjs-otel';
 import { Repository } from 'typeorm';
 import { AssetStackEntity } from '../entities';
-import { DecorateAll } from '../infra.utils';
+import { DecorateAll, ExecutionTimeHistogram } from '../infra.utils';
 
-@DecorateAll(Span())
+@DecorateAll(ExecutionTimeHistogram())
 @Injectable()
 export class AssetStackRepository implements IAssetStackRepository {
   constructor(@InjectRepository(AssetStackEntity) private repository: Repository<AssetStackEntity>) {}

@@ -12,13 +12,12 @@ import { ImmichLogger } from '@app/infra/logger';
 import archiver from 'archiver';
 import chokidar, { WatchOptions } from 'chokidar';
 import { glob } from 'fast-glob';
-import { Span } from 'nestjs-otel';
 import { constants, createReadStream, existsSync, mkdirSync } from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { DecorateAll } from '../infra.utils';
+import { DecorateAll, ExecutionTimeHistogram } from '../infra.utils';
 
-@DecorateAll(Span())
+@DecorateAll(ExecutionTimeHistogram())
 export class FilesystemProvider implements IStorageRepository {
   private logger = new ImmichLogger(FilesystemProvider.name);
 

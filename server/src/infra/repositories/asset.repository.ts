@@ -25,7 +25,6 @@ import {
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DateTime } from 'luxon';
-import { Span } from 'nestjs-otel';
 import path from 'node:path';
 import {
   Brackets,
@@ -43,6 +42,7 @@ import {
   Chunked,
   ChunkedArray,
   DecorateAll,
+  ExecutionTimeHistogram,
   OptionalBetween,
   paginate,
   paginatedBuilder,
@@ -59,7 +59,7 @@ const dateTrunc = (options: TimeBucketOptions) =>
     truncateMap[options.size]
   }', (asset."localDateTime" at time zone 'UTC')) at time zone 'UTC')::timestamptz`;
 
-@DecorateAll(Span())
+@DecorateAll(ExecutionTimeHistogram())
 @Injectable()
 export class AssetRepository implements IAssetRepository {
   constructor(

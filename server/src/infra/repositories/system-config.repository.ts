@@ -1,13 +1,12 @@
 import { ISystemConfigRepository } from '@app/domain';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Span } from 'nestjs-otel';
 import { readFile } from 'node:fs/promises';
 import { In, Repository } from 'typeorm';
 import { SystemConfigEntity } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';
-import { Chunked, DecorateAll } from '../infra.utils';
+import { Chunked, DecorateAll, ExecutionTimeHistogram } from '../infra.utils';
 
-@DecorateAll(Span())
+@DecorateAll(ExecutionTimeHistogram())
 export class SystemConfigRepository implements ISystemConfigRepository {
   constructor(
     @InjectRepository(SystemConfigEntity)

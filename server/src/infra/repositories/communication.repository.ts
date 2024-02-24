@@ -14,11 +14,10 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { Span } from 'nestjs-otel';
 import { Server, Socket } from 'socket.io';
-import { DecorateAll } from '../infra.utils';
+import { DecorateAll, ExecutionTimeHistogram } from '../infra.utils';
 
-@DecorateAll(Span())
+@DecorateAll(ExecutionTimeHistogram())
 @WebSocketGateway({
   cors: true,
   path: '/api/socket.io',

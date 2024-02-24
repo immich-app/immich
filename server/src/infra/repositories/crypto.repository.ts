@@ -1,12 +1,11 @@
 import { ICryptoRepository } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { compareSync, hash } from 'bcrypt';
-import { Span } from 'nestjs-otel';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { createReadStream } from 'node:fs';
-import { DecorateAll } from '../infra.utils';
+import { DecorateAll, ExecutionTimeHistogram } from '../infra.utils';
 
-@DecorateAll(Span())
+@DecorateAll(ExecutionTimeHistogram())
 @Injectable()
 export class CryptoRepository implements ICryptoRepository {
   randomUUID() {

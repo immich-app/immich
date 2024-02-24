@@ -2,11 +2,10 @@ import { ITagRepository } from '@app/domain';
 import { AssetEntity, TagEntity } from '@app/infra/entities';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Span } from 'nestjs-otel';
 import { Repository } from 'typeorm';
-import { DecorateAll } from '../infra.utils';
+import { DecorateAll, ExecutionTimeHistogram } from '../infra.utils';
 
-@DecorateAll(Span())
+@DecorateAll(ExecutionTimeHistogram())
 @Injectable()
 export class TagRepository implements ITagRepository {
   constructor(

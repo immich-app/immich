@@ -1,11 +1,10 @@
 import { IActivityRepository } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Span } from 'nestjs-otel';
 import { IsNull, Repository } from 'typeorm';
 import { ActivityEntity } from '../entities/activity.entity';
 import { DummyValue, GenerateSql } from '../infra.util';
-import { DecorateAll } from '../infra.utils';
+import { DecorateAll, ExecutionTimeHistogram } from '../infra.utils';
 
 export interface ActivitySearch {
   albumId?: string;
@@ -14,7 +13,7 @@ export interface ActivitySearch {
   isLiked?: boolean;
 }
 
-@DecorateAll(Span())
+@DecorateAll(ExecutionTimeHistogram())
 @Injectable()
 export class ActivityRepository implements IActivityRepository {
   constructor(@InjectRepository(ActivityEntity) private repository: Repository<ActivityEntity>) {}

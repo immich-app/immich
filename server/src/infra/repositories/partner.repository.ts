@@ -1,12 +1,11 @@
 import { IPartnerRepository, PartnerIds } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Span } from 'nestjs-otel';
 import { DeepPartial, Repository } from 'typeorm';
 import { PartnerEntity } from '../entities';
-import { DecorateAll } from '../infra.utils';
+import { DecorateAll, ExecutionTimeHistogram } from '../infra.utils';
 
-@DecorateAll(Span())
+@DecorateAll(ExecutionTimeHistogram())
 @Injectable()
 export class PartnerRepository implements IPartnerRepository {
   constructor(@InjectRepository(PartnerEntity) private readonly repository: Repository<PartnerEntity>) {}

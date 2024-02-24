@@ -11,13 +11,12 @@ import {
 } from '@app/domain';
 import { InjectRepository } from '@nestjs/typeorm';
 import _ from 'lodash';
-import { Span } from 'nestjs-otel';
 import { FindManyOptions, FindOptionsRelations, FindOptionsSelect, In, Repository } from 'typeorm';
 import { AssetEntity, AssetFaceEntity, PersonEntity } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';
-import { ChunkedArray, DecorateAll, asVector, paginate } from '../infra.utils';
+import { ChunkedArray, DecorateAll, ExecutionTimeHistogram, asVector, paginate } from '../infra.utils';
 
-@DecorateAll(Span())
+@DecorateAll(ExecutionTimeHistogram())
 export class PersonRepository implements IPersonRepository {
   constructor(
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,

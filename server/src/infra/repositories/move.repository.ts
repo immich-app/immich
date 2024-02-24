@@ -1,13 +1,12 @@
 import { IMoveRepository, MoveCreate } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Span } from 'nestjs-otel';
 import { Repository } from 'typeorm';
 import { MoveEntity, PathType } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';
-import { DecorateAll } from '../infra.utils';
+import { DecorateAll, ExecutionTimeHistogram } from '../infra.utils';
 
-@DecorateAll(Span())
+@DecorateAll(ExecutionTimeHistogram())
 @Injectable()
 export class MoveRepository implements IMoveRepository {
   constructor(@InjectRepository(MoveEntity) private repository: Repository<MoveEntity>) {}

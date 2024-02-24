@@ -22,13 +22,19 @@ import {
 import { ImmichLogger } from '@app/infra/logger';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Span } from 'nestjs-otel';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import { vectorExt } from '../database.config';
 import { DummyValue, GenerateSql } from '../infra.util';
-import { DecorateAll, asVector, isValidInteger, paginatedBuilder, searchAssetBuilder } from '../infra.utils';
+import {
+  DecorateAll,
+  ExecutionTimeHistogram,
+  asVector,
+  isValidInteger,
+  paginatedBuilder,
+  searchAssetBuilder,
+} from '../infra.utils';
 
-@DecorateAll(Span())
+@DecorateAll(ExecutionTimeHistogram())
 @Injectable()
 export class SearchRepository implements ISearchRepository {
   private logger = new ImmichLogger(SearchRepository.name);

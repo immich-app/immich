@@ -13,4 +13,4 @@ scrape_configs:
   
   - job_name: immich_microservices
     static_configs:
-      - targets: ['immich-server:8082']
+      - targets: ['immich-microservices:8081']

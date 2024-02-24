@@ -9,18 +9,17 @@ import {
 import { Colorspace } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
-import { Span } from 'nestjs-otel';
 import fs from 'node:fs/promises';
 import { Writable } from 'node:stream';
 import { promisify } from 'node:util';
 import sharp from 'sharp';
-import { DecorateAll } from '../infra.utils';
+import { DecorateAll, ExecutionTimeHistogram } from '../infra.utils';
 
 const probe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
 sharp.concurrency(0);
 sharp.cache({ files: 0 });
 
-@DecorateAll(Span())
+@DecorateAll(ExecutionTimeHistogram())
 export class MediaRepository implements IMediaRepository {
   private logger = new ImmichLogger(MediaRepository.name);
 

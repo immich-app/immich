@@ -1,11 +1,10 @@
 import { AuditSearch, IAuditRepository } from '@app/domain';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Span } from 'nestjs-otel';
 import { LessThan, MoreThan, Repository } from 'typeorm';
 import { AuditEntity } from '../entities';
-import { DecorateAll } from '../infra.utils';
+import { DecorateAll, ExecutionTimeHistogram } from '../infra.utils';
 
-@DecorateAll(Span())
+@DecorateAll(ExecutionTimeHistogram())
 export class AuditRepository implements IAuditRepository {
   constructor(@InjectRepository(AuditEntity) private repository: Repository<AuditEntity>) {}
 
