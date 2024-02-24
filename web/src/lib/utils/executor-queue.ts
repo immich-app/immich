@@ -56,7 +56,7 @@ export class ExecutorQueue {
     this.tryRun();
   }
 
-  private async tryRun() {
+  private tryRun() {
     if (this.running >= this.concurrency) {
       return;
     }
@@ -66,6 +66,6 @@ export class ExecutorQueue {
       return;
     }
 
-    await runnable();
+    runnable();
   }
 }
