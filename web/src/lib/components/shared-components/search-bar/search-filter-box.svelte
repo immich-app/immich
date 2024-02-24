@@ -16,7 +16,7 @@
   import { createEventDispatcher, onMount } from 'svelte';
   import { fly } from 'svelte/transition';
   import Combobox, { type ComboBoxOption } from '../combobox.svelte';
-  import { DateTime } from 'luxon';
+  import { parseUtcDate } from '$lib/utils/date-time';
 
   enum MediaType {
     All = 'all',
@@ -231,6 +231,9 @@
     };
   };
 
+  const parseOptionalDate = (dateString?: string) => (dateString ? parseUtcDate(dateString) : undefined);
+  const toStartOfDayDate = (dateString: string) => parseUtcDate(dateString)?.startOf('day').toISODate() || undefined;
+
   const search = async () => {
     let type: AssetTypeEnum | undefined = undefined;
 
@@ -246,16 +249,11 @@
       city: filter.location.city?.value,
       make: filter.camera.make?.value,
       model: filter.camera.model?.value,
-      takenAfter: filter.date.takenAfter
-        ? DateTime.fromFormat(filter.date.takenAfter, 'yyyy-MM-dd').toUTC().startOf('day').toString()
-        : undefined,
-      takenBefore: filter.date.takenBefore
-        ? DateTime.fromFormat(filter.date.takenBefore, 'yyyy-MM-dd').toUTC().endOf('day').toString()
-        : undefined,
-      /* eslint-disable unicorn/prefer-logical-operator-over-ternary */
-      isArchived: filter.isArchive ? filter.isArchive : undefined,
-      isFavorite: filter.isFavorite ? filter.isFavorite : undefined,
-      isNotInAlbum: filter.isNotInAlbum ? filter.isNotInAlbum : undefined,
+      takenAfter: parseOptionalDate(filter.date.takenAfter)?.startOf('day').toISO() || undefined,
+      takenBefore: parseOptionalDate(filter.date.takenBefore)?.endOf('day').toISO() || undefined,
+      isArchived: filter.isArchive || undefined,
+      isFavorite: filter.isFavorite || undefined,
+      isNotInAlbum: filter.isNotInAlbum || undefined,
       personIds: filter.people && filter.people.length > 0 ? filter.people.map((p) => p.id) : undefined,
       type,
     };
@@ -295,12 +293,8 @@
           model: searchQuery.model ? { label: searchQuery.model, value: searchQuery.model } : undefined,
         },
         date: {
-          takenAfter: searchQuery.takenAfter
-            ? DateTime.fromISO(searchQuery.takenAfter).toUTC().toFormat('yyyy-MM-dd')
-            : undefined,
-          takenBefore: searchQuery.takenBefore
-            ? DateTime.fromISO(searchQuery.takenBefore).toUTC().toFormat('yyyy-MM-dd')
-            : undefined,
+          takenAfter: searchQuery.takenAfter ? toStartOfDayDate(searchQuery.takenAfter) : undefined,
+          takenBefore: searchQuery.takenBefore ? toStartOfDayDate(searchQuery.takenBefore) : undefined,
         },
         isArchive: searchQuery.isArchived,
         isFavorite: searchQuery.isFavorite,
