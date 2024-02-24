@@ -42,6 +42,11 @@ void main() {
       // TODO
     });
 
+    //Future<List<PlacesResponseDto>> searchPlaces(String name) async
+    test('test searchPlaces', () async {
+      // TODO
+    });
+
     //Future<SearchResponseDto> searchSmart(SmartSearchDto smartSearchDto) async
     test('test searchSmart', () async {
       // TODO

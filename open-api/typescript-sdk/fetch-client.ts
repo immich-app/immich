@@ -646,6 +646,13 @@ export type MetadataSearchDto = {
     withPeople?: boolean;
     withStacked?: boolean;
 };
+export type PlacesResponseDto = {
+    admin1name?: string;
+    admin2name?: string;
+    latitude: number;
+    longitude: number;
+    name: string;
+};
 export type SmartSearchDto = {
     city?: string;
     country?: string;
@@ -2194,6 +2201,18 @@ export function searchPerson({ name, withHidden }: {
     }>(`/search/person${QS.query(QS.explode({
         name,
         withHidden
+    }))}`, {
+        ...opts
+    }));
+}
+export function searchPlaces({ name }: {
+    name: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: PlacesResponseDto[];
+    }>(`/search/places${QS.query(QS.explode({
+        name
     }))}`, {
         ...opts
     }));

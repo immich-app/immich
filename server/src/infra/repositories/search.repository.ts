@@ -12,7 +12,13 @@ import {
   SmartSearchOptions,
 } from '@app/domain';
 import { getCLIPModelInfo } from '@app/domain/smart-info/smart-info.constant';
-import { AssetEntity, AssetFaceEntity, SmartInfoEntity, SmartSearchEntity } from '@app/infra/entities';
+import {
+  AssetEntity,
+  AssetFaceEntity,
+  GeodataPlacesEntity,
+  SmartInfoEntity,
+  SmartSearchEntity,
+} from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -31,6 +37,7 @@ export class SearchRepository implements ISearchRepository {
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
     @InjectRepository(AssetFaceEntity) private assetFaceRepository: Repository<AssetFaceEntity>,
     @InjectRepository(SmartSearchEntity) private smartSearchRepository: Repository<SmartSearchEntity>,
+    @InjectRepository(GeodataPlacesEntity) private readonly geodataPlacesRepository: Repository<GeodataPlacesEntity>,
   ) {
     this.faceColumns = this.assetFaceRepository.manager.connection
       .getMetadata(AssetFaceEntity)
@@ -170,6 +177,27 @@ export class SearchRepository implements ISearchRepository {
       face: this.assetFaceRepository.create(row),
       distance: row.distance,
     }));
+  }
+
+  @GenerateSql({ params: [DummyValue.STRING] })
+  async searchPlaces(placeName: string): Promise<GeodataPlacesEntity[]> {
+    return await this.geodataPlacesRepository
+      .createQueryBuilder('geoplaces')
+      .where(`f_unaccent(name) %>> f_unaccent(:placeName)`)
+      .orWhere(`f_unaccent("admin2Name") %>> f_unaccent(:placeName)`)
+      .orWhere(`f_unaccent("admin1Name") %>> f_unaccent(:placeName)`)
+      .orWhere(`f_unaccent("alternateNames") %>> f_unaccent(:placeName)`)
+      .orderBy(
+        `
+        COALESCE(f_unaccent(name) <->>> f_unaccent(:placeName), 0) +
+        COALESCE(f_unaccent("admin2Name") <->>> f_unaccent(:placeName), 0) +
+        COALESCE(f_unaccent("admin1Name") <->>> f_unaccent(:placeName), 0) +
+        COALESCE(f_unaccent("alternateNames") <->>> f_unaccent(:placeName), 0)
+        `,
+      )
+      .setParameters({ placeName })
+      .limit(20)
+      .getMany();
   }
 
   async upsert(smartInfo: Partial<SmartInfoEntity>, embedding?: Embedding): Promise<void> {
