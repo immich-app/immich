@@ -6,11 +6,8 @@ from pathlib import Path
 from shutil import rmtree
 from typing import Any
 
-import onnx
 import onnxruntime as ort
 from huggingface_hub import snapshot_download
-from onnx.shape_inference import infer_shapes
-from onnx.tools.update_model_dims import update_inputs_outputs_dims
 
 import ann.ann
 from app.models.constants import SUPPORTED_PROVIDERS
