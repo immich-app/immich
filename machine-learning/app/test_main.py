@@ -288,7 +288,6 @@ class TestBase:
         mock_model_path.with_suffix.return_value = mock_model_path
         mock_ort = mocker.patch("app.models.base.ort.InferenceSession")
         mock_chdir = mocker.patch("app.models.base.os.chdir")
-        mock_chdir = mocker.patch("app.models.base.os.chdir")
 
         encoder = OpenCLIPEncoder("ViT-B-32__openai")
         encoder._make_session(mock_model_path)
