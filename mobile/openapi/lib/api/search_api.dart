@@ -63,8 +63,6 @@ class SearchApi {
   /// Performs an HTTP 'GET /search/suggestions' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [SearchSuggestionType] type (required):
-  ///
   /// * [String] country:
   ///
   /// * [String] make:
@@ -72,7 +70,7 @@ class SearchApi {
   /// * [String] model:
   ///
   /// * [String] state:
-  Future<Response> getSearchSuggestionsWithHttpInfo(SearchSuggestionType type, { String? country, String? make, String? model, String? state, }) async {
+  Future<Response> getSearchSuggestionsWithHttpInfo({ String? country, String? make, String? model, String? state, }) async {
     // ignore: prefer_const_declarations
     final path = r'/search/suggestions';
 
@@ -95,7 +93,6 @@ class SearchApi {
     if (state != null) {
       queryParams.addAll(_queryParams('', 'state', state));
     }
-      queryParams.addAll(_queryParams('', 'type', type));
 
     const contentTypes = <String>[];
 
@@ -113,8 +110,6 @@ class SearchApi {
 
   /// Parameters:
   ///
-  /// * [SearchSuggestionType] type (required):
-  ///
   /// * [String] country:
   ///
   /// * [String] make:
@@ -122,8 +117,8 @@ class SearchApi {
   /// * [String] model:
   ///
   /// * [String] state:
-  Future<List<String>?> getSearchSuggestions(SearchSuggestionType type, { String? country, String? make, String? model, String? state, }) async {
-    final response = await getSearchSuggestionsWithHttpInfo(type,  country: country, make: make, model: model, state: state, );
+  Future<SearchSuggestionResponseDto?> getSearchSuggestions({ String? country, String? make, String? model, String? state, }) async {
+    final response = await getSearchSuggestionsWithHttpInfo( country: country, make: make, model: model, state: state, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -131,11 +126,8 @@ class SearchApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<String>') as List)
-        .cast<String>()
-        .toList(growable: false);
-
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'SearchSuggestionResponseDto',) as SearchSuggestionResponseDto;
+    
     }
     return null;
   }

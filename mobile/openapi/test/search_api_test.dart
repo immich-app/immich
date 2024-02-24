@@ -22,7 +22,7 @@ void main() {
       // TODO
     });
 
-    //Future<List<String>> getSearchSuggestions(SearchSuggestionType type, { String country, String make, String model, String state }) async
+    //Future<SearchSuggestionResponseDto> getSearchSuggestions({ String country, String make, String model, String state }) async
     test('test getSearchSuggestions', () async {
       // TODO
     });

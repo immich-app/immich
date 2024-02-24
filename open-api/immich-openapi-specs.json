@@ -4812,14 +4812,6 @@
             "schema": {
               "type": "string"
             }
-          },
-          {
-            "name": "type",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/SearchSuggestionType"
-            }
           }
         ],
         "responses": {
@@ -4827,10 +4819,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "items": {
-                    "type": "string"
-                  },
-                  "type": "array"
+                  "$ref": "#/components/schemas/SearchSuggestionResponseDto"
                 }
               }
             },
@@ -9042,15 +9031,47 @@
         ],
         "type": "object"
       },
-      "SearchSuggestionType": {
-        "enum": [
-          "country",
-          "state",
-          "city",
-          "camera-make",
-          "camera-model"
+      "SearchSuggestionResponseDto": {
+        "properties": {
+          "cameraMakes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "cameraModels": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "cities": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "countries": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "states": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "cameraMakes",
+          "cameraModels",
+          "cities",
+          "countries",
+          "states"
         ],
-        "type": "string"
+        "type": "object"
       },
       "ServerConfigDto": {
         "properties": {
