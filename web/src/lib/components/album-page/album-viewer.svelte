@@ -67,7 +67,7 @@
 
   const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
 
-  onMount(async () => {
+  onMount(() => {
     document.addEventListener('keydown', onKeyboardPress);
   });
 

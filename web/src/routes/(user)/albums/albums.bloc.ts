@@ -46,10 +46,10 @@ export const useAlbums = (properties: AlbumsProperties) => {
     albums.set(get(albums).filter(({ id }) => id !== albumToDelete.id));
   }
 
-  async function showAlbumContextMenu(
+  function showAlbumContextMenu(
     contextMenuDetail: OnShowContextMenuDetail,
     album: AlbumResponseDto,
-  ): Promise<void> {
+  ): void {
     contextMenuTargetAlbum.set(album);
 
     contextMenuPosition.set({

@@ -164,7 +164,7 @@
     }
   };
 
-  const handlePersonPicker = async (index: number) => {
+  const handlePersonPicker = (index: number) => {
     editedPersonIndex = index;
     showSeletecFaces = true;
   };

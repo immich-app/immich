@@ -225,7 +225,7 @@
     }
   });
 
-  const handleKeypress = async (event: KeyboardEvent) => {
+  const handleKeypress = (event: KeyboardEvent) => {
     if (event.target !== textArea) {
       return;
     }
