@@ -13,8 +13,8 @@ module.exports = {
     sourceType: 'module',
     ecmaVersion: 2022,
     extraFileExtensions: ['.svelte'],
-// TODO: set this after https://github.com/sveltejs/kit/pull/11886 is merged and released
-//    project: ['./tsconfig.json'],
+    // TODO: set this after https://github.com/sveltejs/kit/pull/11886 is merged and released
+    // project: ['./tsconfig.json'],
   },
   env: {
     browser: true,

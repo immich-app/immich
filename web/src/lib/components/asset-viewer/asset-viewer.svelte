@@ -180,13 +180,13 @@
   }
 
   onMount(async () => {
-    slideshowStateUnsubscribe = slideshowState.subscribe(async (value) => {
+    slideshowStateUnsubscribe = slideshowState.subscribe((value) => {
       if (value === SlideshowState.PlaySlideshow) {
         slideshowHistory.reset();
         slideshowHistory.queue(asset.id);
         handlePlaySlideshow();
       } else if (value === SlideshowState.StopSlideshow) {
-        await handleStopSlideshow();
+        handleStopSlideshow();
       }
     });
 
@@ -491,8 +491,8 @@
 
   let assetViewerHtmlElement: HTMLElement;
 
-  const slideshowHistory = new SlideshowHistory(async (assetId: string) => {
-    await setAssetId(assetId);
+  const slideshowHistory = new SlideshowHistory((assetId: string) => {
+    setAssetId(assetId);
     $restartSlideshowProgress = true;
   });
 

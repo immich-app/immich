@@ -47,19 +47,18 @@
   $: isEmpty = $assetStore.initialized && $assetStore.buckets.length === 0;
   $: idsSelectedAssets = [...$selectedAssets].filter((a) => !a.isExternal).map((a) => a.id);
 
-  const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
   const dispatch = createEventDispatcher<{ select: AssetResponseDto; escape: void }>();
 
   onMount(async () => {
     showSkeleton = false;
-    document.addEventListener('keydown', onKeyboardPress);
+    document.addEventListener('keydown', handleKeyboardPress);
     assetStore.connect();
     await assetStore.init(viewport);
   });
 
   onDestroy(() => {
     if (browser) {
-      document.removeEventListener('keydown', onKeyboardPress);
+      document.removeEventListener('keydown', handleKeyboardPress);
     }
 
     if ($showAssetViewer) {
@@ -75,7 +74,7 @@
     assetInteractionStore.clearMultiselect();
   };
 
-  const handleKeyboardPress = async (event: KeyboardEvent) => {
+  const handleKeyboardPress = (event: KeyboardEvent) => {
     if ($isSearchEnabled || shouldIgnoreShortcut(event)) {
       return;
     }
@@ -98,7 +97,7 @@
         }
         case '/': {
           event.preventDefault();
-          await goto(AppRoute.EXPLORE);
+          goto(AppRoute.EXPLORE);
           return;
         }
         case 'Delete': {

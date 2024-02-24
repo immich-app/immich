@@ -33,9 +33,9 @@
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
-  dragAndDropFilesStore.subscribe(async (value) => {
+  dragAndDropFilesStore.subscribe((value) => {
     if (value.isDragging && value.files.length > 0) {
-      await fileUploadHandler(value.files, album.id);
+      fileUploadHandler(value.files, album.id);
       dragAndDropFilesStore.set({ isDragging: false, files: [] });
     }
   });

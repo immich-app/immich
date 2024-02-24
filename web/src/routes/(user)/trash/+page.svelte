@@ -27,9 +27,9 @@
 
   export let data: PageData;
 
-  featureFlags.subscribe(async ({ trash }) => {
+  featureFlags.subscribe(({ trash }) => {
     if (!trash) {
-      await goto(AppRoute.PHOTOS);
+      goto(AppRoute.PHOTOS);
     }
   });
 

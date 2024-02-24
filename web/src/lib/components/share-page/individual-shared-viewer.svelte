@@ -27,9 +27,9 @@
   $: assets = sharedLink.assets;
   $: isMultiSelectionMode = selectedAssets.size > 0;
 
-  dragAndDropFilesStore.subscribe(async (value) => {
+  dragAndDropFilesStore.subscribe((value) => {
     if (value.isDragging && value.files.length > 0) {
-      await handleUploadAssets(value.files);
+      handleUploadAssets(value.files);
       dragAndDropFilesStore.set({ isDragging: false, files: [] });
     }
   });
