@@ -687,13 +687,6 @@ export type SmartSearchDto = {
     withDeleted?: boolean;
     withExif?: boolean;
 };
-export type SearchSuggestionResponseDto = {
-    cameraMakes: string[];
-    cameraModels: string[];
-    cities: string[];
-    countries: string[];
-    states: string[];
-};
 export type ServerInfoResponseDto = {
     diskAvailable: string;
     diskAvailableRaw: number;
@@ -2236,20 +2229,22 @@ export function searchSmart({ smartSearchDto }: {
         body: smartSearchDto
     })));
 }
-export function getSearchSuggestions({ country, make, model, state }: {
+export function getSearchSuggestions({ country, make, model, state, $type }: {
     country?: string;
     make?: string;
     model?: string;
     state?: string;
+    $type: SearchSuggestionType;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: SearchSuggestionResponseDto;
+        data: string[];
     }>(`/search/suggestions${QS.query(QS.explode({
         country,
         make,
         model,
-        state
+        state,
+        "type": $type
     }))}`, {
         ...opts
     }));
@@ -2791,6 +2786,13 @@ export enum JobCommand {
 export enum LibraryType {
     Upload = "UPLOAD",
     External = "EXTERNAL"
+}
+export enum SearchSuggestionType {
+    Country = "country",
+    State = "state",
+    City = "city",
+    CameraMake = "camera-make",
+    CameraModel = "camera-model"
 }
 export enum SharedLinkType {
     Album = "ALBUM",

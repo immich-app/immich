@@ -70,7 +70,7 @@ This endpoint does not need any parameter.
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getSearchSuggestions**
-> SearchSuggestionResponseDto getSearchSuggestions(country, make, model, state)
+> List<String> getSearchSuggestions(type, country, make, model, state)
 
 
 
@@ -93,13 +93,14 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = SearchApi();
+final type = ; // SearchSuggestionType | 
 final country = country_example; // String | 
 final make = make_example; // String | 
 final model = model_example; // String | 
 final state = state_example; // String | 
 
 try {
-    final result = api_instance.getSearchSuggestions(country, make, model, state);
+    final result = api_instance.getSearchSuggestions(type, country, make, model, state);
     print(result);
 } catch (e) {
     print('Exception when calling SearchApi->getSearchSuggestions: $e\n');
@@ -110,6 +111,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
+ **type** | [**SearchSuggestionType**](.md)|  | 
  **country** | **String**|  | [optional] 
  **make** | **String**|  | [optional] 
  **model** | **String**|  | [optional] 
@@ -117,7 +119,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**SearchSuggestionResponseDto**](SearchSuggestionResponseDto.md)
+**List<String>**
 
 ### Authorization
 

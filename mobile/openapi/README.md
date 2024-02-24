@@ -320,7 +320,7 @@ Class | Method | HTTP request | Description
  - [SearchFacetCountResponseDto](doc//SearchFacetCountResponseDto.md)
  - [SearchFacetResponseDto](doc//SearchFacetResponseDto.md)
  - [SearchResponseDto](doc//SearchResponseDto.md)
- - [SearchSuggestionResponseDto](doc//SearchSuggestionResponseDto.md)
+ - [SearchSuggestionType](doc//SearchSuggestionType.md)
  - [ServerConfigDto](doc//ServerConfigDto.md)
  - [ServerFeaturesDto](doc//ServerFeaturesDto.md)
  - [ServerInfoResponseDto](doc//ServerInfoResponseDto.md)
