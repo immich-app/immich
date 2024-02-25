@@ -34,12 +34,6 @@ module.exports = {
     NodeJS: true,
   },
   rules: {
-    // TODO: set this after fixing the remaining errors
-    // TODO: set recommended-type-checked and remove this
-    // '@typescript-eslint/no-floating-promises': 'error',
-    // TODO: set this after https://github.com/sveltejs/kit/pull/11886 is merged and released
-    // TODO: set recommended-type-checked and remove this
-    // '@typescript-eslint/no-misused-promises': 'error',
     '@typescript-eslint/no-unused-vars': [
       'warn',
       {
@@ -48,9 +42,6 @@ module.exports = {
         varsIgnorePattern: '^_$',
       },
     ],
-    // TODO: set this after https://github.com/sveltejs/kit/pull/11886 is merged and released
-    // TODO: set recommended-type-checked and remove this
-    // '@typescript-eslint/require-await': 'error',
     curly: 2,
     'unicorn/no-useless-undefined': 'off',
     'unicorn/prefer-spread': 'off',
@@ -59,5 +50,10 @@ module.exports = {
     'unicorn/no-nested-ternary': 'off',
     'unicorn/consistent-function-scoping': 'off',
     'unicorn/prefer-top-level-await': 'off',
+    // TODO: set these rules after https://github.com/sveltejs/kit/pull/11886 is merged and released
+    // TODO: set recommended-type-checked and remove these rules
+    // '@typescript-eslint/require-await': 'error',
+    // '@typescript-eslint/no-floating-promises': 'error',
+    // '@typescript-eslint/no-misused-promises': 'error',
   },
 };
