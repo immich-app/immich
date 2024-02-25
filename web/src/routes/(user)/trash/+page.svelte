@@ -24,12 +24,13 @@
   import { emptyTrash, restoreTrash } from '@immich/sdk';
   import { mdiDeleteOutline, mdiHistory } from '@mdi/js';
   import type { PageData } from './$types';
+  import { resolvePromise } from '$lib/utils';
 
   export let data: PageData;
 
   featureFlags.subscribe(({ trash }) => {
     if (!trash) {
-      goto(AppRoute.PHOTOS);
+      resolvePromise(goto(AppRoute.PHOTOS));
     }
   });
 

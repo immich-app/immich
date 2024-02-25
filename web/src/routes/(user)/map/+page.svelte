@@ -15,6 +15,7 @@
   import { DateTime, Duration } from 'luxon';
   import { onDestroy, onMount } from 'svelte';
   import type { PageData } from './$types';
+  import { resolvePromise } from '$lib/utils';
 
   export let data: PageData;
 
@@ -35,7 +36,7 @@
     assetViewingStore.showAssetViewer(false);
   });
 
-  $: $featureFlags.map || goto(AppRoute.PHOTOS);
+  $: $featureFlags.map || resolvePromise(goto(AppRoute.PHOTOS));
   const omit = (obj: MapSettings, key: string) => {
     return Object.fromEntries(Object.entries(obj).filter(([k]) => k !== key));
   };

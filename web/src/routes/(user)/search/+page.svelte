@@ -35,6 +35,7 @@
   import type { Viewport } from '$lib/stores/assets.store';
   import { locale } from '$lib/stores/preferences.store';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
+  import { resolvePromise } from '$lib/utils';
 
   const MAX_ASSET_COUNT = 5000;
   let { isViewing: showAssetViewer } = assetViewingStore;
@@ -107,7 +108,7 @@
     return searchQuery ? JSON.parse(searchQuery) : {};
   })();
 
-  $: terms, onSearchQueryUpdate();
+  $: terms, resolvePromise(onSearchQueryUpdate());
 
   async function onSearchQueryUpdate() {
     nextPage = 1;

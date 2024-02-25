@@ -34,6 +34,9 @@ module.exports = {
     NodeJS: true,
   },
   rules: {
+    // TODO: set this after fixing the remaining errors
+    // TODO: set recommended-type-checked and remove this
+    // '@typescript-eslint/no-floating-promises': 'error',
     // TODO: set this after https://github.com/sveltejs/kit/pull/11886 is merged and released
     // TODO: set recommended-type-checked and remove this
     // '@typescript-eslint/no-misused-promises': 'error',

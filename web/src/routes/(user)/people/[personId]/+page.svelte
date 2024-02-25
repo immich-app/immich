@@ -244,7 +244,7 @@
   const handleMerge = async (person: PersonResponseDto) => {
     const { assets } = await getPersonStatistics({ id: person.id });
     numberOfAssets = assets;
-    handleGoBack();
+    await handleGoBack();
 
     data.person = person;
 

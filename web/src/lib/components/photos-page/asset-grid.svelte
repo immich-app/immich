@@ -21,6 +21,7 @@
   import ShowShortcuts from '../shared-components/show-shortcuts.svelte';
   import AssetDateGroup from './asset-date-group.svelte';
   import DeleteAssetDialog from './delete-asset-dialog.svelte';
+  import { resolvePromise } from '$lib/utils';
 
   export let isSelectionMode = false;
   export let singleSelect = false;
@@ -49,16 +50,17 @@
 
   const dispatch = createEventDispatcher<{ select: AssetResponseDto; escape: void }>();
 
+  const onKeydown = (event: KeyboardEvent) => resolvePromise(handleKeyboardPress(event));
   onMount(async () => {
     showSkeleton = false;
-    document.addEventListener('keydown', handleKeyboardPress);
+    document.addEventListener('keydown', onKeydown);
     assetStore.connect();
     await assetStore.init(viewport);
   });
 
   onDestroy(() => {
     if (browser) {
-      document.removeEventListener('keydown', handleKeyboardPress);
+      document.removeEventListener('keydown', onKeydown);
     }
 
     if ($showAssetViewer) {
@@ -68,13 +70,13 @@
     assetStore.disconnect();
   });
 
-  const trashOrDelete = (force: boolean = false) => {
+  const trashOrDelete = async (force: boolean = false) => {
     isShowDeleteConfirmation = false;
-    deleteAssets(!(isTrashEnabled && !force), (assetId) => assetStore.removeAsset(assetId), idsSelectedAssets);
+    await deleteAssets(!(isTrashEnabled && !force), (assetId) => assetStore.removeAsset(assetId), idsSelectedAssets);
     assetInteractionStore.clearMultiselect();
   };
 
-  const handleKeyboardPress = (event: KeyboardEvent) => {
+  const handleKeyboardPress = async (event: KeyboardEvent) => {
     if ($isSearchEnabled || shouldIgnoreShortcut(event)) {
       return;
     }
@@ -97,7 +99,7 @@
         }
         case '/': {
           event.preventDefault();
-          goto(AppRoute.EXPLORE);
+          await goto(AppRoute.EXPLORE);
           return;
         }
         case 'Delete': {
@@ -111,7 +113,7 @@
               force = true;
             }
 
-            trashOrDelete(force);
+            await trashOrDelete(force);
           }
           return;
         }
@@ -368,7 +370,7 @@
   <DeleteAssetDialog
     size={idsSelectedAssets.length}
     on:cancel={() => (isShowDeleteConfirmation = false)}
-    on:confirm={() => trashOrDelete(true)}
+    on:confirm={() => resolvePromise(trashOrDelete(true))}
   />
 {/if}
 
