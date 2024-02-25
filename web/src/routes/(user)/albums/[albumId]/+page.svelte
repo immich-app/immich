@@ -81,6 +81,7 @@
   let { slideshowState, slideshowShuffle } = slideshowStore;
 
   $: album = data.album;
+  $: albumId = album.id;
 
   $: {
     if (!album.isActivityEnabled && $numberOfComments === 0) {
@@ -111,11 +112,11 @@
   let assetGridWidth: number;
   let textArea: HTMLTextAreaElement;
 
-  $: assetStore = new AssetStore({ albumId: album.id });
+  $: assetStore = new AssetStore({ albumId });
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
-  $: timelineStore = new AssetStore({ isArchived: false }, album.id);
+  $: timelineStore = new AssetStore({ isArchived: false }, albumId);
   const timelineInteractionStore = createAssetInteractionStore();
   const { selectedAssets: timelineSelected } = timelineInteractionStore;
 
@@ -539,7 +540,7 @@
       style={`width:${assetGridWidth}px`}
     >
       <!-- Use key because AssetGrid can't deal with changing stores -->
-      {#key album.id}
+      {#key albumId}
         {#if viewMode === ViewMode.SELECT_ASSETS}
           <AssetGrid
             assetStore={timelineStore}
@@ -561,7 +562,7 @@
             {#if viewMode !== ViewMode.SELECT_THUMBNAIL}
               <!-- ALBUM TITLE -->
               <section class="pt-24">
-                <AlbumTitle id={album.id} albumName={album.albumName} {isOwned} />
+                <AlbumTitle id={album.id} bind:albumName={album.albumName} {isOwned} />
 
                 <!-- ALBUM SUMMARY -->
                 {#if album.assetCount > 0}
@@ -611,7 +612,7 @@
                   </div>
                 {/if}
                 <!-- ALBUM DESCRIPTION -->
-                <AlbumDescription id={album.id} description={album.description} {isOwned} />
+                <AlbumDescription id={album.id} bind:description={album.description} {isOwned} />
               </section>
             {/if}
 
