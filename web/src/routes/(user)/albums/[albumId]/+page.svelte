@@ -81,6 +81,7 @@
   let { slideshowState, slideshowShuffle } = slideshowStore;
 
   $: album = data.album;
+  $: console.log(album);
   $: albumId = album.id;
 
   $: {
@@ -562,7 +563,7 @@
             {#if viewMode !== ViewMode.SELECT_THUMBNAIL}
               <!-- ALBUM TITLE -->
               <section class="pt-24">
-                <AlbumTitle id={album.id} bind:albumName={album.albumName} {isOwned} />
+                <AlbumTitle id={album.id} albumName={album.albumName} {isOwned} />
 
                 <!-- ALBUM SUMMARY -->
                 {#if album.assetCount > 0}
@@ -612,7 +613,7 @@
                   </div>
                 {/if}
                 <!-- ALBUM DESCRIPTION -->
-                <AlbumDescription id={album.id} bind:description={album.description} {isOwned} />
+                <AlbumDescription id={album.id} description={album.description} {isOwned} />
               </section>
             {/if}
 
