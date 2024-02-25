@@ -10,9 +10,9 @@
     people: PersonResponseDto[];
 
     location: {
-      country?: ComboBoxOption;
-      state?: ComboBoxOption;
-      city?: ComboBoxOption;
+      country?: string;
+      state?: string;
+      city?: string;
     };
 
     camera: {
@@ -64,9 +64,6 @@
 
   type SearchSuggestion = {
     people: PersonResponseDto[];
-    country: ComboBoxOption[];
-    state: ComboBoxOption[];
-    city: ComboBoxOption[];
     make: ComboBoxOption[];
     model: ComboBoxOption[];
   };
@@ -75,9 +72,6 @@
 
   let suggestions: SearchSuggestion = {
     people: [],
-    country: [],
-    state: [],
-    city: [],
     make: [],
     model: [],
   };
@@ -134,25 +128,10 @@
 
   const updateSuggestions = async () => {
     let data: {
-      countries: ComboBoxOption[];
-      states: ComboBoxOption[];
-      cities: ComboBoxOption[];
       makes: ComboBoxOption[];
       models: ComboBoxOption[];
     };
     try {
-      const countries = await getSearchSuggestions({
-        $type: SearchSuggestionType.State,
-      });
-      const states = await getSearchSuggestions({
-        $type: SearchSuggestionType.State,
-        country: filter.location.country?.value,
-      });
-      const cities = await getSearchSuggestions({
-        $type: SearchSuggestionType.City,
-        country: filter.location.country?.value,
-        state: filter.location.state?.value,
-      });
       const makes = await getSearchSuggestions({
         $type: SearchSuggestionType.CameraMake,
         model: filter.camera.model?.value,
@@ -163,9 +142,6 @@
       });
 
       data = {
-        countries: countries.map<ComboBoxOption>((item) => ({ label: item, value: item })),
-        states: states.map<ComboBoxOption>((item) => ({ label: item, value: item })),
-        cities: cities.map<ComboBoxOption>((item) => ({ label: item, value: item })),
         makes: makes.map<ComboBoxOption>((item) => ({ label: item, value: item })),
         models: models.map<ComboBoxOption>((item) => ({ label: item, value: item })),
       };
@@ -175,9 +151,6 @@
     }
     suggestions = {
       ...suggestions,
-      city: data.cities,
-      state: data.states,
-      country: data.countries,
       make: data.makes,
       model: data.models,
     };
@@ -220,9 +193,9 @@
     }
 
     let payload: SmartSearchDto | MetadataSearchDto = {
-      country: filter.location.country?.value,
-      state: filter.location.state?.value,
-      city: filter.location.city?.value,
+      country: filter.location.country,
+      state: filter.location.state,
+      city: filter.location.city,
       make: filter.camera.make?.value,
       model: filter.camera.model?.value,
       takenAfter: parseOptionalDate(filter.date.takenAfter)?.startOf('day').toISO() || undefined,
@@ -262,9 +235,9 @@
           personIds.map((id) => suggestions.people.find((person) => person.id === id)!),
         ),
         location: {
-          country: searchQuery.country ? { label: searchQuery.country, value: searchQuery.country } : undefined,
-          state: searchQuery.state ? { label: searchQuery.state, value: searchQuery.state } : undefined,
-          city: searchQuery.city ? { label: searchQuery.city, value: searchQuery.city } : undefined,
+          country: searchQuery.country,
+          state: searchQuery.state,
+          city: searchQuery.city,
         },
         camera: {
           make: searchQuery.make ? { label: searchQuery.make, value: searchQuery.make } : undefined,
@@ -323,13 +296,7 @@
       </div>
 
       <!-- LOCATION -->
-      <SearchLocationSection
-        suggestedCities={suggestions.city}
-        suggestedCountries={suggestions.country}
-        suggestedStates={suggestions.state}
-        bind:filteredLocation={filter.location}
-        {updateSuggestions}
-      />
+      <SearchLocationSection bind:filter={filter.location} />
 
       <!-- CAMERA MODEL -->
       <SearchCameraSection
