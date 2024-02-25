@@ -81,7 +81,6 @@
   let { slideshowState, slideshowShuffle } = slideshowStore;
 
   $: album = data.album;
-  $: console.log(album);
   $: albumId = album.id;
 
   $: {
