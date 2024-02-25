@@ -42,7 +42,7 @@ class UserService {
       final dto = await _apiService.userApi.getAllUsers(isAll);
       return dto?.map(User.fromUserDto).toList();
     } catch (e) {
-      _log.warning("Failed get all users:\n$e");
+      _log.warning("Failed get all users", e);
       return null;
     }
   }
@@ -65,7 +65,7 @@ class UserService {
         ),
       );
     } catch (e) {
-      _log.warning("Failed to upload profile image:\n$e");
+      _log.warning("Failed to upload profile image", e);
       return null;
     }
   }

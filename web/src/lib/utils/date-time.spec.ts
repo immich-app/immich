@@ -1,4 +1,4 @@
-import { timeToSeconds } from './time-to-seconds';
+import { timeToSeconds } from './date-time';
 
 describe('converting time to seconds', () => {
   it('parses hh:mm:ss correctly', () => {

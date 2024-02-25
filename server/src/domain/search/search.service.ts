@@ -16,7 +16,15 @@ import {
   SearchStrategy,
 } from '../repositories';
 import { FeatureFlag, SystemConfigCore } from '../system-config';
-import { MetadataSearchDto, SearchDto, SearchPeopleDto, SmartSearchDto } from './dto';
+import {
+  MetadataSearchDto,
+  PlacesResponseDto,
+  SearchDto,
+  SearchPeopleDto,
+  SearchPlacesDto,
+  SmartSearchDto,
+  mapPlaces,
+} from './dto';
 import { SearchSuggestionRequestDto, SearchSuggestionType } from './dto/search-suggestion.dto';
 import { SearchResponseDto } from './response-dto';
 
@@ -39,6 +47,11 @@ export class SearchService {
 
   async searchPerson(auth: AuthDto, dto: SearchPeopleDto): Promise<PersonResponseDto[]> {
     return this.personRepository.getByName(auth.user.id, dto.name, { withHidden: dto.withHidden });
+  }
+
+  async searchPlaces(dto: SearchPlacesDto): Promise<PlacesResponseDto[]> {
+    const places = await this.searchRepository.searchPlaces(dto.name);
+    return places.map((place) => mapPlaces(place));
   }
 
   async getExploreData(auth: AuthDto): Promise<SearchExploreItem<AssetResponseDto>[]> {

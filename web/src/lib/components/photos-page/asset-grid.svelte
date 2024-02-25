@@ -457,9 +457,9 @@
       asset={$viewingAsset}
       {isShared}
       {album}
-      on:previous={() => handlePrevious()}
-      on:next={() => handleNext()}
-      on:close={() => handleClose()}
+      on:previous={handlePrevious}
+      on:next={handleNext}
+      on:close={handleClose}
       on:action={({ detail: action }) => handleAction(action.type, action.asset)}
     />
   {/if}

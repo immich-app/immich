@@ -7,8 +7,6 @@ import { AssetStackEntity } from './asset-stack.entity';
 import { AssetEntity } from './asset.entity';
 import { AuditEntity } from './audit.entity';
 import { ExifEntity } from './exif.entity';
-import { GeodataAdmin1Entity } from './geodata-admin1.entity';
-import { GeodataAdmin2Entity } from './geodata-admin2.entity';
 import { GeodataPlacesEntity } from './geodata-places.entity';
 import { LibraryEntity } from './library.entity';
 import { MoveEntity } from './move.entity';
@@ -32,8 +30,6 @@ export * from './asset-stack.entity';
 export * from './asset.entity';
 export * from './audit.entity';
 export * from './exif.entity';
-export * from './geodata-admin1.entity';
-export * from './geodata-admin2.entity';
 export * from './geodata-places.entity';
 export * from './library.entity';
 export * from './move.entity';
@@ -59,8 +55,6 @@ export const databaseEntities = [
   AuditEntity,
   ExifEntity,
   GeodataPlacesEntity,
-  GeodataAdmin1Entity,
-  GeodataAdmin2Entity,
   MoveEntity,
   PartnerEntity,
   PersonEntity,

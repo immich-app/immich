@@ -1,5 +1,5 @@
 import { AssetOrder } from '@app/domain/asset/dto/asset.dto';
-import { AssetType } from '@app/infra/entities';
+import { AssetType, GeodataPlacesEntity } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import { IsBoolean, IsEnum, IsInt, IsNotEmpty, IsString, Max, Min } from 'class-validator';
@@ -241,6 +241,12 @@ export class SearchDto {
   size?: number;
 }
 
+export class SearchPlacesDto {
+  @IsString()
+  @IsNotEmpty()
+  name!: string;
+}
+
 export class SearchPeopleDto {
   @IsString()
   @IsNotEmpty()
@@ -250,4 +256,22 @@ export class SearchPeopleDto {
   @Transform(toBoolean)
   @Optional()
   withHidden?: boolean;
+}
+
+export class PlacesResponseDto {
+  name!: string;
+  latitude!: number;
+  longitude!: number;
+  admin1name?: string;
+  admin2name?: string;
+}
+
+export function mapPlaces(place: GeodataPlacesEntity): PlacesResponseDto {
+  return {
+    name: place.name,
+    latitude: place.latitude,
+    longitude: place.longitude,
+    admin1name: place.admin1Name,
+    admin2name: place.admin2Name,
+  };
 }

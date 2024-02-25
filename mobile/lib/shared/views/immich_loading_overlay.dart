@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
+import 'package:immich_mobile/shared/ui/delayed_loading_indicator.dart';
 
 final _loadingEntry = OverlayEntry(
   builder: (context) => SizedBox.square(
@@ -9,7 +9,12 @@ final _loadingEntry = OverlayEntry(
     child: DecoratedBox(
       decoration:
           BoxDecoration(color: context.colorScheme.surface.withAlpha(200)),
-      child: const Center(child: ImmichLoadingIndicator()),
+      child: const Center(
+        child: DelayedLoadingIndicator(
+          delay: Duration(seconds: 1),
+          fadeInDuration: Duration(milliseconds: 400),
+        ),
+      ),
     ),
   ),
 );
@@ -27,19 +32,19 @@ class _LoadingOverlay extends Hook<ValueNotifier<bool>> {
 
 class _LoadingOverlayState
     extends HookState<ValueNotifier<bool>, _LoadingOverlay> {
-  late final _isProcessing = ValueNotifier(false)..addListener(_listener);
-  OverlayEntry? overlayEntry;
+  late final _isLoading = ValueNotifier(false)..addListener(_listener);
+  OverlayEntry? _loadingOverlay;
 
   void _listener() {
     setState(() {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (_isProcessing.value) {
-          overlayEntry?.remove();
-          overlayEntry = _loadingEntry;
+        if (_isLoading.value) {
+          _loadingOverlay?.remove();
+          _loadingOverlay = _loadingEntry;
           Overlay.of(context).insert(_loadingEntry);
         } else {
-          overlayEntry?.remove();
-          overlayEntry = null;
+          _loadingOverlay?.remove();
+          _loadingOverlay = null;
         }
       });
     });
@@ -47,17 +52,17 @@ class _LoadingOverlayState
 
   @override
   ValueNotifier<bool> build(BuildContext context) {
-    return _isProcessing;
+    return _isLoading;
   }
 
   @override
   void dispose() {
-    _isProcessing.dispose();
+    _isLoading.dispose();
     super.dispose();
   }
 
   @override
-  Object? get debugValue => _isProcessing.value;
+  Object? get debugValue => _isLoading.value;
 
   @override
   String get debugLabel => 'useProcessingOverlay<>';

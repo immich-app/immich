@@ -6,12 +6,13 @@
   import { createEventDispatcher } from 'svelte';
   import Button from '../elements/buttons/button.svelte';
   import ImmichLogo from '../shared-components/immich-logo.svelte';
+  import PasswordField from '../shared-components/password-field.svelte';
 
   let error: string;
   let success: string;
 
   let password = '';
-  let confirmPassowrd = '';
+  let confirmPassword = '';
 
   let canCreateUser = false;
   let quotaSize: number | undefined;
@@ -20,7 +21,7 @@
   $: quotaSizeWarning = quotaSize && convertToBytes(Number(quotaSize), 'GiB') > $serverInfo.diskSizeRaw;
 
   $: {
-    if (password !== confirmPassowrd && confirmPassowrd.length > 0) {
+    if (password !== confirmPassword && confirmPassword.length > 0) {
       error = 'Password does not match';
       canCreateUser = false;
     } else {
@@ -91,19 +92,12 @@
 
     <div class="m-4 flex flex-col gap-2">
       <label class="immich-form-label" for="password">Password</label>
-      <input class="immich-form-input" id="password" name="password" type="password" required bind:value={password} />
+      <PasswordField id="password" name="password" bind:password autocomplete="new-password" />
     </div>
 
     <div class="m-4 flex flex-col gap-2">
       <label class="immich-form-label" for="confirmPassword">Confirm Password</label>
-      <input
-        class="immich-form-input"
-        id="confirmPassword"
-        name="password"
-        type="password"
-        required
-        bind:value={confirmPassowrd}
-      />
+      <PasswordField id="confirmPassword" bind:password={confirmPassword} autocomplete="new-password" />
     </div>
 
     <div class="m-4 flex flex-col gap-2">

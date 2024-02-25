@@ -32,6 +32,17 @@
   export let simplified = false;
   export let clickable = false;
   export let useLocationPin = false;
+  export function addClipMapMarker(lng: number, lat: number) {
+    if (map) {
+      if (marker) {
+        marker.remove();
+      }
+
+      center = { lng, lat };
+      marker = new maplibregl.Marker().setLngLat([lng, lat]).addTo(map);
+      map.setZoom(15);
+    }
+  }
 
   let map: maplibregl.Map;
   let marker: maplibregl.Marker | null = null;

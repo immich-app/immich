@@ -84,7 +84,26 @@
   };
 </script>
 
-<section class="dark:text-immich-dark-fg">
+<section class="dark:text-immich-dark-fg mt-2">
+  <div in:fade={{ duration: 500 }} class="mx-4 flex flex-col gap-4 py-4">
+    <p class="text-sm dark:text-immich-dark-fg">
+      For more details about this feature, refer to the <a
+        href="https://immich.app/docs/administration/storage-template"
+        class="underline"
+        target="_blank"
+        rel="noreferrer"
+        >Storage Template
+      </a>
+      and its
+      <a
+        href="https://immich.app/docs/administration/backup-and-restore#asset-types-and-storage-locations"
+        class="underline"
+        target="_blank"
+        rel="noreferrer"
+        >implications
+      </a>
+    </p>
+  </div>
   {#await getTemplateOptions() then}
     <div id="directory-path-builder" class="flex flex-col gap-4 {minified ? '' : 'ml-4 mt-4'}">
       <SettingSwitch
