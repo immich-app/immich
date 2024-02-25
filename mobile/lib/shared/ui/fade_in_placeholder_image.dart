@@ -23,7 +23,7 @@ class FadeInPlaceholderImage extends StatelessWidget {
         children: [
           placeholder,
           FadeInImage(
-            fadeInDuration: const Duration(milliseconds: 100),
+            fadeInDuration: duration,
             image: image,
             fit: fit,
             placeholder: MemoryImage(kTransparentImage),
