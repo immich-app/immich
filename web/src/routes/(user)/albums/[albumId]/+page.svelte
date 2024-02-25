@@ -156,6 +156,7 @@
     if (previousAlbumId !== data.album.id) {
       previousAlbumId = data.album.id;
       album = data.album;
+      description = album.description;
       assetStore = new AssetStore({ albumId: album.id });
       if (data.album.sharedUsers.length > 0) {
         getFavorite();
