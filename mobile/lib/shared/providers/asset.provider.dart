@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/providers/local_album_service.provider.dart';
 import 'package:immich_mobile/modules/album/services/local_album.service.dart';
+import 'package:immich_mobile/modules/backup/providers/device_assets.provider.dart';
 import 'package:immich_mobile/shared/models/exif_info.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/models/user.dart';
@@ -17,6 +18,9 @@ import 'package:immich_mobile/utils/renderlist_generator.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:photo_manager/photo_manager.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+
+part 'asset.provider.g.dart';
 
 class AssetNotifier extends StateNotifier<bool> {
   final AssetService _assetService;
@@ -341,24 +345,27 @@ final assetWatcher =
   return db.assets.watchObject(asset.id, fireImmediately: true);
 });
 
-final assetsProvider = StreamProvider.family<RenderList, int?>((ref, userId) {
+@riverpod
+Stream<RenderList> assets(AssetsRef ref, int? userId) {
   if (userId == null) return const Stream.empty();
   final query = _commonFilterAndSort(
+    ref,
     _assets(ref).where().ownerIdEqualToAnyChecksum(userId),
   );
-  return renderListGenerator(query, ref);
-});
+  return renderListGeneratorAutoDispose(query, ref);
+}
 
-final multiUserAssetsProvider =
-    StreamProvider.family<RenderList, List<int>>((ref, userIds) {
+@riverpod
+Stream<RenderList> multiUserAssets(MultiUserAssetsRef ref, List<int> userIds) {
   if (userIds.isEmpty) return const Stream.empty();
   final query = _commonFilterAndSort(
+    ref,
     _assets(ref)
         .where()
         .anyOf(userIds, (q, u) => q.ownerIdEqualToAnyChecksum(u)),
   );
-  return renderListGenerator(query, ref);
-});
+  return renderListGeneratorAutoDispose(query, ref);
+}
 
 QueryBuilder<Asset, Asset, QAfterSortBy>? getRemoteAssetQuery(WidgetRef ref) {
   final userId = ref.watch(currentUserProvider)?.isarId;
@@ -377,16 +384,27 @@ QueryBuilder<Asset, Asset, QAfterSortBy>? getRemoteAssetQuery(WidgetRef ref) {
       .sortByFileCreatedAtDesc();
 }
 
-IsarCollection<Asset> _assets(StreamProviderRef<RenderList> ref) =>
+IsarCollection<Asset> _assets(AutoDisposeStreamProviderRef<RenderList> ref) =>
     ref.watch(dbProvider).assets;
 
 QueryBuilder<Asset, Asset, QAfterSortBy> _commonFilterAndSort(
+  AutoDisposeStreamProviderRef<RenderList> ref,
   QueryBuilder<Asset, Asset, QAfterWhereClause> query,
 ) {
+  final localIds =
+      ref.watch(deviceAssetsProvider).valueOrNull?.assetIdsForBackup ??
+          <String>[];
+
   return query
       .filter()
       .isArchivedEqualTo(false)
       .isTrashedEqualTo(false)
       .stackParentIdIsNull()
+      .group(
+        (q) => q
+            .remoteIdIsNotNull()
+            .or()
+            .anyOf(localIds, (q, id) => q.localIdEqualTo(id)),
+      )
       .sortByFileCreatedAtDesc();
 }

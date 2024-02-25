@@ -7,9 +7,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/album/models/album.model.dart';
 import 'package:immich_mobile/modules/album/providers/local_album.provider.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
-import 'package:immich_mobile/modules/backup/providers/backup_album.provider.dart';
 import 'package:immich_mobile/modules/backup/ui/backup_album_info_list_item.dart';
-import 'package:immich_mobile/modules/backup/ui/backup_album_selection_chip.dart';
 import 'package:immich_mobile/shared/ui/immich_app_bar.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 
@@ -24,8 +22,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
     useEffect(
       () {
         ref.read(localAlbumsProvider.notifier).getDeviceAlbums();
-        ref.read(backupProvider.notifier).getBackupInfo();
-        return null;
+        return ref.read(backupProvider.notifier).getBackupInfo;
       },
       [],
     );
@@ -39,40 +36,6 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 8.0,
-                    horizontal: 16.0,
-                  ),
-                  child: Text(
-                    "backup_album_selection_page_selection_info",
-                    style: context.textTheme.titleSmall,
-                  ).tr(),
-                ),
-
-                // Selected Album Chips
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Consumer(
-                    builder: (ctx, ref, child) {
-                      final backupState = ref.watch(backupAlbumsProvider);
-                      return backupState.maybeWhen(
-                        orElse: () => const SizedBox.shrink(),
-                        data: (data) {
-                          final chips = data.selectedBackupAlbums
-                              .followedBy(data.excludedBackupAlbums);
-                          return Wrap(
-                            children: [
-                              ...chips.map(
-                                (c) => BackupAlbumSelectionChip(album: c),
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                    },
-                  ),
-                ),
                 _AlbumBackupInfoRow(localAlbums.valueOrNull?.length ?? 0),
                 _AlbumSearchBar(onSearch: (value) => searchValue.value = value),
               ],

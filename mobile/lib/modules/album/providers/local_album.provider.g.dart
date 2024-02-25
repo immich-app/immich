@@ -6,7 +6,7 @@ part of 'local_album.provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$localAlbumsHash() => r'5a41fcf15416a9acf46ecc7c4fb02409e422f8ac';
+String _$localAlbumsHash() => r'2142afa2aef7d84062c71d999035f851a9c3978b';
 
 /// See also [LocalAlbums].
 @ProviderFor(LocalAlbums)

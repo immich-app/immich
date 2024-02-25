@@ -11,6 +11,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/album/models/album.model.dart';
 import 'package:immich_mobile/modules/backup/models/backup_album.model.dart';
+import 'package:immich_mobile/shared/models/device_asset.dart';
 import 'package:timezone/data/latest.dart';
 import 'package:immich_mobile/constants/locales.dart';
 import 'package:immich_mobile/modules/backup/background_service/background.service.dart';
@@ -18,11 +19,9 @@ import 'package:immich_mobile/modules/backup/models/duplicated_asset.model.dart'
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/routing/tab_navigation_observer.dart';
 import 'package:immich_mobile/shared/cache/widgets_binding.dart';
-import 'package:immich_mobile/shared/models/android_device_asset.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/etag.dart';
 import 'package:immich_mobile/shared/models/exif_info.dart';
-import 'package:immich_mobile/shared/models/ios_device_asset.dart';
 import 'package:immich_mobile/shared/models/logger_message.model.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/models/user.dart';
@@ -102,8 +101,7 @@ Future<Isar> loadDb() async {
       DuplicatedAssetSchema,
       LoggerMessageSchema,
       ETagSchema,
-      if (Platform.isAndroid) AndroidDeviceAssetSchema,
-      if (Platform.isIOS) IOSDeviceAssetSchema,
+      DeviceAssetSchema,
     ],
     directory: dir.path,
     maxSizeMiB: 256,

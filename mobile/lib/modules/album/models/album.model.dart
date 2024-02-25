@@ -19,6 +19,8 @@ sealed class Album {
   String name;
   DateTime modifiedAt;
   final IsarLink<Asset> thumb = IsarLink<Asset>();
+
+  static const assetsLinkId = 'assets';
   final IsarLinks<Asset> assets = IsarLinks<Asset>();
 
   @ignore
@@ -62,6 +64,8 @@ sealed class Album {
 
 @Collection()
 class LocalAlbum extends Album {
+  static const isAllId = 'isAll';
+
   @Backlink(to: BackupAlbum.albumLinkId)
   final IsarLink<BackupAlbum> backup = IsarLink<BackupAlbum>();
 

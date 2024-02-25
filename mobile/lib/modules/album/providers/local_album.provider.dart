@@ -8,8 +8,6 @@ part 'local_album.provider.g.dart';
 
 @riverpod
 class LocalAlbums extends _$LocalAlbums {
-  static const isAllId = 'isAll';
-
   @override
   Stream<List<LocalAlbum>> build() async* {
     final db = ref.read(dbProvider);

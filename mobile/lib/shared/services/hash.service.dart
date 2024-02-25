@@ -1,14 +1,9 @@
-import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/backup/background_service/background.service.dart';
-import 'package:immich_mobile/shared/models/android_device_asset.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/device_asset.dart';
-import 'package:immich_mobile/shared/models/ios_device_asset.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
-import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:photo_manager/photo_manager.dart';
@@ -41,10 +36,8 @@ class HashService {
     const int batchFileCount = 128;
     const int batchDataSize = 1024 * 1024 * 1024; // 1GB
 
-    final ids = assetEntities
-        .map(Platform.isAndroid ? (a) => a.id.toInt() : (a) => a.id)
-        .toList();
-    final List<DeviceAsset?> hashes = await _lookupHashes(ids);
+    final ids = assetEntities.map((a) => a.id).toList();
+    final List<DeviceAsset?> hashes = await _db.deviceAssets.getAllById(ids);
     final List<DeviceAsset> toAdd = [];
     final List<String> toHash = [];
 
@@ -63,9 +56,7 @@ class HashService {
       }
       bytes += await file.length();
       toHash.add(file.path);
-      final deviceAsset = Platform.isAndroid
-          ? AndroidDeviceAsset(id: ids[i] as int, hash: const [])
-          : IOSDeviceAsset(id: ids[i] as String, hash: const []);
+      final deviceAsset = DeviceAsset(id: ids[i], hash: const []);
       toAdd.add(deviceAsset);
       hashes[i] = deviceAsset;
       if (toHash.length == batchFileCount || bytes >= batchDataSize) {
@@ -80,12 +71,6 @@ class HashService {
     }
     return _mapAllHashedAssets(assetEntities, hashes);
   }
-
-  /// Lookup hashes of assets by their local ID
-  Future<List<DeviceAsset?>> _lookupHashes(List<Object> ids) =>
-      Platform.isAndroid
-          ? _db.androidDeviceAssets.getAll(ids.cast())
-          : _db.iOSDeviceAssets.getAllById(ids.cast());
 
   /// Processes a batch of files and saves any successfully hashed
   /// values to the DB table.
@@ -106,11 +91,7 @@ class HashService {
     final validHashes = anyNull
         ? toAdd.where((e) => e.hash.length == 20).toList(growable: false)
         : toAdd;
-    await _db.writeTxn(
-      () => Platform.isAndroid
-          ? _db.androidDeviceAssets.putAll(validHashes.cast())
-          : _db.iOSDeviceAssets.putAll(validHashes.cast()),
-    );
+    await _db.writeTxn(() => _db.deviceAssets.putAll(validHashes));
     _log.fine("Hashed ${validHashes.length}/${toHash.length} assets");
   }
 
