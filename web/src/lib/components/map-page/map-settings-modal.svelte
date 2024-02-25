@@ -8,6 +8,7 @@
   import LinkButton from '../elements/buttons/link-button.svelte';
   import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
+  import DateInput from '../elements/date-input.svelte';
 
   export let settings: MapSettings;
   let customDateRange = !!settings.dateAfter || !!settings.dateBefore;
@@ -38,7 +39,7 @@
         <div in:fly={{ y: 10, duration: 200 }} class="flex flex-col gap-4">
           <div class="flex items-center justify-between gap-8">
             <label class="immich-form-label shrink-0 text-sm" for="date-after">Date after</label>
-            <input
+            <DateInput
               class="immich-form-input w-40"
               type="date"
               id="date-after"
@@ -48,7 +49,7 @@
           </div>
           <div class="flex items-center justify-between gap-8">
             <label class="immich-form-label shrink-0 text-sm" for="date-before">Date before</label>
-            <input class="immich-form-input w-40" type="date" id="date-before" bind:value={settings.dateBefore} />
+            <DateInput class="immich-form-input w-40" type="date" id="date-before" bind:value={settings.dateBefore} />
           </div>
           <div class="flex justify-center text-xs">
             <LinkButton

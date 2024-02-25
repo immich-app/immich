@@ -4,6 +4,7 @@
   import FullScreenModal from '../shared-components/full-screen-modal.svelte';
   import { mdiCake } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
+  import DateInput from '../elements/date-input.svelte';
 
   export let birthDate: string;
 
@@ -37,7 +38,7 @@
 
     <form on:submit|preventDefault={() => handleSubmit()} autocomplete="off">
       <div class="m-4 flex flex-col gap-2">
-        <input
+        <DateInput
           class="immich-form-input"
           id="birthDate"
           name="birthDate"
