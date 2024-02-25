@@ -23,13 +23,10 @@ class ImmichThumbnail extends HookWidget {
   final double height;
   final BoxFit fit;
 
-  // Helper function to return the image provider for the asset
-  // either by using the asset ID or the asset itself
+  /// Helper function to return the image provider for the asset thumbnail
+  /// either by using the asset ID or the asset itself
   /// [asset] is the Asset to request, or else use [assetId] to get a remote
   /// image provider
-  /// Use [isThumbnail] and [thumbnailSize] if you'd like to request a thumbnail
-  /// The size of the square thumbnail to request. Ignored if isThumbnail
-  /// is not true
   static ImageProvider imageProvider({
     Asset? asset,
     String? assetId,
@@ -64,7 +61,7 @@ class ImmichThumbnail extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    Uint8List? blurhash = useBlurHashState(asset).value;
+    Uint8List? blurhash = useBlurHashRef(asset).value;
     if (asset == null) {
       return Container(
         color: Colors.grey,
