@@ -6,6 +6,8 @@
 </script>
 
 <script lang="ts">
+  import { resolvePromise } from '$lib/utils';
+
   import { createEventDispatcher, onMount } from 'svelte';
   import { tweened } from 'svelte/motion';
 
@@ -24,14 +26,14 @@
 
   export let duration = 5;
 
-  const onChange = () => {
+  const onChange = async () => {
     progress = setDuration(duration);
-    play();
+    await play();
   };
 
   let progress = setDuration(duration);
 
-  $: duration, onChange();
+  $: duration, resolvePromise(onChange());
 
   $: {
     if ($progress === 1) {
@@ -45,9 +47,9 @@
     paused: void;
   }>();
 
-  onMount(() => {
+  onMount(async () => {
     if (autoplay) {
-      play();
+      await play();
     }
   });
 
@@ -67,7 +69,7 @@
     await progress.set(0);
 
     if (autoplay) {
-      play();
+      await play();
     }
   };
 

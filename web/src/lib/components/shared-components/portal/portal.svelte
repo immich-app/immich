@@ -1,4 +1,5 @@
 <script context="module" lang="ts">
+  import { resolvePromise } from '$lib/utils';
   import { tick } from 'svelte';
 
   /**
@@ -36,7 +37,7 @@
       }
     }
 
-    update(target);
+    resolvePromise(update(target));
     return {
       update,
       destroy,

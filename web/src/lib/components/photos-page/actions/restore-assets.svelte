@@ -32,7 +32,7 @@
 
       clearSelect();
     } catch (error) {
-      handleError(error, 'Error restoring assets');
+      await handleError(error, 'Error restoring assets');
     } finally {
       loading = false;
     }

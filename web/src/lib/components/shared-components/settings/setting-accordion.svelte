@@ -1,7 +1,7 @@
 <script lang="ts">
   import { page } from '$app/stores';
   import { QueryParameter } from '$lib/constants';
-  import { hasParamValue, updateParamList } from '$lib/utils';
+  import { hasParamValue, resolvePromise, updateParamList } from '$lib/utils';
   import { slide } from 'svelte/transition';
 
   export let title: string;
@@ -12,7 +12,7 @@
   const syncFromUrl = () => (isOpen = hasParamValue(QueryParameter.IS_OPEN, key));
   const syncToUrl = (isOpen: boolean) => updateParamList({ param: QueryParameter.IS_OPEN, value: key, add: isOpen });
 
-  isOpen ? syncToUrl(true) : syncFromUrl();
+  isOpen ? resolvePromise(syncToUrl(true)) : syncFromUrl();
   $: $page.url && syncFromUrl();
 
   const toggle = async () => {

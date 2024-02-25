@@ -19,7 +19,7 @@
     try {
       await updateAssets({ assetBulkUpdateDto: { ids, latitude: point.lat, longitude: point.lng } });
     } catch (error) {
-      handleError(error, 'Unable to update location');
+      await handleError(error, 'Unable to update location');
     }
     clearSelect();
   }

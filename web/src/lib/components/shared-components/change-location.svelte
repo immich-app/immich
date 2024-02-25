@@ -80,7 +80,7 @@
       places = await searchPlaces({ name: searchWord });
     } catch (error) {
       places = [];
-      handleError(error, "Can't search places");
+      await handleError(error, "Can't search places");
     } finally {
       clearTimeout(timeout);
       isSearching = false;

@@ -262,10 +262,10 @@
     }
   };
 
-  const onRemoveOfflineFilesClicked = () => {
+  const onRemoveOfflineFilesClicked = async () => {
     closeAll();
     if (selectedLibrary) {
-      handleRemoveOffline(selectedLibrary.id);
+      await handleRemoveOffline(selectedLibrary.id);
     }
   };
 
@@ -348,27 +348,27 @@
 
                 {#if showContextMenu}
                   <Portal target="body">
-                    <ContextMenu {...contextMenuPosition} on:outclick={() => onMenuExit()}>
-                      <MenuOption on:click={() => onRenameClicked()} text={`Rename`} />
+                    <ContextMenu {...contextMenuPosition} on:outclick={onMenuExit}>
+                      <MenuOption on:click={onRenameClicked} text={`Rename`} />
 
                       {#if selectedLibrary && selectedLibrary.type === LibraryType.External}
-                        <MenuOption on:click={() => onEditImportPathClicked()} text="Edit Import Paths" />
-                        <MenuOption on:click={() => onScanSettingClicked()} text="Scan Settings" />
+                        <MenuOption on:click={onEditImportPathClicked} text="Edit Import Paths" />
+                        <MenuOption on:click={onScanSettingClicked} text="Scan Settings" />
                         <hr />
-                        <MenuOption on:click={() => onScanNewLibraryClicked()} text="Scan New Library Files" />
+                        <MenuOption on:click={onScanNewLibraryClicked} text="Scan New Library Files" />
                         <MenuOption
-                          on:click={() => onScanAllLibraryFilesClicked()}
+                          on:click={onScanAllLibraryFilesClicked}
                           text="Re-scan All Library Files"
                           subtitle={'Only refreshes modified files'}
                         />
                         <MenuOption
-                          on:click={() => onForceScanAllLibraryFilesClicked()}
+                          on:click={onForceScanAllLibraryFilesClicked}
                           text="Force Re-scan All Library Files"
                           subtitle={'Refreshes every file'}
                         />
                         <hr />
-                        <MenuOption on:click={() => onRemoveOfflineFilesClicked()} text="Remove Offline Files" />
-                        <MenuOption on:click={() => onDeleteLibraryClicked()}>
+                        <MenuOption on:click={onRemoveOfflineFilesClicked} text="Remove Offline Files" />
+                        <MenuOption on:click={onDeleteLibraryClicked}>
                           <p class="text-red-600">Delete library</p>
                         </MenuOption>
                       {/if}

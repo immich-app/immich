@@ -3,7 +3,7 @@
   import { timeBeforeShowLoadingSpinner } from '$lib/constants';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { websocketEvents } from '$lib/stores/websocket';
-  import { getPeopleThumbnailUrl } from '$lib/utils';
+  import { getPeopleThumbnailUrl, resolvePromise } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { getPersonNameWithHiddenValue } from '$lib/utils/person';
   import {
@@ -85,7 +85,7 @@
   };
 
   onMount(() => {
-    loadPeople();
+    resolvePromise(loadPeople());
     return websocketEvents.on('on_person_thumbnail', onPersonThumbnail);
   });
 

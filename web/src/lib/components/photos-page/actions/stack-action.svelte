@@ -50,7 +50,7 @@
 
       clearSelect();
     } catch (error) {
-      handleError(error, `Unable to stack`);
+      await handleError(error, `Unable to stack`);
     }
   };
 </script>

@@ -48,7 +48,7 @@
 
       clearSelect();
     } catch (error) {
-      handleError(error, `Unable to ${isArchived ? 'archive' : 'unarchive'}`);
+      await handleError(error, `Unable to ${isArchived ? 'archive' : 'unarchive'}`);
     } finally {
       loading = false;
     }

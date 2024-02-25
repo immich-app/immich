@@ -11,6 +11,7 @@
   import { createAlbum, type AlbumResponseDto } from '@immich/sdk';
   import { getMenuContext } from '../asset-select-context-menu.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
+  import { handleError } from '../../../../hooks.client';
 
   export let shared = false;
   let showAlbumPicker = false;
@@ -27,18 +28,22 @@
     showAlbumPicker = false;
 
     const assetIds = [...getAssets()].map((asset) => asset.id);
-    createAlbum({ createAlbumDto: { albumName, assetIds } }).then((response) => {
-      const { id, albumName } = response;
+    createAlbum({ createAlbumDto: { albumName, assetIds } })
+      .then(async (response) => {
+        const { id, albumName } = response;
 
-      notificationController.show({
-        message: `Added ${assetIds.length} to ${albumName}`,
-        type: NotificationType.Info,
+        notificationController.show({
+          message: `Added ${assetIds.length} to ${albumName}`,
+          type: NotificationType.Info,
+        });
+
+        clearSelect();
+
+        await goto(`${AppRoute.ALBUMS}/${id}`);
+      })
+      .catch(async (error) => {
+        await handleError(error);
       });
-
-      clearSelect();
-
-      goto(`${AppRoute.ALBUMS}/${id}`);
-    });
   };
 
   const handleAddToAlbum = async (album: AlbumResponseDto) => {
