@@ -1,5 +1,5 @@
 import { AssetSearchBuilderOptions, Paginated, PaginationOptions } from '@app/domain';
-import { MetricOptions, ValueType, metrics, Histogram } from '@opentelemetry/api';
+import { Histogram, MetricOptions, ValueType, metrics } from '@opentelemetry/api';
 import _ from 'lodash';
 import { copyMetadataFromFunctionToFunction } from 'nestjs-otel/lib/opentelemetry.utils';
 import { performance } from 'perf_hooks';
@@ -157,7 +157,9 @@ export function ExecutionTimeHistogram({ description, unit = 'ms', valueType = V
     const metricName = `${_.snakeCase(className).replaceAll(/_(?=(repository)|(controller)|(provider)|(service)|(module))/g, '.')}.${_.snakeCase(propertyName)}.duration`;
     const isAsync = method.constructor.name === 'AsyncFunction';
 
-    const metricDescription = description ?? `The elapsed time in ${unit} for the ${_.startCase(className)} to ${_.startCase(propertyName).toLowerCase()}`;
+    const metricDescription =
+      description ??
+      `The elapsed time in ${unit} for the ${_.startCase(className)} to ${_.startCase(propertyName).toLowerCase()}`;
 
     let histogram: Histogram | undefined;
 
@@ -167,7 +169,9 @@ export function ExecutionTimeHistogram({ description, unit = 'ms', valueType = V
         const result = await method.apply(this, args);
         const end = performance.now();
         if (!histogram) {
-          histogram = metrics.getMeter('immich').createHistogram(metricName, { description: metricDescription, unit, valueType });
+          histogram = metrics
+            .getMeter('immich')
+            .createHistogram(metricName, { description: metricDescription, unit, valueType });
         }
         histogram.record(end - start, {});
         return result;
@@ -178,7 +182,9 @@ export function ExecutionTimeHistogram({ description, unit = 'ms', valueType = V
         const result = method.apply(this, args);
         const end = performance.now();
         if (!histogram) {
-          histogram = metrics.getMeter('immich').createHistogram(metricName, { description: metricDescription, unit, valueType });
+          histogram = metrics
+            .getMeter('immich')
+            .createHistogram(metricName, { description: metricDescription, unit, valueType });
         }
         histogram.record(end - start, {});
         return result;

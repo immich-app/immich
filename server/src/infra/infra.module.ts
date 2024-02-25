@@ -37,6 +37,7 @@ import { OpenTelemetryModule } from 'nestjs-otel';
 import { databaseConfig } from './database.config';
 import { databaseEntities } from './entities';
 import { bullConfig, bullQueues } from './infra.config';
+import { otelConfig } from './instrumentation';
 import {
   AccessRepository,
   ActivityRepository,
@@ -66,7 +67,6 @@ import {
   UserRepository,
   UserTokenRepository,
 } from './repositories';
-import { otelConfig } from './instrumentation';
 
 const providers: Provider[] = [
   { provide: IActivityRepository, useClass: ActivityRepository },

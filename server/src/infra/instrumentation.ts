@@ -3,6 +3,7 @@ import { PrometheusExporter } from '@opentelemetry/exporter-prometheus';
 import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
 import { IORedisInstrumentation } from '@opentelemetry/instrumentation-ioredis';
 import { NestInstrumentation } from '@opentelemetry/instrumentation-nestjs-core';
+import { PgInstrumentation } from '@opentelemetry/instrumentation-pg';
 import { ExplicitBucketHistogramAggregation, View } from '@opentelemetry/sdk-metrics';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import { OpenTelemetryModuleOptions } from 'nestjs-otel/lib/interfaces';
@@ -22,7 +23,12 @@ const otelSDK = new NodeSDK({
   }),
   metricReader: new PrometheusExporter({ port: 8081 }),
   contextManager: new AsyncLocalStorageContextManager(),
-  instrumentations: [new HttpInstrumentation(), new IORedisInstrumentation(), new NestInstrumentation()],
+  instrumentations: [
+    new HttpInstrumentation(),
+    new IORedisInstrumentation(),
+    new NestInstrumentation(),
+    new PgInstrumentation(),
+  ],
   views: [new View({ aggregation, instrumentName: '*', instrumentUnit: 'ms' })],
 });
 
