@@ -80,12 +80,10 @@
   let { isViewing: showAssetViewer, setAssetId } = assetViewingStore;
   let { slideshowState, slideshowShuffle } = slideshowStore;
 
-  let album = data.album;
-  let description = album.description;
-  let previousAlbumId = data.album.id;
+  let description = data.album.description;
 
   $: {
-    if (!album.isActivityEnabled && $numberOfComments === 0) {
+    if (!data.album.isActivityEnabled && $numberOfComments === 0) {
       isShowActivity = false;
     }
   }
@@ -106,7 +104,7 @@
   let viewMode = ViewMode.VIEW;
   let titleInput: HTMLInputElement;
   let isCreatingSharedAlbum = false;
-  let currentAlbumName = album.albumName;
+  let currentAlbumName = data.album.albumName;
   let contextMenuPosition: { x: number; y: number } = { x: 0, y: 0 };
   let isShowActivity = false;
   let isLiked: ActivityResponseDto | null = null;
@@ -114,17 +112,15 @@
   let globalWidth: number;
   let assetGridWidth: number;
   let textArea: HTMLTextAreaElement;
-  let refreshAssetGrid = false;
 
-  let assetStore = new AssetStore({ albumId: album.id });
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
-  const timelineStore = new AssetStore({ isArchived: false }, album.id);
+  const timelineStore = new AssetStore({ isArchived: false }, data.album.id);
   const timelineInteractionStore = createAssetInteractionStore();
   const { selectedAssets: timelineSelected } = timelineInteractionStore;
 
-  $: isOwned = $user.id == album.ownerId;
+  $: isOwned = $user.id == data.album.ownerId;
   $: isAllUserOwned = [...$selectedAssets].every((asset) => asset.ownerId === $user.id);
   $: isAllFavorite = [...$selectedAssets].every((asset) => asset.isFavorite);
   $: isAllArchived = [...$selectedAssets].every((asset) => asset.isArchived);
@@ -132,7 +128,8 @@
     assetGridWidth = isShowActivity ? globalWidth - (globalWidth < 768 ? 360 : 460) : globalWidth;
   }
   $: showActivityStatus =
-    album.sharedUsers.length > 0 && !$showAssetViewer && (album.isActivityEnabled || $numberOfComments > 0);
+    data.album.sharedUsers.length > 0 && !$showAssetViewer && (data.album.isActivityEnabled || $numberOfComments > 0);
+  $: assetStore = new AssetStore({ albumId: data.album.id });
 
   $: afterNavigate(({ from }) => {
     assetViewingStore.showAssetViewer(false);
@@ -149,37 +146,36 @@
 
     backUrl = url || AppRoute.ALBUMS;
 
-    if (backUrl === AppRoute.SHARING && album.sharedUsers.length === 0) {
+    if (backUrl === AppRoute.SHARING && data.album.sharedUsers.length === 0) {
       isCreatingSharedAlbum = true;
     }
-
-    if (previousAlbumId !== data.album.id) {
-      previousAlbumId = data.album.id;
-      album = data.album;
-      description = album.description;
-      assetStore = new AssetStore({ albumId: album.id });
-      if (data.album.sharedUsers.length > 0) {
-        getFavorite();
-        getNumberOfComments();
-      }
-      refreshAssetGrid = !refreshAssetGrid;
+    if (from?.route.id !== data.album.id) {
+      updateAlbumData();
     }
   });
 
+  const updateAlbumData = () => {
+    description = data.album.description;
+    if (data.album.sharedUsers.length > 0) {
+      getFavorite();
+      getNumberOfComments();
+    }
+  };
+
   const handleToggleEnableActivity = async () => {
     try {
-      album = await updateAlbumInfo({
-        id: album.id,
+      data.album = await updateAlbumInfo({
+        id: data.album.id,
         updateAlbumDto: {
-          isActivityEnabled: !album.isActivityEnabled,
+          isActivityEnabled: !data.album.isActivityEnabled,
         },
       });
       notificationController.show({
         type: NotificationType.Info,
-        message: `Activity is ${album.isActivityEnabled ? 'enabled' : 'disabled'}`,
+        message: `Activity is ${data.album.isActivityEnabled ? 'enabled' : 'disabled'}`,
       });
     } catch (error) {
-      handleError(error, `Can't ${album.isActivityEnabled ? 'disable' : 'enable'} activity`);
+      handleError(error, `Can't ${data.album.isActivityEnabled ? 'disable' : 'enable'} activity`);
     }
   };
 
@@ -192,7 +188,7 @@
         isLiked = null;
       } else {
         isLiked = await createActivity({
-          activityCreateDto: { albumId: album.id, type: ReactionType.Like },
+          activityCreateDto: { albumId: data.album.id, type: ReactionType.Like },
         });
         reactions = [...reactions, isLiked];
       }
@@ -204,14 +200,14 @@
   const getFavorite = async () => {
     if ($user) {
       try {
-        const data = await getActivities({
+        const response = await getActivities({
           userId: $user.id,
-          albumId: album.id,
+          albumId: data.album.id,
           $type: ReactionType.Like,
           level: ReactionLevel.Album,
         });
-        if (data.length > 0) {
-          isLiked = data[0];
+        if (response.length > 0) {
+          isLiked = response[0];
         }
       } catch (error) {
         handleError(error, "Can't get Favorite");
@@ -221,7 +217,7 @@
 
   const getNumberOfComments = async () => {
     try {
-      const { comments } = await getActivityStatistics({ albumId: album.id });
+      const { comments } = await getActivityStatistics({ albumId: data.album.id });
       setNumberOfComments(comments);
     } catch (error) {
       handleError(error, "Can't get number of comments");
@@ -233,10 +229,7 @@
   };
 
   onMount(async () => {
-    if (album.sharedUsers.length > 0) {
-      getFavorite();
-      getNumberOfComments();
-    }
+    updateAlbumData();
   });
 
   const handleKeypress = async (event: KeyboardEvent) => {
@@ -294,11 +287,11 @@
   };
 
   const refreshAlbum = async () => {
-    album = await getAlbumInfo({ id: album.id, withoutAssets: true });
+    data.album = await getAlbumInfo({ id: data.album.id, withoutAssets: true });
   };
 
   const getDateRange = () => {
-    const { startDate, endDate } = album;
+    const { startDate, endDate } = data.album;
 
     let start = '';
     let end = '';
@@ -327,7 +320,7 @@
 
     try {
       const results = await addAssetsToAlbum({
-        id: album.id,
+        id: data.album.id,
         bulkIdsDto: { ids: assetIds },
       });
 
@@ -363,15 +356,15 @@
   };
 
   const handleSelectFromComputer = async () => {
-    await openFileUploadDialog(album.id);
+    await openFileUploadDialog(data.album.id);
     timelineInteractionStore.clearMultiselect();
     viewMode = ViewMode.VIEW;
   };
 
   const handleAddUsers = async (users: UserResponseDto[]) => {
     try {
-      album = await addUsersToAlbum({
-        id: album.id,
+      data.album = await addUsersToAlbum({
+        id: data.album.id,
         addUsersDto: {
           sharedUserIds: [...users].map(({ id }) => id),
         },
@@ -391,19 +384,19 @@
 
     try {
       await refreshAlbum();
-      viewMode = album.sharedUsers.length > 1 ? ViewMode.SELECT_USERS : ViewMode.VIEW;
+      viewMode = data.album.sharedUsers.length > 1 ? ViewMode.SELECT_USERS : ViewMode.VIEW;
     } catch (error) {
       handleError(error, 'Error deleting share users');
     }
   };
 
   const handleDownloadAlbum = async () => {
-    await downloadArchive(`${album.albumName}.zip`, { albumId: album.id });
+    await downloadArchive(`${data.album.albumName}.zip`, { albumId: data.album.id });
   };
 
   const handleRemoveAlbum = async () => {
     try {
-      await deleteAlbum({ id: album.id });
+      await deleteAlbum({ id: data.album.id });
       goto(backUrl);
     } catch (error) {
       handleError(error, 'Unable to delete album');
@@ -422,7 +415,7 @@
 
     try {
       await updateAlbumInfo({
-        id: album.id,
+        id: data.album.id,
         updateAlbumDto: {
           albumThumbnailAssetId: assetId,
         },
@@ -435,18 +428,18 @@
   };
 
   const handleUpdateName = async () => {
-    if (currentAlbumName === album.albumName) {
+    if (currentAlbumName === data.album.albumName) {
       return;
     }
 
     try {
       await updateAlbumInfo({
-        id: album.id,
+        id: data.album.id,
         updateAlbumDto: {
-          albumName: album.albumName,
+          albumName: data.album.albumName,
         },
       });
-      currentAlbumName = album.albumName;
+      currentAlbumName = data.album.albumName;
       notificationController.show({ type: NotificationType.Info, message: 'New album name has been saved' });
     } catch (error) {
       handleError(error, 'Unable to update album name');
@@ -454,12 +447,12 @@
   };
 
   const handleUpdateDescription = async () => {
-    if (album.description === description) {
+    if (data.album.description === description) {
       return;
     }
     try {
       await updateAlbumInfo({
-        id: album.id,
+        id: data.album.id,
         updateAlbumDto: {
           description,
         },
@@ -468,7 +461,7 @@
         type: NotificationType.Info,
         message: 'Album description has been updated',
       });
-      album.description = description;
+      data.album.description = description;
     } catch (error) {
       handleError(error, 'Error updating album description');
     }
@@ -492,9 +485,9 @@
             <FavoriteAction menuItem removeFavorite={isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
             <ArchiveAction menuItem unarchive={isAllArchived} onArchive={() => assetStore.triggerUpdate()} />
           {/if}
-          <DownloadAction menuItem filename="{album.albumName}.zip" />
+          <DownloadAction menuItem filename="{data.album.albumName}.zip" />
           {#if isOwned || isAllUserOwned}
-            <RemoveFromAlbum menuItem bind:album onRemove={(assetIds) => handleRemoveAssets(assetIds)} />
+            <RemoveFromAlbum menuItem bind:album={data.album} onRemove={(assetIds) => handleRemoveAssets(assetIds)} />
           {/if}
           {#if isAllUserOwned}
             <DeleteAssets menuItem onAssetDelete={(assetId) => assetStore.removeAsset(assetId)} />
@@ -526,7 +519,7 @@
               />
             {/if}
 
-            {#if album.assetCount > 0}
+            {#if data.album.assetCount > 0}
               <CircleIconButton title="Download" on:click={handleDownloadAlbum} icon={mdiFolderDownloadOutline} />
 
               {#if isOwned}
@@ -534,7 +527,7 @@
                   <CircleIconButton title="Album options" on:click={handleOpenAlbumOptions} icon={mdiDotsVertical}>
                     {#if viewMode === ViewMode.ALBUM_OPTIONS}
                       <ContextMenu {...contextMenuPosition}>
-                        {#if album.assetCount !== 0}
+                        {#if data.album.assetCount !== 0}
                           <MenuOption on:click={handleStartSlideshow} text="Slideshow" />
                         {/if}
                         <MenuOption on:click={() => (viewMode = ViewMode.SELECT_THUMBNAIL)} text="Set album cover" />
@@ -546,11 +539,11 @@
               {/if}
             {/if}
 
-            {#if isCreatingSharedAlbum && album.sharedUsers.length === 0}
+            {#if isCreatingSharedAlbum && data.album.sharedUsers.length === 0}
               <Button
                 size="sm"
                 rounded="lg"
-                disabled={album.assetCount == 0}
+                disabled={data.album.assetCount == 0}
                 on:click={() => (viewMode = ViewMode.SELECT_USERS)}
               >
                 Share
@@ -597,7 +590,7 @@
       class="relative h-screen overflow-hidden bg-immich-bg px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg"
       style={`width:${assetGridWidth}px`}
     >
-      {#key refreshAssetGrid}
+      {#key data.album.id}
         {#if viewMode === ViewMode.SELECT_ASSETS}
           <AssetGrid
             assetStore={timelineStore}
@@ -606,10 +599,10 @@
           />
         {:else}
           <AssetGrid
-            {album}
+            album={data.album}
             {assetStore}
             {assetInteractionStore}
-            isShared={album.sharedUsers.length > 0}
+            isShared={data.album.sharedUsers.length > 0}
             isSelectionMode={viewMode === ViewMode.SELECT_THUMBNAIL}
             singleSelect={viewMode === ViewMode.SELECT_THUMBNAIL}
             showArchiveIcon
@@ -626,7 +619,7 @@
                     ? 'hover:border-gray-400'
                     : 'hover:border-transparent'} bg-immich-bg focus:border-b-2 focus:border-immich-primary focus:outline-none dark:bg-immich-dark-bg dark:focus:border-immich-dark-primary dark:focus:bg-immich-dark-gray"
                   type="text"
-                  bind:value={album.albumName}
+                  bind:value={data.album.albumName}
                   disabled={!isOwned}
                   bind:this={titleInput}
                   title="Edit Title"
@@ -634,19 +627,19 @@
                 />
 
                 <!-- ALBUM SUMMARY -->
-                {#if album.assetCount > 0}
+                {#if data.album.assetCount > 0}
                   <span class="my-2 flex gap-2 text-sm font-medium text-gray-500" data-testid="album-details">
                     <p class="">{getDateRange()}</p>
                     <p>·</p>
-                    <p>{album.assetCount} items</p>
+                    <p>{data.album.assetCount} items</p>
                   </span>
                 {/if}
 
                 <!-- ALBUM SHARING -->
-                {#if album.sharedUsers.length > 0 || (album.hasSharedLink && isOwned)}
+                {#if data.album.sharedUsers.length > 0 || (data.album.hasSharedLink && isOwned)}
                   <div class="my-3 flex gap-x-1">
                     <!-- link -->
-                    {#if album.hasSharedLink && isOwned}
+                    {#if data.album.hasSharedLink && isOwned}
                       <CircleIconButton
                         backgroundColor="#d3d3d3"
                         forceDark
@@ -658,11 +651,11 @@
 
                     <!-- owner -->
                     <button on:click={() => (viewMode = ViewMode.VIEW_USERS)}>
-                      <UserAvatar user={album.owner} size="md" />
+                      <UserAvatar user={data.album.owner} size="md" />
                     </button>
 
                     <!-- users -->
-                    {#each album.sharedUsers as user (user.id)}
+                    {#each data.album.sharedUsers as user (user.id)}
                       <button on:click={() => (viewMode = ViewMode.VIEW_USERS)}>
                         <UserAvatar {user} size="md" />
                       </button>
@@ -699,7 +692,7 @@
               </section>
             {/if}
 
-            {#if album.assetCount === 0}
+            {#if data.album.assetCount === 0}
               <section id="empty-album" class=" mt-[200px] flex place-content-center place-items-center">
                 <div class="w-[300px]">
                   <p class="text-xs dark:text-immich-dark-fg">ADD PHOTOS</p>
@@ -721,7 +714,7 @@
         {#if showActivityStatus}
           <div class="absolute z-[2] bottom-0 right-0 mb-6 mr-6 justify-self-end">
             <ActivityStatus
-              disabled={!album.isActivityEnabled}
+              disabled={!data.album.isActivityEnabled}
               {isLiked}
               numberOfComments={$numberOfComments}
               {isShowActivity}
@@ -733,7 +726,7 @@
       {/key}
     </main>
   </div>
-  {#if album.sharedUsers.length > 0 && album && isShowActivity && $user && !$showAssetViewer}
+  {#if data.album.sharedUsers.length > 0 && data.album && isShowActivity && $user && !$showAssetViewer}
     <div class="flex">
       <div
         transition:fly={{ duration: 150 }}
@@ -743,9 +736,9 @@
       >
         <ActivityViewer
           user={$user}
-          disabled={!album.isActivityEnabled}
-          albumOwnerId={album.ownerId}
-          albumId={album.id}
+          disabled={!data.album.isActivityEnabled}
+          albumOwnerId={data.album.ownerId}
+          albumId={data.album.id}
           {isLiked}
           bind:reactions
           on:addComment={() => updateNumberOfComments(1)}
@@ -759,7 +752,7 @@
 </div>
 {#if viewMode === ViewMode.SELECT_USERS}
   <UserSelectionModal
-    {album}
+    album={data.album}
     on:select={({ detail: users }) => handleAddUsers(users)}
     on:share={() => (viewMode = ViewMode.LINK_SHARING)}
     on:close={() => (viewMode = ViewMode.VIEW)}
@@ -767,13 +760,13 @@
 {/if}
 
 {#if viewMode === ViewMode.LINK_SHARING}
-  <CreateSharedLinkModal albumId={album.id} on:close={() => (viewMode = ViewMode.VIEW)} />
+  <CreateSharedLinkModal albumId={data.album.id} on:close={() => (viewMode = ViewMode.VIEW)} />
 {/if}
 
 {#if viewMode === ViewMode.VIEW_USERS}
   <ShareInfoModal
     on:close={() => (viewMode = ViewMode.VIEW)}
-    {album}
+    album={data.album}
     on:remove={({ detail: userId }) => handleRemoveUser(userId)}
   />
 {/if}
@@ -786,7 +779,7 @@
     on:cancel={() => (viewMode = ViewMode.VIEW)}
   >
     <svelte:fragment slot="prompt">
-      <p>Are you sure you want to delete the album <b>{album.albumName}</b>?</p>
+      <p>Are you sure you want to delete the album <b>{data.album.albumName}</b>?</p>
       <p>If this album is shared, other users will not be able to access it anymore.</p>
     </svelte:fragment>
   </ConfirmDialogue>
@@ -794,7 +787,7 @@
 
 {#if viewMode === ViewMode.OPTIONS && $user}
   <AlbumOptions
-    {album}
+    album={data.album}
     user={$user}
     on:close={() => (viewMode = ViewMode.VIEW)}
     on:toggleEnableActivity={handleToggleEnableActivity}
