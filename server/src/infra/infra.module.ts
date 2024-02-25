@@ -66,7 +66,7 @@ import {
   UserRepository,
   UserTokenRepository,
 } from './repositories';
-import { otelConfig } from './tracing';
+import { otelConfig } from './instrumentation';
 
 const providers: Provider[] = [
   { provide: IActivityRepository, useClass: ActivityRepository },

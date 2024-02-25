@@ -15,7 +15,7 @@ import {
   SystemConfigService,
   UserService,
 } from '@app/domain';
-import otelSDK from '@app/infra/tracing';
+import otelSDK from '@app/infra/instrumentation';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()

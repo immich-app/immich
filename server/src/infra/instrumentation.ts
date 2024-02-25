@@ -28,11 +28,10 @@ const otelSDK = new NodeSDK({
 
 export const otelConfig: OpenTelemetryModuleOptions = {
   metrics: {
-    hostMetrics: true, // Includes Host Metrics
+    hostMetrics: process.env.OTEL_SDK_DISABLED !== 'true',
     apiMetrics: {
-      enable: true, // Includes api metrics
+      enable: process.env.OTEL_SDK_DISABLED !== 'true',
       ignoreRoutes: ['/favicon.ico', '/custom.css'],
-      ignoreUndefinedRoutes: false, //Records metrics for all URLs, even undefined ones
     },
   },
 };

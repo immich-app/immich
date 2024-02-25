@@ -147,6 +147,10 @@ export function DecorateAll(
 
 export function ExecutionTimeHistogram({ description, unit = 'ms', valueType = ValueType.DOUBLE }: MetricOptions = {}) {
   return (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) => {
+    if (process.env.OTEL_SDK_DISABLED === 'true') {
+      return;
+    }
+
     const method = descriptor.value;
     const className = target.constructor.name as string;
     const propertyName = String(propertyKey);

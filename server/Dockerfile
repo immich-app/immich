@@ -45,7 +45,8 @@ FROM ghcr.io/immich-app/base-server-prod:20240305@sha256:d0bcac4e77f1371d6c4b8ec
 WORKDIR /usr/src/app
 ENV NODE_ENV=production \
     NVIDIA_DRIVER_CAPABILITIES=all \
-    NVIDIA_VISIBLE_DEVICES=all
+    NVIDIA_VISIBLE_DEVICES=all \
+    OTEL_SDK_DISABLED=true
 COPY --from=prod /usr/src/app/node_modules ./node_modules
 COPY --from=prod /usr/src/app/dist ./dist
 COPY --from=prod /usr/src/app/bin ./bin
