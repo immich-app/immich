@@ -82,7 +82,7 @@
     };
   };
 
-  const search = async () => {
+  const search = () => {
     if (filter.context && filter.personIds.size > 0) {
       handleError(
         new Error('Context search does not support people filter'),
