@@ -1,5 +1,6 @@
 <script lang="ts" context="module">
   import type { SearchLocationFilter } from './search-location-section.svelte';
+  import type { SearchDisplayFilters } from './search-display-section.svelte';
 
   export enum MediaType {
     All = 'all',
@@ -16,18 +17,8 @@
       takenAfter?: string;
       takenBefore?: string;
     };
-    isArchive?: boolean;
-    isFavorite?: boolean;
-    isNotInAlbum?: boolean;
+    display: SearchDisplayFilters;
     mediaType: MediaType;
-  };
-
-  export type SearchParams = {
-    state?: string;
-    country?: string;
-    city?: string;
-    cameraMake?: string;
-    cameraModel?: string;
   };
 </script>
 
@@ -43,6 +34,7 @@
   import SearchDateSection from './search-date-section.svelte';
   import SearchMediaSection from './search-media-section.svelte';
   import { parseUtcDate } from '$lib/utils/date-time';
+  import SearchDisplaySection from './search-display-section.svelte';
 
   export let searchQuery: MetadataSearchDto | SmartSearchDto;
 
@@ -66,9 +58,11 @@
       takenAfter: searchQuery.takenAfter ? toStartOfDayDate(searchQuery.takenAfter) : undefined,
       takenBefore: searchQuery.takenBefore ? toStartOfDayDate(searchQuery.takenBefore) : undefined,
     },
-    isArchive: searchQuery.isArchived,
-    isFavorite: searchQuery.isFavorite,
-    isNotInAlbum: 'isNotInAlbum' in searchQuery ? searchQuery.isNotInAlbum : undefined,
+    display: {
+      isArchive: searchQuery.isArchived,
+      isFavorite: searchQuery.isFavorite,
+      isNotInAlbum: 'isNotInAlbum' in searchQuery ? searchQuery.isNotInAlbum : undefined,
+    },
     mediaType:
       searchQuery.type === AssetTypeEnum.Image
         ? MediaType.Image
@@ -81,24 +75,11 @@
 
   const resetForm = () => {
     filter = {
-      context: undefined,
       personIds: new Set(),
-      location: {
-        country: undefined,
-        state: undefined,
-        city: undefined,
-      },
-      camera: {
-        make: undefined,
-        model: undefined,
-      },
-      date: {
-        takenAfter: undefined,
-        takenBefore: undefined,
-      },
-      isArchive: undefined,
-      isFavorite: undefined,
-      isNotInAlbum: undefined,
+      location: {},
+      camera: {},
+      date: {},
+      display: {},
       mediaType: MediaType.All,
     };
   };
@@ -120,9 +101,9 @@
       model: filter.camera.model,
       takenAfter: parseOptionalDate(filter.date.takenAfter)?.startOf('day').toISO() || undefined,
       takenBefore: parseOptionalDate(filter.date.takenBefore)?.endOf('day').toISO() || undefined,
-      isArchived: filter.isArchive || undefined,
-      isFavorite: filter.isFavorite || undefined,
-      isNotInAlbum: filter.isNotInAlbum || undefined,
+      isArchived: filter.display.isArchive || undefined,
+      isFavorite: filter.display.isFavorite || undefined,
+      isNotInAlbum: filter.display.isNotInAlbum || undefined,
       personIds: filter.personIds.size > 0 ? [...filter.personIds] : undefined,
       type,
     };
@@ -190,26 +171,7 @@
         <SearchMediaSection bind:filteredMedia={filter.mediaType} />
 
         <!-- DISPLAY OPTIONS -->
-        <div id="display-options-selection" class="text-sm">
-          <p class="immich-form-label">DISPLAY OPTIONS</p>
-
-          <div class="flex flex-wrap gap-x-5 gap-y-2 mt-1">
-            <label class="flex items-center gap-2">
-              <input type="checkbox" class="size-5 flex-shrink-0" bind:checked={filter.isNotInAlbum} />
-              <span class="pt-1">Not in any album</span>
-            </label>
-
-            <label class="flex items-center gap-2">
-              <input type="checkbox" class="size-5 flex-shrink-0" bind:checked={filter.isArchive} />
-              <span class="pt-1">Archive</span>
-            </label>
-
-            <label class="flex items-center gap-2">
-              <input type="checkbox" class="size-5 flex-shrink-0" bind:checked={filter.isFavorite} />
-              <span class="pt-1">Favorite</span>
-            </label>
-          </div>
-        </div>
+        <SearchDisplaySection bind:filters={filter.display} />
       </div>
     </div>
 
