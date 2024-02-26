@@ -28,11 +28,7 @@
 
   export let data: PageData;
 
-  featureFlags.subscribe(({ trash }) => {
-    if (!trash) {
-      handlePromiseError(goto(AppRoute.PHOTOS));
-    }
-  });
+  $featureFlags.trash || handlePromiseError(goto(AppRoute.PHOTOS));
 
   const assetStore = new AssetStore({ isTrashed: true });
   const assetInteractionStore = createAssetInteractionStore();
