@@ -28,11 +28,13 @@ describe('Executor Queue test', function () {
       });
 
     // The first 3 should be finished within 200ms (concurrency 3)
-    await eq.addTask(() => timeoutPromiseBuilder(100, 'T1'));
-    await eq.addTask(() => timeoutPromiseBuilder(200, 'T2'));
-    await eq.addTask(() => timeoutPromiseBuilder(150, 'T3'));
     // The last task will be executed after 200ms and will finish at 400ms
-    await eq.addTask(() => timeoutPromiseBuilder(200, 'T4'));
+    await Promise.all([
+      eq.addTask(() => timeoutPromiseBuilder(100, 'T1')),
+      eq.addTask(() => timeoutPromiseBuilder(200, 'T2')),
+      eq.addTask(() => timeoutPromiseBuilder(150, 'T3')),
+      eq.addTask(() => timeoutPromiseBuilder(200, 'T4')),
+    ]);
 
     expect(finished).not.toBeCalled();
     expect(started).toHaveBeenCalledTimes(3);
