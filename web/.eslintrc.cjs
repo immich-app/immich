@@ -13,8 +13,7 @@ module.exports = {
     sourceType: 'module',
     ecmaVersion: 2022,
     extraFileExtensions: ['.svelte'],
-    // TODO: set this after https://github.com/sveltejs/kit/pull/11886 is merged and released
-    // project: ['./tsconfig.json'],
+    project: ['./tsconfig.json'],
   },
   env: {
     browser: true,
@@ -50,10 +49,9 @@ module.exports = {
     'unicorn/no-nested-ternary': 'off',
     'unicorn/consistent-function-scoping': 'off',
     'unicorn/prefer-top-level-await': 'off',
-    // TODO: set these rules after https://github.com/sveltejs/kit/pull/11886 is merged and released
     // TODO: set recommended-type-checked and remove these rules
-    // '@typescript-eslint/require-await': 'error',
-    // '@typescript-eslint/no-floating-promises': 'error',
-    // '@typescript-eslint/no-misused-promises': 'error',
+    '@typescript-eslint/require-await': 'error',
+    '@typescript-eslint/no-floating-promises': 'error',
+    '@typescript-eslint/no-misused-promises': 'error',
   },
 };
