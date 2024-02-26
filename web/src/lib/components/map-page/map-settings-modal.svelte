@@ -34,6 +34,7 @@
       <SettingSwitch title="Only favorites" bind:checked={settings.onlyFavorites} />
       <SettingSwitch title="Include archived" bind:checked={settings.includeArchived} />
       <SettingSwitch title="Include shared with me" bind:checked={settings.withPartners} />
+      <SettingSwitch title="Include shared albums" bind:checked={settings.withSharedAlbums} />
       {#if customDateRange}
         <div in:fly={{ y: 10, duration: 200 }} class="flex flex-col gap-4">
           <div class="flex items-center justify-between gap-8">

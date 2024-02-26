@@ -500,7 +500,7 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
-  async getMapMarkers(ownerIds: string[], options: MapMarkerSearchOptions = {}): Promise<MapMarker[]> {
+  async getMapMarkers(ownerIds: string[], albumIds: string[], options: MapMarkerSearchOptions = {}): Promise<MapMarker[]> {
     const { isArchived, isFavorite, fileCreatedAfter, fileCreatedBefore } = options;
 
     const assets = await this.repository.find({
@@ -511,19 +511,35 @@ export class AssetRepository implements IAssetRepository {
           longitude: true,
         },
       },
-      where: {
-        ownerId: In([...ownerIds]),
-        isVisible: true,
-        isArchived,
-        exifInfo: {
-          latitude: Not(IsNull()),
-          longitude: Not(IsNull()),
+      where: [
+        {
+          ownerId: In([...ownerIds]),
+          isVisible: true,
+          isArchived,
+          exifInfo: {
+            latitude: Not(IsNull()),
+            longitude: Not(IsNull()),
+          },
+          isFavorite,
+          fileCreatedAt: OptionalBetween(fileCreatedAfter, fileCreatedBefore),
         },
-        isFavorite,
-        fileCreatedAt: OptionalBetween(fileCreatedAfter, fileCreatedBefore),
-      },
+        {
+          albums: {
+            id: In([...albumIds])
+          },
+          isVisible: true,
+          isArchived,
+          exifInfo: {
+            latitude: Not(IsNull()),
+            longitude: Not(IsNull()),
+          },
+          isFavorite,
+          fileCreatedAt: OptionalBetween(fileCreatedAfter, fileCreatedBefore),
+        }
+      ],
       relations: {
         exifInfo: true,
+        albums: true,
       },
       order: {
         fileCreatedAt: 'DESC',

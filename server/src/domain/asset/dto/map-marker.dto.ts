@@ -31,4 +31,10 @@ export class MapMarkerDto {
   @IsBoolean()
   @Transform(toBoolean)
   withPartners?: boolean;
+
+  @ApiProperty()
+  @Optional()
+  @IsBoolean()
+  @Transform(toBoolean)
+  withSharedAlbums?: boolean;
 }

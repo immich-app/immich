@@ -654,7 +654,9 @@ class AssetApi {
   /// * [bool] isFavorite:
   ///
   /// * [bool] withPartners:
-  Future<Response> getMapMarkersWithHttpInfo({ DateTime? fileCreatedAfter, DateTime? fileCreatedBefore, bool? isArchived, bool? isFavorite, bool? withPartners, }) async {
+  ///
+  /// * [bool] withSharedAlbums:
+  Future<Response> getMapMarkersWithHttpInfo({ DateTime? fileCreatedAfter, DateTime? fileCreatedBefore, bool? isArchived, bool? isFavorite, bool? withPartners, bool? withSharedAlbums, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/map-marker';
 
@@ -679,6 +681,9 @@ class AssetApi {
     }
     if (withPartners != null) {
       queryParams.addAll(_queryParams('', 'withPartners', withPartners));
+    }
+    if (withSharedAlbums != null) {
+      queryParams.addAll(_queryParams('', 'withSharedAlbums', withSharedAlbums));
     }
 
     const contentTypes = <String>[];
@@ -706,8 +711,10 @@ class AssetApi {
   /// * [bool] isFavorite:
   ///
   /// * [bool] withPartners:
-  Future<List<MapMarkerResponseDto>?> getMapMarkers({ DateTime? fileCreatedAfter, DateTime? fileCreatedBefore, bool? isArchived, bool? isFavorite, bool? withPartners, }) async {
-    final response = await getMapMarkersWithHttpInfo( fileCreatedAfter: fileCreatedAfter, fileCreatedBefore: fileCreatedBefore, isArchived: isArchived, isFavorite: isFavorite, withPartners: withPartners, );
+  ///
+  /// * [bool] withSharedAlbums:
+  Future<List<MapMarkerResponseDto>?> getMapMarkers({ DateTime? fileCreatedAfter, DateTime? fileCreatedBefore, bool? isArchived, bool? isFavorite, bool? withPartners, bool? withSharedAlbums, }) async {
+    final response = await getMapMarkersWithHttpInfo( fileCreatedAfter: fileCreatedAfter, fileCreatedBefore: fileCreatedBefore, isArchived: isArchived, isFavorite: isFavorite, withPartners: withPartners, withSharedAlbums: withSharedAlbums, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
