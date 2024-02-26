@@ -220,8 +220,7 @@
 
   onMount(async () => {
     if (album.sharedUsers.length > 0) {
-      await getFavorite();
-      await getNumberOfComments();
+      await Promise.all([getFavorite(), getNumberOfComments()]);
     }
   });
 
