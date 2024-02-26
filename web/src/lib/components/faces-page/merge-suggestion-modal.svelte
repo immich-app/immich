@@ -100,7 +100,7 @@
               <div class="flex flex-wrap justify-center md:grid md:grid-cols-{potentialMergePeople.length}">
                 {#each potentialMergePeople as person (person.id)}
                   <div class="h-24 w-24 md:h-28 md:w-28">
-                    <button class="p-2" on:click={() => changePersonToMerge(person)}>
+                    <button class="p-2 w-full" on:click={() => changePersonToMerge(person)}>
                       <ImageThumbnail
                         border={true}
                         circle
