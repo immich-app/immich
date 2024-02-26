@@ -9,7 +9,7 @@
 
   export type SearchFilter = {
     context?: string;
-    people: PersonResponseDto[];
+    personIds: Set<string>;
 
     location: SearchLocationFilter;
 
@@ -42,14 +42,8 @@
 <script lang="ts">
   import Button from '$lib/components/elements/buttons/button.svelte';
   import { handleError } from '$lib/utils/handle-error';
-  import {
-    AssetTypeEnum,
-    type PersonResponseDto,
-    type SmartSearchDto,
-    type MetadataSearchDto,
-    SearchSuggestionType,
-  } from '@immich/sdk';
-  import { getAllPeople, getSearchSuggestions } from '@immich/sdk';
+  import { AssetTypeEnum, type SmartSearchDto, type MetadataSearchDto, SearchSuggestionType } from '@immich/sdk';
+  import { getSearchSuggestions } from '@immich/sdk';
   import { createEventDispatcher, onMount } from 'svelte';
   import { fly } from 'svelte/transition';
   import { type ComboBoxOption } from '../combobox.svelte';
@@ -61,7 +55,6 @@
   import { parseUtcDate } from '$lib/utils/date-time';
 
   type SearchSuggestion = {
-    people: PersonResponseDto[];
     make: ComboBoxOption[];
     model: ComboBoxOption[];
   };
@@ -69,14 +62,13 @@
   export let searchQuery: MetadataSearchDto | SmartSearchDto;
 
   let suggestions: SearchSuggestion = {
-    people: [],
     make: [],
     model: [],
   };
 
   let filter: SearchFilter = {
     context: undefined,
-    people: [],
+    personIds: new Set(),
     location: {
       country: undefined,
       state: undefined,
@@ -101,28 +93,9 @@
   let filterBoxWidth = 0;
 
   onMount(() => {
-    getPeople();
     updateSuggestions();
     populateExistingFilters();
   });
-
-  function orderBySelectedPeopleFirst(people: PersonResponseDto[]) {
-    return people.sort((a, _) => {
-      if (filter.people.some((p) => p.id === a.id)) {
-        return -1;
-      }
-      return 1;
-    });
-  }
-
-  const getPeople = async () => {
-    try {
-      const { people } = await getAllPeople({ withHidden: false });
-      suggestions.people = orderBySelectedPeopleFirst(people);
-    } catch (error) {
-      handleError(error, 'Failed to get people');
-    }
-  };
 
   const updateSuggestions = async () => {
     let data: {
@@ -157,7 +130,7 @@
   const resetForm = () => {
     filter = {
       context: undefined,
-      people: [],
+      personIds: new Set(),
       location: {
         country: undefined,
         state: undefined,
@@ -201,7 +174,7 @@
       isArchived: filter.isArchive || undefined,
       isFavorite: filter.isFavorite || undefined,
       isNotInAlbum: filter.isNotInAlbum || undefined,
-      personIds: filter.people && filter.people.length > 0 ? filter.people.map((p) => p.id) : undefined,
+      personIds: filter.personIds.size > 0 ? [...filter.personIds] : undefined,
       type,
     };
 
@@ -229,9 +202,7 @@
 
       filter = {
         context: 'query' in searchQuery ? searchQuery.query : '',
-        people: orderBySelectedPeopleFirst(
-          personIds.map((id) => suggestions.people.find((person) => person.id === id)!),
-        ),
+        personIds: new Set(personIds),
         location: {
           country: searchQuery.country,
           state: searchQuery.state,
@@ -272,11 +243,7 @@
   >
     <div class="px-4 sm:px-6 py-4 space-y-10 max-h-[calc(100dvh-12rem)] overflow-y-auto immich-scrollbar">
       <!-- PEOPLE -->
-      <SearchPeopleSection
-        width={filterBoxWidth}
-        suggestedPeople={suggestions.people}
-        bind:filteredPeople={filter.people}
-      />
+      <SearchPeopleSection width={filterBoxWidth} bind:selectedPeople={filter.personIds} />
 
       <!-- CONTEXT -->
       <div>
