@@ -8,6 +8,12 @@
   import type { PageData } from './$types';
 
   export let data: PageData;
+
+  const onSuccess = async () => {
+    await goto(AppRoute.AUTH_LOGIN);
+    resetSavedUser();
+    await logout();
+  };
 </script>
 
 <FullscreenContainer title={data.meta.title}>
@@ -19,12 +25,5 @@
     enter the new password below.
   </p>
 
-  <ChangePasswordForm
-    user={$user}
-    on:success={async () => {
-      await goto(AppRoute.AUTH_LOGIN);
-      resetSavedUser();
-      await logout();
-    }}
-  />
+  <ChangePasswordForm user={$user} on:success={onSuccess} />
 </FullscreenContainer>
