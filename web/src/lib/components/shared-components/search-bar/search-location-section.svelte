@@ -8,16 +8,13 @@
 
 <script lang="ts">
   import { getSearchSuggestions, SearchSuggestionType } from '@immich/sdk';
-  import Combobox, { type ComboBoxOption } from '../combobox.svelte';
-  import type { SearchFilter } from './search-filter-box.svelte';
+  import Combobox, { toComboBoxOptions } from '../combobox.svelte';
 
-  export let filter: SearchFilter['location'];
+  export let filter: SearchLocationFilter;
 
   let countries: string[] = [];
   let states: string[] = [];
   let cities: string[] = [];
-
-  const toComboBoxOptions = (items: string[]) => items.map<ComboBoxOption>((item) => ({ label: item, value: item }));
 
   $: countryFilter = filter.country;
   $: stateFilter = filter.state;

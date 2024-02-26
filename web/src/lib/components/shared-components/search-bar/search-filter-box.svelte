@@ -1,4 +1,6 @@
 <script lang="ts" context="module">
+  import type { SearchLocationFilter } from './search-location-section.svelte';
+
   export enum MediaType {
     All = 'all',
     Image = 'image',
@@ -9,11 +11,7 @@
     context?: string;
     people: PersonResponseDto[];
 
-    location: {
-      country?: string;
-      state?: string;
-      city?: string;
-    };
+    location: SearchLocationFilter;
 
     camera: {
       make?: ComboBoxOption;
