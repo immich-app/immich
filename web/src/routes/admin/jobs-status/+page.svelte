@@ -18,7 +18,7 @@
 
   onMount(async () => {
     while (running) {
-      await getAllJobsStatus();
+      jobs = await getAllJobsStatus();
       await asyncTimeout(5000);
     }
   });
