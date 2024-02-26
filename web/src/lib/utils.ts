@@ -203,5 +203,5 @@ export const asyncTimeout = (ms: number) => {
 };
 
 export const resolvePromise = <T>(promise: Promise<T>): void => {
-  Promise.resolve(promise).catch(async (error) => await handleError(error));
+  promise.catch(async (error) => await handleError(error));
 };
