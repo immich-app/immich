@@ -59,7 +59,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      await handleError(error, 'Unable to add assets to shared link');
+      handleError(error, 'Unable to add assets to shared link');
     }
   };
 

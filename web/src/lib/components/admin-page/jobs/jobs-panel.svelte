@@ -140,7 +140,7 @@
         }
       }
     } catch (error) {
-      await handleError(error, `Command '${jobCommand.command}' failed for job: ${title}`);
+      handleError(error, `Command '${jobCommand.command}' failed for job: ${title}`);
     }
   }
 </script>

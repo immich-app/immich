@@ -80,7 +80,7 @@
       });
       dispatch('merge', mergedPerson);
     } catch (error) {
-      await handleError(error, 'Cannot merge people');
+      handleError(error, 'Cannot merge people');
     } finally {
       isShowConfirmation = false;
     }

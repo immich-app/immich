@@ -108,7 +108,7 @@
       searchWord = name;
     } catch (error) {
       people = [];
-      await handleError(error, "Can't search people");
+      handleError(error, "Can't search people");
     } finally {
       clearTimeout(timeout);
     }
@@ -237,7 +237,7 @@
 
       await goto(previousRoute, { replaceState: true });
     } catch (error) {
-      await handleError(error, 'Unable to hide person');
+      handleError(error, 'Unable to hide person');
     }
   };
 
@@ -269,7 +269,7 @@
       const { assets } = await getPersonStatistics({ id: data.person.id });
       numberOfAssets = assets;
     } catch (error) {
-      await handleError(error, "Can't update the asset count");
+      handleError(error, "Can't update the asset count");
     }
   };
 
@@ -294,7 +294,7 @@
       }
       await goto(`${AppRoute.PEOPLE}/${personToBeMergedIn.id}`, { replaceState: true });
     } catch (error) {
-      await handleError(error, 'Unable to save name');
+      handleError(error, 'Unable to save name');
     }
   };
 
@@ -320,7 +320,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      await handleError(error, 'Unable to save name');
+      handleError(error, 'Unable to save name');
     }
   };
 
@@ -388,7 +388,7 @@
 
       notificationController.show({ message: 'Date of birth saved successfully', type: NotificationType.Info });
     } catch (error) {
-      await handleError(error, 'Unable to save date of birth');
+      handleError(error, 'Unable to save date of birth');
     }
   };
 

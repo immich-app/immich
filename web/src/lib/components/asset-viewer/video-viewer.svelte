@@ -20,7 +20,7 @@
       video.muted = false;
       dispatch('onVideoStarted');
     } catch (error) {
-      await handleError(error, 'Unable to play video');
+      handleError(error, 'Unable to play video');
     } finally {
       isVideoLoading = false;
     }

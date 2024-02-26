@@ -65,7 +65,7 @@
       });
       $user.profileImagePath = profileImagePath;
     } catch (error) {
-      await handleError(error, 'Error setting profile picture.');
+      handleError(error, 'Error setting profile picture.');
     }
     dispatch('close');
   };

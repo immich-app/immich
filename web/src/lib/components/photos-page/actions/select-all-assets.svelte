@@ -29,7 +29,7 @@
 
       selecting = false;
     } catch (error) {
-      await handleError(error, 'Error selecting all assets');
+      handleError(error, 'Error selecting all assets');
     }
   };
 </script>

@@ -49,7 +49,7 @@
     if (assetType === AssetTypeEnum.Image) {
       image = $photoViewer;
     } else if (assetType === AssetTypeEnum.Video) {
-      const data = await getAssetThumbnailUrl(assetId, ThumbnailFormat.Webp);
+      const data = getAssetThumbnailUrl(assetId, ThumbnailFormat.Webp);
       const img: HTMLImageElement = new Image();
       img.src = data;
 
@@ -128,7 +128,7 @@
       searchedPeopleCopy = data;
       searchWord = searchName;
     } catch (error) {
-      await handleError(error, "Can't search people");
+      handleError(error, "Can't search people");
     } finally {
       clearTimeout(timeout);
     }

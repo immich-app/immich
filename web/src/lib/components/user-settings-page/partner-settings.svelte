@@ -85,7 +85,7 @@
       removePartnerDto = null;
       await refreshPartners();
     } catch (error) {
-      await handleError(error, 'Unable to remove partner');
+      handleError(error, 'Unable to remove partner');
     }
   };
 
@@ -98,7 +98,7 @@
       await refreshPartners();
       createPartnerFlag = false;
     } catch (error) {
-      await handleError(error, 'Unable to add partners');
+      handleError(error, 'Unable to add partners');
     }
   };
 
@@ -109,7 +109,7 @@
       partner.inTimeline = inTimeline;
       partners = partners;
     } catch (error) {
-      await handleError(error, 'Unable to update timeline display status');
+      handleError(error, 'Unable to update timeline display status');
     }
   };
 </script>

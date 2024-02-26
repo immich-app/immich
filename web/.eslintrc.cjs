@@ -50,8 +50,9 @@ module.exports = {
     'unicorn/consistent-function-scoping': 'off',
     'unicorn/prefer-top-level-await': 'off',
     // TODO: set recommended-type-checked and remove these rules
-    '@typescript-eslint/require-await': 'error',
+    '@typescript-eslint/await-thenable': 'error',
     '@typescript-eslint/no-floating-promises': 'error',
     '@typescript-eslint/no-misused-promises': 'error',
+    '@typescript-eslint/require-await': 'error',
   },
 };

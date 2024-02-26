@@ -26,7 +26,7 @@
           type: NotificationType.Info,
         });
       } catch (error) {
-        await handleError(error, 'Unable to link OAuth account');
+        handleError(error, 'Unable to link OAuth account');
       } finally {
         await goto('?open=oauth');
       }
@@ -43,7 +43,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      await handleError(error, 'Unable to unlink account');
+      handleError(error, 'Unable to unlink account');
     }
   };
 </script>

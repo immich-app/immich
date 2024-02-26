@@ -21,7 +21,7 @@
       const newAlbum = await createAlbum({ createAlbumDto: { albumName: '' } });
       await goto(`${AppRoute.ALBUMS}/${newAlbum.id}`);
     } catch (error) {
-      await handleError(error, 'Unable to create album');
+      handleError(error, 'Unable to create album');
     }
   };
 </script>

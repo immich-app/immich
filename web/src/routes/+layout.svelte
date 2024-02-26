@@ -75,7 +75,7 @@
     try {
       await loadConfig();
     } catch (error) {
-      await handleError(error, 'Unable to connect to server');
+      handleError(error, 'Unable to connect to server');
     }
   });
 </script>

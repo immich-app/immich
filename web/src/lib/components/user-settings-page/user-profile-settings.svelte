@@ -33,7 +33,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      await handleError(error, 'Unable to save profile');
+      handleError(error, 'Unable to save profile');
     }
   };
 </script>

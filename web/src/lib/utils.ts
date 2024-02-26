@@ -2,7 +2,7 @@ import { goto } from '$app/navigation';
 import { page } from '$app/stores';
 import { NotificationType, notificationController } from '$lib/components/shared-components/notification/notification';
 import { locales } from '$lib/constants';
-import { handleError as handlerServerError } from '$lib/utils/handle-error';
+import { handleError } from '$lib/utils/handle-error';
 import {
   AssetJobName,
   JobName,
@@ -15,7 +15,6 @@ import {
   type UserResponseDto,
 } from '@immich/sdk';
 import { get } from 'svelte/store';
-import { handleError } from '../hooks.client';
 
 interface UpdateParamAction {
   param: string;
@@ -140,7 +139,7 @@ export const copyToClipboard = async (secret: string) => {
     await navigator.clipboard.writeText(secret);
     notificationController.show({ message: 'Copied to clipboard!', type: NotificationType.Info });
   } catch (error) {
-    await handlerServerError(error, 'Cannot copy to clipboard, make sure you are accessing the page through https');
+    handleError(error, 'Cannot copy to clipboard, make sure you are accessing the page through https');
   }
 };
 
@@ -173,7 +172,7 @@ export const oauth = {
       window.location.href = url;
       return true;
     } catch (error) {
-      await handlerServerError(error, 'Unable to login with OAuth');
+      handleError(error, 'Unable to login with OAuth');
       return false;
     }
   },
@@ -203,5 +202,5 @@ export const asyncTimeout = (ms: number) => {
 };
 
 export const handlePromiseError = <T>(promise: Promise<T>): void => {
-  promise.catch(async (error) => await handleError(error));
+  promise.catch((error) => console.error(`[utils.ts]:handlePromiseError ${error}`, error));
 };

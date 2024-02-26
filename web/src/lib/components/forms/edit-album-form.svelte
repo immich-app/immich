@@ -25,7 +25,7 @@
 
       dispatch('editSuccess');
     } catch (error) {
-      await handleError(error, 'Unable to update user');
+      handleError(error, 'Unable to update user');
     }
   };
 </script>

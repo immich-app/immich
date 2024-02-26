@@ -127,7 +127,7 @@
       const { people } = await getAllPeople({ withHidden: false });
       suggestions.people = orderBySelectedPeopleFirst(people);
     } catch (error) {
-      await handleError(error, 'Failed to get people');
+      handleError(error, 'Failed to get people');
     }
   };
 
@@ -203,7 +203,7 @@
         }
       }
     } catch (error) {
-      await handleError(error, 'Failed to get search suggestions');
+      handleError(error, 'Failed to get search suggestions');
     }
   };
 
@@ -234,7 +234,7 @@
   const parseOptionalDate = (dateString?: string) => (dateString ? parseUtcDate(dateString) : undefined);
   const toStartOfDayDate = (dateString: string) => parseUtcDate(dateString)?.startOf('day').toISODate() || undefined;
 
-  const search = async () => {
+  const search = () => {
     let type: AssetTypeEnum | undefined = undefined;
 
     if (filter.mediaType === MediaType.Image) {
@@ -260,7 +260,7 @@
 
     if (filter.context) {
       if (payload.personIds && payload.personIds.length > 0) {
-        await handleError(
+        handleError(
           new Error('Context search does not support people filter'),
           'Context search does not support people filter',
         );

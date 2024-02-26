@@ -41,7 +41,7 @@
 
       clearSelect();
     } catch (error) {
-      await handleError(error, 'Unable to remove assets from shared link');
+      handleError(error, 'Unable to remove assets from shared link');
     }
   };
 </script>

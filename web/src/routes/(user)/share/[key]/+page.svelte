@@ -24,7 +24,7 @@
       title = (sharedLink.album ? sharedLink.album.albumName : 'Public Share') + ' - Immich';
       description = sharedLink.description || `${sharedLink.assets.length} shared photos & videos.`;
     } catch (error) {
-      await handleError(error, 'Failed to get shared link');
+      handleError(error, 'Failed to get shared link');
     }
   };
 </script>

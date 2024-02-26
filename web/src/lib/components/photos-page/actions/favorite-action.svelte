@@ -49,7 +49,7 @@
 
       clearSelect();
     } catch (error) {
-      await handleError(error, `Unable to ${isFavorite ? 'add to' : 'remove from'} favorites`);
+      handleError(error, `Unable to ${isFavorite ? 'add to' : 'remove from'} favorites`);
     } finally {
       loading = false;
     }

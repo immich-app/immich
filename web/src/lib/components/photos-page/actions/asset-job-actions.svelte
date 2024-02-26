@@ -26,7 +26,7 @@
       notificationController.show({ message: getAssetJobMessage(name), type: NotificationType.Info });
       clearSelect();
     } catch (error) {
-      await handleError(error, 'Unable to submit job');
+      handleError(error, 'Unable to submit job');
     }
   };
 </script>

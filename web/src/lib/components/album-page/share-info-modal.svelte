@@ -30,7 +30,7 @@
     try {
       currentUser = await getMyUserInfo();
     } catch (error) {
-      await handleError(error, 'Unable to refresh user');
+      handleError(error, 'Unable to refresh user');
     }
   });
 
@@ -58,7 +58,7 @@
       const message = userId === 'me' ? `Left ${album.albumName}` : `Removed ${selectedRemoveUser.name}`;
       notificationController.show({ type: NotificationType.Info, message });
     } catch (error) {
-      await handleError(error, 'Unable to remove user');
+      handleError(error, 'Unable to remove user');
     } finally {
       selectedRemoveUser = null;
     }

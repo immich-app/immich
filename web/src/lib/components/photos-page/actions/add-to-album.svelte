@@ -11,7 +11,6 @@
   import { createAlbum, type AlbumResponseDto } from '@immich/sdk';
   import { getMenuContext } from '../asset-select-context-menu.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
-  import { handleError } from '../../../../hooks.client';
 
   export let shared = false;
   let showAlbumPicker = false;
@@ -41,8 +40,8 @@
 
         await goto(`${AppRoute.ALBUMS}/${id}`);
       })
-      .catch(async (error) => {
-        await handleError(error);
+      .catch((error) => {
+        console.error(`[add-to-album.svelte]:handleAddToNewAlbum ${error}`, error);
       });
   };
 

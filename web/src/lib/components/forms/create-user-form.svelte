@@ -65,7 +65,7 @@
 
         return;
       } catch (error) {
-        await handleError(error, 'Unable to create user');
+        handleError(error, 'Unable to create user');
       } finally {
         isCreatingUser = false;
       }

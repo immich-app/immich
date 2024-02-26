@@ -165,7 +165,7 @@
         message: `Activity is ${album.isActivityEnabled ? 'enabled' : 'disabled'}`,
       });
     } catch (error) {
-      await handleError(error, `Can't ${album.isActivityEnabled ? 'disable' : 'enable'} activity`);
+      handleError(error, `Can't ${album.isActivityEnabled ? 'disable' : 'enable'} activity`);
     }
   };
 
@@ -183,7 +183,7 @@
         reactions = [...reactions, isLiked];
       }
     } catch (error) {
-      await handleError(error, "Can't change favorite for asset");
+      handleError(error, "Can't change favorite for asset");
     }
   };
 
@@ -200,7 +200,7 @@
           isLiked = data[0];
         }
       } catch (error) {
-        await handleError(error, "Can't get Favorite");
+        handleError(error, "Can't get Favorite");
       }
     }
   };
@@ -210,7 +210,7 @@
       const { comments } = await getActivityStatistics({ albumId: album.id });
       setNumberOfComments(comments);
     } catch (error) {
-      await handleError(error, "Can't get number of comments");
+      handleError(error, "Can't get number of comments");
     }
   };
 
@@ -327,7 +327,7 @@
       timelineInteractionStore.clearMultiselect();
       viewMode = ViewMode.VIEW;
     } catch (error) {
-      await handleError(error, 'Error adding assets to album');
+      handleError(error, 'Error adding assets to album');
     }
   };
 
@@ -364,7 +364,7 @@
 
       viewMode = ViewMode.VIEW;
     } catch (error) {
-      await handleError(error, 'Error adding users to album');
+      handleError(error, 'Error adding users to album');
     }
   };
 
@@ -378,7 +378,7 @@
       await refreshAlbum();
       viewMode = album.sharedUsers.length > 1 ? ViewMode.SELECT_USERS : ViewMode.VIEW;
     } catch (error) {
-      await handleError(error, 'Error deleting share users');
+      handleError(error, 'Error deleting share users');
     }
   };
 
@@ -391,7 +391,7 @@
       await deleteAlbum({ id: album.id });
       await goto(backUrl);
     } catch (error) {
-      await handleError(error, 'Unable to delete album');
+      handleError(error, 'Unable to delete album');
     } finally {
       viewMode = ViewMode.VIEW;
     }
@@ -415,7 +415,7 @@
 
       notificationController.show({ type: NotificationType.Info, message: 'Updated album cover' });
     } catch (error) {
-      await handleError(error, 'Unable to update album cover');
+      handleError(error, 'Unable to update album cover');
     }
   };
 
@@ -434,7 +434,7 @@
       currentAlbumName = album.albumName;
       notificationController.show({ type: NotificationType.Info, message: 'New album name has been saved' });
     } catch (error) {
-      await handleError(error, 'Unable to update album name');
+      handleError(error, 'Unable to update album name');
     }
   };
 
@@ -455,7 +455,7 @@
       });
       album.description = description;
     } catch (error) {
-      await handleError(error, 'Error updating album description');
+      handleError(error, 'Error updating album description');
     }
   };
 </script>

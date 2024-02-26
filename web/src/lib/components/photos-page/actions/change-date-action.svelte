@@ -19,7 +19,7 @@
     try {
       await updateAssets({ assetBulkUpdateDto: { ids, dateTimeOriginal } });
     } catch (error) {
-      await handleError(error, 'Unable to change date');
+      handleError(error, 'Unable to change date');
     }
     clearSelect();
   };

@@ -20,7 +20,7 @@
         dispatch('success');
       }
     } catch (error) {
-      await handleError(error, 'Unable to delete user');
+      handleError(error, 'Unable to delete user');
       dispatch('fail');
     }
   };

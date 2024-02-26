@@ -184,7 +184,7 @@
         });
       }
     } catch (error) {
-      await handleError(
+      handleError(
         error,
         `Unable to change the visibility for ${changed.length} ${changed.length <= 1 ? 'person' : 'people'}`,
       );
@@ -219,7 +219,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      await handleError(error, 'Unable to save name');
+      handleError(error, 'Unable to save name');
     }
     if (personToBeMergedIn.name !== personName && edittingPerson.id === personToBeMergedIn.id) {
       /*
@@ -245,7 +245,7 @@
         // trigger reactivity
         people = people;
       } catch (error) {
-        await handleError(error, 'Unable to save name');
+        handleError(error, 'Unable to save name');
       }
     }
   };
@@ -287,7 +287,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      await handleError(error, 'Unable to hide person');
+      handleError(error, 'Unable to hide person');
     }
   };
 
@@ -314,7 +314,7 @@
       searchedPeople = await searchPerson({ name: searchName, withHidden: false });
       searchWord = searchName;
     } catch (error) {
-      await handleError(error, "Can't search people");
+      handleError(error, "Can't search people");
     } finally {
       clearTimeout(timeout);
     }
@@ -383,7 +383,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      await handleError(error, 'Unable to save name');
+      handleError(error, 'Unable to save name');
     }
   };
 
@@ -410,7 +410,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      await handleError(error, 'Unable to save name');
+      handleError(error, 'Unable to save name');
     }
   };
 </script>

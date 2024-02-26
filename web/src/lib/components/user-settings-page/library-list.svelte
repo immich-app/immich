@@ -113,7 +113,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      await handleError(error, 'Unable to create library');
+      handleError(error, 'Unable to create library');
     } finally {
       await readLibraryList();
     }
@@ -130,7 +130,7 @@
       closeAll();
       await readLibraryList();
     } catch (error) {
-      await handleError(error, 'Unable to update library');
+      handleError(error, 'Unable to update library');
     }
   };
 
@@ -150,7 +150,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      await handleError(error, 'Unable to remove library');
+      handleError(error, 'Unable to remove library');
     } finally {
       confirmDeleteLibrary = null;
       deletedLibrary = null;
@@ -170,7 +170,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      await handleError(error, 'Unable to scan libraries');
+      handleError(error, 'Unable to scan libraries');
     }
   };
 
@@ -182,7 +182,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      await handleError(error, 'Unable to scan library');
+      handleError(error, 'Unable to scan library');
     }
   };
 
@@ -194,7 +194,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      await handleError(error, 'Unable to scan library');
+      handleError(error, 'Unable to scan library');
     }
   };
 
@@ -206,7 +206,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      await handleError(error, 'Unable to scan library');
+      handleError(error, 'Unable to scan library');
     }
   };
 
@@ -218,7 +218,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      await handleError(error, 'Unable to remove offline files');
+      handleError(error, 'Unable to remove offline files');
     }
   };
 

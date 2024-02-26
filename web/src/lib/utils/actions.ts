@@ -20,6 +20,6 @@ export const deleteAssets = async (force: boolean, onAssetDelete: OnDelete, ids:
       type: NotificationType.Info,
     });
   } catch (error) {
-    await handleError(error, 'Error deleting assets');
+    handleError(error, 'Error deleting assets');
   }
 };

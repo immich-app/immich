@@ -140,7 +140,7 @@
           reactions = [...reactions, isLiked];
         }
       } catch (error) {
-        await handleError(error, "Can't change favorite for asset");
+        handleError(error, "Can't change favorite for asset");
       }
     }
   };
@@ -156,7 +156,7 @@
         });
         isLiked = data.length > 0 ? data[0] : null;
       } catch (error) {
-        await handleError(error, "Can't get Favorite");
+        handleError(error, "Can't get Favorite");
       }
     }
   };
@@ -167,7 +167,7 @@
         const { comments } = await getActivityStatistics({ assetId: asset.id, albumId: album.id });
         numberOfComments = comments;
       } catch (error) {
-        await handleError(error, "Can't get number of comments");
+        handleError(error, "Can't get number of comments");
       }
     }
   };
@@ -394,7 +394,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      await handleError(error, 'Unable to trash asset');
+      handleError(error, 'Unable to trash asset');
     }
   };
 
@@ -409,7 +409,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      await handleError(error, 'Unable to delete asset');
+      handleError(error, 'Unable to delete asset');
     } finally {
       isShowDeleteConfirmation = false;
     }
@@ -432,7 +432,7 @@
         message: asset.isFavorite ? `Added to favorites` : `Removed from favorites`,
       });
     } catch (error) {
-      await handleError(error, `Unable to ${asset.isFavorite ? `add asset to` : `remove asset from`} favorites`);
+      handleError(error, `Unable to ${asset.isFavorite ? `add asset to` : `remove asset from`} favorites`);
     }
   };
 
@@ -472,7 +472,7 @@
         message: asset.isArchived ? `Added to archive` : `Removed from archive`,
       });
     } catch (error) {
-      await handleError(error, `Unable to ${asset.isArchived ? `add asset to` : `remove asset from`} archive`);
+      handleError(error, `Unable to ${asset.isArchived ? `add asset to` : `remove asset from`} archive`);
     }
   };
 
@@ -481,7 +481,7 @@
       await runAssetJobs({ assetJobsDto: { assetIds: [asset.id], name } });
       notificationController.show({ type: NotificationType.Info, message: getAssetJobMessage(name) });
     } catch (error) {
-      await handleError(error, `Unable to submit job`);
+      handleError(error, `Unable to submit job`);
     }
   };
 
@@ -550,7 +550,7 @@
       dispatch('close');
       notificationController.show({ type: NotificationType.Info, message: 'Un-stacked', timeout: 1500 });
     } catch (error) {
-      await handleError(error, `Unable to unstack`);
+      handleError(error, `Unable to unstack`);
     }
   };
 </script>

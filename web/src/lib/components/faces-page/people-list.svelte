@@ -43,7 +43,7 @@
       people = await searchPerson({ name });
       searchWord = name;
     } catch (error) {
-      await handleError(error, "Can't search people");
+      handleError(error, "Can't search people");
     } finally {
       clearTimeout(timeout);
     }

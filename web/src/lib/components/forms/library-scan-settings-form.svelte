@@ -37,7 +37,7 @@
     dispatch('submit', { library, type: LibraryType.External });
   };
 
-  const handleAddExclusionPattern = async () => {
+  const handleAddExclusionPattern = () => {
     if (!addExclusionPattern) {
       return;
     }
@@ -53,14 +53,14 @@
         exclusionPatterns = library.exclusionPatterns;
       }
     } catch (error) {
-      await handleError(error, 'Unable to add exclusion pattern');
+      handleError(error, 'Unable to add exclusion pattern');
     } finally {
       exclusionPatternToAdd = '';
       addExclusionPattern = false;
     }
   };
 
-  const handleEditExclusionPattern = async () => {
+  const handleEditExclusionPattern = () => {
     if (editExclusionPattern === null) {
       return;
     }
@@ -73,13 +73,13 @@
       library.exclusionPatterns[editExclusionPattern] = editedExclusionPattern;
       exclusionPatterns = library.exclusionPatterns;
     } catch (error) {
-      await handleError(error, 'Unable to edit exclude pattern');
+      handleError(error, 'Unable to edit exclude pattern');
     } finally {
       editExclusionPattern = null;
     }
   };
 
-  const handleDeleteExclusionPattern = async () => {
+  const handleDeleteExclusionPattern = () => {
     if (editExclusionPattern === null) {
       return;
     }
@@ -93,7 +93,7 @@
       library.exclusionPatterns = library.exclusionPatterns.filter((path) => path != pathToDelete);
       exclusionPatterns = library.exclusionPatterns;
     } catch (error) {
-      await handleError(error, 'Unable to delete exclude pattern');
+      handleError(error, 'Unable to delete exclude pattern');
     } finally {
       editExclusionPattern = null;
     }

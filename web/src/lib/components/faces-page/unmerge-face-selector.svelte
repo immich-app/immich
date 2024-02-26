@@ -82,7 +82,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      await handleError(error, 'Unable to reassign assets to a new person');
+      handleError(error, 'Unable to reassign assets to a new person');
     } finally {
       clearTimeout(timeout);
     }
@@ -105,7 +105,7 @@
         });
       }
     } catch (error) {
-      await handleError(error, `Unable to reassign assets to ${selectedPerson?.name || 'an existing person'}`);
+      handleError(error, `Unable to reassign assets to ${selectedPerson?.name || 'an existing person'}`);
     } finally {
       clearTimeout(timeout);
     }

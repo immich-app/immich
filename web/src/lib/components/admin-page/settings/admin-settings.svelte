@@ -37,7 +37,7 @@
 
       dispatch('save');
     } catch (error) {
-      await handleError(error, 'Unable to save settings');
+      handleError(error, 'Unable to save settings');
     }
   };
 

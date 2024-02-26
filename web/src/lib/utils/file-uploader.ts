@@ -119,7 +119,7 @@ async function fileUploader(asset: File, albumId: string | undefined = undefined
       }
     })
     .catch(async (error) => {
-      await handleError(error, 'Unable to upload file');
+      handleError(error, 'Unable to upload file');
       const reason = (await getServerErrorMessage(error)) || error;
       uploadAssetsStore.updateAsset(deviceAssetId, { state: UploadState.ERROR, error: reason });
       return undefined;

@@ -150,7 +150,7 @@
         message: 'Asset description has been updated',
       });
     } catch (error) {
-      await handleError(error, 'Cannot update the description');
+      handleError(error, 'Cannot update the description');
     }
   };
 
@@ -163,7 +163,7 @@
     try {
       await updateAsset({ id: asset.id, updateAssetDto: { dateTimeOriginal } });
     } catch (error) {
-      await handleError(error, 'Unable to change date');
+      handleError(error, 'Unable to change date');
     }
   }
 
@@ -175,7 +175,7 @@
     try {
       await updateAsset({ id: asset.id, updateAssetDto: { latitude: gps.lat, longitude: gps.lng } });
     } catch (error) {
-      await handleError(error, 'Unable to change location');
+      handleError(error, 'Unable to change location');
     }
   }
 </script>

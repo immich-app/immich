@@ -49,7 +49,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      await handleError(error, 'Error emptying trash');
+      handleError(error, 'Error emptying trash');
     }
   };
 
@@ -62,7 +62,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      await handleError(error, 'Error restoring trash');
+      handleError(error, 'Error restoring trash');
     }
   };
 </script>

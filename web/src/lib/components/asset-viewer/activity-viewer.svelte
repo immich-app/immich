@@ -91,7 +91,7 @@
     try {
       reactions = await getActivities({ assetId, albumId });
     } catch (error) {
-      await handleError(error, 'Error when fetching reactions');
+      handleError(error, 'Error when fetching reactions');
     }
   };
 
@@ -128,7 +128,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      await handleError(error, `Can't remove ${reaction.type}`);
+      handleError(error, `Can't remove ${reaction.type}`);
     }
   };
 
@@ -148,7 +148,7 @@
       // Re-render the activity feed
       reactions = reactions;
     } catch (error) {
-      await handleError(error, "Can't add your comment");
+      handleError(error, "Can't add your comment");
     } finally {
       clearTimeout(timeout);
     }
