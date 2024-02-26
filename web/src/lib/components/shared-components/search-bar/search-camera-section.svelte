@@ -1,12 +1,37 @@
-<script lang="ts">
-  import type { ComboBoxOption } from '../combobox.svelte';
-  import Combobox from '../combobox.svelte';
-  import type { SearchFilter } from './search-filter-box.svelte';
+<script lang="ts" context="module">
+  export interface SearchCameraFilter {
+    make?: string;
+    model?: string;
+  }
+</script>
 
-  export let filteredCamera: SearchFilter['camera'];
-  export let suggestedMakes: ComboBoxOption[];
-  export let suggestedModels: ComboBoxOption[];
-  export let updateSuggestions: () => Promise<void>;
+<script lang="ts">
+  import { SearchSuggestionType, getSearchSuggestions } from '@immich/sdk';
+  import Combobox, { toComboBoxOptions } from '../combobox.svelte';
+
+  export let filters: SearchCameraFilter;
+
+  let makes: string[] = [];
+  let models: string[] = [];
+
+  $: makeFilter = filters.make;
+  $: modelFilter = filters.model;
+  $: updateMakes(modelFilter);
+  $: updateModels(makeFilter);
+
+  async function updateMakes(model?: string) {
+    makes = await getSearchSuggestions({
+      $type: SearchSuggestionType.CameraMake,
+      model,
+    });
+  }
+
+  async function updateModels(make?: string) {
+    models = await getSearchSuggestions({
+      $type: SearchSuggestionType.CameraModel,
+      make,
+    });
+  }
 </script>
 
 <div id="camera-selection">
@@ -17,10 +42,10 @@
       <label class="text-sm text-black dark:text-white" for="search-camera-make">Make</label>
       <Combobox
         id="search-camera-make"
-        options={suggestedMakes}
-        bind:selectedOption={filteredCamera.make}
+        options={toComboBoxOptions(makes)}
+        selectedOption={makeFilter ? { label: makeFilter, value: makeFilter } : undefined}
+        on:select={({ detail }) => (filters.make = detail?.value)}
         placeholder="Search camera make..."
-        on:click={updateSuggestions}
       />
     </div>
 
@@ -28,10 +53,10 @@
       <label class="text-sm text-black dark:text-white" for="search-camera-model">Model</label>
       <Combobox
         id="search-camera-model"
-        options={suggestedModels}
-        bind:selectedOption={filteredCamera.model}
+        options={toComboBoxOptions(models)}
+        selectedOption={modelFilter ? { label: modelFilter, value: modelFilter } : undefined}
+        on:select={({ detail }) => (filters.model = detail?.value)}
         placeholder="Search camera model..."
-        on:click={updateSuggestions}
       />
     </div>
   </div>

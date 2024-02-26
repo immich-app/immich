@@ -10,23 +10,15 @@
   export type SearchFilter = {
     context?: string;
     personIds: Set<string>;
-
     location: SearchLocationFilter;
-
-    camera: {
-      make?: ComboBoxOption;
-      model?: ComboBoxOption;
-    };
-
+    camera: SearchCameraFilter;
     date: {
       takenAfter?: string;
       takenBefore?: string;
     };
-
     isArchive?: boolean;
     isFavorite?: boolean;
     isNotInAlbum?: boolean;
-
     mediaType: MediaType;
   };
 
@@ -42,90 +34,50 @@
 <script lang="ts">
   import Button from '$lib/components/elements/buttons/button.svelte';
   import { handleError } from '$lib/utils/handle-error';
-  import { AssetTypeEnum, type SmartSearchDto, type MetadataSearchDto, SearchSuggestionType } from '@immich/sdk';
-  import { getSearchSuggestions } from '@immich/sdk';
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { AssetTypeEnum, type SmartSearchDto, type MetadataSearchDto } from '@immich/sdk';
+  import { createEventDispatcher } from 'svelte';
   import { fly } from 'svelte/transition';
-  import { type ComboBoxOption } from '../combobox.svelte';
   import SearchPeopleSection from './search-people-section.svelte';
   import SearchLocationSection from './search-location-section.svelte';
-  import SearchCameraSection from './search-camera-section.svelte';
+  import SearchCameraSection, { type SearchCameraFilter } from './search-camera-section.svelte';
   import SearchDateSection from './search-date-section.svelte';
   import SearchMediaSection from './search-media-section.svelte';
   import { parseUtcDate } from '$lib/utils/date-time';
 
-  type SearchSuggestion = {
-    make: ComboBoxOption[];
-    model: ComboBoxOption[];
-  };
-
   export let searchQuery: MetadataSearchDto | SmartSearchDto;
 
-  let suggestions: SearchSuggestion = {
-    make: [],
-    model: [],
-  };
-
-  let filter: SearchFilter = {
-    context: undefined,
-    personIds: new Set(),
-    location: {
-      country: undefined,
-      state: undefined,
-      city: undefined,
-    },
-    camera: {
-      make: undefined,
-      model: undefined,
-    },
-    date: {
-      takenAfter: undefined,
-      takenBefore: undefined,
-    },
-    isArchive: undefined,
-    isFavorite: undefined,
-    isNotInAlbum: undefined,
-    mediaType: MediaType.All,
-  };
-
+  const parseOptionalDate = (dateString?: string) => (dateString ? parseUtcDate(dateString) : undefined);
+  const toStartOfDayDate = (dateString: string) => parseUtcDate(dateString)?.startOf('day').toISODate() || undefined;
   const dispatch = createEventDispatcher<{ search: SmartSearchDto | MetadataSearchDto }>();
 
-  let filterBoxWidth = 0;
-
-  onMount(() => {
-    updateSuggestions();
-    populateExistingFilters();
-  });
-
-  const updateSuggestions = async () => {
-    let data: {
-      makes: ComboBoxOption[];
-      models: ComboBoxOption[];
-    };
-    try {
-      const makes = await getSearchSuggestions({
-        $type: SearchSuggestionType.CameraMake,
-        model: filter.camera.model?.value,
-      });
-      const models = await getSearchSuggestions({
-        $type: SearchSuggestionType.CameraModel,
-        make: filter.camera.make?.value,
-      });
-
-      data = {
-        makes: makes.map<ComboBoxOption>((item) => ({ label: item, value: item })),
-        models: models.map<ComboBoxOption>((item) => ({ label: item, value: item })),
-      };
-    } catch (error) {
-      handleError(error, 'Failed to get search suggestions');
-      return;
-    }
-    suggestions = {
-      ...suggestions,
-      make: data.makes,
-      model: data.models,
-    };
+  let filter: SearchFilter = {
+    context: 'query' in searchQuery ? searchQuery.query : '',
+    personIds: new Set('personIds' in searchQuery ? searchQuery.personIds : []),
+    location: {
+      country: searchQuery.country,
+      state: searchQuery.state,
+      city: searchQuery.city,
+    },
+    camera: {
+      make: searchQuery.make,
+      model: searchQuery.model,
+    },
+    date: {
+      takenAfter: searchQuery.takenAfter ? toStartOfDayDate(searchQuery.takenAfter) : undefined,
+      takenBefore: searchQuery.takenBefore ? toStartOfDayDate(searchQuery.takenBefore) : undefined,
+    },
+    isArchive: searchQuery.isArchived,
+    isFavorite: searchQuery.isFavorite,
+    isNotInAlbum: 'isNotInAlbum' in searchQuery ? searchQuery.isNotInAlbum : undefined,
+    mediaType:
+      searchQuery.type === AssetTypeEnum.Image
+        ? MediaType.Image
+        : searchQuery.type === AssetTypeEnum.Video
+          ? MediaType.Video
+          : MediaType.All,
   };
+
+  let filterBoxWidth = 0;
 
   const resetForm = () => {
     filter = {
@@ -151,9 +103,6 @@
     };
   };
 
-  const parseOptionalDate = (dateString?: string) => (dateString ? parseUtcDate(dateString) : undefined);
-  const toStartOfDayDate = (dateString: string) => parseUtcDate(dateString)?.startOf('day').toISODate() || undefined;
-
   const search = async () => {
     let type: AssetTypeEnum | undefined = undefined;
 
@@ -167,8 +116,8 @@
       country: filter.location.country,
       state: filter.location.state,
       city: filter.location.city,
-      make: filter.camera.make?.value,
-      model: filter.camera.model?.value,
+      make: filter.camera.make,
+      model: filter.camera.model,
       takenAfter: parseOptionalDate(filter.date.takenAfter)?.startOf('day').toISO() || undefined,
       takenBefore: parseOptionalDate(filter.date.takenBefore)?.endOf('day').toISO() || undefined,
       isArchived: filter.isArchive || undefined,
@@ -195,39 +144,6 @@
 
     dispatch('search', payload);
   };
-
-  function populateExistingFilters() {
-    if (searchQuery) {
-      const personIds = 'personIds' in searchQuery && searchQuery.personIds ? searchQuery.personIds : [];
-
-      filter = {
-        context: 'query' in searchQuery ? searchQuery.query : '',
-        personIds: new Set(personIds),
-        location: {
-          country: searchQuery.country,
-          state: searchQuery.state,
-          city: searchQuery.city,
-        },
-        camera: {
-          make: searchQuery.make ? { label: searchQuery.make, value: searchQuery.make } : undefined,
-          model: searchQuery.model ? { label: searchQuery.model, value: searchQuery.model } : undefined,
-        },
-        date: {
-          takenAfter: searchQuery.takenAfter ? toStartOfDayDate(searchQuery.takenAfter) : undefined,
-          takenBefore: searchQuery.takenBefore ? toStartOfDayDate(searchQuery.takenBefore) : undefined,
-        },
-        isArchive: searchQuery.isArchived,
-        isFavorite: searchQuery.isFavorite,
-        isNotInAlbum: 'isNotInAlbum' in searchQuery ? searchQuery.isNotInAlbum : undefined,
-        mediaType:
-          searchQuery.type === AssetTypeEnum.Image
-            ? MediaType.Image
-            : searchQuery.type === AssetTypeEnum.Video
-              ? MediaType.Video
-              : MediaType.All,
-      };
-    }
-  }
 </script>
 
 <div
@@ -264,12 +180,7 @@
       <SearchLocationSection bind:filter={filter.location} />
 
       <!-- CAMERA MODEL -->
-      <SearchCameraSection
-        suggestedMakes={suggestions.make}
-        suggestedModels={suggestions.model}
-        bind:filteredCamera={filter.camera}
-        {updateSuggestions}
-      />
+      <SearchCameraSection bind:filters={filter.camera} />
 
       <!-- DATE RANGE -->
       <SearchDateSection bind:filteredDate={filter.date} />
