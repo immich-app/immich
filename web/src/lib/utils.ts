@@ -202,6 +202,6 @@ export const asyncTimeout = (ms: number) => {
   });
 };
 
-export const resolvePromise = <T>(promise: Promise<T>): void => {
+export const handlePromiseError = <T>(promise: Promise<T>): void => {
   promise.catch(async (error) => await handleError(error));
 };

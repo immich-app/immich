@@ -1,5 +1,5 @@
 <script context="module" lang="ts">
-  import { resolvePromise } from '$lib/utils';
+  import { handlePromiseError } from '$lib/utils';
   import { tick } from 'svelte';
 
   /**
@@ -37,7 +37,7 @@
       }
     }
 
-    resolvePromise(update(target));
+    handlePromiseError(update(target));
     return {
       update,
       destroy,

@@ -35,7 +35,7 @@
   import type { Viewport } from '$lib/stores/assets.store';
   import { locale } from '$lib/stores/preferences.store';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
-  import { resolvePromise } from '$lib/utils';
+  import { handlePromiseError } from '$lib/utils';
   import { parseUtcDate } from '$lib/utils/date-time';
 
   const MAX_ASSET_COUNT = 5000;
@@ -109,7 +109,7 @@
     return searchQuery ? JSON.parse(searchQuery) : {};
   })();
 
-  $: terms, resolvePromise(onSearchQueryUpdate());
+  $: terms, handlePromiseError(onSearchQueryUpdate());
 
   async function onSearchQueryUpdate() {
     nextPage = 1;

@@ -10,7 +10,7 @@
   import { SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { stackAssetsStore } from '$lib/stores/stacked-asset.store';
   import { user } from '$lib/stores/user.store';
-  import { getAssetJobMessage, isSharedLink, resolvePromise } from '$lib/utils';
+  import { getAssetJobMessage, isSharedLink, handlePromiseError } from '$lib/utils';
   import { addAssetsToAlbum, downloadFile } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
@@ -174,8 +174,8 @@
 
   $: {
     if (isShared && asset.id) {
-      resolvePromise(getFavorite());
-      resolvePromise(getNumberOfComments());
+      handlePromiseError(getFavorite());
+      handlePromiseError(getNumberOfComments());
     }
   }
 
@@ -184,9 +184,9 @@
       if (value === SlideshowState.PlaySlideshow) {
         slideshowHistory.reset();
         slideshowHistory.queue(asset.id);
-        resolvePromise(handlePlaySlideshow());
+        handlePromiseError(handlePlaySlideshow());
       } else if (value === SlideshowState.StopSlideshow) {
-        resolvePromise(handleStopSlideshow());
+        handlePromiseError(handleStopSlideshow());
       }
     });
 
@@ -226,7 +226,7 @@
     }
   });
 
-  $: asset.id && !sharedLink && resolvePromise(handleGetAllAlbums()); // Update the album information when the asset ID changes
+  $: asset.id && !sharedLink && handlePromiseError(handleGetAllAlbums()); // Update the album information when the asset ID changes
 
   const handleGetAllAlbums = async () => {
     if (isSharedLink()) {
@@ -492,7 +492,7 @@
   let assetViewerHtmlElement: HTMLElement;
 
   const slideshowHistory = new SlideshowHistory((assetId: string) => {
-    resolvePromise(setAssetId(assetId));
+    handlePromiseError(setAssetId(assetId));
     $restartSlideshowProgress = true;
   });
 

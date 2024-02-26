@@ -1,4 +1,4 @@
-import { resolvePromise } from '$lib/utils';
+import { handlePromiseError } from '$lib/utils';
 
 interface Options {
   concurrency: number;
@@ -68,6 +68,6 @@ export class ExecutorQueue {
       return;
     }
 
-    resolvePromise(runnable());
+    handlePromiseError(runnable());
   }
 }

@@ -1,7 +1,7 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
   import { timeBeforeShowLoadingSpinner } from '$lib/constants';
-  import { getAssetThumbnailUrl, resolvePromise } from '$lib/utils';
+  import { getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { getAssetType } from '$lib/utils/asset-utils';
   import { autoGrowHeight } from '$lib/utils/autogrow';
   import { clickOutside } from '$lib/utils/click-outside';
@@ -79,7 +79,7 @@
 
   $: {
     if (assetId && previousAssetId != assetId) {
-      resolvePromise(getReactions());
+      handlePromiseError(getReactions());
       previousAssetId = assetId;
     }
   }

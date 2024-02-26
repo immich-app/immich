@@ -21,7 +21,7 @@
   import ShowShortcuts from '../shared-components/show-shortcuts.svelte';
   import AssetDateGroup from './asset-date-group.svelte';
   import DeleteAssetDialog from './delete-asset-dialog.svelte';
-  import { resolvePromise } from '$lib/utils';
+  import { handlePromiseError } from '$lib/utils';
 
   export let isSelectionMode = false;
   export let singleSelect = false;
@@ -50,7 +50,7 @@
 
   const dispatch = createEventDispatcher<{ select: AssetResponseDto; escape: void }>();
 
-  const onKeydown = (event: KeyboardEvent) => resolvePromise(handleKeyboardPress(event));
+  const onKeydown = (event: KeyboardEvent) => handlePromiseError(handleKeyboardPress(event));
   onMount(async () => {
     showSkeleton = false;
     document.addEventListener('keydown', onKeydown);
@@ -370,7 +370,7 @@
   <DeleteAssetDialog
     size={idsSelectedAssets.length}
     on:cancel={() => (isShowDeleteConfirmation = false)}
-    on:confirm={() => resolvePromise(trashOrDelete(true))}
+    on:confirm={() => handlePromiseError(trashOrDelete(true))}
   />
 {/if}
 

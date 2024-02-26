@@ -8,7 +8,7 @@
   import { AppRoute, QueryParameter } from '$lib/constants';
   import type { Viewport } from '$lib/stores/assets.store';
   import { memoryStore } from '$lib/stores/memory.store';
-  import { getAssetThumbnailUrl, resolvePromise } from '$lib/utils';
+  import { getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { fromLocalDateTime } from '$lib/utils/timeline-util';
   import { ThumbnailFormat, getMemoryLane } from '@immich/sdk';
   import { mdiChevronDown, mdiChevronLeft, mdiChevronRight, mdiChevronUp, mdiPause, mdiPlay } from '@mdi/js';
@@ -59,19 +59,19 @@
   let paused = false;
 
   // Play or pause progress when the paused state changes.
-  $: paused ? resolvePromise(pause()) : resolvePromise(play());
+  $: paused ? handlePromiseError(pause()) : handlePromiseError(play());
 
   // Progress should be paused when it's no longer possible to advance.
   $: paused ||= !canGoForward || galleryInView;
 
   // Advance to the next asset or memory when progress is complete.
-  $: $progress === 1 && resolvePromise(toNext());
+  $: $progress === 1 && handlePromiseError(toNext());
 
   // Progress should be resumed when reset and not paused.
-  $: !$progress && !paused && resolvePromise(play());
+  $: !$progress && !paused && handlePromiseError(play());
 
   // Progress should be reset when the current memory or asset changes.
-  $: memoryIndex, assetIndex, resolvePromise(reset());
+  $: memoryIndex, assetIndex, handlePromiseError(reset());
 
   const handleKeyDown = async (e: KeyboardEvent) => {
     if (e.key === 'ArrowRight' && canGoForward) {

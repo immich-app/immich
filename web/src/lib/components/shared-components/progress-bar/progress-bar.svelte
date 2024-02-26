@@ -6,7 +6,7 @@
 </script>
 
 <script lang="ts">
-  import { resolvePromise } from '$lib/utils';
+  import { handlePromiseError } from '$lib/utils';
 
   import { createEventDispatcher, onMount } from 'svelte';
   import { tweened } from 'svelte/motion';
@@ -33,7 +33,7 @@
 
   let progress = setDuration(duration);
 
-  $: duration, resolvePromise(onChange());
+  $: duration, handlePromiseError(onChange());
 
   $: {
     if ($progress === 1) {

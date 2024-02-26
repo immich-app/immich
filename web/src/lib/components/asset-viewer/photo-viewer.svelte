@@ -4,7 +4,7 @@
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
-  import { getKey, resolvePromise } from '$lib/utils';
+  import { getKey, handlePromiseError } from '$lib/utils';
   import { isWebCompatibleImage } from '$lib/utils/asset-utils';
   import { getBoundingBox } from '$lib/utils/people-utils';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
@@ -120,7 +120,7 @@
     if (state.currentZoom > 1 && isWebCompatibleImage(asset) && !hasZoomed && !$alwaysLoadOriginalFile) {
       hasZoomed = true;
 
-      resolvePromise(loadAssetData({ loadOriginal: true }));
+      handlePromiseError(loadAssetData({ loadOriginal: true }));
     }
   });
 </script>

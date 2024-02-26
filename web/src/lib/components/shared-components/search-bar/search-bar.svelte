@@ -10,7 +10,7 @@
   import SearchFilterBox from './search-filter-box.svelte';
   import type { MetadataSearchDto, SmartSearchDto } from '@immich/sdk';
   import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
-  import { resolvePromise } from '$lib/utils';
+  import { handlePromiseError } from '$lib/utils';
 
   export let value = '';
   export let grayTheme: boolean;
@@ -79,7 +79,7 @@
   };
 
   const onSubmit = () => {
-    resolvePromise(onSearch({ query: value }));
+    handlePromiseError(onSearch({ query: value }));
     saveSearchTerm(value);
   };
 </script>
@@ -142,7 +142,7 @@
       <SearchHistoryBox
         on:clearAllSearchTerms={clearAllSearchTerms}
         on:clearSearchTerm={({ detail: searchTerm }) => clearSearchTerm(searchTerm)}
-        on:selectSearchTerm={({ detail: searchTerm }) => resolvePromise(onHistoryTermClick(searchTerm))}
+        on:selectSearchTerm={({ detail: searchTerm }) => handlePromiseError(onHistoryTermClick(searchTerm))}
       />
     {/if}
   </form>
