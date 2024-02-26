@@ -155,7 +155,6 @@ export function ExecutionTimeHistogram({ description, unit = 'ms', valueType = V
     const className = target.constructor.name as string;
     const propertyName = String(propertyKey);
     const metricName = `${_.snakeCase(className).replaceAll(/_(?=(repository)|(controller)|(provider)|(service)|(module))/g, '.')}.${_.snakeCase(propertyName)}.duration`;
-    const isAsync = method.constructor.name === 'AsyncFunction';
 
     const metricDescription =
       description ??
@@ -163,33 +162,26 @@ export function ExecutionTimeHistogram({ description, unit = 'ms', valueType = V
 
     let histogram: Histogram | undefined;
 
-    if (isAsync) {
-      descriptor.value = async function (...args: any[]) {
-        const start = performance.now();
-        const result = await method.apply(this, args);
-        const end = performance.now();
-        if (!histogram) {
-          histogram = metrics
-            .getMeter('immich')
-            .createHistogram(metricName, { description: metricDescription, unit, valueType });
-        }
-        histogram.record(end - start, {});
-        return result;
-      };
-    } else {
-      descriptor.value = function (...args: any[]) {
-        const start = performance.now();
-        const result = method.apply(this, args);
-        const end = performance.now();
-        if (!histogram) {
-          histogram = metrics
-            .getMeter('immich')
-            .createHistogram(metricName, { description: metricDescription, unit, valueType });
-        }
-        histogram.record(end - start, {});
-        return result;
-      };
-    }
+    descriptor.value = function (...args: any[]) {
+      const start = performance.now();
+      const result = method.apply(this, args);
+
+      void Promise.resolve(result)
+        .then(() => {
+          const end = performance.now();
+          if (!histogram) {
+            histogram = metrics
+              .getMeter('immich')
+              .createHistogram(metricName, { description: metricDescription, unit, valueType });
+          }
+          histogram.record(end - start, {});
+        })
+        .catch(() => {
+          // noop
+        });
+
+      return result;
+    };
 
     copyMetadataFromFunctionToFunction(method, descriptor.value);
   };
