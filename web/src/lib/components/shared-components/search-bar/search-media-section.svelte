@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { MediaType, type SearchFilter } from './search-filter-box.svelte';
+  import { MediaType } from './search-filter-box.svelte';
 
-  export let filteredMedia: SearchFilter['mediaType'];
+  export let filteredMedia: MediaType;
 </script>
 
 <div id="media-type-selection">

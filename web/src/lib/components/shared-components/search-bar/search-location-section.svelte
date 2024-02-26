@@ -10,14 +10,14 @@
   import { getSearchSuggestions, SearchSuggestionType } from '@immich/sdk';
   import Combobox, { toComboBoxOptions } from '../combobox.svelte';
 
-  export let filter: SearchLocationFilter;
+  export let filters: SearchLocationFilter;
 
   let countries: string[] = [];
   let states: string[] = [];
   let cities: string[] = [];
 
-  $: countryFilter = filter.country;
-  $: stateFilter = filter.state;
+  $: countryFilter = filters.country;
+  $: stateFilter = filters.state;
   $: updateCountries();
   $: updateStates(countryFilter);
   $: updateCities(countryFilter, stateFilter);
@@ -27,8 +27,8 @@
       $type: SearchSuggestionType.Country,
     });
 
-    if (filter.country && !countries.includes(filter.country)) {
-      filter.country = undefined;
+    if (filters.country && !countries.includes(filters.country)) {
+      filters.country = undefined;
     }
   }
 
@@ -38,8 +38,8 @@
       country,
     });
 
-    if (filter.state && !states.includes(filter.state)) {
-      filter.state = undefined;
+    if (filters.state && !states.includes(filters.state)) {
+      filters.state = undefined;
     }
   }
 
@@ -50,8 +50,8 @@
       state,
     });
 
-    if (filter.city && !cities.includes(filter.city)) {
-      filter.city = undefined;
+    if (filters.city && !cities.includes(filters.city)) {
+      filters.city = undefined;
     }
   }
 </script>
@@ -65,8 +65,8 @@
       <Combobox
         id="search-place-country"
         options={toComboBoxOptions(countries)}
-        selectedOption={filter.country ? { label: filter.country, value: filter.country } : undefined}
-        on:select={({ detail }) => (filter.country = detail?.value)}
+        selectedOption={filters.country ? { label: filters.country, value: filters.country } : undefined}
+        on:select={({ detail }) => (filters.country = detail?.value)}
         placeholder="Search country..."
       />
     </div>
@@ -76,8 +76,8 @@
       <Combobox
         id="search-place-state"
         options={toComboBoxOptions(states)}
-        selectedOption={filter.state ? { label: filter.state, value: filter.state } : undefined}
-        on:select={({ detail }) => (filter.state = detail?.value)}
+        selectedOption={filters.state ? { label: filters.state, value: filters.state } : undefined}
+        on:select={({ detail }) => (filters.state = detail?.value)}
         placeholder="Search state..."
       />
     </div>
@@ -87,8 +87,8 @@
       <Combobox
         id="search-place-city"
         options={toComboBoxOptions(cities)}
-        selectedOption={filter.city ? { label: filter.city, value: filter.city } : undefined}
-        on:select={({ detail }) => (filter.city = detail?.value)}
+        selectedOption={filters.city ? { label: filters.city, value: filters.city } : undefined}
+        on:select={({ detail }) => (filters.city = detail?.value)}
         placeholder="Search city..."
       />
     </div>

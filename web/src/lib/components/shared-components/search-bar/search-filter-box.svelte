@@ -1,6 +1,7 @@
 <script lang="ts" context="module">
   import type { SearchLocationFilter } from './search-location-section.svelte';
   import type { SearchDisplayFilters } from './search-display-section.svelte';
+  import type { SearchDateFilter } from './search-date-section.svelte';
 
   export enum MediaType {
     All = 'all',
@@ -13,10 +14,7 @@
     personIds: Set<string>;
     location: SearchLocationFilter;
     camera: SearchCameraFilter;
-    date: {
-      takenAfter?: string;
-      takenBefore?: string;
-    };
+    date: SearchDateFilter;
     display: SearchDisplayFilters;
     mediaType: MediaType;
   };
@@ -85,8 +83,15 @@
   };
 
   const search = async () => {
-    let type: AssetTypeEnum | undefined = undefined;
+    if (filter.context && filter.personIds.size > 0) {
+      handleError(
+        new Error('Context search does not support people filter'),
+        'Context search does not support people filter',
+      );
+      return;
+    }
 
+    let type: AssetTypeEnum | undefined = undefined;
     if (filter.mediaType === MediaType.Image) {
       type = AssetTypeEnum.Image;
     } else if (filter.mediaType === MediaType.Video) {
@@ -94,6 +99,7 @@
     }
 
     let payload: SmartSearchDto | MetadataSearchDto = {
+      query: filter.context || undefined,
       country: filter.location.country,
       state: filter.location.state,
       city: filter.location.city,
@@ -107,21 +113,6 @@
       personIds: filter.personIds.size > 0 ? [...filter.personIds] : undefined,
       type,
     };
-
-    if (filter.context) {
-      if (payload.personIds && payload.personIds.length > 0) {
-        handleError(
-          new Error('Context search does not support people filter'),
-          'Context search does not support people filter',
-        );
-        return;
-      }
-
-      payload = {
-        ...payload,
-        query: filter.context,
-      };
-    }
 
     dispatch('search', payload);
   };
@@ -158,13 +149,13 @@
       </div>
 
       <!-- LOCATION -->
-      <SearchLocationSection bind:filter={filter.location} />
+      <SearchLocationSection bind:filters={filter.location} />
 
       <!-- CAMERA MODEL -->
       <SearchCameraSection bind:filters={filter.camera} />
 
       <!-- DATE RANGE -->
-      <SearchDateSection bind:filteredDate={filter.date} />
+      <SearchDateSection bind:filters={filter.date} />
 
       <div class="grid md:grid-cols-2 gap-x-5 gap-y-8">
         <!-- MEDIA TYPE -->

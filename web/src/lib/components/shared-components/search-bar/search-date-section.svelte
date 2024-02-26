@@ -1,7 +1,12 @@
-<script lang="ts">
-  import type { SearchFilter } from './search-filter-box.svelte';
+<script lang="ts" context="module">
+  export interface SearchDateFilter {
+    takenBefore?: string;
+    takenAfter?: string;
+  }
+</script>
 
-  export let filteredDate: SearchFilter['date'];
+<script lang="ts">
+  export let filters: SearchDateFilter;
 </script>
 
 <div id="date-range-selection" class="grid grid-cols-[repeat(auto-fit,minmax(10rem,1fr))] gap-5">
@@ -12,8 +17,8 @@
       type="date"
       id="start-date"
       name="start-date"
-      max={filteredDate.takenBefore}
-      bind:value={filteredDate.takenAfter}
+      max={filters.takenBefore}
+      bind:value={filters.takenAfter}
     />
   </label>
 
@@ -25,8 +30,8 @@
       id="end-date"
       name="end-date"
       placeholder=""
-      min={filteredDate.takenAfter}
-      bind:value={filteredDate.takenBefore}
+      min={filters.takenAfter}
+      bind:value={filters.takenBefore}
     />
   </label>
 </div>
