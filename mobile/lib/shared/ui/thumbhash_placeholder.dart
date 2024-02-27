@@ -23,8 +23,7 @@ OctoPlaceholderBuilder blurHashPlaceholderBuilder(
 }) {
   return (context) => blurhash == null
       ? const ThumbnailPlaceholder()
-      : FadeInPlaceholderImage(
-          placeholder: const ThumbnailPlaceholder(),
+      : Image(
           image: MemoryImage(blurhash),
           fit: fit ?? BoxFit.cover,
         );

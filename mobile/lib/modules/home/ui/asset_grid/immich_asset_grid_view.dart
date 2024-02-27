@@ -1,4 +1,5 @@
 import 'dart:collection';
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:math';
 
@@ -6,12 +7,15 @@ import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/collection_extensions.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/scroll_notifier.provider.dart';
+import 'package:immich_mobile/modules/home/ui/asset_grid/blurhash_thumb.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/thumbnail_image.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/thumbnail_placeholder.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/ui/hooks/blurhash_hook.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 import 'asset_grid_data_structure.dart';
@@ -325,32 +329,33 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
 }
 
 /// A single row of all placeholder widgets
-class _PlaceholderRow extends StatelessWidget {
-  final int number;
+class _PlaceholderRow extends HookWidget {
   final double width;
   final double height;
   final double margin;
+  final List<Asset> assets;
 
   const _PlaceholderRow({
     super.key,
-    required this.number,
     required this.width,
     required this.height,
     required this.margin,
+    required this.assets,
   });
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        for (int i = 0; i < number; i++)
-          ThumbnailPlaceholder(
+        for (int i = 0; i < assets.length; i++)
+          BlurhashThumb(
             key: ValueKey(i),
+            asset: assets[i],
             width: width,
             height: height,
             margin: EdgeInsets.only(
               bottom: margin,
-              right: i + 1 == number ? 0.0 : margin,
+              right: i + 1 == assets.length ? 0.0 : margin,
             ),
           ),
       ],
@@ -401,9 +406,9 @@ class _Section extends StatelessWidget {
         final width = constraints.maxWidth / assetsPerRow -
             margin * (assetsPerRow - 1) / assetsPerRow;
         final rows = (section.count + assetsPerRow - 1) ~/ assetsPerRow;
-        final List<Asset> assetsToRender = scrolling
-            ? []
-            : renderList.loadAssets(section.offset, section.count);
+        final List<Asset> assetsToRender = //scrolling
+            //? []
+            renderList.loadAssets(section.offset, section.count);
         return Column(
           key: ValueKey(section.offset),
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -422,18 +427,22 @@ class _Section extends StatelessWidget {
                 selectAssets: selectAssets,
                 deselectAssets: deselectAssets,
               ),
-            for (int i = 0; i < rows; i++)
-              scrolling
-                  ? _PlaceholderRow(
-                      key: ValueKey(i),
-                      number: i + 1 == rows
-                          ? section.count - i * assetsPerRow
-                          : assetsPerRow,
-                      width: width,
-                      height: width,
-                      margin: margin,
-                    )
-                  : _AssetRow(
+            Stack(
+              children: [
+                for (int i = 0; i < rows; i++)
+                  _PlaceholderRow(
+                    key: ValueKey('placeholder-$i'),
+                    assets: assetsToRender.nestedSlice(
+                      i * assetsPerRow,
+                      min((i + 1) * assetsPerRow, section.count),
+                    ),
+                    width: width,
+                    height: width,
+                    margin: margin,
+                  ),
+                if (!scrolling)
+                  for (int i = 0; i < rows; i++)
+                    _AssetRow(
                       key: ValueKey(i),
                       assets: assetsToRender.nestedSlice(
                         i * assetsPerRow,
@@ -454,6 +463,8 @@ class _Section extends StatelessWidget {
                       onSelect: (asset) => selectAssets([asset]),
                       onDeselect: (asset) => deselectAssets([asset]),
                     ),
+              ],
+            ),
           ],
         );
       },
