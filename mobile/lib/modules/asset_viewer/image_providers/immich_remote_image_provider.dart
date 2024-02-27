@@ -13,7 +13,9 @@ import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 
 /// Our Image Provider HTTP client to make the request
-final _httpClient = HttpClient()..autoUncompress = false;
+final _httpClient = HttpClient()
+  ..autoUncompress = false
+  ..maxConnectionsPerHost = 10;
 
 /// The remote image provider
 class ImmichRemoteImageProvider

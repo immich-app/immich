@@ -12,14 +12,16 @@ import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 
+/// Our HTTP client to make the request
+final _httpClient = HttpClient()
+  ..autoUncompress = false
+  ..maxConnectionsPerHost = 100;
+
 /// The remote image provider
 class ImmichRemoteThumbnailProvider
     extends ImageProvider<ImmichRemoteThumbnailProvider> {
   /// The [Asset.remoteId] of the asset to fetch
   final String assetId;
-
-  /// Our HTTP client to make the request
-  final _httpClient = HttpClient()..autoUncompress = false;
 
   ImmichRemoteThumbnailProvider({
     required this.assetId,
