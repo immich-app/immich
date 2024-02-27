@@ -11,8 +11,10 @@ import 'package:immich_mobile/shared/ui/delayed_loading_indicator.dart';
 import 'package:video_player/video_player.dart';
 
 class VideoPlayerControls extends ConsumerStatefulWidget {
+  final bool hideControlsOnInitialize;
   const VideoPlayerControls({
     super.key,
+    this.hideControlsOnInitialize = true,
   });
 
   @override
@@ -133,7 +135,8 @@ class VideoPlayerControlsState extends ConsumerState<VideoPlayerControls>
   }
 
   Future<void> _initialize() async {
-    ref.read(showControlsProvider.notifier).show = false;
+    ref.read(showControlsProvider.notifier).show =
+        !widget.hideControlsOnInitialize;
     _mute(ref.read(videoPlayerControlsProvider.select((value) => value.mute)));
 
     _latestValue = controller.value;

@@ -123,8 +123,10 @@ class GalleryViewerPage extends HookConsumerWidget {
             settings.getSetting<bool>(AppSettingsEnum.loadPreview);
         isLoadOriginal.value =
             settings.getSetting<bool>(AppSettingsEnum.loadOriginal);
-        var autoPlayMotionPhotos = settings.getSetting<bool>(AppSettingsEnum.autoPlayMotionPhotos);
-        isPlayingMotionVideo.value = asset().livePhotoVideoId != null && autoPlayMotionPhotos;
+        var autoPlayVideos =
+            settings.getSetting<bool>(AppSettingsEnum.autoPlayVideos);
+        isPlayingMotionVideo.value =
+            asset().livePhotoVideoId != null && autoPlayVideos;
         return null;
       },
       [],
@@ -829,6 +831,8 @@ class GalleryViewerPage extends HookConsumerWidget {
                           isPlayingMotionVideo.value = false;
                         }
                       },
+                      autoPlayVideo: settings
+                          .getSetting<bool>(AppSettingsEnum.autoPlayVideos),
                     ),
                   );
                 }

@@ -19,6 +19,7 @@ class VideoViewerPage extends HookWidget {
   final Duration hideControlsTimer;
   final bool showControls;
   final bool showDownloadingIndicator;
+  final bool autoPlayVideo;
 
   const VideoViewerPage({
     super.key,
@@ -31,6 +32,7 @@ class VideoViewerPage extends HookWidget {
     this.showControls = true,
     this.hideControlsTimer = const Duration(seconds: 5),
     this.showDownloadingIndicator = true,
+    this.autoPlayVideo = true,
   });
 
   @override
@@ -40,10 +42,15 @@ class VideoViewerPage extends HookWidget {
       controlsSafeAreaMinimum: const EdgeInsets.only(
         bottom: 100,
       ),
+      // If the video is a motion picture, the controls are hidden and the video should play through automatically
+      // If it's not a motion picture, use the autoPlayVideo parameter to determine if the video should play through automatically
+      autoPlay: isMotionVideo || autoPlayVideo,
       placeholder: SizedBox.expand(child: placeholder),
       showControls: showControls && !isMotionVideo,
       hideControlsTimer: hideControlsTimer,
-      customControls: const VideoPlayerControls(),
+      // Don't hide the controls if autoplay is disabled
+      customControls:
+          VideoPlayerControls(hideControlsOnInitialize: autoPlayVideo),
       onPlaying: onPlaying,
       onPaused: onPaused,
       onVideoEnded: onVideoEnded,

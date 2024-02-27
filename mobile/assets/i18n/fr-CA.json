@@ -1,8 +1,6 @@
 {
     "add_to_album_bottom_sheet_added": "Ajouté à {album}",
     "add_to_album_bottom_sheet_already_exists": "Déjà dans {album}",
-    "advanced_settings_auto_play_motion_photos_subtitle": "Lire automatiquement les photos avec mouvement lorsqu'elles sont affichées dans l'application. Désactiver pour lire manuellement les photos avec mouvement.",
-    "advanced_settings_auto_play_motion_photos_title": "Lecture automatique des photos avec mouvement",
     "advanced_settings_prefer_remote_subtitle": "Certains appareils sont très lents à charger des vignettes à partir de ressources présentes sur l'appareil. Activez ce paramètre pour charger des images externes à la place.",
     "advanced_settings_prefer_remote_title": "Préférer les images externes",
     "advanced_settings_self_signed_ssl_subtitle": "Permet d'ignorer la vérification du certificat SSL pour le point d'accès du serveur. Requis pour les certificats auto-signés.",

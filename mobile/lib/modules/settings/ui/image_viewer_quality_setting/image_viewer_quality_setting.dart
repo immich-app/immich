@@ -17,11 +17,15 @@ class ImageViewerQualitySetting extends HookConsumerWidget {
     final settings = ref.watch(appSettingsServiceProvider);
     final isPreview = useState(AppSettingsEnum.loadPreview.defaultValue);
     final isOriginal = useState(AppSettingsEnum.loadOriginal.defaultValue);
+    final autoPlayVideos =
+        useState(AppSettingsEnum.autoPlayVideos.defaultValue);
 
     useEffect(
       () {
         isPreview.value = settings.getSetting(AppSettingsEnum.loadPreview);
         isOriginal.value = settings.getSetting(AppSettingsEnum.loadOriginal);
+        autoPlayVideos.value =
+            settings.getSetting(AppSettingsEnum.autoPlayVideos);
         return null;
       },
     );
@@ -55,6 +59,13 @@ class ImageViewerQualitySetting extends HookConsumerWidget {
           settingsEnum: AppSettingsEnum.loadOriginal,
           title: "setting_image_viewer_original_title".tr(),
           subtitle: "setting_image_viewer_original_subtitle".tr(),
+        ),
+        SettingsSwitchListTile(
+          appSettingService: settings,
+          valueNotifier: autoPlayVideos,
+          settingsEnum: AppSettingsEnum.autoPlayVideos,
+          title: "setting_image_viewer_auto_play_videos_title".tr(),
+          subtitle: "setting_image_viewer_auto_play_videos_subtitle".tr(),
         ),
       ],
     );
