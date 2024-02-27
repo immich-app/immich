@@ -2,7 +2,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { Theme } from '$lib/constants';
   import { colorTheme, mapSettings } from '$lib/stores/preferences.store';
-  import { getAssetThumbnailUrl } from '$lib/utils';
+  import { getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { getMapStyle, MapTheme, type MapMarkerResponseDto } from '@immich/sdk';
   import { mdiCog, mdiMapMarker } from '@mdi/js';
   import type { Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
@@ -152,9 +152,7 @@
         applyToClusters
         asButton
         let:feature
-        on:click={(event) => {
-          handleClusterClick(event.detail.feature.properties.cluster_id, map);
-        }}
+        on:click={(event) => handlePromiseError(handleClusterClick(event.detail.feature.properties.cluster_id, map))}
       >
         <div
           class="rounded-full w-[40px] h-[40px] bg-immich-primary text-immich-gray flex justify-center items-center font-mono font-bold shadow-lg hover:bg-immich-dark-primary transition-all duration-200 hover:text-immich-dark-bg opacity-90"

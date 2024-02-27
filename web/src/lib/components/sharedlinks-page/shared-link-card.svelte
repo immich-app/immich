@@ -1,6 +1,5 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import noThumbnailUrl from '$lib/assets/no-thumbnail.png';
   import Icon from '$lib/components/elements/icon.svelte';
   import { AppRoute } from '$lib/constants';
   import { getAssetThumbnailUrl } from '$lib/utils';
@@ -87,7 +86,7 @@
       {/await}
     {:else}
       <enhanced:img
-        src={noThumbnailUrl}
+        src="$lib/assets/no-thumbnail.png"
         alt={'Album without assets'}
         class="h-[100px] w-[100px] rounded-lg object-cover"
         loading="lazy"

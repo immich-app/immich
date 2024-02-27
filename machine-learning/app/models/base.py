@@ -165,6 +165,14 @@ class InferenceModel(ABC):
     def providers_default(self) -> list[str]:
         available_providers = set(ort.get_available_providers())
         log.debug(f"Available ORT providers: {available_providers}")
+        if (openvino := "OpenVINOExecutionProvider") in available_providers:
+            device_ids: list[str] = ort.capi._pybind_state.get_available_openvino_device_ids()
+            log.debug(f"Available OpenVINO devices: {device_ids}")
+
+            gpu_devices = [device_id for device_id in device_ids if device_id.startswith("GPU")]
+            if not gpu_devices:
+                log.warning("No GPU device found in OpenVINO. Falling back to CPU.")
+                available_providers.remove(openvino)
         return [provider for provider in SUPPORTED_PROVIDERS if provider in available_providers]
 
     @property
@@ -184,15 +192,7 @@ class InferenceModel(ABC):
                 case "CPUExecutionProvider" | "CUDAExecutionProvider":
                     option = {"arena_extend_strategy": "kSameAsRequested"}
                 case "OpenVINOExecutionProvider":
-                    try:
-                        device_ids: list[str] = ort.capi._pybind_state.get_available_openvino_device_ids()
-                        log.debug(f"Available OpenVINO devices: {device_ids}")
-                        gpu_devices = [device_id for device_id in device_ids if device_id.startswith("GPU")]
-                        option = {"device_id": gpu_devices[0]} if gpu_devices else {}
-                    except AttributeError as e:
-                        log.warning("Failed to get OpenVINO device IDs. Using default options.")
-                        log.error(e)
-                        option = {}
+                    option = {"device_type": "GPU_FP32"}
                 case _:
                     option = {}
             options.append(option)

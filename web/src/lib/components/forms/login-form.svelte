@@ -47,7 +47,7 @@
         return;
       }
     } catch (error) {
-      await handleError(error, 'Unable to connect!');
+      handleError(error, 'Unable to connect!');
     }
 
     oauthLoading = false;

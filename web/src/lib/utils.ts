@@ -194,3 +194,13 @@ export const findLocale = (code: string | undefined) => {
     name: language?.name,
   };
 };
+
+export const asyncTimeout = (ms: number) => {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+};
+
+export const handlePromiseError = <T>(promise: Promise<T>): void => {
+  promise.catch((error) => console.error(`[utils.ts]:handlePromiseError ${error}`, error));
+};

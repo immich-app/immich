@@ -1,7 +1,7 @@
 import {
   ActivityCreateDto,
   AlbumResponseDto,
-  AssetResponseDto,
+  AssetFileUploadResponseDto,
   LoginResponseDto,
   ReactionType,
   createActivity as create,
@@ -16,13 +16,13 @@ import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 describe('/activity', () => {
   let admin: LoginResponseDto;
   let nonOwner: LoginResponseDto;
-  let asset: AssetResponseDto;
+  let asset: AssetFileUploadResponseDto;
   let album: AlbumResponseDto;
 
   const createActivity = (dto: ActivityCreateDto, accessToken?: string) =>
     create(
       { activityCreateDto: dto },
-      { headers: asBearerAuth(accessToken || admin.accessToken) }
+      { headers: asBearerAuth(accessToken || admin.accessToken) },
     );
 
   beforeAll(async () => {
@@ -40,7 +40,7 @@ describe('/activity', () => {
           sharedWithUserIds: [nonOwner.userId],
         },
       },
-      { headers: asBearerAuth(admin.accessToken) }
+      { headers: asBearerAuth(admin.accessToken) },
     );
   });
 
@@ -61,7 +61,7 @@ describe('/activity', () => {
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toEqual(400);
       expect(body).toEqual(
-        errorDto.badRequest(expect.arrayContaining(['albumId must be a UUID']))
+        errorDto.badRequest(expect.arrayContaining(['albumId must be a UUID'])),
       );
     });
 
@@ -72,7 +72,7 @@ describe('/activity', () => {
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toEqual(400);
       expect(body).toEqual(
-        errorDto.badRequest(expect.arrayContaining(['albumId must be a UUID']))
+        errorDto.badRequest(expect.arrayContaining(['albumId must be a UUID'])),
       );
     });
 
@@ -83,7 +83,7 @@ describe('/activity', () => {
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toEqual(400);
       expect(body).toEqual(
-        errorDto.badRequest(expect.arrayContaining(['assetId must be a UUID']))
+        errorDto.badRequest(expect.arrayContaining(['assetId must be a UUID'])),
       );
     });
 
@@ -104,7 +104,7 @@ describe('/activity', () => {
             assetIds: [asset.id],
           },
         },
-        { headers: asBearerAuth(admin.accessToken) }
+        { headers: asBearerAuth(admin.accessToken) },
       );
 
       const [reaction] = await Promise.all([
@@ -216,7 +216,7 @@ describe('/activity', () => {
         .send({ albumId: uuidDto.invalid });
       expect(status).toEqual(400);
       expect(body).toEqual(
-        errorDto.badRequest(expect.arrayContaining(['albumId must be a UUID']))
+        errorDto.badRequest(expect.arrayContaining(['albumId must be a UUID'])),
       );
     });
 
@@ -230,7 +230,7 @@ describe('/activity', () => {
         errorDto.badRequest([
           'comment must be a string',
           'comment should not be empty',
-        ])
+        ]),
       );
     });
 
@@ -357,7 +357,7 @@ describe('/activity', () => {
   describe('DELETE /activity/:id', () => {
     it('should require authentication', async () => {
       const { status, body } = await request(app).delete(
-        `/activity/${uuidDto.notFound}`
+        `/activity/${uuidDto.notFound}`,
       );
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
@@ -421,7 +421,7 @@ describe('/activity', () => {
 
       expect(status).toBe(400);
       expect(body).toEqual(
-        errorDto.badRequest('Not found or no activity.delete access')
+        errorDto.badRequest('Not found or no activity.delete access'),
       );
     });
 
@@ -432,7 +432,7 @@ describe('/activity', () => {
           type: ReactionType.Comment,
           comment: 'This is a test comment',
         },
-        nonOwner.accessToken
+        nonOwner.accessToken,
       );
 
       const { status } = await request(app)
