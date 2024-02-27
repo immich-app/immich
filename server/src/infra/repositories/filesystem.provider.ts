@@ -21,6 +21,30 @@ import { Instrumentation } from '../instrumentation';
 export class FilesystemProvider implements IStorageRepository {
   private logger = new ImmichLogger(FilesystemProvider.name);
 
+  readdir(folder: string): Promise<string[]> {
+    return fs.readdir(folder);
+  }
+
+  copyFile(source: string, target: string) {
+    return fs.copyFile(source, target);
+  }
+
+  stat(filepath: string) {
+    return fs.stat(filepath);
+  }
+
+  writeFile(filepath: string, buffer: Buffer) {
+    return fs.writeFile(filepath, buffer);
+  }
+
+  rename(source: string, target: string) {
+    return fs.rename(source, target);
+  }
+
+  utimes(filepath: string, atime: Date, mtime: Date) {
+    return fs.utimes(filepath, atime, mtime);
+  }
+
   createZipStream(): ImmichZipStream {
     const archive = archiver('zip', { store: true });
 
@@ -43,10 +67,6 @@ export class FilesystemProvider implements IStorageRepository {
     };
   }
 
-  async readdir(folder: string): Promise<string[]> {
-    return fs.readdir(folder);
-  }
-
   async readFile(filepath: string, options?: fs.FileReadOptions<Buffer>): Promise<Buffer> {
     const file = await fs.open(filepath);
     try {
@@ -55,22 +75,6 @@ export class FilesystemProvider implements IStorageRepository {
     } finally {
       await file.close();
     }
-  }
-
-  writeFile(filepath: string, buffer: Buffer) {
-    return fs.writeFile(filepath, buffer);
-  }
-
-  rename(source: string, target: string) {
-    return fs.rename(source, target);
-  }
-
-  copyFile(source: string, target: string) {
-    return fs.copyFile(source, target);
-  }
-
-  utimes(filepath: string, atime: Date, mtime: Date) {
-    return fs.utimes(filepath, atime, mtime);
   }
 
   async checkFileExists(filepath: string, mode = constants.F_OK): Promise<boolean> {
@@ -92,10 +96,6 @@ export class FilesystemProvider implements IStorageRepository {
         throw error;
       }
     }
-  }
-
-  stat(filepath: string) {
-    return fs.stat(filepath);
   }
 
   async unlinkDir(folder: string, options: { recursive?: boolean; force?: boolean }) {
