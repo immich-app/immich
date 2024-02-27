@@ -10,6 +10,7 @@ import { testApp } from '../utils';
 describe(`${LibraryController.name} (e2e)`, () => {
   let server: any;
   let admin: LoginResponseDto;
+  let user: LoginResponseDto;
 
   beforeAll(async () => {
     const app = await testApp.create();
@@ -25,6 +26,9 @@ describe(`${LibraryController.name} (e2e)`, () => {
     await testApp.reset();
     await api.authApi.adminSignUp(server);
     admin = await api.authApi.adminLogin(server);
+
+    await api.userApi.create(server, admin.accessToken, userDto.user1);
+    user = await api.authApi.login(server, userDto.user1);
   });
 
   describe('GET /library', () => {
@@ -39,18 +43,19 @@ describe(`${LibraryController.name} (e2e)`, () => {
         .get('/library')
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(200);
-      expect(body).toHaveLength(1);
-      expect(body).toEqual([
-        expect.objectContaining({
-          ownerId: admin.userId,
-          type: LibraryType.UPLOAD,
-          name: 'Default Library',
-          refreshedAt: null,
-          assetCount: 0,
-          importPaths: [],
-          exclusionPatterns: [],
-        }),
-      ]);
+      expect(body).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            ownerId: admin.userId,
+            type: LibraryType.UPLOAD,
+            name: 'Default Library',
+            refreshedAt: null,
+            assetCount: 0,
+            importPaths: [],
+            exclusionPatterns: [],
+          }),
+        ]),
+      );
     });
   });
 
@@ -59,6 +64,16 @@ describe(`${LibraryController.name} (e2e)`, () => {
       const { status, body } = await request(server).post('/library').send({});
       expect(status).toBe(401);
       expect(body).toEqual(errorStub.unauthorized);
+    });
+
+    it('should require admin authentication', async () => {
+      const { status, body } = await request(server)
+        .post('/library')
+        .set('Authorization', `Bearer ${user.accessToken}`)
+        .send({ type: LibraryType.EXTERNAL });
+
+      expect(status).toBe(403);
+      expect(body).toEqual(errorStub.forbidden);
     });
 
     it('should create an external library with defaults', async () => {
@@ -184,18 +199,6 @@ describe(`${LibraryController.name} (e2e)`, () => {
       expect(status).toBe(400);
       expect(body).toEqual(errorStub.badRequest('Upload libraries cannot have exclusion patterns'));
     });
-
-    it('should not allow a non-admin to create a library', async () => {
-      await api.userApi.create(server, admin.accessToken, userDto.user1);
-      const user1 = await api.authApi.login(server, userDto.user1);
-
-      const { status, body } = await request(server)
-        .post('/library')
-        .set('Authorization', `Bearer ${user1.accessToken}`)
-        .send({ type: LibraryType.EXTERNAL });
-
-      expect(status).toBe(403);
-    });
   });
 
   describe('PUT /library/:id', () => {
@@ -315,6 +318,14 @@ describe(`${LibraryController.name} (e2e)`, () => {
       expect(body).toEqual(errorStub.unauthorized);
     });
 
+    it('should require admin access', async () => {
+      const { status, body } = await request(server)
+        .get(`/library/${uuidStub.notFound}`)
+        .set('Authorization', `Bearer ${user.accessToken}`);
+      expect(status).toBe(403);
+      expect(body).toEqual(errorStub.forbidden);
+    });
+
     it('should get library by id', async () => {
       const library = await api.libraryApi.create(server, admin.accessToken, { type: LibraryType.EXTERNAL });
 
@@ -334,30 +345,6 @@ describe(`${LibraryController.name} (e2e)`, () => {
           exclusionPatterns: [],
         }),
       );
-    });
-
-    it("should not allow getting another user's library", async () => {
-      await Promise.all([
-        api.userApi.create(server, admin.accessToken, userDto.user1),
-        api.userApi.create(server, admin.accessToken, userDto.user2),
-      ]);
-
-      const [user1, user2] = await Promise.all([
-        api.authApi.login(server, userDto.user1),
-        api.authApi.login(server, userDto.user2),
-      ]);
-
-      const library = await api.libraryApi.create(server, admin.accessToken, {
-        type: LibraryType.EXTERNAL,
-        ownerId: user1.userId,
-      });
-
-      const { status, body } = await request(server)
-        .get(`/library/${library.id}`)
-        .set('Authorization', `Bearer ${user2.accessToken}`);
-
-      expect(status).toBe(400);
-      expect(body).toEqual(errorStub.badRequest('Not found or no library.read access'));
     });
   });
 
@@ -381,7 +368,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
       expect(body).toEqual(errorStub.noDeleteUploadLibrary);
     });
 
-    it('should delete an empty library', async () => {
+    it('should delete an external library', async () => {
       const library = await api.libraryApi.create(server, admin.accessToken, { type: LibraryType.EXTERNAL });
 
       const { status, body } = await request(server)
@@ -392,7 +379,6 @@ describe(`${LibraryController.name} (e2e)`, () => {
       expect(body).toEqual({});
 
       const libraries = await api.libraryApi.getAll(server, admin.accessToken);
-      expect(libraries).toHaveLength(1);
       expect(libraries).not.toEqual(
         expect.arrayContaining([
           expect.objectContaining({

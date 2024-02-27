@@ -1,6 +1,6 @@
 import { AssetType, LibraryType } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
-import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { R_OK } from 'node:constants';
 import { EventEmitter } from 'node:events';
 import { Stats } from 'node:fs';
@@ -225,8 +225,6 @@ export class LibraryService extends EventEmitter {
   }
 
   async create(auth: AuthDto, dto: CreateLibraryDto): Promise<LibraryResponseDto> {
-    await this.access.requirePermission(auth, Permission.LIBRARY_CREATE, auth.user.id);
-
     switch (dto.type) {
       case LibraryType.EXTERNAL: {
         if (!dto.name) {
