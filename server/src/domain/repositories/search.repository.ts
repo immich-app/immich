@@ -187,4 +187,5 @@ export interface ISearchRepository {
   searchFaces(search: FaceEmbeddingSearch): Promise<FaceSearchResult[]>;
   upsert(smartInfo: Partial<SmartInfoEntity>, embedding?: Embedding): Promise<void>;
   searchPlaces(placeName: string): Promise<GeodataPlacesEntity[]>;
+  deleteAllSearchEmbeddings(): Promise<void>;
 }

@@ -1,4 +1,5 @@
 import { getAllAlbums, getAllAssets } from '@immich/sdk';
+import { mkdir, readdir, rm, symlink } from 'fs/promises';
 import {
   apiUtils,
   asKeyAuth,
@@ -8,18 +9,18 @@ import {
   testAssetDir,
 } from 'src/utils';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { mkdir, readdir, rm, symlink } from 'fs/promises';
 
 describe(`immich upload`, () => {
   let key: string;
 
-  beforeAll(() => {
+  beforeAll(async () => {
     apiUtils.setup();
+    await dbUtils.reset();
+    key = await cliUtils.login();
   });
 
   beforeEach(async () => {
-    await dbUtils.reset();
-    key = await cliUtils.login();
+    await dbUtils.reset(['assets', 'albums']);
   });
 
   describe('immich upload --recursive', () => {
@@ -33,7 +34,7 @@ describe(`immich upload`, () => {
       expect(stdout.split('\n')).toEqual(
         expect.arrayContaining([
           expect.stringContaining('Successfully uploaded 9 assets'),
-        ])
+        ]),
       );
       expect(exitCode).toBe(0);
 
@@ -55,7 +56,7 @@ describe(`immich upload`, () => {
           expect.stringContaining('Successfully uploaded 9 assets'),
           expect.stringContaining('Successfully created 1 new album'),
           expect.stringContaining('Successfully updated 9 assets'),
-        ])
+        ]),
       );
       expect(stderr).toBe('');
       expect(exitCode).toBe(0);
@@ -77,7 +78,7 @@ describe(`immich upload`, () => {
       expect(response1.stdout.split('\n')).toEqual(
         expect.arrayContaining([
           expect.stringContaining('Successfully uploaded 9 assets'),
-        ])
+        ]),
       );
       expect(response1.stderr).toBe('');
       expect(response1.exitCode).toBe(0);
@@ -97,10 +98,10 @@ describe(`immich upload`, () => {
       expect(response2.stdout.split('\n')).toEqual(
         expect.arrayContaining([
           expect.stringContaining(
-            'All assets were already uploaded, nothing to do.'
+            'All assets were already uploaded, nothing to do.',
           ),
           expect.stringContaining('Successfully updated 9 assets'),
-        ])
+        ]),
       );
       expect(response2.stderr).toBe('');
       expect(response2.exitCode).toBe(0);
@@ -127,7 +128,7 @@ describe(`immich upload`, () => {
           expect.stringContaining('Successfully uploaded 9 assets'),
           expect.stringContaining('Successfully created 1 new album'),
           expect.stringContaining('Successfully updated 9 assets'),
-        ])
+        ]),
       );
       expect(stderr).toBe('');
       expect(exitCode).toBe(0);
@@ -148,7 +149,7 @@ describe(`immich upload`, () => {
       for (const file of filesToLink) {
         await symlink(
           `${testAssetDir}/albums/nature/${file}`,
-          `/tmp/albums/nature/${file}`
+          `/tmp/albums/nature/${file}`,
         );
       }
 
@@ -166,7 +167,7 @@ describe(`immich upload`, () => {
         expect.arrayContaining([
           expect.stringContaining('Successfully uploaded 9 assets'),
           expect.stringContaining('Deleting assets that have been uploaded'),
-        ])
+        ]),
       );
       expect(stderr).toBe('');
       expect(exitCode).toBe(0);

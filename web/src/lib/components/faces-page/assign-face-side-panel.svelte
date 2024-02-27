@@ -49,7 +49,7 @@
     if (assetType === AssetTypeEnum.Image) {
       image = $photoViewer;
     } else if (assetType === AssetTypeEnum.Video) {
-      const data = await getAssetThumbnailUrl(assetId, ThumbnailFormat.Webp);
+      const data = getAssetThumbnailUrl(assetId, ThumbnailFormat.Webp);
       const img: HTMLImageElement = new Image();
       img.src = data;
 

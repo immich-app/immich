@@ -35,6 +35,7 @@
   import type { Viewport } from '$lib/stores/assets.store';
   import { locale } from '$lib/stores/preferences.store';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
+  import { handlePromiseError } from '$lib/utils';
   import { parseUtcDate } from '$lib/utils/date-time';
 
   const MAX_ASSET_COUNT = 5000;
@@ -53,7 +54,7 @@
 
   const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
 
-  const handleKeyboardPress = (event: KeyboardEvent) => {
+  const handleKeyboardPress = async (event: KeyboardEvent) => {
     if (shouldIgnoreShortcut(event)) {
       return;
     }
@@ -65,7 +66,7 @@
             return;
           }
           if (!$preventRaceConditionSearchBar) {
-            goto(previousRoute);
+            await goto(previousRoute);
           }
           $preventRaceConditionSearchBar = false;
           return;
@@ -108,13 +109,13 @@
     return searchQuery ? JSON.parse(searchQuery) : {};
   })();
 
-  $: terms, onSearchQueryUpdate();
+  $: terms, handlePromiseError(onSearchQueryUpdate());
 
   async function onSearchQueryUpdate() {
     nextPage = 1;
     searchResultAssets = [];
     searchResultAlbums = [];
-    loadNextPage();
+    await loadNextPage();
   }
 
   export const loadNextPage = async () => {

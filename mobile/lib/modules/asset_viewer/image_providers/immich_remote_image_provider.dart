@@ -13,10 +13,13 @@ import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 
 /// Our Image Provider HTTP client to make the request
-final _httpClient = HttpClient()..autoUncompress = false;
+final _httpClient = HttpClient()
+  ..autoUncompress = false
+  ..maxConnectionsPerHost = 10;
 
 /// The remote image provider
-class ImmichRemoteImageProvider extends ImageProvider<String> {
+class ImmichRemoteImageProvider
+    extends ImageProvider<ImmichRemoteImageProvider> {
   /// The [Asset.remoteId] of the asset to fetch
   final String assetId;
 
@@ -32,16 +35,20 @@ class ImmichRemoteImageProvider extends ImageProvider<String> {
   /// Converts an [ImageProvider]'s settings plus an [ImageConfiguration] to a key
   /// that describes the precise image to load.
   @override
-  Future<String> obtainKey(ImageConfiguration configuration) {
-    return SynchronousFuture('$assetId,$isThumbnail');
+  Future<ImmichRemoteImageProvider> obtainKey(
+    ImageConfiguration configuration,
+  ) {
+    return SynchronousFuture(this);
   }
 
   @override
-  ImageStreamCompleter loadImage(String key, ImageDecoderCallback decode) {
-    final id = key.split(',').first;
+  ImageStreamCompleter loadImage(
+    ImmichRemoteImageProvider key,
+    ImageDecoderCallback decode,
+  ) {
     final chunkEvents = StreamController<ImageChunkEvent>();
     return MultiImageStreamCompleter(
-      codec: _codec(id, decode, chunkEvents),
+      codec: _codec(key, decode, chunkEvents),
       scale: 1.0,
       chunkEvents: chunkEvents.stream,
     );
@@ -61,14 +68,14 @@ class ImmichRemoteImageProvider extends ImageProvider<String> {
 
   // Streams in each stage of the image as we ask for it
   Stream<ui.Codec> _codec(
-    String key,
+    ImmichRemoteImageProvider key,
     ImageDecoderCallback decode,
     StreamController<ImageChunkEvent> chunkEvents,
   ) async* {
     // Load a preview to the chunk events
-    if (_loadPreview || isThumbnail) {
+    if (_loadPreview || key.isThumbnail) {
       final preview = getThumbnailUrlForRemoteId(
-        assetId,
+        key.assetId,
         type: api.ThumbnailFormat.WEBP,
       );
 
@@ -80,14 +87,14 @@ class ImmichRemoteImageProvider extends ImageProvider<String> {
     }
 
     // Guard thumnbail rendering
-    if (isThumbnail) {
+    if (key.isThumbnail) {
       await chunkEvents.close();
       return;
     }
 
     // Load the higher resolution version of the image
     final url = getThumbnailUrlForRemoteId(
-      assetId,
+      key.assetId,
       type: api.ThumbnailFormat.JPEG,
     );
     final codec = await _loadFromUri(Uri.parse(url), decode, chunkEvents);
@@ -96,7 +103,7 @@ class ImmichRemoteImageProvider extends ImageProvider<String> {
     // Load the final remote image
     if (_useOriginal) {
       // Load the original image
-      final url = getImageUrlFromId(assetId);
+      final url = getImageUrlFromId(key.assetId);
       final codec = await _loadFromUri(Uri.parse(url), decode, chunkEvents);
       yield codec;
     }
@@ -137,7 +144,7 @@ class ImmichRemoteImageProvider extends ImageProvider<String> {
   bool operator ==(Object other) {
     if (other is! ImmichRemoteImageProvider) return false;
     if (identical(this, other)) return true;
-    return assetId == other.assetId;
+    return assetId == other.assetId && isThumbnail == other.isThumbnail;
   }
 
   @override

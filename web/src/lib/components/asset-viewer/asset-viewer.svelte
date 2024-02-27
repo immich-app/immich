@@ -10,7 +10,7 @@
   import { SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { stackAssetsStore } from '$lib/stores/stacked-asset.store';
   import { user } from '$lib/stores/user.store';
-  import { getAssetJobMessage, isSharedLink } from '$lib/utils';
+  import { getAssetJobMessage, isSharedLink, handlePromiseError } from '$lib/utils';
   import { addAssetsToAlbum, downloadFile } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
@@ -174,8 +174,8 @@
 
   $: {
     if (isShared && asset.id) {
-      getFavorite();
-      getNumberOfComments();
+      handlePromiseError(getFavorite());
+      handlePromiseError(getNumberOfComments());
     }
   }
 
@@ -184,9 +184,9 @@
       if (value === SlideshowState.PlaySlideshow) {
         slideshowHistory.reset();
         slideshowHistory.queue(asset.id);
-        handlePlaySlideshow();
+        handlePromiseError(handlePlaySlideshow());
       } else if (value === SlideshowState.StopSlideshow) {
-        handleStopSlideshow();
+        handlePromiseError(handleStopSlideshow());
       }
     });
 
@@ -226,7 +226,7 @@
     }
   });
 
-  $: asset.id && !sharedLink && handleGetAllAlbums(); // Update the album information when the asset ID changes
+  $: asset.id && !sharedLink && handlePromiseError(handleGetAllAlbums()); // Update the album information when the asset ID changes
 
   const handleGetAllAlbums = async () => {
     if (isSharedLink()) {
@@ -247,7 +247,7 @@
     isShowActivity = !isShowActivity;
   };
 
-  const handleKeypress = (event: KeyboardEvent) => {
+  const handleKeypress = async (event: KeyboardEvent) => {
     if (shouldIgnoreShortcut(event)) {
       return;
     }
@@ -264,7 +264,7 @@
       case 'a':
       case 'A': {
         if (shiftKey) {
-          toggleArchive();
+          await toggleArchive();
         }
         return;
       }
@@ -273,18 +273,18 @@
         return;
       }
       case 'ArrowRight': {
-        navigateAssetForward();
+        await navigateAssetForward();
         return;
       }
       case 'd':
       case 'D': {
         if (shiftKey) {
-          downloadFile(asset);
+          await downloadFile(asset);
         }
         return;
       }
       case 'Delete': {
-        trashOrDelete(shiftKey);
+        await trashOrDelete(shiftKey);
         return;
       }
       case 'Escape': {
@@ -296,7 +296,7 @@
         return;
       }
       case 'f': {
-        toggleFavorite();
+        await toggleFavorite();
         return;
       }
       case 'i': {
@@ -326,7 +326,7 @@
 
     slideshowHistory.queue(asset.id);
 
-    setAssetId(asset.id);
+    await setAssetId(asset.id);
     $restartSlideshowProgress = true;
   };
 
@@ -369,17 +369,17 @@
     $isShowDetail = !$isShowDetail;
   };
 
-  const trashOrDelete = (force: boolean = false) => {
+  const trashOrDelete = async (force: boolean = false) => {
     if (force || !isTrashEnabled) {
       if ($showDeleteModal) {
         isShowDeleteConfirmation = true;
         return;
       }
-      deleteAsset();
+      await deleteAsset();
       return;
     }
 
-    trashAsset();
+    await trashAsset();
     return;
   };
 
@@ -432,7 +432,7 @@
         message: asset.isFavorite ? `Added to favorites` : `Removed from favorites`,
       });
     } catch (error) {
-      await handleError(error, `Unable to ${asset.isFavorite ? `add asset to` : `remove asset from`} favorites`);
+      handleError(error, `Unable to ${asset.isFavorite ? `add asset to` : `remove asset from`} favorites`);
     }
   };
 
@@ -472,7 +472,7 @@
         message: asset.isArchived ? `Added to archive` : `Removed from archive`,
       });
     } catch (error) {
-      await handleError(error, `Unable to ${asset.isArchived ? `add asset to` : `remove asset from`} archive`);
+      handleError(error, `Unable to ${asset.isArchived ? `add asset to` : `remove asset from`} archive`);
     }
   };
 
@@ -481,7 +481,7 @@
       await runAssetJobs({ assetJobsDto: { assetIds: [asset.id], name } });
       notificationController.show({ type: NotificationType.Info, message: getAssetJobMessage(name) });
     } catch (error) {
-      await handleError(error, `Unable to submit job`);
+      handleError(error, `Unable to submit job`);
     }
   };
 
@@ -492,7 +492,7 @@
   let assetViewerHtmlElement: HTMLElement;
 
   const slideshowHistory = new SlideshowHistory((assetId: string) => {
-    setAssetId(assetId);
+    handlePromiseError(setAssetId(assetId));
     $restartSlideshowProgress = true;
   });
 
@@ -550,7 +550,7 @@
       dispatch('close');
       notificationController.show({ type: NotificationType.Info, message: 'Un-stacked', timeout: 1500 });
     } catch (error) {
-      await handleError(error, `Unable to unstack`);
+      handleError(error, `Unable to unstack`);
     }
   };
 </script>

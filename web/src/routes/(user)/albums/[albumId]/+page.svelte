@@ -220,12 +220,11 @@
 
   onMount(async () => {
     if (album.sharedUsers.length > 0) {
-      getFavorite();
-      getNumberOfComments();
+      await Promise.all([getFavorite(), getNumberOfComments()]);
     }
   });
 
-  const handleKeypress = async (event: KeyboardEvent) => {
+  const handleKeypress = (event: KeyboardEvent) => {
     if (event.target !== textArea) {
       return;
     }
@@ -242,12 +241,12 @@
   const handleStartSlideshow = async () => {
     const asset = $slideshowShuffle ? await assetStore.getRandomAsset() : assetStore.assets[0];
     if (asset) {
-      setAssetId(asset.id);
+      await setAssetId(asset.id);
       $slideshowState = SlideshowState.PlaySlideshow;
     }
   };
 
-  const handleEscape = () => {
+  const handleEscape = async () => {
     if (viewMode === ViewMode.SELECT_USERS) {
       viewMode = ViewMode.VIEW;
       return;
@@ -275,7 +274,7 @@
       assetInteractionStore.clearMultiselect();
       return;
     }
-    goto(backUrl);
+    await goto(backUrl);
     return;
   };
 
@@ -371,7 +370,7 @@
 
   const handleRemoveUser = async (userId: string) => {
     if (userId == 'me' || userId === $user.id) {
-      goto(backUrl);
+      await goto(backUrl);
       return;
     }
 
@@ -390,7 +389,7 @@
   const handleRemoveAlbum = async () => {
     try {
       await deleteAlbum({ id: album.id });
-      goto(backUrl);
+      await goto(backUrl);
     } catch (error) {
       handleError(error, 'Unable to delete album');
     } finally {
@@ -413,8 +412,6 @@
           albumThumbnailAssetId: assetId,
         },
       });
-
-      notificationController.show({ type: NotificationType.Info, message: 'Updated album cover' });
     } catch (error) {
       handleError(error, 'Unable to update album cover');
     }
@@ -433,7 +430,6 @@
         },
       });
       currentAlbumName = album.albumName;
-      notificationController.show({ type: NotificationType.Info, message: 'New album name has been saved' });
     } catch (error) {
       handleError(error, 'Unable to update album name');
     }
@@ -450,10 +446,7 @@
           description,
         },
       });
-      notificationController.show({
-        type: NotificationType.Info,
-        message: 'Album description has been updated',
-      });
+
       album.description = description;
     } catch (error) {
       handleError(error, 'Error updating album description');

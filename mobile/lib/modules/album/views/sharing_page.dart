@@ -12,7 +12,7 @@ import 'package:immich_mobile/modules/partner/ui/partner_list.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/providers/user.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_app_bar.dart';
-import 'package:immich_mobile/shared/ui/immich_image.dart';
+import 'package:immich_mobile/shared/ui/immich_thumbnail.dart';
 
 @RoutePage()
 class SharingPage extends HookConsumerWidget {
@@ -72,8 +72,8 @@ class SharingPage extends HookConsumerWidget {
               contentPadding: const EdgeInsets.symmetric(horizontal: 12),
               leading: ClipRRect(
                 borderRadius: const BorderRadius.all(Radius.circular(8)),
-                child: ImmichImage.thumbnail(
-                  album.thumbnail.value,
+                child: ImmichThumbnail(
+                  asset: album.thumbnail.value,
                   width: 60,
                   height: 60,
                 ),

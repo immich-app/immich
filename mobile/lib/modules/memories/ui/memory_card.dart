@@ -1,10 +1,11 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/asset_viewer/views/video_viewer_page.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:immich_mobile/shared/models/store.dart';
+import 'package:immich_mobile/shared/ui/hooks/blurhash_hook.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
 
 class MemoryCard extends StatelessWidget {
@@ -21,8 +22,6 @@ class MemoryCard extends StatelessWidget {
     super.key,
   });
 
-  String get accessToken => Store.get(StoreKey.accessToken);
-
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -37,20 +36,8 @@ class MemoryCard extends StatelessWidget {
       clipBehavior: Clip.hardEdge,
       child: Stack(
         children: [
-          ImageFiltered(
-            imageFilter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-            child: Container(
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: ImmichImage.imageProvider(
-                    asset: asset,
-                    isThumbnail: true,
-                  ),
-                  fit: BoxFit.cover,
-                ),
-              ),
-              child: Container(color: Colors.black.withOpacity(0.2)),
-            ),
+          SizedBox.expand(
+            child: _BlurredBackdrop(asset: asset),
           ),
           LayoutBuilder(
             builder: (context, constraints) {
@@ -111,5 +98,52 @@ class MemoryCard extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class _BlurredBackdrop extends HookWidget {
+  final Asset asset;
+
+  const _BlurredBackdrop({required this.asset});
+
+  @override
+  Widget build(BuildContext context) {
+    final blurhash = useBlurHashRef(asset).value;
+    if (blurhash != null) {
+      // Use a nice cheap blur hash image decoration
+      return Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: MemoryImage(
+              blurhash,
+            ),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: Container(
+          color: Colors.black.withOpacity(0.2),
+        ),
+      );
+    } else {
+      // Fall back to using a more expensive image filtered
+      // Since the ImmichImage is already precached, we can
+      // safely use that as the image provider
+      return ImageFiltered(
+        imageFilter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+        child: Container(
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: ImmichImage.imageProvider(
+                asset: asset,
+              ),
+              fit: BoxFit.cover,
+            ),
+          ),
+          child: Container(
+            color: Colors.black.withOpacity(0.2),
+          ),
+        ),
+      );
+    }
   }
 }

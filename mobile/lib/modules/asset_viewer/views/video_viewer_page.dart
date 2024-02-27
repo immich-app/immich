@@ -40,7 +40,7 @@ class VideoViewerPage extends HookWidget {
       controlsSafeAreaMinimum: const EdgeInsets.only(
         bottom: 100,
       ),
-      placeholder: placeholder,
+      placeholder: SizedBox.expand(child: placeholder),
       showControls: showControls && !isMotionVideo,
       hideControlsTimer: hideControlsTimer,
       customControls: const VideoPlayerControls(),
@@ -58,7 +58,7 @@ class VideoViewerPage extends HookWidget {
             if (controller == null) {
               return Stack(
                 children: [
-                  if (placeholder != null) placeholder!,
+                  if (placeholder != null) SizedBox.expand(child: placeholder!),
                   const DelayedLoadingIndicator(
                     fadeInDuration: Duration(milliseconds: 500),
                   ),
