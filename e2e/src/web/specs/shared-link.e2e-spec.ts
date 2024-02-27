@@ -31,25 +31,15 @@ test.describe('Shared Links', () => {
       },
       { headers: asBearerAuth(admin.accessToken) }
     );
-    sharedLink = await createSharedLink(
-      {
-        sharedLinkCreateDto: {
-          type: SharedLinkType.Album,
-          albumId: album.id,
-        },
-      },
-      { headers: asBearerAuth(admin.accessToken) }
-    );
-    sharedLinkPassword = await createSharedLink(
-      {
-        sharedLinkCreateDto: {
-          type: SharedLinkType.Album,
-          albumId: album.id,
-          password: 'test-password',
-        },
-      },
-      { headers: asBearerAuth(admin.accessToken) }
-    );
+    sharedLink = await apiUtils.createSharedLink(admin.accessToken, {
+      type: SharedLinkType.Album,
+      albumId: album.id,
+    });
+    sharedLinkPassword = await apiUtils.createSharedLink(admin.accessToken, {
+      type: SharedLinkType.Album,
+      albumId: album.id,
+      password: 'test-password',
+    });
   });
 
   test.afterAll(async () => {
