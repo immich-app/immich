@@ -4,9 +4,10 @@ import { readFile } from 'node:fs/promises';
 import { In, Repository } from 'typeorm';
 import { SystemConfigEntity } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';
-import { Chunked, DecorateAll, ExecutionTimeHistogram } from '../infra.utils';
+import { Chunked } from '../infra.utils';
+import { Instrumentation } from '../instrumentation';
 
-@DecorateAll(ExecutionTimeHistogram())
+@Instrumentation()
 export class SystemConfigRepository implements ISystemConfigRepository {
   constructor(
     @InjectRepository(SystemConfigEntity)

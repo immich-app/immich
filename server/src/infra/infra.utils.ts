@@ -1,8 +1,5 @@
 import { AssetSearchBuilderOptions, Paginated, PaginationOptions } from '@app/domain';
-import { Histogram, MetricOptions, ValueType, metrics } from '@opentelemetry/api';
 import _ from 'lodash';
-import { copyMetadataFromFunctionToFunction } from 'nestjs-otel/lib/opentelemetry.utils';
-import { performance } from 'perf_hooks';
 import {
   Between,
   FindManyOptions,
@@ -142,48 +139,6 @@ export function DecorateAll(
       decorator({ ...target, constructor: { ...target.constructor, name: target.name } as any }, propName, descriptor);
       Object.defineProperty(target.prototype, propName, descriptor);
     }
-  };
-}
-
-export function ExecutionTimeHistogram({ description, unit = 'ms', valueType = ValueType.DOUBLE }: MetricOptions = {}) {
-  return (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) => {
-    if (process.env.OTEL_SDK_DISABLED === 'true') {
-      return;
-    }
-
-    const method = descriptor.value;
-    const className = target.constructor.name as string;
-    const propertyName = String(propertyKey);
-    const metricName = `${_.snakeCase(className).replaceAll(/_(?=(repository)|(controller)|(provider)|(service)|(module))/g, '.')}.${_.snakeCase(propertyName)}.duration`;
-
-    const metricDescription =
-      description ??
-      `The elapsed time in ${unit} for the ${_.startCase(className)} to ${_.startCase(propertyName).toLowerCase()}`;
-
-    let histogram: Histogram | undefined;
-
-    descriptor.value = function (...args: any[]) {
-      const start = performance.now();
-      const result = method.apply(this, args);
-
-      void Promise.resolve(result)
-        .then(() => {
-          const end = performance.now();
-          if (!histogram) {
-            histogram = metrics
-              .getMeter('immich')
-              .createHistogram(metricName, { description: metricDescription, unit, valueType });
-          }
-          histogram.record(end - start, {});
-        })
-        .catch(() => {
-          // noop
-        });
-
-      return result;
-    };
-
-    copyMetadataFromFunctionToFunction(method, descriptor.value);
   };
 }
 

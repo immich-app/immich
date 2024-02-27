@@ -1,6 +1,6 @@
 import { WEB_ROOT, envName, isDev, serverVersion } from '@app/domain';
 import { WebSocketAdapter } from '@app/infra';
-import otelSDK from '@app/infra/instrumentation';
+import { otelSDK } from '@app/infra/instrumentation';
 import { ImmichLogger } from '@app/infra/logger';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';

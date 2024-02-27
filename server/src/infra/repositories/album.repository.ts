@@ -7,9 +7,10 @@ import { setUnion } from '../../domain/domain.util';
 import { dataSource } from '../database.config';
 import { AlbumEntity, AssetEntity } from '../entities';
 import { DATABASE_PARAMETER_CHUNK_SIZE, DummyValue, GenerateSql } from '../infra.util';
-import { Chunked, ChunkedArray, DecorateAll, ExecutionTimeHistogram } from '../infra.utils';
+import { Chunked, ChunkedArray } from '../infra.utils';
+import { Instrumentation } from '../instrumentation';
 
-@DecorateAll(ExecutionTimeHistogram())
+@Instrumentation()
 @Injectable()
 export class AlbumRepository implements IAlbumRepository {
   constructor(

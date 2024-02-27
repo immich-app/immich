@@ -13,7 +13,8 @@ import {
   UserTokenEntity,
 } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';
-import { ChunkedSet, DecorateAll, ExecutionTimeHistogram } from '../infra.utils';
+import { ChunkedSet } from '../infra.utils';
+import { Instrumentation } from '../instrumentation';
 
 type IActivityAccess = IAccessRepository['activity'];
 type IAlbumAccess = IAccessRepository['album'];
@@ -24,7 +25,7 @@ type ITimelineAccess = IAccessRepository['timeline'];
 type IPersonAccess = IAccessRepository['person'];
 type IPartnerAccess = IAccessRepository['partner'];
 
-@DecorateAll(ExecutionTimeHistogram())
+@Instrumentation()
 class ActivityAccess implements IActivityAccess {
   constructor(
     private activityRepository: Repository<ActivityEntity>,

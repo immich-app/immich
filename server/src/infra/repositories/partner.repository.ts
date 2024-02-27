@@ -3,9 +3,9 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, Repository } from 'typeorm';
 import { PartnerEntity } from '../entities';
-import { DecorateAll, ExecutionTimeHistogram } from '../infra.utils';
+import { Instrumentation } from '../instrumentation';
 
-@DecorateAll(ExecutionTimeHistogram())
+@Instrumentation()
 @Injectable()
 export class PartnerRepository implements IPartnerRepository {
   constructor(@InjectRepository(PartnerEntity) private readonly repository: Repository<PartnerEntity>) {}

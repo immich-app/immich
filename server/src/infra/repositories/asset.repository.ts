@@ -41,13 +41,12 @@ import { DummyValue, GenerateSql } from '../infra.util';
 import {
   Chunked,
   ChunkedArray,
-  DecorateAll,
-  ExecutionTimeHistogram,
   OptionalBetween,
   paginate,
   paginatedBuilder,
   searchAssetBuilder,
 } from '../infra.utils';
+import { Instrumentation } from '../instrumentation';
 
 const truncateMap: Record<TimeBucketSize, string> = {
   [TimeBucketSize.DAY]: 'day',
@@ -59,7 +58,7 @@ const dateTrunc = (options: TimeBucketOptions) =>
     truncateMap[options.size]
   }', (asset."localDateTime" at time zone 'UTC')) at time zone 'UTC')::timestamptz`;
 
-@DecorateAll(ExecutionTimeHistogram())
+@Instrumentation()
 @Injectable()
 export class AssetRepository implements IAssetRepository {
   constructor(

@@ -4,9 +4,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { MoveEntity, PathType } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';
-import { DecorateAll, ExecutionTimeHistogram } from '../infra.utils';
+import { Instrumentation } from '../instrumentation';
 
-@DecorateAll(ExecutionTimeHistogram())
+@Instrumentation()
 @Injectable()
 export class MoveRepository implements IMoveRepository {
   constructor(@InjectRepository(MoveEntity) private repository: Repository<MoveEntity>) {}

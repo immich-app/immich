@@ -3,9 +3,9 @@ import { Injectable } from '@nestjs/common';
 import { compareSync, hash } from 'bcrypt';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { createReadStream } from 'node:fs';
-import { DecorateAll, ExecutionTimeHistogram } from '../infra.utils';
+import { Instrumentation } from '../instrumentation';
 
-@DecorateAll(ExecutionTimeHistogram())
+@Instrumentation()
 @Injectable()
 export class CryptoRepository implements ICryptoRepository {
   randomUUID() {

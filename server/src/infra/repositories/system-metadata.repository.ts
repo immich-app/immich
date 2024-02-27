@@ -2,9 +2,9 @@ import { ISystemMetadataRepository } from '@app/domain/repositories/system-metad
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SystemMetadata, SystemMetadataEntity } from '../entities';
-import { DecorateAll, ExecutionTimeHistogram } from '../infra.utils';
+import { Instrumentation } from '../instrumentation';
 
-@DecorateAll(ExecutionTimeHistogram())
+@Instrumentation()
 export class SystemMetadataRepository implements ISystemMetadataRepository {
   constructor(
     @InjectRepository(SystemMetadataEntity)

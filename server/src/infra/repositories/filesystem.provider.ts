@@ -15,9 +15,9 @@ import { glob } from 'fast-glob';
 import { constants, createReadStream, existsSync, mkdirSync } from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { DecorateAll, ExecutionTimeHistogram } from '../infra.utils';
+import { Instrumentation } from '../instrumentation';
 
-@DecorateAll(ExecutionTimeHistogram())
+@Instrumentation()
 export class FilesystemProvider implements IStorageRepository {
   private logger = new ImmichLogger(FilesystemProvider.name);
 

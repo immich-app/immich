@@ -23,9 +23,9 @@ import * as readLine from 'node:readline';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity.js';
 import { DummyValue, GenerateSql } from '../infra.util';
-import { DecorateAll, ExecutionTimeHistogram } from '../infra.utils';
+import { Instrumentation } from '../instrumentation';
 
-@DecorateAll(ExecutionTimeHistogram())
+@Instrumentation()
 export class MetadataRepository implements IMetadataRepository {
   constructor(
     @InjectRepository(ExifEntity) private exifRepository: Repository<ExifEntity>,

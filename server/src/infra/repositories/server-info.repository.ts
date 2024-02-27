@@ -1,8 +1,8 @@
 import { GitHubRelease, IServerInfoRepository } from '@app/domain';
 import { Injectable } from '@nestjs/common';
-import { DecorateAll, ExecutionTimeHistogram } from '../infra.utils';
+import { Instrumentation } from '../instrumentation';
 
-@DecorateAll(ExecutionTimeHistogram())
+@Instrumentation()
 @Injectable()
 export class ServerInfoRepository implements IServerInfoRepository {
   async getGitHubRelease(): Promise<GitHubRelease> {

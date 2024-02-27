@@ -26,15 +26,14 @@ import { Repository, SelectQueryBuilder } from 'typeorm';
 import { vectorExt } from '../database.config';
 import { DummyValue, GenerateSql } from '../infra.util';
 import {
-  DecorateAll,
-  ExecutionTimeHistogram,
   asVector,
   isValidInteger,
   paginatedBuilder,
   searchAssetBuilder,
 } from '../infra.utils';
+import { Instrumentation } from '../instrumentation';
 
-@DecorateAll(ExecutionTimeHistogram())
+@Instrumentation()
 @Injectable()
 export class SearchRepository implements ISearchRepository {
   private logger = new ImmichLogger(SearchRepository.name);

@@ -14,10 +14,11 @@ import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import AsyncLock from 'async-lock';
 import { DataSource, EntityManager, QueryRunner } from 'typeorm';
-import { DecorateAll, ExecutionTimeHistogram, isValidInteger } from '../infra.utils';
+import { isValidInteger } from '../infra.utils';
 import { ImmichLogger } from '../logger';
+import { Instrumentation } from '../instrumentation';
 
-@DecorateAll(ExecutionTimeHistogram())
+@Instrumentation()
 @Injectable()
 export class DatabaseRepository implements IDatabaseRepository {
   private logger = new ImmichLogger(DatabaseRepository.name);

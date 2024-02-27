@@ -13,13 +13,13 @@ import fs from 'node:fs/promises';
 import { Writable } from 'node:stream';
 import { promisify } from 'node:util';
 import sharp from 'sharp';
-import { DecorateAll, ExecutionTimeHistogram } from '../infra.utils';
+import { Instrumentation } from '../instrumentation';
 
 const probe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
 sharp.concurrency(0);
 sharp.cache({ files: 0 });
 
-@DecorateAll(ExecutionTimeHistogram())
+@Instrumentation()
 export class MediaRepository implements IMediaRepository {
   private logger = new ImmichLogger(MediaRepository.name);
 

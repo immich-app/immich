@@ -14,9 +14,10 @@ import _ from 'lodash';
 import { FindManyOptions, FindOptionsRelations, FindOptionsSelect, In, Repository } from 'typeorm';
 import { AssetEntity, AssetFaceEntity, PersonEntity } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';
-import { ChunkedArray, DecorateAll, ExecutionTimeHistogram, asVector, paginate } from '../infra.utils';
+import { ChunkedArray, asVector, paginate } from '../infra.utils';
+import { Instrumentation } from '../instrumentation';
 
-@DecorateAll(ExecutionTimeHistogram())
+@Instrumentation()
 export class PersonRepository implements IPersonRepository {
   constructor(
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,

@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
 import { ActivityEntity } from '../entities/activity.entity';
 import { DummyValue, GenerateSql } from '../infra.util';
-import { DecorateAll, ExecutionTimeHistogram } from '../infra.utils';
+import { Instrumentation } from '../instrumentation';
 
 export interface ActivitySearch {
   albumId?: string;
@@ -13,7 +13,7 @@ export interface ActivitySearch {
   isLiked?: boolean;
 }
 
-@DecorateAll(ExecutionTimeHistogram())
+@Instrumentation()
 @Injectable()
 export class ActivityRepository implements IActivityRepository {
   constructor(@InjectRepository(ActivityEntity) private repository: Repository<ActivityEntity>) {}

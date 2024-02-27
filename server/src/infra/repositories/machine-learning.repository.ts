@@ -11,11 +11,11 @@ import {
 } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { readFile } from 'node:fs/promises';
-import { DecorateAll, ExecutionTimeHistogram } from '../infra.utils';
+import { Instrumentation } from '../instrumentation';
 
 const errorPrefix = 'Machine learning request';
 
-@DecorateAll(ExecutionTimeHistogram())
+@Instrumentation()
 @Injectable()
 export class MachineLearningRepository implements IMachineLearningRepository {
   private async predict<T>(url: string, input: TextModelInput | VisionModelInput, config: ModelConfig): Promise<T> {
