@@ -1,11 +1,9 @@
 import {
   AlbumResponseDto,
-  AssetResponseDto,
+  AssetFileUploadResponseDto,
   LoginResponseDto,
-  SharedLinkCreateDto,
   SharedLinkResponseDto,
   SharedLinkType,
-  createSharedLink as create,
   createAlbum,
   deleteUser,
 } from '@immich/sdk';
@@ -17,8 +15,8 @@ import { beforeAll, describe, expect, it } from 'vitest';
 
 describe('/shared-link', () => {
   let admin: LoginResponseDto;
-  let asset1: AssetResponseDto;
-  let asset2: AssetResponseDto;
+  let asset1: AssetFileUploadResponseDto;
+  let asset2: AssetFileUploadResponseDto;
   let user1: LoginResponseDto;
   let user2: LoginResponseDto;
   let album: AlbumResponseDto;
@@ -50,11 +48,11 @@ describe('/shared-link', () => {
     [album, deletedAlbum, metadataAlbum] = await Promise.all([
       createAlbum(
         { createAlbumDto: { albumName: 'album' } },
-        { headers: asBearerAuth(user1.accessToken) }
+        { headers: asBearerAuth(user1.accessToken) },
       ),
       createAlbum(
         { createAlbumDto: { albumName: 'deleted album' } },
-        { headers: asBearerAuth(user2.accessToken) }
+        { headers: asBearerAuth(user2.accessToken) },
       ),
       createAlbum(
         {
@@ -63,7 +61,7 @@ describe('/shared-link', () => {
             assetIds: [asset1.id],
           },
         },
-        { headers: asBearerAuth(user1.accessToken) }
+        { headers: asBearerAuth(user1.accessToken) },
       ),
     ]);
 
@@ -106,7 +104,7 @@ describe('/shared-link', () => {
 
     await deleteUser(
       { id: user2.userId },
-      { headers: asBearerAuth(admin.accessToken) }
+      { headers: asBearerAuth(admin.accessToken) },
     );
   });
 
@@ -132,7 +130,7 @@ describe('/shared-link', () => {
           expect.objectContaining({ id: linkWithPassword.id }),
           expect.objectContaining({ id: linkWithMetadata.id }),
           expect.objectContaining({ id: linkWithoutMetadata.id }),
-        ])
+        ]),
       );
     });
 
@@ -166,7 +164,7 @@ describe('/shared-link', () => {
           album,
           userId: user1.userId,
           type: SharedLinkType.Album,
-        })
+        }),
       );
     });
 
@@ -208,7 +206,7 @@ describe('/shared-link', () => {
           album,
           userId: user1.userId,
           type: SharedLinkType.Album,
-        })
+        }),
       );
     });
 
@@ -225,7 +223,7 @@ describe('/shared-link', () => {
           localDateTime: expect.any(String),
           fileCreatedAt: expect.any(String),
           exifInfo: expect.any(Object),
-        })
+        }),
       );
       expect(body.album).toBeDefined();
     });
@@ -250,7 +248,7 @@ describe('/shared-link', () => {
   describe('GET /shared-link/:id', () => {
     it('should require authentication', async () => {
       const { status, body } = await request(app).get(
-        `/shared-link/${linkWithAlbum.id}`
+        `/shared-link/${linkWithAlbum.id}`,
       );
 
       expect(status).toBe(401);
@@ -268,7 +266,7 @@ describe('/shared-link', () => {
           album,
           userId: user1.userId,
           type: SharedLinkType.Album,
-        })
+        }),
       );
     });
 
@@ -279,7 +277,7 @@ describe('/shared-link', () => {
 
       expect(status).toBe(400);
       expect(body).toEqual(
-        expect.objectContaining({ message: 'Shared link not found' })
+        expect.objectContaining({ message: 'Shared link not found' }),
       );
     });
   });
@@ -311,7 +309,7 @@ describe('/shared-link', () => {
 
       expect(status).toBe(400);
       expect(body).toEqual(
-        expect.objectContaining({ message: 'Invalid albumId' })
+        expect.objectContaining({ message: 'Invalid albumId' }),
       );
     });
 
@@ -323,7 +321,7 @@ describe('/shared-link', () => {
 
       expect(status).toBe(400);
       expect(body).toEqual(
-        expect.objectContaining({ message: 'Invalid assetIds' })
+        expect.objectContaining({ message: 'Invalid assetIds' }),
       );
     });
 
@@ -338,7 +336,7 @@ describe('/shared-link', () => {
         expect.objectContaining({
           type: SharedLinkType.Album,
           userId: user1.userId,
-        })
+        }),
       );
     });
   });
@@ -375,7 +373,7 @@ describe('/shared-link', () => {
           type: SharedLinkType.Album,
           userId: user1.userId,
           description: 'foo',
-        })
+        }),
       );
     });
   });
@@ -427,7 +425,7 @@ describe('/shared-link', () => {
   describe('DELETE /shared-link/:id', () => {
     it('should require authentication', async () => {
       const { status, body } = await request(app).delete(
-        `/shared-link/${linkWithAlbum.id}`
+        `/shared-link/${linkWithAlbum.id}`,
       );
 
       expect(status).toBe(401);

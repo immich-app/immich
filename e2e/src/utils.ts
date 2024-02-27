@@ -1,5 +1,5 @@
 import {
-  AssetResponseDto,
+  AssetFileUploadResponseDto,
   CreateAlbumDto,
   CreateAssetDto,
   CreateUserDto,
@@ -11,6 +11,8 @@ import {
   createSharedLink,
   createUser,
   defaults,
+  deleteAssets,
+  getAssetInfo,
   login,
   setAdminOnboarding,
   signUpAdmin,
@@ -23,6 +25,7 @@ import { access } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 import pg from 'pg';
+import { io, type Socket } from 'socket.io-client';
 import { loginDto, signupDto } from 'src/fixtures';
 import request from 'supertest';
 
@@ -39,15 +42,19 @@ const directoryExists = (directory: string) =>
 export const testAssetDir = path.resolve(`./../server/test/assets/`);
 
 const serverContainerName = 'immich-e2e-server';
-const uploadMediaDir = '/usr/src/app/upload/upload';
+const mediaDir = '/usr/src/app/upload';
+const dirs = [
+  `"${mediaDir}/thumbs"`,
+  `"${mediaDir}/upload"`,
+  `"${mediaDir}/library"`,
+].join(' ');
 
 if (!(await directoryExists(`${testAssetDir}/albums`))) {
   throw new Error(
-    `Test assets not found. Please checkout https://github.com/immich-app/test-assets into ${testAssetDir} before testing`
+    `Test assets not found. Please checkout https://github.com/immich-app/test-assets into ${testAssetDir} before testing`,
   );
 }
 
-const setBaseUrl = () => (defaults.baseUrl = app);
 export const asBearerAuth = (accessToken: string) => ({
   Authorization: `Bearer ${accessToken}`,
 });
@@ -59,7 +66,7 @@ let client: pg.Client | null = null;
 export const fileUtils = {
   reset: async () => {
     await execPromise(
-      `docker exec -i "${serverContainerName}" rm -R "${uploadMediaDir}"`
+      `docker exec -i "${serverContainerName}" /bin/bash -c "rm -rf ${dirs} && mkdir ${dirs}"`,
     );
   },
 };
@@ -81,7 +88,7 @@ export const dbUtils = {
 
     await client.query(
       'INSERT INTO asset_faces ("assetId", "personId", "embedding") VALUES ($1, $2, $3)',
-      [assetId, personId, embedding]
+      [assetId, personId, embedding],
     );
   },
   setPersonThumbnail: async (personId: string) => {
@@ -91,14 +98,14 @@ export const dbUtils = {
 
     await client.query(
       `UPDATE "person" set "thumbnailPath" = '/my/awesome/thumbnail.jpg' where "id" = $1`,
-      [personId]
+      [personId],
     );
   },
   reset: async (tables?: string[]) => {
     try {
       if (!client) {
         client = new pg.Client(
-          'postgres://postgres:postgres@127.0.0.1:5433/immich'
+          'postgres://postgres:postgres@127.0.0.1:5433/immich',
         );
         await client.connect();
       }
@@ -170,10 +177,42 @@ export interface AdminSetupOptions {
   onboarding?: boolean;
 }
 
+export const wsUtils = {
+  connect: async (accessToken: string) => {
+    const websocket = io('http://127.0.0.1:2283', {
+      path: '/api/socket.io',
+      transports: ['websocket'],
+      extraHeaders: { Authorization: `Bearer ${accessToken}` },
+      autoConnect: false,
+      forceNew: true,
+    });
+
+    return new Promise<Socket>((resolve) => {
+      websocket.on('connect', () => resolve(websocket));
+      websocket.connect();
+    });
+  },
+  disconnect: (ws: Socket) => {
+    if (ws?.connected) {
+      ws.disconnect();
+    }
+  },
+  once: <T = any>(ws: Socket, event: string): Promise<T> => {
+    return new Promise<T>((resolve, reject) => {
+      const timeout = setTimeout(() => reject(new Error('Timeout')), 4000);
+      ws.once(event, (data: T) => {
+        clearTimeout(timeout);
+        resolve(data);
+      });
+    });
+  },
+};
+
 export const apiUtils = {
   setup: () => {
-    setBaseUrl();
+    defaults.baseUrl = app;
   },
+
   adminSetup: async (options?: AdminSetupOptions) => {
     options = options || { onboarding: true };
 
@@ -187,7 +226,7 @@ export const apiUtils = {
   userSetup: async (accessToken: string, dto: CreateUserDto) => {
     await createUser(
       { createUserDto: dto },
-      { headers: asBearerAuth(accessToken) }
+      { headers: asBearerAuth(accessToken) },
     );
     return login({
       loginCredentialDto: { email: dto.email, password: dto.password },
@@ -196,48 +235,74 @@ export const apiUtils = {
   createApiKey: (accessToken: string) => {
     return createApiKey(
       { apiKeyCreateDto: { name: 'e2e' } },
-      { headers: asBearerAuth(accessToken) }
+      { headers: asBearerAuth(accessToken) },
     );
   },
   createAlbum: (accessToken: string, dto: CreateAlbumDto) =>
     createAlbum(
       { createAlbumDto: dto },
-      { headers: asBearerAuth(accessToken) }
+      { headers: asBearerAuth(accessToken) },
     ),
   createAsset: async (
     accessToken: string,
-    dto?: Omit<CreateAssetDto, 'assetData'>
+    dto?: Partial<Omit<CreateAssetDto, 'assetData'>>,
+    data?: {
+      bytes?: Buffer;
+      filename?: string;
+    },
   ) => {
-    dto = dto || {
+    const _dto = {
       deviceAssetId: 'test-1',
       deviceId: 'test',
       fileCreatedAt: new Date().toISOString(),
       fileModifiedAt: new Date().toISOString(),
+      ...(dto || {}),
     };
-    const { body } = await request(app)
+
+    const _assetData = {
+      bytes: randomBytes(32),
+      filename: 'example.jpg',
+      ...(data || {}),
+    };
+
+    const builder = request(app)
       .post(`/asset/upload`)
-      .field('deviceAssetId', dto.deviceAssetId)
-      .field('deviceId', dto.deviceId)
-      .field('fileCreatedAt', dto.fileCreatedAt)
-      .field('fileModifiedAt', dto.fileModifiedAt)
-      .attach('assetData', randomBytes(32), 'example.jpg')
+      .attach('assetData', _assetData.bytes, _assetData.filename)
       .set('Authorization', `Bearer ${accessToken}`);
 
-    return body as AssetResponseDto;
+    for (const [key, value] of Object.entries(_dto)) {
+      builder.field(key, String(value));
+    }
+
+    const { body } = await builder;
+
+    return body as AssetFileUploadResponseDto;
   },
-  createPerson: async (accessToken: string, dto: PersonUpdateDto) => {
+  getAssetInfo: (accessToken: string, id: string) =>
+    getAssetInfo({ id }, { headers: asBearerAuth(accessToken) }),
+  deleteAssets: (accessToken: string, ids: string[]) =>
+    deleteAssets(
+      { assetBulkDeleteDto: { ids } },
+      { headers: asBearerAuth(accessToken) },
+    ),
+  createPerson: async (accessToken: string, dto?: PersonUpdateDto) => {
     // TODO fix createPerson to accept a body
-    const { id } = await createPerson({ headers: asBearerAuth(accessToken) });
-    await dbUtils.setPersonThumbnail(id);
+    let person = await createPerson({ headers: asBearerAuth(accessToken) });
+    await dbUtils.setPersonThumbnail(person.id);
+
+    if (!dto) {
+      return person;
+    }
+
     return updatePerson(
-      { id, personUpdateDto: dto },
-      { headers: asBearerAuth(accessToken) }
+      { id: person.id, personUpdateDto: dto },
+      { headers: asBearerAuth(accessToken) },
     );
   },
   createSharedLink: (accessToken: string, dto: SharedLinkCreateDto) =>
     createSharedLink(
       { sharedLinkCreateDto: dto },
-      { headers: asBearerAuth(accessToken) }
+      { headers: asBearerAuth(accessToken) },
     ),
 };
 

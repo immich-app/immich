@@ -40,7 +40,7 @@
       deleteLinkId = null;
       await refresh();
     } catch (error) {
-      await handleError(error, 'Unable to delete shared link');
+      handleError(error, 'Unable to delete shared link');
     }
   };
 

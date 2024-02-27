@@ -12,13 +12,16 @@ import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 
+/// Our HTTP client to make the request
+final _httpClient = HttpClient()
+  ..autoUncompress = false
+  ..maxConnectionsPerHost = 100;
+
 /// The remote image provider
-class ImmichRemoteThumbnailProvider extends ImageProvider<String> {
+class ImmichRemoteThumbnailProvider
+    extends ImageProvider<ImmichRemoteThumbnailProvider> {
   /// The [Asset.remoteId] of the asset to fetch
   final String assetId;
-
-  /// Our HTTP client to make the request
-  final _httpClient = HttpClient()..autoUncompress = false;
 
   ImmichRemoteThumbnailProvider({
     required this.assetId,
@@ -27,12 +30,17 @@ class ImmichRemoteThumbnailProvider extends ImageProvider<String> {
   /// Converts an [ImageProvider]'s settings plus an [ImageConfiguration] to a key
   /// that describes the precise image to load.
   @override
-  Future<String> obtainKey(ImageConfiguration configuration) {
-    return SynchronousFuture(assetId);
+  Future<ImmichRemoteThumbnailProvider> obtainKey(
+    ImageConfiguration configuration,
+  ) {
+    return SynchronousFuture(this);
   }
 
   @override
-  ImageStreamCompleter loadImage(String key, ImageDecoderCallback decode) {
+  ImageStreamCompleter loadImage(
+    ImmichRemoteThumbnailProvider key,
+    ImageDecoderCallback decode,
+  ) {
     final chunkEvents = StreamController<ImageChunkEvent>();
     return MultiImageStreamCompleter(
       codec: _codec(key, decode, chunkEvents),
@@ -43,13 +51,13 @@ class ImmichRemoteThumbnailProvider extends ImageProvider<String> {
 
   // Streams in each stage of the image as we ask for it
   Stream<ui.Codec> _codec(
-    String key,
+    ImmichRemoteThumbnailProvider key,
     ImageDecoderCallback decode,
     StreamController<ImageChunkEvent> chunkEvents,
   ) async* {
     // Load a preview to the chunk events
     final preview = getThumbnailUrlForRemoteId(
-      assetId,
+      key.assetId,
       type: api.ThumbnailFormat.WEBP,
     );
 

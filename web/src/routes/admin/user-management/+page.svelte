@@ -51,7 +51,7 @@
     shouldShowCreateUserForm = false;
   };
 
-  const editUserHandler = async (user: UserResponseDto) => {
+  const editUserHandler = (user: UserResponseDto) => {
     selectedUser = user;
     shouldShowEditUserForm = true;
   };
@@ -67,7 +67,7 @@
     shouldShowInfoPanel = true;
   };
 
-  const deleteUserHandler = async (user: UserResponseDto) => {
+  const deleteUserHandler = (user: UserResponseDto) => {
     selectedUser = user;
     shouldShowDeleteConfirmDialog = true;
   };
@@ -82,7 +82,7 @@
     shouldShowDeleteConfirmDialog = false;
   };
 
-  const restoreUserHandler = async (user: UserResponseDto) => {
+  const restoreUserHandler = (user: UserResponseDto) => {
     selectedUser = user;
     shouldShowRestoreDialog = true;
   };

@@ -109,25 +109,13 @@ class MemoryPage extends HookConsumerWidget {
         asset = memories[nextMemoryIndex].assets.first;
       }
 
-      // Gets the thumbnail url and precaches it
-      final precaches = <Future<dynamic>>[];
-
-      precaches.addAll([
-        precacheImage(
-          ImmichImage.imageProvider(
-            asset: asset,
-          ),
-          context,
+      // Precache the asset
+      await precacheImage(
+        ImmichImage.imageProvider(
+          asset: asset,
         ),
-        precacheImage(
-          ImmichImage.imageProvider(
-            asset: asset,
-            isThumbnail: true,
-          ),
-          context,
-        ),
-      ]);
-      await Future.wait(precaches);
+        context,
+      );
     }
 
     // Precache the next page right away if we are on the first page

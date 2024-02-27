@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -11,28 +10,29 @@ import 'package:photo_manager/photo_manager.dart';
 
 /// The local image provider for an asset
 /// Only viable
-class ImmichLocalImageProvider extends ImageProvider<ImmichLocalImageProvider> {
+class ImmichLocalThumbnailProvider extends ImageProvider<Asset> {
   final Asset asset;
+  final int height;
+  final int width;
 
-  ImmichLocalImageProvider({
+  ImmichLocalThumbnailProvider({
     required this.asset,
+    this.height = 256,
+    this.width = 256,
   }) : assert(asset.local != null, 'Only usable when asset.local is set');
 
   /// Converts an [ImageProvider]'s settings plus an [ImageConfiguration] to a key
   /// that describes the precise image to load.
   @override
-  Future<ImmichLocalImageProvider> obtainKey(ImageConfiguration configuration) {
-    return SynchronousFuture(this);
+  Future<Asset> obtainKey(ImageConfiguration configuration) {
+    return SynchronousFuture(asset);
   }
 
   @override
-  ImageStreamCompleter loadImage(
-    ImmichLocalImageProvider key,
-    ImageDecoderCallback decode,
-  ) {
+  ImageStreamCompleter loadImage(Asset key, ImageDecoderCallback decode) {
     final chunkEvents = StreamController<ImageChunkEvent>();
     return MultiImageStreamCompleter(
-      codec: _codec(key.asset, decode, chunkEvents),
+      codec: _codec(key, decode, chunkEvents),
       scale: 1.0,
       chunkEvents: chunkEvents.stream,
       informationCollector: () sync* {
@@ -49,8 +49,8 @@ class ImmichLocalImageProvider extends ImageProvider<ImmichLocalImageProvider> {
   ) async* {
     // Load a small thumbnail
     final thumbBytes = await asset.local?.thumbnailDataWithSize(
-      const ThumbnailSize.square(256),
-      quality: 80,
+      const ThumbnailSize.square(32),
+      quality: 75,
     );
     if (thumbBytes != null) {
       final buffer = await ui.ImmutableBuffer.fromUint8List(thumbBytes);
@@ -60,41 +60,23 @@ class ImmichLocalImageProvider extends ImageProvider<ImmichLocalImageProvider> {
       debugPrint("Loading thumb for ${asset.fileName} failed");
     }
 
-    if (asset.isImage) {
-      /// Using 2K thumbnail for local iOS image to avoid double swiping issue
-      if (Platform.isIOS) {
-        final largeImageBytes = await asset.local
-            ?.thumbnailDataWithSize(const ThumbnailSize(3840, 2160));
-        if (largeImageBytes == null) {
-          throw StateError(
-            "Loading thumb for local photo ${asset.fileName} failed",
-          );
-        }
-        final buffer = await ui.ImmutableBuffer.fromUint8List(largeImageBytes);
-        final codec = await decode(buffer);
-        yield codec;
-      } else {
-        // Use the original file for Android
-        final File? file = await asset.local?.originFile;
-        if (file == null) {
-          throw StateError("Opening file for asset ${asset.fileName} failed");
-        }
-        try {
-          final buffer = await ui.ImmutableBuffer.fromFilePath(file.path);
-          final codec = await decode(buffer);
-          yield codec;
-        } catch (error) {
-          throw StateError("Loading asset ${asset.fileName} failed");
-        }
-      }
+    final normalThumbBytes =
+        await asset.local?.thumbnailDataWithSize(ThumbnailSize(width, height));
+    if (normalThumbBytes == null) {
+      throw StateError(
+        "Loading thumb for local photo ${asset.fileName} failed",
+      );
     }
+    final buffer = await ui.ImmutableBuffer.fromUint8List(normalThumbBytes);
+    final codec = await decode(buffer);
+    yield codec;
 
     chunkEvents.close();
   }
 
   @override
   bool operator ==(Object other) {
-    if (other is! ImmichLocalImageProvider) return false;
+    if (other is! ImmichLocalThumbnailProvider) return false;
     if (identical(this, other)) return true;
     return asset == other.asset;
   }

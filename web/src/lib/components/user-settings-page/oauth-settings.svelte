@@ -28,7 +28,7 @@
       } catch (error) {
         handleError(error, 'Unable to link OAuth account');
       } finally {
-        goto('?open=oauth');
+        await goto('?open=oauth');
       }
     }
 

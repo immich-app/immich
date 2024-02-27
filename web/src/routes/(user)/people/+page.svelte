@@ -81,12 +81,12 @@
 
   const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
 
-  onMount(() => {
+  onMount(async () => {
     document.addEventListener('keydown', onKeyboardPress);
     const getSearchedPeople = $page.url.searchParams.get(QueryParameter.SEARCHED_PEOPLE);
     if (getSearchedPeople) {
       searchName = getSearchedPeople;
-      handleSearchPeople(true);
+      await handleSearchPeople(true);
     }
   });
 
@@ -108,10 +108,10 @@
     }
   };
 
-  const handleSearch = (force: boolean) => {
+  const handleSearch = async (force: boolean) => {
     $page.url.searchParams.set(QueryParameter.SEARCHED_PEOPLE, searchName);
-    goto($page.url);
-    handleSearchPeople(force);
+    await goto($page.url);
+    await handleSearchPeople(force);
   };
 
   const handleCloseClick = () => {
@@ -293,8 +293,8 @@
     }
   };
 
-  const handleMergePeople = (detail: PersonResponseDto) => {
-    goto(
+  const handleMergePeople = async (detail: PersonResponseDto) => {
+    await goto(
       `${AppRoute.PEOPLE}/${detail.id}?${QueryParameter.ACTION}=${ActionQueryParameterValue.MERGE}&${QueryParameter.PREVIOUS_ROUTE}=${AppRoute.PEOPLE}`,
     );
   };
@@ -303,7 +303,7 @@
     if (searchName === '') {
       if ($page.url.searchParams.has(QueryParameter.SEARCHED_PEOPLE)) {
         $page.url.searchParams.delete(QueryParameter.SEARCHED_PEOPLE);
-        goto($page.url);
+        await goto($page.url);
       }
       return;
     }
@@ -331,7 +331,7 @@
       return;
     }
     if (personName === '') {
-      changeName();
+      await changeName();
       return;
     }
     const data = await searchPerson({ name: personName, withHidden: true });
@@ -359,7 +359,7 @@
         .slice(0, 3);
       return;
     }
-    changeName();
+    await changeName();
   };
 
   const submitBirthDateChange = async (value: string) => {

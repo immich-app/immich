@@ -1491,6 +1491,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.6.1"
+  thumbhash:
+    dependency: "direct main"
+    description:
+      name: thumbhash
+      sha256: "5f6d31c5279ca0b5caa81ec10aae8dcaab098d82cb699ea66ada4ed09c794a37"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.0+1"
   time:
     dependency: transitive
     description:

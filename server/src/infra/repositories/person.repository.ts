@@ -40,11 +40,11 @@ export class PersonRepository implements IPersonRepository {
   }
 
   async deleteAll(): Promise<void> {
-    await this.personRepository.delete({});
+    await this.personRepository.clear();
   }
 
   async deleteAllFaces(): Promise<void> {
-    await this.assetFaceRepository.delete({});
+    await this.assetFaceRepository.query('TRUNCATE TABLE asset_faces CASCADE');
   }
 
   getAllFaces(
