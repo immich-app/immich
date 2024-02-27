@@ -10,7 +10,6 @@ import 'package:immich_mobile/modules/memories/ui/memory_epilogue.dart';
 import 'package:immich_mobile/modules/memories/ui/memory_progress_indicator.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
-import 'package:immich_mobile/shared/ui/immich_thumbnail.dart';
 
 @RoutePage()
 class MemoryPage extends HookConsumerWidget {
