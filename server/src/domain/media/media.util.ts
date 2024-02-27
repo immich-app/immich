@@ -14,7 +14,7 @@ class BaseConfig implements VideoCodecSWConfig {
 
   getOptions(target: TranscodeTarget, videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
     const options = {
-      inputOptions: this.getBaseInputOptions(),
+      inputOptions: this.getBaseInputOptions(videoStream),
       outputOptions: [...this.getBaseOutputOptions(target, videoStream, audioStream), '-v verbose'],
       twoPass: this.eligibleForTwoPass(),
     } as TranscodeOptions;
@@ -30,7 +30,8 @@ class BaseConfig implements VideoCodecSWConfig {
     return options;
   }
 
-  getBaseInputOptions(): string[] {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  getBaseInputOptions(videoStream: VideoStreamInfo): string[] {
     return [];
   }
 
@@ -611,19 +612,26 @@ export class RKMPPConfig extends BaseHWConfig {
     return false;
   }
 
-  getBaseInputOptions() {
+  getBaseInputOptions(videoStream: VideoStreamInfo) {
     if (this.devices.length === 0) {
       throw new Error('No RKMPP device found');
+    }
+    if (this.shouldToneMap(videoStream)) {
+      // disable hardware decoding
+      return [];
     }
     return ['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga'];
   }
 
   getFilterOptions(videoStream: VideoStreamInfo) {
-    const options = this.shouldToneMap(videoStream) ? this.getToneMapping() : [];
-    if (this.shouldScale(videoStream)) {
-      options.push(`scale_rkrga=${this.getScaling(videoStream)}:format=nv12:afbc=1`);
+    if (this.shouldToneMap(videoStream)) {
+      // use software filter options
+      return super.getFilterOptions(videoStream);
     }
-    return options;
+    if (this.shouldScale(videoStream)) {
+      return [`scale_rkrga=${this.getScaling(videoStream)}:format=nv12:afbc=1`];
+    }
+    return [];
   }
 
   getPresetOptions() {
