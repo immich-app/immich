@@ -38,14 +38,7 @@ import {
 } from 'typeorm';
 import { AssetEntity, AssetJobStatusEntity, AssetType, ExifEntity, SmartInfoEntity } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';
-import {
-  Chunked,
-  ChunkedArray,
-  OptionalBetween,
-  paginate,
-  paginatedBuilder,
-  searchAssetBuilder,
-} from '../infra.utils';
+import { Chunked, ChunkedArray, OptionalBetween, paginate, paginatedBuilder, searchAssetBuilder } from '../infra.utils';
 import { Instrumentation } from '../instrumentation';
 
 const truncateMap: Record<TimeBucketSize, string> = {
