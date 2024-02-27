@@ -1799,7 +1799,7 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
-          inputOptions: [],
+          inputOptions: ['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga'],
           outputOptions: [
             `-c:v hevc_rkmpp`,
             '-c:a copy',
@@ -1810,9 +1810,9 @@ describe(MediaService.name, () => {
             '-g 256',
             '-tag:v hvc1',
             '-v verbose',
-            '-vf scale=-2:720,format=yuv420p',
+            '-vf scale_rkrga=-2:720:format=nv12:afbc=1',
             '-level 153',
-            '-rc_mode 3',
+            '-rc_mode AVBR',
             '-b:v 10000k',
           ],
           twoPass: false,
@@ -1834,7 +1834,7 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
-          inputOptions: [],
+          inputOptions: ['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga'],
           outputOptions: [
             `-c:v h264_rkmpp`,
             '-c:a copy',
@@ -1844,9 +1844,9 @@ describe(MediaService.name, () => {
             '-map 0:1',
             '-g 256',
             '-v verbose',
-            '-vf scale=-2:720,format=yuv420p',
+            '-vf scale_rkrga=-2:720:format=nv12:afbc=1',
             '-level 51',
-            '-rc_mode 2',
+            '-rc_mode CQP',
             '-qp_init 30',
           ],
           twoPass: false,

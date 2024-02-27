@@ -615,7 +615,15 @@ export class RKMPPConfig extends BaseHWConfig {
     if (this.devices.length === 0) {
       throw new Error('No RKMPP device found');
     }
-    return [];
+    return ['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga'];
+  }
+
+  getFilterOptions(videoStream: VideoStreamInfo) {
+    const options = this.shouldToneMap(videoStream) ? this.getToneMapping() : [];
+    if (this.shouldScale(videoStream)) {
+      options.push(`scale_rkrga=${this.getScaling(videoStream)}:format=nv12:afbc=1`);
+    }
+    return options;
   }
 
   getPresetOptions() {
@@ -638,10 +646,10 @@ export class RKMPPConfig extends BaseHWConfig {
     const bitrate = this.getMaxBitrateValue();
     if (bitrate > 0) {
       // -b:v specifies max bitrate, average bitrate is derived automatically...
-      return ['-rc_mode 3', `-b:v ${bitrate}${this.getBitrateUnit()}`];
+      return ['-rc_mode AVBR', `-b:v ${bitrate}${this.getBitrateUnit()}`];
     }
     // use CRF value as QP value
-    return ['-rc_mode 2', `-qp_init ${this.config.crf}`];
+    return ['-rc_mode CQP', `-qp_init ${this.config.crf}`];
   }
 
   getSupportedCodecs() {
