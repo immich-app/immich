@@ -1801,7 +1801,7 @@ describe(MediaService.name, () => {
         {
           inputOptions: [],
           outputOptions: [
-            `-c:v hevc_rkmpp_encoder`,
+            `-c:v hevc_rkmpp`,
             '-c:a copy',
             '-movflags faststart',
             '-fps_mode passthrough',
@@ -1810,17 +1810,12 @@ describe(MediaService.name, () => {
             '-g 256',
             '-tag:v hvc1',
             '-v verbose',
+            '-vf scale=-2:720,format=yuv420p',
             '-level 153',
             '-rc_mode 3',
-            '-quality_min 0',
-            '-quality_max 100',
             '-b:v 10000k',
-            '-width 1280',
-            '-height 720',
           ],
           twoPass: false,
-          ffmpegPath: 'ffmpeg_mpp',
-          ldLibraryPath: '/lib/aarch64-linux-gnu:/lib/ffmpeg-mpp',
         },
       );
     });
@@ -1841,7 +1836,7 @@ describe(MediaService.name, () => {
         {
           inputOptions: [],
           outputOptions: [
-            `-c:v h264_rkmpp_encoder`,
+            `-c:v h264_rkmpp`,
             '-c:a copy',
             '-movflags faststart',
             '-fps_mode passthrough',
@@ -1849,16 +1844,12 @@ describe(MediaService.name, () => {
             '-map 0:1',
             '-g 256',
             '-v verbose',
+            '-vf scale=-2:720,format=yuv420p',
             '-level 51',
             '-rc_mode 2',
-            '-quality_min 51',
-            '-quality_max 51',
-            '-width 1280',
-            '-height 720',
+            '-qp_init 30',
           ],
           twoPass: false,
-          ffmpegPath: 'ffmpeg_mpp',
-          ldLibraryPath: '/lib/aarch64-linux-gnu:/lib/ffmpeg-mpp',
         },
       );
     });
