@@ -412,8 +412,6 @@
           albumThumbnailAssetId: assetId,
         },
       });
-
-      notificationController.show({ type: NotificationType.Info, message: 'Updated album cover' });
     } catch (error) {
       handleError(error, 'Unable to update album cover');
     }
@@ -432,7 +430,6 @@
         },
       });
       currentAlbumName = album.albumName;
-      notificationController.show({ type: NotificationType.Info, message: 'New album name has been saved' });
     } catch (error) {
       handleError(error, 'Unable to update album name');
     }
@@ -449,10 +446,7 @@
           description,
         },
       });
-      notificationController.show({
-        type: NotificationType.Info,
-        message: 'Album description has been updated',
-      });
+
       album.description = description;
     } catch (error) {
       handleError(error, 'Error updating album description');
