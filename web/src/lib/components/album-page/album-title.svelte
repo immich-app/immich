@@ -1,13 +1,11 @@
 <script lang="ts">
   import { updateAlbumInfo } from '@immich/sdk';
-  import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import { handleError } from '$lib/utils/handle-error';
 
   export let id: string;
   export let albumName: string;
   export let isOwned: boolean;
 
-  let titleInput: HTMLInputElement;
   $: newAlbumName = albumName;
 
   const handleUpdateName = async () => {
@@ -30,7 +28,7 @@
 </script>
 
 <input
-  on:keydown={(e) => e.key === 'Enter' && titleInput.blur()}
+  on:keydown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
   on:blur={handleUpdateName}
   class="w-[99%] mb-2 border-b-2 border-transparent text-6xl text-immich-primary outline-none transition-all dark:text-immich-dark-primary {isOwned
     ? 'hover:border-gray-400'
@@ -38,7 +36,6 @@
   type="text"
   bind:value={newAlbumName}
   disabled={!isOwned}
-  bind:this={titleInput}
   title="Edit Title"
   placeholder="Add a title"
 />

@@ -74,6 +74,7 @@
   import type { PageData } from './$types';
   import AlbumTitle from '$lib/components/album-page/album-title.svelte';
   import AlbumDescription from '$lib/components/album-page/album-description.svelte';
+  import { handlePromiseError } from '$lib/utils';
 
   export let data: PageData;
 
@@ -217,8 +218,8 @@
   };
 
   $: if (album.sharedUsers.length > 0) {
-    getFavorite();
-    getNumberOfComments();
+    handlePromiseError(getFavorite());
+    handlePromiseError(getNumberOfComments());
   }
 
   const handleKeypress = (event: KeyboardEvent) => {
