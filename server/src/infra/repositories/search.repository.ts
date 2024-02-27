@@ -229,23 +229,15 @@ export class SearchRepository implements ISearchRepository {
     this.logger.log(`Updating database CLIP dimension size to ${dimSize}.`);
 
     await this.smartSearchRepository.manager.transaction(async (manager) => {
-      await manager.query(`DROP TABLE smart_search`);
-
-      await manager.query(`
-        CREATE TABLE smart_search (
-          "assetId"  uuid PRIMARY KEY REFERENCES assets(id) ON DELETE CASCADE,
-          embedding  vector(${dimSize}) NOT NULL )`);
-
-      await manager.query(`
-        CREATE INDEX clip_index ON smart_search
-          USING vectors (embedding vector_cos_ops) WITH (options = $$
-          [indexing.hnsw]
-          m = 16
-          ef_construction = 300
-          $$)`);
+      await manager.clear(SmartSearchEntity);
+      await manager.query(`ALTER TABLE smart_search ALTER COLUMN embedding SET DATA TYPE vector(${dimSize})`);
     });
 
     this.logger.log(`Successfully updated database CLIP dimension size from ${curDimSize} to ${dimSize}.`);
+  }
+
+  deleteAllSearchEmbeddings(): Promise<void> {
+    return this.smartSearchRepository.clear();
   }
 
   private async getDimSize(): Promise<number> {
