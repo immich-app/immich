@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
@@ -16,28 +16,31 @@ class AuthGuard extends AutoRouteGuard {
     resolver.next(true);
 
     try {
-      var res = await _apiService.authenticationApi.validateAccessToken();
+      // Look in the store for an access token
+      Store.get(StoreKey.accessToken);
+
+      // Validate the access token with the server
+      final res = await _apiService.authenticationApi.validateAccessToken();
       if (res == null || res.authStatus != true) {
         // If the access token is invalid, take user back to login
-        _log.fine("User token is invalid. Redirecting to login");
+        _log.fine('User token is invalid. Redirecting to login');
         router.replaceAll([const LoginRoute()]);
       }
+    } on StoreKeyNotFoundException catch (_) {
+      // If there is no access token, take us to the login page
+      _log.warning('No access token in the store.');
+      router.replaceAll([const LoginRoute()]);
+      return;
     } on ApiException catch (e) {
-      if (e.code == HttpStatus.badRequest &&
-          e.innerException is SocketException) {
-        // offline?
-        _log.fine(
-          "Unable to validate user token. User may be offline and offline browsing is allowed.",
-        );
-      } else {
-        debugPrint("Error [onNavigation] ${e.toString()}");
+      // On an unauthorized request, take us to the login page
+      if (e.code == HttpStatus.unauthorized) {
+        _log.warning("Unauthorized access token.");
         router.replaceAll([const LoginRoute()]);
         return;
       }
     } catch (e) {
-      debugPrint("Error [onNavigation] ${e.toString()}");
-      router.replaceAll([const LoginRoute()]);
-      return;
+      // Otherwise, this is not fatal, but we still log the warning
+      _log.warning('Error validating access token from server: $e');
     }
   }
 }
