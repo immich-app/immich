@@ -39,4 +39,5 @@ export default async () => {
   process.env.NODE_ENV = 'development';
   process.env.IMMICH_CONFIG_FILE = path.normalize(`${__dirname}/immich-e2e-config.json`);
   process.env.TZ = 'Z';
+  process.env.OTEL_SDK_DISABLED = 'false';
 };
