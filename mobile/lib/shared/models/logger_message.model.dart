@@ -9,6 +9,7 @@ part 'logger_message.model.g.dart';
 class LoggerMessage {
   Id id = Isar.autoIncrement;
   String message;
+  String? details;
   @Enumerated(EnumType.ordinal)
   LogLevel level = LogLevel.INFO;
   DateTime createdAt;
@@ -17,6 +18,7 @@ class LoggerMessage {
 
   LoggerMessage({
     required this.message,
+    required this.details,
     required this.level,
     required this.createdAt,
     required this.context1,

@@ -12,7 +12,13 @@ import {
   SmartSearchOptions,
 } from '@app/domain';
 import { getCLIPModelInfo } from '@app/domain/smart-info/smart-info.constant';
-import { AssetEntity, AssetFaceEntity, SmartInfoEntity, SmartSearchEntity } from '@app/infra/entities';
+import {
+  AssetEntity,
+  AssetFaceEntity,
+  GeodataPlacesEntity,
+  SmartInfoEntity,
+  SmartSearchEntity,
+} from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -31,6 +37,7 @@ export class SearchRepository implements ISearchRepository {
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
     @InjectRepository(AssetFaceEntity) private assetFaceRepository: Repository<AssetFaceEntity>,
     @InjectRepository(SmartSearchEntity) private smartSearchRepository: Repository<SmartSearchEntity>,
+    @InjectRepository(GeodataPlacesEntity) private readonly geodataPlacesRepository: Repository<GeodataPlacesEntity>,
   ) {
     this.faceColumns = this.assetFaceRepository.manager.connection
       .getMetadata(AssetFaceEntity)
@@ -172,6 +179,27 @@ export class SearchRepository implements ISearchRepository {
     }));
   }
 
+  @GenerateSql({ params: [DummyValue.STRING] })
+  async searchPlaces(placeName: string): Promise<GeodataPlacesEntity[]> {
+    return await this.geodataPlacesRepository
+      .createQueryBuilder('geoplaces')
+      .where(`f_unaccent(name) %>> f_unaccent(:placeName)`)
+      .orWhere(`f_unaccent("admin2Name") %>> f_unaccent(:placeName)`)
+      .orWhere(`f_unaccent("admin1Name") %>> f_unaccent(:placeName)`)
+      .orWhere(`f_unaccent("alternateNames") %>> f_unaccent(:placeName)`)
+      .orderBy(
+        `
+        COALESCE(f_unaccent(name) <->>> f_unaccent(:placeName), 0) +
+        COALESCE(f_unaccent("admin2Name") <->>> f_unaccent(:placeName), 0) +
+        COALESCE(f_unaccent("admin1Name") <->>> f_unaccent(:placeName), 0) +
+        COALESCE(f_unaccent("alternateNames") <->>> f_unaccent(:placeName), 0)
+        `,
+      )
+      .setParameters({ placeName })
+      .limit(20)
+      .getMany();
+  }
+
   async upsert(smartInfo: Partial<SmartInfoEntity>, embedding?: Embedding): Promise<void> {
     await this.repository.upsert(smartInfo, { conflictPaths: ['assetId'] });
     if (!smartInfo.assetId || !embedding) {
@@ -201,23 +229,15 @@ export class SearchRepository implements ISearchRepository {
     this.logger.log(`Updating database CLIP dimension size to ${dimSize}.`);
 
     await this.smartSearchRepository.manager.transaction(async (manager) => {
-      await manager.query(`DROP TABLE smart_search`);
-
-      await manager.query(`
-        CREATE TABLE smart_search (
-          "assetId"  uuid PRIMARY KEY REFERENCES assets(id) ON DELETE CASCADE,
-          embedding  vector(${dimSize}) NOT NULL )`);
-
-      await manager.query(`
-        CREATE INDEX clip_index ON smart_search
-          USING vectors (embedding vector_cos_ops) WITH (options = $$
-          [indexing.hnsw]
-          m = 16
-          ef_construction = 300
-          $$)`);
+      await manager.clear(SmartSearchEntity);
+      await manager.query(`ALTER TABLE smart_search ALTER COLUMN embedding SET DATA TYPE vector(${dimSize})`);
     });
 
     this.logger.log(`Successfully updated database CLIP dimension size from ${curDimSize} to ${dimSize}.`);
+  }
+
+  deleteAllSearchEmbeddings(): Promise<void> {
+    return this.smartSearchRepository.clear();
   }
 
   private async getDimSize(): Promise<number> {

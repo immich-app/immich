@@ -1,6 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import Button from '../elements/buttons/button.svelte';
+  import PasswordField from '../shared-components/password-field.svelte';
   import { updateUser, type UserResponseDto } from '@immich/sdk';
 
   export let user: UserResponseDto;
@@ -46,28 +47,12 @@
 <form on:submit|preventDefault={changePassword} method="post" class="mt-5 flex flex-col gap-5">
   <div class="flex flex-col gap-2">
     <label class="immich-form-label" for="password">New Password</label>
-    <input
-      class="immich-form-input"
-      id="password"
-      name="password"
-      type="password"
-      autocomplete="new-password"
-      required
-      bind:value={password}
-    />
+    <PasswordField id="password" bind:password autocomplete="new-password" />
   </div>
 
   <div class="flex flex-col gap-2">
     <label class="immich-form-label" for="confirmPassword">Confirm Password</label>
-    <input
-      class="immich-form-input"
-      id="confirmPassword"
-      name="password"
-      type="password"
-      autocomplete="current-password"
-      required
-      bind:value={passwordConfirm}
-    />
+    <PasswordField id="confirmPassword" bind:password={passwordConfirm} autocomplete="new-password" />
   </div>
 
   {#if errorMessage}

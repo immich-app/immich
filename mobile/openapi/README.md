@@ -166,6 +166,7 @@ Class | Method | HTTP request | Description
 *SearchApi* | [**search**](doc//SearchApi.md#search) | **GET** /search | 
 *SearchApi* | [**searchMetadata**](doc//SearchApi.md#searchmetadata) | **POST** /search/metadata | 
 *SearchApi* | [**searchPerson**](doc//SearchApi.md#searchperson) | **GET** /search/person | 
+*SearchApi* | [**searchPlaces**](doc//SearchApi.md#searchplaces) | **GET** /search/places | 
 *SearchApi* | [**searchSmart**](doc//SearchApi.md#searchsmart) | **POST** /search/smart | 
 *ServerInfoApi* | [**getServerConfig**](doc//ServerInfoApi.md#getserverconfig) | **GET** /server-info/config | 
 *ServerInfoApi* | [**getServerFeatures**](doc//ServerInfoApi.md#getserverfeatures) | **GET** /server-info/features | 
@@ -306,6 +307,7 @@ Class | Method | HTTP request | Description
  - [PersonStatisticsResponseDto](doc//PersonStatisticsResponseDto.md)
  - [PersonUpdateDto](doc//PersonUpdateDto.md)
  - [PersonWithFacesResponseDto](doc//PersonWithFacesResponseDto.md)
+ - [PlacesResponseDto](doc//PlacesResponseDto.md)
  - [QueueStatusDto](doc//QueueStatusDto.md)
  - [ReactionLevel](doc//ReactionLevel.md)
  - [ReactionType](doc//ReactionType.md)

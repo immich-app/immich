@@ -1,4 +1,5 @@
 import json
+import os
 from io import BytesIO
 from pathlib import Path
 from random import randint
@@ -44,10 +45,22 @@ class TestBase:
         assert encoder.providers == self.CUDA_EP
 
     @pytest.mark.providers(OV_EP)
-    def test_sets_openvino_provider_if_available(self, providers: list[str]) -> None:
+    def test_sets_openvino_provider_if_available(self, providers: list[str], mocker: MockerFixture) -> None:
+        mocked = mocker.patch("app.models.base.ort.capi._pybind_state")
+        mocked.get_available_openvino_device_ids.return_value = ["GPU.0", "CPU"]
+
         encoder = OpenCLIPEncoder("ViT-B-32__openai")
 
         assert encoder.providers == self.OV_EP
+
+    @pytest.mark.providers(OV_EP)
+    def test_avoids_openvino_if_gpu_not_available(self, providers: list[str], mocker: MockerFixture) -> None:
+        mocked = mocker.patch("app.models.base.ort.capi._pybind_state")
+        mocked.get_available_openvino_device_ids.return_value = ["CPU"]
+
+        encoder = OpenCLIPEncoder("ViT-B-32__openai")
+
+        assert encoder.providers == self.CPU_EP
 
     @pytest.mark.providers(CUDA_EP_OUT_OF_ORDER)
     def test_sets_providers_in_correct_order(self, providers: list[str]) -> None:
@@ -67,22 +80,14 @@ class TestBase:
 
         assert encoder.providers == providers
 
-    def test_sets_default_provider_options(self) -> None:
-        encoder = OpenCLIPEncoder("ViT-B-32__openai", providers=["OpenVINOExecutionProvider", "CPUExecutionProvider"])
-
-        assert encoder.provider_options == [
-            {},
-            {"arena_extend_strategy": "kSameAsRequested"},
-        ]
-
-    def test_sets_openvino_device_id_if_possible(self, mocker: MockerFixture) -> None:
+    def test_sets_default_provider_options(self, mocker: MockerFixture) -> None:
         mocked = mocker.patch("app.models.base.ort.capi._pybind_state")
         mocked.get_available_openvino_device_ids.return_value = ["GPU.0", "CPU"]
 
         encoder = OpenCLIPEncoder("ViT-B-32__openai", providers=["OpenVINOExecutionProvider", "CPUExecutionProvider"])
 
         assert encoder.provider_options == [
-            {"device_id": "GPU.0"},
+            {"device_type": "GPU_FP32"},
             {"arena_extend_strategy": "kSameAsRequested"},
         ]
 
@@ -237,12 +242,12 @@ class TestBase:
         mock_model_path.is_file.return_value = True
         mock_model_path.suffix = ".armnn"
         mock_model_path.with_suffix.return_value = mock_model_path
-        mock_session = mocker.patch("app.models.base.AnnSession")
+        mock_ann = mocker.patch("app.models.base.AnnSession")
 
         encoder = OpenCLIPEncoder("ViT-B-32__openai")
         encoder._make_session(mock_model_path)
 
-        mock_session.assert_called_once()
+        mock_ann.assert_called_once()
 
     def test_make_session_return_ort_if_available_and_ann_is_not(self, mocker: MockerFixture) -> None:
         mock_armnn_path = mocker.Mock()
@@ -256,6 +261,7 @@ class TestBase:
 
         mock_ann = mocker.patch("app.models.base.AnnSession")
         mock_ort = mocker.patch("app.models.base.ort.InferenceSession")
+        mocker.patch("app.models.base.os.chdir")
 
         encoder = OpenCLIPEncoder("ViT-B-32__openai")
         encoder._make_session(mock_armnn_path)
@@ -277,6 +283,26 @@ class TestBase:
 
         mock_ann.assert_not_called()
         mock_ort.assert_not_called()
+
+    def test_make_session_changes_cwd(self, mocker: MockerFixture) -> None:
+        mock_model_path = mocker.Mock()
+        mock_model_path.is_file.return_value = True
+        mock_model_path.suffix = ".onnx"
+        mock_model_path.parent = "model_parent"
+        mock_model_path.with_suffix.return_value = mock_model_path
+        mock_ort = mocker.patch("app.models.base.ort.InferenceSession")
+        mock_chdir = mocker.patch("app.models.base.os.chdir")
+
+        encoder = OpenCLIPEncoder("ViT-B-32__openai")
+        encoder._make_session(mock_model_path)
+
+        mock_chdir.assert_has_calls(
+            [
+                mock.call(mock_model_path.parent),
+                mock.call(os.getcwd()),
+            ]
+        )
+        mock_ort.assert_called_once()
 
     def test_download(self, mocker: MockerFixture) -> None:
         mock_snapshot_download = mocker.patch("app.models.base.snapshot_download")

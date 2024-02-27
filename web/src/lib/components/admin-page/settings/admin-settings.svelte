@@ -54,7 +54,7 @@
     });
   };
 
-  const resetToDefault = async (configKeys: Array<keyof SystemConfigDto>) => {
+  const resetToDefault = (configKeys: Array<keyof SystemConfigDto>) => {
     for (const key of configKeys) {
       config = { ...config, [key]: defaultConfig[key] };
     }

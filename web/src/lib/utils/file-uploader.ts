@@ -29,7 +29,7 @@ export const openFileUploadDialog = async (albumId?: string | undefined) => {
       fileSelector.type = 'file';
       fileSelector.multiple = true;
       fileSelector.accept = extensions.join(',');
-      fileSelector.addEventListener('change', async (e: Event) => {
+      fileSelector.addEventListener('change', (e: Event) => {
         const target = e.target as HTMLInputElement;
         if (!target.files) {
           return;
@@ -119,7 +119,7 @@ async function fileUploader(asset: File, albumId: string | undefined = undefined
       }
     })
     .catch(async (error) => {
-      await handleError(error, 'Unable to upload file');
+      handleError(error, 'Unable to upload file');
       const reason = (await getServerErrorMessage(error)) || error;
       uploadAssetsStore.updateAsset(deviceAssetId, { state: UploadState.ERROR, error: reason });
       return undefined;

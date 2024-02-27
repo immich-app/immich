@@ -196,7 +196,7 @@
   const handleCreateAlbum = async () => {
     const newAlbum = await createAlbum();
     if (newAlbum) {
-      goto(`${AppRoute.ALBUMS}/${newAlbum.id}`);
+      await goto(`${AppRoute.ALBUMS}/${newAlbum.id}`);
     }
   };
 
@@ -204,8 +204,8 @@
     return new Date(dateString).toLocaleDateString($locale, dateFormats.album);
   };
 
-  onMount(() => {
-    removeAlbumsIfEmpty();
+  onMount(async () => {
+    await removeAlbumsIfEmpty();
   });
 
   const removeAlbumsIfEmpty = async () => {

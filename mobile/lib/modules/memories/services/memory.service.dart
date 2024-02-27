@@ -47,7 +47,7 @@ class MemoryService {
 
       return memories.isNotEmpty ? memories : null;
     } catch (error, stack) {
-      log.severe("Cannot get memories ${error.toString()}", error, stack);
+      log.severe("Cannot get memories", error, stack);
       return null;
     }
   }

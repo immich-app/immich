@@ -140,7 +140,7 @@ class SyncService {
     try {
       await _db.writeTxn(() => a.put(_db));
     } on IsarError catch (e) {
-      _log.severe("Failed to put new asset into db: $e");
+      _log.severe("Failed to put new asset into db", e);
       return false;
     }
     return true;
@@ -173,7 +173,7 @@ class SyncService {
       }
       return false;
     } on IsarError catch (e) {
-      _log.severe("Failed to sync remote assets to db: $e");
+      _log.severe("Failed to sync remote assets to db", e);
     }
     return null;
   }
@@ -232,7 +232,7 @@ class SyncService {
       await _db.writeTxn(() => _db.assets.deleteAll(idsToDelete));
       await upsertAssetsWithExif(toAdd + toUpdate);
     } on IsarError catch (e) {
-      _log.severe("Failed to sync remote assets to db: $e");
+      _log.severe("Failed to sync remote assets to db", e);
     }
     await _updateUserAssetsETag(user, now);
     return true;
@@ -364,7 +364,7 @@ class SyncService {
       });
       _log.info("Synced changes of remote album ${album.name} to DB");
     } on IsarError catch (e) {
-      _log.severe("Failed to sync remote album to database $e");
+      _log.severe("Failed to sync remote album to database", e);
     }
 
     if (album.shared || dto.shared) {
@@ -441,7 +441,7 @@ class SyncService {
       assert(ok);
       _log.info("Removed local album $album from DB");
     } catch (e) {
-      _log.severe("Failed to remove local album $album from DB");
+      _log.severe("Failed to remove local album $album from DB", e);
     }
   }
 
@@ -577,7 +577,7 @@ class SyncService {
       });
       _log.info("Synced changes of local album ${ape.name} to DB");
     } on IsarError catch (e) {
-      _log.severe("Failed to update synced album ${ape.name} in DB: $e");
+      _log.severe("Failed to update synced album ${ape.name} in DB", e);
     }
 
     return true;
@@ -623,7 +623,7 @@ class SyncService {
       });
       _log.info("Fast synced local album ${ape.name} to DB");
     } on IsarError catch (e) {
-      _log.severe("Failed to fast sync local album ${ape.name} to DB: $e");
+      _log.severe("Failed to fast sync local album ${ape.name} to DB", e);
       return false;
     }
 
@@ -656,7 +656,7 @@ class SyncService {
       await _db.writeTxn(() => _db.albums.store(a));
       _log.info("Added a new local album to DB: ${ape.name}");
     } on IsarError catch (e) {
-      _log.severe("Failed to add new local album ${ape.name} to DB: $e");
+      _log.severe("Failed to add new local album ${ape.name} to DB", e);
     }
   }
 
@@ -706,9 +706,7 @@ class SyncService {
       });
       _log.info("Upserted ${assets.length} assets into the DB");
     } on IsarError catch (e) {
-      _log.severe(
-        "Failed to upsert ${assets.length} assets into the DB: ${e.toString()}",
-      );
+      _log.severe("Failed to upsert ${assets.length} assets into the DB", e);
       // give details on the errors
       assets.sort(Asset.compareByOwnerChecksum);
       final inDb = await _db.assets.getAllByOwnerIdChecksum(
@@ -776,7 +774,7 @@ class SyncService {
       });
       return true;
     } catch (e) {
-      _log.severe("Failed to remove all local albums and assets: $e");
+      _log.severe("Failed to remove all local albums and assets", e);
       return false;
     }
   }

@@ -24,10 +24,11 @@
   import { emptyTrash, restoreTrash } from '@immich/sdk';
   import { mdiDeleteOutline, mdiHistory } from '@mdi/js';
   import type { PageData } from './$types';
+  import { handlePromiseError } from '$lib/utils';
 
   export let data: PageData;
 
-  $: $featureFlags.trash || goto(AppRoute.PHOTOS);
+  $featureFlags.trash || handlePromiseError(goto(AppRoute.PHOTOS));
 
   const assetStore = new AssetStore({ isTrashed: true });
   const assetInteractionStore = createAssetInteractionStore();
