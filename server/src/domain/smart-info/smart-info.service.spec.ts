@@ -71,6 +71,7 @@ describe(SmartInfoService.name, () => {
 
       expect(jobMock.queueAll).toHaveBeenCalledWith([{ name: JobName.SMART_SEARCH, data: { id: assetStub.image.id } }]);
       expect(assetMock.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.SMART_SEARCH);
+      expect(searchMock.deleteAllSearchEmbeddings).not.toHaveBeenCalled();
     });
 
     it('should queue all the assets', async () => {
@@ -83,6 +84,7 @@ describe(SmartInfoService.name, () => {
 
       expect(jobMock.queueAll).toHaveBeenCalledWith([{ name: JobName.SMART_SEARCH, data: { id: assetStub.image.id } }]);
       expect(assetMock.getAll).toHaveBeenCalled();
+      expect(searchMock.deleteAllSearchEmbeddings).toHaveBeenCalled();
     });
   });
 

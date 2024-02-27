@@ -6,6 +6,7 @@ import 'package:immich_mobile/modules/asset_viewer/views/video_viewer_page.dart'
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
+import 'package:immich_mobile/shared/ui/immich_thumbnail.dart';
 
 class MemoryCard extends StatelessWidget {
   final Asset asset;
@@ -42,9 +43,8 @@ class MemoryCard extends StatelessWidget {
             child: Container(
               decoration: BoxDecoration(
                 image: DecorationImage(
-                  image: ImmichImage.imageProvider(
+                  image: ImmichThumbnail.imageProvider(
                     asset: asset,
-                    isThumbnail: true,
                   ),
                   fit: BoxFit.cover,
                 ),

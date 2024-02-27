@@ -15,6 +15,7 @@ test.describe('Shared Links', () => {
   let asset: AssetResponseDto;
   let album: AlbumResponseDto;
   let sharedLink: SharedLinkResponseDto;
+  let sharedLinkPassword: SharedLinkResponseDto;
 
   test.beforeAll(async () => {
     apiUtils.setup();
@@ -29,17 +30,16 @@ test.describe('Shared Links', () => {
         },
       },
       { headers: asBearerAuth(admin.accessToken) }
-      // { headers: asBearerAuth(admin.accessToken)},
     );
-    sharedLink = await createSharedLink(
-      {
-        sharedLinkCreateDto: {
-          type: SharedLinkType.Album,
-          albumId: album.id,
-        },
-      },
-      { headers: asBearerAuth(admin.accessToken) }
-    );
+    sharedLink = await apiUtils.createSharedLink(admin.accessToken, {
+      type: SharedLinkType.Album,
+      albumId: album.id,
+    });
+    sharedLinkPassword = await apiUtils.createSharedLink(admin.accessToken, {
+      type: SharedLinkType.Album,
+      albumId: album.id,
+      password: 'test-password',
+    });
   });
 
   test.afterAll(async () => {
@@ -54,5 +54,17 @@ test.describe('Shared Links', () => {
     await page.getByRole('checkbox').click();
     await page.getByRole('button', { name: 'Download' }).click();
     await page.getByText('DOWNLOADING').waitFor();
+  });
+
+  test('enter password for a shared link', async ({ page }) => {
+    await page.goto(`/share/${sharedLinkPassword.key}`);
+    await page.getByPlaceholder('Password').fill('test-password');
+    await page.getByRole('button', { name: 'Submit' }).click();
+    await page.getByRole('heading', { name: 'Test Album' }).waitFor();
+  });
+
+  test('show error for invalid shared link', async ({ page }) => {
+    await page.goto('/share/invalid');
+    await page.getByRole('heading', { name: 'Invalid share key' }).waitFor();
   });
 });

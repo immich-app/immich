@@ -6,13 +6,15 @@
 </script>
 
 <script lang="ts">
+  import DateInput from '$lib/components/elements/date-input.svelte';
+
   export let filters: SearchDateFilter;
 </script>
 
 <div id="date-range-selection" class="grid grid-cols-[repeat(auto-fit,minmax(10rem,1fr))] gap-5">
   <label class="immich-form-label" for="start-date">
     <span>START DATE</span>
-    <input
+    <DateInput
       class="immich-form-input w-full mt-1 hover:cursor-pointer"
       type="date"
       id="start-date"
@@ -24,7 +26,7 @@
 
   <label class="immich-form-label" for="end-date">
     <span>END DATE</span>
-    <input
+    <DateInput
       class="immich-form-input w-full mt-1 hover:cursor-pointer"
       type="date"
       id="end-date"
