@@ -118,20 +118,20 @@
 
     if (numberOfChanges > 0) {
       try {
-        for (const peopleWithFace of peopleWithFaces) {
-          const personId = selectedPersonToReassign[peopleWithFace.id]?.id;
+        for (const personWithFace of peopleWithFaces) {
+          const personId = selectedPersonToReassign[personWithFace.id]?.id;
 
           if (personId) {
             await reassignFacesById({
               id: personId,
-              faceDto: { id: peopleWithFace.id },
+              faceDto: { id: personWithFace.id },
             });
-          } else if (selectedPersonToCreate[peopleWithFace.id]) {
+          } else if (selectedPersonToCreate[personWithFace.id]) {
             const data = await createPerson();
             peopleToCreate.push(data.id);
             await reassignFacesById({
               id: data.id,
-              faceDto: { id: peopleWithFace.id },
+              faceDto: { id: personWithFace.id },
             });
           }
         }
