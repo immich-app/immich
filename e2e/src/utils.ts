@@ -19,9 +19,10 @@ import {
   updatePerson,
 } from '@immich/sdk';
 import { BrowserContext } from '@playwright/test';
-import { exec, spawn } from 'child_process';
+import { exec, spawn } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import { access } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
 import pg from 'pg';
@@ -40,6 +41,7 @@ const directoryExists = (directory: string) =>
 
 // TODO move test assets into e2e/assets
 export const testAssetDir = path.resolve(`./../server/test/assets/`);
+export const tempDir = tmpdir();
 
 const serverContainerName = 'immich-e2e-server';
 const mediaDir = '/usr/src/app/upload';
