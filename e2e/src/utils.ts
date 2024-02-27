@@ -1,5 +1,5 @@
 import {
-  AssetResponseDto,
+  AssetFileUploadResponseDto,
   CreateAlbumDto,
   CreateAssetDto,
   CreateUserDto,
@@ -245,24 +245,38 @@ export const apiUtils = {
     ),
   createAsset: async (
     accessToken: string,
-    dto?: Omit<CreateAssetDto, 'assetData'>,
+    dto?: Partial<Omit<CreateAssetDto, 'assetData'>>,
+    data?: {
+      bytes?: Buffer;
+      filename?: string;
+    },
   ) => {
-    dto = dto || {
+    const _dto = {
       deviceAssetId: 'test-1',
       deviceId: 'test',
       fileCreatedAt: new Date().toISOString(),
       fileModifiedAt: new Date().toISOString(),
+      ...(dto || {}),
     };
-    const { body } = await request(app)
+
+    const _assetData = {
+      bytes: randomBytes(32),
+      filename: 'example.jpg',
+      ...(data || {}),
+    };
+
+    const builder = request(app)
       .post(`/asset/upload`)
-      .field('deviceAssetId', dto.deviceAssetId)
-      .field('deviceId', dto.deviceId)
-      .field('fileCreatedAt', dto.fileCreatedAt)
-      .field('fileModifiedAt', dto.fileModifiedAt)
-      .attach('assetData', randomBytes(32), 'example.jpg')
+      .attach('assetData', _assetData.bytes, _assetData.filename)
       .set('Authorization', `Bearer ${accessToken}`);
 
-    return body as AssetResponseDto;
+    for (const [key, value] of Object.entries(_dto)) {
+      builder.field(key, String(value));
+    }
+
+    const { body } = await builder;
+
+    return body as AssetFileUploadResponseDto;
   },
   getAssetInfo: (accessToken: string, id: string) =>
     getAssetInfo({ id }, { headers: asBearerAuth(accessToken) }),
@@ -271,12 +285,17 @@ export const apiUtils = {
       { assetBulkDeleteDto: { ids } },
       { headers: asBearerAuth(accessToken) },
     ),
-  createPerson: async (accessToken: string, dto: PersonUpdateDto) => {
+  createPerson: async (accessToken: string, dto?: PersonUpdateDto) => {
     // TODO fix createPerson to accept a body
-    const { id } = await createPerson({ headers: asBearerAuth(accessToken) });
-    await dbUtils.setPersonThumbnail(id);
+    let person = await createPerson({ headers: asBearerAuth(accessToken) });
+    await dbUtils.setPersonThumbnail(person.id);
+
+    if (!dto) {
+      return person;
+    }
+
     return updatePerson(
-      { id, personUpdateDto: dto },
+      { id: person.id, personUpdateDto: dto },
       { headers: asBearerAuth(accessToken) },
     );
   },
