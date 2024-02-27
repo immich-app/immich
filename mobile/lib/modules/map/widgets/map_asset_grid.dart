@@ -147,7 +147,7 @@ class MapAssetGrid extends HookConsumerWidget {
                         },
                         error: (error, stackTrace) {
                           log.warning(
-                            "Cannot get assets in the current map bounds $error",
+                            "Cannot get assets in the current map bounds",
                             error,
                             stackTrace,
                           );

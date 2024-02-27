@@ -3,6 +3,7 @@
   import { DateTime } from 'luxon';
   import ConfirmDialogue from './confirm-dialogue.svelte';
   import Combobox from './combobox.svelte';
+  import DateInput from '../elements/date-input.svelte';
 
   export let initialDate: DateTime = DateTime.now();
 
@@ -74,7 +75,7 @@
       <div class="mt-2" />
       <div class="flex flex-col">
         <label for="datetime">Date and Time</label>
-        <input
+        <DateInput
           class="immich-form-input text-sm my-4 w-full"
           id="datetime"
           type="datetime-local"

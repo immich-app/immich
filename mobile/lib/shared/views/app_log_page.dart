@@ -69,9 +69,9 @@ class AppLogPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          "Logs - ${logMessages.value.length}",
-          style: const TextStyle(
+        title: const Text(
+          "Logs",
+          style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 16.0,
           ),
@@ -135,29 +135,15 @@ class AppLogPage extends HookConsumerWidget {
             dense: true,
             tileColor: getTileColor(logMessage.level),
             minLeadingWidth: 10,
-            title: Text.rich(
-              TextSpan(
-                children: [
-                  TextSpan(
-                    text: "#$index ",
-                    style: TextStyle(
-                      color: isDarkTheme ? Colors.white70 : Colors.grey[600],
-                      fontSize: 14.0,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  TextSpan(
-                    text: truncateLogMessage(logMessage.message, 4),
-                    style: const TextStyle(
-                      fontSize: 14.0,
-                    ),
-                  ),
-                ],
+            title: Text(
+              truncateLogMessage(logMessage.message, 4),
+              style: const TextStyle(
+                fontSize: 14.0,
+                fontFamily: "Inconsolata",
               ),
-              style: const TextStyle(fontSize: 14.0, fontFamily: "Inconsolata"),
             ),
             subtitle: Text(
-              "[${logMessage.context1}] Logged on ${DateFormat("HH:mm:ss.SSS").format(logMessage.createdAt)}",
+              "at ${DateFormat("HH:mm:ss.SSS").format(logMessage.createdAt)} in ${logMessage.context1}",
               style: TextStyle(
                 fontSize: 12.0,
                 color: Colors.grey[600],
