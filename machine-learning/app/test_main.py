@@ -45,10 +45,22 @@ class TestBase:
         assert encoder.providers == self.CUDA_EP
 
     @pytest.mark.providers(OV_EP)
-    def test_sets_openvino_provider_if_available(self, providers: list[str]) -> None:
+    def test_sets_openvino_provider_if_available(self, providers: list[str], mocker: MockerFixture) -> None:
+        mocked = mocker.patch("app.models.base.ort.capi._pybind_state")
+        mocked.get_available_openvino_device_ids.return_value = ["GPU.0", "CPU"]
+
         encoder = OpenCLIPEncoder("ViT-B-32__openai")
 
         assert encoder.providers == self.OV_EP
+
+    @pytest.mark.providers(OV_EP)
+    def test_avoids_openvino_if_gpu_not_available(self, providers: list[str], mocker: MockerFixture) -> None:
+        mocked = mocker.patch("app.models.base.ort.capi._pybind_state")
+        mocked.get_available_openvino_device_ids.return_value = ["CPU"]
+
+        encoder = OpenCLIPEncoder("ViT-B-32__openai")
+
+        assert encoder.providers == self.CPU_EP
 
     @pytest.mark.providers(CUDA_EP_OUT_OF_ORDER)
     def test_sets_providers_in_correct_order(self, providers: list[str]) -> None:
@@ -68,22 +80,14 @@ class TestBase:
 
         assert encoder.providers == providers
 
-    def test_sets_default_provider_options(self) -> None:
-        encoder = OpenCLIPEncoder("ViT-B-32__openai", providers=["OpenVINOExecutionProvider", "CPUExecutionProvider"])
-
-        assert encoder.provider_options == [
-            {},
-            {"arena_extend_strategy": "kSameAsRequested"},
-        ]
-
-    def test_sets_openvino_device_id_if_possible(self, mocker: MockerFixture) -> None:
+    def test_sets_default_provider_options(self, mocker: MockerFixture) -> None:
         mocked = mocker.patch("app.models.base.ort.capi._pybind_state")
         mocked.get_available_openvino_device_ids.return_value = ["GPU.0", "CPU"]
 
         encoder = OpenCLIPEncoder("ViT-B-32__openai", providers=["OpenVINOExecutionProvider", "CPUExecutionProvider"])
 
         assert encoder.provider_options == [
-            {"device_id": "GPU.0"},
+            {"device_type": "GPU_FP32"},
             {"arena_extend_strategy": "kSameAsRequested"},
         ]
 
