@@ -10,7 +10,7 @@
   import OAuthSettings from '$lib/components/admin-page/settings/oauth/oauth-settings.svelte';
   import PasswordLoginSettings from '$lib/components/admin-page/settings/password-login/password-login-settings.svelte';
   import ServerSettings from '$lib/components/admin-page/settings/server/server-settings.svelte';
-  import SettingAccordion from '$lib/components/admin-page/settings/setting-accordion.svelte';
+  import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
   import StorageTemplateSettings from '$lib/components/admin-page/settings/storage-template/storage-template-settings.svelte';
   import ThemeSettings from '$lib/components/admin-page/settings/theme/theme-settings.svelte';
   import ThumbnailSettings from '$lib/components/admin-page/settings/thumbnail/thumbnail-settings.svelte';

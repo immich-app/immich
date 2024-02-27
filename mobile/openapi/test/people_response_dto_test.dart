@@ -16,6 +16,11 @@ void main() {
   // final instance = PeopleResponseDto();
 
   group('test PeopleResponseDto', () {
+    // int hidden
+    test('to test the property `hidden`', () async {
+      // TODO
+    });
+
     // List<PersonResponseDto> people (default value: const [])
     test('to test the property `people`', () async {
       // TODO

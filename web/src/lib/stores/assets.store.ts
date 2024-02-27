@@ -172,15 +172,17 @@ export class AssetStore {
     this.emit(false);
 
     let height = 0;
+    const loaders = [];
     for (const bucket of this.buckets) {
       if (height < viewport.height) {
         height += bucket.bucketHeight;
-        this.loadBucket(bucket.bucketDate, BucketPosition.Visible);
+        loaders.push(this.loadBucket(bucket.bucketDate, BucketPosition.Visible));
         continue;
       }
 
       break;
     }
+    await Promise.all(loaders);
   }
 
   async loadBucket(bucketDate: string, position: BucketPosition): Promise<void> {
@@ -414,6 +416,10 @@ export class AssetStore {
     const nextBucket = this.buckets[bucketIndex + 1];
     await this.loadBucket(nextBucket.bucketDate, BucketPosition.Unknown);
     return nextBucket.assets[0]?.id || null;
+  }
+
+  triggerUpdate() {
+    this.emit(false);
   }
 
   private emit(recalculate: boolean) {

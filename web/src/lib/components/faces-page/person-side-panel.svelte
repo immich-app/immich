@@ -3,7 +3,7 @@
   import { timeBeforeShowLoadingSpinner } from '$lib/constants';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { websocketEvents } from '$lib/stores/websocket';
-  import { getPeopleThumbnailUrl } from '$lib/utils';
+  import { getPeopleThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { getPersonNameWithHiddenValue } from '$lib/utils/person';
   import {
@@ -46,8 +46,8 @@
   let allPeople: PersonResponseDto[] = [];
 
   // timers
-  let loaderLoadingDoneTimeout: NodeJS.Timeout;
-  let automaticRefreshTimeout: NodeJS.Timeout;
+  let loaderLoadingDoneTimeout: ReturnType<typeof setTimeout>;
+  let automaticRefreshTimeout: ReturnType<typeof setTimeout>;
 
   const dispatch = createEventDispatcher<{
     close: void;
@@ -85,7 +85,7 @@
   };
 
   onMount(() => {
-    loadPeople();
+    handlePromiseError(loadPeople());
     return websocketEvents.on('on_person_thumbnail', onPersonThumbnail);
   });
 
@@ -164,7 +164,7 @@
     }
   };
 
-  const handlePersonPicker = async (index: number) => {
+  const handlePersonPicker = (index: number) => {
     editedPersonIndex = index;
     showSeletecFaces = true;
   };

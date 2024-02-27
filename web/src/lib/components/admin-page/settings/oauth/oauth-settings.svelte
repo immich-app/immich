@@ -5,9 +5,11 @@
   import { fade } from 'svelte/transition';
   import type { SettingsEventType } from '../admin-settings';
   import ConfirmDisableLogin from '../confirm-disable-login.svelte';
-  import SettingButtonsRow from '../setting-buttons-row.svelte';
-  import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
-  import SettingSwitch from '../setting-switch.svelte';
+  import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
+  import SettingInputField, {
+    SettingInputFieldType,
+  } from '$lib/components/shared-components/settings/setting-input-field.svelte';
+  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;

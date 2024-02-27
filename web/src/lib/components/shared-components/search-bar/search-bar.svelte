@@ -2,12 +2,7 @@
   import { AppRoute } from '$lib/constants';
   import Icon from '$lib/components/elements/icon.svelte';
   import { goto } from '$app/navigation';
-  import {
-    isSearchEnabled,
-    preventRaceConditionSearchBar,
-    savedSearchTerms,
-    searchQuery,
-  } from '$lib/stores/search.store';
+  import { isSearchEnabled, preventRaceConditionSearchBar, savedSearchTerms } from '$lib/stores/search.store';
   import { clickOutside } from '$lib/utils/click-outside';
   import { mdiClose, mdiMagnify, mdiTune } from '@mdi/js';
   import IconButton from '$lib/components/elements/buttons/icon-button.svelte';
@@ -15,8 +10,11 @@
   import SearchFilterBox from './search-filter-box.svelte';
   import type { MetadataSearchDto, SmartSearchDto } from '@immich/sdk';
   import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
+  import { handlePromiseError } from '$lib/utils';
+
   export let value = '';
   export let grayTheme: boolean;
+  export let searchQuery: MetadataSearchDto | SmartSearchDto = {};
 
   let input: HTMLInputElement;
 
@@ -24,14 +22,13 @@
   let showFilter = false;
   $: showClearIcon = value.length > 0;
 
-  const onSearch = (payload: SmartSearchDto | MetadataSearchDto) => {
+  const onSearch = async (payload: SmartSearchDto | MetadataSearchDto) => {
     const params = getMetadataSearchQuery(payload);
 
     showHistory = false;
     showFilter = false;
     $isSearchEnabled = false;
-    $searchQuery = payload;
-    goto(`${AppRoute.SEARCH}?${params}`, { invalidateAll: true });
+    await goto(`${AppRoute.SEARCH}?${params}`);
   };
 
   const clearSearchTerm = (searchTerm: string) => {
@@ -67,9 +64,9 @@
     showFilter = false;
   };
 
-  const onHistoryTermClick = (searchTerm: string) => {
+  const onHistoryTermClick = async (searchTerm: string) => {
     const searchPayload = { query: searchTerm };
-    onSearch(searchPayload);
+    await onSearch(searchPayload);
   };
 
   const onFilterClick = () => {
@@ -82,16 +79,16 @@
   };
 
   const onSubmit = () => {
-    onSearch({ query: value });
+    handlePromiseError(onSearch({ query: value }));
     saveSearchTerm(value);
   };
 </script>
 
-<div role="button" class="w-full" use:clickOutside on:outclick={onFocusOut} on:escape={onFocusOut}>
+<div class="w-full relative" use:clickOutside on:outclick={onFocusOut} on:escape={onFocusOut}>
   <form
     draggable="false"
     autocomplete="off"
-    class="relative select-text text-sm"
+    class="select-text text-sm"
     action={AppRoute.SEARCH}
     on:reset={() => (value = '')}
     on:submit|preventDefault={onSubmit}
@@ -145,12 +142,12 @@
       <SearchHistoryBox
         on:clearAllSearchTerms={clearAllSearchTerms}
         on:clearSearchTerm={({ detail: searchTerm }) => clearSearchTerm(searchTerm)}
-        on:selectSearchTerm={({ detail: searchTerm }) => onHistoryTermClick(searchTerm)}
+        on:selectSearchTerm={({ detail: searchTerm }) => handlePromiseError(onHistoryTermClick(searchTerm))}
       />
     {/if}
-
-    {#if showFilter}
-      <SearchFilterBox on:search={({ detail }) => onSearch(detail)} />
-    {/if}
   </form>
+
+  {#if showFilter}
+    <SearchFilterBox {searchQuery} on:search={({ detail }) => onSearch(detail)} />
+  {/if}
 </div>

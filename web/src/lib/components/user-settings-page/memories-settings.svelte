@@ -6,8 +6,9 @@
   import { updateUser, type UserResponseDto } from '@immich/sdk';
   import { fade } from 'svelte/transition';
   import { handleError } from '../../utils/handle-error';
-  import SettingSwitch from '../admin-page/settings/setting-switch.svelte';
+
   import Button from '../elements/buttons/button.svelte';
+  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
 
   export let user: UserResponseDto;
 

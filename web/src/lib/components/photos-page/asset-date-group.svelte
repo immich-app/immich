@@ -25,6 +25,7 @@
   export let viewport: Viewport;
   export let singleSelect = false;
   export let withStacked = false;
+  export let showArchiveIcon = false;
 
   export let assetStore: AssetStore;
   export let assetInteractionStore: AssetInteractionStore;
@@ -79,13 +80,17 @@
     });
   }
 
-  const assetClickHandler = (asset: AssetResponseDto, assetsInDateGroup: AssetResponseDto[], groupTitle: string) => {
+  const assetClickHandler = async (
+    asset: AssetResponseDto,
+    assetsInDateGroup: AssetResponseDto[],
+    groupTitle: string,
+  ) => {
     if (isSelectionMode || $isMultiSelectState) {
       assetSelectHandler(asset, assetsInDateGroup, groupTitle);
       return;
     }
 
-    assetViewingStore.setAssetId(asset.id);
+    await assetViewingStore.setAssetId(asset.id);
   };
 
   const handleSelectGroup = (title: string, assets: AssetResponseDto[]) => dispatch('select', { title, assets });
@@ -170,6 +175,7 @@
           >
             <Thumbnail
               showStackedIcon={withStacked}
+              {showArchiveIcon}
               {asset}
               {groupIndex}
               on:click={() => assetClickHandler(asset, groupAssets, groupTitle)}

@@ -142,6 +142,7 @@ part 'model/person_response_dto.dart';
 part 'model/person_statistics_response_dto.dart';
 part 'model/person_update_dto.dart';
 part 'model/person_with_faces_response_dto.dart';
+part 'model/places_response_dto.dart';
 part 'model/queue_status_dto.dart';
 part 'model/reaction_level.dart';
 part 'model/reaction_type.dart';
@@ -209,6 +210,9 @@ part 'model/user_avatar_color.dart';
 part 'model/user_dto.dart';
 part 'model/user_response_dto.dart';
 part 'model/validate_access_token_response_dto.dart';
+part 'model/validate_library_dto.dart';
+part 'model/validate_library_import_path_response_dto.dart';
+part 'model/validate_library_response_dto.dart';
 part 'model/video_codec.dart';
 
 

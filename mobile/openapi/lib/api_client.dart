@@ -366,6 +366,8 @@ class ApiClient {
           return PersonUpdateDto.fromJson(value);
         case 'PersonWithFacesResponseDto':
           return PersonWithFacesResponseDto.fromJson(value);
+        case 'PlacesResponseDto':
+          return PlacesResponseDto.fromJson(value);
         case 'QueueStatusDto':
           return QueueStatusDto.fromJson(value);
         case 'ReactionLevel':
@@ -500,6 +502,12 @@ class ApiClient {
           return UserResponseDto.fromJson(value);
         case 'ValidateAccessTokenResponseDto':
           return ValidateAccessTokenResponseDto.fromJson(value);
+        case 'ValidateLibraryDto':
+          return ValidateLibraryDto.fromJson(value);
+        case 'ValidateLibraryImportPathResponseDto':
+          return ValidateLibraryImportPathResponseDto.fromJson(value);
+        case 'ValidateLibraryResponseDto':
+          return ValidateLibraryResponseDto.fromJson(value);
         case 'VideoCodec':
           return VideoCodecTypeTransformer().decode(value);
         default:

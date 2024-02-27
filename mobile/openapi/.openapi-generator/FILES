@@ -108,6 +108,7 @@ doc/PersonResponseDto.md
 doc/PersonStatisticsResponseDto.md
 doc/PersonUpdateDto.md
 doc/PersonWithFacesResponseDto.md
+doc/PlacesResponseDto.md
 doc/QueueStatusDto.md
 doc/ReactionLevel.md
 doc/ReactionType.md
@@ -182,6 +183,9 @@ doc/UserAvatarColor.md
 doc/UserDto.md
 doc/UserResponseDto.md
 doc/ValidateAccessTokenResponseDto.md
+doc/ValidateLibraryDto.md
+doc/ValidateLibraryImportPathResponseDto.md
+doc/ValidateLibraryResponseDto.md
 doc/VideoCodec.md
 git_push.sh
 lib/api.dart
@@ -305,6 +309,7 @@ lib/model/person_response_dto.dart
 lib/model/person_statistics_response_dto.dart
 lib/model/person_update_dto.dart
 lib/model/person_with_faces_response_dto.dart
+lib/model/places_response_dto.dart
 lib/model/queue_status_dto.dart
 lib/model/reaction_level.dart
 lib/model/reaction_type.dart
@@ -372,6 +377,9 @@ lib/model/user_avatar_color.dart
 lib/model/user_dto.dart
 lib/model/user_response_dto.dart
 lib/model/validate_access_token_response_dto.dart
+lib/model/validate_library_dto.dart
+lib/model/validate_library_import_path_response_dto.dart
+lib/model/validate_library_response_dto.dart
 lib/model/video_codec.dart
 pubspec.yaml
 test/activity_api_test.dart
@@ -479,6 +487,7 @@ test/person_response_dto_test.dart
 test/person_statistics_response_dto_test.dart
 test/person_update_dto_test.dart
 test/person_with_faces_response_dto_test.dart
+test/places_response_dto_test.dart
 test/queue_status_dto_test.dart
 test/reaction_level_test.dart
 test/reaction_type_test.dart
@@ -553,4 +562,7 @@ test/user_avatar_color_test.dart
 test/user_dto_test.dart
 test/user_response_dto_test.dart
 test/validate_access_token_response_dto_test.dart
+test/validate_library_dto_test.dart
+test/validate_library_import_path_response_dto_test.dart
+test/validate_library_response_dto_test.dart
 test/video_codec_test.dart

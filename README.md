@@ -128,3 +128,9 @@ If you feel like this is the right cause and the app is something you are seeing
 <a href="https://github.com/alextran1502/immich/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=immich-app/immich" width="100%"/>
 </a>
+
+## Star History
+
+<a href="https://star-history.com/#immich-app/immich">
+  <img src="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" alt="Star History Chart" width="100%" />
+</a>

@@ -1,6 +1,7 @@
 import { goto } from '$app/navigation';
 import { page } from '$app/stores';
 import { NotificationType, notificationController } from '$lib/components/shared-components/notification/notification';
+import { locales } from '$lib/constants';
 import { handleError } from '$lib/utils/handle-error';
 import {
   AssetJobName,
@@ -184,4 +185,22 @@ export const oauth = {
   unlink: () => {
     return unlinkOAuthAccount();
   },
+};
+
+export const findLocale = (code: string | undefined) => {
+  const language = locales.find((lang) => lang.code === code);
+  return {
+    code: language?.code,
+    name: language?.name,
+  };
+};
+
+export const asyncTimeout = (ms: number) => {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+};
+
+export const handlePromiseError = <T>(promise: Promise<T>): void => {
+  promise.catch((error) => console.error(`[utils.ts]:handlePromiseError ${error}`, error));
 };

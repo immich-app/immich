@@ -8,7 +8,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import MergeSuggestionModal from '$lib/components/faces-page/merge-suggestion-modal.svelte';
   import PeopleCard from '$lib/components/faces-page/people-card.svelte';
-  import SearchBar from '$lib/components/faces-page/search-bar.svelte';
+  import SearchBar from '$lib/components/elements/search-bar.svelte';
   import SetBirthDateModal from '$lib/components/faces-page/set-birth-date-modal.svelte';
   import ShowHide from '$lib/components/faces-page/show-hide.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
@@ -40,11 +40,13 @@
   import { mdiAccountOff, mdiEyeOutline } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
   import type { PageData } from './$types';
+  import { locale } from '$lib/stores/preferences.store';
 
   export let data: PageData;
 
   let people = data.people.people;
   let countTotalPeople = data.people.total;
+  let countHiddenPeople = data.people.hidden;
 
   let selectHidden = false;
   let initialHiddenValues: Record<string, boolean> = {};
@@ -75,16 +77,16 @@
 
   $: searchedPeopleLocal = searchName ? searchNameLocal(searchName, searchedPeople, maximumLengthSearchPeople) : [];
 
-  $: countVisiblePeople = people.filter((person) => !person.isHidden).length;
+  $: countVisiblePeople = countTotalPeople - countHiddenPeople;
 
   const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
 
-  onMount(() => {
+  onMount(async () => {
     document.addEventListener('keydown', onKeyboardPress);
     const getSearchedPeople = $page.url.searchParams.get(QueryParameter.SEARCHED_PEOPLE);
     if (getSearchedPeople) {
       searchName = getSearchedPeople;
-      handleSearchPeople(true);
+      await handleSearchPeople(true);
     }
   });
 
@@ -106,10 +108,10 @@
     }
   };
 
-  const handleSearch = (force: boolean) => {
+  const handleSearch = async (force: boolean) => {
     $page.url.searchParams.set(QueryParameter.SEARCHED_PEOPLE, searchName);
-    goto($page.url);
-    handleSearchPeople(force);
+    await goto($page.url);
+    await handleSearchPeople(force);
   };
 
   const handleCloseClick = () => {
@@ -152,6 +154,11 @@
       for (const person of people) {
         if (person.isHidden !== initialHiddenValues[person.id]) {
           changed.push({ id: person.id, isHidden: person.isHidden });
+          if (person.isHidden) {
+            countHiddenPeople++;
+          } else {
+            countHiddenPeople--;
+          }
 
           // Update the initial hidden values
           initialHiddenValues[person.id] = person.isHidden;
@@ -203,10 +210,12 @@
 
       const mergedPerson = await getPerson({ id: personToBeMergedIn.id });
 
-      countVisiblePeople--;
       people = people.filter((person: PersonResponseDto) => person.id !== personToMerge.id);
       people = people.map((person: PersonResponseDto) => (person.id === personToBeMergedIn.id ? mergedPerson : person));
-
+      if (personToMerge.isHidden) {
+        countHiddenPeople--;
+      }
+      countTotalPeople--;
       notificationController.show({
         message: 'Merge people successfully',
         type: NotificationType.Info,
@@ -274,7 +283,7 @@
       }
 
       showChangeNameModal = false;
-
+      countHiddenPeople++;
       notificationController.show({
         message: 'Changed visibility successfully',
         type: NotificationType.Info,
@@ -284,8 +293,8 @@
     }
   };
 
-  const handleMergePeople = (detail: PersonResponseDto) => {
-    goto(
+  const handleMergePeople = async (detail: PersonResponseDto) => {
+    await goto(
       `${AppRoute.PEOPLE}/${detail.id}?${QueryParameter.ACTION}=${ActionQueryParameterValue.MERGE}&${QueryParameter.PREVIOUS_ROUTE}=${AppRoute.PEOPLE}`,
     );
   };
@@ -294,7 +303,7 @@
     if (searchName === '') {
       if ($page.url.searchParams.has(QueryParameter.SEARCHED_PEOPLE)) {
         $page.url.searchParams.delete(QueryParameter.SEARCHED_PEOPLE);
-        goto($page.url);
+        await goto($page.url);
       }
       return;
     }
@@ -322,7 +331,7 @@
       return;
     }
     if (personName === '') {
-      changeName();
+      await changeName();
       return;
     }
     const data = await searchPerson({ name: personName, withHidden: true });
@@ -350,7 +359,7 @@
         .slice(0, 3);
       return;
     }
-    changeName();
+    await changeName();
   };
 
   const submitBirthDateChange = async (value: string) => {
@@ -423,7 +432,10 @@
   </FullScreenModal>
 {/if}
 
-<UserPageLayout title="People" description={countTotalPeople === 0 ? undefined : `(${countTotalPeople.toString()})`}>
+<UserPageLayout
+  title="People"
+  description={countVisiblePeople === 0 ? undefined : `(${countVisiblePeople.toLocaleString($locale)})`}
+>
   <svelte:fragment slot="buttons">
     {#if countTotalPeople > 0}
       <div class="flex gap-2 items-center justify-center">
@@ -431,7 +443,8 @@
           <div class="w-40 lg:w-80 h-10">
             <SearchBar
               bind:name={searchName}
-              {isSearchingPeople}
+              isSearching={isSearchingPeople}
+              placeholder="Search people"
               on:reset={() => {
                 searchedPeople = [];
               }}
@@ -522,9 +535,10 @@
     on:change={handleToggleVisibility}
     bind:showLoadingSpinner
     bind:toggleVisibility
+    {countTotalPeople}
     screenHeight={innerHeight}
   >
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-7 2xl:grid-cols-9 gap-1">
+    <div class="w-full grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-7 2xl:grid-cols-9 gap-1">
       {#each people as person, index (person.id)}
         <button
           class="relative"

@@ -607,16 +607,6 @@ export class VAAPIConfig extends BaseHWConfig {
 }
 
 export class RKMPPConfig extends BaseHWConfig {
-  getOptions(target: TranscodeTarget, videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo): TranscodeOptions {
-    const options = super.getOptions(target, videoStream, audioStream);
-    options.ffmpegPath = 'ffmpeg_mpp';
-    options.ldLibraryPath = '/lib/aarch64-linux-gnu:/lib/ffmpeg-mpp';
-    if ([TranscodeTarget.ALL, TranscodeTarget.VIDEO].includes(target)) {
-      options.outputOptions.push(...this.getSizeOptions(videoStream));
-    }
-    return options;
-  }
-
   eligibleForTwoPass(): boolean {
     return false;
   }
@@ -624,18 +614,6 @@ export class RKMPPConfig extends BaseHWConfig {
   getBaseInputOptions() {
     if (this.devices.length === 0) {
       throw new Error('No RKMPP device found');
-    }
-    return [];
-  }
-
-  getFilterOptions(videoStream: VideoStreamInfo) {
-    return this.shouldToneMap(videoStream) ? this.getToneMapping() : [];
-  }
-
-  getSizeOptions(videoStream: VideoStreamInfo) {
-    if (this.shouldScale(videoStream)) {
-      const { width, height } = this.getSize(videoStream);
-      return [`-width ${width}`, `-height ${height}`];
     }
     return [];
   }
@@ -659,12 +637,11 @@ export class RKMPPConfig extends BaseHWConfig {
   getBitrateOptions() {
     const bitrate = this.getMaxBitrateValue();
     if (bitrate > 0) {
-      return ['-rc_mode 3', '-quality_min 0', '-quality_max 100', `-b:v ${bitrate}${this.getBitrateUnit()}`];
-    } else {
-      // convert CQP from 51-10 to 0-100, values below 10 are set to 10
-      const quality = Math.floor(125 - Math.max(this.config.crf, 10) * (125 / 51));
-      return ['-rc_mode 2', `-quality_min ${quality}`, `-quality_max ${quality}`];
+      // -b:v specifies max bitrate, average bitrate is derived automatically...
+      return ['-rc_mode 3', `-b:v ${bitrate}${this.getBitrateUnit()}`];
     }
+    // use CRF value as QP value
+    return ['-rc_mode 2', `-qp_init ${this.config.crf}`];
   }
 
   getSupportedCodecs() {
@@ -672,6 +649,6 @@ export class RKMPPConfig extends BaseHWConfig {
   }
 
   getVideoCodec(): string {
-    return `${this.config.targetVideoCodec}_rkmpp_encoder`;
+    return `${this.config.targetVideoCodec}_rkmpp`;
   }
 }

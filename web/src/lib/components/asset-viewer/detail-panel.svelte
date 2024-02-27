@@ -7,7 +7,7 @@
   import { featureFlags } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
   import { websocketEvents } from '$lib/stores/websocket';
-  import { getAssetThumbnailUrl, getPeopleThumbnailUrl, isSharedLink } from '$lib/utils';
+  import { getAssetThumbnailUrl, getPeopleThumbnailUrl, isSharedLink, handlePromiseError } from '$lib/utils';
   import { delay, getAssetFilename } from '$lib/utils/asset-utils';
   import { autoGrowHeight } from '$lib/utils/autogrow';
   import { clickOutside } from '$lib/utils/click-outside';
@@ -40,6 +40,7 @@
   import ChangeLocation from '../shared-components/change-location.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
+  import { NotificationType, notificationController } from '../shared-components/notification/notification';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
@@ -77,7 +78,7 @@
     originalDescription = description;
   };
 
-  $: handleNewAsset(asset);
+  $: handlePromiseError(handleNewAsset(asset));
 
   $: latlng = (() => {
     const lat = asset.exifInfo?.latitude;
@@ -101,9 +102,6 @@
 
   const dispatch = createEventDispatcher<{
     close: void;
-    descriptionFocusIn: void;
-    descriptionFocusOut: void;
-    click: AlbumResponseDto;
     closeViewer: void;
   }>();
 
@@ -115,7 +113,7 @@
     switch (event.key) {
       case 'Enter': {
         if (ctrl && event.target === textArea) {
-          handleFocusOut();
+          await handleFocusOut();
         }
       }
     }
@@ -139,19 +137,18 @@
     showEditFaces = false;
   };
 
-  const handleFocusIn = () => {
-    dispatch('descriptionFocusIn');
-  };
-
   const handleFocusOut = async () => {
     textArea.blur();
     if (description === originalDescription) {
       return;
     }
     originalDescription = description;
-    dispatch('descriptionFocusOut');
     try {
       await updateAsset({ id: asset.id, updateAssetDto: { description } });
+      notificationController.show({
+        type: NotificationType.Info,
+        message: 'Asset description has been updated',
+      });
     } catch (error) {
       handleError(error, 'Cannot update the description');
     }
@@ -220,7 +217,6 @@
           class="max-h-[500px]
       w-full resize-none overflow-hidden border-b border-gray-500 bg-transparent text-base text-black outline-none transition-all focus:border-b-2 focus:border-immich-primary disabled:border-none dark:text-white dark:focus:border-immich-dark-primary"
           placeholder={isOwner ? 'Add a description' : ''}
-          on:focusin={handleFocusIn}
           on:focusout={handleFocusOut}
           on:input={() => autoGrowHeight(textArea)}
           bind:value={description}
@@ -447,6 +443,7 @@
       {@const assetDateTimeOriginal = asset.exifInfo?.dateTimeOriginal
         ? DateTime.fromISO(asset.exifInfo.dateTimeOriginal, {
             zone: asset.exifInfo.timeZone ?? undefined,
+            locale: $locale,
           })
         : DateTime.now()}
       <ChangeDate
@@ -665,12 +662,7 @@
     <p class="pb-4 text-sm">APPEARS IN</p>
     {#each albums as album}
       <a data-sveltekit-preload-data="hover" href={`/albums/${album.id}`}>
-        <!-- svelte-ignore a11y-no-static-element-interactions -->
-        <div
-          class="flex gap-4 py-2 hover:cursor-pointer"
-          on:click={() => dispatch('click', album)}
-          on:keydown={() => dispatch('click', album)}
-        >
+        <div class="flex gap-4 py-2 hover:cursor-pointer">
           <div>
             <img
               alt={album.albumName}

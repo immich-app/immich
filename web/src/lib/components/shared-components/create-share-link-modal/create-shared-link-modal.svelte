@@ -1,8 +1,4 @@
 <script lang="ts">
-  import SettingInputField, {
-    SettingInputFieldType,
-  } from '$lib/components/admin-page/settings/setting-input-field.svelte';
-  import SettingSwitch from '$lib/components/admin-page/settings/setting-switch.svelte';
   import Button from '$lib/components/elements/buttons/button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import { serverConfig } from '$lib/stores/server-config.store';
@@ -15,6 +11,8 @@
   import type { ImmichDropDownOption } from '../dropdown-button.svelte';
   import DropdownButton from '../dropdown-button.svelte';
   import { NotificationType, notificationController } from '../notification/notification';
+  import SettingInputField, { SettingInputFieldType } from '../settings/setting-input-field.svelte';
+  import SettingSwitch from '../settings/setting-switch.svelte';
 
   export let albumId: string | undefined = undefined;
   export let assetIds: string[] = [];

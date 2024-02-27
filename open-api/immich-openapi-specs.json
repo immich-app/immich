@@ -2463,6 +2463,7 @@
             "required": false,
             "in": "query",
             "schema": {
+              "default": false,
               "type": "boolean"
             }
           },
@@ -3618,6 +3619,58 @@
         ]
       }
     },
+    "/library/{id}/validate": {
+      "post": {
+        "operationId": "validate",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ValidateLibraryDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidateLibraryResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Library"
+        ]
+      }
+    },
     "/oauth/authorize": {
       "post": {
         "operationId": "startOAuth",
@@ -4614,6 +4667,50 @@
                 "schema": {
                   "items": {
                     "$ref": "#/components/schemas/PersonResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Search"
+        ]
+      }
+    },
+    "/search/places": {
+      "get": {
+        "operationId": "searchPlaces",
+        "parameters": [
+          {
+            "name": "name",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PlacesResponseDto"
                   },
                   "type": "array"
                 }
@@ -6361,7 +6458,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.94.1",
+    "version": "1.96.0",
     "contact": {}
   },
   "tags": [],
@@ -8377,6 +8474,7 @@
             "type": "string"
           },
           "withArchived": {
+            "default": false,
             "type": "boolean"
           },
           "withDeleted": {
@@ -8539,6 +8637,9 @@
       },
       "PeopleResponseDto": {
         "properties": {
+          "hidden": {
+            "type": "integer"
+          },
           "people": {
             "items": {
               "$ref": "#/components/schemas/PersonResponseDto"
@@ -8550,6 +8651,7 @@
           }
         },
         "required": [
+          "hidden",
           "people",
           "total"
         ],
@@ -8695,6 +8797,31 @@
           "isHidden",
           "name",
           "thumbnailPath"
+        ],
+        "type": "object"
+      },
+      "PlacesResponseDto": {
+        "properties": {
+          "admin1name": {
+            "type": "string"
+          },
+          "admin2name": {
+            "type": "string"
+          },
+          "latitude": {
+            "type": "number"
+          },
+          "longitude": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "latitude",
+          "longitude",
+          "name"
         ],
         "type": "object"
       },
@@ -9383,6 +9510,9 @@
           "isMotion": {
             "type": "boolean"
           },
+          "isNotInAlbum": {
+            "type": "boolean"
+          },
           "isOffline": {
             "type": "boolean"
           },
@@ -9445,6 +9575,7 @@
             "type": "string"
           },
           "withArchived": {
+            "default": false,
             "type": "boolean"
           },
           "withDeleted": {
@@ -10404,6 +10535,52 @@
         "required": [
           "authStatus"
         ],
+        "type": "object"
+      },
+      "ValidateLibraryDto": {
+        "properties": {
+          "exclusionPatterns": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "importPaths": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "ValidateLibraryImportPathResponseDto": {
+        "properties": {
+          "importPath": {
+            "type": "string"
+          },
+          "isValid": {
+            "default": false,
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "importPath"
+        ],
+        "type": "object"
+      },
+      "ValidateLibraryResponseDto": {
+        "properties": {
+          "importPaths": {
+            "items": {
+              "$ref": "#/components/schemas/ValidateLibraryImportPathResponseDto"
+            },
+            "type": "array"
+          }
+        },
         "type": "object"
       },
       "VideoCodec": {

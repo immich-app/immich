@@ -79,7 +79,10 @@ FROM
         AND "exifInfo"."lensModel" = $2
         AND 1 = 1
         AND 1 = 1
-        AND "asset"."isFavorite" = $3
+        AND (
+          "asset"."isFavorite" = $3
+          AND "asset"."isArchived" = $4
+        )
         AND (
           "stack"."primaryAssetId" = "asset"."id"
           OR "asset"."stackId" IS NULL
@@ -177,16 +180,19 @@ WHERE
     AND "exifInfo"."lensModel" = $2
     AND 1 = 1
     AND 1 = 1
-    AND "asset"."isFavorite" = $3
+    AND (
+      "asset"."isFavorite" = $3
+      AND "asset"."isArchived" = $4
+    )
     AND (
       "stack"."primaryAssetId" = "asset"."id"
       OR "asset"."stackId" IS NULL
     )
-    AND "asset"."ownerId" IN ($4)
+    AND "asset"."ownerId" IN ($5)
   )
   AND ("asset"."deletedAt" IS NULL)
 ORDER BY
-  "search"."embedding" <= > $5 ASC
+  "search"."embedding" <= > $6 ASC
 LIMIT
   101
 COMMIT
@@ -232,3 +238,37 @@ FROM
 WHERE
   res.distance <= $3
 COMMIT
+
+-- SearchRepository.searchPlaces
+SELECT
+  "geoplaces"."id" AS "geoplaces_id",
+  "geoplaces"."name" AS "geoplaces_name",
+  "geoplaces"."longitude" AS "geoplaces_longitude",
+  "geoplaces"."latitude" AS "geoplaces_latitude",
+  "geoplaces"."countryCode" AS "geoplaces_countryCode",
+  "geoplaces"."admin1Code" AS "geoplaces_admin1Code",
+  "geoplaces"."admin2Code" AS "geoplaces_admin2Code",
+  "geoplaces"."admin1Name" AS "geoplaces_admin1Name",
+  "geoplaces"."admin2Name" AS "geoplaces_admin2Name",
+  "geoplaces"."alternateNames" AS "geoplaces_alternateNames",
+  "geoplaces"."modificationDate" AS "geoplaces_modificationDate"
+FROM
+  "geodata_places" "geoplaces"
+WHERE
+  f_unaccent (name) %>> f_unaccent ($1)
+  OR f_unaccent ("admin2Name") %>> f_unaccent ($1)
+  OR f_unaccent ("admin1Name") %>> f_unaccent ($1)
+  OR f_unaccent ("alternateNames") %>> f_unaccent ($1)
+ORDER BY
+  COALESCE(f_unaccent (name) <->>> f_unaccent ($1), 0) + COALESCE(
+    f_unaccent ("admin2Name") <->>> f_unaccent ($1),
+    0
+  ) + COALESCE(
+    f_unaccent ("admin1Name") <->>> f_unaccent ($1),
+    0
+  ) + COALESCE(
+    f_unaccent ("alternateNames") <->>> f_unaccent ($1),
+    0
+  ) ASC
+LIMIT
+  20

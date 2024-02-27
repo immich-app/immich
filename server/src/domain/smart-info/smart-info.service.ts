@@ -50,6 +50,10 @@ export class SmartInfoService {
       return true;
     }
 
+    if (force) {
+      await this.repository.deleteAllSearchEmbeddings();
+    }
+
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
       return force
         ? this.assetRepository.getAll(pagination)

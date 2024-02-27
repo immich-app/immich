@@ -1,6 +1,5 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import noThumbnailUrl from '$lib/assets/no-thumbnail.png';
   import Icon from '$lib/components/elements/icon.svelte';
   import { AppRoute } from '$lib/constants';
   import { getAssetThumbnailUrl } from '$lib/utils';
@@ -16,6 +15,7 @@
   import { createEventDispatcher } from 'svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
+  import { locale } from '$lib/stores/preferences.store';
 
   export let link: SharedLinkResponseDto;
 
@@ -43,7 +43,7 @@
       return;
     }
 
-    const expiresAtDate = luxon.DateTime.fromISO(new Date(link.expiresAt).toISOString());
+    const expiresAtDate = luxon.DateTime.fromISO(new Date(link.expiresAt).toISOString(), { locale: $locale });
     const now = luxon.DateTime.now();
 
     expirationCountdown = expiresAtDate.diff(now, ['days', 'hours', 'minutes', 'seconds']).toObject();
@@ -86,7 +86,7 @@
       {/await}
     {:else}
       <enhanced:img
-        src={noThumbnailUrl}
+        src="$lib/assets/no-thumbnail.png"
         alt={'Album without assets'}
         class="h-[100px] w-[100px] rounded-lg object-cover"
         loading="lazy"

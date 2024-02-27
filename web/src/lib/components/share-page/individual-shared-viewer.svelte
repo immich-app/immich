@@ -2,7 +2,7 @@
   import { goto } from '$app/navigation';
   import { AppRoute } from '$lib/constants';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
-  import { getKey } from '$lib/utils';
+  import { getKey, handlePromiseError } from '$lib/utils';
   import { downloadArchive } from '$lib/utils/asset-utils';
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
@@ -29,7 +29,7 @@
 
   dragAndDropFilesStore.subscribe((value) => {
     if (value.isDragging && value.files.length > 0) {
-      handleUploadAssets(value.files);
+      handlePromiseError(handleUploadAssets(value.files));
       dragAndDropFilesStore.set({ isDragging: false, files: [] });
     }
   });
@@ -59,7 +59,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      await handleError(error, 'Unable to add assets to shared link');
+      handleError(error, 'Unable to add assets to shared link');
     }
   };
 
