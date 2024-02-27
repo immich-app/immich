@@ -7,5 +7,7 @@ export const newSearchRepositoryMock = (): jest.Mocked<ISearchRepository> => {
     searchSmart: jest.fn(),
     searchFaces: jest.fn(),
     upsert: jest.fn(),
+    searchPlaces: jest.fn(),
+    deleteAllSearchEmbeddings: jest.fn(),
   };
 };

@@ -21,6 +21,7 @@
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
   import { mdiFileImagePlusOutline, mdiFolderDownloadOutline } from '@mdi/js';
   import UpdatePanel from '../shared-components/update-panel.svelte';
+  import { handlePromiseError } from '$lib/utils';
 
   export let sharedLink: SharedLinkResponseDto;
   export let user: UserResponseDto | undefined = undefined;
@@ -35,7 +36,7 @@
 
   dragAndDropFilesStore.subscribe((value) => {
     if (value.isDragging && value.files.length > 0) {
-      fileUploadHandler(value.files, album.id);
+      handlePromiseError(fileUploadHandler(value.files, album.id));
       dragAndDropFilesStore.set({ isDragging: false, files: [] });
     }
   });
@@ -67,7 +68,7 @@
 
   const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
 
-  onMount(async () => {
+  onMount(() => {
     document.addEventListener('keydown', onKeyboardPress);
   });
 

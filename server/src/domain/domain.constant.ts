@@ -91,7 +91,7 @@ export const citiesFile = 'cities500.txt';
 export const geodataDatePath = join(GEODATA_ROOT_PATH, 'geodata-date.txt');
 export const geodataAdmin1Path = join(GEODATA_ROOT_PATH, 'admin1CodesASCII.txt');
 export const geodataAdmin2Path = join(GEODATA_ROOT_PATH, 'admin2Codes.txt');
-export const geodataCitites500Path = join(GEODATA_ROOT_PATH, citiesFile);
+export const geodataCities500Path = join(GEODATA_ROOT_PATH, citiesFile);
 
 const image: Record<string, string[]> = {
   '.3fr': ['image/3fr', 'image/x-hasselblad-3fr'],

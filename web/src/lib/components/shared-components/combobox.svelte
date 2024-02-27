@@ -3,6 +3,10 @@
     label: string;
     value: string;
   };
+
+  export function toComboBoxOptions(items: string[]) {
+    return items.map<ComboBoxOption>((item) => ({ label: item, value: item }));
+  }
 </script>
 
 <script lang="ts">

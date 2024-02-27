@@ -31,8 +31,8 @@
   let removePartnerDto: PartnerResponseDto | null = null;
   let partners: Array<PartnerSharing> = [];
 
-  onMount(() => {
-    refreshPartners();
+  onMount(async () => {
+    await refreshPartners();
   });
 
   const refreshPartners = async () => {

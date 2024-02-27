@@ -10,6 +10,7 @@
 <script lang="ts">
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
+  import PasswordField from '../password-field.svelte';
 
   export let inputType: SettingInputFieldType;
   export let value: string | number;
@@ -22,6 +23,7 @@
   export let required = false;
   export let disabled = false;
   export let isEdited = false;
+  export let passwordAutocomplete: string = 'current-password';
 
   const handleInput = (e: Event) => {
     value = (e.target as HTMLInputElement).value;
@@ -64,20 +66,35 @@
     <slot name="desc" />
   {/if}
 
-  <input
-    class="immich-form-input w-full pb-2"
-    aria-describedby={desc ? `${label}-desc` : undefined}
-    aria-labelledby="{label}-label"
-    id={label}
-    name={label}
-    type={inputType}
-    min={min.toString()}
-    max={max.toString()}
-    {step}
-    {required}
-    {value}
-    on:input={handleInput}
-    {disabled}
-    {title}
-  />
+  {#if inputType !== SettingInputFieldType.PASSWORD}
+    <input
+      class="immich-form-input w-full pb-2"
+      aria-describedby={desc ? `${label}-desc` : undefined}
+      aria-labelledby="{label}-label"
+      id={label}
+      name={label}
+      type={inputType}
+      min={min.toString()}
+      max={max.toString()}
+      {step}
+      {required}
+      {value}
+      on:input={handleInput}
+      {disabled}
+      {title}
+    />
+  {:else}
+    <PasswordField
+      aria-describedby={desc ? `${label}-desc` : undefined}
+      aria-labelledby="{label}-label"
+      id={label}
+      name={label}
+      autocomplete={passwordAutocomplete}
+      {required}
+      password={value.toString()}
+      onInput={(passwordValue) => (value = passwordValue)}
+      {disabled}
+      {title}
+    />
+  {/if}
 </div>
