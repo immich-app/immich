@@ -46,8 +46,8 @@
   let allPeople: PersonResponseDto[] = [];
 
   // timers
-  let loaderLoadingDoneTimeout: NodeJS.Timeout;
-  let automaticRefreshTimeout: NodeJS.Timeout;
+  let loaderLoadingDoneTimeout: ReturnType<typeof setTimeout>;
+  let automaticRefreshTimeout: ReturnType<typeof setTimeout>;
 
   const dispatch = createEventDispatcher<{
     close: void;
