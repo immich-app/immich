@@ -500,7 +500,11 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
-  async getMapMarkers(ownerIds: string[], albumIds: string[], options: MapMarkerSearchOptions = {}): Promise<MapMarker[]> {
+  async getMapMarkers(
+    ownerIds: string[],
+    albumIds: string[],
+    options: MapMarkerSearchOptions = {},
+  ): Promise<MapMarker[]> {
     const { isArchived, isFavorite, fileCreatedAfter, fileCreatedBefore } = options;
 
     const assets = await this.repository.find({
@@ -525,7 +529,7 @@ export class AssetRepository implements IAssetRepository {
         },
         {
           albums: {
-            id: In([...albumIds])
+            id: In([...albumIds]),
           },
           isVisible: true,
           isArchived,
@@ -535,7 +539,7 @@ export class AssetRepository implements IAssetRepository {
           },
           isFavorite,
           fileCreatedAt: OptionalBetween(fileCreatedAfter, fileCreatedBefore),
-        }
+        },
       ],
       relations: {
         exifInfo: true,
