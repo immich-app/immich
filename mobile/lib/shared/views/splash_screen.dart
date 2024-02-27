@@ -35,10 +35,10 @@ class SplashScreenPage extends HookConsumerWidget {
             deviceIsOffline = true;
             log.fine("Device seems to be offline upon launch");
           } else {
-            log.severe(e);
+            log.severe("Failed to resolve endpoint", e);
           }
         } catch (e) {
-          log.severe(e);
+          log.severe("Failed to resolve endpoint", e);
         }
 
         try {
@@ -53,7 +53,7 @@ class SplashScreenPage extends HookConsumerWidget {
           ref.read(authenticationProvider.notifier).logout();
 
           log.severe(
-            'Cannot set success login info: $error',
+            'Cannot set success login info',
             error,
             stackTrace,
           );

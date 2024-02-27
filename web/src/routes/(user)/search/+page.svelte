@@ -35,6 +35,7 @@
   import type { Viewport } from '$lib/stores/assets.store';
   import { locale } from '$lib/stores/preferences.store';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
+  import { parseUtcDate } from '$lib/utils/date-time';
 
   const MAX_ASSET_COUNT = 5000;
   let { isViewing: showAssetViewer } = assetViewingStore;
@@ -143,13 +144,16 @@
     isLoading = false;
   };
 
-  function getHumanReadableDate(date: string) {
-    const d = new Date(date);
-    return d.toLocaleDateString($locale, {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
+  function getHumanReadableDate(dateString: string) {
+    const date = parseUtcDate(dateString).startOf('day');
+    return date.toLocaleString(
+      {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      },
+      { locale: $locale },
+    );
   }
 
   function getHumanReadableSearchKey(key: keyof SearchTerms): string {
@@ -286,11 +290,7 @@
       </section>
     {/if}
     <section id="search-content" class="relative bg-immich-bg dark:bg-immich-dark-bg">
-      {#if isLoading}
-        <div class="flex justify-center py-16 items-center">
-          <LoadingSpinner size="48" />
-        </div>
-      {:else if searchResultAssets.length > 0}
+      {#if searchResultAssets.length > 0}
         <GalleryViewer
           assets={searchResultAssets}
           bind:selectedAssets
@@ -298,13 +298,19 @@
           showArchiveIcon={true}
           {viewport}
         />
-      {:else}
+      {:else if !isLoading}
         <div class="flex min-h-[calc(66vh_-_11rem)] w-full place-content-center items-center dark:text-white">
           <div class="flex flex-col content-center items-center text-center">
             <Icon path={mdiImageOffOutline} size="3.5em" />
             <p class="mt-5 text-3xl font-medium">No results</p>
             <p class="text-base font-normal">Try a synonym or more general keyword</p>
           </div>
+        </div>
+      {/if}
+
+      {#if isLoading}
+        <div class="flex justify-center py-16 items-center">
+          <LoadingSpinner size="48" />
         </div>
       {/if}
     </section>

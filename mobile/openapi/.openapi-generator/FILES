@@ -108,6 +108,7 @@ doc/PersonResponseDto.md
 doc/PersonStatisticsResponseDto.md
 doc/PersonUpdateDto.md
 doc/PersonWithFacesResponseDto.md
+doc/PlacesResponseDto.md
 doc/QueueStatusDto.md
 doc/ReactionLevel.md
 doc/ReactionType.md
@@ -308,6 +309,7 @@ lib/model/person_response_dto.dart
 lib/model/person_statistics_response_dto.dart
 lib/model/person_update_dto.dart
 lib/model/person_with_faces_response_dto.dart
+lib/model/places_response_dto.dart
 lib/model/queue_status_dto.dart
 lib/model/reaction_level.dart
 lib/model/reaction_type.dart
@@ -485,6 +487,7 @@ test/person_response_dto_test.dart
 test/person_statistics_response_dto_test.dart
 test/person_update_dto_test.dart
 test/person_with_faces_response_dto_test.dart
+test/places_response_dto_test.dart
 test/queue_status_dto_test.dart
 test/reaction_level_test.dart
 test/reaction_type_test.dart

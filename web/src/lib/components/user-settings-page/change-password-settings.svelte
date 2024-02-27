@@ -47,6 +47,7 @@
           label="PASSWORD"
           bind:value={password}
           required={true}
+          passwordAutocomplete="current-password"
         />
 
         <SettingInputField
@@ -54,6 +55,7 @@
           label="NEW PASSWORD"
           bind:value={newPassword}
           required={true}
+          passwordAutocomplete="new-password"
         />
 
         <SettingInputField
@@ -61,6 +63,7 @@
           label="CONFIRM PASSWORD"
           bind:value={confirmPassword}
           required={true}
+          passwordAutocomplete="new-password"
         />
 
         <div class="flex justify-end">

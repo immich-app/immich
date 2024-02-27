@@ -1,4 +1,4 @@
-import { AssetEntity, AssetFaceEntity, AssetType, SmartInfoEntity } from '@app/infra/entities';
+import { AssetEntity, AssetFaceEntity, AssetType, GeodataPlacesEntity, SmartInfoEntity } from '@app/infra/entities';
 import { Paginated } from '../domain.util';
 
 export const ISearchRepository = 'ISearchRepository';
@@ -186,4 +186,5 @@ export interface ISearchRepository {
   searchSmart(pagination: SearchPaginationOptions, options: SmartSearchOptions): Paginated<AssetEntity>;
   searchFaces(search: FaceEmbeddingSearch): Promise<FaceSearchResult[]>;
   upsert(smartInfo: Partial<SmartInfoEntity>, embedding?: Embedding): Promise<void>;
+  searchPlaces(placeName: string): Promise<GeodataPlacesEntity[]>;
 }

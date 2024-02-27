@@ -80,7 +80,7 @@
           checked={$locale == undefined}
           on:toggle={handleToggleLocaleBrowser}
         >
-          <p class="mt-2">{selectedDate}</p>
+          <p class="mt-2 dark:text-gray-400">{selectedDate}</p>
         </SettingSwitch>
       </div>
       {#if $locale !== undefined}

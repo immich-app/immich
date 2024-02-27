@@ -117,7 +117,7 @@ export class StorageTemplateService {
       return true;
     }
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
-      this.assetRepository.getAll(pagination),
+      this.assetRepository.getAll(pagination, { withExif: true }),
     );
     const users = await this.userRepository.getList();
 

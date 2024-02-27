@@ -212,7 +212,9 @@
 
       people = people.filter((person: PersonResponseDto) => person.id !== personToMerge.id);
       people = people.map((person: PersonResponseDto) => (person.id === personToBeMergedIn.id ? mergedPerson : person));
-      countHiddenPeople--;
+      if (personToMerge.isHidden) {
+        countHiddenPeople--;
+      }
       countTotalPeople--;
       notificationController.show({
         message: 'Merge people successfully',

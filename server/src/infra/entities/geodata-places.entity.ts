@@ -1,6 +1,4 @@
-import { GeodataAdmin1Entity } from '@app/infra/entities/geodata-admin1.entity';
-import { GeodataAdmin2Entity } from '@app/infra/entities/geodata-admin2.entity';
-import { Column, Entity, ManyToOne, PrimaryColumn } from 'typeorm';
+import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity('geodata_places', { synchronize: false })
 export class GeodataPlacesEntity {
@@ -21,7 +19,7 @@ export class GeodataPlacesEntity {
   //   asExpression: 'll_to_earth((latitude)::double precision, (longitude)::double precision)',
   //   type: 'earth',
   // })
-  earthCoord!: unknown;
+  // earthCoord!: unknown;
 
   @Column({ type: 'char', length: 2 })
   countryCode!: string;
@@ -32,27 +30,14 @@ export class GeodataPlacesEntity {
   @Column({ type: 'varchar', length: 80, nullable: true })
   admin2Code!: string;
 
-  @Column({
-    type: 'varchar',
-    generatedType: 'STORED',
-    asExpression: `"countryCode" || '.' || "admin1Code"`,
-    nullable: true,
-  })
-  admin1Key!: string;
+  @Column({ type: 'varchar', nullable: true })
+  admin1Name!: string;
 
-  @ManyToOne(() => GeodataAdmin1Entity, { eager: true, nullable: true, createForeignKeyConstraints: false })
-  admin1!: GeodataAdmin1Entity;
+  @Column({ type: 'varchar', nullable: true })
+  admin2Name!: string;
 
-  @Column({
-    type: 'varchar',
-    generatedType: 'STORED',
-    asExpression: `"countryCode" || '.' || "admin1Code" || '.' || "admin2Code"`,
-    nullable: true,
-  })
-  admin2Key!: string;
-
-  @ManyToOne(() => GeodataAdmin2Entity, { eager: true, nullable: true, createForeignKeyConstraints: false })
-  admin2!: GeodataAdmin2Entity;
+  @Column({ type: 'varchar', nullable: true })
+  alternateNames!: string;
 
   @Column({ type: 'date' })
   modificationDate!: Date;
