@@ -124,7 +124,7 @@ export function ChunkedSet(options?: { paramIndex?: number }): MethodDecorator {
 // https://stackoverflow.com/a/74898678
 export function DecorateAll(
   decorator: <T>(
-    target: Object,
+    target: any,
     propertyKey: string,
     descriptor: TypedPropertyDescriptor<T>,
   ) => TypedPropertyDescriptor<T> | void,

@@ -13,7 +13,7 @@ import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions'
 import { snakeCase, startCase } from 'lodash';
 import { OpenTelemetryModuleOptions } from 'nestjs-otel/lib/interfaces';
 import { copyMetadataFromFunctionToFunction } from 'nestjs-otel/lib/opentelemetry.utils';
-import { performance } from 'perf_hooks';
+import { performance } from 'node:perf_hooks';
 import { DecorateAll } from './infra.utils';
 
 const aggregation = new ExplicitBucketHistogramAggregation(
