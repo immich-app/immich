@@ -147,7 +147,6 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
     }
 
     final section = widget.renderList.elements[index];
-    // debugPrint("section: ${section.date} $index");
     return _Section(
       showStorageIndicator: widget.showStorageIndicator,
       selectedAssets: _selectedAssets,
