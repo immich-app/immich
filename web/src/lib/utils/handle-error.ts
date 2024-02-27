@@ -22,20 +22,25 @@ export async function getServerErrorMessage(error: unknown) {
   }
 }
 
-export async function handleError(error: unknown, message: string) {
+export function handleError(error: unknown, message: string) {
   if ((error as Error)?.name === 'AbortError') {
     return;
   }
 
   console.error(`[handleError]: ${message}`, error, (error as Error)?.stack);
 
-  let serverMessage = await getServerErrorMessage(error);
-  if (serverMessage) {
-    serverMessage = `${String(serverMessage).slice(0, 75)}\n(Immich Server Error)`;
-  }
+  getServerErrorMessage(error)
+    .then((serverMessage) => {
+      if (serverMessage) {
+        serverMessage = `${String(serverMessage).slice(0, 75)}\n(Immich Server Error)`;
+      }
 
-  notificationController.show({
-    message: serverMessage || message,
-    type: NotificationType.Error,
-  });
+      notificationController.show({
+        message: serverMessage || message,
+        type: NotificationType.Error,
+      });
+    })
+    .catch((error) => {
+      console.error(error);
+    });
 }

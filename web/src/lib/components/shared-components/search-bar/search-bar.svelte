@@ -10,6 +10,7 @@
   import SearchFilterBox from './search-filter-box.svelte';
   import type { MetadataSearchDto, SmartSearchDto } from '@immich/sdk';
   import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
+  import { handlePromiseError } from '$lib/utils';
 
   export let value = '';
   export let grayTheme: boolean;
@@ -21,13 +22,13 @@
   let showFilter = false;
   $: showClearIcon = value.length > 0;
 
-  const onSearch = (payload: SmartSearchDto | MetadataSearchDto) => {
+  const onSearch = async (payload: SmartSearchDto | MetadataSearchDto) => {
     const params = getMetadataSearchQuery(payload);
 
     showHistory = false;
     showFilter = false;
     $isSearchEnabled = false;
-    goto(`${AppRoute.SEARCH}?${params}`);
+    await goto(`${AppRoute.SEARCH}?${params}`);
   };
 
   const clearSearchTerm = (searchTerm: string) => {
@@ -63,9 +64,9 @@
     showFilter = false;
   };
 
-  const onHistoryTermClick = (searchTerm: string) => {
+  const onHistoryTermClick = async (searchTerm: string) => {
     const searchPayload = { query: searchTerm };
-    onSearch(searchPayload);
+    await onSearch(searchPayload);
   };
 
   const onFilterClick = () => {
@@ -78,7 +79,7 @@
   };
 
   const onSubmit = () => {
-    onSearch({ query: value });
+    handlePromiseError(onSearch({ query: value }));
     saveSearchTerm(value);
   };
 </script>
@@ -141,7 +142,7 @@
       <SearchHistoryBox
         on:clearAllSearchTerms={clearAllSearchTerms}
         on:clearSearchTerm={({ detail: searchTerm }) => clearSearchTerm(searchTerm)}
-        on:selectSearchTerm={({ detail: searchTerm }) => onHistoryTermClick(searchTerm)}
+        on:selectSearchTerm={({ detail: searchTerm }) => handlePromiseError(onHistoryTermClick(searchTerm))}
       />
     {/if}
   </form>
