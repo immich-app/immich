@@ -130,6 +130,15 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
   }
 
   Future<void> _scrollToIndex(int index) async {
+    // if the index is so far down, that the end of the list is reached on the screen
+    // the scroll_position widget crashes. This is a workaround to prevent this.
+    // If the index is within the last 10 elements, we jump instead of scrolling.
+    if (widget.renderList.elements.length <= index + 10) {
+      _itemScrollController.jumpTo(
+        index: index,
+      );
+      return;
+    }
     await _itemScrollController.scrollTo(
       index: index,
       alignment: 0,
@@ -232,7 +241,8 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
         : RefreshIndicator(onRefresh: widget.onRefresh!, child: child);
   }
 
-  void _scrollToDate(DateTime? date) {
+  void _scrollToDate() {
+    final date = scrollToDateNotifierProvider.value;
     if (date == null) {
       return;
     }
@@ -242,9 +252,9 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
           e.date.month == date.month &&
           e.date.day == date.day,
     );
-    if (index != -1) {
+    if (index != -1 && index < widget.renderList.elements.length) {
       // Not sure why the index is shifted, but it works. :3
-      _scrollToIndex(index + 1);
+      _scrollToIndex(index + 20);
     }
   }
 
@@ -262,8 +272,7 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
   void initState() {
     super.initState();
     scrollToTopNotifierProvider.addListener(_scrollToTop);
-    scrollToDateNotifierProvider
-        .addListener(() => _scrollToDate(scrollToDateNotifierProvider.value));
+    scrollToDateNotifierProvider.addListener(_scrollToDate);
 
     if (widget.visibleItemsListener != null) {
       _itemPositionsListener.itemPositions.addListener(_positionListener);
@@ -278,6 +287,7 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
   @override
   void dispose() {
     scrollToTopNotifierProvider.removeListener(_scrollToTop);
+    scrollToDateNotifierProvider.removeListener(_scrollToDate);
     if (widget.visibleItemsListener != null) {
       _itemPositionsListener.itemPositions.removeListener(_positionListener);
     }
