@@ -136,8 +136,6 @@ const updatedConfig = Object.freeze<SystemConfig>({
     },
     watch: {
       enabled: false,
-      usePolling: false,
-      interval: 10_000,
     },
   },
 });
