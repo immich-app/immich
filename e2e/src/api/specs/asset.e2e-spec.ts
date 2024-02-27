@@ -47,12 +47,8 @@ describe('/asset', () => {
   let user1: LoginResponseDto;
   let user2: LoginResponseDto;
   let userStats: LoginResponseDto;
-  let asset1: AssetFileUploadResponseDto;
-  let asset2: AssetFileUploadResponseDto;
-  let asset3: AssetFileUploadResponseDto;
-  let asset4: AssetFileUploadResponseDto; // user2 asset
-  let asset5: AssetFileUploadResponseDto;
-  let asset6: AssetFileUploadResponseDto;
+  let user1Assets: AssetFileUploadResponseDto[];
+  let user2Assets: AssetFileUploadResponseDto[];
   let assetLocation: AssetFileUploadResponseDto;
   let ws: Socket;
 
@@ -70,7 +66,7 @@ describe('/asset', () => {
 
     // asset location
     assetLocation = await apiUtils.createAsset(
-      user1.accessToken,
+      admin.accessToken,
       {},
       {
         filename: 'thompson-springs.jpg',
@@ -78,7 +74,9 @@ describe('/asset', () => {
       },
     );
 
-    [asset1, asset2, asset3, asset4, asset5, asset6] = await Promise.all([
+    await wsUtils.waitForEvent({ event: 'upload', assetId: assetLocation.id });
+
+    user1Assets = await Promise.all([
       apiUtils.createAsset(user1.accessToken),
       apiUtils.createAsset(user1.accessToken),
       apiUtils.createAsset(
@@ -92,10 +90,13 @@ describe('/asset', () => {
         },
         { filename: 'example.mp4' },
       ),
-      apiUtils.createAsset(user2.accessToken),
       apiUtils.createAsset(user1.accessToken),
       apiUtils.createAsset(user1.accessToken),
+    ]);
 
+    user2Assets = await Promise.all([apiUtils.createAsset(user2.accessToken)]);
+
+    await Promise.all([
       // stats
       apiUtils.createAsset(userStats.accessToken),
       apiUtils.createAsset(userStats.accessToken, { isFavorite: true }),
@@ -113,8 +114,11 @@ describe('/asset', () => {
     const person1 = await apiUtils.createPerson(user1.accessToken, {
       name: 'Test Person',
     });
-    await dbUtils.createFace({ assetId: asset1.id, personId: person1.id });
-  });
+    await dbUtils.createFace({
+      assetId: user1Assets[0].id,
+      personId: person1.id,
+    });
+  }, 30_000);
 
   afterAll(() => {
     wsUtils.disconnect(ws);
@@ -139,7 +143,7 @@ describe('/asset', () => {
 
     it('should require access', async () => {
       const { status, body } = await request(app)
-        .get(`/asset/${asset4.id}`)
+        .get(`/asset/${user2Assets[0].id}`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
       expect(status).toBe(400);
       expect(body).toEqual(errorDto.noPermission);
@@ -147,33 +151,33 @@ describe('/asset', () => {
 
     it('should get the asset info', async () => {
       const { status, body } = await request(app)
-        .get(`/asset/${asset1.id}`)
+        .get(`/asset/${user1Assets[0].id}`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
       expect(status).toBe(200);
-      expect(body).toMatchObject({ id: asset1.id });
+      expect(body).toMatchObject({ id: user1Assets[0].id });
     });
 
     it('should work with a shared link', async () => {
       const sharedLink = await apiUtils.createSharedLink(user1.accessToken, {
         type: SharedLinkType.Individual,
-        assetIds: [asset1.id],
+        assetIds: [user1Assets[0].id],
       });
 
       const { status, body } = await request(app).get(
-        `/asset/${asset1.id}?key=${sharedLink.key}`,
+        `/asset/${user1Assets[0].id}?key=${sharedLink.key}`,
       );
       expect(status).toBe(200);
-      expect(body).toMatchObject({ id: asset1.id });
+      expect(body).toMatchObject({ id: user1Assets[0].id });
     });
 
     it('should not send people data for shared links for un-authenticated users', async () => {
       const { status, body } = await request(app)
-        .get(`/asset/${asset1.id}`)
+        .get(`/asset/${user1Assets[0].id}`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
 
       expect(status).toEqual(200);
       expect(body).toMatchObject({
-        id: asset1.id,
+        id: user1Assets[0].id,
         isFavorite: false,
         people: [
           {
@@ -188,11 +192,11 @@ describe('/asset', () => {
 
       const sharedLink = await apiUtils.createSharedLink(user1.accessToken, {
         type: SharedLinkType.Individual,
-        assetIds: [asset1.id],
+        assetIds: [user1Assets[0].id],
       });
 
       const data = await request(app).get(
-        `/asset/${asset1.id}?key=${sharedLink.key}`,
+        `/asset/${user1Assets[0].id}?key=${sharedLink.key}`,
       );
       expect(data.status).toBe(200);
       expect(data.body).toMatchObject({ people: [] });
@@ -286,11 +290,11 @@ describe('/asset', () => {
       const assets: AssetResponseDto[] = body;
       expect(assets.length).toBe(1);
       expect(assets[0].ownerId).toBe(user1.userId);
-      //
-      // assets owned by user2
-      expect(assets[0].id).not.toBe(asset4.id);
+
       // assets owned by user1
-      expect([asset1.id, asset2.id, asset3.id]).toContain(assets[0].id);
+      expect([user1Assets.map(({ id }) => id)]).toContain(assets[0].id);
+      // assets owned by user2
+      expect([user1Assets.map(({ id }) => id)]).not.toContain(assets[0].id);
     });
 
     it.each(Array(10))('should return 2 random assets', async () => {
@@ -306,9 +310,9 @@ describe('/asset', () => {
       for (const asset of assets) {
         expect(asset.ownerId).toBe(user1.userId);
         // assets owned by user1
-        expect([asset1.id, asset2.id, asset3.id]).toContain(asset.id);
+        expect([user1Assets.map(({ id }) => id)]).toContain(asset.id);
         // assets owned by user2
-        expect(asset.id).not.toBe(asset4.id);
+        expect([user2Assets.map(({ id }) => id)]).not.toContain(asset.id);
       }
     });
 
@@ -320,7 +324,9 @@ describe('/asset', () => {
           .set('Authorization', `Bearer ${user2.accessToken}`);
 
         expect(status).toBe(200);
-        expect(body).toEqual([expect.objectContaining({ id: asset4.id })]);
+        expect(body).toEqual([
+          expect.objectContaining({ id: user2Assets[0].id }),
+        ]);
       },
     );
 
@@ -352,44 +358,50 @@ describe('/asset', () => {
 
     it('should require access', async () => {
       const { status, body } = await request(app)
-        .put(`/asset/${asset4.id}`)
+        .put(`/asset/${user2Assets[0].id}`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
       expect(status).toBe(400);
       expect(body).toEqual(errorDto.noPermission);
     });
 
     it('should favorite an asset', async () => {
-      const before = await apiUtils.getAssetInfo(user1.accessToken, asset1.id);
+      const before = await apiUtils.getAssetInfo(
+        user1.accessToken,
+        user1Assets[0].id,
+      );
       expect(before.isFavorite).toBe(false);
 
       const { status, body } = await request(app)
-        .put(`/asset/${asset1.id}`)
+        .put(`/asset/${user1Assets[0].id}`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({ isFavorite: true });
-      expect(body).toMatchObject({ id: asset1.id, isFavorite: true });
+      expect(body).toMatchObject({ id: user1Assets[0].id, isFavorite: true });
       expect(status).toEqual(200);
     });
 
     it('should archive an asset', async () => {
-      const before = await apiUtils.getAssetInfo(user1.accessToken, asset1.id);
+      const before = await apiUtils.getAssetInfo(
+        user1.accessToken,
+        user1Assets[0].id,
+      );
       expect(before.isArchived).toBe(false);
 
       const { status, body } = await request(app)
-        .put(`/asset/${asset1.id}`)
+        .put(`/asset/${user1Assets[0].id}`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({ isArchived: true });
-      expect(body).toMatchObject({ id: asset1.id, isArchived: true });
+      expect(body).toMatchObject({ id: user1Assets[0].id, isArchived: true });
       expect(status).toEqual(200);
     });
 
     it('should update date time original', async () => {
       const { status, body } = await request(app)
-        .put(`/asset/${asset1.id}`)
+        .put(`/asset/${user1Assets[0].id}`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({ dateTimeOriginal: '2023-11-19T18:11:00.000-07:00' });
 
       expect(body).toMatchObject({
-        id: asset1.id,
+        id: user1Assets[0].id,
         exifInfo: expect.objectContaining({
           dateTimeOriginal: '2023-11-20T01:11:00.000Z',
         }),
@@ -411,7 +423,7 @@ describe('/asset', () => {
         { latitude: 12, longitude: 181 },
       ]) {
         const { status, body } = await request(app)
-          .put(`/asset/${asset1.id}`)
+          .put(`/asset/${user1Assets[0].id}`)
           .send(test)
           .set('Authorization', `Bearer ${user1.accessToken}`);
         expect(status).toBe(400);
@@ -421,12 +433,12 @@ describe('/asset', () => {
 
     it('should update gps data', async () => {
       const { status, body } = await request(app)
-        .put(`/asset/${asset1.id}`)
+        .put(`/asset/${user1Assets[0].id}`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({ latitude: 12, longitude: 12 });
 
       expect(body).toMatchObject({
-        id: asset1.id,
+        id: user1Assets[0].id,
         exifInfo: expect.objectContaining({ latitude: 12, longitude: 12 }),
       });
       expect(status).toEqual(200);
@@ -434,11 +446,11 @@ describe('/asset', () => {
 
     it('should set the description', async () => {
       const { status, body } = await request(app)
-        .put(`/asset/${asset1.id}`)
+        .put(`/asset/${user1Assets[0].id}`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({ description: 'Test asset description' });
       expect(body).toMatchObject({
-        id: asset1.id,
+        id: user1Assets[0].id,
         exifInfo: expect.objectContaining({
           description: 'Test asset description',
         }),
@@ -448,12 +460,12 @@ describe('/asset', () => {
 
     it('should return tagged people', async () => {
       const { status, body } = await request(app)
-        .put(`/asset/${asset1.id}`)
+        .put(`/asset/${user1Assets[0].id}`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({ isFavorite: true });
       expect(status).toEqual(200);
       expect(body).toMatchObject({
-        id: asset1.id,
+        id: user1Assets[0].id,
         isFavorite: true,
         people: [
           {
@@ -643,7 +655,7 @@ describe('/asset', () => {
 
         expect(duplicate).toBe(false);
 
-        await wsUtils.once(ws, 'on_upload_success');
+        await wsUtils.waitForEvent({ event: 'upload', assetId: id });
 
         const asset = await apiUtils.getAssetInfo(admin.accessToken, id);
 
@@ -698,9 +710,9 @@ describe('/asset', () => {
           },
         );
 
-        expect(response.duplicate).toBe(false);
+        await wsUtils.waitForEvent({ event: 'upload', assetId: response.id });
 
-        await wsUtils.once(ws, 'on_upload_success');
+        expect(response.duplicate).toBe(false);
 
         const asset = await apiUtils.getAssetInfo(
           admin.accessToken,
@@ -730,7 +742,12 @@ describe('/asset', () => {
     it('should not include gps data for webp thumbnails', async () => {
       const { status, body, type } = await request(app)
         .get(`/asset/thumbnail/${assetLocation.id}?format=WEBP`)
-        .set('Authorization', `Bearer ${user1.accessToken}`);
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+
+      await wsUtils.waitForEvent({
+        event: 'upload',
+        assetId: assetLocation.id,
+      });
 
       expect(status).toBe(200);
       expect(body).toBeDefined();
@@ -744,7 +761,7 @@ describe('/asset', () => {
     it('should not include gps data for jpeg thumbnails', async () => {
       const { status, body, type } = await request(app)
         .get(`/asset/thumbnail/${assetLocation.id}?format=JPEG`)
-        .set('Authorization', `Bearer ${user1.accessToken}`);
+        .set('Authorization', `Bearer ${admin.accessToken}`);
 
       expect(status).toBe(200);
       expect(body).toBeDefined();
@@ -769,14 +786,14 @@ describe('/asset', () => {
     it('should download the original', async () => {
       const { status, body, type } = await request(app)
         .get(`/asset/file/${assetLocation.id}`)
-        .set('Authorization', `Bearer ${user1.accessToken}`);
+        .set('Authorization', `Bearer ${admin.accessToken}`);
 
       expect(status).toBe(200);
       expect(body).toBeDefined();
       expect(type).toBe('image/jpeg');
 
       const asset = await apiUtils.getAssetInfo(
-        user1.accessToken,
+        admin.accessToken,
         assetLocation.id,
       );
 
