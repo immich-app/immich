@@ -6,7 +6,7 @@
   import { user } from '$lib/stores/user.store';
   import { oauth } from '$lib/utils';
   import { type ApiKeyResponseDto, type AuthDeviceResponseDto } from '@immich/sdk';
-  import SettingAccordion from '../admin-page/settings/setting-accordion.svelte';
+  import SettingAccordion from '../shared-components/settings/setting-accordion.svelte';
   import AppearanceSettings from './appearance-settings.svelte';
   import ChangePasswordSettings from './change-password-settings.svelte';
   import DeviceList from './device-list.svelte';
@@ -14,8 +14,6 @@
   import MemoriesSettings from './memories-settings.svelte';
   import OAuthSettings from './oauth-settings.svelte';
   import PartnerSettings from './partner-settings.svelte';
-  import QualitySettings from './quality-settings.svelte';
-  import SidebarSettings from './sidebar-settings.svelte';
   import TrashSettings from './trash-settings.svelte';
   import UserAPIKeyList from './user-api-key-list.svelte';
   import UserProfileSettings from './user-profile-settings.svelte';
@@ -29,7 +27,7 @@
   }
 </script>
 
-<SettingAccordion key="appearance" title="Appearance" subtitle="Manage your Immich appearance">
+<SettingAccordion key="appearance" title="Appearance" subtitle="Manage the app appearance">
   <AppearanceSettings />
 </SettingAccordion>
 
@@ -69,16 +67,8 @@
   <ChangePasswordSettings />
 </SettingAccordion>
 
-<SettingAccordion key="quality" title="Quality" subtitle="Manage your photo viewing experience">
-  <QualitySettings />
-</SettingAccordion>
-
 <SettingAccordion key="sharing" title="Sharing" subtitle="Manage sharing with partners">
   <PartnerSettings user={$user} />
-</SettingAccordion>
-
-<SettingAccordion key="sidebar" title="Sidebar" subtitle="Manage sidebar settings">
-  <SidebarSettings />
 </SettingAccordion>
 
 <SettingAccordion key="trash" title="Trash" subtitle="Manage trash settings">

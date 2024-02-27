@@ -3,7 +3,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { ProjectionType } from '$lib/constants';
   import { getAssetFileUrl, getAssetThumbnailUrl, isSharedLink } from '$lib/utils';
-  import { timeToSeconds } from '$lib/utils/time-to-seconds';
+  import { timeToSeconds } from '$lib/utils/date-time';
   import { AssetTypeEnum, ThumbnailFormat, type AssetResponseDto } from '@immich/sdk';
   import {
     mdiArchiveArrowDownOutline,

@@ -699,6 +699,18 @@ class GalleryViewerPage extends HookConsumerWidget {
       );
     }
 
+    useEffect(
+      () {
+        if (ref.read(showControlsProvider)) {
+          SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+        } else {
+          SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
+        }
+        return null;
+      },
+      [],
+    );
+
     ref.listen(showControlsProvider, (_, show) {
       if (show) {
         SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
@@ -795,7 +807,9 @@ class GalleryViewerPage extends HookConsumerWidget {
                     minScale: 1.0,
                     basePosition: Alignment.center,
                     child: VideoViewerPage(
-                      onPlaying: () => isPlayingVideo.value = true,
+                      onPlaying: () {
+                        isPlayingVideo.value = true;
+                      },
                       onPaused: () =>
                           WidgetsBinding.instance.addPostFrameCallback(
                         (_) => isPlayingVideo.value = false,

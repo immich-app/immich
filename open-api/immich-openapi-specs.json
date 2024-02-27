@@ -2463,6 +2463,7 @@
             "required": false,
             "in": "query",
             "schema": {
+              "default": false,
               "type": "boolean"
             }
           },
@@ -4690,6 +4691,50 @@
         ]
       }
     },
+    "/search/places": {
+      "get": {
+        "operationId": "searchPlaces",
+        "parameters": [
+          {
+            "name": "name",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PlacesResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Search"
+        ]
+      }
+    },
     "/search/smart": {
       "post": {
         "operationId": "searchSmart",
@@ -6413,7 +6458,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.95.0",
+    "version": "1.95.1",
     "contact": {}
   },
   "tags": [],
@@ -8429,6 +8474,7 @@
             "type": "string"
           },
           "withArchived": {
+            "default": false,
             "type": "boolean"
           },
           "withDeleted": {
@@ -8591,6 +8637,9 @@
       },
       "PeopleResponseDto": {
         "properties": {
+          "hidden": {
+            "type": "integer"
+          },
           "people": {
             "items": {
               "$ref": "#/components/schemas/PersonResponseDto"
@@ -8602,6 +8651,7 @@
           }
         },
         "required": [
+          "hidden",
           "people",
           "total"
         ],
@@ -8747,6 +8797,31 @@
           "isHidden",
           "name",
           "thumbnailPath"
+        ],
+        "type": "object"
+      },
+      "PlacesResponseDto": {
+        "properties": {
+          "admin1name": {
+            "type": "string"
+          },
+          "admin2name": {
+            "type": "string"
+          },
+          "latitude": {
+            "type": "number"
+          },
+          "longitude": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "latitude",
+          "longitude",
+          "name"
         ],
         "type": "object"
       },
@@ -9435,6 +9510,9 @@
           "isMotion": {
             "type": "boolean"
           },
+          "isNotInAlbum": {
+            "type": "boolean"
+          },
           "isOffline": {
             "type": "boolean"
           },
@@ -9497,6 +9575,7 @@
             "type": "string"
           },
           "withArchived": {
+            "default": false,
             "type": "boolean"
           },
           "withDeleted": {

@@ -1153,7 +1153,7 @@ Name | Type | Description  | Notes
  **updatedAfter** | **DateTime**|  | [optional] 
  **updatedBefore** | **DateTime**|  | [optional] 
  **webpPath** | **String**|  | [optional] 
- **withArchived** | **bool**|  | [optional] 
+ **withArchived** | **bool**|  | [optional] [default to false]
  **withDeleted** | **bool**|  | [optional] 
  **withExif** | **bool**|  | [optional] 
  **withPeople** | **bool**|  | [optional] 

@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.95.0
+ * 1.95.1
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -524,6 +524,7 @@ export type UpdatePartnerDto = {
     inTimeline: boolean;
 };
 export type PeopleResponseDto = {
+    hidden: number;
     people: PersonResponseDto[];
     total: number;
 };
@@ -645,6 +646,13 @@ export type MetadataSearchDto = {
     withPeople?: boolean;
     withStacked?: boolean;
 };
+export type PlacesResponseDto = {
+    admin1name?: string;
+    admin2name?: string;
+    latitude: number;
+    longitude: number;
+    name: string;
+};
 export type SmartSearchDto = {
     city?: string;
     country?: string;
@@ -656,6 +664,7 @@ export type SmartSearchDto = {
     isExternal?: boolean;
     isFavorite?: boolean;
     isMotion?: boolean;
+    isNotInAlbum?: boolean;
     isOffline?: boolean;
     isReadOnly?: boolean;
     isVisible?: boolean;
@@ -2192,6 +2201,18 @@ export function searchPerson({ name, withHidden }: {
     }>(`/search/person${QS.query(QS.explode({
         name,
         withHidden
+    }))}`, {
+        ...opts
+    }));
+}
+export function searchPlaces({ name }: {
+    name: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: PlacesResponseDto[];
+    }>(`/search/places${QS.query(QS.explode({
+        name
     }))}`, {
         ...opts
     }));

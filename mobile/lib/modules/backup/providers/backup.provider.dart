@@ -245,7 +245,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         } catch (e, stack) {
           log.severe(
             "Failed to get thumbnail for album ${album.name}",
-            e.toString(),
+            e,
             stack,
           );
         }

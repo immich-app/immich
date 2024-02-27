@@ -183,7 +183,7 @@ export function searchAssetBuilder(
     _.omitBy(
       {
         ...status,
-        isArchived: isArchived ?? withArchived,
+        isArchived: isArchived ?? (withArchived ? undefined : false),
         encodedVideoPath: isEncoded ? Not(IsNull()) : undefined,
         livePhotoVideoId: isMotion ? Not(IsNull()) : undefined,
       },
@@ -213,9 +213,9 @@ export function searchAssetBuilder(
   if (personIds && personIds.length > 0) {
     builder
       .leftJoin(`${builder.alias}.faces`, 'faces')
-      .andWhere('faces.personId IN (:...personIds)', { personIds: personIds })
+      .andWhere('faces.personId IN (:...personIds)', { personIds })
       .addGroupBy(`${builder.alias}.id`)
-      .having('COUNT(faces.id) = :personCount', { personCount: personIds.length });
+      .having('COUNT(DISTINCT faces.personId) = :personCount', { personCount: personIds.length });
 
     if (withExif) {
       builder.addGroupBy('exifInfo.assetId');

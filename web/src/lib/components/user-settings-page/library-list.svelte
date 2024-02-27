@@ -1,6 +1,7 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
+  import { locale } from '$lib/stores/preferences.store';
   import { getBytesWithUnit } from '$lib/utils/byte-units';
   import { getContextMenuPosition } from '$lib/utils/context-menu';
   import { handleError } from '$lib/utils/handle-error';
@@ -332,7 +333,7 @@
                 </td>
               {:else}
                 <td class="w-1/6 text-ellipsis px-4 text-sm">
-                  {totalCount[index]}
+                  {totalCount[index].toLocaleString($locale)}
                 </td>
                 <td class="w-1/6 text-ellipsis px-4 text-sm">{diskUsage[index]} {diskUsageUnit[index]}</td>
               {/if}

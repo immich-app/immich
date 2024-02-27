@@ -175,6 +175,11 @@ class Asset {
 
   int? stackCount;
 
+  /// Aspect ratio of the asset
+  @ignore
+  double? get aspectRatio =>
+      width == null || height == null ? 0 : width! / height!;
+
   /// `true` if this [Asset] is present on the device
   @ignore
   bool get isLocal => localId != null;
