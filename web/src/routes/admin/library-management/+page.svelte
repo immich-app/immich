@@ -69,8 +69,8 @@
 
   let toCreateLibrary = false;
 
-  onMount(() => {
-    readLibraryList();
+  onMount(async () => {
+    await readLibraryList();
   });
 
   const closeAll = () => {
@@ -252,11 +252,11 @@
     updateLibraryIndex = selectedLibraryIndex;
   };
 
-  const onScanNewLibraryClicked = () => {
+  const onScanNewLibraryClicked = async () => {
     closeAll();
 
     if (selectedLibrary) {
-      handleScan(selectedLibrary.id);
+      await handleScan(selectedLibrary.id);
     }
   };
 
@@ -266,38 +266,38 @@
     updateLibraryIndex = selectedLibraryIndex;
   };
 
-  const onScanAllLibraryFilesClicked = () => {
+  const onScanAllLibraryFilesClicked = async () => {
     closeAll();
     if (selectedLibrary) {
-      handleScanChanges(selectedLibrary.id);
+      await handleScanChanges(selectedLibrary.id);
     }
   };
 
-  const onForceScanAllLibraryFilesClicked = () => {
+  const onForceScanAllLibraryFilesClicked = async () => {
     closeAll();
     if (selectedLibrary) {
-      handleForceScan(selectedLibrary.id);
+      await handleForceScan(selectedLibrary.id);
     }
   };
 
-  const onRemoveOfflineFilesClicked = () => {
+  const onRemoveOfflineFilesClicked = async () => {
     closeAll();
     if (selectedLibrary) {
-      handleRemoveOffline(selectedLibrary.id);
+      await handleRemoveOffline(selectedLibrary.id);
     }
   };
 
-  const onDeleteLibraryClicked = () => {
+  const onDeleteLibraryClicked = async () => {
     closeAll();
 
     if (selectedLibrary && confirm(`Are you sure you want to delete ${selectedLibrary.name} library?`) == true) {
-      refreshStats(selectedLibraryIndex);
+      await refreshStats(selectedLibraryIndex);
       if (totalCount[selectedLibraryIndex] > 0) {
         deleteAssetCount = totalCount[selectedLibraryIndex];
         confirmDeleteLibrary = selectedLibrary;
       } else {
         deletedLibrary = selectedLibrary;
-        handleDelete();
+        await handleDelete();
       }
     }
   };
