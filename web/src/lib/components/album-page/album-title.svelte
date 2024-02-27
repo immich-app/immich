@@ -23,7 +23,6 @@
         },
       });
       albumName = newAlbumName;
-      notificationController.show({ type: NotificationType.Info, message: 'New album name has been saved' });
     } catch (error) {
       handleError(error, 'Unable to update album name');
     }

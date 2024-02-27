@@ -23,10 +23,6 @@
           description: newDescription,
         },
       });
-      notificationController.show({
-        type: NotificationType.Info,
-        message: 'Album description has been updated',
-      });
       description = newDescription;
     } catch (error) {
       handleError(error, 'Error updating album description');
