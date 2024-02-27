@@ -637,11 +637,11 @@ export class RKMPPConfig extends BaseHWConfig {
   getBitrateOptions() {
     const bitrate = this.getMaxBitrateValue();
     if (bitrate > 0) {
+      // -b:v specifies max bitrate, average bitrate is derived automatically...
       return ['-rc_mode 3', `-b:v ${bitrate}${this.getBitrateUnit()}`];
-    } else {
-      // use CRF value as QP value
-      return ['-rc_mode 2', `-qp_init ${this.config.crf}`];
     }
+    // use CRF value as QP value
+    return ['-rc_mode 2', `-qp_init ${this.config.crf}`];
   }
 
   getSupportedCodecs() {
