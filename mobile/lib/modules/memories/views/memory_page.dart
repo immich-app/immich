@@ -124,11 +124,14 @@ class MemoryPage extends HookConsumerWidget {
           .then((_) => precacheAsset(1));
     }
 
-    onAssetChanged(int otherIndex) {
+    Future<void> onAssetChanged(int otherIndex) async {
       HapticFeedback.selectionClick();
       currentAssetPage.value = otherIndex;
-      precacheAsset(otherIndex + 1);
       updateProgressText();
+      // Wait for page change animation to finish
+      await Future.delayed(const Duration(milliseconds: 400));
+      // And then precache the next asset
+      await precacheAsset(otherIndex + 1);
     }
 
     /* Notification listener is used instead of OnPageChanged callback since OnPageChanged is called

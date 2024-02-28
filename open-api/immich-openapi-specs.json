@@ -6467,7 +6467,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.96.0",
+    "version": "1.97.0",
     "contact": {}
   },
   "tags": [],
@@ -9835,18 +9835,10 @@
         "properties": {
           "enabled": {
             "type": "boolean"
-          },
-          "interval": {
-            "type": "integer"
-          },
-          "usePolling": {
-            "type": "boolean"
           }
         },
         "required": [
-          "enabled",
-          "interval",
-          "usePolling"
+          "enabled"
         ],
         "type": "object"
       },
