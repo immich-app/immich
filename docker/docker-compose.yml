@@ -60,7 +60,7 @@ services:
 
   redis:
     container_name: immich_redis
-    image: registry.hub.docker.com/library/redis:6.2-alpine@sha256:51d6c56749a4243096327e3fb964a48ed92254357108449cb6e23999c37773c5
+    image: registry.hub.docker.com/library/redis:7.2-alpine@sha256:1b503bb77079ba644371969e06e1a6a1670bb34c2251107c0fc3a21ef9fdaeca
     restart: always
 
   database:
