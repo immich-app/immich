@@ -198,11 +198,6 @@ export class LibraryService extends EventEmitter {
     return this.repository.getCountForUser(auth.user.id);
   }
 
-  async getAllForUser(auth: AuthDto, getAll = false): Promise<LibraryResponseDto[]> {
-    const libraries = getAll ? await this.repository.getAll() : await this.repository.getAllByUserId(auth.user.id);
-    return libraries.map((library) => mapLibrary(library));
-  }
-
   async get(auth: AuthDto, id: string): Promise<LibraryResponseDto> {
     await this.access.requirePermission(auth, Permission.LIBRARY_READ, id);
 

@@ -150,7 +150,6 @@ describe(LibraryService.name, () => {
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
       storageMock.crawl.mockResolvedValue(['/data/user1/photo.jpg']);
       assetMock.getByLibraryId.mockResolvedValue([]);
-      libraryMock.getOnlineAssetPaths.mockResolvedValue([]);
       userMock.get.mockResolvedValue(userStub.admin);
 
       await sut.handleQueueAssetRefresh(mockLibraryJob);
@@ -178,7 +177,6 @@ describe(LibraryService.name, () => {
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
       storageMock.crawl.mockResolvedValue(['/data/user1/photo.jpg']);
       assetMock.getByLibraryId.mockResolvedValue([]);
-      libraryMock.getOnlineAssetPaths.mockResolvedValue([]);
       userMock.get.mockResolvedValue(userStub.admin);
 
       await sut.handleQueueAssetRefresh(mockLibraryJob);
@@ -230,7 +228,6 @@ describe(LibraryService.name, () => {
       libraryMock.get.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
       storageMock.crawl.mockResolvedValue([]);
       assetMock.getByLibraryId.mockResolvedValue([]);
-      libraryMock.getOnlineAssetPaths.mockResolvedValue([]);
       userMock.get.mockResolvedValue(userStub.externalPathRoot);
 
       await sut.handleQueueAssetRefresh(mockLibraryJob);
@@ -720,26 +717,6 @@ describe(LibraryService.name, () => {
       libraryMock.get.mockResolvedValue(null);
       await expect(sut.get(authStub.admin, libraryStub.uploadLibrary1.id)).rejects.toBeInstanceOf(BadRequestException);
       expect(libraryMock.get).toHaveBeenCalledWith(libraryStub.uploadLibrary1.id);
-    });
-  });
-
-  describe('getAllForUser', () => {
-    it('should return all libraries for user', async () => {
-      libraryMock.getAllByUserId.mockResolvedValue([libraryStub.uploadLibrary1, libraryStub.externalLibrary1]);
-      await expect(sut.getAllForUser(authStub.admin)).resolves.toEqual([
-        expect.objectContaining({
-          id: libraryStub.uploadLibrary1.id,
-          name: libraryStub.uploadLibrary1.name,
-          ownerId: libraryStub.uploadLibrary1.ownerId,
-        }),
-        expect.objectContaining({
-          id: libraryStub.externalLibrary1.id,
-          name: libraryStub.externalLibrary1.name,
-          ownerId: libraryStub.externalLibrary1.ownerId,
-        }),
-      ]);
-
-      expect(libraryMock.getAllByUserId).toHaveBeenCalledWith(authStub.admin.user.id);
     });
   });
 
