@@ -13,7 +13,7 @@ import {
   newMediaRepositoryMock,
   newMoveRepositoryMock,
   newPersonRepositoryMock,
-  newSmartInfoRepositoryMock,
+  newSearchRepositoryMock,
   newStorageRepositoryMock,
   newSystemConfigRepositoryMock,
   personStub,
@@ -31,7 +31,7 @@ import {
   IMediaRepository,
   IMoveRepository,
   IPersonRepository,
-  ISmartInfoRepository,
+  ISearchRepository,
   IStorageRepository,
   ISystemConfigRepository,
   WithoutProperty,
@@ -76,7 +76,7 @@ describe(PersonService.name, () => {
   let moveMock: jest.Mocked<IMoveRepository>;
   let personMock: jest.Mocked<IPersonRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
-  let smartInfoMock: jest.Mocked<ISmartInfoRepository>;
+  let searchMock: jest.Mocked<ISearchRepository>;
   let cryptoMock: jest.Mocked<ICryptoRepository>;
   let sut: PersonService;
 
@@ -90,7 +90,7 @@ describe(PersonService.name, () => {
     mediaMock = newMediaRepositoryMock();
     personMock = newPersonRepositoryMock();
     storageMock = newStorageRepositoryMock();
-    smartInfoMock = newSmartInfoRepositoryMock();
+    searchMock = newSearchRepositoryMock();
     cryptoMock = newCryptoRepositoryMock();
     sut = new PersonService(
       accessMock,
@@ -102,7 +102,7 @@ describe(PersonService.name, () => {
       configMock,
       storageMock,
       jobMock,
-      smartInfoMock,
+      searchMock,
       cryptoMock,
     );
 
@@ -114,35 +114,12 @@ describe(PersonService.name, () => {
   });
 
   describe('getAll', () => {
-    it('should get all people with thumbnails', async () => {
-      personMock.getAllForUser.mockResolvedValue([personStub.withName, personStub.noThumbnail]);
-      personMock.getNumberOfPeople.mockResolvedValue(1);
-      await expect(sut.getAll(authStub.admin, { withHidden: undefined })).resolves.toEqual({
-        total: 1,
-        people: [responseDto],
-      });
-      expect(personMock.getAllForUser).toHaveBeenCalledWith(authStub.admin.user.id, {
-        minimumFaceCount: 3,
-        withHidden: false,
-      });
-    });
-    it('should get all visible people with thumbnails', async () => {
-      personMock.getAllForUser.mockResolvedValue([personStub.withName, personStub.hidden]);
-      personMock.getNumberOfPeople.mockResolvedValue(2);
-      await expect(sut.getAll(authStub.admin, { withHidden: false })).resolves.toEqual({
-        total: 2,
-        people: [responseDto],
-      });
-      expect(personMock.getAllForUser).toHaveBeenCalledWith(authStub.admin.user.id, {
-        minimumFaceCount: 3,
-        withHidden: false,
-      });
-    });
     it('should get all hidden and visible people with thumbnails', async () => {
       personMock.getAllForUser.mockResolvedValue([personStub.withName, personStub.hidden]);
-      personMock.getNumberOfPeople.mockResolvedValue(2);
+      personMock.getNumberOfPeople.mockResolvedValue({ total: 2, hidden: 1 });
       await expect(sut.getAll(authStub.admin, { withHidden: true })).resolves.toEqual({
         total: 2,
+        hidden: 1,
         people: [
           responseDto,
           {
@@ -752,7 +729,7 @@ describe(PersonService.name, () => {
     it('should create a face with no person and queue recognition job', async () => {
       personMock.createFaces.mockResolvedValue([faceStub.face1.id]);
       machineLearningMock.detectFaces.mockResolvedValue([detectFaceMock]);
-      smartInfoMock.searchFaces.mockResolvedValue([{ face: faceStub.face1, distance: 0.7 }]);
+      searchMock.searchFaces.mockResolvedValue([{ face: faceStub.face1, distance: 0.7 }]);
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
       const face = {
         assetId: 'asset-id',
@@ -814,7 +791,7 @@ describe(PersonService.name, () => {
       }
 
       const faces = [
-        { face: faceStub.noPerson1, distance: 0.0 },
+        { face: faceStub.noPerson1, distance: 0 },
         { face: faceStub.primaryFace1, distance: 0.2 },
         { face: faceStub.noPerson2, distance: 0.3 },
         { face: faceStub.face1, distance: 0.4 },
@@ -823,7 +800,7 @@ describe(PersonService.name, () => {
       configMock.load.mockResolvedValue([
         { key: SystemConfigKey.MACHINE_LEARNING_FACIAL_RECOGNITION_MIN_FACES, value: 1 },
       ]);
-      smartInfoMock.searchFaces.mockResolvedValue(faces);
+      searchMock.searchFaces.mockResolvedValue(faces);
       personMock.getFaceByIdWithAssets.mockResolvedValue(faceStub.noPerson1);
       personMock.create.mockResolvedValue(faceStub.primaryFace1.person);
 
@@ -843,14 +820,14 @@ describe(PersonService.name, () => {
 
     it('should create a new person if the face is a core point with no person', async () => {
       const faces = [
-        { face: faceStub.noPerson1, distance: 0.0 },
+        { face: faceStub.noPerson1, distance: 0 },
         { face: faceStub.noPerson2, distance: 0.3 },
       ] as FaceSearchResult[];
 
       configMock.load.mockResolvedValue([
         { key: SystemConfigKey.MACHINE_LEARNING_FACIAL_RECOGNITION_MIN_FACES, value: 1 },
       ]);
-      smartInfoMock.searchFaces.mockResolvedValue(faces);
+      searchMock.searchFaces.mockResolvedValue(faces);
       personMock.getFaceByIdWithAssets.mockResolvedValue(faceStub.noPerson1);
       personMock.create.mockResolvedValue(personStub.withName);
 
@@ -866,13 +843,31 @@ describe(PersonService.name, () => {
       });
     });
 
+    it('should not queue face with no matches', async () => {
+      const faces = [{ face: faceStub.noPerson1, distance: 0 }] as FaceSearchResult[];
+
+      searchMock.searchFaces.mockResolvedValue(faces);
+      personMock.getFaceByIdWithAssets.mockResolvedValue(faceStub.noPerson1);
+      personMock.create.mockResolvedValue(personStub.withName);
+
+      await sut.handleRecognizeFaces({ id: faceStub.noPerson1.id });
+
+      expect(jobMock.queue).not.toHaveBeenCalled();
+      expect(searchMock.searchFaces).toHaveBeenCalledTimes(1);
+      expect(personMock.create).not.toHaveBeenCalled();
+      expect(personMock.reassignFaces).not.toHaveBeenCalled();
+    });
+
     it('should defer non-core faces to end of queue', async () => {
-      const faces = [{ face: faceStub.noPerson1, distance: 0.0 }] as FaceSearchResult[];
+      const faces = [
+        { face: faceStub.noPerson1, distance: 0 },
+        { face: faceStub.noPerson2, distance: 0.4 },
+      ] as FaceSearchResult[];
 
       configMock.load.mockResolvedValue([
-        { key: SystemConfigKey.MACHINE_LEARNING_FACIAL_RECOGNITION_MIN_FACES, value: 2 },
+        { key: SystemConfigKey.MACHINE_LEARNING_FACIAL_RECOGNITION_MIN_FACES, value: 3 },
       ]);
-      smartInfoMock.searchFaces.mockResolvedValue(faces);
+      searchMock.searchFaces.mockResolvedValue(faces);
       personMock.getFaceByIdWithAssets.mockResolvedValue(faceStub.noPerson1);
       personMock.create.mockResolvedValue(personStub.withName);
 
@@ -882,25 +877,28 @@ describe(PersonService.name, () => {
         name: JobName.FACIAL_RECOGNITION,
         data: { id: faceStub.noPerson1.id, deferred: true },
       });
-      expect(smartInfoMock.searchFaces).toHaveBeenCalledTimes(1);
+      expect(searchMock.searchFaces).toHaveBeenCalledTimes(1);
       expect(personMock.create).not.toHaveBeenCalled();
       expect(personMock.reassignFaces).not.toHaveBeenCalled();
     });
 
-    it('should not assign person to non-core face with no matching person', async () => {
-      const faces = [{ face: faceStub.noPerson1, distance: 0.0 }] as FaceSearchResult[];
+    it('should not assign person to deferred non-core face with no matching person', async () => {
+      const faces = [
+        { face: faceStub.noPerson1, distance: 0 },
+        { face: faceStub.noPerson2, distance: 0.4 },
+      ] as FaceSearchResult[];
 
       configMock.load.mockResolvedValue([
-        { key: SystemConfigKey.MACHINE_LEARNING_FACIAL_RECOGNITION_MIN_FACES, value: 2 },
+        { key: SystemConfigKey.MACHINE_LEARNING_FACIAL_RECOGNITION_MIN_FACES, value: 3 },
       ]);
-      smartInfoMock.searchFaces.mockResolvedValueOnce(faces).mockResolvedValueOnce([]);
+      searchMock.searchFaces.mockResolvedValueOnce(faces).mockResolvedValueOnce([]);
       personMock.getFaceByIdWithAssets.mockResolvedValue(faceStub.noPerson1);
       personMock.create.mockResolvedValue(personStub.withName);
 
       await sut.handleRecognizeFaces({ id: faceStub.noPerson1.id, deferred: true });
 
       expect(jobMock.queue).not.toHaveBeenCalled();
-      expect(smartInfoMock.searchFaces).toHaveBeenCalledTimes(2);
+      expect(searchMock.searchFaces).toHaveBeenCalledTimes(2);
       expect(personMock.create).not.toHaveBeenCalled();
       expect(personMock.reassignFaces).not.toHaveBeenCalled();
     });

@@ -1,19 +1,19 @@
 <script lang="ts">
-  import { locale } from '$lib/stores/preferences.store';
-  import type { AuthDeviceResponseDto } from '@api';
-  import { DateTime, type ToRelativeCalendarOptions } from 'luxon';
-  import { createEventDispatcher } from 'svelte';
   import Icon from '$lib/components/elements/icon.svelte';
+  import { locale } from '$lib/stores/preferences.store';
+  import type { AuthDeviceResponseDto } from '@immich/sdk';
   import {
     mdiAndroid,
     mdiApple,
     mdiAppleSafari,
-    mdiMicrosoftWindows,
-    mdiLinux,
     mdiGoogleChrome,
-    mdiTrashCanOutline,
     mdiHelp,
+    mdiLinux,
+    mdiMicrosoftWindows,
+    mdiTrashCanOutline,
   } from '@mdi/js';
+  import { DateTime, type ToRelativeCalendarOptions } from 'luxon';
+  import { createEventDispatcher } from 'svelte';
 
   export let device: AuthDeviceResponseDto;
 
@@ -34,9 +34,9 @@
       <Icon path={mdiAndroid} size="40" />
     {:else if device.deviceOS === 'iOS' || device.deviceOS === 'Mac OS'}
       <Icon path={mdiApple} size="40" />
-    {:else if device.deviceOS.indexOf('Safari') !== -1}
+    {:else if device.deviceOS.includes('Safari')}
       <Icon path={mdiAppleSafari} size="40" />
-    {:else if device.deviceOS.indexOf('Windows') !== -1}
+    {:else if device.deviceOS.includes('Windows')}
       <Icon path={mdiMicrosoftWindows} size="40" />
     {:else if device.deviceOS === 'Linux'}
       <Icon path={mdiLinux} size="40" />
@@ -57,7 +57,7 @@
       </span>
       <div class="text-sm">
         <span class="">Last seen</span>
-        <span>{DateTime.fromISO(device.updatedAt).toRelativeCalendar(options)}</span>
+        <span>{DateTime.fromISO(device.updatedAt, { locale: $locale }).toRelativeCalendar(options)}</span>
       </div>
     </div>
     {#if !device.current}

@@ -1,4 +1,4 @@
-import { CQMode, ToneMapping, TranscodeHWAccel, VideoCodec } from '@app/infra/entities';
+import { CQMode, ToneMapping, TranscodeHWAccel, TranscodeTarget, VideoCodec } from '@app/infra/entities';
 import {
   AudioStreamInfo,
   BitrateDistribution,
@@ -12,31 +12,33 @@ class BaseConfig implements VideoCodecSWConfig {
   presets = ['veryslow', 'slower', 'slow', 'medium', 'fast', 'faster', 'veryfast', 'superfast', 'ultrafast'];
   constructor(protected config: SystemConfigFFmpegDto) {}
 
-  getOptions(videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
+  getOptions(target: TranscodeTarget, videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
     const options = {
-      inputOptions: this.getBaseInputOptions(),
-      outputOptions: this.getBaseOutputOptions(videoStream, audioStream).concat('-v verbose'),
+      inputOptions: this.getBaseInputOptions(videoStream),
+      outputOptions: [...this.getBaseOutputOptions(target, videoStream, audioStream), '-v verbose'],
       twoPass: this.eligibleForTwoPass(),
     } as TranscodeOptions;
-    const filters = this.getFilterOptions(videoStream);
-    if (filters.length > 0) {
-      options.outputOptions.push(`-vf ${filters.join(',')}`);
+    if ([TranscodeTarget.ALL, TranscodeTarget.VIDEO].includes(target)) {
+      const filters = this.getFilterOptions(videoStream);
+      if (filters.length > 0) {
+        options.outputOptions.push(`-vf ${filters.join(',')}`);
+      }
     }
-    options.outputOptions.push(...this.getPresetOptions());
-    options.outputOptions.push(...this.getThreadOptions());
-    options.outputOptions.push(...this.getBitrateOptions());
+
+    options.outputOptions.push(...this.getPresetOptions(), ...this.getThreadOptions(), ...this.getBitrateOptions());
 
     return options;
   }
 
-  getBaseInputOptions(): string[] {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  getBaseInputOptions(videoStream: VideoStreamInfo): string[] {
     return [];
   }
 
-  getBaseOutputOptions(videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
+  getBaseOutputOptions(target: TranscodeTarget, videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
     const options = [
-      `-c:v ${this.getVideoCodec()}`,
-      `-c:a ${this.getAudioCodec()}`,
+      `-c:v ${[TranscodeTarget.ALL, TranscodeTarget.VIDEO].includes(target) ? this.getVideoCodec() : 'copy'}`,
+      `-c:a ${[TranscodeTarget.ALL, TranscodeTarget.AUDIO].includes(target) ? this.getAudioCodec() : 'copy'}`,
       // Makes a second pass moving the moov atom to the
       // beginning of the file for improved playback speed.
       '-movflags faststart',
@@ -129,11 +131,10 @@ class BaseConfig implements VideoCodecSWConfig {
 
   getTargetResolution(videoStream: VideoStreamInfo) {
     let target;
-    if (this.config.targetResolution === 'original') {
-      target = Math.min(videoStream.height, videoStream.width);
-    } else {
-      target = Number.parseInt(this.config.targetResolution);
-    }
+    target =
+      this.config.targetResolution === 'original'
+        ? Math.min(videoStream.height, videoStream.width)
+        : Number.parseInt(this.config.targetResolution);
 
     if (target % 2 !== 0) {
       target -= 1;
@@ -182,7 +183,7 @@ class BaseConfig implements VideoCodecSWConfig {
 
   getBitrateUnit() {
     const maxBitrate = this.getMaxBitrateValue();
-    return this.config.maxBitrate.trim().substring(maxBitrate.toString().length); // use inputted unit if provided
+    return this.config.maxBitrate.trim().slice(maxBitrate.toString().length); // use inputted unit if provided
   }
 
   getMaxBitrateValue() {
@@ -401,18 +402,17 @@ export class NVENCConfig extends BaseHWConfig {
     return ['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda'];
   }
 
-  getBaseOutputOptions(videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
+  getBaseOutputOptions(target: TranscodeTarget, videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
     const options = [
       // below settings recommended from https://docs.nvidia.com/video-technologies/video-codec-sdk/12.0/ffmpeg-with-nvidia-gpu/index.html#command-line-for-latency-tolerant-high-quality-transcoding
       '-tune hq',
       '-qmin 0',
       '-rc-lookahead 20',
       '-i_qfactor 0.75',
-      ...super.getBaseOutputOptions(videoStream, audioStream),
+      ...super.getBaseOutputOptions(target, videoStream, audioStream),
     ];
     if (this.getBFrames() > 0) {
-      options.push('-b_ref_mode middle');
-      options.push('-b_qfactor 1.1');
+      options.push('-b_ref_mode middle', '-b_qfactor 1.1');
     }
     if (this.config.temporalAQ) {
       options.push('-temporal-aq 1');
@@ -474,8 +474,8 @@ export class NVENCConfig extends BaseHWConfig {
 
 export class QSVConfig extends BaseHWConfig {
   getBaseInputOptions() {
-    if (!this.devices.length) {
-      throw Error('No QSV device found');
+    if (this.devices.length === 0) {
+      throw new Error('No QSV device found');
     }
 
     let qsvString = '';
@@ -487,8 +487,8 @@ export class QSVConfig extends BaseHWConfig {
     return [`-init_hw_device qsv=hw${qsvString}`, '-filter_hw_device hw'];
   }
 
-  getBaseOutputOptions(videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
-    const options = super.getBaseOutputOptions(videoStream, audioStream);
+  getBaseOutputOptions(target: TranscodeTarget, videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
+    const options = super.getBaseOutputOptions(target, videoStream, audioStream);
     // VP9 requires enabling low power mode https://git.ffmpeg.org/gitweb/ffmpeg.git/commit/33583803e107b6d532def0f9d949364b01b6ad5a
     if (this.config.targetVideoCodec === VideoCodec.VP9) {
       options.push('-low_power 1');
@@ -519,8 +519,7 @@ export class QSVConfig extends BaseHWConfig {
     options.push(`-${this.useCQP() ? 'q:v' : 'global_quality'} ${this.config.crf}`);
     const bitrates = this.getBitrateDistribution();
     if (bitrates.max > 0) {
-      options.push(`-maxrate ${bitrates.max}${bitrates.unit}`);
-      options.push(`-bufsize ${bitrates.max * 2}${bitrates.unit}`);
+      options.push(`-maxrate ${bitrates.max}${bitrates.unit}`, `-bufsize ${bitrates.max * 2}${bitrates.unit}`);
     }
     return options;
   }
@@ -609,59 +608,56 @@ export class VAAPIConfig extends BaseHWConfig {
 }
 
 export class RKMPPConfig extends BaseHWConfig {
-  getOptions(videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo): TranscodeOptions {
-    const options = super.getOptions(videoStream, audioStream);
-    options.ffmpegPath = 'ffmpeg_mpp';
-    options.ldLibraryPath = '/lib/aarch64-linux-gnu:/lib/ffmpeg-mpp';
-    options.outputOptions.push(...this.getSizeOptions(videoStream));
-    return options;
-  }
-
   eligibleForTwoPass(): boolean {
     return false;
   }
 
-  getBaseInputOptions() {
+  getBaseInputOptions(videoStream: VideoStreamInfo) {
     if (this.devices.length === 0) {
-      throw Error('No RKMPP device found');
+      throw new Error('No RKMPP device found');
     }
-    return [];
+    if (this.shouldToneMap(videoStream)) {
+      // disable hardware decoding
+      return [];
+    }
+    return ['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga'];
   }
 
   getFilterOptions(videoStream: VideoStreamInfo) {
-    return this.shouldToneMap(videoStream) ? this.getToneMapping() : [];
-  }
-
-  getSizeOptions(videoStream: VideoStreamInfo) {
+    if (this.shouldToneMap(videoStream)) {
+      // use software filter options
+      return super.getFilterOptions(videoStream);
+    }
     if (this.shouldScale(videoStream)) {
-      const { width, height } = this.getSize(videoStream);
-      return [`-width ${width}`, `-height ${height}`];
+      return [`scale_rkrga=${this.getScaling(videoStream)}:format=nv12:afbc=1`];
     }
     return [];
   }
 
   getPresetOptions() {
     switch (this.config.targetVideoCodec) {
-      case VideoCodec.H264:
+      case VideoCodec.H264: {
         // from ffmpeg_mpp help, commonly referred to as H264 level 5.1
         return ['-level 51'];
-      case VideoCodec.HEVC:
+      }
+      case VideoCodec.HEVC: {
         // from ffmpeg_mpp help, commonly referred to as HEVC level 5.1
         return ['-level 153'];
-      default:
-        throw Error(`Incompatible video codec for RKMPP: ${this.config.targetVideoCodec}`);
+      }
+      default: {
+        throw new Error(`Incompatible video codec for RKMPP: ${this.config.targetVideoCodec}`);
+      }
     }
   }
 
   getBitrateOptions() {
     const bitrate = this.getMaxBitrateValue();
     if (bitrate > 0) {
-      return ['-rc_mode 3', '-quality_min 0', '-quality_max 100', `-b:v ${bitrate}${this.getBitrateUnit()}`];
-    } else {
-      // convert CQP from 51-10 to 0-100, values below 10 are set to 10
-      const quality = Math.floor(125 - Math.max(this.config.crf, 10) * (125 / 51));
-      return ['-rc_mode 2', `-quality_min ${quality}`, `-quality_max ${quality}`];
+      // -b:v specifies max bitrate, average bitrate is derived automatically...
+      return ['-rc_mode AVBR', `-b:v ${bitrate}${this.getBitrateUnit()}`];
     }
+    // use CRF value as QP value
+    return ['-rc_mode CQP', `-qp_init ${this.config.crf}`];
   }
 
   getSupportedCodecs() {
@@ -669,6 +665,6 @@ export class RKMPPConfig extends BaseHWConfig {
   }
 
   getVideoCodec(): string {
-    return `${this.config.targetVideoCodec}_rkmpp_encoder`;
+    return `${this.config.targetVideoCodec}_rkmpp`;
   }
 }

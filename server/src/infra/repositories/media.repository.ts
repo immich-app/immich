@@ -2,10 +2,10 @@ import { CropOptions, IMediaRepository, ResizeOptions, TranscodeOptions, VideoIn
 import { Colorspace } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
-import fs from 'fs/promises';
+import fs from 'node:fs/promises';
+import { Writable } from 'node:stream';
+import { promisify } from 'node:util';
 import sharp from 'sharp';
-import { Writable } from 'stream';
-import { promisify } from 'util';
 
 const probe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
 sharp.concurrency(0);
@@ -60,6 +60,7 @@ export class MediaRepository implements IMediaRepository {
           frameCount: Number.parseInt(stream.nb_frames ?? '0'),
           rotation: Number.parseInt(`${stream.rotation ?? 0}`),
           isHDR: stream.color_transfer === 'smpte2084' || stream.color_transfer === 'arib-std-b67',
+          bitrate: Number.parseInt(stream.bit_rate ?? '0'),
         })),
       audioStreams: results.streams
         .filter((stream) => stream.codec_type === 'audio')
@@ -75,23 +76,12 @@ export class MediaRepository implements IMediaRepository {
   transcode(input: string, output: string | Writable, options: TranscodeOptions): Promise<void> {
     if (!options.twoPass) {
       return new Promise((resolve, reject) => {
-        const oldLdLibraryPath = process.env.LD_LIBRARY_PATH;
-        if (options.ldLibraryPath) {
-          // fluent ffmpeg does not allow to set environment variables, so we do it manually
-          process.env.LD_LIBRARY_PATH = this.chainPath(oldLdLibraryPath || '', options.ldLibraryPath);
-        }
-        try {
-          this.configureFfmpegCall(input, output, options).on('error', reject).on('end', resolve).run();
-        } finally {
-          if (options.ldLibraryPath) {
-            process.env.LD_LIBRARY_PATH = oldLdLibraryPath;
-          }
-        }
+        this.configureFfmpegCall(input, output, options).on('error', reject).on('end', resolve).run();
       });
     }
 
     if (typeof output !== 'string') {
-      throw new Error('Two-pass transcoding does not support writing to a stream');
+      throw new TypeError('Two-pass transcoding does not support writing to a stream');
     }
 
     // two-pass allows for precise control of bitrate at the cost of running twice
@@ -120,16 +110,15 @@ export class MediaRepository implements IMediaRepository {
 
   configureFfmpegCall(input: string, output: string | Writable, options: TranscodeOptions) {
     return ffmpeg(input, { niceness: 10 })
-      .setFfmpegPath(options.ffmpegPath || 'ffmpeg')
       .inputOptions(options.inputOptions)
       .outputOptions(options.outputOptions)
       .output(output)
-      .on('error', (err, stdout, stderr) => this.logger.error(stderr || err));
+      .on('error', (error, stdout, stderr) => this.logger.error(stderr || error));
   }
 
   chainPath(existing: string, path: string) {
-    const sep = existing.endsWith(':') ? '' : ':';
-    return `${existing}${sep}${path}`;
+    const separator = existing.endsWith(':') ? '' : ':';
+    return `${existing}${separator}${path}`;
   }
 
   async generateThumbhash(imagePath: string): Promise<Buffer> {

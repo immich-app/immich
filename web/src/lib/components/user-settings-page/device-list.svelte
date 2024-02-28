@@ -1,16 +1,16 @@
 <script lang="ts">
-  import { api, type AuthDeviceResponseDto } from '@api';
+  import { getAuthDevices, logoutAuthDevice, logoutAuthDevices, type AuthDeviceResponseDto } from '@immich/sdk';
   import { handleError } from '../../utils/handle-error';
   import Button from '../elements/buttons/button.svelte';
   import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
-  import { notificationController, NotificationType } from '../shared-components/notification/notification';
+  import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import DeviceCard from './device-card.svelte';
 
   export let devices: AuthDeviceResponseDto[];
   let deleteDevice: AuthDeviceResponseDto | null = null;
   let deleteAll = false;
 
-  const refresh = () => api.authenticationApi.getAuthDevices().then(({ data }) => (devices = data));
+  const refresh = () => getAuthDevices().then((_devices) => (devices = _devices));
 
   $: currentDevice = devices.find((device) => device.current);
   $: otherDevices = devices.filter((device) => !device.current);
@@ -21,7 +21,7 @@
     }
 
     try {
-      await api.authenticationApi.logoutAuthDevice({ id: deleteDevice.id });
+      await logoutAuthDevice({ id: deleteDevice.id });
       notificationController.show({ message: `Logged out device`, type: NotificationType.Info });
     } catch (error) {
       handleError(error, 'Unable to log out device');
@@ -33,7 +33,7 @@
 
   const handleDeleteAll = async () => {
     try {
-      await api.authenticationApi.logoutAuthDevices();
+      await logoutAuthDevices();
       notificationController.show({
         message: `Logged out all devices`,
         type: NotificationType.Info,
@@ -73,9 +73,9 @@
   {#if otherDevices.length > 0}
     <div class="mb-6">
       <h3 class="mb-2 text-xs font-medium text-immich-primary dark:text-immich-dark-primary">OTHER DEVICES</h3>
-      {#each otherDevices as device, i}
+      {#each otherDevices as device, index}
         <DeviceCard {device} on:delete={() => (deleteDevice = device)} />
-        {#if i !== otherDevices.length - 1}
+        {#if index !== otherDevices.length - 1}
           <hr class="my-3" />
         {/if}
       {/each}

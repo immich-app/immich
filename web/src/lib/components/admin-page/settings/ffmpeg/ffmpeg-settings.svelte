@@ -1,25 +1,27 @@
 <script lang="ts">
+  import Icon from '$lib/components/elements/icon.svelte';
   import {
     AudioCodec,
     CQMode,
-    type SystemConfigDto,
     ToneMapping,
     TranscodeHWAccel,
     TranscodePolicy,
     VideoCodec,
-  } from '@api';
-  import SettingButtonsRow from '../setting-buttons-row.svelte';
-  import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
-  import SettingSelect from '../setting-select.svelte';
-  import SettingSwitch from '../setting-switch.svelte';
-  import SettingCheckboxes from '../setting-checkboxes.svelte';
-  import { isEqual, sortBy } from 'lodash-es';
-  import { fade } from 'svelte/transition';
-  import SettingAccordion from '../setting-accordion.svelte';
+    type SystemConfigDto,
+  } from '@immich/sdk';
   import { mdiHelpCircleOutline } from '@mdi/js';
-  import Icon from '$lib/components/elements/icon.svelte';
+  import { isEqual, sortBy } from 'lodash-es';
   import { createEventDispatcher } from 'svelte';
+  import { fade } from 'svelte/transition';
   import type { SettingsEventType } from '../admin-settings';
+  import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
+  import SettingInputField, {
+    SettingInputFieldType,
+  } from '$lib/components/shared-components/settings/setting-input-field.svelte';
+  import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
+  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
+  import SettingCheckboxes from '$lib/components/shared-components/settings/setting-checkboxes.svelte';
+  import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
@@ -90,7 +92,10 @@
           ]}
           name="acodec"
           isEdited={config.ffmpeg.targetAudioCodec !== savedConfig.ffmpeg.targetAudioCodec}
-          on:select={() => (config.ffmpeg.acceptedAudioCodecs = [config.ffmpeg.targetAudioCodec])}
+          on:select={() =>
+            config.ffmpeg.acceptedAudioCodecs.includes(config.ffmpeg.targetAudioCodec)
+              ? null
+              : config.ffmpeg.acceptedAudioCodecs.push(config.ffmpeg.targetAudioCodec)}
         />
 
         <SettingCheckboxes
@@ -235,6 +240,7 @@
         />
 
         <SettingAccordion
+          key="hardware-acceleration"
           title="Hardware Acceleration"
           subtitle="Experimental; much faster, but will have lower quality at the same bitrate"
         >
@@ -296,7 +302,11 @@
           </div>
         </SettingAccordion>
 
-        <SettingAccordion title="Advanced" subtitle="Options most users should not need to change">
+        <SettingAccordion
+          key="advanced-options"
+          title="Advanced"
+          subtitle="Options most users should not need to change"
+        >
           <div class="ml-4 mt-4 flex flex-col gap-4">
             <SettingInputField
               inputType={SettingInputFieldType.NUMBER}

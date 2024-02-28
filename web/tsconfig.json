@@ -5,7 +5,6 @@
     "checkJs": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "lib": ["es2020", "DOM"],
     "moduleResolution": "bundler",
     "module": "es2020",
     "resolveJsonModule": true,

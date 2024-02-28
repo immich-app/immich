@@ -1,19 +1,25 @@
 <script lang="ts">
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
+  import { AppRoute } from '$lib/constants';
   import { user } from '$lib/stores/user.store';
-  import { api, type SystemConfigDto, type SystemConfigTemplateStorageOptionDto } from '@api';
+  import {
+    getStorageTemplateOptions,
+    type SystemConfigDto,
+    type SystemConfigTemplateStorageOptionDto,
+  } from '@immich/sdk';
   import handlebar from 'handlebars';
   import { isEqual } from 'lodash-es';
   import * as luxon from 'luxon';
   import { createEventDispatcher } from 'svelte';
   import { fade } from 'svelte/transition';
   import type { SettingsEventType } from '../admin-settings';
-  import SettingButtonsRow from '../setting-buttons-row.svelte';
-  import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
-  import SettingSwitch from '../setting-switch.svelte';
   import SupportedDatetimePanel from './supported-datetime-panel.svelte';
   import SupportedVariablesPanel from './supported-variables-panel.svelte';
-  import { AppRoute } from '$lib/constants';
+  import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
+  import SettingInputField, {
+    SettingInputFieldType,
+  } from '$lib/components/shared-components/settings/setting-input-field.svelte';
+  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
@@ -26,19 +32,16 @@
   let selectedPreset = '';
 
   const getTemplateOptions = async () => {
-    templateOptions = await api.systemConfigApi.getStorageTemplateOptions().then((res) => res.data);
+    templateOptions = await getStorageTemplateOptions();
     selectedPreset = savedConfig.storageTemplate.template;
   };
 
-  const getSupportDateTimeFormat = async () => {
-    const { data } = await api.systemConfigApi.getStorageTemplateOptions();
-    return data;
-  };
+  const getSupportDateTimeFormat = () => getStorageTemplateOptions();
 
   $: parsedTemplate = () => {
     try {
       return renderTemplate(config.storageTemplate.template);
-    } catch (error) {
+    } catch {
       return 'error';
     }
   };
@@ -81,7 +84,26 @@
   };
 </script>
 
-<section class="dark:text-immich-dark-fg">
+<section class="dark:text-immich-dark-fg mt-2">
+  <div in:fade={{ duration: 500 }} class="mx-4 flex flex-col gap-4 py-4">
+    <p class="text-sm dark:text-immich-dark-fg">
+      For more details about this feature, refer to the <a
+        href="https://immich.app/docs/administration/storage-template"
+        class="underline"
+        target="_blank"
+        rel="noreferrer"
+        >Storage Template
+      </a>
+      and its
+      <a
+        href="https://immich.app/docs/administration/backup-and-restore#asset-types-and-storage-locations"
+        class="underline"
+        target="_blank"
+        rel="noreferrer"
+        >implications
+      </a>
+    </p>
+  </div>
   {#await getTemplateOptions() then}
     <div id="directory-path-builder" class="flex flex-col gap-4 {minified ? '' : 'ml-4 mt-4'}">
       <SettingSwitch

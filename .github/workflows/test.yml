@@ -12,7 +12,7 @@ concurrency:
 jobs:
   server-e2e-api:
     name: Server (e2e-api)
-    runs-on: mich
+    runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: ./server
@@ -29,7 +29,7 @@ jobs:
 
   server-e2e-jobs:
     name: Server (e2e-jobs)
-    runs-on: mich
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
@@ -103,6 +103,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
       - name: Run setup typescript-sdk
         run: npm ci && npm run build
         working-directory: ./open-api/typescript-sdk
@@ -129,33 +134,6 @@ jobs:
       - name: Run unit tests & coverage
         run: npm run test:cov
         if: ${{ !cancelled() }}
-
-  cli-e2e-tests:
-    name: CLI (e2e)
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./cli
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          submodules: "recursive"
-
-      - name: Run setup typescript-sdk
-        run: npm ci && npm run build
-        working-directory: ./open-api/typescript-sdk
-
-      - name: Run npm install (cli)
-        run: npm ci
-
-      - name: Run npm install (server)
-        run: npm ci && npm run build
-        working-directory: ./server
-
-      - name: Run e2e tests
-        run: npm run test:e2e
 
   web-unit-tests:
     name: Web
@@ -194,6 +172,47 @@ jobs:
       - name: Run unit tests & coverage
         run: npm run test:cov
         if: ${{ !cancelled() }}
+
+  e2e-tests:
+    name: End-to-End Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./e2e
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: "recursive"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Run setup typescript-sdk
+        run: npm ci && npm run build
+        working-directory: ./open-api/typescript-sdk
+
+      - name: Run setup cli
+        run: npm ci && npm run build
+        working-directory: ./cli
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
+      - name: Docker build
+        run: docker compose build
+
+      - name: Run e2e tests (api & cli)
+        run: npm run test
+
+      - name: Run e2e tests (web)
+        run: npx playwright test
 
   mobile-unit-tests:
     name: Mobile
@@ -237,7 +256,20 @@ jobs:
           poetry run mypy --install-types --non-interactive --strict app/
       - name: Run tests and coverage
         run: |
-          poetry run pytest --cov app
+          poetry run pytest app --cov=app --cov-report term-missing
+
+  shellcheck:
+    name: ShellCheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run ShellCheck
+        uses: ludeeus/action-shellcheck@master
+        with:
+          ignore_paths: >-
+            **/open-api/**
+            **/openapi/**
+            **/node_modules/**
 
   generated-api-up-to-date:
     name: OpenAPI Clients
@@ -247,7 +279,7 @@ jobs:
       - name: Run API generation
         run: make open-api
       - name: Find file changes
-        uses: tj-actions/verify-changed-files@v13.1
+        uses: tj-actions/verify-changed-files@v18
         id: verify-changed-files
         with:
           files: |
@@ -265,7 +297,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: tensorchord/pgvecto-rs:pg14-v0.1.11@sha256:0335a1a22f8c5dd1b697f14f079934f5152eaaa216c09b61e293be285491f8ee
+        image: tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:90724186f0a3517cf6914295b5ab410db9ce23190a2d9d0b9dd6463e3fa298f0
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_USER: postgres
@@ -302,7 +334,7 @@ jobs:
         run: npm run typeorm:migrations:generate ./src/infra/migrations/TestMigration
 
       - name: Find file changes
-        uses: tj-actions/verify-changed-files@v13.1
+        uses: tj-actions/verify-changed-files@v18
         id: verify-changed-files
         with:
           files: |
@@ -320,7 +352,7 @@ jobs:
           DB_URL: postgres://postgres:postgres@localhost:5432/immich
 
       - name: Find file changes
-        uses: tj-actions/verify-changed-files@v13.1
+        uses: tj-actions/verify-changed-files@v18
         id: verify-changed-sql-files
         with:
           files: |

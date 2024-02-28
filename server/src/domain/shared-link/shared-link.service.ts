@@ -21,7 +21,7 @@ export class SharedLinkService {
   }
 
   getAll(auth: AuthDto): Promise<SharedLinkResponseDto[]> {
-    return this.repository.getAll(auth.user.id).then((links) => links.map(mapSharedLink));
+    return this.repository.getAll(auth.user.id).then((links) => links.map((link) => mapSharedLink(link)));
   }
 
   async getMine(auth: AuthDto, dto: SharedLinkPasswordDto): Promise<SharedLinkResponseDto> {
@@ -30,7 +30,7 @@ export class SharedLinkService {
     }
 
     const sharedLink = await this.findOrFail(auth.user.id, auth.sharedLink.id);
-    const response = this.map(sharedLink, { withExif: sharedLink.showExif });
+    const response = this.mapToSharedLink(sharedLink, { withExif: sharedLink.showExif });
     if (sharedLink.password) {
       response.token = this.validateAndRefreshToken(sharedLink, dto);
     }
@@ -40,19 +40,20 @@ export class SharedLinkService {
 
   async get(auth: AuthDto, id: string): Promise<SharedLinkResponseDto> {
     const sharedLink = await this.findOrFail(auth.user.id, id);
-    return this.map(sharedLink, { withExif: true });
+    return this.mapToSharedLink(sharedLink, { withExif: true });
   }
 
   async create(auth: AuthDto, dto: SharedLinkCreateDto): Promise<SharedLinkResponseDto> {
     switch (dto.type) {
-      case SharedLinkType.ALBUM:
+      case SharedLinkType.ALBUM: {
         if (!dto.albumId) {
           throw new BadRequestException('Invalid albumId');
         }
         await this.access.requirePermission(auth, Permission.ALBUM_SHARE, dto.albumId);
         break;
+      }
 
-      case SharedLinkType.INDIVIDUAL:
+      case SharedLinkType.INDIVIDUAL: {
         if (!dto.assetIds || dto.assetIds.length === 0) {
           throw new BadRequestException('Invalid assetIds');
         }
@@ -60,6 +61,7 @@ export class SharedLinkService {
         await this.access.requirePermission(auth, Permission.ASSET_SHARE, dto.assetIds);
 
         break;
+      }
     }
 
     const sharedLink = await this.repository.create({
@@ -76,7 +78,7 @@ export class SharedLinkService {
       showExif: dto.showMetadata ?? true,
     });
 
-    return this.map(sharedLink, { withExif: true });
+    return this.mapToSharedLink(sharedLink, { withExif: true });
   }
 
   async update(auth: AuthDto, id: string, dto: SharedLinkEditDto) {
@@ -91,7 +93,7 @@ export class SharedLinkService {
       allowDownload: dto.allowDownload,
       showExif: dto.showMetadata,
     });
-    return this.map(sharedLink, { withExif: true });
+    return this.mapToSharedLink(sharedLink, { withExif: true });
   }
 
   async remove(auth: AuthDto, id: string): Promise<void> {
@@ -173,7 +175,7 @@ export class SharedLinkService {
 
     const sharedLink = await this.findOrFail(auth.sharedLink.userId, auth.sharedLink.id);
     const assetId = sharedLink.album?.albumThumbnailAssetId || sharedLink.assets[0]?.id;
-    const assetCount = sharedLink.assets.length || sharedLink.album?.assets.length || 0;
+    const assetCount = sharedLink.assets.length ?? sharedLink.album?.assets.length ?? 0;
 
     return {
       title: sharedLink.album ? sharedLink.album.albumName : 'Public Share',
@@ -184,7 +186,7 @@ export class SharedLinkService {
     };
   }
 
-  private map(sharedLink: SharedLinkEntity, { withExif }: { withExif: boolean }) {
+  private mapToSharedLink(sharedLink: SharedLinkEntity, { withExif }: { withExif: boolean }) {
     return withExif ? mapSharedLink(sharedLink) : mapSharedLinkWithoutMetadata(sharedLink);
   }
 

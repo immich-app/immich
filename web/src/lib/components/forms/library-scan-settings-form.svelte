@@ -1,12 +1,11 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
-  import Button from '../elements/buttons/button.svelte';
-  import { LibraryType, type LibraryResponseDto } from '@api';
-  import { handleError } from '../../utils/handle-error';
-  import { onMount } from 'svelte';
   import Icon from '$lib/components/elements/icon.svelte';
-  import LibraryExclusionPatternForm from './library-exclusion-pattern-form.svelte';
+  import { LibraryType, type LibraryResponseDto } from '@immich/sdk';
   import { mdiPencilOutline } from '@mdi/js';
+  import { createEventDispatcher, onMount } from 'svelte';
+  import { handleError } from '../../utils/handle-error';
+  import Button from '../elements/buttons/button.svelte';
+  import LibraryExclusionPatternForm from './library-exclusion-pattern-form.svelte';
 
   export let library: Partial<LibraryResponseDto>;
 
@@ -38,7 +37,7 @@
     dispatch('submit', { library, type: LibraryType.External });
   };
 
-  const handleAddExclusionPattern = async () => {
+  const handleAddExclusionPattern = () => {
     if (!addExclusionPattern) {
       return;
     }
@@ -48,17 +47,20 @@
     }
 
     try {
-      library.exclusionPatterns.push(exclusionPatternToAdd);
-      exclusionPatternToAdd = '';
-
-      exclusionPatterns = library.exclusionPatterns;
-      addExclusionPattern = false;
+      // Check so that exclusion pattern isn't duplicated
+      if (!library.exclusionPatterns.includes(exclusionPatternToAdd)) {
+        library.exclusionPatterns.push(exclusionPatternToAdd);
+        exclusionPatterns = library.exclusionPatterns;
+      }
     } catch (error) {
-      handleError(error, 'Unable to add exclude pattern');
+      handleError(error, 'Unable to add exclusion pattern');
+    } finally {
+      exclusionPatternToAdd = '';
+      addExclusionPattern = false;
     }
   };
 
-  const handleEditExclusionPattern = async () => {
+  const handleEditExclusionPattern = () => {
     if (editExclusionPattern === null) {
       return;
     }
@@ -77,7 +79,7 @@
     }
   };
 
-  const handleDeleteExclusionPattern = async () => {
+  const handleDeleteExclusionPattern = () => {
     if (editExclusionPattern === null) {
       return;
     }
@@ -102,6 +104,7 @@
   <LibraryExclusionPatternForm
     submitText="Add"
     bind:exclusionPattern={exclusionPatternToAdd}
+    {exclusionPatterns}
     on:submit={handleAddExclusionPattern}
     on:cancel={() => {
       addExclusionPattern = false;
@@ -109,11 +112,12 @@
   />
 {/if}
 
-{#if editExclusionPattern != null}
+{#if editExclusionPattern != undefined}
   <LibraryExclusionPatternForm
     submitText="Save"
-    canDelete={true}
+    isEditing={true}
     bind:exclusionPattern={editedExclusionPattern}
+    {exclusionPatterns}
     on:submit={handleEditExclusionPattern}
     on:delete={handleDeleteExclusionPattern}
     on:cancel={() => {

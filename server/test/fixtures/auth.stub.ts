@@ -19,11 +19,6 @@ export const loginStub = {
   },
 };
 
-export const changePasswordStub = {
-  password: 'Password123',
-  newPassword: 'Password1234',
-};
-
 export const authStub = {
   admin: Object.freeze<AuthDto>({
     user: {
@@ -145,6 +140,7 @@ export const loginResponseStub = {
     cookie: [
       'immich_access_token=cmFuZG9tLWJ5dGVz; HttpOnly; Secure; Path=/; Max-Age=34560000; SameSite=Lax;',
       'immich_auth_type=oauth; HttpOnly; Secure; Path=/; Max-Age=34560000; SameSite=Lax;',
+      'immich_is_authenticated=true; Secure; Path=/; Max-Age=34560000; SameSite=Lax;',
     ],
   },
   user1password: {
@@ -160,6 +156,7 @@ export const loginResponseStub = {
     cookie: [
       'immich_access_token=cmFuZG9tLWJ5dGVz; HttpOnly; Secure; Path=/; Max-Age=34560000; SameSite=Lax;',
       'immich_auth_type=password; HttpOnly; Secure; Path=/; Max-Age=34560000; SameSite=Lax;',
+      'immich_is_authenticated=true; Secure; Path=/; Max-Age=34560000; SameSite=Lax;',
     ],
   },
   user1insecure: {
@@ -175,6 +172,7 @@ export const loginResponseStub = {
     cookie: [
       'immich_access_token=cmFuZG9tLWJ5dGVz; HttpOnly; Path=/; Max-Age=34560000; SameSite=Lax;',
       'immich_auth_type=password; HttpOnly; Path=/; Max-Age=34560000; SameSite=Lax;',
+      'immich_is_authenticated=true; Path=/; Max-Age=34560000; SameSite=Lax;',
     ],
   },
 };

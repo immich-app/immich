@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'dart:math';
+import 'dart:ui' as ui;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:auto_route/auto_route.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
@@ -10,6 +10,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/album/providers/current_album.provider.dart';
+import 'package:immich_mobile/modules/asset_viewer/image_providers/immich_remote_image_provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/asset_stack.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/current_asset.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/show_controls.provider.dart';
@@ -25,15 +26,14 @@ import 'package:immich_mobile/modules/asset_viewer/views/video_viewer_page.dart'
 import 'package:immich_mobile/modules/backup/providers/manual_upload.provider.dart';
 import 'package:immich_mobile/modules/home/ui/upload_dialog.dart';
 import 'package:immich_mobile/modules/partner/providers/partner.provider.dart';
-import 'package:immich_mobile/shared/cache/original_image_provider.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/modules/home/ui/delete_dialog.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/providers/user.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
+import 'package:immich_mobile/shared/ui/immich_thumbnail.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/shared/ui/photo_view/photo_view_gallery.dart';
 import 'package:immich_mobile/shared/ui/photo_view/src/photo_view_computed_scale.dart';
@@ -41,8 +41,6 @@ import 'package:immich_mobile/shared/ui/photo_view/src/photo_view_scale_state.da
 import 'package:immich_mobile/shared/ui/photo_view/src/utils/photo_view_hero_attributes.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
-import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
-import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:isar/isar.dart';
 import 'package:openapi/api.dart' show ThumbnailFormat;
 
@@ -78,8 +76,6 @@ class GalleryViewerPage extends HookConsumerWidget {
     final isPlayingMotionVideo = useState(false);
     final isPlayingVideo = useState(false);
     Offset? localPosition;
-    final authToken = 'Bearer ${Store.get(StoreKey.accessToken)}';
-    final header = {"Authorization": authToken};
     final currentIndex = useState(initialIndex);
     final currentAsset = loadAsset(currentIndex.value);
     final isTrashEnabled =
@@ -136,53 +132,19 @@ class GalleryViewerPage extends HookConsumerWidget {
     void toggleFavorite(Asset asset) =>
         ref.read(assetProvider.notifier).toggleFavorite([asset]);
 
-    /// Original (large) image of a remote asset. Required asset.isRemote
-    ImageProvider remoteOriginalProvider(Asset asset) =>
-        CachedNetworkImageProvider(
-          getImageUrl(asset),
-          cacheKey: getImageCacheKey(asset),
-          headers: header,
-        );
-
-    /// Original (large) image of a local asset. Required asset.isLocal
-    ImageProvider localOriginalProvider(Asset asset) =>
-        OriginalImageProvider(asset);
-
-    ImageProvider finalImageProvider(Asset asset) {
-      if (ImmichImage.useLocal(asset)) {
-        return localOriginalProvider(asset);
-      } else if (isLoadOriginal.value) {
-        return remoteOriginalProvider(asset);
-      } else if (isLoadPreview.value) {
-        return ImmichImage.remoteThumbnailProvider(asset, jpeg, header);
-      }
-      return ImmichImage.remoteThumbnailProvider(asset, webp, header);
-    }
-
-    Iterable<ImageProvider> allImageProviders(Asset asset) sync* {
-      if (ImmichImage.useLocal(asset)) {
-        yield ImmichImage.localImageProvider(asset);
-        yield localOriginalProvider(asset);
-      } else {
-        yield ImmichImage.remoteThumbnailProvider(asset, webp, header);
-        if (isLoadPreview.value) {
-          yield ImmichImage.remoteThumbnailProvider(asset, jpeg, header);
-        }
-        if (isLoadOriginal.value) {
-          yield remoteOriginalProvider(asset);
-        }
-      }
-    }
-
     void precacheNextImage(int index) {
       void onError(Object exception, StackTrace? stackTrace) {
         // swallow error silently
+        debugPrint('Error precaching next image: $exception, $stackTrace');
       }
+
       if (index < totalAssets && index >= 0) {
         final asset = loadAsset(index);
-        for (final imageProvider in allImageProviders(asset)) {
-          precacheImage(imageProvider, context, onError: onError);
-        }
+        precacheImage(
+          ImmichImage.imageProvider(asset: asset),
+          context,
+          onError: onError,
+        );
       }
     }
 
@@ -192,10 +154,11 @@ class GalleryViewerPage extends HookConsumerWidget {
           borderRadius: BorderRadius.all(Radius.circular(15.0)),
         ),
         barrierColor: Colors.transparent,
-        backgroundColor: Colors.transparent,
         isScrollControlled: true,
-        useSafeArea: true,
+        showDragHandle: true,
+        enableDrag: true,
         context: context,
+        useSafeArea: true,
         builder: (context) {
           return Padding(
             padding: EdgeInsets.only(
@@ -519,16 +482,9 @@ class GalleryViewerPage extends HookConsumerWidget {
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(4),
-                  child: CachedNetworkImage(
+                  child: Image(
                     fit: BoxFit.cover,
-                    imageUrl:
-                        '${Store.get(StoreKey.serverEndpoint)}/asset/thumbnail/$assetId',
-                    httpHeaders: {
-                      "Authorization":
-                          "Bearer ${Store.get(StoreKey.accessToken)}",
-                    },
-                    errorWidget: (context, url, error) =>
-                        const Icon(Icons.image_not_supported_outlined),
+                    image: ImmichRemoteImageProvider(assetId: assetId!),
                   ),
                 ),
               ),
@@ -743,6 +699,18 @@ class GalleryViewerPage extends HookConsumerWidget {
       );
     }
 
+    useEffect(
+      () {
+        if (ref.read(showControlsProvider)) {
+          SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+        } else {
+          SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
+        }
+        return null;
+      },
+      [],
+    );
+
     ref.listen(showControlsProvider, (_, show) {
       if (show) {
         SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
@@ -767,6 +735,16 @@ class GalleryViewerPage extends HookConsumerWidget {
                 isZoomed.value = state != PhotoViewScaleState.initial;
                 ref.read(showControlsProvider.notifier).show = !isZoomed.value;
               },
+              loadingBuilder: (context, event, index) => ImageFiltered(
+                imageFilter: ui.ImageFilter.blur(
+                  sigmaX: 1,
+                  sigmaY: 1,
+                ),
+                child: ImmichThumbnail(
+                  asset: asset(),
+                  fit: BoxFit.contain,
+                ),
+              ),
               pageController: controller,
               scrollPhysics: isZoomed.value
                   ? const NeverScrollableScrollPhysics() // Don't allow paging while scrolled in
@@ -783,47 +761,11 @@ class GalleryViewerPage extends HookConsumerWidget {
                 stackIndex.value = -1;
                 HapticFeedback.selectionClick();
               },
-              loadingBuilder: (context, event, index) {
-                final a = loadAsset(index);
-                if (ImmichImage.useLocal(a)) {
-                  return Image(
-                    image: ImmichImage.localImageProvider(a),
-                    fit: BoxFit.contain,
-                  );
-                }
-                // Use the WEBP Thumbnail as a placeholder for the JPEG thumbnail to achieve
-                // Three-Stage Loading (WEBP -> JPEG -> Original)
-                final webPThumbnail = CachedNetworkImage(
-                  imageUrl: getThumbnailUrl(a, type: webp),
-                  cacheKey: getThumbnailCacheKey(a, type: webp),
-                  httpHeaders: header,
-                  progressIndicatorBuilder: (_, __, ___) => const Center(
-                    child: ImmichLoadingIndicator(),
-                  ),
-                  fadeInDuration: const Duration(milliseconds: 0),
-                  fit: BoxFit.contain,
-                  errorWidget: (context, url, error) =>
-                      const Icon(Icons.image_not_supported_outlined),
-                );
-
-                // loading the preview in the loadingBuilder only
-                // makes sense if the original is loaded in the builder
-                return isLoadPreview.value && isLoadOriginal.value
-                    ? CachedNetworkImage(
-                        imageUrl: getThumbnailUrl(a, type: jpeg),
-                        cacheKey: getThumbnailCacheKey(a, type: jpeg),
-                        httpHeaders: header,
-                        fit: BoxFit.contain,
-                        fadeInDuration: const Duration(milliseconds: 0),
-                        placeholder: (_, __) => webPThumbnail,
-                        errorWidget: (_, __, ___) => webPThumbnail,
-                      )
-                    : webPThumbnail;
-              },
               builder: (context, index) {
                 final a =
                     index == currentIndex.value ? asset() : loadAsset(index);
-                final ImageProvider provider = finalImageProvider(a);
+                final ImageProvider provider =
+                    ImmichImage.imageProvider(asset: a);
 
                 if (a.isImage && !isPlayingMotionVideo.value) {
                   return PhotoViewGalleryPageOptions(
@@ -865,7 +807,9 @@ class GalleryViewerPage extends HookConsumerWidget {
                     minScale: 1.0,
                     basePosition: Alignment.center,
                     child: VideoViewerPage(
-                      onPlaying: () => isPlayingVideo.value = true,
+                      onPlaying: () {
+                        isPlayingVideo.value = true;
+                      },
                       onPaused: () =>
                           WidgetsBinding.instance.addPostFrameCallback(
                         (_) => isPlayingVideo.value = false,

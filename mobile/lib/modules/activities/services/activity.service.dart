@@ -24,6 +24,7 @@ class ActivityService with ErrorLoggerMixin {
         return list != null ? list.map(Activity.fromDto).toList() : [];
       },
       defaultValue: [],
+      errorMessage: "Failed to get all activities for album $albumId",
     );
   }
 
@@ -35,6 +36,7 @@ class ActivityService with ErrorLoggerMixin {
         return dto?.comments ?? 0;
       },
       defaultValue: 0,
+      errorMessage: "Failed to statistics for album $albumId",
     );
   }
 
@@ -45,6 +47,7 @@ class ActivityService with ErrorLoggerMixin {
         return true;
       },
       defaultValue: false,
+      errorMessage: "Failed to delete activity",
     );
   }
 
@@ -54,21 +57,24 @@ class ActivityService with ErrorLoggerMixin {
     String? assetId,
     String? comment,
   }) async {
-    return guardError(() async {
-      final dto = await _apiService.activityApi.createActivity(
-        ActivityCreateDto(
-          albumId: albumId,
-          type: type == ActivityType.comment
-              ? ReactionType.comment
-              : ReactionType.like,
-          assetId: assetId,
-          comment: comment,
-        ),
-      );
-      if (dto != null) {
-        return Activity.fromDto(dto);
-      }
-      throw NoResponseDtoError();
-    });
+    return guardError(
+      () async {
+        final dto = await _apiService.activityApi.createActivity(
+          ActivityCreateDto(
+            albumId: albumId,
+            type: type == ActivityType.comment
+                ? ReactionType.comment
+                : ReactionType.like,
+            assetId: assetId,
+            comment: comment,
+          ),
+        );
+        if (dto != null) {
+          return Activity.fromDto(dto);
+        }
+        throw NoResponseDtoError();
+      },
+      errorMessage: "Failed to create $type for album $albumId",
+    );
   }
 }

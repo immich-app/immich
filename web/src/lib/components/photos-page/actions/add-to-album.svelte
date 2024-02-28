@@ -6,11 +6,11 @@
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
+  import { AppRoute } from '$lib/constants';
   import { addAssetsToAlbum } from '$lib/utils/asset-utils';
-  import { type AlbumResponseDto, api } from '@api';
+  import { createAlbum, type AlbumResponseDto } from '@immich/sdk';
   import { getMenuContext } from '../asset-select-context-menu.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
-  import { AppRoute } from '$lib/constants';
 
   export let shared = false;
   let showAlbumPicker = false;
@@ -26,24 +26,28 @@
   const handleAddToNewAlbum = (albumName: string) => {
     showAlbumPicker = false;
 
-    const assetIds = Array.from(getAssets()).map((asset) => asset.id);
-    api.albumApi.createAlbum({ createAlbumDto: { albumName, assetIds } }).then((response) => {
-      const { id, albumName } = response.data;
+    const assetIds = [...getAssets()].map((asset) => asset.id);
+    createAlbum({ createAlbumDto: { albumName, assetIds } })
+      .then(async (response) => {
+        const { id, albumName } = response;
 
-      notificationController.show({
-        message: `Added ${assetIds.length} to ${albumName}`,
-        type: NotificationType.Info,
+        notificationController.show({
+          message: `Added ${assetIds.length} to ${albumName}`,
+          type: NotificationType.Info,
+        });
+
+        clearSelect();
+
+        await goto(`${AppRoute.ALBUMS}/${id}`);
+      })
+      .catch((error) => {
+        console.error(`[add-to-album.svelte]:handleAddToNewAlbum ${error}`, error);
       });
-
-      clearSelect();
-
-      goto(`${AppRoute.ALBUMS}/${id}`);
-    });
   };
 
   const handleAddToAlbum = async (album: AlbumResponseDto) => {
     showAlbumPicker = false;
-    const assetIds = Array.from(getAssets()).map((asset) => asset.id);
+    const assetIds = [...getAssets()].map((asset) => asset.id);
     await addAssetsToAlbum(album.id, assetIds);
     clearSelect();
   };

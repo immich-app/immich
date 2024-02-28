@@ -15,10 +15,8 @@ export const handleToggleTheme = () => {
 };
 
 const initTheme = (): ThemeSetting => {
-  if (browser) {
-    if (!window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      return { value: Theme.LIGHT, system: false };
-    }
+  if (browser && !window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    return { value: Theme.LIGHT, system: false };
   }
   return { value: Theme.DARK, system: false };
 };
@@ -30,13 +28,9 @@ export const colorTheme = persisted<ThemeSetting>('color-theme', initialTheme, {
   serializer: {
     parse: (text: string): ThemeSetting => {
       const parsedText: ThemeSetting = JSON.parse(text);
-      if (Object.values(Theme).includes(parsedText.value)) {
-        return parsedText;
-      } else {
-        return initTheme();
-      }
+      return Object.values(Theme).includes(parsedText.value) ? parsedText : initTheme();
     },
-    stringify: (obj) => JSON.stringify(obj),
+    stringify: (object) => JSON.stringify(object),
   },
 });
 
@@ -44,7 +38,7 @@ export const colorTheme = persisted<ThemeSetting>('color-theme', initialTheme, {
 export const locale = persisted<string | undefined>('locale', undefined, {
   serializer: {
     parse: (text) => text,
-    stringify: (obj) => obj ?? '',
+    stringify: (object) => object ?? '',
   },
 });
 
@@ -52,6 +46,7 @@ export interface MapSettings {
   allowDarkMode: boolean;
   includeArchived: boolean;
   onlyFavorites: boolean;
+  withPartners: boolean;
   relativeDate: string;
   dateAfter: string;
   dateBefore: string;
@@ -61,6 +56,7 @@ export const mapSettings = persisted<MapSettings>('map-settings', {
   allowDarkMode: true,
   includeArchived: false,
   onlyFavorites: false,
+  withPartners: false,
   relativeDate: '',
   dateAfter: '',
   dateBefore: '',
@@ -98,3 +94,5 @@ export const albumViewSettings = persisted<AlbumViewSettings>('album-view-settin
 });
 
 export const showDeleteModal = persisted<boolean>('delete-confirm-dialog', true, {});
+
+export const alwaysLoadOriginalFile = persisted<boolean>('always-load-original-file', false, {});

@@ -1,5 +1,5 @@
 # dev build
-FROM ghcr.io/immich-app/base-server-dev:20240130@sha256:a11ac5c56f0ccce1f218954c07c43caadf489557252ba5b9ca1c5977aaa25999 as dev
+FROM ghcr.io/immich-app/base-server-dev:20240227@sha256:b1e212c106ce2318a587e0b2ef377215c958e877f61993ed9310534e4589cce4 as dev
 
 RUN apt-get install --no-install-recommends -yqq tini
 WORKDIR /usr/src/app
@@ -24,7 +24,7 @@ RUN npm prune --omit=dev --omit=optional
 COPY --from=dev /usr/src/app/node_modules/@img ./node_modules/@img
 
 # web build
-FROM node:iron-alpine3.18 as web
+FROM node:iron-alpine3.18@sha256:a02826c7340c37a29179152723190bcc3044f933c925f3c2d78abb20f794de3f as web
 
 WORKDIR /usr/src/open-api/typescript-sdk
 COPY open-api/typescript-sdk/package*.json open-api/typescript-sdk/tsconfig*.json ./
@@ -40,7 +40,7 @@ RUN npm run build
 
 
 # prod build
-FROM ghcr.io/immich-app/base-server-prod:20240130@sha256:ce23a32154540b906df3c971766bcd991561c60331794e0ebb780947ac48113f
+FROM ghcr.io/immich-app/base-server-prod:20240227@sha256:d47f5f7f2b6c53957c6353352b2fa24f2845da50e6491a7c74eb779ace10628c
 
 WORKDIR /usr/src/app
 ENV NODE_ENV=production \
@@ -59,4 +59,4 @@ COPY LICENSE /LICENSE
 ENV PATH="${PATH}:/usr/src/app/bin"
 VOLUME /usr/src/app/upload
 EXPOSE 3001
-ENTRYPOINT ["tini", "--", "/bin/sh"]
+ENTRYPOINT ["tini", "--", "/bin/bash"]

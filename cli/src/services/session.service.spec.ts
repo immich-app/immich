@@ -1,29 +1,55 @@
-import { SessionService } from './session.service';
 import fs from 'node:fs';
+import path from 'node:path';
 import yaml from 'yaml';
-import {
-  TEST_AUTH_FILE,
-  TEST_CONFIG_DIR,
-  TEST_IMMICH_API_KEY,
-  TEST_IMMICH_INSTANCE_URL,
-  createTestAuthFile,
-  deleteAuthFile,
-  readTestAuthFile,
-  spyOnConsole,
-} from '../../test/cli-test-utils';
+import { SessionService } from './session.service';
 
-const mockPingServer = vi.fn(() => Promise.resolve({ data: { res: 'pong' } }));
-const mockUserInfo = vi.fn(() => Promise.resolve({ data: { email: 'admin@example.com' } }));
+const TEST_CONFIG_DIR = '/tmp/immich/';
+const TEST_AUTH_FILE = path.join(TEST_CONFIG_DIR, 'auth.yml');
+const TEST_IMMICH_INSTANCE_URL = 'https://test/api';
+const TEST_IMMICH_API_KEY = 'pNussssKSYo5WasdgalvKJ1n9kdvaasdfbluPg';
 
-vi.mock('@immich/sdk', async () => ({
-  ...(await vi.importActual('@immich/sdk')),
-  UserApi: vi.fn().mockImplementation(() => {
-    return { getMyUserInfo: mockUserInfo };
-  }),
-  ServerInfoApi: vi.fn().mockImplementation(() => {
-    return { pingServer: mockPingServer };
-  }),
-}));
+const spyOnConsole = () => vi.spyOn(console, 'log').mockImplementation(() => {});
+
+const createTestAuthFile = async (contents: string) => {
+  if (!fs.existsSync(TEST_CONFIG_DIR)) {
+    // Create config folder if it doesn't exist
+    const created = await fs.promises.mkdir(TEST_CONFIG_DIR, { recursive: true });
+    if (!created) {
+      throw new Error(`Failed to create config folder ${TEST_CONFIG_DIR}`);
+    }
+  }
+
+  fs.writeFileSync(TEST_AUTH_FILE, contents);
+};
+
+const readTestAuthFile = async (): Promise<string> => {
+  return await fs.promises.readFile(TEST_AUTH_FILE, 'utf8');
+};
+
+const deleteAuthFile = () => {
+  try {
+    fs.unlinkSync(TEST_AUTH_FILE);
+  } catch (error: any) {
+    if (error.code !== 'ENOENT') {
+      throw error;
+    }
+  }
+};
+
+const mocks = vi.hoisted(() => {
+  return {
+    getMyUserInfo: vi.fn(() => Promise.resolve({ email: 'admin@example.com' })),
+    pingServer: vi.fn(() => Promise.resolve({ res: 'pong' })),
+  };
+});
+
+vi.mock('./api.service', async (importOriginal) => {
+  const module = await importOriginal<typeof import('./api.service')>();
+  // @ts-expect-error this is only a partial implementation of the return value
+  module.ImmichApi.prototype.getMyUserInfo = mocks.getMyUserInfo;
+  module.ImmichApi.prototype.pingServer = mocks.pingServer;
+  return module;
+});
 
 describe('SessionService', () => {
   let sessionService: SessionService;
@@ -46,7 +72,7 @@ describe('SessionService', () => {
     );
 
     await sessionService.connect();
-    expect(mockPingServer).toHaveBeenCalledTimes(1);
+    expect(mocks.pingServer).toHaveBeenCalledTimes(1);
   });
 
   it('should error if no auth file exists', async () => {

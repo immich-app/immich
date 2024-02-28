@@ -41,6 +41,7 @@ class MapPage extends HookConsumerWidget {
     final bottomSheetStreamController = useStreamController<MapEvent>();
     final selectedMarker = useValueNotifier<_AssetMarkerMeta?>(null);
     final assetsDebouncer = useDebouncer();
+    final layerDebouncer = useDebouncer(interval: const Duration(seconds: 1));
     final isLoading = useProcessingOverlay();
     final scrollController = useScrollController();
     final markerDebouncer =
@@ -77,7 +78,9 @@ class MapPage extends HookConsumerWidget {
     // removes all sources and layers and re-adds them with the updated markers
     Future<void> reloadLayers() async {
       if (mapController.value != null) {
-        mapController.value!.reloadAllLayersForMarkers(markers.value);
+        layerDebouncer.run(
+          () => mapController.value!.reloadAllLayersForMarkers(markers.value),
+        );
       }
     }
 
@@ -217,10 +220,9 @@ class MapPage extends HookConsumerWidget {
     }
 
     void onZoomToLocation() async {
-      final location = await MapUtils.checkPermAndGetLocation(context);
-      if (location.$2 != null) {
-        if (location.$2 == LocationPermission.unableToDetermine &&
-            context.mounted) {
+      final (location, error) = await MapUtils.checkPermAndGetLocation(context);
+      if (error != null) {
+        if (error == LocationPermission.unableToDetermine && context.mounted) {
           ImmichToast.show(
             context: context,
             gravity: ToastGravity.BOTTOM,
@@ -231,10 +233,10 @@ class MapPage extends HookConsumerWidget {
         return;
       }
 
-      if (mapController.value != null && location.$1 != null) {
+      if (mapController.value != null && location != null) {
         mapController.value!.animateCamera(
           CameraUpdate.newLatLngZoom(
-            LatLng(location.$1!.latitude, location.$1!.longitude),
+            LatLng(location.latitude, location.longitude),
             mapZoomToAssetLevel,
           ),
           duration: const Duration(milliseconds: 800),
@@ -386,6 +388,7 @@ class _MapWithMarker extends StatelessWidget {
                 dragEnabled: false,
                 myLocationEnabled: false,
                 attributionButtonPosition: AttributionButtonPosition.TopRight,
+                rotateGesturesEnabled: false,
               ),
             ),
             ValueListenableBuilder(

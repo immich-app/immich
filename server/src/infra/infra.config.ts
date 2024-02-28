@@ -15,8 +15,8 @@ function parseRedisConfig(): RedisOptions {
   }
   return {
     host: process.env.REDIS_HOSTNAME || 'immich_redis',
-    port: parseInt(process.env.REDIS_PORT || '6379'),
-    db: parseInt(process.env.REDIS_DBINDEX || '0'),
+    port: Number.parseInt(process.env.REDIS_PORT || '6379'),
+    db: Number.parseInt(process.env.REDIS_DBINDEX || '0'),
     username: process.env.REDIS_USERNAME || undefined,
     password: process.env.REDIS_PASSWORD || undefined,
     path: process.env.REDIS_SOCKET || undefined,

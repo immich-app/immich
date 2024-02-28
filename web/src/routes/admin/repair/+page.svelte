@@ -2,6 +2,7 @@
   import empty4Url from '$lib/assets/empty-4.svg';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import {
@@ -9,12 +10,12 @@
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import { downloadManager } from '$lib/stores/download';
+  import { copyToClipboard } from '$lib/utils';
   import { downloadBlob } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { type FileReportItemDto, api, copyToClipboard } from '@api';
-  import Icon from '$lib/components/elements/icon.svelte';
+  import { fixAuditFiles, getAuditFiles, getFileChecksums, type FileReportItemDto } from '@immich/sdk';
+  import { mdiCheckAll, mdiContentCopy, mdiDownload, mdiRefresh, mdiWrench } from '@mdi/js';
   import type { PageData } from './$types';
-  import { mdiWrench, mdiCheckAll, mdiDownload, mdiRefresh, mdiContentCopy } from '@mdi/js';
 
   export let data: PageData;
 
@@ -44,7 +45,7 @@
       downloadManager.add(downloadKey, blob.size);
       downloadManager.update(downloadKey, blob.size);
       downloadBlob(blob, downloadKey);
-      setTimeout(() => downloadManager.clear(downloadKey), 5_000);
+      setTimeout(() => downloadManager.clear(downloadKey), 5000);
     }
 
     if (orphans.length > 0) {
@@ -53,7 +54,7 @@
       downloadManager.add(downloadKey, blob.size);
       downloadManager.update(downloadKey, blob.size);
       downloadBlob(blob, downloadKey);
-      setTimeout(() => downloadManager.clear(downloadKey), 5_000);
+      setTimeout(() => downloadManager.clear(downloadKey), 5000);
     }
   };
 
@@ -65,7 +66,7 @@
     repairing = true;
 
     try {
-      await api.auditApi.fixAuditFiles({
+      await fixAuditFiles({
         fileReportFixDto: {
           items: matches.map(({ orphan, extra }) => ({
             entityId: orphan.entityId,
@@ -101,7 +102,7 @@
     extras = [];
 
     try {
-      const { data: report } = await api.auditApi.getAuditFiles();
+      const report = await getAuditFiles();
 
       orphans = report.orphans;
       extras = normalize(report.extras);
@@ -130,9 +131,9 @@
 
     try {
       const chunkSize = 10;
-      const filenames = [...extras.filter(({ checksum }) => !checksum).map(({ filename }) => filename)];
-      for (let i = 0; i < filenames.length; i += chunkSize) {
-        count += await loadAndMatch(filenames.slice(i, i + chunkSize));
+      const filenames = extras.filter(({ checksum }) => !checksum).map(({ filename }) => filename);
+      for (let index = 0; index < filenames.length; index += chunkSize) {
+        count += await loadAndMatch(filenames.slice(index, index + chunkSize));
       }
     } catch (error) {
       handleError(error, 'Unable to check items');
@@ -144,7 +145,7 @@
   };
 
   const loadAndMatch = async (filenames: string[]) => {
-    const { data: items } = await api.auditApi.getFileChecksums({
+    const items = await getFileChecksums({
       fileChecksumDto: { filenames },
     });
 
@@ -218,7 +219,7 @@
               <tr class="flex w-full place-items-center p-2 md:p-5">
                 <th class="w-full text-sm place-items-center font-medium flex justify-between" colspan="2">
                   <div class="px-3">
-                    <p>MATCHES {matches.length ? `(${matches.length})` : ''}</p>
+                    <p>MATCHES {matches.length > 0 ? `(${matches.length})` : ''}</p>
                     <p class="text-gray-600 dark:text-gray-300 mt-1">These files are matched by their checksums</p>
                   </div>
                 </th>
@@ -252,7 +253,7 @@
               <tr class="flex w-full place-items-center p-1 md:p-5">
                 <th class="w-full text-sm font-medium justify-between place-items-center flex" colspan="2">
                   <div class="px-3">
-                    <p>OFFLINE PATHS {orphans.length ? `(${orphans.length})` : ''}</p>
+                    <p>OFFLINE PATHS {orphans.length > 0 ? `(${orphans.length})` : ''}</p>
                     <p class="text-gray-600 dark:text-gray-300 mt-1">
                       These files are the results of manually deletion of the default upload library
                     </p>
@@ -290,7 +291,7 @@
               <tr class="flex w-full place-items-center p-2 md:p-5">
                 <th class="w-full text-sm font-medium place-items-center flex justify-between" colspan="2">
                   <div class="px-3">
-                    <p>UNTRACKS FILES {extras.length ? `(${extras.length})` : ''}</p>
+                    <p>UNTRACKS FILES {extras.length > 0 ? `(${extras.length})` : ''}</p>
                     <p class="text-gray-600 dark:text-gray-300 mt-1">
                       These files are not tracked by the application. They can be the results of failed moves,
                       interrupted uploads, or left behind due to a bug

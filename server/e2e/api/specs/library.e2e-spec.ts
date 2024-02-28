@@ -2,6 +2,7 @@ import { LibraryResponseDto, LoginResponseDto } from '@app/domain';
 import { LibraryController } from '@app/immich';
 import { LibraryType } from '@app/infra/entities';
 import { errorStub, userDto, uuidStub } from '@test/fixtures';
+import { IMMICH_TEST_ASSET_TEMP_PATH, restoreTempFolder } from 'src/test-utils/utils';
 import request from 'supertest';
 import { api } from '../../client';
 import { testApp } from '../utils';
@@ -11,7 +12,8 @@ describe(`${LibraryController.name} (e2e)`, () => {
   let admin: LoginResponseDto;
 
   beforeAll(async () => {
-    server = (await testApp.create()).getHttpServer();
+    const app = await testApp.create();
+    server = app.getHttpServer();
   });
 
   afterAll(async () => {
@@ -19,6 +21,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
   });
 
   beforeEach(async () => {
+    await restoreTempFolder();
     await testApp.reset();
     await api.authApi.adminSignUp(server);
     admin = await api.authApi.adminLogin(server);
@@ -96,6 +99,36 @@ describe(`${LibraryController.name} (e2e)`, () => {
           importPaths: ['/path/to/import'],
         }),
       );
+    });
+
+    it('should not create an external library with duplicate import paths', async () => {
+      const { status, body } = await request(server)
+        .post('/library')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({
+          type: LibraryType.EXTERNAL,
+          name: 'My Awesome Library',
+          importPaths: ['/path', '/path'],
+          exclusionPatterns: ['**/Raw/**'],
+        });
+
+      expect(status).toBe(400);
+      expect(body).toEqual(errorStub.badRequest(["All importPaths's elements must be unique"]));
+    });
+
+    it('should not create an external library with duplicate exclusion patterns', async () => {
+      const { status, body } = await request(server)
+        .post('/library')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({
+          type: LibraryType.EXTERNAL,
+          name: 'My Awesome Library',
+          importPaths: ['/path/to/import'],
+          exclusionPatterns: ['**/Raw/**', '**/Raw/**'],
+        });
+
+      expect(status).toBe(400);
+      expect(body).toEqual(errorStub.badRequest(["All exclusionPatterns's elements must be unique"]));
     });
 
     it('should create an upload library with defaults', async () => {
@@ -216,20 +249,21 @@ describe(`${LibraryController.name} (e2e)`, () => {
       });
 
       it('should change the import paths', async () => {
+        await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, IMMICH_TEST_ASSET_TEMP_PATH);
         const { status, body } = await request(server)
           .put(`/library/${library.id}`)
           .set('Authorization', `Bearer ${admin.accessToken}`)
-          .send({ importPaths: ['/path/to/import'] });
+          .send({ importPaths: [IMMICH_TEST_ASSET_TEMP_PATH] });
 
         expect(status).toBe(200);
         expect(body).toEqual(
           expect.objectContaining({
-            importPaths: ['/path/to/import'],
+            importPaths: [IMMICH_TEST_ASSET_TEMP_PATH],
           }),
         );
       });
 
-      it('should not allow an empty import path', async () => {
+      it('should reject an empty import path', async () => {
         const { status, body } = await request(server)
           .put(`/library/${library.id}`)
           .set('Authorization', `Bearer ${admin.accessToken}`)
@@ -237,6 +271,16 @@ describe(`${LibraryController.name} (e2e)`, () => {
 
         expect(status).toBe(400);
         expect(body).toEqual(errorStub.badRequest(['each value in importPaths should not be empty']));
+      });
+
+      it('should reject duplicate import paths', async () => {
+        const { status, body } = await request(server)
+          .put(`/library/${library.id}`)
+          .set('Authorization', `Bearer ${admin.accessToken}`)
+          .send({ importPaths: ['/path', '/path'] });
+
+        expect(status).toBe(400);
+        expect(body).toEqual(errorStub.badRequest(["All importPaths's elements must be unique"]));
       });
 
       it('should change the exclusion pattern', async () => {
@@ -253,7 +297,17 @@ describe(`${LibraryController.name} (e2e)`, () => {
         );
       });
 
-      it('should not allow an empty exclusion pattern', async () => {
+      it('should reject duplicate exclusion patterns', async () => {
+        const { status, body } = await request(server)
+          .put(`/library/${library.id}`)
+          .set('Authorization', `Bearer ${admin.accessToken}`)
+          .send({ exclusionPatterns: ['**/*.jpg', '**/*.jpg'] });
+
+        expect(status).toBe(400);
+        expect(body).toEqual(errorStub.badRequest(["All exclusionPatterns's elements must be unique"]));
+      });
+
+      it('should reject an empty exclusion pattern', async () => {
         const { status, body } = await request(server)
           .put(`/library/${library.id}`)
           .set('Authorization', `Bearer ${admin.accessToken}`)
@@ -382,6 +436,95 @@ describe(`${LibraryController.name} (e2e)`, () => {
 
       expect(status).toBe(401);
       expect(body).toEqual(errorStub.unauthorized);
+    });
+  });
+
+  describe('POST /library/:id/validate', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(server).post(`/library/${uuidStub.notFound}/validate`).send({});
+
+      expect(status).toBe(401);
+      expect(body).toEqual(errorStub.unauthorized);
+    });
+
+    describe('Validate import path', () => {
+      let library: LibraryResponseDto;
+
+      beforeEach(async () => {
+        // Create an external library with default settings
+        library = await api.libraryApi.create(server, admin.accessToken, { type: LibraryType.EXTERNAL });
+      });
+
+      it('should fail with no external path set', async () => {
+        const { status, body } = await request(server)
+          .post(`/library/${library.id}/validate`)
+          .set('Authorization', `Bearer ${admin.accessToken}`)
+
+          .send({ importPaths: [] });
+
+        expect(status).toBe(400);
+        expect(body).toEqual(errorStub.badRequest('User has no external path set'));
+      });
+
+      describe('With external path set', () => {
+        beforeEach(async () => {
+          await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, IMMICH_TEST_ASSET_TEMP_PATH);
+        });
+
+        it('should pass with no import paths', async () => {
+          const response = await api.libraryApi.validate(server, admin.accessToken, library.id, { importPaths: [] });
+          expect(response.importPaths).toEqual([]);
+        });
+
+        it('should not allow paths outside of the external path', async () => {
+          const pathToTest = `${IMMICH_TEST_ASSET_TEMP_PATH}/../`;
+          const response = await api.libraryApi.validate(server, admin.accessToken, library.id, {
+            importPaths: [pathToTest],
+          });
+          expect(response.importPaths?.length).toEqual(1);
+          const pathResponse = response?.importPaths?.at(0);
+
+          expect(pathResponse).toEqual({
+            importPath: pathToTest,
+            isValid: false,
+            message: `Not contained in user's external path`,
+          });
+        });
+
+        it('should fail if path does not exist', async () => {
+          const pathToTest = `${IMMICH_TEST_ASSET_TEMP_PATH}/does/not/exist`;
+
+          const response = await api.libraryApi.validate(server, admin.accessToken, library.id, {
+            importPaths: [pathToTest],
+          });
+
+          expect(response.importPaths?.length).toEqual(1);
+          const pathResponse = response?.importPaths?.at(0);
+
+          expect(pathResponse).toEqual({
+            importPath: pathToTest,
+            isValid: false,
+            message: `Path does not exist (ENOENT)`,
+          });
+        });
+
+        it('should fail if path is a file', async () => {
+          const pathToTest = `${IMMICH_TEST_ASSET_TEMP_PATH}/does/not/exist`;
+
+          const response = await api.libraryApi.validate(server, admin.accessToken, library.id, {
+            importPaths: [pathToTest],
+          });
+
+          expect(response.importPaths?.length).toEqual(1);
+          const pathResponse = response?.importPaths?.at(0);
+
+          expect(pathResponse).toEqual({
+            importPath: pathToTest,
+            isValid: false,
+            message: `Path does not exist (ENOENT)`,
+          });
+        });
+      });
     });
   });
 });

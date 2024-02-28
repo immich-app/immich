@@ -20,7 +20,7 @@ import {
   IMediaRepository,
   IMoveRepository,
   IPersonRepository,
-  ISmartInfoRepository,
+  ISearchRepository,
   IStorageRepository,
   ISystemConfigRepository,
   JobItem,
@@ -61,7 +61,7 @@ export class PersonService {
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
-    @Inject(ISmartInfoRepository) private smartInfoRepository: ISmartInfoRepository,
+    @Inject(ISearchRepository) private smartInfoRepository: ISearchRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
   ) {
     this.access = AccessCore.create(accessRepository);
@@ -82,15 +82,12 @@ export class PersonService {
       minimumFaceCount: machineLearning.facialRecognition.minFaces,
       withHidden: dto.withHidden || false,
     });
-    const total = await this.repository.getNumberOfPeople(auth.user.id);
-    const persons: PersonResponseDto[] = people
-      // with thumbnails
-      .filter((person) => !!person.thumbnailPath)
-      .map((person) => mapPerson(person));
+    const { total, hidden } = await this.repository.getNumberOfPeople(auth.user.id);
 
     return {
-      people: persons.filter((person) => dto.withHidden || !person.isHidden),
+      people: people.map((person) => mapPerson(person)),
       total,
+      hidden,
     };
   }
 
@@ -122,7 +119,7 @@ export class PersonService {
     }
     if (changeFeaturePhoto.length > 0) {
       // Remove duplicates
-      await this.createNewFeaturePhoto(Array.from(new Set(changeFeaturePhoto)));
+      await this.createNewFeaturePhoto([...new Set(changeFeaturePhoto)]);
     }
     return result;
   }
@@ -285,15 +282,7 @@ export class PersonService {
 
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
       return force
-        ? this.assetRepository.getAll(pagination, {
-            order: 'DESC',
-            withFaces: true,
-            withPeople: false,
-            withSmartInfo: false,
-            withSmartSearch: false,
-            withExif: false,
-            withStacked: false,
-          })
+        ? this.assetRepository.getAll(pagination, { orderDirection: 'DESC', withFaces: true })
         : this.assetRepository.getWithout(pagination, WithoutProperty.FACES);
     });
 
@@ -332,7 +321,7 @@ export class PersonService {
     this.logger.debug(`${faces.length} faces detected in ${asset.resizePath}`);
     this.logger.verbose(faces.map((face) => ({ ...face, embedding: `vector(${face.embedding.length})` })));
 
-    if (faces.length) {
+    if (faces.length > 0) {
       await this.jobRepository.queue({ name: JobName.QUEUE_FACIAL_RECOGNITION, data: { force: false } });
 
       const mappedFaces = faces.map((face) => ({
@@ -417,7 +406,13 @@ export class PersonService {
       numResults: machineLearning.facialRecognition.minFaces,
     });
 
-    this.logger.debug(`Face ${id} has ${matches.length} match${matches.length != 1 ? 'es' : ''}`);
+    // `matches` also includes the face itself
+    if (machineLearning.facialRecognition.minFaces > 1 && matches.length <= 1) {
+      this.logger.debug(`Face ${id} only matched the face itself, skipping`);
+      return true;
+    }
+
+    this.logger.debug(`Face ${id} has ${matches.length} matches`);
 
     const isCore = matches.length >= machineLearning.facialRecognition.minFaces;
     if (!isCore && !deferred) {
@@ -426,7 +421,7 @@ export class PersonService {
       return true;
     }
 
-    let personId = matches.find((match) => match.face.personId)?.face.personId; // `matches` also includes the face itself
+    let personId = matches.find((match) => match.face.personId)?.face.personId;
     if (!personId) {
       const matchWithPerson = await this.smartInfoRepository.searchFaces({
         userIds: [face.asset.ownerId],

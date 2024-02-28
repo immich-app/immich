@@ -4,9 +4,9 @@
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
   import { featureFlags } from '$lib/stores/server-config.store';
+  import { getJobName } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { type AllJobStatusResponseDto, api, JobCommand, type JobCommandDto, JobName } from '@api';
-  import type { ComponentType } from 'svelte';
+  import { JobCommand, JobName, sendJobCommand, type AllJobStatusResponseDto, type JobCommandDto } from '@immich/sdk';
   import {
     mdiFaceRecognition,
     mdiFileJpgBox,
@@ -18,6 +18,7 @@
     mdiTagFaces,
     mdiVideo,
   } from '@mdi/js';
+  import type { ComponentType } from 'svelte';
   import ConfirmDialogue from '../../shared-components/confirm-dialogue.svelte';
   import JobTile from './job-tile.svelte';
   import StorageMigrationDescription from './storage-migration-description.svelte';
@@ -47,34 +48,34 @@
     await handleCommand(jobId, dto);
   };
 
-  const onConfirm = () => {
+  const onConfirm = async () => {
     if (!confirmJob) {
       return;
     }
-    handleCommand(confirmJob, { command: JobCommand.Start, force: true });
+    await handleCommand(confirmJob, { command: JobCommand.Start, force: true });
     confirmJob = null;
   };
 
   $: jobDetails = <Partial<Record<JobName, JobDetails>>>{
     [JobName.ThumbnailGeneration]: {
       icon: mdiFileJpgBox,
-      title: api.getJobName(JobName.ThumbnailGeneration),
+      title: getJobName(JobName.ThumbnailGeneration),
       subtitle: 'Generate large, small and blurred thumbnails for each asset, as well as thumbnails for each person',
     },
     [JobName.MetadataExtraction]: {
       icon: mdiTable,
-      title: api.getJobName(JobName.MetadataExtraction),
+      title: getJobName(JobName.MetadataExtraction),
       subtitle: 'Extract metadata information from each asset, such as GPS and resolution',
     },
     [JobName.Library]: {
       icon: mdiLibraryShelves,
-      title: api.getJobName(JobName.Library),
+      title: getJobName(JobName.Library),
       subtitle: 'Perform library tasks',
       allText: 'ALL',
       missingText: 'REFRESH',
     },
     [JobName.Sidecar]: {
-      title: api.getJobName(JobName.Sidecar),
+      title: getJobName(JobName.Sidecar),
       icon: mdiFileXmlBox,
       subtitle: 'Discover or synchronize sidecar metadata from the filesystem',
       allText: 'SYNC',
@@ -83,13 +84,13 @@
     },
     [JobName.SmartSearch]: {
       icon: mdiImageSearch,
-      title: api.getJobName(JobName.SmartSearch),
+      title: getJobName(JobName.SmartSearch),
       subtitle: 'Run machine learning on assets to support smart search',
       disabled: !$featureFlags.smartSearch,
     },
     [JobName.FaceDetection]: {
       icon: mdiFaceRecognition,
-      title: api.getJobName(JobName.FaceDetection),
+      title: getJobName(JobName.FaceDetection),
       subtitle:
         'Detect the faces in assets using machine learning. For videos, only the thumbnail is considered. "All" (re-)processes all assets. "Missing" queues assets that haven\'t been processed yet. Detected faces will be queued for Facial Recognition after Face Detection is complete, grouping them into existing or new people.',
       handleCommand: handleConfirmCommand,
@@ -97,7 +98,7 @@
     },
     [JobName.FacialRecognition]: {
       icon: mdiTagFaces,
-      title: api.getJobName(JobName.FacialRecognition),
+      title: getJobName(JobName.FacialRecognition),
       subtitle:
         'Group detected faces into people. This step runs after Face Detection is complete. "All" (re-)clusters all faces. "Missing" queues faces that don\'t have a person assigned.',
       handleCommand: handleConfirmCommand,
@@ -105,18 +106,18 @@
     },
     [JobName.VideoConversion]: {
       icon: mdiVideo,
-      title: api.getJobName(JobName.VideoConversion),
+      title: getJobName(JobName.VideoConversion),
       subtitle: 'Transcode videos for wider compatibility with browsers and devices',
     },
     [JobName.StorageTemplateMigration]: {
       icon: mdiFolderMove,
-      title: api.getJobName(JobName.StorageTemplateMigration),
+      title: getJobName(JobName.StorageTemplateMigration),
       allowForceCommand: false,
       component: StorageMigrationDescription,
     },
     [JobName.Migration]: {
       icon: mdiFolderMove,
-      title: api.getJobName(JobName.Migration),
+      title: getJobName(JobName.Migration),
       subtitle: 'Migrate thumbnails for assets and faces to the latest folder structure',
       allowForceCommand: false,
     },
@@ -127,16 +128,16 @@
     const title = jobDetails[jobId]?.title;
 
     try {
-      const { data } = await api.jobApi.sendJobCommand({ id: jobId, jobCommandDto: jobCommand });
-      jobs[jobId] = data;
+      jobs[jobId] = await sendJobCommand({ id: jobId, jobCommandDto: jobCommand });
 
       switch (jobCommand.command) {
-        case JobCommand.Empty:
+        case JobCommand.Empty: {
           notificationController.show({
             message: `Cleared jobs for: ${title}`,
             type: NotificationType.Info,
           });
           break;
+        }
       }
     } catch (error) {
       handleError(error, `Command '${jobCommand.command}' failed for job: ${title}`);

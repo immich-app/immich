@@ -4,6 +4,7 @@
     | 'primary'
     | 'secondary'
     | 'transparent-primary'
+    | 'text-primary'
     | 'light-red'
     | 'red'
     | 'green'
@@ -26,6 +27,7 @@
   export let fullwidth = false;
   export let border = false;
   export let title: string | undefined = '';
+
   let className = '';
   export { className as class };
 
@@ -36,6 +38,8 @@
       'bg-gray-500 dark:bg-gray-200 text-white dark:text-immich-dark-gray enabled:hover:bg-gray-500/90 enabled:dark:hover:bg-gray-200/90',
     'transparent-primary':
       'text-gray-500 dark:text-immich-dark-primary enabled:hover:bg-gray-100 enabled:dark:hover:bg-gray-700',
+    'text-primary':
+      'text-immich-primary dark:text-immich-dark-primary enabled:dark:hover:bg-immich-dark-primary/10 enabled:hover:bg-immich-primary/10',
     'light-red': 'bg-[#F9DEDC] text-[#410E0B] enabled:hover:bg-red-50',
     red: 'bg-red-500 text-white enabled:hover:bg-red-400',
     green: 'bg-green-500 text-gray-800 enabled:hover:bg-green-400/90',
@@ -62,6 +66,8 @@
   {disabled}
   {title}
   on:click
+  on:focus
+  on:blur
   class="{className} inline-flex items-center justify-center transition-colors disabled:cursor-not-allowed disabled:opacity-60 {colorClasses[
     color
   ]} {sizeClasses[size]}"

@@ -1,5 +1,6 @@
 import {
   AssetType,
+  AudioCodec,
   Colorspace,
   ExifEntity,
   SystemConfigKey,
@@ -475,7 +476,7 @@ describe(MediaService.name, () => {
           inputOptions: [],
           outputOptions: [
             '-c:v h264',
-            '-c:a aac',
+            '-c:a copy',
             '-movflags faststart',
             '-fps_mode passthrough',
             '-map 0:0',
@@ -542,7 +543,7 @@ describe(MediaService.name, () => {
           inputOptions: [],
           outputOptions: [
             '-c:v h264',
-            '-c:a aac',
+            '-c:a copy',
             '-movflags faststart',
             '-fps_mode passthrough',
             '-map 0:0',
@@ -571,7 +572,7 @@ describe(MediaService.name, () => {
           inputOptions: [],
           outputOptions: [
             '-c:v h264',
-            '-c:a aac',
+            '-c:a copy',
             '-movflags faststart',
             '-fps_mode passthrough',
             '-map 0:0',
@@ -629,7 +630,7 @@ describe(MediaService.name, () => {
           inputOptions: [],
           outputOptions: [
             '-c:v h264',
-            '-c:a aac',
+            '-c:a copy',
             '-movflags faststart',
             '-fps_mode passthrough',
             '-map 0:0',
@@ -704,8 +705,38 @@ describe(MediaService.name, () => {
       );
     });
 
-    it('should transcode when audio doesnt match target', async () => {
-      mediaMock.probe.mockResolvedValue(probeStub.audioStreamMp3);
+    it('should copy video stream when video matches target', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.FFMPEG_TARGET_VIDEO_CODEC, value: VideoCodec.HEVC },
+        { key: SystemConfigKey.FFMPEG_ACCEPTED_AUDIO_CODECS, value: [AudioCodec.AAC] },
+      ]);
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        {
+          inputOptions: [],
+          outputOptions: [
+            '-c:v copy',
+            '-c:a aac',
+            '-movflags faststart',
+            '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-tag:v hvc1',
+            '-v verbose',
+            '-preset ultrafast',
+            '-crf 23',
+          ],
+          twoPass: false,
+        },
+      );
+    });
+
+    it('should copy audio stream when audio matches target', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.audioStreamAac);
       configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_TRANSCODE, value: TranscodePolicy.OPTIMAL }]);
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
@@ -716,7 +747,7 @@ describe(MediaService.name, () => {
           inputOptions: [],
           outputOptions: [
             '-c:v h264',
-            '-c:a aac',
+            '-c:a copy',
             '-movflags faststart',
             '-fps_mode passthrough',
             '-map 0:0',
@@ -743,7 +774,7 @@ describe(MediaService.name, () => {
           inputOptions: [],
           outputOptions: [
             '-c:v h264',
-            '-c:a aac',
+            '-c:a copy',
             '-movflags faststart',
             '-fps_mode passthrough',
             '-map 0:0',
@@ -758,11 +789,11 @@ describe(MediaService.name, () => {
       );
     });
 
-    it('should not transcode an invalid transcode value', async () => {
+    it('should throw an exception if transcode value is invalid', async () => {
       mediaMock.probe.mockResolvedValue(probeStub.videoStream2160p);
       configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_TRANSCODE, value: 'invalid' }]);
-      assetMock.getByIds.mockResolvedValue([assetStub.video]);
-      await sut.handleVideoConversion({ id: assetStub.video.id });
+
+      await expect(sut.handleVideoConversion({ id: assetStub.video.id })).rejects.toThrow();
       expect(mediaMock.transcode).not.toHaveBeenCalled();
     });
 
@@ -809,7 +840,7 @@ describe(MediaService.name, () => {
           inputOptions: [],
           outputOptions: [
             '-c:v h264',
-            '-c:a aac',
+            '-c:a copy',
             '-movflags faststart',
             '-fps_mode passthrough',
             '-map 0:0',
@@ -841,7 +872,7 @@ describe(MediaService.name, () => {
           inputOptions: [],
           outputOptions: [
             '-c:v h264',
-            '-c:a aac',
+            '-c:a copy',
             '-movflags faststart',
             '-fps_mode passthrough',
             '-map 0:0',
@@ -870,7 +901,7 @@ describe(MediaService.name, () => {
           inputOptions: [],
           outputOptions: [
             '-c:v h264',
-            '-c:a aac',
+            '-c:a copy',
             '-movflags faststart',
             '-fps_mode passthrough',
             '-map 0:0',
@@ -901,7 +932,7 @@ describe(MediaService.name, () => {
           inputOptions: [],
           outputOptions: [
             '-c:v vp9',
-            '-c:a aac',
+            '-c:a copy',
             '-movflags faststart',
             '-fps_mode passthrough',
             '-map 0:0',
@@ -935,7 +966,7 @@ describe(MediaService.name, () => {
           inputOptions: [],
           outputOptions: [
             '-c:v vp9',
-            '-c:a aac',
+            '-c:a copy',
             '-movflags faststart',
             '-fps_mode passthrough',
             '-map 0:0',
@@ -967,7 +998,7 @@ describe(MediaService.name, () => {
           inputOptions: [],
           outputOptions: [
             '-c:v vp9',
-            '-c:a aac',
+            '-c:a copy',
             '-movflags faststart',
             '-fps_mode passthrough',
             '-map 0:0',
@@ -999,7 +1030,7 @@ describe(MediaService.name, () => {
           inputOptions: [],
           outputOptions: [
             '-c:v vp9',
-            '-c:a aac',
+            '-c:a copy',
             '-movflags faststart',
             '-fps_mode passthrough',
             '-map 0:0',
@@ -1030,7 +1061,7 @@ describe(MediaService.name, () => {
           inputOptions: [],
           outputOptions: [
             '-c:v vp9',
-            '-c:a aac',
+            '-c:a copy',
             '-movflags faststart',
             '-fps_mode passthrough',
             '-map 0:0',
@@ -1060,7 +1091,7 @@ describe(MediaService.name, () => {
           inputOptions: [],
           outputOptions: [
             '-c:v h264',
-            '-c:a aac',
+            '-c:a copy',
             '-movflags faststart',
             '-fps_mode passthrough',
             '-map 0:0',
@@ -1090,7 +1121,7 @@ describe(MediaService.name, () => {
           inputOptions: [],
           outputOptions: [
             '-c:v h264',
-            '-c:a aac',
+            '-c:a copy',
             '-movflags faststart',
             '-fps_mode passthrough',
             '-map 0:0',
@@ -1106,7 +1137,7 @@ describe(MediaService.name, () => {
     });
 
     it('should disable thread pooling for hevc if thread limit is above 0', async () => {
-      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
+      mediaMock.probe.mockResolvedValue(probeStub.videoStreamVp9);
       configMock.load.mockResolvedValue([
         { key: SystemConfigKey.FFMPEG_THREADS, value: 2 },
         { key: SystemConfigKey.FFMPEG_TARGET_VIDEO_CODEC, value: VideoCodec.HEVC },
@@ -1120,7 +1151,7 @@ describe(MediaService.name, () => {
           inputOptions: [],
           outputOptions: [
             '-c:v hevc',
-            '-c:a aac',
+            '-c:a copy',
             '-movflags faststart',
             '-fps_mode passthrough',
             '-map 0:0',
@@ -1140,7 +1171,7 @@ describe(MediaService.name, () => {
     });
 
     it('should omit thread flags for hevc if thread limit is at or below 0', async () => {
-      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
+      mediaMock.probe.mockResolvedValue(probeStub.videoStreamVp9);
       configMock.load.mockResolvedValue([
         { key: SystemConfigKey.FFMPEG_THREADS, value: 0 },
         { key: SystemConfigKey.FFMPEG_TARGET_VIDEO_CODEC, value: VideoCodec.HEVC },
@@ -1154,7 +1185,7 @@ describe(MediaService.name, () => {
           inputOptions: [],
           outputOptions: [
             '-c:v hevc',
-            '-c:a aac',
+            '-c:a copy',
             '-movflags faststart',
             '-fps_mode passthrough',
             '-map 0:0',
@@ -1221,7 +1252,7 @@ describe(MediaService.name, () => {
             '-rc-lookahead 20',
             '-i_qfactor 0.75',
             `-c:v h264_nvenc`,
-            '-c:a aac',
+            '-c:a copy',
             '-movflags faststart',
             '-fps_mode passthrough',
             '-map 0:0',
@@ -1259,7 +1290,7 @@ describe(MediaService.name, () => {
             '-rc-lookahead 20',
             '-i_qfactor 0.75',
             `-c:v h264_nvenc`,
-            '-c:a aac',
+            '-c:a copy',
             '-movflags faststart',
             '-fps_mode passthrough',
             '-map 0:0',
@@ -1293,7 +1324,7 @@ describe(MediaService.name, () => {
             '-rc-lookahead 20',
             '-i_qfactor 0.75',
             `-c:v h264_nvenc`,
-            '-c:a aac',
+            '-c:a copy',
             '-movflags faststart',
             '-fps_mode passthrough',
             '-map 0:0',
@@ -1328,7 +1359,7 @@ describe(MediaService.name, () => {
             '-rc-lookahead 20',
             '-i_qfactor 0.75',
             `-c:v h264_nvenc`,
-            '-c:a aac',
+            '-c:a copy',
             '-movflags faststart',
             '-fps_mode passthrough',
             '-map 0:0',
@@ -1359,7 +1390,7 @@ describe(MediaService.name, () => {
             '-rc-lookahead 20',
             '-i_qfactor 0.75',
             `-c:v h264_nvenc`,
-            '-c:a aac',
+            '-c:a copy',
             '-movflags faststart',
             '-fps_mode passthrough',
             '-map 0:0',
@@ -1391,7 +1422,7 @@ describe(MediaService.name, () => {
           inputOptions: ['-init_hw_device qsv=hw', '-filter_hw_device hw'],
           outputOptions: [
             `-c:v h264_qsv`,
-            '-c:a aac',
+            '-c:a copy',
             '-movflags faststart',
             '-fps_mode passthrough',
             '-map 0:0',
@@ -1428,7 +1459,7 @@ describe(MediaService.name, () => {
           inputOptions: ['-init_hw_device qsv=hw,child_device=/dev/dri/renderD128', '-filter_hw_device hw'],
           outputOptions: [
             `-c:v h264_qsv`,
-            '-c:a aac',
+            '-c:a copy',
             '-movflags faststart',
             '-fps_mode passthrough',
             '-map 0:0',
@@ -1464,7 +1495,7 @@ describe(MediaService.name, () => {
           inputOptions: ['-init_hw_device qsv=hw', '-filter_hw_device hw'],
           outputOptions: [
             `-c:v h264_qsv`,
-            '-c:a aac',
+            '-c:a copy',
             '-movflags faststart',
             '-fps_mode passthrough',
             '-map 0:0',
@@ -1497,7 +1528,7 @@ describe(MediaService.name, () => {
           inputOptions: ['-init_hw_device qsv=hw', '-filter_hw_device hw'],
           outputOptions: [
             `-c:v vp9_qsv`,
-            '-c:a aac',
+            '-c:a copy',
             '-movflags faststart',
             '-fps_mode passthrough',
             '-map 0:0',
@@ -1541,7 +1572,7 @@ describe(MediaService.name, () => {
           inputOptions: ['-init_hw_device vaapi=accel:/dev/dri/renderD128', '-filter_hw_device accel'],
           outputOptions: [
             `-c:v h264_vaapi`,
-            '-c:a aac',
+            '-c:a copy',
             '-movflags faststart',
             '-fps_mode passthrough',
             '-map 0:0',
@@ -1573,7 +1604,7 @@ describe(MediaService.name, () => {
           inputOptions: ['-init_hw_device vaapi=accel:/dev/dri/renderD128', '-filter_hw_device accel'],
           outputOptions: [
             `-c:v h264_vaapi`,
-            '-c:a aac',
+            '-c:a copy',
             '-movflags faststart',
             '-fps_mode passthrough',
             '-map 0:0',
@@ -1607,7 +1638,7 @@ describe(MediaService.name, () => {
           inputOptions: ['-init_hw_device vaapi=accel:/dev/dri/renderD128', '-filter_hw_device accel'],
           outputOptions: [
             `-c:v h264_vaapi`,
-            '-c:a aac',
+            '-c:a copy',
             '-movflags faststart',
             '-fps_mode passthrough',
             '-map 0:0',
@@ -1637,7 +1668,7 @@ describe(MediaService.name, () => {
           inputOptions: ['-init_hw_device vaapi=accel:/dev/dri/card1', '-filter_hw_device accel'],
           outputOptions: [
             `-c:v h264_vaapi`,
-            '-c:a aac',
+            '-c:a copy',
             '-movflags faststart',
             '-fps_mode passthrough',
             '-map 0:0',
@@ -1663,7 +1694,7 @@ describe(MediaService.name, () => {
           inputOptions: ['-init_hw_device vaapi=accel:/dev/dri/renderD129', '-filter_hw_device accel'],
           outputOptions: [
             `-c:v h264_vaapi`,
-            '-c:a aac',
+            '-c:a copy',
             '-movflags faststart',
             '-fps_mode passthrough',
             '-map 0:0',
@@ -1697,7 +1728,7 @@ describe(MediaService.name, () => {
           inputOptions: ['-init_hw_device vaapi=accel:/dev/dri/renderD128', '-filter_hw_device accel'],
           outputOptions: [
             `-c:v h264_vaapi`,
-            '-c:a aac',
+            '-c:a copy',
             '-movflags faststart',
             '-fps_mode passthrough',
             '-map 0:0',
@@ -1730,7 +1761,7 @@ describe(MediaService.name, () => {
           inputOptions: [],
           outputOptions: [
             '-c:v h264',
-            '-c:a aac',
+            '-c:a copy',
             '-movflags faststart',
             '-fps_mode passthrough',
             '-map 0:0',
@@ -1756,7 +1787,7 @@ describe(MediaService.name, () => {
 
     it('should set vbr options for rkmpp when max bitrate is enabled', async () => {
       storageMock.readdir.mockResolvedValue(['renderD128']);
-      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
+      mediaMock.probe.mockResolvedValue(probeStub.videoStreamVp9);
       configMock.load.mockResolvedValue([
         { key: SystemConfigKey.FFMPEG_ACCEL, value: TranscodeHWAccel.RKMPP },
         { key: SystemConfigKey.FFMPEG_MAX_BITRATE, value: '10000k' },
@@ -1768,10 +1799,10 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
-          inputOptions: [],
+          inputOptions: ['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga'],
           outputOptions: [
-            `-c:v hevc_rkmpp_encoder`,
-            '-c:a aac',
+            `-c:v hevc_rkmpp`,
+            '-c:a copy',
             '-movflags faststart',
             '-fps_mode passthrough',
             '-map 0:0',
@@ -1779,17 +1810,12 @@ describe(MediaService.name, () => {
             '-g 256',
             '-tag:v hvc1',
             '-v verbose',
+            '-vf scale_rkrga=-2:720:format=nv12:afbc=1',
             '-level 153',
-            '-rc_mode 3',
-            '-quality_min 0',
-            '-quality_max 100',
+            '-rc_mode AVBR',
             '-b:v 10000k',
-            '-width 1280',
-            '-height 720',
           ],
           twoPass: false,
-          ffmpegPath: 'ffmpeg_mpp',
-          ldLibraryPath: '/lib/aarch64-linux-gnu:/lib/ffmpeg-mpp',
         },
       );
     });
@@ -1808,26 +1834,22 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
-          inputOptions: [],
+          inputOptions: ['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga'],
           outputOptions: [
-            `-c:v h264_rkmpp_encoder`,
-            '-c:a aac',
+            `-c:v h264_rkmpp`,
+            '-c:a copy',
             '-movflags faststart',
             '-fps_mode passthrough',
             '-map 0:0',
             '-map 0:1',
             '-g 256',
             '-v verbose',
+            '-vf scale_rkrga=-2:720:format=nv12:afbc=1',
             '-level 51',
-            '-rc_mode 2',
-            '-quality_min 51',
-            '-quality_max 51',
-            '-width 1280',
-            '-height 720',
+            '-rc_mode CQP',
+            '-qp_init 30',
           ],
           twoPass: false,
-          ffmpegPath: 'ffmpeg_mpp',
-          ldLibraryPath: '/lib/aarch64-linux-gnu:/lib/ffmpeg-mpp',
         },
       );
     });
@@ -1845,7 +1867,7 @@ describe(MediaService.name, () => {
         inputOptions: [],
         outputOptions: [
           '-c:v h264',
-          '-c:a aac',
+          '-c:a copy',
           '-movflags faststart',
           '-fps_mode passthrough',
           '-map 0:0',
@@ -1872,7 +1894,7 @@ describe(MediaService.name, () => {
         inputOptions: [],
         outputOptions: [
           '-c:v h264',
-          '-c:a aac',
+          '-c:a copy',
           '-movflags faststart',
           '-fps_mode passthrough',
           '-map 0:0',
@@ -1899,7 +1921,7 @@ describe(MediaService.name, () => {
         inputOptions: [],
         outputOptions: [
           '-c:v h264',
-          '-c:a aac',
+          '-c:a copy',
           '-movflags faststart',
           '-fps_mode passthrough',
           '-map 0:0',

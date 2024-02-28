@@ -33,7 +33,7 @@ export const defaults = Object.freeze<SystemConfig>({
     targetVideoCodec: VideoCodec.H264,
     acceptedVideoCodecs: [VideoCodec.H264],
     targetAudioCodec: AudioCodec.AAC,
-    acceptedAudioCodecs: [AudioCodec.AAC],
+    acceptedAudioCodecs: [AudioCodec.AAC, AudioCodec.MP3, AudioCodec.LIBOPUS],
     targetResolution: '720',
     maxBitrate: '0',
     bframes: -1,
@@ -88,17 +88,18 @@ export const defaults = Object.freeze<SystemConfig>({
     enabled: true,
   },
   oauth: {
-    enabled: false,
-    issuerUrl: '',
+    autoLaunch: false,
+    autoRegister: true,
+    buttonText: 'Login with OAuth',
     clientId: '',
     clientSecret: '',
+    enabled: false,
+    issuerUrl: '',
     mobileOverrideEnabled: false,
     mobileRedirectUri: '',
     scope: 'openid email profile',
+    signingAlgorithm: 'RS256',
     storageLabelClaim: 'preferred_username',
-    buttonText: 'Login with OAuth',
-    autoRegister: true,
-    autoLaunch: false,
   },
   passwordLogin: {
     enabled: true,
@@ -132,7 +133,7 @@ export const defaults = Object.freeze<SystemConfig>({
     watch: {
       enabled: false,
       usePolling: false,
-      interval: 10000,
+      interval: 10_000,
     },
   },
   server: {
@@ -184,22 +185,30 @@ export class SystemConfigCore {
     const hasFeature = await this.hasFeature(feature);
     if (!hasFeature) {
       switch (feature) {
-        case FeatureFlag.SMART_SEARCH:
+        case FeatureFlag.SMART_SEARCH: {
           throw new BadRequestException('Smart search is not enabled');
-        case FeatureFlag.FACIAL_RECOGNITION:
+        }
+        case FeatureFlag.FACIAL_RECOGNITION: {
           throw new BadRequestException('Facial recognition is not enabled');
-        case FeatureFlag.SIDECAR:
+        }
+        case FeatureFlag.SIDECAR: {
           throw new BadRequestException('Sidecar is not enabled');
-        case FeatureFlag.SEARCH:
+        }
+        case FeatureFlag.SEARCH: {
           throw new BadRequestException('Search is not enabled');
-        case FeatureFlag.OAUTH:
+        }
+        case FeatureFlag.OAUTH: {
           throw new BadRequestException('OAuth is not enabled');
-        case FeatureFlag.PASSWORD_LOGIN:
+        }
+        case FeatureFlag.PASSWORD_LOGIN: {
           throw new BadRequestException('Password login is not enabled');
-        case FeatureFlag.CONFIG_FILE:
+        }
+        case FeatureFlag.CONFIG_FILE: {
           throw new BadRequestException('Config file is not set');
-        default:
+        }
+        default: {
           throw new ForbiddenException(`Missing required feature: ${feature}`);
+        }
       }
     }
   }
@@ -221,8 +230,6 @@ export class SystemConfigCore {
       [FeatureFlag.SIDECAR]: true,
       [FeatureFlag.SEARCH]: true,
       [FeatureFlag.TRASH]: config.trash.enabled,
-
-      // TODO: use these instead of `POST oauth/config`
       [FeatureFlag.OAUTH]: config.oauth.enabled,
       [FeatureFlag.OAUTH_AUTO_LAUNCH]: config.oauth.autoLaunch,
       [FeatureFlag.PASSWORD_LOGIN]: config.passwordLogin.enabled,
@@ -278,9 +285,9 @@ export class SystemConfigCore {
       for (const validator of this.validators) {
         await validator(newConfig, oldConfig);
       }
-    } catch (e) {
-      this.logger.warn(`Unable to save system config due to a validation error: ${e}`);
-      throw new BadRequestException(e instanceof Error ? e.message : e);
+    } catch (error) {
+      this.logger.warn(`Unable to save system config due to a validation error: ${error}`);
+      throw new BadRequestException(error instanceof Error ? error.message : error);
     }
 
     const updates: SystemConfigEntity[] = [];
@@ -330,19 +337,20 @@ export class SystemConfigCore {
   private async loadFromFile(filepath: string, force = false) {
     if (force || !this.configCache) {
       try {
-        const file = JSON.parse((await this.repository.readFile(filepath)).toString());
+        const file = await this.repository.readFile(filepath);
+        const json = JSON.parse(file.toString());
         const overrides: SystemConfigEntity<SystemConfigValue>[] = [];
 
         for (const key of Object.values(SystemConfigKey)) {
-          const value = _.get(file, key);
-          this.unsetDeep(file, key);
+          const value = _.get(json, key);
+          this.unsetDeep(json, key);
           if (value !== undefined) {
             overrides.push({ key, value });
           }
         }
 
-        if (!_.isEmpty(file)) {
-          this.logger.warn(`Unknown keys found: ${JSON.stringify(file, null, 2)}`);
+        if (!_.isEmpty(json)) {
+          this.logger.warn(`Unknown keys found: ${JSON.stringify(json, null, 2)}`);
         }
 
         this.configCache = overrides;

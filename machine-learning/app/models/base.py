@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import pickle
+import os
 from abc import ABC, abstractmethod
 from pathlib import Path
 from shutil import rmtree
@@ -8,7 +8,6 @@ from typing import Any
 
 import onnxruntime as ort
 from huggingface_hub import snapshot_download
-from typing_extensions import Buffer
 
 import ann.ann
 from app.models.constants import SUPPORTED_PROVIDERS
@@ -61,8 +60,7 @@ class InferenceModel(ABC):
         return self._predict(inputs)
 
     @abstractmethod
-    def _predict(self, inputs: Any) -> Any:
-        ...
+    def _predict(self, inputs: Any) -> Any: ...
 
     def configure(self, **model_kwargs: Any) -> None:
         pass
@@ -78,8 +76,7 @@ class InferenceModel(ABC):
         )
 
     @abstractmethod
-    def _load(self) -> None:
-        ...
+    def _load(self) -> None: ...
 
     def clear_cache(self) -> None:
         if not self.cache_dir.exists():
@@ -118,12 +115,17 @@ class InferenceModel(ABC):
             case ".armnn":
                 session = AnnSession(model_path)
             case ".onnx":
-                session = ort.InferenceSession(
-                    model_path.as_posix(),
-                    sess_options=self.sess_options,
-                    providers=self.providers,
-                    provider_options=self.provider_options,
-                )
+                cwd = os.getcwd()
+                try:
+                    os.chdir(model_path.parent)
+                    session = ort.InferenceSession(
+                        model_path.as_posix(),
+                        sess_options=self.sess_options,
+                        providers=self.providers,
+                        provider_options=self.provider_options,
+                    )
+                finally:
+                    os.chdir(cwd)
             case _:
                 raise ValueError(f"Unsupported model file type: {model_path.suffix}")
         return session
@@ -154,7 +156,7 @@ class InferenceModel(ABC):
 
     @providers.setter
     def providers(self, providers: list[str]) -> None:
-        log.debug(
+        log.info(
             (f"Setting '{self.model_name}' execution providers to {providers}, " "in descending order of preference"),
         )
         self._providers = providers
@@ -163,6 +165,14 @@ class InferenceModel(ABC):
     def providers_default(self) -> list[str]:
         available_providers = set(ort.get_available_providers())
         log.debug(f"Available ORT providers: {available_providers}")
+        if (openvino := "OpenVINOExecutionProvider") in available_providers:
+            device_ids: list[str] = ort.capi._pybind_state.get_available_openvino_device_ids()
+            log.debug(f"Available OpenVINO devices: {device_ids}")
+
+            gpu_devices = [device_id for device_id in device_ids if device_id.startswith("GPU")]
+            if not gpu_devices:
+                log.warning("No GPU device found in OpenVINO. Falling back to CPU.")
+                available_providers.remove(openvino)
         return [provider for provider in SUPPORTED_PROVIDERS if provider in available_providers]
 
     @property
@@ -182,15 +192,7 @@ class InferenceModel(ABC):
                 case "CPUExecutionProvider" | "CUDAExecutionProvider":
                     option = {"arena_extend_strategy": "kSameAsRequested"}
                 case "OpenVINOExecutionProvider":
-                    try:
-                        device_ids: list[str] = ort.capi._pybind_state.get_available_openvino_device_ids()
-                        log.debug(f"Available OpenVINO devices: {device_ids}")
-                        gpu_devices = [device_id for device_id in device_ids if device_id.startswith("GPU")]
-                        option = {"device_id": gpu_devices[0]} if gpu_devices else {}
-                    except AttributeError as e:
-                        log.warning("Failed to get OpenVINO device IDs. Using default options.")
-                        log.error(e)
-                        option = {}
+                    option = {"device_type": "GPU_FP32"}
                 case _:
                     option = {}
             options.append(option)
@@ -209,7 +211,7 @@ class InferenceModel(ABC):
 
     @property
     def sess_options_default(self) -> ort.SessionOptions:
-        sess_options = PicklableSessionOptions()
+        sess_options = ort.SessionOptions()
         sess_options.enable_cpu_mem_arena = False
 
         # avoid thread contention between models
@@ -241,15 +243,3 @@ class InferenceModel(ABC):
     @property
     def preferred_runtime_default(self) -> ModelRuntime:
         return ModelRuntime.ARMNN if ann.ann.is_available and settings.ann else ModelRuntime.ONNX
-
-
-# HF deep copies configs, so we need to make session options picklable
-class PicklableSessionOptions(ort.SessionOptions):  # type: ignore[misc]
-    def __getstate__(self) -> bytes:
-        return pickle.dumps([(attr, getattr(self, attr)) for attr in dir(self) if not callable(getattr(self, attr))])
-
-    def __setstate__(self, state: Buffer) -> None:
-        self.__init__()  # type: ignore[misc]
-        attrs: list[tuple[str, Any]] = pickle.loads(state)
-        for attr, val in attrs:
-            setattr(self, attr, val)

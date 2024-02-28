@@ -18,7 +18,7 @@ import {
   userStub,
   userTokenStub,
 } from '@test';
-import { IncomingHttpHeaders } from 'http';
+import { IncomingHttpHeaders } from 'node:http';
 import { Issuer, generators } from 'openid-client';
 import { Socket } from 'socket.io';
 import {
@@ -73,7 +73,7 @@ describe('AuthService', () => {
 
     jest.spyOn(generators, 'state').mockReturnValue('state');
     jest.spyOn(Issuer, 'discover').mockResolvedValue({
-      id_token_signing_alg_values_supported: ['HS256'],
+      id_token_signing_alg_values_supported: ['RS256'],
       Client: jest.fn().mockResolvedValue({
         issuer: {
           metadata: {
@@ -426,27 +426,6 @@ describe('AuthService', () => {
 
     it('should work if called without query params', () => {
       expect(sut.getMobileRedirect('http://immich.app')).toEqual('app.immich:/?');
-    });
-  });
-
-  describe('generateConfig', () => {
-    it('should work when oauth is not configured', async () => {
-      configMock.load.mockResolvedValue(systemConfigStub.disabled);
-      await expect(sut.generateConfig({ redirectUri: 'http://callback' })).resolves.toEqual({
-        enabled: false,
-        passwordLoginEnabled: false,
-      });
-    });
-
-    it('should generate the config', async () => {
-      configMock.load.mockResolvedValue(systemConfigStub.enabled);
-      await expect(sut.generateConfig({ redirectUri: 'http://redirect' })).resolves.toEqual({
-        enabled: true,
-        buttonText: 'OAuth',
-        url: 'http://authorization-url',
-        autoLaunch: false,
-        passwordLoginEnabled: true,
-      });
     });
   });
 

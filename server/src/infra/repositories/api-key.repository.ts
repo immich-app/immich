@@ -42,7 +42,7 @@ export class ApiKeyRepository implements IKeyRepository {
     return this.repository.findOne({ where: { userId, id } });
   }
 
-  @GenerateSql({ params: [DummyValue.STRING] })
+  @GenerateSql({ params: [DummyValue.UUID] })
   getByUserId(userId: string): Promise<APIKeyEntity[]> {
     return this.repository.find({ where: { userId }, order: { createdAt: 'DESC' } });
   }

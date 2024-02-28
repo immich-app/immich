@@ -1,16 +1,19 @@
 <script lang="ts">
-  import { fade } from 'svelte/transition';
-  import { onDestroy, onMount } from 'svelte';
-  import LoadingSpinner from '../shared-components/loading-spinner.svelte';
-  import { api, type AssetResponseDto } from '@api';
-  import { notificationController, NotificationType } from '../shared-components/notification/notification';
-  import { useZoomImageWheel } from '@zoom-image/svelte';
-  import { photoZoomState } from '$lib/stores/zoom-image.store';
-  import { isWebCompatibleImage } from '$lib/utils/asset-utils';
-  import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
+  import { api } from '$lib/api';
   import { photoViewer } from '$lib/stores/assets.store';
-  import { getBoundingBox } from '$lib/utils/people-utils';
   import { boundingBoxesArray } from '$lib/stores/people.store';
+  import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
+  import { photoZoomState } from '$lib/stores/zoom-image.store';
+  import { getKey, handlePromiseError } from '$lib/utils';
+  import { isWebCompatibleImage } from '$lib/utils/asset-utils';
+  import { getBoundingBox } from '$lib/utils/people-utils';
+  import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
+  import { type AssetResponseDto } from '@immich/sdk';
+  import { useZoomImageWheel } from '@zoom-image/svelte';
+  import { onDestroy, onMount } from 'svelte';
+  import { fade } from 'svelte/transition';
+  import LoadingSpinner from '../shared-components/loading-spinner.svelte';
+  import { NotificationType, notificationController } from '../shared-components/notification/notification';
 
   export let asset: AssetResponseDto;
   export let element: HTMLDivElement | undefined = undefined;
@@ -20,7 +23,7 @@
   let assetData: string;
   let abortController: AbortController;
   let hasZoomed = false;
-  let copyImageToClipboard: (src: string) => Promise<Blob>;
+  let copyImageToClipboard: (source: string) => Promise<Blob>;
   let canCopyImagesToClipboard: () => boolean;
 
   $: if (imgElement) {
@@ -49,7 +52,7 @@
       abortController = new AbortController();
 
       const { data } = await api.assetApi.serveFile(
-        { id: asset.id, isThumb: false, isWeb: !loadOriginal, key: api.getKey() },
+        { id: asset.id, isThumb: false, isWeb: !loadOriginal, key: getKey() },
         {
           responseType: 'blob',
           signal: abortController.signal,
@@ -90,8 +93,8 @@
         message: 'Copied image to clipboard.',
         timeout: 3000,
       });
-    } catch (err) {
-      console.error('Error [photo-viewer]:', err);
+    } catch (error) {
+      console.error('Error [photo-viewer]:', error);
       notificationController.show({
         type: NotificationType.Error,
         message: 'Copying image to clipboard failed.',
@@ -99,7 +102,7 @@
     }
   };
 
-  const doZoomImage = async () => {
+  const doZoomImage = () => {
     setZoomImageWheelState({
       currentZoom: $zoomImageWheelState.currentZoom === 1 ? 2 : 1,
     });
@@ -114,10 +117,10 @@
   zoomImageWheelState.subscribe((state) => {
     photoZoomState.set(state);
 
-    if (state.currentZoom > 1 && isWebCompatibleImage(asset) && !hasZoomed) {
+    if (state.currentZoom > 1 && isWebCompatibleImage(asset) && !hasZoomed && !$alwaysLoadOriginalFile) {
       hasZoomed = true;
 
-      loadAssetData({ loadOriginal: true });
+      handlePromiseError(loadAssetData({ loadOriginal: true }));
     }
   });
 </script>
@@ -129,7 +132,7 @@
   transition:fade={{ duration: haveFadeTransition ? 150 : 0 }}
   class="flex h-full select-none place-content-center place-items-center"
 >
-  {#await loadAssetData({ loadOriginal: false })}
+  {#await loadAssetData({ loadOriginal: $alwaysLoadOriginalFile ? isWebCompatibleImage(asset) : false })}
     <LoadingSpinner />
   {:then}
     <div bind:this={imgElement} class="h-full w-full">

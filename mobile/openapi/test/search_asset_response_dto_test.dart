@@ -31,6 +31,11 @@ void main() {
       // TODO
     });
 
+    // String nextPage
+    test('to test the property `nextPage`', () async {
+      // TODO
+    });
+
     // int total
     test('to test the property `total`', () async {
       // TODO

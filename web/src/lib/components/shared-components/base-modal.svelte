@@ -18,6 +18,8 @@
     if (browser) {
       const scrollTop = document.documentElement.scrollTop;
       const scrollLeft = document.documentElement.scrollLeft;
+
+      /* eslint-disable unicorn/prefer-add-event-listener */
       window.onscroll = function () {
         window.scrollTo(scrollLeft, scrollTop);
       };
@@ -26,6 +28,7 @@
 
   onDestroy(() => {
     if (browser) {
+      /* eslint-disable unicorn/prefer-add-event-listener */
       window.onscroll = null;
     }
   });

@@ -1,9 +1,8 @@
-import { existsSync } from 'fs';
+import { existsSync } from 'node:fs';
 import { access, constants, mkdir, readFile, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import yaml from 'yaml';
 import { ImmichApi } from './api.service';
-
 class LoginError extends Error {
   constructor(message: string) {
     super(message);
@@ -15,12 +14,12 @@ class LoginError extends Error {
 }
 
 export class SessionService {
-  readonly configDir!: string;
+  readonly configDirectory!: string;
   readonly authPath!: string;
 
-  constructor(configDir: string) {
-    this.configDir = configDir;
-    this.authPath = path.join(configDir, '/auth.yml');
+  constructor(configDirectory: string) {
+    this.configDirectory = configDirectory;
+    this.authPath = path.join(configDirectory, '/auth.yml');
   }
 
   async connect(): Promise<ImmichApi> {
@@ -51,12 +50,12 @@ export class SessionService {
 
     const api = new ImmichApi(instanceUrl, apiKey);
 
-    const { data: pingResponse } = await api.serverInfoApi.pingServer().catch((error) => {
-      throw new Error(`Failed to connect to server ${api.instanceUrl}: ${error.message}`);
+    const pingResponse = await api.pingServer().catch((error) => {
+      throw new Error(`Failed to connect to server ${instanceUrl}: ${error.message}`, error);
     });
 
     if (pingResponse.res !== 'pong') {
-      throw new Error(`Could not parse response. Is Immich listening on ${api.instanceUrl}?`);
+      throw new Error(`Could not parse response. Is Immich listening on ${instanceUrl}?`);
     }
 
     return api;
@@ -68,21 +67,21 @@ export class SessionService {
     const api = new ImmichApi(instanceUrl, apiKey);
 
     // Check if server and api key are valid
-    const { data: userInfo } = await api.userApi.getMyUserInfo().catch((error) => {
+    const userInfo = await api.getMyUserInfo().catch((error) => {
       throw new LoginError(`Failed to connect to server ${instanceUrl}: ${error.message}`);
     });
 
     console.log(`Logged in as ${userInfo.email}`);
 
-    if (!existsSync(this.configDir)) {
+    if (!existsSync(this.configDirectory)) {
       // Create config folder if it doesn't exist
-      const created = await mkdir(this.configDir, { recursive: true });
+      const created = await mkdir(this.configDirectory, { recursive: true });
       if (!created) {
-        throw new Error(`Failed to create config folder ${this.configDir}`);
+        throw new Error(`Failed to create config folder ${this.configDirectory}`);
       }
     }
 
-    await writeFile(this.authPath, yaml.stringify({ instanceUrl, apiKey }));
+    await writeFile(this.authPath, yaml.stringify({ instanceUrl, apiKey }), { mode: 0o600 });
 
     console.log('Wrote auth info to ' + this.authPath);
 

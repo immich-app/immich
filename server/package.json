@@ -1,10 +1,10 @@
 {
   "name": "immich",
-  "version": "1.94.0",
+  "version": "1.96.0",
   "description": "",
   "author": "",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "GNU Affero General Public License version 3",
   "scripts": {
     "build": "nest build",
     "format": "prettier --check .",
@@ -35,7 +35,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.22.11",
-    "@immich/cli": "^2.0.3",
+    "@immich/cli": "^2.0.7",
     "@nestjs/bullmq": "^10.0.1",
     "@nestjs/common": "^10.2.2",
     "@nestjs/config": "^3.0.0",
@@ -50,15 +50,14 @@
     "@types/picomatch": "^2.3.3",
     "archiver": "^6.0.0",
     "async-lock": "^1.4.0",
-    "axios": "^1.5.0",
     "bcrypt": "^5.1.1",
     "bullmq": "^4.8.0",
     "chokidar": "^3.5.3",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
     "cookie-parser": "^1.4.6",
-    "exiftool-vendored": "~24.4.0",
-    "exiftool-vendored.pl": "12.73",
+    "exiftool-vendored": "~24.5.0",
+    "exiftool-vendored.pl": "12.76",
     "fluent-ffmpeg": "^2.1.2",
     "geo-tz": "^8.0.0",
     "glob": "^10.3.3",
@@ -72,7 +71,7 @@
     "node-addon-api": "^7.0.0",
     "openid-client": "^5.4.3",
     "pg": "^8.11.3",
-    "picomatch": "^3.0.1",
+    "picomatch": "^4.0.0",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
     "sanitize-filename": "^1.6.3",
@@ -93,7 +92,7 @@
     "@types/express": "^4.17.17",
     "@types/fluent-ffmpeg": "^2.1.21",
     "@types/imagemin": "^8.0.1",
-    "@types/jest": "29.5.11",
+    "@types/jest": "29.5.12",
     "@types/jest-when": "^3.5.2",
     "@types/lodash": "^4.14.197",
     "@types/mock-fs": "^4.13.1",
@@ -102,12 +101,13 @@
     "@types/sharp": "^0.31.1",
     "@types/supertest": "^6.0.0",
     "@types/ua-parser-js": "^0.7.36",
-    "@typescript-eslint/eslint-plugin": "^6.4.1",
-    "@typescript-eslint/parser": "^6.4.1",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
     "dotenv": "^16.3.1",
-    "eslint": "^8.48.0",
-    "eslint-config-prettier": "^9.0.0",
-    "eslint-plugin-prettier": "^5.0.0",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.1.3",
+    "eslint-plugin-unicorn": "^51.0.0",
     "jest": "^29.6.4",
     "jest-when": "^3.6.0",
     "mock-fs": "^5.2.0",
@@ -122,7 +122,7 @@
     "ts-loader": "^9.4.4",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.2.2",
+    "typescript": "^5.3.3",
     "utimes": "^5.2.1"
   },
   "jest": {
@@ -145,7 +145,7 @@
     "coverageDirectory": "./coverage",
     "coverageThreshold": {
       "./src/domain/": {
-        "branches": 80,
+        "branches": 79,
         "functions": 80,
         "lines": 90,
         "statements": 90
@@ -161,6 +161,6 @@
     "globalSetup": "<rootDir>/test/global-setup.js"
   },
   "volta": {
-    "node": "20.11.0"
+    "node": "20.11.1"
   }
 }

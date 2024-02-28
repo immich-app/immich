@@ -1,23 +1,34 @@
 <script lang="ts">
-  import { api, type LibraryResponseDto, LibraryType, type LibraryStatsResponseDto } from '@api';
-  import { onMount } from 'svelte';
-  import Button from '../elements/buttons/button.svelte';
-  import { notificationController, NotificationType } from '../shared-components/notification/notification';
-  import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
-  import { handleError } from '$lib/utils/handle-error';
-  import { fade } from 'svelte/transition';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { slide } from 'svelte/transition';
-  import LibraryImportPathsForm from '../forms/library-import-paths-form.svelte';
-  import LibraryScanSettingsForm from '../forms/library-scan-settings-form.svelte';
-  import LibraryRenameForm from '../forms/library-rename-form.svelte';
+  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
+  import { locale } from '$lib/stores/preferences.store';
   import { getBytesWithUnit } from '$lib/utils/byte-units';
-  import Portal from '../shared-components/portal/portal.svelte';
+  import { getContextMenuPosition } from '$lib/utils/context-menu';
+  import { handleError } from '$lib/utils/handle-error';
+  import {
+    LibraryType,
+    createLibrary,
+    deleteLibrary,
+    getLibraries,
+    getLibraryStatistics,
+    removeOfflineFiles,
+    scanLibrary,
+    updateLibrary,
+    type LibraryResponseDto,
+    type LibraryStatsResponseDto,
+  } from '@immich/sdk';
+  import { mdiDatabase, mdiDotsVertical, mdiUpload } from '@mdi/js';
+  import { onMount } from 'svelte';
+  import { fade, slide } from 'svelte/transition';
+  import Button from '../elements/buttons/button.svelte';
+  import LibraryImportPathsForm from '../forms/library-import-paths-form.svelte';
+  import LibraryRenameForm from '../forms/library-rename-form.svelte';
+  import LibraryScanSettingsForm from '../forms/library-scan-settings-form.svelte';
+  import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
   import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
   import MenuOption from '../shared-components/context-menu/menu-option.svelte';
-  import { getContextMenuPosition } from '$lib/utils/context-menu';
-  import { mdiDatabase, mdiDotsVertical, mdiUpload } from '@mdi/js';
-  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
+  import { NotificationType, notificationController } from '../shared-components/notification/notification';
+  import Portal from '../shared-components/portal/portal.svelte';
 
   let libraries: LibraryResponseDto[] = [];
 
@@ -29,7 +40,7 @@
   let diskUsageUnit: string[] = [];
 
   let confirmDeleteLibrary: LibraryResponseDto | null = null;
-  let deleteLibrary: LibraryResponseDto | null = null;
+  let deletedLibrary: LibraryResponseDto | null = null;
 
   let editImportPaths: number | null;
   let editScanSettings: number | null;
@@ -45,8 +56,8 @@
   let selectedLibraryIndex = 0;
   let selectedLibrary: LibraryResponseDto | null = null;
 
-  onMount(() => {
-    readLibraryList();
+  onMount(async () => {
+    await readLibraryList();
   });
 
   const closeAll = () => {
@@ -56,8 +67,8 @@
     updateLibraryIndex = null;
     showContextMenu = false;
 
-    for (let i = 0; i < dropdownOpen.length; i++) {
-      dropdownOpen[i] = false;
+    for (let index = 0; index < dropdownOpen.length; index++) {
+      dropdownOpen[index] = false;
     }
   };
 
@@ -73,8 +84,7 @@
     showContextMenu = false;
   };
   const refreshStats = async (listIndex: number) => {
-    const { data } = await api.libraryApi.getLibraryStatistics({ id: libraries[listIndex].id });
-    stats[listIndex] = data;
+    stats[listIndex] = await getLibraryStatistics({ id: libraries[listIndex].id });
     photos[listIndex] = stats[listIndex].photos;
     videos[listIndex] = stats[listIndex].videos;
     totalCount[listIndex] = stats[listIndex].total;
@@ -82,24 +92,21 @@
   };
 
   async function readLibraryList() {
-    const { data } = await api.libraryApi.getLibraries();
-    libraries = data;
+    libraries = await getLibraries();
 
     dropdownOpen.length = libraries.length;
 
-    for (let i = 0; i < libraries.length; i++) {
-      await refreshStats(i);
-      dropdownOpen[i] = false;
+    for (let index = 0; index < libraries.length; index++) {
+      await refreshStats(index);
+      dropdownOpen[index] = false;
     }
   }
 
   const handleCreate = async (libraryType: LibraryType) => {
     try {
-      const { data } = await api.libraryApi.createLibrary({
+      const createdLibrary = await createLibrary({
         createLibraryDto: { type: libraryType },
       });
-
-      const createdLibrary = data;
 
       notificationController.show({
         message: `Created library: ${createdLibrary.name}`,
@@ -119,26 +126,25 @@
 
     try {
       const libraryId = libraries[updateLibraryIndex].id;
-      await api.libraryApi.updateLibrary({ id: libraryId, updateLibraryDto: { ...event } });
-    } catch (error) {
-      handleError(error, 'Unable to update library');
-    } finally {
+      await updateLibrary({ id: libraryId, updateLibraryDto: { ...event } });
       closeAll();
       await readLibraryList();
+    } catch (error) {
+      handleError(error, 'Unable to update library');
     }
   };
 
   const handleDelete = async () => {
     if (confirmDeleteLibrary) {
-      deleteLibrary = confirmDeleteLibrary;
+      deletedLibrary = confirmDeleteLibrary;
     }
 
-    if (!deleteLibrary) {
+    if (!deletedLibrary) {
       return;
     }
 
     try {
-      await api.libraryApi.deleteLibrary({ id: deleteLibrary.id });
+      await deleteLibrary({ id: deletedLibrary.id });
       notificationController.show({
         message: `Library deleted`,
         type: NotificationType.Info,
@@ -147,7 +153,7 @@
       handleError(error, 'Unable to remove library');
     } finally {
       confirmDeleteLibrary = null;
-      deleteLibrary = null;
+      deletedLibrary = null;
       await readLibraryList();
     }
   };
@@ -156,7 +162,7 @@
     try {
       for (const library of libraries) {
         if (library.type === LibraryType.External) {
-          await api.libraryApi.scanLibrary({ id: library.id, scanLibraryDto: {} });
+          await scanLibrary({ id: library.id, scanLibraryDto: {} });
         }
       }
       notificationController.show({
@@ -170,7 +176,7 @@
 
   const handleScan = async (libraryId: string) => {
     try {
-      await api.libraryApi.scanLibrary({ id: libraryId, scanLibraryDto: {} });
+      await scanLibrary({ id: libraryId, scanLibraryDto: {} });
       notificationController.show({
         message: `Scanning library for new files`,
         type: NotificationType.Info,
@@ -182,7 +188,7 @@
 
   const handleScanChanges = async (libraryId: string) => {
     try {
-      await api.libraryApi.scanLibrary({ id: libraryId, scanLibraryDto: { refreshModifiedFiles: true } });
+      await scanLibrary({ id: libraryId, scanLibraryDto: { refreshModifiedFiles: true } });
       notificationController.show({
         message: `Scanning library for changed files`,
         type: NotificationType.Info,
@@ -194,7 +200,7 @@
 
   const handleForceScan = async (libraryId: string) => {
     try {
-      await api.libraryApi.scanLibrary({ id: libraryId, scanLibraryDto: { refreshAllFiles: true } });
+      await scanLibrary({ id: libraryId, scanLibraryDto: { refreshAllFiles: true } });
       notificationController.show({
         message: `Forcing refresh of all library files`,
         type: NotificationType.Info,
@@ -206,7 +212,7 @@
 
   const handleRemoveOffline = async (libraryId: string) => {
     try {
-      await api.libraryApi.removeOfflineFiles({ id: libraryId });
+      await removeOfflineFiles({ id: libraryId });
       notificationController.show({
         message: `Removing Offline Files`,
         type: NotificationType.Info,
@@ -228,11 +234,11 @@
     updateLibraryIndex = selectedLibraryIndex;
   };
 
-  const onScanNewLibraryClicked = () => {
+  const onScanNewLibraryClicked = async () => {
     closeAll();
 
     if (selectedLibrary) {
-      handleScan(selectedLibrary.id);
+      await handleScan(selectedLibrary.id);
     }
   };
 
@@ -242,38 +248,38 @@
     updateLibraryIndex = selectedLibraryIndex;
   };
 
-  const onScanAllLibraryFilesClicked = () => {
+  const onScanAllLibraryFilesClicked = async () => {
     closeAll();
     if (selectedLibrary) {
-      handleScanChanges(selectedLibrary.id);
+      await handleScanChanges(selectedLibrary.id);
     }
   };
 
-  const onForceScanAllLibraryFilesClicked = () => {
+  const onForceScanAllLibraryFilesClicked = async () => {
     closeAll();
     if (selectedLibrary) {
-      handleForceScan(selectedLibrary.id);
+      await handleForceScan(selectedLibrary.id);
     }
   };
 
-  const onRemoveOfflineFilesClicked = () => {
+  const onRemoveOfflineFilesClicked = async () => {
     closeAll();
     if (selectedLibrary) {
-      handleRemoveOffline(selectedLibrary.id);
+      await handleRemoveOffline(selectedLibrary.id);
     }
   };
 
-  const onDeleteLibraryClicked = () => {
+  const onDeleteLibraryClicked = async () => {
     closeAll();
 
     if (selectedLibrary && confirm(`Are you sure you want to delete ${selectedLibrary.name} library?`) == true) {
-      refreshStats(selectedLibraryIndex);
+      await refreshStats(selectedLibraryIndex);
       if (totalCount[selectedLibraryIndex] > 0) {
         deleteAssetCount = totalCount[selectedLibraryIndex];
         confirmDeleteLibrary = selectedLibrary;
       } else {
-        deleteLibrary = selectedLibrary;
-        handleDelete();
+        deletedLibrary = selectedLibrary;
+        await handleDelete();
       }
     }
   };
@@ -327,7 +333,7 @@
                 </td>
               {:else}
                 <td class="w-1/6 text-ellipsis px-4 text-sm">
-                  {totalCount[index]}
+                  {totalCount[index].toLocaleString($locale)}
                 </td>
                 <td class="w-1/6 text-ellipsis px-4 text-sm">{diskUsage[index]} {diskUsageUnit[index]}</td>
               {/if}
@@ -342,27 +348,27 @@
 
                 {#if showContextMenu}
                   <Portal target="body">
-                    <ContextMenu {...contextMenuPosition} on:outclick={() => onMenuExit()}>
-                      <MenuOption on:click={() => onRenameClicked()} text={`Rename`} />
+                    <ContextMenu {...contextMenuPosition} on:outclick={onMenuExit}>
+                      <MenuOption on:click={onRenameClicked} text={`Rename`} />
 
                       {#if selectedLibrary && selectedLibrary.type === LibraryType.External}
-                        <MenuOption on:click={() => onEditImportPathClicked()} text="Edit Import Paths" />
-                        <MenuOption on:click={() => onScanSettingClicked()} text="Scan Settings" />
+                        <MenuOption on:click={onEditImportPathClicked} text="Edit Import Paths" />
+                        <MenuOption on:click={onScanSettingClicked} text="Scan Settings" />
                         <hr />
-                        <MenuOption on:click={() => onScanNewLibraryClicked()} text="Scan New Library Files" />
+                        <MenuOption on:click={onScanNewLibraryClicked} text="Scan New Library Files" />
                         <MenuOption
-                          on:click={() => onScanAllLibraryFilesClicked()}
+                          on:click={onScanAllLibraryFilesClicked}
                           text="Re-scan All Library Files"
                           subtitle={'Only refreshes modified files'}
                         />
                         <MenuOption
-                          on:click={() => onForceScanAllLibraryFilesClicked()}
+                          on:click={onForceScanAllLibraryFilesClicked}
                           text="Force Re-scan All Library Files"
                           subtitle={'Refreshes every file'}
                         />
                         <hr />
-                        <MenuOption on:click={() => onRemoveOfflineFilesClicked()} text="Remove Offline Files" />
-                        <MenuOption on:click={() => onDeleteLibraryClicked()}>
+                        <MenuOption on:click={onRemoveOfflineFilesClicked} text="Remove Offline Files" />
+                        <MenuOption on:click={onDeleteLibraryClicked}>
                           <p class="text-red-600">Delete library</p>
                         </MenuOption>
                       {/if}

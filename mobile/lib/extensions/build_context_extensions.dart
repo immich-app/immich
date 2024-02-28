@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 
 extension ContextHelper on BuildContext {
-  // Returns the current size from MediaQuery
-  Size get size => MediaQuery.sizeOf(this);
+  // Returns the current padding from MediaQuery
+  EdgeInsets get padding => MediaQuery.paddingOf(this);
 
   // Returns the current width from MediaQuery
-  double get width => size.width;
+  double get width => MediaQuery.sizeOf(this).width;
 
   // Returns the current height from MediaQuery
-  double get height => size.height;
+  double get height => MediaQuery.sizeOf(this).height;
 
   // Returns true if the app is running on a mobile device (!tablets)
   bool get isMobile => width < 550;

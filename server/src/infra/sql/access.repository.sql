@@ -7,8 +7,8 @@ FROM
   "activity" "ActivityEntity"
 WHERE
   (
-    "ActivityEntity"."id" IN ($1)
-    AND "ActivityEntity"."userId" = $2
+    ("ActivityEntity"."id" IN ($1))
+    AND ("ActivityEntity"."userId" = $2)
   )
 
 -- AccessRepository.activity.checkAlbumOwnerAccess
@@ -22,8 +22,14 @@ FROM
   )
 WHERE
   (
-    "ActivityEntity"."id" IN ($1)
-    AND "ActivityEntity__ActivityEntity_album"."ownerId" = $2
+    ("ActivityEntity"."id" IN ($1))
+    AND (
+      (
+        (
+          "ActivityEntity__ActivityEntity_album"."ownerId" = $2
+        )
+      )
+    )
   )
 
 -- AccessRepository.activity.checkCreateAccess
@@ -53,8 +59,8 @@ FROM
 WHERE
   (
     (
-      "AlbumEntity"."id" IN ($1)
-      AND "AlbumEntity"."ownerId" = $2
+      ("AlbumEntity"."id" IN ($1))
+      AND ("AlbumEntity"."ownerId" = $2)
     )
   )
   AND ("AlbumEntity"."deletedAt" IS NULL)
@@ -72,8 +78,12 @@ FROM
 WHERE
   (
     (
-      "AlbumEntity"."id" IN ($1)
-      AND "AlbumEntity__AlbumEntity_sharedUsers"."id" = $2
+      ("AlbumEntity"."id" IN ($1))
+      AND (
+        (
+          ("AlbumEntity__AlbumEntity_sharedUsers"."id" = $2)
+        )
+      )
     )
   )
   AND ("AlbumEntity"."deletedAt" IS NULL)
@@ -86,8 +96,8 @@ FROM
   "shared_links" "SharedLinkEntity"
 WHERE
   (
-    "SharedLinkEntity"."id" = $1
-    AND "SharedLinkEntity"."albumId" IN ($2)
+    ("SharedLinkEntity"."id" = $1)
+    AND ("SharedLinkEntity"."albumId" IN ($2))
   )
 
 -- AccessRepository.asset.checkAlbumAccess
@@ -119,8 +129,8 @@ FROM
   "assets" "AssetEntity"
 WHERE
   (
-    "AssetEntity"."id" IN ($1)
-    AND "AssetEntity"."ownerId" = $2
+    ("AssetEntity"."id" IN ($1))
+    AND ("AssetEntity"."ownerId" = $2)
   )
 
 -- AccessRepository.asset.checkPartnerAccess
@@ -168,8 +178,8 @@ FROM
   "user_token" "UserTokenEntity"
 WHERE
   (
-    "UserTokenEntity"."userId" = $1
-    AND "UserTokenEntity"."id" IN ($2)
+    ("UserTokenEntity"."userId" = $1)
+    AND ("UserTokenEntity"."id" IN ($2))
   )
 
 -- AccessRepository.library.checkOwnerAccess
@@ -180,8 +190,8 @@ FROM
 WHERE
   (
     (
-      "LibraryEntity"."id" IN ($1)
-      AND "LibraryEntity"."ownerId" = $2
+      ("LibraryEntity"."id" IN ($1))
+      AND ("LibraryEntity"."ownerId" = $2)
     )
   )
   AND ("LibraryEntity"."deletedAt" IS NULL)
@@ -203,8 +213,8 @@ FROM
   "person" "PersonEntity"
 WHERE
   (
-    "PersonEntity"."id" IN ($1)
-    AND "PersonEntity"."ownerId" = $2
+    ("PersonEntity"."id" IN ($1))
+    AND ("PersonEntity"."ownerId" = $2)
   )
 
 -- AccessRepository.person.checkFaceOwnerAccess
@@ -218,8 +228,14 @@ FROM
   )
 WHERE
   (
-    "AssetFaceEntity"."id" IN ($1)
-    AND "AssetFaceEntity__AssetFaceEntity_asset"."ownerId" = $2
+    ("AssetFaceEntity"."id" IN ($1))
+    AND (
+      (
+        (
+          "AssetFaceEntity__AssetFaceEntity_asset"."ownerId" = $2
+        )
+      )
+    )
   )
 
 -- AccessRepository.partner.checkUpdateAccess

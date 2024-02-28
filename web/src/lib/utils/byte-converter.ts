@@ -11,7 +11,7 @@ export function convertToBytes(size: number, unit: string): number {
   let bytes = 0;
 
   if (unit === 'GiB') {
-    bytes = size * 1073741824;
+    bytes = size * 1_073_741_824;
   }
 
   return bytes;
@@ -30,7 +30,7 @@ export function convertFromBytes(bytes: number, unit: string): number {
   let size = 0;
 
   if (unit === 'GiB') {
-    size = bytes / 1073741824;
+    size = bytes / 1_073_741_824;
   }
 
   return size;

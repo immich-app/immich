@@ -164,7 +164,7 @@ export const assetStub = {
     deletedAt: null,
     sidecarPath: null,
     exifInfo: {
-      fileSizeInByte: 5_000,
+      fileSizeInByte: 5000,
     } as ExifEntity,
     stack: assetStackStub('stack-1', [
       { id: 'primary-asset-id' } as AssetEntity,
@@ -209,7 +209,7 @@ export const assetStub = {
     deletedAt: null,
     sidecarPath: null,
     exifInfo: {
-      fileSizeInByte: 5_000,
+      fileSizeInByte: 5000,
     } as ExifEntity,
   }),
 
@@ -249,7 +249,7 @@ export const assetStub = {
     deletedAt: null,
     sidecarPath: null,
     exifInfo: {
-      fileSizeInByte: 5_000,
+      fileSizeInByte: 5000,
     } as ExifEntity,
   }),
 
@@ -288,7 +288,7 @@ export const assetStub = {
     faces: [],
     sidecarPath: null,
     exifInfo: {
-      fileSizeInByte: 5_000,
+      fileSizeInByte: 5000,
     } as ExifEntity,
     deletedAt: null,
   }),
@@ -329,7 +329,7 @@ export const assetStub = {
     faces: [],
     sidecarPath: null,
     exifInfo: {
-      fileSizeInByte: 5_000,
+      fileSizeInByte: 5000,
     } as ExifEntity,
   }),
 
@@ -368,7 +368,7 @@ export const assetStub = {
     faces: [],
     sidecarPath: null,
     exifInfo: {
-      fileSizeInByte: 5_000,
+      fileSizeInByte: 5000,
     } as ExifEntity,
     deletedAt: null,
   }),

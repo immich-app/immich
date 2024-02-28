@@ -1,13 +1,15 @@
 <script lang="ts">
-  import type { SystemConfigDto } from '@api';
+  import type { SystemConfigDto } from '@immich/sdk';
   import { isEqual } from 'lodash-es';
   import { createEventDispatcher } from 'svelte';
   import { fade } from 'svelte/transition';
   import type { SettingsEventType } from '../admin-settings';
-  import SettingAccordion from '../setting-accordion.svelte';
-  import SettingButtonsRow from '../setting-buttons-row.svelte';
-  import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
-  import SettingSwitch from '../setting-switch.svelte';
+  import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
+  import SettingInputField, {
+    SettingInputFieldType,
+  } from '$lib/components/shared-components/settings/setting-input-field.svelte';
+  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
+  import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
@@ -26,7 +28,12 @@
 
 <div>
   <div in:fade={{ duration: 500 }}>
-    <SettingAccordion title="Library watching (EXPERIMENTAL)" subtitle="Automatically watch for changed files" isOpen>
+    <SettingAccordion
+      key="library-watching"
+      title="Library watching (EXPERIMENTAL)"
+      subtitle="Automatically watch for changed files"
+      isOpen
+    >
       <form autocomplete="off" on:submit|preventDefault>
         <div class="ml-4 mt-4 flex flex-col gap-4">
           <SettingSwitch
@@ -70,7 +77,12 @@
       </form>
     </SettingAccordion>
 
-    <SettingAccordion title="Periodic Scanning" subtitle="Configure periodic library scanning" isOpen>
+    <SettingAccordion
+      key="library-scanning"
+      title="Periodic Scanning"
+      subtitle="Configure periodic library scanning"
+      isOpen
+    >
       <form autocomplete="off" on:submit|preventDefault>
         <div class="ml-4 mt-4 flex flex-col gap-4">
           <SettingSwitch

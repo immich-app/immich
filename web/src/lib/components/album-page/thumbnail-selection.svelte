@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { AlbumResponseDto, AssetResponseDto } from '@api';
+  import type { AlbumResponseDto, AssetResponseDto } from '@immich/sdk';
   import { createEventDispatcher } from 'svelte';
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
@@ -16,11 +16,7 @@
   }>();
 
   $: isSelected = (id: string): boolean | undefined => {
-    if (!selectedThumbnail && album.albumThumbnailAssetId == id) {
-      return true;
-    } else {
-      return selectedThumbnail?.id == id;
-    }
+    return !selectedThumbnail && album.albumThumbnailAssetId == id ? true : selectedThumbnail?.id == id;
   };
 </script>
 

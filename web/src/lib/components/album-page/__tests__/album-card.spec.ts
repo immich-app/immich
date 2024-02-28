@@ -1,12 +1,13 @@
 import { createObjectURLMock } from '$lib/__mocks__/jsdom-url.mock';
-import { api, ThumbnailFormat } from '@api';
+import { api } from '$lib/api';
+import { ThumbnailFormat } from '@immich/sdk';
 import { albumFactory } from '@test-data';
 import '@testing-library/jest-dom';
-import { fireEvent, render, type RenderResult, waitFor } from '@testing-library/svelte';
-import AlbumCard from '../album-card.svelte';
+import { fireEvent, render, waitFor, type RenderResult } from '@testing-library/svelte';
 import type { MockedObject } from 'vitest';
+import AlbumCard from '../album-card.svelte';
 
-vi.mock('@api');
+vi.mock('$lib/api');
 const apiMock: MockedObject<typeof api> = api as MockedObject<typeof api>;
 
 describe('AlbumCard component', () => {
@@ -122,10 +123,10 @@ describe('AlbumCard component', () => {
       const onClickHandler = vi.fn();
       sut.component.$on('showalbumcontextmenu', onClickHandler);
 
-      const contextMenuBtnParent = sut.getByTestId('context-button-parent');
+      const contextMenuButtonParent = sut.getByTestId('context-button-parent');
 
       // Mock getBoundingClientRect to return a bounding rectangle that will result in the expected position
-      contextMenuBtnParent.getBoundingClientRect = () => ({
+      contextMenuButtonParent.getBoundingClientRect = () => ({
         x: 123,
         y: 456,
         width: 0,
@@ -138,7 +139,7 @@ describe('AlbumCard component', () => {
       });
 
       await fireEvent(
-        contextMenuBtnParent,
+        contextMenuButtonParent,
         new MouseEvent('click', {
           clientX: 123,
           clientY: 456,

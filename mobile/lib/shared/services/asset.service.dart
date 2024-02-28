@@ -63,7 +63,7 @@ class AssetService {
 
   /// Returns `null` if the server state did not change, else list of assets
   Future<List<Asset>?> _getRemoteAssets(User user) async {
-    const int chunkSize = 5000;
+    const int chunkSize = 10000;
     try {
       final DateTime now = DateTime.now().toUtc();
       final List<Asset> allAssets = [];
@@ -90,7 +90,7 @@ class AssetService {
       return allAssets;
     } catch (error, stack) {
       log.severe(
-        'Error while getting remote assets: ${error.toString()}',
+        'Error while getting remote assets',
         error,
         stack,
       );
@@ -117,7 +117,7 @@ class AssetService {
       );
       return true;
     } catch (error, stack) {
-      log.severe("Error deleteAssets  ${error.toString()}", error, stack);
+      log.severe("Error while deleting assets", error, stack);
     }
     return false;
   }
@@ -129,7 +129,7 @@ class AssetService {
     // fileSize is always filled on the server but not set on client
     if (a.exifInfo?.fileSize == null) {
       if (a.isRemote) {
-        final dto = await _apiService.assetApi.getAssetById(a.remoteId!);
+        final dto = await _apiService.assetApi.getAssetInfo(a.remoteId!);
         if (dto != null && dto.exifInfo != null) {
           final newExif = Asset.remote(dto).exifInfo!.copyWith(id: a.id);
           if (newExif != a.exifInfo) {

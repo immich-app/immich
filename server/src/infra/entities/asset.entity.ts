@@ -85,6 +85,7 @@ export class AssetEntity {
   @DeleteDateColumn({ type: 'timestamptz', nullable: true })
   deletedAt!: Date | null;
 
+  @Index('idx_asset_file_created_at')
   @Column({ type: 'timestamptz' })
   fileCreatedAt!: Date;
 

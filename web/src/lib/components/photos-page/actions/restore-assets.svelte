@@ -1,17 +1,17 @@
 <script lang="ts">
+  import Icon from '$lib/components/elements/icon.svelte';
   import {
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
+  import type { OnRestore } from '$lib/utils/actions';
   import { handleError } from '$lib/utils/handle-error';
-  import { api } from '@api';
-  import Icon from '$lib/components/elements/icon.svelte';
+  import { restoreAssets } from '@immich/sdk';
+  import { mdiHistory } from '@mdi/js';
   import Button from '../../elements/buttons/button.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
-  import { mdiHistory } from '@mdi/js';
-  import type { OnRestore } from '$lib/utils/actions';
 
-  export let onRestore: OnRestore | undefined = undefined;
+  export let onRestore: OnRestore | undefined;
 
   const { getAssets, clearSelect } = getAssetControlContext();
 
@@ -21,8 +21,8 @@
     loading = true;
 
     try {
-      const ids = Array.from(getAssets()).map((a) => a.id);
-      await api.trashApi.restoreAssets({ bulkIdsDto: { ids } });
+      const ids = [...getAssets()].map((a) => a.id);
+      await restoreAssets({ bulkIdsDto: { ids } });
       onRestore?.(ids);
 
       notificationController.show({
@@ -31,8 +31,8 @@
       });
 
       clearSelect();
-    } catch (e) {
-      handleError(e, 'Error restoring assets');
+    } catch (error) {
+      handleError(error, 'Error restoring assets');
     } finally {
       loading = false;
     }

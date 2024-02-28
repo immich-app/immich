@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { api, type UserResponseDto } from '@api';
-  import BaseModal from '../shared-components/base-modal.svelte';
-  import UserAvatar from '../shared-components/user-avatar.svelte';
-  import ImmichLogo from '../shared-components/immich-logo.svelte';
-  import Button from '../elements/buttons/button.svelte';
+  import { getAllUsers, getPartners, type UserResponseDto } from '@immich/sdk';
   import { createEventDispatcher, onMount } from 'svelte';
+  import Button from '../elements/buttons/button.svelte';
+  import BaseModal from '../shared-components/base-modal.svelte';
+  import ImmichLogo from '../shared-components/immich-logo.svelte';
+  import UserAvatar from '../shared-components/user-avatar.svelte';
 
   export let user: UserResponseDto;
 
@@ -15,23 +15,21 @@
 
   onMount(async () => {
     // TODO: update endpoint to have a query param for deleted users
-    let { data: users } = await api.userApi.getAllUsers({ isAll: false });
+    let users = await getAllUsers({ isAll: false });
 
     // remove invalid users
     users = users.filter((_user) => !(_user.deletedAt || _user.id === user.id));
 
     // exclude partners from the list of users available for selection
-    const { data: partners } = await api.partnerApi.getPartners({ direction: 'shared-by' });
-    const partnerIds = partners.map((partner) => partner.id);
-    availableUsers = users.filter((user) => !partnerIds.includes(user.id));
+    const partners = await getPartners({ direction: 'shared-by' });
+    const partnerIds = new Set(partners.map((partner) => partner.id));
+    availableUsers = users.filter((user) => !partnerIds.has(user.id));
   });
 
   const selectUser = (user: UserResponseDto) => {
-    if (selectedUsers.includes(user)) {
-      selectedUsers = selectedUsers.filter((selectedUser) => selectedUser.id !== user.id);
-    } else {
-      selectedUsers = [...selectedUsers, user];
-    }
+    selectedUsers = selectedUsers.includes(user)
+      ? selectedUsers.filter((selectedUser) => selectedUser.id !== user.id)
+      : [...selectedUsers, user];
   };
 </script>
 

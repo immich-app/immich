@@ -1,15 +1,15 @@
 <svelte:options accessors />
 
 <script lang="ts">
-  import { type SystemConfigDto, api } from '@api';
   import {
-    notificationController,
     NotificationType,
+    notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import { handleError } from '$lib/utils/handle-error';
-  import type { SettingsEventType } from './admin-settings';
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { getConfig, getConfigDefaults, updateConfig, type SystemConfigDto } from '@immich/sdk';
   import { cloneDeep } from 'lodash-es';
+  import { createEventDispatcher, onMount } from 'svelte';
+  import type { SettingsEventType } from './admin-settings';
 
   export let config: SystemConfigDto;
 
@@ -19,16 +19,12 @@
   const dispatch = createEventDispatcher<{ save: void }>();
 
   const handleReset = async (detail: SettingsEventType['reset']) => {
-    if (detail.default) {
-      await resetToDefault(detail.configKeys);
-    } else {
-      await reset(detail.configKeys);
-    }
+    await (detail.default ? resetToDefault(detail.configKeys) : reset(detail.configKeys));
   };
 
   const handleSave = async (update: Partial<SystemConfigDto>) => {
     try {
-      const { data: newConfig } = await api.systemConfigApi.updateConfig({
+      const newConfig = await updateConfig({
         systemConfigDto: {
           ...savedConfig,
           ...update,
@@ -46,8 +42,11 @@
   };
 
   const reset = async (configKeys: Array<keyof SystemConfigDto>) => {
-    const { data: resetConfig } = await api.systemConfigApi.getConfig();
-    config = configKeys.reduce((acc, key) => ({ ...acc, [key]: resetConfig[key] }), config);
+    const resetConfig = await getConfig();
+
+    for (const key of configKeys) {
+      config = { ...config, [key]: resetConfig[key] };
+    }
 
     notificationController.show({
       message: 'Reset settings to the recent saved settings',
@@ -55,8 +54,10 @@
     });
   };
 
-  const resetToDefault = async (configKeys: Array<keyof SystemConfigDto>) => {
-    config = configKeys.reduce((acc, key) => ({ ...acc, [key]: defaultConfig[key] }), config);
+  const resetToDefault = (configKeys: Array<keyof SystemConfigDto>) => {
+    for (const key of configKeys) {
+      config = { ...config, [key]: defaultConfig[key] };
+    }
 
     notificationController.show({
       message: 'Reset settings to default',
@@ -65,10 +66,7 @@
   };
 
   onMount(async () => {
-    [savedConfig, defaultConfig] = await Promise.all([
-      api.systemConfigApi.getConfig().then((res) => res.data),
-      api.systemConfigApi.getConfigDefaults().then((res) => res.data),
-    ]);
+    [savedConfig, defaultConfig] = await Promise.all([getConfig(), getConfigDefaults()]);
   });
 </script>
 

@@ -1,4 +1,11 @@
-import { IAssetRepository, IJobRepository, ILibraryRepository, IUserRepository, JobName } from '@app/domain';
+import {
+  IAssetRepository,
+  IJobRepository,
+  ILibraryRepository,
+  IStorageRepository,
+  IUserRepository,
+  JobName,
+} from '@app/domain';
 import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
 import {
   IAccessRepositoryMock,
@@ -9,6 +16,7 @@ import {
   newAssetRepositoryMock,
   newJobRepositoryMock,
   newLibraryRepositoryMock,
+  newStorageRepositoryMock,
   newUserRepositoryMock,
 } from '@test';
 import { when } from 'jest-when';
@@ -51,8 +59,8 @@ const _getAsset_1 = () => {
   asset_1.encodedVideoPath = '';
   asset_1.duration = '0:00:00.000000';
   asset_1.exifInfo = new ExifEntity();
-  asset_1.exifInfo.latitude = 49.533547;
-  asset_1.exifInfo.longitude = 10.703075;
+  asset_1.exifInfo.latitude = 49.533_547;
+  asset_1.exifInfo.longitude = 10.703_075;
   return asset_1;
 };
 
@@ -63,15 +71,12 @@ describe('AssetService', () => {
   let assetMock: jest.Mocked<IAssetRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
   let libraryMock: jest.Mocked<ILibraryRepository>;
+  let storageMock: jest.Mocked<IStorageRepository>;
   let userMock: jest.Mocked<IUserRepository>;
 
   beforeEach(() => {
     assetRepositoryMockV1 = {
       get: jest.fn(),
-      create: jest.fn(),
-      upsertExif: jest.fn(),
-
-      getAllByUserId: jest.fn(),
       getDetectedObjectsByUserId: jest.fn(),
       getLocationsByUserId: jest.fn(),
       getSearchPropertiesByUserId: jest.fn(),
@@ -84,9 +89,10 @@ describe('AssetService', () => {
     assetMock = newAssetRepositoryMock();
     jobMock = newJobRepositoryMock();
     libraryMock = newLibraryRepositoryMock();
+    storageMock = newStorageRepositoryMock();
     userMock = newUserRepositoryMock();
 
-    sut = new AssetService(accessMock, assetRepositoryMockV1, assetMock, jobMock, libraryMock, userMock);
+    sut = new AssetService(accessMock, assetRepositoryMockV1, assetMock, jobMock, libraryMock, storageMock, userMock);
 
     when(assetRepositoryMockV1.get)
       .calledWith(assetStub.livePhotoStillAsset.id)
@@ -109,13 +115,18 @@ describe('AssetService', () => {
       };
       const dto = _getCreateAssetDto();
 
-      assetRepositoryMockV1.create.mockResolvedValue(assetEntity);
+      assetMock.create.mockResolvedValue(assetEntity);
       accessMock.library.checkOwnerAccess.mockResolvedValue(new Set([dto.libraryId!]));
 
       await expect(sut.uploadFile(authStub.user1, dto, file)).resolves.toEqual({ duplicate: false, id: 'id_1' });
 
-      expect(assetRepositoryMockV1.create).toHaveBeenCalled();
+      expect(assetMock.create).toHaveBeenCalled();
       expect(userMock.updateUsage).toHaveBeenCalledWith(authStub.user1.user.id, file.size);
+      expect(storageMock.utimes).toHaveBeenCalledWith(
+        file.originalPath,
+        expect.any(Date),
+        new Date(dto.fileModifiedAt),
+      );
     });
 
     it('should handle a duplicate', async () => {
@@ -131,7 +142,7 @@ describe('AssetService', () => {
       const error = new QueryFailedError('', [], new Error('unique key violation'));
       (error as any).constraint = ASSET_CHECKSUM_CONSTRAINT;
 
-      assetRepositoryMockV1.create.mockRejectedValue(error);
+      assetMock.create.mockRejectedValue(error);
       assetRepositoryMockV1.getAssetsByChecksums.mockResolvedValue([_getAsset_1()]);
       accessMock.library.checkOwnerAccess.mockResolvedValue(new Set([dto.libraryId!]));
 
@@ -149,8 +160,8 @@ describe('AssetService', () => {
       const error = new QueryFailedError('', [], new Error('unique key violation'));
       (error as any).constraint = ASSET_CHECKSUM_CONSTRAINT;
 
-      assetRepositoryMockV1.create.mockResolvedValueOnce(assetStub.livePhotoMotionAsset);
-      assetRepositoryMockV1.create.mockResolvedValueOnce(assetStub.livePhotoStillAsset);
+      assetMock.create.mockResolvedValueOnce(assetStub.livePhotoMotionAsset);
+      assetMock.create.mockResolvedValueOnce(assetStub.livePhotoStillAsset);
       accessMock.library.checkOwnerAccess.mockResolvedValue(new Set([dto.libraryId!]));
 
       await expect(
@@ -170,6 +181,16 @@ describe('AssetService', () => {
         [{ name: JobName.METADATA_EXTRACTION, data: { id: assetStub.livePhotoStillAsset.id, source: 'upload' } }],
       ]);
       expect(userMock.updateUsage).toHaveBeenCalledWith(authStub.user1.user.id, 111);
+      expect(storageMock.utimes).toHaveBeenCalledWith(
+        fileStub.livePhotoStill.originalPath,
+        expect.any(Date),
+        new Date(dto.fileModifiedAt),
+      );
+      expect(storageMock.utimes).toHaveBeenCalledWith(
+        fileStub.livePhotoMotion.originalPath,
+        expect.any(Date),
+        new Date(dto.fileModifiedAt),
+      );
     });
   });
 

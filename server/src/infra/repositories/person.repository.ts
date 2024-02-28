@@ -3,6 +3,7 @@ import {
   IPersonRepository,
   Paginated,
   PaginationOptions,
+  PeopleStatistics,
   PersonNameSearchOptions,
   PersonSearchOptions,
   PersonStatistics,
@@ -28,12 +29,7 @@ export class PersonRepository implements IPersonRepository {
       .createQueryBuilder()
       .update()
       .set({ personId: newPersonId })
-      .where(
-        _.omitBy(
-          { personId: oldPersonId ? oldPersonId : undefined, id: faceIds ? In(faceIds) : undefined },
-          _.isUndefined,
-        ),
-      )
+      .where(_.omitBy({ personId: oldPersonId ?? undefined, id: faceIds ? In(faceIds) : undefined }, _.isUndefined))
       .execute();
 
     return result.affected ?? 0;
@@ -44,11 +40,11 @@ export class PersonRepository implements IPersonRepository {
   }
 
   async deleteAll(): Promise<void> {
-    await this.personRepository.delete({});
+    await this.personRepository.clear();
   }
 
   async deleteAllFaces(): Promise<void> {
-    await this.assetFaceRepository.delete({});
+    await this.assetFaceRepository.query('TRUNCATE TABLE asset_faces CASCADE');
   }
 
   getAllFaces(
@@ -74,6 +70,7 @@ export class PersonRepository implements IPersonRepository {
       .addOrderBy("NULLIF(person.name, '') IS NULL", 'ASC')
       .addOrderBy('COUNT(face.assetId)', 'DESC')
       .addOrderBy("NULLIF(person.name, '')", 'ASC', 'NULLS LAST')
+      .andWhere("person.thumbnailPath != ''")
       .having("person.name != '' OR COUNT(face.assetId) >= :faces", { faces: options?.minimumFaceCount || 1 })
       .groupBy('person.id')
       .limit(500);
@@ -212,15 +209,25 @@ export class PersonRepository implements IPersonRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  async getNumberOfPeople(userId: string): Promise<number> {
-    return this.personRepository
+  async getNumberOfPeople(userId: string): Promise<PeopleStatistics> {
+    const items = await this.personRepository
       .createQueryBuilder('person')
       .leftJoin('person.faces', 'face')
       .where('person.ownerId = :userId', { userId })
+      .innerJoin('face.asset', 'asset')
+      .andWhere('asset.isArchived = false')
+      .andWhere("person.thumbnailPath != ''")
+      .select('COUNT(DISTINCT(person.id))', 'total')
+      .addSelect('COUNT(DISTINCT(person.id)) FILTER (WHERE person.isHidden = true)', 'hidden')
       .having('COUNT(face.assetId) != 0')
-      .groupBy('person.id')
-      .withDeleted()
-      .getCount();
+      .getRawOne();
+
+    const result: PeopleStatistics = {
+      total: items ? Number.parseInt(items.total) : 0,
+      hidden: items ? Number.parseInt(items.hidden) : 0,
+    };
+
+    return result;
   }
 
   create(entity: Partial<PersonEntity>): Promise<PersonEntity> {

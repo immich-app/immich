@@ -1,29 +1,53 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
+  import Icon from '$lib/components/elements/icon.svelte';
+  import { AppRoute, AssetAction, ProjectionType } from '$lib/constants';
+  import { updateNumberOfComments } from '$lib/stores/activity.store';
+  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import type { AssetStore } from '$lib/stores/assets.store';
+  import { isShowDetail, showDeleteModal } from '$lib/stores/preferences.store';
+  import { featureFlags } from '$lib/stores/server-config.store';
+  import { SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
+  import { stackAssetsStore } from '$lib/stores/stacked-asset.store';
+  import { user } from '$lib/stores/user.store';
+  import { getAssetJobMessage, isSharedLink, handlePromiseError } from '$lib/utils';
+  import { addAssetsToAlbum, downloadFile } from '$lib/utils/asset-utils';
+  import { handleError } from '$lib/utils/handle-error';
+  import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
+  import { SlideshowHistory } from '$lib/utils/slideshow-history';
   import {
-    type ActivityResponseDto,
-    type AlbumResponseDto,
-    api,
     AssetJobName,
-    type AssetResponseDto,
     AssetTypeEnum,
     ReactionType,
+    createActivity,
+    createAlbum,
+    deleteActivity,
+    deleteAssets,
+    getActivities,
+    getActivityStatistics,
+    getAllAlbums,
+    runAssetJobs,
+    updateAsset,
+    updateAssets,
+    type ActivityResponseDto,
+    type AlbumResponseDto,
+    type AssetResponseDto,
     type SharedLinkResponseDto,
-  } from '@api';
+  } from '@immich/sdk';
+  import { mdiChevronLeft, mdiChevronRight, mdiImageBrokenVariant } from '@mdi/js';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import { fly } from 'svelte/transition';
+  import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
+  import DeleteAssetDialog from '../photos-page/delete-asset-dialog.svelte';
   import AlbumSelectionModal from '../shared-components/album-selection-modal.svelte';
-  import { notificationController, NotificationType } from '../shared-components/notification/notification';
+  import { NotificationType, notificationController } from '../shared-components/notification/notification';
+  import ProfileImageCropper from '../shared-components/profile-image-cropper.svelte';
+  import ActivityStatus from './activity-status.svelte';
+  import ActivityViewer from './activity-viewer.svelte';
   import AssetViewerNavBar from './asset-viewer-nav-bar.svelte';
   import DetailPanel from './detail-panel.svelte';
-  import PhotoViewer from './photo-viewer.svelte';
-  import VideoViewer from './video-viewer.svelte';
-  import PanoramaViewer from './panorama-viewer.svelte';
-  import { AppRoute, AssetAction, ProjectionType } from '$lib/constants';
-  import ProfileImageCropper from '../shared-components/profile-image-cropper.svelte';
-  import { isShowDetail, showDeleteModal } from '$lib/stores/preferences.store';
-  import { addAssetsToAlbum, downloadFile } from '$lib/utils/asset-utils';
   import NavigationArea from './navigation-area.svelte';
+<<<<<<< HEAD
   import { browser } from '$app/environment';
   import PhotoEditor from './photo-editor/photo-editor.svelte';
   import { handleError } from '$lib/utils/handle-error';
@@ -40,9 +64,12 @@
   import ActivityStatus from './activity-status.svelte';
   import { updateNumberOfComments } from '$lib/stores/activity.store';
   import { SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
+=======
+  import PanoramaViewer from './panorama-viewer.svelte';
+  import PhotoViewer from './photo-viewer.svelte';
+>>>>>>> origin/main
   import SlideshowBar from './slideshow-bar.svelte';
-  import { user } from '$lib/stores/user.store';
-  import DeleteAssetDialog from '../photos-page/delete-asset-dialog.svelte';
+  import VideoViewer from './video-viewer.svelte';
 
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
@@ -120,11 +147,11 @@
       try {
         if (isLiked) {
           const activityId = isLiked.id;
-          await api.activityApi.deleteActivity({ id: activityId });
+          await deleteActivity({ id: activityId });
           reactions = reactions.filter((reaction) => reaction.id !== activityId);
           isLiked = null;
         } else {
-          const { data } = await api.activityApi.createActivity({
+          const data = await createActivity({
             activityCreateDto: { albumId: album.id, assetId: asset.id, type: ReactionType.Like },
           });
 
@@ -140,17 +167,13 @@
   const getFavorite = async () => {
     if (album && $user) {
       try {
-        const { data } = await api.activityApi.getActivities({
+        const data = await getActivities({
           userId: $user.id,
           assetId: asset.id,
           albumId: album.id,
-          type: ReactionType.Like,
+          $type: ReactionType.Like,
         });
-        if (data.length > 0) {
-          isLiked = data[0];
-        } else {
-          isLiked = null;
-        }
+        isLiked = data.length > 0 ? data[0] : null;
       } catch (error) {
         handleError(error, "Can't get Favorite");
       }
@@ -160,8 +183,8 @@
   const getNumberOfComments = async () => {
     if (album) {
       try {
-        const { data } = await api.activityApi.getActivityStatistics({ assetId: asset.id, albumId: album.id });
-        numberOfComments = data.comments;
+        const { comments } = await getActivityStatistics({ assetId: asset.id, albumId: album.id });
+        numberOfComments = comments;
       } catch (error) {
         handleError(error, "Can't get number of comments");
       }
@@ -170,24 +193,25 @@
 
   $: {
     if (isShared && asset.id) {
-      getFavorite();
-      getNumberOfComments();
+      handlePromiseError(getFavorite());
+      handlePromiseError(getNumberOfComments());
     }
   }
+<<<<<<< HEAD
   let shouldShowPhotoEditor = false;
 
   const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo);
+=======
+>>>>>>> origin/main
 
   onMount(async () => {
-    document.addEventListener('keydown', onKeyboardPress);
-
     slideshowStateUnsubscribe = slideshowState.subscribe((value) => {
       if (value === SlideshowState.PlaySlideshow) {
         slideshowHistory.reset();
         slideshowHistory.queue(asset.id);
-        handlePlaySlideshow();
+        handlePromiseError(handlePlaySlideshow());
       } else if (value === SlideshowState.StopSlideshow) {
-        handleStopSlideshow();
+        handlePromiseError(handleStopSlideshow());
       }
     });
 
@@ -199,7 +223,7 @@
     });
 
     if (!sharedLink) {
-      await getAllAlbums();
+      await handleGetAllAlbums();
     }
 
     // Import hack :( see https://github.com/vadimkorr/svelte-carousel/issues/27#issuecomment-851022295
@@ -218,10 +242,6 @@
   });
 
   onDestroy(() => {
-    if (browser) {
-      document.removeEventListener('keydown', onKeyboardPress);
-    }
-
     if (slideshowStateUnsubscribe) {
       slideshowStateUnsubscribe();
     }
@@ -231,18 +251,17 @@
     }
   });
 
-  $: asset.id && !sharedLink && getAllAlbums(); // Update the album information when the asset ID changes
+  $: asset.id && !sharedLink && handlePromiseError(handleGetAllAlbums()); // Update the album information when the asset ID changes
 
-  const getAllAlbums = async () => {
-    if (api.isSharedLink) {
+  const handleGetAllAlbums = async () => {
+    if (isSharedLink()) {
       return;
     }
 
     try {
-      const { data } = await api.albumApi.getAllAlbums({ assetId: asset.id });
-      appearsInAlbums = data;
-    } catch (e) {
-      console.error('Error getting album that asset belong to', e);
+      appearsInAlbums = await getAllAlbums({ assetId: asset.id });
+    } catch (error) {
+      console.error('Error getting album that asset belong to', error);
     }
   };
 
@@ -253,50 +272,63 @@
     isShowActivity = !isShowActivity;
   };
 
-  const handleKeyboardPress = (event: KeyboardEvent) => {
+  const handleKeypress = async (event: KeyboardEvent) => {
     if (shouldIgnoreShortcut(event)) {
       return;
     }
 
     const key = event.key;
     const shiftKey = event.shiftKey;
+    const ctrlKey = event.ctrlKey;
+
+    if (ctrlKey) {
+      return;
+    }
 
     switch (key) {
       case 'a':
-      case 'A':
+      case 'A': {
         if (shiftKey) {
-          toggleArchive();
+          await toggleArchive();
         }
         return;
-      case 'ArrowLeft':
+      }
+      case 'ArrowLeft': {
         navigateAssetBackward();
         return;
-      case 'ArrowRight':
-        navigateAssetForward();
+      }
+      case 'ArrowRight': {
+        await navigateAssetForward();
         return;
+      }
       case 'd':
-      case 'D':
+      case 'D': {
         if (shiftKey) {
-          downloadFile(asset);
+          await downloadFile(asset);
         }
         return;
-      case 'Delete':
-        trashOrDelete(shiftKey);
+      }
+      case 'Delete': {
+        await trashOrDelete(shiftKey);
         return;
-      case 'Escape':
+      }
+      case 'Escape': {
         if (isShowDeleteConfirmation) {
           isShowDeleteConfirmation = false;
           return;
         }
         closeViewer();
         return;
-      case 'f':
-        toggleFavorite();
+      }
+      case 'f': {
+        await toggleFavorite();
         return;
-      case 'i':
+      }
+      case 'i': {
         isShowActivity = false;
         $isShowDetail = !$isShowDetail;
         return;
+      }
     }
   };
 
@@ -319,7 +351,7 @@
 
     slideshowHistory.queue(asset.id);
 
-    setAssetId(asset.id);
+    await setAssetId(asset.id);
     $restartSlideshowProgress = true;
   };
 
@@ -362,23 +394,23 @@
     $isShowDetail = !$isShowDetail;
   };
 
-  const trashOrDelete = (force: boolean = false) => {
+  const trashOrDelete = async (force: boolean = false) => {
     if (force || !isTrashEnabled) {
       if ($showDeleteModal) {
         isShowDeleteConfirmation = true;
         return;
       }
-      deleteAsset();
+      await deleteAsset();
       return;
     }
 
-    trashAsset();
+    await trashAsset();
     return;
   };
 
   const trashAsset = async () => {
     try {
-      await api.assetApi.deleteAssets({ assetBulkDeleteDto: { ids: [asset.id] } });
+      await deleteAssets({ assetBulkDeleteDto: { ids: [asset.id] } });
 
       dispatch('action', { type: AssetAction.TRASH, asset });
 
@@ -386,14 +418,14 @@
         message: 'Moved to trash',
         type: NotificationType.Info,
       });
-    } catch (e) {
-      handleError(e, 'Unable to trash asset');
+    } catch (error) {
+      handleError(error, 'Unable to trash asset');
     }
   };
 
   const deleteAsset = async () => {
     try {
-      await api.assetApi.deleteAssets({ assetBulkDeleteDto: { ids: [asset.id], force: true } });
+      await deleteAssets({ assetBulkDeleteDto: { ids: [asset.id], force: true } });
 
       dispatch('action', { type: AssetAction.DELETE, asset });
 
@@ -401,8 +433,8 @@
         message: 'Permanently deleted asset',
         type: NotificationType.Info,
       });
-    } catch (e) {
-      handleError(e, 'Unable to delete asset');
+    } catch (error) {
+      handleError(error, 'Unable to delete asset');
     } finally {
       isShowDeleteConfirmation = false;
     }
@@ -410,7 +442,7 @@
 
   const toggleFavorite = async () => {
     try {
-      const { data } = await api.assetApi.updateAsset({
+      const data = await updateAsset({
         id: asset.id,
         updateAssetDto: {
           isFavorite: !asset.isFavorite,
@@ -425,7 +457,7 @@
         message: asset.isFavorite ? `Added to favorites` : `Removed from favorites`,
       });
     } catch (error) {
-      await handleError(error, `Unable to ${asset.isFavorite ? `add asset to` : `remove asset from`} favorites`);
+      handleError(error, `Unable to ${asset.isFavorite ? `add asset to` : `remove asset from`} favorites`);
     }
   };
 
@@ -434,37 +466,23 @@
     addToSharedAlbum = shared;
   };
 
-  const handleAddToNewAlbum = (albumName: string) => {
+  const handleAddToNewAlbum = async (albumName: string) => {
     isShowAlbumPicker = false;
 
-    api.albumApi.createAlbum({ createAlbumDto: { albumName, assetIds: [asset.id] } }).then((response) => {
-      const album = response.data;
-      goto(`${AppRoute.ALBUMS}/${album.id}`);
-    });
+    const album = await createAlbum({ createAlbumDto: { albumName, assetIds: [asset.id] } });
+    await goto(`${AppRoute.ALBUMS}/${album.id}`);
   };
 
   const handleAddToAlbum = async (album: AlbumResponseDto) => {
     isShowAlbumPicker = false;
 
     await addAssetsToAlbum(album.id, [asset.id]);
-    await getAllAlbums();
-  };
-
-  const disableKeyDownEvent = () => {
-    if (browser) {
-      document.removeEventListener('keydown', onKeyboardPress);
-    }
-  };
-
-  const enableKeyDownEvent = () => {
-    if (browser) {
-      document.addEventListener('keydown', onKeyboardPress);
-    }
+    await handleGetAllAlbums();
   };
 
   const toggleArchive = async () => {
     try {
-      const { data } = await api.assetApi.updateAsset({
+      const data = await updateAsset({
         id: asset.id,
         updateAssetDto: {
           isArchived: !asset.isArchived,
@@ -479,17 +497,17 @@
         message: asset.isArchived ? `Added to archive` : `Removed from archive`,
       });
     } catch (error) {
-      await handleError(error, `Unable to ${asset.isArchived ? `add asset to` : `remove asset from`} archive`);
+      handleError(error, `Unable to ${asset.isArchived ? `add asset to` : `remove asset from`} archive`);
     }
   };
 
   $: console.log(shouldShowPhotoEditor);
   const handleRunJob = async (name: AssetJobName) => {
     try {
-      await api.assetApi.runAssetJobs({ assetJobsDto: { assetIds: [asset.id], name } });
-      notificationController.show({ type: NotificationType.Info, message: api.getAssetJobMessage(name) });
+      await runAssetJobs({ assetJobsDto: { assetIds: [asset.id], name } });
+      notificationController.show({ type: NotificationType.Info, message: getAssetJobMessage(name) });
     } catch (error) {
-      await handleError(error, `Unable to submit job`);
+      handleError(error, `Unable to submit job`);
     }
   };
 
@@ -500,7 +518,7 @@
   let assetViewerHtmlElement: HTMLElement;
 
   const slideshowHistory = new SlideshowHistory((assetId: string) => {
-    setAssetId(assetId);
+    handlePromiseError(setAssetId(assetId));
     $restartSlideshowProgress = true;
   });
 
@@ -541,17 +559,13 @@
   const handleStackedAssetMouseEvent = (e: CustomEvent<{ isMouseOver: boolean }>, asset: AssetResponseDto) => {
     const { isMouseOver } = e.detail;
 
-    if (isMouseOver) {
-      previewStackedAsset = asset;
-    } else {
-      previewStackedAsset = undefined;
-    }
+    previewStackedAsset = isMouseOver ? asset : undefined;
   };
 
   const handleUnstack = async () => {
     try {
       const ids = $stackAssetsStore.map(({ id }) => id);
-      await api.assetApi.updateAssets({ assetBulkUpdateDto: { ids, removeParent: true } });
+      await updateAssets({ assetBulkUpdateDto: { ids, removeParent: true } });
       for (const child of $stackAssetsStore) {
         child.stackParentId = null;
         child.stackCount = 0;
@@ -562,10 +576,12 @@
       dispatch('close');
       notificationController.show({ type: NotificationType.Info, message: 'Un-stacked', timeout: 1500 });
     } catch (error) {
-      await handleError(error, `Unable to unstack`);
+      handleError(error, `Unable to unstack`);
     }
   };
 </script>
+
+<svelte:window on:keydown={handleKeypress} />
 
 <section
   id="immich-asset-viewer"
@@ -732,12 +748,10 @@
     >
       <DetailPanel
         {asset}
-        albumId={album?.id}
+        currentAlbum={album}
         albums={appearsInAlbums}
         on:close={() => ($isShowDetail = false)}
         on:closeViewer={handleCloseViewer}
-        on:descriptionFocusIn={disableKeyDownEvent}
-        on:descriptionFocusOut={enableKeyDownEvent}
       />
     </div>
   {/if}

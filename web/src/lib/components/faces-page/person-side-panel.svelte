@@ -1,19 +1,28 @@
 <script lang="ts">
-  import { fly } from 'svelte/transition';
-  import { linear } from 'svelte/easing';
-  import { api, type PersonResponseDto, type AssetFaceResponseDto, AssetTypeEnum } from '@api';
-  import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
-  import { handleError } from '$lib/utils/handle-error';
-  import { createEventDispatcher, onMount } from 'svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
-  import { NotificationType, notificationController } from '../shared-components/notification/notification';
-  import { mdiArrowLeftThin, mdiRestart } from '@mdi/js';
-  import Icon from '../elements/icon.svelte';
-  import { boundingBoxesArray } from '$lib/stores/people.store';
-  import { websocketStore } from '$lib/stores/websocket';
-  import AssignFaceSidePanel from './assign-face-side-panel.svelte';
-  import { getPersonNameWithHiddenValue } from '$lib/utils/person';
   import { timeBeforeShowLoadingSpinner } from '$lib/constants';
+  import { boundingBoxesArray } from '$lib/stores/people.store';
+  import { websocketEvents } from '$lib/stores/websocket';
+  import { getPeopleThumbnailUrl, handlePromiseError } from '$lib/utils';
+  import { handleError } from '$lib/utils/handle-error';
+  import { getPersonNameWithHiddenValue } from '$lib/utils/person';
+  import {
+    AssetTypeEnum,
+    createPerson,
+    getAllPeople,
+    getFaces,
+    reassignFacesById,
+    type AssetFaceResponseDto,
+    type PersonResponseDto,
+  } from '@immich/sdk';
+  import { mdiArrowLeftThin, mdiRestart } from '@mdi/js';
+  import { createEventDispatcher, onMount } from 'svelte';
+  import { linear } from 'svelte/easing';
+  import { fly } from 'svelte/transition';
+  import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
+  import Icon from '../elements/icon.svelte';
+  import { NotificationType, notificationController } from '../shared-components/notification/notification';
+  import AssignFaceSidePanel from './assign-face-side-panel.svelte';
 
   export let assetId: string;
   export let assetType: AssetTypeEnum;
@@ -37,49 +46,47 @@
   let allPeople: PersonResponseDto[] = [];
 
   // timers
-  let loaderLoadingDoneTimeout: NodeJS.Timeout;
-  let automaticRefreshTimeout: NodeJS.Timeout;
+  let loaderLoadingDoneTimeout: ReturnType<typeof setTimeout>;
+  let automaticRefreshTimeout: ReturnType<typeof setTimeout>;
 
-  const { onPersonThumbnail } = websocketStore;
   const dispatch = createEventDispatcher<{
     close: void;
     refresh: void;
   }>();
 
-  // Reset value
-  $onPersonThumbnail = '';
-
-  $: {
-    if ($onPersonThumbnail) {
-      numberOfAssetFaceGenerated.push($onPersonThumbnail);
-      if (
-        isEqual(numberOfAssetFaceGenerated, numberOfPersonToCreate) &&
-        loaderLoadingDoneTimeout &&
-        automaticRefreshTimeout &&
-        selectedPersonToCreate.filter((person) => person !== null).length === numberOfPersonToCreate.length
-      ) {
-        clearTimeout(loaderLoadingDoneTimeout);
-        clearTimeout(automaticRefreshTimeout);
-        dispatch('refresh');
-      }
-    }
-  }
-
-  onMount(async () => {
+  async function loadPeople() {
     const timeout = setTimeout(() => (isShowLoadingPeople = true), timeBeforeShowLoadingSpinner);
     try {
-      const { data } = await api.personApi.getAllPeople({ withHidden: true });
-      allPeople = data.people;
-      const result = await api.faceApi.getFaces({ id: assetId });
-      peopleWithFaces = result.data;
-      selectedPersonToCreate = new Array<string | null>(peopleWithFaces.length);
-      selectedPersonToReassign = new Array<PersonResponseDto | null>(peopleWithFaces.length);
+      const { people } = await getAllPeople({ withHidden: true });
+      allPeople = people;
+      peopleWithFaces = await getFaces({ id: assetId });
+      selectedPersonToCreate = Array.from({ length: peopleWithFaces.length });
+      selectedPersonToReassign = Array.from({ length: peopleWithFaces.length });
     } catch (error) {
       handleError(error, "Can't get faces");
     } finally {
       clearTimeout(timeout);
     }
     isShowLoadingPeople = false;
+  }
+
+  const onPersonThumbnail = (personId: string) => {
+    numberOfAssetFaceGenerated.push(personId);
+    if (
+      isEqual(numberOfAssetFaceGenerated, numberOfPersonToCreate) &&
+      loaderLoadingDoneTimeout &&
+      automaticRefreshTimeout &&
+      selectedPersonToCreate.filter((person) => person !== null).length === numberOfPersonToCreate.length
+    ) {
+      clearTimeout(loaderLoadingDoneTimeout);
+      clearTimeout(automaticRefreshTimeout);
+      dispatch('refresh');
+    }
+  };
+
+  onMount(() => {
+    handlePromiseError(loadPeople());
+    return websocketEvents.on('on_person_thumbnail', onPersonThumbnail);
   });
 
   const isEqual = (a: string[], b: string[]): boolean => {
@@ -106,20 +113,20 @@
       selectedPersonToReassign.filter((person) => person !== null).length;
     if (numberOfChanges > 0) {
       try {
-        for (let i = 0; i < peopleWithFaces.length; i++) {
-          const personId = selectedPersonToReassign[i]?.id;
+        for (const [index, peopleWithFace] of peopleWithFaces.entries()) {
+          const personId = selectedPersonToReassign[index]?.id;
 
           if (personId) {
-            await api.faceApi.reassignFacesById({
+            await reassignFacesById({
               id: personId,
-              faceDto: { id: peopleWithFaces[i].id },
+              faceDto: { id: peopleWithFace.id },
             });
-          } else if (selectedPersonToCreate[i]) {
-            const { data } = await api.personApi.createPerson();
+          } else if (selectedPersonToCreate[index]) {
+            const data = await createPerson();
             numberOfPersonToCreate.push(data.id);
-            await api.faceApi.reassignFacesById({
+            await reassignFacesById({
               id: data.id,
-              faceDto: { id: peopleWithFaces[i].id },
+              faceDto: { id: peopleWithFace.id },
             });
           }
         }
@@ -138,7 +145,7 @@
       clearTimeout(loaderLoadingDoneTimeout);
       dispatch('refresh');
     } else {
-      automaticRefreshTimeout = setTimeout(() => dispatch('refresh'), 15000);
+      automaticRefreshTimeout = setTimeout(() => dispatch('refresh'), 15_000);
     }
   };
 
@@ -157,7 +164,7 @@
     }
   };
 
-  const handlePersonPicker = async (index: number) => {
+  const handlePersonPicker = (index: number) => {
     editedPersonIndex = index;
     showSeletecFaces = true;
   };
@@ -214,7 +221,7 @@
                     curve
                     shadow
                     url={selectedPersonToCreate[index] ||
-                      api.getPeopleThumbnailUrl(selectedPersonToReassign[index]?.id || face.person.id)}
+                      getPeopleThumbnailUrl(selectedPersonToReassign[index]?.id || face.person.id)}
                     altText={selectedPersonToReassign[index]
                       ? selectedPersonToReassign[index]?.name || ''
                       : selectedPersonToCreate[index]

@@ -26,6 +26,7 @@ FROM
 WHERE
   "person"."ownerId" = $1
   AND "asset"."isArchived" = false
+  AND "person"."thumbnailPath" != ''
   AND "person"."isHidden" = false
 GROUP BY
   "person"."id"
@@ -83,7 +84,7 @@ FROM
   "asset_faces" "AssetFaceEntity"
   LEFT JOIN "person" "AssetFaceEntity__AssetFaceEntity_person" ON "AssetFaceEntity__AssetFaceEntity_person"."id" = "AssetFaceEntity"."personId"
 WHERE
-  ("AssetFaceEntity"."assetId" = $1)
+  (("AssetFaceEntity"."assetId" = $1))
 
 -- PersonRepository.getFaceById
 SELECT DISTINCT
@@ -113,7 +114,7 @@ FROM
       "asset_faces" "AssetFaceEntity"
       LEFT JOIN "person" "AssetFaceEntity__AssetFaceEntity_person" ON "AssetFaceEntity__AssetFaceEntity_person"."id" = "AssetFaceEntity"."personId"
     WHERE
-      ("AssetFaceEntity"."id" = $1)
+      (("AssetFaceEntity"."id" = $1))
   ) "distinctAlias"
 ORDER BY
   "AssetFaceEntity_id" ASC
@@ -181,7 +182,7 @@ FROM
         "AssetFaceEntity__AssetFaceEntity_asset"."deletedAt" IS NULL
       )
     WHERE
-      ("AssetFaceEntity"."id" = $1)
+      (("AssetFaceEntity"."id" = $1))
   ) "distinctAlias"
 ORDER BY
   "AssetFaceEntity_id" ASC
@@ -325,9 +326,13 @@ FROM
     WHERE
       (
         (
-          "AssetEntity__AssetEntity_faces"."personId" = $1
-          AND "AssetEntity"."isVisible" = $2
-          AND "AssetEntity"."isArchived" = $3
+          (
+            (
+              ("AssetEntity__AssetEntity_faces"."personId" = $1)
+            )
+          )
+          AND ("AssetEntity"."isVisible" = $2)
+          AND ("AssetEntity"."isArchived" = $3)
         )
       )
       AND ("AssetEntity"."deletedAt" IS NULL)
@@ -340,12 +345,20 @@ LIMIT
 
 -- PersonRepository.getNumberOfPeople
 SELECT
-  COUNT(DISTINCT ("person"."id")) AS "cnt"
+  COUNT(DISTINCT ("person"."id")) AS "total",
+  COUNT(DISTINCT ("person"."id")) FILTER (
+    WHERE
+      "person"."isHidden" = true
+  ) AS "hidden"
 FROM
   "person" "person"
   LEFT JOIN "asset_faces" "face" ON "face"."personId" = "person"."id"
+  INNER JOIN "assets" "asset" ON "asset"."id" = "face"."assetId"
+  AND ("asset"."deletedAt" IS NULL)
 WHERE
   "person"."ownerId" = $1
+  AND "asset"."isArchived" = false
+  AND "person"."thumbnailPath" != ''
 HAVING
   COUNT("face"."assetId") != 0
 
@@ -395,8 +408,10 @@ FROM
 WHERE
   (
     (
-      "AssetFaceEntity"."assetId" = $1
-      AND "AssetFaceEntity"."personId" = $2
+      (
+        ("AssetFaceEntity"."assetId" = $1)
+        AND ("AssetFaceEntity"."personId" = $2)
+      )
     )
   )
 
@@ -414,6 +429,6 @@ SELECT
 FROM
   "asset_faces" "AssetFaceEntity"
 WHERE
-  ("AssetFaceEntity"."personId" = $1)
+  (("AssetFaceEntity"."personId" = $1))
 LIMIT
   1

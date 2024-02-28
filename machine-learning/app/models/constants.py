@@ -51,11 +51,7 @@ _INSIGHTFACE_MODELS = {
 }
 
 
-SUPPORTED_PROVIDERS = [
-    "CUDAExecutionProvider",
-    "OpenVINOExecutionProvider",
-    "CPUExecutionProvider",
-]
+SUPPORTED_PROVIDERS = ["CUDAExecutionProvider", "OpenVINOExecutionProvider", "CPUExecutionProvider"]
 
 
 def is_openclip(model_name: str) -> bool:

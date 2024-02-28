@@ -1,10 +1,10 @@
 <script lang="ts">
+  import Icon from '$lib/components/elements/icon.svelte';
+  import { copyToClipboard } from '$lib/utils';
+  import { mdiKeyVariant } from '@mdi/js';
   import { createEventDispatcher, onMount } from 'svelte';
-  import { copyToClipboard } from '@api';
   import Button from '../elements/buttons/button.svelte';
   import FullScreenModal from '../shared-components/full-screen-modal.svelte';
-  import { mdiKeyVariant } from '@mdi/js';
-  import Icon from '$lib/components/elements/icon.svelte';
 
   export let secret = '';
 

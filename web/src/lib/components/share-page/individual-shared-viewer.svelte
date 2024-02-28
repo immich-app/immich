@@ -1,9 +1,13 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
-  import { downloadArchive } from '$lib/utils/asset-utils';
-  import { api, type AssetResponseDto, type SharedLinkResponseDto } from '@api';
+  import { AppRoute } from '$lib/constants';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
+  import { getKey, handlePromiseError } from '$lib/utils';
+  import { downloadArchive } from '$lib/utils/asset-utils';
+  import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
+  import { handleError } from '$lib/utils/handle-error';
+  import { addSharedLinkAssets, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
+  import { mdiArrowLeft, mdiFileImagePlusOutline, mdiFolderDownloadOutline, mdiSelectAll } from '@mdi/js';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import DownloadAction from '../photos-page/actions/download-action.svelte';
   import RemoveFromSharedLink from '../photos-page/actions/remove-from-shared-link.svelte';
@@ -11,14 +15,13 @@
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
   import GalleryViewer from '../shared-components/gallery-viewer/gallery-viewer.svelte';
   import ImmichLogo from '../shared-components/immich-logo.svelte';
-  import { notificationController, NotificationType } from '../shared-components/notification/notification';
-  import { handleError } from '$lib/utils/handle-error';
-  import { mdiArrowLeft, mdiFileImagePlusOutline, mdiFolderDownloadOutline, mdiSelectAll } from '@mdi/js';
-  import { AppRoute } from '$lib/constants';
+  import { NotificationType, notificationController } from '../shared-components/notification/notification';
+  import type { Viewport } from '$lib/stores/assets.store';
 
   export let sharedLink: SharedLinkResponseDto;
   export let isOwned: boolean;
 
+  const viewport: Viewport = { width: 0, height: 0 };
   let selectedAssets: Set<AssetResponseDto> = new Set();
 
   $: assets = sharedLink.assets;
@@ -26,7 +29,7 @@
 
   dragAndDropFilesStore.subscribe((value) => {
     if (value.isDragging && value.files.length > 0) {
-      handleUploadAssets(value.files);
+      handlePromiseError(handleUploadAssets(value.files));
       dragAndDropFilesStore.set({ isDragging: false, files: [] });
     }
   });
@@ -38,17 +41,15 @@
   const handleUploadAssets = async (files: File[] = []) => {
     try {
       let results: (string | undefined)[] = [];
-      if (!files || files.length === 0 || !Array.isArray(files)) {
-        results = await openFileUploadDialog(undefined);
-      } else {
-        results = await fileUploadHandler(files, undefined);
-      }
-      const { data } = await api.sharedLinkApi.addSharedLinkAssets({
+      results = await (!files || files.length === 0 || !Array.isArray(files)
+        ? openFileUploadDialog()
+        : fileUploadHandler(files));
+      const data = await addSharedLinkAssets({
         id: sharedLink.id,
         assetIdsDto: {
           assetIds: results.filter((id) => !!id) as string[],
         },
-        key: api.getKey(),
+        key: getKey(),
       });
 
       const added = data.filter((item) => item.success).length;
@@ -57,8 +58,8 @@
         message: `Added ${added} assets`,
         type: NotificationType.Info,
       });
-    } catch (e) {
-      await handleError(e, 'Unable to add assets to shared link');
+    } catch (error) {
+      handleError(error, 'Unable to add assets to shared link');
     }
   };
 
@@ -98,7 +99,7 @@
       </svelte:fragment>
     </ControlAppBar>
   {/if}
-  <section class="my-[160px] flex flex-col px-6 sm:px-12 md:px-24 lg:px-40">
-    <GalleryViewer {assets} bind:selectedAssets />
+  <section class="my-[160px] mx-4" bind:clientHeight={viewport.height} bind:clientWidth={viewport.width}>
+    <GalleryViewer {assets} bind:selectedAssets {viewport} />
   </section>
 </section>

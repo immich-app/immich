@@ -1,4 +1,4 @@
-import { IAccessRepository, chunks, setUnion } from '@app/domain';
+import { IAccessRepository } from '@app/domain';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Brackets, In, Repository } from 'typeorm';
 import {
@@ -12,7 +12,8 @@ import {
   SharedLinkEntity,
   UserTokenEntity,
 } from '../entities';
-import { DATABASE_PARAMETER_CHUNK_SIZE, DummyValue, GenerateSql } from '../infra.util';
+import { DummyValue, GenerateSql } from '../infra.util';
+import { ChunkedSet } from '../infra.utils';
 
 type IActivityAccess = IAccessRepository['activity'];
 type IAlbumAccess = IAccessRepository['album'];
@@ -30,72 +31,63 @@ class ActivityAccess implements IActivityAccess {
   ) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
+  @ChunkedSet({ paramIndex: 1 })
   async checkOwnerAccess(userId: string, activityIds: Set<string>): Promise<Set<string>> {
     if (activityIds.size === 0) {
       return new Set();
     }
 
-    return Promise.all(
-      chunks(activityIds, DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
-        this.activityRepository
-          .find({
-            select: { id: true },
-            where: {
-              id: In(idChunk),
-              userId,
-            },
-          })
-          .then((activities) => new Set(activities.map((activity) => activity.id))),
-      ),
-    ).then((results) => setUnion(...results));
+    return this.activityRepository
+      .find({
+        select: { id: true },
+        where: {
+          id: In([...activityIds]),
+          userId,
+        },
+      })
+      .then((activities) => new Set(activities.map((activity) => activity.id)));
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
+  @ChunkedSet({ paramIndex: 1 })
   async checkAlbumOwnerAccess(userId: string, activityIds: Set<string>): Promise<Set<string>> {
     if (activityIds.size === 0) {
       return new Set();
     }
 
-    return Promise.all(
-      chunks(activityIds, DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
-        this.activityRepository
-          .find({
-            select: { id: true },
-            where: {
-              id: In(idChunk),
-              album: {
-                ownerId: userId,
-              },
-            },
-          })
-          .then((activities) => new Set(activities.map((activity) => activity.id))),
-      ),
-    ).then((results) => setUnion(...results));
+    return this.activityRepository
+      .find({
+        select: { id: true },
+        where: {
+          id: In([...activityIds]),
+          album: {
+            ownerId: userId,
+          },
+        },
+      })
+      .then((activities) => new Set(activities.map((activity) => activity.id)));
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
+  @ChunkedSet({ paramIndex: 1 })
   async checkCreateAccess(userId: string, albumIds: Set<string>): Promise<Set<string>> {
     if (albumIds.size === 0) {
       return new Set();
     }
 
-    return Promise.all(
-      chunks(albumIds, DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
-        this.albumRepository
-          .createQueryBuilder('album')
-          .select('album.id')
-          .leftJoin('album.sharedUsers', 'sharedUsers')
-          .where('album.id IN (:...albumIds)', { albumIds: idChunk })
-          .andWhere('album.isActivityEnabled = true')
-          .andWhere(
-            new Brackets((qb) => {
-              qb.where('album.ownerId = :userId', { userId }).orWhere('sharedUsers.id = :userId', { userId });
-            }),
-          )
-          .getMany()
-          .then((albums) => new Set(albums.map((album) => album.id))),
-      ),
-    ).then((results) => setUnion(...results));
+    return this.albumRepository
+      .createQueryBuilder('album')
+      .select('album.id')
+      .leftJoin('album.sharedUsers', 'sharedUsers')
+      .where('album.id IN (:...albumIds)', { albumIds: [...albumIds] })
+      .andWhere('album.isActivityEnabled = true')
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('album.ownerId = :userId', { userId }).orWhere('sharedUsers.id = :userId', { userId });
+        }),
+      )
+      .getMany()
+      .then((albums) => new Set(albums.map((album) => album.id)));
   }
 }
 
@@ -106,71 +98,61 @@ class AlbumAccess implements IAlbumAccess {
   ) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
+  @ChunkedSet({ paramIndex: 1 })
   async checkOwnerAccess(userId: string, albumIds: Set<string>): Promise<Set<string>> {
     if (albumIds.size === 0) {
       return new Set();
     }
 
-    return Promise.all(
-      chunks(albumIds, DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
-        this.albumRepository
-          .find({
-            select: { id: true },
-            where: {
-              id: In(idChunk),
-              ownerId: userId,
-            },
-          })
-          .then((albums) => new Set(albums.map((album) => album.id))),
-      ),
-    ).then((results) => setUnion(...results));
+    return this.albumRepository
+      .find({
+        select: { id: true },
+        where: {
+          id: In([...albumIds]),
+          ownerId: userId,
+        },
+      })
+      .then((albums) => new Set(albums.map((album) => album.id)));
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
+  @ChunkedSet({ paramIndex: 1 })
   async checkSharedAlbumAccess(userId: string, albumIds: Set<string>): Promise<Set<string>> {
     if (albumIds.size === 0) {
       return new Set();
     }
 
-    return Promise.all(
-      chunks(albumIds, DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
-        this.albumRepository
-          .find({
-            select: { id: true },
-            where: {
-              id: In(idChunk),
-              sharedUsers: {
-                id: userId,
-              },
-            },
-          })
-          .then((albums) => new Set(albums.map((album) => album.id))),
-      ),
-    ).then((results) => setUnion(...results));
+    return this.albumRepository
+      .find({
+        select: { id: true },
+        where: {
+          id: In([...albumIds]),
+          sharedUsers: {
+            id: userId,
+          },
+        },
+      })
+      .then((albums) => new Set(albums.map((album) => album.id)));
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
+  @ChunkedSet({ paramIndex: 1 })
   async checkSharedLinkAccess(sharedLinkId: string, albumIds: Set<string>): Promise<Set<string>> {
     if (albumIds.size === 0) {
       return new Set();
     }
 
-    return Promise.all(
-      chunks(albumIds, DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
-        this.sharedLinkRepository
-          .find({
-            select: { albumId: true },
-            where: {
-              id: sharedLinkId,
-              albumId: In(idChunk),
-            },
-          })
-          .then(
-            (sharedLinks) =>
-              new Set(sharedLinks.flatMap((sharedLink) => (!!sharedLink.albumId ? [sharedLink.albumId] : []))),
-          ),
-      ),
-    ).then((results) => setUnion(...results));
+    return this.sharedLinkRepository
+      .find({
+        select: { albumId: true },
+        where: {
+          id: sharedLinkId,
+          albumId: In([...albumIds]),
+        },
+      })
+      .then(
+        (sharedLinks) => new Set(sharedLinks.flatMap((sharedLink) => (sharedLink.albumId ? [sharedLink.albumId] : []))),
+      );
   }
 }
 
@@ -183,132 +165,120 @@ class AssetAccess implements IAssetAccess {
   ) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
+  @ChunkedSet({ paramIndex: 1 })
   async checkAlbumAccess(userId: string, assetIds: Set<string>): Promise<Set<string>> {
     if (assetIds.size === 0) {
       return new Set();
     }
 
-    return Promise.all(
-      chunks(assetIds, DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
-        this.albumRepository
-          .createQueryBuilder('album')
-          .innerJoin('album.assets', 'asset')
-          .leftJoin('album.sharedUsers', 'sharedUsers')
-          .select('asset.id', 'assetId')
-          .addSelect('asset.livePhotoVideoId', 'livePhotoVideoId')
-          .where('array["asset"."id", "asset"."livePhotoVideoId"] && array[:...assetIds]::uuid[]', {
-            assetIds: idChunk,
-          })
-          .andWhere(
-            new Brackets((qb) => {
-              qb.where('album.ownerId = :userId', { userId }).orWhere('sharedUsers.id = :userId', { userId });
-            }),
-          )
-          .getRawMany()
-          .then((rows) => {
-            const allowedIds = new Set<string>();
-            for (const row of rows) {
-              if (row.assetId && assetIds.has(row.assetId)) {
-                allowedIds.add(row.assetId);
-              }
-              if (row.livePhotoVideoId && assetIds.has(row.livePhotoVideoId)) {
-                allowedIds.add(row.livePhotoVideoId);
-              }
-            }
-            return allowedIds;
-          }),
-      ),
-    ).then((results) => setUnion(...results));
+    return this.albumRepository
+      .createQueryBuilder('album')
+      .innerJoin('album.assets', 'asset')
+      .leftJoin('album.sharedUsers', 'sharedUsers')
+      .select('asset.id', 'assetId')
+      .addSelect('asset.livePhotoVideoId', 'livePhotoVideoId')
+      .where('array["asset"."id", "asset"."livePhotoVideoId"] && array[:...assetIds]::uuid[]', {
+        assetIds: [...assetIds],
+      })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('album.ownerId = :userId', { userId }).orWhere('sharedUsers.id = :userId', { userId });
+        }),
+      )
+      .getRawMany()
+      .then((rows) => {
+        const allowedIds = new Set<string>();
+        for (const row of rows) {
+          if (row.assetId && assetIds.has(row.assetId)) {
+            allowedIds.add(row.assetId);
+          }
+          if (row.livePhotoVideoId && assetIds.has(row.livePhotoVideoId)) {
+            allowedIds.add(row.livePhotoVideoId);
+          }
+        }
+        return allowedIds;
+      });
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
+  @ChunkedSet({ paramIndex: 1 })
   async checkOwnerAccess(userId: string, assetIds: Set<string>): Promise<Set<string>> {
     if (assetIds.size === 0) {
       return new Set();
     }
 
-    return Promise.all(
-      chunks(assetIds, DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
-        this.assetRepository
-          .find({
-            select: { id: true },
-            where: {
-              id: In(idChunk),
-              ownerId: userId,
-            },
-            withDeleted: true,
-          })
-          .then((assets) => new Set(assets.map((asset) => asset.id))),
-      ),
-    ).then((results) => setUnion(...results));
+    return this.assetRepository
+      .find({
+        select: { id: true },
+        where: {
+          id: In([...assetIds]),
+          ownerId: userId,
+        },
+        withDeleted: true,
+      })
+      .then((assets) => new Set(assets.map((asset) => asset.id)));
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
+  @ChunkedSet({ paramIndex: 1 })
   async checkPartnerAccess(userId: string, assetIds: Set<string>): Promise<Set<string>> {
     if (assetIds.size === 0) {
       return new Set();
     }
 
-    return Promise.all(
-      chunks(assetIds, DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
-        this.partnerRepository
-          .createQueryBuilder('partner')
-          .innerJoin('partner.sharedBy', 'sharedBy')
-          .innerJoin('sharedBy.assets', 'asset')
-          .select('asset.id', 'assetId')
-          .where('partner.sharedWithId = :userId', { userId })
-          .andWhere('asset.id IN (:...assetIds)', { assetIds: idChunk })
-          .getRawMany()
-          .then((rows) => new Set(rows.map((row) => row.assetId))),
-      ),
-    ).then((results) => setUnion(...results));
+    return this.partnerRepository
+      .createQueryBuilder('partner')
+      .innerJoin('partner.sharedBy', 'sharedBy')
+      .innerJoin('sharedBy.assets', 'asset')
+      .select('asset.id', 'assetId')
+      .where('partner.sharedWithId = :userId', { userId })
+      .andWhere('asset.id IN (:...assetIds)', { assetIds: [...assetIds] })
+      .getRawMany()
+      .then((rows) => new Set(rows.map((row) => row.assetId)));
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
+  @ChunkedSet({ paramIndex: 1 })
   async checkSharedLinkAccess(sharedLinkId: string, assetIds: Set<string>): Promise<Set<string>> {
     if (assetIds.size === 0) {
       return new Set();
     }
 
-    return Promise.all(
-      chunks(assetIds, DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
-        this.sharedLinkRepository
-          .createQueryBuilder('sharedLink')
-          .leftJoin('sharedLink.album', 'album')
-          .leftJoin('sharedLink.assets', 'assets')
-          .leftJoin('album.assets', 'albumAssets')
-          .select('assets.id', 'assetId')
-          .addSelect('albumAssets.id', 'albumAssetId')
-          .addSelect('assets.livePhotoVideoId', 'assetLivePhotoVideoId')
-          .addSelect('albumAssets.livePhotoVideoId', 'albumAssetLivePhotoVideoId')
-          .where('sharedLink.id = :sharedLinkId', { sharedLinkId })
-          .andWhere(
-            'array["assets"."id", "assets"."livePhotoVideoId", "albumAssets"."id", "albumAssets"."livePhotoVideoId"] && array[:...assetIds]::uuid[]',
-            {
-              assetIds: idChunk,
-            },
-          )
-          .getRawMany()
-          .then((rows) => {
-            const allowedIds = new Set<string>();
-            for (const row of rows) {
-              if (row.assetId && assetIds.has(row.assetId)) {
-                allowedIds.add(row.assetId);
-              }
-              if (row.assetLivePhotoVideoId && assetIds.has(row.assetLivePhotoVideoId)) {
-                allowedIds.add(row.assetLivePhotoVideoId);
-              }
-              if (row.albumAssetId && assetIds.has(row.albumAssetId)) {
-                allowedIds.add(row.albumAssetId);
-              }
-              if (row.albumAssetLivePhotoVideoId && assetIds.has(row.albumAssetLivePhotoVideoId)) {
-                allowedIds.add(row.albumAssetLivePhotoVideoId);
-              }
-            }
-            return allowedIds;
-          }),
-      ),
-    ).then((results) => setUnion(...results));
+    return this.sharedLinkRepository
+      .createQueryBuilder('sharedLink')
+      .leftJoin('sharedLink.album', 'album')
+      .leftJoin('sharedLink.assets', 'assets')
+      .leftJoin('album.assets', 'albumAssets')
+      .select('assets.id', 'assetId')
+      .addSelect('albumAssets.id', 'albumAssetId')
+      .addSelect('assets.livePhotoVideoId', 'assetLivePhotoVideoId')
+      .addSelect('albumAssets.livePhotoVideoId', 'albumAssetLivePhotoVideoId')
+      .where('sharedLink.id = :sharedLinkId', { sharedLinkId })
+      .andWhere(
+        'array["assets"."id", "assets"."livePhotoVideoId", "albumAssets"."id", "albumAssets"."livePhotoVideoId"] && array[:...assetIds]::uuid[]',
+        {
+          assetIds: [...assetIds],
+        },
+      )
+      .getRawMany()
+      .then((rows) => {
+        const allowedIds = new Set<string>();
+        for (const row of rows) {
+          if (row.assetId && assetIds.has(row.assetId)) {
+            allowedIds.add(row.assetId);
+          }
+          if (row.assetLivePhotoVideoId && assetIds.has(row.assetLivePhotoVideoId)) {
+            allowedIds.add(row.assetLivePhotoVideoId);
+          }
+          if (row.albumAssetId && assetIds.has(row.albumAssetId)) {
+            allowedIds.add(row.albumAssetId);
+          }
+          if (row.albumAssetLivePhotoVideoId && assetIds.has(row.albumAssetLivePhotoVideoId)) {
+            allowedIds.add(row.albumAssetLivePhotoVideoId);
+          }
+        }
+        return allowedIds;
+      });
   }
 }
 
@@ -316,24 +286,21 @@ class AuthDeviceAccess implements IAuthDeviceAccess {
   constructor(private tokenRepository: Repository<UserTokenEntity>) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
+  @ChunkedSet({ paramIndex: 1 })
   async checkOwnerAccess(userId: string, deviceIds: Set<string>): Promise<Set<string>> {
     if (deviceIds.size === 0) {
       return new Set();
     }
 
-    return Promise.all(
-      chunks(deviceIds, DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
-        this.tokenRepository
-          .find({
-            select: { id: true },
-            where: {
-              userId,
-              id: In(idChunk),
-            },
-          })
-          .then((tokens) => new Set(tokens.map((token) => token.id))),
-      ),
-    ).then((results) => setUnion(...results));
+    return this.tokenRepository
+      .find({
+        select: { id: true },
+        where: {
+          userId,
+          id: In([...deviceIds]),
+        },
+      })
+      .then((tokens) => new Set(tokens.map((token) => token.id)));
   }
 }
 
@@ -344,43 +311,37 @@ class LibraryAccess implements ILibraryAccess {
   ) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
+  @ChunkedSet({ paramIndex: 1 })
   async checkOwnerAccess(userId: string, libraryIds: Set<string>): Promise<Set<string>> {
     if (libraryIds.size === 0) {
       return new Set();
     }
 
-    return Promise.all(
-      chunks(libraryIds, DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
-        this.libraryRepository
-          .find({
-            select: { id: true },
-            where: {
-              id: In(idChunk),
-              ownerId: userId,
-            },
-          })
-          .then((libraries) => new Set(libraries.map((library) => library.id))),
-      ),
-    ).then((results) => setUnion(...results));
+    return this.libraryRepository
+      .find({
+        select: { id: true },
+        where: {
+          id: In([...libraryIds]),
+          ownerId: userId,
+        },
+      })
+      .then((libraries) => new Set(libraries.map((library) => library.id)));
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
+  @ChunkedSet({ paramIndex: 1 })
   async checkPartnerAccess(userId: string, partnerIds: Set<string>): Promise<Set<string>> {
     if (partnerIds.size === 0) {
       return new Set();
     }
 
-    return Promise.all(
-      chunks(partnerIds, DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
-        this.partnerRepository
-          .createQueryBuilder('partner')
-          .select('partner.sharedById')
-          .where('partner.sharedById IN (:...partnerIds)', { partnerIds: idChunk })
-          .andWhere('partner.sharedWithId = :userId', { userId })
-          .getMany()
-          .then((partners) => new Set(partners.map((partner) => partner.sharedById))),
-      ),
-    ).then((results) => setUnion(...results));
+    return this.partnerRepository
+      .createQueryBuilder('partner')
+      .select('partner.sharedById')
+      .where('partner.sharedById IN (:...partnerIds)', { partnerIds: [...partnerIds] })
+      .andWhere('partner.sharedWithId = :userId', { userId })
+      .getMany()
+      .then((partners) => new Set(partners.map((partner) => partner.sharedById)));
   }
 }
 
@@ -388,22 +349,19 @@ class TimelineAccess implements ITimelineAccess {
   constructor(private partnerRepository: Repository<PartnerEntity>) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
+  @ChunkedSet({ paramIndex: 1 })
   async checkPartnerAccess(userId: string, partnerIds: Set<string>): Promise<Set<string>> {
     if (partnerIds.size === 0) {
       return new Set();
     }
 
-    return Promise.all(
-      chunks(partnerIds, DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
-        this.partnerRepository
-          .createQueryBuilder('partner')
-          .select('partner.sharedById')
-          .where('partner.sharedById IN (:...partnerIds)', { partnerIds: idChunk })
-          .andWhere('partner.sharedWithId = :userId', { userId })
-          .getMany()
-          .then((partners) => new Set(partners.map((partner) => partner.sharedById))),
-      ),
-    ).then((results) => setUnion(...results));
+    return this.partnerRepository
+      .createQueryBuilder('partner')
+      .select('partner.sharedById')
+      .where('partner.sharedById IN (:...partnerIds)', { partnerIds: [...partnerIds] })
+      .andWhere('partner.sharedWithId = :userId', { userId })
+      .getMany()
+      .then((partners) => new Set(partners.map((partner) => partner.sharedById)));
   }
 }
 
@@ -414,47 +372,41 @@ class PersonAccess implements IPersonAccess {
   ) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
+  @ChunkedSet({ paramIndex: 1 })
   async checkOwnerAccess(userId: string, personIds: Set<string>): Promise<Set<string>> {
     if (personIds.size === 0) {
       return new Set();
     }
 
-    return Promise.all(
-      chunks(personIds, DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
-        this.personRepository
-          .find({
-            select: { id: true },
-            where: {
-              id: In(idChunk),
-              ownerId: userId,
-            },
-          })
-          .then((persons) => new Set(persons.map((person) => person.id))),
-      ),
-    ).then((results) => setUnion(...results));
+    return this.personRepository
+      .find({
+        select: { id: true },
+        where: {
+          id: In([...personIds]),
+          ownerId: userId,
+        },
+      })
+      .then((persons) => new Set(persons.map((person) => person.id)));
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
+  @ChunkedSet({ paramIndex: 1 })
   async checkFaceOwnerAccess(userId: string, assetFaceIds: Set<string>): Promise<Set<string>> {
     if (assetFaceIds.size === 0) {
       return new Set();
     }
 
-    return Promise.all(
-      chunks(assetFaceIds, DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
-        this.assetFaceRepository
-          .find({
-            select: { id: true },
-            where: {
-              id: In(idChunk),
-              asset: {
-                ownerId: userId,
-              },
-            },
-          })
-          .then((faces) => new Set(faces.map((face) => face.id))),
-      ),
-    ).then((results) => setUnion(...results));
+    return this.assetFaceRepository
+      .find({
+        select: { id: true },
+        where: {
+          id: In([...assetFaceIds]),
+          asset: {
+            ownerId: userId,
+          },
+        },
+      })
+      .then((faces) => new Set(faces.map((face) => face.id)));
   }
 }
 
@@ -462,22 +414,19 @@ class PartnerAccess implements IPartnerAccess {
   constructor(private partnerRepository: Repository<PartnerEntity>) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
+  @ChunkedSet({ paramIndex: 1 })
   async checkUpdateAccess(userId: string, partnerIds: Set<string>): Promise<Set<string>> {
     if (partnerIds.size === 0) {
       return new Set();
     }
 
-    return Promise.all(
-      chunks(partnerIds, DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
-        this.partnerRepository
-          .createQueryBuilder('partner')
-          .select('partner.sharedById')
-          .where('partner.sharedById IN (:...partnerIds)', { partnerIds: idChunk })
-          .andWhere('partner.sharedWithId = :userId', { userId })
-          .getMany()
-          .then((partners) => new Set(partners.map((partner) => partner.sharedById))),
-      ),
-    ).then((results) => setUnion(...results));
+    return this.partnerRepository
+      .createQueryBuilder('partner')
+      .select('partner.sharedById')
+      .where('partner.sharedById IN (:...partnerIds)', { partnerIds: [...partnerIds] })
+      .andWhere('partner.sharedWithId = :userId', { userId })
+      .getMany()
+      .then((partners) => new Set(partners.map((partner) => partner.sharedById)));
   }
 }
 

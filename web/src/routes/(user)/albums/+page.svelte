@@ -8,47 +8,48 @@
 </script>
 
 <script lang="ts">
-  import { albumViewSettings } from '$lib/stores/preferences.store';
-  import AlbumCard from '$lib/components/album-page/album-card.svelte';
   import { goto } from '$app/navigation';
+  import AlbumCard from '$lib/components/album-page/album-card.svelte';
+  import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
+  import Dropdown from '$lib/components/elements/dropdown.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
+  import TableHeader from '$lib/components/elements/table-header.svelte';
+  import EditAlbumForm from '$lib/components/forms/edit-album-form.svelte';
+  import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
+  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
-  import type { PageData } from './$types';
-  import { useAlbums } from './albums.bloc';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
-  import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
-  import { onMount } from 'svelte';
-  import { flip } from 'svelte/animate';
-  import Dropdown from '$lib/components/elements/dropdown.svelte';
-  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
-  import { AppRoute, dateFormats } from '$lib/constants';
-  import { locale, AlbumViewMode } from '$lib/stores/preferences.store';
-  import {
-    notificationController,
-    NotificationType,
-  } from '$lib/components/shared-components/notification/notification';
-  import type { AlbumResponseDto } from '@api';
-  import TableHeader from '$lib/components/elements/table-header.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
-  import EditAlbumForm from '$lib/components/forms/edit-album-form.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
-  import { orderBy } from 'lodash-es';
   import {
-    mdiPlusBoxOutline,
+    NotificationType,
+    notificationController,
+  } from '$lib/components/shared-components/notification/notification';
+  import { AppRoute, dateFormats } from '$lib/constants';
+  import { AlbumViewMode, albumViewSettings, locale } from '$lib/stores/preferences.store';
+  import type { AlbumResponseDto } from '@immich/sdk';
+  import {
     mdiArrowDownThin,
     mdiArrowUpThin,
+    mdiDeleteOutline,
     mdiFormatListBulletedSquare,
     mdiPencilOutline,
+    mdiPlusBoxOutline,
     mdiTrashCanOutline,
     mdiViewGridOutline,
-    mdiDeleteOutline,
   } from '@mdi/js';
+  import { orderBy } from 'lodash-es';
+  import { onMount } from 'svelte';
+  import { flip } from 'svelte/animate';
+  import type { PageData } from './$types';
+  import { useAlbums } from './albums.bloc';
+  import SearchBar from '$lib/components/elements/search-bar.svelte';
 
   export let data: PageData;
 
   let shouldShowEditUserForm = false;
   let selectedAlbum: AlbumResponseDto;
+  let searchAlbum = '';
 
   let sortByOptions: Record<string, Sort> = {
     albumTitle: {
@@ -181,6 +182,8 @@
     }
   }
 
+  $: albumsFiltered = $albums.filter((album) => album.albumName.toLowerCase().includes(searchAlbum.toLowerCase()));
+
   const searchSort = (searched: string): Sort => {
     for (const key in sortByOptions) {
       if (sortByOptions[key].title === searched) {
@@ -193,7 +196,7 @@
   const handleCreateAlbum = async () => {
     const newAlbum = await createAlbum();
     if (newAlbum) {
-      goto(`${AppRoute.ALBUMS}/${newAlbum.id}`);
+      await goto(`${AppRoute.ALBUMS}/${newAlbum.id}`);
     }
   };
 
@@ -201,8 +204,8 @@
     return new Date(dateString).toLocaleDateString($locale, dateFormats.album);
   };
 
-  onMount(() => {
-    removeAlbumsIfEmpty();
+  onMount(async () => {
+    await removeAlbumsIfEmpty();
   });
 
   const removeAlbumsIfEmpty = async () => {
@@ -227,11 +230,8 @@
   };
 
   const handleChangeListMode = () => {
-    if ($albumViewSettings.view === AlbumViewMode.Cover) {
-      $albumViewSettings.view = AlbumViewMode.List;
-    } else {
-      $albumViewSettings.view = AlbumViewMode.Cover;
-    }
+    $albumViewSettings.view =
+      $albumViewSettings.view === AlbumViewMode.Cover ? AlbumViewMode.List : AlbumViewMode.Cover;
   };
 </script>
 
@@ -247,6 +247,9 @@
 
 <UserPageLayout title={data.meta.title}>
   <div class="flex place-items-center gap-2" slot="buttons">
+    <div class="hidden lg:block lg:w-40 xl:w-60 2xl:w-80 h-10">
+      <SearchBar placeholder="Search albums" bind:name={searchAlbum} isSearching={false} />
+    </div>
     <LinkButton on:click={handleCreateAlbum}>
       <div class="flex place-items-center gap-2 text-sm">
         <Icon path={mdiPlusBoxOutline} size="18" />
@@ -285,14 +288,14 @@
       </div>
     </LinkButton>
   </div>
-  {#if $albums.length !== 0}
+  {#if $albums.length > 0}
     <!-- Album Card -->
     {#if $albumViewSettings.view === AlbumViewMode.Cover}
       <div class="grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))]">
-        {#each $albums as album, idx (album.id)}
+        {#each albumsFiltered as album, index (album.id)}
           <a data-sveltekit-preload-data="hover" href="{AppRoute.ALBUMS}/{album.id}" animate:flip={{ duration: 200 }}>
             <AlbumCard
-              preload={idx < 20}
+              preload={index < 20}
               {album}
               on:showalbumcontextmenu={(e) => showAlbumContextMenu(e.detail, album)}
             />
@@ -300,7 +303,7 @@
         {/each}
       </div>
     {:else if $albumViewSettings.view === AlbumViewMode.List}
-      <table class="mt-5 w-full text-left">
+      <table class="mt-2 w-full text-left">
         <thead
           class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
         >
@@ -314,7 +317,7 @@
         <tbody
           class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray dark:text-immich-dark-fg"
         >
-          {#each $albums as album (album.id)}
+          {#each albumsFiltered as album (album.id)}
             <tr
               class="flex h-[50px] w-full place-items-center border-[3px] border-transparent p-2 text-center odd:bg-immich-gray even:bg-immich-bg hover:cursor-pointer hover:border-immich-primary/75 odd:dark:bg-immich-dark-gray/75 even:dark:bg-immich-dark-gray/50 dark:hover:border-immich-dark-primary/75 md:p-5"
               on:click={() => goto(`${AppRoute.ALBUMS}/${album.id}`)}

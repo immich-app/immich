@@ -3,23 +3,33 @@
   "version": "1.92.1",
   "description": "",
   "type": "module",
-  "main": "./build/esm/index.js",
-  "types": "./build/types/index.d.ts",
+  "main": "./build/fetch/index.js",
+  "types": "./build/fetch/index.d.ts",
   "exports": {
+    "./axios": {
+      "types": "./build/axios/axios.d.ts",
+      "default": "./build/axios/axios.js"
+    },
     ".": {
-      "types": "./build/types/index.d.ts",
-      "default": "./build/esm/index.js"
+      "types": "./build/fetch/fetch.d.ts",
+      "default": "./build/fetch/fetch.js"
     }
   },
   "scripts": {
-    "build": "tsc -b ./tsconfig.esm.json ./tsconfig.types.json"
+    "build": "tsc -b ./tsconfig.axios.json ./tsconfig.fetch.json"
   },
-  "license": "MIT",
+  "license": "GNU Affero General Public License version 3",
   "devDependencies": {
+    "@oazapfts/runtime": "^1.0.0",
     "@types/node": "^20.11.0",
     "typescript": "^5.3.3"
   },
-  "dependencies": {
+  "peerDependencies": {
     "axios": "^1.6.7"
+  },
+  "peerDependenciesMeta": {
+    "axios": {
+      "optional": true
+    }
   }
 }

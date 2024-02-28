@@ -1,18 +1,13 @@
 <script lang="ts">
+  import Icon from '$lib/components/elements/icon.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
-  import { api, type PersonResponseDto } from '@api';
+  import { getPeopleThumbnailUrl } from '$lib/utils';
+  import { type PersonResponseDto } from '@immich/sdk';
+  import { mdiArrowLeft, mdiClose, mdiMerge } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import Button from '../elements/buttons/button.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
-  import { mdiArrowLeft, mdiClose, mdiMerge } from '@mdi/js';
-  import Icon from '$lib/components/elements/icon.svelte';
-
-  const dispatch = createEventDispatcher<{
-    reject: void;
-    confirm: [PersonResponseDto, PersonResponseDto];
-    close: void;
-  }>();
 
   export let personMerge1: PersonResponseDto;
   export let personMerge2: PersonResponseDto;
@@ -22,12 +17,29 @@
 
   const title = personMerge2.name;
 
+  const dispatch = createEventDispatcher<{
+    reject: void;
+    confirm: [PersonResponseDto, PersonResponseDto];
+    close: void;
+  }>();
+
+  const handleKeyboardPress = (event: KeyboardEvent) => {
+    switch (event.key) {
+      case 'Escape': {
+        dispatch('close');
+        return;
+      }
+    }
+  };
+
   const changePersonToMerge = (newperson: PersonResponseDto) => {
     const index = potentialMergePeople.indexOf(newperson);
     [potentialMergePeople[index], personMerge2] = [personMerge2, potentialMergePeople[index]];
     choosePersonToMerge = false;
   };
 </script>
+
+<svelte:document on:keypress={handleKeyboardPress} />
 
 <FullScreenModal on:clickOutside={() => dispatch('close')}>
   <div class="flex h-full w-full place-content-center place-items-center overflow-hidden">
@@ -49,7 +61,7 @@
             <ImageThumbnail
               circle
               shadow
-              url={api.getPeopleThumbnailUrl(personMerge1.id)}
+              url={getPeopleThumbnailUrl(personMerge1.id)}
               altText={personMerge1.name}
               widthStyle="100%"
             />
@@ -71,10 +83,10 @@
             }}
           >
             <ImageThumbnail
-              border={potentialMergePeople.length !== 0}
+              border={potentialMergePeople.length > 0}
               circle
               shadow
-              url={api.getPeopleThumbnailUrl(personMerge2.id)}
+              url={getPeopleThumbnailUrl(personMerge2.id)}
               altText={personMerge2.name}
               widthStyle="100%"
             />
@@ -88,12 +100,12 @@
               <div class="flex flex-wrap justify-center md:grid md:grid-cols-{potentialMergePeople.length}">
                 {#each potentialMergePeople as person (person.id)}
                   <div class="h-24 w-24 md:h-28 md:w-28">
-                    <button class="p-2" on:click={() => changePersonToMerge(person)}>
+                    <button class="p-2 w-full" on:click={() => changePersonToMerge(person)}>
                       <ImageThumbnail
                         border={true}
                         circle
                         shadow
-                        url={api.getPeopleThumbnailUrl(person.id)}
+                        url={getPeopleThumbnailUrl(person.id)}
                         altText={person.name}
                         widthStyle="100%"
                         on:click={() => changePersonToMerge(person)}
@@ -114,7 +126,7 @@
         <p class="text-sm text-gray-500 dark:text-gray-300">They will be merged together</p>
       </div>
       <div class="mt-8 flex w-full gap-4 px-4 pb-4">
-        <Button color="gray" fullwidth on:click={() => dispatch('reject')}>No</Button>
+        <Button fullwidth color="gray" on:click={() => dispatch('reject')}>No</Button>
         <Button fullwidth on:click={() => dispatch('confirm', [personMerge1, personMerge2])}>Yes</Button>
       </div>
     </div>

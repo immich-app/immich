@@ -5,7 +5,7 @@
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
   import { locale } from '$lib/stores/preferences.store';
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
-  import type { AlbumResponseDto, SharedLinkResponseDto, UserResponseDto } from '@api';
+  import type { AlbumResponseDto, SharedLinkResponseDto, UserResponseDto } from '@immich/sdk';
   import { onDestroy, onMount } from 'svelte';
   import { dateFormats } from '../../constants';
   import { createAssetInteractionStore } from '../../stores/asset-interaction.store';
@@ -21,6 +21,7 @@
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
   import { mdiFileImagePlusOutline, mdiFolderDownloadOutline } from '@mdi/js';
   import UpdatePanel from '../shared-components/update-panel.svelte';
+  import { handlePromiseError } from '$lib/utils';
 
   export let sharedLink: SharedLinkResponseDto;
   export let user: UserResponseDto | undefined = undefined;
@@ -35,7 +36,7 @@
 
   dragAndDropFilesStore.subscribe((value) => {
     if (value.isDragging && value.files.length > 0) {
-      fileUploadHandler(value.files, album.id);
+      handlePromiseError(fileUploadHandler(value.files, album.id));
       dragAndDropFilesStore.set({ isDragging: false, files: [] });
     }
   });
@@ -67,7 +68,7 @@
 
   const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
 
-  onMount(async () => {
+  onMount(() => {
     document.addEventListener('keydown', onKeyboardPress);
   });
 
@@ -83,11 +84,12 @@
     }
     if (!$showAssetViewer) {
       switch (event.key) {
-        case 'Escape':
+        case 'Escape': {
           if ($isMultiSelectState) {
             assetInteractionStore.clearMultiselect();
           }
           return;
+        }
       }
     }
   };
@@ -98,9 +100,9 @@
 </script>
 
 <header>
-  {#if $isMultiSelectState && user}
+  {#if $isMultiSelectState}
     <AssetSelectControlBar
-      ownerId={user.id}
+      ownerId={user?.id}
       assets={$selectedAssets}
       clearSelect={() => assetInteractionStore.clearMultiselect()}
     >
@@ -137,17 +139,15 @@
   {/if}
 </header>
 
-<main
-  class="relative h-screen overflow-hidden bg-immich-bg px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg sm:px-12 md:px-24 lg:px-40"
->
+<main class="relative h-screen overflow-hidden bg-immich-bg px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg">
   <AssetGrid {album} {assetStore} {assetInteractionStore}>
     <section class="pt-24">
       <!-- ALBUM TITLE -->
-      <p
+      <h1
         class="bg-immich-bg text-6xl text-immich-primary outline-none transition-all dark:bg-immich-dark-bg dark:text-immich-dark-primary"
       >
         {album.albumName}
-      </p>
+      </h1>
 
       <!-- ALBUM SUMMARY -->
       {#if album.assetCount > 0}

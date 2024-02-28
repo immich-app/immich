@@ -1,7 +1,6 @@
 import { ISystemConfigRepository } from '@app/domain';
 import { InjectRepository } from '@nestjs/typeorm';
-import axios from 'axios';
-import { readFile } from 'fs/promises';
+import { readFile } from 'node:fs/promises';
 import { In, Repository } from 'typeorm';
 import { SystemConfigEntity } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';
@@ -13,7 +12,17 @@ export class SystemConfigRepository implements ISystemConfigRepository {
     private repository: Repository<SystemConfigEntity>,
   ) {}
   async fetchStyle(url: string) {
-    return axios.get(url).then((response) => response.data);
+    try {
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch data from ${url} with status ${response.status}: ${await response.text()}`);
+      }
+
+      return response.json();
+    } catch (error) {
+      throw new Error(`Failed to fetch data from ${url}: ${error}`);
+    }
   }
 
   @GenerateSql()
@@ -22,7 +31,7 @@ export class SystemConfigRepository implements ISystemConfigRepository {
   }
 
   readFile(filename: string): Promise<string> {
-    return readFile(filename, { encoding: 'utf-8' });
+    return readFile(filename, { encoding: 'utf8' });
   }
 
   saveAll(items: SystemConfigEntity[]): Promise<SystemConfigEntity[]> {

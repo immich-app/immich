@@ -1,26 +1,27 @@
 <script lang="ts">
-  import { api } from '@api';
-  import { createEventDispatcher } from 'svelte';
-  import ImmichLogo from '../shared-components/immich-logo.svelte';
-  import { notificationController, NotificationType } from '../shared-components/notification/notification';
-  import Button from '../elements/buttons/button.svelte';
-  import { convertToBytes } from '$lib/utils/byte-converter';
   import { serverInfo } from '$lib/stores/server-info.store';
+  import { convertToBytes } from '$lib/utils/byte-converter';
+  import { handleError } from '$lib/utils/handle-error';
+  import { createUser } from '@immich/sdk';
+  import { createEventDispatcher } from 'svelte';
+  import Button from '../elements/buttons/button.svelte';
+  import ImmichLogo from '../shared-components/immich-logo.svelte';
+  import PasswordField from '../shared-components/password-field.svelte';
 
   let error: string;
   let success: string;
 
   let password = '';
-  let confirmPassowrd = '';
+  let confirmPassword = '';
 
   let canCreateUser = false;
-  let quotaSize: number | undefined = undefined;
+  let quotaSize: number | undefined;
   let isCreatingUser = false;
 
   $: quotaSizeWarning = quotaSize && convertToBytes(Number(quotaSize), 'GiB') > $serverInfo.diskSizeRaw;
 
   $: {
-    if (password !== confirmPassowrd && confirmPassowrd.length > 0) {
+    if (password !== confirmPassword && confirmPassword.length > 0) {
       error = 'Password does not match';
       canCreateUser = false;
     } else {
@@ -49,7 +50,7 @@
       const quotaSize = form.get('quotaSize');
 
       try {
-        const { status } = await api.userApi.createUser({
+        await createUser({
           createUserDto: {
             email: String(email),
             password: String(password),
@@ -58,34 +59,22 @@
           },
         });
 
-        if (status === 201) {
-          success = 'New user created';
+        success = 'New user created';
 
-          dispatch('submit');
+        dispatch('submit');
 
-          isCreatingUser = false;
-          return;
-        } else {
-          error = 'Error create user account';
-          isCreatingUser = false;
-        }
-      } catch (e) {
-        error = 'Error create user account';
+        return;
+      } catch (error) {
+        handleError(error, 'Unable to create user');
+      } finally {
         isCreatingUser = false;
-
-        console.log('[ERROR] registerUser', e);
-
-        notificationController.show({
-          message: `Error create new user, check console for more detail`,
-          type: NotificationType.Error,
-        });
       }
     }
   }
 </script>
 
 <div
-  class="max-h-screen w-[500px] max-w-[95vw] overflow-y-scroll rounded-3xl border bg-immich-bg p-4 py-8 shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg"
+  class="max-h-screen w-[500px] max-w-[95vw] overflow-y-auto immich-scrollbar rounded-3xl border bg-immich-bg p-4 py-8 shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg"
 >
   <div class="flex flex-col place-content-center place-items-center gap-4 px-4">
     <ImmichLogo class="text-center" height="100" width="100" />
@@ -103,19 +92,12 @@
 
     <div class="m-4 flex flex-col gap-2">
       <label class="immich-form-label" for="password">Password</label>
-      <input class="immich-form-input" id="password" name="password" type="password" required bind:value={password} />
+      <PasswordField id="password" name="password" bind:password autocomplete="new-password" />
     </div>
 
     <div class="m-4 flex flex-col gap-2">
       <label class="immich-form-label" for="confirmPassword">Confirm Password</label>
-      <input
-        class="immich-form-input"
-        id="confirmPassword"
-        name="password"
-        type="password"
-        required
-        bind:value={confirmPassowrd}
-      />
+      <PasswordField id="confirmPassword" bind:password={confirmPassword} autocomplete="new-password" />
     </div>
 
     <div class="m-4 flex flex-col gap-2">

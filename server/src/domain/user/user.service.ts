@@ -1,7 +1,8 @@
 import { UserEntity } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
 import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { randomBytes } from 'crypto';
+import { DateTime } from 'luxon';
+import { randomBytes } from 'node:crypto';
 import { AuthDto } from '../auth';
 import { CacheControl, ImmichFileResponse } from '../domain.util';
 import { IEntityJob, JobName } from '../job';
@@ -39,7 +40,7 @@ export class UserService {
 
   async getAll(auth: AuthDto, isAll: boolean): Promise<UserResponseDto[]> {
     const users = await this.userRepository.getList({ withDeleted: !isAll });
-    return users.map(mapUser);
+    return users.map((user) => mapUser(user));
   }
 
   async get(userId: string): Promise<UserResponseDto> {
@@ -125,7 +126,7 @@ export class UserService {
     }
 
     const providedPassword = await ask(mapUser(admin));
-    const password = providedPassword || randomBytes(24).toString('base64').replace(/\W/g, '');
+    const password = providedPassword || randomBytes(24).toString('base64').replaceAll(/\W/g, '');
 
     await this.userCore.updateUser(admin, admin.id, { password });
 
@@ -188,11 +189,7 @@ export class UserService {
       return false;
     }
 
-    const msInDay = 86400000;
-    const msDeleteWait = msInDay * 7;
-    const msSinceDelete = new Date().getTime() - (Date.parse(user.deletedAt.toString()) || 0);
-
-    return msSinceDelete >= msDeleteWait;
+    return DateTime.now().minus({ days: 7 }) > DateTime.fromJSDate(user.deletedAt);
   }
 
   private async findOrFail(id: string, options: UserFindOptions) {

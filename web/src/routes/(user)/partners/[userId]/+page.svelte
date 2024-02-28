@@ -19,7 +19,7 @@
 
   const assetStore = new AssetStore({ userId: data.partner.id, isArchived: false, withStacked: true });
   const assetInteractionStore = createAssetInteractionStore();
-  const { isMultiSelectState, selectedAssets } = assetInteractionStore;
+  const { isMultiSelectState, selectedAssets, clearMultiselect } = assetInteractionStore;
 
   onDestroy(() => {
     assetInteractionStore.clearMultiselect();
@@ -28,7 +28,7 @@
 
 <main class="grid h-screen bg-immich-bg pt-18 dark:bg-immich-dark-bg">
   {#if $isMultiSelectState}
-    <AssetSelectControlBar assets={$selectedAssets} clearSelect={assetInteractionStore.clearMultiselect}>
+    <AssetSelectControlBar assets={$selectedAssets} clearSelect={clearMultiselect}>
       <CreateSharedLink />
       <AssetSelectContextMenu icon={mdiPlus} title="Add">
         <AddToAlbum />

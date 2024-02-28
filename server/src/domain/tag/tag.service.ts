@@ -10,7 +10,7 @@ export class TagService {
   constructor(@Inject(ITagRepository) private repository: ITagRepository) {}
 
   getAll(auth: AuthDto) {
-    return this.repository.getAll(auth.user.id).then((tags) => tags.map(mapTag));
+    return this.repository.getAll(auth.user.id).then((tags) => tags.map((tag) => mapTag(tag)));
   }
 
   async getById(auth: AuthDto, id: string): Promise<TagResponseDto> {
@@ -78,10 +78,10 @@ export class TagService {
     const results: AssetIdsResponseDto[] = [];
     for (const assetId of dto.assetIds) {
       const hasAsset = await this.repository.hasAsset(auth.user.id, id, assetId);
-      if (!hasAsset) {
-        results.push({ assetId, success: false, error: AssetIdErrorReason.NOT_FOUND });
-      } else {
+      if (hasAsset) {
         results.push({ assetId, success: true });
+      } else {
+        results.push({ assetId, success: false, error: AssetIdErrorReason.NOT_FOUND });
       }
     }
 

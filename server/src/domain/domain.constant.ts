@@ -3,8 +3,6 @@ import { Duration } from 'luxon';
 import { readFileSync } from 'node:fs';
 import { extname, join } from 'node:path';
 
-const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'));
-
 export const AUDIT_LOG_MAX_DURATION = Duration.fromObject({ days: 100 });
 export const ONE_HOUR = Duration.fromObject({ hours: 1 });
 
@@ -14,11 +12,20 @@ export interface IVersion {
   patch: number;
 }
 
+export enum VersionType {
+  EQUAL = 0,
+  PATCH = 1,
+  MINOR = 2,
+  MAJOR = 3,
+}
+
 export class Version implements IVersion {
+  public readonly types = ['major', 'minor', 'patch'] as const;
+
   constructor(
-    public readonly major: number,
-    public readonly minor: number = 0,
-    public readonly patch: number = 0,
+    public major: number,
+    public minor: number = 0,
+    public patch: number = 0,
   ) {}
 
   toString() {
@@ -31,7 +38,7 @@ export class Version implements IVersion {
   }
 
   static fromString(version: string): Version {
-    const regex = /(?:v)?(?<major>\d+)(?:\.(?<minor>\d+))?(?:[\.-](?<patch>\d+))?/i;
+    const regex = /v?(?<major>\d+)(?:\.(?<minor>\d+))?(?:[.-](?<patch>\d+))?/i;
     const matchResult = version.match(regex);
     if (matchResult) {
       const { major, minor = '0', patch = '0' } = matchResult.groups as { [K in keyof IVersion]: string };
@@ -41,34 +48,38 @@ export class Version implements IVersion {
     }
   }
 
-  compare(version: Version): number {
-    for (const key of ['major', 'minor', 'patch'] as const) {
+  private compare(version: Version): [number, VersionType] {
+    for (const [i, key] of this.types.entries()) {
       const diff = this[key] - version[key];
       if (diff !== 0) {
-        return diff > 0 ? 1 : -1;
+        return [diff > 0 ? 1 : -1, (VersionType.MAJOR - i) as VersionType];
       }
     }
 
-    return 0;
+    return [0, VersionType.EQUAL];
   }
 
-  isOlderThan(version: Version): boolean {
-    return this.compare(version) < 0;
+  isOlderThan(version: Version): VersionType {
+    const [bool, type] = this.compare(version);
+    return bool < 0 ? type : VersionType.EQUAL;
   }
 
   isEqual(version: Version): boolean {
-    return this.compare(version) === 0;
+    const [bool] = this.compare(version);
+    return bool === 0;
   }
 
-  isNewerThan(version: Version): boolean {
-    return this.compare(version) > 0;
+  isNewerThan(version: Version): VersionType {
+    const [bool, type] = this.compare(version);
+    return bool > 0 ? type : VersionType.EQUAL;
   }
 }
 
 export const envName = (process.env.NODE_ENV || 'development').toUpperCase();
 export const isDev = process.env.NODE_ENV === 'development';
 
-export const serverVersion = Version.fromString(pkg.version);
+const { version } = JSON.parse(readFileSync('./package.json', 'utf8'));
+export const serverVersion = Version.fromString(version);
 
 export const APP_MEDIA_LOCATION = process.env.IMMICH_MEDIA_LOCATION || './upload';
 
@@ -80,7 +91,7 @@ export const citiesFile = 'cities500.txt';
 export const geodataDatePath = join(GEODATA_ROOT_PATH, 'geodata-date.txt');
 export const geodataAdmin1Path = join(GEODATA_ROOT_PATH, 'admin1CodesASCII.txt');
 export const geodataAdmin2Path = join(GEODATA_ROOT_PATH, 'admin2Codes.txt');
-export const geodataCitites500Path = join(GEODATA_ROOT_PATH, citiesFile);
+export const geodataCities500Path = join(GEODATA_ROOT_PATH, citiesFile);
 
 const image: Record<string, string[]> = {
   '.3fr': ['image/3fr', 'image/x-hasselblad-3fr'],
@@ -129,9 +140,9 @@ const image: Record<string, string[]> = {
   '.x3f': ['image/x3f', 'image/x-sigma-x3f'],
 };
 
-const profileExtensions = ['.avif', '.dng', '.heic', '.heif', '.jpeg', '.jpg', '.png', '.webp'];
+const profileExtensions = new Set(['.avif', '.dng', '.heic', '.heif', '.jpeg', '.jpg', '.png', '.webp']);
 const profile: Record<string, string[]> = Object.fromEntries(
-  Object.entries(image).filter(([key]) => profileExtensions.includes(key)),
+  Object.entries(image).filter(([key]) => profileExtensions.has(key)),
 );
 
 const video: Record<string, string[]> = {
@@ -180,5 +191,5 @@ export const mimeTypes = {
     }
     return AssetType.OTHER;
   },
-  getSupportedFileExtensions: () => Object.keys(image).concat(Object.keys(video)),
+  getSupportedFileExtensions: () => [...Object.keys(image), ...Object.keys(video)],
 };

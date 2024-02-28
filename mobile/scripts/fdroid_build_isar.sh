@@ -1,4 +1,6 @@
-cd .isar
+#!/usr/bin/env sh
+
+cd .isar || exit
 bash tool/build_android.sh x86
 bash tool/build_android.sh x64
 bash tool/build_android.sh armv7

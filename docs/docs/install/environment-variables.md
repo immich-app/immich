@@ -60,14 +60,17 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 
 ## Database
 
-| Variable      | Description       |   Default   | Services              |
-| :------------ | :---------------- | :---------: | :-------------------- |
-| `DB_URL`      | Database URL      |             | server, microservices |
-| `DB_HOSTNAME` | Database Host     | `localhost` | server, microservices |
-| `DB_PORT`     | Database Port     |   `5432`    | server, microservices |
-| `DB_USERNAME` | Database User     | `postgres`  | server, microservices |
-| `DB_PASSWORD` | Database Password | `postgres`  | server, microservices |
-| `DB_DATABASE` | Database Name     |  `immich`   | server, microservices |
+| Variable                            | Description                                                   |   Default    | Services              |
+| :---------------------------------- | :------------------------------------------------------------ | :----------: | :-------------------- |
+| `DB_URL`                            | Database URL                                                  |              | server, microservices |
+| `DB_HOSTNAME`                       | Database Host                                                 | `localhost`  | server, microservices |
+| `DB_PORT`                           | Database Port                                                 |    `5432`    | server, microservices |
+| `DB_USERNAME`                       | Database User                                                 |  `postgres`  | server, microservices |
+| `DB_PASSWORD`                       | Database Password                                             |  `postgres`  | server, microservices |
+| `DB_DATABASE`                       | Database Name                                                 |   `immich`   | server, microservices |
+| `DB_VECTOR_EXTENSION`<sup>\*1</sup> | Database Vector Extension (one of [`pgvector`, `pgvecto.rs`]) | `pgvecto.rs` | server, microservices |
+
+\*1: This setting cannot be changed after the server has successfully started up
 
 :::info
 

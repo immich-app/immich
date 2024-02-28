@@ -1,19 +1,18 @@
 <script lang="ts">
-  import SettingInputField, {
-    SettingInputFieldType,
-  } from '$lib/components/admin-page/settings/setting-input-field.svelte';
-  import SettingSwitch from '$lib/components/admin-page/settings/setting-switch.svelte';
   import Button from '$lib/components/elements/buttons/button.svelte';
-  import { handleError } from '$lib/utils/handle-error';
-  import { api, copyToClipboard, makeSharedLinkUrl, type SharedLinkResponseDto, SharedLinkType } from '@api';
-  import { createEventDispatcher, onMount } from 'svelte';
   import Icon from '$lib/components/elements/icon.svelte';
+  import { serverConfig } from '$lib/stores/server-config.store';
+  import { copyToClipboard, makeSharedLinkUrl } from '$lib/utils';
+  import { handleError } from '$lib/utils/handle-error';
+  import { SharedLinkType, createSharedLink, updateSharedLink, type SharedLinkResponseDto } from '@immich/sdk';
+  import { mdiLink } from '@mdi/js';
+  import { createEventDispatcher, onMount } from 'svelte';
   import BaseModal from '../base-modal.svelte';
   import type { ImmichDropDownOption } from '../dropdown-button.svelte';
   import DropdownButton from '../dropdown-button.svelte';
-  import { notificationController, NotificationType } from '../notification/notification';
-  import { mdiLink } from '@mdi/js';
-  import { serverConfig } from '$lib/stores/server-config.store';
+  import { NotificationType, notificationController } from '../notification/notification';
+  import SettingInputField, { SettingInputFieldType } from '../settings/setting-input-field.svelte';
+  import SettingSwitch from '../settings/setting-switch.svelte';
 
   export let albumId: string | undefined = undefined;
   export let assetIds: string[] = [];
@@ -66,11 +65,11 @@
 
   const handleCreateSharedLink = async () => {
     const expirationTime = getExpirationTimeInMillisecond();
-    const currentTime = new Date().getTime();
+    const currentTime = Date.now();
     const expirationDate = expirationTime ? new Date(currentTime + expirationTime).toISOString() : undefined;
 
     try {
-      const { data } = await api.sharedLinkApi.createSharedLink({
+      const data = await createSharedLink({
         sharedLinkCreateDto: {
           type: shareType,
           albumId,
@@ -84,8 +83,8 @@
         },
       });
       sharedLink = makeSharedLinkUrl($serverConfig.externalDomain, data.key);
-    } catch (e) {
-      handleError(e, 'Failed to create shared link');
+    } catch (error) {
+      handleError(error, 'Failed to create shared link');
     }
   };
 
@@ -99,20 +98,27 @@
 
   const getExpirationTimeInMillisecond = () => {
     switch (expirationTime) {
-      case '30 minutes':
+      case '30 minutes': {
         return 30 * 60 * 1000;
-      case '1 hour':
+      }
+      case '1 hour': {
         return 60 * 60 * 1000;
-      case '6 hours':
+      }
+      case '6 hours': {
         return 6 * 60 * 60 * 1000;
-      case '1 day':
+      }
+      case '1 day': {
         return 24 * 60 * 60 * 1000;
-      case '7 days':
+      }
+      case '7 days': {
         return 7 * 24 * 60 * 60 * 1000;
-      case '30 days':
+      }
+      case '30 days': {
         return 30 * 24 * 60 * 60 * 1000;
-      default:
+      }
+      default: {
         return 0;
+      }
     }
   };
 
@@ -123,12 +129,12 @@
 
     try {
       const expirationTime = getExpirationTimeInMillisecond();
-      const currentTime = new Date().getTime();
+      const currentTime = Date.now();
       const expirationDate: string | null = expirationTime
         ? new Date(currentTime + expirationTime).toISOString()
         : null;
 
-      await api.sharedLinkApi.updateSharedLink({
+      await updateSharedLink({
         id: editingLink.id,
         sharedLinkEditDto: {
           description,
@@ -146,8 +152,8 @@
       });
 
       dispatch('close');
-    } catch (e) {
-      handleError(e, 'Failed to edit shared link');
+    } catch (error) {
+      handleError(error, 'Failed to edit shared link');
     }
   };
 </script>

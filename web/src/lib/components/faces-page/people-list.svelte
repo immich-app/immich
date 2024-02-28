@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { api, type PersonResponseDto } from '@api';
-  import FaceThumbnail from './face-thumbnail.svelte';
-  import { createEventDispatcher } from 'svelte';
+  import { maximumLengthSearchPeople, timeBeforeShowLoadingSpinner } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
   import { searchNameLocal } from '$lib/utils/person';
-  import SearchBar from './search-bar.svelte';
-  import { maximumLengthSearchPeople, timeBeforeShowLoadingSpinner } from '$lib/constants';
+  import { searchPerson, type PersonResponseDto } from '@immich/sdk';
+  import { createEventDispatcher } from 'svelte';
+  import FaceThumbnail from './face-thumbnail.svelte';
+  import SearchBar from '../elements/search-bar.svelte';
 
   export let screenHeight: number;
   export let people: PersonResponseDto[];
@@ -34,16 +34,13 @@
       people = peopleCopy;
       return;
     }
-    if (!force) {
-      if (people.length < maximumLengthSearchPeople && name.startsWith(searchWord)) {
-        return;
-      }
+    if (!force && people.length < maximumLengthSearchPeople && name.startsWith(searchWord)) {
+      return;
     }
 
     const timeout = setTimeout(() => (isSearchingPeople = true), timeBeforeShowLoadingSpinner);
     try {
-      const { data } = await api.searchApi.searchPerson({ name });
-      people = data;
+      people = await searchPerson({ name });
       searchWord = name;
     } catch (error) {
       handleError(error, "Can't search people");
@@ -58,7 +55,8 @@
 <div class=" w-40 sm:w-48 md:w-96 h-14 mb-8">
   <SearchBar
     bind:name
-    {isSearchingPeople}
+    isSearching={isSearchingPeople}
+    placeholder="Search people"
     on:reset={() => {
       people = peopleCopy;
     }}

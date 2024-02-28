@@ -16,11 +16,11 @@ import {
   newSystemConfigRepositoryMock,
   probeStub,
 } from '@test';
-import { randomBytes } from 'crypto';
 import { BinaryField } from 'exiftool-vendored';
-import { Stats } from 'fs';
-import { constants } from 'fs/promises';
 import { when } from 'jest-when';
+import { randomBytes } from 'node:crypto';
+import { Stats } from 'node:fs';
+import { constants } from 'node:fs/promises';
 import { JobName } from '../job';
 import {
   ClientEvent,
@@ -37,7 +37,6 @@ import {
   IStorageRepository,
   ISystemConfigRepository,
   ImmichTags,
-  WithProperty,
   WithoutProperty,
 } from '../repositories';
 import { MetadataService, Orientation } from './metadata.service';
@@ -234,7 +233,7 @@ describe(MetadataService.name, () => {
 
   describe('handleMetadataExtraction', () => {
     beforeEach(() => {
-      storageMock.stat.mockResolvedValue({ size: 123456 } as Stats);
+      storageMock.stat.mockResolvedValue({ size: 123_456 } as Stats);
     });
 
     it('should handle an asset that could not be found', async () => {
@@ -507,7 +506,7 @@ describe(MetadataService.name, () => {
         exifImageWidth: null,
         exposureTime: tags.ExposureTime,
         fNumber: null,
-        fileSizeInByte: 123456,
+        fileSizeInByte: 123_456,
         focalLength: tags.FocalLength,
         fps: null,
         iso: tags.ISO,
@@ -547,6 +546,22 @@ describe(MetadataService.name, () => {
       );
     });
 
+    it('should handle duration in ISO time string', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      metadataMock.readTags.mockResolvedValue({ Duration: '00:00:08.41' });
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id]);
+      expect(assetMock.upsertExif).toHaveBeenCalled();
+      expect(assetMock.save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: assetStub.image.id,
+          duration: '00:00:08.410',
+        }),
+      );
+    });
+
     it('should handle duration as an object without Scale', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
       metadataMock.readTags.mockResolvedValue({ Duration: { Value: 6.2 } });
@@ -565,7 +580,7 @@ describe(MetadataService.name, () => {
 
     it('should handle duration with scale', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
-      metadataMock.readTags.mockResolvedValue({ Duration: { Scale: 1.11111111111111e-5, Value: 558720 } });
+      metadataMock.readTags.mockResolvedValue({ Duration: { Scale: 1.111_111_111_111_11e-5, Value: 558_720 } });
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
 
@@ -582,11 +597,11 @@ describe(MetadataService.name, () => {
 
   describe('handleQueueSidecar', () => {
     it('should queue assets with sidecar files', async () => {
-      assetMock.getWith.mockResolvedValue({ items: [assetStub.sidecar], hasNextPage: false });
+      assetMock.getAll.mockResolvedValue({ items: [assetStub.sidecar], hasNextPage: false });
 
       await sut.handleQueueSidecar({ force: true });
 
-      expect(assetMock.getWith).toHaveBeenCalledWith({ take: 1000, skip: 0 }, WithProperty.SIDECAR);
+      expect(assetMock.getAll).toHaveBeenCalledWith({ take: 1000, skip: 0 });
       expect(assetMock.getWithout).not.toHaveBeenCalled();
       expect(jobMock.queueAll).toHaveBeenCalledWith([
         {
@@ -602,7 +617,7 @@ describe(MetadataService.name, () => {
       await sut.handleQueueSidecar({ force: false });
 
       expect(assetMock.getWithout).toHaveBeenCalledWith({ take: 1000, skip: 0 }, WithoutProperty.SIDECAR);
-      expect(assetMock.getWith).not.toHaveBeenCalled();
+      expect(assetMock.getAll).not.toHaveBeenCalled();
       expect(jobMock.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.SIDECAR_DISCOVERY,
@@ -613,8 +628,46 @@ describe(MetadataService.name, () => {
   });
 
   describe('handleSidecarSync', () => {
-    it('should not error', async () => {
-      await sut.handleSidecarSync();
+    it('should do nothing if asset could not be found', async () => {
+      assetMock.getByIds.mockResolvedValue([]);
+      await expect(sut.handleSidecarSync({ id: assetStub.image.id })).resolves.toBe(false);
+      expect(assetMock.save).not.toHaveBeenCalled();
+    });
+
+    it('should do nothing if asset has no sidecar path', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      await expect(sut.handleSidecarSync({ id: assetStub.image.id })).resolves.toBe(false);
+      expect(assetMock.save).not.toHaveBeenCalled();
+    });
+
+    it('should do nothing if asset has no sidecar path', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      await expect(sut.handleSidecarSync({ id: assetStub.image.id })).resolves.toBe(false);
+      expect(assetMock.save).not.toHaveBeenCalled();
+    });
+
+    it('should set sidecar path if exists', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.sidecar]);
+      storageMock.checkFileExists.mockResolvedValue(true);
+
+      await expect(sut.handleSidecarSync({ id: assetStub.sidecar.id })).resolves.toBe(true);
+      expect(storageMock.checkFileExists).toHaveBeenCalledWith(`${assetStub.sidecar.originalPath}.xmp`, constants.R_OK);
+      expect(assetMock.save).toHaveBeenCalledWith({
+        id: assetStub.sidecar.id,
+        sidecarPath: assetStub.sidecar.sidecarPath,
+      });
+    });
+
+    it('should unset sidecar path if file does not exist anymore', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.sidecar]);
+      storageMock.checkFileExists.mockResolvedValue(false);
+
+      await expect(sut.handleSidecarSync({ id: assetStub.sidecar.id })).resolves.toBe(true);
+      expect(storageMock.checkFileExists).toHaveBeenCalledWith(`${assetStub.sidecar.originalPath}.xmp`, constants.R_OK);
+      expect(assetMock.save).toHaveBeenCalledWith({
+        id: assetStub.sidecar.id,
+        sidecarPath: null,
+      });
     });
   });
 
