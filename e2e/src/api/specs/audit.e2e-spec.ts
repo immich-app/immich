@@ -29,14 +29,14 @@ describe('/audit', () => {
       await Promise.all([
         deleteAssets(
           { assetBulkDeleteDto: { ids: [trashedAsset.id] } },
-          { headers: asBearerAuth(admin.accessToken) }
+          { headers: asBearerAuth(admin.accessToken) },
         ),
         updateAsset(
           {
             id: archivedAsset.id,
             updateAssetDto: { isArchived: true },
           },
-          { headers: asBearerAuth(admin.accessToken) }
+          { headers: asBearerAuth(admin.accessToken) },
         ),
       ]);
 

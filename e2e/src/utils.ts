@@ -1,5 +1,6 @@
 import {
   AssetFileUploadResponseDto,
+  AssetResponseDto,
   CreateAlbumDto,
   CreateAssetDto,
   CreateUserDto,
@@ -19,10 +20,12 @@ import {
   updatePerson,
 } from '@immich/sdk';
 import { BrowserContext } from '@playwright/test';
-import { exec, spawn } from 'child_process';
+import { exec, spawn } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import { access } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { EventEmitter } from 'node:stream';
 import { promisify } from 'node:util';
 import pg from 'pg';
 import { io, type Socket } from 'socket.io-client';
@@ -40,6 +43,7 @@ const directoryExists = (directory: string) =>
 
 // TODO move test assets into e2e/assets
 export const testAssetDir = path.resolve(`./../server/test/assets/`);
+export const tempDir = tmpdir();
 
 const serverContainerName = 'immich-e2e-server';
 const mediaDir = '/usr/src/app/upload';
@@ -47,6 +51,7 @@ const dirs = [
   `"${mediaDir}/thumbs"`,
   `"${mediaDir}/upload"`,
   `"${mediaDir}/library"`,
+  `"${mediaDir}/encoded-video"`,
 ].join(' ');
 
 if (!(await directoryExists(`${testAssetDir}/albums`))) {
@@ -177,33 +182,85 @@ export interface AdminSetupOptions {
   onboarding?: boolean;
 }
 
+export enum SocketEvent {
+  UPLOAD = 'upload',
+  DELETE = 'delete',
+}
+
+export type EventType = 'upload' | 'delete';
+export interface WaitOptions {
+  event: EventType;
+  assetId: string;
+  timeout?: number;
+}
+
+const events: Record<EventType, Set<string>> = {
+  upload: new Set<string>(),
+  delete: new Set<string>(),
+};
+
+const callbacks: Record<string, () => void> = {};
+
+const onEvent = ({ event, assetId }: { event: EventType; assetId: string }) => {
+  events[event].add(assetId);
+  const callback = callbacks[assetId];
+  if (callback) {
+    callback();
+    delete callbacks[assetId];
+  }
+};
+
 export const wsUtils = {
   connect: async (accessToken: string) => {
     const websocket = io('http://127.0.0.1:2283', {
       path: '/api/socket.io',
       transports: ['websocket'],
       extraHeaders: { Authorization: `Bearer ${accessToken}` },
-      autoConnect: false,
+      autoConnect: true,
       forceNew: true,
     });
 
     return new Promise<Socket>((resolve) => {
-      websocket.on('connect', () => resolve(websocket));
-      websocket.connect();
+      websocket
+        .on('connect', () => resolve(websocket))
+        .on('on_upload_success', (data: AssetResponseDto) =>
+          onEvent({ event: 'upload', assetId: data.id }),
+        )
+        .on('on_asset_delete', (assetId: string) =>
+          onEvent({ event: 'delete', assetId }),
+        )
+        .connect();
     });
   },
   disconnect: (ws: Socket) => {
     if (ws?.connected) {
       ws.disconnect();
     }
+
+    for (const set of Object.values(events)) {
+      set.clear();
+    }
   },
-  once: <T = any>(ws: Socket, event: string): Promise<T> => {
-    return new Promise<T>((resolve, reject) => {
-      const timeout = setTimeout(() => reject(new Error('Timeout')), 4000);
-      ws.once(event, (data: T) => {
+  waitForEvent: async ({
+    event,
+    assetId,
+    timeout: ms,
+  }: WaitOptions): Promise<void> => {
+    const set = events[event];
+    if (set.has(assetId)) {
+      return;
+    }
+
+    return new Promise<void>((resolve, reject) => {
+      const timeout = setTimeout(
+        () => reject(new Error(`Timed out waiting for ${event} event`)),
+        ms || 5000,
+      );
+
+      callbacks[assetId] = () => {
         clearTimeout(timeout);
-        resolve(data);
-      });
+        resolve();
+      };
     });
   },
 };
