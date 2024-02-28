@@ -42,6 +42,9 @@ docker run -it -v "$(pwd)":/import:ro -e IMMICH_INSTANCE_URL=https://your-immich
 
 Please modify the `IMMICH_INSTANCE_URL` and `IMMICH_API_KEY` environment variables as suitable. You can also use a Docker env file to store your sensitive API key.
 
+:::info
+If you're using the CLI inside of the container then you should use localhost:3001, and not the IP of server.
+:::
 ## Usage
 
 ```

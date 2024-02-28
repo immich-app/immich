@@ -10,10 +10,20 @@ Archived photos are not included in search results by default. To include them, 
 
 Some search examples:
 
-<img src={require('./img/search-ex-3.webp').default} title='Search Example 2' />
+<img src={require('./img/search-ex-3.webp').default} width="70%" title='Search Example 2' />
 
 ## Advanced search filters
 
 In addition, Immich offers advanced search functionality, allowing you to find specific content using customizable search filters. These filters include location, one or more faces, specific albums, and more. You can try out the search filters on the [Demo site](https://demo.immich.app).
 
-<img src={require('./img/advanced-search-filters.webp').default} title='advanced search filters' />
+Smart search features include:
+
+- Search for one or more faces (note: context search does not support people filter).
+- Search by Country or State or City or by all three.
+- Search by camera company and model.
+- Search by date range.
+- Search by media types: image, video or all (note: image includes live images).
+- Search by condition: not in any album or archive or Favorite or all conditions.
+
+<img src={require('./img/advanced-search-filters.webp').default} width="70%" title='advanced search filters' />
+
