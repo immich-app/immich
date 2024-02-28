@@ -13,7 +13,7 @@ import {
   type UserResponseDto,
 } from '@immich/sdk';
 
-interface DownloadRequestOptions<T = any> {
+interface DownloadRequestOptions<T = unknown> {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
   url: string;
   data?: T;
@@ -68,7 +68,7 @@ export const uploadRequest = async <T>(options: UploadRequestOptions): Promise<{
   });
 };
 
-export const downloadRequest = <TBody = any>(options: DownloadRequestOptions<TBody> | string) => {
+export const downloadRequest = <TBody = unknown>(options: DownloadRequestOptions<TBody> | string) => {
   if (typeof options === 'string') {
     options = { url: options };
   }

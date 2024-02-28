@@ -5,7 +5,7 @@
     "strict": true,
     "skipLibCheck": true,
     "declaration": true,
-    "outDir": "build/fetch",
+    "outDir": "build",
     "module": "esnext",
     "moduleResolution": "Bundler",
     "lib": ["esnext", "dom"]

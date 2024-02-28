@@ -119,9 +119,9 @@ async function fileUploader(asset: File, albumId: string | undefined = undefined
         return res.id;
       }
     })
-    .catch(async (error) => {
+    .catch((error) => {
       handleError(error, 'Unable to upload file');
-      const reason = (await getServerErrorMessage(error)) || error;
+      const reason = getServerErrorMessage(error) || error;
       uploadAssetsStore.updateAsset(deviceAssetId, { state: UploadState.ERROR, error: reason });
       return undefined;
     });

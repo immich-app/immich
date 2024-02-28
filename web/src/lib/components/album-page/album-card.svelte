@@ -2,8 +2,8 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { user } from '$lib/stores/user.store';
-  import { downloadRequest, getAssetFileUrl, getAssetThumbnailUrl } from '$lib/utils';
-  import { ThumbnailFormat, getUserById, type AlbumResponseDto, defaults } from '@immich/sdk';
+  import { downloadRequest, getAssetThumbnailUrl } from '$lib/utils';
+  import { ThumbnailFormat, getUserById, type AlbumResponseDto } from '@immich/sdk';
   import { mdiDotsVertical } from '@mdi/js';
   import { createEventDispatcher, onMount } from 'svelte';
   import { getContextMenuPosition } from '../../utils/context-menu';
