@@ -9831,18 +9831,10 @@
         "properties": {
           "enabled": {
             "type": "boolean"
-          },
-          "interval": {
-            "type": "integer"
-          },
-          "usePolling": {
-            "type": "boolean"
           }
         },
         "required": [
-          "enabled",
-          "interval",
-          "usePolling"
+          "enabled"
         ],
         "type": "object"
       },

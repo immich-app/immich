@@ -735,14 +735,21 @@ class GalleryViewerPage extends HookConsumerWidget {
                 isZoomed.value = state != PhotoViewScaleState.initial;
                 ref.read(showControlsProvider.notifier).show = !isZoomed.value;
               },
-              loadingBuilder: (context, event, index) => ImageFiltered(
-                imageFilter: ui.ImageFilter.blur(
-                  sigmaX: 1,
-                  sigmaY: 1,
-                ),
-                child: ImmichThumbnail(
-                  asset: asset(),
-                  fit: BoxFit.contain,
+              loadingBuilder: (context, event, index) => ClipRect(
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    BackdropFilter(
+                      filter: ui.ImageFilter.blur(
+                        sigmaX: 10,
+                        sigmaY: 10,
+                      ),
+                    ),
+                    ImmichThumbnail(
+                      asset: asset(),
+                      fit: BoxFit.contain,
+                    ),
+                  ],
                 ),
               ),
               pageController: controller,
@@ -818,7 +825,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                       isMotionVideo: isPlayingMotionVideo.value,
                       placeholder: Image(
                         image: provider,
-                        fit: BoxFit.fitWidth,
+                        fit: BoxFit.contain,
                         height: context.height,
                         width: context.width,
                         alignment: Alignment.center,

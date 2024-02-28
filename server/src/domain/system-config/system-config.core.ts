@@ -132,8 +132,6 @@ export const defaults = Object.freeze<SystemConfig>({
     },
     watch: {
       enabled: false,
-      usePolling: false,
-      interval: 10_000,
     },
   },
   server: {

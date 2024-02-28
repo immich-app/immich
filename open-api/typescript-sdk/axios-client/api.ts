@@ -4401,18 +4401,6 @@ export interface SystemConfigLibraryWatchDto {
      * @memberof SystemConfigLibraryWatchDto
      */
     'enabled': boolean;
-    /**
-     * 
-     * @type {number}
-     * @memberof SystemConfigLibraryWatchDto
-     */
-    'interval': number;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof SystemConfigLibraryWatchDto
-     */
-    'usePolling': boolean;
 }
 /**
  * 
