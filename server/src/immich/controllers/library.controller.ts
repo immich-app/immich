@@ -10,7 +10,7 @@ import {
   ValidateLibraryDto,
   ValidateLibraryResponseDto,
 } from '@app/domain';
-import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put, Query, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AdminRoute, Auth, Authenticated } from '../app.guard';
 import { UseValidation } from '../app.utils';
@@ -25,10 +25,7 @@ export class LibraryController {
   constructor(private service: LibraryService) {}
 
   @Get()
-  getAllLibraries(
-    @Auth() auth: AuthDto,
-    @Query(new ValidationPipe({ transform: true })) dto: SearchLibraryDto,
-  ): Promise<ResponseDto[]> {
+  getAllLibraries(@Auth() auth: AuthDto, @Query() dto: SearchLibraryDto): Promise<ResponseDto[]> {
     return this.service.getAll(auth, dto);
   }
 
