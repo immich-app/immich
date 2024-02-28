@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+lib_path="/usr/lib/$(arch)-linux-gnu/libmimalloc.so.2"
+export LD_PRELOAD="$lib_path"
+
 read_file_and_export() {
 	if [ -n "${!1}" ]; then
 		content="$(cat "${!1}")"
