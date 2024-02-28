@@ -7,7 +7,7 @@
   import type { AssetStore } from '$lib/stores/assets.store';
   import { isShowDetail, showDeleteModal } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
-  import { SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
+  import { SlideShowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { stackAssetsStore } from '$lib/stores/stacked-asset.store';
   import { user } from '$lib/stores/user.store';
   import { getAssetJobMessage, isSharedLink, handlePromiseError } from '$lib/utils';
@@ -67,7 +67,7 @@
   const {
     restartProgress: restartSlideshowProgress,
     stopProgress: stopSlideshowProgress,
-    slideshowShuffle,
+    slideshowNavigation,
     slideshowState,
   } = slideshowStore;
 
@@ -190,8 +190,8 @@
       }
     });
 
-    shuffleSlideshowUnsubscribe = slideshowShuffle.subscribe((value) => {
-      if (value) {
+    shuffleSlideshowUnsubscribe = slideshowNavigation.subscribe((value) => {
+      if (value === SlideShowNavigation.Shuffle) {
         slideshowHistory.reset();
         slideshowHistory.queue(asset.id);
       }
@@ -331,7 +331,7 @@
   };
 
   const navigateAsset = async (order: 'previous' | 'next', e?: Event) => {
-    if ($slideshowState === SlideshowState.PlaySlideshow && $slideshowShuffle) {
+    if ($slideshowState === SlideshowState.PlaySlideshow && $slideshowNavigation === SlideShowNavigation.Shuffle) {
       return (order === 'previous' ? slideshowHistory.previous() : slideshowHistory.next()) || navigateAssetRandom();
     }
 

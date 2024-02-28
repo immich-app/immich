@@ -38,7 +38,7 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { AssetStore } from '$lib/stores/assets.store';
   import { locale } from '$lib/stores/preferences.store';
-  import { SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
+  import { SlideShowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { user } from '$lib/stores/user.store';
   import { downloadArchive } from '$lib/utils/asset-utils';
   import { autoGrowHeight } from '$lib/utils/autogrow';
@@ -78,7 +78,7 @@
   export let data: PageData;
 
   let { isViewing: showAssetViewer, setAssetId } = assetViewingStore;
-  let { slideshowState, slideshowShuffle } = slideshowStore;
+  let { slideshowState, slideshowNavigation } = slideshowStore;
 
   let album = data.album;
   let description = album.description;
@@ -239,7 +239,8 @@
   };
 
   const handleStartSlideshow = async () => {
-    const asset = $slideshowShuffle ? await assetStore.getRandomAsset() : assetStore.assets[0];
+    const asset =
+      $slideshowNavigation === SlideShowNavigation.Shuffle ? await assetStore.getRandomAsset() : assetStore.assets[0];
     if (asset) {
       await setAssetId(asset.id);
       $slideshowState = SlideshowState.PlaySlideshow;

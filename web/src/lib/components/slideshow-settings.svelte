@@ -4,12 +4,30 @@
     SettingInputFieldType,
   } from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
-  import { slideshowStore } from '../stores/slideshow.store';
+  import { mdiArrowDownThin, mdiArrowUpThin, mdiShuffle } from '@mdi/js';
+  import { SlideShowNavigation, slideshowStore } from '../stores/slideshow.store';
   import Button from './elements/buttons/button.svelte';
+  import type { RenderedOption } from './elements/dropdown.svelte';
+  import SettingDropdown from './shared-components/settings/setting-dropdown.svelte';
 
-  const { slideshowShuffle, slideshowDelay, showProgressBar, slideshowAscendingOrder } = slideshowStore;
+  const { slideshowDelay, showProgressBar, slideshowNavigation } = slideshowStore;
 
   export let onClose = () => {};
+
+  const options: Record<SlideShowNavigation, RenderedOption> = {
+    [SlideShowNavigation.Shuffle]: { icon: mdiShuffle, title: 'Shuffle' },
+    [SlideShowNavigation.AscendingOrder]: { icon: mdiArrowUpThin, title: 'Ascending order' },
+    [SlideShowNavigation.DescendingOrder]: { icon: mdiArrowDownThin, title: 'Descending order' },
+  };
+
+  export const handleToggle = (selectedOption: RenderedOption) => {
+    for (const [key, option] of Object.entries(options)) {
+      if (option === selectedOption) {
+        $slideshowNavigation = key as SlideShowNavigation;
+        break;
+      }
+    }
+  };
 </script>
 
 <FullScreenModal on:clickOutside={onClose} on:escape={onClose}>
@@ -21,10 +39,12 @@
     </h1>
 
     <div class="flex flex-col gap-4 text-immich-primary dark:text-immich-dark-primary">
-      <SettingSwitch title="Shuffle" bind:checked={$slideshowShuffle} />
-
-      <SettingSwitch title="Ascending order" disabled={$slideshowShuffle} bind:checked={$slideshowAscendingOrder} />
-
+      <SettingDropdown
+        title="Navigation"
+        options={Object.values(options)}
+        selectedOption={options[$slideshowNavigation]}
+        on:toggle={({ detail }) => handleToggle(detail)}
+      />
       <SettingSwitch title="Show Progress Bar" bind:checked={$showProgressBar} />
       <SettingInputField
         inputType={SettingInputFieldType.NUMBER}

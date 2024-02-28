@@ -2,7 +2,7 @@
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import ProgressBar, { ProgressBarStatus } from '$lib/components/shared-components/progress-bar/progress-bar.svelte';
   import SlideshowSettings from '$lib/components/slideshow-settings.svelte';
-  import { slideshowStore } from '$lib/stores/slideshow.store';
+  import { SlideShowNavigation, slideshowStore } from '$lib/stores/slideshow.store';
   import { mdiChevronLeft, mdiChevronRight, mdiClose, mdiCog, mdiPause, mdiPlay } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
 
@@ -10,7 +10,7 @@
   export let onPrevious = () => {};
   export let onClose = () => {};
 
-  const { restartProgress, stopProgress, slideshowDelay, showProgressBar, slideshowAscendingOrder } = slideshowStore;
+  const { restartProgress, stopProgress, slideshowDelay, showProgressBar, slideshowNavigation } = slideshowStore;
 
   let progressBarStatus: ProgressBarStatus;
   let progressBar: ProgressBar;
@@ -44,7 +44,7 @@
   });
 
   const handleDone = () => {
-    if ($slideshowAscendingOrder) {
+    if ($slideshowNavigation === SlideShowNavigation.AscendingOrder) {
       onPrevious();
       return;
     }

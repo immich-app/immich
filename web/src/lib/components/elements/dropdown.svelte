@@ -2,6 +2,11 @@
   // Necessary for eslint
   /* eslint-disable @typescript-eslint/no-explicit-any */
   type T = any;
+
+  export type RenderedOption = {
+    title: string;
+    icon?: string;
+  };
 </script>
 
 <script lang="ts" generics="T">
@@ -27,11 +32,6 @@
   export let selectedOption = options[0];
 
   export let render: (item: T) => string | RenderedOption = String;
-
-  type RenderedOption = {
-    title: string;
-    icon?: string;
-  };
 
   export let showMenu = false;
   export let controlable = false;
