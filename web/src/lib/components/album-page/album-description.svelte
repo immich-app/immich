@@ -21,10 +21,11 @@
           description: newDescription,
         },
       });
-      description = newDescription;
     } catch (error) {
       handleError(error, 'Error updating album description');
+      return;
     }
+    description = newDescription;
   };
 </script>
 
