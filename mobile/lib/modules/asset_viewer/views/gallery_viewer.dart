@@ -825,7 +825,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                       isMotionVideo: isPlayingMotionVideo.value,
                       placeholder: Image(
                         image: provider,
-                        fit: BoxFit.fitWidth,
+                        fit: BoxFit.contain,
                         height: context.height,
                         width: context.width,
                         alignment: Alignment.center,
