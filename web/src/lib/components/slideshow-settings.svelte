@@ -16,8 +16,8 @@
 
   const options: Record<SlideShowNavigation, RenderedOption> = {
     [SlideShowNavigation.Shuffle]: { icon: mdiShuffle, title: 'Shuffle' },
-    [SlideShowNavigation.AscendingOrder]: { icon: mdiArrowUpThin, title: 'Ascending order' },
-    [SlideShowNavigation.DescendingOrder]: { icon: mdiArrowDownThin, title: 'Descending order' },
+    [SlideShowNavigation.AscendingOrder]: { icon: mdiArrowUpThin, title: 'Backward' },
+    [SlideShowNavigation.DescendingOrder]: { icon: mdiArrowDownThin, title: 'Forward' },
   };
 
   export const handleToggle = (selectedOption: RenderedOption) => {
