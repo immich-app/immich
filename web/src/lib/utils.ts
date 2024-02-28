@@ -13,6 +13,59 @@ import {
   type UserResponseDto,
 } from '@immich/sdk';
 
+interface DownloadRequestOptions<T = any> {
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  url: string;
+  body?: T;
+  signal: AbortSignal;
+  onDownloadProgress: (event: ProgressEvent<XMLHttpRequestEventTarget>) => void;
+}
+
+class AbortError extends Error {
+  name = 'AbortError';
+}
+
+class ApiError extends Error {
+  name = 'ApiError';
+
+  constructor(
+    public message: string,
+    public statusCode: number,
+    public details: string,
+  ) {
+    super(message);
+  }
+}
+
+export const downloadRequest = <TBody = any>(options: DownloadRequestOptions<TBody>) => {
+  const { signal, method, url, body, onDownloadProgress: onProgress } = options;
+  const xhr = new XMLHttpRequest();
+
+  return new Promise<{ data: Blob; status: number }>((resolve, reject) => {
+    xhr.addEventListener('progress', (event) => onProgress(event));
+    xhr.addEventListener('error', (error) => reject(error));
+    xhr.addEventListener('abort', () => reject(new AbortError()));
+    xhr.addEventListener('load', () => {
+      if (xhr.readyState === 4 && xhr.status >= 200 && xhr.status < 300) {
+        resolve({ data: xhr.response as Blob, status: xhr.status });
+      } else {
+        reject(new ApiError(xhr.statusText, xhr.status, xhr.responseText));
+      }
+    });
+
+    signal.addEventListener('abort', () => xhr.abort());
+
+    xhr.open(method, url);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.responseType = 'blob';
+    if (body) {
+      xhr.send(JSON.stringify(body));
+    } else {
+      xhr.send();
+    }
+  });
+};
+
 export const getJobName = (jobName: JobName) => {
   const names: Record<JobName, string> = {
     [JobName.ThumbnailGeneration]: 'Generate Thumbnails',

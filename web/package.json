@@ -23,7 +23,6 @@
   },
   "devDependencies": {
     "@faker-js/faker": "^8.4.1",
-    "@floating-ui/dom": "^1.6.3",
     "@socket.io/component-emitter": "^3.1.0",
     "@sveltejs/adapter-static": "^3.0.1",
     "@sveltejs/enhanced-img": "^0.1.8",
@@ -44,7 +43,6 @@
     "eslint-plugin-svelte": "^2.35.1",
     "eslint-plugin-unicorn": "^51.0.1",
     "factory.ts": "^1.4.1",
-    "identity-obj-proxy": "^3.0.0",
     "postcss": "^8.4.35",
     "prettier": "^3.2.5",
     "prettier-plugin-organize-imports": "^3.2.4",

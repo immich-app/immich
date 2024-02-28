@@ -1,8 +1,9 @@
-import { api } from '$lib/api';
 import { notificationController, NotificationType } from '$lib/components/shared-components/notification/notification';
 import { downloadManager } from '$lib/stores/download';
+import { downloadRequest, getKey } from '$lib/utils';
 import {
   addAssetsToAlbum as addAssets,
+  defaults,
   getDownloadInfo,
   type AssetResponseDto,
   type AssetTypeEnum,
@@ -12,7 +13,6 @@ import {
   type UserResponseDto,
 } from '@immich/sdk';
 import { DateTime } from 'luxon';
-import { getKey } from '../utils';
 import { handleError } from './handle-error';
 
 export const addAssetsToAlbum = async (albumId: string, assetIds: Array<string>): Promise<BulkIdResponseDto[]> =>
@@ -61,6 +61,7 @@ export const downloadArchive = async (fileName: string, options: DownloadInfoDto
     const archive = downloadInfo.archives[index];
     const suffix = downloadInfo.archives.length === 1 ? '' : `+${index + 1}`;
     const archiveName = fileName.replace('.zip', `${suffix}-${DateTime.now().toFormat('yyyy-LL-dd-HH-mm-ss')}.zip`);
+    const key = getKey();
 
     let downloadKey = `${archiveName} `;
     if (downloadInfo.archives.length > 1) {
@@ -71,14 +72,13 @@ export const downloadArchive = async (fileName: string, options: DownloadInfoDto
     downloadManager.add(downloadKey, archive.size, abort);
 
     try {
-      const { data } = await api.downloadApi.downloadArchive(
-        { assetIdsDto: { assetIds: archive.assetIds }, key: getKey() },
-        {
-          responseType: 'blob',
-          signal: abort.signal,
-          onDownloadProgress: (event) => downloadManager.update(downloadKey, event.loaded),
-        },
-      );
+      const { data } = await downloadRequest({
+        method: 'POST',
+        url: defaults.baseUrl + '/download/archive' + (key ? `?key=${key}` : ''),
+        body: { assetIds: archive.assetIds },
+        signal: abort.signal,
+        onDownloadProgress: (event) => downloadManager.update(downloadKey, event.loaded),
+      });
 
       downloadBlob(data, archiveName);
     } catch (error) {
@@ -120,19 +120,14 @@ export const downloadFile = async (asset: AssetResponseDto) => {
     try {
       const abort = new AbortController();
       downloadManager.add(downloadKey, size, abort);
+      const key = getKey();
 
-      const { data } = await api.downloadApi.downloadFile(
-        { id, key: getKey() },
-        {
-          responseType: 'blob',
-          onDownloadProgress: ({ event }) => {
-            if (event.lengthComputable) {
-              downloadManager.update(downloadKey, event.loaded, event.total);
-            }
-          },
-          signal: abort.signal,
-        },
-      );
+      const { data } = await downloadRequest({
+        method: 'POST',
+        url: defaults.baseUrl + `/download/asset/${id}` + (key ? `?key=${key}` : ''),
+        signal: abort.signal,
+        onDownloadProgress: (event) => downloadManager.update(downloadKey, event.loaded, event.total),
+      });
 
       notificationController.show({
         type: NotificationType.Info,
