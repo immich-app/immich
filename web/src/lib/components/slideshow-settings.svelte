@@ -7,7 +7,7 @@
   import { slideshowStore } from '../stores/slideshow.store';
   import Button from './elements/buttons/button.svelte';
 
-  const { slideshowShuffle, slideshowDelay, showProgressBar } = slideshowStore;
+  const { slideshowShuffle, slideshowDelay, showProgressBar, slideshowAscendingOrder } = slideshowStore;
 
   export let onClose = () => {};
 </script>
@@ -22,6 +22,9 @@
 
     <div class="flex flex-col gap-4 text-immich-primary dark:text-immich-dark-primary">
       <SettingSwitch title="Shuffle" bind:checked={$slideshowShuffle} />
+
+      <SettingSwitch title="Ascending order" disabled={$slideshowShuffle} bind:checked={$slideshowAscendingOrder} />
+
       <SettingSwitch title="Show Progress Bar" bind:checked={$showProgressBar} />
       <SettingInputField
         inputType={SettingInputFieldType.NUMBER}
