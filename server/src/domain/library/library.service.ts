@@ -67,6 +67,17 @@ export class LibraryService extends EventEmitter {
 
   async init() {
     const config = await this.configCore.getConfig();
+
+    if (process.env.IMMICH_STOP_LIBRARY_WATCHER === 'true') {
+      this.logger.warn('Initiating emergency stop of library watcher');
+      config.library.watch.enabled = false;
+      await this.configCore.updateConfig(config);
+      this.logger.error(
+        'Library watcher configuration has been disabled, remove IMMICH_STOP_LIBRARY_WATCHER env variable and restart immich',
+      );
+      process.exit(1);
+    }
+
     const { watch, scan } = config.library;
     this.watchLibraries = watch.enabled;
     this.jobRepository.addCronJob(
