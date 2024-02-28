@@ -14,11 +14,17 @@ import {
 } from '@immich/sdk';
 
 interface DownloadRequestOptions<T = any> {
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
   url: string;
-  body?: T;
-  signal: AbortSignal;
-  onDownloadProgress: (event: ProgressEvent<XMLHttpRequestEventTarget>) => void;
+  data?: T;
+  signal?: AbortSignal;
+  onDownloadProgress?: (event: ProgressEvent<XMLHttpRequestEventTarget>) => void;
+}
+
+interface UploadRequestOptions {
+  url: string;
+  data: FormData;
+  onUploadProgress?: (event: ProgressEvent<XMLHttpRequestEventTarget>) => void;
 }
 
 class AbortError extends Error {
@@ -37,12 +43,41 @@ class ApiError extends Error {
   }
 }
 
-export const downloadRequest = <TBody = any>(options: DownloadRequestOptions<TBody>) => {
-  const { signal, method, url, body, onDownloadProgress: onProgress } = options;
-  const xhr = new XMLHttpRequest();
+export const uploadRequest = async <T>(options: UploadRequestOptions): Promise<{ data: T; status: number }> => {
+  const { onUploadProgress: onProgress, data, url } = options;
+
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+
+    xhr.addEventListener('error', (error) => reject(error));
+    xhr.addEventListener('load', () => {
+      if (xhr.readyState === 4 && xhr.status >= 200 && xhr.status < 300) {
+        resolve({ data: xhr.response as T, status: xhr.status });
+      } else {
+        reject(new ApiError(xhr.statusText, xhr.status, xhr.response));
+      }
+    });
+
+    if (onProgress) {
+      xhr.addEventListener('progress', (event) => onProgress(event));
+    }
+
+    xhr.open('POST', url);
+    xhr.responseType = 'json';
+    xhr.send(data);
+  });
+};
+
+export const downloadRequest = <TBody = any>(options: DownloadRequestOptions<TBody> | string) => {
+  if (typeof options === 'string') {
+    options = { url: options };
+  }
+
+  const { signal, method, url, data: body, onDownloadProgress: onProgress } = options;
 
   return new Promise<{ data: Blob; status: number }>((resolve, reject) => {
-    xhr.addEventListener('progress', (event) => onProgress(event));
+    const xhr = new XMLHttpRequest();
+
     xhr.addEventListener('error', (error) => reject(error));
     xhr.addEventListener('abort', () => reject(new AbortError()));
     xhr.addEventListener('load', () => {
@@ -53,12 +88,19 @@ export const downloadRequest = <TBody = any>(options: DownloadRequestOptions<TBo
       }
     });
 
-    signal.addEventListener('abort', () => xhr.abort());
+    if (onProgress) {
+      xhr.addEventListener('progress', (event) => onProgress(event));
+    }
 
-    xhr.open(method, url);
-    xhr.setRequestHeader('Content-Type', 'application/json');
+    if (signal) {
+      signal.addEventListener('abort', () => xhr.abort());
+    }
+
+    xhr.open(method || 'GET', url);
     xhr.responseType = 'blob';
+
     if (body) {
+      xhr.setRequestHeader('Content-Type', 'application/json');
       xhr.send(JSON.stringify(body));
     } else {
       xhr.send();

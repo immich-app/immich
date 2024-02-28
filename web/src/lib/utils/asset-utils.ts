@@ -75,7 +75,7 @@ export const downloadArchive = async (fileName: string, options: DownloadInfoDto
       const { data } = await downloadRequest({
         method: 'POST',
         url: defaults.baseUrl + '/download/archive' + (key ? `?key=${key}` : ''),
-        body: { assetIds: archive.assetIds },
+        data: { assetIds: archive.assetIds },
         signal: abort.signal,
         onDownloadProgress: (event) => downloadManager.update(downloadKey, event.loaded),
       });
