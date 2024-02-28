@@ -835,8 +835,6 @@ export type SystemConfigLibraryScanDto = {
 };
 export type SystemConfigLibraryWatchDto = {
     enabled: boolean;
-    interval: number;
-    usePolling: boolean;
 };
 export type SystemConfigLibraryDto = {
     scan: SystemConfigLibraryScanDto;
