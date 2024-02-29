@@ -3979,6 +3979,12 @@ export interface SmartSearchDto {
     'page'?: number;
     /**
      * 
+     * @type {Array<string>}
+     * @memberof SmartSearchDto
+     */
+    'personIds'?: Array<string>;
+    /**
+     * 
      * @type {string}
      * @memberof SmartSearchDto
      */
