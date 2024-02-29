@@ -13,8 +13,8 @@
   const dispatch = createEventDispatcher<{ toggle: RenderedOption }>();
 </script>
 
-<div class="grid grid-cols-2">
-  <div class="flex place-items-center justify-between">
+<div class="flex place-items-center justify-between">
+  <div>
     <div class="flex h-[26px] place-items-center gap-1">
       <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm" for={title}>
         {title}
@@ -32,7 +32,7 @@
     <p class="text-sm dark:text-immich-dark-fg">{subtitle}</p>
     <slot />
   </div>
-  <div class="w-full">
+  <div class="w-fit">
     <Dropdown
       {options}
       bind:selectedOption
