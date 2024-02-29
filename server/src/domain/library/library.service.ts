@@ -57,7 +57,6 @@ export class LibraryService extends EventEmitter {
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ILibraryRepository) private repository: ILibraryRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
-    @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository,
   ) {
     super();
@@ -97,11 +96,10 @@ export class LibraryService extends EventEmitter {
     this.configCore.config$.subscribe(async ({ library }) => {
       this.jobRepository.updateCronJob('libraryScan', library.scan.cronExpression, library.scan.enabled);
 
-      if (this.watchLock) {
-        if (library.watch.enabled !== this.watchLibraries) {
-          this.watchLibraries = library.watch.enabled;
-          await (this.watchLibraries ? this.watchAll() : this.unwatchAll());
-        }
+      if (library.watch.enabled !== this.watchLibraries) {
+        // Watch configuration changed, update accordingly
+        this.watchLibraries = library.watch.enabled;
+        await (this.watchLibraries ? this.watchAll() : this.unwatchAll());
       }
     });
   }
@@ -178,26 +176,30 @@ export class LibraryService extends EventEmitter {
 
   async unwatch(id: string) {
     if (this.watchers[id]) {
-      await this.watchers[id]();
+      this.watchers[id]();
       delete this.watchers[id];
     }
   }
 
   async teardown() {
     await this.unwatchAll();
-
-    if (this.watchLock) {
-      await this.databaseRepository.releaseLock(DatabaseLock.LibraryWatch);
-    }
   }
 
   private async unwatchAll() {
+    if (!this.watchLock) {
+      return false;
+    }
+
     for (const id in this.watchers) {
       await this.unwatch(id);
     }
   }
 
   async watchAll() {
+    if (!this.watchLock) {
+      return false;
+    }
+
     const libraries = await this.repository.getAll(false, LibraryType.EXTERNAL);
 
     for (const library of libraries) {
@@ -278,7 +280,7 @@ export class LibraryService extends EventEmitter {
 
     this.logger.log(`Creating ${dto.type} library for user ${auth.user.name}`);
 
-    if (dto.type === LibraryType.EXTERNAL && this.watchLibraries) {
+    if (dto.type === LibraryType.EXTERNAL) {
       await this.watch(library.id);
     }
 

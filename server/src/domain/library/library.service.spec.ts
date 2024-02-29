@@ -42,7 +42,6 @@ describe(LibraryService.name, () => {
   let assetMock: jest.Mocked<IAssetRepository>;
   let configMock: jest.Mocked<ISystemConfigRepository>;
   let cryptoMock: jest.Mocked<ICryptoRepository>;
-  let userMock: jest.Mocked<IUserRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
   let libraryMock: jest.Mocked<ILibraryRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
@@ -52,7 +51,6 @@ describe(LibraryService.name, () => {
     accessMock = newAccessRepositoryMock();
     configMock = newSystemConfigRepositoryMock();
     libraryMock = newLibraryRepositoryMock();
-    userMock = newUserRepositoryMock();
     assetMock = newAssetRepositoryMock();
     jobMock = newJobRepositoryMock();
     cryptoMock = newCryptoRepositoryMock();
@@ -70,7 +68,6 @@ describe(LibraryService.name, () => {
       jobMock,
       libraryMock,
       storageMock,
-      userMock,
       databaseMock,
     );
 
@@ -167,7 +164,6 @@ describe(LibraryService.name, () => {
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
       storageMock.crawl.mockResolvedValue(['/data/user1/photo.jpg']);
       assetMock.getByLibraryId.mockResolvedValue([]);
-      userMock.get.mockResolvedValue(userStub.admin);
 
       await sut.handleQueueAssetRefresh(mockLibraryJob);
 
@@ -194,7 +190,6 @@ describe(LibraryService.name, () => {
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
       storageMock.crawl.mockResolvedValue(['/data/user1/photo.jpg']);
       assetMock.getByLibraryId.mockResolvedValue([]);
-      userMock.get.mockResolvedValue(userStub.admin);
 
       await sut.handleQueueAssetRefresh(mockLibraryJob);
 
@@ -245,7 +240,6 @@ describe(LibraryService.name, () => {
       libraryMock.get.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
       storageMock.crawl.mockResolvedValue([]);
       assetMock.getByLibraryId.mockResolvedValue([]);
-      userMock.get.mockResolvedValue(userStub.externalPathRoot);
 
       await sut.handleQueueAssetRefresh(mockLibraryJob);
 
@@ -261,7 +255,6 @@ describe(LibraryService.name, () => {
 
     beforeEach(() => {
       mockUser = userStub.admin;
-      userMock.get.mockResolvedValue(mockUser);
 
       storageMock.stat.mockResolvedValue({
         size: 100,

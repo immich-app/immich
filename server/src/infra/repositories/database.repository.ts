@@ -200,7 +200,7 @@ export class DatabaseRepository implements IDatabaseRepository {
         res = await callback();
       } finally {
         try {
-          await this._releaseLock(lock, queryRunner);
+          await this.releaseLock(lock, queryRunner);
         } finally {
           await queryRunner.release();
         }
@@ -213,11 +213,6 @@ export class DatabaseRepository implements IDatabaseRepository {
   async tryLock(lock: DatabaseLock): Promise<boolean> {
     const queryRunner = this.dataSource.createQueryRunner();
     return await this.acquireTryLock(lock, queryRunner);
-  }
-
-  async releaseLock(lock: DatabaseLock): Promise<void> {
-    const queryRunner = this.dataSource.createQueryRunner();
-    return await this._releaseLock(lock, queryRunner);
   }
 
   isBusy(lock: DatabaseLock): boolean {
@@ -237,7 +232,7 @@ export class DatabaseRepository implements IDatabaseRepository {
     return lockResult[0].pg_try_advisory_lock;
   }
 
-  private async _releaseLock(lock: DatabaseLock, queryRunner: QueryRunner): Promise<void> {
+  private async releaseLock(lock: DatabaseLock, queryRunner: QueryRunner): Promise<void> {
     return queryRunner.query('SELECT pg_advisory_unlock($1)', [lock]);
   }
 }
