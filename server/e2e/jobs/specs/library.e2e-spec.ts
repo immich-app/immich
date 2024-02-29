@@ -40,8 +40,6 @@ describe(`${LibraryController.name} (e2e)`, () => {
         type: LibraryType.EXTERNAL,
         importPaths: [`${IMMICH_TEST_ASSET_PATH}/albums/nature`],
       });
-      await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
-
       await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
 
       const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
@@ -79,8 +77,6 @@ describe(`${LibraryController.name} (e2e)`, () => {
         type: LibraryType.EXTERNAL,
         importPaths: [`${IMMICH_TEST_ASSET_PATH}/albums/nature`],
       });
-      await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
-
       await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
 
       const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
@@ -118,15 +114,11 @@ describe(`${LibraryController.name} (e2e)`, () => {
     });
 
     it('should scan external library with exclusion pattern', async () => {
-      await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/not/a/real/path');
-
       const library = await api.libraryApi.create(server, admin.accessToken, {
         type: LibraryType.EXTERNAL,
         importPaths: [`${IMMICH_TEST_ASSET_PATH}/albums/nature`],
         exclusionPatterns: ['**/el_corcal*'],
       });
-
-      await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
 
       await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
 
@@ -163,7 +155,6 @@ describe(`${LibraryController.name} (e2e)`, () => {
         type: LibraryType.EXTERNAL,
         importPaths: [`${IMMICH_TEST_ASSET_TEMP_PATH}`],
       });
-      await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
 
       await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
 
@@ -190,39 +181,11 @@ describe(`${LibraryController.name} (e2e)`, () => {
       );
     });
 
-    it('should offline files outside of changed external path', async () => {
-      const library = await api.libraryApi.create(server, admin.accessToken, {
-        type: LibraryType.EXTERNAL,
-        importPaths: [`${IMMICH_TEST_ASSET_PATH}/albums/nature`],
-      });
-      await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
-      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
-
-      await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/some/other/path');
-      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
-
-      const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
-
-      expect(assets).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            isOffline: true,
-            originalFileName: 'el_torcal_rocks',
-          }),
-          expect.objectContaining({
-            isOffline: true,
-            originalFileName: 'tanners_ridge',
-          }),
-        ]),
-      );
-    });
-
     it('should scan new files', async () => {
       const library = await api.libraryApi.create(server, admin.accessToken, {
         type: LibraryType.EXTERNAL,
         importPaths: [`${IMMICH_TEST_ASSET_TEMP_PATH}`],
       });
-      await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
 
       await fs.promises.cp(
         `${IMMICH_TEST_ASSET_PATH}/albums/nature/silver_fir.jpg`,
@@ -258,7 +221,6 @@ describe(`${LibraryController.name} (e2e)`, () => {
           type: LibraryType.EXTERNAL,
           importPaths: [`${IMMICH_TEST_ASSET_TEMP_PATH}`],
         });
-        await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
 
         await fs.promises.cp(
           `${IMMICH_TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
@@ -305,7 +267,6 @@ describe(`${LibraryController.name} (e2e)`, () => {
           type: LibraryType.EXTERNAL,
           importPaths: [`${IMMICH_TEST_ASSET_TEMP_PATH}`],
         });
-        await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
 
         await fs.promises.cp(
           `${IMMICH_TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
@@ -345,7 +306,6 @@ describe(`${LibraryController.name} (e2e)`, () => {
           type: LibraryType.EXTERNAL,
           importPaths: [`${IMMICH_TEST_ASSET_TEMP_PATH}`],
         });
-        await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
 
         await fs.promises.cp(
           `${IMMICH_TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
@@ -387,72 +347,6 @@ describe(`${LibraryController.name} (e2e)`, () => {
       });
     });
 
-    describe('External path', () => {
-      let library: LibraryResponseDto;
-
-      beforeEach(async () => {
-        library = await api.libraryApi.create(server, admin.accessToken, {
-          type: LibraryType.EXTERNAL,
-          importPaths: [`${IMMICH_TEST_ASSET_PATH}/albums/nature`],
-        });
-      });
-
-      it('should not scan assets for user without external path', async () => {
-        await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
-        const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
-
-        expect(assets).toEqual([]);
-      });
-
-      it("should not import assets outside of user's external path", async () => {
-        await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/not/a/real/path');
-        await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
-
-        const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
-        expect(assets).toEqual([]);
-      });
-
-      it.each([`${IMMICH_TEST_ASSET_PATH}/albums/nature`, `${IMMICH_TEST_ASSET_PATH}/albums/nature/`])(
-        'should scan external library with external path %s',
-        async (externalPath: string) => {
-          await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, externalPath);
-
-          await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
-
-          const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
-
-          expect(assets).toEqual(
-            expect.arrayContaining([
-              expect.objectContaining({
-                type: AssetType.IMAGE,
-                originalFileName: 'el_torcal_rocks',
-                libraryId: library.id,
-                resized: true,
-                exifInfo: expect.objectContaining({
-                  exifImageWidth: 512,
-                  exifImageHeight: 341,
-                  latitude: null,
-                  longitude: null,
-                }),
-              }),
-              expect.objectContaining({
-                type: AssetType.IMAGE,
-                originalFileName: 'silver_fir',
-                libraryId: library.id,
-                resized: true,
-                exifInfo: expect.objectContaining({
-                  exifImageWidth: 511,
-                  exifImageHeight: 323,
-                  latitude: null,
-                  longitude: null,
-                }),
-              }),
-            ]),
-          );
-        },
-      );
-    });
-
     it('should not scan an upload library', async () => {
       const library = await api.libraryApi.create(server, admin.accessToken, {
         type: LibraryType.UPLOAD,
@@ -484,7 +378,6 @@ describe(`${LibraryController.name} (e2e)`, () => {
         type: LibraryType.EXTERNAL,
         importPaths: [`${IMMICH_TEST_ASSET_TEMP_PATH}`],
       });
-      await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
 
       await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
 
@@ -506,12 +399,11 @@ describe(`${LibraryController.name} (e2e)`, () => {
       expect(assets).toEqual([]);
     });
 
-    it('should not remvove online files', async () => {
+    it('should not remove online files', async () => {
       const library = await api.libraryApi.create(server, admin.accessToken, {
         type: LibraryType.EXTERNAL,
         importPaths: [`${IMMICH_TEST_ASSET_PATH}/albums/nature`],
       });
-      await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
 
       await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
 

@@ -243,8 +243,8 @@
               addImportPath = true;
             }}>Add path</Button
           ></td
-        ></tr
-      >
+        >
+      </tr>
     </tbody>
   </table>
   <div class="flex justify-between w-full">

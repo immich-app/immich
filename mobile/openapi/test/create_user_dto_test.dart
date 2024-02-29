@@ -21,11 +21,6 @@ void main() {
       // TODO
     });
 
-    // String externalPath
-    test('to test the property `externalPath`', () async {
-      // TODO
-    });
-
     // bool memoriesEnabled
     test('to test the property `memoriesEnabled`', () async {
       // TODO

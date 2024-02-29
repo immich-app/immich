@@ -3299,8 +3299,17 @@
     },
     "/library": {
       "get": {
-        "operationId": "getLibraries",
-        "parameters": [],
+        "operationId": "getAllLibraries",
+        "parameters": [
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/LibraryType"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
@@ -3407,7 +3416,7 @@
         ]
       },
       "get": {
-        "operationId": "getLibraryInfo",
+        "operationId": "getLibrary",
         "parameters": [
           {
             "name": "id",
@@ -7592,6 +7601,10 @@
           "name": {
             "type": "string"
           },
+          "ownerId": {
+            "format": "uuid",
+            "type": "string"
+          },
           "type": {
             "$ref": "#/components/schemas/LibraryType"
           }
@@ -7646,10 +7659,6 @@
       "CreateUserDto": {
         "properties": {
           "email": {
-            "type": "string"
-          },
-          "externalPath": {
-            "nullable": true,
             "type": "string"
           },
           "memoriesEnabled": {
@@ -8549,10 +8558,6 @@
           "email": {
             "type": "string"
           },
-          "externalPath": {
-            "nullable": true,
-            "type": "string"
-          },
           "id": {
             "type": "string"
           },
@@ -8601,7 +8606,6 @@
           "createdAt",
           "deletedAt",
           "email",
-          "externalPath",
           "id",
           "isAdmin",
           "name",
@@ -10326,9 +10330,6 @@
           "email": {
             "type": "string"
           },
-          "externalPath": {
-            "type": "string"
-          },
           "id": {
             "format": "uuid",
             "type": "string"
@@ -10455,10 +10456,6 @@
           "email": {
             "type": "string"
           },
-          "externalPath": {
-            "nullable": true,
-            "type": "string"
-          },
           "id": {
             "type": "string"
           },
@@ -10504,7 +10501,6 @@
           "createdAt",
           "deletedAt",
           "email",
-          "externalPath",
           "id",
           "isAdmin",
           "name",
