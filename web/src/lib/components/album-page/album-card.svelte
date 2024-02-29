@@ -1,10 +1,9 @@
 <script lang="ts">
-  import { api } from '$lib/api';
   import Icon from '$lib/components/elements/icon.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { user } from '$lib/stores/user.store';
   import { getAssetThumbnailUrl } from '$lib/utils';
-  import { ThumbnailFormat, getUserById, type AlbumResponseDto } from '@immich/sdk';
+  import { ThumbnailFormat, getAssetThumbnail, getUserById, type AlbumResponseDto } from '@immich/sdk';
   import { mdiDotsVertical } from '@mdi/js';
   import { createEventDispatcher, onMount } from 'svelte';
   import { getContextMenuPosition } from '../../utils/context-menu';
@@ -25,24 +24,13 @@
   const dispatchClick = createEventDispatcher<OnClick>();
   const dispatchShowContextMenu = createEventDispatcher<OnShowContextMenu>();
 
-  const loadHighQualityThumbnail = async (thubmnailId: string | null) => {
-    if (thubmnailId == undefined) {
+  const loadHighQualityThumbnail = async (assetId: string | null) => {
+    if (!assetId) {
       return;
     }
 
-    const { data } = await api.assetApi.getAssetThumbnail(
-      {
-        id: thubmnailId,
-        format: ThumbnailFormat.Jpeg,
-      },
-      {
-        responseType: 'blob',
-      },
-    );
-
-    if (data instanceof Blob) {
-      return URL.createObjectURL(data);
-    }
+    const data = await getAssetThumbnail({ id: assetId, format: ThumbnailFormat.Jpeg });
+    return URL.createObjectURL(data);
   };
 
   const showAlbumContextMenu = (e: MouseEvent) =>
