@@ -2,8 +2,8 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { user } from '$lib/stores/user.store';
-  import { downloadRequest, getAssetThumbnailUrl } from '$lib/utils';
-  import { ThumbnailFormat, getUserById, type AlbumResponseDto } from '@immich/sdk';
+  import { getAssetThumbnailUrl } from '$lib/utils';
+  import { ThumbnailFormat, getAssetThumbnail, getUserById, type AlbumResponseDto } from '@immich/sdk';
   import { mdiDotsVertical } from '@mdi/js';
   import { createEventDispatcher, onMount } from 'svelte';
   import { getContextMenuPosition } from '../../utils/context-menu';
@@ -25,12 +25,11 @@
   const dispatchShowContextMenu = createEventDispatcher<OnShowContextMenu>();
 
   const loadHighQualityThumbnail = async (assetId: string | null) => {
-    if (assetId == undefined) {
+    if (!assetId) {
       return;
     }
 
-    const { data } = await downloadRequest(getAssetThumbnailUrl(assetId, ThumbnailFormat.Jpeg));
-
+    const data = await getAssetThumbnail({ id: assetId, format: ThumbnailFormat.Jpeg });
     return URL.createObjectURL(data);
   };
 

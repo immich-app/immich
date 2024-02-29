@@ -1,13 +1,12 @@
 <script lang="ts">
-  import { downloadRequest, getAssetFileUrl } from '$lib/utils';
-  import { type AssetResponseDto } from '@immich/sdk';
+  import { serveFile, type AssetResponseDto } from '@immich/sdk';
   import { fade } from 'svelte/transition';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
 
   export let asset: AssetResponseDto;
 
   const loadAssetData = async () => {
-    const { data } = await downloadRequest(getAssetFileUrl(asset.id, false, false));
+    const data = await serveFile({ id: asset.id, isWeb: false, isThumb: false });
     return URL.createObjectURL(data);
   };
 </script>

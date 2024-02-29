@@ -50,6 +50,7 @@
       abortController?.abort();
       abortController = new AbortController();
 
+      // TODO: Use sdk once it supports signals
       const { data } = await downloadRequest({
         url: getAssetFileUrl(asset.id, !loadOriginal, false),
         signal: abortController.signal,

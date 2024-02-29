@@ -72,6 +72,7 @@ export const downloadArchive = async (fileName: string, options: DownloadInfoDto
     downloadManager.add(downloadKey, archive.size, abort);
 
     try {
+      // TODO use sdk once it supports progress events
       const { data } = await downloadRequest({
         method: 'POST',
         url: defaults.baseUrl + '/download/archive' + (key ? `?key=${key}` : ''),
@@ -122,6 +123,7 @@ export const downloadFile = async (asset: AssetResponseDto) => {
       downloadManager.add(downloadKey, size, abort);
       const key = getKey();
 
+      // TODO use sdk once it supports progress events
       const { data } = await downloadRequest({
         method: 'POST',
         url: defaults.baseUrl + `/download/asset/${id}` + (key ? `?key=${key}` : ''),
