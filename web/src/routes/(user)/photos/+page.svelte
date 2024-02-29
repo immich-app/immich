@@ -22,7 +22,6 @@
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { mdiDotsVertical, mdiPlus } from '@mdi/js';
-  import UpdatePanel from '$lib/components/shared-components/update-panel.svelte';
   import { user } from '$lib/stores/user.store';
 
   let { isViewing: showAssetViewer } = assetViewingStore;
@@ -96,4 +95,3 @@
     />
   </AssetGrid>
 </UserPageLayout>
-<UpdatePanel {assetStore} />

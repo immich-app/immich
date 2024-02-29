@@ -1,4 +1,4 @@
-version: "3.8"
+version: '3.8'
 
 name: immich-prod
 
@@ -17,7 +17,7 @@ x-server-build: &server-common
 services:
   immich-server:
     container_name: immich_server
-    command: [ "start.sh", "immich" ]
+    command: ['start.sh', 'immich']
     <<: *server-common
     ports:
       - 2283:3001
@@ -27,7 +27,7 @@ services:
 
   immich-microservices:
     container_name: immich_microservices
-    command: [ "start.sh", "microservices" ]
+    command: ['start.sh', 'microservices']
     <<: *server-common
     # extends:
     #   file: hwaccel.transcoding.yml

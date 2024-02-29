@@ -13,6 +13,101 @@ import {
   type UserResponseDto,
 } from '@immich/sdk';
 
+interface DownloadRequestOptions<T = unknown> {
+  method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  url: string;
+  data?: T;
+  signal?: AbortSignal;
+  onDownloadProgress?: (event: ProgressEvent<XMLHttpRequestEventTarget>) => void;
+}
+
+interface UploadRequestOptions {
+  url: string;
+  data: FormData;
+  onUploadProgress?: (event: ProgressEvent<XMLHttpRequestEventTarget>) => void;
+}
+
+class AbortError extends Error {
+  name = 'AbortError';
+}
+
+class ApiError extends Error {
+  name = 'ApiError';
+
+  constructor(
+    public message: string,
+    public statusCode: number,
+    public details: string,
+  ) {
+    super(message);
+  }
+}
+
+export const uploadRequest = async <T>(options: UploadRequestOptions): Promise<{ data: T; status: number }> => {
+  const { onUploadProgress: onProgress, data, url } = options;
+
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+
+    xhr.addEventListener('error', (error) => reject(error));
+    xhr.addEventListener('load', () => {
+      if (xhr.readyState === 4 && xhr.status >= 200 && xhr.status < 300) {
+        resolve({ data: xhr.response as T, status: xhr.status });
+      } else {
+        reject(new ApiError(xhr.statusText, xhr.status, xhr.response));
+      }
+    });
+
+    if (onProgress) {
+      xhr.addEventListener('progress', (event) => onProgress(event));
+    }
+
+    xhr.open('POST', url);
+    xhr.responseType = 'json';
+    xhr.send(data);
+  });
+};
+
+export const downloadRequest = <TBody = unknown>(options: DownloadRequestOptions<TBody> | string) => {
+  if (typeof options === 'string') {
+    options = { url: options };
+  }
+
+  const { signal, method, url, data: body, onDownloadProgress: onProgress } = options;
+
+  return new Promise<{ data: Blob; status: number }>((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+
+    xhr.addEventListener('error', (error) => reject(error));
+    xhr.addEventListener('abort', () => reject(new AbortError()));
+    xhr.addEventListener('load', () => {
+      if (xhr.readyState === 4 && xhr.status >= 200 && xhr.status < 300) {
+        resolve({ data: xhr.response as Blob, status: xhr.status });
+      } else {
+        reject(new ApiError(xhr.statusText, xhr.status, xhr.responseText));
+      }
+    });
+
+    if (onProgress) {
+      xhr.addEventListener('progress', (event) => onProgress(event));
+    }
+
+    if (signal) {
+      signal.addEventListener('abort', () => xhr.abort());
+    }
+
+    xhr.open(method || 'GET', url);
+    xhr.responseType = 'blob';
+
+    if (body) {
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.send(JSON.stringify(body));
+    } else {
+      xhr.send();
+    }
+  });
+};
+
 export const getJobName = (jobName: JobName) => {
   const names: Record<JobName, string> = {
     [JobName.ThumbnailGeneration]: 'Generate Thumbnails',

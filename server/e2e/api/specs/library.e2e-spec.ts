@@ -10,6 +10,7 @@ import { testApp } from '../utils';
 describe(`${LibraryController.name} (e2e)`, () => {
   let server: any;
   let admin: LoginResponseDto;
+  let user: LoginResponseDto;
 
   beforeAll(async () => {
     const app = await testApp.create();
@@ -25,6 +26,9 @@ describe(`${LibraryController.name} (e2e)`, () => {
     await testApp.reset();
     await api.authApi.adminSignUp(server);
     admin = await api.authApi.adminLogin(server);
+
+    await api.userApi.create(server, admin.accessToken, userDto.user1);
+    user = await api.authApi.login(server, userDto.user1);
   });
 
   describe('GET /library', () => {
@@ -39,18 +43,19 @@ describe(`${LibraryController.name} (e2e)`, () => {
         .get('/library')
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(200);
-      expect(body).toHaveLength(1);
-      expect(body).toEqual([
-        expect.objectContaining({
-          ownerId: admin.userId,
-          type: LibraryType.UPLOAD,
-          name: 'Default Library',
-          refreshedAt: null,
-          assetCount: 0,
-          importPaths: [],
-          exclusionPatterns: [],
-        }),
-      ]);
+      expect(body).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            ownerId: admin.userId,
+            type: LibraryType.UPLOAD,
+            name: 'Default Library',
+            refreshedAt: null,
+            assetCount: 0,
+            importPaths: [],
+            exclusionPatterns: [],
+          }),
+        ]),
+      );
     });
   });
 
@@ -59,6 +64,16 @@ describe(`${LibraryController.name} (e2e)`, () => {
       const { status, body } = await request(server).post('/library').send({});
       expect(status).toBe(401);
       expect(body).toEqual(errorStub.unauthorized);
+    });
+
+    it('should require admin authentication', async () => {
+      const { status, body } = await request(server)
+        .post('/library')
+        .set('Authorization', `Bearer ${user.accessToken}`)
+        .send({ type: LibraryType.EXTERNAL });
+
+      expect(status).toBe(403);
+      expect(body).toEqual(errorStub.forbidden);
     });
 
     it('should create an external library with defaults', async () => {
@@ -184,29 +199,6 @@ describe(`${LibraryController.name} (e2e)`, () => {
       expect(status).toBe(400);
       expect(body).toEqual(errorStub.badRequest('Upload libraries cannot have exclusion patterns'));
     });
-
-    it('should allow a non-admin to create a library', async () => {
-      await api.userApi.create(server, admin.accessToken, userDto.user1);
-      const user1 = await api.authApi.login(server, userDto.user1);
-
-      const { status, body } = await request(server)
-        .post('/library')
-        .set('Authorization', `Bearer ${user1.accessToken}`)
-        .send({ type: LibraryType.EXTERNAL });
-
-      expect(status).toBe(201);
-      expect(body).toEqual(
-        expect.objectContaining({
-          ownerId: user1.userId,
-          type: LibraryType.EXTERNAL,
-          name: 'New External Library',
-          refreshedAt: null,
-          assetCount: 0,
-          importPaths: [],
-          exclusionPatterns: [],
-        }),
-      );
-    });
   });
 
   describe('PUT /library/:id', () => {
@@ -249,7 +241,6 @@ describe(`${LibraryController.name} (e2e)`, () => {
       });
 
       it('should change the import paths', async () => {
-        await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, IMMICH_TEST_ASSET_TEMP_PATH);
         const { status, body } = await request(server)
           .put(`/library/${library.id}`)
           .set('Authorization', `Bearer ${admin.accessToken}`)
@@ -327,6 +318,14 @@ describe(`${LibraryController.name} (e2e)`, () => {
       expect(body).toEqual(errorStub.unauthorized);
     });
 
+    it('should require admin access', async () => {
+      const { status, body } = await request(server)
+        .get(`/library/${uuidStub.notFound}`)
+        .set('Authorization', `Bearer ${user.accessToken}`);
+      expect(status).toBe(403);
+      expect(body).toEqual(errorStub.forbidden);
+    });
+
     it('should get library by id', async () => {
       const library = await api.libraryApi.create(server, admin.accessToken, { type: LibraryType.EXTERNAL });
 
@@ -346,27 +345,6 @@ describe(`${LibraryController.name} (e2e)`, () => {
           exclusionPatterns: [],
         }),
       );
-    });
-
-    it("should not allow getting another user's library", async () => {
-      await Promise.all([
-        api.userApi.create(server, admin.accessToken, userDto.user1),
-        api.userApi.create(server, admin.accessToken, userDto.user2),
-      ]);
-
-      const [user1, user2] = await Promise.all([
-        api.authApi.login(server, userDto.user1),
-        api.authApi.login(server, userDto.user2),
-      ]);
-
-      const library = await api.libraryApi.create(server, user1.accessToken, { type: LibraryType.EXTERNAL });
-
-      const { status, body } = await request(server)
-        .get(`/library/${library.id}`)
-        .set('Authorization', `Bearer ${user2.accessToken}`);
-
-      expect(status).toBe(400);
-      expect(body).toEqual(errorStub.badRequest('Not found or no library.read access'));
     });
   });
 
@@ -390,7 +368,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
       expect(body).toEqual(errorStub.noDeleteUploadLibrary);
     });
 
-    it('should delete an empty library', async () => {
+    it('should delete an external library', async () => {
       const library = await api.libraryApi.create(server, admin.accessToken, { type: LibraryType.EXTERNAL });
 
       const { status, body } = await request(server)
@@ -401,7 +379,6 @@ describe(`${LibraryController.name} (e2e)`, () => {
       expect(body).toEqual({});
 
       const libraries = await api.libraryApi.getAll(server, admin.accessToken);
-      expect(libraries).toHaveLength(1);
       expect(libraries).not.toEqual(
         expect.arrayContaining([
           expect.objectContaining({
@@ -455,74 +432,42 @@ describe(`${LibraryController.name} (e2e)`, () => {
         library = await api.libraryApi.create(server, admin.accessToken, { type: LibraryType.EXTERNAL });
       });
 
-      it('should fail with no external path set', async () => {
-        const { status, body } = await request(server)
-          .post(`/library/${library.id}/validate`)
-          .set('Authorization', `Bearer ${admin.accessToken}`)
-
-          .send({ importPaths: [] });
-
-        expect(status).toBe(400);
-        expect(body).toEqual(errorStub.badRequest('User has no external path set'));
+      it('should pass with no import paths', async () => {
+        const response = await api.libraryApi.validate(server, admin.accessToken, library.id, { importPaths: [] });
+        expect(response.importPaths).toEqual([]);
       });
 
-      describe('With external path set', () => {
-        beforeEach(async () => {
-          await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, IMMICH_TEST_ASSET_TEMP_PATH);
+      it('should fail if path does not exist', async () => {
+        const pathToTest = `${IMMICH_TEST_ASSET_TEMP_PATH}/does/not/exist`;
+
+        const response = await api.libraryApi.validate(server, admin.accessToken, library.id, {
+          importPaths: [pathToTest],
         });
 
-        it('should pass with no import paths', async () => {
-          const response = await api.libraryApi.validate(server, admin.accessToken, library.id, { importPaths: [] });
-          expect(response.importPaths).toEqual([]);
+        expect(response.importPaths?.length).toEqual(1);
+        const pathResponse = response?.importPaths?.at(0);
+
+        expect(pathResponse).toEqual({
+          importPath: pathToTest,
+          isValid: false,
+          message: `Path does not exist (ENOENT)`,
+        });
+      });
+
+      it('should fail if path is a file', async () => {
+        const pathToTest = `${IMMICH_TEST_ASSET_TEMP_PATH}/does/not/exist`;
+
+        const response = await api.libraryApi.validate(server, admin.accessToken, library.id, {
+          importPaths: [pathToTest],
         });
 
-        it('should not allow paths outside of the external path', async () => {
-          const pathToTest = `${IMMICH_TEST_ASSET_TEMP_PATH}/../`;
-          const response = await api.libraryApi.validate(server, admin.accessToken, library.id, {
-            importPaths: [pathToTest],
-          });
-          expect(response.importPaths?.length).toEqual(1);
-          const pathResponse = response?.importPaths?.at(0);
+        expect(response.importPaths?.length).toEqual(1);
+        const pathResponse = response?.importPaths?.at(0);
 
-          expect(pathResponse).toEqual({
-            importPath: pathToTest,
-            isValid: false,
-            message: `Not contained in user's external path`,
-          });
-        });
-
-        it('should fail if path does not exist', async () => {
-          const pathToTest = `${IMMICH_TEST_ASSET_TEMP_PATH}/does/not/exist`;
-
-          const response = await api.libraryApi.validate(server, admin.accessToken, library.id, {
-            importPaths: [pathToTest],
-          });
-
-          expect(response.importPaths?.length).toEqual(1);
-          const pathResponse = response?.importPaths?.at(0);
-
-          expect(pathResponse).toEqual({
-            importPath: pathToTest,
-            isValid: false,
-            message: `Path does not exist (ENOENT)`,
-          });
-        });
-
-        it('should fail if path is a file', async () => {
-          const pathToTest = `${IMMICH_TEST_ASSET_TEMP_PATH}/does/not/exist`;
-
-          const response = await api.libraryApi.validate(server, admin.accessToken, library.id, {
-            importPaths: [pathToTest],
-          });
-
-          expect(response.importPaths?.length).toEqual(1);
-          const pathResponse = response?.importPaths?.at(0);
-
-          expect(pathResponse).toEqual({
-            importPath: pathToTest,
-            isValid: false,
-            message: `Path does not exist (ENOENT)`,
-          });
+        expect(pathResponse).toEqual({
+          importPath: pathToTest,
+          isValid: false,
+          message: `Path does not exist (ENOENT)`,
         });
       });
     });

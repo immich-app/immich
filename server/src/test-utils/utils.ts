@@ -6,7 +6,8 @@ import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { DateTime } from 'luxon';
 import * as fs from 'node:fs';
-import path from 'node:path';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { EventEmitter } from 'node:stream';
 import { Server } from 'node:tls';
 import { EntityTarget, ObjectLiteral } from 'typeorm';
@@ -14,7 +15,7 @@ import { AppService } from '../immich/app.service';
 import { AppService as MicroAppService } from '../microservices/app.service';
 
 export const IMMICH_TEST_ASSET_PATH = process.env.IMMICH_TEST_ASSET_PATH as string;
-export const IMMICH_TEST_ASSET_TEMP_PATH = path.normalize(`${IMMICH_TEST_ASSET_PATH}/temp/`);
+export const IMMICH_TEST_ASSET_TEMP_PATH = join(tmpdir(), 'immich');
 
 export const today = DateTime.fromObject({ year: 2023, month: 11, day: 3 });
 export const yesterday = today.minus({ days: 1 });

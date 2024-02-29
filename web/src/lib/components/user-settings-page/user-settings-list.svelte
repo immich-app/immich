@@ -9,7 +9,6 @@
   import AppearanceSettings from './appearance-settings.svelte';
   import ChangePasswordSettings from './change-password-settings.svelte';
   import DeviceList from './device-list.svelte';
-  import LibraryList from './library-list.svelte';
   import MemoriesSettings from './memories-settings.svelte';
   import OAuthSettings from './oauth-settings.svelte';
   import PartnerSettings from './partner-settings.svelte';
@@ -41,10 +40,6 @@
 
   <SettingAccordion key="authorized-devices" title="Authorized Devices" subtitle="Manage your logged-in devices">
     <DeviceList bind:devices />
-  </SettingAccordion>
-
-  <SettingAccordion key="libraries" title="Libraries" subtitle="Manage your asset libraries">
-    <LibraryList />
   </SettingAccordion>
 
   <SettingAccordion key="memories" title="Memories" subtitle="Manage what you see in your memories.">
