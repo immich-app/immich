@@ -148,6 +148,6 @@ export class FilesystemProvider implements IStorageRepository {
     watcher.on(StorageEventType.UNLINK, (path) => events.onUnlink?.(path));
     watcher.on(StorageEventType.ERROR, (error) => events.onError?.(error));
 
-    return () => watcher.close();
+    return async () => await watcher.close();
   }
 }

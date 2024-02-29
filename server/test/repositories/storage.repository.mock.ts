@@ -11,7 +11,7 @@ interface MockWatcherOptions {
       | StorageEventType.ERROR;
     value: string;
   }>;
-  close?: () => void;
+  close?: () => Promise<void>;
 }
 
 export const makeMockWatcher =
@@ -37,7 +37,7 @@ export const makeMockWatcher =
         }
       }
     }
-    return () => close?.();
+    return async () => await close?.();
   };
 
 export const newStorageRepositoryMock = (reset = true): jest.Mocked<IStorageRepository> => {

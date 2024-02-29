@@ -46,7 +46,7 @@ export class LibraryService extends EventEmitter {
   private configCore: SystemConfigCore;
   private watchLibraries = false;
   private watchLock = false;
-  private watchers: Record<string, () => void> = {};
+  private watchers: Record<string, () => Promise<void>> = {};
 
   constructor(
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
@@ -175,7 +175,7 @@ export class LibraryService extends EventEmitter {
 
   async unwatch(id: string) {
     if (this.watchers[id]) {
-      this.watchers[id]();
+      await this.watchers[id]();
       delete this.watchers[id];
     }
   }
