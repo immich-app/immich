@@ -6,6 +6,7 @@ import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import Any, AsyncGenerator, Callable, Iterator
 from zipfile import BadZipFile
 
@@ -105,7 +106,15 @@ async def predict(
 
     model = await load(await model_cache.get(model_name, model_type, **kwargs))
     model.configure(**kwargs)
-    outputs = await run(model.predict, inputs)
+    cwd = os.getcwd()
+    if model.mode == "vision":
+        os.chdir(Path(model.visual_path).parent)
+    elif model.mode == "text":
+        os.chdir(Path(model.textual_path).parent)
+    try:
+        outputs = await run(model.predict, inputs)
+    finally:
+        os.chdir(cwd)
     return ORJSONResponse(outputs)
 
 
