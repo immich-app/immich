@@ -15,6 +15,7 @@ class ModelCache:
 
     def __init__(
         self,
+        preloaded_model_list: str = "",
         ttl: float | None = None,
         revalidate: bool = False,
         timeout: int | None = None,
@@ -22,6 +23,7 @@ class ModelCache:
     ) -> None:
         """
         Args:
+            preloaded_model_list: Comma-separated list of "type:model" pairs to preload. Defaults to "".
             ttl: Unloads model after this duration. Disabled if None. Defaults to None.
             revalidate: Resets TTL on cache hit. Useful to keep models in memory while active. Defaults to False.
             timeout: Maximum allowed time for model to load. Disabled if None. Defaults to None.
@@ -38,6 +40,8 @@ class ModelCache:
 
         self.cache = SimpleMemoryCache(ttl=ttl, timeout=timeout, plugins=plugins, namespace=None)
 
+        self.preload_models(preloaded_model_list)
+
     async def get(self, model_name: str, model_type: ModelType, **model_kwargs: Any) -> InferenceModel:
         """
         Args:
@@ -48,7 +52,11 @@ class ModelCache:
             model: The requested model.
         """
 
-        key = f"{model_name}{model_type.value}{model_kwargs.get('mode', '')}"
+        key = self.generate_key(model_name, model_type, **model_kwargs)
+
+        if key in self.preloaded_models:
+            return self.preloaded_models[key]
+
         async with OptimisticLock(self.cache, key) as lock:
             model: InferenceModel | None = await self.cache.get(key)
             if model is None:
@@ -61,6 +69,26 @@ class ModelCache:
             return None
 
         return self.cache.profiling
+
+    def generate_key(self, model_name: str, model_type: ModelType, **model_kwargs: Any) -> str:
+        return f"{model_name}{model_type.value}{model_kwargs.get('mode', '')}"
+
+    def preload_models(self, preloaded_model_list: str) -> None:
+        """Preloads models from comma-separated list of "type:model" pairs and stores them in memory."""
+        if not self.preloaded_models:
+            self.preloaded_models = {}
+
+        preloaded_models = preloaded_model_list.split(",")
+        self.preloaded_models: dict[str, InferenceModel] = {}
+        for model_str in preloaded_models:
+            if not model_str:
+                continue
+            if ":" not in model_str:
+                continue
+            model_type = ModelType(model_str.split(":")[0])
+            model_name = model_str.split(":")[1]
+            key = self.generate_key(model_name, model_type)
+            self.preloaded_models[key] = from_model_type(model_type, model_name)
 
 
 class RevalidationPlugin(BasePlugin):  # type: ignore[misc]

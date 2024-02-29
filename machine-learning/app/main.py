@@ -27,7 +27,9 @@ from .schemas import (
 
 MultiPartParser.max_file_size = 2**26  # spools to disk if payload is 64 MiB or larger
 
-model_cache = ModelCache(ttl=settings.model_ttl, revalidate=settings.model_ttl > 0)
+model_cache = ModelCache(
+    preloaded_model_list=settings.preload, ttl=settings.model_ttl, revalidate=settings.model_ttl > 0
+)
 thread_pool: ThreadPoolExecutor | None = None
 lock = threading.Lock()
 active_requests = 0
