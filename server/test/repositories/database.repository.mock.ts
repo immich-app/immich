@@ -14,7 +14,6 @@ export const newDatabaseRepositoryMock = (): jest.Mocked<IDatabaseRepository> =>
     runMigrations: jest.fn(),
     withLock: jest.fn().mockImplementation((_, function_: <R>() => Promise<R>) => function_()),
     tryLock: jest.fn(),
-    releaseLock: jest.fn(),
     isBusy: jest.fn(),
     wait: jest.fn(),
   };
