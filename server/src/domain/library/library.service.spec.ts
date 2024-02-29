@@ -139,7 +139,6 @@ describe(LibraryService.name, () => {
 
     it('should not initialize watcher when watching is disabled', async () => {
       configMock.load.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
-      databaseMock.tryLock.mockResolvedValue(false);
 
       await sut.init();
 
@@ -148,6 +147,7 @@ describe(LibraryService.name, () => {
 
     it('should not initialize watcher when lock is taken', async () => {
       configMock.load.mockResolvedValue(systemConfigStub.libraryWatchDisabled);
+      databaseMock.tryLock.mockResolvedValue(false);
 
       await sut.init();
 
