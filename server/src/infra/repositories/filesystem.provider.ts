@@ -145,6 +145,7 @@ export class FilesystemProvider implements IStorageRepository {
     watcher.on('add', (path) => events.onAdd?.(path));
     watcher.on('change', (path) => events.onChange?.(path));
     watcher.on('unlink', (path) => events.onUnlink?.(path));
+    watcher.on('error', (error) => events.onError?.(error));
 
     return () => watcher.close();
   }
