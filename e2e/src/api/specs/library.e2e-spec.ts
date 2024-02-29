@@ -3,21 +3,19 @@ import { userDto, uuidDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
 import { apiUtils, app, asBearerAuth, dbUtils, testAssetDirInternal } from 'src/utils';
 import request from 'supertest';
-import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 
 describe('/library', () => {
   let admin: LoginResponseDto;
   let user: LoginResponseDto;
+  let library: LibraryResponseDto;
 
   beforeAll(async () => {
     apiUtils.setup();
-  });
-
-  // TODO: move this to beforeAll
-  beforeEach(async () => {
     await dbUtils.reset();
     admin = await apiUtils.adminSetup();
     user = await apiUtils.userSetup(admin.accessToken, userDto.user1);
+    library = await apiUtils.createLibrary(admin.accessToken, { type: LibraryType.External });
   });
 
   describe('GET /library', () => {
@@ -195,105 +193,96 @@ describe('/library', () => {
       expect(body).toEqual(errorDto.unauthorized);
     });
 
-    describe('external library', () => {
-      let library: LibraryResponseDto;
+    it('should change the library name', async () => {
+      const { status, body } = await request(app)
+        .put(`/library/${library.id}`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({ name: 'New Library Name' });
 
-      beforeEach(async () => {
-        // Create an external library with default settings
-        library = await apiUtils.createLibrary(admin.accessToken, { type: LibraryType.External });
-      });
+      expect(status).toBe(200);
+      expect(body).toEqual(
+        expect.objectContaining({
+          name: 'New Library Name',
+        }),
+      );
+    });
 
-      it('should change the library name', async () => {
-        const { status, body } = await request(app)
-          .put(`/library/${library.id}`)
-          .set('Authorization', `Bearer ${admin.accessToken}`)
-          .send({ name: 'New Library Name' });
+    it('should not set an empty name', async () => {
+      const { status, body } = await request(app)
+        .put(`/library/${library.id}`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({ name: '' });
 
-        expect(status).toBe(200);
-        expect(body).toEqual(
-          expect.objectContaining({
-            name: 'New Library Name',
-          }),
-        );
-      });
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest(['name should not be empty']));
+    });
 
-      it('should not set an empty name', async () => {
-        const { status, body } = await request(app)
-          .put(`/library/${library.id}`)
-          .set('Authorization', `Bearer ${admin.accessToken}`)
-          .send({ name: '' });
+    it('should change the import paths', async () => {
+      const { status, body } = await request(app)
+        .put(`/library/${library.id}`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({ importPaths: [testAssetDirInternal] });
 
-        expect(status).toBe(400);
-        expect(body).toEqual(errorDto.badRequest(['name should not be empty']));
-      });
+      expect(status).toBe(200);
+      expect(body).toEqual(
+        expect.objectContaining({
+          importPaths: [testAssetDirInternal],
+        }),
+      );
+    });
 
-      it('should change the import paths', async () => {
-        const { status, body } = await request(app)
-          .put(`/library/${library.id}`)
-          .set('Authorization', `Bearer ${admin.accessToken}`)
-          .send({ importPaths: [testAssetDirInternal] });
+    it('should reject an empty import path', async () => {
+      const { status, body } = await request(app)
+        .put(`/library/${library.id}`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({ importPaths: [''] });
 
-        expect(status).toBe(200);
-        expect(body).toEqual(
-          expect.objectContaining({
-            importPaths: [testAssetDirInternal],
-          }),
-        );
-      });
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest(['each value in importPaths should not be empty']));
+    });
 
-      it('should reject an empty import path', async () => {
-        const { status, body } = await request(app)
-          .put(`/library/${library.id}`)
-          .set('Authorization', `Bearer ${admin.accessToken}`)
-          .send({ importPaths: [''] });
+    it('should reject duplicate import paths', async () => {
+      const { status, body } = await request(app)
+        .put(`/library/${library.id}`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({ importPaths: ['/path', '/path'] });
 
-        expect(status).toBe(400);
-        expect(body).toEqual(errorDto.badRequest(['each value in importPaths should not be empty']));
-      });
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest(["All importPaths's elements must be unique"]));
+    });
 
-      it('should reject duplicate import paths', async () => {
-        const { status, body } = await request(app)
-          .put(`/library/${library.id}`)
-          .set('Authorization', `Bearer ${admin.accessToken}`)
-          .send({ importPaths: ['/path', '/path'] });
+    it('should change the exclusion pattern', async () => {
+      const { status, body } = await request(app)
+        .put(`/library/${library.id}`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({ exclusionPatterns: ['**/Raw/**'] });
 
-        expect(status).toBe(400);
-        expect(body).toEqual(errorDto.badRequest(["All importPaths's elements must be unique"]));
-      });
+      expect(status).toBe(200);
+      expect(body).toEqual(
+        expect.objectContaining({
+          exclusionPatterns: ['**/Raw/**'],
+        }),
+      );
+    });
 
-      it('should change the exclusion pattern', async () => {
-        const { status, body } = await request(app)
-          .put(`/library/${library.id}`)
-          .set('Authorization', `Bearer ${admin.accessToken}`)
-          .send({ exclusionPatterns: ['**/Raw/**'] });
+    it('should reject duplicate exclusion patterns', async () => {
+      const { status, body } = await request(app)
+        .put(`/library/${library.id}`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({ exclusionPatterns: ['**/*.jpg', '**/*.jpg'] });
 
-        expect(status).toBe(200);
-        expect(body).toEqual(
-          expect.objectContaining({
-            exclusionPatterns: ['**/Raw/**'],
-          }),
-        );
-      });
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest(["All exclusionPatterns's elements must be unique"]));
+    });
 
-      it('should reject duplicate exclusion patterns', async () => {
-        const { status, body } = await request(app)
-          .put(`/library/${library.id}`)
-          .set('Authorization', `Bearer ${admin.accessToken}`)
-          .send({ exclusionPatterns: ['**/*.jpg', '**/*.jpg'] });
+    it('should reject an empty exclusion pattern', async () => {
+      const { status, body } = await request(app)
+        .put(`/library/${library.id}`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({ exclusionPatterns: [''] });
 
-        expect(status).toBe(400);
-        expect(body).toEqual(errorDto.badRequest(["All exclusionPatterns's elements must be unique"]));
-      });
-
-      it('should reject an empty exclusion pattern', async () => {
-        const { status, body } = await request(app)
-          .put(`/library/${library.id}`)
-          .set('Authorization', `Bearer ${admin.accessToken}`)
-          .send({ exclusionPatterns: [''] });
-
-        expect(status).toBe(400);
-        expect(body).toEqual(errorDto.badRequest(['each value in exclusionPatterns should not be empty']));
-      });
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest(['each value in exclusionPatterns should not be empty']));
     });
   });
 
@@ -344,15 +333,29 @@ describe('/library', () => {
     });
 
     it('should not delete the last upload library', async () => {
-      const [defaultLibrary] = await getAllLibraries({}, { headers: asBearerAuth(admin.accessToken) });
-      expect(defaultLibrary).toBeDefined();
+      const libraries = await getAllLibraries(
+        { $type: LibraryType.Upload },
+        { headers: asBearerAuth(admin.accessToken) },
+      );
+
+      const adminLibraries = libraries.filter((library) => library.ownerId === admin.userId);
+      expect(adminLibraries.length).toBeGreaterThanOrEqual(1);
+      const lastLibrary = adminLibraries.pop() as LibraryResponseDto;
+
+      // delete all but the last upload library
+      for (const library of adminLibraries) {
+        const { status } = await request(app)
+          .delete(`/library/${library.id}`)
+          .set('Authorization', `Bearer ${admin.accessToken}`);
+        expect(status).toBe(204);
+      }
 
       const { status, body } = await request(app)
-        .delete(`/library/${defaultLibrary.id}`)
+        .delete(`/library/${lastLibrary.id}`)
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
-      expect(status).toBe(400);
       expect(body).toEqual(errorDto.noDeleteUploadLibrary);
+      expect(status).toBe(400);
     });
 
     it('should delete an external library', async () => {
@@ -362,7 +365,7 @@ describe('/library', () => {
         .delete(`/library/${library.id}`)
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
-      expect(status).toBe(200);
+      expect(status).toBe(204);
       expect(body).toEqual({});
 
       const libraries = await getAllLibraries({}, { headers: asBearerAuth(admin.accessToken) });
@@ -411,51 +414,42 @@ describe('/library', () => {
       expect(body).toEqual(errorDto.unauthorized);
     });
 
-    describe('Validate import path', () => {
-      let library: LibraryResponseDto;
+    it('should pass with no import paths', async () => {
+      const response = await apiUtils.validateLibrary(admin.accessToken, library.id, { importPaths: [] });
+      expect(response.importPaths).toEqual([]);
+    });
 
-      beforeEach(async () => {
-        // Create an external library with default settings
-        library = await apiUtils.createLibrary(admin.accessToken, { type: LibraryType.External });
+    it('should fail if path does not exist', async () => {
+      const pathToTest = `${testAssetDirInternal}/does/not/exist`;
+
+      const response = await apiUtils.validateLibrary(admin.accessToken, library.id, {
+        importPaths: [pathToTest],
       });
 
-      it('should pass with no import paths', async () => {
-        const response = await apiUtils.validateLibrary(admin.accessToken, library.id, { importPaths: [] });
-        expect(response.importPaths).toEqual([]);
+      expect(response.importPaths?.length).toEqual(1);
+      const pathResponse = response?.importPaths?.at(0);
+
+      expect(pathResponse).toEqual({
+        importPath: pathToTest,
+        isValid: false,
+        message: `Path does not exist (ENOENT)`,
+      });
+    });
+
+    it('should fail if path is a file', async () => {
+      const pathToTest = `${testAssetDirInternal}/albums/nature/el_torcal_rocks.jpg`;
+
+      const response = await apiUtils.validateLibrary(admin.accessToken, library.id, {
+        importPaths: [pathToTest],
       });
 
-      it('should fail if path does not exist', async () => {
-        const pathToTest = `${testAssetDirInternal}/does/not/exist`;
+      expect(response.importPaths?.length).toEqual(1);
+      const pathResponse = response?.importPaths?.at(0);
 
-        const response = await apiUtils.validateLibrary(admin.accessToken, library.id, {
-          importPaths: [pathToTest],
-        });
-
-        expect(response.importPaths?.length).toEqual(1);
-        const pathResponse = response?.importPaths?.at(0);
-
-        expect(pathResponse).toEqual({
-          importPath: pathToTest,
-          isValid: false,
-          message: `Path does not exist (ENOENT)`,
-        });
-      });
-
-      it('should fail if path is a file', async () => {
-        const pathToTest = `${testAssetDirInternal}/albums/nature/el_torcal_rocks.jpg`;
-
-        const response = await apiUtils.validateLibrary(admin.accessToken, library.id, {
-          importPaths: [pathToTest],
-        });
-
-        expect(response.importPaths?.length).toEqual(1);
-        const pathResponse = response?.importPaths?.at(0);
-
-        expect(pathResponse).toEqual({
-          importPath: pathToTest,
-          isValid: false,
-          message: `Not a directory`,
-        });
+      expect(pathResponse).toEqual({
+        importPath: pathToTest,
+        isValid: false,
+        message: `Not a directory`,
       });
     });
   });
