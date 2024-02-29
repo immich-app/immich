@@ -22,7 +22,6 @@ import {
   ILibraryRepository,
   IStorageRepository,
   ISystemConfigRepository,
-  IUserRepository,
   StorageEventType,
   WithProperty,
 } from '../repositories';
