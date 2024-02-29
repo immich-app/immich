@@ -33,7 +33,7 @@ describe(`Library watcher (e2e)`, () => {
   });
 
   afterEach(async () => {
-    await libraryService.unwatchAll();
+    await libraryService.teardown();
   });
 
   afterAll(async () => {

@@ -48,6 +48,9 @@ export const db = {
       if (deleteUsers) {
         await em.query(`DELETE FROM "users" CASCADE;`);
       }
+
+      // Release all locks
+      await em.query('SELECT pg_advisory_unlock_all()');
     });
   },
   disconnect: async () => {
@@ -124,9 +127,6 @@ export const testApp = {
   },
   reset: async (options?: ResetOptions) => {
     await db.reset(options);
-    await app.get(AppService).init();
-
-    await app.get(MicroAppService).init();
   },
   get: (member: any) => app.get(member),
   teardown: async () => {

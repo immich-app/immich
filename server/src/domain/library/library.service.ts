@@ -78,8 +78,8 @@ export class LibraryService extends EventEmitter {
     if (watch.enabled) {
       // This ensures that library watching only occurs in one microservice
       // TODO: we could make the lock be per-library instead of global
-
       this.watchLock = await this.databaseRepository.tryLock(DatabaseLock.LibraryWatch);
+
       this.watchLibraries = this.watchLock;
     }
     this.jobRepository.addCronJob(
@@ -179,7 +179,15 @@ export class LibraryService extends EventEmitter {
     }
   }
 
-  async unwatchAll() {
+  async teardown() {
+    await this.unwatchAll();
+
+    if (this.watchLock) {
+      await this.databaseRepository.releaseLock(DatabaseLock.LibraryWatch);
+    }
+  }
+
+  private async unwatchAll() {
     for (const id in this.watchers) {
       await this.unwatch(id);
     }

@@ -87,8 +87,7 @@ export class AppService {
   }
 
   async teardown() {
-    await this.libraryService.unwatchAll();
-
+    await this.libraryService.teardown();
     await this.metadataService.teardown();
   }
 }

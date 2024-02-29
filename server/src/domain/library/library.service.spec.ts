@@ -1312,7 +1312,7 @@ describe(LibraryService.name, () => {
       storageMock.watch.mockImplementation(makeMockWatcher({ close: mockClose }));
 
       await sut.init();
-      await sut.unwatchAll();
+      await sut.tearDown();
 
       expect(mockClose).toHaveBeenCalledTimes(2);
     });

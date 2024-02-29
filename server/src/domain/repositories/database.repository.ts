@@ -48,6 +48,7 @@ export interface IDatabaseRepository {
   runMigrations(options?: { transaction?: 'all' | 'none' | 'each' }): Promise<void>;
   withLock<R>(lock: DatabaseLock, callback: () => Promise<R>): Promise<R>;
   tryLock(lock: DatabaseLock): Promise<boolean>;
+  releaseLock(lock: DatabaseLock): Promise<void>;
   isBusy(lock: DatabaseLock): boolean;
   wait(lock: DatabaseLock): Promise<void>;
 }
