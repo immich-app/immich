@@ -77,7 +77,6 @@ describe('/asset', () => {
         user1.accessToken,
         {
           isFavorite: true,
-          isExternal: true,
           isReadOnly: true,
           fileCreatedAt: yesterday.toISO(),
           fileModifiedAt: yesterday.toISO(),
@@ -282,11 +281,6 @@ describe('/asset', () => {
       const assets: AssetResponseDto[] = body;
       expect(assets.length).toBe(1);
       expect(assets[0].ownerId).toBe(user1.userId);
-
-      // assets owned by user1
-      expect([user1Assets.map(({ id }) => id)]).toContain(assets[0].id);
-      // assets owned by user2
-      expect([user1Assets.map(({ id }) => id)]).not.toContain(assets[0].id);
     });
 
     it.each(TEN_TIMES)('should return 2 random assets', async () => {
@@ -301,10 +295,6 @@ describe('/asset', () => {
 
       for (const asset of assets) {
         expect(asset.ownerId).toBe(user1.userId);
-        // assets owned by user1
-        expect([user1Assets.map(({ id }) => id)]).toContain(asset.id);
-        // assets owned by user2
-        expect([user2Assets.map(({ id }) => id)]).not.toContain(asset.id);
       }
     });
 
@@ -312,7 +302,7 @@ describe('/asset', () => {
       'should return 1 asset if there are 10 assets in the database but user 2 only has 1',
       async () => {
         const { status, body } = await request(app)
-          .get('/[]asset/random')
+          .get('/asset/random')
           .set('Authorization', `Bearer ${user2.accessToken}`);
 
         expect(status).toBe(200);
