@@ -327,25 +327,25 @@
           <thead
             class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
           >
-            <tr class="flex w-full place-items-center">
-              <th class="w-1/6 text-center text-sm font-medium">Type</th>
-              <th class="w-1/3 text-center text-sm font-medium">Name</th>
-              <th class="w-1/3 text-center text-sm font-medium">Owner</th>
-              <th class="w-1/5 text-center text-sm font-medium">Assets</th>
-              <th class="w-1/6 text-center text-sm font-medium">Size</th>
-              <th class="w-1/6 text-center text-sm font-medium" />
+            <tr class="grid grid-cols-6 w-full place-items-center">
+              <th class="text-center text-sm font-medium">Type</th>
+              <th class="text-center text-sm font-medium">Name</th>
+              <th class="text-center text-sm font-medium">Owner</th>
+              <th class="text-center text-sm font-medium">Assets</th>
+              <th class="text-center text-sm font-medium">Size</th>
+              <th class="text-center text-sm font-medium" />
             </tr>
           </thead>
-          <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
+          <tbody class="block overflow-y-auto rounded-md border dark:border-immich-dark-gray">
             {#each libraries as library, index (library.id)}
               <tr
-                class={`flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
+                class={`grid grid-cols-6 h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
                   index % 2 == 0
                     ? 'bg-immich-gray dark:bg-immich-dark-gray/75'
                     : 'bg-immich-bg dark:bg-immich-dark-gray/50'
                 }`}
               >
-                <td class="w-1/6 px-10 text-sm">
+                <td class=" px-10 text-sm">
                   {#if library.type === LibraryType.External}
                     <Icon path={mdiDatabase} size="40" title="External library (created on {library.createdAt})" />
                   {:else if library.type === LibraryType.Upload}
@@ -353,8 +353,8 @@
                   {/if}</td
                 >
 
-                <td class="w-1/3 text-ellipsis px-4 text-sm">{library.name}</td>
-                <td class="w-1/3 text-ellipsis px-4 text-sm">
+                <td class=" text-ellipsis px-4 text-sm">{library.name}</td>
+                <td class=" text-ellipsis px-4 text-sm">
                   {#if owner[index] == undefined}
                     <LoadingSpinner size="40" />
                   {:else}{owner[index].name}{/if}
@@ -365,13 +365,13 @@
                     <LoadingSpinner size="40" />
                   </td>
                 {:else}
-                  <td class="w-1/6 text-ellipsis px-4 text-sm">
+                  <td class=" text-ellipsis px-4 text-sm">
                     {totalCount[index]}
                   </td>
-                  <td class="w-1/6 text-ellipsis px-4 text-sm">{diskUsage[index]} {diskUsageUnit[index]}</td>
+                  <td class=" text-ellipsis px-4 text-sm">{diskUsage[index]} {diskUsageUnit[index]}</td>
                 {/if}
 
-                <td class="w-1/6 text-ellipsis px-4 text-sm">
+                <td class=" text-ellipsis px-4 text-sm">
                   <button
                     class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
                     on:click|stopPropagation|preventDefault={(e) => showMenu(e, library, index)}
