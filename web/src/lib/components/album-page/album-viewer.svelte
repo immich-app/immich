@@ -20,7 +20,6 @@
   import ThemeButton from '../shared-components/theme-button.svelte';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
   import { mdiFileImagePlusOutline, mdiFolderDownloadOutline } from '@mdi/js';
-  import UpdatePanel from '../shared-components/update-panel.svelte';
   import { handlePromiseError } from '$lib/utils';
 
   export let sharedLink: SharedLinkResponseDto;
@@ -168,5 +167,4 @@
       {/if}
     </section>
   </AssetGrid>
-  <UpdatePanel {assetStore} />
 </main>
