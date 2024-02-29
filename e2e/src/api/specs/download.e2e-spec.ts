@@ -54,7 +54,7 @@ describe('/download', () => {
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
       expect(response.status).toBe(200);
-      expect(response.headers['content-type']).toEqual('image/jpeg');
+      expect(response.headers['content-type']).toEqual('image/png');
     });
   });
 });

@@ -256,7 +256,7 @@ describe('/album', () => {
       expect(status).toBe(200);
       expect(body).toEqual({
         ...user1Albums[0],
-        assets: [expect.objectContaining(user1Albums[0].assets[0])],
+        assets: [expect.objectContaining({ id: user1Albums[0].assets[0].id })],
       });
     });
 
@@ -268,7 +268,7 @@ describe('/album', () => {
       expect(status).toBe(200);
       expect(body).toEqual({
         ...user2Albums[0],
-        assets: [expect.objectContaining(user2Albums[0].assets[0])],
+        assets: [expect.objectContaining({ id: user2Albums[0].assets[0].id })],
       });
     });
 
@@ -280,7 +280,7 @@ describe('/album', () => {
       expect(status).toBe(200);
       expect(body).toEqual({
         ...user1Albums[0],
-        assets: [expect.objectContaining(user1Albums[0].assets[0])],
+        assets: [expect.objectContaining({ id: user1Albums[0].assets[0].id })],
       });
     });
 

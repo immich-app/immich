@@ -59,30 +59,25 @@ describe('/asset', () => {
     ]);
 
     // asset location
-    assetLocation = await apiUtils.createAsset(
-      admin.accessToken,
-      {},
-      {
+    assetLocation = await apiUtils.createAsset(admin.accessToken, {
+      assetData: {
         filename: 'thompson-springs.jpg',
         bytes: await readFile(locationAssetFilepath),
       },
-    );
+    });
 
     await wsUtils.waitForEvent({ event: 'upload', assetId: assetLocation.id });
 
     user1Assets = await Promise.all([
       apiUtils.createAsset(user1.accessToken),
       apiUtils.createAsset(user1.accessToken),
-      apiUtils.createAsset(
-        user1.accessToken,
-        {
-          isFavorite: true,
-          isReadOnly: true,
-          fileCreatedAt: yesterday.toISO(),
-          fileModifiedAt: yesterday.toISO(),
-        },
-        { filename: 'example.mp4' },
-      ),
+      apiUtils.createAsset(user1.accessToken, {
+        isFavorite: true,
+        isReadOnly: true,
+        fileCreatedAt: yesterday.toISO(),
+        fileModifiedAt: yesterday.toISO(),
+        assetData: { filename: 'example.mp4' },
+      }),
       apiUtils.createAsset(user1.accessToken),
       apiUtils.createAsset(user1.accessToken),
     ]);
@@ -98,14 +93,11 @@ describe('/asset', () => {
       apiUtils.createAsset(userStats.accessToken),
       apiUtils.createAsset(userStats.accessToken, { isFavorite: true }),
       apiUtils.createAsset(userStats.accessToken, { isArchived: true }),
-      apiUtils.createAsset(
-        userStats.accessToken,
-        {
-          isArchived: true,
-          isFavorite: true,
-        },
-        { filename: 'example.mp4' },
-      ),
+      apiUtils.createAsset(userStats.accessToken, {
+        isArchived: true,
+        isFavorite: true,
+        assetData: { filename: 'example.mp4' },
+      }),
     ]);
 
     const person1 = await apiUtils.createPerson(user1.accessToken, {
@@ -615,11 +607,9 @@ describe('/asset', () => {
     for (const { input, expected } of tests) {
       it(`should generate a thumbnail for ${input}`, async () => {
         const filepath = join(testAssetDir, input);
-        const { id, duplicate } = await apiUtils.createAsset(
-          admin.accessToken,
-          {},
-          { bytes: await readFile(filepath), filename: basename(filepath) },
-        );
+        const { id, duplicate } = await apiUtils.createAsset(admin.accessToken, {
+          assetData: { bytes: await readFile(filepath), filename: basename(filepath) },
+        });
 
         expect(duplicate).toBe(false);
 
@@ -635,14 +625,12 @@ describe('/asset', () => {
 
     it('should handle a duplicate', async () => {
       const filepath = 'formats/jpeg/el_torcal_rocks.jpeg';
-      const { duplicate } = await apiUtils.createAsset(
-        admin.accessToken,
-        {},
-        {
+      const { duplicate } = await apiUtils.createAsset(admin.accessToken, {
+        assetData: {
           bytes: await readFile(join(testAssetDir, filepath)),
           filename: basename(filepath),
         },
-      );
+      });
 
       expect(duplicate).toBe(true);
     });
@@ -669,14 +657,12 @@ describe('/asset', () => {
 
     for (const { filepath, checksum } of motionTests) {
       it(`should extract motionphoto video from ${filepath}`, async () => {
-        const response = await apiUtils.createAsset(
-          admin.accessToken,
-          {},
-          {
+        const response = await apiUtils.createAsset(admin.accessToken, {
+          assetData: {
             bytes: await readFile(join(testAssetDir, filepath)),
             filename: basename(filepath),
           },
-        );
+        });
 
         await wsUtils.waitForEvent({ event: 'upload', assetId: response.id });
 

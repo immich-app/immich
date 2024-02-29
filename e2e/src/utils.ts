@@ -21,7 +21,6 @@ import {
 } from '@immich/sdk';
 import { BrowserContext } from '@playwright/test';
 import { exec, spawn } from 'node:child_process';
-import { randomBytes } from 'node:crypto';
 import { access } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -29,6 +28,7 @@ import { promisify } from 'node:util';
 import pg from 'pg';
 import { io, type Socket } from 'socket.io-client';
 import { loginDto, signupDto } from 'src/fixtures';
+import { makeRandomImage } from 'src/generators';
 import request from 'supertest';
 
 const execPromise = promisify(exec);
@@ -241,6 +241,8 @@ export const wsUtils = {
   },
 };
 
+type AssetData = { bytes?: Buffer; filename: string };
+
 export const apiUtils = {
   setup: () => {
     defaults.baseUrl = app;
@@ -269,11 +271,7 @@ export const apiUtils = {
     createAlbum({ createAlbumDto: dto }, { headers: asBearerAuth(accessToken) }),
   createAsset: async (
     accessToken: string,
-    dto?: Partial<Omit<CreateAssetDto, 'assetData'>>,
-    data?: {
-      bytes?: Buffer;
-      filename: string;
-    },
+    dto?: Partial<Omit<CreateAssetDto, 'assetData'>> & { assetData?: AssetData },
   ) => {
     const _dto = {
       deviceAssetId: 'test-1',
@@ -283,15 +281,12 @@ export const apiUtils = {
       ...dto,
     };
 
-    const _assetData = {
-      bytes: randomBytes(32),
-      filename: 'example.jpg',
-      ...data,
-    };
+    const assetData = dto?.assetData?.bytes || makeRandomImage();
+    const filename = dto?.assetData?.filename || 'example.png';
 
     const builder = request(app)
       .post(`/asset/upload`)
-      .attach('assetData', _assetData.bytes, _assetData.filename)
+      .attach('assetData', assetData, filename)
       .set('Authorization', `Bearer ${accessToken}`);
 
     for (const [key, value] of Object.entries(_dto)) {
