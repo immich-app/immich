@@ -63,6 +63,7 @@ if [ "$CURRENT_SERVER" != "$NEXT_SERVER" ]; then
   echo "Pumping Server: $CURRENT_SERVER => $NEXT_SERVER"
   npm --prefix server version "$SERVER_PUMP"
   npm --prefix web version "$SERVER_PUMP"
+  npm --prefix open-api/typescript-sdk version "$SERVER_PUMP"
   make open-api
   poetry --directory machine-learning version "$SERVER_PUMP"
 fi
