@@ -45,12 +45,11 @@ describe(`${LibraryController.name} (e2e)`, () => {
       const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
       expect(assets.length).toBeGreaterThan(2);
 
-      const { status, body } = await request(server)
+      const { status } = await request(server)
         .delete(`/library/${library.id}`)
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
-      expect(status).toBe(200);
-      expect(body).toEqual({});
+      expect(status).toBe(204);
 
       const libraries = await api.libraryApi.getAll(server, admin.accessToken);
       expect(libraries).toHaveLength(1);
@@ -392,7 +391,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
         .post(`/library/${library.id}/removeOffline`)
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send();
-      expect(status).toBe(201);
+      expect(status).toBe(204);
 
       const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
 
@@ -416,7 +415,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
         .post(`/library/${library.id}/removeOffline`)
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send();
-      expect(status).toBe(201);
+      expect(status).toBe(204);
 
       const assetsAfter = await api.assetApi.getAllAssets(server, admin.accessToken);
 

@@ -3396,7 +3396,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -3521,7 +3521,7 @@
           }
         ],
         "responses": {
-          "201": {
+          "204": {
             "description": ""
           }
         },
@@ -3566,7 +3566,7 @@
           "required": true
         },
         "responses": {
-          "201": {
+          "204": {
             "description": ""
           }
         },
