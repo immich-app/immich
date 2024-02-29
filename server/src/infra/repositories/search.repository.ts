@@ -116,7 +116,7 @@ export class SearchRepository implements ISearchRepository {
         const cte = this.createPersonFilter(assetFaceBuilder, personIds);
         builder
           .addCommonTableExpression(cte, 'asset_face_ids')
-          .where(`asset.id IN (SELECT "assetId" FROM asset_face_ids)`);
+          .innerJoin('asset_face_ids', 'a', 'a."assetId" = asset.id');
       }
 
       builder = searchAssetBuilder(builder, options);
