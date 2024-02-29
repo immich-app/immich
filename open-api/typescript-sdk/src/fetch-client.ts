@@ -289,7 +289,6 @@ export type CreateAssetDto = {
     fileCreatedAt: string;
     fileModifiedAt: string;
     isArchived?: boolean;
-    isExternal?: boolean;
     isFavorite?: boolean;
     isOffline?: boolean;
     isReadOnly?: boolean;

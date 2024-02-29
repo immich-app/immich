@@ -1401,7 +1401,7 @@ void (empty response body)
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **uploadFile**
-> AssetFileUploadResponseDto uploadFile(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, key, duration, isArchived, isExternal, isFavorite, isOffline, isReadOnly, isVisible, libraryId, livePhotoData, sidecarData)
+> AssetFileUploadResponseDto uploadFile(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, key, duration, isArchived, isFavorite, isOffline, isReadOnly, isVisible, libraryId, livePhotoData, sidecarData)
 
 
 
@@ -1432,7 +1432,6 @@ final fileModifiedAt = 2013-10-20T19:20:30+01:00; // DateTime |
 final key = key_example; // String | 
 final duration = duration_example; // String | 
 final isArchived = true; // bool | 
-final isExternal = true; // bool | 
 final isFavorite = true; // bool | 
 final isOffline = true; // bool | 
 final isReadOnly = true; // bool | 
@@ -1442,7 +1441,7 @@ final livePhotoData = BINARY_DATA_HERE; // MultipartFile |
 final sidecarData = BINARY_DATA_HERE; // MultipartFile | 
 
 try {
-    final result = api_instance.uploadFile(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, key, duration, isArchived, isExternal, isFavorite, isOffline, isReadOnly, isVisible, libraryId, livePhotoData, sidecarData);
+    final result = api_instance.uploadFile(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, key, duration, isArchived, isFavorite, isOffline, isReadOnly, isVisible, libraryId, livePhotoData, sidecarData);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->uploadFile: $e\n');
@@ -1461,7 +1460,6 @@ Name | Type | Description  | Notes
  **key** | **String**|  | [optional] 
  **duration** | **String**|  | [optional] 
  **isArchived** | **bool**|  | [optional] 
- **isExternal** | **bool**|  | [optional] 
  **isFavorite** | **bool**|  | [optional] 
  **isOffline** | **bool**|  | [optional] 
  **isReadOnly** | **bool**|  | [optional] 
