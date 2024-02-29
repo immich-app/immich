@@ -22,7 +22,6 @@ class ModelCache:
     ) -> None:
         """
         Args:
-            preloaded_model_list: Comma-separated list of "type:model" pairs to preload. Defaults to "".
             ttl: Unloads model after this duration. Disabled if None. Defaults to None.
             revalidate: Resets TTL on cache hit. Useful to keep models in memory while active. Defaults to False.
             timeout: Maximum allowed time for model to load. Disabled if None. Defaults to None.
