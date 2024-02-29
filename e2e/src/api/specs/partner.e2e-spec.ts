@@ -24,14 +24,8 @@ describe('/partner', () => {
     ]);
 
     await Promise.all([
-      createPartner(
-        { id: user2.userId },
-        { headers: asBearerAuth(user1.accessToken) }
-      ),
-      createPartner(
-        { id: user1.userId },
-        { headers: asBearerAuth(user2.accessToken) }
-      ),
+      createPartner({ id: user2.userId }, { headers: asBearerAuth(user1.accessToken) }),
+      createPartner({ id: user1.userId }, { headers: asBearerAuth(user2.accessToken) }),
     ]);
   });
 
@@ -66,9 +60,7 @@ describe('/partner', () => {
 
   describe('POST /partner/:id', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).post(
-        `/partner/${user3.userId}`
-      );
+      const { status, body } = await request(app).post(`/partner/${user3.userId}`);
 
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
@@ -89,17 +81,13 @@ describe('/partner', () => {
         .set('Authorization', `Bearer ${user1.accessToken}`);
 
       expect(status).toBe(400);
-      expect(body).toEqual(
-        expect.objectContaining({ message: 'Partner already exists' })
-      );
+      expect(body).toEqual(expect.objectContaining({ message: 'Partner already exists' }));
     });
   });
 
   describe('PUT /partner/:id', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).put(
-        `/partner/${user2.userId}`
-      );
+      const { status, body } = await request(app).put(`/partner/${user2.userId}`);
 
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
@@ -112,17 +100,13 @@ describe('/partner', () => {
         .send({ inTimeline: false });
 
       expect(status).toBe(200);
-      expect(body).toEqual(
-        expect.objectContaining({ id: user2.userId, inTimeline: false })
-      );
+      expect(body).toEqual(expect.objectContaining({ id: user2.userId, inTimeline: false }));
     });
   });
 
   describe('DELETE /partner/:id', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).delete(
-        `/partner/${user3.userId}`
-      );
+      const { status, body } = await request(app).delete(`/partner/${user3.userId}`);
 
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
@@ -142,9 +126,7 @@ describe('/partner', () => {
         .set('Authorization', `Bearer ${user1.accessToken}`);
 
       expect(status).toBe(400);
-      expect(body).toEqual(
-        expect.objectContaining({ message: 'Partner not found' })
-      );
+      expect(body).toEqual(expect.objectContaining({ message: 'Partner not found' }));
     });
   });
 });

@@ -22,10 +22,7 @@ describe('/server-info', () => {
       apiUtils.userSetup(admin.accessToken, createUserDto.user3),
     ]);
 
-    await deleteUser(
-      { id: deletedUser.userId },
-      { headers: asBearerAuth(admin.accessToken) }
-    );
+    await deleteUser({ id: deletedUser.userId }, { headers: asBearerAuth(admin.accessToken) });
   });
 
   describe('GET /user', () => {
@@ -36,9 +33,7 @@ describe('/server-info', () => {
     });
 
     it('should get users', async () => {
-      const { status, body } = await request(app)
-        .get('/user')
-        .set('Authorization', `Bearer ${admin.accessToken}`);
+      const { status, body } = await request(app).get('/user').set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toEqual(200);
       expect(body).toHaveLength(4);
       expect(body).toEqual(
@@ -47,7 +42,7 @@ describe('/server-info', () => {
           expect.objectContaining({ email: 'user1@immich.cloud' }),
           expect.objectContaining({ email: 'user2@immich.cloud' }),
           expect.objectContaining({ email: 'user3@immich.cloud' }),
-        ])
+        ]),
       );
     });
 
@@ -63,7 +58,7 @@ describe('/server-info', () => {
           expect.objectContaining({ email: 'admin@immich.cloud' }),
           expect.objectContaining({ email: 'user2@immich.cloud' }),
           expect.objectContaining({ email: 'user3@immich.cloud' }),
-        ])
+        ]),
       );
     });
 
@@ -81,7 +76,7 @@ describe('/server-info', () => {
           expect.objectContaining({ email: 'user1@immich.cloud' }),
           expect.objectContaining({ email: 'user2@immich.cloud' }),
           expect.objectContaining({ email: 'user3@immich.cloud' }),
-        ])
+        ]),
       );
     });
   });
@@ -112,9 +107,7 @@ describe('/server-info', () => {
     });
 
     it('should get my info', async () => {
-      const { status, body } = await request(app)
-        .get(`/user/me`)
-        .set('Authorization', `Bearer ${admin.accessToken}`);
+      const { status, body } = await request(app).get(`/user/me`).set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(200);
       expect(body).toMatchObject({
         id: admin.userId,
@@ -125,9 +118,7 @@ describe('/server-info', () => {
 
   describe('POST /user', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app)
-        .post(`/user`)
-        .send(createUserDto.user1);
+      const { status, body } = await request(app).post(`/user`).send(createUserDto.user1);
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
     });
@@ -181,9 +172,7 @@ describe('/server-info', () => {
 
   describe('DELETE /user/:id', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).delete(
-        `/user/${userToDelete.userId}`
-      );
+      const { status, body } = await request(app).delete(`/user/${userToDelete.userId}`);
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
     });
@@ -241,10 +230,7 @@ describe('/server-info', () => {
     });
 
     it('should ignore updates to createdAt, updatedAt and deletedAt', async () => {
-      const before = await getUserById(
-        { id: admin.userId },
-        { headers: asBearerAuth(admin.accessToken) }
-      );
+      const before = await getUserById({ id: admin.userId }, { headers: asBearerAuth(admin.accessToken) });
 
       const { status, body } = await request(app)
         .put(`/user`)
@@ -261,10 +247,7 @@ describe('/server-info', () => {
     });
 
     it('should update first and last name', async () => {
-      const before = await getUserById(
-        { id: admin.userId },
-        { headers: asBearerAuth(admin.accessToken) }
-      );
+      const before = await getUserById({ id: admin.userId }, { headers: asBearerAuth(admin.accessToken) });
 
       const { status, body } = await request(app)
         .put(`/user`)
@@ -284,10 +267,7 @@ describe('/server-info', () => {
     });
 
     it('should update memories enabled', async () => {
-      const before = await getUserById(
-        { id: admin.userId },
-        { headers: asBearerAuth(admin.accessToken) }
-      );
+      const before = await getUserById({ id: admin.userId }, { headers: asBearerAuth(admin.accessToken) });
       const { status, body } = await request(app)
         .put(`/user`)
         .send({

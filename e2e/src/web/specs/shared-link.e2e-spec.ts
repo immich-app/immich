@@ -28,7 +28,7 @@ test.describe('Shared Links', () => {
           assetIds: [asset.id],
         },
       },
-      { headers: asBearerAuth(admin.accessToken) }
+      { headers: asBearerAuth(admin.accessToken) },
     );
     sharedLink = await apiUtils.createSharedLink(admin.accessToken, {
       type: SharedLinkType.Album,
