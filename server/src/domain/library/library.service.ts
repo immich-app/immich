@@ -45,6 +45,7 @@ export class LibraryService extends EventEmitter {
   private access: AccessCore;
   private configCore: SystemConfigCore;
   private watchLibraries = false;
+  private watchLock = false;
   private watchers: Record<string, () => void> = {};
 
   constructor(
@@ -73,11 +74,13 @@ export class LibraryService extends EventEmitter {
     const config = await this.configCore.getConfig();
 
     const { watch, scan } = config.library;
-    this.watchLibraries = false;
+
     if (watch.enabled) {
       // This ensures that library watching only occurs in one microservice
       // TODO: we could make the lock be per-library instead of global
-      this.watchLibraries = await this.databaseRepository.tryLock(DatabaseLock.LibraryWatch);
+
+      this.watchLock = await this.databaseRepository.tryLock(DatabaseLock.LibraryWatch);
+      this.watchLibraries = this.watchLock;
     }
     this.jobRepository.addCronJob(
       'libraryScan',
@@ -93,7 +96,7 @@ export class LibraryService extends EventEmitter {
     this.configCore.config$.subscribe(async ({ library }) => {
       this.jobRepository.updateCronJob('libraryScan', library.scan.cronExpression, library.scan.enabled);
 
-      if (library.watch.enabled !== this.watchLibraries) {
+      if (this.watchLock && library.watch.enabled !== this.watchLibraries) {
         this.watchLibraries = library.watch.enabled;
         await (this.watchLibraries ? this.watchAll() : this.unwatchAll());
       }

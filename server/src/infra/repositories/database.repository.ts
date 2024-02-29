@@ -228,7 +228,8 @@ export class DatabaseRepository implements IDatabaseRepository {
   }
 
   private async acquireTryLock(lock: DatabaseLock, queryRunner: QueryRunner): Promise<boolean> {
-    return queryRunner.query('SELECT pg_try_advisory_lock($1)', [lock]);
+    const lockResult = await queryRunner.query('SELECT pg_try_advisory_lock($1)', [lock]);
+    return lockResult[0].pg_try_advisory_lock;
   }
 
   private async releaseLock(lock: DatabaseLock, queryRunner: QueryRunner): Promise<void> {
