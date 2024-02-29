@@ -1,10 +1,9 @@
 <script lang="ts">
-  import { api } from '$lib/api';
   import { photoViewer } from '$lib/stores/assets.store';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
-  import { getKey, handlePromiseError } from '$lib/utils';
+  import { downloadRequest, getAssetFileUrl, handlePromiseError } from '$lib/utils';
   import { isWebCompatibleImage } from '$lib/utils/asset-utils';
   import { getBoundingBox } from '$lib/utils/people-utils';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
@@ -51,17 +50,11 @@
       abortController?.abort();
       abortController = new AbortController();
 
-      const { data } = await api.assetApi.serveFile(
-        { id: asset.id, isThumb: false, isWeb: !loadOriginal, key: getKey() },
-        {
-          responseType: 'blob',
-          signal: abortController.signal,
-        },
-      );
-
-      if (!(data instanceof Blob)) {
-        return;
-      }
+      // TODO: Use sdk once it supports signals
+      const { data } = await downloadRequest({
+        url: getAssetFileUrl(asset.id, !loadOriginal, false),
+        signal: abortController.signal,
+      });
 
       assetData = URL.createObjectURL(data);
     } catch {
