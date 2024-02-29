@@ -9,6 +9,7 @@ import {
   newAccessRepositoryMock,
   newAssetRepositoryMock,
   newCryptoRepositoryMock,
+  newDatabaseRepositoryMock,
   newJobRepositoryMock,
   newLibraryRepositoryMock,
   newStorageRepositoryMock,
@@ -22,6 +23,7 @@ import { ILibraryFileJob, ILibraryRefreshJob, JobName } from '../job';
 import {
   IAssetRepository,
   ICryptoRepository,
+  IDatabaseRepository,
   IJobRepository,
   ILibraryRepository,
   IStorageRepository,
@@ -43,6 +45,7 @@ describe(LibraryService.name, () => {
   let jobMock: jest.Mocked<IJobRepository>;
   let libraryMock: jest.Mocked<ILibraryRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
+  let databaseMock: jest.Mocked<IDatabaseRepository>;
 
   beforeEach(() => {
     accessMock = newAccessRepositoryMock();
@@ -53,6 +56,7 @@ describe(LibraryService.name, () => {
     jobMock = newJobRepositoryMock();
     cryptoMock = newCryptoRepositoryMock();
     storageMock = newStorageRepositoryMock();
+    databaseMock = newDatabaseRepositoryMock();
 
     // Always validate owner access for library.
     accessMock.library.checkOwnerAccess.mockImplementation(async (_, libraryIds) => libraryIds);
@@ -66,6 +70,7 @@ describe(LibraryService.name, () => {
       libraryMock,
       storageMock,
       userMock,
+      databaseMock,
     );
   });
 
