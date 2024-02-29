@@ -2,7 +2,6 @@ import {
   AuthService,
   DatabaseService,
   JobService,
-  LibraryService,
   ONE_HOUR,
   OpenGraphTags,
   ServerInfoService,
