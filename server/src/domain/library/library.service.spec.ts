@@ -1252,7 +1252,7 @@ describe(LibraryService.name, () => {
           }),
         );
 
-        await expect(sut.watchAll()).rejects.toEqual([expect.stringMatching('/Error: Error/')]);
+        await expect(sut.watchAll()).rejects.toThrow('Error!');
       });
 
       it('should ignore unknown extensions', async () => {
