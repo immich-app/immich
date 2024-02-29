@@ -32,6 +32,7 @@ class ModelCache:
 
         self.ttl = ttl
         plugins = []
+        self.preloaded_models: dict[str, InferenceModel] = {}
 
         if revalidate:
             plugins.append(RevalidationPlugin())
@@ -75,17 +76,12 @@ class ModelCache:
 
     def preload_models(self, preloaded_model_list: str) -> None:
         """Preloads models from comma-separated list of "type:model" pairs and stores them in memory."""
-        if not self.preloaded_models:
-            self.preloaded_models = {}
-
-        preloaded_models = preloaded_model_list.split(",")
-        self.preloaded_models: dict[str, InferenceModel] = {}
-        for model_str in preloaded_models:
+        for model_str in preloaded_model_list.split(","):
             if not model_str:
                 continue
             if ":" not in model_str:
                 continue
-            model_type = ModelType(model_str.split(":")[0])
+            model_type = ModelType(model_str.split(":")[0].lower().replace("_", "-"))
             model_name = model_str.split(":")[1]
             key = self.generate_key(model_name, model_type)
             self.preloaded_models[key] = from_model_type(model_type, model_name)

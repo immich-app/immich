@@ -548,6 +548,18 @@ class TestCache:
         with pytest.raises(ValueError):
             await model_cache.get("test_model_name", ModelType.CLIP, mode="text")
 
+    async def test_preloads_models(self, mock_get_model: mock.Mock) -> None:
+        preloaded_model_list = "CLIP:ViT-B-32__openai,FACIAL_RECOGNITION:buffalo_s"
+        model_cache = ModelCache(preloaded_model_list=preloaded_model_list)
+
+        assert len(model_cache.preloaded_models) == 2
+        assert mock_get_model.call_count == 2
+        await model_cache.get("ViT-B-32__openai", ModelType.CLIP)
+        await model_cache.get("buffalo_s", ModelType.FACIAL_RECOGNITION)
+        await model_cache.get("ViT-B-32__openai", ModelType.CLIP)
+        await model_cache.get("buffalo_s", ModelType.FACIAL_RECOGNITION)
+        assert mock_get_model.call_count == 2
+
 
 @pytest.mark.asyncio
 class TestLoad:
