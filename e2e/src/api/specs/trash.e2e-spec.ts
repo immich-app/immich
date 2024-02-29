@@ -32,24 +32,16 @@ describe('/trash', () => {
       const { id: assetId } = await apiUtils.createAsset(admin.accessToken);
       await apiUtils.deleteAssets(admin.accessToken, [assetId]);
 
-      const before = await getAllAssets(
-        {},
-        { headers: asBearerAuth(admin.accessToken) },
-      );
+      const before = await getAllAssets({}, { headers: asBearerAuth(admin.accessToken) });
 
       expect(before.length).toBeGreaterThanOrEqual(1);
 
-      const { status } = await request(app)
-        .post('/trash/empty')
-        .set('Authorization', `Bearer ${admin.accessToken}`);
+      const { status } = await request(app).post('/trash/empty').set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(204);
 
       await wsUtils.waitForEvent({ event: 'delete', assetId });
 
-      const after = await getAllAssets(
-        {},
-        { headers: asBearerAuth(admin.accessToken) },
-      );
+      const after = await getAllAssets({}, { headers: asBearerAuth(admin.accessToken) });
       expect(after.length).toBe(0);
     });
   });
@@ -69,9 +61,7 @@ describe('/trash', () => {
       const before = await apiUtils.getAssetInfo(admin.accessToken, assetId);
       expect(before.isTrashed).toBe(true);
 
-      const { status } = await request(app)
-        .post('/trash/restore')
-        .set('Authorization', `Bearer ${admin.accessToken}`);
+      const { status } = await request(app).post('/trash/restore').set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(204);
 
       const after = await apiUtils.getAssetInfo(admin.accessToken, assetId);

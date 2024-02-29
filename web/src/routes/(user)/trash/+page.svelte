@@ -15,7 +15,6 @@
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
-  import UpdatePanel from '$lib/components/shared-components/update-panel.svelte';
   import { AppRoute } from '$lib/constants';
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { AssetStore } from '$lib/stores/assets.store';
@@ -115,4 +114,3 @@
     </svelte:fragment>
   </ConfirmDialogue>
 {/if}
-<UpdatePanel {assetStore} />

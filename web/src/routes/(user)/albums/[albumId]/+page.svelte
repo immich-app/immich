@@ -30,7 +30,6 @@
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
-  import UpdatePanel from '$lib/components/shared-components/update-panel.svelte';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
   import { AppRoute, dateFormats } from '$lib/constants';
   import { numberOfComments, setNumberOfComments, updateNumberOfComments } from '$lib/stores/activity.store';
@@ -717,8 +716,6 @@
     on:showSelectSharedUser={() => (viewMode = ViewMode.SELECT_USERS)}
   />
 {/if}
-
-<UpdatePanel {assetStore} />
 
 <style>
   ::placeholder {
