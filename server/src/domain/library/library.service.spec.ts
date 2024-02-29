@@ -72,6 +72,8 @@ describe(LibraryService.name, () => {
       userMock,
       databaseMock,
     );
+
+    databaseMock.tryLock.mockResolvedValue(true);
   });
 
   it('should work', () => {
@@ -135,7 +137,16 @@ describe(LibraryService.name, () => {
       );
     });
 
-    it('should not initialize when watching is disabled', async () => {
+    it('should not initialize watcher when watching is disabled', async () => {
+      configMock.load.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
+      databaseMock.tryLock.mockResolvedValue(false);
+
+      await sut.init();
+
+      expect(storageMock.watch).not.toHaveBeenCalled();
+    });
+
+    it('should not initialize watcher when lock is taken', async () => {
       configMock.load.mockResolvedValue(systemConfigStub.libraryWatchDisabled);
 
       await sut.init();
