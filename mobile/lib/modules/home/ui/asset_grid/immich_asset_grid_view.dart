@@ -11,6 +11,8 @@ import 'package:immich_mobile/extensions/collection_extensions.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/scroll_notifier.provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/thumbnail_image.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/thumbnail_placeholder.dart';
+import 'package:immich_mobile/shared/ui/immich_toast.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/scroll_to_date_notifier.provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
@@ -254,7 +256,15 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
     );
     if (index != -1 && index < widget.renderList.elements.length) {
       // Not sure why the index is shifted, but it works. :3
-      _scrollToIndex(index + 20);
+      _scrollToIndex(index + 1);
+    } else {
+      ImmichToast.show(
+        context: context,
+        msg:
+            "Scroll To Date (${DateFormat.yMd().format(date)}) failed, index out of bounds. Index: $index, List length: ${widget.renderList.elements.length}",
+        gravity: ToastGravity.BOTTOM,
+        toastType: ToastType.error,
+      );
     }
   }
 
