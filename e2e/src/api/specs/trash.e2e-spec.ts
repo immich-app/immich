@@ -44,7 +44,7 @@ describe('/trash', () => {
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(204);
 
-      await wsUtils.once(ws, 'on_asset_delete');
+      await wsUtils.waitForEvent({ event: 'delete', assetId });
 
       const after = await getAllAssets(
         {},

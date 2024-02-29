@@ -6,6 +6,7 @@ import 'package:immich_mobile/modules/asset_viewer/image_providers/immich_local_
 import 'package:immich_mobile/modules/asset_viewer/image_providers/immich_remote_image_provider.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/hooks/blurhash_hook.dart';
+import 'package:immich_mobile/shared/ui/immich_image.dart';
 import 'package:immich_mobile/shared/ui/thumbhash_placeholder.dart';
 import 'package:octo_image/octo_image.dart';
 
@@ -43,7 +44,7 @@ class ImmichThumbnail extends HookWidget {
       );
     }
 
-    if (useLocal(asset)) {
+    if (ImmichImage.useLocal(asset)) {
       return ImmichLocalThumbnailProvider(
         asset: asset,
         height: thumbnailSize,
@@ -56,8 +57,6 @@ class ImmichThumbnail extends HookWidget {
       );
     }
   }
-
-  static bool useLocal(Asset asset) => !asset.isRemote || asset.isLocal;
 
   @override
   Widget build(BuildContext context) {

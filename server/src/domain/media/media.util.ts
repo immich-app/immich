@@ -14,7 +14,7 @@ class BaseConfig implements VideoCodecSWConfig {
 
   getOptions(target: TranscodeTarget, videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
     const options = {
-      inputOptions: this.getBaseInputOptions(),
+      inputOptions: this.getBaseInputOptions(videoStream),
       outputOptions: [...this.getBaseOutputOptions(target, videoStream, audioStream), '-v verbose'],
       twoPass: this.eligibleForTwoPass(),
     } as TranscodeOptions;
@@ -30,7 +30,8 @@ class BaseConfig implements VideoCodecSWConfig {
     return options;
   }
 
-  getBaseInputOptions(): string[] {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  getBaseInputOptions(videoStream: VideoStreamInfo): string[] {
     return [];
   }
 
@@ -611,9 +612,24 @@ export class RKMPPConfig extends BaseHWConfig {
     return false;
   }
 
-  getBaseInputOptions() {
+  getBaseInputOptions(videoStream: VideoStreamInfo) {
     if (this.devices.length === 0) {
       throw new Error('No RKMPP device found');
+    }
+    if (this.shouldToneMap(videoStream)) {
+      // disable hardware decoding
+      return [];
+    }
+    return ['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga'];
+  }
+
+  getFilterOptions(videoStream: VideoStreamInfo) {
+    if (this.shouldToneMap(videoStream)) {
+      // use software filter options
+      return super.getFilterOptions(videoStream);
+    }
+    if (this.shouldScale(videoStream)) {
+      return [`scale_rkrga=${this.getScaling(videoStream)}:format=nv12:afbc=1`];
     }
     return [];
   }
@@ -638,10 +654,10 @@ export class RKMPPConfig extends BaseHWConfig {
     const bitrate = this.getMaxBitrateValue();
     if (bitrate > 0) {
       // -b:v specifies max bitrate, average bitrate is derived automatically...
-      return ['-rc_mode 3', `-b:v ${bitrate}${this.getBitrateUnit()}`];
+      return ['-rc_mode AVBR', `-b:v ${bitrate}${this.getBitrateUnit()}`];
     }
     // use CRF value as QP value
-    return ['-rc_mode 2', `-qp_init ${this.config.crf}`];
+    return ['-rc_mode CQP', `-qp_init ${this.config.crf}`];
   }
 
   getSupportedCodecs() {

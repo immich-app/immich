@@ -21,6 +21,7 @@
     "@types/pg": "^8.11.0",
     "@types/supertest": "^6.0.2",
     "@vitest/coverage-v8": "^1.3.0",
+    "exiftool-vendored": "^24.5.0",
     "luxon": "^3.4.4",
     "pg": "^8.11.3",
     "socket.io-client": "^4.7.4",

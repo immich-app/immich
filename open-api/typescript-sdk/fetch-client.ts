@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.96.0
+ * 1.97.0
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -835,8 +835,6 @@ export type SystemConfigLibraryScanDto = {
 };
 export type SystemConfigLibraryWatchDto = {
     enabled: boolean;
-    interval: number;
-    usePolling: boolean;
 };
 export type SystemConfigLibraryDto = {
     scan: SystemConfigLibraryScanDto;
