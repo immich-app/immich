@@ -74,11 +74,9 @@ export class LibraryService extends EventEmitter {
     const { watch, scan } = config.library;
     this.watchLibraries = false;
     if (watch.enabled) {
-      this.databaseRepository.withTryLock(DatabaseLock.LibraryWatch, async () => {
-        // This ensures that library watching only occurs in one microservice
-        // TODO: we could make the lock be per-library instead of global
-        this.watchLibraries = true;
-      });
+      // This ensures that library watching only occurs in one microservice
+      // TODO: we could make the lock be per-library instead of global
+      this.watchLibraries = await this.databaseRepository.tryLock(DatabaseLock.LibraryWatch);
     }
     this.jobRepository.addCronJob(
       'libraryScan',

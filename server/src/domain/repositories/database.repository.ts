@@ -47,7 +47,7 @@ export interface IDatabaseRepository {
   shouldReindex(name: VectorIndex): Promise<boolean>;
   runMigrations(options?: { transaction?: 'all' | 'none' | 'each' }): Promise<void>;
   withLock<R>(lock: DatabaseLock, callback: () => Promise<R>): Promise<R>;
-  withTryLock<R>(lock: DatabaseLock, callback: () => Promise<R>): Promise<R>;
+  tryLock(lock: DatabaseLock): Promise<boolean>;
   isBusy(lock: DatabaseLock): boolean;
   wait(lock: DatabaseLock): Promise<void>;
 }
