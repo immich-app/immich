@@ -138,19 +138,26 @@ export const testApp = {
   },
 };
 
-export function waitForEvent<T>(emitter: EventEmitter, event: string): Promise<T> {
-  return new Promise((resolve, reject) => {
-    const success = (value: T) => {
-      emitter.off(StorageEvent.ERROR, fail);
-      resolve(value);
-    };
-    const fail = (error: Error) => {
-      emitter.off(event, success);
-      reject(error);
-    };
-    emitter.once(event, success);
-    emitter.once(StorageEvent.ERROR, fail);
-  });
+export function waitForEvent(emitter: EventEmitter, event: string, times = 1): Promise<void[]> {
+  const promises: Promise<void>[] = [];
+
+  for (let i = 1; i <= times; i++) {
+    promises.push(
+      new Promise((resolve, reject) => {
+        const success = (value: any) => {
+          emitter.off(StorageEvent.ERROR, fail);
+          resolve(value);
+        };
+        const fail = (error: Error) => {
+          emitter.off(event, success);
+          reject(error);
+        };
+        emitter.once(event, success);
+        emitter.once(StorageEvent.ERROR, fail);
+      }),
+    );
+  }
+  return Promise.all(promises);
 }
 
 const directoryExists = async (dirPath: string) =>

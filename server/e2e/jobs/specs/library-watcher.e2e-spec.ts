@@ -84,10 +84,7 @@ describe(`Library watcher (e2e)`, () => {
           `${IMMICH_TEST_ASSET_TEMP_PATH}/file5.jPg`,
         );
 
-        await waitForEvent(libraryService, StorageEvent.ADD);
-        await waitForEvent(libraryService, StorageEvent.ADD);
-        await waitForEvent(libraryService, StorageEvent.ADD);
-        await waitForEvent(libraryService, StorageEvent.ADD);
+        await waitForEvent(libraryService, StorageEvent.ADD, 4);
 
         const afterAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
         expect(afterAssets.length).toEqual(4);
@@ -161,9 +158,7 @@ describe(`Library watcher (e2e)`, () => {
           `${IMMICH_TEST_ASSET_TEMP_PATH}/dir3/file4.jpg`,
         );
 
-        await waitForEvent(libraryService, StorageEvent.ADD);
-        await waitForEvent(libraryService, StorageEvent.ADD);
-        await waitForEvent(libraryService, StorageEvent.ADD);
+        await waitForEvent(libraryService, StorageEvent.ADD, 3);
 
         const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
         expect(assets.length).toEqual(3);
