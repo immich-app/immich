@@ -15,7 +15,6 @@ class ModelCache:
 
     def __init__(
         self,
-        preloaded_model_list: str = "",
         ttl: float | None = None,
         revalidate: bool = False,
         timeout: int | None = None,
@@ -40,8 +39,6 @@ class ModelCache:
             plugins.append(TimingPlugin())
 
         self.cache = SimpleMemoryCache(ttl=ttl, timeout=timeout, plugins=plugins, namespace=None)
-
-        self.preload_models(preloaded_model_list)
 
     async def get(self, model_name: str, model_type: ModelType, **model_kwargs: Any) -> InferenceModel:
         """

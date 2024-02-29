@@ -134,6 +134,7 @@ Redis (Sentinel) URL example JSON before encoding:
 | `MACHINE_LEARNING_MODEL_INTRA_OP_THREADS`        | Number of threads for each model operation                         |         `2`         | machine learning |
 | `MACHINE_LEARNING_WORKERS`<sup>\*2</sup>         | Number of worker processes to spawn                                |         `1`         | machine learning |
 | `MACHINE_LEARNING_WORKER_TIMEOUT`                | Maximum time (s) of unresponsiveness before a worker is killed     |        `120`        | machine learning |
+| `MACHINE_LEARNING_PRELOAD`                       | Comma seprated list of "model_type:model_name" pairs               |         ``          | machine learning |
 
 \*1: It is recommended to begin with this parameter when changing the concurrency levels of the machine learning service and then tune the other ones.
 

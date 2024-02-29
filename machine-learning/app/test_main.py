@@ -550,7 +550,8 @@ class TestCache:
 
     async def test_preloads_models(self, mock_get_model: mock.Mock) -> None:
         preloaded_model_list = "CLIP:ViT-B-32__openai,FACIAL_RECOGNITION:buffalo_s"
-        model_cache = ModelCache(preloaded_model_list=preloaded_model_list)
+        model_cache = ModelCache()
+        model_cache.preload_models(preloaded_model_list)
 
         assert len(model_cache.preloaded_models) == 2
         assert mock_get_model.call_count == 2

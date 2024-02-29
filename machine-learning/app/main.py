@@ -27,9 +27,7 @@ from .schemas import (
 
 MultiPartParser.max_file_size = 2**26  # spools to disk if payload is 64 MiB or larger
 
-model_cache = ModelCache(
-    preloaded_model_list=settings.preload, ttl=settings.model_ttl, revalidate=settings.model_ttl > 0
-)
+model_cache = ModelCache(ttl=settings.model_ttl, revalidate=settings.model_ttl > 0)
 thread_pool: ThreadPoolExecutor | None = None
 lock = threading.Lock()
 active_requests = 0
@@ -53,6 +51,9 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
             log.info(f"Initialized request thread pool with {settings.request_threads} threads.")
         if settings.model_ttl > 0 and settings.model_ttl_poll_s > 0:
             asyncio.ensure_future(idle_shutdown_task())
+        if settings.preload != "":
+            log.info(f"Preloading models: {settings.preload}")
+            model_cache.preload_models(settings.preload)
         yield
     finally:
         log.handlers.clear()
