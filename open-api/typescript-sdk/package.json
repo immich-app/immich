@@ -7,8 +7,8 @@
   "types": "./build/index.d.ts",
   "exports": {
     ".": {
-      "types": "./build/fetch.d.ts",
-      "default": "./build/fetch.js"
+      "types": "./build/index.d.ts",
+      "default": "./build/index.js"
     }
   },
   "scripts": {

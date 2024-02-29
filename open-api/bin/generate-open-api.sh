@@ -17,7 +17,7 @@ function dart {
 }
 
 function typescript {
-  npx --yes oazapfts --optimistic --argumentStyle=object --useEnumType immich-openapi-specs.json typescript-sdk/fetch-client.ts
+  npx --yes oazapfts --optimistic --argumentStyle=object --useEnumType immich-openapi-specs.json typescript-sdk/src/fetch-client.ts
   npm --prefix typescript-sdk ci && npm --prefix typescript-sdk run build
 }
 

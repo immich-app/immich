@@ -1,5 +1,4 @@
 {
-  "include": ["fetch.ts", "fetch-client.ts"],
   "compilerOptions": {
     "target": "esnext",
     "strict": true,
@@ -9,5 +8,6 @@
     "module": "esnext",
     "moduleResolution": "Bundler",
     "lib": ["esnext", "dom"]
-  }
+  },
+  "include": ["src/**/*.ts"]
 }
