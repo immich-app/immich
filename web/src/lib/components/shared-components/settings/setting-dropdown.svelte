@@ -1,7 +1,6 @@
 <script lang="ts">
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
-  import { createEventDispatcher } from 'svelte';
   import Dropdown, { type RenderedOption } from '$lib/components/elements/dropdown.svelte';
 
   export let title: string;
@@ -10,7 +9,7 @@
   export let selectedOption: RenderedOption;
   export let isEdited = false;
 
-  const dispatch = createEventDispatcher<{ toggle: RenderedOption }>();
+  export let onToggle: (option: RenderedOption) => void;
 </script>
 
 <div class="flex place-items-center justify-between">
@@ -42,7 +41,7 @@
           icon: option.icon,
         };
       }}
-      on:select={({ detail }) => dispatch('toggle', detail)}
+      on:select={({ detail }) => onToggle(detail)}
     />
   </div>
 </div>

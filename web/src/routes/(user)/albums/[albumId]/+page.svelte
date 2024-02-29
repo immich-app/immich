@@ -38,7 +38,7 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { AssetStore } from '$lib/stores/assets.store';
   import { locale } from '$lib/stores/preferences.store';
-  import { SlideShowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
+  import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { user } from '$lib/stores/user.store';
   import { downloadArchive } from '$lib/utils/asset-utils';
   import { autoGrowHeight } from '$lib/utils/autogrow';
@@ -240,7 +240,7 @@
 
   const handleStartSlideshow = async () => {
     const asset =
-      $slideshowNavigation === SlideShowNavigation.Shuffle ? await assetStore.getRandomAsset() : assetStore.assets[0];
+      $slideshowNavigation === SlideshowNavigation.Shuffle ? await assetStore.getRandomAsset() : assetStore.assets[0];
     if (asset) {
       await setAssetId(asset.id);
       $slideshowState = SlideshowState.PlaySlideshow;

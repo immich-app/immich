@@ -5,7 +5,7 @@
   } from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { mdiArrowDownThin, mdiArrowUpThin, mdiShuffle } from '@mdi/js';
-  import { SlideShowNavigation, slideshowStore } from '../stores/slideshow.store';
+  import { SlideshowNavigation, slideshowStore } from '../stores/slideshow.store';
   import Button from './elements/buttons/button.svelte';
   import type { RenderedOption } from './elements/dropdown.svelte';
   import SettingDropdown from './shared-components/settings/setting-dropdown.svelte';
@@ -14,16 +14,16 @@
 
   export let onClose = () => {};
 
-  const options: Record<SlideShowNavigation, RenderedOption> = {
-    [SlideShowNavigation.Shuffle]: { icon: mdiShuffle, title: 'Shuffle' },
-    [SlideShowNavigation.AscendingOrder]: { icon: mdiArrowUpThin, title: 'Backward' },
-    [SlideShowNavigation.DescendingOrder]: { icon: mdiArrowDownThin, title: 'Forward' },
+  const options: Record<SlideshowNavigation, RenderedOption> = {
+    [SlideshowNavigation.Shuffle]: { icon: mdiShuffle, title: 'Shuffle' },
+    [SlideshowNavigation.AscendingOrder]: { icon: mdiArrowUpThin, title: 'Backward' },
+    [SlideshowNavigation.DescendingOrder]: { icon: mdiArrowDownThin, title: 'Forward' },
   };
 
   export const handleToggle = (selectedOption: RenderedOption) => {
     for (const [key, option] of Object.entries(options)) {
       if (option === selectedOption) {
-        $slideshowNavigation = key as SlideShowNavigation;
+        $slideshowNavigation = key as SlideshowNavigation;
         break;
       }
     }
@@ -43,7 +43,7 @@
         title="Navigation"
         options={Object.values(options)}
         selectedOption={options[$slideshowNavigation]}
-        on:toggle={({ detail }) => handleToggle(detail)}
+        onToggle={(option) => handleToggle(option)}
       />
       <SettingSwitch title="Show Progress Bar" bind:checked={$showProgressBar} />
       <SettingInputField

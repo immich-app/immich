@@ -7,7 +7,7 @@ export enum SlideshowState {
   None = 'none',
 }
 
-export enum SlideShowNavigation {
+export enum SlideshowNavigation {
   Shuffle = 'shuffle',
   AscendingOrder = 'ascending-order',
   DescendingOrder = 'descending-order',
@@ -17,9 +17,9 @@ function createSlideshowStore() {
   const restartState = writable<boolean>(false);
   const stopState = writable<boolean>(false);
 
-  const slideshowNavigation = persisted<SlideShowNavigation>(
+  const slideshowNavigation = persisted<SlideshowNavigation>(
     'slideshow-navigation',
-    SlideShowNavigation.DescendingOrder,
+    SlideshowNavigation.DescendingOrder,
   );
   const slideshowState = writable<SlideshowState>(SlideshowState.None);
 
