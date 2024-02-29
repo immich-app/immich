@@ -23,6 +23,7 @@ import {
   IStorageRepository,
   ISystemConfigRepository,
   IUserRepository,
+  StorageEvent,
   WithProperty,
 } from '../repositories';
 import { SystemConfigCore } from '../system-config';
@@ -141,7 +142,7 @@ export class LibraryService extends EventEmitter {
           if (matcher(path)) {
             await this.scanAssets(library.id, [path], library.ownerId, false);
           }
-          this.emit('add', path);
+          this.emit(StorageEvent.ADD, path);
         },
         onChange: async (path) => {
           this.logger.debug(`Detected file change for ${path} in library ${library.id}`);
@@ -149,7 +150,7 @@ export class LibraryService extends EventEmitter {
             // Note: if the changed file was not previously imported, it will be imported now.
             await this.scanAssets(library.id, [path], library.ownerId, false);
           }
-          this.emit('change', path);
+          this.emit(StorageEvent.CHANGE, path);
         },
         onUnlink: async (path) => {
           this.logger.debug(`Detected deleted file at ${path} in library ${library.id}`);
@@ -157,11 +158,12 @@ export class LibraryService extends EventEmitter {
           if (asset && matcher(path)) {
             await this.assetRepository.save({ id: asset.id, isOffline: true });
           }
-          this.emit('unlink', path);
+          this.emit(StorageEvent.UNLINK, path);
         },
         onError: (error) => {
           // TODO: should we log, or throw an exception?
           this.logger.error(`Library watcher for library ${library.id} encountered error: ${error}`);
+          this.emit(StorageEvent.ERROR, error);
         },
       },
     );

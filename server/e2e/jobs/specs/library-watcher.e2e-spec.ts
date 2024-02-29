@@ -1,4 +1,4 @@
-import { LibraryResponseDto, LibraryService, LoginResponseDto } from '@app/domain';
+import { LibraryResponseDto, LibraryService, LoginResponseDto, StorageEvent } from '@app/domain';
 import { AssetType, LibraryType } from '@app/infra/entities';
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -57,7 +57,7 @@ describe(`Library watcher (e2e)`, () => {
           `${IMMICH_TEST_ASSET_TEMP_PATH}/file.jpg`,
         );
 
-        await waitForEvent(libraryService, 'add');
+        await waitForEvent(libraryService, StorageEvent.ADD);
 
         const afterAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
         expect(afterAssets.length).toEqual(1);
@@ -84,10 +84,10 @@ describe(`Library watcher (e2e)`, () => {
           `${IMMICH_TEST_ASSET_TEMP_PATH}/file5.jPg`,
         );
 
-        await waitForEvent(libraryService, 'add');
-        await waitForEvent(libraryService, 'add');
-        await waitForEvent(libraryService, 'add');
-        await waitForEvent(libraryService, 'add');
+        await waitForEvent(libraryService, StorageEvent.ADD);
+        await waitForEvent(libraryService, StorageEvent.ADD);
+        await waitForEvent(libraryService, StorageEvent.ADD);
+        await waitForEvent(libraryService, StorageEvent.ADD);
 
         const afterAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
         expect(afterAssets.length).toEqual(4);
@@ -99,7 +99,7 @@ describe(`Library watcher (e2e)`, () => {
           `${IMMICH_TEST_ASSET_TEMP_PATH}/file.jpg`,
         );
 
-        await waitForEvent(libraryService, 'add');
+        await waitForEvent(libraryService, StorageEvent.ADD);
 
         const originalAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
         expect(originalAssets.length).toEqual(1);
@@ -109,7 +109,7 @@ describe(`Library watcher (e2e)`, () => {
           `${IMMICH_TEST_ASSET_TEMP_PATH}/file.jpg`,
         );
 
-        await waitForEvent(libraryService, 'change');
+        await waitForEvent(libraryService, StorageEvent.CHANGE);
 
         const afterAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
         expect(afterAssets).toEqual([
@@ -161,9 +161,9 @@ describe(`Library watcher (e2e)`, () => {
           `${IMMICH_TEST_ASSET_TEMP_PATH}/dir3/file4.jpg`,
         );
 
-        await waitForEvent(libraryService, 'add');
-        await waitForEvent(libraryService, 'add');
-        await waitForEvent(libraryService, 'add');
+        await waitForEvent(libraryService, StorageEvent.ADD);
+        await waitForEvent(libraryService, StorageEvent.ADD);
+        await waitForEvent(libraryService, StorageEvent.ADD);
 
         const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
         expect(assets.length).toEqual(3);
@@ -175,14 +175,14 @@ describe(`Library watcher (e2e)`, () => {
           `${IMMICH_TEST_ASSET_TEMP_PATH}/dir1/file.jpg`,
         );
 
-        await waitForEvent(libraryService, 'add');
+        await waitForEvent(libraryService, StorageEvent.ADD);
 
         const addedAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
         expect(addedAssets.length).toEqual(1);
 
         await fs.unlink(`${IMMICH_TEST_ASSET_TEMP_PATH}/dir1/file.jpg`);
 
-        await waitForEvent(libraryService, 'unlink');
+        await waitForEvent(libraryService, StorageEvent.UNLINK);
 
         const afterAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
         expect(afterAssets[0].isOffline).toEqual(true);
