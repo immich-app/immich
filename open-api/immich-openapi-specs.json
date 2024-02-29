@@ -3396,7 +3396,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -3521,7 +3521,7 @@
           }
         ],
         "responses": {
-          "201": {
+          "204": {
             "description": ""
           }
         },
@@ -3566,7 +3566,7 @@
           "required": true
         },
         "responses": {
-          "201": {
+          "204": {
             "description": ""
           }
         },
@@ -7541,9 +7541,6 @@
           "isArchived": {
             "type": "boolean"
           },
-          "isExternal": {
-            "type": "boolean"
-          },
           "isFavorite": {
             "type": "boolean"
           },
@@ -9541,6 +9538,12 @@
           },
           "page": {
             "type": "number"
+          },
+          "personIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
           },
           "query": {
             "type": "string"

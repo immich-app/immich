@@ -36,14 +36,14 @@ export const libraryApi = {
       .post(`/library/${id}/scan`)
       .set('Authorization', `Bearer ${accessToken}`)
       .send(dto);
-    expect(status).toBe(201);
+    expect(status).toBe(204);
   },
   removeOfflineFiles: async (server: any, accessToken: string, id: string) => {
     const { status } = await request(server)
       .post(`/library/${id}/removeOffline`)
       .set('Authorization', `Bearer ${accessToken}`)
       .send();
-    expect(status).toBe(201);
+    expect(status).toBe(204);
   },
   getLibraryStatistics: async (server: any, accessToken: string, id: string): Promise<LibraryStatsResponseDto> => {
     const { body, status } = await request(server)

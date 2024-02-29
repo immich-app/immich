@@ -289,7 +289,6 @@ export type CreateAssetDto = {
     fileCreatedAt: string;
     fileModifiedAt: string;
     isArchived?: boolean;
-    isExternal?: boolean;
     isFavorite?: boolean;
     isOffline?: boolean;
     isReadOnly?: boolean;
@@ -672,6 +671,7 @@ export type SmartSearchDto = {
     make?: string;
     model?: string;
     page?: number;
+    personIds?: string[];
     query: string;
     size?: number;
     state?: string;

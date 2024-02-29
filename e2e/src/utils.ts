@@ -3,11 +3,14 @@ import {
   AssetResponseDto,
   CreateAlbumDto,
   CreateAssetDto,
+  CreateLibraryDto,
   CreateUserDto,
   PersonUpdateDto,
   SharedLinkCreateDto,
+  ValidateLibraryDto,
   createAlbum,
   createApiKey,
+  createLibrary,
   createPerson,
   createSharedLink,
   createUser,
@@ -18,6 +21,7 @@ import {
   setAdminOnboarding,
   signUpAdmin,
   updatePerson,
+  validate,
 } from '@immich/sdk';
 import { BrowserContext } from '@playwright/test';
 import { exec, spawn } from 'node:child_process';
@@ -42,6 +46,7 @@ const directoryExists = (directory: string) =>
 
 // TODO move test assets into e2e/assets
 export const testAssetDir = path.resolve(`./../server/test/assets/`);
+export const testAssetDirInternal = '/data/assets';
 export const tempDir = tmpdir();
 
 const serverContainerName = 'immich-e2e-server';
@@ -103,6 +108,7 @@ export const dbUtils = {
       }
 
       tables = tables || [
+        'libraries',
         'shared_links',
         'person',
         'albums',
@@ -313,6 +319,10 @@ export const apiUtils = {
   },
   createSharedLink: (accessToken: string, dto: SharedLinkCreateDto) =>
     createSharedLink({ sharedLinkCreateDto: dto }, { headers: asBearerAuth(accessToken) }),
+  createLibrary: (accessToken: string, dto: CreateLibraryDto) =>
+    createLibrary({ createLibraryDto: dto }, { headers: asBearerAuth(accessToken) }),
+  validateLibrary: (accessToken: string, id: string, dto: ValidateLibraryDto) =>
+    validate({ id, validateLibraryDto: dto }, { headers: asBearerAuth(accessToken) }),
 };
 
 export const cliUtils = {
