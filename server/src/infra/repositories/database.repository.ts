@@ -210,6 +210,25 @@ export class DatabaseRepository implements IDatabaseRepository {
     return res as R;
   }
 
+  async withTryLock<R>(lock: DatabaseLock, callback: () => Promise<R>): Promise<R> {
+    let res;
+    const queryRunner = this.dataSource.createQueryRunner();
+    try {
+      const lockAcquired = await this.tryLock(lock, queryRunner);
+      if (lockAcquired) {
+        res = await callback();
+      }
+    } finally {
+      try {
+        await this.releaseLock(lock, queryRunner);
+      } finally {
+        await queryRunner.release();
+      }
+    }
+
+    return res as R;
+  }
+
   isBusy(lock: DatabaseLock): boolean {
     return this.asyncLock.isBusy(DatabaseLock[lock]);
   }
@@ -220,6 +239,10 @@ export class DatabaseRepository implements IDatabaseRepository {
 
   private async acquireLock(lock: DatabaseLock, queryRunner: QueryRunner): Promise<void> {
     return queryRunner.query('SELECT pg_advisory_lock($1)', [lock]);
+  }
+
+  private async tryLock(lock: DatabaseLock, queryRunner: QueryRunner): Promise<boolean> {
+    return queryRunner.query('SELECT pg_try_advisory_lock($1)', [lock]);
   }
 
   private async releaseLock(lock: DatabaseLock, queryRunner: QueryRunner): Promise<void> {
