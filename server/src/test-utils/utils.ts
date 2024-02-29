@@ -131,7 +131,6 @@ export const testApp = {
   teardown: async () => {
     if (app) {
       await app.get(MicroAppService).teardown();
-      await app.get(AppService).teardown();
       await app.close();
     }
     await db.disconnect();
