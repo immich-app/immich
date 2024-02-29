@@ -5,7 +5,6 @@ import {
   SharedLinkResponseDto,
   SharedLinkType,
   createAlbum,
-  createSharedLink,
 } from '@immich/sdk';
 import { test } from '@playwright/test';
 import { apiUtils, asBearerAuth, dbUtils } from 'src/utils';
@@ -29,7 +28,7 @@ test.describe('Shared Links', () => {
           assetIds: [asset.id],
         },
       },
-      { headers: asBearerAuth(admin.accessToken) }
+      { headers: asBearerAuth(admin.accessToken) },
     );
     sharedLink = await apiUtils.createSharedLink(admin.accessToken, {
       type: SharedLinkType.Album,

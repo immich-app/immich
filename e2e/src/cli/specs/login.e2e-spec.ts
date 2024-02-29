@@ -1,6 +1,6 @@
 import { stat } from 'node:fs/promises';
 import { apiUtils, app, dbUtils, immichCli } from 'src/utils';
-import { beforeEach, beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 describe(`immich login-key`, () => {
   beforeAll(() => {
@@ -24,25 +24,15 @@ describe(`immich login-key`, () => {
   });
 
   it('should require a valid key', async () => {
-    const { stderr, exitCode } = await immichCli([
-      'login-key',
-      app,
-      'immich-is-so-cool',
-    ]);
-    expect(stderr).toContain(
-      'Failed to connect to server http://127.0.0.1:2283/api: Error: 401'
-    );
+    const { stderr, exitCode } = await immichCli(['login-key', app, 'immich-is-so-cool']);
+    expect(stderr).toContain('Failed to connect to server http://127.0.0.1:2283/api: Error: 401');
     expect(exitCode).toBe(1);
   });
 
   it('should login', async () => {
     const admin = await apiUtils.adminSetup();
     const key = await apiUtils.createApiKey(admin.accessToken);
-    const { stdout, stderr, exitCode } = await immichCli([
-      'login-key',
-      app,
-      `${key.secret}`,
-    ]);
+    const { stdout, stderr, exitCode } = await immichCli(['login-key', app, `${key.secret}`]);
     expect(stdout.split('\n')).toEqual([
       'Logging in...',
       'Logged in as admin@immich.cloud',

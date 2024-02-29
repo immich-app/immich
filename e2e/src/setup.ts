@@ -1,4 +1,4 @@
-import { spawn, exec } from 'child_process';
+import { exec, spawn } from 'node:child_process';
 
 export default async () => {
   let _resolve: () => unknown;
@@ -19,8 +19,6 @@ export default async () => {
   await ready;
 
   return async () => {
-    await new Promise<void>((resolve) =>
-      exec('docker compose down', () => resolve()),
-    );
+    await new Promise<void>((resolve) => exec('docker compose down', () => resolve()));
   };
 };
