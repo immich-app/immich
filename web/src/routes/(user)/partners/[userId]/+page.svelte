@@ -13,7 +13,6 @@
   import { onDestroy } from 'svelte';
   import type { PageData } from './$types';
   import { mdiPlus, mdiArrowLeft } from '@mdi/js';
-  import UpdatePanel from '$lib/components/shared-components/update-panel.svelte';
 
   export let data: PageData;
 
@@ -46,5 +45,4 @@
     </ControlAppBar>
   {/if}
   <AssetGrid {assetStore} {assetInteractionStore} />
-  <UpdatePanel {assetStore} />
 </main>

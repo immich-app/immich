@@ -13,21 +13,15 @@ import { basename, join } from 'node:path';
 import { Socket } from 'socket.io-client';
 import { createUserDto, uuidDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
-import {
-  apiUtils,
-  app,
-  dbUtils,
-  tempDir,
-  testAssetDir,
-  wsUtils,
-} from 'src/utils';
+import { apiUtils, app, dbUtils, tempDir, testAssetDir, wsUtils } from 'src/utils';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
+const TEN_TIMES = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+
 const locationAssetFilepath = `${testAssetDir}/metadata/gps-position/thompson-springs.jpg`;
 
-const sha1 = (bytes: Buffer) =>
-  createHash('sha1').update(bytes).digest('base64');
+const sha1 = (bytes: Buffer) => createHash('sha1').update(bytes).digest('base64');
 
 const readTags = async (bytes: Buffer, filename: string) => {
   const filepath = join(tempDir, filename);
@@ -65,50 +59,45 @@ describe('/asset', () => {
     ]);
 
     // asset location
-    assetLocation = await apiUtils.createAsset(
-      admin.accessToken,
-      {},
-      {
+    assetLocation = await apiUtils.createAsset(admin.accessToken, {
+      assetData: {
         filename: 'thompson-springs.jpg',
         bytes: await readFile(locationAssetFilepath),
       },
-    );
+    });
 
     await wsUtils.waitForEvent({ event: 'upload', assetId: assetLocation.id });
 
     user1Assets = await Promise.all([
       apiUtils.createAsset(user1.accessToken),
       apiUtils.createAsset(user1.accessToken),
-      apiUtils.createAsset(
-        user1.accessToken,
-        {
-          isFavorite: true,
-          isExternal: true,
-          isReadOnly: true,
-          fileCreatedAt: yesterday.toISO(),
-          fileModifiedAt: yesterday.toISO(),
-        },
-        { filename: 'example.mp4' },
-      ),
+      apiUtils.createAsset(user1.accessToken, {
+        isFavorite: true,
+        isReadOnly: true,
+        fileCreatedAt: yesterday.toISO(),
+        fileModifiedAt: yesterday.toISO(),
+        assetData: { filename: 'example.mp4' },
+      }),
       apiUtils.createAsset(user1.accessToken),
       apiUtils.createAsset(user1.accessToken),
     ]);
 
     user2Assets = await Promise.all([apiUtils.createAsset(user2.accessToken)]);
 
+    for (const asset of [...user1Assets, ...user2Assets]) {
+      expect(asset.duplicate).toBe(false);
+    }
+
     await Promise.all([
       // stats
       apiUtils.createAsset(userStats.accessToken),
       apiUtils.createAsset(userStats.accessToken, { isFavorite: true }),
       apiUtils.createAsset(userStats.accessToken, { isArchived: true }),
-      apiUtils.createAsset(
-        userStats.accessToken,
-        {
-          isArchived: true,
-          isFavorite: true,
-        },
-        { filename: 'example.mp4' },
-      ),
+      apiUtils.createAsset(userStats.accessToken, {
+        isArchived: true,
+        isFavorite: true,
+        assetData: { filename: 'example.mp4' },
+      }),
     ]);
 
     const person1 = await apiUtils.createPerson(user1.accessToken, {
@@ -126,9 +115,7 @@ describe('/asset', () => {
 
   describe('GET /asset/:id', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).get(
-        `/asset/${uuidDto.notFound}`,
-      );
+      const { status, body } = await request(app).get(`/asset/${uuidDto.notFound}`);
       expect(body).toEqual(errorDto.unauthorized);
       expect(status).toBe(401);
     });
@@ -163,9 +150,7 @@ describe('/asset', () => {
         assetIds: [user1Assets[0].id],
       });
 
-      const { status, body } = await request(app).get(
-        `/asset/${user1Assets[0].id}?key=${sharedLink.key}`,
-      );
+      const { status, body } = await request(app).get(`/asset/${user1Assets[0].id}?key=${sharedLink.key}`);
       expect(status).toBe(200);
       expect(body).toMatchObject({ id: user1Assets[0].id });
     });
@@ -195,9 +180,7 @@ describe('/asset', () => {
         assetIds: [user1Assets[0].id],
       });
 
-      const data = await request(app).get(
-        `/asset/${user1Assets[0].id}?key=${sharedLink.key}`,
-      );
+      const data = await request(app).get(`/asset/${user1Assets[0].id}?key=${sharedLink.key}`);
       expect(data.status).toBe(200);
       expect(data.body).toMatchObject({ people: [] });
     });
@@ -280,7 +263,7 @@ describe('/asset', () => {
       expect(body).toEqual(errorDto.unauthorized);
     });
 
-    it.each(Array(10))('should return 1 random assets', async () => {
+    it.each(TEN_TIMES)('should return 1 random assets', async () => {
       const { status, body } = await request(app)
         .get('/asset/random')
         .set('Authorization', `Bearer ${user1.accessToken}`);
@@ -290,14 +273,9 @@ describe('/asset', () => {
       const assets: AssetResponseDto[] = body;
       expect(assets.length).toBe(1);
       expect(assets[0].ownerId).toBe(user1.userId);
-
-      // assets owned by user1
-      expect([user1Assets.map(({ id }) => id)]).toContain(assets[0].id);
-      // assets owned by user2
-      expect([user1Assets.map(({ id }) => id)]).not.toContain(assets[0].id);
     });
 
-    it.each(Array(10))('should return 2 random assets', async () => {
+    it.each(TEN_TIMES)('should return 2 random assets', async () => {
       const { status, body } = await request(app)
         .get('/asset/random?count=2')
         .set('Authorization', `Bearer ${user1.accessToken}`);
@@ -309,24 +287,18 @@ describe('/asset', () => {
 
       for (const asset of assets) {
         expect(asset.ownerId).toBe(user1.userId);
-        // assets owned by user1
-        expect([user1Assets.map(({ id }) => id)]).toContain(asset.id);
-        // assets owned by user2
-        expect([user2Assets.map(({ id }) => id)]).not.toContain(asset.id);
       }
     });
 
-    it.each(Array(10))(
+    it.each(TEN_TIMES)(
       'should return 1 asset if there are 10 assets in the database but user 2 only has 1',
       async () => {
         const { status, body } = await request(app)
-          .get('/[]asset/random')
+          .get('/asset/random')
           .set('Authorization', `Bearer ${user2.accessToken}`);
 
         expect(status).toBe(200);
-        expect(body).toEqual([
-          expect.objectContaining({ id: user2Assets[0].id }),
-        ]);
+        expect(body).toEqual([expect.objectContaining({ id: user2Assets[0].id })]);
       },
     );
 
@@ -341,9 +313,7 @@ describe('/asset', () => {
 
   describe('PUT /asset/:id', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).put(
-        `/asset/:${uuidDto.notFound}`,
-      );
+      const { status, body } = await request(app).put(`/asset/:${uuidDto.notFound}`);
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
     });
@@ -365,10 +335,7 @@ describe('/asset', () => {
     });
 
     it('should favorite an asset', async () => {
-      const before = await apiUtils.getAssetInfo(
-        user1.accessToken,
-        user1Assets[0].id,
-      );
+      const before = await apiUtils.getAssetInfo(user1.accessToken, user1Assets[0].id);
       expect(before.isFavorite).toBe(false);
 
       const { status, body } = await request(app)
@@ -380,10 +347,7 @@ describe('/asset', () => {
     });
 
     it('should archive an asset', async () => {
-      const before = await apiUtils.getAssetInfo(
-        user1.accessToken,
-        user1Assets[0].id,
-      );
+      const before = await apiUtils.getAssetInfo(user1.accessToken, user1Assets[0].id);
       expect(before.isArchived).toBe(false);
 
       const { status, body } = await request(app)
@@ -497,9 +461,7 @@ describe('/asset', () => {
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
       expect(status).toBe(400);
-      expect(body).toEqual(
-        errorDto.badRequest(['each value in ids must be a UUID']),
-      );
+      expect(body).toEqual(errorDto.badRequest(['each value in ids must be a UUID']));
     });
 
     it('should throw an error when the id is not found', async () => {
@@ -509,9 +471,7 @@ describe('/asset', () => {
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
       expect(status).toBe(400);
-      expect(body).toEqual(
-        errorDto.badRequest('Not found or no asset.delete access'),
-      );
+      expect(body).toEqual(errorDto.badRequest('Not found or no asset.delete access'));
     });
 
     it('should move an asset to the trash', async () => {
@@ -647,11 +607,9 @@ describe('/asset', () => {
     for (const { input, expected } of tests) {
       it(`should generate a thumbnail for ${input}`, async () => {
         const filepath = join(testAssetDir, input);
-        const { id, duplicate } = await apiUtils.createAsset(
-          admin.accessToken,
-          {},
-          { bytes: await readFile(filepath), filename: basename(filepath) },
-        );
+        const { id, duplicate } = await apiUtils.createAsset(admin.accessToken, {
+          assetData: { bytes: await readFile(filepath), filename: basename(filepath) },
+        });
 
         expect(duplicate).toBe(false);
 
@@ -667,14 +625,12 @@ describe('/asset', () => {
 
     it('should handle a duplicate', async () => {
       const filepath = 'formats/jpeg/el_torcal_rocks.jpeg';
-      const { duplicate } = await apiUtils.createAsset(
-        admin.accessToken,
-        {},
-        {
+      const { duplicate } = await apiUtils.createAsset(admin.accessToken, {
+        assetData: {
           bytes: await readFile(join(testAssetDir, filepath)),
           filename: basename(filepath),
         },
-      );
+      });
 
       expect(duplicate).toBe(true);
     });
@@ -701,29 +657,21 @@ describe('/asset', () => {
 
     for (const { filepath, checksum } of motionTests) {
       it(`should extract motionphoto video from ${filepath}`, async () => {
-        const response = await apiUtils.createAsset(
-          admin.accessToken,
-          {},
-          {
+        const response = await apiUtils.createAsset(admin.accessToken, {
+          assetData: {
             bytes: await readFile(join(testAssetDir, filepath)),
             filename: basename(filepath),
           },
-        );
+        });
 
         await wsUtils.waitForEvent({ event: 'upload', assetId: response.id });
 
         expect(response.duplicate).toBe(false);
 
-        const asset = await apiUtils.getAssetInfo(
-          admin.accessToken,
-          response.id,
-        );
+        const asset = await apiUtils.getAssetInfo(admin.accessToken, response.id);
         expect(asset.livePhotoVideoId).toBeDefined();
 
-        const video = await apiUtils.getAssetInfo(
-          admin.accessToken,
-          asset.livePhotoVideoId as string,
-        );
+        const video = await apiUtils.getAssetInfo(admin.accessToken, asset.livePhotoVideoId as string);
         expect(video.checksum).toStrictEqual(checksum);
       });
     }
@@ -731,9 +679,7 @@ describe('/asset', () => {
 
   describe('GET /asset/thumbnail/:id', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).get(
-        `/asset/thumbnail/${assetLocation.id}`,
-      );
+      const { status, body } = await request(app).get(`/asset/thumbnail/${assetLocation.id}`);
 
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
@@ -775,9 +721,7 @@ describe('/asset', () => {
 
   describe('GET /asset/file/:id', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).get(
-        `/asset/thumbnail/${assetLocation.id}`,
-      );
+      const { status, body } = await request(app).get(`/asset/thumbnail/${assetLocation.id}`);
 
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
@@ -792,10 +736,7 @@ describe('/asset', () => {
       expect(body).toBeDefined();
       expect(type).toBe('image/jpeg');
 
-      const asset = await apiUtils.getAssetInfo(
-        admin.accessToken,
-        assetLocation.id,
-      );
+      const asset = await apiUtils.getAssetInfo(admin.accessToken, assetLocation.id);
 
       const original = await readFile(locationAssetFilepath);
       const originalChecksum = sha1(original);

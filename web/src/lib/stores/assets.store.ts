@@ -49,6 +49,11 @@ interface AddAsset {
   value: AssetResponseDto;
 }
 
+interface UpdateAsset {
+  type: 'update';
+  value: AssetResponseDto;
+}
+
 interface DeleteAsset {
   type: 'delete';
   value: string;
@@ -61,7 +66,7 @@ interface TrashAsset {
 
 export const photoViewer = writable<HTMLImageElement | null>(null);
 
-type PendingChange = AddAsset | DeleteAsset | TrashAsset;
+type PendingChange = AddAsset | UpdateAsset | DeleteAsset | TrashAsset;
 
 export class AssetStore {
   private store$ = writable(this);
@@ -102,6 +107,9 @@ export class AssetStore {
       websocketEvents.on('on_asset_trash', (ids) => {
         this.addPendingChanges(...ids.map((id): TrashAsset => ({ type: 'trash', value: id })));
       }),
+      websocketEvents.on('on_asset_update', (asset) => {
+        this.addPendingChanges({ type: 'update', value: asset });
+      }),
       websocketEvents.on('on_asset_delete', (id: string) => {
         this.addPendingChanges({ type: 'delete', value: id });
       }),
@@ -119,6 +127,11 @@ export class AssetStore {
       switch (type) {
         case 'add': {
           this.addAsset(value);
+          break;
+        }
+
+        case 'update': {
+          this.updateAsset(value);
           break;
         }
 
@@ -276,6 +289,10 @@ export class AssetStore {
       return;
     }
 
+    this.addAssetToBucket(asset);
+  }
+
+  private addAssetToBucket(asset: AssetResponseDto) {
     const timeBucket = DateTime.fromISO(asset.fileCreatedAt).toUTC().startOf('month').toString();
     let bucket = this.getBucketByDate(timeBucket);
 
@@ -307,7 +324,7 @@ export class AssetStore {
     // If we added an asset to the store, we need to recalculate
     // asset store containers
     this.assets.push(asset);
-    this.updateAsset(asset, true);
+    this.emit(true);
   }
 
   getBucketByDate(bucketDate: string): AssetBucket | null {
@@ -338,14 +355,20 @@ export class AssetStore {
     return null;
   }
 
-  updateAsset(_asset: AssetResponseDto, recalculate = false) {
+  updateAsset(_asset: AssetResponseDto) {
     const asset = this.assets.find((asset) => asset.id === _asset.id);
     if (!asset) {
       return;
     }
 
-    Object.assign(asset, _asset);
+    const recalculate = asset.fileCreatedAt !== _asset.fileCreatedAt;
+    if (recalculate) {
+      this.removeAsset(asset.id);
+      this.addAssetToBucket(_asset);
+      return;
+    }
 
+    Object.assign(asset, _asset);
     this.emit(recalculate);
   }
 
@@ -357,6 +380,9 @@ export class AssetStore {
   }
 
   removeAsset(id: string) {
+    this.assets = this.assets.filter((asset) => asset.id !== id);
+    delete this.assetToBucket[id];
+
     for (let index = 0; index < this.buckets.length; index++) {
       const bucket = this.buckets[index];
       for (let index_ = 0; index_ < bucket.assets.length; index_++) {

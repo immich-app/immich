@@ -42,9 +42,7 @@ describe('/download', () => {
 
   describe('POST /download/asset/:id', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).post(
-        `/download/asset/${asset1.id}`,
-      );
+      const { status, body } = await request(app).post(`/download/asset/${asset1.id}`);
 
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
@@ -56,7 +54,7 @@ describe('/download', () => {
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
       expect(response.status).toBe(200);
-      expect(response.headers['content-type']).toEqual('image/jpeg');
+      expect(response.headers['content-type']).toEqual('image/png');
     });
   });
 });

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 import { apiUtils, dbUtils, webUtils } from 'src/utils';
 
 test.describe('Registration', () => {
@@ -68,7 +68,7 @@ test.describe('Registration', () => {
     await page.getByRole('button', { name: 'Login' }).click();
 
     // change password
-    expect(page.getByRole('heading')).toHaveText('Change Password');
+    await expect(page.getByRole('heading')).toHaveText('Change Password');
     await expect(page).toHaveURL('/auth/change-password');
     await page.getByLabel('New Password').fill('new-password');
     await page.getByLabel('Confirm Password').fill('new-password');
