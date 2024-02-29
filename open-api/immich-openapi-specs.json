@@ -1405,6 +1405,14 @@
             "schema": {
               "type": "boolean"
             }
+          },
+          {
+            "name": "withSharedAlbums",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "responses": {

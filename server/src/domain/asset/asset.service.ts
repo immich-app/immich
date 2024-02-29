@@ -13,6 +13,7 @@ import { IAssetDeletionJob, ISidecarWriteJob, JOBS_ASSET_PAGINATION_SIZE, JobNam
 import {
   ClientEvent,
   IAccessRepository,
+  IAlbumRepository,
   IAssetRepository,
   IAssetStackRepository,
   ICommunicationRepository,
@@ -85,6 +86,7 @@ export class AssetService {
     @Inject(ICommunicationRepository) private communicationRepository: ICommunicationRepository,
     @Inject(IPartnerRepository) private partnerRepository: IPartnerRepository,
     @Inject(IAssetStackRepository) private assetStackRepository: IAssetStackRepository,
+    @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
   ) {
     this.access = AccessCore.create(accessRepository);
     this.configCore = SystemConfigCore.create(configRepository);
@@ -159,6 +161,7 @@ export class AssetService {
 
   async getMapMarkers(auth: AuthDto, options: MapMarkerDto): Promise<MapMarkerResponseDto[]> {
     const userIds: string[] = [auth.user.id];
+    const albumIds: string[] = [];
     if (options.withPartners) {
       const partners = await this.partnerRepository.getAll(auth.user.id);
       const partnersIds = partners
@@ -166,7 +169,11 @@ export class AssetService {
         .map((partner) => partner.sharedById);
       userIds.push(...partnersIds);
     }
-    return this.assetRepository.getMapMarkers(userIds, options);
+    if (options.withSharedAlbums) {
+      const sharedAlbums = await this.albumRepository.getShared(auth.user.id);
+      albumIds.push(...sharedAlbums.map((album) => album.id));
+    }
+    return this.assetRepository.getMapMarkers(userIds, albumIds, options);
   }
 
   async getMemoryLane(auth: AuthDto, dto: MemoryLaneDto): Promise<MemoryLaneResponseDto[]> {

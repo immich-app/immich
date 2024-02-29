@@ -7,6 +7,7 @@ import {
   authStub,
   faceStub,
   newAccessRepositoryMock,
+  newAlbumRepositoryMock,
   newAssetRepositoryMock,
   newAssetStackRepositoryMock,
   newCommunicationRepositoryMock,
@@ -21,6 +22,7 @@ import { JobName } from '../job';
 import {
   AssetStats,
   ClientEvent,
+  IAlbumRepository,
   IAssetRepository,
   IAssetStackRepository,
   ICommunicationRepository,
@@ -164,6 +166,7 @@ describe(AssetService.name, () => {
   let configMock: jest.Mocked<ISystemConfigRepository>;
   let partnerMock: jest.Mocked<IPartnerRepository>;
   let assetStackMock: jest.Mocked<IAssetStackRepository>;
+  let albumMock: jest.Mocked<IAlbumRepository>;
 
   it('should work', () => {
     expect(sut).toBeDefined();
@@ -179,6 +182,7 @@ describe(AssetService.name, () => {
     configMock = newSystemConfigRepositoryMock();
     partnerMock = newPartnerRepositoryMock();
     assetStackMock = newAssetStackRepositoryMock();
+    albumMock = newAlbumRepositoryMock();
 
     sut = new AssetService(
       accessMock,
@@ -190,6 +194,7 @@ describe(AssetService.name, () => {
       communicationMock,
       partnerMock,
       assetStackMock,
+      albumMock,
     );
 
     when(assetMock.getById)
