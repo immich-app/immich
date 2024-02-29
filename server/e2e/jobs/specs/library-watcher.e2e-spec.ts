@@ -215,7 +215,7 @@ describe(`Library watcher (e2e)`, () => {
         `${IMMICH_TEST_ASSET_TEMP_PATH}/dir4/file.jpg`,
       );
 
-      await waitForEvent(libraryService, 'add');
+      await waitForEvent(libraryService, StorageEventType.ADD);
 
       const afterAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
       expect(afterAssets.length).toEqual(1);
