@@ -14,7 +14,6 @@ import {
   newLibraryRepositoryMock,
   newStorageRepositoryMock,
   newSystemConfigRepositoryMock,
-  newUserRepositoryMock,
   systemConfigStub,
   userStub,
 } from '@test';
@@ -28,7 +27,6 @@ import {
   ILibraryRepository,
   IStorageRepository,
   ISystemConfigRepository,
-  IUserRepository,
   StorageEventType,
 } from '../repositories';
 import { SystemConfigCore } from '../system-config/system-config.core';
