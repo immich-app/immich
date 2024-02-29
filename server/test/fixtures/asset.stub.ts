@@ -167,6 +167,8 @@ export const assetStub = {
     sidecarPath: null,
     exifInfo: {
       fileSizeInByte: 5000,
+      exifImageHeight: 1000,
+      exifImageWidth: 1000,
     } as ExifEntity,
     stack: assetStackStub('stack-1', [
       { id: 'primary-asset-id' } as AssetEntity,
@@ -212,6 +214,8 @@ export const assetStub = {
     sidecarPath: null,
     exifInfo: {
       fileSizeInByte: 5000,
+      exifImageHeight: 3840,
+      exifImageWidth: 2160,
     } as ExifEntity,
   }),
 

@@ -213,7 +213,7 @@ describe(MediaService.name, () => {
     it('should skip thumbnail generation if asset not found', async () => {
       assetMock.getByIds.mockResolvedValue([]);
       await sut.handleGeneratePreview({ id: assetStub.image.id });
-      expect(mediaMock.resize).not.toHaveBeenCalled();
+      expect(mediaMock.generateThumbnail).not.toHaveBeenCalled();
       expect(assetMock.update).not.toHaveBeenCalledWith();
     });
 
@@ -221,7 +221,7 @@ describe(MediaService.name, () => {
       mediaMock.probe.mockResolvedValue(probeStub.noVideoStreams);
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleGeneratePreview({ id: assetStub.image.id });
-      expect(mediaMock.resize).not.toHaveBeenCalled();
+      expect(mediaMock.generateThumbnail).not.toHaveBeenCalled();
       expect(assetMock.update).not.toHaveBeenCalledWith();
     });
 
@@ -230,7 +230,7 @@ describe(MediaService.name, () => {
 
       expect(await sut.handleGeneratePreview({ id: assetStub.livePhotoMotionAsset.id })).toEqual(JobStatus.SKIPPED);
 
-      expect(mediaMock.resize).not.toHaveBeenCalled();
+      expect(mediaMock.generateThumbnail).not.toHaveBeenCalled();
       expect(assetMock.update).not.toHaveBeenCalledWith();
     });
 
@@ -242,7 +242,7 @@ describe(MediaService.name, () => {
       await sut.handleGeneratePreview({ id: assetStub.image.id });
 
       expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id/as/se');
-      expect(mediaMock.resize).toHaveBeenCalledWith('/original/path.jpg', previewPath, {
+      expect(mediaMock.generateThumbnail).toHaveBeenCalledWith('/original/path.jpg', previewPath, {
         size: 1440,
         format,
         quality: 80,
@@ -269,7 +269,7 @@ describe(MediaService.name, () => {
       await sut.handleGeneratePreview({ id: assetStub.image.id });
 
       expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id/as/se');
-      expect(mediaMock.resize).toHaveBeenCalledWith(
+      expect(mediaMock.generateThumbnail).toHaveBeenCalledWith(
         '/original/path.jpg',
         'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
         {
@@ -369,7 +369,7 @@ describe(MediaService.name, () => {
     it('should skip thumbnail generation if asset not found', async () => {
       assetMock.getByIds.mockResolvedValue([]);
       await sut.handleGenerateThumbnail({ id: assetStub.image.id });
-      expect(mediaMock.resize).not.toHaveBeenCalled();
+      expect(mediaMock.generateThumbnail).not.toHaveBeenCalled();
       expect(assetMock.update).not.toHaveBeenCalledWith();
     });
 
@@ -378,7 +378,7 @@ describe(MediaService.name, () => {
 
       expect(await sut.handleGenerateThumbnail({ id: assetStub.livePhotoMotionAsset.id })).toEqual(JobStatus.SKIPPED);
 
-      expect(mediaMock.resize).not.toHaveBeenCalled();
+      expect(mediaMock.generateThumbnail).not.toHaveBeenCalled();
       expect(assetMock.update).not.toHaveBeenCalledWith();
     });
 
@@ -392,7 +392,7 @@ describe(MediaService.name, () => {
         await sut.handleGenerateThumbnail({ id: assetStub.image.id });
 
         expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id/as/se');
-        expect(mediaMock.resize).toHaveBeenCalledWith('/original/path.jpg', thumbnailPath, {
+        expect(mediaMock.generateThumbnail).toHaveBeenCalledWith('/original/path.jpg', thumbnailPath, {
           size: 250,
           format,
           quality: 80,
@@ -419,7 +419,7 @@ describe(MediaService.name, () => {
     await sut.handleGenerateThumbnail({ id: assetStub.image.id });
 
     expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id/as/se');
-    expect(mediaMock.resize).toHaveBeenCalledWith(
+    expect(mediaMock.generateThumbnail).toHaveBeenCalledWith(
       assetStub.imageDng.originalPath,
       'upload/thumbs/user-id/as/se/asset-id-thumbnail.webp',
       {
@@ -444,7 +444,7 @@ describe(MediaService.name, () => {
     await sut.handleGenerateThumbnail({ id: assetStub.image.id });
 
     const extractedPath = mediaMock.extract.mock.calls.at(-1)?.[1].toString();
-    expect(mediaMock.resize.mock.calls).toEqual([
+    expect(mediaMock.generateThumbnail.mock.calls).toEqual([
       [
         extractedPath,
         'upload/thumbs/user-id/as/se/asset-id-thumbnail.webp',
@@ -468,7 +468,7 @@ describe(MediaService.name, () => {
 
     await sut.handleGenerateThumbnail({ id: assetStub.image.id });
 
-    expect(mediaMock.resize.mock.calls).toEqual([
+    expect(mediaMock.generateThumbnail.mock.calls).toEqual([
       [
         assetStub.imageDng.originalPath,
         'upload/thumbs/user-id/as/se/asset-id-thumbnail.webp',
@@ -491,7 +491,7 @@ describe(MediaService.name, () => {
 
     await sut.handleGenerateThumbnail({ id: assetStub.image.id });
 
-    expect(mediaMock.resize).toHaveBeenCalledWith(
+    expect(mediaMock.generateThumbnail).toHaveBeenCalledWith(
       assetStub.imageDng.originalPath,
       'upload/thumbs/user-id/as/se/asset-id-thumbnail.webp',
       {
@@ -511,7 +511,7 @@ describe(MediaService.name, () => {
     await sut.handleGenerateThumbnail({ id: assetStub.image.id });
 
     expect(mediaMock.extract).not.toHaveBeenCalled();
-    expect(mediaMock.resize).toHaveBeenCalledWith(
+    expect(mediaMock.generateThumbnail).toHaveBeenCalledWith(
       assetStub.imageDng.originalPath,
       'upload/thumbs/user-id/as/se/asset-id-thumbnail.webp',
       {

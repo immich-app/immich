@@ -210,7 +210,11 @@ export class MediaService {
           const colorspace = this.isSRGB(asset) ? Colorspace.SRGB : image.colorspace;
           const imageOptions = { format, size, colorspace, quality: image.quality };
 
-          await this.mediaRepository.resize(useExtracted ? extractedPath : asset.originalPath, path, imageOptions);
+          await this.mediaRepository.generateThumbnail(
+            useExtracted ? extractedPath : asset.originalPath,
+            path,
+            imageOptions,
+          );
         } finally {
           if (didExtract) {
             await this.storageRepository.unlink(extractedPath);
