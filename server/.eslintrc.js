@@ -25,6 +25,7 @@ module.exports = {
     'unicorn/prefer-top-level-await': 'off',
     'unicorn/prefer-event-target': 'off',
     'unicorn/no-thenable': 'off',
+    '@typescript-eslint/await-thenable': 'error',
     curly: 2,
     'prettier/prettier': 0,
   },

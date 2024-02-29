@@ -542,7 +542,7 @@ export class AssetRepository implements IAssetRepository {
   }
 
   async getStatistics(ownerId: string, options: AssetStatsOptions): Promise<AssetStats> {
-    let builder = await this.repository
+    let builder = this.repository
       .createQueryBuilder('asset')
       .select(`COUNT(asset.id)`, 'count')
       .addSelect(`asset.type`, 'type')
