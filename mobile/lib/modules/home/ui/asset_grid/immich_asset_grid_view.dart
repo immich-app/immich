@@ -246,6 +246,12 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
   void _scrollToDate() {
     final date = scrollToDateNotifierProvider.value;
     if (date == null) {
+      ImmichToast.show(
+        context: context,
+        msg: "Scroll To Date failed, date is null.",
+        gravity: ToastGravity.BOTTOM,
+        toastType: ToastType.error,
+      );
       return;
     }
     final index = widget.renderList.elements.indexWhere(
