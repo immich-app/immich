@@ -23,7 +23,7 @@ import {
   IStorageRepository,
   ISystemConfigRepository,
   IUserRepository,
-  StorageEvent,
+  StorageEventType,
   WithProperty,
 } from '../repositories';
 import { SystemConfigCore } from '../system-config';
@@ -97,9 +97,11 @@ export class LibraryService extends EventEmitter {
     this.configCore.config$.subscribe(async ({ library }) => {
       this.jobRepository.updateCronJob('libraryScan', library.scan.cronExpression, library.scan.enabled);
 
-      if (this.watchLock && library.watch.enabled !== this.watchLibraries) {
-        this.watchLibraries = library.watch.enabled;
-        await (this.watchLibraries ? this.watchAll() : this.unwatchAll());
+      if (this.watchLock) {
+        if (library.watch.enabled !== this.watchLibraries) {
+          this.watchLibraries = library.watch.enabled;
+          await (this.watchLibraries ? this.watchAll() : this.unwatchAll());
+        }
       }
     });
   }
@@ -142,7 +144,7 @@ export class LibraryService extends EventEmitter {
           if (matcher(path)) {
             await this.scanAssets(library.id, [path], library.ownerId, false);
           }
-          this.emit(StorageEvent.ADD, path);
+          this.emit(StorageEventType.ADD, path);
         },
         onChange: async (path) => {
           this.logger.debug(`Detected file change for ${path} in library ${library.id}`);
@@ -150,7 +152,7 @@ export class LibraryService extends EventEmitter {
             // Note: if the changed file was not previously imported, it will be imported now.
             await this.scanAssets(library.id, [path], library.ownerId, false);
           }
-          this.emit(StorageEvent.CHANGE, path);
+          this.emit(StorageEventType.CHANGE, path);
         },
         onUnlink: async (path) => {
           this.logger.debug(`Detected deleted file at ${path} in library ${library.id}`);
@@ -158,12 +160,12 @@ export class LibraryService extends EventEmitter {
           if (asset && matcher(path)) {
             await this.assetRepository.save({ id: asset.id, isOffline: true });
           }
-          this.emit(StorageEvent.UNLINK, path);
+          this.emit(StorageEventType.UNLINK, path);
         },
         onError: (error) => {
           // TODO: should we log, or throw an exception?
           this.logger.error(`Library watcher for library ${library.id} encountered error: ${error}`);
-          this.emit(StorageEvent.ERROR, error);
+          this.emit(StorageEventType.ERROR, error);
         },
       },
     );

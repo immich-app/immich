@@ -31,7 +31,7 @@ export interface WatchEvents {
   onError(error: Error): void;
 }
 
-export enum StorageEvent {
+export enum StorageEventType {
   READY = 'ready',
   ADD = 'add',
   CHANGE = 'change',

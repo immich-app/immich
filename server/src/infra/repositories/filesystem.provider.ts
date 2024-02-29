@@ -4,7 +4,7 @@ import {
   IStorageRepository,
   ImmichReadStream,
   ImmichZipStream,
-  StorageEvent,
+  StorageEventType,
   WatchEvents,
   mimeTypes,
 } from '@app/domain';
@@ -142,11 +142,11 @@ export class FilesystemProvider implements IStorageRepository {
   watch(paths: string[], options: WatchOptions, events: Partial<WatchEvents>) {
     const watcher = chokidar.watch(paths, options);
 
-    watcher.on(StorageEvent.READY, () => events.onReady?.());
-    watcher.on(StorageEvent.ADD, (path) => events.onAdd?.(path));
-    watcher.on(StorageEvent.CHANGE, (path) => events.onChange?.(path));
-    watcher.on(StorageEvent.UNLINK, (path) => events.onUnlink?.(path));
-    watcher.on(StorageEvent.ERROR, (error) => events.onError?.(error));
+    watcher.on(StorageEventType.READY, () => events.onReady?.());
+    watcher.on(StorageEventType.ADD, (path) => events.onAdd?.(path));
+    watcher.on(StorageEventType.CHANGE, (path) => events.onChange?.(path));
+    watcher.on(StorageEventType.UNLINK, (path) => events.onUnlink?.(path));
+    watcher.on(StorageEventType.ERROR, (error) => events.onError?.(error));
 
     return () => watcher.close();
   }

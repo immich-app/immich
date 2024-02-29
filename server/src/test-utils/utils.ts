@@ -1,4 +1,4 @@
-import { IJobRepository, IMediaRepository, JobItem, JobItemHandler, QueueName, StorageEvent } from '@app/domain';
+import { IJobRepository, IMediaRepository, JobItem, JobItemHandler, QueueName, StorageEventType } from '@app/domain';
 import { AppModule } from '@app/immich';
 import { InfraModule, InfraTestModule, dataSource } from '@app/infra';
 import { MediaRepository } from '@app/infra/repositories';
@@ -145,7 +145,7 @@ export function waitForEvent(emitter: EventEmitter, event: string, times = 1): P
     promises.push(
       new Promise((resolve, reject) => {
         const success = (value: any) => {
-          emitter.off(StorageEvent.ERROR, fail);
+          emitter.off(StorageEventType.ERROR, fail);
           resolve(value);
         };
         const fail = (error: Error) => {
@@ -153,7 +153,7 @@ export function waitForEvent(emitter: EventEmitter, event: string, times = 1): P
           reject(error);
         };
         emitter.once(event, success);
-        emitter.once(StorageEvent.ERROR, fail);
+        emitter.once(StorageEventType.ERROR, fail);
       }),
     );
   }

@@ -29,6 +29,7 @@ import {
   IStorageRepository,
   ISystemConfigRepository,
   IUserRepository,
+  StorageEventType,
 } from '../repositories';
 import { SystemConfigCore } from '../system-config/system-config.core';
 import { mapLibrary } from './library.dto';
@@ -1187,7 +1188,9 @@ describe(LibraryService.name, () => {
       it('should handle a new file event', async () => {
         libraryMock.get.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
         libraryMock.getAll.mockResolvedValue([libraryStub.externalLibraryWithImportPaths1]);
-        storageMock.watch.mockImplementation(makeMockWatcher({ items: [{ event: 'add', value: '/foo/photo.jpg' }] }));
+        storageMock.watch.mockImplementation(
+          makeMockWatcher({ items: [{ event: StorageEventType.ADD, value: '/foo/photo.jpg' }] }),
+        );
 
         await sut.watchAll();
 
@@ -1208,7 +1211,7 @@ describe(LibraryService.name, () => {
         libraryMock.get.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
         libraryMock.getAll.mockResolvedValue([libraryStub.externalLibraryWithImportPaths1]);
         storageMock.watch.mockImplementation(
-          makeMockWatcher({ items: [{ event: 'change', value: '/foo/photo.jpg' }] }),
+          makeMockWatcher({ items: [{ event: StorageEventType.CHANGE, value: '/foo/photo.jpg' }] }),
         );
 
         await sut.watchAll();
@@ -1231,7 +1234,7 @@ describe(LibraryService.name, () => {
         libraryMock.getAll.mockResolvedValue([libraryStub.externalLibraryWithImportPaths1]);
         assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.external);
         storageMock.watch.mockImplementation(
-          makeMockWatcher({ items: [{ event: 'unlink', value: '/foo/photo.jpg' }] }),
+          makeMockWatcher({ items: [{ event: StorageEventType.UNLINK, value: '/foo/photo.jpg' }] }),
         );
 
         await sut.watchAll();
@@ -1245,17 +1248,19 @@ describe(LibraryService.name, () => {
         libraryMock.getAll.mockResolvedValue([libraryStub.externalLibraryWithImportPaths1]);
         storageMock.watch.mockImplementation(
           makeMockWatcher({
-            items: [{ event: 'error', value: 'Error!' }],
+            items: [{ event: StorageEventType.ERROR, value: 'Error!' }],
           }),
         );
 
-        await sut.watchAll();
+        await expect(sut.watchAll()).rejects.toEqual([expect.stringMatching('/Error: Error/')]);
       });
 
       it('should ignore unknown extensions', async () => {
         libraryMock.get.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
         libraryMock.getAll.mockResolvedValue([libraryStub.externalLibraryWithImportPaths1]);
-        storageMock.watch.mockImplementation(makeMockWatcher({ items: [{ event: 'add', value: '/foo/photo.jpg' }] }));
+        storageMock.watch.mockImplementation(
+          makeMockWatcher({ items: [{ event: StorageEventType.ADD, value: '/foo/photo.jpg' }] }),
+        );
 
         await sut.watchAll();
 
@@ -1265,7 +1270,9 @@ describe(LibraryService.name, () => {
       it('should ignore excluded paths', async () => {
         libraryMock.get.mockResolvedValue(libraryStub.patternPath);
         libraryMock.getAll.mockResolvedValue([libraryStub.patternPath]);
-        storageMock.watch.mockImplementation(makeMockWatcher({ items: [{ event: 'add', value: '/dir1/photo.txt' }] }));
+        storageMock.watch.mockImplementation(
+          makeMockWatcher({ items: [{ event: StorageEventType.ADD, value: '/dir1/photo.txt' }] }),
+        );
 
         await sut.watchAll();
 
@@ -1275,7 +1282,9 @@ describe(LibraryService.name, () => {
       it('should ignore excluded paths without case sensitivity', async () => {
         libraryMock.get.mockResolvedValue(libraryStub.patternPath);
         libraryMock.getAll.mockResolvedValue([libraryStub.patternPath]);
-        storageMock.watch.mockImplementation(makeMockWatcher({ items: [{ event: 'add', value: '/DIR1/photo.txt' }] }));
+        storageMock.watch.mockImplementation(
+          makeMockWatcher({ items: [{ event: StorageEventType.ADD, value: '/DIR1/photo.txt' }] }),
+        );
 
         await sut.watchAll();
 
@@ -1284,7 +1293,7 @@ describe(LibraryService.name, () => {
     });
   });
 
-  describe('tearDown', () => {
+  describe('teardown', () => {
     it('should tear down all watchers', async () => {
       libraryMock.getAll.mockResolvedValue([
         libraryStub.externalLibraryWithImportPaths1,
