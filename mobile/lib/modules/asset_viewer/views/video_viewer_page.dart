@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:chewie/chewie.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:immich_mobile/modules/asset_viewer/hooks/chewiew_controller_hook.dart';
+import 'package:immich_mobile/modules/asset_viewer/ui/video_controls.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/video_player_controls.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/delayed_loading_indicator.dart';
@@ -50,13 +51,16 @@ class VideoViewerPage extends HookWidget {
     );
 
     // Loading
+    final size = MediaQuery.of(context).size;
+    print('showControls $showControls and isMotion $isMotionVideo');
     return PopScope(
       child: AnimatedSwitcher(
         duration: const Duration(milliseconds: 400),
-        child: Builder(
-          builder: (context) {
-            if (controller == null) {
-              return Stack(
+        child: Stack(
+          children: [
+            Visibility(
+              visible: controller == null,
+              child: Stack(
                 children: [
                   if (placeholder != null) placeholder!,
                   const Positioned.fill(
@@ -67,18 +71,30 @@ class VideoViewerPage extends HookWidget {
                     ),
                   ),
                 ],
-              );
-            }
-
-            final size = MediaQuery.of(context).size;
-            return SizedBox(
-              height: size.height,
-              width: size.width,
-              child: Chewie(
-                controller: controller,
               ),
-            );
-          },
+            ),
+            if (controller != null)
+              SizedBox(
+                height: size.height,
+                width: size.width,
+                child: Chewie(
+                  controller: controller,
+                ),
+              ),
+            if (controller != null)
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: SizedBox(
+                  width: size.width,
+                  child: Visibility(
+                    visible: true,
+                    child: const VideoControls(),
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );

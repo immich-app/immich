@@ -97,7 +97,7 @@ class _ChewieControllerHookState
   @override
   void initHook() async {
     super.initHook();
-    unawaited(_initialize());
+    _initialize().whenComplete(() => setState(() {}));
   }
 
   @override
@@ -155,20 +155,18 @@ class _ChewieControllerHookState
 
     await videoPlayerController!.initialize();
 
-    setState(() {
-      chewieController = ChewieController(
-        videoPlayerController: videoPlayerController!,
-        controlsSafeAreaMinimum: hook.controlsSafeAreaMinimum,
-        showOptions: hook.showOptions,
-        showControlsOnInitialize: hook.showControlsOnInitialize,
-        autoPlay: hook.autoPlay,
-        allowFullScreen: hook.allowFullScreen,
-        allowedScreenSleep: hook.allowedScreenSleep,
-        showControls: hook.showControls,
-        customControls: hook.customControls,
-        placeholder: hook.placeholder,
-        hideControlsTimer: hook.hideControlsTimer,
-      );
-    });
+    chewieController = ChewieController(
+      videoPlayerController: videoPlayerController!,
+      controlsSafeAreaMinimum: hook.controlsSafeAreaMinimum,
+      showOptions: hook.showOptions,
+      showControlsOnInitialize: hook.showControlsOnInitialize,
+      autoPlay: hook.autoPlay,
+      allowFullScreen: hook.allowFullScreen,
+      allowedScreenSleep: hook.allowedScreenSleep,
+      showControls: hook.showControls,
+      customControls: hook.customControls,
+      placeholder: hook.placeholder,
+      hideControlsTimer: hook.hideControlsTimer,
+    );
   }
 }
