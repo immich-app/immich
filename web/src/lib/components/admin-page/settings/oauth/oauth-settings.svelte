@@ -143,7 +143,7 @@
         <SettingInputField
           inputType={SettingInputFieldType.NUMBER}
           label="DEFAULT STORAGE QUOTA (GiB)"
-          desc="User's quota if not set in the claim (Note: Enter 0 for unlimited quota)."
+          desc="Quota in GiB to be used when no claim is provided (Enter 0 for unlimited quota)."
           bind:value={config.oauth.defaultStorageQuota}
           required={true}
           disabled={disabled || !config.oauth.enabled}

@@ -23,8 +23,6 @@ export class SystemConfigOAuthDto {
   @IsString()
   clientSecret!: string;
 
-  @ValidateIf(isEnabled)
-  @IsNotEmpty()
   @IsNumber()
   defaultStorageQuota!: number;
 
@@ -53,8 +51,6 @@ export class SystemConfigOAuthDto {
   @IsString()
   storageLabelClaim!: string;
 
-  @ValidateIf(isEnabled)
-  @IsNotEmpty()
   @IsString()
   storageQuotaClaim!: string;
 }
