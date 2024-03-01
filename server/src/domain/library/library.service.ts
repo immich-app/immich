@@ -43,7 +43,7 @@ export class LibraryService extends EventEmitter {
   private access: AccessCore;
   private configCore: SystemConfigCore;
   private watchLibraries = false;
-  private watchers: Record<string, () => void> = {};
+  private watchers: Record<string, () => Promise<void>> = {};
 
   constructor(
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
