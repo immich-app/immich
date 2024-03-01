@@ -3,12 +3,7 @@ import { WatchOptions } from 'chokidar';
 
 interface MockWatcherOptions {
   items?: Array<{
-    event:
-      | StorageEventType.READY
-      | StorageEventType.ADD
-      | StorageEventType.CHANGE
-      | StorageEventType.UNLINK
-      | StorageEventType.ERROR;
+    event: StorageEventType;
     value: string;
   }>;
   close?: () => Promise<void>;
