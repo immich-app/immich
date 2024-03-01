@@ -10,10 +10,12 @@ import 'package:immich_mobile/modules/asset_viewer/providers/asset_stack.provide
 import 'package:immich_mobile/modules/asset_viewer/providers/image_viewer_page_state.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/show_controls.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/services/asset_stack.service.dart';
-import 'package:immich_mobile/modules/backup/providers/manual_upload.provider.dart';
-import 'package:immich_mobile/modules/home/ui/upload_dialog.dart';
+import 'package:immich_mobile/modules/asset_viewer/ui/video_controls.dart';
+import 'package:immich_mobile/modules/home/ui/delete_dialog.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
+import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/providers/user.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 
@@ -21,6 +23,8 @@ class BottomGalleryBar extends ConsumerWidget {
   final Asset asset;
   final bool showStack;
   final int stackIndex;
+  final int totalAssets;
+  final bool showVideoPlayerControls;
   final PageController controller;
 
   const BottomGalleryBar({
@@ -29,6 +33,8 @@ class BottomGalleryBar extends ConsumerWidget {
     required this.stackIndex,
     required this.asset,
     required this.controller,
+    required this.totalAssets,
+    required this.showVideoPlayerControls,
   });
 
   @override
@@ -40,7 +46,12 @@ class BottomGalleryBar extends ConsumerWidget {
         : <Asset>[];
     final stackElements = showStack ? [asset, ...stack] : <Asset>[];
     bool isParent = stackIndex == -1 || stackIndex == 0;
-
+    final navStack = AutoRouter.of(context).stackData;
+    final isTrashEnabled =
+        ref.watch(serverInfoProvider.select((v) => v.serverFeatures.trash));
+    final isFromTrash = isTrashEnabled &&
+        navStack.length > 2 &&
+        navStack.elementAt(navStack.length - 2).name == TrashRoute.name;
     // !!!! itemsList and actionlist should always be in sync
     final itemsList = [
       BottomNavigationBarItem(
@@ -87,11 +98,10 @@ class BottomGalleryBar extends ConsumerWidget {
         ref
             .read(assetStackStateProvider(asset).notifier)
             .removeChild(stackIndex - 1);
-        stackIndex.value = stackIndex.value - 1;
       }
     }
 
-    void handleDelete(Asset deleteAsset) async {
+    void handleDelete() async {
       // Cannot delete readOnly / external assets. They are handled through library offline jobs
       if (asset.isReadOnly) {
         ImmichToast.show(
@@ -104,7 +114,7 @@ class BottomGalleryBar extends ConsumerWidget {
       }
       Future<bool> onDelete(bool force) async {
         final isDeleted = await ref.read(assetProvider.notifier).deleteAssets(
-          {deleteAsset},
+          {asset},
           force: force,
         );
         if (isDeleted && isParent) {
@@ -127,7 +137,7 @@ class BottomGalleryBar extends ConsumerWidget {
         final isDeleted = await onDelete(false);
         if (isDeleted) {
           // Can only trash assets stored in server. Local assets are always permanently removed for now
-          if (context.mounted && deleteAsset.isRemote && isParent) {
+          if (context.mounted && asset.isRemote && isParent) {
             ImmichToast.show(
               durationInSecond: 1,
               context: context,
@@ -178,7 +188,7 @@ class BottomGalleryBar extends ConsumerWidget {
                             .read(assetStackServiceProvider)
                             .updateStackParent(
                               asset,
-                              stackElements.elementAt(stackIndex.value),
+                              stackElements.elementAt(stackIndex),
                             );
                         ctx.pop();
                         context.popRoute();
@@ -213,7 +223,7 @@ class BottomGalleryBar extends ConsumerWidget {
                         await ref.read(assetStackServiceProvider).updateStack(
                           asset,
                           childrenToRemove: [
-                            stackElements.elementAt(stackIndex.value),
+                            stackElements.elementAt(stackIndex),
                           ],
                         );
                         removeAssetFromStack();
@@ -273,21 +283,6 @@ class BottomGalleryBar extends ConsumerWidget {
       removeAssetFromStack();
     }
 
-    handleUpload(Asset asset) {
-      showDialog(
-        context: context,
-        builder: (BuildContext _) {
-          return UploadDialog(
-            onUpload: () {
-              ref
-                  .read(manualUploadProvider.notifier)
-                  .uploadAssets(context, [asset]);
-            },
-          );
-        },
-      );
-    }
-
     handleDownload() {
       if (asset.isLocal) {
         return;
@@ -323,17 +318,10 @@ class BottomGalleryBar extends ConsumerWidget {
         opacity: ref.watch(showControlsProvider) ? 1.0 : 0.0,
         child: Column(
           children: [
-            if (stack.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(
-                  left: 10,
-                  bottom: 30,
-                ),
-                child: SizedBox(
-                  height: 40,
-                  child: buildStackedChildren(),
-                ),
-              ),
+            Visibility(
+              visible: showVideoPlayerControls,
+              child: const VideoControls(),
+            ),
             BottomNavigationBar(
               backgroundColor: Colors.black.withOpacity(0.4),
               unselectedIconTheme: const IconThemeData(color: Colors.white),

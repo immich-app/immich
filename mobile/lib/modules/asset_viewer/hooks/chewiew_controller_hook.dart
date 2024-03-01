@@ -96,14 +96,17 @@ class _ChewieControllerHookState
 
   @override
   void initHook() async {
+    print('CHEWIE CONTROLLER > creating chewie $hashCode');
     super.initHook();
     _initialize().whenComplete(() => setState(() {}));
   }
 
   @override
   void dispose() {
-    chewieController?.dispose();
+    print('CHEWIE CONTROLLER > disposing chewie $hashCode');
+    videoPlayerController?.pause();
     videoPlayerController?.dispose();
+    chewieController?.dispose();
     super.dispose();
   }
 

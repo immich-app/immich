@@ -12,72 +12,78 @@ class VideoControls extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final player = ref.watch(videoPlaybackValueProvider);
-    print('player is $player');
-    final duration = player.duration;
-    final position = player.position;
+    final duration =
+        ref.watch(videoPlaybackValueProvider.select((v) => v.duration));
+    final position =
+        ref.watch(videoPlaybackValueProvider.select((v) => v.position));
 
     return AnimatedOpacity(
       opacity: ref.watch(showControlsProvider) ? 1.0 : 0.0,
       duration: const Duration(milliseconds: 100),
-      child: Container(
-        color: Colors.black.withOpacity(0.4),
-        child: Padding(
-          padding: MediaQuery.of(context).orientation == Orientation.portrait
-              ? const EdgeInsets.symmetric(horizontal: 12.0)
-              : const EdgeInsets.symmetric(horizontal: 64.0),
-          child: Row(
-            children: [
-              Text(
-                _formatDuration(position),
-                style: TextStyle(
-                  fontSize: 14.0,
-                  color: Colors.white.withOpacity(.75),
-                  fontWeight: FontWeight.normal,
+      child: OrientationBuilder(
+        builder: (context, orientation) => Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: orientation == Orientation.portrait ? 12.0 : 64.0,
+          ),
+          color: Colors.black.withOpacity(0.4),
+          child: Padding(
+            padding: MediaQuery.of(context).orientation == Orientation.portrait
+                ? const EdgeInsets.symmetric(horizontal: 12.0)
+                : const EdgeInsets.symmetric(horizontal: 64.0),
+            child: Row(
+              children: [
+                Text(
+                  _formatDuration(position),
+                  style: TextStyle(
+                    fontSize: 14.0,
+                    color: Colors.white.withOpacity(.75),
+                    fontWeight: FontWeight.normal,
+                  ),
                 ),
-              ),
-              Expanded(
-                child: Slider(
-                  value: player.duration == Duration.zero
-                      ? 0.0
-                      : min(
-                          player.position.inMicroseconds /
-                              player.duration.inMicroseconds *
-                              100,
-                          100,
-                        ),
-                  min: 0,
-                  max: 100,
-                  thumbColor: Colors.white,
-                  activeColor: Colors.white,
-                  inactiveColor: Colors.white.withOpacity(0.75),
-                  onChanged: (position) {
-                    ref.read(videoPlayerControlsProvider.notifier).position =
-                        position;
-                  },
+                Expanded(
+                  child: Slider(
+                    value: duration == Duration.zero
+                        ? 0.0
+                        : min(
+                            position.inMicroseconds /
+                                duration.inMicroseconds *
+                                100,
+                            100,
+                          ),
+                    min: 0,
+                    max: 100,
+                    thumbColor: Colors.white,
+                    activeColor: Colors.white,
+                    inactiveColor: Colors.white.withOpacity(0.75),
+                    onChanged: (position) {
+                      ref.read(videoPlayerControlsProvider.notifier).position =
+                          position;
+                    },
+                  ),
                 ),
-              ),
-              Text(
-                _formatDuration(duration),
-                style: TextStyle(
-                  fontSize: 14.0,
-                  color: Colors.white.withOpacity(.75),
-                  fontWeight: FontWeight.normal,
+                Text(
+                  _formatDuration(duration),
+                  style: TextStyle(
+                    fontSize: 14.0,
+                    color: Colors.white.withOpacity(.75),
+                    fontWeight: FontWeight.normal,
+                  ),
                 ),
-              ),
-              IconButton(
-                icon: Icon(
-                  ref.watch(
-                    videoPlayerControlsProvider.select((value) => value.mute),
-                  )
-                      ? Icons.volume_off
-                      : Icons.volume_up,
+                IconButton(
+                  icon: Icon(
+                    ref.watch(
+                      videoPlayerControlsProvider.select((value) => value.mute),
+                    )
+                        ? Icons.volume_off
+                        : Icons.volume_up,
+                  ),
+                  onPressed: () => ref
+                      .read(videoPlayerControlsProvider.notifier)
+                      .toggleMute(),
+                  color: Colors.white,
                 ),
-                onPressed: () =>
-                    ref.read(videoPlayerControlsProvider.notifier).toggleMute(),
-                color: Colors.white,
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

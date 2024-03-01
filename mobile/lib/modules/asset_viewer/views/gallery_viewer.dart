@@ -2,12 +2,10 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 import 'dart:ui' as ui;
-import 'package:easy_localization/easy_localization.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/album/providers/current_album.provider.dart';
@@ -17,7 +15,6 @@ import 'package:immich_mobile/modules/asset_viewer/providers/current_asset.provi
 import 'package:immich_mobile/modules/asset_viewer/providers/show_controls.provider.dart';
 import 'package:immich_mobile/modules/album/ui/add_to_album_bottom_sheet.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/image_viewer_page_state.provider.dart';
-import 'package:immich_mobile/modules/asset_viewer/services/asset_stack.service.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/advanced_bottom_sheet.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/bottom_gallery_bar.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/exif_bottom_sheet.dart';
@@ -27,14 +24,11 @@ import 'package:immich_mobile/modules/backup/providers/manual_upload.provider.da
 import 'package:immich_mobile/modules/home/ui/upload_dialog.dart';
 import 'package:immich_mobile/modules/partner/providers/partner.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/modules/home/ui/delete_dialog.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
-import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/providers/user.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
 import 'package:immich_mobile/shared/ui/immich_thumbnail.dart';
-import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/shared/ui/photo_view/photo_view_gallery.dart';
 import 'package:immich_mobile/shared/ui/photo_view/src/photo_view_computed_scale.dart';
 import 'package:immich_mobile/shared/ui/photo_view/src/photo_view_scale_state.dart';
@@ -74,16 +68,10 @@ class GalleryViewerPage extends HookConsumerWidget {
     final isLoadOriginal = useState(AppSettingsEnum.loadOriginal.defaultValue);
     final isZoomed = useState<bool>(false);
     final isPlayingMotionVideo = useState(false);
-    final isPlayingVideo = useState(false);
     Offset? localPosition;
     final currentIndex = useState(initialIndex);
     final currentAsset = loadAsset(currentIndex.value);
-    final isTrashEnabled =
-        ref.watch(serverInfoProvider.select((v) => v.serverFeatures.trash));
-    final navStack = AutoRouter.of(context).stackData;
-    final isFromTrash = isTrashEnabled &&
-        navStack.length > 2 &&
-        navStack.elementAt(navStack.length - 2).name == TrashRoute.name;
+
     final stackIndex = useState(-1);
     final stack = showStack && currentAsset.stackChildrenCount > 0
         ? ref.watch(assetStackStateProvider(currentAsset))
@@ -101,7 +89,6 @@ class GalleryViewerPage extends HookConsumerWidget {
         .watch(partnerSharedWithProvider)
         .map((e) => e.isarId)
         .contains(asset.ownerId);
-
 
     // Listen provider to prevent autoDispose when navigating to other routes from within the gallery page
     ref.listen(currentAssetProvider, (_, __) {});
@@ -223,6 +210,21 @@ class GalleryViewerPage extends HookConsumerWidget {
       }
     }
 
+    handleUpload(Asset asset) {
+      showDialog(
+        context: context,
+        builder: (BuildContext _) {
+          return UploadDialog(
+            onUpload: () {
+              ref
+                  .read(manualUploadProvider.notifier)
+                  .uploadAssets(context, [asset]);
+            },
+          );
+        },
+      );
+    }
+
     buildAppBar() {
       return IgnorePointer(
         ignoring: !ref.watch(showControlsProvider),
@@ -238,8 +240,7 @@ class GalleryViewerPage extends HookConsumerWidget {
               asset: asset,
               onMoreInfoPressed: showInfo,
               onFavorite: toggleFavorite,
-              onUploadPressed:
-                  asset.isLocal ? () => handleUpload(asset) : null,
+              onUploadPressed: asset.isLocal ? () => handleUpload(asset) : null,
               onDownloadPressed: asset.isLocal
                   ? null
                   : () =>
@@ -256,10 +257,6 @@ class GalleryViewerPage extends HookConsumerWidget {
           ),
         ),
       );
-    }
-
-    // TODO: Migrate to a custom bottom bar and handle long press to delete
-    Widget buildBottomBar() {
     }
 
     useEffect(
@@ -297,11 +294,16 @@ class GalleryViewerPage extends HookConsumerWidget {
       }
     });
 
-   Widget buildStackedChildren() {
+    Widget buildStackedChildren() {
       return ListView.builder(
         shrinkWrap: true,
         scrollDirection: Axis.horizontal,
         itemCount: stackElements.length,
+        padding: const EdgeInsets.only(
+          left: 10,
+          right: 10,
+          bottom: 30,
+        ),
         itemBuilder: (context, index) {
           final assetId = stackElements.elementAt(index).remoteId;
           return Padding(
@@ -434,13 +436,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                     minScale: 1.0,
                     basePosition: Alignment.center,
                     child: VideoViewerPage(
-                      onPlaying: () {
-                        isPlayingVideo.value = true;
-                      },
-                      onPaused: () =>
-                          WidgetsBinding.instance.addPostFrameCallback(
-                        (_) => isPlayingVideo.value = false,
-                      ),
+                      key: ValueKey(a),
                       asset: a,
                       isMotionVideo: isPlayingMotionVideo.value,
                       placeholder: Image(
@@ -472,9 +468,24 @@ class GalleryViewerPage extends HookConsumerWidget {
               right: 0,
               child: Column(
                 children: [
-                  buildStackedChildren(),
-                  BottomGalleryBar(
+                  Visibility(
+                    visible: stack.isNotEmpty,
+                    child: SizedBox(
+                      height: 40,
+                      child: buildStackedChildren(),
+                    ),
                   ),
+                  BottomGalleryBar(
+                    totalAssets: totalAssets,
+                    controller: controller,
+                    showStack: showStack,
+                    stackIndex: stackIndex.value,
+                    asset: asset,
+                    showVideoPlayerControls:
+                        !asset.isImage && !isPlayingMotionVideo.value,
+                  ),
+                ],
+              ),
             ),
           ],
         ),
