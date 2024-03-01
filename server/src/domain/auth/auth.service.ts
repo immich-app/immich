@@ -251,11 +251,26 @@ export class AuthService {
         storageLabel = null;
       }
 
+      let defaultQuota: number | null = config.oauth.defaultStorageQuota as keyof OAuthProfile as number;
+      if (typeof defaultQuota !== 'number') {
+        defaultQuota = null;
+      }
+
+      let storageQuota: number | null = profile[config.oauth.storageQuotaClaim as keyof OAuthProfile] as number;
+      if (typeof storageQuota !== 'number') {
+        storageQuota = defaultQuota;
+      }
+
+      if (typeof storageQuota == 'number' && storageQuota == 0) {
+        storageQuota = null;
+      }
+
       const userName = profile.name ?? `${profile.given_name || ''} ${profile.family_name || ''}`;
       user = await this.userCore.createUser({
         name: userName,
         email: profile.email,
         oauthId: profile.sub,
+        quotaSizeInBytes: storageQuota ? storageQuota * 1_073_741_824 : null,
         storageLabel,
       });
     }

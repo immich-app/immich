@@ -9930,6 +9930,9 @@
           "clientSecret": {
             "type": "string"
           },
+          "defaultStorageQuota": {
+            "type": "number"
+          },
           "enabled": {
             "type": "boolean"
           },
@@ -9950,6 +9953,9 @@
           },
           "storageLabelClaim": {
             "type": "string"
+          },
+          "storageQuotaClaim": {
+            "type": "string"
           }
         },
         "required": [
@@ -9958,13 +9964,15 @@
           "buttonText",
           "clientId",
           "clientSecret",
+          "defaultStorageQuota",
           "enabled",
           "issuerUrl",
           "mobileOverrideEnabled",
           "mobileRedirectUri",
           "scope",
           "signingAlgorithm",
-          "storageLabelClaim"
+          "storageLabelClaim",
+          "storageQuotaClaim"
         ],
         "type": "object"
       },
