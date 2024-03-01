@@ -46,6 +46,17 @@ WORKDIR /usr/src/app
 ENV NODE_ENV=production \
     NVIDIA_DRIVER_CAPABILITIES=all \
     NVIDIA_VISIBLE_DEVICES=all
+
+RUN apt-get update && \
+    apt-get install --no-install-recommends -yqq curl unzip && \
+    curl -fsSL https://bun.sh/install | bash && \
+    apt-get purge -yqq curl unzip && \
+    apt-get autoremove -yqq && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+ENV PATH="${PATH}:~/.bun/bin"
+
 COPY --from=prod /usr/src/app/node_modules ./node_modules
 COPY --from=prod /usr/src/app/dist ./dist
 COPY --from=prod /usr/src/app/bin ./bin
