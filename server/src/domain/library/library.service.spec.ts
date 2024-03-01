@@ -55,7 +55,9 @@ describe(LibraryService.name, () => {
     storageMock = newStorageRepositoryMock();
 
     // Always validate owner access for library.
-    accessMock.library.checkOwnerAccess.mockImplementation((_, libraryIds) => libraryIds);
+    // eslint-disable-next-line @typescript-eslint/require-await
+
+    accessMock.library.checkOwnerAccess.mockImplementation(async (_, libraryIds) => libraryIds);
 
     sut = new LibraryService(
       accessMock,
@@ -106,7 +108,8 @@ describe(LibraryService.name, () => {
       configMock.load.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
 
-      libraryMock.get.mockImplementation((id) => {
+      // eslint-disable-next-line @typescript-eslint/require-await
+      libraryMock.get.mockImplementation(async (id) => {
         switch (id) {
           case libraryStub.externalLibraryWithImportPaths1.id: {
             return libraryStub.externalLibraryWithImportPaths1;
@@ -1278,7 +1281,8 @@ describe(LibraryService.name, () => {
       configMock.load.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
 
-      libraryMock.get.mockImplementation((id) => {
+      // eslint-disable-next-line @typescript-eslint/require-await
+      libraryMock.get.mockImplementation(async (id) => {
         switch (id) {
           case libraryStub.externalLibraryWithImportPaths1.id: {
             return libraryStub.externalLibraryWithImportPaths1;
@@ -1304,9 +1308,8 @@ describe(LibraryService.name, () => {
 
   describe('handleDeleteLibrary', () => {
     it('should not delete a nonexistent library', async () => {
-      libraryMock.get.mockImplementation(() => {
-        return null;
-      });
+      libraryMock.get.mockResolvedValue(null);
+
       libraryMock.getAssetIds.mockResolvedValue([]);
       libraryMock.delete.mockImplementation(async () => {});
 

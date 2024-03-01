@@ -29,7 +29,8 @@ export const makeMockWatcher =
         }
       }
     }
-    return () => close?.();
+    // eslint-disable-next-line @typescript-eslint/require-await
+    return async () => close?.();
   };
 
 export const newStorageRepositoryMock = (reset = true): jest.Mocked<IStorageRepository> => {

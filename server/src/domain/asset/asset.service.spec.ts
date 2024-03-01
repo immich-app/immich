@@ -291,10 +291,10 @@ describe(AssetService.name, () => {
         [assetStub.withLocation].map((asset) => ({
           id: asset.id,
 
-          /* eslint-disable-next-line @typescript-eslint/no-non-null-assertion */
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           lat: asset.exifInfo!.latitude!,
 
-          /* eslint-disable-next-line @typescript-eslint/no-non-null-assertion */
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           lon: asset.exifInfo!.longitude!,
         })),
       );
