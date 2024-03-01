@@ -65,8 +65,8 @@
 {#if $isMultiSelectState}
   <AssetSelectControlBar assets={$selectedAssets} clearSelect={() => assetInteractionStore.clearMultiselect()}>
     <SelectAllAssets {assetStore} {assetInteractionStore} />
-    <DeleteAssets force onAssetDelete={(assetId) => assetStore.removeAsset(assetId)} />
-    <RestoreAssets onRestore={(ids) => assetStore.removeAssets(ids)} />
+    <DeleteAssets force onAssetDelete={assetStore.removeAssets} />
+    <RestoreAssets onRestore={assetStore.removeAssets} />
   </AssetSelectControlBar>
 {/if}
 

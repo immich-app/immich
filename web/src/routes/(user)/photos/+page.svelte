@@ -59,16 +59,13 @@
       <AddToAlbum />
       <AddToAlbum shared />
     </AssetSelectContextMenu>
-    <DeleteAssets
-      on:escape={() => (handleEscapeKey = true)}
-      onAssetDelete={(assetId) => assetStore.removeAsset(assetId)}
-    />
+    <DeleteAssets on:escape={() => (handleEscapeKey = true)} onAssetDelete={assetStore.removeAssets} />
     <AssetSelectContextMenu icon={mdiDotsVertical} title="Menu">
       <FavoriteAction menuItem removeFavorite={isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
       <DownloadAction menuItem />
-      <ArchiveAction menuItem onArchive={(ids) => assetStore.removeAssets(ids)} />
+      <ArchiveAction menuItem onArchive={assetStore.removeAssets} />
       {#if $selectedAssets.size > 1}
-        <StackAction onStack={(ids) => assetStore.removeAssets(ids)} />
+        <StackAction onStack={assetStore.removeAssets} />
       {/if}
       <ChangeDate menuItem />
       <ChangeLocation menuItem />
