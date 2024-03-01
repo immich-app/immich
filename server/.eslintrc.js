@@ -27,12 +27,7 @@ module.exports = {
     'unicorn/no-thenable': 'off',
     '@typescript-eslint/await-thenable': 'error',
     '@typescript-eslint/no-floating-promises': 'error',
-    '@typescript-eslint/no-misused-promises': [
-      'error',
-      {
-        checksVoidReturn: false,
-      },
-    ],
+    '@typescript-eslint/no-misused-promises': 'error',
     // Note: you must disable the base rule as it can report incorrect errors
     'require-await': 'off',
     '@typescript-eslint/require-await': 'error',
