@@ -34,6 +34,7 @@
   <div class="w-fit">
     <Dropdown
       {options}
+      hideTextOnSmallScreen={false}
       bind:selectedOption
       render={(option) => {
         return {

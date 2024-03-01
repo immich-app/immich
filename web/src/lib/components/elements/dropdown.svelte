@@ -30,11 +30,11 @@
 
   export let options: T[];
   export let selectedOption = options[0];
-
-  export let render: (item: T) => string | RenderedOption = String;
-
   export let showMenu = false;
   export let controlable = false;
+  export let hideTextOnSmallScreen = true;
+
+  export let render: (item: T) => string | RenderedOption = String;
 
   const handleClickOutside = () => {
     if (!controlable) {
@@ -76,7 +76,7 @@
       {#if renderedSelectedOption?.icon}
         <Icon path={renderedSelectedOption.icon} size="18" />
       {/if}
-      <p class="hidden sm:block">{renderedSelectedOption.title}</p>
+      <p class={hideTextOnSmallScreen ? 'hidden sm:block' : ''}>{renderedSelectedOption.title}</p>
     </div>
   </LinkButton>
 
