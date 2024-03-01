@@ -252,19 +252,11 @@ export class AuthService {
         storageLabel = null;
       }
 
-      let defaultQuota: number | null = config.oauth.defaultStorageQuota as keyof OAuthProfile as number;
-      if (typeof defaultQuota !== 'number') {
-        defaultQuota = null;
-      }
-
       let storageQuota: number | null = profile[config.oauth.storageQuotaClaim as keyof OAuthProfile] as number;
       if (typeof storageQuota !== 'number') {
-        storageQuota = defaultQuota;
+        storageQuota = config.oauth.defaultStorageQuota;
       }
-
-      if (typeof storageQuota == 'number' && storageQuota == 0) {
-        storageQuota = null;
-      }
+      storageQuota = storageQuota == 0 ? null : storageQuota;
 
       const userName = profile.name ?? `${profile.given_name || ''} ${profile.family_name || ''}`;
       user = await this.userCore.createUser({
