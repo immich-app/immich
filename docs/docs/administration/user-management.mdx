@@ -13,11 +13,28 @@ Immich supports multiple users, each with their own library.
 
 <UserCreate />
 
+
+## Set Storage Quota For User
+
+Starting from v1.93.0, admin can specify the storage quota for the user as the instance's admin; once the limit is reached, the user won't be able to upload to the instance anymore.
+
+In order to select a storage quota, click on the pencil icon and enter the storage quota in GiB. You can choose an unlimited quota using the value 0 (default).
+
+:::tip
+The system administrator can see the usage quota percentage of all users in Server Stats.
+:::
+
+:::info
+External libraries don't take up space from the storage quota.
+:::
+<img src={require('./img/user-quota-size.png').default} title="Set quota size" />
+
+
 ## Delete a User
 
 If you need to remove a user from Immich, head to "Administration", where users can be scheduled for deletion. The user account will immediately become disabled and their library and all associated data will be removed after 7 days.
 
-<img src={require('./img/Delete-User.png').default} title="Database Structure" />
+<img src={require('./img/delete-User.png').default} title="Delete User" />
 
 ## Password Reset
 
