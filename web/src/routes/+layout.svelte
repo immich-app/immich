@@ -1,30 +1,35 @@
 <script lang="ts">
-  import '../app.css';
-  import { page } from '$app/stores';
   import { afterNavigate, beforeNavigate } from '$app/navigation';
-  import NavigationLoadingBar from '$lib/components/shared-components/navigation-loading-bar.svelte';
+  import { page } from '$app/stores';
   import DownloadPanel from '$lib/components/asset-viewer/download-panel.svelte';
-  import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
-  import NotificationList from '$lib/components/shared-components/notification/notification-list.svelte';
-  import VersionAnnouncementBox from '$lib/components/shared-components/version-announcement-box.svelte';
-  import FullscreenContainer from '$lib/components/shared-components/fullscreen-container.svelte';
   import AppleHeader from '$lib/components/shared-components/apple-header.svelte';
-  import { onDestroy, onMount } from 'svelte';
-  import { loadConfig } from '$lib/stores/server-config.store';
-  import { handleError } from '$lib/utils/handle-error';
-  import { api } from '@api';
-  import { closeWebsocketConnection, openWebsocketConnection } from '$lib/stores/websocket';
-  import { user } from '$lib/stores/user.store';
-  import { type ThemeSetting, colorTheme, handleToggleTheme } from '$lib/stores/preferences.store';
+  import FullscreenContainer from '$lib/components/shared-components/fullscreen-container.svelte';
+  import NavigationLoadingBar from '$lib/components/shared-components/navigation-loading-bar.svelte';
+  import NotificationList from '$lib/components/shared-components/notification/notification-list.svelte';
+  import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
+  import VersionAnnouncementBox from '$lib/components/shared-components/version-announcement-box.svelte';
   import { Theme } from '$lib/constants';
+  import { colorTheme, handleToggleTheme, type ThemeSetting } from '$lib/stores/preferences.store';
+  import { loadConfig } from '$lib/stores/server-config.store';
+  import { user } from '$lib/stores/user.store';
+  import { closeWebsocketConnection, openWebsocketConnection } from '$lib/stores/websocket';
+  import { setKey } from '$lib/utils';
+  import { handleError } from '$lib/utils/handle-error';
+  import { onDestroy, onMount } from 'svelte';
+  import '../app.css';
 
   let showNavigationLoadingBar = false;
   let albumId: string | undefined;
 
   const isSharedLinkRoute = (route: string | null) => route?.startsWith('/(user)/share/[key]');
-  const isAuthRoute = (route?: string) => route?.startsWith('/auth');
 
   $: changeTheme($colorTheme);
+
+  $: if ($user) {
+    openWebsocketConnection();
+  } else {
+    closeWebsocketConnection();
+  }
 
   const changeTheme = (theme: ThemeSetting) => {
     if (theme.system) {
@@ -55,21 +60,10 @@
   });
 
   if (isSharedLinkRoute($page.route?.id)) {
-    api.setKey($page.params.key);
+    setKey($page.params.key);
   }
 
-  beforeNavigate(({ from, to }) => {
-    const fromRoute = from?.route?.id || '';
-    const toRoute = to?.route?.id || '';
-
-    if (isAuthRoute(fromRoute) && !isAuthRoute(toRoute)) {
-      openWebsocketConnection();
-    }
-
-    if (!isAuthRoute(fromRoute) && isAuthRoute(toRoute)) {
-      closeWebsocketConnection();
-    }
-
+  beforeNavigate(() => {
     showNavigationLoadingBar = true;
   });
 
@@ -78,10 +72,6 @@
   });
 
   onMount(async () => {
-    if ($page.route.id?.startsWith('/auth') === false) {
-      openWebsocketConnection();
-    }
-
     try {
       await loadConfig();
     } catch (error) {

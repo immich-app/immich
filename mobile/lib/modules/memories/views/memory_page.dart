@@ -10,7 +10,6 @@ import 'package:immich_mobile/modules/memories/ui/memory_epilogue.dart';
 import 'package:immich_mobile/modules/memories/ui/memory_progress_indicator.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
-import 'package:openapi/api.dart' as api;
 
 @RoutePage()
 class MemoryPage extends HookConsumerWidget {
@@ -110,27 +109,13 @@ class MemoryPage extends HookConsumerWidget {
         asset = memories[nextMemoryIndex].assets.first;
       }
 
-      // Gets the thumbnail url and precaches it
-      final precaches = <Future<dynamic>>[];
-
-      precaches.add(
-        ImmichImage.precacheAsset(
-          asset,
-          context,
-          type: api.ThumbnailFormat.WEBP,
-          size: 2048,
+      // Precache the asset
+      await precacheImage(
+        ImmichImage.imageProvider(
+          asset: asset,
         ),
+        context,
       );
-      precaches.add(
-        ImmichImage.precacheAsset(
-          asset,
-          context,
-          type: api.ThumbnailFormat.JPEG,
-          size: 2048,
-        ),
-      );
-
-      await Future.wait(precaches);
     }
 
     // Precache the next page right away if we are on the first page
@@ -139,11 +124,14 @@ class MemoryPage extends HookConsumerWidget {
           .then((_) => precacheAsset(1));
     }
 
-    onAssetChanged(int otherIndex) {
+    Future<void> onAssetChanged(int otherIndex) async {
       HapticFeedback.selectionClick();
       currentAssetPage.value = otherIndex;
-      precacheAsset(otherIndex + 1);
       updateProgressText();
+      // Wait for page change animation to finish
+      await Future.delayed(const Duration(milliseconds: 400));
+      // And then precache the next asset
+      await precacheAsset(otherIndex + 1);
     }
 
     /* Notification listener is used instead of OnPageChanged callback since OnPageChanged is called

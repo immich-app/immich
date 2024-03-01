@@ -336,6 +336,8 @@ class ApiClient {
           return MemoryLaneResponseDto.fromJson(value);
         case 'MergePersonDto':
           return MergePersonDto.fromJson(value);
+        case 'MetadataSearchDto':
+          return MetadataSearchDto.fromJson(value);
         case 'ModelType':
           return ModelTypeTypeTransformer().decode(value);
         case 'OAuthAuthorizeResponseDto':
@@ -364,6 +366,8 @@ class ApiClient {
           return PersonUpdateDto.fromJson(value);
         case 'PersonWithFacesResponseDto':
           return PersonWithFacesResponseDto.fromJson(value);
+        case 'PlacesResponseDto':
+          return PlacesResponseDto.fromJson(value);
         case 'QueueStatusDto':
           return QueueStatusDto.fromJson(value);
         case 'ReactionLevel':
@@ -388,6 +392,8 @@ class ApiClient {
           return SearchFacetResponseDto.fromJson(value);
         case 'SearchResponseDto':
           return SearchResponseDto.fromJson(value);
+        case 'SearchSuggestionType':
+          return SearchSuggestionTypeTypeTransformer().decode(value);
         case 'ServerConfigDto':
           return ServerConfigDto.fromJson(value);
         case 'ServerFeaturesDto':
@@ -416,6 +422,8 @@ class ApiClient {
           return SignUpDto.fromJson(value);
         case 'SmartInfoResponseDto':
           return SmartInfoResponseDto.fromJson(value);
+        case 'SmartSearchDto':
+          return SmartSearchDto.fromJson(value);
         case 'SystemConfigDto':
           return SystemConfigDto.fromJson(value);
         case 'SystemConfigFFmpegDto':
@@ -494,6 +502,12 @@ class ApiClient {
           return UserResponseDto.fromJson(value);
         case 'ValidateAccessTokenResponseDto':
           return ValidateAccessTokenResponseDto.fromJson(value);
+        case 'ValidateLibraryDto':
+          return ValidateLibraryDto.fromJson(value);
+        case 'ValidateLibraryImportPathResponseDto':
+          return ValidateLibraryImportPathResponseDto.fromJson(value);
+        case 'ValidateLibraryResponseDto':
+          return ValidateLibraryResponseDto.fromJson(value);
         case 'VideoCodec':
           return VideoCodecTypeTransformer().decode(value);
         default:

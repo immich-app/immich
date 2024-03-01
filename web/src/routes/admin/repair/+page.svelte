@@ -2,6 +2,7 @@
   import empty4Url from '$lib/assets/empty-4.svg';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import {
@@ -9,12 +10,12 @@
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import { downloadManager } from '$lib/stores/download';
+  import { copyToClipboard } from '$lib/utils';
   import { downloadBlob } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { type FileReportItemDto, api, copyToClipboard } from '@api';
-  import Icon from '$lib/components/elements/icon.svelte';
+  import { fixAuditFiles, getAuditFiles, getFileChecksums, type FileReportItemDto } from '@immich/sdk';
+  import { mdiCheckAll, mdiContentCopy, mdiDownload, mdiRefresh, mdiWrench } from '@mdi/js';
   import type { PageData } from './$types';
-  import { mdiWrench, mdiCheckAll, mdiDownload, mdiRefresh, mdiContentCopy } from '@mdi/js';
 
   export let data: PageData;
 
@@ -65,7 +66,7 @@
     repairing = true;
 
     try {
-      await api.auditApi.fixAuditFiles({
+      await fixAuditFiles({
         fileReportFixDto: {
           items: matches.map(({ orphan, extra }) => ({
             entityId: orphan.entityId,
@@ -101,7 +102,7 @@
     extras = [];
 
     try {
-      const { data: report } = await api.auditApi.getAuditFiles();
+      const report = await getAuditFiles();
 
       orphans = report.orphans;
       extras = normalize(report.extras);
@@ -144,7 +145,7 @@
   };
 
   const loadAndMatch = async (filenames: string[]) => {
-    const { data: items } = await api.auditApi.getFileChecksums({
+    const items = await getFileChecksums({
       fileChecksumDto: { filenames },
     });
 

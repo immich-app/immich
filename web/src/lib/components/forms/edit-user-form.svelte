@@ -1,16 +1,15 @@
 <script lang="ts">
-  import { api, type UserResponseDto } from '@api';
-  import { createEventDispatcher } from 'svelte';
-  import { notificationController, NotificationType } from '../shared-components/notification/notification';
-  import Button from '../elements/buttons/button.svelte';
-  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { mdiAccountEditOutline, mdiClose } from '@mdi/js';
+  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import { AppRoute } from '$lib/constants';
-  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
-  import { handleError } from '$lib/utils/handle-error';
-  import { convertFromBytes, convertToBytes } from '$lib/utils/byte-converter';
   import { serverInfo } from '$lib/stores/server-info.store';
+  import { convertFromBytes, convertToBytes } from '$lib/utils/byte-converter';
+  import { handleError } from '$lib/utils/handle-error';
+  import { updateUser, type UserResponseDto } from '@immich/sdk';
+  import { mdiAccountEditOutline, mdiClose } from '@mdi/js';
+  import { createEventDispatcher } from 'svelte';
+  import Button from '../elements/buttons/button.svelte';
+  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
 
   export let user: UserResponseDto;
   export let canResetPassword = true;
@@ -35,21 +34,18 @@
 
   const editUser = async () => {
     try {
-      const { id, email, name, storageLabel, externalPath } = user;
-      const { status } = await api.userApi.updateUser({
+      const { id, email, name, storageLabel } = user;
+      await updateUser({
         updateUserDto: {
           id,
           email,
           name,
           storageLabel: storageLabel || '',
-          externalPath: externalPath || '',
           quotaSizeInBytes: quotaSize ? convertToBytes(Number(quotaSize), 'GiB') : null,
         },
       });
 
-      if (status === 200) {
-        dispatch('editSuccess');
-      }
+      dispatch('editSuccess');
     } catch (error) {
       handleError(error, 'Unable to update user');
     }
@@ -59,7 +55,7 @@
     try {
       const defaultPassword = 'password';
 
-      const { status } = await api.userApi.updateUser({
+      await updateUser({
         updateUserDto: {
           id: user.id,
           password: defaultPassword,
@@ -67,15 +63,9 @@
         },
       });
 
-      if (status == 200) {
-        dispatch('resetPasswordSuccess');
-      }
+      dispatch('resetPasswordSuccess');
     } catch (error) {
-      console.error('Error reseting user password', error);
-      notificationController.show({
-        message: 'Error reseting user password, check console for more details',
-        type: NotificationType.Error,
-      });
+      handleError(error, 'Unable to reset password');
     } finally {
       isShowResetPasswordConfirmation = false;
     }
@@ -132,22 +122,6 @@
         <a href={AppRoute.ADMIN_JOBS} class="text-immich-primary dark:text-immich-dark-primary">
           Storage Migration Job</a
         >
-      </p>
-    </div>
-
-    <div class="m-4 flex flex-col gap-2">
-      <label class="immich-form-label" for="external-path">External Path</label>
-      <input
-        class="immich-form-input"
-        id="external-path"
-        name="external-path"
-        type="text"
-        bind:value={user.externalPath}
-      />
-
-      <p>
-        Note: Absolute path of parent import directory. A user can only import files if they exist at or under this
-        path.
       </p>
     </div>
 

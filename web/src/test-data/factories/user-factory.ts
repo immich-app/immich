@@ -1,5 +1,5 @@
-import { UserAvatarColor, type UserResponseDto } from '@api';
 import { faker } from '@faker-js/faker';
+import { UserAvatarColor, type UserResponseDto } from '@immich/sdk';
 import { Sync } from 'factory.ts';
 
 export const userFactory = Sync.makeFactory<UserResponseDto>({
@@ -7,7 +7,6 @@ export const userFactory = Sync.makeFactory<UserResponseDto>({
   email: Sync.each(() => faker.internet.email()),
   name: Sync.each(() => faker.person.fullName()),
   storageLabel: Sync.each(() => faker.string.alphanumeric()),
-  externalPath: Sync.each(() => faker.string.alphanumeric()),
   profileImagePath: '',
   shouldChangePassword: Sync.each(() => faker.datatype.boolean()),
   isAdmin: true,

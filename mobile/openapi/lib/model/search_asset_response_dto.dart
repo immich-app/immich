@@ -16,6 +16,7 @@ class SearchAssetResponseDto {
     required this.count,
     this.facets = const [],
     this.items = const [],
+    required this.nextPage,
     required this.total,
   });
 
@@ -25,6 +26,8 @@ class SearchAssetResponseDto {
 
   List<AssetResponseDto> items;
 
+  String? nextPage;
+
   int total;
 
   @override
@@ -32,6 +35,7 @@ class SearchAssetResponseDto {
     other.count == count &&
     _deepEquality.equals(other.facets, facets) &&
     _deepEquality.equals(other.items, items) &&
+    other.nextPage == nextPage &&
     other.total == total;
 
   @override
@@ -40,16 +44,22 @@ class SearchAssetResponseDto {
     (count.hashCode) +
     (facets.hashCode) +
     (items.hashCode) +
+    (nextPage == null ? 0 : nextPage!.hashCode) +
     (total.hashCode);
 
   @override
-  String toString() => 'SearchAssetResponseDto[count=$count, facets=$facets, items=$items, total=$total]';
+  String toString() => 'SearchAssetResponseDto[count=$count, facets=$facets, items=$items, nextPage=$nextPage, total=$total]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'count'] = this.count;
       json[r'facets'] = this.facets;
       json[r'items'] = this.items;
+    if (this.nextPage != null) {
+      json[r'nextPage'] = this.nextPage;
+    } else {
+    //  json[r'nextPage'] = null;
+    }
       json[r'total'] = this.total;
     return json;
   }
@@ -65,6 +75,7 @@ class SearchAssetResponseDto {
         count: mapValueOfType<int>(json, r'count')!,
         facets: SearchFacetResponseDto.listFromJson(json[r'facets']),
         items: AssetResponseDto.listFromJson(json[r'items']),
+        nextPage: mapValueOfType<String>(json, r'nextPage'),
         total: mapValueOfType<int>(json, r'total')!,
       );
     }
@@ -116,6 +127,7 @@ class SearchAssetResponseDto {
     'count',
     'facets',
     'items',
+    'nextPage',
     'total',
   };
 }

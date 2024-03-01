@@ -1,197 +1,167 @@
-<script lang="ts">
-  import Button from '$lib/components/elements/buttons/button.svelte';
-  import { fly } from 'svelte/transition';
-  import Combobox, { type ComboBoxOption } from '../combobox.svelte';
+<script lang="ts" context="module">
+  import type { SearchLocationFilter } from './search-location-section.svelte';
+  import type { SearchDisplayFilters } from './search-display-section.svelte';
+  import type { SearchDateFilter } from './search-date-section.svelte';
 
-  enum MediaType {
+  export enum MediaType {
     All = 'all',
     Image = 'image',
     Video = 'video',
   }
 
-  let selectedCountry: ComboBoxOption = { label: '', value: '' };
-  let selectedState: ComboBoxOption = { label: '', value: '' };
-  let selectedCity: ComboBoxOption = { label: '', value: '' };
+  export type SearchFilter = {
+    context?: string;
+    personIds: Set<string>;
+    location: SearchLocationFilter;
+    camera: SearchCameraFilter;
+    date: SearchDateFilter;
+    display: SearchDisplayFilters;
+    mediaType: MediaType;
+  };
+</script>
 
-  let mediaType: MediaType = MediaType.All;
-  let notInAlbum = false;
-  let inArchive = false;
-  let inFavorite = false;
+<script lang="ts">
+  import Button from '$lib/components/elements/buttons/button.svelte';
+  import { AssetTypeEnum, type SmartSearchDto, type MetadataSearchDto } from '@immich/sdk';
+  import { createEventDispatcher } from 'svelte';
+  import { fly } from 'svelte/transition';
+  import SearchPeopleSection from './search-people-section.svelte';
+  import SearchLocationSection from './search-location-section.svelte';
+  import SearchCameraSection, { type SearchCameraFilter } from './search-camera-section.svelte';
+  import SearchDateSection from './search-date-section.svelte';
+  import SearchMediaSection from './search-media-section.svelte';
+  import { parseUtcDate } from '$lib/utils/date-time';
+  import SearchDisplaySection from './search-display-section.svelte';
+
+  export let searchQuery: MetadataSearchDto | SmartSearchDto;
+
+  const parseOptionalDate = (dateString?: string) => (dateString ? parseUtcDate(dateString) : undefined);
+  const toStartOfDayDate = (dateString: string) => parseUtcDate(dateString)?.startOf('day').toISODate() || undefined;
+  const dispatch = createEventDispatcher<{ search: SmartSearchDto | MetadataSearchDto }>();
+
+  let filter: SearchFilter = {
+    context: 'query' in searchQuery ? searchQuery.query : '',
+    personIds: new Set('personIds' in searchQuery ? searchQuery.personIds : []),
+    location: {
+      country: searchQuery.country,
+      state: searchQuery.state,
+      city: searchQuery.city,
+    },
+    camera: {
+      make: searchQuery.make,
+      model: searchQuery.model,
+    },
+    date: {
+      takenAfter: searchQuery.takenAfter ? toStartOfDayDate(searchQuery.takenAfter) : undefined,
+      takenBefore: searchQuery.takenBefore ? toStartOfDayDate(searchQuery.takenBefore) : undefined,
+    },
+    display: {
+      isArchive: searchQuery.isArchived,
+      isFavorite: searchQuery.isFavorite,
+      isNotInAlbum: 'isNotInAlbum' in searchQuery ? searchQuery.isNotInAlbum : undefined,
+    },
+    mediaType:
+      searchQuery.type === AssetTypeEnum.Image
+        ? MediaType.Image
+        : searchQuery.type === AssetTypeEnum.Video
+          ? MediaType.Video
+          : MediaType.All,
+  };
+
+  let filterBoxWidth = 0;
+
+  const resetForm = () => {
+    filter = {
+      personIds: new Set(),
+      location: {},
+      camera: {},
+      date: {},
+      display: {},
+      mediaType: MediaType.All,
+    };
+  };
+
+  const search = () => {
+    let type: AssetTypeEnum | undefined = undefined;
+    if (filter.mediaType === MediaType.Image) {
+      type = AssetTypeEnum.Image;
+    } else if (filter.mediaType === MediaType.Video) {
+      type = AssetTypeEnum.Video;
+    }
+
+    let payload: SmartSearchDto | MetadataSearchDto = {
+      query: filter.context || undefined,
+      country: filter.location.country,
+      state: filter.location.state,
+      city: filter.location.city,
+      make: filter.camera.make,
+      model: filter.camera.model,
+      takenAfter: parseOptionalDate(filter.date.takenAfter)?.startOf('day').toISO() || undefined,
+      takenBefore: parseOptionalDate(filter.date.takenBefore)?.endOf('day').toISO() || undefined,
+      isArchived: filter.display.isArchive || undefined,
+      isFavorite: filter.display.isFavorite || undefined,
+      isNotInAlbum: filter.display.isNotInAlbum || undefined,
+      personIds: filter.personIds.size > 0 ? [...filter.personIds] : undefined,
+      type,
+    };
+
+    dispatch('search', payload);
+  };
 </script>
 
 <div
+  bind:clientWidth={filterBoxWidth}
   transition:fly={{ y: 25, duration: 250 }}
-  class="absolute w-full rounded-b-3xl border border-gray-200 bg-white pb-5 shadow-2xl transition-all dark:border-gray-800 dark:bg-immich-dark-gray dark:text-gray-300 p-6"
+  class="absolute w-full rounded-b-3xl border border-t-0 border-gray-200 bg-white shadow-2xl dark:border-gray-800 dark:bg-immich-dark-gray dark:text-gray-300"
 >
-  <p class="text-xs py-2">FILTERS</p>
-  <hr class="py-2" />
+  <form
+    id="search-filter-form"
+    autocomplete="off"
+    on:submit|preventDefault={search}
+    on:reset|preventDefault={resetForm}
+  >
+    <div class="px-4 sm:px-6 py-4 space-y-10 max-h-[calc(100dvh-12rem)] overflow-y-auto immich-scrollbar">
+      <!-- PEOPLE -->
+      <SearchPeopleSection width={filterBoxWidth} bind:selectedPeople={filter.personIds} />
 
-  <form id="search-filter-form" autocomplete="off">
-    <div class="py-3">
-      <label class="immich-form-label" for="context">CONTEXT</label>
-      <input
-        class="immich-form-input hover:cursor-text w-full mt-3"
-        type="text"
-        id="context"
-        name="context"
-        placeholder="Sunrise on the beach"
-      />
-    </div>
-
-    <div class="py-3 grid grid-cols-2">
-      <!-- MEDIA TYPE -->
-      <div id="media-type-selection">
-        <p class="immich-form-label">MEDIA TYPE</p>
-
-        <div class="flex gap-5 mt-3">
-          <label
-            for="type-all"
-            class="text-base flex place-items-center gap-1 hover:cursor-pointer text-black dark:text-white"
-          >
-            <input
-              bind:group={mediaType}
-              value={MediaType.All}
-              type="radio"
-              name="radio-type"
-              id="type-all"
-            />All</label
-          >
-
-          <label
-            for="type-image"
-            class="text-base flex place-items-center gap-1 hover:cursor-pointer text-black dark:text-white"
-          >
-            <input
-              bind:group={mediaType}
-              value={MediaType.Image}
-              type="radio"
-              name="radio-type"
-              id="type-image"
-            />Image</label
-          >
-
-          <label
-            for="type-video"
-            class="text-base flex place-items-center gap-1 hover:cursor-pointer text-black dark:text-white"
-          >
-            <input
-              bind:group={mediaType}
-              value={MediaType.Video}
-              type="radio"
-              name="radio-type"
-              id="type-video"
-            />Video</label
-          >
-        </div>
+      <!-- CONTEXT -->
+      <div>
+        <label class="immich-form-label" for="context">
+          <span>CONTEXT</span>
+          <input
+            class="immich-form-input hover:cursor-text w-full mt-1"
+            type="text"
+            id="context"
+            name="context"
+            placeholder="Sunrise on the beach"
+            bind:value={filter.context}
+          />
+        </label>
       </div>
 
-      <!-- DISPLAY OPTIONS -->
-      <div id="display-options-selection">
-        <p class="immich-form-label">DISPLAY OPTIONS</p>
+      <!-- LOCATION -->
+      <SearchLocationSection bind:filters={filter.location} />
 
-        <div class="flex gap-5 mt-3">
-          <label class="flex items-center mb-2">
-            <input type="checkbox" class="form-checkbox h-5 w-5 color" bind:checked={notInAlbum} />
-            <span class="ml-2 text-sm text-black dark:text-white pt-1">Not in any album</span>
-          </label>
+      <!-- CAMERA MODEL -->
+      <SearchCameraSection bind:filters={filter.camera} />
 
-          <label class="flex items-center mb-2">
-            <input type="checkbox" class="form-checkbox h-5 w-5 color" bind:checked={inArchive} />
-            <span class="ml-2 text-sm text-black dark:text-white pt-1">Archive</span>
-          </label>
+      <!-- DATE RANGE -->
+      <SearchDateSection bind:filters={filter.date} />
 
-          <label class="flex items-center mb-2">
-            <input type="checkbox" class="form-checkbox h-5 w-5 color" bind:checked={inFavorite} />
-            <span class="ml-2 text-sm text-black dark:text-white pt-1">Favorite</span>
-          </label>
-        </div>
+      <div class="grid md:grid-cols-2 gap-x-5 gap-y-8">
+        <!-- MEDIA TYPE -->
+        <SearchMediaSection bind:filteredMedia={filter.mediaType} />
+
+        <!-- DISPLAY OPTIONS -->
+        <SearchDisplaySection bind:filters={filter.display} />
       </div>
     </div>
 
-    <hr />
-
-    <!-- PEOPLE -->
-    <div id="people-selection" class="my-4">
-      <div class="flex justify-between place-items-center gap-6">
-        <div class="flex-1">
-          <p class="immich-form-label">PEOPLE</p>
-        </div>
-
-        <div class="flex-1">
-          <Combobox options={[]} selectedOption={selectedCountry} placeholder="Search people..." />
-        </div>
-      </div>
-    </div>
-
-    <hr />
-    <!-- LOCATION -->
-    <div id="location-selection" class="my-4">
-      <p class="immich-form-label">PLACE</p>
-
-      <div class="flex justify-between gap-5 mt-3">
-        <div class="w-full">
-          <p class="text-sm text-black dark:text-white">Country</p>
-          <Combobox options={[]} selectedOption={selectedCountry} placeholder="Search country..." />
-        </div>
-
-        <div class="w-full">
-          <p class="text-sm text-black dark:text-white">State</p>
-          <Combobox options={[]} selectedOption={selectedState} placeholder="Search state..." />
-        </div>
-
-        <div class="w-full">
-          <p class="text-sm text-black dark:text-white">City</p>
-          <Combobox options={[]} selectedOption={selectedCity} placeholder="Search city..." />
-        </div>
-      </div>
-    </div>
-
-    <hr />
-    <!-- CAMERA MODEL -->
-    <div id="camera-selection" class="my-4">
-      <p class="immich-form-label">CAMERA</p>
-
-      <div class="flex justify-between gap-5 mt-3">
-        <div class="w-full">
-          <p class="text-sm text-black dark:text-white">Make</p>
-          <Combobox options={[]} selectedOption={selectedCountry} placeholder="Search country..." />
-        </div>
-
-        <div class="w-full">
-          <p class="text-sm text-black dark:text-white">Model</p>
-          <Combobox options={[]} selectedOption={selectedState} placeholder="Search state..." />
-        </div>
-      </div>
-    </div>
-
-    <hr />
-
-    <!-- DATE RANGE -->
-    <div id="date-range-selection" class="my-4 flex justify-between gap-5">
-      <div class="mb-3 flex-1 mt">
-        <label class="immich-form-label" for="start-date">START DATE</label>
-        <input
-          class="immich-form-input w-full mt-3 hover:cursor-pointer"
-          type="date"
-          id="start-date"
-          name="start-date"
-        />
-      </div>
-
-      <div class="mb-3 flex-1">
-        <label class="immich-form-label" for="end-date">END DATE</label>
-        <input
-          class="immich-form-input w-full mt-3 hover:cursor-pointer"
-          type="date"
-          id="end-date"
-          name="end-date"
-          placeholder=""
-        />
-      </div>
-    </div>
-
-    <div id="button-row" class="flex justify-end gap-4 mt-5">
-      <Button color="gray">CLEAR ALL</Button>
+    <div
+      id="button-row"
+      class="flex justify-end gap-4 border-t dark:border-gray-800 dark:bg-immich-dark-gray px-4 sm:py-6 py-4 mt-2 rounded-b-3xl"
+    >
+      <Button type="reset" color="gray">CLEAR ALL</Button>
       <Button type="submit">SEARCH</Button>
     </div>
   </form>

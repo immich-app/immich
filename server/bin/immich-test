@@ -1,2 +1,3 @@
 #!/usr/bin/env bash
-node /usr/src/app/node_modules/.bin/jest --config e2e/$1/jest-e2e.json --runInBand
+
+node /usr/src/app/node_modules/.bin/jest --config e2e/"$1"/jest-e2e.json --runInBand

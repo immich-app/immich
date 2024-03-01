@@ -12,7 +12,7 @@ concurrency:
 jobs:
   server-e2e-api:
     name: Server (e2e-api)
-    runs-on: mich
+    runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: ./server
@@ -29,13 +29,13 @@ jobs:
 
   server-e2e-jobs:
     name: Server (e2e-jobs)
-    runs-on: mich
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          submodules: "recursive"
+          submodules: 'recursive'
 
       - name: Run e2e tests
         run: make server-e2e-jobs
@@ -135,38 +135,6 @@ jobs:
         run: npm run test:cov
         if: ${{ !cancelled() }}
 
-  cli-e2e-tests:
-    name: CLI (e2e)
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./cli
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          submodules: "recursive"
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Run setup typescript-sdk
-        run: npm ci && npm run build
-        working-directory: ./open-api/typescript-sdk
-
-      - name: Run npm install (cli)
-        run: npm ci
-
-      - name: Run npm install (server)
-        run: npm ci && npm run build
-        working-directory: ./server
-
-      - name: Run e2e tests
-        run: npm run test:e2e
-
   web-unit-tests:
     name: Web
     runs-on: ubuntu-latest
@@ -205,6 +173,62 @@ jobs:
         run: npm run test:cov
         if: ${{ !cancelled() }}
 
+  e2e-tests:
+    name: End-to-End Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./e2e
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Run setup typescript-sdk
+        run: npm ci && npm run build
+        working-directory: ./open-api/typescript-sdk
+        if: ${{ !cancelled() }}
+
+      - name: Run setup cli
+        run: npm ci && npm run build
+        working-directory: ./cli
+        if: ${{ !cancelled() }}
+
+      - name: Install dependencies
+        run: npm ci
+        if: ${{ !cancelled() }}
+
+      - name: Run linter
+        run: npm run lint
+        if: ${{ !cancelled() }}
+
+      - name: Run formatter
+        run: npm run format
+        if: ${{ !cancelled() }}
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps chromium
+        if: ${{ !cancelled() }}
+
+      - name: Docker build
+        run: docker compose build
+        if: ${{ !cancelled() }}
+
+      - name: Run e2e tests (api & cli)
+        run: npm run test
+        if: ${{ !cancelled() }}
+
+      - name: Run e2e tests (web)
+        run: npx playwright test
+        if: ${{ !cancelled() }}
+
   mobile-unit-tests:
     name: Mobile
     runs-on: ubuntu-latest
@@ -213,8 +237,8 @@ jobs:
       - name: Setup Flutter SDK
         uses: subosito/flutter-action@v2
         with:
-          channel: "stable"
-          flutter-version: "3.16.9"
+          channel: 'stable'
+          flutter-version: '3.16.9'
       - name: Run tests
         working-directory: ./mobile
         run: flutter test -j 1
@@ -232,7 +256,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: 3.11
-          cache: "poetry"
+          cache: 'poetry'
       - name: Install dependencies
         run: |
           poetry install --with dev --with cpu
@@ -247,7 +271,20 @@ jobs:
           poetry run mypy --install-types --non-interactive --strict app/
       - name: Run tests and coverage
         run: |
-          poetry run pytest --cov app
+          poetry run pytest app --cov=app --cov-report term-missing
+
+  shellcheck:
+    name: ShellCheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run ShellCheck
+        uses: ludeeus/action-shellcheck@master
+        with:
+          ignore_paths: >-
+            **/open-api/**
+            **/openapi/**
+            **/node_modules/**
 
   generated-api-up-to-date:
     name: OpenAPI Clients
@@ -257,7 +294,7 @@ jobs:
       - name: Run API generation
         run: make open-api
       - name: Find file changes
-        uses: tj-actions/verify-changed-files@v13.1
+        uses: tj-actions/verify-changed-files@v19
         id: verify-changed-files
         with:
           files: |
@@ -275,7 +312,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: tensorchord/pgvecto-rs:pg14-v0.2.0
+        image: tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:90724186f0a3517cf6914295b5ab410db9ce23190a2d9d0b9dd6463e3fa298f0
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_USER: postgres
@@ -312,7 +349,7 @@ jobs:
         run: npm run typeorm:migrations:generate ./src/infra/migrations/TestMigration
 
       - name: Find file changes
-        uses: tj-actions/verify-changed-files@v13.1
+        uses: tj-actions/verify-changed-files@v19
         id: verify-changed-files
         with:
           files: |
@@ -330,7 +367,7 @@ jobs:
           DB_URL: postgres://postgres:postgres@localhost:5432/immich
 
       - name: Find file changes
-        uses: tj-actions/verify-changed-files@v13.1
+        uses: tj-actions/verify-changed-files@v19
         id: verify-changed-sql-files
         with:
           files: |

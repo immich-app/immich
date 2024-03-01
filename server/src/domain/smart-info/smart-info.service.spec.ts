@@ -5,7 +5,7 @@ import {
   newDatabaseRepositoryMock,
   newJobRepositoryMock,
   newMachineLearningRepositoryMock,
-  newSmartInfoRepositoryMock,
+  newSearchRepositoryMock,
   newSystemConfigRepositoryMock,
 } from '@test';
 import { JobName } from '../job';
@@ -14,7 +14,7 @@ import {
   IDatabaseRepository,
   IJobRepository,
   IMachineLearningRepository,
-  ISmartInfoRepository,
+  ISearchRepository,
   ISystemConfigRepository,
   WithoutProperty,
 } from '../repositories';
@@ -31,18 +31,18 @@ describe(SmartInfoService.name, () => {
   let assetMock: jest.Mocked<IAssetRepository>;
   let configMock: jest.Mocked<ISystemConfigRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
-  let smartMock: jest.Mocked<ISmartInfoRepository>;
+  let searchMock: jest.Mocked<ISearchRepository>;
   let machineMock: jest.Mocked<IMachineLearningRepository>;
   let databaseMock: jest.Mocked<IDatabaseRepository>;
 
   beforeEach(async () => {
     assetMock = newAssetRepositoryMock();
     configMock = newSystemConfigRepositoryMock();
-    smartMock = newSmartInfoRepositoryMock();
+    searchMock = newSearchRepositoryMock();
     jobMock = newJobRepositoryMock();
     machineMock = newMachineLearningRepositoryMock();
     databaseMock = newDatabaseRepositoryMock();
-    sut = new SmartInfoService(assetMock, databaseMock, jobMock, machineMock, smartMock, configMock);
+    sut = new SmartInfoService(assetMock, databaseMock, jobMock, machineMock, searchMock, configMock);
 
     assetMock.getByIds.mockResolvedValue([asset]);
   });
@@ -71,6 +71,7 @@ describe(SmartInfoService.name, () => {
 
       expect(jobMock.queueAll).toHaveBeenCalledWith([{ name: JobName.SMART_SEARCH, data: { id: assetStub.image.id } }]);
       expect(assetMock.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.SMART_SEARCH);
+      expect(searchMock.deleteAllSearchEmbeddings).not.toHaveBeenCalled();
     });
 
     it('should queue all the assets', async () => {
@@ -83,6 +84,7 @@ describe(SmartInfoService.name, () => {
 
       expect(jobMock.queueAll).toHaveBeenCalledWith([{ name: JobName.SMART_SEARCH, data: { id: assetStub.image.id } }]);
       expect(assetMock.getAll).toHaveBeenCalled();
+      expect(searchMock.deleteAllSearchEmbeddings).toHaveBeenCalled();
     });
   });
 
@@ -102,12 +104,12 @@ describe(SmartInfoService.name, () => {
 
       await sut.handleEncodeClip({ id: asset.id });
 
-      expect(smartMock.upsert).not.toHaveBeenCalled();
+      expect(searchMock.upsert).not.toHaveBeenCalled();
       expect(machineMock.encodeImage).not.toHaveBeenCalled();
     });
 
     it('should save the returned objects', async () => {
-      smartMock.upsert.mockResolvedValue();
+      searchMock.upsert.mockResolvedValue();
       machineMock.encodeImage.mockResolvedValue([0.01, 0.02, 0.03]);
 
       await sut.handleEncodeClip({ id: asset.id });
@@ -117,7 +119,7 @@ describe(SmartInfoService.name, () => {
         { imagePath: 'path/to/resize.ext' },
         { enabled: true, modelName: 'ViT-B-32__openai' },
       );
-      expect(smartMock.upsert).toHaveBeenCalledWith(
+      expect(searchMock.upsert).toHaveBeenCalledWith(
         {
           assetId: 'asset-1',
         },

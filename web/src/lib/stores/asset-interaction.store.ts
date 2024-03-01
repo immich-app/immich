@@ -1,4 +1,4 @@
-import type { AssetResponseDto } from '@api';
+import type { AssetResponseDto } from '@immich/sdk';
 import { derived, writable } from 'svelte/store';
 
 export interface AssetInteractionStore {

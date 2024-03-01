@@ -72,7 +72,7 @@ export class DatabaseService {
         In this case, please run 'CREATE EXTENSION IF NOT EXISTS ${this.vectorExt}' manually as a superuser.
         See https://immich.app/docs/guides/database-queries for how to query the database.
 
-        Alternatively, if your Postgres instance has ${extName[otherExt]}, you may use this instead by setting the environment variable 'VECTOR_EXTENSION=${otherExt}'.
+        Alternatively, if your Postgres instance has ${extName[otherExt]}, you may use this instead by setting the environment variable 'DB_VECTOR_EXTENSION=${extName[otherExt]}'.
         Note that switching between the two extensions after a successful startup is not supported.
         The exception is if your version of Immich prior to upgrading was 1.90.2 or earlier.
         In this case, you may set either extension now, but you will not be able to switch to the other extension following a successful startup.

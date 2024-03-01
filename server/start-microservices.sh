@@ -1,2 +1,3 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
+
 ./start.sh microservices

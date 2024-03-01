@@ -20,7 +20,7 @@ import {
   IMediaRepository,
   IMoveRepository,
   IPersonRepository,
-  ISmartInfoRepository,
+  ISearchRepository,
   IStorageRepository,
   ISystemConfigRepository,
   JobItem,
@@ -61,7 +61,7 @@ export class PersonService {
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
-    @Inject(ISmartInfoRepository) private smartInfoRepository: ISmartInfoRepository,
+    @Inject(ISearchRepository) private smartInfoRepository: ISearchRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
   ) {
     this.access = AccessCore.create(accessRepository);
@@ -82,15 +82,12 @@ export class PersonService {
       minimumFaceCount: machineLearning.facialRecognition.minFaces,
       withHidden: dto.withHidden || false,
     });
-    const total = await this.repository.getNumberOfPeople(auth.user.id);
-    const persons: PersonResponseDto[] = people
-      // with thumbnails
-      .filter((person) => !!person.thumbnailPath)
-      .map((person) => mapPerson(person));
+    const { total, hidden } = await this.repository.getNumberOfPeople(auth.user.id);
 
     return {
-      people: persons.filter((person) => dto.withHidden || !person.isHidden),
+      people: people.map((person) => mapPerson(person)),
       total,
+      hidden,
     };
   }
 
@@ -285,15 +282,7 @@ export class PersonService {
 
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
       return force
-        ? this.assetRepository.getAll(pagination, {
-            order: 'DESC',
-            withFaces: true,
-            withPeople: false,
-            withSmartInfo: false,
-            withSmartSearch: false,
-            withExif: false,
-            withStacked: false,
-          })
+        ? this.assetRepository.getAll(pagination, { orderDirection: 'DESC', withFaces: true })
         : this.assetRepository.getWithout(pagination, WithoutProperty.FACES);
     });
 
@@ -418,8 +407,8 @@ export class PersonService {
     });
 
     // `matches` also includes the face itself
-    if (matches.length <= 1) {
-      this.logger.debug(`Face ${id} has no matches`);
+    if (machineLearning.facialRecognition.minFaces > 1 && matches.length <= 1) {
+      this.logger.debug(`Face ${id} only matched the face itself, skipping`);
       return true;
     }
 

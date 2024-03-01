@@ -15,6 +15,7 @@ export class PartnerController {
 
   @Get()
   @ApiQuery({ name: 'direction', type: 'string', enum: PartnerDirection, required: true })
+  // TODO: remove 'direction' and convert to full query dto
   getPartners(@Auth() auth: AuthDto, @Query('direction') direction: PartnerDirection): Promise<PartnerResponseDto[]> {
     return this.service.getAll(auth, direction);
   }

@@ -29,6 +29,7 @@ import {
   IMMICH_ACCESS_COOKIE,
   IMMICH_API_KEY_HEADER,
   IMMICH_AUTH_TYPE_COOKIE,
+  IMMICH_IS_AUTHENTICATED,
   LOGIN_URL,
   MOBILE_REDIRECT,
 } from './auth.constant';
@@ -429,14 +430,17 @@ export class AuthService {
 
     let authTypeCookie = '';
     let accessTokenCookie = '';
+    let isAuthenticatedCookie = '';
 
     if (isSecure) {
       accessTokenCookie = `${IMMICH_ACCESS_COOKIE}=${loginResponse.accessToken}; HttpOnly; Secure; Path=/; Max-Age=${maxAge}; SameSite=Lax;`;
       authTypeCookie = `${IMMICH_AUTH_TYPE_COOKIE}=${authType}; HttpOnly; Secure; Path=/; Max-Age=${maxAge}; SameSite=Lax;`;
+      isAuthenticatedCookie = `${IMMICH_IS_AUTHENTICATED}=true; Secure; Path=/; Max-Age=${maxAge}; SameSite=Lax;`;
     } else {
       accessTokenCookie = `${IMMICH_ACCESS_COOKIE}=${loginResponse.accessToken}; HttpOnly; Path=/; Max-Age=${maxAge}; SameSite=Lax;`;
       authTypeCookie = `${IMMICH_AUTH_TYPE_COOKIE}=${authType}; HttpOnly; Path=/; Max-Age=${maxAge}; SameSite=Lax;`;
+      isAuthenticatedCookie = `${IMMICH_IS_AUTHENTICATED}=true; Path=/; Max-Age=${maxAge}; SameSite=Lax;`;
     }
-    return [accessTokenCookie, authTypeCookie];
+    return [accessTokenCookie, authTypeCookie, isAuthenticatedCookie];
   }
 }

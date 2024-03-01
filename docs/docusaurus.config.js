@@ -161,7 +161,7 @@ const config = {
             ],
           },
         ],
-        copyright: `Immich is available as open source under the terms of the MIT License.`,
+        copyright: `Immich is available as open source under the terms of the GNU AGPL v3 License.`,
       },
       prism: {
         theme: prism.themes.github,

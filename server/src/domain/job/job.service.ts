@@ -248,16 +248,18 @@ export class JobService {
         const jobs: JobItem[] = [
           { name: JobName.GENERATE_WEBP_THUMBNAIL, data: item.data },
           { name: JobName.GENERATE_THUMBHASH_THUMBNAIL, data: item.data },
-          { name: JobName.SMART_SEARCH, data: item.data },
-          { name: JobName.FACE_DETECTION, data: item.data },
         ];
 
-        const [asset] = await this.assetRepository.getByIds([item.data.id]);
-        if (asset) {
-          if (asset.type === AssetType.VIDEO) {
-            jobs.push({ name: JobName.VIDEO_CONVERSION, data: item.data });
-          } else if (asset.livePhotoVideoId) {
-            jobs.push({ name: JobName.VIDEO_CONVERSION, data: { id: asset.livePhotoVideoId } });
+        if (item.data.source === 'upload') {
+          jobs.push({ name: JobName.SMART_SEARCH, data: item.data }, { name: JobName.FACE_DETECTION, data: item.data });
+
+          const [asset] = await this.assetRepository.getByIds([item.data.id]);
+          if (asset) {
+            if (asset.type === AssetType.VIDEO) {
+              jobs.push({ name: JobName.VIDEO_CONVERSION, data: item.data });
+            } else if (asset.livePhotoVideoId) {
+              jobs.push({ name: JobName.VIDEO_CONVERSION, data: { id: asset.livePhotoVideoId } });
+            }
           }
         }
 

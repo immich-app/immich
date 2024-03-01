@@ -8,7 +8,7 @@ import {
   IDatabaseRepository,
   IJobRepository,
   IMachineLearningRepository,
-  ISmartInfoRepository,
+  ISearchRepository,
   ISystemConfigRepository,
   WithoutProperty,
 } from '../repositories';
@@ -24,7 +24,7 @@ export class SmartInfoService {
     @Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IMachineLearningRepository) private machineLearning: IMachineLearningRepository,
-    @Inject(ISmartInfoRepository) private repository: ISmartInfoRepository,
+    @Inject(ISearchRepository) private repository: ISearchRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
   ) {
     this.configCore = SystemConfigCore.create(configRepository);
@@ -48,6 +48,10 @@ export class SmartInfoService {
     const { machineLearning } = await this.configCore.getConfig();
     if (!machineLearning.enabled || !machineLearning.clip.enabled) {
       return true;
+    }
+
+    if (force) {
+      await this.repository.deleteAllSearchEmbeddings();
     }
 
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {

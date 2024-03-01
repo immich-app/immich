@@ -105,10 +105,8 @@ class MapUtils {
         timeLimit: const Duration(seconds: 5),
       );
       return (currentUserLocation, null);
-    } catch (error) {
-      _log.severe(
-        "Cannot get user's current location due to ${error.toString()}",
-      );
+    } catch (error, stack) {
+      _log.severe("Cannot get user's current location", error, stack);
       return (null, LocationPermission.unableToDetermine);
     }
   }

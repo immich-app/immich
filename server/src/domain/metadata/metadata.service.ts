@@ -493,7 +493,7 @@ export class MetadataService {
       model: tags.Model ?? null,
       modifyDate: exifDate(tags.ModifyDate) ?? asset.fileModifiedAt,
       orientation: validate(tags.Orientation)?.toString() ?? null,
-      profileDescription: tags.ProfileDescription || tags.ProfileName || null,
+      profileDescription: tags.ProfileDescription || null,
       projectionType: tags.ProjectionType ? String(tags.ProjectionType).toUpperCase() : null,
       timeZone: tags.tz ?? null,
     };

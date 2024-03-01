@@ -1,6 +1,7 @@
 <script lang="ts">
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
-  import { OnStack, getAssetControlContext } from '../asset-select-control-bar.svelte';
+  import { getAssetControlContext } from '../asset-select-control-bar.svelte';
+  import type { OnStack } from '$lib/utils/actions';
   import { stackAssets } from '$lib/utils/asset-utils';
 
   export let onStack: OnStack | undefined;

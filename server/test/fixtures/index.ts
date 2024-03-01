@@ -3,7 +3,6 @@ export * from './api-key.stub';
 export * from './asset.stub';
 export * from './audit.stub';
 export * from './auth.stub';
-export * from './device.stub';
 export * from './error.stub';
 export * from './face.stub';
 export * from './file.stub';

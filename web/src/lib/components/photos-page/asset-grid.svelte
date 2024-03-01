@@ -7,8 +7,11 @@
   import { BucketPosition, type AssetStore, type Viewport } from '$lib/stores/assets.store';
   import { locale, showDeleteModal } from '$lib/stores/preferences.store';
   import { isSearchEnabled } from '$lib/stores/search.store';
+  import { featureFlags } from '$lib/stores/server-config.store';
+  import { deleteAssets } from '$lib/utils/actions';
+  import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
   import { formatGroupTitle, splitBucketIntoDateGroups } from '$lib/utils/timeline-util';
-  import type { AlbumResponseDto, AssetResponseDto } from '@api';
+  import type { AlbumResponseDto, AssetResponseDto } from '@immich/sdk';
   import { DateTime } from 'luxon';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import AssetViewer from '../asset-viewer/asset-viewer.svelte';
@@ -17,11 +20,9 @@
   import Scrollbar from '../shared-components/scrollbar/scrollbar.svelte';
   import ShowShortcuts from '../shared-components/show-shortcuts.svelte';
   import AssetDateGroup from './asset-date-group.svelte';
-  import { featureFlags } from '$lib/stores/server-config.store';
-  import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
   import { stackAssets } from '$lib/utils/asset-utils';
-  import { deleteAssets } from '$lib/utils/actions';
   import DeleteAssetDialog from './delete-asset-dialog.svelte';
+  import { handlePromiseError } from '$lib/utils';
 
   export let isSelectionMode = false;
   export let singleSelect = false;
@@ -29,6 +30,7 @@
   export let assetInteractionStore: AssetInteractionStore;
   export let removeAction: AssetAction | null = null;
   export let withStacked = false;
+  export let showArchiveIcon = false;
   export let isShared = false;
   export let album: AlbumResponseDto | null = null;
   export let isShowDeleteConfirmation = false;
@@ -47,19 +49,19 @@
   $: isEmpty = $assetStore.initialized && $assetStore.buckets.length === 0;
   $: idsSelectedAssets = [...$selectedAssets].filter((a) => !a.isExternal).map((a) => a.id);
 
-  const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
   const dispatch = createEventDispatcher<{ select: AssetResponseDto; escape: void }>();
 
+  const onKeydown = (event: KeyboardEvent) => handlePromiseError(handleKeyboardPress(event));
   onMount(async () => {
     showSkeleton = false;
-    document.addEventListener('keydown', onKeyboardPress);
+    document.addEventListener('keydown', onKeydown);
     assetStore.connect();
     await assetStore.init(viewport);
   });
 
   onDestroy(() => {
     if (browser) {
-      document.removeEventListener('keydown', onKeyboardPress);
+      document.removeEventListener('keydown', onKeydown);
     }
 
     if ($showAssetViewer) {
@@ -69,13 +71,13 @@
     assetStore.disconnect();
   });
 
-  const trashOrDelete = (force: boolean = false) => {
+  const trashOrDelete = async (force: boolean = false) => {
     isShowDeleteConfirmation = false;
-    deleteAssets(!(isTrashEnabled && !force), (assetId) => assetStore.removeAsset(assetId), idsSelectedAssets);
+    await deleteAssets(!(isTrashEnabled && !force), (assetId) => assetStore.removeAsset(assetId), idsSelectedAssets);
     assetInteractionStore.clearMultiselect();
   };
 
-  const handleKeyboardPress = (event: KeyboardEvent) => {
+  const handleKeyboardPress = async (event: KeyboardEvent) => {
     if ($isSearchEnabled || shouldIgnoreShortcut(event)) {
       return;
     }
@@ -98,7 +100,7 @@
         }
         case '/': {
           event.preventDefault();
-          goto(AppRoute.EXPLORE);
+          await goto(AppRoute.EXPLORE);
           return;
         }
         case 's': {
@@ -121,7 +123,7 @@
               force = true;
             }
 
-            trashOrDelete(force);
+            await trashOrDelete(force);
           }
           return;
         }
@@ -135,12 +137,12 @@
     }
   };
 
-  function intersectedHandler(event: CustomEvent) {
+  async function intersectedHandler(event: CustomEvent) {
     const element_ = event.detail.container as HTMLElement;
     const target = element_.firstChild as HTMLElement;
     if (target) {
       const bucketDate = target.id.split('_')[1];
-      assetStore.loadBucket(bucketDate, event.detail.position);
+      await assetStore.loadBucket(bucketDate, event.detail.position);
     }
   }
 
@@ -151,7 +153,7 @@
   const handlePrevious = async () => {
     const previousAsset = await assetStore.getPreviousAssetId($viewingAsset.id);
     if (previousAsset) {
-      assetViewingStore.setAssetId(previousAsset);
+      await assetViewingStore.setAssetId(previousAsset);
     }
 
     return !!previousAsset;
@@ -160,7 +162,7 @@
   const handleNext = async () => {
     const nextAsset = await assetStore.getNextAssetId($viewingAsset.id);
     if (nextAsset) {
-      assetViewingStore.setAssetId(nextAsset);
+      await assetViewingStore.setAssetId(nextAsset);
     }
 
     return !!nextAsset;
@@ -378,7 +380,7 @@
   <DeleteAssetDialog
     size={idsSelectedAssets.length}
     on:cancel={() => (isShowDeleteConfirmation = false)}
-    on:confirm={() => trashOrDelete(true)}
+    on:confirm={() => handlePromiseError(trashOrDelete(true))}
   />
 {/if}
 
@@ -435,6 +437,7 @@
             {#if intersecting}
               <AssetDateGroup
                 {withStacked}
+                {showArchiveIcon}
                 {assetStore}
                 {assetInteractionStore}
                 {isSelectionMode}
@@ -464,9 +467,9 @@
       asset={$viewingAsset}
       {isShared}
       {album}
-      on:previous={() => handlePrevious()}
-      on:next={() => handleNext()}
-      on:close={() => handleClose()}
+      on:previous={handlePrevious}
+      on:next={handleNext}
+      on:close={handleClose}
       on:action={({ detail: action }) => handleAction(action.type, action.asset)}
     />
   {/if}

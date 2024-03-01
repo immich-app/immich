@@ -1,18 +1,18 @@
 <script lang="ts">
-  import type { ServerVersionResponseDto } from '@api';
   import { websocketStore } from '$lib/stores/websocket';
+  import type { ServerVersionResponseDto } from '@immich/sdk';
   import Button from '../elements/buttons/button.svelte';
   import FullScreenModal from './full-screen-modal.svelte';
 
   let showModal = false;
 
-  const { onRelease } = websocketStore;
+  const { release } = websocketStore;
 
   const semverToName = ({ major, minor, patch }: ServerVersionResponseDto) => `v${major}.${minor}.${patch}`;
 
-  $: releaseVersion = $onRelease && semverToName($onRelease.releaseVersion);
-  $: serverVersion = $onRelease && semverToName($onRelease.serverVersion);
-  $: $onRelease?.isAvailable && handleRelease();
+  $: releaseVersion = $release && semverToName($release.releaseVersion);
+  $: serverVersion = $release && semverToName($release.serverVersion);
+  $: $release?.isAvailable && handleRelease();
 
   const onAcknowledge = () => {
     localStorage.setItem('appVersion', releaseVersion);

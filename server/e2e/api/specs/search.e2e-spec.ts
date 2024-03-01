@@ -1,7 +1,7 @@
 import {
   AssetResponseDto,
   IAssetRepository,
-  ISmartInfoRepository,
+  ISearchRepository,
   LibraryResponseDto,
   LoginResponseDto,
   mapAsset,
@@ -20,14 +20,14 @@ describe(`${SearchController.name}`, () => {
   let accessToken: string;
   let libraries: LibraryResponseDto[];
   let assetRepository: IAssetRepository;
-  let smartInfoRepository: ISmartInfoRepository;
+  let smartInfoRepository: ISearchRepository;
   let asset1: AssetResponseDto;
 
   beforeAll(async () => {
     app = await testApp.create();
     server = app.getHttpServer();
     assetRepository = app.get<IAssetRepository>(IAssetRepository);
-    smartInfoRepository = app.get<ISmartInfoRepository>(ISmartInfoRepository);
+    smartInfoRepository = app.get<ISearchRepository>(ISearchRepository);
   });
 
   afterAll(async () => {
@@ -44,7 +44,7 @@ describe(`${SearchController.name}`, () => {
 
   describe('GET /search (exif)', () => {
     beforeEach(async () => {
-      const assetId = (await assetRepository.create(generateAsset(loginResponse.userId, libraries))).id;
+      const { id: assetId } = await assetRepository.create(generateAsset(loginResponse.userId, libraries));
       await assetRepository.upsertExif({ assetId, ...searchStub.exif });
 
       const assetWithMetadata = await assetRepository.getById(assetId, { exifInfo: true });
@@ -166,7 +166,7 @@ describe(`${SearchController.name}`, () => {
 
   describe('GET /search (smart info)', () => {
     beforeEach(async () => {
-      const assetId = (await assetRepository.create(generateAsset(loginResponse.userId, libraries))).id;
+      const { id: assetId } = await assetRepository.create(generateAsset(loginResponse.userId, libraries));
       await assetRepository.upsertExif({ assetId, ...searchStub.exif });
       await smartInfoRepository.upsert({ assetId, ...searchStub.smartInfo }, Array.from({ length: 512 }, Math.random));
 
@@ -215,7 +215,7 @@ describe(`${SearchController.name}`, () => {
 
   describe('GET /search (file name)', () => {
     beforeEach(async () => {
-      const assetId = (await assetRepository.create(generateAsset(loginResponse.userId, libraries))).id;
+      const { id: assetId } = await assetRepository.create(generateAsset(loginResponse.userId, libraries));
       await assetRepository.upsertExif({ assetId, ...searchStub.exif });
 
       const assetWithMetadata = await assetRepository.getById(assetId, { exifInfo: true });

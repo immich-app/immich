@@ -110,7 +110,8 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
         final endpoint = Uri.parse(Store.get(StoreKey.serverEndpoint));
         final headers = {"x-immich-user-token": accessToken};
         if (endpoint.userInfo.isNotEmpty) {
-          headers["Authorization"] = "Basic ${base64.encode(utf8.encode(endpoint.userInfo))}";
+          headers["Authorization"] =
+              "Basic ${base64.encode(utf8.encode(endpoint.userInfo))}";
         }
 
         debugPrint("Attempting to connect to websocket");
@@ -161,6 +162,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
         socket.on('on_asset_trash', _handleServerUpdates);
         socket.on('on_asset_restore', _handleServerUpdates);
         socket.on('on_asset_update', _handleServerUpdates);
+        socket.on('on_asset_stack_update', _handleServerUpdates);
         socket.on('on_asset_hidden', _handleOnAssetHidden);
         socket.on('on_new_release', _handleReleaseUpdates);
       } catch (e) {

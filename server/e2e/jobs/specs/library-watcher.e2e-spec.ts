@@ -1,7 +1,7 @@
 import { LibraryResponseDto, LibraryService, LoginResponseDto } from '@app/domain';
 import { AssetType, LibraryType } from '@app/infra/entities';
-import fs from 'fs/promises';
-import path from 'path';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import {
   IMMICH_TEST_ASSET_PATH,
   IMMICH_TEST_ASSET_TEMP_PATH,
@@ -20,7 +20,8 @@ describe(`Library watcher (e2e)`, () => {
   beforeAll(async () => {
     process.env.IMMICH_CONFIG_FILE = path.normalize(`${__dirname}/../config/library-watcher-e2e-config.json`);
 
-    server = (await testApp.create()).getHttpServer();
+    const app = await testApp.create();
+    server = app.getHttpServer();
     libraryService = testApp.get(LibraryService);
   });
 
@@ -29,8 +30,6 @@ describe(`Library watcher (e2e)`, () => {
     await restoreTempFolder();
     await api.authApi.adminSignUp(server);
     admin = await api.authApi.adminLogin(server);
-
-    await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
   });
 
   afterEach(async () => {
@@ -203,8 +202,6 @@ describe(`Library watcher (e2e)`, () => {
           `${IMMICH_TEST_ASSET_TEMP_PATH}/dir3`,
         ],
       });
-
-      await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
 
       await fs.mkdir(`${IMMICH_TEST_ASSET_TEMP_PATH}/dir1`, { recursive: true });
       await fs.mkdir(`${IMMICH_TEST_ASSET_TEMP_PATH}/dir2`, { recursive: true });

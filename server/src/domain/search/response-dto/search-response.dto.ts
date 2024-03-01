@@ -29,6 +29,7 @@ class SearchAssetResponseDto {
   count!: number;
   items!: AssetResponseDto[];
   facets!: SearchFacetResponseDto[];
+  nextPage!: string | null;
 }
 
 export class SearchResponseDto {

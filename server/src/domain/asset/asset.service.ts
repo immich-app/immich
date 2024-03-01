@@ -31,8 +31,6 @@ import {
   AssetBulkUpdateDto,
   AssetJobName,
   AssetJobsDto,
-  AssetOrder,
-  AssetSearchDto,
   AssetStatsDto,
   MapMarkerDto,
   MemoryLaneDto,
@@ -90,34 +88,6 @@ export class AssetService {
   ) {
     this.access = AccessCore.create(accessRepository);
     this.configCore = SystemConfigCore.create(configRepository);
-  }
-
-  search(auth: AuthDto, dto: AssetSearchDto) {
-    let checksum: Buffer | undefined;
-
-    if (dto.checksum) {
-      const encoding = dto.checksum.length === 28 ? 'base64' : 'hex';
-      checksum = Buffer.from(dto.checksum, encoding);
-    }
-
-    const enumToOrder = { [AssetOrder.ASC]: 'ASC', [AssetOrder.DESC]: 'DESC' } as const;
-    const order = dto.order ? enumToOrder[dto.order] : undefined;
-
-    return this.assetRepository
-      .search({
-        ...dto,
-        order,
-        checksum,
-        ownerId: auth.user.id,
-      })
-      .then((assets) =>
-        assets.map((asset) =>
-          mapAsset(asset, {
-            stripMetadata: false,
-            withStack: true,
-          }),
-        ),
-      );
   }
 
   canUploadFile({ auth, fieldName, file }: UploadRequest): true {
@@ -187,8 +157,16 @@ export class AssetService {
     return folder;
   }
 
-  getMapMarkers(auth: AuthDto, options: MapMarkerDto): Promise<MapMarkerResponseDto[]> {
-    return this.assetRepository.getMapMarkers(auth.user.id, options);
+  async getMapMarkers(auth: AuthDto, options: MapMarkerDto): Promise<MapMarkerResponseDto[]> {
+    const userIds: string[] = [auth.user.id];
+    if (options.withPartners) {
+      const partners = await this.partnerRepository.getAll(auth.user.id);
+      const partnersIds = partners
+        .filter((partner) => partner.sharedBy && partner.sharedWith && partner.sharedById != auth.user.id)
+        .map((partner) => partner.sharedById);
+      userIds.push(...partnersIds);
+    }
+    return this.assetRepository.getMapMarkers(userIds, options);
   }
 
   async getMemoryLane(auth: AuthDto, dto: MemoryLaneDto): Promise<MemoryLaneResponseDto[]> {
@@ -348,7 +326,7 @@ export class AssetService {
     const stackIdsToCheckForDelete: string[] = [];
     if (removeParent) {
       (options as Partial<AssetEntity>).stack = null;
-      const assets = await this.assetRepository.getByIds(ids);
+      const assets = await this.assetRepository.getByIds(ids, { stack: true });
       stackIdsToCheckForDelete.push(...new Set(assets.filter((a) => !!a.stackId).map((a) => a.stackId!)));
       // This updates the updatedAt column of the parents to indicate that one of its children is removed
       // All the unique parent's -> parent is set to null
@@ -403,7 +381,7 @@ export class AssetService {
       .flatMap((stack) => (stack ? [stack] : []))
       .filter((stack) => stack.assets.length < 2);
     await Promise.all(stacksToDelete.map((as) => this.assetStackRepository.delete(as.id)));
-    this.communicationRepository.send(ClientEvent.ASSET_UPDATE, auth.user.id, ids);
+    this.communicationRepository.send(ClientEvent.ASSET_STACK_UPDATE, auth.user.id, ids);
   }
 
   async handleAssetDeletionCheck() {
@@ -521,7 +499,11 @@ export class AssetService {
       primaryAssetId: newParentId,
     });
 
-    this.communicationRepository.send(ClientEvent.ASSET_UPDATE, auth.user.id, [...childIds, newParentId, oldParentId]);
+    this.communicationRepository.send(ClientEvent.ASSET_STACK_UPDATE, auth.user.id, [
+      ...childIds,
+      newParentId,
+      oldParentId,
+    ]);
     await this.assetRepository.updateAll([oldParentId, newParentId, ...childIds], { updatedAt: new Date() });
   }
 

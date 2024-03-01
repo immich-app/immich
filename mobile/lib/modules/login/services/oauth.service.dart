@@ -36,7 +36,7 @@ class OAuthService {
         ),
       );
     } catch (e, stack) {
-      log.severe("Error performing oAuthLogin: ${e.toString()}", e, stack);
+      log.severe("OAuth login failed", e, stack);
       return null;
     }
   }

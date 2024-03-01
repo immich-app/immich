@@ -27,13 +27,13 @@ void main() {
       // TODO
     });
 
-    //Future<List<LibraryResponseDto>> getLibraries() async
-    test('test getLibraries', () async {
+    //Future<List<LibraryResponseDto>> getAllLibraries({ LibraryType type }) async
+    test('test getAllLibraries', () async {
       // TODO
     });
 
-    //Future<LibraryResponseDto> getLibraryInfo(String id) async
-    test('test getLibraryInfo', () async {
+    //Future<LibraryResponseDto> getLibrary(String id) async
+    test('test getLibrary', () async {
       // TODO
     });
 
@@ -54,6 +54,11 @@ void main() {
 
     //Future<LibraryResponseDto> updateLibrary(String id, UpdateLibraryDto updateLibraryDto) async
     test('test updateLibrary', () async {
+      // TODO
+    });
+
+    //Future<ValidateLibraryResponseDto> validate(String id, ValidateLibraryDto validateLibraryDto) async
+    test('test validate', () async {
       // TODO
     });
 

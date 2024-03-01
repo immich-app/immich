@@ -1,18 +1,22 @@
 <script lang="ts">
+  import Icon from '$lib/components/elements/icon.svelte';
+  import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
+  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import type { AssetStore, Viewport } from '$lib/stores/assets.store';
   import { locale } from '$lib/stores/preferences.store';
   import { getAssetRatio } from '$lib/utils/asset-utils';
-  import { formatGroupTitle, fromLocalDateTime, splitBucketIntoDateGroups } from '$lib/utils/timeline-util';
-  import type { AssetResponseDto } from '@api';
+  import {
+    calculateWidth,
+    formatGroupTitle,
+    fromLocalDateTime,
+    splitBucketIntoDateGroups,
+  } from '$lib/utils/timeline-util';
+  import type { AssetResponseDto } from '@immich/sdk';
+  import { mdiCheckCircle, mdiCircleOutline } from '@mdi/js';
   import justifiedLayout from 'justified-layout';
   import { createEventDispatcher } from 'svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
   import { fly } from 'svelte/transition';
   import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import type { AssetStore } from '$lib/stores/assets.store';
-  import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
-  import type { Viewport } from '$lib/stores/assets.store';
-  import { mdiCheckCircle, mdiCircleOutline } from '@mdi/js';
 
   export let assets: AssetResponseDto[];
   export let bucketDate: string;
@@ -21,6 +25,7 @@
   export let viewport: Viewport;
   export let singleSelect = false;
   export let withStacked = false;
+  export let showArchiveIcon = false;
 
   export let assetStore: AssetStore;
   export let assetInteractionStore: AssetInteractionStore;
@@ -36,12 +41,6 @@
   let isMouseOverGroup = false;
   let actualBucketHeight: number;
   let hoveredDateGroup = '';
-
-  interface LayoutBox {
-    top: number;
-    left: number;
-    width: number;
-  }
 
   $: assetsGroupByDate = splitBucketIntoDateGroups(assets, $locale);
 
@@ -81,24 +80,17 @@
     });
   }
 
-  const calculateWidth = (boxes: LayoutBox[]): number => {
-    let width = 0;
-    for (const box of boxes) {
-      if (box.top < 100) {
-        width = box.left + box.width;
-      }
-    }
-
-    return width;
-  };
-
-  const assetClickHandler = (asset: AssetResponseDto, assetsInDateGroup: AssetResponseDto[], groupTitle: string) => {
+  const assetClickHandler = async (
+    asset: AssetResponseDto,
+    assetsInDateGroup: AssetResponseDto[],
+    groupTitle: string,
+  ) => {
     if (isSelectionMode || $isMultiSelectState) {
       assetSelectHandler(asset, assetsInDateGroup, groupTitle);
       return;
     }
 
-    assetViewingStore.setAssetId(asset.id);
+    await assetViewingStore.setAssetId(asset.id);
   };
 
   const handleSelectGroup = (title: string, assets: AssetResponseDto[]) => dispatch('select', { title, assets });
@@ -183,6 +175,7 @@
           >
             <Thumbnail
               showStackedIcon={withStacked}
+              {showArchiveIcon}
               {asset}
               {groupIndex}
               on:click={() => assetClickHandler(asset, groupAssets, groupTitle)}

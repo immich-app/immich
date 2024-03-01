@@ -1,4 +1,11 @@
-import { IAssetRepository, IJobRepository, ILibraryRepository, IUserRepository, JobName } from '@app/domain';
+import {
+  IAssetRepository,
+  IJobRepository,
+  ILibraryRepository,
+  IStorageRepository,
+  IUserRepository,
+  JobName,
+} from '@app/domain';
 import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
 import {
   IAccessRepositoryMock,
@@ -9,6 +16,7 @@ import {
   newAssetRepositoryMock,
   newJobRepositoryMock,
   newLibraryRepositoryMock,
+  newStorageRepositoryMock,
   newUserRepositoryMock,
 } from '@test';
 import { when } from 'jest-when';
@@ -63,12 +71,12 @@ describe('AssetService', () => {
   let assetMock: jest.Mocked<IAssetRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
   let libraryMock: jest.Mocked<ILibraryRepository>;
+  let storageMock: jest.Mocked<IStorageRepository>;
   let userMock: jest.Mocked<IUserRepository>;
 
   beforeEach(() => {
     assetRepositoryMockV1 = {
       get: jest.fn(),
-      getAllByUserId: jest.fn(),
       getDetectedObjectsByUserId: jest.fn(),
       getLocationsByUserId: jest.fn(),
       getSearchPropertiesByUserId: jest.fn(),
@@ -81,9 +89,10 @@ describe('AssetService', () => {
     assetMock = newAssetRepositoryMock();
     jobMock = newJobRepositoryMock();
     libraryMock = newLibraryRepositoryMock();
+    storageMock = newStorageRepositoryMock();
     userMock = newUserRepositoryMock();
 
-    sut = new AssetService(accessMock, assetRepositoryMockV1, assetMock, jobMock, libraryMock, userMock);
+    sut = new AssetService(accessMock, assetRepositoryMockV1, assetMock, jobMock, libraryMock, storageMock, userMock);
 
     when(assetRepositoryMockV1.get)
       .calledWith(assetStub.livePhotoStillAsset.id)
@@ -113,6 +122,11 @@ describe('AssetService', () => {
 
       expect(assetMock.create).toHaveBeenCalled();
       expect(userMock.updateUsage).toHaveBeenCalledWith(authStub.user1.user.id, file.size);
+      expect(storageMock.utimes).toHaveBeenCalledWith(
+        file.originalPath,
+        expect.any(Date),
+        new Date(dto.fileModifiedAt),
+      );
     });
 
     it('should handle a duplicate', async () => {
@@ -167,6 +181,16 @@ describe('AssetService', () => {
         [{ name: JobName.METADATA_EXTRACTION, data: { id: assetStub.livePhotoStillAsset.id, source: 'upload' } }],
       ]);
       expect(userMock.updateUsage).toHaveBeenCalledWith(authStub.user1.user.id, 111);
+      expect(storageMock.utimes).toHaveBeenCalledWith(
+        fileStub.livePhotoStill.originalPath,
+        expect.any(Date),
+        new Date(dto.fileModifiedAt),
+      );
+      expect(storageMock.utimes).toHaveBeenCalledWith(
+        fileStub.livePhotoMotion.originalPath,
+        expect.any(Date),
+        new Date(dto.fileModifiedAt),
+      );
     });
   });
 

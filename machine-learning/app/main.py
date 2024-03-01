@@ -119,16 +119,12 @@ async def load(model: InferenceModel) -> InferenceModel:
     if model.loaded:
         return model
 
-    def _load() -> None:
+    def _load(model: InferenceModel) -> None:
         with lock:
             model.load()
 
-    loop = asyncio.get_running_loop()
     try:
-        if thread_pool is None:
-            model.load()
-        else:
-            await loop.run_in_executor(thread_pool, _load)
+        await run(_load, model)
         return model
     except (OSError, InvalidProtobuf, BadZipFile, NoSuchFile):
         log.warning(
@@ -138,10 +134,7 @@ async def load(model: InferenceModel) -> InferenceModel:
             )
         )
         model.clear_cache()
-        if thread_pool is None:
-            model.load()
-        else:
-            await loop.run_in_executor(thread_pool, _load)
+        await run(_load, model)
         return model
 
 

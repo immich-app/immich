@@ -59,7 +59,7 @@
     }
   };
 
-  let removeNotificationTimeout: NodeJS.Timeout | undefined;
+  let removeNotificationTimeout: ReturnType<typeof setTimeout> | undefined;
 
   onMount(() => {
     removeNotificationTimeout = setTimeout(discard, notificationInfo.timeout);

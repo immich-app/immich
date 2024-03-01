@@ -2,7 +2,7 @@ import {
   citiesFile,
   geodataAdmin1Path,
   geodataAdmin2Path,
-  geodataCitites500Path,
+  geodataCities500Path,
   geodataDatePath,
   GeoPoint,
   IMetadataRepository,
@@ -10,7 +10,7 @@ import {
   ISystemMetadataRepository,
   ReverseGeocodeResult,
 } from '@app/domain';
-import { GeodataAdmin1Entity, GeodataAdmin2Entity, GeodataPlacesEntity, SystemMetadataKey } from '@app/infra/entities';
+import { ExifEntity, GeodataPlacesEntity, SystemMetadataKey } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
 import { Inject } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
@@ -20,17 +20,16 @@ import { getName } from 'i18n-iso-countries';
 import { createReadStream, existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import * as readLine from 'node:readline';
-import { DataSource, DeepPartial, QueryRunner, Repository } from 'typeorm';
-
-type GeoEntity = GeodataPlacesEntity | GeodataAdmin1Entity | GeodataAdmin2Entity;
-type GeoEntityClass = typeof GeodataPlacesEntity | typeof GeodataAdmin1Entity | typeof GeodataAdmin2Entity;
+import { DataSource, QueryRunner, Repository } from 'typeorm';
+import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity.js';
+import { DummyValue, GenerateSql } from '../infra.util';
 
 export class MetadataRepository implements IMetadataRepository {
   constructor(
+    @InjectRepository(ExifEntity) private exifRepository: Repository<ExifEntity>,
     @InjectRepository(GeodataPlacesEntity) private readonly geodataPlacesRepository: Repository<GeodataPlacesEntity>,
-    @InjectRepository(GeodataAdmin1Entity) private readonly geodataAdmin1Repository: Repository<GeodataAdmin1Entity>,
-    @InjectRepository(GeodataAdmin2Entity) private readonly geodataAdmin2Repository: Repository<GeodataAdmin2Entity>,
-    @Inject(ISystemMetadataRepository) private readonly systemMetadataRepository: ISystemMetadataRepository,
+    @Inject(ISystemMetadataRepository)
+    private readonly systemMetadataRepository: ISystemMetadataRepository,
     @InjectDataSource() private dataSource: DataSource,
   ) {}
 
@@ -46,7 +45,6 @@ export class MetadataRepository implements IMetadataRepository {
       return;
     }
 
-    this.logger.log('Importing geodata to database from file');
     await this.importGeodata();
 
     await this.systemMetadataRepository.set(SystemMetadataKey.REVERSE_GEOCODING_STATE, {
@@ -61,12 +59,14 @@ export class MetadataRepository implements IMetadataRepository {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
 
+    const admin1 = await this.loadAdmin(geodataAdmin1Path);
+    const admin2 = await this.loadAdmin(geodataAdmin2Path);
+
     try {
       await queryRunner.startTransaction();
 
-      await this.loadCities500(queryRunner);
-      await this.loadAdmin1(queryRunner);
-      await this.loadAdmin2(queryRunner);
+      await queryRunner.manager.clear(GeodataPlacesEntity);
+      await this.loadCities500(queryRunner, admin1, admin2);
 
       await queryRunner.commitTransaction();
     } catch (error) {
@@ -78,76 +78,73 @@ export class MetadataRepository implements IMetadataRepository {
     }
   }
 
-  private async loadGeodataToTableFromFile<T extends GeoEntity>(
+  private async loadGeodataToTableFromFile(
     queryRunner: QueryRunner,
-    lineToEntityMapper: (lineSplit: string[]) => T,
+    lineToEntityMapper: (lineSplit: string[]) => GeodataPlacesEntity,
     filePath: string,
-    entity: GeoEntityClass,
   ) {
     if (!existsSync(filePath)) {
       this.logger.error(`Geodata file ${filePath} not found`);
       throw new Error(`Geodata file ${filePath} not found`);
     }
-    await queryRunner.manager.clear(entity);
 
     const input = createReadStream(filePath);
-    let buffer: DeepPartial<T>[] = [];
-    const lineReader = readLine.createInterface({ input: input });
+    let bufferGeodata: QueryDeepPartialEntity<GeodataPlacesEntity>[] = [];
+    const lineReader = readLine.createInterface({ input });
 
     for await (const line of lineReader) {
       const lineSplit = line.split('\t');
-      buffer.push(lineToEntityMapper(lineSplit));
-      if (buffer.length > 1000) {
-        await queryRunner.manager.save(buffer);
-        buffer = [];
+      const geoData = lineToEntityMapper(lineSplit);
+      bufferGeodata.push(geoData);
+      if (bufferGeodata.length > 1000) {
+        await queryRunner.manager.upsert(GeodataPlacesEntity, bufferGeodata, ['id']);
+        bufferGeodata = [];
       }
     }
-    await queryRunner.manager.save(buffer);
+    await queryRunner.manager.upsert(GeodataPlacesEntity, bufferGeodata, ['id']);
   }
 
-  private async loadCities500(queryRunner: QueryRunner) {
-    await this.loadGeodataToTableFromFile<GeodataPlacesEntity>(
+  private async loadCities500(
+    queryRunner: QueryRunner,
+    admin1Map: Map<string, string>,
+    admin2Map: Map<string, string>,
+  ) {
+    await this.loadGeodataToTableFromFile(
       queryRunner,
       (lineSplit: string[]) =>
         this.geodataPlacesRepository.create({
           id: Number.parseInt(lineSplit[0]),
           name: lineSplit[1],
+          alternateNames: lineSplit[3],
           latitude: Number.parseFloat(lineSplit[4]),
           longitude: Number.parseFloat(lineSplit[5]),
           countryCode: lineSplit[8],
           admin1Code: lineSplit[10],
           admin2Code: lineSplit[11],
           modificationDate: lineSplit[18],
+          admin1Name: admin1Map.get(`${lineSplit[8]}.${lineSplit[10]}`),
+          admin2Name: admin2Map.get(`${lineSplit[8]}.${lineSplit[10]}.${lineSplit[11]}`),
         }),
-      geodataCitites500Path,
-      GeodataPlacesEntity,
+      geodataCities500Path,
     );
   }
 
-  private async loadAdmin1(queryRunner: QueryRunner) {
-    await this.loadGeodataToTableFromFile<GeodataAdmin1Entity>(
-      queryRunner,
-      (lineSplit: string[]) =>
-        this.geodataAdmin1Repository.create({
-          key: lineSplit[0],
-          name: lineSplit[1],
-        }),
-      geodataAdmin1Path,
-      GeodataAdmin1Entity,
-    );
-  }
+  private async loadAdmin(filePath: string) {
+    if (!existsSync(filePath)) {
+      this.logger.error(`Geodata file ${filePath} not found`);
+      throw new Error(`Geodata file ${filePath} not found`);
+    }
 
-  private async loadAdmin2(queryRunner: QueryRunner) {
-    await this.loadGeodataToTableFromFile<GeodataAdmin2Entity>(
-      queryRunner,
-      (lineSplit: string[]) =>
-        this.geodataAdmin2Repository.create({
-          key: lineSplit[0],
-          name: lineSplit[1],
-        }),
-      geodataAdmin2Path,
-      GeodataAdmin2Entity,
-    );
+    const input = createReadStream(filePath);
+    const lineReader = readLine.createInterface({ input: input });
+
+    const adminMap = new Map<string, string>();
+    for await (const line of lineReader) {
+      const lineSplit = line.split('\t');
+      adminMap.set(lineSplit[0], lineSplit[1]);
+    }
+
+    return adminMap;
   }
 
   async teardown() {
@@ -159,8 +156,6 @@ export class MetadataRepository implements IMetadataRepository {
 
     const response = await this.geodataPlacesRepository
       .createQueryBuilder('geoplaces')
-      .leftJoinAndSelect('geoplaces.admin1', 'admin1')
-      .leftJoinAndSelect('geoplaces.admin2', 'admin2')
       .where('earth_box(ll_to_earth(:latitude, :longitude), 25000) @> "earthCoord"', point)
       .orderBy('earth_distance(ll_to_earth(:latitude, :longitude), "earthCoord")')
       .limit(1)
@@ -175,9 +170,9 @@ export class MetadataRepository implements IMetadataRepository {
 
     this.logger.verbose(`Raw: ${JSON.stringify(response, null, 2)}`);
 
-    const { countryCode, name: city, admin1, admin2 } = response;
+    const { countryCode, name: city, admin1Name, admin2Name } = response;
     const country = getName(countryCode, 'en') ?? null;
-    const stateParts = [admin2?.name, admin1?.name].filter((name) => !!name);
+    const stateParts = [admin2Name, admin1Name].filter((name) => !!name);
     const state = stateParts.length > 0 ? stateParts.join(', ') : null;
 
     return { country, state, city };
@@ -212,5 +207,107 @@ export class MetadataRepository implements IMetadataRepository {
     } catch (error) {
       this.logger.warn(`Error writing exif data (${path}): ${error}`);
     }
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getCountries(userId: string): Promise<string[]> {
+    const entity = await this.exifRepository
+      .createQueryBuilder('exif')
+      .leftJoin('exif.asset', 'asset')
+      .where('asset.ownerId = :userId', { userId })
+      .andWhere('exif.country IS NOT NULL')
+      .select('exif.country')
+      .distinctOn(['exif.country'])
+      .getMany();
+
+    return entity.map((e) => e.country ?? '').filter((c) => c !== '');
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
+  async getStates(userId: string, country: string | undefined): Promise<string[]> {
+    let result: ExifEntity[] = [];
+
+    const query = this.exifRepository
+      .createQueryBuilder('exif')
+      .leftJoin('exif.asset', 'asset')
+      .where('asset.ownerId = :userId', { userId })
+      .andWhere('exif.state IS NOT NULL')
+      .select('exif.state')
+      .distinctOn(['exif.state']);
+
+    if (country) {
+      query.andWhere('exif.country = :country', { country });
+    }
+
+    result = await query.getMany();
+
+    return result.map((entity) => entity.state ?? '').filter((s) => s !== '');
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING, DummyValue.STRING] })
+  async getCities(userId: string, country: string | undefined, state: string | undefined): Promise<string[]> {
+    let result: ExifEntity[] = [];
+
+    const query = this.exifRepository
+      .createQueryBuilder('exif')
+      .leftJoin('exif.asset', 'asset')
+      .where('asset.ownerId = :userId', { userId })
+      .andWhere('exif.city IS NOT NULL')
+      .select('exif.city')
+      .distinctOn(['exif.city']);
+
+    if (country) {
+      query.andWhere('exif.country = :country', { country });
+    }
+
+    if (state) {
+      query.andWhere('exif.state = :state', { state });
+    }
+
+    result = await query.getMany();
+
+    return result.map((entity) => entity.city ?? '').filter((c) => c !== '');
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
+  async getCameraMakes(userId: string, model: string | undefined): Promise<string[]> {
+    let result: ExifEntity[] = [];
+
+    const query = this.exifRepository
+      .createQueryBuilder('exif')
+      .leftJoin('exif.asset', 'asset')
+      .where('asset.ownerId = :userId', { userId })
+      .andWhere('exif.make IS NOT NULL')
+      .select('exif.make')
+      .distinctOn(['exif.make']);
+
+    if (model) {
+      query.andWhere('exif.model = :model', { model });
+    }
+
+    result = await query.getMany();
+
+    return result.map((entity) => entity.make ?? '').filter((m) => m !== '');
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
+  async getCameraModels(userId: string, make: string | undefined): Promise<string[]> {
+    let result: ExifEntity[] = [];
+
+    const query = this.exifRepository
+      .createQueryBuilder('exif')
+      .leftJoin('exif.asset', 'asset')
+      .where('asset.ownerId = :userId', { userId })
+      .andWhere('exif.model IS NOT NULL')
+      .select('exif.model')
+      .distinctOn(['exif.model']);
+
+    if (make) {
+      query.andWhere('exif.make = :make', { make });
+    }
+
+    result = await query.getMany();
+
+    return result.map((entity) => entity.model ?? '').filter((m) => m !== '');
   }
 }

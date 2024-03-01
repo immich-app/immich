@@ -127,7 +127,8 @@ export class PersonStatisticsResponseDto {
 export class PeopleResponseDto {
   @ApiProperty({ type: 'integer' })
   total!: number;
-
+  @ApiProperty({ type: 'integer' })
+  hidden!: number;
   people!: PersonResponseDto[];
 }
 

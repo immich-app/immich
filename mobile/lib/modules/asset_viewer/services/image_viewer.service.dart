@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/response_extensions.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
@@ -39,7 +40,8 @@ class ImageViewerService {
           final failedResponse =
               imageResponse.statusCode != 200 ? imageResponse : motionReponse;
           _log.severe(
-            "Motion asset download failed with status - ${failedResponse.statusCode} and response - ${failedResponse.body}",
+            "Motion asset download failed",
+            failedResponse.toLoggerString(),
           );
           return false;
         }
@@ -75,9 +77,7 @@ class ImageViewerService {
             .downloadFileWithHttpInfo(asset.remoteId!);
 
         if (res.statusCode != 200) {
-          _log.severe(
-            "Asset download failed with status - ${res.statusCode} and response - ${res.body}",
-          );
+          _log.severe("Asset download failed", res.toLoggerString());
           return false;
         }
 
@@ -98,7 +98,7 @@ class ImageViewerService {
         return entity != null;
       }
     } catch (error, stack) {
-      _log.severe("Error saving file ${error.toString()}", error, stack);
+      _log.severe("Error saving downloaded asset", error, stack);
       return false;
     } finally {
       // Clear temp files

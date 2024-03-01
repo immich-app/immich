@@ -4,6 +4,6 @@
 
   "compilerOptions": {
     "baseUrl": ".",
-    "module": "Node16",
-  },
+    "module": "Node16"
+  }
 }

@@ -2,6 +2,7 @@ import {
   AssetBuilderOptions,
   AssetCreate,
   AssetExploreFieldOptions,
+  AssetSearchOneToOneRelationOptions,
   AssetSearchOptions,
   AssetStats,
   AssetStatsOptions,
@@ -12,6 +13,7 @@ import {
   MetadataSearchOptions,
   MonthDay,
   Paginated,
+  PaginationMode,
   PaginationOptions,
   SearchExploreItem,
   TimeBucketItem,
@@ -22,26 +24,21 @@ import {
 } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import _ from 'lodash';
 import { DateTime } from 'luxon';
 import path from 'node:path';
 import {
-  And,
   Brackets,
   FindOptionsRelations,
   FindOptionsSelect,
   FindOptionsWhere,
   In,
   IsNull,
-  LessThan,
   Not,
   Repository,
 } from 'typeorm';
 import { AssetEntity, AssetJobStatusEntity, AssetType, ExifEntity, SmartInfoEntity } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';
-import { Chunked, ChunkedArray, OptionalBetween, paginate } from '../infra.utils';
-
-const DEFAULT_SEARCH_SIZE = 250;
+import { Chunked, ChunkedArray, OptionalBetween, paginate, paginatedBuilder, searchAssetBuilder } from '../infra.utils';
 
 const truncateMap: Record<TimeBucketSize, string> = {
   [TimeBucketSize.DAY]: 'day',
@@ -68,142 +65,6 @@ export class AssetRepository implements IAssetRepository {
 
   async upsertJobStatus(jobStatus: Partial<AssetJobStatusEntity>): Promise<void> {
     await this.jobStatusRepository.upsert(jobStatus, { conflictPaths: ['assetId'] });
-  }
-
-  search(options: AssetSearchOptions): Promise<AssetEntity[]> {
-    const {
-      id,
-      libraryId,
-      deviceAssetId,
-      type,
-      checksum,
-      ownerId,
-
-      isVisible,
-      isFavorite,
-      isExternal,
-      isReadOnly,
-      isOffline,
-      isArchived,
-      isMotion,
-      isEncoded,
-
-      createdBefore,
-      createdAfter,
-      updatedBefore,
-      updatedAfter,
-      trashedBefore,
-      trashedAfter,
-      takenBefore,
-      takenAfter,
-
-      originalFileName,
-      originalPath,
-      resizePath,
-      webpPath,
-      encodedVideoPath,
-
-      city,
-      state,
-      country,
-      make,
-      model,
-      lensModel,
-
-      withDeleted: _withDeleted,
-      withExif: _withExif,
-      withStacked,
-      withPeople,
-      withSmartInfo,
-
-      order,
-    } = options;
-
-    const withDeleted = _withDeleted ?? (trashedAfter !== undefined || trashedBefore !== undefined);
-
-    const page = Math.max(options.page || 1, 1);
-    const size = Math.min(options.size || DEFAULT_SEARCH_SIZE, DEFAULT_SEARCH_SIZE);
-
-    const exifWhere = _.omitBy(
-      {
-        city,
-        state,
-        country,
-        make,
-        model,
-        lensModel,
-      },
-      _.isUndefined,
-    );
-
-    const withExif = Object.keys(exifWhere).length > 0 || _withExif;
-
-    const where: FindOptionsWhere<AssetEntity> = _.omitBy(
-      {
-        ownerId,
-        id,
-        libraryId,
-        deviceAssetId,
-        type,
-        checksum,
-        isVisible,
-        isFavorite,
-        isExternal,
-        isReadOnly,
-        isOffline,
-        isArchived,
-        livePhotoVideoId: isMotion && Not(IsNull()),
-        originalFileName,
-        originalPath,
-        resizePath,
-        webpPath,
-        encodedVideoPath: encodedVideoPath ?? (isEncoded && Not(IsNull())),
-        createdAt: OptionalBetween(createdAfter, createdBefore),
-        updatedAt: OptionalBetween(updatedAfter, updatedBefore),
-        deletedAt: OptionalBetween(trashedAfter, trashedBefore),
-        fileCreatedAt: OptionalBetween(takenAfter, takenBefore),
-        exifInfo: Object.keys(exifWhere).length > 0 ? exifWhere : undefined,
-      },
-      _.isUndefined,
-    );
-
-    const builder = this.repository.createQueryBuilder('asset');
-
-    if (withExif) {
-      if (_withExif) {
-        builder.leftJoinAndSelect('asset.exifInfo', 'exifInfo');
-      } else {
-        builder.leftJoin('asset.exifInfo', 'exifInfo');
-      }
-    }
-
-    if (withPeople) {
-      builder.leftJoinAndSelect('asset.faces', 'faces');
-      builder.leftJoinAndSelect('faces.person', 'person');
-    }
-
-    if (withSmartInfo) {
-      builder.leftJoinAndSelect('asset.smartInfo', 'smartInfo');
-    }
-
-    if (withDeleted) {
-      builder.withDeleted();
-    }
-
-    builder.where(where);
-
-    if (withStacked) {
-      builder
-        .leftJoinAndSelect('asset.stack', 'stack')
-        .leftJoinAndSelect('stack.assets', 'stackedAssets')
-        .andWhere(new Brackets((qb) => qb.where('stack.primaryAssetId = asset.id').orWhere('asset.stackId IS NULL')));
-    }
-
-    return builder
-      .skip(size * (page - 1))
-      .take(size)
-      .orderBy('asset.fileCreatedAt', order ?? 'DESC')
-      .getMany();
   }
 
   create(asset: AssetCreate): Promise<AssetEntity> {
@@ -315,18 +176,12 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
-  getByUserId(pagination: PaginationOptions, userId: string, options: AssetSearchOptions = {}): Paginated<AssetEntity> {
-    return paginate(this.repository, pagination, {
-      where: {
-        ownerId: userId,
-        isVisible: options.isVisible,
-        deletedAt: options.trashedBefore ? And(Not(IsNull()), LessThan(options.trashedBefore)) : undefined,
-      },
-      relations: {
-        exifInfo: true,
-      },
-      withDeleted: !!options.trashedBefore,
-    });
+  getByUserId(
+    pagination: PaginationOptions,
+    userId: string,
+    options: Omit<AssetSearchOptions, 'userIds'> = {},
+  ): Paginated<AssetEntity> {
+    return this.getAll(pagination, { ...options, userIds: [userId] });
   }
 
   @GenerateSql({ params: [[DummyValue.UUID]] })
@@ -345,24 +200,36 @@ export class AssetRepository implements IAssetRepository {
   }
 
   getAll(pagination: PaginationOptions, options: AssetSearchOptions = {}): Paginated<AssetEntity> {
-    return paginate(this.repository, pagination, {
-      where: {
-        isVisible: options.isVisible,
-        type: options.type,
-        deletedAt: options.trashedBefore ? And(Not(IsNull()), LessThan(options.trashedBefore)) : undefined,
+    let builder = this.repository.createQueryBuilder('asset');
+    builder = searchAssetBuilder(builder, options);
+    builder.orderBy('asset.createdAt', options.orderDirection ?? 'ASC');
+    return paginatedBuilder<AssetEntity>(builder, {
+      mode: PaginationMode.SKIP_TAKE,
+      skip: pagination.skip,
+      take: pagination.take,
+    });
+  }
+
+  @GenerateSql({
+    params: [
+      { skip: 20_000, take: 10_000 },
+      {
+        takenBefore: DummyValue.DATE,
+        userIds: [DummyValue.UUID],
       },
-      relations: {
-        exifInfo: options.withExif !== false,
-        smartInfo: options.withSmartInfo !== false,
-        tags: options.withSmartInfo !== false,
-        faces: options.withFaces !== false,
-        smartSearch: options.withSmartInfo === true,
-      },
-      withDeleted: options.withDeleted ?? !!options.trashedBefore,
-      order: {
-        // Ensures correct order when paginating
-        createdAt: options.order ?? 'ASC',
-      },
+    ],
+  })
+  getAllByFileCreationDate(
+    pagination: PaginationOptions,
+    options: AssetSearchOneToOneRelationOptions = {},
+  ): Paginated<AssetEntity> {
+    let builder = this.repository.createQueryBuilder('asset');
+    builder = searchAssetBuilder(builder, options);
+    builder.orderBy('asset.fileCreatedAt', options.orderDirection ?? 'DESC');
+    return paginatedBuilder<AssetEntity>(builder, {
+      mode: PaginationMode.LIMIT_OFFSET,
+      skip: pagination.skip,
+      take: pagination.take,
     });
   }
 
@@ -435,7 +302,7 @@ export class AssetRepository implements IAssetRepository {
     await this.repository.remove(asset);
   }
 
-  @GenerateSql({ params: [[DummyValue.UUID], DummyValue.BUFFER] })
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.BUFFER] })
   getByChecksum(userId: string, checksum: Buffer): Promise<AssetEntity | null> {
     return this.repository.findOne({ where: { ownerId: userId, checksum } });
   }
@@ -633,7 +500,7 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
-  async getMapMarkers(ownerId: string, options: MapMarkerSearchOptions = {}): Promise<MapMarker[]> {
+  async getMapMarkers(ownerIds: string[], options: MapMarkerSearchOptions = {}): Promise<MapMarker[]> {
     const { isArchived, isFavorite, fileCreatedAfter, fileCreatedBefore } = options;
 
     const assets = await this.repository.find({
@@ -645,7 +512,7 @@ export class AssetRepository implements IAssetRepository {
         },
       },
       where: {
-        ownerId,
+        ownerId: In([...ownerIds]),
         isVisible: true,
         isArchived,
         exifInfo: {

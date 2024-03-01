@@ -1,32 +1,36 @@
 <script lang="ts">
-  import { createEventDispatcher, onMount } from 'svelte';
-  import UserAvatar from '../shared-components/user-avatar.svelte';
-  import { mdiClose, mdiHeart, mdiSend, mdiDotsVertical } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
-  import {
-    type ActivityResponseDto,
-    api,
-    AssetTypeEnum,
-    ReactionType,
-    ThumbnailFormat,
-    type UserResponseDto,
-  } from '@api';
+  import { timeBeforeShowLoadingSpinner } from '$lib/constants';
+  import { getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
+  import { getAssetType } from '$lib/utils/asset-utils';
+  import { autoGrowHeight } from '$lib/utils/autogrow';
+  import { clickOutside } from '$lib/utils/click-outside';
   import { handleError } from '$lib/utils/handle-error';
   import { isTenMinutesApart } from '$lib/utils/timesince';
-  import { clickOutside } from '$lib/utils/click-outside';
+  import {
+    ReactionType,
+    ThumbnailFormat,
+    createActivity,
+    deleteActivity,
+    getActivities,
+    type ActivityResponseDto,
+    type AssetTypeEnum,
+    type UserResponseDto,
+  } from '@immich/sdk';
+  import { mdiClose, mdiDotsVertical, mdiHeart, mdiSend } from '@mdi/js';
+  import * as luxon from 'luxon';
+  import { createEventDispatcher, onMount } from 'svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
-  import { getAssetType } from '$lib/utils/asset-utils';
-  import * as luxon from 'luxon';
-  import { timeBeforeShowLoadingSpinner } from '$lib/constants';
-  import { autoGrowHeight } from '$lib/utils/autogrow';
+  import UserAvatar from '../shared-components/user-avatar.svelte';
+  import { locale } from '$lib/stores/preferences.store';
 
   const units: Intl.RelativeTimeFormatUnit[] = ['year', 'month', 'week', 'day', 'hour', 'minute', 'second'];
 
   const shouldGroup = (currentDate: string, nextDate: string): boolean => {
-    const currentDateTime = luxon.DateTime.fromISO(currentDate);
-    const nextDateTime = luxon.DateTime.fromISO(nextDate);
+    const currentDateTime = luxon.DateTime.fromISO(currentDate, { locale: $locale });
+    const nextDateTime = luxon.DateTime.fromISO(nextDate, { locale: $locale });
 
     return currentDateTime.hasSame(nextDateTime, 'hour') || currentDateTime.toRelative() === nextDateTime.toRelative();
   };
@@ -75,7 +79,7 @@
 
   $: {
     if (assetId && previousAssetId != assetId) {
-      getReactions();
+      handlePromiseError(getReactions());
       previousAssetId = assetId;
     }
   }
@@ -85,17 +89,16 @@
 
   const getReactions = async () => {
     try {
-      const { data } = await api.activityApi.getActivities({ assetId, albumId });
-      reactions = data;
+      reactions = await getActivities({ assetId, albumId });
     } catch (error) {
       handleError(error, 'Error when fetching reactions');
     }
   };
 
-  const handleEnter = (event: KeyboardEvent) => {
+  const handleEnter = async (event: KeyboardEvent) => {
     if (event.key === 'Enter') {
       event.preventDefault();
-      handleSendComment();
+      await handleSendComment();
       return;
     }
   };
@@ -111,7 +114,7 @@
 
   const handleDeleteReaction = async (reaction: ActivityResponseDto, index: number) => {
     try {
-      await api.activityApi.deleteActivity({ id: reaction.id });
+      await deleteActivity({ id: reaction.id });
       reactions.splice(index, 1);
       showDeleteReaction.splice(index, 1);
       reactions = reactions;
@@ -135,7 +138,7 @@
     }
     const timeout = setTimeout(() => (isSendingMessage = true), timeBeforeShowLoadingSpinner);
     try {
-      const { data } = await api.activityApi.createActivity({
+      const data = await createActivity({
         activityCreateDto: { albumId, assetId, type: ReactionType.Comment, comment: message },
       });
       reactions.push(data);
@@ -191,7 +194,7 @@
                 <div class="aspect-square w-[75px] h-[75px]">
                   <img
                     class="rounded-lg w-[75px] h-[75px] object-cover"
-                    src={api.getAssetThumbnailUrl(reaction.assetId, ThumbnailFormat.Webp)}
+                    src={getAssetThumbnailUrl(reaction.assetId, ThumbnailFormat.Webp)}
                     alt="comment-thumbnail"
                   />
                 </div>
@@ -222,7 +225,7 @@
                 class="pt-1 px-2 text-right w-full text-sm text-gray-500 dark:text-gray-300"
                 title={new Date(reaction.createdAt).toLocaleDateString(undefined, timeOptions)}
               >
-                {timeSince(luxon.DateTime.fromISO(reaction.createdAt))}
+                {timeSince(luxon.DateTime.fromISO(reaction.createdAt, { locale: $locale }))}
               </div>
             {/if}
           {:else if reaction.type === 'like'}
@@ -237,7 +240,7 @@
                   <div class="aspect-square w-[75px] h-[75px]">
                     <img
                       class="rounded-lg w-[75px] h-[75px] object-cover"
-                      src={api.getAssetThumbnailUrl(reaction.assetId, ThumbnailFormat.Webp)}
+                      src={getAssetThumbnailUrl(reaction.assetId, ThumbnailFormat.Webp)}
                       alt="like-thumbnail"
                     />
                   </div>
@@ -267,7 +270,7 @@
                   class="pt-1 px-2 text-right w-full text-sm text-gray-500 dark:text-gray-300"
                   title={new Date(reaction.createdAt).toLocaleDateString(navigator.language, timeOptions)}
                 >
-                  {timeSince(luxon.DateTime.fromISO(reaction.createdAt))}
+                  {timeSince(luxon.DateTime.fromISO(reaction.createdAt, { locale: $locale }))}
                 </div>
               {/if}
             </div>
@@ -289,8 +292,9 @@
               {disabled}
               bind:this={textArea}
               bind:value={message}
+              use:autoGrowHeight={'5px'}
               placeholder={disabled ? 'Comments are disabled' : 'Say something'}
-              on:input={() => autoGrowHeight(textArea)}
+              on:input={() => autoGrowHeight(textArea, '5px')}
               on:keypress={handleEnter}
               class="h-[18px] {disabled
                 ? 'cursor-not-allowed'

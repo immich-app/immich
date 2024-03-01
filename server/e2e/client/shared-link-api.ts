@@ -10,11 +10,4 @@ export const sharedLinkApi = {
     expect(status).toBe(201);
     return body as SharedLinkResponseDto;
   },
-
-  getMySharedLink: async (server: any, key: string) => {
-    const { status, body } = await request(server).get('/shared-link/me').query({ key });
-
-    expect(status).toBe(200);
-    return body as SharedLinkResponseDto;
-  },
 };

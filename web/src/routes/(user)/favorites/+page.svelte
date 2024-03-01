@@ -18,7 +18,6 @@
   import { AssetStore } from '$lib/stores/assets.store';
   import type { PageData } from './$types';
   import { mdiDotsVertical, mdiPlus } from '@mdi/js';
-  import UpdatePanel from '$lib/components/shared-components/update-panel.svelte';
 
   export let data: PageData;
 
@@ -42,7 +41,7 @@
     <DeleteAssets onAssetDelete={(assetId) => assetStore.removeAsset(assetId)} />
     <AssetSelectContextMenu icon={mdiDotsVertical} title="Menu">
       <DownloadAction menuItem />
-      <ArchiveAction menuItem unarchive={isAllArchive} />
+      <ArchiveAction menuItem unarchive={isAllArchive} onArchive={(ids) => assetStore.removeAssets(ids)} />
       <ChangeDate menuItem />
       <ChangeLocation menuItem />
     </AssetSelectContextMenu>
@@ -58,4 +57,3 @@
     />
   </AssetGrid>
 </UserPageLayout>
-<UpdatePanel {assetStore} />

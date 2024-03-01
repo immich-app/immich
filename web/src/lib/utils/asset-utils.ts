@@ -1,33 +1,35 @@
 import { notificationController, NotificationType } from '$lib/components/shared-components/notification/notification';
 import { downloadManager } from '$lib/stores/download';
+import { downloadRequest, getKey } from '$lib/utils';
 import {
-  api,
-  type BulkIdResponseDto,
+  addAssetsToAlbum as addAssets,
+  defaults,
+  getDownloadInfo,
+  updateAssets,
   type AssetResponseDto,
-  type DownloadResponseDto,
+  type AssetTypeEnum,
+  type BulkIdResponseDto,
   type DownloadInfoDto,
-  AssetTypeEnum,
+  type DownloadResponseDto,
   type UserResponseDto,
-} from '@api';
-import { handleError } from './handle-error';
+} from '@immich/sdk';
 import { DateTime } from 'luxon';
+import { handleError } from './handle-error';
 
 export const addAssetsToAlbum = async (albumId: string, assetIds: Array<string>): Promise<BulkIdResponseDto[]> =>
-  api.albumApi
-    .addAssetsToAlbum({
-      id: albumId,
-      bulkIdsDto: { ids: assetIds },
-      key: api.getKey(),
-    })
-    .then(({ data: results }) => {
-      const count = results.filter(({ success }) => success).length;
-      notificationController.show({
-        type: NotificationType.Info,
-        message: `Added ${count} asset${count === 1 ? '' : 's'}`,
-      });
-
-      return results;
+  addAssets({
+    id: albumId,
+    bulkIdsDto: { ids: assetIds },
+    key: getKey(),
+  }).then((results) => {
+    const count = results.filter(({ success }) => success).length;
+    notificationController.show({
+      type: NotificationType.Info,
+      message: `Added ${count} asset${count === 1 ? '' : 's'}`,
     });
+
+    return results;
+  });
 
 export const downloadBlob = (data: Blob, filename: string) => {
   const url = URL.createObjectURL(data);
@@ -47,8 +49,7 @@ export const downloadArchive = async (fileName: string, options: DownloadInfoDto
   let downloadInfo: DownloadResponseDto | null = null;
 
   try {
-    const { data } = await api.downloadApi.getDownloadInfo({ downloadInfoDto: options, key: api.getKey() });
-    downloadInfo = data;
+    downloadInfo = await getDownloadInfo({ downloadInfoDto: options, key: getKey() });
   } catch (error) {
     handleError(error, 'Unable to download files');
     return;
@@ -61,6 +62,7 @@ export const downloadArchive = async (fileName: string, options: DownloadInfoDto
     const archive = downloadInfo.archives[index];
     const suffix = downloadInfo.archives.length === 1 ? '' : `+${index + 1}`;
     const archiveName = fileName.replace('.zip', `${suffix}-${DateTime.now().toFormat('yyyy-LL-dd-HH-mm-ss')}.zip`);
+    const key = getKey();
 
     let downloadKey = `${archiveName} `;
     if (downloadInfo.archives.length > 1) {
@@ -71,14 +73,14 @@ export const downloadArchive = async (fileName: string, options: DownloadInfoDto
     downloadManager.add(downloadKey, archive.size, abort);
 
     try {
-      const { data } = await api.downloadApi.downloadArchive(
-        { assetIdsDto: { assetIds: archive.assetIds }, key: api.getKey() },
-        {
-          responseType: 'blob',
-          signal: abort.signal,
-          onDownloadProgress: (event) => downloadManager.update(downloadKey, event.loaded),
-        },
-      );
+      // TODO use sdk once it supports progress events
+      const { data } = await downloadRequest({
+        method: 'POST',
+        url: defaults.baseUrl + '/download/archive' + (key ? `?key=${key}` : ''),
+        data: { assetIds: archive.assetIds },
+        signal: abort.signal,
+        onDownloadProgress: (event) => downloadManager.update(downloadKey, event.loaded),
+      });
 
       downloadBlob(data, archiveName);
     } catch (error) {
@@ -120,23 +122,19 @@ export const downloadFile = async (asset: AssetResponseDto) => {
     try {
       const abort = new AbortController();
       downloadManager.add(downloadKey, size, abort);
-
-      const { data } = await api.downloadApi.downloadFile(
-        { id, key: api.getKey() },
-        {
-          responseType: 'blob',
-          onDownloadProgress: ({ event }) => {
-            if (event.lengthComputable) {
-              downloadManager.update(downloadKey, event.loaded, event.total);
-            }
-          },
-          signal: abort.signal,
-        },
-      );
+      const key = getKey();
 
       notificationController.show({
         type: NotificationType.Info,
         message: `Downloading asset ${asset.originalFileName}`,
+      });
+
+      // TODO use sdk once it supports progress events
+      const { data } = await downloadRequest({
+        method: 'POST',
+        url: defaults.baseUrl + `/download/asset/${id}` + (key ? `?key=${key}` : ''),
+        signal: abort.signal,
+        onDownloadProgress: (event) => downloadManager.update(downloadKey, event.loaded, event.total),
       });
 
       downloadBlob(data, filename);
@@ -239,7 +237,7 @@ export async function stackAssets(assets: Array<AssetResponseDto>, onStack: (ds:
     const ids = children.map(({ id }) => id);
 
     if (children.length > 0) {
-      await api.assetApi.updateAssets({ assetBulkUpdateDto: { ids, stackParentId: parent.id } });
+      await updateAssets({ assetBulkUpdateDto: { ids, stackParentId: parent.id } });
     }
 
     let childrenCount = parent.stackCount ?? 0;
@@ -265,3 +263,7 @@ export async function stackAssets(assets: Array<AssetResponseDto>, onStack: (ds:
     handleError(error, `Unable to stack`);
   }
 }
+
+export const delay = async (ms: number) => {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+};

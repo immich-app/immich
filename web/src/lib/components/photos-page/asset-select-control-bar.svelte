@@ -14,9 +14,9 @@
 
 <script lang="ts">
   import { locale } from '$lib/stores/preferences.store';
-  import type { AssetResponseDto } from '@api';
-  import ControlAppBar from '../shared-components/control-app-bar.svelte';
+  import type { AssetResponseDto } from '@immich/sdk';
   import { mdiClose } from '@mdi/js';
+  import ControlAppBar from '../shared-components/control-app-bar.svelte';
 
   export let assets: Set<AssetResponseDto>;
   export let clearSelect: () => void;

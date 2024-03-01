@@ -7,7 +7,7 @@ export class SystemConfigEntity<T = SystemConfigValue> {
   key!: SystemConfigKey;
 
   @Column({ type: 'varchar', nullable: true, transformer: { to: JSON.stringify, from: JSON.parse } })
-  value!: T;
+  value!: T | T[];
 }
 
 export type SystemConfigValue = string | number | boolean;
@@ -51,8 +51,6 @@ export enum SystemConfigKey {
   LIBRARY_SCAN_CRON_EXPRESSION = 'library.scan.cronExpression',
 
   LIBRARY_WATCH_ENABLED = 'library.watch.enabled',
-  LIBRARY_WATCH_USE_POLLING = 'library.watch.usePolling',
-  LIBRARY_WATCH_INTERVAL = 'library.watch.interval',
 
   LOGGING_ENABLED = 'logging.enabled',
   LOGGING_LEVEL = 'logging.level',
@@ -116,6 +114,13 @@ export enum TranscodePolicy {
   BITRATE = 'bitrate',
   REQUIRED = 'required',
   DISABLED = 'disabled',
+}
+
+export enum TranscodeTarget {
+  NONE,
+  AUDIO,
+  VIDEO,
+  ALL,
 }
 
 export enum VideoCodec {
@@ -261,8 +266,6 @@ export interface SystemConfig {
     };
     watch: {
       enabled: boolean;
-      usePolling: boolean;
-      interval: number;
     };
   };
   server: {

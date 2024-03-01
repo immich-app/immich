@@ -19,8 +19,8 @@ import {
   MoveRepository,
   PartnerRepository,
   PersonRepository,
+  SearchRepository,
   SharedLinkRepository,
-  SmartInfoRepository,
   SystemConfigRepository,
   SystemMetadataRepository,
   TagRepository,
@@ -41,7 +41,7 @@ const repositories = [
   PartnerRepository,
   PersonRepository,
   SharedLinkRepository,
-  SmartInfoRepository,
+  SearchRepository,
   SystemConfigRepository,
   SystemMetadataRepository,
   TagRepository,
@@ -142,7 +142,7 @@ class SqlGenerator {
         this.sqlLogger.clear();
 
         // errors still generate sql, which is all we care about
-        await target.apply(instance, params).catch(() => null);
+        await target.apply(instance, params).catch((error: Error) => console.error(`${queryLabel} error: ${error}`));
 
         if (this.sqlLogger.queries.length === 0) {
           console.warn(`No queries recorded for ${queryLabel}`);

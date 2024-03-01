@@ -1,22 +1,23 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
+  import IconButton from '$lib/components/elements/buttons/icon-button.svelte';
+  import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
+  import SkipLink from '$lib/components/elements/buttons/skip-link.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
+  import { featureFlags } from '$lib/stores/server-config.store';
+  import { resetSavedUser, user } from '$lib/stores/user.store';
   import { clickOutside } from '$lib/utils/click-outside';
+  import { logout } from '@immich/sdk';
+  import { mdiCog, mdiMagnify, mdiTrayArrowUp } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
   import { fade, fly } from 'svelte/transition';
-  import { api } from '@api';
-  import ThemeButton from '../theme-button.svelte';
   import { AppRoute } from '../../../constants';
-  import AccountInfoPanel from './account-info-panel.svelte';
   import ImmichLogo from '../immich-logo.svelte';
   import SearchBar from '../search-bar/search-bar.svelte';
-  import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
-  import IconButton from '$lib/components/elements/buttons/icon-button.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
+  import ThemeButton from '../theme-button.svelte';
   import UserAvatar from '../user-avatar.svelte';
-  import { featureFlags } from '$lib/stores/server-config.store';
-  import { mdiMagnify, mdiTrayArrowUp, mdiCog } from '@mdi/js';
-  import { resetSavedUser, user } from '$lib/stores/user.store';
+  import AccountInfoPanel from './account-info-panel.svelte';
 
   export let showUploadButton = true;
 
@@ -28,17 +29,18 @@
   }>();
 
   const logOut = async () => {
-    resetSavedUser();
-    const { data } = await api.authenticationApi.logout();
-    if (data.redirectUri.startsWith('/')) {
-      goto(data.redirectUri);
+    const { redirectUri } = await logout();
+    if (redirectUri.startsWith('/')) {
+      await goto(redirectUri);
     } else {
-      window.location.href = data.redirectUri;
+      window.location.href = redirectUri;
     }
+    resetSavedUser();
   };
 </script>
 
 <section id="dashboard-navbar" class="fixed z-[900] h-[var(--navbar-height)] w-screen text-sm">
+  <SkipLink>Skip to content</SkipLink>
   <div
     class="grid h-full grid-cols-[theme(spacing.18)_auto] items-center border-b bg-immich-bg py-2 dark:border-b-immich-dark-gray dark:bg-immich-dark-bg md:grid-cols-[theme(spacing.64)_auto]"
   >
@@ -146,7 +148,7 @@
           {/if}
 
           {#if shouldShowAccountInfoPanel}
-            <AccountInfoPanel user={$user} on:logout={logOut} />
+            <AccountInfoPanel on:logout={logOut} />
           {/if}
         </div>
       </section>

@@ -1,7 +1,9 @@
 import json
-import pickle
+import os
 from io import BytesIO
 from pathlib import Path
+from random import randint
+from types import SimpleNamespace
 from typing import Any, Callable
 from unittest import mock
 
@@ -13,10 +15,12 @@ from fastapi.testclient import TestClient
 from PIL import Image
 from pytest_mock import MockerFixture
 
+from app.main import load
+
 from .config import log, settings
-from .models.base import InferenceModel, PicklableSessionOptions
+from .models.base import InferenceModel
 from .models.cache import ModelCache
-from .models.clip import OpenCLIPEncoder
+from .models.clip import MCLIPEncoder, OpenCLIPEncoder
 from .models.facial_recognition import FaceRecognizer
 from .schemas import ModelRuntime, ModelType
 
@@ -41,10 +45,22 @@ class TestBase:
         assert encoder.providers == self.CUDA_EP
 
     @pytest.mark.providers(OV_EP)
-    def test_sets_openvino_provider_if_available(self, providers: list[str]) -> None:
+    def test_sets_openvino_provider_if_available(self, providers: list[str], mocker: MockerFixture) -> None:
+        mocked = mocker.patch("app.models.base.ort.capi._pybind_state")
+        mocked.get_available_openvino_device_ids.return_value = ["GPU.0", "CPU"]
+
         encoder = OpenCLIPEncoder("ViT-B-32__openai")
 
         assert encoder.providers == self.OV_EP
+
+    @pytest.mark.providers(OV_EP)
+    def test_avoids_openvino_if_gpu_not_available(self, providers: list[str], mocker: MockerFixture) -> None:
+        mocked = mocker.patch("app.models.base.ort.capi._pybind_state")
+        mocked.get_available_openvino_device_ids.return_value = ["CPU"]
+
+        encoder = OpenCLIPEncoder("ViT-B-32__openai")
+
+        assert encoder.providers == self.CPU_EP
 
     @pytest.mark.providers(CUDA_EP_OUT_OF_ORDER)
     def test_sets_providers_in_correct_order(self, providers: list[str]) -> None:
@@ -64,11 +80,14 @@ class TestBase:
 
         assert encoder.providers == providers
 
-    def test_sets_default_provider_options(self) -> None:
+    def test_sets_default_provider_options(self, mocker: MockerFixture) -> None:
+        mocked = mocker.patch("app.models.base.ort.capi._pybind_state")
+        mocked.get_available_openvino_device_ids.return_value = ["GPU.0", "CPU"]
+
         encoder = OpenCLIPEncoder("ViT-B-32__openai", providers=["OpenVINOExecutionProvider", "CPUExecutionProvider"])
 
         assert encoder.provider_options == [
-            {},
+            {"device_type": "GPU_FP32"},
             {"arena_extend_strategy": "kSameAsRequested"},
         ]
 
@@ -119,7 +138,7 @@ class TestBase:
     def test_sets_default_cache_dir(self) -> None:
         encoder = OpenCLIPEncoder("ViT-B-32__openai")
 
-        assert encoder.cache_dir == Path("/cache/clip/ViT-B-32__openai")
+        assert encoder.cache_dir == Path(settings.cache_folder) / "clip" / "ViT-B-32__openai"
 
     def test_sets_cache_dir_kwarg(self) -> None:
         cache_dir = Path("/test_cache")
@@ -170,7 +189,7 @@ class TestBase:
         encoder.clear_cache()
 
         mock_rmtree.assert_called_once_with(encoder.cache_dir)
-        assert info.call_count == 2
+        info.assert_called_with(f"Cleared cache directory for model '{encoder.model_name}'.")
 
     def test_clear_cache_warns_if_path_does_not_exist(self, mocker: MockerFixture) -> None:
         mock_rmtree = mocker.patch("app.models.base.rmtree", autospec=True)
@@ -223,12 +242,12 @@ class TestBase:
         mock_model_path.is_file.return_value = True
         mock_model_path.suffix = ".armnn"
         mock_model_path.with_suffix.return_value = mock_model_path
-        mock_session = mocker.patch("app.models.base.AnnSession")
+        mock_ann = mocker.patch("app.models.base.AnnSession")
 
         encoder = OpenCLIPEncoder("ViT-B-32__openai")
         encoder._make_session(mock_model_path)
 
-        mock_session.assert_called_once()
+        mock_ann.assert_called_once()
 
     def test_make_session_return_ort_if_available_and_ann_is_not(self, mocker: MockerFixture) -> None:
         mock_armnn_path = mocker.Mock()
@@ -242,6 +261,7 @@ class TestBase:
 
         mock_ann = mocker.patch("app.models.base.AnnSession")
         mock_ort = mocker.patch("app.models.base.ort.InferenceSession")
+        mocker.patch("app.models.base.os.chdir")
 
         encoder = OpenCLIPEncoder("ViT-B-32__openai")
         encoder._make_session(mock_armnn_path)
@@ -264,10 +284,30 @@ class TestBase:
         mock_ann.assert_not_called()
         mock_ort.assert_not_called()
 
+    def test_make_session_changes_cwd(self, mocker: MockerFixture) -> None:
+        mock_model_path = mocker.Mock()
+        mock_model_path.is_file.return_value = True
+        mock_model_path.suffix = ".onnx"
+        mock_model_path.parent = "model_parent"
+        mock_model_path.with_suffix.return_value = mock_model_path
+        mock_ort = mocker.patch("app.models.base.ort.InferenceSession")
+        mock_chdir = mocker.patch("app.models.base.os.chdir")
+
+        encoder = OpenCLIPEncoder("ViT-B-32__openai")
+        encoder._make_session(mock_model_path)
+
+        mock_chdir.assert_has_calls(
+            [
+                mock.call(mock_model_path.parent),
+                mock.call(os.getcwd()),
+            ]
+        )
+        mock_ort.assert_called_once()
+
     def test_download(self, mocker: MockerFixture) -> None:
         mock_snapshot_download = mocker.patch("app.models.base.snapshot_download")
 
-        encoder = OpenCLIPEncoder("ViT-B-32__openai")
+        encoder = OpenCLIPEncoder("ViT-B-32__openai", cache_dir="/path/to/cache")
         encoder.download()
 
         mock_snapshot_download.assert_called_once_with(
@@ -348,6 +388,60 @@ class TestCLIP:
         assert embedding.dtype == np.float32
         mocked.run.assert_called_once()
 
+    def test_openclip_tokenizer(
+        self,
+        mocker: MockerFixture,
+        clip_model_cfg: dict[str, Any],
+        clip_preprocess_cfg: Callable[[Path], dict[str, Any]],
+        clip_tokenizer_cfg: Callable[[Path], dict[str, Any]],
+    ) -> None:
+        mocker.patch.object(OpenCLIPEncoder, "download")
+        mocker.patch.object(OpenCLIPEncoder, "model_cfg", clip_model_cfg)
+        mocker.patch.object(OpenCLIPEncoder, "preprocess_cfg", clip_preprocess_cfg)
+        mocker.patch.object(OpenCLIPEncoder, "tokenizer_cfg", clip_tokenizer_cfg)
+        mock_tokenizer = mocker.patch("app.models.clip.Tokenizer.from_file", autospec=True).return_value
+        mock_ids = [randint(0, 50000) for _ in range(77)]
+        mock_tokenizer.encode.return_value = SimpleNamespace(ids=mock_ids)
+
+        clip_encoder = OpenCLIPEncoder("ViT-B-32__openai", cache_dir="test_cache", mode="text")
+        clip_encoder._load_tokenizer()
+        tokens = clip_encoder.tokenize("test search query")
+
+        assert "text" in tokens
+        assert isinstance(tokens["text"], np.ndarray)
+        assert tokens["text"].shape == (1, 77)
+        assert tokens["text"].dtype == np.int32
+        assert np.allclose(tokens["text"], np.array([mock_ids], dtype=np.int32), atol=0)
+
+    def test_mclip_tokenizer(
+        self,
+        mocker: MockerFixture,
+        clip_model_cfg: dict[str, Any],
+        clip_preprocess_cfg: Callable[[Path], dict[str, Any]],
+        clip_tokenizer_cfg: Callable[[Path], dict[str, Any]],
+    ) -> None:
+        mocker.patch.object(OpenCLIPEncoder, "download")
+        mocker.patch.object(OpenCLIPEncoder, "model_cfg", clip_model_cfg)
+        mocker.patch.object(OpenCLIPEncoder, "preprocess_cfg", clip_preprocess_cfg)
+        mocker.patch.object(OpenCLIPEncoder, "tokenizer_cfg", clip_tokenizer_cfg)
+        mock_tokenizer = mocker.patch("app.models.clip.Tokenizer.from_file", autospec=True).return_value
+        mock_ids = [randint(0, 50000) for _ in range(77)]
+        mock_attention_mask = [randint(0, 1) for _ in range(77)]
+        mock_tokenizer.encode.return_value = SimpleNamespace(ids=mock_ids, attention_mask=mock_attention_mask)
+
+        clip_encoder = MCLIPEncoder("ViT-B-32__openai", cache_dir="test_cache", mode="text")
+        clip_encoder._load_tokenizer()
+        tokens = clip_encoder.tokenize("test search query")
+
+        assert "input_ids" in tokens
+        assert "attention_mask" in tokens
+        assert isinstance(tokens["input_ids"], np.ndarray)
+        assert isinstance(tokens["attention_mask"], np.ndarray)
+        assert tokens["input_ids"].shape == (1, 77)
+        assert tokens["attention_mask"].shape == (1, 77)
+        assert np.allclose(tokens["input_ids"], np.array([mock_ids], dtype=np.int32), atol=0)
+        assert np.allclose(tokens["attention_mask"], np.array([mock_attention_mask], dtype=np.int32), atol=0)
+
 
 class TestFaceRecognition:
     def test_set_min_score(self, mocker: MockerFixture) -> None:
@@ -420,11 +514,74 @@ class TestCache:
         mock_lock_cls.return_value.__aenter__.return_value.cas.assert_called_with(mock.ANY, ttl=100)
 
     @mock.patch("app.models.cache.SimpleMemoryCache.expire")
-    async def test_revalidate(self, mock_cache_expire: mock.Mock, mock_get_model: mock.Mock) -> None:
+    async def test_revalidate_get(self, mock_cache_expire: mock.Mock, mock_get_model: mock.Mock) -> None:
         model_cache = ModelCache(ttl=100, revalidate=True)
         await model_cache.get("test_model_name", ModelType.FACIAL_RECOGNITION)
         await model_cache.get("test_model_name", ModelType.FACIAL_RECOGNITION)
         mock_cache_expire.assert_called_once_with(mock.ANY, 100)
+
+    async def test_profiling(self, mock_get_model: mock.Mock) -> None:
+        model_cache = ModelCache(ttl=100, profiling=True)
+        await model_cache.get("test_model_name", ModelType.FACIAL_RECOGNITION)
+        profiling = await model_cache.get_profiling()
+        assert isinstance(profiling, dict)
+        assert profiling == model_cache.cache.profiling
+
+    async def test_loads_mclip(self) -> None:
+        model_cache = ModelCache()
+
+        model = await model_cache.get("XLM-Roberta-Large-Vit-B-32", ModelType.CLIP, mode="text")
+
+        assert isinstance(model, MCLIPEncoder)
+        assert model.model_name == "XLM-Roberta-Large-Vit-B-32"
+
+    async def test_raises_exception_if_invalid_model_type(self) -> None:
+        invalid: Any = SimpleNamespace(value="invalid")
+        model_cache = ModelCache()
+
+        with pytest.raises(ValueError):
+            await model_cache.get("XLM-Roberta-Large-Vit-B-32", invalid, mode="text")
+
+    async def test_raises_exception_if_unknown_model_name(self) -> None:
+        model_cache = ModelCache()
+
+        with pytest.raises(ValueError):
+            await model_cache.get("test_model_name", ModelType.CLIP, mode="text")
+
+
+@pytest.mark.asyncio
+class TestLoad:
+    async def test_load(self) -> None:
+        mock_model = mock.Mock(spec=InferenceModel)
+        mock_model.loaded = False
+
+        res = await load(mock_model)
+
+        assert res is mock_model
+        mock_model.load.assert_called_once()
+        mock_model.clear_cache.assert_not_called()
+
+    async def test_load_returns_model_if_loaded(self) -> None:
+        mock_model = mock.Mock(spec=InferenceModel)
+        mock_model.loaded = True
+
+        res = await load(mock_model)
+
+        assert res is mock_model
+        mock_model.load.assert_not_called()
+
+    async def test_load_clears_cache_and_retries_if_os_error(self) -> None:
+        mock_model = mock.Mock(spec=InferenceModel)
+        mock_model.model_name = "test_model_name"
+        mock_model.model_type = ModelType.CLIP
+        mock_model.load.side_effect = [OSError, None]
+        mock_model.loaded = False
+
+        res = await load(mock_model)
+
+        assert res is mock_model
+        mock_model.clear_cache.assert_called_once()
+        assert mock_model.load.call_count == 2
 
 
 @pytest.mark.skipif(
@@ -437,15 +594,21 @@ class TestEndpoints:
     ) -> None:
         byte_image = BytesIO()
         pil_image.save(byte_image, format="jpeg")
+        expected = responses["clip"]["image"]
+
         response = deployed_app.post(
             "http://localhost:3003/predict",
             data={"modelName": "ViT-B-32__openai", "modelType": "clip", "options": json.dumps({"mode": "vision"})},
             files={"image": byte_image.getvalue()},
         )
+
+        actual = response.json()
         assert response.status_code == 200
-        assert response.json() == responses["clip"]["image"]
+        assert np.allclose(expected, actual)
 
     def test_clip_text_endpoint(self, responses: dict[str, Any], deployed_app: TestClient) -> None:
+        expected = responses["clip"]["text"]
+
         response = deployed_app.post(
             "http://localhost:3003/predict",
             data={
@@ -455,12 +618,15 @@ class TestEndpoints:
                 "options": json.dumps({"mode": "text"}),
             },
         )
+
+        actual = response.json()
         assert response.status_code == 200
-        assert response.json() == responses["clip"]["text"]
+        assert np.allclose(expected, actual)
 
     def test_face_endpoint(self, pil_image: Image.Image, responses: dict[str, Any], deployed_app: TestClient) -> None:
         byte_image = BytesIO()
         pil_image.save(byte_image, format="jpeg")
+        expected = responses["facial-recognition"]
 
         response = deployed_app.post(
             "http://localhost:3003/predict",
@@ -471,15 +637,13 @@ class TestEndpoints:
             },
             files={"image": byte_image.getvalue()},
         )
+
+        actual = response.json()
         assert response.status_code == 200
-        assert response.json() == responses["facial-recognition"]
-
-
-def test_sess_options() -> None:
-    sess_options = PicklableSessionOptions()
-    sess_options.intra_op_num_threads = 1
-    sess_options.inter_op_num_threads = 1
-    pickled = pickle.dumps(sess_options)
-    unpickled = pickle.loads(pickled)
-    assert unpickled.intra_op_num_threads == 1
-    assert unpickled.inter_op_num_threads == 1
+        assert len(expected) == len(actual)
+        for expected_face, actual_face in zip(expected, actual):
+            assert expected_face["imageHeight"] == actual_face["imageHeight"]
+            assert expected_face["imageWidth"] == actual_face["imageWidth"]
+            assert expected_face["boundingBox"] == actual_face["boundingBox"]
+            assert np.allclose(expected_face["embedding"], actual_face["embedding"])
+            assert np.allclose(expected_face["score"], actual_face["score"])
