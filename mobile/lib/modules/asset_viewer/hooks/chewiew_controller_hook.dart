@@ -20,7 +20,6 @@ ChewieController? useChewieController(
   bool showOptions = true,
   bool showControlsOnInitialize = false,
   bool autoPlay = true,
-  bool autoInitialize = true,
   bool allowFullScreen = false,
   bool allowedScreenSleep = false,
   bool showControls = true,
@@ -43,7 +42,6 @@ ChewieController? useChewieController(
       hideControlsTimer: hideControlsTimer,
       showControlsOnInitialize: showControlsOnInitialize,
       showControls: showControls,
-      autoInitialize: autoInitialize,
       allowedScreenSleep: allowedScreenSleep,
       onPlaying: onPlaying,
       onPaused: onPaused,
@@ -58,7 +56,6 @@ class _ChewieControllerHook extends Hook<ChewieController?> {
   final bool showOptions;
   final bool showControlsOnInitialize;
   final bool autoPlay;
-  final bool autoInitialize;
   final bool allowFullScreen;
   final bool allowedScreenSleep;
   final bool showControls;
@@ -77,7 +74,6 @@ class _ChewieControllerHook extends Hook<ChewieController?> {
     this.showOptions = true,
     this.showControlsOnInitialize = false,
     this.autoPlay = true,
-    this.autoInitialize = true,
     this.allowFullScreen = false,
     this.allowedScreenSleep = false,
     this.showControls = true,
@@ -166,7 +162,6 @@ class _ChewieControllerHookState
         showOptions: hook.showOptions,
         showControlsOnInitialize: hook.showControlsOnInitialize,
         autoPlay: hook.autoPlay,
-        autoInitialize: hook.autoInitialize,
         allowFullScreen: hook.allowFullScreen,
         allowedScreenSleep: hook.allowedScreenSleep,
         showControls: hook.showControls,
