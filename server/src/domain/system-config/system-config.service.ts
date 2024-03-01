@@ -1,3 +1,4 @@
+/* eslint@typescript-eslint/require-await: off */
 import { LogLevel, SystemConfig } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
 import { Inject, Injectable } from '@nestjs/common';
@@ -118,7 +119,7 @@ export class SystemConfigService {
     await this.core.refreshConfig();
   }
 
-  private async setLogLevel({ logging }: SystemConfig) {
+  private setLogLevel({ logging }: SystemConfig) {
     const envLevel = this.getEnvLogLevel();
     const configLevel = logging.enabled ? logging.level : false;
     const level = envLevel ?? configLevel;
@@ -130,6 +131,7 @@ export class SystemConfigService {
     return process.env.LOG_LEVEL as LogLevel;
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   private async validateConfig(newConfig: SystemConfig, oldConfig: SystemConfig) {
     if (!_.isEqual(instanceToPlain(newConfig.logging), oldConfig.logging) && this.getEnvLogLevel()) {
       throw new Error('Logging cannot be changed while the environment variable LOG_LEVEL is set.');

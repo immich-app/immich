@@ -1,3 +1,4 @@
+/* eslint @typescript-eslint/require-await: off */
 import { IJobRepository, IMediaRepository, JobItem, JobItemHandler, QueueName } from '@app/domain';
 import { AppModule } from '@app/immich';
 import { InfraModule, InfraTestModule, dataSource } from '@app/infra';

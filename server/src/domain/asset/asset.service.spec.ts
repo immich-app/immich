@@ -169,7 +169,7 @@ describe(AssetService.name, () => {
     expect(sut).toBeDefined();
   });
 
-  beforeEach(async () => {
+  beforeEach(() => {
     accessMock = newAccessRepositoryMock();
     assetMock = newAssetRepositoryMock();
     communicationMock = newCommunicationRepositoryMock();

@@ -61,6 +61,7 @@ export class DatabaseService {
   }
 
   private async createVectorExtension() {
+    // eslint-disable-next-line @typescript-eslint/require-await
     await this.databaseRepository.createExtension(this.vectorExt).catch(async (error: QueryFailedError) => {
       const otherExt =
         this.vectorExt === DatabaseExtension.VECTORS ? DatabaseExtension.VECTOR : DatabaseExtension.VECTORS;

@@ -26,6 +26,16 @@ module.exports = {
     'unicorn/prefer-event-target': 'off',
     'unicorn/no-thenable': 'off',
     '@typescript-eslint/await-thenable': 'error',
+    '@typescript-eslint/no-floating-promises': 'error',
+    '@typescript-eslint/no-misused-promises': [
+      'error',
+      {
+        checksVoidReturn: false,
+      },
+    ],
+    // Note: you must disable the base rule as it can report incorrect errors
+    'require-await': 'off',
+    '@typescript-eslint/require-await': 'error',
     curly: 2,
     'prettier/prettier': 0,
   },

@@ -56,7 +56,7 @@ describe(MetadataService.name, () => {
   let databaseMock: jest.Mocked<IDatabaseRepository>;
   let sut: MetadataService;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     albumMock = newAlbumRepositoryMock();
     assetMock = newAssetRepositoryMock();
     configMock = newSystemConfigRepositoryMock();

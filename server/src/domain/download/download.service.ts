@@ -107,6 +107,7 @@ export class DownloadService {
       const assetIds = dto.assetIds;
       await this.access.requirePermission(auth, Permission.ASSET_DOWNLOAD, assetIds);
       const assets = await this.assetRepository.getByIds(assetIds);
+      // eslint-disable-next-line @typescript-eslint/require-await
       return (async function* () {
         yield assets;
       })();

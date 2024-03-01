@@ -55,7 +55,7 @@ describe(LibraryService.name, () => {
     storageMock = newStorageRepositoryMock();
 
     // Always validate owner access for library.
-    accessMock.library.checkOwnerAccess.mockImplementation(async (_, libraryIds) => libraryIds);
+    accessMock.library.checkOwnerAccess.mockImplementation((_, libraryIds) => libraryIds);
 
     sut = new LibraryService(
       accessMock,
@@ -106,7 +106,7 @@ describe(LibraryService.name, () => {
       configMock.load.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
 
-      libraryMock.get.mockImplementation(async (id) => {
+      libraryMock.get.mockImplementation((id) => {
         switch (id) {
           case libraryStub.externalLibraryWithImportPaths1.id: {
             return libraryStub.externalLibraryWithImportPaths1;
@@ -1278,7 +1278,7 @@ describe(LibraryService.name, () => {
       configMock.load.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
 
-      libraryMock.get.mockImplementation(async (id) => {
+      libraryMock.get.mockImplementation((id) => {
         switch (id) {
           case libraryStub.externalLibraryWithImportPaths1.id: {
             return libraryStub.externalLibraryWithImportPaths1;
@@ -1304,7 +1304,7 @@ describe(LibraryService.name, () => {
 
   describe('handleDeleteLibrary', () => {
     it('should not delete a nonexistent library', async () => {
-      libraryMock.get.mockImplementation(async () => {
+      libraryMock.get.mockImplementation(() => {
         return null;
       });
       libraryMock.getAssetIds.mockResolvedValue([]);

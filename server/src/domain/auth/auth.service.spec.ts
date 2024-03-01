@@ -68,7 +68,7 @@ describe('AuthService', () => {
     jest.resetModules();
   });
 
-  beforeEach(async () => {
+  beforeEach(() => {
     callbackMock = jest.fn().mockReturnValue({ access_token: 'access-token' });
 
     jest.spyOn(generators, 'state').mockReturnValue('state');
