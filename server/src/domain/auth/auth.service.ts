@@ -12,6 +12,7 @@ import { DateTime } from 'luxon';
 import { IncomingHttpHeaders } from 'node:http';
 import { ClientMetadata, Issuer, UserinfoResponse, custom, generators } from 'openid-client';
 import { AccessCore, Permission } from '../access';
+import { HumanReadableSize } from '../domain.util';
 import {
   IAccessRepository,
   ICryptoRepository,
@@ -270,7 +271,7 @@ export class AuthService {
         name: userName,
         email: profile.email,
         oauthId: profile.sub,
-        quotaSizeInBytes: storageQuota ? storageQuota * 1_073_741_824 : null,
+        quotaSizeInBytes: storageQuota ? storageQuota * HumanReadableSize.GiB : null,
         storageLabel,
       });
     }
