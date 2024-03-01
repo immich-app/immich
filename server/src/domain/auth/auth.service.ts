@@ -256,14 +256,14 @@ export class AuthService {
       if (typeof storageQuota !== 'number') {
         storageQuota = config.oauth.defaultStorageQuota;
       }
-      storageQuota = storageQuota == 0 ? null : storageQuota;
+      storageQuota = storageQuota == 0 ? null : storageQuota * HumanReadableSize.GiB;
 
       const userName = profile.name ?? `${profile.given_name || ''} ${profile.family_name || ''}`;
       user = await this.userCore.createUser({
         name: userName,
         email: profile.email,
         oauthId: profile.sub,
-        quotaSizeInBytes: storageQuota ? storageQuota * HumanReadableSize.GiB : null,
+        quotaSizeInBytes: storageQuota,
         storageLabel,
       });
     }
