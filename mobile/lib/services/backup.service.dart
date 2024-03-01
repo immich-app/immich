@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:background_downloader/background_downloader.dart';
@@ -22,7 +21,6 @@ import 'package:openapi/api.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:cancellation_token_http/http.dart' as http;
-import 'package:path/path.dart' as p;
 
 final backupServiceProvider = Provider(
   (ref) => BackupService(
@@ -297,8 +295,7 @@ class BackupService {
         'duration': entity.videoDuration.toString(),
       };
 
-      if (files.length == 1) {
-        final String file = files.first;
+      for (final file in files) {
         final split = file.split('/');
         final name = split.last;
         final directory = split.take(split.length - 1).join('/');
@@ -318,24 +315,6 @@ class BackupService {
           directory: directory,
           baseDirectory: BaseDirectory.root,
         );
-        tasks.add(task);
-      } else {
-        final task = MultiUploadTask(
-          url: url,
-          files: files,
-          headers: headers,
-          fields: fields,
-          updates: Updates.statusAndProgress,
-          group: 'backup',
-          taskId: entity.id,
-          retries: 0,
-          displayName: 'Immich',
-          httpRequestMethod: 'POST',
-          baseDirectory: BaseDirectory.root,
-        );
-
-        print('created task $task for files $files');
-
         tasks.add(task);
       }
     }
