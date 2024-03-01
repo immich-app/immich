@@ -32,7 +32,7 @@ export const makeMockWatcher =
         }
       }
     }
-    return async () => await close?.();
+    return () => close?.();
   };
 
 export const newStorageRepositoryMock = (reset = true): jest.Mocked<IStorageRepository> => {
