@@ -15,8 +15,8 @@ import {
   newUserTokenRepositoryMock,
   sharedLinkStub,
   systemConfigStub,
-  userStub,
   userDto,
+  userStub,
   userTokenStub,
 } from '@test';
 import { IncomingHttpHeaders } from 'node:http';
@@ -63,10 +63,15 @@ describe('AuthService', () => {
   let userTokenMock: jest.Mocked<IUserTokenRepository>;
   let shareMock: jest.Mocked<ISharedLinkRepository>;
   let keyMock: jest.Mocked<IKeyRepository>;
-  let callbackMock: jest.Mock;
 
-  function setupOpenIdClientSpy(quota: any){
-    const immich_quota = quota;
+  let callbackMock: jest.Mock;
+  let userinfoMock: jest.Mock;
+
+  beforeEach(async () => {
+    callbackMock = jest.fn().mockReturnValue({ access_token: 'access-token' });
+    userinfoMock = jest.fn().mockResolvedValue({ sub, email });
+
+    jest.spyOn(generators, 'state').mockReturnValue('state');
     jest.spyOn(Issuer, 'discover').mockResolvedValue({
       id_token_signing_alg_values_supported: ['RS256'],
       Client: jest.fn().mockResolvedValue({
@@ -78,20 +83,9 @@ describe('AuthService', () => {
         authorizationUrl: jest.fn().mockReturnValue('http://authorization-url'),
         callbackParams: jest.fn().mockReturnValue({ state: 'state' }),
         callback: callbackMock,
-        userinfo: jest.fn().mockResolvedValue({ sub, email, immich_quota }),
+        userinfo: userinfoMock,
       }),
     } as any);
-  }
-
-  afterEach(() => {
-    jest.resetModules();
-  });
-
-  beforeEach(async () => {
-    callbackMock = jest.fn().mockReturnValue({ access_token: 'access-token' });
-
-    jest.spyOn(generators, 'state').mockReturnValue('state');
-    setupOpenIdClientSpy(null);
 
     accessMock = newAccessRepositoryMock();
     cryptoMock = newCryptoRepositoryMock();
@@ -498,7 +492,7 @@ describe('AuthService', () => {
       expect(callbackMock).toHaveBeenCalledWith('http://mobile-redirect', { state: 'state' }, { state: 'state' });
     });
 
-    it('should use defaultStorageQuota', async () => {
+    it('should use the default quota', async () => {
       configMock.load.mockResolvedValue(systemConfigStub.withDefaultStorageQuota);
       userMock.getByEmail.mockResolvedValue(null);
       userMock.getAdmin.mockResolvedValue(userStub.user1);
@@ -511,12 +505,25 @@ describe('AuthService', () => {
       expect(userMock.create).toHaveBeenCalledWith(userDto.userWithDefaultStorageQuota);
     });
 
-    it('should use defaultStorageQuota if storageQuotaClaim invalid', async () => {
+    it('should ignore an invalid storage quota', async () => {
       configMock.load.mockResolvedValue(systemConfigStub.withDefaultStorageQuota);
       userMock.getByEmail.mockResolvedValue(null);
       userMock.getAdmin.mockResolvedValue(userStub.user1);
       userMock.create.mockResolvedValue(userStub.user1);
-      setupOpenIdClientSpy("abc");
+      userinfoMock.mockResolvedValue({ sub, email, immich_quota: 'abc' });
+
+      await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).resolves.toEqual(
+        loginResponseStub.user1oauth,
+      );
+
+      expect(userMock.create).toHaveBeenCalledWith(userDto.userWithDefaultStorageQuota);
+    });
+    it('should ignore a negative quota', async () => {
+      configMock.load.mockResolvedValue(systemConfigStub.withDefaultStorageQuota);
+      userMock.getByEmail.mockResolvedValue(null);
+      userMock.getAdmin.mockResolvedValue(userStub.user1);
+      userMock.create.mockResolvedValue(userStub.user1);
+      userinfoMock.mockResolvedValue({ sub, email, immich_quota: -5 });
 
       await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).resolves.toEqual(
         loginResponseStub.user1oauth,
@@ -525,12 +532,26 @@ describe('AuthService', () => {
       expect(userMock.create).toHaveBeenCalledWith(userDto.userWithDefaultStorageQuota);
     });
 
-    it('should use storageQuotaClaim', async () => {
+    it('should ignore a 0 quota', async () => {
       configMock.load.mockResolvedValue(systemConfigStub.withDefaultStorageQuota);
       userMock.getByEmail.mockResolvedValue(null);
       userMock.getAdmin.mockResolvedValue(userStub.user1);
       userMock.create.mockResolvedValue(userStub.user1);
-      setupOpenIdClientSpy(5);
+      userinfoMock.mockResolvedValue({ sub, email, immich_quota: 0 });
+
+      await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).resolves.toEqual(
+        loginResponseStub.user1oauth,
+      );
+
+      expect(userMock.create).toHaveBeenCalledWith(userDto.userWithDefaultStorageQuota);
+    });
+
+    it('should use a valid storage quota', async () => {
+      configMock.load.mockResolvedValue(systemConfigStub.withDefaultStorageQuota);
+      userMock.getByEmail.mockResolvedValue(null);
+      userMock.getAdmin.mockResolvedValue(userStub.user1);
+      userMock.create.mockResolvedValue(userStub.user1);
+      userinfoMock.mockResolvedValue({ sub, email, immich_quota: 5 });
 
       await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).resolves.toEqual(
         loginResponseStub.user1oauth,
