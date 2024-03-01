@@ -27,4 +27,3 @@ Smart search features include:
 - Search by condition: not in any album or archive or Favorite or all conditions.
 
 <img src={require('./img/advanced-search-filters.webp').default} width="70%" title='advanced search filters' />
-

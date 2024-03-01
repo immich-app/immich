@@ -45,6 +45,7 @@ Please modify the `IMMICH_INSTANCE_URL` and `IMMICH_API_KEY` environment variabl
 :::info
 If you're using the CLI inside of the container then you should use localhost:3001, and not the IP of server.
 :::
+
 ## Usage
 
 ```
