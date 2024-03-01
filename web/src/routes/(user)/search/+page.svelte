@@ -95,8 +95,9 @@
   $: isAllArchived = [...selectedAssets].every((asset) => asset.isArchived);
   $: isAllFavorite = [...selectedAssets].every((asset) => asset.isFavorite);
 
-  const onAssetDelete = (assetId: string) => {
-    searchResultAssets = searchResultAssets.filter((a: AssetResponseDto) => a.id !== assetId);
+  const onAssetDelete = (assetIds: string[]) => {
+    const assetIdSet = new Set(assetIds);
+    searchResultAssets = searchResultAssets.filter((a: AssetResponseDto) => !assetIdSet.has(a.id));
   };
   const handleSelectAll = () => {
     selectedAssets = new Set(searchResultAssets);
