@@ -1,6 +1,7 @@
 # Smart Search
 
 Immich uses Postgres as its search database for both metadata and smart search.
+Smart Search is capable of returning up to 5,000 results for a single search just to avoid browser jank from too many assets being loaded.
 
 Smart search is powered by the [pgvecto.rs v0.2.0](https://github.com/tensorchord/pgvecto.rs) extension, utilizing machine learning models like [CLIP](https://openai.com/research/clip) to provide relevant search results. This allows for freeform searches without requiring specific keywords in the image or video metadata.
 
