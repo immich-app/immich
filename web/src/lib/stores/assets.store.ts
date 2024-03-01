@@ -207,7 +207,7 @@ export class AssetStore {
 
       bucket.position = position;
 
-      if (bucket.assets.length > 0) {
+      if (bucket.assets.length > 0 || bucket.cancelToken) {
         this.emit(false);
         return;
       }
