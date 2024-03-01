@@ -12,6 +12,7 @@ import { mimeTypes } from '../domain.constant';
 import { usePagination, validateCronExpression } from '../domain.util';
 import { IBaseJob, IEntityJob, ILibraryFileJob, ILibraryRefreshJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
 
+import { handlePromiseError } from 'src/utils';
 import {
   IAccessRepository,
   IAssetRepository,
@@ -73,7 +74,8 @@ export class LibraryService extends EventEmitter {
     this.jobRepository.addCronJob(
       'libraryScan',
       scan.cronExpression,
-      () => this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SCAN_ALL, data: { force: false } }),
+      () =>
+        handlePromiseError(this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SCAN_ALL, data: { force: false } })),
       scan.enabled,
     );
 
@@ -81,12 +83,12 @@ export class LibraryService extends EventEmitter {
       await this.watchAll();
     }
 
-    this.configCore.config$.subscribe(async ({ library }) => {
+    this.configCore.config$.subscribe(({ library }) => {
       this.jobRepository.updateCronJob('libraryScan', library.scan.cronExpression, library.scan.enabled);
 
       if (library.watch.enabled !== this.watchLibraries) {
         this.watchLibraries = library.watch.enabled;
-        await (this.watchLibraries ? this.watchAll() : this.unwatchAll());
+        handlePromiseError(this.watchLibraries ? this.watchAll() : this.unwatchAll());
       }
     });
   }
@@ -124,29 +126,32 @@ export class LibraryService extends EventEmitter {
       },
       {
         onReady: () => _resolve(),
-        onAdd: async (path) => {
+        onAdd: (path) => {
           this.logger.debug(`File add event received for ${path} in library ${library.id}}`);
           if (matcher(path)) {
-            await this.scanAssets(library.id, [path], library.ownerId, false);
+            handlePromiseError(this.scanAssets(library.id, [path], library.ownerId, false));
           }
           this.emit('add', path);
         },
-        onChange: async (path) => {
+        onChange: (path) => {
           this.logger.debug(`Detected file change for ${path} in library ${library.id}`);
           if (matcher(path)) {
             // Note: if the changed file was not previously imported, it will be imported now.
-            await this.scanAssets(library.id, [path], library.ownerId, false);
+            handlePromiseError(this.scanAssets(library.id, [path], library.ownerId, false));
           }
           this.emit('change', path);
         },
-        onUnlink: async (path) => {
-          this.logger.debug(`Detected deleted file at ${path} in library ${library.id}`);
-          const asset = await this.assetRepository.getByLibraryIdAndOriginalPath(library.id, path);
-          if (asset && matcher(path)) {
-            await this.assetRepository.save({ id: asset.id, isOffline: true });
-          }
-          this.emit('unlink', path);
-        },
+        onUnlink: (path) =>
+          handlePromiseError(
+            (async () => {
+              this.logger.debug(`Detected deleted file at ${path} in library ${library.id}`);
+              const asset = await this.assetRepository.getByLibraryIdAndOriginalPath(library.id, path);
+              if (asset && matcher(path)) {
+                await this.assetRepository.save({ id: asset.id, isOffline: true });
+              }
+              this.emit('unlink', path);
+            })(),
+          ),
         onError: (error) => {
           // TODO: should we log, or throw an exception?
           this.logger.error(`Library watcher for library ${library.id} encountered error: ${error}`);

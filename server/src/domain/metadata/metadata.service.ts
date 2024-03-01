@@ -7,6 +7,7 @@ import _ from 'lodash';
 import { Duration } from 'luxon';
 import { constants } from 'node:fs/promises';
 import { Subscription } from 'rxjs';
+import { handlePromiseError } from 'src/utils';
 import { usePagination } from '../domain.util';
 import { IBaseJob, IEntityJob, ISidecarWriteJob, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
 import {
@@ -124,7 +125,7 @@ export class MetadataService {
 
   async init() {
     if (!this.subscription) {
-      this.subscription = this.configCore.config$.subscribe(() => this.init());
+      this.subscription = this.configCore.config$.subscribe(() => handlePromiseError(this.init()));
     }
 
     const { reverseGeocoding } = await this.configCore.getConfig();
