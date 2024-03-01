@@ -428,10 +428,10 @@
           {/if}
           <DownloadAction menuItem filename="{album.albumName}.zip" />
           {#if isOwned || isAllUserOwned}
-            <RemoveFromAlbum menuItem bind:album onRemove={assetStore.removeAssets} />
+            <RemoveFromAlbum menuItem bind:album onRemove={(assetIds) => assetStore.removeAssets(assetIds)} />
           {/if}
           {#if isAllUserOwned}
-            <DeleteAssets menuItem onAssetDelete={assetStore.removeAssets} />
+            <DeleteAssets menuItem onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)} />
             <ChangeDate menuItem />
             <ChangeLocation menuItem />
           {/if}

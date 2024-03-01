@@ -31,17 +31,17 @@
 <!-- Multiselection mode app bar -->
 {#if $isMultiSelectState}
   <AssetSelectControlBar assets={$selectedAssets} clearSelect={() => assetInteractionStore.clearMultiselect()}>
-    <FavoriteAction removeFavorite onFavorite={assetStore.removeAssets} />
+    <FavoriteAction removeFavorite onFavorite={(assetIds) => assetStore.removeAssets(assetIds)} />
     <CreateSharedLink />
     <SelectAllAssets {assetStore} {assetInteractionStore} />
     <AssetSelectContextMenu icon={mdiPlus} title="Add">
       <AddToAlbum />
       <AddToAlbum shared />
     </AssetSelectContextMenu>
-    <DeleteAssets onAssetDelete={assetStore.removeAssets} />
+    <DeleteAssets onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)} />
     <AssetSelectContextMenu icon={mdiDotsVertical} title="Menu">
       <DownloadAction menuItem />
-      <ArchiveAction menuItem unarchive={isAllArchive} onArchive={assetStore.removeAssets} />
+      <ArchiveAction menuItem unarchive={isAllArchive} onArchive={(assetIds) => assetStore.removeAssets(assetIds)} />
       <ChangeDate menuItem />
       <ChangeLocation menuItem />
     </AssetSelectContextMenu>

@@ -372,7 +372,7 @@ export class AssetStore {
     this.emit(recalculate);
   }
 
-  removeAssets = (ids: string[]) => {
+  removeAssets(ids: string[]) {
     const idSet = new Set(ids);
     this.assets = this.assets.filter((asset) => !idSet.has(asset.id));
 
@@ -396,7 +396,7 @@ export class AssetStore {
     }
 
     this.emit(false);
-  };
+  }
 
   async getPreviousAssetId(assetId: string): Promise<string | null> {
     const info = this.getBucketInfoForAssetId(assetId);
