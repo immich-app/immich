@@ -66,8 +66,8 @@ if [ "$CURRENT_SERVER" != "$NEXT_SERVER" ]; then
   npm --prefix open-api/typescript-sdk version "$SERVER_PUMP"
   npm --prefix web version "$SERVER_PUMP"
   npm --prefix web i --package-lock-only
-  npm --prefix e2e i --package-lock-only
   npm --prefix cli i --package-lock-only
+  npm --prefix e2e i --package-lock-only
   poetry --directory machine-learning version "$SERVER_PUMP"
 fi
 
