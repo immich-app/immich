@@ -11,20 +11,25 @@ Starting with version v1.93.0 face detection work and face recognize were split.
 :::
 
 ```yaml
-version: '3.8'
-
+version: "3.8"
+ 
 services:
-  immich-machine-learning:
-    container_name: immich_machine_learning
-    image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-release}
-    volumes:
-      - model-cache:/cache
-    restart: always
-    ports:
-      - 3003:3003
-
+   immich-machine-learning:
+     container_name: immich_machine_learning
+    # For hardware acceleration, add one of -[armnn, cuda, openvino] to the image tag.
+    # Example tag: ${IMMICH_VERSION:-release}-cuda
+     image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-release}-cuda
+     extends:
+       file: hwaccel.ml.yml
+       service: cuda # set to one of [armnn, cuda, openvino, openvino-wsl] for accelerated inference - use the `-wsl` version for WSL2 where applicable
+     volumes:
+       - model-cache:/cache
+     restart: always
+     ports:
+       - 3003:3003
+      
 volumes:
-  model-cache:
+   model-cache:
 ```
 
 Please note that version mismatches between both hosts may cause instabilities and bugs, so make sure to always perform updates together.
