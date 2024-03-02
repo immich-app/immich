@@ -1,4 +1,3 @@
-import 'package:immich_mobile/modules/backup/models/backup_album.model.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/etag.dart';
@@ -33,19 +32,6 @@ class DBUtils {
       await db.exifInfos.clear();
       await db.albums.clear();
       await db.eTags.clear();
-    });
-  }
-
-  static Future<void> clearBackupSettings(Isar db) async {
-    await Store.delete(StoreKey.autoBackup);
-    await Store.delete(StoreKey.backgroundBackup);
-    await Store.delete(StoreKey.backupFailedSince);
-    await Store.delete(StoreKey.backupRequireWifi);
-    await Store.delete(StoreKey.backupRequireCharging);
-    await Store.delete(StoreKey.backupTriggerDelay);
-    await Store.delete(StoreKey.ignoreIcloudAssets);
-    await db.writeTxn(() async {
-      await db.backupAlbums.clear();
     });
   }
 
