@@ -17,6 +17,7 @@ import 'package:immich_mobile/modules/search/ui/search_row_title.dart';
 import 'package:immich_mobile/modules/search/ui/search_suggestion_list.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
+import 'package:immich_mobile/shared/ui/immich_app_bar.dart';
 import 'package:immich_mobile/shared/ui/scaffold_error_body.dart';
 
 @RoutePage()
@@ -124,132 +125,152 @@ class SearchPage extends HookConsumerWidget {
       );
     }
 
-    return Scaffold(
-      appBar: ImmichSearchBar(
-        searchFocusNode: searchFocusNode,
-        onSubmitted: onSearchSubmitted,
-      ),
-      body: GestureDetector(
-        onTap: () {
-          searchFocusNode.unfocus();
-          ref.watch(searchPageStateProvider.notifier).disableSearch();
-        },
-        child: Stack(
-          children: [
-            ListView(
+    buildSearchButton() {
+      return GestureDetector(
+        onTap: () {},
+        child: Card(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 12.0,
+            ),
+            child: Row(
               children: [
-                SearchRowTitle(
-                  title: "search_page_people".tr(),
-                  onViewAllPressed: () =>
-                      context.pushRoute(const AllPeopleRoute()),
-                ),
-                buildPeople(),
-                SearchRowTitle(
-                  title: "search_page_places".tr(),
-                  onViewAllPressed: () =>
-                      context.pushRoute(const CuratedLocationRoute()),
-                  top: 0,
-                ),
-                const SizedBox(height: 10.0),
-                buildPlaces(),
-                const SizedBox(height: 24.0),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Text(
-                    'search_page_your_activity',
-                    style: context.textTheme.bodyLarge?.copyWith(
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ).tr(),
-                ),
-                ListTile(
-                  leading: Icon(
-                    Icons.favorite_border_rounded,
-                    color: categoryIconColor,
+                Icon(Icons.search, color: context.primaryColor),
+                const SizedBox(width: 16.0),
+                Text(
+                  "Search your photos",
+                  style: context.textTheme.bodyLarge?.copyWith(
+                    color:
+                        context.isDarkTheme ? Colors.white70 : Colors.black54,
+                    fontWeight: FontWeight.w500,
                   ),
-                  title:
-                      Text('search_page_favorites', style: categoryTitleStyle)
-                          .tr(),
-                  onTap: () => context.pushRoute(const FavoritesRoute()),
-                ),
-                const CategoryDivider(),
-                ListTile(
-                  leading: Icon(
-                    Icons.schedule_outlined,
-                    color: categoryIconColor,
-                  ),
-                  title: Text(
-                    'search_page_recently_added',
-                    style: categoryTitleStyle,
-                  ).tr(),
-                  onTap: () => context.pushRoute(const RecentlyAddedRoute()),
-                ),
-                const SizedBox(height: 24.0),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Text(
-                    'search_page_categories',
-                    style: context.textTheme.bodyLarge?.copyWith(
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ).tr(),
-                ),
-                ListTile(
-                  title:
-                      Text('search_page_screenshots', style: categoryTitleStyle)
-                          .tr(),
-                  leading: Icon(
-                    Icons.screenshot,
-                    color: categoryIconColor,
-                  ),
-                  onTap: () => context.pushRoute(
-                    SearchResultRoute(
-                      searchTerm: 'screenshots',
-                    ),
-                  ),
-                ),
-                const CategoryDivider(),
-                ListTile(
-                  title: Text('search_page_selfies', style: categoryTitleStyle)
-                      .tr(),
-                  leading: Icon(
-                    Icons.photo_camera_front_outlined,
-                    color: categoryIconColor,
-                  ),
-                  onTap: () => context.pushRoute(
-                    SearchResultRoute(
-                      searchTerm: 'selfies',
-                    ),
-                  ),
-                ),
-                const CategoryDivider(),
-                ListTile(
-                  title: Text('search_page_videos', style: categoryTitleStyle)
-                      .tr(),
-                  leading: Icon(
-                    Icons.play_circle_outline,
-                    color: categoryIconColor,
-                  ),
-                  onTap: () => context.pushRoute(const AllVideosRoute()),
-                ),
-                const CategoryDivider(),
-                ListTile(
-                  title: Text(
-                    'search_page_motion_photos',
-                    style: categoryTitleStyle,
-                  ).tr(),
-                  leading: Icon(
-                    Icons.motion_photos_on_outlined,
-                    color: categoryIconColor,
-                  ),
-                  onTap: () => context.pushRoute(const AllMotionPhotosRoute()),
                 ),
               ],
             ),
-            if (isSearchEnabled)
-              SearchSuggestionList(onSubmitted: onSearchSubmitted),
-          ],
+          ),
         ),
+      );
+    }
+
+    return Scaffold(
+      appBar: const ImmichAppBar(),
+      body: Stack(
+        children: [
+          ListView(
+            children: [
+              buildSearchButton(),
+              SearchRowTitle(
+                title: "search_page_people".tr(),
+                onViewAllPressed: () =>
+                    context.pushRoute(const AllPeopleRoute()),
+              ),
+              buildPeople(),
+              SearchRowTitle(
+                title: "search_page_places".tr(),
+                onViewAllPressed: () =>
+                    context.pushRoute(const CuratedLocationRoute()),
+                top: 0,
+              ),
+              const SizedBox(height: 10.0),
+              buildPlaces(),
+              const SizedBox(height: 24.0),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  'search_page_your_activity',
+                  style: context.textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
+                ).tr(),
+              ),
+              ListTile(
+                leading: Icon(
+                  Icons.favorite_border_rounded,
+                  color: categoryIconColor,
+                ),
+                title: Text('search_page_favorites', style: categoryTitleStyle)
+                    .tr(),
+                onTap: () => context.pushRoute(const FavoritesRoute()),
+              ),
+              const CategoryDivider(),
+              ListTile(
+                leading: Icon(
+                  Icons.schedule_outlined,
+                  color: categoryIconColor,
+                ),
+                title: Text(
+                  'search_page_recently_added',
+                  style: categoryTitleStyle,
+                ).tr(),
+                onTap: () => context.pushRoute(const RecentlyAddedRoute()),
+              ),
+              const SizedBox(height: 24.0),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Text(
+                  'search_page_categories',
+                  style: context.textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
+                ).tr(),
+              ),
+              ListTile(
+                title:
+                    Text('search_page_screenshots', style: categoryTitleStyle)
+                        .tr(),
+                leading: Icon(
+                  Icons.screenshot,
+                  color: categoryIconColor,
+                ),
+                onTap: () => context.pushRoute(
+                  SearchResultRoute(
+                    searchTerm: 'screenshots',
+                  ),
+                ),
+              ),
+              const CategoryDivider(),
+              ListTile(
+                title:
+                    Text('search_page_selfies', style: categoryTitleStyle).tr(),
+                leading: Icon(
+                  Icons.photo_camera_front_outlined,
+                  color: categoryIconColor,
+                ),
+                onTap: () => context.pushRoute(
+                  SearchResultRoute(
+                    searchTerm: 'selfies',
+                  ),
+                ),
+              ),
+              const CategoryDivider(),
+              ListTile(
+                title:
+                    Text('search_page_videos', style: categoryTitleStyle).tr(),
+                leading: Icon(
+                  Icons.play_circle_outline,
+                  color: categoryIconColor,
+                ),
+                onTap: () => context.pushRoute(const AllVideosRoute()),
+              ),
+              const CategoryDivider(),
+              ListTile(
+                title: Text(
+                  'search_page_motion_photos',
+                  style: categoryTitleStyle,
+                ).tr(),
+                leading: Icon(
+                  Icons.motion_photos_on_outlined,
+                  color: categoryIconColor,
+                ),
+                onTap: () => context.pushRoute(const AllMotionPhotosRoute()),
+              ),
+            ],
+          ),
+          if (isSearchEnabled)
+            SearchSuggestionList(onSubmitted: onSearchSubmitted),
+        ],
       ),
     );
   }
