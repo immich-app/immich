@@ -252,3 +252,7 @@ export const setIsSuperset = <T>(set: Set<T>, subset: Set<T>): boolean => {
 export const setIsEqual = <T>(setA: Set<T>, setB: Set<T>): boolean => {
   return setA.size === setB.size && setIsSuperset(setA, setB);
 };
+
+export const handlePromiseError = <T>(promise: Promise<T>): void => {
+  promise.catch((error) => console.error(`[utils.ts]:handlePromiseError ${error}`, error));
+};

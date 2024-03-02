@@ -7,8 +7,7 @@ import _ from 'lodash';
 import { Duration } from 'luxon';
 import { constants } from 'node:fs/promises';
 import { Subscription } from 'rxjs';
-import { handlePromiseError } from 'src/utils';
-import { usePagination } from '../domain.util';
+import { handlePromiseError, usePagination } from '../domain.util';
 import { IBaseJob, IEntityJob, ISidecarWriteJob, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
 import {
   ClientEvent,

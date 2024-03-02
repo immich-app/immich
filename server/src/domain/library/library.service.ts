@@ -9,10 +9,9 @@ import picomatch from 'picomatch';
 import { AccessCore, Permission } from '../access';
 import { AuthDto } from '../auth';
 import { mimeTypes } from '../domain.constant';
-import { usePagination, validateCronExpression } from '../domain.util';
+import { handlePromiseError, usePagination, validateCronExpression } from '../domain.util';
 import { IBaseJob, IEntityJob, ILibraryFileJob, ILibraryRefreshJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
 
-import { handlePromiseError } from 'src/utils';
 import {
   IAccessRepository,
   IAssetRepository,
