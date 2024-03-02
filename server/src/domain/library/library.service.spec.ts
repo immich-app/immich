@@ -140,24 +140,6 @@ describe(LibraryService.name, () => {
   });
 
   describe('handleQueueAssetRefresh', () => {
-    it("should not queue assets outside of user's external path", async () => {
-      const mockLibraryJob: ILibraryRefreshJob = {
-        id: libraryStub.externalLibrary1.id,
-        refreshModifiedFiles: false,
-        refreshAllFiles: false,
-      };
-
-      libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
-      storageMock.crawl.mockResolvedValue(['/data/user2/photo.jpg']);
-      assetMock.getByLibraryId.mockResolvedValue([]);
-      libraryMock.getOnlineAssetPaths.mockResolvedValue([]);
-      userMock.get.mockResolvedValue(userStub.externalPath1);
-
-      await sut.handleQueueAssetRefresh(mockLibraryJob);
-
-      expect(jobMock.queue.mock.calls).toEqual([]);
-    });
-
     it('should queue new assets', async () => {
       const mockLibraryJob: ILibraryRefreshJob = {
         id: libraryStub.externalLibrary1.id,
@@ -168,8 +150,7 @@ describe(LibraryService.name, () => {
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
       storageMock.crawl.mockResolvedValue(['/data/user1/photo.jpg']);
       assetMock.getByLibraryId.mockResolvedValue([]);
-      libraryMock.getOnlineAssetPaths.mockResolvedValue([]);
-      userMock.get.mockResolvedValue(userStub.externalPath1);
+      userMock.get.mockResolvedValue(userStub.admin);
 
       await sut.handleQueueAssetRefresh(mockLibraryJob);
 
@@ -196,8 +177,7 @@ describe(LibraryService.name, () => {
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
       storageMock.crawl.mockResolvedValue(['/data/user1/photo.jpg']);
       assetMock.getByLibraryId.mockResolvedValue([]);
-      libraryMock.getOnlineAssetPaths.mockResolvedValue([]);
-      userMock.get.mockResolvedValue(userStub.externalPath1);
+      userMock.get.mockResolvedValue(userStub.admin);
 
       await sut.handleQueueAssetRefresh(mockLibraryJob);
 
@@ -212,45 +192,6 @@ describe(LibraryService.name, () => {
           },
         },
       ]);
-    });
-
-    it("should mark assets outside of the user's external path as offline", async () => {
-      const mockLibraryJob: ILibraryRefreshJob = {
-        id: libraryStub.externalLibrary1.id,
-        refreshModifiedFiles: false,
-        refreshAllFiles: false,
-      };
-
-      libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
-      storageMock.crawl.mockResolvedValue(['/data/user1/photo.jpg']);
-      assetMock.getByLibraryId.mockResolvedValue([assetStub.external]);
-      libraryMock.getOnlineAssetPaths.mockResolvedValue([]);
-      userMock.get.mockResolvedValue(userStub.externalPath2);
-
-      await sut.handleQueueAssetRefresh(mockLibraryJob);
-
-      expect(assetMock.updateAll.mock.calls).toEqual([
-        [
-          [assetStub.external.id],
-          {
-            isOffline: true,
-          },
-        ],
-      ]);
-    });
-
-    it('should not scan libraries owned by user without external path', async () => {
-      const mockLibraryJob: ILibraryRefreshJob = {
-        id: libraryStub.externalLibrary1.id,
-        refreshModifiedFiles: false,
-        refreshAllFiles: false,
-      };
-
-      libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
-
-      userMock.get.mockResolvedValue(userStub.user1);
-
-      await expect(sut.handleQueueAssetRefresh(mockLibraryJob)).resolves.toBe(false);
     });
 
     it('should not scan upload libraries', async () => {
@@ -287,7 +228,6 @@ describe(LibraryService.name, () => {
       libraryMock.get.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
       storageMock.crawl.mockResolvedValue([]);
       assetMock.getByLibraryId.mockResolvedValue([]);
-      libraryMock.getOnlineAssetPaths.mockResolvedValue([]);
       userMock.get.mockResolvedValue(userStub.externalPathRoot);
 
       await sut.handleQueueAssetRefresh(mockLibraryJob);
@@ -303,7 +243,7 @@ describe(LibraryService.name, () => {
     let mockUser: UserEntity;
 
     beforeEach(() => {
-      mockUser = userStub.externalPath1;
+      mockUser = userStub.admin;
       userMock.get.mockResolvedValue(mockUser);
 
       storageMock.stat.mockResolvedValue({
@@ -780,26 +720,6 @@ describe(LibraryService.name, () => {
     });
   });
 
-  describe('getAllForUser', () => {
-    it('should return all libraries for user', async () => {
-      libraryMock.getAllByUserId.mockResolvedValue([libraryStub.uploadLibrary1, libraryStub.externalLibrary1]);
-      await expect(sut.getAllForUser(authStub.admin)).resolves.toEqual([
-        expect.objectContaining({
-          id: libraryStub.uploadLibrary1.id,
-          name: libraryStub.uploadLibrary1.name,
-          ownerId: libraryStub.uploadLibrary1.ownerId,
-        }),
-        expect.objectContaining({
-          id: libraryStub.externalLibrary1.id,
-          name: libraryStub.externalLibrary1.name,
-          ownerId: libraryStub.externalLibrary1.ownerId,
-        }),
-      ]);
-
-      expect(libraryMock.getAllByUserId).toHaveBeenCalledWith(authStub.admin.user.id);
-    });
-  });
-
   describe('getStatistics', () => {
     it('should return library statistics', async () => {
       libraryMock.getStatistics.mockResolvedValue({ photos: 10, videos: 0, total: 10, usage: 1337 });
@@ -1144,12 +1064,12 @@ describe(LibraryService.name, () => {
       storageMock.checkFileExists.mockResolvedValue(true);
 
       await expect(
-        sut.update(authStub.external1, authStub.external1.user.id, { importPaths: ['/data/user1/foo'] }),
+        sut.update(authStub.admin, authStub.admin.user.id, { importPaths: ['/data/user1/foo'] }),
       ).resolves.toEqual(mapLibrary(libraryStub.externalLibraryWithImportPaths1));
 
       expect(libraryMock.update).toHaveBeenCalledWith(
         expect.objectContaining({
-          id: authStub.external1.user.id,
+          id: authStub.admin.user.id,
         }),
       );
       expect(storageMock.watch).toHaveBeenCalledWith(
@@ -1580,26 +1500,6 @@ describe(LibraryService.name, () => {
           importPath: '/data/user1/',
           isValid: true,
           message: undefined,
-        },
-      ]);
-    });
-
-    it('should error when no external path is set', async () => {
-      await expect(
-        sut.validate(authStub.admin, libraryStub.externalLibrary1.id, { importPaths: ['/photos'] }),
-      ).rejects.toBeInstanceOf(BadRequestException);
-    });
-
-    it('should detect when path is outside external path', async () => {
-      const result = await sut.validate(authStub.external1, libraryStub.externalLibraryWithImportPaths1.id, {
-        importPaths: ['/data/user2'],
-      });
-
-      expect(result.importPaths).toEqual([
-        {
-          importPath: '/data/user2',
-          isValid: false,
-          message: "Not contained in user's external path",
         },
       ]);
     });

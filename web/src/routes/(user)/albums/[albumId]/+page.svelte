@@ -37,7 +37,7 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { AssetStore } from '$lib/stores/assets.store';
   import { locale } from '$lib/stores/preferences.store';
-  import { SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
+  import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { user } from '$lib/stores/user.store';
   import { downloadArchive } from '$lib/utils/asset-utils';
   import { clickOutside } from '$lib/utils/click-outside';
@@ -78,7 +78,7 @@
   export let data: PageData;
 
   let { isViewing: showAssetViewer, setAssetId } = assetViewingStore;
-  let { slideshowState, slideshowShuffle } = slideshowStore;
+  let { slideshowState, slideshowNavigation } = slideshowStore;
 
   $: album = data.album;
   $: albumId = album.id;
@@ -236,7 +236,8 @@
   };
 
   const handleStartSlideshow = async () => {
-    const asset = $slideshowShuffle ? await assetStore.getRandomAsset() : assetStore.assets[0];
+    const asset =
+      $slideshowNavigation === SlideshowNavigation.Shuffle ? await assetStore.getRandomAsset() : assetStore.assets[0];
     if (asset) {
       await setAssetId(asset.id);
       $slideshowState = SlideshowState.PlaySlideshow;
@@ -325,12 +326,6 @@
       viewMode = ViewMode.VIEW;
     } catch (error) {
       handleError(error, 'Error adding assets to album');
-    }
-  };
-
-  const handleRemoveAssets = (assetIds: string[]) => {
-    for (const assetId of assetIds) {
-      assetStore.removeAsset(assetId);
     }
   };
 
@@ -434,10 +429,10 @@
           {/if}
           <DownloadAction menuItem filename="{album.albumName}.zip" />
           {#if isOwned || isAllUserOwned}
-            <RemoveFromAlbum menuItem bind:album onRemove={(assetIds) => handleRemoveAssets(assetIds)} />
+            <RemoveFromAlbum menuItem bind:album onRemove={(assetIds) => assetStore.removeAssets(assetIds)} />
           {/if}
           {#if isAllUserOwned}
-            <DeleteAssets menuItem onAssetDelete={(assetId) => assetStore.removeAsset(assetId)} />
+            <DeleteAssets menuItem onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)} />
             <ChangeDate menuItem />
             <ChangeLocation menuItem />
           {/if}

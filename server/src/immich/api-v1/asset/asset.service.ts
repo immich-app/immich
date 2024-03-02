@@ -341,7 +341,6 @@ export class AssetService {
       fileCreatedAt: dto.fileCreatedAt,
       fileModifiedAt: dto.fileModifiedAt,
       localDateTime: dto.fileCreatedAt,
-      deletedAt: null,
 
       type: mimeTypes.assetType(file.originalPath),
       isFavorite: dto.isFavorite,
@@ -349,17 +348,9 @@ export class AssetService {
       duration: dto.duration || null,
       isVisible: dto.isVisible ?? true,
       livePhotoVideo: livePhotoAssetId === null ? null : ({ id: livePhotoAssetId } as AssetEntity),
-      resizePath: null,
-      webpPath: null,
-      thumbhash: null,
-      encodedVideoPath: null,
-      tags: [],
-      sharedLinks: [],
       originalFileName: parse(file.originalName).name,
-      faces: [],
       sidecarPath: sidecarPath || null,
       isReadOnly: dto.isReadOnly ?? false,
-      isExternal: dto.isExternal ?? false,
       isOffline: dto.isOffline ?? false,
     });
 

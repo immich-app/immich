@@ -66,7 +66,6 @@ export type UserResponseDto = {
     createdAt: string;
     deletedAt: string | null;
     email: string;
-    externalPath: string | null;
     id: string;
     isAdmin: boolean;
     memoriesEnabled?: boolean;
@@ -290,7 +289,6 @@ export type CreateAssetDto = {
     fileCreatedAt: string;
     fileModifiedAt: string;
     isArchived?: boolean;
-    isExternal?: boolean;
     isFavorite?: boolean;
     isOffline?: boolean;
     isReadOnly?: boolean;
@@ -462,6 +460,7 @@ export type CreateLibraryDto = {
     isVisible?: boolean;
     isWatched?: boolean;
     name?: string;
+    ownerId?: string;
     "type": LibraryType;
 };
 export type UpdateLibraryDto = {
@@ -506,7 +505,6 @@ export type PartnerResponseDto = {
     createdAt: string;
     deletedAt: string | null;
     email: string;
-    externalPath: string | null;
     id: string;
     inTimeline?: boolean;
     isAdmin: boolean;
@@ -673,6 +671,7 @@ export type SmartSearchDto = {
     make?: string;
     model?: string;
     page?: number;
+    personIds?: string[];
     query: string;
     size?: number;
     state?: string;
@@ -878,6 +877,7 @@ export type SystemConfigOAuthDto = {
     buttonText: string;
     clientId: string;
     clientSecret: string;
+    defaultStorageQuota: number;
     enabled: boolean;
     issuerUrl: string;
     mobileOverrideEnabled: boolean;
@@ -885,6 +885,7 @@ export type SystemConfigOAuthDto = {
     scope: string;
     signingAlgorithm: string;
     storageLabelClaim: string;
+    storageQuotaClaim: string;
 };
 export type SystemConfigPasswordLoginDto = {
     enabled: boolean;
@@ -950,7 +951,6 @@ export type UpdateTagDto = {
 };
 export type CreateUserDto = {
     email: string;
-    externalPath?: string | null;
     memoriesEnabled?: boolean;
     name: string;
     password: string;
@@ -960,7 +960,6 @@ export type CreateUserDto = {
 export type UpdateUserDto = {
     avatarColor?: UserAvatarColor;
     email?: string;
-    externalPath?: string;
     id: string;
     isAdmin?: boolean;
     memoriesEnabled?: boolean;
@@ -1841,11 +1840,15 @@ export function sendJobCommand({ id, jobCommandDto }: {
         body: jobCommandDto
     })));
 }
-export function getLibraries(opts?: Oazapfts.RequestOpts) {
+export function getAllLibraries({ $type }: {
+    $type?: LibraryType;
+}, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: LibraryResponseDto[];
-    }>("/library", {
+    }>(`/library${QS.query(QS.explode({
+        "type": $type
+    }))}`, {
         ...opts
     }));
 }
@@ -1869,7 +1872,7 @@ export function deleteLibrary({ id }: {
         method: "DELETE"
     }));
 }
-export function getLibraryInfo({ id }: {
+export function getLibrary({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{

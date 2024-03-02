@@ -72,7 +72,7 @@
 
   const trashOrDelete = async (force: boolean = false) => {
     isShowDeleteConfirmation = false;
-    await deleteAssets(!(isTrashEnabled && !force), (assetId) => assetStore.removeAsset(assetId), idsSelectedAssets);
+    await deleteAssets(!(isTrashEnabled && !force), (assetIds) => assetStore.removeAssets(assetIds), idsSelectedAssets);
     assetInteractionStore.clearMultiselect();
   };
 
@@ -169,7 +169,7 @@
         (await handleNext()) || (await handlePrevious()) || handleClose();
 
         // delete after find the next one
-        assetStore.removeAsset(asset.id);
+        assetStore.removeAssets([asset.id]);
         break;
       }
 
@@ -414,7 +414,7 @@
       <slot name="empty" />
     {/if}
     <section id="virtual-timeline" style:height={$assetStore.timelineHeight + 'px'}>
-      {#each $assetStore.buckets as bucket, bucketIndex (bucketIndex)}
+      {#each $assetStore.buckets as bucket (bucket.bucketDate)}
         <IntersectionObserver
           on:intersected={intersectedHandler}
           on:hidden={() => assetStore.cancelBucket(bucket)}

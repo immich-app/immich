@@ -61,14 +61,14 @@
     </AssetSelectContextMenu>
     <DeleteAssets
       on:escape={() => (handleEscapeKey = true)}
-      onAssetDelete={(assetId) => assetStore.removeAsset(assetId)}
+      onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)}
     />
     <AssetSelectContextMenu icon={mdiDotsVertical} title="Menu">
       <FavoriteAction menuItem removeFavorite={isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
       <DownloadAction menuItem />
-      <ArchiveAction menuItem onArchive={(ids) => assetStore.removeAssets(ids)} />
+      <ArchiveAction menuItem onArchive={(assetIds) => assetStore.removeAssets(assetIds)} />
       {#if $selectedAssets.size > 1}
-        <StackAction onStack={(ids) => assetStore.removeAssets(ids)} />
+        <StackAction onStack={(assetIds) => assetStore.removeAssets(assetIds)} />
       {/if}
       <ChangeDate menuItem />
       <ChangeLocation menuItem />
