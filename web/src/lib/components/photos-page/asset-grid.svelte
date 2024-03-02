@@ -105,7 +105,7 @@
         }
         case 's': {
           if ($isMultiSelectState) {
-            stackAssets(Array.from($selectedAssets), (ids) => {
+            await stackAssets(Array.from($selectedAssets), (ids) => {
               assetStore.removeAssets(ids);
               dispatch('escape');
             });

@@ -8,8 +8,8 @@
 
   const { clearSelect, getOwnedAssets } = getAssetControlContext();
 
-  const handleStack = () => {
-    stackAssets([...getOwnedAssets()], (ids) => {
+  const handleStack = async () => {
+    await stackAssets([...getOwnedAssets()], (ids) => {
       onStack?.(ids);
       clearSelect();
     });
