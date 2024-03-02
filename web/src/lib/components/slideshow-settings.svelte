@@ -40,7 +40,7 @@
 
     <div class="flex flex-col gap-4 text-immich-primary dark:text-immich-dark-primary">
       <SettingDropdown
-        title="Navigation"
+        title="Direction"
         options={Object.values(options)}
         selectedOption={options[$slideshowNavigation]}
         onToggle={(option) => handleToggle(option)}
@@ -48,7 +48,7 @@
       <SettingSwitch title="Show Progress Bar" bind:checked={$showProgressBar} />
       <SettingInputField
         inputType={SettingInputFieldType.NUMBER}
-        label="Delay"
+        label="Duration"
         desc="Number of seconds to display each image"
         min={1}
         bind:value={$slideshowDelay}
