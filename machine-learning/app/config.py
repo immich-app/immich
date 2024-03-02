@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     model_inter_op_threads: int = 0
     model_intra_op_threads: int = 0
     ann: bool = True
-    preload: str = ""
+    preload: list[tuple[ModelType, str]] | None = None
 
     class Config:
         env_prefix = "MACHINE_LEARNING_"

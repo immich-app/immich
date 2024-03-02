@@ -15,29 +15,25 @@ class ModelCache:
 
     def __init__(
         self,
-        ttl: float | None = None,
         revalidate: bool = False,
         timeout: int | None = None,
         profiling: bool = False,
     ) -> None:
         """
         Args:
-            ttl: Unloads model after this duration. Disabled if None. Defaults to None.
             revalidate: Resets TTL on cache hit. Useful to keep models in memory while active. Defaults to False.
             timeout: Maximum allowed time for model to load. Disabled if None. Defaults to None.
             profiling: Collects metrics for cache operations, adding slight overhead. Defaults to False.
         """
 
-        self.ttl = ttl
         plugins = []
-        self.preloaded_models: dict[str, InferenceModel] = {}
 
         if revalidate:
             plugins.append(RevalidationPlugin())
         if profiling:
             plugins.append(TimingPlugin())
 
-        self.cache = SimpleMemoryCache(ttl=ttl, timeout=timeout, plugins=plugins, namespace=None)
+        self.cache = SimpleMemoryCache(timeout=timeout, plugins=plugins, namespace=None)
 
     async def get(self, model_name: str, model_type: ModelType, **model_kwargs: Any) -> InferenceModel:
         """
@@ -49,16 +45,13 @@ class ModelCache:
             model: The requested model.
         """
 
-        key = self.generate_key(model_name, model_type, **model_kwargs)
-
-        if key in self.preloaded_models:
-            return self.preloaded_models[key]
+        key = f"{model_name}{model_type.value}{model_kwargs.get('mode', '')}"
 
         async with OptimisticLock(self.cache, key) as lock:
             model: InferenceModel | None = await self.cache.get(key)
             if model is None:
                 model = from_model_type(model_type, model_name, **model_kwargs)
-                await lock.cas(model, ttl=self.ttl)
+                await lock.cas(model, ttl=model_kwargs.get('ttl', None))
         return model
 
     async def get_profiling(self) -> dict[str, float] | None:
@@ -66,22 +59,6 @@ class ModelCache:
             return None
 
         return self.cache.profiling
-
-    def generate_key(self, model_name: str, model_type: ModelType, **model_kwargs: Any) -> str:
-        return f"{model_name}{model_type.value}{model_kwargs.get('mode', '')}"
-
-    def preload_models(self, preloaded_model_list: str) -> None:
-        """Preloads models from comma-separated list of "type:model" pairs and stores them in memory."""
-        for model_str in preloaded_model_list.split(","):
-            if not model_str:
-                continue
-            if ":" not in model_str:
-                continue
-            model_type = ModelType(model_str.split(":")[0].lower().replace("_", "-"))
-            model_name = model_str.split(":")[1]
-            key = self.generate_key(model_name, model_type)
-            self.preloaded_models[key] = from_model_type(model_type, model_name)
-
 
 class RevalidationPlugin(BasePlugin):  # type: ignore[misc]
     """Revalidates cache item's TTL after cache hit."""
