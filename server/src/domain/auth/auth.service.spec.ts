@@ -532,7 +532,7 @@ describe('AuthService', () => {
       expect(userMock.create).toHaveBeenCalledWith(userDto.userWithDefaultStorageQuota);
     });
 
-    it('should ignore a 0 quota', async () => {
+    it('should not set quota for 0 quota', async () => {
       configMock.load.mockResolvedValue(systemConfigStub.withDefaultStorageQuota);
       userMock.getByEmail.mockResolvedValue(null);
       userMock.getAdmin.mockResolvedValue(userStub.user1);
@@ -543,7 +543,7 @@ describe('AuthService', () => {
         loginResponseStub.user1oauth,
       );
 
-      expect(userMock.create).toHaveBeenCalledWith(userDto.userWithDefaultStorageQuota);
+      expect(userMock.create).toHaveBeenCalledWith(userDto.userWithUnsetQuotaClaim);
     });
 
     it('should use a valid storage quota', async () => {

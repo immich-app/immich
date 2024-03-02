@@ -37,6 +37,13 @@ export const userDto = {
     quotaSizeInBytes: 5_368_709_120,
     storageLabel: null,
   },
+  userWithUnsetQuotaClaim: {
+    email: 'test@immich.com',
+    name: ' ',
+    oauthId: 'my-auth-user-sub',
+    quotaSizeInBytes: null,
+    storageLabel: null,
+  },
 };
 
 export const userStub = {
