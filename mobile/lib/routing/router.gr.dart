@@ -255,6 +255,12 @@ abstract class _$AppRouter extends RootStackRouter {
         child: const RecentlyAddedPage(),
       );
     },
+    SearchInputRoute.name: (routeData) {
+      return AutoRoutePage<dynamic>(
+        routeData: routeData,
+        child: const SearchInputPage(),
+      );
+    },
     SearchRoute.name: (routeData) {
       final args = routeData.argsAs<SearchRouteArgs>(
           orElse: () => const SearchRouteArgs());
@@ -1106,6 +1112,20 @@ class RecentlyAddedRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [SearchInputPage]
+class SearchInputRoute extends PageRouteInfo<void> {
+  const SearchInputRoute({List<PageRouteInfo>? children})
+      : super(
+          SearchInputRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'SearchInputRoute';
+
+  static const PageInfo<void> page = PageInfo<void>(name);
+}
+
+/// generated route for
 /// [SearchPage]
 class SearchRoute extends PageRouteInfo<SearchRouteArgs> {
   SearchRoute({
@@ -1393,7 +1413,7 @@ class VideoViewerRoute extends PageRouteInfo<VideoViewerRouteArgs> {
     void Function()? onPaused,
     Widget? placeholder,
     bool showControls = true,
-    Duration hideControlsTimer = const Duration(milliseconds: 1500),
+    Duration hideControlsTimer = const Duration(seconds: 5),
     bool showDownloadingIndicator = true,
     List<PageRouteInfo>? children,
   }) : super(
@@ -1429,7 +1449,7 @@ class VideoViewerRouteArgs {
     this.onPaused,
     this.placeholder,
     this.showControls = true,
-    this.hideControlsTimer = const Duration(milliseconds: 1500),
+    this.hideControlsTimer = const Duration(seconds: 5),
     this.showDownloadingIndicator = true,
   });
 

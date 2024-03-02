@@ -11,7 +11,6 @@ import 'package:immich_mobile/modules/search/providers/people.provider.dart';
 import 'package:immich_mobile/modules/search/providers/search_page_state.provider.dart';
 import 'package:immich_mobile/modules/search/ui/curated_people_row.dart';
 import 'package:immich_mobile/modules/search/ui/curated_places_row.dart';
-import 'package:immich_mobile/modules/search/ui/immich_search_bar.dart';
 import 'package:immich_mobile/modules/search/ui/person_name_edit_form.dart';
 import 'package:immich_mobile/modules/search/ui/search_row_title.dart';
 import 'package:immich_mobile/modules/search/ui/search_suggestion_list.dart';
@@ -127,7 +126,9 @@ class SearchPage extends HookConsumerWidget {
 
     buildSearchButton() {
       return GestureDetector(
-        onTap: () {},
+        onTap: () {
+          context.pushRoute(const SearchInputRoute());
+        },
         child: Card(
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Padding(

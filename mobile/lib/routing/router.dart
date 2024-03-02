@@ -31,6 +31,7 @@ import 'package:immich_mobile/modules/login/views/change_password_page.dart';
 import 'package:immich_mobile/modules/login/views/login_page.dart';
 import 'package:immich_mobile/modules/onboarding/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/modules/onboarding/views/permission_onboarding_page.dart';
+import 'package:immich_mobile/modules/search/views/search_input_page.dart';
 import 'package:immich_mobile/modules/shared_link/models/shared_link.dart';
 import 'package:immich_mobile/modules/shared_link/views/shared_link_edit_page.dart';
 import 'package:immich_mobile/modules/shared_link/views/shared_link_page.dart';
@@ -220,6 +221,11 @@ class AppRouter extends _$AppRouter {
     AutoRoute(
       page: BackupOptionsRoute.page,
       guards: [_authGuard, _duplicateGuard],
+    ),
+    CustomRoute(
+      page: SearchInputRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+      transitionsBuilder: TransitionsBuilders.slideBottom,
     ),
   ];
 }
