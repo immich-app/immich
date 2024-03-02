@@ -1,35 +1,23 @@
 {
   "name": "@immich/sdk",
-  "version": "1.92.1",
+  "version": "1.97.0",
   "description": "",
   "type": "module",
-  "main": "./build/fetch/index.js",
-  "types": "./build/fetch/index.d.ts",
+  "main": "./build/index.js",
+  "types": "./build/index.d.ts",
   "exports": {
-    "./axios": {
-      "types": "./build/axios/axios.d.ts",
-      "default": "./build/axios/axios.js"
-    },
     ".": {
-      "types": "./build/fetch/fetch.d.ts",
-      "default": "./build/fetch/fetch.js"
+      "types": "./build/index.d.ts",
+      "default": "./build/index.js"
     }
   },
   "scripts": {
-    "build": "tsc -b ./tsconfig.axios.json ./tsconfig.fetch.json"
+    "build": "tsc"
   },
   "license": "GNU Affero General Public License version 3",
   "devDependencies": {
     "@oazapfts/runtime": "^1.0.0",
     "@types/node": "^20.11.0",
     "typescript": "^5.3.3"
-  },
-  "peerDependencies": {
-    "axios": "^1.6.7"
-  },
-  "peerDependenciesMeta": {
-    "axios": {
-      "optional": true
-    }
   }
 }

@@ -4,7 +4,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/object_extensions.dart';
 import 'package:immich_mobile/modules/album/models/album.model.dart';
 import 'package:immich_mobile/shared/models/store.dart';
-import 'package:immich_mobile/shared/ui/immich_image.dart';
+import 'package:immich_mobile/shared/ui/immich_thumbnail.dart';
 
 class AlbumThumbnailCard extends StatelessWidget {
   final Album album;
@@ -77,8 +77,8 @@ class AlbumThumbnailCard extends StatelessWidget {
                                 ),
                               )
                             // Thumbnail image
-                            : ImmichImage(
-                                album.thumbnail,
+                            : ImmichThumbnail(
+                                asset: album.thumbnail,
                                 width: cardSize,
                                 height: cardSize,
                               ),

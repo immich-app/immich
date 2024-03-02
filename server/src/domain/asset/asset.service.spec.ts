@@ -286,6 +286,7 @@ describe(AssetService.name, () => {
 
   describe('getMapMarkers', () => {
     it('should get geo information of assets', async () => {
+      partnerMock.getAll.mockResolvedValue([]);
       assetMock.getMapMarkers.mockResolvedValue(
         [assetStub.withLocation].map((asset) => ({
           id: asset.id,
@@ -705,7 +706,7 @@ describe(AssetService.name, () => {
         stackParentId: 'parent',
       });
 
-      expect(communicationMock.send).toHaveBeenCalledWith(ClientEvent.ASSET_UPDATE, authStub.user1.user.id, [
+      expect(communicationMock.send).toHaveBeenCalledWith(ClientEvent.ASSET_STACK_UPDATE, authStub.user1.user.id, [
         'asset-1',
         'parent',
       ]);

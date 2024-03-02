@@ -11,7 +11,7 @@
   export let scrollbar = true;
   export let admin = false;
 
-  $: scrollbarClass = scrollbar ? 'immich-scrollbar p-4 pb-8' : 'scrollbar-hidden';
+  $: scrollbarClass = scrollbar ? 'immich-scrollbar p-2 pb-8' : 'scrollbar-hidden';
   $: hasTitleClass = title ? 'top-16 h-[calc(100%-theme(spacing.16))]' : 'top-0 h-full';
 </script>
 
@@ -23,6 +23,7 @@
   <slot name="header" />
 </header>
 <main
+  tabindex="-1"
   class="relative grid h-screen grid-cols-[theme(spacing.18)_auto] overflow-hidden bg-immich-bg pt-[var(--navbar-height)] dark:bg-immich-dark-bg md:grid-cols-[theme(spacing.64)_auto]"
 >
   <slot name="sidebar">

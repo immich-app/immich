@@ -28,6 +28,7 @@ class MapSerivce with ErrorLoggerMixin {
         return markers?.map(MapMarker.fromDto) ?? [];
       },
       defaultValue: [],
+      errorMessage: "Failed to get map markers",
     );
   }
 }

@@ -1399,7 +1399,7 @@ class VideoViewerRoute extends PageRouteInfo<VideoViewerRouteArgs> {
     void Function()? onPaused,
     Widget? placeholder,
     bool showControls = true,
-    Duration hideControlsTimer = const Duration(seconds: 5),
+    Duration hideControlsTimer = const Duration(milliseconds: 1500),
     bool showDownloadingIndicator = true,
     List<PageRouteInfo>? children,
   }) : super(
@@ -1435,7 +1435,7 @@ class VideoViewerRouteArgs {
     this.onPaused,
     this.placeholder,
     this.showControls = true,
-    this.hideControlsTimer = const Duration(seconds: 5),
+    this.hideControlsTimer = const Duration(milliseconds: 1500),
     this.showDownloadingIndicator = true,
   });
 

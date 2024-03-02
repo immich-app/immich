@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { type UserResponseDto } from '@api';
-  import { getAllUsers, getPartners } from '@immich/sdk';
+  import { getAllUsers, getPartners, type UserResponseDto } from '@immich/sdk';
   import { createEventDispatcher, onMount } from 'svelte';
   import Button from '../elements/buttons/button.svelte';
   import BaseModal from '../shared-components/base-modal.svelte';

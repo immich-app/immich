@@ -1,8 +1,10 @@
 import { notificationController, NotificationType } from '$lib/components/shared-components/notification/notification';
 import { downloadManager } from '$lib/stores/download';
-import { api } from '@api';
+import { downloadRequest, getKey } from '$lib/utils';
 import {
   addAssetsToAlbum as addAssets,
+  defaults,
+  getDownloadInfo,
   type AssetResponseDto,
   type AssetTypeEnum,
   type BulkIdResponseDto,
@@ -17,7 +19,7 @@ export const addAssetsToAlbum = async (albumId: string, assetIds: Array<string>)
   addAssets({
     id: albumId,
     bulkIdsDto: { ids: assetIds },
-    key: api.getKey(),
+    key: getKey(),
   }).then((results) => {
     const count = results.filter(({ success }) => success).length;
     notificationController.show({
@@ -46,8 +48,7 @@ export const downloadArchive = async (fileName: string, options: DownloadInfoDto
   let downloadInfo: DownloadResponseDto | null = null;
 
   try {
-    const { data } = await api.downloadApi.getDownloadInfo({ downloadInfoDto: options, key: api.getKey() });
-    downloadInfo = data;
+    downloadInfo = await getDownloadInfo({ downloadInfoDto: options, key: getKey() });
   } catch (error) {
     handleError(error, 'Unable to download files');
     return;
@@ -60,6 +61,7 @@ export const downloadArchive = async (fileName: string, options: DownloadInfoDto
     const archive = downloadInfo.archives[index];
     const suffix = downloadInfo.archives.length === 1 ? '' : `+${index + 1}`;
     const archiveName = fileName.replace('.zip', `${suffix}-${DateTime.now().toFormat('yyyy-LL-dd-HH-mm-ss')}.zip`);
+    const key = getKey();
 
     let downloadKey = `${archiveName} `;
     if (downloadInfo.archives.length > 1) {
@@ -70,14 +72,14 @@ export const downloadArchive = async (fileName: string, options: DownloadInfoDto
     downloadManager.add(downloadKey, archive.size, abort);
 
     try {
-      const { data } = await api.downloadApi.downloadArchive(
-        { assetIdsDto: { assetIds: archive.assetIds }, key: api.getKey() },
-        {
-          responseType: 'blob',
-          signal: abort.signal,
-          onDownloadProgress: (event) => downloadManager.update(downloadKey, event.loaded),
-        },
-      );
+      // TODO use sdk once it supports progress events
+      const { data } = await downloadRequest({
+        method: 'POST',
+        url: defaults.baseUrl + '/download/archive' + (key ? `?key=${key}` : ''),
+        data: { assetIds: archive.assetIds },
+        signal: abort.signal,
+        onDownloadProgress: (event) => downloadManager.update(downloadKey, event.loaded),
+      });
 
       downloadBlob(data, archiveName);
     } catch (error) {
@@ -119,23 +121,19 @@ export const downloadFile = async (asset: AssetResponseDto) => {
     try {
       const abort = new AbortController();
       downloadManager.add(downloadKey, size, abort);
-
-      const { data } = await api.downloadApi.downloadFile(
-        { id, key: api.getKey() },
-        {
-          responseType: 'blob',
-          onDownloadProgress: ({ event }) => {
-            if (event.lengthComputable) {
-              downloadManager.update(downloadKey, event.loaded, event.total);
-            }
-          },
-          signal: abort.signal,
-        },
-      );
+      const key = getKey();
 
       notificationController.show({
         type: NotificationType.Info,
         message: `Downloading asset ${asset.originalFileName}`,
+      });
+
+      // TODO use sdk once it supports progress events
+      const { data } = await downloadRequest({
+        method: 'POST',
+        url: defaults.baseUrl + `/download/asset/${id}` + (key ? `?key=${key}` : ''),
+        signal: abort.signal,
+        onDownloadProgress: (event) => downloadManager.update(downloadKey, event.loaded, event.total),
       });
 
       downloadBlob(data, filename);
@@ -224,4 +222,8 @@ export const getSelectedAssets = (assets: Set<AssetResponseDto>, user: UserRespo
     });
   }
   return ids;
+};
+
+export const delay = async (ms: number) => {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 };

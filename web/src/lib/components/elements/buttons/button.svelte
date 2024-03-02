@@ -66,6 +66,8 @@
   {disabled}
   {title}
   on:click
+  on:focus
+  on:blur
   class="{className} inline-flex items-center justify-center transition-colors disabled:cursor-not-allowed disabled:opacity-60 {colorClasses[
     color
   ]} {sizeClasses[size]}"

@@ -1,15 +1,9 @@
 import adapter from '@sveltejs/adapter-static';
-import preprocess from 'svelte-preprocess';
+import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
-  preprocess: preprocess(),
-  onwarn: (warning, handler) => {
-    if (warning.code.includes('a11y')) {
-      return;
-    }
-    handler(warning);
-  },
+  preprocess: vitePreprocess(),
   kit: {
     adapter: adapter({
       // default options are shown. On some platforms
@@ -23,7 +17,6 @@ const config = {
     alias: {
       $lib: 'src/lib',
       '$lib/*': 'src/lib/*',
-      '@api': 'src/api',
       '@test-data': 'src/test-data',
     },
   },

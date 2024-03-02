@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { locale } from '$lib/stores/preferences.store';
-  import type { ServerStatsResponseDto } from '@api';
-  import { asByteUnitString, getBytesWithUnit } from '$lib/utils/byte-units';
-  import StatsCard from './stats-card.svelte';
-  import { mdiCameraIris, mdiChartPie, mdiPlayCircle } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
+  import { locale } from '$lib/stores/preferences.store';
+  import { asByteUnitString, getBytesWithUnit } from '$lib/utils/byte-units';
+  import type { ServerStatsResponseDto } from '@immich/sdk';
+  import { mdiCameraIris, mdiChartPie, mdiPlayCircle } from '@mdi/js';
+  import StatsCard from './stats-card.svelte';
 
   export let stats: ServerStatsResponseDto = {
     photos: 0,

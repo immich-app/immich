@@ -1,13 +1,15 @@
 <script lang="ts">
-  import type { SystemConfigDto } from '@api';
+  import type { SystemConfigDto } from '@immich/sdk';
   import { isEqual } from 'lodash-es';
   import { createEventDispatcher } from 'svelte';
   import { fade } from 'svelte/transition';
   import type { SettingsEventType } from '../admin-settings';
   import ConfirmDisableLogin from '../confirm-disable-login.svelte';
-  import SettingButtonsRow from '../setting-buttons-row.svelte';
-  import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
-  import SettingSwitch from '../setting-switch.svelte';
+  import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
+  import SettingInputField, {
+    SettingInputFieldType,
+  } from '$lib/components/shared-components/settings/setting-input-field.svelte';
+  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
@@ -126,6 +128,26 @@
           required={true}
           disabled={disabled || !config.oauth.enabled}
           isEdited={!(config.oauth.storageLabelClaim == savedConfig.oauth.storageLabelClaim)}
+        />
+
+        <SettingInputField
+          inputType={SettingInputFieldType.TEXT}
+          label="STORAGE QUOTA CLAIM"
+          desc="Automatically set the user's storage quota to the value of this claim."
+          bind:value={config.oauth.storageQuotaClaim}
+          required={true}
+          disabled={disabled || !config.oauth.enabled}
+          isEdited={!(config.oauth.storageQuotaClaim == savedConfig.oauth.storageQuotaClaim)}
+        />
+
+        <SettingInputField
+          inputType={SettingInputFieldType.NUMBER}
+          label="DEFAULT STORAGE QUOTA (GiB)"
+          desc="Quota in GiB to be used when no claim is provided (Enter 0 for unlimited quota)."
+          bind:value={config.oauth.defaultStorageQuota}
+          required={true}
+          disabled={disabled || !config.oauth.enabled}
+          isEdited={!(config.oauth.defaultStorageQuota == savedConfig.oauth.defaultStorageQuota)}
         />
 
         <SettingInputField

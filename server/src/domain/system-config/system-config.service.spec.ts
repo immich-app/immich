@@ -43,7 +43,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     threads: 0,
     preset: 'ultrafast',
     targetAudioCodec: AudioCodec.AAC,
-    acceptedAudioCodecs: [AudioCodec.AAC],
+    acceptedAudioCodecs: [AudioCodec.AAC, AudioCodec.MP3, AudioCodec.LIBOPUS],
     targetResolution: '720',
     targetVideoCodec: VideoCodec.H264,
     acceptedVideoCodecs: [VideoCodec.H264],
@@ -93,6 +93,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     buttonText: 'Login with OAuth',
     clientId: '',
     clientSecret: '',
+    defaultStorageQuota: 0,
     enabled: false,
     issuerUrl: '',
     mobileOverrideEnabled: false,
@@ -100,6 +101,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     scope: 'openid email profile',
     signingAlgorithm: 'RS256',
     storageLabelClaim: 'preferred_username',
+    storageQuotaClaim: 'immich_quota',
   },
   passwordLogin: {
     enabled: true,
@@ -136,8 +138,6 @@ const updatedConfig = Object.freeze<SystemConfig>({
     },
     watch: {
       enabled: false,
-      usePolling: false,
-      interval: 10_000,
     },
   },
 });

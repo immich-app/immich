@@ -5,11 +5,13 @@
   } from '$lib/components/shared-components/notification/notification';
   import { fade } from 'svelte/transition';
   import { handleError } from '../../utils/handle-error';
-  import SettingInputField, { SettingInputFieldType } from '../admin-page/settings/setting-input-field.svelte';
   import Button from '../elements/buttons/button.svelte';
   import { user } from '$lib/stores/user.store';
   import { cloneDeep } from 'lodash-es';
   import { updateUser } from '@immich/sdk';
+  import SettingInputField, {
+    SettingInputFieldType,
+  } from '$lib/components/shared-components/settings/setting-input-field.svelte';
 
   let editedUser = cloneDeep($user);
 
@@ -61,14 +63,6 @@
           label="STORAGE LABEL"
           disabled={true}
           value={editedUser.storageLabel || ''}
-          required={false}
-        />
-
-        <SettingInputField
-          inputType={SettingInputFieldType.TEXT}
-          label="EXTERNAL PATH"
-          disabled={true}
-          value={editedUser.externalPath || ''}
           required={false}
         />
 

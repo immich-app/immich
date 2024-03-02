@@ -4,14 +4,14 @@
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
+  import type { OnArchive } from '$lib/utils/actions';
   import { handleError } from '$lib/utils/handle-error';
-  import { api } from '@api';
+  import { updateAssets } from '@immich/sdk';
+  import { mdiArchiveArrowDownOutline, mdiArchiveArrowUpOutline, mdiTimerSand } from '@mdi/js';
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
-  import { mdiArchiveArrowUpOutline, mdiArchiveArrowDownOutline, mdiTimerSand } from '@mdi/js';
-  import type { OnArchive } from '$lib/utils/actions';
 
-  export let onArchive: OnArchive | undefined = undefined;
+  export let onArchive: OnArchive;
 
   export let menuItem = false;
   export let unarchive = false;
@@ -32,14 +32,14 @@
       const ids = assets.map(({ id }) => id);
 
       if (ids.length > 0) {
-        await api.assetApi.updateAssets({ assetBulkUpdateDto: { ids, isArchived } });
+        await updateAssets({ assetBulkUpdateDto: { ids, isArchived } });
       }
 
       for (const asset of assets) {
         asset.isArchived = isArchived;
       }
 
-      onArchive?.(ids, isArchived);
+      onArchive(ids, isArchived);
 
       notificationController.show({
         message: `${isArchived ? 'Archived' : 'Unarchived'} ${ids.length}`,

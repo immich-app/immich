@@ -30,4 +30,4 @@ export const databaseConfig: PostgresConnectionOptions = {
 export const dataSource = new DataSource(databaseConfig);
 
 export const vectorExt =
-  process.env.VECTOR_EXTENSION === 'pgvector' ? DatabaseExtension.VECTOR : DatabaseExtension.VECTORS;
+  process.env.DB_VECTOR_EXTENSION === 'pgvector' ? DatabaseExtension.VECTOR : DatabaseExtension.VECTORS;

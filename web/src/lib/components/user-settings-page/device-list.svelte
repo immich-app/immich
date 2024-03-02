@@ -1,10 +1,9 @@
 <script lang="ts">
-  import { type AuthDeviceResponseDto } from '@api';
-  import { getAuthDevices, logoutAuthDevice, logoutAuthDevices } from '@immich/sdk';
+  import { getAuthDevices, logoutAuthDevice, logoutAuthDevices, type AuthDeviceResponseDto } from '@immich/sdk';
   import { handleError } from '../../utils/handle-error';
   import Button from '../elements/buttons/button.svelte';
   import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
-  import { notificationController, NotificationType } from '../shared-components/notification/notification';
+  import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import DeviceCard from './device-card.svelte';
 
   export let devices: AuthDeviceResponseDto[];

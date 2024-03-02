@@ -54,12 +54,6 @@ describe(LibraryService.name, () => {
     cryptoMock = newCryptoRepositoryMock();
     storageMock = newStorageRepositoryMock();
 
-    storageMock.stat.mockResolvedValue({
-      size: 100,
-      mtime: new Date('2023-01-01'),
-      ctime: new Date('2023-01-01'),
-    } as Stats);
-
     // Always validate owner access for library.
     accessMock.library.checkOwnerAccess.mockImplementation(async (_, libraryIds) => libraryIds);
 
@@ -146,24 +140,6 @@ describe(LibraryService.name, () => {
   });
 
   describe('handleQueueAssetRefresh', () => {
-    it("should not queue assets outside of user's external path", async () => {
-      const mockLibraryJob: ILibraryRefreshJob = {
-        id: libraryStub.externalLibrary1.id,
-        refreshModifiedFiles: false,
-        refreshAllFiles: false,
-      };
-
-      libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
-      storageMock.crawl.mockResolvedValue(['/data/user2/photo.jpg']);
-      assetMock.getByLibraryId.mockResolvedValue([]);
-      libraryMock.getOnlineAssetPaths.mockResolvedValue([]);
-      userMock.get.mockResolvedValue(userStub.externalPath1);
-
-      await sut.handleQueueAssetRefresh(mockLibraryJob);
-
-      expect(jobMock.queue.mock.calls).toEqual([]);
-    });
-
     it('should queue new assets', async () => {
       const mockLibraryJob: ILibraryRefreshJob = {
         id: libraryStub.externalLibrary1.id,
@@ -174,8 +150,7 @@ describe(LibraryService.name, () => {
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
       storageMock.crawl.mockResolvedValue(['/data/user1/photo.jpg']);
       assetMock.getByLibraryId.mockResolvedValue([]);
-      libraryMock.getOnlineAssetPaths.mockResolvedValue([]);
-      userMock.get.mockResolvedValue(userStub.externalPath1);
+      userMock.get.mockResolvedValue(userStub.admin);
 
       await sut.handleQueueAssetRefresh(mockLibraryJob);
 
@@ -202,8 +177,7 @@ describe(LibraryService.name, () => {
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
       storageMock.crawl.mockResolvedValue(['/data/user1/photo.jpg']);
       assetMock.getByLibraryId.mockResolvedValue([]);
-      libraryMock.getOnlineAssetPaths.mockResolvedValue([]);
-      userMock.get.mockResolvedValue(userStub.externalPath1);
+      userMock.get.mockResolvedValue(userStub.admin);
 
       await sut.handleQueueAssetRefresh(mockLibraryJob);
 
@@ -220,45 +194,6 @@ describe(LibraryService.name, () => {
       ]);
     });
 
-    it("should mark assets outside of the user's external path as offline", async () => {
-      const mockLibraryJob: ILibraryRefreshJob = {
-        id: libraryStub.externalLibrary1.id,
-        refreshModifiedFiles: false,
-        refreshAllFiles: false,
-      };
-
-      libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
-      storageMock.crawl.mockResolvedValue(['/data/user1/photo.jpg']);
-      assetMock.getByLibraryId.mockResolvedValue([assetStub.external]);
-      libraryMock.getOnlineAssetPaths.mockResolvedValue([]);
-      userMock.get.mockResolvedValue(userStub.externalPath2);
-
-      await sut.handleQueueAssetRefresh(mockLibraryJob);
-
-      expect(assetMock.updateAll.mock.calls).toEqual([
-        [
-          [assetStub.external.id],
-          {
-            isOffline: true,
-          },
-        ],
-      ]);
-    });
-
-    it('should not scan libraries owned by user without external path', async () => {
-      const mockLibraryJob: ILibraryRefreshJob = {
-        id: libraryStub.externalLibrary1.id,
-        refreshModifiedFiles: false,
-        refreshAllFiles: false,
-      };
-
-      libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
-
-      userMock.get.mockResolvedValue(userStub.user1);
-
-      await expect(sut.handleQueueAssetRefresh(mockLibraryJob)).resolves.toBe(false);
-    });
-
     it('should not scan upload libraries', async () => {
       const mockLibraryJob: ILibraryRefreshJob = {
         id: libraryStub.externalLibrary1.id,
@@ -270,14 +205,52 @@ describe(LibraryService.name, () => {
 
       await expect(sut.handleQueueAssetRefresh(mockLibraryJob)).resolves.toBe(false);
     });
+
+    it('should ignore import paths that do not exist', async () => {
+      storageMock.stat.mockImplementation((path): Promise<Stats> => {
+        if (path === libraryStub.externalLibraryWithImportPaths1.importPaths[0]) {
+          const error = { code: 'ENOENT' } as any;
+          throw error;
+        }
+        return Promise.resolve({
+          isDirectory: () => true,
+        } as Stats);
+      });
+
+      storageMock.checkFileExists.mockResolvedValue(true);
+
+      const mockLibraryJob: ILibraryRefreshJob = {
+        id: libraryStub.externalLibraryWithImportPaths1.id,
+        refreshModifiedFiles: false,
+        refreshAllFiles: false,
+      };
+
+      libraryMock.get.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
+      storageMock.crawl.mockResolvedValue([]);
+      assetMock.getByLibraryId.mockResolvedValue([]);
+      userMock.get.mockResolvedValue(userStub.externalPathRoot);
+
+      await sut.handleQueueAssetRefresh(mockLibraryJob);
+
+      expect(storageMock.crawl).toHaveBeenCalledWith({
+        pathsToCrawl: [libraryStub.externalLibraryWithImportPaths1.importPaths[1]],
+        exclusionPatterns: [],
+      });
+    });
   });
 
   describe('handleAssetRefresh', () => {
     let mockUser: UserEntity;
 
     beforeEach(() => {
-      mockUser = userStub.externalPath1;
+      mockUser = userStub.admin;
       userMock.get.mockResolvedValue(mockUser);
+
+      storageMock.stat.mockResolvedValue({
+        size: 100,
+        mtime: new Date('2023-01-01'),
+        ctime: new Date('2023-01-01'),
+      } as Stats);
     });
 
     it('should reject an unknown file extension', async () => {
@@ -747,26 +720,6 @@ describe(LibraryService.name, () => {
     });
   });
 
-  describe('getAllForUser', () => {
-    it('should return all libraries for user', async () => {
-      libraryMock.getAllByUserId.mockResolvedValue([libraryStub.uploadLibrary1, libraryStub.externalLibrary1]);
-      await expect(sut.getAllForUser(authStub.admin)).resolves.toEqual([
-        expect.objectContaining({
-          id: libraryStub.uploadLibrary1.id,
-          name: libraryStub.uploadLibrary1.name,
-          ownerId: libraryStub.uploadLibrary1.ownerId,
-        }),
-        expect.objectContaining({
-          id: libraryStub.externalLibrary1.id,
-          name: libraryStub.externalLibrary1.name,
-          ownerId: libraryStub.externalLibrary1.ownerId,
-        }),
-      ]);
-
-      expect(libraryMock.getAllByUserId).toHaveBeenCalledWith(authStub.admin.user.id);
-    });
-  });
-
   describe('getStatistics', () => {
     it('should return library statistics', async () => {
       libraryMock.getStatistics.mockResolvedValue({ photos: 10, videos: 0, total: 10, usage: 1337 });
@@ -1104,9 +1057,15 @@ describe(LibraryService.name, () => {
       libraryMock.update.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
       libraryMock.get.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
 
-      await expect(sut.update(authStub.admin, authStub.admin.user.id, { importPaths: ['/foo'] })).resolves.toEqual(
-        mapLibrary(libraryStub.externalLibraryWithImportPaths1),
-      );
+      storageMock.stat.mockResolvedValue({
+        isDirectory: () => true,
+      } as Stats);
+
+      storageMock.checkFileExists.mockResolvedValue(true);
+
+      await expect(
+        sut.update(authStub.admin, authStub.admin.user.id, { importPaths: ['/data/user1/foo'] }),
+      ).resolves.toEqual(mapLibrary(libraryStub.externalLibraryWithImportPaths1));
 
       expect(libraryMock.update).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -1142,7 +1101,7 @@ describe(LibraryService.name, () => {
     });
   });
 
-  describe('watchAll new', () => {
+  describe('watchAll', () => {
     describe('watching disabled', () => {
       beforeEach(async () => {
         configMock.load.mockResolvedValue(systemConfigStub.libraryWatchDisabled);
@@ -1519,6 +1478,103 @@ describe(LibraryService.name, () => {
         {
           name: JobName.ASSET_DELETION,
           data: { id: assetStub.image1.id, fromExternal: true },
+        },
+      ]);
+    });
+  });
+
+  describe('validate', () => {
+    it('should validate directory', async () => {
+      storageMock.stat.mockResolvedValue({
+        isDirectory: () => true,
+      } as Stats);
+
+      storageMock.checkFileExists.mockResolvedValue(true);
+
+      const result = await sut.validate(authStub.external1, libraryStub.externalLibraryWithImportPaths1.id, {
+        importPaths: ['/data/user1/'],
+      });
+
+      expect(result.importPaths).toEqual([
+        {
+          importPath: '/data/user1/',
+          isValid: true,
+          message: undefined,
+        },
+      ]);
+    });
+
+    it('should detect when path does not exist', async () => {
+      storageMock.stat.mockImplementation(() => {
+        const error = { code: 'ENOENT' } as any;
+        throw error;
+      });
+
+      const result = await sut.validate(authStub.external1, libraryStub.externalLibraryWithImportPaths1.id, {
+        importPaths: ['/data/user1/'],
+      });
+
+      expect(result.importPaths).toEqual([
+        {
+          importPath: '/data/user1/',
+          isValid: false,
+          message: 'Path does not exist (ENOENT)',
+        },
+      ]);
+    });
+
+    it('should detect when path is not a directory', async () => {
+      storageMock.stat.mockResolvedValue({
+        isDirectory: () => false,
+      } as Stats);
+
+      const result = await sut.validate(authStub.external1, libraryStub.externalLibraryWithImportPaths1.id, {
+        importPaths: ['/data/user1/file'],
+      });
+
+      expect(result.importPaths).toEqual([
+        {
+          importPath: '/data/user1/file',
+          isValid: false,
+          message: 'Not a directory',
+        },
+      ]);
+    });
+
+    it('should return an unknown exception from stat', async () => {
+      storageMock.stat.mockImplementation(() => {
+        throw new Error('Unknown error');
+      });
+
+      const result = await sut.validate(authStub.external1, libraryStub.externalLibraryWithImportPaths1.id, {
+        importPaths: ['/data/user1/'],
+      });
+
+      expect(result.importPaths).toEqual([
+        {
+          importPath: '/data/user1/',
+          isValid: false,
+          message: 'Error: Unknown error',
+        },
+      ]);
+    });
+
+    it('should detect when access rights are missing', async () => {
+      storageMock.stat.mockResolvedValue({
+        isDirectory: () => true,
+      } as Stats);
+
+      storageMock.checkFileExists.mockResolvedValue(false);
+
+      const result = await sut.validate(authStub.external1, libraryStub.externalLibraryWithImportPaths1.id, {
+        importPaths: ['/data/user1/'],
+      });
+
+      expect(result.importPaths).toEqual([
+        {
+          importPath: '/data/user1/',
+          isValid: false,
+          message: 'Lacking read permission for folder',
         },
       ]);
     });

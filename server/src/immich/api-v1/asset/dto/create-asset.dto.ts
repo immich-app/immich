@@ -3,7 +3,10 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import { IsBoolean, IsDate, IsNotEmpty, IsString } from 'class-validator';
 
-export class CreateAssetBase {
+export class CreateAssetDto {
+  @ValidateUUID({ optional: true })
+  libraryId?: string;
+
   @IsNotEmpty()
   @IsString()
   deviceAssetId!: string;
@@ -23,6 +26,10 @@ export class CreateAssetBase {
   fileModifiedAt!: Date;
 
   @Optional()
+  @IsString()
+  duration?: string;
+
+  @Optional()
   @IsBoolean()
   @Transform(toBoolean)
   isFavorite?: boolean;
@@ -38,26 +45,14 @@ export class CreateAssetBase {
   isVisible?: boolean;
 
   @Optional()
-  @IsString()
-  duration?: string;
-
-  @Optional()
   @IsBoolean()
-  isExternal?: boolean;
-
-  @Optional()
-  @IsBoolean()
+  @Transform(toBoolean)
   isOffline?: boolean;
-}
 
-export class CreateAssetDto extends CreateAssetBase {
   @Optional()
   @IsBoolean()
   @Transform(toBoolean)
   isReadOnly?: boolean;
-
-  @ValidateUUID({ optional: true })
-  libraryId?: string;
 
   // The properties below are added to correctly generate the API docs
   // and client SDKs. Validation should be handled in the controller.

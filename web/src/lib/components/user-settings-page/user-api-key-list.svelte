@@ -1,8 +1,7 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
   import { locale } from '$lib/stores/preferences.store';
-  import { type APIKeyResponseDto } from '@api';
-  import { createApiKey, deleteApiKey, getApiKeys, updateApiKey } from '@immich/sdk';
+  import { createApiKey, deleteApiKey, getApiKeys, updateApiKey, type ApiKeyResponseDto } from '@immich/sdk';
   import { mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
   import { fade } from 'svelte/transition';
   import { handleError } from '../../utils/handle-error';
@@ -12,11 +11,11 @@
   import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
 
-  export let keys: APIKeyResponseDto[];
+  export let keys: ApiKeyResponseDto[];
 
-  let newKey: Partial<APIKeyResponseDto> | null = null;
-  let editKey: APIKeyResponseDto | null = null;
-  let deleteKey: APIKeyResponseDto | null = null;
+  let newKey: Partial<ApiKeyResponseDto> | null = null;
+  let editKey: ApiKeyResponseDto | null = null;
+  let deleteKey: ApiKeyResponseDto | null = null;
   let secret = '';
 
   const format: Intl.DateTimeFormatOptions = {
@@ -29,7 +28,7 @@
     keys = await getApiKeys();
   }
 
-  const handleCreate = async (detail: Partial<APIKeyResponseDto>) => {
+  const handleCreate = async (detail: Partial<ApiKeyResponseDto>) => {
     try {
       const data = await createApiKey({ apiKeyCreateDto: detail });
       secret = data.secret;
@@ -41,7 +40,7 @@
     }
   };
 
-  const handleUpdate = async (detail: Partial<APIKeyResponseDto>) => {
+  const handleUpdate = async (detail: Partial<ApiKeyResponseDto>) => {
     if (!editKey || !detail.name) {
       return;
     }

@@ -82,15 +82,12 @@ export class PersonService {
       minimumFaceCount: machineLearning.facialRecognition.minFaces,
       withHidden: dto.withHidden || false,
     });
-    const total = await this.repository.getNumberOfPeople(auth.user.id);
-    const persons: PersonResponseDto[] = people
-      // with thumbnails
-      .filter((person) => !!person.thumbnailPath)
-      .map((person) => mapPerson(person));
+    const { total, hidden } = await this.repository.getNumberOfPeople(auth.user.id);
 
     return {
-      people: persons.filter((person) => dto.withHidden || !person.isHidden),
+      people: people.map((person) => mapPerson(person)),
       total,
+      hidden,
     };
   }
 
@@ -410,8 +407,8 @@ export class PersonService {
     });
 
     // `matches` also includes the face itself
-    if (matches.length <= 1) {
-      this.logger.debug(`Face ${id} has no matches`);
+    if (machineLearning.facialRecognition.minFaces > 1 && matches.length <= 1) {
+      this.logger.debug(`Face ${id} only matched the face itself, skipping`);
       return true;
     }
 

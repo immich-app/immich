@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/constants/immich_colors.dart';
-import 'package:immich_mobile/extensions/build_context_extensions.dart';
 
 class MemoryProgressIndicator extends StatelessWidget {
   /// The number of ticks in the progress indicator
@@ -39,9 +38,9 @@ class MemoryProgressIndicator extends StatelessWidget {
                     decoration: BoxDecoration(
                       border: i == 0
                           ? null
-                          : Border(
+                          : const Border(
                               left: BorderSide(
-                                color: context.colorScheme.onSecondaryContainer,
+                                color: Colors.black,
                                 width: 1,
                               ),
                             ),

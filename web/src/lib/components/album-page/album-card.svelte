@@ -1,10 +1,9 @@
 <script lang="ts">
-  import noThumbnailUrl from '$lib/assets/no-thumbnail.png';
   import Icon from '$lib/components/elements/icon.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { user } from '$lib/stores/user.store';
-  import { ThumbnailFormat, api, type AlbumResponseDto } from '@api';
-  import { getUserById } from '@immich/sdk';
+  import { getAssetThumbnailUrl } from '$lib/utils';
+  import { ThumbnailFormat, getAssetThumbnail, getUserById, type AlbumResponseDto } from '@immich/sdk';
   import { mdiDotsVertical } from '@mdi/js';
   import { createEventDispatcher, onMount } from 'svelte';
   import { getContextMenuPosition } from '../../utils/context-menu';
@@ -19,37 +18,26 @@
   let showVerticalDots = false;
 
   $: imageData = album.albumThumbnailAssetId
-    ? api.getAssetThumbnailUrl(album.albumThumbnailAssetId, ThumbnailFormat.Webp)
-    : noThumbnailUrl;
+    ? getAssetThumbnailUrl(album.albumThumbnailAssetId, ThumbnailFormat.Webp)
+    : null;
 
   const dispatchClick = createEventDispatcher<OnClick>();
   const dispatchShowContextMenu = createEventDispatcher<OnShowContextMenu>();
 
-  const loadHighQualityThumbnail = async (thubmnailId: string | null) => {
-    if (thubmnailId == undefined) {
+  const loadHighQualityThumbnail = async (assetId: string | null) => {
+    if (!assetId) {
       return;
     }
 
-    const { data } = await api.assetApi.getAssetThumbnail(
-      {
-        id: thubmnailId,
-        format: ThumbnailFormat.Jpeg,
-      },
-      {
-        responseType: 'blob',
-      },
-    );
-
-    if (data instanceof Blob) {
-      return URL.createObjectURL(data);
-    }
+    const data = await getAssetThumbnail({ id: assetId, format: ThumbnailFormat.Jpeg });
+    return URL.createObjectURL(data);
   };
 
   const showAlbumContextMenu = (e: MouseEvent) =>
     dispatchShowContextMenu('showalbumcontextmenu', getContextMenuPosition(e));
 
   onMount(async () => {
-    imageData = (await loadHighQualityThumbnail(album.albumThumbnailAssetId)) || noThumbnailUrl;
+    imageData = (await loadHighQualityThumbnail(album.albumThumbnailAssetId)) || null;
   });
 
   const getAlbumOwnerInfo = () => getUserById({ id: album.ownerId });
@@ -80,15 +68,26 @@
   {/if}
 
   <div class={`relative aspect-square`}>
-    <img
-      loading={preload ? 'eager' : 'lazy'}
-      src={imageData}
-      alt={album.id}
-      class={`z-0 h-full w-full rounded-xl object-cover transition-all duration-300 hover:shadow-lg`}
-      data-testid="album-image"
-      draggable="false"
-    />
-    <div class="absolute top-0 h-full w-full rounded-3xl" />
+    {#if album.albumThumbnailAssetId}
+      <img
+        loading={preload ? 'eager' : 'lazy'}
+        src={imageData}
+        alt={album.id}
+        class="z-0 h-full w-full rounded-xl object-cover transition-all duration-300 hover:shadow-lg"
+        data-testid="album-image"
+        draggable="false"
+      />
+    {:else}
+      <enhanced:img
+        loading={preload ? 'eager' : 'lazy'}
+        src="$lib/assets/no-thumbnail.png"
+        sizes="min(271px,186px)"
+        alt={album.id}
+        class="z-0 h-full w-full rounded-xl object-cover transition-all duration-300 hover:shadow-lg"
+        data-testid="album-image"
+        draggable="false"
+      />
+    {/if}
   </div>
 
   <div class="mt-4">

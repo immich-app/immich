@@ -15,7 +15,6 @@ FROM
       "APIKeyEntity__APIKeyEntity_user"."isAdmin" AS "APIKeyEntity__APIKeyEntity_user_isAdmin",
       "APIKeyEntity__APIKeyEntity_user"."email" AS "APIKeyEntity__APIKeyEntity_user_email",
       "APIKeyEntity__APIKeyEntity_user"."storageLabel" AS "APIKeyEntity__APIKeyEntity_user_storageLabel",
-      "APIKeyEntity__APIKeyEntity_user"."externalPath" AS "APIKeyEntity__APIKeyEntity_user_externalPath",
       "APIKeyEntity__APIKeyEntity_user"."oauthId" AS "APIKeyEntity__APIKeyEntity_user_oauthId",
       "APIKeyEntity__APIKeyEntity_user"."profileImagePath" AS "APIKeyEntity__APIKeyEntity_user_profileImagePath",
       "APIKeyEntity__APIKeyEntity_user"."shouldChangePassword" AS "APIKeyEntity__APIKeyEntity_user_shouldChangePassword",

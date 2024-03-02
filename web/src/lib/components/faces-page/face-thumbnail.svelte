@@ -1,7 +1,8 @@
 <script lang="ts">
-  import { api, type PersonResponseDto } from '@api';
-  import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
+  import { getPeopleThumbnailUrl } from '$lib/utils';
+  import { type PersonResponseDto } from '@immich/sdk';
   import { createEventDispatcher } from 'svelte';
+  import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
 
   export let person: PersonResponseDto;
   export let selectable = false;
@@ -34,13 +35,7 @@
     class:dark:border-immich-dark-primary={border}
     class:border-immich-primary={border}
   >
-    <ImageThumbnail
-      {circle}
-      url={api.getPeopleThumbnailUrl(person.id)}
-      altText={person.name}
-      widthStyle="100%"
-      shadow
-    />
+    <ImageThumbnail {circle} url={getPeopleThumbnailUrl(person.id)} altText={person.name} widthStyle="100%" shadow />
   </div>
 
   <div

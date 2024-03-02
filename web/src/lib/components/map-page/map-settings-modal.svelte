@@ -4,10 +4,11 @@
   import { Duration } from 'luxon';
   import { createEventDispatcher } from 'svelte';
   import { fly } from 'svelte/transition';
-  import SettingSelect from '../admin-page/settings/setting-select.svelte';
-  import SettingSwitch from '../admin-page/settings/setting-switch.svelte';
   import Button from '../elements/buttons/button.svelte';
   import LinkButton from '../elements/buttons/link-button.svelte';
+  import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
+  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
+  import DateInput from '../elements/date-input.svelte';
 
   export let settings: MapSettings;
   let customDateRange = !!settings.dateAfter || !!settings.dateBefore;
@@ -33,11 +34,12 @@
       <SettingSwitch title="Allow dark mode" bind:checked={settings.allowDarkMode} />
       <SettingSwitch title="Only favorites" bind:checked={settings.onlyFavorites} />
       <SettingSwitch title="Include archived" bind:checked={settings.includeArchived} />
+      <SettingSwitch title="Include shared with me" bind:checked={settings.withPartners} />
       {#if customDateRange}
         <div in:fly={{ y: 10, duration: 200 }} class="flex flex-col gap-4">
           <div class="flex items-center justify-between gap-8">
             <label class="immich-form-label shrink-0 text-sm" for="date-after">Date after</label>
-            <input
+            <DateInput
               class="immich-form-input w-40"
               type="date"
               id="date-after"
@@ -47,7 +49,7 @@
           </div>
           <div class="flex items-center justify-between gap-8">
             <label class="immich-form-label shrink-0 text-sm" for="date-before">Date before</label>
-            <input class="immich-form-input w-40" type="date" id="date-before" bind:value={settings.dateBefore} />
+            <DateInput class="immich-form-input w-40" type="date" id="date-before" bind:value={settings.dateBefore} />
           </div>
           <div class="flex justify-center text-xs">
             <LinkButton

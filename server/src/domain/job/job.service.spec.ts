@@ -286,12 +286,7 @@ describe(JobService.name, () => {
       },
       {
         item: { name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: 'asset-1' } },
-        jobs: [
-          JobName.GENERATE_WEBP_THUMBNAIL,
-          JobName.GENERATE_THUMBHASH_THUMBNAIL,
-          JobName.SMART_SEARCH,
-          JobName.FACE_DETECTION,
-        ],
+        jobs: [JobName.GENERATE_WEBP_THUMBNAIL, JobName.GENERATE_THUMBHASH_THUMBNAIL],
       },
       {
         item: { name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: 'asset-1', source: 'upload' } },

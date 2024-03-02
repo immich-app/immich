@@ -8,8 +8,8 @@
     easing: cubicOut,
   });
 
-  onMount(() => {
-    progress.set(90);
+  onMount(async () => {
+    await progress.set(90);
   });
 </script>
 

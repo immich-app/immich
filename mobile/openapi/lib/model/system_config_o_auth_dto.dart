@@ -18,6 +18,7 @@ class SystemConfigOAuthDto {
     required this.buttonText,
     required this.clientId,
     required this.clientSecret,
+    required this.defaultStorageQuota,
     required this.enabled,
     required this.issuerUrl,
     required this.mobileOverrideEnabled,
@@ -25,6 +26,7 @@ class SystemConfigOAuthDto {
     required this.scope,
     required this.signingAlgorithm,
     required this.storageLabelClaim,
+    required this.storageQuotaClaim,
   });
 
   bool autoLaunch;
@@ -36,6 +38,8 @@ class SystemConfigOAuthDto {
   String clientId;
 
   String clientSecret;
+
+  num defaultStorageQuota;
 
   bool enabled;
 
@@ -51,6 +55,8 @@ class SystemConfigOAuthDto {
 
   String storageLabelClaim;
 
+  String storageQuotaClaim;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigOAuthDto &&
     other.autoLaunch == autoLaunch &&
@@ -58,13 +64,15 @@ class SystemConfigOAuthDto {
     other.buttonText == buttonText &&
     other.clientId == clientId &&
     other.clientSecret == clientSecret &&
+    other.defaultStorageQuota == defaultStorageQuota &&
     other.enabled == enabled &&
     other.issuerUrl == issuerUrl &&
     other.mobileOverrideEnabled == mobileOverrideEnabled &&
     other.mobileRedirectUri == mobileRedirectUri &&
     other.scope == scope &&
     other.signingAlgorithm == signingAlgorithm &&
-    other.storageLabelClaim == storageLabelClaim;
+    other.storageLabelClaim == storageLabelClaim &&
+    other.storageQuotaClaim == storageQuotaClaim;
 
   @override
   int get hashCode =>
@@ -74,16 +82,18 @@ class SystemConfigOAuthDto {
     (buttonText.hashCode) +
     (clientId.hashCode) +
     (clientSecret.hashCode) +
+    (defaultStorageQuota.hashCode) +
     (enabled.hashCode) +
     (issuerUrl.hashCode) +
     (mobileOverrideEnabled.hashCode) +
     (mobileRedirectUri.hashCode) +
     (scope.hashCode) +
     (signingAlgorithm.hashCode) +
-    (storageLabelClaim.hashCode);
+    (storageLabelClaim.hashCode) +
+    (storageQuotaClaim.hashCode);
 
   @override
-  String toString() => 'SystemConfigOAuthDto[autoLaunch=$autoLaunch, autoRegister=$autoRegister, buttonText=$buttonText, clientId=$clientId, clientSecret=$clientSecret, enabled=$enabled, issuerUrl=$issuerUrl, mobileOverrideEnabled=$mobileOverrideEnabled, mobileRedirectUri=$mobileRedirectUri, scope=$scope, signingAlgorithm=$signingAlgorithm, storageLabelClaim=$storageLabelClaim]';
+  String toString() => 'SystemConfigOAuthDto[autoLaunch=$autoLaunch, autoRegister=$autoRegister, buttonText=$buttonText, clientId=$clientId, clientSecret=$clientSecret, defaultStorageQuota=$defaultStorageQuota, enabled=$enabled, issuerUrl=$issuerUrl, mobileOverrideEnabled=$mobileOverrideEnabled, mobileRedirectUri=$mobileRedirectUri, scope=$scope, signingAlgorithm=$signingAlgorithm, storageLabelClaim=$storageLabelClaim, storageQuotaClaim=$storageQuotaClaim]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -92,6 +102,7 @@ class SystemConfigOAuthDto {
       json[r'buttonText'] = this.buttonText;
       json[r'clientId'] = this.clientId;
       json[r'clientSecret'] = this.clientSecret;
+      json[r'defaultStorageQuota'] = this.defaultStorageQuota;
       json[r'enabled'] = this.enabled;
       json[r'issuerUrl'] = this.issuerUrl;
       json[r'mobileOverrideEnabled'] = this.mobileOverrideEnabled;
@@ -99,6 +110,7 @@ class SystemConfigOAuthDto {
       json[r'scope'] = this.scope;
       json[r'signingAlgorithm'] = this.signingAlgorithm;
       json[r'storageLabelClaim'] = this.storageLabelClaim;
+      json[r'storageQuotaClaim'] = this.storageQuotaClaim;
     return json;
   }
 
@@ -115,6 +127,7 @@ class SystemConfigOAuthDto {
         buttonText: mapValueOfType<String>(json, r'buttonText')!,
         clientId: mapValueOfType<String>(json, r'clientId')!,
         clientSecret: mapValueOfType<String>(json, r'clientSecret')!,
+        defaultStorageQuota: num.parse('${json[r'defaultStorageQuota']}'),
         enabled: mapValueOfType<bool>(json, r'enabled')!,
         issuerUrl: mapValueOfType<String>(json, r'issuerUrl')!,
         mobileOverrideEnabled: mapValueOfType<bool>(json, r'mobileOverrideEnabled')!,
@@ -122,6 +135,7 @@ class SystemConfigOAuthDto {
         scope: mapValueOfType<String>(json, r'scope')!,
         signingAlgorithm: mapValueOfType<String>(json, r'signingAlgorithm')!,
         storageLabelClaim: mapValueOfType<String>(json, r'storageLabelClaim')!,
+        storageQuotaClaim: mapValueOfType<String>(json, r'storageQuotaClaim')!,
       );
     }
     return null;
@@ -174,6 +188,7 @@ class SystemConfigOAuthDto {
     'buttonText',
     'clientId',
     'clientSecret',
+    'defaultStorageQuota',
     'enabled',
     'issuerUrl',
     'mobileOverrideEnabled',
@@ -181,6 +196,7 @@ class SystemConfigOAuthDto {
     'scope',
     'signingAlgorithm',
     'storageLabelClaim',
+    'storageQuotaClaim',
   };
 }
 

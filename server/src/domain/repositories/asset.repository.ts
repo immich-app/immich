@@ -1,4 +1,4 @@
-import { AssetSearchOptions, SearchExploreItem } from '@app/domain';
+import { AssetSearchOneToOneRelationOptions, AssetSearchOptions, SearchExploreItem } from '@app/domain';
 import { AssetEntity, AssetJobStatusEntity, AssetType, ExifEntity } from '@app/infra/entities';
 import { FindOptionsRelations, FindOptionsSelect } from 'typeorm';
 import { Paginated, PaginationOptions } from '../domain.util';
@@ -133,6 +133,10 @@ export interface IAssetRepository {
   getByLibraryIdAndOriginalPath(libraryId: string, originalPath: string): Promise<AssetEntity | null>;
   deleteAll(ownerId: string): Promise<void>;
   getAll(pagination: PaginationOptions, options?: AssetSearchOptions): Paginated<AssetEntity>;
+  getAllByFileCreationDate(
+    pagination: PaginationOptions,
+    options?: AssetSearchOneToOneRelationOptions,
+  ): Paginated<AssetEntity>;
   getAllByDeviceId(userId: string, deviceId: string): Promise<string[]>;
   updateAll(ids: string[], options: Partial<AssetEntity>): Promise<void>;
   save(asset: Pick<AssetEntity, 'id'> & Partial<AssetEntity>): Promise<AssetEntity>;
@@ -140,7 +144,7 @@ export interface IAssetRepository {
   softDeleteAll(ids: string[]): Promise<void>;
   restoreAll(ids: string[]): Promise<void>;
   findLivePhotoMatch(options: LivePhotoSearchOptions): Promise<AssetEntity | null>;
-  getMapMarkers(ownerId: string, options?: MapMarkerSearchOptions): Promise<MapMarker[]>;
+  getMapMarkers(ownerIds: string[], options?: MapMarkerSearchOptions): Promise<MapMarker[]>;
   getStatistics(ownerId: string, options: AssetStatsOptions): Promise<AssetStats>;
   getTimeBuckets(options: TimeBucketOptions): Promise<TimeBucketItem[]>;
   getTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]>;
