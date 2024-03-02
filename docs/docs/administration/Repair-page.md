@@ -17,7 +17,7 @@ Any other state describes the following 3 states:
 - OFFLINE PATHS - These files are the results of manual deletion of the default upload library.
 
 :::tip
-To get rid of Offline Files you can follow this [guide](/docs/guides/remove-offline-files.md)
+To get rid of Offline paths you can follow this [guide](/docs/guides/remove-offline-paths.md)
 :::
 
 - UNTRACKS FILES - These files are not tracked by the application. They can be the results of failed moves, interrupted uploads, or left behind due to a bug.
