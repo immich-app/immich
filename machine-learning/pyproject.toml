@@ -45,7 +45,7 @@ onnxruntime = "^1.15.0"
 optional = true
 
 [tool.poetry.group.cuda.dependencies]
-onnxruntime-gpu = "^1.15.0"
+onnxruntime-gpu = {version = "^1.17.0", source = "cuda12"}
 
 [tool.poetry.group.openvino]
 optional = true
@@ -58,12 +58,6 @@ optional = true
 
 [tool.poetry.group.armnn.dependencies]
 onnxruntime = "^1.15.0"
-
-[tool.poetry.group.cuda12]
-optional = true
-
-[tool.poetry.group.cuda12.dependencies]
-onnxruntime-gpu = {version = "^1.17.0", source = "cuda12"}
 
 [[tool.poetry.source]]
 name = "cuda12"
