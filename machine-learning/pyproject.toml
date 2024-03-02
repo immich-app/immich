@@ -59,6 +59,9 @@ optional = true
 [tool.poetry.group.armnn.dependencies]
 onnxruntime = "^1.15.0"
 
+[tool.poetry.group.cuda12]
+optional = true
+
 [tool.poetry.group.cuda12.dependencies]
 onnxruntime-gpu = {version = "^1.17.0", source = "cuda12"}
 
