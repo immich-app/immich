@@ -24,7 +24,7 @@ server-e2e-api:
 
 .PHONY: e2e
 e2e:
-	docker compose -f ./docker/docker-compose.e2e.yml up --build -V --remove-orphans
+	docker compose -f ./e2e/docker-compose.yml up --build -V --remove-orphans
 
 prod:
 	docker compose -f ./docker/docker-compose.prod.yml up --build -V --remove-orphans

@@ -7,11 +7,13 @@ import {
   InternalServerErrorException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { isNumber, isString } from 'class-validator';
 import cookieParser from 'cookie';
 import { DateTime } from 'luxon';
 import { IncomingHttpHeaders } from 'node:http';
 import { ClientMetadata, Issuer, UserinfoResponse, custom, generators } from 'openid-client';
 import { AccessCore, Permission } from '../access';
+import { HumanReadableSize } from '../domain.util';
 import {
   IAccessRepository,
   ICryptoRepository,
@@ -62,6 +64,12 @@ interface LoginResponse {
 
 interface OAuthProfile extends UserinfoResponse {
   email: string;
+}
+
+interface ClaimOptions<T> {
+  key: string;
+  default: T;
+  isValid: (value: unknown) => boolean;
 }
 
 @Injectable()
@@ -234,9 +242,11 @@ export class AuthService {
       }
     }
 
+    const { autoRegister, defaultStorageQuota, storageLabelClaim, storageQuotaClaim } = config.oauth;
+
     // register new user
     if (!user) {
-      if (!config.oauth.autoRegister) {
+      if (!autoRegister) {
         this.logger.warn(
           `Unable to register ${profile.email}. To enable set OAuth Auto Register to true in admin settings.`,
         );
@@ -246,17 +256,24 @@ export class AuthService {
       this.logger.log(`Registering new user: ${profile.email}/${profile.sub}`);
       this.logger.verbose(`OAuth Profile: ${JSON.stringify(profile)}`);
 
-      let storageLabel: string | null = profile[config.oauth.storageLabelClaim as keyof OAuthProfile] as string;
-      if (typeof storageLabel !== 'string') {
-        storageLabel = null;
-      }
+      const storageLabel = this.getClaim(profile, {
+        key: storageLabelClaim,
+        default: '',
+        isValid: isString,
+      });
+      const storageQuota = this.getClaim(profile, {
+        key: storageQuotaClaim,
+        default: defaultStorageQuota,
+        isValid: (value: unknown) => isNumber(value) && value >= 0,
+      });
 
       const userName = profile.name ?? `${profile.given_name || ''} ${profile.family_name || ''}`;
       user = await this.userCore.createUser({
         name: userName,
         email: profile.email,
         oauthId: profile.sub,
-        storageLabel,
+        quotaSizeInBytes: storageQuota * HumanReadableSize.GiB || null,
+        storageLabel: storageLabel || null,
       });
     }
 
@@ -442,5 +459,10 @@ export class AuthService {
       isAuthenticatedCookie = `${IMMICH_IS_AUTHENTICATED}=true; Path=/; Max-Age=${maxAge}; SameSite=Lax;`;
     }
     return [accessTokenCookie, authTypeCookie, isAuthenticatedCookie];
+  }
+
+  private getClaim<T>(profile: OAuthProfile, options: ClaimOptions<T>): T {
+    const value = profile[options.key as keyof OAuthProfile];
+    return options.isValid(value) ? (value as T) : options.default;
   }
 }

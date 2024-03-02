@@ -90,6 +90,7 @@ doc/MapMarkerResponseDto.md
 doc/MapTheme.md
 doc/MemoryLaneResponseDto.md
 doc/MergePersonDto.md
+doc/MetadataSearchDto.md
 doc/ModelType.md
 doc/OAuthApi.md
 doc/OAuthAuthorizeResponseDto.md
@@ -107,6 +108,7 @@ doc/PersonResponseDto.md
 doc/PersonStatisticsResponseDto.md
 doc/PersonUpdateDto.md
 doc/PersonWithFacesResponseDto.md
+doc/PlacesResponseDto.md
 doc/QueueStatusDto.md
 doc/ReactionLevel.md
 doc/ReactionType.md
@@ -137,6 +139,7 @@ doc/SharedLinkResponseDto.md
 doc/SharedLinkType.md
 doc/SignUpDto.md
 doc/SmartInfoResponseDto.md
+doc/SmartSearchDto.md
 doc/SystemConfigApi.md
 doc/SystemConfigDto.md
 doc/SystemConfigFFmpegDto.md
@@ -180,6 +183,9 @@ doc/UserAvatarColor.md
 doc/UserDto.md
 doc/UserResponseDto.md
 doc/ValidateAccessTokenResponseDto.md
+doc/ValidateLibraryDto.md
+doc/ValidateLibraryImportPathResponseDto.md
+doc/ValidateLibraryResponseDto.md
 doc/VideoCodec.md
 git_push.sh
 lib/api.dart
@@ -288,6 +294,7 @@ lib/model/map_marker_response_dto.dart
 lib/model/map_theme.dart
 lib/model/memory_lane_response_dto.dart
 lib/model/merge_person_dto.dart
+lib/model/metadata_search_dto.dart
 lib/model/model_type.dart
 lib/model/o_auth_authorize_response_dto.dart
 lib/model/o_auth_callback_dto.dart
@@ -302,6 +309,7 @@ lib/model/person_response_dto.dart
 lib/model/person_statistics_response_dto.dart
 lib/model/person_update_dto.dart
 lib/model/person_with_faces_response_dto.dart
+lib/model/places_response_dto.dart
 lib/model/queue_status_dto.dart
 lib/model/reaction_level.dart
 lib/model/reaction_type.dart
@@ -329,6 +337,7 @@ lib/model/shared_link_response_dto.dart
 lib/model/shared_link_type.dart
 lib/model/sign_up_dto.dart
 lib/model/smart_info_response_dto.dart
+lib/model/smart_search_dto.dart
 lib/model/system_config_dto.dart
 lib/model/system_config_f_fmpeg_dto.dart
 lib/model/system_config_job_dto.dart
@@ -368,6 +377,9 @@ lib/model/user_avatar_color.dart
 lib/model/user_dto.dart
 lib/model/user_response_dto.dart
 lib/model/validate_access_token_response_dto.dart
+lib/model/validate_library_dto.dart
+lib/model/validate_library_import_path_response_dto.dart
+lib/model/validate_library_response_dto.dart
 lib/model/video_codec.dart
 pubspec.yaml
 test/activity_api_test.dart
@@ -457,6 +469,7 @@ test/map_marker_response_dto_test.dart
 test/map_theme_test.dart
 test/memory_lane_response_dto_test.dart
 test/merge_person_dto_test.dart
+test/metadata_search_dto_test.dart
 test/model_type_test.dart
 test/o_auth_api_test.dart
 test/o_auth_authorize_response_dto_test.dart
@@ -474,6 +487,7 @@ test/person_response_dto_test.dart
 test/person_statistics_response_dto_test.dart
 test/person_update_dto_test.dart
 test/person_with_faces_response_dto_test.dart
+test/places_response_dto_test.dart
 test/queue_status_dto_test.dart
 test/reaction_level_test.dart
 test/reaction_type_test.dart
@@ -504,6 +518,7 @@ test/shared_link_response_dto_test.dart
 test/shared_link_type_test.dart
 test/sign_up_dto_test.dart
 test/smart_info_response_dto_test.dart
+test/smart_search_dto_test.dart
 test/system_config_api_test.dart
 test/system_config_dto_test.dart
 test/system_config_f_fmpeg_dto_test.dart
@@ -547,4 +562,7 @@ test/user_avatar_color_test.dart
 test/user_dto_test.dart
 test/user_response_dto_test.dart
 test/validate_access_token_response_dto_test.dart
+test/validate_library_dto_test.dart
+test/validate_library_import_path_response_dto_test.dart
+test/validate_library_response_dto_test.dart
 test/video_codec_test.dart

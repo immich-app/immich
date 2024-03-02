@@ -1,11 +1,14 @@
 <script lang="ts">
-  import { api, JobName, type SystemConfigDto, type SystemConfigJobDto } from '@api';
+  import { getJobName } from '$lib/utils';
+  import { JobName, type SystemConfigDto, type SystemConfigJobDto } from '@immich/sdk';
   import { isEqual } from 'lodash-es';
   import { createEventDispatcher } from 'svelte';
   import { fade } from 'svelte/transition';
   import type { SettingsEventType } from '../admin-settings';
-  import SettingButtonsRow from '../setting-buttons-row.svelte';
-  import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
+  import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
+  import SettingInputField, {
+    SettingInputFieldType,
+  } from '$lib/components/shared-components/settings/setting-input-field.svelte';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
@@ -27,7 +30,8 @@
     JobName.Migration,
   ];
 
-  function isSystemConfigJobDto(jobName: JobName): jobName is keyof SystemConfigJobDto {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function isSystemConfigJobDto(jobName: any): jobName is keyof SystemConfigJobDto {
     return jobName in config.job;
   }
 </script>
@@ -41,7 +45,7 @@
             <SettingInputField
               inputType={SettingInputFieldType.NUMBER}
               {disabled}
-              label="{api.getJobName(jobName)} Concurrency"
+              label="{getJobName(jobName)} Concurrency"
               desc=""
               bind:value={config.job[jobName].concurrency}
               required={true}
@@ -50,7 +54,7 @@
           {:else}
             <SettingInputField
               inputType={SettingInputFieldType.NUMBER}
-              label="{api.getJobName(jobName)} Concurrency"
+              label="{getJobName(jobName)} Concurrency"
               desc=""
               value="1"
               disabled={true}

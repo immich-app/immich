@@ -41,6 +41,11 @@ void main() {
       // TODO
     });
 
+    // String ownerId
+    test('to test the property `ownerId`', () async {
+      // TODO
+    });
+
     // LibraryType type
     test('to test the property `type`', () async {
       // TODO

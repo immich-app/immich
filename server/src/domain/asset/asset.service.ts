@@ -157,8 +157,16 @@ export class AssetService {
     return folder;
   }
 
-  getMapMarkers(auth: AuthDto, options: MapMarkerDto): Promise<MapMarkerResponseDto[]> {
-    return this.assetRepository.getMapMarkers(auth.user.id, options);
+  async getMapMarkers(auth: AuthDto, options: MapMarkerDto): Promise<MapMarkerResponseDto[]> {
+    const userIds: string[] = [auth.user.id];
+    if (options.withPartners) {
+      const partners = await this.partnerRepository.getAll(auth.user.id);
+      const partnersIds = partners
+        .filter((partner) => partner.sharedBy && partner.sharedWith && partner.sharedById != auth.user.id)
+        .map((partner) => partner.sharedById);
+      userIds.push(...partnersIds);
+    }
+    return this.assetRepository.getMapMarkers(userIds, options);
   }
 
   async getMemoryLane(auth: AuthDto, dto: MemoryLaneDto): Promise<MemoryLaneResponseDto[]> {
@@ -172,7 +180,7 @@ export class AssetService {
 
         return {
           title: `${years} year${years > 1 ? 's' : ''} since...`,
-          asset: mapAsset(asset),
+          asset: mapAsset(asset, { auth }),
         };
       })
       .groupBy((asset) => asset.title)
@@ -222,8 +230,8 @@ export class AssetService {
     const timeBucketOptions = await this.buildTimeBucketOptions(auth, dto);
     const assets = await this.assetRepository.getTimeBucket(dto.timeBucket, timeBucketOptions);
     return !auth.sharedLink || auth.sharedLink?.showExif
-      ? assets.map((asset) => mapAsset(asset, { withStack: true }))
-      : assets.map((asset) => mapAsset(asset, { stripMetadata: true }));
+      ? assets.map((asset) => mapAsset(asset, { withStack: true, auth }))
+      : assets.map((asset) => mapAsset(asset, { stripMetadata: true, auth }));
   }
 
   async buildTimeBucketOptions(auth: AuthDto, dto: TimeBucketDto): Promise<TimeBucketOptions> {
@@ -253,7 +261,7 @@ export class AssetService {
 
   async getRandom(auth: AuthDto, count: number): Promise<AssetResponseDto[]> {
     const assets = await this.assetRepository.getRandom(auth.user.id, count);
-    return assets.map((a) => mapAsset(a));
+    return assets.map((a) => mapAsset(a, { auth }));
   }
 
   async getUserAssetsByDeviceId(auth: AuthDto, deviceId: string) {
@@ -284,10 +292,10 @@ export class AssetService {
     }
 
     if (auth.sharedLink && !auth.sharedLink.showExif) {
-      return mapAsset(asset, { stripMetadata: true, withStack: true });
+      return mapAsset(asset, { stripMetadata: true, withStack: true, auth });
     }
 
-    const data = mapAsset(asset, { withStack: true });
+    const data = mapAsset(asset, { withStack: true, auth });
 
     if (auth.sharedLink) {
       delete data.owner;
@@ -307,7 +315,7 @@ export class AssetService {
     await this.updateMetadata({ id, description, dateTimeOriginal, latitude, longitude });
 
     const asset = await this.assetRepository.save({ id, ...rest });
-    return mapAsset(asset);
+    return mapAsset(asset, { auth });
   }
 
   async updateAll(auth: AuthDto, dto: AssetBulkUpdateDto): Promise<void> {
@@ -318,7 +326,7 @@ export class AssetService {
     const stackIdsToCheckForDelete: string[] = [];
     if (removeParent) {
       (options as Partial<AssetEntity>).stack = null;
-      const assets = await this.assetRepository.getByIds(ids);
+      const assets = await this.assetRepository.getByIds(ids, { stack: true });
       stackIdsToCheckForDelete.push(...new Set(assets.filter((a) => !!a.stackId).map((a) => a.stackId!)));
       // This updates the updatedAt column of the parents to indicate that one of its children is removed
       // All the unique parent's -> parent is set to null
@@ -373,7 +381,7 @@ export class AssetService {
       .flatMap((stack) => (stack ? [stack] : []))
       .filter((stack) => stack.assets.length < 2);
     await Promise.all(stacksToDelete.map((as) => this.assetStackRepository.delete(as.id)));
-    this.communicationRepository.send(ClientEvent.ASSET_UPDATE, auth.user.id, ids);
+    this.communicationRepository.send(ClientEvent.ASSET_STACK_UPDATE, auth.user.id, ids);
   }
 
   async handleAssetDeletionCheck() {
@@ -491,7 +499,11 @@ export class AssetService {
       primaryAssetId: newParentId,
     });
 
-    this.communicationRepository.send(ClientEvent.ASSET_UPDATE, auth.user.id, [...childIds, newParentId, oldParentId]);
+    this.communicationRepository.send(ClientEvent.ASSET_STACK_UPDATE, auth.user.id, [
+      ...childIds,
+      newParentId,
+      oldParentId,
+    ]);
     await this.assetRepository.updateAll([oldParentId, newParentId, ...childIds], { updatedAt: new Date() });
   }
 

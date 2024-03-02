@@ -16,7 +16,15 @@ import {
   SearchStrategy,
 } from '../repositories';
 import { FeatureFlag, SystemConfigCore } from '../system-config';
-import { MetadataSearchDto, SearchDto, SearchPeopleDto, SmartSearchDto } from './dto';
+import {
+  MetadataSearchDto,
+  PlacesResponseDto,
+  SearchDto,
+  SearchPeopleDto,
+  SearchPlacesDto,
+  SmartSearchDto,
+  mapPlaces,
+} from './dto';
 import { SearchSuggestionRequestDto, SearchSuggestionType } from './dto/search-suggestion.dto';
 import { SearchResponseDto } from './response-dto';
 
@@ -41,6 +49,11 @@ export class SearchService {
     return this.personRepository.getByName(auth.user.id, dto.name, { withHidden: dto.withHidden });
   }
 
+  async searchPlaces(dto: SearchPlacesDto): Promise<PlacesResponseDto[]> {
+    const places = await this.searchRepository.searchPlaces(dto.name);
+    return places.map((place) => mapPlaces(place));
+  }
+
   async getExploreData(auth: AuthDto): Promise<SearchExploreItem<AssetResponseDto>[]> {
     await this.configCore.requireFeature(FeatureFlag.SEARCH);
     const options = { maxFields: 12, minAssetsPerField: 5 };
@@ -60,6 +73,7 @@ export class SearchService {
 
   async searchMetadata(auth: AuthDto, dto: MetadataSearchDto): Promise<SearchResponseDto> {
     let checksum: Buffer | undefined;
+    const userIds = await this.getUserIdsToSearch(auth);
 
     if (dto.checksum) {
       const encoding = dto.checksum.length === 28 ? 'base64' : 'hex';
@@ -74,7 +88,7 @@ export class SearchService {
       {
         ...dto,
         checksum,
-        ownerId: auth.user.id,
+        userIds,
         orderDirection: dto.order ? enumToOrder[dto.order] : 'DESC',
       },
     );
@@ -181,26 +195,22 @@ export class SearchService {
   }
 
   async getSearchSuggestions(auth: AuthDto, dto: SearchSuggestionRequestDto): Promise<string[]> {
-    if (dto.type === SearchSuggestionType.COUNTRY) {
-      return this.metadataRepository.getCountries(auth.user.id);
+    switch (dto.type) {
+      case SearchSuggestionType.COUNTRY: {
+        return this.metadataRepository.getCountries(auth.user.id);
+      }
+      case SearchSuggestionType.STATE: {
+        return this.metadataRepository.getStates(auth.user.id, dto.country);
+      }
+      case SearchSuggestionType.CITY: {
+        return this.metadataRepository.getCities(auth.user.id, dto.country, dto.state);
+      }
+      case SearchSuggestionType.CAMERA_MAKE: {
+        return this.metadataRepository.getCameraMakes(auth.user.id, dto.model);
+      }
+      case SearchSuggestionType.CAMERA_MODEL: {
+        return this.metadataRepository.getCameraModels(auth.user.id, dto.make);
+      }
     }
-
-    if (dto.type === SearchSuggestionType.STATE) {
-      return this.metadataRepository.getStates(auth.user.id, dto.country);
-    }
-
-    if (dto.type === SearchSuggestionType.CITY) {
-      return this.metadataRepository.getCities(auth.user.id, dto.country, dto.state);
-    }
-
-    if (dto.type === SearchSuggestionType.CAMERA_MAKE) {
-      return this.metadataRepository.getCameraMakes(auth.user.id, dto.model);
-    }
-
-    if (dto.type === SearchSuggestionType.CAMERA_MODEL) {
-      return this.metadataRepository.getCameraModels(auth.user.id, dto.make);
-    }
-
-    return [];
   }
 }

@@ -2,8 +2,8 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { Theme } from '$lib/constants';
   import { colorTheme, mapSettings } from '$lib/stores/preferences.store';
-  import { api, type MapMarkerResponseDto } from '@api';
-  import { getMapStyle } from '@immich/sdk';
+  import { getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
+  import { getMapStyle, MapTheme, type MapMarkerResponseDto } from '@immich/sdk';
   import { mdiCog, mdiMapMarker } from '@mdi/js';
   import type { Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
   import type { GeoJSONSource, LngLatLike, StyleSpecification } from 'maplibre-gl';
@@ -32,13 +32,24 @@
   export let simplified = false;
   export let clickable = false;
   export let useLocationPin = false;
+  export function addClipMapMarker(lng: number, lat: number) {
+    if (map) {
+      if (marker) {
+        marker.remove();
+      }
+
+      center = { lng, lat };
+      marker = new maplibregl.Marker().setLngLat([lng, lat]).addTo(map);
+      map.setZoom(15);
+    }
+  }
 
   let map: maplibregl.Map;
   let marker: maplibregl.Marker | null = null;
 
   $: style = (() =>
     getMapStyle({
-      theme: $mapSettings.allowDarkMode ? $colorTheme.value : Theme.LIGHT,
+      theme: ($mapSettings.allowDarkMode ? $colorTheme.value : Theme.LIGHT) as unknown as MapTheme,
     }) as Promise<StyleSpecification>)();
 
   const dispatch = createEventDispatcher<{
@@ -53,22 +64,15 @@
     dispatch('selected', [assetId]);
   }
 
-  function handleClusterClick(clusterId: number, map: Map | null) {
+  async function handleClusterClick(clusterId: number, map: Map | null) {
     if (!map) {
       return;
     }
 
     const mapSource = map?.getSource('geojson') as GeoJSONSource;
-    mapSource.getClusterLeaves(clusterId, 10_000, 0, (error, leaves) => {
-      if (error) {
-        return;
-      }
-
-      if (leaves) {
-        const ids = leaves.map((leaf) => leaf.properties?.id);
-        dispatch('selected', ids);
-      }
-    });
+    const leaves = await mapSource.getClusterLeaves(clusterId, 10_000, 0);
+    const ids = leaves.map((leaf) => leaf.properties?.id);
+    dispatch('selected', ids);
   }
 
   function handleMapClick(event: maplibregl.MapMouseEvent) {
@@ -148,9 +152,7 @@
         applyToClusters
         asButton
         let:feature
-        on:click={(event) => {
-          handleClusterClick(event.detail.feature.properties.cluster_id, map);
-        }}
+        on:click={(event) => handlePromiseError(handleClusterClick(event.detail.feature.properties.cluster_id, map))}
       >
         <div
           class="rounded-full w-[40px] h-[40px] bg-immich-primary text-immich-gray flex justify-center items-center font-mono font-bold shadow-lg hover:bg-immich-dark-primary transition-all duration-200 hover:text-immich-dark-bg opacity-90"
@@ -174,7 +176,7 @@
           />
         {:else}
           <img
-            src={api.getAssetThumbnailUrl(feature.properties?.id)}
+            src={getAssetThumbnailUrl(feature.properties?.id, undefined)}
             class="rounded-full w-[60px] h-[60px] border-2 border-immich-primary shadow-lg hover:border-immich-dark-primary transition-all duration-200 hover:scale-150 object-cover bg-immich-primary"
             alt={`Image with id ${feature.properties?.id}`}
           />

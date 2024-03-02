@@ -3,12 +3,17 @@
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { AppRoute } from '$lib/constants';
   import { featureFlags, serverConfig } from '$lib/stores/server-config.store';
+  import { oauth } from '$lib/utils';
   import { getServerErrorMessage, handleError } from '$lib/utils/handle-error';
-  import { oauth } from '@api';
   import { getServerConfig, login } from '@immich/sdk';
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { onMount } from 'svelte';
   import { fade } from 'svelte/transition';
   import Button from '../elements/buttons/button.svelte';
+  import PasswordField from '../shared-components/password-field.svelte';
+
+  export let onSuccess: () => unknown | Promise<unknown>;
+  export let onFirstLogin: () => unknown | Promise<unknown>;
+  export let onOnboarding: () => unknown | Promise<unknown>;
 
   let errorMessage: string;
   let email = '';
@@ -16,12 +21,6 @@
   let oauthError = '';
   let loading = false;
   let oauthLoading = true;
-
-  const dispatch = createEventDispatcher<{
-    success: void;
-    firstLogin: void;
-    onboarding: void;
-  }>();
 
   onMount(async () => {
     if (!$featureFlags.oauth) {
@@ -32,11 +31,11 @@
     if (oauth.isCallback(window.location)) {
       try {
         await oauth.login(window.location);
-        dispatch('success');
+        await onSuccess();
         return;
       } catch (error) {
         console.error('Error [login-form] [oauth.callback]', error);
-        oauthError = (await getServerErrorMessage(error)) || 'Unable to complete OAuth login';
+        oauthError = getServerErrorMessage(error) || 'Unable to complete OAuth login';
         oauthLoading = false;
       }
     }
@@ -48,7 +47,7 @@
         return;
       }
     } catch (error) {
-      await handleError(error, 'Unable to connect!');
+      handleError(error, 'Unable to connect!');
     }
 
     oauthLoading = false;
@@ -63,18 +62,18 @@
       const serverConfig = await getServerConfig();
 
       if (user.isAdmin && !serverConfig.isOnboarded) {
-        dispatch('onboarding');
+        await onOnboarding();
         return;
       }
 
       if (!user.isAdmin && user.shouldChangePassword) {
-        dispatch('firstLogin');
+        await onFirstLogin();
         return;
       }
-      dispatch('success');
+      await onSuccess();
       return;
     } catch (error) {
-      errorMessage = (await getServerErrorMessage(error)) || 'Incorrect email or password';
+      errorMessage = getServerErrorMessage(error) || 'Incorrect email or password';
       loading = false;
       return;
     }
@@ -114,15 +113,7 @@
 
     <div class="flex flex-col gap-2">
       <label class="immich-form-label" for="password">Password</label>
-      <input
-        class="immich-form-input"
-        id="password"
-        name="password"
-        type="password"
-        autocomplete="current-password"
-        bind:value={password}
-        required
-      />
+      <PasswordField id="password" bind:password autocomplete="current-password" />
     </div>
 
     <div class="my-5 flex w-full">

@@ -19,11 +19,6 @@ export const loginStub = {
   },
 };
 
-export const changePasswordStub = {
-  password: 'Password123',
-  newPassword: 'Password1234',
-};
-
 export const authStub = {
   admin: Object.freeze<AuthDto>({
     user: {
@@ -57,7 +52,6 @@ export const authStub = {
       id: 'user-id',
       email: 'immich@test.com',
       isAdmin: false,
-      externalPath: '/data/user1',
     } as UserEntity,
     userToken: {
       id: 'token-id',

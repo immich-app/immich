@@ -108,7 +108,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
           .then((_) => log.info("Logout was successful for $userEmail"))
           .onError(
             (error, stackTrace) =>
-                log.severe("Error logging out $userEmail", error, stackTrace),
+                log.severe("Logout failed for $userEmail", error, stackTrace),
           );
 
       await Future.wait([
@@ -129,8 +129,8 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
         shouldChangePassword: false,
         isAuthenticated: false,
       );
-    } catch (e) {
-      log.severe("Error logging out $e");
+    } catch (e, stack) {
+      log.severe('Logout failed', e, stack);
     }
   }
 

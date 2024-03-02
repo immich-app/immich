@@ -29,7 +29,11 @@ import {
   LibraryResponseDto,
   LibraryStatsResponseDto,
   ScanLibraryDto,
+  SearchLibraryDto,
   UpdateLibraryDto,
+  ValidateLibraryDto,
+  ValidateLibraryImportPathResponseDto,
+  ValidateLibraryResponseDto,
   mapLibrary,
 } from './library.dto';
 
@@ -109,20 +113,13 @@ export class LibraryService extends EventEmitter {
       ignore: library.exclusionPatterns,
     });
 
-    const config = await this.configCore.getConfig();
-    const { usePolling, interval } = config.library.watch;
-
-    this.logger.debug(`Settings for watcher: usePolling: ${usePolling}, interval: ${interval}`);
-
     let _resolve: () => void;
     const ready$ = new Promise<void>((resolve) => (_resolve = resolve));
 
     this.watchers[id] = this.storageRepository.watch(
       library.importPaths,
       {
-        usePolling,
-        interval,
-        binaryInterval: interval,
+        usePolling: false,
         ignoreInitial: true,
       },
       {
@@ -186,6 +183,7 @@ export class LibraryService extends EventEmitter {
 
   async getStatistics(auth: AuthDto, id: string): Promise<LibraryStatsResponseDto> {
     await this.access.requirePermission(auth, Permission.LIBRARY_READ, id);
+
     return this.repository.getStatistics(id);
   }
 
@@ -193,15 +191,16 @@ export class LibraryService extends EventEmitter {
     return this.repository.getCountForUser(auth.user.id);
   }
 
-  async getAllForUser(auth: AuthDto): Promise<LibraryResponseDto[]> {
-    const libraries = await this.repository.getAllByUserId(auth.user.id);
-    return libraries.map((library) => mapLibrary(library));
-  }
-
   async get(auth: AuthDto, id: string): Promise<LibraryResponseDto> {
     await this.access.requirePermission(auth, Permission.LIBRARY_READ, id);
+
     const library = await this.findOrFail(id);
     return mapLibrary(library);
+  }
+
+  async getAll(auth: AuthDto, dto: SearchLibraryDto): Promise<LibraryResponseDto[]> {
+    const libraries = await this.repository.getAll(false, dto.type);
+    return libraries.map((library) => mapLibrary(library));
   }
 
   async handleQueueCleanup(): Promise<boolean> {
@@ -238,8 +237,14 @@ export class LibraryService extends EventEmitter {
       }
     }
 
+    let ownerId = auth.user.id;
+
+    if (dto.ownerId) {
+      ownerId = dto.ownerId;
+    }
+
     const library = await this.repository.create({
-      ownerId: auth.user.id,
+      ownerId,
       name: dto.name,
       type: dto.type,
       importPaths: dto.importPaths ?? [],
@@ -270,9 +275,68 @@ export class LibraryService extends EventEmitter {
     );
   }
 
+  private async validateImportPath(importPath: string): Promise<ValidateLibraryImportPathResponseDto> {
+    const validation = new ValidateLibraryImportPathResponseDto();
+    validation.importPath = importPath;
+
+    try {
+      const stat = await this.storageRepository.stat(importPath);
+
+      if (!stat.isDirectory()) {
+        validation.message = 'Not a directory';
+        return validation;
+      }
+    } catch (error: any) {
+      if (error.code === 'ENOENT') {
+        validation.message = 'Path does not exist (ENOENT)';
+        return validation;
+      }
+      validation.message = String(error);
+      return validation;
+    }
+
+    const access = await this.storageRepository.checkFileExists(importPath, R_OK);
+
+    if (!access) {
+      validation.message = 'Lacking read permission for folder';
+      return validation;
+    }
+
+    validation.isValid = true;
+    return validation;
+  }
+
+  public async validate(auth: AuthDto, id: string, dto: ValidateLibraryDto): Promise<ValidateLibraryResponseDto> {
+    await this.access.requirePermission(auth, Permission.LIBRARY_UPDATE, id);
+
+    const response = new ValidateLibraryResponseDto();
+
+    if (dto.importPaths) {
+      response.importPaths = await Promise.all(
+        dto.importPaths.map(async (importPath) => {
+          return await this.validateImportPath(importPath);
+        }),
+      );
+    }
+
+    return response;
+  }
+
   async update(auth: AuthDto, id: string, dto: UpdateLibraryDto): Promise<LibraryResponseDto> {
     await this.access.requirePermission(auth, Permission.LIBRARY_UPDATE, id);
+
     const library = await this.repository.update({ id, ...dto });
+
+    if (dto.importPaths) {
+      const validation = await this.validate(auth, id, { importPaths: dto.importPaths });
+      if (validation.importPaths) {
+        for (const path of validation.importPaths) {
+          if (!path.isValid) {
+            throw new BadRequestException(`Invalid import path: ${path.message}`);
+          }
+        }
+      }
+    }
 
     if (dto.importPaths || dto.exclusionPatterns) {
       // Re-watch library to use new paths and/or exclusion patterns
@@ -337,7 +401,7 @@ export class LibraryService extends EventEmitter {
         return true;
       } else {
         // File can't be accessed and does not already exist in db
-        throw new BadRequestException("Can't access file", { cause: error });
+        throw new BadRequestException('Cannot access file', { cause: error });
       }
     }
 
@@ -509,6 +573,14 @@ export class LibraryService extends EventEmitter {
     return true;
   }
 
+  // Check if a given path is in a user's external path. Both arguments are assumed to be normalized
+  private isInExternalPath(filePath: string, externalPath: string | null): boolean {
+    if (externalPath === null) {
+      return false;
+    }
+    return filePath.startsWith(externalPath);
+  }
+
   async handleQueueAssetRefresh(job: ILibraryRefreshJob): Promise<boolean> {
     const library = await this.repository.get(job.id);
     if (!library || library.type !== LibraryType.EXTERNAL) {
@@ -516,24 +588,28 @@ export class LibraryService extends EventEmitter {
       return false;
     }
 
-    const user = await this.userRepository.get(library.ownerId, {});
-    if (!user?.externalPath) {
-      this.logger.warn('User has no external path set, cannot refresh library');
-      return false;
-    }
-
     this.logger.verbose(`Refreshing library: ${job.id}`);
+
+    const pathValidation = await Promise.all(
+      library.importPaths.map(async (importPath) => await this.validateImportPath(importPath)),
+    );
+
+    const validImportPaths = pathValidation
+      .map((validation) => {
+        if (!validation.isValid) {
+          this.logger.error(`Skipping invalid import path: ${validation.importPath}. Reason: ${validation.message}`);
+        }
+        return validation;
+      })
+      .filter((validation) => validation.isValid)
+      .map((validation) => validation.importPath);
+
     const rawPaths = await this.storageRepository.crawl({
-      pathsToCrawl: library.importPaths,
+      pathsToCrawl: validImportPaths,
       exclusionPatterns: library.exclusionPatterns,
     });
 
-    const crawledAssetPaths = rawPaths
-      .map((filePath) => path.normalize(filePath))
-      .filter((assetPath) =>
-        // Filter out paths that are not within the user's external path
-        assetPath.match(new RegExp(`^${user.externalPath}`)),
-      ) as string[];
+    const crawledAssetPaths = rawPaths.map((filePath) => path.normalize(filePath));
 
     this.logger.debug(`Found ${crawledAssetPaths.length} asset(s) when crawling import paths ${library.importPaths}`);
     const assetsInLibrary = await this.assetRepository.getByLibraryId([job.id]);

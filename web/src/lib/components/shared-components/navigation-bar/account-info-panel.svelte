@@ -4,8 +4,7 @@
   import { AppRoute } from '$lib/constants';
   import { user } from '$lib/stores/user.store';
   import { handleError } from '$lib/utils/handle-error';
-  import { UserAvatarColor } from '@api';
-  import { deleteProfileImage, updateUser } from '@immich/sdk';
+  import { deleteProfileImage, updateUser, type UserAvatarColor } from '@immich/sdk';
   import { mdiCog, mdiLogout, mdiPencil } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
   import { fade } from 'svelte/transition';

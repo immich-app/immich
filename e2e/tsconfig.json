@@ -16,8 +16,8 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     "rootDirs": ["src"],
-    "baseUrl": "./",
-    "types": ["vitest/globals"]
+    "baseUrl": "./"
   },
+  "include": ["src/**/*.ts"],
   "exclude": ["dist", "node_modules"]
 }

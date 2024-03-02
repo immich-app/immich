@@ -1397,6 +1397,14 @@
             "schema": {
               "type": "boolean"
             }
+          },
+          {
+            "name": "withPartners",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "responses": {
@@ -2249,6 +2257,14 @@
             }
           },
           {
+            "name": "isNotInAlbum",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "isOffline",
             "required": false,
             "in": "query",
@@ -2335,6 +2351,17 @@
             "in": "query",
             "schema": {
               "type": "number"
+            }
+          },
+          {
+            "name": "personIds",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             }
           },
           {
@@ -2436,6 +2463,7 @@
             "required": false,
             "in": "query",
             "schema": {
+              "default": false,
               "type": "boolean"
             }
           },
@@ -3271,8 +3299,17 @@
     },
     "/library": {
       "get": {
-        "operationId": "getLibraries",
-        "parameters": [],
+        "operationId": "getAllLibraries",
+        "parameters": [
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/LibraryType"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
@@ -3359,7 +3396,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -3379,7 +3416,7 @@
         ]
       },
       "get": {
-        "operationId": "getLibraryInfo",
+        "operationId": "getLibrary",
         "parameters": [
           {
             "name": "id",
@@ -3484,7 +3521,7 @@
           }
         ],
         "responses": {
-          "201": {
+          "204": {
             "description": ""
           }
         },
@@ -3529,7 +3566,7 @@
           "required": true
         },
         "responses": {
-          "201": {
+          "204": {
             "description": ""
           }
         },
@@ -3569,6 +3606,58 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/LibraryStatsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Library"
+        ]
+      }
+    },
+    "/library/{id}/validate": {
+      "post": {
+        "operationId": "validate",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ValidateLibraryDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidateLibraryResponseDto"
                 }
               }
             },
@@ -4518,350 +4607,21 @@
       }
     },
     "/search/metadata": {
-      "get": {
+      "post": {
         "operationId": "searchMetadata",
-        "parameters": [
-          {
-            "name": "checksum",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MetadataSearchDto"
+              }
             }
           },
-          {
-            "name": "city",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "country",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "createdAfter",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
-            }
-          },
-          {
-            "name": "createdBefore",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
-            }
-          },
-          {
-            "name": "deviceAssetId",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "deviceId",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "encodedVideoPath",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "id",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          },
-          {
-            "name": "isArchived",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "isEncoded",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "isExternal",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "isFavorite",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "isMotion",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "isOffline",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "isReadOnly",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "isVisible",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "lensModel",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "libraryId",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          },
-          {
-            "name": "make",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "model",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "order",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/AssetOrder"
-            }
-          },
-          {
-            "name": "originalFileName",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "originalPath",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "resizePath",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "size",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "state",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "takenAfter",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
-            }
-          },
-          {
-            "name": "takenBefore",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
-            }
-          },
-          {
-            "name": "trashedAfter",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
-            }
-          },
-          {
-            "name": "trashedBefore",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
-            }
-          },
-          {
-            "name": "type",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/AssetTypeEnum"
-            }
-          },
-          {
-            "name": "updatedAfter",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
-            }
-          },
-          {
-            "name": "updatedBefore",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
-            }
-          },
-          {
-            "name": "webpPath",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "withArchived",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "withDeleted",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "withExif",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "withPeople",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "withStacked",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          }
-        ],
+          "required": true
+        },
         "responses": {
-          "200": {
+          "201": {
             "content": {
               "application/json": {
                 "schema": {
@@ -4940,270 +4700,66 @@
         ]
       }
     },
-    "/search/smart": {
+    "/search/places": {
       "get": {
-        "operationId": "searchSmart",
+        "operationId": "searchPlaces",
         "parameters": [
           {
-            "name": "city",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "country",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "createdAfter",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
-            }
-          },
-          {
-            "name": "createdBefore",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
-            }
-          },
-          {
-            "name": "deviceId",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "isArchived",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "isEncoded",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "isExternal",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "isFavorite",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "isMotion",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "isOffline",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "isReadOnly",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "isVisible",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "lensModel",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "libraryId",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          },
-          {
-            "name": "make",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "model",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "query",
+            "name": "name",
             "required": true,
             "in": "query",
             "schema": {
               "type": "string"
             }
-          },
-          {
-            "name": "size",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "state",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "takenAfter",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
-            }
-          },
-          {
-            "name": "takenBefore",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
-            }
-          },
-          {
-            "name": "trashedAfter",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
-            }
-          },
-          {
-            "name": "trashedBefore",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
-            }
-          },
-          {
-            "name": "type",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/AssetTypeEnum"
-            }
-          },
-          {
-            "name": "updatedAfter",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
-            }
-          },
-          {
-            "name": "updatedBefore",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
-            }
-          },
-          {
-            "name": "withArchived",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "withDeleted",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "withExif",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
           }
         ],
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PlacesResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Search"
+        ]
+      }
+    },
+    "/search/smart": {
+      "post": {
+        "operationId": "searchSmart",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SmartSearchDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
             "content": {
               "application/json": {
                 "schema": {
@@ -6911,7 +6467,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.94.1",
+    "version": "1.97.0",
     "contact": {}
   },
   "tags": [],
@@ -7985,9 +7541,6 @@
           "isArchived": {
             "type": "boolean"
           },
-          "isExternal": {
-            "type": "boolean"
-          },
           "isFavorite": {
             "type": "boolean"
           },
@@ -8045,6 +7598,10 @@
           "name": {
             "type": "string"
           },
+          "ownerId": {
+            "format": "uuid",
+            "type": "string"
+          },
           "type": {
             "$ref": "#/components/schemas/LibraryType"
           }
@@ -8099,10 +7656,6 @@
       "CreateUserDto": {
         "properties": {
           "email": {
-            "type": "string"
-          },
-          "externalPath": {
-            "nullable": true,
             "type": "string"
           },
           "memoriesEnabled": {
@@ -8797,6 +8350,154 @@
         ],
         "type": "object"
       },
+      "MetadataSearchDto": {
+        "properties": {
+          "checksum": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          },
+          "createdAfter": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "createdBefore": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "deviceAssetId": {
+            "type": "string"
+          },
+          "deviceId": {
+            "type": "string"
+          },
+          "encodedVideoPath": {
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "isArchived": {
+            "type": "boolean"
+          },
+          "isEncoded": {
+            "type": "boolean"
+          },
+          "isExternal": {
+            "type": "boolean"
+          },
+          "isFavorite": {
+            "type": "boolean"
+          },
+          "isMotion": {
+            "type": "boolean"
+          },
+          "isNotInAlbum": {
+            "type": "boolean"
+          },
+          "isOffline": {
+            "type": "boolean"
+          },
+          "isReadOnly": {
+            "type": "boolean"
+          },
+          "isVisible": {
+            "type": "boolean"
+          },
+          "lensModel": {
+            "type": "string"
+          },
+          "libraryId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "make": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          },
+          "order": {
+            "$ref": "#/components/schemas/AssetOrder"
+          },
+          "originalFileName": {
+            "type": "string"
+          },
+          "originalPath": {
+            "type": "string"
+          },
+          "page": {
+            "type": "number"
+          },
+          "personIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "resizePath": {
+            "type": "string"
+          },
+          "size": {
+            "type": "number"
+          },
+          "state": {
+            "type": "string"
+          },
+          "takenAfter": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "takenBefore": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "trashedAfter": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "trashedBefore": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/AssetTypeEnum"
+          },
+          "updatedAfter": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedBefore": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "webpPath": {
+            "type": "string"
+          },
+          "withArchived": {
+            "default": false,
+            "type": "boolean"
+          },
+          "withDeleted": {
+            "type": "boolean"
+          },
+          "withExif": {
+            "type": "boolean"
+          },
+          "withPeople": {
+            "type": "boolean"
+          },
+          "withStacked": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
       "ModelType": {
         "enum": [
           "facial-recognition",
@@ -8854,10 +8555,6 @@
           "email": {
             "type": "string"
           },
-          "externalPath": {
-            "nullable": true,
-            "type": "string"
-          },
           "id": {
             "type": "string"
           },
@@ -8906,7 +8603,6 @@
           "createdAt",
           "deletedAt",
           "email",
-          "externalPath",
           "id",
           "isAdmin",
           "name",
@@ -8942,6 +8638,9 @@
       },
       "PeopleResponseDto": {
         "properties": {
+          "hidden": {
+            "type": "integer"
+          },
           "people": {
             "items": {
               "$ref": "#/components/schemas/PersonResponseDto"
@@ -8953,6 +8652,7 @@
           }
         },
         "required": [
+          "hidden",
           "people",
           "total"
         ],
@@ -9098,6 +8798,31 @@
           "isHidden",
           "name",
           "thumbnailPath"
+        ],
+        "type": "object"
+      },
+      "PlacesResponseDto": {
+        "properties": {
+          "admin1name": {
+            "type": "string"
+          },
+          "admin2name": {
+            "type": "string"
+          },
+          "latitude": {
+            "type": "number"
+          },
+          "longitude": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "latitude",
+          "longitude",
+          "name"
         ],
         "type": "object"
       },
@@ -9752,6 +9477,126 @@
         },
         "type": "object"
       },
+      "SmartSearchDto": {
+        "properties": {
+          "city": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          },
+          "createdAfter": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "createdBefore": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "deviceId": {
+            "type": "string"
+          },
+          "isArchived": {
+            "type": "boolean"
+          },
+          "isEncoded": {
+            "type": "boolean"
+          },
+          "isExternal": {
+            "type": "boolean"
+          },
+          "isFavorite": {
+            "type": "boolean"
+          },
+          "isMotion": {
+            "type": "boolean"
+          },
+          "isNotInAlbum": {
+            "type": "boolean"
+          },
+          "isOffline": {
+            "type": "boolean"
+          },
+          "isReadOnly": {
+            "type": "boolean"
+          },
+          "isVisible": {
+            "type": "boolean"
+          },
+          "lensModel": {
+            "type": "string"
+          },
+          "libraryId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "make": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          },
+          "page": {
+            "type": "number"
+          },
+          "personIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "query": {
+            "type": "string"
+          },
+          "size": {
+            "type": "number"
+          },
+          "state": {
+            "type": "string"
+          },
+          "takenAfter": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "takenBefore": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "trashedAfter": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "trashedBefore": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/AssetTypeEnum"
+          },
+          "updatedAfter": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedBefore": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "withArchived": {
+            "default": false,
+            "type": "boolean"
+          },
+          "withDeleted": {
+            "type": "boolean"
+          },
+          "withExif": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      },
       "SystemConfigDto": {
         "properties": {
           "ffmpeg": {
@@ -9993,18 +9838,10 @@
         "properties": {
           "enabled": {
             "type": "boolean"
-          },
-          "interval": {
-            "type": "integer"
-          },
-          "usePolling": {
-            "type": "boolean"
           }
         },
         "required": [
-          "enabled",
-          "interval",
-          "usePolling"
+          "enabled"
         ],
         "type": "object"
       },
@@ -10093,6 +9930,9 @@
           "clientSecret": {
             "type": "string"
           },
+          "defaultStorageQuota": {
+            "type": "number"
+          },
           "enabled": {
             "type": "boolean"
           },
@@ -10113,6 +9953,9 @@
           },
           "storageLabelClaim": {
             "type": "string"
+          },
+          "storageQuotaClaim": {
+            "type": "string"
           }
         },
         "required": [
@@ -10121,13 +9964,15 @@
           "buttonText",
           "clientId",
           "clientSecret",
+          "defaultStorageQuota",
           "enabled",
           "issuerUrl",
           "mobileOverrideEnabled",
           "mobileRedirectUri",
           "scope",
           "signingAlgorithm",
-          "storageLabelClaim"
+          "storageLabelClaim",
+          "storageQuotaClaim"
         ],
         "type": "object"
       },
@@ -10496,9 +10341,6 @@
           "email": {
             "type": "string"
           },
-          "externalPath": {
-            "type": "string"
-          },
           "id": {
             "format": "uuid",
             "type": "string"
@@ -10625,10 +10467,6 @@
           "email": {
             "type": "string"
           },
-          "externalPath": {
-            "nullable": true,
-            "type": "string"
-          },
           "id": {
             "type": "string"
           },
@@ -10674,7 +10512,6 @@
           "createdAt",
           "deletedAt",
           "email",
-          "externalPath",
           "id",
           "isAdmin",
           "name",
@@ -10697,6 +10534,52 @@
         "required": [
           "authStatus"
         ],
+        "type": "object"
+      },
+      "ValidateLibraryDto": {
+        "properties": {
+          "exclusionPatterns": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "importPaths": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "ValidateLibraryImportPathResponseDto": {
+        "properties": {
+          "importPath": {
+            "type": "string"
+          },
+          "isValid": {
+            "default": false,
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "importPath"
+        ],
+        "type": "object"
+      },
+      "ValidateLibraryResponseDto": {
+        "properties": {
+          "importPaths": {
+            "items": {
+              "$ref": "#/components/schemas/ValidateLibraryImportPathResponseDto"
+            },
+            "type": "array"
+          }
+        },
         "type": "object"
       },
       "VideoCodec": {

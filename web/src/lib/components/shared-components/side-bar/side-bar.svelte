@@ -2,8 +2,7 @@
   import { page } from '$app/stores';
   import { locale, sidebarSettings } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
-  import { api, type AssetApiGetAssetStatisticsRequest } from '@api';
-  import { getAlbumCount } from '@immich/sdk';
+  import { getAlbumCount, getAssetStatistics } from '@immich/sdk';
   import {
     mdiAccount,
     mdiAccountMultiple,
@@ -24,10 +23,7 @@
   import SideBarButton from './side-bar-button.svelte';
   import SideBarSection from './side-bar-section.svelte';
 
-  const getStats = async (dto: AssetApiGetAssetStatisticsRequest) => {
-    const { data: stats } = await api.assetApi.getAssetStatistics(dto);
-    return stats;
-  };
+  const getStats = (dto: Parameters<typeof getAssetStatistics>[0]) => getAssetStatistics(dto);
 
   const handleAlbumCount = async () => {
     try {

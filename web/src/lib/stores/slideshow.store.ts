@@ -7,12 +7,24 @@ export enum SlideshowState {
   None = 'none',
 }
 
+export enum SlideshowNavigation {
+  Shuffle = 'shuffle',
+  AscendingOrder = 'ascending-order',
+  DescendingOrder = 'descending-order',
+}
+
 function createSlideshowStore() {
   const restartState = writable<boolean>(false);
   const stopState = writable<boolean>(false);
 
-  const slideshowShuffle = persisted<boolean>('slideshow-shuffle', true);
+  const slideshowNavigation = persisted<SlideshowNavigation>(
+    'slideshow-navigation',
+    SlideshowNavigation.DescendingOrder,
+  );
   const slideshowState = writable<SlideshowState>(SlideshowState.None);
+
+  const showProgressBar = persisted<boolean>('slideshow-show-progressbar', true);
+  const slideshowDelay = persisted<number>('slideshow-delay', 5, {});
 
   return {
     restartProgress: {
@@ -37,8 +49,10 @@ function createSlideshowStore() {
         }
       },
     },
-    slideshowShuffle,
+    slideshowNavigation,
     slideshowState,
+    slideshowDelay,
+    showProgressBar,
   };
 }
 

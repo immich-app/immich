@@ -16,7 +16,6 @@
   import { AssetStore } from '$lib/stores/assets.store';
   import type { PageData } from './$types';
   import { mdiPlus, mdiDotsVertical } from '@mdi/js';
-  import UpdatePanel from '$lib/components/shared-components/update-panel.svelte';
 
   export let data: PageData;
 
@@ -29,17 +28,17 @@
 
 {#if $isMultiSelectState}
   <AssetSelectControlBar assets={$selectedAssets} clearSelect={() => assetInteractionStore.clearMultiselect()}>
-    <ArchiveAction unarchive onArchive={(ids) => assetStore.removeAssets(ids)} />
+    <ArchiveAction unarchive onArchive={(assetIds) => assetStore.removeAssets(assetIds)} />
     <CreateSharedLink />
     <SelectAllAssets {assetStore} {assetInteractionStore} />
     <AssetSelectContextMenu icon={mdiPlus} title="Add">
       <AddToAlbum />
       <AddToAlbum shared />
     </AssetSelectContextMenu>
-    <DeleteAssets onAssetDelete={(assetId) => assetStore.removeAsset(assetId)} />
+    <DeleteAssets onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)} />
     <AssetSelectContextMenu icon={mdiDotsVertical} title="Add">
       <DownloadAction menuItem />
-      <FavoriteAction menuItem removeFavorite={isAllFavorite} />
+      <FavoriteAction menuItem removeFavorite={isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
     </AssetSelectContextMenu>
   </AssetSelectControlBar>
 {/if}
@@ -53,4 +52,3 @@
     />
   </AssetGrid>
 </UserPageLayout>
-<UpdatePanel {assetStore} />

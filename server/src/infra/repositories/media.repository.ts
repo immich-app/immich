@@ -60,6 +60,7 @@ export class MediaRepository implements IMediaRepository {
           frameCount: Number.parseInt(stream.nb_frames ?? '0'),
           rotation: Number.parseInt(`${stream.rotation ?? 0}`),
           isHDR: stream.color_transfer === 'smpte2084' || stream.color_transfer === 'arib-std-b67',
+          bitrate: Number.parseInt(stream.bit_rate ?? '0'),
         })),
       audioStreams: results.streams
         .filter((stream) => stream.codec_type === 'audio')
@@ -75,18 +76,7 @@ export class MediaRepository implements IMediaRepository {
   transcode(input: string, output: string | Writable, options: TranscodeOptions): Promise<void> {
     if (!options.twoPass) {
       return new Promise((resolve, reject) => {
-        const oldLdLibraryPath = process.env.LD_LIBRARY_PATH;
-        if (options.ldLibraryPath) {
-          // fluent ffmpeg does not allow to set environment variables, so we do it manually
-          process.env.LD_LIBRARY_PATH = this.chainPath(oldLdLibraryPath || '', options.ldLibraryPath);
-        }
-        try {
-          this.configureFfmpegCall(input, output, options).on('error', reject).on('end', resolve).run();
-        } finally {
-          if (options.ldLibraryPath) {
-            process.env.LD_LIBRARY_PATH = oldLdLibraryPath;
-          }
-        }
+        this.configureFfmpegCall(input, output, options).on('error', reject).on('end', resolve).run();
       });
     }
 
@@ -120,7 +110,6 @@ export class MediaRepository implements IMediaRepository {
 
   configureFfmpegCall(input: string, output: string | Writable, options: TranscodeOptions) {
     return ffmpeg(input, { niceness: 10 })
-      .setFfmpegPath(options.ffmpegPath || 'ffmpeg')
       .inputOptions(options.inputOptions)
       .outputOptions(options.outputOptions)
       .output(output)

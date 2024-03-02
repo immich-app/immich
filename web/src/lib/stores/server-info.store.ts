@@ -1,4 +1,4 @@
+import type { ServerInfoResponseDto } from '@immich/sdk';
 import { writable } from 'svelte/store';
-import type { ServerInfoResponseDto } from '@api';
 
 export const serverInfo = writable<ServerInfoResponseDto>();
