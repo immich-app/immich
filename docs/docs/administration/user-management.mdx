@@ -21,13 +21,23 @@ Starting from v1.93.0, admin can specify the storage quota for the user as the i
 In order to select a storage quota, click on the pencil icon and enter the storage quota in GiB. You can choose an unlimited quota using the value 0 (default).
 
 :::tip
-The system administrator can see the usage quota percentage of all users in Server Stats.
+The system administrator can see the usage quota percentage of all users in Server Stats page.
 :::
 
 :::info
 External libraries don't take up space from the storage quota.
 :::
 <img src={require('./img/user-quota-size.png').default} title="Set Quota Size" />
+
+## Set Storage Label For User
+
+The admin can add a custom label for each user, so instead of `upload/{userId}/your-template` it will be `upload/{custom_user_label}/your-template`.  
+To apply a storage template, go to the Administration page -> click on the pencil button next to the user.
+:::note
+To apply the Storage Label to previously uploaded assets, run the Storage Migration Job.
+:::
+
+<img src={require('./img/user-storage-label.png').default} title="Delete User" />
 
 
 ## Delete a User
