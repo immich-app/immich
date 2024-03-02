@@ -62,7 +62,7 @@ onnxruntime = "^1.15.0"
 [[tool.poetry.source]]
 name = "cuda12"
 url = "https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/"
-priority = "supplemental"
+priority = "explicit"
 
 [build-system]
 requires = ["poetry-core"]
