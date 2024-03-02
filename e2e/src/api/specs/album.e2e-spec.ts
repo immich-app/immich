@@ -122,7 +122,7 @@ describe('/album', () => {
     it("should not show other users' favorites", async () => {
       const { status, body } = await request(app)
         .get(`/album/${user1Albums[0].id}?withoutAssets=false`)
-        .set('Authorization', `Bearer ${user1.accessToken}`);
+        .set('Authorization', `Bearer ${user2.accessToken}`);
       expect(status).toEqual(200);
       expect(body).toEqual({
         ...user1Albums[0],
