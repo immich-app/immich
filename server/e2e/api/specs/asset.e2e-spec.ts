@@ -41,6 +41,7 @@ describe(`${AssetController.name} (e2e)`, () => {
   let app: INestApplication;
   let server: any;
   let assetRepository: IAssetRepository;
+  let admin: LoginResponseDto;
   let user1: LoginResponseDto;
   let user2: LoginResponseDto;
   let userWithQuota: LoginResponseDto;
@@ -72,7 +73,7 @@ describe(`${AssetController.name} (e2e)`, () => {
     await testApp.reset();
 
     await api.authApi.adminSignUp(server);
-    const admin = await api.authApi.adminLogin(server);
+    admin = await api.authApi.adminLogin(server);
 
     await Promise.all([
       api.userApi.create(server, admin.accessToken, userDto.user1),
@@ -86,12 +87,7 @@ describe(`${AssetController.name} (e2e)`, () => {
       api.authApi.login(server, userDto.userWithQuota),
     ]);
 
-    const [user1Libraries, user2Libraries] = await Promise.all([
-      api.libraryApi.getAll(server, user1.accessToken),
-      api.libraryApi.getAll(server, user2.accessToken),
-    ]);
-
-    libraries = [...user1Libraries, ...user2Libraries];
+    libraries = await api.libraryApi.getAll(server, admin.accessToken);
   });
 
   beforeEach(async () => {
@@ -615,7 +611,7 @@ describe(`${AssetController.name} (e2e)`, () => {
 
     it("should not upload to another user's library", async () => {
       const content = randomBytes(32);
-      const [library] = await api.libraryApi.getAll(server, user2.accessToken);
+      const [library] = await api.libraryApi.getAll(server, admin.accessToken);
       await api.assetApi.upload(server, user1.accessToken, 'example-image', { content });
 
       const { body, status } = await request(server)

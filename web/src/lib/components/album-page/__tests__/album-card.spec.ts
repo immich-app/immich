@@ -1,14 +1,18 @@
 import { createObjectURLMock } from '$lib/__mocks__/jsdom-url.mock';
-import { api } from '$lib/api';
-import { ThumbnailFormat } from '@immich/sdk';
+import sdk, { ThumbnailFormat } from '@immich/sdk';
 import { albumFactory } from '@test-data';
 import '@testing-library/jest-dom';
 import { fireEvent, render, waitFor, type RenderResult } from '@testing-library/svelte';
 import type { MockedObject } from 'vitest';
 import AlbumCard from '../album-card.svelte';
 
-vi.mock('$lib/api');
-const apiMock: MockedObject<typeof api> = api as MockedObject<typeof api>;
+vi.mock('@immich/sdk', async (originalImport) => {
+  const module = await originalImport<typeof import('@immich/sdk')>();
+  const mock = { ...module, getAssetThumbnail: vi.fn() };
+  return { ...mock, default: mock };
+});
+
+const sdkMock: MockedObject<typeof sdk> = sdk as MockedObject<typeof sdk>;
 
 describe('AlbumCard component', () => {
   let sut: RenderResult<AlbumCard>;
@@ -48,7 +52,7 @@ describe('AlbumCard component', () => {
     await waitFor(() => expect(albumImgElement).toHaveAttribute('src'));
 
     expect(albumImgElement).toHaveAttribute('alt', album.id);
-    expect(apiMock.assetApi.getAssetThumbnail).not.toHaveBeenCalled();
+    expect(sdkMock.getAssetThumbnail).not.toHaveBeenCalled();
 
     expect(albumNameElement).toHaveTextContent(album.albumName);
     expect(albumDetailsElement).toHaveTextContent(new RegExp(detailsText));
@@ -57,17 +61,7 @@ describe('AlbumCard component', () => {
   it('shows album data and loads the thumbnail image when available', async () => {
     const thumbnailFile = new File([new Blob()], 'fileThumbnail');
     const thumbnailUrl = 'blob:thumbnailUrlOne';
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    //  @ts-ignore
-    // TODO: there needs to be a more robust mock of the @api to avoid mockResolvedValueOnce ts error
-    //       this is a workaround to make ts checks not fail but the test will pass as expected
-    apiMock.assetApi.getAssetThumbnail.mockResolvedValue({
-      data: thumbnailFile,
-      config: {},
-      headers: {},
-      status: 200,
-      statusText: '',
-    });
+    sdkMock.getAssetThumbnail.mockResolvedValue(thumbnailFile);
     createObjectURLMock.mockReturnValueOnce(thumbnailUrl);
 
     const album = albumFactory.build({
@@ -85,14 +79,11 @@ describe('AlbumCard component', () => {
     await waitFor(() => expect(albumImgElement).toHaveAttribute('src', thumbnailUrl));
 
     expect(albumImgElement).toHaveAttribute('alt', album.id);
-    expect(apiMock.assetApi.getAssetThumbnail).toHaveBeenCalledTimes(1);
-    expect(apiMock.assetApi.getAssetThumbnail).toHaveBeenCalledWith(
-      {
-        id: 'thumbnailIdOne',
-        format: ThumbnailFormat.Jpeg,
-      },
-      { responseType: 'blob' },
-    );
+    expect(sdkMock.getAssetThumbnail).toHaveBeenCalledTimes(1);
+    expect(sdkMock.getAssetThumbnail).toHaveBeenCalledWith({
+      id: 'thumbnailIdOne',
+      format: ThumbnailFormat.Jpeg,
+    });
     expect(createObjectURLMock).toHaveBeenCalledWith(thumbnailFile);
 
     expect(albumNameElement).toHaveTextContent('some album name');

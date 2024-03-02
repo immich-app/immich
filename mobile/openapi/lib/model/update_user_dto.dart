@@ -15,7 +15,6 @@ class UpdateUserDto {
   UpdateUserDto({
     this.avatarColor,
     this.email,
-    this.externalPath,
     required this.id,
     this.isAdmin,
     this.memoriesEnabled,
@@ -41,14 +40,6 @@ class UpdateUserDto {
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
   String? email;
-
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? externalPath;
 
   String id;
 
@@ -106,7 +97,6 @@ class UpdateUserDto {
   bool operator ==(Object other) => identical(this, other) || other is UpdateUserDto &&
     other.avatarColor == avatarColor &&
     other.email == email &&
-    other.externalPath == externalPath &&
     other.id == id &&
     other.isAdmin == isAdmin &&
     other.memoriesEnabled == memoriesEnabled &&
@@ -121,7 +111,6 @@ class UpdateUserDto {
     // ignore: unnecessary_parenthesis
     (avatarColor == null ? 0 : avatarColor!.hashCode) +
     (email == null ? 0 : email!.hashCode) +
-    (externalPath == null ? 0 : externalPath!.hashCode) +
     (id.hashCode) +
     (isAdmin == null ? 0 : isAdmin!.hashCode) +
     (memoriesEnabled == null ? 0 : memoriesEnabled!.hashCode) +
@@ -132,7 +121,7 @@ class UpdateUserDto {
     (storageLabel == null ? 0 : storageLabel!.hashCode);
 
   @override
-  String toString() => 'UpdateUserDto[avatarColor=$avatarColor, email=$email, externalPath=$externalPath, id=$id, isAdmin=$isAdmin, memoriesEnabled=$memoriesEnabled, name=$name, password=$password, quotaSizeInBytes=$quotaSizeInBytes, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel]';
+  String toString() => 'UpdateUserDto[avatarColor=$avatarColor, email=$email, id=$id, isAdmin=$isAdmin, memoriesEnabled=$memoriesEnabled, name=$name, password=$password, quotaSizeInBytes=$quotaSizeInBytes, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -145,11 +134,6 @@ class UpdateUserDto {
       json[r'email'] = this.email;
     } else {
     //  json[r'email'] = null;
-    }
-    if (this.externalPath != null) {
-      json[r'externalPath'] = this.externalPath;
-    } else {
-    //  json[r'externalPath'] = null;
     }
       json[r'id'] = this.id;
     if (this.isAdmin != null) {
@@ -200,7 +184,6 @@ class UpdateUserDto {
       return UpdateUserDto(
         avatarColor: UserAvatarColor.fromJson(json[r'avatarColor']),
         email: mapValueOfType<String>(json, r'email'),
-        externalPath: mapValueOfType<String>(json, r'externalPath'),
         id: mapValueOfType<String>(json, r'id')!,
         isAdmin: mapValueOfType<bool>(json, r'isAdmin'),
         memoriesEnabled: mapValueOfType<bool>(json, r'memoriesEnabled'),

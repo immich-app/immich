@@ -122,6 +122,9 @@ class BaseSearchDto {
 
   @QueryBoolean({ optional: true })
   isNotInAlbum?: boolean;
+
+  @Optional()
+  personIds?: string[];
 }
 
 export class MetadataSearchDto extends BaseSearchDto {
@@ -173,9 +176,6 @@ export class MetadataSearchDto extends BaseSearchDto {
   @Optional()
   @ApiProperty({ enumName: 'AssetOrder', enum: AssetOrder })
   order?: AssetOrder;
-
-  @Optional()
-  personIds?: string[];
 }
 
 export class SmartSearchDto extends BaseSearchDto {

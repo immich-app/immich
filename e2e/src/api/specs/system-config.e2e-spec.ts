@@ -18,9 +18,7 @@ describe('/system-config', () => {
 
   describe('GET /system-config/map/style.json', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).get(
-        '/system-config/map/style.json'
-      );
+      const { status, body } = await request(app).get('/system-config/map/style.json');
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
     });
@@ -32,11 +30,7 @@ describe('/system-config', () => {
           .query({ theme })
           .set('Authorization', `Bearer ${admin.accessToken}`);
         expect(status).toBe(400);
-        expect(body).toEqual(
-          errorDto.badRequest([
-            'theme must be one of the following values: light, dark',
-          ])
-        );
+        expect(body).toEqual(errorDto.badRequest(['theme must be one of the following values: light, dark']));
       }
     });
 

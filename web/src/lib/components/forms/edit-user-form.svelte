@@ -34,14 +34,13 @@
 
   const editUser = async () => {
     try {
-      const { id, email, name, storageLabel, externalPath } = user;
+      const { id, email, name, storageLabel } = user;
       await updateUser({
         updateUserDto: {
           id,
           email,
           name,
           storageLabel: storageLabel || '',
-          externalPath: externalPath || '',
           quotaSizeInBytes: quotaSize ? convertToBytes(Number(quotaSize), 'GiB') : null,
         },
       });
@@ -123,22 +122,6 @@
         <a href={AppRoute.ADMIN_JOBS} class="text-immich-primary dark:text-immich-dark-primary">
           Storage Migration Job</a
         >
-      </p>
-    </div>
-
-    <div class="m-4 flex flex-col gap-2">
-      <label class="immich-form-label" for="external-path">External Path</label>
-      <input
-        class="immich-form-input"
-        id="external-path"
-        name="external-path"
-        type="text"
-        bind:value={user.externalPath}
-      />
-
-      <p>
-        Note: Absolute path of parent import directory. A user can only import files if they exist at or under this
-        path.
       </p>
     </div>
 

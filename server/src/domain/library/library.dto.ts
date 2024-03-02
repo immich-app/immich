@@ -1,59 +1,62 @@
 import { LibraryEntity, LibraryType } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
-import { ArrayMaxSize, ArrayUnique, IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import { ValidateUUID } from '../domain.util';
+import { ArrayMaxSize, ArrayUnique, IsBoolean, IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import { Optional, ValidateUUID } from '../domain.util';
 
 export class CreateLibraryDto {
   @IsEnum(LibraryType)
   @ApiProperty({ enumName: 'LibraryType', enum: LibraryType })
   type!: LibraryType;
 
+  @ValidateUUID({ optional: true })
+  ownerId?: string;
+
   @IsString()
-  @IsOptional()
+  @Optional()
   @IsNotEmpty()
   name?: string;
 
-  @IsOptional()
+  @Optional()
   @IsBoolean()
   isVisible?: boolean;
 
-  @IsOptional()
+  @Optional()
   @IsString({ each: true })
   @IsNotEmpty({ each: true })
   @ArrayUnique()
   @ArrayMaxSize(128)
   importPaths?: string[];
 
-  @IsOptional()
+  @Optional()
   @IsString({ each: true })
   @IsNotEmpty({ each: true })
   @ArrayUnique()
   @ArrayMaxSize(128)
   exclusionPatterns?: string[];
 
-  @IsOptional()
+  @Optional()
   @IsBoolean()
   isWatched?: boolean;
 }
 
 export class UpdateLibraryDto {
-  @IsOptional()
+  @Optional()
   @IsString()
   @IsNotEmpty()
   name?: string;
 
-  @IsOptional()
+  @Optional()
   @IsBoolean()
   isVisible?: boolean;
 
-  @IsOptional()
+  @Optional()
   @IsString({ each: true })
   @IsNotEmpty({ each: true })
   @ArrayUnique()
   @ArrayMaxSize(128)
   importPaths?: string[];
 
-  @IsOptional()
+  @Optional()
   @IsNotEmpty({ each: true })
   @IsString({ each: true })
   @ArrayUnique()
@@ -68,14 +71,14 @@ export class CrawlOptionsDto {
 }
 
 export class ValidateLibraryDto {
-  @IsOptional()
+  @Optional()
   @IsString({ each: true })
   @IsNotEmpty({ each: true })
   @ArrayUnique()
   @ArrayMaxSize(128)
   importPaths?: string[];
 
-  @IsOptional()
+  @Optional()
   @IsNotEmpty({ each: true })
   @IsString({ each: true })
   @ArrayUnique()
@@ -100,12 +103,19 @@ export class LibrarySearchDto {
 
 export class ScanLibraryDto {
   @IsBoolean()
-  @IsOptional()
+  @Optional()
   refreshModifiedFiles?: boolean;
 
   @IsBoolean()
-  @IsOptional()
+  @Optional()
   refreshAllFiles?: boolean = false;
+}
+
+export class SearchLibraryDto {
+  @IsEnum(LibraryType)
+  @ApiProperty({ enumName: 'LibraryType', enum: LibraryType })
+  @Optional()
+  type?: LibraryType;
 }
 
 export class LibraryResponseDto {

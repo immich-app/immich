@@ -22,7 +22,6 @@
 
 <script lang="ts">
   import Button from '$lib/components/elements/buttons/button.svelte';
-  import { handleError } from '$lib/utils/handle-error';
   import { AssetTypeEnum, type SmartSearchDto, type MetadataSearchDto } from '@immich/sdk';
   import { createEventDispatcher } from 'svelte';
   import { fly } from 'svelte/transition';
@@ -83,14 +82,6 @@
   };
 
   const search = () => {
-    if (filter.context && filter.personIds.size > 0) {
-      handleError(
-        new Error('Context search does not support people filter'),
-        'Context search does not support people filter',
-      );
-      return;
-    }
-
     let type: AssetTypeEnum | undefined = undefined;
     if (filter.mediaType === MediaType.Image) {
       type = AssetTypeEnum.Image;

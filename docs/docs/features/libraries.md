@@ -88,10 +88,7 @@ Some basic examples:
 
 This feature - currently hidden in the config file - is considered experimental and for advanced users only. If enabled, it will allow automatic watching of the filesystem which means new assets are automatically imported to Immich without needing to rescan. Deleted assets are, as always, marked as offline and can be removed with the "Remove offline files" button.
 
-If your photos are on a network drive you will likely have to enable filesystem polling. The performance hit for polling large libraries is currently unknown, feel free to test this feature and report back. In addition to the boolean feature flag, the configuration file allows customization of the following parameters, please see the [chokidar documentation](https://github.com/paulmillr/chokidar?tab=readme-ov-file#performance) for reference.
-
-- `usePolling` (default: `false`).
-- `interval`. (default: 10000). When using polling, this is how often (in milliseconds) the filesystem is polled.
+If your photos are on a network drive, automatic file watching likely won't work. In that case, you will have to rely on a periodic library refresh to pull in your changes.
 
 ### Nightly job
 

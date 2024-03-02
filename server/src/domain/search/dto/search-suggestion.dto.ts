@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import { Optional } from '../../domain.util';
 
 export enum SearchSuggestionType {
   COUNTRY = 'country',
@@ -16,18 +17,18 @@ export class SearchSuggestionRequestDto {
   type!: SearchSuggestionType;
 
   @IsString()
-  @IsOptional()
+  @Optional()
   country?: string;
 
   @IsString()
-  @IsOptional()
+  @Optional()
   state?: string;
 
   @IsString()
-  @IsOptional()
+  @Optional()
   make?: string;
 
   @IsString()
-  @IsOptional()
+  @Optional()
   model?: string;
 }

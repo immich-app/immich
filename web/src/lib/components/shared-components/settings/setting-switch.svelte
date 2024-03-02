@@ -11,7 +11,7 @@
   export let isEdited = false;
 
   const dispatch = createEventDispatcher<{ toggle: boolean }>();
-  const onToggle = (event: Event) => dispatch('toggle', (event.target as HTMLInputElement).checked);
+  const onToggle = (ischecked: boolean) => dispatch('toggle', ischecked);
 </script>
 
 <div class="flex place-items-center justify-between">
@@ -34,5 +34,5 @@
     <slot />
   </div>
 
-  <Slider bind:checked {disabled} on:click={onToggle} />
+  <Slider bind:checked {disabled} on:toggle={({ detail }) => onToggle(detail)} />
 </div>

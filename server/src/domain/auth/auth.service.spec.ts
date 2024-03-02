@@ -15,6 +15,7 @@ import {
   newUserTokenRepositoryMock,
   sharedLinkStub,
   systemConfigStub,
+  userDto,
   userStub,
   userTokenStub,
 } from '@test';
@@ -62,14 +63,13 @@ describe('AuthService', () => {
   let userTokenMock: jest.Mocked<IUserTokenRepository>;
   let shareMock: jest.Mocked<ISharedLinkRepository>;
   let keyMock: jest.Mocked<IKeyRepository>;
-  let callbackMock: jest.Mock;
 
-  afterEach(() => {
-    jest.resetModules();
-  });
+  let callbackMock: jest.Mock;
+  let userinfoMock: jest.Mock;
 
   beforeEach(async () => {
     callbackMock = jest.fn().mockReturnValue({ access_token: 'access-token' });
+    userinfoMock = jest.fn().mockResolvedValue({ sub, email });
 
     jest.spyOn(generators, 'state').mockReturnValue('state');
     jest.spyOn(Issuer, 'discover').mockResolvedValue({
@@ -83,7 +83,7 @@ describe('AuthService', () => {
         authorizationUrl: jest.fn().mockReturnValue('http://authorization-url'),
         callbackParams: jest.fn().mockReturnValue({ state: 'state' }),
         callback: callbackMock,
-        userinfo: jest.fn().mockResolvedValue({ sub, email }),
+        userinfo: userinfoMock,
       }),
     } as any);
 
@@ -490,6 +490,74 @@ describe('AuthService', () => {
       await sut.callback({ url: `app.immich:///?code=abc123` }, loginDetails);
 
       expect(callbackMock).toHaveBeenCalledWith('http://mobile-redirect', { state: 'state' }, { state: 'state' });
+    });
+
+    it('should use the default quota', async () => {
+      configMock.load.mockResolvedValue(systemConfigStub.withDefaultStorageQuota);
+      userMock.getByEmail.mockResolvedValue(null);
+      userMock.getAdmin.mockResolvedValue(userStub.user1);
+      userMock.create.mockResolvedValue(userStub.user1);
+
+      await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).resolves.toEqual(
+        loginResponseStub.user1oauth,
+      );
+
+      expect(userMock.create).toHaveBeenCalledWith(userDto.userWithDefaultStorageQuota);
+    });
+
+    it('should ignore an invalid storage quota', async () => {
+      configMock.load.mockResolvedValue(systemConfigStub.withDefaultStorageQuota);
+      userMock.getByEmail.mockResolvedValue(null);
+      userMock.getAdmin.mockResolvedValue(userStub.user1);
+      userMock.create.mockResolvedValue(userStub.user1);
+      userinfoMock.mockResolvedValue({ sub, email, immich_quota: 'abc' });
+
+      await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).resolves.toEqual(
+        loginResponseStub.user1oauth,
+      );
+
+      expect(userMock.create).toHaveBeenCalledWith(userDto.userWithDefaultStorageQuota);
+    });
+    it('should ignore a negative quota', async () => {
+      configMock.load.mockResolvedValue(systemConfigStub.withDefaultStorageQuota);
+      userMock.getByEmail.mockResolvedValue(null);
+      userMock.getAdmin.mockResolvedValue(userStub.user1);
+      userMock.create.mockResolvedValue(userStub.user1);
+      userinfoMock.mockResolvedValue({ sub, email, immich_quota: -5 });
+
+      await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).resolves.toEqual(
+        loginResponseStub.user1oauth,
+      );
+
+      expect(userMock.create).toHaveBeenCalledWith(userDto.userWithDefaultStorageQuota);
+    });
+
+    it('should ignore a 0 quota', async () => {
+      configMock.load.mockResolvedValue(systemConfigStub.withDefaultStorageQuota);
+      userMock.getByEmail.mockResolvedValue(null);
+      userMock.getAdmin.mockResolvedValue(userStub.user1);
+      userMock.create.mockResolvedValue(userStub.user1);
+      userinfoMock.mockResolvedValue({ sub, email, immich_quota: 0 });
+
+      await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).resolves.toEqual(
+        loginResponseStub.user1oauth,
+      );
+
+      expect(userMock.create).toHaveBeenCalledWith(userDto.userWithDefaultStorageQuota);
+    });
+
+    it('should use a valid storage quota', async () => {
+      configMock.load.mockResolvedValue(systemConfigStub.withDefaultStorageQuota);
+      userMock.getByEmail.mockResolvedValue(null);
+      userMock.getAdmin.mockResolvedValue(userStub.user1);
+      userMock.create.mockResolvedValue(userStub.user1);
+      userinfoMock.mockResolvedValue({ sub, email, immich_quota: 5 });
+
+      await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).resolves.toEqual(
+        loginResponseStub.user1oauth,
+      );
+
+      expect(userMock.create).toHaveBeenCalledWith(userDto.userWithStorageQuotaClaim);
     });
   });
 

@@ -35,7 +35,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          submodules: "recursive"
+          submodules: 'recursive'
 
       - name: Run e2e tests
         run: make server-e2e-jobs
@@ -184,7 +184,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          submodules: "recursive"
+          submodules: 'recursive'
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -194,25 +194,40 @@ jobs:
       - name: Run setup typescript-sdk
         run: npm ci && npm run build
         working-directory: ./open-api/typescript-sdk
+        if: ${{ !cancelled() }}
 
       - name: Run setup cli
         run: npm ci && npm run build
         working-directory: ./cli
+        if: ${{ !cancelled() }}
 
       - name: Install dependencies
         run: npm ci
+        if: ${{ !cancelled() }}
+
+      - name: Run linter
+        run: npm run lint
+        if: ${{ !cancelled() }}
+
+      - name: Run formatter
+        run: npm run format
+        if: ${{ !cancelled() }}
 
       - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
+        run: npx playwright install --with-deps chromium
+        if: ${{ !cancelled() }}
 
       - name: Docker build
         run: docker compose build
+        if: ${{ !cancelled() }}
 
       - name: Run e2e tests (api & cli)
         run: npm run test
+        if: ${{ !cancelled() }}
 
       - name: Run e2e tests (web)
         run: npx playwright test
+        if: ${{ !cancelled() }}
 
   mobile-unit-tests:
     name: Mobile
@@ -222,8 +237,8 @@ jobs:
       - name: Setup Flutter SDK
         uses: subosito/flutter-action@v2
         with:
-          channel: "stable"
-          flutter-version: "3.16.9"
+          channel: 'stable'
+          flutter-version: '3.16.9'
       - name: Run tests
         working-directory: ./mobile
         run: flutter test -j 1
@@ -241,7 +256,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: 3.11
-          cache: "poetry"
+          cache: 'poetry'
       - name: Install dependencies
         run: |
           poetry install --with dev --with cpu
@@ -279,7 +294,7 @@ jobs:
       - name: Run API generation
         run: make open-api
       - name: Find file changes
-        uses: tj-actions/verify-changed-files@v18
+        uses: tj-actions/verify-changed-files@v19
         id: verify-changed-files
         with:
           files: |
@@ -334,7 +349,7 @@ jobs:
         run: npm run typeorm:migrations:generate ./src/infra/migrations/TestMigration
 
       - name: Find file changes
-        uses: tj-actions/verify-changed-files@v18
+        uses: tj-actions/verify-changed-files@v19
         id: verify-changed-files
         with:
           files: |
@@ -352,7 +367,7 @@ jobs:
           DB_URL: postgres://postgres:postgres@localhost:5432/immich
 
       - name: Find file changes
-        uses: tj-actions/verify-changed-files@v18
+        uses: tj-actions/verify-changed-files@v19
         id: verify-changed-sql-files
         with:
           files: |
