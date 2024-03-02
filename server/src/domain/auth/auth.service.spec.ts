@@ -15,7 +15,6 @@ import {
   newUserTokenRepositoryMock,
   sharedLinkStub,
   systemConfigStub,
-  userDto,
   userStub,
   userTokenStub,
 } from '@test';
@@ -51,6 +50,14 @@ const fixtures = {
     email,
     password: 'password',
   },
+};
+
+const oauthUserWithDefaultQuota = {
+  email: email,
+  name: ' ',
+  oauthId: sub,
+  quotaSizeInBytes: 1_073_741_824,
+  storageLabel: null,
 };
 
 describe('AuthService', () => {
@@ -502,7 +509,7 @@ describe('AuthService', () => {
         loginResponseStub.user1oauth,
       );
 
-      expect(userMock.create).toHaveBeenCalledWith(userDto.userWithDefaultStorageQuota);
+      expect(userMock.create).toHaveBeenCalledWith(oauthUserWithDefaultQuota);
     });
 
     it('should ignore an invalid storage quota', async () => {
@@ -516,8 +523,9 @@ describe('AuthService', () => {
         loginResponseStub.user1oauth,
       );
 
-      expect(userMock.create).toHaveBeenCalledWith(userDto.userWithDefaultStorageQuota);
+      expect(userMock.create).toHaveBeenCalledWith(oauthUserWithDefaultQuota);
     });
+
     it('should ignore a negative quota', async () => {
       configMock.load.mockResolvedValue(systemConfigStub.withDefaultStorageQuota);
       userMock.getByEmail.mockResolvedValue(null);
@@ -529,10 +537,10 @@ describe('AuthService', () => {
         loginResponseStub.user1oauth,
       );
 
-      expect(userMock.create).toHaveBeenCalledWith(userDto.userWithDefaultStorageQuota);
+      expect(userMock.create).toHaveBeenCalledWith(oauthUserWithDefaultQuota);
     });
 
-    it('should ignore a 0 quota', async () => {
+    it('should not set quota for 0 quota', async () => {
       configMock.load.mockResolvedValue(systemConfigStub.withDefaultStorageQuota);
       userMock.getByEmail.mockResolvedValue(null);
       userMock.getAdmin.mockResolvedValue(userStub.user1);
@@ -543,7 +551,13 @@ describe('AuthService', () => {
         loginResponseStub.user1oauth,
       );
 
-      expect(userMock.create).toHaveBeenCalledWith(userDto.userWithDefaultStorageQuota);
+      expect(userMock.create).toHaveBeenCalledWith({
+        email: email,
+        name: ' ',
+        oauthId: sub,
+        quotaSizeInBytes: null,
+        storageLabel: null,
+      });
     });
 
     it('should use a valid storage quota', async () => {
@@ -557,7 +571,13 @@ describe('AuthService', () => {
         loginResponseStub.user1oauth,
       );
 
-      expect(userMock.create).toHaveBeenCalledWith(userDto.userWithStorageQuotaClaim);
+      expect(userMock.create).toHaveBeenCalledWith({
+        email: email,
+        name: ' ',
+        oauthId: sub,
+        quotaSizeInBytes: 5_368_709_120,
+        storageLabel: null,
+      });
     });
   });
 
