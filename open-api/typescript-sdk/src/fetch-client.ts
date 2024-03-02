@@ -877,6 +877,7 @@ export type SystemConfigOAuthDto = {
     buttonText: string;
     clientId: string;
     clientSecret: string;
+    defaultStorageQuota: number;
     enabled: boolean;
     issuerUrl: string;
     mobileOverrideEnabled: boolean;
@@ -884,6 +885,7 @@ export type SystemConfigOAuthDto = {
     scope: string;
     signingAlgorithm: string;
     storageLabelClaim: string;
+    storageQuotaClaim: string;
 };
 export type SystemConfigPasswordLoginDto = {
     enabled: boolean;
