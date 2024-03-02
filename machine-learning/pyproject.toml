@@ -59,6 +59,14 @@ optional = true
 [tool.poetry.group.armnn.dependencies]
 onnxruntime = "^1.15.0"
 
+[tool.poetry.group.cuda12.dependencies]
+onnxruntime-gpu = {version = "^1.17.0", source = "cuda12"}
+
+[[tool.poetry.source]]
+name = "cuda12"
+url = "https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/"
+priority = "supplemental"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
