@@ -328,12 +328,6 @@
     }
   };
 
-  const handleRemoveAssets = (assetIds: string[]) => {
-    for (const assetId of assetIds) {
-      assetStore.removeAsset(assetId);
-    }
-  };
-
   const handleCloseSelectAssets = () => {
     viewMode = ViewMode.VIEW;
     timelineInteractionStore.clearMultiselect();
@@ -434,10 +428,10 @@
           {/if}
           <DownloadAction menuItem filename="{album.albumName}.zip" />
           {#if isOwned || isAllUserOwned}
-            <RemoveFromAlbum menuItem bind:album onRemove={(assetIds) => handleRemoveAssets(assetIds)} />
+            <RemoveFromAlbum menuItem bind:album onRemove={(assetIds) => assetStore.removeAssets(assetIds)} />
           {/if}
           {#if isAllUserOwned}
-            <DeleteAssets menuItem onAssetDelete={(assetId) => assetStore.removeAsset(assetId)} />
+            <DeleteAssets menuItem onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)} />
             <ChangeDate menuItem />
             <ChangeLocation menuItem />
           {/if}
