@@ -1,9 +1,4 @@
-import {
-  deleteAssets,
-  getAuditFiles,
-  updateAsset,
-  type LoginResponseDto,
-} from '@immich/sdk';
+import { deleteAssets, getAuditFiles, updateAsset, type LoginResponseDto } from '@immich/sdk';
 import { apiUtils, asBearerAuth, dbUtils, fileUtils } from 'src/utils';
 import { beforeAll, describe, expect, it } from 'vitest';
 
@@ -20,23 +15,20 @@ describe('/audit', () => {
 
   describe('GET :/file-report', () => {
     it('excludes assets without issues from report', async () => {
-      const [trashedAsset, archivedAsset, _] = await Promise.all([
+      const [trashedAsset, archivedAsset] = await Promise.all([
         apiUtils.createAsset(admin.accessToken),
         apiUtils.createAsset(admin.accessToken),
         apiUtils.createAsset(admin.accessToken),
       ]);
 
       await Promise.all([
-        deleteAssets(
-          { assetBulkDeleteDto: { ids: [trashedAsset.id] } },
-          { headers: asBearerAuth(admin.accessToken) }
-        ),
+        deleteAssets({ assetBulkDeleteDto: { ids: [trashedAsset.id] } }, { headers: asBearerAuth(admin.accessToken) }),
         updateAsset(
           {
             id: archivedAsset.id,
             updateAssetDto: { isArchived: true },
           },
-          { headers: asBearerAuth(admin.accessToken) }
+          { headers: asBearerAuth(admin.accessToken) },
         ),
       ]);
 

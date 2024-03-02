@@ -1,22 +1,13 @@
 <script lang="ts">
-  import { api } from '$lib/api';
-  import { getKey } from '$lib/utils';
-  import { type AssetResponseDto } from '@immich/sdk';
+  import { serveFile, type AssetResponseDto } from '@immich/sdk';
   import { fade } from 'svelte/transition';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
 
   export let asset: AssetResponseDto;
 
   const loadAssetData = async () => {
-    const { data } = await api.assetApi.serveFile(
-      { id: asset.id, isThumb: false, isWeb: false, key: getKey() },
-      { responseType: 'blob' },
-    );
-    if (data instanceof Blob) {
-      return URL.createObjectURL(data);
-    } else {
-      throw new TypeError('Invalid data format');
-    }
+    const data = await serveFile({ id: asset.id, isWeb: false, isThumb: false });
+    return URL.createObjectURL(data);
   };
 </script>
 

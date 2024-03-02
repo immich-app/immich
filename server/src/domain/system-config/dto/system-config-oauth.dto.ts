@@ -1,4 +1,4 @@
-import { IsBoolean, IsNotEmpty, IsString, IsUrl, ValidateIf } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsNumber, IsString, IsUrl, Min, ValidateIf } from 'class-validator';
 
 const isEnabled = (config: SystemConfigOAuthDto) => config.enabled;
 const isOverrideEnabled = (config: SystemConfigOAuthDto) => config.mobileOverrideEnabled;
@@ -22,6 +22,10 @@ export class SystemConfigOAuthDto {
   @IsNotEmpty()
   @IsString()
   clientSecret!: string;
+
+  @IsNumber()
+  @Min(0)
+  defaultStorageQuota!: number;
 
   @IsBoolean()
   enabled!: boolean;
@@ -47,4 +51,7 @@ export class SystemConfigOAuthDto {
 
   @IsString()
   storageLabelClaim!: string;
+
+  @IsString()
+  storageQuotaClaim!: string;
 }

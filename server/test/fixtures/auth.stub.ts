@@ -52,7 +52,6 @@ export const authStub = {
       id: 'user-id',
       email: 'immich@test.com',
       isAdmin: false,
-      externalPath: '/data/user1',
     } as UserEntity,
     userToken: {
       id: 'token-id',

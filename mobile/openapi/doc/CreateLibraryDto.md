@@ -13,6 +13,7 @@ Name | Type | Description | Notes
 **isVisible** | **bool** |  | [optional] 
 **isWatched** | **bool** |  | [optional] 
 **name** | **String** |  | [optional] 
+**ownerId** | **String** |  | [optional] 
 **type** | [**LibraryType**](LibraryType.md) |  | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

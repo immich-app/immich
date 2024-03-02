@@ -12,7 +12,6 @@ Name | Type | Description | Notes
 **createdAt** | [**DateTime**](DateTime.md) |  | 
 **deletedAt** | [**DateTime**](DateTime.md) |  | 
 **email** | **String** |  | 
-**externalPath** | **String** |  | 
 **id** | **String** |  | 
 **isAdmin** | **bool** |  | 
 **memoriesEnabled** | **bool** |  | [optional] 

@@ -111,6 +111,11 @@ void main() {
       // TODO
     });
 
+    // List<String> personIds (default value: const [])
+    test('to test the property `personIds`', () async {
+      // TODO
+    });
+
     // String query
     test('to test the property `query`', () async {
       // TODO

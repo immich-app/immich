@@ -65,9 +65,7 @@ describe('/activity', () => {
     });
 
     it('should return only visible people', async () => {
-      const { status, body } = await request(app)
-        .get('/person')
-        .set('Authorization', `Bearer ${admin.accessToken}`);
+      const { status, body } = await request(app).get('/person').set('Authorization', `Bearer ${admin.accessToken}`);
 
       expect(status).toBe(200);
       expect(body).toEqual({
@@ -80,9 +78,7 @@ describe('/activity', () => {
 
   describe('GET /person/:id', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).get(
-        `/person/${uuidDto.notFound}`
-      );
+      const { status, body } = await request(app).get(`/person/${uuidDto.notFound}`);
 
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
@@ -109,9 +105,7 @@ describe('/activity', () => {
 
   describe('PUT /person/:id', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).put(
-        `/person/${uuidDto.notFound}`
-      );
+      const { status, body } = await request(app).put(`/person/${uuidDto.notFound}`);
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
     });
@@ -139,7 +133,7 @@ describe('/activity', () => {
           birthDate: '123567',
           response: 'Not found or no person.write access',
         },
-        { birthDate: 123567, response: 'Not found or no person.write access' },
+        { birthDate: 123_567, response: 'Not found or no person.write access' },
       ]) {
         const { status, body } = await request(app)
           .put(`/person/${uuidDto.notFound}`)

@@ -1,12 +1,9 @@
 import { validateCronExpression } from '@app/domain';
-import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsBoolean,
-  IsInt,
   IsNotEmpty,
   IsObject,
-  IsPositive,
   IsString,
   Validate,
   ValidateIf,
@@ -38,14 +35,6 @@ export class SystemConfigLibraryScanDto {
 export class SystemConfigLibraryWatchDto {
   @IsBoolean()
   enabled!: boolean;
-
-  @IsBoolean()
-  usePolling!: boolean;
-
-  @IsInt()
-  @IsPositive()
-  @ApiProperty({ type: 'integer' })
-  interval!: number;
 }
 
 export class SystemConfigLibraryDto {

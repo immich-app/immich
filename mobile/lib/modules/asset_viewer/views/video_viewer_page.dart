@@ -45,7 +45,7 @@ class VideoViewerPage extends HookWidget {
       // If the video is a motion picture, the controls are hidden and the video should play through automatically
       // If it's not a motion picture, use the autoPlayVideo parameter to determine if the video should play through automatically
       autoPlay: isMotionVideo || autoPlayVideo,
-      placeholder: SizedBox.expand(child: placeholder),
+      placeholder: placeholder,
       showControls: showControls && !isMotionVideo,
       hideControlsTimer: hideControlsTimer,
       // Don't hide the controls if autoplay is disabled
@@ -65,9 +65,13 @@ class VideoViewerPage extends HookWidget {
             if (controller == null) {
               return Stack(
                 children: [
-                  if (placeholder != null) SizedBox.expand(child: placeholder!),
-                  const DelayedLoadingIndicator(
-                    fadeInDuration: Duration(milliseconds: 500),
+                  if (placeholder != null) placeholder!,
+                  const Positioned.fill(
+                    child: Center(
+                      child: DelayedLoadingIndicator(
+                        fadeInDuration: Duration(milliseconds: 500),
+                      ),
+                    ),
                   ),
                 ],
               );

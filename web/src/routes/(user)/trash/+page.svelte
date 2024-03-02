@@ -15,7 +15,6 @@
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
-  import UpdatePanel from '$lib/components/shared-components/update-panel.svelte';
   import { AppRoute } from '$lib/constants';
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { AssetStore } from '$lib/stores/assets.store';
@@ -66,8 +65,8 @@
 {#if $isMultiSelectState}
   <AssetSelectControlBar assets={$selectedAssets} clearSelect={() => assetInteractionStore.clearMultiselect()}>
     <SelectAllAssets {assetStore} {assetInteractionStore} />
-    <DeleteAssets force onAssetDelete={(assetId) => assetStore.removeAsset(assetId)} />
-    <RestoreAssets onRestore={(ids) => assetStore.removeAssets(ids)} />
+    <DeleteAssets force onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)} />
+    <RestoreAssets onRestore={(assetIds) => assetStore.removeAssets(assetIds)} />
   </AssetSelectControlBar>
 {/if}
 
@@ -115,4 +114,3 @@
     </svelte:fragment>
   </ConfirmDialogue>
 {/if}
-<UpdatePanel {assetStore} />

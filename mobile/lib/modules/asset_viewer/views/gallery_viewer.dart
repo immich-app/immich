@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 import 'dart:ui' as ui;
@@ -135,7 +136,7 @@ class GalleryViewerPage extends HookConsumerWidget {
     void toggleFavorite(Asset asset) =>
         ref.read(assetProvider.notifier).toggleFavorite([asset]);
 
-    void precacheNextImage(int index) {
+    Future<void> precacheNextImage(int index) async {
       void onError(Object exception, StackTrace? stackTrace) {
         // swallow error silently
         debugPrint('Error precaching next image: $exception, $stackTrace');
@@ -143,7 +144,7 @@ class GalleryViewerPage extends HookConsumerWidget {
 
       if (index < totalAssets && index >= 0) {
         final asset = loadAsset(index);
-        precacheImage(
+        await precacheImage(
           ImmichImage.imageProvider(asset: asset),
           context,
           onError: onError,
@@ -714,6 +715,21 @@ class GalleryViewerPage extends HookConsumerWidget {
       [],
     );
 
+    useEffect(
+      () {
+        // No need to await this
+        unawaited(
+          // Delay this a bit so we can finish loading the page
+          Future.delayed(const Duration(milliseconds: 400)).then(
+            // Precache the next image
+            (_) => precacheNextImage(currentIndex.value + 1),
+          ),
+        );
+        return null;
+      },
+      [],
+    );
+
     ref.listen(showControlsProvider, (_, show) {
       if (show) {
         SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
@@ -738,14 +754,21 @@ class GalleryViewerPage extends HookConsumerWidget {
                 isZoomed.value = state != PhotoViewScaleState.initial;
                 ref.read(showControlsProvider.notifier).show = !isZoomed.value;
               },
-              loadingBuilder: (context, event, index) => ImageFiltered(
-                imageFilter: ui.ImageFilter.blur(
-                  sigmaX: 1,
-                  sigmaY: 1,
-                ),
-                child: ImmichThumbnail(
-                  asset: asset(),
-                  fit: BoxFit.contain,
+              loadingBuilder: (context, event, index) => ClipRect(
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    BackdropFilter(
+                      filter: ui.ImageFilter.blur(
+                        sigmaX: 10,
+                        sigmaY: 10,
+                      ),
+                    ),
+                    ImmichThumbnail(
+                      asset: asset(),
+                      fit: BoxFit.contain,
+                    ),
+                  ],
                 ),
               ),
               pageController: controller,
@@ -757,12 +780,16 @@ class GalleryViewerPage extends HookConsumerWidget {
                   ),
               itemCount: totalAssets,
               scrollDirection: Axis.horizontal,
-              onPageChanged: (value) {
+              onPageChanged: (value) async {
                 final next = currentIndex.value < value ? value + 1 : value - 1;
-                precacheNextImage(next);
+                HapticFeedback.selectionClick();
                 currentIndex.value = value;
                 stackIndex.value = -1;
-                HapticFeedback.selectionClick();
+
+                // Wait for page change animation to finish
+                await Future.delayed(const Duration(milliseconds: 400));
+                // Then precache the next image
+                unawaited(precacheNextImage(next));
               },
               builder: (context, index) {
                 final a =
@@ -821,7 +848,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                       isMotionVideo: isPlayingMotionVideo.value,
                       placeholder: Image(
                         image: provider,
-                        fit: BoxFit.fitWidth,
+                        fit: BoxFit.contain,
                         height: context.height,
                         width: context.width,
                         alignment: Alignment.center,

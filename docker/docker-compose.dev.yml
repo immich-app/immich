@@ -2,7 +2,7 @@
 # - https://immich.app/docs/developer/setup
 # - https://immich.app/docs/developer/troubleshooting
 
-version: "3.8"
+version: '3.8'
 
 name: immich-dev
 
@@ -30,7 +30,7 @@ x-server-build: &server-common
 services:
   immich-server:
     container_name: immich_server
-    command: [ "/usr/src/app/bin/immich-dev", "immich" ]
+    command: ['/usr/src/app/bin/immich-dev', 'immich']
     <<: *server-common
     ports:
       - 3001:3001
@@ -41,7 +41,7 @@ services:
 
   immich-microservices:
     container_name: immich_microservices
-    command: [ "/usr/src/app/bin/immich-dev", "microservices" ]
+    command: ['/usr/src/app/bin/immich-dev', 'microservices']
     <<: *server-common
     # extends:
     #   file: hwaccel.transcoding.yml
@@ -57,7 +57,7 @@ services:
     image: immich-web-dev:latest
     build:
       context: ../web
-    command: [ "/usr/src/app/bin/immich-web" ]
+    command: ['/usr/src/app/bin/immich-web']
     env_file:
       - .env
     ports:

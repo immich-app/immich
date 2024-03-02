@@ -1,18 +1,17 @@
 import {
   AlbumResponseDto,
-  AssetResponseDto,
+  AssetFileUploadResponseDto,
   LoginResponseDto,
   SharedLinkResponseDto,
   SharedLinkType,
   createAlbum,
-  createSharedLink,
 } from '@immich/sdk';
 import { test } from '@playwright/test';
 import { apiUtils, asBearerAuth, dbUtils } from 'src/utils';
 
 test.describe('Shared Links', () => {
   let admin: LoginResponseDto;
-  let asset: AssetResponseDto;
+  let asset: AssetFileUploadResponseDto;
   let album: AlbumResponseDto;
   let sharedLink: SharedLinkResponseDto;
   let sharedLinkPassword: SharedLinkResponseDto;
@@ -29,7 +28,7 @@ test.describe('Shared Links', () => {
           assetIds: [asset.id],
         },
       },
-      { headers: asBearerAuth(admin.accessToken) }
+      { headers: asBearerAuth(admin.accessToken) },
     );
     sharedLink = await apiUtils.createSharedLink(admin.accessToken, {
       type: SharedLinkType.Album,
@@ -53,7 +52,7 @@ test.describe('Shared Links', () => {
     await page.waitForSelector('#asset-group-by-date svg');
     await page.getByRole('checkbox').click();
     await page.getByRole('button', { name: 'Download' }).click();
-    await page.getByText('DOWNLOADING').waitFor();
+    await page.getByText('DOWNLOADING', { exact: true }).waitFor();
   });
 
   test('enter password for a shared link', async ({ page }) => {
