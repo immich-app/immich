@@ -179,7 +179,6 @@ export class PersonRepository implements IPersonRepository {
       .andWhere('asset.deletedAt IS NULL')
       .andWhere('asset.livePhotoVideoId IS NULL')
       .select('COUNT(DISTINCT(asset.id))', 'count')
-      .distinct(true)
       .getRawOne();
     return {
       assets: items.count ?? 0,

@@ -224,7 +224,7 @@ LIMIT
   20
 
 -- PersonRepository.getStatistics
-SELECT DISTINCT
+SELECT
   COUNT(DISTINCT ("asset"."id")) AS "count"
 FROM
   "asset_faces" "face"
