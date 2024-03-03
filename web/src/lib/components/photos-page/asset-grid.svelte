@@ -14,7 +14,6 @@
   import type { AlbumResponseDto, AssetResponseDto } from '@immich/sdk';
   import { DateTime } from 'luxon';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
-  import AssetViewer from '../asset-viewer/asset-viewer.svelte';
   import IntersectionObserver from '../asset-viewer/intersection-observer.svelte';
   import Portal from '../shared-components/portal/portal.svelte';
   import Scrollbar from '../shared-components/scrollbar/scrollbar.svelte';
@@ -22,7 +21,6 @@
   import AssetDateGroup from './asset-date-group.svelte';
   import DeleteAssetDialog from './delete-asset-dialog.svelte';
   import { handlePromiseError } from '$lib/utils';
-
   export let isSelectionMode = false;
   export let singleSelect = false;
   export let assetStore: AssetStore;
@@ -306,7 +304,7 @@
       // Select/deselect assets in all intermediate buckets
       for (let bucketIndex = startBucketIndex + 1; bucketIndex < endBucketIndex; bucketIndex++) {
         const bucket = $assetStore.buckets[bucketIndex];
-        await assetStore.loadBucket(bucket.bucketDate, BucketPosition.Unknown);
+        await assetStore.loadBucket(bucket.date, BucketPosition.Unknown);
         for (const asset of bucket.assets) {
           if (deselect) {
             assetInteractionStore.removeAssetFromMultiselectGroup(asset);
@@ -321,9 +319,7 @@
         const bucket = $assetStore.buckets[bucketIndex];
 
         // Split bucket into date groups and check each group
-        const assetsGroupByDate = splitBucketIntoDateGroups(bucket.assets, $locale);
-
-        for (const dateGroup of assetsGroupByDate) {
+        for (const dateGroup of bucket.dateGroups.values()) {
           const dateGroupTitle = formatGroupTitle(DateTime.fromISO(dateGroup[0].fileCreatedAt).startOf('day'));
           if (dateGroup.every((a) => $selectedAssets.has(a))) {
             assetInteractionStore.addGroupToMultiselectGroup(dateGroupTitle);
@@ -414,7 +410,7 @@
       <slot name="empty" />
     {/if}
     <section id="virtual-timeline" style:height={$assetStore.timelineHeight + 'px'}>
-      {#each $assetStore.buckets as bucket (bucket.bucketDate)}
+      {#each $assetStore.buckets as bucket (bucket.date)}
         <IntersectionObserver
           on:intersected={intersectedHandler}
           on:hidden={() => assetStore.cancelBucket(bucket)}
@@ -423,7 +419,7 @@
           bottom={750}
           root={element}
         >
-          <div id={'bucket_' + bucket.bucketDate} style:height={bucket.bucketHeight + 'px'}>
+          <div id={'bucket_' + bucket.date} style:height={bucket.height + 'px'}>
             {#if intersecting}
               <AssetDateGroup
                 {withStacked}
@@ -436,9 +432,7 @@
                 on:shift={handleScrollTimeline}
                 on:selectAssetCandidates={({ detail: asset }) => handleSelectAssetCandidates(asset)}
                 on:selectAssets={({ detail: asset }) => handleSelectAssets(asset)}
-                assets={bucket.assets}
-                bucketDate={bucket.bucketDate}
-                bucketHeight={bucket.bucketHeight}
+                {bucket}
                 {viewport}
               />
             {/if}
@@ -451,17 +445,19 @@
 
 <Portal target="body">
   {#if $showAssetViewer}
-    <AssetViewer
-      {withStacked}
-      {assetStore}
-      asset={$viewingAsset}
-      {isShared}
-      {album}
-      on:previous={handlePrevious}
-      on:next={handleNext}
-      on:close={handleClose}
-      on:action={({ detail: action }) => handleAction(action.type, action.asset)}
-    />
+    {#await import('../asset-viewer/asset-viewer.svelte') then AssetViewer}
+      <AssetViewer.default
+        {withStacked}
+        {assetStore}
+        asset={$viewingAsset}
+        {isShared}
+        {album}
+        on:previous={handlePrevious}
+        on:next={handleNext}
+        on:close={handleClose}
+        on:action={({ detail: action }) => handleAction(action.type, action.asset)}
+      />
+    {/await}
   {/if}
 </Portal>
 

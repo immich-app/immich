@@ -2,15 +2,9 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import type { AssetStore, Viewport } from '$lib/stores/assets.store';
-  import { locale } from '$lib/stores/preferences.store';
+  import type { AssetBucket, AssetStore, Viewport } from '$lib/stores/assets.store';
   import { getAssetRatio } from '$lib/utils/asset-utils';
-  import {
-    calculateWidth,
-    formatGroupTitle,
-    fromLocalDateTime,
-    splitBucketIntoDateGroups,
-  } from '$lib/utils/timeline-util';
+  import { calculateWidth, formatGroupTitle, fromLocalDateTime } from '$lib/utils/timeline-util';
   import type { AssetResponseDto } from '@immich/sdk';
   import { mdiCheckCircle, mdiCircleOutline } from '@mdi/js';
   import justifiedLayout from 'justified-layout';
@@ -18,9 +12,7 @@
   import { fly } from 'svelte/transition';
   import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
 
-  export let assets: AssetResponseDto[];
-  export let bucketDate: string;
-  export let bucketHeight: number;
+  export let bucket: AssetBucket;
   export let isSelectionMode = false;
   export let viewport: Viewport;
   export let singleSelect = false;
@@ -42,7 +34,7 @@
   let actualBucketHeight: number;
   let hoveredDateGroup = '';
 
-  $: assetsGroupByDate = splitBucketIntoDateGroups(assets, $locale);
+  $: assetsGroupByDate = [...bucket.dateGroups.values()];
 
   $: geometry = (() => {
     const geometry = [];
@@ -66,8 +58,8 @@
   })();
 
   $: {
-    if (actualBucketHeight && actualBucketHeight !== 0 && actualBucketHeight != bucketHeight) {
-      const heightDelta = assetStore.updateBucket(bucketDate, actualBucketHeight);
+    if (actualBucketHeight && actualBucketHeight !== 0 && actualBucketHeight != bucket.height) {
+      const heightDelta = assetStore.updateBucket(bucket.date, actualBucketHeight);
       if (heightDelta !== 0) {
         scrollTimeline(heightDelta);
       }
@@ -120,7 +112,7 @@
 </script>
 
 <section id="asset-group-by-date" class="flex flex-wrap gap-x-12" bind:clientHeight={actualBucketHeight}>
-  {#each assetsGroupByDate as groupAssets, groupIndex (groupAssets[0].id)}
+  {#each assetsGroupByDate.values() as groupAssets, groupIndex (groupAssets[0].id)}
     {@const asset = groupAssets[0]}
     {@const groupTitle = formatGroupTitle(fromLocalDateTime(asset.localDateTime).startOf('day'))}
     <!-- Asset Group By Date -->
@@ -162,34 +154,36 @@
         </span>
       </p>
 
-      <!-- Image grid -->
-      <div
-        class="relative"
-        style="height: {geometry[groupIndex].containerHeight}px;width: {geometry[groupIndex].containerWidth}px"
-      >
-        {#each groupAssets as asset, index (asset.id)}
-          {@const box = geometry[groupIndex].boxes[index]}
-          <div
-            class="absolute"
-            style="width: {box.width}px; height: {box.height}px; top: {box.top}px; left: {box.left}px"
-          >
-            <Thumbnail
-              showStackedIcon={withStacked}
-              {showArchiveIcon}
-              {asset}
-              {groupIndex}
-              on:click={() => assetClickHandler(asset, groupAssets, groupTitle)}
-              on:select={() => assetSelectHandler(asset, groupAssets, groupTitle)}
-              on:mouse-event={() => assetMouseEventHandler(groupTitle, asset)}
-              selected={$selectedAssets.has(asset) || $assetStore.albumAssets.has(asset.id)}
-              selectionCandidate={$assetSelectionCandidates.has(asset)}
-              disabled={$assetStore.albumAssets.has(asset.id)}
-              thumbnailWidth={box.width}
-              thumbnailHeight={box.height}
-            />
-          </div>
-        {/each}
-      </div>
+      {#if groupAssets.length > 0}
+        <!-- Image grid -->
+        <div
+          class="relative"
+          style="height: {geometry[groupIndex].containerHeight}px;width: {geometry[groupIndex].containerWidth}px"
+        >
+          {#each groupAssets as asset, index (asset.id)}
+            {@const box = geometry[groupIndex].boxes[index]}
+            <div
+              class="absolute"
+              style="width: {box.width}px; height: {box.height}px; top: {box.top}px; left: {box.left}px"
+            >
+              <Thumbnail
+                showStackedIcon={withStacked}
+                {showArchiveIcon}
+                {asset}
+                {groupIndex}
+                on:click={() => assetClickHandler(asset, groupAssets, groupTitle)}
+                on:select={() => assetSelectHandler(asset, groupAssets, groupTitle)}
+                on:mouse-event={() => assetMouseEventHandler(groupTitle, asset)}
+                selected={$selectedAssets.has(asset) || $assetStore.albumAssets.has(asset.id)}
+                selectionCandidate={$assetSelectionCandidates.has(asset)}
+                disabled={$assetStore.albumAssets.has(asset.id)}
+                thumbnailWidth={box.width}
+                thumbnailHeight={box.height}
+              />
+            </div>
+          {/each}
+        </div>
+      {/if}
     </div>
   {/each}
 </section>

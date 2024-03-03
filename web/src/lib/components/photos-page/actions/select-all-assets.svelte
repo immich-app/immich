@@ -21,7 +21,7 @@
         if ($isSelectAllCancelled) {
           break;
         }
-        await assetStore.loadBucket(bucket.bucketDate, BucketPosition.Unknown);
+        await assetStore.loadBucket(bucket.date, BucketPosition.Unknown);
         for (const asset of bucket.assets) {
           assetInteractionStore.selectAsset(asset);
         }

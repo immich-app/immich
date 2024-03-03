@@ -1,4 +1,5 @@
 import { getKey } from '$lib/utils';
+import { fromLocalDateTime, groupDateFormat } from '$lib/utils/timeline-util';
 import { TimeBucketSize, getTimeBucket, getTimeBuckets, type AssetResponseDto } from '@immich/sdk';
 import { throttle } from 'lodash-es';
 import { DateTime } from 'luxon';
@@ -26,17 +27,71 @@ interface AssetLookup {
   assetIndex: number;
 }
 
+type BucketConstructor = {
+  height: number;
+  date: string;
+  count: number;
+  assets?: AssetResponseDto[];
+  position?: BucketPosition;
+};
+
 export class AssetBucket {
   /**
    * The DOM height of the bucket in pixel
    * This value is first estimated by the number of asset and later is corrected as the user scroll
    */
-  bucketHeight!: number;
-  bucketDate!: string;
-  bucketCount!: number;
+  height!: number;
+  date!: string;
+  count!: number;
   assets!: AssetResponseDto[];
   cancelToken!: AbortController | null;
   position!: BucketPosition;
+  dateGroups!: Map<string, AssetResponseDto[]>;
+
+  constructor({ height, date, count, assets = [], position = BucketPosition.Unknown }: BucketConstructor) {
+    this.height = height;
+    this.date = date;
+    this.count = count;
+    this.assets = assets;
+    this.position = position;
+    this.cancelToken = null;
+    this.dateGroups = new Map();
+  }
+
+  public addAssets(assets: AssetResponseDto[]) {
+    if (this.assets.length === 0) {
+      this.assets = assets;
+    } else {
+      this.assets.push(...assets);
+      const time1 = performance.now();
+      this.assets.sort((a, b) => {
+        const aDate = DateTime.fromISO(a.fileCreatedAt).toUTC();
+        const bDate = DateTime.fromISO(b.fileCreatedAt).toUTC();
+        return bDate.diff(aDate).milliseconds;
+      });
+      const time2 = performance.now();
+      console.log(`addAssets sorting for ${this.date}:`, time2 - time1);
+    }
+    this.updateDateGroups();
+  }
+
+  public updateDateGroups() {
+    if (this.assets.length === 0) {
+      return;
+    }
+
+    const time1 = performance.now();
+    for (const asset of this.assets) {
+      const curLocale = fromLocalDateTime(asset.localDateTime).toLocaleString(groupDateFormat);
+      if (this.dateGroups.has(curLocale)) {
+        this.dateGroups.get(curLocale)?.push(asset);
+      } else {
+        this.dateGroups.set(curLocale, [asset]);
+      }
+    }
+    const time2 = performance.now();
+    console.log(`updateDateGroups for ${this.date}:`, time2 - time1);
+  }
 }
 
 const isMismatched = (option: boolean | undefined, value: boolean): boolean =>
@@ -165,37 +220,25 @@ export class AssetStore {
 
     this.initialized = true;
 
-    this.buckets = buckets.map((bucket) => {
-      const unwrappedWidth = (3 / 2) * bucket.count * THUMBNAIL_HEIGHT * (7 / 10);
-      const rows = Math.ceil(unwrappedWidth / viewport.width);
-      const height = rows * THUMBNAIL_HEIGHT;
-
-      return {
-        bucketDate: bucket.timeBucket,
-        bucketHeight: height,
-        bucketCount: bucket.count,
-        assets: [],
-        cancelToken: null,
-        position: BucketPosition.Unknown,
-      };
-    });
-
-    this.timelineHeight = this.buckets.reduce((accumulator, b) => accumulator + b.bucketHeight, 0);
-
-    this.emit(false);
-
-    let height = 0;
+    let viewHeight = 0;
     const loaders = [];
-    for (const bucket of this.buckets) {
-      if (height < viewport.height) {
-        height += bucket.bucketHeight;
-        loaders.push(this.loadBucket(bucket.bucketDate, BucketPosition.Visible));
-        continue;
-      }
+    for (const { timeBucket, count } of buckets) {
+      const unwrappedWidth = (3 / 2) * count * THUMBNAIL_HEIGHT * (7 / 10);
+      const rows = Math.ceil(unwrappedWidth / viewport.width);
+      const bucketHeight = rows * THUMBNAIL_HEIGHT;
 
-      break;
+      const bucket = new AssetBucket({ height: bucketHeight, date: timeBucket, count });
+      this.buckets.push(bucket);
+      if (viewHeight < viewport.height) {
+        viewHeight += bucket.height;
+        loaders.push(this.loadBucket(bucket.date, BucketPosition.Visible));
+      }
     }
+
+    this.timelineHeight = this.buckets.reduce((accumulator, b) => accumulator + b.height, 0);
+
     await Promise.all(loaders);
+    this.emit(false);
   }
 
   async loadBucket(bucketDate: string, position: BucketPosition): Promise<void> {
@@ -243,8 +286,7 @@ export class AssetStore {
         return;
       }
 
-      bucket.assets = assets;
-
+      bucket.addAssets(assets);
       this.emit(true);
     } catch (error) {
       handleError(error, 'Failed to load assets');
@@ -261,10 +303,10 @@ export class AssetStore {
       return 0;
     }
 
-    const delta = height - bucket.bucketHeight;
+    const delta = height - bucket.height;
     const scrollTimeline = bucket.position == BucketPosition.Above;
 
-    bucket.bucketHeight = height;
+    bucket.height = height;
     bucket.position = BucketPosition.Unknown;
 
     this.timelineHeight += delta;
@@ -297,29 +339,17 @@ export class AssetStore {
     let bucket = this.getBucketByDate(timeBucket);
 
     if (!bucket) {
-      bucket = {
-        bucketDate: timeBucket,
-        bucketHeight: THUMBNAIL_HEIGHT,
-        bucketCount: 0,
-        assets: [],
-        cancelToken: null,
-        position: BucketPosition.Unknown,
-      };
+      bucket = new AssetBucket({ height: 0, date: timeBucket, count: 0 });
 
       this.buckets.push(bucket);
       this.buckets = this.buckets.sort((a, b) => {
-        const aDate = DateTime.fromISO(a.bucketDate).toUTC();
-        const bDate = DateTime.fromISO(b.bucketDate).toUTC();
+        const aDate = DateTime.fromISO(a.date).toUTC();
+        const bDate = DateTime.fromISO(b.date).toUTC();
         return bDate.diff(aDate).milliseconds;
       });
     }
 
-    bucket.assets.push(asset);
-    bucket.assets.sort((a, b) => {
-      const aDate = DateTime.fromISO(a.fileCreatedAt).toUTC();
-      const bDate = DateTime.fromISO(b.fileCreatedAt).toUTC();
-      return bDate.diff(aDate).milliseconds;
-    });
+    bucket.addAssets([asset]);
 
     // If we added an asset to the store, we need to recalculate
     // asset store containers
@@ -328,7 +358,7 @@ export class AssetStore {
   }
 
   getBucketByDate(bucketDate: string): AssetBucket | null {
-    return this.buckets.find((bucket) => bucket.bucketDate === bucketDate) || null;
+    return this.buckets.find((bucket) => bucket.date === bucketDate) || null;
   }
 
   getBucketInfoForAssetId(assetId: string) {
@@ -340,16 +370,14 @@ export class AssetStore {
   }
 
   async getRandomAsset(): Promise<AssetResponseDto | null> {
-    let index = Math.floor(
-      Math.random() * this.buckets.reduce((accumulator, bucket) => accumulator + bucket.bucketCount, 0),
-    );
+    let index = Math.floor(Math.random() * this.buckets.reduce((accumulator, bucket) => accumulator + bucket.count, 0));
     for (const bucket of this.buckets) {
-      if (index < bucket.bucketCount) {
-        await this.loadBucket(bucket.bucketDate, BucketPosition.Unknown);
+      if (index < bucket.count) {
+        await this.loadBucket(bucket.date, BucketPosition.Unknown);
         return bucket.assets[index] || null;
       }
 
-      index -= bucket.bucketCount;
+      index -= bucket.count;
     }
 
     return null;
@@ -386,8 +414,8 @@ export class AssetStore {
         }
 
         bucket.assets.splice(index_, 1);
-        bucket.bucketCount = bucket.assets.length;
-        if (bucket.bucketCount === 0) {
+        bucket.count = bucket.assets.length;
+        if (bucket.count === 0) {
           this.buckets.splice(index, 1);
         }
 
@@ -415,7 +443,7 @@ export class AssetStore {
     }
 
     const previousBucket = this.buckets[bucketIndex - 1];
-    await this.loadBucket(previousBucket.bucketDate, BucketPosition.Unknown);
+    await this.loadBucket(previousBucket.date, BucketPosition.Unknown);
     return previousBucket.assets.at(-1)?.id || null;
   }
 
@@ -436,7 +464,7 @@ export class AssetStore {
     }
 
     const nextBucket = this.buckets[bucketIndex + 1];
-    await this.loadBucket(nextBucket.bucketDate, BucketPosition.Unknown);
+    await this.loadBucket(nextBucket.date, BucketPosition.Unknown);
     return nextBucket.assets[0]?.id || null;
   }
 
@@ -452,7 +480,7 @@ export class AssetStore {
       for (let index = 0; index < this.buckets.length; index++) {
         const bucket = this.buckets[index];
         if (bucket.assets.length > 0) {
-          bucket.bucketCount = bucket.assets.length;
+          bucket.count = bucket.assets.length;
         }
         for (let index_ = 0; index_ < bucket.assets.length; index_++) {
           const asset = bucket.assets[index_];
