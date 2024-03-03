@@ -28,10 +28,10 @@ class ModelCache:
 
         plugins = []
 
-        if revalidate:
-            plugins.append(RevalidationPlugin())
         if profiling:
             plugins.append(TimingPlugin())
+
+        self.revalidate_enable = revalidate
 
         self.cache = SimpleMemoryCache(timeout=timeout, plugins=plugins, namespace=None)
 
@@ -52,6 +52,8 @@ class ModelCache:
             if model is None:
                 model = from_model_type(model_type, model_name, **model_kwargs)
                 await lock.cas(model, ttl=model_kwargs.get('ttl', None))
+            elif self.revalidate_enable:
+                await self.revalidate(key, model_kwargs.get('ttl', None))
         return model
 
     async def get_profiling(self) -> dict[str, float] | None:
@@ -59,21 +61,7 @@ class ModelCache:
             return None
 
         return self.cache.profiling
-
-class RevalidationPlugin(BasePlugin):  # type: ignore[misc]
-    """Revalidates cache item's TTL after cache hit."""
-
-    async def post_get(
-        self,
-        client: SimpleMemoryCache,
-        key: str,
-        ret: Any | None = None,
-        namespace: str | None = None,
-        **kwargs: Any,
-    ) -> None:
-        if ret is None:
-            return
-        if namespace is not None:
-            key = client.build_key(key, namespace)
-        if key in client._handlers:
-            await client.expire(key, client.ttl)
+    
+    async def revalidate(self, key: str, ttl: int | None) -> None:
+        if ttl is not None:
+            await self.cache.expire(key, ttl)

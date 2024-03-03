@@ -52,9 +52,7 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
         if settings.model_ttl > 0 and settings.model_ttl_poll_s > 0:
             asyncio.ensure_future(idle_shutdown_task())
         if settings.preload is not None:
-            log.info(f"Preloading models: {settings.preload}")
-            for pair in settings.preload:
-                await load(await model_cache.get(pair[1], pair[0]))
+            await preload_models(model_cache, settings.preload)
         yield
     finally:
         log.handlers.clear()
@@ -63,6 +61,11 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
         if thread_pool is not None:
             thread_pool.shutdown()
         gc.collect()
+
+async def preload_models(cache: ModelCache, preload_models: list[tuple[ModelType, str]]):
+    log.info(f"Preloading models: {preload_models}")
+    for pair in preload_models:
+        await load(await cache.get(pair[1], pair[0]))
 
 
 def update_state() -> Iterator[None]:
@@ -107,8 +110,10 @@ async def predict(
     except orjson.JSONDecodeError:
         raise HTTPException(400, f"Invalid options JSON: {options}")
 
-    kwargs["ttl"] = settings.model_ttl
-    model = await load(await model_cache.get(model_name, model_type, **kwargs))
+    ttl = settings.model_ttl
+    if (model_type, model_name) in settings.preload:
+        ttl = None
+    model = await load(await model_cache.get(model_name, model_type, ttl=ttl, **kwargs))
     model.configure(**kwargs)
     outputs = await run(model.predict, inputs)
     return ORJSONResponse(outputs)
