@@ -36,22 +36,25 @@ class SearchInputPage extends HookConsumerWidget {
           onSubmitted: (value) {},
         ),
       ),
-      body: Column(
+      body: ListView(
         children: [
-          SizedBox(
-            height: 50,
-            child: ListView(
-              shrinkWrap: true,
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.only(left: 16),
-              children: [
-                SearchFilterChip(onTap: () {}, label: 'People'),
-                SearchFilterChip(onTap: () {}, label: 'Places'),
-                SearchFilterChip(onTap: () {}, label: 'Camera'),
-                SearchFilterChip(onTap: () {}, label: 'Date'),
-                SearchFilterChip(onTap: () {}, label: 'Media Type'),
-                SearchFilterChip(onTap: () {}, label: 'Display Options'),
-              ],
+          Padding(
+            padding: const EdgeInsets.only(top: 12.0),
+            child: SizedBox(
+              height: 50,
+              child: ListView(
+                shrinkWrap: true,
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.only(left: 16),
+                children: [
+                  SearchFilterChip(onTap: () {}, label: 'People'),
+                  SearchFilterChip(onTap: () {}, label: 'Places'),
+                  SearchFilterChip(onTap: () {}, label: 'Camera'),
+                  SearchFilterChip(onTap: () {}, label: 'Date'),
+                  SearchFilterChip(onTap: () {}, label: 'Media Type'),
+                  SearchFilterChip(onTap: () {}, label: 'Display Options'),
+                ],
+              ),
             ),
           ),
         ],
