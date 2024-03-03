@@ -1,6 +1,4 @@
 import { locale } from '$lib/stores/preferences.store';
-import type { AssetResponseDto } from '@immich/sdk';
-import { groupBy, sortBy } from 'lodash-es';
 import { DateTime, Interval } from 'luxon';
 import { get } from 'svelte/store';
 
@@ -44,20 +42,11 @@ export function formatGroupTitle(date: DateTime): string {
   return date.toLocaleString(groupDateFormat);
 }
 
-export function splitBucketIntoDateGroups(
-  assets: AssetResponseDto[],
-  locale: string | undefined,
-): AssetResponseDto[][] {
-  const grouped = groupBy(assets, (asset) =>
-    fromLocalDateTime(asset.localDateTime).toLocaleString(groupDateFormat, { locale }),
-  );
-  return sortBy(grouped, (group) => assets.indexOf(group[0]));
-}
-
 export type LayoutBox = {
   top: number;
   left: number;
   width: number;
+  height: number;
 };
 
 export function calculateWidth(boxes: LayoutBox[]): number {
