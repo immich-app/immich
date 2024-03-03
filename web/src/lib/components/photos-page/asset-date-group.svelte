@@ -154,36 +154,34 @@
         </span>
       </p>
 
-      {#if groupAssets.length > 0}
-        <!-- Image grid -->
-        <div
-          class="relative"
-          style="height: {geometry[groupIndex].containerHeight}px;width: {geometry[groupIndex].containerWidth}px"
-        >
-          {#each groupAssets as asset, index (asset.id)}
-            {@const box = geometry[groupIndex].boxes[index]}
-            <div
-              class="absolute"
-              style="width: {box.width}px; height: {box.height}px; top: {box.top}px; left: {box.left}px"
-            >
-              <Thumbnail
-                showStackedIcon={withStacked}
-                {showArchiveIcon}
-                {asset}
-                {groupIndex}
-                on:click={() => assetClickHandler(asset, groupAssets, groupTitle)}
-                on:select={() => assetSelectHandler(asset, groupAssets, groupTitle)}
-                on:mouse-event={() => assetMouseEventHandler(groupTitle, asset)}
-                selected={$selectedAssets.has(asset) || $assetStore.albumAssets.has(asset.id)}
-                selectionCandidate={$assetSelectionCandidates.has(asset)}
-                disabled={$assetStore.albumAssets.has(asset.id)}
-                thumbnailWidth={box.width}
-                thumbnailHeight={box.height}
-              />
-            </div>
-          {/each}
-        </div>
-      {/if}
+      <!-- Image grid -->
+      <div
+        class="relative"
+        style="height: {geometry[groupIndex].containerHeight}px;width: {geometry[groupIndex].containerWidth}px"
+      >
+        {#each groupAssets as asset, index (asset.id)}
+          {@const box = geometry[groupIndex].boxes[index]}
+          <div
+            class="absolute"
+            style="width: {box.width}px; height: {box.height}px; top: {box.top}px; left: {box.left}px"
+          >
+            <Thumbnail
+              showStackedIcon={withStacked}
+              {showArchiveIcon}
+              {asset}
+              {groupIndex}
+              on:click={() => assetClickHandler(asset, groupAssets, groupTitle)}
+              on:select={() => assetSelectHandler(asset, groupAssets, groupTitle)}
+              on:mouse-event={() => assetMouseEventHandler(groupTitle, asset)}
+              selected={$selectedAssets.has(asset) || $assetStore.albumAssets.has(asset.id)}
+              selectionCandidate={$assetSelectionCandidates.has(asset)}
+              disabled={$assetStore.albumAssets.has(asset.id)}
+              thumbnailWidth={box.width}
+              thumbnailHeight={box.height}
+            />
+          </div>
+        {/each}
+      </div>
     </div>
   {/each}
 </section>
