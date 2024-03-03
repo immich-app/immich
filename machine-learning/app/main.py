@@ -62,6 +62,7 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
             thread_pool.shutdown()
         gc.collect()
 
+
 async def preload_models(cache: ModelCache, preload_models: list[tuple[ModelType, str]]):
     log.info(f"Preloading models: {preload_models}")
     for pair in preload_models:
@@ -110,9 +111,8 @@ async def predict(
     except orjson.JSONDecodeError:
         raise HTTPException(400, f"Invalid options JSON: {options}")
 
-    ttl = settings.model_ttl
-    if (model_type, model_name) in settings.preload:
-        ttl = None
+    key = f"{model_name}{model_type.value}{kwargs.get('mode', '')}"
+    ttl = settings.model_ttl if key in model_cache.cache._handlers else None
     model = await load(await model_cache.get(model_name, model_type, ttl=ttl, **kwargs))
     model.configure(**kwargs)
     outputs = await run(model.predict, inputs)

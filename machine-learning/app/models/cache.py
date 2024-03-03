@@ -2,7 +2,7 @@ from typing import Any
 
 from aiocache.backends.memory import SimpleMemoryCache
 from aiocache.lock import OptimisticLock
-from aiocache.plugins import BasePlugin, TimingPlugin
+from aiocache.plugins import TimingPlugin
 
 from app.models import from_model_type
 
@@ -51,9 +51,9 @@ class ModelCache:
             model: InferenceModel | None = await self.cache.get(key)
             if model is None:
                 model = from_model_type(model_type, model_name, **model_kwargs)
-                await lock.cas(model, ttl=model_kwargs.get('ttl', None))
+                await lock.cas(model, ttl=model_kwargs.get("ttl", None))
             elif self.revalidate_enable:
-                await self.revalidate(key, model_kwargs.get('ttl', None))
+                await self.revalidate(key, model_kwargs.get("ttl", None))
         return model
 
     async def get_profiling(self) -> dict[str, float] | None:
@@ -61,7 +61,7 @@ class ModelCache:
             return None
 
         return self.cache.profiling
-    
+
     async def revalidate(self, key: str, ttl: int | None) -> None:
-        if ttl is not None:
+        if ttl is not None and key in self.cache._handlers:
             await self.cache.expire(key, ttl)
