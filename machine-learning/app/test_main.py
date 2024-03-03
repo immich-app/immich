@@ -14,6 +14,7 @@ import pytest
 from fastapi.testclient import TestClient
 from PIL import Image
 from pytest_mock import MockerFixture
+from pytest import MonkeyPatch
 
 from app.main import load, preload_models
 
@@ -548,7 +549,7 @@ class TestCache:
         with pytest.raises(ValueError):
             await model_cache.get("test_model_name", ModelType.CLIP, mode="text")
 
-    async def test_preloads_models(self, monkeypatch, mock_get_model: mock.Mock) -> None:
+    async def test_preloads_models(self, monkeypatch: MonkeyPatch, mock_get_model: mock.Mock) -> None:
         os.environ["MACHINE_LEARNING_PRELOAD__CLIP"] = "ViT-B-32__openai"
         os.environ["MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION"] = "buffalo_s"
 

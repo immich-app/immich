@@ -63,7 +63,7 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
         gc.collect()
 
 
-async def preload_models(preload_models: PreloadModelData):
+async def preload_models(preload_models: PreloadModelData) -> None:
     log.info(f"Preloading models: {preload_models}")
     if preload_models.clip is not None:
         await load(await model_cache.get(preload_models.clip, ModelType.CLIP))
