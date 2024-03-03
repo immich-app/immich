@@ -225,7 +225,7 @@ LIMIT
 
 -- PersonRepository.getStatistics
 SELECT DISTINCT
-  COUNT(DISTINCT ("face"."id")) AS "cnt"
+  COUNT(DISTINCT ("asset"."id")) AS "count"
 FROM
   "asset_faces" "face"
   LEFT JOIN "assets" "asset" ON "asset"."id" = "face"."assetId"

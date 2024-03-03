@@ -172,15 +172,17 @@ export class PersonRepository implements IPersonRepository {
   @GenerateSql({ params: [DummyValue.UUID] })
   async getStatistics(personId: string): Promise<PersonStatistics> {
     return {
-      assets: await this.assetFaceRepository
-        .createQueryBuilder('face')
-        .leftJoin('face.asset', 'asset')
-        .where('face.personId = :personId', { personId })
-        .andWhere('asset.isArchived = false')
-        .andWhere('asset.deletedAt IS NULL')
-        .andWhere('asset.livePhotoVideoId IS NULL')
-        .distinct(true)
-        .getCount(),
+      assets:
+        (await this.assetFaceRepository
+          .createQueryBuilder('face')
+          .leftJoin('face.asset', 'asset')
+          .where('face.personId = :personId', { personId })
+          .andWhere('asset.isArchived = false')
+          .andWhere('asset.deletedAt IS NULL')
+          .andWhere('asset.livePhotoVideoId IS NULL')
+          .select('COUNT(DISTINCT(asset.id))', 'count')
+          .distinct(true)
+          .getRawOne()).count ?? 0,
     };
   }
 
