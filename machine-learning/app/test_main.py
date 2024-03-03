@@ -548,14 +548,19 @@ class TestCache:
         with pytest.raises(ValueError):
             await model_cache.get("test_model_name", ModelType.CLIP, mode="text")
 
-    async def test_preloads_models(self, mock_get_model: mock.Mock) -> None:
-        os.environ['MACHINE_LEARNING_PRELOAD'] = '[["clip", "ViT-B-32__openai"], ["facial-recognition", "buffalo_s"]]'
-        settings = Settings()
-        assert settings.preload == [(ModelType.CLIP, "ViT-B-32__openai"), (ModelType.FACIAL_RECOGNITION, "buffalo_s")]
-        
-        model_cache = ModelCache()
+    async def test_preloads_models(self, monkeypatch, mock_get_model: mock.Mock) -> None:
+        os.environ["MACHINE_LEARNING_PRELOAD__CLIP"] = "ViT-B-32__openai"
+        os.environ["MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION"] = "buffalo_s"
 
-        await preload_models(model_cache, settings.preload)
+        settings = Settings()
+        assert settings.preload is not None
+        assert settings.preload.clip == "ViT-B-32__openai"
+        assert settings.preload.facial_recognition == "buffalo_s"
+
+        model_cache = ModelCache()
+        monkeypatch.setattr("app.main.model_cache", model_cache)
+
+        await preload_models(settings.preload)
         assert len(model_cache.cache._cache) == 2
         assert mock_get_model.call_count == 2
         await model_cache.get("ViT-B-32__openai", ModelType.CLIP, ttl=100)

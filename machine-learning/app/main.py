@@ -17,7 +17,7 @@ from starlette.formparsers import MultiPartParser
 
 from app.models.base import InferenceModel
 
-from .config import log, settings
+from .config import PreloadModelData, log, settings
 from .models.cache import ModelCache
 from .schemas import (
     MessageResponse,
@@ -52,7 +52,7 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
         if settings.model_ttl > 0 and settings.model_ttl_poll_s > 0:
             asyncio.ensure_future(idle_shutdown_task())
         if settings.preload is not None:
-            await preload_models(model_cache, settings.preload)
+            await preload_models(settings.preload)
         yield
     finally:
         log.handlers.clear()
@@ -63,10 +63,12 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
         gc.collect()
 
 
-async def preload_models(cache: ModelCache, preload_models: list[tuple[ModelType, str]]):
+async def preload_models(preload_models: PreloadModelData):
     log.info(f"Preloading models: {preload_models}")
-    for pair in preload_models:
-        await load(await cache.get(pair[1], pair[0]))
+    if preload_models.clip is not None:
+        await load(await model_cache.get(preload_models.clip, ModelType.CLIP))
+    if preload_models.facial_recognition is not None:
+        await load(await model_cache.get(preload_models.facial_recognition, ModelType.FACIAL_RECOGNITION))
 
 
 def update_state() -> Iterator[None]:
@@ -111,9 +113,7 @@ async def predict(
     except orjson.JSONDecodeError:
         raise HTTPException(400, f"Invalid options JSON: {options}")
 
-    key = f"{model_name}{model_type.value}{kwargs.get('mode', '')}"
-    ttl = settings.model_ttl if key in model_cache.cache._handlers else None
-    model = await load(await model_cache.get(model_name, model_type, ttl=ttl, **kwargs))
+    model = await load(await model_cache.get(model_name, model_type, ttl=settings.model_ttl, **kwargs))
     model.configure(**kwargs)
     outputs = await run(model.predict, inputs)
     return ORJSONResponse(outputs)
