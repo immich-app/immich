@@ -574,7 +574,10 @@ export class MetadataService {
     }
 
     const sidecarPathWithoutExt = `${asset.originalFileName}.xmp`;
-    const sidecarPathWithoutExtExists = await this.storageRepository.checkFileExists(sidecarPathWithoutExt, constants.R_OK);
+    const sidecarPathWithoutExtExists = await this.storageRepository.checkFileExists(
+      sidecarPathWithoutExt,
+      constants.R_OK,
+    );
     if (sidecarPathWithoutExtExists) {
       await this.assetRepository.save({ id: asset.id, sidecarPath: sidecarPathWithoutExt });
       return true;
@@ -584,7 +587,9 @@ export class MetadataService {
       return false;
     }
 
-    this.logger.debug(`Sidecar File was not found. Checked paths '${sidecarPathWithExt}' and '${sidecarPathWithoutExt}'. Removing sidecarPath for asset ${asset.id}`);
+    this.logger.debug(
+      `Sidecar File was not found. Checked paths '${sidecarPathWithExt}' and '${sidecarPathWithoutExt}'. Removing sidecarPath for asset ${asset.id}`,
+    );
     await this.assetRepository.save({ id: asset.id, sidecarPath: null });
 
     return true;

@@ -663,7 +663,10 @@ describe(MetadataService.name, () => {
       storageMock.checkFileExists.mockResolvedValue(true);
 
       await expect(sut.handleSidecarSync({ id: assetStub.sidecarWithoutExt.id })).resolves.toBe(true);
-      expect(storageMock.checkFileExists).toHaveBeenCalledWith(`${assetStub.sidecarWithoutExt.originalFileName}.xmp`, constants.R_OK);
+      expect(storageMock.checkFileExists).toHaveBeenCalledWith(
+        `${assetStub.sidecarWithoutExt.originalFileName}.xmp`,
+        constants.R_OK,
+      );
       expect(assetMock.save).toHaveBeenCalledWith({
         id: assetStub.sidecarWithoutExt.id,
         sidecarPath: assetStub.sidecarWithoutExt.sidecarPath,
