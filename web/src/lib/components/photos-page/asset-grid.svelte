@@ -5,15 +5,16 @@
   import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { BucketPosition, type AssetStore, type Viewport } from '$lib/stores/assets.store';
-  import { locale, showDeleteModal } from '$lib/stores/preferences.store';
+  import { showDeleteModal } from '$lib/stores/preferences.store';
   import { isSearchEnabled } from '$lib/stores/search.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { deleteAssets } from '$lib/utils/actions';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
-  import { formatGroupTitle, splitBucketIntoDateGroups } from '$lib/utils/timeline-util';
+  import { formatGroupTitle } from '$lib/utils/timeline-util';
   import type { AlbumResponseDto, AssetResponseDto } from '@immich/sdk';
   import { DateTime } from 'luxon';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
+  import AssetViewer from '../asset-viewer/asset-viewer.svelte';
   import IntersectionObserver from '../asset-viewer/intersection-observer.svelte';
   import Portal from '../shared-components/portal/portal.svelte';
   import Scrollbar from '../shared-components/scrollbar/scrollbar.svelte';
@@ -444,19 +445,17 @@
 
 <Portal target="body">
   {#if $showAssetViewer}
-    {#await import('../asset-viewer/asset-viewer.svelte') then AssetViewer}
-      <AssetViewer.default
-        {withStacked}
-        {assetStore}
-        asset={$viewingAsset}
-        {isShared}
-        {album}
-        on:previous={handlePrevious}
-        on:next={handleNext}
-        on:close={handleClose}
-        on:action={({ detail: action }) => handleAction(action.type, action.asset)}
-      />
-    {/await}
+    <AssetViewer
+      {withStacked}
+      {assetStore}
+      asset={$viewingAsset}
+      {isShared}
+      {album}
+      on:previous={handlePrevious}
+      on:next={handleNext}
+      on:close={handleClose}
+      on:action={({ detail: action }) => handleAction(action.type, action.asset)}
+    />
   {/if}
 </Portal>
 
