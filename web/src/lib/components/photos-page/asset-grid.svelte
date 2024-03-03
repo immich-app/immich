@@ -449,19 +449,21 @@
 </section>
 
 <Portal target="body">
-  {#await import('../asset-viewer/asset-viewer.svelte') then AssetViewer}
-    <AssetViewer.default
-      {withStacked}
-      {assetStore}
-      asset={$viewingAsset}
-      {isShared}
-      {album}
-      on:previous={handlePrevious}
-      on:next={handleNext}
-      on:close={handleClose}
-      on:action={({ detail: action }) => handleAction(action.type, action.asset)}
-    />
-  {/await}
+  {#if $showAssetViewer}
+    {#await import('../asset-viewer/asset-viewer.svelte') then AssetViewer}
+      <AssetViewer.default
+        {withStacked}
+        {assetStore}
+        asset={$viewingAsset}
+        {isShared}
+        {album}
+        on:previous={handlePrevious}
+        on:next={handleNext}
+        on:close={handleClose}
+        on:action={({ detail: action }) => handleAction(action.type, action.asset)}
+      />
+    {/await}
+  {/if}
 </Portal>
 
 <style>
