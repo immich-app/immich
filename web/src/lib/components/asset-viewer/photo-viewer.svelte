@@ -13,6 +13,7 @@
   import { fade } from 'svelte/transition';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
+  import { getAltText } from '$lib/utils/thumbnail-util';
 
   export let asset: AssetResponseDto;
   export let element: HTMLDivElement | undefined = undefined;
@@ -133,7 +134,7 @@
         bind:this={$photoViewer}
         transition:fade={{ duration: haveFadeTransition ? 150 : 0 }}
         src={assetData}
-        alt={asset.exifInfo?.description}
+        alt={getAltText(asset)}
         class="h-full w-full object-contain"
         draggable="false"
       />
