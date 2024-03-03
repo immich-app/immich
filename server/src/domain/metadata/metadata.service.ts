@@ -566,6 +566,7 @@ export class MetadataService {
       return false;
     }
 
+    // XMP sidecars can come in two filename formats. For a photo named photo.ext, the filenames are photo.ext.xmp and photo.xmp
     const sidecarPathWithExt = `${asset.originalPath}.xmp`;
     const sidecarPathWithExtExists = await this.storageRepository.checkFileExists(sidecarPathWithExt, constants.R_OK);
     if (sidecarPathWithExtExists) {
