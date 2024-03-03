@@ -507,6 +507,9 @@ export class AssetRepository implements IAssetRepository {
       select: {
         id: true,
         exifInfo: {
+          city: true,
+          state: true,
+          country: true,
           latitude: true,
           longitude: true,
         },

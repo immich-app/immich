@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { ISystemConfigRepository } from '@app/domain';
+import { ISystemConfigRepository, ISystemMetadataRepository } from '@app/domain';
 import { INestApplication } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Test } from '@nestjs/testing';
@@ -16,6 +16,7 @@ import {
   AssetRepository,
   AuditRepository,
   LibraryRepository,
+  MetadataRepository,
   MoveRepository,
   PartnerRepository,
   PersonRepository,
@@ -37,6 +38,7 @@ const repositories = [
   AssetRepository,
   AuditRepository,
   LibraryRepository,
+  MetadataRepository,
   MoveRepository,
   PartnerRepository,
   PersonRepository,
@@ -86,7 +88,11 @@ class SqlGenerator {
         }),
         TypeOrmModule.forFeature(databaseEntities),
       ],
-      providers: [{ provide: ISystemConfigRepository, useClass: SystemConfigRepository }, ...repositories],
+      providers: [
+        { provide: ISystemMetadataRepository, useClass: SystemMetadataRepository },
+        { provide: ISystemConfigRepository, useClass: SystemConfigRepository },
+        ...repositories,
+      ],
     }).compile();
 
     this.app = await moduleFixture.createNestApplication().init();

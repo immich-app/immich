@@ -133,7 +133,7 @@
         bind:this={$photoViewer}
         transition:fade={{ duration: haveFadeTransition ? 150 : 0 }}
         src={assetData}
-        alt={asset.id}
+        alt={asset.exifInfo?.description}
         class="h-full w-full object-contain"
         draggable="false"
       />
