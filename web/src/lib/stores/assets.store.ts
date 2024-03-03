@@ -63,14 +63,6 @@ export class AssetBucket {
       this.assets = assets;
     } else {
       this.assets.push(...assets);
-      const time1 = performance.now();
-      this.assets.sort((a, b) => {
-        const aDate = DateTime.fromISO(a.fileCreatedAt).toUTC();
-        const bDate = DateTime.fromISO(b.fileCreatedAt).toUTC();
-        return bDate.diff(aDate).milliseconds;
-      });
-      const time2 = performance.now();
-      console.log(`addAssets sorting for ${this.date}:`, time2 - time1);
     }
     this.updateDateGroups();
   }
