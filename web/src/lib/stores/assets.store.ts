@@ -80,7 +80,6 @@ export class AssetBucket {
       return;
     }
 
-    const time1 = performance.now();
     for (const asset of this.assets) {
       const curLocale = fromLocalDateTime(asset.localDateTime).toLocaleString(groupDateFormat);
       if (this.dateGroups.has(curLocale)) {
@@ -89,8 +88,6 @@ export class AssetBucket {
         this.dateGroups.set(curLocale, [asset]);
       }
     }
-    const time2 = performance.now();
-    console.log(`updateDateGroups for ${this.date}:`, time2 - time1);
   }
 }
 
