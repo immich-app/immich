@@ -13,6 +13,10 @@ const upstream = {
 };
 
 export default defineConfig({
+  build: {
+    minify: 'esbuild',
+    cssMinify: 'esbuild',
+  },
   resolve: {
     alias: {
       'xmlhttprequest-ssl': './node_modules/engine.io-client/lib/xmlhttprequest.js',

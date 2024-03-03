@@ -4,6 +4,7 @@ import { ImmichLogger } from '@app/infra/logger';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { json } from 'body-parser';
+import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import { AppService } from './app.service';
@@ -19,6 +20,7 @@ export async function bootstrap() {
   app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
   app.set('etag', 'strong');
   app.use(cookieParser());
+  app.use(compression({ level: 1 }));
   app.use(json({ limit: '10mb' }));
   if (isDev) {
     app.enableCors();
