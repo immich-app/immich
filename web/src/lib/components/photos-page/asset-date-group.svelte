@@ -112,7 +112,7 @@
 </script>
 
 <section id="asset-group-by-date" class="flex flex-wrap gap-x-12" bind:clientHeight={actualBucketHeight}>
-  {#each assetsGroupByDate.values() as groupAssets, groupIndex (groupAssets[0].id)}
+  {#each assetsGroupByDate as groupAssets, groupIndex (groupAssets[0].id)}
     {@const asset = groupAssets[0]}
     {@const groupTitle = formatGroupTitle(fromLocalDateTime(asset.localDateTime).startOf('day'))}
     <!-- Asset Group By Date -->
