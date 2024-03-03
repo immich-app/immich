@@ -28,6 +28,13 @@ Or before beginning app installation, [create the datasets](https://www.truenas.
 Immich requires seven datasets: **library**, **pgBackup**, **pgData**, **profile**, **thumbs**, **uploads**, and **video**.
 You can organize these as one parent with seven child datasets, for example `mnt/tank/immich/library`, `mnt/tank/immich/pgBackup`, and so on.
 
+:::info
+
+The **pgData** dataset must be owned by the user `netdata` (UID 999) for postgres to start. The other datasets must be owned by the user `root` (UID 0) or a group that includes the user `root` (UID 0).
+
+:::
+
+
 ## Installing the Immich Application
 
 To install the **Immich** application, go to **Apps**, click **Discover Apps**, either begin typing Immich into the search field or scroll down to locate the **Immich** application widget.
