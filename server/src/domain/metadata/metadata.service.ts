@@ -6,6 +6,7 @@ import { firstDateTime } from 'exiftool-vendored/dist/FirstDateTime';
 import _ from 'lodash';
 import { Duration } from 'luxon';
 import { constants } from 'node:fs/promises';
+import path from 'node:path';
 import { Subscription } from 'rxjs';
 import { usePagination } from '../domain.util';
 import { IBaseJob, IEntityJob, ISidecarWriteJob, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
@@ -574,7 +575,9 @@ export class MetadataService {
       return true;
     }
 
-    const sidecarPathWithoutExt = `${asset.originalFileName}.xmp`;
+    const assetPath = path.parse(asset.originalPath);
+    const assetPathWithoutExt = path.join(assetPath.dir, assetPath.name);
+    const sidecarPathWithoutExt = `${assetPathWithoutExt}.xmp`;
     const sidecarPathWithoutExtExists = await this.storageRepository.checkFileExists(
       sidecarPathWithoutExt,
       constants.R_OK,
