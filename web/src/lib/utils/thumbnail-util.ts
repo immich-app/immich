@@ -41,7 +41,7 @@ export function getAltText(asset: AssetResponseDto) {
   }
 
   let altText = 'Image taken';
-  if (asset.exifInfo) {
+  if (asset.exifInfo?.city && asset.exifInfo.country) {
     altText += ` in ${asset.exifInfo.city}, ${asset.exifInfo.country}`;
   }
 
