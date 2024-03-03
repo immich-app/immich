@@ -49,8 +49,11 @@ export function getAltText(asset: AssetResponseDto) {
   if (names.length == 1) {
     altText += `with ${names[0]}`;
   }
-  if (names.length > 1) {
+  if (names.length > 1 && names.length < 4) {
     altText += `with ${names.slice(0, -1).join(', ')} and ${names.at(-1)}`;
+  }
+  if (names.length > 3) {
+    altText += `with ${names.slice(0, 2).join(', ')}, and ${names.length - 2} others`;
   }
 
   const date = fromLocalDateTime(asset.localDateTime).toLocaleString({ dateStyle: 'long' });
