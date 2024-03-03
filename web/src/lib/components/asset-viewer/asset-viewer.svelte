@@ -51,6 +51,7 @@
   import PhotoViewer from './photo-viewer.svelte';
   import SlideshowBar from './slideshow-bar.svelte';
   import VideoViewer from './video-viewer.svelte';
+  import CreateSharedLinkModal from '$lib/components/shared-components/create-share-link-modal/create-shared-link-modal.svelte';
 
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
@@ -81,11 +82,13 @@
   let appearsInAlbums: AlbumResponseDto[] = [];
   let isShowAlbumPicker = false;
   let isShowDeleteConfirmation = false;
+  let isShowShareModal = false;
   let addToSharedAlbum = true;
   let shouldPlayMotionPhoto = false;
   let isShowProfileImageCrop = false;
   let shouldShowDownloadButton = sharedLink ? sharedLink.allowDownload : !asset.isOffline;
   let shouldShowDetailButton = asset.hasMetadata;
+  let shouldShowShareModal = !asset.isTrashed;
   let canCopyImagesToClipboard: boolean;
   let slideshowStateUnsubscribe: () => void;
   let shuffleSlideshowUnsubscribe: () => void;
@@ -290,6 +293,10 @@
       case 'Escape': {
         if (isShowDeleteConfirmation) {
           isShowDeleteConfirmation = false;
+          return;
+        }
+        if (isShowShareModal) {
+          isShowShareModal = false;
           return;
         }
         closeViewer();
@@ -563,6 +570,7 @@
         showDetailButton={shouldShowDetailButton}
         showSlideshow={!!assetStore}
         hasStackChildren={$stackAssetsStore.length > 0}
+        showShareButton={shouldShowShareModal}
         on:back={closeViewer}
         on:showDetail={showDetailInfoHandler}
         on:download={() => downloadFile(asset)}
@@ -577,6 +585,7 @@
         on:runJob={({ detail: job }) => handleRunJob(job)}
         on:playSlideShow={() => ($slideshowState = SlideshowState.PlaySlideshow)}
         on:unstack={handleUnstack}
+        on:showShareModal={() => (isShowShareModal = true)}
       />
     </div>
   {/if}
@@ -766,6 +775,13 @@
 
   {#if isShowProfileImageCrop}
     <ProfileImageCropper {asset} on:close={() => (isShowProfileImageCrop = false)} />
+  {/if}
+
+  {#if isShowShareModal}
+    <CreateSharedLinkModal
+      assetIds={[asset.id]}
+      on:close={() => (isShowShareModal = false)}
+    />
   {/if}
 </section>
 

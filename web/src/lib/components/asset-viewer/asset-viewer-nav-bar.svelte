@@ -20,6 +20,7 @@
     mdiMagnifyPlusOutline,
     mdiMotionPauseOutline,
     mdiPlaySpeed,
+    mdiShareVariantOutline,
   } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
   import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
@@ -32,6 +33,7 @@
   export let isMotionPhotoPlaying = false;
   export let showDownloadButton: boolean;
   export let showDetailButton: boolean;
+  export let showShareButton: boolean;
   export let showSlideshow = false;
   export let hasStackChildren = false;
 
@@ -54,6 +56,7 @@
     runJob: AssetJobName;
     playSlideShow: void;
     unstack: void;
+    showShareModal: void;
   }>();
 
   let contextMenuPosition = { x: 0, y: 0 };
@@ -137,6 +140,14 @@
         icon={mdiCloudDownloadOutline}
         on:click={() => dispatch('download')}
         title="Download"
+      />
+    {/if}
+    {#if showShareButton}
+      <CircleIconButton
+        isOpacity={true}
+        icon={mdiShareVariantOutline}
+        on:click={() => dispatch('showShareModal')}
+        title=Share
       />
     {/if}
     {#if showDetailButton}
