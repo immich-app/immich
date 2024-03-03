@@ -88,7 +88,7 @@
     }
   }
 
-  type FeaturePoint = Feature<Point, { id: string }>;
+  type FeaturePoint = Feature<Point, { id: string; city: string | null; state: string | null; country: string | null }>;
 
   const asFeature = (marker: MapMarkerResponseDto): FeaturePoint => {
     return {
@@ -110,6 +110,9 @@
       lat: coords.lat,
       lon: coords.lng,
       id: featurePoint.properties.id,
+      city: featurePoint.properties.city,
+      state: featurePoint.properties.state,
+      country: featurePoint.properties.country,
     };
   };
 </script>
