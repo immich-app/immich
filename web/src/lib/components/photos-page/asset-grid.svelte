@@ -318,7 +318,6 @@
       for (let bucketIndex = startBucketIndex; bucketIndex <= endBucketIndex; bucketIndex++) {
         const bucket = $assetStore.buckets[bucketIndex];
 
-        // Split bucket into date groups and check each group
         for (const dateGroup of bucket.dateGroups.values()) {
           const dateGroupTitle = formatGroupTitle(DateTime.fromISO(dateGroup[0].fileCreatedAt).startOf('day'));
           if (dateGroup.every((a) => $selectedAssets.has(a))) {
