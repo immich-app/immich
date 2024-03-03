@@ -104,7 +104,7 @@ export class AlbumService {
     const [albumMetadataForIds] = await this.albumRepository.getMetadataForIds([album.id]);
 
     return {
-      ...mapAlbum(album, withAssets),
+      ...mapAlbum(album, withAssets, auth),
       startDate: albumMetadataForIds.startDate,
       endDate: albumMetadataForIds.endDate,
       assetCount: albumMetadataForIds.assetCount,

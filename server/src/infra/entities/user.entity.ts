@@ -43,9 +43,6 @@ export class UserEntity {
   @Column({ type: 'varchar', unique: true, default: null })
   storageLabel!: string | null;
 
-  @Column({ type: 'varchar', default: null })
-  externalPath!: string | null;
-
   @Column({ default: '', select: false })
   password?: string;
 

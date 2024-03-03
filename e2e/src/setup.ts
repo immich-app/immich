@@ -1,26 +1,24 @@
-import { spawn, exec } from 'child_process';
+import { exec, spawn } from 'node:child_process';
 
 export default async () => {
   let _resolve: () => unknown;
-  const promise = new Promise<void>((resolve) => (_resolve = resolve));
+  const ready = new Promise<void>((resolve) => (_resolve = resolve));
 
   const child = spawn('docker', ['compose', 'up'], { stdio: 'pipe' });
 
   child.stdout.on('data', (data) => {
     const input = data.toString();
     console.log(input);
-    if (input.includes('Immich Server is listening')) {
+    if (input.includes('Immich Microservices is listening')) {
       _resolve();
     }
   });
 
   child.stderr.on('data', (data) => console.log(data.toString()));
 
-  await promise;
+  await ready;
 
   return async () => {
-    await new Promise<void>((resolve) =>
-      exec('docker compose down', () => resolve())
-    );
+    await new Promise<void>((resolve) => exec('docker compose down', () => resolve()));
   };
 };

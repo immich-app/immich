@@ -26,7 +26,12 @@ export const userApi = {
 
     return body as UserResponseDto;
   },
-  setExternalPath: async (server: any, accessToken: string, id: string, externalPath: string) => {
-    return await userApi.update(server, accessToken, { id, externalPath });
+  delete: async (server: any, accessToken: string, id: string) => {
+    const { status, body } = await request(server).delete(`/user/${id}`).set('Authorization', `Bearer ${accessToken}`);
+
+    expect(status).toBe(200);
+    expect(body).toMatchObject({ id, deletedAt: expect.any(String) });
+
+    return body as UserResponseDto;
   },
 };

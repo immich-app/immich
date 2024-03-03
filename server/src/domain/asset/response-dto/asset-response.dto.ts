@@ -1,3 +1,4 @@
+import { AuthDto } from '@app/domain/auth/auth.dto';
 import { AssetEntity, AssetFaceEntity, AssetType } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { PersonWithFacesResponseDto, mapFacesWithoutPerson, mapPerson } from '../../person/person.dto';
@@ -50,6 +51,7 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
 export type AssetMapOptions = {
   stripMetadata?: boolean;
   withStack?: boolean;
+  auth?: AuthDto;
 };
 
 const peopleWithFaces = (faces: AssetFaceEntity[]): PersonWithFacesResponseDto[] => {
@@ -103,8 +105,8 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
     fileModifiedAt: entity.fileModifiedAt,
     localDateTime: entity.localDateTime,
     updatedAt: entity.updatedAt,
-    isFavorite: entity.isFavorite,
-    isArchived: entity.isArchived,
+    isFavorite: options.auth?.user.id === entity.ownerId ? entity.isFavorite : false,
+    isArchived: options.auth?.user.id === entity.ownerId ? entity.isArchived : false,
     isTrashed: !!entity.deletedAt,
     duration: entity.duration ?? '0:00:00.00000',
     exifInfo: entity.exifInfo ? mapExif(entity.exifInfo) : undefined,
@@ -117,7 +119,7 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
     stack: withStack
       ? entity.stack?.assets
           .filter((a) => a.id !== entity.stack?.primaryAssetId)
-          .map((a) => mapAsset(a, { stripMetadata }))
+          .map((a) => mapAsset(a, { stripMetadata, auth: options.auth }))
       : undefined,
     stackCount: entity.stack?.assets?.length ?? null,
     isExternal: entity.isExternal,

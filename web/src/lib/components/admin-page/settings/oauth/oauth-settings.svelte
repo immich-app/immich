@@ -132,6 +132,26 @@
 
         <SettingInputField
           inputType={SettingInputFieldType.TEXT}
+          label="STORAGE QUOTA CLAIM"
+          desc="Automatically set the user's storage quota to the value of this claim."
+          bind:value={config.oauth.storageQuotaClaim}
+          required={true}
+          disabled={disabled || !config.oauth.enabled}
+          isEdited={!(config.oauth.storageQuotaClaim == savedConfig.oauth.storageQuotaClaim)}
+        />
+
+        <SettingInputField
+          inputType={SettingInputFieldType.NUMBER}
+          label="DEFAULT STORAGE QUOTA (GiB)"
+          desc="Quota in GiB to be used when no claim is provided (Enter 0 for unlimited quota)."
+          bind:value={config.oauth.defaultStorageQuota}
+          required={true}
+          disabled={disabled || !config.oauth.enabled}
+          isEdited={!(config.oauth.defaultStorageQuota == savedConfig.oauth.defaultStorageQuota)}
+        />
+
+        <SettingInputField
+          inputType={SettingInputFieldType.TEXT}
           label="BUTTON TEXT"
           bind:value={config.oauth.buttonText}
           required={false}
