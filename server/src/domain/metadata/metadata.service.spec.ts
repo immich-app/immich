@@ -660,10 +660,15 @@ describe(MetadataService.name, () => {
 
     it('should set sidecar path if exists (sidecar named photo.xmp)', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.sidecarWithoutExt]);
-      storageMock.checkFileExists.mockResolvedValue(true);
+      storageMock.checkFileExists.mockResolvedValueOnce(false);
+      storageMock.checkFileExists.mockResolvedValueOnce(true);
 
       await expect(sut.handleSidecarSync({ id: assetStub.sidecarWithoutExt.id })).resolves.toBe(true);
-      expect(storageMock.checkFileExists).toHaveBeenCalledWith(assetStub.sidecarWithoutExt.sidecarPath, constants.R_OK);
+      expect(storageMock.checkFileExists).toHaveBeenNthCalledWith(
+        2,
+        assetStub.sidecarWithoutExt.sidecarPath,
+        constants.R_OK,
+      );
       expect(assetMock.save).toHaveBeenCalledWith({
         id: assetStub.sidecarWithoutExt.id,
         sidecarPath: assetStub.sidecarWithoutExt.sidecarPath,
