@@ -66,9 +66,9 @@ describe('/activity', () => {
         total: 3,
         hidden: 1,
         people: [
+          expect.objectContaining({ name: 'multiple_assets_person' }),
           expect.objectContaining({ name: 'visible_person' }),
           expect.objectContaining({ name: 'hidden_person' }),
-          expect.objectContaining({ name: 'multiple_assets_person' }),
         ],
       });
     });
@@ -81,8 +81,8 @@ describe('/activity', () => {
         total: 3,
         hidden: 1,
         people: [
-          expect.objectContaining({ name: 'visible_person' }),
           expect.objectContaining({ name: 'multiple_assets_person' }),
+          expect.objectContaining({ name: 'visible_person' }),
         ],
       });
     });
