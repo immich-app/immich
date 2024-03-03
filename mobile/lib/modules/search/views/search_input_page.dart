@@ -13,6 +13,12 @@ class SearchInputPage extends HookConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios),
+          onPressed: () {
+            context.router.pop();
+          },
+        ),
         title: TextField(
           autofocus: true,
           decoration: InputDecoration(
