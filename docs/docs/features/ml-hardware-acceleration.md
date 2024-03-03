@@ -10,7 +10,7 @@ You do not need to redo any machine learning jobs after enabling hardware accele
 ## Supported Backends
 
 - ARM NN (Mali)
-- CUDA (NVIDIA)
+- CUDA (NVIDIA) Note: It is supported with [compute capability](https://developer.nvidia.com/cuda-gpus) 5.2 or higher
 - OpenVINO (Intel)
 
 ## Limitations
