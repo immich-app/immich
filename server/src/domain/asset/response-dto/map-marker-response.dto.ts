@@ -9,4 +9,13 @@ export class MapMarkerResponseDto {
 
   @ApiProperty({ format: 'double' })
   lon!: number;
+
+  @ApiProperty()
+  city!: string | null;
+
+  @ApiProperty()
+  state!: string | null;
+
+  @ApiProperty()
+  country!: string | null;
 }
