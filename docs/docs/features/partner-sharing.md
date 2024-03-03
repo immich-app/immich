@@ -5,21 +5,22 @@ You can manage one or multiple users to have access to your library from the [Us
 
 Partner sharing include:
 
-* All your photos and videos except those in Archived and Deleted.
-* You are at the mercy of the partners' actions (as it should be) on the asset they own. If the partner decides to delete or archive an asset belonging to them, it will not be displayed on your timeline.
-* The location where your photos were taken.
-* You can view partners' media and add them to an album. No other actions are allowed on those assets.
-* Facial data is not shared (yet)
-* The search result doesn't include partners' assets (yet)
-* You cannot favorite partners' assets (yet)
+- All your photos and videos except those in Archived and Deleted.
+- You are at the mercy of the partners' actions (as it should be) on the asset they own. If the partner decides to delete or archive an asset belonging to them, it will not be displayed on your timeline.
+- The location where your photos were taken.
+- You can view partners' media and add them to an album. No other actions are allowed on those assets.
+- Facial data is not shared (yet)
+- The search result doesn't include partners' assets (yet)
+- You cannot favorite partners' assets (yet)
 
-:::info 
+:::info
 Partner sharing is one-sided, whoever shared with you will not be able to see your photos  
 unless you share them with them through partner sharing from your user.
 :::
 
 ## Add Partner
-* Partner sharing may result in displaying duplicate assets on the main timeline. We would like to address this soon.
+
+- Partner sharing may result in displaying duplicate assets on the main timeline. We would like to address this soon.
 
 <img src={require('./img/partner-sharing-1.png').default} width="70%" title='Partner Sharing 1' />
 
@@ -39,7 +40,7 @@ For sharing a specific set of assets, you can use the shared album feature of Im
 
 ## Partner sharing on the main timeline
 
- to enable parter-shared photos to be displayed in the main timeline. This feature can be enabled on a per-partner basis and can be viewed and updated on both the web and mobile app.
+to enable parter-shared photos to be displayed in the main timeline. This feature can be enabled on a per-partner basis and can be viewed and updated on both the web and mobile app.
 
 ### For the web interface:
 
