@@ -18,6 +18,7 @@ class CreateUserDto {
     required this.name,
     required this.password,
     this.quotaSizeInBytes,
+    this.shouldChangePassword,
     this.storageLabel,
   });
 
@@ -37,6 +38,14 @@ class CreateUserDto {
 
   int? quotaSizeInBytes;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? shouldChangePassword;
+
   String? storageLabel;
 
   @override
@@ -46,6 +55,7 @@ class CreateUserDto {
     other.name == name &&
     other.password == password &&
     other.quotaSizeInBytes == quotaSizeInBytes &&
+    other.shouldChangePassword == shouldChangePassword &&
     other.storageLabel == storageLabel;
 
   @override
@@ -56,10 +66,11 @@ class CreateUserDto {
     (name.hashCode) +
     (password.hashCode) +
     (quotaSizeInBytes == null ? 0 : quotaSizeInBytes!.hashCode) +
+    (shouldChangePassword == null ? 0 : shouldChangePassword!.hashCode) +
     (storageLabel == null ? 0 : storageLabel!.hashCode);
 
   @override
-  String toString() => 'CreateUserDto[email=$email, memoriesEnabled=$memoriesEnabled, name=$name, password=$password, quotaSizeInBytes=$quotaSizeInBytes, storageLabel=$storageLabel]';
+  String toString() => 'CreateUserDto[email=$email, memoriesEnabled=$memoriesEnabled, name=$name, password=$password, quotaSizeInBytes=$quotaSizeInBytes, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -75,6 +86,11 @@ class CreateUserDto {
       json[r'quotaSizeInBytes'] = this.quotaSizeInBytes;
     } else {
     //  json[r'quotaSizeInBytes'] = null;
+    }
+    if (this.shouldChangePassword != null) {
+      json[r'shouldChangePassword'] = this.shouldChangePassword;
+    } else {
+    //  json[r'shouldChangePassword'] = null;
     }
     if (this.storageLabel != null) {
       json[r'storageLabel'] = this.storageLabel;
@@ -97,6 +113,7 @@ class CreateUserDto {
         name: mapValueOfType<String>(json, r'name')!,
         password: mapValueOfType<String>(json, r'password')!,
         quotaSizeInBytes: mapValueOfType<int>(json, r'quotaSizeInBytes'),
+        shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword'),
         storageLabel: mapValueOfType<String>(json, r'storageLabel'),
       );
     }
