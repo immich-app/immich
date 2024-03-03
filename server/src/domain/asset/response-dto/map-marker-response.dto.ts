@@ -11,11 +11,11 @@ export class MapMarkerResponseDto {
   lon!: number;
 
   @ApiProperty()
-  city!: string;
+  city!: string | null;
 
   @ApiProperty()
-  state!: string;
+  state!: string | null;
 
   @ApiProperty()
-  country!: string;
+  country!: string | null;
 }

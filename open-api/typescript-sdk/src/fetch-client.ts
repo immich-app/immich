@@ -260,9 +260,12 @@ export type AssetJobsDto = {
     name: AssetJobName;
 };
 export type MapMarkerResponseDto = {
+    city: string | null;
+    country: string | null;
     id: string;
     lat: number;
     lon: number;
+    state: string | null;
 };
 export type MemoryLaneResponseDto = {
     assets: AssetResponseDto[];
