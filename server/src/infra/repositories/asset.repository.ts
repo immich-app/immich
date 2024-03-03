@@ -535,8 +535,8 @@ export class AssetRepository implements IAssetRepository {
 
     return assets.map((asset) => ({
       id: asset.id,
-      lat: asset.exifInfo!.latitude!, /* eslint-disable-next-line @typescript-eslint/no-non-null-assertion */
-      lon: asset.exifInfo!.longitude!, /* eslint-disable-next-line @typescript-eslint/no-non-null-assertion */
+      lat: asset.exifInfo!.latitude!,
+      lon: asset.exifInfo!.longitude!,
       city: asset.exifInfo!.city,
       state: asset.exifInfo!.state,
       country: asset.exifInfo!.country,
