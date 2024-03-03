@@ -116,6 +116,22 @@ describe('/activity', () => {
   });
 
   describe('GET /person/:id/statistics', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(app).get(`/person/${multipleAssetsPerson.id}/statistics`);
+
+      expect(status).toBe(401);
+      expect(body).toEqual(errorDto.unauthorized);
+    });
+
+    it('should throw error if person with id does not exist', async () => {
+      const { status, body } = await request(app)
+        .get(`/person/${uuidDto.notFound}/statistics`)
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest());
+    });
+
     it('should return the correct number of assets', async () => {
       const { status, body } = await request(app)
         .get(`/person/${multipleAssetsPerson.id}/statistics`)
