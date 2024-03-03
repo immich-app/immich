@@ -65,7 +65,6 @@
         {/if}
       </div>
     {/if}
-W
     <div class="inline-block" bind:offsetWidth={innerWidth}>
       {#each $memoryStore as memory, index (memory.title)}
         <button
