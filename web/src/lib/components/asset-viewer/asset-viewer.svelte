@@ -778,10 +778,7 @@
   {/if}
 
   {#if isShowShareModal}
-    <CreateSharedLinkModal
-      assetIds={[asset.id]}
-      on:close={() => (isShowShareModal = false)}
-    />
+    <CreateSharedLinkModal assetIds={[asset.id]} on:close={() => (isShowShareModal = false)} />
   {/if}
 </section>
 

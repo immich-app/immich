@@ -9,7 +9,6 @@
   import {
     mdiAlertOutline,
     mdiArrowLeft,
-    mdiCloudDownloadOutline,
     mdiContentCopy,
     mdiDeleteOutline,
     mdiDotsVertical,
@@ -39,7 +38,14 @@
 
   $: isOwner = asset.ownerId === $user?.id;
 
-  type MenuItemEvent = 'addToAlbum' | 'addToSharedAlbum' | 'asProfileImage' | 'runJob' | 'playSlideShow' | 'unstack';
+  type MenuItemEvent =
+    | 'addToAlbum'
+    | 'addToSharedAlbum'
+    | 'asProfileImage'
+    | 'download'
+    | 'playSlideShow'
+    | 'runJob'
+    | 'unstack';
 
   const dispatch = createEventDispatcher<{
     back: void;
@@ -85,6 +91,14 @@
     <CircleIconButton isOpacity={true} icon={mdiArrowLeft} on:click={() => dispatch('back')} />
   </div>
   <div class="flex w-[calc(100%-3rem)] justify-end gap-2 overflow-hidden text-white">
+    {#if showShareButton}
+      <CircleIconButton
+        isOpacity={true}
+        icon={mdiShareVariantOutline}
+        on:click={() => dispatch('showShareModal')}
+        title="Share"
+      />
+    {/if}
     {#if asset.isOffline}
       <CircleIconButton
         isOpacity={true}
@@ -133,23 +147,6 @@
         }}
       />
     {/if}
-
-    {#if showDownloadButton}
-      <CircleIconButton
-        isOpacity={true}
-        icon={mdiCloudDownloadOutline}
-        on:click={() => dispatch('download')}
-        title="Download"
-      />
-    {/if}
-    {#if showShareButton}
-      <CircleIconButton
-        isOpacity={true}
-        icon={mdiShareVariantOutline}
-        on:click={() => dispatch('showShareModal')}
-        title=Share
-      />
-    {/if}
     {#if showDetailButton}
       <CircleIconButton
         isOpacity={true}
@@ -177,6 +174,9 @@
           <ContextMenu {...contextMenuPosition} direction="left">
             {#if showSlideshow}
               <MenuOption on:click={() => onMenuClick('playSlideShow')} text="Slideshow" />
+            {/if}
+            {#if showDownloadButton}
+              <MenuOption on:click={() => onMenuClick('download')} text="Download" />
             {/if}
             <MenuOption on:click={() => onMenuClick('addToAlbum')} text="Add to Album" />
             <MenuOption on:click={() => onMenuClick('addToSharedAlbum')} text="Add to Shared Album" />
