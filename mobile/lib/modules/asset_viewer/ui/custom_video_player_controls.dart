@@ -22,7 +22,11 @@ class CustomVideoPlayerControls extends HookConsumerWidget {
     final hideTimer = useTimer(
       hideTimerDuration,
       () {
-        ref.read(showControlsProvider.notifier).show = false;
+        final state = ref.read(videoPlaybackValueProvider).state;
+        // Do not hide on paused
+        if (state != VideoPlaybackState.paused) {
+          ref.read(showControlsProvider.notifier).show = false;
+        }
       },
     );
 
@@ -68,7 +72,7 @@ class CustomVideoPlayerControls extends HookConsumerWidget {
     }
 
     return GestureDetector(
-      onTap: () => showControlsAndStartHideTimer(),
+      onTap: showControlsAndStartHideTimer,
       child: AbsorbPointer(
         absorbing: !ref.watch(showControlsProvider),
         child: Stack(

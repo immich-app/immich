@@ -135,39 +135,46 @@ class VideoViewerPage extends HookConsumerWidget {
     );
 
     final size = MediaQuery.of(context).size;
-    return PopScope(
-      onPopInvoked: (pop) {
-        ref.read(videoPlaybackValueProvider.notifier).value =
-            VideoPlaybackValue.uninitialized();
+    return GestureDetector(
+      onTap: () {
+        if (ref.read(showControlsProvider)) {
+          ref.read(showControlsProvider.notifier).show = false;
+        }
       },
-      child: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 400),
-        child: Stack(
-          children: [
-            Visibility(
-              visible: controller == null,
-              child: Stack(
-                children: [
-                  if (placeholder != null) placeholder!,
-                  const Positioned.fill(
-                    child: Center(
-                      child: DelayedLoadingIndicator(
-                        fadeInDuration: Duration(milliseconds: 500),
+      child: PopScope(
+        onPopInvoked: (pop) {
+          ref.read(videoPlaybackValueProvider.notifier).value =
+              VideoPlaybackValue.uninitialized();
+        },
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 400),
+          child: Stack(
+            children: [
+              Visibility(
+                visible: controller == null,
+                child: Stack(
+                  children: [
+                    if (placeholder != null) placeholder!,
+                    const Positioned.fill(
+                      child: Center(
+                        child: DelayedLoadingIndicator(
+                          fadeInDuration: Duration(milliseconds: 500),
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-            if (controller != null)
-              SizedBox(
-                height: size.height,
-                width: size.width,
-                child: Chewie(
-                  controller: controller,
+                  ],
                 ),
               ),
-          ],
+              if (controller != null)
+                SizedBox(
+                  height: size.height,
+                  width: size.width,
+                  child: Chewie(
+                    controller: controller,
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
