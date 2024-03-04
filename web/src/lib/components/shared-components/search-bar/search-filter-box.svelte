@@ -75,8 +75,6 @@
 
   const resetForm = () => {
     filter = {
-      context: undefined,
-      fileName: undefined,
       personIds: new Set(),
       location: {},
       camera: {},
