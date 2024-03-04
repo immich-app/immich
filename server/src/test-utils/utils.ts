@@ -1,4 +1,3 @@
-/* eslint @typescript-eslint/require-await: off */
 import { IJobRepository, IMediaRepository, JobItem, JobItemHandler, QueueName } from '@app/domain';
 import { AppModule } from '@app/immich';
 import { InfraModule, InfraTestModule, dataSource } from '@app/infra';
@@ -76,13 +75,16 @@ class JobMock implements IJobRepository {
   async resume() {}
   async empty() {}
   async setConcurrency() {}
+  // eslint-disable-next-line @typescript-eslint/require-await
   async getQueueStatus() {
-    return null as any;
+    return Promise.resolve(null) as any;
   }
+  // eslint-disable-next-line @typescript-eslint/require-await
   async getJobCounts() {
     return null as any;
   }
   async pause() {}
+  // eslint-disable-next-line @typescript-eslint/require-await
   async clear() {
     return [];
   }
@@ -90,6 +92,7 @@ class JobMock implements IJobRepository {
 }
 
 class MediaMockRepository extends MediaRepository {
+  // eslint-disable-next-line @typescript-eslint/require-await
   async generateThumbhash() {
     return Buffer.from('mock-thumbhash');
   }
