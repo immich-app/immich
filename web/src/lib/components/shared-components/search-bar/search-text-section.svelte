@@ -7,7 +7,7 @@
     FileName = 'file-name',
   }
 
-  let selectedOption: TextSearchOptions = TextSearchOptions.Context;
+  let selectedOption = context ? TextSearchOptions.Context : TextSearchOptions.FileName;
 
   $: {
     if (selectedOption === TextSearchOptions.Context) {
