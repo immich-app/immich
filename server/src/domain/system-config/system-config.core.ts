@@ -93,6 +93,7 @@ export const defaults = Object.freeze<SystemConfig>({
     buttonText: 'Login with OAuth',
     clientId: '',
     clientSecret: '',
+    defaultStorageQuota: 0,
     enabled: false,
     issuerUrl: '',
     mobileOverrideEnabled: false,
@@ -100,6 +101,7 @@ export const defaults = Object.freeze<SystemConfig>({
     scope: 'openid email profile',
     signingAlgorithm: 'RS256',
     storageLabelClaim: 'preferred_username',
+    storageQuotaClaim: 'immich_quota',
   },
   passwordLogin: {
     enabled: true,

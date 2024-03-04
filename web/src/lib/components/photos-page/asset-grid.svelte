@@ -5,12 +5,12 @@
   import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { BucketPosition, type AssetStore, type Viewport } from '$lib/stores/assets.store';
-  import { locale, showDeleteModal } from '$lib/stores/preferences.store';
+  import { showDeleteModal } from '$lib/stores/preferences.store';
   import { isSearchEnabled } from '$lib/stores/search.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { deleteAssets } from '$lib/utils/actions';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
-  import { formatGroupTitle, splitBucketIntoDateGroups } from '$lib/utils/timeline-util';
+  import { formatGroupTitle } from '$lib/utils/timeline-util';
   import type { AlbumResponseDto, AssetResponseDto } from '@immich/sdk';
   import { DateTime } from 'luxon';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
@@ -22,7 +22,6 @@
   import AssetDateGroup from './asset-date-group.svelte';
   import DeleteAssetDialog from './delete-asset-dialog.svelte';
   import { handlePromiseError } from '$lib/utils';
-
   export let isSelectionMode = false;
   export let singleSelect = false;
   export let assetStore: AssetStore;
@@ -72,7 +71,7 @@
 
   const trashOrDelete = async (force: boolean = false) => {
     isShowDeleteConfirmation = false;
-    await deleteAssets(!(isTrashEnabled && !force), (assetId) => assetStore.removeAsset(assetId), idsSelectedAssets);
+    await deleteAssets(!(isTrashEnabled && !force), (assetIds) => assetStore.removeAssets(assetIds), idsSelectedAssets);
     assetInteractionStore.clearMultiselect();
   };
 
@@ -169,7 +168,7 @@
         (await handleNext()) || (await handlePrevious()) || handleClose();
 
         // delete after find the next one
-        assetStore.removeAsset(asset.id);
+        assetStore.removeAssets([asset.id]);
         break;
       }
 
@@ -306,7 +305,7 @@
       // Select/deselect assets in all intermediate buckets
       for (let bucketIndex = startBucketIndex + 1; bucketIndex < endBucketIndex; bucketIndex++) {
         const bucket = $assetStore.buckets[bucketIndex];
-        await assetStore.loadBucket(bucket.bucketDate, BucketPosition.Unknown);
+        await assetStore.loadBucket(bucket.date, BucketPosition.Unknown);
         for (const asset of bucket.assets) {
           if (deselect) {
             assetInteractionStore.removeAssetFromMultiselectGroup(asset);
@@ -320,10 +319,7 @@
       for (let bucketIndex = startBucketIndex; bucketIndex <= endBucketIndex; bucketIndex++) {
         const bucket = $assetStore.buckets[bucketIndex];
 
-        // Split bucket into date groups and check each group
-        const assetsGroupByDate = splitBucketIntoDateGroups(bucket.assets, $locale);
-
-        for (const dateGroup of assetsGroupByDate) {
+        for (const dateGroup of bucket.dateGroups.values()) {
           const dateGroupTitle = formatGroupTitle(DateTime.fromISO(dateGroup[0].fileCreatedAt).startOf('day'));
           if (dateGroup.every((a) => $selectedAssets.has(a))) {
             assetInteractionStore.addGroupToMultiselectGroup(dateGroupTitle);
@@ -414,7 +410,7 @@
       <slot name="empty" />
     {/if}
     <section id="virtual-timeline" style:height={$assetStore.timelineHeight + 'px'}>
-      {#each $assetStore.buckets as bucket, bucketIndex (bucketIndex)}
+      {#each $assetStore.buckets as bucket (bucket.date)}
         <IntersectionObserver
           on:intersected={intersectedHandler}
           on:hidden={() => assetStore.cancelBucket(bucket)}
@@ -423,7 +419,7 @@
           bottom={750}
           root={element}
         >
-          <div id={'bucket_' + bucket.bucketDate} style:height={bucket.bucketHeight + 'px'}>
+          <div id={'bucket_' + bucket.date} style:height={bucket.height + 'px'}>
             {#if intersecting}
               <AssetDateGroup
                 {withStacked}
@@ -436,9 +432,7 @@
                 on:shift={handleScrollTimeline}
                 on:selectAssetCandidates={({ detail: asset }) => handleSelectAssetCandidates(asset)}
                 on:selectAssets={({ detail: asset }) => handleSelectAssets(asset)}
-                assets={bucket.assets}
-                bucketDate={bucket.bucketDate}
-                bucketHeight={bucket.bucketHeight}
+                {bucket}
                 {viewport}
               />
             {/if}

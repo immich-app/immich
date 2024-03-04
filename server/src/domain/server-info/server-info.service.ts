@@ -149,7 +149,7 @@ export class ServerInfoService {
       }
 
       // check once per hour (max)
-      if (this.releaseVersionCheckedAt && this.releaseVersionCheckedAt.diffNow().as('minutes') < 60) {
+      if (this.releaseVersionCheckedAt && DateTime.now().diff(this.releaseVersionCheckedAt).as('minutes') < 60) {
         return true;
       }
 

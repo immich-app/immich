@@ -7,7 +7,7 @@
   import type { AssetStore } from '$lib/stores/assets.store';
   import { isShowDetail, showDeleteModal } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
-  import { SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
+  import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { stackAssetsStore } from '$lib/stores/stacked-asset.store';
   import { user } from '$lib/stores/user.store';
   import { getAssetJobMessage, isSharedLink, handlePromiseError } from '$lib/utils';
@@ -51,6 +51,7 @@
   import PhotoViewer from './photo-viewer.svelte';
   import SlideshowBar from './slideshow-bar.svelte';
   import VideoViewer from './video-viewer.svelte';
+  import CreateSharedLinkModal from '$lib/components/shared-components/create-share-link-modal/create-shared-link-modal.svelte';
 
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
@@ -67,7 +68,7 @@
   const {
     restartProgress: restartSlideshowProgress,
     stopProgress: stopSlideshowProgress,
-    slideshowShuffle,
+    slideshowNavigation,
     slideshowState,
   } = slideshowStore;
 
@@ -81,11 +82,13 @@
   let appearsInAlbums: AlbumResponseDto[] = [];
   let isShowAlbumPicker = false;
   let isShowDeleteConfirmation = false;
+  let isShowShareModal = false;
   let addToSharedAlbum = true;
   let shouldPlayMotionPhoto = false;
   let isShowProfileImageCrop = false;
   let shouldShowDownloadButton = sharedLink ? sharedLink.allowDownload : !asset.isOffline;
   let shouldShowDetailButton = asset.hasMetadata;
+  let shouldShowShareModal = !asset.isTrashed;
   let canCopyImagesToClipboard: boolean;
   let slideshowStateUnsubscribe: () => void;
   let shuffleSlideshowUnsubscribe: () => void;
@@ -190,8 +193,8 @@
       }
     });
 
-    shuffleSlideshowUnsubscribe = slideshowShuffle.subscribe((value) => {
-      if (value) {
+    shuffleSlideshowUnsubscribe = slideshowNavigation.subscribe((value) => {
+      if (value === SlideshowNavigation.Shuffle) {
         slideshowHistory.reset();
         slideshowHistory.queue(asset.id);
       }
@@ -269,11 +272,11 @@
         return;
       }
       case 'ArrowLeft': {
-        navigateAssetBackward();
+        await navigateAsset('previous');
         return;
       }
       case 'ArrowRight': {
-        await navigateAssetForward();
+        await navigateAsset('next');
         return;
       }
       case 'd':
@@ -290,6 +293,10 @@
       case 'Escape': {
         if (isShowDeleteConfirmation) {
           isShowDeleteConfirmation = false;
+          return;
+        }
+        if (isShowShareModal) {
+          isShowShareModal = false;
           return;
         }
         closeViewer();
@@ -330,13 +337,16 @@
     $restartSlideshowProgress = true;
   };
 
-  const navigateAssetForward = async (e?: Event) => {
-    if ($slideshowState === SlideshowState.PlaySlideshow && $slideshowShuffle) {
-      return slideshowHistory.next() || navigateAssetRandom();
+  const navigateAsset = async (order: 'previous' | 'next', e?: Event) => {
+    if ($slideshowState === SlideshowState.PlaySlideshow && $slideshowNavigation === SlideshowNavigation.Shuffle) {
+      return (order === 'previous' ? slideshowHistory.previous() : slideshowHistory.next()) || navigateAssetRandom();
     }
 
     if ($slideshowState === SlideshowState.PlaySlideshow && assetStore) {
-      const hasNext = await assetStore.getNextAssetId(asset.id);
+      const hasNext =
+        order === 'previous'
+          ? await assetStore.getPreviousAssetId(asset.id)
+          : await assetStore.getNextAssetId(asset.id);
       if (hasNext) {
         $restartSlideshowProgress = true;
       } else {
@@ -345,21 +355,7 @@
     }
 
     e?.stopPropagation();
-    dispatch('next');
-  };
-
-  const navigateAssetBackward = (e?: Event) => {
-    if ($slideshowState === SlideshowState.PlaySlideshow && $slideshowShuffle) {
-      slideshowHistory.previous();
-      return;
-    }
-
-    if ($slideshowState === SlideshowState.PlaySlideshow) {
-      $restartSlideshowProgress = true;
-    }
-
-    e?.stopPropagation();
-    dispatch('previous');
+    dispatch(order);
   };
 
   const showDetailInfoHandler = () => {
@@ -504,7 +500,7 @@
 
   const handleVideoEnded = async () => {
     if ($slideshowState === SlideshowState.PlaySlideshow) {
-      await navigateAssetForward();
+      await navigateAsset('next');
     }
   };
 
@@ -574,6 +570,7 @@
         showDetailButton={shouldShowDetailButton}
         showSlideshow={!!assetStore}
         hasStackChildren={$stackAssetsStore.length > 0}
+        showShareButton={shouldShowShareModal}
         on:back={closeViewer}
         on:showDetail={showDetailInfoHandler}
         on:download={() => downloadFile(asset)}
@@ -588,13 +585,16 @@
         on:runJob={({ detail: job }) => handleRunJob(job)}
         on:playSlideShow={() => ($slideshowState = SlideshowState.PlaySlideshow)}
         on:unstack={handleUnstack}
+        on:showShareModal={() => (isShowShareModal = true)}
       />
     </div>
   {/if}
 
   {#if $slideshowState === SlideshowState.None && showNavigation}
     <div class="z-[1001] column-span-1 col-start-1 row-span-1 row-start-2 mb-[60px] justify-self-start">
-      <NavigationArea on:click={navigateAssetBackward}><Icon path={mdiChevronLeft} size="36" /></NavigationArea>
+      <NavigationArea on:click={(e) => navigateAsset('previous', e)}
+        ><Icon path={mdiChevronLeft} size="36" /></NavigationArea
+      >
     </div>
   {/if}
 
@@ -603,9 +603,9 @@
     {#if $slideshowState != SlideshowState.None}
       <div class="z-[1000] absolute w-full flex">
         <SlideshowBar
-          on:prev={navigateAssetBackward}
-          on:next={navigateAssetForward}
-          on:close={() => ($slideshowState = SlideshowState.StopSlideshow)}
+          onPrevious={() => navigateAsset('previous')}
+          onNext={() => navigateAsset('next')}
+          onClose={() => ($slideshowState = SlideshowState.StopSlideshow)}
         />
       </div>
     {/if}
@@ -708,7 +708,9 @@
 
   {#if $slideshowState === SlideshowState.None && showNavigation}
     <div class="z-[1001] col-span-1 col-start-4 row-span-1 row-start-2 mb-[60px] justify-self-end">
-      <NavigationArea on:click={navigateAssetForward}><Icon path={mdiChevronRight} size="36" /></NavigationArea>
+      <NavigationArea on:click={(e) => navigateAsset('next', e)}
+        ><Icon path={mdiChevronRight} size="36" /></NavigationArea
+      >
     </div>
   {/if}
 
@@ -773,6 +775,10 @@
 
   {#if isShowProfileImageCrop}
     <ProfileImageCropper {asset} on:close={() => (isShowProfileImageCrop = false)} />
+  {/if}
+
+  {#if isShowShareModal}
+    <CreateSharedLinkModal assetIds={[asset.id]} on:close={() => (isShowShareModal = false)} />
   {/if}
 </section>
 

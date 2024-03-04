@@ -223,14 +223,14 @@
                     url={selectedPersonToCreate[index] ||
                       getPeopleThumbnailUrl(selectedPersonToReassign[index]?.id || face.person.id)}
                     altText={selectedPersonToReassign[index]
-                      ? selectedPersonToReassign[index]?.name || ''
+                      ? selectedPersonToReassign[index]?.name
                       : selectedPersonToCreate[index]
-                        ? 'new person'
+                        ? 'New person'
                         : getPersonNameWithHiddenValue(face.person?.name, face.person?.isHidden)}
                     title={selectedPersonToReassign[index]
-                      ? selectedPersonToReassign[index]?.name || ''
+                      ? selectedPersonToReassign[index]?.name
                       : selectedPersonToCreate[index]
-                        ? 'new person'
+                        ? 'New person'
                         : getPersonNameWithHiddenValue(face.person?.name, face.person?.isHidden)}
                     widthStyle="90px"
                     heightStyle="90px"

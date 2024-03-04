@@ -72,7 +72,7 @@
       <img
         loading={preload ? 'eager' : 'lazy'}
         src={imageData}
-        alt={album.id}
+        alt={album.albumName}
         class="z-0 h-full w-full rounded-xl object-cover transition-all duration-300 hover:shadow-lg"
         data-testid="album-image"
         draggable="false"
@@ -82,7 +82,7 @@
         loading={preload ? 'eager' : 'lazy'}
         src="$lib/assets/no-thumbnail.png"
         sizes="min(271px,186px)"
-        alt={album.id}
+        alt={album.albumName}
         class="z-0 h-full w-full rounded-xl object-cover transition-all duration-300 hover:shadow-lg"
         data-testid="album-image"
         draggable="false"

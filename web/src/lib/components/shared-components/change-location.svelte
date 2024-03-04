@@ -192,7 +192,18 @@
       {:then component}
         <svelte:component
           this={component.default}
-          mapMarkers={lat && lng && asset ? [{ id: asset.id, lat, lon: lng }] : []}
+          mapMarkers={lat && lng && asset
+            ? [
+                {
+                  id: asset.id,
+                  lat,
+                  lon: lng,
+                  city: asset.exifInfo?.city ?? null,
+                  state: asset.exifInfo?.state ?? null,
+                  country: asset.exifInfo?.country ?? null,
+                },
+              ]
+            : []}
           {zoom}
           bind:addClipMapMarker
           center={lat && lng ? { lat, lng } : undefined}

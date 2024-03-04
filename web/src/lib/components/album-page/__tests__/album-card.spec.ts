@@ -47,11 +47,11 @@ describe('AlbumCard component', () => {
     const detailsText = `${count} items` + (shared ? ' . Shared' : '');
 
     expect(albumImgElement).toHaveAttribute('src');
-    expect(albumImgElement).toHaveAttribute('alt', album.id);
+    expect(albumImgElement).toHaveAttribute('alt', album.albumName);
 
     await waitFor(() => expect(albumImgElement).toHaveAttribute('src'));
 
-    expect(albumImgElement).toHaveAttribute('alt', album.id);
+    expect(albumImgElement).toHaveAttribute('alt', album.albumName);
     expect(sdkMock.getAssetThumbnail).not.toHaveBeenCalled();
 
     expect(albumNameElement).toHaveTextContent(album.albumName);
@@ -74,11 +74,11 @@ describe('AlbumCard component', () => {
     const albumImgElement = sut.getByTestId('album-image');
     const albumNameElement = sut.getByTestId('album-name');
     const albumDetailsElement = sut.getByTestId('album-details');
-    expect(albumImgElement).toHaveAttribute('alt', album.id);
+    expect(albumImgElement).toHaveAttribute('alt', album.albumName);
 
     await waitFor(() => expect(albumImgElement).toHaveAttribute('src', thumbnailUrl));
 
-    expect(albumImgElement).toHaveAttribute('alt', album.id);
+    expect(albumImgElement).toHaveAttribute('alt', album.albumName);
     expect(sdkMock.getAssetThumbnail).toHaveBeenCalledTimes(1);
     expect(sdkMock.getAssetThumbnail).toHaveBeenCalledWith({
       id: 'thumbnailIdOne',
