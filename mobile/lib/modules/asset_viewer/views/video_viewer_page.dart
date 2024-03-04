@@ -111,7 +111,10 @@ class VideoViewerPage extends HookConsumerWidget {
         }
 
         // Hide the controls
-        ref.read(showControlsProvider.notifier).show = false;
+        // Done in a microtask to avoid setting the state while the widget is building
+        Future.microtask(
+          () => ref.read(showControlsProvider.notifier).show = false,
+        );
 
         final video = controller.videoPlayerController.value;
 
