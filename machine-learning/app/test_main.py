@@ -13,8 +13,8 @@ import onnxruntime as ort
 import pytest
 from fastapi.testclient import TestClient
 from PIL import Image
-from pytest_mock import MockerFixture
 from pytest import MonkeyPatch
+from pytest_mock import MockerFixture
 
 from app.main import load, preload_models
 
