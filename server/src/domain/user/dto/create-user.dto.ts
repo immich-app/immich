@@ -30,6 +30,10 @@ export class CreateUserDto {
   @IsPositive()
   @ApiProperty({ type: 'integer', format: 'int64' })
   quotaSizeInBytes?: number | null;
+
+  @Optional()
+  @IsBoolean()
+  shouldChangePassword?: boolean;
 }
 
 export class CreateAdminDto {
