@@ -19,11 +19,11 @@ In addition, Immich offers advanced search functionality, allowing you to find s
 
 Smart search features include:
 
-- Search for one or more faces (note: context search does not support people filter).
+- Search for one or more faces (**Note:** Context search does not support people filter).
 - Search by Country or State or City or by all three.
 - Search by camera company and model.
 - Search by date range.
-- Search by media types: image, video or all (note: image includes live images).
+- Search by media types: image, video or all (**Note:** Image includes live images).
 - Search by condition: not in any album or archive or Favorite or all conditions.
 
 <img src={require('./img/advanced-search-filters.webp').default} width="70%" title='advanced search filters' />

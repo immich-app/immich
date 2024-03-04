@@ -22,17 +22,17 @@ unless you share them with them through partner sharing from your user.
 
 - Partner sharing may result in displaying duplicate assets on the main timeline. We would like to address this soon.
 
-<img src={require('./img/partner-sharing-1.png').default} width="70%" title='Partner Sharing 1' />
+<img src={require('./img/partner-sharing-1.png').default} width="70%" title='Add Partner 1' />
 
-<img src={require('./img/partner-sharing-2.png').default} width="70%" title='Partner Sharing 2' />
+<img src={require('./img/partner-sharing-2.png').default} width="70%" title='Add Partner 2' />
 
-<img src={require('./img/partner-sharing-4.png').default} width="70%" title='Partner Sharing 4' />
+<img src={require('./img/partner-sharing-4.png').default} width="70%" title='Add Partner 4' />
 
 ## Accessing to the Shared Library
 
 Accessing the shared library can be done from the Sharing page.
 
-<img src={require('./img/partner-sharing-3.png').default} width="70%" title='Partner Sharing 3' />
+<img src={require('./img/partner-sharing-3.png').default} width="70%" title='Access to the Shared Library' />
 
 :::tip Sharing specific assets
 For sharing a specific set of assets, you can use the shared album feature of Immich.
@@ -46,10 +46,16 @@ to enable parter-shared photos to be displayed in the main timeline. This featur
 
 Account’s Setting -> Sharing -> Show in timeline
 
-<img src={require('./img/partner-sharing-5.png').default} width="70%" title='Partner Sharing 5' />
+<img src={require('./img/partner-sharing-5.png').default} width="70%" title='Partner Sharing for the web interface' />
 
 ### For the mobile app:
 
 From the partner’s view, on the top right corner of the app bar
 
-<img src={require('./img/partner-sharing-6.png').default} width="30%" title='Partner Sharing 6' />
+<img src={require('./img/partner-sharing-6.png').default} width="30%" title='Partner Sharing for the mobile app' />
+
+## Remove Partner
+
+In order to remove partner you can go to User -> Account Settings -> Sharing -> Click on the X
+
+<img src={require('./img/partner-sharing-7.png').default} width="70%" title='Remove Partner' />

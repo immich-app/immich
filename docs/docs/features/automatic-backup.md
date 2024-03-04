@@ -2,7 +2,7 @@
 
 A guide on how the foreground and background automatic backup works.
 
-<img src={require('./img/background-foreground-backup.png').default} width="50%" title="Foreground&Background Backup" />
+<img src={require('./img/background-foreground-backup.png').default} width="30%" title="Foreground&Background Backup" />
 
 ## Foreground backup
 
@@ -28,6 +28,10 @@ If background backup is enabled. The app will periodically check if there are an
 #### iOS
 
 - You must enable **Background App Refresh** for the app to work in the background. You can enable it in the Settings app under General > Background App Refresh.
+
+:::note iOS background backup
+We are aware of the problem that for some users uploads in the background do not work automatically, we have nothing to do about it because it is a "black box" and the problem cannot be overcome at this stage. A side solution is to create an automation that enters the application automatically every X amount of time.
+:::
 
 <div style={{textAlign: 'center'}}>
 <img src={require('./img/background-app-refresh.png').default} width="30%" title="background-app-refresh" />
