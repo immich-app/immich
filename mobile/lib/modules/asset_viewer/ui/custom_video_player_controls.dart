@@ -56,13 +56,6 @@ class CustomVideoPlayerControls extends HookConsumerWidget {
         (_, state) {
       // Show buffering
       showBuffering.value = state == VideoPlaybackState.buffering;
-
-      // Synchronize player with video state
-      if (state == VideoPlaybackState.playing) {
-        ref.read(videoPlayerControlsProvider.notifier).play();
-      } else if (state == VideoPlaybackState.paused) {
-        ref.read(videoPlayerControlsProvider.notifier).pause();
-      }
     });
 
     /// Toggles between playing and pausing depending on the state of the video
@@ -72,6 +65,7 @@ class CustomVideoPlayerControls extends HookConsumerWidget {
     }
 
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: showControlsAndStartHideTimer,
       child: AbsorbPointer(
         absorbing: !ref.watch(showControlsProvider),
@@ -82,22 +76,24 @@ class CustomVideoPlayerControls extends HookConsumerWidget {
                 child: DelayedLoadingIndicator(
                   fadeInDuration: Duration(milliseconds: 400),
                 ),
+              )
+            else
+              GestureDetector(
+                onTap: () {
+                  if (state != VideoPlaybackState.playing) {
+                    togglePlay();
+                  }
+                  ref.read(showControlsProvider.notifier).show = false;
+                },
+                child: CenterPlayButton(
+                  backgroundColor: Colors.black54,
+                  iconColor: Colors.white,
+                  isFinished: state == VideoPlaybackState.completed,
+                  isPlaying: state == VideoPlaybackState.playing,
+                  show: ref.watch(showControlsProvider),
+                  onPressed: togglePlay,
+                ),
               ),
-            GestureDetector(
-              onTap: () {
-                if (state != VideoPlaybackState.playing) {
-                  togglePlay();
-                }
-              },
-              child: CenterPlayButton(
-                backgroundColor: Colors.black54,
-                iconColor: Colors.white,
-                isFinished: state == VideoPlaybackState.completed,
-                isPlaying: state == VideoPlaybackState.playing,
-                show: ref.watch(showControlsProvider),
-                onPressed: togglePlay,
-              ),
-            ),
           ],
         ),
       ),

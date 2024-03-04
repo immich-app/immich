@@ -102,15 +102,6 @@ class VideoViewerPage extends HookConsumerWidget {
       );
     }
 
-    // Hide the controls when we load
-    useEffect(
-      () {
-        ref.read(showControlsProvider.notifier).show = false;
-        return null;
-      },
-      [],
-    );
-
     // Adds and removes the listener to the video player
     useEffect(
       () {
@@ -135,46 +126,39 @@ class VideoViewerPage extends HookConsumerWidget {
     );
 
     final size = MediaQuery.of(context).size;
-    return GestureDetector(
-      onTap: () {
-        if (ref.read(showControlsProvider)) {
-          ref.read(showControlsProvider.notifier).show = false;
-        }
+    return PopScope(
+      onPopInvoked: (pop) {
+        ref.read(videoPlaybackValueProvider.notifier).value =
+            VideoPlaybackValue.uninitialized();
       },
-      child: PopScope(
-        onPopInvoked: (pop) {
-          ref.read(videoPlaybackValueProvider.notifier).value =
-              VideoPlaybackValue.uninitialized();
-        },
-        child: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 400),
-          child: Stack(
-            children: [
-              Visibility(
-                visible: controller == null,
-                child: Stack(
-                  children: [
-                    if (placeholder != null) placeholder!,
-                    const Positioned.fill(
-                      child: Center(
-                        child: DelayedLoadingIndicator(
-                          fadeInDuration: Duration(milliseconds: 500),
-                        ),
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 400),
+        child: Stack(
+          children: [
+            Visibility(
+              visible: controller == null,
+              child: Stack(
+                children: [
+                  if (placeholder != null) placeholder!,
+                  const Positioned.fill(
+                    child: Center(
+                      child: DelayedLoadingIndicator(
+                        fadeInDuration: Duration(milliseconds: 500),
                       ),
                     ),
-                  ],
+                  ),
+                ],
+              ),
+            ),
+            if (controller != null)
+              SizedBox(
+                height: size.height,
+                width: size.width,
+                child: Chewie(
+                  controller: controller,
                 ),
               ),
-              if (controller != null)
-                SizedBox(
-                  height: size.height,
-                  width: size.width,
-                  child: Chewie(
-                    controller: controller,
-                  ),
-                ),
-            ],
-          ),
+          ],
         ),
       ),
     );
