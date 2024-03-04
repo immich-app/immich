@@ -110,6 +110,9 @@ class VideoViewerPage extends HookConsumerWidget {
           return null;
         }
 
+        // Hide the controls
+        ref.read(showControlsProvider.notifier).show = false;
+
         final video = controller.videoPlayerController.value;
 
         // Hold initial volume

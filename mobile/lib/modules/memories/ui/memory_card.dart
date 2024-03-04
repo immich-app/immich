@@ -72,9 +72,11 @@ class MemoryCard extends StatelessWidget {
                     key: ValueKey(asset),
                     asset: asset,
                     showDownloadingIndicator: false,
-                    placeholder: ImmichImage(
-                      asset,
-                      fit: fit,
+                    placeholder: SizedBox.expand(
+                      child: ImmichImage(
+                        asset,
+                        fit: fit,
+                      ),
                     ),
                     hideControlsTimer: const Duration(seconds: 2),
                     onVideoEnded: onVideoEnded,
