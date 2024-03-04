@@ -225,7 +225,7 @@ class AppRouter extends _$AppRouter {
     CustomRoute(
       page: SearchInputRoute.page,
       guards: [_authGuard, _duplicateGuard],
-      transitionsBuilder: TransitionsBuilders.slideBottom,
+      transitionsBuilder: TransitionsBuilders.noTransition,
     ),
   ];
 }
