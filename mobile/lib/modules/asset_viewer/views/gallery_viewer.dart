@@ -116,7 +116,6 @@ class GalleryViewerPage extends HookConsumerWidget {
             settings.getSetting<bool>(AppSettingsEnum.loadPreview);
         isLoadOriginal.value =
             settings.getSetting<bool>(AppSettingsEnum.loadOriginal);
-        isPlayingVideo.value = false;
         return null;
       },
       [],
@@ -273,6 +272,7 @@ class GalleryViewerPage extends HookConsumerWidget {
         } else {
           SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
         }
+        isPlayingVideo.value = false;
         return null;
       },
       [],
@@ -391,6 +391,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                 HapticFeedback.selectionClick();
                 currentIndex.value = value;
                 stackIndex.value = -1;
+                isPlayingVideo.value = false;
 
                 // Wait for page change animation to finish
                 await Future.delayed(const Duration(milliseconds: 400));
