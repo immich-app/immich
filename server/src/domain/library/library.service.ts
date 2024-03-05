@@ -129,32 +129,37 @@ export class LibraryService extends EventEmitter {
       {
         onReady: () => _resolve(),
         onAdd: (path) => {
-          this.logger.debug(`File add event received for ${path} in library ${library.id}}`);
-          if (matcher(path)) {
-            handlePromiseError(this.scanAssets(library.id, [path], library.ownerId, false), this.logger);
-          }
-          this.emit('add', path);
+          const handler = async () => {
+            this.logger.debug(`File add event received for ${path} in library ${library.id}}`);
+            if (matcher(path)) {
+              await this.scanAssets(library.id, [path], library.ownerId, false);
+            }
+            this.emit('add', path);
+          };
+          return handlePromiseError(handler(), this.logger);
         },
         onChange: (path) => {
-          this.logger.debug(`Detected file change for ${path} in library ${library.id}`);
-          if (matcher(path)) {
-            // Note: if the changed file was not previously imported, it will be imported now.
-            handlePromiseError(this.scanAssets(library.id, [path], library.ownerId, false), this.logger);
-          }
-          this.emit('change', path);
+          const handler = async () => {
+            this.logger.debug(`Detected file change for ${path} in library ${library.id}`);
+            if (matcher(path)) {
+              // Note: if the changed file was not previously imported, it will be imported now.
+              await this.scanAssets(library.id, [path], library.ownerId, false);
+            }
+            this.emit('change', path);
+          };
+          return handlePromiseError(handler(), this.logger);
         },
-        onUnlink: (path) =>
-          handlePromiseError(
-            (async () => {
-              this.logger.debug(`Detected deleted file at ${path} in library ${library.id}`);
-              const asset = await this.assetRepository.getByLibraryIdAndOriginalPath(library.id, path);
-              if (asset && matcher(path)) {
-                await this.assetRepository.save({ id: asset.id, isOffline: true });
-              }
-              this.emit('unlink', path);
-            })(),
-            this.logger,
-          ),
+        onUnlink: (path) => {
+          const handler = async () => {
+            this.logger.debug(`Detected deleted file at ${path} in library ${library.id}`);
+            const asset = await this.assetRepository.getByLibraryIdAndOriginalPath(library.id, path);
+            if (asset && matcher(path)) {
+              await this.assetRepository.save({ id: asset.id, isOffline: true });
+            }
+            this.emit('unlink', path);
+          };
+          return handlePromiseError(handler(), this.logger);
+        },
         onError: (error) => {
           // TODO: should we log, or throw an exception?
           this.logger.error(`Library watcher for library ${library.id} encountered error: ${error}`);
