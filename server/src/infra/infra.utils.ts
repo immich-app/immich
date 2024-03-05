@@ -164,7 +164,7 @@ export function searchAssetBuilder(
   builder.andWhere(_.omitBy(path, _.isUndefined));
 
   if (options.originalPath) {
-    builder.andWhere(`${builder.alias}.originalPath ILIKE :originalPath`, {
+    builder.andWhere(`f_unaccent(${builder.alias}.originalPath) ILIKE f_unaccent(:originalPath)`, {
       originalPath: `%${options.originalPath}%`,
     });
   }

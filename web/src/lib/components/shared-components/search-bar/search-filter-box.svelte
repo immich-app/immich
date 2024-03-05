@@ -43,7 +43,7 @@
 
   let filter: SearchFilter = {
     context: 'query' in searchQuery ? searchQuery.query : '',
-    fileName: 'originalFileName' in searchQuery ? searchQuery.originalFileName : undefined,
+    fileName: 'originalPath' in searchQuery ? searchQuery.originalPath : undefined,
     personIds: new Set('personIds' in searchQuery ? searchQuery.personIds : []),
     location: {
       country: searchQuery.country,
