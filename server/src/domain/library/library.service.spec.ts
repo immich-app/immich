@@ -17,6 +17,7 @@ import {
   systemConfigStub,
   userStub,
 } from '@test';
+import { when } from 'jest-when';
 import { Stats } from 'node:fs';
 import { ILibraryFileJob, ILibraryRefreshJob, JobName } from '../job';
 import {
@@ -56,7 +57,7 @@ describe(LibraryService.name, () => {
     databaseMock = newDatabaseRepositoryMock();
 
     // Always validate owner access for library.
-    accessMock.library.checkOwnerAccess.mockImplementation(async (_, libraryIds) => libraryIds);
+    accessMock.library.checkOwnerAccess.mockImplementation((_, libraryIds) => Promise.resolve(libraryIds));
 
     sut = new LibraryService(
       accessMock,
@@ -109,19 +110,13 @@ describe(LibraryService.name, () => {
       configMock.load.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
 
-      libraryMock.get.mockImplementation(async (id) => {
-        switch (id) {
-          case libraryStub.externalLibraryWithImportPaths1.id: {
-            return libraryStub.externalLibraryWithImportPaths1;
-          }
-          case libraryStub.externalLibraryWithImportPaths2.id: {
-            return libraryStub.externalLibraryWithImportPaths2;
-          }
-          default: {
-            return null;
-          }
-        }
-      });
+      when(libraryMock.get)
+        .calledWith(libraryStub.externalLibraryWithImportPaths1.id)
+        .mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
+
+      when(libraryMock.get)
+        .calledWith(libraryStub.externalLibraryWithImportPaths2.id)
+        .mockResolvedValue(libraryStub.externalLibraryWithImportPaths2);
 
       await sut.init();
 
@@ -1294,19 +1289,13 @@ describe(LibraryService.name, () => {
       configMock.load.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
 
-      libraryMock.get.mockImplementation(async (id) => {
-        switch (id) {
-          case libraryStub.externalLibraryWithImportPaths1.id: {
-            return libraryStub.externalLibraryWithImportPaths1;
-          }
-          case libraryStub.externalLibraryWithImportPaths2.id: {
-            return libraryStub.externalLibraryWithImportPaths2;
-          }
-          default: {
-            return null;
-          }
-        }
-      });
+      when(libraryMock.get)
+        .calledWith(libraryStub.externalLibraryWithImportPaths1.id)
+        .mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
+
+      when(libraryMock.get)
+        .calledWith(libraryStub.externalLibraryWithImportPaths2.id)
+        .mockResolvedValue(libraryStub.externalLibraryWithImportPaths2);
 
       const mockClose = jest.fn();
       storageMock.watch.mockImplementation(makeMockWatcher({ close: mockClose }));
@@ -1320,9 +1309,8 @@ describe(LibraryService.name, () => {
 
   describe('handleDeleteLibrary', () => {
     it('should not delete a nonexistent library', async () => {
-      libraryMock.get.mockImplementation(async () => {
-        return null;
-      });
+      libraryMock.get.mockResolvedValue(null);
+
       libraryMock.getAssetIds.mockResolvedValue([]);
       libraryMock.delete.mockImplementation(async () => {});
 

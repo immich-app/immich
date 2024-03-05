@@ -9,7 +9,7 @@ import picomatch from 'picomatch';
 import { AccessCore, Permission } from '../access';
 import { AuthDto } from '../auth';
 import { mimeTypes } from '../domain.constant';
-import { usePagination, validateCronExpression } from '../domain.util';
+import { handlePromiseError, usePagination, validateCronExpression } from '../domain.util';
 import { IBaseJob, IEntityJob, ILibraryFileJob, ILibraryRefreshJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
 
 import {
@@ -83,7 +83,11 @@ export class LibraryService extends EventEmitter {
     this.jobRepository.addCronJob(
       'libraryScan',
       scan.cronExpression,
-      () => this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SCAN_ALL, data: { force: false } }),
+      () =>
+        handlePromiseError(
+          this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SCAN_ALL, data: { force: false } }),
+          this.logger,
+        ),
       scan.enabled,
     );
 
@@ -91,13 +95,13 @@ export class LibraryService extends EventEmitter {
       await this.watchAll();
     }
 
-    this.configCore.config$.subscribe(async ({ library }) => {
+    this.configCore.config$.subscribe(({ library }) => {
       this.jobRepository.updateCronJob('libraryScan', library.scan.cronExpression, library.scan.enabled);
 
       if (library.watch.enabled !== this.watchLibraries) {
         // Watch configuration changed, update accordingly
         this.watchLibraries = library.watch.enabled;
-        await (this.watchLibraries ? this.watchAll() : this.unwatchAll());
+        handlePromiseError(this.watchLibraries ? this.watchAll() : this.unwatchAll(), this.logger);
       }
     });
   }
@@ -135,28 +139,37 @@ export class LibraryService extends EventEmitter {
       },
       {
         onReady: () => _resolve(),
-        onAdd: async (path) => {
-          this.logger.debug(`File add event received for ${path} in library ${library.id}}`);
-          if (matcher(path)) {
-            await this.scanAssets(library.id, [path], library.ownerId, false);
-          }
-          this.emit(StorageEventType.ADD, path);
+        onAdd: (path) => {
+          const handler = async () => {
+            this.logger.debug(`File add event received for ${path} in library ${library.id}}`);
+            if (matcher(path)) {
+              await this.scanAssets(library.id, [path], library.ownerId, false);
+            }
+            this.emit(StorageEventType.ADD, path);
+          };
+          return handlePromiseError(handler(), this.logger);
         },
-        onChange: async (path) => {
-          this.logger.debug(`Detected file change for ${path} in library ${library.id}`);
-          if (matcher(path)) {
-            // Note: if the changed file was not previously imported, it will be imported now.
-            await this.scanAssets(library.id, [path], library.ownerId, false);
-          }
-          this.emit(StorageEventType.CHANGE, path);
+        onChange: (path) => {
+          const handler = async () => {
+            this.logger.debug(`Detected file change for ${path} in library ${library.id}`);
+            if (matcher(path)) {
+              // Note: if the changed file was not previously imported, it will be imported now.
+              await this.scanAssets(library.id, [path], library.ownerId, false);
+            }
+            this.emit(StorageEventType.CHANGE, path);
+          };
+          return handlePromiseError(handler(), this.logger);
         },
-        onUnlink: async (path) => {
-          this.logger.debug(`Detected deleted file at ${path} in library ${library.id}`);
-          const asset = await this.assetRepository.getByLibraryIdAndOriginalPath(library.id, path);
-          if (asset && matcher(path)) {
-            await this.assetRepository.save({ id: asset.id, isOffline: true });
-          }
-          this.emit(StorageEventType.UNLINK, path);
+        onUnlink: (path) => {
+          const handler = async () => {
+            this.logger.debug(`Detected deleted file at ${path} in library ${library.id}`);
+            const asset = await this.assetRepository.getByLibraryIdAndOriginalPath(library.id, path);
+            if (asset && matcher(path)) {
+              await this.assetRepository.save({ id: asset.id, isOffline: true });
+            }
+            this.emit(StorageEventType.UNLINK, path);
+          };
+          return handlePromiseError(handler(), this.logger);
         },
         onError: (error) => {
           this.logger.error(`Library watcher for library ${library.id} encountered error: ${error}`);

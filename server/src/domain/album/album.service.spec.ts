@@ -23,7 +23,7 @@ describe(AlbumService.name, () => {
   let jobMock: jest.Mocked<IJobRepository>;
   let userMock: jest.Mocked<IUserRepository>;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     accessMock = newAccessRepositoryMock();
     albumMock = newAlbumRepositoryMock();
     assetMock = newAssetRepositoryMock();

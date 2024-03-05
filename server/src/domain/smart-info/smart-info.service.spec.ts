@@ -35,7 +35,7 @@ describe(SmartInfoService.name, () => {
   let machineMock: jest.Mocked<IMachineLearningRepository>;
   let databaseMock: jest.Mocked<IDatabaseRepository>;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     assetMock = newAssetRepositoryMock();
     configMock = newSystemConfigRepositoryMock();
     searchMock = newSearchRepositoryMock();

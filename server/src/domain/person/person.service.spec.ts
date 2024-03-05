@@ -80,7 +80,7 @@ describe(PersonService.name, () => {
   let cryptoMock: jest.Mocked<ICryptoRepository>;
   let sut: PersonService;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     accessMock = newAccessRepositoryMock();
     assetMock = newAssetRepositoryMock();
     configMock = newSystemConfigRepositoryMock();

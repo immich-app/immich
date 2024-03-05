@@ -2,10 +2,7 @@ import { IStorageRepository, StorageCore, StorageEventType, WatchEvents } from '
 import { WatchOptions } from 'chokidar';
 
 interface MockWatcherOptions {
-  items?: Array<{
-    event: StorageEventType;
-    value: string;
-  }>;
+  items?: Array<{ event: 'change' | 'add' | 'unlink' | 'error'; value: string }>;
   close?: () => Promise<void>;
 }
 
@@ -32,7 +29,12 @@ export const makeMockWatcher =
         }
       }
     }
-    return async () => await close?.();
+
+    if (close) {
+      return () => close();
+    }
+
+    return () => Promise.resolve();
   };
 
 export const newStorageRepositoryMock = (reset = true): jest.Mocked<IStorageRepository> => {
