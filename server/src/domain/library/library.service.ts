@@ -74,13 +74,12 @@ export class LibraryService extends EventEmitter {
 
     const { watch, scan } = config.library;
 
-    if (watch.enabled) {
-      // This ensures that library watching only occurs in one microservice
-      // TODO: we could make the lock be per-library instead of global
-      this.watchLock = await this.databaseRepository.tryLock(DatabaseLock.LibraryWatch);
+    // This ensures that library watching only occurs in one microservice
+    // TODO: we could make the lock be per-library instead of global
+    this.watchLock = await this.databaseRepository.tryLock(DatabaseLock.LibraryWatch);
 
-      this.watchLibraries = this.watchLock;
-    }
+    this.watchLibraries = this.watchLock;
+
     this.jobRepository.addCronJob(
       'libraryScan',
       scan.cronExpression,
@@ -160,7 +159,6 @@ export class LibraryService extends EventEmitter {
           this.emit(StorageEventType.UNLINK, path);
         },
         onError: (error) => {
-          // TODO: should we log, or throw an exception?
           this.logger.error(`Library watcher for library ${library.id} encountered error: ${error}`);
           this.emit(StorageEventType.ERROR, error);
         },
