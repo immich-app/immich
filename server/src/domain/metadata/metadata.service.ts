@@ -124,7 +124,7 @@ export class MetadataService {
 
   async init() {
     if (!this.subscription) {
-      this.subscription = this.configCore.config$.subscribe(() => handlePromiseError(this.init()));
+      this.subscription = this.configCore.config$.subscribe(() => handlePromiseError(this.init(), this.logger));
     }
 
     const { reverseGeocoding } = await this.configCore.getConfig();

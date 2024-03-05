@@ -74,7 +74,10 @@ export class LibraryService extends EventEmitter {
       'libraryScan',
       scan.cronExpression,
       () =>
-        handlePromiseError(this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SCAN_ALL, data: { force: false } })),
+        handlePromiseError(
+          this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SCAN_ALL, data: { force: false } }),
+          this.logger,
+        ),
       scan.enabled,
     );
 
@@ -87,7 +90,7 @@ export class LibraryService extends EventEmitter {
 
       if (library.watch.enabled !== this.watchLibraries) {
         this.watchLibraries = library.watch.enabled;
-        handlePromiseError(this.watchLibraries ? this.watchAll() : this.unwatchAll());
+        handlePromiseError(this.watchLibraries ? this.watchAll() : this.unwatchAll(), this.logger);
       }
     });
   }
@@ -128,7 +131,7 @@ export class LibraryService extends EventEmitter {
         onAdd: (path) => {
           this.logger.debug(`File add event received for ${path} in library ${library.id}}`);
           if (matcher(path)) {
-            handlePromiseError(this.scanAssets(library.id, [path], library.ownerId, false));
+            handlePromiseError(this.scanAssets(library.id, [path], library.ownerId, false), this.logger);
           }
           this.emit('add', path);
         },
@@ -136,7 +139,7 @@ export class LibraryService extends EventEmitter {
           this.logger.debug(`Detected file change for ${path} in library ${library.id}`);
           if (matcher(path)) {
             // Note: if the changed file was not previously imported, it will be imported now.
-            handlePromiseError(this.scanAssets(library.id, [path], library.ownerId, false));
+            handlePromiseError(this.scanAssets(library.id, [path], library.ownerId, false), this.logger);
           }
           this.emit('change', path);
         },
@@ -150,6 +153,7 @@ export class LibraryService extends EventEmitter {
               }
               this.emit('unlink', path);
             })(),
+            this.logger,
           ),
         onError: (error) => {
           // TODO: should we log, or throw an exception?

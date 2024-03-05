@@ -106,8 +106,8 @@ export class MediaRepository implements IMediaRepository {
             .addOptions('-pass', '2')
             .addOptions('-passlogfile', output)
             .on('error', reject)
-            .on('end', () => handlePromiseError(fs.unlink(`${output}-0.log`)))
-            .on('end', () => handlePromiseError(fs.rm(`${output}-0.log.mbtree`, { force: true })))
+            .on('end', () => handlePromiseError(fs.unlink(`${output}-0.log`), this.logger))
+            .on('end', () => handlePromiseError(fs.rm(`${output}-0.log.mbtree`, { force: true }), this.logger))
             .on('end', resolve)
             .run();
         })
