@@ -45,7 +45,7 @@ class VideoViewerPage extends HookConsumerWidget {
       ),
       showControls: showControls && !isMotionVideo,
       hideControlsTimer: hideControlsTimer,
-    ).data;
+    );
 
     // The last volume of the video used when mute is toggled
     final lastVolume = useState(0.0);

@@ -11,7 +11,7 @@ import 'package:immich_mobile/shared/models/store.dart' as store;
 /// Provides the initialized video player controller
 /// If the asset is local, use the local file
 /// Otherwise, use a video player with a URL
-AsyncSnapshot<ChewieController> useChewieController(
+ChewieController? useChewieController(
   Asset asset, {
   EdgeInsets controlsSafeAreaMinimum = const EdgeInsets.only(
     bottom: 100,
@@ -29,12 +29,96 @@ AsyncSnapshot<ChewieController> useChewieController(
   VoidCallback? onPaused,
   VoidCallback? onVideoEnded,
 }) {
+  return use(
+    _ChewieControllerHook(
+      keys: [asset],
+      asset: asset,
+      placeholder: placeholder,
+      showOptions: showOptions,
+      controlsSafeAreaMinimum: controlsSafeAreaMinimum,
+      autoPlay: autoPlay,
+      allowFullScreen: allowFullScreen,
+      customControls: customControls,
+      hideControlsTimer: hideControlsTimer,
+      showControlsOnInitialize: showControlsOnInitialize,
+      showControls: showControls,
+      allowedScreenSleep: allowedScreenSleep,
+      onPlaying: onPlaying,
+      onPaused: onPaused,
+      onVideoEnded: onVideoEnded,
+    ),
+  );
+}
+
+class _ChewieControllerHook extends Hook<ChewieController?> {
+  final Asset asset;
+  final EdgeInsets controlsSafeAreaMinimum;
+  final bool showOptions;
+  final bool showControlsOnInitialize;
+  final bool autoPlay;
+  final bool allowFullScreen;
+  final bool allowedScreenSleep;
+  final bool showControls;
+  final Widget? customControls;
+  final Widget? placeholder;
+  final Duration hideControlsTimer;
+  final VoidCallback? onPlaying;
+  final VoidCallback? onPaused;
+  final VoidCallback? onVideoEnded;
+
+  const _ChewieControllerHook({
+    super.keys,
+    required this.asset,
+    this.controlsSafeAreaMinimum = const EdgeInsets.only(
+      bottom: 100,
+    ),
+    this.showOptions = true,
+    this.showControlsOnInitialize = false,
+    this.autoPlay = true,
+    this.allowFullScreen = false,
+    this.allowedScreenSleep = false,
+    this.showControls = true,
+    this.customControls,
+    this.placeholder,
+    this.hideControlsTimer = const Duration(seconds: 3),
+    this.onPlaying,
+    this.onPaused,
+    this.onVideoEnded,
+  });
+
+  @override
+  createState() => _ChewieControllerHookState();
+}
+
+class _ChewieControllerHookState
+    extends HookState<ChewieController?, _ChewieControllerHook> {
+  ChewieController? chewieController;
+  VideoPlayerController? videoPlayerController;
+
+  @override
+  void initHook() {
+    super.initHook();
+    _initialize().whenComplete(() => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    videoPlayerController?.pause();
+    videoPlayerController?.dispose();
+    chewieController?.dispose();
+    super.dispose();
+  }
+
+  @override
+  ChewieController? build(BuildContext context) {
+    return chewieController;
+  }
+
   /// Initializes the chewie controller and video player controller
-  Future<ChewieController> initializeChewie(Asset asset) async {
-    late VideoPlayerController videoPlayerController;
-    if (asset.isLocal && asset.livePhotoVideoId == null) {
+  Future<void> _initialize() async {
+    if (hook.asset.isLocal && hook.asset.livePhotoVideoId == null) {
       // Use a local file for the video player controller
-      final file = await asset.local!.file;
+      final file = await hook.asset.local!.file;
       if (file == null) {
         throw Exception('No file found for the video');
       }
@@ -42,9 +126,9 @@ AsyncSnapshot<ChewieController> useChewieController(
     } else {
       // Use a network URL for the video player controller
       final serverEndpoint = store.Store.get(store.StoreKey.serverEndpoint);
-      final String videoUrl = asset.livePhotoVideoId != null
-          ? '$serverEndpoint/asset/file/${asset.livePhotoVideoId}'
-          : '$serverEndpoint/asset/file/${asset.remoteId}';
+      final String videoUrl = hook.asset.livePhotoVideoId != null
+          ? '$serverEndpoint/asset/file/${hook.asset.livePhotoVideoId}'
+          : '$serverEndpoint/asset/file/${hook.asset.remoteId}';
 
       final url = Uri.parse(videoUrl);
       final accessToken = store.Store.get(StoreKey.accessToken);
@@ -55,23 +139,20 @@ AsyncSnapshot<ChewieController> useChewieController(
       );
     }
 
-    await videoPlayerController.initialize();
+    await videoPlayerController!.initialize();
 
-    return ChewieController(
-      videoPlayerController: videoPlayerController,
-      controlsSafeAreaMinimum: controlsSafeAreaMinimum,
-      showOptions: showOptions,
-      showControlsOnInitialize: showControlsOnInitialize,
-      autoPlay: autoPlay,
-      allowFullScreen: allowFullScreen,
-      allowedScreenSleep: allowedScreenSleep,
-      showControls: showControls,
-      customControls: customControls,
-      placeholder: placeholder,
-      hideControlsTimer: hideControlsTimer,
+    chewieController = ChewieController(
+      videoPlayerController: videoPlayerController!,
+      controlsSafeAreaMinimum: hook.controlsSafeAreaMinimum,
+      showOptions: hook.showOptions,
+      showControlsOnInitialize: hook.showControlsOnInitialize,
+      autoPlay: hook.autoPlay,
+      allowFullScreen: hook.allowFullScreen,
+      allowedScreenSleep: hook.allowedScreenSleep,
+      showControls: hook.showControls,
+      customControls: hook.customControls,
+      placeholder: hook.placeholder,
+      hideControlsTimer: hook.hideControlsTimer,
     );
   }
-
-  final controller = useMemoized(() => initializeChewie(asset));
-  return useFuture(controller);
 }
