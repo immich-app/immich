@@ -9,6 +9,7 @@ RUN npm ci && \
     # they're marked as optional dependencies, so we need to copy them manually after pruning
     rm -rf node_modules/@img/sharp-libvips* && \
     rm -rf node_modules/@img/sharp-linuxmusl-x64
+RUN mkdir --parents /etc/OpenCL/vendors && echo "/usr/lib/libmali.so" > /etc/OpenCL/vendors/mali.icd
 COPY server .
 ENV PATH="${PATH}:/usr/src/app/bin" \
     NODE_ENV=development \
@@ -22,6 +23,7 @@ FROM dev AS prod
 RUN npm run build
 RUN npm prune --omit=dev --omit=optional
 COPY --from=dev /usr/src/app/node_modules/@img ./node_modules/@img
+COPY --from=dev /etc/OpenCL /etc/OpenCL
 
 # web build
 FROM node:iron-alpine3.18@sha256:a02826c7340c37a29179152723190bcc3044f933c925f3c2d78abb20f794de3f as web
@@ -49,6 +51,7 @@ ENV NODE_ENV=production \
 COPY --from=prod /usr/src/app/node_modules ./node_modules
 COPY --from=prod /usr/src/app/dist ./dist
 COPY --from=prod /usr/src/app/bin ./bin
+COPY --from=prod /etc/OpenCL /etc/OpenCL
 COPY --from=web /usr/src/app/build ./www
 COPY server/resources resources
 COPY server/package.json server/package-lock.json ./
