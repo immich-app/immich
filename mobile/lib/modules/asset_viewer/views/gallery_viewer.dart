@@ -67,12 +67,11 @@ class GalleryViewerPage extends HookConsumerWidget {
     final settings = ref.watch(appSettingsServiceProvider);
     final isLoadPreview = useState(AppSettingsEnum.loadPreview.defaultValue);
     final isLoadOriginal = useState(AppSettingsEnum.loadOriginal.defaultValue);
-    final isZoomed = useState<bool>(false);
+    final isZoomed = useState(false);
     final isPlayingMotionVideo = useState(false);
     Offset? localPosition;
     final currentIndex = useState(initialIndex);
     final currentAsset = loadAsset(currentIndex.value);
-
     // Update is playing motion video
     ref.listen(videoPlaybackValueProvider.select((v) => v.state), (_, state) {
       isPlayingMotionVideo.value = state == VideoPlaybackState.playing;
@@ -90,6 +89,8 @@ class GalleryViewerPage extends HookConsumerWidget {
     Asset asset = stackIndex.value == -1
         ? currentAsset
         : stackElements.elementAt(stackIndex.value);
+
+    final isMotionPhoto = asset.livePhotoVideoId != null;
     final isOwner = asset.ownerId == ref.watch(currentUserProvider)?.isarId;
     final isPartner = ref
         .watch(partnerSharedWithProvider)
@@ -115,7 +116,6 @@ class GalleryViewerPage extends HookConsumerWidget {
             settings.getSetting<bool>(AppSettingsEnum.loadPreview);
         isLoadOriginal.value =
             settings.getSetting<bool>(AppSettingsEnum.loadOriginal);
-        isPlayingMotionVideo.value = false;
         return null;
       },
       [],
@@ -482,8 +482,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                     showStack: showStack,
                     stackIndex: stackIndex.value,
                     asset: asset,
-                    showVideoPlayerControls:
-                        !asset.isImage && !isPlayingMotionVideo.value,
+                    showVideoPlayerControls: !asset.isImage && !isMotionPhoto,
                   ),
                 ],
               ),

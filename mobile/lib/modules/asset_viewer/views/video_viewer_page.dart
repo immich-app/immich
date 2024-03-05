@@ -112,9 +112,11 @@ class VideoViewerPage extends HookConsumerWidget {
 
         // Hide the controls
         // Done in a microtask to avoid setting the state while the widget is building
-        Future.microtask(
-          () => ref.read(showControlsProvider.notifier).show = false,
-        );
+        if (!isMotionVideo) {
+          Future.microtask(
+            () => ref.read(showControlsProvider.notifier).show = false,
+          );
+        }
 
         final video = controller.videoPlayerController.value;
 
@@ -131,7 +133,8 @@ class VideoViewerPage extends HookConsumerWidget {
       [controller],
     );
 
-    final size = MediaQuery.of(context).size;
+    final size = MediaQuery.sizeOf(context);
+
     return PopScope(
       onPopInvoked: (pop) {
         ref.read(videoPlaybackValueProvider.notifier).value =
