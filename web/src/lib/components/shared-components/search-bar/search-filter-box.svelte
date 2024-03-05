@@ -11,7 +11,7 @@
 
   export type SearchFilter = {
     context?: string;
-    fileName?: string;
+    filename?: string;
     personIds: Set<string>;
     location: SearchLocationFilter;
     camera: SearchCameraFilter;
@@ -43,7 +43,7 @@
 
   let filter: SearchFilter = {
     context: 'query' in searchQuery ? searchQuery.query : '',
-    fileName: 'originalPath' in searchQuery ? searchQuery.originalPath : undefined,
+    filename: 'originalPath' in searchQuery ? searchQuery.originalPath : undefined,
     personIds: new Set('personIds' in searchQuery ? searchQuery.personIds : []),
     location: {
       country: searchQuery.country,
@@ -94,7 +94,7 @@
 
     let payload: SmartSearchDto | MetadataSearchDto = {
       query: filter.context || undefined,
-      originalPath: filter.fileName,
+      originalPath: filter.filename,
       country: filter.location.country,
       state: filter.location.state,
       city: filter.location.city,
@@ -129,7 +129,7 @@
       <SearchPeopleSection width={filterBoxWidth} bind:selectedPeople={filter.personIds} />
 
       <!-- TEXT -->
-      <SearchTextSection bind:filename={filter.fileName} bind:context={filter.context} />
+      <SearchTextSection bind:filename={filter.filename} bind:context={filter.context} />
 
       <!-- LOCATION -->
       <SearchLocationSection bind:filters={filter.location} />
