@@ -68,13 +68,13 @@ class GalleryViewerPage extends HookConsumerWidget {
     final isLoadPreview = useState(AppSettingsEnum.loadPreview.defaultValue);
     final isLoadOriginal = useState(AppSettingsEnum.loadOriginal.defaultValue);
     final isZoomed = useState(false);
-    final isPlayingMotionVideo = useState(false);
+    final isPlayingVideo = useState(false);
     Offset? localPosition;
     final currentIndex = useState(initialIndex);
     final currentAsset = loadAsset(currentIndex.value);
     // Update is playing motion video
     ref.listen(videoPlaybackValueProvider.select((v) => v.state), (_, state) {
-      isPlayingMotionVideo.value = state == VideoPlaybackState.playing;
+      isPlayingVideo.value = state == VideoPlaybackState.playing;
     });
 
     final stackIndex = useState(-1);
@@ -116,6 +116,7 @@ class GalleryViewerPage extends HookConsumerWidget {
             settings.getSetting<bool>(AppSettingsEnum.loadPreview);
         isLoadOriginal.value =
             settings.getSetting<bool>(AppSettingsEnum.loadOriginal);
+        isPlayingVideo.value = false;
         return null;
       },
       [],
@@ -242,7 +243,7 @@ class GalleryViewerPage extends HookConsumerWidget {
             child: TopControlAppBar(
               isOwner: isOwner,
               isPartner: isPartner,
-              isPlayingMotionVideo: isPlayingMotionVideo.value,
+              isPlayingMotionVideo: isPlayingVideo.value,
               asset: asset,
               onMoreInfoPressed: showInfo,
               onFavorite: toggleFavorite,
@@ -255,7 +256,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                             context,
                           ),
               onToggleMotionVideo: (() {
-                isPlayingMotionVideo.value = !isPlayingMotionVideo.value;
+                isPlayingVideo.value = !isPlayingVideo.value;
               }),
               onAddToAlbumPressed: () => addToAlbum(asset),
               onActivitiesPressed: handleActivities,
@@ -402,7 +403,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                 final ImageProvider provider =
                     ImmichImage.imageProvider(asset: a);
 
-                if (a.isImage && !isPlayingMotionVideo.value) {
+                if (a.isImage && !isPlayingVideo.value) {
                   return PhotoViewGalleryPageOptions(
                     onDragStart: (_, details, __) =>
                         localPosition = details.localPosition,
@@ -444,7 +445,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                     child: VideoViewerPage(
                       key: ValueKey(a),
                       asset: a,
-                      isMotionVideo: isPlayingMotionVideo.value,
+                      isMotionVideo: isPlayingVideo.value,
                       placeholder: Image(
                         image: provider,
                         fit: BoxFit.contain,
