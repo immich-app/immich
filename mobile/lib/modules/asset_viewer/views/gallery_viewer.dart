@@ -8,26 +8,18 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/modules/album/providers/current_album.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/image_providers/immich_remote_image_provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/asset_stack.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/current_asset.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/show_controls.provider.dart';
-import 'package:immich_mobile/modules/album/ui/add_to_album_bottom_sheet.dart';
-import 'package:immich_mobile/modules/asset_viewer/providers/image_viewer_page_state.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/video_player_value_provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/advanced_bottom_sheet.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/bottom_gallery_bar.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/exif_bottom_sheet.dart';
-import 'package:immich_mobile/modules/asset_viewer/ui/top_control_app_bar.dart';
+import 'package:immich_mobile/modules/asset_viewer/ui/gallery_app_bar.dart';
 import 'package:immich_mobile/modules/asset_viewer/views/video_viewer_page.dart';
-import 'package:immich_mobile/modules/backup/providers/manual_upload.provider.dart';
-import 'package:immich_mobile/modules/home/ui/upload_dialog.dart';
-import 'package:immich_mobile/modules/partner/providers/partner.provider.dart';
-import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
-import 'package:immich_mobile/shared/providers/user.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
 import 'package:immich_mobile/shared/ui/immich_thumbnail.dart';
 import 'package:immich_mobile/shared/ui/photo_view/photo_view_gallery.dart';
@@ -35,7 +27,6 @@ import 'package:immich_mobile/shared/ui/photo_view/src/photo_view_computed_scale
 import 'package:immich_mobile/shared/ui/photo_view/src/photo_view_scale_state.dart';
 import 'package:immich_mobile/shared/ui/photo_view/src/utils/photo_view_hero_attributes.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:isar/isar.dart';
 import 'package:openapi/api.dart' show ThumbnailFormat;
 
@@ -84,19 +75,12 @@ class GalleryViewerPage extends HookConsumerWidget {
     final stackElements = showStack ? [currentAsset, ...stack] : <Asset>[];
     // Assets from response DTOs do not have an isar id, querying which would give us the default autoIncrement id
     final isFromDto = currentAsset.id == Isar.autoIncrement;
-    final album = ref.watch(currentAlbumProvider);
 
     Asset asset = stackIndex.value == -1
         ? currentAsset
         : stackElements.elementAt(stackIndex.value);
 
     final isMotionPhoto = asset.livePhotoVideoId != null;
-    final isOwner = asset.ownerId == ref.watch(currentUserProvider)?.isarId;
-    final isPartner = ref
-        .watch(partnerSharedWithProvider)
-        .map((e) => e.isarId)
-        .contains(asset.ownerId);
-
     // Listen provider to prevent autoDispose when navigating to other routes from within the gallery page
     ref.listen(currentAssetProvider, (_, __) {});
     useEffect(
@@ -120,9 +104,6 @@ class GalleryViewerPage extends HookConsumerWidget {
       },
       [],
     );
-
-    void toggleFavorite(Asset asset) =>
-        ref.read(assetProvider.notifier).toggleFavorite([asset]);
 
     Future<void> precacheNextImage(int index) async {
       void onError(Object exception, StackTrace? stackTrace) {
@@ -166,21 +147,6 @@ class GalleryViewerPage extends HookConsumerWidget {
       );
     }
 
-    void addToAlbum(Asset addToAlbumAsset) {
-      showModalBottomSheet(
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15.0),
-        ),
-        context: context,
-        builder: (BuildContext _) {
-          return AddToAlbumBottomSheet(
-            assets: [addToAlbumAsset],
-          );
-        },
-      );
-    }
-
     void handleSwipeUpDown(DragUpdateDetails details) {
       int sensitivity = 15;
       int dxThreshold = 50;
@@ -208,61 +174,6 @@ class GalleryViewerPage extends HookConsumerWidget {
       } else if (d.dy < -sensitivity && ratio < -ratioThreshold) {
         showInfo();
       }
-    }
-
-    handleActivities() {
-      if (album != null && album.shared && album.remoteId != null) {
-        context.pushRoute(const ActivitiesRoute());
-      }
-    }
-
-    handleUpload(Asset asset) {
-      showDialog(
-        context: context,
-        builder: (BuildContext _) {
-          return UploadDialog(
-            onUpload: () {
-              ref
-                  .read(manualUploadProvider.notifier)
-                  .uploadAssets(context, [asset]);
-            },
-          );
-        },
-      );
-    }
-
-    buildAppBar() {
-      return IgnorePointer(
-        ignoring: !ref.watch(showControlsProvider),
-        child: AnimatedOpacity(
-          duration: const Duration(milliseconds: 100),
-          opacity: ref.watch(showControlsProvider) ? 1.0 : 0.0,
-          child: Container(
-            color: Colors.black.withOpacity(0.4),
-            child: TopControlAppBar(
-              isOwner: isOwner,
-              isPartner: isPartner,
-              isPlayingMotionVideo: isPlayingVideo.value,
-              asset: asset,
-              onMoreInfoPressed: showInfo,
-              onFavorite: toggleFavorite,
-              onUploadPressed: asset.isLocal ? () => handleUpload(asset) : null,
-              onDownloadPressed: asset.isLocal
-                  ? null
-                  : () =>
-                      ref.read(imageViewerStateProvider.notifier).downloadAsset(
-                            asset,
-                            context,
-                          ),
-              onToggleMotionVideo: (() {
-                isPlayingVideo.value = !isPlayingVideo.value;
-              }),
-              onAddToAlbumPressed: () => addToAlbum(asset),
-              onActivitiesPressed: handleActivities,
-            ),
-          ),
-        ),
-      );
     }
 
     useEffect(
@@ -463,7 +374,10 @@ class GalleryViewerPage extends HookConsumerWidget {
               top: 0,
               left: 0,
               right: 0,
-              child: buildAppBar(),
+              child: GalleryAppBar(
+                asset: asset,
+                showInfo: showInfo,
+              ),
             ),
             Positioned(
               bottom: 0,
