@@ -29,12 +29,12 @@ describe(`immich login-key`, () => {
     expect(exitCode).toBe(1);
   });
 
-  it('should login', async () => {
+  it('should login and save auth.yml with 600', async () => {
     const admin = await apiUtils.adminSetup();
     const key = await apiUtils.createApiKey(admin.accessToken);
     const { stdout, stderr, exitCode } = await immichCli(['login-key', app, `${key.secret}`]);
     expect(stdout.split('\n')).toEqual([
-      'Logging in...',
+      'Logging in to http://127.0.0.1:2283/api',
       'Logged in as admin@immich.cloud',
       'Wrote auth info to /tmp/immich/auth.yml',
     ]);
@@ -44,5 +44,19 @@ describe(`immich login-key`, () => {
     const stats = await stat('/tmp/immich/auth.yml');
     const mode = (stats.mode & 0o777).toString(8);
     expect(mode).toEqual('600');
+  });
+
+  it('should login without /api in the url', async () => {
+    const admin = await apiUtils.adminSetup();
+    const key = await apiUtils.createApiKey(admin.accessToken);
+    const { stdout, stderr, exitCode } = await immichCli(['login-key', app.replaceAll('/api', ''), `${key.secret}`]);
+    expect(stdout.split('\n')).toEqual([
+      'Logging in to http://127.0.0.1:2283',
+      'Discovered API at http://127.0.0.1:2283/api',
+      'Logged in as admin@immich.cloud',
+      'Wrote auth info to /tmp/immich/auth.yml',
+    ]);
+    expect(stderr).toBe('');
+    expect(exitCode).toBe(0);
   });
 });

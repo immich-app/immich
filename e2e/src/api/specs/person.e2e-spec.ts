@@ -9,6 +9,7 @@ describe('/activity', () => {
   let admin: LoginResponseDto;
   let visiblePerson: PersonResponseDto;
   let hiddenPerson: PersonResponseDto;
+  let multipleAssetsPerson: PersonResponseDto;
 
   beforeAll(async () => {
     apiUtils.setup();
@@ -19,7 +20,7 @@ describe('/activity', () => {
   beforeEach(async () => {
     await dbUtils.reset(['person']);
 
-    [visiblePerson, hiddenPerson] = await Promise.all([
+    [visiblePerson, hiddenPerson, multipleAssetsPerson] = await Promise.all([
       apiUtils.createPerson(admin.accessToken, {
         name: 'visible_person',
       }),
@@ -27,13 +28,20 @@ describe('/activity', () => {
         name: 'hidden_person',
         isHidden: true,
       }),
+      apiUtils.createPerson(admin.accessToken, {
+        name: 'multiple_assets_person',
+      }),
     ]);
 
-    const asset = await apiUtils.createAsset(admin.accessToken);
+    const asset1 = await apiUtils.createAsset(admin.accessToken);
+    const asset2 = await apiUtils.createAsset(admin.accessToken);
 
     await Promise.all([
-      dbUtils.createFace({ assetId: asset.id, personId: visiblePerson.id }),
-      dbUtils.createFace({ assetId: asset.id, personId: hiddenPerson.id }),
+      dbUtils.createFace({ assetId: asset1.id, personId: visiblePerson.id }),
+      dbUtils.createFace({ assetId: asset1.id, personId: hiddenPerson.id }),
+      dbUtils.createFace({ assetId: asset1.id, personId: multipleAssetsPerson.id }),
+      dbUtils.createFace({ assetId: asset1.id, personId: multipleAssetsPerson.id }),
+      dbUtils.createFace({ assetId: asset2.id, personId: multipleAssetsPerson.id }),
     ]);
   });
 
@@ -55,9 +63,10 @@ describe('/activity', () => {
 
       expect(status).toBe(200);
       expect(body).toEqual({
-        total: 2,
+        total: 3,
         hidden: 1,
         people: [
+          expect.objectContaining({ name: 'multiple_assets_person' }),
           expect.objectContaining({ name: 'visible_person' }),
           expect.objectContaining({ name: 'hidden_person' }),
         ],
@@ -69,9 +78,12 @@ describe('/activity', () => {
 
       expect(status).toBe(200);
       expect(body).toEqual({
-        total: 2,
+        total: 3,
         hidden: 1,
-        people: [expect.objectContaining({ name: 'visible_person' })],
+        people: [
+          expect.objectContaining({ name: 'multiple_assets_person' }),
+          expect.objectContaining({ name: 'visible_person' }),
+        ],
       });
     });
   });
@@ -100,6 +112,33 @@ describe('/activity', () => {
 
       expect(status).toBe(200);
       expect(body).toEqual(expect.objectContaining({ id: visiblePerson.id }));
+    });
+  });
+
+  describe('GET /person/:id/statistics', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(app).get(`/person/${multipleAssetsPerson.id}/statistics`);
+
+      expect(status).toBe(401);
+      expect(body).toEqual(errorDto.unauthorized);
+    });
+
+    it('should throw error if person with id does not exist', async () => {
+      const { status, body } = await request(app)
+        .get(`/person/${uuidDto.notFound}/statistics`)
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest());
+    });
+
+    it('should return the correct number of assets', async () => {
+      const { status, body } = await request(app)
+        .get(`/person/${multipleAssetsPerson.id}/statistics`)
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toEqual(expect.objectContaining({ assets: 2 }));
     });
   });
 

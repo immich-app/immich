@@ -26,6 +26,8 @@
   let copyImageToClipboard: (source: string) => Promise<Blob>;
   let canCopyImagesToClipboard: () => boolean;
 
+  const loadOriginalByDefault = $alwaysLoadOriginalFile && isWebCompatibleImage(asset);
+
   $: if (imgElement) {
     createZoomImageWheel(imgElement, {
       maxZoom: 10,
@@ -126,7 +128,7 @@
   transition:fade={{ duration: haveFadeTransition ? 150 : 0 }}
   class="flex h-full select-none place-content-center place-items-center"
 >
-  {#await loadAssetData({ loadOriginal: $alwaysLoadOriginalFile ? isWebCompatibleImage(asset) : false })}
+  {#await loadAssetData({ loadOriginal: loadOriginalByDefault })}
     <LoadingSpinner />
   {:then}
     <div bind:this={imgElement} class="h-full w-full">
