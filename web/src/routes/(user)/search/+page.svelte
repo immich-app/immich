@@ -173,7 +173,7 @@
       make: 'Camera brand',
       model: 'Camera model',
       personIds: 'People',
-      originalFileName: 'File name',
+      originalPath: 'File name',
     };
     return keyMap[key] || key;
   }

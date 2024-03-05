@@ -94,7 +94,7 @@
 
     let payload: SmartSearchDto | MetadataSearchDto = {
       query: filter.context || undefined,
-      originalFileName: filter.fileName,
+      originalPath: filter.fileName,
       country: filter.location.country,
       state: filter.location.state,
       city: filter.location.city,

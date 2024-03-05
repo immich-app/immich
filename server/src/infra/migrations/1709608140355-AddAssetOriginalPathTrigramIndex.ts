@@ -5,7 +5,7 @@ export class AddAssetOriginalPathTrigramIndex1709608140355 implements MigrationI
     await queryRunner.query(`
     CREATE INDEX idx_originalpath_trigram
         ON assets
-    USING gin ("originalPath" gin_trgm_ops)`);
+    USING gin (f_unaccent("originalPath") gin_trgm_ops)`);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
