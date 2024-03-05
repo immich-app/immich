@@ -2,6 +2,7 @@
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { deleteUser, type UserResponseDto } from '@immich/sdk';
+  import { serverConfig } from '$lib/stores/server-config.store';
   import { createEventDispatcher } from 'svelte';
 
   export let user: UserResponseDto;
@@ -30,7 +31,7 @@
   <svelte:fragment slot="prompt">
     <div class="flex flex-col gap-4">
       <p>
-        <b>{user.name}</b>'s account and assets will be permanently deleted after 7 days.
+        <b>{user.name}</b>'s account and assets will be permanently deleted after {$serverConfig.userDeleteDelay} days.
       </p>
       <p>Are you sure you want to continue?</p>
     </div>

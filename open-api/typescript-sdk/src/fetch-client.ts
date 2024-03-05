@@ -705,6 +705,7 @@ export type ServerConfigDto = {
     loginPageMessage: string;
     oauthButtonText: string;
     trashDays: number;
+    userDeleteDelay: number;
 };
 export type ServerFeaturesDto = {
     configFile: boolean;
@@ -918,6 +919,9 @@ export type SystemConfigTrashDto = {
     days: number;
     enabled: boolean;
 };
+export type SystemConfigUserDto = {
+    deleteDelay: number;
+};
 export type SystemConfigDto = {
     ffmpeg: SystemConfigFFmpegDto;
     job: SystemConfigJobDto;
@@ -934,6 +938,7 @@ export type SystemConfigDto = {
     theme: SystemConfigThemeDto;
     thumbnail: SystemConfigThumbnailDto;
     trash: SystemConfigTrashDto;
+    user: SystemConfigUserDto;
 };
 export type SystemConfigTemplateStorageOptionDto = {
     dayOptions: string[];

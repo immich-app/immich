@@ -160,6 +160,7 @@ doc/SystemConfigTemplateStorageOptionDto.md
 doc/SystemConfigThemeDto.md
 doc/SystemConfigThumbnailDto.md
 doc/SystemConfigTrashDto.md
+doc/SystemConfigUserDto.md
 doc/TagApi.md
 doc/TagResponseDto.md
 doc/TagTypeEnum.md
@@ -357,6 +358,7 @@ lib/model/system_config_template_storage_option_dto.dart
 lib/model/system_config_theme_dto.dart
 lib/model/system_config_thumbnail_dto.dart
 lib/model/system_config_trash_dto.dart
+lib/model/system_config_user_dto.dart
 lib/model/tag_response_dto.dart
 lib/model/tag_type_enum.dart
 lib/model/thumbnail_format.dart
@@ -539,6 +541,7 @@ test/system_config_template_storage_option_dto_test.dart
 test/system_config_theme_dto_test.dart
 test/system_config_thumbnail_dto_test.dart
 test/system_config_trash_dto_test.dart
+test/system_config_user_dto_test.dart
 test/tag_api_test.dart
 test/tag_response_dto_test.dart
 test/tag_type_enum_test.dart

@@ -128,6 +128,9 @@ The default configuration looks like this:
   "theme": {
     "customCss": ""
   },
+  "user": {
+    "deleteDelay": 7
+  },
   "library": {
     "scan": {
       "enabled": true,

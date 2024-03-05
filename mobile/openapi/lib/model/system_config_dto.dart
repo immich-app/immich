@@ -28,6 +28,7 @@ class SystemConfigDto {
     required this.theme,
     required this.thumbnail,
     required this.trash,
+    required this.user,
   });
 
   SystemConfigFFmpegDto ffmpeg;
@@ -60,6 +61,8 @@ class SystemConfigDto {
 
   SystemConfigTrashDto trash;
 
+  SystemConfigUserDto user;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigDto &&
     other.ffmpeg == ffmpeg &&
@@ -76,7 +79,8 @@ class SystemConfigDto {
     other.storageTemplate == storageTemplate &&
     other.theme == theme &&
     other.thumbnail == thumbnail &&
-    other.trash == trash;
+    other.trash == trash &&
+    other.user == user;
 
   @override
   int get hashCode =>
@@ -95,10 +99,11 @@ class SystemConfigDto {
     (storageTemplate.hashCode) +
     (theme.hashCode) +
     (thumbnail.hashCode) +
-    (trash.hashCode);
+    (trash.hashCode) +
+    (user.hashCode);
 
   @override
-  String toString() => 'SystemConfigDto[ffmpeg=$ffmpeg, job=$job, library_=$library_, logging=$logging, machineLearning=$machineLearning, map=$map, newVersionCheck=$newVersionCheck, oauth=$oauth, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, server=$server, storageTemplate=$storageTemplate, theme=$theme, thumbnail=$thumbnail, trash=$trash]';
+  String toString() => 'SystemConfigDto[ffmpeg=$ffmpeg, job=$job, library_=$library_, logging=$logging, machineLearning=$machineLearning, map=$map, newVersionCheck=$newVersionCheck, oauth=$oauth, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, server=$server, storageTemplate=$storageTemplate, theme=$theme, thumbnail=$thumbnail, trash=$trash, user=$user]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -117,6 +122,7 @@ class SystemConfigDto {
       json[r'theme'] = this.theme;
       json[r'thumbnail'] = this.thumbnail;
       json[r'trash'] = this.trash;
+      json[r'user'] = this.user;
     return json;
   }
 
@@ -143,6 +149,7 @@ class SystemConfigDto {
         theme: SystemConfigThemeDto.fromJson(json[r'theme'])!,
         thumbnail: SystemConfigThumbnailDto.fromJson(json[r'thumbnail'])!,
         trash: SystemConfigTrashDto.fromJson(json[r'trash'])!,
+        user: SystemConfigUserDto.fromJson(json[r'user'])!,
       );
     }
     return null;
@@ -205,6 +212,7 @@ class SystemConfigDto {
     'theme',
     'thumbnail',
     'trash',
+    'user',
   };
 }
 

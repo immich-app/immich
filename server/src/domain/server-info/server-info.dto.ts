@@ -88,6 +88,8 @@ export class ServerConfigDto {
   loginPageMessage!: string;
   @ApiProperty({ type: 'integer' })
   trashDays!: number;
+  @ApiProperty({ type: 'integer' })
+  userDeleteDelay!: number;
   isInitialized!: boolean;
   isOnboarded!: boolean;
   externalDomain!: string;
