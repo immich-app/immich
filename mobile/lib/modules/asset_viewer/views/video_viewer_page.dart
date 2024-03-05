@@ -76,7 +76,7 @@ class VideoViewerPage extends HookConsumerWidget {
 
     // When the custom video controls paus or plays
     ref.listen(videoPlayerControlsProvider.select((value) => value.pause),
-        (_, pause) {
+        (lastPause, pause) {
       if (pause) {
         controller?.pause();
       } else {
@@ -97,11 +97,9 @@ class VideoViewerPage extends HookConsumerWidget {
       // Enable the WakeLock while the video is playing
       if (state == VideoPlaybackState.playing) {
         // Sync with the controls playing
-        ref.read(videoPlayerControlsProvider.notifier).play();
         WakelockPlus.enable();
       } else {
         // Sync with the controls pause
-        ref.read(videoPlayerControlsProvider.notifier).pause();
         WakelockPlus.disable();
       }
     }
@@ -109,6 +107,9 @@ class VideoViewerPage extends HookConsumerWidget {
     // Adds and removes the listener to the video player
     useEffect(
       () {
+        Future.microtask(
+          () => ref.read(videoPlayerControlsProvider.notifier).reset(),
+        );
         // Guard no controller
         if (controller == null) {
           return null;
@@ -119,7 +120,6 @@ class VideoViewerPage extends HookConsumerWidget {
         if (!isMotionVideo) {
           Future.microtask(() {
             ref.read(showControlsProvider.notifier).show = false;
-            ref.read(videoPlayerControlsProvider.notifier).reset();
           });
         }
 
