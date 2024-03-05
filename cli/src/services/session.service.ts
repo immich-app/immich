@@ -3,6 +3,7 @@ import { access, constants, mkdir, readFile, unlink, writeFile } from 'node:fs/p
 import path from 'node:path';
 import yaml from 'yaml';
 import { ImmichApi } from './api.service';
+
 class LoginError extends Error {
   constructor(message: string) {
     super(message);
@@ -14,13 +15,11 @@ class LoginError extends Error {
 }
 
 export class SessionService {
-  readonly configDirectory!: string;
-  readonly authPath!: string;
-
-  constructor(configDirectory: string) {
-    this.configDirectory = configDirectory;
-    this.authPath = path.join(configDirectory, '/auth.yml');
+  private get authPath() {
+    return path.join(this.configDirectory, '/auth.yml');
   }
+
+  constructor(private configDirectory: string) {}
 
   async connect(): Promise<ImmichApi> {
     let instanceUrl = process.env.IMMICH_INSTANCE_URL;
@@ -48,6 +47,8 @@ export class SessionService {
       }
     }
 
+    instanceUrl = await this.resolveApiEndpoint(instanceUrl);
+
     const api = new ImmichApi(instanceUrl, apiKey);
 
     const pingResponse = await api.pingServer().catch((error) => {
@@ -62,7 +63,9 @@ export class SessionService {
   }
 
   async login(instanceUrl: string, apiKey: string): Promise<ImmichApi> {
-    console.log('Logging in...');
+    console.log(`Logging in to ${instanceUrl}`);
+
+    instanceUrl = await this.resolveApiEndpoint(instanceUrl);
 
     const api = new ImmichApi(instanceUrl, apiKey);
 
@@ -83,7 +86,7 @@ export class SessionService {
 
     await writeFile(this.authPath, yaml.stringify({ instanceUrl, apiKey }), { mode: 0o600 });
 
-    console.log('Wrote auth info to ' + this.authPath);
+    console.log(`Wrote auth info to ${this.authPath}`);
 
     return api;
   }
@@ -97,5 +100,19 @@ export class SessionService {
     }
 
     console.log('Successfully logged out');
+  }
+
+  private async resolveApiEndpoint(instanceUrl: string): Promise<string> {
+    const wellKnownUrl = new URL('.well-known/immich', instanceUrl);
+    try {
+      const wellKnown = await fetch(wellKnownUrl).then((response) => response.json());
+      const endpoint = new URL(wellKnown.api.endpoint, instanceUrl).toString();
+      if (endpoint !== instanceUrl) {
+        console.debug(`Discovered API at ${endpoint}`);
+      }
+      return endpoint;
+    } catch {
+      return instanceUrl;
+    }
   }
 }
