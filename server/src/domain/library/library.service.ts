@@ -78,7 +78,7 @@ export class LibraryService extends EventEmitter {
     // TODO: we could make the lock be per-library instead of global
     this.watchLock = await this.databaseRepository.tryLock(DatabaseLock.LibraryWatch);
 
-    this.watchLibraries = this.watchLock;
+    this.watchLibraries = this.watchLock && watch.enabled;
 
     this.jobRepository.addCronJob(
       'libraryScan',
