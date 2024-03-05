@@ -7,7 +7,7 @@
     FileName = 'file-name',
   }
 
-  let selectedOption = context ? TextSearchOptions.Context : TextSearchOptions.FileName;
+  let selectedOption = fileName ? TextSearchOptions.FileName : TextSearchOptions.Context;
 
   $: {
     if (selectedOption === TextSearchOptions.Context) {
@@ -51,7 +51,7 @@
     type="text"
     id="file-name"
     name="file-name"
-    placeholder={'IMG_1234.JPG or PNG'}
+    placeholder={'File name or extension i.e. IMG_1234.JPG or PNG'}
     bind:value={fileName}
   />
 {/if}
