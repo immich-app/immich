@@ -8,17 +8,20 @@ import 'package:immich_mobile/modules/asset_viewer/models/image_viewer_page_stat
 import 'package:immich_mobile/modules/asset_viewer/services/image_viewer.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/services/share.service.dart';
+import 'package:immich_mobile/shared/services/edit_with.service.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/shared/ui/share_dialog.dart';
 
 class ImageViewerStateNotifier extends StateNotifier<ImageViewerPageState> {
   final ImageViewerService _imageViewerService;
   final ShareService _shareService;
+  final EditWithService _editWithService;
   final AlbumService _albumService;
 
   ImageViewerStateNotifier(
     this._imageViewerService,
     this._shareService,
+    this._editWithService,
     this._albumService,
   ) : super(
           ImageViewerPageState(
@@ -76,6 +79,30 @@ class ImageViewerStateNotifier extends StateNotifier<ImageViewerPageState> {
       barrierDismissible: false,
     );
   }
+
+  void editAssetWith(Asset asset, BuildContext context) async {
+    showDialog(
+      context: context,
+      builder: (BuildContext buildContext) {
+        _editWithService.editAsset(asset).then(
+          (bool status) {
+            if (!status) {
+              ImmichToast.show(
+                context: context,
+                msg: 'image_viewer_page_state_provider_edit_with_error'.tr(),
+                toastType: ToastType.error,
+                gravity: ToastGravity.BOTTOM,
+              );
+            }
+            buildContext.pop();
+          },
+        );
+        // Reuse share loading dialog
+        return const ShareDialog();
+      },
+      barrierDismissible: false,
+    );
+  }
 }
 
 final imageViewerStateProvider =
@@ -83,6 +110,7 @@ final imageViewerStateProvider =
   ((ref) => ImageViewerStateNotifier(
         ref.watch(imageViewerServiceProvider),
         ref.watch(shareServiceProvider),
+        ref.watch(editWithServiceProvider),
         ref.watch(albumServiceProvider),
       )),
 );

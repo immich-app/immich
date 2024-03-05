@@ -306,6 +306,21 @@ class GalleryViewerPage extends HookConsumerWidget {
       ref.read(imageViewerStateProvider.notifier).shareAsset(asset(), context);
     }
 
+    editAssetWith() {
+      if (asset().isOffline) {
+        ImmichToast.show(
+          durationInSecond: 1,
+          context: context,
+          msg: 'asset_action_edit_with_err_offline'.tr(),
+          gravity: ToastGravity.BOTTOM,
+        );
+        return;
+      }
+      ref
+          .read(imageViewerStateProvider.notifier)
+          .editAssetWith(asset(), context);
+    }
+
     handleArchive(Asset asset) {
       ref.read(assetProvider.notifier).toggleArchive([asset]);
       if (isParent) {
@@ -601,6 +616,11 @@ class GalleryViewerPage extends HookConsumerWidget {
           label: 'control_bottom_app_bar_share'.tr(),
           tooltip: 'control_bottom_app_bar_share'.tr(),
         ),
+        BottomNavigationBarItem(
+          icon: const Icon(Icons.edit_rounded),
+          label: 'control_bottom_app_bar_edit_with'.tr(),
+          tooltip: 'control_bottom_app_bar_edit_with'.tr(),
+        ),
         if (isOwner)
           asset().isArchived
               ? BottomNavigationBarItem(
@@ -635,6 +655,7 @@ class GalleryViewerPage extends HookConsumerWidget {
 
       List<Function(int)> actionslist = [
         (_) => shareAsset(),
+        (_) => editAssetWith(),
         if (isOwner) (_) => handleArchive(asset()),
         if (isOwner && stack.isNotEmpty) (_) => showStackActionItems(),
         if (isOwner) (_) => handleDelete(asset()),
