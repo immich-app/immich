@@ -24,7 +24,7 @@
       <div class="ml-4 mt-4 flex flex-col gap-4">
         <SettingInputField
           inputType={SettingInputFieldType.NUMBER}
-          label="DELETE USER DELAY"
+          label="DELETE DELAY"
           desc="Number of days after removal to permanently delete an user's account and assets. Changing this will impact users already queued for deletion."
           bind:value={config.user.deleteDelay}
           isEdited={config.user.deleteDelay !== savedConfig.user.deleteDelay}

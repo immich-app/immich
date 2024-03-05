@@ -137,6 +137,12 @@
       key: 'trash',
     },
     {
+      item: UserSettings,
+      title: 'User Settings',
+      subtitle: 'Manage user settings',
+      key: 'user-settings',
+    },
+    {
       item: NewVersionCheckSettings,
       title: 'Version Check',
       subtitle: 'Enable/disable the new version notification',
@@ -147,12 +153,6 @@
       title: 'Video Transcoding Settings',
       subtitle: 'Manage the resolution and encoding information of the video files',
       key: 'video-transcoding',
-    },
-    {
-      item: UserSettings,
-      title: 'User Settings',
-      subtitle: 'Manage user settings',
-      key: 'user-settings',
     },
   ];
 </script>
