@@ -1,8 +1,15 @@
-import { CropOptions, IMediaRepository, ResizeOptions, TranscodeOptions, VideoInfo } from '@app/domain';
+import {
+  CropOptions,
+  IMediaRepository,
+  ResizeOptions,
+  TranscodeOptions,
+  VideoInfo,
+  handlePromiseError,
+} from '@app/domain';
 import { Colorspace } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
-import fs from 'node:fs';
+import fs from 'node:fs/promises';
 import { Writable } from 'node:stream';
 import { promisify } from 'node:util';
 import sharp from 'sharp';
@@ -99,8 +106,8 @@ export class MediaRepository implements IMediaRepository {
             .addOptions('-pass', '2')
             .addOptions('-passlogfile', output)
             .on('error', reject)
-            .on('end', (): void => fs.unlinkSync(`${output}-0.log`))
-            .on('end', (): void => fs.rmSync(`${output}-0.log.mbtree`, { force: true }))
+            .on('end', () => handlePromiseError(fs.unlink(`${output}-0.log`)))
+            .on('end', () => handlePromiseError(fs.rm(`${output}-0.log.mbtree`, { force: true })))
             .on('end', resolve)
             .run();
         })

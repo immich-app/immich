@@ -75,26 +75,22 @@ class JobMock implements IJobRepository {
   async resume() {}
   async empty() {}
   async setConcurrency() {}
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async getQueueStatus() {
+  getQueueStatus() {
     return Promise.resolve(null) as any;
   }
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async getJobCounts() {
-    return null as any;
+  getJobCounts() {
+    return Promise.resolve(null) as any;
   }
   async pause() {}
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async clear() {
-    return [];
+  clear() {
+    return Promise.resolve([]);
   }
   async waitForQueueCompletion() {}
 }
 
 class MediaMockRepository extends MediaRepository {
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async generateThumbhash() {
-    return Buffer.from('mock-thumbhash');
+  generateThumbhash() {
+    return Promise.resolve(Buffer.from('mock-thumbhash'));
   }
 }
 

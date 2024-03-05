@@ -170,8 +170,7 @@ export class ServerInfoService {
     return true;
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
-  private async handleConnect(userId: string) {
+  private handleConnect(userId: string) {
     this.communicationRepository.send(ClientEvent.SERVER_VERSION, userId, serverVersion);
     this.newReleaseNotification(userId);
   }

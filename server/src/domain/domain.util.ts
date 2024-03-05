@@ -157,7 +157,7 @@ export type Paginated<T> = Promise<PaginationResult<T>>;
 
 export async function* usePagination<T>(
   pageSize: number,
-  getNextPage: (pagination: PaginationOptions) => Paginated<T>,
+  getNextPage: (pagination: PaginationOptions) => PaginationResult<T> | Paginated<T>,
 ) {
   let hasNextPage = true;
 
