@@ -2,9 +2,15 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import type { AssetBucket, AssetStore, Viewport } from '$lib/stores/assets.store';
+  import type { AssetStore, Viewport } from '$lib/stores/assets.store';
+  import { locale } from '$lib/stores/preferences.store';
   import { getAssetRatio } from '$lib/utils/asset-utils';
-  import { calculateWidth, formatGroupTitle, fromLocalDateTime } from '$lib/utils/timeline-util';
+  import {
+    calculateWidth,
+    formatGroupTitle,
+    fromLocalDateTime,
+    splitBucketIntoDateGroups,
+  } from '$lib/utils/timeline-util';
   import type { AssetResponseDto } from '@immich/sdk';
   import { mdiCheckCircle, mdiCircleOutline } from '@mdi/js';
   import justifiedLayout from 'justified-layout';
@@ -12,7 +18,9 @@
   import { fly } from 'svelte/transition';
   import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
 
-  export let bucket: AssetBucket;
+  export let assets: AssetResponseDto[];
+  export let bucketDate: string;
+  export let bucketHeight: number;
   export let isSelectionMode = false;
   export let viewport: Viewport;
   export let singleSelect = false;
@@ -34,7 +42,7 @@
   let actualBucketHeight: number;
   let hoveredDateGroup = '';
 
-  $: assetsGroupByDate = [...bucket.dateGroups.values()];
+  $: assetsGroupByDate = splitBucketIntoDateGroups(assets, $locale);
 
   $: geometry = (() => {
     const geometry = [];
@@ -58,8 +66,8 @@
   })();
 
   $: {
-    if (actualBucketHeight && actualBucketHeight !== 0 && actualBucketHeight != bucket.height) {
-      const heightDelta = assetStore.updateBucket(bucket.date, actualBucketHeight);
+    if (actualBucketHeight && actualBucketHeight !== 0 && actualBucketHeight != bucketHeight) {
+      const heightDelta = assetStore.updateBucket(bucketDate, actualBucketHeight);
       if (heightDelta !== 0) {
         scrollTimeline(heightDelta);
       }

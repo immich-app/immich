@@ -958,6 +958,7 @@ export type CreateUserDto = {
     name: string;
     password: string;
     quotaSizeInBytes?: number | null;
+    shouldChangePassword?: boolean;
     storageLabel?: string | null;
 };
 export type UpdateUserDto = {

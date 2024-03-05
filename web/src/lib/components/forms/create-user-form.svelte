@@ -7,12 +7,14 @@
   import Button from '../elements/buttons/button.svelte';
   import ImmichLogo from '../shared-components/immich-logo.svelte';
   import PasswordField from '../shared-components/password-field.svelte';
+  import Slider from '../elements/slider.svelte';
 
   let error: string;
   let success: string;
 
   let password = '';
   let confirmPassword = '';
+  let shouldChangePassword = true;
 
   let canCreateUser = false;
   let quotaSize: number | undefined;
@@ -54,6 +56,7 @@
           createUserDto: {
             email: String(email),
             password: String(password),
+            shouldChangePassword: Boolean(shouldChangePassword),
             name: String(name),
             quotaSizeInBytes: quotaSize ? convertToBytes(Number(quotaSize), 'GiB') : null,
           },
@@ -79,9 +82,6 @@
   <div class="flex flex-col place-content-center place-items-center gap-4 px-4">
     <ImmichLogo class="text-center" height="100" width="100" />
     <h1 class="text-2xl font-medium text-immich-primary dark:text-immich-dark-primary">Create new user</h1>
-    <p class="rounded-md border p-4 font-mono text-sm text-gray-600 dark:border-immich-dark-bg dark:text-gray-300">
-      Please provide your user with the password, they will have to change it on their first sign in.
-    </p>
   </div>
 
   <form on:submit|preventDefault={registerUser} autocomplete="off">
@@ -98,6 +98,13 @@
     <div class="m-4 flex flex-col gap-2">
       <label class="immich-form-label" for="confirmPassword">Confirm Password</label>
       <PasswordField id="confirmPassword" bind:password={confirmPassword} autocomplete="new-password" />
+    </div>
+
+    <div class="m-4 flex place-items-center justify-between gap-2">
+      <label class="text-sm dark:text-immich-dark-fg" for="Require user to change password on first login">
+        Require user to change password on first login
+      </label>
+      <Slider bind:checked={shouldChangePassword} />
     </div>
 
     <div class="m-4 flex flex-col gap-2">
