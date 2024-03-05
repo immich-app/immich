@@ -14,7 +14,7 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 
 @RoutePage()
 // ignore: must_be_immutable
-class VideoViewerPage extends HookConsumerWidget {
+class VideoViewerPage extends StatefulHookConsumerWidget {
   final Asset asset;
   final bool isMotionVideo;
   final Widget? placeholder;
@@ -33,18 +33,24 @@ class VideoViewerPage extends HookConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ConsumerStatefulWidget> createState() =>
+      _VideoViewerPageState();
+}
+
+class _VideoViewerPageState extends ConsumerState<VideoViewerPage> {
+  @override
+  Widget build(BuildContext context) {
     final controller = useChewieController(
-      asset,
+      widget.asset,
       controlsSafeAreaMinimum: const EdgeInsets.only(
         bottom: 100,
       ),
-      placeholder: SizedBox.expand(child: placeholder),
+      placeholder: SizedBox.expand(child: widget.placeholder),
       customControls: CustomVideoPlayerControls(
-        hideTimerDuration: hideControlsTimer,
+        hideTimerDuration: widget.hideControlsTimer,
       ),
-      showControls: showControls && !isMotionVideo,
-      hideControlsTimer: hideControlsTimer,
+      showControls: widget.showControls && !widget.isMotionVideo,
+      hideControlsTimer: widget.hideControlsTimer,
     );
 
     // The last volume of the video used when mute is toggled
@@ -117,7 +123,7 @@ class VideoViewerPage extends HookConsumerWidget {
 
         // Hide the controls
         // Done in a microtask to avoid setting the state while the widget is building
-        if (!isMotionVideo) {
+        if (!widget.isMotionVideo) {
           Future.microtask(() {
             ref.read(showControlsProvider.notifier).show = false;
           });
@@ -154,7 +160,7 @@ class VideoViewerPage extends HookConsumerWidget {
               visible: controller == null,
               child: Stack(
                 children: [
-                  if (placeholder != null) placeholder!,
+                  if (widget.placeholder != null) widget.placeholder!,
                   const Positioned.fill(
                     child: Center(
                       child: DelayedLoadingIndicator(
