@@ -1,17 +1,17 @@
 <script lang="ts">
-  export let fileName: string | undefined;
+  export let filename: string | undefined;
   export let context: string | undefined;
 
   enum TextSearchOptions {
     Context = 'context',
-    FileName = 'file-name',
+    Filename = 'filename',
   }
 
-  let selectedOption = fileName ? TextSearchOptions.FileName : TextSearchOptions.Context;
+  let selectedOption = filename ? TextSearchOptions.Filename : TextSearchOptions.Context;
 
   $: {
     if (selectedOption === TextSearchOptions.Context) {
-      fileName = undefined;
+      filename = undefined;
     } else {
       context = undefined;
     }
@@ -30,7 +30,7 @@
       name="file-name"
       id="file-name"
       bind:group={selectedOption}
-      value={TextSearchOptions.FileName}
+      value={TextSearchOptions.Filename}
     />
     <span>FILE NAME</span>
   </label>
@@ -52,6 +52,6 @@
     id="file-name"
     name="file-name"
     placeholder="File name or extension i.e. IMG_1234.JPG or PNG"
-    bind:value={fileName}
+    bind:value={filename}
   />
 {/if}

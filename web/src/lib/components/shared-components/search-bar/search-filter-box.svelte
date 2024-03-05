@@ -129,7 +129,7 @@
       <SearchPeopleSection width={filterBoxWidth} bind:selectedPeople={filter.personIds} />
 
       <!-- TEXT -->
-      <SearchTextSection bind:fileName={filter.fileName} bind:context={filter.context} />
+      <SearchTextSection bind:filename={filter.fileName} bind:context={filter.context} />
 
       <!-- LOCATION -->
       <SearchLocationSection bind:filters={filter.location} />
