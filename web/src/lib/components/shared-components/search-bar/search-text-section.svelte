@@ -51,7 +51,7 @@
     type="text"
     id="file-name"
     name="file-name"
-    placeholder={'File name or extension i.e. IMG_1234.JPG or PNG'}
+    placeholder="File name or extension i.e. IMG_1234.JPG or PNG"
     bind:value={fileName}
   />
 {/if}
