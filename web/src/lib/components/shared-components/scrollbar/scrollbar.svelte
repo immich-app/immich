@@ -38,8 +38,8 @@
     return buckets.map((bucket) => {
       const segment = new Segment();
       segment.count = bucket.assets.length;
-      segment.height = toScrollY(bucket.height);
-      segment.timeGroup = bucket.date;
+      segment.height = toScrollY(bucket.bucketHeight);
+      segment.timeGroup = bucket.bucketDate;
       segment.date = fromLocalDateTime(segment.timeGroup);
 
       if (previous?.date.year !== segment.date.year && height > MIN_YEAR_LABEL_DISTANCE) {
