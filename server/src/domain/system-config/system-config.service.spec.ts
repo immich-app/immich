@@ -148,7 +148,7 @@ describe(SystemConfigService.name, () => {
   let communicationMock: jest.Mocked<ICommunicationRepository>;
   let smartInfoMock: jest.Mocked<ISearchRepository>;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     delete process.env.IMMICH_CONFIG_FILE;
     configMock = newSystemConfigRepositoryMock();
     communicationMock = newCommunicationRepositoryMock();

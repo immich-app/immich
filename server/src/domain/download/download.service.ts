@@ -114,9 +114,7 @@ export class DownloadService {
       const assetIds = dto.assetIds;
       await this.access.requirePermission(auth, Permission.ASSET_DOWNLOAD, assetIds);
       const assets = await this.assetRepository.getByIds(assetIds);
-      return (async function* () {
-        yield assets;
-      })();
+      return usePagination(PAGINATION_SIZE, () => ({ hasNextPage: false, items: assets }));
     }
 
     if (dto.albumId) {

@@ -22,7 +22,7 @@ describe(SharedLinkService.name, () => {
   let cryptoMock: jest.Mocked<ICryptoRepository>;
   let shareMock: jest.Mocked<ISharedLinkRepository>;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     accessMock = newAccessRepositoryMock();
     cryptoMock = newCryptoRepositoryMock();
     shareMock = newSharedLinkRepositoryMock();

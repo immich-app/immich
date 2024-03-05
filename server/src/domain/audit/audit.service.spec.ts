@@ -31,7 +31,7 @@ describe(AuditService.name, () => {
   let storageMock: jest.Mocked<IStorageRepository>;
   let userMock: jest.Mocked<IUserRepository>;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     accessMock = newAccessRepositoryMock();
     assetMock = newAssetRepositoryMock();
     cryptoMock = newCryptoRepositoryMock();

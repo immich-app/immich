@@ -49,7 +49,7 @@ describe(UserService.name, () => {
   let libraryMock: jest.Mocked<ILibraryRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     albumMock = newAlbumRepositoryMock();
     assetMock = newAssetRepositoryMock();
     cryptoRepositoryMock = newCryptoRepositoryMock();
