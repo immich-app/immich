@@ -25,6 +25,7 @@ import {
 } from '@immich/sdk';
 import { BrowserContext } from '@playwright/test';
 import { exec, spawn } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { access } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -76,6 +77,10 @@ export const fileUtils = {
   reset: async () => {
     await execPromise(`docker exec -i "${serverContainerName}" /bin/bash -c "rm -rf ${dirs} && mkdir ${dirs}"`);
   },
+  unzip: async (input: string, output: string) => {
+    await execPromise(`unzip -o -d "${output}" "${input}"`);
+  },
+  sha1: (bytes: Buffer) => createHash('sha1').update(bytes).digest('base64'),
 };
 
 export const dbUtils = {
@@ -150,7 +155,7 @@ export interface CliResponse {
 export const immichCli = async (args: string[]) => {
   let _resolve: (value: CliResponse) => void;
   const deferred = new Promise<CliResponse>((resolve) => (_resolve = resolve));
-  const _args = ['node_modules/.bin/immich', '-d', '/tmp/immich/', ...args];
+  const _args = ['node_modules/.bin/immich', '-d', `/${tempDir}/immich/`, ...args];
   const child = spawn('node', _args, {
     stdio: 'pipe',
   });

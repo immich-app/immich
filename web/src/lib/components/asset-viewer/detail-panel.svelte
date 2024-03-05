@@ -616,7 +616,16 @@
     {:then component}
       <svelte:component
         this={component.default}
-        mapMarkers={[{ lat: latlng.lat, lon: latlng.lng, id: asset.id }]}
+        mapMarkers={[
+          {
+            lat: latlng.lat,
+            lon: latlng.lng,
+            id: asset.id,
+            city: asset.exifInfo?.city ?? null,
+            state: asset.exifInfo?.state ?? null,
+            country: asset.exifInfo?.country ?? null,
+          },
+        ]}
         center={latlng}
         zoom={15}
         simplified

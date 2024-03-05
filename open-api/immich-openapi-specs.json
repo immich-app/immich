@@ -7672,6 +7672,9 @@
             "nullable": true,
             "type": "integer"
           },
+          "shouldChangePassword": {
+            "type": "boolean"
+          },
           "storageLabel": {
             "nullable": true,
             "type": "string"
@@ -8291,6 +8294,14 @@
       },
       "MapMarkerResponseDto": {
         "properties": {
+          "city": {
+            "nullable": true,
+            "type": "string"
+          },
+          "country": {
+            "nullable": true,
+            "type": "string"
+          },
           "id": {
             "type": "string"
           },
@@ -8301,12 +8312,19 @@
           "lon": {
             "format": "double",
             "type": "number"
+          },
+          "state": {
+            "nullable": true,
+            "type": "string"
           }
         },
         "required": [
+          "city",
+          "country",
           "id",
           "lat",
-          "lon"
+          "lon",
+          "state"
         ],
         "type": "object"
       },
@@ -9930,6 +9948,9 @@
           "clientSecret": {
             "type": "string"
           },
+          "defaultStorageQuota": {
+            "type": "number"
+          },
           "enabled": {
             "type": "boolean"
           },
@@ -9950,6 +9971,9 @@
           },
           "storageLabelClaim": {
             "type": "string"
+          },
+          "storageQuotaClaim": {
+            "type": "string"
           }
         },
         "required": [
@@ -9958,13 +9982,15 @@
           "buttonText",
           "clientId",
           "clientSecret",
+          "defaultStorageQuota",
           "enabled",
           "issuerUrl",
           "mobileOverrideEnabled",
           "mobileRedirectUri",
           "scope",
           "signingAlgorithm",
-          "storageLabelClaim"
+          "storageLabelClaim",
+          "storageQuotaClaim"
         ],
         "type": "object"
       },

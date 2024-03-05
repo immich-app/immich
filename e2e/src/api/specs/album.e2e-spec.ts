@@ -41,7 +41,7 @@ describe('/album', () => {
     ]);
 
     [user1Asset1, user1Asset2] = await Promise.all([
-      apiUtils.createAsset(user1.accessToken),
+      apiUtils.createAsset(user1.accessToken, { isFavorite: true }),
       apiUtils.createAsset(user1.accessToken),
     ]);
 
@@ -117,6 +117,17 @@ describe('/album', () => {
         .set('Authorization', `Bearer ${user1.accessToken}`);
       expect(status).toEqual(400);
       expect(body).toEqual(errorDto.badRequest(['assetId must be a UUID']));
+    });
+
+    it("should not show other users' favorites", async () => {
+      const { status, body } = await request(app)
+        .get(`/album/${user1Albums[0].id}?withoutAssets=false`)
+        .set('Authorization', `Bearer ${user2.accessToken}`);
+      expect(status).toEqual(200);
+      expect(body).toEqual({
+        ...user1Albums[0],
+        assets: [expect.objectContaining({ isFavorite: false })],
+      });
     });
 
     it('should not return shared albums with a deleted owner', async () => {

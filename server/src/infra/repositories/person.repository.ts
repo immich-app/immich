@@ -171,16 +171,17 @@ export class PersonRepository implements IPersonRepository {
 
   @GenerateSql({ params: [DummyValue.UUID] })
   async getStatistics(personId: string): Promise<PersonStatistics> {
+    const items = await this.assetFaceRepository
+      .createQueryBuilder('face')
+      .leftJoin('face.asset', 'asset')
+      .where('face.personId = :personId', { personId })
+      .andWhere('asset.isArchived = false')
+      .andWhere('asset.deletedAt IS NULL')
+      .andWhere('asset.livePhotoVideoId IS NULL')
+      .select('COUNT(DISTINCT(asset.id))', 'count')
+      .getRawOne();
     return {
-      assets: await this.assetFaceRepository
-        .createQueryBuilder('face')
-        .leftJoin('face.asset', 'asset')
-        .where('face.personId = :personId', { personId })
-        .andWhere('asset.isArchived = false')
-        .andWhere('asset.deletedAt IS NULL')
-        .andWhere('asset.livePhotoVideoId IS NULL')
-        .distinct(true)
-        .getCount(),
+      assets: items.count ?? 0,
     };
   }
 
@@ -223,8 +224,8 @@ export class PersonRepository implements IPersonRepository {
       .getRawOne();
 
     const result: PeopleStatistics = {
-      total: items ? Number.parseInt(items.total) : 0,
-      hidden: items ? Number.parseInt(items.hidden) : 0,
+      total: items.total ?? 0,
+      hidden: items.hidden ?? 0,
     };
 
     return result;

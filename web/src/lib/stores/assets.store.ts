@@ -59,14 +59,14 @@ interface DeleteAsset {
   value: string;
 }
 
-interface TrashAsset {
+interface TrashAssets {
   type: 'trash';
-  value: string;
+  value: string[];
 }
 
 export const photoViewer = writable<HTMLImageElement | null>(null);
 
-type PendingChange = AddAsset | UpdateAsset | DeleteAsset | TrashAsset;
+type PendingChange = AddAsset | UpdateAsset | DeleteAsset | TrashAssets;
 
 export class AssetStore {
   private store$ = writable(this);
@@ -105,7 +105,7 @@ export class AssetStore {
         this.addPendingChanges({ type: 'add', value: asset });
       }),
       websocketEvents.on('on_asset_trash', (ids) => {
-        this.addPendingChanges(...ids.map((id): TrashAsset => ({ type: 'trash', value: id })));
+        this.addPendingChanges({ type: 'trash', value: ids });
       }),
       websocketEvents.on('on_asset_update', (asset) => {
         this.addPendingChanges({ type: 'update', value: asset });
@@ -137,13 +137,13 @@ export class AssetStore {
 
         case 'trash': {
           if (!this.options.isTrashed) {
-            this.removeAsset(value);
+            this.removeAssets(value);
           }
           break;
         }
 
         case 'delete': {
-          this.removeAsset(value);
+          this.removeAssets([value]);
           break;
         }
       }
@@ -363,7 +363,7 @@ export class AssetStore {
 
     const recalculate = asset.fileCreatedAt !== _asset.fileCreatedAt;
     if (recalculate) {
-      this.removeAsset(asset.id);
+      this.removeAssets([asset.id]);
       this.addAssetToBucket(_asset);
       return;
     }
@@ -373,33 +373,29 @@ export class AssetStore {
   }
 
   removeAssets(ids: string[]) {
-    // TODO: this could probably be more efficient
-    for (const id of ids) {
-      this.removeAsset(id);
-    }
-  }
+    const idSet = new Set(ids);
+    this.assets = this.assets.filter((asset) => !idSet.has(asset.id));
 
-  removeAsset(id: string) {
-    this.assets = this.assets.filter((asset) => asset.id !== id);
-    delete this.assetToBucket[id];
-
-    for (let index = 0; index < this.buckets.length; index++) {
+    // Iterate in reverse to allow array splicing.
+    for (let index = this.buckets.length - 1; index >= 0; index--) {
       const bucket = this.buckets[index];
-      for (let index_ = 0; index_ < bucket.assets.length; index_++) {
+      for (let index_ = bucket.assets.length - 1; index_ >= 0; index_--) {
         const asset = bucket.assets[index_];
-        if (asset.id !== id) {
+        if (!idSet.has(asset.id)) {
           continue;
         }
 
         bucket.assets.splice(index_, 1);
-        if (bucket.assets.length === 0) {
+        bucket.bucketCount = bucket.assets.length;
+        if (bucket.bucketCount === 0) {
           this.buckets.splice(index, 1);
         }
 
-        this.emit(true);
-        return;
+        delete this.assetToBucket[asset.id];
       }
     }
+
+    this.emit(false);
   }
 
   async getPreviousAssetId(assetId: string): Promise<string | null> {

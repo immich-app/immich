@@ -4,6 +4,7 @@
   import { AppRoute, QueryParameter } from '$lib/constants';
   import { memoryStore } from '$lib/stores/memory.store';
   import { getAssetThumbnailUrl } from '$lib/utils';
+  import { getAltText } from '$lib/utils/thumbnail-util';
   import { ThumbnailFormat, getMemoryLane } from '@immich/sdk';
   import { mdiChevronLeft, mdiChevronRight } from '@mdi/js';
   import { onMount } from 'svelte';
@@ -64,7 +65,6 @@
         {/if}
       </div>
     {/if}
-
     <div class="inline-block" bind:offsetWidth={innerWidth}>
       {#each $memoryStore as memory, index (memory.title)}
         <button
@@ -74,7 +74,7 @@
           <img
             class="h-full w-full rounded-xl object-cover"
             src={getAssetThumbnailUrl(memory.assets[0].id, ThumbnailFormat.Jpeg)}
-            alt={memory.title}
+            alt={`Memory Lane ${getAltText(memory.assets[0])}`}
             draggable="false"
           />
           <p class="absolute bottom-2 left-4 z-10 text-lg text-white">{memory.title}</p>
