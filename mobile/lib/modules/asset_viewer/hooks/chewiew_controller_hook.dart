@@ -31,6 +31,7 @@ ChewieController? useChewieController(
 }) {
   return use(
     _ChewieControllerHook(
+      keys: [asset],
       asset: asset,
       placeholder: placeholder,
       showOptions: showOptions,
@@ -66,6 +67,7 @@ class _ChewieControllerHook extends Hook<ChewieController?> {
   final VoidCallback? onVideoEnded;
 
   const _ChewieControllerHook({
+    super.keys,
     required this.asset,
     this.controlsSafeAreaMinimum = const EdgeInsets.only(
       bottom: 100,
@@ -94,7 +96,7 @@ class _ChewieControllerHookState
   VideoPlayerController? videoPlayerController;
 
   @override
-  void initHook() async {
+  void initHook() {
     super.initHook();
     _initialize().whenComplete(() => setState(() {}));
   }

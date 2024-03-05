@@ -96,8 +96,12 @@ class VideoViewerPage extends HookConsumerWidget {
 
       // Enable the WakeLock while the video is playing
       if (state == VideoPlaybackState.playing) {
+        // Sync with the controls playing
+        ref.read(videoPlayerControlsProvider.notifier).play();
         WakelockPlus.enable();
       } else {
+        // Sync with the controls pause
+        ref.read(videoPlayerControlsProvider.notifier).pause();
         WakelockPlus.disable();
       }
     }
@@ -113,9 +117,10 @@ class VideoViewerPage extends HookConsumerWidget {
         // Hide the controls
         // Done in a microtask to avoid setting the state while the widget is building
         if (!isMotionVideo) {
-          Future.microtask(
-            () => ref.read(showControlsProvider.notifier).show = false,
-          );
+          Future.microtask(() {
+            ref.read(showControlsProvider.notifier).show = false;
+            ref.read(videoPlayerControlsProvider.notifier).reset();
+          });
         }
 
         final video = controller.videoPlayerController.value;
@@ -127,8 +132,8 @@ class VideoViewerPage extends HookConsumerWidget {
         controller.videoPlayerController.addListener(updateVideoPlayback);
         return () {
           // Removes listener when we dispose
-          controller.pause();
           controller.videoPlayerController.removeListener(updateVideoPlayback);
+          controller.pause();
         };
       },
       [controller],

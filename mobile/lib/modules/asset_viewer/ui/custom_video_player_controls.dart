@@ -61,7 +61,12 @@ class CustomVideoPlayerControls extends HookConsumerWidget {
     /// Toggles between playing and pausing depending on the state of the video
     void togglePlay() {
       showControlsAndStartHideTimer();
-      ref.read(videoPlayerControlsProvider.notifier).togglePlay();
+      final state = ref.read(videoPlaybackValueProvider).state;
+      if (state == VideoPlaybackState.playing) {
+        ref.read(videoPlayerControlsProvider.notifier).pause();
+      } else {
+        ref.read(videoPlayerControlsProvider.notifier).play();
+      }
     }
 
     return GestureDetector(

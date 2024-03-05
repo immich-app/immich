@@ -446,7 +446,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                     child: VideoViewerPage(
                       key: ValueKey(a),
                       asset: a,
-                      isMotionVideo: isPlayingVideo.value,
+                      isMotionVideo: a.livePhotoVideoId != null,
                       placeholder: Image(
                         image: provider,
                         fit: BoxFit.contain,
