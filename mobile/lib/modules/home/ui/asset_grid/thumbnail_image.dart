@@ -1,39 +1,42 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/immich_thumbnail.dart';
 import 'package:immich_mobile/utils/storage_indicator.dart';
 import 'package:isar/isar.dart';
 
+/// Shows the thumbnail images in the asset grid view
 class ThumbnailImage extends StatelessWidget {
+  /// The asset to show the thumbnail image for
   final Asset asset;
-  final int index;
-  final Asset Function(int index) loadAsset;
-  final int totalAssets;
+
+  /// Whether to show the storage indicator icont over the image or not
   final bool showStorageIndicator;
+
+  /// Whether to show the show stack icon over the image or not
   final bool showStack;
+
+  /// Whether to show the checkmark indicating that this image is selected
   final bool isSelected;
+
+  /// Can override [isSelected] and never show the selection indicator
   final bool multiselectEnabled;
-  final Function? onSelect;
-  final Function? onDeselect;
+
+  /// If we are allowed to deselect this image
+  final bool canDeselect;
+
+  /// The offset index to apply to this hero tag for animation
   final int heroOffset;
 
   const ThumbnailImage({
     super.key,
     required this.asset,
-    required this.index,
-    required this.loadAsset,
-    required this.totalAssets,
     this.showStorageIndicator = true,
     this.showStack = false,
     this.isSelected = false,
     this.multiselectEnabled = false,
-    this.onDeselect,
-    this.onSelect,
     this.heroOffset = 0,
+    this.canDeselect = true,
   });
 
   @override
@@ -146,11 +149,7 @@ class ThumbnailImage extends StatelessWidget {
       }
       return Container(
         decoration: BoxDecoration(
-          border: Border.all(
-            width: 0,
-            color: onDeselect == null ? Colors.grey : assetContainerColor,
-          ),
-          color: onDeselect == null ? Colors.grey : assetContainerColor,
+          color: canDeselect ? assetContainerColor : Colors.grey,
         ),
         child: ClipRRect(
           borderRadius: const BorderRadius.only(
@@ -164,79 +163,52 @@ class ThumbnailImage extends StatelessWidget {
       );
     }
 
-    return GestureDetector(
-      onTap: () {
-        if (multiselectEnabled) {
-          if (isSelected) {
-            onDeselect?.call();
-          } else {
-            onSelect?.call();
-          }
-        } else {
-          context.pushRoute(
-            GalleryViewerRoute(
-              initialIndex: index,
-              loadAsset: loadAsset,
-              totalAssets: totalAssets,
-              heroOffset: heroOffset,
-              showStack: showStack,
-            ),
-          );
-        }
-      },
-      onLongPress: () {
-        onSelect?.call();
-        HapticFeedback.heavyImpact();
-      },
-      child: Stack(
-        children: [
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.decelerate,
-            decoration: BoxDecoration(
-              border: multiselectEnabled && isSelected
-                  ? Border.all(
-                      color: onDeselect == null
-                          ? Colors.grey
-                          : assetContainerColor,
-                      width: 8,
-                    )
-                  : const Border(),
-            ),
-            child: buildImage(),
+    return Stack(
+      children: [
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.decelerate,
+          decoration: BoxDecoration(
+            border: multiselectEnabled && isSelected
+                ? Border.all(
+                    color: canDeselect ? assetContainerColor : Colors.grey,
+                    width: 8,
+                  )
+                : const Border(),
           ),
-          if (multiselectEnabled)
-            Padding(
-              padding: const EdgeInsets.all(3.0),
-              child: Align(
-                alignment: Alignment.topLeft,
-                child: buildSelectionIcon(asset),
-              ),
+          child: buildImage(),
+        ),
+        if (multiselectEnabled)
+          Padding(
+            padding: const EdgeInsets.all(3.0),
+            child: Align(
+              alignment: Alignment.topLeft,
+              child: buildSelectionIcon(asset),
             ),
-          if (showStorageIndicator)
-            Positioned(
-              right: 8,
-              bottom: 5,
-              child: Icon(
-                storageIcon(asset),
-                color: Colors.white,
-                size: 18,
-              ),
+          ),
+        if (showStorageIndicator)
+          Positioned(
+            right: 8,
+            bottom: 5,
+            child: Icon(
+              storageIcon(asset),
+              color: Colors.white,
+              size: 18,
             ),
-          if (asset.isFavorite)
-            const Positioned(
-              left: 8,
-              bottom: 5,
-              child: Icon(
-                Icons.favorite,
-                color: Colors.white,
-                size: 18,
-              ),
+          ),
+        if (asset.isFavorite)
+          const Positioned(
+            left: 8,
+            bottom: 5,
+            child: Icon(
+              Icons.favorite,
+              color: Colors.white,
+              size: 18,
             ),
-          if (!asset.isImage) buildVideoIcon(),
-          if (asset.stackChildrenCount > 0) buildStackIcon(),
-        ],
-      ),
+          ),
+        if (!asset.isImage) buildVideoIcon(),
+        if (asset.stackChildrenCount > 0) buildStackIcon(),
+      ],
     );
   }
 }

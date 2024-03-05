@@ -11,6 +11,7 @@ import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/latlngbounds_extension.dart';
 import 'package:immich_mobile/extensions/maplibrecontroller_extensions.dart';
+import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/modules/map/models/map_event.model.dart';
 import 'package:immich_mobile/modules/map/models/map_marker.dart';
 import 'package:immich_mobile/modules/map/providers/map_marker.provider.dart';
@@ -178,11 +179,16 @@ class MapPage extends HookConsumerWidget {
         return;
       }
 
+      // Since we only have a single asset, we can just show GroupAssetBy.none
+      final renderList = await RenderList.fromAssets(
+        [asset],
+        GroupAssetsBy.none,
+      );
+
       context.pushRoute(
         GalleryViewerRoute(
           initialIndex: 0,
-          loadAsset: (index) => asset,
-          totalAssets: 1,
+          renderList: renderList,
           heroOffset: 0,
         ),
       );
