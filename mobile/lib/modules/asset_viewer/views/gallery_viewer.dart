@@ -15,6 +15,7 @@ import 'package:immich_mobile/modules/asset_viewer/providers/current_asset.provi
 import 'package:immich_mobile/modules/asset_viewer/providers/show_controls.provider.dart';
 import 'package:immich_mobile/modules/album/ui/add_to_album_bottom_sheet.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/image_viewer_page_state.provider.dart';
+import 'package:immich_mobile/modules/asset_viewer/providers/video_player_value_provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/advanced_bottom_sheet.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/bottom_gallery_bar.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/exif_bottom_sheet.dart';
@@ -71,6 +72,11 @@ class GalleryViewerPage extends HookConsumerWidget {
     Offset? localPosition;
     final currentIndex = useState(initialIndex);
     final currentAsset = loadAsset(currentIndex.value);
+
+    // Update is playing motion video
+    ref.listen(videoPlaybackValueProvider.select((v) => v.state), (_, state) {
+      isPlayingMotionVideo.value = state == VideoPlaybackState.playing;
+    });
 
     final stackIndex = useState(-1);
     final stack = showStack && currentAsset.stackChildrenCount > 0
