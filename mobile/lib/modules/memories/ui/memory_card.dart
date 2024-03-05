@@ -79,7 +79,6 @@ class MemoryCard extends StatelessWidget {
                       ),
                     ),
                     hideControlsTimer: const Duration(seconds: 2),
-                    onVideoEnded: onVideoEnded,
                     showControls: false,
                   ),
                 );

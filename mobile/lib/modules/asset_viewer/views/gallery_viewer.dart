@@ -446,11 +446,6 @@ class GalleryViewerPage extends HookConsumerWidget {
                         width: context.width,
                         alignment: Alignment.center,
                       ),
-                      onVideoEnded: () {
-                        if (isPlayingMotionVideo.value) {
-                          isPlayingMotionVideo.value = false;
-                        }
-                      },
                     ),
                   );
                 }

@@ -7,7 +7,6 @@ import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:video_player/video_player.dart';
 import 'package:immich_mobile/shared/models/store.dart' as store;
-import 'package:wakelock_plus/wakelock_plus.dart';
 
 /// Provides the initialized video player controller
 /// If the asset is local, use the local file
@@ -137,24 +136,6 @@ class _ChewieControllerHookState
         httpHeaders: {"x-immich-user-token": accessToken},
       );
     }
-
-    videoPlayerController!.addListener(() {
-      final value = videoPlayerController!.value;
-      if (value.isPlaying) {
-        WakelockPlus.enable();
-        hook.onPlaying?.call();
-      } else if (!value.isPlaying) {
-        WakelockPlus.disable();
-        hook.onPaused?.call();
-      }
-
-      if (value.position != const Duration() &&
-          value.position == value.duration) {
-        WakelockPlus.disable();
-
-        hook.onVideoEnded?.call();
-      }
-    });
 
     await videoPlayerController!.initialize();
 

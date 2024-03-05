@@ -10,6 +10,7 @@ import 'package:immich_mobile/modules/asset_viewer/providers/video_player_value_
 import 'package:immich_mobile/modules/asset_viewer/ui/custom_video_player_controls.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/delayed_loading_indicator.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 @RoutePage()
 // ignore: must_be_immutable
@@ -17,9 +18,6 @@ class VideoViewerPage extends HookConsumerWidget {
   final Asset asset;
   final bool isMotionVideo;
   final Widget? placeholder;
-  final VoidCallback? onVideoEnded;
-  final VoidCallback? onPlaying;
-  final VoidCallback? onPaused;
   final Duration hideControlsTimer;
   final bool showControls;
   final bool showDownloadingIndicator;
@@ -28,9 +26,6 @@ class VideoViewerPage extends HookConsumerWidget {
     super.key,
     required this.asset,
     this.isMotionVideo = false,
-    this.onVideoEnded,
-    this.onPlaying,
-    this.onPaused,
     this.placeholder,
     this.showControls = true,
     this.hideControlsTimer = const Duration(seconds: 5),
@@ -50,9 +45,6 @@ class VideoViewerPage extends HookConsumerWidget {
       ),
       showControls: showControls && !isMotionVideo,
       hideControlsTimer: hideControlsTimer,
-      onPlaying: onPlaying,
-      onPaused: onPaused,
-      onVideoEnded: onVideoEnded,
     );
 
     // The last volume of the video used when mute is toggled
@@ -96,10 +88,18 @@ class VideoViewerPage extends HookConsumerWidget {
     // position and duration of the video from the Chewie [controller]
     // Also sets the error if there is an error in the playback
     void updateVideoPlayback() {
-      ref.read(videoPlaybackValueProvider.notifier).value =
-          VideoPlaybackValue.fromController(
+      final videoPlayback = VideoPlaybackValue.fromController(
         controller?.videoPlayerController,
       );
+      ref.read(videoPlaybackValueProvider.notifier).value = videoPlayback;
+      final state = videoPlayback.state;
+
+      // Enable the WakeLock while the video is playing
+      if (state == VideoPlaybackState.playing) {
+        WakelockPlus.enable();
+      } else {
+        WakelockPlus.disable();
+      }
     }
 
     // Adds and removes the listener to the video player
