@@ -164,7 +164,7 @@ export function searchAssetBuilder(
   builder.andWhere(_.omitBy(path, _.isUndefined));
 
   if (options.originalFileName) {
-    builder.orWhere(`${builder.alias}.originalPath ILIKE :originalFileName`, {
+    builder.andWhere(`${builder.alias}.originalPath ILIKE :originalFileName`, {
       originalFileName: `%${options.originalFileName}%`,
     });
   }
