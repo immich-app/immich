@@ -148,8 +148,10 @@ class _ChewieControllerHookState
         hook.onPaused?.call();
       }
 
-      if (value.position == value.duration) {
+      if (value.position != const Duration() &&
+          value.position == value.duration) {
         WakelockPlus.disable();
+
         hook.onVideoEnded?.call();
       }
     });
