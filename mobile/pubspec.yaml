@@ -36,6 +36,11 @@ dependencies:
   flutter_udid: ^3.0.0
   package_info_plus: ^5.0.1
   url_launcher: ^6.2.4
+  open_filex: ^4.4.0
+  file_edit_launcher:
+    git:
+      url: https://github.com/alecames/file_edit_launcher.git
+      ref: main
   http: 0.13.5
   cancellation_token_http: ^1.1.0
   easy_localization: ^3.0.3

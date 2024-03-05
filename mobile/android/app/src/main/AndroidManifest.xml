@@ -51,11 +51,25 @@
       android:name="androidx.startup.InitializationProvider"
       android:authorities="${applicationId}.androidx-startup"
       tools:node="remove"></provider>
+    <provider
+      android:name="androidx.core.content.FileProvider"
+      android:authorities="${applicationId}.fileProvider"
+      android:exported="false"
+      android:grantUriPermissions="true"
+      android:readPermission="true"
+      android:writePermission="true"
+      tools:replace="android:authorities"
+    >
+      <meta-data
+        android:name="android.support.FILE_PROVIDER_PATHS"
+        android:resource="@xml/filepaths"/>
+    </provider>
   </application>
 
 
   <uses-permission android:name="android.permission.INTERNET" />
-  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32"/>
+  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+    android:maxSdkVersion="32" />
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
   <uses-permission android:name="android.permission.ACCESS_MEDIA_LOCATION" />
   <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
@@ -73,6 +87,14 @@
     <intent>
       <action android:name="android.intent.action.VIEW" />
       <data android:scheme="geo" />
+    </intent>
+    <intent>
+      <action android:name="android.intent.action.EDIT" />
+      <data android:scheme="file" />
+    </intent>
+    <intent>
+      <action android:name="android.intent.action.EDIT" />
+      <data android:scheme="content" />
     </intent>
   </queries>
 </manifest>
