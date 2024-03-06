@@ -43,3 +43,4 @@ class VideoPlayerViewer extends HookConsumerWidget {
     );
   }
 }
+
