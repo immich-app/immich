@@ -47,6 +47,15 @@ To reset a user's password, click the pencil icon to edit a user, then click "Re
 
 ## Delete a User
 
-If you need to remove a user from Immich, head to "Administration", where users can be scheduled for deletion. The user account will immediately become disabled and their library and all associated data will be removed after 7 days.
+If you need to remove a user from Immich, head to "Administration", where users can be scheduled for deletion. The user account will immediately become disabled and their library and all associated data will be removed after 7 days by default.
 
 <img src={require('./img/delete-user.png').default} title="Delete User" />
+
+### Delete Delay
+
+You can customize the time of the deletion of the users from the Administration -> Settings -> User Settings.
+:::info user deletion job
+The user deletion job runs at midnight to check for users that are ready for deletion. Changes to this setting will be evaluated at the next execution.
+:::
+
+<img src={require('./img/customize-delete-user.png').default} width="80%" title="Customize Delete User" />
