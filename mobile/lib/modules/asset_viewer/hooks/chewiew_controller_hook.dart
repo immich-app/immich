@@ -1,18 +1,13 @@
-import 'dart:async';
-
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:immich_mobile/shared/models/store.dart';
 import 'package:video_player/video_player.dart';
-import 'package:immich_mobile/shared/models/store.dart' as store;
 
 /// Provides the initialized video player controller
 /// If the asset is local, use the local file
 /// Otherwise, use a video player with a URL
-ChewieController? useChewieController(
-  Asset asset, {
+ChewieController useChewieController({
+  required VideoPlayerController controller,
   EdgeInsets controlsSafeAreaMinimum = const EdgeInsets.only(
     bottom: 100,
   ),
@@ -31,8 +26,7 @@ ChewieController? useChewieController(
 }) {
   return use(
     _ChewieControllerHook(
-      keys: [asset],
-      asset: asset,
+      controller: controller,
       placeholder: placeholder,
       showOptions: showOptions,
       controlsSafeAreaMinimum: controlsSafeAreaMinimum,
@@ -50,8 +44,8 @@ ChewieController? useChewieController(
   );
 }
 
-class _ChewieControllerHook extends Hook<ChewieController?> {
-  final Asset asset;
+class _ChewieControllerHook extends Hook<ChewieController> {
+  final VideoPlayerController controller;
   final EdgeInsets controlsSafeAreaMinimum;
   final bool showOptions;
   final bool showControlsOnInitialize;
@@ -67,8 +61,7 @@ class _ChewieControllerHook extends Hook<ChewieController?> {
   final VoidCallback? onVideoEnded;
 
   const _ChewieControllerHook({
-    super.keys,
-    required this.asset,
+    required this.controller,
     this.controlsSafeAreaMinimum = const EdgeInsets.only(
       bottom: 100,
     ),
@@ -91,29 +84,33 @@ class _ChewieControllerHook extends Hook<ChewieController?> {
 }
 
 class _ChewieControllerHookState
-    extends HookState<ChewieController?, _ChewieControllerHook> {
-  ChewieController? chewieController;
-  VideoPlayerController? videoPlayerController;
-
-  @override
-  void initHook() {
-    super.initHook();
-    _initialize().whenComplete(() => setState(() {}));
-  }
+    extends HookState<ChewieController, _ChewieControllerHook> {
+  late ChewieController chewieController = ChewieController(
+    videoPlayerController: hook.controller,
+    controlsSafeAreaMinimum: hook.controlsSafeAreaMinimum,
+    showOptions: hook.showOptions,
+    showControlsOnInitialize: hook.showControlsOnInitialize,
+    autoPlay: hook.autoPlay,
+    allowFullScreen: hook.allowFullScreen,
+    allowedScreenSleep: hook.allowedScreenSleep,
+    showControls: hook.showControls,
+    customControls: hook.customControls,
+    placeholder: hook.placeholder,
+    hideControlsTimer: hook.hideControlsTimer,
+  );
 
   @override
   void dispose() {
-    videoPlayerController?.pause();
-    videoPlayerController?.dispose();
-    chewieController?.dispose();
+    chewieController.dispose();
     super.dispose();
   }
 
   @override
-  ChewieController? build(BuildContext context) {
+  ChewieController build(BuildContext context) {
     return chewieController;
   }
 
+  /*
   /// Initializes the chewie controller and video player controller
   Future<void> _initialize() async {
     if (hook.asset.isLocal && hook.asset.livePhotoVideoId == null) {
@@ -155,4 +152,5 @@ class _ChewieControllerHookState
       hideControlsTimer: hook.hideControlsTimer,
     );
   }
+  */
 }

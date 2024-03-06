@@ -1,12 +1,10 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/providers/current_album.provider.dart';
 import 'package:immich_mobile/modules/album/ui/add_to_album_bottom_sheet.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/image_viewer_page_state.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/show_controls.provider.dart';
-import 'package:immich_mobile/modules/asset_viewer/providers/video_player_value_provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/top_control_app_bar.dart';
 import 'package:immich_mobile/modules/backup/providers/manual_upload.provider.dart';
 import 'package:immich_mobile/modules/home/ui/upload_dialog.dart';
@@ -16,21 +14,22 @@ import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/user.provider.dart';
 
-class GalleryAppBar extends HookConsumerWidget {
+class GalleryAppBar extends ConsumerWidget {
   final Asset asset;
   final void Function() showInfo;
+  final void Function() onToggleMotionVideo;
+  final bool isPlayingVideo;
 
   const GalleryAppBar({
     super.key,
     required this.asset,
     required this.showInfo,
+    required this.onToggleMotionVideo,
+    required this.isPlayingVideo,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // TODO: implement build
-    final isPlayingVideo = useState(false);
-
     final album = ref.watch(currentAlbumProvider);
     final isOwner = asset.ownerId == ref.watch(currentUserProvider)?.isarId;
 
@@ -78,9 +77,6 @@ class GalleryAppBar extends HookConsumerWidget {
       );
     }
 
-    ref.listen(videoPlaybackValueProvider.select((v) => v.state), (_, state) {
-      isPlayingVideo.value = state == VideoPlaybackState.playing;
-    });
     return IgnorePointer(
       ignoring: !ref.watch(showControlsProvider),
       child: AnimatedOpacity(
@@ -91,7 +87,7 @@ class GalleryAppBar extends HookConsumerWidget {
           child: TopControlAppBar(
             isOwner: isOwner,
             isPartner: isPartner,
-            isPlayingMotionVideo: isPlayingVideo.value,
+            isPlayingMotionVideo: isPlayingVideo,
             asset: asset,
             onMoreInfoPressed: showInfo,
             onFavorite: toggleFavorite,
@@ -103,9 +99,7 @@ class GalleryAppBar extends HookConsumerWidget {
                           asset,
                           context,
                         ),
-            onToggleMotionVideo: (() {
-              isPlayingVideo.value = !isPlayingVideo.value;
-            }),
+            onToggleMotionVideo: onToggleMotionVideo,
             onAddToAlbumPressed: () => addToAlbum(asset),
             onActivitiesPressed: handleActivities,
           ),

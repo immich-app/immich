@@ -1385,9 +1385,6 @@ class VideoViewerRoute extends PageRouteInfo<VideoViewerRouteArgs> {
     Key? key,
     required Asset asset,
     bool isMotionVideo = false,
-    void Function()? onVideoEnded,
-    void Function()? onPlaying,
-    void Function()? onPaused,
     Widget? placeholder,
     bool showControls = true,
     Duration hideControlsTimer = const Duration(seconds: 5),
@@ -1399,9 +1396,6 @@ class VideoViewerRoute extends PageRouteInfo<VideoViewerRouteArgs> {
             key: key,
             asset: asset,
             isMotionVideo: isMotionVideo,
-            onVideoEnded: onVideoEnded,
-            onPlaying: onPlaying,
-            onPaused: onPaused,
             placeholder: placeholder,
             showControls: showControls,
             hideControlsTimer: hideControlsTimer,
@@ -1421,9 +1415,6 @@ class VideoViewerRouteArgs {
     this.key,
     required this.asset,
     this.isMotionVideo = false,
-    this.onVideoEnded,
-    this.onPlaying,
-    this.onPaused,
     this.placeholder,
     this.showControls = true,
     this.hideControlsTimer = const Duration(seconds: 5),
@@ -1436,12 +1427,6 @@ class VideoViewerRouteArgs {
 
   final bool isMotionVideo;
 
-  final void Function()? onVideoEnded;
-
-  final void Function()? onPlaying;
-
-  final void Function()? onPaused;
-
   final Widget? placeholder;
 
   final bool showControls;
@@ -1452,6 +1437,6 @@ class VideoViewerRouteArgs {
 
   @override
   String toString() {
-    return 'VideoViewerRouteArgs{key: $key, asset: $asset, isMotionVideo: $isMotionVideo, onVideoEnded: $onVideoEnded, onPlaying: $onPlaying, onPaused: $onPaused, placeholder: $placeholder, showControls: $showControls, hideControlsTimer: $hideControlsTimer, showDownloadingIndicator: $showDownloadingIndicator}';
+    return 'VideoViewerRouteArgs{key: $key, asset: $asset, isMotionVideo: $isMotionVideo, placeholder: $placeholder, showControls: $showControls, hideControlsTimer: $hideControlsTimer, showDownloadingIndicator: $showDownloadingIndicator}';
   }
 }

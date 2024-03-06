@@ -60,7 +60,7 @@ class GalleryViewerPage extends HookConsumerWidget {
     final isLoadOriginal = useState(AppSettingsEnum.loadOriginal.defaultValue);
     final isZoomed = useState(false);
     final isPlayingVideo = useState(false);
-    Offset? localPosition;
+    final localPosition = useState<Offset?>(null);
     final currentIndex = useState(initialIndex);
     final currentAsset = loadAsset(currentIndex.value);
     // Update is playing motion video
@@ -157,12 +157,12 @@ class GalleryViewerPage extends HookConsumerWidget {
       }
 
       // Guard [localPosition] null
-      if (localPosition == null) {
+      if (localPosition.value == null) {
         return;
       }
 
       // Check for delta from initial down point
-      final d = details.localPosition - localPosition!;
+      final d = details.localPosition - localPosition.value!;
       // If the magnitude of the dx swipe is large, we probably didn't mean to go down
       if (d.dx.abs() > dxThreshold) {
         return;
@@ -318,7 +318,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                 if (a.isImage && !isPlayingVideo.value) {
                   return PhotoViewGalleryPageOptions(
                     onDragStart: (_, details, __) =>
-                        localPosition = details.localPosition,
+                        localPosition.value = details.localPosition,
                     onDragUpdate: (_, details, __) =>
                         handleSwipeUpDown(details),
                     onTapDown: (_, __, ___) {
@@ -342,7 +342,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                 } else {
                   return PhotoViewGalleryPageOptions.customChild(
                     onDragStart: (_, details, __) =>
-                        localPosition = details.localPosition,
+                        localPosition.value = details.localPosition,
                     onDragUpdate: (_, details, __) =>
                         handleSwipeUpDown(details),
                     heroAttributes: PhotoViewHeroAttributes(
@@ -377,6 +377,9 @@ class GalleryViewerPage extends HookConsumerWidget {
               child: GalleryAppBar(
                 asset: asset,
                 showInfo: showInfo,
+                isPlayingVideo: isPlayingVideo.value,
+                onToggleMotionVideo: () =>
+                    isPlayingVideo.value = !isPlayingVideo.value,
               ),
             ),
             Positioned(
