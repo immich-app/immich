@@ -162,6 +162,10 @@ const config = {
                 label: 'GitHub',
                 href: 'https://github.com/immich-app/immich',
               },
+              {
+                label: 'YouTube',
+                href: 'https://www.youtube.com/@immich-app',
+              },
             ],
           },
         ],
