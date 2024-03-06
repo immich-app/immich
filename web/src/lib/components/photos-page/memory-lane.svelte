@@ -73,7 +73,7 @@
         >
           <img
             class="h-full w-full rounded-xl object-cover"
-            src={getAssetThumbnailUrl(memory.assets[0].id, ThumbnailFormat.Jpeg)}
+            src={getAssetThumbnailUrl(memory.assets[0].id, ThumbnailFormat.Webp)}
             alt={`Memory Lane ${getAltText(memory.assets[0])}`}
             draggable="false"
           />
