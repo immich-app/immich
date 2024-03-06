@@ -91,12 +91,14 @@ export class DownloadService {
       }
 
       const { originalPath, originalFileName } = asset;
-      const extension = extname(originalPath);
-      let filename = `${parse(originalFileName).name}`;
+      const extension = parse(originalFileName).ext;
+      let filename = parse(originalFileName).name;
       const count = paths[filename] || 0;
       paths[filename] = count + 1;
       if (count !== 0) {
         filename = `${originalFileName}+${count}${extension}`;
+      } else {
+        filename = `${originalFileName}`;
       }
 
       zip.addFile(originalPath, filename);
