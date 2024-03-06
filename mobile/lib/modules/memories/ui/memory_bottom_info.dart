@@ -1,6 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/memories/models/memory.dart';
+import 'package:immich_mobile/modules/memories/providers/memory_auto_play.provider.dart';
 
 class MemoryBottomInfo extends StatelessWidget {
   final Memory memory;
@@ -13,6 +15,7 @@ class MemoryBottomInfo extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -36,6 +39,22 @@ class MemoryBottomInfo extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+          Consumer(
+            builder: (_, ref, __) => MaterialButton(
+              minWidth: 0,
+              onPressed: () =>
+                  ref.read(memoryAutoPlayProvider.notifier).toggleAutoPlay(),
+              shape: const CircleBorder(),
+              color: Colors.white.withOpacity(0.2),
+              elevation: 0,
+              child: Icon(
+                ref.watch(memoryAutoPlayProvider)
+                    ? Icons.pause_circle_outline_rounded
+                    : Icons.play_circle_outline_rounded,
+                color: Colors.white,
+              ),
+            ),
           ),
         ],
       ),

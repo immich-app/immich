@@ -1,14 +1,19 @@
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/asset_viewer/views/video_viewer_page.dart';
+import 'package:immich_mobile/modules/memories/providers/memory_auto_play.provider.dart';
+import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
+import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/hooks/blurhash_hook.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
 
-class MemoryCard extends StatelessWidget {
+class MemoryCard extends HookConsumerWidget {
   final Asset asset;
   final String title;
   final bool showTitle;
@@ -23,12 +28,48 @@ class MemoryCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final animationDuration = useRef(
+      ref
+          .read(appSettingsServiceProvider)
+          .getSetting(AppSettingsEnum.memoryAutoPlayDuration),
+    );
+
+    final animation = useAnimationController(
+      duration: Duration(seconds: animationDuration.value + 1),
+    );
+
+    const scale = 1.2;
+    final shouldZoom = Random().nextBool();
+    final identity = Matrix4.identity();
+    final scaled = Matrix4.identity()..scale(scale);
+    final beginTransform = shouldZoom ? identity : scaled;
+    final endTransform = shouldZoom ? scaled : identity;
+
+    useEffect(
+      () {
+        if (ref.read(memoryAutoPlayProvider)) {
+          WidgetsBinding.instance
+              .addPostFrameCallback((_) => animation.forward());
+        }
+        return null;
+      },
+      [],
+    );
+
+    ref.listen(memoryAutoPlayProvider, (_, value) {
+      if (!value) {
+        animation.stop();
+      } else {
+        animation.forward();
+      }
+    });
+
     return Card(
       color: Colors.black,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(25.0),
-        side: const BorderSide(
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(25.0)),
+        side: BorderSide(
           color: Colors.black,
           width: 1.0,
         ),
@@ -58,11 +99,24 @@ class MemoryCard extends StatelessWidget {
               if (asset.isImage) {
                 return Hero(
                   tag: 'memory-${asset.id}',
-                  child: ImmichImage(
-                    asset,
-                    fit: fit,
-                    height: double.infinity,
-                    width: double.infinity,
+                  child: AnimatedBuilder(
+                    animation: animation,
+                    builder: (_, child) => Container(
+                      height: double.infinity,
+                      width: double.infinity,
+                      transform: Matrix4Tween(
+                        begin: beginTransform,
+                        end: endTransform,
+                      ).evaluate(animation),
+                      transformAlignment: Alignment.center,
+                      child: child,
+                    ),
+                    child: ImmichImage(
+                      asset,
+                      fit: fit,
+                      height: double.infinity,
+                      width: double.infinity,
+                    ),
                   ),
                 );
               } else {

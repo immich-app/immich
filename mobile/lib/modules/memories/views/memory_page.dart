@@ -1,13 +1,19 @@
+import 'dart:async';
+import 'dart:math' as math;
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/memories/models/memory.dart';
+import 'package:immich_mobile/modules/memories/providers/memory_auto_play.provider.dart';
 import 'package:immich_mobile/modules/memories/ui/memory_bottom_info.dart';
 import 'package:immich_mobile/modules/memories/ui/memory_card.dart';
 import 'package:immich_mobile/modules/memories/ui/memory_epilogue.dart';
 import 'package:immich_mobile/modules/memories/ui/memory_progress_indicator.dart';
+import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
+import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
 
@@ -24,13 +30,17 @@ class MemoryPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final currentMemory = useState(memories[memoryIndex]);
-    final currentAssetPage = useState(0);
+    final currentMemory = useRef(memories[memoryIndex]);
+    final currentAssetPage = useRef(0);
     final currentMemoryIndex = useState(memoryIndex);
-    final assetProgress = useState(
-      "${currentAssetPage.value + 1}|${currentMemory.value.assets.length}",
-    );
+    final memoryTimer = useRef<Timer?>(null);
+    final memoryStopWatch = useRef<Stopwatch?>(null);
     const bgColor = Colors.black;
+    final animationDuration = useRef(
+      ref
+          .read(appSettingsServiceProvider)
+          .getSetting(AppSettingsEnum.memoryAutoPlayDuration),
+    );
 
     /// The list of all of the asset page controllers
     final memoryAssetPageControllers =
@@ -38,13 +48,6 @@ class MemoryPage extends HookConsumerWidget {
 
     /// The main vertically scrolling page controller with each list of memories
     final memoryPageController = usePageController(initialPage: memoryIndex);
-
-    // The Page Controller that scrolls horizontally with all of the assets
-    useEffect(() {
-      // Memories is an immersive activity
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
-      return null;
-    });
 
     toNextMemory() {
       memoryPageController.nextPage(
@@ -67,11 +70,6 @@ class MemoryPage extends HookConsumerWidget {
         // Go to the next memory since we are at the end of our assets
         toNextMemory();
       }
-    }
-
-    updateProgressText() {
-      assetProgress.value =
-          "${currentAssetPage.value + 1}|${currentMemory.value.assets.length}";
     }
 
     /// Downloads and caches the image for the asset at this [currentMemory]'s index
@@ -124,15 +122,73 @@ class MemoryPage extends HookConsumerWidget {
           .then((_) => precacheAsset(1));
     }
 
-    Future<void> onAssetChanged(int otherIndex) async {
+    int getAutoPlayDuration() {
+      final currentAsset = currentMemory.value.assets[currentAssetPage.value];
+      return currentAsset.isImage
+          ? animationDuration.value
+          : math.max(
+              currentAsset.durationInSeconds + 2,
+              animationDuration.value,
+            );
+    }
+
+    void resetTimer([int? remainingTime]) {
+      final isEpiloguePage =
+          (memoryPageController.page?.floor() ?? 0) >= memories.length;
+
+      memoryTimer.value?.cancel();
+      memoryStopWatch.value?.reset();
+      if (isEpiloguePage) {
+        memoryTimer.value = null;
+        memoryStopWatch.value = null;
+        return;
+      }
+
+      memoryTimer.value = Timer(
+        Duration(
+          seconds: remainingTime ?? getAutoPlayDuration(),
+        ),
+        () => toNextAsset(currentAssetPage.value),
+      );
+      if (ref.read(memoryAutoPlayProvider)) {
+        memoryStopWatch.value = Stopwatch()..start();
+      }
+    }
+
+    onAssetChanged(int otherIndex) async {
       HapticFeedback.selectionClick();
       currentAssetPage.value = otherIndex;
-      updateProgressText();
       // Wait for page change animation to finish
       await Future.delayed(const Duration(milliseconds: 400));
-      // And then precache the next asset
-      await precacheAsset(otherIndex + 1);
+      precacheAsset(otherIndex + 1);
+      WidgetsBinding.instance.addPostFrameCallback((_) => resetTimer());
     }
+
+    ref.listen(memoryAutoPlayProvider, (_, value) {
+      if (!value) {
+        memoryTimer.value?.cancel();
+        memoryStopWatch.value?.stop();
+      } else {
+        final elapsedSeconds = memoryStopWatch.value?.elapsed.inSeconds;
+        final remaining = getAutoPlayDuration() - (elapsedSeconds ?? 0);
+        WidgetsBinding.instance
+            .addPostFrameCallback((_) => resetTimer(remaining));
+      }
+    });
+
+    // The Page Controller that scrolls horizontally with all of the assets
+    useEffect(
+      () {
+        // Memories is an immersive activity
+        SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
+        WidgetsBinding.instance.addPostFrameCallback((_) => resetTimer());
+        return () {
+          memoryTimer.value?.cancel();
+          memoryStopWatch.value?.stop();
+        };
+      },
+      [],
+    );
 
     /* Notification listener is used instead of OnPageChanged callback since OnPageChanged is called
      * when the page in the **center** of the viewer changes. We want to reset currentAssetPage only when the final
@@ -160,10 +216,9 @@ class MemoryPage extends HookConsumerWidget {
       child: Scaffold(
         backgroundColor: bgColor,
         body: PopScope(
-          onPopInvoked: (didPop) {
-            // Remove immersive mode and go back to normal mode
-            SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-          },
+          onPopInvoked: (_) =>
+              // Remove immersive mode and go back to normal mode
+              SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge),
           child: SafeArea(
             child: PageView.builder(
               physics: const BouncingScrollPhysics(
@@ -173,14 +228,14 @@ class MemoryPage extends HookConsumerWidget {
               controller: memoryPageController,
               onPageChanged: (pageNumber) {
                 HapticFeedback.mediumImpact();
+                currentAssetPage.value = 0;
+
                 if (pageNumber < memories.length) {
                   currentMemoryIndex.value = pageNumber;
                   currentMemory.value = memories[pageNumber];
+                  WidgetsBinding.instance
+                      .addPostFrameCallback((_) => resetTimer());
                 }
-
-                currentAssetPage.value = 0;
-
-                updateProgressText();
               },
               itemCount: memories.length + 1,
               itemBuilder: (context, mIndex) {
@@ -208,14 +263,10 @@ class MemoryPage extends HookConsumerWidget {
                       child: AnimatedBuilder(
                         animation: assetController,
                         builder: (context, child) {
-                          double value = 0.0;
-                          if (assetController.hasClients) {
-                            // We can only access [page] if this has clients
-                            value = assetController.page ?? 0;
-                          }
                           return MemoryProgressIndicator(
                             ticks: memories[mIndex].assets.length,
-                            value: (value + 1) / memories[mIndex].assets.length,
+                            value: currentAssetPage.value,
+                            animationDuration: getAutoPlayDuration(),
                           );
                         },
                       ),
@@ -235,9 +286,7 @@ class MemoryPage extends HookConsumerWidget {
                               final asset = memories[mIndex].assets[index];
                               return GestureDetector(
                                 behavior: HitTestBehavior.translucent,
-                                onTap: () {
-                                  toNextAsset(index);
-                                },
+                                onTap: () => toNextAsset(index),
                                 child: Container(
                                   color: Colors.black,
                                   child: MemoryCard(

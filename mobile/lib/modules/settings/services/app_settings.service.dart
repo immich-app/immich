@@ -57,6 +57,7 @@ enum AppSettingsEnum<T> {
     null,
     false,
   ),
+  memoryAutoPlayDuration<int>(StoreKey.memoryAutoPlayDuration, null, 5),
   ;
 
   const AppSettingsEnum(this.storeKey, this.hiveKey, this.defaultValue);

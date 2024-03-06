@@ -190,6 +190,7 @@ enum StoreKey<T> {
   ignoreIcloudAssets<bool>(122, type: bool),
   selectedAlbumSortReverse<bool>(123, type: bool),
   mapThemeMode<int>(124, type: int),
+  memoryAutoPlayDuration<int>(125, type: int),
   ;
 
   const StoreKey(

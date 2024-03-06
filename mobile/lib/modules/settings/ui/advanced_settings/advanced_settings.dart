@@ -21,6 +21,8 @@ class AdvancedSettings extends HookConsumerWidget {
     final isEnabled =
         useState(AppSettingsEnum.advancedTroubleshooting.defaultValue);
     final levelId = useState(AppSettingsEnum.logLevel.defaultValue);
+    final memoryAutoPlayDuration =
+        useState(AppSettingsEnum.memoryAutoPlayDuration.defaultValue);
     final preferRemote =
         useState(AppSettingsEnum.preferRemoteImage.defaultValue);
     final allowSelfSignedSSLCert =
@@ -34,6 +36,8 @@ class AdvancedSettings extends HookConsumerWidget {
         levelId.value = appSettingService.getSetting(AppSettingsEnum.logLevel);
         preferRemote.value =
             appSettingService.getSetting(AppSettingsEnum.preferRemoteImage);
+        memoryAutoPlayDuration.value = appSettingService
+            .getSetting(AppSettingsEnum.memoryAutoPlayDuration);
         allowSelfSignedSSLCert.value = appSettingService
             .getSetting(AppSettingsEnum.allowSelfSignedSSLCert);
         return null;
@@ -81,6 +85,26 @@ class AdvancedSettings extends HookConsumerWidget {
             min: 1.0,
             divisions: 7,
             label: logLevel,
+            activeColor: context.primaryColor,
+          ),
+        ),
+        ListTile(
+          dense: true,
+          title: Text(
+            "Memory auto play duration: ${memoryAutoPlayDuration.value}s",
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ).tr(),
+          subtitle: Slider(
+            value: memoryAutoPlayDuration.value.toDouble(),
+            onChanged: (double v) => memoryAutoPlayDuration.value = v.toInt(),
+            onChangeEnd: (double v) => appSettingService.setSetting(
+              AppSettingsEnum.memoryAutoPlayDuration,
+              v.toInt(),
+            ),
+            max: 5,
+            min: 1.0,
+            divisions: 5,
+            label: "${memoryAutoPlayDuration.value}",
             activeColor: context.primaryColor,
           ),
         ),
