@@ -14,7 +14,7 @@ export class AddExtensionToOriginalFileName1709763765506 implements MigrationInt
       `);
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> {
-    // no down migration
+  public async down(): Promise<void> {
+    // noop
   }
 }
