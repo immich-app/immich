@@ -108,6 +108,8 @@ export enum SystemConfigKey {
   TRASH_DAYS = 'trash.days',
 
   THEME_CUSTOM_CSS = 'theme.customCss',
+
+  USER_DELETE_DELAY = 'user.deleteDelay',
 }
 
 export enum TranscodePolicy {
@@ -275,5 +277,8 @@ export interface SystemConfig {
   server: {
     externalDomain: string;
     loginPageMessage: string;
+  };
+  user: {
+    deleteDelay: number;
   };
 }

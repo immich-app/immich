@@ -25,6 +25,7 @@ export const serverConfig = writable<ServerConfig>({
   oauthButtonText: '',
   loginPageMessage: '',
   trashDays: 30,
+  userDeleteDelay: 7,
   isInitialized: false,
   isOnboarded: false,
   externalDomain: '',

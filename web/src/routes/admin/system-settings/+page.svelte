@@ -15,6 +15,7 @@
   import ThemeSettings from '$lib/components/admin-page/settings/theme/theme-settings.svelte';
   import ThumbnailSettings from '$lib/components/admin-page/settings/thumbnail/thumbnail-settings.svelte';
   import TrashSettings from '$lib/components/admin-page/settings/trash-settings/trash-settings.svelte';
+  import UserSettings from '$lib/components/admin-page/settings/user-settings/user-settings.svelte';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
@@ -45,7 +46,8 @@
     | typeof ThumbnailSettings
     | typeof TrashSettings
     | typeof NewVersionCheckSettings
-    | typeof FFmpegSettings;
+    | typeof FFmpegSettings
+    | typeof UserSettings;
 
   const downloadConfig = () => {
     const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
@@ -133,6 +135,12 @@
       title: 'Trash Settings',
       subtitle: 'Manage trash settings',
       key: 'trash',
+    },
+    {
+      item: UserSettings,
+      title: 'User Settings',
+      subtitle: 'Manage user settings',
+      key: 'user-settings',
     },
     {
       item: NewVersionCheckSettings,

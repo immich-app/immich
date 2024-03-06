@@ -140,6 +140,9 @@ export const defaults = Object.freeze<SystemConfig>({
     externalDomain: '',
     loginPageMessage: '',
   },
+  user: {
+    deleteDelay: 7,
+  },
 });
 
 export enum FeatureFlag {

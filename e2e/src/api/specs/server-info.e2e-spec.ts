@@ -88,6 +88,7 @@ describe('/server-info', () => {
         loginPageMessage: '',
         oauthButtonText: 'Login with OAuth',
         trashDays: 30,
+        userDeleteDelay: 7,
         isInitialized: true,
         externalDomain: '',
         isOnboarded: false,

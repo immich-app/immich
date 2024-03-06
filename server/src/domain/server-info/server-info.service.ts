@@ -96,6 +96,7 @@ export class ServerInfoService {
     return {
       loginPageMessage: config.server.loginPageMessage,
       trashDays: config.trash.days,
+      userDeleteDelay: config.user.deleteDelay,
       oauthButtonText: config.oauth.buttonText,
       isInitialized,
       isOnboarded: onboarding?.isOnboarded || false,
