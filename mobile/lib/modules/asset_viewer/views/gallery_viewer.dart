@@ -218,18 +218,19 @@ class GalleryViewerPage extends HookConsumerWidget {
         scrollDirection: Axis.horizontal,
         itemCount: stackElements.length,
         padding: const EdgeInsets.only(
-          left: 10,
-          right: 10,
+          left: 5,
+          right: 5,
           bottom: 30,
         ),
         itemBuilder: (context, index) {
           final assetId = stackElements.elementAt(index).remoteId;
           return Padding(
-            padding: const EdgeInsets.only(right: 10),
+            padding: const EdgeInsets.only(right: 5),
             child: GestureDetector(
               onTap: () => stackIndex.value = index,
               child: Container(
-                width: 40,
+                width: 60,
+                height: 60,
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(6),
@@ -391,7 +392,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                   Visibility(
                     visible: stack.isNotEmpty,
                     child: SizedBox(
-                      height: 40,
+                      height: 80,
                       child: buildStackedChildren(),
                     ),
                   ),
