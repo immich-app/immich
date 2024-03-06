@@ -56,7 +56,7 @@
 
       <div class="m-4 flex place-items-center center-between gap-2">
         <label class="text-sm dark:text-immich-dark-fg" for="forceDelete">
-          Schedule user and assets for immediate deletion
+          Queue user and assets for immediate deletion
         </label>
 
         <input type="checkbox" class="form-checkbox h-5 w-5 color" bind:checked={forceDelete} />
