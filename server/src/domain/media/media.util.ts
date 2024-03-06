@@ -1,5 +1,4 @@
 import { CQMode, ToneMapping, TranscodeHWAccel, TranscodeTarget, VideoCodec } from '@app/infra/entities';
-import { statSync } from 'node:fs';
 import {
   AudioStreamInfo,
   BitrateDistribution,
@@ -609,17 +608,15 @@ export class VAAPIConfig extends BaseHWConfig {
 }
 
 export class RKMPPConfig extends BaseHWConfig {
-  private static hasOpenCL?: boolean = undefined;
+  private hasOpenCL: boolean;
 
   constructor(
     protected config: SystemConfigFFmpegDto,
     devices: string[] = [],
+    hasOpenCL: boolean = false,
   ) {
     super(config, devices);
-    if (RKMPPConfig.hasOpenCL === undefined) {
-      // static property to check only once
-      RKMPPConfig.hasOpenCL = statSync('/usr/lib/libmali.so').isFile() && statSync('/dev/mali0').isCharacterDevice();
-    }
+    this.hasOpenCL = hasOpenCL;
   }
 
   eligibleForTwoPass(): boolean {
@@ -630,14 +627,14 @@ export class RKMPPConfig extends BaseHWConfig {
     if (this.devices.length === 0) {
       throw new Error('No RKMPP device found');
     }
-    return this.shouldToneMap(videoStream) && !RKMPPConfig.hasOpenCL
+    return this.shouldToneMap(videoStream) && !this.hasOpenCL
       ? [] // disable hardware decoding & filters
       : ['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga'];
   }
 
   getFilterOptions(videoStream: VideoStreamInfo) {
     if (this.shouldToneMap(videoStream)) {
-      if (!RKMPPConfig.hasOpenCL) {
+      if (!this.hasOpenCL) {
         return super.getFilterOptions(videoStream);
       }
       const colors = this.getColors();
