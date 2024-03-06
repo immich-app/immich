@@ -26,7 +26,7 @@
           inputType={SettingInputFieldType.NUMBER}
           min={1}
           label="DELETE DELAY"
-          desc="Number of days after removal to permanently delete an user's account and assets. Changing this will impact users already queued for deletion."
+          desc="Number of days after removal to permanently delete a user's account and assets. The user deletion job runs at midnight to check for users that are ready for deletion. Changes to this setting will be evaluated at the next execution."
           bind:value={config.user.deleteDelay}
           isEdited={config.user.deleteDelay !== savedConfig.user.deleteDelay}
         />
