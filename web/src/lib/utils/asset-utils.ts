@@ -102,14 +102,14 @@ export const downloadFile = async (asset: AssetResponseDto) => {
   }
   const assets = [
     {
-      filename: `${asset.originalFileName}`,
+      filename: asset.originalFileName,
       id: asset.id,
       size: asset.exifInfo?.fileSizeInByte || 0,
     },
   ];
   if (asset.livePhotoVideoId) {
     assets.push({
-      filename: `${asset.originalFileName}`,
+      filename: asset.originalFileName,
       id: asset.livePhotoVideoId,
       size: 0,
     });
