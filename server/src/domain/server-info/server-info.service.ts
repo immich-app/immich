@@ -149,7 +149,7 @@ export class ServerInfoService {
       }
 
       // check once per hour (max)
-      if (this.releaseVersionCheckedAt && this.releaseVersionCheckedAt.diffNow().as('minutes') < 60) {
+      if (this.releaseVersionCheckedAt && DateTime.now().diff(this.releaseVersionCheckedAt).as('minutes') < 60) {
         return true;
       }
 
@@ -170,7 +170,7 @@ export class ServerInfoService {
     return true;
   }
 
-  private async handleConnect(userId: string) {
+  private handleConnect(userId: string) {
     this.communicationRepository.send(ClientEvent.SERVER_VERSION, userId, serverVersion);
     this.newReleaseNotification(userId);
   }

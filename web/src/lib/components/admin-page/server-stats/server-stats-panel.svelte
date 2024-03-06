@@ -102,6 +102,9 @@
             <td class="w-1/4 text-ellipsis px-2 text-sm">{user.videos.toLocaleString($locale)}</td>
             <td class="w-1/4 text-ellipsis px-2 text-sm">
               {asByteUnitString(user.usage, $locale, 0)}
+              {#if user.quotaSizeInBytes}
+                / {asByteUnitString(user.quotaSizeInBytes, $locale, 0)}
+              {/if}
               <span class="text-immich-primary dark:text-immich-dark-primary">
                 {#if user.quotaSizeInBytes}
                   ({((user.usage / user.quotaSizeInBytes) * 100).toFixed(0)}%)

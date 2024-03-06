@@ -7,21 +7,18 @@ import {
 } from '@immich/sdk';
 import { exiftool } from 'exiftool-vendored';
 import { DateTime } from 'luxon';
-import { createHash } from 'node:crypto';
 import { readFile, writeFile } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 import { Socket } from 'socket.io-client';
 import { createUserDto, uuidDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
-import { apiUtils, app, dbUtils, tempDir, testAssetDir, wsUtils } from 'src/utils';
+import { apiUtils, app, dbUtils, fileUtils, tempDir, testAssetDir, wsUtils } from 'src/utils';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 const TEN_TIMES = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 const locationAssetFilepath = `${testAssetDir}/metadata/gps-position/thompson-springs.jpg`;
-
-const sha1 = (bytes: Buffer) => createHash('sha1').update(bytes).digest('base64');
 
 const readTags = async (bytes: Buffer, filename: string) => {
   const filepath = join(tempDir, filename);
@@ -739,8 +736,8 @@ describe('/asset', () => {
       const asset = await apiUtils.getAssetInfo(admin.accessToken, assetLocation.id);
 
       const original = await readFile(locationAssetFilepath);
-      const originalChecksum = sha1(original);
-      const downloadChecksum = sha1(body);
+      const originalChecksum = fileUtils.sha1(original);
+      const downloadChecksum = fileUtils.sha1(body);
 
       expect(originalChecksum).toBe(downloadChecksum);
       expect(downloadChecksum).toBe(asset.checksum);

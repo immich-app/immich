@@ -13,6 +13,7 @@
   import { fade } from 'svelte/transition';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
+  import { getAltText } from '$lib/utils/thumbnail-util';
 
   export let asset: AssetResponseDto;
   export let element: HTMLDivElement | undefined = undefined;
@@ -24,6 +25,8 @@
   let hasZoomed = false;
   let copyImageToClipboard: (source: string) => Promise<Blob>;
   let canCopyImagesToClipboard: () => boolean;
+
+  const loadOriginalByDefault = $alwaysLoadOriginalFile && isWebCompatibleImage(asset);
 
   $: if (imgElement) {
     createZoomImageWheel(imgElement, {
@@ -125,7 +128,7 @@
   transition:fade={{ duration: haveFadeTransition ? 150 : 0 }}
   class="flex h-full select-none place-content-center place-items-center"
 >
-  {#await loadAssetData({ loadOriginal: $alwaysLoadOriginalFile ? isWebCompatibleImage(asset) : false })}
+  {#await loadAssetData({ loadOriginal: loadOriginalByDefault })}
     <LoadingSpinner />
   {:then}
     <div bind:this={imgElement} class="h-full w-full">
@@ -133,7 +136,7 @@
         bind:this={$photoViewer}
         transition:fade={{ duration: haveFadeTransition ? 150 : 0 }}
         src={assetData}
-        alt={asset.id}
+        alt={getAltText(asset)}
         class="h-full w-full object-contain"
         draggable="false"
       />

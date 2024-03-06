@@ -58,6 +58,7 @@ dependencies:
   timezone: ^0.9.2
   octo_image: ^2.0.0
   thumbhash: 0.1.0+1
+  async: ^2.11.0
 
   openapi:
     path: openapi

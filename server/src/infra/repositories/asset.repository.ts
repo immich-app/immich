@@ -507,6 +507,9 @@ export class AssetRepository implements IAssetRepository {
       select: {
         id: true,
         exifInfo: {
+          city: true,
+          state: true,
+          country: true,
           latitude: true,
           longitude: true,
         },
@@ -532,17 +535,16 @@ export class AssetRepository implements IAssetRepository {
 
     return assets.map((asset) => ({
       id: asset.id,
-
-      /* eslint-disable-next-line @typescript-eslint/no-non-null-assertion */
       lat: asset.exifInfo!.latitude!,
-
-      /* eslint-disable-next-line @typescript-eslint/no-non-null-assertion */
       lon: asset.exifInfo!.longitude!,
+      city: asset.exifInfo!.city,
+      state: asset.exifInfo!.state,
+      country: asset.exifInfo!.country,
     }));
   }
 
   async getStatistics(ownerId: string, options: AssetStatsOptions): Promise<AssetStats> {
-    let builder = await this.repository
+    let builder = this.repository
       .createQueryBuilder('asset')
       .select(`COUNT(asset.id)`, 'count')
       .addSelect(`asset.type`, 'type')

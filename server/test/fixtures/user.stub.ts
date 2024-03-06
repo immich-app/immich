@@ -23,20 +23,6 @@ export const userDto = {
     name: 'User with quota',
     quotaSizeInBytes: 42,
   },
-  userWithDefaultStorageQuota: {
-    email: 'test@immich.com',
-    name: ' ',
-    oauthId: 'my-auth-user-sub',
-    quotaSizeInBytes: 1_073_741_824,
-    storageLabel: null,
-  },
-  userWithStorageQuotaClaim: {
-    email: 'test@immich.com',
-    name: ' ',
-    oauthId: 'my-auth-user-sub',
-    quotaSizeInBytes: 5_368_709_120,
-    storageLabel: null,
-  },
 };
 
 export const userStub = {

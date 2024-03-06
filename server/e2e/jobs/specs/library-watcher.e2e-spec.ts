@@ -208,7 +208,7 @@ describe(`Library watcher (e2e)`, () => {
       await fs.mkdir(`${IMMICH_TEST_ASSET_TEMP_PATH}/dir3`, { recursive: true });
     });
 
-    it('should use an updated import paths', async () => {
+    it('should use an updated import path', async () => {
       await fs.mkdir(`${IMMICH_TEST_ASSET_TEMP_PATH}/dir4`, { recursive: true });
 
       await api.libraryApi.setImportPaths(server, admin.accessToken, library.id, [
