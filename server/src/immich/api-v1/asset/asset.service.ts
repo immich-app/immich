@@ -26,7 +26,6 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { parse } from 'node:path';
 import { QueryFailedError } from 'typeorm';
 import { IAssetRepositoryV1 } from './asset-repository';
 import { AssetBulkUploadCheckDto } from './dto/asset-check.dto';
