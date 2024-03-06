@@ -8,4 +8,4 @@ All jobs run every night at midnight (cannot be changed) except for the external
 Storage Migration job can be run after changing the [Storage Template](/docs/administration/storage-template.mdx), in order to apply the change to the existing library.
 :::
 
-![Admin jobs](./img/admin-jobs.png)
+<img src={require('./img/admin-jobs.png').default} width="80%" title="Admin jobs" />
