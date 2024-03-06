@@ -44,10 +44,6 @@ class CuratedPeopleRow extends StatelessWidget {
 
     return ListView.builder(
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.only(
-        left: 16,
-        top: 8,
-      ),
       itemBuilder: (context, index) {
         final person = content[index];
         final headers = {

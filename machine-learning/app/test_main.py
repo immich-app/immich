@@ -13,11 +13,12 @@ import onnxruntime as ort
 import pytest
 from fastapi.testclient import TestClient
 from PIL import Image
+from pytest import MonkeyPatch
 from pytest_mock import MockerFixture
 
-from app.main import load
+from app.main import load, preload_models
 
-from .config import log, settings
+from .config import Settings, log, settings
 from .models.base import InferenceModel
 from .models.cache import ModelCache
 from .models.clip import MCLIPEncoder, OpenCLIPEncoder
@@ -45,10 +46,22 @@ class TestBase:
         assert encoder.providers == self.CUDA_EP
 
     @pytest.mark.providers(OV_EP)
-    def test_sets_openvino_provider_if_available(self, providers: list[str]) -> None:
+    def test_sets_openvino_provider_if_available(self, providers: list[str], mocker: MockerFixture) -> None:
+        mocked = mocker.patch("app.models.base.ort.capi._pybind_state")
+        mocked.get_available_openvino_device_ids.return_value = ["GPU.0", "CPU"]
+
         encoder = OpenCLIPEncoder("ViT-B-32__openai")
 
         assert encoder.providers == self.OV_EP
+
+    @pytest.mark.providers(OV_EP)
+    def test_avoids_openvino_if_gpu_not_available(self, providers: list[str], mocker: MockerFixture) -> None:
+        mocked = mocker.patch("app.models.base.ort.capi._pybind_state")
+        mocked.get_available_openvino_device_ids.return_value = ["CPU"]
+
+        encoder = OpenCLIPEncoder("ViT-B-32__openai")
+
+        assert encoder.providers == self.CPU_EP
 
     @pytest.mark.providers(CUDA_EP_OUT_OF_ORDER)
     def test_sets_providers_in_correct_order(self, providers: list[str]) -> None:
@@ -68,22 +81,14 @@ class TestBase:
 
         assert encoder.providers == providers
 
-    def test_sets_default_provider_options(self) -> None:
-        encoder = OpenCLIPEncoder("ViT-B-32__openai", providers=["OpenVINOExecutionProvider", "CPUExecutionProvider"])
-
-        assert encoder.provider_options == [
-            {},
-            {"arena_extend_strategy": "kSameAsRequested"},
-        ]
-
-    def test_sets_openvino_device_id_if_possible(self, mocker: MockerFixture) -> None:
+    def test_sets_default_provider_options(self, mocker: MockerFixture) -> None:
         mocked = mocker.patch("app.models.base.ort.capi._pybind_state")
         mocked.get_available_openvino_device_ids.return_value = ["GPU.0", "CPU"]
 
         encoder = OpenCLIPEncoder("ViT-B-32__openai", providers=["OpenVINOExecutionProvider", "CPUExecutionProvider"])
 
         assert encoder.provider_options == [
-            {"device_id": "GPU.0"},
+            {"device_type": "GPU_FP32"},
             {"arena_extend_strategy": "kSameAsRequested"},
         ]
 
@@ -505,20 +510,20 @@ class TestCache:
 
     @mock.patch("app.models.cache.OptimisticLock", autospec=True)
     async def test_model_ttl(self, mock_lock_cls: mock.Mock, mock_get_model: mock.Mock) -> None:
-        model_cache = ModelCache(ttl=100)
-        await model_cache.get("test_model_name", ModelType.FACIAL_RECOGNITION)
+        model_cache = ModelCache()
+        await model_cache.get("test_model_name", ModelType.FACIAL_RECOGNITION, ttl=100)
         mock_lock_cls.return_value.__aenter__.return_value.cas.assert_called_with(mock.ANY, ttl=100)
 
     @mock.patch("app.models.cache.SimpleMemoryCache.expire")
     async def test_revalidate_get(self, mock_cache_expire: mock.Mock, mock_get_model: mock.Mock) -> None:
-        model_cache = ModelCache(ttl=100, revalidate=True)
-        await model_cache.get("test_model_name", ModelType.FACIAL_RECOGNITION)
-        await model_cache.get("test_model_name", ModelType.FACIAL_RECOGNITION)
+        model_cache = ModelCache(revalidate=True)
+        await model_cache.get("test_model_name", ModelType.FACIAL_RECOGNITION, ttl=100)
+        await model_cache.get("test_model_name", ModelType.FACIAL_RECOGNITION, ttl=100)
         mock_cache_expire.assert_called_once_with(mock.ANY, 100)
 
     async def test_profiling(self, mock_get_model: mock.Mock) -> None:
-        model_cache = ModelCache(ttl=100, profiling=True)
-        await model_cache.get("test_model_name", ModelType.FACIAL_RECOGNITION)
+        model_cache = ModelCache(profiling=True)
+        await model_cache.get("test_model_name", ModelType.FACIAL_RECOGNITION, ttl=100)
         profiling = await model_cache.get_profiling()
         assert isinstance(profiling, dict)
         assert profiling == model_cache.cache.profiling
@@ -543,6 +548,25 @@ class TestCache:
 
         with pytest.raises(ValueError):
             await model_cache.get("test_model_name", ModelType.CLIP, mode="text")
+
+    async def test_preloads_models(self, monkeypatch: MonkeyPatch, mock_get_model: mock.Mock) -> None:
+        os.environ["MACHINE_LEARNING_PRELOAD__CLIP"] = "ViT-B-32__openai"
+        os.environ["MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION"] = "buffalo_s"
+
+        settings = Settings()
+        assert settings.preload is not None
+        assert settings.preload.clip == "ViT-B-32__openai"
+        assert settings.preload.facial_recognition == "buffalo_s"
+
+        model_cache = ModelCache()
+        monkeypatch.setattr("app.main.model_cache", model_cache)
+
+        await preload_models(settings.preload)
+        assert len(model_cache.cache._cache) == 2
+        assert mock_get_model.call_count == 2
+        await model_cache.get("ViT-B-32__openai", ModelType.CLIP, ttl=100)
+        await model_cache.get("buffalo_s", ModelType.FACIAL_RECOGNITION, ttl=100)
+        assert mock_get_model.call_count == 2
 
 
 @pytest.mark.asyncio

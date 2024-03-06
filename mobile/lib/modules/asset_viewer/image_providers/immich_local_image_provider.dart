@@ -11,7 +11,7 @@ import 'package:photo_manager/photo_manager.dart';
 
 /// The local image provider for an asset
 /// Only viable
-class ImmichLocalImageProvider extends ImageProvider<Asset> {
+class ImmichLocalImageProvider extends ImageProvider<ImmichLocalImageProvider> {
   final Asset asset;
 
   ImmichLocalImageProvider({
@@ -21,15 +21,18 @@ class ImmichLocalImageProvider extends ImageProvider<Asset> {
   /// Converts an [ImageProvider]'s settings plus an [ImageConfiguration] to a key
   /// that describes the precise image to load.
   @override
-  Future<Asset> obtainKey(ImageConfiguration configuration) {
-    return SynchronousFuture(asset);
+  Future<ImmichLocalImageProvider> obtainKey(ImageConfiguration configuration) {
+    return SynchronousFuture(this);
   }
 
   @override
-  ImageStreamCompleter loadImage(Asset key, ImageDecoderCallback decode) {
+  ImageStreamCompleter loadImage(
+    ImmichLocalImageProvider key,
+    ImageDecoderCallback decode,
+  ) {
     final chunkEvents = StreamController<ImageChunkEvent>();
     return MultiImageStreamCompleter(
-      codec: _codec(key, decode, chunkEvents),
+      codec: _codec(key.asset, decode, chunkEvents),
       scale: 1.0,
       chunkEvents: chunkEvents.stream,
       informationCollector: () sync* {
@@ -82,11 +85,6 @@ class ImmichLocalImageProvider extends ImageProvider<Asset> {
           yield codec;
         } catch (error) {
           throw StateError("Loading asset ${asset.fileName} failed");
-        } finally {
-          if (Platform.isIOS) {
-            // Clean up this file
-            await file.delete();
-          }
         }
       }
     }

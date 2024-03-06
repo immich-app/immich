@@ -92,12 +92,12 @@ export interface SearchStatusOptions {
 export interface SearchOneToOneRelationOptions {
   withExif?: boolean;
   withSmartInfo?: boolean;
+  withStacked?: boolean;
 }
 
 export interface SearchRelationOptions extends SearchOneToOneRelationOptions {
   withFaces?: boolean;
   withPeople?: boolean;
-  withStacked?: boolean;
 }
 
 export interface SearchDateOptions {
@@ -187,4 +187,5 @@ export interface ISearchRepository {
   searchFaces(search: FaceEmbeddingSearch): Promise<FaceSearchResult[]>;
   upsert(smartInfo: Partial<SmartInfoEntity>, embedding?: Embedding): Promise<void>;
   searchPlaces(placeName: string): Promise<GeodataPlacesEntity[]>;
+  deleteAllSearchEmbeddings(): Promise<void>;
 }

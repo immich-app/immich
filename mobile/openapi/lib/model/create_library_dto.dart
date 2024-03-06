@@ -18,6 +18,7 @@ class CreateLibraryDto {
     this.isVisible,
     this.isWatched,
     this.name,
+    this.ownerId,
     required this.type,
   });
 
@@ -49,6 +50,14 @@ class CreateLibraryDto {
   ///
   String? name;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? ownerId;
+
   LibraryType type;
 
   @override
@@ -58,6 +67,7 @@ class CreateLibraryDto {
     other.isVisible == isVisible &&
     other.isWatched == isWatched &&
     other.name == name &&
+    other.ownerId == ownerId &&
     other.type == type;
 
   @override
@@ -68,10 +78,11 @@ class CreateLibraryDto {
     (isVisible == null ? 0 : isVisible!.hashCode) +
     (isWatched == null ? 0 : isWatched!.hashCode) +
     (name == null ? 0 : name!.hashCode) +
+    (ownerId == null ? 0 : ownerId!.hashCode) +
     (type.hashCode);
 
   @override
-  String toString() => 'CreateLibraryDto[exclusionPatterns=$exclusionPatterns, importPaths=$importPaths, isVisible=$isVisible, isWatched=$isWatched, name=$name, type=$type]';
+  String toString() => 'CreateLibraryDto[exclusionPatterns=$exclusionPatterns, importPaths=$importPaths, isVisible=$isVisible, isWatched=$isWatched, name=$name, ownerId=$ownerId, type=$type]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -91,6 +102,11 @@ class CreateLibraryDto {
       json[r'name'] = this.name;
     } else {
     //  json[r'name'] = null;
+    }
+    if (this.ownerId != null) {
+      json[r'ownerId'] = this.ownerId;
+    } else {
+    //  json[r'ownerId'] = null;
     }
       json[r'type'] = this.type;
     return json;
@@ -113,6 +129,7 @@ class CreateLibraryDto {
         isVisible: mapValueOfType<bool>(json, r'isVisible'),
         isWatched: mapValueOfType<bool>(json, r'isWatched'),
         name: mapValueOfType<String>(json, r'name'),
+        ownerId: mapValueOfType<String>(json, r'ownerId'),
         type: LibraryType.fromJson(json[r'type'])!,
       );
     }

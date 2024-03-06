@@ -1,16 +1,6 @@
-import {
-  LoginResponseDto,
-  getAuthDevices,
-  login,
-  signUpAdmin,
-} from '@immich/sdk';
+import { LoginResponseDto, getAuthDevices, login, signUpAdmin } from '@immich/sdk';
 import { loginDto, signupDto, uuidDto } from 'src/fixtures';
-import {
-  deviceDto,
-  errorDto,
-  loginResponseDto,
-  signupResponseDto,
-} from 'src/responses';
+import { deviceDto, errorDto, loginResponseDto, signupResponseDto } from 'src/responses';
 import { apiUtils, app, asBearerAuth, dbUtils } from 'src/utils';
 import request from 'supertest';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
@@ -48,18 +38,14 @@ describe(`/auth/admin-sign-up`, () => {
 
     for (const { should, data } of invalid) {
       it(`should ${should}`, async () => {
-        const { status, body } = await request(app)
-          .post('/auth/admin-sign-up')
-          .send(data);
+        const { status, body } = await request(app).post('/auth/admin-sign-up').send(data);
         expect(status).toEqual(400);
         expect(body).toEqual(errorDto.badRequest());
       });
     }
 
     it(`should sign up the admin`, async () => {
-      const { status, body } = await request(app)
-        .post('/auth/admin-sign-up')
-        .send(signupDto.admin);
+      const { status, body } = await request(app).post('/auth/admin-sign-up').send(signupDto.admin);
       expect(status).toBe(201);
       expect(body).toEqual(signupResponseDto.admin);
     });
@@ -86,9 +72,7 @@ describe(`/auth/admin-sign-up`, () => {
     it('should not allow a second admin to sign up', async () => {
       await signUpAdmin({ signUpDto: signupDto.admin });
 
-      const { status, body } = await request(app)
-        .post('/auth/admin-sign-up')
-        .send(signupDto.admin);
+      const { status, body } = await request(app).post('/auth/admin-sign-up').send(signupDto.admin);
 
       expect(status).toBe(400);
       expect(body).toEqual(errorDto.alreadyHasAdmin);
@@ -107,9 +91,7 @@ describe('/auth/*', () => {
 
   describe(`POST /auth/login`, () => {
     it('should reject an incorrect password', async () => {
-      const { status, body } = await request(app)
-        .post('/auth/login')
-        .send({ email, password: 'incorrect' });
+      const { status, body } = await request(app).post('/auth/login').send({ email, password: 'incorrect' });
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.incorrectLogin);
     });
@@ -125,9 +107,7 @@ describe('/auth/*', () => {
     }
 
     it('should accept a correct password', async () => {
-      const { status, body, headers } = await request(app)
-        .post('/auth/login')
-        .send({ email, password });
+      const { status, body, headers } = await request(app).post('/auth/login').send({ email, password });
       expect(status).toBe(201);
       expect(body).toEqual(loginResponseDto.admin);
 
@@ -136,15 +116,9 @@ describe('/auth/*', () => {
 
       const cookies = headers['set-cookie'];
       expect(cookies).toHaveLength(3);
-      expect(cookies[0]).toEqual(
-        `immich_access_token=${token}; HttpOnly; Path=/; Max-Age=34560000; SameSite=Lax;`
-      );
-      expect(cookies[1]).toEqual(
-        'immich_auth_type=password; HttpOnly; Path=/; Max-Age=34560000; SameSite=Lax;'
-      );
-      expect(cookies[2]).toEqual(
-        'immich_is_authenticated=true; Path=/; Max-Age=34560000; SameSite=Lax;'
-      );
+      expect(cookies[0]).toEqual(`immich_access_token=${token}; HttpOnly; Path=/; Max-Age=34560000; SameSite=Lax;`);
+      expect(cookies[1]).toEqual('immich_auth_type=password; HttpOnly; Path=/; Max-Age=34560000; SameSite=Lax;');
+      expect(cookies[2]).toEqual('immich_is_authenticated=true; Path=/; Max-Age=34560000; SameSite=Lax;');
     });
   });
 
@@ -176,18 +150,12 @@ describe('/auth/*', () => {
         await login({ loginCredentialDto: loginDto.admin });
       }
 
-      await expect(
-        getAuthDevices({ headers: asBearerAuth(admin.accessToken) })
-      ).resolves.toHaveLength(6);
+      await expect(getAuthDevices({ headers: asBearerAuth(admin.accessToken) })).resolves.toHaveLength(6);
 
-      const { status } = await request(app)
-        .delete(`/auth/devices`)
-        .set('Authorization', `Bearer ${admin.accessToken}`);
+      const { status } = await request(app).delete(`/auth/devices`).set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(204);
 
-      await expect(
-        getAuthDevices({ headers: asBearerAuth(admin.accessToken) })
-      ).resolves.toHaveLength(1);
+      await expect(getAuthDevices({ headers: asBearerAuth(admin.accessToken) })).resolves.toHaveLength(1);
     });
 
     it('should throw an error for a non-existent device id', async () => {
@@ -195,9 +163,7 @@ describe('/auth/*', () => {
         .delete(`/auth/devices/${uuidDto.notFound}`)
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(400);
-      expect(body).toEqual(
-        errorDto.badRequest('Not found or no authDevice.delete access')
-      );
+      expect(body).toEqual(errorDto.badRequest('Not found or no authDevice.delete access'));
     });
 
     it('should logout a device', async () => {
@@ -219,9 +185,7 @@ describe('/auth/*', () => {
 
   describe('POST /auth/validateToken', () => {
     it('should reject an invalid token', async () => {
-      const { status, body } = await request(app)
-        .post(`/auth/validateToken`)
-        .set('Authorization', 'Bearer 123');
+      const { status, body } = await request(app).post(`/auth/validateToken`).set('Authorization', 'Bearer 123');
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.invalidToken);
     });

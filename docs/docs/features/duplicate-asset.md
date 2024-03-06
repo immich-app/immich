@@ -6,7 +6,6 @@ In order to avoid duplicated assets, Immich uses a hash to make sure that assets
 
 <img src={require('./img/avoid-duplicate.png').default} width="30%" title="avoid duplicate message" />
 
-
 ## Mobile App
 
 when the user tries to upload assets that already exist on the server from the mobile phone, the server rejects the file. In the app, it adds the rejected file to the blacklist so it's not trying to be reuploaded in the next backup.

@@ -81,9 +81,16 @@ export class DownloadService {
 
     const zip = this.storageRepository.createZipStream();
     const assets = await this.assetRepository.getByIds(dto.assetIds);
+    const assetMap = new Map(assets.map((asset) => [asset.id, asset]));
     const paths: Record<string, number> = {};
 
-    for (const { originalPath, originalFileName } of assets) {
+    for (const assetId of dto.assetIds) {
+      const asset = assetMap.get(assetId);
+      if (!asset) {
+        continue;
+      }
+
+      const { originalPath, originalFileName } = asset;
       const extension = extname(originalPath);
       let filename = `${originalFileName}${extension}`;
       const count = paths[filename] || 0;
@@ -107,9 +114,7 @@ export class DownloadService {
       const assetIds = dto.assetIds;
       await this.access.requirePermission(auth, Permission.ASSET_DOWNLOAD, assetIds);
       const assets = await this.assetRepository.getByIds(assetIds);
-      return (async function* () {
-        yield assets;
-      })();
+      return usePagination(PAGINATION_SIZE, () => ({ hasNextPage: false, items: assets }));
     }
 
     if (dto.albumId) {

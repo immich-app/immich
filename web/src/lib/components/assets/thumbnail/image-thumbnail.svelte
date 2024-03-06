@@ -8,7 +8,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
 
   export let url: string;
-  export let altText: string;
+  export let altText: string | undefined;
   export let title: string | null = null;
   export let heightStyle: string | undefined = undefined;
   export let widthStyle: string;

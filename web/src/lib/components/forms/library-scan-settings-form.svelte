@@ -37,7 +37,7 @@
     dispatch('submit', { library, type: LibraryType.External });
   };
 
-  const handleAddExclusionPattern = async () => {
+  const handleAddExclusionPattern = () => {
     if (!addExclusionPattern) {
       return;
     }
@@ -60,7 +60,7 @@
     }
   };
 
-  const handleEditExclusionPattern = async () => {
+  const handleEditExclusionPattern = () => {
     if (editExclusionPattern === null) {
       return;
     }
@@ -79,7 +79,7 @@
     }
   };
 
-  const handleDeleteExclusionPattern = async () => {
+  const handleDeleteExclusionPattern = () => {
     if (editExclusionPattern === null) {
       return;
     }

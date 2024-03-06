@@ -3,7 +3,7 @@ import { WatchOptions } from 'chokidar';
 
 interface MockWatcherOptions {
   items?: Array<{ event: 'change' | 'add' | 'unlink' | 'error'; value: string }>;
-  close?: () => void;
+  close?: () => Promise<void>;
 }
 
 export const makeMockWatcher =
@@ -29,7 +29,12 @@ export const makeMockWatcher =
         }
       }
     }
-    return () => close?.();
+
+    if (close) {
+      return () => close();
+    }
+
+    return () => Promise.resolve();
   };
 
 export const newStorageRepositoryMock = (reset = true): jest.Mocked<IStorageRepository> => {

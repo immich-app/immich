@@ -29,17 +29,17 @@
   const handleDoneClicked = async () => {
     if (index >= onboardingSteps.length - 1) {
       await setAdminOnboarding();
-      goto(AppRoute.PHOTOS);
+      await goto(AppRoute.PHOTOS);
     } else {
       index++;
-      goto(`${AppRoute.AUTH_ONBOARDING}?${QueryParameter.ONBOARDING_STEP}=${onboardingSteps[index].name}`);
+      await goto(`${AppRoute.AUTH_ONBOARDING}?${QueryParameter.ONBOARDING_STEP}=${onboardingSteps[index].name}`);
     }
   };
 
-  const handlePrevious = () => {
+  const handlePrevious = async () => {
     if (index >= 1) {
       index--;
-      goto(`${AppRoute.AUTH_ONBOARDING}?${QueryParameter.ONBOARDING_STEP}=${onboardingSteps[index].name}`);
+      await goto(`${AppRoute.AUTH_ONBOARDING}?${QueryParameter.ONBOARDING_STEP}=${onboardingSteps[index].name}`);
     }
   };
 </script>

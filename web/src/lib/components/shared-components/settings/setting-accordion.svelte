@@ -1,28 +1,28 @@
 <script lang="ts">
-  import { page } from '$app/stores';
-  import { QueryParameter } from '$lib/constants';
-  import { hasParamValue, updateParamList } from '$lib/utils';
   import { slide } from 'svelte/transition';
+  import { getAccordionState } from './setting-accordion-state.svelte';
+
+  const accordionState = getAccordionState();
 
   export let title: string;
   export let subtitle = '';
   export let key: string;
-  export let isOpen = false;
+  export let isOpen = $accordionState.has(key);
 
-  const syncFromUrl = () => (isOpen = hasParamValue(QueryParameter.IS_OPEN, key));
-  const syncToUrl = (isOpen: boolean) => updateParamList({ param: QueryParameter.IS_OPEN, value: key, add: isOpen });
+  $: setIsOpen(isOpen);
 
-  isOpen ? syncToUrl(true) : syncFromUrl();
-  $: $page.url && syncFromUrl();
-
-  const toggle = () => {
-    isOpen = !isOpen;
-    syncToUrl(isOpen);
+  const setIsOpen = (isOpen: boolean) => {
+    if (isOpen) {
+      $accordionState = $accordionState.add(key);
+    } else {
+      $accordionState.delete(key);
+      $accordionState = $accordionState;
+    }
   };
 </script>
 
 <div class="border-b-[1px] border-gray-200 py-4 dark:border-gray-700">
-  <button on:click={toggle} class="flex w-full place-items-center justify-between text-left">
+  <button on:click={() => (isOpen = !isOpen)} class="flex w-full place-items-center justify-between text-left">
     <div>
       <h2 class="font-medium text-immich-primary dark:text-immich-dark-primary">
         {title}

@@ -9,6 +9,7 @@
 <script lang="ts">
   import { getSearchSuggestions, SearchSuggestionType } from '@immich/sdk';
   import Combobox, { toComboBoxOptions } from '../combobox.svelte';
+  import { handlePromiseError } from '$lib/utils';
 
   export let filters: SearchLocationFilter;
 
@@ -18,9 +19,9 @@
 
   $: countryFilter = filters.country;
   $: stateFilter = filters.state;
-  $: updateCountries();
-  $: updateStates(countryFilter);
-  $: updateCities(countryFilter, stateFilter);
+  $: handlePromiseError(updateCountries());
+  $: handlePromiseError(updateStates(countryFilter));
+  $: handlePromiseError(updateCities(countryFilter, stateFilter));
 
   async function updateCountries() {
     countries = await getSearchSuggestions({

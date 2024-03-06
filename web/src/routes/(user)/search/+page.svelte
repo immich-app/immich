@@ -35,6 +35,7 @@
   import type { Viewport } from '$lib/stores/assets.store';
   import { locale } from '$lib/stores/preferences.store';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
+  import { handlePromiseError } from '$lib/utils';
   import { parseUtcDate } from '$lib/utils/date-time';
 
   const MAX_ASSET_COUNT = 5000;
@@ -53,7 +54,7 @@
 
   const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
 
-  const handleKeyboardPress = (event: KeyboardEvent) => {
+  const handleKeyboardPress = async (event: KeyboardEvent) => {
     if (shouldIgnoreShortcut(event)) {
       return;
     }
@@ -65,7 +66,7 @@
             return;
           }
           if (!$preventRaceConditionSearchBar) {
-            goto(previousRoute);
+            await goto(previousRoute);
           }
           $preventRaceConditionSearchBar = false;
           return;
@@ -94,8 +95,9 @@
   $: isAllArchived = [...selectedAssets].every((asset) => asset.isArchived);
   $: isAllFavorite = [...selectedAssets].every((asset) => asset.isFavorite);
 
-  const onAssetDelete = (assetId: string) => {
-    searchResultAssets = searchResultAssets.filter((a: AssetResponseDto) => a.id !== assetId);
+  const onAssetDelete = (assetIds: string[]) => {
+    const assetIdSet = new Set(assetIds);
+    searchResultAssets = searchResultAssets.filter((a: AssetResponseDto) => !assetIdSet.has(a.id));
   };
   const handleSelectAll = () => {
     selectedAssets = new Set(searchResultAssets);
@@ -108,13 +110,13 @@
     return searchQuery ? JSON.parse(searchQuery) : {};
   })();
 
-  $: terms, onSearchQueryUpdate();
+  $: terms, handlePromiseError(onSearchQueryUpdate());
 
   async function onSearchQueryUpdate() {
     nextPage = 1;
     searchResultAssets = [];
     searchResultAlbums = [];
-    loadNextPage();
+    await loadNextPage();
   }
 
   export const loadNextPage = async () => {
@@ -171,6 +173,7 @@
       make: 'Camera brand',
       model: 'Camera model',
       personIds: 'People',
+      originalPath: 'File name',
     };
     return keyMap[key] || key;
   }

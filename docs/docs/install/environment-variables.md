@@ -67,7 +67,7 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 | `DB_PORT`                           | Database Port                                                 |    `5432`    | server, microservices |
 | `DB_USERNAME`                       | Database User                                                 |  `postgres`  | server, microservices |
 | `DB_PASSWORD`                       | Database Password                                             |  `postgres`  | server, microservices |
-| `DB_DATABASE`                       | Database Name                                                 |   `immich`   | server, microservices |
+| `DB_DATABASE_NAME`                  | Database Name                                                 |   `immich`   | server, microservices |
 | `DB_VECTOR_EXTENSION`<sup>\*1</sup> | Database Vector Extension (one of [`pgvector`, `pgvecto.rs`]) | `pgvecto.rs` | server, microservices |
 
 \*1: This setting cannot be changed after the server has successfully started up
@@ -124,16 +124,18 @@ Redis (Sentinel) URL example JSON before encoding:
 
 ## Machine Learning
 
-| Variable                                         | Description                                                        |       Default       | Services         |
-| :----------------------------------------------- | :----------------------------------------------------------------- | :-----------------: | :--------------- |
-| `MACHINE_LEARNING_MODEL_TTL`                     | Inactivity time (s) before a model is unloaded (disabled if \<= 0) |        `300`        | machine learning |
-| `MACHINE_LEARNING_MODEL_TTL_POLL_S`              | Interval (s) between checks for the model TTL (disabled if \<= 0)  |        `10`         | machine learning |
-| `MACHINE_LEARNING_CACHE_FOLDER`                  | Directory where models are downloaded                              |      `/cache`       | machine learning |
-| `MACHINE_LEARNING_REQUEST_THREADS`<sup>\*1</sup> | Thread count of the request thread pool (disabled if \<= 0)        | number of CPU cores | machine learning |
-| `MACHINE_LEARNING_MODEL_INTER_OP_THREADS`        | Number of parallel model operations                                |         `1`         | machine learning |
-| `MACHINE_LEARNING_MODEL_INTRA_OP_THREADS`        | Number of threads for each model operation                         |         `2`         | machine learning |
-| `MACHINE_LEARNING_WORKERS`<sup>\*2</sup>         | Number of worker processes to spawn                                |         `1`         | machine learning |
-| `MACHINE_LEARNING_WORKER_TIMEOUT`                | Maximum time (s) of unresponsiveness before a worker is killed     |        `120`        | machine learning |
+| Variable                                         | Description                                                          |       Default       | Services         |
+| :----------------------------------------------- | :------------------------------------------------------------------- | :-----------------: | :--------------- |
+| `MACHINE_LEARNING_MODEL_TTL`                     | Inactivity time (s) before a model is unloaded (disabled if \<= 0)   |        `300`        | machine learning |
+| `MACHINE_LEARNING_MODEL_TTL_POLL_S`              | Interval (s) between checks for the model TTL (disabled if \<= 0)    |        `10`         | machine learning |
+| `MACHINE_LEARNING_CACHE_FOLDER`                  | Directory where models are downloaded                                |      `/cache`       | machine learning |
+| `MACHINE_LEARNING_REQUEST_THREADS`<sup>\*1</sup> | Thread count of the request thread pool (disabled if \<= 0)          | number of CPU cores | machine learning |
+| `MACHINE_LEARNING_MODEL_INTER_OP_THREADS`        | Number of parallel model operations                                  |         `1`         | machine learning |
+| `MACHINE_LEARNING_MODEL_INTRA_OP_THREADS`        | Number of threads for each model operation                           |         `2`         | machine learning |
+| `MACHINE_LEARNING_WORKERS`<sup>\*2</sup>         | Number of worker processes to spawn                                  |         `1`         | machine learning |
+| `MACHINE_LEARNING_WORKER_TIMEOUT`                | Maximum time (s) of unresponsiveness before a worker is killed       |        `120`        | machine learning |
+| `MACHINE_LEARNING_PRELOAD__CLIP`                 | Name of a CLIP model to be preloaded and kept in cache               |                     | machine learning |
+| `MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION`   | Name of a facial recognition model to be preloaded and kept in cache |                     | machine learning |
 
 \*1: It is recommended to begin with this parameter when changing the concurrency levels of the machine learning service and then tune the other ones.
 

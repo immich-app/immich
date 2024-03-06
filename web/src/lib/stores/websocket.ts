@@ -47,7 +47,7 @@ websocket
   .on('on_new_release', (releaseVersion) => websocketStore.release.set(releaseVersion))
   .on('connect_error', (e) => console.log('Websocket Connect Error', e));
 
-export const openWebsocketConnection = async () => {
+export const openWebsocketConnection = () => {
   try {
     if (!get(user)) {
       return;

@@ -8,7 +8,7 @@ describe(APIKeyService.name, () => {
   let keyMock: jest.Mocked<IKeyRepository>;
   let cryptoMock: jest.Mocked<ICryptoRepository>;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     cryptoMock = newCryptoRepositoryMock();
     keyMock = newKeyRepositoryMock();
     sut = new APIKeyService(cryptoMock, keyMock);

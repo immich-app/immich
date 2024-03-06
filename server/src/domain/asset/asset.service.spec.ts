@@ -169,7 +169,7 @@ describe(AssetService.name, () => {
     expect(sut).toBeDefined();
   });
 
-  beforeEach(async () => {
+  beforeEach(() => {
     accessMock = newAccessRepositoryMock();
     assetMock = newAssetRepositoryMock();
     communicationMock = newCommunicationRepositoryMock();
@@ -286,27 +286,22 @@ describe(AssetService.name, () => {
 
   describe('getMapMarkers', () => {
     it('should get geo information of assets', async () => {
+      const asset = assetStub.withLocation;
+      const marker = {
+        id: asset.id,
+        lat: asset.exifInfo!.latitude!,
+        lon: asset.exifInfo!.longitude!,
+        city: asset.exifInfo!.city,
+        state: asset.exifInfo!.state,
+        country: asset.exifInfo!.country,
+      };
       partnerMock.getAll.mockResolvedValue([]);
-      assetMock.getMapMarkers.mockResolvedValue(
-        [assetStub.withLocation].map((asset) => ({
-          id: asset.id,
-
-          /* eslint-disable-next-line @typescript-eslint/no-non-null-assertion */
-          lat: asset.exifInfo!.latitude!,
-
-          /* eslint-disable-next-line @typescript-eslint/no-non-null-assertion */
-          lon: asset.exifInfo!.longitude!,
-        })),
-      );
+      assetMock.getMapMarkers.mockResolvedValue([marker]);
 
       const markers = await sut.getMapMarkers(authStub.user1, {});
 
       expect(markers).toHaveLength(1);
-      expect(markers[0]).toEqual({
-        id: assetStub.withLocation.id,
-        lat: 100,
-        lon: 100,
-      });
+      expect(markers[0]).toEqual(marker);
     });
   });
 

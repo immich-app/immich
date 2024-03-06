@@ -18,7 +18,6 @@ const responseDto = {
     createdAt: new Date('2021-01-01'),
     deletedAt: null,
     updatedAt: new Date('2021-01-01'),
-    externalPath: null,
     memoriesEnabled: true,
     avatarColor: UserAvatarColor.PRIMARY,
     quotaSizeInBytes: null,
@@ -37,7 +36,6 @@ const responseDto = {
     createdAt: new Date('2021-01-01'),
     deletedAt: null,
     updatedAt: new Date('2021-01-01'),
-    externalPath: null,
     memoriesEnabled: true,
     avatarColor: UserAvatarColor.PRIMARY,
     inTimeline: true,
@@ -51,7 +49,7 @@ describe(PartnerService.name, () => {
   let partnerMock: jest.Mocked<IPartnerRepository>;
   let accessMock: jest.Mocked<IAccessRepository>;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     partnerMock = newPartnerRepositoryMock();
     sut = new PartnerService(partnerMock, accessMock);
   });

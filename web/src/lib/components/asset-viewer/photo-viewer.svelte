@@ -1,10 +1,9 @@
 <script lang="ts">
-  import { api } from '$lib/api';
   import { photoViewer } from '$lib/stores/assets.store';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
-  import { getKey } from '$lib/utils';
+  import { downloadRequest, getAssetFileUrl, handlePromiseError } from '$lib/utils';
   import { isWebCompatibleImage } from '$lib/utils/asset-utils';
   import { getBoundingBox } from '$lib/utils/people-utils';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
@@ -14,6 +13,7 @@
   import { fade } from 'svelte/transition';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
+  import { getAltText } from '$lib/utils/thumbnail-util';
 
   export let asset: AssetResponseDto;
   export let element: HTMLDivElement | undefined = undefined;
@@ -25,6 +25,8 @@
   let hasZoomed = false;
   let copyImageToClipboard: (source: string) => Promise<Blob>;
   let canCopyImagesToClipboard: () => boolean;
+
+  const loadOriginalByDefault = $alwaysLoadOriginalFile && isWebCompatibleImage(asset);
 
   $: if (imgElement) {
     createZoomImageWheel(imgElement, {
@@ -51,17 +53,11 @@
       abortController?.abort();
       abortController = new AbortController();
 
-      const { data } = await api.assetApi.serveFile(
-        { id: asset.id, isThumb: false, isWeb: !loadOriginal, key: getKey() },
-        {
-          responseType: 'blob',
-          signal: abortController.signal,
-        },
-      );
-
-      if (!(data instanceof Blob)) {
-        return;
-      }
+      // TODO: Use sdk once it supports signals
+      const { data } = await downloadRequest({
+        url: getAssetFileUrl(asset.id, !loadOriginal, false),
+        signal: abortController.signal,
+      });
 
       assetData = URL.createObjectURL(data);
     } catch {
@@ -102,7 +98,7 @@
     }
   };
 
-  const doZoomImage = async () => {
+  const doZoomImage = () => {
     setZoomImageWheelState({
       currentZoom: $zoomImageWheelState.currentZoom === 1 ? 2 : 1,
     });
@@ -120,7 +116,7 @@
     if (state.currentZoom > 1 && isWebCompatibleImage(asset) && !hasZoomed && !$alwaysLoadOriginalFile) {
       hasZoomed = true;
 
-      loadAssetData({ loadOriginal: true });
+      handlePromiseError(loadAssetData({ loadOriginal: true }));
     }
   });
 </script>
@@ -132,7 +128,7 @@
   transition:fade={{ duration: haveFadeTransition ? 150 : 0 }}
   class="flex h-full select-none place-content-center place-items-center"
 >
-  {#await loadAssetData({ loadOriginal: $alwaysLoadOriginalFile ? isWebCompatibleImage(asset) : false })}
+  {#await loadAssetData({ loadOriginal: loadOriginalByDefault })}
     <LoadingSpinner />
   {:then}
     <div bind:this={imgElement} class="h-full w-full">
@@ -140,7 +136,7 @@
         bind:this={$photoViewer}
         transition:fade={{ duration: haveFadeTransition ? 150 : 0 }}
         src={assetData}
-        alt={asset.id}
+        alt={getAltText(asset)}
         class="h-full w-full object-contain"
         draggable="false"
       />
