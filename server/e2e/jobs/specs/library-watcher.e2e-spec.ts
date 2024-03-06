@@ -30,8 +30,6 @@ describe(`Library watcher (e2e)`, () => {
     await restoreTempFolder();
     await api.authApi.adminSignUp(server);
     admin = await api.authApi.adminLogin(server);
-
-    await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
   });
 
   afterEach(async () => {
@@ -205,14 +203,12 @@ describe(`Library watcher (e2e)`, () => {
         ],
       });
 
-      await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
-
       await fs.mkdir(`${IMMICH_TEST_ASSET_TEMP_PATH}/dir1`, { recursive: true });
       await fs.mkdir(`${IMMICH_TEST_ASSET_TEMP_PATH}/dir2`, { recursive: true });
       await fs.mkdir(`${IMMICH_TEST_ASSET_TEMP_PATH}/dir3`, { recursive: true });
     });
 
-    it('should use an updated import paths', async () => {
+    it('should use an updated import path', async () => {
       await fs.mkdir(`${IMMICH_TEST_ASSET_TEMP_PATH}/dir4`, { recursive: true });
 
       await api.libraryApi.setImportPaths(server, admin.accessToken, library.id, [

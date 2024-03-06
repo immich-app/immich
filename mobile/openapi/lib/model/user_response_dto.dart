@@ -17,7 +17,6 @@ class UserResponseDto {
     required this.createdAt,
     required this.deletedAt,
     required this.email,
-    required this.externalPath,
     required this.id,
     required this.isAdmin,
     this.memoriesEnabled,
@@ -38,8 +37,6 @@ class UserResponseDto {
   DateTime? deletedAt;
 
   String email;
-
-  String? externalPath;
 
   String id;
 
@@ -75,7 +72,6 @@ class UserResponseDto {
     other.createdAt == createdAt &&
     other.deletedAt == deletedAt &&
     other.email == email &&
-    other.externalPath == externalPath &&
     other.id == id &&
     other.isAdmin == isAdmin &&
     other.memoriesEnabled == memoriesEnabled &&
@@ -95,7 +91,6 @@ class UserResponseDto {
     (createdAt.hashCode) +
     (deletedAt == null ? 0 : deletedAt!.hashCode) +
     (email.hashCode) +
-    (externalPath == null ? 0 : externalPath!.hashCode) +
     (id.hashCode) +
     (isAdmin.hashCode) +
     (memoriesEnabled == null ? 0 : memoriesEnabled!.hashCode) +
@@ -109,7 +104,7 @@ class UserResponseDto {
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'UserResponseDto[avatarColor=$avatarColor, createdAt=$createdAt, deletedAt=$deletedAt, email=$email, externalPath=$externalPath, id=$id, isAdmin=$isAdmin, memoriesEnabled=$memoriesEnabled, name=$name, oauthId=$oauthId, profileImagePath=$profileImagePath, quotaSizeInBytes=$quotaSizeInBytes, quotaUsageInBytes=$quotaUsageInBytes, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel, updatedAt=$updatedAt]';
+  String toString() => 'UserResponseDto[avatarColor=$avatarColor, createdAt=$createdAt, deletedAt=$deletedAt, email=$email, id=$id, isAdmin=$isAdmin, memoriesEnabled=$memoriesEnabled, name=$name, oauthId=$oauthId, profileImagePath=$profileImagePath, quotaSizeInBytes=$quotaSizeInBytes, quotaUsageInBytes=$quotaUsageInBytes, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -121,11 +116,6 @@ class UserResponseDto {
     //  json[r'deletedAt'] = null;
     }
       json[r'email'] = this.email;
-    if (this.externalPath != null) {
-      json[r'externalPath'] = this.externalPath;
-    } else {
-    //  json[r'externalPath'] = null;
-    }
       json[r'id'] = this.id;
       json[r'isAdmin'] = this.isAdmin;
     if (this.memoriesEnabled != null) {
@@ -168,7 +158,6 @@ class UserResponseDto {
         createdAt: mapDateTime(json, r'createdAt', r'')!,
         deletedAt: mapDateTime(json, r'deletedAt', r''),
         email: mapValueOfType<String>(json, r'email')!,
-        externalPath: mapValueOfType<String>(json, r'externalPath'),
         id: mapValueOfType<String>(json, r'id')!,
         isAdmin: mapValueOfType<bool>(json, r'isAdmin')!,
         memoriesEnabled: mapValueOfType<bool>(json, r'memoriesEnabled'),
@@ -231,7 +220,6 @@ class UserResponseDto {
     'createdAt',
     'deletedAt',
     'email',
-    'externalPath',
     'id',
     'isAdmin',
     'name',

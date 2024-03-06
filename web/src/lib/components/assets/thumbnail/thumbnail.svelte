@@ -3,6 +3,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { ProjectionType } from '$lib/constants';
   import { getAssetFileUrl, getAssetThumbnailUrl, isSharedLink } from '$lib/utils';
+  import { getAltText } from '$lib/utils/thumbnail-util';
   import { timeToSeconds } from '$lib/utils/date-time';
   import { AssetTypeEnum, ThumbnailFormat, type AssetResponseDto } from '@immich/sdk';
   import {
@@ -177,7 +178,7 @@
         {#if asset.resized}
           <ImageThumbnail
             url={getAssetThumbnailUrl(asset.id, format)}
-            altText={asset.originalFileName}
+            altText={getAltText(asset)}
             widthStyle="{width}px"
             heightStyle="{height}px"
             thumbhash={asset.thumbhash}

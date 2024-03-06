@@ -1,39 +1,27 @@
 import { getAllAlbums, getAllAssets } from '@immich/sdk';
-import {
-  apiUtils,
-  asKeyAuth,
-  cliUtils,
-  dbUtils,
-  immichCli,
-  testAssetDir,
-} from 'src/utils';
+import { mkdir, readdir, rm, symlink } from 'node:fs/promises';
+import { apiUtils, asKeyAuth, cliUtils, dbUtils, immichCli, testAssetDir } from 'src/utils';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { mkdir, readdir, rm, symlink } from 'fs/promises';
 
 describe(`immich upload`, () => {
   let key: string;
 
-  beforeAll(() => {
+  beforeAll(async () => {
     apiUtils.setup();
-  });
-
-  beforeEach(async () => {
     await dbUtils.reset();
     key = await cliUtils.login();
   });
 
+  beforeEach(async () => {
+    await dbUtils.reset(['assets', 'albums']);
+  });
+
   describe('immich upload --recursive', () => {
     it('should upload a folder recursively', async () => {
-      const { stderr, stdout, exitCode } = await immichCli([
-        'upload',
-        `${testAssetDir}/albums/nature/`,
-        '--recursive',
-      ]);
+      const { stderr, stdout, exitCode } = await immichCli(['upload', `${testAssetDir}/albums/nature/`, '--recursive']);
       expect(stderr).toBe('');
       expect(stdout.split('\n')).toEqual(
-        expect.arrayContaining([
-          expect.stringContaining('Successfully uploaded 9 assets'),
-        ])
+        expect.arrayContaining([expect.stringContaining('Successfully uploaded 9 assets')]),
       );
       expect(exitCode).toBe(0);
 
@@ -55,7 +43,7 @@ describe(`immich upload`, () => {
           expect.stringContaining('Successfully uploaded 9 assets'),
           expect.stringContaining('Successfully created 1 new album'),
           expect.stringContaining('Successfully updated 9 assets'),
-        ])
+        ]),
       );
       expect(stderr).toBe('');
       expect(exitCode).toBe(0);
@@ -69,15 +57,9 @@ describe(`immich upload`, () => {
     });
 
     it('should add existing assets to albums', async () => {
-      const response1 = await immichCli([
-        'upload',
-        `${testAssetDir}/albums/nature/`,
-        '--recursive',
-      ]);
+      const response1 = await immichCli(['upload', `${testAssetDir}/albums/nature/`, '--recursive']);
       expect(response1.stdout.split('\n')).toEqual(
-        expect.arrayContaining([
-          expect.stringContaining('Successfully uploaded 9 assets'),
-        ])
+        expect.arrayContaining([expect.stringContaining('Successfully uploaded 9 assets')]),
       );
       expect(response1.stderr).toBe('');
       expect(response1.exitCode).toBe(0);
@@ -88,19 +70,12 @@ describe(`immich upload`, () => {
       const albums1 = await getAllAlbums({}, { headers: asKeyAuth(key) });
       expect(albums1.length).toBe(0);
 
-      const response2 = await immichCli([
-        'upload',
-        `${testAssetDir}/albums/nature/`,
-        '--recursive',
-        '--album',
-      ]);
+      const response2 = await immichCli(['upload', `${testAssetDir}/albums/nature/`, '--recursive', '--album']);
       expect(response2.stdout.split('\n')).toEqual(
         expect.arrayContaining([
-          expect.stringContaining(
-            'All assets were already uploaded, nothing to do.'
-          ),
+          expect.stringContaining('All assets were already uploaded, nothing to do.'),
           expect.stringContaining('Successfully updated 9 assets'),
-        ])
+        ]),
       );
       expect(response2.stderr).toBe('');
       expect(response2.exitCode).toBe(0);
@@ -127,7 +102,7 @@ describe(`immich upload`, () => {
           expect.stringContaining('Successfully uploaded 9 assets'),
           expect.stringContaining('Successfully created 1 new album'),
           expect.stringContaining('Successfully updated 9 assets'),
-        ])
+        ]),
       );
       expect(stderr).toBe('');
       expect(exitCode).toBe(0);
@@ -146,17 +121,10 @@ describe(`immich upload`, () => {
       await mkdir(`/tmp/albums/nature`, { recursive: true });
       const filesToLink = await readdir(`${testAssetDir}/albums/nature`);
       for (const file of filesToLink) {
-        await symlink(
-          `${testAssetDir}/albums/nature/${file}`,
-          `/tmp/albums/nature/${file}`
-        );
+        await symlink(`${testAssetDir}/albums/nature/${file}`, `/tmp/albums/nature/${file}`);
       }
 
-      const { stderr, stdout, exitCode } = await immichCli([
-        'upload',
-        `/tmp/albums/nature`,
-        '--delete',
-      ]);
+      const { stderr, stdout, exitCode } = await immichCli(['upload', `/tmp/albums/nature`, '--delete']);
 
       const files = await readdir(`/tmp/albums/nature`);
       await rm(`/tmp/albums/nature`, { recursive: true });
@@ -166,7 +134,7 @@ describe(`immich upload`, () => {
         expect.arrayContaining([
           expect.stringContaining('Successfully uploaded 9 assets'),
           expect.stringContaining('Deleting assets that have been uploaded'),
-        ])
+        ]),
       );
       expect(stderr).toBe('');
       expect(exitCode).toBe(0);

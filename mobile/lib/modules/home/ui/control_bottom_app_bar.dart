@@ -226,7 +226,7 @@ class ControlBottomAppBar extends ConsumerWidget {
         if (selectionAssetState.hasLocal)
           ControlBoxButton(
             iconData: Icons.backup_outlined,
-            label: "Upload",
+            label: "control_bottom_app_bar_upload".tr(),
             onPressed: enabled
                 ? () => showDialog(
                       context: context,

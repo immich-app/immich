@@ -21,10 +21,6 @@ export class CreateUserDto {
   @Transform(toSanitized)
   storageLabel?: string | null;
 
-  @Optional({ nullable: true })
-  @IsString()
-  externalPath?: string | null;
-
   @Optional()
   @IsBoolean()
   memoriesEnabled?: boolean;
@@ -34,6 +30,10 @@ export class CreateUserDto {
   @IsPositive()
   @ApiProperty({ type: 'integer', format: 'int64' })
   quotaSizeInBytes?: number | null;
+
+  @Optional()
+  @IsBoolean()
+  shouldChangePassword?: boolean;
 }
 
 export class CreateAdminDto {

@@ -166,7 +166,7 @@ export class LibraryRepository implements ILibraryRepository {
 
   @GenerateSql({ params: [DummyValue.UUID] })
   async getAssetIds(libraryId: string, withDeleted = false): Promise<string[]> {
-    let query = await this.repository
+    let query = this.repository
       .createQueryBuilder('library')
       .innerJoinAndSelect('library.assets', 'assets')
       .where('library.id = :id', { id: libraryId })

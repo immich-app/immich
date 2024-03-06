@@ -22,6 +22,12 @@ export const systemConfigStub: Record<string, SystemConfigEntity[]> = {
     { key: SystemConfigKey.OAUTH_MOBILE_REDIRECT_URI, value: 'http://mobile-redirect' },
     { key: SystemConfigKey.OAUTH_BUTTON_TEXT, value: 'OAuth' },
   ],
+  withDefaultStorageQuota: [
+    { key: SystemConfigKey.OAUTH_ENABLED, value: true },
+    { key: SystemConfigKey.OAUTH_AUTO_REGISTER, value: true },
+    { key: SystemConfigKey.OAUTH_DEFAULT_STORAGE_QUOTA, value: 1 },
+  ],
+  deleteDelay30: [{ key: SystemConfigKey.USER_DELETE_DELAY, value: 30 }],
   libraryWatchEnabled: [{ key: SystemConfigKey.LIBRARY_WATCH_ENABLED, value: true }],
   libraryWatchDisabled: [{ key: SystemConfigKey.LIBRARY_WATCH_ENABLED, value: false }],
 };

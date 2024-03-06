@@ -15,6 +15,7 @@
   import ThemeSettings from '$lib/components/admin-page/settings/theme/theme-settings.svelte';
   import ThumbnailSettings from '$lib/components/admin-page/settings/thumbnail/thumbnail-settings.svelte';
   import TrashSettings from '$lib/components/admin-page/settings/trash-settings/trash-settings.svelte';
+  import UserSettings from '$lib/components/admin-page/settings/user-settings/user-settings.svelte';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
@@ -24,6 +25,8 @@
   import { downloadBlob } from '$lib/utils/asset-utils';
   import { mdiAlert, mdiContentCopy, mdiDownload } from '@mdi/js';
   import type { PageData } from './$types';
+  import SettingAccordionState from '$lib/components/shared-components/settings/setting-accordion-state.svelte';
+  import { QueryParameter } from '$lib/constants';
 
   export let data: PageData;
 
@@ -43,7 +46,8 @@
     | typeof ThumbnailSettings
     | typeof TrashSettings
     | typeof NewVersionCheckSettings
-    | typeof FFmpegSettings;
+    | typeof FFmpegSettings
+    | typeof UserSettings;
 
   const downloadConfig = () => {
     const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
@@ -133,6 +137,12 @@
       key: 'trash',
     },
     {
+      item: UserSettings,
+      title: 'User Settings',
+      subtitle: 'Manage user settings',
+      key: 'user-settings',
+    },
+    {
       item: NewVersionCheckSettings,
       title: 'Version Check',
       subtitle: 'Enable/disable the new version notification',
@@ -176,19 +186,21 @@
     <AdminSettings bind:config let:handleReset let:handleSave let:savedConfig let:defaultConfig>
       <section id="setting-content" class="flex place-content-center sm:mx-4">
         <section class="w-full pb-28 sm:w-5/6 md:w-[850px]">
-          {#each settings as { item, title, subtitle, key }}
-            <SettingAccordion {title} {subtitle} {key}>
-              <svelte:component
-                this={item}
-                on:save={({ detail }) => handleSave(detail)}
-                on:reset={({ detail }) => handleReset(detail)}
-                disabled={$featureFlags.configFile}
-                {defaultConfig}
-                {config}
-                {savedConfig}
-              />
-            </SettingAccordion>
-          {/each}
+          <SettingAccordionState queryParam={QueryParameter.IS_OPEN}>
+            {#each settings as { item, title, subtitle, key }}
+              <SettingAccordion {title} {subtitle} {key}>
+                <svelte:component
+                  this={item}
+                  on:save={({ detail }) => handleSave(detail)}
+                  on:reset={({ detail }) => handleReset(detail)}
+                  disabled={$featureFlags.configFile}
+                  {defaultConfig}
+                  {config}
+                  {savedConfig}
+                />
+              </SettingAccordion>
+            {/each}
+          </SettingAccordionState>
         </section>
       </section>
     </AdminSettings>

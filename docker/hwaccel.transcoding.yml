@@ -38,12 +38,6 @@ services:
       - /dev/dri:/dev/dri
       - /dev/dma_heap:/dev/dma_heap
       - /dev/mpp_service:/dev/mpp_service
-    volumes:
-      - /usr/bin/ffmpeg:/usr/bin/ffmpeg_mpp:ro
-      - /lib/aarch64-linux-gnu:/lib/ffmpeg-mpp:ro
-      - /lib/aarch64-linux-gnu/libblas.so.3:/lib/ffmpeg-mpp/libblas.so.3:ro # symlink is resolved by mounting
-      - /lib/aarch64-linux-gnu/liblapack.so.3:/lib/ffmpeg-mpp/liblapack.so.3:ro # symlink is resolved by mounting
-      - /lib/aarch64-linux-gnu/pulseaudio/libpulsecommon-15.99.so:/lib/ffmpeg-mpp/libpulsecommon-15.99.so:ro
 
   vaapi:
     devices:

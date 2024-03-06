@@ -91,6 +91,11 @@ void main() {
       // TODO
     });
 
+    // SystemConfigUserDto user
+    test('to test the property `user`', () async {
+      // TODO
+    });
+
 
   });
 

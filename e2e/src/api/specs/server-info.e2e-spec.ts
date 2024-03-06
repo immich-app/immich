@@ -88,6 +88,7 @@ describe('/server-info', () => {
         loginPageMessage: '',
         oauthButtonText: 'Login with OAuth',
         trashDays: 30,
+        userDeleteDelay: 7,
         isInitialized: true,
         externalDomain: '',
         isOnboarded: false,
@@ -97,9 +98,7 @@ describe('/server-info', () => {
 
   describe('GET /server-info/statistics', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).get(
-        '/server-info/statistics'
-      );
+      const { status, body } = await request(app).get('/server-info/statistics');
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
     });
@@ -145,9 +144,7 @@ describe('/server-info', () => {
 
   describe('GET /server-info/media-types', () => {
     it('should return accepted media types', async () => {
-      const { status, body } = await request(app).get(
-        '/server-info/media-types'
-      );
+      const { status, body } = await request(app).get('/server-info/media-types');
       expect(status).toBe(200);
       expect(body).toEqual({
         sidecar: ['.xmp'],

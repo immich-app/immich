@@ -13,7 +13,9 @@ import {
   newJobRepositoryMock,
   newLibraryRepositoryMock,
   newStorageRepositoryMock,
+  newSystemConfigRepositoryMock,
   newUserRepositoryMock,
+  systemConfigStub,
   userStub,
 } from '@test';
 import { when } from 'jest-when';
@@ -26,6 +28,7 @@ import {
   IJobRepository,
   ILibraryRepository,
   IStorageRepository,
+  ISystemConfigRepository,
   IUserRepository,
 } from '../repositories';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -48,17 +51,28 @@ describe(UserService.name, () => {
   let jobMock: jest.Mocked<IJobRepository>;
   let libraryMock: jest.Mocked<ILibraryRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
+  let configMock: jest.Mocked<ISystemConfigRepository>;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     albumMock = newAlbumRepositoryMock();
     assetMock = newAssetRepositoryMock();
+    configMock = newSystemConfigRepositoryMock();
     cryptoRepositoryMock = newCryptoRepositoryMock();
     jobMock = newJobRepositoryMock();
     libraryMock = newLibraryRepositoryMock();
     storageMock = newStorageRepositoryMock();
     userMock = newUserRepositoryMock();
 
-    sut = new UserService(albumMock, assetMock, cryptoRepositoryMock, jobMock, libraryMock, storageMock, userMock);
+    sut = new UserService(
+      albumMock,
+      assetMock,
+      cryptoRepositoryMock,
+      jobMock,
+      libraryMock,
+      storageMock,
+      configMock,
+      userMock,
+    );
 
     when(userMock.get).calledWith(authStub.admin.user.id, {}).mockResolvedValue(userStub.admin);
     when(userMock.get).calledWith(authStub.admin.user.id, { withDeleted: true }).mockResolvedValue(userStub.admin);
@@ -461,8 +475,34 @@ describe(UserService.name, () => {
       expect(jobMock.queueAll).toHaveBeenCalledWith([]);
     });
 
+    it('should skip users not ready for deletion - deleteDelay30', async () => {
+      configMock.load.mockResolvedValue(systemConfigStub.deleteDelay30);
+      userMock.getDeletedUsers.mockResolvedValue([
+        {},
+        { deletedAt: undefined },
+        { deletedAt: null },
+        { deletedAt: makeDeletedAt(15) },
+      ] as UserEntity[]);
+
+      await sut.handleUserDeleteCheck();
+
+      expect(userMock.getDeletedUsers).toHaveBeenCalled();
+      expect(jobMock.queue).not.toHaveBeenCalled();
+      expect(jobMock.queueAll).toHaveBeenCalledWith([]);
+    });
+
     it('should queue user ready for deletion', async () => {
       const user = { id: 'deleted-user', deletedAt: makeDeletedAt(10) };
+      userMock.getDeletedUsers.mockResolvedValue([user] as UserEntity[]);
+
+      await sut.handleUserDeleteCheck();
+
+      expect(userMock.getDeletedUsers).toHaveBeenCalled();
+      expect(jobMock.queueAll).toHaveBeenCalledWith([{ name: JobName.USER_DELETION, data: { id: user.id } }]);
+    });
+
+    it('should queue user ready for deletion - deleteDelay30', async () => {
+      const user = { id: 'deleted-user', deletedAt: makeDeletedAt(31) };
       userMock.getDeletedUsers.mockResolvedValue([user] as UserEntity[]);
 
       await sut.handleUserDeleteCheck();

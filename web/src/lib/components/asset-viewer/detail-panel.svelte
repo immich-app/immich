@@ -7,7 +7,7 @@
   import { featureFlags } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
   import { websocketEvents } from '$lib/stores/websocket';
-  import { getAssetThumbnailUrl, getPeopleThumbnailUrl, isSharedLink } from '$lib/utils';
+  import { getAssetThumbnailUrl, getPeopleThumbnailUrl, isSharedLink, handlePromiseError } from '$lib/utils';
   import { delay, getAssetFilename } from '$lib/utils/asset-utils';
   import { autoGrowHeight } from '$lib/utils/autogrow';
   import { clickOutside } from '$lib/utils/click-outside';
@@ -78,7 +78,7 @@
     originalDescription = description;
   };
 
-  $: handleNewAsset(asset);
+  $: handlePromiseError(handleNewAsset(asset));
 
   $: latlng = (() => {
     const lat = asset.exifInfo?.latitude;
@@ -113,7 +113,7 @@
     switch (event.key) {
       case 'Enter': {
         if (ctrl && event.target === textArea) {
-          handleFocusOut();
+          await handleFocusOut();
         }
       }
     }
@@ -616,7 +616,16 @@
     {:then component}
       <svelte:component
         this={component.default}
-        mapMarkers={[{ lat: latlng.lat, lon: latlng.lng, id: asset.id }]}
+        mapMarkers={[
+          {
+            lat: latlng.lat,
+            lon: latlng.lng,
+            id: asset.id,
+            city: asset.exifInfo?.city ?? null,
+            state: asset.exifInfo?.state ?? null,
+            country: asset.exifInfo?.country ?? null,
+          },
+        ]}
         center={latlng}
         zoom={15}
         simplified

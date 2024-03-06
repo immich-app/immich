@@ -462,6 +462,8 @@ class ApiClient {
           return SystemConfigThumbnailDto.fromJson(value);
         case 'SystemConfigTrashDto':
           return SystemConfigTrashDto.fromJson(value);
+        case 'SystemConfigUserDto':
+          return SystemConfigUserDto.fromJson(value);
         case 'TagResponseDto':
           return TagResponseDto.fromJson(value);
         case 'TagTypeEnum':
