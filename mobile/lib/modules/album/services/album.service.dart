@@ -243,8 +243,10 @@ class AlbumService {
           }
         }
 
-        AlbumResponseDto? remote = successAssets.isNotEmpty ?
-            await _apiService.albumApi.getAlbumInfo(album.remoteId!, withoutAssets: true) : null;
+        AlbumResponseDto? remote = successAssets.isNotEmpty
+            ? await _apiService.albumApi
+                .getAlbumInfo(album.remoteId!, withoutAssets: true)
+            : null;
         await _db.writeTxn(() async {
           await album.assets.update(link: successAssets);
           final a = await _db.albums.get(album.id);
@@ -366,7 +368,8 @@ class AlbumService {
           ids: assets.map((asset) => asset.remoteId!).toList(),
         ),
       );
-      AlbumResponseDto? remote = await _apiService.albumApi.getAlbumInfo(album.remoteId!, withoutAssets: true);
+      AlbumResponseDto? remote = await _apiService.albumApi
+          .getAlbumInfo(album.remoteId!, withoutAssets: true);
       await _db.writeTxn(() async {
         await album.assets.update(unlink: assets);
         final a = await _db.albums.get(album.id);
