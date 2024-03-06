@@ -6,13 +6,13 @@ import 'package:immich_mobile/shared/models/exif_info.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-
 class ExifMap extends StatelessWidget {
   final ExifInfo exifInfo;
   final String formattedDateTime;
   final String? markerId;
 
-  const ExifMap({super.key,
+  const ExifMap({
+    super.key,
     required this.exifInfo,
     required this.formattedDateTime,
     this.markerId = 'marker',
