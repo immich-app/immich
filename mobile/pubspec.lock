@@ -50,7 +50,7 @@ packages:
     source: hosted
     version: "2.4.2"
   async:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: async
       sha256: "947bfcf187f74dbc5e146c9eb9c0f10c9f8b30743e341481c1e2ed3ecc18c20c"
