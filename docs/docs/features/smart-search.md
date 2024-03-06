@@ -8,6 +8,9 @@ Smart search is powered by the [pgvecto.rs v0.2.0](https://github.com/tensorchor
 Metadata search (prefixed with `m:`) can search specifically by text without the use of a model.
 
 Archived photos are not included in search results by default. To include them, add checkbox in advanced search filters.
+:::tip more powerful CLIP models
+Since Smart Search relies on CLIP models, more powerful models can be used for more accurate search results, you can learn more in the [FAQ](/docs/FAQ#can-i-use-a-custom-clip-model).
+:::
 
 Some search examples:
 
