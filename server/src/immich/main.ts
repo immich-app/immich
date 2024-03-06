@@ -15,7 +15,6 @@ import { useSwagger } from './app.utils';
 const logger = new ImmichLogger('ImmichServer');
 const port = Number(process.env.SERVER_PORT) || 3001;
 
-
 export async function bootstrap() {
   otelSDK.start();
   const app = await NestFactory.create<NestExpressApplication>(AppModule, { bufferLogs: true });
