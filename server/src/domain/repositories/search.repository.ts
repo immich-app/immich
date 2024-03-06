@@ -92,12 +92,12 @@ export interface SearchStatusOptions {
 export interface SearchOneToOneRelationOptions {
   withExif?: boolean;
   withSmartInfo?: boolean;
+  withStacked?: boolean;
 }
 
 export interface SearchRelationOptions extends SearchOneToOneRelationOptions {
   withFaces?: boolean;
   withPeople?: boolean;
-  withStacked?: boolean;
 }
 
 export interface SearchDateOptions {

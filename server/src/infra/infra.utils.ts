@@ -2,7 +2,6 @@ import { AssetSearchBuilderOptions, Paginated, PaginationOptions } from '@app/do
 import _ from 'lodash';
 import {
   Between,
-  Brackets,
   FindManyOptions,
   IsNull,
   LessThanOrEqual,
@@ -229,12 +228,7 @@ export function searchAssetBuilder(
   }
 
   if (withStacked) {
-    builder
-      .leftJoinAndSelect(`${builder.alias}.stack`, 'stack')
-      .leftJoinAndSelect('stack.assets', 'stackedAssets')
-      .andWhere(
-        new Brackets((qb) => qb.where(`stack.primaryAssetId = ${builder.alias}.id`).orWhere('asset.stackId IS NULL')),
-      );
+    builder.leftJoinAndSelect(`${builder.alias}.stack`, 'stack').leftJoinAndSelect('stack.assets', 'stackedAssets');
   }
 
   const withDeleted = options.withDeleted ?? (trashedAfter !== undefined || trashedBefore !== undefined);
