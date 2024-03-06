@@ -329,7 +329,7 @@ export class AssetService {
     return library.id;
   }
 
-  private async create(
+  async create(
     auth: AuthDto,
     dto: CreateAssetDto & { libraryId: string },
     file: UploadFile,
