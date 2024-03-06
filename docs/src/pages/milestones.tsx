@@ -50,12 +50,24 @@ import {
   mdiVectorCombine,
   mdiVideo,
   mdiWeb,
+  mdiMagnifyExpand,
+  mdiAllInclusive,
+
 } from '@mdi/js';
 import Layout from '@theme/Layout';
 import React from 'react';
 import Timeline, { DateType, Item } from '../components/timeline';
 
 const items: Item[] = [
+  {
+    icon: mdiAllInclusive,
+    description: 'From now on a single search returns up to 5000 compared to 100 in previous versions',
+    title: 'Unlimited search results',
+    release: 'v1.95.0',
+    tag: 'v1.95.0',
+    date: new Date(2024, 2, 20),
+    dateType: DateType.RELEASE,
+  },
   {
     icon: mdiEyeRefreshOutline,
     description: 'Automatically import files in external libraries when the operating system detects changes.',
