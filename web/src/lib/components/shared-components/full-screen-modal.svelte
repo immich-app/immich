@@ -2,7 +2,7 @@
   import { clickOutside } from '../../utils/click-outside';
   import { fade } from 'svelte/transition';
 
-  export let onClose: () => void;
+  export let onClose: (() => void) | undefined = undefined;
 </script>
 
 <section
