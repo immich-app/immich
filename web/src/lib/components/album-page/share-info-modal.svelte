@@ -129,8 +129,8 @@
     title="Leave Album?"
     prompt="Are you sure you want to leave {album.albumName}?"
     confirmText="Leave"
-    on:confirm={handleRemoveUser}
-    on:cancel={() => (selectedRemoveUser = null)}
+    onConfirm={handleRemoveUser}
+    onClose={() => (selectedRemoveUser = null)}
   />
 {/if}
 
@@ -139,7 +139,7 @@
     title="Remove User?"
     prompt="Are you sure you want to remove {selectedRemoveUser.name}"
     confirmText="Remove"
-    on:confirm={handleRemoveUser}
-    on:cancel={() => (selectedRemoveUser = null)}
+    onConfirm={handleRemoveUser}
+    onClose={() => (selectedRemoveUser = null)}
   />
 {/if}
