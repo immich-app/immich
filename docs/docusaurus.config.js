@@ -145,6 +145,10 @@ const config = {
                 label: 'Discord',
                 href: 'https://discord.com/invite/D8JsnBEuKb',
               },
+              {
+                label: 'Reddit',
+                href: 'https://www.reddit.com/r/immich/',
+              },
             ],
           },
           {
