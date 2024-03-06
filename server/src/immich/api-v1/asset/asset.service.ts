@@ -356,7 +356,7 @@ export class AssetService {
       duration: dto.duration || null,
       isVisible: dto.isVisible ?? true,
       livePhotoVideo: livePhotoAssetId === null ? null : ({ id: livePhotoAssetId } as AssetEntity),
-      originalFileName: parse(file.originalName).name + parse(file.originalName).ext,
+      originalFileName: file.originalName,
       sidecarPath: sidecarPath || null,
       isReadOnly: dto.isReadOnly ?? false,
       isOffline: dto.isOffline ?? false,
