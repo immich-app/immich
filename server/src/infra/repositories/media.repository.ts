@@ -132,7 +132,6 @@ export class MediaRepository implements IMediaRepository {
 
   private configureFfmpegCall(input: string, output: string | Writable, options: TranscodeOptions) {
     return ffmpeg(input, { niceness: 10 })
-      .setFfmpegPath(options.ffmpegPath || 'ffmpeg')
       .inputOptions(options.inputOptions)
       .outputOptions(options.outputOptions)
       .output(output)
