@@ -329,7 +329,7 @@ export class AssetService {
     return library.id;
   }
 
-  async create(
+  private async create(
     auth: AuthDto,
     dto: CreateAssetDto & { libraryId: string },
     file: UploadFile,
@@ -356,7 +356,7 @@ export class AssetService {
       duration: dto.duration || null,
       isVisible: dto.isVisible ?? true,
       livePhotoVideo: livePhotoAssetId === null ? null : ({ id: livePhotoAssetId } as AssetEntity),
-      originalFileName: parse(file.originalName).name,
+      originalFileName: parse(file.originalName).name + parse(file.originalName).ext,
       sidecarPath: sidecarPath || null,
       isReadOnly: dto.isReadOnly ?? false,
       isOffline: dto.isOffline ?? false,
