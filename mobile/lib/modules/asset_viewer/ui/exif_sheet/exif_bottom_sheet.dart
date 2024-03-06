@@ -1,5 +1,4 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/asset_extensions.dart';
@@ -78,10 +77,11 @@ class ExifBottomSheet extends HookConsumerWidget {
                   ),
                 ),
                 ExifPeople(
-                    asset: asset,
-                    padding: EdgeInsets.symmetric(
-                      horizontal: horizontalPadding,
-                    )),
+                  asset: asset,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: horizontalPadding,
+                  ),
+                ),
                 Padding(
                   padding: EdgeInsets.symmetric(
                     horizontal: horizontalPadding,
