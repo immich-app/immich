@@ -1,5 +1,5 @@
 import { WEB_ROOT, envName, isDev, serverVersion } from '@app/domain';
-import { WebSocketAdapter } from '@app/infra';
+import { WebSocketAdapter, excludePaths } from '@app/infra';
 import { otelSDK } from '@app/infra/instrumentation';
 import { ImmichLogger } from '@app/infra/logger';
 import { NestFactory } from '@nestjs/core';
@@ -14,6 +14,7 @@ import { useSwagger } from './app.utils';
 
 const logger = new ImmichLogger('ImmichServer');
 const port = Number(process.env.SERVER_PORT) || 3001;
+
 
 export async function bootstrap() {
   otelSDK.start();
@@ -30,7 +31,6 @@ export async function bootstrap() {
   app.useWebSocketAdapter(new WebSocketAdapter(app));
   useSwagger(app, isDev);
 
-  const excludePaths = ['/.well-known/immich', '/custom.css'];
   app.setGlobalPrefix('api', { exclude: excludePaths });
   if (existsSync(WEB_ROOT)) {
     // copied from https://github.com/sveltejs/kit/blob/679b5989fe62e3964b9a73b712d7b41831aa1f07/packages/adapter-node/src/handler.js#L46

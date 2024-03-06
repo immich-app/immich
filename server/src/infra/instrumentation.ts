@@ -15,6 +15,7 @@ import { OpenTelemetryModuleOptions } from 'nestjs-otel/lib/interfaces';
 import { copyMetadataFromFunctionToFunction } from 'nestjs-otel/lib/opentelemetry.utils';
 import { performance } from 'node:perf_hooks';
 import { DecorateAll } from './infra.utils';
+import { excludePaths } from './infra.config';
 
 const aggregation = new ExplicitBucketHistogramAggregation(
   [0.1, 0.25, 0.5, 1, 2.5, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000],
@@ -42,7 +43,7 @@ export const otelConfig: OpenTelemetryModuleOptions = {
     hostMetrics: process.env.OTEL_SDK_DISABLED !== 'true',
     apiMetrics: {
       enable: process.env.OTEL_SDK_DISABLED !== 'true',
-      ignoreRoutes: ['/favicon.ico', '/custom.css'],
+      ignoreRoutes: excludePaths,
     },
   },
 };
