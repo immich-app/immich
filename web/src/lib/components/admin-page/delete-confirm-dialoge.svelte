@@ -7,6 +7,8 @@
 
   export let user: UserResponseDto;
 
+  let forceDelete = false;
+
   const dispatch = createEventDispatcher<{
     success: void;
     fail: void;
@@ -15,7 +17,11 @@
 
   const handleDeleteUser = async () => {
     try {
-      const { deletedAt } = await deleteUser({ id: user.id });
+      const { deletedAt } = await deleteUser({
+        id: user.id,
+        deleteUserOptionsDto: { force: forceDelete },
+      });
+
       if (deletedAt == undefined) {
         dispatch('fail');
       } else {
@@ -36,9 +42,26 @@
 >
   <svelte:fragment slot="prompt">
     <div class="flex flex-col gap-4">
-      <p>
-        <b>{user.name}</b>'s account and assets will be permanently deleted after {$serverConfig.userDeleteDelay} days.
-      </p>
+      {#if !forceDelete}
+        <p>
+          <b>{user.name}</b>'s account and assets will be scheduled for permanent deletion in {$serverConfig.userDeleteDelay}
+          days.
+        </p>
+      {/if}
+      {#if forceDelete}
+        <p>
+          <b>{user.name}</b>'s account and assets will be queued for permanent deletion <b>immediately</b>.
+        </p>
+      {/if}
+
+      <div class="m-4 flex place-items-center center-between gap-2">
+        <label class="text-sm dark:text-immich-dark-fg" for="forceDelete">
+          Schedule user and assets for immediate deletion
+        </label>
+
+        <input type="checkbox" class="form-checkbox h-5 w-5 color" bind:checked={forceDelete} />
+      </div>
+
       <p>Are you sure you want to continue?</p>
     </div>
   </svelte:fragment>

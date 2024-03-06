@@ -282,6 +282,22 @@ describe(UserService.name, () => {
       expect(userMock.get).toHaveBeenCalledWith(userStub.user1.id, {});
       expect(userMock.delete).toHaveBeenCalledWith(userStub.user1);
     });
+
+    it('should force delete user', async () => {
+      userMock.get.mockResolvedValue(userStub.user1);
+      userMock.delete.mockResolvedValue(userStub.user1);
+
+      await expect(sut.delete(authStub.admin, userStub.user1.id, { force: true })).resolves.toEqual(
+        mapUser(userStub.user1),
+      );
+
+      expect(userMock.get).toHaveBeenCalledWith(userStub.user1.id, {});
+      expect(userMock.delete).toHaveBeenCalledWith(userStub.user1);
+      expect(jobMock.queue).toHaveBeenCalledWith({
+        name: JobName.USER_DELETION,
+        data: { id: userStub.user1.id, force: true },
+      });
+    });
   });
 
   describe('create', () => {

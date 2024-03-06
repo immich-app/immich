@@ -6402,6 +6402,16 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteUserOptionsDto"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "content": {
@@ -7748,6 +7758,14 @@
           "object",
           "resizePath"
         ],
+        "type": "object"
+      },
+      "DeleteUserOptionsDto": {
+        "properties": {
+          "force": {
+            "type": "boolean"
+          }
+        },
         "type": "object"
       },
       "DownloadArchiveInfo": {

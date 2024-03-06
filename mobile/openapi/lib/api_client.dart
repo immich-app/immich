@@ -280,6 +280,8 @@ class ApiClient {
           return CuratedLocationsResponseDto.fromJson(value);
         case 'CuratedObjectsResponseDto':
           return CuratedObjectsResponseDto.fromJson(value);
+        case 'DeleteUserOptionsDto':
+          return DeleteUserOptionsDto.fromJson(value);
         case 'DownloadArchiveInfo':
           return DownloadArchiveInfo.fromJson(value);
         case 'DownloadInfoDto':

@@ -18,7 +18,7 @@ import {
 } from '../repositories';
 import { StorageCore, StorageFolder } from '../storage';
 import { SystemConfigCore } from '../system-config/system-config.core';
-import { CreateUserDto, UpdateUserDto } from './dto';
+import { CreateUserDto, DeleteUserOptionsDto, UpdateUserDto } from './dto';
 import { CreateProfileImageResponseDto, UserResponseDto, mapCreateProfileImageResponse, mapUser } from './response-dto';
 import { UserCore } from './user.core';
 
@@ -73,13 +73,20 @@ export class UserService {
     return this.userCore.updateUser(auth.user, dto.id, dto).then(mapUser);
   }
 
-  async delete(auth: AuthDto, id: string): Promise<UserResponseDto> {
+  async delete(auth: AuthDto, id: string, options?: DeleteUserOptionsDto): Promise<UserResponseDto> {
     const user = await this.findOrFail(id, {});
     if (user.isAdmin) {
       throw new ForbiddenException('Cannot delete admin user');
     }
 
     await this.albumRepository.softDeleteAll(id);
+
+    if (options && options.force) {
+      await this.jobRepository.queue({
+        name: JobName.USER_DELETION,
+        data: { id: user.id, force: options.force },
+      });
+    }
 
     return this.userRepository.delete(user).then(mapUser);
   }
@@ -154,7 +161,7 @@ export class UserService {
     return true;
   }
 
-  async handleUserDelete({ id }: IEntityJob) {
+  async handleUserDelete({ id, force }: IEntityJob) {
     const config = await this.configCore.getConfig();
     const user = await this.userRepository.get(id, { withDeleted: true });
     if (!user) {
@@ -162,7 +169,7 @@ export class UserService {
     }
 
     // just for extra protection here
-    if (!this.isReadyForDeletion(user, config.user.deleteDelay)) {
+    if (!force && !this.isReadyForDeletion(user, config.user.deleteDelay)) {
       this.logger.warn(`Skipped user that was not ready for deletion: id=${id}`);
       return false;
     }

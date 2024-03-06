@@ -8,6 +8,7 @@
   import EditUserForm from '$lib/components/forms/edit-user-form.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
+  import { serverConfig } from '$lib/stores/server-config.store';
   import { locale } from '$lib/stores/preferences.store';
   import { user } from '$lib/stores/user.store';
   import { asByteUnitString } from '$lib/utils/byte-units';
@@ -42,7 +43,7 @@
 
   const getDeleteDate = (user: UserResponseDto): string => {
     let deletedAt = new Date(user.deletedAt ?? Date.now());
-    deletedAt.setDate(deletedAt.getDate() + 7);
+    deletedAt.setDate(deletedAt.getDate() + $serverConfig.userDeleteDelay);
     return deletedAt.toLocaleString($locale, deleteDateFormat);
   };
 
