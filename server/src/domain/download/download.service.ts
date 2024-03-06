@@ -1,6 +1,6 @@
 import { AssetEntity } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { extname, parse } from 'node:path';
+import { parse } from 'node:path';
 import { AccessCore, Permission } from '../access';
 import { AssetIdsDto } from '../asset';
 import { AuthDto } from '../auth';
