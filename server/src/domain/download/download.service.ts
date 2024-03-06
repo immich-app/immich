@@ -1,6 +1,6 @@
 import { AssetEntity } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { extname } from 'node:path';
+import { extname, parse } from 'node:path';
 import { AccessCore, Permission } from '../access';
 import { AssetIdsDto } from '../asset';
 import { AuthDto } from '../auth';
@@ -92,7 +92,7 @@ export class DownloadService {
 
       const { originalPath, originalFileName } = asset;
       const extension = extname(originalPath);
-      let filename = `${originalFileName}${extension}`;
+      let filename = `${parse(originalFileName).name}`;
       const count = paths[filename] || 0;
       paths[filename] = count + 1;
       if (count !== 0) {
