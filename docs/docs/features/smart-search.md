@@ -24,7 +24,7 @@ In addition, Immich offers advanced search functionality, allowing you to find s
 
 Smart search features include:
 
-- Search for one or more faces (**Note:** Context search does not support people filter).
+- Search for one or more faces (With or without context)
 - Search by Country or State or City or by all three.
 - Search by camera company and model.
 - Search by date range.
