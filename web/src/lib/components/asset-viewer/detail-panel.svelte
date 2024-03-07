@@ -8,7 +8,7 @@
   import { user } from '$lib/stores/user.store';
   import { websocketEvents } from '$lib/stores/websocket';
   import { getAssetThumbnailUrl, getPeopleThumbnailUrl, isSharedLink, handlePromiseError } from '$lib/utils';
-  import { delay, getAssetFilename } from '$lib/utils/asset-utils';
+  import { delay } from '$lib/utils/asset-utils';
   import { autoGrowHeight } from '$lib/utils/autogrow';
   import { clickOutside } from '$lib/utils/click-outside';
   import {
@@ -459,13 +459,11 @@
 
         <div>
           <p class="break-all flex place-items-center gap-2">
+            {asset.originalFileName}
             {#if isOwner}
-              {asset.originalFileName}
-              <button title="Show File Location" on:click={toggleAssetPath}>
+              <button title="Show File Location" on:click={toggleAssetPath} class="-translate-y-[2px]">
                 <Icon path={mdiInformationOutline} />
               </button>
-            {:else}
-              {getAssetFilename(asset)}
             {/if}
           </p>
           <div class="flex gap-2 text-sm">
@@ -650,7 +648,7 @@
 {/if}
 
 {#if currentAlbum && currentAlbum.sharedUsers.length > 0 && asset.owner}
-  <section class="px-6 dark:text-immich-dark-fg">
+  <section class="px-6 dark:text-immich-dark-fg mt-4">
     <p class="text-sm">SHARED BY</p>
     <div class="flex gap-4 pt-4">
       <div>
