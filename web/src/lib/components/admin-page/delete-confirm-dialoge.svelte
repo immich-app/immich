@@ -54,7 +54,7 @@
         </p>
       {/if}
 
-      <div class="m-4 flex place-items-center center-between gap-2">
+      <div class="flex justify-center m-4 gap-2">
         <label class="text-sm dark:text-immich-dark-fg" for="forceDelete">
           Queue user and assets for immediate deletion
         </label>
