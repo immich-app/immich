@@ -1,15 +1,7 @@
 import { exec, spawn } from 'node:child_process';
-import { existsSync } from 'node:fs';
 import { setTimeout } from 'node:timers';
-import { testAssetDir } from 'src/utils';
 
 export default async () => {
-  if (!existsSync(`${testAssetDir}/albums`)) {
-    throw new Error(
-      `Test assets not found. Please checkout https://github.com/immich-app/test-assets into ${testAssetDir} before testing`,
-    );
-  }
-
   let _resolve: () => unknown;
   let _reject: () => unknown;
 

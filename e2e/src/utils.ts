@@ -26,6 +26,7 @@ import {
 import { BrowserContext } from '@playwright/test';
 import { exec, spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
+import { existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
@@ -338,3 +339,9 @@ export const utils = {
 };
 
 utils.setApiEndpoint();
+
+if (!existsSync(`${testAssetDir}/albums`)) {
+  throw new Error(
+    `Test assets not found. Please checkout https://github.com/immich-app/test-assets into ${testAssetDir} before testing`,
+  );
+}
