@@ -529,6 +529,15 @@ export type PeopleResponseDto = {
     people: PersonResponseDto[];
     total: number;
 };
+export type PersonCreateDto = {
+    /** Person date of birth.
+    Note: the mobile app cannot currently set the birth date to null. */
+    birthDate?: string | null;
+    /** Person visibility */
+    isHidden?: boolean;
+    /** Person name. */
+    name?: string;
+};
 export type PeopleUpdateItem = {
     /** Person date of birth.
     Note: the mobile app cannot currently set the birth date to null. */
@@ -2051,14 +2060,17 @@ export function getAllPeople({ withHidden }: {
         ...opts
     }));
 }
-export function createPerson(opts?: Oazapfts.RequestOpts) {
+export function createPerson({ personCreateDto }: {
+    personCreateDto: PersonCreateDto;
+}, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 201;
         data: PersonResponseDto;
-    }>("/person", {
+    }>("/person", oazapfts.json({
         ...opts,
-        method: "POST"
-    }));
+        method: "POST",
+        body: personCreateDto
+    })));
 }
 export function updatePeople({ peopleUpdateDto }: {
     peopleUpdateDto: PeopleUpdateDto;
