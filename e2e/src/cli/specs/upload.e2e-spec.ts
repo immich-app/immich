@@ -1,19 +1,18 @@
 import { getAllAlbums, getAllAssets } from '@immich/sdk';
 import { mkdir, readdir, rm, symlink } from 'node:fs/promises';
-import { apiUtils, asKeyAuth, cliUtils, dbUtils, immichCli, testAssetDir } from 'src/utils';
+import { asKeyAuth, immichCli, testAssetDir, utils } from 'src/utils';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 describe(`immich upload`, () => {
   let key: string;
 
   beforeAll(async () => {
-    apiUtils.setup();
-    await dbUtils.reset();
-    key = await cliUtils.login();
+    await utils.resetDatabase();
+    key = await utils.cliLogin();
   });
 
   beforeEach(async () => {
-    await dbUtils.reset(['assets', 'albums']);
+    await utils.resetDatabase(['assets', 'albums']);
   });
 
   describe('immich upload --recursive', () => {

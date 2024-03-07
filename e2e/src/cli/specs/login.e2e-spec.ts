@@ -1,14 +1,10 @@
 import { stat } from 'node:fs/promises';
-import { apiUtils, app, dbUtils, immichCli } from 'src/utils';
-import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { app, immichCli, utils } from 'src/utils';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 describe(`immich login-key`, () => {
-  beforeAll(() => {
-    apiUtils.setup();
-  });
-
   beforeEach(async () => {
-    await dbUtils.reset();
+    await utils.resetDatabase();
   });
 
   it('should require a url', async () => {
@@ -30,8 +26,8 @@ describe(`immich login-key`, () => {
   });
 
   it('should login and save auth.yml with 600', async () => {
-    const admin = await apiUtils.adminSetup();
-    const key = await apiUtils.createApiKey(admin.accessToken);
+    const admin = await utils.adminSetup();
+    const key = await utils.createApiKey(admin.accessToken);
     const { stdout, stderr, exitCode } = await immichCli(['login-key', app, `${key.secret}`]);
     expect(stdout.split('\n')).toEqual([
       'Logging in to http://127.0.0.1:2283/api',
@@ -47,8 +43,8 @@ describe(`immich login-key`, () => {
   });
 
   it('should login without /api in the url', async () => {
-    const admin = await apiUtils.adminSetup();
-    const key = await apiUtils.createApiKey(admin.accessToken);
+    const admin = await utils.adminSetup();
+    const key = await utils.createApiKey(admin.accessToken);
     const { stdout, stderr, exitCode } = await immichCli(['login-key', app.replaceAll('/api', ''), `${key.secret}`]);
     expect(stdout.split('\n')).toEqual([
       'Logging in to http://127.0.0.1:2283',

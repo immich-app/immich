@@ -23,6 +23,8 @@ export const newAssetRepositoryMock = (): jest.Mocked<IAssetRepository> => {
     updateAll: jest.fn(),
     getByLibraryId: jest.fn(),
     getByLibraryIdAndOriginalPath: jest.fn(),
+    updateOfflineLibraryAssets: jest.fn(),
+    getPathsNotInLibrary: jest.fn(),
     deleteAll: jest.fn(),
     save: jest.fn(),
     remove: jest.fn(),
