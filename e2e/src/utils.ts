@@ -5,7 +5,7 @@ import {
   CreateAssetDto,
   CreateLibraryDto,
   CreateUserDto,
-  PersonUpdateDto,
+  PersonCreateDto,
   SharedLinkCreateDto,
   ValidateLibraryDto,
   createAlbum,
@@ -20,7 +20,6 @@ import {
   login,
   setAdminOnboarding,
   signUpAdmin,
-  updatePerson,
   validate,
 } from '@immich/sdk';
 import { BrowserContext } from '@playwright/test';
@@ -252,16 +251,11 @@ export const utils = {
   deleteAssets: (accessToken: string, ids: string[]) =>
     deleteAssets({ assetBulkDeleteDto: { ids } }, { headers: asBearerAuth(accessToken) }),
 
-  createPerson: async (accessToken: string, dto?: PersonUpdateDto) => {
-    // TODO fix createPerson to accept a body
-    const person = await createPerson({ headers: asBearerAuth(accessToken) });
+  createPerson: async (accessToken: string, dto?: PersonCreateDto) => {
+    const person = await createPerson({ personCreateDto: dto || {} }, { headers: asBearerAuth(accessToken) });
     await utils.setPersonThumbnail(person.id);
 
-    if (!dto) {
-      return person;
-    }
-
-    return updatePerson({ id: person.id, personUpdateDto: dto }, { headers: asBearerAuth(accessToken) });
+    return person;
   },
 
   createFace: async ({ assetId, personId }: { assetId: string; personId: string }) => {

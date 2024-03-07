@@ -74,7 +74,7 @@
 
     try {
       disableButtons = true;
-      const data = await createPerson();
+      const data = await createPerson({ personCreateDto: {} });
       await reassignFaces({ id: data.id, assetFaceUpdateDto: { data: selectedPeople } });
 
       notificationController.show({

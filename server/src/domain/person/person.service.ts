@@ -36,6 +36,7 @@ import {
   MergePersonDto,
   PeopleResponseDto,
   PeopleUpdateDto,
+  PersonCreateDto,
   PersonResponseDto,
   PersonSearchDto,
   PersonStatisticsResponseDto,
@@ -89,10 +90,6 @@ export class PersonService {
       total,
       hidden,
     };
-  }
-
-  createPerson(auth: AuthDto): Promise<PersonResponseDto> {
-    return this.repository.create({ ownerId: auth.user.id });
   }
 
   async reassignFaces(auth: AuthDto, personId: string, dto: AssetFaceUpdateDto): Promise<PersonResponseDto[]> {
@@ -199,21 +196,21 @@ export class PersonService {
     return assets.map((asset) => mapAsset(asset));
   }
 
+  create(auth: AuthDto, dto: PersonCreateDto): Promise<PersonResponseDto> {
+    return this.repository.create({
+      ownerId: auth.user.id,
+      name: dto.name,
+      birthDate: dto.birthDate,
+      isHidden: dto.isHidden,
+    });
+  }
+
   async update(auth: AuthDto, id: string, dto: PersonUpdateDto): Promise<PersonResponseDto> {
     await this.access.requirePermission(auth, Permission.PERSON_WRITE, id);
-    let person = await this.findOrFail(id);
 
     const { name, birthDate, isHidden, featureFaceAssetId: assetId } = dto;
-
-    // Check if the birthDate is in the future
-    if (birthDate && new Date(birthDate) > new Date()) {
-      throw new BadRequestException('Date of birth cannot be in the future');
-    }
-
-    if (name !== undefined || birthDate !== undefined || isHidden !== undefined) {
-      person = await this.repository.update({ id, name, birthDate, isHidden });
-    }
-
+    // TODO: set by faceId directly
+    let faceId: string | undefined = undefined;
     if (assetId) {
       await this.access.requirePermission(auth, Permission.ASSET_READ, assetId);
       const [face] = await this.repository.getFacesByIds([{ personId: id, assetId }]);
@@ -221,14 +218,19 @@ export class PersonService {
         throw new BadRequestException('Invalid assetId for feature face');
       }
 
-      person = await this.repository.update({ id, faceAssetId: face.id });
+      faceId = face.id;
+    }
+
+    const person = await this.repository.update({ id, faceAssetId: faceId, name, birthDate, isHidden });
+
+    if (assetId) {
       await this.jobRepository.queue({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id } });
     }
 
     return mapPerson(person);
   }
 
-  async updatePeople(auth: AuthDto, dto: PeopleUpdateDto): Promise<BulkIdResponseDto[]> {
+  async updateAll(auth: AuthDto, dto: PeopleUpdateDto): Promise<BulkIdResponseDto[]> {
     const results: BulkIdResponseDto[] = [];
     for (const person of dto.people) {
       try {
