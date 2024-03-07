@@ -5,7 +5,7 @@ import { app, utils } from 'src/utils';
 import request from 'supertest';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
-describe('/activity', () => {
+describe('/person', () => {
   let admin: LoginResponseDto;
   let visiblePerson: PersonResponseDto;
   let hiddenPerson: PersonResponseDto;
