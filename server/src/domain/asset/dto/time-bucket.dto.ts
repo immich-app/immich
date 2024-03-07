@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDateString, IsEnum, IsNotEmpty } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
 import { ValidateBoolean, ValidateUUID } from '../../domain.util';
 import { TimeBucketSize } from '../../repositories';
 
@@ -35,6 +35,6 @@ export class TimeBucketDto {
 }
 
 export class TimeBucketAssetDto extends TimeBucketDto {
-  @IsDateString()
+  @IsString()
   timeBucket!: string;
 }
