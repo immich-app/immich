@@ -17,7 +17,7 @@ void main() {
   // final instance = PersonApi();
 
   group('tests for PersonApi', () {
-    //Future<PersonResponseDto> createPerson() async
+    //Future<PersonResponseDto> createPerson(PersonCreateDto personCreateDto) async
     test('test createPerson', () async {
       // TODO
     });

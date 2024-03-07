@@ -104,6 +104,7 @@ doc/PeopleResponseDto.md
 doc/PeopleUpdateDto.md
 doc/PeopleUpdateItem.md
 doc/PersonApi.md
+doc/PersonCreateDto.md
 doc/PersonResponseDto.md
 doc/PersonStatisticsResponseDto.md
 doc/PersonUpdateDto.md
@@ -306,6 +307,7 @@ lib/model/path_type.dart
 lib/model/people_response_dto.dart
 lib/model/people_update_dto.dart
 lib/model/people_update_item.dart
+lib/model/person_create_dto.dart
 lib/model/person_response_dto.dart
 lib/model/person_statistics_response_dto.dart
 lib/model/person_update_dto.dart
@@ -485,6 +487,7 @@ test/people_response_dto_test.dart
 test/people_update_dto_test.dart
 test/people_update_item_test.dart
 test/person_api_test.dart
+test/person_create_dto_test.dart
 test/person_response_dto_test.dart
 test/person_statistics_response_dto_test.dart
 test/person_update_dto_test.dart
