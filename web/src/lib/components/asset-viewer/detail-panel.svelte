@@ -8,7 +8,7 @@
   import { user } from '$lib/stores/user.store';
   import { websocketEvents } from '$lib/stores/websocket';
   import { getAssetThumbnailUrl, getPeopleThumbnailUrl, isSharedLink, handlePromiseError } from '$lib/utils';
-  import { delay, getAssetFilename } from '$lib/utils/asset-utils';
+  import { delay } from '$lib/utils/asset-utils';
   import { autoGrowHeight } from '$lib/utils/autogrow';
   import { clickOutside } from '$lib/utils/click-outside';
   import {
