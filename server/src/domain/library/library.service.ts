@@ -617,12 +617,11 @@ export class LibraryService extends EventEmitter {
       .filter((validation) => validation.isValid)
       .map((validation) => validation.importPath);
 
-    const crawledAssetPaths = (
-      await this.storageRepository.crawl({
-        pathsToCrawl: validImportPaths,
-        exclusionPatterns: library.exclusionPatterns,
-      })
-    ).map((filePath) => path.normalize(filePath));
+    const rawPaths = await this.storageRepository.crawl({
+      pathsToCrawl: validImportPaths,
+      exclusionPatterns: library.exclusionPatterns,
+    });
+    const crawledAssetPaths = rawPaths.map((filePath) => path.normalize(filePath));
 
     this.logger.debug(`Found ${crawledAssetPaths.length} asset(s) when crawling import paths ${library.importPaths}`);
 
