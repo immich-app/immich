@@ -194,7 +194,7 @@ describe('/shared-link', () => {
       expect(body.assets).toHaveLength(1);
       expect(body.assets[0]).toEqual(
         expect.objectContaining({
-          originalFileName: 'example',
+          originalFileName: 'example.png',
           localDateTime: expect.any(String),
           fileCreatedAt: expect.any(String),
           exifInfo: expect.any(Object),

@@ -494,7 +494,7 @@ describe('/asset', () => {
         input: 'formats/jpg/el_torcal_rocks.jpg',
         expected: {
           type: AssetTypeEnum.Image,
-          originalFileName: 'el_torcal_rocks',
+          originalFileName: 'el_torcal_rocks.jpg',
           resized: true,
           exifInfo: {
             dateTimeOriginal: '2012-08-05T11:39:59.000Z',
@@ -518,7 +518,7 @@ describe('/asset', () => {
         input: 'formats/heic/IMG_2682.heic',
         expected: {
           type: AssetTypeEnum.Image,
-          originalFileName: 'IMG_2682',
+          originalFileName: 'IMG_2682.heic',
           resized: true,
           fileCreatedAt: '2019-03-21T16:04:22.348Z',
           exifInfo: {
@@ -543,7 +543,7 @@ describe('/asset', () => {
         input: 'formats/png/density_plot.png',
         expected: {
           type: AssetTypeEnum.Image,
-          originalFileName: 'density_plot',
+          originalFileName: 'density_plot.png',
           resized: true,
           exifInfo: {
             exifImageWidth: 800,
@@ -558,7 +558,7 @@ describe('/asset', () => {
         input: 'formats/raw/Nikon/D80/glarus.nef',
         expected: {
           type: AssetTypeEnum.Image,
-          originalFileName: 'glarus',
+          originalFileName: 'glarus.nef',
           resized: true,
           fileCreatedAt: '2010-07-20T17:27:12.000Z',
           exifInfo: {
@@ -580,7 +580,7 @@ describe('/asset', () => {
         input: 'formats/raw/Nikon/D700/philadelphia.nef',
         expected: {
           type: AssetTypeEnum.Image,
-          originalFileName: 'philadelphia',
+          originalFileName: 'philadelphia.nef',
           resized: true,
           fileCreatedAt: '2016-09-22T22:10:29.060Z',
           exifInfo: {

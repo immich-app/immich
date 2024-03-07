@@ -609,6 +609,42 @@ describe(`${AssetController.name} (e2e)`, () => {
       expect(asset).toMatchObject({ id: body.id, isFavorite: true });
     });
 
+    it('should have correct original file name and extension (simple)', async () => {
+      const { body, status } = await request(server)
+        .post('/asset/upload')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .field('deviceAssetId', 'example-image')
+        .field('deviceId', 'TEST')
+        .field('fileCreatedAt', new Date().toISOString())
+        .field('fileModifiedAt', new Date().toISOString())
+        .field('isFavorite', 'true')
+        .field('duration', '0:00:00.000000')
+        .attach('assetData', randomBytes(32), 'example.jpg');
+      expect(status).toBe(201);
+      expect(body).toEqual({ id: expect.any(String), duplicate: false });
+
+      const asset = await api.assetApi.get(server, user1.accessToken, body.id);
+      expect(asset).toMatchObject({ id: body.id, originalFileName: 'example.jpg' });
+    });
+
+    it('should have correct original file name and extension (complex)', async () => {
+      const { body, status } = await request(server)
+        .post('/asset/upload')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .field('deviceAssetId', 'example-image')
+        .field('deviceId', 'TEST')
+        .field('fileCreatedAt', new Date().toISOString())
+        .field('fileModifiedAt', new Date().toISOString())
+        .field('isFavorite', 'true')
+        .field('duration', '0:00:00.000000')
+        .attach('assetData', randomBytes(32), 'example.complex.ext.jpg');
+      expect(status).toBe(201);
+      expect(body).toEqual({ id: expect.any(String), duplicate: false });
+
+      const asset = await api.assetApi.get(server, user1.accessToken, body.id);
+      expect(asset).toMatchObject({ id: body.id, originalFileName: 'example.complex.ext.jpg' });
+    });
+
     it('should not upload the same asset twice', async () => {
       const content = randomBytes(32);
       await api.assetApi.upload(server, user1.accessToken, 'example-image', { content });

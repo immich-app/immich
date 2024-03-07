@@ -26,7 +26,6 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { parse } from 'node:path';
 import { QueryFailedError } from 'typeorm';
 import { IAssetRepositoryV1 } from './asset-repository';
 import { AssetBulkUploadCheckDto } from './dto/asset-check.dto';
@@ -356,7 +355,7 @@ export class AssetService {
       duration: dto.duration || null,
       isVisible: dto.isVisible ?? true,
       livePhotoVideo: livePhotoAssetId === null ? null : ({ id: livePhotoAssetId } as AssetEntity),
-      originalFileName: parse(file.originalName).name,
+      originalFileName: file.originalName,
       sidecarPath: sidecarPath || null,
       isReadOnly: dto.isReadOnly ?? false,
       isOffline: dto.isOffline ?? false,
