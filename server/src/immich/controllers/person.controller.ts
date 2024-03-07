@@ -6,6 +6,7 @@ import {
   MergePersonDto,
   PeopleResponseDto,
   PeopleUpdateDto,
+  PersonCreateDto,
   PersonResponseDto,
   PersonSearchDto,
   PersonService,
@@ -32,22 +33,13 @@ export class PersonController {
   }
 
   @Post()
-  createPerson(@Auth() auth: AuthDto): Promise<PersonResponseDto> {
-    return this.service.createPerson(auth);
-  }
-
-  @Put(':id/reassign')
-  reassignFaces(
-    @Auth() auth: AuthDto,
-    @Param() { id }: UUIDParamDto,
-    @Body() dto: AssetFaceUpdateDto,
-  ): Promise<PersonResponseDto[]> {
-    return this.service.reassignFaces(auth, id, dto);
+  createPerson(@Auth() auth: AuthDto, @Body() dto: PersonCreateDto): Promise<PersonResponseDto> {
+    return this.service.create(auth, dto);
   }
 
   @Put()
   updatePeople(@Auth() auth: AuthDto, @Body() dto: PeopleUpdateDto): Promise<BulkIdResponseDto[]> {
-    return this.service.updatePeople(auth, dto);
+    return this.service.updateAll(auth, dto);
   }
 
   @Get(':id')
@@ -83,6 +75,15 @@ export class PersonController {
   @Get(':id/assets')
   getPersonAssets(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AssetResponseDto[]> {
     return this.service.getAssets(auth, id);
+  }
+
+  @Put(':id/reassign')
+  reassignFaces(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+    @Body() dto: AssetFaceUpdateDto,
+  ): Promise<PersonResponseDto[]> {
+    return this.service.reassignFaces(auth, id, dto);
   }
 
   @Post(':id/merge')

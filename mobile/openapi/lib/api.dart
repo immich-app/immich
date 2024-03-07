@@ -138,6 +138,7 @@ part 'model/path_type.dart';
 part 'model/people_response_dto.dart';
 part 'model/people_update_dto.dart';
 part 'model/people_update_item.dart';
+part 'model/person_create_dto.dart';
 part 'model/person_response_dto.dart';
 part 'model/person_statistics_response_dto.dart';
 part 'model/person_update_dto.dart';
