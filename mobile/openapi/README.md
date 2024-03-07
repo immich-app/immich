@@ -355,6 +355,7 @@ Class | Method | HTTP request | Description
  - [SystemConfigThemeDto](doc//SystemConfigThemeDto.md)
  - [SystemConfigThumbnailDto](doc//SystemConfigThumbnailDto.md)
  - [SystemConfigTrashDto](doc//SystemConfigTrashDto.md)
+ - [SystemConfigUserDto](doc//SystemConfigUserDto.md)
  - [TagResponseDto](doc//TagResponseDto.md)
  - [TagTypeEnum](doc//TagTypeEnum.md)
  - [ThumbnailFormat](doc//ThumbnailFormat.md)

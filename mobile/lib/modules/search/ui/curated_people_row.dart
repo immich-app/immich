@@ -7,6 +7,7 @@ import 'package:immich_mobile/utils/image_url_builder.dart';
 
 class CuratedPeopleRow extends StatelessWidget {
   final List<CuratedContent> content;
+  final EdgeInsets? padding;
 
   /// Callback with the content and the index when tapped
   final Function(CuratedContent, int)? onTap;
@@ -16,6 +17,7 @@ class CuratedPeopleRow extends StatelessWidget {
     super.key,
     required this.content,
     this.onTap,
+    this.padding,
     required this.onNameTap,
   });
 
@@ -43,11 +45,8 @@ class CuratedPeopleRow extends StatelessWidget {
     }
 
     return ListView.builder(
+      padding: padding,
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.only(
-        left: 16,
-        top: 8,
-      ),
       itemBuilder: (context, index) {
         final person = content[index];
         final headers = {

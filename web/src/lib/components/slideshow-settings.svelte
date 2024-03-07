@@ -30,7 +30,7 @@
   };
 </script>
 
-<FullScreenModal on:clickOutside={onClose} on:escape={onClose}>
+<FullScreenModal {onClose}>
   <div
     class="flex w-full md:w-96 max-w-lg flex-col gap-8 rounded-3xl border bg-white p-8 shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray"
   >

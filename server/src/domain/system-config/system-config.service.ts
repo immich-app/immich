@@ -118,7 +118,7 @@ export class SystemConfigService {
     await this.core.refreshConfig();
   }
 
-  private async setLogLevel({ logging }: SystemConfig) {
+  private setLogLevel({ logging }: SystemConfig) {
     const envLevel = this.getEnvLogLevel();
     const configLevel = logging.enabled ? logging.level : false;
     const level = envLevel ?? configLevel;
@@ -130,7 +130,7 @@ export class SystemConfigService {
     return process.env.LOG_LEVEL as LogLevel;
   }
 
-  private async validateConfig(newConfig: SystemConfig, oldConfig: SystemConfig) {
+  private validateConfig(newConfig: SystemConfig, oldConfig: SystemConfig) {
     if (!_.isEqual(instanceToPlain(newConfig.logging), oldConfig.logging) && this.getEnvLogLevel()) {
       throw new Error('Logging cannot be changed while the environment variable LOG_LEVEL is set.');
     }

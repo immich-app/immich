@@ -56,7 +56,7 @@
 </script>
 
 {#if isConfirmOpen}
-  <ConfirmDisableLogin on:cancel={() => handleConfirm(false)} on:confirm={() => handleConfirm(true)} />
+  <ConfirmDisableLogin onCancel={() => handleConfirm(false)} onConfirm={() => handleConfirm(true)} />
 {/if}
 
 <div class="mt-2">

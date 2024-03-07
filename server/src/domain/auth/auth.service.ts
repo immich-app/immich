@@ -264,7 +264,7 @@ export class AuthService {
       const storageQuota = this.getClaim(profile, {
         key: storageQuotaClaim,
         default: defaultStorageQuota,
-        isValid: (value: unknown) => isNumber(value) && value > 0,
+        isValid: (value: unknown) => isNumber(value) && value >= 0,
       });
 
       const userName = profile.name ?? `${profile.given_name || ''} ${profile.family_name || ''}`;

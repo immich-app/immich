@@ -48,7 +48,7 @@ describe(MediaService.name, () => {
   let storageMock: jest.Mocked<IStorageRepository>;
   let cryptoMock: jest.Mocked<ICryptoRepository>;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     assetMock = newAssetRepositoryMock();
     configMock = newSystemConfigRepositoryMock();
     jobMock = newJobRepositoryMock();

@@ -13,7 +13,7 @@ describe(DatabaseService.name, () => {
   let sut: DatabaseService;
   let databaseMock: jest.Mocked<IDatabaseRepository>;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     databaseMock = newDatabaseRepositoryMock();
 
     sut = new DatabaseService(databaseMock);
@@ -31,7 +31,7 @@ describe(DatabaseService.name, () => {
     let errorLog: jest.SpyInstance;
     let warnLog: jest.SpyInstance;
 
-    beforeEach(async () => {
+    beforeEach(() => {
       fatalLog = jest.spyOn(ImmichLogger.prototype, 'fatal');
       errorLog = jest.spyOn(ImmichLogger.prototype, 'error');
       warnLog = jest.spyOn(ImmichLogger.prototype, 'warn');

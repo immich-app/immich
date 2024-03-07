@@ -97,7 +97,7 @@
       <div class="absolute inset-y-0 left-0 flex items-center pl-6">
         <div class="dark:text-immich-dark-fg/75">
           <button class="flex items-center">
-            <Icon path={mdiMagnify} size="1.5em" />
+            <Icon ariaLabel="search" path={mdiMagnify} size="1.5em" />
           </button>
         </div>
       </div>
@@ -134,7 +134,7 @@
           type="reset"
           class="rounded-full p-2 hover:bg-immich-primary/5 active:bg-immich-primary/10 dark:text-immich-dark-fg/75 dark:hover:bg-immich-dark-primary/25 dark:active:bg-immich-dark-primary/[.35]"
         >
-          <Icon path={mdiClose} size="1.5em" />
+          <Icon ariaLabel="clear" path={mdiClose} size="1.5em" />
         </button>
       </div>
     {/if}

@@ -6,7 +6,7 @@ describe(StorageService.name, () => {
   let sut: StorageService;
   let storageMock: jest.Mocked<IStorageRepository>;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     storageMock = newStorageRepositoryMock();
     sut = new StorageService(storageMock);
   });

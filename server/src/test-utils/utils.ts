@@ -75,22 +75,22 @@ class JobMock implements IJobRepository {
   async resume() {}
   async empty() {}
   async setConcurrency() {}
-  async getQueueStatus() {
-    return null as any;
+  getQueueStatus() {
+    return Promise.resolve(null) as any;
   }
-  async getJobCounts() {
-    return null as any;
+  getJobCounts() {
+    return Promise.resolve(null) as any;
   }
   async pause() {}
-  async clear() {
-    return [];
+  clear() {
+    return Promise.resolve([]);
   }
   async waitForQueueCompletion() {}
 }
 
 class MediaMockRepository extends MediaRepository {
-  async generateThumbhash() {
-    return Buffer.from('mock-thumbhash');
+  generateThumbhash() {
+    return Promise.resolve(Buffer.from('mock-thumbhash'));
   }
 }
 

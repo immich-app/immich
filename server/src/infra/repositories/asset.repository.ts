@@ -199,6 +199,29 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
+  @GenerateSql({ params: [DummyValue.UUID, [DummyValue.STRING]] })
+  @ChunkedArray({ paramIndex: 1 })
+  async getPathsNotInLibrary(libraryId: string, originalPaths: string[]): Promise<string[]> {
+    const result = await this.repository.query(
+      `
+      WITH paths AS (SELECT unnest($2::text[]) AS path)
+      SELECT path FROM paths
+      WHERE NOT EXISTS (SELECT 1 FROM assets WHERE "libraryId" = $1 AND "originalPath" = path);
+    `,
+      [libraryId, originalPaths],
+    );
+    return result.map((row: { path: string }) => row.path);
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, [DummyValue.STRING]] })
+  @ChunkedArray({ paramIndex: 1 })
+  async updateOfflineLibraryAssets(libraryId: string, originalPaths: string[]): Promise<void> {
+    await this.repository.update(
+      { library: { id: libraryId }, originalPath: Not(In(originalPaths)), isOffline: false },
+      { isOffline: true },
+    );
+  }
+
   getAll(pagination: PaginationOptions, options: AssetSearchOptions = {}): Paginated<AssetEntity> {
     let builder = this.repository.createQueryBuilder('asset');
     builder = searchAssetBuilder(builder, options);
@@ -507,6 +530,9 @@ export class AssetRepository implements IAssetRepository {
       select: {
         id: true,
         exifInfo: {
+          city: true,
+          state: true,
+          country: true,
           latitude: true,
           longitude: true,
         },
@@ -532,17 +558,16 @@ export class AssetRepository implements IAssetRepository {
 
     return assets.map((asset) => ({
       id: asset.id,
-
-      /* eslint-disable-next-line @typescript-eslint/no-non-null-assertion */
       lat: asset.exifInfo!.latitude!,
-
-      /* eslint-disable-next-line @typescript-eslint/no-non-null-assertion */
       lon: asset.exifInfo!.longitude!,
+      city: asset.exifInfo!.city,
+      state: asset.exifInfo!.state,
+      country: asset.exifInfo!.country,
     }));
   }
 
   async getStatistics(ownerId: string, options: AssetStatsOptions): Promise<AssetStats> {
-    let builder = await this.repository
+    let builder = this.repository
       .createQueryBuilder('asset')
       .select(`COUNT(asset.id)`, 'count')
       .addSelect(`asset.type`, 'type')

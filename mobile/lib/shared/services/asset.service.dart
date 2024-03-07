@@ -61,6 +61,27 @@ class AssetService {
     return (assetDto.map(Asset.remote).toList(), deleted.ids);
   }
 
+  /// Returns the list of people of the given asset id.
+  // If the server is not reachable `null` is returned.
+  Future<List<PersonWithFacesResponseDto>?> getRemotePeopleOfAsset(
+    String remoteId,
+  ) async {
+    try {
+      final AssetResponseDto? dto =
+          await _apiService.assetApi.getAssetInfo(remoteId);
+
+      return dto?.people;
+    } catch (error, stack) {
+      log.severe(
+        'Error while getting remote asset info: ${error.toString()}',
+        error,
+        stack,
+      );
+
+      return null;
+    }
+  }
+
   /// Returns `null` if the server state did not change, else list of assets
   Future<List<Asset>?> _getRemoteAssets(User user) async {
     const int chunkSize = 10000;

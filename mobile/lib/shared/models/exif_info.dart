@@ -25,6 +25,10 @@ class ExifInfo {
   String? description;
 
   @ignore
+  bool get hasCoordinates =>
+      latitude != null && longitude != null && latitude != 0 && longitude != 0;
+
+  @ignore
   String get exposureTime {
     if (exposureSeconds == null) {
       return "";
