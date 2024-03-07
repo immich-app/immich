@@ -459,13 +459,11 @@
 
         <div>
           <p class="break-all flex place-items-center gap-2">
+            {asset.originalFileName}
             {#if isOwner}
-              {asset.originalFileName}
-              <button title="Show File Location" on:click={toggleAssetPath}>
+              <button title="Show File Location" on:click={toggleAssetPath} class="-translate-y-[2px]">
                 <Icon path={mdiInformationOutline} />
               </button>
-            {:else}
-              {getAssetFilename(asset)}
             {/if}
           </p>
           <div class="flex gap-2 text-sm">
