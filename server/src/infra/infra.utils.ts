@@ -159,12 +159,12 @@ export function searchAssetBuilder(
     builder.andWhere(`${builder.alias}.ownerId IN (:...userIds)`, { userIds: options.userIds });
   }
 
-  const path = _.pick(options, ['encodedVideoPath', 'originalFileName', 'resizePath', 'webpPath']);
+  const path = _.pick(options, ['encodedVideoPath', 'originalPath', 'resizePath', 'webpPath']);
   builder.andWhere(_.omitBy(path, _.isUndefined));
 
-  if (options.originalPath) {
-    builder.andWhere(`f_unaccent(${builder.alias}.originalPath) ILIKE f_unaccent(:originalPath)`, {
-      originalPath: `%${options.originalPath}%`,
+  if (options.originalFileName) {
+    builder.andWhere(`f_unaccent(${builder.alias}.originalFileName) ILIKE f_unaccent(:originalFileName)`, {
+      originalFileName: `%${options.originalFileName}%`,
     });
   }
 
