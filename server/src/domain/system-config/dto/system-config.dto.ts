@@ -16,6 +16,7 @@ import { SystemConfigStorageTemplateDto } from './system-config-storage-template
 import { SystemConfigThemeDto } from './system-config-theme.dto';
 import { SystemConfigThumbnailDto } from './system-config-thumbnail.dto';
 import { SystemConfigTrashDto } from './system-config-trash.dto';
+import { SystemConfigUserDto } from './system-config-user.dto';
 
 export class SystemConfigDto implements SystemConfig {
   @Type(() => SystemConfigFFmpegDto)
@@ -92,6 +93,11 @@ export class SystemConfigDto implements SystemConfig {
   @ValidateNested()
   @IsObject()
   server!: SystemConfigServerDto;
+
+  @Type(() => SystemConfigUserDto)
+  @ValidateNested()
+  @IsObject()
+  user!: SystemConfigUserDto;
 }
 
 export function mapConfig(config: SystemConfig): SystemConfigDto {

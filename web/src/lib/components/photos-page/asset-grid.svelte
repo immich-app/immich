@@ -14,7 +14,6 @@
   import type { AlbumResponseDto, AssetResponseDto } from '@immich/sdk';
   import { DateTime } from 'luxon';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
-  import AssetViewer from '../asset-viewer/asset-viewer.svelte';
   import IntersectionObserver from '../asset-viewer/intersection-observer.svelte';
   import Portal from '../shared-components/portal/portal.svelte';
   import Scrollbar from '../shared-components/scrollbar/scrollbar.svelte';
@@ -451,17 +450,19 @@
 
 <Portal target="body">
   {#if $showAssetViewer}
-    <AssetViewer
-      {withStacked}
-      {assetStore}
-      asset={$viewingAsset}
-      {isShared}
-      {album}
-      on:previous={handlePrevious}
-      on:next={handleNext}
-      on:close={handleClose}
-      on:action={({ detail: action }) => handleAction(action.type, action.asset)}
-    />
+    {#await import('../asset-viewer/asset-viewer.svelte') then AssetViewer}
+      <AssetViewer.default
+        {withStacked}
+        {assetStore}
+        asset={$viewingAsset}
+        {isShared}
+        {album}
+        on:previous={handlePrevious}
+        on:next={handleNext}
+        on:close={handleClose}
+        on:action={({ detail: action }) => handleAction(action.type, action.asset)}
+      />
+    {/await}
   {/if}
 </Portal>
 

@@ -420,16 +420,14 @@
 <svelte:window bind:innerHeight />
 
 {#if showMergeModal}
-  <FullScreenModal on:clickOutside={() => (showMergeModal = false)}>
-    <MergeSuggestionModal
-      {personMerge1}
-      {personMerge2}
-      {potentialMergePeople}
-      on:close={() => (showMergeModal = false)}
-      on:reject={() => changeName()}
-      on:confirm={(event) => handleMergeSamePerson(event.detail)}
-    />
-  </FullScreenModal>
+  <MergeSuggestionModal
+    {personMerge1}
+    {personMerge2}
+    {potentialMergePeople}
+    on:close={() => (showMergeModal = false)}
+    on:reject={() => changeName()}
+    on:confirm={(event) => handleMergeSamePerson(event.detail)}
+  />
 {/if}
 
 <UserPageLayout
@@ -487,7 +485,7 @@
   {/if}
 
   {#if showChangeNameModal}
-    <FullScreenModal on:clickOutside={() => (showChangeNameModal = false)}>
+    <FullScreenModal onClose={() => (showChangeNameModal = false)}>
       <div
         class="w-[500px] max-w-[95vw] rounded-3xl border bg-immich-bg p-4 py-8 shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg"
       >

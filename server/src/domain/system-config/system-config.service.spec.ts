@@ -23,6 +23,7 @@ const updates: SystemConfigEntity[] = [
   { key: SystemConfigKey.FFMPEG_CRF, value: 30 },
   { key: SystemConfigKey.OAUTH_AUTO_LAUNCH, value: true },
   { key: SystemConfigKey.TRASH_DAYS, value: 10 },
+  { key: SystemConfigKey.USER_DELETE_DELAY, value: 15 },
 ];
 
 const updatedConfig = Object.freeze<SystemConfig>({
@@ -75,7 +76,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
       enabled: true,
       modelName: 'buffalo_l',
       minScore: 0.7,
-      maxDistance: 0.6,
+      maxDistance: 0.5,
       minFaces: 3,
     },
   },
@@ -140,6 +141,9 @@ const updatedConfig = Object.freeze<SystemConfig>({
       enabled: false,
     },
   },
+  user: {
+    deleteDelay: 15,
+  },
 });
 
 describe(SystemConfigService.name, () => {
@@ -199,6 +203,7 @@ describe(SystemConfigService.name, () => {
         { key: SystemConfigKey.FFMPEG_CRF, value: 30 },
         { key: SystemConfigKey.OAUTH_AUTO_LAUNCH, value: true },
         { key: SystemConfigKey.TRASH_DAYS, value: 10 },
+        { key: SystemConfigKey.USER_DELETE_DELAY, value: 15 },
       ]);
 
       await expect(sut.getConfig()).resolves.toEqual(updatedConfig);
@@ -206,7 +211,12 @@ describe(SystemConfigService.name, () => {
 
     it('should load the config from a file', async () => {
       process.env.IMMICH_CONFIG_FILE = 'immich-config.json';
-      const partialConfig = { ffmpeg: { crf: 30 }, oauth: { autoLaunch: true }, trash: { days: 10 } };
+      const partialConfig = {
+        ffmpeg: { crf: 30 },
+        oauth: { autoLaunch: true },
+        trash: { days: 10 },
+        user: { deleteDelay: 15 },
+      };
       configMock.readFile.mockResolvedValue(JSON.stringify(partialConfig));
 
       await expect(sut.getConfig()).resolves.toEqual(updatedConfig);

@@ -199,6 +199,29 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
+  @GenerateSql({ params: [DummyValue.UUID, [DummyValue.STRING]] })
+  @ChunkedArray({ paramIndex: 1 })
+  async getPathsNotInLibrary(libraryId: string, originalPaths: string[]): Promise<string[]> {
+    const result = await this.repository.query(
+      `
+      WITH paths AS (SELECT unnest($2::text[]) AS path)
+      SELECT path FROM paths
+      WHERE NOT EXISTS (SELECT 1 FROM assets WHERE "libraryId" = $1 AND "originalPath" = path);
+    `,
+      [libraryId, originalPaths],
+    );
+    return result.map((row: { path: string }) => row.path);
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, [DummyValue.STRING]] })
+  @ChunkedArray({ paramIndex: 1 })
+  async updateOfflineLibraryAssets(libraryId: string, originalPaths: string[]): Promise<void> {
+    await this.repository.update(
+      { library: { id: libraryId }, originalPath: Not(In(originalPaths)), isOffline: false },
+      { isOffline: true },
+    );
+  }
+
   getAll(pagination: PaginationOptions, options: AssetSearchOptions = {}): Paginated<AssetEntity> {
     let builder = this.repository.createQueryBuilder('asset');
     builder = searchAssetBuilder(builder, options);

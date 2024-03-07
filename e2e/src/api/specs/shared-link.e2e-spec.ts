@@ -9,7 +9,7 @@ import {
 } from '@immich/sdk';
 import { createUserDto, uuidDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
-import { apiUtils, app, asBearerAuth, dbUtils } from 'src/utils';
+import { app, asBearerAuth, utils } from 'src/utils';
 import request from 'supertest';
 import { beforeAll, describe, expect, it } from 'vitest';
 
@@ -30,20 +30,16 @@ describe('/shared-link', () => {
   let linkWithoutMetadata: SharedLinkResponseDto;
 
   beforeAll(async () => {
-    apiUtils.setup();
-    await dbUtils.reset();
+    await utils.resetDatabase();
 
-    admin = await apiUtils.adminSetup();
+    admin = await utils.adminSetup();
 
     [user1, user2] = await Promise.all([
-      apiUtils.userSetup(admin.accessToken, createUserDto.user1),
-      apiUtils.userSetup(admin.accessToken, createUserDto.user2),
+      utils.userSetup(admin.accessToken, createUserDto.user1),
+      utils.userSetup(admin.accessToken, createUserDto.user2),
     ]);
 
-    [asset1, asset2] = await Promise.all([
-      apiUtils.createAsset(user1.accessToken),
-      apiUtils.createAsset(user1.accessToken),
-    ]);
+    [asset1, asset2] = await Promise.all([utils.createAsset(user1.accessToken), utils.createAsset(user1.accessToken)]);
 
     [album, deletedAlbum, metadataAlbum] = await Promise.all([
       createAlbum({ createAlbumDto: { albumName: 'album' } }, { headers: asBearerAuth(user1.accessToken) }),
@@ -61,29 +57,29 @@ describe('/shared-link', () => {
 
     [linkWithDeletedAlbum, linkWithAlbum, linkWithAssets, linkWithPassword, linkWithMetadata, linkWithoutMetadata] =
       await Promise.all([
-        apiUtils.createSharedLink(user2.accessToken, {
+        utils.createSharedLink(user2.accessToken, {
           type: SharedLinkType.Album,
           albumId: deletedAlbum.id,
         }),
-        apiUtils.createSharedLink(user1.accessToken, {
+        utils.createSharedLink(user1.accessToken, {
           type: SharedLinkType.Album,
           albumId: album.id,
         }),
-        apiUtils.createSharedLink(user1.accessToken, {
+        utils.createSharedLink(user1.accessToken, {
           type: SharedLinkType.Individual,
           assetIds: [asset1.id],
         }),
-        apiUtils.createSharedLink(user1.accessToken, {
+        utils.createSharedLink(user1.accessToken, {
           type: SharedLinkType.Album,
           albumId: album.id,
           password: 'foo',
         }),
-        apiUtils.createSharedLink(user1.accessToken, {
+        utils.createSharedLink(user1.accessToken, {
           type: SharedLinkType.Album,
           albumId: metadataAlbum.id,
           showMetadata: true,
         }),
-        apiUtils.createSharedLink(user1.accessToken, {
+        utils.createSharedLink(user1.accessToken, {
           type: SharedLinkType.Album,
           albumId: metadataAlbum.id,
           showMetadata: false,
@@ -194,7 +190,7 @@ describe('/shared-link', () => {
       expect(body.assets).toHaveLength(1);
       expect(body.assets[0]).toEqual(
         expect.objectContaining({
-          originalFileName: 'example',
+          originalFileName: 'example.png',
           localDateTime: expect.any(String),
           fileCreatedAt: expect.any(String),
           exifInfo: expect.any(Object),

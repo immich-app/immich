@@ -190,6 +190,7 @@ part 'model/system_config_template_storage_option_dto.dart';
 part 'model/system_config_theme_dto.dart';
 part 'model/system_config_thumbnail_dto.dart';
 part 'model/system_config_trash_dto.dart';
+part 'model/system_config_user_dto.dart';
 part 'model/tag_response_dto.dart';
 part 'model/tag_type_enum.dart';
 part 'model/thumbnail_format.dart';

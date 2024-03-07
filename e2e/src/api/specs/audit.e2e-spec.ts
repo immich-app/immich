@@ -1,24 +1,23 @@
 import { deleteAssets, getAuditFiles, updateAsset, type LoginResponseDto } from '@immich/sdk';
-import { apiUtils, asBearerAuth, dbUtils, fileUtils } from 'src/utils';
+import { asBearerAuth, utils } from 'src/utils';
 import { beforeAll, describe, expect, it } from 'vitest';
 
 describe('/audit', () => {
   let admin: LoginResponseDto;
 
   beforeAll(async () => {
-    apiUtils.setup();
-    await dbUtils.reset();
-    await fileUtils.reset();
+    await utils.resetDatabase();
+    await utils.resetFilesystem();
 
-    admin = await apiUtils.adminSetup();
+    admin = await utils.adminSetup();
   });
 
   describe('GET :/file-report', () => {
     it('excludes assets without issues from report', async () => {
       const [trashedAsset, archivedAsset] = await Promise.all([
-        apiUtils.createAsset(admin.accessToken),
-        apiUtils.createAsset(admin.accessToken),
-        apiUtils.createAsset(admin.accessToken),
+        utils.createAsset(admin.accessToken),
+        utils.createAsset(admin.accessToken),
+        utils.createAsset(admin.accessToken),
       ]);
 
       await Promise.all([

@@ -190,7 +190,7 @@
   <ConfirmDialogue
     title="Stop sharing your photos?"
     prompt="{removePartnerDto.name} will no longer be able to access your photos."
-    on:cancel={() => (removePartnerDto = null)}
-    on:confirm={() => handleRemovePartner()}
+    onClose={() => (removePartnerDto = null)}
+    onConfirm={() => handleRemovePartner()}
   />
 {/if}

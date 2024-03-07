@@ -19,7 +19,7 @@
   }>();
 </script>
 
-<FullScreenModal on:clickOutside={() => dispatch('close')}>
+<FullScreenModal onClose={() => dispatch('close')}>
   <div class="flex h-full w-full place-content-center place-items-center overflow-hidden p-2 md:p-0">
     <div
       class="w-[550px] rounded-3xl border bg-immich-bg shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg"

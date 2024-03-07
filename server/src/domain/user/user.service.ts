@@ -13,16 +13,19 @@ import {
   IJobRepository,
   ILibraryRepository,
   IStorageRepository,
+  ISystemConfigRepository,
   IUserRepository,
   UserFindOptions,
 } from '../repositories';
 import { StorageCore, StorageFolder } from '../storage';
+import { SystemConfigCore } from '../system-config/system-config.core';
 import { CreateUserDto, UpdateUserDto } from './dto';
 import { CreateProfileImageResponseDto, UserResponseDto, mapCreateProfileImageResponse, mapUser } from './response-dto';
 import { UserCore } from './user.core';
 
 @Injectable()
 export class UserService {
+  private configCore: SystemConfigCore;
   private logger = new ImmichLogger(UserService.name);
   private userCore: UserCore;
 
@@ -33,9 +36,11 @@ export class UserService {
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ILibraryRepository) libraryRepository: ILibraryRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
+    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
   ) {
     this.userCore = UserCore.create(cryptoRepository, libraryRepository, userRepository);
+    this.configCore = SystemConfigCore.create(configRepository);
   }
 
   async getAll(auth: AuthDto, isAll: boolean): Promise<UserResponseDto[]> {
@@ -140,22 +145,26 @@ export class UserService {
 
   async handleUserDeleteCheck() {
     const users = await this.userRepository.getDeletedUsers();
+    const config = await this.configCore.getConfig();
     await this.jobRepository.queueAll(
       users.flatMap((user) =>
-        this.isReadyForDeletion(user) ? [{ name: JobName.USER_DELETION, data: { id: user.id } }] : [],
+        this.isReadyForDeletion(user, config.user.deleteDelay)
+          ? [{ name: JobName.USER_DELETION, data: { id: user.id } }]
+          : [],
       ),
     );
     return true;
   }
 
   async handleUserDelete({ id }: IEntityJob) {
+    const config = await this.configCore.getConfig();
     const user = await this.userRepository.get(id, { withDeleted: true });
     if (!user) {
       return false;
     }
 
     // just for extra protection here
-    if (!this.isReadyForDeletion(user)) {
+    if (!this.isReadyForDeletion(user, config.user.deleteDelay)) {
       this.logger.warn(`Skipped user that was not ready for deletion: id=${id}`);
       return false;
     }
@@ -184,12 +193,12 @@ export class UserService {
     return true;
   }
 
-  private isReadyForDeletion(user: UserEntity): boolean {
+  private isReadyForDeletion(user: UserEntity, deleteDelay: number): boolean {
     if (!user.deletedAt) {
       return false;
     }
 
-    return DateTime.now().minus({ days: 7 }) > DateTime.fromJSDate(user.deletedAt);
+    return DateTime.now().minus({ days: deleteDelay }) > DateTime.fromJSDate(user.deletedAt);
   }
 
   private async findOrFail(id: string, options: UserFindOptions) {

@@ -83,10 +83,6 @@ FROM
           "asset"."isFavorite" = $3
           AND "asset"."isArchived" = $4
         )
-        AND (
-          "stack"."primaryAssetId" = "asset"."id"
-          OR "asset"."stackId" IS NULL
-        )
       )
       AND ("asset"."deletedAt" IS NULL)
   ) "distinctAlias"
@@ -183,10 +179,6 @@ WHERE
     AND (
       "asset"."isFavorite" = $3
       AND "asset"."isArchived" = $4
-    )
-    AND (
-      "stack"."primaryAssetId" = "asset"."id"
-      OR "asset"."stackId" IS NULL
     )
     AND "asset"."ownerId" IN ($5)
   )
