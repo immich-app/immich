@@ -3,14 +3,14 @@ import { setTimeout } from 'node:timers';
 
 export default async () => {
   let _resolve: () => unknown;
-  let _reject: () => unknown;
+  let _reject: (error: Error) => unknown;
 
   const ready = new Promise<void>((resolve, reject) => {
     _resolve = resolve;
     _reject = reject;
   });
 
-  const timeout = setTimeout(() => _reject(), 15_000);
+  const timeout = setTimeout(() => _reject(new Error('Timeout starting e2e environment')), 60_000);
 
   const child = spawn('docker', ['compose', 'up'], { stdio: 'pipe' });
 
