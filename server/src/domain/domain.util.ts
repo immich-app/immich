@@ -1,3 +1,4 @@
+import { ImmichLogger } from '@app/infra/logger';
 import { applyDecorators } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
@@ -157,7 +158,7 @@ export type Paginated<T> = Promise<PaginationResult<T>>;
 
 export async function* usePagination<T>(
   pageSize: number,
-  getNextPage: (pagination: PaginationOptions) => Paginated<T>,
+  getNextPage: (pagination: PaginationOptions) => PaginationResult<T> | Paginated<T>,
 ) {
   let hasNextPage = true;
 
@@ -251,4 +252,8 @@ export const setIsSuperset = <T>(set: Set<T>, subset: Set<T>): boolean => {
 
 export const setIsEqual = <T>(setA: Set<T>, setB: Set<T>): boolean => {
   return setA.size === setB.size && setIsSuperset(setA, setB);
+};
+
+export const handlePromiseError = <T>(promise: Promise<T>, logger: ImmichLogger): void => {
+  promise.catch((error: Error | any) => logger.error(`Promise error: ${error}`, error?.stack));
 };

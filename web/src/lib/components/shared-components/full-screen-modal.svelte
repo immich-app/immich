@@ -1,12 +1,8 @@
 <script lang="ts">
   import { clickOutside } from '../../utils/click-outside';
-  import { createEventDispatcher } from 'svelte';
   import { fade } from 'svelte/transition';
 
-  const dispatch = createEventDispatcher<{
-    clickOutside: void;
-    escape: void;
-  }>();
+  export let onClose: (() => void) | undefined = undefined;
 </script>
 
 <section
@@ -14,12 +10,7 @@
   out:fade={{ duration: 100 }}
   class="fixed left-0 top-0 z-[9990] flex h-screen w-screen place-content-center place-items-center bg-black/40"
 >
-  <div
-    class="z-[9999]"
-    use:clickOutside
-    on:outclick={() => dispatch('clickOutside')}
-    on:escape={() => dispatch('escape')}
-  >
+  <div class="z-[9999]" use:clickOutside={{ onOutclick: onClose, onEscape: onClose }}>
     <slot />
   </div>
 </section>

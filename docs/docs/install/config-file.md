@@ -95,13 +95,16 @@ The default configuration looks like this:
     "issuerUrl": "",
     "clientId": "",
     "clientSecret": "",
-    "mobileOverrideEnabled": false,
-    "mobileRedirectUri": "",
     "scope": "openid email profile",
+    "signingAlgorithm": "RS256",
     "storageLabelClaim": "preferred_username",
+    "storageQuotaClaim": "immich_quota",
+    "defaultStorageQuota": 0,
     "buttonText": "Login with OAuth",
     "autoRegister": true,
-    "autoLaunch": false
+    "autoLaunch": false,
+    "mobileOverrideEnabled": false,
+    "mobileRedirectUri": ""
   },
   "passwordLogin": {
     "enabled": true
@@ -124,6 +127,9 @@ The default configuration looks like this:
   },
   "theme": {
     "customCss": ""
+  },
+  "user": {
+    "deleteDelay": 7
   },
   "library": {
     "scan": {

@@ -19,6 +19,7 @@ export enum DatabaseLock {
   Migrations = 200,
   StorageTemplateMigration = 420,
   CLIPDimSize = 512,
+  LibraryWatch = 1337,
 }
 
 export const extName: Record<DatabaseExtension, string> = {
@@ -46,6 +47,7 @@ export interface IDatabaseRepository {
   shouldReindex(name: VectorIndex): Promise<boolean>;
   runMigrations(options?: { transaction?: 'all' | 'none' | 'each' }): Promise<void>;
   withLock<R>(lock: DatabaseLock, callback: () => Promise<R>): Promise<R>;
+  tryLock(lock: DatabaseLock): Promise<boolean>;
   isBusy(lock: DatabaseLock): boolean;
   wait(lock: DatabaseLock): Promise<void>;
 }

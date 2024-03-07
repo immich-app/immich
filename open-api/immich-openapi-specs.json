@@ -3299,8 +3299,17 @@
     },
     "/library": {
       "get": {
-        "operationId": "getLibraries",
-        "parameters": [],
+        "operationId": "getAllLibraries",
+        "parameters": [
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/LibraryType"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
@@ -3387,7 +3396,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -3407,7 +3416,7 @@
         ]
       },
       "get": {
-        "operationId": "getLibraryInfo",
+        "operationId": "getLibrary",
         "parameters": [
           {
             "name": "id",
@@ -3512,7 +3521,7 @@
           }
         ],
         "responses": {
-          "201": {
+          "204": {
             "description": ""
           }
         },
@@ -3557,7 +3566,7 @@
           "required": true
         },
         "responses": {
-          "201": {
+          "204": {
             "description": ""
           }
         },
@@ -4038,6 +4047,16 @@
       "post": {
         "operationId": "createPerson",
         "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PersonCreateDto"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "201": {
             "content": {
@@ -6458,7 +6477,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.95.1",
+    "version": "1.98.0",
     "contact": {}
   },
   "tags": [],
@@ -7532,9 +7551,6 @@
           "isArchived": {
             "type": "boolean"
           },
-          "isExternal": {
-            "type": "boolean"
-          },
           "isFavorite": {
             "type": "boolean"
           },
@@ -7590,6 +7606,10 @@
             "type": "boolean"
           },
           "name": {
+            "type": "string"
+          },
+          "ownerId": {
+            "format": "uuid",
             "type": "string"
           },
           "type": {
@@ -7648,10 +7668,6 @@
           "email": {
             "type": "string"
           },
-          "externalPath": {
-            "nullable": true,
-            "type": "string"
-          },
           "memoriesEnabled": {
             "type": "boolean"
           },
@@ -7665,6 +7681,9 @@
             "format": "int64",
             "nullable": true,
             "type": "integer"
+          },
+          "shouldChangePassword": {
+            "type": "boolean"
           },
           "storageLabel": {
             "nullable": true,
@@ -8285,6 +8304,14 @@
       },
       "MapMarkerResponseDto": {
         "properties": {
+          "city": {
+            "nullable": true,
+            "type": "string"
+          },
+          "country": {
+            "nullable": true,
+            "type": "string"
+          },
           "id": {
             "type": "string"
           },
@@ -8295,12 +8322,19 @@
           "lon": {
             "format": "double",
             "type": "number"
+          },
+          "state": {
+            "nullable": true,
+            "type": "string"
           }
         },
         "required": [
+          "city",
+          "country",
           "id",
           "lat",
-          "lon"
+          "lon",
+          "state"
         ],
         "type": "object"
       },
@@ -8549,10 +8583,6 @@
           "email": {
             "type": "string"
           },
-          "externalPath": {
-            "nullable": true,
-            "type": "string"
-          },
           "id": {
             "type": "string"
           },
@@ -8601,7 +8631,6 @@
           "createdAt",
           "deletedAt",
           "email",
-          "externalPath",
           "id",
           "isAdmin",
           "name",
@@ -8699,6 +8728,25 @@
         "required": [
           "id"
         ],
+        "type": "object"
+      },
+      "PersonCreateDto": {
+        "properties": {
+          "birthDate": {
+            "description": "Person date of birth.\nNote: the mobile app cannot currently set the birth date to null.",
+            "format": "date",
+            "nullable": true,
+            "type": "string"
+          },
+          "isHidden": {
+            "description": "Person visibility",
+            "type": "boolean"
+          },
+          "name": {
+            "description": "Person name.",
+            "type": "string"
+          }
+        },
         "type": "object"
       },
       "PersonResponseDto": {
@@ -9071,6 +9119,9 @@
           },
           "trashDays": {
             "type": "integer"
+          },
+          "userDeleteDelay": {
+            "type": "integer"
           }
         },
         "required": [
@@ -9079,7 +9130,8 @@
           "isOnboarded",
           "loginPageMessage",
           "oauthButtonText",
-          "trashDays"
+          "trashDays",
+          "userDeleteDelay"
         ],
         "type": "object"
       },
@@ -9538,6 +9590,12 @@
           "page": {
             "type": "number"
           },
+          "personIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
           "query": {
             "type": "string"
           },
@@ -9636,6 +9694,9 @@
           },
           "trash": {
             "$ref": "#/components/schemas/SystemConfigTrashDto"
+          },
+          "user": {
+            "$ref": "#/components/schemas/SystemConfigUserDto"
           }
         },
         "required": [
@@ -9653,7 +9714,8 @@
           "storageTemplate",
           "theme",
           "thumbnail",
-          "trash"
+          "trash",
+          "user"
         ],
         "type": "object"
       },
@@ -9831,18 +9893,10 @@
         "properties": {
           "enabled": {
             "type": "boolean"
-          },
-          "interval": {
-            "type": "integer"
-          },
-          "usePolling": {
-            "type": "boolean"
           }
         },
         "required": [
-          "enabled",
-          "interval",
-          "usePolling"
+          "enabled"
         ],
         "type": "object"
       },
@@ -9931,6 +9985,9 @@
           "clientSecret": {
             "type": "string"
           },
+          "defaultStorageQuota": {
+            "type": "number"
+          },
           "enabled": {
             "type": "boolean"
           },
@@ -9951,6 +10008,9 @@
           },
           "storageLabelClaim": {
             "type": "string"
+          },
+          "storageQuotaClaim": {
+            "type": "string"
           }
         },
         "required": [
@@ -9959,13 +10019,15 @@
           "buttonText",
           "clientId",
           "clientSecret",
+          "defaultStorageQuota",
           "enabled",
           "issuerUrl",
           "mobileOverrideEnabled",
           "mobileRedirectUri",
           "scope",
           "signingAlgorithm",
-          "storageLabelClaim"
+          "storageLabelClaim",
+          "storageQuotaClaim"
         ],
         "type": "object"
       },
@@ -10134,6 +10196,17 @@
         "required": [
           "days",
           "enabled"
+        ],
+        "type": "object"
+      },
+      "SystemConfigUserDto": {
+        "properties": {
+          "deleteDelay": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "deleteDelay"
         ],
         "type": "object"
       },
@@ -10334,9 +10407,6 @@
           "email": {
             "type": "string"
           },
-          "externalPath": {
-            "type": "string"
-          },
           "id": {
             "format": "uuid",
             "type": "string"
@@ -10463,10 +10533,6 @@
           "email": {
             "type": "string"
           },
-          "externalPath": {
-            "nullable": true,
-            "type": "string"
-          },
           "id": {
             "type": "string"
           },
@@ -10512,7 +10578,6 @@
           "createdAt",
           "deletedAt",
           "email",
-          "externalPath",
           "id",
           "isAdmin",
           "name",

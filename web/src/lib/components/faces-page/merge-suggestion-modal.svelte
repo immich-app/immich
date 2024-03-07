@@ -23,15 +23,6 @@
     close: void;
   }>();
 
-  const handleKeyboardPress = (event: KeyboardEvent) => {
-    switch (event.key) {
-      case 'Escape': {
-        dispatch('close');
-        return;
-      }
-    }
-  };
-
   const changePersonToMerge = (newperson: PersonResponseDto) => {
     const index = potentialMergePeople.indexOf(newperson);
     [potentialMergePeople[index], personMerge2] = [personMerge2, potentialMergePeople[index]];
@@ -39,9 +30,7 @@
   };
 </script>
 
-<svelte:document on:keypress={handleKeyboardPress} />
-
-<FullScreenModal on:clickOutside={() => dispatch('close')}>
+<FullScreenModal onClose={() => dispatch('close')}>
   <div class="flex h-full w-full place-content-center place-items-center overflow-hidden">
     <div
       class="w-[250px] max-w-[125vw] rounded-3xl border bg-immich-bg shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg md:w-[375px]"

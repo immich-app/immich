@@ -185,7 +185,7 @@
     }
   };
 
-  const handleEscape = () => {
+  const handleEscape = async () => {
     if ($showAssetViewer || viewMode === ViewMode.SUGGEST_MERGE) {
       return;
     }
@@ -193,7 +193,7 @@
       assetInteractionStore.clearMultiselect();
       return;
     } else {
-      goto(previousRoute);
+      await goto(previousRoute);
       return;
     }
   };
@@ -235,7 +235,7 @@
         type: NotificationType.Info,
       });
 
-      goto(previousRoute, { replaceState: true });
+      await goto(previousRoute, { replaceState: true });
     } catch (error) {
       handleError(error, 'Unable to hide person');
     }
@@ -244,7 +244,7 @@
   const handleMerge = async (person: PersonResponseDto) => {
     const { assets } = await getPersonStatistics({ id: person.id });
     numberOfAssets = assets;
-    handleGoBack();
+    await handleGoBack();
 
     data.person = person;
 
@@ -292,7 +292,7 @@
         refreshAssetGrid = !refreshAssetGrid;
         return;
       }
-      goto(`${AppRoute.PEOPLE}/${personToBeMergedIn.id}`, { replaceState: true });
+      await goto(`${AppRoute.PEOPLE}/${personToBeMergedIn.id}`, { replaceState: true });
     } catch (error) {
       handleError(error, 'Unable to save name');
     }
@@ -341,7 +341,7 @@
       return;
     }
     if (name === '') {
-      changeName();
+      await changeName();
       return;
     }
 
@@ -366,7 +366,7 @@
       viewMode = ViewMode.SUGGEST_MERGE;
       return;
     }
-    changeName();
+    await changeName();
   };
 
   const handleSetBirthDate = async (birthDate: string) => {
@@ -392,11 +392,11 @@
     }
   };
 
-  const handleGoBack = () => {
+  const handleGoBack = async () => {
     viewMode = ViewMode.VIEW_ASSETS;
     if ($page.url.searchParams.has(QueryParameter.ACTION)) {
       $page.url.searchParams.delete(QueryParameter.ACTION);
-      goto($page.url);
+      await goto($page.url);
     }
   };
 </script>
@@ -443,11 +443,11 @@
         <AddToAlbum />
         <AddToAlbum shared />
       </AssetSelectContextMenu>
-      <DeleteAssets onAssetDelete={(assetId) => $assetStore.removeAsset(assetId)} />
+      <DeleteAssets onAssetDelete={(assetIds) => $assetStore.removeAssets(assetIds)} />
       <AssetSelectContextMenu icon={mdiDotsVertical} title="Add">
         <DownloadAction menuItem filename="{data.person.name || 'immich'}.zip" />
         <FavoriteAction menuItem removeFavorite={isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
-        <ArchiveAction menuItem unarchive={isAllArchive} onArchive={(ids) => $assetStore.removeAssets(ids)} />
+        <ArchiveAction menuItem unarchive={isAllArchive} onArchive={(assetIds) => $assetStore.removeAssets(assetIds)} />
         <MenuOption text="Fix incorrect match" on:click={handleReassignAssets} />
         <ChangeDate menuItem />
         <ChangeLocation menuItem />

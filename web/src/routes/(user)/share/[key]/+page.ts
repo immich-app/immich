@@ -1,7 +1,6 @@
 import { getAssetThumbnailUrl } from '$lib/utils';
 import { authenticate } from '$lib/utils/auth';
-import { ThumbnailFormat, getMySharedLink } from '@immich/sdk';
-import { error as throwError, type HttpError } from '@sveltejs/kit';
+import { ThumbnailFormat, getMySharedLink, isHttpError } from '@immich/sdk';
 import type { PageLoad } from './$types';
 
 export const load = (async ({ params }) => {
@@ -22,9 +21,7 @@ export const load = (async ({ params }) => {
       },
     };
   } catch (error) {
-    // handle unauthorized error
-    // TODO this doesn't allow for 404 shared links anymore
-    if ((error as HttpError).status === 401) {
+    if (isHttpError(error) && error.data.message === 'Invalid password') {
       return {
         passwordRequired: true,
         sharedLinkKey: key,
@@ -34,8 +31,6 @@ export const load = (async ({ params }) => {
       };
     }
 
-    throwError(404, {
-      message: 'Invalid shared link',
-    });
+    throw error;
   }
 }) satisfies PageLoad;

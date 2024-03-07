@@ -1,4 +1,9 @@
-import { AssetSearchOneToOneRelationOptions, AssetSearchOptions, SearchExploreItem } from '@app/domain';
+import {
+  AssetSearchOneToOneRelationOptions,
+  AssetSearchOptions,
+  ReverseGeocodeResult,
+  SearchExploreItem,
+} from '@app/domain';
 import { AssetEntity, AssetJobStatusEntity, AssetType, ExifEntity } from '@app/infra/entities';
 import { FindOptionsRelations, FindOptionsSelect } from 'typeorm';
 import { Paginated, PaginationOptions } from '../domain.util';
@@ -25,7 +30,7 @@ export interface MapMarkerSearchOptions {
   fileCreatedAfter?: Date;
 }
 
-export interface MapMarker {
+export interface MapMarker extends ReverseGeocodeResult {
   id: string;
   lat: number;
   lon: number;
@@ -131,6 +136,8 @@ export interface IAssetRepository {
   getLastUpdatedAssetForAlbumId(albumId: string): Promise<AssetEntity | null>;
   getByLibraryId(libraryIds: string[]): Promise<AssetEntity[]>;
   getByLibraryIdAndOriginalPath(libraryId: string, originalPath: string): Promise<AssetEntity | null>;
+  getPathsNotInLibrary(libraryId: string, originalPaths: string[]): Promise<string[]>;
+  updateOfflineLibraryAssets(libraryId: string, originalPaths: string[]): Promise<void>;
   deleteAll(ownerId: string): Promise<void>;
   getAll(pagination: PaginationOptions, options?: AssetSearchOptions): Paginated<AssetEntity>;
   getAllByFileCreationDate(

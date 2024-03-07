@@ -15,7 +15,6 @@
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
-  import UpdatePanel from '$lib/components/shared-components/update-panel.svelte';
   import { AppRoute } from '$lib/constants';
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { AssetStore } from '$lib/stores/assets.store';
@@ -24,10 +23,11 @@
   import { emptyTrash, restoreTrash } from '@immich/sdk';
   import { mdiDeleteOutline, mdiHistory } from '@mdi/js';
   import type { PageData } from './$types';
+  import { handlePromiseError } from '$lib/utils';
 
   export let data: PageData;
 
-  $: $featureFlags.trash || goto(AppRoute.PHOTOS);
+  $featureFlags.trash || handlePromiseError(goto(AppRoute.PHOTOS));
 
   const assetStore = new AssetStore({ isTrashed: true });
   const assetInteractionStore = createAssetInteractionStore();
@@ -65,8 +65,8 @@
 {#if $isMultiSelectState}
   <AssetSelectControlBar assets={$selectedAssets} clearSelect={() => assetInteractionStore.clearMultiselect()}>
     <SelectAllAssets {assetStore} {assetInteractionStore} />
-    <DeleteAssets force onAssetDelete={(assetId) => assetStore.removeAsset(assetId)} />
-    <RestoreAssets onRestore={(ids) => assetStore.removeAssets(ids)} />
+    <DeleteAssets force onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)} />
+    <RestoreAssets onRestore={(assetIds) => assetStore.removeAssets(assetIds)} />
   </AssetSelectControlBar>
 {/if}
 
@@ -105,8 +105,8 @@
   <ConfirmDialogue
     title="Empty Trash"
     confirmText="Empty"
-    on:confirm={handleEmptyTrash}
-    on:cancel={() => (isShowEmptyConfirmation = false)}
+    onConfirm={handleEmptyTrash}
+    onClose={() => (isShowEmptyConfirmation = false)}
   >
     <svelte:fragment slot="prompt">
       <p>Are you sure you want to empty the trash? This will remove all the assets in trash permanently from Immich.</p>
@@ -114,4 +114,3 @@
     </svelte:fragment>
   </ConfirmDialogue>
 {/if}
-<UpdatePanel {assetStore} />

@@ -12,7 +12,7 @@
   import { user } from '$lib/stores/user.store';
   import { asByteUnitString } from '$lib/utils/byte-units';
   import { getAllUsers, type UserResponseDto } from '@immich/sdk';
-  import { mdiCheck, mdiClose, mdiDeleteRestore, mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
+  import { mdiClose, mdiDeleteRestore, mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
   import { onMount } from 'svelte';
   import type { PageData } from './$types';
 
@@ -51,7 +51,7 @@
     shouldShowCreateUserForm = false;
   };
 
-  const editUserHandler = async (user: UserResponseDto) => {
+  const editUserHandler = (user: UserResponseDto) => {
     selectedUser = user;
     shouldShowEditUserForm = true;
   };
@@ -67,7 +67,7 @@
     shouldShowInfoPanel = true;
   };
 
-  const deleteUserHandler = async (user: UserResponseDto) => {
+  const deleteUserHandler = (user: UserResponseDto) => {
     selectedUser = user;
     shouldShowDeleteConfirmDialog = true;
   };
@@ -82,7 +82,7 @@
     shouldShowDeleteConfirmDialog = false;
   };
 
-  const restoreUserHandler = async (user: UserResponseDto) => {
+  const restoreUserHandler = (user: UserResponseDto) => {
     selectedUser = user;
     shouldShowRestoreDialog = true;
   };
@@ -103,19 +103,13 @@
   <section id="setting-content" class="flex place-content-center sm:mx-4">
     <section class="w-full pb-28 lg:w-[850px]">
       {#if shouldShowCreateUserForm}
-        <FullScreenModal
-          on:clickOutside={() => (shouldShowCreateUserForm = false)}
-          on:escape={() => (shouldShowCreateUserForm = false)}
-        >
+        <FullScreenModal onClose={() => (shouldShowCreateUserForm = false)}>
           <CreateUserForm on:submit={onUserCreated} on:cancel={() => (shouldShowCreateUserForm = false)} />
         </FullScreenModal>
       {/if}
 
       {#if shouldShowEditUserForm}
-        <FullScreenModal
-          on:clickOutside={() => (shouldShowEditUserForm = false)}
-          on:escape={() => (shouldShowEditUserForm = false)}
-        >
+        <FullScreenModal onClose={() => (shouldShowEditUserForm = false)}>
           <EditUserForm
             user={selectedUser}
             canResetPassword={selectedUser?.id !== $user.id}
@@ -145,10 +139,7 @@
       {/if}
 
       {#if shouldShowInfoPanel}
-        <FullScreenModal
-          on:clickOutside={() => (shouldShowInfoPanel = false)}
-          on:escape={() => (shouldShowInfoPanel = false)}
-        >
+        <FullScreenModal onClose={() => (shouldShowInfoPanel = false)}>
           <div class="w-[500px] max-w-[95vw] rounded-3xl border bg-white p-8 text-sm shadow-sm">
             <h1 class="mb-4 text-lg font-medium text-immich-primary">Password reset success</h1>
 
@@ -175,7 +166,6 @@
             <th class="w-8/12 sm:w-5/12 lg:w-6/12 xl:w-4/12 2xl:w-5/12 text-center text-sm font-medium">Email</th>
             <th class="hidden sm:block w-3/12 text-center text-sm font-medium">Name</th>
             <th class="hidden xl:block w-3/12 2xl:w-2/12 text-center text-sm font-medium">Has quota</th>
-            <th class="hidden xl:block w-3/12 2xl:w-2/12 text-center text-sm font-medium">Can import</th>
             <th class="w-4/12 lg:w-3/12 xl:w-2/12 text-center text-sm font-medium">Action</th>
           </tr>
         </thead>
@@ -204,16 +194,6 @@
                     {/if}
                   </div>
                 </td>
-                <td class="hidden xl:block w-3/12 2xl:w-2/12 text-ellipsis break-all px-2 text-sm">
-                  <div class="container mx-auto flex flex-wrap justify-center">
-                    {#if immichUser.externalPath}
-                      <Icon path={mdiCheck} size="16" />
-                    {:else}
-                      <Icon path={mdiClose} size="16" />
-                    {/if}
-                  </div>
-                </td>
-
                 <td class="w-4/12 lg:w-3/12 xl:w-2/12 text-ellipsis break-all text-sm">
                   {#if !isDeleted(immichUser)}
                     <button

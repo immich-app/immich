@@ -11,7 +11,7 @@ describe(ActivityService.name, () => {
   let accessMock: IAccessRepositoryMock;
   let activityMock: jest.Mocked<IActivityRepository>;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     accessMock = newAccessRepositoryMock();
     activityMock = newActivityRepositoryMock();
 

@@ -8,5 +8,6 @@ export const newSearchRepositoryMock = (): jest.Mocked<ISearchRepository> => {
     searchFaces: jest.fn(),
     upsert: jest.fn(),
     searchPlaces: jest.fn(),
+    deleteAllSearchEmbeddings: jest.fn(),
   };
 };

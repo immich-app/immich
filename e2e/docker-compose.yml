@@ -1,10 +1,9 @@
-version: "3.8"
+version: '3.8'
 
 name: immich-e2e
 
 x-server-build: &server-common
   image: immich-server:latest
-  container_name: immich-e2e-server
   build:
     context: ../
     dockerfile: server/Dockerfile
@@ -17,20 +16,23 @@ x-server-build: &server-common
     - IMMICH_MACHINE_LEARNING_ENABLED=false
   volumes:
     - upload:/usr/src/app/upload
+    - ../server/test/assets:/data/assets
   depends_on:
     - redis
     - database
 
 services:
   immich-server:
-    command: [ "./start.sh", "immich" ]
+    container_name: immich-e2e-server
+    command: ['./start.sh', 'immich']
     <<: *server-common
     ports:
       - 2283:3001
 
-  # immich-microservices:
-  #   command: [ "./start.sh", "microservices" ]
-  #   <<: *server-common
+  immich-microservices:
+    container_name: immich-e2e-microservices
+    command: ['./start.sh', 'microservices']
+    <<: *server-common
 
   redis:
     image: redis:6.2-alpine@sha256:51d6c56749a4243096327e3fb964a48ed92254357108449cb6e23999c37773c5

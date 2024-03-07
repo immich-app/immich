@@ -1,5 +1,6 @@
 import type { OnShowContextMenuDetail } from '$lib/components/album-page/album-card';
 import { notificationController, NotificationType } from '$lib/components/shared-components/notification/notification';
+import { asyncTimeout } from '$lib/utils';
 import { handleError } from '$lib/utils/handle-error';
 import { createAlbum, deleteAlbum, getAllAlbums, type AlbumResponseDto } from '@immich/sdk';
 import { derived, get, writable } from 'svelte/store';
@@ -20,9 +21,8 @@ export const useAlbums = (properties: AlbumsProperties) => {
       // Delete album that has no photos and is named ''
       for (const album of data) {
         if (album.albumName === '' && album.assetCount === 0) {
-          setTimeout(async () => {
-            await handleDeleteAlbum(album);
-          }, 500);
+          await asyncTimeout(500);
+          await handleDeleteAlbum(album);
         }
       }
     } catch {
@@ -46,10 +46,7 @@ export const useAlbums = (properties: AlbumsProperties) => {
     albums.set(get(albums).filter(({ id }) => id !== albumToDelete.id));
   }
 
-  async function showAlbumContextMenu(
-    contextMenuDetail: OnShowContextMenuDetail,
-    album: AlbumResponseDto,
-  ): Promise<void> {
+  function showAlbumContextMenu(contextMenuDetail: OnShowContextMenuDetail, album: AlbumResponseDto): void {
     contextMenuTargetAlbum.set(album);
 
     contextMenuPosition.set({

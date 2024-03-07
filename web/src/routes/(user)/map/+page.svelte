@@ -15,6 +15,7 @@
   import { DateTime, Duration } from 'luxon';
   import { onDestroy, onMount } from 'svelte';
   import type { PageData } from './$types';
+  import { handlePromiseError } from '$lib/utils';
 
   export let data: PageData;
 
@@ -26,8 +27,8 @@
   let viewingAssetCursor = 0;
   let showSettingsModal = false;
 
-  onMount(() => {
-    loadMapMarkers().then((data) => (mapMarkers = data));
+  onMount(async () => {
+    mapMarkers = await loadMapMarkers();
   });
 
   onDestroy(() => {
@@ -35,7 +36,7 @@
     assetViewingStore.showAssetViewer(false);
   });
 
-  $: $featureFlags.map || goto(AppRoute.PHOTOS);
+  $: $featureFlags.map || handlePromiseError(goto(AppRoute.PHOTOS));
   const omit = (obj: MapSettings, key: string) => {
     return Object.fromEntries(Object.entries(obj).filter(([k]) => k !== key));
   };
@@ -85,21 +86,21 @@
     }
   }
 
-  function onViewAssets(assetIds: string[]) {
-    assetViewingStore.setAssetId(assetIds[0]);
+  async function onViewAssets(assetIds: string[]) {
+    await assetViewingStore.setAssetId(assetIds[0]);
     viewingAssets = assetIds;
     viewingAssetCursor = 0;
   }
 
-  function navigateNext() {
+  async function navigateNext() {
     if (viewingAssetCursor < viewingAssets.length - 1) {
-      assetViewingStore.setAssetId(viewingAssets[++viewingAssetCursor]);
+      await assetViewingStore.setAssetId(viewingAssets[++viewingAssetCursor]);
     }
   }
 
-  function navigatePrevious() {
+  async function navigatePrevious() {
     if (viewingAssetCursor > 0) {
-      assetViewingStore.setAssetId(viewingAssets[--viewingAssetCursor]);
+      await assetViewingStore.setAssetId(viewingAssets[--viewingAssetCursor]);
     }
   }
 </script>

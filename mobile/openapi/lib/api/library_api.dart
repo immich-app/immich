@@ -104,7 +104,10 @@ class LibraryApi {
   }
 
   /// Performs an HTTP 'GET /library' operation and returns the [Response].
-  Future<Response> getLibrariesWithHttpInfo() async {
+  /// Parameters:
+  ///
+  /// * [LibraryType] type:
+  Future<Response> getAllLibrariesWithHttpInfo({ LibraryType? type, }) async {
     // ignore: prefer_const_declarations
     final path = r'/library';
 
@@ -114,6 +117,10 @@ class LibraryApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
+
+    if (type != null) {
+      queryParams.addAll(_queryParams('', 'type', type));
+    }
 
     const contentTypes = <String>[];
 
@@ -129,8 +136,11 @@ class LibraryApi {
     );
   }
 
-  Future<List<LibraryResponseDto>?> getLibraries() async {
-    final response = await getLibrariesWithHttpInfo();
+  /// Parameters:
+  ///
+  /// * [LibraryType] type:
+  Future<List<LibraryResponseDto>?> getAllLibraries({ LibraryType? type, }) async {
+    final response = await getAllLibrariesWithHttpInfo( type: type, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -151,7 +161,7 @@ class LibraryApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> getLibraryInfoWithHttpInfo(String id,) async {
+  Future<Response> getLibraryWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final path = r'/library/{id}'
       .replaceAll('{id}', id);
@@ -180,8 +190,8 @@ class LibraryApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<LibraryResponseDto?> getLibraryInfo(String id,) async {
-    final response = await getLibraryInfoWithHttpInfo(id,);
+  Future<LibraryResponseDto?> getLibrary(String id,) async {
+    final response = await getLibraryWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

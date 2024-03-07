@@ -5,7 +5,6 @@ export const ILibraryRepository = 'ILibraryRepository';
 
 export interface ILibraryRepository {
   getCountForUser(ownerId: string): Promise<number>;
-  getAllByUserId(userId: string, type?: LibraryType): Promise<LibraryEntity[]>;
   getAll(withDeleted?: boolean, type?: LibraryType): Promise<LibraryEntity[]>;
   getAllDeleted(): Promise<LibraryEntity[]>;
   get(id: string, withDeleted?: boolean): Promise<LibraryEntity | null>;
@@ -16,7 +15,5 @@ export interface ILibraryRepository {
   getUploadLibraryCount(ownerId: string): Promise<number>;
   update(library: Partial<LibraryEntity>): Promise<LibraryEntity>;
   getStatistics(id: string): Promise<LibraryStatsResponseDto>;
-  getOnlineAssetPaths(id: string): Promise<string[]>;
   getAssetIds(id: string, withDeleted?: boolean): Promise<string[]>;
-  existsByName(name: string, withDeleted?: boolean): Promise<boolean>;
 }

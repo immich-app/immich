@@ -8,6 +8,7 @@
 <script lang="ts">
   import { SearchSuggestionType, getSearchSuggestions } from '@immich/sdk';
   import Combobox, { toComboBoxOptions } from '../combobox.svelte';
+  import { handlePromiseError } from '$lib/utils';
 
   export let filters: SearchCameraFilter;
 
@@ -16,8 +17,8 @@
 
   $: makeFilter = filters.make;
   $: modelFilter = filters.model;
-  $: updateMakes(modelFilter);
-  $: updateModels(makeFilter);
+  $: handlePromiseError(updateMakes(modelFilter));
+  $: handlePromiseError(updateModels(makeFilter));
 
   async function updateMakes(model?: string) {
     makes = await getSearchSuggestions({

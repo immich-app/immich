@@ -1,6 +1,7 @@
 import { AlbumEntity } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { AssetResponseDto, mapAsset } from '../asset';
+import { AuthDto } from '../auth/auth.dto';
 import { UserResponseDto, mapUser } from '../user';
 
 export class AlbumResponseDto {
@@ -24,7 +25,7 @@ export class AlbumResponseDto {
   isActivityEnabled!: boolean;
 }
 
-export const mapAlbum = (entity: AlbumEntity, withAssets: boolean): AlbumResponseDto => {
+export const mapAlbum = (entity: AlbumEntity, withAssets: boolean, auth?: AuthDto): AlbumResponseDto => {
   const sharedUsers: UserResponseDto[] = [];
 
   if (entity.sharedUsers) {
@@ -59,7 +60,7 @@ export const mapAlbum = (entity: AlbumEntity, withAssets: boolean): AlbumRespons
     hasSharedLink,
     startDate,
     endDate,
-    assets: (withAssets ? assets : []).map((asset) => mapAsset(asset)),
+    assets: (withAssets ? assets : []).map((asset) => mapAsset(asset, { auth })),
     assetCount: entity.assets?.length || 0,
     isActivityEnabled: entity.isActivityEnabled,
   };

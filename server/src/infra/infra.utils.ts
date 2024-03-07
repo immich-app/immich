@@ -2,7 +2,6 @@ import { AssetSearchBuilderOptions, Paginated, PaginationOptions } from '@app/do
 import _ from 'lodash';
 import {
   Between,
-  Brackets,
   FindManyOptions,
   IsNull,
   LessThanOrEqual,
@@ -160,8 +159,14 @@ export function searchAssetBuilder(
     builder.andWhere(`${builder.alias}.ownerId IN (:...userIds)`, { userIds: options.userIds });
   }
 
-  const path = _.pick(options, ['encodedVideoPath', 'originalFileName', 'originalPath', 'resizePath', 'webpPath']);
+  const path = _.pick(options, ['encodedVideoPath', 'originalPath', 'resizePath', 'webpPath']);
   builder.andWhere(_.omitBy(path, _.isUndefined));
+
+  if (options.originalFileName) {
+    builder.andWhere(`f_unaccent(${builder.alias}.originalFileName) ILIKE f_unaccent(:originalFileName)`, {
+      originalFileName: `%${options.originalFileName}%`,
+    });
+  }
 
   const status = _.pick(options, ['isExternal', 'isFavorite', 'isOffline', 'isReadOnly', 'isVisible', 'type']);
   const {
@@ -223,12 +228,7 @@ export function searchAssetBuilder(
   }
 
   if (withStacked) {
-    builder
-      .leftJoinAndSelect(`${builder.alias}.stack`, 'stack')
-      .leftJoinAndSelect('stack.assets', 'stackedAssets')
-      .andWhere(
-        new Brackets((qb) => qb.where(`stack.primaryAssetId = ${builder.alias}.id`).orWhere('asset.stackId IS NULL')),
-      );
+    builder.leftJoinAndSelect(`${builder.alias}.stack`, 'stack').leftJoinAndSelect('stack.assets', 'stackedAssets');
   }
 
   const withDeleted = options.withDeleted ?? (trashedAfter !== undefined || trashedBefore !== undefined);

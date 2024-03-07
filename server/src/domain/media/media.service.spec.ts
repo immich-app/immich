@@ -48,7 +48,7 @@ describe(MediaService.name, () => {
   let storageMock: jest.Mocked<IStorageRepository>;
   let cryptoMock: jest.Mocked<ICryptoRepository>;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     assetMock = newAssetRepositoryMock();
     configMock = newSystemConfigRepositoryMock();
     jobMock = newJobRepositoryMock();
@@ -1799,9 +1799,9 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
-          inputOptions: [],
+          inputOptions: ['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga'],
           outputOptions: [
-            `-c:v hevc_rkmpp_encoder`,
+            `-c:v hevc_rkmpp`,
             '-c:a copy',
             '-movflags faststart',
             '-fps_mode passthrough',
@@ -1810,17 +1810,12 @@ describe(MediaService.name, () => {
             '-g 256',
             '-tag:v hvc1',
             '-v verbose',
+            '-vf scale_rkrga=-2:720:format=nv12:afbc=1',
             '-level 153',
-            '-rc_mode 3',
-            '-quality_min 0',
-            '-quality_max 100',
+            '-rc_mode AVBR',
             '-b:v 10000k',
-            '-width 1280',
-            '-height 720',
           ],
           twoPass: false,
-          ffmpegPath: 'ffmpeg_mpp',
-          ldLibraryPath: '/lib/aarch64-linux-gnu:/lib/ffmpeg-mpp',
         },
       );
     });
@@ -1839,9 +1834,9 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
-          inputOptions: [],
+          inputOptions: ['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga'],
           outputOptions: [
-            `-c:v h264_rkmpp_encoder`,
+            `-c:v h264_rkmpp`,
             '-c:a copy',
             '-movflags faststart',
             '-fps_mode passthrough',
@@ -1849,16 +1844,12 @@ describe(MediaService.name, () => {
             '-map 0:1',
             '-g 256',
             '-v verbose',
+            '-vf scale_rkrga=-2:720:format=nv12:afbc=1',
             '-level 51',
-            '-rc_mode 2',
-            '-quality_min 51',
-            '-quality_max 51',
-            '-width 1280',
-            '-height 720',
+            '-rc_mode CQP',
+            '-qp_init 30',
           ],
           twoPass: false,
-          ffmpegPath: 'ffmpeg_mpp',
-          ldLibraryPath: '/lib/aarch64-linux-gnu:/lib/ffmpeg-mpp',
         },
       );
     });

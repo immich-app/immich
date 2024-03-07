@@ -18,7 +18,6 @@ FROM
       "UserTokenEntity__UserTokenEntity_user"."isAdmin" AS "UserTokenEntity__UserTokenEntity_user_isAdmin",
       "UserTokenEntity__UserTokenEntity_user"."email" AS "UserTokenEntity__UserTokenEntity_user_email",
       "UserTokenEntity__UserTokenEntity_user"."storageLabel" AS "UserTokenEntity__UserTokenEntity_user_storageLabel",
-      "UserTokenEntity__UserTokenEntity_user"."externalPath" AS "UserTokenEntity__UserTokenEntity_user_externalPath",
       "UserTokenEntity__UserTokenEntity_user"."oauthId" AS "UserTokenEntity__UserTokenEntity_user_oauthId",
       "UserTokenEntity__UserTokenEntity_user"."profileImagePath" AS "UserTokenEntity__UserTokenEntity_user_profileImagePath",
       "UserTokenEntity__UserTokenEntity_user"."shouldChangePassword" AS "UserTokenEntity__UserTokenEntity_user_shouldChangePassword",

@@ -2,7 +2,6 @@ import {
   AuthService,
   DatabaseService,
   JobService,
-  LibraryService,
   ONE_HOUR,
   OpenGraphTags,
   ServerInfoService,
@@ -45,7 +44,6 @@ export class AppService {
     private authService: AuthService,
     private configService: SystemConfigService,
     private jobService: JobService,
-    private libraryService: LibraryService,
     private serverService: ServerInfoService,
     private sharedLinkService: SharedLinkService,
     private storageService: StorageService,
@@ -66,13 +64,8 @@ export class AppService {
     await this.databaseService.init();
     await this.configService.init();
     this.storageService.init();
-    await this.libraryService.init();
     await this.serverService.init();
     this.logger.log(`Feature Flags: ${JSON.stringify(await this.serverService.getFeatures(), null, 2)}`);
-  }
-
-  async teardown() {
-    await this.libraryService.unwatchAll();
   }
 
   ssr(excludePaths: string[]) {

@@ -11,6 +11,7 @@
 
   export type SearchFilter = {
     context?: string;
+    filename?: string;
     personIds: Set<string>;
     location: SearchLocationFilter;
     camera: SearchCameraFilter;
@@ -22,7 +23,6 @@
 
 <script lang="ts">
   import Button from '$lib/components/elements/buttons/button.svelte';
-  import { handleError } from '$lib/utils/handle-error';
   import { AssetTypeEnum, type SmartSearchDto, type MetadataSearchDto } from '@immich/sdk';
   import { createEventDispatcher } from 'svelte';
   import { fly } from 'svelte/transition';
@@ -33,6 +33,7 @@
   import SearchMediaSection from './search-media-section.svelte';
   import { parseUtcDate } from '$lib/utils/date-time';
   import SearchDisplaySection from './search-display-section.svelte';
+  import SearchTextSection from './search-text-section.svelte';
 
   export let searchQuery: MetadataSearchDto | SmartSearchDto;
 
@@ -42,6 +43,7 @@
 
   let filter: SearchFilter = {
     context: 'query' in searchQuery ? searchQuery.query : '',
+    filename: 'originalFileName' in searchQuery ? searchQuery.originalFileName : undefined,
     personIds: new Set('personIds' in searchQuery ? searchQuery.personIds : []),
     location: {
       country: searchQuery.country,
@@ -82,15 +84,7 @@
     };
   };
 
-  const search = async () => {
-    if (filter.context && filter.personIds.size > 0) {
-      handleError(
-        new Error('Context search does not support people filter'),
-        'Context search does not support people filter',
-      );
-      return;
-    }
-
+  const search = () => {
     let type: AssetTypeEnum | undefined = undefined;
     if (filter.mediaType === MediaType.Image) {
       type = AssetTypeEnum.Image;
@@ -100,6 +94,7 @@
 
     let payload: SmartSearchDto | MetadataSearchDto = {
       query: filter.context || undefined,
+      originalFileName: filter.filename,
       country: filter.location.country,
       state: filter.location.state,
       city: filter.location.city,
@@ -133,20 +128,8 @@
       <!-- PEOPLE -->
       <SearchPeopleSection width={filterBoxWidth} bind:selectedPeople={filter.personIds} />
 
-      <!-- CONTEXT -->
-      <div>
-        <label class="immich-form-label" for="context">
-          <span>CONTEXT</span>
-          <input
-            class="immich-form-input hover:cursor-text w-full mt-1"
-            type="text"
-            id="context"
-            name="context"
-            placeholder="Sunrise on the beach"
-            bind:value={filter.context}
-          />
-        </label>
-      </div>
+      <!-- TEXT -->
+      <SearchTextSection bind:filename={filter.filename} bind:context={filter.context} />
 
       <!-- LOCATION -->
       <SearchLocationSection bind:filters={filter.location} />

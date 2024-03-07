@@ -35,7 +35,7 @@
         return;
       } catch (error) {
         console.error('Error [login-form] [oauth.callback]', error);
-        oauthError = (await getServerErrorMessage(error)) || 'Unable to complete OAuth login';
+        oauthError = getServerErrorMessage(error) || 'Unable to complete OAuth login';
         oauthLoading = false;
       }
     }
@@ -47,7 +47,7 @@
         return;
       }
     } catch (error) {
-      await handleError(error, 'Unable to connect!');
+      handleError(error, 'Unable to connect!');
     }
 
     oauthLoading = false;
@@ -73,7 +73,7 @@
       await onSuccess();
       return;
     } catch (error) {
-      errorMessage = (await getServerErrorMessage(error)) || 'Incorrect email or password';
+      errorMessage = getServerErrorMessage(error) || 'Incorrect email or password';
       loading = false;
       return;
     }

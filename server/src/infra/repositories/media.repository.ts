@@ -1,4 +1,11 @@
-import { CropOptions, IMediaRepository, ResizeOptions, TranscodeOptions, VideoInfo } from '@app/domain';
+import {
+  CropOptions,
+  IMediaRepository,
+  ResizeOptions,
+  TranscodeOptions,
+  VideoInfo,
+  handlePromiseError,
+} from '@app/domain';
 import { Colorspace } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
@@ -76,18 +83,7 @@ export class MediaRepository implements IMediaRepository {
   transcode(input: string, output: string | Writable, options: TranscodeOptions): Promise<void> {
     if (!options.twoPass) {
       return new Promise((resolve, reject) => {
-        const oldLdLibraryPath = process.env.LD_LIBRARY_PATH;
-        if (options.ldLibraryPath) {
-          // fluent ffmpeg does not allow to set environment variables, so we do it manually
-          process.env.LD_LIBRARY_PATH = this.chainPath(oldLdLibraryPath || '', options.ldLibraryPath);
-        }
-        try {
-          this.configureFfmpegCall(input, output, options).on('error', reject).on('end', resolve).run();
-        } finally {
-          if (options.ldLibraryPath) {
-            process.env.LD_LIBRARY_PATH = oldLdLibraryPath;
-          }
-        }
+        this.configureFfmpegCall(input, output, options).on('error', reject).on('end', resolve).run();
       });
     }
 
@@ -110,8 +106,8 @@ export class MediaRepository implements IMediaRepository {
             .addOptions('-pass', '2')
             .addOptions('-passlogfile', output)
             .on('error', reject)
-            .on('end', () => fs.unlink(`${output}-0.log`))
-            .on('end', () => fs.rm(`${output}-0.log.mbtree`, { force: true }))
+            .on('end', () => handlePromiseError(fs.unlink(`${output}-0.log`), this.logger))
+            .on('end', () => handlePromiseError(fs.rm(`${output}-0.log.mbtree`, { force: true }), this.logger))
             .on('end', resolve)
             .run();
         })
@@ -121,7 +117,6 @@ export class MediaRepository implements IMediaRepository {
 
   configureFfmpegCall(input: string, output: string | Writable, options: TranscodeOptions) {
     return ffmpeg(input, { niceness: 10 })
-      .setFfmpegPath(options.ffmpegPath || 'ffmpeg')
       .inputOptions(options.inputOptions)
       .outputOptions(options.outputOptions)
       .output(output)

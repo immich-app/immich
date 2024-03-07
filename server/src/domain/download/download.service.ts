@@ -1,6 +1,6 @@
 import { AssetEntity } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { extname } from 'node:path';
+import { parse } from 'node:path';
 import { AccessCore, Permission } from '../access';
 import { AssetIdsDto } from '../asset';
 import { AuthDto } from '../auth';
@@ -81,15 +81,23 @@ export class DownloadService {
 
     const zip = this.storageRepository.createZipStream();
     const assets = await this.assetRepository.getByIds(dto.assetIds);
+    const assetMap = new Map(assets.map((asset) => [asset.id, asset]));
     const paths: Record<string, number> = {};
 
-    for (const { originalPath, originalFileName } of assets) {
-      const extension = extname(originalPath);
-      let filename = `${originalFileName}${extension}`;
+    for (const assetId of dto.assetIds) {
+      const asset = assetMap.get(assetId);
+      if (!asset) {
+        continue;
+      }
+
+      const { originalPath, originalFileName } = asset;
+
+      let filename = originalFileName;
       const count = paths[filename] || 0;
       paths[filename] = count + 1;
       if (count !== 0) {
-        filename = `${originalFileName}+${count}${extension}`;
+        const parsedFilename = parse(originalFileName);
+        filename = `${parsedFilename.name}+${count}${parsedFilename.ext}`;
       }
 
       zip.addFile(originalPath, filename);
@@ -107,9 +115,7 @@ export class DownloadService {
       const assetIds = dto.assetIds;
       await this.access.requirePermission(auth, Permission.ASSET_DOWNLOAD, assetIds);
       const assets = await this.assetRepository.getByIds(assetIds);
-      return (async function* () {
-        yield assets;
-      })();
+      return usePagination(PAGINATION_SIZE, () => ({ hasNextPage: false, items: assets }));
     }
 
     if (dto.albumId) {

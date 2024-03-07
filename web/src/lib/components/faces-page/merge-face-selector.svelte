@@ -43,10 +43,10 @@
     dispatch('back');
   };
 
-  const handleSwapPeople = () => {
+  const handleSwapPeople = async () => {
     [person, selectedPeople[0]] = [selectedPeople[0], person];
     $page.url.searchParams.set(QueryParameter.ACTION, ActionQueryParameterValue.MERGE);
-    goto(`${AppRoute.PEOPLE}/${person.id}?${$page.url.searchParams.toString()}`);
+    await goto(`${AppRoute.PEOPLE}/${person.id}?${$page.url.searchParams.toString()}`);
   };
 
   const onSelect = (selected: PersonResponseDto) => {
@@ -158,8 +158,8 @@
       <ConfirmDialogue
         title="Merge people"
         confirmText="Merge"
-        on:confirm={handleMerge}
-        on:cancel={() => (isShowConfirmation = false)}
+        onConfirm={handleMerge}
+        onClose={() => (isShowConfirmation = false)}
       >
         <svelte:fragment slot="prompt">
           <p>Are you sure you want merge these people ?</p></svelte:fragment

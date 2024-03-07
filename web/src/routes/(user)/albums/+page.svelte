@@ -196,7 +196,7 @@
   const handleCreateAlbum = async () => {
     const newAlbum = await createAlbum();
     if (newAlbum) {
-      goto(`${AppRoute.ALBUMS}/${newAlbum.id}`);
+      await goto(`${AppRoute.ALBUMS}/${newAlbum.id}`);
     }
   };
 
@@ -204,8 +204,8 @@
     return new Date(dateString).toLocaleDateString($locale, dateFormats.album);
   };
 
-  onMount(() => {
-    removeAlbumsIfEmpty();
+  onMount(async () => {
+    await removeAlbumsIfEmpty();
   });
 
   const removeAlbumsIfEmpty = async () => {
@@ -236,7 +236,7 @@
 </script>
 
 {#if shouldShowEditUserForm}
-  <FullScreenModal on:clickOutside={() => (shouldShowEditUserForm = false)}>
+  <FullScreenModal onClose={() => (shouldShowEditUserForm = false)}>
     <EditAlbumForm
       album={selectedAlbum}
       on:editSuccess={() => successModifyAlbum()}
@@ -399,8 +399,8 @@
   <ConfirmDialogue
     title="Delete Album"
     confirmText="Delete"
-    on:confirm={deleteSelectedAlbum}
-    on:cancel={() => (albumToDelete = null)}
+    onConfirm={deleteSelectedAlbum}
+    onClose={() => (albumToDelete = null)}
   >
     <svelte:fragment slot="prompt">
       <p>Are you sure you want to delete the album <b>{albumToDelete.albumName}</b>?</p>

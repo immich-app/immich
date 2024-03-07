@@ -75,7 +75,7 @@ export const defaults = Object.freeze<SystemConfig>({
       enabled: true,
       modelName: 'buffalo_l',
       minScore: 0.7,
-      maxDistance: 0.6,
+      maxDistance: 0.5,
       minFaces: 3,
     },
   },
@@ -93,6 +93,7 @@ export const defaults = Object.freeze<SystemConfig>({
     buttonText: 'Login with OAuth',
     clientId: '',
     clientSecret: '',
+    defaultStorageQuota: 0,
     enabled: false,
     issuerUrl: '',
     mobileOverrideEnabled: false,
@@ -100,6 +101,7 @@ export const defaults = Object.freeze<SystemConfig>({
     scope: 'openid email profile',
     signingAlgorithm: 'RS256',
     storageLabelClaim: 'preferred_username',
+    storageQuotaClaim: 'immich_quota',
   },
   passwordLogin: {
     enabled: true,
@@ -132,13 +134,14 @@ export const defaults = Object.freeze<SystemConfig>({
     },
     watch: {
       enabled: false,
-      usePolling: false,
-      interval: 10_000,
     },
   },
   server: {
     externalDomain: '',
     loginPageMessage: '',
+  },
+  user: {
+    deleteDelay: 7,
   },
 });
 

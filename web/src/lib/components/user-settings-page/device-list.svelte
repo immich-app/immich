@@ -50,16 +50,16 @@
 {#if deleteDevice}
   <ConfirmDialogue
     prompt="Are you sure you want to log out this device?"
-    on:confirm={() => handleDelete()}
-    on:cancel={() => (deleteDevice = null)}
+    onConfirm={() => handleDelete()}
+    onClose={() => (deleteDevice = null)}
   />
 {/if}
 
 {#if deleteAll}
   <ConfirmDialogue
     prompt="Are you sure you want to log out all devices?"
-    on:confirm={() => handleDeleteAll()}
-    on:cancel={() => (deleteAll = false)}
+    onConfirm={() => handleDeleteAll()}
+    onClose={() => (deleteAll = false)}
   />
 {/if}
 

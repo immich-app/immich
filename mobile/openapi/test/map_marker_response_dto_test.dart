@@ -16,6 +16,16 @@ void main() {
   // final instance = MapMarkerResponseDto();
 
   group('test MapMarkerResponseDto', () {
+    // String city
+    test('to test the property `city`', () async {
+      // TODO
+    });
+
+    // String country
+    test('to test the property `country`', () async {
+      // TODO
+    });
+
     // String id
     test('to test the property `id`', () async {
       // TODO
@@ -28,6 +38,11 @@ void main() {
 
     // double lon
     test('to test the property `lon`', () async {
+      // TODO
+    });
+
+    // String state
+    test('to test the property `state`', () async {
       // TODO
     });
 

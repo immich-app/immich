@@ -1,6 +1,5 @@
 import { LibraryType, UserEntity } from '@app/infra/entities';
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
-import path from 'node:path';
 import sanitize from 'sanitize-filename';
 import { ICryptoRepository, ILibraryRepository, IUserRepository } from '../repositories';
 import { UserResponseDto } from './response-dto';
@@ -42,7 +41,6 @@ export class UserCore {
       // Users can never update the isAdmin property.
       delete dto.isAdmin;
       delete dto.storageLabel;
-      delete dto.externalPath;
     } else if (dto.isAdmin && user.id !== id) {
       // Admin cannot create another admin.
       throw new BadRequestException('The server already has an admin');
@@ -68,12 +66,6 @@ export class UserCore {
 
     if (dto.storageLabel === '') {
       dto.storageLabel = null;
-    }
-
-    if (dto.externalPath === '') {
-      dto.externalPath = null;
-    } else if (dto.externalPath) {
-      dto.externalPath = path.normalize(dto.externalPath);
     }
 
     return this.userRepository.update(id, dto);

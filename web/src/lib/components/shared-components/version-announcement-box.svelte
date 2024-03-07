@@ -33,7 +33,7 @@
 </script>
 
 {#if showModal}
-  <FullScreenModal on:clickOutside={() => (showModal = false)}>
+  <FullScreenModal onClose={() => (showModal = false)}>
     <div
       class="max-w-lg rounded-3xl border bg-immich-bg px-8 py-10 shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg"
     >

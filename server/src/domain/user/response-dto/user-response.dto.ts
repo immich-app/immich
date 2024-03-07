@@ -22,7 +22,6 @@ export class UserDto {
 
 export class UserResponseDto extends UserDto {
   storageLabel!: string | null;
-  externalPath!: string | null;
   shouldChangePassword!: boolean;
   isAdmin!: boolean;
   createdAt!: Date;
@@ -50,7 +49,6 @@ export function mapUser(entity: UserEntity): UserResponseDto {
   return {
     ...mapSimpleUser(entity),
     storageLabel: entity.storageLabel,
-    externalPath: entity.externalPath,
     shouldChangePassword: entity.shouldChangePassword,
     isAdmin: entity.isAdmin,
     createdAt: entity.createdAt,

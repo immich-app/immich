@@ -81,12 +81,12 @@
 
   const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
 
-  onMount(() => {
+  onMount(async () => {
     document.addEventListener('keydown', onKeyboardPress);
     const getSearchedPeople = $page.url.searchParams.get(QueryParameter.SEARCHED_PEOPLE);
     if (getSearchedPeople) {
       searchName = getSearchedPeople;
-      handleSearchPeople(true);
+      await handleSearchPeople(true);
     }
   });
 
@@ -108,10 +108,10 @@
     }
   };
 
-  const handleSearch = (force: boolean) => {
+  const handleSearch = async (force: boolean) => {
     $page.url.searchParams.set(QueryParameter.SEARCHED_PEOPLE, searchName);
-    goto($page.url);
-    handleSearchPeople(force);
+    await goto($page.url);
+    await handleSearchPeople(force);
   };
 
   const handleCloseClick = () => {
@@ -293,8 +293,8 @@
     }
   };
 
-  const handleMergePeople = (detail: PersonResponseDto) => {
-    goto(
+  const handleMergePeople = async (detail: PersonResponseDto) => {
+    await goto(
       `${AppRoute.PEOPLE}/${detail.id}?${QueryParameter.ACTION}=${ActionQueryParameterValue.MERGE}&${QueryParameter.PREVIOUS_ROUTE}=${AppRoute.PEOPLE}`,
     );
   };
@@ -303,7 +303,7 @@
     if (searchName === '') {
       if ($page.url.searchParams.has(QueryParameter.SEARCHED_PEOPLE)) {
         $page.url.searchParams.delete(QueryParameter.SEARCHED_PEOPLE);
-        goto($page.url);
+        await goto($page.url);
       }
       return;
     }
@@ -331,7 +331,7 @@
       return;
     }
     if (personName === '') {
-      changeName();
+      await changeName();
       return;
     }
     const data = await searchPerson({ name: personName, withHidden: true });
@@ -359,7 +359,7 @@
         .slice(0, 3);
       return;
     }
-    changeName();
+    await changeName();
   };
 
   const submitBirthDateChange = async (value: string) => {
@@ -420,16 +420,14 @@
 <svelte:window bind:innerHeight />
 
 {#if showMergeModal}
-  <FullScreenModal on:clickOutside={() => (showMergeModal = false)}>
-    <MergeSuggestionModal
-      {personMerge1}
-      {personMerge2}
-      {potentialMergePeople}
-      on:close={() => (showMergeModal = false)}
-      on:reject={() => changeName()}
-      on:confirm={(event) => handleMergeSamePerson(event.detail)}
-    />
-  </FullScreenModal>
+  <MergeSuggestionModal
+    {personMerge1}
+    {personMerge2}
+    {potentialMergePeople}
+    on:close={() => (showMergeModal = false)}
+    on:reject={() => changeName()}
+    on:confirm={(event) => handleMergeSamePerson(event.detail)}
+  />
 {/if}
 
 <UserPageLayout
@@ -487,7 +485,7 @@
   {/if}
 
   {#if showChangeNameModal}
-    <FullScreenModal on:clickOutside={() => (showChangeNameModal = false)}>
+    <FullScreenModal onClose={() => (showChangeNameModal = false)}>
       <div
         class="w-[500px] max-w-[95vw] rounded-3xl border bg-immich-bg p-4 py-8 shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg"
       >

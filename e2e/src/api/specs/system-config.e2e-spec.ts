@@ -1,7 +1,7 @@
 import { LoginResponseDto } from '@immich/sdk';
 import { createUserDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
-import { apiUtils, app, dbUtils } from 'src/utils';
+import { app, utils } from 'src/utils';
 import request from 'supertest';
 import { beforeAll, describe, expect, it } from 'vitest';
 
@@ -10,17 +10,14 @@ describe('/system-config', () => {
   let nonAdmin: LoginResponseDto;
 
   beforeAll(async () => {
-    apiUtils.setup();
-    await dbUtils.reset();
-    admin = await apiUtils.adminSetup();
-    nonAdmin = await apiUtils.userSetup(admin.accessToken, createUserDto.user1);
+    await utils.resetDatabase();
+    admin = await utils.adminSetup();
+    nonAdmin = await utils.userSetup(admin.accessToken, createUserDto.user1);
   });
 
   describe('GET /system-config/map/style.json', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).get(
-        '/system-config/map/style.json'
-      );
+      const { status, body } = await request(app).get('/system-config/map/style.json');
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
     });
@@ -32,11 +29,7 @@ describe('/system-config', () => {
           .query({ theme })
           .set('Authorization', `Bearer ${admin.accessToken}`);
         expect(status).toBe(400);
-        expect(body).toEqual(
-          errorDto.badRequest([
-            'theme must be one of the following values: light, dark',
-          ])
-        );
+        expect(body).toEqual(errorDto.badRequest(['theme must be one of the following values: light, dark']));
       }
     });
 
