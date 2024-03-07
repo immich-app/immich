@@ -1,7 +1,7 @@
 <script lang="ts">
   import { AppRoute } from '$lib/constants';
   import type { AlbumResponseDto } from '@immich/sdk';
-  import TableHeader from '$lib/components/elements/table-header.svelte';
+  import TableHeader from '$lib/components/album-page/albums-table-header.svelte';
   import { goto } from '$app/navigation';
   import Icon from '$lib/components/elements/icon.svelte';
   import { mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
