@@ -626,7 +626,7 @@ export class LibraryService extends EventEmitter {
 
     this.logger.debug(`Found ${crawledAssetPaths.length} asset(s) when crawling import paths ${library.importPaths}`);
 
-    this.assetRepository.updateOfflineLibraryAssets(library.id, crawledAssetPaths);
+    await this.assetRepository.updateOfflineLibraryAssets(library.id, crawledAssetPaths);
 
     if (crawledAssetPaths.length > 0) {
       let filteredPaths: string[] = [];
