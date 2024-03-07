@@ -223,6 +223,10 @@ export class PersonRepository implements IPersonRepository {
       .having('COUNT(face.assetId) != 0')
       .getRawOne();
 
+    if (items == undefined) {
+      return { total: 0, hidden: 0 };
+    }
+
     const result: PeopleStatistics = {
       total: items.total ?? 0,
       hidden: items.hidden ?? 0,
