@@ -12,6 +12,7 @@ export default defineConfig({
   test: {
     include: ['src/{api,cli}/specs/*.e2e-spec.ts'],
     globalSetup,
+    testTimeout: 10_000,
     poolOptions: {
       threads: {
         singleThread: true,

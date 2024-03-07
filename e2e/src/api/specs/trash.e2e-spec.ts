@@ -1,7 +1,7 @@
 import { LoginResponseDto, getAllAssets } from '@immich/sdk';
 import { Socket } from 'socket.io-client';
 import { errorDto } from 'src/responses';
-import { apiUtils, app, asBearerAuth, dbUtils, wsUtils } from 'src/utils';
+import { app, asBearerAuth, utils } from 'src/utils';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
@@ -10,14 +10,13 @@ describe('/trash', () => {
   let ws: Socket;
 
   beforeAll(async () => {
-    apiUtils.setup();
-    await dbUtils.reset();
-    admin = await apiUtils.adminSetup({ onboarding: false });
-    ws = await wsUtils.connect(admin.accessToken);
+    await utils.resetDatabase();
+    admin = await utils.adminSetup({ onboarding: false });
+    ws = await utils.connectWebsocket(admin.accessToken);
   });
 
   afterAll(() => {
-    wsUtils.disconnect(ws);
+    utils.disconnectWebsocket(ws);
   });
 
   describe('POST /trash/empty', () => {
@@ -29,8 +28,8 @@ describe('/trash', () => {
     });
 
     it('should empty the trash', async () => {
-      const { id: assetId } = await apiUtils.createAsset(admin.accessToken);
-      await apiUtils.deleteAssets(admin.accessToken, [assetId]);
+      const { id: assetId } = await utils.createAsset(admin.accessToken);
+      await utils.deleteAssets(admin.accessToken, [assetId]);
 
       const before = await getAllAssets({}, { headers: asBearerAuth(admin.accessToken) });
 
@@ -39,7 +38,7 @@ describe('/trash', () => {
       const { status } = await request(app).post('/trash/empty').set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(204);
 
-      await wsUtils.waitForEvent({ event: 'delete', assetId });
+      await utils.waitForWebsocketEvent({ event: 'delete', assetId });
 
       const after = await getAllAssets({}, { headers: asBearerAuth(admin.accessToken) });
       expect(after.length).toBe(0);
@@ -55,16 +54,16 @@ describe('/trash', () => {
     });
 
     it('should restore all trashed assets', async () => {
-      const { id: assetId } = await apiUtils.createAsset(admin.accessToken);
-      await apiUtils.deleteAssets(admin.accessToken, [assetId]);
+      const { id: assetId } = await utils.createAsset(admin.accessToken);
+      await utils.deleteAssets(admin.accessToken, [assetId]);
 
-      const before = await apiUtils.getAssetInfo(admin.accessToken, assetId);
+      const before = await utils.getAssetInfo(admin.accessToken, assetId);
       expect(before.isTrashed).toBe(true);
 
       const { status } = await request(app).post('/trash/restore').set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(204);
 
-      const after = await apiUtils.getAssetInfo(admin.accessToken, assetId);
+      const after = await utils.getAssetInfo(admin.accessToken, assetId);
       expect(after.isTrashed).toBe(false);
     });
   });
@@ -78,10 +77,10 @@ describe('/trash', () => {
     });
 
     it('should restore a trashed asset by id', async () => {
-      const { id: assetId } = await apiUtils.createAsset(admin.accessToken);
-      await apiUtils.deleteAssets(admin.accessToken, [assetId]);
+      const { id: assetId } = await utils.createAsset(admin.accessToken);
+      await utils.deleteAssets(admin.accessToken, [assetId]);
 
-      const before = await apiUtils.getAssetInfo(admin.accessToken, assetId);
+      const before = await utils.getAssetInfo(admin.accessToken, assetId);
       expect(before.isTrashed).toBe(true);
 
       const { status } = await request(app)
@@ -90,7 +89,7 @@ describe('/trash', () => {
         .send({ ids: [assetId] });
       expect(status).toBe(204);
 
-      const after = await apiUtils.getAssetInfo(admin.accessToken, assetId);
+      const after = await utils.getAssetInfo(admin.accessToken, assetId);
       expect(after.isTrashed).toBe(false);
     });
   });

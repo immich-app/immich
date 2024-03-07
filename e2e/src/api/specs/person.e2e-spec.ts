@@ -1,7 +1,7 @@
 import { LoginResponseDto, PersonResponseDto } from '@immich/sdk';
 import { uuidDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
-import { apiUtils, app, dbUtils } from 'src/utils';
+import { app, utils } from 'src/utils';
 import request from 'supertest';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
@@ -12,36 +12,35 @@ describe('/activity', () => {
   let multipleAssetsPerson: PersonResponseDto;
 
   beforeAll(async () => {
-    apiUtils.setup();
-    await dbUtils.reset();
-    admin = await apiUtils.adminSetup();
+    await utils.resetDatabase();
+    admin = await utils.adminSetup();
   });
 
   beforeEach(async () => {
-    await dbUtils.reset(['person']);
+    await utils.resetDatabase(['person']);
 
     [visiblePerson, hiddenPerson, multipleAssetsPerson] = await Promise.all([
-      apiUtils.createPerson(admin.accessToken, {
+      utils.createPerson(admin.accessToken, {
         name: 'visible_person',
       }),
-      apiUtils.createPerson(admin.accessToken, {
+      utils.createPerson(admin.accessToken, {
         name: 'hidden_person',
         isHidden: true,
       }),
-      apiUtils.createPerson(admin.accessToken, {
+      utils.createPerson(admin.accessToken, {
         name: 'multiple_assets_person',
       }),
     ]);
 
-    const asset1 = await apiUtils.createAsset(admin.accessToken);
-    const asset2 = await apiUtils.createAsset(admin.accessToken);
+    const asset1 = await utils.createAsset(admin.accessToken);
+    const asset2 = await utils.createAsset(admin.accessToken);
 
     await Promise.all([
-      dbUtils.createFace({ assetId: asset1.id, personId: visiblePerson.id }),
-      dbUtils.createFace({ assetId: asset1.id, personId: hiddenPerson.id }),
-      dbUtils.createFace({ assetId: asset1.id, personId: multipleAssetsPerson.id }),
-      dbUtils.createFace({ assetId: asset1.id, personId: multipleAssetsPerson.id }),
-      dbUtils.createFace({ assetId: asset2.id, personId: multipleAssetsPerson.id }),
+      utils.createFace({ assetId: asset1.id, personId: visiblePerson.id }),
+      utils.createFace({ assetId: asset1.id, personId: hiddenPerson.id }),
+      utils.createFace({ assetId: asset1.id, personId: multipleAssetsPerson.id }),
+      utils.createFace({ assetId: asset1.id, personId: multipleAssetsPerson.id }),
+      utils.createFace({ assetId: asset2.id, personId: multipleAssetsPerson.id }),
     ]);
   });
 
@@ -194,7 +193,7 @@ describe('/activity', () => {
 
     it('should clear a date of birth', async () => {
       // TODO ironically this uses the update endpoint to create the person
-      const person = await apiUtils.createPerson(admin.accessToken, {
+      const person = await utils.createPerson(admin.accessToken, {
         birthDate: new Date('1990-01-01').toISOString(),
       });
 

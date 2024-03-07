@@ -1,7 +1,7 @@
 import { LoginResponseDto } from '@immich/sdk';
 import { createUserDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
-import { apiUtils, app, dbUtils } from 'src/utils';
+import { app, utils } from 'src/utils';
 import request from 'supertest';
 import { beforeAll, describe, expect, it } from 'vitest';
 
@@ -10,10 +10,9 @@ describe('/system-config', () => {
   let nonAdmin: LoginResponseDto;
 
   beforeAll(async () => {
-    apiUtils.setup();
-    await dbUtils.reset();
-    admin = await apiUtils.adminSetup();
-    nonAdmin = await apiUtils.userSetup(admin.accessToken, createUserDto.user1);
+    await utils.resetDatabase();
+    admin = await utils.adminSetup();
+    nonAdmin = await utils.userSetup(admin.accessToken, createUserDto.user1);
   });
 
   describe('GET /system-config/map/style.json', () => {

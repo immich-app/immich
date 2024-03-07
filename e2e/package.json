@@ -5,7 +5,8 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "vitest --config vitest.config.ts",
+    "test": "vitest --run",
+    "test:watch": "vitest",
     "test:web": "npx playwright test",
     "start:web": "npx playwright test --ui",
     "format": "prettier --check .",
