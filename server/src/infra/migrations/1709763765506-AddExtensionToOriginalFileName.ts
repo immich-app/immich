@@ -10,7 +10,7 @@ export class AddExtensionToOriginalFileName1709763765506 implements MigrationInt
       UPDATE assets
       SET "originalFileName" = assets."originalFileName" || '.' || extension."ext"
       FROM extension
-      INNER JOIN assets a ON a.id = extension.id;
+      WHERE assets.id = extension.id;
       `);
   }
 
