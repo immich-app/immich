@@ -1,7 +1,7 @@
 import { LibraryResponseDto, LibraryType, LoginResponseDto, getAllLibraries } from '@immich/sdk';
 import { userDto, uuidDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
-import { apiUtils, app, asBearerAuth, dbUtils, testAssetDirInternal } from 'src/utils';
+import { app, asBearerAuth, testAssetDirInternal, utils } from 'src/utils';
 import request from 'supertest';
 import { beforeAll, describe, expect, it } from 'vitest';
 
@@ -11,11 +11,10 @@ describe('/library', () => {
   let library: LibraryResponseDto;
 
   beforeAll(async () => {
-    apiUtils.setup();
-    await dbUtils.reset();
-    admin = await apiUtils.adminSetup();
-    user = await apiUtils.userSetup(admin.accessToken, userDto.user1);
-    library = await apiUtils.createLibrary(admin.accessToken, { type: LibraryType.External });
+    await utils.resetDatabase();
+    admin = await utils.adminSetup();
+    user = await utils.userSetup(admin.accessToken, userDto.user1);
+    library = await utils.createLibrary(admin.accessToken, { type: LibraryType.External });
   });
 
   describe('GET /library', () => {
@@ -303,7 +302,7 @@ describe('/library', () => {
     });
 
     it('should get library by id', async () => {
-      const library = await apiUtils.createLibrary(admin.accessToken, { type: LibraryType.External });
+      const library = await utils.createLibrary(admin.accessToken, { type: LibraryType.External });
 
       const { status, body } = await request(app)
         .get(`/library/${library.id}`)
@@ -359,7 +358,7 @@ describe('/library', () => {
     });
 
     it('should delete an external library', async () => {
-      const library = await apiUtils.createLibrary(admin.accessToken, { type: LibraryType.External });
+      const library = await utils.createLibrary(admin.accessToken, { type: LibraryType.External });
 
       const { status, body } = await request(app)
         .delete(`/library/${library.id}`)
@@ -415,14 +414,14 @@ describe('/library', () => {
     });
 
     it('should pass with no import paths', async () => {
-      const response = await apiUtils.validateLibrary(admin.accessToken, library.id, { importPaths: [] });
+      const response = await utils.validateLibrary(admin.accessToken, library.id, { importPaths: [] });
       expect(response.importPaths).toEqual([]);
     });
 
     it('should fail if path does not exist', async () => {
       const pathToTest = `${testAssetDirInternal}/does/not/exist`;
 
-      const response = await apiUtils.validateLibrary(admin.accessToken, library.id, {
+      const response = await utils.validateLibrary(admin.accessToken, library.id, {
         importPaths: [pathToTest],
       });
 
@@ -439,7 +438,7 @@ describe('/library', () => {
     it('should fail if path is a file', async () => {
       const pathToTest = `${testAssetDirInternal}/albums/nature/el_torcal_rocks.jpg`;
 
-      const response = await apiUtils.validateLibrary(admin.accessToken, library.id, {
+      const response = await utils.validateLibrary(admin.accessToken, library.id, {
         importPaths: [pathToTest],
       });
 
