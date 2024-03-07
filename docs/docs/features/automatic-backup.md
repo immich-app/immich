@@ -14,6 +14,10 @@ Background backup is available thanks to the contribution effort of [@zoodyy](ht
 
 If background backup is enabled. The app will periodically check if there are any new photos or videos in the selected album(s) to be uploaded to the cloud. If there are, it will upload them to the cloud in the background.
 
+:::info
+The WiFi setting only applies to the background backup.
+:::
+
 :::info Note
 
 #### General

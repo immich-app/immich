@@ -5,10 +5,12 @@ Smart Search is capable of returning up to 5,000 results for a single search jus
 
 Smart search is powered by the [pgvecto.rs v0.2.0](https://github.com/tensorchord/pgvecto.rs) extension, utilizing machine learning models like [CLIP](https://openai.com/research/clip) to provide relevant search results. This allows for freeform searches without requiring specific keywords in the image or video metadata.
 
-Metadata search (prefixed with `m:`) can search specifically by text without the use of a model.
+:::info m: option
+The `m:` option has been removed starting with version 1.95.0 in favor of [advanced search filters](/docs/features/smart-search#advanced-search-filters)
+:::
 
-Archived photos are not included in search results by default. To include them, add checkbox in advanced search filters.
-:::tip more powerful CLIP models
+Archived photos are not included in search results by default. To include them, mark the checkbox in [advanced search filters](/docs/features/smart-search#advanced-search-filters).
+:::tip more powerful models
 Since Smart Search relies on CLIP models, more powerful models can be used for more accurate search results, you can learn more in the [FAQ](/docs/FAQ#can-i-use-a-custom-clip-model).
 :::
 
@@ -26,7 +28,10 @@ Smart search features include:
 - Search by Country or State or City or by all three.
 - Search by camera company and model.
 - Search by date range.
+- Search by file name.
 - Search by media types: image, video or all (**Note:** Image includes live images).
 - Search by condition: not in any album or archive or Favorite or all conditions.
 
 <img src={require('./img/advanced-search-filters.webp').default} width="70%" title='advanced search filters' />
+
+<img src={require('./img/search-by-file-name.png').default} width="70%" title='advanced search filters' />
