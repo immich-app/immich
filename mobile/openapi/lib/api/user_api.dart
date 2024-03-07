@@ -158,14 +158,14 @@ class UserApi {
   ///
   /// * [String] id (required):
   ///
-  /// * [DeleteUserOptionsDto] deleteUserOptionsDto (required):
-  Future<Response> deleteUserWithHttpInfo(String id, DeleteUserOptionsDto deleteUserOptionsDto,) async {
+  /// * [DeleteUserDto] deleteUserDto (required):
+  Future<Response> deleteUserWithHttpInfo(String id, DeleteUserDto deleteUserDto,) async {
     // ignore: prefer_const_declarations
     final path = r'/user/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
-    Object? postBody = deleteUserOptionsDto;
+    Object? postBody = deleteUserDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
@@ -189,9 +189,9 @@ class UserApi {
   ///
   /// * [String] id (required):
   ///
-  /// * [DeleteUserOptionsDto] deleteUserOptionsDto (required):
-  Future<UserResponseDto?> deleteUser(String id, DeleteUserOptionsDto deleteUserOptionsDto,) async {
-    final response = await deleteUserWithHttpInfo(id, deleteUserOptionsDto,);
+  /// * [DeleteUserDto] deleteUserDto (required):
+  Future<UserResponseDto?> deleteUser(String id, DeleteUserDto deleteUserDto,) async {
+    final response = await deleteUserWithHttpInfo(id, deleteUserDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

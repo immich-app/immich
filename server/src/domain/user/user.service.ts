@@ -18,7 +18,7 @@ import {
 } from '../repositories';
 import { StorageCore, StorageFolder } from '../storage';
 import { SystemConfigCore } from '../system-config/system-config.core';
-import { CreateUserDto, DeleteUserOptionsDto, UpdateUserDto } from './dto';
+import { CreateUserDto, DeleteUserDto, UpdateUserDto } from './dto';
 import { CreateProfileImageResponseDto, UserResponseDto, mapCreateProfileImageResponse, mapUser } from './response-dto';
 import { UserCore } from './user.core';
 
@@ -73,7 +73,7 @@ export class UserService {
     return this.userCore.updateUser(auth.user, dto.id, dto).then(mapUser);
   }
 
-  async delete(auth: AuthDto, id: string, options?: DeleteUserOptionsDto): Promise<UserResponseDto> {
+  async delete(auth: AuthDto, id: string, options: DeleteUserDto): Promise<UserResponseDto> {
     const user = await this.findOrFail(id, {});
     if (user.isAdmin) {
       throw new ForbiddenException('Cannot delete admin user');

@@ -994,7 +994,7 @@ export type CreateProfileImageResponseDto = {
     profileImagePath: string;
     userId: string;
 };
-export type DeleteUserOptionsDto = {
+export type DeleteUserDto = {
     force?: boolean;
 };
 export function getActivities({ albumId, assetId, level, $type, userId }: {
@@ -2681,9 +2681,9 @@ export function getProfileImage({ id }: {
         ...opts
     }));
 }
-export function deleteUser({ id, deleteUserOptionsDto }: {
+export function deleteUser({ id, deleteUserDto }: {
     id: string;
-    deleteUserOptionsDto: DeleteUserOptionsDto;
+    deleteUserDto: DeleteUserDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -2691,7 +2691,7 @@ export function deleteUser({ id, deleteUserOptionsDto }: {
     }>(`/user/${encodeURIComponent(id)}`, oazapfts.json({
         ...opts,
         method: "DELETE",
-        body: deleteUserOptionsDto
+        body: deleteUserDto
     })));
 }
 export function restoreUser({ id }: {

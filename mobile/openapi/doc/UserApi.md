@@ -182,7 +182,7 @@ void (empty response body)
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **deleteUser**
-> UserResponseDto deleteUser(id, deleteUserOptionsDto)
+> UserResponseDto deleteUser(id, deleteUserDto)
 
 
 
@@ -206,10 +206,10 @@ import 'package:openapi/api.dart';
 
 final api_instance = UserApi();
 final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final deleteUserOptionsDto = DeleteUserOptionsDto(); // DeleteUserOptionsDto | 
+final deleteUserDto = DeleteUserDto(); // DeleteUserDto | 
 
 try {
-    final result = api_instance.deleteUser(id, deleteUserOptionsDto);
+    final result = api_instance.deleteUser(id, deleteUserDto);
     print(result);
 } catch (e) {
     print('Exception when calling UserApi->deleteUser: $e\n');
@@ -221,7 +221,7 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **id** | **String**|  | 
- **deleteUserOptionsDto** | [**DeleteUserOptionsDto**](DeleteUserOptionsDto.md)|  | 
+ **deleteUserDto** | [**DeleteUserDto**](DeleteUserDto.md)|  | 
 
 ### Return type
 

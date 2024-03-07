@@ -6406,7 +6406,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/DeleteUserOptionsDto"
+                "$ref": "#/components/schemas/DeleteUserDto"
               }
             }
           },
@@ -7760,7 +7760,7 @@
         ],
         "type": "object"
       },
-      "DeleteUserOptionsDto": {
+      "DeleteUserDto": {
         "properties": {
           "force": {
             "type": "boolean"

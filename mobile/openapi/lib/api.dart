@@ -99,7 +99,7 @@ part 'model/create_tag_dto.dart';
 part 'model/create_user_dto.dart';
 part 'model/curated_locations_response_dto.dart';
 part 'model/curated_objects_response_dto.dart';
-part 'model/delete_user_options_dto.dart';
+part 'model/delete_user_dto.dart';
 part 'model/download_archive_info.dart';
 part 'model/download_info_dto.dart';
 part 'model/download_response_dto.dart';

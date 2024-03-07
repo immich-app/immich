@@ -19,7 +19,7 @@
     try {
       const { deletedAt } = await deleteUser({
         id: user.id,
-        deleteUserOptionsDto: { force: forceDelete },
+        deleteUserDto: { force: forceDelete },
       });
 
       if (deletedAt == undefined) {
@@ -47,8 +47,7 @@
           <b>{user.name}</b>'s account and assets will be scheduled for permanent deletion in {$serverConfig.userDeleteDelay}
           days.
         </p>
-      {/if}
-      {#if forceDelete}
+      {:else}
         <p>
           <b>{user.name}</b>'s account and assets will be queued for permanent deletion <b>immediately</b>.
         </p>

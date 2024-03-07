@@ -32,7 +32,7 @@ void main() {
       // TODO
     });
 
-    //Future<UserResponseDto> deleteUser(String id, DeleteUserOptionsDto deleteUserOptionsDto) async
+    //Future<UserResponseDto> deleteUser(String id, DeleteUserDto deleteUserDto) async
     test('test deleteUser', () async {
       // TODO
     });

@@ -3,7 +3,7 @@ import {
   CreateUserDto as CreateDto,
   CreateProfileImageDto,
   CreateProfileImageResponseDto,
-  DeleteUserOptionsDto,
+  DeleteUserDto,
   UpdateUserDto as UpdateDto,
   UserResponseDto,
   UserService,
@@ -69,8 +69,8 @@ export class UserController {
   @Delete(':id')
   deleteUser(
     @Auth() auth: AuthDto,
-    @Body() dto: DeleteUserOptionsDto,
     @Param() { id }: UUIDParamDto,
+    @Body() dto: DeleteUserDto,
   ): Promise<UserResponseDto> {
     return this.service.delete(auth, id, dto);
   }
