@@ -172,3 +172,5 @@ cython_debug/
 
 *.onnx
 *.zip
+
+core

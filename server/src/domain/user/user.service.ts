@@ -8,7 +8,6 @@ import { CacheControl, ImmichFileResponse } from '../domain.util';
 import { IEntityJob, JobName } from '../job';
 import {
   IAlbumRepository,
-  IAssetRepository,
   ICryptoRepository,
   IJobRepository,
   ILibraryRepository,
@@ -31,7 +30,6 @@ export class UserService {
 
   constructor(
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
-    @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ILibraryRepository) libraryRepository: ILibraryRepository,
@@ -185,9 +183,7 @@ export class UserService {
     }
 
     this.logger.warn(`Removing user from database: ${user.id}`);
-
     await this.albumRepository.deleteAll(user.id);
-    await this.assetRepository.deleteAll(user.id);
     await this.userRepository.delete(user, true);
 
     return true;
