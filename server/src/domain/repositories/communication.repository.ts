@@ -34,7 +34,7 @@ export interface ClientEventMap {
   [ClientEvent.NEW_RELEASE]: ReleaseNotification;
 }
 
-export type OnConnectCallback = (userId: string) => Promise<void>;
+export type OnConnectCallback = (userId: string) => void | Promise<void>;
 export type OnServerEventCallback = () => Promise<void>;
 
 export interface ICommunicationRepository {

@@ -88,7 +88,7 @@
     }
   }
 
-  type FeaturePoint = Feature<Point, { id: string }>;
+  type FeaturePoint = Feature<Point, { id: string; city: string | null; state: string | null; country: string | null }>;
 
   const asFeature = (marker: MapMarkerResponseDto): FeaturePoint => {
     return {
@@ -96,6 +96,9 @@
       geometry: { type: 'Point', coordinates: [marker.lon, marker.lat] },
       properties: {
         id: marker.id,
+        city: marker.city,
+        state: marker.state,
+        country: marker.country,
       },
     };
   };
@@ -107,6 +110,9 @@
       lat: coords.lat,
       lon: coords.lng,
       id: featurePoint.properties.id,
+      city: featurePoint.properties.city,
+      state: featurePoint.properties.state,
+      country: featurePoint.properties.country,
     };
   };
 </script>
@@ -178,7 +184,9 @@
           <img
             src={getAssetThumbnailUrl(feature.properties?.id, undefined)}
             class="rounded-full w-[60px] h-[60px] border-2 border-immich-primary shadow-lg hover:border-immich-dark-primary transition-all duration-200 hover:scale-150 object-cover bg-immich-primary"
-            alt={`Image with id ${feature.properties?.id}`}
+            alt={feature.properties?.city && feature.properties.country
+              ? `Map marker for images taken in ${feature.properties.city}, ${feature.properties.country}`
+              : 'Map marker with image'}
           />
         {/if}
         {#if $$slots.popup}

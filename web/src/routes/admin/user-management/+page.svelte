@@ -103,19 +103,13 @@
   <section id="setting-content" class="flex place-content-center sm:mx-4">
     <section class="w-full pb-28 lg:w-[850px]">
       {#if shouldShowCreateUserForm}
-        <FullScreenModal
-          on:clickOutside={() => (shouldShowCreateUserForm = false)}
-          on:escape={() => (shouldShowCreateUserForm = false)}
-        >
+        <FullScreenModal onClose={() => (shouldShowCreateUserForm = false)}>
           <CreateUserForm on:submit={onUserCreated} on:cancel={() => (shouldShowCreateUserForm = false)} />
         </FullScreenModal>
       {/if}
 
       {#if shouldShowEditUserForm}
-        <FullScreenModal
-          on:clickOutside={() => (shouldShowEditUserForm = false)}
-          on:escape={() => (shouldShowEditUserForm = false)}
-        >
+        <FullScreenModal onClose={() => (shouldShowEditUserForm = false)}>
           <EditUserForm
             user={selectedUser}
             canResetPassword={selectedUser?.id !== $user.id}
@@ -145,10 +139,7 @@
       {/if}
 
       {#if shouldShowInfoPanel}
-        <FullScreenModal
-          on:clickOutside={() => (shouldShowInfoPanel = false)}
-          on:escape={() => (shouldShowInfoPanel = false)}
-        >
+        <FullScreenModal onClose={() => (shouldShowInfoPanel = false)}>
           <div class="w-[500px] max-w-[95vw] rounded-3xl border bg-white p-8 text-sm shadow-sm">
             <h1 class="mb-4 text-lg font-medium text-immich-primary">Password reset success</h1>
 

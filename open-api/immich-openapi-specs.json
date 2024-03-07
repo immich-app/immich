@@ -7672,6 +7672,9 @@
             "nullable": true,
             "type": "integer"
           },
+          "shouldChangePassword": {
+            "type": "boolean"
+          },
           "storageLabel": {
             "nullable": true,
             "type": "string"
@@ -8291,6 +8294,14 @@
       },
       "MapMarkerResponseDto": {
         "properties": {
+          "city": {
+            "nullable": true,
+            "type": "string"
+          },
+          "country": {
+            "nullable": true,
+            "type": "string"
+          },
           "id": {
             "type": "string"
           },
@@ -8301,12 +8312,19 @@
           "lon": {
             "format": "double",
             "type": "number"
+          },
+          "state": {
+            "nullable": true,
+            "type": "string"
           }
         },
         "required": [
+          "city",
+          "country",
           "id",
           "lat",
-          "lon"
+          "lon",
+          "state"
         ],
         "type": "object"
       },
@@ -9072,6 +9090,9 @@
           },
           "trashDays": {
             "type": "integer"
+          },
+          "userDeleteDelay": {
+            "type": "integer"
           }
         },
         "required": [
@@ -9080,7 +9101,8 @@
           "isOnboarded",
           "loginPageMessage",
           "oauthButtonText",
-          "trashDays"
+          "trashDays",
+          "userDeleteDelay"
         ],
         "type": "object"
       },
@@ -9643,6 +9665,9 @@
           },
           "trash": {
             "$ref": "#/components/schemas/SystemConfigTrashDto"
+          },
+          "user": {
+            "$ref": "#/components/schemas/SystemConfigUserDto"
           }
         },
         "required": [
@@ -9660,7 +9685,8 @@
           "storageTemplate",
           "theme",
           "thumbnail",
-          "trash"
+          "trash",
+          "user"
         ],
         "type": "object"
       },
@@ -10141,6 +10167,17 @@
         "required": [
           "days",
           "enabled"
+        ],
+        "type": "object"
+      },
+      "SystemConfigUserDto": {
+        "properties": {
+          "deleteDelay": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "deleteDelay"
         ],
         "type": "object"
       },

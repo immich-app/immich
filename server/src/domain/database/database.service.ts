@@ -1,6 +1,5 @@
 import { ImmichLogger } from '@app/infra/logger';
 import { Inject, Injectable } from '@nestjs/common';
-import { QueryFailedError } from 'typeorm';
 import { Version, VersionType } from '../domain.constant';
 import {
   DatabaseExtension,
@@ -61,7 +60,9 @@ export class DatabaseService {
   }
 
   private async createVectorExtension() {
-    await this.databaseRepository.createExtension(this.vectorExt).catch(async (error: QueryFailedError) => {
+    try {
+      await this.databaseRepository.createExtension(this.vectorExt);
+    } catch (error) {
       const otherExt =
         this.vectorExt === DatabaseExtension.VECTORS ? DatabaseExtension.VECTOR : DatabaseExtension.VECTORS;
       this.logger.fatal(`
@@ -78,7 +79,7 @@ export class DatabaseService {
         In this case, you may set either extension now, but you will not be able to switch to the other extension following a successful startup.
       `);
       throw error;
-    });
+    }
   }
 
   private async updateVectorExtension() {

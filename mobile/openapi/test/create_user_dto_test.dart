@@ -41,6 +41,11 @@ void main() {
       // TODO
     });
 
+    // bool shouldChangePassword
+    test('to test the property `shouldChangePassword`', () async {
+      // TODO
+    });
+
     // String storageLabel
     test('to test the property `storageLabel`', () async {
       // TODO

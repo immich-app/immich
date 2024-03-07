@@ -147,8 +147,8 @@
   <ConfirmDialogue
     title="Reset Password"
     confirmText="Reset"
-    on:confirm={resetPassword}
-    on:cancel={() => (isShowResetPasswordConfirmation = false)}
+    onConfirm={resetPassword}
+    onClose={() => (isShowResetPasswordConfirmation = false)}
   >
     <svelte:fragment slot="prompt">
       <p>

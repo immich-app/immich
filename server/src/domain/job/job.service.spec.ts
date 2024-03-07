@@ -37,7 +37,7 @@ describe(JobService.name, () => {
   let jobMock: jest.Mocked<IJobRepository>;
   let personMock: jest.Mocked<IPersonRepository>;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     assetMock = newAssetRepositoryMock();
     configMock = newSystemConfigRepositoryMock();
     communicationMock = newCommunicationRepositoryMock();

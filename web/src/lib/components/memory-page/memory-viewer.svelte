@@ -171,7 +171,7 @@
               <img
                 class="h-full w-full rounded-2xl object-cover"
                 src={getAssetThumbnailUrl(previousMemory.assets[0].id, ThumbnailFormat.Jpeg)}
-                alt=""
+                alt="Previous memory"
                 draggable="false"
               />
             {:else}
@@ -179,7 +179,7 @@
                 class="h-full w-full rounded-2xl object-cover"
                 src="$lib/assets/no-thumbnail.png"
                 sizes="min(271px,186px)"
-                alt=""
+                alt="Previous memory"
                 draggable="false"
               />
             {/if}
@@ -203,7 +203,7 @@
                 transition:fade
                 class="h-full w-full rounded-2xl object-contain transition-all"
                 src={getAssetThumbnailUrl(currentAsset.id, ThumbnailFormat.Jpeg)}
-                alt=""
+                alt={currentAsset.exifInfo?.description}
                 draggable="false"
               />
             {/key}
@@ -244,7 +244,7 @@
               <img
                 class="h-full w-full rounded-2xl object-cover"
                 src={getAssetThumbnailUrl(nextMemory.assets[0].id, ThumbnailFormat.Jpeg)}
-                alt=""
+                alt="Next memory"
                 draggable="false"
               />
             {:else}
@@ -252,7 +252,7 @@
                 class="h-full w-full rounded-2xl object-cover"
                 src="$lib/assets/no-thumbnail.png"
                 sizes="min(271px,186px)"
-                alt=""
+                alt="Next memory"
                 draggable="false"
               />
             {/if}

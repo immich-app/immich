@@ -59,8 +59,8 @@ export const downloadArchive = async (fileName: string, options: DownloadInfoDto
 
   for (let index = 0; index < downloadInfo.archives.length; index++) {
     const archive = downloadInfo.archives[index];
-    const suffix = downloadInfo.archives.length === 1 ? '' : `+${index + 1}`;
-    const archiveName = fileName.replace('.zip', `${suffix}-${DateTime.now().toFormat('yyyy-LL-dd-HH-mm-ss')}.zip`);
+    const suffix = downloadInfo.archives.length > 1 ? `+${index + 1}` : '';
+    const archiveName = fileName.replace('.zip', `${suffix}-${DateTime.now().toFormat('yyyyLLdd_HHmmss')}.zip`);
     const key = getKey();
 
     let downloadKey = `${archiveName} `;
@@ -102,14 +102,14 @@ export const downloadFile = async (asset: AssetResponseDto) => {
   }
   const assets = [
     {
-      filename: `${asset.originalFileName}.${getFilenameExtension(asset.originalPath)}`,
+      filename: asset.originalFileName,
       id: asset.id,
       size: asset.exifInfo?.fileSizeInByte || 0,
     },
   ];
   if (asset.livePhotoVideoId) {
     assets.push({
-      filename: `${asset.originalFileName}.mov`,
+      filename: asset.originalFileName,
       id: asset.livePhotoVideoId,
       size: 0,
     });

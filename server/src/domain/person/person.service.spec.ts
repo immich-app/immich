@@ -80,7 +80,7 @@ describe(PersonService.name, () => {
   let cryptoMock: jest.Mocked<ICryptoRepository>;
   let sut: PersonService;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     accessMock = newAccessRepositoryMock();
     assetMock = newAssetRepositoryMock();
     configMock = newSystemConfigRepositoryMock();
@@ -709,7 +709,7 @@ describe(PersonService.name, () => {
         },
         {
           enabled: true,
-          maxDistance: 0.6,
+          maxDistance: 0.5,
           minScore: 0.7,
           minFaces: 3,
           modelName: 'buffalo_l',

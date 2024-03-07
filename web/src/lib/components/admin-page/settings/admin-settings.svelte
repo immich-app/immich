@@ -7,6 +7,7 @@
   } from '$lib/components/shared-components/notification/notification';
   import { handleError } from '$lib/utils/handle-error';
   import { getConfig, getConfigDefaults, updateConfig, type SystemConfigDto } from '@immich/sdk';
+  import { loadConfig } from '$lib/stores/server-config.store';
   import { cloneDeep } from 'lodash-es';
   import { createEventDispatcher, onMount } from 'svelte';
   import type { SettingsEventType } from './admin-settings';
@@ -34,6 +35,8 @@
       config = cloneDeep(newConfig);
       savedConfig = cloneDeep(newConfig);
       notificationController.show({ message: 'Settings saved', type: NotificationType.Info });
+
+      await loadConfig();
 
       dispatch('save');
     } catch (error) {

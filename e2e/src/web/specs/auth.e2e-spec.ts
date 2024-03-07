@@ -1,17 +1,13 @@
 import { expect, test } from '@playwright/test';
-import { apiUtils, dbUtils, webUtils } from 'src/utils';
+import { utils } from 'src/utils';
 
 test.describe('Registration', () => {
   test.beforeAll(() => {
-    apiUtils.setup();
+    utils.setApiEndpoint();
   });
 
   test.beforeEach(async () => {
-    await dbUtils.reset();
-  });
-
-  test.afterAll(async () => {
-    await dbUtils.teardown();
+    await utils.resetDatabase();
   });
 
   test('admin registration', async ({ page }) => {
@@ -45,8 +41,8 @@ test.describe('Registration', () => {
   });
 
   test('user registration', async ({ context, page }) => {
-    const admin = await apiUtils.adminSetup();
-    await webUtils.setAuthCookies(context, admin.accessToken);
+    const admin = await utils.adminSetup();
+    await utils.setAuthCookies(context, admin.accessToken);
 
     // create user
     await page.goto('/admin/user-management');

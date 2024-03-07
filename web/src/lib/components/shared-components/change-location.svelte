@@ -144,8 +144,8 @@
   cancelColor="secondary"
   title="Change Location"
   width={800}
-  on:confirm={handleConfirm}
-  on:cancel={handleCancel}
+  onConfirm={handleConfirm}
+  onClose={handleCancel}
 >
   <div slot="prompt" class="flex flex-col w-full h-full gap-2">
     <div class="relative w-64 sm:w-96" use:clickOutside on:outclick={() => (hideSuggestion = true)}>
@@ -192,7 +192,18 @@
       {:then component}
         <svelte:component
           this={component.default}
-          mapMarkers={lat && lng && asset ? [{ id: asset.id, lat, lon: lng }] : []}
+          mapMarkers={lat && lng && asset
+            ? [
+                {
+                  id: asset.id,
+                  lat,
+                  lon: lng,
+                  city: asset.exifInfo?.city ?? null,
+                  state: asset.exifInfo?.state ?? null,
+                  country: asset.exifInfo?.country ?? null,
+                },
+              ]
+            : []}
           {zoom}
           bind:addClipMapMarker
           center={lat && lng ? { lat, lng } : undefined}

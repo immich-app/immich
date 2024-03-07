@@ -181,7 +181,7 @@ export class SearchService {
     return userIds;
   }
 
-  private async mapResponse(assets: AssetEntity[], nextPage: string | null): Promise<SearchResponseDto> {
+  private mapResponse(assets: AssetEntity[], nextPage: string | null): SearchResponseDto {
     return {
       albums: { total: 0, count: 0, items: [], facets: [] },
       assets: {

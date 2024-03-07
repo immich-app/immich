@@ -180,7 +180,7 @@ export class AssetService {
 
         return {
           title: `${years} year${years > 1 ? 's' : ''} since...`,
-          asset: mapAsset(asset),
+          asset: mapAsset(asset, { auth }),
         };
       })
       .groupBy((asset) => asset.title)
@@ -230,8 +230,8 @@ export class AssetService {
     const timeBucketOptions = await this.buildTimeBucketOptions(auth, dto);
     const assets = await this.assetRepository.getTimeBucket(dto.timeBucket, timeBucketOptions);
     return !auth.sharedLink || auth.sharedLink?.showExif
-      ? assets.map((asset) => mapAsset(asset, { withStack: true }))
-      : assets.map((asset) => mapAsset(asset, { stripMetadata: true }));
+      ? assets.map((asset) => mapAsset(asset, { withStack: true, auth }))
+      : assets.map((asset) => mapAsset(asset, { stripMetadata: true, auth }));
   }
 
   async buildTimeBucketOptions(auth: AuthDto, dto: TimeBucketDto): Promise<TimeBucketOptions> {
@@ -261,7 +261,7 @@ export class AssetService {
 
   async getRandom(auth: AuthDto, count: number): Promise<AssetResponseDto[]> {
     const assets = await this.assetRepository.getRandom(auth.user.id, count);
-    return assets.map((a) => mapAsset(a));
+    return assets.map((a) => mapAsset(a, { auth }));
   }
 
   async getUserAssetsByDeviceId(auth: AuthDto, deviceId: string) {
@@ -292,10 +292,10 @@ export class AssetService {
     }
 
     if (auth.sharedLink && !auth.sharedLink.showExif) {
-      return mapAsset(asset, { stripMetadata: true, withStack: true });
+      return mapAsset(asset, { stripMetadata: true, withStack: true, auth });
     }
 
-    const data = mapAsset(asset, { withStack: true });
+    const data = mapAsset(asset, { withStack: true, auth });
 
     if (auth.sharedLink) {
       delete data.owner;
@@ -315,7 +315,7 @@ export class AssetService {
     await this.updateMetadata({ id, description, dateTimeOriginal, latitude, longitude });
 
     const asset = await this.assetRepository.save({ id, ...rest });
-    return mapAsset(asset);
+    return mapAsset(asset, { auth });
   }
 
   async updateAll(auth: AuthDto, dto: AssetBulkUpdateDto): Promise<void> {
