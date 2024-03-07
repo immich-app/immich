@@ -53,7 +53,6 @@ import {
   mdiScaleBalance,
   mdiAllInclusive,
   mdiMagnifyScan,
-
 } from '@mdi/js';
 import Layout from '@theme/Layout';
 import React from 'react';
