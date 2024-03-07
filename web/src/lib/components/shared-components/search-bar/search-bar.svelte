@@ -109,8 +109,8 @@
           : 'dark:bg-immich-dark-bg'} px-14 py-4 text-immich-fg/75 dark:text-immich-dark-fg {(showHistory &&
           $savedSearchTerms.length > 0) ||
         showFilter
-          ? 'rounded-t-3xl border  border-gray-200 bg-white dark:border-gray-800'
-          : 'rounded-3xl border border-transparent bg-gray-200'}"
+          ? 'rounded-t-lg border  border-gray-200 bg-white dark:border-gray-800'
+          : 'rounded-lg border border-transparent bg-gray-100'}"
         placeholder="Search your photos"
         required
         pattern="^(?!m:$).*$"
