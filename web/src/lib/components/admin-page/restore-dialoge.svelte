@@ -8,6 +8,7 @@
   const dispatch = createEventDispatcher<{
     success: void;
     fail: void;
+    cancel: void;
   }>();
 
   const handleRestoreUser = async () => {
@@ -24,8 +25,8 @@
   title="Restore User"
   confirmText="Continue"
   confirmColor="green"
-  on:confirm={handleRestoreUser}
-  on:cancel
+  onConfirm={handleRestoreUser}
+  onClose={() => dispatch('cancel')}
 >
   <svelte:fragment slot="prompt">
     <p><b>{user.name}</b>'s account will be restored.</p>
