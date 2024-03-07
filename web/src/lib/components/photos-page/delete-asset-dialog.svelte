@@ -27,9 +27,8 @@
 <ConfirmDialogue
   title="Permanently Delete Asset{size > 1 ? 's' : ''}"
   confirmText="Delete"
-  on:confirm={handleConfirm}
-  on:cancel={() => dispatch('cancel')}
-  on:escape={() => dispatch('cancel')}
+  onConfirm={handleConfirm}
+  onClose={() => dispatch('cancel')}
 >
   <svelte:fragment slot="prompt">
     <p>

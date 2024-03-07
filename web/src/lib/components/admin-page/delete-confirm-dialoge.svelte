@@ -10,6 +10,7 @@
   const dispatch = createEventDispatcher<{
     success: void;
     fail: void;
+    cancel: void;
   }>();
 
   const handleDeleteUser = async () => {
@@ -27,7 +28,12 @@
   };
 </script>
 
-<ConfirmDialogue title="Delete User" confirmText="Delete" on:confirm={handleDeleteUser} on:cancel>
+<ConfirmDialogue
+  title="Delete User"
+  confirmText="Delete"
+  onConfirm={handleDeleteUser}
+  onClose={() => dispatch('cancel')}
+>
   <svelte:fragment slot="prompt">
     <div class="flex flex-col gap-4">
       <p>

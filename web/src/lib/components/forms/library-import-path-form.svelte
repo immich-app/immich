@@ -31,7 +31,7 @@
   const handleSubmit = () => dispatch('submit', { importPath });
 </script>
 
-<FullScreenModal on:clickOutside={() => handleCancel()}>
+<FullScreenModal onClose={handleCancel}>
   <div
     class="w-[500px] max-w-[95vw] rounded-3xl border bg-immich-bg p-4 py-8 shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg"
   >
