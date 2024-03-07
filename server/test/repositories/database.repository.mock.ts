@@ -13,6 +13,7 @@ export const newDatabaseRepositoryMock = (): jest.Mocked<IDatabaseRepository> =>
     shouldReindex: jest.fn(),
     runMigrations: jest.fn(),
     withLock: jest.fn().mockImplementation((_, function_: <R>() => Promise<R>) => function_()),
+    tryLock: jest.fn(),
     isBusy: jest.fn(),
     wait: jest.fn(),
   };
