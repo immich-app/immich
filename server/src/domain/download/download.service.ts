@@ -96,7 +96,8 @@ export class DownloadService {
       const count = paths[filename] || 0;
       paths[filename] = count + 1;
       if (count !== 0) {
-        filename = `${parse(originalFileName).name}+${count}${parse(originalFileName).ext}`;
+        const parsedFilename = parse(originalFileName);
+        filename = `${parsedFilename.name}+${count}${parsedFilename.ext}`;
       }
 
       zip.addFile(originalPath, filename);
