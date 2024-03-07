@@ -10,3 +10,9 @@ Here you can see a [comparison between the various OpenSource Photo Libraries](h
 :::note
 It is important to remember, Immich is under very active development. Expect bugs and changes. Do not use it as the only way to store your photos and videos!
 :::
+
+:::tip
+::: Tip
+If you have chosen to move definitively from Photoprism to Immich, you may want to check [how to perform migrating favorites and albums from Photoprism to Immich.](https://github.com/immich-app/immich/discussions/4701)
+:::
+:::
