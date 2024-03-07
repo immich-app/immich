@@ -8,11 +8,9 @@ import {
 import {
   authStub,
   newAlbumRepositoryMock,
-  newAssetRepositoryMock,
   newCryptoRepositoryMock,
   newJobRepositoryMock,
   newLibraryRepositoryMock,
-  newSharedLinkRepositoryMock,
   newStorageRepositoryMock,
   newSystemConfigRepositoryMock,
   newUserRepositoryMock,
@@ -24,11 +22,9 @@ import { CacheControl, ImmichFileResponse } from '../domain.util';
 import { JobName } from '../job';
 import {
   IAlbumRepository,
-  IAssetRepository,
   ICryptoRepository,
   IJobRepository,
   ILibraryRepository,
-  ISharedLinkRepository,
   IStorageRepository,
   ISystemConfigRepository,
   IUserRepository,
@@ -49,35 +45,21 @@ describe(UserService.name, () => {
   let cryptoRepositoryMock: jest.Mocked<ICryptoRepository>;
 
   let albumMock: jest.Mocked<IAlbumRepository>;
-  let assetMock: jest.Mocked<IAssetRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
   let libraryMock: jest.Mocked<ILibraryRepository>;
-  let sharedLinkMock: jest.Mocked<ISharedLinkRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
   let configMock: jest.Mocked<ISystemConfigRepository>;
 
   beforeEach(() => {
     albumMock = newAlbumRepositoryMock();
-    assetMock = newAssetRepositoryMock();
     configMock = newSystemConfigRepositoryMock();
     cryptoRepositoryMock = newCryptoRepositoryMock();
     jobMock = newJobRepositoryMock();
     libraryMock = newLibraryRepositoryMock();
-    sharedLinkMock = newSharedLinkRepositoryMock();
     storageMock = newStorageRepositoryMock();
     userMock = newUserRepositoryMock();
 
-    sut = new UserService(
-      albumMock,
-      assetMock,
-      cryptoRepositoryMock,
-      jobMock,
-      libraryMock,
-      sharedLinkMock,
-      storageMock,
-      configMock,
-      userMock,
-    );
+    sut = new UserService(albumMock, cryptoRepositoryMock, jobMock, libraryMock, storageMock, configMock, userMock);
 
     when(userMock.get).calledWith(authStub.admin.user.id, {}).mockResolvedValue(userStub.admin);
     when(userMock.get).calledWith(authStub.admin.user.id, { withDeleted: true }).mockResolvedValue(userStub.admin);
@@ -542,8 +524,6 @@ describe(UserService.name, () => {
       expect(storageMock.unlinkDir).toHaveBeenCalledWith('upload/thumbs/deleted-user', options);
       expect(storageMock.unlinkDir).toHaveBeenCalledWith('upload/encoded-video/deleted-user', options);
       expect(albumMock.deleteAll).toHaveBeenCalledWith(user.id);
-      expect(assetMock.deleteAll).toHaveBeenCalledWith(user.id);
-      expect(sharedLinkMock.deleteAll).toHaveBeenCalledWith(user.id);
       expect(userMock.delete).toHaveBeenCalledWith(user, true);
     });
 

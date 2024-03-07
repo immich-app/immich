@@ -8,6 +8,5 @@ export const newSharedLinkRepositoryMock = (): jest.Mocked<ISharedLinkRepository
     create: jest.fn(),
     remove: jest.fn(),
     update: jest.fn(),
-    deleteAll: jest.fn(),
   };
 };

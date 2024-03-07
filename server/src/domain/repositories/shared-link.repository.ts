@@ -9,5 +9,4 @@ export interface ISharedLinkRepository {
   create(entity: Partial<SharedLinkEntity>): Promise<SharedLinkEntity>;
   update(entity: Partial<SharedLinkEntity>): Promise<SharedLinkEntity>;
   remove(entity: SharedLinkEntity): Promise<void>;
-  deleteAll(userId: string): Promise<void>;
 }
