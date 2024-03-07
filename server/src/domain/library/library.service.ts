@@ -617,33 +617,23 @@ export class LibraryService extends EventEmitter {
       .filter((validation) => validation.isValid)
       .map((validation) => validation.importPath);
 
-    const rawPaths = await this.storageRepository.crawl({
-      pathsToCrawl: validImportPaths,
-      exclusionPatterns: library.exclusionPatterns,
-    });
-
-    const crawledAssetPaths = rawPaths.map((filePath) => path.normalize(filePath));
+    const crawledAssetPaths = (
+      await this.storageRepository.crawl({
+        pathsToCrawl: validImportPaths,
+        exclusionPatterns: library.exclusionPatterns,
+      })
+    ).map((filePath) => path.normalize(filePath));
 
     this.logger.debug(`Found ${crawledAssetPaths.length} asset(s) when crawling import paths ${library.importPaths}`);
-    const assetsInLibrary = await this.assetRepository.getByLibraryId([job.id]);
-    const onlineFiles = new Set(crawledAssetPaths);
-    const offlineAssetIds = assetsInLibrary
-      .filter((asset) => !onlineFiles.has(asset.originalPath))
-      .filter((asset) => !asset.isOffline)
-      .map((asset) => asset.id);
-    this.logger.debug(`Marking ${offlineAssetIds.length} assets as offline`);
 
-    await this.assetRepository.updateAll(offlineAssetIds, { isOffline: true });
+    this.assetRepository.updateOfflineLibraryAssets(library.id, crawledAssetPaths);
 
     if (crawledAssetPaths.length > 0) {
       let filteredPaths: string[] = [];
       if (job.refreshAllFiles || job.refreshModifiedFiles) {
         filteredPaths = crawledAssetPaths;
       } else {
-        const onlinePathsInLibrary = new Set(
-          assetsInLibrary.filter((asset) => !asset.isOffline).map((asset) => asset.originalPath),
-        );
-        filteredPaths = crawledAssetPaths.filter((assetPath) => !onlinePathsInLibrary.has(assetPath));
+        filteredPaths = await this.assetRepository.getPathsNotInLibrary(library.id, crawledAssetPaths);
 
         this.logger.debug(`Will import ${filteredPaths.length} new asset(s)`);
       }
