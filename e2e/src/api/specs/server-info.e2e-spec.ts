@@ -1,7 +1,7 @@
 import { LoginResponseDto, getServerConfig } from '@immich/sdk';
 import { createUserDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
-import { apiUtils, app, dbUtils } from 'src/utils';
+import { app, utils } from 'src/utils';
 import request from 'supertest';
 import { beforeAll, describe, expect, it } from 'vitest';
 
@@ -10,10 +10,9 @@ describe('/server-info', () => {
   let nonAdmin: LoginResponseDto;
 
   beforeAll(async () => {
-    apiUtils.setup();
-    await dbUtils.reset();
-    admin = await apiUtils.adminSetup({ onboarding: false });
-    nonAdmin = await apiUtils.userSetup(admin.accessToken, createUserDto.user1);
+    await utils.resetDatabase();
+    admin = await utils.adminSetup({ onboarding: false });
+    nonAdmin = await utils.userSetup(admin.accessToken, createUserDto.user1);
   });
 
   describe('GET /server-info', () => {

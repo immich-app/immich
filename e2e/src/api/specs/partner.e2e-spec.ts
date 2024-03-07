@@ -1,7 +1,7 @@
 import { LoginResponseDto, createPartner } from '@immich/sdk';
 import { createUserDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
-import { apiUtils, app, asBearerAuth, dbUtils } from 'src/utils';
+import { app, asBearerAuth, utils } from 'src/utils';
 import request from 'supertest';
 import { beforeAll, describe, expect, it } from 'vitest';
 
@@ -12,15 +12,14 @@ describe('/partner', () => {
   let user3: LoginResponseDto;
 
   beforeAll(async () => {
-    apiUtils.setup();
-    await dbUtils.reset();
+    await utils.resetDatabase();
 
-    admin = await apiUtils.adminSetup();
+    admin = await utils.adminSetup();
 
     [user1, user2, user3] = await Promise.all([
-      apiUtils.userSetup(admin.accessToken, createUserDto.user1),
-      apiUtils.userSetup(admin.accessToken, createUserDto.user2),
-      apiUtils.userSetup(admin.accessToken, createUserDto.user3),
+      utils.userSetup(admin.accessToken, createUserDto.user1),
+      utils.userSetup(admin.accessToken, createUserDto.user2),
+      utils.userSetup(admin.accessToken, createUserDto.user3),
     ]);
 
     await Promise.all([

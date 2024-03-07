@@ -1,11 +1,10 @@
-import { apiUtils, cliUtils, dbUtils, immichCli } from 'src/utils';
+import { immichCli, utils } from 'src/utils';
 import { beforeAll, describe, expect, it } from 'vitest';
 
 describe(`immich server-info`, () => {
   beforeAll(async () => {
-    apiUtils.setup();
-    await dbUtils.reset();
-    await cliUtils.login();
+    await utils.resetDatabase();
+    await utils.cliLogin();
   });
 
   it('should return the server info', async () => {
