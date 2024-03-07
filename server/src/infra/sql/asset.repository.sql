@@ -395,6 +395,39 @@ ORDER BY
 LIMIT
   1
 
+-- AssetRepository.getPathsNotInLibrary
+WITH
+  paths AS (
+    SELECT
+      unnest($2::text []) AS path
+  )
+SELECT
+  path
+FROM
+  paths
+WHERE
+  NOT EXISTS (
+    SELECT
+      1
+    FROM
+      assets
+    WHERE
+      "libraryId" = $1
+      AND "originalPath" = path
+  );
+
+-- AssetRepository.updateOfflineLibraryAssets
+UPDATE "assets"
+SET
+  "isOffline" = $1,
+  "updatedAt" = CURRENT_TIMESTAMP
+WHERE
+  (
+    "libraryId" = $2
+    AND NOT ("originalPath" IN ($3))
+    AND "isOffline" = $4
+  )
+
 -- AssetRepository.getAllByFileCreationDate
 SELECT
   "asset"."id" AS "asset_id",
