@@ -12,7 +12,5 @@ It is important to remember, Immich is under very active development. Expect bug
 :::
 
 :::tip
-::: Tip
 If you have chosen to move definitively from Photoprism to Immich, you may want to check [how to perform migrating favorites and albums from Photoprism to Immich.](https://github.com/immich-app/immich/discussions/4701)
-:::
 :::
