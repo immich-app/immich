@@ -73,7 +73,8 @@ export class UserService {
     return this.userCore.updateUser(auth.user, dto.id, dto).then(mapUser);
   }
 
-  async delete(auth: AuthDto, id: string, options: DeleteUserDto): Promise<UserResponseDto> {
+  async delete(auth: AuthDto, id: string, dto: DeleteUserDto): Promise<UserResponseDto> {
+    const { force } = dto;
     const user = await this.findOrFail(id, {});
     if (user.isAdmin) {
       throw new ForbiddenException('Cannot delete admin user');
@@ -81,10 +82,10 @@ export class UserService {
 
     await this.albumRepository.softDeleteAll(id);
 
-    if (options && options.force) {
+    if (force) {
       await this.jobRepository.queue({
         name: JobName.USER_DELETION,
-        data: { id: user.id, force: options.force },
+        data: { id: user.id, force: force },
       });
     }
 
