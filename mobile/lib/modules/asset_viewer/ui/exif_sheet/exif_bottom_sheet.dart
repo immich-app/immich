@@ -133,15 +133,18 @@ class ExifBottomSheet extends HookConsumerWidget {
                   children: [
                     dateWidget,
                     if (asset.isRemote) DescriptionInput(asset: asset),
-                    ExifLocation(
-                      asset: asset,
-                      exifInfo: exifInfo,
-                      editLocation: () => handleEditLocation(
-                        ref,
-                        context,
-                        [assetWithExif.value ?? asset],
+                    Padding(
+                      padding: EdgeInsets.only(top: asset.isRemote ? 0 : 16.0),
+                      child: ExifLocation(
+                        asset: asset,
+                        exifInfo: exifInfo,
+                        editLocation: () => handleEditLocation(
+                          ref,
+                          context,
+                          [assetWithExif.value ?? asset],
+                        ),
+                        formattedDateTime: formattedDateTime,
                       ),
-                      formattedDateTime: formattedDateTime,
                     ),
                   ],
                 ),

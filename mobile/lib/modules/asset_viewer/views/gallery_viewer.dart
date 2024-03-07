@@ -133,15 +133,18 @@ class GalleryViewerPage extends HookConsumerWidget {
         context: context,
         useSafeArea: true,
         builder: (context) {
-          return Padding(
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.viewInsetsOf(context).bottom,
+          return FractionallySizedBox(
+            heightFactor: 0.75,
+            child: Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.viewInsetsOf(context).bottom,
+              ),
+              child: ref
+                      .watch(appSettingsServiceProvider)
+                      .getSetting<bool>(AppSettingsEnum.advancedTroubleshooting)
+                  ? AdvancedBottomSheet(assetDetail: asset)
+                  : ExifBottomSheet(asset: asset),
             ),
-            child: ref
-                    .watch(appSettingsServiceProvider)
-                    .getSetting<bool>(AppSettingsEnum.advancedTroubleshooting)
-                ? AdvancedBottomSheet(assetDetail: asset)
-                : ExifBottomSheet(asset: asset),
           );
         },
       );
