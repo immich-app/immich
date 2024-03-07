@@ -1,4 +1,4 @@
-# Remove Offline Files [Community]
+# Remove Offline Paths [Community]
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -8,19 +8,19 @@ import TabItem from '@theme/TabItem';
 :::
 
 :::info
-**None** of the scripts can delete orphaned files from the external library.
+**None** of the scripts can delete orphaned paths from the external library.
 :::
 
-This page is a guide to get rid of offline files from the repair page.
+This page is a guide to get rid of offline paths from the repair page.
 
 <Tabs>
 
 <TabItem value="Python script (Best way)" label="Python script (Best way)">
 
-This way works by retrieving a file that contains a list of all the files that are defined as offline files, running a script that uses the [Immich API](/docs/api/delete-assets) in order to remove the offline files.
+This way works by retrieving a file that contains a list of all the files that are defined as offline paths, running a script that uses the [Immich API](/docs/api/delete-assets) in order to remove the offline paths.
 
 1. Create an API key under Admin User -> Account Settings -> API Keys -> New API Key -> Copy to clipboard.
-2. Copy and save the code to file -> `Immich Remove Offline Files.py`.
+2. Copy and save the code to file -> `Immich Remove Offline paths.py`.
 3. Run the script and follow the instructions.
 
 :::note

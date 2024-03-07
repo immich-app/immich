@@ -51,12 +51,32 @@ import {
   mdiVideo,
   mdiWeb,
   mdiScaleBalance,
+  mdiAllInclusive,
+  mdiMagnifyScan,
 } from '@mdi/js';
 import Layout from '@theme/Layout';
 import React from 'react';
 import Timeline, { DateType, Item } from '../components/timeline';
 
 const items: Item[] = [
+  {
+    icon: mdiMagnifyScan,
+    description: 'Advanced search with filters by date, location and more.',
+    title: 'smart search',
+    release: 'v1.95.0',
+    tag: 'v1.95.0',
+    date: new Date(2024, 1, 20),
+    dateType: DateType.RELEASE,
+  },
+  {
+    icon: mdiAllInclusive,
+    description: 'From now on a single search returns up to 5000 results compared to 100 in previous versions',
+    title: 'Unlimited search results',
+    release: 'v1.95.0',
+    tag: 'v1.95.0',
+    date: new Date(2024, 1, 20),
+    dateType: DateType.RELEASE,
+  },
   {
     icon: mdiScaleBalance,
     description: 'Immich switches to AGPLv3 license',
