@@ -12,6 +12,7 @@ class VideoPlayerViewer extends HookConsumerWidget {
   final Duration hideControlsTimer;
   final bool showControls;
   final bool showDownloadingIndicator;
+  final bool autoPlayVideo;
 
   const VideoPlayerViewer({
     super.key,
@@ -21,6 +22,7 @@ class VideoPlayerViewer extends HookConsumerWidget {
     required this.hideControlsTimer,
     required this.showControls,
     required this.showDownloadingIndicator,
+    this.autoPlayVideo = true,
   });
 
   @override
@@ -36,6 +38,9 @@ class VideoPlayerViewer extends HookConsumerWidget {
       ),
       showControls: showControls && !isMotionVideo,
       hideControlsTimer: hideControlsTimer,
+      // Always auto play motion pictures, this component isn't rendered when the motion pictures are not playing
+      // If it's a regular video, use the autoPlayVideo parameter
+      autoPlay: isMotionVideo || autoPlayVideo,
     );
 
     return Chewie(

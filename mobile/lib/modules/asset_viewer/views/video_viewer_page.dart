@@ -158,6 +158,7 @@ class VideoViewerPage extends HookConsumerWidget {
                   hideControlsTimer: hideControlsTimer,
                   showControls: showControls,
                   showDownloadingIndicator: showDownloadingIndicator,
+                  autoPlayVideo: autoPlayVideo,
                 ),
               ),
           ],

@@ -186,7 +186,9 @@ class GalleryViewerPage extends HookConsumerWidget {
         } else {
           SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
         }
-        isPlayingVideo.value = false;
+        var autoPlayMotionPhotos =
+            settings.getSetting<bool>(AppSettingsEnum.autoPlayVideos);
+        isPlayingVideo.value = isMotionPhoto && autoPlayMotionPhotos;
         return null;
       },
       [],
