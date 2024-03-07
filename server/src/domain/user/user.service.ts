@@ -12,6 +12,7 @@ import {
   ICryptoRepository,
   IJobRepository,
   ILibraryRepository,
+  ISharedLinkRepository,
   IStorageRepository,
   ISystemConfigRepository,
   IUserRepository,
@@ -35,6 +36,7 @@ export class UserService {
     @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ILibraryRepository) libraryRepository: ILibraryRepository,
+    @Inject(ISharedLinkRepository) private sharedLinkRepository: ISharedLinkRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
@@ -188,6 +190,7 @@ export class UserService {
 
     await this.albumRepository.deleteAll(user.id);
     await this.assetRepository.deleteAll(user.id);
+    await this.sharedLinkRepository.deleteAll(user.id);
     await this.userRepository.delete(user, true);
 
     return true;

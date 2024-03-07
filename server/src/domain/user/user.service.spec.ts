@@ -12,6 +12,7 @@ import {
   newCryptoRepositoryMock,
   newJobRepositoryMock,
   newLibraryRepositoryMock,
+  newSharedLinkRepositoryMock,
   newStorageRepositoryMock,
   newSystemConfigRepositoryMock,
   newUserRepositoryMock,
@@ -27,6 +28,7 @@ import {
   ICryptoRepository,
   IJobRepository,
   ILibraryRepository,
+  ISharedLinkRepository,
   IStorageRepository,
   ISystemConfigRepository,
   IUserRepository,
@@ -50,6 +52,7 @@ describe(UserService.name, () => {
   let assetMock: jest.Mocked<IAssetRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
   let libraryMock: jest.Mocked<ILibraryRepository>;
+  let sharedLinkMock: jest.Mocked<ISharedLinkRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
   let configMock: jest.Mocked<ISystemConfigRepository>;
 
@@ -60,6 +63,7 @@ describe(UserService.name, () => {
     cryptoRepositoryMock = newCryptoRepositoryMock();
     jobMock = newJobRepositoryMock();
     libraryMock = newLibraryRepositoryMock();
+    sharedLinkMock = newSharedLinkRepositoryMock();
     storageMock = newStorageRepositoryMock();
     userMock = newUserRepositoryMock();
 
@@ -69,6 +73,7 @@ describe(UserService.name, () => {
       cryptoRepositoryMock,
       jobMock,
       libraryMock,
+      sharedLinkMock,
       storageMock,
       configMock,
       userMock,
@@ -538,6 +543,7 @@ describe(UserService.name, () => {
       expect(storageMock.unlinkDir).toHaveBeenCalledWith('upload/encoded-video/deleted-user', options);
       expect(albumMock.deleteAll).toHaveBeenCalledWith(user.id);
       expect(assetMock.deleteAll).toHaveBeenCalledWith(user.id);
+      expect(sharedLinkMock.deleteAll).toHaveBeenCalledWith(user.id);
       expect(userMock.delete).toHaveBeenCalledWith(user, true);
     });
 

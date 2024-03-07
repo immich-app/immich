@@ -83,6 +83,10 @@ export class SharedLinkRepository implements ISharedLinkRepository {
     await this.repository.remove(entity);
   }
 
+  async deleteAll(userId: string): Promise<void> {
+    await this.repository.delete({ userId: userId });
+  }
+
   private async save(entity: Partial<SharedLinkEntity>): Promise<SharedLinkEntity> {
     await this.repository.save(entity);
     return this.repository.findOneOrFail({ where: { id: entity.id } });
