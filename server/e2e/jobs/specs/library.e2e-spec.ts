@@ -368,7 +368,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
       expect(body).toEqual(errorStub.unauthorized);
     });
 
-    it('should remvove offline files', async () => {
+    it('should remove offline files', async () => {
       await fs.promises.cp(`${IMMICH_TEST_ASSET_PATH}/albums/nature`, `${IMMICH_TEST_ASSET_TEMP_PATH}/albums/nature`, {
         recursive: true,
       });

@@ -7,7 +7,7 @@ import {
 } from '@immich/sdk';
 import { createUserDto, uuidDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
-import { apiUtils, app, asBearerAuth, dbUtils } from 'src/utils';
+import { app, asBearerAuth, utils } from 'src/utils';
 import request from 'supertest';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
@@ -29,49 +29,48 @@ describe('/album', () => {
   let user3: LoginResponseDto; // deleted
 
   beforeAll(async () => {
-    apiUtils.setup();
-    await dbUtils.reset();
+    await utils.resetDatabase();
 
-    admin = await apiUtils.adminSetup();
+    admin = await utils.adminSetup();
 
     [user1, user2, user3] = await Promise.all([
-      apiUtils.userSetup(admin.accessToken, createUserDto.user1),
-      apiUtils.userSetup(admin.accessToken, createUserDto.user2),
-      apiUtils.userSetup(admin.accessToken, createUserDto.user3),
+      utils.userSetup(admin.accessToken, createUserDto.user1),
+      utils.userSetup(admin.accessToken, createUserDto.user2),
+      utils.userSetup(admin.accessToken, createUserDto.user3),
     ]);
 
     [user1Asset1, user1Asset2] = await Promise.all([
-      apiUtils.createAsset(user1.accessToken, { isFavorite: true }),
-      apiUtils.createAsset(user1.accessToken),
+      utils.createAsset(user1.accessToken, { isFavorite: true }),
+      utils.createAsset(user1.accessToken),
     ]);
 
     const albums = await Promise.all([
       // user 1
-      apiUtils.createAlbum(user1.accessToken, {
+      utils.createAlbum(user1.accessToken, {
         albumName: user1SharedUser,
         sharedWithUserIds: [user2.userId],
         assetIds: [user1Asset1.id],
       }),
-      apiUtils.createAlbum(user1.accessToken, {
+      utils.createAlbum(user1.accessToken, {
         albumName: user1SharedLink,
         assetIds: [user1Asset1.id],
       }),
-      apiUtils.createAlbum(user1.accessToken, {
+      utils.createAlbum(user1.accessToken, {
         albumName: user1NotShared,
         assetIds: [user1Asset1.id, user1Asset2.id],
       }),
 
       // user 2
-      apiUtils.createAlbum(user2.accessToken, {
+      utils.createAlbum(user2.accessToken, {
         albumName: user2SharedUser,
         sharedWithUserIds: [user1.userId],
         assetIds: [user1Asset1.id],
       }),
-      apiUtils.createAlbum(user2.accessToken, { albumName: user2SharedLink }),
-      apiUtils.createAlbum(user2.accessToken, { albumName: user2NotShared }),
+      utils.createAlbum(user2.accessToken, { albumName: user2SharedLink }),
+      utils.createAlbum(user2.accessToken, { albumName: user2NotShared }),
 
       // user 3
-      apiUtils.createAlbum(user3.accessToken, {
+      utils.createAlbum(user3.accessToken, {
         albumName: 'Deleted',
         sharedWithUserIds: [user1.userId],
       }),
@@ -82,12 +81,12 @@ describe('/album', () => {
 
     await Promise.all([
       // add shared link to user1SharedLink album
-      apiUtils.createSharedLink(user1.accessToken, {
+      utils.createSharedLink(user1.accessToken, {
         type: SharedLinkType.Album,
         albumId: user1Albums[1].id,
       }),
       // add shared link to user2SharedLink album
-      apiUtils.createSharedLink(user2.accessToken, {
+      utils.createSharedLink(user2.accessToken, {
         type: SharedLinkType.Album,
         albumId: user2Albums[1].id,
       }),
@@ -366,7 +365,7 @@ describe('/album', () => {
     });
 
     it('should be able to add own asset to own album', async () => {
-      const asset = await apiUtils.createAsset(user1.accessToken);
+      const asset = await utils.createAsset(user1.accessToken);
       const { status, body } = await request(app)
         .put(`/album/${user1Albums[0].id}/assets`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
@@ -377,7 +376,7 @@ describe('/album', () => {
     });
 
     it('should be able to add own asset to shared album', async () => {
-      const asset = await apiUtils.createAsset(user1.accessToken);
+      const asset = await utils.createAsset(user1.accessToken);
       const { status, body } = await request(app)
         .put(`/album/${user2Albums[0].id}/assets`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
@@ -398,7 +397,7 @@ describe('/album', () => {
     });
 
     it('should update an album', async () => {
-      const album = await apiUtils.createAlbum(user1.accessToken, {
+      const album = await utils.createAlbum(user1.accessToken, {
         albumName: 'New album',
       });
       const { status, body } = await request(app)
@@ -485,7 +484,7 @@ describe('/album', () => {
     let album: AlbumResponseDto;
 
     beforeEach(async () => {
-      album = await apiUtils.createAlbum(user1.accessToken, {
+      album = await utils.createAlbum(user1.accessToken, {
         albumName: 'testAlbum',
       });
     });

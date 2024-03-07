@@ -5,7 +5,7 @@ import {
   CreateAssetDto,
   CreateLibraryDto,
   CreateUserDto,
-  PersonUpdateDto,
+  PersonCreateDto,
   SharedLinkCreateDto,
   ValidateLibraryDto,
   createAlbum,
@@ -20,13 +20,12 @@ import {
   login,
   setAdminOnboarding,
   signUpAdmin,
-  updatePerson,
   validate,
 } from '@immich/sdk';
 import { BrowserContext } from '@playwright/test';
 import { exec, spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { access } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
@@ -36,79 +35,71 @@ import { loginDto, signupDto } from 'src/fixtures';
 import { makeRandomImage } from 'src/generators';
 import request from 'supertest';
 
-const execPromise = promisify(exec);
+type CliResponse = { stdout: string; stderr: string; exitCode: number | null };
+type EventType = 'upload' | 'delete';
+type WaitOptions = { event: EventType; assetId: string; timeout?: number };
+type AdminSetupOptions = { onboarding?: boolean };
+type AssetData = { bytes?: Buffer; filename: string };
 
-export const app = 'http://127.0.0.1:2283/api';
+const dbUrl = 'postgres://postgres:postgres@127.0.0.1:5433/immich';
+const baseUrl = 'http://127.0.0.1:2283';
 
-const directoryExists = (directory: string) =>
-  access(directory)
-    .then(() => true)
-    .catch(() => false);
-
+export const app = `${baseUrl}/api`;
 // TODO move test assets into e2e/assets
 export const testAssetDir = path.resolve(`./../server/test/assets/`);
 export const testAssetDirInternal = '/data/assets';
 export const tempDir = tmpdir();
-
-const serverContainerName = 'immich-e2e-server';
-const mediaDir = '/usr/src/app/upload';
-const dirs = [
-  `"${mediaDir}/thumbs"`,
-  `"${mediaDir}/upload"`,
-  `"${mediaDir}/library"`,
-  `"${mediaDir}/encoded-video"`,
-].join(' ');
-
-if (!(await directoryExists(`${testAssetDir}/albums`))) {
-  throw new Error(
-    `Test assets not found. Please checkout https://github.com/immich-app/test-assets into ${testAssetDir} before testing`,
-  );
-}
-
-export const asBearerAuth = (accessToken: string) => ({
-  Authorization: `Bearer ${accessToken}`,
-});
-
+export const asBearerAuth = (accessToken: string) => ({ Authorization: `Bearer ${accessToken}` });
 export const asKeyAuth = (key: string) => ({ 'x-api-key': key });
+export const immichCli = async (args: string[]) => {
+  let _resolve: (value: CliResponse) => void;
+  const deferred = new Promise<CliResponse>((resolve) => (_resolve = resolve));
+  const _args = ['node_modules/.bin/immich', '-d', `/${tempDir}/immich/`, ...args];
+  const child = spawn('node', _args, {
+    stdio: 'pipe',
+  });
+
+  let stdout = '';
+  let stderr = '';
+
+  child.stdout.on('data', (data) => (stdout += data.toString()));
+  child.stderr.on('data', (data) => (stderr += data.toString()));
+  child.on('exit', (exitCode) => {
+    _resolve({
+      stdout: stdout.trim(),
+      stderr: stderr.trim(),
+      exitCode,
+    });
+  });
+
+  return deferred;
+};
 
 let client: pg.Client | null = null;
 
-export const fileUtils = {
-  reset: async () => {
-    await execPromise(`docker exec -i "${serverContainerName}" /bin/bash -c "rm -rf ${dirs} && mkdir ${dirs}"`);
-  },
-  unzip: async (input: string, output: string) => {
-    await execPromise(`unzip -o -d "${output}" "${input}"`);
-  },
-  sha1: (bytes: Buffer) => createHash('sha1').update(bytes).digest('base64'),
+const events: Record<EventType, Set<string>> = {
+  upload: new Set<string>(),
+  delete: new Set<string>(),
 };
 
-export const dbUtils = {
-  createFace: async ({ assetId, personId }: { assetId: string; personId: string }) => {
-    if (!client) {
-      return;
-    }
+const callbacks: Record<string, () => void> = {};
 
-    const vector = Array.from({ length: 512 }, Math.random);
-    const embedding = `[${vector.join(',')}]`;
+const execPromise = promisify(exec);
 
-    await client.query('INSERT INTO asset_faces ("assetId", "personId", "embedding") VALUES ($1, $2, $3)', [
-      assetId,
-      personId,
-      embedding,
-    ]);
-  },
-  setPersonThumbnail: async (personId: string) => {
-    if (!client) {
-      return;
-    }
+const onEvent = ({ event, assetId }: { event: EventType; assetId: string }) => {
+  events[event].add(assetId);
+  const callback = callbacks[assetId];
+  if (callback) {
+    callback();
+    delete callbacks[assetId];
+  }
+};
 
-    await client.query(`UPDATE "person" set "thumbnailPath" = '/my/awesome/thumbnail.jpg' where "id" = $1`, [personId]);
-  },
-  reset: async (tables?: string[]) => {
+export const utils = {
+  resetDatabase: async (tables?: string[]) => {
     try {
       if (!client) {
-        client = new pg.Client('postgres://postgres:postgres@127.0.0.1:5433/immich');
+        client = new pg.Client(dbUrl);
         await client.connect();
       }
 
@@ -134,83 +125,27 @@ export const dbUtils = {
       throw error;
     }
   },
-  teardown: async () => {
-    try {
-      if (client) {
-        await client.end();
-        client = null;
-      }
-    } catch (error) {
-      console.error('Failed to teardown database', error);
-      throw error;
-    }
+
+  resetFilesystem: async () => {
+    const mediaInternal = '/usr/src/app/upload';
+    const dirs = [
+      `"${mediaInternal}/thumbs"`,
+      `"${mediaInternal}/upload"`,
+      `"${mediaInternal}/library"`,
+      `"${mediaInternal}/encoded-video"`,
+    ].join(' ');
+
+    await execPromise(`docker exec -i "immich-e2e-server" /bin/bash -c "rm -rf ${dirs} && mkdir ${dirs}"`);
   },
-};
-export interface CliResponse {
-  stdout: string;
-  stderr: string;
-  exitCode: number | null;
-}
 
-export const immichCli = async (args: string[]) => {
-  let _resolve: (value: CliResponse) => void;
-  const deferred = new Promise<CliResponse>((resolve) => (_resolve = resolve));
-  const _args = ['node_modules/.bin/immich', '-d', `/${tempDir}/immich/`, ...args];
-  const child = spawn('node', _args, {
-    stdio: 'pipe',
-  });
+  unzip: async (input: string, output: string) => {
+    await execPromise(`unzip -o -d "${output}" "${input}"`);
+  },
 
-  let stdout = '';
-  let stderr = '';
+  sha1: (bytes: Buffer) => createHash('sha1').update(bytes).digest('base64'),
 
-  child.stdout.on('data', (data) => (stdout += data.toString()));
-  child.stderr.on('data', (data) => (stderr += data.toString()));
-  child.on('exit', (exitCode) => {
-    _resolve({
-      stdout: stdout.trim(),
-      stderr: stderr.trim(),
-      exitCode,
-    });
-  });
-
-  return deferred;
-};
-
-export interface AdminSetupOptions {
-  onboarding?: boolean;
-}
-
-export enum SocketEvent {
-  UPLOAD = 'upload',
-  DELETE = 'delete',
-}
-
-export type EventType = 'upload' | 'delete';
-export interface WaitOptions {
-  event: EventType;
-  assetId: string;
-  timeout?: number;
-}
-
-const events: Record<EventType, Set<string>> = {
-  upload: new Set<string>(),
-  delete: new Set<string>(),
-};
-
-const callbacks: Record<string, () => void> = {};
-
-const onEvent = ({ event, assetId }: { event: EventType; assetId: string }) => {
-  events[event].add(assetId);
-  const callback = callbacks[assetId];
-  if (callback) {
-    callback();
-    delete callbacks[assetId];
-  }
-};
-
-export const wsUtils = {
-  connect: async (accessToken: string) => {
-    const websocket = io('http://127.0.0.1:2283', {
+  connectWebsocket: async (accessToken: string) => {
+    const websocket = io(baseUrl, {
       path: '/api/socket.io',
       transports: ['websocket'],
       extraHeaders: { Authorization: `Bearer ${accessToken}` },
@@ -226,7 +161,8 @@ export const wsUtils = {
         .connect();
     });
   },
-  disconnect: (ws: Socket) => {
+
+  disconnectWebsocket: (ws: Socket) => {
     if (ws?.connected) {
       ws.disconnect();
     }
@@ -235,14 +171,15 @@ export const wsUtils = {
       set.clear();
     }
   },
-  waitForEvent: async ({ event, assetId, timeout: ms }: WaitOptions): Promise<void> => {
+
+  waitForWebsocketEvent: async ({ event, assetId, timeout: ms }: WaitOptions): Promise<void> => {
     const set = events[event];
     if (set.has(assetId)) {
       return;
     }
 
     return new Promise<void>((resolve, reject) => {
-      const timeout = setTimeout(() => reject(new Error(`Timed out waiting for ${event} event`)), ms || 5000);
+      const timeout = setTimeout(() => reject(new Error(`Timed out waiting for ${event} event`)), ms || 10_000);
 
       callbacks[assetId] = () => {
         clearTimeout(timeout);
@@ -250,12 +187,8 @@ export const wsUtils = {
       };
     });
   },
-};
 
-type AssetData = { bytes?: Buffer; filename: string };
-
-export const apiUtils = {
-  setup: () => {
+  setApiEndpoint: () => {
     defaults.baseUrl = app;
   },
 
@@ -269,17 +202,21 @@ export const apiUtils = {
     }
     return response;
   },
+
   userSetup: async (accessToken: string, dto: CreateUserDto) => {
     await createUser({ createUserDto: dto }, { headers: asBearerAuth(accessToken) });
     return login({
       loginCredentialDto: { email: dto.email, password: dto.password },
     });
   },
+
   createApiKey: (accessToken: string) => {
     return createApiKey({ apiKeyCreateDto: { name: 'e2e' } }, { headers: asBearerAuth(accessToken) });
   },
+
   createAlbum: (accessToken: string, dto: CreateAlbumDto) =>
     createAlbum({ createAlbumDto: dto }, { headers: asBearerAuth(accessToken) }),
+
   createAsset: async (
     accessToken: string,
     dto?: Partial<Omit<CreateAssetDto, 'assetData'>> & { assetData?: AssetData },
@@ -308,38 +245,51 @@ export const apiUtils = {
 
     return body as AssetFileUploadResponseDto;
   },
+
   getAssetInfo: (accessToken: string, id: string) => getAssetInfo({ id }, { headers: asBearerAuth(accessToken) }),
+
   deleteAssets: (accessToken: string, ids: string[]) =>
     deleteAssets({ assetBulkDeleteDto: { ids } }, { headers: asBearerAuth(accessToken) }),
-  createPerson: async (accessToken: string, dto?: PersonUpdateDto) => {
-    // TODO fix createPerson to accept a body
-    const person = await createPerson({ headers: asBearerAuth(accessToken) });
-    await dbUtils.setPersonThumbnail(person.id);
 
-    if (!dto) {
-      return person;
+  createPerson: async (accessToken: string, dto?: PersonCreateDto) => {
+    const person = await createPerson({ personCreateDto: dto || {} }, { headers: asBearerAuth(accessToken) });
+    await utils.setPersonThumbnail(person.id);
+
+    return person;
+  },
+
+  createFace: async ({ assetId, personId }: { assetId: string; personId: string }) => {
+    if (!client) {
+      return;
     }
 
-    return updatePerson({ id: person.id, personUpdateDto: dto }, { headers: asBearerAuth(accessToken) });
+    const vector = Array.from({ length: 512 }, Math.random);
+    const embedding = `[${vector.join(',')}]`;
+
+    await client.query('INSERT INTO asset_faces ("assetId", "personId", "embedding") VALUES ($1, $2, $3)', [
+      assetId,
+      personId,
+      embedding,
+    ]);
   },
+
+  setPersonThumbnail: async (personId: string) => {
+    if (!client) {
+      return;
+    }
+
+    await client.query(`UPDATE "person" set "thumbnailPath" = '/my/awesome/thumbnail.jpg' where "id" = $1`, [personId]);
+  },
+
   createSharedLink: (accessToken: string, dto: SharedLinkCreateDto) =>
     createSharedLink({ sharedLinkCreateDto: dto }, { headers: asBearerAuth(accessToken) }),
+
   createLibrary: (accessToken: string, dto: CreateLibraryDto) =>
     createLibrary({ createLibraryDto: dto }, { headers: asBearerAuth(accessToken) }),
+
   validateLibrary: (accessToken: string, id: string, dto: ValidateLibraryDto) =>
     validate({ id, validateLibraryDto: dto }, { headers: asBearerAuth(accessToken) }),
-};
 
-export const cliUtils = {
-  login: async () => {
-    const admin = await apiUtils.adminSetup();
-    const key = await apiUtils.createApiKey(admin.accessToken);
-    await immichCli(['login-key', app, `${key.secret}`]);
-    return key.secret;
-  },
-};
-
-export const webUtils = {
   setAuthCookies: async (context: BrowserContext, accessToken: string) =>
     await context.addCookies([
       {
@@ -373,4 +323,19 @@ export const webUtils = {
         sameSite: 'Lax',
       },
     ]),
+
+  cliLogin: async () => {
+    const admin = await utils.adminSetup();
+    const key = await utils.createApiKey(admin.accessToken);
+    await immichCli(['login-key', app, `${key.secret}`]);
+    return key.secret;
+  },
 };
+
+utils.setApiEndpoint();
+
+if (!existsSync(`${testAssetDir}/albums`)) {
+  throw new Error(
+    `Test assets not found. Please checkout https://github.com/immich-app/test-assets into ${testAssetDir} before testing`,
+  );
+}

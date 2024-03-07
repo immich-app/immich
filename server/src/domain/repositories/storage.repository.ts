@@ -31,6 +31,14 @@ export interface WatchEvents {
   onError(error: Error): void;
 }
 
+export enum StorageEventType {
+  READY = 'ready',
+  ADD = 'add',
+  CHANGE = 'change',
+  UNLINK = 'unlink',
+  ERROR = 'error',
+}
+
 export interface IStorageRepository {
   createZipStream(): ImmichZipStream;
   createReadStream(filepath: string, mimeType?: string | null): Promise<ImmichReadStream>;

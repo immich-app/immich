@@ -12,7 +12,7 @@ import { basename, join } from 'node:path';
 import { Socket } from 'socket.io-client';
 import { createUserDto, uuidDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
-import { apiUtils, app, dbUtils, fileUtils, tempDir, testAssetDir, wsUtils } from 'src/utils';
+import { app, tempDir, testAssetDir, utils } from 'src/utils';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
@@ -44,42 +44,41 @@ describe('/asset', () => {
   let ws: Socket;
 
   beforeAll(async () => {
-    apiUtils.setup();
-    await dbUtils.reset();
-    admin = await apiUtils.adminSetup({ onboarding: false });
+    await utils.resetDatabase();
+    admin = await utils.adminSetup({ onboarding: false });
 
     [ws, user1, user2, userStats] = await Promise.all([
-      wsUtils.connect(admin.accessToken),
-      apiUtils.userSetup(admin.accessToken, createUserDto.user1),
-      apiUtils.userSetup(admin.accessToken, createUserDto.user2),
-      apiUtils.userSetup(admin.accessToken, createUserDto.user3),
+      utils.connectWebsocket(admin.accessToken),
+      utils.userSetup(admin.accessToken, createUserDto.user1),
+      utils.userSetup(admin.accessToken, createUserDto.user2),
+      utils.userSetup(admin.accessToken, createUserDto.user3),
     ]);
 
     // asset location
-    assetLocation = await apiUtils.createAsset(admin.accessToken, {
+    assetLocation = await utils.createAsset(admin.accessToken, {
       assetData: {
         filename: 'thompson-springs.jpg',
         bytes: await readFile(locationAssetFilepath),
       },
     });
 
-    await wsUtils.waitForEvent({ event: 'upload', assetId: assetLocation.id });
+    await utils.waitForWebsocketEvent({ event: 'upload', assetId: assetLocation.id });
 
     user1Assets = await Promise.all([
-      apiUtils.createAsset(user1.accessToken),
-      apiUtils.createAsset(user1.accessToken),
-      apiUtils.createAsset(user1.accessToken, {
+      utils.createAsset(user1.accessToken),
+      utils.createAsset(user1.accessToken),
+      utils.createAsset(user1.accessToken, {
         isFavorite: true,
         isReadOnly: true,
         fileCreatedAt: yesterday.toISO(),
         fileModifiedAt: yesterday.toISO(),
         assetData: { filename: 'example.mp4' },
       }),
-      apiUtils.createAsset(user1.accessToken),
-      apiUtils.createAsset(user1.accessToken),
+      utils.createAsset(user1.accessToken),
+      utils.createAsset(user1.accessToken),
     ]);
 
-    user2Assets = await Promise.all([apiUtils.createAsset(user2.accessToken)]);
+    user2Assets = await Promise.all([utils.createAsset(user2.accessToken)]);
 
     for (const asset of [...user1Assets, ...user2Assets]) {
       expect(asset.duplicate).toBe(false);
@@ -87,27 +86,27 @@ describe('/asset', () => {
 
     await Promise.all([
       // stats
-      apiUtils.createAsset(userStats.accessToken),
-      apiUtils.createAsset(userStats.accessToken, { isFavorite: true }),
-      apiUtils.createAsset(userStats.accessToken, { isArchived: true }),
-      apiUtils.createAsset(userStats.accessToken, {
+      utils.createAsset(userStats.accessToken),
+      utils.createAsset(userStats.accessToken, { isFavorite: true }),
+      utils.createAsset(userStats.accessToken, { isArchived: true }),
+      utils.createAsset(userStats.accessToken, {
         isArchived: true,
         isFavorite: true,
         assetData: { filename: 'example.mp4' },
       }),
     ]);
 
-    const person1 = await apiUtils.createPerson(user1.accessToken, {
+    const person1 = await utils.createPerson(user1.accessToken, {
       name: 'Test Person',
     });
-    await dbUtils.createFace({
+    await utils.createFace({
       assetId: user1Assets[0].id,
       personId: person1.id,
     });
   }, 30_000);
 
   afterAll(() => {
-    wsUtils.disconnect(ws);
+    utils.disconnectWebsocket(ws);
   });
 
   describe('GET /asset/:id', () => {
@@ -142,7 +141,7 @@ describe('/asset', () => {
     });
 
     it('should work with a shared link', async () => {
-      const sharedLink = await apiUtils.createSharedLink(user1.accessToken, {
+      const sharedLink = await utils.createSharedLink(user1.accessToken, {
         type: SharedLinkType.Individual,
         assetIds: [user1Assets[0].id],
       });
@@ -172,7 +171,7 @@ describe('/asset', () => {
         ],
       });
 
-      const sharedLink = await apiUtils.createSharedLink(user1.accessToken, {
+      const sharedLink = await utils.createSharedLink(user1.accessToken, {
         type: SharedLinkType.Individual,
         assetIds: [user1Assets[0].id],
       });
@@ -244,12 +243,12 @@ describe('/asset', () => {
   describe('GET /asset/random', () => {
     beforeAll(async () => {
       await Promise.all([
-        apiUtils.createAsset(user1.accessToken),
-        apiUtils.createAsset(user1.accessToken),
-        apiUtils.createAsset(user1.accessToken),
-        apiUtils.createAsset(user1.accessToken),
-        apiUtils.createAsset(user1.accessToken),
-        apiUtils.createAsset(user1.accessToken),
+        utils.createAsset(user1.accessToken),
+        utils.createAsset(user1.accessToken),
+        utils.createAsset(user1.accessToken),
+        utils.createAsset(user1.accessToken),
+        utils.createAsset(user1.accessToken),
+        utils.createAsset(user1.accessToken),
       ]);
     });
 
@@ -332,7 +331,7 @@ describe('/asset', () => {
     });
 
     it('should favorite an asset', async () => {
-      const before = await apiUtils.getAssetInfo(user1.accessToken, user1Assets[0].id);
+      const before = await utils.getAssetInfo(user1.accessToken, user1Assets[0].id);
       expect(before.isFavorite).toBe(false);
 
       const { status, body } = await request(app)
@@ -344,7 +343,7 @@ describe('/asset', () => {
     });
 
     it('should archive an asset', async () => {
-      const before = await apiUtils.getAssetInfo(user1.accessToken, user1Assets[0].id);
+      const before = await utils.getAssetInfo(user1.accessToken, user1Assets[0].id);
       expect(before.isArchived).toBe(false);
 
       const { status, body } = await request(app)
@@ -472,9 +471,9 @@ describe('/asset', () => {
     });
 
     it('should move an asset to the trash', async () => {
-      const { id: assetId } = await apiUtils.createAsset(admin.accessToken);
+      const { id: assetId } = await utils.createAsset(admin.accessToken);
 
-      const before = await apiUtils.getAssetInfo(admin.accessToken, assetId);
+      const before = await utils.getAssetInfo(admin.accessToken, assetId);
       expect(before.isTrashed).toBe(false);
 
       const { status } = await request(app)
@@ -483,7 +482,7 @@ describe('/asset', () => {
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(204);
 
-      const after = await apiUtils.getAssetInfo(admin.accessToken, assetId);
+      const after = await utils.getAssetInfo(admin.accessToken, assetId);
       expect(after.isTrashed).toBe(true);
     });
   });
@@ -494,7 +493,7 @@ describe('/asset', () => {
         input: 'formats/jpg/el_torcal_rocks.jpg',
         expected: {
           type: AssetTypeEnum.Image,
-          originalFileName: 'el_torcal_rocks',
+          originalFileName: 'el_torcal_rocks.jpg',
           resized: true,
           exifInfo: {
             dateTimeOriginal: '2012-08-05T11:39:59.000Z',
@@ -518,7 +517,7 @@ describe('/asset', () => {
         input: 'formats/heic/IMG_2682.heic',
         expected: {
           type: AssetTypeEnum.Image,
-          originalFileName: 'IMG_2682',
+          originalFileName: 'IMG_2682.heic',
           resized: true,
           fileCreatedAt: '2019-03-21T16:04:22.348Z',
           exifInfo: {
@@ -543,7 +542,7 @@ describe('/asset', () => {
         input: 'formats/png/density_plot.png',
         expected: {
           type: AssetTypeEnum.Image,
-          originalFileName: 'density_plot',
+          originalFileName: 'density_plot.png',
           resized: true,
           exifInfo: {
             exifImageWidth: 800,
@@ -558,7 +557,7 @@ describe('/asset', () => {
         input: 'formats/raw/Nikon/D80/glarus.nef',
         expected: {
           type: AssetTypeEnum.Image,
-          originalFileName: 'glarus',
+          originalFileName: 'glarus.nef',
           resized: true,
           fileCreatedAt: '2010-07-20T17:27:12.000Z',
           exifInfo: {
@@ -580,7 +579,7 @@ describe('/asset', () => {
         input: 'formats/raw/Nikon/D700/philadelphia.nef',
         expected: {
           type: AssetTypeEnum.Image,
-          originalFileName: 'philadelphia',
+          originalFileName: 'philadelphia.nef',
           resized: true,
           fileCreatedAt: '2016-09-22T22:10:29.060Z',
           exifInfo: {
@@ -604,15 +603,15 @@ describe('/asset', () => {
     for (const { input, expected } of tests) {
       it(`should generate a thumbnail for ${input}`, async () => {
         const filepath = join(testAssetDir, input);
-        const { id, duplicate } = await apiUtils.createAsset(admin.accessToken, {
+        const { id, duplicate } = await utils.createAsset(admin.accessToken, {
           assetData: { bytes: await readFile(filepath), filename: basename(filepath) },
         });
 
         expect(duplicate).toBe(false);
 
-        await wsUtils.waitForEvent({ event: 'upload', assetId: id });
+        await utils.waitForWebsocketEvent({ event: 'upload', assetId: id });
 
-        const asset = await apiUtils.getAssetInfo(admin.accessToken, id);
+        const asset = await utils.getAssetInfo(admin.accessToken, id);
 
         expect(asset.exifInfo).toBeDefined();
         expect(asset.exifInfo).toMatchObject(expected.exifInfo);
@@ -622,7 +621,7 @@ describe('/asset', () => {
 
     it('should handle a duplicate', async () => {
       const filepath = 'formats/jpeg/el_torcal_rocks.jpeg';
-      const { duplicate } = await apiUtils.createAsset(admin.accessToken, {
+      const { duplicate } = await utils.createAsset(admin.accessToken, {
         assetData: {
           bytes: await readFile(join(testAssetDir, filepath)),
           filename: basename(filepath),
@@ -654,21 +653,21 @@ describe('/asset', () => {
 
     for (const { filepath, checksum } of motionTests) {
       it(`should extract motionphoto video from ${filepath}`, async () => {
-        const response = await apiUtils.createAsset(admin.accessToken, {
+        const response = await utils.createAsset(admin.accessToken, {
           assetData: {
             bytes: await readFile(join(testAssetDir, filepath)),
             filename: basename(filepath),
           },
         });
 
-        await wsUtils.waitForEvent({ event: 'upload', assetId: response.id });
+        await utils.waitForWebsocketEvent({ event: 'upload', assetId: response.id });
 
         expect(response.duplicate).toBe(false);
 
-        const asset = await apiUtils.getAssetInfo(admin.accessToken, response.id);
+        const asset = await utils.getAssetInfo(admin.accessToken, response.id);
         expect(asset.livePhotoVideoId).toBeDefined();
 
-        const video = await apiUtils.getAssetInfo(admin.accessToken, asset.livePhotoVideoId as string);
+        const video = await utils.getAssetInfo(admin.accessToken, asset.livePhotoVideoId as string);
         expect(video.checksum).toStrictEqual(checksum);
       });
     }
@@ -687,7 +686,7 @@ describe('/asset', () => {
         .get(`/asset/thumbnail/${assetLocation.id}?format=WEBP`)
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
-      await wsUtils.waitForEvent({
+      await utils.waitForWebsocketEvent({
         event: 'upload',
         assetId: assetLocation.id,
       });
@@ -733,11 +732,11 @@ describe('/asset', () => {
       expect(body).toBeDefined();
       expect(type).toBe('image/jpeg');
 
-      const asset = await apiUtils.getAssetInfo(admin.accessToken, assetLocation.id);
+      const asset = await utils.getAssetInfo(admin.accessToken, assetLocation.id);
 
       const original = await readFile(locationAssetFilepath);
-      const originalChecksum = fileUtils.sha1(original);
-      const downloadChecksum = fileUtils.sha1(body);
+      const originalChecksum = utils.sha1(original);
+      const downloadChecksum = utils.sha1(body);
 
       expect(originalChecksum).toBe(downloadChecksum);
       expect(downloadChecksum).toBe(asset.checksum);

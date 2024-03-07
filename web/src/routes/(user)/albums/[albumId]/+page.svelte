@@ -692,8 +692,8 @@
   <ConfirmDialogue
     title="Delete album"
     confirmText="Delete"
-    on:confirm={handleRemoveAlbum}
-    on:cancel={() => (viewMode = ViewMode.VIEW)}
+    onConfirm={handleRemoveAlbum}
+    onClose={() => (viewMode = ViewMode.VIEW)}
   >
     <svelte:fragment slot="prompt">
       <p>Are you sure you want to delete the album <b>{album.albumName}</b>?</p>

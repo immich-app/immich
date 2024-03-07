@@ -1,11 +1,11 @@
 import { AssetFaceEntity, PersonEntity } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
-import { IsArray, IsBoolean, IsDate, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
+import { IsArray, IsBoolean, IsDate, IsNotEmpty, IsString, MaxDate, ValidateNested } from 'class-validator';
 import { AuthDto } from '../auth';
 import { Optional, ValidateUUID, toBoolean } from '../domain.util';
 
-export class PersonUpdateDto {
+export class PersonCreateDto {
   /**
    * Person name.
    */
@@ -20,15 +20,9 @@ export class PersonUpdateDto {
   @Optional({ nullable: true })
   @IsDate()
   @Type(() => Date)
+  @MaxDate(() => new Date(), { message: 'Birth date cannot be in the future' })
   @ApiProperty({ format: 'date' })
   birthDate?: Date | null;
-
-  /**
-   * Asset is used to get the feature face thumbnail.
-   */
-  @Optional()
-  @IsString()
-  featureFaceAssetId?: string;
 
   /**
    * Person visibility
@@ -36,6 +30,15 @@ export class PersonUpdateDto {
   @Optional()
   @IsBoolean()
   isHidden?: boolean;
+}
+
+export class PersonUpdateDto extends PersonCreateDto {
+  /**
+   * Asset is used to get the feature face thumbnail.
+   */
+  @Optional()
+  @IsString()
+  featureFaceAssetId?: string;
 }
 
 export class PeopleUpdateDto {

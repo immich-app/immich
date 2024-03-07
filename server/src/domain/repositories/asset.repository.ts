@@ -136,6 +136,8 @@ export interface IAssetRepository {
   getLastUpdatedAssetForAlbumId(albumId: string): Promise<AssetEntity | null>;
   getByLibraryId(libraryIds: string[]): Promise<AssetEntity[]>;
   getByLibraryIdAndOriginalPath(libraryId: string, originalPath: string): Promise<AssetEntity | null>;
+  getPathsNotInLibrary(libraryId: string, originalPaths: string[]): Promise<string[]>;
+  updateOfflineLibraryAssets(libraryId: string, originalPaths: string[]): Promise<void>;
   deleteAll(ownerId: string): Promise<void>;
   getAll(pagination: PaginationOptions, options?: AssetSearchOptions): Paginated<AssetEntity>;
   getAllByFileCreationDate(
