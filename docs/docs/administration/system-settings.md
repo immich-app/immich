@@ -43,3 +43,30 @@ Unless version checking has been enabled in the settings.
 :::
 
 ### Facial Recognition
+
+Under these settings you can change the facial recognition settings
+Editable settings:
+
+- **Facial Recognition Model -** Models are listed in descending order of size. Larger models are slower and use more memory, but produce better results. Note that you must re-run the Face Detection job for all images upon changing a model.
+
+- **Min Detection Score -** Minimum confidence score for a face to be detected from 0-1. Lower values will detect more faces but may result in false positives.
+
+- **Max Recognition Distance -** Maximum distance between two faces to be considered the same person, ranging from 0-2. Lowering this can prevent labeling two people as the same person, while raising it can prevent labeling the same person as two different people. Note that it is easier to merge two people than to split one person in two, so err on the side of a lower threshold when possible.
+
+- **Min Recognized Faces -** The minimum number of recognized faces for a person to be created (AKA: Core face). Increasing this makes Facial Recognition more precise at the cost of increasing the chance that a face is not assigned to a person.
+
+:::info
+When changing the values in: Min Detection Score, Max Recognition Distance And Min Recognized Faces.
+You will have to restart **only** the job FACIAL RECOGNITION - ALL.
+
+If you replace the Facial Recognition Model, you will have to run the job FACE DETECTION - ALL.
+:::
+
+:::tip identical twins
+If you have twins, you might want to lower the Max Recognition Distance value, decreasing this a **bit** can make it distinguish between them.
+:::
+
+## Map & GPS Settings
+
+In these settings you can change the appearance of the map in night and day modes according to your personal preference and according to the supported options.
+The map can be easily adjusted via [OpenMapTiles](https://openmaptiles.org/styles/) for example.
