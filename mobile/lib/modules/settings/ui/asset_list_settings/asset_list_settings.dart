@@ -1,31 +1,35 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/modules/settings/ui/asset_list_settings/asset_list_layout_settings.dart';
-import 'package:immich_mobile/modules/settings/ui/asset_list_settings/asset_list_storage_indicator.dart';
-import 'asset_list_tiles_per_row.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
+import 'package:immich_mobile/modules/settings/ui/asset_list_settings/asset_list_group_settings.dart';
+import 'package:immich_mobile/modules/settings/ui/settings_sub_page_scaffold.dart';
+import 'package:immich_mobile/modules/settings/ui/settings_switch_list_tile.dart';
+import 'package:immich_mobile/modules/settings/utils/app_settings_update_hook.dart';
+import 'asset_list_layout_settings.dart';
 
-class AssetListSettings extends StatelessWidget {
+class AssetListSettings extends HookWidget {
   const AssetListSettings({
     super.key,
   });
 
   @override
   Widget build(BuildContext context) {
-    return ExpansionTile(
-      textColor: context.primaryColor,
-      title: Text(
-        'asset_list_settings_title',
-        style: context.textTheme.titleMedium,
-      ).tr(),
-      subtitle: const Text(
-        'asset_list_settings_subtitle',
-      ).tr(),
-      children: const [
-        TilesPerRow(),
-        StorageIndicator(),
-        LayoutSettings(),
-      ],
+    final showStorageIndicator =
+        useAppSettingsState(AppSettingsEnum.storageIndicator);
+
+    final assetListSetting = [
+      SettingsSwitchListTile(
+        valueNotifier: showStorageIndicator,
+        title: 'theme_setting_asset_list_storage_indicator_title'.tr(),
+      ),
+      const LayoutSettings(),
+      const GroupSettings(),
+    ];
+
+    return SettingsSubPageScaffold(
+      settings: assetListSetting,
+      showDivider: true,
     );
   }
 }
