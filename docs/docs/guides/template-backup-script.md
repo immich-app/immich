@@ -50,13 +50,13 @@ docker exec -t immich_postgres pg_dumpall -c -U postgres > "$UPLOAD_LOCATION"/da
 # docker exec -t immich_postgres pg_dumpall -c -U postgres | /usr/bin/gzip --rsyncable > "$UPLOAD_LOCATION"/database-backup/immich-database.sql.gz
 
 ### Append to local Borg repository
-borg create "$BACKUP_PATH"/immich-borg::{now} "$UPLOAD_LOCATION" --exclude "$UPLOAD_LOCATION"/thumbs/ --exclude "$UPLOAD_LOCATION"/encoded-video/
+borg create "$BACKUP_PATH/immich-borg::{now}" "$UPLOAD_LOCATION" --exclude "$UPLOAD_LOCATION"/thumbs/ --exclude "$UPLOAD_LOCATION"/encoded-video/
 borg prune --keep-weekly=4 --keep-monthly=3 "$BACKUP_PATH"/immich-borg
 borg compact "$BACKUP_PATH"/immich-borg
 
 
 ### Append to remote Borg repository
-borg create "$REMOTE_HOST:$REMOTE_BACKUP_PATH"/immich-borg::{now} "$UPLOAD_LOCATION" --exclude "$UPLOAD_LOCATION"/thumbs/ --exclude "$UPLOAD_LOCATION"/encoded-video/
+borg create "$REMOTE_HOST:$REMOTE_BACKUP_PATH/immich-borg::{now}" "$UPLOAD_LOCATION" --exclude "$UPLOAD_LOCATION"/thumbs/ --exclude "$UPLOAD_LOCATION"/encoded-video/
 borg prune --keep-weekly=4 --keep-monthly=3 "$REMOTE_HOST:$REMOTE_BACKUP_PATH"/immich-borg
 borg compact "$REMOTE_HOST:$REMOTE_BACKUP_PATH"/immich-borg
 ```
