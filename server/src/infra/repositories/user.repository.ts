@@ -77,10 +77,6 @@ export class UserRepository implements IUserRepository {
     return hard ? this.userRepository.remove(user) : this.userRepository.softRemove(user);
   }
 
-  async restore(user: UserEntity): Promise<UserEntity> {
-    return this.userRepository.recover(user);
-  }
-
   @GenerateSql()
   async getUserStats(): Promise<UserStatsQueryResponse[]> {
     const stats = await this.userRepository

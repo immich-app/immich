@@ -243,7 +243,7 @@ describe(UserService.name, () => {
     it('should throw error if user could not be found', async () => {
       when(userMock.get).calledWith(userStub.admin.id, { withDeleted: true }).mockResolvedValue(null);
       await expect(sut.restore(authStub.admin, userStub.admin.id)).rejects.toThrowError(BadRequestException);
-      expect(userMock.restore).not.toHaveBeenCalled();
+      expect(userMock.update).not.toHaveBeenCalled();
     });
 
     it('should restore an user', async () => {
