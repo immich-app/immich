@@ -20,8 +20,8 @@
 
 <div
   class="flex items-center text-sm {roundedBottom
-    ? 'rounded-lg'
-    : 'rounded-t-lg'} bg-gray-100 p-2 dark:bg-gray-700 gap-2 place-items-center h-full"
+    ? 'rounded-md'
+    : 'rounded-t-md'} bg-gray-100 p-2 dark:bg-gray-700 gap-2 place-items-center h-full"
 >
   <button on:click={() => dispatch('search', { force: true })}>
     <div class="w-fit">
