@@ -2,6 +2,8 @@
 
 The System Settings page is the page that is visible only to the server administrator, through the page you can manage the global settings that will affect all users.
 
+
+
 ## Job Settings
 
 Using these settings, you can determine the amount of work that will run concurrently for each task in microservices. Some tasks can be set to higher values on computers with powerful hardware and storage with good I/O capabilities.
@@ -48,11 +50,8 @@ Under these settings, you can change the facial recognition settings
 Editable settings:
 
 - **Facial Recognition Model -** Models are listed in descending order of size. Larger models are slower and use more memory, but produce better results. Note that you must re-run the Face Detection job for all images upon changing a model.
-
 - **Min Detection Score -** Minimum confidence score for a face to be detected from 0-1. Lower values will detect more faces but may result in false positives.
-
 - **Max Recognition Distance -** Maximum distance between two faces to be considered the same person, ranging from 0-2. Lowering this can prevent labeling two people as the same person, while raising it can prevent labeling the same person as two different people. Note that it is easier to merge two people than to split one person in two, so err on the side of a lower threshold when possible.
-
 - **Min Recognized Faces -** The minimum number of recognized faces for a person to be created (AKA: Core face). Increasing this makes Facial Recognition more precise at the cost of increasing the chance that a face is not assigned to a person.
 
 :::info
@@ -87,7 +86,7 @@ The administrator can choose to disable the username and password globally, whic
 
 ## Server Settings
 
-### External Domain 
+### External Domain
 
 Add the option to set the instance's "external domain" when constructing the shared link URL to copy to the clipboard.
 
@@ -112,4 +111,3 @@ For example:
 ```
 
 ## Thumbnail Settings
-
