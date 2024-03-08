@@ -506,6 +506,8 @@ class ApiClient {
           return UserDto.fromJson(value);
         case 'UserResponseDto':
           return UserResponseDto.fromJson(value);
+        case 'UserStatus':
+          return UserStatusTypeTransformer().decode(value);
         case 'ValidateAccessTokenResponseDto':
           return ValidateAccessTokenResponseDto.fromJson(value);
         case 'ValidateLibraryDto':

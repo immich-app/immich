@@ -377,6 +377,7 @@ Class | Method | HTTP request | Description
  - [UserAvatarColor](doc//UserAvatarColor.md)
  - [UserDto](doc//UserDto.md)
  - [UserResponseDto](doc//UserResponseDto.md)
+ - [UserStatus](doc//UserStatus.md)
  - [ValidateAccessTokenResponseDto](doc//ValidateAccessTokenResponseDto.md)
  - [ValidateLibraryDto](doc//ValidateLibraryDto.md)
  - [ValidateLibraryImportPathResponseDto](doc//ValidateLibraryImportPathResponseDto.md)

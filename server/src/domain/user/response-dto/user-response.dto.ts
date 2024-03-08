@@ -1,4 +1,4 @@
-import { UserAvatarColor, UserEntity } from '@app/infra/entities';
+import { UserAvatarColor, UserEntity, UserStatus } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum } from 'class-validator';
 
@@ -33,6 +33,7 @@ export class UserResponseDto extends UserDto {
   quotaSizeInBytes!: number | null;
   @ApiProperty({ type: 'integer', format: 'int64' })
   quotaUsageInBytes!: number | null;
+  @ApiProperty({ enumName: 'UserStatus', enum: UserStatus })
   status!: string;
 }
 

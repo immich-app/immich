@@ -12,7 +12,7 @@
   import { locale } from '$lib/stores/preferences.store';
   import { user } from '$lib/stores/user.store';
   import { asByteUnitString } from '$lib/utils/byte-units';
-  import { getAllUsers, type UserResponseDto } from '@immich/sdk';
+  import { getAllUsers, type UserResponseDto, UserStatus } from '@immich/sdk';
   import { mdiClose, mdiDeleteRestore, mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
   import { onMount } from 'svelte';
   import type { PageData } from './$types';
@@ -212,7 +212,7 @@
                       </button>
                     {/if}
                   {/if}
-                  {#if isDeleted(immichUser) && immichUser.status != "removing"}
+                  {#if isDeleted(immichUser) && immichUser.status != UserStatus.Removing}
                     <button
                       on:click={() => restoreUserHandler(immichUser)}
                       class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"

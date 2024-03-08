@@ -75,30 +75,30 @@ export class UserService {
 
   async delete(auth: AuthDto, id: string, dto: DeleteUserDto): Promise<UserResponseDto> {
     const { force } = dto;
-    const user = await this.findOrFail(id, {});
-    if (user.isAdmin) {
+    const { isAdmin } = await this.findOrFail(id, {});
+    if (isAdmin) {
       throw new ForbiddenException('Cannot delete admin user');
     }
 
     await this.albumRepository.softDeleteAll(id);
 
+    const status = force ? UserStatus.REMOVING : UserStatus.DELETED;
+    const user = await this.userRepository.update(id, { status, deletedAt: new Date() });
+
     if (force) {
-      user.status = UserStatus.REMOVING;
-      
       await this.jobRepository.queue({
         name: JobName.USER_DELETION,
-        data: { id: user.id, force: force },
+        data: { id: user.id, force },
       });
     }
 
-    return this.userRepository.delete(user).then(mapUser);
+    return mapUser(user);
   }
 
   async restore(auth: AuthDto, id: string): Promise<UserResponseDto> {
-    let user = await this.findOrFail(id, { withDeleted: true });
-    user = await this.userRepository.restore(user);
+    await this.findOrFail(id, { withDeleted: true });
     await this.albumRepository.restoreAll(id);
-    return mapUser(user);
+    return this.userRepository.update(id, { deletedAt: null, status: UserStatus.ACTIVE }).then(mapUser);
   }
 
   async createProfileImage(auth: AuthDto, fileInfo: Express.Multer.File): Promise<CreateProfileImageResponseDto> {

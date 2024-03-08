@@ -22,7 +22,7 @@ Name | Type | Description | Notes
 **quotaSizeInBytes** | **int** |  | 
 **quotaUsageInBytes** | **int** |  | 
 **shouldChangePassword** | **bool** |  | 
-**status** | **String** |  | 
+**status** | [**UserStatus**](UserStatus.md) |  | 
 **storageLabel** | **String** |  | 
 **updatedAt** | [**DateTime**](DateTime.md) |  | 
 

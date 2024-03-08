@@ -86,7 +86,7 @@ void main() {
       // TODO
     });
 
-    // String status
+    // UserStatus status
     test('to test the property `status`', () async {
       // TODO
     });

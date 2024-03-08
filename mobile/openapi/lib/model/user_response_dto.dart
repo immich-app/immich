@@ -63,7 +63,7 @@ class UserResponseDto {
 
   bool shouldChangePassword;
 
-  String status;
+  UserStatus status;
 
   String? storageLabel;
 
@@ -173,7 +173,7 @@ class UserResponseDto {
         quotaSizeInBytes: mapValueOfType<int>(json, r'quotaSizeInBytes'),
         quotaUsageInBytes: mapValueOfType<int>(json, r'quotaUsageInBytes'),
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword')!,
-        status: mapValueOfType<String>(json, r'status')!,
+        status: UserStatus.fromJson(json[r'status'])!,
         storageLabel: mapValueOfType<String>(json, r'storageLabel'),
         updatedAt: mapDateTime(json, r'updatedAt', r'')!,
       );

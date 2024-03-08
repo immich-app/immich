@@ -75,7 +75,7 @@ export type UserResponseDto = {
     quotaSizeInBytes: number | null;
     quotaUsageInBytes: number | null;
     shouldChangePassword: boolean;
-    status: string;
+    status: UserStatus;
     storageLabel: string | null;
     updatedAt: string;
 };
@@ -519,7 +519,7 @@ export type PartnerResponseDto = {
     quotaSizeInBytes: number | null;
     quotaUsageInBytes: number | null;
     shouldChangePassword: boolean;
-    status: string;
+    status: UserStatus;
     storageLabel: string | null;
     updatedAt: string;
 };
@@ -2730,6 +2730,11 @@ export enum UserAvatarColor {
     Orange = "orange",
     Gray = "gray",
     Amber = "amber"
+}
+export enum UserStatus {
+    Active = "active",
+    Removing = "removing",
+    Deleted = "deleted"
 }
 export enum TagTypeEnum {
     Object = "OBJECT",

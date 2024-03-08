@@ -8635,7 +8635,7 @@
             "type": "boolean"
           },
           "status": {
-            "type": "string"
+            "$ref": "#/components/schemas/UserStatus"
           },
           "storageLabel": {
             "nullable": true,
@@ -10584,7 +10584,7 @@
             "type": "boolean"
           },
           "status": {
-            "type": "string"
+            "$ref": "#/components/schemas/UserStatus"
           },
           "storageLabel": {
             "nullable": true,
@@ -10613,6 +10613,14 @@
           "updatedAt"
         ],
         "type": "object"
+      },
+      "UserStatus": {
+        "enum": [
+          "active",
+          "removing",
+          "deleted"
+        ],
+        "type": "string"
       },
       "ValidateAccessTokenResponseDto": {
         "properties": {
