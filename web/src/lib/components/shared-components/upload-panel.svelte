@@ -29,18 +29,20 @@
   $: $isUploading && autoHide();
 </script>
 
-{#if $hasError || $isUploading}
+{#if $hasError || ($isUploading && $remainingUploads > 0)}
   <div
     in:fade={{ duration: 250 }}
     out:fade={{ duration: 250 }}
     on:outroend={() => {
-      notificationController.show({
-        message:
-          ($errorCounter > 0
-            ? `Upload completed with ${$errorCounter} error${$errorCounter > 1 ? 's' : ''}`
-            : 'Upload success') + ', refresh the page to see new upload assets.',
-        type: $errorCounter > 0 ? NotificationType.Warning : NotificationType.Info,
-      });
+      if ($hasError) {
+        notificationController.show({
+          message:
+            ($errorCounter > 0
+              ? `Upload completed with ${$errorCounter} error${$errorCounter > 1 ? 's' : ''}`
+              : 'Upload success') + ', refresh the page to see new upload assets.',
+          type: $errorCounter > 0 ? NotificationType.Warning : NotificationType.Info,
+        });
+      }
 
       if ($duplicateCounter > 0) {
         notificationController.show({
