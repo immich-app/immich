@@ -173,6 +173,7 @@ export const utils = {
   },
 
   waitForWebsocketEvent: async ({ event, assetId, timeout: ms }: WaitOptions): Promise<void> => {
+    console.log(`Waiting for ${event} [${assetId}]`);
     const set = events[event];
     if (set.has(assetId)) {
       return;
@@ -231,6 +232,10 @@ export const utils = {
 
     const assetData = dto?.assetData?.bytes || makeRandomImage();
     const filename = dto?.assetData?.filename || 'example.png';
+
+    if (dto?.assetData?.bytes) {
+      console.log(`Uploading ${filename}`);
+    }
 
     const builder = request(app)
       .post(`/asset/upload`)
