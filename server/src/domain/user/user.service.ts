@@ -1,4 +1,4 @@
-import { UserEntity } from '@app/infra/entities';
+import { UserEntity, UserStatus } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
 import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { DateTime } from 'luxon';
@@ -83,6 +83,8 @@ export class UserService {
     await this.albumRepository.softDeleteAll(id);
 
     if (force) {
+      user.status = UserStatus.REMOVING;
+      
       await this.jobRepository.queue({
         name: JobName.USER_DELETION,
         data: { id: user.id, force: force },

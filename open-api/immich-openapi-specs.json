@@ -8634,6 +8634,9 @@
           "shouldChangePassword": {
             "type": "boolean"
           },
+          "status": {
+            "type": "string"
+          },
           "storageLabel": {
             "nullable": true,
             "type": "string"
@@ -8656,6 +8659,7 @@
           "quotaSizeInBytes",
           "quotaUsageInBytes",
           "shouldChangePassword",
+          "status",
           "storageLabel",
           "updatedAt"
         ],
@@ -10579,6 +10583,9 @@
           "shouldChangePassword": {
             "type": "boolean"
           },
+          "status": {
+            "type": "string"
+          },
           "storageLabel": {
             "nullable": true,
             "type": "string"
@@ -10601,6 +10608,7 @@
           "quotaSizeInBytes",
           "quotaUsageInBytes",
           "shouldChangePassword",
+          "status",
           "storageLabel",
           "updatedAt"
         ],

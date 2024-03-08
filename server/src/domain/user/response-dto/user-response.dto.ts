@@ -33,6 +33,7 @@ export class UserResponseDto extends UserDto {
   quotaSizeInBytes!: number | null;
   @ApiProperty({ type: 'integer', format: 'int64' })
   quotaUsageInBytes!: number | null;
+  status!: string;
 }
 
 export const mapSimpleUser = (entity: UserEntity): UserDto => {
@@ -58,5 +59,6 @@ export function mapUser(entity: UserEntity): UserResponseDto {
     memoriesEnabled: entity.memoriesEnabled,
     quotaSizeInBytes: entity.quotaSizeInBytes,
     quotaUsageInBytes: entity.quotaUsageInBytes,
+    status: entity.status,
   };
 }

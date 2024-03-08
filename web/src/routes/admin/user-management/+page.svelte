@@ -212,7 +212,7 @@
                       </button>
                     {/if}
                   {/if}
-                  {#if isDeleted(immichUser)}
+                  {#if isDeleted(immichUser) && immichUser.status != "removing"}
                     <button
                       on:click={() => restoreUserHandler(immichUser)}
                       class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"

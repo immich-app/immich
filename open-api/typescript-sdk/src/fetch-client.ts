@@ -75,6 +75,7 @@ export type UserResponseDto = {
     quotaSizeInBytes: number | null;
     quotaUsageInBytes: number | null;
     shouldChangePassword: boolean;
+    status: string;
     storageLabel: string | null;
     updatedAt: string;
 };
@@ -518,6 +519,7 @@ export type PartnerResponseDto = {
     quotaSizeInBytes: number | null;
     quotaUsageInBytes: number | null;
     shouldChangePassword: boolean;
+    status: string;
     storageLabel: string | null;
     updatedAt: string;
 };

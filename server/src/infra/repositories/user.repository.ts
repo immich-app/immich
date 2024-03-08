@@ -2,7 +2,7 @@ import { IUserRepository, UserFindOptions, UserListFilter, UserStatsQueryRespons
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Not, Repository } from 'typeorm';
-import { AssetEntity, UserEntity } from '../entities';
+import { AssetEntity, UserEntity, UserStatus } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';
 
 @Injectable()
@@ -74,10 +74,18 @@ export class UserRepository implements IUserRepository {
   }
 
   async delete(user: UserEntity, hard?: boolean): Promise<UserEntity> {
+    if (!hard) {
+      if (user.status != UserStatus.REMOVING) {
+        user.status = UserStatus.DELETED;
+      }
+      await this.userRepository.save(user);
+    }
+
     return hard ? this.userRepository.remove(user) : this.userRepository.softRemove(user);
   }
 
   async restore(user: UserEntity): Promise<UserEntity> {
+    await this.userRepository.update(user.id, { status: UserStatus.ACTIVE });
     return this.userRepository.recover(user);
   }
 

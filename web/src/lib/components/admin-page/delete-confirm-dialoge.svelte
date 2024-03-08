@@ -58,7 +58,7 @@
           Queue user and assets for immediate deletion
         </label>
 
-        <input type="checkbox" class="form-checkbox h-5 w-5 color" bind:checked={forceDelete} />
+        <input id="forceDelete" type="checkbox" class="form-checkbox h-5 w-5 color" bind:checked={forceDelete} />
       </div>
 
       <p>Are you sure you want to continue?</p>
