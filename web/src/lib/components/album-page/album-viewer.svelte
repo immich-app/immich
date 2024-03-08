@@ -138,7 +138,9 @@
   {/if}
 </header>
 
-<main class="relative h-screen overflow-hidden transition-all bg-immich-bg px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg">
+<main
+  class="relative h-screen overflow-hidden transition-all bg-immich-bg px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg"
+>
   <AssetGrid {album} {assetStore} {assetInteractionStore}>
     <section class="pt-24">
       <!-- ALBUM TITLE -->
