@@ -18,11 +18,11 @@ import { excludePaths } from './infra.config';
 import { DecorateAll } from './infra.utils';
 
 const aggregation = new ExplicitBucketHistogramAggregation(
-  [0.1, 0.25, 0.5, 0.75, 1, 2.5, 5, 7.5, 10, 25, 50, 75, 100, 250, 500, 750, 1000, 2500, 5000, 7500, 10000],
+  [0.1, 0.25, 0.5, 0.75, 1, 2.5, 5, 7.5, 10, 25, 50, 75, 100, 250, 500, 750, 1000, 2500, 5000, 7500, 10_000],
   true,
 );
 
-const metricsPort = parseInt(process.env.IMMICH_METRICS_PORT ?? '8081');
+const metricsPort = Number.parseInt(process.env.IMMICH_METRICS_PORT ?? '8081');
 
 let metricsEnabled = process.env.IMMICH_METRICS === 'true';
 const hostMetrics = metricsEnabled || process.env.IMMICH_HOST_METRICS === 'true';
