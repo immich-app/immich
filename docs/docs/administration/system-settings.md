@@ -68,5 +68,48 @@ If you have twins, you might want to lower the Max Recognition Distance value, d
 
 ## Map & GPS Settings
 
+### Map Settings
+
 In these settings you can change the appearance of the map in night and day modes according to your personal preference and according to the supported options.
 The map can be easily adjusted via [OpenMapTiles](https://openmaptiles.org/styles/) for example.
+
+### GPS Settings
+
+Immich supports [Reverse Geocoding](/docs/features/reverse-geocoding) using data from the [GeoNames](https://www.geonames.org/) geographical database.
+
+## OAuth Authentication
+
+Immich supports OAuth Authentication, since this part is long and contains many details, we separated it from this page, you can read more [here](/docs/administration/oauth).
+
+## Password Authentication
+
+The administrator can choose to disable the username and password globally, which will mean that **no one**, including the system administrator, will be able to log into Immich until the configuration is activated through the [Server CLI](/docs/administration/server-commands).
+
+## Server Settings
+
+### External Domain 
+
+Add the option to set the instance's "external domain" when constructing the shared link URL to copy to the clipboard.
+
+### Welcome Message
+
+The administrator can set a custom message on the login screen (the message will be displayed to all users).
+
+## Storage Template
+
+Immich supports the storage template option, since this section contains a lot of information, we split it into another page, read more [here](/docs/administration/storage-template).
+
+## Theme Settings
+
+You can write custom CSS that will get loaded in the web application for all users. This enables administrators to change fonts, colors, and other styles.
+
+For example:
+
+```CSS title='CSS'
+  p {
+  color: green
+}
+```
+
+## Thumbnail Settings
+
