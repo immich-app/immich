@@ -12,15 +12,18 @@
   let error: string;
   let success: string;
 
+  let email = '';
   let password = '';
   let confirmPassword = '';
+  let name = '';
   let shouldChangePassword = true;
 
   let canCreateUser = false;
   let quotaSize: number | undefined;
   let isCreatingUser = false;
 
-  $: quotaSizeWarning = quotaSize && convertToBytes(Number(quotaSize), 'GiB') > $serverInfo.diskSizeRaw;
+  $: quotaSizeInBytes = quotaSize ? convertToBytes(quotaSize, 'GiB') : null;
+  $: quotaSizeWarning = quotaSizeInBytes && quotaSizeInBytes > $serverInfo.diskSizeRaw;
 
   $: {
     if (password !== confirmPassword && confirmPassword.length > 0) {
@@ -36,29 +39,19 @@
     cancel: void;
   }>();
 
-  async function registerUser(event: SubmitEvent) {
+  async function registerUser() {
     if (canCreateUser && !isCreatingUser) {
       isCreatingUser = true;
-
       error = '';
-
-      const formElement = event.target as HTMLFormElement;
-
-      const form = new FormData(formElement);
-
-      const email = form.get('email');
-      const password = form.get('password');
-      const name = form.get('name');
-      const quotaSize = form.get('quotaSize');
 
       try {
         await createUser({
           createUserDto: {
-            email: String(email),
-            password: String(password),
-            shouldChangePassword: Boolean(shouldChangePassword),
-            name: String(name),
-            quotaSizeInBytes: quotaSize ? convertToBytes(Number(quotaSize), 'GiB') : null,
+            email,
+            password,
+            shouldChangePassword,
+            name,
+            quotaSizeInBytes,
           },
         });
 
@@ -87,12 +80,12 @@
   <form on:submit|preventDefault={registerUser} autocomplete="off">
     <div class="m-4 flex flex-col gap-2">
       <label class="immich-form-label" for="email">Email</label>
-      <input class="immich-form-input" id="email" name="email" type="email" required />
+      <input class="immich-form-input" id="email" bind:value={email} type="email" required />
     </div>
 
     <div class="m-4 flex flex-col gap-2">
       <label class="immich-form-label" for="password">Password</label>
-      <PasswordField id="password" name="password" bind:password autocomplete="new-password" />
+      <PasswordField id="password" bind:password autocomplete="new-password" />
     </div>
 
     <div class="m-4 flex flex-col gap-2">
@@ -109,16 +102,17 @@
 
     <div class="m-4 flex flex-col gap-2">
       <label class="immich-form-label" for="name">Name</label>
-      <input class="immich-form-input" id="name" name="name" type="text" required />
+      <input class="immich-form-input" id="name" bind:value={name} type="text" required />
     </div>
 
     <div class="m-4 flex flex-col gap-2">
-      <label class="flex items-center gap-2 immich-form-label" for="quotaSize"
-        >Quota Size (GiB) {#if quotaSizeWarning}
+      <label class="flex items-center gap-2 immich-form-label" for="quotaSize">
+        Quota Size (GiB)
+        {#if quotaSizeWarning}
           <p class="text-red-400 text-sm">You set a quota higher than the disk size</p>
-        {/if}</label
-      >
-      <input class="immich-form-input" id="quotaSize" name="quotaSize" type="number" min="0" bind:value={quotaSize} />
+        {/if}
+      </label>
+      <input class="immich-form-input" id="quotaSize" type="number" min="0" bind:value={quotaSize} />
     </div>
 
     {#if error}
