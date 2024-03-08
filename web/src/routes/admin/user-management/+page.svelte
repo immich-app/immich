@@ -140,12 +140,17 @@
 
       {#if shouldShowInfoPanel}
         <FullScreenModal onClose={() => (shouldShowInfoPanel = false)}>
-          <div class="w-[500px] max-w-[95vw] rounded-3xl bg-immich-bg p-8 text-immich-fg shadow-sm dark:bg-immich-dark-gray dark:text-immich-dark-fg">
-            <h1 class="mb-4 text-2xl font-medium text-immich-primary dark:text-immich-dark-primary">Password reset success</h1>
+          <div
+            class="w-[500px] max-w-[95vw] rounded-3xl bg-immich-bg p-8 text-immich-fg shadow-sm dark:bg-immich-dark-gray dark:text-immich-dark-fg"
+          >
+            <h1 class="mb-4 text-2xl font-medium text-immich-primary dark:text-immich-dark-primary">
+              Password reset success
+            </h1>
 
             <p>
               The user's password has been reset to the default <code
-                class="rounded-md bg-gray-200 px-2 py-1 font-bold text-immich-primary dark:text-immich-dark-primary dark:bg-gray-700">password</code
+                class="rounded-md bg-gray-200 px-2 py-1 font-bold text-immich-primary dark:text-immich-dark-primary dark:bg-gray-700"
+                >password</code
               >
               <br />
               <br />
