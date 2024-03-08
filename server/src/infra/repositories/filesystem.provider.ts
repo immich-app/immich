@@ -1,11 +1,12 @@
 import {
   CrawlOptionsDto,
   DiskUsage,
+  IStorageRepository,
   ImmichReadStream,
   ImmichZipStream,
-  IStorageRepository,
-  mimeTypes,
+  StorageEventType,
   WatchEvents,
+  mimeTypes,
 } from '@app/domain';
 import { ImmichLogger } from '@app/infra/logger';
 import archiver from 'archiver';
@@ -141,10 +142,11 @@ export class FilesystemProvider implements IStorageRepository {
   watch(paths: string[], options: WatchOptions, events: Partial<WatchEvents>) {
     const watcher = chokidar.watch(paths, options);
 
-    watcher.on('ready', () => events.onReady?.());
-    watcher.on('add', (path) => events.onAdd?.(path));
-    watcher.on('change', (path) => events.onChange?.(path));
-    watcher.on('unlink', (path) => events.onUnlink?.(path));
+    watcher.on(StorageEventType.READY, () => events.onReady?.());
+    watcher.on(StorageEventType.ADD, (path) => events.onAdd?.(path));
+    watcher.on(StorageEventType.CHANGE, (path) => events.onChange?.(path));
+    watcher.on(StorageEventType.UNLINK, (path) => events.onUnlink?.(path));
+    watcher.on(StorageEventType.ERROR, (error) => events.onError?.(error));
 
     return () => watcher.close();
   }

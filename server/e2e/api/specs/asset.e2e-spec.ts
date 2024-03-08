@@ -14,6 +14,7 @@ import { AssetEntity, AssetStackEntity, AssetType, SharedLinkType } from '@app/i
 import { AssetRepository } from '@app/infra/repositories';
 import { INestApplication } from '@nestjs/common';
 import { errorStub, userDto, uuidStub } from '@test/fixtures';
+import { assetApi } from 'e2e/client/asset-api';
 import { randomBytes } from 'node:crypto';
 import request from 'supertest';
 import { api } from '../../client';
@@ -532,6 +533,23 @@ describe(`${AssetController.name} (e2e)`, () => {
         }
       });
     }
+
+    it('should return stack data', async () => {
+      const parentId = asset1.id;
+      const childIds = [asset2.id, asset3.id];
+      await request(server)
+        .put('/asset')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ stackParentId: parentId, ids: childIds });
+
+      const body = await assetApi.getAllAssets(server, user1.accessToken);
+      // Response includes parent with stack children count
+      const parentDto = body.find((a) => a.id == parentId);
+      expect(parentDto?.stackCount).toEqual(3);
+
+      // Response includes children at the root level
+      expect.arrayContaining([expect.objectContaining({ id: asset1.id }), expect.objectContaining({ id: asset2.id })]);
+    });
   });
 
   describe('POST /asset/upload', () => {
@@ -589,6 +607,42 @@ describe(`${AssetController.name} (e2e)`, () => {
 
       const asset = await api.assetApi.get(server, user1.accessToken, body.id);
       expect(asset).toMatchObject({ id: body.id, isFavorite: true });
+    });
+
+    it('should have correct original file name and extension (simple)', async () => {
+      const { body, status } = await request(server)
+        .post('/asset/upload')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .field('deviceAssetId', 'example-image')
+        .field('deviceId', 'TEST')
+        .field('fileCreatedAt', new Date().toISOString())
+        .field('fileModifiedAt', new Date().toISOString())
+        .field('isFavorite', 'true')
+        .field('duration', '0:00:00.000000')
+        .attach('assetData', randomBytes(32), 'example.jpg');
+      expect(status).toBe(201);
+      expect(body).toEqual({ id: expect.any(String), duplicate: false });
+
+      const asset = await api.assetApi.get(server, user1.accessToken, body.id);
+      expect(asset).toMatchObject({ id: body.id, originalFileName: 'example.jpg' });
+    });
+
+    it('should have correct original file name and extension (complex)', async () => {
+      const { body, status } = await request(server)
+        .post('/asset/upload')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .field('deviceAssetId', 'example-image')
+        .field('deviceId', 'TEST')
+        .field('fileCreatedAt', new Date().toISOString())
+        .field('fileModifiedAt', new Date().toISOString())
+        .field('isFavorite', 'true')
+        .field('duration', '0:00:00.000000')
+        .attach('assetData', randomBytes(32), 'example.complex.ext.jpg');
+      expect(status).toBe(201);
+      expect(body).toEqual({ id: expect.any(String), duplicate: false });
+
+      const asset = await api.assetApi.get(server, user1.accessToken, body.id);
+      expect(asset).toMatchObject({ id: body.id, originalFileName: 'example.complex.ext.jpg' });
     });
 
     it('should not upload the same asset twice', async () => {

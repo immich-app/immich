@@ -195,7 +195,7 @@
                   <img
                     class="rounded-lg w-[75px] h-[75px] object-cover"
                     src={getAssetThumbnailUrl(reaction.assetId, ThumbnailFormat.Webp)}
-                    alt="comment-thumbnail"
+                    alt="Profile picture of {reaction.user.name}, who commented on this asset"
                   />
                 </div>
               {/if}
@@ -241,7 +241,7 @@
                     <img
                       class="rounded-lg w-[75px] h-[75px] object-cover"
                       src={getAssetThumbnailUrl(reaction.assetId, ThumbnailFormat.Webp)}
-                      alt="like-thumbnail"
+                      alt="Profile picture of {reaction.user.name}, who liked this asset"
                     />
                   </div>
                 {/if}

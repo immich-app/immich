@@ -8,12 +8,13 @@ import {
 import {
   authStub,
   newAlbumRepositoryMock,
-  newAssetRepositoryMock,
   newCryptoRepositoryMock,
   newJobRepositoryMock,
   newLibraryRepositoryMock,
   newStorageRepositoryMock,
+  newSystemConfigRepositoryMock,
   newUserRepositoryMock,
+  systemConfigStub,
   userStub,
 } from '@test';
 import { when } from 'jest-when';
@@ -21,11 +22,11 @@ import { CacheControl, ImmichFileResponse } from '../domain.util';
 import { JobName } from '../job';
 import {
   IAlbumRepository,
-  IAssetRepository,
   ICryptoRepository,
   IJobRepository,
   ILibraryRepository,
   IStorageRepository,
+  ISystemConfigRepository,
   IUserRepository,
 } from '../repositories';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -44,21 +45,21 @@ describe(UserService.name, () => {
   let cryptoRepositoryMock: jest.Mocked<ICryptoRepository>;
 
   let albumMock: jest.Mocked<IAlbumRepository>;
-  let assetMock: jest.Mocked<IAssetRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
   let libraryMock: jest.Mocked<ILibraryRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
+  let configMock: jest.Mocked<ISystemConfigRepository>;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     albumMock = newAlbumRepositoryMock();
-    assetMock = newAssetRepositoryMock();
+    configMock = newSystemConfigRepositoryMock();
     cryptoRepositoryMock = newCryptoRepositoryMock();
     jobMock = newJobRepositoryMock();
     libraryMock = newLibraryRepositoryMock();
     storageMock = newStorageRepositoryMock();
     userMock = newUserRepositoryMock();
 
-    sut = new UserService(albumMock, assetMock, cryptoRepositoryMock, jobMock, libraryMock, storageMock, userMock);
+    sut = new UserService(albumMock, cryptoRepositoryMock, jobMock, libraryMock, storageMock, configMock, userMock);
 
     when(userMock.get).calledWith(authStub.admin.user.id, {}).mockResolvedValue(userStub.admin);
     when(userMock.get).calledWith(authStub.admin.user.id, { withDeleted: true }).mockResolvedValue(userStub.admin);
@@ -461,8 +462,34 @@ describe(UserService.name, () => {
       expect(jobMock.queueAll).toHaveBeenCalledWith([]);
     });
 
+    it('should skip users not ready for deletion - deleteDelay30', async () => {
+      configMock.load.mockResolvedValue(systemConfigStub.deleteDelay30);
+      userMock.getDeletedUsers.mockResolvedValue([
+        {},
+        { deletedAt: undefined },
+        { deletedAt: null },
+        { deletedAt: makeDeletedAt(15) },
+      ] as UserEntity[]);
+
+      await sut.handleUserDeleteCheck();
+
+      expect(userMock.getDeletedUsers).toHaveBeenCalled();
+      expect(jobMock.queue).not.toHaveBeenCalled();
+      expect(jobMock.queueAll).toHaveBeenCalledWith([]);
+    });
+
     it('should queue user ready for deletion', async () => {
       const user = { id: 'deleted-user', deletedAt: makeDeletedAt(10) };
+      userMock.getDeletedUsers.mockResolvedValue([user] as UserEntity[]);
+
+      await sut.handleUserDeleteCheck();
+
+      expect(userMock.getDeletedUsers).toHaveBeenCalled();
+      expect(jobMock.queueAll).toHaveBeenCalledWith([{ name: JobName.USER_DELETION, data: { id: user.id } }]);
+    });
+
+    it('should queue user ready for deletion - deleteDelay30', async () => {
+      const user = { id: 'deleted-user', deletedAt: makeDeletedAt(31) };
       userMock.getDeletedUsers.mockResolvedValue([user] as UserEntity[]);
 
       await sut.handleUserDeleteCheck();
@@ -497,7 +524,6 @@ describe(UserService.name, () => {
       expect(storageMock.unlinkDir).toHaveBeenCalledWith('upload/thumbs/deleted-user', options);
       expect(storageMock.unlinkDir).toHaveBeenCalledWith('upload/encoded-video/deleted-user', options);
       expect(albumMock.deleteAll).toHaveBeenCalledWith(user.id);
-      expect(assetMock.deleteAll).toHaveBeenCalledWith(user.id);
       expect(userMock.delete).toHaveBeenCalledWith(user, true);
     });
 

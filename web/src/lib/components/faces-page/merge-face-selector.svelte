@@ -158,8 +158,8 @@
       <ConfirmDialogue
         title="Merge people"
         confirmText="Merge"
-        on:confirm={handleMerge}
-        on:cancel={() => (isShowConfirmation = false)}
+        onConfirm={handleMerge}
+        onClose={() => (isShowConfirmation = false)}
       >
         <svelte:fragment slot="prompt">
           <p>Are you sure you want merge these people ?</p></svelte:fragment

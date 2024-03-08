@@ -127,7 +127,7 @@
               faceDto: { id: personWithFace.id },
             });
           } else if (selectedPersonToCreate[personWithFace.id]) {
-            const data = await createPerson();
+            const data = await createPerson({ personCreateDto: {} });
             peopleToCreate.push(data.id);
             await reassignFacesById({
               id: data.id,

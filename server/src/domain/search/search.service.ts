@@ -1,5 +1,4 @@
 import { AssetEntity } from '@app/infra/entities';
-import { ImmichLogger } from '@app/infra/logger';
 import { Inject, Injectable } from '@nestjs/common';
 import { AssetOrder, AssetResponseDto, mapAsset } from '../asset';
 import { AuthDto } from '../auth';
@@ -30,7 +29,6 @@ import { SearchResponseDto } from './response-dto';
 
 @Injectable()
 export class SearchService {
-  private logger = new ImmichLogger(SearchService.name);
   private configCore: SystemConfigCore;
 
   constructor(
@@ -181,7 +179,7 @@ export class SearchService {
     return userIds;
   }
 
-  private async mapResponse(assets: AssetEntity[], nextPage: string | null): Promise<SearchResponseDto> {
+  private mapResponse(assets: AssetEntity[], nextPage: string | null): SearchResponseDto {
     return {
       albums: { total: 0, count: 0, items: [], facets: [] },
       assets: {

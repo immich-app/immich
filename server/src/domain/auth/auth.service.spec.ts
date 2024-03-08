@@ -74,7 +74,7 @@ describe('AuthService', () => {
   let callbackMock: jest.Mock;
   let userinfoMock: jest.Mock;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     callbackMock = jest.fn().mockReturnValue({ access_token: 'access-token' });
     userinfoMock = jest.fn().mockResolvedValue({ sub, email });
 

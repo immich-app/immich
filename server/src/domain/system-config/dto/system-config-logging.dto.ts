@@ -1,9 +1,10 @@
 import { LogLevel } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsEnum } from 'class-validator';
+import { IsEnum } from 'class-validator';
+import { ValidateBoolean } from '../../domain.util';
 
 export class SystemConfigLoggingDto {
-  @IsBoolean()
+  @ValidateBoolean()
   enabled!: boolean;
 
   @ApiProperty({ enum: LogLevel, enumName: 'LogLevel' })

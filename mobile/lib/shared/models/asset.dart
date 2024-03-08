@@ -22,7 +22,7 @@ class Asset {
         updatedAt = remote.updatedAt,
         durationInSeconds = remote.duration.toDuration()?.inSeconds ?? 0,
         type = remote.type.toAssetType(),
-        fileName = p.basename(remote.originalPath),
+        fileName = remote.originalFileName,
         height = remote.exifInfo?.exifImageHeight?.toInt(),
         width = remote.exifInfo?.exifImageWidth?.toInt(),
         livePhotoVideoId = remote.livePhotoVideoId,

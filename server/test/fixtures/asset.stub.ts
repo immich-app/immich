@@ -16,7 +16,7 @@ export const assetStackStub = (stackId: string, assets: AssetEntity[]): AssetSta
 export const assetStub = {
   noResizePath: Object.freeze<AssetEntity>({
     id: 'asset-id',
-    originalFileName: 'IMG_123',
+    originalFileName: 'IMG_123.jpg',
     deviceAssetId: 'device-asset-id',
     fileModifiedAt: new Date('2023-02-23T05:06:29.716Z'),
     fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
@@ -77,7 +77,7 @@ export const assetStub = {
     livePhotoVideoId: null,
     tags: [],
     sharedLinks: [],
-    originalFileName: 'IMG_456',
+    originalFileName: 'IMG_456.jpg',
     faces: [],
     sidecarPath: null,
     isReadOnly: false,
@@ -482,6 +482,9 @@ export const assetStub = {
       latitude: 100,
       longitude: 100,
       fileSizeInByte: 23_456,
+      city: 'test-city',
+      state: 'test-state',
+      country: 'test-country',
     } as ExifEntity,
     deletedAt: null,
   }),

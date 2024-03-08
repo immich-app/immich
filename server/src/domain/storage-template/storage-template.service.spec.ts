@@ -45,7 +45,7 @@ describe(StorageTemplateService.name, () => {
     expect(sut).toBeDefined();
   });
 
-  beforeEach(async () => {
+  beforeEach(() => {
     configMock = newSystemConfigRepositoryMock();
     assetMock = newAssetRepositoryMock();
     albumMock = newAlbumRepositoryMock();

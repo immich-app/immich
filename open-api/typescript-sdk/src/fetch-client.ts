@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.97.0
+ * 1.98.0
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -260,9 +260,12 @@ export type AssetJobsDto = {
     name: AssetJobName;
 };
 export type MapMarkerResponseDto = {
+    city: string | null;
+    country: string | null;
     id: string;
     lat: number;
     lon: number;
+    state: string | null;
 };
 export type MemoryLaneResponseDto = {
     assets: AssetResponseDto[];
@@ -526,6 +529,15 @@ export type PeopleResponseDto = {
     people: PersonResponseDto[];
     total: number;
 };
+export type PersonCreateDto = {
+    /** Person date of birth.
+    Note: the mobile app cannot currently set the birth date to null. */
+    birthDate?: string | null;
+    /** Person visibility */
+    isHidden?: boolean;
+    /** Person name. */
+    name?: string;
+};
 export type PeopleUpdateItem = {
     /** Person date of birth.
     Note: the mobile app cannot currently set the birth date to null. */
@@ -702,6 +714,7 @@ export type ServerConfigDto = {
     loginPageMessage: string;
     oauthButtonText: string;
     trashDays: number;
+    userDeleteDelay: number;
 };
 export type ServerFeaturesDto = {
     configFile: boolean;
@@ -915,6 +928,9 @@ export type SystemConfigTrashDto = {
     days: number;
     enabled: boolean;
 };
+export type SystemConfigUserDto = {
+    deleteDelay: number;
+};
 export type SystemConfigDto = {
     ffmpeg: SystemConfigFFmpegDto;
     job: SystemConfigJobDto;
@@ -931,6 +947,7 @@ export type SystemConfigDto = {
     theme: SystemConfigThemeDto;
     thumbnail: SystemConfigThumbnailDto;
     trash: SystemConfigTrashDto;
+    user: SystemConfigUserDto;
 };
 export type SystemConfigTemplateStorageOptionDto = {
     dayOptions: string[];
@@ -955,6 +972,7 @@ export type CreateUserDto = {
     name: string;
     password: string;
     quotaSizeInBytes?: number | null;
+    shouldChangePassword?: boolean;
     storageLabel?: string | null;
 };
 export type UpdateUserDto = {
@@ -2042,14 +2060,17 @@ export function getAllPeople({ withHidden }: {
         ...opts
     }));
 }
-export function createPerson(opts?: Oazapfts.RequestOpts) {
+export function createPerson({ personCreateDto }: {
+    personCreateDto: PersonCreateDto;
+}, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 201;
         data: PersonResponseDto;
-    }>("/person", {
+    }>("/person", oazapfts.json({
         ...opts,
-        method: "POST"
-    }));
+        method: "POST",
+        body: personCreateDto
+    })));
 }
 export function updatePeople({ peopleUpdateDto }: {
     peopleUpdateDto: PeopleUpdateDto;

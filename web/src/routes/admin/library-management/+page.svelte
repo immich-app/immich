@@ -307,8 +307,8 @@
   <ConfirmDialogue
     title="Warning!"
     prompt="Are you sure you want to delete this library? This will delete all {deleteAssetCount} contained assets from Immich and cannot be undone. Files will remain on disk."
-    on:confirm={handleDelete}
-    on:cancel={() => (confirmDeleteLibrary = null)}
+    onConfirm={handleDelete}
+    onClose={() => (confirmDeleteLibrary = null)}
   />
 {/if}
 

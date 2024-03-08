@@ -103,19 +103,13 @@
   <section id="setting-content" class="flex place-content-center sm:mx-4">
     <section class="w-full pb-28 lg:w-[850px]">
       {#if shouldShowCreateUserForm}
-        <FullScreenModal
-          on:clickOutside={() => (shouldShowCreateUserForm = false)}
-          on:escape={() => (shouldShowCreateUserForm = false)}
-        >
+        <FullScreenModal onClose={() => (shouldShowCreateUserForm = false)}>
           <CreateUserForm on:submit={onUserCreated} on:cancel={() => (shouldShowCreateUserForm = false)} />
         </FullScreenModal>
       {/if}
 
       {#if shouldShowEditUserForm}
-        <FullScreenModal
-          on:clickOutside={() => (shouldShowEditUserForm = false)}
-          on:escape={() => (shouldShowEditUserForm = false)}
-        >
+        <FullScreenModal onClose={() => (shouldShowEditUserForm = false)}>
           <EditUserForm
             user={selectedUser}
             canResetPassword={selectedUser?.id !== $user.id}
@@ -145,17 +139,20 @@
       {/if}
 
       {#if shouldShowInfoPanel}
-        <FullScreenModal
-          on:clickOutside={() => (shouldShowInfoPanel = false)}
-          on:escape={() => (shouldShowInfoPanel = false)}
-        >
-          <div class="w-[500px] max-w-[95vw] rounded-3xl border bg-white p-8 text-sm shadow-sm">
-            <h1 class="mb-4 text-lg font-medium text-immich-primary">Password reset success</h1>
+        <FullScreenModal onClose={() => (shouldShowInfoPanel = false)}>
+          <div
+            class="w-[500px] max-w-[95vw] rounded-3xl bg-immich-bg p-8 text-immich-fg shadow-sm dark:bg-immich-dark-gray dark:text-immich-dark-fg"
+          >
+            <h1 class="mb-4 text-2xl font-medium text-immich-primary dark:text-immich-dark-primary">
+              Password reset success
+            </h1>
 
             <p>
               The user's password has been reset to the default <code
-                class="rounded-md bg-gray-200 px-2 py-1 font-bold text-immich-primary">password</code
+                class="rounded-md bg-gray-200 px-2 py-1 font-bold text-immich-primary dark:text-immich-dark-primary dark:bg-gray-700"
+                >password</code
               >
+              <br />
               <br />
               Please inform the user, and they will need to change the password at the next log-on.
             </p>
