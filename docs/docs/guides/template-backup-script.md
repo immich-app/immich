@@ -31,7 +31,7 @@ ssh "$REMOTE_HOST" "mkdir \"$REMOTE_BACKUP_PATH\"/immich-borg"
 ssh "$REMOTE_HOST" "borg init --encryption=none \"$REMOTE_BACKUP_PATH\"/immich-borg"
 ```
 
-Edit the following script as necessary and add it to your crontab. Note that this script assumes there are no `:` or `"` characters in your paths. If these characters exist, you will need to escape and/or rename the paths.
+Edit the following script as necessary and add it to your crontab. Note that this script assumes there are no `:`, `@`, or `"` characters in your paths. If these characters exist, you will need to escape and/or rename the paths.
 ```bash title='Borg backup template'
 #!/bin/sh
 
@@ -50,7 +50,7 @@ docker exec -t immich_postgres pg_dumpall -c -U postgres > "$UPLOAD_LOCATION"/da
 # docker exec -t immich_postgres pg_dumpall -c -U postgres | /usr/bin/gzip --rsyncable > "$UPLOAD_LOCATION"/database-backup/immich-database.sql.gz
 
 ### Append to local Borg repository
-borg create $BACKUP_PATH/immich-borg::{now} "$UPLOAD_LOCATION" --exclude "$UPLOAD_LOCATION"/thumbs/ --exclude "$UPLOAD_LOCATION"/encoded-video/
+borg create "$BACKUP_PATH"/immich-borg::{now} "$UPLOAD_LOCATION" --exclude "$UPLOAD_LOCATION"/thumbs/ --exclude "$UPLOAD_LOCATION"/encoded-video/
 borg prune --keep-weekly=4 --keep-monthly=3 "$BACKUP_PATH"/immich-borg
 borg compact "$BACKUP_PATH"/immich-borg
 
