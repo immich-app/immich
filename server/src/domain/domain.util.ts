@@ -1,7 +1,7 @@
 import { ImmichLogger } from '@app/infra/logger';
-import { applyDecorators } from '@nestjs/common';
+import { BadRequestException, applyDecorators } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
-import { Transform, Type } from 'class-transformer';
+import { Transform } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
@@ -12,6 +12,7 @@ import {
   IsUUID,
   ValidateIf,
   ValidationOptions,
+  isDateString,
 } from 'class-validator';
 import { CronJob } from 'cron';
 import _ from 'lodash';
@@ -40,14 +41,10 @@ export interface OpenGraphTags {
   imageUrl?: string;
 }
 
-export type Options = {
-  optional?: boolean;
-  each?: boolean;
-};
-
 export const isConnectionAborted = (error: Error | any) => error.code === 'ECONNABORTED';
 
-export function ValidateUUID(options?: Options) {
+type UUIDOptions = { optional?: boolean; each?: boolean };
+export const ValidateUUID = (options?: UUIDOptions) => {
   const { optional, each } = { optional: false, each: false, ...options };
   return applyDecorators(
     IsUUID('4', { each }),
@@ -55,7 +52,58 @@ export function ValidateUUID(options?: Options) {
     optional ? Optional() : IsNotEmpty(),
     each ? IsArray() : IsString(),
   );
-}
+};
+
+type DateOptions = { optional?: boolean; nullable?: boolean; format?: 'date' | 'date-time' };
+export const ValidateDate = (options?: DateOptions) => {
+  const { optional, nullable, format } = { optional: false, nullable: false, format: 'date-time', ...options };
+
+  const decorators = [
+    ApiProperty({ format }),
+    IsDate(),
+    optional ? Optional({ nullable: true }) : IsNotEmpty(),
+    Transform(({ key, value }) => {
+      if (value === null || value === undefined) {
+        return value;
+      }
+
+      if (!isDateString(value)) {
+        throw new BadRequestException(`${key} must be a date string`);
+      }
+
+      return new Date(value as string);
+    }),
+  ];
+
+  if (optional) {
+    decorators.push(Optional({ nullable }));
+  }
+
+  return applyDecorators(...decorators);
+};
+
+type BooleanOptions = { optional?: boolean };
+export const ValidateBoolean = (options?: BooleanOptions) => {
+  const { optional } = { optional: false, ...options };
+  const decorators = [
+    // ApiProperty(),
+    IsBoolean(),
+    Transform(({ value }) => {
+      if (value == 'true') {
+        return true;
+      } else if (value == 'false') {
+        return false;
+      }
+      return value;
+    }),
+  ];
+
+  if (optional) {
+    decorators.push(Optional());
+  }
+
+  return applyDecorators(...decorators);
+};
 
 export function validateCronExpression(expression: string) {
   try {
@@ -67,34 +115,7 @@ export function validateCronExpression(expression: string) {
   return true;
 }
 
-interface IValue {
-  value?: string;
-}
-
-export const QueryBoolean = ({ optional }: { optional?: boolean }) => {
-  const decorators = [IsBoolean(), Transform(toBoolean)];
-  if (optional) {
-    decorators.push(Optional());
-  }
-  return applyDecorators(...decorators);
-};
-
-export const QueryDate = ({ optional }: { optional?: boolean }) => {
-  const decorators = [IsDate(), Type(() => Date)];
-  if (optional) {
-    decorators.push(Optional());
-  }
-  return applyDecorators(...decorators);
-};
-
-export const toBoolean = ({ value }: IValue) => {
-  if (value == 'true') {
-    return true;
-  } else if (value == 'false') {
-    return false;
-  }
-  return value;
-};
+type IValue = { value: string };
 
 export const toEmail = ({ value }: IValue) => value?.toLowerCase();
 

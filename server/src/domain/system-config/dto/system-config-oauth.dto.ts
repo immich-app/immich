@@ -1,13 +1,14 @@
-import { IsBoolean, IsNotEmpty, IsNumber, IsString, IsUrl, Min, ValidateIf } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString, IsUrl, Min, ValidateIf } from 'class-validator';
+import { ValidateBoolean } from '../../domain.util';
 
 const isEnabled = (config: SystemConfigOAuthDto) => config.enabled;
 const isOverrideEnabled = (config: SystemConfigOAuthDto) => config.mobileOverrideEnabled;
 
 export class SystemConfigOAuthDto {
-  @IsBoolean()
+  @ValidateBoolean()
   autoLaunch!: boolean;
 
-  @IsBoolean()
+  @ValidateBoolean()
   autoRegister!: boolean;
 
   @IsString()
@@ -27,7 +28,7 @@ export class SystemConfigOAuthDto {
   @Min(0)
   defaultStorageQuota!: number;
 
-  @IsBoolean()
+  @ValidateBoolean()
   enabled!: boolean;
 
   @ValidateIf(isEnabled)
@@ -35,7 +36,7 @@ export class SystemConfigOAuthDto {
   @IsString()
   issuerUrl!: string;
 
-  @IsBoolean()
+  @ValidateBoolean()
   mobileOverrideEnabled!: boolean;
 
   @ValidateIf(isOverrideEnabled)

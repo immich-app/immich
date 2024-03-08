@@ -4012,7 +4012,6 @@
             "required": false,
             "in": "query",
             "schema": {
-              "default": false,
               "type": "boolean"
             }
           }
@@ -8937,7 +8936,6 @@
       "ScanLibraryDto": {
         "properties": {
           "refreshAllFiles": {
-            "default": false,
             "type": "boolean"
           },
           "refreshModifiedFiles": {
@@ -9346,7 +9344,6 @@
             "type": "boolean"
           },
           "allowUpload": {
-            "default": false,
             "type": "boolean"
           },
           "assetIds": {
