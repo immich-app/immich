@@ -39,8 +39,11 @@ export class AssetRepositoryV1 implements IAssetRepositoryV1 {
   ) {}
 
   /**
-   * Get all assets belong to the user on the database
-   * @param ownerId
+   * Retrieves all assets by user ID.
+   *
+   * @param ownerId - The ID of the owner.
+   * @param dto - The AssetSearchDto object containing search criteria.
+   * @returns A Promise that resolves to an array of AssetEntity objects.
    */
   getAllByUserId(ownerId: string, dto: AssetSearchDto): Promise<AssetEntity[]> {
     return this.assetRepository.find({

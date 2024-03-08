@@ -140,10 +140,6 @@ export interface IAssetRepository {
   updateOfflineLibraryAssets(libraryId: string, originalPaths: string[]): Promise<void>;
   deleteAll(ownerId: string): Promise<void>;
   getAll(pagination: PaginationOptions, options?: AssetSearchOptions): Paginated<AssetEntity>;
-  getAllByFileCreationDate(
-    pagination: PaginationOptions,
-    options?: AssetSearchOneToOneRelationOptions,
-  ): Paginated<AssetEntity>;
   getAllByDeviceId(userId: string, deviceId: string): Promise<string[]>;
   updateAll(ids: string[], options: Partial<AssetEntity>): Promise<void>;
   save(asset: Pick<AssetEntity, 'id'> & Partial<AssetEntity>): Promise<AssetEntity>;

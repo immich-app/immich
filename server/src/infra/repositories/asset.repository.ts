@@ -58,6 +58,12 @@ export class AssetRepository implements IAssetRepository {
     @InjectRepository(AssetJobStatusEntity) private jobStatusRepository: Repository<AssetJobStatusEntity>,
     @InjectRepository(SmartInfoEntity) private smartInfoRepository: Repository<SmartInfoEntity>,
   ) {}
+  getAllByFileCreationDate(
+    pagination: PaginationOptions,
+    options?: AssetSearchOneToOneRelationOptions | undefined,
+  ): Paginated<AssetEntity> {
+    throw new Error('Method not implemented.');
+  }
 
   async upsertExif(exif: Partial<ExifEntity>): Promise<void> {
     await this.exifRepository.upsert(exif, { conflictPaths: ['assetId'] });
@@ -226,29 +232,6 @@ export class AssetRepository implements IAssetRepository {
     let builder = this.repository.createQueryBuilder('asset');
     builder = searchAssetBuilder(builder, options);
     builder.orderBy('asset.createdAt', options.orderDirection ?? 'ASC');
-    return paginatedBuilder<AssetEntity>(builder, {
-      mode: PaginationMode.SKIP_TAKE,
-      skip: pagination.skip,
-      take: pagination.take,
-    });
-  }
-
-  @GenerateSql({
-    params: [
-      { skip: 20_000, take: 10_000 },
-      {
-        takenBefore: DummyValue.DATE,
-        userIds: [DummyValue.UUID],
-      },
-    ],
-  })
-  getAllByFileCreationDate(
-    pagination: PaginationOptions,
-    options: AssetSearchOneToOneRelationOptions = {},
-  ): Paginated<AssetEntity> {
-    let builder = this.repository.createQueryBuilder('asset');
-    builder = searchAssetBuilder(builder, options);
-    builder.orderBy('asset.fileCreatedAt', options.orderDirection ?? 'DESC');
     return paginatedBuilder<AssetEntity>(builder, {
       mode: PaginationMode.SKIP_TAKE,
       skip: pagination.skip,
