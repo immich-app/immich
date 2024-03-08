@@ -1,10 +1,13 @@
-import { IsBoolean, IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
+import { ValidateBoolean } from '../../domain.util';
 
 export class SystemConfigStorageTemplateDto {
-  @IsBoolean()
+  @ValidateBoolean()
   enabled!: boolean;
-  @IsBoolean()
+
+  @ValidateBoolean()
   hashVerificationEnabled!: boolean;
+
   @IsNotEmpty()
   @IsString()
   template!: string;

@@ -1,11 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsBoolean, IsEnum, IsNotEmpty, IsNumber, IsString, Max, Min } from 'class-validator';
-import { Optional } from '../../domain.util';
+import { IsEnum, IsNotEmpty, IsNumber, IsString, Max, Min } from 'class-validator';
+import { Optional, ValidateBoolean } from '../../domain.util';
 import { CLIPMode, ModelType } from '../../repositories';
 
 export class ModelConfig {
-  @IsBoolean()
+  @ValidateBoolean()
   enabled!: boolean;
 
   @IsString()

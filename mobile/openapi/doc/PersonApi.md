@@ -114,7 +114,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **withHidden** | **bool**|  | [optional] [default to false]
+ **withHidden** | **bool**|  | [optional] 
 
 ### Return type
 

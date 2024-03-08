@@ -11,10 +11,26 @@ Edit `docker-compose.yml` to add two new mount points under `volumes:`
 ```
   immich-server:
     volumes:
-      - /path/to/photos/on/host:/usr/src/app/external
+      - ${EXTERNAL_PATH}:/usr/src/app/external
 ```
 
 Be sure to add exactly the same line to both `immich-server:` and `immich-microservices:`.
+
+Edit `.env` to define `EXTERNAL_PATH`, substituting in the correct path for your computer:
+
+```
+EXTERNAL_PATH=<your-path-here>
+```
+
+On my computer, for example, I use this path:
+
+```
+EXTERNAL_PATH=/home/tenino/photos
+```
+
+:::info EXTERNAL_PATH design
+The design choice to put the EXTERNAL_PATH into .env rather than put two copies of the absolute path in the yml file in order to make everything easier, so if you have two copies of the same path that have to be kept in sync, then someday later when you move the data, update only one of the paths, without everything will break mysteriously.
+:::
 
 Restart Immich.
 
@@ -42,7 +58,7 @@ In the Immich web UI:
 - Click the three-dots menu and select **Edit Import Paths**
   <img src={require('./img/edit-import-paths.png').default} width="50%" title="Edit Import Paths menu option" />
 
-- Click \*_Add path_
+- Click Add path
   <img src={require('./img/add-path-button.png').default} width="50%" title="Add Path button" />
 
 - Enter **/usr/src/app/external** as the path and click Add

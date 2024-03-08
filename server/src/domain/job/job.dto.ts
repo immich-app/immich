@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsEnum, IsNotEmpty } from 'class-validator';
-import { Optional } from '../domain.util';
+import { IsEnum, IsNotEmpty } from 'class-validator';
+import { ValidateBoolean } from '../domain.util';
 import { JobCommand, QueueName } from './job.constants';
 
 export class JobIdParamDto {
@@ -16,8 +16,7 @@ export class JobCommandDto {
   @ApiProperty({ type: 'string', enum: JobCommand, enumName: 'JobCommand' })
   command!: JobCommand;
 
-  @Optional()
-  @IsBoolean()
+  @ValidateBoolean({ optional: true })
   force!: boolean;
 }
 

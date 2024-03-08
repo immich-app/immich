@@ -13,7 +13,7 @@ Run `docker exec -it immich_postgres psql immich <DB_USERNAME>` to connect to th
 ## Assets
 
 :::note
-The `"originalFileName"` column is the name of the uploaded file _without_ the extension.
+The `"originalFileName"` column is the name of the file at time of upload, including the extension.
 :::
 
 ```sql title="Find by original filename"
@@ -38,6 +38,10 @@ SELECT * FROM "assets" where "livePhotoVideoId" IS NOT NULL;
 
 ```sql title="Without metadata"
 SELECT "assets".* FROM "exif"  LEFT JOIN "assets" ON "assets"."id" = "exif"."assetId" WHERE "exif"."assetId" IS NULL;
+```
+
+```sql title="size < 100,000 bytes, smallest to largest"
+SELECT * FROM "assets" JOIN "exif" ON "assets"."id" = "exif"."assetId" WHERE "exif"."fileSizeInByte" < 100000 ORDER BY "exif"."fileSizeInByte" ASC;
 ```
 
 ```sql title="Without thumbnails"

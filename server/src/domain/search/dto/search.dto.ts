@@ -1,9 +1,9 @@
 import { AssetOrder } from '@app/domain/asset/dto/asset.dto';
 import { AssetType, GeodataPlacesEntity } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
-import { Transform, Type } from 'class-transformer';
-import { IsBoolean, IsEnum, IsInt, IsNotEmpty, IsString, Max, Min } from 'class-validator';
-import { Optional, QueryBoolean, QueryDate, ValidateUUID, toBoolean } from '../../domain.util';
+import { Type } from 'class-transformer';
+import { IsEnum, IsInt, IsNotEmpty, IsString, Max, Min } from 'class-validator';
+import { Optional, ValidateBoolean, ValidateDate, ValidateUUID } from '../../domain.util';
 
 class BaseSearchDto {
   @ValidateUUID({ optional: true })
@@ -19,62 +19,62 @@ class BaseSearchDto {
   @ApiProperty({ enumName: 'AssetTypeEnum', enum: AssetType })
   type?: AssetType;
 
-  @QueryBoolean({ optional: true })
+  @ValidateBoolean({ optional: true })
   isArchived?: boolean;
 
-  @QueryBoolean({ optional: true })
+  @ValidateBoolean({ optional: true })
   @ApiProperty({ default: false })
   withArchived?: boolean;
 
-  @QueryBoolean({ optional: true })
+  @ValidateBoolean({ optional: true })
   isEncoded?: boolean;
 
-  @QueryBoolean({ optional: true })
+  @ValidateBoolean({ optional: true })
   isExternal?: boolean;
 
-  @QueryBoolean({ optional: true })
+  @ValidateBoolean({ optional: true })
   isFavorite?: boolean;
 
-  @QueryBoolean({ optional: true })
+  @ValidateBoolean({ optional: true })
   isMotion?: boolean;
 
-  @QueryBoolean({ optional: true })
+  @ValidateBoolean({ optional: true })
   isOffline?: boolean;
 
-  @QueryBoolean({ optional: true })
+  @ValidateBoolean({ optional: true })
   isReadOnly?: boolean;
 
-  @QueryBoolean({ optional: true })
+  @ValidateBoolean({ optional: true })
   isVisible?: boolean;
 
-  @QueryBoolean({ optional: true })
+  @ValidateBoolean({ optional: true })
   withDeleted?: boolean;
 
-  @QueryBoolean({ optional: true })
+  @ValidateBoolean({ optional: true })
   withExif?: boolean;
 
-  @QueryDate({ optional: true })
+  @ValidateDate({ optional: true })
   createdBefore?: Date;
 
-  @QueryDate({ optional: true })
+  @ValidateDate({ optional: true })
   createdAfter?: Date;
 
-  @QueryDate({ optional: true })
+  @ValidateDate({ optional: true })
   updatedBefore?: Date;
 
-  @QueryDate({ optional: true })
+  @ValidateDate({ optional: true })
   updatedAfter?: Date;
 
-  @QueryDate({ optional: true })
+  @ValidateDate({ optional: true })
   trashedBefore?: Date;
 
-  @QueryDate({ optional: true })
+  @ValidateDate({ optional: true })
   trashedAfter?: Date;
 
-  @QueryDate({ optional: true })
+  @ValidateDate({ optional: true })
   takenBefore?: Date;
 
-  @QueryDate({ optional: true })
+  @ValidateDate({ optional: true })
   takenAfter?: Date;
 
   @IsString()
@@ -120,7 +120,7 @@ class BaseSearchDto {
   @Optional()
   size?: number;
 
-  @QueryBoolean({ optional: true })
+  @ValidateBoolean({ optional: true })
   isNotInAlbum?: boolean;
 
   @Optional()
@@ -141,10 +141,10 @@ export class MetadataSearchDto extends BaseSearchDto {
   @Optional()
   checksum?: string;
 
-  @QueryBoolean({ optional: true })
+  @ValidateBoolean({ optional: true })
   withStacked?: boolean;
 
-  @QueryBoolean({ optional: true })
+  @ValidateBoolean({ optional: true })
   withPeople?: boolean;
 
   @IsString()
@@ -197,34 +197,24 @@ export class SearchDto {
   @Optional()
   query?: string;
 
-  @IsBoolean()
-  @Optional()
-  @Transform(toBoolean)
+  @ValidateBoolean({ optional: true })
   smart?: boolean;
 
   /** @deprecated */
-  @IsBoolean()
-  @Optional()
-  @Transform(toBoolean)
+  @ValidateBoolean({ optional: true })
   clip?: boolean;
 
   @IsEnum(AssetType)
   @Optional()
   type?: AssetType;
 
-  @IsBoolean()
-  @Optional()
-  @Transform(toBoolean)
+  @ValidateBoolean({ optional: true })
   recent?: boolean;
 
-  @IsBoolean()
-  @Optional()
-  @Transform(toBoolean)
+  @ValidateBoolean({ optional: true })
   motion?: boolean;
 
-  @IsBoolean()
-  @Optional()
-  @Transform(toBoolean)
+  @ValidateBoolean({ optional: true })
   withArchived?: boolean;
 
   @IsInt()
@@ -252,9 +242,7 @@ export class SearchPeopleDto {
   @IsNotEmpty()
   name!: string;
 
-  @IsBoolean()
-  @Transform(toBoolean)
-  @Optional()
+  @ValidateBoolean({ optional: true })
   withHidden?: boolean;
 }
 

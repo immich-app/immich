@@ -1,7 +1,5 @@
-import { validateCronExpression } from '@app/domain';
 import { Type } from 'class-transformer';
 import {
-  IsBoolean,
   IsNotEmpty,
   IsObject,
   IsString,
@@ -11,6 +9,7 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator';
+import { ValidateBoolean, validateCronExpression } from '../../domain.util';
 
 const isEnabled = (config: SystemConfigLibraryScanDto) => config.enabled;
 
@@ -22,7 +21,7 @@ class CronValidator implements ValidatorConstraintInterface {
 }
 
 export class SystemConfigLibraryScanDto {
-  @IsBoolean()
+  @ValidateBoolean()
   enabled!: boolean;
 
   @ValidateIf(isEnabled)
@@ -33,7 +32,7 @@ export class SystemConfigLibraryScanDto {
 }
 
 export class SystemConfigLibraryWatchDto {
-  @IsBoolean()
+  @ValidateBoolean()
   enabled!: boolean;
 }
 
