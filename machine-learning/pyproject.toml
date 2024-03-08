@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "machine-learning"
-version = "1.98.0"
+version = "1.98.1"
 description = ""
 authors = ["Hau Tran <alex.tran1502@gmail.com>"]
 readme = "README.md"
