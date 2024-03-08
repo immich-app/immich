@@ -6402,6 +6402,16 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteUserDto"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "content": {
@@ -7750,6 +7760,14 @@
         ],
         "type": "object"
       },
+      "DeleteUserDto": {
+        "properties": {
+          "force": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
       "DownloadArchiveInfo": {
         "properties": {
           "assetIds": {
@@ -8616,6 +8634,9 @@
           "shouldChangePassword": {
             "type": "boolean"
           },
+          "status": {
+            "$ref": "#/components/schemas/UserStatus"
+          },
           "storageLabel": {
             "nullable": true,
             "type": "string"
@@ -8638,6 +8659,7 @@
           "quotaSizeInBytes",
           "quotaUsageInBytes",
           "shouldChangePassword",
+          "status",
           "storageLabel",
           "updatedAt"
         ],
@@ -10561,6 +10583,9 @@
           "shouldChangePassword": {
             "type": "boolean"
           },
+          "status": {
+            "$ref": "#/components/schemas/UserStatus"
+          },
           "storageLabel": {
             "nullable": true,
             "type": "string"
@@ -10583,10 +10608,19 @@
           "quotaSizeInBytes",
           "quotaUsageInBytes",
           "shouldChangePassword",
+          "status",
           "storageLabel",
           "updatedAt"
         ],
         "type": "object"
+      },
+      "UserStatus": {
+        "enum": [
+          "active",
+          "removing",
+          "deleted"
+        ],
+        "type": "string"
       },
       "ValidateAccessTokenResponseDto": {
         "properties": {

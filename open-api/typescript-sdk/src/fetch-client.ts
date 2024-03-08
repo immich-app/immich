@@ -75,6 +75,7 @@ export type UserResponseDto = {
     quotaSizeInBytes: number | null;
     quotaUsageInBytes: number | null;
     shouldChangePassword: boolean;
+    status: UserStatus;
     storageLabel: string | null;
     updatedAt: string;
 };
@@ -518,6 +519,7 @@ export type PartnerResponseDto = {
     quotaSizeInBytes: number | null;
     quotaUsageInBytes: number | null;
     shouldChangePassword: boolean;
+    status: UserStatus;
     storageLabel: string | null;
     updatedAt: string;
 };
@@ -993,6 +995,9 @@ export type CreateProfileImageDto = {
 export type CreateProfileImageResponseDto = {
     profileImagePath: string;
     userId: string;
+};
+export type DeleteUserDto = {
+    force?: boolean;
 };
 export function getActivities({ albumId, assetId, level, $type, userId }: {
     albumId: string;
@@ -2678,16 +2683,18 @@ export function getProfileImage({ id }: {
         ...opts
     }));
 }
-export function deleteUser({ id }: {
+export function deleteUser({ id, deleteUserDto }: {
     id: string;
+    deleteUserDto: DeleteUserDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: UserResponseDto;
-    }>(`/user/${encodeURIComponent(id)}`, {
+    }>(`/user/${encodeURIComponent(id)}`, oazapfts.json({
         ...opts,
-        method: "DELETE"
-    }));
+        method: "DELETE",
+        body: deleteUserDto
+    })));
 }
 export function restoreUser({ id }: {
     id: string;
@@ -2723,6 +2730,11 @@ export enum UserAvatarColor {
     Orange = "orange",
     Gray = "gray",
     Amber = "amber"
+}
+export enum UserStatus {
+    Active = "active",
+    Removing = "removing",
+    Deleted = "deleted"
 }
 export enum TagTypeEnum {
     Object = "OBJECT",
