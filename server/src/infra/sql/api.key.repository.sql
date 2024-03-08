@@ -20,6 +20,7 @@ FROM
       "APIKeyEntity__APIKeyEntity_user"."shouldChangePassword" AS "APIKeyEntity__APIKeyEntity_user_shouldChangePassword",
       "APIKeyEntity__APIKeyEntity_user"."createdAt" AS "APIKeyEntity__APIKeyEntity_user_createdAt",
       "APIKeyEntity__APIKeyEntity_user"."deletedAt" AS "APIKeyEntity__APIKeyEntity_user_deletedAt",
+      "APIKeyEntity__APIKeyEntity_user"."status" AS "APIKeyEntity__APIKeyEntity_user_status",
       "APIKeyEntity__APIKeyEntity_user"."updatedAt" AS "APIKeyEntity__APIKeyEntity_user_updatedAt",
       "APIKeyEntity__APIKeyEntity_user"."memoriesEnabled" AS "APIKeyEntity__APIKeyEntity_user_memoriesEnabled",
       "APIKeyEntity__APIKeyEntity_user"."quotaSizeInBytes" AS "APIKeyEntity__APIKeyEntity_user_quotaSizeInBytes",
