@@ -1,13 +1,14 @@
-import { AssetEntity } from '@app/infra/entities';
+import { AssetEntity, ExifEntity } from '@app/infra/entities';
+import { OptionalBetween } from '@app/infra/infra.utils';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In } from 'typeorm/find-options/operator/In.js';
 import { Repository } from 'typeorm/repository/Repository.js';
+import { AssetSearchDto } from './dto/asset-search.dto';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 import { SearchPropertiesDto } from './dto/search-properties.dto';
 import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
-
 export interface AssetCheck {
   id: string;
   checksum: Buffer;
@@ -21,6 +22,7 @@ export interface IAssetRepositoryV1 {
   get(id: string): Promise<AssetEntity | null>;
   getLocationsByUserId(userId: string): Promise<CuratedLocationsResponseDto[]>;
   getDetectedObjectsByUserId(userId: string): Promise<CuratedObjectsResponseDto[]>;
+  getAllByUserId(userId: string, dto: AssetSearchDto): Promise<AssetEntity[]>;
   getSearchPropertiesByUserId(userId: string): Promise<SearchPropertiesDto[]>;
   getAssetsByChecksums(userId: string, checksums: Buffer[]): Promise<AssetCheck[]>;
   getExistingAssets(userId: string, checkDuplicateAssetDto: CheckExistingAssetsDto): Promise<string[]>;
@@ -31,7 +33,40 @@ export const IAssetRepositoryV1 = 'IAssetRepositoryV1';
 
 @Injectable()
 export class AssetRepositoryV1 implements IAssetRepositoryV1 {
-  constructor(@InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>) {}
+  constructor(
+    @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
+    @InjectRepository(ExifEntity) private exifRepository: Repository<ExifEntity>,
+  ) {}
+
+  /**
+   * Retrieves all assets by user ID.
+   *
+   * @param ownerId - The ID of the owner.
+   * @param dto - The AssetSearchDto object containing search criteria.
+   * @returns A Promise that resolves to an array of AssetEntity objects.
+   */
+  getAllByUserId(ownerId: string, dto: AssetSearchDto): Promise<AssetEntity[]> {
+    return this.assetRepository.find({
+      where: {
+        ownerId,
+        isVisible: true,
+        isFavorite: dto.isFavorite,
+        isArchived: dto.isArchived,
+        updatedAt: OptionalBetween(dto.updatedAfter, dto.updatedBefore),
+      },
+      relations: {
+        exifInfo: true,
+        tags: true,
+        stack: { assets: true },
+      },
+      skip: dto.skip || 0,
+      take: dto.take,
+      order: {
+        fileCreatedAt: 'DESC',
+      },
+      withDeleted: true,
+    });
+  }
 
   getSearchPropertiesByUserId(userId: string): Promise<SearchPropertiesDto[]> {
     return this.assetRepository
