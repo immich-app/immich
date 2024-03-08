@@ -103,13 +103,20 @@ headers = {
 photolist = []
 
 for id in image_urls:
-    url = "https://photo.eisner.uk/api/download/asset/" + str(id['id'])
-    response = requests.post(url, headers=headers, stream=True)
+    # Query asset info endpoint for correct extension
+    assetinfourl = url + "/api/asset/" + str(id['id'])
+    response = requests.get(assetinfourl, headers=headers)
+    assetinfo = response.json()
+    ext = os.path.splitext(assetinfo['originalFileName'])
+
+    asseturl = url + "/api/download/asset/" + str(id['id'])
+    response = requests.post(asseturl, headers=headers, stream=True)
+
     # Build current photo list for deletions below
-    photo = os.path.basename(url) + '.jpg'
+    photo = os.path.basename(asseturl) + ext[1]
     photolist.append(photo)
 
-    photofullpath = photodir + '/' + os.path.basename(url) + '.jpg'
+    photofullpath = photodir + '/' + os.path.basename(asseturl) + ext[1]
     # Only download file if it doesn't already exist
     if os.path.exists(photofullpath) == False:
         with open(photofullpath, 'wb') as f:
