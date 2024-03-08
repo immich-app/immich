@@ -40,7 +40,7 @@
         class="absolute flex h-16 w-full place-items-center justify-between border-b p-4 dark:border-immich-dark-gray dark:text-immich-dark-fg"
       >
         <div class="flex gap-2 items-center">
-          <div class="font-medium">{title}</div>
+          <div class="font-medium text-immich-fg dark:text-immich-dark-fg">{title}</div>
           {#if description}
             <p class="text-sm text-gray-400 dark:text-gray-600">{description}</p>
           {/if}

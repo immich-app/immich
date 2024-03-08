@@ -247,7 +247,7 @@
 
 <UserPageLayout title={data.meta.title}>
   <div class="flex place-items-center gap-2" slot="buttons">
-    <div class="hidden lg:block lg:w-40 xl:w-60 2xl:w-80 h-10">
+    <div class="hidden lg:block lg:w-40 xl:w-72 2xl:w-96 h-10">
       <SearchBar placeholder="Search albums" bind:name={searchAlbum} isSearching={false} />
     </div>
     <LinkButton on:click={handleCreateAlbum}>
