@@ -123,7 +123,7 @@ class BaseSearchDto {
   @ValidateBoolean({ optional: true })
   isNotInAlbum?: boolean;
 
-  @Optional()
+  @ValidateUUID({ each: true, optional: true })
   personIds?: string[];
 }
 
