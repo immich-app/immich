@@ -1,9 +1,9 @@
 import { AssetFaceEntity, PersonEntity } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
-import { Transform, Type } from 'class-transformer';
-import { IsArray, IsBoolean, IsDate, IsNotEmpty, IsString, MaxDate, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsArray, IsNotEmpty, IsString, MaxDate, ValidateNested } from 'class-validator';
 import { AuthDto } from '../auth';
-import { Optional, ValidateUUID, toBoolean } from '../domain.util';
+import { Optional, ValidateBoolean, ValidateDate, ValidateUUID } from '../domain.util';
 
 export class PersonCreateDto {
   /**
@@ -17,18 +17,14 @@ export class PersonCreateDto {
    * Person date of birth.
    * Note: the mobile app cannot currently set the birth date to null.
    */
-  @Optional({ nullable: true })
-  @IsDate()
-  @Type(() => Date)
   @MaxDate(() => new Date(), { message: 'Birth date cannot be in the future' })
-  @ApiProperty({ format: 'date' })
+  @ValidateDate({ optional: true, nullable: true, format: 'date' })
   birthDate?: Date | null;
 
   /**
    * Person visibility
    */
-  @Optional()
-  @IsBoolean()
+  @ValidateBoolean({ optional: true })
   isHidden?: boolean;
 }
 
@@ -63,9 +59,8 @@ export class MergePersonDto {
 }
 
 export class PersonSearchDto {
-  @IsBoolean()
-  @Transform(toBoolean)
-  withHidden?: boolean = false;
+  @ValidateBoolean({ optional: true })
+  withHidden?: boolean;
 }
 
 export class PersonResponseDto {

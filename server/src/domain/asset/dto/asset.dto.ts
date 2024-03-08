@@ -1,6 +1,5 @@
 import { Type } from 'class-transformer';
 import {
-  IsBoolean,
   IsDateString,
   IsInt,
   IsLatitude,
@@ -10,7 +9,7 @@ import {
   IsString,
   ValidateIf,
 } from 'class-validator';
-import { Optional, ValidateUUID } from '../../domain.util';
+import { Optional, ValidateBoolean, ValidateUUID } from '../../domain.util';
 import { BulkIdsDto } from '../response-dto';
 
 export class DeviceIdDto {
@@ -28,22 +27,12 @@ const hasGPS = (o: { latitude: undefined; longitude: undefined }) =>
   o.latitude !== undefined || o.longitude !== undefined;
 const ValidateGPS = () => ValidateIf(hasGPS);
 
-export class AssetBulkUpdateDto extends BulkIdsDto {
-  @Optional()
-  @IsBoolean()
+export class UpdateAssetBase {
+  @ValidateBoolean({ optional: true })
   isFavorite?: boolean;
 
-  @Optional()
-  @IsBoolean()
+  @ValidateBoolean({ optional: true })
   isArchived?: boolean;
-
-  @Optional()
-  @ValidateUUID()
-  stackParentId?: string;
-
-  @Optional()
-  @IsBoolean()
-  removeParent?: boolean;
 
   @Optional()
   @IsDateString()
@@ -60,32 +49,21 @@ export class AssetBulkUpdateDto extends BulkIdsDto {
   longitude?: number;
 }
 
-export class UpdateAssetDto {
-  @Optional()
-  @IsBoolean()
-  isFavorite?: boolean;
+export class AssetBulkUpdateDto extends UpdateAssetBase {
+  @ValidateUUID({ each: true })
+  ids!: string[];
 
-  @Optional()
-  @IsBoolean()
-  isArchived?: boolean;
+  @ValidateUUID({ optional: true })
+  stackParentId?: string;
 
+  @ValidateBoolean({ optional: true })
+  removeParent?: boolean;
+}
+
+export class UpdateAssetDto extends UpdateAssetBase {
   @Optional()
   @IsString()
   description?: string;
-
-  @Optional()
-  @IsDateString()
-  dateTimeOriginal?: string;
-
-  @ValidateGPS()
-  @IsLatitude()
-  @IsNotEmpty()
-  latitude?: number;
-
-  @ValidateGPS()
-  @IsLongitude()
-  @IsNotEmpty()
-  longitude?: number;
 }
 
 export class RandomAssetsDto {
@@ -97,7 +75,6 @@ export class RandomAssetsDto {
 }
 
 export class AssetBulkDeleteDto extends BulkIdsDto {
-  @Optional()
-  @IsBoolean()
+  @ValidateBoolean({ optional: true })
   force?: boolean;
 }

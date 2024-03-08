@@ -1,7 +1,8 @@
-import { IsBoolean, IsString } from 'class-validator';
+import { IsString } from 'class-validator';
+import { ValidateBoolean } from '../../domain.util';
 
 export class SystemConfigMapDto {
-  @IsBoolean()
+  @ValidateBoolean()
   enabled!: boolean;
 
   @IsString()
