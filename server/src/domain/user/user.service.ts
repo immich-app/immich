@@ -86,10 +86,7 @@ export class UserService {
     const user = await this.userRepository.update(id, { status, deletedAt: new Date() });
 
     if (force) {
-      await this.jobRepository.queue({
-        name: JobName.USER_DELETION,
-        data: { id: user.id, force },
-      });
+      await this.jobRepository.queue({ name: JobName.USER_DELETION, data: { id: user.id, force } });
     }
 
     return mapUser(user);

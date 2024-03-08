@@ -1,7 +1,6 @@
-import { IsBoolean, IsOptional } from 'class-validator';
+import { ValidateBoolean } from '../../domain.util';
 
 export class DeleteUserDto {
-  @IsBoolean()
-  @IsOptional()
+  @ValidateBoolean({ optional: true })
   force?: boolean;
 }

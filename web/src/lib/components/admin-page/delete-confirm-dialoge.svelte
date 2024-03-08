@@ -36,20 +36,20 @@
 
 <ConfirmDialogue
   title="Delete User"
-  confirmText="Delete"
+  confirmText={forceDelete ? 'Permanently Delete' : 'Delete'}
   onConfirm={handleDeleteUser}
   onClose={() => dispatch('cancel')}
 >
   <svelte:fragment slot="prompt">
     <div class="flex flex-col gap-4">
-      {#if !forceDelete}
+      {#if forceDelete}
         <p>
-          <b>{user.name}</b>'s account and assets will be scheduled for permanent deletion in {$serverConfig.userDeleteDelay}
-          days.
+          <b>{user.name}</b>'s account and assets will be queued for permanent deletion <b>immediately</b>.
         </p>
       {:else}
         <p>
-          <b>{user.name}</b>'s account and assets will be queued for permanent deletion <b>immediately</b>.
+          <b>{user.name}</b>'s account and assets will be scheduled for permanent deletion in {$serverConfig.userDeleteDelay}
+          days.
         </p>
       {/if}
 

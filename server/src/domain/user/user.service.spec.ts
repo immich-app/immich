@@ -279,7 +279,7 @@ describe(UserService.name, () => {
       await expect(sut.delete(authStub.admin, userStub.user1.id, {})).resolves.toEqual(mapUser(userStub.user1));
       expect(userMock.update).toHaveBeenCalledWith(userStub.user1.id, {
         status: UserStatus.DELETED,
-        deletedAt: new Date(),
+        deletedAt: expect.any(Date),
       });
     });
 
@@ -293,7 +293,7 @@ describe(UserService.name, () => {
 
       expect(userMock.update).toHaveBeenCalledWith(userStub.user1.id, {
         status: UserStatus.REMOVING,
-        deletedAt: new Date(),
+        deletedAt: expect.any(Date),
       });
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.USER_DELETION,
