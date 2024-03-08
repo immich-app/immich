@@ -2,16 +2,13 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/modules/memories/models/memory.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
-import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
-import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
 final memoryServiceProvider = StateProvider<MemoryService>((ref) {
   return MemoryService(
     ref.watch(apiServiceProvider),
-    ref.watch(dbProvider),
   );
 });
 
@@ -19,9 +16,8 @@ class MemoryService {
   final log = Logger("MemoryService");
 
   final ApiService _apiService;
-  final Isar _db;
 
-  MemoryService(this._apiService, this._db);
+  MemoryService(this._apiService);
 
   Future<List<Memory>?> getMemoryLane() async {
     try {
@@ -40,7 +36,7 @@ class MemoryService {
         memories.add(
           Memory(
             title: title,
-            assets: await _db.assets.getAllByRemoteId(assets.map((e) => e.id)),
+            assets: assets.map((e) => Asset.remote(e)).toList(),
           ),
         );
       }
