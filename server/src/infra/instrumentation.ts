@@ -22,12 +22,24 @@ const aggregation = new ExplicitBucketHistogramAggregation(
   true,
 );
 
+const metricsPort = parseInt(process.env.IMMICH_METRICS_PORT ?? '8081');
+
+let metricsEnabled = process.env.IMMICH_METRICS === 'true';
+const hostMetrics = metricsEnabled || process.env.IMMICH_HOST_METRICS === 'true';
+const apiMetrics = metricsEnabled || process.env.IMMICH_API_METRICS === 'true';
+const repoMetrics = metricsEnabled || process.env.IMMICH_IO_METRICS === 'true';
+
+metricsEnabled ||= hostMetrics || apiMetrics || repoMetrics;
+if (!metricsEnabled && process.env.OTEL_SDK_DISABLED === undefined) {
+  process.env.OTEL_SDK_DISABLED = 'true';
+}
+
 export const otelSDK = new NodeSDK({
   resource: new Resource({
     [SemanticResourceAttributes.SERVICE_NAME]: `immich`,
     [SemanticResourceAttributes.SERVICE_VERSION]: serverVersion.toString(),
   }),
-  metricReader: new PrometheusExporter({ port: 8081 }),
+  metricReader: new PrometheusExporter({ port: metricsPort }),
   contextManager: new AsyncLocalStorageContextManager(),
   instrumentations: [
     new HttpInstrumentation(),
@@ -40,9 +52,9 @@ export const otelSDK = new NodeSDK({
 
 export const otelConfig: OpenTelemetryModuleOptions = {
   metrics: {
-    hostMetrics: process.env.OTEL_SDK_DISABLED !== 'true',
+    hostMetrics,
     apiMetrics: {
-      enable: process.env.OTEL_SDK_DISABLED !== 'true',
+      enable: apiMetrics,
       ignoreRoutes: excludePaths,
     },
   },
@@ -50,7 +62,7 @@ export const otelConfig: OpenTelemetryModuleOptions = {
 
 function ExecutionTimeHistogram({ description, unit = 'ms', valueType = ValueType.DOUBLE }: MetricOptions = {}) {
   return (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) => {
-    if (process.env.OTEL_SDK_DISABLED === 'true') {
+    if (!repoMetrics || process.env.OTEL_SDK_DISABLED) {
       return;
     }
 
