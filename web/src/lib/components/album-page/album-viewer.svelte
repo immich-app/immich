@@ -122,7 +122,9 @@
         {album.albumName}
       </h1>
 
-      <AlbumSummary assetCount={album.assetCount} {album} />
+      {#if album.assetCount > 0}
+        <AlbumSummary {album} />
+      {/if}
 
       <!-- ALBUM DESCRIPTION -->
       {#if album.description}

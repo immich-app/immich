@@ -114,7 +114,6 @@
   let textArea: HTMLTextAreaElement;
 
   $: assetStore = new AssetStore({ albumId });
-  $: assetCount = $assetStore.initialized ? assetStore.assets.length : album.assetCount;
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
@@ -366,6 +365,11 @@
     }
   };
 
+  const handleRemoveAssets = async (assetIds: string[]) => {
+    assetStore.removeAssets(assetIds);
+    await refreshAlbum();
+  };
+
   const handleUpdateThumbnail = async (assetId: string) => {
     if (viewMode !== ViewMode.SELECT_THUMBNAIL) {
       return;
@@ -406,10 +410,10 @@
           {/if}
           <DownloadAction menuItem filename="{album.albumName}.zip" />
           {#if isOwned || isAllUserOwned}
-            <RemoveFromAlbum menuItem bind:album onRemove={(assetIds) => assetStore.removeAssets(assetIds)} />
+            <RemoveFromAlbum menuItem bind:album onRemove={handleRemoveAssets} />
           {/if}
           {#if isAllUserOwned}
-            <DeleteAssets menuItem onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)} />
+            <DeleteAssets menuItem onAssetDelete={handleRemoveAssets} />
             <ChangeDate menuItem />
             <ChangeLocation menuItem />
           {/if}
@@ -438,7 +442,7 @@
               />
             {/if}
 
-            {#if assetCount > 0}
+            {#if album.assetCount > 0}
               <CircleIconButton title="Download" on:click={handleDownloadAlbum} icon={mdiFolderDownloadOutline} />
 
               {#if isOwned}
@@ -460,7 +464,7 @@
               <Button
                 size="sm"
                 rounded="lg"
-                disabled={assetCount === 0}
+                disabled={album.assetCount === 0}
                 on:click={() => (viewMode = ViewMode.SELECT_USERS)}
               >
                 Share
@@ -532,12 +536,9 @@
               <section class="pt-24">
                 <AlbumTitle id={album.id} albumName={album.albumName} {isOwned} />
 
-                <AlbumSummary
-                  {assetCount}
-                  {album}
-                  oldestAsset={$assetStore.assets.at(-1)}
-                  newestAsset={$assetStore.assets.at(0)}
-                />
+                {#if album.assetCount > 0}
+                  <AlbumSummary {album} />
+                {/if}
 
                 <!-- ALBUM SHARING -->
                 {#if album.sharedUsers.length > 0 || (album.hasSharedLink && isOwned)}
@@ -582,7 +583,7 @@
               </section>
             {/if}
 
-            {#if assetCount === 0}
+            {#if album.assetCount === 0}
               <section id="empty-album" class=" mt-[200px] flex place-content-center place-items-center">
                 <div class="w-[300px]">
                   <p class="text-xs dark:text-immich-dark-fg">ADD PHOTOS</p>
