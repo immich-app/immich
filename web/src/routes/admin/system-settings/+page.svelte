@@ -72,8 +72,8 @@
     },
     {
       item: LibrarySettings,
-      title: 'Library',
-      subtitle: 'Manage library settings',
+      title: 'External Library',
+      subtitle: 'Manage external library settings',
       key: 'library',
     },
     {
