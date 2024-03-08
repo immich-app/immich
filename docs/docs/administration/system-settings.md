@@ -2,8 +2,6 @@
 
 The System Settings page is the page that is visible only to the server administrator, through the page you can manage the global settings that will affect all users.
 
-
-
 ## Job Settings
 
 Using these settings, you can determine the amount of work that will run concurrently for each task in microservices. Some tasks can be set to higher values on computers with powerful hardware and storage with good I/O capabilities.
