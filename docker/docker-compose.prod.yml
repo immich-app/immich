@@ -73,7 +73,7 @@ services:
     ports:
       - 5432:5432
 
-  # set OTEL_SDK_DISABLED=false in .env to enable metrics
+  # set IMMICH_METRICS=true in .env to enable metrics
   immich-prometheus:
     container_name: immich_prometheus
     ports:
