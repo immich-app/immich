@@ -216,7 +216,7 @@
 </script>
 
 {#if shouldShowEditAlbumForm}
-  <FullScreenModal on:clickOutside={() => (shouldShowEditAlbumForm = false)}>
+  <FullScreenModal onClose={() => (shouldShowEditAlbumForm = false)}>
     <EditAlbumForm
       album={selectedAlbum}
       on:editSuccess={() => successModifyAlbum()}
@@ -275,8 +275,8 @@
   <ConfirmDialogue
     title="Delete Album"
     confirmText="Delete"
-    on:confirm={deleteSelectedAlbum}
-    on:cancel={() => (albumToDelete = null)}
+    onConfirm={deleteSelectedAlbum}
+    onClose={() => (albumToDelete = null)}
   >
     <svelte:fragment slot="prompt">
       <p>Are you sure you want to delete the album <b>{albumToDelete.albumName}</b>?</p>
