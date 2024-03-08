@@ -53,7 +53,6 @@ class AssetService {
   Future<(List<Asset>? toUpsert, List<String>? toDelete, DateTime? time)>
       _getRemoteAssetChanges(User user, DateTime since) async {
     final deleted = await _apiService.auditApi
-
         .getAuditDeletes(since, EntityType.ASSET, userId: user.id);
     if (deleted == null || deleted.needsFullSync) {
       return (null, null, deleted?.requestedAt);
@@ -89,7 +88,6 @@ class AssetService {
       return null;
     }
   }
-
 
   /// Returns `null` if the server state did not change, else list of assets
 
@@ -236,5 +234,4 @@ class AssetService {
       ),
     );
   }
-  return null;
 }
