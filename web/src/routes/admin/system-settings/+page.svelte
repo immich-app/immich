@@ -74,7 +74,7 @@
       item: LibrarySettings,
       title: 'External Library',
       subtitle: 'Manage external library settings',
-      key: 'library',
+      key: 'external-library',
     },
     {
       item: LoggingSettings,
