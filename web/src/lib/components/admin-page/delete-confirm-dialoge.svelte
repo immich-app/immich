@@ -8,6 +8,8 @@
   export let user: UserResponseDto;
 
   let forceDelete = false;
+  let deleteButtonDisabled = false;
+  let userIdInput: string = '';
 
   const dispatch = createEventDispatcher<{
     success: void;
@@ -32,6 +34,11 @@
       dispatch('fail');
     }
   };
+
+  const handleConfirm = (e: Event) => {
+    userIdInput = (e.target as HTMLInputElement).value;
+    deleteButtonDisabled = userIdInput != user.email;
+  };
 </script>
 
 <ConfirmDialogue
@@ -39,6 +46,7 @@
   confirmText={forceDelete ? 'Permanently Delete' : 'Delete'}
   onConfirm={handleDeleteUser}
   onClose={() => dispatch('cancel')}
+  disabled={deleteButtonDisabled}
 >
   <svelte:fragment slot="prompt">
     <div class="flex flex-col gap-4">
@@ -58,10 +66,36 @@
           Queue user and assets for immediate deletion
         </label>
 
-        <input id="forceDelete" type="checkbox" class="form-checkbox h-5 w-5" bind:checked={forceDelete} />
+        <input
+          id="forceDelete"
+          type="checkbox"
+          class="form-checkbox h-5 w-5"
+          bind:checked={forceDelete}
+          on:change={() => {
+            deleteButtonDisabled = forceDelete;
+          }}
+        />
       </div>
 
-      <p>Are you sure you want to continue?</p>
+      {#if forceDelete}
+        <p class="text-immich-error">
+          WARNING: This will immediately remove the user and all assets. This cannot be undone and the files cannot be
+          recovered.
+        </p>
+
+        <p class="immich-form-label text-sm" id="confirm-user-desc">
+          To confirm, type "{user.email}" in the box below
+        </p>
+
+        <input
+          class="immich-form-input w-full pb-2"
+          id="confirm-user-id"
+          aria-describedby="confirm-user-desc"
+          name="confirm-user-id"
+          type="text"
+          on:input={handleConfirm}
+        />
+      {/if}
     </div>
   </svelte:fragment>
 </ConfirmDialogue>
