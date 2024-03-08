@@ -184,10 +184,10 @@ export class AssetRepository implements IAssetRepository {
   }
 
   @GenerateSql({ params: [[DummyValue.UUID]] })
-  @ChunkedArray()
-  getByLibraryId(libraryIds: string[]): Promise<AssetEntity[]> {
-    return this.repository.find({
-      where: { library: { id: In(libraryIds) } },
+  getLibraryAssetPaths(pagination: PaginationOptions, libraryId: string): Paginated<AssetEntity> {
+    return paginate(this.repository, pagination, {
+      select: { id: true, originalPath: true, isOffline: true },
+      where: { library: { id: libraryId } },
     });
   }
 

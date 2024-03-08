@@ -129,10 +129,8 @@ export interface IAssetRepository {
   getRandom(userId: string, count: number): Promise<AssetEntity[]>;
   getFirstAssetForAlbumId(albumId: string): Promise<AssetEntity | null>;
   getLastUpdatedAssetForAlbumId(albumId: string): Promise<AssetEntity | null>;
-  getByLibraryId(libraryIds: string[]): Promise<AssetEntity[]>;
+  getLibraryAssetPaths(pagination: PaginationOptions, libraryId: string): Paginated<AssetEntity>;
   getByLibraryIdAndOriginalPath(libraryId: string, originalPath: string): Promise<AssetEntity | null>;
-  getPathsNotInLibrary(libraryId: string, originalPaths: string[]): Promise<string[]>;
-  updateOfflineLibraryAssets(libraryId: string, originalPaths: string[]): Promise<void>;
   deleteAll(ownerId: string): Promise<void>;
   getAll(pagination: PaginationOptions, options?: AssetSearchOptions): Paginated<AssetEntity>;
   getAllByDeviceId(userId: string, deviceId: string): Promise<string[]>;

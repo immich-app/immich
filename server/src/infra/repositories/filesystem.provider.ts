@@ -11,7 +11,7 @@ import {
 import { ImmichLogger } from '@app/infra/logger';
 import archiver from 'archiver';
 import chokidar, { WatchOptions } from 'chokidar';
-import { glob } from 'glob';
+import { iterate } from 'glob';
 import { constants, createReadStream, existsSync, mkdirSync } from 'node:fs';
 import fs, { copyFile, readdir, rename, stat, utimes, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -121,16 +121,17 @@ export class FilesystemProvider implements IStorageRepository {
     };
   }
 
-  crawl(crawlOptions: CrawlOptionsDto): Promise<string[]> {
+  crawl(crawlOptions: CrawlOptionsDto): AsyncGenerator<string> {
     const { pathsToCrawl, exclusionPatterns, includeHidden } = crawlOptions;
-    if (!pathsToCrawl) {
-      return Promise.resolve([]);
+    if (!pathsToCrawl.length) {
+      async function* generator() {}
+      return generator() as AsyncGenerator<string>;
     }
 
     const base = pathsToCrawl.length === 1 ? pathsToCrawl[0] : `{${pathsToCrawl.join(',')}}`;
     const extensions = `*{${mimeTypes.getSupportedFileExtensions().join(',')}}`;
 
-    return glob(`${base}/**/${extensions}`, {
+    return iterate(`${base}/**/${extensions}`, {
       absolute: true,
       nocase: true,
       nodir: true,

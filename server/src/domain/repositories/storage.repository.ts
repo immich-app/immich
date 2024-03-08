@@ -52,7 +52,7 @@ export interface IStorageRepository {
   checkDiskUsage(folder: string): Promise<DiskUsage>;
   readdir(folder: string): Promise<string[]>;
   stat(filepath: string): Promise<Stats>;
-  crawl(crawlOptions: CrawlOptionsDto): Promise<string[]>;
+  crawl(crawlOptions: CrawlOptionsDto): AsyncGenerator<string>;
   copyFile(source: string, target: string): Promise<void>;
   rename(source: string, target: string): Promise<void>;
   watch(paths: string[], options: WatchOptions, events: Partial<WatchEvents>): () => Promise<void>;

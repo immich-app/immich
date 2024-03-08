@@ -1,4 +1,4 @@
-import { AssetType, LibraryType } from '@app/infra/entities';
+import { AssetType, LibraryEntity, LibraryType } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { R_OK } from 'node:constants';
@@ -640,32 +640,60 @@ export class LibraryService extends EventEmitter {
       .filter((validation) => validation.isValid)
       .map((validation) => validation.importPath);
 
-    const rawPaths = await this.storageRepository.crawl({
-      pathsToCrawl: validImportPaths,
-      exclusionPatterns: library.exclusionPatterns,
-    });
-    const crawledAssetPaths = rawPaths.map((filePath) => path.normalize(filePath));
+    const shouldRefresh = job.refreshAllFiles || job.refreshModifiedFiles;
+    const crawledAssetPaths = await this.crawlLibrary(library, validImportPaths);
+    let pathsToScan: string[] = shouldRefresh ? [...crawledAssetPaths] : [];
 
-    this.logger.debug(`Found ${crawledAssetPaths.length} asset(s) when crawling import paths ${library.importPaths}`);
+    this.logger.debug(`Found ${crawledAssetPaths.size} asset(s) when crawling import paths ${library.importPaths}`);
 
-    await this.assetRepository.updateOfflineLibraryAssets(library.id, crawledAssetPaths);
+    const assetIdsToMarkOffline = [];
+    const assetIdsToMarkOnline = [];
+    const pagination = usePagination(5_000, (pagination) =>
+      this.assetRepository.getLibraryAssetPaths(pagination, library.id),
+    );
 
-    if (crawledAssetPaths.length > 0) {
-      let filteredPaths: string[] = [];
-      if (job.refreshAllFiles || job.refreshModifiedFiles) {
-        filteredPaths = crawledAssetPaths;
-      } else {
-        filteredPaths = await this.assetRepository.getPathsNotInLibrary(library.id, crawledAssetPaths);
+    for await (const page of pagination) {
+      for (const asset of page) {
+        const isOffline = !crawledAssetPaths.has(asset.originalPath);
+        if (isOffline && !asset.isOffline) {
+          assetIdsToMarkOffline.push(asset.id);
+        }
 
-        this.logger.debug(`Will import ${filteredPaths.length} new asset(s)`);
+        if (!isOffline && asset.isOffline) {
+          assetIdsToMarkOnline.push(asset.id);
+        }
+
+        crawledAssetPaths.delete(asset.originalPath);
       }
+    }
 
-      await this.scanAssets(job.id, filteredPaths, library.ownerId, job.refreshAllFiles ?? false);
+    await this.assetRepository.updateAll(assetIdsToMarkOffline, { isOffline: true });
+    await this.assetRepository.updateAll(assetIdsToMarkOnline, { isOffline: false });
+
+    if (!shouldRefresh) {
+      pathsToScan = [...crawledAssetPaths];
+      this.logger.debug(`Will import ${pathsToScan.length} new asset(s)`);
+    }
+
+    if (pathsToScan.length > 0) {
+      await this.scanAssets(job.id, pathsToScan, library.ownerId, job.refreshAllFiles ?? false);
     }
 
     await this.repository.update({ id: job.id, refreshedAt: new Date() });
 
     return true;
+  }
+
+  private async crawlLibrary(library: LibraryEntity, importPaths: string[]): Promise<Set<string>> {
+    const crawledAssetPaths: Set<string> = new Set();
+    for await (const path of this.storageRepository.crawl({
+      pathsToCrawl: importPaths,
+      exclusionPatterns: library.exclusionPatterns,
+    })) {
+      crawledAssetPaths.add(path);
+    }
+
+    return crawledAssetPaths;
   }
 
   private async findOrFail(id: string) {
