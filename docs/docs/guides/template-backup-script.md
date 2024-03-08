@@ -47,6 +47,8 @@ REMOTE_BACKUP_PATH="/path/to/remote/backup/directory"
 
 # Backup Immich database
 docker exec -t immich_postgres pg_dumpall -c -U postgres > "$UPLOAD_LOCATION"/database-backup/immich-database.sql
+# For deduplicating backup programs such as Borg or Restic, compressing the content can increase backup size by making it harder to deduplicate. If you are using a different program or still prefer to compress, you can use the following command instead:
+# docker exec -t immich_postgres pg_dumpall -c -U postgres | /usr/bin/gzip --rsyncable > "$UPLOAD_LOCATION"/database-backup/immich-database.sql.gz
 
 ### Append to local Borg repository
 borg create $BACKUP_PATH/immich-borg::{now} "$UPLOAD_LOCATION" --exclude "$UPLOAD_LOCATION"/thumbs/ --exclude "$UPLOAD_LOCATION"/encoded-video/
