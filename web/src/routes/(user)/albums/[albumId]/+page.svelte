@@ -31,7 +31,7 @@
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
-  import { AppRoute, dateFormats } from '$lib/constants';
+  import { AppRoute } from '$lib/constants';
   import { numberOfComments, setNumberOfComments, updateNumberOfComments } from '$lib/stores/activity.store';
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
@@ -74,6 +74,7 @@
   import AlbumTitle from '$lib/components/album-page/album-title.svelte';
   import AlbumDescription from '$lib/components/album-page/album-description.svelte';
   import { handlePromiseError } from '$lib/utils';
+  import AlbumSummary from '$lib/components/album-page/album-summary.svelte';
 
   export let data: PageData;
 
@@ -113,6 +114,7 @@
   let textArea: HTMLTextAreaElement;
 
   $: assetStore = new AssetStore({ albumId });
+  $: assetCount = $assetStore.initialized ? assetStore.assets.length : album.assetCount;
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
@@ -280,31 +282,6 @@
     album = await getAlbumInfo({ id: album.id, withoutAssets: true });
   };
 
-  const getDateRange = () => {
-    const { startDate, endDate } = album;
-
-    let start = '';
-    let end = '';
-
-    if (startDate) {
-      start = new Date(startDate).toLocaleDateString($locale, dateFormats.album);
-    }
-
-    if (endDate) {
-      end = new Date(endDate).toLocaleDateString($locale, dateFormats.album);
-    }
-
-    if (startDate && endDate && start !== end) {
-      return `${start} - ${end}`;
-    }
-
-    if (start) {
-      return start;
-    }
-
-    return '';
-  };
-
   const handleAddAssets = async () => {
     const assetIds = [...$timelineSelected].map((asset) => asset.id);
 
@@ -461,7 +438,7 @@
               />
             {/if}
 
-            {#if album.assetCount > 0}
+            {#if assetCount > 0}
               <CircleIconButton title="Download" on:click={handleDownloadAlbum} icon={mdiFolderDownloadOutline} />
 
               {#if isOwned}
@@ -469,9 +446,7 @@
                   <CircleIconButton title="Album options" on:click={handleOpenAlbumOptions} icon={mdiDotsVertical}>
                     {#if viewMode === ViewMode.ALBUM_OPTIONS}
                       <ContextMenu {...contextMenuPosition}>
-                        {#if album.assetCount !== 0}
-                          <MenuOption on:click={handleStartSlideshow} text="Slideshow" />
-                        {/if}
+                        <MenuOption on:click={handleStartSlideshow} text="Slideshow" />
                         <MenuOption on:click={() => (viewMode = ViewMode.SELECT_THUMBNAIL)} text="Set album cover" />
                         <MenuOption on:click={() => (viewMode = ViewMode.OPTIONS)} text="Options" />
                       </ContextMenu>
@@ -485,7 +460,7 @@
               <Button
                 size="sm"
                 rounded="lg"
-                disabled={album.assetCount == 0}
+                disabled={assetCount === 0}
                 on:click={() => (viewMode = ViewMode.SELECT_USERS)}
               >
                 Share
@@ -557,14 +532,12 @@
               <section class="pt-24">
                 <AlbumTitle id={album.id} albumName={album.albumName} {isOwned} />
 
-                <!-- ALBUM SUMMARY -->
-                {#if album.assetCount > 0}
-                  <span class="my-2 flex gap-2 text-sm font-medium text-gray-500" data-testid="album-details">
-                    <p class="">{getDateRange()}</p>
-                    <p>·</p>
-                    <p>{album.assetCount} items</p>
-                  </span>
-                {/if}
+                <AlbumSummary
+                  {assetCount}
+                  {album}
+                  oldestAsset={$assetStore.assets.at(-1)}
+                  newestAsset={$assetStore.assets.at(0)}
+                />
 
                 <!-- ALBUM SHARING -->
                 {#if album.sharedUsers.length > 0 || (album.hasSharedLink && isOwned)}
@@ -609,7 +582,7 @@
               </section>
             {/if}
 
-            {#if album.assetCount === 0}
+            {#if assetCount === 0}
               <section id="empty-album" class=" mt-[200px] flex place-content-center place-items-center">
                 <div class="w-[300px]">
                   <p class="text-xs dark:text-immich-dark-fg">ADD PHOTOS</p>
