@@ -46,7 +46,7 @@ REMOTE_BACKUP_PATH="/path/to/remote/backup/directory"
 ### Local
 
 # Backup Immich database
-docker exec -t immich_postgres pg_dumpall -c -U postgres | /usr/bin/gzip > $UPLOAD_LOCATION/database-backup/immich-database.sql.gz
+docker exec -t immich_postgres pg_dumpall -c -U postgres > $UPLOAD_LOCATION/database-backup/immich-database.sql
 
 ### Append to local Borg repository
 borg create $BACKUP_PATH/immich-borg::{now} $UPLOAD_LOCATION --exclude $UPLOAD_LOCATION/thumbs/ --exclude $UPLOAD_LOCATION/encoded-video/
