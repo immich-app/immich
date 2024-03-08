@@ -84,7 +84,7 @@
         </p>
 
         <p class="immich-form-label text-sm" id="confirm-user-desc">
-          To confirm, type "{user.email}" in the box below
+          To confirm, type "{user.email}" below
         </p>
 
         <input
