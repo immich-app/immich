@@ -156,8 +156,7 @@ describe(LibraryService.name, () => {
 
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
       storageMock.crawl.mockResolvedValue(['/data/user1/photo.jpg']);
-      assetMock.getPathsNotInLibrary.mockResolvedValue(['/data/user1/photo.jpg']);
-      assetMock.getByLibraryId.mockResolvedValue([]);
+      assetMock.getLibraryAssetPaths.mockResolvedValue({ items: [], hasNextPage: false });
 
       await sut.handleQueueAssetRefresh(mockLibraryJob);
 
@@ -183,7 +182,7 @@ describe(LibraryService.name, () => {
 
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
       storageMock.crawl.mockResolvedValue(['/data/user1/photo.jpg']);
-      assetMock.getByLibraryId.mockResolvedValue([]);
+      assetMock.getLibraryAssetPaths.mockResolvedValue({ items: [], hasNextPage: false });
 
       await sut.handleQueueAssetRefresh(mockLibraryJob);
 
@@ -233,7 +232,7 @@ describe(LibraryService.name, () => {
 
       libraryMock.get.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
       storageMock.crawl.mockResolvedValue([]);
-      assetMock.getByLibraryId.mockResolvedValue([]);
+      assetMock.getLibraryAssetPaths.mockResolvedValue({ items: [], hasNextPage: false });
 
       await sut.handleQueueAssetRefresh(mockLibraryJob);
 

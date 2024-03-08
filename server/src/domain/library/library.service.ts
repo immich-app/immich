@@ -640,9 +640,15 @@ export class LibraryService extends EventEmitter {
       .filter((validation) => validation.isValid)
       .map((validation) => validation.importPath);
 
-    const shouldRefresh = job.refreshAllFiles || job.refreshModifiedFiles;
-    const crawledAssetPaths = await this.crawlLibrary(library, validImportPaths);
-    let pathsToScan: string[] = shouldRefresh ? [...crawledAssetPaths] : [];
+    let rawPaths = await this.storageRepository.crawl({
+      pathsToCrawl: validImportPaths,
+      exclusionPatterns: library.exclusionPatterns,
+    });
+    const crawledAssetPaths = new Set<string>(rawPaths);
+
+    const shouldScanAll = job.refreshAllFiles || job.refreshModifiedFiles;
+    let pathsToScan: string[] = shouldScanAll ? rawPaths : [];
+    rawPaths = [];
 
     this.logger.debug(`Found ${crawledAssetPaths.size} asset(s) when crawling import paths ${library.importPaths}`);
 
@@ -670,7 +676,7 @@ export class LibraryService extends EventEmitter {
     await this.assetRepository.updateAll(assetIdsToMarkOffline, { isOffline: true });
     await this.assetRepository.updateAll(assetIdsToMarkOnline, { isOffline: false });
 
-    if (!shouldRefresh) {
+    if (!shouldScanAll) {
       pathsToScan = [...crawledAssetPaths];
       this.logger.debug(`Will import ${pathsToScan.length} new asset(s)`);
     }
@@ -682,18 +688,6 @@ export class LibraryService extends EventEmitter {
     await this.repository.update({ id: job.id, refreshedAt: new Date() });
 
     return true;
-  }
-
-  private async crawlLibrary(library: LibraryEntity, importPaths: string[]): Promise<Set<string>> {
-    const crawledAssetPaths: Set<string> = new Set();
-    for await (const path of this.storageRepository.crawl({
-      pathsToCrawl: importPaths,
-      exclusionPatterns: library.exclusionPatterns,
-    })) {
-      crawledAssetPaths.add(path);
-    }
-
-    return crawledAssetPaths;
   }
 
   private async findOrFail(id: string) {
