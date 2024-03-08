@@ -4,12 +4,12 @@ The System Settings page is the page that is visible only to the server administ
 
 ## Job Settings
 
-Using these settings, you can determine the amount of work that will run concurrently for each individual task in microservices. Some tasks can be set to higher values on computers with powerful hardware and storage with good I/O capabilities.
+Using these settings, you can determine the amount of work that will run concurrently for each task in microservices. Some tasks can be set to higher values on computers with powerful hardware and storage with good I/O capabilities.
 
 With higher concurrency, the host will work on more assets in parallel,
-this advice improves throughput, not latency, for example it will make Smart Search jobs process more quickly, but it won't make searching faster.
+this advice improves throughput, not latency, for example, it will make Smart Search jobs process more quickly, but it won't make searching faster.
 
-It is important to remember that jobs like Smart Search, Face Detection, Facial Recognition, Transcode Videos require a **lot** of processing power and therefore do not exaggerate with the amount of jobs because you're probably thoroughly overloading the server.
+It is important to remember that jobs like Smart Search, Face Detection, Facial Recognition, and Transcode Videos require a **lot** of processing power and therefore do not exaggerate the amount of jobs because you're probably thoroughly overloading the server.
 
 :::info Facial Recognition Concurrency
 The Facial Recognition Concurrency value cannot be changed because
@@ -28,23 +28,23 @@ Here you can [learn about the different error levels](https://sematext.com/blog/
 
 ## Machine Learning Settings
 
-Through this setting, you can manage all the settings related to machine learning in Immich, from the setting of remote machine learning to the model model and its parameters
+Through this setting, you can manage all the settings related to machine learning in Immich, from the setting of remote machine learning to the model and its parameters
 You can choose to disable a certain type of machine learning, for example smart search or facial recognition.
 
 ### Smart Search
 
 The smart search settings are designed to allow the search tool to be used using [CLIP](https://openai.com/research/clip) models that [can be changed](/docs/FAQ#can-i-use-a-custom-clip-model), different models will necessarily give better results but may consume more processing power, when changing a model it is mandatory to re-run the
-Smart Search job on all images in order to fully apply the change.
+Smart Search job on all images to fully apply the change.
 
 :::info Internet connection
-Changing models requires a connection to the Internet in order to download the model.
+Changing models requires a connection to the Internet to download the model.
 After downloading, there is no need for Immich to connect to the network
 Unless version checking has been enabled in the settings.
 :::
 
 ### Facial Recognition
 
-Under these settings you can change the facial recognition settings
+Under these settings, you can change the facial recognition settings
 Editable settings:
 
 - **Facial Recognition Model -** Models are listed in descending order of size. Larger models are slower and use more memory, but produce better results. Note that you must re-run the Face Detection job for all images upon changing a model.
@@ -56,7 +56,7 @@ Editable settings:
 - **Min Recognized Faces -** The minimum number of recognized faces for a person to be created (AKA: Core face). Increasing this makes Facial Recognition more precise at the cost of increasing the chance that a face is not assigned to a person.
 
 :::info
-When changing the values in: Min Detection Score, Max Recognition Distance And Min Recognized Faces.
+When changing the values in Min Detection Score, Max Recognition Distance, and Min Recognized Faces.
 You will have to restart **only** the job FACIAL RECOGNITION - ALL.
 
 If you replace the Facial Recognition Model, you will have to run the job FACE DETECTION - ALL.
@@ -70,7 +70,7 @@ If you have twins, you might want to lower the Max Recognition Distance value, d
 
 ### Map Settings
 
-In these settings you can change the appearance of the map in night and day modes according to your personal preference and according to the supported options.
+In these settings, you can change the appearance of the map in night and day modes according to your personal preference and according to the supported options.
 The map can be easily adjusted via [OpenMapTiles](https://openmaptiles.org/styles/) for example.
 
 ### GPS Settings
