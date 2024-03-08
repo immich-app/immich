@@ -2,7 +2,6 @@ import {
   AssetBuilderOptions,
   AssetCreate,
   AssetExploreFieldOptions,
-  AssetSearchOneToOneRelationOptions,
   AssetSearchOptions,
   AssetStats,
   AssetStatsOptions,
@@ -58,12 +57,6 @@ export class AssetRepository implements IAssetRepository {
     @InjectRepository(AssetJobStatusEntity) private jobStatusRepository: Repository<AssetJobStatusEntity>,
     @InjectRepository(SmartInfoEntity) private smartInfoRepository: Repository<SmartInfoEntity>,
   ) {}
-  getAllByFileCreationDate(
-    pagination: PaginationOptions,
-    options?: AssetSearchOneToOneRelationOptions | undefined,
-  ): Paginated<AssetEntity> {
-    throw new Error('Method not implemented.');
-  }
 
   async upsertExif(exif: Partial<ExifEntity>): Promise<void> {
     await this.exifRepository.upsert(exif, { conflictPaths: ['assetId'] });
