@@ -96,6 +96,7 @@ export class ServerInfoService {
     return {
       loginPageMessage: config.server.loginPageMessage,
       trashDays: config.trash.days,
+      userDeleteDelay: config.user.deleteDelay,
       oauthButtonText: config.oauth.buttonText,
       isInitialized,
       isOnboarded: onboarding?.isOnboarded || false,
@@ -170,7 +171,7 @@ export class ServerInfoService {
     return true;
   }
 
-  private async handleConnect(userId: string) {
+  private handleConnect(userId: string) {
     this.communicationRepository.send(ClientEvent.SERVER_VERSION, userId, serverVersion);
     this.newReleaseNotification(userId);
   }

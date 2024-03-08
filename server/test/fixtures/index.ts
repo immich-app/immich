@@ -10,7 +10,6 @@ export * from './library.stub';
 export * from './media.stub';
 export * from './partner.stub';
 export * from './person.stub';
-export * from './search.stub';
 export * from './shared-link.stub';
 export * from './system-config.stub';
 export * from './tag.stub';

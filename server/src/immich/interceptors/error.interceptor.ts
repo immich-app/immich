@@ -15,7 +15,7 @@ import { routeToErrorMessage } from '../app.utils';
 export class ErrorInterceptor implements NestInterceptor {
   private logger = new ImmichLogger(ErrorInterceptor.name);
 
-  async intercept(context: ExecutionContext, next: CallHandler<any>): Promise<Observable<any>> {
+  intercept(context: ExecutionContext, next: CallHandler<any>): Observable<any> {
     return next.handle().pipe(
       catchError((error) =>
         throwError(() => {

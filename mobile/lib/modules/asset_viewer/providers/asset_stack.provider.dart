@@ -2,6 +2,9 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:isar/isar.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+
+part 'asset_stack.provider.g.dart';
 
 class AssetStackNotifier extends StateNotifier<List<Asset>> {
   final Asset _asset;
@@ -49,3 +52,8 @@ final assetStackProvider =
       .sortByFileCreatedAtDesc()
       .findAll();
 });
+
+@riverpod
+int assetStackIndex(AssetStackIndexRef ref, Asset asset) {
+  return -1;
+}

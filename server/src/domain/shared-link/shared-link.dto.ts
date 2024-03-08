@@ -1,8 +1,7 @@
 import { SharedLinkType } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import { IsBoolean, IsDate, IsEnum, IsString } from 'class-validator';
-import { Optional, ValidateUUID } from '../domain.util';
+import { IsEnum, IsString } from 'class-validator';
+import { Optional, ValidateBoolean, ValidateDate, ValidateUUID } from '../domain.util';
 
 export class SharedLinkCreateDto {
   @IsEnum(SharedLinkType)
@@ -23,21 +22,16 @@ export class SharedLinkCreateDto {
   @Optional()
   password?: string;
 
-  @IsDate()
-  @Type(() => Date)
-  @Optional({ nullable: true })
+  @ValidateDate({ optional: true, nullable: true })
   expiresAt?: Date | null = null;
 
-  @Optional()
-  @IsBoolean()
-  allowUpload?: boolean = false;
+  @ValidateBoolean({ optional: true })
+  allowUpload?: boolean;
 
-  @Optional()
-  @IsBoolean()
+  @ValidateBoolean({ optional: true })
   allowDownload?: boolean = true;
 
-  @Optional()
-  @IsBoolean()
+  @ValidateBoolean({ optional: true })
   showMetadata?: boolean = true;
 }
 
@@ -54,10 +48,10 @@ export class SharedLinkEditDto {
   @Optional()
   allowUpload?: boolean;
 
-  @Optional()
+  @ValidateBoolean({ optional: true })
   allowDownload?: boolean;
 
-  @Optional()
+  @ValidateBoolean({ optional: true })
   showMetadata?: boolean;
 
   /**
@@ -65,8 +59,7 @@ export class SharedLinkEditDto {
    * Setting this flag and not sending expiryAt is considered as null instead.
    * Clients that can send null values can ignore this.
    */
-  @Optional()
-  @IsBoolean()
+  @ValidateBoolean({ optional: true })
   changeExpiryTime?: boolean;
 }
 

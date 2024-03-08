@@ -34,7 +34,7 @@ describe(DownloadService.name, () => {
     expect(sut).toBeDefined();
   });
 
-  beforeEach(async () => {
+  beforeEach(() => {
     accessMock = newAccessRepositoryMock();
     assetMock = newAssetRepositoryMock();
     storageMock = newStorageRepositoryMock();
@@ -90,7 +90,10 @@ describe(DownloadService.name, () => {
       };
 
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1', 'asset-2']));
-      assetMock.getByIds.mockResolvedValue([assetStub.noResizePath, assetStub.noWebpPath]);
+      assetMock.getByIds.mockResolvedValue([
+        { ...assetStub.noResizePath, id: 'asset-1' },
+        { ...assetStub.noWebpPath, id: 'asset-2' },
+      ]);
       storageMock.createZipStream.mockReturnValue(archiveMock);
 
       await expect(sut.downloadArchive(authStub.admin, { assetIds: ['asset-1', 'asset-2'] })).resolves.toEqual({
@@ -110,7 +113,33 @@ describe(DownloadService.name, () => {
       };
 
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1', 'asset-2']));
-      assetMock.getByIds.mockResolvedValue([assetStub.noResizePath, assetStub.noResizePath]);
+      assetMock.getByIds.mockResolvedValue([
+        { ...assetStub.noResizePath, id: 'asset-1' },
+        { ...assetStub.noResizePath, id: 'asset-2' },
+      ]);
+      storageMock.createZipStream.mockReturnValue(archiveMock);
+
+      await expect(sut.downloadArchive(authStub.admin, { assetIds: ['asset-1', 'asset-2'] })).resolves.toEqual({
+        stream: archiveMock.stream,
+      });
+
+      expect(archiveMock.addFile).toHaveBeenCalledTimes(2);
+      expect(archiveMock.addFile).toHaveBeenNthCalledWith(1, 'upload/library/IMG_123.jpg', 'IMG_123.jpg');
+      expect(archiveMock.addFile).toHaveBeenNthCalledWith(2, 'upload/library/IMG_123.jpg', 'IMG_123+1.jpg');
+    });
+
+    it('should be deterministic', async () => {
+      const archiveMock = {
+        addFile: jest.fn(),
+        finalize: jest.fn(),
+        stream: new Readable(),
+      };
+
+      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1', 'asset-2']));
+      assetMock.getByIds.mockResolvedValue([
+        { ...assetStub.noResizePath, id: 'asset-2' },
+        { ...assetStub.noResizePath, id: 'asset-1' },
+      ]);
       storageMock.createZipStream.mockReturnValue(archiveMock);
 
       await expect(sut.downloadArchive(authStub.admin, { assetIds: ['asset-1', 'asset-2'] })).resolves.toEqual({

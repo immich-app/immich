@@ -1,4 +1,4 @@
-import { IJobRepository, IMediaRepository, JobItem, JobItemHandler, QueueName } from '@app/domain';
+import { IJobRepository, IMediaRepository, JobItem, JobItemHandler, QueueName, StorageEventType } from '@app/domain';
 import { AppModule } from '@app/immich';
 import { InfraModule, InfraTestModule, dataSource } from '@app/infra';
 import { MediaRepository } from '@app/infra/repositories';
@@ -48,6 +48,9 @@ export const db = {
       if (deleteUsers) {
         await em.query(`DELETE FROM "users" CASCADE;`);
       }
+
+      // Release all locks
+      await em.query('SELECT pg_advisory_unlock_all()');
     });
   },
   disconnect: async () => {
@@ -75,22 +78,22 @@ class JobMock implements IJobRepository {
   async resume() {}
   async empty() {}
   async setConcurrency() {}
-  async getQueueStatus() {
-    return null as any;
+  getQueueStatus() {
+    return Promise.resolve(null) as any;
   }
-  async getJobCounts() {
-    return null as any;
+  getJobCounts() {
+    return Promise.resolve(null) as any;
   }
   async pause() {}
-  async clear() {
-    return [];
+  clear() {
+    return Promise.resolve([]);
   }
   async waitForQueueCompletion() {}
 }
 
 class MediaMockRepository extends MediaRepository {
-  async generateThumbhash() {
-    return Buffer.from('mock-thumbhash');
+  generateThumbhash() {
+    return Promise.resolve(Buffer.from('mock-thumbhash'));
   }
 }
 
@@ -124,34 +127,37 @@ export const testApp = {
   },
   reset: async (options?: ResetOptions) => {
     await db.reset(options);
-    await app.get(AppService).init();
-
-    await app.get(MicroAppService).init();
   },
   get: (member: any) => app.get(member),
   teardown: async () => {
     if (app) {
       await app.get(MicroAppService).teardown();
-      await app.get(AppService).teardown();
       await app.close();
     }
     await db.disconnect();
   },
 };
 
-export function waitForEvent<T>(emitter: EventEmitter, event: string): Promise<T> {
-  return new Promise((resolve, reject) => {
-    const success = (value: T) => {
-      emitter.off('error', fail);
-      resolve(value);
-    };
-    const fail = (error: Error) => {
-      emitter.off(event, success);
-      reject(error);
-    };
-    emitter.once(event, success);
-    emitter.once('error', fail);
-  });
+export function waitForEvent(emitter: EventEmitter, event: string, times = 1): Promise<void[]> {
+  const promises: Promise<void>[] = [];
+
+  for (let i = 1; i <= times; i++) {
+    promises.push(
+      new Promise((resolve, reject) => {
+        const success = (value: any) => {
+          emitter.off(StorageEventType.ERROR, fail);
+          resolve(value);
+        };
+        const fail = (error: Error) => {
+          emitter.off(event, success);
+          reject(error);
+        };
+        emitter.once(event, success);
+        emitter.once(StorageEventType.ERROR, fail);
+      }),
+    );
+  }
+  return Promise.all(promises);
 }
 
 const directoryExists = async (dirPath: string) =>

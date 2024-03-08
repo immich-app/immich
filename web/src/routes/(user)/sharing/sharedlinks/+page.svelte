@@ -91,7 +91,7 @@
     title="Delete Shared Link"
     prompt="Are you sure you want to delete this shared link?"
     confirmText="Delete"
-    on:confirm={() => handleDeleteLink()}
-    on:cancel={() => (deleteLinkId = null)}
+    onConfirm={() => handleDeleteLink()}
+    onClose={() => (deleteLinkId = null)}
   />
 {/if}
