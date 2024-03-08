@@ -2,6 +2,7 @@ import {
   AudioCodec,
   Colorspace,
   CQMode,
+  LogLevel,
   SystemConfig,
   SystemConfigEntity,
   SystemConfigKey,
@@ -10,15 +11,11 @@ import {
   TranscodePolicy,
   VideoCodec,
 } from '@app/infra/entities';
+import { ImmichLogger } from '@app/infra/logger';
 import { BadRequestException } from '@nestjs/common';
-import { newCommunicationRepositoryMock, newJobRepositoryMock, newSystemConfigRepositoryMock } from '@test';
-import { JobName, QueueName } from '../job';
-import {
-  ICommunicationRepository,
-  IJobRepository,
-  ISmartInfoRepository,
-  ISystemConfigRepository,
-} from '../repositories';
+import { newCommunicationRepositoryMock, newSystemConfigRepositoryMock } from '@test';
+import { QueueName } from '../job';
+import { ICommunicationRepository, ISearchRepository, ISystemConfigRepository, ServerEvent } from '../repositories';
 import { defaults, SystemConfigValidator } from './system-config.core';
 import { SystemConfigService } from './system-config.service';
 
@@ -26,19 +23,18 @@ const updates: SystemConfigEntity[] = [
   { key: SystemConfigKey.FFMPEG_CRF, value: 30 },
   { key: SystemConfigKey.OAUTH_AUTO_LAUNCH, value: true },
   { key: SystemConfigKey.TRASH_DAYS, value: 10 },
+  { key: SystemConfigKey.USER_DELETE_DELAY, value: 15 },
 ];
 
 const updatedConfig = Object.freeze<SystemConfig>({
   job: {
     [QueueName.BACKGROUND_TASK]: { concurrency: 5 },
-    [QueueName.CLIP_ENCODING]: { concurrency: 2 },
+    [QueueName.SMART_SEARCH]: { concurrency: 2 },
     [QueueName.METADATA_EXTRACTION]: { concurrency: 5 },
-    [QueueName.OBJECT_TAGGING]: { concurrency: 2 },
-    [QueueName.RECOGNIZE_FACES]: { concurrency: 2 },
+    [QueueName.FACE_DETECTION]: { concurrency: 2 },
     [QueueName.SEARCH]: { concurrency: 5 },
     [QueueName.SIDECAR]: { concurrency: 5 },
     [QueueName.LIBRARY]: { concurrency: 5 },
-    [QueueName.STORAGE_TEMPLATE_MIGRATION]: { concurrency: 5 },
     [QueueName.MIGRATION]: { concurrency: 5 },
     [QueueName.THUMBNAIL_GENERATION]: { concurrency: 5 },
     [QueueName.VIDEO_CONVERSION]: { concurrency: 1 },
@@ -48,8 +44,10 @@ const updatedConfig = Object.freeze<SystemConfig>({
     threads: 0,
     preset: 'ultrafast',
     targetAudioCodec: AudioCodec.AAC,
+    acceptedAudioCodecs: [AudioCodec.AAC, AudioCodec.MP3, AudioCodec.LIBOPUS],
     targetResolution: '720',
     targetVideoCodec: VideoCodec.H264,
+    acceptedVideoCodecs: [VideoCodec.H264],
     maxBitrate: '0',
     bframes: -1,
     refs: 0,
@@ -58,18 +56,18 @@ const updatedConfig = Object.freeze<SystemConfig>({
     temporalAQ: false,
     cqMode: CQMode.AUTO,
     twoPass: false,
+    preferredHwDevice: 'auto',
     transcode: TranscodePolicy.REQUIRED,
     accel: TranscodeHWAccel.DISABLED,
     tonemap: ToneMapping.HABLE,
   },
+  logging: {
+    enabled: true,
+    level: LogLevel.LOG,
+  },
   machineLearning: {
     enabled: true,
     url: 'http://immich-machine-learning:3003',
-    classification: {
-      enabled: true,
-      modelName: 'microsoft/resnet-50',
-      minScore: 0.9,
-    },
     clip: {
       enabled: true,
       modelName: 'ViT-B-32__openai',
@@ -78,8 +76,8 @@ const updatedConfig = Object.freeze<SystemConfig>({
       enabled: true,
       modelName: 'buffalo_l',
       minScore: 0.7,
-      maxDistance: 0.6,
-      minFaces: 1,
+      maxDistance: 0.5,
+      minFaces: 3,
     },
   },
   map: {
@@ -96,17 +94,26 @@ const updatedConfig = Object.freeze<SystemConfig>({
     buttonText: 'Login with OAuth',
     clientId: '',
     clientSecret: '',
+    defaultStorageQuota: 0,
     enabled: false,
     issuerUrl: '',
     mobileOverrideEnabled: false,
     mobileRedirectUri: '',
     scope: 'openid email profile',
+    signingAlgorithm: 'RS256',
     storageLabelClaim: 'preferred_username',
+    storageQuotaClaim: 'immich_quota',
   },
   passwordLogin: {
     enabled: true,
   },
+  server: {
+    externalDomain: '',
+    loginPageMessage: '',
+  },
   storageTemplate: {
+    enabled: false,
+    hashVerificationEnabled: true,
     template: '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
   },
   thumbnail: {
@@ -130,6 +137,12 @@ const updatedConfig = Object.freeze<SystemConfig>({
       enabled: true,
       cronExpression: '0 0 * * *',
     },
+    watch: {
+      enabled: false,
+    },
+  },
+  user: {
+    deleteDelay: 15,
   },
 });
 
@@ -137,15 +150,13 @@ describe(SystemConfigService.name, () => {
   let sut: SystemConfigService;
   let configMock: jest.Mocked<ISystemConfigRepository>;
   let communicationMock: jest.Mocked<ICommunicationRepository>;
-  let jobMock: jest.Mocked<IJobRepository>;
-  let smartInfoMock: jest.Mocked<ISmartInfoRepository>;
+  let smartInfoMock: jest.Mocked<ISearchRepository>;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     delete process.env.IMMICH_CONFIG_FILE;
     configMock = newSystemConfigRepositoryMock();
     communicationMock = newCommunicationRepositoryMock();
-    jobMock = newJobRepositoryMock();
-    sut = new SystemConfigService(configMock, communicationMock, jobMock, smartInfoMock);
+    sut = new SystemConfigService(configMock, communicationMock, smartInfoMock);
   });
 
   it('should work', () => {
@@ -166,11 +177,21 @@ describe(SystemConfigService.name, () => {
       const validator: SystemConfigValidator = jest.fn();
       sut.addValidator(validator);
       await sut.updateConfig(defaults);
-      expect(validator).toHaveBeenCalledWith(defaults);
+      expect(validator).toHaveBeenCalledWith(defaults, defaults);
     });
   });
 
   describe('getConfig', () => {
+    let warnLog: jest.SpyInstance;
+
+    beforeEach(() => {
+      warnLog = jest.spyOn(ImmichLogger.prototype, 'warn');
+    });
+
+    afterEach(() => {
+      warnLog.mockRestore();
+    });
+
     it('should return the default config', async () => {
       configMock.load.mockResolvedValue([]);
 
@@ -182,6 +203,7 @@ describe(SystemConfigService.name, () => {
         { key: SystemConfigKey.FFMPEG_CRF, value: 30 },
         { key: SystemConfigKey.OAUTH_AUTO_LAUNCH, value: true },
         { key: SystemConfigKey.TRASH_DAYS, value: 10 },
+        { key: SystemConfigKey.USER_DELETE_DELAY, value: 15 },
       ]);
 
       await expect(sut.getConfig()).resolves.toEqual(updatedConfig);
@@ -189,7 +211,12 @@ describe(SystemConfigService.name, () => {
 
     it('should load the config from a file', async () => {
       process.env.IMMICH_CONFIG_FILE = 'immich-config.json';
-      const partialConfig = { ffmpeg: { crf: 30 }, oauth: { autoLaunch: true }, trash: { days: 10 } };
+      const partialConfig = {
+        ffmpeg: { crf: 30 },
+        oauth: { autoLaunch: true },
+        trash: { days: 10 },
+        user: { deleteDelay: 15 },
+      };
       configMock.readFile.mockResolvedValue(JSON.stringify(partialConfig));
 
       await expect(sut.getConfig()).resolves.toEqual(updatedConfig);
@@ -219,9 +246,9 @@ describe(SystemConfigService.name, () => {
       { should: 'validate numbers', config: { ffmpeg: { crf: 'not-a-number' } } },
       { should: 'validate booleans', config: { oauth: { enabled: 'invalid' } } },
       { should: 'validate enums', config: { ffmpeg: { transcode: 'unknown' } } },
-      { should: 'validate top level unknown options', config: { unknownOption: true } },
-      { should: 'validate nested unknown options', config: { ffmpeg: { unknownOption: true } } },
       { should: 'validate required oauth fields', config: { oauth: { enabled: true } } },
+      { should: 'warn for top level unknown options', warn: true, config: { unknownOption: true } },
+      { should: 'warn for nested unknown options', warn: true, config: { ffmpeg: { unknownOption: true } } },
     ];
 
     for (const test of tests) {
@@ -229,7 +256,12 @@ describe(SystemConfigService.name, () => {
         process.env.IMMICH_CONFIG_FILE = 'immich-config.json';
         configMock.readFile.mockResolvedValue(JSON.stringify(test.config));
 
-        await expect(sut.getConfig()).rejects.toBeInstanceOf(Error);
+        if (test.warn) {
+          await sut.getConfig();
+          expect(warnLog).toHaveBeenCalled();
+        } else {
+          await expect(sut.getConfig()).rejects.toBeInstanceOf(Error);
+        }
       });
     }
   });
@@ -269,13 +301,14 @@ describe(SystemConfigService.name, () => {
   });
 
   describe('updateConfig', () => {
-    it('should notify the microservices process', async () => {
+    it('should update the config and emit client and server events', async () => {
       configMock.load.mockResolvedValue(updates);
 
       await expect(sut.updateConfig(updatedConfig)).resolves.toEqual(updatedConfig);
 
+      expect(communicationMock.broadcast).toHaveBeenCalled();
+      expect(communicationMock.sendServerEvent).toHaveBeenCalledWith(ServerEvent.CONFIG_UPDATE);
       expect(configMock.saveAll).toHaveBeenCalledWith(updates);
-      expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.SYSTEM_CONFIG_CHANGE });
     });
 
     it('should throw an error if the config is not valid', async () => {
@@ -285,7 +318,7 @@ describe(SystemConfigService.name, () => {
 
       await expect(sut.updateConfig(updatedConfig)).rejects.toBeInstanceOf(BadRequestException);
 
-      expect(validator).toHaveBeenCalledWith(updatedConfig);
+      expect(validator).toHaveBeenCalledWith(updatedConfig, defaults);
       expect(configMock.saveAll).not.toHaveBeenCalled();
     });
 

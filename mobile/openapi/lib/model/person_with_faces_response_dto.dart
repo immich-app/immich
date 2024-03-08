@@ -35,12 +35,12 @@ class PersonWithFacesResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is PersonWithFacesResponseDto &&
-     other.birthDate == birthDate &&
-     other.faces == faces &&
-     other.id == id &&
-     other.isHidden == isHidden &&
-     other.name == name &&
-     other.thumbnailPath == thumbnailPath;
+    other.birthDate == birthDate &&
+    _deepEquality.equals(other.faces, faces) &&
+    other.id == id &&
+    other.isHidden == isHidden &&
+    other.name == name &&
+    other.thumbnailPath == thumbnailPath;
 
   @override
   int get hashCode =>
@@ -78,7 +78,7 @@ class PersonWithFacesResponseDto {
       final json = value.cast<String, dynamic>();
 
       return PersonWithFacesResponseDto(
-        birthDate: mapDateTime(json, r'birthDate', ''),
+        birthDate: mapDateTime(json, r'birthDate', r''),
         faces: AssetFaceWithoutPersonResponseDto.listFromJson(json[r'faces']),
         id: mapValueOfType<String>(json, r'id')!,
         isHidden: mapValueOfType<bool>(json, r'isHidden')!,

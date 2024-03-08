@@ -8,7 +8,6 @@ import 'package:openapi/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**classification** | [**ClassificationConfig**](ClassificationConfig.md) |  | 
 **clip** | [**CLIPConfig**](CLIPConfig.md) |  | 
 **enabled** | **bool** |  | 
 **facialRecognition** | [**RecognitionConfig**](RecognitionConfig.md) |  | 

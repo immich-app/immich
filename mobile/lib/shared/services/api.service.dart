@@ -24,6 +24,8 @@ class ApiService {
   late SharedLinkApi sharedLinkApi;
   late SystemConfigApi systemConfigApi;
   late ActivityApi activityApi;
+  late DownloadApi downloadApi;
+  late TrashApi trashApi;
 
   ApiService() {
     final endpoint = Store.tryGet(StoreKey.serverEndpoint);
@@ -31,12 +33,12 @@ class ApiService {
       setEndpoint(endpoint);
     }
   }
-  String? _authToken;
+  String? _accessToken;
 
   setEndpoint(String endpoint) {
     _apiClient = ApiClient(basePath: endpoint);
-    if (_authToken != null) {
-      setAccessToken(_authToken!);
+    if (_accessToken != null) {
+      setAccessToken(_accessToken!);
     }
     userApi = UserApi(_apiClient);
     authenticationApi = AuthenticationApi(_apiClient);
@@ -51,6 +53,8 @@ class ApiService {
     sharedLinkApi = SharedLinkApi(_apiClient);
     systemConfigApi = SystemConfigApi(_apiClient);
     activityApi = ActivityApi(_apiClient);
+    downloadApi = DownloadApi(_apiClient);
+    trashApi = TrashApi(_apiClient);
   }
 
   Future<String> resolveAndSetEndpoint(String serverUrl) async {
@@ -134,8 +138,8 @@ class ApiService {
   }
 
   setAccessToken(String accessToken) {
-    _authToken = accessToken;
-    _apiClient.addDefaultHeader('Authorization', 'Bearer $accessToken');
+    _accessToken = accessToken;
+    _apiClient.addDefaultHeader('x-immich-user-token', accessToken);
   }
 
   ApiClient get apiClient => _apiClient;

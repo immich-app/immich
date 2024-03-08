@@ -22,13 +22,6 @@ void main() {
       // TODO
     });
 
-    // @deprecated use feature flags and /oauth/authorize
-    //
-    //Future<OAuthConfigResponseDto> generateOAuthConfig(OAuthConfigDto oAuthConfigDto) async
-    test('test generateOAuthConfig', () async {
-      // TODO
-    });
-
     //Future<UserResponseDto> linkOAuthAccount(OAuthCallbackDto oAuthCallbackDto) async
     test('test linkOAuthAccount', () async {
       // TODO

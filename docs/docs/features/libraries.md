@@ -34,48 +34,57 @@ If you add assets from an external library to an album and then move the asset t
 
 ### Deleted External Assets
 
+Note: Either a manual or scheduled library scan must have been performed to identify offline assets before this process will work.
+
 In all above scan methods, Immich will check if any files are missing. This can happen if files are deleted, or if they are on a storage location that is currently unavailable, like a network drive that is not mounted, or a USB drive that has been unplugged. In order to prevent accidental deletion of assets, Immich will not immediately delete an asset from the library if the file is missing. Instead, the asset will be internally marked as offline and will still be visible in the main timeline. If the file is moved back to its original location and the library is scanned again, the asset will be restored.
 
-Finally, files can be deleted from Immich via the `Remove Offline Files` job. Any assets marked as offline will then be removed from Immich. Run this job whenever files have been deleted from the file system and you want to remove them from Immich. Note that a library scan must be performed first to mark the assets as offline.
+Finally, files can be deleted from Immich via the `Remove Offline Files` job. This job can be found by the three dots menu for the associated external storage that was configured under Administration > Libraries (the same location described at [create external libraries](#create-external-libraries)). When this job is run, any assets marked as offline will then be removed from Immich. Run this job whenever files have been deleted from the file system and you want to remove them from Immich.
 
 ### Import Paths
 
-External libraries use import paths to determine which files to scan. Each library can have multiple import paths so that files from different locations can be added to the same library. Import paths are scanned recursively, and if a file is in multiple import paths, it will only be added once. If the import paths are edited in a way that an external file is no longer in any import path, it will be removed from the library in the same way a deleted file would. If the file is moved back to an import path, it will be added again as if it was a new file.
+External libraries use import paths to determine which files to scan. Each library can have multiple import paths so that files from different locations can be added to the same library. Import paths are scanned recursively, and if a file is in multiple import paths, it will only be added once. Each import file must be a readable directory that exists on the filesystem; the import path dialog will alert you of any paths that are not accessible.
+
+If the import paths are edited in a way that an external file is no longer in any import path, it will be removed from the library in the same way a deleted file would. If the file is moved back to an import path, it will be added again as if it was a new file.
 
 ### Troubleshooting
 
-Sometimes, an external library will not scan correctly. This can happen if the immich_server or immich_microservices can't access the files. Here are some things to check:
+Sometimes, an external library will not scan correctly. This can happen if immich_server or immich_microservices can't access the files. Here are some things to check:
 
-- Is the external path set correctly?
 - In the docker-compose file, are the volumes mounted correctly?
 - Are the volumes identical between the `server` and `microservices` container?
 - Are the import paths set correctly, and do they match the path set in docker-compose file?
+- Make sure you don't use symlinks in your import libraries, and that you aren't linking across docker mounts.
 - Are the permissions set correctly?
+- Make sure you are using forward slashes (`/`) and not backward slashes.
 
-If all else fails, you can always start a shell inside the container and check if the path is accessible. For example, `docker exec -it immich_microservices /bin/bash` will start a bash shell. If your import path, for instance, is `/data/import/photos`, you can check if the files are accessible by running `ls /data/import/photos`. Also check the `immich_server` container in the same way.
+To validate that Immich can reach your external library, start a shell inside the container. Run `docker exec -it immich_microservices /bin/bash` to a bash shell. If your import path is `/data/import/photos`, check it with `ls /data/import/photos`. Do the same check for the `immich_server` container. If you cannot access this directory in both the `microservices` and `server` containers, Immich won't be able to import files.
 
-### Security Considerations
-
-:::caution
-
-Please read and understand this section before setting external paths, as there are important security considerations.
-
-:::
-
-For security purposes, each Immich user is disallowed to add external files by default. This is to prevent devastating [path traversal attacks](https://owasp.org/www-community/attacks/Path_Traversal). An admin can allow individual users to use external path feature via the `external path` setting found in the admin panel. Without the external path restriction, a user can add any image or video file on the Immich host filesystem to be imported into Immich, potentially allowing sensitive data to be accessed. If you are running Immich as root in your Docker setup (which is the default), all external file reads are done with root privileges. This is particularly dangerous if the Immich host is a shared server.
-
-With the `external path` set, a user is restricted to accessing external files to files or directories within that path. The Immich admin should still be careful not set the external path too generously. For example, `user1` wants to read their photos in to `/home/user1`. A lazy admin sets that user's external path to `/home/` since it "gets the job done". However, that user will then be able to read all photos in `/home/user2/private-photos`, too! Please set the external path as specific as possible. If multiple folders must be added, do this using the docker volume mount feature described below.
-
-### Exclusion Patterns and Scan Settings
+### Exclusion Patterns
 
 By default, all files in the import paths will be added to the library. If there are files that should not be added, exclusion patterns can be used to exclude them. Exclusion patterns are glob patterns are matched against the full file path. If a file matches an exclusion pattern, it will not be added to the library. Exclusion patterns can be added in the Scan Settings page for each library. Under the hood, Immich uses the [glob](https://www.npmjs.com/package/glob) package to match patterns, so please refer to [their documentation](https://github.com/isaacs/node-glob#glob-primer) to see what patterns are supported.
 
 Some basic examples:
 
-- `*.tif` will exclude all files with the extension `.tif`
-- `hidden.jpg` will exclude all files named `hidden.jpg`
+- `**/*.tif` will exclude all files with the extension `.tif`
+- `**/hidden.jpg` will exclude all files named `hidden.jpg`
 - `**/Raw/**` will exclude all files in any directory named `Raw`
-- `*.{tif,jpg}` will exclude all files with the extension `.tif` or `.jpg`
+- `**/*.{tif,jpg}` will exclude all files with the extension `.tif` or `.jpg`
+
+### Automatic watching (EXPERIMENTAL)
+
+This feature - currently hidden in the config file - is considered experimental and for advanced users only. If enabled, it will allow automatic watching of the filesystem which means new assets are automatically imported to Immich without needing to rescan. Deleted assets are, as always, marked as offline and can be removed with the "Remove offline files" button.
+
+If your photos are on a network drive, automatic file watching likely won't work. In that case, you will have to rely on a periodic library refresh to pull in your changes.
+
+#### Troubleshooting
+
+If you encounter an `ENOSPC` error, you need to increase your file watcher limit. In sysctl, this key is called `fs.inotify.max_user_watched` and has a default value of 8192. Increase this number to a suitable value greater than the number of files you will be watching. Note that Immich has to watch all files in your import paths including any ignored files.
+
+```
+ERROR [LibraryService] Library watcher for library c69faf55-f96d-4aa0-b83b-2d80cbc27d98 encountered error: Error: ENOSPC: System limit for number of file watchers reached, watch '/media/photo.jpg'
+```
+
+In rare cases, the library watcher can hang, preventing Immich from starting up. In this case, disable the library watcher in the configuration file. If the watcher is enabled from within Immich, the app must be started without the microservices. Disable the microservices in the docker compose file, start Immich, disable the library watcher in the admin settings, close Immich, re-enable the microservices, and then Immich can be started normally.
 
 ### Nightly job
 
@@ -102,6 +111,7 @@ First, we need to plan how we want to organize the libraries. The christmas trip
 +     - /mnt/nas/christmas-trip:/mnt/media/christmas-trip:ro
 +     - /home/user/old-pics:/mnt/media/old-pics:ro
 +     - /mnt/media/videos:/mnt/media/videos:ro
++     - "C:/Users/user_name/Desktop/my media:/mnt/media/my-media:ro" # import path in Windows system.
 
 
   immich-microservices:
@@ -110,27 +120,24 @@ First, we need to plan how we want to organize the libraries. The christmas trip
 +     - /mnt/nas/christmas-trip:/mnt/media/christmas-trip:ro
 +     - /home/user/old-pics:/mnt/media/old-pics:ro
 +     - /mnt/media/videos:/mnt/media/videos:ro
++     - "C:/Users/user_name/Desktop/my media:/mnt/media/my-media:ro" # import path in Windows system.
 ```
 
 :::tip
 The `ro` flag at the end only gives read-only access to the volumes. While Immich does not modify files, it's a good practice to mount read-only.
 :::
 
-_Remember to bring the container down/up to register the changes. Make sure you can see the mounted path in the container._
-
-### Set External Path
-
-Only an admin can do this.
-
-- Navigate to `Administration > Users` page on the web.
-- Click on the user edit button.
-- Set `/mnt/media` to be the external path. This folder will only contain the three folders that we want to import, so nothing else can be accessed.
+:::info
+_Remember to bring the container `docker compose down/up` to register the changes. Make sure you can see the mounted path in the container._
+:::
 
 ### Create External Libraries
 
-- Click on your user name in the top right corner -> Account Settings
-- Click on Libraries
+These actions must be performed by the Immich administrator.
+
+- Click on Administration -> Libraries
 - Click on Create External Library
+- Select which user owns the library, this can not be changed later
 - Click the drop-down menu on the newly created library
 - Click on Rename Library and rename it to "Christmas Trip"
 - Click Edit Import Paths
@@ -141,7 +148,7 @@ NOTE: We have to use the `/mnt/media/christmas-trip` path and not the `/mnt/nas/
 
 Next, we'll add an exclusion pattern to filter out raw files.
 
-- Click the drop-down menu on the newly christmas library
+- Click the drop-down menu on the newly-created Christmas library
 - Click on Manage
 - Click on Scan Settings
 - Click on Add Exclusion Pattern

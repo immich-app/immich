@@ -32,14 +32,11 @@ The default configuration looks like this:
     "backgroundTask": {
       "concurrency": 5
     },
-    "clipEncoding": {
+    "smartSearch": {
       "concurrency": 2
     },
     "metadataExtraction": {
       "concurrency": 5
-    },
-    "objectTagging": {
-      "concurrency": 2
     },
     "recognizeFaces": {
       "concurrency": 2
@@ -66,14 +63,13 @@ The default configuration looks like this:
       "concurrency": 1
     }
   },
+  "logging": {
+    "enabled": true,
+    "level": "log"
+  },
   "machineLearning": {
     "enabled": true,
     "url": "http://immich-machine-learning:3003",
-    "classification": {
-      "enabled": true,
-      "modelName": "microsoft/resnet-50",
-      "minScore": 0.9
-    },
     "clip": {
       "enabled": true,
       "modelName": "ViT-B-32__openai"
@@ -83,29 +79,32 @@ The default configuration looks like this:
       "modelName": "buffalo_l",
       "minScore": 0.7,
       "maxDistance": 0.6,
-      "minFaces": 1
+      "minFaces": 3
     }
   },
   "map": {
     "enabled": true,
-    "tileUrl": "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+    "lightStyle": "",
+    "darkStyle": ""
   },
   "reverseGeocoding": {
-    "enabled": true,
-    "citiesFileOverride": "cities500"
+    "enabled": true
   },
   "oauth": {
     "enabled": false,
     "issuerUrl": "",
     "clientId": "",
     "clientSecret": "",
-    "mobileOverrideEnabled": false,
-    "mobileRedirectUri": "",
     "scope": "openid email profile",
+    "signingAlgorithm": "RS256",
     "storageLabelClaim": "preferred_username",
+    "storageQuotaClaim": "immich_quota",
+    "defaultStorageQuota": 0,
     "buttonText": "Login with OAuth",
     "autoRegister": true,
-    "autoLaunch": false
+    "autoLaunch": false,
+    "mobileOverrideEnabled": false,
+    "mobileRedirectUri": ""
   },
   "passwordLogin": {
     "enabled": true
@@ -129,14 +128,19 @@ The default configuration looks like this:
   "theme": {
     "customCss": ""
   },
+  "user": {
+    "deleteDelay": 7
+  },
   "library": {
     "scan": {
       "enabled": true,
       "cronExpression": "0 0 * * *"
+    },
+    "watch": {
+      "enabled": false,
+      "usePolling": false,
+      "interval": 10000
     }
-  },
-  "stylesheets": {
-    "css": ""
   }
 }
 ```
@@ -149,4 +153,4 @@ So you can just grab it from there, paste it into a file and you're pretty much 
 ### Step 2 - Specify the file location
 
 In your `.env` file, set the variable `IMMICH_CONFIG_FILE` to the path of your config.
-For more information, refer to the [Environment Variables](https://docs.immich.app/docs/install/environment-variables) section.
+For more information, refer to the [Environment Variables](/docs/install/environment-variables.md) section.

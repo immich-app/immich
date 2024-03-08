@@ -3,43 +3,30 @@
   import empty2Url from '$lib/assets/empty-2.svg';
   import AlbumCard from '$lib/components/album-page/album-card.svelte';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
-  import {
-    notificationController,
-    NotificationType,
-  } from '$lib/components/shared-components/notification/notification';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
   import { AppRoute } from '$lib/constants';
-  import { api } from '@api';
-  import { flip } from 'svelte/animate';
-  import type { PageData } from './$types';
+  import { createAlbum } from '@immich/sdk';
   import { mdiLink, mdiPlusBoxOutline } from '@mdi/js';
-  import Icon from '$lib/components/elements/icon.svelte';
+  import { flip } from 'svelte/animate';
+  import { handleError } from '../../../lib/utils/handle-error';
+  import type { PageData } from './$types';
 
   export let data: PageData;
 
   const createSharedAlbum = async () => {
     try {
-      const { data: newAlbum } = await api.albumApi.createAlbum({
-        createAlbumDto: {
-          albumName: '',
-        },
-      });
-
-      goto('/albums/' + newAlbum.id);
-    } catch (e) {
-      notificationController.show({
-        message: 'Error creating album, check console for more details',
-        type: NotificationType.Error,
-      });
-
-      console.log('Error [createAlbum] ', e);
+      const newAlbum = await createAlbum({ createAlbumDto: { albumName: '' } });
+      await goto(`${AppRoute.ALBUMS}/${newAlbum.id}`);
+    } catch (error) {
+      handleError(error, 'Unable to create album');
     }
   };
 </script>
 
-<UserPageLayout user={data.user} title={data.meta.title}>
+<UserPageLayout title={data.meta.title}>
   <div class="flex" slot="buttons">
     <LinkButton on:click={createSharedAlbum}>
       <div class="flex flex-wrap place-items-center justify-center gap-x-1 text-sm">
@@ -66,7 +53,7 @@
         <div class="flex flex-row flex-wrap gap-4">
           {#each data.partners as partner (partner.id)}
             <a
-              href="/partners/{partner.id}"
+              href="{AppRoute.PARTNERS}/{partner.id}"
               class="flex gap-4 rounded-lg px-5 py-4 transition-all hover:bg-gray-200 dark:hover:bg-gray-700"
             >
               <UserAvatar user={partner} size="lg" />
@@ -94,9 +81,9 @@
       <div>
         <!-- Share Album List -->
         <div class="grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))]">
-          {#each data.sharedAlbums as album (album.id)}
+          {#each data.sharedAlbums as album, index (album.id)}
             <a data-sveltekit-preload-data="hover" href={`albums/${album.id}`} animate:flip={{ duration: 200 }}>
-              <AlbumCard {album} user={data.user} isSharingView showContextMenu={false} />
+              <AlbumCard preload={index < 20} {album} isSharingView showContextMenu={false} />
             </a>
           {/each}
         </div>

@@ -7,7 +7,10 @@
   import { clickOutside } from '$lib/utils/click-outside';
   import { mdiClose } from '@mdi/js';
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    escape: void;
+    close: void;
+  }>();
   export let zIndex = 9999;
   export let ignoreClickOutside = false;
 
@@ -15,6 +18,8 @@
     if (browser) {
       const scrollTop = document.documentElement.scrollTop;
       const scrollLeft = document.documentElement.scrollLeft;
+
+      /* eslint-disable unicorn/prefer-add-event-listener */
       window.onscroll = function () {
         window.scrollTo(scrollLeft, scrollTop);
       };
@@ -23,6 +28,7 @@
 
   onDestroy(() => {
     if (browser) {
+      /* eslint-disable unicorn/prefer-add-event-listener */
       window.onscroll = null;
     }
   });

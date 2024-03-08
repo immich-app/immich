@@ -1,34 +1,37 @@
 <script lang="ts">
-  import { api, UserResponseDto } from '@api';
   import { createEventDispatcher } from 'svelte';
   import Button from '../elements/buttons/button.svelte';
+  import PasswordField from '../shared-components/password-field.svelte';
+  import { updateUser, type UserResponseDto } from '@immich/sdk';
 
   export let user: UserResponseDto;
-  let error: string;
+  let errorMessage: string;
   let success: string;
 
   let password = '';
-  let confirmPassowrd = '';
+  let passwordConfirm = '';
 
-  let changeChagePassword = false;
+  let valid = false;
 
   $: {
-    if (password !== confirmPassowrd && confirmPassowrd.length > 0) {
-      error = 'Password does not match';
-      changeChagePassword = false;
+    if (password !== passwordConfirm && passwordConfirm.length > 0) {
+      errorMessage = 'Password does not match';
+      valid = false;
     } else {
-      error = '';
-      changeChagePassword = true;
+      errorMessage = '';
+      valid = true;
     }
   }
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    success: void;
+  }>();
 
   async function changePassword() {
-    if (changeChagePassword) {
-      error = '';
+    if (valid) {
+      errorMessage = '';
 
-      const { status } = await api.userApi.updateUser({
+      await updateUser({
         updateUserDto: {
           id: user.id,
           password: String(password),
@@ -36,12 +39,7 @@
         },
       });
 
-      if (status === 200) {
-        dispatch('success');
-        return;
-      } else {
-        console.error('Error changing password');
-      }
+      dispatch('success');
     }
   }
 </script>
@@ -49,32 +47,16 @@
 <form on:submit|preventDefault={changePassword} method="post" class="mt-5 flex flex-col gap-5">
   <div class="flex flex-col gap-2">
     <label class="immich-form-label" for="password">New Password</label>
-    <input
-      class="immich-form-input"
-      id="password"
-      name="password"
-      type="password"
-      autocomplete="new-password"
-      required
-      bind:value={password}
-    />
+    <PasswordField id="password" bind:password autocomplete="new-password" />
   </div>
 
   <div class="flex flex-col gap-2">
     <label class="immich-form-label" for="confirmPassword">Confirm Password</label>
-    <input
-      class="immich-form-input"
-      id="confirmPassword"
-      name="password"
-      type="password"
-      autocomplete="current-password"
-      required
-      bind:value={confirmPassowrd}
-    />
+    <PasswordField id="confirmPassword" bind:password={passwordConfirm} autocomplete="new-password" />
   </div>
 
-  {#if error}
-    <p class="text-sm text-red-400">{error}</p>
+  {#if errorMessage}
+    <p class="text-sm text-red-400">{errorMessage}</p>
   {/if}
 
   {#if success}

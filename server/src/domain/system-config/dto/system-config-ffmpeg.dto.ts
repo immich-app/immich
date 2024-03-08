@@ -1,7 +1,8 @@
 import { AudioCodec, CQMode, ToneMapping, TranscodeHWAccel, TranscodePolicy, VideoCodec } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsBoolean, IsEnum, IsInt, IsString, Max, Min } from 'class-validator';
+import { IsEnum, IsInt, IsString, Max, Min } from 'class-validator';
+import { ValidateBoolean } from '../../domain.util';
 
 export class SystemConfigFFmpegDto {
   @IsInt()
@@ -24,9 +25,17 @@ export class SystemConfigFFmpegDto {
   @ApiProperty({ enumName: 'VideoCodec', enum: VideoCodec })
   targetVideoCodec!: VideoCodec;
 
+  @IsEnum(VideoCodec, { each: true })
+  @ApiProperty({ enumName: 'VideoCodec', enum: VideoCodec, isArray: true })
+  acceptedVideoCodecs!: VideoCodec[];
+
   @IsEnum(AudioCodec)
   @ApiProperty({ enumName: 'AudioCodec', enum: AudioCodec })
   targetAudioCodec!: AudioCodec;
+
+  @IsEnum(AudioCodec, { each: true })
+  @ApiProperty({ enumName: 'AudioCodec', enum: AudioCodec, isArray: true })
+  acceptedAudioCodecs!: AudioCodec[];
 
   @IsString()
   targetResolution!: string;
@@ -60,15 +69,18 @@ export class SystemConfigFFmpegDto {
   @ApiProperty({ type: 'integer' })
   npl!: number;
 
-  @IsBoolean()
+  @ValidateBoolean()
   temporalAQ!: boolean;
 
   @IsEnum(CQMode)
   @ApiProperty({ enumName: 'CQMode', enum: CQMode })
   cqMode!: CQMode;
 
-  @IsBoolean()
+  @ValidateBoolean()
   twoPass!: boolean;
+
+  @IsString()
+  preferredHwDevice!: string;
 
   @IsEnum(TranscodePolicy)
   @ApiProperty({ enumName: 'TranscodePolicy', enum: TranscodePolicy })

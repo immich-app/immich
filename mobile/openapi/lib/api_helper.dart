@@ -88,6 +88,9 @@ String parameterToString(dynamic value) {
   if (value is LibraryType) {
     return LibraryTypeTypeTransformer().encode(value).toString();
   }
+  if (value is LogLevel) {
+    return LogLevelTypeTransformer().encode(value).toString();
+  }
   if (value is MapTheme) {
     return MapThemeTypeTransformer().encode(value).toString();
   }
@@ -105,6 +108,9 @@ String parameterToString(dynamic value) {
   }
   if (value is ReactionType) {
     return ReactionTypeTypeTransformer().encode(value).toString();
+  }
+  if (value is SearchSuggestionType) {
+    return SearchSuggestionTypeTypeTransformer().encode(value).toString();
   }
   if (value is SharedLinkType) {
     return SharedLinkTypeTypeTransformer().encode(value).toString();
@@ -165,7 +171,7 @@ DateTime? mapDateTime(dynamic map, String key, [String? pattern]) {
     if (value is int) {
       millis = value;
     } else if (value is String) {
-      if (pattern == _dateEpochMarker) {
+      if (_isEpochMarker(pattern)) {
         millis = int.tryParse(value);
       } else {
         return DateTime.tryParse(value);

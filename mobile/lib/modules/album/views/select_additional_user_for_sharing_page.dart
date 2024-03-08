@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -9,11 +10,11 @@ import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
 
+@RoutePage<List<String>?>()
 class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
   final Album album;
 
-  const SelectAdditionalUserForSharingPage({Key? key, required this.album})
-      : super(key: key);
+  const SelectAdditionalUserForSharingPage({super.key, required this.album});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -22,7 +23,7 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
     final sharedUsersList = useState<Set<User>>({});
 
     addNewUsersHandler() {
-      context.autoPop(sharedUsersList.value.map((e) => e.id).toList());
+      context.popRoute(sharedUsersList.value.map((e) => e.id).toList());
     }
 
     buildTileIcon(User user) {
@@ -123,7 +124,7 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
         leading: IconButton(
           icon: const Icon(Icons.close_rounded),
           onPressed: () {
-            context.autoPop(null);
+            context.popRoute(null);
           },
         ),
         actions: [

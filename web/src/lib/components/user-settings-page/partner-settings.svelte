@@ -1,15 +1,22 @@
 <script lang="ts">
-  import { PartnerResponseDto, UserResponseDto, api } from '@api';
-  import UserAvatar from '../shared-components/user-avatar.svelte';
-  import Button from '../elements/buttons/button.svelte';
-  import PartnerSelectionModal from './partner-selection-modal.svelte';
-  import { handleError } from '../../utils/handle-error';
-  import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
-  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
+  import {
+    createPartner,
+    getPartners,
+    removePartner,
+    updatePartner,
+    type PartnerResponseDto,
+    type UserResponseDto,
+  } from '@immich/sdk';
   import { mdiCheck, mdiClose } from '@mdi/js';
   import { onMount } from 'svelte';
+  import { handleError } from '../../utils/handle-error';
+  import Button from '../elements/buttons/button.svelte';
+  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import Icon from '../elements/icon.svelte';
-  import SettingSwitch from '../admin-page/settings/setting-switch.svelte';
+  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
+  import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
+  import PartnerSelectionModal from './partner-selection-modal.svelte';
+  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
 
   interface PartnerSharing {
     user: UserResponseDto;
@@ -20,20 +27,20 @@
 
   export let user: UserResponseDto;
 
-  let createPartner = false;
-  let removePartner: PartnerResponseDto | null = null;
+  let createPartnerFlag = false;
+  let removePartnerDto: PartnerResponseDto | null = null;
   let partners: Array<PartnerSharing> = [];
 
-  onMount(() => {
-    refreshPartners();
+  onMount(async () => {
+    await refreshPartners();
   });
 
   const refreshPartners = async () => {
     partners = [];
 
-    const [{ data: sharedBy }, { data: sharedWith }] = await Promise.all([
-      api.partnerApi.getPartners({ direction: 'shared-by' }),
-      api.partnerApi.getPartners({ direction: 'shared-with' }),
+    const [sharedBy, sharedWith] = await Promise.all([
+      getPartners({ direction: 'shared-by' }),
+      getPartners({ direction: 'shared-with' }),
     ]);
 
     for (const candidate of sharedBy) {
@@ -69,13 +76,13 @@
   };
 
   const handleRemovePartner = async () => {
-    if (!removePartner) {
+    if (!removePartnerDto) {
       return;
     }
 
     try {
-      await api.partnerApi.removePartner({ id: removePartner.id });
-      removePartner = null;
+      await removePartner({ id: removePartnerDto.id });
+      removePartnerDto = null;
       await refreshPartners();
     } catch (error) {
       handleError(error, 'Unable to remove partner');
@@ -85,11 +92,11 @@
   const handleCreatePartners = async (users: UserResponseDto[]) => {
     try {
       for (const user of users) {
-        await api.partnerApi.createPartner({ id: user.id });
+        await createPartner({ id: user.id });
       }
 
       await refreshPartners();
-      createPartner = false;
+      createPartnerFlag = false;
     } catch (error) {
       handleError(error, 'Unable to add partners');
     }
@@ -97,7 +104,7 @@
 
   const handleShowOnTimelineChanged = async (partner: PartnerSharing, inTimeline: boolean) => {
     try {
-      await api.partnerApi.updatePartner({ id: partner.user.id, updatePartnerDto: { inTimeline } });
+      await updatePartner({ id: partner.user.id, updatePartnerDto: { inTimeline } });
 
       partner.inTimeline = inTimeline;
       partners = partners;
@@ -126,7 +133,7 @@
 
           {#if partner.sharedByMe}
             <CircleIconButton
-              on:click={() => (removePartner = partner.user)}
+              on:click={() => (removePartnerDto = partner.user)}
               icon={mdiClose}
               size={'16'}
               title="Stop sharing your photos with this user"
@@ -167,23 +174,23 @@
   {/if}
 
   <div class="flex justify-end mt-5">
-    <Button size="sm" on:click={() => (createPartner = true)}>Add partner</Button>
+    <Button size="sm" on:click={() => (createPartnerFlag = true)}>Add partner</Button>
   </div>
 </section>
 
-{#if createPartner}
+{#if createPartnerFlag}
   <PartnerSelectionModal
     {user}
-    on:close={() => (createPartner = false)}
+    on:close={() => (createPartnerFlag = false)}
     on:add-users={(event) => handleCreatePartners(event.detail)}
   />
 {/if}
 
-{#if removePartner}
+{#if removePartnerDto}
   <ConfirmDialogue
     title="Stop sharing your photos?"
-    prompt="{removePartner.name} will no longer be able to access your photos."
-    on:cancel={() => (removePartner = null)}
-    on:confirm={() => handleRemovePartner()}
+    prompt="{removePartnerDto.name} will no longer be able to access your photos."
+    onClose={() => (removePartnerDto = null)}
+    onConfirm={() => handleRemovePartner()}
   />
 {/if}

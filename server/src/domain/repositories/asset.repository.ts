@@ -1,6 +1,11 @@
-import { SearchExploreItem } from '@app/domain';
+import {
+  AssetSearchOneToOneRelationOptions,
+  AssetSearchOptions,
+  ReverseGeocodeResult,
+  SearchExploreItem,
+} from '@app/domain';
 import { AssetEntity, AssetJobStatusEntity, AssetType, ExifEntity } from '@app/infra/entities';
-import { FindOptionsRelations } from 'typeorm';
+import { FindOptionsRelations, FindOptionsSelect } from 'typeorm';
 import { Paginated, PaginationOptions } from '../domain.util';
 
 export type AssetStats = Record<AssetType, number>;
@@ -9,61 +14,6 @@ export interface AssetStatsOptions {
   isFavorite?: boolean;
   isArchived?: boolean;
   isTrashed?: boolean;
-}
-
-export interface AssetSearchOptions {
-  id?: string;
-  libraryId?: string;
-  deviceAssetId?: string;
-  deviceId?: string;
-  ownerId?: string;
-  type?: AssetType;
-  checksum?: Buffer;
-
-  isArchived?: boolean;
-  isEncoded?: boolean;
-  isExternal?: boolean;
-  isFavorite?: boolean;
-  isMotion?: boolean;
-  isOffline?: boolean;
-  isReadOnly?: boolean;
-  isVisible?: boolean;
-
-  withDeleted?: boolean;
-  withStacked?: boolean;
-  withExif?: boolean;
-  withPeople?: boolean;
-
-  createdBefore?: Date;
-  createdAfter?: Date;
-  updatedBefore?: Date;
-  updatedAfter?: Date;
-  trashedBefore?: Date;
-  trashedAfter?: Date;
-  takenBefore?: Date;
-  takenAfter?: Date;
-
-  originalFileName?: string;
-  originalPath?: string;
-  resizePath?: string;
-  webpPath?: string;
-  encodedVideoPath?: string;
-
-  city?: string;
-  state?: string;
-  country?: string;
-  make?: string;
-  model?: string;
-  lensModel?: string;
-
-  /** defaults to 'DESC' */
-  order?: 'ASC' | 'DESC';
-
-  /** defaults to 1 */
-  page?: number;
-
-  /** defaults to 250 */
-  size?: number;
 }
 
 export interface LivePhotoSearchOptions {
@@ -80,7 +30,7 @@ export interface MapMarkerSearchOptions {
   fileCreatedAfter?: Date;
 }
 
-export interface MapMarker {
+export interface MapMarker extends ReverseGeocodeResult {
   id: string;
   lat: number;
   lon: number;
@@ -90,9 +40,10 @@ export enum WithoutProperty {
   THUMBNAIL = 'thumbnail',
   ENCODED_VIDEO = 'encoded-video',
   EXIF = 'exif',
-  CLIP_ENCODING = 'clip-embedding',
+  SMART_SEARCH = 'smart-search',
   OBJECT_TAGS = 'object-tags',
   FACES = 'faces',
+  PERSON = 'person',
   SIDECAR = 'sidecar',
 }
 
@@ -168,7 +119,11 @@ export const IAssetRepository = 'IAssetRepository';
 export interface IAssetRepository {
   create(asset: AssetCreate): Promise<AssetEntity>;
   getByDate(ownerId: string, date: Date): Promise<AssetEntity[]>;
-  getByIds(ids: string[], relations?: FindOptionsRelations<AssetEntity>): Promise<AssetEntity[]>;
+  getByIds(
+    ids: string[],
+    relations?: FindOptionsRelations<AssetEntity>,
+    select?: FindOptionsSelect<AssetEntity>,
+  ): Promise<AssetEntity[]>;
   getByDayOfYear(ownerId: string, monthDay: MonthDay): Promise<AssetEntity[]>;
   getByChecksum(userId: string, checksum: Buffer): Promise<AssetEntity | null>;
   getByAlbumId(pagination: PaginationOptions, albumId: string): Paginated<AssetEntity>;
@@ -181,8 +136,14 @@ export interface IAssetRepository {
   getLastUpdatedAssetForAlbumId(albumId: string): Promise<AssetEntity | null>;
   getByLibraryId(libraryIds: string[]): Promise<AssetEntity[]>;
   getByLibraryIdAndOriginalPath(libraryId: string, originalPath: string): Promise<AssetEntity | null>;
+  getPathsNotInLibrary(libraryId: string, originalPaths: string[]): Promise<string[]>;
+  updateOfflineLibraryAssets(libraryId: string, originalPaths: string[]): Promise<void>;
   deleteAll(ownerId: string): Promise<void>;
   getAll(pagination: PaginationOptions, options?: AssetSearchOptions): Paginated<AssetEntity>;
+  getAllByFileCreationDate(
+    pagination: PaginationOptions,
+    options?: AssetSearchOneToOneRelationOptions,
+  ): Paginated<AssetEntity>;
   getAllByDeviceId(userId: string, deviceId: string): Promise<string[]>;
   updateAll(ids: string[], options: Partial<AssetEntity>): Promise<void>;
   save(asset: Pick<AssetEntity, 'id'> & Partial<AssetEntity>): Promise<AssetEntity>;
@@ -190,14 +151,13 @@ export interface IAssetRepository {
   softDeleteAll(ids: string[]): Promise<void>;
   restoreAll(ids: string[]): Promise<void>;
   findLivePhotoMatch(options: LivePhotoSearchOptions): Promise<AssetEntity | null>;
-  getMapMarkers(ownerId: string, options?: MapMarkerSearchOptions): Promise<MapMarker[]>;
+  getMapMarkers(ownerIds: string[], options?: MapMarkerSearchOptions): Promise<MapMarker[]>;
   getStatistics(ownerId: string, options: AssetStatsOptions): Promise<AssetStats>;
   getTimeBuckets(options: TimeBucketOptions): Promise<TimeBucketItem[]>;
   getTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]>;
   upsertExif(exif: Partial<ExifEntity>): Promise<void>;
   upsertJobStatus(jobStatus: Partial<AssetJobStatusEntity>): Promise<void>;
-  search(options: AssetSearchOptions): Promise<AssetEntity[]>;
   getAssetIdByCity(userId: string, options: AssetExploreFieldOptions): Promise<SearchExploreItem<string>>;
   getAssetIdByTag(userId: string, options: AssetExploreFieldOptions): Promise<SearchExploreItem<string>>;
-  searchMetadata(query: string, userId: string, options: MetadataSearchOptions): Promise<AssetEntity[]>;
+  searchMetadata(query: string, userIds: string[], options: MetadataSearchOptions): Promise<AssetEntity[]>;
 }

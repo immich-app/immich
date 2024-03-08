@@ -1,12 +1,13 @@
 import 'dart:async';
 
+import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/collection_extensions.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
@@ -21,7 +22,6 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
-import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/providers/user.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
@@ -30,7 +30,7 @@ import 'package:immich_mobile/utils/selection_handlers.dart';
 
 class MultiselectGrid extends HookConsumerWidget {
   const MultiselectGrid({
-    Key? key,
+    super.key,
     required this.renderListProvider,
     this.onRefresh,
     this.buildLoadingIndicator,
@@ -43,7 +43,7 @@ class MultiselectGrid extends HookConsumerWidget {
     this.editEnabled = false,
     this.unarchive = false,
     this.unfavorite = false,
-  }) : super(key: key);
+  });
 
   final ProviderListenable<AsyncValue<RenderList>> renderListProvider;
   final Future<void> Function()? onRefresh;
@@ -108,57 +108,38 @@ class MultiselectGrid extends HookConsumerWidget {
             )
         : null;
 
-    Iterable<Asset> remoteOnly(
-      Iterable<Asset> assets, {
-      void Function()? errorCallback,
-    }) {
-      final bool onlyRemote = assets.every((e) => e.isRemote);
-      if (!onlyRemote) {
-        if (errorCallback != null) errorCallback();
-        return assets.where((a) => a.isRemote);
-      }
-      return assets;
-    }
-
-    Iterable<Asset> ownedOnly(
-      Iterable<Asset> assets, {
-      void Function()? errorCallback,
-    }) {
-      if (currentUser == null) return [];
-      final userId = currentUser.isarId;
-      final bool onlyOwned = assets.every((e) => e.ownerId == userId);
-      if (!onlyOwned) {
-        if (errorCallback != null) errorCallback();
-        return assets.where((a) => a.ownerId == userId);
-      }
-      return assets;
-    }
-
     Iterable<Asset> ownedRemoteSelection({
       String? localErrorMessage,
       String? ownerErrorMessage,
     }) {
       final assets = selection.value;
-      return remoteOnly(
-        ownedOnly(assets, errorCallback: errorBuilder(ownerErrorMessage)),
-        errorCallback: errorBuilder(localErrorMessage),
-      );
+      return assets
+          .remoteOnly(errorCallback: errorBuilder(localErrorMessage))
+          .ownedOnly(
+            currentUser,
+            errorCallback: errorBuilder(ownerErrorMessage),
+          );
     }
 
-    Iterable<Asset> remoteSelection({String? errorMessage}) => remoteOnly(
-          selection.value,
+    Iterable<Asset> remoteSelection({String? errorMessage}) =>
+        selection.value.remoteOnly(
           errorCallback: errorBuilder(errorMessage),
         );
 
     void onShareAssets(bool shareLocal) {
       processing.value = true;
       if (shareLocal) {
-        handleShareAssets(ref, context, selection.value.toList());
+        // Share = Download + Send to OS specific share sheet
+        // Filter offline assets since we cannot fetch their original file
+        final liveAssets = selection.value.nonOfflineOnly(
+          errorCallback: errorBuilder('asset_action_share_err_offline'.tr()),
+        );
+        handleShareAssets(ref, context, liveAssets);
       } else {
         final ids =
             remoteSelection(errorMessage: "home_page_share_err_local".tr())
                 .map((e) => e.remoteId!);
-        context.autoPush(SharedLinkEditRoute(assetsList: ids.toList()));
+        context.pushRoute(SharedLinkEditRoute(assetsList: ids.toList()));
       }
       processing.value = false;
       selectionEnabledHook.value = false;
@@ -194,32 +175,91 @@ class MultiselectGrid extends HookConsumerWidget {
       }
     }
 
-    void onDelete() async {
+    void onDelete([bool force = false]) async {
       processing.value = true;
       try {
-        final trashEnabled =
-            ref.read(serverInfoProvider.select((v) => v.serverFeatures.trash));
-        final toDelete = ownedOnly(
-          selection.value,
-          errorCallback: errorBuilder('home_page_delete_err_partner'.tr()),
-        ).toList();
-        await ref
+        final toDelete = selection.value
+            .ownedOnly(
+              currentUser,
+              errorCallback: errorBuilder('home_page_delete_err_partner'.tr()),
+            )
+            // Cannot delete readOnly / external assets. They are handled through library offline jobs
+            .writableOnly(
+              errorCallback:
+                  errorBuilder('asset_action_delete_err_read_only'.tr()),
+            )
+            .toList();
+        final isDeleted = await ref
             .read(assetProvider.notifier)
-            .deleteAssets(toDelete, force: !trashEnabled);
+            .deleteAssets(toDelete, force: force);
 
-        final hasRemote = toDelete.any((a) => a.isRemote);
-        final assetOrAssets = toDelete.length > 1 ? 'assets' : 'asset';
-        final trashOrRemoved =
-            !trashEnabled ? 'deleted permanently' : 'trashed';
-        if (hasRemote) {
+        if (isDeleted) {
+          final assetOrAssets = toDelete.length > 1 ? 'assets' : 'asset';
+          final trashOrRemoved = force ? 'deleted permanently' : 'trashed';
           ImmichToast.show(
             context: context,
             msg: '${selection.value.length} $assetOrAssets $trashOrRemoved',
             gravity: ToastGravity.BOTTOM,
           );
+          selectionEnabledHook.value = false;
         }
-        selectionEnabledHook.value = false;
       } finally {
+        processing.value = false;
+      }
+    }
+
+    void onDeleteLocal(bool onlyBackedUp) async {
+      processing.value = true;
+      try {
+        final localIds = selection.value.where((a) => a.isLocal).toList();
+
+        final isDeleted = await ref
+            .read(assetProvider.notifier)
+            .deleteLocalOnlyAssets(localIds, onlyBackedUp: onlyBackedUp);
+        if (isDeleted) {
+          final assetOrAssets = localIds.length > 1 ? 'assets' : 'asset';
+          ImmichToast.show(
+            context: context,
+            msg:
+                '${localIds.length} $assetOrAssets removed permanently from your device',
+            gravity: ToastGravity.BOTTOM,
+          );
+          selectionEnabledHook.value = false;
+        }
+      } finally {
+        processing.value = false;
+      }
+    }
+
+    void onDeleteRemote([bool force = false]) async {
+      processing.value = true;
+      try {
+        final toDelete = ownedRemoteSelection(
+          localErrorMessage: 'home_page_delete_remote_err_local'.tr(),
+          ownerErrorMessage: 'home_page_delete_err_partner'.tr(),
+        )
+            // Cannot delete readOnly / external assets. They are handled through library offline jobs
+            .writableOnly(
+              errorCallback:
+                  errorBuilder('asset_action_delete_err_read_only'.tr()),
+            )
+            .toList();
+
+        final isDeleted = await ref
+            .read(assetProvider.notifier)
+            .deleteRemoteOnlyAssets(toDelete, force: force);
+        if (isDeleted) {
+          final assetOrAssets = toDelete.length > 1 ? 'assets' : 'asset';
+          final trashOrRemoved = force ? 'deleted permanently' : 'trashed';
+          ImmichToast.show(
+            context: context,
+            msg:
+                '${toDelete.length} $assetOrAssets $trashOrRemoved from the Immich server',
+            gravity: ToastGravity.BOTTOM,
+          );
+        }
+      } finally {
+        selectionEnabledHook.value = false;
         processing.value = false;
       }
     }
@@ -301,7 +341,7 @@ class MultiselectGrid extends HookConsumerWidget {
           ref.watch(sharedAlbumProvider.notifier).getAllSharedAlbums();
           selectionEnabledHook.value = false;
 
-          context.autoPush(AlbumViewerRoute(albumId: result.id));
+          context.pushRoute(AlbumViewerRoute(albumId: result.id));
         }
       } finally {
         processing.value = false;
@@ -331,6 +371,11 @@ class MultiselectGrid extends HookConsumerWidget {
         final remoteAssets = ownedRemoteSelection(
           localErrorMessage: 'home_page_favorite_err_local'.tr(),
           ownerErrorMessage: 'home_page_favorite_err_partner'.tr(),
+        ).writableOnly(
+          // Assume readOnly assets to be present in a read-only mount. So do not write sidecar
+          errorCallback: errorBuilder(
+            'multiselect_grid_edit_date_time_err_read_only'.tr(),
+          ),
         );
         if (remoteAssets.isNotEmpty) {
           handleEditDateTime(ref, context, remoteAssets.toList());
@@ -345,6 +390,11 @@ class MultiselectGrid extends HookConsumerWidget {
         final remoteAssets = ownedRemoteSelection(
           localErrorMessage: 'home_page_favorite_err_local'.tr(),
           ownerErrorMessage: 'home_page_favorite_err_partner'.tr(),
+        ).writableOnly(
+          // Assume readOnly assets to be present in a read-only mount. So do not write sidecar
+          errorCallback: errorBuilder(
+            'multiselect_grid_edit_gps_err_read_only'.tr(),
+          ),
         );
         if (remoteAssets.isNotEmpty) {
           handleEditLocation(ref, context, remoteAssets.toList());
@@ -402,6 +452,11 @@ class MultiselectGrid extends HookConsumerWidget {
               onFavorite: favoriteEnabled ? onFavoriteAssets : null,
               onArchive: archiveEnabled ? onArchiveAsset : null,
               onDelete: deleteEnabled ? onDelete : null,
+              onDeleteServer: deleteEnabled ? onDeleteRemote : null,
+
+              /// local file deletion is allowed irrespective of [deleteEnabled] since it has
+              /// nothing to do with the state of the asset in the Immich server
+              onDeleteLocal: onDeleteLocal,
               onAddToAlbum: onAddToAlbum,
               onCreateNewAlbum: onCreateNewAlbum,
               onUpload: onUpload,

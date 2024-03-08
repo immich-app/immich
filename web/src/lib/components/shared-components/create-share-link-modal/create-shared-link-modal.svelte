@@ -1,18 +1,19 @@
 <script lang="ts">
-  import SettingInputField, {
-    SettingInputFieldType,
-  } from '$lib/components/admin-page/settings/setting-input-field.svelte';
-  import SettingSwitch from '$lib/components/admin-page/settings/setting-switch.svelte';
   import Button from '$lib/components/elements/buttons/button.svelte';
-  import { handleError } from '$lib/utils/handle-error';
-  import { api, copyToClipboard, SharedLinkResponseDto, SharedLinkType } from '@api';
-  import { createEventDispatcher, onMount } from 'svelte';
+  import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
+  import { serverConfig } from '$lib/stores/server-config.store';
+  import { copyToClipboard, makeSharedLinkUrl } from '$lib/utils';
+  import { handleError } from '$lib/utils/handle-error';
+  import { SharedLinkType, createSharedLink, updateSharedLink, type SharedLinkResponseDto } from '@immich/sdk';
+  import { mdiContentCopy, mdiLink } from '@mdi/js';
+  import { createEventDispatcher } from 'svelte';
   import BaseModal from '../base-modal.svelte';
   import type { ImmichDropDownOption } from '../dropdown-button.svelte';
   import DropdownButton from '../dropdown-button.svelte';
-  import { notificationController, NotificationType } from '../notification/notification';
-  import { mdiLink } from '@mdi/js';
+  import { NotificationType, notificationController } from '../notification/notification';
+  import SettingInputField, { SettingInputFieldType } from '../settings/setting-input-field.svelte';
+  import SettingSwitch from '../settings/setting-switch.svelte';
 
   export let albumId: string | undefined = undefined;
   export let assetIds: string[] = [];
@@ -26,10 +27,12 @@
   let expirationTime = '';
   let password = '';
   let shouldChangeExpirationTime = false;
-  let canCopyImagesToClipboard = true;
   let enablePassword = false;
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    close: void;
+    escape: void;
+  }>();
 
   const expiredDateOption: ImmichDropDownOption = {
     default: 'Never',
@@ -38,35 +41,30 @@
 
   $: shareType = albumId ? SharedLinkType.Album : SharedLinkType.Individual;
 
-  onMount(async () => {
-    if (editingLink) {
-      if (editingLink.description) {
-        description = editingLink.description;
-      }
-      if (editingLink.password) {
-        password = editingLink.password;
-      }
-      allowUpload = editingLink.allowUpload;
-      allowDownload = editingLink.allowDownload;
-      showMetadata = editingLink.showMetadata;
-
-      albumId = editingLink.album?.id;
-      assetIds = editingLink.assets.map(({ id }) => id);
-
-      enablePassword = !!editingLink.password;
+  if (editingLink) {
+    if (editingLink.description) {
+      description = editingLink.description;
     }
+    if (editingLink.password) {
+      password = editingLink.password;
+    }
+    allowUpload = editingLink.allowUpload;
+    allowDownload = editingLink.allowDownload;
+    showMetadata = editingLink.showMetadata;
 
-    const module = await import('copy-image-clipboard');
-    canCopyImagesToClipboard = module.canCopyImagesToClipboard();
-  });
+    albumId = editingLink.album?.id;
+    assetIds = editingLink.assets.map(({ id }) => id);
+
+    enablePassword = !!editingLink.password;
+  }
 
   const handleCreateSharedLink = async () => {
     const expirationTime = getExpirationTimeInMillisecond();
-    const currentTime = new Date().getTime();
+    const currentTime = Date.now();
     const expirationDate = expirationTime ? new Date(currentTime + expirationTime).toISOString() : undefined;
 
     try {
-      const { data } = await api.sharedLinkApi.createSharedLink({
+      const data = await createSharedLink({
         sharedLinkCreateDto: {
           type: shareType,
           albumId,
@@ -79,36 +77,35 @@
           showMetadata,
         },
       });
-      sharedLink = `${window.location.origin}/share/${data.key}`;
-    } catch (e) {
-      handleError(e, 'Failed to create shared link');
+      sharedLink = makeSharedLinkUrl($serverConfig.externalDomain, data.key);
+    } catch (error) {
+      handleError(error, 'Failed to create shared link');
     }
-  };
-
-  const handleCopy = async () => {
-    if (!sharedLink) {
-      return;
-    }
-
-    await copyToClipboard(password ? `Link: ${sharedLink}\nPassword: ${password}` : sharedLink);
   };
 
   const getExpirationTimeInMillisecond = () => {
     switch (expirationTime) {
-      case '30 minutes':
+      case '30 minutes': {
         return 30 * 60 * 1000;
-      case '1 hour':
+      }
+      case '1 hour': {
         return 60 * 60 * 1000;
-      case '6 hours':
+      }
+      case '6 hours': {
         return 6 * 60 * 60 * 1000;
-      case '1 day':
+      }
+      case '1 day': {
         return 24 * 60 * 60 * 1000;
-      case '7 days':
+      }
+      case '7 days': {
         return 7 * 24 * 60 * 60 * 1000;
-      case '30 days':
+      }
+      case '30 days': {
         return 30 * 24 * 60 * 60 * 1000;
-      default:
+      }
+      default: {
         return 0;
+      }
     }
   };
 
@@ -119,12 +116,12 @@
 
     try {
       const expirationTime = getExpirationTimeInMillisecond();
-      const currentTime = new Date().getTime();
+      const currentTime = Date.now();
       const expirationDate: string | null = expirationTime
         ? new Date(currentTime + expirationTime).toISOString()
         : null;
 
-      await api.sharedLinkApi.updateSharedLink({
+      await updateSharedLink({
         id: editingLink.id,
         sharedLinkEditDto: {
           description,
@@ -142,8 +139,8 @@
       });
 
       dispatch('close');
-    } catch (e) {
-      handleError(e, 'Failed to edit shared link');
+    } catch (error) {
+      handleError(error, 'Failed to edit shared link');
     }
   };
 </script>
@@ -179,7 +176,7 @@
       {:else}
         <div class="text-sm">
           Individual shared | <span class="text-immich-primary dark:text-immich-dark-primary"
-            >{editingLink.description}</span
+            >{editingLink.description || ''}</span
           >
         </div>
       {/if}
@@ -255,9 +252,11 @@
       <div class="flex w-full gap-4">
         <input class="immich-form-input w-full" bind:value={sharedLink} disabled />
 
-        {#if canCopyImagesToClipboard}
-          <Button on:click={() => handleCopy()}>Copy</Button>
-        {/if}
+        <LinkButton on:click={() => (sharedLink ? copyToClipboard(sharedLink) : '')}>
+          <div class="flex place-items-center gap-2 text-sm">
+            <Icon path={mdiContentCopy} size="18" />
+          </div>
+        </LinkButton>
       </div>
     {/if}
   </section>

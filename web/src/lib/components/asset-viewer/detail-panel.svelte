@@ -1,16 +1,23 @@
 <script lang="ts">
-  import { page } from '$app/stores';
+  import Icon from '$lib/components/elements/icon.svelte';
+  import ChangeDate from '$lib/components/shared-components/change-date.svelte';
+  import { AppRoute, QueryParameter, timeToLoadTheMap } from '$lib/constants';
+  import { boundingBoxesArray } from '$lib/stores/people.store';
   import { locale } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
-  import { getAssetFilename } from '$lib/utils/asset-utils';
-  import { AlbumResponseDto, AssetResponseDto, ThumbnailFormat, api } from '@api';
-  import { DateTime } from 'luxon';
-  import { createEventDispatcher, onDestroy } from 'svelte';
-  import { slide } from 'svelte/transition';
-  import { asByteUnitString } from '../../utils/byte-units';
-  import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
-  import UserAvatar from '../shared-components/user-avatar.svelte';
-  import ChangeDate from '$lib/components/shared-components/change-date.svelte';
+  import { user } from '$lib/stores/user.store';
+  import { websocketEvents } from '$lib/stores/websocket';
+  import { getAssetThumbnailUrl, getPeopleThumbnailUrl, isSharedLink, handlePromiseError } from '$lib/utils';
+  import { delay } from '$lib/utils/asset-utils';
+  import { autoGrowHeight } from '$lib/utils/autogrow';
+  import { clickOutside } from '$lib/utils/click-outside';
+  import {
+    ThumbnailFormat,
+    getAssetInfo,
+    updateAsset,
+    type AlbumResponseDto,
+    type AssetResponseDto,
+  } from '@immich/sdk';
   import {
     mdiCalendar,
     mdiCameraIris,
@@ -18,28 +25,31 @@
     mdiEye,
     mdiEyeOff,
     mdiImageOutline,
-    mdiMapMarkerOutline,
     mdiInformationOutline,
+    mdiMapMarkerOutline,
     mdiPencil,
   } from '@mdi/js';
-  import Icon from '$lib/components/elements/icon.svelte';
-  import PersonSidePanel from '../faces-page/person-side-panel.svelte';
-  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
-  import Map from '../shared-components/map/map.svelte';
-  import { boundingBoxesArray } from '$lib/stores/people.store';
-  import { websocketStore } from '$lib/stores/websocket';
-  import { AppRoute } from '$lib/constants';
-  import ChangeLocation from '../shared-components/change-location.svelte';
+  import { DateTime } from 'luxon';
+  import { createEventDispatcher, onMount } from 'svelte';
+  import { slide } from 'svelte/transition';
+  import { asByteUnitString } from '../../utils/byte-units';
   import { handleError } from '../../utils/handle-error';
-  import { user } from '$lib/stores/user.store';
+  import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
+  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
+  import PersonSidePanel from '../faces-page/person-side-panel.svelte';
+  import ChangeLocation from '../shared-components/change-location.svelte';
+  import UserAvatar from '../shared-components/user-avatar.svelte';
+  import LoadingSpinner from '../shared-components/loading-spinner.svelte';
+  import { NotificationType, notificationController } from '../shared-components/notification/notification';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
-  export let albumId: string | null = null;
+  export let currentAlbum: AlbumResponseDto | null = null;
 
   let showAssetPath = false;
-  let textarea: HTMLTextAreaElement;
+  let textArea: HTMLTextAreaElement;
   let description: string;
+  let originalDescription: string;
   let showEditFaces = false;
   let previousId: string;
 
@@ -53,17 +63,22 @@
     }
   }
 
-  $: isOwner = $page?.data?.user?.id === asset.ownerId;
+  $: isOwner = $user?.id === asset.ownerId;
 
-  $: {
+  const handleNewAsset = async (newAsset: AssetResponseDto) => {
+    description = newAsset?.exifInfo?.description || '';
+
     // Get latest description from server
-    if (asset.id && !api.isSharedLink) {
-      api.assetApi.getAssetById({ id: asset.id }).then((res) => {
-        people = res.data?.people || [];
-        textarea.value = res.data?.exifInfo?.description || '';
-      });
+    if (newAsset.id && !isSharedLink()) {
+      const data = await getAssetInfo({ id: asset.id });
+      people = data?.people || [];
+
+      description = data.exifInfo?.description || '';
     }
-  }
+    originalDescription = description;
+  };
+
+  $: handlePromiseError(handleNewAsset(asset));
 
   $: latlng = (() => {
     const lat = asset.exifInfo?.latitude;
@@ -77,17 +92,32 @@
   $: people = asset.people || [];
   $: showingHiddenPeople = false;
 
-  const unsubscribe = websocketStore.onAssetUpdate.subscribe((assetUpdate) => {
-    if (assetUpdate && assetUpdate.id === asset.id) {
-      asset = assetUpdate;
+  onMount(() => {
+    return websocketEvents.on('on_asset_update', (assetUpdate) => {
+      if (assetUpdate.id === asset.id) {
+        asset = assetUpdate;
+      }
+    });
+  });
+
+  const dispatch = createEventDispatcher<{
+    close: void;
+    closeViewer: void;
+  }>();
+
+  const handleKeypress = async (event: KeyboardEvent) => {
+    if (event.target !== textArea) {
+      return;
     }
-  });
-
-  onDestroy(() => {
-    unsubscribe();
-  });
-
-  const dispatch = createEventDispatcher();
+    const ctrl = event.ctrlKey;
+    switch (event.key) {
+      case 'Enter': {
+        if (ctrl && event.target === textArea) {
+          await handleFocusOut();
+        }
+      }
+    }
+  };
 
   const getMegapixel = (width: number, height: number): number | undefined => {
     const megapixel = Math.round((height * width) / 1_000_000);
@@ -100,32 +130,27 @@
   };
 
   const handleRefreshPeople = async () => {
-    await api.assetApi.getAssetById({ id: asset.id }).then((res) => {
-      people = res.data?.people || [];
-      textarea.value = res.data?.exifInfo?.description || '';
+    await getAssetInfo({ id: asset.id }).then((data) => {
+      people = data?.people || [];
+      textArea.value = data?.exifInfo?.description || '';
     });
     showEditFaces = false;
   };
 
-  const autoGrowHeight = (e: Event) => {
-    const target = e.target as HTMLTextAreaElement;
-    target.style.height = 'auto';
-    target.style.height = `${target.scrollHeight}px`;
-  };
-
-  const handleFocusIn = () => {
-    dispatch('description-focus-in');
-  };
-
   const handleFocusOut = async () => {
-    dispatch('description-focus-out');
+    textArea.blur();
+    if (description === originalDescription) {
+      return;
+    }
+    originalDescription = description;
     try {
-      await api.assetApi.updateAsset({
-        id: asset.id,
-        updateAssetDto: { description },
+      await updateAsset({ id: asset.id, updateAssetDto: { description } });
+      notificationController.show({
+        type: NotificationType.Info,
+        message: 'Asset description has been updated',
       });
     } catch (error) {
-      console.error(error);
+      handleError(error, 'Cannot update the description');
     }
   };
 
@@ -136,7 +161,7 @@
   async function handleConfirmChangeDate(dateTimeOriginal: string) {
     isShowChangeDate = false;
     try {
-      await api.assetApi.updateAsset({ id: asset.id, updateAssetDto: { dateTimeOriginal } });
+      await updateAsset({ id: asset.id, updateAssetDto: { dateTimeOriginal } });
     } catch (error) {
       handleError(error, 'Unable to change date');
     }
@@ -148,18 +173,14 @@
     isShowChangeLocation = false;
 
     try {
-      await api.assetApi.updateAsset({
-        id: asset.id,
-        updateAssetDto: {
-          latitude: gps.lat,
-          longitude: gps.lng,
-        },
-      });
+      await updateAsset({ id: asset.id, updateAssetDto: { latitude: gps.lat, longitude: gps.lng } });
     } catch (error) {
       handleError(error, 'Unable to change location');
     }
   }
 </script>
+
+<svelte:window on:keydown={handleKeypress} />
 
 <section class="relative p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
   <div class="flex place-items-center gap-2">
@@ -187,21 +208,29 @@
     </section>
   {/if}
 
-  <section class="mx-4 mt-10" style:display={!isOwner && textarea?.value == '' ? 'none' : 'block'}>
-    <textarea
-      bind:this={textarea}
-      class="max-h-[500px]
+  {#if isOwner}
+    <section class="px-4 mt-10">
+      {#key asset.id}
+        <textarea
+          disabled={!isOwner || isSharedLink()}
+          bind:this={textArea}
+          class="max-h-[500px]
       w-full resize-none overflow-hidden border-b border-gray-500 bg-transparent text-base text-black outline-none transition-all focus:border-b-2 focus:border-immich-primary disabled:border-none dark:text-white dark:focus:border-immich-dark-primary"
-      placeholder={!isOwner ? '' : 'Add a description'}
-      on:focusin={handleFocusIn}
-      on:focusout={handleFocusOut}
-      on:input={autoGrowHeight}
-      bind:value={description}
-      disabled={!isOwner}
-    />
-  </section>
+          placeholder={isOwner ? 'Add a description' : ''}
+          on:focusout={handleFocusOut}
+          on:input={() => autoGrowHeight(textArea)}
+          bind:value={description}
+          use:autoGrowHeight
+          use:clickOutside
+          on:outclick={handleFocusOut}
+        />
+      {/key}
+    </section>
+  {:else if description}
+    <p class="px-4 break-words whitespace-pre-line w-full text-black dark:text-white text-base">{description}</p>
+  {/if}
 
-  {#if !api.isSharedLink && people.length > 0}
+  {#if !isSharedLink() && people.length > 0}
     <section class="px-4 py-4 text-sm">
       <div class="flex h-10 w-full items-center justify-between">
         <h2>PEOPLE</h2>
@@ -238,14 +267,16 @@
               on:mouseleave={() => ($boundingBoxesArray = [])}
             >
               <a
-                href="/people/{person.id}?previousRoute={albumId ? `${AppRoute.ALBUMS}/${albumId}` : AppRoute.PHOTOS}"
-                on:click={() => dispatch('close-viewer')}
+                href="{AppRoute.PEOPLE}/{person.id}?{QueryParameter.PREVIOUS_ROUTE}={currentAlbum?.id
+                  ? `${AppRoute.ALBUMS}/${currentAlbum?.id}`
+                  : AppRoute.PHOTOS}"
+                on:click={() => dispatch('closeViewer')}
               >
                 <div class="relative">
                   <ImageThumbnail
                     curve
                     shadow
-                    url={api.getPeopleThumbnailUrl(person.id)}
+                    url={getPeopleThumbnailUrl(person.id)}
                     altText={person.name}
                     title={person.name}
                     widthStyle="90px"
@@ -257,19 +288,29 @@
                 <p class="mt-1 truncate font-medium" title={person.name}>{person.name}</p>
                 {#if person.birthDate}
                   {@const personBirthDate = DateTime.fromISO(person.birthDate)}
-                  <p
-                    class="font-light"
-                    title={personBirthDate.toLocaleString(
-                      {
-                        month: 'long',
-                        day: 'numeric',
-                        year: 'numeric',
-                      },
-                      { locale: $locale },
-                    )}
-                  >
-                    Age {Math.floor(DateTime.fromISO(asset.fileCreatedAt).diff(personBirthDate, 'years').years)}
-                  </p>
+                  {@const age = Math.floor(DateTime.fromISO(asset.fileCreatedAt).diff(personBirthDate, 'years').years)}
+                  {@const ageInMonths = Math.floor(
+                    DateTime.fromISO(asset.fileCreatedAt).diff(personBirthDate, 'months').months,
+                  )}
+                  {#if age >= 0}
+                    <p
+                      class="font-light"
+                      title={personBirthDate.toLocaleString(
+                        {
+                          month: 'long',
+                          day: 'numeric',
+                          year: 'numeric',
+                        },
+                        { locale: $locale },
+                      )}
+                    >
+                      {#if ageInMonths <= 11}
+                        Age {ageInMonths} months
+                      {:else}
+                        Age {age}
+                      {/if}
+                    </p>
+                  {/if}
                 {/if}
               </a>
             </div>
@@ -291,7 +332,9 @@
         </div>
       </div>
     {:else}
-      <p class="text-sm">DETAILS</p>
+      <div class="flex h-10 w-full items-center justify-between text-sm">
+        <h2>DETAILS</h2>
+      </div>
     {/if}
 
     {#if asset.exifInfo?.dateTimeOriginal && !asset.isReadOnly}
@@ -346,7 +389,7 @@
           </button>
         {/if}
       </div>
-    {:else if !asset.exifInfo?.dateTimeOriginal && !asset.isReadOnly && $user && asset.ownerId === $user.id}
+    {:else if !asset.exifInfo?.dateTimeOriginal && !asset.isReadOnly && isOwner}
       <div class="flex justify-between place-items-start gap-4 py-4">
         <div class="flex gap-4">
           <div>
@@ -400,6 +443,7 @@
       {@const assetDateTimeOriginal = asset.exifInfo?.dateTimeOriginal
         ? DateTime.fromISO(asset.exifInfo.dateTimeOriginal, {
             zone: asset.exifInfo.timeZone ?? undefined,
+            locale: $locale,
           })
         : DateTime.now()}
       <ChangeDate
@@ -415,13 +459,11 @@
 
         <div>
           <p class="break-all flex place-items-center gap-2">
+            {asset.originalFileName}
             {#if isOwner}
-              {asset.originalFileName}
-              <button title="Show File Location" on:click={toggleAssetPath}>
+              <button title="Show File Location" on:click={toggleAssetPath} class="-translate-y-[2px]">
                 <Icon path={mdiInformationOutline} />
               </button>
-            {:else}
-              {getAssetFilename(asset)}
             {/if}
           </p>
           <div class="flex gap-2 text-sm">
@@ -509,7 +551,7 @@
           </div>
         {/if}
       </div>
-    {:else if !asset.exifInfo?.city && !asset.isReadOnly && $user && asset.ownerId === $user.id}
+    {:else if !asset.exifInfo?.city && !asset.isReadOnly && isOwner}
       <div
         class="flex justify-between place-items-start gap-4 py-4 rounded-lg hover:dark:text-immich-dark-primary hover:text-immich-primary"
         on:click={() => (isShowChangeLocation = true)}
@@ -562,26 +604,51 @@
 
 {#if latlng && $featureFlags.loaded && $featureFlags.map}
   <div class="h-[360px]">
-    <Map mapMarkers={[{ lat: latlng.lat, lon: latlng.lng, id: asset.id }]} center={latlng} zoom={14} simplified>
-      <svelte:fragment slot="popup" let:marker>
-        {@const { lat, lon } = marker}
-        <div class="flex flex-col items-center gap-1">
-          <p class="font-bold">{lat.toPrecision(6)}, {lon.toPrecision(6)}</p>
-          <a
-            href="https://www.openstreetmap.org/?mlat={lat}&mlon={lon}&zoom=15#map=15/{lat}/{lon}"
-            target="_blank"
-            class="font-medium text-immich-primary"
-          >
-            Open in OpenStreetMap
-          </a>
+    {#await import('../shared-components/map/map.svelte')}
+      {#await delay(timeToLoadTheMap) then}
+        <!-- show the loading spinner only if loading the map takes too much time -->
+        <div class="flex items-center justify-center h-full w-full">
+          <LoadingSpinner />
         </div>
-      </svelte:fragment>
-    </Map>
+      {/await}
+    {:then component}
+      <svelte:component
+        this={component.default}
+        mapMarkers={[
+          {
+            lat: latlng.lat,
+            lon: latlng.lng,
+            id: asset.id,
+            city: asset.exifInfo?.city ?? null,
+            state: asset.exifInfo?.state ?? null,
+            country: asset.exifInfo?.country ?? null,
+          },
+        ]}
+        center={latlng}
+        zoom={15}
+        simplified
+        useLocationPin
+      >
+        <svelte:fragment slot="popup" let:marker>
+          {@const { lat, lon } = marker}
+          <div class="flex flex-col items-center gap-1">
+            <p class="font-bold">{lat.toPrecision(6)}, {lon.toPrecision(6)}</p>
+            <a
+              href="https://www.openstreetmap.org/?mlat={lat}&mlon={lon}&zoom=15#map=15/{lat}/{lon}"
+              target="_blank"
+              class="font-medium text-immich-primary"
+            >
+              Open in OpenStreetMap
+            </a>
+          </div>
+        </svelte:fragment>
+      </svelte:component>
+    {/await}
   </div>
 {/if}
 
-{#if asset.owner && !isOwner}
-  <section class="px-6 pt-6 dark:text-immich-dark-fg">
+{#if currentAlbum && currentAlbum.sharedUsers.length > 0 && asset.owner}
+  <section class="px-6 dark:text-immich-dark-fg mt-4">
     <p class="text-sm">SHARED BY</p>
     <div class="flex gap-4 pt-4">
       <div>
@@ -602,18 +669,13 @@
     <p class="pb-4 text-sm">APPEARS IN</p>
     {#each albums as album}
       <a data-sveltekit-preload-data="hover" href={`/albums/${album.id}`}>
-        <!-- svelte-ignore a11y-no-static-element-interactions -->
-        <div
-          class="flex gap-4 py-2 hover:cursor-pointer"
-          on:click={() => dispatch('click', album)}
-          on:keydown={() => dispatch('click', album)}
-        >
+        <div class="flex gap-4 py-2 hover:cursor-pointer">
           <div>
             <img
               alt={album.albumName}
               class="h-[50px] w-[50px] rounded object-cover"
               src={album.albumThumbnailAssetId &&
-                api.getAssetThumbnailUrl(album.albumThumbnailAssetId, ThumbnailFormat.Jpeg)}
+                getAssetThumbnailUrl(album.albumThumbnailAssetId, ThumbnailFormat.Jpeg)}
               draggable="false"
             />
           </div>

@@ -3,17 +3,19 @@
   import AssetViewer from '$lib/components/asset-viewer/asset-viewer.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import MapSettingsModal from '$lib/components/map-page/map-settings-modal.svelte';
+  import Map from '$lib/components/shared-components/map/map.svelte';
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
   import { AppRoute } from '$lib/constants';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import type { MapSettings } from '$lib/stores/preferences.store';
   import { mapSettings } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
-  import { MapMarkerResponseDto, api } from '@api';
-  import { isEqual, omit } from 'lodash-es';
+  import { getMapMarkers, type MapMarkerResponseDto } from '@immich/sdk';
+  import { isEqual } from 'lodash-es';
   import { DateTime, Duration } from 'luxon';
   import { onDestroy, onMount } from 'svelte';
   import type { PageData } from './$types';
-  import Map from '$lib/components/shared-components/map/map.svelte';
+  import { handlePromiseError } from '$lib/utils';
 
   export let data: PageData;
 
@@ -25,8 +27,8 @@
   let viewingAssetCursor = 0;
   let showSettingsModal = false;
 
-  onMount(() => {
-    loadMapMarkers().then((data) => (mapMarkers = data));
+  onMount(async () => {
+    mapMarkers = await loadMapMarkers();
   });
 
   onDestroy(() => {
@@ -34,7 +36,10 @@
     assetViewingStore.showAssetViewer(false);
   });
 
-  $: $featureFlags.map || goto(AppRoute.PHOTOS);
+  $: $featureFlags.map || handlePromiseError(goto(AppRoute.PHOTOS));
+  const omit = (obj: MapSettings, key: string) => {
+    return Object.fromEntries(Object.entries(obj).filter(([k]) => k !== key));
+  };
 
   async function loadMapMarkers() {
     if (abortController) {
@@ -42,21 +47,21 @@
     }
     abortController = new AbortController();
 
-    const { includeArchived, onlyFavorites } = $mapSettings;
+    const { includeArchived, onlyFavorites, withPartners } = $mapSettings;
     const { fileCreatedAfter, fileCreatedBefore } = getFileCreatedDates();
 
-    const { data } = await api.assetApi.getMapMarkers(
+    return await getMapMarkers(
       {
         isArchived: includeArchived && undefined,
         isFavorite: onlyFavorites || undefined,
         fileCreatedAfter: fileCreatedAfter || undefined,
         fileCreatedBefore,
+        withPartners: withPartners || undefined,
       },
       {
         signal: abortController.signal,
       },
     );
-    return data;
   }
 
   function getFileCreatedDates() {
@@ -81,27 +86,27 @@
     }
   }
 
-  function onViewAssets(assetIds: string[]) {
-    assetViewingStore.setAssetId(assetIds[0]);
+  async function onViewAssets(assetIds: string[]) {
+    await assetViewingStore.setAssetId(assetIds[0]);
     viewingAssets = assetIds;
     viewingAssetCursor = 0;
   }
 
-  function navigateNext() {
+  async function navigateNext() {
     if (viewingAssetCursor < viewingAssets.length - 1) {
-      assetViewingStore.setAssetId(viewingAssets[++viewingAssetCursor]);
+      await assetViewingStore.setAssetId(viewingAssets[++viewingAssetCursor]);
     }
   }
 
-  function navigatePrevious() {
+  async function navigatePrevious() {
     if (viewingAssetCursor > 0) {
-      assetViewingStore.setAssetId(viewingAssets[--viewingAssetCursor]);
+      await assetViewingStore.setAssetId(viewingAssets[--viewingAssetCursor]);
     }
   }
 </script>
 
 {#if $featureFlags.loaded && $featureFlags.map}
-  <UserPageLayout user={data.user} title={data.meta.title}>
+  <UserPageLayout title={data.meta.title}>
     <div class="isolate h-full w-full">
       <Map bind:mapMarkers bind:showSettingsModal on:selected={(event) => onViewAssets(event.detail)} />
     </div></UserPageLayout

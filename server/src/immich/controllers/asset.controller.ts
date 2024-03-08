@@ -1,46 +1,32 @@
 import {
   AssetBulkDeleteDto,
   AssetBulkUpdateDto,
-  AssetIdsDto,
   AssetJobsDto,
   AssetResponseDto,
-  AssetSearchDto,
   AssetService,
   AssetStatsDto,
   AssetStatsResponseDto,
   AuthDto,
-  BulkIdsDto,
-  DownloadInfoDto,
-  DownloadResponseDto,
+  DeviceIdDto,
+  DownloadService,
   MapMarkerDto,
   MapMarkerResponseDto,
   MemoryLaneDto,
   MemoryLaneResponseDto,
+  MetadataSearchDto,
   RandomAssetsDto,
+  SearchService,
   TimeBucketAssetDto,
   TimeBucketDto,
   TimeBucketResponseDto,
-  TrashAction,
+  TrashService,
   UpdateAssetDto as UpdateDto,
   UpdateStackParentDto,
 } from '@app/domain';
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Param,
-  Post,
-  Put,
-  Query,
-  StreamableFile,
-} from '@nestjs/common';
-import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { DeviceIdDto } from '../api-v1/asset/dto/device-id.dto';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Auth, Authenticated, SharedLinkRoute } from '../app.guard';
-import { UseValidation, asStreamableFile } from '../app.utils';
+import { UseValidation } from '../app.utils';
 import { Route } from '../interceptors';
 import { UUIDParamDto } from './dto/uuid-param.dto';
 
@@ -49,11 +35,15 @@ import { UUIDParamDto } from './dto/uuid-param.dto';
 @Authenticated()
 @UseValidation()
 export class AssetsController {
-  constructor(private service: AssetService) {}
+  constructor(private searchService: SearchService) {}
 
   @Get()
-  searchAssets(@Auth() auth: AuthDto, @Query() dto: AssetSearchDto): Promise<AssetResponseDto[]> {
-    return this.service.search(auth, dto);
+  @ApiOperation({ deprecated: true })
+  async searchAssets(@Auth() auth: AuthDto, @Query() dto: MetadataSearchDto): Promise<AssetResponseDto[]> {
+    const {
+      assets: { items },
+    } = await this.searchService.searchMetadata(auth, dto);
+    return items;
   }
 }
 
@@ -62,7 +52,11 @@ export class AssetsController {
 @Authenticated()
 @UseValidation()
 export class AssetController {
-  constructor(private service: AssetService) {}
+  constructor(
+    private service: AssetService,
+    private downloadService: DownloadService,
+    private trashService: TrashService,
+  ) {}
 
   @Get('map-marker')
   getMapMarkers(@Auth() auth: AuthDto, @Query() options: MapMarkerDto): Promise<MapMarkerResponseDto[]> {
@@ -77,28 +71,6 @@ export class AssetController {
   @Get('random')
   getRandom(@Auth() auth: AuthDto, @Query() dto: RandomAssetsDto): Promise<AssetResponseDto[]> {
     return this.service.getRandom(auth, dto.count ?? 1);
-  }
-
-  @SharedLinkRoute()
-  @Post('download/info')
-  getDownloadInfo(@Auth() auth: AuthDto, @Body() dto: DownloadInfoDto): Promise<DownloadResponseDto> {
-    return this.service.getDownloadInfo(auth, dto);
-  }
-
-  @SharedLinkRoute()
-  @Post('download/archive')
-  @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } })
-  downloadArchive(@Auth() auth: AuthDto, @Body() dto: AssetIdsDto): Promise<StreamableFile> {
-    return this.service.downloadArchive(auth, dto).then(asStreamableFile);
-  }
-
-  @SharedLinkRoute()
-  @Post('download/:id')
-  @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } })
-  downloadFile(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto) {
-    return this.service.downloadFile(auth, id).then(asStreamableFile);
   }
 
   /**
@@ -144,28 +116,16 @@ export class AssetController {
     return this.service.deleteAll(auth, dto);
   }
 
-  @Post('restore')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  restoreAssets(@Auth() auth: AuthDto, @Body() dto: BulkIdsDto): Promise<void> {
-    return this.service.restoreAll(auth, dto);
-  }
-
-  @Post('trash/empty')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  emptyTrash(@Auth() auth: AuthDto): Promise<void> {
-    return this.service.handleTrashAction(auth, TrashAction.EMPTY_ALL);
-  }
-
-  @Post('trash/restore')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  restoreTrash(@Auth() auth: AuthDto): Promise<void> {
-    return this.service.handleTrashAction(auth, TrashAction.RESTORE_ALL);
-  }
-
   @Put('stack/parent')
   @HttpCode(HttpStatus.OK)
   updateStackParent(@Auth() auth: AuthDto, @Body() dto: UpdateStackParentDto): Promise<void> {
     return this.service.updateStackParent(auth, dto);
+  }
+
+  @SharedLinkRoute()
+  @Get(':id')
+  getAssetInfo(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AssetResponseDto> {
+    return this.service.get(auth, id) as Promise<AssetResponseDto>;
   }
 
   @Put(':id')

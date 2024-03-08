@@ -1,15 +1,13 @@
+#!/usr/bin/env bash
+
 echo "Starting Immich installation..."
 
 ip_address=$(hostname -I | awk '{print $1}')
 
-RED='\033[0;31m'
-GREEN='\032[0;31m'
-NC='\033[0m' # No Color
-
 create_immich_directory() {
   echo "Creating Immich directory..."
   mkdir -p ./immich-app/immich-data
-  cd ./immich-app
+  cd ./immich-app || exit
 }
 
 download_docker_compose_file() {
@@ -23,7 +21,8 @@ download_dot_env_file() {
 }
 
 replace_env_value() {
-  if [[ "$OSTYPE" == "darwin"* ]]; then
+  KERNEL="$(uname -s | tr '[:upper:]' '[:lower:]')"
+  if [ "$KERNEL" = "darwin" ]; then
     sed -i '' "s|$1=.*|$1=$2|" ./.env
   else
     sed -i "s|$1=.*|$1=$2|" ./.env
@@ -33,18 +32,18 @@ replace_env_value() {
 populate_upload_location() {
   echo "Populating default UPLOAD_LOCATION value..."
   upload_location=$(pwd)/immich-data
-  replace_env_value "UPLOAD_LOCATION" $upload_location
+  replace_env_value "UPLOAD_LOCATION" "$upload_location"
 }
 
 start_docker_compose() {
   echo "Starting Immich's docker containers"
 
-  if docker compose &>/dev/null; then
+  if docker compose >/dev/null 2>&1; then
     docker_bin="docker compose"
-  elif docker-compose &>/dev/null; then
+  elif docker-compose >/dev/null 2>&1; then
     docker_bin="docker-compose"
   else
-    echo 'Cannot find `docker compose` or `docker-compose`.'
+    echo "Cannot find \`docker compose\` or \`docker-compose\`."
     exit 1
   fi
 
@@ -58,7 +57,7 @@ start_docker_compose() {
 }
 
 show_friendly_message() {
-  echo "Succesfully deployed Immich!"
+  echo "Successfully deployed Immich!"
   echo "You can access the website at http://$ip_address:2283 and the server URL for the mobile app is http://$ip_address:2283/api"
   echo "The library location is $upload_location"
   echo "---------------------------------------------------"

@@ -1,17 +1,24 @@
 <script lang="ts">
+  import Icon from '$lib/components/elements/icon.svelte';
+  import { timeBeforeShowLoadingSpinner } from '$lib/constants';
+  import { handleError } from '$lib/utils/handle-error';
+  import {
+    createPerson,
+    getAllPeople,
+    reassignFaces,
+    type AssetFaceUpdateItem,
+    type PersonResponseDto,
+  } from '@immich/sdk';
+  import { mdiMerge, mdiPlus } from '@mdi/js';
   import { createEventDispatcher, onMount } from 'svelte';
-  import FaceThumbnail from './face-thumbnail.svelte';
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
-  import { api, AssetFaceUpdateItem, type PersonResponseDto } from '@api';
-  import ControlAppBar from '../shared-components/control-app-bar.svelte';
   import Button from '../elements/buttons/button.svelte';
-  import { mdiPlus, mdiMerge } from '@mdi/js';
+  import ControlAppBar from '../shared-components/control-app-bar.svelte';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
-  import { handleError } from '$lib/utils/handle-error';
-  import { notificationController, NotificationType } from '../shared-components/notification/notification';
+  import { NotificationType, notificationController } from '../shared-components/notification/notification';
+  import FaceThumbnail from './face-thumbnail.svelte';
   import PeopleList from './people-list.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
 
   export let assetIds: string[];
   export let personAssets: PersonResponseDto;
@@ -28,7 +35,10 @@
     ? people.filter((person) => selectedPerson && person.id !== selectedPerson.id && personAssets.id !== person.id)
     : people;
 
-  let dispatch = createEventDispatcher();
+  let dispatch = createEventDispatcher<{
+    confirm: void;
+    close: void;
+  }>();
 
   const selectedPeople: AssetFaceUpdateItem[] = [];
 
@@ -37,7 +47,7 @@
   }
 
   onMount(async () => {
-    const { data } = await api.personApi.getAllPeople({ withHidden: false });
+    const data = await getAllPeople({ withHidden: false });
     people = data.people;
   });
 
@@ -60,15 +70,12 @@
   };
 
   const handleCreate = async () => {
-    const timeout = setTimeout(() => (showLoadingSpinnerCreate = true), 100);
+    const timeout = setTimeout(() => (showLoadingSpinnerCreate = true), timeBeforeShowLoadingSpinner);
 
     try {
       disableButtons = true;
-      const { data } = await api.personApi.createPerson();
-      await api.personApi.reassignFaces({
-        id: data.id,
-        assetFaceUpdateDto: { data: selectedPeople },
-      });
+      const data = await createPerson({ personCreateDto: {} });
+      await reassignFaces({ id: data.id, assetFaceUpdateDto: { data: selectedPeople } });
 
       notificationController.show({
         message: `Re-assigned ${assetIds.length} asset${assetIds.length > 1 ? 's' : ''} to a new person`,
@@ -85,14 +92,11 @@
   };
 
   const handleReassign = async () => {
-    const timeout = setTimeout(() => (showLoadingSpinnerReassign = true), 100);
+    const timeout = setTimeout(() => (showLoadingSpinnerReassign = true), timeBeforeShowLoadingSpinner);
     try {
       disableButtons = true;
       if (selectedPerson) {
-        await api.personApi.reassignFaces({
-          id: selectedPerson.id,
-          assetFaceUpdateDto: { data: selectedPeople },
-        });
+        await reassignFaces({ id: selectedPerson.id, assetFaceUpdateDto: { data: selectedPeople } });
         notificationController.show({
           message: `Re-assigned ${assetIds.length} asset${assetIds.length > 1 ? 's' : ''} to ${
             selectedPerson.name || 'an existing person'
@@ -117,7 +121,7 @@
   transition:fly={{ y: 500, duration: 100, easing: quintOut }}
   class="absolute left-0 top-0 z-[9999] h-full w-full bg-immich-bg dark:bg-immich-dark-bg"
 >
-  <ControlAppBar on:close-button-click={onClose}>
+  <ControlAppBar on:close={onClose}>
     <svelte:fragment slot="leading">
       <slot name="header" />
       <div />
@@ -128,9 +132,7 @@
           title={'Assign selected assets to a new person'}
           size={'sm'}
           disabled={disableButtons || hasSelection}
-          on:click={() => {
-            handleCreate();
-          }}
+          on:click={handleCreate}
         >
           {#if !showLoadingSpinnerCreate}
             <Icon path={mdiPlus} size={18} />
@@ -143,9 +145,7 @@
           size={'sm'}
           title={'Assign selected assets to an existing person'}
           disabled={disableButtons || !hasSelection}
-          on:click={() => {
-            handleReassign();
-          }}
+          on:click={handleReassign}
         >
           {#if !showLoadingSpinnerReassign}
             <div>

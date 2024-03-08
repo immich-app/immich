@@ -1,11 +1,14 @@
 <script lang="ts">
+  import type { LibraryResponseDto } from '@immich/sdk';
   import { createEventDispatcher } from 'svelte';
   import Button from '../elements/buttons/button.svelte';
-  import type { LibraryResponseDto } from '@api';
 
   export let library: Partial<LibraryResponseDto>;
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    cancel: void;
+    submit: Partial<LibraryResponseDto>;
+  }>();
   const handleCancel = () => {
     dispatch('cancel');
   };

@@ -3,6 +3,7 @@ import { BadRequestException, ForbiddenException, Inject, Injectable, Unauthoriz
 import { AccessCore, Permission } from '../access';
 import { AssetIdErrorReason, AssetIdsDto, AssetIdsResponseDto } from '../asset';
 import { AuthDto } from '../auth';
+import { OpenGraphTags } from '../domain.util';
 import { IAccessRepository, ICryptoRepository, ISharedLinkRepository } from '../repositories';
 import { SharedLinkResponseDto, mapSharedLink, mapSharedLinkWithoutMetadata } from './shared-link-response.dto';
 import { SharedLinkCreateDto, SharedLinkEditDto, SharedLinkPasswordDto } from './shared-link.dto';
@@ -20,7 +21,7 @@ export class SharedLinkService {
   }
 
   getAll(auth: AuthDto): Promise<SharedLinkResponseDto[]> {
-    return this.repository.getAll(auth.user.id).then((links) => links.map(mapSharedLink));
+    return this.repository.getAll(auth.user.id).then((links) => links.map((link) => mapSharedLink(link)));
   }
 
   async getMine(auth: AuthDto, dto: SharedLinkPasswordDto): Promise<SharedLinkResponseDto> {
@@ -28,8 +29,8 @@ export class SharedLinkService {
       throw new ForbiddenException();
     }
 
-    const sharedLink = await this.findOrFail(auth, auth.sharedLink.id);
-    const response = this.map(sharedLink, { withExif: sharedLink.showExif });
+    const sharedLink = await this.findOrFail(auth.user.id, auth.sharedLink.id);
+    const response = this.mapToSharedLink(sharedLink, { withExif: sharedLink.showExif });
     if (sharedLink.password) {
       response.token = this.validateAndRefreshToken(sharedLink, dto);
     }
@@ -38,20 +39,21 @@ export class SharedLinkService {
   }
 
   async get(auth: AuthDto, id: string): Promise<SharedLinkResponseDto> {
-    const sharedLink = await this.findOrFail(auth, id);
-    return this.map(sharedLink, { withExif: true });
+    const sharedLink = await this.findOrFail(auth.user.id, id);
+    return this.mapToSharedLink(sharedLink, { withExif: true });
   }
 
   async create(auth: AuthDto, dto: SharedLinkCreateDto): Promise<SharedLinkResponseDto> {
     switch (dto.type) {
-      case SharedLinkType.ALBUM:
+      case SharedLinkType.ALBUM: {
         if (!dto.albumId) {
           throw new BadRequestException('Invalid albumId');
         }
         await this.access.requirePermission(auth, Permission.ALBUM_SHARE, dto.albumId);
         break;
+      }
 
-      case SharedLinkType.INDIVIDUAL:
+      case SharedLinkType.INDIVIDUAL: {
         if (!dto.assetIds || dto.assetIds.length === 0) {
           throw new BadRequestException('Invalid assetIds');
         }
@@ -59,6 +61,7 @@ export class SharedLinkService {
         await this.access.requirePermission(auth, Permission.ASSET_SHARE, dto.assetIds);
 
         break;
+      }
     }
 
     const sharedLink = await this.repository.create({
@@ -75,11 +78,11 @@ export class SharedLinkService {
       showExif: dto.showMetadata ?? true,
     });
 
-    return this.map(sharedLink, { withExif: true });
+    return this.mapToSharedLink(sharedLink, { withExif: true });
   }
 
   async update(auth: AuthDto, id: string, dto: SharedLinkEditDto) {
-    await this.findOrFail(auth, id);
+    await this.findOrFail(auth.user.id, id);
     const sharedLink = await this.repository.update({
       id,
       userId: auth.user.id,
@@ -90,16 +93,17 @@ export class SharedLinkService {
       allowDownload: dto.allowDownload,
       showExif: dto.showMetadata,
     });
-    return this.map(sharedLink, { withExif: true });
+    return this.mapToSharedLink(sharedLink, { withExif: true });
   }
 
   async remove(auth: AuthDto, id: string): Promise<void> {
-    const sharedLink = await this.findOrFail(auth, id);
+    const sharedLink = await this.findOrFail(auth.user.id, id);
     await this.repository.remove(sharedLink);
   }
 
-  private async findOrFail(auth: AuthDto, id: string) {
-    const sharedLink = await this.repository.get(auth.user.id, id);
+  // TODO: replace `userId` with permissions and access control checks
+  private async findOrFail(userId: string, id: string) {
+    const sharedLink = await this.repository.get(userId, id);
     if (!sharedLink) {
       throw new BadRequestException('Shared link not found');
     }
@@ -107,7 +111,7 @@ export class SharedLinkService {
   }
 
   async addAssets(auth: AuthDto, id: string, dto: AssetIdsDto): Promise<AssetIdsResponseDto[]> {
-    const sharedLink = await this.findOrFail(auth, id);
+    const sharedLink = await this.findOrFail(auth.user.id, id);
 
     if (sharedLink.type !== SharedLinkType.INDIVIDUAL) {
       throw new BadRequestException('Invalid shared link type');
@@ -141,7 +145,7 @@ export class SharedLinkService {
   }
 
   async removeAssets(auth: AuthDto, id: string, dto: AssetIdsDto): Promise<AssetIdsResponseDto[]> {
-    const sharedLink = await this.findOrFail(auth, id);
+    const sharedLink = await this.findOrFail(auth.user.id, id);
 
     if (sharedLink.type !== SharedLinkType.INDIVIDUAL) {
       throw new BadRequestException('Invalid shared link type');
@@ -164,7 +168,25 @@ export class SharedLinkService {
     return results;
   }
 
-  private map(sharedLink: SharedLinkEntity, { withExif }: { withExif: boolean }) {
+  async getMetadataTags(auth: AuthDto): Promise<null | OpenGraphTags> {
+    if (!auth.sharedLink || auth.sharedLink.password) {
+      return null;
+    }
+
+    const sharedLink = await this.findOrFail(auth.sharedLink.userId, auth.sharedLink.id);
+    const assetId = sharedLink.album?.albumThumbnailAssetId || sharedLink.assets[0]?.id;
+    const assetCount = sharedLink.assets.length ?? sharedLink.album?.assets.length ?? 0;
+
+    return {
+      title: sharedLink.album ? sharedLink.album.albumName : 'Public Share',
+      description: sharedLink.description || `${assetCount} shared photos & videos`,
+      imageUrl: assetId
+        ? `/api/asset/thumbnail/${assetId}?key=${sharedLink.key.toString('base64url')}`
+        : '/feature-panel.png',
+    };
+  }
+
+  private mapToSharedLink(sharedLink: SharedLinkEntity, { withExif }: { withExif: boolean }) {
     return withExif ? mapSharedLink(sharedLink) : mapSharedLinkWithoutMetadata(sharedLink);
   }
 

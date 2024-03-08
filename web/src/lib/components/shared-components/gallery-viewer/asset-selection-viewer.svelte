@@ -1,7 +1,7 @@
 <script lang="ts">
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
   import { getThumbnailSize } from '$lib/utils/thumbnail-util';
-  import { AssetResponseDto, ThumbnailFormat } from '@api';
+  import { ThumbnailFormat, type AssetResponseDto } from '@immich/sdk';
   import { createEventDispatcher } from 'svelte';
   import { flip } from 'svelte/animate';
 
@@ -11,18 +11,20 @@
   let viewWidth: number;
   $: thumbnailSize = getThumbnailSize(assets.length, viewWidth);
 
-  let dispatch = createEventDispatcher();
+  let dispatch = createEventDispatcher<{
+    select: { asset: AssetResponseDto; selectedAssets: Set<AssetResponseDto> };
+  }>();
 
   const selectAssetHandler = (event: CustomEvent) => {
     const { asset }: { asset: AssetResponseDto } = event.detail;
-    let temp = new Set(selectedAssets);
+    let temporary = new Set(selectedAssets);
     if (selectedAssets.has(asset)) {
-      temp.delete(asset);
+      temporary.delete(asset);
     } else {
-      temp.add(asset);
+      temporary.add(asset);
     }
 
-    selectedAssets = temp;
+    selectedAssets = temporary;
     dispatch('select', { asset, selectedAssets });
   };
 </script>

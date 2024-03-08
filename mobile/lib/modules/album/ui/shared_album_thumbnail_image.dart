@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:immich_mobile/shared/ui/immich_image.dart';
+import 'package:immich_mobile/shared/ui/immich_thumbnail.dart';
 
 class SharedAlbumThumbnailImage extends HookConsumerWidget {
   final Asset asset;
 
-  const SharedAlbumThumbnailImage({Key? key, required this.asset})
-      : super(key: key);
+  const SharedAlbumThumbnailImage({super.key, required this.asset});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -17,7 +16,11 @@ class SharedAlbumThumbnailImage extends HookConsumerWidget {
       },
       child: Stack(
         children: [
-          ImmichImage(asset, width: 500, height: 500),
+          ImmichThumbnail(
+            asset: asset,
+            width: 500,
+            height: 500,
+          ),
         ],
       ),
     );

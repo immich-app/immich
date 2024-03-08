@@ -1,11 +1,12 @@
 <script lang="ts">
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import { SharedLinkResponseDto, api } from '@api';
-  import ConfirmDialogue from '../../shared-components/confirm-dialogue.svelte';
-  import { getAssetControlContext } from '../asset-select-control-bar.svelte';
-  import { NotificationType, notificationController } from '../../shared-components/notification/notification';
-  import { handleError } from '../../../utils/handle-error';
+  import { getKey } from '$lib/utils';
+  import { handleError } from '$lib/utils/handle-error';
+  import { removeSharedLinkAssets, type SharedLinkResponseDto } from '@immich/sdk';
   import { mdiDeleteOutline } from '@mdi/js';
+  import ConfirmDialogue from '../../shared-components/confirm-dialogue.svelte';
+  import { NotificationType, notificationController } from '../../shared-components/notification/notification';
+  import { getAssetControlContext } from '../asset-select-control-bar.svelte';
 
   export let sharedLink: SharedLinkResponseDto;
 
@@ -15,12 +16,12 @@
 
   const handleRemove = async () => {
     try {
-      const { data: results } = await api.sharedLinkApi.removeSharedLinkAssets({
+      const results = await removeSharedLinkAssets({
         id: sharedLink.id,
         assetIdsDto: {
-          assetIds: Array.from(getAssets()).map((asset) => asset.id),
+          assetIds: [...getAssets()].map((asset) => asset.id),
         },
-        key: api.getKey(),
+        key: getKey(),
       });
 
       for (const result of results) {
@@ -52,7 +53,7 @@
     title="Remove Assets?"
     prompt="Are you sure you want to remove {getAssets().size} asset(s) from this shared link?"
     confirmText="Remove"
-    on:confirm={() => handleRemove()}
-    on:cancel={() => (removing = false)}
+    onConfirm={() => handleRemove()}
+    onClose={() => (removing = false)}
   />
 {/if}

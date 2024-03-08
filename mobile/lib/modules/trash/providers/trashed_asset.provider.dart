@@ -2,6 +2,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/modules/trash/services/trash.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/providers/user.provider.dart';
 import 'package:immich_mobile/shared/services/sync.service.dart';
@@ -43,8 +44,35 @@ class TrashNotifier extends StateNotifier<bool> {
           .read(syncServiceProvider)
           .handleRemoteAssetRemoval(idsToRemove.cast<String>().toList());
     } catch (error, stack) {
-      _log.severe("Cannot empty trash ${error.toString()}", error, stack);
+      _log.severe("Cannot empty trash", error, stack);
     }
+  }
+
+  Future<bool> removeAssets(Iterable<Asset> assetList) async {
+    try {
+      final user = _ref.read(currentUserProvider);
+      if (user == null) {
+        return false;
+      }
+
+      final isRemoved = await _ref
+          .read(assetProvider.notifier)
+          .deleteRemoteOnlyAssets(assetList, force: true);
+
+      if (isRemoved) {
+        final idsToRemove =
+            assetList.where((a) => a.isRemote).map((a) => a.remoteId!).toList();
+
+        _ref
+            .read(syncServiceProvider)
+            .handleRemoteAssetRemoval(idsToRemove.cast<String>().toList());
+      }
+
+      return isRemoved;
+    } catch (error, stack) {
+      _log.severe("Cannot remove assets", error, stack);
+    }
+    return false;
   }
 
   Future<bool> restoreAssets(Iterable<Asset> assetList) async {
@@ -65,7 +93,7 @@ class TrashNotifier extends StateNotifier<bool> {
         return true;
       }
     } catch (error, stack) {
-      _log.severe("Cannot restore trash ${error.toString()}", error, stack);
+      _log.severe("Cannot restore assets", error, stack);
     }
     return false;
   }
@@ -95,7 +123,7 @@ class TrashNotifier extends StateNotifier<bool> {
         await _db.assets.putAll(updatedAssets);
       });
     } catch (error, stack) {
-      _log.severe("Cannot restore trash ${error.toString()}", error, stack);
+      _log.severe("Cannot restore trash", error, stack);
     }
   }
 }

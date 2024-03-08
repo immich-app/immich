@@ -1,16 +1,18 @@
-import { IsBoolean, IsNotEmpty, IsString, IsUrl, ValidateIf } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString, IsUrl, Min, ValidateIf } from 'class-validator';
+import { ValidateBoolean } from '../../domain.util';
 
 const isEnabled = (config: SystemConfigOAuthDto) => config.enabled;
 const isOverrideEnabled = (config: SystemConfigOAuthDto) => config.mobileOverrideEnabled;
 
 export class SystemConfigOAuthDto {
-  @IsBoolean()
-  enabled!: boolean;
+  @ValidateBoolean()
+  autoLaunch!: boolean;
 
-  @ValidateIf(isEnabled)
-  @IsNotEmpty()
+  @ValidateBoolean()
+  autoRegister!: boolean;
+
   @IsString()
-  issuerUrl!: string;
+  buttonText!: string;
 
   @ValidateIf(isEnabled)
   @IsNotEmpty()
@@ -22,25 +24,35 @@ export class SystemConfigOAuthDto {
   @IsString()
   clientSecret!: string;
 
+  @IsNumber()
+  @Min(0)
+  defaultStorageQuota!: number;
+
+  @ValidateBoolean()
+  enabled!: boolean;
+
+  @ValidateIf(isEnabled)
+  @IsNotEmpty()
   @IsString()
-  scope!: string;
+  issuerUrl!: string;
 
-  @IsString()
-  storageLabelClaim!: string;
-
-  @IsString()
-  buttonText!: string;
-
-  @IsBoolean()
-  autoRegister!: boolean;
-
-  @IsBoolean()
-  autoLaunch!: boolean;
-
-  @IsBoolean()
+  @ValidateBoolean()
   mobileOverrideEnabled!: boolean;
 
   @ValidateIf(isOverrideEnabled)
   @IsUrl()
   mobileRedirectUri!: string;
+
+  @IsString()
+  scope!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  signingAlgorithm!: string;
+
+  @IsString()
+  storageLabelClaim!: string;
+
+  @IsString()
+  storageQuotaClaim!: string;
 }

@@ -1,27 +1,29 @@
 <script lang="ts">
-  import {
-    MapLibre,
-    GeoJSON,
-    MarkerLayer,
-    AttributionControl,
-    ControlButton,
-    Control,
-    ControlGroup,
-    Map,
-    FullscreenControl,
-    GeolocateControl,
-    NavigationControl,
-    ScaleControl,
-    Popup,
-  } from 'svelte-maplibre';
-  import { colorTheme, mapSettings } from '$lib/stores/preferences.store';
-  import { MapMarkerResponseDto, api } from '@api';
-  import maplibregl from 'maplibre-gl';
-  import type { GeoJSONSource, LngLatLike, StyleSpecification } from 'maplibre-gl';
-  import type { Feature, Geometry, GeoJsonProperties, Point } from 'geojson';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { mdiCog } from '@mdi/js';
+  import { Theme } from '$lib/constants';
+  import { colorTheme, mapSettings } from '$lib/stores/preferences.store';
+  import { getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
+  import { getMapStyle, MapTheme, type MapMarkerResponseDto } from '@immich/sdk';
+  import { mdiCog, mdiMapMarker } from '@mdi/js';
+  import type { Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
+  import type { GeoJSONSource, LngLatLike, StyleSpecification } from 'maplibre-gl';
+  import maplibregl from 'maplibre-gl';
   import { createEventDispatcher } from 'svelte';
+  import {
+    AttributionControl,
+    Control,
+    ControlButton,
+    ControlGroup,
+    FullscreenControl,
+    GeoJSON,
+    GeolocateControl,
+    MapLibre,
+    MarkerLayer,
+    NavigationControl,
+    Popup,
+    ScaleControl,
+    type Map,
+  } from 'svelte-maplibre';
 
   export let mapMarkers: MapMarkerResponseDto[];
   export let showSettingsModal: boolean | undefined = undefined;
@@ -29,16 +31,26 @@
   export let center: LngLatLike | undefined = undefined;
   export let simplified = false;
   export let clickable = false;
+  export let useLocationPin = false;
+  export function addClipMapMarker(lng: number, lat: number) {
+    if (map) {
+      if (marker) {
+        marker.remove();
+      }
+
+      center = { lng, lat };
+      marker = new maplibregl.Marker().setLngLat([lng, lat]).addTo(map);
+      map.setZoom(15);
+    }
+  }
 
   let map: maplibregl.Map;
   let marker: maplibregl.Marker | null = null;
 
-  $: style = (async () => {
-    const { data } = await api.systemConfigApi.getMapStyle({
-      theme: $mapSettings.allowDarkMode ? $colorTheme : 'light',
-    });
-    return data as StyleSpecification;
-  })();
+  $: style = (() =>
+    getMapStyle({
+      theme: ($mapSettings.allowDarkMode ? $colorTheme.value : Theme.LIGHT) as unknown as MapTheme,
+    }) as Promise<StyleSpecification>)();
 
   const dispatch = createEventDispatcher<{
     selected: string[];
@@ -52,22 +64,15 @@
     dispatch('selected', [assetId]);
   }
 
-  function handleClusterClick(clusterId: number, map: Map | null) {
+  async function handleClusterClick(clusterId: number, map: Map | null) {
     if (!map) {
       return;
     }
 
     const mapSource = map?.getSource('geojson') as GeoJSONSource;
-    mapSource.getClusterLeaves(clusterId, 10000, 0, (error, leaves) => {
-      if (error) {
-        return;
-      }
-
-      if (leaves) {
-        const ids = leaves.map((leaf) => leaf.properties?.id);
-        dispatch('selected', ids);
-      }
-    });
+    const leaves = await mapSource.getClusterLeaves(clusterId, 10_000, 0);
+    const ids = leaves.map((leaf) => leaf.properties?.id);
+    dispatch('selected', ids);
   }
 
   function handleMapClick(event: maplibregl.MapMouseEvent) {
@@ -83,7 +88,7 @@
     }
   }
 
-  type FeaturePoint = Feature<Point, { id: string }>;
+  type FeaturePoint = Feature<Point, { id: string; city: string | null; state: string | null; country: string | null }>;
 
   const asFeature = (marker: MapMarkerResponseDto): FeaturePoint => {
     return {
@@ -91,6 +96,9 @@
       geometry: { type: 'Point', coordinates: [marker.lon, marker.lat] },
       properties: {
         id: marker.id,
+        city: marker.city,
+        state: marker.state,
+        country: marker.country,
       },
     };
   };
@@ -102,6 +110,9 @@
       lat: coords.lat,
       lon: coords.lng,
       id: featurePoint.properties.id,
+      city: featurePoint.properties.city,
+      state: featurePoint.properties.state,
+      country: featurePoint.properties.country,
     };
   };
 </script>
@@ -115,7 +126,7 @@
     attributionControl={false}
     diffStyleUpdates={true}
     let:map
-    on:load={(event) => event.detail.setMaxZoom(14)}
+    on:load={(event) => event.detail.setMaxZoom(18)}
     on:load={(event) => event.detail.on('click', handleMapClick)}
     bind:map
   >
@@ -141,15 +152,13 @@
         }),
       }}
       id="geojson"
-      cluster={{ radius: 500 }}
+      cluster={{ radius: 500, maxZoom: 24 }}
     >
       <MarkerLayer
         applyToClusters
         asButton
         let:feature
-        on:click={(event) => {
-          handleClusterClick(event.detail.feature.properties.cluster_id, map);
-        }}
+        on:click={(event) => handlePromiseError(handleClusterClick(event.detail.feature.properties.cluster_id, map))}
       >
         <div
           class="rounded-full w-[40px] h-[40px] bg-immich-primary text-immich-gray flex justify-center items-center font-mono font-bold shadow-lg hover:bg-immich-dark-primary transition-all duration-200 hover:text-immich-dark-bg opacity-90"
@@ -165,17 +174,33 @@
           $$slots.popup || handleAssetClick(event.detail.feature.properties.id, map);
         }}
       >
-        <img
-          src={api.getAssetThumbnailUrl(feature.properties?.id)}
-          class="rounded-full w-[60px] h-[60px] border-2 border-immich-primary shadow-lg hover:border-immich-dark-primary transition-all duration-200 hover:scale-150"
-          alt={`Image with id ${feature.properties?.id}`}
-        />
+        {#if useLocationPin}
+          <Icon
+            path={mdiMapMarker}
+            size="50px"
+            class="location-pin dark:text-immich-dark-primary text-immich-primary"
+          />
+        {:else}
+          <img
+            src={getAssetThumbnailUrl(feature.properties?.id, undefined)}
+            class="rounded-full w-[60px] h-[60px] border-2 border-immich-primary shadow-lg hover:border-immich-dark-primary transition-all duration-200 hover:scale-150 object-cover bg-immich-primary"
+            alt={feature.properties?.city && feature.properties.country
+              ? `Map marker for images taken in ${feature.properties.city}, ${feature.properties.country}`
+              : 'Map marker with image'}
+          />
+        {/if}
         {#if $$slots.popup}
-          <Popup openOn="click" closeOnClickOutside>
+          <Popup offset={[0, -30]} openOn="click" closeOnClickOutside>
             <slot name="popup" marker={asMarker(feature)} />
           </Popup>
         {/if}
       </MarkerLayer>
     </GeoJSON>
   </MapLibre>
+  <style>
+    .location-pin {
+      transform: translate(0, -50%);
+      filter: drop-shadow(0 3px 3px rgb(0 0 0 / 0.3));
+    }
+  </style>
 {/await}

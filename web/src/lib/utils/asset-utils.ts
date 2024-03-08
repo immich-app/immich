@@ -1,32 +1,34 @@
 import { notificationController, NotificationType } from '$lib/components/shared-components/notification/notification';
 import { downloadManager } from '$lib/stores/download';
+import { downloadRequest, getKey } from '$lib/utils';
 import {
-  api,
-  BulkIdResponseDto,
-  AssetResponseDto,
-  DownloadResponseDto,
-  DownloadInfoDto,
-  AssetTypeEnum,
-  UserResponseDto,
-} from '@api';
+  addAssetsToAlbum as addAssets,
+  defaults,
+  getDownloadInfo,
+  type AssetResponseDto,
+  type AssetTypeEnum,
+  type BulkIdResponseDto,
+  type DownloadInfoDto,
+  type DownloadResponseDto,
+  type UserResponseDto,
+} from '@immich/sdk';
+import { DateTime } from 'luxon';
 import { handleError } from './handle-error';
 
 export const addAssetsToAlbum = async (albumId: string, assetIds: Array<string>): Promise<BulkIdResponseDto[]> =>
-  api.albumApi
-    .addAssetsToAlbum({
-      id: albumId,
-      bulkIdsDto: { ids: assetIds },
-      key: api.getKey(),
-    })
-    .then(({ data: results }) => {
-      const count = results.filter(({ success }) => success).length;
-      notificationController.show({
-        type: NotificationType.Info,
-        message: `Added ${count} asset${count === 1 ? '' : 's'}`,
-      });
-
-      return results;
+  addAssets({
+    id: albumId,
+    bulkIdsDto: { ids: assetIds },
+    key: getKey(),
+  }).then((results) => {
+    const count = results.filter(({ success }) => success).length;
+    notificationController.show({
+      type: NotificationType.Info,
+      message: `Added ${count} asset${count === 1 ? '' : 's'}`,
     });
+
+    return results;
+  });
 
 export const downloadBlob = (data: Blob, filename: string) => {
   const url = URL.createObjectURL(data);
@@ -35,9 +37,9 @@ export const downloadBlob = (data: Blob, filename: string) => {
   anchor.href = url;
   anchor.download = filename;
 
-  document.body.appendChild(anchor);
+  document.body.append(anchor);
   anchor.click();
-  document.body.removeChild(anchor);
+  anchor.remove();
 
   URL.revokeObjectURL(url);
 };
@@ -46,8 +48,7 @@ export const downloadArchive = async (fileName: string, options: DownloadInfoDto
   let downloadInfo: DownloadResponseDto | null = null;
 
   try {
-    const { data } = await api.assetApi.getDownloadInfo({ downloadInfoDto: options, key: api.getKey() });
-    downloadInfo = data;
+    downloadInfo = await getDownloadInfo({ downloadInfoDto: options, key: getKey() });
   } catch (error) {
     handleError(error, 'Unable to download files');
     return;
@@ -56,36 +57,37 @@ export const downloadArchive = async (fileName: string, options: DownloadInfoDto
   // TODO: prompt for big download
   // const total = downloadInfo.totalSize;
 
-  for (let i = 0; i < downloadInfo.archives.length; i++) {
-    const archive = downloadInfo.archives[i];
-    const suffix = downloadInfo.archives.length === 1 ? '' : `+${i + 1}`;
-    const archiveName = fileName.replace('.zip', `${suffix}.zip`);
+  for (let index = 0; index < downloadInfo.archives.length; index++) {
+    const archive = downloadInfo.archives[index];
+    const suffix = downloadInfo.archives.length > 1 ? `+${index + 1}` : '';
+    const archiveName = fileName.replace('.zip', `${suffix}-${DateTime.now().toFormat('yyyyLLdd_HHmmss')}.zip`);
+    const key = getKey();
 
     let downloadKey = `${archiveName} `;
     if (downloadInfo.archives.length > 1) {
-      downloadKey = `${archiveName} (${i + 1}/${downloadInfo.archives.length})`;
+      downloadKey = `${archiveName} (${index + 1}/${downloadInfo.archives.length})`;
     }
 
     const abort = new AbortController();
     downloadManager.add(downloadKey, archive.size, abort);
 
     try {
-      const { data } = await api.assetApi.downloadArchive(
-        { assetIdsDto: { assetIds: archive.assetIds }, key: api.getKey() },
-        {
-          responseType: 'blob',
-          signal: abort.signal,
-          onDownloadProgress: (event) => downloadManager.update(downloadKey, event.loaded),
-        },
-      );
+      // TODO use sdk once it supports progress events
+      const { data } = await downloadRequest({
+        method: 'POST',
+        url: defaults.baseUrl + '/download/archive' + (key ? `?key=${key}` : ''),
+        data: { assetIds: archive.assetIds },
+        signal: abort.signal,
+        onDownloadProgress: (event) => downloadManager.update(downloadKey, event.loaded),
+      });
 
       downloadBlob(data, archiveName);
-    } catch (e) {
-      handleError(e, 'Unable to download files');
+    } catch (error) {
+      handleError(error, 'Unable to download files');
       downloadManager.clear(downloadKey);
       return;
     } finally {
-      setTimeout(() => downloadManager.clear(downloadKey), 5_000);
+      setTimeout(() => downloadManager.clear(downloadKey), 5000);
     }
   }
 };
@@ -100,14 +102,14 @@ export const downloadFile = async (asset: AssetResponseDto) => {
   }
   const assets = [
     {
-      filename: `${asset.originalFileName}.${getFilenameExtension(asset.originalPath)}`,
+      filename: asset.originalFileName,
       id: asset.id,
       size: asset.exifInfo?.fileSizeInByte || 0,
     },
   ];
   if (asset.livePhotoVideoId) {
     assets.push({
-      filename: `${asset.originalFileName}.mov`,
+      filename: asset.originalFileName,
       id: asset.livePhotoVideoId,
       size: 0,
     });
@@ -119,31 +121,27 @@ export const downloadFile = async (asset: AssetResponseDto) => {
     try {
       const abort = new AbortController();
       downloadManager.add(downloadKey, size, abort);
-
-      const { data } = await api.assetApi.downloadFile(
-        { id, key: api.getKey() },
-        {
-          responseType: 'blob',
-          onDownloadProgress: (event: ProgressEvent) => {
-            if (event.lengthComputable) {
-              downloadManager.update(downloadKey, event.loaded, event.total);
-            }
-          },
-          signal: abort.signal,
-        },
-      );
+      const key = getKey();
 
       notificationController.show({
         type: NotificationType.Info,
         message: `Downloading asset ${asset.originalFileName}`,
       });
 
+      // TODO use sdk once it supports progress events
+      const { data } = await downloadRequest({
+        method: 'POST',
+        url: defaults.baseUrl + `/download/asset/${id}` + (key ? `?key=${key}` : ''),
+        signal: abort.signal,
+        onDownloadProgress: (event) => downloadManager.update(downloadKey, event.loaded, event.total),
+      });
+
       downloadBlob(data, filename);
-    } catch (e) {
-      handleError(e, `Error downloading ${filename}`);
+    } catch (error) {
+      handleError(error, `Error downloading ${filename}`);
       downloadManager.clear(downloadKey);
     } finally {
-      setTimeout(() => downloadManager.clear(downloadKey), 5_000);
+      setTimeout(() => downloadManager.clear(downloadKey), 5000);
     }
   }
 };
@@ -154,7 +152,7 @@ export const downloadFile = async (asset: AssetResponseDto) => {
  */
 export function getFilenameExtension(filename: string): string {
   const lastIndex = Math.max(0, filename.lastIndexOf('.'));
-  const startIndex = (lastIndex || Infinity) + 1;
+  const startIndex = (lastIndex || Number.POSITIVE_INFINITY) + 1;
   return filename.slice(startIndex).toLowerCase();
 }
 
@@ -181,10 +179,8 @@ export function getAssetRatio(asset: AssetResponseDto) {
   let height = asset.exifInfo?.exifImageHeight || 235;
   let width = asset.exifInfo?.exifImageWidth || 235;
   const orientation = Number(asset.exifInfo?.orientation);
-  if (orientation) {
-    if (isRotated90CW(orientation) || isRotated270CW(orientation)) {
-      [width, height] = [height, width];
-    }
+  if (orientation && (isRotated90CW(orientation) || isRotated270CW(orientation))) {
+    [width, height] = [height, width];
   }
   return { width, height };
 }
@@ -203,21 +199,22 @@ export function isWebCompatibleImage(asset: AssetResponseDto): boolean {
 
 export const getAssetType = (type: AssetTypeEnum) => {
   switch (type) {
-    case 'IMAGE':
+    case 'IMAGE': {
       return 'Photo';
-    case 'VIDEO':
+    }
+    case 'VIDEO': {
       return 'Video';
-    default:
+    }
+    default: {
       return 'Asset';
+    }
   }
 };
 
 export const getSelectedAssets = (assets: Set<AssetResponseDto>, user: UserResponseDto | null): string[] => {
-  const ids = Array.from(assets)
-    .filter((a) => !a.isExternal && user && a.ownerId === user.id)
-    .map((a) => a.id);
+  const ids = [...assets].filter((a) => !a.isExternal && user && a.ownerId === user.id).map((a) => a.id);
 
-  const numberOfIssues = Array.from(assets).filter((a) => a.isExternal || (user && a.ownerId !== user.id)).length;
+  const numberOfIssues = [...assets].filter((a) => a.isExternal || (user && a.ownerId !== user.id)).length;
   if (numberOfIssues > 0) {
     notificationController.show({
       message: `Can't change metadata of ${numberOfIssues} asset${numberOfIssues > 1 ? 's' : ''}`,
@@ -225,4 +222,8 @@ export const getSelectedAssets = (assets: Set<AssetResponseDto>, user: UserRespo
     });
   }
   return ids;
+};
+
+export const delay = async (ms: number) => {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 };

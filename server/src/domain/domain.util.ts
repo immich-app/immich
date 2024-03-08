@@ -1,6 +1,7 @@
-import { applyDecorators } from '@nestjs/common';
+import { ImmichLogger } from '@app/infra/logger';
+import { BadRequestException, applyDecorators } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
-import { Transform, Type } from 'class-transformer';
+import { Transform } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
@@ -11,69 +12,114 @@ import {
   IsUUID,
   ValidateIf,
   ValidationOptions,
+  isDateString,
 } from 'class-validator';
 import { CronJob } from 'cron';
+import _ from 'lodash';
 import { basename, extname } from 'node:path';
 import sanitize from 'sanitize-filename';
 
-export type Options = {
-  optional?: boolean;
-  each?: boolean;
-};
+export enum CacheControl {
+  PRIVATE_WITH_CACHE = 'private_with_cache',
+  PRIVATE_WITHOUT_CACHE = 'private_without_cache',
+  NONE = 'none',
+}
+
+export class ImmichFileResponse {
+  public readonly path!: string;
+  public readonly contentType!: string;
+  public readonly cacheControl!: CacheControl;
+
+  constructor(response: ImmichFileResponse) {
+    Object.assign(this, response);
+  }
+}
+
+export interface OpenGraphTags {
+  title: string;
+  description: string;
+  imageUrl?: string;
+}
 
 export const isConnectionAborted = (error: Error | any) => error.code === 'ECONNABORTED';
 
-export function ValidateUUID({ optional, each }: Options = { optional: false, each: false }) {
+type UUIDOptions = { optional?: boolean; each?: boolean };
+export const ValidateUUID = (options?: UUIDOptions) => {
+  const { optional, each } = { optional: false, each: false, ...options };
   return applyDecorators(
     IsUUID('4', { each }),
     ApiProperty({ format: 'uuid' }),
     optional ? Optional() : IsNotEmpty(),
     each ? IsArray() : IsString(),
   );
-}
+};
+
+type DateOptions = { optional?: boolean; nullable?: boolean; format?: 'date' | 'date-time' };
+export const ValidateDate = (options?: DateOptions) => {
+  const { optional, nullable, format } = { optional: false, nullable: false, format: 'date-time', ...options };
+
+  const decorators = [
+    ApiProperty({ format }),
+    IsDate(),
+    optional ? Optional({ nullable: true }) : IsNotEmpty(),
+    Transform(({ key, value }) => {
+      if (value === null || value === undefined) {
+        return value;
+      }
+
+      if (!isDateString(value)) {
+        throw new BadRequestException(`${key} must be a date string`);
+      }
+
+      return new Date(value as string);
+    }),
+  ];
+
+  if (optional) {
+    decorators.push(Optional({ nullable }));
+  }
+
+  return applyDecorators(...decorators);
+};
+
+type BooleanOptions = { optional?: boolean };
+export const ValidateBoolean = (options?: BooleanOptions) => {
+  const { optional } = { optional: false, ...options };
+  const decorators = [
+    // ApiProperty(),
+    IsBoolean(),
+    Transform(({ value }) => {
+      if (value == 'true') {
+        return true;
+      } else if (value == 'false') {
+        return false;
+      }
+      return value;
+    }),
+  ];
+
+  if (optional) {
+    decorators.push(Optional());
+  }
+
+  return applyDecorators(...decorators);
+};
 
 export function validateCronExpression(expression: string) {
   try {
     new CronJob(expression, () => {});
-  } catch (error) {
+  } catch {
     return false;
   }
 
   return true;
 }
 
-interface IValue {
-  value?: string;
-}
-
-export const QueryBoolean = ({ optional }: { optional?: boolean }) => {
-  const decorators = [IsBoolean(), Transform(toBoolean)];
-  if (optional) {
-    decorators.push(Optional());
-  }
-  return applyDecorators(...decorators);
-};
-
-export const QueryDate = ({ optional }: { optional?: boolean }) => {
-  const decorators = [IsDate(), Type(() => Date)];
-  if (optional) {
-    decorators.push(Optional());
-  }
-  return applyDecorators(...decorators);
-};
-
-export const toBoolean = ({ value }: IValue) => {
-  if (value == 'true') {
-    return true;
-  } else if (value == 'false') {
-    return false;
-  }
-  return value;
-};
+type IValue = { value: string };
 
 export const toEmail = ({ value }: IValue) => value?.toLowerCase();
 
-export const toSanitized = ({ value }: IValue) => sanitize((value || '').replace(/\./g, ''));
+export const toSanitized = ({ value }: IValue) => sanitize((value || '').replaceAll('.', ''));
 
 export function getFileNameWithoutExtension(path: string): string {
   return basename(path, extname(path));
@@ -113,6 +159,17 @@ export interface PaginationOptions {
   skip?: number;
 }
 
+export enum PaginationMode {
+  LIMIT_OFFSET = 'limit-offset',
+  SKIP_TAKE = 'skip-take',
+}
+
+export interface PaginatedBuilderOptions {
+  take: number;
+  skip?: number;
+  mode?: PaginationMode;
+}
+
 export interface PaginationResult<T> {
   items: T[];
   hasNextPage: boolean;
@@ -122,7 +179,7 @@ export type Paginated<T> = Promise<PaginationResult<T>>;
 
 export async function* usePagination<T>(
   pageSize: number,
-  getNextPage: (pagination: PaginationOptions) => Paginated<T>,
+  getNextPage: (pagination: PaginationOptions) => PaginationResult<T> | Paginated<T>,
 ) {
   let hasNextPage = true;
 
@@ -150,7 +207,35 @@ export function Optional({ nullable, ...validationOptions }: OptionalOptions = {
     return IsOptional(validationOptions);
   }
 
-  return ValidateIf((obj: any, v: any) => v !== undefined, validationOptions);
+  return ValidateIf((object: any, v: any) => v !== undefined, validationOptions);
+}
+
+/**
+ * Chunks an array or set into smaller collections of the same type and specified size.
+ *
+ * @param collection The collection to chunk.
+ * @param size The size of each chunk.
+ */
+export function chunks<T>(collection: Array<T>, size: number): Array<Array<T>>;
+export function chunks<T>(collection: Set<T>, size: number): Array<Set<T>>;
+export function chunks<T>(collection: Array<T> | Set<T>, size: number): Array<Array<T>> | Array<Set<T>> {
+  if (collection instanceof Set) {
+    const result = [];
+    let chunk = new Set<T>();
+    for (const element of collection) {
+      chunk.add(element);
+      if (chunk.size === size) {
+        result.push(chunk);
+        chunk = new Set<T>();
+      }
+    }
+    if (chunk.size > 0) {
+      result.push(chunk);
+    }
+    return result;
+  } else {
+    return _.chunk(collection, size);
+  }
 }
 
 // NOTE: The following Set utils have been added here, to easily determine where they are used.
@@ -160,8 +245,8 @@ export function Optional({ nullable, ...validationOptions }: OptionalOptions = {
 export const setUnion = <T>(...sets: Set<T>[]): Set<T> => {
   const union = new Set(sets[0]);
   for (const set of sets.slice(1)) {
-    for (const elem of set) {
-      union.add(elem);
+    for (const element of set) {
+      union.add(element);
     }
   }
   return union;
@@ -170,16 +255,16 @@ export const setUnion = <T>(...sets: Set<T>[]): Set<T> => {
 export const setDifference = <T>(setA: Set<T>, ...sets: Set<T>[]): Set<T> => {
   const difference = new Set(setA);
   for (const set of sets) {
-    for (const elem of set) {
-      difference.delete(elem);
+    for (const element of set) {
+      difference.delete(element);
     }
   }
   return difference;
 };
 
 export const setIsSuperset = <T>(set: Set<T>, subset: Set<T>): boolean => {
-  for (const elem of subset) {
-    if (!set.has(elem)) {
+  for (const element of subset) {
+    if (!set.has(element)) {
       return false;
     }
   }
@@ -188,4 +273,8 @@ export const setIsSuperset = <T>(set: Set<T>, subset: Set<T>): boolean => {
 
 export const setIsEqual = <T>(setA: Set<T>, setB: Set<T>): boolean => {
   return setA.size === setB.size && setIsSuperset(setA, setB);
+};
+
+export const handlePromiseError = <T>(promise: Promise<T>, logger: ImmichLogger): void => {
+  promise.catch((error: Error | any) => logger.error(`Promise error: ${error}`, error?.stack));
 };

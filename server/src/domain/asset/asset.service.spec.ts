@@ -2,47 +2,39 @@ import { AssetEntity, AssetType } from '@app/infra/entities';
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import {
   IAccessRepositoryMock,
+  assetStackStub,
   assetStub,
   authStub,
   faceStub,
   newAccessRepositoryMock,
   newAssetRepositoryMock,
+  newAssetStackRepositoryMock,
   newCommunicationRepositoryMock,
-  newCryptoRepositoryMock,
   newJobRepositoryMock,
   newPartnerRepositoryMock,
   newStorageRepositoryMock,
   newSystemConfigRepositoryMock,
+  newUserRepositoryMock,
 } from '@test';
 import { when } from 'jest-when';
-import { Readable } from 'stream';
 import { JobName } from '../job';
 import {
   AssetStats,
-  CommunicationEvent,
+  ClientEvent,
   IAssetRepository,
+  IAssetStackRepository,
   ICommunicationRepository,
-  ICryptoRepository,
   IJobRepository,
   IPartnerRepository,
   IStorageRepository,
   ISystemConfigRepository,
+  IUserRepository,
   JobItem,
   TimeBucketSize,
 } from '../repositories';
 import { AssetService, UploadFieldName } from './asset.service';
-import { AssetJobName, AssetStatsResponseDto, DownloadResponseDto } from './dto';
+import { AssetJobName, AssetStatsResponseDto } from './dto';
 import { mapAsset } from './response-dto';
-
-const downloadResponse: DownloadResponseDto = {
-  totalSize: 105_000,
-  archives: [
-    {
-      assetIds: ['asset-id', 'asset-id'],
-      size: 105_000,
-    },
-  ],
-};
 
 const stats: AssetStats = {
   [AssetType.IMAGE]: 10,
@@ -62,9 +54,11 @@ const uploadFile = {
     auth: null,
     fieldName: UploadFieldName.ASSET_DATA,
     file: {
+      uuid: 'random-uuid',
       checksum: Buffer.from('checksum', 'utf8'),
       originalPath: 'upload/admin/image.jpeg',
       originalName: 'image.jpeg',
+      size: 1000,
     },
   },
   filename: (fieldName: UploadFieldName, filename: string) => {
@@ -72,10 +66,12 @@ const uploadFile = {
       auth: authStub.admin,
       fieldName,
       file: {
+        uuid: 'random-uuid',
         mimeType: 'image/jpeg',
         checksum: Buffer.from('checksum', 'utf8'),
         originalPath: `upload/admin/${filename}`,
         originalName: filename,
+        size: 1000,
       },
     };
   },
@@ -161,36 +157,39 @@ describe(AssetService.name, () => {
   let sut: AssetService;
   let accessMock: IAccessRepositoryMock;
   let assetMock: jest.Mocked<IAssetRepository>;
-  let cryptoMock: jest.Mocked<ICryptoRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
+  let userMock: jest.Mocked<IUserRepository>;
   let communicationMock: jest.Mocked<ICommunicationRepository>;
   let configMock: jest.Mocked<ISystemConfigRepository>;
   let partnerMock: jest.Mocked<IPartnerRepository>;
+  let assetStackMock: jest.Mocked<IAssetStackRepository>;
 
   it('should work', () => {
     expect(sut).toBeDefined();
   });
 
-  beforeEach(async () => {
+  beforeEach(() => {
     accessMock = newAccessRepositoryMock();
     assetMock = newAssetRepositoryMock();
     communicationMock = newCommunicationRepositoryMock();
-    cryptoMock = newCryptoRepositoryMock();
     jobMock = newJobRepositoryMock();
     storageMock = newStorageRepositoryMock();
+    userMock = newUserRepositoryMock();
     configMock = newSystemConfigRepositoryMock();
     partnerMock = newPartnerRepositoryMock();
+    assetStackMock = newAssetStackRepositoryMock();
 
     sut = new AssetService(
       accessMock,
       assetMock,
-      cryptoMock,
       jobMock,
       configMock,
       storageMock,
+      userMock,
       communicationMock,
       partnerMock,
+      assetStackMock,
     );
 
     when(assetMock.getById)
@@ -279,34 +278,30 @@ describe(AssetService.name, () => {
 
     it('should return upload for everything else', () => {
       expect(sut.getUploadFolder(uploadFile.filename(UploadFieldName.ASSET_DATA, 'image.jpg'))).toEqual(
-        'upload/upload/admin_id',
+        'upload/upload/admin_id/ra/nd',
       );
-      expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/upload/admin_id');
+      expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/upload/admin_id/ra/nd');
     });
   });
 
   describe('getMapMarkers', () => {
     it('should get geo information of assets', async () => {
-      assetMock.getMapMarkers.mockResolvedValue(
-        [assetStub.withLocation].map((asset) => ({
-          id: asset.id,
-
-          /* eslint-disable-next-line @typescript-eslint/no-non-null-assertion */
-          lat: asset.exifInfo!.latitude!,
-
-          /* eslint-disable-next-line @typescript-eslint/no-non-null-assertion */
-          lon: asset.exifInfo!.longitude!,
-        })),
-      );
+      const asset = assetStub.withLocation;
+      const marker = {
+        id: asset.id,
+        lat: asset.exifInfo!.latitude!,
+        lon: asset.exifInfo!.longitude!,
+        city: asset.exifInfo!.city,
+        state: asset.exifInfo!.state,
+        country: asset.exifInfo!.country,
+      };
+      partnerMock.getAll.mockResolvedValue([]);
+      assetMock.getMapMarkers.mockResolvedValue([marker]);
 
       const markers = await sut.getMapMarkers(authStub.user1, {});
 
       expect(markers).toHaveLength(1);
-      expect(markers[0]).toEqual({
-        id: assetStub.withLocation.id,
-        lat: 100,
-        lon: 100,
-      });
+      expect(markers[0]).toEqual(marker);
     });
   });
 
@@ -455,171 +450,6 @@ describe(AssetService.name, () => {
     });
   });
 
-  describe('downloadFile', () => {
-    it('should require the asset.download permission', async () => {
-      await expect(sut.downloadFile(authStub.admin, 'asset-1')).rejects.toBeInstanceOf(BadRequestException);
-
-      expect(accessMock.asset.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['asset-1']));
-      expect(accessMock.asset.checkAlbumAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['asset-1']));
-      expect(accessMock.asset.checkPartnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['asset-1']));
-    });
-
-    it('should throw an error if the asset is not found', async () => {
-      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
-      assetMock.getByIds.mockResolvedValue([]);
-
-      await expect(sut.downloadFile(authStub.admin, 'asset-1')).rejects.toBeInstanceOf(BadRequestException);
-
-      expect(assetMock.getByIds).toHaveBeenCalledWith(['asset-1']);
-    });
-
-    it('should download a file', async () => {
-      const stream = new Readable();
-
-      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
-      assetMock.getByIds.mockResolvedValue([assetStub.image]);
-      storageMock.createReadStream.mockResolvedValue({ stream });
-
-      await expect(sut.downloadFile(authStub.admin, 'asset-1')).resolves.toEqual({ stream });
-
-      expect(storageMock.createReadStream).toHaveBeenCalledWith(assetStub.image.originalPath, 'image/jpeg');
-    });
-
-    it('should download an archive', async () => {
-      const archiveMock = {
-        addFile: jest.fn(),
-        finalize: jest.fn(),
-        stream: new Readable(),
-      };
-
-      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1', 'asset-2']));
-      assetMock.getByIds.mockResolvedValue([assetStub.noResizePath, assetStub.noWebpPath]);
-      storageMock.createZipStream.mockReturnValue(archiveMock);
-
-      await expect(sut.downloadArchive(authStub.admin, { assetIds: ['asset-1', 'asset-2'] })).resolves.toEqual({
-        stream: archiveMock.stream,
-      });
-
-      expect(archiveMock.addFile).toHaveBeenCalledTimes(2);
-      expect(archiveMock.addFile).toHaveBeenNthCalledWith(1, 'upload/library/IMG_123.jpg', 'IMG_123.jpg');
-      expect(archiveMock.addFile).toHaveBeenNthCalledWith(2, 'upload/library/IMG_456.jpg', 'IMG_456.jpg');
-    });
-
-    it('should handle duplicate file names', async () => {
-      const archiveMock = {
-        addFile: jest.fn(),
-        finalize: jest.fn(),
-        stream: new Readable(),
-      };
-
-      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1', 'asset-2']));
-      assetMock.getByIds.mockResolvedValue([assetStub.noResizePath, assetStub.noResizePath]);
-      storageMock.createZipStream.mockReturnValue(archiveMock);
-
-      await expect(sut.downloadArchive(authStub.admin, { assetIds: ['asset-1', 'asset-2'] })).resolves.toEqual({
-        stream: archiveMock.stream,
-      });
-
-      expect(archiveMock.addFile).toHaveBeenCalledTimes(2);
-      expect(archiveMock.addFile).toHaveBeenNthCalledWith(1, 'upload/library/IMG_123.jpg', 'IMG_123.jpg');
-      expect(archiveMock.addFile).toHaveBeenNthCalledWith(2, 'upload/library/IMG_123.jpg', 'IMG_123+1.jpg');
-    });
-  });
-
-  describe('getDownloadInfo', () => {
-    it('should throw an error for an invalid dto', async () => {
-      await expect(sut.getDownloadInfo(authStub.admin, {})).rejects.toBeInstanceOf(BadRequestException);
-    });
-
-    it('should return a list of archives (assetIds)', async () => {
-      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1', 'asset-2']));
-      assetMock.getByIds.mockResolvedValue([assetStub.image, assetStub.video]);
-
-      const assetIds = ['asset-1', 'asset-2'];
-      await expect(sut.getDownloadInfo(authStub.admin, { assetIds })).resolves.toEqual(downloadResponse);
-
-      expect(assetMock.getByIds).toHaveBeenCalledWith(['asset-1', 'asset-2']);
-    });
-
-    it('should return a list of archives (albumId)', async () => {
-      accessMock.album.checkOwnerAccess.mockResolvedValue(new Set(['album-1']));
-      assetMock.getByAlbumId.mockResolvedValue({
-        items: [assetStub.image, assetStub.video],
-        hasNextPage: false,
-      });
-
-      await expect(sut.getDownloadInfo(authStub.admin, { albumId: 'album-1' })).resolves.toEqual(downloadResponse);
-
-      expect(accessMock.album.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['album-1']));
-      expect(assetMock.getByAlbumId).toHaveBeenCalledWith({ take: 2500, skip: 0 }, 'album-1');
-    });
-
-    it('should return a list of archives (userId)', async () => {
-      accessMock.library.checkOwnerAccess.mockResolvedValue(new Set([authStub.admin.user.id]));
-      assetMock.getByUserId.mockResolvedValue({
-        items: [assetStub.image, assetStub.video],
-        hasNextPage: false,
-      });
-
-      await expect(sut.getDownloadInfo(authStub.admin, { userId: authStub.admin.user.id })).resolves.toEqual(
-        downloadResponse,
-      );
-
-      expect(assetMock.getByUserId).toHaveBeenCalledWith({ take: 2500, skip: 0 }, authStub.admin.user.id, {
-        isVisible: true,
-      });
-    });
-
-    it('should split archives by size', async () => {
-      accessMock.library.checkOwnerAccess.mockResolvedValue(new Set([authStub.admin.user.id]));
-
-      assetMock.getByUserId.mockResolvedValue({
-        items: [
-          { ...assetStub.image, id: 'asset-1' },
-          { ...assetStub.video, id: 'asset-2' },
-          { ...assetStub.withLocation, id: 'asset-3' },
-          { ...assetStub.noWebpPath, id: 'asset-4' },
-        ],
-        hasNextPage: false,
-      });
-
-      await expect(
-        sut.getDownloadInfo(authStub.admin, {
-          userId: authStub.admin.user.id,
-          archiveSize: 30_000,
-        }),
-      ).resolves.toEqual({
-        totalSize: 251_456,
-        archives: [
-          { assetIds: ['asset-1', 'asset-2'], size: 105_000 },
-          { assetIds: ['asset-3', 'asset-4'], size: 146_456 },
-        ],
-      });
-    });
-
-    it('should include the video portion of a live photo', async () => {
-      const assetIds = [assetStub.livePhotoStillAsset.id];
-
-      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(assetIds));
-      when(assetMock.getByIds)
-        .calledWith([assetStub.livePhotoStillAsset.id])
-        .mockResolvedValue([assetStub.livePhotoStillAsset]);
-      when(assetMock.getByIds)
-        .calledWith([assetStub.livePhotoMotionAsset.id])
-        .mockResolvedValue([assetStub.livePhotoMotionAsset]);
-
-      await expect(sut.getDownloadInfo(authStub.admin, { assetIds })).resolves.toEqual({
-        totalSize: 125_000,
-        archives: [
-          {
-            assetIds: [assetStub.livePhotoStillAsset.id, assetStub.livePhotoMotionAsset.id],
-            size: 125_000,
-          },
-        ],
-      });
-    });
-  });
-
   describe('getStatistics', () => {
     it('should get the statistics for a user, excluding archived assets', async () => {
       assetMock.getStatistics.mockResolvedValue(stats);
@@ -643,6 +473,59 @@ describe(AssetService.name, () => {
       assetMock.getStatistics.mockResolvedValue(stats);
       await expect(sut.getStatistics(authStub.admin, {})).resolves.toEqual(statResponse);
       expect(assetMock.getStatistics).toHaveBeenCalledWith(authStub.admin.user.id, {});
+    });
+  });
+
+  describe('get', () => {
+    it('should allow owner access', async () => {
+      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set([assetStub.image.id]));
+      assetMock.getById.mockResolvedValue(assetStub.image);
+      await sut.get(authStub.admin, assetStub.image.id);
+      expect(accessMock.asset.checkOwnerAccess).toHaveBeenCalledWith(
+        authStub.admin.user.id,
+        new Set([assetStub.image.id]),
+      );
+    });
+
+    it('should allow shared link access', async () => {
+      accessMock.asset.checkSharedLinkAccess.mockResolvedValue(new Set([assetStub.image.id]));
+      assetMock.getById.mockResolvedValue(assetStub.image);
+      await sut.get(authStub.adminSharedLink, assetStub.image.id);
+      expect(accessMock.asset.checkSharedLinkAccess).toHaveBeenCalledWith(
+        authStub.adminSharedLink.sharedLink?.id,
+        new Set([assetStub.image.id]),
+      );
+    });
+
+    it('should allow partner sharing access', async () => {
+      accessMock.asset.checkPartnerAccess.mockResolvedValue(new Set([assetStub.image.id]));
+      assetMock.getById.mockResolvedValue(assetStub.image);
+      await sut.get(authStub.admin, assetStub.image.id);
+      expect(accessMock.asset.checkPartnerAccess).toHaveBeenCalledWith(
+        authStub.admin.user.id,
+        new Set([assetStub.image.id]),
+      );
+    });
+
+    it('should allow shared album access', async () => {
+      accessMock.asset.checkAlbumAccess.mockResolvedValue(new Set([assetStub.image.id]));
+      assetMock.getById.mockResolvedValue(assetStub.image);
+      await sut.get(authStub.admin, assetStub.image.id);
+      expect(accessMock.asset.checkAlbumAccess).toHaveBeenCalledWith(
+        authStub.admin.user.id,
+        new Set([assetStub.image.id]),
+      );
+    });
+
+    it('should throw an error for no access', async () => {
+      await expect(sut.get(authStub.admin, assetStub.image.id)).rejects.toBeInstanceOf(BadRequestException);
+      expect(assetMock.getById).not.toHaveBeenCalled();
+    });
+
+    it('should throw an error for an invalid shared link', async () => {
+      await expect(sut.get(authStub.adminSharedLink, assetStub.image.id)).rejects.toBeInstanceOf(BadRequestException);
+      expect(accessMock.asset.checkOwnerAccess).not.toHaveBeenCalled();
+      expect(assetMock.getById).not.toHaveBeenCalled();
     });
   });
 
@@ -697,73 +580,130 @@ describe(AssetService.name, () => {
       ).rejects.toBeInstanceOf(BadRequestException);
     });
 
-    it('should update parent asset when children are added', async () => {
+    it('should update parent asset updatedAt when children are added', async () => {
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['parent']));
+      when(assetMock.getById)
+        .calledWith('parent', { stack: { assets: true } })
+        .mockResolvedValue(assetStub.image);
       await sut.updateAll(authStub.user1, {
         ids: [],
         stackParentId: 'parent',
       }),
-        expect(assetMock.updateAll).toHaveBeenCalledWith(['parent'], { stackParentId: null });
+        expect(assetMock.updateAll).toHaveBeenCalledWith(['parent'], { updatedAt: expect.any(Date) });
     });
 
     it('should update parent asset when children are removed', async () => {
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['child-1']));
-      assetMock.getByIds.mockResolvedValue([{ id: 'child-1', stackParentId: 'parent' } as AssetEntity]);
+      assetMock.getByIds.mockResolvedValue([
+        {
+          id: 'child-1',
+          stackId: 'stack-1',
+          stack: assetStackStub('stack-1', [{ id: 'parent' } as AssetEntity, { id: 'child-1' } as AssetEntity]),
+        } as AssetEntity,
+      ]);
+      when(assetStackMock.getById)
+        .calledWith('stack-1')
+        .mockResolvedValue(assetStackStub('stack-1', [{ id: 'parent' } as AssetEntity]));
 
       await sut.updateAll(authStub.user1, {
         ids: ['child-1'],
         removeParent: true,
-      }),
-        expect(assetMock.updateAll).toHaveBeenCalledWith(expect.arrayContaining(['parent']), { stackParentId: null });
+      });
+      expect(assetMock.updateAll).toHaveBeenCalledWith(expect.arrayContaining(['child-1']), { stack: null });
+      expect(assetMock.updateAll).toHaveBeenCalledWith(expect.arrayContaining(['parent']), {
+        updatedAt: expect.any(Date),
+      });
+      expect(assetStackMock.delete).toHaveBeenCalledWith('stack-1');
     });
 
     it('update parentId for new children', async () => {
       accessMock.asset.checkOwnerAccess.mockResolvedValueOnce(new Set(['child-1', 'child-2']));
       accessMock.asset.checkOwnerAccess.mockResolvedValueOnce(new Set(['parent']));
+      const stack = assetStackStub('stack-1', [
+        { id: 'parent' } as AssetEntity,
+        { id: 'child-1' } as AssetEntity,
+        { id: 'child-2' } as AssetEntity,
+      ]);
+      when(assetMock.getById)
+        .calledWith('parent', { stack: { assets: true } })
+        .mockResolvedValue({
+          id: 'child-1',
+          stack,
+        } as AssetEntity);
+
       await sut.updateAll(authStub.user1, {
         stackParentId: 'parent',
         ids: ['child-1', 'child-2'],
       });
 
-      expect(assetMock.updateAll).toBeCalledWith(['child-1', 'child-2'], { stackParentId: 'parent' });
+      expect(assetStackMock.update).toHaveBeenCalledWith({
+        ...assetStackStub('stack-1', [
+          { id: 'child-1' } as AssetEntity,
+          { id: 'child-2' } as AssetEntity,
+          { id: 'parent' } as AssetEntity,
+        ]),
+        primaryAsset: undefined,
+      });
+      expect(assetMock.updateAll).toBeCalledWith(['child-1', 'child-2', 'parent'], { updatedAt: expect.any(Date) });
     });
 
-    it('nullify parentId for remove children', async () => {
+    it('remove stack for removed children', async () => {
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['child-1', 'child-2']));
       await sut.updateAll(authStub.user1, {
         removeParent: true,
         ids: ['child-1', 'child-2'],
       });
 
-      expect(assetMock.updateAll).toBeCalledWith(['child-1', 'child-2'], { stackParentId: null });
+      expect(assetMock.updateAll).toBeCalledWith(['child-1', 'child-2'], { stack: null });
     });
 
     it('merge stacks if new child has children', async () => {
       accessMock.asset.checkOwnerAccess.mockResolvedValueOnce(new Set(['child-1']));
       accessMock.asset.checkOwnerAccess.mockResolvedValueOnce(new Set(['parent']));
+      when(assetMock.getById)
+        .calledWith('parent', { stack: { assets: true } })
+        .mockResolvedValue({ ...assetStub.image, id: 'parent' });
       assetMock.getByIds.mockResolvedValue([
-        { id: 'child-1', stack: [{ id: 'child-2' } as AssetEntity] } as AssetEntity,
+        {
+          id: 'child-1',
+          stackId: 'stack-1',
+          stack: assetStackStub('stack-1', [{ id: 'child-1' } as AssetEntity, { id: 'child-2' } as AssetEntity]),
+        } as AssetEntity,
       ]);
+      when(assetStackMock.getById)
+        .calledWith('stack-1')
+        .mockResolvedValue(assetStackStub('stack-1', [{ id: 'parent' } as AssetEntity]));
 
       await sut.updateAll(authStub.user1, {
         ids: ['child-1'],
         stackParentId: 'parent',
       });
 
-      expect(assetMock.updateAll).toBeCalledWith(['child-1', 'child-2'], { stackParentId: 'parent' });
+      expect(assetStackMock.delete).toHaveBeenCalledWith('stack-1');
+      expect(assetStackMock.create).toHaveBeenCalledWith({
+        assets: [{ id: 'child-1' }, { id: 'parent' }, { id: 'child-1' }, { id: 'child-2' }],
+        primaryAssetId: 'parent',
+      });
+      expect(assetMock.updateAll).toBeCalledWith(['child-1', 'parent', 'child-1', 'child-2'], {
+        updatedAt: expect.any(Date),
+      });
     });
 
     it('should send ws asset update event', async () => {
       accessMock.asset.checkOwnerAccess.mockResolvedValueOnce(new Set(['asset-1']));
       accessMock.asset.checkOwnerAccess.mockResolvedValueOnce(new Set(['parent']));
+      when(assetMock.getById)
+        .calledWith('parent', { stack: { assets: true } })
+        .mockResolvedValue(assetStub.image);
 
       await sut.updateAll(authStub.user1, {
         ids: ['asset-1'],
         stackParentId: 'parent',
       });
 
-      expect(communicationMock.send).toHaveBeenCalledWith(CommunicationEvent.ASSET_UPDATE, authStub.user1.user.id, [
+      expect(communicationMock.send).toHaveBeenCalledWith(ClientEvent.ASSET_STACK_UPDATE, authStub.user1.user.id, [
         'asset-1',
+        'parent',
       ]);
     });
   });
@@ -782,9 +722,9 @@ describe(AssetService.name, () => {
 
       await sut.deleteAll(authStub.user1, { ids: ['asset1', 'asset2'], force: true });
 
-      expect(jobMock.queue.mock.calls).toEqual([
-        [{ name: JobName.ASSET_DELETION, data: { id: 'asset1' } }],
-        [{ name: JobName.ASSET_DELETION, data: { id: 'asset2' } }],
+      expect(jobMock.queueAll).toHaveBeenCalledWith([
+        { name: JobName.ASSET_DELETION, data: { id: 'asset1' } },
+        { name: JobName.ASSET_DELETION, data: { id: 'asset2' } },
       ]);
     });
 
@@ -794,25 +734,6 @@ describe(AssetService.name, () => {
       await sut.deleteAll(authStub.user1, { ids: ['asset1', 'asset2'], force: false });
 
       expect(assetMock.softDeleteAll).toHaveBeenCalledWith(['asset1', 'asset2']);
-      expect(jobMock.queue.mock.calls).toEqual([]);
-    });
-  });
-
-  describe('restoreAll', () => {
-    it('should require asset restore access for all ids', async () => {
-      await expect(
-        sut.deleteAll(authStub.user1, {
-          ids: ['asset-1'],
-        }),
-      ).rejects.toBeInstanceOf(BadRequestException);
-    });
-
-    it('should restore a batch of assets', async () => {
-      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset1', 'asset2']));
-
-      await sut.restoreAll(authStub.user1, { ids: ['asset1', 'asset2'] });
-
-      expect(assetMock.restoreAll).toHaveBeenCalledWith(['asset1', 'asset2']);
       expect(jobMock.queue.mock.calls).toEqual([]);
     });
   });
@@ -832,9 +753,18 @@ describe(AssetService.name, () => {
     });
 
     it('should remove faces', async () => {
-      const assetWithFace = { ...(assetStub.image as AssetEntity), faces: [faceStub.face1, faceStub.mergeFace1] };
+      const assetWithFace = { ...assetStub.image, faces: [faceStub.face1, faceStub.mergeFace1] };
 
-      when(assetMock.getById).calledWith(assetWithFace.id).mockResolvedValue(assetWithFace);
+      when(assetMock.getById)
+        .calledWith(assetWithFace.id, {
+          faces: {
+            person: true,
+          },
+          library: true,
+          stack: { assets: true },
+          exifInfo: true,
+        })
+        .mockResolvedValue(assetWithFace);
 
       await sut.handleAssetDeletion({ id: assetWithFace.id });
 
@@ -858,25 +788,37 @@ describe(AssetService.name, () => {
       expect(assetMock.remove).toHaveBeenCalledWith(assetWithFace);
     });
 
-    it('should update stack parent if asset has stack children', async () => {
+    it('should update stack primary asset if deleted asset was primary asset in a stack', async () => {
       when(assetMock.getById)
-        .calledWith(assetStub.primaryImage.id)
+        .calledWith(assetStub.primaryImage.id, {
+          faces: {
+            person: true,
+          },
+          library: true,
+          stack: { assets: true },
+          exifInfo: true,
+        })
         .mockResolvedValue(assetStub.primaryImage as AssetEntity);
 
       await sut.handleAssetDeletion({ id: assetStub.primaryImage.id });
 
-      expect(assetMock.updateAll).toHaveBeenCalledWith(['stack-child-asset-2'], {
-        stackParentId: 'stack-child-asset-1',
-      });
-      expect(assetMock.updateAll).toHaveBeenCalledWith(['stack-child-asset-1'], {
-        stackParentId: null,
+      expect(assetStackMock.update).toHaveBeenCalledWith({
+        id: 'stack-1',
+        primaryAssetId: 'stack-child-asset-1',
       });
     });
 
     it('should not schedule delete-files job for readonly assets', async () => {
       when(assetMock.getById)
-        .calledWith(assetStub.readOnly.id)
-        .mockResolvedValue(assetStub.readOnly as AssetEntity);
+        .calledWith(assetStub.readOnly.id, {
+          faces: {
+            person: true,
+          },
+          library: true,
+          stack: { assets: true },
+          exifInfo: true,
+        })
+        .mockResolvedValue(assetStub.readOnly);
 
       await sut.handleAssetDeletion({ id: assetStub.readOnly.id });
 
@@ -886,20 +828,26 @@ describe(AssetService.name, () => {
     });
 
     it('should not process assets from external library without fromExternal flag', async () => {
-      when(assetMock.getById)
-        .calledWith(assetStub.external.id)
-        .mockResolvedValue(assetStub.external as AssetEntity);
+      when(assetMock.getById).calledWith(assetStub.external.id).mockResolvedValue(assetStub.external);
 
       await sut.handleAssetDeletion({ id: assetStub.external.id });
 
-      expect(jobMock.queue).not.toBeCalled();
-      expect(assetMock.remove).not.toBeCalled();
+      expect(jobMock.queue).not.toHaveBeenCalled();
+      expect(jobMock.queueAll).not.toHaveBeenCalled();
+      expect(assetMock.remove).not.toHaveBeenCalled();
     });
 
     it('should process assets from external library with fromExternal flag', async () => {
       when(assetMock.getById)
-        .calledWith(assetStub.external.id)
-        .mockResolvedValue(assetStub.external as AssetEntity);
+        .calledWith(assetStub.external.id, {
+          faces: {
+            person: true,
+          },
+          library: true,
+          stack: { assets: true },
+          exifInfo: true,
+        })
+        .mockResolvedValue(assetStub.external);
 
       await sut.handleAssetDeletion({ id: assetStub.external.id, fromExternal: true });
 
@@ -922,6 +870,27 @@ describe(AssetService.name, () => {
     });
 
     it('should delete a live photo', async () => {
+      when(assetMock.getById)
+        .calledWith(assetStub.livePhotoStillAsset.id, {
+          faces: {
+            person: true,
+          },
+          library: true,
+          stack: { assets: true },
+          exifInfo: true,
+        })
+        .mockResolvedValue(assetStub.livePhotoStillAsset);
+      when(assetMock.getById)
+        .calledWith(assetStub.livePhotoMotionAsset.id, {
+          faces: {
+            person: true,
+          },
+          library: true,
+          stack: { assets: true },
+          exifInfo: true,
+        })
+        .mockResolvedValue(assetStub.livePhotoMotionAsset);
+
       await sut.handleAssetDeletion({ id: assetStub.livePhotoStillAsset.id });
 
       expect(jobMock.queue.mock.calls).toEqual([
@@ -944,25 +913,43 @@ describe(AssetService.name, () => {
         ],
       ]);
     });
+
+    it('should update usage', async () => {
+      when(assetMock.getById)
+        .calledWith(assetStub.image.id, {
+          faces: {
+            person: true,
+          },
+          library: true,
+          stack: { assets: true },
+          exifInfo: true,
+        })
+        .mockResolvedValue(assetStub.image);
+      await sut.handleAssetDeletion({ id: assetStub.image.id });
+
+      expect(userMock.updateUsage).toHaveBeenCalledWith(assetStub.image.ownerId, -5000);
+    });
   });
 
   describe('run', () => {
     it('should run the refresh metadata job', async () => {
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
       await sut.run(authStub.admin, { assetIds: ['asset-1'], name: AssetJobName.REFRESH_METADATA }),
-        expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.METADATA_EXTRACTION, data: { id: 'asset-1' } });
+        expect(jobMock.queueAll).toHaveBeenCalledWith([{ name: JobName.METADATA_EXTRACTION, data: { id: 'asset-1' } }]);
     });
 
     it('should run the refresh thumbnails job', async () => {
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
       await sut.run(authStub.admin, { assetIds: ['asset-1'], name: AssetJobName.REGENERATE_THUMBNAIL }),
-        expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: 'asset-1' } });
+        expect(jobMock.queueAll).toHaveBeenCalledWith([
+          { name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: 'asset-1' } },
+        ]);
     });
 
     it('should run the transcode video', async () => {
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
       await sut.run(authStub.admin, { assetIds: ['asset-1'], name: AssetJobName.TRANSCODE_VIDEO }),
-        expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.VIDEO_CONVERSION, data: { id: 'asset-1' } });
+        expect(jobMock.queueAll).toHaveBeenCalledWith([{ name: JobName.VIDEO_CONVERSION, data: { id: 'asset-1' } }]);
     });
   });
 
@@ -992,54 +979,33 @@ describe(AssetService.name, () => {
       accessMock.asset.checkOwnerAccess.mockResolvedValueOnce(new Set(['new']));
 
       when(assetMock.getById)
-        .calledWith(assetStub.image.id)
-        .mockResolvedValue(assetStub.image as AssetEntity);
+        .calledWith(assetStub.image.id, {
+          faces: {
+            person: true,
+          },
+          library: true,
+          stack: {
+            assets: true,
+          },
+        })
+        .mockResolvedValue({ ...assetStub.image, stackId: 'stack-1' });
 
       await sut.updateStackParent(authStub.user1, {
         oldParentId: assetStub.image.id,
         newParentId: 'new',
       });
 
-      expect(assetMock.updateAll).toBeCalledWith([assetStub.image.id], { stackParentId: 'new' });
-    });
-
-    it('remove stackParentId of new parent', async () => {
-      accessMock.asset.checkOwnerAccess.mockResolvedValueOnce(new Set([assetStub.primaryImage.id]));
-      accessMock.asset.checkOwnerAccess.mockResolvedValueOnce(new Set(['new']));
-
-      await sut.updateStackParent(authStub.user1, {
-        oldParentId: assetStub.primaryImage.id,
-        newParentId: 'new',
+      expect(assetStackMock.update).toBeCalledWith({ id: 'stack-1', primaryAssetId: 'new' });
+      expect(assetMock.updateAll).toBeCalledWith([assetStub.image.id, 'new', assetStub.image.id], {
+        updatedAt: expect.any(Date),
       });
-
-      expect(assetMock.updateAll).toBeCalledWith(['new'], { stackParentId: null });
-    });
-
-    it('update stackParentId of old parents children to new parent', async () => {
-      accessMock.asset.checkOwnerAccess.mockResolvedValueOnce(new Set([assetStub.primaryImage.id]));
-      accessMock.asset.checkOwnerAccess.mockResolvedValueOnce(new Set(['new']));
-      when(assetMock.getById)
-        .calledWith(assetStub.primaryImage.id)
-        .mockResolvedValue(assetStub.primaryImage as AssetEntity);
-
-      await sut.updateStackParent(authStub.user1, {
-        oldParentId: assetStub.primaryImage.id,
-        newParentId: 'new',
-      });
-
-      expect(assetMock.updateAll).toBeCalledWith(
-        [assetStub.primaryImage.id, 'stack-child-asset-1', 'stack-child-asset-2'],
-        { stackParentId: 'new' },
-      );
     });
   });
 
   it('get assets by device id', async () => {
     const assets = [assetStub.image, assetStub.image1];
 
-    assetMock.getAllByDeviceId.mockImplementation(() =>
-      Promise.resolve<string[]>(Array.from(assets.map((asset) => asset.deviceAssetId))),
-    );
+    assetMock.getAllByDeviceId.mockResolvedValue(assets.map((asset) => asset.deviceAssetId));
 
     const deviceId = 'device-id';
     const result = await sut.getUserAssetsByDeviceId(authStub.user1, deviceId);

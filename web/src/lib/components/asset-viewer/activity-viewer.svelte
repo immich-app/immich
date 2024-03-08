@@ -1,23 +1,36 @@
 <script lang="ts">
-  import { createEventDispatcher, onMount } from 'svelte';
-  import UserAvatar from '../shared-components/user-avatar.svelte';
-  import { mdiClose, mdiHeart, mdiSend, mdiDotsVertical } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { ActivityResponseDto, api, AssetTypeEnum, ReactionType, ThumbnailFormat, type UserResponseDto } from '@api';
+  import { timeBeforeShowLoadingSpinner } from '$lib/constants';
+  import { getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
+  import { getAssetType } from '$lib/utils/asset-utils';
+  import { autoGrowHeight } from '$lib/utils/autogrow';
+  import { clickOutside } from '$lib/utils/click-outside';
   import { handleError } from '$lib/utils/handle-error';
   import { isTenMinutesApart } from '$lib/utils/timesince';
-  import { clickOutside } from '$lib/utils/click-outside';
+  import {
+    ReactionType,
+    ThumbnailFormat,
+    createActivity,
+    deleteActivity,
+    getActivities,
+    type ActivityResponseDto,
+    type AssetTypeEnum,
+    type UserResponseDto,
+  } from '@immich/sdk';
+  import { mdiClose, mdiDotsVertical, mdiHeart, mdiSend } from '@mdi/js';
+  import * as luxon from 'luxon';
+  import { createEventDispatcher, onMount } from 'svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
-  import { getAssetType } from '$lib/utils/asset-utils';
-  import * as luxon from 'luxon';
+  import UserAvatar from '../shared-components/user-avatar.svelte';
+  import { locale } from '$lib/stores/preferences.store';
 
   const units: Intl.RelativeTimeFormatUnit[] = ['year', 'month', 'week', 'day', 'hour', 'minute', 'second'];
 
   const shouldGroup = (currentDate: string, nextDate: string): boolean => {
-    const currentDateTime = luxon.DateTime.fromISO(currentDate);
-    const nextDateTime = luxon.DateTime.fromISO(nextDate);
+    const currentDateTime = luxon.DateTime.fromISO(currentDate, { locale: $locale });
+    const nextDateTime = luxon.DateTime.fromISO(nextDate, { locale: $locale });
 
     return currentDateTime.hasSame(nextDateTime, 'hour') || currentDateTime.toRelative() === nextDateTime.toRelative();
   };
@@ -50,9 +63,14 @@
   let message = '';
   let isSendingMessage = false;
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    deleteComment: void;
+    deleteLike: void;
+    addComment: void;
+    close: void;
+  }>();
 
-  $: showDeleteReaction = Array(reactions.length).fill(false);
+  $: showDeleteReaction = Array.from({ length: reactions.length }).fill(false);
   $: {
     if (innerHeight && activityHeight) {
       divHeight = innerHeight - activityHeight;
@@ -61,7 +79,7 @@
 
   $: {
     if (assetId && previousAssetId != assetId) {
-      getReactions();
+      handlePromiseError(getReactions());
       previousAssetId = assetId;
     }
   }
@@ -71,24 +89,18 @@
 
   const getReactions = async () => {
     try {
-      const { data } = await api.activityApi.getActivities({ assetId, albumId });
-      reactions = data;
+      reactions = await getActivities({ assetId, albumId });
     } catch (error) {
       handleError(error, 'Error when fetching reactions');
     }
   };
 
-  const handleEnter = (event: KeyboardEvent) => {
+  const handleEnter = async (event: KeyboardEvent) => {
     if (event.key === 'Enter') {
       event.preventDefault();
-      handleSendComment();
+      await handleSendComment();
       return;
     }
-  };
-
-  const autoGrow = () => {
-    textArea.style.height = '5px';
-    textArea.style.height = textArea.scrollHeight + 'px';
   };
 
   const timeOptions = {
@@ -102,7 +114,7 @@
 
   const handleDeleteReaction = async (reaction: ActivityResponseDto, index: number) => {
     try {
-      await api.activityApi.deleteActivity({ id: reaction.id });
+      await deleteActivity({ id: reaction.id });
       reactions.splice(index, 1);
       showDeleteReaction.splice(index, 1);
       reactions = reactions;
@@ -124,9 +136,9 @@
     if (!message) {
       return;
     }
-    const timeout = setTimeout(() => (isSendingMessage = true), 100);
+    const timeout = setTimeout(() => (isSendingMessage = true), timeBeforeShowLoadingSpinner);
     try {
-      const { data } = await api.activityApi.createActivity({
+      const data = await createActivity({
         activityCreateDto: { albumId, assetId, type: ReactionType.Comment, comment: message },
       });
       reactions.push(data);
@@ -167,12 +179,12 @@
     </div>
     {#if innerHeight}
       <div
-        class="overflow-y-auto immich-scrollbar relative w-full"
+        class="overflow-y-auto immich-scrollbar relative w-full px-2"
         style="height: {divHeight}px;padding-bottom: {chatHeight}px"
       >
         {#each reactions as reaction, index (reaction.id)}
           {#if reaction.type === 'comment'}
-            <div class="flex dark:bg-gray-800 bg-gray-200 p-3 mx-2 mt-3 rounded-lg gap-4 justify-start">
+            <div class="flex dark:bg-gray-800 bg-gray-200 py-3 pl-3 mt-3 rounded-lg gap-4 justify-start">
               <div class="flex items-center">
                 <UserAvatar user={reaction.user} size="sm" />
               </div>
@@ -182,14 +194,14 @@
                 <div class="aspect-square w-[75px] h-[75px]">
                   <img
                     class="rounded-lg w-[75px] h-[75px] object-cover"
-                    src={api.getAssetThumbnailUrl(reaction.assetId, ThumbnailFormat.Webp)}
-                    alt="comment-thumbnail"
+                    src={getAssetThumbnailUrl(reaction.assetId, ThumbnailFormat.Webp)}
+                    alt="Profile picture of {reaction.user.name}, who commented on this asset"
                   />
                 </div>
               {/if}
               {#if reaction.user.id === user.id || albumOwnerId === user.id}
                 <div class="flex items-start w-fit pt-[5px]" title="Delete comment">
-                  <button on:click={() => (!showDeleteReaction[index] ? showOptionsMenu(index) : '')}>
+                  <button on:click={() => (showDeleteReaction[index] ? '' : showOptionsMenu(index))}>
                     <Icon path={mdiDotsVertical} />
                   </button>
                 </div>
@@ -210,15 +222,15 @@
 
             {#if (index != reactions.length - 1 && !shouldGroup(reactions[index].createdAt, reactions[index + 1].createdAt)) || index === reactions.length - 1}
               <div
-                class=" px-2 text-right w-full text-sm text-gray-500 dark:text-gray-300"
+                class="pt-1 px-2 text-right w-full text-sm text-gray-500 dark:text-gray-300"
                 title={new Date(reaction.createdAt).toLocaleDateString(undefined, timeOptions)}
               >
-                {timeSince(luxon.DateTime.fromISO(reaction.createdAt))}
+                {timeSince(luxon.DateTime.fromISO(reaction.createdAt, { locale: $locale }))}
               </div>
             {/if}
           {:else if reaction.type === 'like'}
             <div class="relative">
-              <div class="flex p-3 mx-2 mt-3 rounded-full gap-4 items-center text-sm">
+              <div class="flex py-3 pl-3 mt-3 gap-4 items-center text-sm">
                 <div class="text-red-600"><Icon path={mdiHeart} size={20} /></div>
 
                 <div class="w-full" title={`${reaction.user.name} (${reaction.user.email})`}>
@@ -228,14 +240,14 @@
                   <div class="aspect-square w-[75px] h-[75px]">
                     <img
                       class="rounded-lg w-[75px] h-[75px] object-cover"
-                      src={api.getAssetThumbnailUrl(reaction.assetId, ThumbnailFormat.Webp)}
-                      alt="like-thumbnail"
+                      src={getAssetThumbnailUrl(reaction.assetId, ThumbnailFormat.Webp)}
+                      alt="Profile picture of {reaction.user.name}, who liked this asset"
                     />
                   </div>
                 {/if}
                 {#if reaction.user.id === user.id || albumOwnerId === user.id}
                   <div class="flex items-start w-fit" title="Delete like">
-                    <button on:click={() => (!showDeleteReaction[index] ? showOptionsMenu(index) : '')}>
+                    <button on:click={() => (showDeleteReaction[index] ? '' : showOptionsMenu(index))}>
                       <Icon path={mdiDotsVertical} />
                     </button>
                   </div>
@@ -255,10 +267,10 @@
               </div>
               {#if (index != reactions.length - 1 && isTenMinutesApart(reactions[index].createdAt, reactions[index + 1].createdAt)) || index === reactions.length - 1}
                 <div
-                  class=" px-2 text-right w-full text-sm text-gray-500 dark:text-gray-300"
+                  class="pt-1 px-2 text-right w-full text-sm text-gray-500 dark:text-gray-300"
                   title={new Date(reaction.createdAt).toLocaleDateString(navigator.language, timeOptions)}
                 >
-                  {timeSince(luxon.DateTime.fromISO(reaction.createdAt))}
+                  {timeSince(luxon.DateTime.fromISO(reaction.createdAt, { locale: $locale }))}
                 </div>
               {/if}
             </div>
@@ -269,7 +281,7 @@
   </div>
 
   <div class="absolute w-full bottom-0">
-    <div class="flex items-center justify-center p-2 mr-2" bind:clientHeight={chatHeight}>
+    <div class="flex items-center justify-center p-2" bind:clientHeight={chatHeight}>
       <div class="flex p-2 gap-4 h-fit bg-gray-200 text-immich-dark-gray rounded-3xl w-full">
         <div>
           <UserAvatar {user} size="md" showTitle={false} />
@@ -280,8 +292,9 @@
               {disabled}
               bind:this={textArea}
               bind:value={message}
+              use:autoGrowHeight={'5px'}
               placeholder={disabled ? 'Comments are disabled' : 'Say something'}
-              on:input={autoGrow}
+              on:input={() => autoGrowHeight(textArea, '5px')}
               on:keypress={handleEnter}
               class="h-[18px] {disabled
                 ? 'cursor-not-allowed'

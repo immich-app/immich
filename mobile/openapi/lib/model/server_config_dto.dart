@@ -13,13 +13,20 @@ part of openapi.api;
 class ServerConfigDto {
   /// Returns a new [ServerConfigDto] instance.
   ServerConfigDto({
+    required this.externalDomain,
     required this.isInitialized,
+    required this.isOnboarded,
     required this.loginPageMessage,
     required this.oauthButtonText,
     required this.trashDays,
+    required this.userDeleteDelay,
   });
 
+  String externalDomain;
+
   bool isInitialized;
+
+  bool isOnboarded;
 
   String loginPageMessage;
 
@@ -27,30 +34,41 @@ class ServerConfigDto {
 
   int trashDays;
 
+  int userDeleteDelay;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is ServerConfigDto &&
-     other.isInitialized == isInitialized &&
-     other.loginPageMessage == loginPageMessage &&
-     other.oauthButtonText == oauthButtonText &&
-     other.trashDays == trashDays;
+    other.externalDomain == externalDomain &&
+    other.isInitialized == isInitialized &&
+    other.isOnboarded == isOnboarded &&
+    other.loginPageMessage == loginPageMessage &&
+    other.oauthButtonText == oauthButtonText &&
+    other.trashDays == trashDays &&
+    other.userDeleteDelay == userDeleteDelay;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (externalDomain.hashCode) +
     (isInitialized.hashCode) +
+    (isOnboarded.hashCode) +
     (loginPageMessage.hashCode) +
     (oauthButtonText.hashCode) +
-    (trashDays.hashCode);
+    (trashDays.hashCode) +
+    (userDeleteDelay.hashCode);
 
   @override
-  String toString() => 'ServerConfigDto[isInitialized=$isInitialized, loginPageMessage=$loginPageMessage, oauthButtonText=$oauthButtonText, trashDays=$trashDays]';
+  String toString() => 'ServerConfigDto[externalDomain=$externalDomain, isInitialized=$isInitialized, isOnboarded=$isOnboarded, loginPageMessage=$loginPageMessage, oauthButtonText=$oauthButtonText, trashDays=$trashDays, userDeleteDelay=$userDeleteDelay]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+      json[r'externalDomain'] = this.externalDomain;
       json[r'isInitialized'] = this.isInitialized;
+      json[r'isOnboarded'] = this.isOnboarded;
       json[r'loginPageMessage'] = this.loginPageMessage;
       json[r'oauthButtonText'] = this.oauthButtonText;
       json[r'trashDays'] = this.trashDays;
+      json[r'userDeleteDelay'] = this.userDeleteDelay;
     return json;
   }
 
@@ -62,10 +80,13 @@ class ServerConfigDto {
       final json = value.cast<String, dynamic>();
 
       return ServerConfigDto(
+        externalDomain: mapValueOfType<String>(json, r'externalDomain')!,
         isInitialized: mapValueOfType<bool>(json, r'isInitialized')!,
+        isOnboarded: mapValueOfType<bool>(json, r'isOnboarded')!,
         loginPageMessage: mapValueOfType<String>(json, r'loginPageMessage')!,
         oauthButtonText: mapValueOfType<String>(json, r'oauthButtonText')!,
         trashDays: mapValueOfType<int>(json, r'trashDays')!,
+        userDeleteDelay: mapValueOfType<int>(json, r'userDeleteDelay')!,
       );
     }
     return null;
@@ -113,10 +134,13 @@ class ServerConfigDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'externalDomain',
     'isInitialized',
+    'isOnboarded',
     'loginPageMessage',
     'oauthButtonText',
     'trashDays',
+    'userDeleteDelay',
   };
 }
 

@@ -1,8 +1,8 @@
 import { UserAvatarColor } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsEmail, IsEnum, IsNotEmpty, IsString, IsUUID } from 'class-validator';
-import { Optional, toEmail, toSanitized } from '../../domain.util';
+import { IsEmail, IsEnum, IsNotEmpty, IsNumber, IsPositive, IsString, IsUUID } from 'class-validator';
+import { Optional, ValidateBoolean, toEmail, toSanitized } from '../../domain.util';
 
 export class UpdateUserDto {
   @Optional()
@@ -25,29 +25,28 @@ export class UpdateUserDto {
   @Transform(toSanitized)
   storageLabel?: string;
 
-  @Optional()
-  @IsString()
-  externalPath?: string;
-
   @IsNotEmpty()
   @IsUUID('4')
   @ApiProperty({ format: 'uuid' })
   id!: string;
 
-  @Optional()
-  @IsBoolean()
+  @ValidateBoolean({ optional: true })
   isAdmin?: boolean;
 
-  @Optional()
-  @IsBoolean()
+  @ValidateBoolean({ optional: true })
   shouldChangePassword?: boolean;
 
-  @Optional()
-  @IsBoolean()
+  @ValidateBoolean({ optional: true })
   memoriesEnabled?: boolean;
 
   @Optional()
   @IsEnum(UserAvatarColor)
   @ApiProperty({ enumName: 'UserAvatarColor', enum: UserAvatarColor })
   avatarColor?: UserAvatarColor;
+
+  @Optional({ nullable: true })
+  @IsNumber()
+  @IsPositive()
+  @ApiProperty({ type: 'integer', format: 'int64' })
+  quotaSizeInBytes?: number | null;
 }

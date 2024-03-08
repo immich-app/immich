@@ -1,47 +1,29 @@
 import 'dart:ui';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/modules/asset_viewer/views/video_viewer_page.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:immich_mobile/shared/models/store.dart';
+import 'package:immich_mobile/shared/ui/hooks/blurhash_hook.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
-import 'package:immich_mobile/utils/image_url_builder.dart';
-import 'package:openapi/api.dart';
 
-class MemoryCard extends HookConsumerWidget {
+class MemoryCard extends StatelessWidget {
   final Asset asset;
-  final void Function() onTap;
-  final void Function() onClose;
   final String title;
-  final String? rightCornerText;
   final bool showTitle;
+  final Function()? onVideoEnded;
 
   const MemoryCard({
     required this.asset,
-    required this.onTap,
-    required this.onClose,
     required this.title,
     required this.showTitle,
-    this.rightCornerText,
+    this.onVideoEnded,
     super.key,
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final authToken = 'Bearer ${Store.get(StoreKey.accessToken)}';
-
-    buildTitle() {
-      return Text(
-        title,
-        style: context.textTheme.headlineMedium?.copyWith(
-          color: Colors.white,
-          fontWeight: FontWeight.w500,
-        ),
-      );
-    }
-
+  Widget build(BuildContext context) {
     return Card(
       color: Colors.black,
       shape: RoundedRectangleBorder(
@@ -54,65 +36,116 @@ class MemoryCard extends HookConsumerWidget {
       clipBehavior: Clip.hardEdge,
       child: Stack(
         children: [
-          ImageFiltered(
-            imageFilter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-            child: Container(
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: CachedNetworkImageProvider(
-                    getThumbnailUrl(
-                      asset,
-                    ),
-                    cacheKey: getThumbnailCacheKey(
-                      asset,
-                    ),
-                    headers: {"Authorization": authToken},
+          SizedBox.expand(
+            child: _BlurredBackdrop(asset: asset),
+          ),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              // Determine the fit using the aspect ratio
+              BoxFit fit = BoxFit.contain;
+              if (asset.width != null && asset.height != null) {
+                final aspectRatio = asset.width! / asset.height!;
+                final phoneAspectRatio =
+                    constraints.maxWidth / constraints.maxHeight;
+                // Look for a 25% difference in either direction
+                if (phoneAspectRatio * .75 < aspectRatio &&
+                    phoneAspectRatio * 1.25 > aspectRatio) {
+                  // Cover to look nice if we have nearly the same aspect ratio
+                  fit = BoxFit.cover;
+                }
+              }
+
+              if (asset.isImage) {
+                return Hero(
+                  tag: 'memory-${asset.id}',
+                  child: ImmichImage(
+                    asset,
+                    fit: fit,
+                    height: double.infinity,
+                    width: double.infinity,
                   ),
-                  fit: BoxFit.cover,
-                ),
-              ),
-              child: Container(color: Colors.black.withOpacity(0.2)),
-            ),
-          ),
-          GestureDetector(
-            onTap: onTap,
-            child: ImmichImage(
-              asset,
-              fit: BoxFit.fitWidth,
-              height: double.infinity,
-              width: double.infinity,
-              type: ThumbnailFormat.JPEG,
-            ),
-          ),
-          Positioned(
-            top: 2.0,
-            left: 2.0,
-            child: IconButton(
-              onPressed: onClose,
-              icon: const Icon(Icons.close_rounded),
-              color: Colors.grey[400],
-            ),
-          ),
-          Positioned(
-            right: 18.0,
-            top: 18.0,
-            child: Text(
-              rightCornerText ?? "",
-              style: TextStyle(
-                color: Colors.grey[200],
-                fontSize: 12.0,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+                );
+              } else {
+                return Hero(
+                  tag: 'memory-${asset.id}',
+                  child: VideoViewerPage(
+                    key: ValueKey(asset),
+                    asset: asset,
+                    showDownloadingIndicator: false,
+                    placeholder: SizedBox.expand(
+                      child: ImmichImage(
+                        asset,
+                        fit: fit,
+                      ),
+                    ),
+                    hideControlsTimer: const Duration(seconds: 2),
+                    showControls: false,
+                  ),
+                );
+              }
+            },
           ),
           if (showTitle)
             Positioned(
               left: 18.0,
               bottom: 18.0,
-              child: buildTitle(),
+              child: Text(
+                title,
+                style: context.textTheme.headlineMedium?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ),
         ],
       ),
     );
+  }
+}
+
+class _BlurredBackdrop extends HookWidget {
+  final Asset asset;
+
+  const _BlurredBackdrop({required this.asset});
+
+  @override
+  Widget build(BuildContext context) {
+    final blurhash = useBlurHashRef(asset).value;
+    if (blurhash != null) {
+      // Use a nice cheap blur hash image decoration
+      return Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: MemoryImage(
+              blurhash,
+            ),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: Container(
+          color: Colors.black.withOpacity(0.2),
+        ),
+      );
+    } else {
+      // Fall back to using a more expensive image filtered
+      // Since the ImmichImage is already precached, we can
+      // safely use that as the image provider
+      return ImageFiltered(
+        imageFilter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+        child: Container(
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: ImmichImage.imageProvider(
+                asset: asset,
+              ),
+              fit: BoxFit.cover,
+            ),
+          ),
+          child: Container(
+            color: Colors.black.withOpacity(0.2),
+          ),
+        ),
+      );
+    }
   }
 }

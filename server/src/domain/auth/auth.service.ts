@@ -1,17 +1,19 @@
 import { SystemConfig, UserEntity } from '@app/infra/entities';
+import { ImmichLogger } from '@app/infra/logger';
 import {
   BadRequestException,
   Inject,
   Injectable,
   InternalServerErrorException,
-  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
+import { isNumber, isString } from 'class-validator';
 import cookieParser from 'cookie';
-import { IncomingHttpHeaders } from 'http';
 import { DateTime } from 'luxon';
+import { IncomingHttpHeaders } from 'node:http';
 import { ClientMetadata, Issuer, UserinfoResponse, custom, generators } from 'openid-client';
 import { AccessCore, Permission } from '../access';
+import { HumanReadableSize } from '../domain.util';
 import {
   IAccessRepository,
   ICryptoRepository,
@@ -29,6 +31,7 @@ import {
   IMMICH_ACCESS_COOKIE,
   IMMICH_API_KEY_HEADER,
   IMMICH_AUTH_TYPE_COOKIE,
+  IMMICH_IS_AUTHENTICATED,
   LOGIN_URL,
   MOBILE_REDIRECT,
 } from './auth.constant';
@@ -42,7 +45,6 @@ import {
   OAuthAuthorizeResponseDto,
   OAuthCallbackDto,
   OAuthConfigDto,
-  OAuthConfigResponseDto,
   SignUpDto,
   mapLoginResponse,
   mapUserToken,
@@ -64,11 +66,17 @@ interface OAuthProfile extends UserinfoResponse {
   email: string;
 }
 
+interface ClaimOptions<T> {
+  key: string;
+  default: T;
+  isValid: (value: unknown) => boolean;
+}
+
 @Injectable()
 export class AuthService {
   private access: AccessCore;
   private configCore: SystemConfigCore;
-  private logger = new Logger(AuthService.name);
+  private logger = new ImmichLogger(AuthService.name);
   private userCore: UserCore;
 
   constructor(
@@ -85,7 +93,7 @@ export class AuthService {
     this.configCore = SystemConfigCore.create(configRepository);
     this.userCore = UserCore.create(cryptoRepository, libraryRepository, userRepository);
 
-    custom.setHttpOptionsDefaults({ timeout: 30000 });
+    custom.setHttpOptionsDefaults({ timeout: 30_000 });
   }
 
   async login(dto: LoginCredentialDto, details: LoginDetails): Promise<LoginResponse> {
@@ -201,27 +209,6 @@ export class AuthService {
     return `${MOBILE_REDIRECT}?${url.split('?')[1] || ''}`;
   }
 
-  async generateConfig(dto: OAuthConfigDto): Promise<OAuthConfigResponseDto> {
-    const config = await this.configCore.getConfig();
-    const response = {
-      enabled: config.oauth.enabled,
-      passwordLoginEnabled: config.passwordLogin.enabled,
-    };
-
-    if (!response.enabled) {
-      return response;
-    }
-
-    const { scope, buttonText, autoLaunch } = config.oauth;
-    const url = (await this.getOAuthClient(config)).authorizationUrl({
-      redirect_uri: this.normalize(config, dto.redirectUri),
-      scope,
-      state: generators.state(),
-    });
-
-    return { ...response, buttonText, url, autoLaunch };
-  }
-
   async authorize(dto: OAuthConfigDto): Promise<OAuthAuthorizeResponseDto> {
     const config = await this.configCore.getConfig();
     if (!config.oauth.enabled) {
@@ -255,9 +242,11 @@ export class AuthService {
       }
     }
 
+    const { autoRegister, defaultStorageQuota, storageLabelClaim, storageQuotaClaim } = config.oauth;
+
     // register new user
     if (!user) {
-      if (!config.oauth.autoRegister) {
+      if (!autoRegister) {
         this.logger.warn(
           `Unable to register ${profile.email}. To enable set OAuth Auto Register to true in admin settings.`,
         );
@@ -267,17 +256,24 @@ export class AuthService {
       this.logger.log(`Registering new user: ${profile.email}/${profile.sub}`);
       this.logger.verbose(`OAuth Profile: ${JSON.stringify(profile)}`);
 
-      let storageLabel: string | null = profile[config.oauth.storageLabelClaim as keyof OAuthProfile] as string;
-      if (typeof storageLabel !== 'string') {
-        storageLabel = null;
-      }
+      const storageLabel = this.getClaim(profile, {
+        key: storageLabelClaim,
+        default: '',
+        isValid: isString,
+      });
+      const storageQuota = this.getClaim(profile, {
+        key: storageQuotaClaim,
+        default: defaultStorageQuota,
+        isValid: (value: unknown) => isNumber(value) && value >= 0,
+      });
 
       const userName = profile.name ?? `${profile.given_name || ''} ${profile.family_name || ''}`;
       user = await this.userCore.createUser({
         name: userName,
         email: profile.email,
         oauthId: profile.sub,
-        storageLabel,
+        quotaSizeInBytes: storageQuota * HumanReadableSize.GiB || null,
+        storageLabel: storageLabel || null,
       });
     }
 
@@ -317,12 +313,25 @@ export class AuthService {
     const redirectUri = this.normalize(config, url.split('?')[0]);
     const client = await this.getOAuthClient(config);
     const params = client.callbackParams(url);
-    const tokens = await client.callback(redirectUri, params, { state: params.state });
-    return client.userinfo<OAuthProfile>(tokens.access_token || '');
+    try {
+      const tokens = await client.callback(redirectUri, params, { state: params.state });
+      return client.userinfo<OAuthProfile>(tokens.access_token || '');
+    } catch (error: Error | any) {
+      if (error.message.includes('unexpected JWT alg received')) {
+        this.logger.warn(
+          [
+            'Algorithm mismatch. Make sure the signing algorithm is set correctly in the OAuth settings.',
+            'Or, that you have specified a signing key in your OAuth provider.',
+          ].join(' '),
+        );
+      }
+
+      throw error;
+    }
   }
 
   private async getOAuthClient(config: SystemConfig) {
-    const { enabled, clientId, clientSecret, issuerUrl } = config.oauth;
+    const { enabled, clientId, clientSecret, issuerUrl, signingAlgorithm } = config.oauth;
 
     if (!enabled) {
       throw new BadRequestException('OAuth2 is not enabled');
@@ -336,10 +345,7 @@ export class AuthService {
 
     try {
       const issuer = await Issuer.discover(issuerUrl);
-      const algorithms = (issuer.id_token_signing_alg_values_supported || []) as string[];
-      if (algorithms[0] === 'HS256') {
-        metadata.id_token_signed_response_alg = algorithms[0];
-      }
+      metadata.id_token_signed_response_alg = signingAlgorithm;
 
       return new issuer.Client(metadata);
     } catch (error: any | AggregateError) {
@@ -371,17 +377,15 @@ export class AuthService {
     return cookies[IMMICH_ACCESS_COOKIE] || null;
   }
 
-  private async validateSharedLink(key: string | string[]): Promise<AuthDto> {
+  async validateSharedLink(key: string | string[]): Promise<AuthDto> {
     key = Array.isArray(key) ? key[0] : key;
 
     const bytes = Buffer.from(key, key.length === 100 ? 'hex' : 'base64url');
     const sharedLink = await this.sharedLinkRepository.getByKey(bytes);
-    if (sharedLink) {
-      if (!sharedLink.expiresAt || new Date(sharedLink.expiresAt) > new Date()) {
-        const user = sharedLink.user;
-        if (user) {
-          return { user, sharedLink };
-        }
+    if (sharedLink && (!sharedLink.expiresAt || new Date(sharedLink.expiresAt) > new Date())) {
+      const user = sharedLink.user;
+      if (user) {
+        return { user, sharedLink };
       }
     }
     throw new UnauthorizedException('Invalid share key');
@@ -423,7 +427,7 @@ export class AuthService {
   }
 
   private async createLoginResponse(user: UserEntity, authType: AuthType, loginDetails: LoginDetails) {
-    const key = this.cryptoRepository.randomBytes(32).toString('base64').replace(/\W/g, '');
+    const key = this.cryptoRepository.randomBytes(32).toString('base64').replaceAll(/\W/g, '');
     const token = this.cryptoRepository.hashSha256(key);
 
     await this.userTokenRepository.create({
@@ -443,14 +447,22 @@ export class AuthService {
 
     let authTypeCookie = '';
     let accessTokenCookie = '';
+    let isAuthenticatedCookie = '';
 
     if (isSecure) {
       accessTokenCookie = `${IMMICH_ACCESS_COOKIE}=${loginResponse.accessToken}; HttpOnly; Secure; Path=/; Max-Age=${maxAge}; SameSite=Lax;`;
       authTypeCookie = `${IMMICH_AUTH_TYPE_COOKIE}=${authType}; HttpOnly; Secure; Path=/; Max-Age=${maxAge}; SameSite=Lax;`;
+      isAuthenticatedCookie = `${IMMICH_IS_AUTHENTICATED}=true; Secure; Path=/; Max-Age=${maxAge}; SameSite=Lax;`;
     } else {
       accessTokenCookie = `${IMMICH_ACCESS_COOKIE}=${loginResponse.accessToken}; HttpOnly; Path=/; Max-Age=${maxAge}; SameSite=Lax;`;
       authTypeCookie = `${IMMICH_AUTH_TYPE_COOKIE}=${authType}; HttpOnly; Path=/; Max-Age=${maxAge}; SameSite=Lax;`;
+      isAuthenticatedCookie = `${IMMICH_IS_AUTHENTICATED}=true; Path=/; Max-Age=${maxAge}; SameSite=Lax;`;
     }
-    return [accessTokenCookie, authTypeCookie];
+    return [accessTokenCookie, authTypeCookie, isAuthenticatedCookie];
+  }
+
+  private getClaim<T>(profile: OAuthProfile, options: ClaimOptions<T>): T {
+    const value = profile[options.key as keyof OAuthProfile];
+    return options.isValid(value) ? (value as T) : options.default;
   }
 }

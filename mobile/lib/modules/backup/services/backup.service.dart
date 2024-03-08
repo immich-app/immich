@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:cancellation_token_http/http.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -45,10 +44,7 @@ class BackupService {
     final String deviceId = Store.get(StoreKey.deviceId);
 
     try {
-      return await _apiService.assetApi.getUserAssetsByDeviceId(deviceId);
-
-      // TODO! Start using this in 1.92.0
-      // return await _apiService.assetApi.getAllUserAssetsByDeviceId(deviceId);
+      return await _apiService.assetApi.getAllUserAssetsByDeviceId(deviceId);
     } catch (e) {
       debugPrint('Error [getDeviceBackupAsset] ${e.toString()}');
       return null;
@@ -226,7 +222,6 @@ class BackupService {
     }
     final String deviceId = Store.get(StoreKey.deviceId);
     final String savedEndpoint = Store.get(StoreKey.serverEndpoint);
-    File? file;
     bool anyErrors = false;
     final List<String> duplicatedAssetIds = [];
 
@@ -248,8 +243,12 @@ class BackupService {
         : assetList.toList();
 
     for (var entity in assetsToUpload) {
+      File? file;
+      File? livePhotoFile;
+
       try {
-        final isAvailableLocally = await entity.isLocallyAvailable();
+        final isAvailableLocally =
+            await entity.isLocallyAvailable(isOrigin: true);
 
         // Handle getting files from iCloud
         if (!isAvailableLocally && Platform.isIOS) {
@@ -271,11 +270,19 @@ class BackupService {
           );
 
           file = await entity.loadFile(progressHandler: pmProgressHandler);
+          livePhotoFile = await entity.loadFile(
+            withSubtype: true,
+            progressHandler: pmProgressHandler,
+          );
         } else {
           if (entity.type == AssetType.video) {
             file = await entity.originFile;
           } else {
             file = await entity.originFile.timeout(const Duration(seconds: 5));
+            if (entity.isLivePhoto) {
+              livePhotoFile = await entity.originFileWithSubtype
+                  .timeout(const Duration(seconds: 5));
+            }
           }
         }
 
@@ -295,8 +302,7 @@ class BackupService {
             onProgress: ((bytes, totalBytes) =>
                 uploadProgressCb(bytes, totalBytes)),
           );
-          req.headers["Authorization"] =
-              "Bearer ${Store.get(StoreKey.accessToken)}";
+          req.headers["x-immich-user-token"] = Store.get(StoreKey.accessToken);
           req.headers["Transfer-Encoding"] = "chunked";
 
           req.fields['deviceAssetId'] = entity.id;
@@ -311,9 +317,23 @@ class BackupService {
           req.files.add(assetRawUploadData);
 
           if (entity.isLivePhoto) {
-            var livePhotoRawUploadData = await _getLivePhotoFile(entity);
-            if (livePhotoRawUploadData != null) {
+            if (livePhotoFile != null) {
+              final livePhotoTitle = p.setExtension(
+                originalFileName,
+                p.extension(livePhotoFile.path),
+              );
+              final fileStream = livePhotoFile.openRead();
+              final livePhotoRawUploadData = http.MultipartFile(
+                "livePhotoData",
+                fileStream,
+                livePhotoFile.lengthSync(),
+                filename: livePhotoTitle,
+              );
               req.files.add(livePhotoRawUploadData);
+            } else {
+              _log.warning(
+                "Failed to obtain motion part of the livePhoto - $originalFileName",
+              );
             }
           }
 
@@ -342,6 +362,7 @@ class BackupService {
           } else {
             var data = await response.stream.bytesToString();
             var error = jsonDecode(data);
+            var errorMessage = error['message'] ?? error['error'];
 
             debugPrint(
               "Error(${error['statusCode']}) uploading ${entity.id} | $originalFileName | Created on ${entity.createDateTime} | ${error['error']}",
@@ -354,9 +375,14 @@ class BackupService {
                 fileCreatedAt: entity.createDateTime,
                 fileName: originalFileName,
                 fileType: _getAssetType(entity.type),
-                errorMessage: error['error'],
+                errorMessage: errorMessage,
               ),
             );
+
+            if (errorMessage == "Quota has been exceeded!") {
+              anyErrors = true;
+              break;
+            }
             continue;
           }
         }
@@ -370,7 +396,12 @@ class BackupService {
         continue;
       } finally {
         if (Platform.isIOS) {
-          file?.deleteSync();
+          try {
+            await file?.delete();
+            await livePhotoFile?.delete();
+          } catch (e) {
+            debugPrint("ERROR deleting file: ${e.toString()}");
+          }
         }
       }
     }
@@ -378,25 +409,6 @@ class BackupService {
       await _saveDuplicatedAssetIds(duplicatedAssetIds);
     }
     return !anyErrors;
-  }
-
-  Future<MultipartFile?> _getLivePhotoFile(AssetEntity entity) async {
-    var motionFilePath = await entity.getMediaUrl();
-
-    if (motionFilePath != null) {
-      var validPath = motionFilePath.replaceAll('file://', '');
-      var motionFile = File(validPath);
-      var fileStream = motionFile.openRead();
-      String fileName = p.basename(motionFile.path);
-      return http.MultipartFile(
-        "livePhotoData",
-        fileStream,
-        motionFile.lengthSync(),
-        filename: fileName,
-      );
-    }
-
-    return null;
   }
 
   String _getAssetType(AssetType assetType) {
@@ -416,10 +428,10 @@ class BackupService {
 class MultipartRequest extends http.MultipartRequest {
   /// Creates a new [MultipartRequest].
   MultipartRequest(
-    String method,
-    Uri url, {
+    super.method,
+    super.url, {
     required this.onProgress,
-  }) : super(method, url);
+  });
 
   final void Function(int bytes, int totalBytes) onProgress;
 

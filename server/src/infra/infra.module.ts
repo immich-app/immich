@@ -3,9 +3,11 @@ import {
   IActivityRepository,
   IAlbumRepository,
   IAssetRepository,
+  IAssetStackRepository,
   IAuditRepository,
   ICommunicationRepository,
   ICryptoRepository,
+  IDatabaseRepository,
   IJobRepository,
   IKeyRepository,
   ILibraryRepository,
@@ -15,9 +17,9 @@ import {
   IMoveRepository,
   IPartnerRepository,
   IPersonRepository,
+  ISearchRepository,
   IServerInfoRepository,
   ISharedLinkRepository,
-  ISmartInfoRepository,
   IStorageRepository,
   ISystemConfigRepository,
   ISystemMetadataRepository,
@@ -40,9 +42,11 @@ import {
   AlbumRepository,
   ApiKeyRepository,
   AssetRepository,
+  AssetStackRepository,
   AuditRepository,
   CommunicationRepository,
   CryptoRepository,
+  DatabaseRepository,
   FilesystemProvider,
   JobRepository,
   LibraryRepository,
@@ -52,9 +56,9 @@ import {
   MoveRepository,
   PartnerRepository,
   PersonRepository,
+  SearchRepository,
   ServerInfoRepository,
   SharedLinkRepository,
-  SmartInfoRepository,
   SystemConfigRepository,
   SystemMetadataRepository,
   TagRepository,
@@ -67,9 +71,11 @@ const providers: Provider[] = [
   { provide: IAccessRepository, useClass: AccessRepository },
   { provide: IAlbumRepository, useClass: AlbumRepository },
   { provide: IAssetRepository, useClass: AssetRepository },
+  { provide: IAssetStackRepository, useClass: AssetStackRepository },
   { provide: IAuditRepository, useClass: AuditRepository },
   { provide: ICommunicationRepository, useClass: CommunicationRepository },
   { provide: ICryptoRepository, useClass: CryptoRepository },
+  { provide: IDatabaseRepository, useClass: DatabaseRepository },
   { provide: IJobRepository, useClass: JobRepository },
   { provide: ILibraryRepository, useClass: LibraryRepository },
   { provide: IKeyRepository, useClass: ApiKeyRepository },
@@ -80,7 +86,7 @@ const providers: Provider[] = [
   { provide: IPersonRepository, useClass: PersonRepository },
   { provide: IServerInfoRepository, useClass: ServerInfoRepository },
   { provide: ISharedLinkRepository, useClass: SharedLinkRepository },
-  { provide: ISmartInfoRepository, useClass: SmartInfoRepository },
+  { provide: ISearchRepository, useClass: SearchRepository },
   { provide: IStorageRepository, useClass: FilesystemProvider },
   { provide: ISystemConfigRepository, useClass: SystemConfigRepository },
   { provide: ISystemMetadataRepository, useClass: SystemMetadataRepository },
@@ -91,25 +97,30 @@ const providers: Provider[] = [
   SchedulerRegistry,
 ];
 
-const imports = [
-  ConfigModule.forRoot(immichAppConfig),
-  TypeOrmModule.forRoot(databaseConfig),
-  TypeOrmModule.forFeature(databaseEntities),
-  ScheduleModule,
-];
-
-const moduleExports = [...providers];
-
-if (process.env.IMMICH_TEST_ENV !== 'true') {
-  imports.push(BullModule.forRoot(bullConfig));
-  imports.push(BullModule.registerQueue(...bullQueues));
-  moduleExports.push(BullModule);
-}
+@Global()
+@Module({
+  imports: [
+    ConfigModule.forRoot(immichAppConfig),
+    TypeOrmModule.forRoot(databaseConfig),
+    TypeOrmModule.forFeature(databaseEntities),
+    ScheduleModule,
+    BullModule.forRoot(bullConfig),
+    BullModule.registerQueue(...bullQueues),
+  ],
+  providers: [...providers],
+  exports: [...providers, BullModule],
+})
+export class InfraModule {}
 
 @Global()
 @Module({
-  imports,
+  imports: [
+    ConfigModule.forRoot(immichAppConfig),
+    TypeOrmModule.forRoot(databaseConfig),
+    TypeOrmModule.forFeature(databaseEntities),
+    ScheduleModule,
+  ],
   providers: [...providers],
-  exports: moduleExports,
+  exports: [...providers],
 })
-export class InfraModule {}
+export class InfraTestModule {}

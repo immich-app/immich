@@ -1,9 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 
-class ConfirmDialog extends ConsumerWidget {
+class ConfirmDialog extends StatelessWidget {
   final Function onOk;
   final String title;
   final String content;
@@ -11,18 +10,25 @@ class ConfirmDialog extends ConsumerWidget {
   final String ok;
 
   const ConfirmDialog({
-    Key? key,
+    super.key,
     required this.onOk,
     required this.title,
     required this.content,
     this.cancel = "delete_dialog_cancel",
     this.ok = "backup_controller_page_background_battery_info_ok",
-  }) : super(key: key);
+  });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
+    void onOkPressed() {
+      onOk();
+      context.pop(true);
+    }
+
     return AlertDialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(10)),
+      ),
       title: Text(title).tr(),
       content: Text(content).tr(),
       actions: [
@@ -37,10 +43,7 @@ class ConfirmDialog extends ConsumerWidget {
           ).tr(),
         ),
         TextButton(
-          onPressed: () {
-            onOk();
-            context.pop(true);
-          },
+          onPressed: onOkPressed,
           child: Text(
             ok,
             style: TextStyle(

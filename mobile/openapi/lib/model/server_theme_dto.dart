@@ -20,7 +20,7 @@ class ServerThemeDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ServerThemeDto &&
-     other.customCss == customCss;
+    other.customCss == customCss;
 
   @override
   int get hashCode =>

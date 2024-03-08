@@ -6,46 +6,53 @@
   import { createEventDispatcher } from 'svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { mdiClose, mdiEye, mdiEyeOff, mdiRestart } from '@mdi/js';
+  import { locale } from '$lib/stores/preferences.store';
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    close: void;
+    reset: void;
+    change: void;
+    done: void;
+  }>();
 
   export let showLoadingSpinner: boolean;
   export let toggleVisibility: boolean;
+  export let screenHeight: number;
+  export let countTotalPeople: number;
 </script>
 
 <section
-  transition:fly={{ y: 500, duration: 100, easing: quintOut }}
+  transition:fly={{ y: screenHeight, duration: 150, easing: quintOut, opacity: 1 }}
   class="absolute left-0 top-0 z-[9999] h-full w-full bg-immich-bg dark:bg-immich-dark-bg"
 >
   <div
-    class="sticky top-0 z-10 flex h-16 w-full items-center justify-between border-b bg-white p-1 dark:border-immich-dark-gray dark:bg-black dark:text-immich-dark-fg md:p-8"
+    class="fixed top-0 z-10 flex h-16 w-full items-center justify-between border-b bg-white p-1 dark:border-immich-dark-gray dark:bg-black dark:text-immich-dark-fg md:p-8"
   >
     <div class="flex items-center">
-      <CircleIconButton icon={mdiClose} on:click={() => dispatch('closeClick')} />
-      <p class="ml-4 hidden sm:block">Show & hide people</p>
+      <CircleIconButton icon={mdiClose} on:click={() => dispatch('close')} />
+      <div class="flex gap-2 items-center">
+        <p class="ml-2">Show & hide people</p>
+        <p class="text-sm text-gray-400 dark:text-gray-600">({countTotalPeople.toLocaleString($locale)})</p>
+      </div>
     </div>
     <div class="flex items-center justify-end">
       <div class="flex items-center md:mr-8">
-        <CircleIconButton
-          title="Reset people visibility"
-          icon={mdiRestart}
-          on:click={() => dispatch('reset-visibility')}
-        />
+        <CircleIconButton title="Reset people visibility" icon={mdiRestart} on:click={() => dispatch('reset')} />
         <CircleIconButton
           title="Toggle visibility"
           icon={toggleVisibility ? mdiEye : mdiEyeOff}
-          on:click={() => dispatch('toggle-visibility')}
+          on:click={() => dispatch('change')}
         />
       </div>
       {#if !showLoadingSpinner}
-        <IconButton on:click={() => dispatch('doneClick')}>Done</IconButton>
+        <IconButton on:click={() => dispatch('done')}>Done</IconButton>
       {:else}
         <LoadingSpinner />
       {/if}
     </div>
   </div>
 
-  <div class="flex w-full flex-wrap gap-1 bg-immich-bg p-2 pb-8 dark:bg-immich-dark-bg md:px-8 md:pt-4">
+  <div class="flex flex-wrap gap-1 bg-immich-bg p-2 pb-8 dark:bg-immich-dark-bg md:px-8 mt-16">
     <slot />
   </div>
 </section>

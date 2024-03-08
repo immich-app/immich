@@ -43,9 +43,6 @@ export class UserEntity {
   @Column({ type: 'varchar', unique: true, default: null })
   storageLabel!: string | null;
 
-  @Column({ type: 'varchar', default: null })
-  externalPath!: string | null;
-
   @Column({ default: '', select: false })
   password?: string;
 
@@ -75,4 +72,10 @@ export class UserEntity {
 
   @OneToMany(() => AssetEntity, (asset) => asset.owner)
   assets!: AssetEntity[];
+
+  @Column({ type: 'bigint', nullable: true })
+  quotaSizeInBytes!: number | null;
+
+  @Column({ type: 'bigint', default: 0 })
+  quotaUsageInBytes!: number;
 }

@@ -4,9 +4,9 @@
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import EditNameInput from '$lib/components/faces-page/edit-name-input.svelte';
   import MergeFaceSelector from '$lib/components/faces-page/merge-face-selector.svelte';
-  import UnMergeFaceSelector from '$lib/components/faces-page/unmerge-face-selector.svelte';
   import MergeSuggestionModal from '$lib/components/faces-page/merge-suggestion-modal.svelte';
   import SetBirthDateModal from '$lib/components/faces-page/set-birth-date-modal.svelte';
+  import UnMergeFaceSelector from '$lib/components/faces-page/unmerge-face-selector.svelte';
   import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
   import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
   import ChangeDate from '$lib/components/photos-page/actions/change-date-action.svelte';
@@ -21,24 +21,32 @@
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
+  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import {
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
-  import { AppRoute } from '$lib/constants';
+  import { AppRoute, QueryParameter, maximumLengthSearchPeople, timeBeforeShowLoadingSpinner } from '$lib/constants';
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
-  import { AssetStore } from '$lib/stores/assets.store';
-  import { websocketStore } from '$lib/stores/websocket';
-  import { handleError } from '$lib/utils/handle-error';
-  import { AssetResponseDto, PersonResponseDto, api } from '@api';
-  import { onMount } from 'svelte';
-  import type { PageData } from './$types';
-  import { clickOutside } from '$lib/utils/click-outside';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
-  import { mdiPlus, mdiDotsVertical, mdiArrowLeft } from '@mdi/js';
+  import { AssetStore } from '$lib/stores/assets.store';
+  import { websocketEvents } from '$lib/stores/websocket';
+  import { getPeopleThumbnailUrl } from '$lib/utils';
+  import { clickOutside } from '$lib/utils/click-outside';
+  import { handleError } from '$lib/utils/handle-error';
   import { isExternalUrl } from '$lib/utils/navigation';
   import { searchNameLocal } from '$lib/utils/person';
+  import {
+    getPersonStatistics,
+    mergePerson,
+    searchPerson,
+    updatePerson,
+    type AssetResponseDto,
+    type PersonResponseDto,
+  } from '@immich/sdk';
+  import { mdiArrowLeft, mdiDotsVertical, mdiPlus } from '@mdi/js';
+  import { onMount } from 'svelte';
+  import type { PageData } from './$types';
 
   export let data: PageData;
 
@@ -60,7 +68,6 @@
   });
   const assetInteractionStore = createAssetInteractionStore();
   const { selectedAssets, isMultiSelectState } = assetInteractionStore;
-  const { onPersonThumbnail } = websocketStore;
 
   let viewMode: ViewMode = ViewMode.VIEW_ASSETS;
   let isEditingName = false;
@@ -74,7 +81,7 @@
   let refreshAssetGrid = false;
 
   let personName = '';
-  $: thumbnailData = api.getPeopleThumbnailUrl(data.person.id);
+  $: thumbnailData = getPeopleThumbnailUrl(data.person.id);
 
   let name: string = data.person.name;
   let suggestedPeople: PersonResponseDto[] = [];
@@ -88,15 +95,16 @@
    **/
   let searchWord: string;
   let isSearchingPeople = false;
+  let focusedElements: (HTMLButtonElement | null)[] = Array.from({ length: maximumLengthSearchPeople }, () => null);
+  let indexFocus: number | null = null;
 
   const searchPeople = async () => {
-    if ((people.length < 20 && name.startsWith(searchWord)) || name === '') {
+    if ((people.length < maximumLengthSearchPeople && name.startsWith(searchWord)) || name === '') {
       return;
     }
-    const timeout = setTimeout(() => (isSearchingPeople = true), 100);
+    const timeout = setTimeout(() => (isSearchingPeople = true), timeBeforeShowLoadingSpinner);
     try {
-      const { data } = await api.searchApi.searchPerson({ name });
-      people = data;
+      people = await searchPerson({ name });
       searchWord = name;
     } catch (error) {
       people = [];
@@ -108,36 +116,84 @@
     isSearchingPeople = false;
   };
 
-  $: isAllArchive = Array.from($selectedAssets).every((asset) => asset.isArchived);
-  $: isAllFavorite = Array.from($selectedAssets).every((asset) => asset.isFavorite);
-  $: $onPersonThumbnail === data.person.id &&
-    (thumbnailData = api.getPeopleThumbnailUrl(data.person.id) + `?now=${Date.now()}`);
+  $: isAllArchive = [...$selectedAssets].every((asset) => asset.isArchived);
+  $: isAllFavorite = [...$selectedAssets].every((asset) => asset.isFavorite);
 
   $: {
     if (people) {
-      suggestedPeople = !name ? [] : searchNameLocal(name, people, 5, data.person.id);
+      suggestedPeople = name ? searchNameLocal(name, people, 5, data.person.id) : [];
+      indexFocus = null;
     }
   }
 
   onMount(() => {
-    const action = $page.url.searchParams.get('action');
-    const getPreviousRoute = $page.url.searchParams.get('previousRoute');
+    const action = $page.url.searchParams.get(QueryParameter.ACTION);
+    const getPreviousRoute = $page.url.searchParams.get(QueryParameter.PREVIOUS_ROUTE);
     if (getPreviousRoute && !isExternalUrl(getPreviousRoute)) {
       previousRoute = getPreviousRoute;
     }
     if (action == 'merge') {
       viewMode = ViewMode.MERGE_PEOPLE;
     }
+
+    return websocketEvents.on('on_person_thumbnail', (personId: string) => {
+      if (data.person.id === personId) {
+        thumbnailData = getPeopleThumbnailUrl(data.person.id) + `?now=${Date.now()}`;
+      }
+    });
   });
-  const handleEscape = () => {
-    if ($showAssetViewer) {
+
+  const handleKeyboardPress = (event: KeyboardEvent) => {
+    if (suggestedPeople.length === 0) {
+      return;
+    }
+    if (!$showAssetViewer) {
+      event.stopPropagation();
+      switch (event.key) {
+        case 'ArrowDown': {
+          event.preventDefault();
+          if (indexFocus === null) {
+            indexFocus = 0;
+          } else if (indexFocus === suggestedPeople.length - 1) {
+            indexFocus = 0;
+          } else {
+            indexFocus++;
+          }
+          focusedElements[indexFocus]?.focus();
+          return;
+        }
+        case 'ArrowUp': {
+          if (indexFocus === null) {
+            indexFocus = 0;
+            return;
+          }
+          if (indexFocus === 0) {
+            indexFocus = suggestedPeople.length - 1;
+          } else {
+            indexFocus--;
+          }
+          focusedElements[indexFocus]?.focus();
+
+          return;
+        }
+        case 'Enter': {
+          if (indexFocus !== null) {
+            handleSuggestPeople(suggestedPeople[indexFocus]);
+          }
+        }
+      }
+    }
+  };
+
+  const handleEscape = async () => {
+    if ($showAssetViewer || viewMode === ViewMode.SUGGEST_MERGE) {
       return;
     }
     if ($isMultiSelectState) {
       assetInteractionStore.clearMultiselect();
       return;
     } else {
-      goto(previousRoute);
+      await goto(previousRoute);
       return;
     }
   };
@@ -158,7 +214,7 @@
   });
 
   const handleUnmerge = () => {
-    $assetStore.removeAssets(Array.from($selectedAssets).map((a) => a.id));
+    $assetStore.removeAssets([...$selectedAssets].map((a) => a.id));
     assetInteractionStore.clearMultiselect();
     viewMode = ViewMode.VIEW_ASSETS;
   };
@@ -169,24 +225,29 @@
 
   const toggleHidePerson = async () => {
     try {
-      await api.personApi.updatePerson({
+      await updatePerson({
         id: data.person.id,
         personUpdateDto: { isHidden: !data.person.isHidden },
       });
 
       notificationController.show({
-        message: 'Changed visibility succesfully',
+        message: 'Changed visibility successfully',
         type: NotificationType.Info,
       });
 
-      goto(previousRoute, { replaceState: true });
+      await goto(previousRoute, { replaceState: true });
     } catch (error) {
       handleError(error, 'Unable to hide person');
     }
   };
 
-  const handleMerge = () => {
-    handleGoBack();
+  const handleMerge = async (person: PersonResponseDto) => {
+    const { assets } = await getPersonStatistics({ id: person.id });
+    numberOfAssets = assets;
+    await handleGoBack();
+
+    data.person = person;
+
     refreshAssetGrid = !refreshAssetGrid;
   };
 
@@ -195,7 +256,7 @@
       return;
     }
 
-    await api.personApi.updatePerson({ id: data.person.id, personUpdateDto: { featureFaceAssetId: asset.id } });
+    await updatePerson({ id: data.person.id, personUpdateDto: { featureFaceAssetId: asset.id } });
 
     notificationController.show({ message: 'Feature photo updated', type: NotificationType.Info });
     assetInteractionStore.clearMultiselect();
@@ -205,10 +266,8 @@
 
   const updateAssetCount = async () => {
     try {
-      const { data: statistics } = await api.personApi.getPersonStatistics({
-        id: data.person.id,
-      });
-      numberOfAssets = statistics.assets;
+      const { assets } = await getPersonStatistics({ id: data.person.id });
+      numberOfAssets = assets;
     } catch (error) {
       handleError(error, "Can't update the asset count");
     }
@@ -219,12 +278,12 @@
     viewMode = ViewMode.VIEW_ASSETS;
     isEditingName = false;
     try {
-      await api.personApi.mergePerson({
+      await mergePerson({
         id: personToBeMergedIn.id,
         mergePersonDto: { ids: [personToMerge.id] },
       });
       notificationController.show({
-        message: 'Merge people succesfully',
+        message: 'Merge people successfully',
         type: NotificationType.Info,
       });
       people = people.filter((person: PersonResponseDto) => person.id !== personToMerge.id);
@@ -233,7 +292,7 @@
         refreshAssetGrid = !refreshAssetGrid;
         return;
       }
-      goto(`${AppRoute.PEOPLE}/${personToBeMergedIn.id}`, { replaceState: true });
+      await goto(`${AppRoute.PEOPLE}/${personToBeMergedIn.id}`, { replaceState: true });
     } catch (error) {
       handleError(error, 'Unable to save name');
     }
@@ -254,13 +313,10 @@
     try {
       isEditingName = false;
 
-      await api.personApi.updatePerson({
-        id: data.person.id,
-        personUpdateDto: { name: personName },
-      });
+      await updatePerson({ id: data.person.id, personUpdateDto: { name: personName } });
 
       notificationController.show({
-        message: 'Change name succesfully',
+        message: 'Change name successfully',
         type: NotificationType.Info,
       });
     } catch (error) {
@@ -285,20 +341,20 @@
       return;
     }
     if (name === '') {
-      changeName();
+      await changeName();
       return;
     }
 
-    const result = await api.searchApi.searchPerson({ name: personName, withHidden: true });
+    const result = await searchPerson({ name: personName, withHidden: true });
 
-    const existingPerson = result.data.find(
+    const existingPerson = result.find(
       (person: PersonResponseDto) =>
         person.name.toLowerCase() === personName.toLowerCase() && person.id !== data.person.id && person.name,
     );
     if (existingPerson) {
       personMerge2 = existingPerson;
       personMerge1 = data.person;
-      potentialMergePeople = result.data
+      potentialMergePeople = result
         .filter(
           (person: PersonResponseDto) =>
             personMerge2.name.toLowerCase() === person.name.toLowerCase() &&
@@ -310,7 +366,7 @@
       viewMode = ViewMode.SUGGEST_MERGE;
       return;
     }
-    changeName();
+    await changeName();
   };
 
   const handleSetBirthDate = async (birthDate: string) => {
@@ -318,7 +374,7 @@
       viewMode = ViewMode.VIEW_ASSETS;
       data.person.birthDate = birthDate;
 
-      const { data: updatedPerson } = await api.personApi.updatePerson({
+      const updatedPerson = await updatePerson({
         id: data.person.id,
         personUpdateDto: { birthDate: birthDate.length > 0 ? birthDate : null },
       });
@@ -336,18 +392,19 @@
     }
   };
 
-  const handleGoBack = () => {
+  const handleGoBack = async () => {
     viewMode = ViewMode.VIEW_ASSETS;
-    if ($page.url.searchParams.has('action')) {
-      $page.url.searchParams.delete('action');
-      goto($page.url);
+    if ($page.url.searchParams.has(QueryParameter.ACTION)) {
+      $page.url.searchParams.delete(QueryParameter.ACTION);
+      await goto($page.url);
     }
   };
 </script>
 
+<svelte:document on:keydown={handleKeyboardPress} />
 {#if viewMode === ViewMode.UNASSIGN_ASSETS}
   <UnMergeFaceSelector
-    assetIds={Array.from($selectedAssets).map((a) => a.id)}
+    assetIds={[...$selectedAssets].map((a) => a.id)}
     personAssets={data.person}
     on:close={() => (viewMode = ViewMode.VIEW_ASSETS)}
     on:confirm={handleUnmerge}
@@ -374,7 +431,7 @@
 {/if}
 
 {#if viewMode === ViewMode.MERGE_PEOPLE}
-  <MergeFaceSelector person={data.person} on:go-back={handleGoBack} on:merge={handleMerge} />
+  <MergeFaceSelector person={data.person} on:back={handleGoBack} on:merge={({ detail }) => handleMerge(detail)} />
 {/if}
 
 <header>
@@ -386,11 +443,11 @@
         <AddToAlbum />
         <AddToAlbum shared />
       </AssetSelectContextMenu>
-      <DeleteAssets onAssetDelete={(assetId) => $assetStore.removeAsset(assetId)} />
+      <DeleteAssets onAssetDelete={(assetIds) => $assetStore.removeAssets(assetIds)} />
       <AssetSelectContextMenu icon={mdiDotsVertical} title="Add">
         <DownloadAction menuItem filename="{data.person.name || 'immich'}.zip" />
-        <FavoriteAction menuItem removeFavorite={isAllFavorite} />
-        <ArchiveAction menuItem unarchive={isAllArchive} onArchive={(ids) => $assetStore.removeAssets(ids)} />
+        <FavoriteAction menuItem removeFavorite={isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
+        <ArchiveAction menuItem unarchive={isAllArchive} onArchive={(assetIds) => $assetStore.removeAssets(assetIds)} />
         <MenuOption text="Fix incorrect match" on:click={handleReassignAssets} />
         <ChangeDate menuItem />
         <ChangeLocation menuItem />
@@ -398,7 +455,7 @@
     </AssetSelectControlBar>
   {:else}
     {#if viewMode === ViewMode.VIEW_ASSETS || viewMode === ViewMode.SUGGEST_MERGE || viewMode === ViewMode.BIRTH_DATE}
-      <ControlAppBar showBackButton backIcon={mdiArrowLeft} on:close-button-click={() => goto(previousRoute)}>
+      <ControlAppBar showBackButton backIcon={mdiArrowLeft} on:close={() => goto(previousRoute)}>
         <svelte:fragment slot="trailing">
           <AssetSelectContextMenu icon={mdiDotsVertical} title="Menu">
             <MenuOption text="Change feature photo" on:click={() => (viewMode = ViewMode.SELECT_PERSON)} />
@@ -414,7 +471,7 @@
     {/if}
 
     {#if viewMode === ViewMode.SELECT_PERSON}
-      <ControlAppBar on:close-button-click={() => (viewMode = ViewMode.VIEW_ASSETS)}>
+      <ControlAppBar on:close={() => (viewMode = ViewMode.VIEW_ASSETS)}>
         <svelte:fragment slot="leading">Select feature photo</svelte:fragment>
       </ControlAppBar>
     {/if}
@@ -448,6 +505,7 @@
                 bind:name
                 on:change={(event) => handleNameChange(event.detail)}
                 on:input={searchPeople}
+                {thumbnailData}
               />
             {:else}
               <div class="relative">
@@ -493,24 +551,24 @@
                 </div>
               {:else}
                 {#each suggestedPeople as person, index (person.id)}
-                  <div
-                    class="flex border-t border-x border-gray-400 dark:border-immich-dark-gray h-14 place-items-center bg-gray-200 p-2 dark:bg-gray-700 hover:bg-gray-300 hover:dark:bg-[#232932] {index ===
+                  <button
+                    bind:this={focusedElements[index]}
+                    class="flex w-full border-t border-gray-400 dark:border-immich-dark-gray h-14 place-items-center bg-gray-200 p-2 dark:bg-gray-700 hover:bg-gray-300 hover:dark:bg-[#232932] focus:bg-gray-300 focus:dark:bg-[#232932] {index ===
                     suggestedPeople.length - 1
                       ? 'rounded-b-lg border-b'
                       : ''}"
+                    on:click={() => handleSuggestPeople(person)}
                   >
-                    <button class="flex w-full place-items-center" on:click={() => handleSuggestPeople(person)}>
-                      <ImageThumbnail
-                        circle
-                        shadow
-                        url={api.getPeopleThumbnailUrl(person.id)}
-                        altText={person.name}
-                        widthStyle="2rem"
-                        heightStyle="2rem"
-                      />
-                      <p class="ml-4 text-gray-700 dark:text-gray-100">{person.name}</p>
-                    </button>
-                  </div>
+                    <ImageThumbnail
+                      circle
+                      shadow
+                      url={getPeopleThumbnailUrl(person.id)}
+                      altText={person.name}
+                      widthStyle="2rem"
+                      heightStyle="2rem"
+                    />
+                    <p class="ml-4 text-gray-700 dark:text-gray-100">{person.name}</p>
+                  </button>
                 {/each}
               {/if}
             </div>

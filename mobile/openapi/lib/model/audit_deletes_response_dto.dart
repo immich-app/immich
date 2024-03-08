@@ -31,29 +31,32 @@ class AuditDeletesResponseDto {
   DateTime? requestedAt;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is AuditDeletesResponseDto &&
-     other.ids == ids &&
-     other.needsFullSync == needsFullSync &&
-     other.requestedAt == requestedAt;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is AuditDeletesResponseDto &&
+          other.ids == ids &&
+          other.needsFullSync == needsFullSync &&
+          other.requestedAt == requestedAt;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (ids.hashCode) +
-    (needsFullSync.hashCode) +
-    (requestedAt == null ? 0 : requestedAt!.hashCode);
+      // ignore: unnecessary_parenthesis
+      (ids.hashCode) +
+      (needsFullSync.hashCode) +
+      (requestedAt == null ? 0 : requestedAt!.hashCode);
 
   @override
-  String toString() => 'AuditDeletesResponseDto[ids=$ids, needsFullSync=$needsFullSync, requestedAt=$requestedAt]';
+  String toString() =>
+      'AuditDeletesResponseDto[ids=$ids, needsFullSync=$needsFullSync, requestedAt=$requestedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'ids'] = this.ids;
-      json[r'needsFullSync'] = this.needsFullSync;
+    json[r'ids'] = this.ids;
+    json[r'needsFullSync'] = this.needsFullSync;
     if (this.requestedAt != null) {
       json[r'requestedAt'] = this.requestedAt!.toUtc().toIso8601String();
     } else {
-    //  json[r'requestedAt'] = null;
+      //  json[r'requestedAt'] = null;
     }
     return json;
   }
@@ -66,8 +69,8 @@ class AuditDeletesResponseDto {
       final json = value.cast<String, dynamic>();
 
       return AuditDeletesResponseDto(
-        ids: json[r'ids'] is List
-            ? (json[r'ids'] as List).cast<String>()
+        ids: json[r'ids'] is Iterable
+            ? (json[r'ids'] as Iterable).cast<String>().toList(growable: false)
             : const [],
         needsFullSync: mapValueOfType<bool>(json, r'needsFullSync')!,
         requestedAt: mapDateTime(json, r'requestedAt', ''),
@@ -76,7 +79,10 @@ class AuditDeletesResponseDto {
     return null;
   }
 
-  static List<AuditDeletesResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<AuditDeletesResponseDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <AuditDeletesResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -104,13 +110,19 @@ class AuditDeletesResponseDto {
   }
 
   // maps a json object with a list of AuditDeletesResponseDto-objects as value to a dart map
-  static Map<String, List<AuditDeletesResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<AuditDeletesResponseDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<AuditDeletesResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = AuditDeletesResponseDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = AuditDeletesResponseDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -122,4 +134,3 @@ class AuditDeletesResponseDto {
     'needsFullSync',
   };
 }
-

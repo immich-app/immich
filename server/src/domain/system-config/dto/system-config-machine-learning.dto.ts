@@ -1,19 +1,15 @@
-import { ClassificationConfig, CLIPConfig, RecognitionConfig } from '@app/domain';
 import { Type } from 'class-transformer';
-import { IsBoolean, IsObject, IsUrl, ValidateIf, ValidateNested } from 'class-validator';
+import { IsObject, IsUrl, ValidateIf, ValidateNested } from 'class-validator';
+import { ValidateBoolean } from '../../domain.util';
+import { CLIPConfig, RecognitionConfig } from '../../smart-info/dto/model-config.dto';
 
 export class SystemConfigMachineLearningDto {
-  @IsBoolean()
+  @ValidateBoolean()
   enabled!: boolean;
 
   @IsUrl({ require_tld: false, allow_underscores: true })
   @ValidateIf((dto) => dto.enabled)
   url!: string;
-
-  @Type(() => ClassificationConfig)
-  @ValidateNested()
-  @IsObject()
-  classification!: ClassificationConfig;
 
   @Type(() => CLIPConfig)
   @ValidateNested()

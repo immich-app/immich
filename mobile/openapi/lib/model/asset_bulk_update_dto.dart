@@ -83,14 +83,14 @@ class AssetBulkUpdateDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetBulkUpdateDto &&
-     other.dateTimeOriginal == dateTimeOriginal &&
-     other.ids == ids &&
-     other.isArchived == isArchived &&
-     other.isFavorite == isFavorite &&
-     other.latitude == latitude &&
-     other.longitude == longitude &&
-     other.removeParent == removeParent &&
-     other.stackParentId == stackParentId;
+    other.dateTimeOriginal == dateTimeOriginal &&
+    _deepEquality.equals(other.ids, ids) &&
+    other.isArchived == isArchived &&
+    other.isFavorite == isFavorite &&
+    other.latitude == latitude &&
+    other.longitude == longitude &&
+    other.removeParent == removeParent &&
+    other.stackParentId == stackParentId;
 
   @override
   int get hashCode =>
@@ -157,17 +157,13 @@ class AssetBulkUpdateDto {
 
       return AssetBulkUpdateDto(
         dateTimeOriginal: mapValueOfType<String>(json, r'dateTimeOriginal'),
-        ids: json[r'ids'] is List
-            ? (json[r'ids'] as List).cast<String>()
+        ids: json[r'ids'] is Iterable
+            ? (json[r'ids'] as Iterable).cast<String>().toList(growable: false)
             : const [],
         isArchived: mapValueOfType<bool>(json, r'isArchived'),
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
-        latitude: json[r'latitude'] == null
-            ? null
-            : num.parse(json[r'latitude'].toString()),
-        longitude: json[r'longitude'] == null
-            ? null
-            : num.parse(json[r'longitude'].toString()),
+        latitude: num.parse('${json[r'latitude']}'),
+        longitude: num.parse('${json[r'longitude']}'),
         removeParent: mapValueOfType<bool>(json, r'removeParent'),
         stackParentId: mapValueOfType<String>(json, r'stackParentId'),
       );

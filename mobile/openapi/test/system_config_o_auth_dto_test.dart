@@ -41,6 +41,11 @@ void main() {
       // TODO
     });
 
+    // num defaultStorageQuota
+    test('to test the property `defaultStorageQuota`', () async {
+      // TODO
+    });
+
     // bool enabled
     test('to test the property `enabled`', () async {
       // TODO
@@ -66,8 +71,18 @@ void main() {
       // TODO
     });
 
+    // String signingAlgorithm
+    test('to test the property `signingAlgorithm`', () async {
+      // TODO
+    });
+
     // String storageLabelClaim
     test('to test the property `storageLabelClaim`', () async {
+      // TODO
+    });
+
+    // String storageQuotaClaim
+    test('to test the property `storageQuotaClaim`', () async {
       // TODO
     });
 

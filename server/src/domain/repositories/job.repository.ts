@@ -3,6 +3,7 @@ import { JobName, QueueName } from '../job/job.constants';
 import {
   IAssetDeletionJob,
   IBaseJob,
+  IDeferrableJob,
   IDeleteFilesJob,
   IEntityJob,
   ILibraryFileJob,
@@ -39,14 +40,14 @@ export type JobItem =
   | { name: JobName.GENERATE_WEBP_THUMBNAIL; data: IEntityJob }
   | { name: JobName.GENERATE_THUMBHASH_THUMBNAIL; data: IEntityJob }
 
-  // User Deletion
+  // User
   | { name: JobName.USER_DELETE_CHECK; data?: IBaseJob }
   | { name: JobName.USER_DELETION; data: IEntityJob }
+  | { name: JobName.USER_SYNC_USAGE; data?: IBaseJob }
 
   // Storage Template
   | { name: JobName.STORAGE_TEMPLATE_MIGRATION; data?: IBaseJob }
   | { name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE; data: IEntityJob }
-  | { name: JobName.SYSTEM_CONFIG_CHANGE; data?: IBaseJob }
 
   // Migration
   | { name: JobName.QUEUE_MIGRATION; data?: IBaseJob }
@@ -63,24 +64,21 @@ export type JobItem =
   | { name: JobName.SIDECAR_SYNC; data: IEntityJob }
   | { name: JobName.SIDECAR_WRITE; data: ISidecarWriteJob }
 
-  // Object Tagging
-  | { name: JobName.QUEUE_OBJECT_TAGGING; data: IBaseJob }
-  | { name: JobName.CLASSIFY_IMAGE; data: IEntityJob }
-
-  // Recognize Faces
-  | { name: JobName.QUEUE_RECOGNIZE_FACES; data: IBaseJob }
-  | { name: JobName.RECOGNIZE_FACES; data: IEntityJob }
+  // Facial Recognition
+  | { name: JobName.QUEUE_FACE_DETECTION; data: IBaseJob }
+  | { name: JobName.FACE_DETECTION; data: IEntityJob }
+  | { name: JobName.QUEUE_FACIAL_RECOGNITION; data: IBaseJob }
+  | { name: JobName.FACIAL_RECOGNITION; data: IDeferrableJob }
   | { name: JobName.GENERATE_PERSON_THUMBNAIL; data: IEntityJob }
-  | { name: JobName.PERSON_DELETE; data: IEntityJob }
 
-  // Clip Embedding
-  | { name: JobName.QUEUE_ENCODE_CLIP; data: IBaseJob }
-  | { name: JobName.ENCODE_CLIP; data: IEntityJob }
+  // Smart Search
+  | { name: JobName.QUEUE_SMART_SEARCH; data: IBaseJob }
+  | { name: JobName.SMART_SEARCH; data: IEntityJob }
 
   // Filesystem
   | { name: JobName.DELETE_FILES; data: IDeleteFilesJob }
 
-  // Audit log cleanup
+  // Audit Log Cleanup
   | { name: JobName.CLEAN_OLD_AUDIT_LOGS; data?: IBaseJob }
 
   // Asset Deletion
@@ -108,10 +106,12 @@ export interface IJobRepository {
   deleteCronJob(name: string): void;
   setConcurrency(queueName: QueueName, concurrency: number): void;
   queue(item: JobItem): Promise<void>;
+  queueAll(items: JobItem[]): Promise<void>;
   pause(name: QueueName): Promise<void>;
   resume(name: QueueName): Promise<void>;
   empty(name: QueueName): Promise<void>;
   clear(name: QueueName, type: QueueCleanType): Promise<string[]>;
   getQueueStatus(name: QueueName): Promise<QueueStatus>;
   getJobCounts(name: QueueName): Promise<JobCounts>;
+  waitForQueueCompletion(...queues: QueueName[]): Promise<void>;
 }

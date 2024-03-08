@@ -5,8 +5,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/search/providers/search_page_state.provider.dart';
 
 class SearchSuggestionList extends ConsumerWidget {
-  const SearchSuggestionList({Key? key, required this.onSubmitted})
-      : super(key: key);
+  const SearchSuggestionList({super.key, required this.onSubmitted});
 
   final Function(String) onSubmitted;
   @override

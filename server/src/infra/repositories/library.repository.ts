@@ -2,7 +2,7 @@ import { ILibraryRepository, LibraryStatsResponseDto } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Not } from 'typeorm';
-import { Repository } from 'typeorm/repository/Repository';
+import { Repository } from 'typeorm/repository/Repository.js';
 import { LibraryEntity, LibraryType } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';
 
@@ -166,7 +166,7 @@ export class LibraryRepository implements ILibraryRepository {
 
   @GenerateSql({ params: [DummyValue.UUID] })
   async getAssetIds(libraryId: string, withDeleted = false): Promise<string[]> {
-    let query = await this.repository
+    let query = this.repository
       .createQueryBuilder('library')
       .innerJoinAndSelect('library.assets', 'assets')
       .where('library.id = :id', { id: libraryId })

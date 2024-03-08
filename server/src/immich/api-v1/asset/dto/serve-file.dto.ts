@@ -1,18 +1,12 @@
-import { Optional, toBoolean } from '@app/domain';
+import { ValidateBoolean } from '@app/domain';
 import { ApiProperty } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
-import { IsBoolean } from 'class-validator';
 
 export class ServeFileDto {
-  @Optional()
-  @IsBoolean()
-  @Transform(toBoolean)
-  @ApiProperty({ type: Boolean, title: 'Is serve thumbnail (resize) file' })
+  @ValidateBoolean({ optional: true })
+  @ApiProperty({ title: 'Is serve thumbnail (resize) file' })
   isThumb?: boolean;
 
-  @Optional()
-  @IsBoolean()
-  @Transform(toBoolean)
-  @ApiProperty({ type: Boolean, title: 'Is request made from web' })
+  @ValidateBoolean({ optional: true })
+  @ApiProperty({ title: 'Is request made from web' })
   isWeb?: boolean;
 }

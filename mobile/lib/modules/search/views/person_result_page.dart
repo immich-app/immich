@@ -1,15 +1,16 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/modules/search/providers/people.provider.dart';
 import 'package:immich_mobile/modules/search/ui/person_name_edit_form.dart';
-import 'package:immich_mobile/shared/models/store.dart' as isar_store;
+import 'package:immich_mobile/shared/models/store.dart';
+import 'package:immich_mobile/shared/ui/asset_grid/multiselect_grid.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 
+@RoutePage()
 class PersonResultPage extends HookConsumerWidget {
   final String personId;
   final String personName;
@@ -101,7 +102,7 @@ class PersonResultPage extends HookConsumerWidget {
       appBar: AppBar(
         title: Text(name.value),
         leading: IconButton(
-          onPressed: () => context.autoPop(),
+          onPressed: () => context.popRoute(),
           icon: const Icon(Icons.arrow_back_ios_rounded),
         ),
         actions: [
@@ -111,32 +112,29 @@ class PersonResultPage extends HookConsumerWidget {
           ),
         ],
       ),
-      body: ref.watch(personAssetsProvider(personId)).widgetWhen(
-            onData: (renderList) => ImmichAssetGrid(
-              renderList: renderList,
-              topWidget: Padding(
-                padding: const EdgeInsets.only(left: 8.0, top: 24),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 36,
-                      backgroundImage: NetworkImage(
-                        getFaceThumbnailUrl(personId),
-                        headers: {
-                          "Authorization":
-                              "Bearer ${isar_store.Store.get(isar_store.StoreKey.accessToken)}",
-                        },
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 16.0),
-                      child: buildTitleBlock(),
-                    ),
-                  ],
+      body: MultiselectGrid(
+        renderListProvider: personAssetsProvider(personId),
+        topWidget: Padding(
+          padding: const EdgeInsets.only(left: 8.0, top: 24),
+          child: Row(
+            children: [
+              CircleAvatar(
+                radius: 36,
+                backgroundImage: NetworkImage(
+                  getFaceThumbnailUrl(personId),
+                  headers: {
+                    "x-immich-user-token": Store.get(StoreKey.accessToken),
+                  },
                 ),
               ),
-            ),
+              Padding(
+                padding: const EdgeInsets.only(left: 16.0),
+                child: buildTitleBlock(),
+              ),
+            ],
           ),
+        ),
+      ),
     );
   }
 }

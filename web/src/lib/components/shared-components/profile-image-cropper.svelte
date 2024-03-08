@@ -1,16 +1,19 @@
 <script lang="ts">
-  import { AssetResponseDto, api } from '@api';
-  import { createEventDispatcher, onMount } from 'svelte';
-  import { notificationController, NotificationType } from './notification/notification';
+  import { user } from '$lib/stores/user.store';
   import { handleError } from '$lib/utils/handle-error';
+  import { createProfileImage, type AssetResponseDto } from '@immich/sdk';
   import domtoimage from 'dom-to-image';
+  import { createEventDispatcher, onMount } from 'svelte';
   import PhotoViewer from '../asset-viewer/photo-viewer.svelte';
-  import BaseModal from './base-modal.svelte';
   import Button from '../elements/buttons/button.svelte';
+  import BaseModal from './base-modal.svelte';
+  import { NotificationType, notificationController } from './notification/notification';
 
   export let asset: AssetResponseDto;
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    close: void;
+  }>();
   let imgElement: HTMLDivElement;
 
   onMount(() => {
@@ -24,18 +27,18 @@
     const canvas = document.createElement('canvas');
     canvas.width = img.width;
     canvas.height = img.height;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) {
+    const context = canvas.getContext('2d');
+    if (!context) {
       throw new Error('Could not get canvas context.');
     }
-    ctx.drawImage(img, 0, 0);
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    context.drawImage(img, 0, 0);
+    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
     const data = imageData?.data;
     if (!data) {
       throw new Error('Could not get image data.');
     }
-    for (let i = 0; i < data.length; i += 4) {
-      if (data[i + 3] < 255) {
+    for (let index = 0; index < data.length; index += 4) {
+      if (data[index + 3] < 255) {
         return true;
       }
     }
@@ -54,14 +57,15 @@
         return;
       }
       const file = new File([blob], 'profile-picture.png', { type: 'image/png' });
-      await api.userApi.createProfileImage({ file });
+      const { profileImagePath } = await createProfileImage({ createProfileImageDto: { file } });
       notificationController.show({
         type: NotificationType.Info,
         message: 'Profile picture set.',
         timeout: 3000,
       });
-    } catch (err) {
-      handleError(err, 'Error setting profile picture.');
+      $user.profileImagePath = profileImagePath;
+    } catch (error) {
+      handleError(error, 'Error setting profile picture.');
     }
     dispatch('close');
   };

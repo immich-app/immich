@@ -5,12 +5,13 @@
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
+  import type { OnFavorite } from '$lib/utils/actions';
   import { handleError } from '$lib/utils/handle-error';
-  import { api } from '@api';
-  import { OnFavorite, getAssetControlContext } from '../asset-select-control-bar.svelte';
+  import { updateAssets } from '@immich/sdk';
   import { mdiHeartMinusOutline, mdiHeartOutline, mdiTimerSand } from '@mdi/js';
+  import { getAssetControlContext } from '../asset-select-control-bar.svelte';
 
-  export let onFavorite: OnFavorite | undefined = undefined;
+  export let onFavorite: OnFavorite;
 
   export let menuItem = false;
   export let removeFavorite: boolean;
@@ -27,19 +28,19 @@
     loading = true;
 
     try {
-      const assets = Array.from(getOwnedAssets()).filter((asset) => asset.isFavorite !== isFavorite);
+      const assets = [...getOwnedAssets()].filter((asset) => asset.isFavorite !== isFavorite);
 
       const ids = assets.map(({ id }) => id);
 
       if (ids.length > 0) {
-        await api.assetApi.updateAssets({ assetBulkUpdateDto: { ids, isFavorite } });
+        await updateAssets({ assetBulkUpdateDto: { ids, isFavorite } });
       }
 
       for (const asset of assets) {
         asset.isFavorite = isFavorite;
       }
 
-      onFavorite?.(ids, isFavorite);
+      onFavorite(ids, isFavorite);
 
       notificationController.show({
         message: isFavorite ? `Added ${ids.length} to favorites` : `Removed ${ids.length} from favorites`,

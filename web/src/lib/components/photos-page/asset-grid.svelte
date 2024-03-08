@@ -5,20 +5,22 @@
   import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { BucketPosition, type AssetStore, type Viewport } from '$lib/stores/assets.store';
-  import { locale } from '$lib/stores/preferences.store';
+  import { locale, showDeleteModal } from '$lib/stores/preferences.store';
   import { isSearchEnabled } from '$lib/stores/search.store';
+  import { featureFlags } from '$lib/stores/server-config.store';
+  import { deleteAssets } from '$lib/utils/actions';
+  import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
   import { formatGroupTitle, splitBucketIntoDateGroups } from '$lib/utils/timeline-util';
-  import type { AlbumResponseDto, AssetResponseDto } from '@api';
+  import type { AlbumResponseDto, AssetResponseDto } from '@immich/sdk';
   import { DateTime } from 'luxon';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
-  import AssetViewer from '../asset-viewer/asset-viewer.svelte';
   import IntersectionObserver from '../asset-viewer/intersection-observer.svelte';
   import Portal from '../shared-components/portal/portal.svelte';
   import Scrollbar from '../shared-components/scrollbar/scrollbar.svelte';
   import ShowShortcuts from '../shared-components/show-shortcuts.svelte';
   import AssetDateGroup from './asset-date-group.svelte';
-  import { featureFlags } from '$lib/stores/server-config.store';
-  import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
+  import DeleteAssetDialog from './delete-asset-dialog.svelte';
+  import { handlePromiseError } from '$lib/utils';
 
   export let isSelectionMode = false;
   export let singleSelect = false;
@@ -26,11 +28,12 @@
   export let assetInteractionStore: AssetInteractionStore;
   export let removeAction: AssetAction | null = null;
   export let withStacked = false;
+  export let showArchiveIcon = false;
   export let isShared = false;
   export let album: AlbumResponseDto | null = null;
+  export let isShowDeleteConfirmation = false;
 
   $: isTrashEnabled = $featureFlags.loaded && $featureFlags.trash;
-  export let forceDelete = false;
 
   const { assetSelectionCandidates, assetSelectionStart, selectedGroup, selectedAssets, isMultiSelectState } =
     assetInteractionStore;
@@ -42,20 +45,21 @@
 
   $: timelineY = element?.scrollTop || 0;
   $: isEmpty = $assetStore.initialized && $assetStore.buckets.length === 0;
+  $: idsSelectedAssets = [...$selectedAssets].filter((a) => !a.isExternal).map((a) => a.id);
 
-  const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
   const dispatch = createEventDispatcher<{ select: AssetResponseDto; escape: void }>();
 
+  const onKeydown = (event: KeyboardEvent) => handlePromiseError(handleKeyboardPress(event));
   onMount(async () => {
     showSkeleton = false;
-    document.addEventListener('keydown', onKeyboardPress);
+    document.addEventListener('keydown', onKeydown);
     assetStore.connect();
     await assetStore.init(viewport);
   });
 
   onDestroy(() => {
     if (browser) {
-      document.removeEventListener('keydown', onKeyboardPress);
+      document.removeEventListener('keydown', onKeydown);
     }
 
     if ($showAssetViewer) {
@@ -65,26 +69,53 @@
     assetStore.disconnect();
   });
 
-  const handleKeyboardPress = (event: KeyboardEvent) => {
+  const trashOrDelete = async (force: boolean = false) => {
+    isShowDeleteConfirmation = false;
+    await deleteAssets(!(isTrashEnabled && !force), (assetIds) => assetStore.removeAssets(assetIds), idsSelectedAssets);
+    assetInteractionStore.clearMultiselect();
+  };
+
+  const handleKeyboardPress = async (event: KeyboardEvent) => {
     if ($isSearchEnabled || shouldIgnoreShortcut(event)) {
       return;
     }
 
+    const key = event.key;
+    const shiftKey = event.shiftKey;
+
     if (!$showAssetViewer) {
-      switch (event.key) {
-        case 'Escape':
+      switch (key) {
+        case 'Escape': {
           dispatch('escape');
           return;
-        case '?':
+        }
+        case '?': {
           if (event.shiftKey) {
             event.preventDefault();
             showShortcuts = !showShortcuts;
           }
           return;
-        case '/':
+        }
+        case '/': {
           event.preventDefault();
-          goto(AppRoute.EXPLORE);
+          await goto(AppRoute.EXPLORE);
           return;
+        }
+        case 'Delete': {
+          if ($isMultiSelectState) {
+            let force = false;
+            if (shiftKey || !isTrashEnabled) {
+              if ($showDeleteModal) {
+                isShowDeleteConfirmation = true;
+                return;
+              }
+              force = true;
+            }
+
+            await trashOrDelete(force);
+          }
+          return;
+        }
       }
     }
   };
@@ -95,12 +126,12 @@
     }
   };
 
-  function intersectedHandler(event: CustomEvent) {
-    const el = event.detail.container as HTMLElement;
-    const target = el.firstChild as HTMLElement;
+  async function intersectedHandler(event: CustomEvent) {
+    const element_ = event.detail.container as HTMLElement;
+    const target = element_.firstChild as HTMLElement;
     if (target) {
       const bucketDate = target.id.split('_')[1];
-      assetStore.loadBucket(bucketDate, event.detail.position);
+      await assetStore.loadBucket(bucketDate, event.detail.position);
     }
   }
 
@@ -111,7 +142,7 @@
   const handlePrevious = async () => {
     const previousAsset = await assetStore.getPreviousAssetId($viewingAsset.id);
     if (previousAsset) {
-      assetViewingStore.setAssetId(previousAsset);
+      await assetViewingStore.setAssetId(previousAsset);
     }
 
     return !!previousAsset;
@@ -120,7 +151,7 @@
   const handleNext = async () => {
     const nextAsset = await assetStore.getNextAssetId($viewingAsset.id);
     if (nextAsset) {
-      assetViewingStore.setAssetId(nextAsset);
+      await assetViewingStore.setAssetId(nextAsset);
     }
 
     return !!nextAsset;
@@ -132,24 +163,27 @@
     switch (action) {
       case removeAction:
       case AssetAction.TRASH:
-      case AssetAction.DELETE:
+      case AssetAction.DELETE: {
         // find the next asset to show or close the viewer
         (await handleNext()) || (await handlePrevious()) || handleClose();
 
         // delete after find the next one
-        assetStore.removeAsset(asset.id);
+        assetStore.removeAssets([asset.id]);
         break;
+      }
 
       case AssetAction.ARCHIVE:
       case AssetAction.UNARCHIVE:
       case AssetAction.FAVORITE:
-      case AssetAction.UNFAVORITE:
+      case AssetAction.UNFAVORITE: {
         assetStore.updateAsset(asset);
         break;
+      }
 
-      case AssetAction.ADD:
+      case AssetAction.ADD: {
         assetStore.addAsset(asset);
         break;
+      }
     }
   };
 
@@ -331,6 +365,14 @@
 
 <svelte:window on:keydown={onKeyDown} on:keyup={onKeyUp} on:selectstart={onSelectStart} />
 
+{#if isShowDeleteConfirmation}
+  <DeleteAssetDialog
+    size={idsSelectedAssets.length}
+    on:cancel={() => (isShowDeleteConfirmation = false)}
+    on:confirm={() => handlePromiseError(trashOrDelete(true))}
+  />
+{/if}
+
 {#if showShortcuts}
   <ShowShortcuts on:close={() => (showShortcuts = !showShortcuts)} />
 {/if}
@@ -356,7 +398,7 @@
     <div class="mt-8 animate-pulse">
       <div class="mb-2 h-4 w-24 rounded-full bg-immich-primary/20 dark:bg-immich-dark-primary/20" />
       <div class="flex w-[120%] flex-wrap">
-        {#each Array(100) as _}
+        {#each Array.from({ length: 100 }) as _}
           <div class="m-[1px] h-[10em] w-[16em] bg-immich-primary/20 dark:bg-immich-dark-primary/20" />
         {/each}
       </div>
@@ -371,7 +413,7 @@
       <slot name="empty" />
     {/if}
     <section id="virtual-timeline" style:height={$assetStore.timelineHeight + 'px'}>
-      {#each $assetStore.buckets as bucket, bucketIndex (bucketIndex)}
+      {#each $assetStore.buckets as bucket (bucket.bucketDate)}
         <IntersectionObserver
           on:intersected={intersectedHandler}
           on:hidden={() => assetStore.cancelBucket(bucket)}
@@ -384,6 +426,7 @@
             {#if intersecting}
               <AssetDateGroup
                 {withStacked}
+                {showArchiveIcon}
                 {assetStore}
                 {assetInteractionStore}
                 {isSelectionMode}
@@ -407,18 +450,19 @@
 
 <Portal target="body">
   {#if $showAssetViewer}
-    <AssetViewer
-      {withStacked}
-      {assetStore}
-      asset={$viewingAsset}
-      force={forceDelete || !isTrashEnabled}
-      {isShared}
-      {album}
-      on:previous={() => handlePrevious()}
-      on:next={() => handleNext()}
-      on:close={() => handleClose()}
-      on:action={({ detail: action }) => handleAction(action.type, action.asset)}
-    />
+    {#await import('../asset-viewer/asset-viewer.svelte') then AssetViewer}
+      <AssetViewer.default
+        {withStacked}
+        {assetStore}
+        asset={$viewingAsset}
+        {isShared}
+        {album}
+        on:previous={handlePrevious}
+        on:next={handleNext}
+        on:close={handleClose}
+        on:action={({ detail: action }) => handleAction(action.type, action.asset)}
+      />
+    {/await}
   {/if}
 </Portal>
 

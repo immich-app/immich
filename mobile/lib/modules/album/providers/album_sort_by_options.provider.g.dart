@@ -7,7 +7,7 @@ part of 'album_sort_by_options.provider.dart';
 // **************************************************************************
 
 String _$albumSortByOptionsHash() =>
-    r'8d22fa8b7cbca2d3d7ed20a83bf00211dc948004';
+    r'dd8da5e730af555de1b86c3b157b6c93183523ac';
 
 /// See also [AlbumSortByOptions].
 @ProviderFor(AlbumSortByOptions)

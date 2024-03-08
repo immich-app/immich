@@ -18,7 +18,6 @@
   import { AssetStore } from '$lib/stores/assets.store';
   import type { PageData } from './$types';
   import { mdiDotsVertical, mdiPlus } from '@mdi/js';
-  import UpdatePanel from '$lib/components/shared-components/update-panel.svelte';
 
   export let data: PageData;
 
@@ -26,30 +25,30 @@
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
-  $: isAllArchive = Array.from($selectedAssets).every((asset) => asset.isArchived);
+  $: isAllArchive = [...$selectedAssets].every((asset) => asset.isArchived);
 </script>
 
 <!-- Multiselection mode app bar -->
 {#if $isMultiSelectState}
   <AssetSelectControlBar assets={$selectedAssets} clearSelect={() => assetInteractionStore.clearMultiselect()}>
-    <FavoriteAction removeFavorite onFavorite={(ids) => assetStore.removeAssets(ids)} />
+    <FavoriteAction removeFavorite onFavorite={(assetIds) => assetStore.removeAssets(assetIds)} />
     <CreateSharedLink />
     <SelectAllAssets {assetStore} {assetInteractionStore} />
     <AssetSelectContextMenu icon={mdiPlus} title="Add">
       <AddToAlbum />
       <AddToAlbum shared />
     </AssetSelectContextMenu>
-    <DeleteAssets onAssetDelete={(assetId) => assetStore.removeAsset(assetId)} />
+    <DeleteAssets onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)} />
     <AssetSelectContextMenu icon={mdiDotsVertical} title="Menu">
       <DownloadAction menuItem />
-      <ArchiveAction menuItem unarchive={isAllArchive} />
+      <ArchiveAction menuItem unarchive={isAllArchive} onArchive={(assetIds) => assetStore.removeAssets(assetIds)} />
       <ChangeDate menuItem />
       <ChangeLocation menuItem />
     </AssetSelectContextMenu>
   </AssetSelectControlBar>
 {/if}
 
-<UserPageLayout user={data.user} hideNavbar={$isMultiSelectState} title={data.meta.title} scrollbar={false}>
+<UserPageLayout hideNavbar={$isMultiSelectState} title={data.meta.title} scrollbar={false}>
   <AssetGrid {assetStore} {assetInteractionStore} removeAction={AssetAction.UNFAVORITE}>
     <EmptyPlaceholder
       text="Add favorites to quickly find your best pictures and videos"
@@ -58,4 +57,3 @@
     />
   </AssetGrid>
 </UserPageLayout>
-<UpdatePanel {assetStore} />

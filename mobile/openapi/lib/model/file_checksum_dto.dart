@@ -20,7 +20,7 @@ class FileChecksumDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is FileChecksumDto &&
-     other.filenames == filenames;
+    _deepEquality.equals(other.filenames, filenames);
 
   @override
   int get hashCode =>
@@ -44,8 +44,8 @@ class FileChecksumDto {
       final json = value.cast<String, dynamic>();
 
       return FileChecksumDto(
-        filenames: json[r'filenames'] is List
-            ? (json[r'filenames'] as List).cast<String>()
+        filenames: json[r'filenames'] is Iterable
+            ? (json[r'filenames'] as Iterable).cast<String>().toList(growable: false)
             : const [],
       );
     }

@@ -10,12 +10,12 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **avatarColor** | [**UserAvatarColor**](UserAvatarColor.md) |  | [optional] 
 **email** | **String** |  | [optional] 
-**externalPath** | **String** |  | [optional] 
 **id** | **String** |  | 
 **isAdmin** | **bool** |  | [optional] 
 **memoriesEnabled** | **bool** |  | [optional] 
 **name** | **String** |  | [optional] 
 **password** | **String** |  | [optional] 
+**quotaSizeInBytes** | **int** |  | [optional] 
 **shouldChangePassword** | **bool** |  | [optional] 
 **storageLabel** | **String** |  | [optional] 
 

@@ -20,7 +20,7 @@ class SystemConfigNewVersionCheckDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigNewVersionCheckDto &&
-     other.enabled == enabled;
+    other.enabled == enabled;
 
   @override
   int get hashCode =>

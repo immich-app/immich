@@ -31,6 +31,11 @@ void main() {
       // TODO
     });
 
+    // SystemConfigLoggingDto logging
+    test('to test the property `logging`', () async {
+      // TODO
+    });
+
     // SystemConfigMachineLearningDto machineLearning
     test('to test the property `machineLearning`', () async {
       // TODO
@@ -61,6 +66,11 @@ void main() {
       // TODO
     });
 
+    // SystemConfigServerDto server
+    test('to test the property `server`', () async {
+      // TODO
+    });
+
     // SystemConfigStorageTemplateDto storageTemplate
     test('to test the property `storageTemplate`', () async {
       // TODO
@@ -78,6 +88,11 @@ void main() {
 
     // SystemConfigTrashDto trash
     test('to test the property `trash`', () async {
+      // TODO
+    });
+
+    // SystemConfigUserDto user
+    test('to test the property `user`', () async {
       // TODO
     });
 

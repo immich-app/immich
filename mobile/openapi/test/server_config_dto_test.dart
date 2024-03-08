@@ -16,8 +16,18 @@ void main() {
   // final instance = ServerConfigDto();
 
   group('test ServerConfigDto', () {
+    // String externalDomain
+    test('to test the property `externalDomain`', () async {
+      // TODO
+    });
+
     // bool isInitialized
     test('to test the property `isInitialized`', () async {
+      // TODO
+    });
+
+    // bool isOnboarded
+    test('to test the property `isOnboarded`', () async {
       // TODO
     });
 
@@ -33,6 +43,11 @@ void main() {
 
     // int trashDays
     test('to test the property `trashDays`', () async {
+      // TODO
+    });
+
+    // int userDeleteDelay
+    test('to test the property `userDeleteDelay`', () async {
       // TODO
     });
 

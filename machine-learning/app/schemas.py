@@ -1,12 +1,16 @@
-from enum import StrEnum
-from typing import Any, Protocol, TypeAlias, TypedDict, TypeGuard
+from enum import Enum
+from typing import Any, Protocol, TypedDict, TypeGuard
 
 import numpy as np
+import numpy.typing as npt
 from pydantic import BaseModel
 
-ndarray_f32: TypeAlias = np.ndarray[int, np.dtype[np.float32]]
-ndarray_i64: TypeAlias = np.ndarray[int, np.dtype[np.int64]]
-ndarray_i32: TypeAlias = np.ndarray[int, np.dtype[np.int32]]
+
+class StrEnum(str, Enum):
+    value: str
+
+    def __str__(self) -> str:
+        return self.value
 
 
 class TextResponse(BaseModel):
@@ -25,9 +29,13 @@ class BoundingBox(TypedDict):
 
 
 class ModelType(StrEnum):
-    IMAGE_CLASSIFICATION = "image-classification"
     CLIP = "clip"
     FACIAL_RECOGNITION = "facial-recognition"
+
+
+class ModelRuntime(StrEnum):
+    ONNX = "onnx"
+    ARMNN = "armnn"
 
 
 class HasProfiling(Protocol):
@@ -36,11 +44,15 @@ class HasProfiling(Protocol):
 
 class Face(TypedDict):
     boundingBox: BoundingBox
-    embedding: ndarray_f32
+    embedding: npt.NDArray[np.float32]
     imageWidth: int
     imageHeight: int
     score: float
 
 
 def has_profiling(obj: Any) -> TypeGuard[HasProfiling]:
-    return hasattr(obj, "profiling") and type(obj.profiling) == dict
+    return hasattr(obj, "profiling") and isinstance(obj.profiling, dict)
+
+
+def is_ndarray(obj: Any, dtype: "type[np._DTypeScalar_co]") -> "TypeGuard[npt.NDArray[np._DTypeScalar_co]]":
+    return isinstance(obj, np.ndarray) and obj.dtype == dtype

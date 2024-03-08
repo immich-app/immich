@@ -12,7 +12,6 @@ Name | Type | Description | Notes
 **createdAt** | [**DateTime**](DateTime.md) |  | 
 **deletedAt** | [**DateTime**](DateTime.md) |  | 
 **email** | **String** |  | 
-**externalPath** | **String** |  | 
 **id** | **String** |  | 
 **inTimeline** | **bool** |  | [optional] 
 **isAdmin** | **bool** |  | 
@@ -20,6 +19,8 @@ Name | Type | Description | Notes
 **name** | **String** |  | 
 **oauthId** | **String** |  | 
 **profileImagePath** | **String** |  | 
+**quotaSizeInBytes** | **int** |  | 
+**quotaUsageInBytes** | **int** |  | 
 **shouldChangePassword** | **bool** |  | 
 **storageLabel** | **String** |  | 
 **updatedAt** | [**DateTime**](DateTime.md) |  | 

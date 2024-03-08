@@ -1,4 +1,4 @@
-version: "3.8"
+version: '3.8'
 
 name: immich-prod
 
@@ -17,7 +17,7 @@ x-server-build: &server-common
 services:
   immich-server:
     container_name: immich_server
-    command: [ "./start-server.sh" ]
+    command: ['start.sh', 'immich']
     <<: *server-common
     ports:
       - 2283:3001
@@ -27,11 +27,11 @@ services:
 
   immich-microservices:
     container_name: immich_microservices
-    command: [ "./start-microservices.sh" ]
+    command: ['start.sh', 'microservices']
     <<: *server-common
     # extends:
-    #   file: hwaccel.yml
-    #   service: hwaccel
+    #   file: hwaccel.transcoding.yml
+    #   service: cpu # set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for accelerated transcoding
     depends_on:
       - redis
       - database
@@ -40,9 +40,14 @@ services:
   immich-machine-learning:
     container_name: immich_machine_learning
     image: immich-machine-learning:latest
+    # extends:
+    #   file: hwaccel.ml.yml
+    #   service: cpu # set to one of [armnn, cuda, openvino, openvino-wsl] for accelerated inference
     build:
       context: ../machine-learning
       dockerfile: Dockerfile
+      args:
+        - DEVICE=cpu # set to one of [armnn, cuda, openvino, openvino-wsl] for accelerated inference
     volumes:
       - model-cache:/cache
     env_file:
@@ -51,12 +56,12 @@ services:
 
   redis:
     container_name: immich_redis
-    image: redis:6.2-alpine@sha256:b6124ab2e45cc332e16398022a411d7e37181f21ff7874835e0180f56a09e82a
+    image: redis:6.2-alpine@sha256:51d6c56749a4243096327e3fb964a48ed92254357108449cb6e23999c37773c5
     restart: always
 
   database:
     container_name: immich_postgres
-    image: tensorchord/pgvecto-rs:pg14-v0.1.11@sha256:0335a1a22f8c5dd1b697f14f079934f5152eaaa216c09b61e293be285491f8ee
+    image: tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:90724186f0a3517cf6914295b5ab410db9ce23190a2d9d0b9dd6463e3fa298f0
     env_file:
       - .env
     environment:
@@ -65,7 +70,8 @@ services:
       POSTGRES_DB: ${DB_DATABASE_NAME}
     volumes:
       - ${UPLOAD_LOCATION}/postgres:/var/lib/postgresql/data
-    restart: always
+    ports:
+      - 5432:5432
 
 volumes:
   model-cache:

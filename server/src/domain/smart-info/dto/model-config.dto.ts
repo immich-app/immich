@@ -1,11 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsBoolean, IsEnum, IsNotEmpty, IsNumber, IsString, Max, Min } from 'class-validator';
-import { Optional } from '../../domain.util';
+import { IsEnum, IsNotEmpty, IsNumber, IsString, Max, Min } from 'class-validator';
+import { Optional, ValidateBoolean } from '../../domain.util';
 import { CLIPMode, ModelType } from '../../repositories';
 
 export class ModelConfig {
-  @IsBoolean()
+  @ValidateBoolean()
   enabled!: boolean;
 
   @IsString()
@@ -16,15 +16,6 @@ export class ModelConfig {
   @Optional()
   @ApiProperty({ enumName: 'ModelType', enum: ModelType })
   modelType?: ModelType;
-}
-
-export class ClassificationConfig extends ModelConfig {
-  @IsNumber()
-  @Min(0)
-  @Max(1)
-  @Type(() => Number)
-  @ApiProperty({ type: 'integer' })
-  minScore!: number;
 }
 
 export class CLIPConfig extends ModelConfig {
@@ -39,14 +30,14 @@ export class RecognitionConfig extends ModelConfig {
   @Min(0)
   @Max(1)
   @Type(() => Number)
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({ type: 'number', format: 'float' })
   minScore!: number;
 
   @IsNumber()
   @Min(0)
   @Max(2)
   @Type(() => Number)
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({ type: 'number', format: 'float' })
   maxDistance!: number;
 
   @IsNumber()

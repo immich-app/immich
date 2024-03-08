@@ -6,6 +6,8 @@ Smart search is powered by the [pgvecto.rs](https://github.com/tensorchord/pgvec
 
 Metadata search (prefixed with `m:`) can search specifically by text without the use of a model.
 
+Archived photos are not included in search results by default. To include them, add the query parameter `withArchived=true` to the url.
+
 Some search examples:
 <img src={require('./img/search-ex-2.webp').default} title='Search Example 1' />
 

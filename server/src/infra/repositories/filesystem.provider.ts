@@ -1,24 +1,35 @@
 import {
   CrawlOptionsDto,
   DiskUsage,
+  IStorageRepository,
   ImmichReadStream,
   ImmichZipStream,
-  IStorageRepository,
+  StorageEventType,
+  WatchEvents,
   mimeTypes,
 } from '@app/domain';
-import { Logger } from '@nestjs/common';
+import { ImmichLogger } from '@app/infra/logger';
 import archiver from 'archiver';
-import { constants, createReadStream, existsSync, mkdirSync } from 'fs';
-import fs, { readdir, writeFile } from 'fs/promises';
+import chokidar, { WatchOptions } from 'chokidar';
 import { glob } from 'glob';
-import mv from 'mv';
-import { promisify } from 'node:util';
-import path from 'path';
-
-const moveFile = promisify<string, string, mv.Options>(mv);
+import { constants, createReadStream, existsSync, mkdirSync } from 'node:fs';
+import fs, { copyFile, readdir, rename, stat, utimes, writeFile } from 'node:fs/promises';
+import path from 'node:path';
 
 export class FilesystemProvider implements IStorageRepository {
-  private logger = new Logger(FilesystemProvider.name);
+  private logger = new ImmichLogger(FilesystemProvider.name);
+
+  readdir = readdir;
+
+  copyFile = copyFile;
+
+  stat = stat;
+
+  writeFile = writeFile;
+
+  rename = rename;
+
+  utimes = utimes;
 
   createZipStream(): ImmichZipStream {
     const archive = archiver('zip', { store: true });
@@ -52,32 +63,26 @@ export class FilesystemProvider implements IStorageRepository {
     }
   }
 
-  writeFile = writeFile;
-
-  async moveFile(source: string, destination: string): Promise<void> {
-    this.logger.verbose(`Moving ${source} to ${destination}`);
-
-    if (await this.checkFileExists(destination)) {
-      throw new Error(`Destination file already exists: ${destination}`);
-    }
-
-    await moveFile(source, destination, { mkdirp: true, clobber: true });
-  }
-
   async checkFileExists(filepath: string, mode = constants.F_OK): Promise<boolean> {
     try {
       await fs.access(filepath, mode);
       return true;
-    } catch (_) {
+    } catch {
       return false;
     }
   }
 
   async unlink(file: string) {
-    await fs.unlink(file);
+    try {
+      await fs.unlink(file);
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException)?.code === 'ENOENT') {
+        this.logger.warn(`File ${file} does not exist.`);
+      } else {
+        throw error;
+      }
+    }
   }
-
-  stat = fs.stat;
 
   async unlinkDir(folder: string, options: { recursive?: boolean; force?: boolean }) {
     await fs.rm(folder, options);
@@ -134,5 +139,15 @@ export class FilesystemProvider implements IStorageRepository {
     });
   }
 
-  readdir = readdir;
+  watch(paths: string[], options: WatchOptions, events: Partial<WatchEvents>) {
+    const watcher = chokidar.watch(paths, options);
+
+    watcher.on(StorageEventType.READY, () => events.onReady?.());
+    watcher.on(StorageEventType.ADD, (path) => events.onAdd?.(path));
+    watcher.on(StorageEventType.CHANGE, (path) => events.onChange?.(path));
+    watcher.on(StorageEventType.UNLINK, (path) => events.onUnlink?.(path));
+    watcher.on(StorageEventType.ERROR, (error) => events.onError?.(error));
+
+    return () => watcher.close();
+  }
 }

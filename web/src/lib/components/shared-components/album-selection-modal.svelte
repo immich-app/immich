@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { AlbumResponseDto, api } from '@api';
-  import { createEventDispatcher, onMount } from 'svelte';
   import Icon from '$lib/components/elements/icon.svelte';
-  import BaseModal from './base-modal.svelte';
-  import AlbumListItem from '../asset-viewer/album-list-item.svelte';
+  import { getAllAlbums, type AlbumResponseDto } from '@immich/sdk';
   import { mdiPlus } from '@mdi/js';
+  import { createEventDispatcher, onMount } from 'svelte';
+  import AlbumListItem from '../asset-viewer/album-list-item.svelte';
+  import BaseModal from './base-modal.svelte';
 
   let albums: AlbumResponseDto[] = [];
   let recentAlbums: AlbumResponseDto[] = [];
@@ -12,39 +12,35 @@
   let loading = true;
   let search = '';
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    newAlbum: string;
+    album: AlbumResponseDto;
+    close: void;
+  }>();
 
   export let shared: boolean;
 
   onMount(async () => {
-    const { data } = await api.albumApi.getAllAlbums({ shared: shared || undefined });
-    albums = data;
-
+    albums = await getAllAlbums({ shared: shared || undefined });
     recentAlbums = albums.sort((a, b) => (new Date(a.createdAt) > new Date(b.createdAt) ? -1 : 1)).slice(0, 3);
-
     loading = false;
   });
 
   $: {
-    if (search.length > 0 && albums.length > 0) {
-      filteredAlbums = albums.filter((album) => {
-        return album.albumName.toLowerCase().includes(search.toLowerCase());
-      });
-    } else {
-      filteredAlbums = albums;
-    }
+    filteredAlbums =
+      search.length > 0 && albums.length > 0
+        ? albums.filter((album) => {
+            return album.albumName.toLowerCase().includes(search.toLowerCase());
+          })
+        : albums;
   }
 
   const handleSelect = (album: AlbumResponseDto) => {
-    dispatch('album', { album });
+    dispatch('album', album);
   };
 
   const handleNew = () => {
-    if (shared) {
-      dispatch('newAlbum', { albumName: search.length > 0 ? search : '' });
-    } else {
-      dispatch('newSharedAlbum', { albumName: search.length > 0 ? search : '' });
-    }
+    dispatch('newAlbum', search.length > 0 ? search : '');
   };
 </script>
 

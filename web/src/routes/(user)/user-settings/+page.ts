@@ -1,15 +1,14 @@
 import { authenticate } from '$lib/utils/auth';
-import { api } from '@api';
+import { getApiKeys, getAuthDevices } from '@immich/sdk';
 import type { PageLoad } from './$types';
 
 export const load = (async () => {
-  const user = await authenticate();
+  await authenticate();
 
-  const { data: keys } = await api.keyApi.getApiKeys();
-  const { data: devices } = await api.authenticationApi.getAuthDevices();
+  const keys = await getApiKeys();
+  const devices = await getAuthDevices();
 
   return {
-    user,
     keys,
     devices,
     meta: {

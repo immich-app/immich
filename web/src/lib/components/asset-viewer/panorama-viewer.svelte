@@ -1,42 +1,23 @@
 <script lang="ts">
+  import { serveFile, type AssetResponseDto } from '@immich/sdk';
   import { fade } from 'svelte/transition';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
-  import { api, AssetResponseDto } from '@api';
-  import View360, { EquirectProjection } from '@egjs/svelte-view360';
-  import './panorama-viewer.css';
 
   export let asset: AssetResponseDto;
 
-  let dataUrl = '';
-  let errorMessage = '';
-
   const loadAssetData = async () => {
-    try {
-      const { data } = await api.assetApi.serveFile(
-        { id: asset.id, isThumb: false, isWeb: false, key: api.getKey() },
-        { responseType: 'blob' },
-      );
-      if (data instanceof Blob) {
-        dataUrl = URL.createObjectURL(data);
-        return dataUrl;
-      } else {
-        throw new Error('Invalid data format');
-      }
-    } catch (error) {
-      errorMessage = 'Failed to load asset';
-      return '';
-    }
+    const data = await serveFile({ id: asset.id, isWeb: false, isThumb: false });
+    return URL.createObjectURL(data);
   };
 </script>
 
 <div transition:fade={{ duration: 150 }} class="flex h-full select-none place-content-center place-items-center">
-  {#await loadAssetData()}
+  <!-- the photo sphere viewer is quite large, so lazy load it in parallel with loading the data -->
+  {#await Promise.all([loadAssetData(), import('./photo-sphere-viewer-adapter.svelte')])}
     <LoadingSpinner />
-  {:then assetData}
-    {#if assetData}
-      <View360 autoResize={true} initialZoom={0.5} projection={new EquirectProjection({ src: assetData })} />
-    {:else}
-      <p>{errorMessage}</p>
-    {/if}
+  {:then [data, module]}
+    <svelte:component this={module.default} panorama={data} />
+  {:catch}
+    Failed to load asset
   {/await}
 </div>

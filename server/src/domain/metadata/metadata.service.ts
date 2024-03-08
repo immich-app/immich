@@ -1,20 +1,22 @@
 import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { ImmichLogger } from '@app/infra/logger';
+import { Inject, Injectable } from '@nestjs/common';
 import { ExifDateTime, Tags } from 'exiftool-vendored';
 import { firstDateTime } from 'exiftool-vendored/dist/FirstDateTime';
-import { constants } from 'fs/promises';
 import _ from 'lodash';
 import { Duration } from 'luxon';
+import { constants } from 'node:fs/promises';
 import { Subscription } from 'rxjs';
-import { usePagination } from '../domain.util';
+import { handlePromiseError, usePagination } from '../domain.util';
 import { IBaseJob, IEntityJob, ISidecarWriteJob, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
 import {
-  CommunicationEvent,
-  ExifDuration,
+  ClientEvent,
+  DatabaseLock,
   IAlbumRepository,
   IAssetRepository,
   ICommunicationRepository,
   ICryptoRepository,
+  IDatabaseRepository,
   IJobRepository,
   IMediaRepository,
   IMetadataRepository,
@@ -23,7 +25,6 @@ import {
   IStorageRepository,
   ISystemConfigRepository,
   ImmichTags,
-  WithProperty,
   WithoutProperty,
 } from '../repositories';
 import { StorageCore } from '../storage';
@@ -82,7 +83,7 @@ const validate = <T>(value: T): NonNullable<T> | null => {
     return null;
   }
 
-  if (typeof value === 'number' && (isNaN(value) || !isFinite(value))) {
+  if (typeof value === 'number' && (Number.isNaN(value) || !Number.isFinite(value))) {
     return null;
   }
 
@@ -91,7 +92,7 @@ const validate = <T>(value: T): NonNullable<T> | null => {
 
 @Injectable()
 export class MetadataService {
-  private logger = new Logger(MetadataService.name);
+  private logger = new ImmichLogger(MetadataService.name);
   private storageCore: StorageCore;
   private configCore: SystemConfigCore;
   private subscription: Subscription | null = null;
@@ -99,23 +100,31 @@ export class MetadataService {
   constructor(
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
+    @Inject(ICommunicationRepository) private communicationRepository: ICommunicationRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
+    @Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
+    @Inject(IMediaRepository) private mediaRepository: IMediaRepository,
     @Inject(IMetadataRepository) private repository: IMetadataRepository,
+    @Inject(IMoveRepository) moveRepository: IMoveRepository,
+    @Inject(IPersonRepository) personRepository: IPersonRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
-    @Inject(IMediaRepository) private mediaRepository: IMediaRepository,
-    @Inject(IMoveRepository) moveRepository: IMoveRepository,
-    @Inject(ICommunicationRepository) private communicationRepository: ICommunicationRepository,
-    @Inject(IPersonRepository) personRepository: IPersonRepository,
   ) {
     this.configCore = SystemConfigCore.create(configRepository);
-    this.storageCore = StorageCore.create(assetRepository, moveRepository, personRepository, storageRepository);
+    this.storageCore = StorageCore.create(
+      assetRepository,
+      moveRepository,
+      personRepository,
+      cryptoRepository,
+      configRepository,
+      storageRepository,
+    );
   }
 
   async init() {
     if (!this.subscription) {
-      this.subscription = this.configCore.config$.subscribe(() => this.init());
+      this.subscription = this.configCore.config$.subscribe(() => handlePromiseError(this.init(), this.logger));
     }
 
     const { reverseGeocoding } = await this.configCore.getConfig();
@@ -127,7 +136,7 @@ export class MetadataService {
 
     try {
       await this.jobRepository.pause(QueueName.METADATA_EXTRACTION);
-      await this.repository.init();
+      await this.databaseRepository.withLock(DatabaseLock.GeodataImport, () => this.repository.init());
       await this.jobRepository.resume(QueueName.METADATA_EXTRACTION);
 
       this.logger.log(`Initialized local reverse geocoder`);
@@ -171,7 +180,7 @@ export class MetadataService {
     await this.albumRepository.removeAsset(motionAsset.id);
 
     // Notify clients to hide the linked live photo asset
-    this.communicationRepository.send(CommunicationEvent.ASSET_HIDDEN, motionAsset.ownerId, motionAsset.id);
+    this.communicationRepository.send(ClientEvent.ASSET_HIDDEN, motionAsset.ownerId, motionAsset.id);
 
     return true;
   }
@@ -185,9 +194,9 @@ export class MetadataService {
     });
 
     for await (const assets of assetPagination) {
-      for (const asset of assets) {
-        await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: asset.id } });
-      }
+      await this.jobRepository.queueAll(
+        assets.map((asset) => ({ name: JobName.METADATA_EXTRACTION, data: { id: asset.id } })),
+      );
     }
 
     return true;
@@ -195,7 +204,7 @@ export class MetadataService {
 
   async handleMetadataExtraction({ id }: IEntityJob) {
     const [asset] = await this.assetRepository.getByIds([id]);
-    if (!asset || !asset.isVisible) {
+    if (!asset) {
       return false;
     }
 
@@ -206,18 +215,22 @@ export class MetadataService {
 
       if (videoStreams[0]) {
         switch (videoStreams[0].rotation) {
-          case -90:
+          case -90: {
             exifData.orientation = Orientation.Rotate90CW;
             break;
-          case 0:
+          }
+          case 0: {
             exifData.orientation = Orientation.Horizontal;
             break;
-          case 90:
+          }
+          case 90: {
             exifData.orientation = Orientation.Rotate270CW;
             break;
-          case 180:
+          }
+          case 180: {
             exifData.orientation = Orientation.Rotate180;
             break;
+          }
         }
       }
     }
@@ -232,13 +245,18 @@ export class MetadataService {
     const timeZoneOffset = tzOffset(firstDateTime(tags as Tags)) ?? 0;
 
     if (dateTimeOriginal && timeZoneOffset) {
-      localDateTime = new Date(dateTimeOriginal.getTime() + timeZoneOffset * 60000);
+      localDateTime = new Date(dateTimeOriginal.getTime() + timeZoneOffset * 60_000);
     }
     await this.assetRepository.save({
       id: asset.id,
       duration: tags.Duration ? this.getDuration(tags.Duration) : null,
       localDateTime,
       fileCreatedAt: exifData.dateTimeOriginal ?? undefined,
+    });
+
+    await this.assetRepository.upsertJobStatus({
+      assetId: asset.id,
+      metadataExtractedAt: new Date(),
     });
 
     return true;
@@ -248,40 +266,28 @@ export class MetadataService {
     const { force } = job;
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
       return force
-        ? this.assetRepository.getWith(pagination, WithProperty.SIDECAR)
+        ? this.assetRepository.getAll(pagination)
         : this.assetRepository.getWithout(pagination, WithoutProperty.SIDECAR);
     });
 
     for await (const assets of assetPagination) {
-      for (const asset of assets) {
-        const name = force ? JobName.SIDECAR_SYNC : JobName.SIDECAR_DISCOVERY;
-        await this.jobRepository.queue({ name, data: { id: asset.id } });
-      }
+      await this.jobRepository.queueAll(
+        assets.map((asset) => ({
+          name: force ? JobName.SIDECAR_SYNC : JobName.SIDECAR_DISCOVERY,
+          data: { id: asset.id },
+        })),
+      );
     }
 
     return true;
   }
 
-  async handleSidecarSync() {
-    // TODO: optimize to only queue assets with recent xmp changes
-    return true;
+  handleSidecarSync({ id }: IEntityJob) {
+    return this.processSidecar(id, true);
   }
 
-  async handleSidecarDiscovery({ id }: IEntityJob) {
-    const [asset] = await this.assetRepository.getByIds([id]);
-    if (!asset || !asset.isVisible || asset.sidecarPath) {
-      return false;
-    }
-
-    const sidecarPath = `${asset.originalPath}.xmp`;
-    const exists = await this.storageRepository.checkFileExists(sidecarPath, constants.R_OK);
-    if (!exists) {
-      return false;
-    }
-
-    await this.assetRepository.save({ id: asset.id, sidecarPath });
-
-    return true;
+  handleSidecarDiscovery({ id }: IEntityJob) {
+    return this.processSidecar(id, false);
   }
 
   async handleSidecarWrite(job: ISidecarWriteJob) {
@@ -336,7 +342,7 @@ export class MetadataService {
   }
 
   private async applyMotionPhotos(asset: AssetEntity, tags: ImmichTags) {
-    if (asset.type !== AssetType.IMAGE || asset.livePhotoVideoId) {
+    if (asset.type !== AssetType.IMAGE) {
       return;
     }
 
@@ -344,6 +350,8 @@ export class MetadataService {
     const isMotionPhoto = tags.MotionPhoto;
     const isMicroVideo = tags.MicroVideo;
     const videoOffset = tags.MicroVideoOffset;
+    const hasMotionPhotoVideo = tags.MotionPhotoVideo;
+    const hasEmbeddedVideoFile = tags.EmbeddedVideoType === 'MotionPhoto_Data' && tags.EmbeddedVideoFile;
     const directory = Array.isArray(rawDirectory) ? (rawDirectory as DirectoryEntry[]) : null;
 
     let length = 0;
@@ -363,7 +371,7 @@ export class MetadataService {
       length = videoOffset;
     }
 
-    if (!length) {
+    if (!length && !hasEmbeddedVideoFile && !hasMotionPhotoVideo) {
       return;
     }
 
@@ -372,20 +380,41 @@ export class MetadataService {
     try {
       const stat = await this.storageRepository.stat(asset.originalPath);
       const position = stat.size - length - padding;
-      const video = await this.storageRepository.readFile(asset.originalPath, {
-        buffer: Buffer.alloc(length),
-        position,
-        length,
-      });
+      let video: Buffer;
+      // Samsung MotionPhoto video extraction
+      //     HEIC-encoded
+      if (hasMotionPhotoVideo) {
+        video = await this.repository.extractBinaryTag(asset.originalPath, 'MotionPhotoVideo');
+      }
+      //     JPEG-encoded; HEIC also contains these tags, so this conditional must come second
+      else if (hasEmbeddedVideoFile) {
+        video = await this.repository.extractBinaryTag(asset.originalPath, 'EmbeddedVideoFile');
+      }
+      // Default video extraction
+      else {
+        video = await this.storageRepository.readFile(asset.originalPath, {
+          buffer: Buffer.alloc(length),
+          position,
+          length,
+        });
+      }
       const checksum = this.cryptoRepository.hashSha1(video);
 
-      const motionPath = StorageCore.getAndroidMotionPath(asset);
-      this.storageCore.ensureFolders(motionPath);
-
       let motionAsset = await this.assetRepository.getByChecksum(asset.ownerId, checksum);
-      if (!motionAsset) {
+      if (motionAsset) {
+        this.logger.debug(
+          `Asset ${asset.id}'s motion photo video with checksum ${checksum.toString(
+            'base64',
+          )} already exists in the repository`,
+        );
+      } else {
+        // We create a UUID in advance so that each extracted video can have a unique filename
+        // (allowing us to delete old ones if necessary)
+        const motionAssetId = this.cryptoRepository.randomUUID();
+        const motionPath = StorageCore.getAndroidMotionPath(asset, motionAssetId);
         const createdAt = asset.fileCreatedAt ?? asset.createdAt;
         motionAsset = await this.assetRepository.create({
+          id: motionAssetId,
           libraryId: asset.libraryId,
           type: AssetType.VIDEO,
           fileCreatedAt: createdAt,
@@ -401,11 +430,19 @@ export class MetadataService {
           deviceId: 'NONE',
         });
 
+        this.storageCore.ensureFolders(motionPath);
         await this.storageRepository.writeFile(motionAsset.originalPath, video);
         await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: motionAsset.id } });
-      }
+        await this.assetRepository.save({ id: asset.id, livePhotoVideoId: motionAsset.id });
 
-      await this.assetRepository.save({ id: asset.id, livePhotoVideoId: motionAsset.id });
+        // If the asset already had an associated livePhotoVideo, delete it, because
+        // its checksum doesn't match the checksum of the motionAsset we just extracted
+        // (if it did, getByChecksum() would've returned non-null)
+        if (asset.livePhotoVideoId) {
+          await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: asset.livePhotoVideoId } });
+          this.logger.log(`Removed old motion photo video asset (${asset.livePhotoVideoId})`);
+        }
+      }
 
       this.logger.debug(`Finished motion photo video extraction (${asset.id})`);
     } catch (error: Error | any) {
@@ -438,34 +475,43 @@ export class MetadataService {
       bitsPerSample: this.getBitsPerSample(tags),
       colorspace: tags.ColorSpace ?? null,
       dateTimeOriginal: this.getDateTimeOriginal(tags) ?? asset.fileCreatedAt,
+      description: (tags.ImageDescription || tags.Description) ?? '',
       exifImageHeight: validate(tags.ImageHeight),
       exifImageWidth: validate(tags.ImageWidth),
       exposureTime: tags.ExposureTime ?? null,
       fileSizeInByte: stats.size,
       fNumber: validate(tags.FNumber),
       focalLength: validate(tags.FocalLength),
-      fps: validate(tags.VideoFrameRate),
+      fps: validate(Number.parseFloat(tags.VideoFrameRate!)),
       iso: validate(tags.ISO),
       latitude: validate(tags.GPSLatitude),
       lensModel: tags.LensModel ?? null,
       livePhotoCID: (tags.ContentIdentifier || tags.MediaGroupUUID) ?? null,
+      autoStackId: this.getAutoStackId(tags),
       longitude: validate(tags.GPSLongitude),
       make: tags.Make ?? null,
       model: tags.Model ?? null,
       modifyDate: exifDate(tags.ModifyDate) ?? asset.fileModifiedAt,
       orientation: validate(tags.Orientation)?.toString() ?? null,
-      profileDescription: tags.ProfileDescription || tags.ProfileName || null,
+      profileDescription: tags.ProfileDescription || null,
       projectionType: tags.ProjectionType ? String(tags.ProjectionType).toUpperCase() : null,
       timeZone: tags.tz ?? null,
     };
 
     if (exifData.latitude === 0 && exifData.longitude === 0) {
-      console.warn('Exif data has latitude and longitude of 0, setting to null');
+      this.logger.warn('Exif data has latitude and longitude of 0, setting to null');
       exifData.latitude = null;
       exifData.longitude = null;
     }
 
     return { exifData, tags };
+  }
+
+  private getAutoStackId(tags: ImmichTags | null): string | null {
+    if (!tags) {
+      return null;
+    }
+    return tags.BurstID ?? tags.BurstUUID ?? tags.CameraBurstID ?? tags.MediaUniqueID ?? null;
   }
 
   private getDateTimeOriginal(tags: ImmichTags | Tags | null) {
@@ -493,11 +539,47 @@ export class MetadataService {
     return bitsPerSample;
   }
 
-  private getDuration(seconds?: number | ExifDuration): string {
+  private getDuration(seconds?: ImmichTags['Duration']): string {
     let _seconds = seconds as number;
+
     if (typeof seconds === 'object') {
       _seconds = seconds.Value * (seconds?.Scale || 1);
+    } else if (typeof seconds === 'string') {
+      _seconds = Duration.fromISOTime(seconds).as('seconds');
     }
+
     return Duration.fromObject({ seconds: _seconds }).toFormat('hh:mm:ss.SSS');
+  }
+
+  private async processSidecar(id: string, isSync: boolean) {
+    const [asset] = await this.assetRepository.getByIds([id]);
+
+    if (!asset) {
+      return false;
+    }
+
+    if (isSync && !asset.sidecarPath) {
+      return false;
+    }
+
+    if (!isSync && (!asset.isVisible || asset.sidecarPath)) {
+      return false;
+    }
+
+    const sidecarPath = `${asset.originalPath}.xmp`;
+    const exists = await this.storageRepository.checkFileExists(sidecarPath, constants.R_OK);
+    if (exists) {
+      await this.assetRepository.save({ id: asset.id, sidecarPath });
+      return true;
+    }
+
+    if (!isSync) {
+      return false;
+    }
+
+    this.logger.debug(`Sidecar File '${sidecarPath}' was not found, removing sidecarPath for asset ${asset.id}`);
+    await this.assetRepository.save({ id: asset.id, sidecarPath: null });
+
+    return true;
   }
 }

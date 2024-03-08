@@ -34,7 +34,7 @@ class AssetOrder {
 
   static AssetOrder? fromJson(dynamic value) => AssetOrderTypeTransformer().decode(value);
 
-  static List<AssetOrder>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<AssetOrder> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <AssetOrder>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {

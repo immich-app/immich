@@ -4,11 +4,12 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class NotificationPermissionNotifier extends StateNotifier<PermissionStatus> {
-  NotificationPermissionNotifier() :
-    super(Platform.isAndroid
-      ? PermissionStatus.granted
-      : PermissionStatus.restricted,
-    ) {
+  NotificationPermissionNotifier()
+      : super(
+          Platform.isAndroid
+              ? PermissionStatus.granted
+              : PermissionStatus.restricted,
+        ) {
     // Sets the initial state
     getNotificationPermission().then((p) => state = p);
   }
@@ -16,9 +17,9 @@ class NotificationPermissionNotifier extends StateNotifier<PermissionStatus> {
   /// Requests the notification permission
   /// Note: In Android, this is always granted
   Future<PermissionStatus> requestNotificationPermission() async {
-     final permission = await Permission.notification.request();
-     state = permission;
-     return permission;
+    final permission = await Permission.notification.request();
+    state = permission;
+    return permission;
   }
 
   /// Whether the user has the permission or not
@@ -37,8 +38,9 @@ class NotificationPermissionNotifier extends StateNotifier<PermissionStatus> {
   Future<bool> hasOrAskForNotificationPermission() {
     return requestNotificationPermission().then((p) => p.isGranted);
   }
-
 }
-final notificationPermissionProvider
-  = StateNotifierProvider<NotificationPermissionNotifier, PermissionStatus>
-    ((ref) => NotificationPermissionNotifier());
+
+final notificationPermissionProvider =
+    StateNotifierProvider<NotificationPermissionNotifier, PermissionStatus>(
+  (ref) => NotificationPermissionNotifier(),
+);

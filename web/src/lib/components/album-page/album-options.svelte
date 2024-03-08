@@ -1,12 +1,13 @@
 <script lang="ts">
-  import { mdiClose, mdiPlus } from '@mdi/js';
-  import SettingSwitch from '../admin-page/settings/setting-switch.svelte';
-  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
-  import FullScreenModal from '../shared-components/full-screen-modal.svelte';
-  import UserAvatar from '../shared-components/user-avatar.svelte';
-  import { createEventDispatcher } from 'svelte';
-  import type { AlbumResponseDto, UserResponseDto } from '../../../api/open-api';
   import Icon from '$lib/components/elements/icon.svelte';
+  import type { AlbumResponseDto, UserResponseDto } from '@immich/sdk';
+  import { mdiClose, mdiPlus } from '@mdi/js';
+  import { createEventDispatcher } from 'svelte';
+
+  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
+  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
+  import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
+  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
 
   export let album: AlbumResponseDto;
   export let user: UserResponseDto;
@@ -18,7 +19,7 @@
   }>();
 </script>
 
-<FullScreenModal on:clickOutside={() => dispatch('close')}>
+<FullScreenModal onClose={() => dispatch('close')}>
   <div class="flex h-full w-full place-content-center place-items-center overflow-hidden p-2 md:p-0">
     <div
       class="w-[550px] rounded-3xl border bg-immich-bg shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg"

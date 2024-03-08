@@ -1,4 +1,3 @@
-export * from './database-locks';
 export * from './database.config';
 export * from './infra.config';
 export * from './infra.module';

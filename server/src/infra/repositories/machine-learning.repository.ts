@@ -1,5 +1,4 @@
 import {
-  ClassificationConfig,
   CLIPConfig,
   CLIPMode,
   DetectFaceResult,
@@ -11,32 +10,32 @@ import {
   VisionModelInput,
 } from '@app/domain';
 import { Injectable } from '@nestjs/common';
-import { readFile } from 'fs/promises';
+import { readFile } from 'node:fs/promises';
+
+const errorPrefix = 'Machine learning request';
 
 @Injectable()
 export class MachineLearningRepository implements IMachineLearningRepository {
-  private async post<T>(url: string, input: TextModelInput | VisionModelInput, config: ModelConfig): Promise<T> {
+  private async predict<T>(url: string, input: TextModelInput | VisionModelInput, config: ModelConfig): Promise<T> {
     const formData = await this.getFormData(input, config);
-    const res = await fetch(`${url}/predict`, { method: 'POST', body: formData });
+
+    const res = await fetch(`${url}/predict`, { method: 'POST', body: formData }).catch((error: Error | any) => {
+      throw new Error(`${errorPrefix} to "${url}" failed with ${error?.cause || error}`);
+    });
+
     if (res.status >= 400) {
-      throw new Error(
-        `Request ${config.modelType ? `for ${config.modelType.replace('-', ' ')} ` : ''}` +
-          `failed with status ${res.status}: ${res.statusText}`,
-      );
+      const modelType = config.modelType ? ` for ${config.modelType.replace('-', ' ')}` : '';
+      throw new Error(`${errorPrefix}${modelType} failed with status ${res.status}: ${res.statusText}`);
     }
     return res.json();
   }
 
-  classifyImage(url: string, input: VisionModelInput, config: ClassificationConfig): Promise<string[]> {
-    return this.post<string[]>(url, input, { ...config, modelType: ModelType.IMAGE_CLASSIFICATION });
-  }
-
   detectFaces(url: string, input: VisionModelInput, config: RecognitionConfig): Promise<DetectFaceResult[]> {
-    return this.post<DetectFaceResult[]>(url, input, { ...config, modelType: ModelType.FACIAL_RECOGNITION });
+    return this.predict<DetectFaceResult[]>(url, input, { ...config, modelType: ModelType.FACIAL_RECOGNITION });
   }
 
   encodeImage(url: string, input: VisionModelInput, config: CLIPConfig): Promise<number[]> {
-    return this.post<number[]>(url, input, {
+    return this.predict<number[]>(url, input, {
       ...config,
       modelType: ModelType.CLIP,
       mode: CLIPMode.VISION,
@@ -44,7 +43,11 @@ export class MachineLearningRepository implements IMachineLearningRepository {
   }
 
   encodeText(url: string, input: TextModelInput, config: CLIPConfig): Promise<number[]> {
-    return this.post<number[]>(url, input, { ...config, modelType: ModelType.CLIP, mode: CLIPMode.TEXT } as CLIPConfig);
+    return this.predict<number[]>(url, input, {
+      ...config,
+      modelType: ModelType.CLIP,
+      mode: CLIPMode.TEXT,
+    } as CLIPConfig);
   }
 
   async getFormData(input: TextModelInput | VisionModelInput, config: ModelConfig): Promise<FormData> {

@@ -1,18 +1,21 @@
 <script lang="ts">
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import { UserAvatarColor, type UserResponseDto } from '@immich/sdk';
   import { mdiClose } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
-  import { UserAvatarColor, UserResponseDto } from '@api';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import FullScreenModal from '../full-screen-modal.svelte';
   import UserAvatar from '../user-avatar.svelte';
 
   export let user: UserResponseDto;
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    close: void;
+    choose: UserAvatarColor;
+  }>();
   const colors: UserAvatarColor[] = Object.values(UserAvatarColor);
 </script>
 
-<FullScreenModal on:clickOutside={() => dispatch('close')} on:escape={() => dispatch('close')}>
+<FullScreenModal onClose={() => dispatch('close')}>
   <div class="flex h-full w-full place-content-center place-items-center overflow-hidden">
     <div
       class=" rounded-3xl border bg-immich-bg shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg p-4"

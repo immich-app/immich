@@ -13,9 +13,9 @@
 
   export let uploadAsset: UploadAsset;
 
-  const handleRetry = (uploadAsset: UploadAsset) => {
+  const handleRetry = async (uploadAsset: UploadAsset) => {
     uploadAssetsStore.removeUploadAsset(uploadAsset.id);
-    fileUploadHandler([uploadAsset.file], uploadAsset.albumId);
+    await fileUploadHandler([uploadAsset.file], uploadAsset.albumId);
   };
 </script>
 
@@ -45,7 +45,8 @@
       />
 
       <div
-        class="relative mt-[5px] h-[15px] w-full rounded-md bg-gray-300 text-white dark:bg-immich-dark-gray dark:text-black"
+        class="relative mt-[5px] h-[15px] w-full rounded-md bg-gray-300 text-white dark:bg-immich-dark-gray"
+        class:dark:text-black={uploadAsset.state === UploadState.STARTED}
       >
         {#if uploadAsset.state === UploadState.STARTED}
           <div class="h-[15px] rounded-md bg-immich-primary transition-all" style={`width: ${uploadAsset.progress}%`} />
@@ -53,7 +54,7 @@
             {#if uploadAsset.message}
               {uploadAsset.message}
             {:else}
-              {uploadAsset.progress}/100 - {asByteUnitString(uploadAsset.speed || 0, $locale)}/s - {uploadAsset.eta}s
+              {uploadAsset.progress}% - {asByteUnitString(uploadAsset.speed || 0, $locale)}/s - {uploadAsset.eta}s
             {/if}
           </p>
         {:else if uploadAsset.state === UploadState.PENDING}

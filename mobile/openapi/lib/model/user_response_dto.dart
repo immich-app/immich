@@ -17,13 +17,14 @@ class UserResponseDto {
     required this.createdAt,
     required this.deletedAt,
     required this.email,
-    required this.externalPath,
     required this.id,
     required this.isAdmin,
     this.memoriesEnabled,
     required this.name,
     required this.oauthId,
     required this.profileImagePath,
+    required this.quotaSizeInBytes,
+    required this.quotaUsageInBytes,
     required this.shouldChangePassword,
     required this.storageLabel,
     required this.updatedAt,
@@ -36,8 +37,6 @@ class UserResponseDto {
   DateTime? deletedAt;
 
   String email;
-
-  String? externalPath;
 
   String id;
 
@@ -57,6 +56,10 @@ class UserResponseDto {
 
   String profileImagePath;
 
+  int? quotaSizeInBytes;
+
+  int? quotaUsageInBytes;
+
   bool shouldChangePassword;
 
   String? storageLabel;
@@ -65,20 +68,21 @@ class UserResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UserResponseDto &&
-     other.avatarColor == avatarColor &&
-     other.createdAt == createdAt &&
-     other.deletedAt == deletedAt &&
-     other.email == email &&
-     other.externalPath == externalPath &&
-     other.id == id &&
-     other.isAdmin == isAdmin &&
-     other.memoriesEnabled == memoriesEnabled &&
-     other.name == name &&
-     other.oauthId == oauthId &&
-     other.profileImagePath == profileImagePath &&
-     other.shouldChangePassword == shouldChangePassword &&
-     other.storageLabel == storageLabel &&
-     other.updatedAt == updatedAt;
+    other.avatarColor == avatarColor &&
+    other.createdAt == createdAt &&
+    other.deletedAt == deletedAt &&
+    other.email == email &&
+    other.id == id &&
+    other.isAdmin == isAdmin &&
+    other.memoriesEnabled == memoriesEnabled &&
+    other.name == name &&
+    other.oauthId == oauthId &&
+    other.profileImagePath == profileImagePath &&
+    other.quotaSizeInBytes == quotaSizeInBytes &&
+    other.quotaUsageInBytes == quotaUsageInBytes &&
+    other.shouldChangePassword == shouldChangePassword &&
+    other.storageLabel == storageLabel &&
+    other.updatedAt == updatedAt;
 
   @override
   int get hashCode =>
@@ -87,19 +91,20 @@ class UserResponseDto {
     (createdAt.hashCode) +
     (deletedAt == null ? 0 : deletedAt!.hashCode) +
     (email.hashCode) +
-    (externalPath == null ? 0 : externalPath!.hashCode) +
     (id.hashCode) +
     (isAdmin.hashCode) +
     (memoriesEnabled == null ? 0 : memoriesEnabled!.hashCode) +
     (name.hashCode) +
     (oauthId.hashCode) +
     (profileImagePath.hashCode) +
+    (quotaSizeInBytes == null ? 0 : quotaSizeInBytes!.hashCode) +
+    (quotaUsageInBytes == null ? 0 : quotaUsageInBytes!.hashCode) +
     (shouldChangePassword.hashCode) +
     (storageLabel == null ? 0 : storageLabel!.hashCode) +
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'UserResponseDto[avatarColor=$avatarColor, createdAt=$createdAt, deletedAt=$deletedAt, email=$email, externalPath=$externalPath, id=$id, isAdmin=$isAdmin, memoriesEnabled=$memoriesEnabled, name=$name, oauthId=$oauthId, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel, updatedAt=$updatedAt]';
+  String toString() => 'UserResponseDto[avatarColor=$avatarColor, createdAt=$createdAt, deletedAt=$deletedAt, email=$email, id=$id, isAdmin=$isAdmin, memoriesEnabled=$memoriesEnabled, name=$name, oauthId=$oauthId, profileImagePath=$profileImagePath, quotaSizeInBytes=$quotaSizeInBytes, quotaUsageInBytes=$quotaUsageInBytes, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -111,11 +116,6 @@ class UserResponseDto {
     //  json[r'deletedAt'] = null;
     }
       json[r'email'] = this.email;
-    if (this.externalPath != null) {
-      json[r'externalPath'] = this.externalPath;
-    } else {
-    //  json[r'externalPath'] = null;
-    }
       json[r'id'] = this.id;
       json[r'isAdmin'] = this.isAdmin;
     if (this.memoriesEnabled != null) {
@@ -126,6 +126,16 @@ class UserResponseDto {
       json[r'name'] = this.name;
       json[r'oauthId'] = this.oauthId;
       json[r'profileImagePath'] = this.profileImagePath;
+    if (this.quotaSizeInBytes != null) {
+      json[r'quotaSizeInBytes'] = this.quotaSizeInBytes;
+    } else {
+    //  json[r'quotaSizeInBytes'] = null;
+    }
+    if (this.quotaUsageInBytes != null) {
+      json[r'quotaUsageInBytes'] = this.quotaUsageInBytes;
+    } else {
+    //  json[r'quotaUsageInBytes'] = null;
+    }
       json[r'shouldChangePassword'] = this.shouldChangePassword;
     if (this.storageLabel != null) {
       json[r'storageLabel'] = this.storageLabel;
@@ -145,19 +155,20 @@ class UserResponseDto {
 
       return UserResponseDto(
         avatarColor: UserAvatarColor.fromJson(json[r'avatarColor'])!,
-        createdAt: mapDateTime(json, r'createdAt', '')!,
-        deletedAt: mapDateTime(json, r'deletedAt', ''),
+        createdAt: mapDateTime(json, r'createdAt', r'')!,
+        deletedAt: mapDateTime(json, r'deletedAt', r''),
         email: mapValueOfType<String>(json, r'email')!,
-        externalPath: mapValueOfType<String>(json, r'externalPath'),
         id: mapValueOfType<String>(json, r'id')!,
         isAdmin: mapValueOfType<bool>(json, r'isAdmin')!,
         memoriesEnabled: mapValueOfType<bool>(json, r'memoriesEnabled'),
         name: mapValueOfType<String>(json, r'name')!,
         oauthId: mapValueOfType<String>(json, r'oauthId')!,
         profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
+        quotaSizeInBytes: mapValueOfType<int>(json, r'quotaSizeInBytes'),
+        quotaUsageInBytes: mapValueOfType<int>(json, r'quotaUsageInBytes'),
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword')!,
         storageLabel: mapValueOfType<String>(json, r'storageLabel'),
-        updatedAt: mapDateTime(json, r'updatedAt', '')!,
+        updatedAt: mapDateTime(json, r'updatedAt', r'')!,
       );
     }
     return null;
@@ -209,12 +220,13 @@ class UserResponseDto {
     'createdAt',
     'deletedAt',
     'email',
-    'externalPath',
     'id',
     'isAdmin',
     'name',
     'oauthId',
     'profileImagePath',
+    'quotaSizeInBytes',
+    'quotaUsageInBytes',
     'shouldChangePassword',
     'storageLabel',
     'updatedAt',

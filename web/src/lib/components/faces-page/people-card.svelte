@@ -1,15 +1,16 @@
 <script lang="ts">
-  import { PersonResponseDto, api } from '@api';
+  import Icon from '$lib/components/elements/icon.svelte';
+  import { AppRoute, QueryParameter } from '$lib/constants';
+  import { getPeopleThumbnailUrl } from '$lib/utils';
   import { getContextMenuPosition } from '$lib/utils/context-menu';
+  import { type PersonResponseDto } from '@immich/sdk';
+  import { mdiDotsVertical } from '@mdi/js';
+  import { createEventDispatcher } from 'svelte';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import IconButton from '../elements/buttons/icon-button.svelte';
   import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
   import MenuOption from '../shared-components/context-menu/menu-option.svelte';
   import Portal from '../shared-components/portal/portal.svelte';
-  import { createEventDispatcher } from 'svelte';
-  import { AppRoute } from '$lib/constants';
-  import { mdiDotsVertical } from '@mdi/js';
-  import Icon from '$lib/components/elements/icon.svelte';
 
   export let person: PersonResponseDto;
   export let preload = false;
@@ -45,12 +46,12 @@
   on:mouseleave={() => (showVerticalDots = false)}
   role="group"
 >
-  <a href="/people/{person.id}?previousRoute={AppRoute.PEOPLE}" draggable="false">
-    <div class="h-48 w-48 rounded-xl brightness-95 filter">
+  <a href="{AppRoute.PEOPLE}/{person.id}?{QueryParameter.PREVIOUS_ROUTE}={AppRoute.PEOPLE}" draggable="false">
+    <div class="w-full h-full rounded-xl brightness-95 filter">
       <ImageThumbnail
         shadow
         {preload}
-        url={api.getPeopleThumbnailUrl(person.id)}
+        url={getPeopleThumbnailUrl(person.id)}
         altText={person.name}
         title={person.name}
         widthStyle="100%"

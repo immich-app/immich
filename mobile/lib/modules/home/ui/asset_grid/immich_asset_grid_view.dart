@@ -1,19 +1,23 @@
 import 'dart:collection';
+import 'dart:developer';
 import 'dart:math';
 
 import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/collection_extensions.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/scroll_notifier.provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/thumbnail_image.dart';
+import 'package:immich_mobile/modules/home/ui/asset_grid/thumbnail_placeholder.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:immich_mobile/extensions/collection_extensions.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+
 import 'asset_grid_data_structure.dart';
-import 'group_divider_title.dart';
 import 'disable_multi_select_button.dart';
 import 'draggable_scrollbar_custom.dart';
+import 'group_divider_title.dart';
 
 typedef ImmichAssetGridSelectionListener = void Function(
   bool,
@@ -32,7 +36,7 @@ class ImmichAssetGridView extends StatefulWidget {
   final bool canDeselect;
   final bool dynamicLayout;
   final bool showMultiSelectIndicator;
-  final void Function(ItemPosition start, ItemPosition end)?
+  final void Function(Iterable<ItemPosition> itemPositions)?
       visibleItemsListener;
   final Widget? topWidget;
   final int heroOffset;
@@ -72,6 +76,9 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
   final ItemPositionsListener _itemPositionsListener =
       ItemPositionsListener.create();
 
+  /// The timestamp when the haptic feedback was last invoked
+  int _hapticFeedbackTS = 0;
+  DateTime? _prevItemTime;
   bool _scrolling = false;
   final Set<Asset> _selectedAssets =
       LinkedHashSet(equals: (a, b) => a.id == b.id, hashCode: (a) => a.id);
@@ -121,184 +128,6 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
         assets.firstWhereOrNull((e) => !_selectedAssets.contains(e)) == null;
   }
 
-  Widget _buildThumbnailOrPlaceholder(Asset asset, int index) {
-    return ThumbnailImage(
-      asset: asset,
-      index: index,
-      loadAsset: widget.renderList.loadAsset,
-      totalAssets: widget.renderList.totalAssets,
-      multiselectEnabled: widget.selectionActive,
-      isSelected: widget.selectionActive && _selectedAssets.contains(asset),
-      onSelect: () => _selectAssets([asset]),
-      onDeselect: widget.canDeselect ||
-              widget.preselectedAssets == null ||
-              !widget.preselectedAssets!.contains(asset)
-          ? () => _deselectAssets([asset])
-          : null,
-      useGrayBoxPlaceholder: true,
-      showStorageIndicator: widget.showStorageIndicator,
-      heroOffset: widget.heroOffset,
-      showStack: widget.showStack,
-    );
-  }
-
-  Widget _buildAssetRow(
-    Key key,
-    BuildContext context,
-    List<Asset> assets,
-    int absoluteOffset,
-    double width,
-  ) {
-    // Default: All assets have the same width
-    final widthDistribution = List.filled(assets.length, 1.0);
-
-    if (widget.dynamicLayout) {
-      final aspectRatios =
-          assets.map((e) => (e.width ?? 1) / (e.height ?? 1)).toList();
-      final meanAspectRatio = aspectRatios.sum / assets.length;
-
-      // 1: mean width
-      // 0.5: width < mean - threshold
-      // 1.5: width > mean + threshold
-      final arConfiguration = aspectRatios.map((e) {
-        if (e - meanAspectRatio > 0.3) return 1.5;
-        if (e - meanAspectRatio < -0.3) return 0.5;
-        return 1.0;
-      });
-
-      // Normalize:
-      final sum = arConfiguration.sum;
-      widthDistribution.setRange(
-        0,
-        widthDistribution.length,
-        arConfiguration.map((e) => (e * assets.length) / sum),
-      );
-    }
-    return Row(
-      key: key,
-      children: assets.mapIndexed((int index, Asset asset) {
-        final bool last = index + 1 == widget.assetsPerRow;
-        return Container(
-          key: ValueKey(index),
-          width: width * widthDistribution[index],
-          height: width,
-          margin: EdgeInsets.only(
-            bottom: widget.margin,
-            right: last ? 0.0 : widget.margin,
-          ),
-          child: _buildThumbnailOrPlaceholder(asset, absoluteOffset + index),
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildTitle(
-    BuildContext context,
-    String title,
-    List<Asset> assets,
-  ) {
-    return GroupDividerTitle(
-      text: title,
-      multiselectEnabled: widget.selectionActive,
-      onSelect: () => _selectAssets(assets),
-      onDeselect: () => _deselectAssets(assets),
-      selected: _allAssetsSelected(assets),
-    );
-  }
-
-  Widget _buildMonthTitle(BuildContext context, DateTime date) {
-    final monthFormat = DateTime.now().year == date.year
-        ? DateFormat.MMMM()
-        : DateFormat.yMMMM();
-    final String title = monthFormat.format(date);
-    return Padding(
-      key: Key("month-$title"),
-      padding: const EdgeInsets.only(left: 12.0, top: 24.0),
-      child: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 26,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPlaceHolderRow(Key key, int num, double width, double height) {
-    return Row(
-      key: key,
-      children: [
-        for (int i = 0; i < num; i++)
-          Container(
-            key: ValueKey(i),
-            width: width,
-            height: height,
-            margin: EdgeInsets.only(
-              bottom: widget.margin,
-              right: i + 1 == num ? 0.0 : widget.margin,
-            ),
-            color: Colors.grey,
-          ),
-      ],
-    );
-  }
-
-  Widget _buildSection(
-    BuildContext context,
-    RenderAssetGridElement section,
-    bool scrolling,
-  ) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final width = constraints.maxWidth / widget.assetsPerRow -
-            widget.margin * (widget.assetsPerRow - 1) / widget.assetsPerRow;
-        final rows =
-            (section.count + widget.assetsPerRow - 1) ~/ widget.assetsPerRow;
-        final List<Asset> assetsToRender = scrolling
-            ? []
-            : widget.renderList.loadAssets(section.offset, section.count);
-        return Column(
-          key: ValueKey(section.offset),
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (section.type == RenderAssetGridElementType.monthTitle)
-              _buildMonthTitle(context, section.date),
-            if (section.type == RenderAssetGridElementType.groupDividerTitle ||
-                section.type == RenderAssetGridElementType.monthTitle)
-              _buildTitle(
-                context,
-                section.title!,
-                scrolling
-                    ? []
-                    : widget.renderList
-                        .loadAssets(section.offset, section.totalCount),
-              ),
-            for (int i = 0; i < rows; i++)
-              scrolling
-                  ? _buildPlaceHolderRow(
-                      ValueKey(i),
-                      i + 1 == rows
-                          ? section.count - i * widget.assetsPerRow
-                          : widget.assetsPerRow,
-                      width,
-                      width,
-                    )
-                  : _buildAssetRow(
-                      ValueKey(i),
-                      context,
-                      assetsToRender.nestedSlice(
-                        i * widget.assetsPerRow,
-                        min((i + 1) * widget.assetsPerRow, section.count),
-                      ),
-                      section.offset + i * widget.assetsPerRow,
-                      width,
-                    ),
-          ],
-        );
-      },
-    );
-  }
-
   Widget _itemBuilder(BuildContext c, int position) {
     int index = position;
     if (widget.topWidget != null) {
@@ -308,8 +137,23 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
       index--;
     }
 
-    final item = widget.renderList.elements[index];
-    return _buildSection(c, item, _scrolling);
+    final section = widget.renderList.elements[index];
+    return _Section(
+      showStorageIndicator: widget.showStorageIndicator,
+      selectedAssets: _selectedAssets,
+      selectionActive: widget.selectionActive,
+      section: section,
+      margin: widget.margin,
+      renderList: widget.renderList,
+      assetsPerRow: widget.assetsPerRow,
+      scrolling: _scrolling,
+      dynamicLayout: widget.dynamicLayout,
+      selectAssets: _selectAssets,
+      deselectAssets: _deselectAssets,
+      allAssetsSelected: _allAssetsSelected,
+      showStack: widget.showStack,
+      heroOffset: widget.heroOffset,
+    );
   }
 
   Text _labelBuilder(int pos) {
@@ -389,15 +233,6 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
     }
   }
 
-  Future<bool> onWillPop() async {
-    if (widget.selectionActive && _selectedAssets.isNotEmpty) {
-      _deselectAll();
-      return false;
-    }
-
-    return true;
-  }
-
   @override
   void initState() {
     super.initState();
@@ -408,6 +243,8 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
     if (widget.preselectedAssets != null) {
       _selectedAssets.addAll(widget.preselectedAssets!);
     }
+
+    _itemPositionsListener.itemPositions.addListener(_hapticsListener);
   }
 
   @override
@@ -421,13 +258,40 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
 
   void _positionListener() {
     final values = _itemPositionsListener.itemPositions.value;
+    widget.visibleItemsListener?.call(values);
+  }
+
+  void _hapticsListener() {
+    /// throttle interval for the haptic feedback in microseconds.
+    /// Currently set to 100ms.
+    const feedbackInterval = 100000;
+
+    final values = _itemPositionsListener.itemPositions.value;
     final start = values.firstOrNull;
-    final end = values.lastOrNull;
-    if (start != null && end != null) {
-      if (start.index <= end.index) {
-        widget.visibleItemsListener?.call(start, end);
-      } else {
-        widget.visibleItemsListener?.call(end, start);
+
+    if (start != null) {
+      final pos = start.index;
+      final maxLength = widget.renderList.elements.length;
+      if (pos < 0 || pos >= maxLength) {
+        return;
+      }
+
+      final date = widget.renderList.elements[pos].date;
+
+      // only provide the feedback if the prev. date is known.
+      // Otherwise the app would provide the haptic feedback
+      // on startup.
+      if (_prevItemTime == null) {
+        _prevItemTime = date;
+      } else if (_prevItemTime?.year != date.year ||
+          _prevItemTime?.month != date.month) {
+        _prevItemTime = date;
+
+        final now = Timeline.now;
+        if (now > (_hapticFeedbackTS + feedbackInterval)) {
+          _hapticFeedbackTS = now;
+          HapticFeedback.mediumImpact();
+        }
       }
     }
   }
@@ -446,8 +310,9 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: onWillPop,
+    return PopScope(
+      canPop: !(widget.selectionActive && _selectedAssets.isNotEmpty),
+      onPopInvoked: (didPop) => !didPop ? _deselectAll() : null,
       child: Stack(
         children: [
           _buildAssetGrid(),
@@ -455,6 +320,295 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
             _buildMultiSelectIndicator(),
         ],
       ),
+    );
+  }
+}
+
+/// A single row of all placeholder widgets
+class _PlaceholderRow extends StatelessWidget {
+  final int number;
+  final double width;
+  final double height;
+  final double margin;
+
+  const _PlaceholderRow({
+    super.key,
+    required this.number,
+    required this.width,
+    required this.height,
+    required this.margin,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        for (int i = 0; i < number; i++)
+          ThumbnailPlaceholder(
+            key: ValueKey(i),
+            width: width,
+            height: height,
+            margin: EdgeInsets.only(
+              bottom: margin,
+              right: i + 1 == number ? 0.0 : margin,
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// A section for the render grid
+class _Section extends StatelessWidget {
+  final RenderAssetGridElement section;
+  final Set<Asset> selectedAssets;
+  final bool scrolling;
+  final double margin;
+  final int assetsPerRow;
+  final RenderList renderList;
+  final bool selectionActive;
+  final bool dynamicLayout;
+  final Function(List<Asset>) selectAssets;
+  final Function(List<Asset>) deselectAssets;
+  final bool Function(List<Asset>) allAssetsSelected;
+  final bool showStack;
+  final int heroOffset;
+  final bool showStorageIndicator;
+
+  const _Section({
+    required this.section,
+    required this.scrolling,
+    required this.margin,
+    required this.assetsPerRow,
+    required this.renderList,
+    required this.selectionActive,
+    required this.dynamicLayout,
+    required this.selectAssets,
+    required this.deselectAssets,
+    required this.allAssetsSelected,
+    required this.selectedAssets,
+    required this.showStack,
+    required this.heroOffset,
+    required this.showStorageIndicator,
+  });
+
+  @override
+  Widget build(
+    BuildContext context,
+  ) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth / assetsPerRow -
+            margin * (assetsPerRow - 1) / assetsPerRow;
+        final rows = (section.count + assetsPerRow - 1) ~/ assetsPerRow;
+        final List<Asset> assetsToRender = scrolling
+            ? []
+            : renderList.loadAssets(section.offset, section.count);
+        return Column(
+          key: ValueKey(section.offset),
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (section.type == RenderAssetGridElementType.monthTitle)
+              _MonthTitle(date: section.date),
+            if (section.type == RenderAssetGridElementType.groupDividerTitle ||
+                section.type == RenderAssetGridElementType.monthTitle)
+              _Title(
+                selectionActive: selectionActive,
+                title: section.title!,
+                assets: scrolling
+                    ? []
+                    : renderList.loadAssets(section.offset, section.totalCount),
+                allAssetsSelected: allAssetsSelected,
+                selectAssets: selectAssets,
+                deselectAssets: deselectAssets,
+              ),
+            for (int i = 0; i < rows; i++)
+              scrolling
+                  ? _PlaceholderRow(
+                      key: ValueKey(i),
+                      number: i + 1 == rows
+                          ? section.count - i * assetsPerRow
+                          : assetsPerRow,
+                      width: width,
+                      height: width,
+                      margin: margin,
+                    )
+                  : _AssetRow(
+                      key: ValueKey(i),
+                      assets: assetsToRender.nestedSlice(
+                        i * assetsPerRow,
+                        min((i + 1) * assetsPerRow, section.count),
+                      ),
+                      absoluteOffset: section.offset + i * assetsPerRow,
+                      width: width,
+                      assetsPerRow: assetsPerRow,
+                      margin: margin,
+                      dynamicLayout: dynamicLayout,
+                      renderList: renderList,
+                      selectedAssets: selectedAssets,
+                      isSelectionActive: selectionActive,
+                      showStack: showStack,
+                      heroOffset: heroOffset,
+                      showStorageIndicator: showStorageIndicator,
+                      selectionActive: selectionActive,
+                      onSelect: (asset) => selectAssets([asset]),
+                      onDeselect: (asset) => deselectAssets([asset]),
+                    ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+/// The month title row for a section
+class _MonthTitle extends StatelessWidget {
+  final DateTime date;
+
+  const _MonthTitle({
+    required this.date,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final monthFormat = DateTime.now().year == date.year
+        ? DateFormat.MMMM()
+        : DateFormat.yMMMM();
+    final String title = monthFormat.format(date);
+    return Padding(
+      key: Key("month-$title"),
+      padding: const EdgeInsets.only(left: 12.0, top: 24.0),
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 26,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+  }
+}
+
+/// A title row
+class _Title extends StatelessWidget {
+  final String title;
+  final List<Asset> assets;
+  final bool selectionActive;
+  final Function(List<Asset>) selectAssets;
+  final Function(List<Asset>) deselectAssets;
+  final Function(List<Asset>) allAssetsSelected;
+
+  const _Title({
+    required this.title,
+    required this.assets,
+    required this.selectionActive,
+    required this.selectAssets,
+    required this.deselectAssets,
+    required this.allAssetsSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GroupDividerTitle(
+      text: title,
+      multiselectEnabled: selectionActive,
+      onSelect: () => selectAssets(assets),
+      onDeselect: () => deselectAssets(assets),
+      selected: allAssetsSelected(assets),
+    );
+  }
+}
+
+/// The row of assets
+class _AssetRow extends StatelessWidget {
+  final List<Asset> assets;
+  final Set<Asset> selectedAssets;
+  final int absoluteOffset;
+  final double width;
+  final bool dynamicLayout;
+  final double margin;
+  final int assetsPerRow;
+  final RenderList renderList;
+  final bool selectionActive;
+  final bool showStorageIndicator;
+  final int heroOffset;
+  final bool showStack;
+  final Function(Asset)? onSelect;
+  final Function(Asset)? onDeselect;
+  final bool isSelectionActive;
+
+  const _AssetRow({
+    super.key,
+    required this.assets,
+    required this.absoluteOffset,
+    required this.width,
+    required this.dynamicLayout,
+    required this.margin,
+    required this.assetsPerRow,
+    required this.renderList,
+    required this.selectionActive,
+    required this.showStorageIndicator,
+    required this.heroOffset,
+    required this.showStack,
+    required this.isSelectionActive,
+    required this.selectedAssets,
+    this.onSelect,
+    this.onDeselect,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    // Default: All assets have the same width
+    final widthDistribution = List.filled(assets.length, 1.0);
+
+    if (dynamicLayout) {
+      final aspectRatios =
+          assets.map((e) => (e.width ?? 1) / (e.height ?? 1)).toList();
+      final meanAspectRatio = aspectRatios.sum / assets.length;
+
+      // 1: mean width
+      // 0.5: width < mean - threshold
+      // 1.5: width > mean + threshold
+      final arConfiguration = aspectRatios.map((e) {
+        if (e - meanAspectRatio > 0.3) return 1.5;
+        if (e - meanAspectRatio < -0.3) return 0.5;
+        return 1.0;
+      });
+
+      // Normalize:
+      final sum = arConfiguration.sum;
+      widthDistribution.setRange(
+        0,
+        widthDistribution.length,
+        arConfiguration.map((e) => (e * assets.length) / sum),
+      );
+    }
+    return Row(
+      key: key,
+      children: assets.mapIndexed((int index, Asset asset) {
+        final bool last = index + 1 == assetsPerRow;
+        return Container(
+          width: width * widthDistribution[index],
+          height: width,
+          margin: EdgeInsets.only(
+            bottom: margin,
+            right: last ? 0.0 : margin,
+          ),
+          child: ThumbnailImage(
+            asset: asset,
+            index: absoluteOffset + index,
+            loadAsset: renderList.loadAsset,
+            totalAssets: renderList.totalAssets,
+            multiselectEnabled: selectionActive,
+            isSelected: isSelectionActive && selectedAssets.contains(asset),
+            onSelect: () => onSelect?.call(asset),
+            onDeselect: () => onDeselect?.call(asset),
+            showStorageIndicator: showStorageIndicator,
+            heroOffset: heroOffset,
+            showStack: showStack,
+          ),
+        );
+      }).toList(),
     );
   }
 }

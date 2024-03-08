@@ -16,7 +16,9 @@ class CreateLibraryDto {
     this.exclusionPatterns = const [],
     this.importPaths = const [],
     this.isVisible,
+    this.isWatched,
     this.name,
+    this.ownerId,
     required this.type,
   });
 
@@ -38,17 +40,35 @@ class CreateLibraryDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
+  bool? isWatched;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
   String? name;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? ownerId;
 
   LibraryType type;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is CreateLibraryDto &&
-     other.exclusionPatterns == exclusionPatterns &&
-     other.importPaths == importPaths &&
-     other.isVisible == isVisible &&
-     other.name == name &&
-     other.type == type;
+    _deepEquality.equals(other.exclusionPatterns, exclusionPatterns) &&
+    _deepEquality.equals(other.importPaths, importPaths) &&
+    other.isVisible == isVisible &&
+    other.isWatched == isWatched &&
+    other.name == name &&
+    other.ownerId == ownerId &&
+    other.type == type;
 
   @override
   int get hashCode =>
@@ -56,11 +76,13 @@ class CreateLibraryDto {
     (exclusionPatterns.hashCode) +
     (importPaths.hashCode) +
     (isVisible == null ? 0 : isVisible!.hashCode) +
+    (isWatched == null ? 0 : isWatched!.hashCode) +
     (name == null ? 0 : name!.hashCode) +
+    (ownerId == null ? 0 : ownerId!.hashCode) +
     (type.hashCode);
 
   @override
-  String toString() => 'CreateLibraryDto[exclusionPatterns=$exclusionPatterns, importPaths=$importPaths, isVisible=$isVisible, name=$name, type=$type]';
+  String toString() => 'CreateLibraryDto[exclusionPatterns=$exclusionPatterns, importPaths=$importPaths, isVisible=$isVisible, isWatched=$isWatched, name=$name, ownerId=$ownerId, type=$type]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -71,10 +93,20 @@ class CreateLibraryDto {
     } else {
     //  json[r'isVisible'] = null;
     }
+    if (this.isWatched != null) {
+      json[r'isWatched'] = this.isWatched;
+    } else {
+    //  json[r'isWatched'] = null;
+    }
     if (this.name != null) {
       json[r'name'] = this.name;
     } else {
     //  json[r'name'] = null;
+    }
+    if (this.ownerId != null) {
+      json[r'ownerId'] = this.ownerId;
+    } else {
+    //  json[r'ownerId'] = null;
     }
       json[r'type'] = this.type;
     return json;
@@ -88,14 +120,16 @@ class CreateLibraryDto {
       final json = value.cast<String, dynamic>();
 
       return CreateLibraryDto(
-        exclusionPatterns: json[r'exclusionPatterns'] is List
-            ? (json[r'exclusionPatterns'] as List).cast<String>()
+        exclusionPatterns: json[r'exclusionPatterns'] is Iterable
+            ? (json[r'exclusionPatterns'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        importPaths: json[r'importPaths'] is List
-            ? (json[r'importPaths'] as List).cast<String>()
+        importPaths: json[r'importPaths'] is Iterable
+            ? (json[r'importPaths'] as Iterable).cast<String>().toList(growable: false)
             : const [],
         isVisible: mapValueOfType<bool>(json, r'isVisible'),
+        isWatched: mapValueOfType<bool>(json, r'isWatched'),
         name: mapValueOfType<String>(json, r'name'),
+        ownerId: mapValueOfType<String>(json, r'ownerId'),
         type: LibraryType.fromJson(json[r'type'])!,
       );
     }

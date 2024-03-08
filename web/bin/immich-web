@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+
+TYPESCRIPT_SDK=/usr/src/open-api/typescript-sdk
+
+npm --prefix "$TYPESCRIPT_SDK" install
+npm --prefix "$TYPESCRIPT_SDK" run build
+
+node ./node_modules/.bin/vite dev --host 0.0.0.0 --port 3000

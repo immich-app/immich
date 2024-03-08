@@ -18,10 +18,11 @@ const responseDto = {
     createdAt: new Date('2021-01-01'),
     deletedAt: null,
     updatedAt: new Date('2021-01-01'),
-    externalPath: null,
     memoriesEnabled: true,
     avatarColor: UserAvatarColor.PRIMARY,
+    quotaSizeInBytes: null,
     inTimeline: true,
+    quotaUsageInBytes: 0,
   },
   user1: <PartnerResponseDto>{
     email: 'immich@test.com',
@@ -35,10 +36,11 @@ const responseDto = {
     createdAt: new Date('2021-01-01'),
     deletedAt: null,
     updatedAt: new Date('2021-01-01'),
-    externalPath: null,
     memoriesEnabled: true,
     avatarColor: UserAvatarColor.PRIMARY,
     inTimeline: true,
+    quotaSizeInBytes: null,
+    quotaUsageInBytes: 0,
   },
 };
 
@@ -47,7 +49,7 @@ describe(PartnerService.name, () => {
   let partnerMock: jest.Mocked<IPartnerRepository>;
   let accessMock: jest.Mocked<IAccessRepository>;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     partnerMock = newPartnerRepositoryMock();
     sut = new PartnerService(partnerMock, accessMock);
   });

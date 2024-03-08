@@ -10,7 +10,6 @@ Below is an example config for nginx. Make sure to include `client_max_body_size
 server {
     server_name <snip>
 
-    # https://github.com/immich-app/immich/blob/main/nginx/templates/default.conf.template#L28
     client_max_body_size 50000M;
 
     location / {
@@ -28,3 +27,30 @@ server {
     }
 }
 ```
+
+### Caddy example config
+
+As an alternative to nginx, you can also use [Caddy](https://caddyserver.com/) as a reverse proxy (with automatic HTTPS configuration). Below is an example config.
+
+```
+immich.example.org {
+    reverse_proxy http://<snip>:2283
+}
+```
+
+### Apache example config
+
+Below is an example config for Apache2 site configuration.
+
+```
+<VirtualHost *:80>
+   ServerName <snip>
+   ProxyRequests Off
+   ProxyPass / http://127.0.0.1:2283/ timeout=600 upgrade=websocket
+   ProxyPassReverse / http://127.0.0.1:2283/
+   ProxyPreserveHost On
+
+</VirtualHost>
+```
+
+**timeout:** is measured in seconds, and it is particularly useful when long operations are triggered (i.e. Repair), so the server doesn't return an error.

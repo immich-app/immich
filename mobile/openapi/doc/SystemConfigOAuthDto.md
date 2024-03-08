@@ -13,12 +13,15 @@ Name | Type | Description | Notes
 **buttonText** | **String** |  | 
 **clientId** | **String** |  | 
 **clientSecret** | **String** |  | 
+**defaultStorageQuota** | **num** |  | 
 **enabled** | **bool** |  | 
 **issuerUrl** | **String** |  | 
 **mobileOverrideEnabled** | **bool** |  | 
 **mobileRedirectUri** | **String** |  | 
 **scope** | **String** |  | 
+**signingAlgorithm** | **String** |  | 
 **storageLabelClaim** | **String** |  | 
+**storageQuotaClaim** | **String** |  | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

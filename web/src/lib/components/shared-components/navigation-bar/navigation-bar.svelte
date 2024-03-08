@@ -1,36 +1,46 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
+  import IconButton from '$lib/components/elements/buttons/icon-button.svelte';
+  import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
+  import SkipLink from '$lib/components/elements/buttons/skip-link.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
+  import { featureFlags } from '$lib/stores/server-config.store';
+  import { resetSavedUser, user } from '$lib/stores/user.store';
   import { clickOutside } from '$lib/utils/click-outside';
+  import { logout } from '@immich/sdk';
+  import { mdiCog, mdiMagnify, mdiTrayArrowUp } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
   import { fade, fly } from 'svelte/transition';
-  import { api, UserResponseDto } from '@api';
-  import ThemeButton from '../theme-button.svelte';
   import { AppRoute } from '../../../constants';
-  import AccountInfoPanel from './account-info-panel.svelte';
   import ImmichLogo from '../immich-logo.svelte';
   import SearchBar from '../search-bar/search-bar.svelte';
-  import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
-  import IconButton from '$lib/components/elements/buttons/icon-button.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
+  import ThemeButton from '../theme-button.svelte';
   import UserAvatar from '../user-avatar.svelte';
-  import { featureFlags } from '$lib/stores/server-config.store';
-  import { mdiMagnify, mdiTrayArrowUp, mdiCog } from '@mdi/js';
-  export let user: UserResponseDto;
+  import AccountInfoPanel from './account-info-panel.svelte';
+
   export let showUploadButton = true;
 
   let shouldShowAccountInfo = false;
   let shouldShowAccountInfoPanel = false;
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    uploadClicked: void;
+  }>();
 
   const logOut = async () => {
-    const { data } = await api.authenticationApi.logout();
-    goto(data.redirectUri || '/auth/login?autoLaunch=0');
+    const { redirectUri } = await logout();
+    if (redirectUri.startsWith('/')) {
+      await goto(redirectUri);
+    } else {
+      window.location.href = redirectUri;
+    }
+    resetSavedUser();
   };
 </script>
 
 <section id="dashboard-navbar" class="fixed z-[900] h-[var(--navbar-height)] w-screen text-sm">
+  <SkipLink>Skip to content</SkipLink>
   <div
     class="grid h-full grid-cols-[theme(spacing.18)_auto] items-center border-b bg-immich-bg py-2 dark:border-b-immich-dark-gray dark:bg-immich-dark-bg md:grid-cols-[theme(spacing.64)_auto]"
   >
@@ -71,7 +81,7 @@
           </div>
         {/if}
 
-        {#if user.isAdmin}
+        {#if $user.isAdmin}
           <a
             data-sveltekit-preload-data="hover"
             href={AppRoute.ADMIN_USER_MANAGEMENT}
@@ -121,8 +131,8 @@
             on:mouseleave={() => (shouldShowAccountInfo = false)}
             on:click={() => (shouldShowAccountInfoPanel = !shouldShowAccountInfoPanel)}
           >
-            {#key user}
-              <UserAvatar {user} size="lg" showTitle={false} interactive />
+            {#key $user}
+              <UserAvatar user={$user} size="lg" showTitle={false} interactive />
             {/key}
           </button>
 
@@ -132,13 +142,13 @@
               out:fade={{ delay: 200, duration: 150 }}
               class="absolute -bottom-12 right-5 rounded-md border bg-gray-500 p-2 text-[12px] text-gray-100 shadow-md dark:border-immich-dark-gray dark:bg-immich-dark-gray"
             >
-              <p>{user.name}</p>
-              <p>{user.email}</p>
+              <p>{$user.name}</p>
+              <p>{$user.email}</p>
             </div>
           {/if}
 
           {#if shouldShowAccountInfoPanel}
-            <AccountInfoPanel bind:user on:logout={logOut} />
+            <AccountInfoPanel on:logout={logOut} />
           {/if}
         </div>
       </section>

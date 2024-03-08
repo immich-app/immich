@@ -11,15 +11,16 @@ class OAuthService {
   final log = Logger('OAuthService');
   OAuthService(this._apiService);
 
-  Future<OAuthConfigResponseDto?> getOAuthServerConfig(
+  Future<String?> getOAuthServerUrl(
     String serverUrl,
   ) async {
     // Resolve API server endpoint from user provided serverUrl
     await _apiService.resolveAndSetEndpoint(serverUrl);
 
-    return await _apiService.oAuthApi.generateOAuthConfig(
+    final dto = await _apiService.oAuthApi.startOAuth(
       OAuthConfigDto(redirectUri: '$callbackUrlScheme:/'),
     );
+    return dto?.url;
   }
 
   Future<LoginResponseDto?> oAuthLogin(String oauthUrl) async {
@@ -35,7 +36,7 @@ class OAuthService {
         ),
       );
     } catch (e, stack) {
-      log.severe("Error performing oAuthLogin: ${e.toString()}", e, stack);
+      log.severe("OAuth login failed", e, stack);
       return null;
     }
   }

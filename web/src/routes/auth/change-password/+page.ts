@@ -1,16 +1,17 @@
 import { AppRoute } from '$lib/constants';
+import { user } from '$lib/stores/user.store';
 import { authenticate } from '$lib/utils/auth';
 import { redirect } from '@sveltejs/kit';
+import { get } from 'svelte/store';
 import type { PageLoad } from './$types';
 
 export const load = (async () => {
-  const user = await authenticate();
-  if (!user.shouldChangePassword) {
-    throw redirect(302, AppRoute.PHOTOS);
+  await authenticate();
+  if (!get(user).shouldChangePassword) {
+    redirect(302, AppRoute.PHOTOS);
   }
 
   return {
-    user,
     meta: {
       title: 'Change Password',
     },

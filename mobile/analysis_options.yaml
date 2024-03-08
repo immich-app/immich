@@ -33,10 +33,10 @@ linter:
 # https://dart.dev/guides/language/analysis-options
 analyzer:
   exclude:
-    - openapi/
-    - openapi/test/
+    - openapi/**
+    - openapi/test/**
     - lib/generated_plugin_registrant.dart
-  
+
 plugins:
   - custom_lint
 
@@ -52,7 +52,6 @@ dart_code_metrics:
     - avoid-cascade-after-if-null
     - avoid-collapsible-if
     - avoid-collection-methods-with-unrelated-types
-    - avoid-declaring-call-method
     - avoid-double-slash-imports
     - avoid-duplicate-cascades
     - avoid-duplicate-patterns

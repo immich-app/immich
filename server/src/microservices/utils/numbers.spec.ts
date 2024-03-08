@@ -2,15 +2,15 @@ import { isDecimalNumber, isNumberInRange, toNumberOrNull } from './numbers';
 
 describe('checks if a number is a decimal number', () => {
   it('returns false for non-decimal numbers', () => {
-    expect(isDecimalNumber(NaN)).toBe(false);
-    expect(isDecimalNumber(Infinity)).toBe(false);
-    expect(isDecimalNumber(-Infinity)).toBe(false);
+    expect(isDecimalNumber(Number.NaN)).toBe(false);
+    expect(isDecimalNumber(Number.POSITIVE_INFINITY)).toBe(false);
+    expect(isDecimalNumber(Number.NEGATIVE_INFINITY)).toBe(false);
   });
 
   it('returns true for decimal numbers', () => {
     expect(isDecimalNumber(0)).toBe(true);
     expect(isDecimalNumber(-0)).toBe(true);
-    expect(isDecimalNumber(10.12345)).toBe(true);
+    expect(isDecimalNumber(10.123_45)).toBe(true);
     expect(isDecimalNumber(Number.MAX_VALUE)).toBe(true);
     expect(isDecimalNumber(Number.MIN_VALUE)).toBe(true);
   });
@@ -26,16 +26,17 @@ describe('checks if a number is within a range', () => {
   it('returns true for numbers inside the range', () => {
     expect(isNumberInRange(0, 0, 50)).toBe(true);
     expect(isNumberInRange(50, 0, 50)).toBe(true);
-    expect(isNumberInRange(-50.12345, -50.12345, 0)).toBe(true);
+    expect(isNumberInRange(-50.123_45, -50.123_45, 0)).toBe(true);
   });
 });
 
 describe('converts input to a number or null', () => {
   it('returns null for invalid inputs', () => {
     expect(toNumberOrNull(null)).toBeNull();
+    // eslint-disable-next-line unicorn/no-useless-undefined
     expect(toNumberOrNull(undefined)).toBeNull();
     expect(toNumberOrNull('')).toBeNull();
-    expect(toNumberOrNull(NaN)).toBeNull();
+    expect(toNumberOrNull(Number.NaN)).toBeNull();
   });
 
   it('returns a number for valid inputs', () => {

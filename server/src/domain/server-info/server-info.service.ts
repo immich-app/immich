@@ -1,13 +1,16 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { SystemMetadataKey } from '@app/infra/entities';
+import { ImmichLogger } from '@app/infra/logger';
+import { Inject, Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
-import { ServerVersion, isDev, mimeTypes, serverVersion } from '../domain.constant';
+import { Version, isDev, mimeTypes, serverVersion } from '../domain.constant';
 import { asHumanReadable } from '../domain.util';
 import {
-  CommunicationEvent,
+  ClientEvent,
   ICommunicationRepository,
   IServerInfoRepository,
   IStorageRepository,
   ISystemConfigRepository,
+  ISystemMetadataRepository,
   IUserRepository,
   UserStatsQueryResponse,
 } from '../repositories';
@@ -25,7 +28,7 @@ import {
 
 @Injectable()
 export class ServerInfoService {
-  private logger = new Logger(ServerInfoService.name);
+  private logger = new ImmichLogger(ServerInfoService.name);
   private configCore: SystemConfigCore;
   private releaseVersion = serverVersion;
   private releaseVersionCheckedAt: DateTime | null = null;
@@ -36,9 +39,19 @@ export class ServerInfoService {
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(IServerInfoRepository) private repository: IServerInfoRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
+    @Inject(ISystemMetadataRepository) private readonly systemMetadataRepository: ISystemMetadataRepository,
   ) {
     this.configCore = SystemConfigCore.create(configRepository);
-    this.communicationRepository.addEventListener('connect', (userId) => this.handleConnect(userId));
+    this.communicationRepository.on('connect', (userId) => this.handleConnect(userId));
+  }
+
+  async init(): Promise<void> {
+    await this.handleVersionCheck();
+
+    const featureFlags = await this.getFeatures();
+    if (featureFlags.configFile) {
+      await this.setAdminOnboarding();
+    }
   }
 
   async getInfo(): Promise<ServerInfoResponseDto> {
@@ -54,7 +67,7 @@ export class ServerInfoService {
     serverInfo.diskAvailableRaw = diskInfo.available;
     serverInfo.diskSizeRaw = diskInfo.total;
     serverInfo.diskUseRaw = diskInfo.total - diskInfo.free;
-    serverInfo.diskUsagePercentage = parseFloat(usagePercentage);
+    serverInfo.diskUsagePercentage = Number.parseFloat(usagePercentage);
     return serverInfo;
   }
 
@@ -77,18 +90,22 @@ export class ServerInfoService {
 
   async getConfig(): Promise<ServerConfigDto> {
     const config = await this.configCore.getConfig();
-
-    // TODO move to system config
-    const loginPageMessage = process.env.PUBLIC_LOGIN_PAGE_MESSAGE || '';
-
     const isInitialized = await this.userRepository.hasAdmin();
+    const onboarding = await this.systemMetadataRepository.get(SystemMetadataKey.ADMIN_ONBOARDING);
 
     return {
-      loginPageMessage,
+      loginPageMessage: config.server.loginPageMessage,
       trashDays: config.trash.days,
+      userDeleteDelay: config.user.deleteDelay,
       oauthButtonText: config.oauth.buttonText,
       isInitialized,
+      isOnboarded: onboarding?.isOnboarded || false,
+      externalDomain: config.server.externalDomain,
     };
+  }
+
+  setAdminOnboarding(): Promise<void> {
+    return this.systemMetadataRepository.set(SystemMetadataKey.ADMIN_ONBOARDING, { isOnboarded: true });
   }
 
   async getStatistics(): Promise<ServerStatsResponseDto> {
@@ -102,6 +119,7 @@ export class ServerInfoService {
       usage.photos = user.photos;
       usage.videos = user.videos;
       usage.usage = user.usage;
+      usage.quotaSizeInBytes = user.quotaSizeInBytes;
 
       serverStats.photos += usage.photos;
       serverStats.videos += usage.videos;
@@ -132,12 +150,12 @@ export class ServerInfoService {
       }
 
       // check once per hour (max)
-      if (this.releaseVersionCheckedAt && this.releaseVersionCheckedAt.diffNow().as('minutes') < 60) {
+      if (this.releaseVersionCheckedAt && DateTime.now().diff(this.releaseVersionCheckedAt).as('minutes') < 60) {
         return true;
       }
 
       const githubRelease = await this.repository.getGitHubRelease();
-      const githubVersion = ServerVersion.fromString(githubRelease.tag_name);
+      const githubVersion = Version.fromString(githubRelease.tag_name);
       const publishedAt = new Date(githubRelease.published_at);
       this.releaseVersion = githubVersion;
       this.releaseVersionCheckedAt = DateTime.now();
@@ -153,13 +171,13 @@ export class ServerInfoService {
     return true;
   }
 
-  private async handleConnect(userId: string) {
-    this.communicationRepository.send(CommunicationEvent.SERVER_VERSION, userId, serverVersion);
+  private handleConnect(userId: string) {
+    this.communicationRepository.send(ClientEvent.SERVER_VERSION, userId, serverVersion);
     this.newReleaseNotification(userId);
   }
 
   private newReleaseNotification(userId?: string) {
-    const event = CommunicationEvent.NEW_RELEASE;
+    const event = ClientEvent.NEW_RELEASE;
     const payload = {
       isAvailable: this.releaseVersion.isNewerThan(serverVersion),
       checkedAt: this.releaseVersionCheckedAt,

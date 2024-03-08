@@ -36,11 +36,6 @@ void main() {
       // TODO
     });
 
-    // String externalPath
-    test('to test the property `externalPath`', () async {
-      // TODO
-    });
-
     // String id
     test('to test the property `id`', () async {
       // TODO
@@ -68,6 +63,16 @@ void main() {
 
     // String profileImagePath
     test('to test the property `profileImagePath`', () async {
+      // TODO
+    });
+
+    // int quotaSizeInBytes
+    test('to test the property `quotaSizeInBytes`', () async {
+      // TODO
+    });
+
+    // int quotaUsageInBytes
+    test('to test the property `quotaUsageInBytes`', () async {
       // TODO
     });
 

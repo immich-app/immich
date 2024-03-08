@@ -1,9 +1,11 @@
-import { Optional, toBoolean, UploadFieldName, ValidateUUID } from '@app/domain';
+import { Optional, UploadFieldName, ValidateBoolean, ValidateDate, ValidateUUID } from '@app/domain';
 import { ApiProperty } from '@nestjs/swagger';
-import { Transform, Type } from 'class-transformer';
-import { IsBoolean, IsDate, IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 
-export class CreateAssetBase {
+export class CreateAssetDto {
+  @ValidateUUID({ optional: true })
+  libraryId?: string;
+
   @IsNotEmpty()
   @IsString()
   deviceAssetId!: string;
@@ -12,52 +14,30 @@ export class CreateAssetBase {
   @IsString()
   deviceId!: string;
 
-  @IsNotEmpty()
-  @IsDate()
-  @Type(() => Date)
+  @ValidateDate()
   fileCreatedAt!: Date;
 
-  @IsNotEmpty()
-  @IsDate()
-  @Type(() => Date)
+  @ValidateDate()
   fileModifiedAt!: Date;
-
-  @Optional()
-  @IsBoolean()
-  @Transform(toBoolean)
-  isFavorite?: boolean;
-
-  @Optional()
-  @IsBoolean()
-  @Transform(toBoolean)
-  isArchived?: boolean;
-
-  @Optional()
-  @IsBoolean()
-  @Transform(toBoolean)
-  isVisible?: boolean;
 
   @Optional()
   @IsString()
   duration?: string;
 
-  @Optional()
-  @IsBoolean()
-  isExternal?: boolean;
+  @ValidateBoolean({ optional: true })
+  isFavorite?: boolean;
 
-  @Optional()
-  @IsBoolean()
+  @ValidateBoolean({ optional: true })
+  isArchived?: boolean;
+
+  @ValidateBoolean({ optional: true })
+  isVisible?: boolean;
+
+  @ValidateBoolean({ optional: true })
   isOffline?: boolean;
-}
 
-export class CreateAssetDto extends CreateAssetBase {
-  @Optional()
-  @IsBoolean()
-  @Transform(toBoolean)
+  @ValidateBoolean({ optional: true })
   isReadOnly?: boolean;
-
-  @ValidateUUID({ optional: true })
-  libraryId?: string;
 
   // The properties below are added to correctly generate the API docs
   // and client SDKs. Validation should be handled in the controller.

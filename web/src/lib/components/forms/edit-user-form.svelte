@@ -1,39 +1,51 @@
 <script lang="ts">
-  import { api, UserResponseDto } from '@api';
-  import { createEventDispatcher } from 'svelte';
-  import { notificationController, NotificationType } from '../shared-components/notification/notification';
-  import Button from '../elements/buttons/button.svelte';
-  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
-  import { handleError } from '../../utils/handle-error';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { mdiAccountEditOutline } from '@mdi/js';
+  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
+  import { AppRoute } from '$lib/constants';
+  import { serverInfo } from '$lib/stores/server-info.store';
+  import { convertFromBytes, convertToBytes } from '$lib/utils/byte-converter';
+  import { handleError } from '$lib/utils/handle-error';
+  import { updateUser, type UserResponseDto } from '@immich/sdk';
+  import { mdiAccountEditOutline, mdiClose } from '@mdi/js';
+  import { createEventDispatcher } from 'svelte';
+  import Button from '../elements/buttons/button.svelte';
+  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
 
   export let user: UserResponseDto;
   export let canResetPassword = true;
 
   let error: string;
   let success: string;
-
   let isShowResetPasswordConfirmation = false;
+  let quotaSize = user.quotaSizeInBytes ? convertFromBytes(user.quotaSizeInBytes, 'GiB') : null;
 
-  const dispatch = createEventDispatcher();
+  const previousQutoa = user.quotaSizeInBytes;
+
+  $: quotaSizeWarning =
+    previousQutoa !== convertToBytes(Number(quotaSize), 'GiB') &&
+    !!quotaSize &&
+    convertToBytes(Number(quotaSize), 'GiB') > $serverInfo.diskSizeRaw;
+
+  const dispatch = createEventDispatcher<{
+    close: void;
+    resetPasswordSuccess: void;
+    editSuccess: void;
+  }>();
 
   const editUser = async () => {
     try {
-      const { id, email, name, storageLabel, externalPath } = user;
-      const { status } = await api.userApi.updateUser({
+      const { id, email, name, storageLabel } = user;
+      await updateUser({
         updateUserDto: {
           id,
           email,
           name,
           storageLabel: storageLabel || '',
-          externalPath: externalPath || '',
+          quotaSizeInBytes: quotaSize ? convertToBytes(Number(quotaSize), 'GiB') : null,
         },
       });
 
-      if (status === 200) {
-        dispatch('edit-success');
-      }
+      dispatch('editSuccess');
     } catch (error) {
       handleError(error, 'Unable to update user');
     }
@@ -43,7 +55,7 @@
     try {
       const defaultPassword = 'password';
 
-      const { status } = await api.userApi.updateUser({
+      await updateUser({
         updateUserDto: {
           id: user.id,
           password: defaultPassword,
@@ -51,15 +63,9 @@
         },
       });
 
-      if (status == 200) {
-        dispatch('reset-password-success');
-      }
-    } catch (e) {
-      console.error('Error reseting user password', e);
-      notificationController.show({
-        message: 'Error reseting user password, check console for more details',
-        type: NotificationType.Error,
-      });
+      dispatch('resetPasswordSuccess');
+    } catch (error) {
+      handleError(error, 'Unable to reset password');
     } finally {
       isShowResetPasswordConfirmation = false;
     }
@@ -67,8 +73,12 @@
 </script>
 
 <div
-  class="max-h-screen w-[500px] max-w-[95vw] overflow-y-auto rounded-3xl border bg-immich-bg p-4 py-8 shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg"
+  class="relative max-h-screen w-[500px] max-w-[95vw] overflow-y-auto rounded-3xl border bg-immich-bg p-4 py-8 shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg"
 >
+  <div class="absolute top-0 right-0 px-2 py-2 h-fit">
+    <CircleIconButton icon={mdiClose} on:click={() => dispatch('close')} />
+  </div>
+
   <div
     class="flex flex-col place-content-center place-items-center gap-4 px-4 text-immich-primary dark:text-immich-dark-primary"
   >
@@ -88,6 +98,16 @@
     </div>
 
     <div class="m-4 flex flex-col gap-2">
+      <label class="flex items-center gap-2 immich-form-label" for="quotaSize"
+        >Quota Size (GiB) {#if quotaSizeWarning}
+          <p class="text-red-400 text-sm">You set a quota higher than the disk size</p>
+        {/if}</label
+      >
+      <input class="immich-form-input" id="quotaSize" name="quotaSize" type="number" min="0" bind:value={quotaSize} />
+      <p>Note: Enter 0 for unlimited quota</p>
+    </div>
+
+    <div class="m-4 flex flex-col gap-2">
       <label class="immich-form-label" for="storage-label">Storage Label</label>
       <input
         class="immich-form-input"
@@ -99,25 +119,9 @@
 
       <p>
         Note: To apply the Storage Label to previously uploaded assets, run the
-        <a href="/admin/jobs-status" class="text-immich-primary dark:text-immich-dark-primary">
+        <a href={AppRoute.ADMIN_JOBS} class="text-immich-primary dark:text-immich-dark-primary">
           Storage Migration Job</a
         >
-      </p>
-    </div>
-
-    <div class="m-4 flex flex-col gap-2">
-      <label class="immich-form-label" for="external-path">External Path</label>
-      <input
-        class="immich-form-input"
-        id="external-path"
-        name="external-path"
-        type="text"
-        bind:value={user.externalPath}
-      />
-
-      <p>
-        Note: Absolute path of parent import directory. A user can only import files if they exist at or under this
-        path.
       </p>
     </div>
 
@@ -143,8 +147,8 @@
   <ConfirmDialogue
     title="Reset Password"
     confirmText="Reset"
-    on:confirm={resetPassword}
-    on:cancel={() => (isShowResetPasswordConfirmation = false)}
+    onConfirm={resetPassword}
+    onClose={() => (isShowResetPasswordConfirmation = false)}
   >
     <svelte:fragment slot="prompt">
       <p>

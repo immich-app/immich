@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/response_extensions.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:logging/logging.dart';
@@ -27,25 +28,28 @@ class ShareService {
       final downloadedXFiles = <XFile>[];
 
       for (var asset in assets) {
-        if (asset.isRemote) {
+        if (asset.isLocal) {
+          // Prefer local assets to share
+          File? f = await asset.local!.file;
+          downloadedXFiles.add(XFile(f!.path));
+        } else if (asset.isRemote) {
+          // Download remote asset otherwise
           final tempDir = await getTemporaryDirectory();
           final fileName = asset.fileName;
           final tempFile = await File('${tempDir.path}/$fileName').create();
-          final res = await _apiService.assetApi
+          final res = await _apiService.downloadApi
               .downloadFileWithHttpInfo(asset.remoteId!);
 
           if (res.statusCode != 200) {
             _log.severe(
-              "Asset download failed with status - ${res.statusCode} and response - ${res.body}",
+              "Asset download for ${asset.fileName} failed",
+              res.toLoggerString(),
             );
             continue;
           }
 
           tempFile.writeAsBytesSync(res.bodyBytes);
           downloadedXFiles.add(XFile(tempFile.path));
-        } else {
-          File? f = await asset.local!.file;
-          downloadedXFiles.add(XFile(f!.path));
         }
       }
 
@@ -66,7 +70,7 @@ class ShareService {
       );
       return true;
     } catch (error) {
-      _log.severe("Share failed with error $error");
+      _log.severe("Share failed", error);
     }
     return false;
   }

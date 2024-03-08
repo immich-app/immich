@@ -1,18 +1,21 @@
 <script lang="ts">
-  import { AlbumResponseDto, api } from '@api';
-  import { createEventDispatcher } from 'svelte';
   import Icon from '$lib/components/elements/icon.svelte';
-  import Button from '../elements/buttons/button.svelte';
-  import { handleError } from '../../utils/handle-error';
+  import { updateAlbumInfo, type AlbumResponseDto } from '@immich/sdk';
   import { mdiImageAlbum } from '@mdi/js';
+  import { createEventDispatcher } from 'svelte';
+  import { handleError } from '../../utils/handle-error';
+  import Button from '../elements/buttons/button.svelte';
 
   export let album: AlbumResponseDto;
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    editSuccess: void;
+    cancel: void;
+  }>();
 
   const editUser = async () => {
     try {
-      const { status } = await api.albumApi.updateAlbumInfo({
+      await updateAlbumInfo({
         id: album.id,
         updateAlbumDto: {
           albumName: album.albumName,
@@ -20,9 +23,7 @@
         },
       });
 
-      if (status === 200) {
-        dispatch('edit-success');
-      }
+      dispatch('editSuccess');
     } catch (error) {
       handleError(error, 'Unable to update user');
     }

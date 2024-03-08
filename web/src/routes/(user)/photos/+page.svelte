@@ -20,13 +20,9 @@
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { AssetStore } from '$lib/stores/assets.store';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
-  import type { PageData } from './$types';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { mdiDotsVertical, mdiPlus } from '@mdi/js';
-  import UpdatePanel from '$lib/components/shared-components/update-panel.svelte';
   import { user } from '$lib/stores/user.store';
-
-  export let data: PageData;
 
   let { isViewing: showAssetViewer } = assetViewingStore;
   let handleEscapeKey = false;
@@ -34,9 +30,7 @@
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
-  $user = data.user;
-
-  $: isAllFavorite = Array.from($selectedAssets).every((asset) => asset.isFavorite);
+  $: isAllFavorite = [...$selectedAssets].every((asset) => asset.isFavorite);
 
   const handleEscape = () => {
     if ($showAssetViewer) {
@@ -55,7 +49,7 @@
 
 {#if $isMultiSelectState}
   <AssetSelectControlBar
-    ownerId={data.user.id}
+    ownerId={$user.id}
     assets={$selectedAssets}
     clearSelect={() => assetInteractionStore.clearMultiselect()}
   >
@@ -67,14 +61,14 @@
     </AssetSelectContextMenu>
     <DeleteAssets
       on:escape={() => (handleEscapeKey = true)}
-      onAssetDelete={(assetId) => assetStore.removeAsset(assetId)}
+      onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)}
     />
     <AssetSelectContextMenu icon={mdiDotsVertical} title="Menu">
-      <FavoriteAction menuItem removeFavorite={isAllFavorite} />
+      <FavoriteAction menuItem removeFavorite={isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
       <DownloadAction menuItem />
-      <ArchiveAction menuItem onArchive={(ids) => assetStore.removeAssets(ids)} />
+      <ArchiveAction menuItem onArchive={(assetIds) => assetStore.removeAssets(assetIds)} />
       {#if $selectedAssets.size > 1}
-        <StackAction onStack={(ids) => assetStore.removeAssets(ids)} />
+        <StackAction onStack={(assetIds) => assetStore.removeAssets(assetIds)} />
       {/if}
       <ChangeDate menuItem />
       <ChangeLocation menuItem />
@@ -83,7 +77,7 @@
   </AssetSelectControlBar>
 {/if}
 
-<UserPageLayout user={data.user} hideNavbar={$isMultiSelectState} showUploadButton scrollbar={false}>
+<UserPageLayout hideNavbar={$isMultiSelectState} showUploadButton scrollbar={false}>
   <AssetGrid
     {assetStore}
     {assetInteractionStore}
@@ -91,7 +85,7 @@
     on:escape={handleEscape}
     withStacked
   >
-    {#if data.user.memoriesEnabled}
+    {#if $user.memoriesEnabled}
       <MemoryLane />
     {/if}
     <EmptyPlaceholder
@@ -101,4 +95,3 @@
     />
   </AssetGrid>
 </UserPageLayout>
-<UpdatePanel {assetStore} />

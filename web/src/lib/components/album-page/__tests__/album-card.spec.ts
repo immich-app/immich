@@ -1,14 +1,18 @@
 import { createObjectURLMock } from '$lib/__mocks__/jsdom-url.mock';
-import { api, ThumbnailFormat } from '@api';
-import { describe, it, jest } from '@jest/globals';
+import sdk, { ThumbnailFormat } from '@immich/sdk';
 import { albumFactory } from '@test-data';
 import '@testing-library/jest-dom';
-import { fireEvent, render, RenderResult, waitFor } from '@testing-library/svelte';
+import { fireEvent, render, waitFor, type RenderResult } from '@testing-library/svelte';
+import type { MockedObject } from 'vitest';
 import AlbumCard from '../album-card.svelte';
 
-jest.mock('@api');
+vi.mock('@immich/sdk', async (originalImport) => {
+  const module = await originalImport<typeof import('@immich/sdk')>();
+  const mock = { ...module, getAssetThumbnail: vi.fn() };
+  return { ...mock, default: mock };
+});
 
-const apiMock: jest.MockedObject<typeof api> = api as jest.MockedObject<typeof api>;
+const sdkMock: MockedObject<typeof sdk> = sdk as MockedObject<typeof sdk>;
 
 describe('AlbumCard component', () => {
   let sut: RenderResult<AlbumCard>;
@@ -35,7 +39,7 @@ describe('AlbumCard component', () => {
       shared: true,
     },
   ])('shows album data without thumbnail with count $count - shared: $shared', async ({ album, count, shared }) => {
-    sut = render(AlbumCard, { album, user: album.owner });
+    sut = render(AlbumCard, { album });
 
     const albumImgElement = sut.getByTestId('album-image');
     const albumNameElement = sut.getByTestId('album-name');
@@ -43,27 +47,21 @@ describe('AlbumCard component', () => {
     const detailsText = `${count} items` + (shared ? ' . Shared' : '');
 
     expect(albumImgElement).toHaveAttribute('src');
-    expect(albumImgElement).toHaveAttribute('alt', album.id);
+    expect(albumImgElement).toHaveAttribute('alt', album.albumName);
 
     await waitFor(() => expect(albumImgElement).toHaveAttribute('src'));
 
-    expect(albumImgElement).toHaveAttribute('alt', album.id);
-    expect(apiMock.assetApi.getAssetThumbnail).not.toHaveBeenCalled();
+    expect(albumImgElement).toHaveAttribute('alt', album.albumName);
+    expect(sdkMock.getAssetThumbnail).not.toHaveBeenCalled();
 
     expect(albumNameElement).toHaveTextContent(album.albumName);
     expect(albumDetailsElement).toHaveTextContent(new RegExp(detailsText));
   });
 
-  it('shows album data and and loads the thumbnail image when available', async () => {
+  it('shows album data and loads the thumbnail image when available', async () => {
     const thumbnailFile = new File([new Blob()], 'fileThumbnail');
     const thumbnailUrl = 'blob:thumbnailUrlOne';
-    apiMock.assetApi.getAssetThumbnail.mockResolvedValue({
-      data: thumbnailFile,
-      config: {},
-      headers: {},
-      status: 200,
-      statusText: '',
-    });
+    sdkMock.getAssetThumbnail.mockResolvedValue(thumbnailFile);
     createObjectURLMock.mockReturnValueOnce(thumbnailUrl);
 
     const album = albumFactory.build({
@@ -71,24 +69,21 @@ describe('AlbumCard component', () => {
       shared: false,
       albumName: 'some album name',
     });
-    sut = render(AlbumCard, { album, user: album.owner });
+    sut = render(AlbumCard, { album });
 
     const albumImgElement = sut.getByTestId('album-image');
     const albumNameElement = sut.getByTestId('album-name');
     const albumDetailsElement = sut.getByTestId('album-details');
-    expect(albumImgElement).toHaveAttribute('alt', album.id);
+    expect(albumImgElement).toHaveAttribute('alt', album.albumName);
 
     await waitFor(() => expect(albumImgElement).toHaveAttribute('src', thumbnailUrl));
 
-    expect(albumImgElement).toHaveAttribute('alt', album.id);
-    expect(apiMock.assetApi.getAssetThumbnail).toHaveBeenCalledTimes(1);
-    expect(apiMock.assetApi.getAssetThumbnail).toHaveBeenCalledWith(
-      {
-        id: 'thumbnailIdOne',
-        format: ThumbnailFormat.Jpeg,
-      },
-      { responseType: 'blob' },
-    );
+    expect(albumImgElement).toHaveAttribute('alt', album.albumName);
+    expect(sdkMock.getAssetThumbnail).toHaveBeenCalledTimes(1);
+    expect(sdkMock.getAssetThumbnail).toHaveBeenCalledWith({
+      id: 'thumbnailIdOne',
+      format: ThumbnailFormat.Jpeg,
+    });
     expect(createObjectURLMock).toHaveBeenCalledWith(thumbnailFile);
 
     expect(albumNameElement).toHaveTextContent('some album name');
@@ -99,14 +94,14 @@ describe('AlbumCard component', () => {
     const album = Object.freeze(albumFactory.build({ albumThumbnailAssetId: null }));
 
     beforeEach(async () => {
-      sut = render(AlbumCard, { album, user: album.owner });
+      sut = render(AlbumCard, { album });
 
       const albumImgElement = sut.getByTestId('album-image');
       await waitFor(() => expect(albumImgElement).toHaveAttribute('src'));
     });
 
     it('dispatches custom "click" event with the album in context', async () => {
-      const onClickHandler = jest.fn();
+      const onClickHandler = vi.fn();
       sut.component.$on('click', onClickHandler);
       const albumCardElement = sut.getByTestId('album-card');
 
@@ -116,19 +111,31 @@ describe('AlbumCard component', () => {
     });
 
     it('dispatches custom "click" event on context menu click with mouse coordinates', async () => {
-      const onClickHandler = jest.fn();
+      const onClickHandler = vi.fn();
       sut.component.$on('showalbumcontextmenu', onClickHandler);
 
-      const contextMenuBtnParent = sut.getByTestId('context-button-parent');
+      const contextMenuButtonParent = sut.getByTestId('context-button-parent');
+
+      // Mock getBoundingClientRect to return a bounding rectangle that will result in the expected position
+      contextMenuButtonParent.getBoundingClientRect = () => ({
+        x: 123,
+        y: 456,
+        width: 0,
+        height: 0,
+        top: 0,
+        right: 0,
+        bottom: 0,
+        left: 0,
+        toJSON: () => ({}),
+      });
 
       await fireEvent(
-        contextMenuBtnParent,
+        contextMenuButtonParent,
         new MouseEvent('click', {
           clientX: 123,
           clientY: 456,
         }),
       );
-
       expect(onClickHandler).toHaveBeenCalledTimes(1);
       expect(onClickHandler).toHaveBeenCalledWith(expect.objectContaining({ detail: { x: 123, y: 456 } }));
     });

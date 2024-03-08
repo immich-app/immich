@@ -1,13 +1,12 @@
 import { authenticate } from '$lib/utils/auth';
-import { api } from '@api';
+import { getAllAlbums } from '@immich/sdk';
 import type { PageLoad } from './$types';
 
 export const load = (async () => {
-  const user = await authenticate();
-  const { data: albums } = await api.albumApi.getAllAlbums();
+  await authenticate();
+  const albums = await getAllAlbums({});
 
   return {
-    user,
     albums,
     meta: {
       title: 'Albums',

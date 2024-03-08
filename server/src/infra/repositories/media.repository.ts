@@ -1,17 +1,25 @@
-import { CropOptions, IMediaRepository, ResizeOptions, TranscodeOptions, VideoInfo } from '@app/domain';
+import {
+  CropOptions,
+  IMediaRepository,
+  ResizeOptions,
+  TranscodeOptions,
+  VideoInfo,
+  handlePromiseError,
+} from '@app/domain';
 import { Colorspace } from '@app/infra/entities';
-import { Logger } from '@nestjs/common';
+import { ImmichLogger } from '@app/infra/logger';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
-import fs from 'fs/promises';
+import fs from 'node:fs/promises';
+import { Writable } from 'node:stream';
+import { promisify } from 'node:util';
 import sharp from 'sharp';
-import { Writable } from 'stream';
-import { promisify } from 'util';
 
 const probe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
 sharp.concurrency(0);
+sharp.cache({ files: 0 });
 
 export class MediaRepository implements IMediaRepository {
-  private logger = new Logger(MediaRepository.name);
+  private logger = new ImmichLogger(MediaRepository.name);
 
   crop(input: string | Buffer, options: CropOptions): Promise<Buffer> {
     return sharp(input, { failOn: 'none' })
@@ -26,13 +34,16 @@ export class MediaRepository implements IMediaRepository {
   }
 
   async resize(input: string | Buffer, output: string, options: ResizeOptions): Promise<void> {
-    const chromaSubsampling = options.quality >= 80 ? '4:4:4' : '4:2:0'; // this is default in libvips (except the threshold is 90), but we need to set it manually in sharp
     await sharp(input, { failOn: 'none' })
       .pipelineColorspace(options.colorspace === Colorspace.SRGB ? 'srgb' : 'rgb16')
       .resize(options.size, options.size, { fit: 'outside', withoutEnlargement: true })
       .rotate()
-      .withMetadata({ icc: options.colorspace })
-      .toFormat(options.format, { quality: options.quality, chromaSubsampling })
+      .withIccProfile(options.colorspace)
+      .toFormat(options.format, {
+        quality: options.quality,
+        // this is default in libvips (except the threshold is 90), but we need to set it manually in sharp
+        chromaSubsampling: options.quality >= 80 ? '4:4:4' : '4:2:0',
+      })
       .toFile(output);
   }
 
@@ -43,6 +54,7 @@ export class MediaRepository implements IMediaRepository {
         formatName: results.format.format_name,
         formatLongName: results.format.format_long_name,
         duration: results.format.duration || 0,
+        bitrate: results.format.bit_rate ?? 0,
       },
       videoStreams: results.streams
         .filter((stream) => stream.codec_type === 'video')
@@ -55,6 +67,7 @@ export class MediaRepository implements IMediaRepository {
           frameCount: Number.parseInt(stream.nb_frames ?? '0'),
           rotation: Number.parseInt(`${stream.rotation ?? 0}`),
           isHDR: stream.color_transfer === 'smpte2084' || stream.color_transfer === 'arib-std-b67',
+          bitrate: Number.parseInt(stream.bit_rate ?? '0'),
         })),
       audioStreams: results.streams
         .filter((stream) => stream.codec_type === 'audio')
@@ -70,23 +83,12 @@ export class MediaRepository implements IMediaRepository {
   transcode(input: string, output: string | Writable, options: TranscodeOptions): Promise<void> {
     if (!options.twoPass) {
       return new Promise((resolve, reject) => {
-        const oldLdLibraryPath = process.env.LD_LIBRARY_PATH;
-        if (options.ldLibraryPath) {
-          // fluent ffmpeg does not allow to set environment variables, so we do it manually
-          process.env.LD_LIBRARY_PATH = this.chainPath(oldLdLibraryPath || '', options.ldLibraryPath);
-        }
-        try {
-          this.configureFfmpegCall(input, output, options).on('error', reject).on('end', resolve).run();
-        } finally {
-          if (options.ldLibraryPath) {
-            process.env.LD_LIBRARY_PATH = oldLdLibraryPath;
-          }
-        }
+        this.configureFfmpegCall(input, output, options).on('error', reject).on('end', resolve).run();
       });
     }
 
     if (typeof output !== 'string') {
-      throw new Error('Two-pass transcoding does not support writing to a stream');
+      throw new TypeError('Two-pass transcoding does not support writing to a stream');
     }
 
     // two-pass allows for precise control of bitrate at the cost of running twice
@@ -104,8 +106,8 @@ export class MediaRepository implements IMediaRepository {
             .addOptions('-pass', '2')
             .addOptions('-passlogfile', output)
             .on('error', reject)
-            .on('end', () => fs.unlink(`${output}-0.log`))
-            .on('end', () => fs.rm(`${output}-0.log.mbtree`, { force: true }))
+            .on('end', () => handlePromiseError(fs.unlink(`${output}-0.log`), this.logger))
+            .on('end', () => handlePromiseError(fs.rm(`${output}-0.log.mbtree`, { force: true }), this.logger))
             .on('end', resolve)
             .run();
         })
@@ -115,16 +117,15 @@ export class MediaRepository implements IMediaRepository {
 
   configureFfmpegCall(input: string, output: string | Writable, options: TranscodeOptions) {
     return ffmpeg(input, { niceness: 10 })
-      .setFfmpegPath(options.ffmpegPath || 'ffmpeg')
       .inputOptions(options.inputOptions)
       .outputOptions(options.outputOptions)
       .output(output)
-      .on('error', (err, stdout, stderr) => this.logger.error(stderr || err));
+      .on('error', (error, stdout, stderr) => this.logger.error(stderr || error));
   }
 
   chainPath(existing: string, path: string) {
-    const sep = existing.endsWith(':') ? '' : ':';
-    return `${existing}${sep}${path}`;
+    const separator = existing.endsWith(':') ? '' : ':';
+    return `${existing}${separator}${path}`;
   }
 
   async generateThumbhash(imagePath: string): Promise<Buffer> {

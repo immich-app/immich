@@ -11,8 +11,8 @@ import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:immich_mobile/shared/services/sync.service.dart';
 import 'package:isar/isar.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:logging/logging.dart';
+import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:openapi/api.dart';
 
 final assetServiceProvider = Provider(
@@ -53,10 +53,12 @@ class AssetService {
   Future<(List<Asset>? toUpsert, List<String>? toDelete, DateTime? time)>
       _getRemoteAssetChanges(User user, DateTime since) async {
     final deleted = await _apiService.auditApi
-        .getAuditDeletes(EntityType.ASSET, since, userId: user.id);
+
+        .getAuditDeletes(since, EntityType.ASSET, userId: user.id);
     if (deleted == null || deleted.needsFullSync) {
       return (null, null, deleted?.requestedAt);
     }
+
     final assetDto = await _apiService.assetApi
         .getAllAssets(userId: user.id, updatedAfter: since);
     if (assetDto == null) return (null, null, deleted.requestedAt);
@@ -67,9 +69,33 @@ class AssetService {
     );
   }
 
+  /// Returns the list of people of the given asset id.
+  // If the server is not reachable `null` is returned.
+  Future<List<PersonWithFacesResponseDto>?> getRemotePeopleOfAsset(
+    String remoteId,
+  ) async {
+    try {
+      final AssetResponseDto? dto =
+          await _apiService.assetApi.getAssetInfo(remoteId);
+
+      return dto?.people;
+    } catch (error, stack) {
+      log.severe(
+        'Error while getting remote asset info: ${error.toString()}',
+        error,
+        stack,
+      );
+
+      return null;
+    }
+  }
+
+
   /// Returns `null` if the server state did not change, else list of assets
+
   Future<List<Asset>?> _getRemoteAssets(User user, DateTime now) async {
-    const int chunkSize = 5000;
+    const int chunkSize = 10000;
+
     try {
       final List<Asset> allAssets = [];
       for (int i = 0;; i += chunkSize) {
@@ -95,7 +121,7 @@ class AssetService {
       return allAssets;
     } catch (error, stack) {
       log.severe(
-        'Error while getting remote assets: ${error.toString()}',
+        'Error while getting remote assets',
         error,
         stack,
       );
@@ -122,7 +148,7 @@ class AssetService {
       );
       return true;
     } catch (error, stack) {
-      log.severe("Error deleteAssets  ${error.toString()}", error, stack);
+      log.severe("Error while deleting assets", error, stack);
     }
     return false;
   }
@@ -134,7 +160,7 @@ class AssetService {
     // fileSize is always filled on the server but not set on client
     if (a.exifInfo?.fileSize == null) {
       if (a.isRemote) {
-        final dto = await _apiService.assetApi.getAssetById(a.remoteId!);
+        final dto = await _apiService.assetApi.getAssetInfo(a.remoteId!);
         if (dto != null && dto.exifInfo != null) {
           final newExif = Asset.remote(dto).exifInfo!.copyWith(id: a.id);
           if (newExif != a.exifInfo) {
@@ -210,4 +236,5 @@ class AssetService {
       ),
     );
   }
+  return null;
 }

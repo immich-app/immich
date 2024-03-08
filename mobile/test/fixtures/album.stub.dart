@@ -50,5 +50,8 @@ final class AlbumStub {
     activityEnabled: false,
     startDate: DateTime(2019),
     endDate: DateTime(2020),
-  )..assets.addAll([AssetStub.image1, AssetStub.image2]);
+  )
+    ..assets.addAll([AssetStub.image1, AssetStub.image2])
+    ..activityEnabled = true
+    ..owner.value = UserStub.admin;
 }

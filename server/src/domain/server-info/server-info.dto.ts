@@ -1,5 +1,6 @@
-import { FeatureFlags, IServerVersion } from '@app/domain';
+import { FeatureFlags, IVersion, type VersionType } from '@app/domain';
 import { ApiProperty, ApiResponseProperty } from '@nestjs/swagger';
+import type { DateTime } from 'luxon';
 import { SystemConfigThemeDto } from '../system-config/dto/system-config-theme.dto';
 
 export class ServerPingResponse {
@@ -25,7 +26,7 @@ export class ServerInfoResponseDto {
   diskUsagePercentage!: number;
 }
 
-export class ServerVersionResponseDto implements IServerVersion {
+export class ServerVersionResponseDto implements IVersion {
   @ApiProperty({ type: 'integer' })
   major!: number;
   @ApiProperty({ type: 'integer' })
@@ -45,6 +46,8 @@ export class UsageByUserDto {
   videos!: number;
   @ApiProperty({ type: 'integer', format: 'int64' })
   usage!: number;
+  @ApiProperty({ type: 'integer', format: 'int64' })
+  quotaSizeInBytes!: number | null;
 }
 
 export class ServerStatsResponseDto {
@@ -85,11 +88,15 @@ export class ServerConfigDto {
   loginPageMessage!: string;
   @ApiProperty({ type: 'integer' })
   trashDays!: number;
+  @ApiProperty({ type: 'integer' })
+  userDeleteDelay!: number;
   isInitialized!: boolean;
+  isOnboarded!: boolean;
+  externalDomain!: string;
 }
 
 export class ServerFeaturesDto implements FeatureFlags {
-  clipEncode!: boolean;
+  smartSearch!: boolean;
   configFile!: boolean;
   facialRecognition!: boolean;
   map!: boolean;
@@ -100,5 +107,11 @@ export class ServerFeaturesDto implements FeatureFlags {
   passwordLogin!: boolean;
   sidecar!: boolean;
   search!: boolean;
-  tagImage!: boolean;
+}
+
+export interface ReleaseNotification {
+  isAvailable: VersionType;
+  checkedAt: DateTime<boolean> | null;
+  serverVersion: ServerVersionResponseDto;
+  releaseVersion: ServerVersionResponseDto;
 }

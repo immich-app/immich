@@ -5,7 +5,7 @@ sidebar_position: 20
 # Install Script [Experimental]
 
 :::caution
-This method is experimental and not currently recommended for production use. For production, please refer to installing with [Docker Compose](/docs/install/docker-compose.md).
+This method is experimental and not currently recommended for production use. For production, please refer to installing with [Docker Compose](/docs/install/docker-compose.mdx).
 :::
 
 In the shell, from a directory of your choice, run the following command:

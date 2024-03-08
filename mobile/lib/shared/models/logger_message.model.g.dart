@@ -32,14 +32,19 @@ const LoggerMessageSchema = CollectionSchema(
       name: r'createdAt',
       type: IsarType.dateTime,
     ),
-    r'level': PropertySchema(
+    r'details': PropertySchema(
       id: 3,
+      name: r'details',
+      type: IsarType.string,
+    ),
+    r'level': PropertySchema(
+      id: 4,
       name: r'level',
       type: IsarType.byte,
       enumMap: _LoggerMessagelevelEnumValueMap,
     ),
     r'message': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'message',
       type: IsarType.string,
     )
@@ -76,6 +81,12 @@ int _loggerMessageEstimateSize(
       bytesCount += 3 + value.length * 3;
     }
   }
+  {
+    final value = object.details;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   bytesCount += 3 + object.message.length * 3;
   return bytesCount;
 }
@@ -89,8 +100,9 @@ void _loggerMessageSerialize(
   writer.writeString(offsets[0], object.context1);
   writer.writeString(offsets[1], object.context2);
   writer.writeDateTime(offsets[2], object.createdAt);
-  writer.writeByte(offsets[3], object.level.index);
-  writer.writeString(offsets[4], object.message);
+  writer.writeString(offsets[3], object.details);
+  writer.writeByte(offsets[4], object.level.index);
+  writer.writeString(offsets[5], object.message);
 }
 
 LoggerMessage _loggerMessageDeserialize(
@@ -103,9 +115,10 @@ LoggerMessage _loggerMessageDeserialize(
     context1: reader.readStringOrNull(offsets[0]),
     context2: reader.readStringOrNull(offsets[1]),
     createdAt: reader.readDateTime(offsets[2]),
-    level: _LoggerMessagelevelValueEnumMap[reader.readByteOrNull(offsets[3])] ??
+    details: reader.readStringOrNull(offsets[3]),
+    level: _LoggerMessagelevelValueEnumMap[reader.readByteOrNull(offsets[4])] ??
         LogLevel.ALL,
-    message: reader.readString(offsets[4]),
+    message: reader.readString(offsets[5]),
   );
   object.id = id;
   return object;
@@ -125,9 +138,11 @@ P _loggerMessageDeserializeProp<P>(
     case 2:
       return (reader.readDateTime(offset)) as P;
     case 3:
+      return (reader.readStringOrNull(offset)) as P;
+    case 4:
       return (_LoggerMessagelevelValueEnumMap[reader.readByteOrNull(offset)] ??
           LogLevel.ALL) as P;
-    case 4:
+    case 5:
       return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -619,6 +634,160 @@ extension LoggerMessageQueryFilter
     });
   }
 
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      detailsIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'details',
+      ));
+    });
+  }
+
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      detailsIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'details',
+      ));
+    });
+  }
+
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      detailsEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'details',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      detailsGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'details',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      detailsLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'details',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      detailsBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'details',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      detailsStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'details',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      detailsEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'details',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      detailsContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'details',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      detailsMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'details',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      detailsIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'details',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      detailsIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'details',
+        value: '',
+      ));
+    });
+  }
+
   QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> idEqualTo(
       Id value) {
     return QueryBuilder.apply(this, (query) {
@@ -913,6 +1082,18 @@ extension LoggerMessageQuerySortBy
     });
   }
 
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterSortBy> sortByDetails() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'details', Sort.asc);
+    });
+  }
+
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterSortBy> sortByDetailsDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'details', Sort.desc);
+    });
+  }
+
   QueryBuilder<LoggerMessage, LoggerMessage, QAfterSortBy> sortByLevel() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'level', Sort.asc);
@@ -979,6 +1160,18 @@ extension LoggerMessageQuerySortThenBy
     });
   }
 
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterSortBy> thenByDetails() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'details', Sort.asc);
+    });
+  }
+
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterSortBy> thenByDetailsDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'details', Sort.desc);
+    });
+  }
+
   QueryBuilder<LoggerMessage, LoggerMessage, QAfterSortBy> thenById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
@@ -1038,6 +1231,13 @@ extension LoggerMessageQueryWhereDistinct
     });
   }
 
+  QueryBuilder<LoggerMessage, LoggerMessage, QDistinct> distinctByDetails(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'details', caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<LoggerMessage, LoggerMessage, QDistinct> distinctByLevel() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'level');
@@ -1075,6 +1275,12 @@ extension LoggerMessageQueryProperty
   QueryBuilder<LoggerMessage, DateTime, QQueryOperations> createdAtProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'createdAt');
+    });
+  }
+
+  QueryBuilder<LoggerMessage, String?, QQueryOperations> detailsProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'details');
     });
   }
 

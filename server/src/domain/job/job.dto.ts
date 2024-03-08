@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsEnum, IsNotEmpty } from 'class-validator';
-import { Optional } from '../domain.util';
+import { IsEnum, IsNotEmpty } from 'class-validator';
+import { ValidateBoolean } from '../domain.util';
 import { JobCommand, QueueName } from './job.constants';
 
 export class JobIdParamDto {
@@ -16,8 +16,7 @@ export class JobCommandDto {
   @ApiProperty({ type: 'string', enum: JobCommand, enumName: 'JobCommand' })
   command!: JobCommand;
 
-  @Optional()
-  @IsBoolean()
+  @ValidateBoolean({ optional: true })
   force!: boolean;
 }
 
@@ -60,10 +59,7 @@ export class AllJobStatusResponseDto implements Record<QueueName, JobStatusDto> 
   [QueueName.VIDEO_CONVERSION]!: JobStatusDto;
 
   @ApiProperty({ type: JobStatusDto })
-  [QueueName.OBJECT_TAGGING]!: JobStatusDto;
-
-  @ApiProperty({ type: JobStatusDto })
-  [QueueName.CLIP_ENCODING]!: JobStatusDto;
+  [QueueName.SMART_SEARCH]!: JobStatusDto;
 
   @ApiProperty({ type: JobStatusDto })
   [QueueName.STORAGE_TEMPLATE_MIGRATION]!: JobStatusDto;
@@ -78,7 +74,10 @@ export class AllJobStatusResponseDto implements Record<QueueName, JobStatusDto> 
   [QueueName.SEARCH]!: JobStatusDto;
 
   @ApiProperty({ type: JobStatusDto })
-  [QueueName.RECOGNIZE_FACES]!: JobStatusDto;
+  [QueueName.FACE_DETECTION]!: JobStatusDto;
+
+  @ApiProperty({ type: JobStatusDto })
+  [QueueName.FACIAL_RECOGNITION]!: JobStatusDto;
 
   @ApiProperty({ type: JobStatusDto })
   [QueueName.SIDECAR]!: JobStatusDto;

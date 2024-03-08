@@ -10,7 +10,6 @@ All URIs are relative to */api*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**finishOAuth**](OAuthApi.md#finishoauth) | **POST** /oauth/callback | 
-[**generateOAuthConfig**](OAuthApi.md#generateoauthconfig) | **POST** /oauth/config | 
 [**linkOAuthAccount**](OAuthApi.md#linkoauthaccount) | **POST** /oauth/link | 
 [**redirectOAuthToMobile**](OAuthApi.md#redirectoauthtomobile) | **GET** /oauth/mobile-redirect | 
 [**startOAuth**](OAuthApi.md#startoauth) | **POST** /oauth/authorize | 
@@ -46,49 +45,6 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**LoginResponseDto**](LoginResponseDto.md)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: application/json
- - **Accept**: application/json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **generateOAuthConfig**
-> OAuthConfigResponseDto generateOAuthConfig(oAuthConfigDto)
-
-
-
-@deprecated use feature flags and /oauth/authorize
-
-### Example
-```dart
-import 'package:openapi/api.dart';
-
-final api_instance = OAuthApi();
-final oAuthConfigDto = OAuthConfigDto(); // OAuthConfigDto | 
-
-try {
-    final result = api_instance.generateOAuthConfig(oAuthConfigDto);
-    print(result);
-} catch (e) {
-    print('Exception when calling OAuthApi->generateOAuthConfig: $e\n');
-}
-```
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **oAuthConfigDto** | [**OAuthConfigDto**](OAuthConfigDto.md)|  | 
-
-### Return type
-
-[**OAuthConfigResponseDto**](OAuthConfigResponseDto.md)
 
 ### Authorization
 

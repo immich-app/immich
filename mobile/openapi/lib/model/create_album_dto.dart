@@ -35,10 +35,10 @@ class CreateAlbumDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is CreateAlbumDto &&
-     other.albumName == albumName &&
-     other.assetIds == assetIds &&
-     other.description == description &&
-     other.sharedWithUserIds == sharedWithUserIds;
+    other.albumName == albumName &&
+    _deepEquality.equals(other.assetIds, assetIds) &&
+    other.description == description &&
+    _deepEquality.equals(other.sharedWithUserIds, sharedWithUserIds);
 
   @override
   int get hashCode =>
@@ -73,12 +73,12 @@ class CreateAlbumDto {
 
       return CreateAlbumDto(
         albumName: mapValueOfType<String>(json, r'albumName')!,
-        assetIds: json[r'assetIds'] is List
-            ? (json[r'assetIds'] as List).cast<String>()
+        assetIds: json[r'assetIds'] is Iterable
+            ? (json[r'assetIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
         description: mapValueOfType<String>(json, r'description'),
-        sharedWithUserIds: json[r'sharedWithUserIds'] is List
-            ? (json[r'sharedWithUserIds'] as List).cast<String>()
+        sharedWithUserIds: json[r'sharedWithUserIds'] is Iterable
+            ? (json[r'sharedWithUserIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
       );
     }

@@ -21,8 +21,8 @@ void main() {
       // TODO
     });
 
-    // JobSettingsDto clipEncoding
-    test('to test the property `clipEncoding`', () async {
+    // JobSettingsDto faceDetection
+    test('to test the property `faceDetection`', () async {
       // TODO
     });
 
@@ -41,16 +41,6 @@ void main() {
       // TODO
     });
 
-    // JobSettingsDto objectTagging
-    test('to test the property `objectTagging`', () async {
-      // TODO
-    });
-
-    // JobSettingsDto recognizeFaces
-    test('to test the property `recognizeFaces`', () async {
-      // TODO
-    });
-
     // JobSettingsDto search
     test('to test the property `search`', () async {
       // TODO
@@ -61,8 +51,8 @@ void main() {
       // TODO
     });
 
-    // JobSettingsDto storageTemplateMigration
-    test('to test the property `storageTemplateMigration`', () async {
+    // JobSettingsDto smartSearch
+    test('to test the property `smartSearch`', () async {
       // TODO
     });
 

@@ -245,7 +245,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         } catch (e, stack) {
           log.severe(
             "Failed to get thumbnail for album ${album.name}",
-            e.toString(),
+            e,
             stack,
           );
         }
@@ -255,7 +255,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         albumMap[album.id] = album;
       }
     }
-
     state = state.copyWith(availableAlbums: availableAlbums);
 
     final List<BackupAlbum> excludedBackupAlbums =
@@ -295,6 +294,9 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       excludedBackupAlbums: excludedAlbums,
     );
 
+    log.info(
+      "_getBackupAlbumsInfo: Found ${availableAlbums.length} available albums",
+    );
     debugPrint("_getBackupAlbumsInfo takes ${stopwatch.elapsedMilliseconds}ms");
   }
 
@@ -345,7 +347,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     );
 
     if (allUniqueAssets.isEmpty) {
-      log.info("Not found albums or assets on the device to backup");
+      log.info("No assets are selected for back up");
       state = state.copyWith(
         backupProgress: BackUpProgressEnum.idle,
         allAssetsInDatabase: allAssetsInDatabase,

@@ -15,14 +15,15 @@ FROM
       "APIKeyEntity__APIKeyEntity_user"."isAdmin" AS "APIKeyEntity__APIKeyEntity_user_isAdmin",
       "APIKeyEntity__APIKeyEntity_user"."email" AS "APIKeyEntity__APIKeyEntity_user_email",
       "APIKeyEntity__APIKeyEntity_user"."storageLabel" AS "APIKeyEntity__APIKeyEntity_user_storageLabel",
-      "APIKeyEntity__APIKeyEntity_user"."externalPath" AS "APIKeyEntity__APIKeyEntity_user_externalPath",
       "APIKeyEntity__APIKeyEntity_user"."oauthId" AS "APIKeyEntity__APIKeyEntity_user_oauthId",
       "APIKeyEntity__APIKeyEntity_user"."profileImagePath" AS "APIKeyEntity__APIKeyEntity_user_profileImagePath",
       "APIKeyEntity__APIKeyEntity_user"."shouldChangePassword" AS "APIKeyEntity__APIKeyEntity_user_shouldChangePassword",
       "APIKeyEntity__APIKeyEntity_user"."createdAt" AS "APIKeyEntity__APIKeyEntity_user_createdAt",
       "APIKeyEntity__APIKeyEntity_user"."deletedAt" AS "APIKeyEntity__APIKeyEntity_user_deletedAt",
       "APIKeyEntity__APIKeyEntity_user"."updatedAt" AS "APIKeyEntity__APIKeyEntity_user_updatedAt",
-      "APIKeyEntity__APIKeyEntity_user"."memoriesEnabled" AS "APIKeyEntity__APIKeyEntity_user_memoriesEnabled"
+      "APIKeyEntity__APIKeyEntity_user"."memoriesEnabled" AS "APIKeyEntity__APIKeyEntity_user_memoriesEnabled",
+      "APIKeyEntity__APIKeyEntity_user"."quotaSizeInBytes" AS "APIKeyEntity__APIKeyEntity_user_quotaSizeInBytes",
+      "APIKeyEntity__APIKeyEntity_user"."quotaUsageInBytes" AS "APIKeyEntity__APIKeyEntity_user_quotaUsageInBytes"
     FROM
       "api_keys" "APIKeyEntity"
       LEFT JOIN "users" "APIKeyEntity__APIKeyEntity_user" ON "APIKeyEntity__APIKeyEntity_user"."id" = "APIKeyEntity"."userId"
@@ -30,7 +31,7 @@ FROM
         "APIKeyEntity__APIKeyEntity_user"."deletedAt" IS NULL
       )
     WHERE
-      ("APIKeyEntity"."key" = $1)
+      (("APIKeyEntity"."key" = $1))
   ) "distinctAlias"
 ORDER BY
   "APIKeyEntity_id" ASC
@@ -48,8 +49,8 @@ FROM
   "api_keys" "APIKeyEntity"
 WHERE
   (
-    "APIKeyEntity"."userId" = $1
-    AND "APIKeyEntity"."id" = $2
+    ("APIKeyEntity"."userId" = $1)
+    AND ("APIKeyEntity"."id" = $2)
   )
 LIMIT
   1
@@ -64,6 +65,6 @@ SELECT
 FROM
   "api_keys" "APIKeyEntity"
 WHERE
-  ("APIKeyEntity"."userId" = $1)
+  (("APIKeyEntity"."userId" = $1))
 ORDER BY
   "APIKeyEntity"."createdAt" DESC

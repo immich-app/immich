@@ -1,44 +1,49 @@
 import { UserEntity } from '@app/infra/entities';
-import { BadRequestException, ForbiddenException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { randomBytes } from 'crypto';
+import { ImmichLogger } from '@app/infra/logger';
+import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { DateTime } from 'luxon';
+import { randomBytes } from 'node:crypto';
 import { AuthDto } from '../auth';
+import { CacheControl, ImmichFileResponse } from '../domain.util';
 import { IEntityJob, JobName } from '../job';
 import {
   IAlbumRepository,
-  IAssetRepository,
   ICryptoRepository,
   IJobRepository,
   ILibraryRepository,
   IStorageRepository,
+  ISystemConfigRepository,
   IUserRepository,
-  ImmichReadStream,
   UserFindOptions,
 } from '../repositories';
 import { StorageCore, StorageFolder } from '../storage';
+import { SystemConfigCore } from '../system-config/system-config.core';
 import { CreateUserDto, UpdateUserDto } from './dto';
 import { CreateProfileImageResponseDto, UserResponseDto, mapCreateProfileImageResponse, mapUser } from './response-dto';
 import { UserCore } from './user.core';
 
 @Injectable()
 export class UserService {
-  private logger = new Logger(UserService.name);
+  private configCore: SystemConfigCore;
+  private logger = new ImmichLogger(UserService.name);
   private userCore: UserCore;
 
   constructor(
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
-    @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ILibraryRepository) libraryRepository: ILibraryRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
+    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
   ) {
     this.userCore = UserCore.create(cryptoRepository, libraryRepository, userRepository);
+    this.configCore = SystemConfigCore.create(configRepository);
   }
 
   async getAll(auth: AuthDto, isAll: boolean): Promise<UserResponseDto[]> {
     const users = await this.userRepository.getList({ withDeleted: !isAll });
-    return users.map(mapUser);
+    return users.map((user) => mapUser(user));
   }
 
   async get(userId: string): Promise<UserResponseDto> {
@@ -59,7 +64,12 @@ export class UserService {
   }
 
   async update(auth: AuthDto, dto: UpdateUserDto): Promise<UserResponseDto> {
-    await this.findOrFail(dto.id, {});
+    const user = await this.findOrFail(dto.id, {});
+
+    if (dto.quotaSizeInBytes && user.quotaSizeInBytes !== dto.quotaSizeInBytes) {
+      await this.userRepository.syncUsage(dto.id);
+    }
+
     return this.userCore.updateUser(auth.user, dto.id, dto).then(mapUser);
   }
 
@@ -99,12 +109,17 @@ export class UserService {
     await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files: [user.profileImagePath] } });
   }
 
-  async getProfileImage(id: string): Promise<ImmichReadStream> {
+  async getProfileImage(id: string): Promise<ImmichFileResponse> {
     const user = await this.findOrFail(id, {});
     if (!user.profileImagePath) {
       throw new NotFoundException('User does not have a profile image');
     }
-    return this.storageRepository.createReadStream(user.profileImagePath, 'image/jpeg');
+
+    return new ImmichFileResponse({
+      path: user.profileImagePath,
+      contentType: 'image/jpeg',
+      cacheControl: CacheControl.NONE,
+    });
   }
 
   async resetAdminPassword(ask: (admin: UserResponseDto) => Promise<string | undefined>) {
@@ -114,32 +129,40 @@ export class UserService {
     }
 
     const providedPassword = await ask(mapUser(admin));
-    const password = providedPassword || randomBytes(24).toString('base64').replace(/\W/g, '');
+    const password = providedPassword || randomBytes(24).toString('base64').replaceAll(/\W/g, '');
 
     await this.userCore.updateUser(admin, admin.id, { password });
 
     return { admin, password, provided: !!providedPassword };
   }
 
+  async handleUserSyncUsage() {
+    await this.userRepository.syncUsage();
+    return true;
+  }
+
   async handleUserDeleteCheck() {
     const users = await this.userRepository.getDeletedUsers();
-    for (const user of users) {
-      if (this.isReadyForDeletion(user)) {
-        await this.jobRepository.queue({ name: JobName.USER_DELETION, data: { id: user.id } });
-      }
-    }
-
+    const config = await this.configCore.getConfig();
+    await this.jobRepository.queueAll(
+      users.flatMap((user) =>
+        this.isReadyForDeletion(user, config.user.deleteDelay)
+          ? [{ name: JobName.USER_DELETION, data: { id: user.id } }]
+          : [],
+      ),
+    );
     return true;
   }
 
   async handleUserDelete({ id }: IEntityJob) {
+    const config = await this.configCore.getConfig();
     const user = await this.userRepository.get(id, { withDeleted: true });
     if (!user) {
       return false;
     }
 
     // just for extra protection here
-    if (!this.isReadyForDeletion(user)) {
+    if (!this.isReadyForDeletion(user, config.user.deleteDelay)) {
       this.logger.warn(`Skipped user that was not ready for deletion: id=${id}`);
       return false;
     }
@@ -160,24 +183,18 @@ export class UserService {
     }
 
     this.logger.warn(`Removing user from database: ${user.id}`);
-
     await this.albumRepository.deleteAll(user.id);
-    await this.assetRepository.deleteAll(user.id);
     await this.userRepository.delete(user, true);
 
     return true;
   }
 
-  private isReadyForDeletion(user: UserEntity): boolean {
+  private isReadyForDeletion(user: UserEntity, deleteDelay: number): boolean {
     if (!user.deletedAt) {
       return false;
     }
 
-    const msInDay = 86400000;
-    const msDeleteWait = msInDay * 7;
-    const msSinceDelete = new Date().getTime() - (Date.parse(user.deletedAt.toString()) || 0);
-
-    return msSinceDelete >= msDeleteWait;
+    return DateTime.now().minus({ days: deleteDelay }) > DateTime.fromJSDate(user.deletedAt);
   }
 
   private async findOrFail(id: string, options: UserFindOptions) {

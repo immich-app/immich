@@ -1,14 +1,14 @@
 <script lang="ts">
-  import { page } from '$app/stores';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import { user } from '$lib/stores/user.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
+  import { getAssetJobName } from '$lib/utils';
   import { clickOutside } from '$lib/utils/click-outside';
   import { getContextMenuPosition } from '$lib/utils/context-menu';
-  import { AssetJobName, AssetResponseDto, AssetTypeEnum, api } from '@api';
+  import { AssetJobName, AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
   import {
     mdiAlertOutline,
     mdiArrowLeft,
-    mdiCloudDownloadOutline,
     mdiContentCopy,
     mdiDeleteOutline,
     mdiDotsVertical,
@@ -19,6 +19,7 @@
     mdiMagnifyPlusOutline,
     mdiMotionPauseOutline,
     mdiPlaySpeed,
+    mdiShareVariantOutline,
   } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
   import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
@@ -31,15 +32,23 @@
   export let isMotionPhotoPlaying = false;
   export let showDownloadButton: boolean;
   export let showDetailButton: boolean;
+  export let showShareButton: boolean;
   export let showSlideshow = false;
   export let hasStackChildren = false;
 
-  $: isOwner = asset.ownerId === $page.data.user?.id;
+  $: isOwner = asset.ownerId === $user?.id;
 
-  type MenuItemEvent = 'addToAlbum' | 'addToSharedAlbum' | 'asProfileImage' | 'runJob' | 'playSlideShow' | 'unstack';
+  type MenuItemEvent =
+    | 'addToAlbum'
+    | 'addToSharedAlbum'
+    | 'asProfileImage'
+    | 'download'
+    | 'playSlideShow'
+    | 'runJob'
+    | 'unstack';
 
   const dispatch = createEventDispatcher<{
-    goBack: void;
+    back: void;
     stopMotionPhoto: void;
     playMotionPhoto: void;
     download: void;
@@ -53,6 +62,7 @@
     runJob: AssetJobName;
     playSlideShow: void;
     unstack: void;
+    showShareModal: void;
   }>();
 
   let contextMenuPosition = { x: 0, y: 0 };
@@ -78,9 +88,17 @@
   class="z-[1001] flex h-16 place-items-center justify-between bg-gradient-to-b from-black/40 px-3 transition-transform duration-200"
 >
   <div class="text-white">
-    <CircleIconButton isOpacity={true} icon={mdiArrowLeft} on:click={() => dispatch('goBack')} />
+    <CircleIconButton isOpacity={true} icon={mdiArrowLeft} on:click={() => dispatch('back')} />
   </div>
   <div class="flex w-[calc(100%-3rem)] justify-end gap-2 overflow-hidden text-white">
+    {#if showShareButton}
+      <CircleIconButton
+        isOpacity={true}
+        icon={mdiShareVariantOutline}
+        on:click={() => dispatch('showShareModal')}
+        title="Share"
+      />
+    {/if}
     {#if asset.isOffline}
       <CircleIconButton
         isOpacity={true}
@@ -129,15 +147,6 @@
         }}
       />
     {/if}
-
-    {#if showDownloadButton}
-      <CircleIconButton
-        isOpacity={true}
-        icon={mdiCloudDownloadOutline}
-        on:click={() => dispatch('download')}
-        title="Download"
-      />
-    {/if}
     {#if showDetailButton}
       <CircleIconButton
         isOpacity={true}
@@ -151,7 +160,7 @@
         isOpacity={true}
         icon={asset.isFavorite ? mdiHeart : mdiHeartOutline}
         on:click={() => dispatch('favorite')}
-        title="Favorite"
+        title={asset.isFavorite ? 'Unfavorite' : 'Favorite'}
       />
     {/if}
 
@@ -165,6 +174,9 @@
           <ContextMenu {...contextMenuPosition} direction="left">
             {#if showSlideshow}
               <MenuOption on:click={() => onMenuClick('playSlideShow')} text="Slideshow" />
+            {/if}
+            {#if showDownloadButton}
+              <MenuOption on:click={() => onMenuClick('download')} text="Download" />
             {/if}
             <MenuOption on:click={() => onMenuClick('addToAlbum')} text="Add to Album" />
             <MenuOption on:click={() => onMenuClick('addToSharedAlbum')} text="Add to Shared Album" />
@@ -182,16 +194,16 @@
 
               <MenuOption
                 on:click={() => onJobClick(AssetJobName.RefreshMetadata)}
-                text={api.getAssetJobName(AssetJobName.RefreshMetadata)}
+                text={getAssetJobName(AssetJobName.RefreshMetadata)}
               />
               <MenuOption
                 on:click={() => onJobClick(AssetJobName.RegenerateThumbnail)}
-                text={api.getAssetJobName(AssetJobName.RegenerateThumbnail)}
+                text={getAssetJobName(AssetJobName.RegenerateThumbnail)}
               />
               {#if asset.type === AssetTypeEnum.Video}
                 <MenuOption
                   on:click={() => onJobClick(AssetJobName.TranscodeVideo)}
-                  text={api.getAssetJobName(AssetJobName.TranscodeVideo)}
+                  text={getAssetJobName(AssetJobName.TranscodeVideo)}
                 />
               {/if}
             {/if}

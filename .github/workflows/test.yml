@@ -10,18 +10,35 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  e2e-tests:
-    name: Server (e2e)
+  server-e2e-api:
+    name: Server (e2e-api)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./server
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run npm install
+        run: npm ci
+
+      - name: Run e2e tests
+        run: npm run e2e:api
+
+  server-e2e-jobs:
+    name: Server (e2e-jobs)
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          submodules: "recursive"
+          submodules: 'recursive'
 
       - name: Run e2e tests
-        run: docker compose -f ./docker/docker-compose.test.yml up --renew-anon-volumes --abort-on-container-exit --exit-code-from immich-server --remove-orphans --build
+        run: make server-e2e-jobs
 
   doc-tests:
     name: Docs
@@ -39,10 +56,6 @@ jobs:
 
       - name: Run formatter
         run: npm run format
-        if: ${{ !cancelled() }}
-
-      - name: Run tsc
-        run: npm run check
         if: ${{ !cancelled() }}
 
       - name: Run build
@@ -90,8 +103,21 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Run npm install
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Run setup typescript-sdk
+        run: npm ci && npm run build
+        working-directory: ./open-api/typescript-sdk
+
+      - name: Run npm install (cli)
         run: npm ci
+
+      - name: Run npm install (server)
+        run: npm ci
+        working-directory: ./server
 
       - name: Run linter
         run: npm run lint
@@ -120,6 +146,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Run setup typescript-sdk
+        run: npm ci && npm run build
+        working-directory: ./open-api/typescript-sdk
+
       - name: Run npm install
         run: npm ci
 
@@ -139,9 +169,65 @@ jobs:
         run: npm run check:typescript
         if: ${{ !cancelled() }}
 
-      # - name: Run unit tests & coverage
-      #   run: npm run test:cov
-      #   if: ${{ !cancelled() }}
+      - name: Run unit tests & coverage
+        run: npm run test:cov
+        if: ${{ !cancelled() }}
+
+  e2e-tests:
+    name: End-to-End Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./e2e
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Run setup typescript-sdk
+        run: npm ci && npm run build
+        working-directory: ./open-api/typescript-sdk
+        if: ${{ !cancelled() }}
+
+      - name: Run setup cli
+        run: npm ci && npm run build
+        working-directory: ./cli
+        if: ${{ !cancelled() }}
+
+      - name: Install dependencies
+        run: npm ci
+        if: ${{ !cancelled() }}
+
+      - name: Run linter
+        run: npm run lint
+        if: ${{ !cancelled() }}
+
+      - name: Run formatter
+        run: npm run format
+        if: ${{ !cancelled() }}
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps chromium
+        if: ${{ !cancelled() }}
+
+      - name: Docker build
+        run: docker compose build
+        if: ${{ !cancelled() }}
+
+      - name: Run e2e tests (api & cli)
+        run: npm run test
+        if: ${{ !cancelled() }}
+
+      - name: Run e2e tests (web)
+        run: npx playwright test
+        if: ${{ !cancelled() }}
 
   mobile-unit-tests:
     name: Mobile
@@ -151,8 +237,8 @@ jobs:
       - name: Setup Flutter SDK
         uses: subosito/flutter-action@v2
         with:
-          channel: "stable"
-          flutter-version: "3.13.6"
+          channel: 'stable'
+          flutter-version: '3.16.9'
       - name: Run tests
         working-directory: ./mobile
         run: flutter test -j 1
@@ -170,22 +256,35 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: 3.11
-          cache: "poetry"
+          cache: 'poetry'
       - name: Install dependencies
         run: |
-          poetry install --with dev
+          poetry install --with dev --with cpu
       - name: Lint with ruff
         run: |
-          poetry run ruff check --format=github app export
+          poetry run ruff check --output-format=github app export
       - name: Check black formatting
         run: |
           poetry run black --check app export
       - name: Run mypy type checking
         run: |
-          poetry run mypy --install-types --non-interactive --strict app/ export/
+          poetry run mypy --install-types --non-interactive --strict app/
       - name: Run tests and coverage
         run: |
-          poetry run pytest --cov app
+          poetry run pytest app --cov=app --cov-report term-missing
+
+  shellcheck:
+    name: ShellCheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run ShellCheck
+        uses: ludeeus/action-shellcheck@master
+        with:
+          ignore_paths: >-
+            **/open-api/**
+            **/openapi/**
+            **/node_modules/**
 
   generated-api-up-to-date:
     name: OpenAPI Clients
@@ -193,14 +292,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Run API generation
-        run: npm --prefix server run api:generate
+        run: make open-api
       - name: Find file changes
-        uses: tj-actions/verify-changed-files@v13.1
+        uses: tj-actions/verify-changed-files@v19
         id: verify-changed-files
         with:
           files: |
             mobile/openapi
-            web/src/api/open-api
+            open-api/typescript-sdk
       - name: Verify files have not changed
         if: steps.verify-changed-files.outputs.files_changed == 'true'
         run: |
@@ -213,7 +312,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: tensorchord/pgvecto-rs:pg14-v0.1.11
+        image: tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:90724186f0a3517cf6914295b5ab410db9ce23190a2d9d0b9dd6463e3fa298f0
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_USER: postgres
@@ -242,12 +341,15 @@ jobs:
       - name: Run existing migrations
         run: npm run typeorm:migrations:run
 
+      - name: Test npm run schema:reset command works
+        run: npm run typeorm:schema:reset
+
       - name: Generate new migrations
         continue-on-error: true
         run: npm run typeorm:migrations:generate ./src/infra/migrations/TestMigration
 
       - name: Find file changes
-        uses: tj-actions/verify-changed-files@v13.1
+        uses: tj-actions/verify-changed-files@v19
         id: verify-changed-files
         with:
           files: |
@@ -265,7 +367,7 @@ jobs:
           DB_URL: postgres://postgres:postgres@localhost:5432/immich
 
       - name: Find file changes
-        uses: tj-actions/verify-changed-files@v13.1
+        uses: tj-actions/verify-changed-files@v19
         id: verify-changed-sql-files
         with:
           files: |

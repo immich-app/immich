@@ -9,9 +9,15 @@
   export let right = 0;
   export let root: HTMLElement | null = null;
 
-  let intersecting = false;
+  export let intersecting = false;
   let container: HTMLDivElement;
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    hidden: HTMLDivElement;
+    intersected: {
+      container: HTMLDivElement;
+      position: BucketPosition;
+    };
+  }>();
 
   onMount(() => {
     if (typeof IntersectionObserver !== 'undefined') {

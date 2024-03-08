@@ -1,0 +1,23 @@
+{
+  "name": "@immich/sdk",
+  "version": "1.98.0",
+  "description": "",
+  "type": "module",
+  "main": "./build/index.js",
+  "types": "./build/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./build/index.d.ts",
+      "default": "./build/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc"
+  },
+  "license": "GNU Affero General Public License version 3",
+  "devDependencies": {
+    "@oazapfts/runtime": "^1.0.0",
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.3"
+  }
+}

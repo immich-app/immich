@@ -1,3 +1,5 @@
+import { handlePromiseError } from '$lib/utils';
+
 interface Options {
   concurrency: number;
 }
@@ -26,7 +28,9 @@ export class ExecutorQueue {
 
     const v = concurrency - this.running;
     if (v > 0) {
-      [...new Array(this._concurrency)].forEach(() => this.tryRun());
+      for (let i = 0; i < v; i++) {
+        this.tryRun();
+      }
     }
   }
 
@@ -38,8 +42,8 @@ export class ExecutorQueue {
           this.running++;
           const result = task();
           resolve(await result);
-        } catch (e) {
-          reject(e);
+        } catch (error) {
+          reject(error);
         } finally {
           this.taskFinished();
         }
@@ -64,6 +68,6 @@ export class ExecutorQueue {
       return;
     }
 
-    runnable();
+    handlePromiseError(runnable());
   }
 }

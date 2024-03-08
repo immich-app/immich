@@ -16,6 +16,7 @@ import {
 import { AlbumEntity } from './album.entity';
 import { AssetFaceEntity } from './asset-face.entity';
 import { AssetJobStatusEntity } from './asset-job-status.entity';
+import { AssetStackEntity } from './asset-stack.entity';
 import { ExifEntity } from './exif.entity';
 import { LibraryEntity } from './library.entity';
 import { SharedLinkEntity } from './shared-link.entity';
@@ -34,7 +35,7 @@ export const ASSET_CHECKSUM_CONSTRAINT = 'UQ_assets_owner_library_checksum';
 @Index('IDX_day_of_month', { synchronize: false })
 @Index('IDX_month', { synchronize: false })
 @Index('IDX_originalPath_libraryId', ['originalPath', 'libraryId'])
-@Index(['stackParentId'])
+@Index('idx_originalFileName_trigram', { synchronize: false })
 // For all assets, each originalpath must be unique per user and library
 export class AssetEntity {
   @PrimaryGeneratedColumn('uuid')
@@ -85,6 +86,7 @@ export class AssetEntity {
   @DeleteDateColumn({ type: 'timestamptz', nullable: true })
   deletedAt!: Date | null;
 
+  @Index('idx_asset_file_created_at')
   @Column({ type: 'timestamptz' })
   fileCreatedAt!: Date;
 
@@ -127,6 +129,7 @@ export class AssetEntity {
   livePhotoVideoId!: string | null;
 
   @Column({ type: 'varchar' })
+  @Index()
   originalFileName!: string;
 
   @Column({ type: 'varchar', nullable: true })
@@ -156,14 +159,11 @@ export class AssetEntity {
   faces!: AssetFaceEntity[];
 
   @Column({ nullable: true })
-  stackParentId?: string | null;
+  stackId?: string | null;
 
-  @ManyToOne(() => AssetEntity, (asset) => asset.stack, { nullable: true, onDelete: 'SET NULL', onUpdate: 'CASCADE' })
-  @JoinColumn({ name: 'stackParentId' })
-  stackParent?: AssetEntity | null;
-
-  @OneToMany(() => AssetEntity, (asset) => asset.stackParent)
-  stack?: AssetEntity[];
+  @ManyToOne(() => AssetStackEntity, { nullable: true, onDelete: 'SET NULL', onUpdate: 'CASCADE' })
+  @JoinColumn()
+  stack?: AssetStackEntity | null;
 
   @OneToOne(() => AssetJobStatusEntity, (jobStatus) => jobStatus.asset, { nullable: true })
   jobStatus?: AssetJobStatusEntity;

@@ -2,6 +2,11 @@
   // Necessary for eslint
   /* eslint-disable @typescript-eslint/no-explicit-any */
   type T = any;
+
+  export type RenderedOption = {
+    title: string;
+    icon?: string;
+  };
 </script>
 
 <script lang="ts" generics="T">
@@ -9,7 +14,7 @@
 
   import { mdiCheck } from '@mdi/js';
 
-  import _ from 'lodash';
+  import { isEqual } from 'lodash-es';
   import LinkButton from './buttons/link-button.svelte';
   import { clickOutside } from '$lib/utils/click-outside';
   import { fly } from 'svelte/transition';
@@ -25,16 +30,11 @@
 
   export let options: T[];
   export let selectedOption = options[0];
-
-  export let render: (item: T) => string | RenderedOption = (item) => String(item);
-
-  type RenderedOption = {
-    title: string;
-    icon?: string;
-  };
-
   export let showMenu = false;
   export let controlable = false;
+  export let hideTextOnSmallScreen = true;
+
+  export let render: (item: T) => string | RenderedOption = String;
 
   const handleClickOutside = () => {
     if (!controlable) {
@@ -54,13 +54,15 @@
   const renderOption = (option: T): RenderedOption => {
     const renderedOption = render(option);
     switch (typeof renderedOption) {
-      case 'string':
+      case 'string': {
         return { title: renderedOption };
-      default:
+      }
+      default: {
         return {
           title: renderedOption.title,
           icon: renderedOption.icon,
         };
+      }
     }
   };
 
@@ -74,15 +76,15 @@
       {#if renderedSelectedOption?.icon}
         <Icon path={renderedSelectedOption.icon} size="18" />
       {/if}
-      <p class="hidden sm:block">{renderedSelectedOption.title}</p>
+      <p class={hideTextOnSmallScreen ? 'hidden sm:block' : ''}>{renderedSelectedOption.title}</p>
     </div>
   </LinkButton>
 
   <!-- DROP DOWN MENU -->
   {#if showMenu}
     <div
-      transition:fly={{ y: -30, x: 30, duration: 100 }}
-      class="text-md fixed z-50 flex min-w-[250px] max-h-[70vh] overflow-y-scroll immich-scrollbar flex-col rounded-2xl bg-gray-100 py-2 text-black shadow-lg dark:bg-gray-700 dark:text-white {className}"
+      transition:fly={{ y: -30, duration: 250 }}
+      class="text-md fixed z-50 flex min-w-[250px] max-h-[70vh] overflow-y-auto immich-scrollbar flex-col rounded-2xl bg-gray-100 py-2 text-black shadow-lg dark:bg-gray-700 dark:text-white {className}"
     >
       {#each options as option (option)}
         {@const renderedOption = renderOption(option)}
@@ -90,7 +92,7 @@
           class="grid grid-cols-[20px,1fr] place-items-center p-2 transition-all hover:bg-gray-300 dark:hover:bg-gray-800"
           on:click={() => handleSelectOption(option)}
         >
-          {#if _.isEqual(selectedOption, option)}
+          {#if isEqual(selectedOption, option)}
             <div class="text-immich-primary dark:text-immich-dark-primary">
               <Icon path={mdiCheck} size="18" />
             </div>

@@ -5,6 +5,7 @@
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import { fly } from 'svelte/transition';
   import { mdiClose } from '@mdi/js';
+  import { isSelectAllCancelled } from '$lib/stores/assets.store';
 
   export let showBackButton = true;
   export let backIcon = mdiClose;
@@ -13,7 +14,9 @@
 
   let appBarBorder = 'bg-immich-bg border border-transparent';
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    close: void;
+  }>();
 
   const onScroll = () => {
     if (window.pageYOffset > 80) {
@@ -25,6 +28,11 @@
     } else {
       appBarBorder = 'bg-immich-bg border border-transparent';
     }
+  };
+
+  const handleClose = () => {
+    $isSelectAllCancelled = true;
+    dispatch('close');
   };
 
   onMount(() => {
@@ -43,14 +51,14 @@
 <div in:fly={{ y: 10, duration: 200 }} class="absolute top-0 w-full z-[100] bg-transparent">
   <div
     id="asset-selection-app-bar"
-    class={`grid grid-cols-[10%_80%_10%] justify-between md:grid-cols-[20%_60%_20%] lg:grid-cols-3 ${appBarBorder} mx-2 mt-2 place-items-center rounded-lg p-2 transition-all ${tailwindClasses} dark:bg-immich-dark-gray ${
+    class={`grid grid-cols-[10%_80%_10%] justify-between md:grid-cols-[15%_70%_15%] lg:grid-cols-[25%_50%_25%]  ${appBarBorder} mx-2 mt-2 place-items-center rounded-lg p-2 transition-all ${tailwindClasses} dark:bg-immich-dark-gray ${
       forceDark && 'bg-immich-dark-gray text-white'
     }`}
   >
     <div class="flex place-items-center gap-6 justify-self-start dark:text-immich-dark-fg">
       {#if showBackButton}
         <CircleIconButton
-          on:click={() => dispatch('close-button-click')}
+          on:click={handleClose}
           icon={backIcon}
           backgroundColor={'transparent'}
           hoverColor={'#e2e7e9'}

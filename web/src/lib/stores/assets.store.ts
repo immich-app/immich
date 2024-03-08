@@ -1,9 +1,10 @@
-import { api, AssetApiGetTimeBucketsRequest, AssetResponseDto, TimeBucketSize } from '@api';
+import { getKey } from '$lib/utils';
+import { TimeBucketSize, getTimeBucket, getTimeBuckets, type AssetResponseDto } from '@immich/sdk';
 import { throttle } from 'lodash-es';
 import { DateTime } from 'luxon';
-import { Unsubscriber, writable } from 'svelte/store';
+import { writable, type Unsubscriber } from 'svelte/store';
 import { handleError } from '../utils/handle-error';
-import { websocketStore } from './websocket';
+import { websocketEvents } from './websocket';
 
 export enum BucketPosition {
   Above = 'above',
@@ -11,7 +12,7 @@ export enum BucketPosition {
   Visible = 'visible',
   Unknown = 'unknown',
 }
-
+type AssetApiGetTimeBucketsRequest = Parameters<typeof getTimeBuckets>[0];
 export type AssetStoreOptions = Omit<AssetApiGetTimeBucketsRequest, 'size'>;
 
 export interface Viewport {
@@ -48,19 +49,24 @@ interface AddAsset {
   value: AssetResponseDto;
 }
 
+interface UpdateAsset {
+  type: 'update';
+  value: AssetResponseDto;
+}
+
 interface DeleteAsset {
   type: 'delete';
   value: string;
 }
 
-interface TrashAsset {
+interface TrashAssets {
   type: 'trash';
-  value: string;
+  value: string[];
 }
 
 export const photoViewer = writable<HTMLImageElement | null>(null);
 
-type PendingChange = AddAsset | DeleteAsset | TrashAsset;
+type PendingChange = AddAsset | UpdateAsset | DeleteAsset | TrashAssets;
 
 export class AssetStore {
   private store$ = writable(this);
@@ -90,27 +96,22 @@ export class AssetStore {
     setTimeout(() => {
       this.pendingChanges.push(...changes);
       this.processPendingChanges();
-    }, 1_000);
+    }, 1000);
   }
 
   connect() {
     this.unsubscribers.push(
-      websocketStore.onUploadSuccess.subscribe((value) => {
-        if (value) {
-          this.addPendingChanges({ type: 'add', value });
-        }
+      websocketEvents.on('on_upload_success', (asset) => {
+        this.addPendingChanges({ type: 'add', value: asset });
       }),
-
-      websocketStore.onAssetTrash.subscribe((ids) => {
-        if (ids) {
-          this.addPendingChanges(...ids.map((id) => ({ type: 'trash', value: id }) as PendingChange));
-        }
+      websocketEvents.on('on_asset_trash', (ids) => {
+        this.addPendingChanges({ type: 'trash', value: ids });
       }),
-
-      websocketStore.onAssetDelete.subscribe((value) => {
-        if (value) {
-          this.addPendingChanges({ type: 'delete', value });
-        }
+      websocketEvents.on('on_asset_update', (asset) => {
+        this.addPendingChanges({ type: 'update', value: asset });
+      }),
+      websocketEvents.on('on_asset_delete', (id: string) => {
+        this.addPendingChanges({ type: 'delete', value: id });
       }),
     );
   }
@@ -124,19 +125,27 @@ export class AssetStore {
   processPendingChanges = throttle(() => {
     for (const { type, value } of this.pendingChanges) {
       switch (type) {
-        case 'add':
+        case 'add': {
           this.addAsset(value);
           break;
+        }
 
-        case 'trash':
+        case 'update': {
+          this.updateAsset(value);
+          break;
+        }
+
+        case 'trash': {
           if (!this.options.isTrashed) {
-            this.removeAsset(value);
+            this.removeAssets(value);
           }
           break;
+        }
 
-        case 'delete':
-          this.removeAsset(value);
+        case 'delete': {
+          this.removeAssets([value]);
           break;
+        }
       }
     }
 
@@ -152,10 +161,7 @@ export class AssetStore {
     this.assetToBucket = {};
     this.albumAssets = new Set();
 
-    const { data: buckets } = await api.assetApi.getTimeBuckets({
-      ...this.options,
-      key: api.getKey(),
-    });
+    const buckets = await getTimeBuckets({ ...this.options, key: getKey() });
 
     this.initialized = true;
 
@@ -174,20 +180,22 @@ export class AssetStore {
       };
     });
 
-    this.timelineHeight = this.buckets.reduce((acc, b) => acc + b.bucketHeight, 0);
+    this.timelineHeight = this.buckets.reduce((accumulator, b) => accumulator + b.bucketHeight, 0);
 
     this.emit(false);
 
     let height = 0;
+    const loaders = [];
     for (const bucket of this.buckets) {
       if (height < viewport.height) {
         height += bucket.bucketHeight;
-        this.loadBucket(bucket.bucketDate, BucketPosition.Visible);
+        loaders.push(this.loadBucket(bucket.bucketDate, BucketPosition.Visible));
         continue;
       }
 
       break;
     }
+    await Promise.all(loaders);
   }
 
   async loadBucket(bucketDate: string, position: BucketPosition): Promise<void> {
@@ -199,29 +207,29 @@ export class AssetStore {
 
       bucket.position = position;
 
-      if (bucket.assets.length !== 0) {
+      if (bucket.assets.length > 0) {
         this.emit(false);
         return;
       }
 
       bucket.cancelToken = new AbortController();
 
-      const { data: assets } = await api.assetApi.getTimeBucket(
+      const assets = await getTimeBucket(
         {
           ...this.options,
           timeBucket: bucketDate,
-          key: api.getKey(),
+          key: getKey(),
         },
         { signal: bucket.cancelToken.signal },
       );
 
       if (this.albumId) {
-        const { data: albumAssets } = await api.assetApi.getTimeBucket(
+        const albumAssets = await getTimeBucket(
           {
             albumId: this.albumId,
             timeBucket: bucketDate,
             size: this.options.size,
-            key: api.getKey(),
+            key: getKey(),
           },
           { signal: bucket.cancelToken.signal },
         );
@@ -229,6 +237,10 @@ export class AssetStore {
         for (const asset of albumAssets) {
           this.albumAssets.add(asset.id);
         }
+      }
+
+      if (bucket.cancelToken.signal.aborted) {
+        return;
       }
 
       bucket.assets = assets;
@@ -277,6 +289,10 @@ export class AssetStore {
       return;
     }
 
+    this.addAssetToBucket(asset);
+  }
+
+  private addAssetToBucket(asset: AssetResponseDto) {
     const timeBucket = DateTime.fromISO(asset.fileCreatedAt).toUTC().startOf('month').toString();
     let bucket = this.getBucketByDate(timeBucket);
 
@@ -308,7 +324,7 @@ export class AssetStore {
     // If we added an asset to the store, we need to recalculate
     // asset store containers
     this.assets.push(asset);
-    this.updateAsset(asset, true);
+    this.emit(true);
   }
 
   getBucketByDate(bucketDate: string): AssetBucket | null {
@@ -324,7 +340,9 @@ export class AssetStore {
   }
 
   async getRandomAsset(): Promise<AssetResponseDto | null> {
-    let index = Math.floor(Math.random() * this.buckets.reduce((acc, bucket) => acc + bucket.bucketCount, 0));
+    let index = Math.floor(
+      Math.random() * this.buckets.reduce((accumulator, bucket) => accumulator + bucket.bucketCount, 0),
+    );
     for (const bucket of this.buckets) {
       if (index < bucket.bucketCount) {
         await this.loadBucket(bucket.bucketDate, BucketPosition.Unknown);
@@ -337,42 +355,47 @@ export class AssetStore {
     return null;
   }
 
-  updateAsset(_asset: AssetResponseDto, recalculate = false) {
+  updateAsset(_asset: AssetResponseDto) {
     const asset = this.assets.find((asset) => asset.id === _asset.id);
     if (!asset) {
       return;
     }
 
-    Object.assign(asset, _asset);
+    const recalculate = asset.fileCreatedAt !== _asset.fileCreatedAt;
+    if (recalculate) {
+      this.removeAssets([asset.id]);
+      this.addAssetToBucket(_asset);
+      return;
+    }
 
+    Object.assign(asset, _asset);
     this.emit(recalculate);
   }
 
   removeAssets(ids: string[]) {
-    // TODO: this could probably be more efficient
-    for (const id of ids) {
-      this.removeAsset(id);
-    }
-  }
+    const idSet = new Set(ids);
+    this.assets = this.assets.filter((asset) => !idSet.has(asset.id));
 
-  removeAsset(id: string) {
-    for (let i = 0; i < this.buckets.length; i++) {
-      const bucket = this.buckets[i];
-      for (let j = 0; j < bucket.assets.length; j++) {
-        const asset = bucket.assets[j];
-        if (asset.id !== id) {
+    // Iterate in reverse to allow array splicing.
+    for (let index = this.buckets.length - 1; index >= 0; index--) {
+      const bucket = this.buckets[index];
+      for (let index_ = bucket.assets.length - 1; index_ >= 0; index_--) {
+        const asset = bucket.assets[index_];
+        if (!idSet.has(asset.id)) {
           continue;
         }
 
-        bucket.assets.splice(j, 1);
-        if (bucket.assets.length === 0) {
-          this.buckets.splice(i, 1);
+        bucket.assets.splice(index_, 1);
+        bucket.bucketCount = bucket.assets.length;
+        if (bucket.bucketCount === 0) {
+          this.buckets.splice(index, 1);
         }
 
-        this.emit(true);
-        return;
+        delete this.assetToBucket[asset.id];
       }
     }
+
+    this.emit(false);
   }
 
   async getPreviousAssetId(assetId: string): Promise<string | null> {
@@ -417,19 +440,23 @@ export class AssetStore {
     return nextBucket.assets[0]?.id || null;
   }
 
+  triggerUpdate() {
+    this.emit(false);
+  }
+
   private emit(recalculate: boolean) {
     if (recalculate) {
       this.assets = this.buckets.flatMap(({ assets }) => assets);
 
       const assetToBucket: Record<string, AssetLookup> = {};
-      for (let i = 0; i < this.buckets.length; i++) {
-        const bucket = this.buckets[i];
-        if (bucket.assets.length !== 0) {
+      for (let index = 0; index < this.buckets.length; index++) {
+        const bucket = this.buckets[index];
+        if (bucket.assets.length > 0) {
           bucket.bucketCount = bucket.assets.length;
         }
-        for (let j = 0; j < bucket.assets.length; j++) {
-          const asset = bucket.assets[j];
-          assetToBucket[asset.id] = { bucket, bucketIndex: i, assetIndex: j };
+        for (let index_ = 0; index_ < bucket.assets.length; index_++) {
+          const asset = bucket.assets[index_];
+          assetToBucket[asset.id] = { bucket, bucketIndex: index, assetIndex: index_ };
         }
       }
       this.assetToBucket = assetToBucket;
@@ -438,3 +465,5 @@ export class AssetStore {
     this.store$.update(() => this);
   }
 }
+
+export const isSelectAllCancelled = writable(false);

@@ -1,11 +1,14 @@
+import { LogLevel, SystemConfig } from '@app/infra/entities';
+import { ImmichLogger } from '@app/infra/logger';
 import { Inject, Injectable } from '@nestjs/common';
-import { JobName } from '../job';
+import { instanceToPlain } from 'class-transformer';
+import _ from 'lodash';
 import {
-  CommunicationEvent,
+  ClientEvent,
   ICommunicationRepository,
-  IJobRepository,
-  ISmartInfoRepository,
+  ISearchRepository,
   ISystemConfigRepository,
+  ServerEvent,
 } from '../repositories';
 import { SystemConfigDto, mapConfig } from './dto/system-config.dto';
 import { SystemConfigTemplateStorageOptionDto } from './response-dto/system-config-template-storage-option.dto';
@@ -23,14 +26,23 @@ import { SystemConfigCore, SystemConfigValidator } from './system-config.core';
 
 @Injectable()
 export class SystemConfigService {
+  private logger = new ImmichLogger(SystemConfigService.name);
   private core: SystemConfigCore;
+
   constructor(
     @Inject(ISystemConfigRepository) private repository: ISystemConfigRepository,
     @Inject(ICommunicationRepository) private communicationRepository: ICommunicationRepository,
-    @Inject(IJobRepository) private jobRepository: IJobRepository,
-    @Inject(ISmartInfoRepository) private smartInfoRepository: ISmartInfoRepository,
+    @Inject(ISearchRepository) private smartInfoRepository: ISearchRepository,
   ) {
     this.core = SystemConfigCore.create(repository);
+    this.communicationRepository.on(ServerEvent.CONFIG_UPDATE, () => this.handleConfigUpdate());
+    this.core.config$.subscribe((config) => this.setLogLevel(config));
+    this.core.addValidator((newConfig, oldConfig) => this.validateConfig(newConfig, oldConfig));
+  }
+
+  async init() {
+    const config = await this.core.getConfig();
+    this.config$.next(config);
   }
 
   get config$() {
@@ -50,15 +62,19 @@ export class SystemConfigService {
   async updateConfig(dto: SystemConfigDto): Promise<SystemConfigDto> {
     const oldConfig = await this.core.getConfig();
     const newConfig = await this.core.updateConfig(dto);
-    await this.jobRepository.queue({ name: JobName.SYSTEM_CONFIG_CHANGE });
-    this.communicationRepository.broadcast(CommunicationEvent.CONFIG_UPDATE, {});
+
+    this.communicationRepository.broadcast(ClientEvent.CONFIG_UPDATE, {});
+    this.communicationRepository.sendServerEvent(ServerEvent.CONFIG_UPDATE);
+
     if (oldConfig.machineLearning.clip.modelName !== newConfig.machineLearning.clip.modelName) {
       await this.smartInfoRepository.init(newConfig.machineLearning.clip.modelName);
     }
     return mapConfig(newConfig);
   }
 
+  // this is only used by the cli on config change, and it's not actually needed anymore
   async refreshConfig() {
+    this.communicationRepository.sendServerEvent(ServerEvent.CONFIG_UPDATE);
     await this.core.refreshConfig();
     return true;
   }
@@ -96,5 +112,27 @@ export class SystemConfigService {
   async getCustomCss(): Promise<string> {
     const { theme } = await this.core.getConfig();
     return theme.customCss;
+  }
+
+  private async handleConfigUpdate() {
+    await this.core.refreshConfig();
+  }
+
+  private setLogLevel({ logging }: SystemConfig) {
+    const envLevel = this.getEnvLogLevel();
+    const configLevel = logging.enabled ? logging.level : false;
+    const level = envLevel ?? configLevel;
+    ImmichLogger.setLogLevel(level);
+    this.logger.log(`LogLevel=${level} ${envLevel ? '(set via LOG_LEVEL)' : '(set via system config)'}`);
+  }
+
+  private getEnvLogLevel() {
+    return process.env.LOG_LEVEL as LogLevel;
+  }
+
+  private validateConfig(newConfig: SystemConfig, oldConfig: SystemConfig) {
+    if (!_.isEqual(instanceToPlain(newConfig.logging), oldConfig.logging) && this.getEnvLogLevel()) {
+      throw new Error('Logging cannot be changed while the environment variable LOG_LEVEL is set.');
+    }
   }
 }

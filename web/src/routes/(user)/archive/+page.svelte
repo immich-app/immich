@@ -16,7 +16,6 @@
   import { AssetStore } from '$lib/stores/assets.store';
   import type { PageData } from './$types';
   import { mdiPlus, mdiDotsVertical } from '@mdi/js';
-  import UpdatePanel from '$lib/components/shared-components/update-panel.svelte';
 
   export let data: PageData;
 
@@ -24,27 +23,27 @@
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
-  $: isAllFavorite = Array.from($selectedAssets).every((asset) => asset.isFavorite);
+  $: isAllFavorite = [...$selectedAssets].every((asset) => asset.isFavorite);
 </script>
 
 {#if $isMultiSelectState}
   <AssetSelectControlBar assets={$selectedAssets} clearSelect={() => assetInteractionStore.clearMultiselect()}>
-    <ArchiveAction unarchive onArchive={(ids) => assetStore.removeAssets(ids)} />
+    <ArchiveAction unarchive onArchive={(assetIds) => assetStore.removeAssets(assetIds)} />
     <CreateSharedLink />
     <SelectAllAssets {assetStore} {assetInteractionStore} />
     <AssetSelectContextMenu icon={mdiPlus} title="Add">
       <AddToAlbum />
       <AddToAlbum shared />
     </AssetSelectContextMenu>
-    <DeleteAssets onAssetDelete={(assetId) => assetStore.removeAsset(assetId)} />
+    <DeleteAssets onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)} />
     <AssetSelectContextMenu icon={mdiDotsVertical} title="Add">
       <DownloadAction menuItem />
-      <FavoriteAction menuItem removeFavorite={isAllFavorite} />
+      <FavoriteAction menuItem removeFavorite={isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
     </AssetSelectContextMenu>
   </AssetSelectControlBar>
 {/if}
 
-<UserPageLayout user={data.user} hideNavbar={$isMultiSelectState} title={data.meta.title} scrollbar={false}>
+<UserPageLayout hideNavbar={$isMultiSelectState} title={data.meta.title} scrollbar={false}>
   <AssetGrid {assetStore} {assetInteractionStore} removeAction={AssetAction.UNARCHIVE}>
     <EmptyPlaceholder
       text="Archive photos and videos to hide them from your Photos view"
@@ -53,4 +52,3 @@
     />
   </AssetGrid>
 </UserPageLayout>
-<UpdatePanel {assetStore} />

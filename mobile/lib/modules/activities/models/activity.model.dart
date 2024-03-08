@@ -46,18 +46,7 @@ class Activity {
         type = dto.type == ActivityResponseDtoTypeEnum.comment
             ? ActivityType.comment
             : ActivityType.like,
-        user = User(
-          email: dto.user.email,
-          name: dto.user.name,
-          profileImagePath: dto.user.profileImagePath,
-          id: dto.user.id,
-          // Placeholder values
-          isAdmin: false,
-          updatedAt: DateTime.now(),
-          isPartnerSharedBy: false,
-          isPartnerSharedWith: false,
-          memoryEnabled: false,
-        );
+        user = User.fromSimpleUserDto(dto.user);
 
   @override
   String toString() {
@@ -65,11 +54,10 @@ class Activity {
   }
 
   @override
-  bool operator ==(Object other) {
+  bool operator ==(covariant Activity other) {
     if (identical(this, other)) return true;
 
-    return other is Activity &&
-        other.id == id &&
+    return other.id == id &&
         other.assetId == assetId &&
         other.comment == comment &&
         other.createdAt == createdAt &&

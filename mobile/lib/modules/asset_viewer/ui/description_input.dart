@@ -48,7 +48,7 @@ class DescriptionInput extends HookConsumerWidget {
         );
       } catch (error, stack) {
         hasError.value = true;
-        _log.severe("Error updating description $error", error, stack);
+        _log.severe("Error updating description", error, stack);
         ImmichToast.show(
           context: context,
           msg: "description_input_submit_error".tr(),

@@ -31,7 +31,7 @@ export interface IAlbumRepository {
   getAssetIds(albumId: string, assetIds?: string[]): Promise<Set<string>>;
   hasAsset(asset: AlbumAsset): Promise<boolean>;
   removeAsset(assetId: string): Promise<void>;
-  removeAssets(assets: AlbumAssets): Promise<void>;
+  removeAssets(albumId: string, assetIds: string[]): Promise<void>;
   getMetadataForIds(ids: string[]): Promise<AlbumAssetCount[]>;
   getInvalidThumbnail(): Promise<string[]>;
   getOwned(ownerId: string): Promise<AlbumEntity[]>;

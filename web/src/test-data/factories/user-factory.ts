@@ -1,13 +1,12 @@
-import { UserAvatarColor, type UserResponseDto } from '@api';
 import { faker } from '@faker-js/faker';
+import { UserAvatarColor, type UserResponseDto } from '@immich/sdk';
 import { Sync } from 'factory.ts';
 
 export const userFactory = Sync.makeFactory<UserResponseDto>({
-  id: Sync.each(() => faker.datatype.uuid()),
+  id: Sync.each(() => faker.string.uuid()),
   email: Sync.each(() => faker.internet.email()),
-  name: Sync.each(() => faker.name.fullName()),
-  storageLabel: Sync.each(() => faker.random.alphaNumeric()),
-  externalPath: Sync.each(() => faker.random.alphaNumeric()),
+  name: Sync.each(() => faker.person.fullName()),
+  storageLabel: Sync.each(() => faker.string.alphanumeric()),
   profileImagePath: '',
   shouldChangePassword: Sync.each(() => faker.datatype.boolean()),
   isAdmin: true,
@@ -17,4 +16,6 @@ export const userFactory = Sync.makeFactory<UserResponseDto>({
   memoriesEnabled: true,
   oauthId: '',
   avatarColor: UserAvatarColor.Primary,
+  quotaUsageInBytes: 0,
+  quotaSizeInBytes: null,
 });
