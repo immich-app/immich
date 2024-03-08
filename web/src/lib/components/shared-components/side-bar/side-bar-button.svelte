@@ -21,7 +21,7 @@
 <div
   on:click={onButtonClicked}
   on:keydown={onButtonClicked}
-  class="flex w-full place-items-center justify-between gap-4 rounded-r-full py-3 transition-[padding] delay-100 duration-100 hover:cursor-pointer hover:bg-immich-gray hover:text-immich-primary dark:text-immich-dark-fg dark:hover:bg-immich-dark-gray dark:hover:text-immich-dark-primary
+  class="flex w-full place-items-center justify-between gap-4 rounded-r-full py-2 transition-[padding] delay-100 duration-100 hover:cursor-pointer hover:bg-immich-gray hover:text-immich-primary dark:text-immich-dark-fg dark:hover:bg-immich-dark-gray dark:hover:text-immich-dark-primary
     {isSelected
     ? 'bg-immich-primary/10 text-immich-primary hover:bg-immich-primary/25 dark:bg-immich-dark-primary/10 dark:text-immich-dark-primary'
     : ''}
@@ -29,7 +29,7 @@
   "
 >
   <div class="flex w-full place-items-center gap-4 overflow-hidden truncate">
-    <Icon path={icon} size="1.5em" class="shrink-0" flipped={flippedLogo} />
+    <Icon path={icon} size="1.3em" class="shrink-0" flipped={flippedLogo} />
     <p class="text-sm font-medium">{title}</p>
   </div>
 
