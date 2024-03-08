@@ -250,7 +250,7 @@ export class AssetRepository implements IAssetRepository {
     builder = searchAssetBuilder(builder, options);
     builder.orderBy('asset.fileCreatedAt', options.orderDirection ?? 'DESC');
     return paginatedBuilder<AssetEntity>(builder, {
-      mode: PaginationMode.LIMIT_OFFSET,
+      mode: PaginationMode.SKIP_TAKE,
       skip: pagination.skip,
       take: pagination.take,
     });
