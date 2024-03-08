@@ -76,7 +76,7 @@ export const signupResponseDto = {
     memoriesEnabled: true,
     quotaUsageInBytes: 0,
     quotaSizeInBytes: null,
-    status: "active",
+    status: 'active',
   },
 };
 
