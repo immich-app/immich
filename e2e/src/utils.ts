@@ -104,6 +104,8 @@ export const utils = {
       }
 
       tables = tables || [
+        // TODO e2e test for deleting a stack, since it is quite complex
+        'asset_stack',
         'libraries',
         'shared_links',
         'person',
@@ -117,9 +119,17 @@ export const utils = {
         'system_metadata',
       ];
 
-      for (const table of tables) {
-        await client.query(`DELETE FROM ${table} CASCADE;`);
+      const sql: string[] = [];
+
+      if (tables.includes('asset_stack')) {
+        sql.push('UPDATE "assets" SET "stackId" = NULL;');
       }
+
+      for (const table of tables) {
+        sql.push(`DELETE FROM ${table} CASCADE;`);
+      }
+
+      await client.query(sql.join('\n'));
     } catch (error) {
       console.error('Failed to reset database', error);
       throw error;
