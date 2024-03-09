@@ -196,6 +196,10 @@ jobs:
         run: npm run format
         if: ${{ !cancelled() }}
 
+      - name: Run tsc
+        run: npm run check
+        if: ${{ !cancelled() }}
+
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps chromium
         if: ${{ !cancelled() }}
