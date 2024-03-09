@@ -13,7 +13,11 @@ enum BackUpProgressEnum {
   inProgress,
   manualInProgress,
   inBackground,
-  done
+  done;
+
+  bool get foregreoundInProgress =>
+      this == BackUpProgressEnum.inProgress ||
+      this == BackUpProgressEnum.manualInProgress;
 }
 
 class BackUpState {

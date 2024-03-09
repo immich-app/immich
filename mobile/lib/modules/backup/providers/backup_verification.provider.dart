@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
@@ -76,7 +77,11 @@ class BackupVerification extends _$BackupVerification {
         }
       }
     } finally {
-      WakelockPlus.disable();
+      final backupProgress =
+          ref.read(backupProvider.select((s) => s.backupProgress));
+      WakelockPlus.toggle(
+        enable: Platform.isIOS && backupProgress.foregreoundInProgress,
+      );
       state = false;
     }
   }
