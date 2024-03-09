@@ -83,7 +83,6 @@
   "backup_controller_page_desc_backup": "Slå sikkerhedskopiering til automatisk at uploade nye elementer til serveren.",
   "backup_controller_page_excluded": "Ekskluderet: ",
   "backup_controller_page_failed": "Felet ({})",
-  "backup_controller_page_file_progress": "File progress: {} - {}",
   "backup_controller_page_filename": "Filnavn: {} [{}]",
   "backup_controller_page_id": "ID: {}",
   "backup_controller_page_info": "Sikkerhedskopieringsinformation",

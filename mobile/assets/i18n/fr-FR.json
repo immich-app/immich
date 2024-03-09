@@ -83,7 +83,6 @@
   "backup_controller_page_desc_backup": "Activez la sauvegarde pour envoyer automatiquement les nouveaux éléments sur le serveur.",
   "backup_controller_page_excluded": "Exclus : ",
   "backup_controller_page_failed": "Échec de l'opération ({})",
-  "backup_controller_page_file_progress": "File progress: {} - {}",
   "backup_controller_page_filename": "Nom du fichier : {} [{}]",
   "backup_controller_page_id": "ID : {}",
   "backup_controller_page_info": "Informations de sauvegarde",

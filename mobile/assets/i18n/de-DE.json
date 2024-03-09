@@ -83,7 +83,6 @@
   "backup_controller_page_desc_backup": "Aktiviere die Sicherung, um Elemente immer automatisch auf den Server zu laden, während du die App benutzt.",
   "backup_controller_page_excluded": "Ausgeschlossen: ",
   "backup_controller_page_failed": "Fehlgeschlagen ({})",
-  "backup_controller_page_file_progress": "File progress: {} - {}",
   "backup_controller_page_filename": "Dateiname: {} [{}]",
   "backup_controller_page_id": "ID: {}",
   "backup_controller_page_info": "Informationen zur Sicherung",

@@ -83,7 +83,6 @@
   "backup_controller_page_desc_backup": "Włącz kopię zapasową, aby automatycznie przesyłać nowe zasoby na serwer.",
   "backup_controller_page_excluded": "Wykluczone: ",
   "backup_controller_page_failed": "Nieudane ({})",
-  "backup_controller_page_file_progress": "File progress: {} - {}",
   "backup_controller_page_filename": "Nazwa pliku: {} [{}]",
   "backup_controller_page_id": "ID: {}",
   "backup_controller_page_info": "Informacje o kopii zapasowej",

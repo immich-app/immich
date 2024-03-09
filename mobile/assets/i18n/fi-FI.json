@@ -83,7 +83,6 @@
   "backup_controller_page_desc_backup": "Kytke varmuuskopiointi päälle lähettääksesi uudet kohteet palvelimelle automaattisesti.",
   "backup_controller_page_excluded": "Jätetty pois:",
   "backup_controller_page_failed": "Epäonnistui ({})",
-  "backup_controller_page_file_progress": "File progress: {} - {}",
   "backup_controller_page_filename": "Tiedoston nimi: {} [{}]",
   "backup_controller_page_id": "ID: {}",
   "backup_controller_page_info": "Varmuuskopioinnin tiedot",

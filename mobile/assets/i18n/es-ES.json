@@ -83,7 +83,6 @@
   "backup_controller_page_desc_backup": "Active la copia de seguridad para cargar automáticamente los nuevos elementos al servidor.",
   "backup_controller_page_excluded": "Excluido:",
   "backup_controller_page_failed": "Fallidos ({})",
-  "backup_controller_page_file_progress": "File progress: {} - {}",
   "backup_controller_page_filename": "Nombre del archivo: {} [{}]",
   "backup_controller_page_id": "ID: {}",
   "backup_controller_page_info": "Información de la Copia de Seguridad",

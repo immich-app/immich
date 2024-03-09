@@ -83,7 +83,6 @@
   "backup_controller_page_desc_backup": "Attiva il backup per eseguire il caricamento automatico sul server all'apertura dell'applicazione.",
   "backup_controller_page_excluded": "Esclusi:",
   "backup_controller_page_failed": "Falliti: ({})",
-  "backup_controller_page_file_progress": "File progress: {} - {}",
   "backup_controller_page_filename": "Nome del file: {} [{}]",
   "backup_controller_page_id": "ID: {}",
   "backup_controller_page_info": "Informazioni sul backup",

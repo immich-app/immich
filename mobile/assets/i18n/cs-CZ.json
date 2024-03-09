@@ -83,7 +83,6 @@
   "backup_controller_page_desc_backup": "Zapněte zálohování na popředí, aby se nové položky automaticky nahrávaly na server při otevření aplikace.",
   "backup_controller_page_excluded": "Vyloučeno: ",
   "backup_controller_page_failed": "Nepodařilo se ({})",
-  "backup_controller_page_file_progress": "File progress: {} - {}",
   "backup_controller_page_filename": "Název souboru: {} [{}]",
   "backup_controller_page_id": "ID: {}",
   "backup_controller_page_info": "Informace o zálohování",

@@ -83,7 +83,6 @@
   "backup_controller_page_desc_backup": "เปิดการสำรองข้อมูลในฉากหน้าเพื่อที่จะอัพโหลดทรัพยากรใหม่ไปยังเซิร์ฟเวอร์เมื่อเปิดแอพ",
   "backup_controller_page_excluded": "ถูกยกเว้น:",
   "backup_controller_page_failed": "Failed ({})",
-  "backup_controller_page_file_progress": "File progress: {} - {}",
   "backup_controller_page_filename": "File name: {} [{}]",
   "backup_controller_page_id": "ID: {}",
   "backup_controller_page_info": "ข้อมูลเกี่ยวกับการสำรองข้อมูล",

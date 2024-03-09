@@ -83,7 +83,6 @@
   "backup_controller_page_desc_backup": "Aktivera förgrunds-säkerhetskopiering för att automatiskt ladda upp nya foton och videor när du öppnar appen.",
   "backup_controller_page_excluded": "Exkluderat: ",
   "backup_controller_page_failed": "Misslyckades ({})",
-  "backup_controller_page_file_progress": "File progress: {} - {}",
   "backup_controller_page_filename": "Filnamn: {} [{}]",
   "backup_controller_page_id": "ID: {}",
   "backup_controller_page_info": "Säkerhetskopieringsinformation",

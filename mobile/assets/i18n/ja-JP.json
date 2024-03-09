@@ -83,7 +83,6 @@
   "backup_controller_page_desc_backup": "アプリを開いているときに写真と動画をバックアップします",
   "backup_controller_page_excluded": "除外中のアルバム:",
   "backup_controller_page_failed": "失敗: ({})",
-  "backup_controller_page_file_progress": "File progress: {} - {}",
   "backup_controller_page_filename": "ファイル名: {} [{}] ",
   "backup_controller_page_id": "ID: {}",
   "backup_controller_page_info": "バックアップ情報",

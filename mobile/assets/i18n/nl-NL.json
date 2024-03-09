@@ -83,7 +83,6 @@
   "backup_controller_page_desc_backup": "Schakel back-up op de voorgrond in om automatisch nieuwe assets naar de server te uploaden bij het openen van de app.",
   "backup_controller_page_excluded": "Uitgezonderd: ",
   "backup_controller_page_failed": "Mislukt ({})",
-  "backup_controller_page_file_progress": "File progress: {} - {}",
   "backup_controller_page_filename": "Bestandsnaam: {} [{}]",
   "backup_controller_page_id": "ID: {}",
   "backup_controller_page_info": "Back-up informatie",

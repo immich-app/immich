@@ -83,7 +83,6 @@
   "backup_controller_page_desc_backup": "Vklopite varnostno kopiranje v ospredju za samodejno nalaganje novih sredstev na strežnik, ko odprete aplikacijo.",
   "backup_controller_page_excluded": "Izključeno:",
   "backup_controller_page_failed": "Neuspešno ({})",
-  "backup_controller_page_file_progress": "File progress: {} - {}",
   "backup_controller_page_filename": "Ime datoteke: {} [{}]",
   "backup_controller_page_id": "ID: {}",
   "backup_controller_page_info": "Informacija o varnostnem kopiranju",
