@@ -48,10 +48,10 @@ export class DownloadService {
     const assetPagination = await this.getDownloadAssets(auth, dto);
     for await (const assets of assetPagination) {
       // motion part of live photos
-      const motionIds = assets.map((asset) => asset.livePhotoVideoId).filter<string>((id): id is string => !!id);
-      if (motionIds.length > 0) {
-        assets.push(...(await this.assetRepository.getByIds(motionIds)));
-      }
+      // const motionIds = assets.map((asset) => asset.livePhotoVideoId).filter<string>((id): id is string => !!id);
+      // if (motionIds.length > 0) {
+      //   assets.push(...(await this.assetRepository.getByIds(motionIds)));
+      // }
 
       for (const asset of assets) {
         archive.size += Number(asset.exifInfo?.fileSizeInByte || 0);

@@ -107,13 +107,13 @@ export const downloadFile = async (asset: AssetResponseDto) => {
       size: asset.exifInfo?.fileSizeInByte || 0,
     },
   ];
-  if (asset.livePhotoVideoId) {
-    assets.push({
-      filename: asset.originalFileName,
-      id: asset.livePhotoVideoId,
-      size: 0,
-    });
-  }
+  // if (asset.livePhotoVideoId) {
+  //   assets.push({
+  //     filename: `${asset.originalFileName}.mov`,
+  //     id: asset.livePhotoVideoId,
+  //     size: 0,
+  //   });
+  // }
 
   for (const { filename, id, size } of assets) {
     const downloadKey = filename;
