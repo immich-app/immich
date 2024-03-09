@@ -5,17 +5,19 @@ class SettingsButtonListTile extends StatelessWidget {
   final IconData icon;
   final Color? iconColor;
   final String title;
+  final Widget? subtitle;
   final String? subtileText;
   final String buttonText;
-  final void Function() onButtonTap;
+  final void Function()? onButtonTap;
 
   const SettingsButtonListTile({
     required this.icon,
     this.iconColor,
     required this.title,
     this.subtileText,
+    this.subtitle,
     required this.buttonText,
-    required this.onButtonTap,
+    this.onButtonTap,
     super.key,
   });
 
@@ -33,6 +35,7 @@ class SettingsButtonListTile extends StatelessWidget {
           if (subtileText != null) const SizedBox(height: 4),
           if (subtileText != null)
             Text(subtileText!, style: context.textTheme.bodyMedium),
+          if (subtitle != null) subtitle!,
           const SizedBox(height: 6),
           ElevatedButton(onPressed: onButtonTap, child: Text(buttonText)),
         ],
