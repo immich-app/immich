@@ -673,6 +673,9 @@ export class LibraryService extends EventEmitter {
       }
     }
 
+    this.logger.debug(`Found ${assetIdsToMarkOffline.length} offline asset(s) previously marked as online`);
+    this.logger.debug(`Found ${assetIdsToMarkOnline.length} online asset(s) previously marked as offline`);
+
     await this.assetRepository.updateAll(assetIdsToMarkOffline, { isOffline: true });
     await this.assetRepository.updateAll(assetIdsToMarkOnline, { isOffline: false });
 
