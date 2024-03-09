@@ -4,6 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/settings/providers/notification_permission.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
+import 'package:immich_mobile/modules/settings/ui/settings_button_list_tile.dart';
 import 'package:immich_mobile/modules/settings/ui/settings_slider_list_tile.dart';
 import 'package:immich_mobile/modules/settings/ui/settings_sub_page_scaffold.dart';
 import 'package:immich_mobile/modules/settings/ui/settings_switch_list_tile.dart';
@@ -59,36 +60,19 @@ class NotificationSetting extends HookConsumerWidget {
 
     final notificationSettings = [
       if (!hasPermission)
-        ListTile(
-          leading: const Icon(Icons.notifications_outlined),
-          title: Text(
-            'notification_permission_list_tile_title',
-            style: context.textTheme.displayMedium,
-          ).tr(),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'notification_permission_list_tile_content',
-                style: context.textTheme.bodyMedium,
-              ).tr(),
-              const SizedBox(height: 8),
-              ElevatedButton(
-                onPressed: () => ref
-                    .watch(notificationPermissionProvider.notifier)
-                    .requestNotificationPermission()
-                    .then((permission) {
-                  if (permission == PermissionStatus.permanentlyDenied) {
-                    showPermissionsDialog();
-                  }
-                }),
-                child: const Text(
-                  'notification_permission_list_tile_enable_button',
-                ).tr(),
-              ),
-            ],
-          ),
-          isThreeLine: true,
+        SettingsButtonListTile(
+          icon: Icons.notifications_outlined,
+          title: 'notification_permission_list_tile_title'.tr(),
+          subtileText: 'notification_permission_list_tile_content'.tr(),
+          buttonText: 'notification_permission_list_tile_enable_button'.tr(),
+          onButtonTap: () => ref
+              .watch(notificationPermissionProvider.notifier)
+              .requestNotificationPermission()
+              .then((permission) {
+            if (permission == PermissionStatus.permanentlyDenied) {
+              showPermissionsDialog();
+            }
+          }),
         ),
       SettingsSwitchListTile(
         enabled: hasPermission,
