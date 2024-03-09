@@ -8,7 +8,6 @@ In any case of change, you can always return to the default settings by clicking
 If you have made a change and want to return to the previous settings before the new change, you can click the `Reset` button to the right of the `Save` button.
 :::
 
-
 ## Job Settings
 
 Using these settings, you can determine the amount of work that will run concurrently for each task in microservices. Some tasks can be set to higher values on computers with powerful hardware and storage with good I/O capabilities.
@@ -143,7 +142,6 @@ Use display p3 for thumbnails. This better preserves the vibrance of images with
 The default resolution for Large thumbnails can be lowered from 1440p (default) to 1080p or 720p to save storage space.
 :::
 
-
 ## Trash Settings
 
 In the system administrator's option to set a trash for deleted files, these files will remain in the trash until the deletion date 30 days (default) or as defined by the system administrator.
@@ -167,5 +165,3 @@ Enable/disable the new version notification, when this option is enabled period 
 ## Video Transcoding Settings
 
 The system administrator can define parameters according to which video files will be converted to different formats (depending on the settings). The settings can be changed in depth, to learn more about the terminology used here, refer to FFmpeg documentation for [H.264](https://trac.ffmpeg.org/wiki/Encode/H.264) codec, [HEVC](https://trac.ffmpeg.org/wiki/Encode/H.265) codec and [VP9](https://trac.ffmpeg.org/wiki/Encode/VP9) codec.
-
-
