@@ -112,7 +112,7 @@
         </p>
       </svelte:fragment>
 
-      {#if !galleryInView}
+      {#if currentMemory.assets.length > 1} <!-- Display play bar only if there's more than 1 image -->
         <div class="flex place-content-center place-items-center gap-2 overflow-hidden">
           <CircleIconButton icon={paused ? mdiPlay : mdiPause} forceDark on:click={() => (paused = !paused)} />
 
@@ -268,7 +268,7 @@
       </div>
     </section>
 
-    <!-- GALERY VIEWER -->
+    <!-- GALLERY VIEWER -->
 
     <section class="bg-immich-dark-gray m-4">
       <div
