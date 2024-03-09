@@ -21,6 +21,13 @@ export const signupDto = {
 };
 
 export const createUserDto = {
+  create(key: string) {
+    return {
+      email: `${key}@immich.cloud`,
+      name: `User ${key}`,
+      password: `password-${key}`,
+    };
+  },
   user1: {
     email: 'user1@immich.cloud',
     name: 'User 1',
@@ -35,6 +42,12 @@ export const createUserDto = {
     email: 'user3@immich.cloud',
     name: 'User 3',
     password: 'password123',
+  },
+  userQuota: {
+    email: 'user-quota@immich.cloud',
+    name: 'User Quota',
+    password: 'password-quota',
+    quotaSizeInBytes: 512,
   },
 };
 
