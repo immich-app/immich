@@ -123,7 +123,7 @@ export class FilesystemProvider implements IStorageRepository {
 
   crawl(crawlOptions: CrawlOptionsDto): Promise<string[]> {
     const { pathsToCrawl, exclusionPatterns, includeHidden } = crawlOptions;
-    if (!pathsToCrawl.length) {
+    if (pathsToCrawl.length === 0) {
       return Promise.resolve([]);
     }
 

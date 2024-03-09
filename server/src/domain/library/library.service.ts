@@ -1,4 +1,4 @@
-import { AssetType, LibraryEntity, LibraryType } from '@app/infra/entities';
+import { AssetType, LibraryType } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { R_OK } from 'node:constants';
@@ -654,7 +654,7 @@ export class LibraryService extends EventEmitter {
 
     const assetIdsToMarkOffline = [];
     const assetIdsToMarkOnline = [];
-    const pagination = usePagination(5_000, (pagination) =>
+    const pagination = usePagination(5000, (pagination) =>
       this.assetRepository.getLibraryAssetPaths(pagination, library.id),
     );
 
