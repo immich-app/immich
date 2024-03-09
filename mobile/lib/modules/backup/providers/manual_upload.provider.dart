@@ -317,9 +317,10 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
       _backupProvider.updateBackupProgress(BackUpProgressEnum.idle);
     }
     state = state.copyWith(
-        progressInPercentage: 0,
-        progressInFileSize: "0 B / 0 B",
-        progressInFileSpeed: 0);
+      progressInPercentage: 0,
+      progressInFileSize: "0 B / 0 B",
+      progressInFileSpeed: 0,
+    );
   }
 
   Future<bool> uploadAssets(

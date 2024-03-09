@@ -104,7 +104,7 @@ class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
                   ).tr(
                     args: [
                       uploadFileProgress,
-                      formatUploadFileSpeed(uploadFileSpeed)
+                      formatUploadFileSpeed(uploadFileSpeed),
                     ],
                   ),
                 ),
