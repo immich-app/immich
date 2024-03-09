@@ -2,6 +2,13 @@
 
 The System Settings page is the page that is visible only to the server administrator, through the page you can manage the global settings that will affect all users.
 
+:::info
+In any case of change, you can always return to the default settings by clicking the `Reset to default` button.
+
+If you have made a change and want to return to the previous settings before the new change, you can click the `Reset` button to the right of the `Save` button.
+:::
+
+
 ## Job Settings
 
 Using these settings, you can determine the amount of work that will run concurrently for each task in microservices. Some tasks can be set to higher values on computers with powerful hardware and storage with good I/O capabilities.
@@ -18,7 +25,14 @@ The Facial Recognition Concurrency value cannot be changed because
 
 ## External Library
 
-To add ####################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################
+### Library watching (EXPERIMENTAL)
+
+External libraries can automatically import changed files without a full rescan. It will import the file whenever the operating system reports a file change. If your photos are mounted over the network, this does not work.
+
+### Periodic Scanning
+
+You can define a custom interval for the trigger external library rescan under Administration -> Settings -> Library.  
+You can set the scanning interval using the preset or cron format. For more information please refer to e.g. [Crontab Guru](https://crontab.guru/).
 
 ## Logging
 
@@ -70,7 +84,7 @@ If you have twins, you might want to lower the Max Recognition Distance value, d
 In these settings, you can change the appearance of the map in night and day modes according to your personal preference and according to the supported options.
 The map can be easily adjusted via [OpenMapTiles](https://openmaptiles.org/styles/) for example.
 
-### GPS Settings
+### Reverse Geocoding Settings
 
 Immich supports [Reverse Geocoding](/docs/features/reverse-geocoding) using data from the [GeoNames](https://www.geonames.org/) geographical database.
 
@@ -109,3 +123,49 @@ For example:
 ```
 
 ## Thumbnail Settings
+
+By default Immich creates 3 thumbnails for each asset,
+Blurred (thumbhash) , Small (webp) , and Large (jpeg), using these settings you can change the quality for the thumbnail files that are created.
+
+**Small thumbnail resolution**  
+Used when viewing groups of photos (main timeline, album view, etc.). Higher resolutions can preserve more detail but take longer to encode, have larger file sizes, and can reduce app responsiveness.
+
+**Large thumbnail resolution**  
+Used when viewing a single photo and for machine learning. Higher resolutions can preserve more detail but take longer to encode, have larger file sizes, and can reduce app responsiveness.
+
+**Quality**  
+Thumbnail quality from 1-100. Higher is better for quality but produces larger files.
+
+**Prefer wide gamut**  
+Use display p3 for thumbnails. This better preserves the vibrance of images with wide color spaces, but images may appear differently on old devices with an old browser version. Srgb images are kept as srgb to avoid color shifts.
+
+:::tip
+The default resolution for Large thumbnails can be lowered from 1440p (default) to 1080p or 720p to save storage space.
+:::
+
+
+## Trash Settings
+
+In the system administrator's option to set a trash for deleted files, these files will remain in the trash until the deletion date 30 days (default) or as defined by the system administrator.
+
+The trash can be disabled, however this is not recommended as future files that are deleted will be permanently deleted.
+
+:::tip Keyboard shortcut for permanently deletion
+You can select assets and press Ctrl + Del from the timeline for quick permanent deletion without the trash option.
+:::
+
+## User Settings
+
+### Delete delay
+
+The system administrator can choose to delete users through the administration panel, the system administrator can delete users immediately or alternatively delay the deletion for users (7 days by default) this action permanently delete a user's account and assets. The user deletion job runs at midnight to check for users that are ready for deletion. Changes to this setting will be evaluated at the next execution.
+
+## Version Check
+
+Enable/disable the new version notification, when this option is enabled period requests to GitHub to check for new releases.
+
+## Video Transcoding Settings
+
+The system administrator can define parameters according to which video files will be converted to different formats (depending on the settings). The settings can be changed in depth, to learn more about the terminology used here, refer to FFmpeg documentation for [H.264](https://trac.ffmpeg.org/wiki/Encode/H.264) codec, [HEVC](https://trac.ffmpeg.org/wiki/Encode/H.265) codec and [VP9](https://trac.ffmpeg.org/wiki/Encode/VP9) codec.
+
+
