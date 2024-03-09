@@ -38,7 +38,7 @@ describe('/trash', () => {
       const { status } = await request(app).post('/trash/empty').set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(204);
 
-      await utils.waitForWebsocketEvent({ event: 'delete', assetId });
+      await utils.waitForWebsocketEvent({ event: 'assetDelete', id: assetId });
 
       const after = await getAllAssets({}, { headers: asBearerAuth(admin.accessToken) });
       expect(after.length).toBe(0);
