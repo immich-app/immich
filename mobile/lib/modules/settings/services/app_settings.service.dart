@@ -57,6 +57,7 @@ enum AppSettingsEnum<T> {
     null,
     false,
   ),
+  iosKeepAliveOnBackup<bool>(StoreKey.iosKeepAliveOnBackup, null, false),
   ;
 
   const AppSettingsEnum(this.storeKey, this.hiveKey, this.defaultValue);

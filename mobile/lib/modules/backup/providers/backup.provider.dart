@@ -4,6 +4,7 @@ import 'package:cancellation_token_http/http.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/asset_viewer/providers/video_player_value_provider.dart';
 import 'package:immich_mobile/modules/backup/models/available_album.model.dart';
 import 'package:immich_mobile/modules/backup/models/backup_album.model.dart';
 import 'package:immich_mobile/modules/backup/models/backup_state.model.dart';
@@ -15,6 +16,8 @@ import 'package:immich_mobile/modules/backup/services/backup.service.dart';
 import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/modules/onboarding/providers/gallery_permission.provider.dart';
+import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
+import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/models/server_info/server_disk_info.model.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/providers/app_state.provider.dart';
@@ -25,6 +28,7 @@ import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 class BackupNotifier extends StateNotifier<BackUpState> {
   BackupNotifier(
@@ -67,7 +71,10 @@ class BackupNotifier extends StateNotifier<BackUpState> {
             ),
             iCloudDownloadProgress: 0.0,
           ),
-        );
+        ) {
+    // Disable wake lock initially, enable it back once backupProgress changes
+    WakelockPlus.disable();
+  }
 
   final log = Logger('BackupNotifier');
   final BackupService _backupService;
@@ -349,11 +356,11 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     if (allUniqueAssets.isEmpty) {
       log.info("No assets are selected for back up");
       state = state.copyWith(
-        backupProgress: BackUpProgressEnum.idle,
         allAssetsInDatabase: allAssetsInDatabase,
         allUniqueAssets: {},
         selectedAlbumsBackupAssetsIds: selectedAlbumsBackupAssets,
       );
+      updateBackupProgress(BackUpProgressEnum.idle);
     } else {
       state = state.copyWith(
         allAssetsInDatabase: allAssetsInDatabase,
@@ -424,7 +431,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   Future<void> startBackupProcess() async {
     debugPrint("Start backup process");
     assert(state.backupProgress == BackUpProgressEnum.idle);
-    state = state.copyWith(backupProgress: BackUpProgressEnum.inProgress);
+    updateBackupProgress(BackUpProgressEnum.inProgress);
 
     await getBackupInfo();
 
@@ -434,7 +441,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
       if (state.allUniqueAssets.isEmpty) {
         log.info("No Asset On Device - Abort Backup Process");
-        state = state.copyWith(backupProgress: BackUpProgressEnum.idle);
+        updateBackupProgress(BackUpProgressEnum.idle);
         return;
       }
 
@@ -445,7 +452,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       }
 
       if (assetsWillBeBackup.isEmpty) {
-        state = state.copyWith(backupProgress: BackUpProgressEnum.idle);
+        updateBackupProgress(BackUpProgressEnum.idle);
       }
 
       // Perform Backup
@@ -493,9 +500,9 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     }
     state.cancelToken.cancel();
     state = state.copyWith(
-      backupProgress: BackUpProgressEnum.idle,
       progressInPercentage: 0.0,
     );
+    updateBackupProgress(BackUpProgressEnum.idle);
   }
 
   void _onAssetUploaded(
@@ -533,9 +540,9 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         excludedBackupAlbums: state.excludedBackupAlbums
             .map((e) => e.copyWith(lastBackup: latestAssetBackup))
             .toSet(),
-        backupProgress: BackUpProgressEnum.done,
         progressInPercentage: 0.0,
       );
+      updateBackupProgress(BackUpProgressEnum.done);
       _updatePersistentAlbumsSelection();
     }
 
@@ -620,15 +627,15 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     }
     final BackUpProgressEnum previous = state.backupProgress;
     state = state.copyWith(
-      backupProgress: BackUpProgressEnum.inBackground,
       selectedBackupAlbums: selectedAlbums,
       excludedBackupAlbums: excludedAlbums,
     );
+    updateBackupProgress(BackUpProgressEnum.inBackground);
     // assumes the background service is currently running
     // if true, waits until it has stopped to start the backup
     final bool hasLock = await _backgroundService.acquireLock();
     if (hasLock) {
-      state = state.copyWith(backupProgress: previous);
+      updateBackupProgress(previous);
     }
     return _resumeBackup();
   }
@@ -665,8 +672,25 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   }
 
   BackUpProgressEnum get backupProgress => state.backupProgress;
-  void updateBackupProgress(BackUpProgressEnum backupProgress) {
-    state = state.copyWith(backupProgress: backupProgress);
+  void updateBackupProgress(BackUpProgressEnum progress) {
+    state = state.copyWith(backupProgress: progress);
+
+    // Handle WakeLock
+    if (Platform.isIOS) {
+      if (progress.foregreoundInProgress) {
+        final appSettings = ref.read(appSettingsServiceProvider);
+        final shouldKeepAlive =
+            appSettings.getSetting(AppSettingsEnum.iosKeepAliveOnBackup);
+        WakelockPlus.toggle(enable: shouldKeepAlive);
+      } else {
+        // Do not disable wake lock when video is playing
+        final isVideoPlaying = ref.read(
+          videoPlaybackValueProvider
+              .select((s) => s.state == VideoPlaybackState.playing),
+        );
+        WakelockPlus.toggle(enable: isVideoPlaying);
+      }
+    }
   }
 }
 
