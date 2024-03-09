@@ -76,7 +76,7 @@ describe('/search', () => {
     }
 
     for (const asset of assets) {
-      await utils.waitForWebsocketEvent({ event: 'upload', id: asset.id });
+      await utils.waitForWebsocketEvent({ event: 'assetUpload', id: asset.id });
     }
 
     [
