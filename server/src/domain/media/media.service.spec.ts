@@ -23,6 +23,7 @@ import {
   personStub,
   probeStub,
 } from '@test';
+import { Stats } from 'node:fs';
 import { JobName } from '../job';
 import {
   IAssetRepository,
@@ -1845,6 +1846,41 @@ describe(MediaService.name, () => {
             '-g 256',
             '-v verbose',
             '-vf scale_rkrga=-2:720:format=nv12:afbc=1',
+            '-level 51',
+            '-rc_mode CQP',
+            '-qp_init 30',
+          ],
+          twoPass: false,
+        },
+      );
+    });
+
+    it('should set OpenCL tonemapping options for rkmpp when OpenCL is available', async () => {
+      storageMock.readdir.mockResolvedValue(['renderD128']);
+      storageMock.stat.mockResolvedValue({ ...new Stats(), isFile: () => true, isCharacterDevice: () => true });
+      mediaMock.probe.mockResolvedValue(probeStub.videoStreamHDR);
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.FFMPEG_ACCEL, value: TranscodeHWAccel.RKMPP },
+        { key: SystemConfigKey.FFMPEG_CRF, value: 30 },
+        { key: SystemConfigKey.FFMPEG_MAX_BITRATE, value: '0' },
+      ]);
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        {
+          inputOptions: ['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga'],
+          outputOptions: [
+            `-c:v h264_rkmpp`,
+            '-c:a copy',
+            '-movflags faststart',
+            '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-g 256',
+            '-v verbose',
+            '-vf scale_rkrga=-2:720:format=p010:afbc=1,hwmap=derive_device=opencl:mode=read,tonemap_opencl=format=nv12:r=pc:p=bt709:t=bt709:m=bt709:tonemap=hable:desat=0,hwmap=derive_device=rkmpp:mode=write:reverse=1,format=drm_prime',
             '-level 51',
             '-rc_mode CQP',
             '-qp_init 30',
