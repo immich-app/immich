@@ -61,17 +61,8 @@ import Timeline, { DateType, Item } from '../components/timeline';
 const items: Item[] = [
   {
     icon: mdiMagnifyScan,
-    description: 'Advanced search with filters by date, location and more.',
-    title: 'smart search',
-    release: 'v1.95.0',
-    tag: 'v1.95.0',
-    date: new Date(2024, 1, 20),
-    dateType: DateType.RELEASE,
-  },
-  {
-    icon: mdiAllInclusive,
-    description: 'From now on a single search returns up to 5000 results compared to 100 in previous versions',
-    title: 'Unlimited search results',
+    description: 'Advanced search with filters by date, location and more, also single search returns up to 5000 results compared to 100 in previous versions',
+    title: 'Search enhancement with advanced filters',
     release: 'v1.95.0',
     tag: 'v1.95.0',
     date: new Date(2024, 1, 20),
