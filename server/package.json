@@ -1,6 +1,6 @@
 {
   "name": "immich",
-  "version": "1.97.0",
+  "version": "1.98.1",
   "description": "",
   "author": "",
   "private": true,
@@ -48,7 +48,7 @@
     "@nestjs/websockets": "^10.2.2",
     "@socket.io/postgres-adapter": "^0.3.1",
     "@types/picomatch": "^2.3.3",
-    "archiver": "^6.0.0",
+    "archiver": "^7.0.0",
     "async-lock": "^1.4.0",
     "bcrypt": "^5.1.1",
     "bullmq": "^4.8.0",
@@ -76,6 +76,7 @@
     "rxjs": "^7.8.1",
     "sanitize-filename": "^1.6.3",
     "sharp": "^0.33.0",
+    "sirv": "^2.0.4",
     "thumbhash": "^0.1.1",
     "typeorm": "^0.3.17",
     "ua-parser-js": "^1.0.35"

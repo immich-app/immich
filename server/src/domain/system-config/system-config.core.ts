@@ -75,7 +75,7 @@ export const defaults = Object.freeze<SystemConfig>({
       enabled: true,
       modelName: 'buffalo_l',
       minScore: 0.7,
-      maxDistance: 0.6,
+      maxDistance: 0.5,
       minFaces: 3,
     },
   },
@@ -139,6 +139,9 @@ export const defaults = Object.freeze<SystemConfig>({
   server: {
     externalDomain: '',
     loginPageMessage: '',
+  },
+  user: {
+    deleteDelay: 7,
   },
 });
 

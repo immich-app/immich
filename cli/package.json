@@ -14,7 +14,6 @@
   ],
   "devDependencies": {
     "@immich/sdk": "file:../open-api/typescript-sdk",
-    "@testcontainers/postgresql": "^10.7.1",
     "@types/byte-size": "^8.1.0",
     "@types/cli-progress": "^3.11.0",
     "@types/lodash-es": "^4.17.12",

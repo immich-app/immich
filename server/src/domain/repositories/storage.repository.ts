@@ -31,6 +31,14 @@ export interface WatchEvents {
   onError(error: Error): void;
 }
 
+export enum StorageEventType {
+  READY = 'ready',
+  ADD = 'add',
+  CHANGE = 'change',
+  UNLINK = 'unlink',
+  ERROR = 'error',
+}
+
 export interface IStorageRepository {
   createZipStream(): ImmichZipStream;
   createReadStream(filepath: string, mimeType?: string | null): Promise<ImmichReadStream>;
@@ -47,6 +55,6 @@ export interface IStorageRepository {
   crawl(crawlOptions: CrawlOptionsDto): Promise<string[]>;
   copyFile(source: string, target: string): Promise<void>;
   rename(source: string, target: string): Promise<void>;
-  watch(paths: string[], options: WatchOptions, events: Partial<WatchEvents>): () => void;
+  watch(paths: string[], options: WatchOptions, events: Partial<WatchEvents>): () => Promise<void>;
   utimes(filepath: string, atime: Date, mtime: Date): Promise<void>;
 }

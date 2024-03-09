@@ -1,7 +1,7 @@
 import { LibraryEntity, LibraryType } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
-import { ArrayMaxSize, ArrayUnique, IsBoolean, IsEnum, IsNotEmpty, IsString } from 'class-validator';
-import { Optional, ValidateUUID } from '../domain.util';
+import { ArrayMaxSize, ArrayUnique, IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import { Optional, ValidateBoolean, ValidateUUID } from '../domain.util';
 
 export class CreateLibraryDto {
   @IsEnum(LibraryType)
@@ -16,8 +16,7 @@ export class CreateLibraryDto {
   @IsNotEmpty()
   name?: string;
 
-  @Optional()
-  @IsBoolean()
+  @ValidateBoolean({ optional: true })
   isVisible?: boolean;
 
   @Optional()
@@ -34,8 +33,7 @@ export class CreateLibraryDto {
   @ArrayMaxSize(128)
   exclusionPatterns?: string[];
 
-  @Optional()
-  @IsBoolean()
+  @ValidateBoolean({ optional: true })
   isWatched?: boolean;
 }
 
@@ -45,8 +43,7 @@ export class UpdateLibraryDto {
   @IsNotEmpty()
   name?: string;
 
-  @Optional()
-  @IsBoolean()
+  @ValidateBoolean({ optional: true })
   isVisible?: boolean;
 
   @Optional()
@@ -102,13 +99,11 @@ export class LibrarySearchDto {
 }
 
 export class ScanLibraryDto {
-  @IsBoolean()
-  @Optional()
+  @ValidateBoolean({ optional: true })
   refreshModifiedFiles?: boolean;
 
-  @IsBoolean()
-  @Optional()
-  refreshAllFiles?: boolean = false;
+  @ValidateBoolean({ optional: true })
+  refreshAllFiles?: boolean;
 }
 
 export class SearchLibraryDto {

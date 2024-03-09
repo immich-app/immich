@@ -69,14 +69,16 @@ class MemoryCard extends StatelessWidget {
                 return Hero(
                   tag: 'memory-${asset.id}',
                   child: VideoViewerPage(
+                    key: ValueKey(asset),
                     asset: asset,
                     showDownloadingIndicator: false,
-                    placeholder: ImmichImage(
-                      asset,
-                      fit: fit,
+                    placeholder: SizedBox.expand(
+                      child: ImmichImage(
+                        asset,
+                        fit: fit,
+                      ),
                     ),
                     hideControlsTimer: const Duration(seconds: 2),
-                    onVideoEnded: onVideoEnded,
                     showControls: false,
                   ),
                 );

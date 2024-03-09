@@ -2,7 +2,7 @@ name: immich_mobile
 description: Immich - selfhosted backup media file on mobile phone
 
 publish_to: "none"
-version: 1.97.0+125
+version: 1.98.1+127
 isar_version: &isar_version 3.1.0+1
 
 environment:
@@ -58,6 +58,7 @@ dependencies:
   timezone: ^0.9.2
   octo_image: ^2.0.0
   thumbhash: 0.1.0+1
+  async: ^2.11.0
 
   openapi:
     path: openapi

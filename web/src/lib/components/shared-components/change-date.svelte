@@ -68,8 +68,8 @@
     title="Edit date & time"
     prompt="Please select a new date:"
     disabled={!date.isValid}
-    on:confirm={handleConfirm}
-    on:cancel={handleCancel}
+    onConfirm={handleConfirm}
+    onClose={handleCancel}
   >
     <div class="flex flex-col text-md px-4 text-center gap-2" slot="prompt">
       <div class="mt-2" />

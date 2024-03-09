@@ -1,4 +1,4 @@
-import { UserEntity } from '@app/infra/entities';
+import { UserEntity, UserStatus } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
 import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { DateTime } from 'luxon';
@@ -8,34 +8,37 @@ import { CacheControl, ImmichFileResponse } from '../domain.util';
 import { IEntityJob, JobName } from '../job';
 import {
   IAlbumRepository,
-  IAssetRepository,
   ICryptoRepository,
   IJobRepository,
   ILibraryRepository,
   IStorageRepository,
+  ISystemConfigRepository,
   IUserRepository,
   UserFindOptions,
 } from '../repositories';
 import { StorageCore, StorageFolder } from '../storage';
-import { CreateUserDto, UpdateUserDto } from './dto';
+import { SystemConfigCore } from '../system-config/system-config.core';
+import { CreateUserDto, DeleteUserDto, UpdateUserDto } from './dto';
 import { CreateProfileImageResponseDto, UserResponseDto, mapCreateProfileImageResponse, mapUser } from './response-dto';
 import { UserCore } from './user.core';
 
 @Injectable()
 export class UserService {
+  private configCore: SystemConfigCore;
   private logger = new ImmichLogger(UserService.name);
   private userCore: UserCore;
 
   constructor(
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
-    @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ILibraryRepository) libraryRepository: ILibraryRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
+    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
   ) {
     this.userCore = UserCore.create(cryptoRepository, libraryRepository, userRepository);
+    this.configCore = SystemConfigCore.create(configRepository);
   }
 
   async getAll(auth: AuthDto, isAll: boolean): Promise<UserResponseDto[]> {
@@ -70,22 +73,29 @@ export class UserService {
     return this.userCore.updateUser(auth.user, dto.id, dto).then(mapUser);
   }
 
-  async delete(auth: AuthDto, id: string): Promise<UserResponseDto> {
-    const user = await this.findOrFail(id, {});
-    if (user.isAdmin) {
+  async delete(auth: AuthDto, id: string, dto: DeleteUserDto): Promise<UserResponseDto> {
+    const { force } = dto;
+    const { isAdmin } = await this.findOrFail(id, {});
+    if (isAdmin) {
       throw new ForbiddenException('Cannot delete admin user');
     }
 
     await this.albumRepository.softDeleteAll(id);
 
-    return this.userRepository.delete(user).then(mapUser);
+    const status = force ? UserStatus.REMOVING : UserStatus.DELETED;
+    const user = await this.userRepository.update(id, { status, deletedAt: new Date() });
+
+    if (force) {
+      await this.jobRepository.queue({ name: JobName.USER_DELETION, data: { id: user.id, force } });
+    }
+
+    return mapUser(user);
   }
 
   async restore(auth: AuthDto, id: string): Promise<UserResponseDto> {
-    let user = await this.findOrFail(id, { withDeleted: true });
-    user = await this.userRepository.restore(user);
+    await this.findOrFail(id, { withDeleted: true });
     await this.albumRepository.restoreAll(id);
-    return mapUser(user);
+    return this.userRepository.update(id, { deletedAt: null, status: UserStatus.ACTIVE }).then(mapUser);
   }
 
   async createProfileImage(auth: AuthDto, fileInfo: Express.Multer.File): Promise<CreateProfileImageResponseDto> {
@@ -140,22 +150,26 @@ export class UserService {
 
   async handleUserDeleteCheck() {
     const users = await this.userRepository.getDeletedUsers();
+    const config = await this.configCore.getConfig();
     await this.jobRepository.queueAll(
       users.flatMap((user) =>
-        this.isReadyForDeletion(user) ? [{ name: JobName.USER_DELETION, data: { id: user.id } }] : [],
+        this.isReadyForDeletion(user, config.user.deleteDelay)
+          ? [{ name: JobName.USER_DELETION, data: { id: user.id } }]
+          : [],
       ),
     );
     return true;
   }
 
-  async handleUserDelete({ id }: IEntityJob) {
+  async handleUserDelete({ id, force }: IEntityJob) {
+    const config = await this.configCore.getConfig();
     const user = await this.userRepository.get(id, { withDeleted: true });
     if (!user) {
       return false;
     }
 
     // just for extra protection here
-    if (!this.isReadyForDeletion(user)) {
+    if (!force && !this.isReadyForDeletion(user, config.user.deleteDelay)) {
       this.logger.warn(`Skipped user that was not ready for deletion: id=${id}`);
       return false;
     }
@@ -176,20 +190,18 @@ export class UserService {
     }
 
     this.logger.warn(`Removing user from database: ${user.id}`);
-
     await this.albumRepository.deleteAll(user.id);
-    await this.assetRepository.deleteAll(user.id);
     await this.userRepository.delete(user, true);
 
     return true;
   }
 
-  private isReadyForDeletion(user: UserEntity): boolean {
+  private isReadyForDeletion(user: UserEntity, deleteDelay: number): boolean {
     if (!user.deletedAt) {
       return false;
     }
 
-    return DateTime.now().minus({ days: 7 }) > DateTime.fromJSDate(user.deletedAt);
+    return DateTime.now().minus({ days: deleteDelay }) > DateTime.fromJSDate(user.deletedAt);
   }
 
   private async findOrFail(id: string, options: UserFindOptions) {

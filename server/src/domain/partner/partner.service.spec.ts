@@ -49,7 +49,7 @@ describe(PartnerService.name, () => {
   let partnerMock: jest.Mocked<IPartnerRepository>;
   let accessMock: jest.Mocked<IAccessRepository>;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     partnerMock = newPartnerRepositoryMock();
     sut = new PartnerService(partnerMock, accessMock);
   });

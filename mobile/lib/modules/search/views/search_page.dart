@@ -78,19 +78,25 @@ class SearchPage extends HookConsumerWidget {
         height: imageSize,
         child: curatedPeople.widgetWhen(
           onError: (error, stack) => const ScaffoldErrorBody(withIcon: false),
-          onData: (people) => CuratedPeopleRow(
-            content: people.take(12).toList(),
-            onTap: (content, index) {
-              context.pushRoute(
-                PersonResultRoute(
-                  personId: content.id,
-                  personName: content.label,
-                ),
-              );
-            },
-            onNameTap: (person, index) => {
-              showNameEditModel(person.id, person.label),
-            },
+          onData: (people) => Padding(
+            padding: const EdgeInsets.only(
+              left: 16,
+              top: 8,
+            ),
+            child: CuratedPeopleRow(
+              content: people.take(12).toList(),
+              onTap: (content, index) {
+                context.pushRoute(
+                  PersonResultRoute(
+                    personId: content.id,
+                    personName: content.label,
+                  ),
+                );
+              },
+              onNameTap: (person, index) => {
+                showNameEditModel(person.id, person.label),
+              },
+            ),
           ),
         ),
       );

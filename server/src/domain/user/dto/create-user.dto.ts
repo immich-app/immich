@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsEmail, IsNotEmpty, IsNumber, IsPositive, IsString } from 'class-validator';
-import { Optional, toEmail, toSanitized } from '../../domain.util';
+import { IsEmail, IsNotEmpty, IsNumber, IsPositive, IsString } from 'class-validator';
+import { Optional, ValidateBoolean, toEmail, toSanitized } from '../../domain.util';
 
 export class CreateUserDto {
   @IsEmail({ require_tld: false })
@@ -21,8 +21,7 @@ export class CreateUserDto {
   @Transform(toSanitized)
   storageLabel?: string | null;
 
-  @Optional()
-  @IsBoolean()
+  @ValidateBoolean({ optional: true })
   memoriesEnabled?: boolean;
 
   @Optional({ nullable: true })
@@ -30,6 +29,9 @@ export class CreateUserDto {
   @IsPositive()
   @ApiProperty({ type: 'integer', format: 'int64' })
   quotaSizeInBytes?: number | null;
+
+  @ValidateBoolean({ optional: true })
+  shouldChangePassword?: boolean;
 }
 
 export class CreateAdminDto {

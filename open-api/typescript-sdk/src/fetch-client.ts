@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.97.0
+ * 1.98.1
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -75,6 +75,7 @@ export type UserResponseDto = {
     quotaSizeInBytes: number | null;
     quotaUsageInBytes: number | null;
     shouldChangePassword: boolean;
+    status: UserStatus;
     storageLabel: string | null;
     updatedAt: string;
 };
@@ -260,9 +261,12 @@ export type AssetJobsDto = {
     name: AssetJobName;
 };
 export type MapMarkerResponseDto = {
+    city: string | null;
+    country: string | null;
     id: string;
     lat: number;
     lon: number;
+    state: string | null;
 };
 export type MemoryLaneResponseDto = {
     assets: AssetResponseDto[];
@@ -515,6 +519,7 @@ export type PartnerResponseDto = {
     quotaSizeInBytes: number | null;
     quotaUsageInBytes: number | null;
     shouldChangePassword: boolean;
+    status: UserStatus;
     storageLabel: string | null;
     updatedAt: string;
 };
@@ -525,6 +530,15 @@ export type PeopleResponseDto = {
     hidden: number;
     people: PersonResponseDto[];
     total: number;
+};
+export type PersonCreateDto = {
+    /** Person date of birth.
+    Note: the mobile app cannot currently set the birth date to null. */
+    birthDate?: string | null;
+    /** Person visibility */
+    isHidden?: boolean;
+    /** Person name. */
+    name?: string;
 };
 export type PeopleUpdateItem = {
     /** Person date of birth.
@@ -702,6 +716,7 @@ export type ServerConfigDto = {
     loginPageMessage: string;
     oauthButtonText: string;
     trashDays: number;
+    userDeleteDelay: number;
 };
 export type ServerFeaturesDto = {
     configFile: boolean;
@@ -915,6 +930,9 @@ export type SystemConfigTrashDto = {
     days: number;
     enabled: boolean;
 };
+export type SystemConfigUserDto = {
+    deleteDelay: number;
+};
 export type SystemConfigDto = {
     ffmpeg: SystemConfigFFmpegDto;
     job: SystemConfigJobDto;
@@ -931,6 +949,7 @@ export type SystemConfigDto = {
     theme: SystemConfigThemeDto;
     thumbnail: SystemConfigThumbnailDto;
     trash: SystemConfigTrashDto;
+    user: SystemConfigUserDto;
 };
 export type SystemConfigTemplateStorageOptionDto = {
     dayOptions: string[];
@@ -955,6 +974,7 @@ export type CreateUserDto = {
     name: string;
     password: string;
     quotaSizeInBytes?: number | null;
+    shouldChangePassword?: boolean;
     storageLabel?: string | null;
 };
 export type UpdateUserDto = {
@@ -975,6 +995,9 @@ export type CreateProfileImageDto = {
 export type CreateProfileImageResponseDto = {
     profileImagePath: string;
     userId: string;
+};
+export type DeleteUserDto = {
+    force?: boolean;
 };
 export function getActivities({ albumId, assetId, level, $type, userId }: {
     albumId: string;
@@ -2042,14 +2065,17 @@ export function getAllPeople({ withHidden }: {
         ...opts
     }));
 }
-export function createPerson(opts?: Oazapfts.RequestOpts) {
+export function createPerson({ personCreateDto }: {
+    personCreateDto: PersonCreateDto;
+}, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 201;
         data: PersonResponseDto;
-    }>("/person", {
+    }>("/person", oazapfts.json({
         ...opts,
-        method: "POST"
-    }));
+        method: "POST",
+        body: personCreateDto
+    })));
 }
 export function updatePeople({ peopleUpdateDto }: {
     peopleUpdateDto: PeopleUpdateDto;
@@ -2657,16 +2683,18 @@ export function getProfileImage({ id }: {
         ...opts
     }));
 }
-export function deleteUser({ id }: {
+export function deleteUser({ id, deleteUserDto }: {
     id: string;
+    deleteUserDto: DeleteUserDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: UserResponseDto;
-    }>(`/user/${encodeURIComponent(id)}`, {
+    }>(`/user/${encodeURIComponent(id)}`, oazapfts.json({
         ...opts,
-        method: "DELETE"
-    }));
+        method: "DELETE",
+        body: deleteUserDto
+    })));
 }
 export function restoreUser({ id }: {
     id: string;
@@ -2702,6 +2730,11 @@ export enum UserAvatarColor {
     Orange = "orange",
     Gray = "gray",
     Amber = "amber"
+}
+export enum UserStatus {
+    Active = "active",
+    Removing = "removing",
+    Deleted = "deleted"
 }
 export enum TagTypeEnum {
     Object = "OBJECT",

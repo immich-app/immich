@@ -196,6 +196,7 @@ describe(ServerInfoService.name, () => {
         loginPageMessage: '',
         oauthButtonText: 'Login with OAuth',
         trashDays: 30,
+        userDeleteDelay: 7,
         isInitialized: undefined,
         isOnboarded: false,
         externalDomain: '',

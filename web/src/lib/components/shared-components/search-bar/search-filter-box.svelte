@@ -11,6 +11,7 @@
 
   export type SearchFilter = {
     context?: string;
+    filename?: string;
     personIds: Set<string>;
     location: SearchLocationFilter;
     camera: SearchCameraFilter;
@@ -32,6 +33,7 @@
   import SearchMediaSection from './search-media-section.svelte';
   import { parseUtcDate } from '$lib/utils/date-time';
   import SearchDisplaySection from './search-display-section.svelte';
+  import SearchTextSection from './search-text-section.svelte';
 
   export let searchQuery: MetadataSearchDto | SmartSearchDto;
 
@@ -41,6 +43,7 @@
 
   let filter: SearchFilter = {
     context: 'query' in searchQuery ? searchQuery.query : '',
+    filename: 'originalFileName' in searchQuery ? searchQuery.originalFileName : undefined,
     personIds: new Set('personIds' in searchQuery ? searchQuery.personIds : []),
     location: {
       country: searchQuery.country,
@@ -91,6 +94,7 @@
 
     let payload: SmartSearchDto | MetadataSearchDto = {
       query: filter.context || undefined,
+      originalFileName: filter.filename,
       country: filter.location.country,
       state: filter.location.state,
       city: filter.location.city,
@@ -124,20 +128,8 @@
       <!-- PEOPLE -->
       <SearchPeopleSection width={filterBoxWidth} bind:selectedPeople={filter.personIds} />
 
-      <!-- CONTEXT -->
-      <div>
-        <label class="immich-form-label" for="context">
-          <span>CONTEXT</span>
-          <input
-            class="immich-form-input hover:cursor-text w-full mt-1"
-            type="text"
-            id="context"
-            name="context"
-            placeholder="Sunrise on the beach"
-            bind:value={filter.context}
-          />
-        </label>
-      </div>
+      <!-- TEXT -->
+      <SearchTextSection bind:filename={filter.filename} bind:context={filter.context} />
 
       <!-- LOCATION -->
       <SearchLocationSection bind:filters={filter.location} />

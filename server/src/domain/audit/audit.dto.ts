@@ -1,14 +1,13 @@
 import { AssetPathType, EntityType, PathType, PersonPathType, UserPathType } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsArray, IsDate, IsEnum, IsString, IsUUID, ValidateNested } from 'class-validator';
-import { Optional, ValidateUUID } from '../domain.util';
+import { IsArray, IsEnum, IsString, IsUUID, ValidateNested } from 'class-validator';
+import { Optional, ValidateDate, ValidateUUID } from '../domain.util';
 
 const PathEnum = Object.values({ ...AssetPathType, ...PersonPathType, ...UserPathType });
 
 export class AuditDeletesDto {
-  @IsDate()
-  @Type(() => Date)
+  @ValidateDate()
   after!: Date;
 
   @ApiProperty({ enum: EntityType, enumName: 'EntityType' })
