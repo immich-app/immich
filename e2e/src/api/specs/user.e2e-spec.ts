@@ -5,7 +5,7 @@ import { app, asBearerAuth, utils } from 'src/utils';
 import request from 'supertest';
 import { beforeAll, describe, expect, it } from 'vitest';
 
-describe('/server-info', () => {
+describe('/user', () => {
   let admin: LoginResponseDto;
   let deletedUser: LoginResponseDto;
   let userToDelete: LoginResponseDto;
@@ -21,7 +21,7 @@ describe('/server-info', () => {
       utils.userSetup(admin.accessToken, createUserDto.user3),
     ]);
 
-    await deleteUser({ id: deletedUser.userId }, { headers: asBearerAuth(admin.accessToken) });
+    await deleteUser({ id: deletedUser.userId, deleteUserDto: {} }, { headers: asBearerAuth(admin.accessToken) });
   });
 
   describe('GET /user', () => {
@@ -187,6 +187,8 @@ describe('/server-info', () => {
         updatedAt: expect.any(String),
         deletedAt: expect.any(String),
       });
+
+      await utils.waitForWebsocketEvent({ event: 'userDelete', id: userToDelete.userId });
     });
   });
 
