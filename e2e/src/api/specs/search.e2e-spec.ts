@@ -325,11 +325,9 @@ describe('/search', () => {
           .post('/search/metadata')
           .send(dto)
           .set('Authorization', `Bearer ${admin.accessToken}`);
-        console.dir({ status, body }, { depth: 10 });
         expect(status).toBe(200);
         expect(body.assets).toBeDefined();
         expect(Array.isArray(body.assets.items)).toBe(true);
-        console.log({ assets: body.assets.items });
         for (const [i, asset] of assets.entries()) {
           expect(body.assets.items[i]).toEqual(expect.objectContaining({ id: asset.id }));
         }
