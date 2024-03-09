@@ -83,6 +83,7 @@
   "backup_controller_page_desc_backup": "Turn on foreground backup to automatically upload new assets to the server when opening the app.",
   "backup_controller_page_excluded": "Exclosos:",
   "backup_controller_page_failed": "Failed ({})",
+  "backup_controller_page_file_progress": "File progress: {} - {}",
   "backup_controller_page_filename": "File name: {} [{}]",
   "backup_controller_page_id": "ID: {}",
   "backup_controller_page_info": "Informació de la còpia",

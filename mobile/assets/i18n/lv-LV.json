@@ -83,6 +83,7 @@
   "backup_controller_page_desc_backup": "Ieslēdziet priekšplāna dublēšanu, lai, atverot programmu, serverī automātiski augšupielādētu jaunus aktīvus.",
   "backup_controller_page_excluded": "Izņemot:",
   "backup_controller_page_failed": "Neizdevās ({})",
+  "backup_controller_page_file_progress": "File progress: {} - {}",
   "backup_controller_page_filename": "Faila nosaukums: {} [{}]",
   "backup_controller_page_id": "ID: {}",
   "backup_controller_page_info": "Dublējuma Informācija",

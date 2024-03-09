@@ -83,6 +83,7 @@
   "backup_controller_page_desc_backup": "Bật sao lưu khi ứng dụng hoạt động để tự động sao lưu ảnh mới lên máy chủ khi mở ứng dụng.",
   "backup_controller_page_excluded": "Đã bỏ qua:",
   "backup_controller_page_failed": "Thất bại ({})",
+  "backup_controller_page_file_progress": "File progress: {} - {}",
   "backup_controller_page_filename": "Tên tệp: {} [{}]",
   "backup_controller_page_id": "ID: {}",
   "backup_controller_page_info": "Thông tin sao lưu",

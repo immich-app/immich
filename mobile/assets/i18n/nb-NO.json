@@ -83,6 +83,7 @@
   "backup_controller_page_desc_backup": "Slå på sikkerhetskopiering i forgrunnen for automatisk å laste opp nye objekter til serveren når du åpner appen.",
   "backup_controller_page_excluded": "Ekskludert:",
   "backup_controller_page_failed": "Feilet ({})",
+  "backup_controller_page_file_progress": "File progress: {} - {}",
   "backup_controller_page_filename": "Filnavn: {} [{}]",
   "backup_controller_page_id": "ID: {}",
   "backup_controller_page_info": "Informasjon om sikkerhetskopi",

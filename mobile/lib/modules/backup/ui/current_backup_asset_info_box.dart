@@ -26,9 +26,27 @@ class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
     var uploadProgress = !isManualUpload
         ? ref.watch(backupProvider).progressInPercentage
         : ref.watch(manualUploadProvider).progressInPercentage;
+    var uploadFileProgress = !isManualUpload
+        ? ref.watch(backupProvider).progressInFileSize
+        : ref.watch(manualUploadProvider).progressInFileSize;
+    var uploadFileSpeed = !isManualUpload
+        ? ref.watch(backupProvider).progressInFileSpeed
+        : ref.watch(manualUploadProvider).progressInFileSpeed;
     var iCloudDownloadProgress =
         ref.watch(backupProvider).iCloudDownloadProgress;
     final isShowThumbnail = useState(false);
+
+    String formatUploadFileSpeed(double uploadFileSpeed) {
+      if (uploadFileSpeed < 1024) {
+        return '${uploadFileSpeed.toStringAsFixed(2)} B/s';
+      } else if (uploadFileSpeed < 1024 * 1024) {
+        return '${(uploadFileSpeed / 1024).toStringAsFixed(2)} KB/s';
+      } else if (uploadFileSpeed < 1024 * 1024 * 1024) {
+        return '${(uploadFileSpeed / (1024 * 1024)).toStringAsFixed(2)} MB/s';
+      } else {
+        return '${(uploadFileSpeed / (1024 * 1024 * 1024)).toStringAsFixed(2)} GB/s';
+      }
+    }
 
     String getAssetCreationDate() {
       return DateFormat.yMMMMd().format(
@@ -68,6 +86,31 @@ class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
           width: 1,
         ),
         children: [
+          TableRow(
+            decoration: const BoxDecoration(
+                // color: Colors.grey[100],
+                ),
+            children: [
+              TableCell(
+                verticalAlignment: TableCellVerticalAlignment.middle,
+                child: Padding(
+                  padding: const EdgeInsets.all(6.0),
+                  child: const Text(
+                    'backup_controller_page_file_progress',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 10.0,
+                    ),
+                  ).tr(
+                    args: [
+                      uploadFileProgress,
+                      formatUploadFileSpeed(uploadFileSpeed)
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
           TableRow(
             decoration: const BoxDecoration(
                 // color: Colors.grey[100],

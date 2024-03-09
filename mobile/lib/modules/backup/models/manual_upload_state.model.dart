@@ -14,9 +14,17 @@ class ManualUploadState {
   final int totalAssetsToUpload;
   final int successfulUploads;
   final double progressInPercentage;
+  final String progressInFileSize;
+  final double progressInFileSpeed;
+  final DateTime progressInFileSpeedUpdateTime;
+  final int progressInFileSpeedUpdateSentBytes;
 
   const ManualUploadState({
     required this.progressInPercentage,
+    required this.progressInFileSize,
+    required this.progressInFileSpeed,
+    required this.progressInFileSpeedUpdateTime,
+    required this.progressInFileSpeedUpdateSentBytes,
     required this.cancelToken,
     required this.currentUploadAsset,
     required this.totalAssetsToUpload,
@@ -27,6 +35,10 @@ class ManualUploadState {
 
   ManualUploadState copyWith({
     double? progressInPercentage,
+    String? progressInFileSize,
+    double? progressInFileSpeed,
+    DateTime? progressInFileSpeedUpdateTime,
+    int? progressInFileSpeedUpdateSentBytes,
     CancellationToken? cancelToken,
     CurrentUploadAsset? currentUploadAsset,
     int? totalAssetsToUpload,
@@ -36,6 +48,12 @@ class ManualUploadState {
   }) {
     return ManualUploadState(
       progressInPercentage: progressInPercentage ?? this.progressInPercentage,
+      progressInFileSize: progressInFileSize ?? this.progressInFileSize,
+      progressInFileSpeed: progressInFileSpeed ?? this.progressInFileSpeed,
+      progressInFileSpeedUpdateTime:
+          progressInFileSpeedUpdateTime ?? this.progressInFileSpeedUpdateTime,
+      progressInFileSpeedUpdateSentBytes: progressInFileSpeedUpdateSentBytes ??
+          this.progressInFileSpeedUpdateSentBytes,
       cancelToken: cancelToken ?? this.cancelToken,
       currentUploadAsset: currentUploadAsset ?? this.currentUploadAsset,
       totalAssetsToUpload: totalAssetsToUpload ?? this.totalAssetsToUpload,
@@ -48,7 +66,7 @@ class ManualUploadState {
 
   @override
   String toString() {
-    return 'ManualUploadState(progressInPercentage: $progressInPercentage, cancelToken: $cancelToken, currentUploadAsset: $currentUploadAsset, totalAssetsToUpload: $totalAssetsToUpload, successfulUploads: $successfulUploads, currentAssetIndex: $currentAssetIndex, showDetailedNotification: $showDetailedNotification)';
+    return 'ManualUploadState(progressInPercentage: $progressInPercentage, progressInFileSize: $progressInFileSize, progressInFileSpeed: $progressInFileSpeed, progressInFileSpeedUpdateTime: $progressInFileSpeedUpdateTime, progressInFileSpeedUpdateSentBytes: $progressInFileSpeedUpdateSentBytes, cancelToken: $cancelToken, currentUploadAsset: $currentUploadAsset, totalAssetsToUpload: $totalAssetsToUpload, successfulUploads: $successfulUploads, currentAssetIndex: $currentAssetIndex, showDetailedNotification: $showDetailedNotification)';
   }
 
   @override
@@ -57,6 +75,11 @@ class ManualUploadState {
 
     return other is ManualUploadState &&
         other.progressInPercentage == progressInPercentage &&
+        other.progressInFileSize == progressInFileSize &&
+        other.progressInFileSpeed == progressInFileSpeed &&
+        other.progressInFileSpeedUpdateTime == progressInFileSpeedUpdateTime &&
+        other.progressInFileSpeedUpdateSentBytes ==
+            progressInFileSpeedUpdateSentBytes &&
         other.cancelToken == cancelToken &&
         other.currentUploadAsset == currentUploadAsset &&
         other.totalAssetsToUpload == totalAssetsToUpload &&
@@ -68,6 +91,10 @@ class ManualUploadState {
   @override
   int get hashCode {
     return progressInPercentage.hashCode ^
+        progressInFileSize.hashCode ^
+        progressInFileSpeed.hashCode ^
+        progressInFileSpeedUpdateTime.hashCode ^
+        progressInFileSpeedUpdateSentBytes.hashCode ^
         cancelToken.hashCode ^
         currentUploadAsset.hashCode ^
         totalAssetsToUpload.hashCode ^

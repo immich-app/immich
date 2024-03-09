@@ -83,6 +83,7 @@
   "backup_controller_page_desc_backup": "Увімкніть резервне копіювання на передньому плані, щоб автоматично завантажувати нові елементи на сервер під час відкриття програми.",
   "backup_controller_page_excluded": "Вилучено:",
   "backup_controller_page_failed": "Невдалі ({})",
+  "backup_controller_page_file_progress": "File progress: {} - {}",
   "backup_controller_page_filename": "Назва файлу: {} [{}]",
   "backup_controller_page_id": "ID: {}",
   "backup_controller_page_info": "Інформація про резервну копію",

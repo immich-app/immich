@@ -83,6 +83,7 @@
   "backup_controller_page_desc_backup": "Uključi pravljenje rezervnih kopija u prvom planu da automatski napravite rezervne kopije kada otvorite aplikaciju.",
   "backup_controller_page_excluded": "Isključeno:",
   "backup_controller_page_failed": "Neuspešno ({})",
+  "backup_controller_page_file_progress": "File progress: {} - {}",
   "backup_controller_page_filename": "Ime fajla:{} [{}]",
   "backup_controller_page_id": "ID:{}",
   "backup_controller_page_info": "Informacije",

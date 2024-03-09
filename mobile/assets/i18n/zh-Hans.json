@@ -83,6 +83,7 @@
   "backup_controller_page_desc_backup": "打开前台备份，以在程序运行时自动备份新项目。",
   "backup_controller_page_excluded": "已排除：",
   "backup_controller_page_failed": "失败（{}）",
+  "backup_controller_page_file_progress": "File progress: {} - {}",
   "backup_controller_page_filename": "文件名称: {} [{}]",
   "backup_controller_page_id": "ID: {}",
   "backup_controller_page_info": "备份信息",

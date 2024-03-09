@@ -83,6 +83,7 @@
   "backup_controller_page_desc_backup": "Ligue o backup para fazer o upload automático de novos itens para o servidor. ",
   "backup_controller_page_excluded": "Excluídos:",
   "backup_controller_page_failed": "Falhou ({})",
+  "backup_controller_page_file_progress": "File progress: {} - {}",
   "backup_controller_page_filename": "Nome do arquivo: {} [{}]",
   "backup_controller_page_id": "ID:{}",
   "backup_controller_page_info": "Informações do backup",

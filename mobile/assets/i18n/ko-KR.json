@@ -83,6 +83,7 @@
   "backup_controller_page_desc_backup": "새 미디어파일을 서버에 자동으로 업로드하려면 백업을 켜주세요.",
   "backup_controller_page_excluded": "제외됨: ",
   "backup_controller_page_failed": "실패함 ({})",
+  "backup_controller_page_file_progress": "File progress: {} - {}",
   "backup_controller_page_filename": "파일 이름: {} [{}]",
   "backup_controller_page_id": "ID: {}",
   "backup_controller_page_info": "정보",

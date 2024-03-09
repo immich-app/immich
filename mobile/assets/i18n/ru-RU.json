@@ -83,6 +83,7 @@
   "backup_controller_page_desc_backup": "Включите резервное копирование в активном режиме, чтобы автоматически загружать новые объекты на сервер при открытии приложения.",
   "backup_controller_page_excluded": "Исключены:",
   "backup_controller_page_failed": "Неудачных ({})",
+  "backup_controller_page_file_progress": "File progress: {} - {}",
   "backup_controller_page_filename": "Имя файла: {} [{}]",
   "backup_controller_page_id": "ID: {}",
   "backup_controller_page_info": "Информация о резервном копировании",

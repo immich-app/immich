@@ -10,6 +10,28 @@ String formatAssetBackupProgress(int uploadedAssets, int assetsToUpload) {
   return "$percent% ($uploadedAssets/$assetsToUpload)";
 }
 
+/// prints progress in useful (kilo/mega/giga)bytes
+String humanReadableFileBytesProgress(int bytes, int bytesTotal) {
+  String unit = "KB"; // Kilobyte
+
+  if (bytesTotal >= 0x40000000) {
+    unit = "GB"; // Gigabyte
+    bytes >>= 20;
+    bytesTotal >>= 20;
+  } else if (bytesTotal >= 0x100000) {
+    unit = "MB"; // Megabyte
+    bytes >>= 10;
+    bytesTotal >>= 10;
+  } else if (bytesTotal < 0x400) {
+    return "$bytes B / $bytesTotal B";
+  }
+
+  final String done = numberFormat.format(bytes / 1024.0);
+  final String total = numberFormat.format(bytesTotal / 1024.0);
+
+  return "$done $unit / $total $unit";
+}
+
 /// prints percentage and absolute progress in useful (kilo/mega/giga)bytes
 String humanReadableBytesProgress(int bytes, int bytesTotal) {
   String unit = "KB"; // Kilobyte

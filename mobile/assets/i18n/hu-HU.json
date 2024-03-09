@@ -83,6 +83,7 @@
   "backup_controller_page_desc_backup": "Ha engedélyezed az előtérben mentést, akkor az új elemek automatikusan feltöltődnek a szerverre, amikor megyitod az alkalmazást.",
   "backup_controller_page_excluded": "Kivéve:",
   "backup_controller_page_failed": "Sikertelen ({})",
+  "backup_controller_page_file_progress": "File progress: {} - {}",
   "backup_controller_page_filename": "Fájlnév: {}[{}]",
   "backup_controller_page_id": "Azonosító: {}",
   "backup_controller_page_info": "Mentésinformációk",

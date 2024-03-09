@@ -47,6 +47,10 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
   ) : super(
           ManualUploadState(
             progressInPercentage: 0,
+            progressInFileSize: "0 B / 0 B",
+            progressInFileSpeed: 0,
+            progressInFileSpeedUpdateTime: DateTime.now(),
+            progressInFileSpeedUpdateSentBytes: 0,
             cancelToken: CancellationToken(),
             currentUploadAsset: CurrentUploadAsset(
               id: '...',
@@ -123,9 +127,28 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
   }
 
   void _onProgress(int sent, int total) {
+    final now = DateTime.now();
+
+    // Calculate time difference since last progress update
+    final duration = now.difference(state.progressInFileSpeedUpdateTime);
+
+    // Calculate upload speed (bytes per second)
+    double uploadSpeed = duration.inSeconds > 0
+        ? ((sent - state.progressInFileSpeedUpdateSentBytes) /
+            duration.inSeconds)
+        : state.progressInFileSpeed;
+
     state = state.copyWith(
       progressInPercentage: (sent.toDouble() / total.toDouble() * 100),
+      progressInFileSize: humanReadableFileBytesProgress(sent, total),
+      progressInFileSpeed: uploadSpeed,
+      progressInFileSpeedUpdateTime:
+          duration.inSeconds > 0 ? now : state.progressInFileSpeedUpdateTime,
+      progressInFileSpeedUpdateSentBytes: duration.inSeconds > 0
+          ? sent
+          : state.progressInFileSpeedUpdateSentBytes,
     );
+
     if (state.showDetailedNotification) {
       final title = "backup_background_service_current_upload_notification"
           .tr(args: [state.currentUploadAsset.fileName]);
@@ -184,6 +207,8 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
 
         state = state.copyWith(
           progressInPercentage: 0,
+          progressInFileSize: "0 B / 0 B",
+          progressInFileSpeed: 0,
           totalAssetsToUpload: allUploadAssets.length,
           successfulUploads: 0,
           currentAssetIndex: 0,
@@ -291,7 +316,10 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
     if (_backupProvider.backupProgress != BackUpProgressEnum.manualInProgress) {
       _backupProvider.updateBackupProgress(BackUpProgressEnum.idle);
     }
-    state = state.copyWith(progressInPercentage: 0);
+    state = state.copyWith(
+        progressInPercentage: 0,
+        progressInFileSize: "0 B / 0 B",
+        progressInFileSpeed: 0);
   }
 
   Future<bool> uploadAssets(

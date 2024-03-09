@@ -83,6 +83,7 @@
   "backup_controller_page_desc_backup": "Activa la copia de seguridad en primer plano para cargar automáticamente nuevos recursos al servidor al abrir la aplicación.",
   "backup_controller_page_excluded": "Excluido:",
   "backup_controller_page_failed": "Fallidos ({})",
+  "backup_controller_page_file_progress": "File progress: {} - {}",
   "backup_controller_page_filename": "Nombre del archivo: {} [{}]",
   "backup_controller_page_id": "ID: {}",
   "backup_controller_page_info": "Información del respaldo",

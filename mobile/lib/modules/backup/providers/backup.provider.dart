@@ -20,6 +20,7 @@ import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/providers/app_state.provider.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/services/server_info.service.dart';
+import 'package:immich_mobile/utils/backup_progress.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
@@ -40,6 +41,10 @@ class BackupNotifier extends StateNotifier<BackUpState> {
             backupProgress: BackUpProgressEnum.idle,
             allAssetsInDatabase: const [],
             progressInPercentage: 0,
+            progressInFileSize: "0 B / 0 B",
+            progressInFileSpeed: 0,
+            progressInFileSpeedUpdateTime: DateTime.now(),
+            progressInFileSpeedUpdateSentBytes: 0,
             cancelToken: CancellationToken(),
             autoBackup: Store.get(StoreKey.autoBackup, false),
             backgroundBackup: Store.get(StoreKey.backgroundBackup, false),
@@ -63,6 +68,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
               fileCreatedAt: DateTime.parse('2020-10-04'),
               fileName: '...',
               fileType: '...',
+              fileSize: 0,
               iCloudAsset: false,
             ),
             iCloudDownloadProgress: 0.0,
@@ -495,6 +501,8 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     state = state.copyWith(
       backupProgress: BackUpProgressEnum.idle,
       progressInPercentage: 0.0,
+      progressInFileSize: "0 B / 0 B",
+      progressInFileSpeed: 0,
     );
   }
 
@@ -535,6 +543,8 @@ class BackupNotifier extends StateNotifier<BackUpState> {
             .toSet(),
         backupProgress: BackUpProgressEnum.done,
         progressInPercentage: 0.0,
+        progressInFileSize: "0 B / 0 B",
+        progressInFileSpeed: 0,
       );
       _updatePersistentAlbumsSelection();
     }
@@ -543,8 +553,26 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   }
 
   void _onUploadProgress(int sent, int total) {
+    final now = DateTime.now();
+
+    // Calculate time difference since last progress update
+    final duration = now.difference(state.progressInFileSpeedUpdateTime);
+
+    // Calculate upload speed (bytes per second)
+    double uploadSpeed = duration.inSeconds > 0
+        ? ((sent - state.progressInFileSpeedUpdateSentBytes) /
+            duration.inSeconds)
+        : state.progressInFileSpeed;
+
     state = state.copyWith(
       progressInPercentage: (sent.toDouble() / total.toDouble() * 100),
+      progressInFileSize: humanReadableFileBytesProgress(sent, total),
+      progressInFileSpeed: uploadSpeed,
+      progressInFileSpeedUpdateTime:
+          duration.inSeconds > 0 ? now : state.progressInFileSpeedUpdateTime,
+      progressInFileSpeedUpdateSentBytes: duration.inSeconds > 0
+          ? sent
+          : state.progressInFileSpeedUpdateSentBytes,
     );
   }
 
