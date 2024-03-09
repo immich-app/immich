@@ -2358,6 +2358,7 @@
             "required": false,
             "in": "query",
             "schema": {
+              "format": "uuid",
               "type": "array",
               "items": {
                 "type": "string"
@@ -4630,7 +4631,7 @@
           "required": true
         },
         "responses": {
-          "201": {
+          "200": {
             "content": {
               "application/json": {
                 "schema": {
@@ -4768,7 +4769,7 @@
           "required": true
         },
         "responses": {
-          "201": {
+          "200": {
             "content": {
               "application/json": {
                 "schema": {
@@ -8481,6 +8482,7 @@
           },
           "personIds": {
             "items": {
+              "format": "uuid",
               "type": "string"
             },
             "type": "array"
@@ -9611,6 +9613,7 @@
           },
           "personIds": {
             "items": {
+              "format": "uuid",
               "type": "string"
             },
             "type": "array"
