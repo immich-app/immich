@@ -2,6 +2,7 @@ import {
   AssetBuilderOptions,
   AssetCreate,
   AssetExploreFieldOptions,
+  AssetPathEntity,
   AssetSearchOptions,
   AssetStats,
   AssetStatsOptions,
@@ -184,7 +185,7 @@ export class AssetRepository implements IAssetRepository {
   }
 
   @GenerateSql({ params: [[DummyValue.UUID]] })
-  getLibraryAssetPaths(pagination: PaginationOptions, libraryId: string): Paginated<AssetEntity> {
+  getLibraryAssetPaths(pagination: PaginationOptions, libraryId: string): Paginated<AssetPathEntity> {
     return paginate(this.repository, pagination, {
       select: { id: true, originalPath: true, isOffline: true },
       where: { library: { id: libraryId } },
