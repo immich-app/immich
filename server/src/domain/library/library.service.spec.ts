@@ -1,4 +1,4 @@
-import { AssetEntity, AssetType, LibraryType, SystemConfig, SystemConfigKey, UserEntity } from '@app/infra/entities';
+import { AssetType, LibraryType, SystemConfig, SystemConfigKey, UserEntity } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
 import {
   IAccessRepositoryMock,
@@ -18,7 +18,6 @@ import {
   userStub,
 } from '@test';
 import { when } from 'jest-when';
-import { not } from 'joi';
 import { Stats } from 'node:fs';
 import { ILibraryFileJob, ILibraryRefreshJob, JobName } from '../job';
 import {
