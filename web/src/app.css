@@ -23,6 +23,7 @@
     --immich-dark-warning: 245 124 0;
   }
 }
+
 @font-face {
   font-family: 'Overpass';
   src: url('$lib/assets/fonts/overpass/Overpass.ttf') format('truetype-variations');
@@ -135,5 +136,13 @@ input:focus-visible {
 
   .scrollbar-stable {
     scrollbar-gutter: stable both-edges;
+  }
+
+  [data-color-scheme="dark"] {
+    color-scheme: dark;
+  }
+
+  [data-color-scheme="light"] {
+    color-scheme: light;
   }
 }

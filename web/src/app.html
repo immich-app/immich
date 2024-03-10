@@ -42,6 +42,11 @@
         theme = fallbackTheme;
       }
 
+      document.documentElement.setAttribute(
+        "data-color-scheme",
+        theme.value
+      );
+
       if (theme.value === 'light') {
         document.documentElement.classList.remove('dark');
       } else {
