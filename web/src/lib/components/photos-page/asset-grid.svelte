@@ -32,7 +32,6 @@
   export let isShared = false;
   export let album: AlbumResponseDto | null = null;
   export let isShowDeleteConfirmation = false;
-  export let ascendingOrder = false;
 
   $: isTrashEnabled = $featureFlags.loaded && $featureFlags.trash;
 
@@ -55,8 +54,7 @@
     showSkeleton = false;
     document.addEventListener('keydown', onKeydown);
     assetStore.connect();
-    console.log(ascendingOrder);
-    await assetStore.init(viewport, ascendingOrder);
+    await assetStore.init(viewport);
   });
 
   onDestroy(() => {

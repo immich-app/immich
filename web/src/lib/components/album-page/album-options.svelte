@@ -29,7 +29,7 @@
   }>();
 
   const handleToggle = async (returnedOption: RenderedOption) => {
-    if (selectedOption == returnedOption) {
+    if (selectedOption === returnedOption) {
       return;
     }
     const ascendingOrder = options[0] == returnedOption;
@@ -38,7 +38,7 @@
       await updateAlbumInfo({
         id: album.id,
         updateAlbumDto: {
-          ascendingOrder: ascendingOrder,
+          ascendingOrder,
         },
       });
       album.ascendingOrder = ascendingOrder;

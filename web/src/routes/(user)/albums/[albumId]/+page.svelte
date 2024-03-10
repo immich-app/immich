@@ -114,7 +114,7 @@
   let assetGridWidth: number;
   let textArea: HTMLTextAreaElement;
 
-  $: assetStore = new AssetStore({ albumId });
+  $: assetStore = new AssetStore({ albumId, ascendingOrder: album.ascendingOrder });
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
@@ -523,7 +523,6 @@
         {:else}
           <AssetGrid
             {album}
-            ascendingOrder={album.ascendingOrder}
             {assetStore}
             {assetInteractionStore}
             isShared={album.sharedUsers.length > 0}
