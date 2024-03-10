@@ -43,11 +43,11 @@
     <DeviceList bind:devices />
   </SettingAccordion>
 
-  <SettingAccordion key="behavior" title="Behavior" subtitle="Manage application behavior settings">
+  <SettingAccordion key="behavior" title="Behavior" subtitle="Manage the app behavior">
     <BehaviorSettings />
   </SettingAccordion>
 
-  <SettingAccordion key="memories" title="Memories" subtitle="Manage what you see in your memories.">
+  <SettingAccordion key="memories" title="Memories" subtitle="Manage what you see in your memories">
     <MemoriesSettings user={$user} />
   </SettingAccordion>
 
