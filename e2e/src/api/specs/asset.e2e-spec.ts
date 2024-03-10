@@ -96,7 +96,7 @@ describe('/asset', () => {
       },
     });
 
-    await utils.waitForWebsocketEvent({ event: 'upload', assetId: locationAsset.id });
+    await utils.waitForWebsocketEvent({ event: 'assetUpload', id: locationAsset.id });
 
     user1Assets = await Promise.all([
       utils.createAsset(user1.accessToken),
@@ -693,7 +693,7 @@ describe('/asset', () => {
 
         expect(duplicate).toBe(false);
 
-        await utils.waitForWebsocketEvent({ event: 'upload', assetId: id });
+        await utils.waitForWebsocketEvent({ event: 'assetUpload', id: id });
 
         const asset = await utils.getAssetInfo(admin.accessToken, id);
 
@@ -795,7 +795,7 @@ describe('/asset', () => {
           },
         });
 
-        await utils.waitForWebsocketEvent({ event: 'upload', assetId: response.id });
+        await utils.waitForWebsocketEvent({ event: 'assetUpload', id: response.id });
 
         expect(response.duplicate).toBe(false);
 
@@ -822,8 +822,8 @@ describe('/asset', () => {
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
       await utils.waitForWebsocketEvent({
-        event: 'upload',
-        assetId: locationAsset.id,
+        event: 'assetUpload',
+        id: locationAsset.id,
       });
 
       expect(status).toBe(200);

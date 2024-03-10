@@ -86,7 +86,7 @@ describe('/shared-link', () => {
         }),
       ]);
 
-    await deleteUser({ id: user2.userId }, { headers: asBearerAuth(admin.accessToken) });
+    await deleteUser({ id: user2.userId, deleteUserDto: {} }, { headers: asBearerAuth(admin.accessToken) });
   });
 
   describe('GET /shared-link', () => {
