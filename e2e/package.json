@@ -12,7 +12,8 @@
     "format": "prettier --check .",
     "format:fix": "prettier --write .",
     "lint": "eslint \"src/**/*.ts\" --max-warnings 0",
-    "lint:fix": "npm run lint -- --fix"
+    "lint:fix": "npm run lint -- --fix",
+    "check": "tsc --noEmit"
   },
   "keywords": [],
   "author": "",

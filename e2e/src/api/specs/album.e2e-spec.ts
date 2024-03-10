@@ -92,7 +92,7 @@ describe('/album', () => {
       }),
     ]);
 
-    await deleteUser({ id: user3.userId }, { headers: asBearerAuth(admin.accessToken) });
+    await deleteUser({ id: user3.userId, deleteUserDto: {} }, { headers: asBearerAuth(admin.accessToken) });
   });
 
   describe('GET /album', () => {

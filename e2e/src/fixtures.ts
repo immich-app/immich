@@ -24,7 +24,7 @@ export const createUserDto = {
   create(key: string) {
     return {
       email: `${key}@immich.cloud`,
-      name: `User ${key}`,
+      name: `Generated User ${key}`,
       password: `password-${key}`,
     };
   },
@@ -41,6 +41,11 @@ export const createUserDto = {
   user3: {
     email: 'user3@immich.cloud',
     name: 'User 3',
+    password: 'password123',
+  },
+  user4: {
+    email: 'user4@immich.cloud',
+    name: 'User 4',
     password: 'password123',
   },
   userQuota: {
