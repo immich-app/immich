@@ -7,6 +7,7 @@
   import { type ApiKeyResponseDto, type AuthDeviceResponseDto } from '@immich/sdk';
   import SettingAccordion from '../shared-components/settings/setting-accordion.svelte';
   import AppearanceSettings from './appearance-settings.svelte';
+  import BehaviorSettings from './behavior-settings.svelte';
   import ChangePasswordSettings from './change-password-settings.svelte';
   import DeviceList from './device-list.svelte';
   import MemoriesSettings from './memories-settings.svelte';
@@ -40,6 +41,10 @@
 
   <SettingAccordion key="authorized-devices" title="Authorized Devices" subtitle="Manage your logged-in devices">
     <DeviceList bind:devices />
+  </SettingAccordion>
+
+  <SettingAccordion key="behavior" title="Behavior" subtitle="Manage application behavior settings">
+    <BehaviorSettings />
   </SettingAccordion>
 
   <SettingAccordion key="memories" title="Memories" subtitle="Manage what you see in your memories.">
