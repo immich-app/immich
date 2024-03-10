@@ -127,7 +127,7 @@
 
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div
-      class="mt-5 flex flex-col"
+      class="flex flex-col"
       on:mouseenter={() => {
         isMouseOverGroup = true;
         assetMouseEventHandler(groupTitle, null);
@@ -138,9 +138,9 @@
       }}
     >
       <!-- Date group title -->
-      <p
-        class="mb-2 flex h-6 place-items-center text-xs font-medium text-immich-fg dark:text-immich-dark-fg md:text-sm"
-        style="width: {geometry[groupIndex].containerWidth}px"
+      <div
+        class="pt-7 pb-5 h-6 flex place-items-center text-xs font-medium text-immich-fg bg-immich-bg dark:bg-immich-dark-bg dark:text-immich-dark-fg md:text-sm"
+        style="z-index:99; position:sticky; top:0px; width: {geometry[groupIndex].containerWidth}px"
       >
         {#if !singleSelect && ((hoveredDateGroup == groupTitle && isMouseOverGroup) || $selectedGroup.has(groupTitle))}
           <div
@@ -160,7 +160,7 @@
         <span class="truncate first-letter:capitalize" title={groupTitle}>
           {groupTitle}
         </span>
-      </p>
+      </div>
 
       <!-- Image grid -->
       <div
