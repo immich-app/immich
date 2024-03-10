@@ -53,7 +53,7 @@
   color-scheme: dark;
 }
 
-.root:not(.dark) {
+:root:not(.dark) {
   color-scheme: light;
 }
 
