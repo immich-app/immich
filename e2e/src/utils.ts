@@ -5,7 +5,7 @@ import {
   CreateAssetDto,
   CreateLibraryDto,
   CreateUserDto,
-  PersonUpdateDto,
+  PersonCreateDto,
   SharedLinkCreateDto,
   ValidateLibraryDto,
   createAlbum,
@@ -20,7 +20,6 @@ import {
   login,
   setAdminOnboarding,
   signUpAdmin,
-  updatePerson,
   validate,
 } from '@immich/sdk';
 import { BrowserContext } from '@playwright/test';
@@ -174,6 +173,7 @@ export const utils = {
   },
 
   waitForWebsocketEvent: async ({ event, assetId, timeout: ms }: WaitOptions): Promise<void> => {
+    console.log(`Waiting for ${event} [${assetId}]`);
     const set = events[event];
     if (set.has(assetId)) {
       return;
@@ -233,6 +233,10 @@ export const utils = {
     const assetData = dto?.assetData?.bytes || makeRandomImage();
     const filename = dto?.assetData?.filename || 'example.png';
 
+    if (dto?.assetData?.bytes) {
+      console.log(`Uploading ${filename}`);
+    }
+
     const builder = request(app)
       .post(`/asset/upload`)
       .attach('assetData', assetData, filename)
@@ -252,16 +256,11 @@ export const utils = {
   deleteAssets: (accessToken: string, ids: string[]) =>
     deleteAssets({ assetBulkDeleteDto: { ids } }, { headers: asBearerAuth(accessToken) }),
 
-  createPerson: async (accessToken: string, dto?: PersonUpdateDto) => {
-    // TODO fix createPerson to accept a body
-    const person = await createPerson({ headers: asBearerAuth(accessToken) });
+  createPerson: async (accessToken: string, dto?: PersonCreateDto) => {
+    const person = await createPerson({ personCreateDto: dto || {} }, { headers: asBearerAuth(accessToken) });
     await utils.setPersonThumbnail(person.id);
 
-    if (!dto) {
-      return person;
-    }
-
-    return updatePerson({ id: person.id, personUpdateDto: dto }, { headers: asBearerAuth(accessToken) });
+    return person;
   },
 
   createFace: async ({ assetId, personId }: { assetId: string; personId: string }) => {

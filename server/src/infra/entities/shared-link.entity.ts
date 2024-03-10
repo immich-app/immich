@@ -27,7 +27,7 @@ export class SharedLinkEntity {
   @Column()
   userId!: string;
 
-  @ManyToOne(() => UserEntity)
+  @ManyToOne(() => UserEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   user!: UserEntity;
 
   @Index('IDX_sharedlink_key')

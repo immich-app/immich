@@ -4,6 +4,7 @@ export const ICommunicationRepository = 'ICommunicationRepository';
 
 export enum ClientEvent {
   UPLOAD_SUCCESS = 'on_upload_success',
+  USER_DELETE = 'on_user_delete',
   ASSET_DELETE = 'on_asset_delete',
   ASSET_TRASH = 'on_asset_trash',
   ASSET_UPDATE = 'on_asset_update',
@@ -22,6 +23,7 @@ export enum ServerEvent {
 
 export interface ClientEventMap {
   [ClientEvent.UPLOAD_SUCCESS]: AssetResponseDto;
+  [ClientEvent.USER_DELETE]: string;
   [ClientEvent.ASSET_DELETE]: string;
   [ClientEvent.ASSET_TRASH]: string[];
   [ClientEvent.ASSET_UPDATE]: AssetResponseDto;
