@@ -37,8 +37,6 @@
         window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? Theme.DARK : Theme.LIGHT;
     }
 
-    document.documentElement.setAttribute('data-color-scheme', theme.value);
-
     if (theme.value === Theme.LIGHT) {
       document.documentElement.classList.remove('dark');
     } else {

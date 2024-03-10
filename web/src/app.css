@@ -49,6 +49,14 @@
   --navbar-height: calc(theme(spacing.18) + 4px);
 }
 
+:root.dark {
+  color-scheme: dark;
+}
+
+.root:not(.dark) {
+  color-scheme: light;
+}
+
 html {
   height: 100%;
   width: 100%;
@@ -136,13 +144,5 @@ input:focus-visible {
 
   .scrollbar-stable {
     scrollbar-gutter: stable both-edges;
-  }
-
-  [data-color-scheme="dark"] {
-    color-scheme: dark;
-  }
-
-  [data-color-scheme="light"] {
-    color-scheme: light;
   }
 }
