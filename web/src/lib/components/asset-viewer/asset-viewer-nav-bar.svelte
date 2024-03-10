@@ -186,7 +186,7 @@
                 on:click={() => dispatch('toggleArchive')}
                 text={asset.isArchived ? 'Unarchive' : 'Archive'}
               />
-              {#if asset.type !== AssetTypeEnum.Video}
+              {#if asset.type === AssetTypeEnum.Image}
                 <MenuOption on:click={() => onMenuClick('asProfileImage')} text="As profile picture" />
               {/if}
 
