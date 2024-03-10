@@ -153,7 +153,7 @@ export class AssetStore {
     this.emit(true);
   }, 10_000);
 
-  async init(viewport: Viewport) {
+  async init(viewport: Viewport, ascendingOrder?: boolean) {
     this.initialized = false;
     this.timelineHeight = 0;
     this.buckets = [];
@@ -161,7 +161,7 @@ export class AssetStore {
     this.assetToBucket = {};
     this.albumAssets = new Set();
 
-    const buckets = await getTimeBuckets({ ...this.options, key: getKey() });
+    const buckets = await getTimeBuckets({ ...this.options, key: getKey(), ascendingOrder });
 
     this.initialized = true;
 

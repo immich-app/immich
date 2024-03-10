@@ -26,6 +26,11 @@ void main() {
       // TODO
     });
 
+    // bool ascendingOrder
+    test('to test the property `ascendingOrder`', () async {
+      // TODO
+    });
+
     // int assetCount
     test('to test the property `assetCount`', () async {
       // TODO

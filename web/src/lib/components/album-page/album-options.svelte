@@ -1,22 +1,51 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
-  import type { AlbumResponseDto, UserResponseDto } from '@immich/sdk';
-  import { mdiClose, mdiPlus } from '@mdi/js';
+  import { updateAlbumInfo, type AlbumResponseDto, type UserResponseDto } from '@immich/sdk';
+  import { mdiArrowDownThin, mdiArrowUpThin, mdiClose, mdiPlus } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
 
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
+  import SettingDropdown from '../shared-components/settings/setting-dropdown.svelte';
+  import type { RenderedOption } from '../elements/dropdown.svelte';
+  import { handleError } from '$lib/utils/handle-error';
 
   export let album: AlbumResponseDto;
   export let user: UserResponseDto;
+
+  const options = [
+    { icon: mdiArrowUpThin, title: 'Ascending' },
+    { icon: mdiArrowDownThin, title: 'Descending' },
+  ];
+
+  $: selectedOption = album.ascendingOrder ? options[0] : options[1];
 
   const dispatch = createEventDispatcher<{
     close: void;
     toggleEnableActivity: void;
     showSelectSharedUser: void;
   }>();
+
+  const handleToggle = async (returnedOption: RenderedOption) => {
+    if (selectedOption == returnedOption) {
+      return;
+    }
+    const ascendingOrder = options[0] == returnedOption;
+
+    try {
+      await updateAlbumInfo({
+        id: album.id,
+        updateAlbumDto: {
+          ascendingOrder: ascendingOrder,
+        },
+      });
+      album.ascendingOrder = ascendingOrder;
+    } catch (error) {
+      handleError(error, 'Error updating album order');
+    }
+  };
 </script>
 
 <FullScreenModal onClose={() => dispatch('close')}>
@@ -34,8 +63,14 @@
 
         <div class=" items-center justify-center p-4">
           <div class="py-2">
-            <h2 class="text-gray text-sm mb-3">SHARING</h2>
-            <div class="p-2">
+            <h2 class="text-gray text-sm mb-2">SETTINGS</h2>
+            <div class="grid p-2 gap-y-2">
+              <SettingDropdown
+                title="Direction"
+                {options}
+                {selectedOption}
+                onToggle={(option) => handleToggle(option)}
+              />
               <SettingSwitch
                 title="Comments & likes"
                 subtitle="Let others respond"

@@ -59,4 +59,7 @@ export class AlbumEntity {
 
   @Column({ default: true })
   isActivityEnabled!: boolean;
+
+  @Column({ default: false })
+  ascendingOrder!: boolean;
 }

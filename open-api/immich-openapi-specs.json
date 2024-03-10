@@ -1734,6 +1734,14 @@
             }
           },
           {
+            "name": "ascendingOrder",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "isArchived",
             "required": false,
             "in": "query",
@@ -1867,6 +1875,14 @@
             "schema": {
               "format": "uuid",
               "type": "string"
+            }
+          },
+          {
+            "name": "ascendingOrder",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
             }
           },
           {
@@ -6689,6 +6705,9 @@
             "nullable": true,
             "type": "string"
           },
+          "ascendingOrder": {
+            "type": "boolean"
+          },
           "assetCount": {
             "type": "integer"
           },
@@ -6749,6 +6768,7 @@
         "required": [
           "albumName",
           "albumThumbnailAssetId",
+          "ascendingOrder",
           "assetCount",
           "assets",
           "createdAt",
@@ -10329,6 +10349,9 @@
           "albumThumbnailAssetId": {
             "format": "uuid",
             "type": "string"
+          },
+          "ascendingOrder": {
+            "type": "boolean"
           },
           "description": {
             "type": "string"

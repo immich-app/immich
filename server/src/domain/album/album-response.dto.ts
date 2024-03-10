@@ -23,6 +23,7 @@ export class AlbumResponseDto {
   startDate?: Date;
   endDate?: Date;
   isActivityEnabled!: boolean;
+  ascendingOrder!: boolean;
 }
 
 export const mapAlbum = (entity: AlbumEntity, withAssets: boolean, auth?: AuthDto): AlbumResponseDto => {
@@ -63,6 +64,7 @@ export const mapAlbum = (entity: AlbumEntity, withAssets: boolean, auth?: AuthDt
     assets: (withAssets ? assets : []).map((asset) => mapAsset(asset, { auth })),
     assetCount: entity.assets?.length || 0,
     isActivityEnabled: entity.isActivityEnabled,
+    ascendingOrder: entity.ascendingOrder,
   };
 };
 

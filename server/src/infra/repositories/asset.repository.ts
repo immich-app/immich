@@ -594,12 +594,17 @@ export class AssetRepository implements IAssetRepository {
   @GenerateSql({ params: [{ size: TimeBucketSize.MONTH }] })
   getTimeBuckets(options: TimeBucketOptions): Promise<TimeBucketItem[]> {
     const truncated = dateTrunc(options);
-    return this.getBuilder(options)
+    const timeBuckets = this.getBuilder(options)
       .select(`COUNT(asset.id)::int`, 'count')
       .addSelect(truncated, 'timeBucket')
-      .groupBy(truncated)
-      .orderBy(truncated, 'DESC')
-      .getRawMany();
+      .groupBy(truncated);
+
+    if (options.ascendingOrder) {
+      timeBuckets.orderBy(truncated, 'ASC');
+    } else {
+      timeBuckets.orderBy(truncated, 'DESC');
+    }
+    return timeBuckets.getRawMany();
   }
 
   @GenerateSql({ params: [DummyValue.TIME_BUCKET, { size: TimeBucketSize.MONTH }] })

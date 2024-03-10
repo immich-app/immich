@@ -834,7 +834,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getTimeBucket**
-> List<AssetResponseDto> getTimeBucket(size, timeBucket, albumId, isArchived, isFavorite, isTrashed, key, personId, userId, withPartners, withStacked)
+> List<AssetResponseDto> getTimeBucket(size, timeBucket, albumId, ascendingOrder, isArchived, isFavorite, isTrashed, key, personId, userId, withPartners, withStacked)
 
 
 
@@ -860,6 +860,7 @@ final api_instance = AssetApi();
 final size = ; // TimeBucketSize | 
 final timeBucket = timeBucket_example; // String | 
 final albumId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final ascendingOrder = true; // bool | 
 final isArchived = true; // bool | 
 final isFavorite = true; // bool | 
 final isTrashed = true; // bool | 
@@ -870,7 +871,7 @@ final withPartners = true; // bool |
 final withStacked = true; // bool | 
 
 try {
-    final result = api_instance.getTimeBucket(size, timeBucket, albumId, isArchived, isFavorite, isTrashed, key, personId, userId, withPartners, withStacked);
+    final result = api_instance.getTimeBucket(size, timeBucket, albumId, ascendingOrder, isArchived, isFavorite, isTrashed, key, personId, userId, withPartners, withStacked);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->getTimeBucket: $e\n');
@@ -884,6 +885,7 @@ Name | Type | Description  | Notes
  **size** | [**TimeBucketSize**](.md)|  | 
  **timeBucket** | **String**|  | 
  **albumId** | **String**|  | [optional] 
+ **ascendingOrder** | **bool**|  | [optional] 
  **isArchived** | **bool**|  | [optional] 
  **isFavorite** | **bool**|  | [optional] 
  **isTrashed** | **bool**|  | [optional] 
@@ -909,7 +911,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getTimeBuckets**
-> List<TimeBucketResponseDto> getTimeBuckets(size, albumId, isArchived, isFavorite, isTrashed, key, personId, userId, withPartners, withStacked)
+> List<TimeBucketResponseDto> getTimeBuckets(size, albumId, ascendingOrder, isArchived, isFavorite, isTrashed, key, personId, userId, withPartners, withStacked)
 
 
 
@@ -934,6 +936,7 @@ import 'package:openapi/api.dart';
 final api_instance = AssetApi();
 final size = ; // TimeBucketSize | 
 final albumId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final ascendingOrder = true; // bool | 
 final isArchived = true; // bool | 
 final isFavorite = true; // bool | 
 final isTrashed = true; // bool | 
@@ -944,7 +947,7 @@ final withPartners = true; // bool |
 final withStacked = true; // bool | 
 
 try {
-    final result = api_instance.getTimeBuckets(size, albumId, isArchived, isFavorite, isTrashed, key, personId, userId, withPartners, withStacked);
+    final result = api_instance.getTimeBuckets(size, albumId, ascendingOrder, isArchived, isFavorite, isTrashed, key, personId, userId, withPartners, withStacked);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->getTimeBuckets: $e\n');
@@ -957,6 +960,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **size** | [**TimeBucketSize**](.md)|  | 
  **albumId** | **String**|  | [optional] 
+ **ascendingOrder** | **bool**|  | [optional] 
  **isArchived** | **bool**|  | [optional] 
  **isFavorite** | **bool**|  | [optional] 
  **isTrashed** | **bool**|  | [optional] 

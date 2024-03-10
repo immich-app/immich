@@ -10,6 +10,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **albumName** | **String** |  | [optional] 
 **albumThumbnailAssetId** | **String** |  | [optional] 
+**ascendingOrder** | **bool** |  | [optional] 
 **description** | **String** |  | [optional] 
 **isActivityEnabled** | **bool** |  | [optional] 
 

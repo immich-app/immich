@@ -15,6 +15,7 @@ class UpdateAlbumDto {
   UpdateAlbumDto({
     this.albumName,
     this.albumThumbnailAssetId,
+    this.ascendingOrder,
     this.description,
     this.isActivityEnabled,
   });
@@ -41,6 +42,14 @@ class UpdateAlbumDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
+  bool? ascendingOrder;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
   String? description;
 
   ///
@@ -55,6 +64,7 @@ class UpdateAlbumDto {
   bool operator ==(Object other) => identical(this, other) || other is UpdateAlbumDto &&
     other.albumName == albumName &&
     other.albumThumbnailAssetId == albumThumbnailAssetId &&
+    other.ascendingOrder == ascendingOrder &&
     other.description == description &&
     other.isActivityEnabled == isActivityEnabled;
 
@@ -63,11 +73,12 @@ class UpdateAlbumDto {
     // ignore: unnecessary_parenthesis
     (albumName == null ? 0 : albumName!.hashCode) +
     (albumThumbnailAssetId == null ? 0 : albumThumbnailAssetId!.hashCode) +
+    (ascendingOrder == null ? 0 : ascendingOrder!.hashCode) +
     (description == null ? 0 : description!.hashCode) +
     (isActivityEnabled == null ? 0 : isActivityEnabled!.hashCode);
 
   @override
-  String toString() => 'UpdateAlbumDto[albumName=$albumName, albumThumbnailAssetId=$albumThumbnailAssetId, description=$description, isActivityEnabled=$isActivityEnabled]';
+  String toString() => 'UpdateAlbumDto[albumName=$albumName, albumThumbnailAssetId=$albumThumbnailAssetId, ascendingOrder=$ascendingOrder, description=$description, isActivityEnabled=$isActivityEnabled]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -80,6 +91,11 @@ class UpdateAlbumDto {
       json[r'albumThumbnailAssetId'] = this.albumThumbnailAssetId;
     } else {
     //  json[r'albumThumbnailAssetId'] = null;
+    }
+    if (this.ascendingOrder != null) {
+      json[r'ascendingOrder'] = this.ascendingOrder;
+    } else {
+    //  json[r'ascendingOrder'] = null;
     }
     if (this.description != null) {
       json[r'description'] = this.description;
@@ -104,6 +120,7 @@ class UpdateAlbumDto {
       return UpdateAlbumDto(
         albumName: mapValueOfType<String>(json, r'albumName'),
         albumThumbnailAssetId: mapValueOfType<String>(json, r'albumThumbnailAssetId'),
+        ascendingOrder: mapValueOfType<bool>(json, r'ascendingOrder'),
         description: mapValueOfType<String>(json, r'description'),
         isActivityEnabled: mapValueOfType<bool>(json, r'isActivityEnabled'),
       );

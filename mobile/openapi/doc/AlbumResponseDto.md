@@ -10,6 +10,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **albumName** | **String** |  | 
 **albumThumbnailAssetId** | **String** |  | 
+**ascendingOrder** | **bool** |  | 
 **assetCount** | **int** |  | 
 **assets** | [**List<AssetResponseDto>**](AssetResponseDto.md) |  | [default to const []]
 **createdAt** | [**DateTime**](DateTime.md) |  | 

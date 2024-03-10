@@ -32,6 +32,9 @@ export class TimeBucketDto {
 
   @ValidateBoolean({ optional: true })
   withPartners?: boolean;
+
+  @ValidateBoolean({ optional: true })
+  ascendingOrder?: boolean;
 }
 
 export class TimeBucketAssetDto extends TimeBucketDto {

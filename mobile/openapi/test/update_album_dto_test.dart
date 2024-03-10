@@ -26,6 +26,11 @@ void main() {
       // TODO
     });
 
+    // bool ascendingOrder
+    test('to test the property `ascendingOrder`', () async {
+      // TODO
+    });
+
     // String description
     test('to test the property `description`', () async {
       // TODO

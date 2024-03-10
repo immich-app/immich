@@ -83,6 +83,7 @@
 
   $: album = data.album;
   $: albumId = album.id;
+  $: albumKey = albumId + String(album.ascendingOrder);
 
   $: {
     if (!album.isActivityEnabled && $numberOfComments === 0) {
@@ -512,7 +513,7 @@
       style={`width:${assetGridWidth}px`}
     >
       <!-- Use key because AssetGrid can't deal with changing stores -->
-      {#key albumId}
+      {#key albumKey}
         {#if viewMode === ViewMode.SELECT_ASSETS}
           <AssetGrid
             assetStore={timelineStore}
@@ -522,6 +523,7 @@
         {:else}
           <AssetGrid
             {album}
+            ascendingOrder={album.ascendingOrder}
             {assetStore}
             {assetInteractionStore}
             isShared={album.sharedUsers.length > 0}
@@ -678,7 +680,7 @@
 
 {#if viewMode === ViewMode.OPTIONS && $user}
   <AlbumOptions
-    {album}
+    bind:album
     user={$user}
     on:close={() => (viewMode = ViewMode.VIEW)}
     on:toggleEnableActivity={handleToggleEnableActivity}

@@ -66,6 +66,7 @@ export interface AssetBuilderOptions {
 
 export interface TimeBucketOptions extends AssetBuilderOptions {
   size: TimeBucketSize;
+  ascendingOrder?: boolean;
 }
 
 export interface TimeBucketItem {

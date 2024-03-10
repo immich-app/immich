@@ -15,4 +15,7 @@ export class UpdateAlbumDto {
 
   @ValidateBoolean({ optional: true })
   isActivityEnabled?: boolean;
+
+  @ValidateBoolean({ optional: true })
+  ascendingOrder?: boolean;
 }

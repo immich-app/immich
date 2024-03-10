@@ -144,6 +144,7 @@ export type AssetResponseDto = {
 export type AlbumResponseDto = {
     albumName: string;
     albumThumbnailAssetId: string | null;
+    ascendingOrder: boolean;
     assetCount: number;
     assets: AssetResponseDto[];
     createdAt: string;
@@ -174,6 +175,7 @@ export type AlbumCountResponseDto = {
 export type UpdateAlbumDto = {
     albumName?: string;
     albumThumbnailAssetId?: string;
+    ascendingOrder?: boolean;
     description?: string;
     isActivityEnabled?: boolean;
 };
@@ -1453,8 +1455,9 @@ export function getAssetThumbnail({ format, id, key }: {
         ...opts
     }));
 }
-export function getTimeBucket({ albumId, isArchived, isFavorite, isTrashed, key, personId, size, timeBucket, userId, withPartners, withStacked }: {
+export function getTimeBucket({ albumId, ascendingOrder, isArchived, isFavorite, isTrashed, key, personId, size, timeBucket, userId, withPartners, withStacked }: {
     albumId?: string;
+    ascendingOrder?: boolean;
     isArchived?: boolean;
     isFavorite?: boolean;
     isTrashed?: boolean;
@@ -1471,6 +1474,7 @@ export function getTimeBucket({ albumId, isArchived, isFavorite, isTrashed, key,
         data: AssetResponseDto[];
     }>(`/asset/time-bucket${QS.query(QS.explode({
         albumId,
+        ascendingOrder,
         isArchived,
         isFavorite,
         isTrashed,
@@ -1485,8 +1489,9 @@ export function getTimeBucket({ albumId, isArchived, isFavorite, isTrashed, key,
         ...opts
     }));
 }
-export function getTimeBuckets({ albumId, isArchived, isFavorite, isTrashed, key, personId, size, userId, withPartners, withStacked }: {
+export function getTimeBuckets({ albumId, ascendingOrder, isArchived, isFavorite, isTrashed, key, personId, size, userId, withPartners, withStacked }: {
     albumId?: string;
+    ascendingOrder?: boolean;
     isArchived?: boolean;
     isFavorite?: boolean;
     isTrashed?: boolean;
@@ -1502,6 +1507,7 @@ export function getTimeBuckets({ albumId, isArchived, isFavorite, isTrashed, key
         data: TimeBucketResponseDto[];
     }>(`/asset/time-buckets${QS.query(QS.explode({
         albumId,
+        ascendingOrder,
         isArchived,
         isFavorite,
         isTrashed,
