@@ -1,60 +1,58 @@
 <!doctype html>
 <html lang="en" class="dark">
+  <head>
+    <!-- (used for SSR) -->
+    <!-- metadata:tags -->
 
-<head>
-  <!-- (used for SSR) -->
-  <!-- metadata:tags -->
-
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
-  <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png" />
-  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png" />
-  <link rel="icon" type="image/png" sizes="144x144" href="/favicon-144.png" />
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180.png" />
-  %sveltekit.head%
-  <script>
-    /**
-     * Prevent FOUC on page load.
-     */
-    const colorThemeKeyName = 'color-theme';
-    let theme;
-    const fallbackTheme = { value: 'dark', system: false };
-    let item = localStorage.getItem(colorThemeKeyName);
-    if (item === 'dark' || item === 'light') {
-      fallbackTheme.value = item;
-      item = JSON.stringify(fallbackTheme);
-      localStorage.setItem(colorThemeKeyName, item);
-    }
-
-    theme = JSON.parse(localStorage.getItem(colorThemeKeyName));
-
-    if (theme) {
-      if (theme.system) {
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-          theme.value = 'dark';
-        } else {
-          theme.value = 'light';
-        }
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png" />
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png" />
+    <link rel="icon" type="image/png" sizes="144x144" href="/favicon-144.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180.png" />
+    %sveltekit.head%
+    <script>
+      /**
+       * Prevent FOUC on page load.
+       */
+      const colorThemeKeyName = 'color-theme';
+      let theme;
+      const fallbackTheme = { value: 'dark', system: false };
+      let item = localStorage.getItem(colorThemeKeyName);
+      if (item === 'dark' || item === 'light') {
+        fallbackTheme.value = item;
+        item = JSON.stringify(fallbackTheme);
+        localStorage.setItem(colorThemeKeyName, item);
       }
-    } else {
-      theme = fallbackTheme;
-    }
 
-    if (theme.value === 'light') {
-      document.documentElement.classList.remove('dark');
-    } else {
-      document.documentElement.classList.add('dark');
-    }
-  </script>
+      theme = JSON.parse(localStorage.getItem(colorThemeKeyName));
 
-  <link rel="stylesheet" href="/custom.css" />
-</head>
+      if (theme) {
+        if (theme.system) {
+          if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            theme.value = 'dark';
+          } else {
+            theme.value = 'light';
+          }
+        }
+      } else {
+        theme = fallbackTheme;
+      }
 
-<body class="bg-immich-bg dark:bg-immich-dark-bg">
-  <div>%sveltekit.body%</div>
-</body>
+      if (theme.value === 'light') {
+        document.documentElement.classList.remove('dark');
+      } else {
+        document.documentElement.classList.add('dark');
+      }
+    </script>
 
+    <link rel="stylesheet" href="/custom.css" />
+  </head>
+
+  <body class="bg-immich-bg dark:bg-immich-dark-bg">
+    <div>%sveltekit.body%</div>
+  </body>
 </html>
