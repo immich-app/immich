@@ -66,7 +66,7 @@
               Uploaded <span class="text-immich-success">{$successCounter - $duplicateCounter}</span> - Error
               <span class="text-immich-error">{$errorCounter}</span>
               - Duplicates <span class="text-immich-warning">{$duplicateCounter}</span>
-            </p>            
+            </p>
           </div>
           <div class="flex flex-col items-end">
             <div class="flex flex-row">
