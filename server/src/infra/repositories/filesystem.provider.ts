@@ -11,7 +11,7 @@ import {
 import { ImmichLogger } from '@app/infra/logger';
 import archiver from 'archiver';
 import chokidar, { WatchOptions } from 'chokidar';
-import { glob } from 'glob';
+import { glob } from 'fast-glob';
 import { constants, createReadStream, existsSync, mkdirSync } from 'node:fs';
 import fs, { copyFile, readdir, rename, stat, utimes, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -132,8 +132,8 @@ export class FilesystemProvider implements IStorageRepository {
 
     return glob(`${base}/**/${extensions}`, {
       absolute: true,
-      nocase: true,
-      nodir: true,
+      caseSensitiveMatch: false,
+      onlyFiles: true,
       dot: includeHidden,
       ignore: exclusionPatterns,
     });
