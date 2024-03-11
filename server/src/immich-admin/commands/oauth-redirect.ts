@@ -5,7 +5,7 @@ import { Command, CommandRunner } from 'nest-commander';
   name: 'enable-oauth-login',
   description: 'Enable OAuth login',
 })
-export class EnableOauthLogin extends CommandRunner {
+export class EnableOAuthLogin extends CommandRunner {
   constructor(private configService: SystemConfigService) {
     super();
   }
@@ -22,7 +22,7 @@ export class EnableOauthLogin extends CommandRunner {
   name: 'disable-oauth-login',
   description: 'Disable OAuth login',
 })
-export class DisableOauthLogin extends CommandRunner {
+export class DisableOAuthLogin extends CommandRunner {
   constructor(private configService: SystemConfigService) {
     super();
   }
