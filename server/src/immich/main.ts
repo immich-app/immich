@@ -30,12 +30,12 @@ export async function bootstrap() {
 
   const excludePaths = ['/.well-known/immich', '/custom.css'];
   app.setGlobalPrefix('api', { exclude: excludePaths });
-  const staticDir = 'www';
-  if (existsSync(staticDir)) {
+  const WEB_ROOT_PATH = process.env.IMMICH_WEB_ROOT || '/usr/src/app/www';
+  if (existsSync(WEB_ROOT_PATH)) {
     // copied from https://github.com/sveltejs/kit/blob/679b5989fe62e3964b9a73b712d7b41831aa1f07/packages/adapter-node/src/handler.js#L46
     // provides serving of precompressed assets and caching of immutable assets
     app.use(
-      sirv(staticDir, {
+      sirv(WEB_ROOT_PATH, {
         etag: true,
         gzip: true,
         brotli: true,
