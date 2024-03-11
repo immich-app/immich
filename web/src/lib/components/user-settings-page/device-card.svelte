@@ -60,7 +60,7 @@
         <span>
           {DateTime.fromISO(device.updatedAt, { locale: $locale }).toLocaleString(DateTime.DATETIME_MED)}
         </span>
-      </div>           
+      </div>
     </div>
     {#if !device.current}
       <div class="flex flex-col justify-center text-sm">
