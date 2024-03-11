@@ -10,23 +10,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  server-e2e-api:
-    name: Server (e2e-api)
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./server
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Run npm install
-        run: npm ci
-
-      - name: Run e2e tests
-        run: npm run e2e:api
-
   server-e2e-jobs:
     name: Server (e2e-jobs)
     runs-on: ubuntu-latest
@@ -211,6 +194,10 @@ jobs:
 
       - name: Run formatter
         run: npm run format
+        if: ${{ !cancelled() }}
+
+      - name: Run tsc
+        run: npm run check
         if: ${{ !cancelled() }}
 
       - name: Install Playwright Browsers

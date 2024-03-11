@@ -608,6 +608,17 @@ export class VAAPIConfig extends BaseHWConfig {
 }
 
 export class RKMPPConfig extends BaseHWConfig {
+  private hasOpenCL: boolean;
+
+  constructor(
+    protected config: SystemConfigFFmpegDto,
+    devices: string[] = [],
+    hasOpenCL: boolean = false,
+  ) {
+    super(config, devices);
+    this.hasOpenCL = hasOpenCL;
+  }
+
   eligibleForTwoPass(): boolean {
     return false;
   }
@@ -616,19 +627,25 @@ export class RKMPPConfig extends BaseHWConfig {
     if (this.devices.length === 0) {
       throw new Error('No RKMPP device found');
     }
-    if (this.shouldToneMap(videoStream)) {
-      // disable hardware decoding
-      return [];
-    }
-    return ['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga'];
+    return this.shouldToneMap(videoStream) && !this.hasOpenCL
+      ? [] // disable hardware decoding & filters
+      : ['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga'];
   }
 
   getFilterOptions(videoStream: VideoStreamInfo) {
     if (this.shouldToneMap(videoStream)) {
-      // use software filter options
-      return super.getFilterOptions(videoStream);
-    }
-    if (this.shouldScale(videoStream)) {
+      if (!this.hasOpenCL) {
+        return super.getFilterOptions(videoStream);
+      }
+      const colors = this.getColors();
+      return [
+        `scale_rkrga=${this.getScaling(videoStream)}:format=p010:afbc=1`,
+        'hwmap=derive_device=opencl:mode=read',
+        `tonemap_opencl=format=nv12:r=pc:p=${colors.primaries}:t=${colors.transfer}:m=${colors.matrix}:tonemap=${this.config.tonemap}:desat=0`,
+        'hwmap=derive_device=rkmpp:mode=write:reverse=1',
+        'format=drm_prime',
+      ];
+    } else if (this.shouldScale(videoStream)) {
       return [`scale_rkrga=${this.getScaling(videoStream)}:format=nv12:afbc=1`];
     }
     return [];

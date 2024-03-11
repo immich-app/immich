@@ -1,5 +1,6 @@
 <script lang="ts">
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
+  import { handleError } from '$lib/utils/handle-error';
   import { restoreUser, type UserResponseDto } from '@immich/sdk';
   import { createEventDispatcher } from 'svelte';
 
@@ -12,10 +13,15 @@
   }>();
 
   const handleRestoreUser = async () => {
-    const { deletedAt } = await restoreUser({ id: user.id });
-    if (deletedAt == undefined) {
-      dispatch('success');
-    } else {
+    try {
+      const { deletedAt } = await restoreUser({ id: user.id });
+      if (deletedAt == undefined) {
+        dispatch('success');
+      } else {
+        dispatch('fail');
+      }
+    } catch (error) {
+      handleError(error, 'Unable to restore user');
       dispatch('fail');
     }
   };
