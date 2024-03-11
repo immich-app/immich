@@ -92,7 +92,7 @@ response = requests.get(url + "/api/album/" + albumid, headers=headers)
 
 # Parse the JSON response and extract the URLs of the images
 data = response.json()
-image_urls = [image for image in data['assets']]
+image_urls = data['assets']
 
 # Download each image from the URL and save it to the directory
 headers = {
