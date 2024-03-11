@@ -1,4 +1,4 @@
-import { envName, isDev, serverVersion } from '@app/domain';
+import { WEB_ROOT, envName, isDev, serverVersion } from '@app/domain';
 import { WebSocketAdapter } from '@app/infra';
 import { ImmichLogger } from '@app/infra/logger';
 import { NestFactory } from '@nestjs/core';
@@ -30,12 +30,11 @@ export async function bootstrap() {
 
   const excludePaths = ['/.well-known/immich', '/custom.css'];
   app.setGlobalPrefix('api', { exclude: excludePaths });
-  const WEB_ROOT_PATH = process.env.IMMICH_WEB_ROOT || '/usr/src/app/www';
-  if (existsSync(WEB_ROOT_PATH)) {
+  if (existsSync(WEB_ROOT)) {
     // copied from https://github.com/sveltejs/kit/blob/679b5989fe62e3964b9a73b712d7b41831aa1f07/packages/adapter-node/src/handler.js#L46
     // provides serving of precompressed assets and caching of immutable assets
     app.use(
-      sirv(WEB_ROOT_PATH, {
+      sirv(WEB_ROOT, {
         etag: true,
         gzip: true,
         brotli: true,
