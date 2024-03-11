@@ -23,6 +23,12 @@ export enum UserAvatarColor {
   AMBER = 'amber',
 }
 
+export enum UserStatus {
+  ACTIVE = 'active',
+  REMOVING = 'removing',
+  DELETED = 'deleted',
+}
+
 @Entity('users')
 export class UserEntity {
   @PrimaryGeneratedColumn('uuid')
@@ -60,6 +66,9 @@ export class UserEntity {
 
   @DeleteDateColumn({ type: 'timestamptz' })
   deletedAt!: Date | null;
+
+  @Column({ type: 'varchar', default: UserStatus.ACTIVE })
+  status!: UserStatus;
 
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt!: Date;

@@ -65,6 +65,7 @@ if [ "$CURRENT_SERVER" != "$NEXT_SERVER" ]; then
   make open-api
   npm --prefix open-api/typescript-sdk version "$SERVER_PUMP"
   npm --prefix web version "$SERVER_PUMP"
+  npm --prefix e2e version "$SERVER_PUMP"
   npm --prefix web i --package-lock-only
   npm --prefix cli i --package-lock-only
   npm --prefix e2e i --package-lock-only

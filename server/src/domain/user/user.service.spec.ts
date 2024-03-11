@@ -1,4 +1,4 @@
-import { UserEntity } from '@app/infra/entities';
+import { UserEntity, UserStatus } from '@app/infra/entities';
 import {
   BadRequestException,
   ForbiddenException,
@@ -243,16 +243,14 @@ describe(UserService.name, () => {
     it('should throw error if user could not be found', async () => {
       when(userMock.get).calledWith(userStub.admin.id, { withDeleted: true }).mockResolvedValue(null);
       await expect(sut.restore(authStub.admin, userStub.admin.id)).rejects.toThrowError(BadRequestException);
-      expect(userMock.restore).not.toHaveBeenCalled();
+      expect(userMock.update).not.toHaveBeenCalled();
     });
 
     it('should restore an user', async () => {
       userMock.get.mockResolvedValue(userStub.user1);
-      userMock.restore.mockResolvedValue(userStub.user1);
-
+      userMock.update.mockResolvedValue(userStub.user1);
       await expect(sut.restore(authStub.admin, userStub.user1.id)).resolves.toEqual(mapUser(userStub.user1));
-      expect(userMock.get).toHaveBeenCalledWith(userStub.user1.id, { withDeleted: true });
-      expect(userMock.restore).toHaveBeenCalledWith(userStub.user1);
+      expect(userMock.update).toHaveBeenCalledWith(userStub.user1.id, { status: UserStatus.ACTIVE, deletedAt: null });
     });
   });
 
@@ -260,27 +258,47 @@ describe(UserService.name, () => {
     it('should throw error if user could not be found', async () => {
       userMock.get.mockResolvedValue(null);
 
-      await expect(sut.delete(authStub.admin, userStub.admin.id)).rejects.toThrowError(BadRequestException);
+      await expect(sut.delete(authStub.admin, userStub.admin.id, {})).rejects.toThrowError(BadRequestException);
       expect(userMock.delete).not.toHaveBeenCalled();
     });
 
     it('cannot delete admin user', async () => {
-      await expect(sut.delete(authStub.admin, userStub.admin.id)).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(sut.delete(authStub.admin, userStub.admin.id, {})).rejects.toBeInstanceOf(ForbiddenException);
     });
 
     it('should require the auth user be an admin', async () => {
-      await expect(sut.delete(authStub.user1, authStub.admin.user.id)).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(sut.delete(authStub.user1, authStub.admin.user.id, {})).rejects.toBeInstanceOf(ForbiddenException);
 
       expect(userMock.delete).not.toHaveBeenCalled();
     });
 
     it('should delete user', async () => {
       userMock.get.mockResolvedValue(userStub.user1);
-      userMock.delete.mockResolvedValue(userStub.user1);
+      userMock.update.mockResolvedValue(userStub.user1);
 
-      await expect(sut.delete(authStub.admin, userStub.user1.id)).resolves.toEqual(mapUser(userStub.user1));
-      expect(userMock.get).toHaveBeenCalledWith(userStub.user1.id, {});
-      expect(userMock.delete).toHaveBeenCalledWith(userStub.user1);
+      await expect(sut.delete(authStub.admin, userStub.user1.id, {})).resolves.toEqual(mapUser(userStub.user1));
+      expect(userMock.update).toHaveBeenCalledWith(userStub.user1.id, {
+        status: UserStatus.DELETED,
+        deletedAt: expect.any(Date),
+      });
+    });
+
+    it('should force delete user', async () => {
+      userMock.get.mockResolvedValue(userStub.user1);
+      userMock.update.mockResolvedValue(userStub.user1);
+
+      await expect(sut.delete(authStub.admin, userStub.user1.id, { force: true })).resolves.toEqual(
+        mapUser(userStub.user1),
+      );
+
+      expect(userMock.update).toHaveBeenCalledWith(userStub.user1.id, {
+        status: UserStatus.REMOVING,
+        deletedAt: expect.any(Date),
+      });
+      expect(jobMock.queue).toHaveBeenCalledWith({
+        name: JobName.USER_DELETION,
+        data: { id: userStub.user1.id, force: true },
+      });
     });
   });
 

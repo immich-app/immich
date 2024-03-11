@@ -293,53 +293,6 @@ DELETE FROM "assets"
 WHERE
   "ownerId" = $1
 
--- AssetRepository.getByLibraryId
-SELECT
-  "AssetEntity"."id" AS "AssetEntity_id",
-  "AssetEntity"."deviceAssetId" AS "AssetEntity_deviceAssetId",
-  "AssetEntity"."ownerId" AS "AssetEntity_ownerId",
-  "AssetEntity"."libraryId" AS "AssetEntity_libraryId",
-  "AssetEntity"."deviceId" AS "AssetEntity_deviceId",
-  "AssetEntity"."type" AS "AssetEntity_type",
-  "AssetEntity"."originalPath" AS "AssetEntity_originalPath",
-  "AssetEntity"."resizePath" AS "AssetEntity_resizePath",
-  "AssetEntity"."webpPath" AS "AssetEntity_webpPath",
-  "AssetEntity"."thumbhash" AS "AssetEntity_thumbhash",
-  "AssetEntity"."encodedVideoPath" AS "AssetEntity_encodedVideoPath",
-  "AssetEntity"."createdAt" AS "AssetEntity_createdAt",
-  "AssetEntity"."updatedAt" AS "AssetEntity_updatedAt",
-  "AssetEntity"."deletedAt" AS "AssetEntity_deletedAt",
-  "AssetEntity"."fileCreatedAt" AS "AssetEntity_fileCreatedAt",
-  "AssetEntity"."localDateTime" AS "AssetEntity_localDateTime",
-  "AssetEntity"."fileModifiedAt" AS "AssetEntity_fileModifiedAt",
-  "AssetEntity"."isFavorite" AS "AssetEntity_isFavorite",
-  "AssetEntity"."isArchived" AS "AssetEntity_isArchived",
-  "AssetEntity"."isExternal" AS "AssetEntity_isExternal",
-  "AssetEntity"."isReadOnly" AS "AssetEntity_isReadOnly",
-  "AssetEntity"."isOffline" AS "AssetEntity_isOffline",
-  "AssetEntity"."checksum" AS "AssetEntity_checksum",
-  "AssetEntity"."duration" AS "AssetEntity_duration",
-  "AssetEntity"."isVisible" AS "AssetEntity_isVisible",
-  "AssetEntity"."livePhotoVideoId" AS "AssetEntity_livePhotoVideoId",
-  "AssetEntity"."originalFileName" AS "AssetEntity_originalFileName",
-  "AssetEntity"."sidecarPath" AS "AssetEntity_sidecarPath",
-  "AssetEntity"."stackId" AS "AssetEntity_stackId"
-FROM
-  "assets" "AssetEntity"
-  LEFT JOIN "libraries" "AssetEntity__AssetEntity_library" ON "AssetEntity__AssetEntity_library"."id" = "AssetEntity"."libraryId"
-  AND (
-    "AssetEntity__AssetEntity_library"."deletedAt" IS NULL
-  )
-WHERE
-  (
-    (
-      (
-        (("AssetEntity__AssetEntity_library"."id" IN ($1)))
-      )
-    )
-  )
-  AND ("AssetEntity"."deletedAt" IS NULL)
-
 -- AssetRepository.getByLibraryIdAndOriginalPath
 SELECT DISTINCT
   "distinctAlias"."AssetEntity_id" AS "ids_AssetEntity_id"
@@ -427,55 +380,6 @@ WHERE
     AND NOT ("originalPath" IN ($3))
     AND "isOffline" = $4
   )
-
--- AssetRepository.getAllByFileCreationDate
-SELECT
-  "asset"."id" AS "asset_id",
-  "asset"."deviceAssetId" AS "asset_deviceAssetId",
-  "asset"."ownerId" AS "asset_ownerId",
-  "asset"."libraryId" AS "asset_libraryId",
-  "asset"."deviceId" AS "asset_deviceId",
-  "asset"."type" AS "asset_type",
-  "asset"."originalPath" AS "asset_originalPath",
-  "asset"."resizePath" AS "asset_resizePath",
-  "asset"."webpPath" AS "asset_webpPath",
-  "asset"."thumbhash" AS "asset_thumbhash",
-  "asset"."encodedVideoPath" AS "asset_encodedVideoPath",
-  "asset"."createdAt" AS "asset_createdAt",
-  "asset"."updatedAt" AS "asset_updatedAt",
-  "asset"."deletedAt" AS "asset_deletedAt",
-  "asset"."fileCreatedAt" AS "asset_fileCreatedAt",
-  "asset"."localDateTime" AS "asset_localDateTime",
-  "asset"."fileModifiedAt" AS "asset_fileModifiedAt",
-  "asset"."isFavorite" AS "asset_isFavorite",
-  "asset"."isArchived" AS "asset_isArchived",
-  "asset"."isExternal" AS "asset_isExternal",
-  "asset"."isReadOnly" AS "asset_isReadOnly",
-  "asset"."isOffline" AS "asset_isOffline",
-  "asset"."checksum" AS "asset_checksum",
-  "asset"."duration" AS "asset_duration",
-  "asset"."isVisible" AS "asset_isVisible",
-  "asset"."livePhotoVideoId" AS "asset_livePhotoVideoId",
-  "asset"."originalFileName" AS "asset_originalFileName",
-  "asset"."sidecarPath" AS "asset_sidecarPath",
-  "asset"."stackId" AS "asset_stackId"
-FROM
-  "assets" "asset"
-WHERE
-  (
-    "asset"."fileCreatedAt" <= $1
-    AND 1 = 1
-    AND "asset"."ownerId" IN ($2)
-    AND 1 = 1
-    AND "asset"."isArchived" = $3
-  )
-  AND ("asset"."deletedAt" IS NULL)
-ORDER BY
-  "asset"."fileCreatedAt" DESC
-LIMIT
-  10001
-OFFSET
-  20000
 
 -- AssetRepository.getAllByDeviceId
 SELECT
