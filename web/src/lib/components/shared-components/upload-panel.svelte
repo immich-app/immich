@@ -80,7 +80,7 @@
               <CircleIconButton
                 title="Minimize"
                 icon={mdiWindowMinimize}
-                size="14"
+                size="15"
                 padding="1"
                 on:click={() => (showDetail = false)}
               />
