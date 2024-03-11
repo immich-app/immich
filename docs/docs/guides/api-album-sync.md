@@ -118,7 +118,7 @@ for id in image_urls:
 
     photofullpath = photodir + '/' + os.path.basename(asseturl) + ext[1]
     # Only download file if it doesn't already exist
-    if os.path.exists(photofullpath) == False:
+    if not os.path.exists(photofullpath):
         with open(photofullpath, 'wb') as f:
             for chunk in response.iter_content(1024):
                 f.write(chunk)
