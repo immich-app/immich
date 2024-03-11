@@ -2,15 +2,15 @@
 
 The `immich-server` docker image comes preinstalled with an administrative CLI (`immich-admin`) that supports the following commands:
 
-| Command                         | Description                           |
-| ------------------------------- | ------------------------------------- |
-| `help`                          | Display help                          |
-| `reset-admin-password`          | Reset the password for the admin user |
-| `disable-password-login`        | Disable password login                |
-| `enable-password-login`         | Enable password login                 |
-| `enable-oauth-auto-redirect`    | Enable OAuth auto-redirect            |
-| `disable-oauth-auto-redirect`   | Disable OAuth auto-redirect           |
-| `list-users`                    | List Immich users                     |
+| Command                       | Description                           |
+| ----------------------------- | ------------------------------------- |
+| `help`                        | Display help                          |
+| `reset-admin-password`        | Reset the password for the admin user |
+| `disable-password-login`      | Disable password login                |
+| `enable-password-login`       | Enable password login                 |
+| `enable-oauth-auto-redirect`  | Enable OAuth auto-redirect            |
+| `disable-oauth-auto-redirect` | Disable OAuth auto-redirect           |
+| `list-users`                  | List Immich users                     |
 
 ## How to run a command
 
