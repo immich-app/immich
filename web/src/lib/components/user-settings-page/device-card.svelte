@@ -12,7 +12,7 @@
     mdiMicrosoftWindows,
     mdiTrashCanOutline,
   } from '@mdi/js';
-  import { DateTime, type ToRelativeCalendarOptions } from 'luxon';
+  import { DateTime } from 'luxon';
   import { createEventDispatcher } from 'svelte';
 
   export let device: AuthDeviceResponseDto;
@@ -20,11 +20,6 @@
   const dispatcher = createEventDispatcher<{
     delete: void;
   }>();
-
-  const options: ToRelativeCalendarOptions = {
-    unit: 'days',
-    locale: $locale,
-  };
 </script>
 
 <div class="flex w-full flex-row">
