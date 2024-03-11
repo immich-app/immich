@@ -578,7 +578,7 @@ export class MetadataService {
       this.storageRepository.checkFileExists(sidecarPathWithoutExt, constants.R_OK),
     ]);
 
-    var sidecarPath = null;
+    let sidecarPath = null;
     if (sidecarPathWithExtExists) {
       sidecarPath = sidecarPathWithExt;
     } else if (sidecarPathWithoutExtExists) {
