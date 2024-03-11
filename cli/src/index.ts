@@ -44,7 +44,7 @@ program
       .default(false),
   )
   .addOption(
-    new Option('-c, --concurrency', 'Number of assets to upload at the same time')
+    new Option('-c, --concurrency <number>', 'Number of assets to upload at the same time')
       .env('IMMICH_UPLOAD_CONCURRENCY')
       .default(4),
   )
