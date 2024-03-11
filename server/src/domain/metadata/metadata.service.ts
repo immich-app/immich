@@ -568,22 +568,25 @@ export class MetadataService {
     }
 
     // XMP sidecars can come in two filename formats. For a photo named photo.ext, the filenames are photo.ext.xmp and photo.xmp
-    const sidecarPathWithExt = `${asset.originalPath}.xmp`;
-    const sidecarPathWithExtExists = await this.storageRepository.checkFileExists(sidecarPathWithExt, constants.R_OK);
-    if (sidecarPathWithExtExists) {
-      await this.assetRepository.save({ id: asset.id, sidecarPath: sidecarPathWithExt });
-      return true;
-    }
-
     const assetPath = path.parse(asset.originalPath);
     const assetPathWithoutExt = path.join(assetPath.dir, assetPath.name);
     const sidecarPathWithoutExt = `${assetPathWithoutExt}.xmp`;
-    const sidecarPathWithoutExtExists = await this.storageRepository.checkFileExists(
-      sidecarPathWithoutExt,
-      constants.R_OK,
-    );
-    if (sidecarPathWithoutExtExists) {
-      await this.assetRepository.save({ id: asset.id, sidecarPath: sidecarPathWithoutExt });
+    const sidecarPathWithExt = `${asset.originalPath}.xmp`;
+
+    const [sidecarPathWithExtExists, sidecarPathWithoutExtExists] = await Promise.all([
+      this.storageRepository.checkFileExists(sidecarPathWithExt, constants.R_OK),
+      this.storageRepository.checkFileExists(sidecarPathWithoutExt, constants.R_OK),
+    ]);
+
+    var sidecarPath = null;
+    if (sidecarPathWithExtExists) {
+      sidecarPath = sidecarPathWithExt;
+    } else if (sidecarPathWithoutExtExists) {
+      sidecarPath = sidecarPathWithoutExt;
+    }
+
+    if (sidecarPath != null) {
+      await this.assetRepository.save({ id: asset.id, sidecarPath: sidecarPath });
       return true;
     }
 
