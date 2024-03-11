@@ -164,7 +164,6 @@ export class AssetStore {
     const buckets = await getTimeBuckets({
       ...this.options,
       key: getKey(),
-      ascendingOrder: this.options.ascendingOrder,
     });
 
     this.initialized = true;
