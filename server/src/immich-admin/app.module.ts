@@ -4,6 +4,7 @@ import { Module } from '@nestjs/common';
 import { ListUsersCommand } from './commands/list-users.command';
 import { DisablePasswordLoginCommand, EnablePasswordLoginCommand } from './commands/password-login';
 import { PromptPasswordQuestions, ResetAdminPasswordCommand } from './commands/reset-admin-password.command';
+import { DisableOauthAutoRedirect, EnableOauthAutoRedirect } from './commands/oauth-redirect';
 
 @Module({
   imports: [InfraModule, DomainModule],
@@ -12,6 +13,8 @@ import { PromptPasswordQuestions, ResetAdminPasswordCommand } from './commands/r
     PromptPasswordQuestions,
     EnablePasswordLoginCommand,
     DisablePasswordLoginCommand,
+    EnableOauthAutoRedirect,
+    DisableOauthAutoRedirect,
     ListUsersCommand,
   ],
 })
