@@ -229,6 +229,8 @@ FROM
   "cte" "res"
 WHERE
   res.distance <= $3
+ORDER BY
+  res.distance ASC
 COMMIT
 
 -- SearchRepository.searchPlaces

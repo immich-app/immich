@@ -640,27 +640,56 @@ export class LibraryService extends EventEmitter {
       .filter((validation) => validation.isValid)
       .map((validation) => validation.importPath);
 
-    const rawPaths = await this.storageRepository.crawl({
+    let rawPaths = await this.storageRepository.crawl({
       pathsToCrawl: validImportPaths,
       exclusionPatterns: library.exclusionPatterns,
     });
-    const crawledAssetPaths = rawPaths.map((filePath) => path.normalize(filePath));
+    const crawledAssetPaths = new Set<string>(rawPaths);
 
-    this.logger.debug(`Found ${crawledAssetPaths.length} asset(s) when crawling import paths ${library.importPaths}`);
+    const shouldScanAll = job.refreshAllFiles || job.refreshModifiedFiles;
+    let pathsToScan: string[] = shouldScanAll ? rawPaths : [];
+    rawPaths = [];
 
-    await this.assetRepository.updateOfflineLibraryAssets(library.id, crawledAssetPaths);
+    this.logger.debug(`Found ${crawledAssetPaths.size} asset(s) when crawling import paths ${library.importPaths}`);
 
-    if (crawledAssetPaths.length > 0) {
-      let filteredPaths: string[] = [];
-      if (job.refreshAllFiles || job.refreshModifiedFiles) {
-        filteredPaths = crawledAssetPaths;
-      } else {
-        filteredPaths = await this.assetRepository.getPathsNotInLibrary(library.id, crawledAssetPaths);
+    const assetIdsToMarkOffline = [];
+    const assetIdsToMarkOnline = [];
+    const pagination = usePagination(5000, (pagination) =>
+      this.assetRepository.getLibraryAssetPaths(pagination, library.id),
+    );
 
-        this.logger.debug(`Will import ${filteredPaths.length} new asset(s)`);
+    for await (const page of pagination) {
+      for (const asset of page) {
+        const isOffline = !crawledAssetPaths.has(asset.originalPath);
+        if (isOffline && !asset.isOffline) {
+          assetIdsToMarkOffline.push(asset.id);
+        }
+
+        if (!isOffline && asset.isOffline) {
+          assetIdsToMarkOnline.push(asset.id);
+        }
+
+        crawledAssetPaths.delete(asset.originalPath);
       }
+    }
 
-      await this.scanAssets(job.id, filteredPaths, library.ownerId, job.refreshAllFiles ?? false);
+    if (assetIdsToMarkOffline.length > 0) {
+      this.logger.debug(`Found ${assetIdsToMarkOffline.length} offline asset(s) previously marked as online`);
+      await this.assetRepository.updateAll(assetIdsToMarkOffline, { isOffline: true });
+    }
+
+    if (assetIdsToMarkOnline.length > 0) {
+      this.logger.debug(`Found ${assetIdsToMarkOnline.length} online asset(s) previously marked as offline`);
+      await this.assetRepository.updateAll(assetIdsToMarkOnline, { isOffline: false });
+    }
+
+    if (!shouldScanAll) {
+      pathsToScan = [...crawledAssetPaths];
+      this.logger.debug(`Will import ${pathsToScan.length} new asset(s)`);
+    }
+
+    if (pathsToScan.length > 0) {
+      await this.scanAssets(job.id, pathsToScan, library.ownerId, job.refreshAllFiles ?? false);
     }
 
     await this.repository.update({ id: job.id, refreshedAt: new Date() });

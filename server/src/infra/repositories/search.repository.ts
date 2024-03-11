@@ -188,6 +188,7 @@ export class SearchRepository implements ISearchRepository {
         .addCommonTableExpression(cte, 'cte')
         .from('cte', 'res')
         .where('res.distance <= :maxDistance', { maxDistance })
+        .orderBy('res.distance')
         .getRawMany();
     });
     return results.map((row) => ({
