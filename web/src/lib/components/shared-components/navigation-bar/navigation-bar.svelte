@@ -23,7 +23,7 @@
 
   let shouldShowAccountInfo = false;
   let shouldShowAccountInfoPanel = false;
-
+  let innerWidth: number;
   const dispatch = createEventDispatcher<{
     uploadClicked: void;
   }>();
@@ -39,13 +39,15 @@
   };
 </script>
 
+<svelte:window bind:innerWidth />
+
 <section id="dashboard-navbar" class="fixed z-[900] h-[var(--navbar-height)] w-screen text-sm">
   <SkipLink>Skip to content</SkipLink>
   <div
     class="grid h-full grid-cols-[theme(spacing.18)_auto] items-center border-b bg-immich-bg py-2 dark:border-b-immich-dark-gray dark:bg-immich-dark-bg md:grid-cols-[theme(spacing.64)_auto]"
   >
     <a data-sveltekit-preload-data="hover" class="ml-4" href={AppRoute.PHOTOS}>
-      <ImmichLogo width="55%" />
+      <ImmichLogo width="55%" noText={innerWidth < 770} />
     </a>
     <div class="flex justify-between gap-16 pr-6">
       <div class="hidden w-full max-w-5xl flex-1 pl-4 sm:block">
