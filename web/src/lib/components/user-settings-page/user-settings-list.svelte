@@ -12,7 +12,6 @@
   import MemoriesSettings from './memories-settings.svelte';
   import OAuthSettings from './oauth-settings.svelte';
   import PartnerSettings from './partner-settings.svelte';
-  import TrashSettings from './trash-settings.svelte';
   import UserAPIKeyList from './user-api-key-list.svelte';
   import UserProfileSettings from './user-profile-settings.svelte';
   import SettingAccordionState from '../shared-components/settings/setting-accordion-state.svelte';
@@ -58,9 +57,5 @@
 
   <SettingAccordion key="sharing" title="Sharing" subtitle="Manage sharing with partners">
     <PartnerSettings user={$user} />
-  </SettingAccordion>
-
-  <SettingAccordion key="trash" title="Trash" subtitle="Manage trash settings">
-    <TrashSettings />
   </SettingAccordion>
 </SettingAccordionState>

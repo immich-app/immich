@@ -4,7 +4,7 @@
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { fallbackLocale, locales } from '$lib/constants';
   import { sidebarSettings } from '$lib/stores/preferences.store';
-  import { alwaysLoadOriginalFile, playVideoThumbnailOnHover } from '$lib/stores/preferences.store';
+  import { alwaysLoadOriginalFile, playVideoThumbnailOnHover, showDeleteModal } from '$lib/stores/preferences.store';
   import { colorTheme, locale } from '$lib/stores/preferences.store';
   import { findLocale } from '$lib/utils';
   import { onMount } from 'svelte';
@@ -104,13 +104,20 @@
           on:toggle={() => ($alwaysLoadOriginalFile = !$alwaysLoadOriginalFile)}
         />
       </div>
-
       <div class="ml-4">
         <SettingSwitch
           title="Play video thumbnail on hover"
           subtitle="Play video thumbnail when mouse is hovering over item. Even when disabled, playback can be started by hovering over the play icon."
           bind:checked={$playVideoThumbnailOnHover}
           on:toggle={() => ($playVideoThumbnailOnHover = !$playVideoThumbnailOnHover)}
+        />
+      </div>
+
+      <div class="ml-4">
+        <SettingSwitch
+          title="Permanent deletion warning"
+          subtitle="Show a warning when permanently deleting assets"
+          bind:checked={$showDeleteModal}
         />
       </div>
 
