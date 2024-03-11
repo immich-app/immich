@@ -5,7 +5,7 @@ This is an example of a python script for syncing an album to a local folder. Th
 The script is copied below in it's current form. A repository is hosted [here](https://git.orenit.solutions/open/immichalbumpull).
 
 :::danger
-This guide uses a generated API key. This key gives the same access to your immich instance as the user it is attached to, be careful how the config file is stored and transferred.
+This guide uses a generated API key. This key gives the same access to your immich instance as the user it is attached to, so be careful how the config file is stored and transferred.
 :::
 
 ### Prerequisites
