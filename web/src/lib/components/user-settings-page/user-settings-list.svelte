@@ -6,8 +6,7 @@
   import { oauth } from '$lib/utils';
   import { type ApiKeyResponseDto, type AuthDeviceResponseDto } from '@immich/sdk';
   import SettingAccordion from '../shared-components/settings/setting-accordion.svelte';
-  import AppearanceSettings from './appearance-settings.svelte';
-  import BehaviorSettings from './behavior-settings.svelte';
+  import AppSettings from './app-settings.svelte';
   import ChangePasswordSettings from './change-password-settings.svelte';
   import DeviceList from './device-list.svelte';
   import MemoriesSettings from './memories-settings.svelte';
@@ -27,8 +26,8 @@
 </script>
 
 <SettingAccordionState queryParam={QueryParameter.IS_OPEN}>
-  <SettingAccordion key="appearance" title="Appearance" subtitle="Manage the app appearance">
-    <AppearanceSettings />
+  <SettingAccordion key="app-settings" title="App Settings" subtitle="Manage the app settings">
+    <AppSettings />
   </SettingAccordion>
 
   <SettingAccordion key="account" title="Account" subtitle="Manage your account">
@@ -41,10 +40,6 @@
 
   <SettingAccordion key="authorized-devices" title="Authorized Devices" subtitle="Manage your logged-in devices">
     <DeviceList bind:devices />
-  </SettingAccordion>
-
-  <SettingAccordion key="behavior" title="Behavior" subtitle="Manage the app behavior">
-    <BehaviorSettings />
   </SettingAccordion>
 
   <SettingAccordion key="memories" title="Memories" subtitle="Manage what you see in your memories">

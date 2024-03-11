@@ -4,6 +4,7 @@
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { fallbackLocale, locales } from '$lib/constants';
   import { sidebarSettings } from '$lib/stores/preferences.store';
+  import { alwaysLoadOriginalFile, playVideoThumbnailOnHover } from '$lib/stores/preferences.store';
   import { colorTheme, locale } from '$lib/stores/preferences.store';
   import { findLocale } from '$lib/utils';
   import { onMount } from 'svelte';
@@ -94,6 +95,24 @@
           />
         </div>
       {/if}
+
+      <div class="ml-4">
+        <SettingSwitch
+          title="Display original photos"
+          subtitle="Prefer to display the original photo when viewing an asset rather than thumbnails when the original asset is web-compatible. This may result in slower photo display speeds."
+          bind:checked={$alwaysLoadOriginalFile}
+          on:toggle={() => ($alwaysLoadOriginalFile = !$alwaysLoadOriginalFile)}
+        />
+      </div>
+
+      <div class="ml-4">
+        <SettingSwitch
+          title="Play video thumbnail on hover"
+          subtitle="Play video thumbnail when mouse is hovering over item. Even when disabled, playback can be started by hovering over the play icon."
+          bind:checked={$playVideoThumbnailOnHover}
+          on:toggle={() => ($playVideoThumbnailOnHover = !$playVideoThumbnailOnHover)}
+        />
+      </div>
 
       <div class="ml-4">
         <SettingSwitch
