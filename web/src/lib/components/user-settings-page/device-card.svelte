@@ -57,8 +57,10 @@
       </span>
       <div class="text-sm">
         <span class="">Last seen</span>
-        <span>{DateTime.fromISO(device.updatedAt, { locale: $locale }).toRelativeCalendar(options)}</span>
-      </div>
+        <span>
+          {DateTime.fromISO(device.updatedAt, { locale: $locale }).toLocaleString(DateTime.DATETIME_MED)}
+        </span>
+      </div>           
     </div>
     {#if !device.current}
       <div class="flex flex-col justify-center text-sm">
