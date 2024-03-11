@@ -2,35 +2,35 @@ import { SystemConfigService } from '@app/domain';
 import { Command, CommandRunner } from 'nest-commander';
 
 @Command({
-  name: 'enable-oauth-auto-redirect',
-  description: 'Enable OAuth auto-redirect',
+  name: 'enable-oauth-login',
+  description: 'Enable OAuth login',
 })
-export class EnableOauthAutoRedirect extends CommandRunner {
+export class EnableOauthLogin extends CommandRunner {
   constructor(private configService: SystemConfigService) {
     super();
   }
 
   async run(): Promise<void> {
     const config = await this.configService.getConfig();
-    config.oauth.autoLaunch = true;
+    config.oauth.enabled = true;
     await this.configService.updateConfig(config);
-    console.log('OAuth auto-redirect has been enabled.');
+    console.log('OAuth login has been enabled.');
   }
 }
 
 @Command({
-  name: 'disable-oauth-auto-redirect',
-  description: 'Disable OAuth auto-redirect',
+  name: 'disable-oauth-login',
+  description: 'Disable OAuth login',
 })
-export class DisableOauthAutoRedirect extends CommandRunner {
+export class DisableOauthLogin extends CommandRunner {
   constructor(private configService: SystemConfigService) {
     super();
   }
 
   async run(): Promise<void> {
     const config = await this.configService.getConfig();
-    config.oauth.autoLaunch = false;
+    config.oauth.enabled = false;
     await this.configService.updateConfig(config);
-    console.log('OAuth auto-redirect has been disabled.');
+    console.log('OAuth login has been disabled.');
   }
 }
