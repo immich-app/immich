@@ -2,7 +2,7 @@ ARG DEVICE=cpu
 
 FROM python:3.11-bookworm@sha256:8e697181d24bd77cc4251fdd37e4cdd6d725c5de2ed63b9bc8db77357400c5e2 as builder-cpu
 
-FROM openvino/ubuntu22_runtime:2023.1.0@sha256:002842a9005ba01543b7169ff6f14ecbec82287f09c4d1dd37717f0a8e8754a7 as builder-openvino
+FROM openvino/ubuntu22_runtime:2023.2.0@sha256:2994cb8b0cf7b6108de88e8f40273761ffbc96d66b783032c5c01ae902035df3 as builder-openvino
 USER root
 RUN apt-get update && apt-get install -y --no-install-recommends python3-dev
 
@@ -36,7 +36,7 @@ RUN poetry install --sync --no-interaction --no-ansi --no-root --with ${DEVICE} 
 
 FROM python:3.11-slim-bookworm@sha256:ce81dc539f0aedc9114cae640f8352fad83d37461c24a3615b01f081d0c0583a as prod-cpu
 
-FROM openvino/ubuntu22_runtime:2023.1.0@sha256:002842a9005ba01543b7169ff6f14ecbec82287f09c4d1dd37717f0a8e8754a7 as prod-openvino
+FROM openvino/ubuntu22_runtime:2023.2.0@sha256:2994cb8b0cf7b6108de88e8f40273761ffbc96d66b783032c5c01ae902035df3 as prod-openvino
 USER root
 
 FROM nvidia/cuda:12.2.2-cudnn8-runtime-ubuntu22.04@sha256:2d913b09e6be8387e1a10976933642c73c840c0b735f0bf3c28d97fc9bc422e0 as prod-cuda
