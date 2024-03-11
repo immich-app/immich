@@ -63,7 +63,7 @@
               Remaining {$remainingUploads} - Processed {$successCounter + $errorCounter}/{$totalUploadCounter}
             </p>
             <p class="immich-form-label text-xs">
-              Uploaded <span class="text-immich-success">{$successCounter - $duplicateCounter}</span> - Error
+              Uploaded <span class="text-immich-success">{$successCounter}</span> - Error
               <span class="text-immich-error">{$errorCounter}</span>
               - Duplicates <span class="text-immich-warning">{$duplicateCounter}</span>
             </p>
