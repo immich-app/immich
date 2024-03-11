@@ -26,6 +26,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
   VIRTUAL_ENV="/opt/venv" \
   PATH="/opt/venv/bin:${PATH}"
 
+RUN apt-get update && apt-get install -y --no-install-recommends g++
+
 RUN pip install --upgrade pip && pip install poetry
 RUN poetry config installer.max-workers 10 && \
     poetry config virtualenvs.create false
