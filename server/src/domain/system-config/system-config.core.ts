@@ -22,6 +22,7 @@ import { Subject } from 'rxjs';
 import { QueueName } from '../job/job.constants';
 import { ISystemConfigRepository } from '../repositories';
 import { SystemConfigDto } from './dto';
+import { load as loadYaml} from 'js-yaml';
 
 export type SystemConfigValidator = (config: SystemConfig, newConfig: SystemConfig) => void | Promise<void>;
 
@@ -341,19 +342,19 @@ export class SystemConfigCore {
     if (force || !this.configCache) {
       try {
         const file = await this.repository.readFile(filepath);
-        const json = JSON.parse(file.toString());
+        const config = loadYaml(file.toString()) as any;
         const overrides: SystemConfigEntity<SystemConfigValue>[] = [];
 
         for (const key of Object.values(SystemConfigKey)) {
-          const value = _.get(json, key);
-          this.unsetDeep(json, key);
+          const value = _.get(config, key);
+          this.unsetDeep(config, key);
           if (value !== undefined) {
             overrides.push({ key, value });
           }
         }
 
-        if (!_.isEmpty(json)) {
-          this.logger.warn(`Unknown keys found: ${JSON.stringify(json, null, 2)}`);
+        if (!_.isEmpty(config)) {
+          this.logger.warn(`Unknown keys found: ${JSON.stringify(config, null, 2)}`);
         }
 
         this.configCache = overrides;
