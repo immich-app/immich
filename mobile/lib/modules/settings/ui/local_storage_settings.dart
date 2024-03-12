@@ -31,7 +31,9 @@ class LocalStorageSettings extends HookConsumerWidget {
       dense: true,
       title: Text(
         "cache_settings_duplicated_assets_title",
-        style: context.textTheme.displayMedium,
+        style: context.textTheme.bodyLarge?.copyWith(
+          fontWeight: FontWeight.w500,
+        ),
       ).tr(args: ["${cacheItemCount.value}"]),
       subtitle: const Text(
         "cache_settings_duplicated_assets_subtitle",

@@ -29,7 +29,12 @@ class SettingsRadioListTile<T> extends StatelessWidget {
               contentPadding: const EdgeInsets.symmetric(horizontal: 20),
               dense: true,
               activeColor: context.primaryColor,
-              title: Text(g.title, style: context.textTheme.displayMedium),
+              title: Text(
+                g.title,
+                style: context.textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
               value: g.value,
               groupValue: groupBy,
               onChanged: onRadioChanged,

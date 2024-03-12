@@ -61,7 +61,12 @@ class _MobileLayout extends StatelessWidget {
       children: SettingSection.values
           .map(
             (s) => ListTile(
-              title: Text(s.title).tr(),
+              title: Text(
+                s.title,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ).tr(),
               leading: Icon(s.icon),
               onTap: () => context.pushRoute(SettingsSubRoute(section: s)),
             ),

@@ -36,7 +36,8 @@ class SettingsSwitchListTile extends StatelessWidget {
       dense: true,
       title: Text(
         title,
-        style: context.textTheme.displayMedium?.copyWith(
+        style: context.textTheme.bodyLarge?.copyWith(
+          fontWeight: FontWeight.w500,
           color: enabled ? null : context.themeData.disabledColor,
           height: 1.5,
         ),

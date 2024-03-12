@@ -15,8 +15,10 @@ class SettingsSubTitle extends StatelessWidget {
       padding: const EdgeInsets.only(left: 20),
       child: Text(
         title,
-        style: context.textTheme.displaySmall
-            ?.copyWith(fontWeight: FontWeight.bold),
+        style: context.textTheme.bodyLarge?.copyWith(
+          color: context.primaryColor,
+          fontWeight: FontWeight.w700,
+        ),
       ),
     );
   }
