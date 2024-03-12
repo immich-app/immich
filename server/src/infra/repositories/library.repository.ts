@@ -5,7 +5,9 @@ import { IsNull, Not } from 'typeorm';
 import { Repository } from 'typeorm/repository/Repository.js';
 import { LibraryEntity, LibraryType } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';
+import { Instrumentation } from '../instrumentation';
 
+@Instrumentation()
 @Injectable()
 export class LibraryRepository implements ILibraryRepository {
   constructor(@InjectRepository(LibraryEntity) private repository: Repository<LibraryEntity>) {}

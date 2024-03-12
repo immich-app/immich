@@ -14,6 +14,7 @@ x-server-build: &server-common
     - DB_DATABASE_NAME=immich
     - REDIS_HOSTNAME=redis
     - IMMICH_MACHINE_LEARNING_ENABLED=false
+    - IMMICH_METRICS=true
   volumes:
     - upload:/usr/src/app/upload
     - ../server/test/assets:/data/assets

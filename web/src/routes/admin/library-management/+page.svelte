@@ -462,8 +462,7 @@
       {:else}
         <EmptyPlaceholder
           text="Create an external library to view your photos and videos"
-          actionHandler={() => (toCreateLibrary = true)}
-          alt="Empty albums"
+          onClick={() => (toCreateLibrary = true)}
         />
       {/if}
     </div>
