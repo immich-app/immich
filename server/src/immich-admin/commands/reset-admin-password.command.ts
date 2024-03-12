@@ -24,19 +24,15 @@ export class ResetAdminPasswordCommand extends CommandRunner {
     return this.inquirer.ask<{ password: string }>('prompt-password', {}).then(({ password }) => password);
   };
 
-  async run(): Promise<void> {
-    try {
-      const { password, provided } = await this.userService.resetAdminPassword(this.ask);
+async run(): Promise<void> {
+  try {
+    const { provided } = await this.userService.resetAdminPassword(this.ask);
 
-      if (provided) {
-        console.log(`The admin password has been updated.`);
-      } else {
-        console.log(`The admin password has been updated to:\n${password}`);
-      }
-    } catch (error) {
-      console.error(error);
-      console.error('Unable to reset admin password');
-    }
+    console.log(`The admin password has been updated.`);
+
+  } catch (error) {
+    console.error(error);
+    console.error('Unable to reset admin password');
   }
 }
 
