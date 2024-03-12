@@ -585,7 +585,7 @@ export class MetadataService {
       sidecarPath = sidecarPathWithoutExt;
     }
 
-    if (sidecarPath != null) {
+    if (sidecarPath) {
       await this.assetRepository.save({ id: asset.id, sidecarPath: sidecarPath });
       return true;
     }
