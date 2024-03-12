@@ -14,7 +14,9 @@ The default configuration looks like this:
     "threads": 0,
     "preset": "ultrafast",
     "targetVideoCodec": "h264",
+    "acceptedVideoCodecs": ["h264"],
     "targetAudioCodec": "aac",
+    "acceptedAudioCodecs": ["aac", "mp3", "libopus"],
     "targetResolution": "720",
     "maxBitrate": "0",
     "bframes": -1,
@@ -24,6 +26,7 @@ The default configuration looks like this:
     "temporalAQ": false,
     "cqMode": "auto",
     "twoPass": false,
+    "preferredHwDevice": "auto",
     "transcode": "required",
     "tonemap": "hable",
     "accel": "disabled"
@@ -38,7 +41,7 @@ The default configuration looks like this:
     "metadataExtraction": {
       "concurrency": 5
     },
-    "recognizeFaces": {
+    "faceDetection": {
       "concurrency": 2
     },
     "search": {
@@ -48,9 +51,6 @@ The default configuration looks like this:
       "concurrency": 5
     },
     "library": {
-      "concurrency": 5
-    },
-    "storageTemplateMigration": {
       "concurrency": 5
     },
     "migration": {
@@ -110,6 +110,8 @@ The default configuration looks like this:
     "enabled": true
   },
   "storageTemplate": {
+    "enabled": false,
+    "hashVerificationEnabled": true,
     "template": "{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}"
   },
   "thumbnail": {
@@ -141,6 +143,13 @@ The default configuration looks like this:
       "usePolling": false,
       "interval": 10000
     }
+  },
+  "server": {
+    "externalDomain": "",
+    "loginPageMessage": ""
+  },
+  "user": {
+    "deleteDelay": 7
   }
 }
 ```
