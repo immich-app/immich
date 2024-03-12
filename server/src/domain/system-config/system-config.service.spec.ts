@@ -235,7 +235,7 @@ describe(SystemConfigService.name, () => {
           days: 10
         user:
           deleteDelay: 15
-      `
+      `;
       configMock.readFile.mockResolvedValue(partialConfig);
 
       await expect(sut.getConfig()).resolves.toEqual(updatedConfig);
@@ -265,7 +265,7 @@ describe(SystemConfigService.name, () => {
       process.env.IMMICH_CONFIG_FILE = 'immich-config.yaml';
       const partialConfig = `
         unknownOption: true
-      `
+      `;
       configMock.readFile.mockResolvedValue(partialConfig);
 
       await sut.getConfig();

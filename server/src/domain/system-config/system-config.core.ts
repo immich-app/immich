@@ -17,12 +17,12 @@ import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/com
 import { CronExpression } from '@nestjs/schedule';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
+import { load as loadYaml } from 'js-yaml';
 import * as _ from 'lodash';
 import { Subject } from 'rxjs';
 import { QueueName } from '../job/job.constants';
 import { ISystemConfigRepository } from '../repositories';
 import { SystemConfigDto } from './dto';
-import { load as loadYaml} from 'js-yaml';
 
 export type SystemConfigValidator = (config: SystemConfig, newConfig: SystemConfig) => void | Promise<void>;
 
