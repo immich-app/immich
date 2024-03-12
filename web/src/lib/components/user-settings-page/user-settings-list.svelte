@@ -6,13 +6,12 @@
   import { oauth } from '$lib/utils';
   import { type ApiKeyResponseDto, type AuthDeviceResponseDto } from '@immich/sdk';
   import SettingAccordion from '../shared-components/settings/setting-accordion.svelte';
-  import AppearanceSettings from './appearance-settings.svelte';
+  import AppSettings from './app-settings.svelte';
   import ChangePasswordSettings from './change-password-settings.svelte';
   import DeviceList from './device-list.svelte';
   import MemoriesSettings from './memories-settings.svelte';
   import OAuthSettings from './oauth-settings.svelte';
   import PartnerSettings from './partner-settings.svelte';
-  import TrashSettings from './trash-settings.svelte';
   import UserAPIKeyList from './user-api-key-list.svelte';
   import UserProfileSettings from './user-profile-settings.svelte';
   import SettingAccordionState from '../shared-components/settings/setting-accordion-state.svelte';
@@ -26,8 +25,8 @@
 </script>
 
 <SettingAccordionState queryParam={QueryParameter.IS_OPEN}>
-  <SettingAccordion key="appearance" title="Appearance" subtitle="Manage the app appearance">
-    <AppearanceSettings />
+  <SettingAccordion key="app-settings" title="App Settings" subtitle="Manage the app settings">
+    <AppSettings />
   </SettingAccordion>
 
   <SettingAccordion key="account" title="Account" subtitle="Manage your account">
@@ -42,7 +41,7 @@
     <DeviceList bind:devices />
   </SettingAccordion>
 
-  <SettingAccordion key="memories" title="Memories" subtitle="Manage what you see in your memories.">
+  <SettingAccordion key="memories" title="Memories" subtitle="Manage what you see in your memories">
     <MemoriesSettings user={$user} />
   </SettingAccordion>
 
@@ -58,9 +57,5 @@
 
   <SettingAccordion key="sharing" title="Sharing" subtitle="Manage sharing with partners">
     <PartnerSettings user={$user} />
-  </SettingAccordion>
-
-  <SettingAccordion key="trash" title="Trash" subtitle="Manage trash settings">
-    <TrashSettings />
   </SettingAccordion>
 </SettingAccordionState>

@@ -156,8 +156,7 @@ describe(LibraryService.name, () => {
 
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
       storageMock.crawl.mockResolvedValue(['/data/user1/photo.jpg']);
-      assetMock.getPathsNotInLibrary.mockResolvedValue(['/data/user1/photo.jpg']);
-      assetMock.getByLibraryId.mockResolvedValue([]);
+      assetMock.getLibraryAssetPaths.mockResolvedValue({ items: [], hasNextPage: false });
 
       await sut.handleQueueAssetRefresh(mockLibraryJob);
 
@@ -183,7 +182,7 @@ describe(LibraryService.name, () => {
 
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
       storageMock.crawl.mockResolvedValue(['/data/user1/photo.jpg']);
-      assetMock.getByLibraryId.mockResolvedValue([]);
+      assetMock.getLibraryAssetPaths.mockResolvedValue({ items: [], hasNextPage: false });
 
       await sut.handleQueueAssetRefresh(mockLibraryJob);
 
@@ -233,7 +232,7 @@ describe(LibraryService.name, () => {
 
       libraryMock.get.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
       storageMock.crawl.mockResolvedValue([]);
-      assetMock.getByLibraryId.mockResolvedValue([]);
+      assetMock.getLibraryAssetPaths.mockResolvedValue({ items: [], hasNextPage: false });
 
       await sut.handleQueueAssetRefresh(mockLibraryJob);
 
@@ -241,6 +240,48 @@ describe(LibraryService.name, () => {
         pathsToCrawl: [libraryStub.externalLibraryWithImportPaths1.importPaths[1]],
         exclusionPatterns: [],
       });
+    });
+
+    it('should set missing assets offline', async () => {
+      const mockLibraryJob: ILibraryRefreshJob = {
+        id: libraryStub.externalLibrary1.id,
+        refreshModifiedFiles: false,
+        refreshAllFiles: false,
+      };
+
+      libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
+      storageMock.crawl.mockResolvedValue([]);
+      assetMock.getLibraryAssetPaths.mockResolvedValue({
+        items: [assetStub.image],
+        hasNextPage: false,
+      });
+
+      await sut.handleQueueAssetRefresh(mockLibraryJob);
+
+      expect(assetMock.updateAll).toHaveBeenCalledWith([assetStub.image.id], { isOffline: true });
+      expect(assetMock.updateAll).not.toHaveBeenCalledWith(expect.anything(), { isOffline: false });
+      expect(jobMock.queueAll).not.toHaveBeenCalled();
+    });
+
+    it('should set crawled assets that were previously offline back online', async () => {
+      const mockLibraryJob: ILibraryRefreshJob = {
+        id: libraryStub.externalLibrary1.id,
+        refreshModifiedFiles: false,
+        refreshAllFiles: false,
+      };
+
+      libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
+      storageMock.crawl.mockResolvedValue([assetStub.offline.originalPath]);
+      assetMock.getLibraryAssetPaths.mockResolvedValue({
+        items: [assetStub.offline],
+        hasNextPage: false,
+      });
+
+      await sut.handleQueueAssetRefresh(mockLibraryJob);
+
+      expect(assetMock.updateAll).toHaveBeenCalledWith([assetStub.offline.id], { isOffline: false });
+      expect(assetMock.updateAll).not.toHaveBeenCalledWith(expect.anything(), { isOffline: true });
+      expect(jobMock.queueAll).not.toHaveBeenCalled();
     });
   });
 
