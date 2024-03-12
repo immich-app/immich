@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.98.1
+ * 1.98.2
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -2210,7 +2210,7 @@ export function searchMetadata({ metadataSearchDto }: {
     metadataSearchDto: MetadataSearchDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
-        status: 201;
+        status: 200;
         data: SearchResponseDto;
     }>("/search/metadata", oazapfts.json({
         ...opts,
@@ -2248,7 +2248,7 @@ export function searchSmart({ smartSearchDto }: {
     smartSearchDto: SmartSearchDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
-        status: 201;
+        status: 200;
         data: SearchResponseDto;
     }>("/search/smart", oazapfts.json({
         ...opts,
