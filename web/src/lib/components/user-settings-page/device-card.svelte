@@ -20,10 +20,24 @@
   const dispatcher = createEventDispatcher<{
     delete: void;
   }>();
+
+  // Calculate difference in hours
+  const hoursAgo = DateTime.now().diff(DateTime.fromISO(device.updatedAt), 'hours').hours;
+
+  // Determine the display format
+  let displayText = 'Last seen today';
+
+  if (hoursAgo >= 24) {
+    // Check if it's older than yesterday
+    const daysAgo = Math.ceil(hoursAgo / 24); // Calculate days
+    displayText = `${daysAgo} days ago`;
+  } else if (hoursAgo >= 8) {
+    // Special check for yesterday (~8 to 24 hours old)
+    displayText = '1 day ago';
+  }
 </script>
 
 <div class="flex w-full flex-row">
-  <!-- TODO: Device Image -->
   <div class="hidden items-center justify-center pr-2 text-immich-primary dark:text-immich-dark-primary sm:flex">
     {#if device.deviceOS === 'Android'}
       <Icon path={mdiAndroid} size="40" />
@@ -52,8 +66,15 @@
       </span>
       <div class="text-sm">
         <span class="">Last seen</span>
-        <span>
-          {DateTime.fromISO(device.updatedAt, { locale: $locale }).toLocaleString(DateTime.DATETIME_MED)}
+        <span
+          class="text-underline cursor-pointer"
+          on:mouseover={(e) =>
+            (e.target.textContent = DateTime.fromISO(device.updatedAt, { locale: $locale }).toLocaleString(
+              DateTime.DATETIME_MED,
+            ))}
+          on:mouseout={(e) => (e.target.textContent = displayText)}
+        >
+          {displayText}
         </span>
       </div>
     </div>
