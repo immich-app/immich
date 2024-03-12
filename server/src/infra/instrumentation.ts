@@ -19,9 +19,9 @@ import { DecorateAll } from './infra.utils';
 
 let metricsEnabled = process.env.IMMICH_METRICS === 'true';
 const hostMetrics =
-  process.env.IMMICH_HOST_METRICS != null ? process.env.IMMICH_HOST_METRICS === 'true' : metricsEnabled;
-const apiMetrics = process.env.IMMICH_API_METRICS != null ? process.env.IMMICH_API_METRICS === 'true' : metricsEnabled;
-const repoMetrics = process.env.IMMICH_IO_METRICS != null ? process.env.IMMICH_IO_METRICS === 'true' : metricsEnabled;
+  process.env.IMMICH_HOST_METRICS == null ? metricsEnabled : process.env.IMMICH_HOST_METRICS === 'true';
+const apiMetrics = process.env.IMMICH_API_METRICS == null ? metricsEnabled : process.env.IMMICH_API_METRICS === 'true';
+const repoMetrics = process.env.IMMICH_IO_METRICS == null ? metricsEnabled : process.env.IMMICH_IO_METRICS === 'true';
 
 metricsEnabled ||= hostMetrics || apiMetrics || repoMetrics;
 if (!metricsEnabled && process.env.OTEL_SDK_DISABLED === undefined) {
