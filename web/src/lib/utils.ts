@@ -59,7 +59,7 @@ export const uploadRequest = async <T>(options: UploadRequestOptions): Promise<{
     });
 
     if (onProgress) {
-      xhr.addEventListener('progress', (event) => onProgress(event));
+      xhr.upload.addEventListener('progress', (event) => onProgress(event));
     }
 
     xhr.open('POST', url);
