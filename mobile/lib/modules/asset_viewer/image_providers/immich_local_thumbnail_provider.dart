@@ -26,13 +26,16 @@ class ImmichLocalThumbnailProvider
   /// that describes the precise image to load.
   @override
   Future<ImmichLocalThumbnailProvider> obtainKey(
-      ImageConfiguration configuration) {
+    ImageConfiguration configuration,
+  ) {
     return SynchronousFuture(this);
   }
 
   @override
   ImageStreamCompleter loadImage(
-      ImmichLocalThumbnailProvider key, ImageDecoderCallback decode) {
+    ImmichLocalThumbnailProvider key,
+    ImageDecoderCallback decode,
+  ) {
     final chunkEvents = StreamController<ImageChunkEvent>();
     return MultiImageStreamCompleter(
       codec: _codec(key.asset, decode, chunkEvents),
