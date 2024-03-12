@@ -309,7 +309,7 @@ export class PersonService {
         person: false,
       },
     };
-    const [asset] = await this.assetRepository.getByIds([id], relations);
+    const asset = await this.assetRepository.getById(id, relations);
     if (!asset || !asset.resizePath || asset.faces?.length > 0) {
       return false;
     }
@@ -490,7 +490,7 @@ export class PersonService {
       imageHeight,
     } = face;
 
-    const [asset] = await this.assetRepository.getByIds([assetId]);
+    const asset = await this.assetRepository.getById(assetId);
     if (!asset?.resizePath) {
       return false;
     }

@@ -152,7 +152,7 @@ export class MetadataService {
 
   async handleLivePhotoLinking(job: IEntityJob) {
     const { id } = job;
-    const [asset] = await this.assetRepository.getByIds([id]);
+    const asset = await this.assetRepository.getById(id, { exifInfo: true });
     if (!asset?.exifInfo) {
       return false;
     }
@@ -203,7 +203,7 @@ export class MetadataService {
   }
 
   async handleMetadataExtraction({ id }: IEntityJob) {
-    const [asset] = await this.assetRepository.getByIds([id]);
+    const asset = await this.assetRepository.getById(id);
     if (!asset) {
       return false;
     }
@@ -292,7 +292,7 @@ export class MetadataService {
 
   async handleSidecarWrite(job: ISidecarWriteJob) {
     const { id, description, dateTimeOriginal, latitude, longitude } = job;
-    const [asset] = await this.assetRepository.getByIds([id]);
+    const asset = await this.assetRepository.getById(id);
     if (!asset) {
       return false;
     }
@@ -552,7 +552,7 @@ export class MetadataService {
   }
 
   private async processSidecar(id: string, isSync: boolean) {
-    const [asset] = await this.assetRepository.getByIds([id]);
+    const asset = await this.assetRepository.getById(id);
 
     if (!asset) {
       return false;

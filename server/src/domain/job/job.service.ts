@@ -214,7 +214,7 @@ export class JobService {
 
       case JobName.METADATA_EXTRACTION: {
         if (item.data.source === 'sidecar-write') {
-          const [asset] = await this.assetRepository.getByIds([item.data.id]);
+          const [asset] = await this.assetRepository.getByIdsWithAllRelations([item.data.id]);
           if (asset) {
             this.communicationRepository.send(ClientEvent.ASSET_UPDATE, asset.ownerId, mapAsset(asset));
           }
@@ -253,7 +253,7 @@ export class JobService {
         if (item.data.source === 'upload') {
           jobs.push({ name: JobName.SMART_SEARCH, data: item.data }, { name: JobName.FACE_DETECTION, data: item.data });
 
-          const [asset] = await this.assetRepository.getByIds([item.data.id]);
+          const asset = await this.assetRepository.getById(item.data.id);
           if (asset) {
             if (asset.type === AssetType.VIDEO) {
               jobs.push({ name: JobName.VIDEO_CONVERSION, data: item.data });
@@ -272,7 +272,7 @@ export class JobService {
           break;
         }
 
-        const [asset] = await this.assetRepository.getByIds([item.data.id]);
+        const [asset] = await this.assetRepository.getByIdsWithAllRelations([item.data.id]);
 
         // Only live-photo motion part will be marked as not visible immediately on upload. Skip notifying clients
         if (asset && asset.isVisible) {

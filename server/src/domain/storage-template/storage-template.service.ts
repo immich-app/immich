@@ -92,7 +92,10 @@ export class StorageTemplateService {
       return true;
     }
 
-    const [asset] = await this.assetRepository.getByIds([id]);
+    const asset = await this.assetRepository.getById(id, { exifInfo: true });
+    if (!asset) {
+      return false;
+    }
 
     const user = await this.userRepository.get(asset.ownerId, {});
     const storageLabel = user?.storageLabel || null;
@@ -101,7 +104,10 @@ export class StorageTemplateService {
 
     // move motion part of live photo
     if (asset.livePhotoVideoId) {
-      const [livePhotoVideo] = await this.assetRepository.getByIds([asset.livePhotoVideoId]);
+      const livePhotoVideo = await this.assetRepository.getById(asset.livePhotoVideoId, { exifInfo: true });
+      if (!livePhotoVideo) {
+        return false;
+      }
       const motionFilename = getLivePhotoMotionFilename(filename, livePhotoVideo.originalPath);
       await this.moveAsset(livePhotoVideo, { storageLabel, filename: motionFilename });
     }

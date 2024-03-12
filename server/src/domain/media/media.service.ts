@@ -152,7 +152,7 @@ export class MediaService {
   }
 
   async handleAssetMigration({ id }: IEntityJob) {
-    const [asset] = await this.assetRepository.getByIds([id]);
+    const asset = await this.assetRepository.getById(id);
     if (!asset) {
       return false;
     }
@@ -165,7 +165,7 @@ export class MediaService {
   }
 
   async handleGenerateJpegThumbnail({ id }: IEntityJob) {
-    const [asset] = await this.assetRepository.getByIds([id]);
+    const asset = await this.assetRepository.getById(id, { exifInfo: true });
     if (!asset) {
       return false;
     }
@@ -215,7 +215,7 @@ export class MediaService {
   }
 
   async handleGenerateWebpThumbnail({ id }: IEntityJob) {
-    const [asset] = await this.assetRepository.getByIds([id]);
+    const asset = await this.assetRepository.getById(id, { exifInfo: true });
     if (!asset) {
       return false;
     }
@@ -226,7 +226,7 @@ export class MediaService {
   }
 
   async handleGenerateThumbhashThumbnail({ id }: IEntityJob): Promise<boolean> {
-    const [asset] = await this.assetRepository.getByIds([id]);
+    const asset = await this.assetRepository.getById(id);
     if (!asset?.resizePath) {
       return false;
     }
@@ -256,7 +256,7 @@ export class MediaService {
   }
 
   async handleVideoConversion({ id }: IEntityJob) {
-    const [asset] = await this.assetRepository.getByIds([id]);
+    const asset = await this.assetRepository.getById(id);
     if (!asset || asset.type !== AssetType.VIDEO) {
       return false;
     }
