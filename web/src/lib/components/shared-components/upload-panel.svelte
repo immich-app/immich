@@ -34,20 +34,17 @@
     in:fade={{ duration: 250 }}
     out:fade={{ duration: 250 }}
     on:outroend={() => {
-      if ($successCounter > 0 && $successCounter !== $duplicateCounter) {
-        notificationController.show({
-          message: 'Upload success, refresh the page to see new upload assets.',
-          type: NotificationType.Info,
-        });
+      if ($errorCounter > 0) {
+        // Show error notification
+      } else if ($successCounter > 0) {
+        // Show success notification
       }
-
       if ($duplicateCounter > 0) {
         notificationController.show({
           message: `Skipped ${$duplicateCounter} duplicate asset${$duplicateCounter > 1 ? 's' : ''}`,
           type: NotificationType.Warning,
         });
       }
-
       uploadAssetsStore.resetStore();
     }}
     class="absolute bottom-6 right-6 z-[10000]"
