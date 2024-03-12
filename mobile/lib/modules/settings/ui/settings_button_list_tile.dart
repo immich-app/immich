@@ -28,7 +28,12 @@ class SettingsButtonListTile extends StatelessWidget {
       horizontalTitleGap: 20,
       isThreeLine: true,
       leading: Icon(icon, color: iconColor),
-      title: Text(title, style: context.textTheme.displayMedium),
+      title: Text(
+        title,
+        style: context.textTheme.bodyLarge?.copyWith(
+          fontWeight: FontWeight.w500,
+        ),
+      ),
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
