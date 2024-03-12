@@ -595,7 +595,7 @@ export class MetadataService {
     }
 
     this.logger.debug(
-      `Sidecar File was not found. Checked paths '${sidecarPathWithExt}' and '${sidecarPathWithoutExt}'. Removing sidecarPath for asset ${asset.id}`,
+      `Sidecar file was not found. Checked paths '${sidecarPathWithExt}' and '${sidecarPathWithoutExt}'. Removing sidecarPath for asset ${asset.id}`,
     );
     await this.assetRepository.save({ id: asset.id, sidecarPath: null });
 
