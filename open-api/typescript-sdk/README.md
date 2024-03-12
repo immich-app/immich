@@ -10,6 +10,8 @@ npm i --save @immich/sdk
 
 ## Usage
 
+For a more detailed example, check out the [`@immich/cli`](https://github.com/immich-app/immich/tree/main/cli).
+
 ```typescript
 import { defaults, getAllAlbums, getAllAssets, getMyUserInfo } from "@immich/sdk";
 
