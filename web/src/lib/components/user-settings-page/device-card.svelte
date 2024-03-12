@@ -12,7 +12,7 @@
     mdiMicrosoftWindows,
     mdiTrashCanOutline,
   } from '@mdi/js';
-  import { DateTime } from 'luxon';
+  import { DateTime, type ToRelativeCalendarOptions } from 'luxon';
   import { createEventDispatcher } from 'svelte';
 
   export let device: AuthDeviceResponseDto;
@@ -21,20 +21,10 @@
     delete: void;
   }>();
 
-  // Calculate difference in hours
-  const hoursAgo = DateTime.now().diff(DateTime.fromISO(device.updatedAt), 'hours').hours;
-
-  // Determine the display format
-  let displayText = 'Last seen today';
-
-  if (hoursAgo >= 24) {
-    // Check if it's older than yesterday
-    const daysAgo = Math.ceil(hoursAgo / 24); // Calculate days
-    displayText = `${daysAgo} days ago`;
-  } else if (hoursAgo >= 8) {
-    // Special check for yesterday (~8 to 24 hours old)
-    displayText = '1 day ago';
-  }
+  const options: ToRelativeCalendarOptions = {
+    unit: 'days',
+    locale: $locale,
+  };
 </script>
 
 <div class="flex w-full flex-row">
@@ -66,15 +56,10 @@
       </span>
       <div class="text-sm">
         <span class="">Last seen</span>
-        <span
-          class="text-underline cursor-pointer"
-          on:mouseover={(e) =>
-            (e.target.textContent = DateTime.fromISO(device.updatedAt, { locale: $locale }).toLocaleString(
-              DateTime.DATETIME_MED,
-            ))}
-          on:mouseout={(e) => (e.target.textContent = displayText)}
-        >
-          {displayText}
+        <span>{DateTime.fromISO(device.updatedAt, { locale: $locale }).toRelativeCalendar(options)}</span>
+        <span class="text-xs text-gray-500 dark:text-gray-400"> - </span>
+        <span class="text-xs text-gray-500 dark:text-gray-400">
+          {DateTime.fromISO(device.updatedAt, { locale: $locale }).toLocaleString(DateTime.DATETIME_MED)}
         </span>
       </div>
     </div>
