@@ -40,7 +40,11 @@
           type: NotificationType.Warning,
         });
       } else if ($successCounter > 0) {
-        // Show success notification
+        notificationController.show({
+          message: 'Upload success, refresh the page to see new upload assets.',
+          type: NotificationType.Info,
+        });
+        ``;
       }
       if ($duplicateCounter > 0) {
         notificationController.show({
