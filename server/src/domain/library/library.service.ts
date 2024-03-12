@@ -658,20 +658,27 @@ export class LibraryService extends EventEmitter {
       this.assetRepository.getLibraryAssetPaths(pagination, library.id),
     );
 
+    this.logger.debug(`Pagination complete`);
+
     for await (const page of pagination) {
       for (const asset of page) {
         const isOffline = !crawledAssetPaths.has(asset.originalPath);
         if (isOffline && !asset.isOffline) {
           assetIdsToMarkOffline.push(asset.id);
+          this.logger.debug(`Adding to offline list: ${asset.originalPath}`);
         }
 
         if (!isOffline && asset.isOffline) {
           assetIdsToMarkOnline.push(asset.id);
+          this.logger.debug(`Adding to online list: ${asset.originalPath}`);
         }
 
         crawledAssetPaths.delete(asset.originalPath);
+        this.logger.debug(`There are ${crawledAssetPaths.size} asset(s) left to check`);
       }
     }
+
+    this.logger.debug(`Checked offline paths`);
 
     if (assetIdsToMarkOffline.length > 0) {
       this.logger.debug(`Found ${assetIdsToMarkOffline.length} offline asset(s) previously marked as online`);
@@ -687,6 +694,8 @@ export class LibraryService extends EventEmitter {
       pathsToScan = [...crawledAssetPaths];
       this.logger.debug(`Will import ${pathsToScan.length} new asset(s)`);
     }
+
+    this.logger.debug(`About to start scan`);
 
     if (pathsToScan.length > 0) {
       await this.scanAssets(job.id, pathsToScan, library.ownerId, job.refreshAllFiles ?? false);
