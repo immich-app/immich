@@ -15,8 +15,10 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import AsyncLock from 'async-lock';
 import { DataSource, EntityManager, QueryRunner } from 'typeorm';
 import { isValidInteger } from '../infra.utils';
+import { Instrumentation } from '../instrumentation';
 import { ImmichLogger } from '../logger';
 
+@Instrumentation()
 @Injectable()
 export class DatabaseRepository implements IDatabaseRepository {
   private logger = new ImmichLogger(DatabaseRepository.name);
@@ -210,6 +212,11 @@ export class DatabaseRepository implements IDatabaseRepository {
     return res as R;
   }
 
+  async tryLock(lock: DatabaseLock): Promise<boolean> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    return await this.acquireTryLock(lock, queryRunner);
+  }
+
   isBusy(lock: DatabaseLock): boolean {
     return this.asyncLock.isBusy(DatabaseLock[lock]);
   }
@@ -220,6 +227,11 @@ export class DatabaseRepository implements IDatabaseRepository {
 
   private async acquireLock(lock: DatabaseLock, queryRunner: QueryRunner): Promise<void> {
     return queryRunner.query('SELECT pg_advisory_lock($1)', [lock]);
+  }
+
+  private async acquireTryLock(lock: DatabaseLock, queryRunner: QueryRunner): Promise<boolean> {
+    const lockResult = await queryRunner.query('SELECT pg_try_advisory_lock($1)', [lock]);
+    return lockResult[0].pg_try_advisory_lock;
   }
 
   private async releaseLock(lock: DatabaseLock, queryRunner: QueryRunner): Promise<void> {

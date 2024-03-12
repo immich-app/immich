@@ -1,7 +1,6 @@
-import { Optional, toBoolean, UploadFieldName, ValidateUUID } from '@app/domain';
+import { Optional, UploadFieldName, ValidateBoolean, ValidateDate, ValidateUUID } from '@app/domain';
 import { ApiProperty } from '@nestjs/swagger';
-import { Transform, Type } from 'class-transformer';
-import { IsBoolean, IsDate, IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateAssetDto {
   @ValidateUUID({ optional: true })
@@ -15,43 +14,29 @@ export class CreateAssetDto {
   @IsString()
   deviceId!: string;
 
-  @IsNotEmpty()
-  @IsDate()
-  @Type(() => Date)
+  @ValidateDate()
   fileCreatedAt!: Date;
 
-  @IsNotEmpty()
-  @IsDate()
-  @Type(() => Date)
+  @ValidateDate()
   fileModifiedAt!: Date;
 
   @Optional()
   @IsString()
   duration?: string;
 
-  @Optional()
-  @IsBoolean()
-  @Transform(toBoolean)
+  @ValidateBoolean({ optional: true })
   isFavorite?: boolean;
 
-  @Optional()
-  @IsBoolean()
-  @Transform(toBoolean)
+  @ValidateBoolean({ optional: true })
   isArchived?: boolean;
 
-  @Optional()
-  @IsBoolean()
-  @Transform(toBoolean)
+  @ValidateBoolean({ optional: true })
   isVisible?: boolean;
 
-  @Optional()
-  @IsBoolean()
-  @Transform(toBoolean)
+  @ValidateBoolean({ optional: true })
   isOffline?: boolean;
 
-  @Optional()
-  @IsBoolean()
-  @Transform(toBoolean)
+  @ValidateBoolean({ optional: true })
   isReadOnly?: boolean;
 
   // The properties below are added to correctly generate the API docs

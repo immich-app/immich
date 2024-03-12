@@ -13,11 +13,17 @@ part of openapi.api;
 class ScanLibraryDto {
   /// Returns a new [ScanLibraryDto] instance.
   ScanLibraryDto({
-    this.refreshAllFiles = false,
+    this.refreshAllFiles,
     this.refreshModifiedFiles,
   });
 
-  bool refreshAllFiles;
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? refreshAllFiles;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -35,7 +41,7 @@ class ScanLibraryDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (refreshAllFiles.hashCode) +
+    (refreshAllFiles == null ? 0 : refreshAllFiles!.hashCode) +
     (refreshModifiedFiles == null ? 0 : refreshModifiedFiles!.hashCode);
 
   @override
@@ -43,7 +49,11 @@ class ScanLibraryDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+    if (this.refreshAllFiles != null) {
       json[r'refreshAllFiles'] = this.refreshAllFiles;
+    } else {
+    //  json[r'refreshAllFiles'] = null;
+    }
     if (this.refreshModifiedFiles != null) {
       json[r'refreshModifiedFiles'] = this.refreshModifiedFiles;
     } else {
@@ -60,7 +70,7 @@ class ScanLibraryDto {
       final json = value.cast<String, dynamic>();
 
       return ScanLibraryDto(
-        refreshAllFiles: mapValueOfType<bool>(json, r'refreshAllFiles') ?? false,
+        refreshAllFiles: mapValueOfType<bool>(json, r'refreshAllFiles'),
         refreshModifiedFiles: mapValueOfType<bool>(json, r'refreshModifiedFiles'),
       );
     }

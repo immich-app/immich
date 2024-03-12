@@ -1,6 +1,6 @@
-import { IsBoolean } from 'class-validator';
+import { ValidateBoolean } from '../../domain.util';
 
 export class SystemConfigPasswordLoginDto {
-  @IsBoolean()
+  @ValidateBoolean()
   enabled!: boolean;
 }

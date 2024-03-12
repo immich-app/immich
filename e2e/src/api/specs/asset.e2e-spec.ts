@@ -2,19 +2,44 @@ import {
   AssetFileUploadResponseDto,
   AssetResponseDto,
   AssetTypeEnum,
+  LibraryResponseDto,
   LoginResponseDto,
   SharedLinkType,
+  TimeBucketSize,
+  getAllLibraries,
+  getAssetInfo,
+  updateAssets,
 } from '@immich/sdk';
 import { exiftool } from 'exiftool-vendored';
 import { DateTime } from 'luxon';
+import { randomBytes } from 'node:crypto';
 import { readFile, writeFile } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 import { Socket } from 'socket.io-client';
 import { createUserDto, uuidDto } from 'src/fixtures';
+import { makeRandomImage } from 'src/generators';
 import { errorDto } from 'src/responses';
-import { app, tempDir, testAssetDir, utils } from 'src/utils';
+import { app, asBearerAuth, tempDir, testAssetDir, utils } from 'src/utils';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+
+const makeUploadDto = (options?: { omit: string }): Record<string, any> => {
+  const dto: Record<string, any> = {
+    deviceAssetId: 'example-image',
+    deviceId: 'TEST',
+    fileCreatedAt: new Date().toISOString(),
+    fileModifiedAt: new Date().toISOString(),
+    isFavorite: 'testing',
+    duration: '0:00:00.000000',
+  };
+
+  const omit = options?.omit;
+  if (omit) {
+    delete dto[omit];
+  }
+
+  return dto;
+};
 
 const TEN_TIMES = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
@@ -35,34 +60,43 @@ const yesterday = today.minus({ days: 1 });
 
 describe('/asset', () => {
   let admin: LoginResponseDto;
+  let websocket: Socket;
+
   let user1: LoginResponseDto;
   let user2: LoginResponseDto;
-  let userStats: LoginResponseDto;
+  let timeBucketUser: LoginResponseDto;
+  let quotaUser: LoginResponseDto;
+  let statsUser: LoginResponseDto;
+  let stackUser: LoginResponseDto;
+
   let user1Assets: AssetFileUploadResponseDto[];
   let user2Assets: AssetFileUploadResponseDto[];
-  let assetLocation: AssetFileUploadResponseDto;
-  let ws: Socket;
+  let stackAssets: AssetFileUploadResponseDto[];
+  let locationAsset: AssetFileUploadResponseDto;
 
   beforeAll(async () => {
     await utils.resetDatabase();
     admin = await utils.adminSetup({ onboarding: false });
 
-    [ws, user1, user2, userStats] = await Promise.all([
+    [websocket, user1, user2, statsUser, quotaUser, timeBucketUser, stackUser] = await Promise.all([
       utils.connectWebsocket(admin.accessToken),
-      utils.userSetup(admin.accessToken, createUserDto.user1),
-      utils.userSetup(admin.accessToken, createUserDto.user2),
-      utils.userSetup(admin.accessToken, createUserDto.user3),
+      utils.userSetup(admin.accessToken, createUserDto.create('1')),
+      utils.userSetup(admin.accessToken, createUserDto.create('2')),
+      utils.userSetup(admin.accessToken, createUserDto.create('stats')),
+      utils.userSetup(admin.accessToken, createUserDto.userQuota),
+      utils.userSetup(admin.accessToken, createUserDto.create('time-bucket')),
+      utils.userSetup(admin.accessToken, createUserDto.create('stack')),
     ]);
 
     // asset location
-    assetLocation = await utils.createAsset(admin.accessToken, {
+    locationAsset = await utils.createAsset(admin.accessToken, {
       assetData: {
         filename: 'thompson-springs.jpg',
         bytes: await readFile(locationAssetFilepath),
       },
     });
 
-    await utils.waitForWebsocketEvent({ event: 'upload', assetId: assetLocation.id });
+    await utils.waitForWebsocketEvent({ event: 'assetUpload', id: locationAsset.id });
 
     user1Assets = await Promise.all([
       utils.createAsset(user1.accessToken),
@@ -80,21 +114,42 @@ describe('/asset', () => {
 
     user2Assets = await Promise.all([utils.createAsset(user2.accessToken)]);
 
+    await Promise.all([
+      utils.createAsset(timeBucketUser.accessToken, { fileCreatedAt: new Date('1970-01-01').toISOString() }),
+      utils.createAsset(timeBucketUser.accessToken, { fileCreatedAt: new Date('1970-02-10').toISOString() }),
+      utils.createAsset(timeBucketUser.accessToken, { fileCreatedAt: new Date('1970-02-11').toISOString() }),
+      utils.createAsset(timeBucketUser.accessToken, { fileCreatedAt: new Date('1970-02-11').toISOString() }),
+    ]);
+
     for (const asset of [...user1Assets, ...user2Assets]) {
       expect(asset.duplicate).toBe(false);
     }
 
     await Promise.all([
       // stats
-      utils.createAsset(userStats.accessToken),
-      utils.createAsset(userStats.accessToken, { isFavorite: true }),
-      utils.createAsset(userStats.accessToken, { isArchived: true }),
-      utils.createAsset(userStats.accessToken, {
+      utils.createAsset(statsUser.accessToken),
+      utils.createAsset(statsUser.accessToken, { isFavorite: true }),
+      utils.createAsset(statsUser.accessToken, { isArchived: true }),
+      utils.createAsset(statsUser.accessToken, {
         isArchived: true,
         isFavorite: true,
         assetData: { filename: 'example.mp4' },
       }),
     ]);
+
+    // stacks
+    stackAssets = await Promise.all([
+      utils.createAsset(stackUser.accessToken),
+      utils.createAsset(stackUser.accessToken),
+      utils.createAsset(stackUser.accessToken),
+      utils.createAsset(stackUser.accessToken),
+      utils.createAsset(stackUser.accessToken),
+    ]);
+
+    await updateAssets(
+      { assetBulkUpdateDto: { stackParentId: stackAssets[0].id, ids: [stackAssets[1].id, stackAssets[2].id] } },
+      { headers: asBearerAuth(stackUser.accessToken) },
+    );
 
     const person1 = await utils.createPerson(user1.accessToken, {
       name: 'Test Person',
@@ -106,7 +161,7 @@ describe('/asset', () => {
   }, 30_000);
 
   afterAll(() => {
-    utils.disconnectWebsocket(ws);
+    utils.disconnectWebsocket(websocket);
   });
 
   describe('GET /asset/:id', () => {
@@ -193,7 +248,7 @@ describe('/asset', () => {
     it('should return stats of all assets', async () => {
       const { status, body } = await request(app)
         .get('/asset/statistics')
-        .set('Authorization', `Bearer ${userStats.accessToken}`);
+        .set('Authorization', `Bearer ${statsUser.accessToken}`);
 
       expect(body).toEqual({ images: 3, videos: 1, total: 4 });
       expect(status).toBe(200);
@@ -202,7 +257,7 @@ describe('/asset', () => {
     it('should return stats of all favored assets', async () => {
       const { status, body } = await request(app)
         .get('/asset/statistics')
-        .set('Authorization', `Bearer ${userStats.accessToken}`)
+        .set('Authorization', `Bearer ${statsUser.accessToken}`)
         .query({ isFavorite: true });
 
       expect(status).toBe(200);
@@ -212,7 +267,7 @@ describe('/asset', () => {
     it('should return stats of all archived assets', async () => {
       const { status, body } = await request(app)
         .get('/asset/statistics')
-        .set('Authorization', `Bearer ${userStats.accessToken}`)
+        .set('Authorization', `Bearer ${statsUser.accessToken}`)
         .query({ isArchived: true });
 
       expect(status).toBe(200);
@@ -222,7 +277,7 @@ describe('/asset', () => {
     it('should return stats of all favored and archived assets', async () => {
       const { status, body } = await request(app)
         .get('/asset/statistics')
-        .set('Authorization', `Bearer ${userStats.accessToken}`)
+        .set('Authorization', `Bearer ${statsUser.accessToken}`)
         .query({ isFavorite: true, isArchived: true });
 
       expect(status).toBe(200);
@@ -232,7 +287,7 @@ describe('/asset', () => {
     it('should return stats of all assets neither favored nor archived', async () => {
       const { status, body } = await request(app)
         .get('/asset/statistics')
-        .set('Authorization', `Bearer ${userStats.accessToken}`)
+        .set('Authorization', `Bearer ${statsUser.accessToken}`)
         .query({ isFavorite: false, isArchived: false });
 
       expect(status).toBe(200);
@@ -488,6 +543,35 @@ describe('/asset', () => {
   });
 
   describe('POST /asset/upload', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(app).post(`/asset/upload`);
+      expect(body).toEqual(errorDto.unauthorized);
+      expect(status).toBe(401);
+    });
+
+    const invalid = [
+      { should: 'require `deviceAssetId`', dto: { ...makeUploadDto({ omit: 'deviceAssetId' }) } },
+      { should: 'require `deviceId`', dto: { ...makeUploadDto({ omit: 'deviceId' }) } },
+      { should: 'require `fileCreatedAt`', dto: { ...makeUploadDto({ omit: 'fileCreatedAt' }) } },
+      { should: 'require `fileModifiedAt`', dto: { ...makeUploadDto({ omit: 'fileModifiedAt' }) } },
+      { should: 'require `duration`', dto: { ...makeUploadDto({ omit: 'duration' }) } },
+      { should: 'throw if `isFavorite` is not a boolean', dto: { ...makeUploadDto(), isFavorite: 'not-a-boolean' } },
+      { should: 'throw if `isVisible` is not a boolean', dto: { ...makeUploadDto(), isVisible: 'not-a-boolean' } },
+      { should: 'throw if `isArchived` is not a boolean', dto: { ...makeUploadDto(), isArchived: 'not-a-boolean' } },
+    ];
+
+    for (const { should, dto } of invalid) {
+      it(`should ${should}`, async () => {
+        const { status, body } = await request(app)
+          .post('/asset/upload')
+          .set('Authorization', `Bearer ${user1.accessToken}`)
+          .attach('assetData', makeRandomImage(), 'example.png')
+          .field(dto);
+        expect(status).toBe(400);
+        expect(body).toEqual(errorDto.badRequest());
+      });
+    }
+
     const tests = [
       {
         input: 'formats/jpg/el_torcal_rocks.jpg',
@@ -601,7 +685,7 @@ describe('/asset', () => {
     ];
 
     for (const { input, expected } of tests) {
-      it(`should generate a thumbnail for ${input}`, async () => {
+      it(`should upload and generate a thumbnail for ${input}`, async () => {
         const filepath = join(testAssetDir, input);
         const { id, duplicate } = await utils.createAsset(admin.accessToken, {
           assetData: { bytes: await readFile(filepath), filename: basename(filepath) },
@@ -609,7 +693,7 @@ describe('/asset', () => {
 
         expect(duplicate).toBe(false);
 
-        await utils.waitForWebsocketEvent({ event: 'upload', assetId: id });
+        await utils.waitForWebsocketEvent({ event: 'assetUpload', id: id });
 
         const asset = await utils.getAssetInfo(admin.accessToken, id);
 
@@ -629,6 +713,57 @@ describe('/asset', () => {
       });
 
       expect(duplicate).toBe(true);
+    });
+
+    it("should not upload to another user's library", async () => {
+      const libraries = await getAllLibraries({}, { headers: asBearerAuth(admin.accessToken) });
+      const library = libraries.find((library) => library.ownerId === user1.userId) as LibraryResponseDto;
+
+      const { body, status } = await request(app)
+        .post('/asset/upload')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .field('libraryId', library.id)
+        .field('deviceAssetId', 'example-image')
+        .field('deviceId', 'e2e')
+        .field('fileCreatedAt', new Date().toISOString())
+        .field('fileModifiedAt', new Date().toISOString())
+        .field('duration', '0:00:00.000000')
+        .attach('assetData', makeRandomImage(), 'example.png');
+
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest('Not found or no asset.upload access'));
+    });
+
+    it('should update the used quota', async () => {
+      const { body, status } = await request(app)
+        .post('/asset/upload')
+        .set('Authorization', `Bearer ${quotaUser.accessToken}`)
+        .field('deviceAssetId', 'example-image')
+        .field('deviceId', 'e2e')
+        .field('fileCreatedAt', new Date().toISOString())
+        .field('fileModifiedAt', new Date().toISOString())
+        .attach('assetData', makeRandomImage(), 'example.jpg');
+
+      expect(body).toEqual({ id: expect.any(String), duplicate: false });
+      expect(status).toBe(201);
+
+      const { body: user } = await request(app).get('/user/me').set('Authorization', `Bearer ${quotaUser.accessToken}`);
+
+      expect(user).toEqual(expect.objectContaining({ quotaUsageInBytes: 70 }));
+    });
+
+    it('should not upload an asset if it would exceed the quota', async () => {
+      const { body, status } = await request(app)
+        .post('/asset/upload')
+        .set('Authorization', `Bearer ${quotaUser.accessToken}`)
+        .field('deviceAssetId', 'example-image')
+        .field('deviceId', 'e2e')
+        .field('fileCreatedAt', new Date().toISOString())
+        .field('fileModifiedAt', new Date().toISOString())
+        .attach('assetData', randomBytes(2014), 'example.jpg');
+
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest('Quota has been exceeded!'));
     });
 
     // These hashes were created by copying the image files to a Samsung phone,
@@ -660,7 +795,7 @@ describe('/asset', () => {
           },
         });
 
-        await utils.waitForWebsocketEvent({ event: 'upload', assetId: response.id });
+        await utils.waitForWebsocketEvent({ event: 'assetUpload', id: response.id });
 
         expect(response.duplicate).toBe(false);
 
@@ -675,7 +810,7 @@ describe('/asset', () => {
 
   describe('GET /asset/thumbnail/:id', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).get(`/asset/thumbnail/${assetLocation.id}`);
+      const { status, body } = await request(app).get(`/asset/thumbnail/${locationAsset.id}`);
 
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
@@ -683,12 +818,12 @@ describe('/asset', () => {
 
     it('should not include gps data for webp thumbnails', async () => {
       const { status, body, type } = await request(app)
-        .get(`/asset/thumbnail/${assetLocation.id}?format=WEBP`)
+        .get(`/asset/thumbnail/${locationAsset.id}?format=WEBP`)
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
       await utils.waitForWebsocketEvent({
-        event: 'upload',
-        assetId: assetLocation.id,
+        event: 'assetUpload',
+        id: locationAsset.id,
       });
 
       expect(status).toBe(200);
@@ -702,7 +837,7 @@ describe('/asset', () => {
 
     it('should not include gps data for jpeg thumbnails', async () => {
       const { status, body, type } = await request(app)
-        .get(`/asset/thumbnail/${assetLocation.id}?format=JPEG`)
+        .get(`/asset/thumbnail/${locationAsset.id}?format=JPEG`)
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
       expect(status).toBe(200);
@@ -717,7 +852,7 @@ describe('/asset', () => {
 
   describe('GET /asset/file/:id', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).get(`/asset/thumbnail/${assetLocation.id}`);
+      const { status, body } = await request(app).get(`/asset/thumbnail/${locationAsset.id}`);
 
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
@@ -725,14 +860,14 @@ describe('/asset', () => {
 
     it('should download the original', async () => {
       const { status, body, type } = await request(app)
-        .get(`/asset/file/${assetLocation.id}`)
+        .get(`/asset/file/${locationAsset.id}`)
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
       expect(status).toBe(200);
       expect(body).toBeDefined();
       expect(type).toBe('image/jpeg');
 
-      const asset = await utils.getAssetInfo(admin.accessToken, assetLocation.id);
+      const asset = await utils.getAssetInfo(admin.accessToken, locationAsset.id);
 
       const original = await readFile(locationAssetFilepath);
       const originalChecksum = utils.sha1(original);
@@ -740,6 +875,378 @@ describe('/asset', () => {
 
       expect(originalChecksum).toBe(downloadChecksum);
       expect(downloadChecksum).toBe(asset.checksum);
+    });
+  });
+
+  describe('GET /asset/map-marker', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(app).get('/asset/map-marker');
+      expect(status).toBe(401);
+      expect(body).toEqual(errorDto.unauthorized);
+    });
+
+    // TODO archive one of these assets
+    it('should get map markers for all non-archived assets', async () => {
+      const { status, body } = await request(app)
+        .get('/asset/map-marker')
+        .query({ isArchived: false })
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toHaveLength(2);
+      expect(body).toEqual([
+        {
+          city: 'Palisade',
+          country: 'United States of America',
+          id: expect.any(String),
+          lat: expect.closeTo(39.115),
+          lon: expect.closeTo(-108.400_968),
+          state: 'Mesa County, Colorado',
+        },
+        {
+          city: 'Ralston',
+          country: 'United States of America',
+          id: expect.any(String),
+          lat: expect.closeTo(41.2203),
+          lon: expect.closeTo(-96.071_625),
+          state: 'Douglas County, Nebraska',
+        },
+      ]);
+    });
+
+    // TODO archive one of these assets
+    it('should get all map markers', async () => {
+      const { status, body } = await request(app)
+        .get('/asset/map-marker')
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toEqual([
+        {
+          city: 'Palisade',
+          country: 'United States of America',
+          id: expect.any(String),
+          lat: expect.closeTo(39.115),
+          lon: expect.closeTo(-108.400_968),
+          state: 'Mesa County, Colorado',
+        },
+        {
+          city: 'Ralston',
+          country: 'United States of America',
+          id: expect.any(String),
+          lat: expect.closeTo(41.2203),
+          lon: expect.closeTo(-96.071_625),
+          state: 'Douglas County, Nebraska',
+        },
+      ]);
+    });
+  });
+
+  describe('GET /asset/time-buckets', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(app).get('/asset/time-buckets').query({ size: TimeBucketSize.Month });
+      expect(status).toBe(401);
+      expect(body).toEqual(errorDto.unauthorized);
+    });
+
+    it('should get time buckets by month', async () => {
+      const { status, body } = await request(app)
+        .get('/asset/time-buckets')
+        .set('Authorization', `Bearer ${timeBucketUser.accessToken}`)
+        .query({ size: TimeBucketSize.Month });
+
+      expect(status).toBe(200);
+      expect(body).toEqual(
+        expect.arrayContaining([
+          { count: 3, timeBucket: '1970-02-01T00:00:00.000Z' },
+          { count: 1, timeBucket: '1970-01-01T00:00:00.000Z' },
+        ]),
+      );
+    });
+
+    it('should not allow access for unrelated shared links', async () => {
+      const sharedLink = await utils.createSharedLink(user1.accessToken, {
+        type: SharedLinkType.Individual,
+        assetIds: user1Assets.map(({ id }) => id),
+      });
+
+      const { status, body } = await request(app)
+        .get('/asset/time-buckets')
+        .query({ key: sharedLink.key, size: TimeBucketSize.Month });
+
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.noPermission);
+    });
+
+    it('should get time buckets by day', async () => {
+      const { status, body } = await request(app)
+        .get('/asset/time-buckets')
+        .set('Authorization', `Bearer ${timeBucketUser.accessToken}`)
+        .query({ size: TimeBucketSize.Day });
+
+      expect(status).toBe(200);
+      expect(body).toEqual([
+        { count: 2, timeBucket: '1970-02-11T00:00:00.000Z' },
+        { count: 1, timeBucket: '1970-02-10T00:00:00.000Z' },
+        { count: 1, timeBucket: '1970-01-01T00:00:00.000Z' },
+      ]);
+    });
+  });
+
+  describe('GET /asset/time-bucket', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(app).get('/asset/time-bucket').query({
+        size: TimeBucketSize.Month,
+        timeBucket: '1900-01-01T00:00:00.000Z',
+      });
+
+      expect(status).toBe(401);
+      expect(body).toEqual(errorDto.unauthorized);
+    });
+
+    it('should handle 5 digit years', async () => {
+      const { status, body } = await request(app)
+        .get('/asset/time-bucket')
+        .query({ size: TimeBucketSize.Month, timeBucket: '+012345-01-01T00:00:00.000Z' })
+        .set('Authorization', `Bearer ${timeBucketUser.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toEqual([]);
+    });
+
+    // TODO enable date string validation while still accepting 5 digit years
+    // it('should fail if time bucket is invalid', async () => {
+    //   const { status, body } = await request(app)
+    //     .get('/asset/time-bucket')
+    //     .set('Authorization', `Bearer ${user1.accessToken}`)
+    //     .query({ size: TimeBucketSize.Month, timeBucket: 'foo' });
+
+    //   expect(status).toBe(400);
+    //   expect(body).toEqual(errorDto.badRequest);
+    // });
+
+    it('should return time bucket', async () => {
+      const { status, body } = await request(app)
+        .get('/asset/time-bucket')
+        .set('Authorization', `Bearer ${timeBucketUser.accessToken}`)
+        .query({ size: TimeBucketSize.Month, timeBucket: '1970-02-10T00:00:00.000Z' });
+
+      expect(status).toBe(200);
+      expect(body).toEqual([]);
+    });
+
+    it('should return error if time bucket is requested with partners asset and archived', async () => {
+      const req1 = await request(app)
+        .get('/asset/time-buckets')
+        .set('Authorization', `Bearer ${timeBucketUser.accessToken}`)
+        .query({ size: TimeBucketSize.Month, withPartners: true, isArchived: true });
+
+      expect(req1.status).toBe(400);
+      expect(req1.body).toEqual(errorDto.badRequest());
+
+      const req2 = await request(app)
+        .get('/asset/time-buckets')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .query({ size: TimeBucketSize.Month, withPartners: true, isArchived: undefined });
+
+      expect(req2.status).toBe(400);
+      expect(req2.body).toEqual(errorDto.badRequest());
+    });
+
+    it('should return error if time bucket is requested with partners asset and favorite', async () => {
+      const req1 = await request(app)
+        .get('/asset/time-buckets')
+        .set('Authorization', `Bearer ${timeBucketUser.accessToken}`)
+        .query({ size: TimeBucketSize.Month, withPartners: true, isFavorite: true });
+
+      expect(req1.status).toBe(400);
+      expect(req1.body).toEqual(errorDto.badRequest());
+
+      const req2 = await request(app)
+        .get('/asset/time-buckets')
+        .set('Authorization', `Bearer ${timeBucketUser.accessToken}`)
+        .query({ size: TimeBucketSize.Month, withPartners: true, isFavorite: false });
+
+      expect(req2.status).toBe(400);
+      expect(req2.body).toEqual(errorDto.badRequest());
+    });
+
+    it('should return error if time bucket is requested with partners asset and trash', async () => {
+      const req = await request(app)
+        .get('/asset/time-buckets')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .query({ size: TimeBucketSize.Month, withPartners: true, isTrashed: true });
+
+      expect(req.status).toBe(400);
+      expect(req.body).toEqual(errorDto.badRequest());
+    });
+  });
+
+  describe('GET /asset', () => {
+    it('should return stack data', async () => {
+      const { status, body } = await request(app).get('/asset').set('Authorization', `Bearer ${stackUser.accessToken}`);
+
+      const stack = body.find((asset: AssetResponseDto) => asset.id === stackAssets[0].id);
+
+      expect(status).toBe(200);
+      expect(stack).toEqual(
+        expect.objectContaining({
+          stackCount: 3,
+          stack:
+            // Response includes children at the root level
+            expect.arrayContaining([
+              expect.objectContaining({ id: stackAssets[1].id }),
+              expect.objectContaining({ id: stackAssets[2].id }),
+            ]),
+        }),
+      );
+    });
+  });
+
+  describe('PUT /asset', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(app).put('/asset');
+
+      expect(status).toBe(401);
+      expect(body).toEqual(errorDto.unauthorized);
+    });
+
+    it('should require a valid parent id', async () => {
+      const { status, body } = await request(app)
+        .put('/asset')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ stackParentId: uuidDto.invalid, ids: [stackAssets[0].id] });
+
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest(['stackParentId must be a UUID']));
+    });
+
+    it('should require access to the parent', async () => {
+      const { status, body } = await request(app)
+        .put('/asset')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ stackParentId: stackAssets[3].id, ids: [user1Assets[0].id] });
+
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.noPermission);
+    });
+
+    it('should add stack children', async () => {
+      const { status } = await request(app)
+        .put('/asset')
+        .set('Authorization', `Bearer ${stackUser.accessToken}`)
+        .send({ stackParentId: stackAssets[0].id, ids: [stackAssets[3].id] });
+
+      expect(status).toBe(204);
+
+      const asset = await getAssetInfo({ id: stackAssets[0].id }, { headers: asBearerAuth(stackUser.accessToken) });
+      expect(asset.stack).not.toBeUndefined();
+      expect(asset.stack).toEqual(expect.arrayContaining([expect.objectContaining({ id: stackAssets[3].id })]));
+    });
+
+    it('should remove stack children', async () => {
+      const { status } = await request(app)
+        .put('/asset')
+        .set('Authorization', `Bearer ${stackUser.accessToken}`)
+        .send({ removeParent: true, ids: [stackAssets[1].id] });
+
+      expect(status).toBe(204);
+
+      const asset = await getAssetInfo({ id: stackAssets[0].id }, { headers: asBearerAuth(stackUser.accessToken) });
+      expect(asset.stack).not.toBeUndefined();
+      expect(asset.stack).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ id: stackAssets[2].id }),
+          expect.objectContaining({ id: stackAssets[3].id }),
+        ]),
+      );
+    });
+
+    it('should remove all stack children', async () => {
+      const { status } = await request(app)
+        .put('/asset')
+        .set('Authorization', `Bearer ${stackUser.accessToken}`)
+        .send({ removeParent: true, ids: [stackAssets[2].id, stackAssets[3].id] });
+
+      expect(status).toBe(204);
+
+      const asset = await getAssetInfo({ id: stackAssets[0].id }, { headers: asBearerAuth(stackUser.accessToken) });
+      expect(asset.stack).toBeUndefined();
+    });
+
+    it('should merge stack children', async () => {
+      // create stack after previous test removed stack children
+      await updateAssets(
+        { assetBulkUpdateDto: { stackParentId: stackAssets[0].id, ids: [stackAssets[1].id, stackAssets[2].id] } },
+        { headers: asBearerAuth(stackUser.accessToken) },
+      );
+
+      const { status } = await request(app)
+        .put('/asset')
+        .set('Authorization', `Bearer ${stackUser.accessToken}`)
+        .send({ stackParentId: stackAssets[3].id, ids: [stackAssets[0].id] });
+
+      expect(status).toBe(204);
+
+      const asset = await getAssetInfo({ id: stackAssets[3].id }, { headers: asBearerAuth(stackUser.accessToken) });
+      expect(asset.stack).not.toBeUndefined();
+      expect(asset.stack).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ id: stackAssets[0].id }),
+          expect.objectContaining({ id: stackAssets[1].id }),
+          expect.objectContaining({ id: stackAssets[2].id }),
+        ]),
+      );
+    });
+  });
+
+  describe('PUT /asset/stack/parent', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(app).put('/asset/stack/parent');
+
+      expect(status).toBe(401);
+      expect(body).toEqual(errorDto.unauthorized);
+    });
+
+    it('should require a valid id', async () => {
+      const { status, body } = await request(app)
+        .put('/asset/stack/parent')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ oldParentId: uuidDto.invalid, newParentId: uuidDto.invalid });
+
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest());
+    });
+
+    it('should require access', async () => {
+      const { status, body } = await request(app)
+        .put('/asset/stack/parent')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ oldParentId: stackAssets[3].id, newParentId: stackAssets[0].id });
+
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.noPermission);
+    });
+
+    it('should make old parent child of new parent', async () => {
+      const { status } = await request(app)
+        .put('/asset/stack/parent')
+        .set('Authorization', `Bearer ${stackUser.accessToken}`)
+        .send({ oldParentId: stackAssets[3].id, newParentId: stackAssets[0].id });
+
+      expect(status).toBe(200);
+
+      const asset = await getAssetInfo({ id: stackAssets[0].id }, { headers: asBearerAuth(stackUser.accessToken) });
+
+      // new parent
+      expect(asset.stack).not.toBeUndefined();
+      expect(asset.stack).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ id: stackAssets[1].id }),
+          expect.objectContaining({ id: stackAssets[2].id }),
+          expect.objectContaining({ id: stackAssets[3].id }),
+        ]),
+      );
     });
   });
 });

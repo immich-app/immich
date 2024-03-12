@@ -2,7 +2,7 @@ import {
   AssetBuilderOptions,
   AssetCreate,
   AssetExploreFieldOptions,
-  AssetSearchOneToOneRelationOptions,
+  AssetPathEntity,
   AssetSearchOptions,
   AssetStats,
   AssetStatsOptions,
@@ -39,6 +39,7 @@ import {
 import { AssetEntity, AssetJobStatusEntity, AssetType, ExifEntity, SmartInfoEntity } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';
 import { Chunked, ChunkedArray, OptionalBetween, paginate, paginatedBuilder, searchAssetBuilder } from '../infra.utils';
+import { Instrumentation } from '../instrumentation';
 
 const truncateMap: Record<TimeBucketSize, string> = {
   [TimeBucketSize.DAY]: 'day',
@@ -50,6 +51,7 @@ const dateTrunc = (options: TimeBucketOptions) =>
     truncateMap[options.size]
   }', (asset."localDateTime" at time zone 'UTC')) at time zone 'UTC')::timestamptz`;
 
+@Instrumentation()
 @Injectable()
 export class AssetRepository implements IAssetRepository {
   constructor(
@@ -185,10 +187,10 @@ export class AssetRepository implements IAssetRepository {
   }
 
   @GenerateSql({ params: [[DummyValue.UUID]] })
-  @ChunkedArray()
-  getByLibraryId(libraryIds: string[]): Promise<AssetEntity[]> {
-    return this.repository.find({
-      where: { library: { id: In(libraryIds) } },
+  getLibraryAssetPaths(pagination: PaginationOptions, libraryId: string): Paginated<AssetPathEntity> {
+    return paginate(this.repository, pagination, {
+      select: { id: true, originalPath: true, isOffline: true },
+      where: { library: { id: libraryId } },
     });
   }
 
@@ -228,29 +230,6 @@ export class AssetRepository implements IAssetRepository {
     builder.orderBy('asset.createdAt', options.orderDirection ?? 'ASC');
     return paginatedBuilder<AssetEntity>(builder, {
       mode: PaginationMode.SKIP_TAKE,
-      skip: pagination.skip,
-      take: pagination.take,
-    });
-  }
-
-  @GenerateSql({
-    params: [
-      { skip: 20_000, take: 10_000 },
-      {
-        takenBefore: DummyValue.DATE,
-        userIds: [DummyValue.UUID],
-      },
-    ],
-  })
-  getAllByFileCreationDate(
-    pagination: PaginationOptions,
-    options: AssetSearchOneToOneRelationOptions = {},
-  ): Paginated<AssetEntity> {
-    let builder = this.repository.createQueryBuilder('asset');
-    builder = searchAssetBuilder(builder, options);
-    builder.orderBy('asset.fileCreatedAt', options.orderDirection ?? 'DESC');
-    return paginatedBuilder<AssetEntity>(builder, {
-      mode: PaginationMode.LIMIT_OFFSET,
       skip: pagination.skip,
       take: pagination.take,
     });

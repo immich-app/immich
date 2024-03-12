@@ -66,8 +66,8 @@ class Asset {
       assetData: new File([await fs.openAsBlob(this.path)], basename(this.path)),
       deviceAssetId: this.deviceAssetId,
       deviceId: 'CLI',
-      fileCreatedAt: this.fileCreatedAt,
-      fileModifiedAt: this.fileModifiedAt,
+      fileCreatedAt: this.fileCreatedAt.toISOString(),
+      fileModifiedAt: this.fileModifiedAt.toISOString(),
       isFavorite: String(false),
     };
     const formData = new FormData();

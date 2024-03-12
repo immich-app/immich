@@ -47,6 +47,7 @@ export class MediaService {
   private logger = new ImmichLogger(MediaService.name);
   private configCore: SystemConfigCore;
   private storageCore: StorageCore;
+  private hasOpenCL?: boolean = undefined;
 
   constructor(
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
@@ -456,8 +457,19 @@ export class MediaService {
         break;
       }
       case TranscodeHWAccel.RKMPP: {
+        if (this.hasOpenCL === undefined) {
+          try {
+            const maliIcdStat = await this.storageRepository.stat('/etc/OpenCL/vendors/mali.icd');
+            const maliDeviceStat = await this.storageRepository.stat('/dev/mali0');
+            this.hasOpenCL = maliIcdStat.isFile() && maliDeviceStat.isCharacterDevice();
+          } catch {
+            this.logger.warn('OpenCL not available for transcoding, using CPU instead.');
+            this.hasOpenCL = false;
+          }
+        }
+
         devices = await this.storageRepository.readdir('/dev/dri');
-        handler = new RKMPPConfig(config, devices);
+        handler = new RKMPPConfig(config, devices, this.hasOpenCL);
         break;
       }
       default: {

@@ -2,12 +2,15 @@ import { ISystemMetadataRepository } from '@app/domain/repositories/system-metad
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SystemMetadata, SystemMetadataEntity } from '../entities';
+import { Instrumentation } from '../instrumentation';
 
+@Instrumentation()
 export class SystemMetadataRepository implements ISystemMetadataRepository {
   constructor(
     @InjectRepository(SystemMetadataEntity)
     private repository: Repository<SystemMetadataEntity>,
   ) {}
+
   async get<T extends keyof SystemMetadata>(key: T): Promise<SystemMetadata[T] | null> {
     const metadata = await this.repository.findOne({ where: { key } });
     if (!metadata) {
