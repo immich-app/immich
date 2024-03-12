@@ -1,6 +1,8 @@
 import { GitHubRelease, IServerInfoRepository } from '@app/domain';
 import { Injectable } from '@nestjs/common';
+import { Instrumentation } from '../instrumentation';
 
+@Instrumentation()
 @Injectable()
 export class ServerInfoRepository implements IServerInfoRepository {
   async getGitHubRelease(): Promise<GitHubRelease> {

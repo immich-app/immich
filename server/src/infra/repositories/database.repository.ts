@@ -15,8 +15,10 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import AsyncLock from 'async-lock';
 import { DataSource, EntityManager, QueryRunner } from 'typeorm';
 import { isValidInteger } from '../infra.utils';
+import { Instrumentation } from '../instrumentation';
 import { ImmichLogger } from '../logger';
 
+@Instrumentation()
 @Injectable()
 export class DatabaseRepository implements IDatabaseRepository {
   private logger = new ImmichLogger(DatabaseRepository.name);

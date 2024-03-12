@@ -13,23 +13,37 @@ import archiver from 'archiver';
 import chokidar, { WatchOptions } from 'chokidar';
 import { glob } from 'fast-glob';
 import { constants, createReadStream, existsSync, mkdirSync } from 'node:fs';
-import fs, { copyFile, readdir, rename, stat, utimes, writeFile } from 'node:fs/promises';
+import fs from 'node:fs/promises';
 import path from 'node:path';
+import { Instrumentation } from '../instrumentation';
 
+@Instrumentation()
 export class FilesystemProvider implements IStorageRepository {
   private logger = new ImmichLogger(FilesystemProvider.name);
 
-  readdir = readdir;
+  readdir(folder: string): Promise<string[]> {
+    return fs.readdir(folder);
+  }
 
-  copyFile = copyFile;
+  copyFile(source: string, target: string) {
+    return fs.copyFile(source, target);
+  }
 
-  stat = stat;
+  stat(filepath: string) {
+    return fs.stat(filepath);
+  }
 
-  writeFile = writeFile;
+  writeFile(filepath: string, buffer: Buffer) {
+    return fs.writeFile(filepath, buffer);
+  }
 
-  rename = rename;
+  rename(source: string, target: string) {
+    return fs.rename(source, target);
+  }
 
-  utimes = utimes;
+  utimes(filepath: string, atime: Date, mtime: Date) {
+    return fs.utimes(filepath, atime, mtime);
+  }
 
   createZipStream(): ImmichZipStream {
     const archive = archiver('zip', { store: true });
