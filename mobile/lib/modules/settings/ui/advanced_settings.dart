@@ -60,7 +60,7 @@ class AdvancedSettings extends HookConsumerWidget {
         valueNotifier: allowSelfSignedSSLCert,
         title: "advanced_settings_self_signed_ssl_title".tr(),
         subtitle: "advanced_settings_self_signed_ssl_subtitle".tr(),
-        onChanged: (value) => HttpOverrides.global = HttpSSLCertOverride(),
+        onChanged: (_) => HttpOverrides.global = HttpSSLCertOverride(),
       ),
     ];
 

@@ -9,6 +9,7 @@ class SettingsSliderListTile extends StatelessWidget {
   final int noDivisons;
   final String? label;
   final bool enabled;
+  final Function(int)? onChangeEnd;
 
   const SettingsSliderListTile({
     required this.valueNotifier,
@@ -18,6 +19,7 @@ class SettingsSliderListTile extends StatelessWidget {
     required this.noDivisons,
     this.enabled = true,
     this.label,
+    this.onChangeEnd,
     super.key,
   });
 
@@ -35,7 +37,7 @@ class SettingsSliderListTile extends StatelessWidget {
       subtitle: Slider(
         value: valueNotifier.value.toDouble(),
         onChanged: (double v) => valueNotifier.value = v.toInt(),
-        onChangeEnd: (double v) => valueNotifier.value = v.toInt(),
+        onChangeEnd: (double v) => onChangeEnd?.call(v.toInt()),
         max: maxValue,
         min: minValue,
         divisions: noDivisons,
