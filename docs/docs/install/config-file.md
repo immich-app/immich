@@ -4,7 +4,7 @@ A config file can be provided as an alternative to the UI configuration.
 
 ### Step 1 - Create a new config file
 
-In JSON format, create a new config file (e.g. `immich.config`) and put it in a location that can be accessed by Immich.
+In JSON format, create a new config file (e.g. `immich.json`) and put it in a location that can be accessed by Immich.
 The default configuration looks like this:
 
 ```json
@@ -163,3 +163,7 @@ So you can just grab it from there, paste it into a file and you're pretty much 
 
 In your `.env` file, set the variable `IMMICH_CONFIG_FILE` to the path of your config.
 For more information, refer to the [Environment Variables](/docs/install/environment-variables.md) section.
+
+:::tip
+YAML-formatted config files are also supported.
+:::
