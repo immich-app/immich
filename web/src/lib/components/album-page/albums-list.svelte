@@ -250,11 +250,7 @@
 
   <!-- Empty Message -->
 {:else}
-  <EmptyPlaceholder
-    text="Create an album to organize your photos and videos"
-    actionHandler={handleCreateAlbum}
-    alt="Empty albums"
-  />
+  <EmptyPlaceholder text="Create an album to organize your photos and videos" onClick={handleCreateAlbum} />
 {/if}
 
 <!-- Context Menu -->
