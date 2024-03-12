@@ -203,12 +203,7 @@
     <section class="w-full pb-28 sm:w-5/6 md:w-[850px]">
       {#if matches.length + extras.length + orphans.length === 0}
         <div class="w-full">
-          <EmptyPlaceholder
-            fullWidth
-            text="Untracked and missing files will show up here"
-            alt="Empty report"
-            src={empty4Url}
-          />
+          <EmptyPlaceholder fullWidth text="Untracked and missing files will show up here" src={empty4Url} />
         </div>
       {:else}
         <div class="gap-2">

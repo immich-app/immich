@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-<img src="design/immich-logo.svg" width="150" title="Login With Custom URL">
+<img src="design/immich-logo-stacked-light.svg" width="300" title="Login With Custom URL">
 </p>
 <h3 align="center">Immich - Soluzione self-hosted ad alte prestazioni per backup di foto e video</h3>
 <br/>

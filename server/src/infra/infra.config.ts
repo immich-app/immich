@@ -34,3 +34,5 @@ export const bullConfig: QueueOptions = {
 };
 
 export const bullQueues: RegisterQueueOptions[] = Object.values(QueueName).map((name) => ({ name }));
+
+export const excludePaths = ['/.well-known/immich', '/custom.css', '/favicon.ico'];

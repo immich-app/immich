@@ -39,11 +39,13 @@ class MemoryPage extends HookConsumerWidget {
     /// The main vertically scrolling page controller with each list of memories
     final memoryPageController = usePageController(initialPage: memoryIndex);
 
-    // The Page Controller that scrolls horizontally with all of the assets
     useEffect(() {
       // Memories is an immersive activity
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
-      return null;
+      return () {
+        // Clean up to normal edge to edge when we are done
+        SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+      };
     });
 
     toNextMemory() {
@@ -159,127 +161,121 @@ class MemoryPage extends HookConsumerWidget {
       },
       child: Scaffold(
         backgroundColor: bgColor,
-        body: PopScope(
-          onPopInvoked: (didPop) {
-            // Remove immersive mode and go back to normal mode
-            SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-          },
-          child: SafeArea(
-            child: PageView.builder(
-              physics: const BouncingScrollPhysics(
-                parent: AlwaysScrollableScrollPhysics(),
-              ),
-              scrollDirection: Axis.vertical,
-              controller: memoryPageController,
-              onPageChanged: (pageNumber) {
-                HapticFeedback.mediumImpact();
-                if (pageNumber < memories.length) {
-                  currentMemoryIndex.value = pageNumber;
-                  currentMemory.value = memories[pageNumber];
-                }
+        body: SafeArea(
+          child: PageView.builder(
+            physics: const BouncingScrollPhysics(
+              parent: AlwaysScrollableScrollPhysics(),
+            ),
+            scrollDirection: Axis.vertical,
+            controller: memoryPageController,
+            onPageChanged: (pageNumber) {
+              HapticFeedback.mediumImpact();
+              if (pageNumber < memories.length) {
+                currentMemoryIndex.value = pageNumber;
+                currentMemory.value = memories[pageNumber];
+              }
 
-                currentAssetPage.value = 0;
+              currentAssetPage.value = 0;
 
-                updateProgressText();
-              },
-              itemCount: memories.length + 1,
-              itemBuilder: (context, mIndex) {
-                // Build last page
-                if (mIndex == memories.length) {
-                  return MemoryEpilogue(
-                    onStartOver: () => memoryPageController.animateToPage(
-                      0,
-                      duration: const Duration(seconds: 1),
-                      curve: Curves.easeInOut,
+              updateProgressText();
+            },
+            itemCount: memories.length + 1,
+            itemBuilder: (context, mIndex) {
+              // Build last page
+              if (mIndex == memories.length) {
+                return MemoryEpilogue(
+                  onStartOver: () => memoryPageController.animateToPage(
+                    0,
+                    duration: const Duration(seconds: 1),
+                    curve: Curves.easeInOut,
+                  ),
+                );
+              }
+              // Build horizontal page
+              final assetController = memoryAssetPageControllers[mIndex];
+              return Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      left: 24.0,
+                      right: 24.0,
+                      top: 8.0,
+                      bottom: 2.0,
                     ),
-                  );
-                }
-                // Build horizontal page
-                final assetController = memoryAssetPageControllers[mIndex];
-                return Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(
-                        left: 24.0,
-                        right: 24.0,
-                        top: 8.0,
-                        bottom: 2.0,
-                      ),
-                      child: AnimatedBuilder(
-                        animation: assetController,
-                        builder: (context, child) {
-                          double value = 0.0;
-                          if (assetController.hasClients) {
-                            // We can only access [page] if this has clients
-                            value = assetController.page ?? 0;
-                          }
-                          return MemoryProgressIndicator(
-                            ticks: memories[mIndex].assets.length,
-                            value: (value + 1) / memories[mIndex].assets.length,
-                          );
-                        },
-                      ),
+                    child: AnimatedBuilder(
+                      animation: assetController,
+                      builder: (context, child) {
+                        double value = 0.0;
+                        if (assetController.hasClients) {
+                          // We can only access [page] if this has clients
+                          value = assetController.page ?? 0;
+                        }
+                        return MemoryProgressIndicator(
+                          ticks: memories[mIndex].assets.length,
+                          value: (value + 1) / memories[mIndex].assets.length,
+                        );
+                      },
                     ),
-                    Expanded(
-                      child: Stack(
-                        children: [
-                          PageView.builder(
-                            physics: const BouncingScrollPhysics(
-                              parent: AlwaysScrollableScrollPhysics(),
-                            ),
-                            controller: assetController,
-                            onPageChanged: onAssetChanged,
-                            scrollDirection: Axis.horizontal,
-                            itemCount: memories[mIndex].assets.length,
-                            itemBuilder: (context, index) {
-                              final asset = memories[mIndex].assets[index];
-                              return GestureDetector(
-                                behavior: HitTestBehavior.translucent,
-                                onTap: () {
-                                  toNextAsset(index);
-                                },
-                                child: Container(
-                                  color: Colors.black,
-                                  child: MemoryCard(
-                                    asset: asset,
-                                    title: memories[mIndex].title,
-                                    showTitle: index == 0,
-                                  ),
+                  ),
+                  Expanded(
+                    child: Stack(
+                      children: [
+                        PageView.builder(
+                          physics: const BouncingScrollPhysics(
+                            parent: AlwaysScrollableScrollPhysics(),
+                          ),
+                          controller: assetController,
+                          onPageChanged: onAssetChanged,
+                          scrollDirection: Axis.horizontal,
+                          itemCount: memories[mIndex].assets.length,
+                          itemBuilder: (context, index) {
+                            final asset = memories[mIndex].assets[index];
+                            return GestureDetector(
+                              behavior: HitTestBehavior.translucent,
+                              onTap: () {
+                                toNextAsset(index);
+                              },
+                              child: Container(
+                                color: Colors.black,
+                                child: MemoryCard(
+                                  asset: asset,
+                                  title: memories[mIndex].title,
+                                  showTitle: index == 0,
                                 ),
+                              ),
+                            );
+                          },
+                        ),
+                        Positioned(
+                          top: 8,
+                          left: 8,
+                          child: MaterialButton(
+                            minWidth: 0,
+                            onPressed: () {
+                              // auto_route doesn't invoke pop scope, so
+                              // turn off full screen mode here
+                              // https://github.com/Milad-Akarie/auto_route_library/issues/1799
+                              context.popRoute();
+                              SystemChrome.setEnabledSystemUIMode(
+                                SystemUiMode.edgeToEdge,
                               );
                             },
-                          ),
-                          Positioned(
-                            top: 8,
-                            left: 8,
-                            child: MaterialButton(
-                              minWidth: 0,
-                              onPressed: () {
-                                // auto_route doesn't invoke pop scope, so
-                                // turn off full screen mode here
-                                // https://github.com/Milad-Akarie/auto_route_library/issues/1799
-                                context.popRoute();
-                                SystemChrome.setEnabledSystemUIMode(
-                                  SystemUiMode.edgeToEdge,
-                                );
-                              },
-                              shape: const CircleBorder(),
-                              color: Colors.white.withOpacity(0.2),
-                              elevation: 0,
-                              child: const Icon(
-                                Icons.close_rounded,
-                                color: Colors.white,
-                              ),
+                            shape: const CircleBorder(),
+                            color: Colors.white.withOpacity(0.2),
+                            elevation: 0,
+                            child: const Icon(
+                              Icons.close_rounded,
+                              color: Colors.white,
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                    MemoryBottomInfo(memory: memories[mIndex]),
-                  ],
-                );
-              },
-            ),
+                  ),
+                  MemoryBottomInfo(memory: memories[mIndex]),
+                ],
+              );
+            },
           ),
         ),
       ),
