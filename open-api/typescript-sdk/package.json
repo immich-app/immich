@@ -1,7 +1,7 @@
 {
   "name": "@immich/sdk",
   "version": "1.98.2",
-  "description": "",
+  "description": "Auto-generated TypeScript SDK for the Immich API",
   "type": "module",
   "main": "./build/index.js",
   "types": "./build/index.d.ts",
@@ -19,5 +19,10 @@
     "@oazapfts/runtime": "^1.0.0",
     "@types/node": "^20.11.0",
     "typescript": "^5.3.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/immich-app/immich.git",
+    "directory": "open-api/typescript-sdk"
   }
 }
