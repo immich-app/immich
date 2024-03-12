@@ -8,11 +8,18 @@
   import EditUserForm from '$lib/components/forms/edit-user-form.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
+  import {
+    NotificationType,
+    notificationController,
+  } from '$lib/components/shared-components/notification/notification';
   import { locale } from '$lib/stores/preferences.store';
+  import { serverConfig } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
+  import { websocketEvents } from '$lib/stores/websocket';
   import { asByteUnitString } from '$lib/utils/byte-units';
-  import { getAllUsers, type UserResponseDto } from '@immich/sdk';
+  import { UserStatus, getAllUsers, type UserResponseDto } from '@immich/sdk';
   import { mdiClose, mdiDeleteRestore, mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
+  import { DateTime } from 'luxon';
   import { onMount } from 'svelte';
   import type { PageData } from './$types';
 
@@ -26,13 +33,26 @@
   let shouldShowRestoreDialog = false;
   let selectedUser: UserResponseDto;
 
+  const refresh = async () => {
+    allUsers = await getAllUsers({ isAll: false });
+  };
+
+  const onDeleteSuccess = (userId: string) => {
+    const user = allUsers.find(({ id }) => id === userId);
+    if (user) {
+      allUsers = allUsers.filter((user) => user.id !== userId);
+      notificationController.show({
+        type: NotificationType.Info,
+        message: `User ${user.email} has been successfully removed.`,
+      });
+    }
+  };
+
   onMount(() => {
     allUsers = $page.data.allUsers;
-  });
 
-  const isDeleted = (user: UserResponseDto): boolean => {
-    return user.deletedAt != undefined;
-  };
+    return websocketEvents.on('on_user_delete', onDeleteSuccess);
+  });
 
   const deleteDateFormat: Intl.DateTimeFormatOptions = {
     month: 'long',
@@ -40,14 +60,14 @@
     year: 'numeric',
   };
 
-  const getDeleteDate = (user: UserResponseDto): string => {
-    let deletedAt = new Date(user.deletedAt ?? Date.now());
-    deletedAt.setDate(deletedAt.getDate() + 7);
-    return deletedAt.toLocaleString($locale, deleteDateFormat);
+  const getDeleteDate = (deletedAt: string): string => {
+    return DateTime.fromISO(deletedAt)
+      .plus({ days: $serverConfig.userDeleteDelay })
+      .toLocaleString(deleteDateFormat, { locale: $locale });
   };
 
   const onUserCreated = async () => {
-    allUsers = await getAllUsers({ isAll: false });
+    await refresh();
     shouldShowCreateUserForm = false;
   };
 
@@ -57,12 +77,12 @@
   };
 
   const onEditUserSuccess = async () => {
-    allUsers = await getAllUsers({ isAll: false });
+    await refresh();
     shouldShowEditUserForm = false;
   };
 
   const onEditPasswordSuccess = async () => {
-    allUsers = await getAllUsers({ isAll: false });
+    await refresh();
     shouldShowEditUserForm = false;
     shouldShowInfoPanel = true;
   };
@@ -72,13 +92,8 @@
     shouldShowDeleteConfirmDialog = true;
   };
 
-  const onUserDeleteSuccess = async () => {
-    allUsers = await getAllUsers({ isAll: false });
-    shouldShowDeleteConfirmDialog = false;
-  };
-
-  const onUserDeleteFail = async () => {
-    allUsers = await getAllUsers({ isAll: false });
+  const onUserDelete = async () => {
+    await refresh();
     shouldShowDeleteConfirmDialog = false;
   };
 
@@ -87,14 +102,8 @@
     shouldShowRestoreDialog = true;
   };
 
-  const onUserRestoreSuccess = async () => {
-    allUsers = await getAllUsers({ isAll: false });
-    shouldShowRestoreDialog = false;
-  };
-
-  const onUserRestoreFail = async () => {
-    // show fail dialog
-    allUsers = await getAllUsers({ isAll: false });
+  const onUserRestore = async () => {
+    await refresh();
     shouldShowRestoreDialog = false;
   };
 </script>
@@ -123,8 +132,8 @@
       {#if shouldShowDeleteConfirmDialog}
         <DeleteConfirmDialog
           user={selectedUser}
-          on:success={onUserDeleteSuccess}
-          on:fail={onUserDeleteFail}
+          on:success={onUserDelete}
+          on:fail={onUserDelete}
           on:cancel={() => (shouldShowDeleteConfirmDialog = false)}
         />
       {/if}
@@ -132,21 +141,27 @@
       {#if shouldShowRestoreDialog}
         <RestoreDialogue
           user={selectedUser}
-          on:success={onUserRestoreSuccess}
-          on:fail={onUserRestoreFail}
+          on:success={onUserRestore}
+          on:fail={onUserRestore}
           on:cancel={() => (shouldShowRestoreDialog = false)}
         />
       {/if}
 
       {#if shouldShowInfoPanel}
         <FullScreenModal onClose={() => (shouldShowInfoPanel = false)}>
-          <div class="w-[500px] max-w-[95vw] rounded-3xl border bg-white p-8 text-sm shadow-sm">
-            <h1 class="mb-4 text-lg font-medium text-immich-primary">Password reset success</h1>
+          <div
+            class="w-[500px] max-w-[95vw] rounded-3xl bg-immich-bg p-8 text-immich-fg shadow-sm dark:bg-immich-dark-gray dark:text-immich-dark-fg"
+          >
+            <h1 class="mb-4 text-2xl font-medium text-immich-primary dark:text-immich-dark-primary">
+              Password reset success
+            </h1>
 
             <p>
               The user's password has been reset to the default <code
-                class="rounded-md bg-gray-200 px-2 py-1 font-bold text-immich-primary">password</code
+                class="rounded-md bg-gray-200 px-2 py-1 font-bold text-immich-primary dark:text-immich-dark-primary dark:bg-gray-700"
+                >password</code
               >
+              <br />
               <br />
               Please inform the user, and they will need to change the password at the next log-on.
             </p>
@@ -173,9 +188,7 @@
           {#if allUsers}
             {#each allUsers as immichUser, index}
               <tr
-                class="flex h-[80px] overflow-hidden w-full place-items-center text-center dark:text-immich-dark-fg {isDeleted(
-                  immichUser,
-                )
+                class="flex h-[80px] overflow-hidden w-full place-items-center text-center dark:text-immich-dark-fg {immichUser.deletedAt
                   ? 'bg-red-300 dark:bg-red-900'
                   : index % 2 == 0
                     ? 'bg-immich-gray dark:bg-immich-dark-gray/75'
@@ -195,7 +208,7 @@
                   </div>
                 </td>
                 <td class="w-4/12 lg:w-3/12 xl:w-2/12 text-ellipsis break-all text-sm">
-                  {#if !isDeleted(immichUser)}
+                  {#if !immichUser.deletedAt}
                     <button
                       on:click={() => editUserHandler(immichUser)}
                       class="rounded-full bg-immich-primary p-2 sm:p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700 max-sm:mb-1"
@@ -211,11 +224,11 @@
                       </button>
                     {/if}
                   {/if}
-                  {#if isDeleted(immichUser)}
+                  {#if immichUser.deletedAt && immichUser.status === UserStatus.Deleted}
                     <button
                       on:click={() => restoreUserHandler(immichUser)}
                       class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
-                      title="scheduled removal on {getDeleteDate(immichUser)}"
+                      title="scheduled removal on {getDeleteDate(immichUser.deletedAt)}"
                     >
                       <Icon path={mdiDeleteRestore} size="16" />
                     </button>

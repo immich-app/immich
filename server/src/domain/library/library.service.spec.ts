@@ -9,11 +9,11 @@ import {
   newAccessRepositoryMock,
   newAssetRepositoryMock,
   newCryptoRepositoryMock,
+  newDatabaseRepositoryMock,
   newJobRepositoryMock,
   newLibraryRepositoryMock,
   newStorageRepositoryMock,
   newSystemConfigRepositoryMock,
-  newUserRepositoryMock,
   systemConfigStub,
   userStub,
 } from '@test';
@@ -23,11 +23,12 @@ import { ILibraryFileJob, ILibraryRefreshJob, JobName } from '../job';
 import {
   IAssetRepository,
   ICryptoRepository,
+  IDatabaseRepository,
   IJobRepository,
   ILibraryRepository,
   IStorageRepository,
   ISystemConfigRepository,
-  IUserRepository,
+  StorageEventType,
 } from '../repositories';
 import { SystemConfigCore } from '../system-config/system-config.core';
 import { mapLibrary } from './library.dto';
@@ -40,20 +41,20 @@ describe(LibraryService.name, () => {
   let assetMock: jest.Mocked<IAssetRepository>;
   let configMock: jest.Mocked<ISystemConfigRepository>;
   let cryptoMock: jest.Mocked<ICryptoRepository>;
-  let userMock: jest.Mocked<IUserRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
   let libraryMock: jest.Mocked<ILibraryRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
+  let databaseMock: jest.Mocked<IDatabaseRepository>;
 
   beforeEach(() => {
     accessMock = newAccessRepositoryMock();
     configMock = newSystemConfigRepositoryMock();
     libraryMock = newLibraryRepositoryMock();
-    userMock = newUserRepositoryMock();
     assetMock = newAssetRepositoryMock();
     jobMock = newJobRepositoryMock();
     cryptoMock = newCryptoRepositoryMock();
     storageMock = newStorageRepositoryMock();
+    databaseMock = newDatabaseRepositoryMock();
 
     // Always validate owner access for library.
     accessMock.library.checkOwnerAccess.mockImplementation((_, libraryIds) => Promise.resolve(libraryIds));
@@ -66,8 +67,10 @@ describe(LibraryService.name, () => {
       jobMock,
       libraryMock,
       storageMock,
-      userMock,
+      databaseMock,
     );
+
+    databaseMock.tryLock.mockResolvedValue(true);
   });
 
   it('should work', () => {
@@ -125,8 +128,17 @@ describe(LibraryService.name, () => {
       );
     });
 
-    it('should not initialize when watching is disabled', async () => {
+    it('should not initialize watcher when watching is disabled', async () => {
       configMock.load.mockResolvedValue(systemConfigStub.libraryWatchDisabled);
+
+      await sut.init();
+
+      expect(storageMock.watch).not.toHaveBeenCalled();
+    });
+
+    it('should not initialize watcher when lock is taken', async () => {
+      configMock.load.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
+      databaseMock.tryLock.mockResolvedValue(false);
 
       await sut.init();
 
@@ -144,9 +156,7 @@ describe(LibraryService.name, () => {
 
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
       storageMock.crawl.mockResolvedValue(['/data/user1/photo.jpg']);
-      assetMock.getPathsNotInLibrary.mockResolvedValue(['/data/user1/photo.jpg']);
-      assetMock.getByLibraryId.mockResolvedValue([]);
-      userMock.get.mockResolvedValue(userStub.admin);
+      assetMock.getLibraryAssetPaths.mockResolvedValue({ items: [], hasNextPage: false });
 
       await sut.handleQueueAssetRefresh(mockLibraryJob);
 
@@ -172,8 +182,7 @@ describe(LibraryService.name, () => {
 
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
       storageMock.crawl.mockResolvedValue(['/data/user1/photo.jpg']);
-      assetMock.getByLibraryId.mockResolvedValue([]);
-      userMock.get.mockResolvedValue(userStub.admin);
+      assetMock.getLibraryAssetPaths.mockResolvedValue({ items: [], hasNextPage: false });
 
       await sut.handleQueueAssetRefresh(mockLibraryJob);
 
@@ -223,8 +232,7 @@ describe(LibraryService.name, () => {
 
       libraryMock.get.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
       storageMock.crawl.mockResolvedValue([]);
-      assetMock.getByLibraryId.mockResolvedValue([]);
-      userMock.get.mockResolvedValue(userStub.externalPathRoot);
+      assetMock.getLibraryAssetPaths.mockResolvedValue({ items: [], hasNextPage: false });
 
       await sut.handleQueueAssetRefresh(mockLibraryJob);
 
@@ -233,6 +241,48 @@ describe(LibraryService.name, () => {
         exclusionPatterns: [],
       });
     });
+
+    it('should set missing assets offline', async () => {
+      const mockLibraryJob: ILibraryRefreshJob = {
+        id: libraryStub.externalLibrary1.id,
+        refreshModifiedFiles: false,
+        refreshAllFiles: false,
+      };
+
+      libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
+      storageMock.crawl.mockResolvedValue([]);
+      assetMock.getLibraryAssetPaths.mockResolvedValue({
+        items: [assetStub.image],
+        hasNextPage: false,
+      });
+
+      await sut.handleQueueAssetRefresh(mockLibraryJob);
+
+      expect(assetMock.updateAll).toHaveBeenCalledWith([assetStub.image.id], { isOffline: true });
+      expect(assetMock.updateAll).not.toHaveBeenCalledWith(expect.anything(), { isOffline: false });
+      expect(jobMock.queueAll).not.toHaveBeenCalled();
+    });
+
+    it('should set crawled assets that were previously offline back online', async () => {
+      const mockLibraryJob: ILibraryRefreshJob = {
+        id: libraryStub.externalLibrary1.id,
+        refreshModifiedFiles: false,
+        refreshAllFiles: false,
+      };
+
+      libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
+      storageMock.crawl.mockResolvedValue([assetStub.offline.originalPath]);
+      assetMock.getLibraryAssetPaths.mockResolvedValue({
+        items: [assetStub.offline],
+        hasNextPage: false,
+      });
+
+      await sut.handleQueueAssetRefresh(mockLibraryJob);
+
+      expect(assetMock.updateAll).toHaveBeenCalledWith([assetStub.offline.id], { isOffline: false });
+      expect(assetMock.updateAll).not.toHaveBeenCalledWith(expect.anything(), { isOffline: true });
+      expect(jobMock.queueAll).not.toHaveBeenCalled();
+    });
   });
 
   describe('handleAssetRefresh', () => {
@@ -240,7 +290,6 @@ describe(LibraryService.name, () => {
 
     beforeEach(() => {
       mockUser = userStub.admin;
-      userMock.get.mockResolvedValue(mockUser);
 
       storageMock.stat.mockResolvedValue({
         size: 100,
@@ -1167,7 +1216,9 @@ describe(LibraryService.name, () => {
       it('should handle a new file event', async () => {
         libraryMock.get.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
         libraryMock.getAll.mockResolvedValue([libraryStub.externalLibraryWithImportPaths1]);
-        storageMock.watch.mockImplementation(makeMockWatcher({ items: [{ event: 'add', value: '/foo/photo.jpg' }] }));
+        storageMock.watch.mockImplementation(
+          makeMockWatcher({ items: [{ event: StorageEventType.ADD, value: '/foo/photo.jpg' }] }),
+        );
 
         await sut.watchAll();
 
@@ -1188,7 +1239,7 @@ describe(LibraryService.name, () => {
         libraryMock.get.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
         libraryMock.getAll.mockResolvedValue([libraryStub.externalLibraryWithImportPaths1]);
         storageMock.watch.mockImplementation(
-          makeMockWatcher({ items: [{ event: 'change', value: '/foo/photo.jpg' }] }),
+          makeMockWatcher({ items: [{ event: StorageEventType.CHANGE, value: '/foo/photo.jpg' }] }),
         );
 
         await sut.watchAll();
@@ -1211,7 +1262,7 @@ describe(LibraryService.name, () => {
         libraryMock.getAll.mockResolvedValue([libraryStub.externalLibraryWithImportPaths1]);
         assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.external);
         storageMock.watch.mockImplementation(
-          makeMockWatcher({ items: [{ event: 'unlink', value: '/foo/photo.jpg' }] }),
+          makeMockWatcher({ items: [{ event: StorageEventType.UNLINK, value: '/foo/photo.jpg' }] }),
         );
 
         await sut.watchAll();
@@ -1225,17 +1276,19 @@ describe(LibraryService.name, () => {
         libraryMock.getAll.mockResolvedValue([libraryStub.externalLibraryWithImportPaths1]);
         storageMock.watch.mockImplementation(
           makeMockWatcher({
-            items: [{ event: 'error', value: 'Error!' }],
+            items: [{ event: StorageEventType.ERROR, value: 'Error!' }],
           }),
         );
 
-        await sut.watchAll();
+        await expect(sut.watchAll()).rejects.toThrow('Error!');
       });
 
       it('should ignore unknown extensions', async () => {
         libraryMock.get.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
         libraryMock.getAll.mockResolvedValue([libraryStub.externalLibraryWithImportPaths1]);
-        storageMock.watch.mockImplementation(makeMockWatcher({ items: [{ event: 'add', value: '/foo/photo.jpg' }] }));
+        storageMock.watch.mockImplementation(
+          makeMockWatcher({ items: [{ event: StorageEventType.ADD, value: '/foo/photo.jpg' }] }),
+        );
 
         await sut.watchAll();
 
@@ -1245,7 +1298,9 @@ describe(LibraryService.name, () => {
       it('should ignore excluded paths', async () => {
         libraryMock.get.mockResolvedValue(libraryStub.patternPath);
         libraryMock.getAll.mockResolvedValue([libraryStub.patternPath]);
-        storageMock.watch.mockImplementation(makeMockWatcher({ items: [{ event: 'add', value: '/dir1/photo.txt' }] }));
+        storageMock.watch.mockImplementation(
+          makeMockWatcher({ items: [{ event: StorageEventType.ADD, value: '/dir1/photo.txt' }] }),
+        );
 
         await sut.watchAll();
 
@@ -1255,7 +1310,9 @@ describe(LibraryService.name, () => {
       it('should ignore excluded paths without case sensitivity', async () => {
         libraryMock.get.mockResolvedValue(libraryStub.patternPath);
         libraryMock.getAll.mockResolvedValue([libraryStub.patternPath]);
-        storageMock.watch.mockImplementation(makeMockWatcher({ items: [{ event: 'add', value: '/DIR1/photo.txt' }] }));
+        storageMock.watch.mockImplementation(
+          makeMockWatcher({ items: [{ event: StorageEventType.ADD, value: '/DIR1/photo.txt' }] }),
+        );
 
         await sut.watchAll();
 
@@ -1264,7 +1321,7 @@ describe(LibraryService.name, () => {
     });
   });
 
-  describe('tearDown', () => {
+  describe('teardown', () => {
     it('should tear down all watchers', async () => {
       libraryMock.getAll.mockResolvedValue([
         libraryStub.externalLibraryWithImportPaths1,
@@ -1286,7 +1343,7 @@ describe(LibraryService.name, () => {
       storageMock.watch.mockImplementation(makeMockWatcher({ close: mockClose }));
 
       await sut.init();
-      await sut.unwatchAll();
+      await sut.teardown();
 
       expect(mockClose).toHaveBeenCalledTimes(2);
     });

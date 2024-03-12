@@ -73,5 +73,28 @@ services:
     ports:
       - 5432:5432
 
+  # set IMMICH_METRICS=true in .env to enable metrics
+  immich-prometheus:
+    container_name: immich_prometheus
+    ports:
+      - 9090:9090
+    image: prom/prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+
+  # first login uses admin/admin
+  # add data source for http://immich-prometheus:9090 to get started
+  immich-grafana:
+    container_name: immich_grafana
+    command: ['./run.sh', '-disable-reporting']
+    ports:
+      - 3000:3000
+    image: grafana/grafana:10.3.3-ubuntu
+    volumes:
+      - grafana-data:/var/lib/grafana
+
 volumes:
   model-cache:
+  prometheus-data:
+  grafana-data:

@@ -1,24 +1,16 @@
 import { AssetType } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
-import { IsBoolean } from 'class-validator';
-import { Optional, toBoolean } from '../../domain.util';
+import { ValidateBoolean } from '../../domain.util';
 import { AssetStats } from '../../repositories';
 
 export class AssetStatsDto {
-  @IsBoolean()
-  @Transform(toBoolean)
-  @Optional()
+  @ValidateBoolean({ optional: true })
   isArchived?: boolean;
 
-  @IsBoolean()
-  @Transform(toBoolean)
-  @Optional()
+  @ValidateBoolean({ optional: true })
   isFavorite?: boolean;
 
-  @IsBoolean()
-  @Transform(toBoolean)
-  @Optional()
+  @ValidateBoolean({ optional: true })
   isTrashed?: boolean;
 }
 

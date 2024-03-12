@@ -12,7 +12,7 @@ import {
   SmartSearchDto,
 } from '@app/domain';
 import { SearchSuggestionRequestDto } from '@app/domain/search/dto/search-suggestion.dto';
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Auth, Authenticated } from '../app.guard';
 import { UseValidation } from '../app.utils';
@@ -24,20 +24,22 @@ import { UseValidation } from '../app.utils';
 export class SearchController {
   constructor(private service: SearchService) {}
 
+  @Get()
+  @ApiOperation({ deprecated: true })
+  search(@Auth() auth: AuthDto, @Query() dto: SearchDto): Promise<SearchResponseDto> {
+    return this.service.search(auth, dto);
+  }
+
   @Post('metadata')
+  @HttpCode(HttpStatus.OK)
   searchMetadata(@Auth() auth: AuthDto, @Body() dto: MetadataSearchDto): Promise<SearchResponseDto> {
     return this.service.searchMetadata(auth, dto);
   }
 
   @Post('smart')
+  @HttpCode(HttpStatus.OK)
   searchSmart(@Auth() auth: AuthDto, @Body() dto: SmartSearchDto): Promise<SearchResponseDto> {
     return this.service.searchSmart(auth, dto);
-  }
-
-  @Get()
-  @ApiOperation({ deprecated: true })
-  search(@Auth() auth: AuthDto, @Query() dto: SearchDto): Promise<SearchResponseDto> {
-    return this.service.search(auth, dto);
   }
 
   @Get('explore')
