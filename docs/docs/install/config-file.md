@@ -14,15 +14,9 @@ The default configuration looks like this:
     "threads": 0,
     "preset": "ultrafast",
     "targetVideoCodec": "h264",
-    "acceptedVideoCodecs": [
-      "h264"
-    ],
+    "acceptedVideoCodecs": ["h264"],
     "targetAudioCodec": "aac",
-    "acceptedAudioCodecs": [
-      "aac",
-      "mp3",
-      "libopus"
-    ],
+    "acceptedAudioCodecs": ["aac", "mp3", "libopus"],
     "targetResolution": "720",
     "maxBitrate": "0",
     "bframes": -1,
