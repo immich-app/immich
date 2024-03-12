@@ -35,7 +35,10 @@
     out:fade={{ duration: 250 }}
     on:outroend={() => {
       if ($errorCounter > 0) {
-        // Show error notification
+        notificationController.show({
+          message: `Upload completed with ${$errorCounter} error${$errorCounter > 1 ? 's' : ''}, refresh the page to see new upload assets.`,
+          type: NotificationType.Warning,
+        });
       } else if ($successCounter > 0) {
         notificationController.show({
           message: 'Upload success, refresh the page to see new upload assets.',
