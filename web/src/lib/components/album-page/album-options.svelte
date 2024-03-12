@@ -21,7 +21,7 @@
     [AssetOrder.Desc]: { icon: mdiArrowDownThin, title: 'Descending' },
   };
 
-  $: selectedOption = options[album.order];
+  $: selectedOption = album.order ? options[album.order] : options[AssetOrder.Desc];
 
   const dispatch = createEventDispatcher<{
     close: void;
@@ -72,12 +72,14 @@
           <div class="py-2">
             <h2 class="text-gray text-sm mb-2">SETTINGS</h2>
             <div class="grid p-2 gap-y-2">
-              <SettingDropdown
-                title="Direction"
-                options={Object.values(options)}
-                selectedOption={options[album.order]}
-                onToggle={(option) => handleToggle(option)}
-              />
+              {#if album.order}
+                <SettingDropdown
+                  title="Direction"
+                  options={Object.values(options)}
+                  selectedOption={options[album.order]}
+                  onToggle={(option) => handleToggle(option)}
+                />
+              {/if}
               <SettingSwitch
                 title="Comments & likes"
                 subtitle="Let others respond"
