@@ -23,6 +23,7 @@ FROM
       "UserTokenEntity__UserTokenEntity_user"."shouldChangePassword" AS "UserTokenEntity__UserTokenEntity_user_shouldChangePassword",
       "UserTokenEntity__UserTokenEntity_user"."createdAt" AS "UserTokenEntity__UserTokenEntity_user_createdAt",
       "UserTokenEntity__UserTokenEntity_user"."deletedAt" AS "UserTokenEntity__UserTokenEntity_user_deletedAt",
+      "UserTokenEntity__UserTokenEntity_user"."status" AS "UserTokenEntity__UserTokenEntity_user_status",
       "UserTokenEntity__UserTokenEntity_user"."updatedAt" AS "UserTokenEntity__UserTokenEntity_user_updatedAt",
       "UserTokenEntity__UserTokenEntity_user"."memoriesEnabled" AS "UserTokenEntity__UserTokenEntity_user_memoriesEnabled",
       "UserTokenEntity__UserTokenEntity_user"."quotaSizeInBytes" AS "UserTokenEntity__UserTokenEntity_user_quotaSizeInBytes",

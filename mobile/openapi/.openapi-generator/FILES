@@ -58,6 +58,7 @@ doc/CreateTagDto.md
 doc/CreateUserDto.md
 doc/CuratedLocationsResponseDto.md
 doc/CuratedObjectsResponseDto.md
+doc/DeleteUserDto.md
 doc/DownloadApi.md
 doc/DownloadArchiveInfo.md
 doc/DownloadInfoDto.md
@@ -184,6 +185,7 @@ doc/UserApi.md
 doc/UserAvatarColor.md
 doc/UserDto.md
 doc/UserResponseDto.md
+doc/UserStatus.md
 doc/ValidateAccessTokenResponseDto.md
 doc/ValidateLibraryDto.md
 doc/ValidateLibraryImportPathResponseDto.md
@@ -268,6 +270,7 @@ lib/model/create_tag_dto.dart
 lib/model/create_user_dto.dart
 lib/model/curated_locations_response_dto.dart
 lib/model/curated_objects_response_dto.dart
+lib/model/delete_user_dto.dart
 lib/model/download_archive_info.dart
 lib/model/download_info_dto.dart
 lib/model/download_response_dto.dart
@@ -380,6 +383,7 @@ lib/model/usage_by_user_dto.dart
 lib/model/user_avatar_color.dart
 lib/model/user_dto.dart
 lib/model/user_response_dto.dart
+lib/model/user_status.dart
 lib/model/validate_access_token_response_dto.dart
 lib/model/validate_library_dto.dart
 lib/model/validate_library_import_path_response_dto.dart
@@ -441,6 +445,7 @@ test/create_tag_dto_test.dart
 test/create_user_dto_test.dart
 test/curated_locations_response_dto_test.dart
 test/curated_objects_response_dto_test.dart
+test/delete_user_dto_test.dart
 test/download_api_test.dart
 test/download_archive_info_test.dart
 test/download_info_dto_test.dart
@@ -567,6 +572,7 @@ test/user_api_test.dart
 test/user_avatar_color_test.dart
 test/user_dto_test.dart
 test/user_response_dto_test.dart
+test/user_status_test.dart
 test/validate_access_token_response_dto_test.dart
 test/validate_library_dto_test.dart
 test/validate_library_import_path_response_dto_test.dart

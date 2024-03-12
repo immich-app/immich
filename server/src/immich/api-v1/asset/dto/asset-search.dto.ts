@@ -1,19 +1,13 @@
-import { Optional, toBoolean } from '@app/domain';
+import { Optional, ValidateBoolean, ValidateDate } from '@app/domain';
 import { ApiProperty } from '@nestjs/swagger';
-import { Transform, Type } from 'class-transformer';
-import { IsBoolean, IsDate, IsInt, IsNotEmpty, IsUUID } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsInt, IsUUID } from 'class-validator';
 
 export class AssetSearchDto {
-  @Optional()
-  @IsNotEmpty()
-  @IsBoolean()
-  @Transform(toBoolean)
+  @ValidateBoolean({ optional: true })
   isFavorite?: boolean;
 
-  @Optional()
-  @IsNotEmpty()
-  @IsBoolean()
-  @Transform(toBoolean)
+  @ValidateBoolean({ optional: true })
   isArchived?: boolean;
 
   @Optional()
@@ -33,13 +27,9 @@ export class AssetSearchDto {
   @ApiProperty({ format: 'uuid' })
   userId?: string;
 
-  @Optional()
-  @IsDate()
-  @Type(() => Date)
+  @ValidateDate({ optional: true })
   updatedAfter?: Date;
 
-  @Optional()
-  @IsDate()
-  @Type(() => Date)
+  @ValidateDate({ optional: true })
   updatedBefore?: Date;
 }

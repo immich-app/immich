@@ -6,10 +6,9 @@ import request from 'supertest';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 const invalidBirthday = [
-  // TODO: enable after replacing `@Type(() => Date)`
-  // { birthDate: 'false', response: 'Invalid date' },
-  // { birthDate: '123567', response: 'Invalid date },
-  // { birthDate: 123_567, response: ['Birth date cannot be in the future'] },
+  { birthDate: 'false', response: 'birthDate must be a date string' },
+  { birthDate: '123567', response: 'birthDate must be a date string' },
+  { birthDate: 123_567, response: 'birthDate must be a date string' },
   { birthDate: new Date(9999, 0, 0).toISOString(), response: ['Birth date cannot be in the future'] },
 ];
 
@@ -152,16 +151,16 @@ describe('/person', () => {
       expect(body).toEqual(errorDto.unauthorized);
     });
 
-    it('should not accept invalid birth dates', async () => {
-      for (const { birthDate, response } of invalidBirthday) {
+    for (const { birthDate, response } of invalidBirthday) {
+      it(`should not accept an invalid birth date [${birthDate}]`, async () => {
         const { status, body } = await request(app)
           .post(`/person`)
           .set('Authorization', `Bearer ${admin.accessToken}`)
           .send({ birthDate });
         expect(status).toBe(400);
         expect(body).toEqual(errorDto.badRequest(response));
-      }
-    });
+      });
+    }
 
     it('should create a person', async () => {
       const { status, body } = await request(app)
@@ -202,16 +201,16 @@ describe('/person', () => {
       });
     }
 
-    it('should not accept invalid birth dates', async () => {
-      for (const { birthDate, response } of invalidBirthday) {
+    for (const { birthDate, response } of invalidBirthday) {
+      it(`should not accept an invalid birth date [${birthDate}]`, async () => {
         const { status, body } = await request(app)
           .put(`/person/${visiblePerson.id}`)
           .set('Authorization', `Bearer ${admin.accessToken}`)
           .send({ birthDate });
         expect(status).toBe(400);
         expect(body).toEqual(errorDto.badRequest(response));
-      }
-    });
+      });
+    }
 
     it('should update a date of birth', async () => {
       const { status, body } = await request(app)

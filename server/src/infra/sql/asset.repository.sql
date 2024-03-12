@@ -428,55 +428,6 @@ WHERE
     AND "isOffline" = $4
   )
 
--- AssetRepository.getAllByFileCreationDate
-SELECT
-  "asset"."id" AS "asset_id",
-  "asset"."deviceAssetId" AS "asset_deviceAssetId",
-  "asset"."ownerId" AS "asset_ownerId",
-  "asset"."libraryId" AS "asset_libraryId",
-  "asset"."deviceId" AS "asset_deviceId",
-  "asset"."type" AS "asset_type",
-  "asset"."originalPath" AS "asset_originalPath",
-  "asset"."resizePath" AS "asset_resizePath",
-  "asset"."webpPath" AS "asset_webpPath",
-  "asset"."thumbhash" AS "asset_thumbhash",
-  "asset"."encodedVideoPath" AS "asset_encodedVideoPath",
-  "asset"."createdAt" AS "asset_createdAt",
-  "asset"."updatedAt" AS "asset_updatedAt",
-  "asset"."deletedAt" AS "asset_deletedAt",
-  "asset"."fileCreatedAt" AS "asset_fileCreatedAt",
-  "asset"."localDateTime" AS "asset_localDateTime",
-  "asset"."fileModifiedAt" AS "asset_fileModifiedAt",
-  "asset"."isFavorite" AS "asset_isFavorite",
-  "asset"."isArchived" AS "asset_isArchived",
-  "asset"."isExternal" AS "asset_isExternal",
-  "asset"."isReadOnly" AS "asset_isReadOnly",
-  "asset"."isOffline" AS "asset_isOffline",
-  "asset"."checksum" AS "asset_checksum",
-  "asset"."duration" AS "asset_duration",
-  "asset"."isVisible" AS "asset_isVisible",
-  "asset"."livePhotoVideoId" AS "asset_livePhotoVideoId",
-  "asset"."originalFileName" AS "asset_originalFileName",
-  "asset"."sidecarPath" AS "asset_sidecarPath",
-  "asset"."stackId" AS "asset_stackId"
-FROM
-  "assets" "asset"
-WHERE
-  (
-    "asset"."fileCreatedAt" <= $1
-    AND 1 = 1
-    AND "asset"."ownerId" IN ($2)
-    AND 1 = 1
-    AND "asset"."isArchived" = $3
-  )
-  AND ("asset"."deletedAt" IS NULL)
-ORDER BY
-  "asset"."fileCreatedAt" DESC
-LIMIT
-  10001
-OFFSET
-  20000
-
 -- AssetRepository.getAllByDeviceId
 SELECT
   "AssetEntity"."deviceAssetId" AS "AssetEntity_deviceAssetId",

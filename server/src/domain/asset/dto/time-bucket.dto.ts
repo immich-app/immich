@@ -1,7 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
-import { IsBoolean, IsEnum, IsNotEmpty, IsString } from 'class-validator';
-import { Optional, ValidateUUID, toBoolean } from '../../domain.util';
+import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import { ValidateBoolean, ValidateUUID } from '../../domain.util';
 import { TimeBucketSize } from '../../repositories';
 
 export class TimeBucketDto {
@@ -19,34 +18,23 @@ export class TimeBucketDto {
   @ValidateUUID({ optional: true })
   personId?: string;
 
-  @Optional()
-  @IsBoolean()
-  @Transform(toBoolean)
+  @ValidateBoolean({ optional: true })
   isArchived?: boolean;
 
-  @Optional()
-  @IsBoolean()
-  @Transform(toBoolean)
+  @ValidateBoolean({ optional: true })
   isFavorite?: boolean;
 
-  @Optional()
-  @IsBoolean()
-  @Transform(toBoolean)
+  @ValidateBoolean({ optional: true })
   isTrashed?: boolean;
 
-  @Optional()
-  @IsBoolean()
-  @Transform(toBoolean)
+  @ValidateBoolean({ optional: true })
   withStacked?: boolean;
 
-  @Optional()
-  @IsBoolean()
-  @Transform(toBoolean)
+  @ValidateBoolean({ optional: true })
   withPartners?: boolean;
 }
 
 export class TimeBucketAssetDto extends TimeBucketDto {
   @IsString()
-  @IsNotEmpty()
   timeBucket!: string;
 }
