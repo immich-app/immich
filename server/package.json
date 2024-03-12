@@ -1,6 +1,6 @@
 {
   "name": "immich",
-  "version": "1.98.0",
+  "version": "1.98.2",
   "description": "",
   "author": "",
   "private": true,
@@ -23,7 +23,6 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "e2e:jobs": "jest --config e2e/jobs/jest-e2e.json --runInBand",
-    "e2e:api": "jest --config e2e/api/jest-e2e.json --runInBand",
     "typeorm": "typeorm",
     "typeorm:migrations:create": "typeorm migration:create",
     "typeorm:migrations:generate": "typeorm migration:generate -d ./dist/infra/database.config.js",
@@ -58,6 +57,7 @@
     "cookie-parser": "^1.4.6",
     "exiftool-vendored": "~24.5.0",
     "exiftool-vendored.pl": "12.76",
+    "fast-glob": "^3.3.2",
     "fluent-ffmpeg": "^2.1.2",
     "geo-tz": "^8.0.0",
     "glob": "^10.3.3",
@@ -76,6 +76,7 @@
     "rxjs": "^7.8.1",
     "sanitize-filename": "^1.6.3",
     "sharp": "^0.33.0",
+    "sirv": "^2.0.4",
     "thumbhash": "^0.1.1",
     "typeorm": "^0.3.17",
     "ua-parser-js": "^1.0.35"

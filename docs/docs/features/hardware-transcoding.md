@@ -42,6 +42,18 @@ You do not need to redo any transcoding jobs after enabling hardware acceleratio
   - If you have an 11th gen CPU or older, then you may need to follow [these][jellyfin-lp] instructions as Low-Power mode is required
   - Additionally, if the server specifically has an 11th gen CPU and is running kernel 5.15 (shipped with Ubuntu 22.04 LTS), then you will need to upgrade this kernel (from [Jellyfin docs][jellyfin-kernel-bug])
 
+#### RKMPP
+
+For RKMPP to work:
+
+- You must have a supported Rockchip ARM SoC.
+- Only RK3588 supports hardware tonemapping, other SoCs use slower software tonemapping while still using hardware encoding.
+- Tonemapping requires `/usr/lib/aarch64-linux-gnu/libmali.so.1` to be present on your host system. Install [`libmali-valhall-g610-g6p0-gbm`][libmali-rockchip] and modify the [`hwaccel.transcoding.yml`][hw-file] file:
+  - under `rkmpp` uncomment the 3 lines required for OpenCL tonemapping by removing the `#` symbol at the beginning of each line
+  - `- /dev/mali0:/dev/mali0`
+  - `- /etc/OpenCL:/etc/OpenCL:ro`
+  - `- /usr/lib/aarch64-linux-gnu/libmali.so.1:/usr/lib/aarch64-linux-gnu/libmali.so.1:ro`
+
 ## Setup
 
 #### Basic Setup
@@ -106,3 +118,4 @@ Once this is done, you can continue to step 3 of "Basic Setup".
 [nvcr]: https://github.com/NVIDIA/nvidia-container-runtime/
 [jellyfin-lp]: https://jellyfin.org/docs/general/administration/hardware-acceleration/intel/#configure-and-verify-lp-mode-on-linux
 [jellyfin-kernel-bug]: https://jellyfin.org/docs/general/administration/hardware-acceleration/intel/#known-issues-and-limitations
+[libmali-rockchip]: https://github.com/tsukumijima/libmali-rockchip/releases

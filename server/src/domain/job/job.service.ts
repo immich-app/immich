@@ -280,6 +280,11 @@ export class JobService {
         }
         break;
       }
+
+      case JobName.USER_DELETION: {
+        this.communicationRepository.broadcast(ClientEvent.USER_DELETE, item.data.id);
+        break;
+      }
     }
   }
 }

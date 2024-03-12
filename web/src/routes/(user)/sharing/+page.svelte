@@ -92,7 +92,6 @@
         {#if data.sharedAlbums.length === 0}
           <EmptyPlaceholder
             text="Create a shared album to share photos and videos with people in your network"
-            alt="Empty album list"
             src={empty2Url}
           />
         {/if}

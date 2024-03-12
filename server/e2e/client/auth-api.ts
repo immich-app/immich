@@ -1,4 +1,4 @@
-import { LoginCredentialDto, LoginResponseDto, UserResponseDto } from '@app/domain';
+import { LoginResponseDto, UserResponseDto } from '@app/domain';
 import { adminSignupStub, loginResponseStub, loginStub } from '@test';
 import request from 'supertest';
 
@@ -16,14 +16,6 @@ export const authApi = {
     expect(body).toEqual(loginResponseStub.admin.response);
     expect(body).toMatchObject({ accessToken: expect.any(String) });
     expect(status).toBe(201);
-
-    return body as LoginResponseDto;
-  },
-  login: async (server: any, dto: LoginCredentialDto) => {
-    const { status, body } = await request(server).post('/auth/login').send(dto);
-
-    expect(status).toEqual(201);
-    expect(body).toMatchObject({ accessToken: expect.any(String) });
 
     return body as LoginResponseDto;
   },
