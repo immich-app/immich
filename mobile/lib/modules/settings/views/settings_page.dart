@@ -5,6 +5,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/settings/ui/advanced_settings.dart';
 import 'package:immich_mobile/modules/settings/ui/asset_list_settings/asset_list_settings.dart';
+import 'package:immich_mobile/modules/settings/ui/backup_settings/backup_settings.dart';
 import 'package:immich_mobile/modules/settings/ui/image_viewer_quality_setting.dart';
 import 'package:immich_mobile/modules/settings/ui/notification_setting.dart';
 import 'package:immich_mobile/modules/settings/ui/preference_settings/preference_setting.dart';
@@ -16,6 +17,7 @@ enum SettingSection {
     Icons.notifications_none_rounded,
   ),
   preferences('preferences_settings_title', Icons.interests_outlined),
+  backup('backup_controller_page_backup', Icons.cloud_upload_outlined),
   timeline('asset_list_settings_title', Icons.auto_awesome_mosaic_outlined),
   viewer('asset_viewer_settings_title', Icons.image_outlined),
   advanced('advanced_settings_tile_title', Icons.build_outlined);
@@ -26,6 +28,7 @@ enum SettingSection {
   Widget get widget => switch (this) {
         SettingSection.notifications => const NotificationSetting(),
         SettingSection.preferences => const PreferenceSetting(),
+        SettingSection.backup => const BackupSettings(),
         SettingSection.timeline => const AssetListSettings(),
         SettingSection.viewer => const ImageViewerQualitySetting(),
         SettingSection.advanced => const AdvancedSettings(),
