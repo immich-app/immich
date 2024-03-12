@@ -5,11 +5,13 @@
   import Albums from '$lib/components/album-page/albums-list.svelte';
 
   export let data: PageData;
+
+  let searchAlbum = '';
 </script>
 
 <UserPageLayout title={data.meta.title}>
   <div class="flex place-items-center gap-2" slot="buttons">
-    <AlbumsControls />
+    <AlbumsControls bind:searchAlbum />
   </div>
-  <Albums albums={data.albums} />
+  <Albums albums={data.albums} {searchAlbum} />
 </UserPageLayout>

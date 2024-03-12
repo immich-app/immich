@@ -1,9 +1,3 @@
-<script lang="ts" context="module">
-  import { writable } from 'svelte/store';
-
-  export const searchAlbum = writable<string>('');
-</script>
-
 <script lang="ts">
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import Dropdown from '$lib/components/elements/dropdown.svelte';
@@ -19,6 +13,8 @@
   import { sortByOptions, type Sort, handleCreateAlbum } from '$lib/components/album-page/albums-list.svelte';
   import SearchBar from '$lib/components/elements/search-bar.svelte';
 
+  export let searchAlbum: string;
+
   const searchSort = (searched: string): Sort => {
     return sortByOptions.find((option) => option.title === searched) || sortByOptions[0];
   };
@@ -30,7 +26,7 @@
 </script>
 
 <div class="hidden lg:block lg:w-40 xl:w-60 2xl:w-80 h-10">
-  <SearchBar placeholder="Search albums" bind:name={$searchAlbum} isSearching={false} />
+  <SearchBar placeholder="Search albums" bind:name={searchAlbum} isSearching={false} />
 </div>
 <LinkButton on:click={handleCreateAlbum}>
   <div class="flex place-items-center gap-2 text-sm">

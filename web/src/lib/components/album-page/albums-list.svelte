@@ -118,9 +118,9 @@
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
   import AlbumsTable from '$lib/components/album-page/albums-table.svelte';
   import { handleError } from '$lib/utils/handle-error';
-  import { searchAlbum } from './albums-controls.svelte';
 
   export let albums: AlbumResponseDto[];
+  export let searchAlbum: string;
 
   let shouldShowEditAlbumForm = false;
   let selectedAlbum: AlbumResponseDto;
@@ -139,7 +139,7 @@
     }
   }
   $: isShowContextMenu = !!contextMenuTargetAlbum;
-  $: albumsFiltered = albums.filter((album) => album.albumName.toLowerCase().includes($searchAlbum.toLowerCase()));
+  $: albumsFiltered = albums.filter((album) => album.albumName.toLowerCase().includes(searchAlbum.toLowerCase()));
 
   onMount(async () => {
     await removeAlbumsIfEmpty();
