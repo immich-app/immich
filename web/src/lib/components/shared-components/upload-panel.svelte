@@ -44,7 +44,6 @@
           message: 'Upload success, refresh the page to see new upload assets.',
           type: NotificationType.Info,
         });
-        ``;
       }
       if ($duplicateCounter > 0) {
         notificationController.show({
