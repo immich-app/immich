@@ -142,4 +142,28 @@ describe(`immich upload`, () => {
       expect(assets.length).toBe(9);
     });
   });
+
+  describe('immich upload --concurrency <number>', () => {
+    it('should reject string argument', async () => {
+      const { stderr, exitCode } = await immichCli([
+        'upload',
+        `${testAssetDir}/albums/nature/`,
+        '--concurrency string',
+      ]);
+
+      expect(stderr).toBe('unknown argument');
+      expect(exitCode).not.toBe(0);
+    });
+    
+    it('should reject command without number', async () => {
+      const { stderr, exitCode } = await immichCli([
+        'upload',
+        `${testAssetDir}/albums/nature/`,
+        '--concurrency',
+      ]);
+
+      expect(stderr).toContain('argument missing');
+      expect(exitCode).not.toBe(0);
+    });
+  });
 });
