@@ -35,7 +35,7 @@ import {
   Not,
   Repository,
 } from 'typeorm';
-import { AssetEntity, AssetJobStatusEntity, AssetType, ExifEntity, SmartInfoEntity } from '../entities';
+import { AssetEntity, AssetJobStatusEntity, AssetOrder, AssetType, ExifEntity, SmartInfoEntity } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';
 import { Chunked, ChunkedArray, OptionalBetween, paginate, paginatedBuilder, searchAssetBuilder } from '../infra.utils';
 
@@ -598,7 +598,7 @@ export class AssetRepository implements IAssetRepository {
       .select(`COUNT(asset.id)::int`, 'count')
       .addSelect(truncated, 'timeBucket')
       .groupBy(truncated)
-      .orderBy(truncated, options.ascendingOrder ? 'ASC' : 'DESC')
+      .orderBy(truncated, options.order === AssetOrder.ASC ? 'ASC' : 'DESC')
       .getRawMany();
   }
 
@@ -611,7 +611,7 @@ export class AssetRepository implements IAssetRepository {
         // First sort by the day in localtime (put it in the right bucket)
         .orderBy(truncated, 'DESC')
         // and then sort by the actual time
-        .addOrderBy('asset.fileCreatedAt', 'DESC')
+        .addOrderBy('asset.fileCreatedAt', options.order === AssetOrder.ASC ? 'ASC' : 'DESC')
         .getMany()
     );
   }

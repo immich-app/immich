@@ -144,7 +144,6 @@ export type AssetResponseDto = {
 export type AlbumResponseDto = {
     albumName: string;
     albumThumbnailAssetId: string | null;
-    ascendingOrder: boolean;
     assetCount: number;
     assets: AssetResponseDto[];
     createdAt: string;
@@ -154,6 +153,7 @@ export type AlbumResponseDto = {
     id: string;
     isActivityEnabled: boolean;
     lastModifiedAssetTimestamp?: string;
+    order?: AssetOrder;
     owner: UserResponseDto;
     ownerId: string;
     shared: boolean;
@@ -175,9 +175,9 @@ export type AlbumCountResponseDto = {
 export type UpdateAlbumDto = {
     albumName?: string;
     albumThumbnailAssetId?: string;
-    ascendingOrder?: boolean;
     description?: string;
     isActivityEnabled?: boolean;
+    order?: AssetOrder;
 };
 export type BulkIdsDto = {
     ids: string[];
@@ -1455,13 +1455,13 @@ export function getAssetThumbnail({ format, id, key }: {
         ...opts
     }));
 }
-export function getTimeBucket({ albumId, ascendingOrder, isArchived, isFavorite, isTrashed, key, personId, size, timeBucket, userId, withPartners, withStacked }: {
+export function getTimeBucket({ albumId, isArchived, isFavorite, isTrashed, key, order, personId, size, timeBucket, userId, withPartners, withStacked }: {
     albumId?: string;
-    ascendingOrder?: boolean;
     isArchived?: boolean;
     isFavorite?: boolean;
     isTrashed?: boolean;
     key?: string;
+    order?: AssetOrder;
     personId?: string;
     size: TimeBucketSize;
     timeBucket: string;
@@ -1474,11 +1474,11 @@ export function getTimeBucket({ albumId, ascendingOrder, isArchived, isFavorite,
         data: AssetResponseDto[];
     }>(`/asset/time-bucket${QS.query(QS.explode({
         albumId,
-        ascendingOrder,
         isArchived,
         isFavorite,
         isTrashed,
         key,
+        order,
         personId,
         size,
         timeBucket,
@@ -1489,13 +1489,13 @@ export function getTimeBucket({ albumId, ascendingOrder, isArchived, isFavorite,
         ...opts
     }));
 }
-export function getTimeBuckets({ albumId, ascendingOrder, isArchived, isFavorite, isTrashed, key, personId, size, userId, withPartners, withStacked }: {
+export function getTimeBuckets({ albumId, isArchived, isFavorite, isTrashed, key, order, personId, size, userId, withPartners, withStacked }: {
     albumId?: string;
-    ascendingOrder?: boolean;
     isArchived?: boolean;
     isFavorite?: boolean;
     isTrashed?: boolean;
     key?: string;
+    order?: AssetOrder;
     personId?: string;
     size: TimeBucketSize;
     userId?: string;
@@ -1507,11 +1507,11 @@ export function getTimeBuckets({ albumId, ascendingOrder, isArchived, isFavorite
         data: TimeBucketResponseDto[];
     }>(`/asset/time-buckets${QS.query(QS.explode({
         albumId,
-        ascendingOrder,
         isArchived,
         isFavorite,
         isTrashed,
         key,
+        order,
         personId,
         size,
         userId,
@@ -2753,6 +2753,10 @@ export enum AssetTypeEnum {
     Audio = "AUDIO",
     Other = "OTHER"
 }
+export enum AssetOrder {
+    Asc = "asc",
+    Desc = "desc"
+}
 export enum Error {
     Duplicate = "duplicate",
     NoPermission = "no_permission",
@@ -2779,10 +2783,6 @@ export enum ThumbnailFormat {
 export enum TimeBucketSize {
     Day = "DAY",
     Month = "MONTH"
-}
-export enum AssetOrder {
-    Asc = "asc",
-    Desc = "desc"
 }
 export enum EntityType {
     Asset = "ASSET",

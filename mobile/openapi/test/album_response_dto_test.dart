@@ -26,11 +26,6 @@ void main() {
       // TODO
     });
 
-    // bool ascendingOrder
-    test('to test the property `ascendingOrder`', () async {
-      // TODO
-    });
-
     // int assetCount
     test('to test the property `assetCount`', () async {
       // TODO
@@ -73,6 +68,11 @@ void main() {
 
     // DateTime lastModifiedAssetTimestamp
     test('to test the property `lastModifiedAssetTimestamp`', () async {
+      // TODO
+    });
+
+    // AssetOrder order
+    test('to test the property `order`', () async {
       // TODO
     });
 

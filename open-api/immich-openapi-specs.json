@@ -1734,14 +1734,6 @@
             }
           },
           {
-            "name": "ascendingOrder",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
             "name": "isArchived",
             "required": false,
             "in": "query",
@@ -1771,6 +1763,14 @@
             "in": "query",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "order",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/AssetOrder"
             }
           },
           {
@@ -1878,14 +1878,6 @@
             }
           },
           {
-            "name": "ascendingOrder",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
             "name": "isArchived",
             "required": false,
             "in": "query",
@@ -1915,6 +1907,14 @@
             "in": "query",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "order",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/AssetOrder"
             }
           },
           {
@@ -6705,9 +6705,6 @@
             "nullable": true,
             "type": "string"
           },
-          "ascendingOrder": {
-            "type": "boolean"
-          },
           "assetCount": {
             "type": "integer"
           },
@@ -6741,6 +6738,9 @@
             "format": "date-time",
             "type": "string"
           },
+          "order": {
+            "$ref": "#/components/schemas/AssetOrder"
+          },
           "owner": {
             "$ref": "#/components/schemas/UserResponseDto"
           },
@@ -6768,7 +6768,6 @@
         "required": [
           "albumName",
           "albumThumbnailAssetId",
-          "ascendingOrder",
           "assetCount",
           "assets",
           "createdAt",
@@ -10350,14 +10349,14 @@
             "format": "uuid",
             "type": "string"
           },
-          "ascendingOrder": {
-            "type": "boolean"
-          },
           "description": {
             "type": "string"
           },
           "isActivityEnabled": {
             "type": "boolean"
+          },
+          "order": {
+            "$ref": "#/components/schemas/AssetOrder"
           }
         },
         "type": "object"

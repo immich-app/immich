@@ -148,7 +148,7 @@ export class AlbumService {
       description: dto.description,
       albumThumbnailAssetId: dto.albumThumbnailAssetId,
       isActivityEnabled: dto.isActivityEnabled,
-      ascendingOrder: dto.ascendingOrder,
+      order: dto.order,
     });
 
     return mapAlbumWithoutAssets(updatedAlbum);

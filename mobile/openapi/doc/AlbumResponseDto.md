@@ -10,7 +10,6 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **albumName** | **String** |  | 
 **albumThumbnailAssetId** | **String** |  | 
-**ascendingOrder** | **bool** |  | 
 **assetCount** | **int** |  | 
 **assets** | [**List<AssetResponseDto>**](AssetResponseDto.md) |  | [default to const []]
 **createdAt** | [**DateTime**](DateTime.md) |  | 
@@ -20,6 +19,7 @@ Name | Type | Description | Notes
 **id** | **String** |  | 
 **isActivityEnabled** | **bool** |  | 
 **lastModifiedAssetTimestamp** | [**DateTime**](DateTime.md) |  | [optional] 
+**order** | [**AssetOrder**](AssetOrder.md) |  | [optional] 
 **owner** | [**UserResponseDto**](UserResponseDto.md) |  | 
 **ownerId** | **String** |  | 
 **shared** | **bool** |  | 

@@ -1,5 +1,5 @@
 import { AlbumResponseDto, AssetResponseDto, ExifResponseDto, mapUser, SharedLinkResponseDto } from '@app/domain';
-import { AssetType, SharedLinkEntity, SharedLinkType, UserEntity } from '@app/infra/entities';
+import { AssetOrder, AssetType, SharedLinkEntity, SharedLinkType, UserEntity } from '@app/infra/entities';
 import { assetStub } from './asset.stub';
 import { authStub } from './auth.stub';
 import { libraryStub } from './library.stub';
@@ -101,7 +101,7 @@ const albumResponse: AlbumResponseDto = {
   assets: [],
   assetCount: 1,
   isActivityEnabled: true,
-  ascendingOrder: false,
+  order: AssetOrder.DESC,
 };
 
 export const sharedLinkStub = {
@@ -182,7 +182,7 @@ export const sharedLinkStub = {
       sharedUsers: [],
       sharedLinks: [],
       isActivityEnabled: true,
-      ascendingOrder: false,
+      order: AssetOrder.DESC,
       assets: [
         {
           id: 'id_1',

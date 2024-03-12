@@ -1,5 +1,5 @@
 import { AssetSearchOptions, ReverseGeocodeResult, SearchExploreItem } from '@app/domain';
-import { AssetEntity, AssetJobStatusEntity, AssetType, ExifEntity } from '@app/infra/entities';
+import { AssetEntity, AssetJobStatusEntity, AssetOrder, AssetType, ExifEntity } from '@app/infra/entities';
 import { FindOptionsRelations, FindOptionsSelect } from 'typeorm';
 import { Paginated, PaginationOptions } from '../domain.util';
 
@@ -66,7 +66,7 @@ export interface AssetBuilderOptions {
 
 export interface TimeBucketOptions extends AssetBuilderOptions {
   size: TimeBucketSize;
-  ascendingOrder?: boolean;
+  order?: AssetOrder;
 }
 
 export interface TimeBucketItem {

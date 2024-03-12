@@ -1,6 +1,7 @@
 import {
   AlbumResponseDto,
   AssetFileUploadResponseDto,
+  AssetOrder,
   LoginResponseDto,
   SharedLinkType,
   deleteUser,
@@ -353,7 +354,7 @@ describe('/album', () => {
         assetCount: 0,
         owner: expect.objectContaining({ email: user1.userEmail }),
         isActivityEnabled: true,
-        ascendingOrder: false,
+        order: AssetOrder.Desc,
       });
     });
   });

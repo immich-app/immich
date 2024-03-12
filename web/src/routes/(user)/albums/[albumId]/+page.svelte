@@ -83,7 +83,7 @@
 
   $: album = data.album;
   $: albumId = album.id;
-  $: albumKey = albumId + String(album.ascendingOrder);
+  $: albumKey = `${albumId}_${album.order}`;
 
   $: {
     if (!album.isActivityEnabled && $numberOfComments === 0) {
@@ -114,7 +114,7 @@
   let assetGridWidth: number;
   let textArea: HTMLTextAreaElement;
 
-  $: assetStore = new AssetStore({ albumId, ascendingOrder: album.ascendingOrder });
+  $: assetStore = new AssetStore({ albumId, order: album.order });
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
@@ -679,8 +679,9 @@
 
 {#if viewMode === ViewMode.OPTIONS && $user}
   <AlbumOptions
-    bind:album
+    {album}
     user={$user}
+    onChangeOrder={(order) => (album.order = order)}
     on:close={() => (viewMode = ViewMode.VIEW)}
     on:toggleEnableActivity={handleToggleEnableActivity}
     on:showSelectSharedUser={() => (viewMode = ViewMode.SELECT_USERS)}

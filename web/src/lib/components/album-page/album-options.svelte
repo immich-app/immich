@@ -1,6 +1,6 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
-  import { updateAlbumInfo, type AlbumResponseDto, type UserResponseDto } from '@immich/sdk';
+  import { updateAlbumInfo, type AlbumResponseDto, type UserResponseDto, AssetOrder } from '@immich/sdk';
   import { mdiArrowDownThin, mdiArrowUpThin, mdiClose, mdiPlus } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
 
@@ -14,13 +14,14 @@
 
   export let album: AlbumResponseDto;
   export let user: UserResponseDto;
+  export let onChangeOrder: (order: AssetOrder) => void;
 
-  const options = [
-    { icon: mdiArrowUpThin, title: 'Ascending' },
-    { icon: mdiArrowDownThin, title: 'Descending' },
-  ];
+  const options: Record<AssetOrder, RenderedOption> = {
+    [AssetOrder.Asc]: { icon: mdiArrowUpThin, title: 'Ascending' },
+    [AssetOrder.Desc]: { icon: mdiArrowDownThin, title: 'Descending' },
+  };
 
-  $: selectedOption = album.ascendingOrder ? options[0] : options[1];
+  $: selectedOption = options[album.order];
 
   const dispatch = createEventDispatcher<{
     close: void;
@@ -32,16 +33,22 @@
     if (selectedOption === returnedOption) {
       return;
     }
-    const ascendingOrder = options[0] == returnedOption;
+    let order = AssetOrder.Desc;
+    for (const [key, option] of Object.entries(options)) {
+      if (option === returnedOption) {
+        order = key as AssetOrder;
+        break;
+      }
+    }
 
     try {
       await updateAlbumInfo({
         id: album.id,
         updateAlbumDto: {
-          ascendingOrder,
+          order,
         },
       });
-      album.ascendingOrder = ascendingOrder;
+      onChangeOrder(order);
     } catch (error) {
       handleError(error, 'Error updating album order');
     }
@@ -67,8 +74,8 @@
             <div class="grid p-2 gap-y-2">
               <SettingDropdown
                 title="Direction"
-                {options}
-                {selectedOption}
+                options={Object.values(options)}
+                selectedOption={options[album.order]}
                 onToggle={(option) => handleToggle(option)}
               />
               <SettingSwitch

@@ -1,4 +1,4 @@
-import { AlbumEntity } from '@app/infra/entities';
+import { AlbumEntity, AssetOrder } from '@app/infra/entities';
 import { assetStub } from './asset.stub';
 import { authStub } from './auth.stub';
 import { userStub } from './user.stub';
@@ -19,7 +19,7 @@ export const albumStub = {
     sharedLinks: [],
     sharedUsers: [],
     isActivityEnabled: true,
-    ascendingOrder: false,
+    order: AssetOrder.DESC,
   }),
   sharedWithUser: Object.freeze<AlbumEntity>({
     id: 'album-2',
@@ -36,7 +36,7 @@ export const albumStub = {
     sharedLinks: [],
     sharedUsers: [userStub.user1],
     isActivityEnabled: true,
-    ascendingOrder: false,
+    order: AssetOrder.DESC,
   }),
   sharedWithMultiple: Object.freeze<AlbumEntity>({
     id: 'album-3',
@@ -53,7 +53,7 @@ export const albumStub = {
     sharedLinks: [],
     sharedUsers: [userStub.user1, userStub.user2],
     isActivityEnabled: true,
-    ascendingOrder: false,
+    order: AssetOrder.DESC,
   }),
   sharedWithAdmin: Object.freeze<AlbumEntity>({
     id: 'album-3',
@@ -70,7 +70,7 @@ export const albumStub = {
     sharedLinks: [],
     sharedUsers: [userStub.admin],
     isActivityEnabled: true,
-    ascendingOrder: false,
+    order: AssetOrder.DESC,
   }),
   oneAsset: Object.freeze<AlbumEntity>({
     id: 'album-4',
@@ -87,7 +87,7 @@ export const albumStub = {
     sharedLinks: [],
     sharedUsers: [],
     isActivityEnabled: true,
-    ascendingOrder: false,
+    order: AssetOrder.DESC,
   }),
   twoAssets: Object.freeze<AlbumEntity>({
     id: 'album-4a',
@@ -104,7 +104,7 @@ export const albumStub = {
     sharedLinks: [],
     sharedUsers: [],
     isActivityEnabled: true,
-    ascendingOrder: false,
+    order: AssetOrder.DESC,
   }),
   emptyWithInvalidThumbnail: Object.freeze<AlbumEntity>({
     id: 'album-5',
@@ -121,7 +121,7 @@ export const albumStub = {
     sharedLinks: [],
     sharedUsers: [],
     isActivityEnabled: true,
-    ascendingOrder: false,
+    order: AssetOrder.DESC,
   }),
   emptyWithValidThumbnail: Object.freeze<AlbumEntity>({
     id: 'album-5',
@@ -138,7 +138,7 @@ export const albumStub = {
     sharedLinks: [],
     sharedUsers: [],
     isActivityEnabled: true,
-    ascendingOrder: false,
+    order: AssetOrder.DESC,
   }),
   oneAssetInvalidThumbnail: Object.freeze<AlbumEntity>({
     id: 'album-6',
@@ -155,7 +155,7 @@ export const albumStub = {
     sharedLinks: [],
     sharedUsers: [],
     isActivityEnabled: true,
-    ascendingOrder: false,
+    order: AssetOrder.DESC,
   }),
   oneAssetValidThumbnail: Object.freeze<AlbumEntity>({
     id: 'album-6',
@@ -172,6 +172,6 @@ export const albumStub = {
     sharedLinks: [],
     sharedUsers: [],
     isActivityEnabled: true,
-    ascendingOrder: false,
+    order: AssetOrder.DESC,
   }),
 };

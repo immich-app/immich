@@ -15,7 +15,6 @@ class AlbumResponseDto {
   AlbumResponseDto({
     required this.albumName,
     required this.albumThumbnailAssetId,
-    required this.ascendingOrder,
     required this.assetCount,
     this.assets = const [],
     required this.createdAt,
@@ -25,6 +24,7 @@ class AlbumResponseDto {
     required this.id,
     required this.isActivityEnabled,
     this.lastModifiedAssetTimestamp,
+    this.order,
     required this.owner,
     required this.ownerId,
     required this.shared,
@@ -36,8 +36,6 @@ class AlbumResponseDto {
   String albumName;
 
   String? albumThumbnailAssetId;
-
-  bool ascendingOrder;
 
   int assetCount;
 
@@ -69,6 +67,14 @@ class AlbumResponseDto {
   ///
   DateTime? lastModifiedAssetTimestamp;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  AssetOrder? order;
+
   UserResponseDto owner;
 
   String ownerId;
@@ -91,7 +97,6 @@ class AlbumResponseDto {
   bool operator ==(Object other) => identical(this, other) || other is AlbumResponseDto &&
     other.albumName == albumName &&
     other.albumThumbnailAssetId == albumThumbnailAssetId &&
-    other.ascendingOrder == ascendingOrder &&
     other.assetCount == assetCount &&
     _deepEquality.equals(other.assets, assets) &&
     other.createdAt == createdAt &&
@@ -101,6 +106,7 @@ class AlbumResponseDto {
     other.id == id &&
     other.isActivityEnabled == isActivityEnabled &&
     other.lastModifiedAssetTimestamp == lastModifiedAssetTimestamp &&
+    other.order == order &&
     other.owner == owner &&
     other.ownerId == ownerId &&
     other.shared == shared &&
@@ -113,7 +119,6 @@ class AlbumResponseDto {
     // ignore: unnecessary_parenthesis
     (albumName.hashCode) +
     (albumThumbnailAssetId == null ? 0 : albumThumbnailAssetId!.hashCode) +
-    (ascendingOrder.hashCode) +
     (assetCount.hashCode) +
     (assets.hashCode) +
     (createdAt.hashCode) +
@@ -123,6 +128,7 @@ class AlbumResponseDto {
     (id.hashCode) +
     (isActivityEnabled.hashCode) +
     (lastModifiedAssetTimestamp == null ? 0 : lastModifiedAssetTimestamp!.hashCode) +
+    (order == null ? 0 : order!.hashCode) +
     (owner.hashCode) +
     (ownerId.hashCode) +
     (shared.hashCode) +
@@ -131,7 +137,7 @@ class AlbumResponseDto {
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'AlbumResponseDto[albumName=$albumName, albumThumbnailAssetId=$albumThumbnailAssetId, ascendingOrder=$ascendingOrder, assetCount=$assetCount, assets=$assets, createdAt=$createdAt, description=$description, endDate=$endDate, hasSharedLink=$hasSharedLink, id=$id, isActivityEnabled=$isActivityEnabled, lastModifiedAssetTimestamp=$lastModifiedAssetTimestamp, owner=$owner, ownerId=$ownerId, shared=$shared, sharedUsers=$sharedUsers, startDate=$startDate, updatedAt=$updatedAt]';
+  String toString() => 'AlbumResponseDto[albumName=$albumName, albumThumbnailAssetId=$albumThumbnailAssetId, assetCount=$assetCount, assets=$assets, createdAt=$createdAt, description=$description, endDate=$endDate, hasSharedLink=$hasSharedLink, id=$id, isActivityEnabled=$isActivityEnabled, lastModifiedAssetTimestamp=$lastModifiedAssetTimestamp, order=$order, owner=$owner, ownerId=$ownerId, shared=$shared, sharedUsers=$sharedUsers, startDate=$startDate, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -141,7 +147,6 @@ class AlbumResponseDto {
     } else {
     //  json[r'albumThumbnailAssetId'] = null;
     }
-      json[r'ascendingOrder'] = this.ascendingOrder;
       json[r'assetCount'] = this.assetCount;
       json[r'assets'] = this.assets;
       json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
@@ -158,6 +163,11 @@ class AlbumResponseDto {
       json[r'lastModifiedAssetTimestamp'] = this.lastModifiedAssetTimestamp!.toUtc().toIso8601String();
     } else {
     //  json[r'lastModifiedAssetTimestamp'] = null;
+    }
+    if (this.order != null) {
+      json[r'order'] = this.order;
+    } else {
+    //  json[r'order'] = null;
     }
       json[r'owner'] = this.owner;
       json[r'ownerId'] = this.ownerId;
@@ -182,7 +192,6 @@ class AlbumResponseDto {
       return AlbumResponseDto(
         albumName: mapValueOfType<String>(json, r'albumName')!,
         albumThumbnailAssetId: mapValueOfType<String>(json, r'albumThumbnailAssetId'),
-        ascendingOrder: mapValueOfType<bool>(json, r'ascendingOrder')!,
         assetCount: mapValueOfType<int>(json, r'assetCount')!,
         assets: AssetResponseDto.listFromJson(json[r'assets']),
         createdAt: mapDateTime(json, r'createdAt', r'')!,
@@ -192,6 +201,7 @@ class AlbumResponseDto {
         id: mapValueOfType<String>(json, r'id')!,
         isActivityEnabled: mapValueOfType<bool>(json, r'isActivityEnabled')!,
         lastModifiedAssetTimestamp: mapDateTime(json, r'lastModifiedAssetTimestamp', r''),
+        order: AssetOrder.fromJson(json[r'order']),
         owner: UserResponseDto.fromJson(json[r'owner'])!,
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
         shared: mapValueOfType<bool>(json, r'shared')!,
@@ -247,7 +257,6 @@ class AlbumResponseDto {
   static const requiredKeys = <String>{
     'albumName',
     'albumThumbnailAssetId',
-    'ascendingOrder',
     'assetCount',
     'assets',
     'createdAt',

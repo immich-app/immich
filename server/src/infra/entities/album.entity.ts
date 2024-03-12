@@ -14,6 +14,11 @@ import { AssetEntity } from './asset.entity';
 import { SharedLinkEntity } from './shared-link.entity';
 import { UserEntity } from './user.entity';
 
+export enum AssetOrder {
+  ASC = 'asc',
+  DESC = 'desc',
+}
+
 @Entity('albums')
 export class AlbumEntity {
   @PrimaryGeneratedColumn('uuid')
@@ -60,6 +65,6 @@ export class AlbumEntity {
   @Column({ default: true })
   isActivityEnabled!: boolean;
 
-  @Column({ default: false })
-  ascendingOrder!: boolean;
+  @Column({ type: 'varchar', default: AssetOrder.DESC })
+  order!: AssetOrder;
 }

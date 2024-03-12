@@ -1,8 +1,9 @@
-import { AlbumEntity } from '@app/infra/entities';
+import { AlbumEntity, AssetOrder } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { AssetResponseDto, mapAsset } from '../asset';
 import { AuthDto } from '../auth/auth.dto';
 import { UserResponseDto, mapUser } from '../user';
+import { Optional } from '@nestjs/common';
 
 export class AlbumResponseDto {
   id!: string;
@@ -23,7 +24,9 @@ export class AlbumResponseDto {
   startDate?: Date;
   endDate?: Date;
   isActivityEnabled!: boolean;
-  ascendingOrder!: boolean;
+  @Optional()
+  @ApiProperty({ enumName: 'AssetOrder', enum: AssetOrder })
+  order?: AssetOrder;
 }
 
 export const mapAlbum = (entity: AlbumEntity, withAssets: boolean, auth?: AuthDto): AlbumResponseDto => {
@@ -64,7 +67,7 @@ export const mapAlbum = (entity: AlbumEntity, withAssets: boolean, auth?: AuthDt
     assets: (withAssets ? assets : []).map((asset) => mapAsset(asset, { auth })),
     assetCount: entity.assets?.length || 0,
     isActivityEnabled: entity.isActivityEnabled,
-    ascendingOrder: entity.ascendingOrder,
+    order: entity.order,
   };
 };
 

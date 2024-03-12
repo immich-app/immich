@@ -26,11 +26,6 @@ void main() {
       // TODO
     });
 
-    // bool ascendingOrder
-    test('to test the property `ascendingOrder`', () async {
-      // TODO
-    });
-
     // String description
     test('to test the property `description`', () async {
       // TODO
@@ -38,6 +33,11 @@ void main() {
 
     // bool isActivityEnabled
     test('to test the property `isActivityEnabled`', () async {
+      // TODO
+    });
+
+    // AssetOrder order
+    test('to test the property `order`', () async {
       // TODO
     });
 
