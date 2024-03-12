@@ -72,7 +72,7 @@
     "luxon": "^3.4.2",
     "nest-commander": "^3.11.1",
     "nestjs-otel": "^5.1.5",
-    "node-addon-api": "^7.0.0",
+    "node-addon-api": "^8.0.0",
     "openid-client": "^5.4.3",
     "pg": "^8.11.3",
     "picomatch": "^4.0.0",
