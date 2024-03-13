@@ -27,11 +27,11 @@ borg init --encryption=none "$BACKUP_PATH/immich-borg"
 REMOTE_HOST="remote_host@IP"
 REMOTE_BACKUP_PATH="/path/to/remote/backup/directory"
 
-ssh "$REMOTE_HOST" "mkdir $REMOTE_BACKUP_PATH/immich-borg"
-ssh "$REMOTE_HOST" "borg init --encryption=none $REMOTE_BACKUP_PATH/immich-borg"
+ssh "$REMOTE_HOST" "mkdir \"$REMOTE_BACKUP_PATH\"/immich-borg"
+ssh "$REMOTE_HOST" "borg init --encryption=none \"$REMOTE_BACKUP_PATH\"/immich-borg"
 ```
 
-Edit the following script as necessary and add it to your crontab. Note that this script assumes there are no spaces in your paths. If there are spaces, enclose the paths in double quotes.
+Edit the following script as necessary and add it to your crontab. Note that this script assumes there are no `:`, `@`, or `"` characters in your paths. If these characters exist, you will need to escape and/or rename the paths.
 
 ```bash title='Borg backup template'
 #!/bin/sh
@@ -46,18 +46,20 @@ REMOTE_BACKUP_PATH="/path/to/remote/backup/directory"
 ### Local
 
 # Backup Immich database
-docker exec -t immich_postgres pg_dumpall -c -U postgres | /usr/bin/gzip > $UPLOAD_LOCATION/database-backup/immich-database.sql.gz
+docker exec -t immich_postgres pg_dumpall -c -U postgres > "$UPLOAD_LOCATION"/database-backup/immich-database.sql
+# For deduplicating backup programs such as Borg or Restic, compressing the content can increase backup size by making it harder to deduplicate. If you are using a different program or still prefer to compress, you can use the following command instead:
+# docker exec -t immich_postgres pg_dumpall -c -U postgres | /usr/bin/gzip --rsyncable > "$UPLOAD_LOCATION"/database-backup/immich-database.sql.gz
 
 ### Append to local Borg repository
-borg create $BACKUP_PATH/immich-borg::{now} $UPLOAD_LOCATION --exclude $UPLOAD_LOCATION/thumbs/ --exclude $UPLOAD_LOCATION/encoded-video/
-borg prune --keep-weekly=4 --keep-monthly=3 $BACKUP_PATH/immich-borg
-borg compact $BACKUP_PATH/immich-borg
+borg create "$BACKUP_PATH/immich-borg::{now}" "$UPLOAD_LOCATION" --exclude "$UPLOAD_LOCATION"/thumbs/ --exclude "$UPLOAD_LOCATION"/encoded-video/
+borg prune --keep-weekly=4 --keep-monthly=3 "$BACKUP_PATH"/immich-borg
+borg compact "$BACKUP_PATH"/immich-borg
 
 
 ### Append to remote Borg repository
-borg create $REMOTE_HOST:$REMOTE_BACKUP_PATH/immich-borg::{now} $UPLOAD_LOCATION --exclude $UPLOAD_LOCATION/thumbs/ --exclude $UPLOAD_LOCATION/encoded-video/
-borg prune --keep-weekly=4 --keep-monthly=3 $REMOTE_HOST:$REMOTE_BACKUP_PATH/immich-borg
-borg compact $REMOTE_HOST:$REMOTE_BACKUP_PATH/immich-borg
+borg create "$REMOTE_HOST:$REMOTE_BACKUP_PATH/immich-borg::{now}" "$UPLOAD_LOCATION" --exclude "$UPLOAD_LOCATION"/thumbs/ --exclude "$UPLOAD_LOCATION"/encoded-video/
+borg prune --keep-weekly=4 --keep-monthly=3 "$REMOTE_HOST:$REMOTE_BACKUP_PATH"/immich-borg
+borg compact "$REMOTE_HOST:$REMOTE_BACKUP_PATH"/immich-borg
 ```
 
 ### Restoring
@@ -67,7 +69,7 @@ To restore from a backup, use the `borg mount` command.
 ```bash title='Restore from local backup'
 BACKUP_PATH="/path/to/local/backup/directory"
 mkdir /tmp/immich-mountpoint
-borg mount $BACKUP_PATH/immich-borg /tmp/immich-mountpoint
+borg mount "$BACKUP_PATH"/immich-borg /tmp/immich-mountpoint
 cd /tmp/immich-mountpoint
 ```
 
@@ -75,7 +77,7 @@ cd /tmp/immich-mountpoint
 REMOTE_HOST="remote_host@IP"
 REMOTE_BACKUP_PATH="/path/to/remote/backup/directory"
 mkdir /tmp/immich-mountpoint
-borg mount $REMOTE_HOST:$REMOTE_BACKUP_PATH/immich-borg /tmp/immich-mountpoint
+borg mount "$REMOTE_HOST:$REMOTE_BACKUP_PATH"/immich-borg /tmp/immich-mountpoint
 cd /tmp/immich-mountpoint
 ```
 

@@ -4,7 +4,7 @@ A config file can be provided as an alternative to the UI configuration.
 
 ### Step 1 - Create a new config file
 
-In JSON format, create a new config file (e.g. `immich.config`) and put it in a location that can be accessed by Immich.
+In JSON format, create a new config file (e.g. `immich.json`) and put it in a location that can be accessed by Immich.
 The default configuration looks like this:
 
 ```json
@@ -14,7 +14,9 @@ The default configuration looks like this:
     "threads": 0,
     "preset": "ultrafast",
     "targetVideoCodec": "h264",
+    "acceptedVideoCodecs": ["h264"],
     "targetAudioCodec": "aac",
+    "acceptedAudioCodecs": ["aac", "mp3", "libopus"],
     "targetResolution": "720",
     "maxBitrate": "0",
     "bframes": -1,
@@ -24,6 +26,7 @@ The default configuration looks like this:
     "temporalAQ": false,
     "cqMode": "auto",
     "twoPass": false,
+    "preferredHwDevice": "auto",
     "transcode": "required",
     "tonemap": "hable",
     "accel": "disabled"
@@ -38,7 +41,7 @@ The default configuration looks like this:
     "metadataExtraction": {
       "concurrency": 5
     },
-    "recognizeFaces": {
+    "faceDetection": {
       "concurrency": 2
     },
     "search": {
@@ -48,9 +51,6 @@ The default configuration looks like this:
       "concurrency": 5
     },
     "library": {
-      "concurrency": 5
-    },
-    "storageTemplateMigration": {
       "concurrency": 5
     },
     "migration": {
@@ -110,6 +110,8 @@ The default configuration looks like this:
     "enabled": true
   },
   "storageTemplate": {
+    "enabled": false,
+    "hashVerificationEnabled": true,
     "template": "{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}"
   },
   "thumbnail": {
@@ -141,6 +143,13 @@ The default configuration looks like this:
       "usePolling": false,
       "interval": 10000
     }
+  },
+  "server": {
+    "externalDomain": "",
+    "loginPageMessage": ""
+  },
+  "user": {
+    "deleteDelay": 7
   }
 }
 ```
@@ -154,3 +163,7 @@ So you can just grab it from there, paste it into a file and you're pretty much 
 
 In your `.env` file, set the variable `IMMICH_CONFIG_FILE` to the path of your config.
 For more information, refer to the [Environment Variables](/docs/install/environment-variables.md) section.
+
+:::tip
+YAML-formatted config files are also supported.
+:::

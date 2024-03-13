@@ -4,7 +4,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Not, Repository } from 'typeorm';
 import { AssetEntity, UserEntity } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';
+import { Instrumentation } from '../instrumentation';
 
+@Instrumentation()
 @Injectable()
 export class UserRepository implements IUserRepository {
   constructor(

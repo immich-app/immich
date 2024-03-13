@@ -15,7 +15,9 @@ import { FindManyOptions, FindOptionsRelations, FindOptionsSelect, In, Repositor
 import { AssetEntity, AssetFaceEntity, PersonEntity } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';
 import { ChunkedArray, asVector, paginate } from '../infra.utils';
+import { Instrumentation } from '../instrumentation';
 
+@Instrumentation()
 export class PersonRepository implements IPersonRepository {
   constructor(
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,

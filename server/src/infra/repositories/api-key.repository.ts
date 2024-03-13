@@ -4,7 +4,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { APIKeyEntity } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';
+import { Instrumentation } from '../instrumentation';
 
+@Instrumentation()
 @Injectable()
 export class ApiKeyRepository implements IKeyRepository {
   constructor(@InjectRepository(APIKeyEntity) private repository: Repository<APIKeyEntity>) {}
