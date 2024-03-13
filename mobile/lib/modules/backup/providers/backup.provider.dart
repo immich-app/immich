@@ -503,6 +503,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       progressInPercentage: 0.0,
       progressInFileSize: "0 B / 0 B",
       progressInFileSpeed: 0,
+      progressInFileSpeedUpdateTime: DateTime.now(),
       progressInFileSpeedUpdateSentBytes: 0,
     );
   }
@@ -546,6 +547,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         progressInPercentage: 0.0,
         progressInFileSize: "0 B / 0 B",
         progressInFileSpeed: 0,
+        progressInFileSpeedUpdateTime: DateTime.now(),
         progressInFileSpeedUpdateSentBytes: 0,
       );
       _updatePersistentAlbumsSelection();
