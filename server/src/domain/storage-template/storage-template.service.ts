@@ -92,7 +92,7 @@ export class StorageTemplateService {
       return true;
     }
 
-    const asset = await this.assetRepository.getById(id, { exifInfo: true });
+    const [asset] = await this.assetRepository.getByIds([id], { exifInfo: true });
     if (!asset) {
       return false;
     }
@@ -104,7 +104,7 @@ export class StorageTemplateService {
 
     // move motion part of live photo
     if (asset.livePhotoVideoId) {
-      const livePhotoVideo = await this.assetRepository.getById(asset.livePhotoVideoId, { exifInfo: true });
+      const [livePhotoVideo] = await this.assetRepository.getByIds([asset.livePhotoVideoId], { exifInfo: true });
       if (!livePhotoVideo) {
         return false;
       }

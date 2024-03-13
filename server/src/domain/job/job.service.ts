@@ -253,7 +253,7 @@ export class JobService {
         if (item.data.source === 'upload') {
           jobs.push({ name: JobName.SMART_SEARCH, data: item.data }, { name: JobName.FACE_DETECTION, data: item.data });
 
-          const asset = await this.assetRepository.getById(item.data.id);
+          const [asset] = await this.assetRepository.getByIds([item.data.id]);
           if (asset) {
             if (asset.type === AssetType.VIDEO) {
               jobs.push({ name: JobName.VIDEO_CONVERSION, data: item.data });

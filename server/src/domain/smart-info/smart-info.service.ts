@@ -75,7 +75,7 @@ export class SmartInfoService {
       return true;
     }
 
-    const asset = await this.assetRepository.getById(id);
+    const [asset] = await this.assetRepository.getByIds([id]);
     if (!asset) {
       return false;
     }

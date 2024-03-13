@@ -24,7 +24,7 @@ export class DownloadService {
   async downloadFile(auth: AuthDto, id: string): Promise<ImmichFileResponse> {
     await this.access.requirePermission(auth, Permission.ASSET_DOWNLOAD, id);
 
-    const asset = await this.assetRepository.getById(id);
+    const [asset] = await this.assetRepository.getByIds([id]);
     if (!asset) {
       throw new BadRequestException('Asset not found');
     }
