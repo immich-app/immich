@@ -141,7 +141,7 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
     state = state.copyWith(
       progressInPercentage: (sent.toDouble() / total.toDouble() * 100),
       progressInFileSize: humanReadableFileBytesProgress(sent, total),
-      progressInFileSpeed: uploadSpeed,
+      progressInFileSpeed: uploadSpeed > 0 ? uploadSpeed : 0,
       progressInFileSpeedUpdateTime:
           duration.inSeconds > 0 ? now : state.progressInFileSpeedUpdateTime,
       progressInFileSpeedUpdateSentBytes: duration.inSeconds > 0
