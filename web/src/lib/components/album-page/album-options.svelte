@@ -11,6 +11,7 @@
   import SettingDropdown from '../shared-components/settings/setting-dropdown.svelte';
   import type { RenderedOption } from '../elements/dropdown.svelte';
   import { handleError } from '$lib/utils/handle-error';
+  import { findKey } from 'lodash-es';
 
   export let album: AlbumResponseDto;
   export let user: UserResponseDto;
@@ -34,12 +35,7 @@
       return;
     }
     let order = AssetOrder.Desc;
-    for (const [key, option] of Object.entries(options)) {
-      if (option === returnedOption) {
-        order = key as AssetOrder;
-        break;
-      }
-    }
+    order = findKey(options, (option) => option === returnedOption) as AssetOrder;
 
     try {
       await updateAlbumInfo({
@@ -77,7 +73,7 @@
                   title="Direction"
                   options={Object.values(options)}
                   selectedOption={options[album.order]}
-                  onToggle={(option) => handleToggle(option)}
+                  onToggle={handleToggle}
                 />
               {/if}
               <SettingSwitch
