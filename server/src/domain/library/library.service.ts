@@ -298,17 +298,25 @@ export class LibraryService extends EventEmitter {
   }
 
   private async scanAssets(libraryId: string, assetPaths: string[], ownerId: string, force = false) {
-    await this.jobRepository.queueAll(
-      assetPaths.map((assetPath) => ({
-        name: JobName.LIBRARY_SCAN_ASSET,
-        data: {
-          id: libraryId,
-          assetPath: path.normalize(assetPath),
-          ownerId,
-          force,
-        },
-      })),
-    );
+    this.logger.debug('About to scan assets');
+
+    const batchSize = 5000;
+    for (let i = 0; i < assetPaths.length; i += batchSize) {
+      const batch = assetPaths.slice(i, i + batchSize);
+      await this.jobRepository.queueAll(
+        batch.map((assetPath) => ({
+          name: JobName.LIBRARY_SCAN_ASSET,
+          data: {
+            id: libraryId,
+            assetPath: path.normalize(assetPath),
+            ownerId,
+            force,
+          },
+        })),
+      );
+    }
+
+    this.logger.debug('Finished scanning assets');
   }
 
   private async validateImportPath(importPath: string): Promise<ValidateLibraryImportPathResponseDto> {
