@@ -52,6 +52,8 @@ class ImmichThumbnail extends HookWidget {
     } else {
       return ImmichRemoteThumbnailProvider(
         assetId: asset.remoteId!,
+        height: thumbnailSize,
+        width: thumbnailSize,
       );
     }
   }

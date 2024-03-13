@@ -78,9 +78,9 @@ class ImmichRemoteImageProvider
 
       yield await ImageLoader.loadImageFromCache(
         Uri.parse(preview),
-        cache,
-        decode,
-        chunkEvents,
+        cache: cache,
+        decode: decode,
+        chunkEvents: chunkEvents,
       );
     }
 
@@ -91,9 +91,9 @@ class ImmichRemoteImageProvider
     );
     final codec = await ImageLoader.loadImageFromCache(
       Uri.parse(url),
-      cache,
-      decode,
-      chunkEvents,
+      cache: cache,
+      decode: decode,
+      chunkEvents: chunkEvents,
     );
     yield codec;
 
@@ -103,9 +103,9 @@ class ImmichRemoteImageProvider
       final url = getImageUrlFromId(key.assetId);
       final codec = await ImageLoader.loadImageFromCache(
         Uri.parse(url),
-        cache,
-        decode,
-        chunkEvents,
+        cache: cache,
+        decode: decode,
+        chunkEvents: chunkEvents,
       );
       yield codec;
     }

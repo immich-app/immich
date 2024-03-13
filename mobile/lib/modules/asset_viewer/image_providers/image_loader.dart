@@ -11,11 +11,13 @@ import 'package:immich_mobile/shared/models/store.dart';
 /// for this wonderful implementation of their image loader
 class ImageLoader {
   static Future<ui.Codec> loadImageFromCache(
-    Uri uri,
-    ImageCacheManager cache,
-    ImageDecoderCallback decode,
-    StreamController<ImageChunkEvent> chunkEvents,
-  ) async {
+    Uri uri, {
+    required ImageCacheManager cache,
+    required ImageDecoderCallback decode,
+    required StreamController<ImageChunkEvent> chunkEvents,
+    int? height,
+    int? width,
+  }) async {
     final headers = {
       'x-immich-user-token': Store.get(StoreKey.accessToken),
     };
@@ -24,6 +26,8 @@ class ImageLoader {
       uri.toString(),
       withProgress: true,
       headers: headers,
+      maxHeight: height,
+      maxWidth: width,
     );
 
     await for (final result in stream) {

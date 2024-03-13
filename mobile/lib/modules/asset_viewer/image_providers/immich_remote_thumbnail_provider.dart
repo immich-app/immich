@@ -17,11 +17,16 @@ class ImmichRemoteThumbnailProvider
   /// The [Asset.remoteId] of the asset to fetch
   final String assetId;
 
+  final int? height;
+  final int? width;
+
   /// The image cache manager
   final ImageCacheManager? cacheManager;
 
   ImmichRemoteThumbnailProvider({
     required this.assetId,
+    this.height,
+    this.width,
     this.cacheManager,
   });
 
@@ -63,9 +68,9 @@ class ImmichRemoteThumbnailProvider
 
     yield await ImageLoader.loadImageFromCache(
       Uri.parse(preview),
-      cache,
-      decode,
-      chunkEvents,
+      cache: cache,
+      decode: decode,
+      chunkEvents: chunkEvents,
     );
 
     await chunkEvents.close();
