@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:openapi/api.dart' as api;
 
 import 'package:flutter/foundation.dart';
@@ -17,19 +18,17 @@ final _httpClient = HttpClient()
   ..autoUncompress = false
   ..maxConnectionsPerHost = 10;
 
-/// The remote image provider
+/// The remote image provider for full size remote images
 class ImmichRemoteImageProvider
     extends ImageProvider<ImmichRemoteImageProvider> {
   /// The [Asset.remoteId] of the asset to fetch
   final String assetId;
 
-  // If this is a thumbnail, we stop at loading the
-  // smallest version of the remote image
-  final bool isThumbnail;
+  final BaseCacheManager? cacheManager;
 
   ImmichRemoteImageProvider({
     required this.assetId,
-    this.isThumbnail = false,
+    this.cacheManager,
   });
 
   /// Converts an [ImageProvider]'s settings plus an [ImageConfiguration] to a key
@@ -73,7 +72,7 @@ class ImmichRemoteImageProvider
     StreamController<ImageChunkEvent> chunkEvents,
   ) async* {
     // Load a preview to the chunk events
-    if (_loadPreview || key.isThumbnail) {
+    if (_loadPreview) {
       final preview = getThumbnailUrlForRemoteId(
         key.assetId,
         type: api.ThumbnailFormat.WEBP,
@@ -84,12 +83,6 @@ class ImmichRemoteImageProvider
         decode,
         chunkEvents,
       );
-    }
-
-    // Guard thumnbail rendering
-    if (key.isThumbnail) {
-      await chunkEvents.close();
-      return;
     }
 
     // Load the higher resolution version of the image
@@ -144,7 +137,7 @@ class ImmichRemoteImageProvider
   bool operator ==(Object other) {
     if (other is! ImmichRemoteImageProvider) return false;
     if (identical(this, other)) return true;
-    return assetId == other.assetId && isThumbnail == other.isThumbnail;
+    return assetId == other.assetId;
   }
 
   @override
