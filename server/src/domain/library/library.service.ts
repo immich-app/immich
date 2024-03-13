@@ -551,14 +551,21 @@ export class LibraryService extends EventEmitter {
       throw new BadRequestException('Can only refresh external libraries');
     }
 
-    await this.jobRepository.queue({
-      name: JobName.LIBRARY_SCAN,
-      data: {
-        id,
-        refreshModifiedFiles: dto.refreshModifiedFiles ?? false,
-        refreshAllFiles: dto.refreshAllFiles ?? false,
-      },
-    });
+    if (dto.checkForOffline) {
+      if (dto.refreshAllFiles || dto.refreshModifiedFiles) {
+        throw new BadRequestException('Cannot use checkForOffline with refreshAllFiles or refreshModifiedFiles');
+      }
+      await this.jobRepository.queue({ name: JobName.LIBRARY_SCAN_OFFLINE, data: { id } });
+    } else {
+      await this.jobRepository.queue({
+        name: JobName.LIBRARY_SCAN,
+        data: {
+          id,
+          refreshModifiedFiles: dto.refreshModifiedFiles ?? false,
+          refreshAllFiles: dto.refreshAllFiles ?? false,
+        },
+      });
+    }
   }
 
   async queueRemoveOffline(auth: AuthDto, id: string) {
@@ -591,6 +598,46 @@ export class LibraryService extends EventEmitter {
         },
       })),
     );
+    return true;
+  }
+
+  async handleQueueOfflineScan(job: IEntityJob): Promise<boolean> {
+    this.logger.log(`Checking for offline files in library: ${job.id}`);
+    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
+      this.assetRepository.getWith(pagination, WithProperty.IS_ONLINE, job.id),
+    );
+
+    for await (const assets of assetPagination) {
+      this.logger.debug(`Checking if ${assets.length} assets are still online`);
+      await this.jobRepository.queueAll(
+        assets.map((asset) => ({
+          name: JobName.LIBRARY_CHECK_IF_ASSET_ONLINE,
+          data: { id: asset.id },
+        })),
+      );
+    }
+
+    return true;
+  }
+
+  // Check if an online asset is offline
+  async handleAssetOnlineCheck(job: IEntityJob) {
+    const asset = await this.assetRepository.getById(job.id);
+
+    if (!asset || asset.isOffline) {
+      // We only care about online assets, we exit here if offline
+      return false;
+    }
+
+    const exists = await this.storageRepository.checkFileExists(asset.originalPath, R_OK);
+
+    if (!exists) {
+      this.logger.debug(`Marking asset as offline: ${asset.originalPath}`);
+      await this.assetRepository.save({ id: asset.id, isOffline: true });
+    } else {
+      this.logger.verbose(`Asset is still online: ${asset.originalPath}`);
+    }
+
     return true;
   }
 

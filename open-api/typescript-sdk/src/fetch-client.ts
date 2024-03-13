@@ -474,6 +474,7 @@ export type UpdateLibraryDto = {
     name?: string;
 };
 export type ScanLibraryDto = {
+    checkForOffline?: boolean;
     refreshAllFiles?: boolean;
     refreshModifiedFiles?: boolean;
 };

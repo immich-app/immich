@@ -44,6 +44,7 @@ export enum WithoutProperty {
 
 export enum WithProperty {
   SIDECAR = 'sidecar',
+  IS_ONLINE = 'isOnline',
   IS_OFFLINE = 'isOffline',
 }
 

@@ -16,6 +16,11 @@ void main() {
   // final instance = ScanLibraryDto();
 
   group('test ScanLibraryDto', () {
+    // bool checkForOffline
+    test('to test the property `checkForOffline`', () async {
+      // TODO
+    });
+
     // bool refreshAllFiles
     test('to test the property `refreshAllFiles`', () async {
       // TODO

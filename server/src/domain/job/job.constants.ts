@@ -71,10 +71,12 @@ export enum JobName {
   // library managment
   LIBRARY_SCAN = 'library-refresh',
   LIBRARY_SCAN_ASSET = 'library-refresh-asset',
-  LIBRARY_REMOVE_OFFLINE = 'library-remove-offline',
   LIBRARY_DELETE = 'library-delete',
   LIBRARY_QUEUE_SCAN_ALL = 'library-queue-all-refresh',
   LIBRARY_QUEUE_CLEANUP = 'library-queue-cleanup',
+  LIBRARY_SCAN_OFFLINE = 'library-scan-offline',
+  LIBRARY_CHECK_IF_ASSET_ONLINE = 'asset-check-if-online',
+  LIBRARY_REMOVE_OFFLINE = 'library-remove-offline',
 
   // cleanup
   DELETE_FILES = 'delete-files',
@@ -149,7 +151,9 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   [JobName.LIBRARY_SCAN_ASSET]: QueueName.LIBRARY,
   [JobName.LIBRARY_SCAN]: QueueName.LIBRARY,
   [JobName.LIBRARY_DELETE]: QueueName.LIBRARY,
+  [JobName.LIBRARY_SCAN_OFFLINE]: QueueName.LIBRARY,
   [JobName.LIBRARY_REMOVE_OFFLINE]: QueueName.LIBRARY,
+  [JobName.LIBRARY_CHECK_IF_ASSET_ONLINE]: QueueName.LIBRARY,
   [JobName.LIBRARY_QUEUE_SCAN_ALL]: QueueName.LIBRARY,
   [JobName.LIBRARY_QUEUE_CLEANUP]: QueueName.LIBRARY,
 };

@@ -473,6 +473,13 @@ export class AssetRepository implements IAssetRepository {
         where = [{ isOffline: true, libraryId: libraryId }];
         break;
       }
+      case WithProperty.IS_ONLINE: {
+        if (!libraryId) {
+          throw new Error('Library id is required when finding online assets');
+        }
+        where = [{ isOffline: false, libraryId: libraryId }];
+        break;
+      }
 
       default: {
         throw new Error(`Invalid getWith property: ${property}`);
