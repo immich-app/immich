@@ -233,12 +233,6 @@ describe(DownloadService.name, () => {
       when(assetMock.getByIds)
         .calledWith([assetStub.livePhotoMotionAsset.id], { exifInfo: true })
         .mockResolvedValue([assetStub.livePhotoMotionAsset]);
-      when(assetMock.getByIdsWithAllRelations)
-        .calledWith([assetStub.livePhotoStillAsset.id])
-        .mockResolvedValue([assetStub.livePhotoStillAsset]);
-      when(assetMock.getByIdsWithAllRelations)
-        .calledWith([assetStub.livePhotoMotionAsset.id])
-        .mockResolvedValue([assetStub.livePhotoMotionAsset]);
 
       await expect(sut.getDownloadInfo(authStub.admin, { assetIds })).resolves.toEqual({
         totalSize: 125_000,

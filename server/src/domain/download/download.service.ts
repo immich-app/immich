@@ -50,7 +50,7 @@ export class DownloadService {
       // motion part of live photos
       const motionIds = assets.map((asset) => asset.livePhotoVideoId).filter<string>((id): id is string => !!id);
       if (motionIds.length > 0) {
-        assets.push(...(await this.assetRepository.getByIdsWithAllRelations(motionIds)));
+        assets.push(...(await this.assetRepository.getByIds(motionIds, { exifInfo: true })));
       }
 
       for (const asset of assets) {
