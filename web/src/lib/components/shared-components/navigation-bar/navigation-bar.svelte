@@ -51,7 +51,7 @@
       </h1>
     </a>
     <div class="flex justify-between gap-16 pr-6">
-      <div class="hidden w-full max-w-5xl flex-1 pl-4 sm:block">
+      <div class="hidden w-full max-w-5xl flex-1 sm:block">
         {#if $featureFlags.search}
           <SearchBar grayTheme={true} />
         {/if}
