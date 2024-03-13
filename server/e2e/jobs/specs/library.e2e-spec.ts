@@ -145,7 +145,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
       );
     });
 
-    it('should offline missing files', async () => {
+    it('should offline a missing files when called with checkForOffline', async () => {
       await fs.promises.cp(`${IMMICH_TEST_ASSET_PATH}/albums/nature`, `${IMMICH_TEST_ASSET_TEMP_PATH}/albums/nature`, {
         recursive: true,
       });
@@ -160,7 +160,42 @@ describe(`${LibraryController.name} (e2e)`, () => {
       const onlineAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
       expect(onlineAssets.length).toBeGreaterThan(1);
 
-      await restoreTempFolder();
+      await fs.promises.rm(`${IMMICH_TEST_ASSET_TEMP_PATH}/albums/nature/silver_fir.jpg`);
+
+      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id, { checkForOffline: true });
+
+      const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
+
+      expect(assets).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            isOffline: true,
+            originalFileName: 'silver_fir',
+          }),
+          expect.objectContaining({
+            isOffline: false,
+            originalFileName: 'tanners_ridge',
+          }),
+        ]),
+      );
+    });
+
+    it('should not offline a missing files when performing regular scan', async () => {
+      await fs.promises.cp(`${IMMICH_TEST_ASSET_PATH}/albums/nature`, `${IMMICH_TEST_ASSET_TEMP_PATH}/albums/nature`, {
+        recursive: true,
+      });
+
+      const library = await api.libraryApi.create(server, admin.accessToken, {
+        type: LibraryType.EXTERNAL,
+        importPaths: [`${IMMICH_TEST_ASSET_TEMP_PATH}`],
+      });
+
+      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
+
+      const onlineAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
+      expect(onlineAssets.length).toBeGreaterThan(1);
+
+      await fs.promises.rm(`${IMMICH_TEST_ASSET_TEMP_PATH}/albums/nature/silver_fir.jpg`);
 
       await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
 
@@ -169,11 +204,52 @@ describe(`${LibraryController.name} (e2e)`, () => {
       expect(assets).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            isOffline: true,
-            originalFileName: 'el_torcal_rocks',
+            isOffline: false,
+            originalFileName: 'silver_fir',
           }),
           expect.objectContaining({
-            isOffline: true,
+            isOffline: false,
+            originalFileName: 'tanners_ridge',
+          }),
+        ]),
+      );
+    });
+
+    it('should mark a rediscovered file as back online', async () => {
+      await fs.promises.cp(`${IMMICH_TEST_ASSET_PATH}/albums/nature`, `${IMMICH_TEST_ASSET_TEMP_PATH}/albums/nature`, {
+        recursive: true,
+      });
+
+      const library = await api.libraryApi.create(server, admin.accessToken, {
+        type: LibraryType.EXTERNAL,
+        importPaths: [`${IMMICH_TEST_ASSET_TEMP_PATH}`],
+      });
+
+      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
+
+      const onlineAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
+      expect(onlineAssets.length).toBeGreaterThan(1);
+
+      await fs.promises.rm(`${IMMICH_TEST_ASSET_TEMP_PATH}/albums/nature/silver_fir.jpg`);
+
+      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id, { checkForOffline: true });
+
+      await fs.promises.cp(`${IMMICH_TEST_ASSET_PATH}/albums/nature`, `${IMMICH_TEST_ASSET_TEMP_PATH}/albums/nature`, {
+        recursive: true,
+      });
+
+      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
+
+      const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
+
+      expect(assets).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            isOffline: false,
+            originalFileName: 'silver_fir',
+          }),
+          expect.objectContaining({
+            isOffline: false,
             originalFileName: 'tanners_ridge',
           }),
         ]),
@@ -385,7 +461,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
 
       await restoreTempFolder();
 
-      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
+      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id, { checkForOffline: true });
 
       const { status } = await request(server)
         .post(`/library/${library.id}/removeOffline`)

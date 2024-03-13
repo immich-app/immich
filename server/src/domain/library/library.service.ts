@@ -699,7 +699,6 @@ export class LibraryService extends EventEmitter {
 
     this.logger.debug(`Found ${crawledAssetPaths.size} asset(s) when crawling import paths ${library.importPaths}`);
 
-    const assetIdsToMarkOffline = [];
     const assetIdsToMarkOnline = [];
     const pagination = usePagination(5000, (pagination) =>
       this.assetRepository.getLibraryAssetPaths(pagination, library.id),
@@ -707,22 +706,12 @@ export class LibraryService extends EventEmitter {
 
     for await (const page of pagination) {
       for (const asset of page) {
-        const isOffline = !crawledAssetPaths.has(asset.originalPath);
-        if (isOffline && !asset.isOffline) {
-          assetIdsToMarkOffline.push(asset.id);
-        }
-
-        if (!isOffline && asset.isOffline) {
+        if (asset.isOffline) {
           assetIdsToMarkOnline.push(asset.id);
         }
 
         crawledAssetPaths.delete(asset.originalPath);
       }
-    }
-
-    if (assetIdsToMarkOffline.length > 0) {
-      this.logger.debug(`Found ${assetIdsToMarkOffline.length} offline asset(s) previously marked as online`);
-      await this.assetRepository.updateAll(assetIdsToMarkOffline, { isOffline: true });
     }
 
     if (assetIdsToMarkOnline.length > 0) {
