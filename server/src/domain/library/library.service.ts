@@ -618,14 +618,6 @@ export class LibraryService extends EventEmitter {
     return true;
   }
 
-  // Check if a given path is in a user's external path. Both arguments are assumed to be normalized
-  private isInExternalPath(filePath: string, externalPath: string | null): boolean {
-    if (externalPath === null) {
-      return false;
-    }
-    return filePath.startsWith(externalPath);
-  }
-
   async handleQueueAssetRefresh(job: ILibraryRefreshJob): Promise<boolean> {
     const library = await this.repository.get(job.id);
     if (!library || library.type !== LibraryType.EXTERNAL) {
