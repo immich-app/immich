@@ -2,7 +2,7 @@ import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
 /// The cache manager for full size images [ImmichRemoteThumbnailProvider]
 class ThumbnailImageCacheManager extends CacheManager with ImageCacheManager {
-  static const key = 'remoteImageCacheKey';
+  static const key = 'thumbnailImageCacheKey';
   static final ThumbnailImageCacheManager _instance =
       ThumbnailImageCacheManager._();
 
