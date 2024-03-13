@@ -309,7 +309,7 @@ export class LibraryService extends EventEmitter {
           name: JobName.LIBRARY_SCAN_ASSET,
           data: {
             id: libraryId,
-            assetPath: path.normalize(assetPath),
+            assetPath: assetPath,
             ownerId,
             force,
           },
