@@ -703,8 +703,6 @@ export class LibraryService extends EventEmitter {
       this.logger.debug(`Will queue refresh of ${pathsToScan.length} new asset(s)`);
     }
 
-    this.logger.verbose(`Queuing asset refresh...`);
-
     if (pathsToScan.length > 0) {
       await this.scanAssets(job.id, pathsToScan, library.ownerId, job.refreshAllFiles ?? false);
     }
