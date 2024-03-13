@@ -127,8 +127,8 @@ flutter:
         - asset: fonts/overpass/OverpassMono.ttf
 
 flutter_launcher_icons:
-  image_path_android: "assets/immich-logo.png"
-  image_path_ios: "assets/immich-logo.png"
+  image_path_android: "assets/immich-logo-w-bg.png"
+  image_path_ios: "assets/immich-logo-w-bg.png"
   android: true # can specify file name here e.g. "ic_launcher"
   ios: true # can specify file name here e.g. "My-Launcher-Icon
   remove_alpha_ios: true
