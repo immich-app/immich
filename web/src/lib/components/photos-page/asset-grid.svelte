@@ -38,7 +38,7 @@
   const { assetSelectionCandidates, assetSelectionStart, selectedGroup, selectedAssets, isMultiSelectState } =
     assetInteractionStore;
   const viewport: Viewport = { width: 0, height: 0 };
-  let { isViewing: showAssetViewer, asset: viewingAsset } = assetViewingStore;
+  let { isViewing: showAssetViewer, asset: viewingAsset, preloadAssets } = assetViewingStore;
   let element: HTMLElement;
   let showShortcuts = false;
   let showSkeleton = true;
@@ -141,8 +141,12 @@
 
   const handlePrevious = async () => {
     const previousAsset = await assetStore.getPreviousAssetId($viewingAsset.id);
+
     if (previousAsset) {
-      await assetViewingStore.setAssetId(previousAsset);
+      const preloadId = await assetStore.getPreviousAssetId(previousAsset);
+      preloadId
+        ? await assetViewingStore.setAssetId(previousAsset, [preloadId])
+        : await assetViewingStore.setAssetId(previousAsset);
     }
 
     return !!previousAsset;
@@ -150,8 +154,12 @@
 
   const handleNext = async () => {
     const nextAsset = await assetStore.getNextAssetId($viewingAsset.id);
+
     if (nextAsset) {
-      await assetViewingStore.setAssetId(nextAsset);
+      const preloadId = await assetStore.getNextAssetId(nextAsset);
+      preloadId
+        ? await assetViewingStore.setAssetId(nextAsset, [preloadId])
+        : await assetViewingStore.setAssetId(nextAsset);
     }
 
     return !!nextAsset;
@@ -455,6 +463,7 @@
         {withStacked}
         {assetStore}
         asset={$viewingAsset}
+        preloadAssets={$preloadAssets}
         {isShared}
         {album}
         on:previous={handlePrevious}
