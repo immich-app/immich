@@ -34,7 +34,7 @@
       e.preventDefault();
     }}
   >
-    <ImmichLogo class="m-16 w-48 animate-bounce" />
+    <ImmichLogo noText class="m-16 w-48 animate-bounce" />
     <div class="text-2xl">Drop files anywhere to upload</div>
   </div>
 {/if}

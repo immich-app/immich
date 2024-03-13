@@ -58,7 +58,7 @@
 <BaseModal on:close={() => dispatch('close')}>
   <svelte:fragment slot="title">
     <span class="flex place-items-center gap-2">
-      <ImmichLogo width={24} />
+      <ImmichLogo noText={true} width={36} />
       <p class="font-medium">Invite to album</p>
     </span>
   </svelte:fragment>
