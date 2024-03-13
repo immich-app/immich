@@ -156,7 +156,9 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
                 padding: const EdgeInsets.only(top: 3),
                 height: 30,
                 child: Image.asset(
-                  'assets/immich-logo-inline-dark.png',
+                  context.isDarkTheme
+                      ? 'assets/immich-logo-inline-dark.png'
+                      : 'assets/immich-logo-inline-light.png',
                 ),
               ),
             ],
