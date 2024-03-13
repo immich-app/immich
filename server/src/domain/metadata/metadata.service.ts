@@ -6,6 +6,7 @@ import { firstDateTime } from 'exiftool-vendored/dist/FirstDateTime';
 import _ from 'lodash';
 import { Duration } from 'luxon';
 import { constants } from 'node:fs/promises';
+import path from 'node:path';
 import { Subscription } from 'rxjs';
 import { handlePromiseError, usePagination } from '../domain.util';
 import { IBaseJob, IEntityJob, ISidecarWriteJob, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
@@ -566,9 +567,25 @@ export class MetadataService {
       return false;
     }
 
-    const sidecarPath = `${asset.originalPath}.xmp`;
-    const exists = await this.storageRepository.checkFileExists(sidecarPath, constants.R_OK);
-    if (exists) {
+    // XMP sidecars can come in two filename formats. For a photo named photo.ext, the filenames are photo.ext.xmp and photo.xmp
+    const assetPath = path.parse(asset.originalPath);
+    const assetPathWithoutExt = path.join(assetPath.dir, assetPath.name);
+    const sidecarPathWithoutExt = `${assetPathWithoutExt}.xmp`;
+    const sidecarPathWithExt = `${asset.originalPath}.xmp`;
+
+    const [sidecarPathWithExtExists, sidecarPathWithoutExtExists] = await Promise.all([
+      this.storageRepository.checkFileExists(sidecarPathWithExt, constants.R_OK),
+      this.storageRepository.checkFileExists(sidecarPathWithoutExt, constants.R_OK),
+    ]);
+
+    let sidecarPath = null;
+    if (sidecarPathWithExtExists) {
+      sidecarPath = sidecarPathWithExt;
+    } else if (sidecarPathWithoutExtExists) {
+      sidecarPath = sidecarPathWithoutExt;
+    }
+
+    if (sidecarPath) {
       await this.assetRepository.save({ id: asset.id, sidecarPath });
       return true;
     }
@@ -577,7 +594,9 @@ export class MetadataService {
       return false;
     }
 
-    this.logger.debug(`Sidecar File '${sidecarPath}' was not found, removing sidecarPath for asset ${asset.id}`);
+    this.logger.debug(
+      `Sidecar file was not found. Checked paths '${sidecarPathWithExt}' and '${sidecarPathWithoutExt}'. Removing sidecarPath for asset ${asset.id}`,
+    );
     await this.assetRepository.save({ id: asset.id, sidecarPath: null });
 
     return true;

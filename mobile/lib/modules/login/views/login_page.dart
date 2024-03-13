@@ -29,36 +29,38 @@ class LoginPage extends HookConsumerWidget {
 
     return Scaffold(
       body: const LoginForm(),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.only(bottom: 16.0),
-        child: SizedBox(
-          height: 50,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'v${appVersion.value}',
-                style: const TextStyle(
-                  color: Colors.grey,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: "Inconsolata",
-                ),
-              ),
-              const Text(' '),
-              GestureDetector(
-                child: Text(
-                  'Logs',
-                  style: TextStyle(
-                    color: context.primaryColor,
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 16.0),
+          child: SizedBox(
+            height: 50,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'v${appVersion.value}',
+                  style: const TextStyle(
+                    color: Colors.grey,
                     fontWeight: FontWeight.bold,
                     fontFamily: "Inconsolata",
                   ),
                 ),
-                onTap: () {
-                  context.pushRoute(const AppLogRoute());
-                },
-              ),
-            ],
+                const Text(' '),
+                GestureDetector(
+                  child: Text(
+                    'Logs',
+                    style: TextStyle(
+                      color: context.primaryColor,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: "Inconsolata",
+                    ),
+                  ),
+                  onTap: () {
+                    context.pushRoute(const AppLogRoute());
+                  },
+                ),
+              ],
+            ),
           ),
         ),
       ),

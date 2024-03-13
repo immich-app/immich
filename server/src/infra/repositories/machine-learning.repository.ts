@@ -11,9 +11,11 @@ import {
 } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { readFile } from 'node:fs/promises';
+import { Instrumentation } from '../instrumentation';
 
 const errorPrefix = 'Machine learning request';
 
+@Instrumentation()
 @Injectable()
 export class MachineLearningRepository implements IMachineLearningRepository {
   private async predict<T>(url: string, input: TextModelInput | VisionModelInput, config: ModelConfig): Promise<T> {
@@ -50,7 +52,7 @@ export class MachineLearningRepository implements IMachineLearningRepository {
     } as CLIPConfig);
   }
 
-  async getFormData(input: TextModelInput | VisionModelInput, config: ModelConfig): Promise<FormData> {
+  private async getFormData(input: TextModelInput | VisionModelInput, config: ModelConfig): Promise<FormData> {
     const formData = new FormData();
     const { enabled, modelName, modelType, ...options } = config;
     if (!enabled) {

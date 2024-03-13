@@ -3,7 +3,9 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AssetStackEntity } from '../entities';
+import { Instrumentation } from '../instrumentation';
 
+@Instrumentation()
 @Injectable()
 export class AssetStackRepository implements IAssetStackRepository {
   constructor(@InjectRepository(AssetStackEntity) private repository: Repository<AssetStackEntity>) {}

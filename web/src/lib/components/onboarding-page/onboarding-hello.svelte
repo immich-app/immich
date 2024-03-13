@@ -13,7 +13,7 @@
 </script>
 
 <OnboardingCard>
-  <ImmichLogo class="w-12 h-12" />
+  <ImmichLogo noText width="75" />
   <p class="font-medium text-6xl my-6 text-immich-primary dark:text-immich-dark-primary">
     Welcome, {$user.name}
   </p>

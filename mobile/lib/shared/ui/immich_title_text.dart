@@ -13,14 +13,14 @@ class ImmichTitleText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      'IMMICH',
-      style: TextStyle(
-        fontFamily: 'SnowburstOne',
-        fontWeight: FontWeight.bold,
-        fontSize: fontSize,
-        color: color ?? context.primaryColor,
+    return Image(
+      image: AssetImage(
+        context.isDarkTheme
+            ? 'assets/immich-text-dark.png'
+            : 'assets/immich-text-light.png',
       ),
+      width: fontSize * 4,
+      filterQuality: FilterQuality.high,
     );
   }
 }

@@ -142,7 +142,7 @@ class AlbumInfoCard extends HookConsumerWidget {
                       image: imageData != null
                           ? MemoryImage(imageData!)
                           : const AssetImage(
-                              'assets/immich-logo-no-outline.png',
+                              'assets/immich-logo.png',
                             ) as ImageProvider,
                       fit: BoxFit.cover,
                     ),

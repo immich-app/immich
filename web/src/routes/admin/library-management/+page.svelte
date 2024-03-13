@@ -1,9 +1,10 @@
 <script lang="ts">
-  import Button from '$lib/components/elements/buttons/button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
+  import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import LibraryImportPathsForm from '$lib/components/forms/library-import-paths-form.svelte';
   import LibraryRenameForm from '$lib/components/forms/library-rename-form.svelte';
   import LibraryScanSettingsForm from '$lib/components/forms/library-scan-settings-form.svelte';
+  import LibraryUserPickerForm from '$lib/components/forms/library-user-picker-form.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
@@ -18,25 +19,25 @@
   import { getContextMenuPosition } from '$lib/utils/context-menu';
   import { handleError } from '$lib/utils/handle-error';
   import {
-    LibraryType,
     createLibrary,
     deleteLibrary,
+    getAllLibraries,
     getLibraryStatistics,
+    getUserById,
+    LibraryType,
     removeOfflineFiles,
     scanLibrary,
     updateLibrary,
+    type CreateLibraryDto,
     type LibraryResponseDto,
     type LibraryStatsResponseDto,
-    getAllLibraries,
     type UserResponseDto,
-    getUserById,
-    type CreateLibraryDto,
   } from '@immich/sdk';
-  import { mdiDatabase, mdiDotsVertical, mdiUpload } from '@mdi/js';
+  import { mdiDatabase, mdiDotsVertical, mdiPlusBoxOutline, mdiSync, mdiUpload } from '@mdi/js';
   import { onMount } from 'svelte';
   import { fade, slide } from 'svelte/transition';
+  import LinkButton from '../../../lib/components/elements/buttons/link-button.svelte';
   import type { PageData } from './$types';
-  import LibraryUserPickerForm from '$lib/components/forms/library-user-picker-form.svelte';
 
   export let data: PageData;
 
@@ -320,6 +321,22 @@
 {/if}
 
 <UserPageLayout title={data.meta.title} admin>
+  <div class="flex justify-end gap-2" slot="buttons">
+    {#if libraries.length > 0}
+      <LinkButton on:click={() => handleScanAll()}>
+        <div class="flex gap-1 text-sm">
+          <Icon path={mdiSync} size="18" />
+          <span>Scan All Libraries</span>
+        </div>
+      </LinkButton>
+    {/if}
+    <LinkButton on:click={() => (toCreateLibrary = true)}>
+      <div class="flex gap-1 text-sm">
+        <Icon path={mdiPlusBoxOutline} size="18" />
+        <span>Create Library</span>
+      </div>
+    </LinkButton>
+  </div>
   <section class="my-4">
     <div class="flex flex-col gap-2" in:fade={{ duration: 500 }}>
       {#if libraries.length > 0}
@@ -440,11 +457,14 @@
             {/each}
           </tbody>
         </table>
+
+        <!-- Empty message -->
+      {:else}
+        <EmptyPlaceholder
+          text="Create an external library to view your photos and videos"
+          onClick={() => (toCreateLibrary = true)}
+        />
       {/if}
-      <div class="my-2 flex justify-end gap-2">
-        <Button size="sm" on:click={() => handleScanAll()}>Scan All Libraries</Button>
-        <Button size="sm" on:click={() => (toCreateLibrary = true)}>Create Library</Button>
-      </div>
     </div>
   </section>
 </UserPageLayout>

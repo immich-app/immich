@@ -592,9 +592,9 @@
 
   {#if $slideshowState === SlideshowState.None && showNavigation}
     <div class="z-[1001] column-span-1 col-start-1 row-span-1 row-start-2 mb-[60px] justify-self-start">
-      <NavigationArea on:click={(e) => navigateAsset('previous', e)}
-        ><Icon path={mdiChevronLeft} size="36" /></NavigationArea
-      >
+      <NavigationArea onClick={(e) => navigateAsset('previous', e)} label="View previous asset">
+        <Icon path={mdiChevronLeft} size="36" ariaHidden />
+      </NavigationArea>
     </div>
   {/if}
 
@@ -708,9 +708,9 @@
 
   {#if $slideshowState === SlideshowState.None && showNavigation}
     <div class="z-[1001] col-span-1 col-start-4 row-span-1 row-start-2 mb-[60px] justify-self-end">
-      <NavigationArea on:click={(e) => navigateAsset('next', e)}
-        ><Icon path={mdiChevronRight} size="36" /></NavigationArea
-      >
+      <NavigationArea onClick={(e) => navigateAsset('next', e)} label="View next asset">
+        <Icon path={mdiChevronRight} size="36" ariaHidden />
+      </NavigationArea>
     </div>
   {/if}
 
