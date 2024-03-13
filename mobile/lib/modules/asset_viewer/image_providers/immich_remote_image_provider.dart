@@ -3,7 +3,8 @@ import 'dart:ui' as ui;
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
-import 'package:immich_mobile/modules/asset_viewer/image_providers/image_loader.dart';
+import 'package:immich_mobile/modules/asset_viewer/image_providers/cache/image_loader.dart';
+import 'package:immich_mobile/modules/asset_viewer/image_providers/cache/remote_image_cache_manager.dart';
 import 'package:openapi/api.dart' as api;
 
 import 'package:flutter/foundation.dart';
@@ -41,7 +42,7 @@ class ImmichRemoteImageProvider
     ImmichRemoteImageProvider key,
     ImageDecoderCallback decode,
   ) {
-    final cache = cacheManager ?? DefaultCacheManager();
+    final cache = cacheManager ?? RemoteImageCacheManager();
     final chunkEvents = StreamController<ImageChunkEvent>();
     return MultiImageStreamCompleter(
       codec: _codec(key, cache, decode, chunkEvents),
