@@ -10,7 +10,7 @@ flutter_native_splash:
   # of your splash screen to a solid color.  Use background_image to set the background of your
   # splash screen to a png image.  This is useful for gradients. The image will be stretch to the
   # size of the app. Only one parameter can be used, color and background_image cannot both be set.
-  #background_image: "assets/immich-logo-no-outline.png"
+  #background_image: "assets/immich-logo.png"
   color: "#f6f8fe"
 
   # Optional parameters are listed below.  To enable a parameter, uncomment the line by removing

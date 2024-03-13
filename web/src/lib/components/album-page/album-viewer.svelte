@@ -87,9 +87,8 @@
   {:else}
     <ControlAppBar showBackButton={false}>
       <svelte:fragment slot="leading">
-        <a data-sveltekit-preload-data="hover" class="ml-6 flex place-items-center gap-2 hover:cursor-pointer" href="/">
-          <ImmichLogo height={30} width={30} />
-          <h1 class="font-immich-title text-lg text-immich-primary dark:text-immich-dark-primary">IMMICH</h1>
+        <a data-sveltekit-preload-data="hover" class="ml-4 hover:cursor-pointer" href="/">
+          <ImmichLogo width="55%" />
         </a>
       </svelte:fragment>
 
