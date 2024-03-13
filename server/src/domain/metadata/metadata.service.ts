@@ -588,7 +588,7 @@ export class MetadataService {
 
     if (sidecarPath) {
       await this.assetRepository.save({ id: asset.id, sidecarPath });
-      return JobStatus.SKIPPED;
+      return JobStatus.SUCCESS;
     }
 
     if (!isSync) {

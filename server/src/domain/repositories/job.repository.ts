@@ -100,7 +100,7 @@ export enum JobStatus {
   SKIPPED = 'skipped',
 }
 
-export type JobHandler<T = any> = (data: T) => boolean | Promise<JobStatus>;
+export type JobHandler<T = any> = (data: T) => Promise<JobStatus>;
 export type JobItemHandler = (item: JobItem) => Promise<void>;
 
 export const IJobRepository = 'IJobRepository';

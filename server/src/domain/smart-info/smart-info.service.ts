@@ -78,7 +78,7 @@ export class SmartInfoService {
 
     const [asset] = await this.assetRepository.getByIds([id]);
     if (!asset) {
-      return false;
+      return JobStatus.FAILED;
     }
 
     if (!asset.resizePath) {

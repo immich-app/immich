@@ -95,7 +95,7 @@ export class StorageTemplateService {
 
     const [asset] = await this.assetRepository.getByIds([id], { exifInfo: true });
     if (!asset) {
-      return false;
+      return JobStatus.FAILED;
     }
 
     const user = await this.userRepository.get(asset.ownerId, {});
@@ -107,7 +107,7 @@ export class StorageTemplateService {
     if (asset.livePhotoVideoId) {
       const [livePhotoVideo] = await this.assetRepository.getByIds([asset.livePhotoVideoId], { exifInfo: true });
       if (!livePhotoVideo) {
-        return false;
+        return JobStatus.FAILED;
       }
       const motionFilename = getLivePhotoMotionFilename(filename, livePhotoVideo.originalPath);
       await this.moveAsset(livePhotoVideo, { storageLabel, filename: motionFilename });
