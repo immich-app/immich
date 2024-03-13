@@ -114,7 +114,7 @@ describe(MetadataService.name, () => {
   describe('handleLivePhotoLinking', () => {
     it('should handle an asset that could not be found', async () => {
       await expect(sut.handleLivePhotoLinking({ id: assetStub.image.id })).resolves.toBe(false);
-      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id]);
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id], { exifInfo: true });
       expect(assetMock.findLivePhotoMatch).not.toHaveBeenCalled();
       expect(assetMock.save).not.toHaveBeenCalled();
       expect(albumMock.removeAsset).not.toHaveBeenCalled();
@@ -124,7 +124,7 @@ describe(MetadataService.name, () => {
       assetMock.getByIds.mockResolvedValue([{ ...assetStub.image, exifInfo: undefined }]);
 
       await expect(sut.handleLivePhotoLinking({ id: assetStub.image.id })).resolves.toBe(false);
-      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id]);
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id], { exifInfo: true });
       expect(assetMock.findLivePhotoMatch).not.toHaveBeenCalled();
       expect(assetMock.save).not.toHaveBeenCalled();
       expect(albumMock.removeAsset).not.toHaveBeenCalled();
@@ -134,7 +134,7 @@ describe(MetadataService.name, () => {
       assetMock.getByIds.mockResolvedValue([{ ...assetStub.image }]);
 
       await expect(sut.handleLivePhotoLinking({ id: assetStub.image.id })).resolves.toBe(true);
-      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id]);
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id], { exifInfo: true });
       expect(assetMock.findLivePhotoMatch).not.toHaveBeenCalled();
       expect(assetMock.save).not.toHaveBeenCalled();
       expect(albumMock.removeAsset).not.toHaveBeenCalled();
@@ -149,7 +149,7 @@ describe(MetadataService.name, () => {
       ]);
 
       await expect(sut.handleLivePhotoLinking({ id: assetStub.livePhotoMotionAsset.id })).resolves.toBe(true);
-      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.livePhotoMotionAsset.id]);
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.livePhotoMotionAsset.id], { exifInfo: true });
       expect(assetMock.findLivePhotoMatch).toHaveBeenCalledWith({
         livePhotoCID: assetStub.livePhotoStillAsset.id,
         ownerId: assetStub.livePhotoMotionAsset.ownerId,
@@ -170,7 +170,7 @@ describe(MetadataService.name, () => {
       assetMock.findLivePhotoMatch.mockResolvedValue(assetStub.livePhotoMotionAsset);
 
       await expect(sut.handleLivePhotoLinking({ id: assetStub.livePhotoStillAsset.id })).resolves.toBe(true);
-      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.livePhotoStillAsset.id]);
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.livePhotoStillAsset.id], { exifInfo: true });
       expect(assetMock.findLivePhotoMatch).toHaveBeenCalledWith({
         livePhotoCID: assetStub.livePhotoMotionAsset.id,
         ownerId: assetStub.livePhotoStillAsset.ownerId,
