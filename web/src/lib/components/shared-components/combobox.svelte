@@ -24,6 +24,7 @@
   export let placeholder = '';
 
   let isOpen = false;
+  let inputFocused = false;
   let searchQuery = selectedOption?.label || '';
 
   $: filteredOptions = options.filter((option) => option.label.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -36,11 +37,16 @@
   const handleClick = () => {
     searchQuery = '';
     isOpen = true;
+    inputFocused = true;
     dispatch('click');
   };
 
   let handleOutClick = () => {
-    isOpen = false;
+    // In rare cases it's possible for the input to still have focus and
+    // outclick to fire.
+    if (!inputFocused) {
+      isOpen = false;
+    }
   };
 
   let handleSelect = (option: ComboBoxOption) => {
@@ -79,6 +85,7 @@
       value={isOpen ? '' : selectedOption?.label || ''}
       on:input={(e) => (searchQuery = e.currentTarget.value)}
       on:focus={handleClick}
+      on:blur={() => (inputFocused = false)}
     />
 
     <div

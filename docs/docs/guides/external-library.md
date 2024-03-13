@@ -14,6 +14,12 @@ Edit `docker-compose.yml` to add two new mount points under `volumes:`
       - ${EXTERNAL_PATH}:/usr/src/app/external
 ```
 
+```
+  immich-microservices:
+    volumes:
+      - ${EXTERNAL_PATH}:/usr/src/app/external
+```
+
 Be sure to add exactly the same line to both `immich-server:` and `immich-microservices:`.
 
 Edit `.env` to define `EXTERNAL_PATH`, substituting in the correct path for your computer:
