@@ -298,8 +298,9 @@ export class LibraryService extends EventEmitter {
   }
 
   private async scanAssets(libraryId: string, assetPaths: string[], ownerId: string, force = false) {
-    this.logger.debug('About to scan assets');
+    this.logger.verbose(`Queuing refresh of ${assetPaths.length} asset(s)`);
 
+    // We perform this in batches to save on memory when performing large refreshes (greater than 1M assets)
     const batchSize = 5000;
     for (let i = 0; i < assetPaths.length; i += batchSize) {
       const batch = assetPaths.slice(i, i + batchSize);
@@ -316,7 +317,7 @@ export class LibraryService extends EventEmitter {
       );
     }
 
-    this.logger.debug('Finished scanning assets');
+    this.logger.debug('Asset refresh queue completed');
   }
 
   private async validateImportPath(importPath: string): Promise<ValidateLibraryImportPathResponseDto> {
@@ -666,44 +667,43 @@ export class LibraryService extends EventEmitter {
       this.assetRepository.getLibraryAssetPaths(pagination, library.id),
     );
 
-    this.logger.debug(`Pagination complete`);
+    this.logger.verbose(`Crawled asset paths paginated`);
 
     for await (const page of pagination) {
       for (const asset of page) {
         const isOffline = !crawledAssetPaths.has(asset.originalPath);
         if (isOffline && !asset.isOffline) {
           assetIdsToMarkOffline.push(asset.id);
-          this.logger.debug(`Adding to offline list: ${asset.originalPath}`);
+          this.logger.verbose(`Added to mark-offline list: ${asset.originalPath}`);
         }
 
         if (!isOffline && asset.isOffline) {
           assetIdsToMarkOnline.push(asset.id);
-          this.logger.debug(`Adding to online list: ${asset.originalPath}`);
+          this.logger.verbose(`Added to mark-online list: ${asset.originalPath}`);
         }
 
         crawledAssetPaths.delete(asset.originalPath);
-        this.logger.debug(`There are ${crawledAssetPaths.size} asset(s) left to check`);
       }
     }
 
-    this.logger.debug(`Checked offline paths`);
+    this.logger.verbose(`Crawled assets have been checked for online/offline status`);
 
     if (assetIdsToMarkOffline.length > 0) {
-      this.logger.debug(`Found ${assetIdsToMarkOffline.length} offline asset(s) previously marked as online`);
+      this.logger.verbose(`Found ${assetIdsToMarkOffline.length} offline asset(s) previously marked as online`);
       await this.assetRepository.updateAll(assetIdsToMarkOffline, { isOffline: true });
     }
 
     if (assetIdsToMarkOnline.length > 0) {
-      this.logger.debug(`Found ${assetIdsToMarkOnline.length} online asset(s) previously marked as offline`);
+      this.logger.verbose(`Found ${assetIdsToMarkOnline.length} online asset(s) previously marked as offline`);
       await this.assetRepository.updateAll(assetIdsToMarkOnline, { isOffline: false });
     }
 
     if (!shouldScanAll) {
       pathsToScan = [...crawledAssetPaths];
-      this.logger.debug(`Will import ${pathsToScan.length} new asset(s)`);
+      this.logger.debug(`Will queue refresh of ${pathsToScan.length} new asset(s)`);
     }
 
-    this.logger.debug(`About to start scan`);
+    this.logger.verbose(`Queuing asset refresh...`);
 
     if (pathsToScan.length > 0) {
       await this.scanAssets(job.id, pathsToScan, library.ownerId, job.refreshAllFiles ?? false);
