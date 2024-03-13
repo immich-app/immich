@@ -631,11 +631,11 @@ export class LibraryService extends EventEmitter {
 
     const exists = await this.storageRepository.checkFileExists(asset.originalPath, R_OK);
 
-    if (!exists) {
+    if (exists) {
+      this.logger.verbose(`Asset is still online: ${asset.originalPath}`);
+    } else {
       this.logger.debug(`Marking asset as offline: ${asset.originalPath}`);
       await this.assetRepository.save({ id: asset.id, isOffline: true });
-    } else {
-      this.logger.verbose(`Asset is still online: ${asset.originalPath}`);
     }
 
     return true;
