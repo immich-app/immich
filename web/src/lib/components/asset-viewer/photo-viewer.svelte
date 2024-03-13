@@ -67,14 +67,16 @@
       assetData = URL.createObjectURL(data);
       imageLoaded = true;
 
-      if (preloadAssets) {
-        for (const preloadAsset of preloadAssets) {
-          if (preloadAsset.type === AssetTypeEnum.Image) {
-            await downloadRequest({
-              url: getAssetFileUrl(preloadAsset.id, !loadOriginal, false),
-              signal: abortController.signal,
-            });
-          }
+      if (!preloadAssets) {
+        return;
+      }
+
+      for (const preloadAsset of preloadAssets) {
+        if (preloadAsset.type === AssetTypeEnum.Image) {
+          await downloadRequest({
+            url: getAssetFileUrl(preloadAsset.id, !loadOriginal, false),
+            signal: abortController.signal,
+          });
         }
       }
     } catch {

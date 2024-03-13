@@ -104,8 +104,11 @@
       $stackAssetsStore = [...$stackAssetsStore, asset].sort(
         (a, b) => new Date(b.fileCreatedAt).getTime() - new Date(a.fileCreatedAt).getTime(),
       );
+
       // if its a stack, add the next stack image in addition to the next asset
-      preloadAssets.push($stackAssetsStore[1]);
+      if (asset.stackCount > 1) {
+        preloadAssets.push($stackAssetsStore[1]);
+      }
     }
 
     if (!$stackAssetsStore.map((a) => a.id).includes(asset.id)) {
