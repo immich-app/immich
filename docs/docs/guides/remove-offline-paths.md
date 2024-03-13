@@ -20,7 +20,7 @@ This page is a guide to get rid of offline paths from the repair page.
 This way works by retrieving a file that contains a list of all the files that are defined as offline paths, running a script that uses the [Immich API](/docs/api/delete-assets) in order to remove the offline paths.
 
 1. Create an API key under Admin User -> Account Settings -> API Keys -> New API Key -> Copy to clipboard.
-2. Copy and save the code to file -> `Immich Remove Offline paths.py`.
+2. Copy and save the code to file -> `Immich_Remove_Offline_Paths.py`.
 3. Run the script and follow the instructions.
 
 :::note

@@ -11,7 +11,7 @@ Starting with version v1.93.0 face detection work and face recognize were split.
 :::
 
 :::note
-[hwaccel.ml.yml](https://github.com/immich-app/immich/releases/latest/download/hwaccel.ml.yml) also need to be in the same folder if you trying to use armnn/cuda/openvino.
+The [hwaccel.ml.yml](https://github.com/immich-app/immich/releases/latest/download/hwaccel.ml.yml) file also needs to be in the same folder if trying to use [hardware acceleration](/docs/features/ml-hardware-acceleration).
 :::
 
 ```yaml

@@ -56,6 +56,6 @@ From the partner’s view, on the top right corner of the app bar
 
 ## Remove Partner
 
-In order to remove partner you can go to User -> Account Settings -> Sharing -> Click on the X
+In order to remove a partner, you can go to User -> Account Settings -> Sharing and click on the X button.
 
 <img src={require('./img/partner-sharing-7.png').default} width="70%" title='Remove Partner' />
