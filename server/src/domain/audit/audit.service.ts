@@ -16,6 +16,7 @@ import {
   IPersonRepository,
   IStorageRepository,
   IUserRepository,
+  JobStatus,
 } from '../repositories';
 import { StorageCore, StorageFolder } from '../storage';
 import {
@@ -44,9 +45,9 @@ export class AuditService {
     this.access = AccessCore.create(accessRepository);
   }
 
-  async handleCleanup(): Promise<boolean> {
+  async handleCleanup(): Promise<JobStatus> {
     await this.repository.removeBefore(DateTime.now().minus(AUDIT_LOG_MAX_DURATION).toJSDate());
-    return true;
+    return JobStatus.SUCCESS;
   }
 
   async getDeletes(auth: AuthDto, dto: AuditDeletesDto): Promise<AuditDeletesResponseDto> {

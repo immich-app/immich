@@ -10,6 +10,7 @@ import {
   IMachineLearningRepository,
   ISearchRepository,
   ISystemConfigRepository,
+  JobStatus,
   WithoutProperty,
 } from '../repositories';
 import { SystemConfigCore } from '../system-config';
@@ -44,10 +45,10 @@ export class SmartInfoService {
     await this.jobRepository.resume(QueueName.SMART_SEARCH);
   }
 
-  async handleQueueEncodeClip({ force }: IBaseJob) {
+  async handleQueueEncodeClip({ force }: IBaseJob): Promise<JobStatus> {
     const { machineLearning } = await this.configCore.getConfig();
     if (!machineLearning.enabled || !machineLearning.clip.enabled) {
-      return true;
+      return JobStatus.SKIPPED;
     }
 
     if (force) {
@@ -66,13 +67,13 @@ export class SmartInfoService {
       );
     }
 
-    return true;
+    return JobStatus.SUCCESS;
   }
 
-  async handleEncodeClip({ id }: IEntityJob) {
+  async handleEncodeClip({ id }: IEntityJob): Promise<JobStatus> {
     const { machineLearning } = await this.configCore.getConfig();
     if (!machineLearning.enabled || !machineLearning.clip.enabled) {
-      return true;
+      return JobStatus.SKIPPED;
     }
 
     const [asset] = await this.assetRepository.getByIds([id]);
@@ -81,7 +82,7 @@ export class SmartInfoService {
     }
 
     if (!asset.resizePath) {
-      return false;
+      return JobStatus.FAILED;
     }
 
     const clipEmbedding = await this.machineLearning.encodeImage(
@@ -97,6 +98,6 @@ export class SmartInfoService {
 
     await this.repository.upsert({ assetId: asset.id }, clipEmbedding);
 
-    return true;
+    return JobStatus.SUCCESS;
   }
 }
