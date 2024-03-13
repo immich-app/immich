@@ -1,7 +1,7 @@
 import { Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { AssetEntity } from './asset.entity';
 
-@Entity('asset_stack', { synchronize: false })
+@Entity('asset_stack')
 export class AssetStackEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
