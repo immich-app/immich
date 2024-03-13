@@ -22,8 +22,7 @@
   };
 
   onDestroy(() => {
-    $accordionState.delete(key);
-    $accordionState = $accordionState;
+    setIsOpen(false);
   });
 </script>
 
