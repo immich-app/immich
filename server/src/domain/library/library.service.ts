@@ -625,7 +625,7 @@ export class LibraryService extends EventEmitter {
       return false;
     }
 
-    this.logger.verbose(`Refreshing library: ${job.id}`);
+    this.logger.log(`Refreshing library: ${job.id}`);
 
     const pathValidation = await Promise.all(
       library.importPaths.map(async (importPath) => await this.validateImportPath(importPath)),
@@ -681,12 +681,12 @@ export class LibraryService extends EventEmitter {
     this.logger.verbose(`Crawled assets have been checked for online/offline status`);
 
     if (assetIdsToMarkOffline.length > 0) {
-      this.logger.verbose(`Found ${assetIdsToMarkOffline.length} offline asset(s) previously marked as online`);
+      this.logger.debug(`Found ${assetIdsToMarkOffline.length} offline asset(s) previously marked as online`);
       await this.assetRepository.updateAll(assetIdsToMarkOffline, { isOffline: true });
     }
 
     if (assetIdsToMarkOnline.length > 0) {
-      this.logger.verbose(`Found ${assetIdsToMarkOnline.length} online asset(s) previously marked as offline`);
+      this.logger.debug(`Found ${assetIdsToMarkOnline.length} online asset(s) previously marked as offline`);
       await this.assetRepository.updateAll(assetIdsToMarkOnline, { isOffline: false });
     }
 
