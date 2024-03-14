@@ -60,7 +60,7 @@ export class SearchService {
       this.assetRepository.getAssetIdByTag(auth.user.id, options),
     ]);
     const assetIds = new Set<string>(results.flatMap((field) => field.items.map((item) => item.data)));
-    const assets = await this.assetRepository.getByIds([...assetIds]);
+    const assets = await this.assetRepository.getByIdsWithAllRelations([...assetIds]);
     const assetMap = new Map<string, AssetResponseDto>(assets.map((asset) => [asset.id, mapAsset(asset)]));
 
     return results.map(({ fieldName, items }) => ({
