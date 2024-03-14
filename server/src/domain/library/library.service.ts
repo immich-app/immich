@@ -26,6 +26,7 @@ import {
   StorageEventType,
   WithProperty,
 } from '../repositories';
+import { StorageCore } from '../storage';
 import { SystemConfigCore } from '../system-config';
 import {
   CreateLibraryDto,
@@ -720,6 +721,11 @@ export class LibraryService extends EventEmitter {
 
     const trie = new Trie<string>();
     for await (const filePath of generator) {
+      // avoid feedback loop
+      if (StorageCore.isGeneratedAsset(filePath)) {
+        continue;
+      }
+
       trie.add(filePath);
     }
 

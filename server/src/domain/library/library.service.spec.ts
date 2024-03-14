@@ -19,6 +19,7 @@ import {
 } from '@test';
 import { when } from 'jest-when';
 import { Stats } from 'node:fs';
+import { join } from 'node:path';
 import { ILibraryFileJob, ILibraryRefreshJob, JobName } from '../job';
 import {
   IAssetRepository,
@@ -31,6 +32,7 @@ import {
   JobStatus,
   StorageEventType,
 } from '../repositories';
+import { ENCODED_VIDEO_DIR, THUMBNAIL_DIR } from '../storage/storage.core';
 import { SystemConfigCore } from '../system-config/system-config.core';
 import { mapLibrary } from './library.dto';
 import { LibraryService } from './library.service';
@@ -289,6 +291,31 @@ describe(LibraryService.name, () => {
 
       expect(assetMock.updateAll).toHaveBeenCalledWith([assetStub.offline.id], { isOffline: false });
       expect(assetMock.updateAll).not.toHaveBeenCalledWith(expect.anything(), { isOffline: true });
+      expect(jobMock.queueAll).not.toHaveBeenCalled();
+    });
+
+    it('should ignore generated assets', async () => {
+      const mockLibraryJob: ILibraryRefreshJob = {
+        id: libraryStub.externalLibrary1.id,
+        refreshModifiedFiles: false,
+        refreshAllFiles: false,
+      };
+
+      libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
+      // eslint-disable-next-line @typescript-eslint/require-await
+      storageMock.walk.mockImplementation(async function* generator() {
+        yield join(THUMBNAIL_DIR, 'photo.jpg');
+        yield assetStub.image.originalPath;
+        yield join(ENCODED_VIDEO_DIR, 'video.mp4');
+      });
+      assetMock.getLibraryAssetPaths.mockResolvedValue({
+        items: [assetStub.image],
+        hasNextPage: false,
+      });
+
+      await sut.handleQueueAssetRefresh(mockLibraryJob);
+
+      expect(assetMock.updateAll).not.toHaveBeenCalled();
       expect(jobMock.queueAll).not.toHaveBeenCalled();
     });
   });
