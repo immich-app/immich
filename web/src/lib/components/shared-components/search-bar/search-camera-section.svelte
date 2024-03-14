@@ -40,9 +40,8 @@
 
   <div class="grid grid-cols-[repeat(auto-fit,minmax(10rem,1fr))] gap-5 mt-1">
     <div class="w-full">
-      <label class="text-sm text-black dark:text-white" for="search-camera-make">Make</label>
       <Combobox
-        id="search-camera-make"
+        label="Make"
         options={toComboBoxOptions(makes)}
         selectedOption={makeFilter ? { label: makeFilter, value: makeFilter } : undefined}
         on:select={({ detail }) => (filters.make = detail?.value)}
@@ -51,9 +50,8 @@
     </div>
 
     <div class="w-full">
-      <label class="text-sm text-black dark:text-white" for="search-camera-model">Model</label>
       <Combobox
-        id="search-camera-model"
+        label="Model"
         options={toComboBoxOptions(models)}
         selectedOption={modelFilter ? { label: modelFilter, value: modelFilter } : undefined}
         on:select={({ detail }) => (filters.model = detail?.value)}
