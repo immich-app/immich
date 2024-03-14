@@ -39,7 +39,7 @@
     use:autoGrowHeight
     placeholder="Add description"
     use:shortcut={{
-      shortcuts: [{ key: 'Enter', ctrl: true }],
+      shortcut: { key: 'Enter', ctrl: true },
       onShortcut: (e) => e.currentTarget.blur(),
     }}
   />

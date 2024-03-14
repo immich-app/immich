@@ -193,7 +193,7 @@
   }
 </script>
 
-<svelte:window use:shortcut={{ shortcuts: [{ key: 'Escape' }], onShortcut: onEscape }} />
+<svelte:window use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: onEscape }} />
 
 <section>
   {#if isMultiSelectionMode}

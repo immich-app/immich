@@ -289,8 +289,8 @@
               placeholder={disabled ? 'Comments are disabled' : 'Say something'}
               on:input={() => autoGrowHeight(textArea, '5px')}
               use:shortcut={{
-                shortcuts: [{ key: 'Enter' }],
-                onShortcut: () => handlePromiseError(handleSendComment()),
+                shortcut: { key: 'Enter' },
+                onShortcut: () => handleSendComment(),
               }}
               class="h-[18px] {disabled
                 ? 'cursor-not-allowed'

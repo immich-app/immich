@@ -5,15 +5,13 @@ export type Shortcut = {
   alt?: boolean;
   ctrl?: boolean;
   shift?: boolean;
-  meta?: true;
+  meta?: boolean;
 };
 
-export type ShortcutOptions<T> = {
-  shortcuts: Shortcut[];
-  onShortcut: (event: KeyboardEvent & { currentTarget: T }) => void;
+export type ShortcutOptions<T = HTMLElement> = {
+  shortcut: Shortcut;
+  onShortcut: (event: KeyboardEvent & { currentTarget: T }) => unknown;
 };
-
-export type ShortcutList = [Shortcut, () => void][];
 
 export const shouldIgnoreShortcut = (event: KeyboardEvent): boolean => {
   if (event.target === event.currentTarget) {
@@ -35,41 +33,44 @@ export const matchesShortcut = (event: KeyboardEvent, shortcut: Shortcut) => {
 
 export const shortcut = <T extends HTMLElement>(
   node: T,
-  options: ShortcutOptions<T>,
+  option: ShortcutOptions<T>,
 ): ActionReturn<ShortcutOptions<T>> => {
-  const { shortcuts, onShortcut } = options;
+  const { update: shortcutsUpdate, destroy } = shortcuts(node, [option]);
 
+  return {
+    update(newOption) {
+      shortcutsUpdate?.([newOption]);
+    },
+    destroy,
+  };
+};
+
+export const shortcuts = <T extends HTMLElement>(
+  node: T,
+  options: ShortcutOptions<T>[],
+): ActionReturn<ShortcutOptions<T>[]> => {
   function onKeydown(event: KeyboardEvent) {
     if (shouldIgnoreShortcut(event)) {
       return;
     }
 
-    const shortcut = shortcuts.find((shortcut) => matchesShortcut(event, shortcut));
-    if (shortcut) {
-      event.preventDefault();
-      onShortcut(event as KeyboardEvent & { currentTarget: T });
+    for (const { shortcut, onShortcut } of options) {
+      if (matchesShortcut(event, shortcut)) {
+        event.preventDefault();
+        onShortcut(event as KeyboardEvent & { currentTarget: T });
+        return;
+      }
     }
   }
 
   node.addEventListener('keydown', onKeydown);
 
   return {
+    update(newOptions) {
+      options = newOptions;
+    },
     destroy() {
       node.removeEventListener('keydown', onKeydown);
     },
   };
-};
-
-export const executeShortcuts = (event: KeyboardEvent, shortcuts: ShortcutList) => {
-  if (shouldIgnoreShortcut(event)) {
-    return;
-  }
-
-  for (const [shortcut, action] of shortcuts) {
-    if (matchesShortcut(event, shortcut)) {
-      event.preventDefault();
-      action();
-      return;
-    }
-  }
 };

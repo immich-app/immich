@@ -44,7 +44,7 @@
 
 <svelte:window
   use:shortcut={{
-    shortcuts: [{ key: 'Escape' }],
+    shortcut: { key: 'Escape' },
     onShortcut: () => {
       if (!$showAssetViewer && $isMultiSelectState) {
         assetInteractionStore.clearMultiselect();

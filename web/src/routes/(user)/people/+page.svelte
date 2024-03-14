@@ -395,7 +395,7 @@
   };
 </script>
 
-<svelte:window bind:innerHeight use:shortcut={{ shortcuts: [{ key: 'Escape' }], onShortcut: handleCloseClick }} />
+<svelte:window bind:innerHeight use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: handleCloseClick }} />
 
 {#if showMergeModal}
   <MergeSuggestionModal

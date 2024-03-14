@@ -8,7 +8,7 @@
   import { isSearchEnabled } from '$lib/stores/search.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { deleteAssets } from '$lib/utils/actions';
-  import { type ShortcutList, executeShortcuts } from '$lib/utils/shortcut';
+  import { shortcuts, type ShortcutOptions } from '$lib/utils/shortcut';
   import { formatGroupTitle, splitBucketIntoDateGroups } from '$lib/utils/timeline-util';
   import type { AlbumResponseDto, AssetResponseDto } from '@immich/sdk';
   import { DateTime } from 'luxon';
@@ -84,26 +84,26 @@
     handlePromiseError(trashOrDelete(true));
   };
 
-  const handleKeyboardPress = (event: KeyboardEvent) => {
+  $: shortcutList = (() => {
     if ($isSearchEnabled || $showAssetViewer) {
-      return;
+      return [];
     }
 
-    const shortcuts: ShortcutList = [
-      [{ key: 'Escape' }, () => dispatch('escape')],
-      [{ key: '?', shift: true }, () => (showShortcuts = !showShortcuts)],
-      [{ key: '/' }, () => handlePromiseError(goto(AppRoute.EXPLORE))],
+    const shortcuts: ShortcutOptions[] = [
+      { shortcut: { key: 'Escape' }, onShortcut: () => dispatch('escape') },
+      { shortcut: { key: '?', shift: true }, onShortcut: () => (showShortcuts = !showShortcuts) },
+      { shortcut: { key: '/' }, onShortcut: () => goto(AppRoute.EXPLORE) },
     ];
 
     if ($isMultiSelectState) {
       shortcuts.push(
-        [{ key: 'Delete' }, onDelete], //
-        [{ key: 'Delete', shift: true }, onForceDelete],
+        { shortcut: { key: 'Delete' }, onShortcut: onDelete },
+        { shortcut: { key: 'Delete', shift: true }, onShortcut: onForceDelete },
       );
     }
 
-    executeShortcuts(event, shortcuts);
-  };
+    return shortcuts;
+  })();
 
   const handleSelectAsset = (asset: AssetResponseDto) => {
     if (!assetStore.albumAssets.has(asset.id)) {
@@ -195,8 +195,6 @@
   let shiftKeyIsDown = false;
 
   const onKeyDown = (e: KeyboardEvent) => {
-    handleKeyboardPress(e);
-
     if ($isSearchEnabled) {
       return;
     }
@@ -350,7 +348,7 @@
   };
 </script>
 
-<svelte:window on:keydown={onKeyDown} on:keyup={onKeyUp} on:selectstart={onSelectStart} />
+<svelte:window on:keydown={onKeyDown} on:keyup={onKeyUp} on:selectstart={onSelectStart} use:shortcuts={shortcutList} />
 
 {#if isShowDeleteConfirmation}
   <DeleteAssetDialog

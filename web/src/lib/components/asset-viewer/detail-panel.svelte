@@ -209,7 +209,7 @@
           use:clickOutside
           on:outclick={handleFocusOut}
           use:shortcut={{
-            shortcuts: [{ key: 'Enter', ctrl: true }],
+            shortcut: { key: 'Enter', ctrl: true },
             onShortcut: () => handlePromiseError(handleFocusOut()),
           }}
         />

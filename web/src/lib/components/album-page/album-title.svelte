@@ -30,7 +30,7 @@
 </script>
 
 <input
-  use:shortcut={{ shortcuts: [{ key: 'Enter' }], onShortcut: (e) => e.currentTarget.blur() }}
+  use:shortcut={{ shortcut: { key: 'Enter' }, onShortcut: (e) => e.currentTarget.blur() }}
   on:blur={handleUpdateName}
   class="w-[99%] mb-2 border-b-2 border-transparent text-6xl text-immich-primary outline-none transition-all dark:text-immich-dark-primary {isOwned
     ? 'hover:border-gray-400'

@@ -13,7 +13,7 @@
   import { getAssetJobMessage, isSharedLink, handlePromiseError } from '$lib/utils';
   import { addAssetsToAlbum, downloadFile } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { executeShortcuts, type ShortcutList } from '$lib/utils/shortcut';
+  import { shortcuts } from '$lib/utils/shortcut';
   import { SlideshowHistory } from '$lib/utils/slideshow-history';
   import {
     AssetJobName,
@@ -249,19 +249,6 @@
     }
     isShowActivity = !isShowActivity;
   };
-
-  let shortcuts: ShortcutList;
-  $: shortcuts = [
-    [{ key: 'a', shift: true }, () => toggleArchive()],
-    [{ key: 'ArrowLeft' }, () => navigateAsset('previous')],
-    [{ key: 'ArrowRight' }, () => navigateAsset('next')],
-    [{ key: 'd', shift: true }, () => downloadFile(asset)],
-    [{ key: 'Delete' }, () => trashOrDelete(false)],
-    [{ key: 'Delete', shift: true }, () => trashOrDelete(true)],
-    [{ key: 'Escape' }, closeViewer],
-    [{ key: 'f' }, toggleFavorite],
-    [{ key: 'i' }, toggleDetailPanel],
-  ];
 
   const toggleDetailPanel = () => {
     isShowActivity = false;
@@ -505,7 +492,19 @@
   };
 </script>
 
-<svelte:window on:keydown={(event) => executeShortcuts(event, shortcuts)} />
+<svelte:window
+  use:shortcuts={[
+    { shortcut: { key: 'a', shift: true }, onShortcut: toggleArchive },
+    { shortcut: { key: 'ArrowLeft' }, onShortcut: () => navigateAsset('previous') },
+    { shortcut: { key: 'ArrowRight' }, onShortcut: () => navigateAsset('next') },
+    { shortcut: { key: 'd', shift: true }, onShortcut: () => downloadFile(asset) },
+    { shortcut: { key: 'Delete' }, onShortcut: () => trashOrDelete(false) },
+    { shortcut: { key: 'Delete', shift: true }, onShortcut: () => trashOrDelete(true) },
+    { shortcut: { key: 'Escape' }, onShortcut: closeViewer },
+    { shortcut: { key: 'f' }, onShortcut: toggleFavorite },
+    { shortcut: { key: 'i' }, onShortcut: toggleDetailPanel },
+  ]}
+/>
 
 <section
   id="immich-asset-viewer"

@@ -6,7 +6,7 @@
   import { downloadRequest, getAssetFileUrl, handlePromiseError } from '$lib/utils';
   import { isWebCompatibleImage } from '$lib/utils/asset-utils';
   import { getBoundingBox } from '$lib/utils/people-utils';
-  import { shortcut } from '$lib/utils/shortcut';
+  import { shortcuts } from '$lib/utils/shortcut';
   import { type AssetResponseDto } from '@immich/sdk';
   import { useZoomImageWheel } from '@zoom-image/svelte';
   import { onDestroy, onMount } from 'svelte';
@@ -107,23 +107,22 @@
       handlePromiseError(loadAssetData({ loadOriginal: true }));
     }
   });
+
+  const onCopyShortcut = () => {
+    if (window.getSelection()?.type === 'Range') {
+      return;
+    }
+    handlePromiseError(doCopy());
+  };
 </script>
 
 <svelte:window
   on:copyImage={doCopy}
   on:zoomImage={doZoomImage}
-  use:shortcut={{
-    shortcuts: [
-      { key: 'c', ctrl: true },
-      { key: 'c', meta: true },
-    ],
-    onShortcut: () => {
-      if (window.getSelection()?.type === 'Range') {
-        return;
-      }
-      handlePromiseError(doCopy());
-    },
-  }}
+  use:shortcuts={[
+    { shortcut: { key: 'c', ctrl: true }, onShortcut: onCopyShortcut },
+    { shortcut: { key: 'c', meta: true }, onShortcut: onCopyShortcut },
+  ]}
 />
 
 <div
