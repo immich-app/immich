@@ -130,7 +130,7 @@ const image: Record<string, string[]> = {
   '.raw': ['image/raw', 'image/x-panasonic-raw'],
   '.rw2': ['image/rw2', 'image/x-panasonic-rw2'],
   '.rwl': ['image/rwl', 'image/x-leica-rwl'],
-  '.svg': ['image/svg+xml'],
+  '.svg': ['image/svg'],
   '.sr2': ['image/sr2', 'image/x-sony-sr2'],
   '.srf': ['image/srf', 'image/x-sony-srf'],
   '.srw': ['image/srw', 'image/x-samsung-srw'],
@@ -157,7 +157,6 @@ const video: Record<string, string[]> = {
   '.mp4': ['video/mp4'],
   '.mpg': ['video/mpeg'],
   '.mts': ['video/mp2t'],
-  '.svg': ['image/svg+xml'],
   '.webm': ['video/webm'],
   '.wmv': ['video/x-ms-wmv'],
 };
