@@ -19,6 +19,7 @@
   import Scrollbar from '../shared-components/scrollbar/scrollbar.svelte';
   import ShowShortcuts from '../shared-components/show-shortcuts.svelte';
   import AssetDateGroup from './asset-date-group.svelte';
+  import { stackAssets } from '$lib/utils/asset-utils';
   import DeleteAssetDialog from './delete-asset-dialog.svelte';
   import { handlePromiseError } from '$lib/utils';
 
@@ -99,6 +100,15 @@
         case '/': {
           event.preventDefault();
           await goto(AppRoute.EXPLORE);
+          return;
+        }
+        case 's': {
+          if ($isMultiSelectState) {
+            await stackAssets(Array.from($selectedAssets), (ids) => {
+              assetStore.removeAssets(ids);
+              dispatch('escape');
+            });
+          }
           return;
         }
         case 'Delete': {
