@@ -153,6 +153,7 @@ export type AlbumResponseDto = {
     id: string;
     isActivityEnabled: boolean;
     lastModifiedAssetTimestamp?: string;
+    order?: AssetOrder;
     owner: UserResponseDto;
     ownerId: string;
     shared: boolean;
@@ -176,6 +177,7 @@ export type UpdateAlbumDto = {
     albumThumbnailAssetId?: string;
     description?: string;
     isActivityEnabled?: boolean;
+    order?: AssetOrder;
 };
 export type BulkIdsDto = {
     ids: string[];
@@ -1453,12 +1455,13 @@ export function getAssetThumbnail({ format, id, key }: {
         ...opts
     }));
 }
-export function getTimeBucket({ albumId, isArchived, isFavorite, isTrashed, key, personId, size, timeBucket, userId, withPartners, withStacked }: {
+export function getTimeBucket({ albumId, isArchived, isFavorite, isTrashed, key, order, personId, size, timeBucket, userId, withPartners, withStacked }: {
     albumId?: string;
     isArchived?: boolean;
     isFavorite?: boolean;
     isTrashed?: boolean;
     key?: string;
+    order?: AssetOrder;
     personId?: string;
     size: TimeBucketSize;
     timeBucket: string;
@@ -1475,6 +1478,7 @@ export function getTimeBucket({ albumId, isArchived, isFavorite, isTrashed, key,
         isFavorite,
         isTrashed,
         key,
+        order,
         personId,
         size,
         timeBucket,
@@ -1485,12 +1489,13 @@ export function getTimeBucket({ albumId, isArchived, isFavorite, isTrashed, key,
         ...opts
     }));
 }
-export function getTimeBuckets({ albumId, isArchived, isFavorite, isTrashed, key, personId, size, userId, withPartners, withStacked }: {
+export function getTimeBuckets({ albumId, isArchived, isFavorite, isTrashed, key, order, personId, size, userId, withPartners, withStacked }: {
     albumId?: string;
     isArchived?: boolean;
     isFavorite?: boolean;
     isTrashed?: boolean;
     key?: string;
+    order?: AssetOrder;
     personId?: string;
     size: TimeBucketSize;
     userId?: string;
@@ -1506,6 +1511,7 @@ export function getTimeBuckets({ albumId, isArchived, isFavorite, isTrashed, key
         isFavorite,
         isTrashed,
         key,
+        order,
         personId,
         size,
         userId,
@@ -2747,6 +2753,10 @@ export enum AssetTypeEnum {
     Audio = "AUDIO",
     Other = "OTHER"
 }
+export enum AssetOrder {
+    Asc = "asc",
+    Desc = "desc"
+}
 export enum Error {
     Duplicate = "duplicate",
     NoPermission = "no_permission",
@@ -2773,10 +2783,6 @@ export enum ThumbnailFormat {
 export enum TimeBucketSize {
     Day = "DAY",
     Month = "MONTH"
-}
-export enum AssetOrder {
-    Asc = "asc",
-    Desc = "desc"
 }
 export enum EntityType {
     Asset = "ASSET",

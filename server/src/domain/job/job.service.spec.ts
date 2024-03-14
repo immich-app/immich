@@ -330,8 +330,6 @@ describe(JobService.name, () => {
           } else {
             assetMock.getByIds.mockResolvedValue([assetStub.livePhotoMotionAsset]);
           }
-        } else {
-          assetMock.getByIds.mockResolvedValue([]);
         }
 
         await sut.init(makeMockHandlers(true));

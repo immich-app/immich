@@ -165,7 +165,7 @@ export class MediaService {
   }
 
   async handleGenerateJpegThumbnail({ id }: IEntityJob) {
-    const [asset] = await this.assetRepository.getByIds([id]);
+    const [asset] = await this.assetRepository.getByIds([id], { exifInfo: true });
     if (!asset) {
       return false;
     }
@@ -215,7 +215,7 @@ export class MediaService {
   }
 
   async handleGenerateWebpThumbnail({ id }: IEntityJob) {
-    const [asset] = await this.assetRepository.getByIds([id]);
+    const [asset] = await this.assetRepository.getByIds([id], { exifInfo: true });
     if (!asset) {
       return false;
     }

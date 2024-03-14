@@ -142,6 +142,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
 
     buildSharedUsersList() {
       return ListView.builder(
+        primary: false,
         shrinkWrap: true,
         itemCount: sharedUsers.value.length,
         itemBuilder: (context, index) {
@@ -188,9 +189,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
         centerTitle: true,
         title: Text("translated_text_options".tr()),
       ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
+      body: ListView(
         children: [
           if (isOwner && album.shared)
             SwitchListTile.adaptive(
