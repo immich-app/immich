@@ -111,7 +111,6 @@
   let reactions: ActivityResponseDto[] = [];
   let globalWidth: number;
   let assetGridWidth: number;
-  let textArea: HTMLTextAreaElement;
 
   $: assetStore = new AssetStore({ albumId });
   const assetInteractionStore = createAssetInteractionStore();
@@ -221,20 +220,6 @@
     handlePromiseError(getFavorite());
     handlePromiseError(getNumberOfComments());
   }
-
-  const handleKeypress = (event: KeyboardEvent) => {
-    if (event.target !== textArea) {
-      return;
-    }
-    const ctrl = event.ctrlKey;
-    switch (event.key) {
-      case 'Enter': {
-        if (ctrl && event.target === textArea) {
-          textArea.blur();
-        }
-      }
-    }
-  };
 
   const handleStartSlideshow = async () => {
     const asset =
@@ -390,8 +375,6 @@
     }
   };
 </script>
-
-<svelte:window on:keydown={handleKeypress} />
 
 <div class="flex overflow-hidden" bind:clientWidth={globalWidth}>
   <div class="relative w-full shrink">

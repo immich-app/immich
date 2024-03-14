@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { browser } from '$app/environment';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
@@ -27,7 +26,7 @@
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { searchNameLocal } from '$lib/utils/person';
-  import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
+  import { shortcut } from '$lib/utils/shortcut';
   import {
     getPerson,
     mergePerson,
@@ -38,7 +37,7 @@
     type PersonResponseDto,
   } from '@immich/sdk';
   import { mdiAccountOff, mdiEyeOutline } from '@mdi/js';
-  import { onDestroy, onMount } from 'svelte';
+  import { onMount } from 'svelte';
   import type { PageData } from './$types';
   import { locale } from '$lib/stores/preferences.store';
 
@@ -79,34 +78,13 @@
 
   $: countVisiblePeople = countTotalPeople - countHiddenPeople;
 
-  const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
-
   onMount(async () => {
-    document.addEventListener('keydown', onKeyboardPress);
     const getSearchedPeople = $page.url.searchParams.get(QueryParameter.SEARCHED_PEOPLE);
     if (getSearchedPeople) {
       searchName = getSearchedPeople;
       await handleSearchPeople(true);
     }
   });
-
-  onDestroy(() => {
-    if (browser) {
-      document.removeEventListener('keydown', onKeyboardPress);
-    }
-  });
-
-  const handleKeyboardPress = (event: KeyboardEvent) => {
-    if (shouldIgnoreShortcut(event)) {
-      return;
-    }
-    switch (event.key) {
-      case 'Escape': {
-        handleCloseClick();
-        return;
-      }
-    }
-  };
 
   const handleSearch = async (force: boolean) => {
     $page.url.searchParams.set(QueryParameter.SEARCHED_PEOPLE, searchName);
@@ -417,7 +395,7 @@
   };
 </script>
 
-<svelte:window bind:innerHeight />
+<svelte:window bind:innerHeight use:shortcut={{ shortcuts: [{ key: 'Escape' }], onShortcut: handleCloseClick }} />
 
 {#if showMergeModal}
   <MergeSuggestionModal

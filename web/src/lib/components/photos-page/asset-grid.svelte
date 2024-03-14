@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { browser } from '$app/environment';
   import { goto } from '$app/navigation';
   import { AppRoute, AssetAction } from '$lib/constants';
   import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
@@ -9,7 +8,7 @@
   import { isSearchEnabled } from '$lib/stores/search.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { deleteAssets } from '$lib/utils/actions';
-  import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
+  import { type ShortcutList, executeShortcuts } from '$lib/utils/shortcut';
   import { formatGroupTitle, splitBucketIntoDateGroups } from '$lib/utils/timeline-util';
   import type { AlbumResponseDto, AssetResponseDto } from '@immich/sdk';
   import { DateTime } from 'luxon';
@@ -49,19 +48,13 @@
 
   const dispatch = createEventDispatcher<{ select: AssetResponseDto; escape: void }>();
 
-  const onKeydown = (event: KeyboardEvent) => handlePromiseError(handleKeyboardPress(event));
   onMount(async () => {
     showSkeleton = false;
-    document.addEventListener('keydown', onKeydown);
     assetStore.connect();
     await assetStore.init(viewport);
   });
 
   onDestroy(() => {
-    if (browser) {
-      document.removeEventListener('keydown', onKeydown);
-    }
-
     if ($showAssetViewer) {
       $showAssetViewer = false;
     }
@@ -75,49 +68,41 @@
     assetInteractionStore.clearMultiselect();
   };
 
-  const handleKeyboardPress = async (event: KeyboardEvent) => {
-    if ($isSearchEnabled || shouldIgnoreShortcut(event)) {
+  const onDelete = () => {
+    if (!isTrashEnabled && $showDeleteModal) {
+      isShowDeleteConfirmation = true;
+      return;
+    }
+    handlePromiseError(trashOrDelete(false));
+  };
+
+  const onForceDelete = () => {
+    if ($showDeleteModal) {
+      isShowDeleteConfirmation = true;
+      return;
+    }
+    handlePromiseError(trashOrDelete(true));
+  };
+
+  const handleKeyboardPress = (event: KeyboardEvent) => {
+    if ($isSearchEnabled || $showAssetViewer) {
       return;
     }
 
-    const key = event.key;
-    const shiftKey = event.shiftKey;
+    const shortcuts: ShortcutList = [
+      [{ key: 'Escape' }, () => dispatch('escape')],
+      [{ key: '?', shift: true }, () => (showShortcuts = !showShortcuts)],
+      [{ key: '/' }, () => handlePromiseError(goto(AppRoute.EXPLORE))],
+    ];
 
-    if (!$showAssetViewer) {
-      switch (key) {
-        case 'Escape': {
-          dispatch('escape');
-          return;
-        }
-        case '?': {
-          if (event.shiftKey) {
-            event.preventDefault();
-            showShortcuts = !showShortcuts;
-          }
-          return;
-        }
-        case '/': {
-          event.preventDefault();
-          await goto(AppRoute.EXPLORE);
-          return;
-        }
-        case 'Delete': {
-          if ($isMultiSelectState) {
-            let force = false;
-            if (shiftKey || !isTrashEnabled) {
-              if ($showDeleteModal) {
-                isShowDeleteConfirmation = true;
-                return;
-              }
-              force = true;
-            }
-
-            await trashOrDelete(force);
-          }
-          return;
-        }
-      }
+    if ($isMultiSelectState) {
+      shortcuts.push(
+        [{ key: 'Delete' }, onDelete], //
+        [{ key: 'Delete', shift: true }, onForceDelete],
+      );
     }
+
+    executeShortcuts(event, shortcuts);
   };
 
   const handleSelectAsset = (asset: AssetResponseDto) => {
@@ -210,6 +195,8 @@
   let shiftKeyIsDown = false;
 
   const onKeyDown = (e: KeyboardEvent) => {
+    handleKeyboardPress(e);
+
     if ($isSearchEnabled) {
       return;
     }

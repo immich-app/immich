@@ -13,7 +13,7 @@
   import { getAssetJobMessage, isSharedLink, handlePromiseError } from '$lib/utils';
   import { addAssetsToAlbum, downloadFile } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
+  import { executeShortcuts, type ShortcutList } from '$lib/utils/shortcut';
   import { SlideshowHistory } from '$lib/utils/slideshow-history';
   import {
     AssetJobName,
@@ -250,68 +250,22 @@
     isShowActivity = !isShowActivity;
   };
 
-  const handleKeypress = async (event: KeyboardEvent) => {
-    if (shouldIgnoreShortcut(event)) {
-      return;
-    }
+  let shortcuts: ShortcutList;
+  $: shortcuts = [
+    [{ key: 'a', shift: true }, () => toggleArchive()],
+    [{ key: 'ArrowLeft' }, () => navigateAsset('previous')],
+    [{ key: 'ArrowRight' }, () => navigateAsset('next')],
+    [{ key: 'd', shift: true }, () => downloadFile(asset)],
+    [{ key: 'Delete' }, () => trashOrDelete(false)],
+    [{ key: 'Delete', shift: true }, () => trashOrDelete(true)],
+    [{ key: 'Escape' }, closeViewer],
+    [{ key: 'f' }, toggleFavorite],
+    [{ key: 'i' }, toggleDetailPanel],
+  ];
 
-    const key = event.key;
-    const shiftKey = event.shiftKey;
-    const ctrlKey = event.ctrlKey;
-
-    if (ctrlKey) {
-      return;
-    }
-
-    switch (key) {
-      case 'a':
-      case 'A': {
-        if (shiftKey) {
-          await toggleArchive();
-        }
-        return;
-      }
-      case 'ArrowLeft': {
-        await navigateAsset('previous');
-        return;
-      }
-      case 'ArrowRight': {
-        await navigateAsset('next');
-        return;
-      }
-      case 'd':
-      case 'D': {
-        if (shiftKey) {
-          await downloadFile(asset);
-        }
-        return;
-      }
-      case 'Delete': {
-        await trashOrDelete(shiftKey);
-        return;
-      }
-      case 'Escape': {
-        if (isShowDeleteConfirmation) {
-          isShowDeleteConfirmation = false;
-          return;
-        }
-        if (isShowShareModal) {
-          isShowShareModal = false;
-          return;
-        }
-        closeViewer();
-        return;
-      }
-      case 'f': {
-        await toggleFavorite();
-        return;
-      }
-      case 'i': {
-        isShowActivity = false;
-        $isShowDetail = !$isShowDetail;
-        return;
-      }
-    }
+  const toggleDetailPanel = () => {
+    isShowActivity = false;
+    $isShowDetail = !$isShowDetail;
   };
 
   const handleCloseViewer = () => {
@@ -551,7 +505,7 @@
   };
 </script>
 
-<svelte:window on:keydown={handleKeypress} />
+<svelte:window on:keydown={(event) => executeShortcuts(event, shortcuts)} />
 
 <section
   id="immich-asset-viewer"

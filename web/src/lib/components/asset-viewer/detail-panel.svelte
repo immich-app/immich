@@ -41,6 +41,7 @@
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
+  import { shortcut } from '$lib/utils/shortcut';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
@@ -105,20 +106,6 @@
     closeViewer: void;
   }>();
 
-  const handleKeypress = async (event: KeyboardEvent) => {
-    if (event.target !== textArea) {
-      return;
-    }
-    const ctrl = event.ctrlKey;
-    switch (event.key) {
-      case 'Enter': {
-        if (ctrl && event.target === textArea) {
-          await handleFocusOut();
-        }
-      }
-    }
-  };
-
   const getMegapixel = (width: number, height: number): number | undefined => {
     const megapixel = Math.round((height * width) / 1_000_000);
 
@@ -180,8 +167,6 @@
   }
 </script>
 
-<svelte:window on:keydown={handleKeypress} />
-
 <section class="relative p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
   <div class="flex place-items-center gap-2">
     <button
@@ -223,6 +208,10 @@
           use:autoGrowHeight
           use:clickOutside
           on:outclick={handleFocusOut}
+          use:shortcut={{
+            shortcuts: [{ key: 'Enter', ctrl: true }],
+            onShortcut: () => handlePromiseError(handleFocusOut()),
+          }}
         />
       {/key}
     </section>

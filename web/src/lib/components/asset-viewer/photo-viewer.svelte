@@ -6,7 +6,7 @@
   import { downloadRequest, getAssetFileUrl, handlePromiseError } from '$lib/utils';
   import { isWebCompatibleImage } from '$lib/utils/asset-utils';
   import { getBoundingBox } from '$lib/utils/people-utils';
-  import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
+  import { shortcut } from '$lib/utils/shortcut';
   import { type AssetResponseDto } from '@immich/sdk';
   import { useZoomImageWheel } from '@zoom-image/svelte';
   import { onDestroy, onMount } from 'svelte';
@@ -65,18 +65,6 @@
     }
   };
 
-  const handleKeypress = async (event: KeyboardEvent) => {
-    if (shouldIgnoreShortcut(event)) {
-      return;
-    }
-    if (window.getSelection()?.type === 'Range') {
-      return;
-    }
-    if ((event.metaKey || event.ctrlKey) && event.key === 'c') {
-      await doCopy();
-    }
-  };
-
   const doCopy = async () => {
     if (!canCopyImagesToClipboard()) {
       return;
@@ -121,7 +109,22 @@
   });
 </script>
 
-<svelte:window on:keydown={handleKeypress} on:copyImage={doCopy} on:zoomImage={doZoomImage} />
+<svelte:window
+  on:copyImage={doCopy}
+  on:zoomImage={doZoomImage}
+  use:shortcut={{
+    shortcuts: [
+      { key: 'c', ctrl: true },
+      { key: 'c', meta: true },
+    ],
+    onShortcut: () => {
+      if (window.getSelection()?.type === 'Range') {
+        return;
+      }
+      handlePromiseError(doCopy());
+    },
+  }}
+/>
 
 <div
   bind:this={element}

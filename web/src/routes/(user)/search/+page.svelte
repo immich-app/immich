@@ -20,7 +20,7 @@
   import { AppRoute, QueryParameter } from '$lib/constants';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { preventRaceConditionSearchBar } from '$lib/stores/search.store';
-  import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
+  import { shortcut } from '$lib/utils/shortcut';
   import {
     type AssetResponseDto,
     searchSmart,
@@ -52,27 +52,19 @@
   let searchResultAssets: AssetResponseDto[] = [];
   let isLoading = true;
 
-  const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
-
-  const handleKeyboardPress = async (event: KeyboardEvent) => {
-    if (shouldIgnoreShortcut(event)) {
+  const onEscape = () => {
+    if ($showAssetViewer) {
       return;
     }
-    if (!$showAssetViewer) {
-      switch (event.key) {
-        case 'Escape': {
-          if (isMultiSelectionMode) {
-            selectedAssets = new Set();
-            return;
-          }
-          if (!$preventRaceConditionSearchBar) {
-            await goto(previousRoute);
-          }
-          $preventRaceConditionSearchBar = false;
-          return;
-        }
-      }
+
+    if (isMultiSelectionMode) {
+      selectedAssets = new Set();
+      return;
     }
+    if (!$preventRaceConditionSearchBar) {
+      handlePromiseError(goto(previousRoute));
+    }
+    $preventRaceConditionSearchBar = false;
   };
 
   afterNavigate(({ from }) => {
@@ -201,7 +193,7 @@
   }
 </script>
 
-<svelte:document on:keydown={onKeyboardPress} />
+<svelte:window use:shortcut={{ shortcuts: [{ key: 'Escape' }], onShortcut: onEscape }} />
 
 <section>
   {#if isMultiSelectionMode}
