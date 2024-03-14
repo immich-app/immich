@@ -153,7 +153,7 @@ export class MetadataService {
 
   async handleLivePhotoLinking(job: IEntityJob) {
     const { id } = job;
-    const [asset] = await this.assetRepository.getByIds([id]);
+    const [asset] = await this.assetRepository.getByIds([id], { exifInfo: true });
     if (!asset?.exifInfo) {
       return false;
     }

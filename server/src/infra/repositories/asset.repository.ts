@@ -137,8 +137,20 @@ export class AssetRepository implements IAssetRepository {
     relations?: FindOptionsRelations<AssetEntity>,
     select?: FindOptionsSelect<AssetEntity>,
   ): Promise<AssetEntity[]> {
-    if (!relations) {
-      relations = {
+    return this.repository.find({
+      where: { id: In(ids) },
+      relations,
+      select,
+      withDeleted: true,
+    });
+  }
+
+  @GenerateSql({ params: [[DummyValue.UUID]] })
+  @ChunkedArray()
+  getByIdsWithAllRelations(ids: string[]): Promise<AssetEntity[]> {
+    return this.repository.find({
+      where: { id: In(ids) },
+      relations: {
         exifInfo: true,
         smartInfo: true,
         tags: true,
@@ -148,13 +160,7 @@ export class AssetRepository implements IAssetRepository {
         stack: {
           assets: true,
         },
-      };
-    }
-
-    return this.repository.find({
-      where: { id: In(ids) },
-      relations,
-      select,
+      },
       withDeleted: true,
     });
   }

@@ -76,6 +76,10 @@ export class SmartInfoService {
     }
 
     const [asset] = await this.assetRepository.getByIds([id]);
+    if (!asset) {
+      return false;
+    }
+
     if (!asset.resizePath) {
       return false;
     }

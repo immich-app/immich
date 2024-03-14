@@ -122,6 +122,7 @@ export interface IAssetRepository {
     relations?: FindOptionsRelations<AssetEntity>,
     select?: FindOptionsSelect<AssetEntity>,
   ): Promise<AssetEntity[]>;
+  getByIdsWithAllRelations(ids: string[]): Promise<AssetEntity[]>;
   getByDayOfYear(ownerId: string, monthDay: MonthDay): Promise<AssetEntity[]>;
   getByChecksum(userId: string, checksum: Buffer): Promise<AssetEntity | null>;
   getByAlbumId(pagination: PaginationOptions, albumId: string): Paginated<AssetEntity>;
