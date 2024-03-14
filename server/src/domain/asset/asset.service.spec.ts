@@ -110,6 +110,7 @@ const validImages = [
   '.raf',
   '.raw',
   '.rwl',
+  '.svg',
   '.sr2',
   '.srf',
   '.srw',

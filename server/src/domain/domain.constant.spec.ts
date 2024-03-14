@@ -38,6 +38,7 @@ describe('mimeTypes', () => {
     { mimetype: 'image/raf', extension: '.raf' },
     { mimetype: 'image/raw', extension: '.raw' },
     { mimetype: 'image/rwl', extension: '.rwl' },
+    { mimetype: 'image/svg', extension: '.svg' },
     { mimetype: 'image/sr2', extension: '.sr2' },
     { mimetype: 'image/srf', extension: '.srf' },
     { mimetype: 'image/srw', extension: '.srw' },

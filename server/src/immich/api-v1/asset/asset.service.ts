@@ -324,6 +324,8 @@ export class AssetService {
     livePhotoAssetId?: string,
     sidecarPath?: string,
   ): Promise<AssetEntity> {
+    const assetType = mimeTypes.assetType(file.originalPath); // Detect asset type
+
     const asset = await this.assetRepository.create({
       ownerId: auth.user.id,
       libraryId: dto.libraryId,
@@ -338,7 +340,7 @@ export class AssetService {
       fileModifiedAt: dto.fileModifiedAt,
       localDateTime: dto.fileCreatedAt,
 
-      type: mimeTypes.assetType(file.originalPath),
+      type: assetType, // Set the detected asset type
       isFavorite: dto.isFavorite,
       isArchived: dto.isArchived ?? false,
       duration: dto.duration || null,
