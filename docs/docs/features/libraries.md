@@ -40,6 +40,8 @@ In all above scan methods, Immich will check if any files are missing. This can 
 
 Finally, files can be deleted from Immich via the `Remove Offline Files` job. This job can be found by the three dots menu for the associated external storage that was configured under Administration > Libraries (the same location described at [create external libraries](#create-external-libraries)). When this job is run, any assets marked as offline will then be removed from Immich. Run this job whenever files have been deleted from the file system and you want to remove them from Immich.
 
+In order to remove offline files that linked to spesifce paths, remove paths -> Scan for new files -> Then run remove offline files
+
 ### Import Paths
 
 External libraries use import paths to determine which files to scan. Each library can have multiple import paths so that files from different locations can be added to the same library. Import paths are scanned recursively, and if a file is in multiple import paths, it will only be added once. Each import file must be a readable directory that exists on the filesystem; the import path dialog will alert you of any paths that are not accessible.
@@ -175,3 +177,14 @@ If you get an error here, please rename the other external library to something 
 - Click on Scan Library Files
 
 Within seconds, the assets from the old-pics and videos folders should show up in the main timeline.
+
+### Set Custom Scan Interval
+
+:::note
+Only an admin can do this.
+:::
+
+You can define a custom interval for the trigger external library rescan under Administration -> Settings -> Library.  
+You can set the scanning interval using the preset or cron format. For more information please refer to e.g. [Crontab Guru](https://crontab.guru/)
+
+<img src={require('./img/library-custom-scan-interval.png').default} width="75%" title='Set custom scan interval for external library' />

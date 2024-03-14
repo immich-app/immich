@@ -1,4 +1,4 @@
-import { UserEntity, UserStatus } from '@app/infra/entities';
+import { UserEntity } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
 import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { DateTime } from 'luxon';
@@ -18,7 +18,7 @@ import {
 } from '../repositories';
 import { StorageCore, StorageFolder } from '../storage';
 import { SystemConfigCore } from '../system-config/system-config.core';
-import { CreateUserDto, DeleteUserDto, UpdateUserDto } from './dto';
+import { CreateUserDto, UpdateUserDto } from './dto';
 import { CreateProfileImageResponseDto, UserResponseDto, mapCreateProfileImageResponse, mapUser } from './response-dto';
 import { UserCore } from './user.core';
 
@@ -73,29 +73,22 @@ export class UserService {
     return this.userCore.updateUser(auth.user, dto.id, dto).then(mapUser);
   }
 
-  async delete(auth: AuthDto, id: string, dto: DeleteUserDto): Promise<UserResponseDto> {
-    const { force } = dto;
-    const { isAdmin } = await this.findOrFail(id, {});
-    if (isAdmin) {
+  async delete(auth: AuthDto, id: string): Promise<UserResponseDto> {
+    const user = await this.findOrFail(id, {});
+    if (user.isAdmin) {
       throw new ForbiddenException('Cannot delete admin user');
     }
 
     await this.albumRepository.softDeleteAll(id);
 
-    const status = force ? UserStatus.REMOVING : UserStatus.DELETED;
-    const user = await this.userRepository.update(id, { status, deletedAt: new Date() });
-
-    if (force) {
-      await this.jobRepository.queue({ name: JobName.USER_DELETION, data: { id: user.id, force } });
-    }
-
-    return mapUser(user);
+    return this.userRepository.delete(user).then(mapUser);
   }
 
   async restore(auth: AuthDto, id: string): Promise<UserResponseDto> {
-    await this.findOrFail(id, { withDeleted: true });
+    let user = await this.findOrFail(id, { withDeleted: true });
+    user = await this.userRepository.restore(user);
     await this.albumRepository.restoreAll(id);
-    return this.userRepository.update(id, { deletedAt: null, status: UserStatus.ACTIVE }).then(mapUser);
+    return mapUser(user);
   }
 
   async createProfileImage(auth: AuthDto, fileInfo: Express.Multer.File): Promise<CreateProfileImageResponseDto> {
@@ -161,7 +154,7 @@ export class UserService {
     return true;
   }
 
-  async handleUserDelete({ id, force }: IEntityJob) {
+  async handleUserDelete({ id }: IEntityJob) {
     const config = await this.configCore.getConfig();
     const user = await this.userRepository.get(id, { withDeleted: true });
     if (!user) {
@@ -169,7 +162,7 @@ export class UserService {
     }
 
     // just for extra protection here
-    if (!force && !this.isReadyForDeletion(user, config.user.deleteDelay)) {
+    if (!this.isReadyForDeletion(user, config.user.deleteDelay)) {
       this.logger.warn(`Skipped user that was not ready for deletion: id=${id}`);
       return false;
     }

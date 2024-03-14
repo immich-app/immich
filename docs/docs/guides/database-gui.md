@@ -45,5 +45,5 @@ Open pgAdmin and click "Add New Server".
 Click on "Save" to connect to the Immich database.
 
 :::tip
-View [Database Queries](https://immich.app/docs/guides/database-queries/) for common database queries.
+View [Database Queries](/docs/guides/database-queries/) for common database queries.
 :::

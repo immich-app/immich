@@ -1,5 +1,4 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -81,7 +80,6 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
               strokeWidth: 2,
               strokeCap: StrokeCap.round,
               valueColor: AlwaysStoppedAnimation<Color>(iconColor),
-              semanticsLabel: 'backup_controller_page_backup'.tr(),
             ),
           );
         } else if (backupState.backupProgress !=
@@ -91,7 +89,6 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
             Icons.check_outlined,
             size: 9,
             color: iconColor,
-            semanticLabel: 'backup_controller_page_backup'.tr(),
           );
         }
       }
@@ -101,7 +98,6 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
           Icons.cloud_off_rounded,
           size: 9,
           color: iconColor,
-          semanticLabel: 'backup_controller_page_backup'.tr(),
         );
       }
     }
@@ -154,11 +150,21 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
             children: [
               Container(
                 padding: const EdgeInsets.only(top: 3),
-                height: 30,
+                width: 28,
+                height: 28,
                 child: Image.asset(
-                  context.isDarkTheme
-                      ? 'assets/immich-logo-inline-dark.png'
-                      : 'assets/immich-logo-inline-light.png',
+                  'assets/immich-logo.png',
+                ),
+              ),
+              Container(
+                margin: const EdgeInsets.only(left: 10),
+                child: const Text(
+                  'IMMICH',
+                  style: TextStyle(
+                    fontFamily: 'SnowburstOne',
+                    fontWeight: FontWeight.bold,
+                    fontSize: 24,
+                  ),
                 ),
               ),
             ],

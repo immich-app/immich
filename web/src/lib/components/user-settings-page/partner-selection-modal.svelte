@@ -36,7 +36,7 @@
 <BaseModal on:close={() => dispatch('close')}>
   <svelte:fragment slot="title">
     <span class="flex place-items-center gap-2">
-      <ImmichLogo noText width={36} />
+      <ImmichLogo width={24} />
       <p class="font-medium">Add partner</p>
     </span>
   </svelte:fragment>

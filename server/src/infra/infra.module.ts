@@ -33,11 +33,9 @@ import { Global, Module, Provider } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { OpenTelemetryModule } from 'nestjs-otel';
 import { databaseConfig } from './database.config';
 import { databaseEntities } from './entities';
 import { bullConfig, bullQueues } from './infra.config';
-import { otelConfig } from './instrumentation';
 import {
   AccessRepository,
   ActivityRepository,
@@ -108,7 +106,6 @@ const providers: Provider[] = [
     ScheduleModule,
     BullModule.forRoot(bullConfig),
     BullModule.registerQueue(...bullQueues),
-    OpenTelemetryModule.forRoot(otelConfig),
   ],
   providers: [...providers],
   exports: [...providers, BullModule],

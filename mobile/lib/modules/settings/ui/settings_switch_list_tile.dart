@@ -1,61 +1,51 @@
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 
 class SettingsSwitchListTile extends StatelessWidget {
+  final AppSettingsService appSettingService;
   final ValueNotifier<bool> valueNotifier;
+  final AppSettingsEnum settingsEnum;
   final String title;
   final bool enabled;
   final String? subtitle;
-  final IconData? icon;
   final Function(bool)? onChanged;
 
-  const SettingsSwitchListTile({
+  SettingsSwitchListTile({
+    required this.appSettingService,
     required this.valueNotifier,
+    required this.settingsEnum,
     required this.title,
     this.subtitle,
-    this.icon,
     this.enabled = true,
     this.onChanged,
-    super.key,
-  });
+  }) : super(key: Key(settingsEnum.name));
 
   @override
   Widget build(BuildContext context) {
-    void onSwitchChanged(bool value) {
-      if (!enabled) return;
-
-      valueNotifier.value = value;
-      onChanged?.call(value);
-    }
-
     return SwitchListTile.adaptive(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 20),
       selectedTileColor: enabled ? null : context.themeData.disabledColor,
       value: valueNotifier.value,
-      onChanged: onSwitchChanged,
+      onChanged: (bool value) {
+        if (enabled) {
+          valueNotifier.value = value;
+          appSettingService.setSetting(settingsEnum, value);
+        }
+        if (onChanged != null) {
+          onChanged!(value);
+        }
+      },
       activeColor:
           enabled ? context.primaryColor : context.themeData.disabledColor,
       dense: true,
-      secondary: icon != null
-          ? Icon(
-              icon!,
-              color: valueNotifier.value ? context.primaryColor : null,
-            )
-          : null,
       title: Text(
         title,
-        style: context.textTheme.bodyLarge?.copyWith(
-          fontWeight: FontWeight.w500,
-          color: enabled ? null : context.themeData.disabledColor,
-          height: 1.5,
-        ),
+        style: context.textTheme.titleSmall,
       ),
       subtitle: subtitle != null
           ? Text(
               subtitle!,
-              style: context.textTheme.bodyMedium?.copyWith(
-                color: enabled ? null : context.themeData.disabledColor,
-              ),
+              style: context.textTheme.bodyMedium,
             )
           : null,
     );

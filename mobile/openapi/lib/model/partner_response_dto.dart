@@ -27,7 +27,6 @@ class PartnerResponseDto {
     required this.quotaSizeInBytes,
     required this.quotaUsageInBytes,
     required this.shouldChangePassword,
-    required this.status,
     required this.storageLabel,
     required this.updatedAt,
   });
@@ -72,8 +71,6 @@ class PartnerResponseDto {
 
   bool shouldChangePassword;
 
-  UserStatus status;
-
   String? storageLabel;
 
   DateTime updatedAt;
@@ -94,7 +91,6 @@ class PartnerResponseDto {
     other.quotaSizeInBytes == quotaSizeInBytes &&
     other.quotaUsageInBytes == quotaUsageInBytes &&
     other.shouldChangePassword == shouldChangePassword &&
-    other.status == status &&
     other.storageLabel == storageLabel &&
     other.updatedAt == updatedAt;
 
@@ -115,12 +111,11 @@ class PartnerResponseDto {
     (quotaSizeInBytes == null ? 0 : quotaSizeInBytes!.hashCode) +
     (quotaUsageInBytes == null ? 0 : quotaUsageInBytes!.hashCode) +
     (shouldChangePassword.hashCode) +
-    (status.hashCode) +
     (storageLabel == null ? 0 : storageLabel!.hashCode) +
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'PartnerResponseDto[avatarColor=$avatarColor, createdAt=$createdAt, deletedAt=$deletedAt, email=$email, id=$id, inTimeline=$inTimeline, isAdmin=$isAdmin, memoriesEnabled=$memoriesEnabled, name=$name, oauthId=$oauthId, profileImagePath=$profileImagePath, quotaSizeInBytes=$quotaSizeInBytes, quotaUsageInBytes=$quotaUsageInBytes, shouldChangePassword=$shouldChangePassword, status=$status, storageLabel=$storageLabel, updatedAt=$updatedAt]';
+  String toString() => 'PartnerResponseDto[avatarColor=$avatarColor, createdAt=$createdAt, deletedAt=$deletedAt, email=$email, id=$id, inTimeline=$inTimeline, isAdmin=$isAdmin, memoriesEnabled=$memoriesEnabled, name=$name, oauthId=$oauthId, profileImagePath=$profileImagePath, quotaSizeInBytes=$quotaSizeInBytes, quotaUsageInBytes=$quotaUsageInBytes, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -158,7 +153,6 @@ class PartnerResponseDto {
     //  json[r'quotaUsageInBytes'] = null;
     }
       json[r'shouldChangePassword'] = this.shouldChangePassword;
-      json[r'status'] = this.status;
     if (this.storageLabel != null) {
       json[r'storageLabel'] = this.storageLabel;
     } else {
@@ -190,7 +184,6 @@ class PartnerResponseDto {
         quotaSizeInBytes: mapValueOfType<int>(json, r'quotaSizeInBytes'),
         quotaUsageInBytes: mapValueOfType<int>(json, r'quotaUsageInBytes'),
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword')!,
-        status: UserStatus.fromJson(json[r'status'])!,
         storageLabel: mapValueOfType<String>(json, r'storageLabel'),
         updatedAt: mapDateTime(json, r'updatedAt', r'')!,
       );
@@ -252,7 +245,6 @@ class PartnerResponseDto {
     'quotaSizeInBytes',
     'quotaUsageInBytes',
     'shouldChangePassword',
-    'status',
     'storageLabel',
     'updatedAt',
   };

@@ -112,7 +112,7 @@
         </p>
       </svelte:fragment>
 
-      {#if canGoForward}
+      {#if !galleryInView}
         <div class="flex place-content-center place-items-center gap-2 overflow-hidden">
           <CircleIconButton icon={paused ? mdiPlay : mdiPause} forceDark on:click={() => (paused = !paused)} />
 
@@ -268,7 +268,7 @@
       </div>
     </section>
 
-    <!-- GALLERY VIEWER -->
+    <!-- GALERY VIEWER -->
 
     <section class="bg-immich-dark-gray m-4">
       <div

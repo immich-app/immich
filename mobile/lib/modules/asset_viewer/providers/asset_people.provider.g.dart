@@ -7,7 +7,7 @@ part of 'asset_people.provider.dart';
 // **************************************************************************
 
 String _$assetPeopleNotifierHash() =>
-    r'9835b180984a750c91e923e7b64dbda94f6d7574';
+    r'192a4ee188f781000fe43f1675c49e1081ccc631';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -34,7 +34,7 @@ abstract class _$AssetPeopleNotifier extends BuildlessAutoDisposeAsyncNotifier<
     List<PersonWithFacesResponseDto>> {
   late final Asset asset;
 
-  FutureOr<List<PersonWithFacesResponseDto>> build(
+  Future<List<PersonWithFacesResponseDto>> build(
     Asset asset,
   );
 }
@@ -127,7 +127,7 @@ class AssetPeopleNotifierProvider extends AutoDisposeAsyncNotifierProviderImpl<
   final Asset asset;
 
   @override
-  FutureOr<List<PersonWithFacesResponseDto>> runNotifierBuild(
+  Future<List<PersonWithFacesResponseDto>> runNotifierBuild(
     covariant AssetPeopleNotifier notifier,
   ) {
     return notifier.build(

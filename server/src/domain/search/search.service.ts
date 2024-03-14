@@ -1,4 +1,5 @@
 import { AssetEntity } from '@app/infra/entities';
+import { ImmichLogger } from '@app/infra/logger';
 import { Inject, Injectable } from '@nestjs/common';
 import { AssetOrder, AssetResponseDto, mapAsset } from '../asset';
 import { AuthDto } from '../auth';
@@ -29,6 +30,7 @@ import { SearchResponseDto } from './response-dto';
 
 @Injectable()
 export class SearchService {
+  private logger = new ImmichLogger(SearchService.name);
   private configCore: SystemConfigCore;
 
   constructor(

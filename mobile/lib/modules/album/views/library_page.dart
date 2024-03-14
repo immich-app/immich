@@ -194,10 +194,9 @@ class LibraryPage extends HookConsumerWidget {
           ? InkWell(
               onTap: () => context.pushRoute(const TrashRoute()),
               borderRadius: const BorderRadius.all(Radius.circular(12)),
-              child: Icon(
+              child: const Icon(
                 Icons.delete_rounded,
                 size: 25,
-                semanticLabel: 'profile_drawer_trash'.tr(),
               ),
             )
           : null;

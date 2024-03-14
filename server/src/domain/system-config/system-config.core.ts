@@ -17,7 +17,6 @@ import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/com
 import { CronExpression } from '@nestjs/schedule';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
-import { load as loadYaml } from 'js-yaml';
 import * as _ from 'lodash';
 import { Subject } from 'rxjs';
 import { QueueName } from '../job/job.constants';
@@ -342,19 +341,19 @@ export class SystemConfigCore {
     if (force || !this.configCache) {
       try {
         const file = await this.repository.readFile(filepath);
-        const config = loadYaml(file.toString()) as any;
+        const json = JSON.parse(file.toString());
         const overrides: SystemConfigEntity<SystemConfigValue>[] = [];
 
         for (const key of Object.values(SystemConfigKey)) {
-          const value = _.get(config, key);
-          this.unsetDeep(config, key);
+          const value = _.get(json, key);
+          this.unsetDeep(json, key);
           if (value !== undefined) {
             overrides.push({ key, value });
           }
         }
 
-        if (!_.isEmpty(config)) {
-          this.logger.warn(`Unknown keys found: ${JSON.stringify(config, null, 2)}`);
+        if (!_.isEmpty(json)) {
+          this.logger.warn(`Unknown keys found: ${JSON.stringify(json, null, 2)}`);
         }
 
         this.configCache = overrides;

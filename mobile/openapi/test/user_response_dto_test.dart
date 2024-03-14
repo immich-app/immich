@@ -81,11 +81,6 @@ void main() {
       // TODO
     });
 
-    // UserStatus status
-    test('to test the property `status`', () async {
-      // TODO
-    });
-
     // String storageLabel
     test('to test the property `storageLabel`', () async {
       // TODO

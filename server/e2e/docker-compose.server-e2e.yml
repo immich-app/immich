@@ -18,7 +18,6 @@ services:
       - DB_USERNAME=postgres
       - DB_PASSWORD=postgres
       - DB_DATABASE_NAME=e2e_test
-      - IMMICH_METRICS=true
     depends_on:
       - database
 

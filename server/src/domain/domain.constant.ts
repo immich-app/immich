@@ -82,7 +82,8 @@ const { version } = JSON.parse(readFileSync('./package.json', 'utf8'));
 export const serverVersion = Version.fromString(version);
 
 export const APP_MEDIA_LOCATION = process.env.IMMICH_MEDIA_LOCATION || './upload';
-export const WEB_ROOT = process.env.IMMICH_WEB_ROOT || '/usr/src/app/www';
+
+export const WEB_ROOT_PATH = join(process.env.IMMICH_WEB_ROOT || '/usr/src/app/www', 'index.html');
 
 const GEODATA_ROOT_PATH = process.env.IMMICH_REVERSE_GEOCODING_ROOT || '/usr/src/resources';
 

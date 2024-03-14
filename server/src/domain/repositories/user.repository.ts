@@ -32,6 +32,7 @@ export interface IUserRepository {
   create(user: Partial<UserEntity>): Promise<UserEntity>;
   update(id: string, user: Partial<UserEntity>): Promise<UserEntity>;
   delete(user: UserEntity, hard?: boolean): Promise<UserEntity>;
+  restore(user: UserEntity): Promise<UserEntity>;
   updateUsage(id: string, delta: number): Promise<void>;
   syncUsage(id?: string): Promise<void>;
 }

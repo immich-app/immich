@@ -10,8 +10,7 @@ import 'package:photo_manager/photo_manager.dart';
 
 /// The local image provider for an asset
 /// Only viable
-class ImmichLocalThumbnailProvider
-    extends ImageProvider<ImmichLocalThumbnailProvider> {
+class ImmichLocalThumbnailProvider extends ImageProvider<Asset> {
   final Asset asset;
   final int height;
   final int width;
@@ -25,20 +24,15 @@ class ImmichLocalThumbnailProvider
   /// Converts an [ImageProvider]'s settings plus an [ImageConfiguration] to a key
   /// that describes the precise image to load.
   @override
-  Future<ImmichLocalThumbnailProvider> obtainKey(
-    ImageConfiguration configuration,
-  ) {
-    return SynchronousFuture(this);
+  Future<Asset> obtainKey(ImageConfiguration configuration) {
+    return SynchronousFuture(asset);
   }
 
   @override
-  ImageStreamCompleter loadImage(
-    ImmichLocalThumbnailProvider key,
-    ImageDecoderCallback decode,
-  ) {
+  ImageStreamCompleter loadImage(Asset key, ImageDecoderCallback decode) {
     final chunkEvents = StreamController<ImageChunkEvent>();
     return MultiImageStreamCompleter(
-      codec: _codec(key.asset, decode, chunkEvents),
+      codec: _codec(key, decode, chunkEvents),
       scale: 1.0,
       chunkEvents: chunkEvents.stream,
       informationCollector: () sync* {

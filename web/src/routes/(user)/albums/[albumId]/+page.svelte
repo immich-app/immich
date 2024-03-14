@@ -31,7 +31,7 @@
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
-  import { AppRoute } from '$lib/constants';
+  import { AppRoute, dateFormats } from '$lib/constants';
   import { numberOfComments, setNumberOfComments, updateNumberOfComments } from '$lib/stores/activity.store';
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
@@ -74,7 +74,6 @@
   import AlbumTitle from '$lib/components/album-page/album-title.svelte';
   import AlbumDescription from '$lib/components/album-page/album-description.svelte';
   import { handlePromiseError } from '$lib/utils';
-  import AlbumSummary from '$lib/components/album-page/album-summary.svelte';
 
   export let data: PageData;
 
@@ -281,6 +280,31 @@
     album = await getAlbumInfo({ id: album.id, withoutAssets: true });
   };
 
+  const getDateRange = () => {
+    const { startDate, endDate } = album;
+
+    let start = '';
+    let end = '';
+
+    if (startDate) {
+      start = new Date(startDate).toLocaleDateString($locale, dateFormats.album);
+    }
+
+    if (endDate) {
+      end = new Date(endDate).toLocaleDateString($locale, dateFormats.album);
+    }
+
+    if (startDate && endDate && start !== end) {
+      return `${start} - ${end}`;
+    }
+
+    if (start) {
+      return start;
+    }
+
+    return '';
+  };
+
   const handleAddAssets = async () => {
     const assetIds = [...$timelineSelected].map((asset) => asset.id);
 
@@ -365,11 +389,6 @@
     }
   };
 
-  const handleRemoveAssets = async (assetIds: string[]) => {
-    assetStore.removeAssets(assetIds);
-    await refreshAlbum();
-  };
-
   const handleUpdateThumbnail = async (assetId: string) => {
     if (viewMode !== ViewMode.SELECT_THUMBNAIL) {
       return;
@@ -410,10 +429,10 @@
           {/if}
           <DownloadAction menuItem filename="{album.albumName}.zip" />
           {#if isOwned || isAllUserOwned}
-            <RemoveFromAlbum menuItem bind:album onRemove={handleRemoveAssets} />
+            <RemoveFromAlbum menuItem bind:album onRemove={(assetIds) => assetStore.removeAssets(assetIds)} />
           {/if}
           {#if isAllUserOwned}
-            <DeleteAssets menuItem onAssetDelete={handleRemoveAssets} />
+            <DeleteAssets menuItem onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)} />
             <ChangeDate menuItem />
             <ChangeLocation menuItem />
           {/if}
@@ -450,7 +469,9 @@
                   <CircleIconButton title="Album options" on:click={handleOpenAlbumOptions} icon={mdiDotsVertical}>
                     {#if viewMode === ViewMode.ALBUM_OPTIONS}
                       <ContextMenu {...contextMenuPosition}>
-                        <MenuOption on:click={handleStartSlideshow} text="Slideshow" />
+                        {#if album.assetCount !== 0}
+                          <MenuOption on:click={handleStartSlideshow} text="Slideshow" />
+                        {/if}
                         <MenuOption on:click={() => (viewMode = ViewMode.SELECT_THUMBNAIL)} text="Set album cover" />
                         <MenuOption on:click={() => (viewMode = ViewMode.OPTIONS)} text="Options" />
                       </ContextMenu>
@@ -464,7 +485,7 @@
               <Button
                 size="sm"
                 rounded="lg"
-                disabled={album.assetCount === 0}
+                disabled={album.assetCount == 0}
                 on:click={() => (viewMode = ViewMode.SELECT_USERS)}
               >
                 Share
@@ -536,8 +557,13 @@
               <section class="pt-24">
                 <AlbumTitle id={album.id} albumName={album.albumName} {isOwned} />
 
+                <!-- ALBUM SUMMARY -->
                 {#if album.assetCount > 0}
-                  <AlbumSummary {album} />
+                  <span class="my-2 flex gap-2 text-sm font-medium text-gray-500" data-testid="album-details">
+                    <p class="">{getDateRange()}</p>
+                    <p>·</p>
+                    <p>{album.assetCount} items</p>
+                  </span>
                 {/if}
 
                 <!-- ALBUM SHARING -->

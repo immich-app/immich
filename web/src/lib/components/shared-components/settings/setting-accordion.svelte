@@ -1,7 +1,6 @@
 <script lang="ts">
   import { slide } from 'svelte/transition';
   import { getAccordionState } from './setting-accordion-state.svelte';
-  import { onDestroy } from 'svelte';
 
   const accordionState = getAccordionState();
 
@@ -20,10 +19,6 @@
       $accordionState = $accordionState;
     }
   };
-
-  onDestroy(() => {
-    setIsOpen(false);
-  });
 </script>
 
 <div class="border-b-[1px] border-gray-200 py-4 dark:border-gray-700">

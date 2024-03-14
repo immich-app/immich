@@ -26,9 +26,7 @@ import { Repository, SelectQueryBuilder } from 'typeorm';
 import { vectorExt } from '../database.config';
 import { DummyValue, GenerateSql } from '../infra.util';
 import { asVector, isValidInteger, paginatedBuilder, searchAssetBuilder } from '../infra.utils';
-import { Instrumentation } from '../instrumentation';
 
-@Instrumentation()
 @Injectable()
 export class SearchRepository implements ISearchRepository {
   private logger = new ImmichLogger(SearchRepository.name);
@@ -190,7 +188,6 @@ export class SearchRepository implements ISearchRepository {
         .addCommonTableExpression(cte, 'cte')
         .from('cte', 'res')
         .where('res.distance <= :maxDistance', { maxDistance })
-        .orderBy('res.distance')
         .getRawMany();
     });
     return results.map((row) => ({

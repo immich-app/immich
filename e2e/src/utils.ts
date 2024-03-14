@@ -36,8 +36,8 @@ import { makeRandomImage } from 'src/generators';
 import request from 'supertest';
 
 type CliResponse = { stdout: string; stderr: string; exitCode: number | null };
-type EventType = 'assetUpload' | 'assetDelete' | 'userDelete';
-type WaitOptions = { event: EventType; id: string; timeout?: number };
+type EventType = 'upload' | 'delete';
+type WaitOptions = { event: EventType; assetId: string; timeout?: number };
 type AdminSetupOptions = { onboarding?: boolean };
 type AssetData = { bytes?: Buffer; filename: string };
 
@@ -78,21 +78,20 @@ export const immichCli = async (args: string[]) => {
 let client: pg.Client | null = null;
 
 const events: Record<EventType, Set<string>> = {
-  assetUpload: new Set<string>(),
-  assetDelete: new Set<string>(),
-  userDelete: new Set<string>(),
+  upload: new Set<string>(),
+  delete: new Set<string>(),
 };
 
 const callbacks: Record<string, () => void> = {};
 
 const execPromise = promisify(exec);
 
-const onEvent = ({ event, id }: { event: EventType; id: string }) => {
-  events[event].add(id);
-  const callback = callbacks[id];
+const onEvent = ({ event, assetId }: { event: EventType; assetId: string }) => {
+  events[event].add(assetId);
+  const callback = callbacks[assetId];
   if (callback) {
     callback();
-    delete callbacks[id];
+    delete callbacks[assetId];
   }
 };
 
@@ -105,8 +104,6 @@ export const utils = {
       }
 
       tables = tables || [
-        // TODO e2e test for deleting a stack, since it is quite complex
-        'asset_stack',
         'libraries',
         'shared_links',
         'person',
@@ -120,17 +117,9 @@ export const utils = {
         'system_metadata',
       ];
 
-      const sql: string[] = [];
-
-      if (tables.includes('asset_stack')) {
-        sql.push('UPDATE "assets" SET "stackId" = NULL;');
-      }
-
       for (const table of tables) {
-        sql.push(`DELETE FROM ${table} CASCADE;`);
+        await client.query(`DELETE FROM ${table} CASCADE;`);
       }
-
-      await client.query(sql.join('\n'));
     } catch (error) {
       console.error('Failed to reset database', error);
       throw error;
@@ -167,9 +156,8 @@ export const utils = {
     return new Promise<Socket>((resolve) => {
       websocket
         .on('connect', () => resolve(websocket))
-        .on('on_upload_success', (data: AssetResponseDto) => onEvent({ event: 'assetUpload', id: data.id }))
-        .on('on_asset_delete', (assetId: string) => onEvent({ event: 'assetDelete', id: assetId }))
-        .on('on_user_delete', (userId: string) => onEvent({ event: 'userDelete', id: userId }))
+        .on('on_upload_success', (data: AssetResponseDto) => onEvent({ event: 'upload', assetId: data.id }))
+        .on('on_asset_delete', (assetId: string) => onEvent({ event: 'delete', assetId }))
         .connect();
     });
   },
@@ -184,17 +172,16 @@ export const utils = {
     }
   },
 
-  waitForWebsocketEvent: async ({ event, id, timeout: ms }: WaitOptions): Promise<void> => {
-    console.log(`Waiting for ${event} [${id}]`);
+  waitForWebsocketEvent: async ({ event, assetId, timeout: ms }: WaitOptions): Promise<void> => {
     const set = events[event];
-    if (set.has(id)) {
+    if (set.has(assetId)) {
       return;
     }
 
     return new Promise<void>((resolve, reject) => {
       const timeout = setTimeout(() => reject(new Error(`Timed out waiting for ${event} event`)), ms || 10_000);
 
-      callbacks[id] = () => {
+      callbacks[assetId] = () => {
         clearTimeout(timeout);
         resolve();
       };
@@ -244,10 +231,6 @@ export const utils = {
 
     const assetData = dto?.assetData?.bytes || makeRandomImage();
     const filename = dto?.assetData?.filename || 'example.png';
-
-    if (dto?.assetData?.bytes) {
-      console.log(`Uploading ${filename}`);
-    }
 
     const builder = request(app)
       .post(`/asset/upload`)

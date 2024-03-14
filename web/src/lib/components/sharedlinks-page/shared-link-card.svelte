@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { goto } from '$app/navigation';
   import Icon from '$lib/components/elements/icon.svelte';
   import { AppRoute } from '$lib/constants';
   import { getAssetThumbnailUrl } from '$lib/utils';
@@ -121,9 +122,15 @@
           {/if}
 
           {#if !link.expiresAt || !isExpired(link.expiresAt)}
-            <a href="{AppRoute.SHARE}/{link.key}" title="Go to share page">
+            <!-- svelte-ignore a11y-no-static-element-interactions -->
+            <div
+              class="hover:cursor-pointer"
+              title="Go to share page"
+              on:click={() => goto(`${AppRoute.SHARE}/${link.key}`)}
+              on:keydown={() => goto(`${AppRoute.SHARE}/${link.key}`)}
+            >
               <Icon path={mdiOpenInNew} />
-            </a>
+            </div>
           {/if}
         </div>
 

@@ -6,7 +6,6 @@
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { timeToSeconds } from '$lib/utils/date-time';
   import { AssetTypeEnum, ThumbnailFormat, type AssetResponseDto } from '@immich/sdk';
-  import { playVideoThumbnailOnHover } from '$lib/stores/preferences.store';
   import {
     mdiArchiveArrowDownOutline,
     mdiCameraBurst,
@@ -195,10 +194,9 @@
           <div class="absolute top-0 h-full w-full">
             <VideoThumbnail
               url={getAssetFileUrl(asset.id, false, true)}
-              enablePlayback={mouseOver && $playVideoThumbnailOnHover}
+              enablePlayback={mouseOver}
               curve={selected}
               durationInSeconds={timeToSeconds(asset.duration)}
-              playbackOnIconHover
             />
           </div>
         {/if}

@@ -117,7 +117,7 @@ class AlbumInfoListTile extends HookConsumerWidget {
                 image: imageData != null
                     ? MemoryImage(imageData!)
                     : const AssetImage(
-                        'assets/immich-logo.png',
+                        'assets/immich-logo-no-outline.png',
                       ) as ImageProvider,
                 fit: BoxFit.cover,
               ),

@@ -1,37 +1,27 @@
 import { LoginResponseDto, deleteUser, getUserById } from '@immich/sdk';
-import { Socket } from 'socket.io-client';
 import { createUserDto, userDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
 import { app, asBearerAuth, utils } from 'src/utils';
 import request from 'supertest';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 
-describe('/user', () => {
-  let websocket: Socket;
-
+describe('/server-info', () => {
   let admin: LoginResponseDto;
   let deletedUser: LoginResponseDto;
   let userToDelete: LoginResponseDto;
-  let userToHardDelete: LoginResponseDto;
   let nonAdmin: LoginResponseDto;
 
   beforeAll(async () => {
     await utils.resetDatabase();
     admin = await utils.adminSetup({ onboarding: false });
 
-    [websocket, deletedUser, nonAdmin, userToDelete, userToHardDelete] = await Promise.all([
-      utils.connectWebsocket(admin.accessToken),
+    [deletedUser, nonAdmin, userToDelete] = await Promise.all([
       utils.userSetup(admin.accessToken, createUserDto.user1),
       utils.userSetup(admin.accessToken, createUserDto.user2),
       utils.userSetup(admin.accessToken, createUserDto.user3),
-      utils.userSetup(admin.accessToken, createUserDto.user4),
     ]);
 
-    await deleteUser({ id: deletedUser.userId, deleteUserDto: {} }, { headers: asBearerAuth(admin.accessToken) });
-  });
-
-  afterAll(() => {
-    utils.disconnectWebsocket(websocket);
+    await deleteUser({ id: deletedUser.userId }, { headers: asBearerAuth(admin.accessToken) });
   });
 
   describe('GET /user', () => {
@@ -44,14 +34,13 @@ describe('/user', () => {
     it('should get users', async () => {
       const { status, body } = await request(app).get('/user').set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toEqual(200);
-      expect(body).toHaveLength(5);
+      expect(body).toHaveLength(4);
       expect(body).toEqual(
         expect.arrayContaining([
           expect.objectContaining({ email: 'admin@immich.cloud' }),
           expect.objectContaining({ email: 'user1@immich.cloud' }),
           expect.objectContaining({ email: 'user2@immich.cloud' }),
           expect.objectContaining({ email: 'user3@immich.cloud' }),
-          expect.objectContaining({ email: 'user4@immich.cloud' }),
         ]),
       );
     });
@@ -62,13 +51,12 @@ describe('/user', () => {
         .query({ isAll: true })
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(200);
-      expect(body).toHaveLength(4);
+      expect(body).toHaveLength(3);
       expect(body).toEqual(
         expect.arrayContaining([
           expect.objectContaining({ email: 'admin@immich.cloud' }),
           expect.objectContaining({ email: 'user2@immich.cloud' }),
           expect.objectContaining({ email: 'user3@immich.cloud' }),
-          expect.objectContaining({ email: 'user4@immich.cloud' }),
         ]),
       );
     });
@@ -80,14 +68,13 @@ describe('/user', () => {
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
       expect(status).toBe(200);
-      expect(body).toHaveLength(5);
+      expect(body).toHaveLength(4);
       expect(body).toEqual(
         expect.arrayContaining([
           expect.objectContaining({ email: 'admin@immich.cloud' }),
           expect.objectContaining({ email: 'user1@immich.cloud' }),
           expect.objectContaining({ email: 'user2@immich.cloud' }),
           expect.objectContaining({ email: 'user3@immich.cloud' }),
-          expect.objectContaining({ email: 'user4@immich.cloud' }),
         ]),
       );
     });
@@ -151,13 +138,13 @@ describe('/user', () => {
         .post(`/user`)
         .send({
           isAdmin: true,
-          email: 'user5@immich.cloud',
+          email: 'user4@immich.cloud',
           password: 'password123',
           name: 'Immich',
         })
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(body).toMatchObject({
-        email: 'user5@immich.cloud',
+        email: 'user4@immich.cloud',
         isAdmin: false,
         shouldChangePassword: true,
       });
@@ -200,22 +187,6 @@ describe('/user', () => {
         updatedAt: expect.any(String),
         deletedAt: expect.any(String),
       });
-    });
-
-    it('should hard delete user', async () => {
-      const { status, body } = await request(app)
-        .delete(`/user/${userToHardDelete.userId}`)
-        .send({ force: true })
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-
-      expect(status).toBe(200);
-      expect(body).toMatchObject({
-        id: userToHardDelete.userId,
-        updatedAt: expect.any(String),
-        deletedAt: expect.any(String),
-      });
-
-      await utils.waitForWebsocketEvent({ event: 'userDelete', id: userToHardDelete.userId, timeout: 5000 });
     });
   });
 

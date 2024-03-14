@@ -136,9 +136,6 @@ String parameterToString(dynamic value) {
   if (value is UserAvatarColor) {
     return UserAvatarColorTypeTransformer().encode(value).toString();
   }
-  if (value is UserStatus) {
-    return UserStatusTypeTransformer().encode(value).toString();
-  }
   if (value is VideoCodec) {
     return VideoCodecTypeTransformer().encode(value).toString();
   }

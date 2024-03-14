@@ -17,6 +17,7 @@ export const newUserRepositoryMock = (reset = true): jest.Mocked<IUserRepository
     update: jest.fn(),
     delete: jest.fn(),
     getDeletedUsers: jest.fn(),
+    restore: jest.fn(),
     hasAdmin: jest.fn(),
     updateUsage: jest.fn(),
     syncUsage: jest.fn(),

@@ -3,26 +3,14 @@ import { Injectable } from '@nestjs/common';
 import { compareSync, hash } from 'bcrypt';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { createReadStream } from 'node:fs';
-import { Instrumentation } from '../instrumentation';
 
-@Instrumentation()
 @Injectable()
 export class CryptoRepository implements ICryptoRepository {
-  randomUUID() {
-    return randomUUID();
-  }
+  randomUUID = randomUUID;
+  randomBytes = randomBytes;
 
-  randomBytes(size: number) {
-    return randomBytes(size);
-  }
-
-  hashBcrypt(data: string | Buffer, saltOrRounds: string | number) {
-    return hash(data, saltOrRounds);
-  }
-
-  compareBcrypt(data: string | Buffer, encrypted: string) {
-    return compareSync(data, encrypted);
-  }
+  hashBcrypt = hash;
+  compareBcrypt = compareSync;
 
   hashSha256(value: string) {
     return createHash('sha256').update(value).digest('base64');

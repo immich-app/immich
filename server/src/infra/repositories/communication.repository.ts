@@ -15,9 +15,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { Instrumentation } from '../instrumentation';
 
-@Instrumentation()
 @WebSocketGateway({
   cors: true,
   path: '/api/socket.io',

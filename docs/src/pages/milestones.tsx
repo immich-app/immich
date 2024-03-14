@@ -51,12 +51,24 @@ import {
   mdiVideo,
   mdiWeb,
   mdiScaleBalance,
+  mdiAllInclusive,
+  mdiMagnifyScan,
 } from '@mdi/js';
 import Layout from '@theme/Layout';
 import React from 'react';
 import Timeline, { DateType, Item } from '../components/timeline';
 
 const items: Item[] = [
+  {
+    icon: mdiMagnifyScan,
+    description:
+      'Advanced search with filters by date, location and more, also single search returns up to 5000 results compared to 100 in previous versions',
+    title: 'Search enhancement with advanced filters',
+    release: 'v1.95.0',
+    tag: 'v1.95.0',
+    date: new Date(2024, 1, 20),
+    dateType: DateType.RELEASE,
+  },
   {
     icon: mdiScaleBalance,
     description: 'Immich switches to AGPLv3 license',
@@ -558,7 +570,7 @@ const items: Item[] = [
     title: 'Dark Mode (Web)',
     description: 'Dark mode on the web.',
     release: 'v1.32.0',
-    tag: 'v1.32.0_50-dev',
+    tag: ' v1.32.0_50-dev',
     date: new Date(2022, 9, 14),
     dateType: DateType.RELEASE,
   },
@@ -621,7 +633,7 @@ const items: Item[] = [
     title: 'View Exif',
     description: 'View metadata about assets.',
     release: 'v1.3.0',
-    tag: 'v1.3.0-dev ',
+    tag: 'V1.3.0-dev ',
     date: new Date(2022, 2, 22),
     dateType: DateType.RELEASE,
   },
@@ -630,7 +642,7 @@ const items: Item[] = [
     title: 'Multi Select',
     description: 'Select and execute actions on multiple assets at the same time.',
     release: 'v1.2.0',
-    tag: 'v0.2-dev ',
+    tag: 'V0.2-dev ',
     date: new Date(2022, 1, 8),
     dateType: DateType.RELEASE,
   },

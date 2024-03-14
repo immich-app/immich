@@ -9,7 +9,7 @@
 /docs/installation/requirements /docs/install/requirements 301
 /docs/overview/logo-meaning /docs/overview/logo 301
 /docs/overview/technology-stack /docs/developer/architecture 301
-/docs/usage/automatic-backup /docs/features/automatic-backup 301
+/docs/usage/automatic-backup /docs/features/mobile-app 301
 /docs/usage/bulk-upload /docs/features/command-line-interface 301
 /docs/features/bulk-upload /docs/features/command-line-interface 301
 /docs/usage/oauth /docs/administration/oauth 301
@@ -24,3 +24,7 @@
 /docs/features/user-management /docs/administration/user-management 301
 /docs/developer/contributing /docs/developer/pr-checklist 301
 /docs/guides/machine-learning /docs/guides/remote-machine-learning 301
+/docs/features/automatic-backup /docs/features/mobile-app 301
+/docs/features/search /docs/features/smart-search 301
+/docs/administration/password-login /docs/administration/system-settings 301
+/docs/administration/password-login#Admin docs/FAQ#how-can-i-reset-the-admin-password 301

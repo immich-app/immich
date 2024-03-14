@@ -13,13 +13,11 @@ import fs from 'node:fs/promises';
 import { Writable } from 'node:stream';
 import { promisify } from 'node:util';
 import sharp from 'sharp';
-import { Instrumentation } from '../instrumentation';
 
 const probe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
 sharp.concurrency(0);
 sharp.cache({ files: 0 });
 
-@Instrumentation()
 export class MediaRepository implements IMediaRepository {
   private logger = new ImmichLogger(MediaRepository.name);
 
@@ -117,6 +115,19 @@ export class MediaRepository implements IMediaRepository {
     });
   }
 
+  configureFfmpegCall(input: string, output: string | Writable, options: TranscodeOptions) {
+    return ffmpeg(input, { niceness: 10 })
+      .inputOptions(options.inputOptions)
+      .outputOptions(options.outputOptions)
+      .output(output)
+      .on('error', (error, stdout, stderr) => this.logger.error(stderr || error));
+  }
+
+  chainPath(existing: string, path: string) {
+    const separator = existing.endsWith(':') ? '' : ':';
+    return `${existing}${separator}${path}`;
+  }
+
   async generateThumbhash(imagePath: string): Promise<Buffer> {
     const maxSize = 100;
 
@@ -128,18 +139,5 @@ export class MediaRepository implements IMediaRepository {
 
     const thumbhash = await import('thumbhash');
     return Buffer.from(thumbhash.rgbaToThumbHash(info.width, info.height, data));
-  }
-
-  private configureFfmpegCall(input: string, output: string | Writable, options: TranscodeOptions) {
-    return ffmpeg(input, { niceness: 10 })
-      .inputOptions(options.inputOptions)
-      .outputOptions(options.outputOptions)
-      .output(output)
-      .on('error', (error, stdout, stderr) => this.logger.error(stderr || error));
-  }
-
-  private chainPath(existing: string, path: string) {
-    const separator = existing.endsWith(':') ? '' : ':';
-    return `${existing}${separator}${path}`;
   }
 }

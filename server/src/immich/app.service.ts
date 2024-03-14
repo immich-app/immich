@@ -8,14 +8,13 @@ import {
   SharedLinkService,
   StorageService,
   SystemConfigService,
-  WEB_ROOT,
+  WEB_ROOT_PATH,
 } from '@app/domain';
 import { ImmichLogger } from '@app/infra/logger';
 import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression, Interval } from '@nestjs/schedule';
 import { NextFunction, Request, Response } from 'express';
 import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 
 const render = (index: string, meta: OpenGraphTags) => {
   const tags = `
@@ -72,7 +71,7 @@ export class AppService {
   ssr(excludePaths: string[]) {
     let index = '';
     try {
-      index = readFileSync(join(WEB_ROOT, 'index.html')).toString();
+      index = readFileSync(WEB_ROOT_PATH).toString();
     } catch {
       this.logger.warn('Unable to open `www/index.html, skipping SSR.');
     }
