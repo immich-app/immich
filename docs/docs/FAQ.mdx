@@ -40,6 +40,11 @@ If you still cannot login to the app, try the following:
 
 ## Assets
 
+## Does Immich change the file?
+
+No, Immich does not touch the original file under any circumstances,  
+all changes of the file are saved in the Side Car file and in the database.
+
 ### Can I add my existing photo library?
 
 Yes, with an [External Library](/docs/features/libraries.md).
@@ -81,6 +86,11 @@ There are three thubmanil jobs for each asset:
 - Large (jpeg)
 
 Also, there are additional jobs for person (face) thumbnails.
+
+### Files from WhatsApp do not appear with a correct date, why?
+
+Files sent on WhatsApp are saved without metadata on the file, 
+therefore Immich has no way of knowing what the original date of the file is when files are uploaded from WhatsApp not in the order of arrival on the device.
 
 ### What happens if an asset exists in more than one account?
 
