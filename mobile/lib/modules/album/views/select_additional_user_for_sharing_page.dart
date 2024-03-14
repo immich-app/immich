@@ -63,8 +63,7 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
           ),
         );
       }
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      return ListView(
         children: [
           Wrap(
             children: [...usersChip],
@@ -81,6 +80,7 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
             ),
           ),
           ListView.builder(
+            primary: false,
             shrinkWrap: true,
             itemBuilder: ((context, index) {
               return ListTile(

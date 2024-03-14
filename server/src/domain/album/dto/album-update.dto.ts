@@ -1,4 +1,6 @@
-import { IsString } from 'class-validator';
+import { AssetOrder } from '@app/infra/entities';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsEnum, IsString } from 'class-validator';
 import { Optional, ValidateBoolean, ValidateUUID } from '../../domain.util';
 
 export class UpdateAlbumDto {
@@ -15,4 +17,9 @@ export class UpdateAlbumDto {
 
   @ValidateBoolean({ optional: true })
   isActivityEnabled?: boolean;
+
+  @IsEnum(AssetOrder)
+  @Optional()
+  @ApiProperty({ enum: AssetOrder, enumName: 'AssetOrder' })
+  order?: AssetOrder;
 }

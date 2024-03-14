@@ -58,6 +58,7 @@
     updateAlbumInfo,
     type ActivityResponseDto,
     type UserResponseDto,
+    AssetOrder,
   } from '@immich/sdk';
   import {
     mdiArrowLeft,
@@ -83,6 +84,7 @@
 
   $: album = data.album;
   $: albumId = album.id;
+  $: albumKey = `${albumId}_${albumOrder}`;
 
   $: {
     if (!album.isActivityEnabled && $numberOfComments === 0) {
@@ -111,8 +113,10 @@
   let reactions: ActivityResponseDto[] = [];
   let globalWidth: number;
   let assetGridWidth: number;
+  let textArea: HTMLTextAreaElement;
+  let albumOrder: AssetOrder | undefined = data.album.order;
 
-  $: assetStore = new AssetStore({ albumId });
+  $: assetStore = new AssetStore({ albumId, order: albumOrder });
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
@@ -495,7 +499,7 @@
       style={`width:${assetGridWidth}px`}
     >
       <!-- Use key because AssetGrid can't deal with changing stores -->
-      {#key albumId}
+      {#key albumKey}
         {#if viewMode === ViewMode.SELECT_ASSETS}
           <AssetGrid
             assetStore={timelineStore}
@@ -662,7 +666,9 @@
 {#if viewMode === ViewMode.OPTIONS && $user}
   <AlbumOptions
     {album}
+    order={albumOrder}
     user={$user}
+    onChangeOrder={(order) => (albumOrder = order)}
     on:close={() => (viewMode = ViewMode.VIEW)}
     on:toggleEnableActivity={handleToggleEnableActivity}
     on:showSelectSharedUser={() => (viewMode = ViewMode.SELECT_USERS)}
