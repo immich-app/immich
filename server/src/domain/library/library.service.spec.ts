@@ -155,6 +155,7 @@ describe(LibraryService.name, () => {
       };
 
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
+      // eslint-disable-next-line @typescript-eslint/require-await
       storageMock.walk.mockImplementation(async function* generator() {
         yield '/data/user1/photo.jpg';
       });
@@ -183,6 +184,7 @@ describe(LibraryService.name, () => {
       };
 
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
+      // eslint-disable-next-line @typescript-eslint/require-await
       storageMock.walk.mockImplementation(async function* generator() {
         yield '/data/user1/photo.jpg';
       });
@@ -273,6 +275,7 @@ describe(LibraryService.name, () => {
       };
 
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
+      // eslint-disable-next-line @typescript-eslint/require-await
       storageMock.walk.mockImplementation(async function* generator() {
         yield assetStub.offline.originalPath;
       });
