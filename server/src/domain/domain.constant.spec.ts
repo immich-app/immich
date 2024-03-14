@@ -105,7 +105,7 @@ describe('mimeTypes', () => {
 
     it('should be a sorted list', () => {
       const keys = Object.keys(mimeTypes.profile);
-      // TODO: use toSorted in NodeJS 20.
+      const sortedKeys = [...keys].sort();
       expect(keys).toEqual([...keys].sort());
     });
 
