@@ -304,9 +304,9 @@ describe(LibraryService.name, () => {
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
       // eslint-disable-next-line @typescript-eslint/require-await
       storageMock.walk.mockImplementation(async function* generator() {
-        yield join(THUMBNAIL_DIR, 'photo.jpg');
+        yield join(THUMBNAIL_DIR, 'ph', 'ot', 'photo.jpg');
         yield assetStub.image.originalPath;
-        yield join(ENCODED_VIDEO_DIR, 'video.mp4');
+        yield join(ENCODED_VIDEO_DIR, 'vi', 'de', 'video.mp4');
       });
       assetMock.getLibraryAssetPaths.mockResolvedValue({
         items: [assetStub.image],
