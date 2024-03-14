@@ -1,6 +1,7 @@
 import { AssetType, LibraryEntity, LibraryType } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { Trie } from 'mnemonist';
 import { R_OK } from 'node:constants';
 import { EventEmitter } from 'node:events';
 import { Stats } from 'node:fs';
@@ -11,8 +12,6 @@ import { AuthDto } from '../auth';
 import { mimeTypes } from '../domain.constant';
 import { handlePromiseError, usePagination, validateCronExpression } from '../domain.util';
 import { IBaseJob, IEntityJob, ILibraryFileJob, ILibraryRefreshJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
-
-import { Trie } from 'mnemonist';
 import {
   DatabaseLock,
   IAccessRepository,
@@ -629,21 +628,7 @@ export class LibraryService extends EventEmitter {
 
     this.logger.verbose(`Refreshing library: ${job.id}`);
 
-    const pathValidation = await Promise.all(
-      library.importPaths.map(async (importPath) => await this.validateImportPath(importPath)),
-    );
-
-    const validImportPaths = pathValidation
-      .map((validation) => {
-        if (!validation.isValid) {
-          this.logger.error(`Skipping invalid import path: ${validation.importPath}. Reason: ${validation.message}`);
-        }
-        return validation;
-      })
-      .filter((validation) => validation.isValid)
-      .map((validation) => validation.importPath);
-
-    const crawledAssetPaths = await this.getPathTrie(library, validImportPaths);
+    const crawledAssetPaths = await this.getPathTrie(library);
     this.logger.debug(`Found ${crawledAssetPaths.size} asset(s) when crawling import paths ${library.importPaths}`);
 
     const assetIdsToMarkOffline = [];
@@ -705,9 +690,23 @@ export class LibraryService extends EventEmitter {
     return true;
   }
 
-  private async getPathTrie(library: LibraryEntity, importPaths: string[]): Promise<Trie<string>> {
+  private async getPathTrie(library: LibraryEntity): Promise<Trie<string>> {
+    const pathValidation = await Promise.all(
+      library.importPaths.map(async (importPath) => await this.validateImportPath(importPath)),
+    );
+
+    const validImportPaths = pathValidation
+      .map((validation) => {
+        if (!validation.isValid) {
+          this.logger.error(`Skipping invalid import path: ${validation.importPath}. Reason: ${validation.message}`);
+        }
+        return validation;
+      })
+      .filter((validation) => validation.isValid)
+      .map((validation) => validation.importPath);
+
     const generator = this.storageRepository.walk({
-      pathsToCrawl: importPaths,
+      pathsToCrawl: validImportPaths,
       exclusionPatterns: library.exclusionPatterns,
     });
 

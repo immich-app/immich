@@ -141,7 +141,7 @@ export class FilesystemProvider implements IStorageRepository {
       return Promise.resolve([]);
     }
 
-    return glob(this.getGlob(pathsToCrawl), {
+    return glob(this.asGlob(pathsToCrawl), {
       absolute: true,
       caseSensitiveMatch: false,
       onlyFiles: true,
@@ -157,7 +157,7 @@ export class FilesystemProvider implements IStorageRepository {
       return emptyGenerator();
     }
 
-    const stream = globStream(this.getGlob(pathsToCrawl), {
+    const stream = globStream(this.asGlob(pathsToCrawl), {
       absolute: true,
       caseSensitiveMatch: false,
       onlyFiles: true,
@@ -182,7 +182,7 @@ export class FilesystemProvider implements IStorageRepository {
     return () => watcher.close();
   }
 
-  private getGlob(pathsToCrawl: string[]): string {
+  private asGlob(pathsToCrawl: string[]): string {
     const base = pathsToCrawl.length === 1 ? pathsToCrawl[0] : `{${pathsToCrawl.join(',')}}`;
     const extensions = `*{${mimeTypes.getSupportedFileExtensions().join(',')}}`;
     return `${base}/**/${extensions}`;
