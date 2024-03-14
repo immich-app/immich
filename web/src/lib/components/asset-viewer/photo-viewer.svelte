@@ -7,7 +7,7 @@
   import { isWebCompatibleImage } from '$lib/utils/asset-utils';
   import { getBoundingBox } from '$lib/utils/people-utils';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
-  import { type AssetResponseDto } from '@immich/sdk';
+  import { type AssetResponseDto, AssetTypeEnum } from '@immich/sdk';
   import { useZoomImageWheel } from '@zoom-image/svelte';
   import { onDestroy, onMount } from 'svelte';
   import { fade } from 'svelte/transition';
@@ -16,6 +16,7 @@
   import { getAltText } from '$lib/utils/thumbnail-util';
 
   export let asset: AssetResponseDto;
+  export let preloadAssets: AssetResponseDto[] | null = null;
   export let element: HTMLDivElement | undefined = undefined;
   export let haveFadeTransition = true;
 
@@ -25,6 +26,7 @@
   let hasZoomed = false;
   let copyImageToClipboard: (source: string) => Promise<Blob>;
   let canCopyImagesToClipboard: () => boolean;
+  let imageLoaded: boolean = false;
 
   const loadOriginalByDefault = $alwaysLoadOriginalFile && isWebCompatibleImage(asset);
 
@@ -41,6 +43,9 @@
     const module = await import('copy-image-clipboard');
     copyImageToClipboard = module.copyImageToClipboard;
     canCopyImagesToClipboard = module.canCopyImagesToClipboard;
+
+    imageLoaded = false;
+    await loadAssetData({ loadOriginal: loadOriginalByDefault });
   });
 
   onDestroy(() => {
@@ -60,8 +65,22 @@
       });
 
       assetData = URL.createObjectURL(data);
+      imageLoaded = true;
+
+      if (!preloadAssets) {
+        return;
+      }
+
+      for (const preloadAsset of preloadAssets) {
+        if (preloadAsset.type === AssetTypeEnum.Image) {
+          await downloadRequest({
+            url: getAssetFileUrl(preloadAsset.id, !loadOriginal, false),
+            signal: abortController.signal,
+          });
+        }
+      }
     } catch {
-      // Do nothing
+      imageLoaded = false;
     }
   };
 
@@ -128,9 +147,9 @@
   transition:fade={{ duration: haveFadeTransition ? 150 : 0 }}
   class="flex h-full select-none place-content-center place-items-center"
 >
-  {#await loadAssetData({ loadOriginal: loadOriginalByDefault })}
+  {#if !imageLoaded}
     <LoadingSpinner />
-  {:then}
+  {:else}
     <div bind:this={imgElement} class="h-full w-full">
       <img
         bind:this={$photoViewer}
@@ -147,5 +166,5 @@
         />
       {/each}
     </div>
-  {/await}
+  {/if}
 </div>
