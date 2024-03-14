@@ -90,8 +90,8 @@ const config = {
       navbar: {
         logo: {
           alt: 'Immich Logo',
-          src: 'img/immich-logo.svg',
-          srcDark: 'img/immich-logo.svg',
+          src: 'img/immich-logo-inline-light.png',
+          srcDark: 'img/immich-logo-inline-dark.png',
         },
         items: [
           {
