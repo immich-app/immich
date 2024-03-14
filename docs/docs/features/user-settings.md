@@ -2,7 +2,6 @@
 
 ![User Modal](./img/user-popup.png)
 
-
 ## App Settings
 
 The user has the option of choosing how to display the browser interface in his user, this preference is personal for each user of the system.
@@ -37,7 +36,6 @@ Display a link to People in the sidebar
 
 Display a link to Sharing (albums&partner sharing) in the sidebar
 
-
 ## Account
 
 View your User ID and email, and update your first and last name.
@@ -63,7 +61,6 @@ User can view all the devices connected to his account, in addition it is possib
 ## Memories
 
 User can choose whether to display memories of his assets at the top of the timeline.
-
 
 ## Change Password
 
