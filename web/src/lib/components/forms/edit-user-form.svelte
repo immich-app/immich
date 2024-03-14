@@ -13,6 +13,7 @@
 
   export let user: UserResponseDto;
   export let canResetPassword = true;
+  export let newPassword: string;
 
   let error: string;
   let success: string;
@@ -53,12 +54,12 @@
 
   const resetPassword = async () => {
     try {
-      const defaultPassword = 'password';
+      newPassword = generatePassword();
 
       await updateUser({
         updateUserDto: {
           id: user.id,
-          password: defaultPassword,
+          password: newPassword,
           shouldChangePassword: true,
         },
       });
@@ -70,6 +71,22 @@
       isShowResetPasswordConfirmation = false;
     }
   };
+
+  function generatePassword(length: number = 16) {
+    let generatedPassword = '';
+
+    const characterSet = '0123456789' + 'abcdefghijklmnopqrstuvwxyz' + 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' + ',.-{}+!#$%/()=?';
+
+    for (let i = 0; i < length; i++) {
+      let randomNumber = crypto.getRandomValues(new Uint32Array(1))[0];
+      randomNumber = randomNumber / 2 ** 32;
+      randomNumber = Math.floor(randomNumber * characterSet.length);
+
+      generatedPassword += characterSet[randomNumber];
+    }
+
+    return generatedPassword;
+  }
 </script>
 
 <div
