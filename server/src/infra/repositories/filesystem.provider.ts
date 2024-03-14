@@ -166,7 +166,7 @@ export class FilesystemProvider implements IStorageRepository {
     });
 
     for await (const value of stream) {
-        yield value as string;
+      yield value as string;
     }
   }
 
