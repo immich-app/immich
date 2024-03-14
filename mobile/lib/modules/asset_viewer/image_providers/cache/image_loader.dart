@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:immich_mobile/modules/asset_viewer/image_providers/exceptions/image_loading_exception.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 
 /// Loads the codec from the URI and sends the events to the [chunkEvents] stream
@@ -51,6 +52,7 @@ class ImageLoader {
       }
     }
 
-    throw Exception('No file found in cache');
+    // If we get here, the image failed to load from the cache stream
+    throw ImageLoadingException('Could not load image from stream');
   }
 }
