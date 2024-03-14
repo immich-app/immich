@@ -1,4 +1,4 @@
-import { AssetType, LibraryType } from '@app/infra/entities';
+import { AssetType, LibraryEntity, LibraryType } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { R_OK } from 'node:constants';
@@ -12,6 +12,7 @@ import { mimeTypes } from '../domain.constant';
 import { handlePromiseError, usePagination, validateCronExpression } from '../domain.util';
 import { IBaseJob, IEntityJob, ILibraryFileJob, ILibraryRefreshJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
 
+import { Trie } from 'mnemonist';
 import {
   DatabaseLock,
   IAccessRepository,
@@ -38,6 +39,8 @@ import {
   ValidateLibraryResponseDto,
   mapLibrary,
 } from './library.dto';
+
+const LIBRARY_SCAN_BATCH_SIZE = 5000;
 
 @Injectable()
 export class LibraryService extends EventEmitter {
@@ -640,24 +643,16 @@ export class LibraryService extends EventEmitter {
       .filter((validation) => validation.isValid)
       .map((validation) => validation.importPath);
 
-    let rawPaths = await this.storageRepository.crawl({
-      pathsToCrawl: validImportPaths,
-      exclusionPatterns: library.exclusionPatterns,
-    });
-    const crawledAssetPaths = new Set<string>(rawPaths);
-
-    const shouldScanAll = job.refreshAllFiles || job.refreshModifiedFiles;
-    let pathsToScan: string[] = shouldScanAll ? rawPaths : [];
-    rawPaths = [];
-
+    const crawledAssetPaths = await this.getPathTrie(library, validImportPaths);
     this.logger.debug(`Found ${crawledAssetPaths.size} asset(s) when crawling import paths ${library.importPaths}`);
 
     const assetIdsToMarkOffline = [];
     const assetIdsToMarkOnline = [];
-    const pagination = usePagination(5000, (pagination) =>
+    const pagination = usePagination(LIBRARY_SCAN_BATCH_SIZE, (pagination) =>
       this.assetRepository.getLibraryAssetPaths(pagination, library.id),
     );
 
+    const shouldScanAll = job.refreshAllFiles || job.refreshModifiedFiles;
     for await (const page of pagination) {
       for (const asset of page) {
         const isOffline = !crawledAssetPaths.has(asset.originalPath);
@@ -669,7 +664,9 @@ export class LibraryService extends EventEmitter {
           assetIdsToMarkOnline.push(asset.id);
         }
 
-        crawledAssetPaths.delete(asset.originalPath);
+        if (!shouldScanAll) {
+          crawledAssetPaths.delete(asset.originalPath);
+        }
       }
     }
 
@@ -683,18 +680,43 @@ export class LibraryService extends EventEmitter {
       await this.assetRepository.updateAll(assetIdsToMarkOnline, { isOffline: false });
     }
 
-    if (!shouldScanAll) {
-      pathsToScan = [...crawledAssetPaths];
-      this.logger.debug(`Will import ${pathsToScan.length} new asset(s)`);
-    }
+    if (crawledAssetPaths.size > 0) {
+      if (!shouldScanAll) {
+        this.logger.debug(`Will import ${crawledAssetPaths.size} new asset(s)`);
+      }
 
-    if (pathsToScan.length > 0) {
-      await this.scanAssets(job.id, pathsToScan, library.ownerId, job.refreshAllFiles ?? false);
+      const batch = [];
+      for (const assetPath of crawledAssetPaths) {
+        batch.push(assetPath);
+
+        if (batch.length >= LIBRARY_SCAN_BATCH_SIZE) {
+          await this.scanAssets(job.id, batch, library.ownerId, false);
+          batch.length = 0;
+        }
+      }
+
+      if (batch.length > 0) {
+        await this.scanAssets(job.id, batch, library.ownerId, false);
+      }
     }
 
     await this.repository.update({ id: job.id, refreshedAt: new Date() });
 
     return true;
+  }
+
+  private async getPathTrie(library: LibraryEntity, importPaths: string[]): Promise<Trie<string>> {
+    const generator = this.storageRepository.walk({
+      pathsToCrawl: importPaths,
+      exclusionPatterns: library.exclusionPatterns,
+    });
+
+    const trie = new Trie<string>();
+    for await (const filePath of generator) {
+      trie.add(filePath);
+    }
+
+    return trie;
   }
 
   private async findOrFail(id: string) {
