@@ -145,7 +145,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
       );
     });
 
-    it('should offline a missing files when called with checkForOffline', async () => {
+    it('should offline a missing file when called with checkForOffline', async () => {
       await fs.promises.cp(`${IMMICH_TEST_ASSET_PATH}/albums/nature`, `${IMMICH_TEST_ASSET_TEMP_PATH}/albums/nature`, {
         recursive: true,
       });
@@ -180,7 +180,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
       );
     });
 
-    it('should not offline a missing files when performing regular scan', async () => {
+    it('should not offline a missing file when performing regular scan', async () => {
       await fs.promises.cp(`${IMMICH_TEST_ASSET_PATH}/albums/nature`, `${IMMICH_TEST_ASSET_TEMP_PATH}/albums/nature`, {
         recursive: true,
       });
