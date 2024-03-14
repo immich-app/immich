@@ -340,7 +340,7 @@ export class AssetService {
       fileModifiedAt: dto.fileModifiedAt,
       localDateTime: dto.fileCreatedAt,
 
-      type: assetType, // Set the detected asset type
+      type: assetType,
       isFavorite: dto.isFavorite,
       isArchived: dto.isArchived ?? false,
       duration: dto.duration || null,
