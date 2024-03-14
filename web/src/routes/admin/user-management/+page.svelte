@@ -1,6 +1,8 @@
 <script lang="ts">
   import { page } from '$app/stores';
+  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import DeleteConfirmDialog from '$lib/components/admin-page/delete-confirm-dialoge.svelte';
+  import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import RestoreDialogue from '$lib/components/admin-page/restore-dialoge.svelte';
   import Button from '$lib/components/elements/buttons/button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
@@ -17,8 +19,9 @@
   import { user } from '$lib/stores/user.store';
   import { websocketEvents } from '$lib/stores/websocket';
   import { asByteUnitString } from '$lib/utils/byte-units';
+  import { copyToClipboard } from '$lib/utils';
   import { UserStatus, getAllUsers, type UserResponseDto } from '@immich/sdk';
-  import { mdiClose, mdiDeleteRestore, mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
+  import { mdiClose, mdiContentCopy, mdiDeleteRestore, mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { onMount } from 'svelte';
   import type { PageData } from './$types';
@@ -28,10 +31,11 @@
   let allUsers: UserResponseDto[] = [];
   let shouldShowEditUserForm = false;
   let shouldShowCreateUserForm = false;
-  let shouldShowInfoPanel = false;
+  let shouldShowPasswordResetSuccess = false;
   let shouldShowDeleteConfirmDialog = false;
   let shouldShowRestoreDialog = false;
   let selectedUser: UserResponseDto;
+  let newPassword: string;
 
   const refresh = async () => {
     allUsers = await getAllUsers({ isAll: false });
@@ -84,7 +88,7 @@
   const onEditPasswordSuccess = async () => {
     await refresh();
     shouldShowEditUserForm = false;
-    shouldShowInfoPanel = true;
+    shouldShowPasswordResetSuccess = true;
   };
 
   const deleteUserHandler = (user: UserResponseDto) => {
@@ -121,6 +125,7 @@
         <FullScreenModal onClose={() => (shouldShowEditUserForm = false)}>
           <EditUserForm
             user={selectedUser}
+            bind:newPassword
             canResetPassword={selectedUser?.id !== $user.id}
             on:editSuccess={onEditUserSuccess}
             on:resetPasswordSuccess={onEditPasswordSuccess}
@@ -147,29 +152,40 @@
         />
       {/if}
 
-      {#if shouldShowInfoPanel}
-        <FullScreenModal onClose={() => (shouldShowInfoPanel = false)}>
-          <div
-            class="w-[500px] max-w-[95vw] rounded-3xl bg-immich-bg p-8 text-immich-fg shadow-sm dark:bg-immich-dark-gray dark:text-immich-dark-fg"
+      {#if shouldShowPasswordResetSuccess}
+        <FullScreenModal onClose={() => (shouldShowPasswordResetSuccess = false)}>
+          <ConfirmDialogue
+            title="Password Reset Success"
+            confirmText="Done"
+            onConfirm={() => (shouldShowPasswordResetSuccess = false)}
+            onClose={() => (shouldShowPasswordResetSuccess = false)}
+            hideCancelButton={true}
+            confirmColor="green"
           >
-            <h1 class="mb-4 text-2xl font-medium text-immich-primary dark:text-immich-dark-primary">
-              Password reset success
-            </h1>
+            <svelte:fragment slot="prompt">
+              <div class="flex flex-col gap-4">
+                <p>The user's password has been reset:</p>
 
-            <p>
-              The user's password has been reset to the default <code
-                class="rounded-md bg-gray-200 px-2 py-1 font-bold text-immich-primary dark:text-immich-dark-primary dark:bg-gray-700"
-                >password</code
-              >
-              <br />
-              <br />
-              Please inform the user, and they will need to change the password at the next log-on.
-            </p>
+                <div class="flex justify-center gap-2">
+                  <code
+                    class="rounded-md bg-gray-200 px-2 py-1 font-bold text-immich-primary dark:text-immich-dark-primary dark:bg-gray-700"
+                  >
+                    {newPassword}
+                  </code>
+                  <LinkButton on:click={() => copyToClipboard(newPassword)} title="Copy password">
+                    <div class="flex place-items-center gap-2 text-sm">
+                      <Icon path={mdiContentCopy} size="18" />
+                    </div>
+                  </LinkButton>
+                </div>
 
-            <div class="mt-6 flex w-full">
-              <Button fullwidth on:click={() => (shouldShowInfoPanel = false)}>Done</Button>
-            </div>
-          </div>
+                <p>
+                  Please provide the temporary password to the user and inform them they will need to change the
+                  password at their next login.
+                </p>
+              </div>
+            </svelte:fragment>
+          </ConfirmDialogue>
         </FullScreenModal>
       {/if}
 
