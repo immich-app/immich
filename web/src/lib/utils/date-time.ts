@@ -1,7 +1,4 @@
-import { dateFormats } from '$lib/constants';
-import { locale } from '$lib/stores/preferences.store';
 import { DateTime, Duration } from 'luxon';
-import { get } from 'svelte/store';
 
 /**
  * Convert time like `01:02:03.456` to seconds.
@@ -18,7 +15,3 @@ export function timeToSeconds(time: string) {
 export function parseUtcDate(date: string) {
   return DateTime.fromISO(date, { zone: 'UTC' }).toUTC();
 }
-
-export const dateLocaleString = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString(get(locale), dateFormats.album);
-};

@@ -6,12 +6,17 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
   import type { Sort } from '$lib/components/album-page/albums-list.svelte';
-  import { dateLocaleString } from '$lib/utils/date-time';
+  import { locale } from '$lib/stores/preferences.store';
+  import { dateFormats } from '$lib/constants';
 
   export let albumsFiltered: AlbumResponseDto[];
   export let sortByOptions: Sort[];
   export let onChooseAlbumToDelete: (album: AlbumResponseDto) => void;
   export let onAlbumToEdit: (album: AlbumResponseDto) => void;
+
+  const dateLocaleString = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString($locale, dateFormats.album);
+  };
 </script>
 
 <table class="mt-2 w-full text-left">
