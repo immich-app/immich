@@ -96,31 +96,6 @@ class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
                 child: Padding(
                   padding: const EdgeInsets.all(6.0),
                   child: const Text(
-                    'backup_controller_page_file_progress',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 10.0,
-                    ),
-                  ).tr(
-                    args: [
-                      uploadFileProgress,
-                      formatUploadFileSpeed(uploadFileSpeed),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-          TableRow(
-            decoration: const BoxDecoration(
-                // color: Colors.grey[100],
-                ),
-            children: [
-              TableCell(
-                verticalAlignment: TableCellVerticalAlignment.middle,
-                child: Padding(
-                  padding: const EdgeInsets.all(6.0),
-                  child: const Text(
                     'backup_controller_page_filename',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
@@ -245,7 +220,26 @@ class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
             ),
             Text(
               " ${uploadProgress.toStringAsFixed(0)}%",
-              style: const TextStyle(fontSize: 12),
+              style: const TextStyle(fontSize: 12, fontFamily: "OverpassMono"),
+            ),
+          ],
+        ),
+      );
+    }
+
+    buildUploadStats() {
+      return Padding(
+        padding: const EdgeInsets.only(top: 2.0, bottom: 2.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              uploadFileProgress,
+              style: const TextStyle(fontSize: 10, fontFamily: "OverpassMono"),
+            ),
+            Text(
+              formatUploadFileSpeed(uploadFileSpeed),
+              style: const TextStyle(fontSize: 10, fontFamily: "OverpassMono"),
             ),
           ],
         ),
@@ -308,6 +302,7 @@ class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
           children: [
             if (Platform.isIOS) buildiCloudDownloadProgerssBar(),
             buildUploadProgressBar(),
+            buildUploadStats(),
             Padding(
               padding: const EdgeInsets.only(top: 8.0),
               child: buildAssetInfoTable(),
