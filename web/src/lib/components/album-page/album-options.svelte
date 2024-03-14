@@ -18,8 +18,8 @@
   export let onChangeOrder: (order: AssetOrder) => void;
 
   const options: Record<AssetOrder, RenderedOption> = {
-    [AssetOrder.Asc]: { icon: mdiArrowUpThin, title: 'Ascending' },
-    [AssetOrder.Desc]: { icon: mdiArrowDownThin, title: 'Descending' },
+    [AssetOrder.Asc]: { icon: mdiArrowUpThin, title: 'Oldest first' },
+    [AssetOrder.Desc]: { icon: mdiArrowDownThin, title: 'Newest first' },
   };
 
   $: selectedOption = album.order ? options[album.order] : options[AssetOrder.Desc];
@@ -70,7 +70,7 @@
             <div class="grid p-2 gap-y-2">
               {#if album.order}
                 <SettingDropdown
-                  title="Direction"
+                  title="Display order"
                   options={Object.values(options)}
                   selectedOption={options[album.order]}
                   onToggle={handleToggle}
