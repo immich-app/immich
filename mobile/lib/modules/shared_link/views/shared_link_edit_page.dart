@@ -428,10 +428,8 @@ class SharedLinkEditPage extends HookConsumerWidget {
         leading: const CloseButton(),
         centerTitle: false,
       ),
-      resizeToAvoidBottomInset: false,
       body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: ListView(
           children: [
             Padding(
               padding: const EdgeInsets.all(padding),
@@ -487,7 +485,10 @@ class SharedLinkEditPage extends HookConsumerWidget {
               Align(
                 alignment: Alignment.bottomRight,
                 child: Padding(
-                  padding: const EdgeInsets.only(right: padding + 10),
+                  padding: const EdgeInsets.only(
+                    right: padding + 10,
+                    bottom: padding,
+                  ),
                   child: ElevatedButton(
                     onPressed:
                         existingLink != null ? handleEditLink : handleNewLink,
@@ -508,6 +509,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
                 padding: const EdgeInsets.only(
                   left: padding,
                   right: padding,
+                  bottom: padding,
                 ),
                 child: buildNewLinkField(),
               ),
