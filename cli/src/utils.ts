@@ -20,6 +20,7 @@ export const authenticate = async (options: BaseOptions): Promise<void> => {
   // provided in command
   if (instanceUrl && apiKey) {
     await connect(instanceUrl, apiKey);
+    return;
   }
 
   // fallback to file
