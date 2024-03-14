@@ -1,7 +1,6 @@
 import { AssetType, LibraryEntity, LibraryType } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { Trie } from 'mnemonist';
 import { R_OK } from 'node:constants';
 import { EventEmitter } from 'node:events';
 import { Stats } from 'node:fs';
@@ -686,65 +685,21 @@ export class LibraryService extends EventEmitter {
       exclusionPatterns: library.exclusionPatterns,
     });
 
-    const crawledAssetPaths = new Trie<string>();
+    let crawledAssetPaths: string[] = [];
+
     let pathCounter = 0;
     for await (const filePath of generator) {
-      crawledAssetPaths.add(filePath);
+      crawledAssetPaths.push(filePath);
       pathCounter++;
-      // Print status message every 50000 counter
-      if (pathCounter % 50000 === 0) {
-        this.logger.debug(`Crawled ${pathCounter} paths`);
-      }
 
-      if (pathCounter % 5000 === 0) {
-        const assetIdsToMarkOnline = [];
-        const pagination = usePagination(LIBRARY_SCAN_BATCH_SIZE, (pagination) =>
-          this.assetRepository.getLibraryAssetPaths(pagination, library.id),
-        );
-
-        const shouldScanAll = job.refreshAllFiles || job.refreshModifiedFiles;
-        for await (const page of pagination) {
-          for (const asset of page) {
-            if (asset.isOffline) {
-              assetIdsToMarkOnline.push(asset.id);
-            }
-
-            if (!shouldScanAll) {
-              crawledAssetPaths.delete(asset.originalPath);
-            }
-          }
-        }
-
-        if (assetIdsToMarkOnline.length > 0) {
-          this.logger.debug(`Found ${assetIdsToMarkOnline.length} online asset(s) previously marked as offline`);
-          await this.assetRepository.updateAll(assetIdsToMarkOnline, { isOffline: false });
-        }
-
-        if (crawledAssetPaths.size > 0) {
-          if (!shouldScanAll) {
-            this.logger.debug(`Will import ${crawledAssetPaths.size} new asset(s)`);
-          }
-
-          const batch = [];
-          for (const assetPath of crawledAssetPaths) {
-            batch.push(assetPath);
-
-            if (batch.length >= LIBRARY_SCAN_BATCH_SIZE) {
-              await this.scanAssets(job.id, batch, library.ownerId, job.refreshAllFiles ?? false);
-              batch.length = 0;
-            }
-          }
-
-          if (batch.length > 0) {
-            await this.scanAssets(job.id, batch, library.ownerId, job.refreshAllFiles ?? false);
-          }
-        }
-
-        crawledAssetPaths.clear();
+      if (pathCounter % LIBRARY_SCAN_BATCH_SIZE === 0) {
+        await this.scanAssets(job.id, crawledAssetPaths, library.ownerId, job.refreshAllFiles ?? false);
+        crawledAssetPaths = [];
       }
     }
+    await this.scanAssets(job.id, crawledAssetPaths, library.ownerId, job.refreshAllFiles ?? false);
 
-    // this.logger.debug(`Found ${crawledAssetPaths.size} asset(s) when crawling import paths ${library.importPaths}`);
+    this.logger.log(`Found ${pathCounter} asset(s) when crawling import paths ${library.importPaths}`);
 
     await this.repository.update({ id: job.id, refreshedAt: new Date() });
 
