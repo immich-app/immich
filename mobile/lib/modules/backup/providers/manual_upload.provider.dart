@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cancellation_token_http/http.dart';
+import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/widgets.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -49,6 +50,7 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
             progressInPercentage: 0,
             progressInFileSize: "0 B / 0 B",
             progressInFileSpeed: 0,
+            progressInFileSpeeds: const [],
             progressInFileSpeedUpdateTime: DateTime.now(),
             progressInFileSpeedUpdateSentBytes: 0,
             cancelToken: CancellationToken(),
@@ -127,26 +129,36 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
   }
 
   void _onProgress(int sent, int total) {
+    double lastUploadSpeed = state.progressInFileSpeed;
+    List<double> lastUploadSpeeds = state.progressInFileSpeeds.toList();
+    DateTime lastUpdateTime = state.progressInFileSpeedUpdateTime;
+    int lastSentBytes = state.progressInFileSpeedUpdateSentBytes;
+
     final now = DateTime.now();
+    final duration = now.difference(lastUpdateTime);
 
-    // Calculate time difference since last progress update
-    final duration = now.difference(state.progressInFileSpeedUpdateTime);
+    // Keep the upload speed average span limited, to keep it somewhat relevant
+    if (lastUploadSpeeds.length > 10) {
+      lastUploadSpeeds.removeAt(0);
+    }
 
-    // Calculate upload speed (bytes per second)
-    double uploadSpeed = duration.inSeconds > 0
-        ? ((sent - state.progressInFileSpeedUpdateSentBytes) /
-            duration.inSeconds)
-        : state.progressInFileSpeed;
+    if (duration.inSeconds > 0) {
+      lastUploadSpeeds.add(
+        ((sent - lastSentBytes) / duration.inSeconds).abs().roundToDouble(),
+      );
+
+      lastUploadSpeed = lastUploadSpeeds.average.abs().roundToDouble();
+      lastUpdateTime = now;
+      lastSentBytes = sent;
+    }
 
     state = state.copyWith(
       progressInPercentage: (sent.toDouble() / total.toDouble() * 100),
       progressInFileSize: humanReadableFileBytesProgress(sent, total),
-      progressInFileSpeed: uploadSpeed > 0 ? uploadSpeed : 0,
-      progressInFileSpeedUpdateTime:
-          duration.inSeconds > 0 ? now : state.progressInFileSpeedUpdateTime,
-      progressInFileSpeedUpdateSentBytes: duration.inSeconds > 0
-          ? sent
-          : state.progressInFileSpeedUpdateSentBytes,
+      progressInFileSpeed: lastUploadSpeed,
+      progressInFileSpeeds: lastUploadSpeeds,
+      progressInFileSpeedUpdateTime: lastUpdateTime,
+      progressInFileSpeedUpdateSentBytes: lastSentBytes,
     );
 
     if (state.showDetailedNotification) {

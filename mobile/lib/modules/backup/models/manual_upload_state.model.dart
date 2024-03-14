@@ -1,4 +1,6 @@
 import 'package:cancellation_token_http/http.dart';
+import 'package:collection/collection.dart';
+
 import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
 
 class ManualUploadState {
@@ -16,6 +18,7 @@ class ManualUploadState {
   final double progressInPercentage;
   final String progressInFileSize;
   final double progressInFileSpeed;
+  final List<double> progressInFileSpeeds;
   final DateTime progressInFileSpeedUpdateTime;
   final int progressInFileSpeedUpdateSentBytes;
 
@@ -23,6 +26,7 @@ class ManualUploadState {
     required this.progressInPercentage,
     required this.progressInFileSize,
     required this.progressInFileSpeed,
+    required this.progressInFileSpeeds,
     required this.progressInFileSpeedUpdateTime,
     required this.progressInFileSpeedUpdateSentBytes,
     required this.cancelToken,
@@ -37,6 +41,7 @@ class ManualUploadState {
     double? progressInPercentage,
     String? progressInFileSize,
     double? progressInFileSpeed,
+    List<double>? progressInFileSpeeds,
     DateTime? progressInFileSpeedUpdateTime,
     int? progressInFileSpeedUpdateSentBytes,
     CancellationToken? cancelToken,
@@ -50,6 +55,7 @@ class ManualUploadState {
       progressInPercentage: progressInPercentage ?? this.progressInPercentage,
       progressInFileSize: progressInFileSize ?? this.progressInFileSize,
       progressInFileSpeed: progressInFileSpeed ?? this.progressInFileSpeed,
+      progressInFileSpeeds: progressInFileSpeeds ?? this.progressInFileSpeeds,
       progressInFileSpeedUpdateTime:
           progressInFileSpeedUpdateTime ?? this.progressInFileSpeedUpdateTime,
       progressInFileSpeedUpdateSentBytes: progressInFileSpeedUpdateSentBytes ??
@@ -66,17 +72,19 @@ class ManualUploadState {
 
   @override
   String toString() {
-    return 'ManualUploadState(progressInPercentage: $progressInPercentage, progressInFileSize: $progressInFileSize, progressInFileSpeed: $progressInFileSpeed, progressInFileSpeedUpdateTime: $progressInFileSpeedUpdateTime, progressInFileSpeedUpdateSentBytes: $progressInFileSpeedUpdateSentBytes, cancelToken: $cancelToken, currentUploadAsset: $currentUploadAsset, totalAssetsToUpload: $totalAssetsToUpload, successfulUploads: $successfulUploads, currentAssetIndex: $currentAssetIndex, showDetailedNotification: $showDetailedNotification)';
+    return 'ManualUploadState(progressInPercentage: $progressInPercentage, progressInFileSize: $progressInFileSize, progressInFileSpeed: $progressInFileSpeed, progressInFileSpeeds: $progressInFileSpeeds, progressInFileSpeedUpdateTime: $progressInFileSpeedUpdateTime, progressInFileSpeedUpdateSentBytes: $progressInFileSpeedUpdateSentBytes, cancelToken: $cancelToken, currentUploadAsset: $currentUploadAsset, totalAssetsToUpload: $totalAssetsToUpload, successfulUploads: $successfulUploads, currentAssetIndex: $currentAssetIndex, showDetailedNotification: $showDetailedNotification)';
   }
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
+    final collectionEquals = const DeepCollectionEquality().equals;
 
     return other is ManualUploadState &&
         other.progressInPercentage == progressInPercentage &&
         other.progressInFileSize == progressInFileSize &&
         other.progressInFileSpeed == progressInFileSpeed &&
+        collectionEquals(other.progressInFileSpeeds, progressInFileSpeeds) &&
         other.progressInFileSpeedUpdateTime == progressInFileSpeedUpdateTime &&
         other.progressInFileSpeedUpdateSentBytes ==
             progressInFileSpeedUpdateSentBytes &&
@@ -93,6 +101,7 @@ class ManualUploadState {
     return progressInPercentage.hashCode ^
         progressInFileSize.hashCode ^
         progressInFileSpeed.hashCode ^
+        progressInFileSpeeds.hashCode ^
         progressInFileSpeedUpdateTime.hashCode ^
         progressInFileSpeedUpdateSentBytes.hashCode ^
         cancelToken.hashCode ^

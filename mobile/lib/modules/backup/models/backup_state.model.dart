@@ -23,6 +23,7 @@ class BackUpState {
   final double progressInPercentage;
   final String progressInFileSize;
   final double progressInFileSpeed;
+  final List<double> progressInFileSpeeds;
   final DateTime progressInFileSpeedUpdateTime;
   final int progressInFileSpeedUpdateSentBytes;
   final double iCloudDownloadProgress;
@@ -54,6 +55,7 @@ class BackUpState {
     required this.progressInPercentage,
     required this.progressInFileSize,
     required this.progressInFileSpeed,
+    required this.progressInFileSpeeds,
     required this.progressInFileSpeedUpdateTime,
     required this.progressInFileSpeedUpdateSentBytes,
     required this.iCloudDownloadProgress,
@@ -78,6 +80,7 @@ class BackUpState {
     double? progressInPercentage,
     String? progressInFileSize,
     double? progressInFileSpeed,
+    List<double>? progressInFileSpeeds,
     DateTime? progressInFileSpeedUpdateTime,
     int? progressInFileSpeedUpdateSentBytes,
     double? iCloudDownloadProgress,
@@ -101,6 +104,7 @@ class BackUpState {
       progressInPercentage: progressInPercentage ?? this.progressInPercentage,
       progressInFileSize: progressInFileSize ?? this.progressInFileSize,
       progressInFileSpeed: progressInFileSpeed ?? this.progressInFileSpeed,
+      progressInFileSpeeds: progressInFileSpeeds ?? this.progressInFileSpeeds,
       progressInFileSpeedUpdateTime:
           progressInFileSpeedUpdateTime ?? this.progressInFileSpeedUpdateTime,
       progressInFileSpeedUpdateSentBytes: progressInFileSpeedUpdateSentBytes ??
@@ -127,7 +131,7 @@ class BackUpState {
 
   @override
   String toString() {
-    return 'BackUpState(backupProgress: $backupProgress, allAssetsInDatabase: $allAssetsInDatabase, progressInPercentage: $progressInPercentage, progressInFileSize: $progressInFileSize, progressInFileSpeed: $progressInFileSpeed, progressInFileSpeedUpdateTime: $progressInFileSpeedUpdateTime, progressInFileSpeedUpdateSentBytes: $progressInFileSpeedUpdateSentBytes, iCloudDownloadProgress: $iCloudDownloadProgress, cancelToken: $cancelToken, serverInfo: $serverInfo, autoBackup: $autoBackup, backgroundBackup: $backgroundBackup, backupRequireWifi: $backupRequireWifi, backupRequireCharging: $backupRequireCharging, backupTriggerDelay: $backupTriggerDelay, availableAlbums: $availableAlbums, selectedBackupAlbums: $selectedBackupAlbums, excludedBackupAlbums: $excludedBackupAlbums, allUniqueAssets: $allUniqueAssets, selectedAlbumsBackupAssetsIds: $selectedAlbumsBackupAssetsIds, currentUploadAsset: $currentUploadAsset)';
+    return 'BackUpState(backupProgress: $backupProgress, allAssetsInDatabase: $allAssetsInDatabase, progressInPercentage: $progressInPercentage, progressInFileSize: $progressInFileSize, progressInFileSpeed: $progressInFileSpeed, progressInFileSpeeds: $progressInFileSpeeds, progressInFileSpeedUpdateTime: $progressInFileSpeedUpdateTime, progressInFileSpeedUpdateSentBytes: $progressInFileSpeedUpdateSentBytes, iCloudDownloadProgress: $iCloudDownloadProgress, cancelToken: $cancelToken, serverInfo: $serverInfo, autoBackup: $autoBackup, backgroundBackup: $backgroundBackup, backupRequireWifi: $backupRequireWifi, backupRequireCharging: $backupRequireCharging, backupTriggerDelay: $backupTriggerDelay, availableAlbums: $availableAlbums, selectedBackupAlbums: $selectedBackupAlbums, excludedBackupAlbums: $excludedBackupAlbums, allUniqueAssets: $allUniqueAssets, selectedAlbumsBackupAssetsIds: $selectedAlbumsBackupAssetsIds, currentUploadAsset: $currentUploadAsset)';
   }
 
   @override
@@ -140,6 +144,7 @@ class BackUpState {
         other.progressInPercentage == progressInPercentage &&
         other.progressInFileSize == progressInFileSize &&
         other.progressInFileSpeed == progressInFileSpeed &&
+        collectionEquals(other.progressInFileSpeeds, progressInFileSpeeds) &&
         other.progressInFileSpeedUpdateTime == progressInFileSpeedUpdateTime &&
         other.progressInFileSpeedUpdateSentBytes ==
             progressInFileSpeedUpdateSentBytes &&
@@ -169,6 +174,7 @@ class BackUpState {
         progressInPercentage.hashCode ^
         progressInFileSize.hashCode ^
         progressInFileSpeed.hashCode ^
+        progressInFileSpeeds.hashCode ^
         progressInFileSpeedUpdateTime.hashCode ^
         progressInFileSpeedUpdateSentBytes.hashCode ^
         iCloudDownloadProgress.hashCode ^
