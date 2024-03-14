@@ -12,7 +12,7 @@ Since Smart Search relies on CLIP models, more powerful models can be used for m
 
 Some search examples:
 
-<img src={require('./img/search-ex-3.webp').default} width="70%" title='Search Example 2' />
+<img src={require('./img/search-ex-1.png').default} width="70%" title='Search Example 1' />
 
 ## Advanced search filters
 
