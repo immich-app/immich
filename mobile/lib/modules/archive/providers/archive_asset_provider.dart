@@ -17,6 +17,6 @@ final archiveProvider = StreamProvider<RenderList>((ref) {
       .filter()
       .isArchivedEqualTo(true)
       .isTrashedEqualTo(false)
-      .sortByFileCreatedAt();
+      .sortByFileCreatedAtDesc();
   return renderListGenerator(query, ref);
 });

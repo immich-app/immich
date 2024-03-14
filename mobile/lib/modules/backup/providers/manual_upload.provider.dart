@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cancellation_token_http/http.dart';
+import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/widgets.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -47,6 +48,11 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
   ) : super(
           ManualUploadState(
             progressInPercentage: 0,
+            progressInFileSize: "0 B / 0 B",
+            progressInFileSpeed: 0,
+            progressInFileSpeeds: const [],
+            progressInFileSpeedUpdateTime: DateTime.now(),
+            progressInFileSpeedUpdateSentBytes: 0,
             cancelToken: CancellationToken(),
             currentUploadAsset: CurrentUploadAsset(
               id: '...',
@@ -123,9 +129,38 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
   }
 
   void _onProgress(int sent, int total) {
+    double lastUploadSpeed = state.progressInFileSpeed;
+    List<double> lastUploadSpeeds = state.progressInFileSpeeds.toList();
+    DateTime lastUpdateTime = state.progressInFileSpeedUpdateTime;
+    int lastSentBytes = state.progressInFileSpeedUpdateSentBytes;
+
+    final now = DateTime.now();
+    final duration = now.difference(lastUpdateTime);
+
+    // Keep the upload speed average span limited, to keep it somewhat relevant
+    if (lastUploadSpeeds.length > 10) {
+      lastUploadSpeeds.removeAt(0);
+    }
+
+    if (duration.inSeconds > 0) {
+      lastUploadSpeeds.add(
+        ((sent - lastSentBytes) / duration.inSeconds).abs().roundToDouble(),
+      );
+
+      lastUploadSpeed = lastUploadSpeeds.average.abs().roundToDouble();
+      lastUpdateTime = now;
+      lastSentBytes = sent;
+    }
+
     state = state.copyWith(
       progressInPercentage: (sent.toDouble() / total.toDouble() * 100),
+      progressInFileSize: humanReadableFileBytesProgress(sent, total),
+      progressInFileSpeed: lastUploadSpeed,
+      progressInFileSpeeds: lastUploadSpeeds,
+      progressInFileSpeedUpdateTime: lastUpdateTime,
+      progressInFileSpeedUpdateSentBytes: lastSentBytes,
     );
+
     if (state.showDetailedNotification) {
       final title = "backup_background_service_current_upload_notification"
           .tr(args: [state.currentUploadAsset.fileName]);
@@ -184,6 +219,8 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
 
         state = state.copyWith(
           progressInPercentage: 0,
+          progressInFileSize: "0 B / 0 B",
+          progressInFileSpeed: 0,
           totalAssetsToUpload: allUploadAssets.length,
           successfulUploads: 0,
           currentAssetIndex: 0,
@@ -291,7 +328,13 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
     if (_backupProvider.backupProgress != BackUpProgressEnum.manualInProgress) {
       _backupProvider.updateBackupProgress(BackUpProgressEnum.idle);
     }
-    state = state.copyWith(progressInPercentage: 0);
+    state = state.copyWith(
+      progressInPercentage: 0,
+      progressInFileSize: "0 B / 0 B",
+      progressInFileSpeed: 0,
+      progressInFileSpeedUpdateTime: DateTime.now(),
+      progressInFileSpeedUpdateSentBytes: 0,
+    );
   }
 
   Future<bool> uploadAssets(

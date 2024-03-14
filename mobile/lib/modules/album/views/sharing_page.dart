@@ -212,9 +212,10 @@ class SharingPage extends HookConsumerWidget {
       return InkWell(
         onTap: () => context.pushRoute(const PartnerRoute()),
         borderRadius: const BorderRadius.all(Radius.circular(12)),
-        child: const Icon(
+        child: Icon(
           Icons.swap_horizontal_circle_rounded,
           size: 25,
+          semanticLabel: 'partner_page_title'.tr(),
         ),
       );
     }

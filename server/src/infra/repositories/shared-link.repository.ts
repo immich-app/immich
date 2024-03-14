@@ -4,7 +4,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SharedLinkEntity } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';
+import { Instrumentation } from '../instrumentation';
 
+@Instrumentation()
 @Injectable()
 export class SharedLinkRepository implements ISharedLinkRepository {
   constructor(@InjectRepository(SharedLinkEntity) private repository: Repository<SharedLinkEntity>) {}

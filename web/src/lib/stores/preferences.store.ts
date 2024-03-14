@@ -96,3 +96,5 @@ export const albumViewSettings = persisted<AlbumViewSettings>('album-view-settin
 export const showDeleteModal = persisted<boolean>('delete-confirm-dialog', true, {});
 
 export const alwaysLoadOriginalFile = persisted<boolean>('always-load-original-file', false, {});
+
+export const playVideoThumbnailOnHover = persisted<boolean>('play-video-thumbnail-on-hover', true, {});

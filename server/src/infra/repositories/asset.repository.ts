@@ -2,6 +2,7 @@ import {
   AssetBuilderOptions,
   AssetCreate,
   AssetExploreFieldOptions,
+  AssetPathEntity,
   AssetSearchOptions,
   AssetStats,
   AssetStatsOptions,
@@ -35,9 +36,10 @@ import {
   Not,
   Repository,
 } from 'typeorm';
-import { AssetEntity, AssetJobStatusEntity, AssetType, ExifEntity, SmartInfoEntity } from '../entities';
+import { AssetEntity, AssetJobStatusEntity, AssetOrder, AssetType, ExifEntity, SmartInfoEntity } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';
 import { Chunked, ChunkedArray, OptionalBetween, paginate, paginatedBuilder, searchAssetBuilder } from '../infra.utils';
+import { Instrumentation } from '../instrumentation';
 
 const truncateMap: Record<TimeBucketSize, string> = {
   [TimeBucketSize.DAY]: 'day',
@@ -49,6 +51,7 @@ const dateTrunc = (options: TimeBucketOptions) =>
     truncateMap[options.size]
   }', (asset."localDateTime" at time zone 'UTC')) at time zone 'UTC')::timestamptz`;
 
+@Instrumentation()
 @Injectable()
 export class AssetRepository implements IAssetRepository {
   constructor(
@@ -134,8 +137,20 @@ export class AssetRepository implements IAssetRepository {
     relations?: FindOptionsRelations<AssetEntity>,
     select?: FindOptionsSelect<AssetEntity>,
   ): Promise<AssetEntity[]> {
-    if (!relations) {
-      relations = {
+    return this.repository.find({
+      where: { id: In(ids) },
+      relations,
+      select,
+      withDeleted: true,
+    });
+  }
+
+  @GenerateSql({ params: [[DummyValue.UUID]] })
+  @ChunkedArray()
+  getByIdsWithAllRelations(ids: string[]): Promise<AssetEntity[]> {
+    return this.repository.find({
+      where: { id: In(ids) },
+      relations: {
         exifInfo: true,
         smartInfo: true,
         tags: true,
@@ -145,13 +160,7 @@ export class AssetRepository implements IAssetRepository {
         stack: {
           assets: true,
         },
-      };
-    }
-
-    return this.repository.find({
-      where: { id: In(ids) },
-      relations,
-      select,
+      },
       withDeleted: true,
     });
   }
@@ -184,10 +193,10 @@ export class AssetRepository implements IAssetRepository {
   }
 
   @GenerateSql({ params: [[DummyValue.UUID]] })
-  @ChunkedArray()
-  getByLibraryId(libraryIds: string[]): Promise<AssetEntity[]> {
-    return this.repository.find({
-      where: { library: { id: In(libraryIds) } },
+  getLibraryAssetPaths(pagination: PaginationOptions, libraryId: string): Paginated<AssetPathEntity> {
+    return paginate(this.repository, pagination, {
+      select: { id: true, originalPath: true, isOffline: true },
+      where: { library: { id: libraryId } },
     });
   }
 
@@ -598,7 +607,7 @@ export class AssetRepository implements IAssetRepository {
       .select(`COUNT(asset.id)::int`, 'count')
       .addSelect(truncated, 'timeBucket')
       .groupBy(truncated)
-      .orderBy(truncated, 'DESC')
+      .orderBy(truncated, options.order === AssetOrder.ASC ? 'ASC' : 'DESC')
       .getRawMany();
   }
 
@@ -611,7 +620,7 @@ export class AssetRepository implements IAssetRepository {
         // First sort by the day in localtime (put it in the right bucket)
         .orderBy(truncated, 'DESC')
         // and then sort by the actual time
-        .addOrderBy('asset.fileCreatedAt', 'DESC')
+        .addOrderBy('asset.fileCreatedAt', options.order === AssetOrder.ASC ? 'ASC' : 'DESC')
         .getMany()
     );
   }

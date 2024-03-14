@@ -258,62 +258,58 @@
       <div class="mt-2 flex flex-wrap gap-2">
         {#each people as person, index (person.id)}
           {#if showingHiddenPeople || !person.isHidden}
-            <div
+            <a
               class="w-[90px]"
-              role="button"
-              tabindex={index}
+              href="{AppRoute.PEOPLE}/{person.id}?{QueryParameter.PREVIOUS_ROUTE}={currentAlbum?.id
+                ? `${AppRoute.ALBUMS}/${currentAlbum?.id}`
+                : AppRoute.PHOTOS}"
               on:focus={() => ($boundingBoxesArray = people[index].faces)}
+              on:blur={() => ($boundingBoxesArray = [])}
               on:mouseover={() => ($boundingBoxesArray = people[index].faces)}
               on:mouseleave={() => ($boundingBoxesArray = [])}
+              on:click={() => dispatch('closeViewer')}
             >
-              <a
-                href="{AppRoute.PEOPLE}/{person.id}?{QueryParameter.PREVIOUS_ROUTE}={currentAlbum?.id
-                  ? `${AppRoute.ALBUMS}/${currentAlbum?.id}`
-                  : AppRoute.PHOTOS}"
-                on:click={() => dispatch('closeViewer')}
-              >
-                <div class="relative">
-                  <ImageThumbnail
-                    curve
-                    shadow
-                    url={getPeopleThumbnailUrl(person.id)}
-                    altText={person.name}
-                    title={person.name}
-                    widthStyle="90px"
-                    heightStyle="90px"
-                    thumbhash={null}
-                    hidden={person.isHidden}
-                  />
-                </div>
-                <p class="mt-1 truncate font-medium" title={person.name}>{person.name}</p>
-                {#if person.birthDate}
-                  {@const personBirthDate = DateTime.fromISO(person.birthDate)}
-                  {@const age = Math.floor(DateTime.fromISO(asset.fileCreatedAt).diff(personBirthDate, 'years').years)}
-                  {@const ageInMonths = Math.floor(
-                    DateTime.fromISO(asset.fileCreatedAt).diff(personBirthDate, 'months').months,
-                  )}
-                  {#if age >= 0}
-                    <p
-                      class="font-light"
-                      title={personBirthDate.toLocaleString(
-                        {
-                          month: 'long',
-                          day: 'numeric',
-                          year: 'numeric',
-                        },
-                        { locale: $locale },
-                      )}
-                    >
-                      {#if ageInMonths <= 11}
-                        Age {ageInMonths} months
-                      {:else}
-                        Age {age}
-                      {/if}
-                    </p>
-                  {/if}
+              <div class="relative">
+                <ImageThumbnail
+                  curve
+                  shadow
+                  url={getPeopleThumbnailUrl(person.id)}
+                  altText={person.name}
+                  title={person.name}
+                  widthStyle="90px"
+                  heightStyle="90px"
+                  thumbhash={null}
+                  hidden={person.isHidden}
+                />
+              </div>
+              <p class="mt-1 truncate font-medium" title={person.name}>{person.name}</p>
+              {#if person.birthDate}
+                {@const personBirthDate = DateTime.fromISO(person.birthDate)}
+                {@const age = Math.floor(DateTime.fromISO(asset.fileCreatedAt).diff(personBirthDate, 'years').years)}
+                {@const ageInMonths = Math.floor(
+                  DateTime.fromISO(asset.fileCreatedAt).diff(personBirthDate, 'months').months,
+                )}
+                {#if age >= 0}
+                  <p
+                    class="font-light"
+                    title={personBirthDate.toLocaleString(
+                      {
+                        month: 'long',
+                        day: 'numeric',
+                        year: 'numeric',
+                      },
+                      { locale: $locale },
+                    )}
+                  >
+                    {#if ageInMonths <= 11}
+                      Age {ageInMonths} months
+                    {:else}
+                      Age {age}
+                    {/if}
+                  </p>
                 {/if}
-              </a>
-            </div>
+              {/if}
+            </a>
           {/if}
         {/each}
       </div>
@@ -341,12 +337,10 @@
       {@const assetDateTimeOriginal = DateTime.fromISO(asset.exifInfo.dateTimeOriginal, {
         zone: asset.exifInfo.timeZone ?? undefined,
       })}
-      <div
-        class="flex justify-between place-items-start gap-4 py-4"
-        tabindex="0"
-        role="button"
+      <button
+        type="button"
+        class="flex w-full text-left justify-between place-items-start gap-4 py-4"
         on:click={() => (isOwner ? (isShowChangeDate = true) : null)}
-        on:keydown={(event) => (isOwner ? event.key === 'Enter' && (isShowChangeDate = true) : null)}
         title={isOwner ? 'Edit date' : ''}
         class:hover:dark:text-immich-dark-primary={isOwner}
         class:hover:text-immich-primary={isOwner}
@@ -384,11 +378,11 @@
         </div>
 
         {#if isOwner}
-          <button class="focus:outline-none p-1">
+          <div class="p-1">
             <Icon path={mdiPencil} size="20" />
-          </button>
+          </div>
         {/if}
-      </div>
+      </button>
     {:else if !asset.exifInfo?.dateTimeOriginal && !asset.isReadOnly && isOwner}
       <div class="flex justify-between place-items-start gap-4 py-4">
         <div class="flex gap-4">
@@ -396,9 +390,9 @@
             <Icon path={mdiCalendar} size="24" />
           </div>
         </div>
-        <button class="focus:outline-none p-1">
+        <div class="p-1">
           <Icon path={mdiPencil} size="20" />
-        </button>
+        </div>
       </div>
     {:else if asset.exifInfo?.dateTimeOriginal && asset.isReadOnly}
       {@const assetDateTimeOriginal = DateTime.fromISO(asset.exifInfo.dateTimeOriginal, {
@@ -517,13 +511,11 @@
     {/if}
 
     {#if asset.exifInfo?.city && !asset.isReadOnly}
-      <div
-        class="flex justify-between place-items-start gap-4 py-4"
+      <button
+        type="button"
+        class="flex w-full text-left justify-between place-items-start gap-4 py-4"
         on:click={() => (isOwner ? (isShowChangeLocation = true) : null)}
-        on:keydown={(event) => (isOwner ? event.key === 'Enter' && (isShowChangeLocation = true) : null)}
-        tabindex="0"
         title={isOwner ? 'Edit location' : ''}
-        role="button"
         class:hover:dark:text-immich-dark-primary={isOwner}
         class:hover:text-immich-primary={isOwner}
       >
@@ -550,14 +542,12 @@
             <Icon path={mdiPencil} size="20" />
           </div>
         {/if}
-      </div>
+      </button>
     {:else if !asset.exifInfo?.city && !asset.isReadOnly && isOwner}
-      <div
-        class="flex justify-between place-items-start gap-4 py-4 rounded-lg hover:dark:text-immich-dark-primary hover:text-immich-primary"
+      <button
+        type="button"
+        class="flex w-full text-left justify-between place-items-start gap-4 py-4 rounded-lg hover:dark:text-immich-dark-primary hover:text-immich-primary"
         on:click={() => (isShowChangeLocation = true)}
-        on:keydown={(event) => event.key === 'Enter' && (isShowChangeLocation = true)}
-        tabindex="0"
-        role="button"
         title="Add location"
       >
         <div class="flex gap-4">
@@ -570,7 +560,7 @@
         <div class="focus:outline-none p-1">
           <Icon path={mdiPencil} size="20" />
         </div>
-      </div>
+      </button>
     {:else if asset.exifInfo?.city && asset.isReadOnly}
       <div class="flex justify-between place-items-start gap-4 py-4">
         <div class="flex gap-4">

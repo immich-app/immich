@@ -161,7 +161,10 @@ export class AssetStore {
     this.assetToBucket = {};
     this.albumAssets = new Set();
 
-    const buckets = await getTimeBuckets({ ...this.options, key: getKey() });
+    const buckets = await getTimeBuckets({
+      ...this.options,
+      key: getKey(),
+    });
 
     this.initialized = true;
 

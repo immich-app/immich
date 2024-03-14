@@ -209,7 +209,7 @@ describe(SystemConfigService.name, () => {
       await expect(sut.getConfig()).resolves.toEqual(updatedConfig);
     });
 
-    it('should load the config from a file', async () => {
+    it('should load the config from a json file', async () => {
       process.env.IMMICH_CONFIG_FILE = 'immich-config.json';
       const partialConfig = {
         ffmpeg: { crf: 30 },
@@ -222,6 +222,25 @@ describe(SystemConfigService.name, () => {
       await expect(sut.getConfig()).resolves.toEqual(updatedConfig);
 
       expect(configMock.readFile).toHaveBeenCalledWith('immich-config.json');
+    });
+
+    it('should load the config from a yaml file', async () => {
+      process.env.IMMICH_CONFIG_FILE = 'immich-config.yaml';
+      const partialConfig = `
+        ffmpeg:
+          crf: 30
+        oauth:
+          autoLaunch: true
+        trash:
+          days: 10
+        user:
+          deleteDelay: 15
+      `;
+      configMock.readFile.mockResolvedValue(partialConfig);
+
+      await expect(sut.getConfig()).resolves.toEqual(updatedConfig);
+
+      expect(configMock.readFile).toHaveBeenCalledWith('immich-config.yaml');
     });
 
     it('should accept an empty configuration file', async () => {
@@ -240,6 +259,17 @@ describe(SystemConfigService.name, () => {
 
       const config = await sut.getConfig();
       expect(config.machineLearning.url).toEqual('immich_machine_learning');
+    });
+
+    it('should warn for unknown options in yaml', async () => {
+      process.env.IMMICH_CONFIG_FILE = 'immich-config.yaml';
+      const partialConfig = `
+        unknownOption: true
+      `;
+      configMock.readFile.mockResolvedValue(partialConfig);
+
+      await sut.getConfig();
+      expect(warnLog).toHaveBeenCalled();
     });
 
     const tests = [

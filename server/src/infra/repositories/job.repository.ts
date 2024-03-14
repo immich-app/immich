@@ -17,7 +17,9 @@ import { Job, JobsOptions, Processor, Queue, Worker, WorkerOptions } from 'bullm
 import { CronJob, CronTime } from 'cron';
 import { setTimeout } from 'node:timers/promises';
 import { bullConfig } from '../infra.config';
+import { Instrumentation } from '../instrumentation';
 
+@Instrumentation()
 @Injectable()
 export class JobRepository implements IJobRepository {
   private workers: Partial<Record<QueueName, Worker>> = {};

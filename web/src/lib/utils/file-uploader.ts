@@ -99,6 +99,8 @@ async function fileUploader(asset: File, albumId: string | undefined = undefined
 
         if (res.duplicate) {
           uploadAssetsStore.duplicateCounter.update((count) => count + 1);
+        } else {
+          uploadAssetsStore.successCounter.update((c) => c + 1);
         }
 
         if (albumId && res.id) {
@@ -110,7 +112,6 @@ async function fileUploader(asset: File, albumId: string | undefined = undefined
         uploadAssetsStore.updateAsset(deviceAssetId, {
           state: res.duplicate ? UploadState.DUPLICATED : UploadState.DONE,
         });
-        uploadAssetsStore.successCounter.update((c) => c + 1);
 
         setTimeout(() => {
           uploadAssetsStore.removeUploadAsset(deviceAssetId);

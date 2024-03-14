@@ -164,7 +164,7 @@ describe(DownloadService.name, () => {
       const assetIds = ['asset-1', 'asset-2'];
       await expect(sut.getDownloadInfo(authStub.admin, { assetIds })).resolves.toEqual(downloadResponse);
 
-      expect(assetMock.getByIds).toHaveBeenCalledWith(['asset-1', 'asset-2']);
+      expect(assetMock.getByIds).toHaveBeenCalledWith(['asset-1', 'asset-2'], { exifInfo: true });
     });
 
     it('should return a list of archives (albumId)', async () => {
@@ -228,10 +228,10 @@ describe(DownloadService.name, () => {
 
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(assetIds));
       when(assetMock.getByIds)
-        .calledWith([assetStub.livePhotoStillAsset.id])
+        .calledWith([assetStub.livePhotoStillAsset.id], { exifInfo: true })
         .mockResolvedValue([assetStub.livePhotoStillAsset]);
       when(assetMock.getByIds)
-        .calledWith([assetStub.livePhotoMotionAsset.id])
+        .calledWith([assetStub.livePhotoMotionAsset.id], { exifInfo: true })
         .mockResolvedValue([assetStub.livePhotoMotionAsset]);
 
       await expect(sut.getDownloadInfo(authStub.admin, { assetIds })).resolves.toEqual({

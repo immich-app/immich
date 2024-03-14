@@ -11,25 +11,39 @@ import {
 import { ImmichLogger } from '@app/infra/logger';
 import archiver from 'archiver';
 import chokidar, { WatchOptions } from 'chokidar';
-import { glob } from 'glob';
+import { glob, globStream } from 'fast-glob';
 import { constants, createReadStream, existsSync, mkdirSync } from 'node:fs';
-import fs, { copyFile, readdir, rename, stat, utimes, writeFile } from 'node:fs/promises';
+import fs from 'node:fs/promises';
 import path from 'node:path';
+import { Instrumentation } from '../instrumentation';
 
+@Instrumentation()
 export class FilesystemProvider implements IStorageRepository {
   private logger = new ImmichLogger(FilesystemProvider.name);
 
-  readdir = readdir;
+  readdir(folder: string): Promise<string[]> {
+    return fs.readdir(folder);
+  }
 
-  copyFile = copyFile;
+  copyFile(source: string, target: string) {
+    return fs.copyFile(source, target);
+  }
 
-  stat = stat;
+  stat(filepath: string) {
+    return fs.stat(filepath);
+  }
 
-  writeFile = writeFile;
+  writeFile(filepath: string, buffer: Buffer) {
+    return fs.writeFile(filepath, buffer);
+  }
 
-  rename = rename;
+  rename(source: string, target: string) {
+    return fs.rename(source, target);
+  }
 
-  utimes = utimes;
+  utimes(filepath: string, atime: Date, mtime: Date) {
+    return fs.utimes(filepath, atime, mtime);
+  }
 
   createZipStream(): ImmichZipStream {
     const archive = archiver('zip', { store: true });
@@ -123,20 +137,37 @@ export class FilesystemProvider implements IStorageRepository {
 
   crawl(crawlOptions: CrawlOptionsDto): Promise<string[]> {
     const { pathsToCrawl, exclusionPatterns, includeHidden } = crawlOptions;
-    if (!pathsToCrawl) {
+    if (pathsToCrawl.length === 0) {
       return Promise.resolve([]);
     }
 
-    const base = pathsToCrawl.length === 1 ? pathsToCrawl[0] : `{${pathsToCrawl.join(',')}}`;
-    const extensions = `*{${mimeTypes.getSupportedFileExtensions().join(',')}}`;
-
-    return glob(`${base}/**/${extensions}`, {
+    return glob(this.asGlob(pathsToCrawl), {
       absolute: true,
-      nocase: true,
-      nodir: true,
+      caseSensitiveMatch: false,
+      onlyFiles: true,
       dot: includeHidden,
       ignore: exclusionPatterns,
     });
+  }
+
+  async *walk(crawlOptions: CrawlOptionsDto): AsyncGenerator<string> {
+    const { pathsToCrawl, exclusionPatterns, includeHidden } = crawlOptions;
+    if (pathsToCrawl.length === 0) {
+      async function* emptyGenerator() {}
+      return emptyGenerator();
+    }
+
+    const stream = globStream(this.asGlob(pathsToCrawl), {
+      absolute: true,
+      caseSensitiveMatch: false,
+      onlyFiles: true,
+      dot: includeHidden,
+      ignore: exclusionPatterns,
+    });
+
+    for await (const value of stream) {
+      yield value as string;
+    }
   }
 
   watch(paths: string[], options: WatchOptions, events: Partial<WatchEvents>) {
@@ -149,5 +180,11 @@ export class FilesystemProvider implements IStorageRepository {
     watcher.on(StorageEventType.ERROR, (error) => events.onError?.(error));
 
     return () => watcher.close();
+  }
+
+  private asGlob(pathsToCrawl: string[]): string {
+    const base = pathsToCrawl.length === 1 ? pathsToCrawl[0] : `{${pathsToCrawl.join(',')}}`;
+    const extensions = `*{${mimeTypes.getSupportedFileExtensions().join(',')}}`;
+    return `${base}/**/${extensions}`;
   }
 }
