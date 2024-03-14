@@ -20,6 +20,10 @@ Your photo may have a location if:
 
 <img src={require('./img/map-zoom.webp').default} width="80%" title='Map Zoom' />
 
+:::tip Map Style
+You can edit the map style through the [system settings](/docs/administration/system-settings#map-settings).
+:::
+
 ### Map Settings
 
 User can adjust which images to display in the map:

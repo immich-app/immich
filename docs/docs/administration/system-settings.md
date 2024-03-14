@@ -81,7 +81,7 @@ If you have twins, you might want to lower the Max Recognition Distance value, d
 ### Map Settings
 
 In these settings, you can change the appearance of the map in night and day modes according to your personal preference and according to the supported options.
-The map can be easily adjusted via [OpenMapTiles](https://openmaptiles.org/styles/) for example.
+The map can be adjusted via [OpenMapTiles](https://openmaptiles.org/styles/) for example.
 
 ### Reverse Geocoding Settings
 
