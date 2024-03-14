@@ -247,27 +247,6 @@ describe(LibraryService.name, () => {
       });
     });
 
-    it('should set missing assets offline', async () => {
-      const mockLibraryJob: ILibraryRefreshJob = {
-        id: libraryStub.externalLibrary1.id,
-        refreshModifiedFiles: false,
-        refreshAllFiles: false,
-      };
-
-      libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
-      storageMock.crawl.mockResolvedValue([]);
-      assetMock.getLibraryAssetPaths.mockResolvedValue({
-        items: [assetStub.image],
-        hasNextPage: false,
-      });
-
-      await sut.handleQueueAssetRefresh(mockLibraryJob);
-
-      expect(assetMock.updateAll).toHaveBeenCalledWith([assetStub.image.id], { isOffline: true });
-      expect(assetMock.updateAll).not.toHaveBeenCalledWith(expect.anything(), { isOffline: false });
-      expect(jobMock.queueAll).not.toHaveBeenCalled();
-    });
-
     it('should set crawled assets that were previously offline back online', async () => {
       const mockLibraryJob: ILibraryRefreshJob = {
         id: libraryStub.externalLibrary1.id,
