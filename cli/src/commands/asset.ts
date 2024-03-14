@@ -1,4 +1,12 @@
-import { AssetBulkUploadCheckResult } from '@immich/sdk';
+import {
+  AssetBulkUploadCheckResult,
+  addAssetsToAlbum,
+  checkBulkUpload,
+  createAlbum,
+  defaults,
+  getAllAlbums,
+  getSupportedMediaTypes,
+} from '@immich/sdk';
 import byteSize from 'byte-size';
 import cliProgress from 'cli-progress';
 import { chunk, zip } from 'lodash-es';
@@ -7,9 +15,8 @@ import fs, { createReadStream } from 'node:fs';
 import { access, constants, stat, unlink } from 'node:fs/promises';
 import os from 'node:os';
 import { basename } from 'node:path';
-import { ImmichApi } from 'src/services/api.service';
-import { CrawlService } from '../services/crawl.service';
-import { BaseCommand } from './base-command';
+import { CrawlService } from 'src/services/crawl.service';
+import { BaseOptions, authenticate } from 'src/utils';
 
 const zipDefined = zip as <T, U>(a: T[], b: U[]) => [T, U][];
 
@@ -106,7 +113,7 @@ class Asset {
   }
 }
 
-export class UploadOptionsDto {
+class UploadOptionsDto {
   recursive? = false;
   exclusionPatterns?: string[] = [];
   dryRun? = false;
@@ -118,11 +125,13 @@ export class UploadOptionsDto {
   concurrency? = 4;
 }
 
-export class UploadCommand extends BaseCommand {
-  api!: ImmichApi;
+export const upload = (paths: string[], baseOptions: BaseOptions, uploadOptions: UploadOptionsDto) =>
+  new UploadCommand().run(paths, baseOptions, uploadOptions);
 
-  public async run(paths: string[], options: UploadOptionsDto): Promise<void> {
-    this.api = await this.connect();
+// TODO refactor this
+class UploadCommand {
+  public async run(paths: string[], baseOptions: BaseOptions, options: UploadOptionsDto): Promise<void> {
+    await authenticate(baseOptions);
 
     console.log('Crawling for assets...');
     const files = await this.getFiles(paths, options);
@@ -264,7 +273,7 @@ export class UploadCommand extends BaseCommand {
   }
 
   public async getAlbums(): Promise<Map<string, string>> {
-    const existingAlbums = await this.api.getAllAlbums();
+    const existingAlbums = await getAllAlbums({});
 
     const albumMapping = new Map<string, string>();
     for (const album of existingAlbums) {
@@ -313,7 +322,7 @@ export class UploadCommand extends BaseCommand {
     try {
       for (const albumNames of chunk(newAlbums, options.concurrency)) {
         const newAlbumIds = await Promise.all(
-          albumNames.map((albumName: string) => this.api.createAlbum({ albumName }).then((r) => r.id)),
+          albumNames.map((albumName: string) => createAlbum({ createAlbumDto: { albumName } }).then((r) => r.id)),
         );
 
         for (const [albumName, albumId] of zipDefined(albumNames, newAlbumIds)) {
@@ -348,7 +357,7 @@ export class UploadCommand extends BaseCommand {
     try {
       for (const [albumId, assets] of albumToAssets.entries()) {
         for (const assetBatch of chunk(assets, Math.min(1000 * (options.concurrency ?? 4), 65_000))) {
-          await this.api.addAssetsToAlbum(albumId, { ids: assetBatch });
+          await addAssetsToAlbum({ id: albumId, bulkIdsDto: { ids: assetBatch } });
           albumUpdateProgress.increment(assetBatch.length);
         }
       }
@@ -404,17 +413,18 @@ export class UploadCommand extends BaseCommand {
     const assetBulkUploadCheckDto = {
       assets: zipDefined(assetsToCheck, checksums).map(([asset, checksum]) => ({ id: asset.path, checksum })),
     };
-    const checkResponse = await this.api.checkBulkUpload(assetBulkUploadCheckDto);
+    const checkResponse = await checkBulkUpload({ assetBulkUploadCheckDto });
     return checkResponse.results;
   }
 
   private async uploadAssets(assets: Asset[]): Promise<string[]> {
     const fileRequests = await Promise.all(assets.map((asset) => asset.getUploadFormData()));
-    return Promise.all(fileRequests.map((request) => this.uploadAsset(request).then((response) => response.id)));
+    const results = await Promise.all(fileRequests.map((request) => this.uploadAsset(request)));
+    return results.map((response) => response.id);
   }
 
   private async crawl(paths: string[], options: UploadOptionsDto): Promise<string[]> {
-    const formatResponse = await this.api.getSupportedMediaTypes();
+    const formatResponse = await getSupportedMediaTypes();
     const crawlService = new CrawlService(formatResponse.image, formatResponse.video);
 
     return crawlService.crawl({
@@ -426,14 +436,12 @@ export class UploadCommand extends BaseCommand {
   }
 
   private async uploadAsset(data: FormData): Promise<{ id: string }> {
-    const url = this.api.instanceUrl + '/asset/upload';
+    const { baseUrl, headers } = defaults;
 
-    const response = await fetch(url, {
+    const response = await fetch(`${baseUrl}/asset/upload`, {
       method: 'post',
       redirect: 'error',
-      headers: {
-        'x-api-key': this.api.apiKey,
-      },
+      headers: headers as Record<string, string>,
       body: data,
     });
     if (response.status !== 200 && response.status !== 201) {

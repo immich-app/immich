@@ -2,11 +2,10 @@
 import { Command, Option } from 'commander';
 import os from 'node:os';
 import path from 'node:path';
+import { upload } from 'src/commands/asset';
+import { login, logout } from 'src/commands/auth';
+import { serverInfo } from 'src/commands/server-info';
 import { version } from '../package.json';
-import { LoginCommand } from './commands/login.command';
-import { LogoutCommand } from './commands/logout.command';
-import { ServerInfoCommand } from './commands/server-info.command';
-import { UploadCommand } from './commands/upload.command';
 
 const defaultConfigDirectory = path.join(os.homedir(), '.config/immich/');
 
@@ -18,14 +17,34 @@ const program = new Command()
     new Option('-d, --config-directory <directory>', 'Configuration directory where auth.yml will be stored')
       .env('IMMICH_CONFIG_DIR')
       .default(defaultConfigDirectory),
-  );
+  )
+  .addOption(new Option('-u, --url [url]', 'Immich server URL').env('IMMICH_INSTANCE_URL'))
+  .addOption(new Option('-k, --key [apiKey]', 'Immich API key').env('IMMICH_API_KEY'));
+
+program
+  .command('login')
+  .alias('login-key')
+  .description('Login using an API key')
+  .argument('url', 'Immich server URL')
+  .argument('key', 'Immich API key')
+  .action((url, key) => login(url, key, program.opts()));
+
+program
+  .command('logout')
+  .description('Remove stored credentials')
+  .action(() => logout(program.opts()));
+
+program
+  .command('server-info')
+  .description('Display server information')
+  .action(() => serverInfo(program.opts()));
 
 program
   .command('upload')
   .description('Upload assets')
-  .usage('[options] [paths...]')
+  .usage('[paths...] [options]')
   .addOption(new Option('-r, --recursive', 'Recursive').env('IMMICH_RECURSIVE').default(false))
-  .addOption(new Option('-i, --ignore [paths...]', 'Paths to ignore').env('IMMICH_IGNORE_PATHS'))
+  .addOption(new Option('-i, --ignore [paths...]', 'Paths to ignore').env('IMMICH_IGNORE_PATHS').default([]))
   .addOption(new Option('-h, --skip-hash', "Don't hash files before upload").env('IMMICH_SKIP_HASH').default(false))
   .addOption(new Option('-H, --include-hidden', 'Include hidden folders').env('IMMICH_INCLUDE_HIDDEN').default(false))
   .addOption(
@@ -50,32 +69,6 @@ program
   )
   .addOption(new Option('--delete', 'Delete local assets after upload').env('IMMICH_DELETE_ASSETS'))
   .argument('[paths...]', 'One or more paths to assets to be uploaded')
-  .action(async (paths, options) => {
-    options.exclusionPatterns = options.ignore;
-    await new UploadCommand(program.opts()).run(paths, options);
-  });
-
-program
-  .command('server-info')
-  .description('Display server information')
-  .action(async () => {
-    await new ServerInfoCommand(program.opts()).run();
-  });
-
-program
-  .command('login-key')
-  .description('Login using an API key')
-  .argument('url')
-  .argument('key')
-  .action(async (url, key) => {
-    await new LoginCommand(program.opts()).run(url, key);
-  });
-
-program
-  .command('logout')
-  .description('Remove stored credentials')
-  .action(async () => {
-    await new LogoutCommand(program.opts()).run();
-  });
+  .action((paths, options) => upload(paths, program.opts(), options));
 
 program.parse(process.argv);
