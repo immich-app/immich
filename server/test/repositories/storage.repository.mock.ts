@@ -56,6 +56,7 @@ export const newStorageRepositoryMock = (reset = true): jest.Mocked<IStorageRepo
     readdir: jest.fn(),
     stat: jest.fn(),
     crawl: jest.fn(),
+    walk: jest.fn().mockImplementation(async function* () {}),
     rename: jest.fn(),
     copyFile: jest.fn(),
     utimes: jest.fn(),

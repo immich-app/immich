@@ -165,7 +165,9 @@ export class FilesystemProvider implements IStorageRepository {
       ignore: exclusionPatterns,
     });
 
-    stream.on('data', (file) => yield file);
+    for await (const value of stream) {
+        yield value as string;
+    }
   }
 
   watch(paths: string[], options: WatchOptions, events: Partial<WatchEvents>) {

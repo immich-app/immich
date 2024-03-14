@@ -690,13 +690,13 @@ export class LibraryService extends EventEmitter {
         batch.push(assetPath);
 
         if (batch.length >= LIBRARY_SCAN_BATCH_SIZE) {
-          await this.scanAssets(job.id, batch, library.ownerId, false);
+          await this.scanAssets(job.id, batch, library.ownerId, job.refreshAllFiles ?? false);
           batch.length = 0;
         }
       }
 
       if (batch.length > 0) {
-        await this.scanAssets(job.id, batch, library.ownerId, false);
+        await this.scanAssets(job.id, batch, library.ownerId, job.refreshAllFiles ?? false);
       }
     }
 
