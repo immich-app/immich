@@ -58,6 +58,7 @@
     updateAlbumInfo,
     type ActivityResponseDto,
     type UserResponseDto,
+    AssetOrder,
   } from '@immich/sdk';
   import {
     mdiArrowLeft,
@@ -83,7 +84,7 @@
 
   $: album = data.album;
   $: albumId = album.id;
-  $: albumKey = `${albumId}_${album.order}`;
+  $: albumKey = `${albumId}_${albumOrder}`;
 
   $: {
     if (!album.isActivityEnabled && $numberOfComments === 0) {
@@ -113,8 +114,9 @@
   let globalWidth: number;
   let assetGridWidth: number;
   let textArea: HTMLTextAreaElement;
+  let albumOrder: AssetOrder | undefined = data.album.order;
 
-  $: assetStore = new AssetStore({ albumId, order: album.order });
+  $: assetStore = new AssetStore({ albumId, order: albumOrder });
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
@@ -681,7 +683,7 @@
   <AlbumOptions
     {album}
     user={$user}
-    onChangeOrder={(order) => (album.order = order)}
+    onChangeOrder={(order) => (albumOrder = order)}
     on:close={() => (viewMode = ViewMode.VIEW)}
     on:toggleEnableActivity={handleToggleEnableActivity}
     on:showSelectSharedUser={() => (viewMode = ViewMode.SELECT_USERS)}
