@@ -24,7 +24,7 @@
   import { mdiClose, mdiContentCopy, mdiDeleteRestore, mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { onMount } from 'svelte';
-  import type { PageData } from './$types'; 
+  import type { PageData } from './$types';
 
   export let data: PageData;
 
