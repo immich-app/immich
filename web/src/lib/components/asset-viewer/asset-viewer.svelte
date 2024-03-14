@@ -55,6 +55,7 @@
 
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
+  export let preloadAssets: AssetResponseDto[] = [];
   export let showNavigation = true;
   export let sharedLink: SharedLinkResponseDto | undefined = undefined;
   $: isTrashEnabled = $featureFlags.trash;
@@ -103,6 +104,11 @@
       $stackAssetsStore = [...$stackAssetsStore, asset].sort(
         (a, b) => new Date(b.fileCreatedAt).getTime() - new Date(a.fileCreatedAt).getTime(),
       );
+
+      // if its a stack, add the next stack image in addition to the next asset
+      if (asset.stackCount > 1) {
+        preloadAssets.push($stackAssetsStore[1]);
+      }
     }
 
     if (!$stackAssetsStore.map((a) => a.id).includes(asset.id)) {
@@ -566,7 +572,7 @@
     {#if previewStackedAsset}
       {#key previewStackedAsset.id}
         {#if previewStackedAsset.type === AssetTypeEnum.Image}
-          <PhotoViewer asset={previewStackedAsset} on:close={closeViewer} haveFadeTransition={false} />
+          <PhotoViewer asset={previewStackedAsset} {preloadAssets} on:close={closeViewer} haveFadeTransition={false} />
         {:else}
           <VideoViewer
             assetId={previewStackedAsset.id}
@@ -598,7 +604,7 @@
                 .endsWith('.insp'))}
             <PanoramaViewer {asset} />
           {:else}
-            <PhotoViewer {asset} on:close={closeViewer} />
+            <PhotoViewer {asset} {preloadAssets} on:close={closeViewer} />
           {/if}
         {:else}
           <VideoViewer
@@ -629,7 +635,7 @@
         class="z-[1005] flex place-item-center place-content-center absolute bottom-0 w-full col-span-4 col-start-1 mb-1 overflow-x-auto horizontal-scrollbar"
       >
         <div class="relative w-full whitespace-nowrap transition-all">
-          {#each $stackAssetsStore as stackedAsset (stackedAsset.id)}
+          {#each $stackAssetsStore as stackedAsset, index (stackedAsset.id)}
             <div
               class="{stackedAsset.id == asset.id
                 ? '-translate-y-[1px]'
@@ -640,7 +646,10 @@
                   ? 'bg-transparent border-2 border-white'
                   : 'bg-gray-700/40'} inline-block hover:bg-transparent"
                 asset={stackedAsset}
-                on:click={() => (asset = stackedAsset)}
+                on:click={() => {
+                  asset = stackedAsset;
+                  preloadAssets = index + 1 >= $stackAssetsStore.length ? [] : [$stackAssetsStore[index + 1]];
+                }}
                 on:mouse-event={(e) => handleStackedAssetMouseEvent(e, stackedAsset)}
                 readonly
                 thumbnailSize={stackedAsset.id == asset.id ? 65 : 60}
