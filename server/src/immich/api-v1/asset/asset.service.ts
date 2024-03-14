@@ -340,7 +340,7 @@ export class AssetService {
       fileModifiedAt: dto.fileModifiedAt,
       localDateTime: dto.fileCreatedAt,
 
-      type: assetType,
+      type: mimeTypes.assetType(file.originalPath),
       isFavorite: dto.isFavorite,
       isArchived: dto.isArchived ?? false,
       duration: dto.duration || null,
