@@ -680,12 +680,12 @@ export class LibraryService extends EventEmitter {
       .filter((validation) => validation.isValid)
       .map((validation) => validation.importPath);
 
+    await this.handleQueueOfflineScan(job);
+
     const generator = this.storageRepository.walk({
       pathsToCrawl: validImportPaths,
       exclusionPatterns: library.exclusionPatterns,
     });
-
-    const shouldScanAll = job.refreshAllFiles || job.refreshModifiedFiles;
 
     let crawledAssetPaths: string[] = [];
     let assetIdsToMarkOnline: string[] = [];
@@ -698,15 +698,12 @@ export class LibraryService extends EventEmitter {
         await this.assetRepository.updateAll(assetIdsToMarkOnline, { isOffline: false });
       }
 
+      this.logger.log(`Queuing refresh for ${crawledAssetPaths.length} asset(s) in library ${job.id}`);
+
       await this.scanAssets(job.id, crawledAssetPaths, library.ownerId, job.refreshAllFiles ?? false);
     };
 
     for await (const filePath of generator) {
-      const asset = await this.assetRepository.getByLibraryIdAndOriginalPath(job.id, filePath);
-      if (asset && asset.isOffline) {
-        // Mark this asset as online
-        assetIdsToMarkOnline.push(asset.id);
-      }
       crawledAssetPaths.push(filePath);
       pathCounter++;
 
