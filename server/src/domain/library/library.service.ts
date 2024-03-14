@@ -689,8 +689,6 @@ export class LibraryService extends EventEmitter {
       .filter((validation) => validation.isValid)
       .map((validation) => validation.importPath);
 
-    await this.handleQueueOfflineScan(job);
-
     const generator = this.storageRepository.walk({
       pathsToCrawl: validImportPaths,
       exclusionPatterns: library.exclusionPatterns,
