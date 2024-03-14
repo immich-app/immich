@@ -88,11 +88,10 @@ const config = {
         },
       },
       navbar: {
-        title: 'IMMICH',
         logo: {
-          alt: 'Immich University Logo',
-          src: 'img/color-logo.png',
-          srcDark: 'img/logo.png',
+          alt: 'Immich Logo',
+          src: 'img/immich-logo.svg',
+          srcDark: 'img/immich-logo.svg',
         },
         items: [
           {
