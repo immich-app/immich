@@ -682,6 +682,7 @@
 {#if viewMode === ViewMode.OPTIONS && $user}
   <AlbumOptions
     {album}
+    order={albumOrder}
     user={$user}
     onChangeOrder={(order) => (albumOrder = order)}
     on:close={() => (viewMode = ViewMode.VIEW)}

@@ -14,6 +14,7 @@
   import { findKey } from 'lodash-es';
 
   export let album: AlbumResponseDto;
+  export let order: AssetOrder | undefined;
   export let user: UserResponseDto;
   export let onChangeOrder: (order: AssetOrder) => void;
 
@@ -22,7 +23,7 @@
     [AssetOrder.Desc]: { icon: mdiArrowDownThin, title: 'Newest first' },
   };
 
-  $: selectedOption = album.order ? options[album.order] : options[AssetOrder.Desc];
+  $: selectedOption = order ? options[order] : options[AssetOrder.Desc];
 
   const dispatch = createEventDispatcher<{
     close: void;
@@ -68,11 +69,11 @@
           <div class="py-2">
             <h2 class="text-gray text-sm mb-2">SETTINGS</h2>
             <div class="grid p-2 gap-y-2">
-              {#if album.order}
+              {#if order}
                 <SettingDropdown
                   title="Display order"
                   options={Object.values(options)}
-                  selectedOption={options[album.order]}
+                  selectedOption={options[order]}
                   onToggle={handleToggle}
                 />
               {/if}
