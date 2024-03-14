@@ -113,7 +113,6 @@
   let reactions: ActivityResponseDto[] = [];
   let globalWidth: number;
   let assetGridWidth: number;
-  let textArea: HTMLTextAreaElement;
   let albumOrder: AssetOrder | undefined = data.album.order;
 
   $: assetStore = new AssetStore({ albumId, order: albumOrder });
