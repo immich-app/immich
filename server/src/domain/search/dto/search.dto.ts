@@ -1,5 +1,4 @@
-import { AssetOrder } from '@app/domain/asset/dto/asset.dto';
-import { AssetType, GeodataPlacesEntity } from '@app/infra/entities';
+import { AssetOrder, AssetType, GeodataPlacesEntity } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsEnum, IsInt, IsNotEmpty, IsString, Max, Min } from 'class-validator';

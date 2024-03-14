@@ -148,6 +148,7 @@ export class AlbumService {
       description: dto.description,
       albumThumbnailAssetId: dto.albumThumbnailAssetId,
       isActivityEnabled: dto.isActivityEnabled,
+      order: dto.order,
     });
 
     return mapAlbumWithoutAssets(updatedAlbum);

@@ -1766,6 +1766,14 @@
             }
           },
           {
+            "name": "order",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/AssetOrder"
+            }
+          },
+          {
             "name": "personId",
             "required": false,
             "in": "query",
@@ -1899,6 +1907,14 @@
             "in": "query",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "order",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/AssetOrder"
             }
           },
           {
@@ -6722,6 +6738,9 @@
             "format": "date-time",
             "type": "string"
           },
+          "order": {
+            "$ref": "#/components/schemas/AssetOrder"
+          },
           "owner": {
             "$ref": "#/components/schemas/UserResponseDto"
           },
@@ -10338,6 +10357,9 @@
           },
           "isActivityEnabled": {
             "type": "boolean"
+          },
+          "order": {
+            "$ref": "#/components/schemas/AssetOrder"
           }
         },
         "type": "object"

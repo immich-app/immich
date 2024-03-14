@@ -18,11 +18,6 @@ export class DeviceIdDto {
   deviceId!: string;
 }
 
-export enum AssetOrder {
-  ASC = 'asc',
-  DESC = 'desc',
-}
-
 const hasGPS = (o: { latitude: undefined; longitude: undefined }) =>
   o.latitude !== undefined || o.longitude !== undefined;
 const ValidateGPS = () => ValidateIf(hasGPS);
