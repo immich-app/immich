@@ -211,8 +211,8 @@ class AlbumViewerAppbar extends HookConsumerWidget
           return SafeArea(
             child: Padding(
               padding: const EdgeInsets.only(top: 24.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
+              child: ListView(
+                shrinkWrap: true,
                 children: [
                   ...buildBottomSheetActions(),
                   if (onAddPhotos != null) ...commonActions,

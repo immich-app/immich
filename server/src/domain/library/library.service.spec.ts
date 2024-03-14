@@ -155,7 +155,10 @@ describe(LibraryService.name, () => {
       };
 
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
-      storageMock.crawl.mockResolvedValue(['/data/user1/photo.jpg']);
+      // eslint-disable-next-line @typescript-eslint/require-await
+      storageMock.walk.mockImplementation(async function* generator() {
+        yield '/data/user1/photo.jpg';
+      });
       assetMock.getLibraryAssetPaths.mockResolvedValue({ items: [], hasNextPage: false });
 
       await sut.handleQueueAssetRefresh(mockLibraryJob);
@@ -181,7 +184,10 @@ describe(LibraryService.name, () => {
       };
 
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
-      storageMock.crawl.mockResolvedValue(['/data/user1/photo.jpg']);
+      // eslint-disable-next-line @typescript-eslint/require-await
+      storageMock.walk.mockImplementation(async function* generator() {
+        yield '/data/user1/photo.jpg';
+      });
       assetMock.getLibraryAssetPaths.mockResolvedValue({ items: [], hasNextPage: false });
 
       await sut.handleQueueAssetRefresh(mockLibraryJob);
@@ -231,12 +237,11 @@ describe(LibraryService.name, () => {
       };
 
       libraryMock.get.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
-      storageMock.crawl.mockResolvedValue([]);
       assetMock.getLibraryAssetPaths.mockResolvedValue({ items: [], hasNextPage: false });
 
       await sut.handleQueueAssetRefresh(mockLibraryJob);
 
-      expect(storageMock.crawl).toHaveBeenCalledWith({
+      expect(storageMock.walk).toHaveBeenCalledWith({
         pathsToCrawl: [libraryStub.externalLibraryWithImportPaths1.importPaths[1]],
         exclusionPatterns: [],
       });
@@ -250,7 +255,6 @@ describe(LibraryService.name, () => {
       };
 
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
-      storageMock.crawl.mockResolvedValue([]);
       assetMock.getLibraryAssetPaths.mockResolvedValue({
         items: [assetStub.image],
         hasNextPage: false,
@@ -271,7 +275,10 @@ describe(LibraryService.name, () => {
       };
 
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
-      storageMock.crawl.mockResolvedValue([assetStub.offline.originalPath]);
+      // eslint-disable-next-line @typescript-eslint/require-await
+      storageMock.walk.mockImplementation(async function* generator() {
+        yield assetStub.offline.originalPath;
+      });
       assetMock.getLibraryAssetPaths.mockResolvedValue({
         items: [assetStub.offline],
         hasNextPage: false,

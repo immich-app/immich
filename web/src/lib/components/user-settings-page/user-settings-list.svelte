@@ -55,7 +55,7 @@
     <ChangePasswordSettings />
   </SettingAccordion>
 
-  <SettingAccordion key="sharing" title="Sharing" subtitle="Manage sharing with partners">
+  <SettingAccordion key="partner-sharing" title="Partner Sharing" subtitle="Manage sharing with partners">
     <PartnerSettings user={$user} />
   </SettingAccordion>
 </SettingAccordionState>
