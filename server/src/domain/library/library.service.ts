@@ -1,4 +1,4 @@
-import { AssetType, LibraryEntity, LibraryType } from '@app/infra/entities';
+import { AssetType, LibraryType } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { R_OK } from 'node:constants';
@@ -685,19 +685,40 @@ export class LibraryService extends EventEmitter {
       exclusionPatterns: library.exclusionPatterns,
     });
 
+    const shouldScanAll = job.refreshAllFiles || job.refreshModifiedFiles;
+
     let crawledAssetPaths: string[] = [];
+    let assetIdsToMarkOnline: string[] = [];
 
     let pathCounter = 0;
+
+    const processAssetBatch = async () => {
+      if (assetIdsToMarkOnline.length > 0) {
+        this.logger.debug(`Found ${assetIdsToMarkOnline.length} online asset(s) previously marked as offline`);
+        await this.assetRepository.updateAll(assetIdsToMarkOnline, { isOffline: false });
+      }
+
+      await this.scanAssets(job.id, crawledAssetPaths, library.ownerId, job.refreshAllFiles ?? false);
+    };
+
     for await (const filePath of generator) {
+      const asset = await this.assetRepository.getByLibraryIdAndOriginalPath(job.id, filePath);
+      if (asset && asset.isOffline) {
+        // Mark this asset as online
+        assetIdsToMarkOnline.push(asset.id);
+      }
       crawledAssetPaths.push(filePath);
       pathCounter++;
 
-      if (pathCounter % LIBRARY_SCAN_BATCH_SIZE === 0) {
-        await this.scanAssets(job.id, crawledAssetPaths, library.ownerId, job.refreshAllFiles ?? false);
+      if (crawledAssetPaths.length % LIBRARY_SCAN_BATCH_SIZE === 0) {
+        await processAssetBatch();
+
+        assetIdsToMarkOnline = [];
         crawledAssetPaths = [];
       }
     }
-    await this.scanAssets(job.id, crawledAssetPaths, library.ownerId, job.refreshAllFiles ?? false);
+
+    await processAssetBatch();
 
     this.logger.log(`Found ${pathCounter} asset(s) when crawling import paths ${library.importPaths}`);
 
