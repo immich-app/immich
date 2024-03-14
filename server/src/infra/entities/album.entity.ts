@@ -14,6 +14,12 @@ import { AssetEntity } from './asset.entity';
 import { SharedLinkEntity } from './shared-link.entity';
 import { UserEntity } from './user.entity';
 
+// ran into issues when importing the enum from `asset.dto.ts`
+export enum AssetOrder {
+  ASC = 'asc',
+  DESC = 'desc',
+}
+
 @Entity('albums')
 export class AlbumEntity {
   @PrimaryGeneratedColumn('uuid')
@@ -59,4 +65,7 @@ export class AlbumEntity {
 
   @Column({ default: true })
   isActivityEnabled!: boolean;
+
+  @Column({ type: 'varchar', default: AssetOrder.DESC })
+  order!: AssetOrder;
 }

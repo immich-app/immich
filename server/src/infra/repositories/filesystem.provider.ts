@@ -11,7 +11,7 @@ import {
 import { ImmichLogger } from '@app/infra/logger';
 import archiver from 'archiver';
 import chokidar, { WatchOptions } from 'chokidar';
-import { glob } from 'fast-glob';
+import { glob, globStream } from 'fast-glob';
 import { constants, createReadStream, existsSync, mkdirSync } from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -141,16 +141,33 @@ export class FilesystemProvider implements IStorageRepository {
       return Promise.resolve([]);
     }
 
-    const base = pathsToCrawl.length === 1 ? pathsToCrawl[0] : `{${pathsToCrawl.join(',')}}`;
-    const extensions = `*{${mimeTypes.getSupportedFileExtensions().join(',')}}`;
-
-    return glob(`${base}/**/${extensions}`, {
+    return glob(this.asGlob(pathsToCrawl), {
       absolute: true,
       caseSensitiveMatch: false,
       onlyFiles: true,
       dot: includeHidden,
       ignore: exclusionPatterns,
     });
+  }
+
+  async *walk(crawlOptions: CrawlOptionsDto): AsyncGenerator<string> {
+    const { pathsToCrawl, exclusionPatterns, includeHidden } = crawlOptions;
+    if (pathsToCrawl.length === 0) {
+      async function* emptyGenerator() {}
+      return emptyGenerator();
+    }
+
+    const stream = globStream(this.asGlob(pathsToCrawl), {
+      absolute: true,
+      caseSensitiveMatch: false,
+      onlyFiles: true,
+      dot: includeHidden,
+      ignore: exclusionPatterns,
+    });
+
+    for await (const value of stream) {
+      yield value as string;
+    }
   }
 
   watch(paths: string[], options: WatchOptions, events: Partial<WatchEvents>) {
@@ -163,5 +180,11 @@ export class FilesystemProvider implements IStorageRepository {
     watcher.on(StorageEventType.ERROR, (error) => events.onError?.(error));
 
     return () => watcher.close();
+  }
+
+  private asGlob(pathsToCrawl: string[]): string {
+    const base = pathsToCrawl.length === 1 ? pathsToCrawl[0] : `{${pathsToCrawl.join(',')}}`;
+    const extensions = `*{${mimeTypes.getSupportedFileExtensions().join(',')}}`;
+    return `${base}/**/${extensions}`;
   }
 }

@@ -91,16 +91,12 @@ jobs:
         with:
           node-version: 20
 
-      - name: Run setup typescript-sdk
+      - name: Setup typescript-sdk
         run: npm ci && npm run build
         working-directory: ./open-api/typescript-sdk
 
-      - name: Run npm install (cli)
+      - name: Install deps
         run: npm ci
-
-      - name: Run npm install (server)
-        run: npm ci
-        working-directory: ./server
 
       - name: Run linter
         run: npm run lint
