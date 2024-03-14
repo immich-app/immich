@@ -68,7 +68,7 @@ class ImmichRemoteThumbnailProvider
     );
 
     yield await ImageLoader.loadImageFromCache(
-      Uri.parse(preview),
+      preview,
       cache: cache,
       decode: decode,
       chunkEvents: chunkEvents,

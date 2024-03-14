@@ -11,7 +11,7 @@ import 'package:immich_mobile/shared/models/store.dart';
 /// for this wonderful implementation of their image loader
 class ImageLoader {
   static Future<ui.Codec> loadImageFromCache(
-    Uri uri, {
+    String uri, {
     required ImageCacheManager cache,
     required ImageDecoderCallback decode,
     required StreamController<ImageChunkEvent> chunkEvents,
@@ -23,7 +23,7 @@ class ImageLoader {
     };
 
     final stream = cache.getImageFile(
-      uri.toString(),
+      uri,
       withProgress: true,
       headers: headers,
       maxHeight: height,

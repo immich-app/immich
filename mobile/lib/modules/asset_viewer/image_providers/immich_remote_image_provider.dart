@@ -78,7 +78,7 @@ class ImmichRemoteImageProvider
       );
 
       yield await ImageLoader.loadImageFromCache(
-        Uri.parse(preview),
+        preview,
         cache: cache,
         decode: decode,
         chunkEvents: chunkEvents,
@@ -91,7 +91,7 @@ class ImmichRemoteImageProvider
       type: api.ThumbnailFormat.JPEG,
     );
     final codec = await ImageLoader.loadImageFromCache(
-      Uri.parse(url),
+      url,
       cache: cache,
       decode: decode,
       chunkEvents: chunkEvents,
@@ -103,7 +103,7 @@ class ImmichRemoteImageProvider
       // Load the original image
       final url = getImageUrlFromId(key.assetId);
       final codec = await ImageLoader.loadImageFromCache(
-        Uri.parse(url),
+        url,
         cache: cache,
         decode: decode,
         chunkEvents: chunkEvents,
