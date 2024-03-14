@@ -14,7 +14,7 @@ class ImageLoader {
     String uri, {
     required ImageCacheManager cache,
     required ImageDecoderCallback decode,
-    required StreamController<ImageChunkEvent> chunkEvents,
+    StreamController<ImageChunkEvent>? chunkEvents,
     int? height,
     int? width,
   }) async {
@@ -33,7 +33,7 @@ class ImageLoader {
     await for (final result in stream) {
       if (result is DownloadProgress) {
         // We are downloading the file, so update the [chunkEvents]
-        chunkEvents.add(
+        chunkEvents?.add(
           ImageChunkEvent(
             cumulativeBytesLoaded: result.downloaded,
             expectedTotalBytes: result.totalSize,

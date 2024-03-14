@@ -45,12 +45,10 @@ class ImmichRemoteThumbnailProvider
     ImmichRemoteThumbnailProvider key,
     ImageDecoderCallback decode,
   ) {
-    final chunkEvents = StreamController<ImageChunkEvent>();
     final cache = cacheManager ?? ThumbnailImageCacheManager();
     return MultiImageStreamCompleter(
-      codec: _codec(key, cache, decode, chunkEvents),
+      codec: _codec(key, cache, decode),
       scale: 1.0,
-      chunkEvents: chunkEvents.stream,
     );
   }
 
@@ -59,7 +57,6 @@ class ImmichRemoteThumbnailProvider
     ImmichRemoteThumbnailProvider key,
     ImageCacheManager cache,
     ImageDecoderCallback decode,
-    StreamController<ImageChunkEvent> chunkEvents,
   ) async* {
     // Load a preview to the chunk events
     final preview = getThumbnailUrlForRemoteId(
@@ -71,10 +68,7 @@ class ImmichRemoteThumbnailProvider
       preview,
       cache: cache,
       decode: decode,
-      chunkEvents: chunkEvents,
     );
-
-    await chunkEvents.close();
   }
 
   @override
