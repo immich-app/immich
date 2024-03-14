@@ -72,6 +72,7 @@
     }
   };
 
+  // TODO move password reset server-side
   function generatePassword(length: number = 16) {
     let generatedPassword = '';
 
