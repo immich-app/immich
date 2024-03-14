@@ -1,6 +1,6 @@
-import { AssetEntity } from '@app/infra/entities';
+import { AssetEntity, AssetOrder } from '@app/infra/entities';
 import { Inject, Injectable } from '@nestjs/common';
-import { AssetOrder, AssetResponseDto, mapAsset } from '../asset';
+import { AssetResponseDto, mapAsset } from '../asset';
 import { AuthDto } from '../auth';
 import { PersonResponseDto } from '../person';
 import {
