@@ -667,58 +667,6 @@ export class LibraryService extends EventEmitter {
 
     this.logger.verbose(`Refreshing library: ${job.id}`);
 
-    const crawledAssetPaths = await this.getPathTrie(library);
-    this.logger.debug(`Found ${crawledAssetPaths.size} asset(s) when crawling import paths ${library.importPaths}`);
-
-    const assetIdsToMarkOnline = [];
-    const pagination = usePagination(LIBRARY_SCAN_BATCH_SIZE, (pagination) =>
-      this.assetRepository.getLibraryAssetPaths(pagination, library.id),
-    );
-
-    const shouldScanAll = job.refreshAllFiles || job.refreshModifiedFiles;
-    for await (const page of pagination) {
-      for (const asset of page) {
-        if (asset.isOffline) {
-          assetIdsToMarkOnline.push(asset.id);
-        }
-
-        if (!shouldScanAll) {
-          crawledAssetPaths.delete(asset.originalPath);
-        }
-      }
-    }
-
-    if (assetIdsToMarkOnline.length > 0) {
-      this.logger.debug(`Found ${assetIdsToMarkOnline.length} online asset(s) previously marked as offline`);
-      await this.assetRepository.updateAll(assetIdsToMarkOnline, { isOffline: false });
-    }
-
-    if (crawledAssetPaths.size > 0) {
-      if (!shouldScanAll) {
-        this.logger.debug(`Will import ${crawledAssetPaths.size} new asset(s)`);
-      }
-
-      const batch = [];
-      for (const assetPath of crawledAssetPaths) {
-        batch.push(assetPath);
-
-        if (batch.length >= LIBRARY_SCAN_BATCH_SIZE) {
-          await this.scanAssets(job.id, batch, library.ownerId, job.refreshAllFiles ?? false);
-          batch.length = 0;
-        }
-      }
-
-      if (batch.length > 0) {
-        await this.scanAssets(job.id, batch, library.ownerId, job.refreshAllFiles ?? false);
-      }
-    }
-
-    await this.repository.update({ id: job.id, refreshedAt: new Date() });
-
-    return true;
-  }
-
-  private async getPathTrie(library: LibraryEntity): Promise<Trie<string>> {
     const pathValidation = await Promise.all(
       library.importPaths.map(async (importPath) => await this.validateImportPath(importPath)),
     );
@@ -738,12 +686,69 @@ export class LibraryService extends EventEmitter {
       exclusionPatterns: library.exclusionPatterns,
     });
 
-    const trie = new Trie<string>();
+    const crawledAssetPaths = new Trie<string>();
+    let pathCounter = 0;
     for await (const filePath of generator) {
-      trie.add(filePath);
+      crawledAssetPaths.add(filePath);
+      pathCounter++;
+      // Print status message every 50000 counter
+      if (pathCounter % 50000 === 0) {
+        this.logger.debug(`Crawled ${pathCounter} paths`);
+      }
+
+      if (pathCounter % 5000 === 0) {
+        const assetIdsToMarkOnline = [];
+        const pagination = usePagination(LIBRARY_SCAN_BATCH_SIZE, (pagination) =>
+          this.assetRepository.getLibraryAssetPaths(pagination, library.id),
+        );
+
+        const shouldScanAll = job.refreshAllFiles || job.refreshModifiedFiles;
+        for await (const page of pagination) {
+          for (const asset of page) {
+            if (asset.isOffline) {
+              assetIdsToMarkOnline.push(asset.id);
+            }
+
+            if (!shouldScanAll) {
+              crawledAssetPaths.delete(asset.originalPath);
+            }
+          }
+        }
+
+        if (assetIdsToMarkOnline.length > 0) {
+          this.logger.debug(`Found ${assetIdsToMarkOnline.length} online asset(s) previously marked as offline`);
+          await this.assetRepository.updateAll(assetIdsToMarkOnline, { isOffline: false });
+        }
+
+        if (crawledAssetPaths.size > 0) {
+          if (!shouldScanAll) {
+            this.logger.debug(`Will import ${crawledAssetPaths.size} new asset(s)`);
+          }
+
+          const batch = [];
+          for (const assetPath of crawledAssetPaths) {
+            batch.push(assetPath);
+
+            if (batch.length >= LIBRARY_SCAN_BATCH_SIZE) {
+              await this.scanAssets(job.id, batch, library.ownerId, job.refreshAllFiles ?? false);
+              batch.length = 0;
+            }
+          }
+
+          if (batch.length > 0) {
+            await this.scanAssets(job.id, batch, library.ownerId, job.refreshAllFiles ?? false);
+          }
+        }
+
+        crawledAssetPaths.clear();
+      }
     }
 
-    return trie;
+    // this.logger.debug(`Found ${crawledAssetPaths.size} asset(s) when crawling import paths ${library.importPaths}`);
+
+    await this.repository.update({ id: job.id, refreshedAt: new Date() });
+
+    return true;
   }
 
   private async findOrFail(id: string) {
