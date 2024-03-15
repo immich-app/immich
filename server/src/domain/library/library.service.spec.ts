@@ -20,7 +20,7 @@ import {
 import { when } from 'jest-when';
 import { R_OK } from 'node:constants';
 import { Stats } from 'node:fs';
-import { ILibraryFileJob, ILibraryRefreshJob, JobName } from '../job';
+import { IEntityJob, ILibraryFileJob, ILibraryRefreshJob, JobName } from '../job';
 import {
   IAssetRepository,
   ICryptoRepository,
@@ -248,29 +248,21 @@ describe(LibraryService.name, () => {
         exclusionPatterns: [],
       });
     });
+  });
 
-    it('should set crawled assets that were previously offline back online', async () => {
-      const mockLibraryJob: ILibraryRefreshJob = {
-        id: libraryStub.externalLibrary1.id,
-        refreshModifiedFiles: false,
-        refreshAllFiles: false,
+  describe('handleOfflineCheck', () => {
+    it('should set missing assets offline', async () => {
+      const mockAssetJob: IEntityJob = {
+        id: assetStub.external.id,
       };
 
-      libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
-      // eslint-disable-next-line @typescript-eslint/require-await
-      storageMock.walk.mockImplementation(async function* generator() {
-        yield assetStub.offline.originalPath;
-      });
-      assetMock.getLibraryAssetPaths.mockResolvedValue({
-        items: [assetStub.offline],
-        hasNextPage: false,
-      });
+      assetMock.getById.mockResolvedValue(assetStub.external);
 
-      await sut.handleQueueAssetRefresh(mockLibraryJob);
+      storageMock.checkFileExists.mockResolvedValue(false);
 
-      expect(assetMock.updateAll).toHaveBeenCalledWith([assetStub.offline.id], { isOffline: false });
-      expect(assetMock.updateAll).not.toHaveBeenCalledWith(expect.anything(), { isOffline: true });
-      expect(jobMock.queueAll).not.toHaveBeenCalled();
+      await sut.handleOfflineCheck(mockAssetJob);
+
+      expect(assetMock.save).toHaveBeenCalledWith([assetStub.offline.id], { isOffline: true });
     });
   });
 
