@@ -1,14 +1,15 @@
 <script lang="ts">
-  import type { Sort } from '../../../routes/(user)/albums/+page.svelte';
+  import { albumViewSettings } from '$lib/stores/preferences.store';
+  import type { Sort } from '$lib/components/album-page/albums-list.svelte';
 
-  export let albumViewSettings: string;
   export let option: Sort;
 
   const handleSort = () => {
-    if (albumViewSettings === option.title) {
+    if ($albumViewSettings.sortBy === option.title) {
+      $albumViewSettings.sortDesc = !option.sortDesc;
       option.sortDesc = !option.sortDesc;
     } else {
-      albumViewSettings = option.title;
+      $albumViewSettings.sortBy = option.title;
     }
   };
 </script>
@@ -18,7 +19,7 @@
     class="rounded-lg p-2 hover:bg-immich-dark-primary hover:dark:bg-immich-dark-primary/50"
     on:click={() => handleSort()}
   >
-    {#if albumViewSettings === option.title}
+    {#if $albumViewSettings.sortBy === option.title}
       {#if option.sortDesc}
         &#8595;
       {:else}

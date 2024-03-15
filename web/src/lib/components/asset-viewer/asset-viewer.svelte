@@ -13,7 +13,7 @@
   import { getAssetJobMessage, isSharedLink, handlePromiseError } from '$lib/utils';
   import { addAssetsToAlbum, downloadFile } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
+  import { shortcuts } from '$lib/utils/shortcut';
   import { SlideshowHistory } from '$lib/utils/slideshow-history';
   import {
     AssetJobName,
@@ -55,6 +55,7 @@
 
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
+  export let preloadAssets: AssetResponseDto[] = [];
   export let showNavigation = true;
   export let sharedLink: SharedLinkResponseDto | undefined = undefined;
   $: isTrashEnabled = $featureFlags.trash;
@@ -103,6 +104,11 @@
       $stackAssetsStore = [...$stackAssetsStore, asset].sort(
         (a, b) => new Date(b.fileCreatedAt).getTime() - new Date(a.fileCreatedAt).getTime(),
       );
+
+      // if its a stack, add the next stack image in addition to the next asset
+      if (asset.stackCount > 1) {
+        preloadAssets.push($stackAssetsStore[1]);
+      }
     }
 
     if (!$stackAssetsStore.map((a) => a.id).includes(asset.id)) {
@@ -250,68 +256,9 @@
     isShowActivity = !isShowActivity;
   };
 
-  const handleKeypress = async (event: KeyboardEvent) => {
-    if (shouldIgnoreShortcut(event)) {
-      return;
-    }
-
-    const key = event.key;
-    const shiftKey = event.shiftKey;
-    const ctrlKey = event.ctrlKey;
-
-    if (ctrlKey) {
-      return;
-    }
-
-    switch (key) {
-      case 'a':
-      case 'A': {
-        if (shiftKey) {
-          await toggleArchive();
-        }
-        return;
-      }
-      case 'ArrowLeft': {
-        await navigateAsset('previous');
-        return;
-      }
-      case 'ArrowRight': {
-        await navigateAsset('next');
-        return;
-      }
-      case 'd':
-      case 'D': {
-        if (shiftKey) {
-          await downloadFile(asset);
-        }
-        return;
-      }
-      case 'Delete': {
-        await trashOrDelete(shiftKey);
-        return;
-      }
-      case 'Escape': {
-        if (isShowDeleteConfirmation) {
-          isShowDeleteConfirmation = false;
-          return;
-        }
-        if (isShowShareModal) {
-          isShowShareModal = false;
-          return;
-        }
-        closeViewer();
-        return;
-      }
-      case 'f': {
-        await toggleFavorite();
-        return;
-      }
-      case 'i': {
-        isShowActivity = false;
-        $isShowDetail = !$isShowDetail;
-        return;
-      }
-    }
+  const toggleDetailPanel = () => {
+    isShowActivity = false;
+    $isShowDetail = !$isShowDetail;
   };
 
   const handleCloseViewer = () => {
@@ -551,7 +498,19 @@
   };
 </script>
 
-<svelte:window on:keydown={handleKeypress} />
+<svelte:window
+  use:shortcuts={[
+    { shortcut: { key: 'a', shift: true }, onShortcut: toggleArchive },
+    { shortcut: { key: 'ArrowLeft' }, onShortcut: () => navigateAsset('previous') },
+    { shortcut: { key: 'ArrowRight' }, onShortcut: () => navigateAsset('next') },
+    { shortcut: { key: 'd', shift: true }, onShortcut: () => downloadFile(asset) },
+    { shortcut: { key: 'Delete' }, onShortcut: () => trashOrDelete(false) },
+    { shortcut: { key: 'Delete', shift: true }, onShortcut: () => trashOrDelete(true) },
+    { shortcut: { key: 'Escape' }, onShortcut: closeViewer },
+    { shortcut: { key: 'f' }, onShortcut: toggleFavorite },
+    { shortcut: { key: 'i' }, onShortcut: toggleDetailPanel },
+  ]}
+/>
 
 <section
   id="immich-asset-viewer"
@@ -613,7 +572,7 @@
     {#if previewStackedAsset}
       {#key previewStackedAsset.id}
         {#if previewStackedAsset.type === AssetTypeEnum.Image}
-          <PhotoViewer asset={previewStackedAsset} on:close={closeViewer} haveFadeTransition={false} />
+          <PhotoViewer asset={previewStackedAsset} {preloadAssets} on:close={closeViewer} haveFadeTransition={false} />
         {:else}
           <VideoViewer
             assetId={previewStackedAsset.id}
@@ -645,7 +604,7 @@
                 .endsWith('.insp'))}
             <PanoramaViewer {asset} />
           {:else}
-            <PhotoViewer {asset} on:close={closeViewer} />
+            <PhotoViewer {asset} {preloadAssets} on:close={closeViewer} />
           {/if}
         {:else}
           <VideoViewer
@@ -676,7 +635,7 @@
         class="z-[1005] flex place-item-center place-content-center absolute bottom-0 w-full col-span-4 col-start-1 mb-1 overflow-x-auto horizontal-scrollbar"
       >
         <div class="relative w-full whitespace-nowrap transition-all">
-          {#each $stackAssetsStore as stackedAsset (stackedAsset.id)}
+          {#each $stackAssetsStore as stackedAsset, index (stackedAsset.id)}
             <div
               class="{stackedAsset.id == asset.id
                 ? '-translate-y-[1px]'
@@ -687,7 +646,10 @@
                   ? 'bg-transparent border-2 border-white'
                   : 'bg-gray-700/40'} inline-block hover:bg-transparent"
                 asset={stackedAsset}
-                on:click={() => (asset = stackedAsset)}
+                on:click={() => {
+                  asset = stackedAsset;
+                  preloadAssets = index + 1 >= $stackAssetsStore.length ? [] : [$stackAssetsStore[index + 1]];
+                }}
                 on:mouse-event={(e) => handleStackedAssetMouseEvent(e, stackedAsset)}
                 readonly
                 thumbnailSize={stackedAsset.id == asset.id ? 65 : 60}

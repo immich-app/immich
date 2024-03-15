@@ -71,6 +71,11 @@ void main() {
       // TODO
     });
 
+    // AssetOrder order
+    test('to test the property `order`', () async {
+      // TODO
+    });
+
     // UserResponseDto owner
     test('to test the property `owner`', () async {
       // TODO
