@@ -3,12 +3,10 @@ import { MapThemeDto } from '@app/domain/system-config/system-config-map-theme.d
 import { Body, Controller, Get, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AdminRoute, Authenticated } from '../app.guard';
-import { UseValidation } from '../app.utils';
 
 @ApiTags('System Config')
 @Controller('system-config')
 @Authenticated({ admin: true })
-@UseValidation()
 export class SystemConfigController {
   constructor(private readonly service: SystemConfigService) {}
 

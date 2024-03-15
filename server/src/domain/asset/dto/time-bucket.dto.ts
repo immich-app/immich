@@ -1,6 +1,7 @@
+import { AssetOrder } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
-import { ValidateBoolean, ValidateUUID } from '../../domain.util';
+import { Optional, ValidateBoolean, ValidateUUID } from '../../domain.util';
 import { TimeBucketSize } from '../../repositories';
 
 export class TimeBucketDto {
@@ -32,6 +33,11 @@ export class TimeBucketDto {
 
   @ValidateBoolean({ optional: true })
   withPartners?: boolean;
+
+  @IsEnum(AssetOrder)
+  @Optional()
+  @ApiProperty({ enum: AssetOrder, enumName: 'AssetOrder' })
+  order?: AssetOrder;
 }
 
 export class TimeBucketAssetDto extends TimeBucketDto {

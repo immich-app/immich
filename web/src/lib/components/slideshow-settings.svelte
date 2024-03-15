@@ -20,7 +20,7 @@
     [SlideshowNavigation.DescendingOrder]: { icon: mdiArrowDownThin, title: 'Forward' },
   };
 
-  export const handleToggle = (selectedOption: RenderedOption) => {
+  const handleToggle = (selectedOption: RenderedOption) => {
     for (const [key, option] of Object.entries(options)) {
       if (option === selectedOption) {
         $slideshowNavigation = key as SlideshowNavigation;

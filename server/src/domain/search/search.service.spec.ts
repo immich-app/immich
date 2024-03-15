@@ -76,7 +76,7 @@ describe(SearchService.name, () => {
         fieldName: 'smartInfo.tags',
         items: [{ value: 'train', data: assetStub.imageFrom2015.id }],
       });
-      assetMock.getByIds.mockResolvedValueOnce([assetStub.image, assetStub.imageFrom2015]);
+      assetMock.getByIdsWithAllRelations.mockResolvedValueOnce([assetStub.image, assetStub.imageFrom2015]);
       const expectedResponse = [
         { fieldName: 'exifInfo.city', items: [{ value: 'Paris', data: mapAsset(assetStub.image) }] },
         { fieldName: 'smartInfo.tags', items: [{ value: 'train', data: mapAsset(assetStub.imageFrom2015) }] },

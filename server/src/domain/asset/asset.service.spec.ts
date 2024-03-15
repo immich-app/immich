@@ -113,6 +113,7 @@ const validImages = [
   '.sr2',
   '.srf',
   '.srw',
+  '.svg',
   '.tiff',
   '.webp',
   '.x3f',

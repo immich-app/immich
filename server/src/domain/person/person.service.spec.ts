@@ -34,6 +34,7 @@ import {
   ISearchRepository,
   IStorageRepository,
   ISystemConfigRepository,
+  JobStatus,
   WithoutProperty,
 } from '../repositories';
 import { PersonResponseDto, mapFaces, mapPerson } from './person.dto';
@@ -357,7 +358,7 @@ describe(PersonService.name, () => {
   describe('handlePersonMigration', () => {
     it('should not move person files', async () => {
       personMock.getById.mockResolvedValue(null);
-      await expect(sut.handlePersonMigration(personStub.noName)).resolves.toStrictEqual(false);
+      await expect(sut.handlePersonMigration(personStub.noName)).resolves.toBe(JobStatus.FAILED);
     });
   });
 
@@ -454,10 +455,10 @@ describe(PersonService.name, () => {
   });
 
   describe('handleQueueDetectFaces', () => {
-    it('should return if machine learning is disabled', async () => {
+    it('should skip if machine learning is disabled', async () => {
       configMock.load.mockResolvedValue([{ key: SystemConfigKey.MACHINE_LEARNING_ENABLED, value: false }]);
 
-      await expect(sut.handleQueueDetectFaces({})).resolves.toBe(true);
+      await expect(sut.handleQueueDetectFaces({})).resolves.toBe(JobStatus.SKIPPED);
       expect(jobMock.queue).not.toHaveBeenCalled();
       expect(jobMock.queueAll).not.toHaveBeenCalled();
       expect(configMock.load).toHaveBeenCalled();
@@ -530,19 +531,19 @@ describe(PersonService.name, () => {
   });
 
   describe('handleQueueRecognizeFaces', () => {
-    it('should return if machine learning is disabled', async () => {
+    it('should skip if machine learning is disabled', async () => {
       jobMock.getJobCounts.mockResolvedValue({ active: 1, waiting: 0, paused: 0, completed: 0, failed: 0, delayed: 0 });
       configMock.load.mockResolvedValue([{ key: SystemConfigKey.MACHINE_LEARNING_ENABLED, value: false }]);
 
-      await expect(sut.handleQueueRecognizeFaces({})).resolves.toBe(true);
+      await expect(sut.handleQueueRecognizeFaces({})).resolves.toBe(JobStatus.SKIPPED);
       expect(jobMock.queueAll).not.toHaveBeenCalled();
       expect(configMock.load).toHaveBeenCalled();
     });
 
-    it('should return if recognition jobs are already queued', async () => {
+    it('should skip if recognition jobs are already queued', async () => {
       jobMock.getJobCounts.mockResolvedValue({ active: 1, waiting: 1, paused: 0, completed: 0, failed: 0, delayed: 0 });
 
-      await expect(sut.handleQueueRecognizeFaces({})).resolves.toBe(true);
+      await expect(sut.handleQueueRecognizeFaces({})).resolves.toBe(JobStatus.SKIPPED);
       expect(jobMock.queueAll).not.toHaveBeenCalled();
     });
 
@@ -612,10 +613,10 @@ describe(PersonService.name, () => {
   });
 
   describe('handleDetectFaces', () => {
-    it('should return if machine learning is disabled', async () => {
+    it('should skip if machine learning is disabled', async () => {
       configMock.load.mockResolvedValue([{ key: SystemConfigKey.MACHINE_LEARNING_ENABLED, value: false }]);
 
-      await expect(sut.handleDetectFaces({ id: 'foo' })).resolves.toBe(true);
+      await expect(sut.handleDetectFaces({ id: 'foo' })).resolves.toBe(JobStatus.SKIPPED);
       expect(assetMock.getByIds).not.toHaveBeenCalled();
       expect(configMock.load).toHaveBeenCalled();
     });
@@ -701,31 +702,31 @@ describe(PersonService.name, () => {
   });
 
   describe('handleRecognizeFaces', () => {
-    it('should return false if face does not exist', async () => {
+    it('should fail if face does not exist', async () => {
       personMock.getFaceByIdWithAssets.mockResolvedValue(null);
 
-      expect(await sut.handleRecognizeFaces({ id: faceStub.face1.id })).toBe(false);
+      expect(await sut.handleRecognizeFaces({ id: faceStub.face1.id })).toBe(JobStatus.FAILED);
 
       expect(personMock.reassignFaces).not.toHaveBeenCalled();
       expect(personMock.create).not.toHaveBeenCalled();
       expect(personMock.createFaces).not.toHaveBeenCalled();
     });
 
-    it('should return false if face does not have asset', async () => {
+    it('should fail if face does not have asset', async () => {
       const face = { ...faceStub.face1, asset: null } as AssetFaceEntity & { asset: null };
       personMock.getFaceByIdWithAssets.mockResolvedValue(face);
 
-      expect(await sut.handleRecognizeFaces({ id: faceStub.face1.id })).toBe(false);
+      expect(await sut.handleRecognizeFaces({ id: faceStub.face1.id })).toBe(JobStatus.FAILED);
 
       expect(personMock.reassignFaces).not.toHaveBeenCalled();
       expect(personMock.create).not.toHaveBeenCalled();
       expect(personMock.createFaces).not.toHaveBeenCalled();
     });
 
-    it('should return true if face already has an assigned person', async () => {
+    it('should skip if face already has an assigned person', async () => {
       personMock.getFaceByIdWithAssets.mockResolvedValue(faceStub.face1);
 
-      expect(await sut.handleRecognizeFaces({ id: faceStub.face1.id })).toBe(true);
+      expect(await sut.handleRecognizeFaces({ id: faceStub.face1.id })).toBe(JobStatus.SKIPPED);
 
       expect(personMock.reassignFaces).not.toHaveBeenCalled();
       expect(personMock.create).not.toHaveBeenCalled();
@@ -852,10 +853,10 @@ describe(PersonService.name, () => {
   });
 
   describe('handleGeneratePersonThumbnail', () => {
-    it('should return if machine learning is disabled', async () => {
+    it('should skip if machine learning is disabled', async () => {
       configMock.load.mockResolvedValue([{ key: SystemConfigKey.MACHINE_LEARNING_ENABLED, value: false }]);
 
-      await expect(sut.handleGeneratePersonThumbnail({ id: 'person-1' })).resolves.toBe(true);
+      await expect(sut.handleGeneratePersonThumbnail({ id: 'person-1' })).resolves.toBe(JobStatus.SKIPPED);
       expect(assetMock.getByIds).not.toHaveBeenCalled();
       expect(configMock.load).toHaveBeenCalled();
     });

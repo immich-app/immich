@@ -316,6 +316,8 @@ class BackupService {
 
           req.files.add(assetRawUploadData);
 
+          var fileSize = file.lengthSync();
+
           if (entity.isLivePhoto) {
             if (livePhotoFile != null) {
               final livePhotoTitle = p.setExtension(
@@ -330,6 +332,7 @@ class BackupService {
                 filename: livePhotoTitle,
               );
               req.files.add(livePhotoRawUploadData);
+              fileSize += livePhotoFile.lengthSync();
             } else {
               _log.warning(
                 "Failed to obtain motion part of the livePhoto - $originalFileName",
@@ -345,6 +348,7 @@ class BackupService {
                   : entity.createDateTime,
               fileName: originalFileName,
               fileType: _getAssetType(entity.type),
+              fileSize: fileSize,
               iCloudAsset: false,
             ),
           );

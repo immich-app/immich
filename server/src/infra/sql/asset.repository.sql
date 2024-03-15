@@ -189,6 +189,42 @@ SELECT
   "AssetEntity"."livePhotoVideoId" AS "AssetEntity_livePhotoVideoId",
   "AssetEntity"."originalFileName" AS "AssetEntity_originalFileName",
   "AssetEntity"."sidecarPath" AS "AssetEntity_sidecarPath",
+  "AssetEntity"."stackId" AS "AssetEntity_stackId"
+FROM
+  "assets" "AssetEntity"
+WHERE
+  (("AssetEntity"."id" IN ($1)))
+
+-- AssetRepository.getByIdsWithAllRelations
+SELECT
+  "AssetEntity"."id" AS "AssetEntity_id",
+  "AssetEntity"."deviceAssetId" AS "AssetEntity_deviceAssetId",
+  "AssetEntity"."ownerId" AS "AssetEntity_ownerId",
+  "AssetEntity"."libraryId" AS "AssetEntity_libraryId",
+  "AssetEntity"."deviceId" AS "AssetEntity_deviceId",
+  "AssetEntity"."type" AS "AssetEntity_type",
+  "AssetEntity"."originalPath" AS "AssetEntity_originalPath",
+  "AssetEntity"."resizePath" AS "AssetEntity_resizePath",
+  "AssetEntity"."webpPath" AS "AssetEntity_webpPath",
+  "AssetEntity"."thumbhash" AS "AssetEntity_thumbhash",
+  "AssetEntity"."encodedVideoPath" AS "AssetEntity_encodedVideoPath",
+  "AssetEntity"."createdAt" AS "AssetEntity_createdAt",
+  "AssetEntity"."updatedAt" AS "AssetEntity_updatedAt",
+  "AssetEntity"."deletedAt" AS "AssetEntity_deletedAt",
+  "AssetEntity"."fileCreatedAt" AS "AssetEntity_fileCreatedAt",
+  "AssetEntity"."localDateTime" AS "AssetEntity_localDateTime",
+  "AssetEntity"."fileModifiedAt" AS "AssetEntity_fileModifiedAt",
+  "AssetEntity"."isFavorite" AS "AssetEntity_isFavorite",
+  "AssetEntity"."isArchived" AS "AssetEntity_isArchived",
+  "AssetEntity"."isExternal" AS "AssetEntity_isExternal",
+  "AssetEntity"."isReadOnly" AS "AssetEntity_isReadOnly",
+  "AssetEntity"."isOffline" AS "AssetEntity_isOffline",
+  "AssetEntity"."checksum" AS "AssetEntity_checksum",
+  "AssetEntity"."duration" AS "AssetEntity_duration",
+  "AssetEntity"."isVisible" AS "AssetEntity_isVisible",
+  "AssetEntity"."livePhotoVideoId" AS "AssetEntity_livePhotoVideoId",
+  "AssetEntity"."originalFileName" AS "AssetEntity_originalFileName",
+  "AssetEntity"."sidecarPath" AS "AssetEntity_sidecarPath",
   "AssetEntity"."stackId" AS "AssetEntity_stackId",
   "AssetEntity__AssetEntity_exifInfo"."assetId" AS "AssetEntity__AssetEntity_exifInfo_assetId",
   "AssetEntity__AssetEntity_exifInfo"."description" AS "AssetEntity__AssetEntity_exifInfo_description",

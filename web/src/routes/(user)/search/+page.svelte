@@ -20,7 +20,7 @@
   import { AppRoute, QueryParameter } from '$lib/constants';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { preventRaceConditionSearchBar } from '$lib/stores/search.store';
-  import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
+  import { shortcut } from '$lib/utils/shortcut';
   import {
     type AssetResponseDto,
     searchSmart,
@@ -52,27 +52,19 @@
   let searchResultAssets: AssetResponseDto[] = [];
   let isLoading = true;
 
-  const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
-
-  const handleKeyboardPress = async (event: KeyboardEvent) => {
-    if (shouldIgnoreShortcut(event)) {
+  const onEscape = () => {
+    if ($showAssetViewer) {
       return;
     }
-    if (!$showAssetViewer) {
-      switch (event.key) {
-        case 'Escape': {
-          if (isMultiSelectionMode) {
-            selectedAssets = new Set();
-            return;
-          }
-          if (!$preventRaceConditionSearchBar) {
-            await goto(previousRoute);
-          }
-          $preventRaceConditionSearchBar = false;
-          return;
-        }
-      }
+
+    if (isMultiSelectionMode) {
+      selectedAssets = new Set();
+      return;
     }
+    if (!$preventRaceConditionSearchBar) {
+      handlePromiseError(goto(previousRoute));
+    }
+    $preventRaceConditionSearchBar = false;
   };
 
   afterNavigate(({ from }) => {
@@ -201,7 +193,7 @@
   }
 </script>
 
-<svelte:document on:keydown={onKeyboardPress} />
+<svelte:window use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: onEscape }} />
 
 <section>
   {#if isMultiSelectionMode}
@@ -275,16 +267,10 @@
     {#if searchResultAlbums.length > 0}
       <section>
         <div class="ml-6 text-4xl font-medium text-black/70 dark:text-white/80">ALBUMS</div>
-        <div class="grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))]">
+        <div class="grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))] mt-4 gap-y-4">
           {#each searchResultAlbums as album, index (album.id)}
             <a data-sveltekit-preload-data="hover" href={`albums/${album.id}`} animate:flip={{ duration: 200 }}>
-              <AlbumCard
-                preload={index < 20}
-                {album}
-                isSharingView={false}
-                showItemCount={false}
-                showContextMenu={false}
-              />
+              <AlbumCard preload={index < 20} {album} isSharingView={false} showItemCount={false} />
             </a>
           {/each}
         </div>

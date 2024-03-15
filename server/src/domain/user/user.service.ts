@@ -14,6 +14,7 @@ import {
   IStorageRepository,
   ISystemConfigRepository,
   IUserRepository,
+  JobStatus,
   UserFindOptions,
 } from '../repositories';
 import { StorageCore, StorageFolder } from '../storage';
@@ -143,12 +144,12 @@ export class UserService {
     return { admin, password, provided: !!providedPassword };
   }
 
-  async handleUserSyncUsage() {
+  async handleUserSyncUsage(): Promise<JobStatus> {
     await this.userRepository.syncUsage();
-    return true;
+    return JobStatus.SUCCESS;
   }
 
-  async handleUserDeleteCheck() {
+  async handleUserDeleteCheck(): Promise<JobStatus> {
     const users = await this.userRepository.getDeletedUsers();
     const config = await this.configCore.getConfig();
     await this.jobRepository.queueAll(
@@ -158,20 +159,20 @@ export class UserService {
           : [],
       ),
     );
-    return true;
+    return JobStatus.SUCCESS;
   }
 
-  async handleUserDelete({ id, force }: IEntityJob) {
+  async handleUserDelete({ id, force }: IEntityJob): Promise<JobStatus> {
     const config = await this.configCore.getConfig();
     const user = await this.userRepository.get(id, { withDeleted: true });
     if (!user) {
-      return false;
+      return JobStatus.FAILED;
     }
 
     // just for extra protection here
     if (!force && !this.isReadyForDeletion(user, config.user.deleteDelay)) {
       this.logger.warn(`Skipped user that was not ready for deletion: id=${id}`);
-      return false;
+      return JobStatus.SKIPPED;
     }
 
     this.logger.log(`Deleting user: ${user.id}`);
@@ -193,7 +194,7 @@ export class UserService {
     await this.albumRepository.deleteAll(user.id);
     await this.userRepository.delete(user, true);
 
-    return true;
+    return JobStatus.SUCCESS;
   }
 
   private isReadyForDeletion(user: UserEntity, deleteDelay: number): boolean {

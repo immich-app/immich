@@ -178,7 +178,7 @@
               {showArchiveIcon}
               {asset}
               {groupIndex}
-              on:click={() => assetClickHandler(asset, groupAssets, groupTitle)}
+              onClick={() => assetClickHandler(asset, groupAssets, groupTitle)}
               on:select={() => assetSelectHandler(asset, groupAssets, groupTitle)}
               on:mouse-event={() => assetMouseEventHandler(groupTitle, asset)}
               selected={$selectedAssets.has(asset) || $assetStore.albumAssets.has(asset.id)}
