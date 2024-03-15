@@ -11,46 +11,108 @@
 
 <script lang="ts">
   import { fly } from 'svelte/transition';
-
   import Icon from '$lib/components/elements/icon.svelte';
   import { mdiMagnify, mdiUnfoldMoreHorizontal, mdiClose } from '@mdi/js';
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, tick } from 'svelte';
   import IconButton from '../elements/buttons/icon-button.svelte';
   import type { FormEventHandler } from 'svelte/elements';
+  import { shortcuts } from '$lib/utils/shortcut';
+  import { onMount, onDestroy } from 'svelte';
 
   export let label: string;
+  export let hideLabel = false;
   export let options: ComboBoxOption[] = [];
   export let selectedOption: ComboBoxOption | undefined;
   export let placeholder = '';
 
+  /**
+   * Indicates whether or not the dropdown autocomplete list should be visible.
+   */
   let isOpen = false;
+  /**
+   * Keeps track of whether the combobox is actively being used.
+   */
+  let isActive = false;
   let searchQuery = selectedOption?.label || '';
   let selectedIndex: number | undefined;
+  let comboboxRef: HTMLElement;
+  let optionRefs: HTMLElement[] = [];
   const inputId = `combobox-${crypto.randomUUID()}`;
   const listboxId = `listbox-${crypto.randomUUID()}`;
 
   $: filteredOptions = options.filter((option) => option.label.toLowerCase().includes(searchQuery.toLowerCase()));
+
+  onMount(() => {
+    window.addEventListener('click', onClick);
+  });
+
+  onDestroy(() => {
+    window.removeEventListener('click', onClick);
+  });
 
   const dispatch = createEventDispatcher<{
     select: ComboBoxOption | undefined;
     click: void;
   }>();
 
-  const handleFocus = () => {
-    searchQuery = '';
-    isOpen = true;
-    dispatch('click'); // TODO: verify this
+  const activate = () => {
+    isActive = true;
+    openDropdown();
   };
 
-  // let handleBlur = () => {
-  //   isOpen = false;
-  //   selectedIndex = undefined;
-  // };
+  const deactivate = () => {
+    searchQuery = selectedOption ? selectedOption.label : '';
+    isActive = false;
+    closeDropdown();
+  };
 
-  let handleSelect = (option: ComboBoxOption) => {
-    selectedOption = option;
-    dispatch('select', option);
+  const openDropdown = () => {
+    isOpen = true;
+  };
+
+  const closeDropdown = () => {
     isOpen = false;
+    selectedIndex = undefined;
+  };
+
+  const moveFocus = (event: KeyboardEvent) => {
+    // move focus to the next focusable element
+    const focusableElements = document.querySelectorAll(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+    ) as NodeListOf<HTMLElement>;
+    const focusableElementIndex = Array.prototype.indexOf.call(focusableElements, event.target);
+    // focus next element
+    if (event.shiftKey) {
+      focusableElements[focusableElementIndex - 1]?.focus();
+    } else {
+      focusableElements[focusableElementIndex + 1]?.focus();
+    }
+  };
+
+  const incrementSelectedIndex = async (increment: number) => {
+    if (filteredOptions.length === 0) {
+      selectedIndex = 0;
+    } else if (selectedIndex === undefined) {
+      selectedIndex = increment === 1 ? 0 : filteredOptions.length - 1;
+    } else {
+      selectedIndex = (selectedIndex + increment + filteredOptions.length) % filteredOptions.length;
+    }
+    await tick();
+    optionRefs[selectedIndex]?.scrollIntoView({ block: 'nearest' });
+  };
+
+  const onInput: FormEventHandler<HTMLInputElement> = (event) => {
+    openDropdown();
+    searchQuery = (event.target as HTMLInputElement).value;
+    selectedIndex = undefined;
+    optionRefs[0]?.scrollIntoView({ block: 'nearest' });
+  };
+
+  let onSelect = (option: ComboBoxOption) => {
+    selectedOption = option;
+    searchQuery = option.label;
+    dispatch('select', option);
+    closeDropdown();
   };
 
   const onClear = () => {
@@ -59,50 +121,18 @@
     dispatch('select', selectedOption);
   };
 
-  // create a method to increment or decrement the selected index, looping around to the other end of the list if at the beginning or end
-  const incrementSelectedIndex = (increment: number) => {
-    if (filteredOptions.length === 0) {
-      selectedIndex = 0;
-      return;
+  const onClick = (event: MouseEvent) => {
+    const target = event.target as HTMLElement;
+    if (comboboxRef && !comboboxRef.contains(target)) {
+      deactivate();
     }
-
-    if (selectedIndex === undefined) {
-      selectedIndex = -1;
-    }
-
-    selectedIndex = (selectedIndex + increment + filteredOptions.length) % filteredOptions.length;
-  };
-
-  const handleKeydown = (event: KeyboardEvent) => {
-    switch (event.key) {
-      case 'ArrowUp': {
-        incrementSelectedIndex(-1);
-        break;
-      }
-      case 'ArrowDown': {
-        isOpen = true;
-        incrementSelectedIndex(1);
-        break;
-      }
-      case 'Enter': {
-        if (selectedIndex !== undefined) {
-          handleSelect(filteredOptions[selectedIndex]);
-        }
-        break;
-      }
-    }
-  };
-
-  const handleInput: FormEventHandler<HTMLInputElement> = (event) => {
-    searchQuery = (event.target as HTMLInputElement).value;
-    selectedIndex = undefined;
   };
 </script>
 
-<label class="text-sm text-black dark:text-white" for={inputId}>{label}</label>
-<div class="relative w-full dark:text-gray-300 text-gray-700 text-base">
+<label class="text-sm text-black dark:text-white" class:sr-only={hideLabel} for={inputId}>{label}</label>
+<div class="relative w-full dark:text-gray-300 text-gray-700 text-base" bind:this={comboboxRef}>
   <div>
-    {#if isOpen}
+    {#if isActive}
       <div class="absolute inset-y-0 left-0 flex items-center pl-3">
         <div class="dark:text-immich-dark-fg/75">
           <Icon path={mdiMagnify} ariaHidden={true} />
@@ -111,20 +141,74 @@
     {/if}
 
     <input
-      id={inputId}
       {placeholder}
-      role="combobox"
-      aria-expanded={isOpen}
-      aria-controls={listboxId}
+      aria-activedescendant={selectedIndex || selectedIndex === 0 ? `${listboxId}-${selectedIndex}` : ''}
       aria-autocomplete="list"
-      class="immich-form-input text-sm text-left w-full !pr-12 transition-all"
-      class:!pl-8={isOpen}
+      aria-controls={listboxId}
+      aria-expanded={isOpen}
+      autocomplete="off"
+      class:!pl-8={isActive}
       class:!rounded-b-none={isOpen}
-      class:cursor-pointer={!isOpen}
-      value={isOpen ? '' : selectedOption?.label || ''}
-      on:input={handleInput}
-      on:focus={handleFocus}
-      on:keydown={handleKeydown}
+      class:cursor-pointer={!isActive}
+      class="immich-form-input text-sm text-left w-full !pr-12 transition-all"
+      id={inputId}
+      on:click={activate}
+      on:focus={activate}
+      on:input={onInput}
+      role="combobox"
+      type="text"
+      value={searchQuery}
+      use:shortcuts={[
+        {
+          shortcut: { key: 'Tab' },
+          onShortcut: (event) => {
+            deactivate();
+            moveFocus(event);
+          },
+        },
+        {
+          shortcut: { key: 'Tab', shift: true },
+          onShortcut: (event) => {
+            deactivate();
+            moveFocus(event);
+          },
+        },
+        {
+          shortcut: { key: 'ArrowUp' },
+          onShortcut: () => {
+            openDropdown();
+            void incrementSelectedIndex(-1);
+          },
+        },
+        {
+          shortcut: { key: 'ArrowDown' },
+          onShortcut: () => {
+            openDropdown();
+            void incrementSelectedIndex(1);
+          },
+        },
+        {
+          shortcut: { key: 'ArrowDown', alt: true },
+          onShortcut: () => {
+            openDropdown();
+          },
+        },
+        {
+          shortcut: { key: 'Enter' },
+          onShortcut: () => {
+            if (selectedIndex !== undefined && filteredOptions.length > 0) {
+              onSelect(filteredOptions[selectedIndex]);
+            }
+            closeDropdown();
+          },
+        },
+        {
+          shortcut: { key: 'Escape' },
+          onShortcut: () => {
+            closeDropdown();
+          },
+        },
+      ]}
     />
 
     <div
@@ -134,7 +218,7 @@
     >
       {#if selectedOption}
         <IconButton color="transparent-gray" on:click={onClear} title="Clear value">
-          <Icon path={mdiClose} ariaLabel="Clear" />
+          <Icon path={mdiClose} ariaLabel="Clear value" />
         </IconButton>
       {:else if !isOpen}
         <Icon path={mdiUnfoldMoreHorizontal} ariaHidden={true} />
@@ -142,31 +226,44 @@
     </div>
   </div>
 
-  <div
+  <ul
     role="listbox"
     id={listboxId}
     transition:fly={{ duration: 250 }}
-    class="absolute text-left text-sm w-full max-h-64 overflow-y-auto bg-white dark:bg-gray-800 rounded-b-lg border border-t-0 border-gray-300 dark:border-gray-900 z-10"
+    class="absolute text-left text-sm w-full max-h-64 overflow-y-auto bg-white dark:bg-gray-800 r unded-b-lg border border-t-0 border-gray-300 dark:border-gray-900 rounded-b-xl z-10"
     tabindex="-1"
   >
     {#if isOpen}
       {#if filteredOptions.length === 0}
-        <div class="px-4 py-2 font-medium">No results</div>
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <li
+          role="option"
+          aria-selected={selectedIndex === 0}
+          aria-disabled={true}
+          class:bg-gray-100={selectedIndex === 0}
+          class:dark:bg-gray-700={selectedIndex === 0}
+          class="text-left w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-default"
+          id={`${listboxId}-${0}`}
+          on:click={() => closeDropdown()}
+        >
+          No results
+        </li>
       {/if}
       {#each filteredOptions as option, index (option.label)}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <div
-          role="option"
+        <li
           aria-selected={index === selectedIndex}
-          class="text-left w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
+          bind:this={optionRefs[index]}
           class:bg-gray-100={index === selectedIndex}
           class:dark:bg-gray-700={index === selectedIndex}
-          on:click={() => handleSelect(option)}
-          tabindex="-1"
+          class="text-left w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all cursor-pointer"
+          id={`${listboxId}-${index}`}
+          on:click={() => onSelect(option)}
+          role="option"
         >
           {option.label}
-        </div>
+        </li>
       {/each}
     {/if}
-  </div>
+  </ul>
 </div>

@@ -33,6 +33,7 @@
   <div class="flex items-center">
     <Combobox
       label={title}
+      hideLabel={true}
       {selectedOption}
       {options}
       placeholder={comboboxPlaceholder}
