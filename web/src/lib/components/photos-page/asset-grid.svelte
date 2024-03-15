@@ -220,7 +220,7 @@
 
     if (matchesShortcut(event, { key: 'Shift' })) {
       event.preventDefault();
-      shiftKeyIsDown = true;
+      shiftKeyIsDown = false;
     }
   };
 
