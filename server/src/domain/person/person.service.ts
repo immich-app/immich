@@ -490,19 +490,23 @@ export class PersonService {
       imageHeight,
     } = face;
 
-    const [asset] = await this.assetRepository.getByIds([assetId]);
-    if (!asset?.resizePath) {
+    const asset = await this.assetRepository.getById(assetId, { exifInfo: true });
+    if (!asset?.exifInfo?.exifImageHeight || !asset?.exifInfo?.exifImageWidth) {
       return false;
     }
+
     this.logger.verbose(`Cropping face for person: ${person.id}`);
     const thumbnailPath = StorageCore.getPersonThumbnailPath(person);
     this.storageCore.ensureFolders(thumbnailPath);
 
-    const halfWidth = (x2 - x1) / 2;
-    const halfHeight = (y2 - y1) / 2;
+    const widthScale = asset.exifInfo.exifImageWidth / imageWidth;
+    const heightScale = asset.exifInfo.exifImageHeight / imageHeight;
 
-    const middleX = Math.round(x1 + halfWidth);
-    const middleY = Math.round(y1 + halfHeight);
+    const halfWidth = (widthScale * (x2 - x1)) / 2;
+    const halfHeight = (heightScale * (y2 - y1)) / 2;
+
+    const middleX = Math.round(widthScale * x1 + halfWidth);
+    const middleY = Math.round(heightScale * y1 + halfHeight);
 
     // zoom out 10%
     const targetHalfSize = Math.floor(Math.max(halfWidth, halfHeight) * 1.1);
@@ -511,8 +515,8 @@ export class PersonService {
     const newHalfSize = Math.min(
       middleX - Math.max(0, middleX - targetHalfSize),
       middleY - Math.max(0, middleY - targetHalfSize),
-      Math.min(imageWidth - 1, middleX + targetHalfSize) - middleX,
-      Math.min(imageHeight - 1, middleY + targetHalfSize) - middleY,
+      Math.min(asset.exifInfo.exifImageWidth - 1, middleX + targetHalfSize) - middleX,
+      Math.min(asset.exifInfo.exifImageHeight - 1, middleY + targetHalfSize) - middleY,
     );
 
     const cropOptions: CropOptions = {
@@ -522,15 +526,15 @@ export class PersonService {
       height: newHalfSize * 2,
     };
 
-    const croppedOutput = await this.mediaRepository.crop(asset.resizePath, cropOptions);
     const thumbnailOptions = {
       format: 'jpeg',
       size: FACE_THUMBNAIL_SIZE,
       colorspace: thumbnail.colorspace,
       quality: thumbnail.quality,
+      crop: cropOptions,
     } as const;
 
-    await this.mediaRepository.resize(croppedOutput, thumbnailPath, thumbnailOptions);
+    await this.mediaRepository.generateThumbnail(asset.originalPath, thumbnailPath, thumbnailOptions);
     await this.repository.update({ id: person.id, thumbnailPath });
 
     return true;

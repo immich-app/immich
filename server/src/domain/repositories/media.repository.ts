@@ -3,11 +3,19 @@ import { Writable } from 'node:stream';
 
 export const IMediaRepository = 'IMediaRepository';
 
-export interface ResizeOptions {
+export interface CropOptions {
+  top: number;
+  left: number;
+  width: number;
+  height: number;
+}
+
+export interface ThumbnailOptions {
   size: number;
   format: 'webp' | 'jpeg';
   colorspace: string;
   quality: number;
+  crop?: CropOptions;
 }
 
 export interface VideoStreamInfo {
@@ -40,13 +48,6 @@ export interface VideoInfo {
   audioStreams: AudioStreamInfo[];
 }
 
-export interface CropOptions {
-  top: number;
-  left: number;
-  width: number;
-  height: number;
-}
-
 export interface TranscodeOptions {
   inputOptions: string[];
   outputOptions: string[];
@@ -70,8 +71,7 @@ export interface VideoCodecHWConfig extends VideoCodecSWConfig {
 
 export interface IMediaRepository {
   // image
-  resize(input: string | Buffer, output: string, options: ResizeOptions): Promise<void>;
-  crop(input: string, options: CropOptions): Promise<Buffer>;
+  generateThumbnail(input: string | Buffer, output: string, options: ThumbnailOptions): Promise<void>;
   generateThumbhash(imagePath: string): Promise<Buffer>;
 
   // video

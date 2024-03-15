@@ -186,7 +186,7 @@ export class MediaService {
       case AssetType.IMAGE: {
         const colorspace = this.isSRGB(asset) ? Colorspace.SRGB : thumbnail.colorspace;
         const thumbnailOptions = { format, size, colorspace, quality: thumbnail.quality };
-        await this.mediaRepository.resize(asset.originalPath, path, thumbnailOptions);
+        await this.mediaRepository.generateThumbnail(asset.originalPath, path, thumbnailOptions);
         break;
       }
 

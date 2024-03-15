@@ -1,11 +1,4 @@
-import {
-  CropOptions,
-  IMediaRepository,
-  ResizeOptions,
-  TranscodeOptions,
-  VideoInfo,
-  handlePromiseError,
-} from '@app/domain';
+import { IMediaRepository, ThumbnailOptions, TranscodeOptions, VideoInfo, handlePromiseError } from '@app/domain';
 import { Colorspace } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
@@ -23,21 +16,16 @@ sharp.cache({ files: 0 });
 export class MediaRepository implements IMediaRepository {
   private logger = new ImmichLogger(MediaRepository.name);
 
-  crop(input: string | Buffer, options: CropOptions): Promise<Buffer> {
-    return sharp(input, { failOn: 'none' })
-      .pipelineColorspace('rgb16')
-      .extract({
-        left: options.left,
-        top: options.top,
-        width: options.width,
-        height: options.height,
-      })
-      .toBuffer();
-  }
+  async generateThumbnail(input: string | Buffer, output: string, options: ThumbnailOptions): Promise<void> {
+    const pipeline = sharp(input, { failOn: 'none' }).pipelineColorspace(
+      options.colorspace === Colorspace.SRGB ? 'srgb' : 'rgb16',
+    );
 
-  async resize(input: string | Buffer, output: string, options: ResizeOptions): Promise<void> {
-    await sharp(input, { failOn: 'none' })
-      .pipelineColorspace(options.colorspace === Colorspace.SRGB ? 'srgb' : 'rgb16')
+    if (options.crop) {
+      pipeline.extract(options.crop);
+    }
+
+    await pipeline
       .resize(options.size, options.size, { fit: 'outside', withoutEnlargement: true })
       .rotate()
       .withIccProfile(options.colorspace)
