@@ -1,11 +1,12 @@
 import { IPartnerRepository } from '@app/domain';
+import { Mocked } from 'vitest';
 
-export const newPartnerRepositoryMock = (): jest.Mocked<IPartnerRepository> => {
+export const newPartnerRepositoryMock = (): Mocked<IPartnerRepository> => {
   return {
-    create: jest.fn(),
-    remove: jest.fn(),
-    getAll: jest.fn(),
-    get: jest.fn(),
-    update: jest.fn(),
+    create: vi.fn(),
+    remove: vi.fn(),
+    getAll: vi.fn(),
+    get: vi.fn(),
+    update: vi.fn(),
   };
 };

@@ -7,6 +7,7 @@ import {
   newSystemMetadataRepositoryMock,
   newUserRepositoryMock,
 } from '@test';
+import { Mocked } from 'vitest';
 import { serverVersion } from '../domain.constant';
 import {
   ICommunicationRepository,
@@ -20,12 +21,12 @@ import { ServerInfoService } from './server-info.service';
 
 describe(ServerInfoService.name, () => {
   let sut: ServerInfoService;
-  let communicationMock: jest.Mocked<ICommunicationRepository>;
-  let configMock: jest.Mocked<ISystemConfigRepository>;
-  let serverInfoMock: jest.Mocked<IServerInfoRepository>;
-  let storageMock: jest.Mocked<IStorageRepository>;
-  let userMock: jest.Mocked<IUserRepository>;
-  let systemMetadataMock: jest.Mocked<ISystemMetadataRepository>;
+  let communicationMock: Mocked<ICommunicationRepository>;
+  let configMock: Mocked<ISystemConfigRepository>;
+  let serverInfoMock: Mocked<IServerInfoRepository>;
+  let storageMock: Mocked<IStorageRepository>;
+  let userMock: Mocked<IUserRepository>;
+  let systemMetadataMock: Mocked<ISystemMetadataRepository>;
 
   beforeEach(() => {
     configMock = newSystemConfigRepositoryMock();

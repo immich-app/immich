@@ -1,12 +1,13 @@
 import { IKeyRepository } from '@app/domain';
+import { Mocked } from 'vitest';
 
-export const newKeyRepositoryMock = (): jest.Mocked<IKeyRepository> => {
+export const newKeyRepositoryMock = (): Mocked<IKeyRepository> => {
   return {
-    create: jest.fn(),
-    update: jest.fn(),
-    delete: jest.fn(),
-    getKey: jest.fn(),
-    getById: jest.fn(),
-    getByUserId: jest.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    getKey: vi.fn(),
+    getById: vi.fn(),
+    getByUserId: vi.fn(),
   };
 };

@@ -1,12 +1,13 @@
 import { ISharedLinkRepository } from '@app/domain';
+import { Mocked } from 'vitest';
 
-export const newSharedLinkRepositoryMock = (): jest.Mocked<ISharedLinkRepository> => {
+export const newSharedLinkRepositoryMock = (): Mocked<ISharedLinkRepository> => {
   return {
-    getAll: jest.fn(),
-    get: jest.fn(),
-    getByKey: jest.fn(),
-    create: jest.fn(),
-    remove: jest.fn(),
-    update: jest.fn(),
+    getAll: vi.fn(),
+    get: vi.fn(),
+    getByKey: vi.fn(),
+    create: vi.fn(),
+    remove: vi.fn(),
+    update: vi.fn(),
   };
 };

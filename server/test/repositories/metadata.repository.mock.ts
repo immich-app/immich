@@ -1,17 +1,18 @@
 import { IMetadataRepository } from '@app/domain';
+import { Mocked } from 'vitest';
 
-export const newMetadataRepositoryMock = (): jest.Mocked<IMetadataRepository> => {
+export const newMetadataRepositoryMock = (): Mocked<IMetadataRepository> => {
   return {
-    init: jest.fn(),
-    teardown: jest.fn(),
-    reverseGeocode: jest.fn(),
-    readTags: jest.fn(),
-    writeTags: jest.fn(),
-    extractBinaryTag: jest.fn(),
-    getCameraMakes: jest.fn(),
-    getCameraModels: jest.fn(),
-    getCities: jest.fn(),
-    getCountries: jest.fn(),
-    getStates: jest.fn(),
+    init: vi.fn(),
+    teardown: vi.fn(),
+    reverseGeocode: vi.fn(),
+    readTags: vi.fn(),
+    writeTags: vi.fn(),
+    extractBinaryTag: vi.fn(),
+    getCameraMakes: vi.fn(),
+    getCameraModels: vi.fn(),
+    getCities: vi.fn(),
+    getCountries: vi.fn(),
+    getStates: vi.fn(),
   };
 };

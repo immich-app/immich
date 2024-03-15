@@ -1,16 +1,17 @@
 import { ITagRepository } from '@app/domain';
+import { Mocked } from 'vitest';
 
-export const newTagRepositoryMock = (): jest.Mocked<ITagRepository> => {
+export const newTagRepositoryMock = (): Mocked<ITagRepository> => {
   return {
-    getAll: jest.fn(),
-    getById: jest.fn(),
-    create: jest.fn(),
-    update: jest.fn(),
-    remove: jest.fn(),
-    hasAsset: jest.fn(),
-    hasName: jest.fn(),
-    getAssets: jest.fn(),
-    addAssets: jest.fn(),
-    removeAssets: jest.fn(),
+    getAll: vi.fn(),
+    getById: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    remove: vi.fn(),
+    hasAsset: vi.fn(),
+    hasName: vi.fn(),
+    getAssets: vi.fn(),
+    addAssets: vi.fn(),
+    removeAssets: vi.fn(),
   };
 };

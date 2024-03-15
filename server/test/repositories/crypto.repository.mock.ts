@@ -1,13 +1,14 @@
 import { ICryptoRepository } from '@app/domain';
+import { Mocked } from 'vitest';
 
-export const newCryptoRepositoryMock = (): jest.Mocked<ICryptoRepository> => {
+export const newCryptoRepositoryMock = (): Mocked<ICryptoRepository> => {
   return {
-    randomUUID: jest.fn().mockReturnValue('random-uuid'),
-    randomBytes: jest.fn().mockReturnValue(Buffer.from('random-bytes', 'utf8')),
-    compareBcrypt: jest.fn().mockReturnValue(true),
-    hashBcrypt: jest.fn().mockImplementation((input) => Promise.resolve(`${input} (hashed)`)),
-    hashSha256: jest.fn().mockImplementation((input) => `${input} (hashed)`),
-    hashSha1: jest.fn().mockImplementation((input) => Buffer.from(`${input.toString()} (hashed)`)),
-    hashFile: jest.fn().mockImplementation((input) => `${input} (file-hashed)`),
+    randomUUID: vi.fn().mockReturnValue('random-uuid'),
+    randomBytes: vi.fn().mockReturnValue(Buffer.from('random-bytes', 'utf8')),
+    compareBcrypt: vi.fn().mockReturnValue(true),
+    hashBcrypt: vi.fn().mockImplementation((input) => Promise.resolve(`${input} (hashed)`)),
+    hashSha256: vi.fn().mockImplementation((input) => `${input} (hashed)`),
+    hashSha1: vi.fn().mockImplementation((input) => Buffer.from(`${input.toString()} (hashed)`)),
+    hashFile: vi.fn().mockImplementation((input) => `${input} (file-hashed)`),
   };
 };

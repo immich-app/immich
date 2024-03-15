@@ -11,6 +11,7 @@ import {
   userStub,
 } from '@test';
 import _ from 'lodash';
+import { Mocked } from 'vitest';
 import { BulkIdErrorReason } from '../asset';
 import { IAlbumRepository, IAssetRepository, IJobRepository, IUserRepository } from '../repositories';
 import { AlbumService } from './album.service';
@@ -18,10 +19,10 @@ import { AlbumService } from './album.service';
 describe(AlbumService.name, () => {
   let sut: AlbumService;
   let accessMock: IAccessRepositoryMock;
-  let albumMock: jest.Mocked<IAlbumRepository>;
-  let assetMock: jest.Mocked<IAssetRepository>;
-  let jobMock: jest.Mocked<IJobRepository>;
-  let userMock: jest.Mocked<IUserRepository>;
+  let albumMock: Mocked<IAlbumRepository>;
+  let assetMock: Mocked<IAssetRepository>;
+  let jobMock: Mocked<IJobRepository>;
+  let userMock: Mocked<IUserRepository>;
 
   beforeEach(() => {
     accessMock = newAccessRepositoryMock();

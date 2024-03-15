@@ -1,12 +1,13 @@
 import { BadRequestException } from '@nestjs/common';
 import { authStub, keyStub, newCryptoRepositoryMock, newKeyRepositoryMock } from '@test';
+import { Mocked } from 'vitest';
 import { ICryptoRepository, IKeyRepository } from '../repositories';
 import { APIKeyService } from './api-key.service';
 
 describe(APIKeyService.name, () => {
   let sut: APIKeyService;
-  let keyMock: jest.Mocked<IKeyRepository>;
-  let cryptoMock: jest.Mocked<ICryptoRepository>;
+  let keyMock: Mocked<IKeyRepository>;
+  let cryptoMock: Mocked<ICryptoRepository>;
 
   beforeEach(() => {
     cryptoMock = newCryptoRepositoryMock();

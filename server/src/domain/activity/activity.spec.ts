@@ -2,6 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 import { authStub, IAccessRepositoryMock, newAccessRepositoryMock } from '@test';
 import { activityStub } from '@test/fixtures/activity.stub';
 import { newActivityRepositoryMock } from '@test/repositories/activity.repository.mock';
+import { Mocked } from 'vitest';
 import { IActivityRepository } from '../repositories';
 import { ReactionType } from './activity.dto';
 import { ActivityService } from './activity.service';
@@ -9,7 +10,7 @@ import { ActivityService } from './activity.service';
 describe(ActivityService.name, () => {
   let sut: ActivityService;
   let accessMock: IAccessRepositoryMock;
-  let activityMock: jest.Mocked<IActivityRepository>;
+  let activityMock: Mocked<IActivityRepository>;
 
   beforeEach(() => {
     accessMock = newAccessRepositoryMock();

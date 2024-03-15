@@ -1,20 +1,21 @@
 import { IJobRepository } from '@app/domain';
+import { Mocked } from 'vitest';
 
-export const newJobRepositoryMock = (): jest.Mocked<IJobRepository> => {
+export const newJobRepositoryMock = (): Mocked<IJobRepository> => {
   return {
-    addHandler: jest.fn(),
-    addCronJob: jest.fn(),
-    deleteCronJob: jest.fn(),
-    updateCronJob: jest.fn(),
-    setConcurrency: jest.fn(),
-    empty: jest.fn(),
-    pause: jest.fn(),
-    resume: jest.fn(),
-    queue: jest.fn().mockImplementation(() => Promise.resolve()),
-    queueAll: jest.fn().mockImplementation(() => Promise.resolve()),
-    getQueueStatus: jest.fn(),
-    getJobCounts: jest.fn(),
-    clear: jest.fn(),
-    waitForQueueCompletion: jest.fn(),
+    addHandler: vi.fn(),
+    addCronJob: vi.fn(),
+    deleteCronJob: vi.fn(),
+    updateCronJob: vi.fn(),
+    setConcurrency: vi.fn(),
+    empty: vi.fn(),
+    pause: vi.fn(),
+    resume: vi.fn(),
+    queue: vi.fn().mockImplementation(() => Promise.resolve()),
+    queueAll: vi.fn().mockImplementation(() => Promise.resolve()),
+    getQueueStatus: vi.fn(),
+    getJobCounts: vi.fn(),
+    clear: vi.fn(),
+    waitForQueueCompletion: vi.fn(),
   };
 };

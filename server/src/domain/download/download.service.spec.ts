@@ -9,6 +9,7 @@ import {
 } from '@test';
 import { when } from 'jest-when';
 import { Readable } from 'typeorm/platform/PlatformTools.js';
+import { Mocked } from 'vitest';
 import { CacheControl, ImmichFileResponse } from '../domain.util';
 import { IAssetRepository, IStorageRepository } from '../repositories';
 import { DownloadResponseDto } from './download.dto';
@@ -27,8 +28,8 @@ const downloadResponse: DownloadResponseDto = {
 describe(DownloadService.name, () => {
   let sut: DownloadService;
   let accessMock: IAccessRepositoryMock;
-  let assetMock: jest.Mocked<IAssetRepository>;
-  let storageMock: jest.Mocked<IStorageRepository>;
+  let assetMock: Mocked<IAssetRepository>;
+  let storageMock: Mocked<IStorageRepository>;
 
   it('should work', () => {
     expect(sut).toBeDefined();
@@ -84,8 +85,8 @@ describe(DownloadService.name, () => {
 
     it('should download an archive', async () => {
       const archiveMock = {
-        addFile: jest.fn(),
-        finalize: jest.fn(),
+        addFile: vi.fn(),
+        finalize: vi.fn(),
         stream: new Readable(),
       };
 
@@ -107,8 +108,8 @@ describe(DownloadService.name, () => {
 
     it('should handle duplicate file names', async () => {
       const archiveMock = {
-        addFile: jest.fn(),
-        finalize: jest.fn(),
+        addFile: vi.fn(),
+        finalize: vi.fn(),
         stream: new Readable(),
       };
 
@@ -130,8 +131,8 @@ describe(DownloadService.name, () => {
 
     it('should be deterministic', async () => {
       const archiveMock = {
-        addFile: jest.fn(),
-        finalize: jest.fn(),
+        addFile: vi.fn(),
+        finalize: vi.fn(),
         stream: new Readable(),
       };
 

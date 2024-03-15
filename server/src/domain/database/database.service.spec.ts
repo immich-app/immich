@@ -8,10 +8,11 @@ import {
 } from '@app/domain';
 import { ImmichLogger } from '@app/infra/logger';
 import { newDatabaseRepositoryMock } from '@test';
+import { MockInstance, Mocked } from 'vitest';
 
 describe(DatabaseService.name, () => {
   let sut: DatabaseService;
-  let databaseMock: jest.Mocked<IDatabaseRepository>;
+  let databaseMock: Mocked<IDatabaseRepository>;
 
   beforeEach(() => {
     databaseMock = newDatabaseRepositoryMock();
@@ -27,14 +28,14 @@ describe(DatabaseService.name, () => {
     [{ vectorExt: DatabaseExtension.VECTORS, extName: 'pgvecto.rs', minVersion: new Version(0, 1, 1) }],
     [{ vectorExt: DatabaseExtension.VECTOR, extName: 'pgvector', minVersion: new Version(0, 5, 0) }],
   ] as const)('init', ({ vectorExt, extName, minVersion }) => {
-    let fatalLog: jest.SpyInstance;
-    let errorLog: jest.SpyInstance;
-    let warnLog: jest.SpyInstance;
+    let fatalLog: MockInstance<[message: any, ...optionalParams: any[]], void>;
+    let errorLog: MockInstance<[message: any, ...optionalParams: any[]], void>;
+    let warnLog: MockInstance<[message: any, ...optionalParams: any[]], void>;
 
     beforeEach(() => {
-      fatalLog = jest.spyOn(ImmichLogger.prototype, 'fatal');
-      errorLog = jest.spyOn(ImmichLogger.prototype, 'error');
-      warnLog = jest.spyOn(ImmichLogger.prototype, 'warn');
+      fatalLog = vi.spyOn(ImmichLogger.prototype, 'fatal');
+      errorLog = vi.spyOn(ImmichLogger.prototype, 'error');
+      warnLog = vi.spyOn(ImmichLogger.prototype, 'warn');
       databaseMock.getPreferredVectorExtension.mockReturnValue(vectorExt);
       databaseMock.getExtensionVersion.mockResolvedValue(minVersion);
 

@@ -1,14 +1,15 @@
 import { AccessCore, IAccessRepository } from '@app/domain';
+import { Mocked } from 'vitest';
 
 export interface IAccessRepositoryMock {
-  activity: jest.Mocked<IAccessRepository['activity']>;
-  asset: jest.Mocked<IAccessRepository['asset']>;
-  album: jest.Mocked<IAccessRepository['album']>;
-  authDevice: jest.Mocked<IAccessRepository['authDevice']>;
-  library: jest.Mocked<IAccessRepository['library']>;
-  timeline: jest.Mocked<IAccessRepository['timeline']>;
-  person: jest.Mocked<IAccessRepository['person']>;
-  partner: jest.Mocked<IAccessRepository['partner']>;
+  activity: Mocked<IAccessRepository['activity']>;
+  asset: Mocked<IAccessRepository['asset']>;
+  album: Mocked<IAccessRepository['album']>;
+  authDevice: Mocked<IAccessRepository['authDevice']>;
+  library: Mocked<IAccessRepository['library']>;
+  timeline: Mocked<IAccessRepository['timeline']>;
+  person: Mocked<IAccessRepository['person']>;
+  partner: Mocked<IAccessRepository['partner']>;
 }
 
 export const newAccessRepositoryMock = (reset = true): IAccessRepositoryMock => {
@@ -18,44 +19,44 @@ export const newAccessRepositoryMock = (reset = true): IAccessRepositoryMock => 
 
   return {
     activity: {
-      checkOwnerAccess: jest.fn().mockResolvedValue(new Set()),
-      checkAlbumOwnerAccess: jest.fn().mockResolvedValue(new Set()),
-      checkCreateAccess: jest.fn().mockResolvedValue(new Set()),
+      checkOwnerAccess: vi.fn().mockResolvedValue(new Set()),
+      checkAlbumOwnerAccess: vi.fn().mockResolvedValue(new Set()),
+      checkCreateAccess: vi.fn().mockResolvedValue(new Set()),
     },
 
     asset: {
-      checkOwnerAccess: jest.fn().mockResolvedValue(new Set()),
-      checkAlbumAccess: jest.fn().mockResolvedValue(new Set()),
-      checkPartnerAccess: jest.fn().mockResolvedValue(new Set()),
-      checkSharedLinkAccess: jest.fn().mockResolvedValue(new Set()),
+      checkOwnerAccess: vi.fn().mockResolvedValue(new Set()),
+      checkAlbumAccess: vi.fn().mockResolvedValue(new Set()),
+      checkPartnerAccess: vi.fn().mockResolvedValue(new Set()),
+      checkSharedLinkAccess: vi.fn().mockResolvedValue(new Set()),
     },
 
     album: {
-      checkOwnerAccess: jest.fn().mockResolvedValue(new Set()),
-      checkSharedAlbumAccess: jest.fn().mockResolvedValue(new Set()),
-      checkSharedLinkAccess: jest.fn().mockResolvedValue(new Set()),
+      checkOwnerAccess: vi.fn().mockResolvedValue(new Set()),
+      checkSharedAlbumAccess: vi.fn().mockResolvedValue(new Set()),
+      checkSharedLinkAccess: vi.fn().mockResolvedValue(new Set()),
     },
 
     authDevice: {
-      checkOwnerAccess: jest.fn().mockResolvedValue(new Set()),
+      checkOwnerAccess: vi.fn().mockResolvedValue(new Set()),
     },
 
     library: {
-      checkOwnerAccess: jest.fn().mockResolvedValue(new Set()),
-      checkPartnerAccess: jest.fn().mockResolvedValue(new Set()),
+      checkOwnerAccess: vi.fn().mockResolvedValue(new Set()),
+      checkPartnerAccess: vi.fn().mockResolvedValue(new Set()),
     },
 
     timeline: {
-      checkPartnerAccess: jest.fn().mockResolvedValue(new Set()),
+      checkPartnerAccess: vi.fn().mockResolvedValue(new Set()),
     },
 
     person: {
-      checkFaceOwnerAccess: jest.fn().mockResolvedValue(new Set()),
-      checkOwnerAccess: jest.fn().mockResolvedValue(new Set()),
+      checkFaceOwnerAccess: vi.fn().mockResolvedValue(new Set()),
+      checkOwnerAccess: vi.fn().mockResolvedValue(new Set()),
     },
 
     partner: {
-      checkUpdateAccess: jest.fn().mockResolvedValue(new Set()),
+      checkUpdateAccess: vi.fn().mockResolvedValue(new Set()),
     },
   };
 };

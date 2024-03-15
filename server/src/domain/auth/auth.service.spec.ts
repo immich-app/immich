@@ -21,6 +21,7 @@ import {
 import { IncomingHttpHeaders } from 'node:http';
 import { Issuer, generators } from 'openid-client';
 import { Socket } from 'socket.io';
+import { Mock, Mocked } from 'vitest';
 import {
   ICryptoRepository,
   IKeyRepository,
@@ -62,33 +63,32 @@ const oauthUserWithDefaultQuota = {
 
 describe('AuthService', () => {
   let sut: AuthService;
-  let accessMock: jest.Mocked<IAccessRepositoryMock>;
-  let cryptoMock: jest.Mocked<ICryptoRepository>;
-  let userMock: jest.Mocked<IUserRepository>;
-  let libraryMock: jest.Mocked<ILibraryRepository>;
-  let configMock: jest.Mocked<ISystemConfigRepository>;
-  let userTokenMock: jest.Mocked<IUserTokenRepository>;
-  let shareMock: jest.Mocked<ISharedLinkRepository>;
-  let keyMock: jest.Mocked<IKeyRepository>;
-
-  let callbackMock: jest.Mock;
-  let userinfoMock: jest.Mock;
+  let accessMock: Mocked<IAccessRepositoryMock>;
+  let cryptoMock: Mocked<ICryptoRepository>;
+  let userMock: Mocked<IUserRepository>;
+  let libraryMock: Mocked<ILibraryRepository>;
+  let configMock: Mocked<ISystemConfigRepository>;
+  let userTokenMock: Mocked<IUserTokenRepository>;
+  let shareMock: Mocked<ISharedLinkRepository>;
+  let keyMock: Mocked<IKeyRepository>;
+  let callbackMock: Mock;
+  let userinfoMock: Mock;
 
   beforeEach(() => {
-    callbackMock = jest.fn().mockReturnValue({ access_token: 'access-token' });
-    userinfoMock = jest.fn().mockResolvedValue({ sub, email });
+    callbackMock = vi.fn().mockReturnValue({ access_token: 'access-token' });
+    userinfoMock = vi.fn().mockResolvedValue({ sub, email });
 
-    jest.spyOn(generators, 'state').mockReturnValue('state');
-    jest.spyOn(Issuer, 'discover').mockResolvedValue({
+    vi.spyOn(generators, 'state').mockReturnValue('state');
+    vi.spyOn(Issuer, 'discover').mockResolvedValue({
       id_token_signing_alg_values_supported: ['RS256'],
-      Client: jest.fn().mockResolvedValue({
+      Client: vi.fn().mockResolvedValue({
         issuer: {
           metadata: {
             end_session_endpoint: 'http://end-session-endpoint',
           },
         },
-        authorizationUrl: jest.fn().mockReturnValue('http://authorization-url'),
-        callbackParams: jest.fn().mockReturnValue({ state: 'state' }),
+        authorizationUrl: vi.fn().mockReturnValue('http://authorization-url'),
+        callbackParams: vi.fn().mockReturnValue({ state: 'state' }),
         callback: callbackMock,
         userinfo: userinfoMock,
       }),
@@ -104,6 +104,10 @@ describe('AuthService', () => {
     keyMock = newKeyRepositoryMock();
 
     sut = new AuthService(accessMock, cryptoMock, configMock, libraryMock, userMock, userTokenMock, shareMock, keyMock);
+  });
+
+  afterEach(() => {
+    vi.resetModules();
   });
 
   it('should be defined', () => {

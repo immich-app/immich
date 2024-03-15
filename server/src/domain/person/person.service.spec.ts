@@ -19,6 +19,7 @@ import {
   personStub,
 } from '@test';
 import { IsNull } from 'typeorm';
+import { Mocked } from 'vitest';
 import { BulkIdErrorReason } from '../asset';
 import { CacheControl, ImmichFileResponse } from '../domain.util';
 import { JobName } from '../job';
@@ -69,16 +70,16 @@ const detectFaceMock = {
 
 describe(PersonService.name, () => {
   let accessMock: IAccessRepositoryMock;
-  let assetMock: jest.Mocked<IAssetRepository>;
-  let configMock: jest.Mocked<ISystemConfigRepository>;
-  let jobMock: jest.Mocked<IJobRepository>;
-  let machineLearningMock: jest.Mocked<IMachineLearningRepository>;
-  let mediaMock: jest.Mocked<IMediaRepository>;
-  let moveMock: jest.Mocked<IMoveRepository>;
-  let personMock: jest.Mocked<IPersonRepository>;
-  let storageMock: jest.Mocked<IStorageRepository>;
-  let searchMock: jest.Mocked<ISearchRepository>;
-  let cryptoMock: jest.Mocked<ICryptoRepository>;
+  let assetMock: Mocked<IAssetRepository>;
+  let configMock: Mocked<ISystemConfigRepository>;
+  let jobMock: Mocked<IJobRepository>;
+  let machineLearningMock: Mocked<IMachineLearningRepository>;
+  let mediaMock: Mocked<IMediaRepository>;
+  let moveMock: Mocked<IMoveRepository>;
+  let personMock: Mocked<IPersonRepository>;
+  let storageMock: Mocked<IStorageRepository>;
+  let searchMock: Mocked<ISearchRepository>;
+  let cryptoMock: Mocked<ICryptoRepository>;
   let sut: PersonService;
 
   beforeEach(() => {

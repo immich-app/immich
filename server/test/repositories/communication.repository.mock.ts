@@ -1,10 +1,11 @@
 import { ICommunicationRepository } from '@app/domain';
+import { Mocked } from 'vitest';
 
-export const newCommunicationRepositoryMock = (): jest.Mocked<ICommunicationRepository> => {
+export const newCommunicationRepositoryMock = (): Mocked<ICommunicationRepository> => {
   return {
-    send: jest.fn(),
-    broadcast: jest.fn(),
-    on: jest.fn(),
-    sendServerEvent: jest.fn(),
+    send: vi.fn(),
+    broadcast: vi.fn(),
+    on: vi.fn() as any,
+    sendServerEvent: vi.fn(),
   };
 };

@@ -2,13 +2,14 @@ import { TagType } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
 import { assetStub, authStub, newTagRepositoryMock, tagResponseStub, tagStub } from '@test';
 import { when } from 'jest-when';
+import { Mocked } from 'vitest';
 import { AssetIdErrorReason } from '../asset';
 import { ITagRepository } from '../repositories';
 import { TagService } from './tag.service';
 
 describe(TagService.name, () => {
   let sut: TagService;
-  let tagMock: jest.Mocked<ITagRepository>;
+  let tagMock: Mocked<ITagRepository>;
 
   beforeEach(() => {
     tagMock = newTagRepositoryMock();

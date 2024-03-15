@@ -1,32 +1,33 @@
 import { IPersonRepository } from '@app/domain';
+import { Mocked } from 'vitest';
 
-export const newPersonRepositoryMock = (): jest.Mocked<IPersonRepository> => {
+export const newPersonRepositoryMock = (): Mocked<IPersonRepository> => {
   return {
-    getById: jest.fn(),
-    getAll: jest.fn(),
-    getAllForUser: jest.fn(),
-    getAssets: jest.fn(),
-    getAllWithoutFaces: jest.fn(),
+    getById: vi.fn(),
+    getAll: vi.fn(),
+    getAllForUser: vi.fn(),
+    getAssets: vi.fn(),
+    getAllWithoutFaces: vi.fn(),
 
-    getByName: jest.fn(),
+    getByName: vi.fn(),
 
-    create: jest.fn(),
-    update: jest.fn(),
-    deleteAll: jest.fn(),
-    delete: jest.fn(),
-    deleteAllFaces: jest.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    deleteAll: vi.fn(),
+    delete: vi.fn(),
+    deleteAllFaces: vi.fn(),
 
-    getStatistics: jest.fn(),
-    getAllFaces: jest.fn(),
-    getFacesByIds: jest.fn(),
-    getRandomFace: jest.fn(),
+    getStatistics: vi.fn(),
+    getAllFaces: vi.fn(),
+    getFacesByIds: vi.fn(),
+    getRandomFace: vi.fn(),
 
-    reassignFaces: jest.fn(),
-    createFaces: jest.fn(),
-    getFaces: jest.fn(),
-    reassignFace: jest.fn(),
-    getFaceById: jest.fn(),
-    getFaceByIdWithAssets: jest.fn(),
-    getNumberOfPeople: jest.fn(),
+    reassignFaces: vi.fn(),
+    createFaces: vi.fn(),
+    getFaces: vi.fn(),
+    reassignFace: vi.fn(),
+    getFaceById: vi.fn(),
+    getFaceByIdWithAssets: vi.fn(),
+    getNumberOfPeople: vi.fn(),
   };
 };

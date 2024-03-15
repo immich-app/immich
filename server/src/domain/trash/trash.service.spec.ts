@@ -8,6 +8,7 @@ import {
   newCommunicationRepositoryMock,
   newJobRepositoryMock,
 } from '@test';
+import { Mocked } from 'vitest';
 import { JobName } from '..';
 import { ClientEvent, IAssetRepository, ICommunicationRepository, IJobRepository } from '../repositories';
 import { TrashService } from './trash.service';
@@ -15,9 +16,9 @@ import { TrashService } from './trash.service';
 describe(TrashService.name, () => {
   let sut: TrashService;
   let accessMock: IAccessRepositoryMock;
-  let assetMock: jest.Mocked<IAssetRepository>;
-  let jobMock: jest.Mocked<IJobRepository>;
-  let communicationMock: jest.Mocked<ICommunicationRepository>;
+  let assetMock: Mocked<IAssetRepository>;
+  let jobMock: Mocked<IJobRepository>;
+  let communicationMock: Mocked<ICommunicationRepository>;
 
   it('should work', () => {
     expect(sut).toBeDefined();

@@ -1,13 +1,14 @@
 import { ISearchRepository } from '@app/domain';
+import { Mocked } from 'vitest';
 
-export const newSearchRepositoryMock = (): jest.Mocked<ISearchRepository> => {
+export const newSearchRepositoryMock = (): Mocked<ISearchRepository> => {
   return {
-    init: jest.fn(),
-    searchMetadata: jest.fn(),
-    searchSmart: jest.fn(),
-    searchFaces: jest.fn(),
-    upsert: jest.fn(),
-    searchPlaces: jest.fn(),
-    deleteAllSearchEmbeddings: jest.fn(),
+    init: vi.fn(),
+    searchMetadata: vi.fn(),
+    searchSmart: vi.fn(),
+    searchFaces: vi.fn(),
+    upsert: vi.fn(),
+    searchPlaces: vi.fn(),
+    deleteAllSearchEmbeddings: vi.fn(),
   };
 };

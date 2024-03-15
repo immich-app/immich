@@ -12,6 +12,7 @@ import {
   sharedLinkStub,
 } from '@test';
 import _ from 'lodash';
+import { Mocked } from 'vitest';
 import { AssetIdErrorReason } from '../asset';
 import { ICryptoRepository, ISharedLinkRepository } from '../repositories';
 import { SharedLinkService } from './shared-link.service';
@@ -19,8 +20,8 @@ import { SharedLinkService } from './shared-link.service';
 describe(SharedLinkService.name, () => {
   let sut: SharedLinkService;
   let accessMock: IAccessRepositoryMock;
-  let cryptoMock: jest.Mocked<ICryptoRepository>;
-  let shareMock: jest.Mocked<ISharedLinkRepository>;
+  let cryptoMock: Mocked<ICryptoRepository>;
+  let shareMock: Mocked<ISharedLinkRepository>;
 
   beforeEach(() => {
     accessMock = newAccessRepositoryMock();

@@ -1,10 +1,11 @@
 import { IActivityRepository } from '@app/domain';
+import { Mocked } from 'vitest';
 
-export const newActivityRepositoryMock = (): jest.Mocked<IActivityRepository> => {
+export const newActivityRepositoryMock = (): Mocked<IActivityRepository> => {
   return {
-    search: jest.fn(),
-    create: jest.fn(),
-    delete: jest.fn(),
-    getStatistics: jest.fn(),
+    search: vi.fn(),
+    create: vi.fn(),
+    delete: vi.fn(),
+    getStatistics: vi.fn(),
   };
 };

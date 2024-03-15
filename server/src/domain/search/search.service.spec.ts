@@ -11,6 +11,7 @@ import {
   newSystemConfigRepositoryMock,
   personStub,
 } from '@test';
+import { Mocked } from 'vitest';
 import { mapAsset } from '../asset';
 import {
   IAssetRepository,
@@ -24,17 +25,17 @@ import {
 import { SearchDto } from './dto';
 import { SearchService } from './search.service';
 
-jest.useFakeTimers();
+vi.useFakeTimers();
 
 describe(SearchService.name, () => {
   let sut: SearchService;
-  let assetMock: jest.Mocked<IAssetRepository>;
-  let configMock: jest.Mocked<ISystemConfigRepository>;
-  let machineMock: jest.Mocked<IMachineLearningRepository>;
-  let personMock: jest.Mocked<IPersonRepository>;
-  let searchMock: jest.Mocked<ISearchRepository>;
-  let partnerMock: jest.Mocked<IPartnerRepository>;
-  let metadataMock: jest.Mocked<IMetadataRepository>;
+  let assetMock: Mocked<IAssetRepository>;
+  let configMock: Mocked<ISystemConfigRepository>;
+  let machineMock: Mocked<IMachineLearningRepository>;
+  let personMock: Mocked<IPersonRepository>;
+  let searchMock: Mocked<ISearchRepository>;
+  let partnerMock: Mocked<IPartnerRepository>;
+  let metadataMock: Mocked<IMetadataRepository>;
 
   beforeEach(() => {
     assetMock = newAssetRepositoryMock();

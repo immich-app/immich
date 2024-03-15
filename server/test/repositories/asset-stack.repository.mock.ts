@@ -1,10 +1,11 @@
 import { IAssetStackRepository } from '@app/domain';
+import { Mocked } from 'vitest';
 
-export const newAssetStackRepositoryMock = (): jest.Mocked<IAssetStackRepository> => {
+export const newAssetStackRepositoryMock = (): Mocked<IAssetStackRepository> => {
   return {
-    create: jest.fn(),
-    update: jest.fn(),
-    delete: jest.fn(),
-    getById: jest.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    getById: vi.fn(),
   };
 };

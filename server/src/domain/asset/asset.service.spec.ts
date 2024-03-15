@@ -17,6 +17,7 @@ import {
   newUserRepositoryMock,
 } from '@test';
 import { when } from 'jest-when';
+import { Mocked } from 'vitest';
 import { JobName } from '../job';
 import {
   AssetStats,
@@ -157,14 +158,14 @@ const uploadTests = [
 describe(AssetService.name, () => {
   let sut: AssetService;
   let accessMock: IAccessRepositoryMock;
-  let assetMock: jest.Mocked<IAssetRepository>;
-  let jobMock: jest.Mocked<IJobRepository>;
-  let storageMock: jest.Mocked<IStorageRepository>;
-  let userMock: jest.Mocked<IUserRepository>;
-  let communicationMock: jest.Mocked<ICommunicationRepository>;
-  let configMock: jest.Mocked<ISystemConfigRepository>;
-  let partnerMock: jest.Mocked<IPartnerRepository>;
-  let assetStackMock: jest.Mocked<IAssetStackRepository>;
+  let assetMock: Mocked<IAssetRepository>;
+  let jobMock: Mocked<IJobRepository>;
+  let storageMock: Mocked<IStorageRepository>;
+  let userMock: Mocked<IUserRepository>;
+  let communicationMock: Mocked<ICommunicationRepository>;
+  let configMock: Mocked<ISystemConfigRepository>;
+  let partnerMock: Mocked<IPartnerRepository>;
+  let assetStackMock: Mocked<IAssetStackRepository>;
 
   it('should work', () => {
     expect(sut).toBeDefined();
@@ -308,12 +309,12 @@ describe(AssetService.name, () => {
 
   describe('getMemoryLane', () => {
     beforeAll(() => {
-      jest.useFakeTimers();
-      jest.setSystemTime(new Date('2024-01-15'));
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date('2024-01-15'));
     });
 
     afterAll(() => {
-      jest.useRealTimers();
+      vi.useRealTimers();
     });
 
     it('should set the title correctly', async () => {

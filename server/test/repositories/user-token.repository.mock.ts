@@ -1,11 +1,12 @@
 import { IUserTokenRepository } from '@app/domain';
+import { Mocked } from 'vitest';
 
-export const newUserTokenRepositoryMock = (): jest.Mocked<IUserTokenRepository> => {
+export const newUserTokenRepositoryMock = (): Mocked<IUserTokenRepository> => {
   return {
-    create: jest.fn(),
-    save: jest.fn(),
-    delete: jest.fn(),
-    getByToken: jest.fn(),
-    getAll: jest.fn(),
+    create: vi.fn(),
+    save: vi.fn(),
+    delete: vi.fn(),
+    getByToken: vi.fn(),
+    getAll: vi.fn(),
   };
 };
