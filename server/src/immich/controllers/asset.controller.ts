@@ -19,7 +19,7 @@ import {
   TimeBucketDto,
   TimeBucketResponseDto,
   UpdateAssetDto as UpdateDto,
-  UpdateStackParentDto
+  UpdateStackParentDto,
 } from '@app/domain';
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
@@ -47,9 +47,7 @@ export class AssetsController {
 @Controller(Route.ASSET)
 @Authenticated()
 export class AssetController {
-  constructor(
-    private service: AssetService,
-  ) {}
+  constructor(private service: AssetService) {}
 
   @Get('map-marker')
   getMapMarkers(@Auth() auth: AuthDto, @Query() options: MapMarkerDto): Promise<MapMarkerResponseDto[]> {

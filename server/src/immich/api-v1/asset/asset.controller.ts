@@ -132,10 +132,7 @@ export class AssetController {
     required: false,
     schema: { type: 'string' },
   })
-  getAllAssets(
-    @Auth() auth: AuthDto,
-    @Query() dto: AssetSearchDto,
-  ): Promise<AssetResponseDto[]> {
+  getAllAssets(@Auth() auth: AuthDto, @Query() dto: AssetSearchDto): Promise<AssetResponseDto[]> {
     return this.serviceV1.getAllAssets(auth, dto);
   }
 
