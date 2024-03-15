@@ -21,10 +21,10 @@ FROM builder-${DEVICE} as builder
 
 ARG DEVICE
 ENV PYTHONDONTWRITEBYTECODE=1 \
-  PYTHONUNBUFFERED=1 \
-  PIP_NO_CACHE_DIR=true \
-  VIRTUAL_ENV="/opt/venv" \
-  PATH="/opt/venv/bin:${PATH}"
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=true \
+    VIRTUAL_ENV="/opt/venv" \
+    PATH="/opt/venv/bin:${PATH}"
 
 RUN apt-get update && apt-get install -y --no-install-recommends g++
 
@@ -58,14 +58,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends ocl-icd-libopen
     mkdir /opt/armnn
 
 COPY --from=builder-armnn \
-      /opt/armnn/libarmnn.so.?? \
-      /opt/armnn/libarmnnOnnxParser.so.?? \
-      /opt/armnn/libarmnnDeserializer.so.?? \
-      /opt/armnn/libarmnnTfLiteParser.so.?? \
-      /opt/armnn/libprotobuf.so.?.??.?.? \
-      /opt/ann/libann.s[o] \
-      /opt/ann/build.sh \
-      /opt/armnn/
+    /opt/armnn/libarmnn.so.?? \
+    /opt/armnn/libarmnnOnnxParser.so.?? \
+    /opt/armnn/libarmnnDeserializer.so.?? \
+    /opt/armnn/libarmnnTfLiteParser.so.?? \
+    /opt/armnn/libprotobuf.so.?.??.?.? \
+    /opt/ann/libann.s[o] \
+    /opt/ann/build.sh \
+    /opt/armnn/
 
 FROM prod-${DEVICE} as prod
 
@@ -75,11 +75,12 @@ RUN apt-get update && \
 
 WORKDIR /usr/src/app
 ENV NODE_ENV=production \
-  TRANSFORMERS_CACHE=/cache \
-  PYTHONDONTWRITEBYTECODE=1 \
-  PYTHONUNBUFFERED=1 \
-  PATH="/opt/venv/bin:$PATH" \
-  PYTHONPATH=/usr/src
+    TRANSFORMERS_CACHE=/cache \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PATH="/opt/venv/bin:$PATH" \
+    PYTHONPATH=/usr/src \
+    DEVICE=${DEVICE}
 
 # prevent core dumps
 RUN echo "hard core 0" >> /etc/security/limits.conf && \
