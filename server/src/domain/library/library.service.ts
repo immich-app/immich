@@ -611,13 +611,13 @@ export class LibraryService extends EventEmitter {
     return true;
   }
 
-  async handleQueueOfflineScan(job: IEntityJob): Promise<boolean> {
-    this.logger.log(`Checking for offline files in library: ${job.id}`);
-    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
+  async handleQueueOnlineStatusCheck(job: IEntityJob): Promise<boolean> {
+    this.logger.log(`Checking files for online/offline status in library: ${job.id}`);
+    const onlineAssets = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
       this.assetRepository.getWith(pagination, WithProperty.IS_ONLINE, job.id),
     );
 
-    for await (const assets of assetPagination) {
+    for await (const assets of onlineAssets) {
       this.logger.debug(`Checking if ${assets.length} assets are still online`);
       await this.jobRepository.queueAll(
         assets.map((asset) => ({
