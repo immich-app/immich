@@ -169,12 +169,12 @@
       case AssetAction.UNARCHIVE:
       case AssetAction.FAVORITE:
       case AssetAction.UNFAVORITE: {
-        assetStore.updateAsset(asset);
+        assetStore.updateAssets([asset]);
         break;
       }
 
       case AssetAction.ADD: {
-        assetStore.addAsset(asset);
+        assetStore.addAssets([asset]);
         break;
       }
     }
