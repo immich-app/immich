@@ -1,7 +1,6 @@
 <script lang="ts" context="module">
   import { AlbumViewMode, albumViewSettings } from '$lib/stores/preferences.store';
   import { goto } from '$app/navigation';
-  import type { OnShowContextMenuDetail } from '$lib/components/album-page/album-card';
   import { AppRoute } from '$lib/constants';
   import { createAlbum, deleteAlbum, type AlbumResponseDto } from '@immich/sdk';
   import { get } from 'svelte/store';
@@ -118,6 +117,7 @@
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
   import AlbumsTable from '$lib/components/album-page/albums-table.svelte';
   import { handleError } from '$lib/utils/handle-error';
+  import type { ContextMenuPosition } from '$lib/utils/context-menu';
 
   export let albums: AlbumResponseDto[];
   export let searchAlbum: string;
@@ -125,7 +125,7 @@
   let shouldShowEditAlbumForm = false;
   let selectedAlbum: AlbumResponseDto;
   let albumToDelete: AlbumResponseDto | null;
-  let contextMenuPosition: OnShowContextMenuDetail = { x: 0, y: 0 };
+  let contextMenuPosition: ContextMenuPosition = { x: 0, y: 0 };
   let contextMenuTargetAlbum: AlbumResponseDto | undefined = undefined;
 
   $: {
@@ -145,7 +145,7 @@
     await removeAlbumsIfEmpty();
   });
 
-  function showAlbumContextMenu(contextMenuDetail: OnShowContextMenuDetail, album: AlbumResponseDto): void {
+  function showAlbumContextMenu(contextMenuDetail: ContextMenuPosition, album: AlbumResponseDto): void {
     contextMenuTargetAlbum = album;
     contextMenuPosition = {
       x: contextMenuDetail.x,
@@ -228,13 +228,13 @@
 {#if albums.length > 0}
   <!-- Album Card -->
   {#if $albumViewSettings.view === AlbumViewMode.Cover}
-    <div class="grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))]">
+    <div class="grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))] mt-4 gap-y-4">
       {#each albumsFiltered as album, index (album.id)}
         <a data-sveltekit-preload-data="hover" href="{AppRoute.ALBUMS}/{album.id}" animate:flip={{ duration: 200 }}>
           <AlbumCard
             preload={index < 20}
             {album}
-            on:showalbumcontextmenu={({ detail }) => showAlbumContextMenu(detail, album)}
+            onShowContextMenu={(position) => showAlbumContextMenu(position, album)}
           />
         </a>
       {/each}
