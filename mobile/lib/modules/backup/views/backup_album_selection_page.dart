@@ -74,10 +74,8 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
           ),
           itemCount: albums.length,
           itemBuilder: ((context, index) {
-            var thumbnailData = albums[index].thumbnailData;
             return AlbumInfoCard(
-              imageData: thumbnailData,
-              albumInfo: albums[index],
+              album: albums[index],
             );
           }),
         ),
