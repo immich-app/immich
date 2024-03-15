@@ -5,6 +5,7 @@ import {
   CreateAssetDto,
   CreateLibraryDto,
   CreateUserDto,
+  MetadataSearchDto,
   PersonCreateDto,
   SharedLinkCreateDto,
   ValidateLibraryDto,
@@ -16,8 +17,10 @@ import {
   createUser,
   defaults,
   deleteAssets,
+  getAllAssets,
   getAssetInfo,
   login,
+  searchMetadata,
   setAdminOnboarding,
   signUpAdmin,
   validate,
@@ -25,9 +28,9 @@ import {
 import { BrowserContext } from '@playwright/test';
 import { exec, spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { existsSync } from 'node:fs';
+import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import path from 'node:path';
+import path, { dirname } from 'node:path';
 import { promisify } from 'node:util';
 import pg from 'pg';
 import { io, type Socket } from 'socket.io-client';
@@ -37,7 +40,7 @@ import request from 'supertest';
 
 type CliResponse = { stdout: string; stderr: string; exitCode: number | null };
 type EventType = 'assetUpload' | 'assetDelete' | 'userDelete';
-type WaitOptions = { event: EventType; id: string; timeout?: number };
+type WaitOptions = { event: EventType; id?: string; total?: number; timeout?: number };
 type AdminSetupOptions = { onboarding?: boolean };
 type AssetData = { bytes?: Buffer; filename: string };
 
@@ -83,16 +86,30 @@ const events: Record<EventType, Set<string>> = {
   userDelete: new Set<string>(),
 };
 
-const callbacks: Record<string, () => void> = {};
+const idCallbacks: Record<string, () => void> = {};
+const countCallbacks: Record<string, { count: number; callback: () => void }> = {};
 
 const execPromise = promisify(exec);
 
 const onEvent = ({ event, id }: { event: EventType; id: string }) => {
-  events[event].add(id);
-  const callback = callbacks[id];
-  if (callback) {
-    callback();
-    delete callbacks[id];
+  // console.log(`Received event: ${event} [id=${id}]`);
+  const set = events[event];
+  set.add(id);
+
+  const idCallback = idCallbacks[id];
+  if (idCallback) {
+    idCallback();
+    delete idCallbacks[id];
+  }
+
+  const item = countCallbacks[event];
+  if (item) {
+    const { count, callback: countCallback } = item;
+
+    if (set.size >= count) {
+      countCallback();
+      delete countCallbacks[event];
+    }
   }
 };
 
@@ -184,20 +201,43 @@ export const utils = {
     }
   },
 
-  waitForWebsocketEvent: async ({ event, id, timeout: ms }: WaitOptions): Promise<void> => {
-    console.log(`Waiting for ${event} [${id}]`);
+  resetEvents: () => {
+    for (const set of Object.values(events)) {
+      set.clear();
+    }
+  },
+
+  waitForWebsocketEvent: async ({ event, id, total: count, timeout: ms }: WaitOptions): Promise<void> => {
+    if (!id && !count) {
+      throw new Error('id or count must be provided for waitForWebsocketEvent');
+    }
+
+    const type = id ? `id=${id}` : `count=${count}`;
+    console.log(`Waiting for ${event} [${type}]`);
     const set = events[event];
-    if (set.has(id)) {
+    if ((id && set.has(id)) || (count && set.size >= count)) {
       return;
     }
 
     return new Promise<void>((resolve, reject) => {
       const timeout = setTimeout(() => reject(new Error(`Timed out waiting for ${event} event`)), ms || 10_000);
 
-      callbacks[id] = () => {
-        clearTimeout(timeout);
-        resolve();
-      };
+      if (id) {
+        idCallbacks[id] = () => {
+          clearTimeout(timeout);
+          resolve();
+        };
+      }
+
+      if (count) {
+        countCallbacks[event] = {
+          count,
+          callback: () => {
+            clearTimeout(timeout);
+            resolve();
+          },
+        };
+      }
     });
   },
 
@@ -263,7 +303,30 @@ export const utils = {
     return body as AssetFileUploadResponseDto;
   },
 
+  createImageFile: (path: string) => {
+    if (!existsSync(dirname(path))) {
+      mkdirSync(dirname(path), { recursive: true });
+    }
+    if (!existsSync(path)) {
+      writeFileSync(path, makeRandomImage());
+    }
+  },
+
+  removeImageFile: (path: string) => {
+    if (!existsSync(path)) {
+      return;
+    }
+
+    rmSync(path);
+  },
+
   getAssetInfo: (accessToken: string, id: string) => getAssetInfo({ id }, { headers: asBearerAuth(accessToken) }),
+
+  getAllAssets: (accessToken: string) => getAllAssets({}, { headers: asBearerAuth(accessToken) }),
+
+  metadataSearch: async (accessToken: string, dto: MetadataSearchDto) => {
+    return searchMetadata({ metadataSearchDto: dto }, { headers: asBearerAuth(accessToken) });
+  },
 
   deleteAssets: (accessToken: string, ids: string[]) =>
     deleteAssets({ assetBulkDeleteDto: { ids } }, { headers: asBearerAuth(accessToken) }),
