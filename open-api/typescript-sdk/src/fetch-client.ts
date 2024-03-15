@@ -492,7 +492,7 @@ export type ValidateLibraryDto = {
 };
 export type ValidateLibraryImportPathResponseDto = {
     importPath: string;
-    isValid?: boolean;
+    isValid: boolean;
     message?: string;
 };
 export type ValidateLibraryResponseDto = {
