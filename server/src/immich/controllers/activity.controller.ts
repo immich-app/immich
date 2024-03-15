@@ -11,13 +11,11 @@ import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query
 import { ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { Auth, Authenticated } from '../app.guard';
-import { UseValidation } from '../app.utils';
 import { UUIDParamDto } from './dto/uuid-param.dto';
 
 @ApiTags('Activity')
 @Controller('activity')
 @Authenticated()
-@UseValidation()
 export class ActivityController {
   constructor(private service: ActivityService) {}
 

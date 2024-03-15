@@ -9,13 +9,11 @@ import {
 import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Auth, Authenticated } from '../app.guard';
-import { UseValidation } from '../app.utils';
 import { UUIDParamDto } from './dto/uuid-param.dto';
 
 @ApiTags('API Key')
 @Controller('api-key')
 @Authenticated()
-@UseValidation()
 export class APIKeyController {
   constructor(private service: APIKeyService) {}
 

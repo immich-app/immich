@@ -8,7 +8,6 @@ import {
   AssetStatsResponseDto,
   AuthDto,
   DeviceIdDto,
-  DownloadService,
   MapMarkerDto,
   MapMarkerResponseDto,
   MemoryLaneDto,
@@ -19,21 +18,18 @@ import {
   TimeBucketAssetDto,
   TimeBucketDto,
   TimeBucketResponseDto,
-  TrashService,
   UpdateAssetDto as UpdateDto,
   UpdateStackParentDto,
 } from '@app/domain';
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Auth, Authenticated, SharedLinkRoute } from '../app.guard';
-import { UseValidation } from '../app.utils';
 import { Route } from '../interceptors';
 import { UUIDParamDto } from './dto/uuid-param.dto';
 
 @ApiTags('Asset')
 @Controller('assets')
 @Authenticated()
-@UseValidation()
 export class AssetsController {
   constructor(private searchService: SearchService) {}
 
@@ -50,13 +46,8 @@ export class AssetsController {
 @ApiTags('Asset')
 @Controller(Route.ASSET)
 @Authenticated()
-@UseValidation()
 export class AssetController {
-  constructor(
-    private service: AssetService,
-    private downloadService: DownloadService,
-    private trashService: TrashService,
-  ) {}
+  constructor(private service: AssetService) {}
 
   @Get('map-marker')
   getMapMarkers(@Auth() auth: AuthDto, @Query() options: MapMarkerDto): Promise<MapMarkerResponseDto[]> {

@@ -13,13 +13,11 @@ import {
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AdminRoute, Auth, Authenticated } from '../app.guard';
-import { UseValidation } from '../app.utils';
 import { UUIDParamDto } from './dto/uuid-param.dto';
 
 @ApiTags('Library')
 @Controller('library')
 @Authenticated()
-@UseValidation()
 @AdminRoute()
 export class LibraryController {
   constructor(private service: LibraryService) {}

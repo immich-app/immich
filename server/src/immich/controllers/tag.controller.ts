@@ -11,13 +11,11 @@ import {
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Auth, Authenticated } from '../app.guard';
-import { UseValidation } from '../app.utils';
 import { UUIDParamDto } from './dto/uuid-param.dto';
 
 @ApiTags('Tag')
 @Controller('tag')
 @Authenticated()
-@UseValidation()
 export class TagController {
   constructor(private service: TagService) {}
 
