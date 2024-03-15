@@ -29,7 +29,6 @@ export const openFileUploadDialog = async (albumId?: string | undefined) => {
       fileSelector.multiple = true;
       fileSelector.accept = extensions.join(',');
 
-      // External User Check and Warning 
       if (isExternalUser()) {
         alert("Please note uploaded files can only be deleted by Immich users. Please upload at your own risk");
       }
@@ -71,7 +70,6 @@ function getDeviceAssetId(asset: File) {
   return 'web' + '-' + asset.name + '-' + asset.lastModified;
 }
 
-// TODO: should probably use the @api SDK
 async function fileUploader(asset: File, albumId: string | undefined = undefined): Promise<string | undefined> {
   const fileCreatedAt = new Date(asset.lastModified).toISOString();
   const deviceAssetId = getDeviceAssetId(asset);
