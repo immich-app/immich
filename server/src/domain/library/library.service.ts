@@ -616,8 +616,8 @@ export class LibraryService extends EventEmitter {
     return JobStatus.SUCCESS;
   }
 
-  async handleQueueOnlineStatusCheck(job: IEntityJob): Promise<JobStatus> {
-    this.logger.log(`Checking files for online/offline status in library: ${job.id}`);
+  async handleQueueOfflineCheck(job: IEntityJob): Promise<JobStatus> {
+    this.logger.log(`Finding offline assets in library: ${job.id}`);
     const onlineAssets = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
       this.assetRepository.getWith(pagination, WithProperty.IS_ONLINE, job.id),
     );
@@ -626,7 +626,7 @@ export class LibraryService extends EventEmitter {
       this.logger.debug(`Checking if ${assets.length} assets are still online`);
       await this.jobRepository.queueAll(
         assets.map((asset) => ({
-          name: JobName.LIBRARY_CHECK_IF_ASSET_ONLINE,
+          name: JobName.LIBRARY_CHECK_OFFLINE,
           data: { id: asset.id },
         })),
       );
@@ -635,8 +635,8 @@ export class LibraryService extends EventEmitter {
     return JobStatus.SUCCESS;
   }
 
-  // Check if an online asset is offline
-  async handleAssetOnlineCheck(job: IEntityJob): Promise<JobStatus> {
+  // Check if an asset is has no file, marking it as offline
+  async handleOfflineCheck(job: IEntityJob): Promise<JobStatus> {
     const asset = await this.assetRepository.getById(job.id);
 
     if (!asset || asset.isOffline) {

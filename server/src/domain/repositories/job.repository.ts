@@ -93,7 +93,7 @@ export type JobItem =
   | { name: JobName.LIBRARY_DELETE; data: IEntityJob }
   | { name: JobName.LIBRARY_QUEUE_SCAN_ALL; data: IBaseJob }
   | { name: JobName.LIBRARY_SCAN_OFFLINE; data: IEntityJob }
-  | { name: JobName.LIBRARY_CHECK_IF_ASSET_ONLINE; data: IEntityJob }
+  | { name: JobName.LIBRARY_CHECK_OFFLINE; data: IEntityJob }
   | { name: JobName.LIBRARY_QUEUE_CLEANUP; data: IBaseJob };
 
 export enum JobStatus {
