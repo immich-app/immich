@@ -5,7 +5,7 @@ lib_path="/usr/lib/$(arch)-linux-gnu/libmimalloc.so.2"
 if ! [[ "$DEVICE" = "openvino" ]]; then 
 	export LD_PRELOAD="$lib_path"
 	export LD_BIND_NOW=1
-; fi
+fi
 
 : "${MACHINE_LEARNING_HOST:=0.0.0.0}"
 : "${MACHINE_LEARNING_PORT:=3003}"
