@@ -18,6 +18,7 @@ import {
   userStub,
 } from '@test';
 import { when } from 'jest-when';
+import { R_OK } from 'node:constants';
 import { Stats } from 'node:fs';
 import { ILibraryFileJob, ILibraryRefreshJob, JobName } from '../job';
 import {
@@ -1629,6 +1630,33 @@ describe(LibraryService.name, () => {
           importPath: '/data/user1/',
           isValid: false,
           message: 'Lacking read permission for folder',
+        },
+      ]);
+    });
+
+    it('should detect when import path is in immich media folder', async () => {
+      storageMock.stat.mockResolvedValue({ isDirectory: () => true } as Stats);
+      const validImport = libraryStub.hasImmichPaths.importPaths[1];
+      when(storageMock.checkFileExists).calledWith(validImport, R_OK).mockResolvedValue(true);
+
+      const result = await sut.validate(authStub.external1, libraryStub.hasImmichPaths.id, {
+        importPaths: libraryStub.hasImmichPaths.importPaths,
+      });
+
+      expect(result.importPaths).toEqual([
+        {
+          importPath: libraryStub.hasImmichPaths.importPaths[0],
+          isValid: false,
+          message: 'Cannot use media upload folder for external libraries',
+        },
+        {
+          importPath: validImport,
+          isValid: true,
+        },
+        {
+          importPath: libraryStub.hasImmichPaths.importPaths[2],
+          isValid: false,
+          message: 'Cannot use media upload folder for external libraries',
         },
       ]);
     });

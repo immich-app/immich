@@ -26,6 +26,7 @@ import {
   StorageEventType,
   WithProperty,
 } from '../repositories';
+import { StorageCore } from '../storage';
 import { SystemConfigCore } from '../system-config';
 import {
   CreateLibraryDto,
@@ -327,9 +328,13 @@ export class LibraryService extends EventEmitter {
     const validation = new ValidateLibraryImportPathResponseDto();
     validation.importPath = importPath;
 
+    if (StorageCore.isImmichPath(importPath)) {
+      validation.message = 'Cannot use media upload folder for external libraries';
+      return validation;
+    }
+
     try {
       const stat = await this.storageRepository.stat(importPath);
-
       if (!stat.isDirectory()) {
         validation.message = 'Not a directory';
         return validation;
@@ -678,13 +683,13 @@ export class LibraryService extends EventEmitter {
         this.logger.debug(`Will import ${crawledAssetPaths.size} new asset(s)`);
       }
 
-      const batch = [];
+      let batch = [];
       for (const assetPath of crawledAssetPaths) {
         batch.push(assetPath);
 
         if (batch.length >= LIBRARY_SCAN_BATCH_SIZE) {
           await this.scanAssets(job.id, batch, library.ownerId, job.refreshAllFiles ?? false);
-          batch.length = 0;
+          batch = [];
         }
       }
 
