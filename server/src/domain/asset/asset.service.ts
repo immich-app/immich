@@ -5,6 +5,7 @@ import _ from 'lodash';
 import { DateTime, Duration } from 'luxon';
 import { extname } from 'node:path';
 import sanitize from 'sanitize-filename';
+import { SearchService } from '..';
 import { AccessCore, Permission } from '../access';
 import { AuthDto } from '../auth';
 import { mimeTypes } from '../domain.constant';
@@ -172,7 +173,16 @@ export class AssetService {
 
   async getMemoryLane(auth: AuthDto, dto: MemoryLaneDto): Promise<MemoryLaneResponseDto[]> {
     const currentYear = new Date().getFullYear();
-    const assets = await this.assetRepository.getByDayOfYear(auth.user.id, dto);
+
+    // get partners id
+    const userIds: string[] = [auth.user.id];
+    const partners = await this.partnerRepository.getAll(auth.user.id);
+    const partnersIds = partners
+      .filter((partner) => partner.sharedBy && partner.inTimeline)
+      .map((partner) => partner.sharedById);
+    userIds.push(...partnersIds);
+
+    const assets = await this.assetRepository.getByDayOfYear(userIds, dto);
 
     return _.chain(assets)
       .filter((asset) => asset.localDateTime.getFullYear() < currentYear)
