@@ -1,4 +1,6 @@
+import { APP_MEDIA_LOCATION, THUMBNAIL_DIR } from '@app/domain';
 import { LibraryEntity, LibraryType } from '@app/infra/entities';
+import { join } from 'node:path';
 import { userStub } from './user.stub';
 
 export const libraryStub = {
@@ -94,6 +96,20 @@ export const libraryStub = {
     ownerId: 'user-id',
     type: LibraryType.EXTERNAL,
     importPaths: ['/xyz', '/asdf'],
+    createdAt: new Date('2023-01-01'),
+    updatedAt: new Date('2023-01-01'),
+    refreshedAt: null,
+    isVisible: true,
+    exclusionPatterns: ['**/dir1/**'],
+  }),
+  hasImmichPaths: Object.freeze<LibraryEntity>({
+    id: 'library-id1337',
+    name: 'importpath-exclusion-library1',
+    assets: [],
+    owner: userStub.admin,
+    ownerId: 'user-id',
+    type: LibraryType.EXTERNAL,
+    importPaths: [join(THUMBNAIL_DIR, 'library'), '/xyz', join(APP_MEDIA_LOCATION, 'library')],
     createdAt: new Date('2023-01-01'),
     updatedAt: new Date('2023-01-01'),
     refreshedAt: null,
