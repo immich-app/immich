@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { extname, join } from 'node:path';
 
 export const AUDIT_LOG_MAX_DURATION = Duration.fromObject({ days: 100 });
+export const AUDIT_LOG_CLEANUP_DURATION = Duration.fromObject({ days: 101 });
 export const ONE_HOUR = Duration.fromObject({ hours: 1 });
 
 export interface IVersion {

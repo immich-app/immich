@@ -49,16 +49,23 @@ class AssetService {
     return changes;
   }
 
-  /// Returns `(null, null)` if changes are invalid -> requires full sync
-  Future<(List<Asset>? toUpsert, List<String>? toDelete)>
+  /// Returns `(null, null, time)` if changes are invalid -> requires full sync
+  Future<(List<Asset>? toUpsert, List<String>? toDelete, DateTime? time)>
       _getRemoteAssetChanges(User user, DateTime since) async {
     final deleted = await _apiService.auditApi
         .getAuditDeletes(since, EntityType.ASSET, userId: user.id);
-    if (deleted == null || deleted.needsFullSync) return (null, null);
+    if (deleted == null || deleted.needsFullSync) {
+      return (null, null, deleted?.requestedAt);
+    }
+
     final assetDto = await _apiService.assetApi
         .getAllAssets(userId: user.id, updatedAfter: since);
-    if (assetDto == null) return (null, null);
-    return (assetDto.map(Asset.remote).toList(), deleted.ids);
+    if (assetDto == null) return (null, null, deleted.requestedAt);
+    return (
+      assetDto.map(Asset.remote).toList(),
+      deleted.ids,
+      deleted.requestedAt
+    );
   }
 
   /// Returns the list of people of the given asset id.
@@ -83,10 +90,11 @@ class AssetService {
   }
 
   /// Returns `null` if the server state did not change, else list of assets
-  Future<List<Asset>?> _getRemoteAssets(User user) async {
+
+  Future<List<Asset>?> _getRemoteAssets(User user, DateTime now) async {
     const int chunkSize = 10000;
+
     try {
-      final DateTime now = DateTime.now().toUtc();
       final List<Asset> allAssets = [];
       for (int i = 0;; i += chunkSize) {
         final List<AssetResponseDto>? assets =

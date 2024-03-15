@@ -7356,6 +7356,10 @@
           },
           "needsFullSync": {
             "type": "boolean"
+          },
+          "requestedAt": {
+            "format": "date-time",
+            "type": "string"
           }
         },
         "required": [
