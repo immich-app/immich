@@ -1,6 +1,7 @@
 import { LogLevel, SystemConfig } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
-import { Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
 import { instanceToPlain } from 'class-transformer';
 import _ from 'lodash';
 import {
@@ -8,6 +9,7 @@ import {
   ICommunicationRepository,
   ISearchRepository,
   ISystemConfigRepository,
+  InternalEvent,
   ServerEvent,
 } from '../repositories';
 import { SystemConfigDto, mapConfig } from './dto/system-config.dto';
@@ -22,7 +24,7 @@ import {
   supportedWeekTokens,
   supportedYearTokens,
 } from './system-config.constants';
-import { SystemConfigCore, SystemConfigValidator } from './system-config.core';
+import { SystemConfigCore } from './system-config.core';
 
 @Injectable()
 export class SystemConfigService {
@@ -37,7 +39,6 @@ export class SystemConfigService {
     this.core = SystemConfigCore.create(repository);
     this.communicationRepository.on(ServerEvent.CONFIG_UPDATE, () => this.handleConfigUpdate());
     this.core.config$.subscribe((config) => this.setLogLevel(config));
-    this.core.addValidator((newConfig, oldConfig) => this.validateConfig(newConfig, oldConfig));
   }
 
   async init() {
@@ -59,8 +60,23 @@ export class SystemConfigService {
     return mapConfig(config);
   }
 
+  @OnEvent(InternalEvent.VALIDATE_CONFIG)
+  validateConfig(newConfig: SystemConfig, oldConfig: SystemConfig) {
+    if (!_.isEqual(instanceToPlain(newConfig.logging), oldConfig.logging) && this.getEnvLogLevel()) {
+      throw new Error('Logging cannot be changed while the environment variable LOG_LEVEL is set.');
+    }
+  }
+
   async updateConfig(dto: SystemConfigDto): Promise<SystemConfigDto> {
     const oldConfig = await this.core.getConfig();
+
+    try {
+      await this.communicationRepository.emitAsync(InternalEvent.VALIDATE_CONFIG, dto, oldConfig);
+    } catch (error) {
+      this.logger.warn(`Unable to save system config due to a validation error: ${error}`);
+      throw new BadRequestException(error instanceof Error ? error.message : error);
+    }
+
     const newConfig = await this.core.updateConfig(dto);
 
     this.communicationRepository.broadcast(ClientEvent.CONFIG_UPDATE, {});
@@ -77,10 +93,6 @@ export class SystemConfigService {
     this.communicationRepository.sendServerEvent(ServerEvent.CONFIG_UPDATE);
     await this.core.refreshConfig();
     return true;
-  }
-
-  addValidator(validator: SystemConfigValidator) {
-    this.core.addValidator(validator);
   }
 
   getStorageTemplateOptions(): SystemConfigTemplateStorageOptionDto {
@@ -128,11 +140,5 @@ export class SystemConfigService {
 
   private getEnvLogLevel() {
     return process.env.LOG_LEVEL as LogLevel;
-  }
-
-  private validateConfig(newConfig: SystemConfig, oldConfig: SystemConfig) {
-    if (!_.isEqual(instanceToPlain(newConfig.logging), oldConfig.logging) && this.getEnvLogLevel()) {
-      throw new Error('Logging cannot be changed while the environment variable LOG_LEVEL is set.');
-    }
   }
 }

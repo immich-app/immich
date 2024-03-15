@@ -7,6 +7,7 @@ import {
   ServerEvent,
 } from '@app/domain';
 import { ImmichLogger } from '@app/infra/logger';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   OnGatewayConnection,
   OnGatewayDisconnect,
@@ -35,7 +36,10 @@ export class CommunicationRepository
   @WebSocketServer()
   private server?: Server;
 
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private eventEmitter: EventEmitter2,
+  ) {}
 
   afterInit(server: Server) {
     this.logger.log('Initialized websocket server');
@@ -96,5 +100,13 @@ export class CommunicationRepository
   sendServerEvent(event: ServerEvent) {
     this.logger.debug(`Server event: ${event} (send)`);
     this.server?.serverSideEmit(event);
+  }
+
+  emit(eventName: string, ...parameters: any[]) {
+    return this.eventEmitter.emit(eventName, parameters);
+  }
+
+  emitAsync(eventName: string, ...parameters: any[]) {
+    return this.eventEmitter.emitAsync(eventName, parameters);
   }
 }

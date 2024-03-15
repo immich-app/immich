@@ -21,6 +21,10 @@ export enum ServerEvent {
   CONFIG_UPDATE = 'config:update',
 }
 
+export enum InternalEvent {
+  VALIDATE_CONFIG = 'validate_config',
+}
+
 export interface ClientEventMap {
   [ClientEvent.UPLOAD_SUCCESS]: AssetResponseDto;
   [ClientEvent.USER_DELETE]: string;
@@ -45,4 +49,6 @@ export interface ICommunicationRepository {
   on(event: 'connect', callback: OnConnectCallback): void;
   on(event: ServerEvent, callback: OnServerEventCallback): void;
   sendServerEvent(event: ServerEvent): void;
+  emit(eventName: string, ...parameters: any[]): boolean;
+  emitAsync(eventName: string, ...parameters: any[]): Promise<any[]>;
 }
