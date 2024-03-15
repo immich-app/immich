@@ -2,7 +2,7 @@
 
 lib_path="/usr/lib/$(arch)-linux-gnu/libmimalloc.so.2"
 # mimalloc seems to increase memory usage dramatically with openvino, need to investigate
-if ! [[ "$DEVICE" = "openvino" ]]; then 
+if ! [ "$DEVICE" = "openvino" ]; then 
 	export LD_PRELOAD="$lib_path"
 	export LD_BIND_NOW=1
 fi
