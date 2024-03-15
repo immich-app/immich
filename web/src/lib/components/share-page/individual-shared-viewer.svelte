@@ -82,8 +82,8 @@
   {:else}
     <ControlAppBar on:close={() => goto(AppRoute.PHOTOS)} backIcon={mdiArrowLeft} showBackButton={false}>
       <svelte:fragment slot="leading">
-        <a data-sveltekit-preload-data="hover" class="ml-4 hover:cursor-pointer" href="/">
-          <ImmichLogo width="50%" />
+        <a data-sveltekit-preload-data="hover" class="ml-4" href="/">
+          <ImmichLogo class="h-10" />
         </a>
       </svelte:fragment>
 

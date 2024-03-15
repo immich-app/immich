@@ -4,6 +4,13 @@
   import logoNoText from '$lib/assets/immich-logo.svg';
   import { Theme } from '$lib/constants';
   import { colorTheme } from '$lib/stores/preferences.store';
+  import type { HTMLImgAttributes } from 'svelte/elements';
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  interface $$Props extends HTMLImgAttributes {
+    noText?: boolean;
+    draggable?: boolean;
+  }
 
   export let noText = false;
   export let draggable = false;
