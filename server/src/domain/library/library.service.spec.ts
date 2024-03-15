@@ -262,7 +262,21 @@ describe(LibraryService.name, () => {
 
       await sut.handleOfflineCheck(mockAssetJob);
 
-      expect(assetMock.save).toHaveBeenCalledWith([assetStub.offline.id], { isOffline: true });
+      expect(assetMock.save).toHaveBeenCalledWith({ id: assetStub.external.id, isOffline: true });
+    });
+
+    it('should ignore an online asset', async () => {
+      const mockAssetJob: IEntityJob = {
+        id: assetStub.external.id,
+      };
+
+      assetMock.getById.mockResolvedValue(assetStub.external);
+
+      storageMock.checkFileExists.mockResolvedValue(true);
+
+      await sut.handleOfflineCheck(mockAssetJob);
+
+      expect(assetMock.save).not.toHaveBeenCalled();
     });
   });
 
