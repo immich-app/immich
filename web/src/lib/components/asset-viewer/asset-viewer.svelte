@@ -646,7 +646,7 @@
                   ? 'bg-transparent border-2 border-white'
                   : 'bg-gray-700/40'} inline-block hover:bg-transparent"
                 asset={stackedAsset}
-                on:click={() => {
+                onClick={() => {
                   asset = stackedAsset;
                   preloadAssets = index + 1 >= $stackAssetsStore.length ? [] : [$stackAssetsStore[index + 1]];
                 }}
