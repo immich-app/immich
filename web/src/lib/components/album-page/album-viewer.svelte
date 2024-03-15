@@ -32,7 +32,17 @@
 
   dragAndDropFilesStore.subscribe((value) => {
     if (value.isDragging && value.files.length > 0) {
-      handlePromiseError(fileUploadHandler(value.files, album.id));
+      if (isExternalUser()) {
+        if (
+          confirm(
+            'Please note uploaded files can only be deleted by Immich users. Please upload at your own risk. Are you sure you want to proceed?',
+          )
+        ) {
+          handlePromiseError(fileUploadHandler(value.files, album.id));
+        }
+      } else {
+        handlePromiseError(fileUploadHandler(value.files, album.id));
+      }
       dragAndDropFilesStore.set({ isDragging: false, files: [] });
     }
   });
@@ -40,6 +50,39 @@
   const downloadAlbum = async () => {
     await downloadArchive(`${album.albumName}.zip`, { albumId: album.id });
   };
+
+  const handleDrop = (event: DragEvent) => {
+    event.preventDefault();
+    const files = Array.from(event.dataTransfer?.files || []);
+    if (files.length > 0) {
+      if (isExternalUser()) {
+        if (
+          confirm(
+            'Please note uploaded files can only be deleted by Immich users. Please upload at your own risk. Are you sure you want to proceed?',
+          )
+        ) {
+          handlePromiseError(fileUploadHandler(files, album.id));
+        }
+      } else {
+        handlePromiseError(fileUploadHandler(files, album.id));
+      }
+    }
+    dragAndDropFilesStore.set({ isDragging: false, files: [] });
+  };
+
+  const handleDragOver = (event: DragEvent) => {
+    event.preventDefault();
+    event.dataTransfer!.dropEffect = 'copy';
+    document.body.classList.add('drag-over');
+  };
+
+  const handleDragLeave = () => {
+    document.body.classList.remove('drag-over');
+  };
+
+  function isExternalUser() {
+    return window.location.href.includes('/share/');
+  }
 </script>
 
 <svelte:window
@@ -92,7 +135,12 @@
   {/if}
 </header>
 
-<main class="relative h-screen overflow-hidden bg-immich-bg px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg">
+<main
+  class="relative h-screen overflow-hidden bg-immich-bg px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg"
+  on:drop={handleDrop}
+  on:dragover={handleDragOver}
+  on:dragleave={handleDragLeave}
+>
   <AssetGrid {album} {assetStore} {assetInteractionStore}>
     <section class="pt-24">
       <!-- ALBUM TITLE -->

@@ -28,6 +28,12 @@ export const openFileUploadDialog = async (albumId?: string | undefined) => {
       fileSelector.type = 'file';
       fileSelector.multiple = true;
       fileSelector.accept = extensions.join(',');
+
+      // External User Check and Warning 
+      if (isExternalUser()) {
+        alert("Please note uploaded files can only be deleted by Immich users. Please upload at your own risk");
+      }
+
       fileSelector.addEventListener('change', (e: Event) => {
         const target = e.target as HTMLInputElement;
         if (!target.files) {
@@ -126,4 +132,8 @@ async function fileUploader(asset: File, albumId: string | undefined = undefined
       uploadAssetsStore.updateAsset(deviceAssetId, { state: UploadState.ERROR, error: reason });
       return undefined;
     });
+}
+
+function isExternalUser() {
+  return window.location.href.includes('/share/');
 }
