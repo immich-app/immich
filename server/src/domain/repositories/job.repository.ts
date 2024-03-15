@@ -96,7 +96,13 @@ export type JobItem =
   | { name: JobName.LIBRARY_CHECK_IF_ASSET_ONLINE; data: IEntityJob }
   | { name: JobName.LIBRARY_QUEUE_CLEANUP; data: IBaseJob };
 
-export type JobHandler<T = any> = (data: T) => boolean | Promise<boolean>;
+export enum JobStatus {
+  SUCCESS = 'success',
+  FAILED = 'failed',
+  SKIPPED = 'skipped',
+}
+
+export type JobHandler<T = any> = (data: T) => Promise<JobStatus>;
 export type JobItemHandler = (item: JobItem) => Promise<void>;
 
 export const IJobRepository = 'IJobRepository';

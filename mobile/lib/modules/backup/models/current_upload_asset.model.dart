@@ -6,6 +6,7 @@ class CurrentUploadAsset {
   final DateTime fileCreatedAt;
   final String fileName;
   final String fileType;
+  final int? fileSize;
   final bool? iCloudAsset;
 
   CurrentUploadAsset({
@@ -13,6 +14,7 @@ class CurrentUploadAsset {
     required this.fileCreatedAt,
     required this.fileName,
     required this.fileType,
+    this.fileSize,
     this.iCloudAsset,
   });
 
@@ -21,6 +23,7 @@ class CurrentUploadAsset {
     DateTime? fileCreatedAt,
     String? fileName,
     String? fileType,
+    int? fileSize,
     bool? iCloudAsset,
   }) {
     return CurrentUploadAsset(
@@ -28,6 +31,7 @@ class CurrentUploadAsset {
       fileCreatedAt: fileCreatedAt ?? this.fileCreatedAt,
       fileName: fileName ?? this.fileName,
       fileType: fileType ?? this.fileType,
+      fileSize: fileSize ?? this.fileSize,
       iCloudAsset: iCloudAsset ?? this.iCloudAsset,
     );
   }
@@ -38,6 +42,7 @@ class CurrentUploadAsset {
       'fileCreatedAt': fileCreatedAt.millisecondsSinceEpoch,
       'fileName': fileName,
       'fileType': fileType,
+      'fileSize': fileSize,
       'iCloudAsset': iCloudAsset,
     };
   }
@@ -49,6 +54,7 @@ class CurrentUploadAsset {
           DateTime.fromMillisecondsSinceEpoch(map['fileCreatedAt'] as int),
       fileName: map['fileName'] as String,
       fileType: map['fileType'] as String,
+      fileSize: map['fileSize'] as int,
       iCloudAsset:
           map['iCloudAsset'] != null ? map['iCloudAsset'] as bool : null,
     );
@@ -61,7 +67,7 @@ class CurrentUploadAsset {
 
   @override
   String toString() {
-    return 'CurrentUploadAsset(id: $id, fileCreatedAt: $fileCreatedAt, fileName: $fileName, fileType: $fileType, iCloudAsset: $iCloudAsset)';
+    return 'CurrentUploadAsset(id: $id, fileCreatedAt: $fileCreatedAt, fileName: $fileName, fileType: $fileType, fileSize: $fileSize, iCloudAsset: $iCloudAsset)';
   }
 
   @override
@@ -72,6 +78,7 @@ class CurrentUploadAsset {
         other.fileCreatedAt == fileCreatedAt &&
         other.fileName == fileName &&
         other.fileType == fileType &&
+        other.fileSize == fileSize &&
         other.iCloudAsset == iCloudAsset;
   }
 
@@ -81,6 +88,7 @@ class CurrentUploadAsset {
         fileCreatedAt.hashCode ^
         fileName.hashCode ^
         fileType.hashCode ^
+        fileSize.hashCode ^
         iCloudAsset.hashCode;
   }
 }

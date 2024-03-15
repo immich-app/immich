@@ -38,7 +38,7 @@
     <ControlAppBar showBackButton={false}>
       <svelte:fragment slot="leading">
         <a data-sveltekit-preload-data="hover" class="ml-4" href="/">
-          <ImmichLogo width="55%" />
+          <ImmichLogo class="h-10" />
         </a>
       </svelte:fragment>
 
