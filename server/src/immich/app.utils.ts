@@ -17,27 +17,14 @@ import {
   SwaggerDocumentOptions,
   SwaggerModule,
 } from '@nestjs/swagger';
+import { SchemaObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
 import { NextFunction, Response } from 'express';
 import _ from 'lodash';
 import { writeFileSync } from 'node:fs';
 import { access, constants } from 'node:fs/promises';
 import path, { isAbsolute } from 'node:path';
 import { promisify } from 'node:util';
-
-import { applyDecorators, UsePipes, ValidationPipe } from '@nestjs/common';
-import { SchemaObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
 import { Metadata } from './app.guard';
-
-export function UseValidation() {
-  return applyDecorators(
-    UsePipes(
-      new ValidationPipe({
-        transform: true,
-        whitelist: true,
-      }),
-    ),
-  );
-}
 
 type SendFile = Parameters<Response['sendFile']>;
 type SendFileOptions = SendFile[1];

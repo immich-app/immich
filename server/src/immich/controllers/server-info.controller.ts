@@ -12,12 +12,10 @@ import {
 import { Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AdminRoute, Authenticated, PublicRoute } from '../app.guard';
-import { UseValidation } from '../app.utils';
 
 @ApiTags('Server Info')
 @Controller('server-info')
 @Authenticated()
-@UseValidation()
 export class ServerInfoController {
   constructor(private service: ServerInfoService) {}
 

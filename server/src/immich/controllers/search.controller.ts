@@ -15,12 +15,10 @@ import { SearchSuggestionRequestDto } from '@app/domain/search/dto/search-sugges
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Auth, Authenticated } from '../app.guard';
-import { UseValidation } from '../app.utils';
 
 @ApiTags('Search')
 @Controller('search')
 @Authenticated()
-@UseValidation()
 export class SearchController {
   constructor(private service: SearchService) {}
 

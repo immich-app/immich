@@ -13,7 +13,6 @@ import {
   Res,
   UploadedFiles,
   UseInterceptors,
-  ValidationPipe,
 } from '@nestjs/common';
 import { ApiBody, ApiConsumes, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
@@ -58,7 +57,7 @@ export class AssetController {
   async uploadFile(
     @Auth() auth: AuthDto,
     @UploadedFiles(new ParseFilePipe({ validators: [new FileNotEmptyValidator(['assetData'])] })) files: UploadFiles,
-    @Body(new ValidationPipe({ transform: true })) dto: CreateAssetDto,
+    @Body() dto: CreateAssetDto,
     @Res({ passthrough: true }) res: Response,
   ): Promise<AssetFileUploadResponseDto> {
     const file = mapToUploadFile(files.assetData[0]);
@@ -90,7 +89,7 @@ export class AssetController {
     @Next() next: NextFunction,
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
-    @Query(new ValidationPipe({ transform: true })) dto: ServeFileDto,
+    @Query() dto: ServeFileDto,
   ) {
     await sendFile(res, next, () => this.serviceV1.serveFile(auth, id, dto));
   }
@@ -103,7 +102,7 @@ export class AssetController {
     @Next() next: NextFunction,
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
-    @Query(new ValidationPipe({ transform: true })) dto: GetAssetThumbnailDto,
+    @Query() dto: GetAssetThumbnailDto,
   ) {
     await sendFile(res, next, () => this.serviceV1.serveThumbnail(auth, id, dto));
   }
@@ -135,7 +134,7 @@ export class AssetController {
   })
   getAllAssets(
     @Auth() auth: AuthDto,
-    @Query(new ValidationPipe({ transform: true })) dto: AssetSearchDto,
+    @Query() dto: AssetSearchDto,
   ): Promise<AssetResponseDto[]> {
     return this.serviceV1.getAllAssets(auth, dto);
   }
@@ -147,7 +146,7 @@ export class AssetController {
   @HttpCode(HttpStatus.OK)
   checkExistingAssets(
     @Auth() auth: AuthDto,
-    @Body(ValidationPipe) dto: CheckExistingAssetsDto,
+    @Body() dto: CheckExistingAssetsDto,
   ): Promise<CheckExistingAssetsResponseDto> {
     return this.serviceV1.checkExistingAssets(auth, dto);
   }
@@ -159,7 +158,7 @@ export class AssetController {
   @HttpCode(HttpStatus.OK)
   checkBulkUpload(
     @Auth() auth: AuthDto,
-    @Body(ValidationPipe) dto: AssetBulkUploadCheckDto,
+    @Body() dto: AssetBulkUploadCheckDto,
   ): Promise<AssetBulkUploadCheckResponseDto> {
     return this.serviceV1.bulkUploadCheck(auth, dto);
   }
