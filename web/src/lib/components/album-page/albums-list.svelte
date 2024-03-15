@@ -228,7 +228,7 @@
 {#if albums.length > 0}
   <!-- Album Card -->
   {#if $albumViewSettings.view === AlbumViewMode.Cover}
-    <div class="grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))] mt-4">
+    <div class="grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))] mt-4 gap-y-4">
       {#each albumsFiltered as album, index (album.id)}
         <a data-sveltekit-preload-data="hover" href="{AppRoute.ALBUMS}/{album.id}" animate:flip={{ duration: 200 }}>
           <AlbumCard
