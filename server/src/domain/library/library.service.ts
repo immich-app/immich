@@ -700,33 +700,21 @@ export class LibraryService extends EventEmitter {
     });
 
     let crawledAssetPaths: string[] = [];
-    let assetIdsToMarkOnline: string[] = [];
 
     let pathCounter = 0;
-
-    const processAssetBatch = async () => {
-      if (assetIdsToMarkOnline.length > 0) {
-        this.logger.debug(`Found ${assetIdsToMarkOnline.length} online asset(s) previously marked as offline`);
-        await this.assetRepository.updateAll(assetIdsToMarkOnline, { isOffline: false });
-      }
-
-      this.logger.log(`Queuing refresh for ${crawledAssetPaths.length} asset(s) in library ${job.id}`);
-
-      await this.scanAssets(job.id, crawledAssetPaths, library.ownerId, job.refreshAllFiles ?? false);
-    };
 
     for await (const filePath of generator) {
       crawledAssetPaths.push(filePath);
       pathCounter++;
 
       if (crawledAssetPaths.length % LIBRARY_SCAN_BATCH_SIZE === 0) {
-        await processAssetBatch();
+        await this.scanAssets(job.id, crawledAssetPaths, library.ownerId, job.refreshAllFiles ?? false);
 
         crawledAssetPaths = [];
       }
     }
 
-    await processAssetBatch();
+    await this.scanAssets(job.id, crawledAssetPaths, library.ownerId, job.refreshAllFiles ?? false);
 
     this.logger.log(`Found ${pathCounter} asset(s) when crawling import paths ${library.importPaths}`);
 
