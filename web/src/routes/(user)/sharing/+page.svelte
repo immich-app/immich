@@ -80,10 +80,10 @@
 
       <div>
         <!-- Share Album List -->
-        <div class="grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))]">
+        <div class="grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))] mt-4">
           {#each data.sharedAlbums as album, index (album.id)}
             <a data-sveltekit-preload-data="hover" href={`albums/${album.id}`} animate:flip={{ duration: 200 }}>
-              <AlbumCard preload={index < 20} {album} isSharingView showContextMenu={false} />
+              <AlbumCard preload={index < 20} {album} isSharingView />
             </a>
           {/each}
         </div>
