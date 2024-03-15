@@ -304,9 +304,8 @@ export class LibraryService extends EventEmitter {
     this.logger.verbose(`Queuing refresh of ${assetPaths.length} asset(s)`);
 
     // We perform this in batches to save on memory when performing large refreshes (greater than 1M assets)
-    const batchSize = 5000;
-    for (let i = 0; i < assetPaths.length; i += batchSize) {
-      const batch = assetPaths.slice(i, i + batchSize);
+    for (let i = 0; i < assetPaths.length; i += LIBRARY_SCAN_BATCH_SIZE) {
+      const batch = assetPaths.slice(i, i + LIBRARY_SCAN_BATCH_SIZE);
       await this.jobRepository.queueAll(
         batch.map((assetPath) => ({
           name: JobName.LIBRARY_SCAN_ASSET,
@@ -617,7 +616,7 @@ export class LibraryService extends EventEmitter {
     return JobStatus.SUCCESS;
   }
 
-  async handleQueueOnlineStatusCheck(job: IEntityJob): Promise<boolean> {
+  async handleQueueOnlineStatusCheck(job: IEntityJob): Promise<JobStatus> {
     this.logger.log(`Checking files for online/offline status in library: ${job.id}`);
     const onlineAssets = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
       this.assetRepository.getWith(pagination, WithProperty.IS_ONLINE, job.id),
@@ -633,16 +632,16 @@ export class LibraryService extends EventEmitter {
       );
     }
 
-    return true;
+    return JobStatus.SUCCESS;
   }
 
   // Check if an online asset is offline
-  async handleAssetOnlineCheck(job: IEntityJob) {
+  async handleAssetOnlineCheck(job: IEntityJob): Promise<JobStatus> {
     const asset = await this.assetRepository.getById(job.id);
 
     if (!asset || asset.isOffline) {
       // We only care about online assets, we exit here if offline
-      return false;
+      return JobStatus.SKIPPED;
     }
 
     const exists = await this.storageRepository.checkFileExists(asset.originalPath, R_OK);
@@ -654,7 +653,7 @@ export class LibraryService extends EventEmitter {
       await this.assetRepository.save({ id: asset.id, isOffline: true });
     }
 
-    return true;
+    return JobStatus.SUCCESS;
   }
 
   async handleOfflineRemoval(job: IEntityJob): Promise<JobStatus> {
@@ -723,7 +722,6 @@ export class LibraryService extends EventEmitter {
       if (crawledAssetPaths.length % LIBRARY_SCAN_BATCH_SIZE === 0) {
         await processAssetBatch();
 
-        assetIdsToMarkOnline = [];
         crawledAssetPaths = [];
       }
     }

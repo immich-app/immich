@@ -10692,7 +10692,8 @@
           }
         },
         "required": [
-          "importPath"
+          "importPath",
+          "isValid"
         ],
         "type": "object"
       },
