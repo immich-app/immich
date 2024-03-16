@@ -303,23 +303,19 @@ export class LibraryService extends EventEmitter {
   private async scanAssets(libraryId: string, assetPaths: string[], ownerId: string, force = false) {
     this.logger.verbose(`Queuing refresh of ${assetPaths.length} asset(s)`);
 
-    // We perform this in batches to save on memory when performing large refreshes (greater than 1M assets)
-    for (let i = 0; i < assetPaths.length; i += LIBRARY_SCAN_BATCH_SIZE) {
-      const batch = assetPaths.slice(i, i + LIBRARY_SCAN_BATCH_SIZE);
-      await this.jobRepository.queueAll(
-        batch.map((assetPath) => ({
-          name: JobName.LIBRARY_SCAN_ASSET,
-          data: {
-            id: libraryId,
-            assetPath: assetPath,
-            ownerId,
-            force,
-          },
-        })),
-      );
-    }
+    await this.jobRepository.queueAll(
+      assetPaths.map((assetPath) => ({
+        name: JobName.LIBRARY_SCAN_ASSET,
+        data: {
+          id: libraryId,
+          assetPath: assetPath,
+          ownerId,
+          force,
+        },
+      })),
+    );
 
-    this.logger.debug('Asset refresh queue completed');
+    this.logger.verbose('Asset refresh queued');
   }
 
   private async validateImportPath(importPath: string): Promise<ValidateLibraryImportPathResponseDto> {
