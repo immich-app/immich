@@ -104,9 +104,6 @@ export class ScanLibraryDto {
 
   @ValidateBoolean({ optional: true })
   refreshAllFiles?: boolean;
-
-  @ValidateBoolean({ optional: true })
-  checkForOffline?: boolean;
 }
 
 export class SearchLibraryDto {

@@ -92,7 +92,7 @@ export type JobItem =
   | { name: JobName.LIBRARY_REMOVE_OFFLINE; data: IEntityJob }
   | { name: JobName.LIBRARY_DELETE; data: IEntityJob }
   | { name: JobName.LIBRARY_QUEUE_SCAN_ALL; data: IBaseJob }
-  | { name: JobName.LIBRARY_SCAN_OFFLINE; data: IEntityJob }
+  | { name: JobName.LIBRARY_SCAN_DELETED; data: IEntityJob }
   | { name: JobName.LIBRARY_CHECK_OFFLINE; data: IEntityJob }
   | { name: JobName.LIBRARY_QUEUE_CLEANUP; data: IBaseJob };
 

@@ -32,6 +32,7 @@
     type LibraryResponseDto,
     type LibraryStatsResponseDto,
     type UserResponseDto,
+    scanDeletedFiles,
   } from '@immich/sdk';
   import { mdiDatabase, mdiDotsVertical, mdiPlusBoxOutline, mdiSync, mdiUpload } from '@mdi/js';
   import { onMount } from 'svelte';
@@ -207,7 +208,7 @@
 
   const handleScanDeleted = async (libraryId: string) => {
     try {
-      await scanLibrary({ id: libraryId, scanLibraryDto: { checkForOffline: true } });
+      await scanDeletedFiles({ id: libraryId });
       notificationController.show({
         message: `Scanning library for deleted files`,
         type: NotificationType.Info,

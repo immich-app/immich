@@ -1440,44 +1440,34 @@ describe(LibraryService.name, () => {
         ],
       ]);
     });
+  });
 
-    it('should queue an offline file scan', async () => {
+  describe('queueDeletedScan', () => {
+    it('should not queue a deleted scan of upload library', async () => {
+      libraryMock.get.mockResolvedValue(libraryStub.uploadLibrary1);
+
+      await expect(sut.queueDeletedScan(authStub.admin, libraryStub.uploadLibrary1.id)).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+
+      expect(jobMock.queue).not.toBeCalled();
+    });
+
+    it('should queue a deleted file scan', async () => {
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
 
-      await sut.queueScan(authStub.admin, libraryStub.externalLibrary1.id, { checkForOffline: true });
+      await sut.queueDeletedScan(authStub.admin, libraryStub.externalLibrary1.id);
 
       expect(jobMock.queue.mock.calls).toEqual([
         [
           {
-            name: JobName.LIBRARY_SCAN_OFFLINE,
+            name: JobName.LIBRARY_SCAN_DELETED,
             data: {
               id: libraryStub.externalLibrary1.id,
             },
           },
         ],
       ]);
-    });
-
-    it('should error when queuing a scan with checkOffline and refreshAll', async () => {
-      libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
-
-      await expect(
-        sut.queueScan(authStub.admin, libraryStub.externalLibrary1.id, {
-          refreshAllFiles: true,
-          checkForOffline: true,
-        }),
-      ).rejects.toBeInstanceOf(BadRequestException);
-    });
-
-    it('should error when queuing a scan with checkOffline and refreshModified', async () => {
-      libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
-
-      await expect(
-        sut.queueScan(authStub.admin, libraryStub.externalLibrary1.id, {
-          refreshModifiedFiles: true,
-          checkForOffline: true,
-        }),
-      ).rejects.toBeInstanceOf(BadRequestException);
     });
   });
 

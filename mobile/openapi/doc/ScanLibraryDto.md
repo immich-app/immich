@@ -8,7 +8,6 @@ import 'package:openapi/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**checkForOffline** | **bool** |  | [optional] 
 **refreshAllFiles** | **bool** |  | [optional] 
 **refreshModifiedFiles** | **bool** |  | [optional] 
 

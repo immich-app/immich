@@ -139,6 +139,7 @@ Class | Method | HTTP request | Description
 *LibraryApi* | [**getLibrary**](doc//LibraryApi.md#getlibrary) | **GET** /library/{id} | 
 *LibraryApi* | [**getLibraryStatistics**](doc//LibraryApi.md#getlibrarystatistics) | **GET** /library/{id}/statistics | 
 *LibraryApi* | [**removeOfflineFiles**](doc//LibraryApi.md#removeofflinefiles) | **POST** /library/{id}/removeOffline | 
+*LibraryApi* | [**scanDeletedFiles**](doc//LibraryApi.md#scandeletedfiles) | **POST** /library/{id}/scanDeleted | 
 *LibraryApi* | [**scanLibrary**](doc//LibraryApi.md#scanlibrary) | **POST** /library/{id}/scan | 
 *LibraryApi* | [**updateLibrary**](doc//LibraryApi.md#updatelibrary) | **PUT** /library/{id} | 
 *LibraryApi* | [**validate**](doc//LibraryApi.md#validate) | **POST** /library/{id}/validate | 

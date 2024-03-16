@@ -559,11 +559,7 @@ export class LibraryService extends EventEmitter {
 
     const library = await this.repository.get(id);
     if (!library || library.type !== LibraryType.EXTERNAL) {
-      throw new BadRequestException('Can only refresh external libraries');
-    }
-
-    if (dto.checkForOffline) {
-      await this.jobRepository.queue({ name: JobName.LIBRARY_SCAN_OFFLINE, data: { id } });
+      throw new BadRequestException('Can only scan external libraries');
     }
 
     await this.jobRepository.queue({
@@ -574,6 +570,17 @@ export class LibraryService extends EventEmitter {
         refreshAllFiles: dto.refreshAllFiles ?? false,
       },
     });
+  }
+
+  async queueDeletedScan(auth: AuthDto, id: string) {
+    await this.access.requirePermission(auth, Permission.LIBRARY_UPDATE, id);
+
+    const library = await this.repository.get(id);
+    if (!library || library.type !== LibraryType.EXTERNAL) {
+      throw new BadRequestException('Can only scan external libraries');
+    }
+
+    await this.jobRepository.queue({ name: JobName.LIBRARY_SCAN_DELETED, data: { id } });
   }
 
   async queueRemoveOffline(auth: AuthDto, id: string) {
