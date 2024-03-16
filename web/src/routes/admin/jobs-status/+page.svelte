@@ -9,6 +9,7 @@
   import { mdiCog } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
   import type { PageData } from './$types';
+  import PageHeader from '$lib/components/layouts/page-header.svelte';
 
   export let data: PageData;
 
@@ -28,17 +29,19 @@
   });
 </script>
 
-<UserPageLayout title={data.meta.title} admin>
-  <div class="flex justify-end" slot="buttons">
-    <a href="{AppRoute.ADMIN_SETTINGS}?open=job">
-      <LinkButton>
-        <div class="flex place-items-center gap-2 text-sm">
-          <Icon path={mdiCog} size="18" />
-          Manage Concurrency
-        </div>
-      </LinkButton>
-    </a>
-  </div>
+<UserPageLayout admin>
+  <PageHeader title={data.meta.title}>
+    <div class="flex justify-end" slot="buttons">
+      <a href="{AppRoute.ADMIN_SETTINGS}?open=job">
+        <LinkButton>
+          <div class="flex place-items-center gap-2 text-sm">
+            <Icon path={mdiCog} size="18" />
+            Manage Concurrency
+          </div>
+        </LinkButton>
+      </a>
+    </div>
+  </PageHeader>
   <section id="setting-content" class="flex place-content-center sm:mx-4">
     <section class="w-full pb-28 sm:w-5/6 md:w-[850px]">
       {#if jobs}

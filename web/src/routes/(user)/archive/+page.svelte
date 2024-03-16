@@ -1,4 +1,5 @@
 <script lang="ts">
+  import PageHeader from '$lib/components/layouts/page-header.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
   import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
@@ -43,7 +44,8 @@
   </AssetSelectControlBar>
 {/if}
 
-<UserPageLayout hideNavbar={$isMultiSelectState} title={data.meta.title} scrollbar={false}>
+<UserPageLayout hideNavbar={$isMultiSelectState}>
+  <PageHeader title={data.meta.title} />
   <AssetGrid {assetStore} {assetInteractionStore} removeAction={AssetAction.UNARCHIVE}>
     <EmptyPlaceholder text="Archive photos and videos to hide them from your Photos view" slot="empty" />
   </AssetGrid>

@@ -1,20 +1,21 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import empty2Url from '$lib/assets/empty-2.svg';
-  import AlbumCard from '$lib/components/album-page/album-card.svelte';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
   import { AppRoute } from '$lib/constants';
   import { createAlbum } from '@immich/sdk';
   import { mdiLink, mdiPlusBoxOutline } from '@mdi/js';
-  import { flip } from 'svelte/animate';
   import { handleError } from '../../../lib/utils/handle-error';
   import type { PageData } from './$types';
+  import PageHeader from '$lib/components/layouts/page-header.svelte';
+  import AlbumsControls from '$lib/components/album-page/albums-controls.svelte';
+  import Albums from '$lib/components/album-page/albums-list.svelte';
 
   export let data: PageData;
+
+  let searchAlbum = '';
 
   const createSharedAlbum = async () => {
     try {
@@ -26,23 +27,24 @@
   };
 </script>
 
-<UserPageLayout title={data.meta.title}>
-  <div class="flex" slot="buttons">
-    <LinkButton on:click={createSharedAlbum}>
-      <div class="flex flex-wrap place-items-center justify-center gap-x-1 text-sm">
-        <Icon path={mdiPlusBoxOutline} size="18" class="shrink-0" />
-        <span class="leading-none max-sm:text-xs">Create shared album</span>
-      </div>
-    </LinkButton>
+<UserPageLayout>
+  <PageHeader title={data.meta.title}>
+    <div class="flex" slot="buttons">
+      <LinkButton on:click={createSharedAlbum}>
+        <div class="flex flex-wrap place-items-center justify-center gap-x-1 text-sm">
+          <Icon path={mdiPlusBoxOutline} size="18" class="shrink-0" />
+          <span class="leading-none max-sm:text-xs">Create shared album</span>
+        </div>
+      </LinkButton>
 
-    <LinkButton on:click={() => goto(AppRoute.SHARED_LINKS)}>
-      <div class="flex flex-wrap place-items-center justify-center gap-x-1 text-sm">
-        <Icon path={mdiLink} size="18" class="shrink-0" />
-        <span class="leading-none max-sm:text-xs">Shared links</span>
-      </div>
-    </LinkButton>
-  </div>
-
+      <LinkButton on:click={() => goto(AppRoute.SHARED_LINKS)}>
+        <div class="flex flex-wrap place-items-center justify-center gap-x-1 text-sm">
+          <Icon path={mdiLink} size="18" class="shrink-0" />
+          <span class="leading-none max-sm:text-xs">Shared links</span>
+        </div>
+      </LinkButton>
+    </div>
+  </PageHeader>
   <div class="flex flex-col">
     {#if data.partners.length > 0}
       <div class="mb-6 mt-2">
@@ -69,33 +71,14 @@
           {/each}
         </div>
       </div>
-
-      <hr class="mb-4 dark:border-immich-dark-gray" />
     {/if}
-
-    <div class="mb-6 mt-2">
-      <div>
-        <p class="mb-4 font-medium dark:text-immich-dark-fg">Albums</p>
-      </div>
-
-      <div>
-        <!-- Share Album List -->
-        <div class="grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))]">
-          {#each data.sharedAlbums as album, index (album.id)}
-            <a data-sveltekit-preload-data="hover" href={`albums/${album.id}`} animate:flip={{ duration: 200 }}>
-              <AlbumCard preload={index < 20} {album} isSharingView showContextMenu={false} />
-            </a>
-          {/each}
-        </div>
-
-        <!-- Empty List -->
-        {#if data.sharedAlbums.length === 0}
-          <EmptyPlaceholder
-            text="Create a shared album to share photos and videos with people in your network"
-            src={empty2Url}
-          />
-        {/if}
-      </div>
-    </div>
   </div>
+
+  <hr class="dark:border-immich-dark-gray" />
+  <PageHeader title="Albums">
+    <div class="flex place-items-center gap-2" slot="buttons">
+      <AlbumsControls bind:searchAlbum />
+    </div>
+  </PageHeader>
+  <Albums albums={data.sharedAlbums} {searchAlbum} />
 </UserPageLayout>

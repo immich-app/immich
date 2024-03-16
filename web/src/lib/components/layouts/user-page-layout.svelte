@@ -6,13 +6,10 @@
 
   export let hideNavbar = false;
   export let showUploadButton = false;
-  export let title: string | undefined = undefined;
-  export let description: string | undefined = undefined;
   export let scrollbar = true;
   export let admin = false;
 
-  $: scrollbarClass = scrollbar ? 'immich-scrollbar p-2 pb-8' : 'scrollbar-hidden';
-  $: hasTitleClass = title ? 'top-16 h-[calc(100%-theme(spacing.16))]' : 'top-0 h-full';
+  $: scrollbarClass = scrollbar ? 'immich-scrollbar pb-8' : 'scrollbar-hidden';
 </script>
 
 <header>
@@ -34,23 +31,7 @@
     {/if}
   </slot>
 
-  <section class="relative">
-    {#if title}
-      <div
-        class="absolute flex h-16 w-full place-items-center justify-between border-b p-4 dark:border-immich-dark-gray dark:text-immich-dark-fg"
-      >
-        <div class="flex gap-2 items-center">
-          <div class="font-medium">{title}</div>
-          {#if description}
-            <p class="text-sm text-gray-400 dark:text-gray-600">{description}</p>
-          {/if}
-        </div>
-        <slot name="buttons" />
-      </div>
-    {/if}
-
-    <div class="{scrollbarClass} scrollbar-stable absolute {hasTitleClass} w-full overflow-y-auto">
-      <slot />
-    </div>
-  </section>
+  <div class="relative {scrollbarClass} scrollbar-stable absolute w-full overflow-y-auto">
+    <slot />
+  </div>
 </main>

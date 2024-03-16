@@ -24,6 +24,7 @@
   import { mdiDeleteOutline, mdiHistory } from '@mdi/js';
   import type { PageData } from './$types';
   import { handlePromiseError } from '$lib/utils';
+  import PageHeader from '$lib/components/layouts/page-header.svelte';
 
   export let data: PageData;
 
@@ -71,22 +72,23 @@
 {/if}
 
 {#if $featureFlags.loaded && $featureFlags.trash}
-  <UserPageLayout hideNavbar={$isMultiSelectState} title={data.meta.title} scrollbar={false}>
-    <div class="flex place-items-center gap-2" slot="buttons">
-      <LinkButton on:click={handleRestoreTrash}>
-        <div class="flex place-items-center gap-2 text-sm">
-          <Icon path={mdiHistory} size="18" />
-          Restore All
-        </div>
-      </LinkButton>
-      <LinkButton on:click={() => (isShowEmptyConfirmation = true)}>
-        <div class="flex place-items-center gap-2 text-sm">
-          <Icon path={mdiDeleteOutline} size="18" />
-          Empty Trash
-        </div>
-      </LinkButton>
-    </div>
-
+  <UserPageLayout hideNavbar={$isMultiSelectState} scrollbar={false}>
+    <PageHeader title={data.meta.title}>
+      <div class="flex place-items-center gap-2" slot="buttons">
+        <LinkButton on:click={handleRestoreTrash}>
+          <div class="flex place-items-center gap-2 text-sm">
+            <Icon path={mdiHistory} size="18" />
+            Restore All
+          </div>
+        </LinkButton>
+        <LinkButton on:click={() => (isShowEmptyConfirmation = true)}>
+          <div class="flex place-items-center gap-2 text-sm">
+            <Icon path={mdiDeleteOutline} size="18" />
+            Empty Trash
+          </div>
+        </LinkButton>
+      </div>
+    </PageHeader>
     <AssetGrid {assetStore} {assetInteractionStore}>
       <p class="font-medium text-gray-500/60 dark:text-gray-300/60 p-4">
         Trashed items will be permanently deleted after {$serverConfig.trashDays} days.

@@ -41,6 +41,7 @@
   import { onDestroy, onMount } from 'svelte';
   import type { PageData } from './$types';
   import { locale } from '$lib/stores/preferences.store';
+  import PageHeader from '$lib/components/layouts/page-header.svelte';
 
   export let data: PageData;
 
@@ -430,36 +431,37 @@
   />
 {/if}
 
-<UserPageLayout
-  title="People"
-  description={countVisiblePeople === 0 ? undefined : `(${countVisiblePeople.toLocaleString($locale)})`}
->
-  <svelte:fragment slot="buttons">
-    {#if countTotalPeople > 0}
-      <div class="flex gap-2 items-center justify-center">
-        <div class="hidden sm:block">
-          <div class="w-40 lg:w-80 h-10">
-            <SearchBar
-              bind:name={searchName}
-              isSearching={isSearchingPeople}
-              placeholder="Search people"
-              on:reset={() => {
-                searchedPeople = [];
-              }}
-              on:search={({ detail }) => handleSearch(detail.force ?? false)}
-            />
+<UserPageLayout>
+  <PageHeader
+    title="People"
+    description={countVisiblePeople === 0 ? undefined : `(${countVisiblePeople.toLocaleString($locale)})`}
+  >
+    <svelte:fragment slot="buttons">
+      {#if countTotalPeople > 0}
+        <div class="flex gap-2 items-center justify-center">
+          <div class="hidden sm:block">
+            <div class="w-40 lg:w-80 h-10">
+              <SearchBar
+                bind:name={searchName}
+                isSearching={isSearchingPeople}
+                placeholder="Search people"
+                on:reset={() => {
+                  searchedPeople = [];
+                }}
+                on:search={({ detail }) => handleSearch(detail.force ?? false)}
+              />
+            </div>
           </div>
+          <IconButton on:click={() => (selectHidden = !selectHidden)}>
+            <div class="flex flex-wrap place-items-center justify-center gap-x-1 text-sm">
+              <Icon path={mdiEyeOutline} size="18" />
+              <p class="ml-2">Show & hide people</p>
+            </div>
+          </IconButton>
         </div>
-        <IconButton on:click={() => (selectHidden = !selectHidden)}>
-          <div class="flex flex-wrap place-items-center justify-center gap-x-1 text-sm">
-            <Icon path={mdiEyeOutline} size="18" />
-            <p class="ml-2">Show & hide people</p>
-          </div>
-        </IconButton>
-      </div>
-    {/if}
-  </svelte:fragment>
-
+      {/if}
+    </svelte:fragment>
+  </PageHeader>
   {#if countVisiblePeople > 0}
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-7 2xl:grid-cols-9 gap-1">
       {#each people as person, index (person.id)}

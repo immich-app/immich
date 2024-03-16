@@ -27,6 +27,7 @@
   import type { PageData } from './$types';
   import SettingAccordionState from '$lib/components/shared-components/settings/setting-accordion-state.svelte';
   import { QueryParameter } from '$lib/constants';
+  import PageHeader from '$lib/components/layouts/page-header.svelte';
 
   export let data: PageData;
 
@@ -167,22 +168,23 @@
     </div>
   {/if}
 
-  <UserPageLayout title={data.meta.title} admin>
-    <div class="flex justify-end gap-2" slot="buttons">
-      <LinkButton on:click={() => copyToClipboard(JSON.stringify(config, null, 2))}>
-        <div class="flex place-items-center gap-2 text-sm">
-          <Icon path={mdiContentCopy} size="18" />
-          Copy to Clipboard
-        </div>
-      </LinkButton>
-      <LinkButton on:click={() => downloadConfig()}>
-        <div class="flex place-items-center gap-2 text-sm">
-          <Icon path={mdiDownload} size="18" />
-          Export as JSON
-        </div>
-      </LinkButton>
-    </div>
-
+  <UserPageLayout admin>
+    <PageHeader title={data.meta.title}>
+      <div class="flex justify-end gap-2" slot="buttons">
+        <LinkButton on:click={() => copyToClipboard(JSON.stringify(config, null, 2))}>
+          <div class="flex place-items-center gap-2 text-sm">
+            <Icon path={mdiContentCopy} size="18" />
+            Copy to Clipboard
+          </div>
+        </LinkButton>
+        <LinkButton on:click={() => downloadConfig()}>
+          <div class="flex place-items-center gap-2 text-sm">
+            <Icon path={mdiDownload} size="18" />
+            Export as JSON
+          </div>
+        </LinkButton>
+      </div>
+    </PageHeader>
     <AdminSettings bind:config let:handleReset let:handleSave let:savedConfig let:defaultConfig>
       <section id="setting-content" class="flex place-content-center sm:mx-4">
         <section class="w-full pb-28 sm:w-5/6 md:w-[850px]">

@@ -16,6 +16,7 @@
   import { fixAuditFiles, getAuditFiles, getFileChecksums, type FileReportItemDto } from '@immich/sdk';
   import { mdiCheckAll, mdiContentCopy, mdiDownload, mdiRefresh, mdiWrench } from '@mdi/js';
   import type { PageData } from './$types';
+  import PageHeader from '$lib/components/layouts/page-header.svelte';
 
   export let data: PageData;
 
@@ -171,34 +172,36 @@
   };
 </script>
 
-<UserPageLayout title={data.meta.title} admin>
+<UserPageLayout admin>
   <svelte:fragment slot="sidebar" />
-  <div class="flex justify-end gap-2" slot="buttons">
-    <LinkButton on:click={() => handleRepair()} disabled={matches.length === 0 || repairing}>
-      <div class="flex place-items-center gap-2 text-sm">
-        <Icon path={mdiWrench} size="18" />
-        Repair All
-      </div>
-    </LinkButton>
-    <LinkButton on:click={() => handleCheckAll()} disabled={extras.length === 0 || checking}>
-      <div class="flex place-items-center gap-2 text-sm">
-        <Icon path={mdiCheckAll} size="18" />
-        Check All
-      </div>
-    </LinkButton>
-    <LinkButton on:click={() => handleDownload()} disabled={extras.length + orphans.length === 0}>
-      <div class="flex place-items-center gap-2 text-sm">
-        <Icon path={mdiDownload} size="18" />
-        Export
-      </div>
-    </LinkButton>
-    <LinkButton on:click={() => handleRefresh()}>
-      <div class="flex place-items-center gap-2 text-sm">
-        <Icon path={mdiRefresh} size="18" />
-        Refresh
-      </div>
-    </LinkButton>
-  </div>
+  <PageHeader title={data.meta.title}>
+    <div class="flex justify-end gap-2" slot="buttons">
+      <LinkButton on:click={() => handleRepair()} disabled={matches.length === 0 || repairing}>
+        <div class="flex place-items-center gap-2 text-sm">
+          <Icon path={mdiWrench} size="18" />
+          Repair All
+        </div>
+      </LinkButton>
+      <LinkButton on:click={() => handleCheckAll()} disabled={extras.length === 0 || checking}>
+        <div class="flex place-items-center gap-2 text-sm">
+          <Icon path={mdiCheckAll} size="18" />
+          Check All
+        </div>
+      </LinkButton>
+      <LinkButton on:click={() => handleDownload()} disabled={extras.length + orphans.length === 0}>
+        <div class="flex place-items-center gap-2 text-sm">
+          <Icon path={mdiDownload} size="18" />
+          Export
+        </div>
+      </LinkButton>
+      <LinkButton on:click={() => handleRefresh()}>
+        <div class="flex place-items-center gap-2 text-sm">
+          <Icon path={mdiRefresh} size="18" />
+          Refresh
+        </div>
+      </LinkButton>
+    </div>
+  </PageHeader>
   <section id="setting-content" class="flex place-content-center sm:mx-4">
     <section class="w-full pb-28 sm:w-5/6 md:w-[850px]">
       {#if matches.length + extras.length + orphans.length === 0}

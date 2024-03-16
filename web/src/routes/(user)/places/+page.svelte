@@ -7,6 +7,7 @@
   import { mdiMapMarkerOff } from '@mdi/js';
   import type { PageData } from './$types';
   import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
+  import PageHeader from '$lib/components/layouts/page-header.svelte';
 
   export let data: PageData;
 
@@ -24,7 +25,8 @@
 
 <svelte:window bind:innerHeight />
 
-<UserPageLayout title="Places">
+<UserPageLayout>
+  <PageHeader title="Places" />
   {#if hasPlaces}
     <div class="flex flex-row flex-wrap gap-4">
       {#each places as item (item.data.id)}

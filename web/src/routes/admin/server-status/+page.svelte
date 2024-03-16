@@ -5,6 +5,7 @@
   import { onDestroy, onMount } from 'svelte';
   import type { PageData } from './$types';
   import { asyncTimeout } from '$lib/utils';
+  import PageHeader from '$lib/components/layouts/page-header.svelte';
 
   export let data: PageData;
 
@@ -22,7 +23,8 @@
   });
 </script>
 
-<UserPageLayout title={data.meta.title} admin>
+<UserPageLayout admin>
+  <PageHeader title={data.meta.title} />
   <section id="setting-content" class="flex place-content-center sm:mx-4">
     <section class="w-full pb-28 sm:w-5/6 md:w-[850px]">
       <ServerStatsPanel stats={data.stats} />

@@ -38,6 +38,7 @@
   import { fade, slide } from 'svelte/transition';
   import LinkButton from '../../../lib/components/elements/buttons/link-button.svelte';
   import type { PageData } from './$types';
+  import PageHeader from '$lib/components/layouts/page-header.svelte';
 
   export let data: PageData;
 
@@ -320,23 +321,25 @@
   />
 {/if}
 
-<UserPageLayout title={data.meta.title} admin>
-  <div class="flex justify-end gap-2" slot="buttons">
-    {#if libraries.length > 0}
-      <LinkButton on:click={() => handleScanAll()}>
+<UserPageLayout admin>
+  <PageHeader title={data.meta.title}>
+    <div class="flex justify-end gap-2" slot="buttons">
+      {#if libraries.length > 0}
+        <LinkButton on:click={() => handleScanAll()}>
+          <div class="flex gap-1 text-sm">
+            <Icon path={mdiSync} size="18" />
+            <span>Scan All Libraries</span>
+          </div>
+        </LinkButton>
+      {/if}
+      <LinkButton on:click={() => (toCreateLibrary = true)}>
         <div class="flex gap-1 text-sm">
-          <Icon path={mdiSync} size="18" />
-          <span>Scan All Libraries</span>
+          <Icon path={mdiPlusBoxOutline} size="18" />
+          <span>Create Library</span>
         </div>
       </LinkButton>
-    {/if}
-    <LinkButton on:click={() => (toCreateLibrary = true)}>
-      <div class="flex gap-1 text-sm">
-        <Icon path={mdiPlusBoxOutline} size="18" />
-        <span>Create Library</span>
-      </div>
-    </LinkButton>
-  </div>
+    </div>
+  </PageHeader>
   <section class="my-4">
     <div class="flex flex-col gap-2" in:fade={{ duration: 500 }}>
       {#if libraries.length > 0}

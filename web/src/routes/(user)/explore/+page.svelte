@@ -7,6 +7,7 @@
   import type { SearchExploreResponseDto } from '@immich/sdk';
   import type { PageData } from './$types';
   import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
+  import PageHeader from '$lib/components/layouts/page-header.svelte';
 
   export let data: PageData;
 
@@ -39,7 +40,8 @@
 
 <svelte:window bind:innerWidth={screenSize} />
 
-<UserPageLayout title={data.meta.title}>
+<UserPageLayout>
+  <PageHeader title={data.meta.title} />
   {#if hasPeople}
     <div class="mb-6 mt-2">
       <div class="flex justify-between">

@@ -16,6 +16,7 @@
   import { onDestroy, onMount } from 'svelte';
   import type { PageData } from './$types';
   import { handlePromiseError } from '$lib/utils';
+  import PageHeader from '$lib/components/layouts/page-header.svelte';
 
   export let data: PageData;
 
@@ -106,11 +107,12 @@
 </script>
 
 {#if $featureFlags.loaded && $featureFlags.map}
-  <UserPageLayout title={data.meta.title}>
+  <UserPageLayout>
+    <PageHeader title={data.meta.title} />
     <div class="isolate h-full w-full">
       <Map bind:mapMarkers bind:showSettingsModal on:selected={(event) => onViewAssets(event.detail)} />
-    </div></UserPageLayout
-  >
+    </div>
+  </UserPageLayout>
   <Portal target="body">
     {#if $showAssetViewer}
       <AssetViewer
