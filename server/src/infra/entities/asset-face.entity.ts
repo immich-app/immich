@@ -3,6 +3,7 @@ import { AssetEntity } from './asset.entity';
 import { PersonEntity } from './person.entity';
 
 @Entity('asset_faces', { synchronize: false })
+@Index('IDX_asset_faces_assetId_personId', ['assetId', 'personId'])
 @Index(['personId', 'assetId'])
 export class AssetFaceEntity {
   @PrimaryGeneratedColumn('uuid')

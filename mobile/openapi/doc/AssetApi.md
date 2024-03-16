@@ -834,7 +834,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getTimeBucket**
-> List<AssetResponseDto> getTimeBucket(size, timeBucket, albumId, isArchived, isFavorite, isTrashed, key, personId, userId, withPartners, withStacked)
+> List<AssetResponseDto> getTimeBucket(size, timeBucket, albumId, isArchived, isFavorite, isTrashed, key, order, personId, userId, withPartners, withStacked)
 
 
 
@@ -864,13 +864,14 @@ final isArchived = true; // bool |
 final isFavorite = true; // bool | 
 final isTrashed = true; // bool | 
 final key = key_example; // String | 
+final order = ; // AssetOrder | 
 final personId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 final userId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 final withPartners = true; // bool | 
 final withStacked = true; // bool | 
 
 try {
-    final result = api_instance.getTimeBucket(size, timeBucket, albumId, isArchived, isFavorite, isTrashed, key, personId, userId, withPartners, withStacked);
+    final result = api_instance.getTimeBucket(size, timeBucket, albumId, isArchived, isFavorite, isTrashed, key, order, personId, userId, withPartners, withStacked);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->getTimeBucket: $e\n');
@@ -888,6 +889,7 @@ Name | Type | Description  | Notes
  **isFavorite** | **bool**|  | [optional] 
  **isTrashed** | **bool**|  | [optional] 
  **key** | **String**|  | [optional] 
+ **order** | [**AssetOrder**](.md)|  | [optional] 
  **personId** | **String**|  | [optional] 
  **userId** | **String**|  | [optional] 
  **withPartners** | **bool**|  | [optional] 
@@ -909,7 +911,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getTimeBuckets**
-> List<TimeBucketResponseDto> getTimeBuckets(size, albumId, isArchived, isFavorite, isTrashed, key, personId, userId, withPartners, withStacked)
+> List<TimeBucketResponseDto> getTimeBuckets(size, albumId, isArchived, isFavorite, isTrashed, key, order, personId, userId, withPartners, withStacked)
 
 
 
@@ -938,13 +940,14 @@ final isArchived = true; // bool |
 final isFavorite = true; // bool | 
 final isTrashed = true; // bool | 
 final key = key_example; // String | 
+final order = ; // AssetOrder | 
 final personId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 final userId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 final withPartners = true; // bool | 
 final withStacked = true; // bool | 
 
 try {
-    final result = api_instance.getTimeBuckets(size, albumId, isArchived, isFavorite, isTrashed, key, personId, userId, withPartners, withStacked);
+    final result = api_instance.getTimeBuckets(size, albumId, isArchived, isFavorite, isTrashed, key, order, personId, userId, withPartners, withStacked);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->getTimeBuckets: $e\n');
@@ -961,6 +964,7 @@ Name | Type | Description  | Notes
  **isFavorite** | **bool**|  | [optional] 
  **isTrashed** | **bool**|  | [optional] 
  **key** | **String**|  | [optional] 
+ **order** | [**AssetOrder**](.md)|  | [optional] 
  **personId** | **String**|  | [optional] 
  **userId** | **String**|  | [optional] 
  **withPartners** | **bool**|  | [optional] 

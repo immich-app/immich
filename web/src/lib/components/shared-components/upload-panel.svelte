@@ -34,21 +34,23 @@
     in:fade={{ duration: 250 }}
     out:fade={{ duration: 250 }}
     on:outroend={() => {
-      notificationController.show({
-        message:
-          ($errorCounter > 0
-            ? `Upload completed with ${$errorCounter} error${$errorCounter > 1 ? 's' : ''}`
-            : 'Upload success') + ', refresh the page to see new upload assets.',
-        type: $errorCounter > 0 ? NotificationType.Warning : NotificationType.Info,
-      });
-
+      if ($errorCounter > 0) {
+        notificationController.show({
+          message: `Upload completed with ${$errorCounter} error${$errorCounter > 1 ? 's' : ''}, refresh the page to see new upload assets.`,
+          type: NotificationType.Warning,
+        });
+      } else if ($successCounter > 0) {
+        notificationController.show({
+          message: 'Upload success, refresh the page to see new upload assets.',
+          type: NotificationType.Info,
+        });
+      }
       if ($duplicateCounter > 0) {
         notificationController.show({
           message: `Skipped ${$duplicateCounter} duplicate asset${$duplicateCounter > 1 ? 's' : ''}`,
           type: NotificationType.Warning,
         });
       }
-
       uploadAssetsStore.resetStore();
     }}
     class="absolute bottom-6 right-6 z-[10000]"

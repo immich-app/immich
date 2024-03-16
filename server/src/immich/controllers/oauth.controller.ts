@@ -12,12 +12,10 @@ import { Body, Controller, Get, HttpStatus, Post, Redirect, Req, Res } from '@ne
 import { ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { Auth, Authenticated, GetLoginDetails, PublicRoute } from '../app.guard';
-import { UseValidation } from '../app.utils';
 
 @ApiTags('OAuth')
 @Controller('oauth')
 @Authenticated()
-@UseValidation()
 export class OAuthController {
   constructor(private service: AuthService) {}
 

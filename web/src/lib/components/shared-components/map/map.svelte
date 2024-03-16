@@ -158,7 +158,7 @@
         applyToClusters
         asButton
         let:feature
-        on:click={(event) => handlePromiseError(handleClusterClick(event.detail.feature.properties.cluster_id, map))}
+        on:click={(event) => handlePromiseError(handleClusterClick(event.detail.feature.properties?.cluster_id, map))}
       >
         <div
           class="rounded-full w-[40px] h-[40px] bg-immich-primary text-immich-gray flex justify-center items-center font-mono font-bold shadow-lg hover:bg-immich-dark-primary transition-all duration-200 hover:text-immich-dark-bg opacity-90"
@@ -171,7 +171,7 @@
         asButton
         let:feature
         on:click={(event) => {
-          $$slots.popup || handleAssetClick(event.detail.feature.properties.id, map);
+          $$slots.popup || handleAssetClick(event.detail.feature.properties?.id, map);
         }}
       >
         {#if useLocationPin}

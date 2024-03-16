@@ -18,6 +18,7 @@ import {
   IStorageRepository,
   ISystemConfigRepository,
   IUserRepository,
+  JobStatus,
 } from '../repositories';
 import { StorageCore, StorageFolder } from '../storage';
 import {
@@ -85,14 +86,17 @@ export class StorageTemplateService {
     );
   }
 
-  async handleMigrationSingle({ id }: IEntityJob) {
+  async handleMigrationSingle({ id }: IEntityJob): Promise<JobStatus> {
     const config = await this.configCore.getConfig();
     const storageTemplateEnabled = config.storageTemplate.enabled;
     if (!storageTemplateEnabled) {
-      return true;
+      return JobStatus.SKIPPED;
     }
 
-    const [asset] = await this.assetRepository.getByIds([id]);
+    const [asset] = await this.assetRepository.getByIds([id], { exifInfo: true });
+    if (!asset) {
+      return JobStatus.FAILED;
+    }
 
     const user = await this.userRepository.get(asset.ownerId, {});
     const storageLabel = user?.storageLabel || null;
@@ -101,20 +105,23 @@ export class StorageTemplateService {
 
     // move motion part of live photo
     if (asset.livePhotoVideoId) {
-      const [livePhotoVideo] = await this.assetRepository.getByIds([asset.livePhotoVideoId]);
+      const [livePhotoVideo] = await this.assetRepository.getByIds([asset.livePhotoVideoId], { exifInfo: true });
+      if (!livePhotoVideo) {
+        return JobStatus.FAILED;
+      }
       const motionFilename = getLivePhotoMotionFilename(filename, livePhotoVideo.originalPath);
       await this.moveAsset(livePhotoVideo, { storageLabel, filename: motionFilename });
     }
-    return true;
+    return JobStatus.SUCCESS;
   }
 
-  async handleMigration() {
+  async handleMigration(): Promise<JobStatus> {
     this.logger.log('Starting storage template migration');
     const { storageTemplate } = await this.configCore.getConfig();
     const { enabled } = storageTemplate;
     if (!enabled) {
       this.logger.log('Storage template migration disabled, skipping');
-      return true;
+      return JobStatus.SKIPPED;
     }
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
       this.assetRepository.getAll(pagination, { withExif: true }),
@@ -136,7 +143,7 @@ export class StorageTemplateService {
 
     this.logger.log('Finished storage template migration');
 
-    return true;
+    return JobStatus.SUCCESS;
   }
 
   async moveAsset(asset: AssetEntity, metadata: MoveAssetMetadata) {

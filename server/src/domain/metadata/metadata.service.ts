@@ -6,6 +6,7 @@ import { firstDateTime } from 'exiftool-vendored/dist/FirstDateTime';
 import _ from 'lodash';
 import { Duration } from 'luxon';
 import { constants } from 'node:fs/promises';
+import path from 'node:path';
 import { Subscription } from 'rxjs';
 import { handlePromiseError, usePagination } from '../domain.util';
 import { IBaseJob, IEntityJob, ISidecarWriteJob, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
@@ -25,6 +26,7 @@ import {
   IStorageRepository,
   ISystemConfigRepository,
   ImmichTags,
+  JobStatus,
   WithoutProperty,
 } from '../repositories';
 import { StorageCore } from '../storage';
@@ -150,15 +152,15 @@ export class MetadataService {
     await this.repository.teardown();
   }
 
-  async handleLivePhotoLinking(job: IEntityJob) {
+  async handleLivePhotoLinking(job: IEntityJob): Promise<JobStatus> {
     const { id } = job;
-    const [asset] = await this.assetRepository.getByIds([id]);
+    const [asset] = await this.assetRepository.getByIds([id], { exifInfo: true });
     if (!asset?.exifInfo) {
-      return false;
+      return JobStatus.FAILED;
     }
 
     if (!asset.exifInfo.livePhotoCID) {
-      return true;
+      return JobStatus.SKIPPED;
     }
 
     const otherType = asset.type === AssetType.VIDEO ? AssetType.IMAGE : AssetType.VIDEO;
@@ -170,7 +172,7 @@ export class MetadataService {
     });
 
     if (!match) {
-      return true;
+      return JobStatus.SKIPPED;
     }
 
     const [photoAsset, motionAsset] = asset.type === AssetType.IMAGE ? [asset, match] : [match, asset];
@@ -182,10 +184,10 @@ export class MetadataService {
     // Notify clients to hide the linked live photo asset
     this.communicationRepository.send(ClientEvent.ASSET_HIDDEN, motionAsset.ownerId, motionAsset.id);
 
-    return true;
+    return JobStatus.SUCCESS;
   }
 
-  async handleQueueMetadataExtraction(job: IBaseJob) {
+  async handleQueueMetadataExtraction(job: IBaseJob): Promise<JobStatus> {
     const { force } = job;
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
       return force
@@ -199,13 +201,13 @@ export class MetadataService {
       );
     }
 
-    return true;
+    return JobStatus.SUCCESS;
   }
 
-  async handleMetadataExtraction({ id }: IEntityJob) {
+  async handleMetadataExtraction({ id }: IEntityJob): Promise<JobStatus> {
     const [asset] = await this.assetRepository.getByIds([id]);
     if (!asset) {
-      return false;
+      return JobStatus.FAILED;
     }
 
     const { exifData, tags } = await this.exifData(asset);
@@ -259,10 +261,10 @@ export class MetadataService {
       metadataExtractedAt: new Date(),
     });
 
-    return true;
+    return JobStatus.SUCCESS;
   }
 
-  async handleQueueSidecar(job: IBaseJob) {
+  async handleQueueSidecar(job: IBaseJob): Promise<JobStatus> {
     const { force } = job;
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
       return force
@@ -279,22 +281,22 @@ export class MetadataService {
       );
     }
 
-    return true;
+    return JobStatus.SUCCESS;
   }
 
-  handleSidecarSync({ id }: IEntityJob) {
+  handleSidecarSync({ id }: IEntityJob): Promise<JobStatus> {
     return this.processSidecar(id, true);
   }
 
-  handleSidecarDiscovery({ id }: IEntityJob) {
+  handleSidecarDiscovery({ id }: IEntityJob): Promise<JobStatus> {
     return this.processSidecar(id, false);
   }
 
-  async handleSidecarWrite(job: ISidecarWriteJob) {
+  async handleSidecarWrite(job: ISidecarWriteJob): Promise<JobStatus> {
     const { id, description, dateTimeOriginal, latitude, longitude } = job;
     const [asset] = await this.assetRepository.getByIds([id]);
     if (!asset) {
-      return false;
+      return JobStatus.FAILED;
     }
 
     const sidecarPath = asset.sidecarPath || `${asset.originalPath}.xmp`;
@@ -309,7 +311,7 @@ export class MetadataService {
     );
 
     if (Object.keys(exif).length === 0) {
-      return true;
+      return JobStatus.SKIPPED;
     }
 
     await this.repository.writeTags(sidecarPath, exif);
@@ -318,7 +320,7 @@ export class MetadataService {
       await this.assetRepository.save({ id, sidecarPath });
     }
 
-    return true;
+    return JobStatus.SUCCESS;
   }
 
   private async applyReverseGeocoding(asset: AssetEntity, exifData: ExifEntityWithoutGeocodeAndTypeOrm) {
@@ -551,35 +553,53 @@ export class MetadataService {
     return Duration.fromObject({ seconds: _seconds }).toFormat('hh:mm:ss.SSS');
   }
 
-  private async processSidecar(id: string, isSync: boolean) {
+  private async processSidecar(id: string, isSync: boolean): Promise<JobStatus> {
     const [asset] = await this.assetRepository.getByIds([id]);
 
     if (!asset) {
-      return false;
+      return JobStatus.FAILED;
     }
 
     if (isSync && !asset.sidecarPath) {
-      return false;
+      return JobStatus.FAILED;
     }
 
     if (!isSync && (!asset.isVisible || asset.sidecarPath)) {
-      return false;
+      return JobStatus.FAILED;
     }
 
-    const sidecarPath = `${asset.originalPath}.xmp`;
-    const exists = await this.storageRepository.checkFileExists(sidecarPath, constants.R_OK);
-    if (exists) {
+    // XMP sidecars can come in two filename formats. For a photo named photo.ext, the filenames are photo.ext.xmp and photo.xmp
+    const assetPath = path.parse(asset.originalPath);
+    const assetPathWithoutExt = path.join(assetPath.dir, assetPath.name);
+    const sidecarPathWithoutExt = `${assetPathWithoutExt}.xmp`;
+    const sidecarPathWithExt = `${asset.originalPath}.xmp`;
+
+    const [sidecarPathWithExtExists, sidecarPathWithoutExtExists] = await Promise.all([
+      this.storageRepository.checkFileExists(sidecarPathWithExt, constants.R_OK),
+      this.storageRepository.checkFileExists(sidecarPathWithoutExt, constants.R_OK),
+    ]);
+
+    let sidecarPath = null;
+    if (sidecarPathWithExtExists) {
+      sidecarPath = sidecarPathWithExt;
+    } else if (sidecarPathWithoutExtExists) {
+      sidecarPath = sidecarPathWithoutExt;
+    }
+
+    if (sidecarPath) {
       await this.assetRepository.save({ id: asset.id, sidecarPath });
-      return true;
+      return JobStatus.SUCCESS;
     }
 
     if (!isSync) {
-      return false;
+      return JobStatus.FAILED;
     }
 
-    this.logger.debug(`Sidecar File '${sidecarPath}' was not found, removing sidecarPath for asset ${asset.id}`);
+    this.logger.debug(
+      `Sidecar file was not found. Checked paths '${sidecarPathWithExt}' and '${sidecarPathWithoutExt}'. Removing sidecarPath for asset ${asset.id}`,
+    );
     await this.assetRepository.save({ id: asset.id, sidecarPath: null });
 
-    return true;
+    return JobStatus.SUCCESS;
   }
 }

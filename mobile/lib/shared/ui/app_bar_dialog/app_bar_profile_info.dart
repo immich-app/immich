@@ -25,7 +25,7 @@ class AppBarProfileInfoBox extends HookConsumerWidget {
       if (user == null) {
         return const CircleAvatar(
           radius: 20,
-          backgroundImage: AssetImage('assets/immich-logo-no-outline.png'),
+          backgroundImage: AssetImage('assets/immich-logo.png'),
           backgroundColor: Colors.transparent,
         );
       }

@@ -34,117 +34,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
     await restoreTempFolder();
   });
 
-  describe('DELETE /library/:id', () => {
-    it('should delete an external library with assets', async () => {
-      const library = await api.libraryApi.create(server, admin.accessToken, {
-        type: LibraryType.EXTERNAL,
-        importPaths: [`${IMMICH_TEST_ASSET_PATH}/albums/nature`],
-      });
-      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
-
-      const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
-      expect(assets.length).toBeGreaterThan(2);
-
-      const { status } = await request(server)
-        .delete(`/library/${library.id}`)
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-
-      expect(status).toBe(204);
-
-      const libraries = await api.libraryApi.getAll(server, admin.accessToken);
-      expect(libraries).toHaveLength(1);
-      expect(libraries).not.toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            id: library.id,
-          }),
-        ]),
-      );
-    });
-  });
-
   describe('POST /library/:id/scan', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(server).post(`/library/${uuidStub.notFound}/scan`).send({});
-
-      expect(status).toBe(401);
-      expect(body).toEqual(errorStub.unauthorized);
-    });
-
-    it('should scan external library with import paths', async () => {
-      const library = await api.libraryApi.create(server, admin.accessToken, {
-        type: LibraryType.EXTERNAL,
-        importPaths: [`${IMMICH_TEST_ASSET_PATH}/albums/nature`],
-      });
-      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
-
-      const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
-
-      expect(assets).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            type: AssetType.IMAGE,
-            originalFileName: 'el_torcal_rocks',
-            libraryId: library.id,
-            resized: true,
-            thumbhash: expect.any(String),
-            exifInfo: expect.objectContaining({
-              exifImageWidth: 512,
-              exifImageHeight: 341,
-              latitude: null,
-              longitude: null,
-            }),
-          }),
-          expect.objectContaining({
-            type: AssetType.IMAGE,
-            originalFileName: 'silver_fir',
-            libraryId: library.id,
-            resized: true,
-            thumbhash: expect.any(String),
-            exifInfo: expect.objectContaining({
-              exifImageWidth: 511,
-              exifImageHeight: 323,
-              latitude: null,
-              longitude: null,
-            }),
-          }),
-        ]),
-      );
-    });
-
-    it('should scan external library with exclusion pattern', async () => {
-      const library = await api.libraryApi.create(server, admin.accessToken, {
-        type: LibraryType.EXTERNAL,
-        importPaths: [`${IMMICH_TEST_ASSET_PATH}/albums/nature`],
-        exclusionPatterns: ['**/el_corcal*'],
-      });
-
-      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
-
-      const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
-
-      expect(assets).toEqual(
-        expect.arrayContaining([
-          expect.not.objectContaining({
-            // Excluded by exclusion pattern
-            originalFileName: 'el_torcal_rocks',
-          }),
-          expect.objectContaining({
-            type: AssetType.IMAGE,
-            originalFileName: 'silver_fir',
-            libraryId: library.id,
-            resized: true,
-            exifInfo: expect.objectContaining({
-              exifImageWidth: 511,
-              exifImageHeight: 323,
-              latitude: null,
-              longitude: null,
-            }),
-          }),
-        ]),
-      );
-    });
-
     it('should offline missing files', async () => {
       await fs.promises.cp(`${IMMICH_TEST_ASSET_PATH}/albums/nature`, `${IMMICH_TEST_ASSET_TEMP_PATH}/albums/nature`, {
         recursive: true,
@@ -344,19 +234,6 @@ describe(`${LibraryController.name} (e2e)`, () => {
           }),
         );
       });
-    });
-
-    it('should not scan an upload library', async () => {
-      const library = await api.libraryApi.create(server, admin.accessToken, {
-        type: LibraryType.UPLOAD,
-      });
-
-      const { status, body } = await request(server)
-        .post(`/library/${library.id}/scan`)
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-
-      expect(status).toBe(400);
-      expect(body).toEqual(errorStub.badRequest('Can only refresh external libraries'));
     });
   });
 

@@ -24,6 +24,7 @@ import {
   IStorageRepository,
   ISystemConfigRepository,
   JobItem,
+  JobStatus,
   VideoCodecHWConfig,
   VideoStreamInfo,
   WithoutProperty,
@@ -70,7 +71,7 @@ export class MediaService {
     );
   }
 
-  async handleQueueGenerateThumbnails({ force }: IBaseJob) {
+  async handleQueueGenerateThumbnails({ force }: IBaseJob): Promise<JobStatus> {
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
       return force
         ? this.assetRepository.getAll(pagination)
@@ -118,10 +119,10 @@ export class MediaService {
 
     await this.jobRepository.queueAll(jobs);
 
-    return true;
+    return JobStatus.SUCCESS;
   }
 
-  async handleQueueMigration() {
+  async handleQueueMigration(): Promise<JobStatus> {
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
       this.assetRepository.getAll(pagination),
     );
@@ -148,31 +149,31 @@ export class MediaService {
       );
     }
 
-    return true;
+    return JobStatus.SUCCESS;
   }
 
-  async handleAssetMigration({ id }: IEntityJob) {
+  async handleAssetMigration({ id }: IEntityJob): Promise<JobStatus> {
     const [asset] = await this.assetRepository.getByIds([id]);
     if (!asset) {
-      return false;
+      return JobStatus.FAILED;
     }
 
     await this.storageCore.moveAssetFile(asset, AssetPathType.JPEG_THUMBNAIL);
     await this.storageCore.moveAssetFile(asset, AssetPathType.WEBP_THUMBNAIL);
     await this.storageCore.moveAssetFile(asset, AssetPathType.ENCODED_VIDEO);
 
-    return true;
+    return JobStatus.SUCCESS;
   }
 
-  async handleGenerateJpegThumbnail({ id }: IEntityJob) {
-    const [asset] = await this.assetRepository.getByIds([id]);
+  async handleGenerateJpegThumbnail({ id }: IEntityJob): Promise<JobStatus> {
+    const [asset] = await this.assetRepository.getByIds([id], { exifInfo: true });
     if (!asset) {
-      return false;
+      return JobStatus.FAILED;
     }
 
     const resizePath = await this.generateThumbnail(asset, 'jpeg');
     await this.assetRepository.save({ id: asset.id, resizePath });
-    return true;
+    return JobStatus.SUCCESS;
   }
 
   private async generateThumbnail(asset: AssetEntity, format: 'jpeg' | 'webp') {
@@ -214,30 +215,30 @@ export class MediaService {
     return path;
   }
 
-  async handleGenerateWebpThumbnail({ id }: IEntityJob) {
-    const [asset] = await this.assetRepository.getByIds([id]);
+  async handleGenerateWebpThumbnail({ id }: IEntityJob): Promise<JobStatus> {
+    const [asset] = await this.assetRepository.getByIds([id], { exifInfo: true });
     if (!asset) {
-      return false;
+      return JobStatus.FAILED;
     }
 
     const webpPath = await this.generateThumbnail(asset, 'webp');
     await this.assetRepository.save({ id: asset.id, webpPath });
-    return true;
+    return JobStatus.SUCCESS;
   }
 
-  async handleGenerateThumbhashThumbnail({ id }: IEntityJob): Promise<boolean> {
+  async handleGenerateThumbhashThumbnail({ id }: IEntityJob): Promise<JobStatus> {
     const [asset] = await this.assetRepository.getByIds([id]);
     if (!asset?.resizePath) {
-      return false;
+      return JobStatus.FAILED;
     }
 
     const thumbhash = await this.mediaRepository.generateThumbhash(asset.resizePath);
     await this.assetRepository.save({ id: asset.id, thumbhash });
 
-    return true;
+    return JobStatus.SUCCESS;
   }
 
-  async handleQueueVideoConversion(job: IBaseJob) {
+  async handleQueueVideoConversion(job: IBaseJob): Promise<JobStatus> {
     const { force } = job;
 
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
@@ -252,13 +253,13 @@ export class MediaService {
       );
     }
 
-    return true;
+    return JobStatus.SUCCESS;
   }
 
-  async handleVideoConversion({ id }: IEntityJob) {
+  async handleVideoConversion({ id }: IEntityJob): Promise<JobStatus> {
     const [asset] = await this.assetRepository.getByIds([id]);
     if (!asset || asset.type !== AssetType.VIDEO) {
-      return false;
+      return JobStatus.FAILED;
     }
 
     const input = asset.originalPath;
@@ -270,12 +271,12 @@ export class MediaService {
     const mainAudioStream = this.getMainStream(audioStreams);
     const containerExtension = format.formatName;
     if (!mainVideoStream || !containerExtension) {
-      return false;
+      return JobStatus.FAILED;
     }
 
     if (!mainVideoStream.height || !mainVideoStream.width) {
       this.logger.warn(`Skipped transcoding for asset ${asset.id}: no video streams found`);
-      return false;
+      return JobStatus.FAILED;
     }
 
     const { ffmpeg: config } = await this.configCore.getConfig();
@@ -288,7 +289,7 @@ export class MediaService {
         await this.assetRepository.save({ id: asset.id, encodedVideoPath: null });
       }
 
-      return true;
+      return JobStatus.SKIPPED;
     }
 
     let transcodeOptions;
@@ -298,7 +299,7 @@ export class MediaService {
       );
     } catch (error) {
       this.logger.error(`An error occurred while configuring transcoding options: ${error}`);
-      return false;
+      return JobStatus.FAILED;
     }
 
     this.logger.log(`Started encoding video ${asset.id} ${JSON.stringify(transcodeOptions)}`);
@@ -322,7 +323,7 @@ export class MediaService {
 
     await this.assetRepository.save({ id: asset.id, encodedVideoPath: output });
 
-    return true;
+    return JobStatus.SUCCESS;
   }
 
   private getMainStream<T extends VideoStreamInfo | AudioStreamInfo>(streams: T[]): T {
