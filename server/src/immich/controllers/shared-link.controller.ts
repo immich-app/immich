@@ -13,13 +13,11 @@ import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Req, Res
 import { ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { Auth, Authenticated, SharedLinkRoute } from '../app.guard';
-import { UseValidation } from '../app.utils';
 import { UUIDParamDto } from './dto/uuid-param.dto';
 
 @ApiTags('Shared Link')
 @Controller('shared-link')
 @Authenticated()
-@UseValidation()
 export class SharedLinkController {
   constructor(private readonly service: SharedLinkService) {}
 

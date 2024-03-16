@@ -1,20 +1,48 @@
-import { LibraryResponseDto, LibraryType, LoginResponseDto, getAllLibraries } from '@immich/sdk';
+import {
+  LibraryResponseDto,
+  LibraryType,
+  LoginResponseDto,
+  ScanLibraryDto,
+  getAllLibraries,
+  scanLibrary,
+} from '@immich/sdk';
+import { existsSync, rmdirSync } from 'node:fs';
+import { Socket } from 'socket.io-client';
 import { userDto, uuidDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
-import { app, asBearerAuth, testAssetDirInternal, utils } from 'src/utils';
+import { app, asBearerAuth, testAssetDir, testAssetDirInternal, utils } from 'src/utils';
 import request from 'supertest';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+
+const scan = async (accessToken: string, id: string, dto: ScanLibraryDto = {}) =>
+  scanLibrary({ id, scanLibraryDto: dto }, { headers: asBearerAuth(accessToken) });
 
 describe('/library', () => {
   let admin: LoginResponseDto;
   let user: LoginResponseDto;
   let library: LibraryResponseDto;
+  let websocket: Socket;
 
   beforeAll(async () => {
     await utils.resetDatabase();
     admin = await utils.adminSetup();
     user = await utils.userSetup(admin.accessToken, userDto.user1);
     library = await utils.createLibrary(admin.accessToken, { type: LibraryType.External });
+    websocket = await utils.connectWebsocket(admin.accessToken);
+  });
+
+  afterAll(() => {
+    utils.disconnectWebsocket(websocket);
+  });
+
+  beforeEach(() => {
+    utils.resetEvents();
+    const tempDir = `${testAssetDir}/temp`;
+    if (existsSync(tempDir)) {
+      rmdirSync(tempDir, { recursive: true });
+    }
+    utils.createImageFile(`${testAssetDir}/temp/directoryA/assetA.png`);
+    utils.createImageFile(`${testAssetDir}/temp/directoryB/assetB.png`);
   });
 
   describe('GET /library', () => {
@@ -376,6 +404,36 @@ describe('/library', () => {
         ]),
       );
     });
+
+    it('should delete an external library with assets', async () => {
+      const library = await utils.createLibrary(admin.accessToken, {
+        type: LibraryType.External,
+        importPaths: [`${testAssetDirInternal}/temp`],
+      });
+
+      await scan(admin.accessToken, library.id);
+      await utils.waitForWebsocketEvent({ event: 'assetUpload', total: 2 });
+
+      const { status, body } = await request(app)
+        .delete(`/library/${library.id}`)
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+
+      expect(status).toBe(204);
+      expect(body).toEqual({});
+
+      const libraries = await getAllLibraries({}, { headers: asBearerAuth(admin.accessToken) });
+      expect(libraries).not.toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: library.id,
+          }),
+        ]),
+      );
+
+      // ensure no files get deleted
+      expect(existsSync(`${testAssetDir}/temp/directoryA/assetA.png`)).toBe(true);
+      expect(existsSync(`${testAssetDir}/temp/directoryB/assetB.png`)).toBe(true);
+    });
   });
 
   describe('GET /library/:id/statistics', () => {
@@ -393,6 +451,89 @@ describe('/library', () => {
 
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
+    });
+
+    it('should not scan an upload library', async () => {
+      const library = await utils.createLibrary(admin.accessToken, {
+        type: LibraryType.Upload,
+      });
+
+      const { status, body } = await request(app)
+        .post(`/library/${library.id}/scan`)
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest('Can only refresh external libraries'));
+    });
+
+    it('should scan external library', async () => {
+      const library = await utils.createLibrary(admin.accessToken, {
+        type: LibraryType.External,
+        importPaths: [`${testAssetDirInternal}/temp/directoryA`],
+      });
+
+      await scan(admin.accessToken, library.id);
+      await utils.waitForWebsocketEvent({ event: 'assetUpload', total: 1 });
+
+      const { assets } = await utils.metadataSearch(admin.accessToken, {
+        originalPath: `${testAssetDirInternal}/temp/directoryA/assetA.png`,
+      });
+      expect(assets.count).toBe(1);
+    });
+
+    it('should scan external library with exclusion pattern', async () => {
+      const library = await utils.createLibrary(admin.accessToken, {
+        type: LibraryType.External,
+        importPaths: [`${testAssetDirInternal}/temp`],
+        exclusionPatterns: ['**/directoryA'],
+      });
+
+      await scan(admin.accessToken, library.id);
+      await utils.waitForWebsocketEvent({ event: 'assetUpload', total: 1 });
+
+      const { assets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
+
+      expect(assets.count).toBe(1);
+      expect(assets.items[0].originalPath.includes('directoryB'));
+    });
+
+    it('should scan multiple import paths', async () => {
+      const library = await utils.createLibrary(admin.accessToken, {
+        type: LibraryType.External,
+        importPaths: [`${testAssetDirInternal}/temp/directoryA`, `${testAssetDirInternal}/temp/directoryB`],
+      });
+
+      await scan(admin.accessToken, library.id);
+      await utils.waitForWebsocketEvent({ event: 'assetUpload', total: 2 });
+
+      const { assets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
+
+      expect(assets.count).toBe(2);
+      expect(assets.items.find((asset) => asset.originalPath.includes('directoryA'))).toBeDefined();
+      expect(assets.items.find((asset) => asset.originalPath.includes('directoryB'))).toBeDefined();
+    });
+
+    it('should pick up new files', async () => {
+      const library = await utils.createLibrary(admin.accessToken, {
+        type: LibraryType.External,
+        importPaths: [`${testAssetDirInternal}/temp`],
+      });
+
+      await scan(admin.accessToken, library.id);
+      await utils.waitForWebsocketEvent({ event: 'assetUpload', total: 2 });
+
+      const { assets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
+
+      expect(assets.count).toBe(2);
+
+      utils.createImageFile(`${testAssetDir}/temp/directoryA/assetB.png`);
+
+      await scan(admin.accessToken, library.id);
+      await utils.waitForWebsocketEvent({ event: 'assetUpload', total: 3 });
+
+      const { assets: newAssets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
+
+      expect(newAssets.count).toBe(3);
     });
   });
 

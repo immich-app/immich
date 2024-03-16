@@ -323,7 +323,7 @@ describe(SystemConfigService.name, () => {
           '{{y}}/{{y}}-{{WW}}/{{assetId}}',
           '{{album}}/{{filename}}',
         ],
-        secondOptions: ['s', 'ss'],
+        secondOptions: ['s', 'ss', 'SSS'],
         weekOptions: ['W', 'WW'],
         yearOptions: ['y', 'yy'],
       });

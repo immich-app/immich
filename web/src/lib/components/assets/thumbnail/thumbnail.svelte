@@ -21,9 +21,9 @@
   import { fade } from 'svelte/transition';
   import ImageThumbnail from './image-thumbnail.svelte';
   import VideoThumbnail from './video-thumbnail.svelte';
+  import { shortcut } from '$lib/utils/shortcut';
 
   const dispatch = createEventDispatcher<{
-    click: { asset: AssetResponseDto };
     select: { asset: AssetResponseDto };
     'mouse-event': { isMouseOver: boolean; selectedGroupIndex: number };
   }>();
@@ -40,12 +40,13 @@
   export let readonly = false;
   export let showArchiveIcon = false;
   export let showStackedIcon = true;
-  export let intersecting = false;
+  export let onClick: ((asset: AssetResponseDto) => void) | undefined = undefined;
 
   let className = '';
   export { className as class };
 
   let mouseOver = false;
+  $: clickable = !disabled && onClick;
 
   $: dispatch('mouse-event', { isMouseOver: mouseOver, selectedGroupIndex: groupIndex });
 
@@ -62,14 +63,8 @@
   })();
 
   const thumbnailClickedHandler = () => {
-    if (!disabled) {
-      dispatch('click', { asset });
-    }
-  };
-
-  const thumbnailKeyDownHandler = (e: KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      thumbnailClickedHandler();
+    if (clickable) {
+      onClick?.(asset);
     }
   };
 
@@ -89,20 +84,22 @@
   };
 </script>
 
-<IntersectionObserver once={false} on:intersected bind:intersecting>
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
+<IntersectionObserver once={false} on:intersected let:intersecting>
+  <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
   <div
     style:width="{width}px"
     style:height="{height}px"
-    class="group relative overflow-hidden {disabled
+    class="group focus-visible:outline-none relative overflow-hidden {disabled
       ? 'bg-gray-300'
       : 'bg-immich-primary/20 dark:bg-immich-dark-primary/20'}"
     class:cursor-not-allowed={disabled}
-    class:hover:cursor-pointer={!disabled}
+    class:hover:cursor-pointer={clickable}
     on:mouseenter={onMouseEnter}
     on:mouseleave={onMouseLeave}
+    role={clickable ? 'button' : undefined}
+    tabindex={clickable ? 0 : undefined}
     on:click={thumbnailClickedHandler}
-    on:keydown={thumbnailKeyDownHandler}
+    use:shortcut={{ shortcut: { key: 'Enter' }, onShortcut: thumbnailClickedHandler }}
   >
     {#if intersecting}
       <div class="absolute z-20 h-full w-full {className}">
@@ -138,6 +135,11 @@
         <div
           class="absolute z-10 h-full w-full bg-gradient-to-b from-black/25 via-[transparent_25%] opacity-0 transition-opacity group-hover:opacity-100"
           class:rounded-xl={selected}
+        />
+
+        <!-- Outline on focus -->
+        <div
+          class="absolute size-full group-focus-visible:outline outline-4 -outline-offset-4 outline-immich-primary"
         />
 
         <!-- Favorite asset star -->

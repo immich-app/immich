@@ -21,7 +21,9 @@ describe(`immich login-key`, () => {
 
   it('should require a valid key', async () => {
     const { stderr, exitCode } = await immichCli(['login-key', app, 'immich-is-so-cool']);
-    expect(stderr).toContain('Failed to connect to server http://127.0.0.1:2283/api: Error: 401');
+    expect(stderr).toContain('Failed to connect to server');
+    expect(stderr).toContain('Invalid API key');
+    expect(stderr).toContain('401');
     expect(exitCode).toBe(1);
   });
 

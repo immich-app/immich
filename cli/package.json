@@ -35,6 +35,7 @@
     "prettier-plugin-organize-imports": "^3.2.4",
     "typescript": "^5.3.3",
     "vite": "^5.0.12",
+    "vite-tsconfig-paths": "^4.3.2",
     "vitest": "^1.2.2",
     "yaml": "^2.3.1"
   },

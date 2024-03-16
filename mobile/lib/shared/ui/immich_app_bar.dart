@@ -154,21 +154,11 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
             children: [
               Container(
                 padding: const EdgeInsets.only(top: 3),
-                width: 28,
-                height: 28,
+                height: 30,
                 child: Image.asset(
-                  'assets/immich-logo.png',
-                ),
-              ),
-              Container(
-                margin: const EdgeInsets.only(left: 10),
-                child: const Text(
-                  'IMMICH',
-                  style: TextStyle(
-                    fontFamily: 'SnowburstOne',
-                    fontWeight: FontWeight.bold,
-                    fontSize: 24,
-                  ),
+                  context.isDarkTheme
+                      ? 'assets/immich-logo-inline-dark.png'
+                      : 'assets/immich-logo-inline-light.png',
                 ),
               ),
             ],

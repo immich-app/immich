@@ -1,12 +1,12 @@
 name: immich_mobile
 description: Immich - selfhosted backup media file on mobile phone
 
-publish_to: "none"
+publish_to: 'none'
 version: 1.98.2+128
 isar_version: &isar_version 3.1.0+1
 
 environment:
-  sdk: ">=3.0.0 <4.0.0"
+  sdk: '>=3.0.0 <4.0.0'
 
 dependencies:
   flutter:
@@ -127,10 +127,12 @@ flutter:
         - asset: fonts/overpass/OverpassMono.ttf
 
 flutter_launcher_icons:
-  image_path_android: "assets/immich-logo-no-outline.png"
-  image_path_ios: "assets/immich-logo-no-outline.png"
-  android: true # can specify file name here e.g. "ic_launcher"
-  ios: true # can specify file name here e.g. "My-Launcher-Icon
+  image_path_android: 'assets/immich-logo.png'
+  adaptive_icon_background: '#ffffff'
+  adaptive_icon_foreground: 'assets/immich-logo-android-adaptive-icon.png'
+  image_path_ios: 'assets/immich-logo-w-bg.png'
+  android: 'ic_launcher' # can specify file name here e.g. "ic_launcher"
+  ios: false # can specify file name here e.g. "My-Launcher-Icon
   remove_alpha_ios: true
 
 analyzer:

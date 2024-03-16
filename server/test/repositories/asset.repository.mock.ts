@@ -8,6 +8,7 @@ export const newAssetRepositoryMock = (): jest.Mocked<IAssetRepository> => {
     getByDate: jest.fn(),
     getByDayOfYear: jest.fn(),
     getByIds: jest.fn().mockResolvedValue([]),
+    getByIdsWithAllRelations: jest.fn().mockResolvedValue([]),
     getByAlbumId: jest.fn(),
     getByUserId: jest.fn(),
     getById: jest.fn(),

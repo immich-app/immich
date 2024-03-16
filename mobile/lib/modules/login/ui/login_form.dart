@@ -402,7 +402,10 @@ class LoginForm extends HookConsumerWidget {
                           ),
                         ),
                       ),
-                      const ImmichTitleText(),
+                      const Padding(
+                        padding: EdgeInsets.only(top: 8.0, bottom: 16),
+                        child: ImmichTitleText(),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 18),
