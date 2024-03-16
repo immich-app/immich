@@ -397,16 +397,20 @@
                   {:else}{owner[index].name}{/if}
                 </td>
 
-                {#if totalCount[index] == undefined}
-                  <td colspan="2" class="flex w-1/3 items-center justify-center text-ellipsis px-4 text-sm">
+                <td class=" text-ellipsis px-4 text-sm">
+                  {#if totalCount[index] == undefined}
                     <LoadingSpinner size="40" />
-                  </td>
-                {:else}
-                  <td class=" text-ellipsis px-4 text-sm">
+                  {:else}
                     {totalCount[index]}
-                  </td>
-                  <td class=" text-ellipsis px-4 text-sm">{diskUsage[index]} {diskUsageUnit[index]}</td>
-                {/if}
+                  {/if}
+                </td>
+                <td class=" text-ellipsis px-4 text-sm">
+                  {#if totalCount[index] == undefined}
+                    <LoadingSpinner size="40" />
+                  {:else}
+                    {diskUsage[index]} {diskUsageUnit[index]}
+                  {/if}
+                </td>
 
                 <td class=" text-ellipsis px-4 text-sm">
                   <button
@@ -426,10 +430,7 @@
                           <MenuOption on:click={() => onScanSettingClicked()} text="Scan Settings" />
                           <hr />
                           <MenuOption on:click={() => onScanNewLibraryClicked()} text="Scan New Library Files" />
-                          <MenuOption
-                            on:click={() => onScanDeletedLibraryClicked()}
-                            text="Scan Deleted Library Files"
-                          />
+                          <MenuOption on:click={() => onScanDeletedLibraryClicked()} text="Scan For Deleted Files" />
 
                           <MenuOption
                             on:click={() => onScanAllLibraryFilesClicked()}
