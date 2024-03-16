@@ -54,8 +54,8 @@
       <div class="flex items-center w-full justify-between gap-6">
         <p class="immich-form-label">PEOPLE</p>
 
-        {#if showAllPeople > 0}
-          <SearchBar bind:name placeholder="Filter people" />
+        {#if showAllPeople}
+          <SearchBar bind:name placeholder="Filter people" isSearching={false} />
         {/if}
       </div>
 
