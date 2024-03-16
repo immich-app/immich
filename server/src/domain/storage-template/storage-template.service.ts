@@ -291,20 +291,31 @@ export class StorageTemplateService {
     return {
       raw: template,
       compiled: handlebar.compile(template, { knownHelpers: undefined, strict: true }),
-      needsAlbum: template.includes('{{album}}'),
+      needsAlbum: template.includes('{{album}}') || template.includes('{{albumPath}}'),
     };
   }
 
   private render(template: HandlebarsTemplateDelegate<any>, options: RenderMetadata) {
     const { filename, extension, asset, albumName } = options;
+    //just throw into the root if it doesn't belong to an album
+    let albumSubstitutions = {
+      album: '.',
+      albumPath: '.',
+    }
+    if (albumName) {
+      const album = albumName.replaceAll(/\.+/g, '')
+      albumSubstitutions = {
+        album: sanitize(album),
+        albumPath: sanitize(album.replaceAll(/\/+/g, '.')).replaceAll('.', '/'),
+      }
+    }
     const substitutions: Record<string, string> = {
       filename,
       ext: extension,
       filetype: asset.type == AssetType.IMAGE ? 'IMG' : 'VID',
       filetypefull: asset.type == AssetType.IMAGE ? 'IMAGE' : 'VIDEO',
       assetId: asset.id,
-      //just throw into the root if it doesn't belong to an album
-      album: (albumName && sanitize(albumName.replaceAll(/\.+/g, ''))) || '.',
+      ...albumSubstitutions,
     };
 
     const systemTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
