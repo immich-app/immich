@@ -1,8 +1,8 @@
 import { DomainModule } from '@app/domain';
 import { InfraModule } from '@app/infra';
 import { AssetEntity, ExifEntity } from '@app/infra/entities';
-import { Module, OnModuleInit } from '@nestjs/common';
-import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { Module, OnModuleInit, ValidationPipe } from '@nestjs/common';
+import { APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AssetRepositoryV1, IAssetRepositoryV1 } from './api-v1/asset/asset-repository';
@@ -70,6 +70,7 @@ import { ErrorInterceptor, FileUploadInterceptor } from './interceptors';
     PersonController,
   ],
   providers: [
+    { provide: APP_PIPE, useValue: new ValidationPipe({ transform: true, whitelist: true }) },
     { provide: APP_INTERCEPTOR, useClass: ErrorInterceptor },
     { provide: APP_GUARD, useClass: AppGuard },
     { provide: IAssetRepositoryV1, useClass: AssetRepositoryV1 },

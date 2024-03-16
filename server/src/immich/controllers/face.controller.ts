@@ -2,13 +2,11 @@ import { AssetFaceResponseDto, AuthDto, FaceDto, PersonResponseDto, PersonServic
 import { Body, Controller, Get, Param, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Auth, Authenticated } from '../app.guard';
-import { UseValidation } from '../app.utils';
 import { UUIDParamDto } from './dto/uuid-param.dto';
 
 @ApiTags('Face')
 @Controller('face')
 @Authenticated()
-@UseValidation()
 export class FaceController {
   constructor(private service: PersonService) {}
 

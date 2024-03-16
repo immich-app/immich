@@ -27,14 +27,13 @@ import {
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
 import { AdminRoute, Auth, Authenticated, FileResponse } from '../app.guard';
-import { UseValidation, sendFile } from '../app.utils';
+import { sendFile } from '../app.utils';
 import { FileUploadInterceptor, Route } from '../interceptors';
 import { UUIDParamDto } from './dto/uuid-param.dto';
 
 @ApiTags('User')
 @Controller(Route.USER)
 @Authenticated()
-@UseValidation()
 export class UserController {
   constructor(private service: UserService) {}
 

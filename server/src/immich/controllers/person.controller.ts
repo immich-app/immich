@@ -17,13 +17,12 @@ import { Body, Controller, Get, Next, Param, Post, Put, Query, Res } from '@nest
 import { ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
 import { Auth, Authenticated, FileResponse } from '../app.guard';
-import { UseValidation, sendFile } from '../app.utils';
+import { sendFile } from '../app.utils';
 import { UUIDParamDto } from './dto/uuid-param.dto';
 
 @ApiTags('Person')
 @Controller('person')
 @Authenticated()
-@UseValidation()
 export class PersonController {
   constructor(private service: PersonService) {}
 

@@ -11,6 +11,7 @@ import {
   ISystemConfigRepository,
   JobHandler,
   JobItem,
+  JobStatus,
   QueueCleanType,
 } from '../repositories';
 import { FeatureFlag, SystemConfigCore } from '../system-config/system-config.core';
@@ -155,8 +156,8 @@ export class JobService {
 
         try {
           const handler = jobHandlers[name];
-          const success = await handler(data);
-          if (success) {
+          const status = await handler(data);
+          if (status === JobStatus.SUCCESS || status == JobStatus.SKIPPED) {
             await this.onDone(item);
           }
         } catch (error: Error | any) {

@@ -1,4 +1,5 @@
 import type { ActionReturn } from 'svelte/action';
+import { matchesShortcut } from './shortcut';
 
 interface Attributes {
   /** @deprecated */
@@ -29,7 +30,7 @@ export function clickOutside(node: HTMLElement, options: Options = {}): ActionRe
   };
 
   const handleKey = (event: KeyboardEvent) => {
-    if (event.key !== 'Escape') {
+    if (!matchesShortcut(event, { key: 'Escape' })) {
       return;
     }
 

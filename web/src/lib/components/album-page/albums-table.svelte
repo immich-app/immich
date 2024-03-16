@@ -35,8 +35,6 @@
       <tr
         class="flex h-[50px] w-full place-items-center border-[3px] border-transparent p-2 text-center odd:bg-immich-gray even:bg-immich-bg hover:cursor-pointer hover:border-immich-primary/75 odd:dark:bg-immich-dark-gray/75 even:dark:bg-immich-dark-gray/50 dark:hover:border-immich-dark-primary/75 md:p-5"
         on:click={() => goto(`${AppRoute.ALBUMS}/${album.id}`)}
-        on:keydown={(event) => event.key === 'Enter' && goto(`${AppRoute.ALBUMS}/${album.id}`)}
-        tabindex="0"
       >
         <a data-sveltekit-preload-data="hover" class="flex w-full" href="{AppRoute.ALBUMS}/{album.id}">
           <td class="text-md text-ellipsis text-left w-8/12 sm:w-4/12 md:w-4/12 xl:w-[30%] 2xl:w-[40%]"

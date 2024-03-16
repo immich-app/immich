@@ -3,13 +3,12 @@ import { Body, Controller, HttpCode, HttpStatus, Next, Param, Post, Res, Streama
 import { ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
 import { Auth, Authenticated, FileResponse, SharedLinkRoute } from '../app.guard';
-import { UseValidation, asStreamableFile, sendFile } from '../app.utils';
+import { asStreamableFile, sendFile } from '../app.utils';
 import { UUIDParamDto } from './dto/uuid-param.dto';
 
 @ApiTags('Download')
 @Controller('download')
 @Authenticated()
-@UseValidation()
 export class DownloadController {
   constructor(private service: DownloadService) {}
 
