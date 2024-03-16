@@ -1,6 +1,7 @@
 <script lang="ts">
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import Button from '$lib/components/elements/buttons/button.svelte';
+  import SearchBar from '$lib/components/elements/search-bar.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { getAllPeople, type PersonResponseDto } from '@immich/sdk';
@@ -13,6 +14,7 @@
   let peoplePromise = getPeople();
   let showAllPeople = false;
   $: numberOfPeople = (width - 80) / 85;
+  $: name = '';
 
   function orderBySelectedPeopleFirst(people: PersonResponseDto[]) {
     return [
@@ -38,15 +40,23 @@
     }
     selectedPeople = selectedPeople;
   }
+
+  const filterPeople = (list: PersonResponseDto[], name: string) => {
+    return name == '' ? list : list.filter((p) => p.name.toLowerCase().startsWith(name.toLowerCase()));
+  };
 </script>
 
 {#await peoplePromise then people}
   {#if people && people.length > 0}
-    {@const peopleList = showAllPeople ? people : people.slice(0, numberOfPeople)}
+    {@const peopleList = showAllPeople ? filterPeople(people, name) : people.slice(0, numberOfPeople)}
 
     <div id="people-selection" class="-mb-4">
-      <div class="flex items-center gap-6">
+      <div class="flex items-center w-full justify-between gap-6">
         <p class="immich-form-label">PEOPLE</p>
+
+        {#if showAllPeople > 0}
+          <SearchBar bind:name placeholder="Filter people" />
+        {/if}
       </div>
 
       <div class="flex -mx-1 max-h-64 gap-1 mt-2 flex-wrap overflow-y-auto immich-scrollbar">
