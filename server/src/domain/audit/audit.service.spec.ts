@@ -18,6 +18,7 @@ import {
   IPersonRepository,
   IStorageRepository,
   IUserRepository,
+  JobStatus,
 } from '../repositories';
 import { AuditService } from './audit.service';
 
@@ -48,8 +49,8 @@ describe(AuditService.name, () => {
 
   describe('handleCleanup', () => {
     it('should delete old audit entries', async () => {
-      await expect(sut.handleCleanup()).resolves.toBe(true);
-      expect(auditMock.removeBefore).toBeCalledWith(expect.any(Date));
+      await expect(sut.handleCleanup()).resolves.toBe(JobStatus.SUCCESS);
+      expect(auditMock.removeBefore).toHaveBeenCalledWith(expect.any(Date));
     });
   });
 

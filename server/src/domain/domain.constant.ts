@@ -133,13 +133,14 @@ const image: Record<string, string[]> = {
   '.sr2': ['image/sr2', 'image/x-sony-sr2'],
   '.srf': ['image/srf', 'image/x-sony-srf'],
   '.srw': ['image/srw', 'image/x-samsung-srw'],
+  '.svg': ['image/svg'],
   '.tif': ['image/tiff'],
   '.tiff': ['image/tiff'],
   '.webp': ['image/webp'],
   '.x3f': ['image/x3f', 'image/x-sigma-x3f'],
 };
 
-const profileExtensions = new Set(['.avif', '.dng', '.heic', '.heif', '.jpeg', '.jpg', '.png', '.webp']);
+const profileExtensions = new Set(['.avif', '.dng', '.heic', '.heif', '.jpeg', '.jpg', '.png', '.webp', '.svg']);
 const profile: Record<string, string[]> = Object.fromEntries(
   Object.entries(image).filter(([key]) => profileExtensions.has(key)),
 );

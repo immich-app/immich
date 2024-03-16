@@ -20,6 +20,9 @@ export enum StorageFolder {
   THUMBNAILS = 'thumbs',
 }
 
+export const THUMBNAIL_DIR = resolve(join(APP_MEDIA_LOCATION, StorageFolder.THUMBNAILS));
+export const ENCODED_VIDEO_DIR = resolve(join(APP_MEDIA_LOCATION, StorageFolder.ENCODED_VIDEO));
+
 export interface MoveRequest {
   entityId: string;
   pathType: PathType;
@@ -113,6 +116,10 @@ export class StorageCore {
 
   static isImmichPath(path: string) {
     return resolve(path).startsWith(resolve(APP_MEDIA_LOCATION));
+  }
+
+  static isGeneratedAsset(path: string) {
+    return path.startsWith(THUMBNAIL_DIR) || path.startsWith(ENCODED_VIDEO_DIR);
   }
 
   async moveAssetFile(asset: AssetEntity, pathType: GeneratedAssetPath) {

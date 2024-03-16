@@ -34,6 +34,7 @@ import {
   IPersonRepository,
   IStorageRepository,
   ISystemConfigRepository,
+  JobStatus,
   WithoutProperty,
 } from '../repositories';
 import { MediaService } from './media.service';
@@ -1214,22 +1215,22 @@ describe(MediaService.name, () => {
       expect(mediaMock.transcode).not.toHaveBeenCalled();
     });
 
-    it('should return false if hwaccel is enabled for an unsupported codec', async () => {
+    it('should fail if hwaccel is enabled for an unsupported codec', async () => {
       mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
       configMock.load.mockResolvedValue([
         { key: SystemConfigKey.FFMPEG_ACCEL, value: TranscodeHWAccel.NVENC },
         { key: SystemConfigKey.FFMPEG_TARGET_VIDEO_CODEC, value: VideoCodec.VP9 },
       ]);
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
-      await expect(sut.handleVideoConversion({ id: assetStub.video.id })).resolves.toEqual(false);
+      await expect(sut.handleVideoConversion({ id: assetStub.video.id })).resolves.toBe(JobStatus.FAILED);
       expect(mediaMock.transcode).not.toHaveBeenCalled();
     });
 
-    it('should return false if hwaccel option is invalid', async () => {
+    it('should fail if hwaccel option is invalid', async () => {
       mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
       configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_ACCEL, value: 'invalid' }]);
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
-      await expect(sut.handleVideoConversion({ id: assetStub.video.id })).resolves.toEqual(false);
+      await expect(sut.handleVideoConversion({ id: assetStub.video.id })).resolves.toBe(JobStatus.FAILED);
       expect(mediaMock.transcode).not.toHaveBeenCalled();
     });
 
@@ -1548,12 +1549,12 @@ describe(MediaService.name, () => {
       );
     });
 
-    it('should return false for qsv if no hw devices', async () => {
+    it('should fail for qsv if no hw devices', async () => {
       storageMock.readdir.mockResolvedValue([]);
       mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
       configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_ACCEL, value: TranscodeHWAccel.QSV }]);
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
-      await expect(sut.handleVideoConversion({ id: assetStub.video.id })).resolves.toEqual(false);
+      await expect(sut.handleVideoConversion({ id: assetStub.video.id })).resolves.toBe(JobStatus.FAILED);
       expect(mediaMock.transcode).not.toHaveBeenCalled();
     });
 
@@ -1777,12 +1778,12 @@ describe(MediaService.name, () => {
       );
     });
 
-    it('should return false for vaapi if no hw devices', async () => {
+    it('should fail for vaapi if no hw devices', async () => {
       storageMock.readdir.mockResolvedValue([]);
       mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
       configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_ACCEL, value: TranscodeHWAccel.VAAPI }]);
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
-      await expect(sut.handleVideoConversion({ id: assetStub.video.id })).resolves.toEqual(false);
+      await expect(sut.handleVideoConversion({ id: assetStub.video.id })).resolves.toBe(JobStatus.FAILED);
       expect(mediaMock.transcode).not.toHaveBeenCalled();
     });
 

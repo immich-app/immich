@@ -8,6 +8,7 @@ import {
   IStorageRepository,
   ISystemConfigRepository,
   IUserRepository,
+  JobStatus,
   StorageTemplateService,
   defaults,
 } from '@app/domain';
@@ -76,7 +77,7 @@ describe(StorageTemplateService.name, () => {
   describe('handleMigrationSingle', () => {
     it('should skip when storage template is disabled', async () => {
       configMock.load.mockResolvedValue([{ key: SystemConfigKey.STORAGE_TEMPLATE_ENABLED, value: false }]);
-      await expect(sut.handleMigrationSingle({ id: assetStub.image.id })).resolves.toBe(true);
+      await expect(sut.handleMigrationSingle({ id: assetStub.image.id })).resolves.toBe(JobStatus.SKIPPED);
       expect(assetMock.getByIds).not.toHaveBeenCalled();
       expect(storageMock.checkFileExists).not.toHaveBeenCalled();
       expect(storageMock.rename).not.toHaveBeenCalled();
@@ -138,7 +139,9 @@ describe(StorageTemplateService.name, () => {
           newPath: newMotionPicturePath,
         });
 
-      await expect(sut.handleMigrationSingle({ id: assetStub.livePhotoStillAsset.id })).resolves.toBe(true);
+      await expect(sut.handleMigrationSingle({ id: assetStub.livePhotoStillAsset.id })).resolves.toBe(
+        JobStatus.SUCCESS,
+      );
 
       expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.livePhotoStillAsset.id], { exifInfo: true });
       expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.livePhotoMotionAsset.id], { exifInfo: true });
@@ -190,7 +193,7 @@ describe(StorageTemplateService.name, () => {
           newPath,
         });
 
-      await expect(sut.handleMigrationSingle({ id: assetStub.image.id })).resolves.toBe(true);
+      await expect(sut.handleMigrationSingle({ id: assetStub.image.id })).resolves.toBe(JobStatus.SUCCESS);
 
       expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id], { exifInfo: true });
       expect(storageMock.checkFileExists).toHaveBeenCalledTimes(3);
@@ -247,7 +250,7 @@ describe(StorageTemplateService.name, () => {
           newPath,
         });
 
-      await expect(sut.handleMigrationSingle({ id: assetStub.image.id })).resolves.toBe(true);
+      await expect(sut.handleMigrationSingle({ id: assetStub.image.id })).resolves.toBe(JobStatus.SUCCESS);
 
       expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id], { exifInfo: true });
       expect(storageMock.checkFileExists).toHaveBeenCalledTimes(3);
@@ -298,7 +301,7 @@ describe(StorageTemplateService.name, () => {
           newPath,
         });
 
-      await expect(sut.handleMigrationSingle({ id: assetStub.image.id })).resolves.toBe(true);
+      await expect(sut.handleMigrationSingle({ id: assetStub.image.id })).resolves.toBe(JobStatus.SUCCESS);
 
       expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id], { exifInfo: true });
       expect(storageMock.checkFileExists).toHaveBeenCalledTimes(1);
@@ -364,7 +367,7 @@ describe(StorageTemplateService.name, () => {
             newPath,
           });
 
-        await expect(sut.handleMigrationSingle({ id: assetStub.image.id })).resolves.toBe(true);
+        await expect(sut.handleMigrationSingle({ id: assetStub.image.id })).resolves.toBe(JobStatus.SUCCESS);
 
         expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id], { exifInfo: true });
         expect(storageMock.checkFileExists).toHaveBeenCalledTimes(3);

@@ -16,13 +16,14 @@ import {
   ISystemConfigRepository,
   JobHandler,
   JobItem,
+  JobStatus,
 } from '../repositories';
 import { FeatureFlag, SystemConfigCore } from '../system-config/system-config.core';
 import { JobCommand, JobName, QueueName } from './job.constants';
 import { JobService } from './job.service';
 
-const makeMockHandlers = (success: boolean) => {
-  const mock = jest.fn().mockResolvedValue(success);
+const makeMockHandlers = (status: JobStatus) => {
+  const mock = jest.fn().mockResolvedValue(status);
   return Object.fromEntries(Object.values(JobName).map((jobName) => [jobName, mock])) as unknown as Record<
     JobName,
     JobHandler
@@ -221,13 +222,13 @@ describe(JobService.name, () => {
 
   describe('init', () => {
     it('should register a handler for each queue', async () => {
-      await sut.init(makeMockHandlers(true));
+      await sut.init(makeMockHandlers(JobStatus.SUCCESS));
       expect(configMock.load).toHaveBeenCalled();
       expect(jobMock.addHandler).toHaveBeenCalledTimes(Object.keys(QueueName).length);
     });
 
     it('should subscribe to config changes', async () => {
-      await sut.init(makeMockHandlers(false));
+      await sut.init(makeMockHandlers(JobStatus.FAILED));
 
       SystemConfigCore.create(newSystemConfigRepositoryMock(false)).config$.next({
         job: {
@@ -332,7 +333,7 @@ describe(JobService.name, () => {
           }
         }
 
-        await sut.init(makeMockHandlers(true));
+        await sut.init(makeMockHandlers(JobStatus.SUCCESS));
         await jobMock.addHandler.mock.calls[0][2](item);
 
         if (jobs.length > 1) {
@@ -348,7 +349,7 @@ describe(JobService.name, () => {
       });
 
       it(`should not queue any jobs when ${item.name} finishes with 'false'`, async () => {
-        await sut.init(makeMockHandlers(false));
+        await sut.init(makeMockHandlers(JobStatus.FAILED));
         await jobMock.addHandler.mock.calls[0][2](item);
 
         expect(jobMock.queueAll).not.toHaveBeenCalled();

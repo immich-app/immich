@@ -22,9 +22,11 @@ import {
   ILibraryRepository,
   IStorageRepository,
   ISystemConfigRepository,
+  JobStatus,
   StorageEventType,
   WithProperty,
 } from '../repositories';
+import { StorageCore } from '../storage';
 import { SystemConfigCore } from '../system-config';
 import {
   CreateLibraryDto,
@@ -241,13 +243,13 @@ export class LibraryService extends EventEmitter {
     return libraries.map((library) => mapLibrary(library));
   }
 
-  async handleQueueCleanup(): Promise<boolean> {
+  async handleQueueCleanup(): Promise<JobStatus> {
     this.logger.debug('Cleaning up any pending library deletions');
     const pendingDeletion = await this.repository.getAllDeleted();
     await this.jobRepository.queueAll(
       pendingDeletion.map((libraryToDelete) => ({ name: JobName.LIBRARY_DELETE, data: { id: libraryToDelete.id } })),
     );
-    return true;
+    return JobStatus.SUCCESS;
   }
 
   async create(auth: AuthDto, dto: CreateLibraryDto): Promise<LibraryResponseDto> {
@@ -326,9 +328,13 @@ export class LibraryService extends EventEmitter {
     const validation = new ValidateLibraryImportPathResponseDto();
     validation.importPath = importPath;
 
+    if (StorageCore.isImmichPath(importPath)) {
+      validation.message = 'Cannot use media upload folder for external libraries';
+      return validation;
+    }
+
     try {
       const stat = await this.storageRepository.stat(importPath);
-
       if (!stat.isDirectory()) {
         validation.message = 'Not a directory';
         return validation;
@@ -410,10 +416,10 @@ export class LibraryService extends EventEmitter {
     await this.jobRepository.queue({ name: JobName.LIBRARY_DELETE, data: { id } });
   }
 
-  async handleDeleteLibrary(job: IEntityJob): Promise<boolean> {
+  async handleDeleteLibrary(job: IEntityJob): Promise<JobStatus> {
     const library = await this.repository.get(job.id, true);
     if (!library) {
-      return false;
+      return JobStatus.FAILED;
     }
 
     // TODO use pagination
@@ -427,10 +433,10 @@ export class LibraryService extends EventEmitter {
       this.logger.log(`Deleting library ${job.id}`);
       await this.repository.delete(job.id);
     }
-    return true;
+    return JobStatus.SUCCESS;
   }
 
-  async handleAssetRefresh(job: ILibraryFileJob) {
+  async handleAssetRefresh(job: ILibraryFileJob): Promise<JobStatus> {
     const assetPath = path.normalize(job.assetPath);
 
     const existingAssetEntity = await this.assetRepository.getByLibraryIdAndOriginalPath(job.id, assetPath);
@@ -445,7 +451,7 @@ export class LibraryService extends EventEmitter {
         this.logger.debug(`Marking asset as offline: ${assetPath}`);
 
         await this.assetRepository.save({ id: existingAssetEntity.id, isOffline: true });
-        return true;
+        return JobStatus.SUCCESS;
       } else {
         // File can't be accessed and does not already exist in db
         throw new BadRequestException('Cannot access file', { cause: error });
@@ -483,7 +489,7 @@ export class LibraryService extends EventEmitter {
 
     if (!doImport && !doRefresh) {
       // If we don't import, exit here
-      return true;
+      return JobStatus.SKIPPED;
     }
 
     let assetType: AssetType;
@@ -509,7 +515,7 @@ export class LibraryService extends EventEmitter {
       const library = await this.repository.get(job.id, true);
       if (library?.deletedAt) {
         this.logger.error('Cannot import asset into deleted library');
-        return false;
+        return JobStatus.FAILED;
       }
 
       const pathHash = this.cryptoRepository.hashSha1(`path:${assetPath}`);
@@ -540,7 +546,7 @@ export class LibraryService extends EventEmitter {
       });
     } else {
       // Not importing and not refreshing, do nothing
-      return true;
+      return JobStatus.SKIPPED;
     }
 
     this.logger.debug(`Queuing metadata extraction for: ${assetPath}`);
@@ -551,7 +557,7 @@ export class LibraryService extends EventEmitter {
       await this.jobRepository.queue({ name: JobName.VIDEO_CONVERSION, data: { id: assetId } });
     }
 
-    return true;
+    return JobStatus.SUCCESS;
   }
 
   async queueScan(auth: AuthDto, id: string, dto: ScanLibraryDto) {
@@ -584,7 +590,7 @@ export class LibraryService extends EventEmitter {
     });
   }
 
-  async handleQueueAllScan(job: IBaseJob): Promise<boolean> {
+  async handleQueueAllScan(job: IBaseJob): Promise<JobStatus> {
     this.logger.debug(`Refreshing all external libraries: force=${job.force}`);
 
     // Queue cleanup
@@ -602,10 +608,10 @@ export class LibraryService extends EventEmitter {
         },
       })),
     );
-    return true;
+    return JobStatus.SUCCESS;
   }
 
-  async handleOfflineRemoval(job: IEntityJob): Promise<boolean> {
+  async handleOfflineRemoval(job: IEntityJob): Promise<JobStatus> {
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
       this.assetRepository.getWith(pagination, WithProperty.IS_OFFLINE, job.id),
     );
@@ -617,14 +623,14 @@ export class LibraryService extends EventEmitter {
       );
     }
 
-    return true;
+    return JobStatus.SUCCESS;
   }
 
-  async handleQueueAssetRefresh(job: ILibraryRefreshJob): Promise<boolean> {
+  async handleQueueAssetRefresh(job: ILibraryRefreshJob): Promise<JobStatus> {
     const library = await this.repository.get(job.id);
     if (!library || library.type !== LibraryType.EXTERNAL) {
       this.logger.warn('Can only refresh external libraries');
-      return false;
+      return JobStatus.FAILED;
     }
 
     this.logger.log(`Refreshing library: ${job.id}`);
@@ -677,13 +683,13 @@ export class LibraryService extends EventEmitter {
         this.logger.debug(`Will import ${crawledAssetPaths.size} new asset(s)`);
       }
 
-      const batch = [];
+      let batch = [];
       for (const assetPath of crawledAssetPaths) {
         batch.push(assetPath);
 
         if (batch.length >= LIBRARY_SCAN_BATCH_SIZE) {
           await this.scanAssets(job.id, batch, library.ownerId, job.refreshAllFiles ?? false);
-          batch.length = 0;
+          batch = [];
         }
       }
 
@@ -694,7 +700,7 @@ export class LibraryService extends EventEmitter {
 
     await this.repository.update({ id: job.id, refreshedAt: new Date() });
 
-    return true;
+    return JobStatus.SUCCESS;
   }
 
   private async getPathTrie(library: LibraryEntity): Promise<Trie<string>> {

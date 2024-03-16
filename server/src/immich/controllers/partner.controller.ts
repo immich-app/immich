@@ -3,13 +3,11 @@ import { PartnerResponseDto, UpdatePartnerDto } from '@app/domain/partner/partne
 import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Auth, Authenticated } from '../app.guard';
-import { UseValidation } from '../app.utils';
 import { UUIDParamDto } from './dto/uuid-param.dto';
 
 @ApiTags('Partner')
 @Controller('partner')
 @Authenticated()
-@UseValidation()
 export class PartnerController {
   constructor(private service: PartnerService) {}
 

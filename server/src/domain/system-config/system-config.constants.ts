@@ -4,7 +4,7 @@ export const supportedWeekTokens = ['W', 'WW'];
 export const supportedDayTokens = ['d', 'dd'];
 export const supportedHourTokens = ['h', 'hh', 'H', 'HH'];
 export const supportedMinuteTokens = ['m', 'mm'];
-export const supportedSecondTokens = ['s', 'ss'];
+export const supportedSecondTokens = ['s', 'ss', 'SSS'];
 export const supportedPresetTokens = [
   '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
   '{{y}}/{{MM}}-{{dd}}/{{filename}}',

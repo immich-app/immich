@@ -15,13 +15,11 @@ import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from '@
 import { ApiTags } from '@nestjs/swagger';
 import { ParseMeUUIDPipe } from '../api-v1/validation/parse-me-uuid-pipe';
 import { Auth, Authenticated, SharedLinkRoute } from '../app.guard';
-import { UseValidation } from '../app.utils';
 import { UUIDParamDto } from './dto/uuid-param.dto';
 
 @ApiTags('Album')
 @Controller('album')
 @Authenticated()
-@UseValidation()
 export class AlbumController {
   constructor(private service: AlbumService) {}
 
