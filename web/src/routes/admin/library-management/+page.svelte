@@ -430,7 +430,10 @@
                           <MenuOption on:click={() => onScanSettingClicked()} text="Scan Settings" />
                           <hr />
                           <MenuOption on:click={() => onScanNewLibraryClicked()} text="Scan New Library Files" />
-                          <MenuOption on:click={() => onScanDeletedLibraryClicked()} text="Scan For Deleted Files" />
+                          <MenuOption
+                            on:click={() => onScanDeletedLibraryClicked()}
+                            text="Scan Deleted Library Files"
+                          />
 
                           <MenuOption
                             on:click={() => onScanAllLibraryFilesClicked()}
