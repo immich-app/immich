@@ -52,7 +52,7 @@
 
     <div id="people-selection" class="-mb-4">
       <div class="flex items-center w-full justify-between gap-6">
-        <p class="immich-form-label">PEOPLE</p>
+        <p class="immich-form-label py-3">PEOPLE</p>
 
         {#if showAllPeople}
           <SearchBar bind:name placeholder="Filter people" isSearching={false} />
