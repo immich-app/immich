@@ -23,7 +23,7 @@
     ? 'rounded-lg'
     : 'rounded-t-lg'} bg-gray-100 p-2 dark:bg-gray-700 gap-2 place-items-center h-full"
 >
-  <button on:click={() => dispatch('search', { force: true })}>
+  <button type="button" on:click={() => dispatch('search', { force: true })}>
     <div class="w-fit">
       <Icon path={mdiMagnify} size="24" />
     </div>

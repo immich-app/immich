@@ -13,8 +13,8 @@
 
   let peoplePromise = getPeople();
   let showAllPeople = false;
+  let name = '';
   $: numberOfPeople = (width - 80) / 85;
-  $: name = '';
 
   function orderBySelectedPeopleFirst(people: PersonResponseDto[]) {
     return [
@@ -42,7 +42,8 @@
   }
 
   const filterPeople = (list: PersonResponseDto[], name: string) => {
-    return name == '' ? list : list.filter((p) => p.name.toLowerCase().startsWith(name.toLowerCase()));
+    const nameLower = name.toLowerCase();
+    return name === '' ? list : list.filter((p) => p.name.toLowerCase().startsWith(nameLower));
   };
 </script>
 
