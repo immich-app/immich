@@ -14,6 +14,7 @@
   import SearchBar from '$lib/components/elements/search-bar.svelte';
 
   export let searchAlbum: string;
+  export let showCreateAlbum = true;
 
   const searchSort = (searched: string): Sort => {
     return sortByOptions.find((option) => option.title === searched) || sortByOptions[0];
@@ -28,13 +29,15 @@
 <div class="hidden lg:block lg:w-40 xl:w-60 2xl:w-80 h-10">
   <SearchBar placeholder="Search albums" bind:name={searchAlbum} isSearching={false} />
 </div>
-<LinkButton on:click={handleCreateAlbum}>
-  <div class="flex place-items-center gap-2 text-sm">
-    <Icon path={mdiPlusBoxOutline} size="18" />
-    Create album
-  </div>
-</LinkButton>
 
+{#if showCreateAlbum}
+  <LinkButton on:click={handleCreateAlbum}>
+    <div class="flex place-items-center gap-2 text-sm">
+      <Icon path={mdiPlusBoxOutline} size="18" />
+      Create album
+    </div>
+  </LinkButton>
+{/if}
 <Dropdown
   options={Object.values(sortByOptions)}
   selectedOption={searchSort($albumViewSettings.sortBy)}

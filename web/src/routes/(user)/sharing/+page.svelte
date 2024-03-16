@@ -77,7 +77,7 @@
   <hr class="dark:border-immich-dark-gray" />
   <PageHeader title="Albums">
     <div class="flex place-items-center gap-2" slot="buttons">
-      <AlbumsControls bind:searchAlbum />
+      <AlbumsControls bind:searchAlbum showCreateAlbum={false} />
     </div>
   </PageHeader>
   <Albums albums={data.sharedAlbums} {searchAlbum} />
