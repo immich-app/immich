@@ -563,20 +563,17 @@ export class LibraryService extends EventEmitter {
     }
 
     if (dto.checkForOffline) {
-      if (dto.refreshAllFiles || dto.refreshModifiedFiles) {
-        throw new BadRequestException('Cannot use checkForOffline with refreshAllFiles or refreshModifiedFiles');
-      }
       await this.jobRepository.queue({ name: JobName.LIBRARY_SCAN_OFFLINE, data: { id } });
-    } else {
-      await this.jobRepository.queue({
-        name: JobName.LIBRARY_SCAN,
-        data: {
-          id,
-          refreshModifiedFiles: dto.refreshModifiedFiles ?? false,
-          refreshAllFiles: dto.refreshAllFiles ?? false,
-        },
-      });
     }
+
+    await this.jobRepository.queue({
+      name: JobName.LIBRARY_SCAN,
+      data: {
+        id,
+        refreshModifiedFiles: dto.refreshModifiedFiles ?? false,
+        refreshAllFiles: dto.refreshAllFiles ?? false,
+      },
+    });
   }
 
   async queueRemoveOffline(auth: AuthDto, id: string) {
