@@ -58,6 +58,8 @@ class GalleryViewerPage extends HookConsumerWidget {
     final settings = ref.watch(appSettingsServiceProvider);
     final isLoadPreview = useState(AppSettingsEnum.loadPreview.defaultValue);
     final isLoadOriginal = useState(AppSettingsEnum.loadOriginal.defaultValue);
+    final shouldAutoPlay =
+        useState(AppSettingsEnum.autoPlayVideos.defaultValue);
     final isZoomed = useState(false);
     final isPlayingVideo = useState(false);
     final localPosition = useState<Offset?>(null);
@@ -89,6 +91,7 @@ class GalleryViewerPage extends HookConsumerWidget {
         Future.microtask(
           () => ref.read(currentAssetProvider.notifier).set(asset),
         );
+        isPlayingVideo.value = isMotionPhoto && shouldAutoPlay.value;
         return null;
       },
       [asset],
@@ -100,6 +103,8 @@ class GalleryViewerPage extends HookConsumerWidget {
             settings.getSetting<bool>(AppSettingsEnum.loadPreview);
         isLoadOriginal.value =
             settings.getSetting<bool>(AppSettingsEnum.loadOriginal);
+        shouldAutoPlay.value =
+            settings.getSetting<bool>(AppSettingsEnum.autoPlayVideos);
         return null;
       },
       [],
@@ -186,9 +191,6 @@ class GalleryViewerPage extends HookConsumerWidget {
         } else {
           SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
         }
-        var autoPlayMotionPhotos =
-            settings.getSetting<bool>(AppSettingsEnum.autoPlayVideos);
-        isPlayingVideo.value = isMotionPhoto && autoPlayMotionPhotos;
         return null;
       },
       [],
@@ -371,8 +373,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                         width: context.width,
                         alignment: Alignment.center,
                       ),
-                      autoPlayVideo: settings
-                          .getSetting<bool>(AppSettingsEnum.autoPlayVideos),
+                      autoPlayVideo: shouldAutoPlay.value,
                     ),
                   );
                 }

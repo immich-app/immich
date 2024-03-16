@@ -104,7 +104,8 @@ class VideoViewerPage extends HookConsumerWidget {
 
         // Hide the controls
         // Done in a microtask to avoid setting the state while the is building
-        if (!isMotionVideo) {
+        // Don't hide the controls if autoplay is disabled
+        if (!isMotionVideo && autoPlayVideo) {
           Future.microtask(() {
             ref.read(showControlsProvider.notifier).show = false;
           });
