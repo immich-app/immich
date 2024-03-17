@@ -447,11 +447,9 @@
 
   const handleVideoEnded = async () => {
     if ($slideshowState === SlideshowState.PlaySlideshow) {
-      if ($slideshowNavigation === SlideshowNavigation.AscendingOrder) {
-        await navigateAsset('previous');
-      } else {
-        await navigateAsset('next');
-      }
+      $slideshowNavigation === SlideshowNavigation.AscendingOrder
+        ? await navigateAsset('previous')
+        : await navigateAsset('next');
     }
   };
 
@@ -597,10 +595,7 @@
           </div>
         {:else if asset.type === AssetTypeEnum.Image}
           {#if shouldPlayMotionPhoto && asset.livePhotoVideoId}
-            <VideoViewer
-              assetId={asset.livePhotoVideoId}
-              onVideoEnded={() => (shouldPlayMotionPhoto = false)}
-            />
+            <VideoViewer assetId={asset.livePhotoVideoId} onVideoEnded={() => (shouldPlayMotionPhoto = false)} />
           {:else if asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR || (asset.originalPath && asset.originalPath
                 .toLowerCase()
                 .endsWith('.insp'))}
@@ -609,11 +604,7 @@
             <PhotoViewer {asset} {preloadAssets} on:close={closeViewer} />
           {/if}
         {:else}
-          <VideoViewer
-            assetId={asset.id}
-            onVideoEnded={handleVideoEnded}
-            onVideoStarted={handleVideoStarted}
-          />
+          <VideoViewer assetId={asset.id} onVideoEnded={handleVideoEnded} onVideoStarted={handleVideoStarted} />
         {/if}
         {#if $slideshowState === SlideshowState.None && isShared && ((album && album.isActivityEnabled) || numberOfComments > 0)}
           <div class="z-[9999] absolute bottom-0 right-0 mb-6 mr-6 justify-self-end">
