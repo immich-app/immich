@@ -20,6 +20,7 @@ import {
 import { when } from 'jest-when';
 import { R_OK } from 'node:constants';
 import { Stats } from 'node:fs';
+import { usePagination } from '../domain.util';
 import { IEntityJob, ILibraryFileJob, ILibraryRefreshJob, JobName } from '../job';
 import {
   IAssetRepository,
@@ -277,6 +278,27 @@ describe(LibraryService.name, () => {
       await sut.handleOfflineCheck(mockAssetJob);
 
       expect(assetMock.save).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('handleQueueOfflineCheck', () => {
+    it('should queue a check of each asset', async () => {
+      const mockLibraryJob: IEntityJob = {
+        id: libraryStub.externalLibrary1.id,
+      };
+
+      assetMock.getWith.mockResolvedValue({
+        items: [assetStub.external],
+        hasNextPage: false,
+      });
+
+      const result = await sut.handleQueueOfflineCheck(mockLibraryJob);
+
+      expect(result).toEqual(JobStatus.SUCCESS);
+
+      expect(jobMock.queueAll).toHaveBeenCalledWith([
+        { name: JobName.LIBRARY_CHECK_OFFLINE, data: { id: assetStub.external.id } },
+      ]);
     });
   });
 
