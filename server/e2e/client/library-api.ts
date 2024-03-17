@@ -30,4 +30,8 @@ export const libraryApi = {
       .send(dto);
     expect(status).toBe(204);
   },
+  scanDeletedFiles: async (server: any, accessToken: string, id: string, dto: ScanLibraryDto = {}) => {
+    const { status } = await request(server).post(`/library/${id}/scan`).set('Authorization', `Bearer ${accessToken}`);
+    expect(status).toBe(204);
+  },
 };
