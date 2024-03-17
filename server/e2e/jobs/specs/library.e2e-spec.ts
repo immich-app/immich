@@ -35,41 +35,6 @@ describe(`${LibraryController.name} (e2e)`, () => {
   });
 
   describe('POST /library/:id/scan', () => {
-    it('should offline a missing file when called with checkForOffline', async () => {
-      await fs.promises.cp(`${IMMICH_TEST_ASSET_PATH}/albums/nature`, `${IMMICH_TEST_ASSET_TEMP_PATH}/albums/nature`, {
-        recursive: true,
-      });
-
-      const library = await api.libraryApi.create(server, admin.accessToken, {
-        type: LibraryType.EXTERNAL,
-        importPaths: [`${IMMICH_TEST_ASSET_TEMP_PATH}`],
-      });
-
-      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
-
-      const onlineAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
-      expect(onlineAssets.length).toBeGreaterThan(1);
-
-      await fs.promises.rm(`${IMMICH_TEST_ASSET_TEMP_PATH}/albums/nature/silver_fir.jpg`);
-
-      await api.libraryApi.scanDeletedFiles(server, admin.accessToken, library.id);
-
-      const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
-
-      expect(assets).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            isOffline: true,
-            originalFileName: 'silver_fir',
-          }),
-          expect.objectContaining({
-            isOffline: false,
-            originalFileName: 'tanners_ridge',
-          }),
-        ]),
-      );
-    });
-
     it('should mark a rediscovered file as back online', async () => {
       await fs.promises.cp(`${IMMICH_TEST_ASSET_PATH}/albums/nature`, `${IMMICH_TEST_ASSET_TEMP_PATH}/albums/nature`, {
         recursive: true,
@@ -275,6 +240,43 @@ describe(`${LibraryController.name} (e2e)`, () => {
           }),
         );
       });
+    });
+  });
+
+  describe('POST /library/:id/scanDeleted', () => {
+    it('should offline a missing file', async () => {
+      await fs.promises.cp(`${IMMICH_TEST_ASSET_PATH}/albums/nature`, `${IMMICH_TEST_ASSET_TEMP_PATH}/albums/nature`, {
+        recursive: true,
+      });
+
+      const library = await api.libraryApi.create(server, admin.accessToken, {
+        type: LibraryType.EXTERNAL,
+        importPaths: [`${IMMICH_TEST_ASSET_TEMP_PATH}`],
+      });
+
+      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
+
+      const onlineAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
+      expect(onlineAssets.length).toBeGreaterThan(1);
+
+      await fs.promises.rm(`${IMMICH_TEST_ASSET_TEMP_PATH}/albums/nature/silver_fir.jpg`);
+
+      await api.libraryApi.scanDeletedFiles(server, admin.accessToken, library.id);
+
+      const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
+
+      expect(assets).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            isOffline: true,
+            originalFileName: 'silver_fir',
+          }),
+          expect.objectContaining({
+            isOffline: false,
+            originalFileName: 'tanners_ridge',
+          }),
+        ]),
+      );
     });
   });
 
