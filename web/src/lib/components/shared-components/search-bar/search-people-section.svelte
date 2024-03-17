@@ -43,7 +43,7 @@
 
   const filterPeople = (list: PersonResponseDto[], name: string) => {
     const nameLower = name.toLowerCase();
-    return name === '' ? list : list.filter((p) => p.name.toLowerCase().startsWith(nameLower));
+    return name ? list.filter((p) => p.name.toLowerCase().startsWith(nameLower)) : list;
   };
 </script>
 
