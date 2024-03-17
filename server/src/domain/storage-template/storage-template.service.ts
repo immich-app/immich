@@ -20,6 +20,7 @@ import {
   ISystemConfigRepository,
   IUserRepository,
   InternalEvent,
+  InternalEventMap,
   JobStatus,
 } from '../repositories';
 import { StorageCore, StorageFolder } from '../storage';
@@ -88,7 +89,7 @@ export class StorageTemplateService {
   }
 
   @OnEvent(InternalEvent.VALIDATE_CONFIG)
-  validate(newConfig: SystemConfig) {
+  validate({ newConfig }: InternalEventMap[InternalEvent.VALIDATE_CONFIG]) {
     try {
       const { compiled } = this.compile(newConfig.storageTemplate.template);
       this.render(compiled, {

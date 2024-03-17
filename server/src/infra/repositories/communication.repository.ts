@@ -2,6 +2,7 @@ import {
   AuthService,
   ClientEvent,
   ICommunicationRepository,
+  InternalEventMap,
   OnConnectCallback,
   OnServerEventCallback,
   ServerEvent,
@@ -102,11 +103,11 @@ export class CommunicationRepository
     this.server?.serverSideEmit(event);
   }
 
-  emit(eventName: string, ...parameters: any[]) {
-    return this.eventEmitter.emit(eventName, parameters);
+  emit<E extends keyof InternalEventMap>(event: E, data: InternalEventMap[E]): boolean {
+    return this.eventEmitter.emit(event, data);
   }
 
-  emitAsync(eventName: string, ...parameters: any[]) {
-    return this.eventEmitter.emitAsync(eventName, parameters);
+  emitAsync<E extends keyof InternalEventMap, R = any[]>(event: E, data: InternalEventMap[E]): Promise<R> {
+    return this.eventEmitter.emitAsync(event, data) as Promise<R>;
   }
 }

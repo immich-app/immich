@@ -1,4 +1,5 @@
 import { AssetResponseDto, ReleaseNotification, ServerVersionResponseDto } from '@app/domain';
+import { SystemConfig } from '@app/infra/entities';
 
 export const ICommunicationRepository = 'ICommunicationRepository';
 
@@ -25,6 +26,10 @@ export enum InternalEvent {
   VALIDATE_CONFIG = 'validate_config',
 }
 
+export interface InternalEventMap {
+  [InternalEvent.VALIDATE_CONFIG]: { newConfig: SystemConfig; oldConfig: SystemConfig };
+}
+
 export interface ClientEventMap {
   [ClientEvent.UPLOAD_SUCCESS]: AssetResponseDto;
   [ClientEvent.USER_DELETE]: string;
@@ -49,6 +54,6 @@ export interface ICommunicationRepository {
   on(event: 'connect', callback: OnConnectCallback): void;
   on(event: ServerEvent, callback: OnServerEventCallback): void;
   sendServerEvent(event: ServerEvent): void;
-  emit(eventName: string, ...parameters: any[]): boolean;
-  emitAsync(eventName: string, ...parameters: any[]): Promise<any[]>;
+  emit<E extends keyof InternalEventMap>(event: E, data: InternalEventMap[E]): boolean;
+  emitAsync<E extends keyof InternalEventMap>(event: E, data: InternalEventMap[E]): Promise<any>;
 }

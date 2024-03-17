@@ -10,6 +10,7 @@ import {
   ISearchRepository,
   ISystemConfigRepository,
   InternalEvent,
+  InternalEventMap,
   ServerEvent,
 } from '../repositories';
 import { SystemConfigDto, mapConfig } from './dto/system-config.dto';
@@ -61,7 +62,7 @@ export class SystemConfigService {
   }
 
   @OnEvent(InternalEvent.VALIDATE_CONFIG)
-  validateConfig(newConfig: SystemConfig, oldConfig: SystemConfig) {
+  validateConfig({ newConfig, oldConfig }: InternalEventMap[InternalEvent.VALIDATE_CONFIG]) {
     if (!_.isEqual(instanceToPlain(newConfig.logging), oldConfig.logging) && this.getEnvLogLevel()) {
       throw new Error('Logging cannot be changed while the environment variable LOG_LEVEL is set.');
     }
@@ -71,7 +72,7 @@ export class SystemConfigService {
     const oldConfig = await this.core.getConfig();
 
     try {
-      await this.communicationRepository.emitAsync(InternalEvent.VALIDATE_CONFIG, dto, oldConfig);
+      await this.communicationRepository.emitAsync(InternalEvent.VALIDATE_CONFIG, { newConfig: dto, oldConfig });
     } catch (error) {
       this.logger.warn(`Unable to save system config due to a validation error: ${error}`);
       throw new BadRequestException(error instanceof Error ? error.message : error);

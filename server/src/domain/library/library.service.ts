@@ -1,4 +1,4 @@
-import { AssetType, LibraryEntity, LibraryType, SystemConfig } from '@app/infra/entities';
+import { AssetType, LibraryEntity, LibraryType } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
@@ -24,6 +24,7 @@ import {
   IStorageRepository,
   ISystemConfigRepository,
   InternalEvent,
+  InternalEventMap,
   JobStatus,
   StorageEventType,
   WithProperty,
@@ -106,7 +107,7 @@ export class LibraryService extends EventEmitter {
   }
 
   @OnEvent(InternalEvent.VALIDATE_CONFIG)
-  validateConfig(newConfig: SystemConfig) {
+  validateConfig({ newConfig }: InternalEventMap[InternalEvent.VALIDATE_CONFIG]) {
     const { scan } = newConfig.library;
     if (!validateCronExpression(scan.cronExpression)) {
       throw new Error(`Invalid cron expression ${scan.cronExpression}`);
