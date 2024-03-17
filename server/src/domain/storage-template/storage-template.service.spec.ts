@@ -12,7 +12,7 @@ import {
   StorageTemplateService,
   defaults,
 } from '@app/domain';
-import { AssetPathType, SystemConfigKey } from '@app/infra/entities';
+import { AssetPathType, SystemConfig, SystemConfigKey } from '@app/infra/entities';
 import {
   assetStub,
   newAlbumRepositoryMock,
@@ -72,6 +72,35 @@ describe(StorageTemplateService.name, () => {
     );
 
     SystemConfigCore.create(configMock).config$.next(defaults);
+  });
+
+  describe('validate', () => {
+    it('should allow valid templates', () => {
+      expect(() =>
+        sut.validate({
+          newConfig: {
+            storageTemplate: {
+              template:
+                '{{y}}{{M}}{{W}}{{d}}{{h}}{{m}}{{s}}{{filename}}{{ext}}{{filetype}}{{filetypefull}}{{assetId}}{{album}}',
+            },
+          } as SystemConfig,
+          oldConfig: {} as SystemConfig,
+        }),
+      ).not.toThrow();
+    });
+
+    it('should fail for an invalid template', () => {
+      expect(() =>
+        sut.validate({
+          newConfig: {
+            storageTemplate: {
+              template: '{{foo}}',
+            },
+          } as SystemConfig,
+          oldConfig: {} as SystemConfig,
+        }),
+      ).toThrow(/Invalid storage template.*/);
+    });
   });
 
   describe('handleMigrationSingle', () => {
