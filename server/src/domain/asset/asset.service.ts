@@ -5,7 +5,6 @@ import _ from 'lodash';
 import { DateTime, Duration } from 'luxon';
 import { extname } from 'node:path';
 import sanitize from 'sanitize-filename';
-import { SearchService } from '..';
 import { AccessCore, Permission } from '../access';
 import { AuthDto } from '../auth';
 import { mimeTypes } from '../domain.constant';
