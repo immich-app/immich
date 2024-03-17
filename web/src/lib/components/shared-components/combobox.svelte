@@ -42,6 +42,10 @@
 
   $: filteredOptions = options.filter((option) => option.label.toLowerCase().includes(searchQuery.toLowerCase()));
 
+  $: {
+    searchQuery = selectedOption ? selectedOption.label : '';
+  }
+
   onMount(() => {
     window.addEventListener('click', onClick);
   });
