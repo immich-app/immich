@@ -7,8 +7,8 @@
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
 
   export let assetId: string;
-  export let onVideoStarted: (() => void) | undefined = undefined;
-  export let onVideoEnded: () => void;
+  export let onVideoStart: (() => void) | undefined = undefined;
+  export let onVideoEnd: () => void;
 
   let isVideoLoading = true;
 
@@ -18,8 +18,8 @@
       video.muted = true;
       await video.play();
       video.muted = false;
-      if (onVideoStarted) {
-        onVideoStarted();
+      if (onVideoStart) {
+        onVideoStart();
       }
     } catch (error) {
       handleError(error, 'Unable to play video');
@@ -36,7 +36,7 @@
     controls
     class="h-full object-contain"
     on:canplay={handleCanPlay}
-    on:ended={onVideoEnded}
+    on:ended={onVideoEnd}
     bind:volume={$videoViewerVolume}
     poster={getAssetThumbnailUrl(assetId, ThumbnailFormat.Jpeg)}
   >
