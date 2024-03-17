@@ -8359,6 +8359,7 @@
         "type": "string"
       },
       "AssetOrder": {
+        "default": "desc",
         "enum": [
           "asc",
           "desc"
