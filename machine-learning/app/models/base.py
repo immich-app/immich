@@ -186,7 +186,7 @@ class InferenceModel(ABC):
                 case "CPUExecutionProvider" | "CUDAExecutionProvider":
                     option = {"arena_extend_strategy": "kSameAsRequested"}
                 case "OpenVINOExecutionProvider":
-                    option = {"device_type": "GPU_FP32", "cache_dir": f"{self.cache_dir}/openvino"}
+                    option = {"device_type": "GPU_FP32", "cache_dir": (self.cache_dir / "openvino").as_posix()}
                 case _:
                     option = {}
             options.append(option)
