@@ -1,6 +1,7 @@
 import { AssetType, LibraryEntity, LibraryType } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
 import { Trie } from 'mnemonist';
 import { R_OK } from 'node:constants';
 import { EventEmitter } from 'node:events';
@@ -22,6 +23,8 @@ import {
   ILibraryRepository,
   IStorageRepository,
   ISystemConfigRepository,
+  InternalEvent,
+  InternalEventMap,
   JobStatus,
   StorageEventType,
   WithProperty,
@@ -65,12 +68,6 @@ export class LibraryService extends EventEmitter {
     super();
     this.access = AccessCore.create(accessRepository);
     this.configCore = SystemConfigCore.create(configRepository);
-    this.configCore.addValidator((config) => {
-      const { scan } = config.library;
-      if (!validateCronExpression(scan.cronExpression)) {
-        throw new Error(`Invalid cron expression ${scan.cronExpression}`);
-      }
-    });
   }
 
   async init() {
@@ -108,6 +105,14 @@ export class LibraryService extends EventEmitter {
         handlePromiseError(this.watchLibraries ? this.watchAll() : this.unwatchAll(), this.logger);
       }
     });
+  }
+
+  @OnEvent(InternalEvent.VALIDATE_CONFIG)
+  validateConfig({ newConfig }: InternalEventMap[InternalEvent.VALIDATE_CONFIG]) {
+    const { scan } = newConfig.library;
+    if (!validateCronExpression(scan.cronExpression)) {
+      throw new Error(`Invalid cron expression ${scan.cronExpression}`);
+    }
   }
 
   private async watch(id: string): Promise<boolean> {
