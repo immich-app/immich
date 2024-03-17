@@ -18,9 +18,8 @@ import {
   userStub,
 } from '@test';
 import { when } from 'jest-when';
-import exp, { R_OK } from 'node:constants';
+import { R_OK } from 'node:constants';
 import { Stats } from 'node:fs';
-import { usePagination } from '../domain.util';
 import { IEntityJob, ILibraryFileJob, ILibraryRefreshJob, JobName } from '../job';
 import {
   IAssetRepository,
