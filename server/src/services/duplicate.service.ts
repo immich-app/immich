@@ -37,7 +37,7 @@ export class DuplicateService {
   }
 
   async getDuplicates(auth: AuthDto): Promise<DuplicateResponseDto[]> {
-    const res = await this.assetRepository.getDuplicates({ userIds: [auth.user.id] });
+    const res = await this.assetRepository.getDuplicates(auth.user.id);
 
     return mapDuplicateResponse(res.map((a) => mapAsset(a, { auth })));
   }

@@ -60,15 +60,6 @@ export class TimelineService {
   private async timeBucketChecks(auth: AuthDto, dto: TimeBucketDto) {
     if (dto.albumId) {
       await this.accessCore.requirePermission(auth, Permission.ALBUM_READ, [dto.albumId]);
-    } else {
-      dto.userId = dto.userId || auth.user.id;
-    }
-
-    if (dto.userId) {
-      await this.accessCore.requirePermission(auth, Permission.TIMELINE_READ, [dto.userId]);
-      if (dto.isArchived !== false) {
-        await this.accessCore.requirePermission(auth, Permission.ARCHIVE_READ, [dto.userId]);
-      }
     }
 
     if (dto.withPartners) {

@@ -4,6 +4,7 @@ import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { TimelineService } from 'src/services/timeline.service';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
+import { partnerStub } from 'test/fixtures/partner.stub';
 import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
 import { newPartnerRepositoryMock } from 'test/repositories/partner.repository.mock';
@@ -52,6 +53,7 @@ describe(TimelineService.name, () => {
         size: TimeBucketSize.DAY,
         timeBucket: 'bucket',
         albumId: 'album-id',
+        userIds: [authStub.admin.user.id],
       });
     });
 
@@ -66,12 +68,15 @@ describe(TimelineService.name, () => {
           userId: authStub.admin.user.id,
         }),
       ).resolves.toEqual(expect.arrayContaining([expect.objectContaining({ id: 'asset-id' })]));
-      expect(assetMock.getTimeBucket).toHaveBeenCalledWith('bucket', {
-        size: TimeBucketSize.DAY,
-        timeBucket: 'bucket',
-        isArchived: true,
-        userIds: [authStub.admin.user.id],
-      });
+      expect(assetMock.getTimeBucket).toHaveBeenCalledWith(
+        'bucket',
+        expect.objectContaining({
+          size: TimeBucketSize.DAY,
+          timeBucket: 'bucket',
+          isArchived: true,
+          userIds: [authStub.admin.user.id],
+        }),
+      );
     });
 
     it('should return the assets for a library time bucket if user has library.read', async () => {
@@ -84,11 +89,14 @@ describe(TimelineService.name, () => {
           userId: authStub.admin.user.id,
         }),
       ).resolves.toEqual(expect.arrayContaining([expect.objectContaining({ id: 'asset-id' })]));
-      expect(assetMock.getTimeBucket).toHaveBeenCalledWith('bucket', {
-        size: TimeBucketSize.DAY,
-        timeBucket: 'bucket',
-        userIds: [authStub.admin.user.id],
-      });
+      expect(assetMock.getTimeBucket).toHaveBeenCalledWith(
+        'bucket',
+        expect.objectContaining({
+          size: TimeBucketSize.DAY,
+          timeBucket: 'bucket',
+          userIds: [authStub.admin.user.id],
+        }),
+      );
     });
 
     it('should throw an error if withParners is true and isArchived true or undefined', async () => {
