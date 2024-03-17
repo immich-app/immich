@@ -3,14 +3,14 @@
   import { getAssetFileUrl, getAssetThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { ThumbnailFormat } from '@immich/sdk';
-  import { createEventDispatcher } from 'svelte';
   import { fade } from 'svelte/transition';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
 
   export let assetId: string;
+  export let onVideoStarted: (() => void) | undefined = undefined;
+  export let onVideoEnded: () => void;
 
   let isVideoLoading = true;
-  const dispatch = createEventDispatcher<{ onVideoEnded: void; onVideoStarted: void }>();
 
   const handleCanPlay = async (event: Event) => {
     try {
@@ -18,7 +18,9 @@
       video.muted = true;
       await video.play();
       video.muted = false;
-      dispatch('onVideoStarted');
+      if (onVideoStarted) {
+        onVideoStarted();
+      }
     } catch (error) {
       handleError(error, 'Unable to play video');
     } finally {
@@ -34,7 +36,7 @@
     controls
     class="h-full object-contain"
     on:canplay={handleCanPlay}
-    on:ended={() => dispatch('onVideoEnded')}
+    on:ended={onVideoEnded}
     bind:volume={$videoViewerVolume}
     poster={getAssetThumbnailUrl(assetId, ThumbnailFormat.Jpeg)}
   >

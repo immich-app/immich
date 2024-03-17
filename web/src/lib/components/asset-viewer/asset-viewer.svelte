@@ -447,7 +447,11 @@
 
   const handleVideoEnded = async () => {
     if ($slideshowState === SlideshowState.PlaySlideshow) {
-      await navigateAsset('next');
+      if ($slideshowNavigation === SlideshowNavigation.AscendingOrder) {
+        await navigateAsset('previous');
+      } else {
+        await navigateAsset('next');
+      }
     }
   };
 
@@ -576,9 +580,8 @@
         {:else}
           <VideoViewer
             assetId={previewStackedAsset.id}
-            on:close={closeViewer}
-            on:onVideoEnded={handleVideoEnded}
-            on:onVideoStarted={handleVideoStarted}
+            onVideoEnded={handleVideoEnded}
+            onVideoStarted={handleVideoStarted}
           />
         {/if}
       {/key}
@@ -596,8 +599,7 @@
           {#if shouldPlayMotionPhoto && asset.livePhotoVideoId}
             <VideoViewer
               assetId={asset.livePhotoVideoId}
-              on:close={closeViewer}
-              on:onVideoEnded={() => (shouldPlayMotionPhoto = false)}
+              onVideoEnded={() => (shouldPlayMotionPhoto = false)}
             />
           {:else if asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR || (asset.originalPath && asset.originalPath
                 .toLowerCase()
@@ -609,9 +611,8 @@
         {:else}
           <VideoViewer
             assetId={asset.id}
-            on:close={closeViewer}
-            on:onVideoEnded={handleVideoEnded}
-            on:onVideoStarted={handleVideoStarted}
+            onVideoEnded={handleVideoEnded}
+            onVideoStarted={handleVideoStarted}
           />
         {/if}
         {#if $slideshowState === SlideshowState.None && isShared && ((album && album.isActivityEnabled) || numberOfComments > 0)}
