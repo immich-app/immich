@@ -41,21 +41,23 @@
   <div class="grid grid-cols-[repeat(auto-fit,minmax(10rem,1fr))] gap-5 mt-1">
     <div class="w-full">
       <Combobox
+        id="camera-make"
         label="Make"
-        options={toComboBoxOptions(makes)}
-        selectedOption={makeFilter ? { label: makeFilter, value: makeFilter } : undefined}
         on:select={({ detail }) => (filters.make = detail?.value)}
+        options={toComboBoxOptions(makes)}
         placeholder="Search camera make..."
+        selectedOption={makeFilter ? { label: makeFilter, value: makeFilter } : undefined}
       />
     </div>
 
     <div class="w-full">
       <Combobox
+        id="camera-model"
         label="Model"
-        options={toComboBoxOptions(models)}
-        selectedOption={modelFilter ? { label: modelFilter, value: modelFilter } : undefined}
         on:select={({ detail }) => (filters.model = detail?.value)}
+        options={toComboBoxOptions(models)}
         placeholder="Search camera model..."
+        selectedOption={modelFilter ? { label: modelFilter, value: modelFilter } : undefined}
       />
     </div>
   </div>
