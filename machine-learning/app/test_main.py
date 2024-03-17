@@ -88,7 +88,7 @@ class TestBase:
         encoder = OpenCLIPEncoder("ViT-B-32__openai", providers=["OpenVINOExecutionProvider", "CPUExecutionProvider"])
 
         assert encoder.provider_options == [
-            {"device_type": "GPU_FP32"},
+            {"device_type": "GPU_FP32", "cache_dir": (encoder.cache_dir / "openvino").as_posix()},
             {"arena_extend_strategy": "kSameAsRequested"},
         ]
 
