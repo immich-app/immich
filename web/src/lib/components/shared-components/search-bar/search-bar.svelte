@@ -11,6 +11,7 @@
   import type { MetadataSearchDto, SmartSearchDto } from '@immich/sdk';
   import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
   import { handlePromiseError } from '$lib/utils';
+  import { shortcut } from '$lib/utils/shortcut';
 
   export let value = '';
   export let grayTheme: boolean;
@@ -84,7 +85,18 @@
   };
 </script>
 
-<div class="w-full relative" use:clickOutside on:outclick={onFocusOut} on:escape={onFocusOut}>
+<div
+  class="w-full relative"
+  use:clickOutside
+  on:outclick={onFocusOut}
+  tabindex="-1"
+  use:shortcut={{
+    shortcut: { key: 'Escape' },
+    onShortcut: () => {
+      onFocusOut();
+    },
+  }}
+>
   <form
     draggable="false"
     autocomplete="off"
