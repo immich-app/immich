@@ -18,7 +18,7 @@ import {
   userStub,
 } from '@test';
 import { when } from 'jest-when';
-import { R_OK } from 'node:constants';
+import exp, { R_OK } from 'node:constants';
 import { Stats } from 'node:fs';
 import { usePagination } from '../domain.util';
 import { IEntityJob, ILibraryFileJob, ILibraryRefreshJob, JobName } from '../job';
@@ -266,16 +266,32 @@ describe(LibraryService.name, () => {
       expect(assetMock.save).toHaveBeenCalledWith({ id: assetStub.external.id, isOffline: true });
     });
 
-    it('should ignore an online asset', async () => {
+    it('should skip an offline asset', async () => {
       const mockAssetJob: IEntityJob = {
         id: assetStub.external.id,
       };
 
-      assetMock.getById.mockResolvedValue(assetStub.external);
+      assetMock.getById.mockResolvedValue(assetStub.offline);
 
       storageMock.checkFileExists.mockResolvedValue(true);
 
-      await sut.handleOfflineCheck(mockAssetJob);
+      const response = await sut.handleOfflineCheck(mockAssetJob);
+      expect(response).toBe(JobStatus.SKIPPED);
+
+      expect(assetMock.save).not.toHaveBeenCalled();
+    });
+
+    it('should skip a nonexistent asset id', async () => {
+      const mockAssetJob: IEntityJob = {
+        id: assetStub.external.id,
+      };
+
+      assetMock.getById.mockImplementation(() => Promise.resolve(null));
+
+      storageMock.checkFileExists.mockResolvedValue(true);
+
+      const response = await sut.handleOfflineCheck(mockAssetJob);
+      expect(response).toBe(JobStatus.SKIPPED);
 
       expect(assetMock.save).not.toHaveBeenCalled();
     });
