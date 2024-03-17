@@ -18,9 +18,7 @@
       video.muted = true;
       await video.play();
       video.muted = false;
-      if (onVideoStart) {
-        onVideoStart();
-      }
+      onVideoStart && onVideoStart();
     } catch (error) {
       handleError(error, 'Unable to play video');
     } finally {
