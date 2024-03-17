@@ -19,6 +19,10 @@
   import { shortcuts } from '$lib/utils/shortcut';
   import { onMount, onDestroy } from 'svelte';
 
+  /**
+   * Unique identifier for the combobox.
+   */
+  export let id: string;
   export let label: string;
   export let hideLabel = false;
   export let options: ComboBoxOption[] = [];
@@ -37,8 +41,8 @@
   let selectedIndex: number | undefined;
   let comboboxRef: HTMLElement;
   let optionRefs: HTMLElement[] = [];
-  const inputId = `combobox-${crypto.randomUUID()}`;
-  const listboxId = `listbox-${crypto.randomUUID()}`;
+  const inputId = `combobox-${id}`;
+  const listboxId = `listbox-${id}`;
 
   $: filteredOptions = options.filter((option) => option.label.toLowerCase().includes(searchQuery.toLowerCase()));
 
@@ -73,20 +77,6 @@
   const closeDropdown = () => {
     isOpen = false;
     selectedIndex = undefined;
-  };
-
-  const moveFocus = (event: KeyboardEvent) => {
-    // move focus to the next focusable element
-    const focusableElements = document.querySelectorAll(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
-    ) as NodeListOf<HTMLElement>;
-    const focusableElementIndex = Array.prototype.indexOf.call(focusableElements, event.target);
-    // focus next element
-    if (event.shiftKey) {
-      focusableElements[focusableElementIndex - 1]?.focus();
-    } else {
-      focusableElements[focusableElementIndex + 1]?.focus();
-    }
   };
 
   const incrementSelectedIndex = async (increment: number) => {
@@ -161,16 +151,16 @@
       use:shortcuts={[
         {
           shortcut: { key: 'Tab' },
-          onShortcut: (event) => {
+          preventDefault: false,
+          onShortcut: () => {
             deactivate();
-            moveFocus(event);
           },
         },
         {
           shortcut: { key: 'Tab', shift: true },
-          onShortcut: (event) => {
+          preventDefault: false,
+          onShortcut: () => {
             deactivate();
-            moveFocus(event);
           },
         },
         {
@@ -230,7 +220,8 @@
     role="listbox"
     id={listboxId}
     transition:fly={{ duration: 250 }}
-    class="absolute text-left text-sm w-full max-h-64 overflow-y-auto bg-white dark:bg-gray-800 r unded-b-lg border border-t-0 border-gray-300 dark:border-gray-900 rounded-b-xl z-10"
+    class="absolute text-left text-sm w-full max-h-64 overflow-y-auto bg-white dark:bg-gray-800 r unded-b-lg border-t-0 border-gray-300 dark:border-gray-900 rounded-b-xl z-10"
+    class:border={isOpen}
     tabindex="-1"
   >
     {#if isOpen}

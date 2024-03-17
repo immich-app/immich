@@ -63,31 +63,34 @@
   <div class="grid grid-cols-[repeat(auto-fit,minmax(10rem,1fr))] gap-5 mt-1">
     <div class="w-full">
       <Combobox
+        id="location-country"
         label="Country"
-        options={toComboBoxOptions(countries)}
-        selectedOption={filters.country ? { label: filters.country, value: filters.country } : undefined}
         on:select={({ detail }) => (filters.country = detail?.value)}
+        options={toComboBoxOptions(countries)}
         placeholder="Search country..."
+        selectedOption={filters.country ? { label: filters.country, value: filters.country } : undefined}
       />
     </div>
 
     <div class="w-full">
       <Combobox
+        id="location-state"
         label="State"
-        options={toComboBoxOptions(states)}
-        selectedOption={filters.state ? { label: filters.state, value: filters.state } : undefined}
         on:select={({ detail }) => (filters.state = detail?.value)}
+        options={toComboBoxOptions(states)}
         placeholder="Search state..."
+        selectedOption={filters.state ? { label: filters.state, value: filters.state } : undefined}
       />
     </div>
 
     <div class="w-full">
       <Combobox
+        id="location-city"
         label="City"
-        options={toComboBoxOptions(cities)}
-        selectedOption={filters.city ? { label: filters.city, value: filters.city } : undefined}
         on:select={({ detail }) => (filters.city = detail?.value)}
+        options={toComboBoxOptions(cities)}
         placeholder="Search city..."
+        selectedOption={filters.city ? { label: filters.city, value: filters.city } : undefined}
       />
     </div>
   </div>
