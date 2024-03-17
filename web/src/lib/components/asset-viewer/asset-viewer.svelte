@@ -97,6 +97,7 @@
   let isShowActivity = false;
   let isLiked: ActivityResponseDto | null = null;
   let numberOfComments: number;
+  let isFullScreen = false;
 
   $: {
     if (asset.stackCount && asset.stack) {
@@ -188,7 +189,12 @@
     }
   }
 
+  const handleFullScreenChange = () => {
+    isFullScreen = document.fullscreenElement !== null;
+  };
+
   onMount(async () => {
+    document.addEventListener('fullscreenchange', handleFullScreenChange);
     slideshowStateUnsubscribe = slideshowState.subscribe((value) => {
       if (value === SlideshowState.PlaySlideshow) {
         slideshowHistory.reset();
@@ -226,6 +232,7 @@
   });
 
   onDestroy(() => {
+    document.removeEventListener('fullscreenchange', handleFullScreenChange);
     if (slideshowStateUnsubscribe) {
       slideshowStateUnsubscribe();
     }
@@ -562,6 +569,8 @@
     {#if $slideshowState != SlideshowState.None}
       <div class="z-[1000] absolute w-full flex">
         <SlideshowBar
+          {isFullScreen}
+          onSetToFullScreen={() => assetViewerHtmlElement.requestFullscreen()}
           onPrevious={() => navigateAsset('previous')}
           onNext={() => navigateAsset('next')}
           onClose={() => ($slideshowState = SlideshowState.StopSlideshow)}
@@ -575,6 +584,7 @@
           <PhotoViewer asset={previewStackedAsset} {preloadAssets} on:close={closeViewer} haveFadeTransition={false} />
         {:else}
           <VideoViewer
+            controls={$slideshowState === SlideshowState.PlaySlideshow && !isFullScreen}
             assetId={previewStackedAsset.id}
             on:close={closeViewer}
             on:onVideoEnded={handleVideoEnded}
@@ -595,6 +605,7 @@
         {:else if asset.type === AssetTypeEnum.Image}
           {#if shouldPlayMotionPhoto && asset.livePhotoVideoId}
             <VideoViewer
+              controls={$slideshowState === SlideshowState.PlaySlideshow && !isFullScreen}
               assetId={asset.livePhotoVideoId}
               on:close={closeViewer}
               on:onVideoEnded={() => (shouldPlayMotionPhoto = false)}
@@ -608,6 +619,7 @@
           {/if}
         {:else}
           <VideoViewer
+            controls={$slideshowState === SlideshowState.PlaySlideshow && !isFullScreen}
             assetId={asset.id}
             on:close={closeViewer}
             on:onVideoEnded={handleVideoEnded}

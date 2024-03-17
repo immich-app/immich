@@ -8,8 +8,10 @@
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
 
   export let assetId: string;
+  export let controls: boolean;
 
   let isVideoLoading = true;
+
   const dispatch = createEventDispatcher<{ onVideoEnded: void; onVideoStarted: void }>();
 
   const handleCanPlay = async (event: Event) => {
@@ -31,7 +33,7 @@
   <video
     autoplay
     playsinline
-    controls
+    {controls}
     class="h-full object-contain"
     on:canplay={handleCanPlay}
     on:ended={() => dispatch('onVideoEnded')}
