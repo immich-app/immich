@@ -90,6 +90,7 @@ class TestBase:
         assert encoder.provider_options == [
             {"device_type": "GPU_FP32"},
             {"arena_extend_strategy": "kSameAsRequested"},
+            {"cache_dir": f"{encoder.cache_dir}/openvino"},
         ]
 
     def test_sets_provider_options_kwarg(self) -> None:
