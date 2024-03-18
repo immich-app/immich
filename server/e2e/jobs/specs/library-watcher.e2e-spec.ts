@@ -46,6 +46,7 @@ describe(`Library watcher (e2e)`, () => {
     describe('Single import path', () => {
       beforeEach(async () => {
         await api.libraryApi.create(server, admin.accessToken, {
+          ownerId: admin.userId,
           type: LibraryType.EXTERNAL,
           importPaths: [`${IMMICH_TEST_ASSET_TEMP_PATH}`],
         });
@@ -133,6 +134,7 @@ describe(`Library watcher (e2e)`, () => {
         await fs.mkdir(`${IMMICH_TEST_ASSET_TEMP_PATH}/dir3`, { recursive: true });
 
         await api.libraryApi.create(server, admin.accessToken, {
+          ownerId: admin.userId,
           type: LibraryType.EXTERNAL,
           importPaths: [
             `${IMMICH_TEST_ASSET_TEMP_PATH}/dir1`,
@@ -190,6 +192,7 @@ describe(`Library watcher (e2e)`, () => {
 
     beforeEach(async () => {
       library = await api.libraryApi.create(server, admin.accessToken, {
+        ownerId: admin.userId,
         type: LibraryType.EXTERNAL,
         importPaths: [
           `${IMMICH_TEST_ASSET_TEMP_PATH}/dir1`,
