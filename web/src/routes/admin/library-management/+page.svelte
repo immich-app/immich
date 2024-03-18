@@ -28,7 +28,6 @@
     removeOfflineFiles,
     scanLibrary,
     updateLibrary,
-    type CreateLibraryDto,
     type LibraryResponseDto,
     type LibraryStatsResponseDto,
     type UserResponseDto,
@@ -118,14 +117,9 @@
     }
   }
 
-  const handleCreate = async (ownerId: string | null) => {
+  const handleCreate = async (ownerId: string) => {
     try {
-      let createLibraryDto: CreateLibraryDto = { type: LibraryType.External };
-      if (ownerId) {
-        createLibraryDto = { ...createLibraryDto, ownerId };
-      }
-
-      const createdLibrary = await createLibrary({ createLibraryDto });
+      const createdLibrary = await createLibrary({ createLibraryDto: { ownerId, type: LibraryType.External } });
 
       notificationController.show({
         message: `Created library: ${createdLibrary.name}`,

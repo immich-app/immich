@@ -7,8 +7,7 @@ import { EventEmitter } from 'node:events';
 import { Stats } from 'node:fs';
 import path, { basename, parse } from 'node:path';
 import picomatch from 'picomatch';
-import { AccessCore, Permission } from '../access';
-import { AuthDto } from '../auth';
+import { AccessCore } from '../access';
 import { mimeTypes } from '../domain.constant';
 import { handlePromiseError, usePagination, validateCronExpression } from '../domain.util';
 import { IBaseJob, IEntityJob, ILibraryFileJob, ILibraryRefreshJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
@@ -225,24 +224,17 @@ export class LibraryService extends EventEmitter {
     }
   }
 
-  async getStatistics(auth: AuthDto, id: string): Promise<LibraryStatsResponseDto> {
-    await this.access.requirePermission(auth, Permission.LIBRARY_READ, id);
-
+  async getStatistics(id: string): Promise<LibraryStatsResponseDto> {
+    await this.findOrFail(id);
     return this.repository.getStatistics(id);
   }
 
-  async getCount(auth: AuthDto): Promise<number> {
-    return this.repository.getCountForUser(auth.user.id);
-  }
-
-  async get(auth: AuthDto, id: string): Promise<LibraryResponseDto> {
-    await this.access.requirePermission(auth, Permission.LIBRARY_READ, id);
-
+  async get(id: string): Promise<LibraryResponseDto> {
     const library = await this.findOrFail(id);
     return mapLibrary(library);
   }
 
-  async getAll(auth: AuthDto, dto: SearchLibraryDto): Promise<LibraryResponseDto[]> {
+  async getAll(dto: SearchLibraryDto): Promise<LibraryResponseDto[]> {
     const libraries = await this.repository.getAll(false, dto.type);
     return libraries.map((library) => mapLibrary(library));
   }
@@ -256,7 +248,7 @@ export class LibraryService extends EventEmitter {
     return JobStatus.SUCCESS;
   }
 
-  async create(auth: AuthDto, dto: CreateLibraryDto): Promise<LibraryResponseDto> {
+  async create(dto: CreateLibraryDto): Promise<LibraryResponseDto> {
     switch (dto.type) {
       case LibraryType.EXTERNAL: {
         if (!dto.name) {
@@ -281,14 +273,8 @@ export class LibraryService extends EventEmitter {
       }
     }
 
-    let ownerId = auth.user.id;
-
-    if (dto.ownerId) {
-      ownerId = dto.ownerId;
-    }
-
     const library = await this.repository.create({
-      ownerId,
+      ownerId: dto.ownerId,
       name: dto.name,
       type: dto.type,
       importPaths: dto.importPaths ?? [],
@@ -296,7 +282,7 @@ export class LibraryService extends EventEmitter {
       isVisible: dto.isVisible ?? true,
     });
 
-    this.logger.log(`Creating ${dto.type} library for user ${auth.user.name}`);
+    this.logger.log(`Creating ${dto.type} library for ${dto.ownerId}}`);
 
     if (dto.type === LibraryType.EXTERNAL) {
       await this.watch(library.id);
@@ -358,29 +344,19 @@ export class LibraryService extends EventEmitter {
     return validation;
   }
 
-  public async validate(auth: AuthDto, id: string, dto: ValidateLibraryDto): Promise<ValidateLibraryResponseDto> {
-    await this.access.requirePermission(auth, Permission.LIBRARY_UPDATE, id);
-
-    const response = new ValidateLibraryResponseDto();
-
-    if (dto.importPaths) {
-      response.importPaths = await Promise.all(
-        dto.importPaths.map(async (importPath) => {
-          return await this.validateImportPath(importPath);
-        }),
-      );
-    }
-
-    return response;
+  async validate(id: string, dto: ValidateLibraryDto): Promise<ValidateLibraryResponseDto> {
+    const importPaths = await Promise.all(
+      (dto.importPaths || []).map((importPath) => this.validateImportPath(importPath)),
+    );
+    return { importPaths };
   }
 
-  async update(auth: AuthDto, id: string, dto: UpdateLibraryDto): Promise<LibraryResponseDto> {
-    await this.access.requirePermission(auth, Permission.LIBRARY_UPDATE, id);
-
+  async update(id: string, dto: UpdateLibraryDto): Promise<LibraryResponseDto> {
+    await this.findOrFail(id);
     const library = await this.repository.update({ id, ...dto });
 
     if (dto.importPaths) {
-      const validation = await this.validate(auth, id, { importPaths: dto.importPaths });
+      const validation = await this.validate(id, { importPaths: dto.importPaths });
       if (validation.importPaths) {
         for (const path of validation.importPaths) {
           if (!path.isValid) {
@@ -398,11 +374,9 @@ export class LibraryService extends EventEmitter {
     return mapLibrary(library);
   }
 
-  async delete(auth: AuthDto, id: string) {
-    await this.access.requirePermission(auth, Permission.LIBRARY_DELETE, id);
-
+  async delete(id: string) {
     const library = await this.findOrFail(id);
-    const uploadCount = await this.repository.getUploadLibraryCount(auth.user.id);
+    const uploadCount = await this.repository.getUploadLibraryCount(library.ownerId);
     if (library.type === LibraryType.UPLOAD && uploadCount <= 1) {
       throw new BadRequestException('Cannot delete the last upload library');
     }
@@ -559,12 +533,10 @@ export class LibraryService extends EventEmitter {
     return JobStatus.SUCCESS;
   }
 
-  async queueScan(auth: AuthDto, id: string, dto: ScanLibraryDto) {
-    await this.access.requirePermission(auth, Permission.LIBRARY_UPDATE, id);
-
-    const library = await this.repository.get(id);
-    if (!library || library.type !== LibraryType.EXTERNAL) {
-      throw new BadRequestException('Can only scan external libraries');
+  async queueScan(id: string, dto: ScanLibraryDto) {
+    const library = await this.findOrFail(id);
+    if (library.type !== LibraryType.EXTERNAL) {
+      throw new BadRequestException('Can only refresh external libraries');
     }
 
     await this.jobRepository.queue({
@@ -578,8 +550,6 @@ export class LibraryService extends EventEmitter {
   }
 
   async queueDeletedScan(auth: AuthDto, id: string) {
-    await this.access.requirePermission(auth, Permission.LIBRARY_UPDATE, id);
-
     const library = await this.repository.get(id);
     if (!library || library.type !== LibraryType.EXTERNAL) {
       throw new BadRequestException('Can only scan external libraries');
@@ -588,16 +558,9 @@ export class LibraryService extends EventEmitter {
     await this.jobRepository.queue({ name: JobName.LIBRARY_SCAN_DELETED, data: { id } });
   }
 
-  async queueRemoveOffline(auth: AuthDto, id: string) {
+  async queueRemoveOffline(id: string) {
     this.logger.verbose(`Removing offline files from library: ${id}`);
-    await this.access.requirePermission(auth, Permission.LIBRARY_UPDATE, id);
-
-    await this.jobRepository.queue({
-      name: JobName.LIBRARY_REMOVE_OFFLINE,
-      data: {
-        id,
-      },
-    });
+    await this.jobRepository.queue({ name: JobName.LIBRARY_REMOVE_OFFLINE, data: { id } });
   }
 
   async handleQueueAllScan(job: IBaseJob): Promise<JobStatus> {

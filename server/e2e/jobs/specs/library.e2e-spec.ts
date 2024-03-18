@@ -1,6 +1,6 @@
-import { LibraryResponseDto, LoginResponseDto } from '@app/domain';
+import { LoginResponseDto } from '@app/domain';
 import { LibraryController } from '@app/immich';
-import { AssetType, LibraryType } from '@app/infra/entities';
+import { LibraryType } from '@app/infra/entities';
 import { errorStub, uuidStub } from '@test/fixtures';
 import * as fs from 'node:fs';
 import request from 'supertest';
@@ -41,6 +41,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
       });
 
       const library = await api.libraryApi.create(server, admin.accessToken, {
+        ownerId: admin.userId,
         type: LibraryType.EXTERNAL,
         importPaths: [`${IMMICH_TEST_ASSET_TEMP_PATH}`],
       });
@@ -78,6 +79,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
 
     it('should scan new files', async () => {
       const library = await api.libraryApi.create(server, admin.accessToken, {
+        ownerId: admin.userId,
         type: LibraryType.EXTERNAL,
         importPaths: [`${IMMICH_TEST_ASSET_TEMP_PATH}`],
       });
@@ -113,6 +115,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
     describe('with refreshModifiedFiles=true', () => {
       it('should reimport modified files', async () => {
         const library = await api.libraryApi.create(server, admin.accessToken, {
+          ownerId: admin.userId,
           type: LibraryType.EXTERNAL,
           importPaths: [`${IMMICH_TEST_ASSET_TEMP_PATH}`],
         });
@@ -159,6 +162,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
 
       it('should not reimport unmodified files', async () => {
         const library = await api.libraryApi.create(server, admin.accessToken, {
+          ownerId: admin.userId,
           type: LibraryType.EXTERNAL,
           importPaths: [`${IMMICH_TEST_ASSET_TEMP_PATH}`],
         });
@@ -198,6 +202,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
     describe('with refreshAllFiles=true', () => {
       it('should reimport all files', async () => {
         const library = await api.libraryApi.create(server, admin.accessToken, {
+          ownerId: admin.userId,
           type: LibraryType.EXTERNAL,
           importPaths: [`${IMMICH_TEST_ASSET_TEMP_PATH}`],
         });
@@ -294,6 +299,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
       });
 
       const library = await api.libraryApi.create(server, admin.accessToken, {
+        ownerId: admin.userId,
         type: LibraryType.EXTERNAL,
         importPaths: [`${IMMICH_TEST_ASSET_TEMP_PATH}`],
       });
@@ -320,6 +326,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
 
     it('should not remove online files', async () => {
       const library = await api.libraryApi.create(server, admin.accessToken, {
+        ownerId: admin.userId,
         type: LibraryType.EXTERNAL,
         importPaths: [`${IMMICH_TEST_ASSET_PATH}/albums/nature`],
       });

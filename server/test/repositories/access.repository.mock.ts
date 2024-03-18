@@ -42,7 +42,6 @@ export const newAccessRepositoryMock = (reset = true): IAccessRepositoryMock => 
 
     library: {
       checkOwnerAccess: jest.fn().mockResolvedValue(new Set()),
-      checkPartnerAccess: jest.fn().mockResolvedValue(new Set()),
     },
 
     timeline: {

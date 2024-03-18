@@ -7681,6 +7681,7 @@
           }
         },
         "required": [
+          "ownerId",
           "type"
         ],
         "type": "object"
