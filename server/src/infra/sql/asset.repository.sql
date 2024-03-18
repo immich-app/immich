@@ -789,81 +789,58 @@ LIMIT
   12
 
 -- AssetRepository.getAssetsByCity
-SELECT DISTINCT
-  ON ("e"."city") "asset"."id" AS "asset_id",
-  "asset"."deviceAssetId" AS "asset_deviceAssetId",
-  "asset"."ownerId" AS "asset_ownerId",
-  "asset"."libraryId" AS "asset_libraryId",
-  "asset"."deviceId" AS "asset_deviceId",
-  "asset"."type" AS "asset_type",
-  "asset"."originalPath" AS "asset_originalPath",
-  "asset"."resizePath" AS "asset_resizePath",
-  "asset"."webpPath" AS "asset_webpPath",
-  "asset"."thumbhash" AS "asset_thumbhash",
-  "asset"."encodedVideoPath" AS "asset_encodedVideoPath",
-  "asset"."createdAt" AS "asset_createdAt",
-  "asset"."updatedAt" AS "asset_updatedAt",
-  "asset"."deletedAt" AS "asset_deletedAt",
-  "asset"."fileCreatedAt" AS "asset_fileCreatedAt",
-  "asset"."localDateTime" AS "asset_localDateTime",
-  "asset"."fileModifiedAt" AS "asset_fileModifiedAt",
-  "asset"."isFavorite" AS "asset_isFavorite",
-  "asset"."isArchived" AS "asset_isArchived",
-  "asset"."isExternal" AS "asset_isExternal",
-  "asset"."isReadOnly" AS "asset_isReadOnly",
-  "asset"."isOffline" AS "asset_isOffline",
-  "asset"."checksum" AS "asset_checksum",
-  "asset"."duration" AS "asset_duration",
-  "asset"."isVisible" AS "asset_isVisible",
-  "asset"."livePhotoVideoId" AS "asset_livePhotoVideoId",
-  "asset"."originalFileName" AS "asset_originalFileName",
-  "asset"."sidecarPath" AS "asset_sidecarPath",
-  "asset"."stackId" AS "asset_stackId",
-  "e"."assetId" AS "e_assetId",
-  "e"."description" AS "e_description",
-  "e"."exifImageWidth" AS "e_exifImageWidth",
-  "e"."exifImageHeight" AS "e_exifImageHeight",
-  "e"."fileSizeInByte" AS "e_fileSizeInByte",
-  "e"."orientation" AS "e_orientation",
-  "e"."dateTimeOriginal" AS "e_dateTimeOriginal",
-  "e"."modifyDate" AS "e_modifyDate",
-  "e"."timeZone" AS "e_timeZone",
-  "e"."latitude" AS "e_latitude",
-  "e"."longitude" AS "e_longitude",
-  "e"."projectionType" AS "e_projectionType",
-  "e"."city" AS "e_city",
-  "e"."livePhotoCID" AS "e_livePhotoCID",
-  "e"."autoStackId" AS "e_autoStackId",
-  "e"."state" AS "e_state",
-  "e"."country" AS "e_country",
-  "e"."make" AS "e_make",
-  "e"."model" AS "e_model",
-  "e"."lensModel" AS "e_lensModel",
-  "e"."fNumber" AS "e_fNumber",
-  "e"."focalLength" AS "e_focalLength",
-  "e"."iso" AS "e_iso",
-  "e"."exposureTime" AS "e_exposureTime",
-  "e"."profileDescription" AS "e_profileDescription",
-  "e"."colorspace" AS "e_colorspace",
-  "e"."bitsPerSample" AS "e_bitsPerSample",
-  "e"."fps" AS "e_fps"
-FROM
-  "assets" "asset"
-  INNER JOIN "exif" "e" ON "e"."assetId" = "asset"."id"
-  AND ("asset"."id" = e."assetId")
-WHERE
-  (
-    "e"."city" IS NOT NULL
-    AND "asset"."ownerId" IN ($1)
-    AND "asset"."isVisible" = $2
-    AND "asset"."isArchived" = $3
-    AND "asset"."type" = $4
+WITH RECURSIVE
+  cte AS (
+    (
+      SELECT
+        city,
+        "assetId"
+      FROM
+        exif
+        INNER JOIN assets ON exif."assetId" = assets.id
+      WHERE
+        "ownerId" IN ($1)
+        AND "isVisible" = $2
+        AND "isArchived" = $3
+        AND type = $4
+      ORDER BY
+        city
+      LIMIT
+        1
+    )
+    UNION ALL
+    SELECT
+      l.city,
+      l."assetId"
+    FROM
+      cte c,
+      LATERAL (
+        SELECT
+          city,
+          "assetId"
+        FROM
+          exif
+        WHERE
+          city > c.city
+        ORDER BY
+          city
+        LIMIT
+          1
+      ) l
+      INNER JOIN assets ON l."assetId" = assets.id
+    WHERE
+      "ownerId" IN ($5)
+      AND "isVisible" = $6
+      AND "isArchived" = $7
+      AND type = $8
   )
-  AND ("asset"."deletedAt" IS NULL)
-LIMIT
-  101
-OFFSET
-  1000
+SELECT
+  assets.*,
+  exif.*
+FROM
+  assets
+  INNER JOIN cte ON id = "assetId"
+  INNER JOIN exif ON assets.id = exif."assetId"
 
 -- AssetRepository.searchMetadata
 SELECT
