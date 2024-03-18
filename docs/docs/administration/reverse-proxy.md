@@ -2,6 +2,14 @@
 
 Users can deploy a custom reverse proxy that forwards requests to Immich. This way, the reverse proxy can handle TLS termination, load balancing, or other advanced features. All reverse proxies between Immich and the user must forward all headers and set the `Host`, `X-Forwarded-Host`, `X-Forwarded-Proto` and `X-Forwarded-For` headers to their appropriate values. Additionally, your reverse proxy should allow for big enough uploads. By following these practices, you ensure that all custom reverse proxies are fully compatible with Immich.
 
+## Port Forwarding
+
+If your reverse proxy is behind a firewall or router, ensure you port forward the following port:
+
+- 80 (http requests)
+- 443 (https requests)
+- 3000 (web socket requests)
+
 ### Nginx example config
 
 Below is an example config for nginx. Make sure to include `client_max_body_size 50000M;` also in a `http` block in `/etc/nginx/nginx.conf`.
