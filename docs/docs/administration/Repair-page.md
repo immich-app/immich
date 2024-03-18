@@ -10,21 +10,21 @@ In this situation, everything is in its place and there is no problem that the s
 
 ## Any Other Situation
 
-:::note ram usge
-Several users report a situation where the page fails to load, in order to solve this problem you should try to allocate more RAM for Immich, if the problem continues, you should stop using the reverse proxy while loading the page.
+:::note RAM Usage
+Several users report a situation where the page fails to load. In order to solve this problem you should try to allocate more RAM to Immich, if the problem continues, you should stop using the reverse proxy while loading the page.
 :::
 
 Any other state describes the following 3 states:
 
 - MATCHES - These files are matched by their checksums.
 
-- OFFLINE PATHS - These files are the results of manual deletion of the default upload library.
+- OFFLINE PATHS - These files are the result of manually deleting files in the upload library or a failed file move in the past (losing track of a file).
 
 :::tip
 To get rid of Offline paths you can follow this [guide](/docs/guides/remove-offline-paths.md)
 :::
 
-- UNTRACKS FILES - These files are not tracked by the application. They can be the results of failed moves, interrupted uploads, or left behind due to a bug.
+- UNTRACKED FILES - These files are not tracked by the application. They can be the result of failed moves, interrupted uploads, or left behind due to a bug.
 
 In addition, you can download the information from a page, mark everything (in order to check hashing) and correct the problem if a match is found in the hashing.
 
