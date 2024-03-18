@@ -685,38 +685,94 @@ export class AssetRepository implements IAssetRepository {
     return { fieldName: 'smartInfo.tags', items };
   }
 
-  @GenerateSql({ params: [{ take: 100, skip: 1000 }, [DummyValue.UUID]] })
-  async getAssetsByCity(pagination: PaginationOptions, userIds: string[]): Paginated<AssetEntity> {
-    // the performance difference between this and the "normal" way is too huge to ignore, e.g. 3s vs 4ms
-    const cte = `(
-      SELECT city, "assetId"
-      FROM   exif
-      ORDER  BY city
-      LIMIT  1
+  @GenerateSql({ params: [[DummyValue.UUID]] })
+  async getAssetsByCity(userIds: string[]): Promise<AssetEntity[]> {
+    // the performance difference between this and the normal way is too huge to ignore, e.g. 3s vs 4ms
+    const parameters = [userIds.join(', '), true, false, AssetType.IMAGE];
+    const rawRes = await this.repository.query(
+      `
+      WITH RECURSIVE cte AS (
+        (
+          SELECT city, "assetId"
+          FROM exif
+          INNER JOIN assets ON exif."assetId" = assets.id
+          WHERE "ownerId" IN ($1) AND "isVisible" = $2 AND "isArchived" = $3 AND type = $4
+          ORDER BY city
+          LIMIT 1
+        )
+        UNION ALL
+        SELECT l.city, l."assetId"
+        FROM cte c
+          , LATERAL (
+          SELECT city, "assetId"
+          FROM exif
+          WHERE city > c.city
+          ORDER BY city
+          LIMIT 1
+          ) l
+        INNER JOIN assets ON l."assetId" = assets.id
+        WHERE "ownerId" IN ($5) AND "isVisible" = $6 AND "isArchived" = $7 AND type = $8
       )
-      UNION ALL
-      SELECT l.city, l."assetId"
-      FROM   cities c
-      ,      LATERAL (
-        SELECT city, "assetId"
-        FROM   exif
-        WHERE  city > c.city
-        ORDER  BY city
-        LIMIT  1
-        ) l`;
+      SELECT assets.*, exif.*
+      FROM assets
+      INNER JOIN cte ON id = "assetId"
+      INNER JOIN exif ON assets.id = exif."assetId"
+    `,
+      parameters.concat(parameters),
+    );
 
-    const builder = this.repository
-      .createQueryBuilder('asset')
-      .where('e.city IS NOT NULL')
-      .andWhere('asset.ownerId IN (:...userIds )', { userIds })
-      .andWhere('asset.isVisible = :isVisible', { isVisible: true })
-      .andWhere('asset.isArchived = :isArchived', { isArchived: false })
-      .andWhere('asset.type = :assetType', { assetType: AssetType.IMAGE })
-      .addCommonTableExpression(cte, 'cities', { recursive: true })
-      .innerJoin('cities', 'c', 'asset.id = c."assetId"')
-      .innerJoinAndSelect('asset.exifInfo', 'e', 'asset.id = e."assetId"');
+    const items = rawRes.map(
+      ({
+        country,
+        state,
+        city,
+        description,
+        model,
+        make,
+        dateTimeOriginal,
+        exifImageHeight,
+        exifImageWidth,
+        exposureTime,
+        fNumber,
+        fileSizeInByte,
+        focalLength,
+        iso,
+        latitude,
+        lensModel,
+        longitude,
+        modifyDate,
+        projectionType,
+        timeZone,
+        ...assetInfo
+      }: any) =>
+        ({
+          exifInfo: {
+            city,
+            country,
+            dateTimeOriginal,
+            description,
+            exifImageHeight,
+            exifImageWidth,
+            exposureTime,
+            fNumber,
+            fileSizeInByte,
+            focalLength,
+            iso,
+            latitude,
+            lensModel,
+            longitude,
+            make,
+            model,
+            modifyDate,
+            projectionType,
+            state,
+            timeZone,
+          },
+          ...assetInfo,
+        }) as AssetEntity,
+    );
 
-    return paginatedBuilder(builder, { ...pagination, mode: PaginationMode.LIMIT_OFFSET });
+    return items;
   }
 
   private getBuilder(options: AssetBuilderOptions) {
