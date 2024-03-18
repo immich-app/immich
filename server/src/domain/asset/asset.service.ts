@@ -22,6 +22,7 @@ import {
   ISystemConfigRepository,
   IUserRepository,
   JobItem,
+  JobStatus,
   TimeBucketOptions,
 } from '../repositories';
 import { StorageCore, StorageFolder } from '../storage';
@@ -384,7 +385,7 @@ export class AssetService {
     this.communicationRepository.send(ClientEvent.ASSET_STACK_UPDATE, auth.user.id, ids);
   }
 
-  async handleAssetDeletionCheck() {
+  async handleAssetDeletionCheck(): Promise<JobStatus> {
     const config = await this.configCore.getConfig();
     const trashedDays = config.trash.enabled ? config.trash.days : 0;
     const trashedBefore = DateTime.now()
@@ -400,10 +401,10 @@ export class AssetService {
       );
     }
 
-    return true;
+    return JobStatus.SUCCESS;
   }
 
-  async handleAssetDeletion(job: IAssetDeletionJob) {
+  async handleAssetDeletion(job: IAssetDeletionJob): Promise<JobStatus> {
     const { id, fromExternal } = job;
 
     const asset = await this.assetRepository.getById(id, {
@@ -416,12 +417,12 @@ export class AssetService {
     });
 
     if (!asset) {
-      return false;
+      return JobStatus.FAILED;
     }
 
     // Ignore requests that are not from external library job but is for an external asset
     if (!fromExternal && (!asset.library || asset.library.type === LibraryType.EXTERNAL)) {
-      return false;
+      return JobStatus.SKIPPED;
     }
 
     // Replace the parent of the stack children with a new asset
@@ -456,7 +457,7 @@ export class AssetService {
       await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files } });
     }
 
-    return true;
+    return JobStatus.SUCCESS;
   }
 
   async deleteAll(auth: AuthDto, dto: AssetBulkDeleteDto): Promise<void> {

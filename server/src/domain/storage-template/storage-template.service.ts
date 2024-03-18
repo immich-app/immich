@@ -1,6 +1,7 @@
 import { AssetEntity, AssetPathType, AssetType, SystemConfig } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
 import { Inject, Injectable } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
 import handlebar from 'handlebars';
 import * as luxon from 'luxon';
 import path from 'node:path';
@@ -18,6 +19,9 @@ import {
   IStorageRepository,
   ISystemConfigRepository,
   IUserRepository,
+  InternalEvent,
+  InternalEventMap,
+  JobStatus,
 } from '../repositories';
 import { StorageCore, StorageFolder } from '../storage';
 import {
@@ -73,7 +77,6 @@ export class StorageTemplateService {
     @Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository,
   ) {
     this.configCore = SystemConfigCore.create(configRepository);
-    this.configCore.addValidator((config) => this.validate(config));
     this.configCore.config$.subscribe((config) => this.onConfig(config));
     this.storageCore = StorageCore.create(
       assetRepository,
@@ -85,14 +88,38 @@ export class StorageTemplateService {
     );
   }
 
-  async handleMigrationSingle({ id }: IEntityJob) {
+  @OnEvent(InternalEvent.VALIDATE_CONFIG)
+  validate({ newConfig }: InternalEventMap[InternalEvent.VALIDATE_CONFIG]) {
+    try {
+      const { compiled } = this.compile(newConfig.storageTemplate.template);
+      this.render(compiled, {
+        asset: {
+          fileCreatedAt: new Date(),
+          originalPath: '/upload/test/IMG_123.jpg',
+          type: AssetType.IMAGE,
+          id: 'd587e44b-f8c0-4832-9ba3-43268bbf5d4e',
+        } as AssetEntity,
+        filename: 'IMG_123',
+        extension: 'jpg',
+        albumName: 'album',
+      });
+    } catch (error) {
+      this.logger.warn(`Storage template validation failed: ${JSON.stringify(error)}`);
+      throw new Error(`Invalid storage template: ${error}`);
+    }
+  }
+
+  async handleMigrationSingle({ id }: IEntityJob): Promise<JobStatus> {
     const config = await this.configCore.getConfig();
     const storageTemplateEnabled = config.storageTemplate.enabled;
     if (!storageTemplateEnabled) {
-      return true;
+      return JobStatus.SKIPPED;
     }
 
-    const [asset] = await this.assetRepository.getByIds([id]);
+    const [asset] = await this.assetRepository.getByIds([id], { exifInfo: true });
+    if (!asset) {
+      return JobStatus.FAILED;
+    }
 
     const user = await this.userRepository.get(asset.ownerId, {});
     const storageLabel = user?.storageLabel || null;
@@ -101,20 +128,23 @@ export class StorageTemplateService {
 
     // move motion part of live photo
     if (asset.livePhotoVideoId) {
-      const [livePhotoVideo] = await this.assetRepository.getByIds([asset.livePhotoVideoId]);
+      const [livePhotoVideo] = await this.assetRepository.getByIds([asset.livePhotoVideoId], { exifInfo: true });
+      if (!livePhotoVideo) {
+        return JobStatus.FAILED;
+      }
       const motionFilename = getLivePhotoMotionFilename(filename, livePhotoVideo.originalPath);
       await this.moveAsset(livePhotoVideo, { storageLabel, filename: motionFilename });
     }
-    return true;
+    return JobStatus.SUCCESS;
   }
 
-  async handleMigration() {
+  async handleMigration(): Promise<JobStatus> {
     this.logger.log('Starting storage template migration');
     const { storageTemplate } = await this.configCore.getConfig();
     const { enabled } = storageTemplate;
     if (!enabled) {
       this.logger.log('Storage template migration disabled, skipping');
-      return true;
+      return JobStatus.SKIPPED;
     }
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
       this.assetRepository.getAll(pagination, { withExif: true }),
@@ -136,7 +166,7 @@ export class StorageTemplateService {
 
     this.logger.log('Finished storage template migration');
 
-    return true;
+    return JobStatus.SUCCESS;
   }
 
   async moveAsset(asset: AssetEntity, metadata: MoveAssetMetadata) {
@@ -249,26 +279,6 @@ export class StorageTemplateService {
     } catch (error: any) {
       this.logger.error(`Unable to get template path for ${filename}`, error);
       return asset.originalPath;
-    }
-  }
-
-  private validate(config: SystemConfig) {
-    try {
-      const { compiled } = this.compile(config.storageTemplate.template);
-      this.render(compiled, {
-        asset: {
-          fileCreatedAt: new Date(),
-          originalPath: '/upload/test/IMG_123.jpg',
-          type: AssetType.IMAGE,
-          id: 'd587e44b-f8c0-4832-9ba3-43268bbf5d4e',
-        } as AssetEntity,
-        filename: 'IMG_123',
-        extension: 'jpg',
-        albumName: 'album',
-      });
-    } catch (error) {
-      this.logger.warn(`Storage template validation failed: ${JSON.stringify(error)}`);
-      throw new Error(`Invalid storage template: ${error}`);
     }
   }
 

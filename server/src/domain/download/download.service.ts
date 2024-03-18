@@ -50,7 +50,7 @@ export class DownloadService {
       // motion part of live photos
       const motionIds = assets.map((asset) => asset.livePhotoVideoId).filter<string>((id): id is string => !!id);
       if (motionIds.length > 0) {
-        assets.push(...(await this.assetRepository.getByIds(motionIds)));
+        assets.push(...(await this.assetRepository.getByIds(motionIds, { exifInfo: true })));
       }
 
       for (const asset of assets) {
@@ -114,7 +114,7 @@ export class DownloadService {
     if (dto.assetIds) {
       const assetIds = dto.assetIds;
       await this.access.requirePermission(auth, Permission.ASSET_DOWNLOAD, assetIds);
-      const assets = await this.assetRepository.getByIds(assetIds);
+      const assets = await this.assetRepository.getByIds(assetIds, { exifInfo: true });
       return usePagination(PAGINATION_SIZE, () => ({ hasNextPage: false, items: assets }));
     }
 
