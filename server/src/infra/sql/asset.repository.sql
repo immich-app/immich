@@ -729,8 +729,7 @@ ORDER BY
 WITH
   "cities" AS (
     SELECT
-      city,
-      count(city) AS "count"
+      city
     FROM
       "exif" "e"
     GROUP BY
@@ -739,7 +738,7 @@ WITH
       count(city) >= $1
   )
 SELECT DISTINCT
-  ON (c.count, c.city) "asset"."id" AS "data",
+  ON (c.city) "asset"."id" AS "data",
   c.city AS "value"
 FROM
   "assets" "asset"
@@ -753,8 +752,6 @@ WHERE
     AND "asset"."isArchived" = $4
   )
   AND ("asset"."deletedAt" IS NULL)
-ORDER BY
-  c.count DESC
 LIMIT
   12
 

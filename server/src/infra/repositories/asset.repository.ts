@@ -633,7 +633,6 @@ export class AssetRepository implements IAssetRepository {
     const cte = this.exifRepository
       .createQueryBuilder('e')
       .select('city')
-      .addSelect('count(city)', 'count')
       .groupBy('city')
       .having('count(city) >= :minAssetsPerField', { minAssetsPerField });
 
@@ -645,12 +644,11 @@ export class AssetRepository implements IAssetRepository {
     })
       .select('c.city', 'value')
       .addSelect('asset.id', 'data')
-      .distinctOn(['c.count', 'c.city'])
+      .distinctOn(['c.city'])
       .innerJoin('exif', 'e', 'asset.id = e."assetId"')
       .addCommonTableExpression(cte, 'cities')
       .innerJoin('cities', 'c', 'c.city = e.city')
       .limit(maxFields)
-      .orderBy('c.count', 'DESC')
       .getRawMany();
 
     return { fieldName: 'exifInfo.city', items };
