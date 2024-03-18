@@ -1098,7 +1098,7 @@
         ]
       }
     },
-    "/asset/city": {
+    "/asset/cities": {
       "get": {
         "operationId": "getAssetsByCity",
         "parameters": [],

@@ -554,10 +554,10 @@ class AssetApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /asset/city' operation and returns the [Response].
+  /// Performs an HTTP 'GET /asset/cities' operation and returns the [Response].
   Future<Response> getAssetsByCityWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/asset/city';
+    final path = r'/asset/cities';
 
     // ignore: prefer_final_locals
     Object? postBody;

@@ -1295,7 +1295,7 @@ export function getAssetsByCity(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: AssetResponseDto[];
-    }>("/asset/city", {
+    }>("/asset/cities", {
         ...opts
     }));
 }

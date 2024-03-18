@@ -18,7 +18,7 @@ Method | HTTP request | Description
 [**getAssetSearchTerms**](AssetApi.md#getassetsearchterms) | **GET** /asset/search-terms | 
 [**getAssetStatistics**](AssetApi.md#getassetstatistics) | **GET** /asset/statistics | 
 [**getAssetThumbnail**](AssetApi.md#getassetthumbnail) | **GET** /asset/thumbnail/{id} | 
-[**getAssetsByCity**](AssetApi.md#getassetsbycity) | **GET** /asset/city | 
+[**getAssetsByCity**](AssetApi.md#getassetsbycity) | **GET** /asset/cities | 
 [**getCuratedLocations**](AssetApi.md#getcuratedlocations) | **GET** /asset/curated-locations | 
 [**getCuratedObjects**](AssetApi.md#getcuratedobjects) | **GET** /asset/curated-objects | 
 [**getMapMarkers**](AssetApi.md#getmapmarkers) | **GET** /asset/map-marker | 

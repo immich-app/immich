@@ -89,7 +89,7 @@ export class AssetController {
     return this.service.getTimeBucket(auth, dto) as Promise<AssetResponseDto[]>;
   }
 
-  @Get('city')
+  @Get('cities')
   getAssetsByCity(@Auth() auth: AuthDto): Promise<AssetResponseDto[]> {
     return this.service.getAssetsByCity(auth);
   }
