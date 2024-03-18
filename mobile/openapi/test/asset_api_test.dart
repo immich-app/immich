@@ -70,6 +70,11 @@ void main() {
       // TODO
     });
 
+    //Future<List<AssetResponseDto>> getAssetsByCity() async
+    test('test getAssetsByCity', () async {
+      // TODO
+    });
+
     //Future<List<CuratedLocationsResponseDto>> getCuratedLocations() async
     test('test getCuratedLocations', () async {
       // TODO

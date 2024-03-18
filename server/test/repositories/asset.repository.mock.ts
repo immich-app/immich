@@ -35,6 +35,7 @@ export const newAssetRepositoryMock = (): jest.Mocked<IAssetRepository> => {
     softDeleteAll: jest.fn(),
     getAssetIdByCity: jest.fn(),
     getAssetIdByTag: jest.fn(),
+    getAssetsByCity: jest.fn(),
     searchMetadata: jest.fn(),
   };
 };

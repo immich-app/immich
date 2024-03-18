@@ -633,6 +633,7 @@ export class AssetRepository implements IAssetRepository {
     const cte = this.exifRepository
       .createQueryBuilder('e')
       .select('city')
+      .addSelect('count(city)', 'count')
       .groupBy('city')
       .having('count(city) >= :minAssetsPerField', { minAssetsPerField });
 
@@ -644,11 +645,12 @@ export class AssetRepository implements IAssetRepository {
     })
       .select('c.city', 'value')
       .addSelect('asset.id', 'data')
-      .distinctOn(['c.city'])
+      .distinctOn(['c.count', 'c.city'])
       .innerJoin('exif', 'e', 'asset.id = e."assetId"')
       .addCommonTableExpression(cte, 'cities')
       .innerJoin('cities', 'c', 'c.city = e.city')
       .limit(maxFields)
+      .orderBy('c.count', 'DESC')
       .getRawMany();
 
     return { fieldName: 'exifInfo.city', items };
@@ -681,6 +683,21 @@ export class AssetRepository implements IAssetRepository {
       .getRawMany();
 
     return { fieldName: 'smartInfo.tags', items };
+  }
+
+  @GenerateSql({ params: [{ take: 100, skip: 1000 }, [DummyValue.UUID]] })
+  getAssetsByCity(pagination: PaginationOptions, userIds: string[]): Paginated<AssetEntity> {
+    const builder = this.repository
+      .createQueryBuilder('asset')
+      .where('e.city IS NOT NULL')
+      .andWhere('asset.ownerId IN (:...userIds )', { userIds })
+      .andWhere('asset.isVisible = :isVisible', { isVisible: true })
+      .andWhere('asset.isArchived = :isArchived', { isArchived: false })
+      .andWhere('asset.type = :assetType', { assetType: AssetType.IMAGE })
+      .distinctOn(['e.city'])
+      .innerJoinAndSelect('asset.exifInfo', 'e', 'asset.id = e."assetId"');
+
+    return paginatedBuilder(builder, { ...pagination, mode: PaginationMode.LIMIT_OFFSET });
   }
 
   private getBuilder(options: AssetBuilderOptions) {

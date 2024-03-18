@@ -100,6 +100,7 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**getAssetSearchTerms**](doc//AssetApi.md#getassetsearchterms) | **GET** /asset/search-terms | 
 *AssetApi* | [**getAssetStatistics**](doc//AssetApi.md#getassetstatistics) | **GET** /asset/statistics | 
 *AssetApi* | [**getAssetThumbnail**](doc//AssetApi.md#getassetthumbnail) | **GET** /asset/thumbnail/{id} | 
+*AssetApi* | [**getAssetsByCity**](doc//AssetApi.md#getassetsbycity) | **GET** /asset/city | 
 *AssetApi* | [**getCuratedLocations**](doc//AssetApi.md#getcuratedlocations) | **GET** /asset/curated-locations | 
 *AssetApi* | [**getCuratedObjects**](doc//AssetApi.md#getcuratedobjects) | **GET** /asset/curated-objects | 
 *AssetApi* | [**getMapMarkers**](doc//AssetApi.md#getmapmarkers) | **GET** /asset/map-marker | 

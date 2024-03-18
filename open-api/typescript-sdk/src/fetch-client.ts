@@ -491,7 +491,7 @@ export type ValidateLibraryDto = {
 };
 export type ValidateLibraryImportPathResponseDto = {
     importPath: string;
-    isValid?: boolean;
+    isValid: boolean;
     message?: string;
 };
 export type ValidateLibraryResponseDto = {
@@ -1290,6 +1290,14 @@ export function checkBulkUpload({ assetBulkUploadCheckDto }: {
         method: "POST",
         body: assetBulkUploadCheckDto
     })));
+}
+export function getAssetsByCity(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetResponseDto[];
+    }>("/asset/city", {
+        ...opts
+    }));
 }
 export function getCuratedLocations(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{

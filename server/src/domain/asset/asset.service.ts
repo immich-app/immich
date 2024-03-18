@@ -269,6 +269,12 @@ export class AssetService {
     return this.assetRepository.getAllByDeviceId(auth.user.id, deviceId);
   }
 
+  async getAssetsByCity(auth: AuthDto): Promise<AssetResponseDto[]> {
+    const { items } = await this.assetRepository.getAssetsByCity({ take: 1000, skip: 0 }, [auth.user.id]);
+    console.log(JSON.stringify(items, null, 2));
+    return items.map((a) => mapAsset(a, { auth }));
+  }
+
   async get(auth: AuthDto, id: string): Promise<AssetResponseDto | SanitizedAssetResponseDto> {
     await this.access.requirePermission(auth, Permission.ASSET_READ, id);
 
