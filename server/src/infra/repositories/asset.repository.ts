@@ -690,26 +690,25 @@ export class AssetRepository implements IAssetRepository {
     const rawRes = await this.repository.query(
       `
       WITH RECURSIVE cte AS (
-        (
-          SELECT city, "assetId"
-          FROM exif
-          INNER JOIN assets ON exif."assetId" = assets.id
-          WHERE "ownerId" IN ($1) AND "isVisible" = $2 AND "isArchived" = $3 AND type = $4
-          ORDER BY city
-          LIMIT 1
-        )
+        SELECT city, "assetId"
+        FROM exif
+        INNER JOIN assets ON exif."assetId" = assets.id
+        WHERE "ownerId" IN ($1) AND "isVisible" = $2 AND "isArchived" = $3 AND type = $4
+        ORDER BY city
+        LIMIT 1
+
         UNION ALL
+        
         SELECT l.city, l."assetId"
         FROM cte c
           , LATERAL (
           SELECT city, "assetId"
           FROM exif
-          WHERE city > c.city
+          INNER JOIN assets ON exif."assetId" = assets.id
+          WHERE city > c.city AND "ownerId" IN ($1) AND "isVisible" = $2 AND "isArchived" = $3 AND type = $4
           ORDER BY city
           LIMIT 1
           ) l
-        INNER JOIN assets ON l."assetId" = assets.id
-        WHERE "ownerId" IN ($5) AND "isVisible" = $6 AND "isArchived" = $7 AND type = $8
       )
       SELECT assets.*, exif.*
       FROM assets
