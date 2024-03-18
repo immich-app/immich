@@ -270,7 +270,7 @@ export class AssetService {
   }
 
   async getAssetsByCity(auth: AuthDto): Promise<AssetResponseDto[]> {
-    const { items } = await this.assetRepository.getAssetsByCity({ take: 1000, skip: 0 }, [auth.user.id]);
+    const { items } = await this.assetRepository.getAssetsByCity({ take: 5000, skip: 0 }, [auth.user.id]);
     console.log(JSON.stringify(items, null, 2));
     return items.map((a) => mapAsset(a, { auth }));
   }
