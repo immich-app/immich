@@ -15,6 +15,8 @@ import {
   newStorageRepositoryMock,
   newSystemConfigRepositoryMock,
   newUserRepositoryMock,
+  partnerStub,
+  userStub,
 } from '@test';
 import { when } from 'jest-when';
 import { JobName } from '../job';
@@ -326,6 +328,16 @@ describe(AssetService.name, () => {
       ]);
 
       expect(assetMock.getByDayOfYear.mock.calls).toEqual([[[authStub.admin.user.id], { day: 15, month: 1 }]]);
+    });
+
+    it('should get memories with partners with inTimeline enabled', async () => {
+      partnerMock.getAll.mockResolvedValue([partnerStub.user1ToAdmin1]);
+
+      await sut.getMemoryLane(authStub.admin, { day: 15, month: 1 });
+
+      expect(assetMock.getByDayOfYear.mock.calls).toEqual([
+        [[authStub.admin.user.id, userStub.user1.id], { day: 15, month: 1 }],
+      ]);
     });
   });
 
