@@ -17,7 +17,7 @@
   import IconButton from '../elements/buttons/icon-button.svelte';
   import type { FormEventHandler } from 'svelte/elements';
   import { shortcuts } from '$lib/utils/shortcut';
-  import { onMount, onDestroy } from 'svelte';
+  import { clickOutside } from '$lib/utils/click-outside';
 
   /**
    * Unique identifier for the combobox.
@@ -39,7 +39,6 @@
   let isActive = false;
   let searchQuery = selectedOption?.label || '';
   let selectedIndex: number | undefined;
-  let comboboxRef: HTMLElement;
   let optionRefs: HTMLElement[] = [];
   const inputId = `combobox-${id}`;
   const listboxId = `listbox-${id}`;
@@ -49,14 +48,6 @@
   $: {
     searchQuery = selectedOption ? selectedOption.label : '';
   }
-
-  onMount(() => {
-    window.addEventListener('click', onClick);
-  });
-
-  onDestroy(() => {
-    window.removeEventListener('click', onClick);
-  });
 
   const dispatch = createEventDispatcher<{
     select: ComboBoxOption | undefined;
@@ -114,17 +105,10 @@
     searchQuery = '';
     dispatch('select', selectedOption);
   };
-
-  const onClick = (event: MouseEvent) => {
-    const target = event.target as HTMLElement;
-    if (comboboxRef && !comboboxRef.contains(target)) {
-      deactivate();
-    }
-  };
 </script>
 
 <label class="text-sm text-black dark:text-white" class:sr-only={hideLabel} for={inputId}>{label}</label>
-<div class="relative w-full dark:text-gray-300 text-gray-700 text-base" bind:this={comboboxRef}>
+<div class="relative w-full dark:text-gray-300 text-gray-700 text-base" use:clickOutside={{ onOutclick: deactivate }}>
   <div>
     {#if isActive}
       <div class="absolute inset-y-0 left-0 flex items-center pl-3">
