@@ -6,7 +6,7 @@ ip_address=$(hostname -I | awk '{print $1}')
 
 create_immich_directory() {
   echo "Creating Immich directory..."
-  mkdir -p ./immich-app/immich-data
+  mkdir -p ./immich-app
   cd ./immich-app || exit
 }
 
@@ -18,21 +18,6 @@ download_docker_compose_file() {
 download_dot_env_file() {
   echo "Downloading .env file..."
   curl -L https://github.com/immich-app/immich/releases/latest/download/example.env -o ./.env >/dev/null 2>&1
-}
-
-replace_env_value() {
-  KERNEL="$(uname -s | tr '[:upper:]' '[:lower:]')"
-  if [ "$KERNEL" = "darwin" ]; then
-    sed -i '' "s|$1=.*|$1=$2|" ./.env
-  else
-    sed -i "s|$1=.*|$1=$2|" ./.env
-  fi
-}
-
-populate_upload_location() {
-  echo "Populating default UPLOAD_LOCATION value..."
-  upload_location=$(pwd)/immich-data
-  replace_env_value "UPLOAD_LOCATION" "$upload_location"
 }
 
 start_docker_compose() {
@@ -75,5 +60,4 @@ show_friendly_message() {
 create_immich_directory
 download_docker_compose_file
 download_dot_env_file
-populate_upload_location
 start_docker_compose
