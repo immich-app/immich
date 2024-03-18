@@ -686,16 +686,17 @@ export class AssetRepository implements IAssetRepository {
   @GenerateSql({ params: [[DummyValue.UUID]] })
   async getAssetsByCity(userIds: string[]): Promise<AssetEntity[]> {
     // the performance difference between this and the normal way is too huge to ignore, e.g. 3s vs 4ms
-    const parameters = [userIds.join(', '), true, false, AssetType.IMAGE];
     const rawRes = await this.repository.query(
       `
       WITH RECURSIVE cte AS (
-        SELECT city, "assetId"
-        FROM exif
-        INNER JOIN assets ON exif."assetId" = assets.id
-        WHERE "ownerId" IN ($1) AND "isVisible" = $2 AND "isArchived" = $3 AND type = $4
-        ORDER BY city
-        LIMIT 1
+        (
+          SELECT city, "assetId"
+          FROM exif
+          INNER JOIN assets ON exif."assetId" = assets.id
+          WHERE "ownerId" IN ($1) AND "isVisible" = $2 AND "isArchived" = $3 AND type = $4
+          ORDER BY city
+          LIMIT 1
+        )
 
         UNION ALL
         
@@ -715,7 +716,7 @@ export class AssetRepository implements IAssetRepository {
       INNER JOIN cte ON id = "assetId"
       INNER JOIN exif ON assets.id = exif."assetId"
     `,
-      [...parameters, ...parameters],
+      [userIds.join(', '), true, false, AssetType.IMAGE],
     );
 
     const items = rawRes.map(
