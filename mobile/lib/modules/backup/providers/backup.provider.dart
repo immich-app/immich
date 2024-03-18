@@ -234,22 +234,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     for (AssetPathEntity album in albums) {
       AvailableAlbum availableAlbum = AvailableAlbum(albumEntity: album);
 
-      // final assetList = await album.getAssetListPaged(page: 0, size: 1);
-
-      // final thumbnailAsset = assetList.first;
-
-      // try {
-      //   final thumbnailData = await thumbnailAsset
-      //       .thumbnailDataWithSize(const ThumbnailSize(512, 512));
-      //   availableAlbum = availableAlbum.copyWith(thumbnailData: thumbnailData);
-      // } catch (e, stack) {
-      //   log.severe(
-      //     "Failed to get thumbnail for album ${album.name}",
-      //     e,
-      //     stack,
-      //   );
-      // }
-
       availableAlbums.add(availableAlbum);
 
       albumMap[album.id] = album;
@@ -381,6 +365,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       await updateServerInfo();
       await _updateBackupAssetCount();
     } else {
+      // !TODO! HANDLE THIS CASER
       log.warning("cannot get backup info - background backup is in progress!");
     }
   }
