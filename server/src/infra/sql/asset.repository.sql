@@ -817,19 +817,18 @@ WITH RECURSIVE
           "assetId"
         FROM
           exif
+          INNER JOIN assets ON exif."assetId" = assets.id
         WHERE
           city > c.city
+          AND "ownerId" IN ($1)
+          AND "isVisible" = $2
+          AND "isArchived" = $3
+          AND type = $4
         ORDER BY
           city
         LIMIT
           1
       ) l
-      INNER JOIN assets ON l."assetId" = assets.id
-    WHERE
-      "ownerId" IN ($5)
-      AND "isVisible" = $6
-      AND "isArchived" = $7
-      AND type = $8
   )
 SELECT
   assets.*,
