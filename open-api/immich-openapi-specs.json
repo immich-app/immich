@@ -7646,6 +7646,7 @@
           }
         },
         "required": [
+          "ownerId",
           "type"
         ],
         "type": "object"
@@ -10689,7 +10690,8 @@
           }
         },
         "required": [
-          "importPath"
+          "importPath",
+          "isValid"
         ],
         "type": "object"
       },

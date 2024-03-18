@@ -196,16 +196,6 @@ WHERE
   )
   AND ("LibraryEntity"."deletedAt" IS NULL)
 
--- AccessRepository.library.checkPartnerAccess
-SELECT
-  "partner"."sharedById" AS "partner_sharedById",
-  "partner"."sharedWithId" AS "partner_sharedWithId"
-FROM
-  "partners" "partner"
-WHERE
-  "partner"."sharedById" IN ($1)
-  AND "partner"."sharedWithId" = $2
-
 -- AccessRepository.person.checkOwnerAccess
 SELECT
   "PersonEntity"."id" AS "PersonEntity_id"
