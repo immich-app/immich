@@ -98,7 +98,9 @@
   let isShowActivity = false;
   let isLiked: ActivityResponseDto | null = null;
   let numberOfComments: number;
-  let isFullScreen = false;
+  let fullscreenElement: Element;
+
+  $: isFullScreen = fullscreenElement !== null;
 
   $: {
     if (asset.stackCount && asset.stack) {
@@ -190,12 +192,7 @@
     }
   }
 
-  const handleFullScreenChange = () => {
-    isFullScreen = document.fullscreenElement !== null;
-  };
-
   onMount(async () => {
-    document.addEventListener('fullscreenchange', handleFullScreenChange);
     slideshowStateUnsubscribe = slideshowState.subscribe((value) => {
       if (value === SlideshowState.PlaySlideshow) {
         slideshowHistory.reset();
@@ -233,7 +230,6 @@
   });
 
   onDestroy(() => {
-    document.removeEventListener('fullscreenchange', handleFullScreenChange);
     if (slideshowStateUnsubscribe) {
       slideshowStateUnsubscribe();
     }
@@ -526,6 +522,8 @@
     { shortcut: { key: 'i' }, onShortcut: toggleDetailPanel },
   ]}
 />
+
+<svelte:document bind:fullscreenElement />
 
 <section
   id="immich-asset-viewer"
