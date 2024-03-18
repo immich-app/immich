@@ -718,7 +718,7 @@ export class AssetRepository implements IAssetRepository {
       INNER JOIN cte ON id = "assetId"
       INNER JOIN exif ON assets.id = exif."assetId"
     `,
-      parameters.concat(parameters),
+      [...parameters, ...parameters],
     );
 
     const items = rawRes.map(
