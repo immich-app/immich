@@ -284,7 +284,15 @@
     $restartSlideshowProgress = true;
   };
 
-  const navigateAsset = async (order: 'previous' | 'next', e?: Event) => {
+  const navigateAsset = async (order?: 'previous' | 'next', e?: Event) => {
+    if (!order) {
+      if ($slideshowState === SlideshowState.PlaySlideshow) {
+        order = $slideshowNavigation === SlideshowNavigation.AscendingOrder ? 'previous' : 'next';
+      } else {
+        return;
+      }
+    }
+
     if ($slideshowState === SlideshowState.PlaySlideshow && $slideshowNavigation === SlideshowNavigation.Shuffle) {
       return (order === 'previous' ? slideshowHistory.previous() : slideshowHistory.next()) || navigateAssetRandom();
     }
@@ -445,14 +453,6 @@
     }
   };
 
-  const handleVideoEnded = async () => {
-    if ($slideshowState === SlideshowState.PlaySlideshow) {
-      $slideshowNavigation === SlideshowNavigation.AscendingOrder
-        ? await navigateAsset('previous')
-        : await navigateAsset('next');
-    }
-  };
-
   const handlePlaySlideshow = async () => {
     try {
       await assetViewerHtmlElement.requestFullscreen();
@@ -578,7 +578,7 @@
         {:else}
           <VideoViewer
             assetId={previewStackedAsset.id}
-            onVideoEnd={handleVideoEnded}
+            onVideoEnd={() => navigateAsset()}
             onVideoStart={handleVideoStarted}
           />
         {/if}
@@ -604,7 +604,7 @@
             <PhotoViewer {asset} {preloadAssets} on:close={closeViewer} />
           {/if}
         {:else}
-          <VideoViewer assetId={asset.id} onVideoEnd={handleVideoEnded} onVideoStart={handleVideoStarted} />
+          <VideoViewer assetId={asset.id} onVideoEnd={() => navigateAsset()} onVideoStart={handleVideoStarted} />
         {/if}
         {#if $slideshowState === SlideshowState.None && isShared && ((album && album.isActivityEnabled) || numberOfComments > 0)}
           <div class="z-[9999] absolute bottom-0 right-0 mb-6 mr-6 justify-self-end">
