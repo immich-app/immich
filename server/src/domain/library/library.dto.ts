@@ -8,8 +8,8 @@ export class CreateLibraryDto {
   @ApiProperty({ enumName: 'LibraryType', enum: LibraryType })
   type!: LibraryType;
 
-  @ValidateUUID({ optional: true })
-  ownerId?: string;
+  @ValidateUUID()
+  ownerId!: string;
 
   @IsString()
   @Optional()
