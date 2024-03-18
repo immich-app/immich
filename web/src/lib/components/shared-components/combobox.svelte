@@ -108,7 +108,15 @@
 </script>
 
 <label class="text-sm text-black dark:text-white" class:sr-only={hideLabel} for={inputId}>{label}</label>
-<div class="relative w-full dark:text-gray-300 text-gray-700 text-base" use:clickOutside={{ onOutclick: deactivate }}>
+<div
+  class="relative w-full dark:text-gray-300 text-gray-700 text-base"
+  use:clickOutside={{ onOutclick: deactivate }}
+  on:focusout={(e) => {
+    if (e.relatedTarget instanceof Node && !e.currentTarget.contains(e.relatedTarget)) {
+      deactivate();
+    }
+  }}
+>
   <div>
     {#if isActive}
       <div class="absolute inset-y-0 left-0 flex items-center pl-3">
@@ -137,20 +145,6 @@
       type="text"
       value={searchQuery}
       use:shortcuts={[
-        {
-          shortcut: { key: 'Tab' },
-          preventDefault: false,
-          onShortcut: () => {
-            deactivate();
-          },
-        },
-        {
-          shortcut: { key: 'Tab', shift: true },
-          preventDefault: false,
-          onShortcut: () => {
-            deactivate();
-          },
-        },
         {
           shortcut: { key: 'ArrowUp' },
           onShortcut: () => {
