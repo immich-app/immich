@@ -26,6 +26,8 @@
 
   export let duration = 5;
 
+  export let isPlaying: boolean;
+
   const onChange = async () => {
     progress = setDuration(duration);
     await play();
@@ -55,12 +57,14 @@
 
   export const play = async () => {
     status = ProgressBarStatus.Playing;
+    isPlaying = true;
     dispatch('playing');
     await progress.set(1);
   };
 
   export const pause = async () => {
     status = ProgressBarStatus.Paused;
+    isPlaying = false;
     dispatch('paused');
     await progress.set($progress);
   };

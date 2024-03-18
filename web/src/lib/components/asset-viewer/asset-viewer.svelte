@@ -71,6 +71,7 @@
     stopProgress: stopSlideshowProgress,
     slideshowNavigation,
     slideshowState,
+    slideshowPlaying,
   } = slideshowStore;
 
   const dispatch = createEventDispatcher<{
@@ -463,6 +464,7 @@
       await assetViewerHtmlElement.requestFullscreen();
     } catch (error) {
       console.error('Error entering fullscreen', error);
+      $slideshowPlaying = false;
       $slideshowState = SlideshowState.StopSlideshow;
     }
   };
@@ -476,6 +478,7 @@
       console.error('Error exiting fullscreen', error);
     } finally {
       $stopSlideshowProgress = true;
+      $slideshowPlaying = false;
       $slideshowState = SlideshowState.None;
     }
   };
@@ -502,6 +505,11 @@
     } catch (error) {
       handleError(error, `Unable to unstack`);
     }
+  };
+
+  const handleStartSlideshow = () => {
+    $slideshowPlaying = true;
+    $slideshowState = SlideshowState.PlaySlideshow;
   };
 </script>
 
@@ -549,7 +557,7 @@
         on:toggleArchive={toggleArchive}
         on:asProfileImage={() => (isShowProfileImageCrop = true)}
         on:runJob={({ detail: job }) => handleRunJob(job)}
-        on:playSlideShow={() => ($slideshowState = SlideshowState.PlaySlideshow)}
+        on:playSlideShow={handleStartSlideshow}
         on:unstack={handleUnstack}
         on:showShareModal={() => (isShowShareModal = true)}
       />
@@ -569,11 +577,12 @@
     {#if $slideshowState != SlideshowState.None}
       <div class="z-[1000] absolute w-full flex">
         <SlideshowBar
+          {asset}
           {isFullScreen}
           onSetToFullScreen={() => assetViewerHtmlElement.requestFullscreen()}
           onPrevious={() => navigateAsset('previous')}
           onNext={() => navigateAsset('next')}
-          onClose={() => ($slideshowState = SlideshowState.StopSlideshow)}
+          onClose={handleStopSlideshow}
         />
       </div>
     {/if}
