@@ -85,18 +85,16 @@
   };
 </script>
 
-<div
-  class="w-full relative"
-  use:clickOutside
-  on:outclick={onFocusOut}
-  tabindex="-1"
+<svelte:window
   use:shortcut={{
     shortcut: { key: 'Escape' },
     onShortcut: () => {
       onFocusOut();
     },
   }}
->
+/>
+
+<div class="w-full relative" use:clickOutside={{ onOutclick: onFocusOut }}>
   <form
     draggable="false"
     autocomplete="off"
@@ -130,6 +128,12 @@
         bind:this={input}
         on:click={onFocusIn}
         disabled={showFilter}
+        use:shortcut={{
+          shortcut: { key: 'Escape' },
+          onShortcut: () => {
+            onFocusOut();
+          },
+        }}
       />
 
       <div class="absolute inset-y-0 {showClearIcon ? 'right-14' : 'right-5'} flex items-center pl-6 transition-all">
