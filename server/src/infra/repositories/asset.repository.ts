@@ -686,7 +686,25 @@ export class AssetRepository implements IAssetRepository {
   }
 
   @GenerateSql({ params: [{ take: 100, skip: 1000 }, [DummyValue.UUID]] })
-  getAssetsByCity(pagination: PaginationOptions, userIds: string[]): Paginated<AssetEntity> {
+  async getAssetsByCity(pagination: PaginationOptions, userIds: string[]): Paginated<AssetEntity> {
+    // the performance difference between this and the "normal" way is too huge to ignore, e.g. 3s vs 4ms
+    const cte = `(
+      SELECT city, "assetId"
+      FROM   exif
+      ORDER  BY city
+      LIMIT  1
+      )
+      UNION ALL
+      SELECT l.city, l."assetId"
+      FROM   cities c
+      ,      LATERAL (
+        SELECT city, "assetId"
+        FROM   exif
+        WHERE  city > c.city
+        ORDER  BY city
+        LIMIT  1
+        ) l`;
+
     const builder = this.repository
       .createQueryBuilder('asset')
       .where('e.city IS NOT NULL')
@@ -694,7 +712,8 @@ export class AssetRepository implements IAssetRepository {
       .andWhere('asset.isVisible = :isVisible', { isVisible: true })
       .andWhere('asset.isArchived = :isArchived', { isArchived: false })
       .andWhere('asset.type = :assetType', { assetType: AssetType.IMAGE })
-      .distinctOn(['e.city'])
+      .addCommonTableExpression(cte, 'cities', { recursive: true })
+      .innerJoin('cities', 'c', 'asset.id = c."assetId"')
       .innerJoinAndSelect('asset.exifInfo', 'e', 'asset.id = e."assetId"');
 
     return paginatedBuilder(builder, { ...pagination, mode: PaginationMode.LIMIT_OFFSET });
