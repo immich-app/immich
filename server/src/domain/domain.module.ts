@@ -26,9 +26,9 @@ import { TrashService } from './trash';
 import { UserService } from './user';
 
 const providers: Provider[] = [
+  APIKeyService,
   ActivityService,
   AlbumService,
-  APIKeyService,
   AssetService,
   AuditService,
   AuthService,
@@ -39,8 +39,8 @@ const providers: Provider[] = [
   LibraryService,
   MediaService,
   MetadataService,
-  PersonService,
   PartnerService,
+  PersonService,
   SearchService,
   ServerInfoService,
   SharedLinkService,

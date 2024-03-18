@@ -6,5 +6,7 @@ export const newCommunicationRepositoryMock = (): jest.Mocked<ICommunicationRepo
     broadcast: jest.fn(),
     on: jest.fn(),
     sendServerEvent: jest.fn(),
+    emit: jest.fn(),
+    emitAsync: jest.fn(),
   };
 };

@@ -31,6 +31,7 @@ import {
 import { BullModule } from '@nestjs/bullmq';
 import { Global, Module, Provider } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { OpenTelemetryModule } from 'nestjs-otel';
@@ -103,6 +104,7 @@ const providers: Provider[] = [
 @Module({
   imports: [
     ConfigModule.forRoot(immichAppConfig),
+    EventEmitterModule.forRoot(),
     TypeOrmModule.forRoot(databaseConfig),
     TypeOrmModule.forFeature(databaseEntities),
     ScheduleModule,
@@ -119,6 +121,7 @@ export class InfraModule {}
 @Module({
   imports: [
     ConfigModule.forRoot(immichAppConfig),
+    EventEmitterModule.forRoot(),
     TypeOrmModule.forRoot(databaseConfig),
     TypeOrmModule.forFeature(databaseEntities),
     ScheduleModule,

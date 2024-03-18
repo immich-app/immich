@@ -88,7 +88,7 @@ class TestBase:
         encoder = OpenCLIPEncoder("ViT-B-32__openai", providers=["OpenVINOExecutionProvider", "CPUExecutionProvider"])
 
         assert encoder.provider_options == [
-            {"device_type": "GPU_FP32"},
+            {"device_type": "GPU_FP32", "cache_dir": (encoder.cache_dir / "openvino").as_posix()},
             {"arena_extend_strategy": "kSameAsRequested"},
         ]
 
@@ -262,7 +262,6 @@ class TestBase:
 
         mock_ann = mocker.patch("app.models.base.AnnSession")
         mock_ort = mocker.patch("app.models.base.ort.InferenceSession")
-        mocker.patch("app.models.base.os.chdir")
 
         encoder = OpenCLIPEncoder("ViT-B-32__openai")
         encoder._make_session(mock_armnn_path)
@@ -284,26 +283,6 @@ class TestBase:
 
         mock_ann.assert_not_called()
         mock_ort.assert_not_called()
-
-    def test_make_session_changes_cwd(self, mocker: MockerFixture) -> None:
-        mock_model_path = mocker.Mock()
-        mock_model_path.is_file.return_value = True
-        mock_model_path.suffix = ".onnx"
-        mock_model_path.parent = "model_parent"
-        mock_model_path.with_suffix.return_value = mock_model_path
-        mock_ort = mocker.patch("app.models.base.ort.InferenceSession")
-        mock_chdir = mocker.patch("app.models.base.os.chdir")
-
-        encoder = OpenCLIPEncoder("ViT-B-32__openai")
-        encoder._make_session(mock_model_path)
-
-        mock_chdir.assert_has_calls(
-            [
-                mock.call(mock_model_path.parent),
-                mock.call(os.getcwd()),
-            ]
-        )
-        mock_ort.assert_called_once()
 
     def test_download(self, mocker: MockerFixture) -> None:
         mock_snapshot_download = mocker.patch("app.models.base.snapshot_download")

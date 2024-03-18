@@ -8,8 +8,8 @@ export class CreateLibraryDto {
   @ApiProperty({ enumName: 'LibraryType', enum: LibraryType })
   type!: LibraryType;
 
-  @ValidateUUID({ optional: true })
-  ownerId?: string;
+  @ValidateUUID()
+  ownerId!: string;
 
   @IsString()
   @Optional()
@@ -89,7 +89,7 @@ export class ValidateLibraryResponseDto {
 
 export class ValidateLibraryImportPathResponseDto {
   importPath!: string;
-  isValid?: boolean = false;
+  isValid: boolean = false;
   message?: string;
 }
 
