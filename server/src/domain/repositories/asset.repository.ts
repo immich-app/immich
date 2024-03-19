@@ -109,6 +109,8 @@ export type AssetWithoutRelations = {
 
 export type AssetUpdateOptions = Pick<AssetWithoutRelations, 'id'> & Partial<AssetWithoutRelations>;
 
+export type AssetUpdateAllOptions = Omit<Partial<AssetWithoutRelations>, 'id'>;
+
 export interface MonthDay {
   day: number;
   month: number;
@@ -157,7 +159,7 @@ export interface IAssetRepository {
   deleteAll(ownerId: string): Promise<void>;
   getAll(pagination: PaginationOptions, options?: AssetSearchOptions): Paginated<AssetEntity>;
   getAllByDeviceId(userId: string, deviceId: string): Promise<string[]>;
-  updateAll(ids: string[], options: Partial<AssetWithoutRelations>): Promise<void>;
+  updateAll(ids: string[], options: Partial<AssetUpdateAllOptions>): Promise<void>;
   update(asset: AssetUpdateOptions): Promise<void>;
   remove(asset: AssetEntity): Promise<void>;
   softDeleteAll(ids: string[]): Promise<void>;

@@ -6,8 +6,8 @@ import {
   AssetSearchOptions,
   AssetStats,
   AssetStatsOptions,
+  AssetUpdateAllOptions,
   AssetUpdateOptions,
-  AssetWithoutRelations,
   IAssetRepository,
   LivePhotoSearchOptions,
   MapMarker,
@@ -277,7 +277,7 @@ export class AssetRepository implements IAssetRepository {
 
   @GenerateSql({ params: [[DummyValue.UUID], { deviceId: DummyValue.STRING }] })
   @Chunked()
-  async updateAll(ids: string[], options: Partial<AssetWithoutRelations>): Promise<void> {
+  async updateAll(ids: string[], options: AssetUpdateAllOptions): Promise<void> {
     await this.repository.update({ id: In(ids) }, options);
   }
 
