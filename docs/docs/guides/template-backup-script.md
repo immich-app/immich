@@ -19,8 +19,6 @@ UPLOAD_LOCATION="/path/to/immich/directory"       # Immich database location, as
 BACKUP_PATH="/path/to/local/backup/directory"
 
 mkdir "$UPLOAD_LOCATION/database-backup"
-mkdir "$BACKUP_PATH/immich-borg"
-
 borg init --encryption=none "$BACKUP_PATH/immich-borg"
 
 ## Remote set up
