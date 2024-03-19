@@ -122,14 +122,6 @@ describe(StorageTemplateService.name, () => {
       const newMotionPicturePath = `upload/library/${userStub.user1.id}/2022/2022-06-19/${assetStub.livePhotoStillAsset.id}.mp4`;
       const newStillPicturePath = `upload/library/${userStub.user1.id}/2022/2022-06-19/${assetStub.livePhotoStillAsset.id}.jpeg`;
 
-      when(assetMock.update)
-        .calledWith({ id: assetStub.livePhotoStillAsset.id, originalPath: newStillPicturePath })
-        .mockResolvedValue(assetStub.livePhotoStillAsset);
-
-      when(assetMock.update)
-        .calledWith({ id: assetStub.livePhotoMotionAsset.id, originalPath: newMotionPicturePath })
-        .mockResolvedValue(assetStub.livePhotoMotionAsset);
-
       when(assetMock.getByIds)
         .calledWith([assetStub.livePhotoStillAsset.id], { exifInfo: true })
         .mockResolvedValue([assetStub.livePhotoStillAsset]);
