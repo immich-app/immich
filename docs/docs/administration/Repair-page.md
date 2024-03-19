@@ -14,7 +14,7 @@ In this situation, everything is in its place and there is no problem that the s
 Several users report a situation where the page fails to load. In order to solve this problem you should try to allocate more RAM to Immich, if the problem continues, you should stop using the reverse proxy while loading the page.
 :::
 
-Any other state describes the following 3 states:
+In any other situation, there are 3 different options that can appear:
 
 - MATCHES - These files are matched by their checksums.
 
