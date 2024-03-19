@@ -729,7 +729,6 @@ describe(MetadataService.name, () => {
 
     it('should update a image asset when a sidecar is found', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
-      assetMock.update.mockResolvedValue(assetStub.image);
       storageMock.checkFileExists.mockResolvedValue(true);
       await sut.handleSidecarDiscovery({ id: assetStub.image.id });
       expect(storageMock.checkFileExists).toHaveBeenCalledWith('/original/path.jpg.xmp', constants.R_OK);
@@ -741,7 +740,6 @@ describe(MetadataService.name, () => {
 
     it('should update a video asset when a sidecar is found', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
-      assetMock.update.mockResolvedValue(assetStub.video);
       storageMock.checkFileExists.mockResolvedValue(true);
       await sut.handleSidecarDiscovery({ id: assetStub.video.id });
       expect(storageMock.checkFileExists).toHaveBeenCalledWith('/original/path.ext.xmp', constants.R_OK);

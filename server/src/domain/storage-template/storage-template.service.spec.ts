@@ -427,7 +427,6 @@ describe(StorageTemplateService.name, () => {
         items: [assetStub.image],
         hasNextPage: false,
       });
-      assetMock.update.mockResolvedValue(assetStub.image);
       userMock.getList.mockResolvedValue([userStub.user1]);
       moveMock.create.mockResolvedValue({
         id: '123',
@@ -503,7 +502,6 @@ describe(StorageTemplateService.name, () => {
         items: [assetStub.image],
         hasNextPage: false,
       });
-      assetMock.update.mockResolvedValue(assetStub.image);
       userMock.getList.mockResolvedValue([userStub.user1]);
       moveMock.create.mockResolvedValue({
         id: '123',
@@ -531,7 +529,6 @@ describe(StorageTemplateService.name, () => {
         items: [assetStub.image],
         hasNextPage: false,
       });
-      assetMock.update.mockResolvedValue(assetStub.image);
       userMock.getList.mockResolvedValue([userStub.storageLabel]);
       moveMock.create.mockResolvedValue({
         id: '123',
@@ -670,7 +667,6 @@ describe(StorageTemplateService.name, () => {
         ],
         hasNextPage: false,
       });
-      assetMock.update.mockResolvedValue(assetStub.image);
       userMock.getList.mockResolvedValue([userStub.user1]);
 
       await sut.handleMigration();
