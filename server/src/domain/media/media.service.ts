@@ -183,7 +183,6 @@ export class MediaService {
       format === 'jpeg' ? StorageCore.getLargeThumbnailPath(asset) : StorageCore.getSmallThumbnailPath(asset);
     this.storageCore.ensureFolders(path);
 
-    console.log(asset);
     switch (asset.type) {
       case AssetType.IMAGE: {
         const colorspace = this.isSRGB(asset) ? Colorspace.SRGB : thumbnail.colorspace;
