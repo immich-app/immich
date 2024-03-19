@@ -255,6 +255,8 @@ describe(LibraryService.name, () => {
 
       storageMock.checkFileExists.mockResolvedValue(true);
 
+      assetMock.getWith.mockResolvedValue({ items: [], hasNextPage: false });
+
       const mockLibraryJob: ILibraryRefreshJob = {
         id: libraryStub.externalLibraryWithImportPaths1.id,
         refreshModifiedFiles: false,
