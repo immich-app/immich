@@ -33,12 +33,6 @@ export enum Permission {
   TIMELINE_READ = 'timeline.read',
   TIMELINE_DOWNLOAD = 'timeline.download',
 
-  LIBRARY_CREATE = 'library.create',
-  LIBRARY_READ = 'library.read',
-  LIBRARY_UPDATE = 'library.update',
-  LIBRARY_DELETE = 'library.delete',
-  LIBRARY_DOWNLOAD = 'library.download',
-
   PERSON_READ = 'person.read',
   PERSON_WRITE = 'person.write',
   PERSON_MERGE = 'person.merge',
@@ -259,29 +253,6 @@ export class AccessCore {
 
       case Permission.TIMELINE_DOWNLOAD: {
         return ids.has(auth.user.id) ? new Set([auth.user.id]) : new Set();
-      }
-
-      case Permission.LIBRARY_READ: {
-        if (auth.user.isAdmin) {
-          return new Set(ids);
-        }
-        const isOwner = await this.repository.library.checkOwnerAccess(auth.user.id, ids);
-        const isPartner = await this.repository.library.checkPartnerAccess(auth.user.id, setDifference(ids, isOwner));
-        return setUnion(isOwner, isPartner);
-      }
-
-      case Permission.LIBRARY_UPDATE: {
-        if (auth.user.isAdmin) {
-          return new Set(ids);
-        }
-        return await this.repository.library.checkOwnerAccess(auth.user.id, ids);
-      }
-
-      case Permission.LIBRARY_DELETE: {
-        if (auth.user.isAdmin) {
-          return new Set(ids);
-        }
-        return await this.repository.library.checkOwnerAccess(auth.user.id, ids);
       }
 
       case Permission.PERSON_READ: {
