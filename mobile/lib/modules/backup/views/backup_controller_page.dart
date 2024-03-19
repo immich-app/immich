@@ -26,7 +26,7 @@ class BackupControllerPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     BackUpState backupState = ref.watch(backupProvider);
     final hasAnyAlbum = backupState.selectedBackupAlbums.isNotEmpty;
-
+    final didGetBackupInfo = useState(false);
     bool hasExclusiveAccess =
         backupState.backupProgress != BackUpProgressEnum.inBackground;
     bool shouldBackup = backupState.allUniqueAssets.length -
@@ -38,11 +38,6 @@ class BackupControllerPage extends HookConsumerWidget {
 
     useEffect(
       () {
-        if (backupState.backupProgress != BackUpProgressEnum.inProgress &&
-            backupState.backupProgress != BackUpProgressEnum.manualInProgress) {
-          ref.watch(backupProvider.notifier).getBackupInfo();
-        }
-
         // Update the background settings information just to make sure we
         // have the latest, since the platform channel will not update
         // automatically
@@ -56,6 +51,18 @@ class BackupControllerPage extends HookConsumerWidget {
         return null;
       },
       [],
+    );
+
+    useEffect(
+      () {
+        if (backupState.backupProgress == BackUpProgressEnum.idle &&
+            !didGetBackupInfo.value) {
+          ref.watch(backupProvider.notifier).getBackupInfo();
+          didGetBackupInfo.value = true;
+        }
+        return null;
+      },
+      [backupState.backupProgress],
     );
 
     Widget buildSelectedAlbumName() {
@@ -235,6 +242,15 @@ class BackupControllerPage extends HookConsumerWidget {
       );
     }
 
+    buildLoadingIndicator() {
+      return const Padding(
+        padding: EdgeInsets.only(top: 42.0),
+        child: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
@@ -297,7 +313,10 @@ class BackupControllerPage extends HookConsumerWidget {
                   if (!hasExclusiveAccess) buildBackgroundBackupInfo(),
                   buildBackupButton(),
                 ]
-              : [buildFolderSelectionTile()],
+              : [
+                  buildFolderSelectionTile(),
+                  if (!didGetBackupInfo.value) buildLoadingIndicator(),
+                ],
         ),
       ),
     );
