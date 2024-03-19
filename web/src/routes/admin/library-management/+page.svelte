@@ -31,7 +31,6 @@
     type LibraryResponseDto,
     type LibraryStatsResponseDto,
     type UserResponseDto,
-    scanDeletedFiles,
   } from '@immich/sdk';
   import { mdiDatabase, mdiDotsVertical, mdiPlusBoxOutline, mdiSync, mdiUpload } from '@mdi/js';
   import { onMount } from 'svelte';
@@ -200,18 +199,6 @@
     }
   };
 
-  const handleScanDeleted = async (libraryId: string) => {
-    try {
-      await scanDeletedFiles({ id: libraryId });
-      notificationController.show({
-        message: `Scanning library for deleted files`,
-        type: NotificationType.Info,
-      });
-    } catch (error) {
-      handleError(error, 'Unable to scan library');
-    }
-  };
-
   const handleScanChanges = async (libraryId: string) => {
     try {
       await scanLibrary({ id: libraryId, scanLibraryDto: { refreshModifiedFiles: true } });
@@ -265,14 +252,6 @@
 
     if (selectedLibrary) {
       await handleScan(selectedLibrary.id);
-    }
-  };
-
-  const onScanDeletedLibraryClicked = async () => {
-    closeAll();
-
-    if (selectedLibrary) {
-      await handleScanDeleted(selectedLibrary.id);
     }
   };
 
@@ -425,10 +404,6 @@
                           <MenuOption on:click={() => onScanSettingClicked()} text="Scan Settings" />
                           <hr />
                           <MenuOption on:click={() => onScanNewLibraryClicked()} text="Scan New Library Files" />
-                          <MenuOption
-                            on:click={() => onScanDeletedLibraryClicked()}
-                            text="Scan Deleted Library Files"
-                          />
 
                           <MenuOption
                             on:click={() => onScanAllLibraryFilesClicked()}

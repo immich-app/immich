@@ -1942,14 +1942,6 @@ export function scanLibrary({ id, scanLibraryDto }: {
         body: scanLibraryDto
     })));
 }
-export function scanDeletedFiles({ id }: {
-    id: string;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText(`/library/${encodeURIComponent(id)}/scanDeleted`, {
-        ...opts,
-        method: "POST"
-    }));
-}
 export function getLibraryStatistics({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {

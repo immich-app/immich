@@ -305,8 +305,6 @@ export class LibraryService extends EventEmitter {
         },
       })),
     );
-
-    this.logger.verbose('Asset refresh queued');
   }
 
   private async validateImportPath(importPath: string): Promise<ValidateLibraryImportPathResponseDto> {
@@ -639,7 +637,7 @@ export class LibraryService extends EventEmitter {
       exclusionPatterns: library.exclusionPatterns,
     });
 
-    const existingAssets = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
+    const existingAssets = usePagination(LIBRARY_SCAN_BATCH_SIZE, (pagination) =>
       this.assetRepository.getWith(pagination, WithProperty.IS_ONLINE, job.id),
     );
 

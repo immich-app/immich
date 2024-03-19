@@ -476,14 +476,14 @@ export class AssetRepository implements IAssetRepository {
         if (!libraryId) {
           throw new Error('Library id is required when finding offline assets');
         }
-        where = [{ isOffline: true, libraryId: libraryId }];
+        where = [{ isOffline: true, libraryId }];
         break;
       }
       case WithProperty.IS_ONLINE: {
         if (!libraryId) {
           throw new Error('Library id is required when finding online assets');
         }
-        where = [{ isOffline: false, libraryId: libraryId }];
+        where = [{ isOffline: false, libraryId }];
         break;
       }
 

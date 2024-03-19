@@ -47,11 +47,6 @@ void main() {
       // TODO
     });
 
-    //Future scanDeletedFiles(String id) async
-    test('test scanDeletedFiles', () async {
-      // TODO
-    });
-
     //Future scanLibrary(String id, ScanLibraryDto scanLibraryDto) async
     test('test scanLibrary', () async {
       // TODO
