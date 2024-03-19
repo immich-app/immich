@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsNumber, IsString, IsUrl, Min, ValidateIf } from 'class-validator';
-import { ValidateBoolean } from '../../domain.util';
+import { ValidateBoolean } from 'src/domain/domain.util';
 
 const isEnabled = (config: SystemConfigOAuthDto) => config.enabled;
 const isOverrideEnabled = (config: SystemConfigOAuthDto) => config.mobileOverrideEnabled;

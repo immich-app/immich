@@ -1,8 +1,8 @@
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
-import { SharedLinkEntity } from '../../infra/entities';
-import { AuthDto } from '../auth';
-import { setDifference, setIsEqual, setUnion } from '../domain.util';
-import { IAccessRepository } from '../repositories';
+import { AuthDto } from 'src/domain/auth/auth.dto';
+import { setDifference, setIsEqual, setUnion } from 'src/domain/domain.util';
+import { IAccessRepository } from 'src/domain/repositories/access.repository';
+import { SharedLinkEntity } from 'src/infra/entities/shared-link.entity';
 
 export enum Permission {
   ACTIVITY_CREATE = 'activity.create',

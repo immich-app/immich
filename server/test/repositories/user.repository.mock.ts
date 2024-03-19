@@ -1,4 +1,5 @@
-import { IUserRepository, UserCore } from '@app/domain';
+import { IUserRepository } from 'src/domain/repositories/user.repository';
+import { UserCore } from 'src/domain/user/user.core';
 
 export const newUserRepositoryMock = (reset = true): jest.Mocked<IUserRepository> => {
   if (reset) {

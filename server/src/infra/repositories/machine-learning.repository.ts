@@ -1,17 +1,15 @@
+import { Injectable } from '@nestjs/common';
+import { readFile } from 'node:fs/promises';
 import {
-  CLIPConfig,
   CLIPMode,
   DetectFaceResult,
   IMachineLearningRepository,
-  ModelConfig,
   ModelType,
-  RecognitionConfig,
   TextModelInput,
   VisionModelInput,
-} from '@app/domain';
-import { Injectable } from '@nestjs/common';
-import { readFile } from 'node:fs/promises';
-import { Instrumentation } from '../instrumentation';
+} from 'src/domain/repositories/machine-learning.repository';
+import { CLIPConfig, ModelConfig, RecognitionConfig } from 'src/domain/smart-info/dto/model-config.dto';
+import { Instrumentation } from 'src/infra/instrumentation';
 
 const errorPrefix = 'Machine learning request';
 

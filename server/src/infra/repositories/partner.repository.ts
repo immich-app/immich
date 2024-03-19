@@ -1,9 +1,9 @@
-import { IPartnerRepository, PartnerIds } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { IPartnerRepository, PartnerIds } from 'src/domain/repositories/partner.repository';
+import { PartnerEntity } from 'src/infra/entities/partner.entity';
+import { Instrumentation } from 'src/infra/instrumentation';
 import { DeepPartial, Repository } from 'typeorm';
-import { PartnerEntity } from '../entities';
-import { Instrumentation } from '../instrumentation';
 
 @Instrumentation()
 @Injectable()

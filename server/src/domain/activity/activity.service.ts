@@ -1,8 +1,5 @@
-import { ActivityEntity } from '@app/infra/entities';
 import { Inject, Injectable } from '@nestjs/common';
-import { AccessCore, Permission } from '../access';
-import { AuthDto } from '../auth';
-import { IAccessRepository, IActivityRepository } from '../repositories';
+import { AccessCore, Permission } from 'src/domain/access/access.core';
 import {
   ActivityCreateDto,
   ActivityDto,
@@ -13,7 +10,11 @@ import {
   ReactionLevel,
   ReactionType,
   mapActivity,
-} from './activity.dto';
+} from 'src/domain/activity/activity.dto';
+import { AuthDto } from 'src/domain/auth/auth.dto';
+import { IAccessRepository } from 'src/domain/repositories/access.repository';
+import { IActivityRepository } from 'src/domain/repositories/activity.repository';
+import { ActivityEntity } from 'src/infra/entities/activity.entity';
 
 @Injectable()
 export class ActivityService {

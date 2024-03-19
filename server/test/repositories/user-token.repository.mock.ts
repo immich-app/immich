@@ -1,4 +1,4 @@
-import { IUserTokenRepository } from '@app/domain';
+import { IUserTokenRepository } from 'src/domain/repositories/user-token.repository';
 
 export const newUserTokenRepositoryMock = (): jest.Mocked<IUserTokenRepository> => {
   return {

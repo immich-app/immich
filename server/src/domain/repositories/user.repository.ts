@@ -1,4 +1,4 @@
-import { UserEntity } from '@app/infra/entities';
+import { UserEntity } from 'src/infra/entities/user.entity';
 
 export interface UserListFilter {
   withDeleted?: boolean;

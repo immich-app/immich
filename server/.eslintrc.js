@@ -33,5 +33,6 @@ module.exports = {
     '@typescript-eslint/require-await': 'error',
     curly: 2,
     'prettier/prettier': 0,
+    'no-restricted-imports': ['error', { patterns: [{ group: ['.*'], message: 'Relative imports are not allowed.' }] }],
   },
 };

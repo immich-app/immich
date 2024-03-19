@@ -1,9 +1,12 @@
-import { UserAvatarColor } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
-import { authStub, newPartnerRepositoryMock, partnerStub } from '@test';
-import { IAccessRepository, IPartnerRepository, PartnerDirection } from '../repositories';
-import { PartnerResponseDto } from './partner.dto';
-import { PartnerService } from './partner.service';
+import { PartnerResponseDto } from 'src/domain/partner/partner.dto';
+import { PartnerService } from 'src/domain/partner/partner.service';
+import { IAccessRepository } from 'src/domain/repositories/access.repository';
+import { IPartnerRepository, PartnerDirection } from 'src/domain/repositories/partner.repository';
+import { UserAvatarColor } from 'src/infra/entities/user.entity';
+import { authStub } from 'test/fixtures/auth.stub';
+import { partnerStub } from 'test/fixtures/partner.stub';
+import { newPartnerRepositoryMock } from 'test/repositories/partner.repository.mock';
 
 const responseDto = {
   admin: <PartnerResponseDto>{

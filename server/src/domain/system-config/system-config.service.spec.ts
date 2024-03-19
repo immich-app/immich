@@ -1,7 +1,14 @@
+import { BadRequestException } from '@nestjs/common';
+import { QueueName } from 'src/domain/job/job.constants';
+import { ICommunicationRepository, ServerEvent } from 'src/domain/repositories/communication.repository';
+import { ISearchRepository } from 'src/domain/repositories/search.repository';
+import { ISystemConfigRepository } from 'src/domain/repositories/system-config.repository';
+import { defaults } from 'src/domain/system-config/system-config.core';
+import { SystemConfigService } from 'src/domain/system-config/system-config.service';
 import {
   AudioCodec,
-  Colorspace,
   CQMode,
+  Colorspace,
   LogLevel,
   SystemConfig,
   SystemConfigEntity,
@@ -10,14 +17,10 @@ import {
   TranscodeHWAccel,
   TranscodePolicy,
   VideoCodec,
-} from '@app/infra/entities';
-import { ImmichLogger } from '@app/infra/logger';
-import { BadRequestException } from '@nestjs/common';
-import { newCommunicationRepositoryMock, newSystemConfigRepositoryMock } from '@test';
-import { QueueName } from '../job';
-import { ICommunicationRepository, ISearchRepository, ISystemConfigRepository, ServerEvent } from '../repositories';
-import { defaults } from './system-config.core';
-import { SystemConfigService } from './system-config.service';
+} from 'src/infra/entities/system-config.entity';
+import { ImmichLogger } from 'src/infra/logger';
+import { newCommunicationRepositoryMock } from 'test/repositories/communication.repository.mock';
+import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
 
 const updates: SystemConfigEntity[] = [
   { key: SystemConfigKey.FFMPEG_CRF, value: 30 },

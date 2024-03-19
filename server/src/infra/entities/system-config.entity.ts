@@ -1,4 +1,4 @@
-import { ConcurrentQueueName } from '@app/domain';
+import { ConcurrentQueueName } from 'src/domain/job/job.constants';
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity('system_config')

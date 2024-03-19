@@ -1,10 +1,10 @@
-import { ISharedLinkRepository } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { ISharedLinkRepository } from 'src/domain/repositories/shared-link.repository';
+import { SharedLinkEntity } from 'src/infra/entities/shared-link.entity';
+import { DummyValue, GenerateSql } from 'src/infra/infra.util';
+import { Instrumentation } from 'src/infra/instrumentation';
 import { Repository } from 'typeorm';
-import { SharedLinkEntity } from '../entities';
-import { DummyValue, GenerateSql } from '../infra.util';
-import { Instrumentation } from '../instrumentation';
 
 @Instrumentation()
 @Injectable()

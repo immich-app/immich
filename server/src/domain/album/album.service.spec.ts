@@ -1,36 +1,32 @@
 import { BadRequestException } from '@nestjs/common';
-import {
-  albumStub,
-  authStub,
-  IAccessRepositoryMock,
-  newAccessRepositoryMock,
-  newAlbumRepositoryMock,
-  newAssetRepositoryMock,
-  newJobRepositoryMock,
-  newUserRepositoryMock,
-  userStub,
-} from '@test';
 import _ from 'lodash';
-import { BulkIdErrorReason } from '../asset';
-import { IAlbumRepository, IAssetRepository, IJobRepository, IUserRepository } from '../repositories';
-import { AlbumService } from './album.service';
+import { AlbumService } from 'src/domain/album/album.service';
+import { BulkIdErrorReason } from 'src/domain/asset/response-dto/asset-ids-response.dto';
+import { IAlbumRepository } from 'src/domain/repositories/album.repository';
+import { IAssetRepository } from 'src/domain/repositories/asset.repository';
+import { IUserRepository } from 'src/domain/repositories/user.repository';
+import { albumStub } from 'test/fixtures/album.stub';
+import { authStub } from 'test/fixtures/auth.stub';
+import { userStub } from 'test/fixtures/user.stub';
+import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
+import { newAlbumRepositoryMock } from 'test/repositories/album.repository.mock';
+import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
+import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
 
 describe(AlbumService.name, () => {
   let sut: AlbumService;
   let accessMock: IAccessRepositoryMock;
   let albumMock: jest.Mocked<IAlbumRepository>;
   let assetMock: jest.Mocked<IAssetRepository>;
-  let jobMock: jest.Mocked<IJobRepository>;
   let userMock: jest.Mocked<IUserRepository>;
 
   beforeEach(() => {
     accessMock = newAccessRepositoryMock();
     albumMock = newAlbumRepositoryMock();
     assetMock = newAssetRepositoryMock();
-    jobMock = newJobRepositoryMock();
     userMock = newUserRepositoryMock();
 
-    sut = new AlbumService(accessMock, albumMock, assetMock, jobMock, userMock);
+    sut = new AlbumService(accessMock, albumMock, assetMock, userMock);
   });
 
   it('should work', () => {

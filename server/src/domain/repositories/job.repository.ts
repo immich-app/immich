@@ -1,5 +1,4 @@
-import { JobName, QueueName } from '../job/job.constants';
-
+import { JobName, QueueName } from 'src/domain/job/job.constants';
 import {
   IAssetDeletionJob,
   IBaseJob,
@@ -9,7 +8,7 @@ import {
   ILibraryFileJob,
   ILibraryRefreshJob,
   ISidecarWriteJob,
-} from '../job/job.interface';
+} from 'src/domain/job/job.interface';
 
 export interface JobCounts {
   active: number;

@@ -1,18 +1,18 @@
-import {
-  CreateLibraryDto as CreateDto,
-  LibraryService,
-  LibraryStatsResponseDto,
-  LibraryResponseDto as ResponseDto,
-  ScanLibraryDto,
-  SearchLibraryDto,
-  UpdateLibraryDto as UpdateDto,
-  ValidateLibraryDto,
-  ValidateLibraryResponseDto,
-} from '@app/domain';
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { AdminRoute, Authenticated } from '../app.guard';
-import { UUIDParamDto } from './dto/uuid-param.dto';
+import {
+  CreateLibraryDto,
+  LibraryResponseDto,
+  LibraryStatsResponseDto,
+  ScanLibraryDto,
+  SearchLibraryDto,
+  UpdateLibraryDto,
+  ValidateLibraryDto,
+  ValidateLibraryResponseDto,
+} from 'src/domain/library/library.dto';
+import { LibraryService } from 'src/domain/library/library.service';
+import { AdminRoute, Authenticated } from 'src/immich/app.guard';
+import { UUIDParamDto } from 'src/immich/controllers/dto/uuid-param.dto';
 
 @ApiTags('Library')
 @Controller('library')
@@ -22,22 +22,22 @@ export class LibraryController {
   constructor(private service: LibraryService) {}
 
   @Get()
-  getAllLibraries(@Query() dto: SearchLibraryDto): Promise<ResponseDto[]> {
+  getAllLibraries(@Query() dto: SearchLibraryDto): Promise<LibraryResponseDto[]> {
     return this.service.getAll(dto);
   }
 
   @Post()
-  createLibrary(@Body() dto: CreateDto): Promise<ResponseDto> {
+  createLibrary(@Body() dto: CreateLibraryDto): Promise<LibraryResponseDto> {
     return this.service.create(dto);
   }
 
   @Put(':id')
-  updateLibrary(@Param() { id }: UUIDParamDto, @Body() dto: UpdateDto): Promise<ResponseDto> {
+  updateLibrary(@Param() { id }: UUIDParamDto, @Body() dto: UpdateLibraryDto): Promise<LibraryResponseDto> {
     return this.service.update(id, dto);
   }
 
   @Get(':id')
-  getLibrary(@Param() { id }: UUIDParamDto): Promise<ResponseDto> {
+  getLibrary(@Param() { id }: UUIDParamDto): Promise<LibraryResponseDto> {
     return this.service.get(id);
   }
 

@@ -1,3 +1,5 @@
+import { AssetEntity } from 'src/infra/entities/asset.entity';
+import { UserEntity } from 'src/infra/entities/user.entity';
 import {
   Column,
   CreateDateColumn,
@@ -9,8 +11,6 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { AssetEntity } from './asset.entity';
-import { UserEntity } from './user.entity';
 
 @Entity('libraries')
 export class LibraryEntity {

@@ -1,8 +1,11 @@
-import { LibraryType, UserEntity } from '@app/infra/entities';
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import sanitize from 'sanitize-filename';
-import { ICryptoRepository, ILibraryRepository, IUserRepository } from '../repositories';
-import { UserResponseDto } from './response-dto';
+import { ICryptoRepository } from 'src/domain/repositories/crypto.repository';
+import { ILibraryRepository } from 'src/domain/repositories/library.repository';
+import { IUserRepository } from 'src/domain/repositories/user.repository';
+import { UserResponseDto } from 'src/domain/user/response-dto/user-response.dto';
+import { LibraryType } from 'src/infra/entities/library.entity';
+import { UserEntity } from 'src/infra/entities/user.entity';
 
 const SALT_ROUNDS = 10;
 

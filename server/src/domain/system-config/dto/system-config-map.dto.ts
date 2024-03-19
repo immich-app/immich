@@ -1,5 +1,5 @@
 import { IsString } from 'class-validator';
-import { ValidateBoolean } from '../../domain.util';
+import { ValidateBoolean } from 'src/domain/domain.util';
 
 export class SystemConfigMapDto {
   @ValidateBoolean()

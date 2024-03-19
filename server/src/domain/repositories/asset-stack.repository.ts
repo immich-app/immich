@@ -1,4 +1,4 @@
-import { AssetStackEntity } from '@app/infra/entities/asset-stack.entity';
+import { AssetStackEntity } from 'src/infra/entities/asset-stack.entity';
 
 export const IAssetStackRepository = 'IAssetStackRepository';
 

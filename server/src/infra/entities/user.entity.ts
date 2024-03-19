@@ -1,3 +1,5 @@
+import { AssetEntity } from 'src/infra/entities/asset.entity';
+import { TagEntity } from 'src/infra/entities/tag.entity';
 import {
   Column,
   CreateDateColumn,
@@ -7,8 +9,6 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { AssetEntity } from './asset.entity';
-import { TagEntity } from './tag.entity';
 
 export enum UserAvatarColor {
   PRIMARY = 'primary',

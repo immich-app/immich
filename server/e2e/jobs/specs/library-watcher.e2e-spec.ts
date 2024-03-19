@@ -1,15 +1,19 @@
-import { LibraryResponseDto, LibraryService, LoginResponseDto, StorageEventType } from '@app/domain';
-import { AssetType, LibraryType } from '@app/infra/entities';
+import { api } from 'e2e/client';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { LoginResponseDto } from 'src/domain/auth/auth.dto';
+import { LibraryResponseDto } from 'src/domain/library/library.dto';
+import { LibraryService } from 'src/domain/library/library.service';
+import { StorageEventType } from 'src/domain/repositories/storage.repository';
+import { AssetType } from 'src/infra/entities/asset.entity';
+import { LibraryType } from 'src/infra/entities/library.entity';
 import {
   IMMICH_TEST_ASSET_PATH,
   IMMICH_TEST_ASSET_TEMP_PATH,
   restoreTempFolder,
   testApp,
   waitForEvent,
-} from '../../../src/test-utils/utils';
-import { api } from '../../client';
+} from 'src/test-utils/utils';
 
 describe(`Library watcher (e2e)`, () => {
   let server: any;

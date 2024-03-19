@@ -1,18 +1,16 @@
 import { BadRequestException } from '@nestjs/common';
-import {
-  IAccessRepositoryMock,
-  assetStub,
-  authStub,
-  newAccessRepositoryMock,
-  newAssetRepositoryMock,
-  newStorageRepositoryMock,
-} from '@test';
 import { when } from 'jest-when';
+import { CacheControl, ImmichFileResponse } from 'src/domain/domain.util';
+import { DownloadResponseDto } from 'src/domain/download/download.dto';
+import { DownloadService } from 'src/domain/download/download.service';
+import { IAssetRepository } from 'src/domain/repositories/asset.repository';
+import { IStorageRepository } from 'src/domain/repositories/storage.repository';
+import { assetStub } from 'test/fixtures/asset.stub';
+import { authStub } from 'test/fixtures/auth.stub';
+import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
+import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
+import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
 import { Readable } from 'typeorm/platform/PlatformTools.js';
-import { CacheControl, ImmichFileResponse } from '../domain.util';
-import { IAssetRepository, IStorageRepository } from '../repositories';
-import { DownloadResponseDto } from './download.dto';
-import { DownloadService } from './download.service';
 
 const downloadResponse: DownloadResponseDto = {
   totalSize: 105_000,

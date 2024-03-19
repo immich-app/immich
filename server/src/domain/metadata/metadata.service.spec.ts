@@ -1,46 +1,40 @@
-import { AssetType, ExifEntity, SystemConfigKey } from '@app/infra/entities';
-import {
-  assetStub,
-  fileStub,
-  newAlbumRepositoryMock,
-  newAssetRepositoryMock,
-  newCommunicationRepositoryMock,
-  newCryptoRepositoryMock,
-  newDatabaseRepositoryMock,
-  newJobRepositoryMock,
-  newMediaRepositoryMock,
-  newMetadataRepositoryMock,
-  newMoveRepositoryMock,
-  newPersonRepositoryMock,
-  newStorageRepositoryMock,
-  newSystemConfigRepositoryMock,
-  probeStub,
-} from '@test';
 import { BinaryField } from 'exiftool-vendored';
 import { when } from 'jest-when';
 import { randomBytes } from 'node:crypto';
 import { Stats } from 'node:fs';
 import { constants } from 'node:fs/promises';
-import { JobName } from '../job';
-import {
-  ClientEvent,
-  IAlbumRepository,
-  IAssetRepository,
-  ICommunicationRepository,
-  ICryptoRepository,
-  IDatabaseRepository,
-  IJobRepository,
-  IMediaRepository,
-  IMetadataRepository,
-  IMoveRepository,
-  IPersonRepository,
-  IStorageRepository,
-  ISystemConfigRepository,
-  ImmichTags,
-  JobStatus,
-  WithoutProperty,
-} from '../repositories';
-import { MetadataService, Orientation } from './metadata.service';
+import { JobName } from 'src/domain/job/job.constants';
+import { MetadataService, Orientation } from 'src/domain/metadata/metadata.service';
+import { IAlbumRepository } from 'src/domain/repositories/album.repository';
+import { IAssetRepository, WithoutProperty } from 'src/domain/repositories/asset.repository';
+import { ClientEvent, ICommunicationRepository } from 'src/domain/repositories/communication.repository';
+import { ICryptoRepository } from 'src/domain/repositories/crypto.repository';
+import { IDatabaseRepository } from 'src/domain/repositories/database.repository';
+import { IJobRepository, JobStatus } from 'src/domain/repositories/job.repository';
+import { IMediaRepository } from 'src/domain/repositories/media.repository';
+import { IMetadataRepository, ImmichTags } from 'src/domain/repositories/metadata.repository';
+import { IMoveRepository } from 'src/domain/repositories/move.repository';
+import { IPersonRepository } from 'src/domain/repositories/person.repository';
+import { IStorageRepository } from 'src/domain/repositories/storage.repository';
+import { ISystemConfigRepository } from 'src/domain/repositories/system-config.repository';
+import { AssetType } from 'src/infra/entities/asset.entity';
+import { ExifEntity } from 'src/infra/entities/exif.entity';
+import { SystemConfigKey } from 'src/infra/entities/system-config.entity';
+import { assetStub } from 'test/fixtures/asset.stub';
+import { fileStub } from 'test/fixtures/file.stub';
+import { probeStub } from 'test/fixtures/media.stub';
+import { newAlbumRepositoryMock } from 'test/repositories/album.repository.mock';
+import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
+import { newCommunicationRepositoryMock } from 'test/repositories/communication.repository.mock';
+import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
+import { newDatabaseRepositoryMock } from 'test/repositories/database.repository.mock';
+import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
+import { newMediaRepositoryMock } from 'test/repositories/media.repository.mock';
+import { newMetadataRepositoryMock } from 'test/repositories/metadata.repository.mock';
+import { newMoveRepositoryMock } from 'test/repositories/move.repository.mock';
+import { newPersonRepositoryMock } from 'test/repositories/person.repository.mock';
+import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
+import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
 
 describe(MetadataService.name, () => {
   let albumMock: jest.Mocked<IAlbumRepository>;

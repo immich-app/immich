@@ -1,5 +1,16 @@
-import { AssetSearchBuilderOptions, Paginated, PaginationOptions } from '@app/domain';
 import _ from 'lodash';
+import {
+  Paginated,
+  PaginatedBuilderOptions,
+  PaginationMode,
+  PaginationOptions,
+  PaginationResult,
+  chunks,
+  setUnion,
+} from 'src/domain/domain.util';
+import { AssetSearchBuilderOptions } from 'src/domain/repositories/search.repository';
+import { AssetEntity } from 'src/infra/entities/asset.entity';
+import { DATABASE_PARAMETER_CHUNK_SIZE } from 'src/infra/infra.util';
 import {
   Between,
   FindManyOptions,
@@ -11,9 +22,6 @@ import {
   Repository,
   SelectQueryBuilder,
 } from 'typeorm';
-import { PaginatedBuilderOptions, PaginationMode, PaginationResult, chunks, setUnion } from '../domain/domain.util';
-import { AssetEntity } from './entities';
-import { DATABASE_PARAMETER_CHUNK_SIZE } from './infra.util';
 
 /**
  * Allows optional values unlike the regular Between and uses MoreThanOrEqual

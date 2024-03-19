@@ -1,8 +1,15 @@
-import { AudioCodec, CQMode, ToneMapping, TranscodeHWAccel, TranscodePolicy, VideoCodec } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsEnum, IsInt, IsString, Max, Min } from 'class-validator';
-import { ValidateBoolean } from '../../domain.util';
+import { ValidateBoolean } from 'src/domain/domain.util';
+import {
+  AudioCodec,
+  CQMode,
+  ToneMapping,
+  TranscodeHWAccel,
+  TranscodePolicy,
+  VideoCodec,
+} from 'src/infra/entities/system-config.entity';
 
 export class SystemConfigFFmpegDto {
   @IsInt()

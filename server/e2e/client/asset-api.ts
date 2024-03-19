@@ -1,4 +1,4 @@
-import { AssetResponseDto } from '@app/domain';
+import { AssetResponseDto } from 'src/domain/asset/response-dto/asset-response.dto';
 import request from 'supertest';
 
 export const assetApi = {

@@ -1,33 +1,28 @@
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Paginated, PaginationMode, PaginationResult } from 'src/domain/domain.util';
+import { DatabaseExtension } from 'src/domain/repositories/database.repository';
 import {
   AssetSearchOptions,
-  DatabaseExtension,
   Embedding,
   FaceEmbeddingSearch,
   FaceSearchResult,
   ISearchRepository,
-  Paginated,
-  PaginationMode,
-  PaginationResult,
   SearchPaginationOptions,
   SmartSearchOptions,
-} from '@app/domain';
-import { getCLIPModelInfo } from '@app/domain/smart-info/smart-info.constant';
-import {
-  AssetEntity,
-  AssetFaceEntity,
-  AssetType,
-  GeodataPlacesEntity,
-  SmartInfoEntity,
-  SmartSearchEntity,
-} from '@app/infra/entities';
-import { ImmichLogger } from '@app/infra/logger';
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+} from 'src/domain/repositories/search.repository';
+import { getCLIPModelInfo } from 'src/domain/smart-info/smart-info.constant';
+import { vectorExt } from 'src/infra/database.config';
+import { AssetFaceEntity } from 'src/infra/entities/asset-face.entity';
+import { AssetEntity, AssetType } from 'src/infra/entities/asset.entity';
+import { GeodataPlacesEntity } from 'src/infra/entities/geodata-places.entity';
+import { SmartInfoEntity } from 'src/infra/entities/smart-info.entity';
+import { SmartSearchEntity } from 'src/infra/entities/smart-search.entity';
+import { DummyValue, GenerateSql } from 'src/infra/infra.util';
+import { asVector, isValidInteger, paginatedBuilder, searchAssetBuilder } from 'src/infra/infra.utils';
+import { Instrumentation } from 'src/infra/instrumentation';
+import { ImmichLogger } from 'src/infra/logger';
 import { Repository, SelectQueryBuilder } from 'typeorm';
-import { vectorExt } from '../database.config';
-import { DummyValue, GenerateSql } from '../infra.util';
-import { asVector, isValidInteger, paginatedBuilder, searchAssetBuilder } from '../infra.utils';
-import { Instrumentation } from '../instrumentation';
 
 @Instrumentation()
 @Injectable()
@@ -335,7 +330,7 @@ WITH RECURSIVE cte AS (
   )
 
   UNION ALL
-  
+
   SELECT l.city, l."assetId"
   FROM cte c
     , LATERAL (

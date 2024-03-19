@@ -1,15 +1,15 @@
+import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import {
   APIKeyCreateDto,
   APIKeyCreateResponseDto,
   APIKeyResponseDto,
-  APIKeyService,
   APIKeyUpdateDto,
-  AuthDto,
-} from '@app/domain';
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
-import { Auth, Authenticated } from '../app.guard';
-import { UUIDParamDto } from './dto/uuid-param.dto';
+} from 'src/domain/api-key/api-key.dto';
+import { APIKeyService } from 'src/domain/api-key/api-key.service';
+import { AuthDto } from 'src/domain/auth/auth.dto';
+import { Auth, Authenticated } from 'src/immich/app.guard';
+import { UUIDParamDto } from 'src/immich/controllers/dto/uuid-param.dto';
 
 @ApiTags('API Key')
 @Controller('api-key')

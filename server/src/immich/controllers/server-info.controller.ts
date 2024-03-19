@@ -1,17 +1,17 @@
+import { Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import {
   ServerConfigDto,
   ServerFeaturesDto,
   ServerInfoResponseDto,
-  ServerInfoService,
   ServerMediaTypesResponseDto,
   ServerPingResponse,
   ServerStatsResponseDto,
   ServerThemeDto,
   ServerVersionResponseDto,
-} from '@app/domain';
-import { Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
-import { AdminRoute, Authenticated, PublicRoute } from '../app.guard';
+} from 'src/domain/server-info/server-info.dto';
+import { ServerInfoService } from 'src/domain/server-info/server-info.service';
+import { AdminRoute, Authenticated, PublicRoute } from 'src/immich/app.guard';
 
 @ApiTags('Server Info')
 @Controller('server-info')

@@ -1,9 +1,9 @@
-import { IAssetStackRepository } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { IAssetStackRepository } from 'src/domain/repositories/asset-stack.repository';
+import { AssetStackEntity } from 'src/infra/entities/asset-stack.entity';
+import { Instrumentation } from 'src/infra/instrumentation';
 import { Repository } from 'typeorm';
-import { AssetStackEntity } from '../entities';
-import { Instrumentation } from '../instrumentation';
 
 @Instrumentation()
 @Injectable()

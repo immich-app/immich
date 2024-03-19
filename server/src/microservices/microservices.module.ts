@@ -1,7 +1,7 @@
-import { DomainModule } from '@app/domain';
-import { InfraModule } from '@app/infra';
 import { Module, OnModuleInit } from '@nestjs/common';
-import { AppService } from './app.service';
+import { DomainModule } from 'src/domain/domain.module';
+import { InfraModule } from 'src/infra/infra.module';
+import { AppService } from 'src/microservices/app.service';
 
 @Module({
   imports: [InfraModule, DomainModule],

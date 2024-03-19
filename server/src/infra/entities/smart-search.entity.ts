@@ -1,5 +1,5 @@
+import { AssetEntity } from 'src/infra/entities/asset.entity';
 import { Column, Entity, Index, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
-import { AssetEntity } from './asset.entity';
 
 @Entity('smart_search', { synchronize: false })
 export class SmartSearchEntity {

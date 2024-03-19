@@ -1,6 +1,6 @@
+import { AssetEntity } from 'src/infra/entities/asset.entity';
+import { PersonEntity } from 'src/infra/entities/person.entity';
 import { Column, Entity, Index, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { AssetEntity } from './asset.entity';
-import { PersonEntity } from './person.entity';
 
 @Entity('asset_faces', { synchronize: false })
 @Index('IDX_asset_faces_assetId_personId', ['assetId', 'personId'])

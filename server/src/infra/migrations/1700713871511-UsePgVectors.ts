@@ -1,6 +1,6 @@
-import { getCLIPModelInfo } from '@app/domain/smart-info/smart-info.constant';
+import { getCLIPModelInfo } from 'src/domain/smart-info/smart-info.constant';
+import { vectorExt } from 'src/infra/database.config';
 import { MigrationInterface, QueryRunner } from 'typeorm';
-import { vectorExt } from '@app/infra/database.config';
 
 export class UsePgVectors1700713871511 implements MigrationInterface {
   name = 'UsePgVectors1700713871511';
@@ -14,12 +14,14 @@ export class UsePgVectors1700713871511 implements MigrationInterface {
         LIMIT 1`);
     const faceDimSize = faceDimQuery?.[0]?.['dimsize'] ?? 512;
 
-    const clipModelNameQuery = await queryRunner.query(`SELECT value FROM system_config WHERE key = 'machineLearning.clip.modelName'`);
+    const clipModelNameQuery = await queryRunner.query(
+      `SELECT value FROM system_config WHERE key = 'machineLearning.clip.modelName'`,
+    );
     const clipModelName: string = clipModelNameQuery?.[0]?.['value'] ?? 'ViT-B-32__openai';
     const clipDimSize = getCLIPModelInfo(clipModelName.replaceAll('"', '')).dimSize;
 
     await queryRunner.query(`
-        ALTER TABLE asset_faces 
+        ALTER TABLE asset_faces
         ALTER COLUMN embedding SET NOT NULL,
         ALTER COLUMN embedding TYPE vector(${faceDimSize})`);
 
@@ -37,7 +39,7 @@ export class UsePgVectors1700713871511 implements MigrationInterface {
         AND array_position(si."clipEmbedding", NULL) IS NULL`);
 
     await queryRunner.query(`ALTER TABLE smart_info DROP COLUMN IF EXISTS "clipEmbedding"`);
-    }
+  }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`ALTER TABLE asset_faces ALTER COLUMN embedding TYPE real array`);

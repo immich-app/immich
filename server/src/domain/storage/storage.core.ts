@@ -1,16 +1,16 @@
-import { SystemConfigCore } from '@app/domain/system-config';
-import { AssetEntity, AssetPathType, PathType, PersonEntity, PersonPathType } from '@app/infra/entities';
-import { ImmichLogger } from '@app/infra/logger';
 import { dirname, join, resolve } from 'node:path';
-import { APP_MEDIA_LOCATION } from '../domain.constant';
-import {
-  IAssetRepository,
-  ICryptoRepository,
-  IMoveRepository,
-  IPersonRepository,
-  IStorageRepository,
-  ISystemConfigRepository,
-} from '../repositories';
+import { APP_MEDIA_LOCATION } from 'src/domain/domain.constant';
+import { IAssetRepository } from 'src/domain/repositories/asset.repository';
+import { ICryptoRepository } from 'src/domain/repositories/crypto.repository';
+import { IMoveRepository } from 'src/domain/repositories/move.repository';
+import { IPersonRepository } from 'src/domain/repositories/person.repository';
+import { IStorageRepository } from 'src/domain/repositories/storage.repository';
+import { ISystemConfigRepository } from 'src/domain/repositories/system-config.repository';
+import { SystemConfigCore } from 'src/domain/system-config/system-config.core';
+import { AssetEntity } from 'src/infra/entities/asset.entity';
+import { AssetPathType, PathType, PersonPathType } from 'src/infra/entities/move.entity';
+import { PersonEntity } from 'src/infra/entities/person.entity';
+import { ImmichLogger } from 'src/infra/logger';
 
 export enum StorageFolder {
   ENCODED_VIDEO = 'encoded-video',
@@ -46,8 +46,8 @@ export class StorageCore {
     private moveRepository: IMoveRepository,
     private personRepository: IPersonRepository,
     private cryptoRepository: ICryptoRepository,
-    private systemConfigRepository: ISystemConfigRepository,
     private repository: IStorageRepository,
+    systemConfigRepository: ISystemConfigRepository,
   ) {
     this.configCore = SystemConfigCore.create(systemConfigRepository);
   }
@@ -66,8 +66,8 @@ export class StorageCore {
         moveRepository,
         personRepository,
         cryptoRepository,
-        configRepository,
         repository,
+        configRepository,
       );
     }
 

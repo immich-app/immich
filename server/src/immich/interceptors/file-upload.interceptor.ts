@@ -1,5 +1,3 @@
-import { AssetService, UploadFieldName, UploadFile } from '@app/domain';
-import { ImmichLogger } from '@app/infra/logger';
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { PATH_METADATA } from '@nestjs/common/constants';
 import { Reflector } from '@nestjs/core';
@@ -8,7 +6,9 @@ import { NextFunction, RequestHandler } from 'express';
 import multer, { StorageEngine, diskStorage } from 'multer';
 import { createHash, randomUUID } from 'node:crypto';
 import { Observable } from 'rxjs';
-import { AuthRequest } from '../app.guard';
+import { AssetService, UploadFieldName, UploadFile } from 'src/domain/asset/asset.service';
+import { AuthRequest } from 'src/immich/app.guard';
+import { ImmichLogger } from 'src/infra/logger';
 
 export enum Route {
   ASSET = 'asset',

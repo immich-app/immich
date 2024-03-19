@@ -1,21 +1,21 @@
-import {
-  AssetResponseDto,
-  AuthDto,
-  MetadataSearchDto,
-  PersonResponseDto,
-  PlacesResponseDto,
-  SearchDto,
-  SearchExploreResponseDto,
-  SearchPeopleDto,
-  SearchPlacesDto,
-  SearchResponseDto,
-  SearchService,
-  SmartSearchDto,
-} from '@app/domain';
-import { SearchSuggestionRequestDto } from '@app/domain/search/dto/search-suggestion.dto';
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { Auth, Authenticated } from '../app.guard';
+import { AssetResponseDto } from 'src/domain/asset/response-dto/asset-response.dto';
+import { AuthDto } from 'src/domain/auth/auth.dto';
+import { PersonResponseDto } from 'src/domain/person/person.dto';
+import { SearchSuggestionRequestDto } from 'src/domain/search/dto/search-suggestion.dto';
+import {
+  MetadataSearchDto,
+  PlacesResponseDto,
+  SearchDto,
+  SearchPeopleDto,
+  SearchPlacesDto,
+  SmartSearchDto,
+} from 'src/domain/search/dto/search.dto';
+import { SearchExploreResponseDto } from 'src/domain/search/response-dto/search-explore.response.dto';
+import { SearchResponseDto } from 'src/domain/search/response-dto/search-response.dto';
+import { SearchService } from 'src/domain/search/search.service';
+import { Auth, Authenticated } from 'src/immich/app.guard';
 
 @ApiTags('Search')
 @Controller('search')

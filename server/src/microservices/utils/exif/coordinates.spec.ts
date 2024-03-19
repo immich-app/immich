@@ -1,4 +1,4 @@
-import { parseLatitude, parseLongitude } from './coordinates';
+import { parseLatitude, parseLongitude } from 'src/microservices/utils/exif/coordinates';
 
 describe('parsing latitude from string input', () => {
   it('returns null for invalid inputs', () => {

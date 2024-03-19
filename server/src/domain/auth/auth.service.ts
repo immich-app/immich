@@ -1,5 +1,3 @@
-import { SystemConfig, UserEntity } from '@app/infra/entities';
-import { ImmichLogger } from '@app/infra/logger';
 import {
   BadRequestException,
   Inject,
@@ -12,20 +10,7 @@ import cookieParser from 'cookie';
 import { DateTime } from 'luxon';
 import { IncomingHttpHeaders } from 'node:http';
 import { ClientMetadata, Issuer, UserinfoResponse, custom, generators } from 'openid-client';
-import { AccessCore, Permission } from '../access';
-import { HumanReadableSize } from '../domain.util';
-import {
-  IAccessRepository,
-  ICryptoRepository,
-  IKeyRepository,
-  ILibraryRepository,
-  ISharedLinkRepository,
-  ISystemConfigRepository,
-  IUserRepository,
-  IUserTokenRepository,
-} from '../repositories';
-import { SystemConfigCore } from '../system-config/system-config.core';
-import { UserCore, UserResponseDto, mapUser } from '../user';
+import { AccessCore, Permission } from 'src/domain/access/access.core';
 import {
   AuthType,
   IMMICH_ACCESS_COOKIE,
@@ -34,7 +19,7 @@ import {
   IMMICH_IS_AUTHENTICATED,
   LOGIN_URL,
   MOBILE_REDIRECT,
-} from './auth.constant';
+} from 'src/domain/auth/auth.constant';
 import {
   AuthDeviceResponseDto,
   AuthDto,
@@ -48,7 +33,22 @@ import {
   SignUpDto,
   mapLoginResponse,
   mapUserToken,
-} from './auth.dto';
+} from 'src/domain/auth/auth.dto';
+import { HumanReadableSize } from 'src/domain/domain.util';
+import { IAccessRepository } from 'src/domain/repositories/access.repository';
+import { IKeyRepository } from 'src/domain/repositories/api-key.repository';
+import { ICryptoRepository } from 'src/domain/repositories/crypto.repository';
+import { ILibraryRepository } from 'src/domain/repositories/library.repository';
+import { ISharedLinkRepository } from 'src/domain/repositories/shared-link.repository';
+import { ISystemConfigRepository } from 'src/domain/repositories/system-config.repository';
+import { IUserTokenRepository } from 'src/domain/repositories/user-token.repository';
+import { IUserRepository } from 'src/domain/repositories/user.repository';
+import { SystemConfigCore } from 'src/domain/system-config/system-config.core';
+import { UserResponseDto, mapUser } from 'src/domain/user/response-dto/user-response.dto';
+import { UserCore } from 'src/domain/user/user.core';
+import { SystemConfig } from 'src/infra/entities/system-config.entity';
+import { UserEntity } from 'src/infra/entities/user.entity';
+import { ImmichLogger } from 'src/infra/logger';
 
 export interface LoginDetails {
   isSecure: boolean;

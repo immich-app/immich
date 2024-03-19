@@ -1,21 +1,21 @@
-import {
-  CrawlOptionsDto,
-  DiskUsage,
-  IStorageRepository,
-  ImmichReadStream,
-  ImmichZipStream,
-  StorageEventType,
-  WatchEvents,
-  mimeTypes,
-} from '@app/domain';
-import { ImmichLogger } from '@app/infra/logger';
 import archiver from 'archiver';
 import chokidar, { WatchOptions } from 'chokidar';
 import { glob, globStream } from 'fast-glob';
 import { constants, createReadStream, existsSync, mkdirSync } from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { Instrumentation } from '../instrumentation';
+import { mimeTypes } from 'src/domain/domain.constant';
+import { CrawlOptionsDto } from 'src/domain/library/library.dto';
+import {
+  DiskUsage,
+  IStorageRepository,
+  ImmichReadStream,
+  ImmichZipStream,
+  StorageEventType,
+  WatchEvents,
+} from 'src/domain/repositories/storage.repository';
+import { Instrumentation } from 'src/infra/instrumentation';
+import { ImmichLogger } from 'src/infra/logger';
 
 @Instrumentation()
 export class FilesystemProvider implements IStorageRepository {

@@ -1,4 +1,3 @@
-import { ImmichLogger } from '@app/infra/logger';
 import { BadRequestException, applyDecorators } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
@@ -18,6 +17,7 @@ import { CronJob } from 'cron';
 import _ from 'lodash';
 import { basename, extname } from 'node:path';
 import sanitize from 'sanitize-filename';
+import { ImmichLogger } from 'src/infra/logger';
 
 export enum CacheControl {
   PRIVATE_WITH_CACHE = 'private_with_cache',

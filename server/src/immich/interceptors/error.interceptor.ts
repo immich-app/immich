@@ -1,4 +1,3 @@
-import { ImmichLogger } from '@app/infra/logger';
 import {
   CallHandler,
   ExecutionContext,
@@ -8,8 +7,9 @@ import {
   NestInterceptor,
 } from '@nestjs/common';
 import { Observable, catchError, throwError } from 'rxjs';
-import { isConnectionAborted } from '../../domain';
-import { routeToErrorMessage } from '../app.utils';
+import { isConnectionAborted } from 'src/domain/domain.util';
+import { routeToErrorMessage } from 'src/immich/app.utils';
+import { ImmichLogger } from 'src/infra/logger';
 
 @Injectable()
 export class ErrorInterceptor implements NestInterceptor {

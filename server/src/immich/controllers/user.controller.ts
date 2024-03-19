@@ -1,14 +1,4 @@
 import {
-  AuthDto,
-  CreateUserDto as CreateDto,
-  CreateProfileImageDto,
-  CreateProfileImageResponseDto,
-  DeleteUserDto,
-  UpdateUserDto as UpdateDto,
-  UserResponseDto,
-  UserService,
-} from '@app/domain';
-import {
   Body,
   Controller,
   Delete,
@@ -26,10 +16,18 @@ import {
 } from '@nestjs/common';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
-import { AdminRoute, Auth, Authenticated, FileResponse } from '../app.guard';
-import { sendFile } from '../app.utils';
-import { FileUploadInterceptor, Route } from '../interceptors';
-import { UUIDParamDto } from './dto/uuid-param.dto';
+import { AuthDto } from 'src/domain/auth/auth.dto';
+import { CreateProfileImageDto } from 'src/domain/user/dto/create-profile-image.dto';
+import { CreateUserDto } from 'src/domain/user/dto/create-user.dto';
+import { DeleteUserDto } from 'src/domain/user/dto/delete-user.dto';
+import { UpdateUserDto } from 'src/domain/user/dto/update-user.dto';
+import { CreateProfileImageResponseDto } from 'src/domain/user/response-dto/create-profile-image-response.dto';
+import { UserResponseDto } from 'src/domain/user/response-dto/user-response.dto';
+import { UserService } from 'src/domain/user/user.service';
+import { AdminRoute, Auth, Authenticated, FileResponse } from 'src/immich/app.guard';
+import { sendFile } from 'src/immich/app.utils';
+import { UUIDParamDto } from 'src/immich/controllers/dto/uuid-param.dto';
+import { FileUploadInterceptor, Route } from 'src/immich/interceptors/file-upload.interceptor';
 
 @ApiTags('User')
 @Controller(Route.USER)
@@ -54,7 +52,7 @@ export class UserController {
 
   @AdminRoute()
   @Post()
-  createUser(@Body() createUserDto: CreateDto): Promise<UserResponseDto> {
+  createUser(@Body() createUserDto: CreateUserDto): Promise<UserResponseDto> {
     return this.service.create(createUserDto);
   }
 
@@ -82,7 +80,7 @@ export class UserController {
 
   // TODO: replace with @Put(':id')
   @Put()
-  updateUser(@Auth() auth: AuthDto, @Body() updateUserDto: UpdateDto): Promise<UserResponseDto> {
+  updateUser(@Auth() auth: AuthDto, @Body() updateUserDto: UpdateUserDto): Promise<UserResponseDto> {
     return this.service.update(auth, updateUserDto);
   }
 

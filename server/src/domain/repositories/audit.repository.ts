@@ -1,4 +1,4 @@
-import { AuditEntity, DatabaseAction, EntityType } from '@app/infra/entities';
+import { AuditEntity, DatabaseAction, EntityType } from 'src/infra/entities/audit.entity';
 
 export const IAuditRepository = 'IAuditRepository';
 

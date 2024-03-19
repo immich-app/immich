@@ -1,4 +1,4 @@
-import { isNumberInRange } from '../numbers';
+import { isNumberInRange } from 'src/microservices/utils/numbers';
 
 export function parseLatitude(input: string | number | null): number | null {
   if (input === null) {

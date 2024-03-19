@@ -1,6 +1,6 @@
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
-import { CreateAdminDto, CreateUserDto, CreateUserOAuthDto } from './create-user.dto';
+import { CreateAdminDto, CreateUserDto, CreateUserOAuthDto } from 'src/domain/user/dto/create-user.dto';
 
 describe('create user DTO', () => {
   it('validates the email', async () => {

@@ -1,10 +1,13 @@
-import { AssetIdsDto, AuthDto, DownloadInfoDto, DownloadResponseDto, DownloadService } from '@app/domain';
 import { Body, Controller, HttpCode, HttpStatus, Next, Param, Post, Res, StreamableFile } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
-import { Auth, Authenticated, FileResponse, SharedLinkRoute } from '../app.guard';
-import { asStreamableFile, sendFile } from '../app.utils';
-import { UUIDParamDto } from './dto/uuid-param.dto';
+import { AssetIdsDto } from 'src/domain/asset/dto/asset-ids.dto';
+import { AuthDto } from 'src/domain/auth/auth.dto';
+import { DownloadInfoDto, DownloadResponseDto } from 'src/domain/download/download.dto';
+import { DownloadService } from 'src/domain/download/download.service';
+import { Auth, Authenticated, FileResponse, SharedLinkRoute } from 'src/immich/app.guard';
+import { asStreamableFile, sendFile } from 'src/immich/app.utils';
+import { UUIDParamDto } from 'src/immich/controllers/dto/uuid-param.dto';
 
 @ApiTags('Download')
 @Controller('download')

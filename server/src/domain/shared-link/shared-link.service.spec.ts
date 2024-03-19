@@ -1,20 +1,17 @@
-import { SharedLinkType } from '@app/infra/entities';
 import { BadRequestException, ForbiddenException, UnauthorizedException } from '@nestjs/common';
-import {
-  IAccessRepositoryMock,
-  albumStub,
-  assetStub,
-  authStub,
-  newAccessRepositoryMock,
-  newCryptoRepositoryMock,
-  newSharedLinkRepositoryMock,
-  sharedLinkResponseStub,
-  sharedLinkStub,
-} from '@test';
 import _ from 'lodash';
-import { AssetIdErrorReason } from '../asset';
-import { ICryptoRepository, ISharedLinkRepository } from '../repositories';
-import { SharedLinkService } from './shared-link.service';
+import { AssetIdErrorReason } from 'src/domain/asset/response-dto/asset-ids-response.dto';
+import { ICryptoRepository } from 'src/domain/repositories/crypto.repository';
+import { ISharedLinkRepository } from 'src/domain/repositories/shared-link.repository';
+import { SharedLinkService } from 'src/domain/shared-link/shared-link.service';
+import { SharedLinkType } from 'src/infra/entities/shared-link.entity';
+import { albumStub } from 'test/fixtures/album.stub';
+import { assetStub } from 'test/fixtures/asset.stub';
+import { authStub } from 'test/fixtures/auth.stub';
+import { sharedLinkResponseStub, sharedLinkStub } from 'test/fixtures/shared-link.stub';
+import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
+import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
+import { newSharedLinkRepositoryMock } from 'test/repositories/shared-link.repository.mock';
 
 describe(SharedLinkService.name, () => {
   let sut: SharedLinkService;

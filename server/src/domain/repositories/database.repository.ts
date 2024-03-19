@@ -1,4 +1,4 @@
-import { Version } from '../domain.constant';
+import { Version } from 'src/domain/domain.constant';
 
 export enum DatabaseExtension {
   CUBE = 'cube',

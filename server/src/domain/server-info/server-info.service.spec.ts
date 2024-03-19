@@ -1,22 +1,18 @@
-import { SystemMetadataKey } from '@app/infra/entities';
-import {
-  newCommunicationRepositoryMock,
-  newServerInfoRepositoryMock,
-  newStorageRepositoryMock,
-  newSystemConfigRepositoryMock,
-  newSystemMetadataRepositoryMock,
-  newUserRepositoryMock,
-} from '@test';
-import { serverVersion } from '../domain.constant';
-import {
-  ICommunicationRepository,
-  IServerInfoRepository,
-  IStorageRepository,
-  ISystemConfigRepository,
-  ISystemMetadataRepository,
-  IUserRepository,
-} from '../repositories';
-import { ServerInfoService } from './server-info.service';
+import { serverVersion } from 'src/domain/domain.constant';
+import { ICommunicationRepository } from 'src/domain/repositories/communication.repository';
+import { IServerInfoRepository } from 'src/domain/repositories/server-info.repository';
+import { IStorageRepository } from 'src/domain/repositories/storage.repository';
+import { ISystemConfigRepository } from 'src/domain/repositories/system-config.repository';
+import { ISystemMetadataRepository } from 'src/domain/repositories/system-metadata.repository';
+import { IUserRepository } from 'src/domain/repositories/user.repository';
+import { ServerInfoService } from 'src/domain/server-info/server-info.service';
+import { SystemMetadataKey } from 'src/infra/entities/system-metadata.entity';
+import { newCommunicationRepositoryMock } from 'test/repositories/communication.repository.mock';
+import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
+import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
+import { newServerInfoRepositoryMock } from 'test/repositories/system-info.repository.mock';
+import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
+import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
 
 describe(ServerInfoService.name, () => {
   let sut: ServerInfoService;
