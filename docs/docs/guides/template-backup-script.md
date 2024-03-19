@@ -27,8 +27,7 @@ borg init --encryption=none "$BACKUP_PATH/immich-borg"
 REMOTE_HOST="remote_host@IP"
 REMOTE_BACKUP_PATH="/path/to/remote/backup/directory"
 
-ssh "$REMOTE_HOST" "mkdir \"$REMOTE_BACKUP_PATH\"/immich-borg"
-ssh "$REMOTE_HOST" "borg init --encryption=none \"$REMOTE_BACKUP_PATH\"/immich-borg"
+borg init --encryption=none $REMOTE_HOST:$REMOTE_BACKUP_PATH/immich-borg
 ```
 
 Edit the following script as necessary and add it to your crontab. Note that this script assumes there are no `:`, `@`, or `"` characters in your paths. If these characters exist, you will need to escape and/or rename the paths.
