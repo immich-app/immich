@@ -256,6 +256,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
 
       const library = await api.libraryApi.create(server, admin.accessToken, {
         type: LibraryType.EXTERNAL,
+        ownerId: admin.userId,
         importPaths: [`${IMMICH_TEST_ASSET_TEMP_PATH}`],
       });
 
