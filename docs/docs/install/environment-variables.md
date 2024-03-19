@@ -36,7 +36,7 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 | `NODE_ENV`                      | Environment (production, development)        |     `production`     | server, microservices, machine learning, web |
 | `LOG_LEVEL`                     | Log Level (verbose, debug, log, warn, error) |        `log`         | server, microservices                        |
 | `IMMICH_MEDIA_LOCATION`         | Media Location                               |      `./upload`      | server, microservices                        |
-| `IMMICH_CONFIG_FILE`            | Path to config file                          |                      | server                                       |
+| `IMMICH_CONFIG_FILE`            | Path to config file                          |                      | server, microservices                        |
 | `IMMICH_WEB_ROOT`               | Path of root index.html                      |  `/usr/src/app/www`  | server                                       |
 | `IMMICH_REVERSE_GEOCODING_ROOT` | Path of reverse geocoding dump directory     | `/usr/src/resources` | microservices                                |
 

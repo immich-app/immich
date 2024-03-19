@@ -109,18 +109,18 @@ export class AssetRepository implements IAssetRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID, { day: 1, month: 1 }] })
-  getByDayOfYear(ownerId: string, { day, month }: MonthDay): Promise<AssetEntity[]> {
+  getByDayOfYear(ownerIds: string[], { day, month }: MonthDay): Promise<AssetEntity[]> {
     return this.repository
       .createQueryBuilder('entity')
       .where(
-        `entity.ownerId = :ownerId
+        `entity.ownerId IN (:...ownerIds)
       AND entity.isVisible = true
       AND entity.isArchived = false
       AND entity.resizePath IS NOT NULL
       AND EXTRACT(DAY FROM entity.localDateTime AT TIME ZONE 'UTC') = :day
       AND EXTRACT(MONTH FROM entity.localDateTime AT TIME ZONE 'UTC') = :month`,
         {
-          ownerId,
+          ownerIds,
           day,
           month,
         },

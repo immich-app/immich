@@ -167,7 +167,6 @@ let instance: SystemConfigCore | null;
 @Injectable()
 export class SystemConfigCore {
   private logger = new ImmichLogger(SystemConfigCore.name);
-  private validators: SystemConfigValidator[] = [];
   private configCache: SystemConfigEntity<SystemConfigValue>[] | null = null;
 
   public config$ = new Subject<SystemConfig>();
@@ -245,10 +244,6 @@ export class SystemConfigCore {
     return defaults;
   }
 
-  public addValidator(validator: SystemConfigValidator) {
-    this.validators.push(validator);
-  }
-
   public async getConfig(force = false): Promise<SystemConfig> {
     const configFilePath = process.env.IMMICH_CONFIG_FILE;
     const config = _.cloneDeep(defaults);
@@ -281,17 +276,6 @@ export class SystemConfigCore {
   public async updateConfig(newConfig: SystemConfig): Promise<SystemConfig> {
     if (await this.hasFeature(FeatureFlag.CONFIG_FILE)) {
       throw new BadRequestException('Cannot update configuration while IMMICH_CONFIG_FILE is in use');
-    }
-
-    const oldConfig = await this.getConfig();
-
-    try {
-      for (const validator of this.validators) {
-        await validator(newConfig, oldConfig);
-      }
-    } catch (error) {
-      this.logger.warn(`Unable to save system config due to a validation error: ${error}`);
-      throw new BadRequestException(error instanceof Error ? error.message : error);
     }
 
     const updates: SystemConfigEntity[] = [];

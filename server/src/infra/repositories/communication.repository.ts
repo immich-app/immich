@@ -2,11 +2,13 @@ import {
   AuthService,
   ClientEvent,
   ICommunicationRepository,
+  InternalEventMap,
   OnConnectCallback,
   OnServerEventCallback,
   ServerEvent,
 } from '@app/domain';
 import { ImmichLogger } from '@app/infra/logger';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   OnGatewayConnection,
   OnGatewayDisconnect,
@@ -35,7 +37,10 @@ export class CommunicationRepository
   @WebSocketServer()
   private server?: Server;
 
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private eventEmitter: EventEmitter2,
+  ) {}
 
   afterInit(server: Server) {
     this.logger.log('Initialized websocket server');
@@ -96,5 +101,13 @@ export class CommunicationRepository
   sendServerEvent(event: ServerEvent) {
     this.logger.debug(`Server event: ${event} (send)`);
     this.server?.serverSideEmit(event);
+  }
+
+  emit<E extends keyof InternalEventMap>(event: E, data: InternalEventMap[E]): boolean {
+    return this.eventEmitter.emit(event, data);
+  }
+
+  emitAsync<E extends keyof InternalEventMap, R = any[]>(event: E, data: InternalEventMap[E]): Promise<R> {
+    return this.eventEmitter.emitAsync(event, data) as Promise<R>;
   }
 }

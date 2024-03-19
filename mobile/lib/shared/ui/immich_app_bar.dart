@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/shared/models/store.dart';
+import 'package:immich_mobile/shared/providers/immich_logo_provider.dart';
 import 'package:immich_mobile/shared/ui/app_bar_dialog/app_bar_dialog.dart';
 import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
 
@@ -26,6 +27,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final bool isEnableAutoBackup =
         backupState.backgroundBackup || backupState.autoBackup;
     final ServerInfo serverInfoState = ref.watch(serverInfoProvider);
+    final immichLogo = ref.watch(immichLogoProvider);
     final user = Store.tryGet(StoreKey.currentUser);
     final isDarkTheme = context.isDarkTheme;
     const widgetSize = 30.0;
@@ -152,14 +154,29 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
         builder: (BuildContext context) {
           return Row(
             children: [
-              Container(
-                padding: const EdgeInsets.only(top: 3),
-                height: 30,
-                child: Image.asset(
-                  context.isDarkTheme
-                      ? 'assets/immich-logo-inline-dark.png'
-                      : 'assets/immich-logo-inline-light.png',
-                ),
+              Builder(
+                builder: (context) {
+                  final today = DateTime.now();
+                  if (today.month == 4 && today.day == 1) {
+                    if (immichLogo.value == null) {
+                      return const SizedBox.shrink();
+                    }
+                    return Image.memory(
+                      immichLogo.value!,
+                      fit: BoxFit.cover,
+                      height: 80,
+                    );
+                  }
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 3.0),
+                    child: Image.asset(
+                      height: 30,
+                      context.isDarkTheme
+                          ? 'assets/immich-logo-inline-dark.png'
+                          : 'assets/immich-logo-inline-light.png',
+                    ),
+                  );
+                },
               ),
             ],
           );
