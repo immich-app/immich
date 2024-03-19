@@ -8,6 +8,7 @@ import { Stats } from 'node:fs';
 import path, { basename, parse } from 'node:path';
 import picomatch from 'picomatch';
 import { AccessCore } from '../access';
+import { AuthDto } from '../auth';
 import { mimeTypes } from '../domain.constant';
 import { handlePromiseError, usePagination, validateCronExpression } from '../domain.util';
 import { IBaseJob, IEntityJob, ILibraryFileJob, ILibraryRefreshJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
@@ -549,15 +550,6 @@ export class LibraryService extends EventEmitter {
     });
   }
 
-  async queueDeletedScan(auth: AuthDto, id: string) {
-    const library = await this.repository.get(id);
-    if (!library || library.type !== LibraryType.EXTERNAL) {
-      throw new BadRequestException('Can only scan external libraries');
-    }
-
-    await this.jobRepository.queue({ name: JobName.LIBRARY_SCAN_DELETED, data: { id } });
-  }
-
   async queueRemoveOffline(id: string) {
     this.logger.verbose(`Removing offline files from library: ${id}`);
     await this.jobRepository.queue({ name: JobName.LIBRARY_REMOVE_OFFLINE, data: { id } });
@@ -581,25 +573,6 @@ export class LibraryService extends EventEmitter {
         },
       })),
     );
-    return JobStatus.SUCCESS;
-  }
-
-  async handleQueueOfflineCheck(job: IEntityJob): Promise<JobStatus> {
-    this.logger.log(`Finding offline assets in library: ${job.id}`);
-    const onlineAssets = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
-      this.assetRepository.getWith(pagination, WithProperty.IS_ONLINE, job.id),
-    );
-
-    for await (const assets of onlineAssets) {
-      this.logger.debug(`Checking if ${assets.length} assets are still online`);
-      await this.jobRepository.queueAll(
-        assets.map((asset) => ({
-          name: JobName.LIBRARY_CHECK_OFFLINE,
-          data: { id: asset.id },
-        })),
-      );
-    }
-
     return JobStatus.SUCCESS;
   }
 
@@ -662,29 +635,69 @@ export class LibraryService extends EventEmitter {
       .filter((validation) => validation.isValid)
       .map((validation) => validation.importPath);
 
-    const generator = this.storageRepository.walk({
+    const crawledAssets = this.storageRepository.walk({
       pathsToCrawl: validImportPaths,
       exclusionPatterns: library.exclusionPatterns,
     });
 
+    const existingAssets = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
+      this.assetRepository.getWith(pagination, WithProperty.IS_ONLINE, job.id),
+    );
+
     let crawledAssetPaths: string[] = [];
 
-    let pathCounter = 0;
+    let crawlCounter = 0;
+    let crawlDone = false;
+    let existingAssetsDone = false;
+    let existingAssetCounter = 0;
 
-    for await (const filePath of generator) {
-      crawledAssetPaths.push(filePath);
-      pathCounter++;
+    const scanNextAssetPage = async () => {
+      if (!existingAssetsDone) {
+        const existingAssetPage = await existingAssets.next();
+        existingAssetsDone = existingAssetPage.done ?? true;
 
-      if (crawledAssetPaths.length % LIBRARY_SCAN_BATCH_SIZE === 0) {
+        if (existingAssetPage.value) {
+          existingAssetCounter += existingAssetPage.value.length;
+          this.logger.log(
+            `Queuing online check of ${existingAssetPage.value.length} asset(s) in library ${library.id}...`,
+          );
+          await this.jobRepository.queueAll(
+            existingAssetPage.value.map((asset) => ({
+              name: JobName.LIBRARY_CHECK_OFFLINE,
+              data: { id: asset.id },
+            })),
+          );
+        }
+      }
+    };
+
+    while (!crawlDone) {
+      const crawlResult = await crawledAssets.next();
+
+      crawlDone = crawlResult.done ?? true;
+
+      crawledAssetPaths.push(crawlResult.value);
+      crawlCounter++;
+
+      if (crawledAssetPaths.length % LIBRARY_SCAN_BATCH_SIZE === 0 || crawlDone) {
+        this.logger.log(`Queueing scan of ${crawledAssetPaths.length} asset path(s) in library ${library.id}...`);
+        // We have reached the batch size or the end of the generator, scan the assets
         await this.scanAssets(job.id, crawledAssetPaths, library.ownerId, job.refreshAllFiles ?? false);
-
         crawledAssetPaths = [];
+
+        // Interweave the queuing of offline checks with the asset scanning (if any)
+        await scanNextAssetPage();
       }
     }
 
-    await this.scanAssets(job.id, crawledAssetPaths, library.ownerId, job.refreshAllFiles ?? false);
+    // If there are any remaining assets to check for offline status, do so
+    while (!existingAssetsDone) {
+      await scanNextAssetPage();
+    }
 
-    this.logger.log(`Found ${pathCounter} asset(s) when crawling import paths ${library.importPaths}`);
+    this.logger.log(
+      `Finished queuing scan of ${crawlCounter} crawled and ${existingAssetCounter} existing asset(s) in library ${library.id}`,
+    );
 
     await this.repository.update({ id: job.id, refreshedAt: new Date() });
 

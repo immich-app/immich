@@ -65,12 +65,6 @@ export class LibraryController {
     return this.service.queueScan(id, dto);
   }
 
-  @Post(':id/scanDeleted')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  scanDeletedFiles(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto) {
-    return this.service.queueDeletedScan(auth, id);
-  }
-
   @Post(':id/removeOffline')
   @HttpCode(HttpStatus.NO_CONTENT)
   removeOfflineFiles(@Param() { id }: UUIDParamDto) {

@@ -316,27 +316,6 @@ describe(LibraryService.name, () => {
     });
   });
 
-  describe('handleQueueOfflineCheck', () => {
-    it('should queue a check of each asset', async () => {
-      const mockLibraryJob: IEntityJob = {
-        id: libraryStub.externalLibrary1.id,
-      };
-
-      assetMock.getWith.mockResolvedValue({
-        items: [assetStub.external],
-        hasNextPage: false,
-      });
-
-      const result = await sut.handleQueueOfflineCheck(mockLibraryJob);
-
-      expect(result).toEqual(JobStatus.SUCCESS);
-
-      expect(jobMock.queueAll).toHaveBeenCalledWith([
-        { name: JobName.LIBRARY_CHECK_OFFLINE, data: { id: assetStub.external.id } },
-      ]);
-    });
-  });
-
   describe('handleAssetRefresh', () => {
     let mockUser: UserEntity;
 
@@ -1451,35 +1430,6 @@ describe(LibraryService.name, () => {
               id: libraryStub.externalLibrary1.id,
               refreshModifiedFiles: false,
               refreshAllFiles: true,
-            },
-          },
-        ],
-      ]);
-    });
-  });
-
-  describe('queueDeletedScan', () => {
-    it('should not queue a deleted scan of upload library', async () => {
-      libraryMock.get.mockResolvedValue(libraryStub.uploadLibrary1);
-
-      await expect(sut.queueDeletedScan(authStub.admin, libraryStub.uploadLibrary1.id)).rejects.toBeInstanceOf(
-        BadRequestException,
-      );
-
-      expect(jobMock.queue).not.toBeCalled();
-    });
-
-    it('should queue a deleted file scan', async () => {
-      libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
-
-      await sut.queueDeletedScan(authStub.admin, libraryStub.externalLibrary1.id);
-
-      expect(jobMock.queue.mock.calls).toEqual([
-        [
-          {
-            name: JobName.LIBRARY_SCAN_DELETED,
-            data: {
-              id: libraryStub.externalLibrary1.id,
             },
           },
         ],
