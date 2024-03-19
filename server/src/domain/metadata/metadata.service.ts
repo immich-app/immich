@@ -177,8 +177,8 @@ export class MetadataService {
 
     const [photoAsset, motionAsset] = asset.type === AssetType.IMAGE ? [asset, match] : [match, asset];
 
-    await this.assetRepository.save({ id: photoAsset.id, livePhotoVideoId: motionAsset.id });
-    await this.assetRepository.save({ id: motionAsset.id, isVisible: false });
+    await this.assetRepository.update({ id: photoAsset.id, livePhotoVideoId: motionAsset.id });
+    await this.assetRepository.update({ id: motionAsset.id, isVisible: false });
     await this.albumRepository.removeAsset(motionAsset.id);
 
     // Notify clients to hide the linked live photo asset
@@ -249,7 +249,7 @@ export class MetadataService {
     if (dateTimeOriginal && timeZoneOffset) {
       localDateTime = new Date(dateTimeOriginal.getTime() + timeZoneOffset * 60_000);
     }
-    await this.assetRepository.save({
+    await this.assetRepository.update({
       id: asset.id,
       duration: tags.Duration ? this.getDuration(tags.Duration) : null,
       localDateTime,
@@ -317,7 +317,7 @@ export class MetadataService {
     await this.repository.writeTags(sidecarPath, exif);
 
     if (!asset.sidecarPath) {
-      await this.assetRepository.save({ id, sidecarPath });
+      await this.assetRepository.update({ id, sidecarPath });
     }
 
     return JobStatus.SUCCESS;
@@ -435,7 +435,7 @@ export class MetadataService {
         this.storageCore.ensureFolders(motionPath);
         await this.storageRepository.writeFile(motionAsset.originalPath, video);
         await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: motionAsset.id } });
-        await this.assetRepository.save({ id: asset.id, livePhotoVideoId: motionAsset.id });
+        await this.assetRepository.update({ id: asset.id, livePhotoVideoId: motionAsset.id });
 
         // If the asset already had an associated livePhotoVideo, delete it, because
         // its checksum doesn't match the checksum of the motionAsset we just extracted
@@ -587,7 +587,7 @@ export class MetadataService {
     }
 
     if (sidecarPath) {
-      await this.assetRepository.save({ id: asset.id, sidecarPath });
+      await this.assetRepository.update({ id: asset.id, sidecarPath });
       return JobStatus.SUCCESS;
     }
 
@@ -598,7 +598,7 @@ export class MetadataService {
     this.logger.debug(
       `Sidecar file was not found. Checked paths '${sidecarPathWithExt}' and '${sidecarPathWithoutExt}'. Removing sidecarPath for asset ${asset.id}`,
     );
-    await this.assetRepository.save({ id: asset.id, sidecarPath: null });
+    await this.assetRepository.update({ id: asset.id, sidecarPath: null });
 
     return JobStatus.SUCCESS;
   }

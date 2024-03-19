@@ -324,7 +324,7 @@ export class AssetService {
     const { description, dateTimeOriginal, latitude, longitude, ...rest } = dto;
     await this.updateMetadata({ id, description, dateTimeOriginal, latitude, longitude });
 
-    const asset = await this.assetRepository.save({ id, ...rest });
+    const asset = await this.assetRepository.update({ id, ...rest });
     return mapAsset(asset, { auth });
   }
 

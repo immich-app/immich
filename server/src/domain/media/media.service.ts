@@ -172,7 +172,7 @@ export class MediaService {
     }
 
     const resizePath = await this.generateThumbnail(asset, 'jpeg');
-    await this.assetRepository.save({ id: asset.id, resizePath });
+    await this.assetRepository.update({ id: asset.id, resizePath });
     return JobStatus.SUCCESS;
   }
 
@@ -222,7 +222,7 @@ export class MediaService {
     }
 
     const webpPath = await this.generateThumbnail(asset, 'webp');
-    await this.assetRepository.save({ id: asset.id, webpPath });
+    await this.assetRepository.update({ id: asset.id, webpPath });
     return JobStatus.SUCCESS;
   }
 
@@ -233,7 +233,7 @@ export class MediaService {
     }
 
     const thumbhash = await this.mediaRepository.generateThumbhash(asset.resizePath);
-    await this.assetRepository.save({ id: asset.id, thumbhash });
+    await this.assetRepository.update({ id: asset.id, thumbhash });
 
     return JobStatus.SUCCESS;
   }
@@ -286,7 +286,7 @@ export class MediaService {
       if (asset.encodedVideoPath) {
         this.logger.log(`Transcoded video exists for asset ${asset.id}, but is no longer required. Deleting...`);
         await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files: [asset.encodedVideoPath] } });
-        await this.assetRepository.save({ id: asset.id, encodedVideoPath: null });
+        await this.assetRepository.update({ id: asset.id, encodedVideoPath: null });
       }
 
       return JobStatus.SKIPPED;
@@ -321,7 +321,7 @@ export class MediaService {
 
     this.logger.log(`Successfully encoded ${asset.id}`);
 
-    await this.assetRepository.save({ id: asset.id, encodedVideoPath: output });
+    await this.assetRepository.update({ id: asset.id, encodedVideoPath: output });
 
     return JobStatus.SUCCESS;
   }

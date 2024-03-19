@@ -6,6 +6,8 @@ import {
   AssetSearchOptions,
   AssetStats,
   AssetStatsOptions,
+  AssetUpdateOptions,
+  AssetWithoutRelations,
   IAssetRepository,
   LivePhotoSearchOptions,
   MapMarker,
@@ -275,7 +277,7 @@ export class AssetRepository implements IAssetRepository {
 
   @GenerateSql({ params: [[DummyValue.UUID], { deviceId: DummyValue.STRING }] })
   @Chunked()
-  async updateAll(ids: string[], options: Partial<AssetEntity>): Promise<void> {
+  async updateAll(ids: string[], options: Partial<AssetWithoutRelations>): Promise<void> {
     await this.repository.update({ id: In(ids) }, options);
   }
 
@@ -289,10 +291,10 @@ export class AssetRepository implements IAssetRepository {
     await this.repository.restore({ id: In(ids) });
   }
 
-  async save(asset: Partial<AssetEntity>): Promise<AssetEntity> {
-    const { id } = await this.repository.save(asset);
+  async update(asset: AssetUpdateOptions): Promise<AssetEntity> {
+    await this.repository.update(asset.id, asset);
     return this.repository.findOneOrFail({
-      where: { id },
+      where: { id: asset.id },
       relations: {
         exifInfo: true,
         owner: true,
