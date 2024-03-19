@@ -11,10 +11,11 @@ interface Attributes {
 interface Options {
   onOutclick?: () => void;
   onEscape?: () => void;
+  onFocusOut?: () => void;
 }
 
 export function clickOutside(node: HTMLElement, options: Options = {}): ActionReturn<void, Attributes> {
-  const { onOutclick, onEscape } = options;
+  const { onOutclick, onEscape, onFocusOut } = options;
 
   const handleClick = (event: MouseEvent) => {
     const targetNode = event.target as Node | null;
@@ -42,13 +43,21 @@ export function clickOutside(node: HTMLElement, options: Options = {}): ActionRe
     }
   };
 
+  const handleFocusOut = (event: FocusEvent) => {
+    if (onFocusOut && event.relatedTarget instanceof Node && !node.contains(event.relatedTarget as Node)) {
+      onFocusOut();
+    }
+  };
+
   document.addEventListener('click', handleClick, true);
   document.addEventListener('keydown', handleKey, true);
+  node.addEventListener('focusout', handleFocusOut);
 
   return {
     destroy() {
       document.removeEventListener('click', handleClick, true);
       document.removeEventListener('keydown', handleKey, true);
+      node.removeEventListener('focusout', handleFocusOut);
     },
   };
 }

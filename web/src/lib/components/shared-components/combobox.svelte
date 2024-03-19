@@ -101,6 +101,7 @@
   };
 
   const onClear = () => {
+    deactivate();
     selectedOption = undefined;
     searchQuery = '';
     dispatch('select', selectedOption);
@@ -110,12 +111,7 @@
 <label class="text-sm text-black dark:text-white" class:sr-only={hideLabel} for={inputId}>{label}</label>
 <div
   class="relative w-full dark:text-gray-300 text-gray-700 text-base"
-  use:clickOutside={{ onOutclick: deactivate }}
-  on:focusout={(e) => {
-    if (e.relatedTarget instanceof Node && !e.currentTarget.contains(e.relatedTarget)) {
-      deactivate();
-    }
-  }}
+  use:clickOutside={{ onOutclick: deactivate, onFocusOut: deactivate }}
 >
   <div>
     {#if isActive}
