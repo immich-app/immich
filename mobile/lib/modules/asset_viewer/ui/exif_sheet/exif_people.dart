@@ -22,7 +22,10 @@ class ExifPeople extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final peopleProvider =
         ref.watch(assetPeopleNotifierProvider(asset).notifier);
-    final people = ref.watch(assetPeopleNotifierProvider(asset)).value?.where((p) => !p.isHidden);
+    final people = ref
+        .watch(assetPeopleNotifierProvider(asset))
+        .value
+        ?.where((p) => !p.isHidden);
     final double imageSize = math.min(context.width / 3, 120);
 
     showPersonNameEditModel(
@@ -45,10 +48,9 @@ class ExifPeople extends ConsumerWidget {
       return Container();
     }
 
-    final curatedPeople = people
-            ?.map((p) => CuratedContent(id: p.id, label: p.name))
-            .toList() ??
-        [];
+    final curatedPeople =
+        people?.map((p) => CuratedContent(id: p.id, label: p.name)).toList() ??
+            [];
 
     return Column(
       children: [
