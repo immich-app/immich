@@ -335,7 +335,7 @@ export class AssetRepository implements IAssetRepository {
 
   @GenerateSql(
     ...Object.values(WithProperty)
-      .filter((property) => property !== WithProperty.IS_OFFLINE)
+      .filter((property) => property !== WithProperty.IS_OFFLINE && property !== WithProperty.IS_ONLINE)
       .map((property) => ({
         name: property,
         params: [DummyValue.PAGINATION, property],
