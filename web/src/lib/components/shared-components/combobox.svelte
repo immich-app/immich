@@ -227,9 +227,7 @@
         <li
           aria-selected={index === selectedIndex}
           bind:this={optionRefs[index]}
-          class:bg-gray-100={index === selectedIndex}
-          class:dark:bg-gray-700={index === selectedIndex}
-          class="text-left w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all cursor-pointer"
+          class="text-left w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all cursor-pointer aria-selected:bg-gray-100 aria-selected:dark:bg-gray-700"
           id={`${listboxId}-${index}`}
           on:click={() => onSelect(option)}
           role="option"
