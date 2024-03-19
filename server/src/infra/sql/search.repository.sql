@@ -266,3 +266,56 @@ ORDER BY
   ) ASC
 LIMIT
   20
+
+-- SearchRepository.getAssetsByCity
+WITH RECURSIVE
+  cte AS (
+    (
+      SELECT
+        city,
+        "assetId"
+      FROM
+        exif
+        INNER JOIN assets ON exif."assetId" = assets.id
+      WHERE
+        "ownerId" IN ($1)
+        AND "isVisible" = $2
+        AND "isArchived" = $3
+        AND type = $4
+      ORDER BY
+        city
+      LIMIT
+        1
+    )
+    UNION ALL
+    SELECT
+      l.city,
+      l."assetId"
+    FROM
+      cte c,
+      LATERAL (
+        SELECT
+          city,
+          "assetId"
+        FROM
+          exif
+          INNER JOIN assets ON exif."assetId" = assets.id
+        WHERE
+          city > c.city
+          AND "ownerId" IN ($1)
+          AND "isVisible" = $2
+          AND "isArchived" = $3
+          AND type = $4
+        ORDER BY
+          city
+        LIMIT
+          1
+      ) l
+  )
+SELECT
+  assets.*,
+  exif.*
+FROM
+  assets
+  INNER JOIN cte ON id = "assetId"
+  INNER JOIN exif ON assets.id = exif."assetId"
