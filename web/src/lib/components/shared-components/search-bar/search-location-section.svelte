@@ -62,35 +62,35 @@
 
   <div class="grid grid-cols-[repeat(auto-fit,minmax(10rem,1fr))] gap-5 mt-1">
     <div class="w-full">
-      <label class="text-sm text-black dark:text-white" for="search-place-country">Country</label>
       <Combobox
-        id="search-place-country"
-        options={toComboBoxOptions(countries)}
-        selectedOption={filters.country ? { label: filters.country, value: filters.country } : undefined}
+        id="location-country"
+        label="Country"
         on:select={({ detail }) => (filters.country = detail?.value)}
+        options={toComboBoxOptions(countries)}
         placeholder="Search country..."
+        selectedOption={filters.country ? { label: filters.country, value: filters.country } : undefined}
       />
     </div>
 
     <div class="w-full">
-      <label class="text-sm text-black dark:text-white" for="search-place-state">State</label>
       <Combobox
-        id="search-place-state"
-        options={toComboBoxOptions(states)}
-        selectedOption={filters.state ? { label: filters.state, value: filters.state } : undefined}
+        id="location-state"
+        label="State"
         on:select={({ detail }) => (filters.state = detail?.value)}
+        options={toComboBoxOptions(states)}
         placeholder="Search state..."
+        selectedOption={filters.state ? { label: filters.state, value: filters.state } : undefined}
       />
     </div>
 
     <div class="w-full">
-      <label class="text-sm text-black dark:text-white" for="search-place-city">City</label>
       <Combobox
-        id="search-place-city"
-        options={toComboBoxOptions(cities)}
-        selectedOption={filters.city ? { label: filters.city, value: filters.city } : undefined}
+        id="location-city"
+        label="City"
         on:select={({ detail }) => (filters.city = detail?.value)}
+        options={toComboBoxOptions(cities)}
         placeholder="Search city..."
+        selectedOption={filters.city ? { label: filters.city, value: filters.city } : undefined}
       />
     </div>
   </div>

@@ -43,10 +43,8 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
         sliver: SliverList(
           delegate: SliverChildBuilderDelegate(
             ((context, index) {
-              var thumbnailData = albums[index].thumbnailData;
               return AlbumInfoListTile(
-                imageData: thumbnailData,
-                albumInfo: albums[index],
+                album: albums[index],
               );
             }),
             childCount: albums.length,
@@ -74,10 +72,8 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
           ),
           itemCount: albums.length,
           itemBuilder: ((context, index) {
-            var thumbnailData = albums[index].thumbnailData;
             return AlbumInfoCard(
-              imageData: thumbnailData,
-              albumInfo: albums[index],
+              album: albums[index],
             );
           }),
         ),
