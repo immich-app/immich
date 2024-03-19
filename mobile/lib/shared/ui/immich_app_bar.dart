@@ -174,7 +174,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
                       context.isDarkTheme
                           ? 'assets/immich-logo-inline-dark.svg'
                           : 'assets/immich-logo-inline-light.svg',
-                      height: 36,
+                      height: 40,
                     ),
                   );
                 },
