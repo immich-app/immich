@@ -325,7 +325,15 @@ export class AssetService {
     await this.updateMetadata({ id, description, dateTimeOriginal, latitude, longitude });
 
     await this.assetRepository.update({ id, ...rest });
-    const asset = await this.assetRepository.getById(id);
+    const asset = await this.assetRepository.getById(id, {
+      exifInfo: true,
+      owner: true,
+      smartInfo: true,
+      tags: true,
+      faces: {
+        person: true,
+      },
+    });
     if (!asset) {
       throw new BadRequestException('Asset not found');
     }
