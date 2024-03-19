@@ -200,10 +200,6 @@ describe(StorageTemplateService.name, () => {
         newPath: previousFailedNewPath,
       });
 
-      when(assetMock.update)
-        .calledWith({ id: assetStub.image.id, originalPath: newPath })
-        .mockResolvedValue(assetStub.image);
-
       when(assetMock.getByIds)
         .calledWith([assetStub.image.id], { exifInfo: true })
         .mockResolvedValue([assetStub.image]);
@@ -257,10 +253,6 @@ describe(StorageTemplateService.name, () => {
         newPath: previousFailedNewPath,
       });
 
-      when(assetMock.update)
-        .calledWith({ id: assetStub.image.id, originalPath: newPath })
-        .mockResolvedValue(assetStub.image);
-
       when(assetMock.getByIds)
         .calledWith([assetStub.image.id], { exifInfo: true })
         .mockResolvedValue([assetStub.image]);
@@ -306,10 +298,6 @@ describe(StorageTemplateService.name, () => {
         .calledWith(newPath)
         .mockResolvedValue({ size: 5000 } as Stats);
       when(cryptoMock.hashFile).calledWith(newPath).mockResolvedValue(Buffer.from('different-hash', 'utf8'));
-
-      when(assetMock.update)
-        .calledWith({ id: assetStub.image.id, originalPath: newPath })
-        .mockResolvedValue(assetStub.image);
 
       when(assetMock.getByIds)
         .calledWith([assetStub.image.id], { exifInfo: true })
@@ -373,10 +361,6 @@ describe(StorageTemplateService.name, () => {
           oldPath: assetStub.image.originalPath,
           newPath: previousFailedNewPath,
         });
-
-        when(assetMock.update)
-          .calledWith({ id: assetStub.image.id, originalPath: newPath })
-          .mockResolvedValue(assetStub.image);
 
         when(assetMock.getByIds)
           .calledWith([assetStub.image.id], { exifInfo: true })
