@@ -53,7 +53,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
 
       await fs.promises.rm(`${IMMICH_TEST_ASSET_TEMP_PATH}/albums/nature/silver_fir.jpg`);
 
-      await api.libraryApi.scanDeletedFiles(server, admin.accessToken, library.id);
+      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
 
       await fs.promises.cp(`${IMMICH_TEST_ASSET_PATH}/albums/nature`, `${IMMICH_TEST_ASSET_TEMP_PATH}/albums/nature`, {
         recursive: true,
@@ -267,7 +267,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
 
       await fs.promises.rm(`${IMMICH_TEST_ASSET_TEMP_PATH}/albums/nature/silver_fir.jpg`);
 
-      await api.libraryApi.scanDeletedFiles(server, admin.accessToken, library.id);
+      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
 
       const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
 
@@ -312,7 +312,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
 
       await restoreTempFolder();
 
-      await api.libraryApi.scanDeletedFiles(server, admin.accessToken, library.id);
+      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
 
       const { status } = await request(server)
         .post(`/library/${library.id}/removeOffline`)
