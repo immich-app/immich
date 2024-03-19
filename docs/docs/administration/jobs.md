@@ -1,6 +1,6 @@
 # Jobs
 
-Several Immich functionalities are implemented as jobs, which run in the background, Whenever an asset is uploaded to the server, the jobs will automatically start running in order until completion. To view the status of a job navigate to the Administration Screen, and then the `Jobs` page.
+Several Immich functionalities are implemented as jobs, which run in the background, Whenever an asset is uploaded to the server, the jobs will automatically start running in order until completion. To view the status of a job navigate to the Administration -> `Jobs` page.
 
 All jobs run every night at midnight (cannot be changed) except for the external library job which can be [adjusted separately](/docs/features/libraries#set-custom-scan-interval).
 
