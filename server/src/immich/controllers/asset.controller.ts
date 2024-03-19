@@ -89,11 +89,6 @@ export class AssetController {
     return this.service.getTimeBucket(auth, dto) as Promise<AssetResponseDto[]>;
   }
 
-  @Get('cities')
-  getAssetsByCity(@Auth() auth: AuthDto): Promise<AssetResponseDto[]> {
-    return this.service.getAssetsByCity(auth);
-  }
-
   @Post('jobs')
   @HttpCode(HttpStatus.NO_CONTENT)
   runAssetJobs(@Auth() auth: AuthDto, @Body() dto: AssetJobsDto): Promise<void> {

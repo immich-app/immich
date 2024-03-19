@@ -1291,14 +1291,6 @@ export function checkBulkUpload({ assetBulkUploadCheckDto }: {
         body: assetBulkUploadCheckDto
     })));
 }
-export function getAssetsByCity(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: AssetResponseDto[];
-    }>("/asset/cities", {
-        ...opts
-    }));
-}
 export function getCuratedLocations(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -2209,6 +2201,14 @@ export function search({ clip, motion, page, q, query, recent, size, smart, $typ
         "type": $type,
         withArchived
     }))}`, {
+        ...opts
+    }));
+}
+export function getAssetsByCity(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetResponseDto[];
+    }>("/search/cities", {
         ...opts
     }));
 }

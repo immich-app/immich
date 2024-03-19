@@ -192,7 +192,7 @@ export class SearchService {
     };
   }
 
-  async getSearchSuggestions(auth: AuthDto, dto: SearchSuggestionRequestDto): Promise<string[]> {
+  getSearchSuggestions(auth: AuthDto, dto: SearchSuggestionRequestDto): Promise<string[]> {
     switch (dto.type) {
       case SearchSuggestionType.COUNTRY: {
         return this.metadataRepository.getCountries(auth.user.id);
@@ -210,5 +210,11 @@ export class SearchService {
         return this.metadataRepository.getCameraModels(auth.user.id, dto.make);
       }
     }
+  }
+
+  async getAssetsByCity(auth: AuthDto): Promise<AssetResponseDto[]> {
+    const userIds = await this.getUserIdsToSearch(auth);
+    const assets = await this.searchRepository.getAssetsByCity(userIds);
+    return assets.map((asset) => mapAsset(asset));
   }
 }

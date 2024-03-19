@@ -1,4 +1,5 @@
 import {
+  AssetResponseDto,
   AuthDto,
   MetadataSearchDto,
   PersonResponseDto,
@@ -53,6 +54,11 @@ export class SearchController {
   @Get('places')
   searchPlaces(@Query() dto: SearchPlacesDto): Promise<PlacesResponseDto[]> {
     return this.service.searchPlaces(dto);
+  }
+
+  @Get('cities')
+  getAssetsByCity(@Auth() auth: AuthDto): Promise<AssetResponseDto[]> {
+    return this.service.getAssetsByCity(auth);
   }
 
   @Get('suggestions')

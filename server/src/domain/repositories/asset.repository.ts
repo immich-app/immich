@@ -152,6 +152,5 @@ export interface IAssetRepository {
   upsertJobStatus(jobStatus: Partial<AssetJobStatusEntity>): Promise<void>;
   getAssetIdByCity(userId: string, options: AssetExploreFieldOptions): Promise<SearchExploreItem<string>>;
   getAssetIdByTag(userId: string, options: AssetExploreFieldOptions): Promise<SearchExploreItem<string>>;
-  getAssetsByCity(userIds: string[]): Promise<AssetEntity[]>;
   searchMetadata(query: string, userIds: string[], options: MetadataSearchOptions): Promise<AssetEntity[]>;
 }
