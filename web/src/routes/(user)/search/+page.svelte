@@ -201,18 +201,18 @@
       <AssetSelectControlBar assets={selectedAssets} clearSelect={() => (selectedAssets = new Set())}>
         <CreateSharedLink />
         <CircleIconButton title="Select all" icon={mdiSelectAll} on:click={handleSelectAll} />
-        <AssetSelectContextMenu icon={mdiPlus} title="Add">
+        <AssetSelectContextMenu icon={mdiPlus} title="Add to...">
           <AddToAlbum />
           <AddToAlbum shared />
         </AssetSelectContextMenu>
-        <DeleteAssets {onAssetDelete} />
+        <FavoriteAction removeFavorite={isAllFavorite} onFavorite={triggerAssetUpdate} />
 
         <AssetSelectContextMenu icon={mdiDotsVertical} title="Add">
           <DownloadAction menuItem />
-          <FavoriteAction menuItem removeFavorite={isAllFavorite} onFavorite={triggerAssetUpdate} />
-          <ArchiveAction menuItem unarchive={isAllArchived} onArchive={triggerAssetUpdate} />
           <ChangeDate menuItem />
           <ChangeLocation menuItem />
+          <ArchiveAction menuItem unarchive={isAllArchived} onArchive={triggerAssetUpdate} />
+          <DeleteAssets menuItem {onAssetDelete} />
         </AssetSelectContextMenu>
       </AssetSelectControlBar>
     </div>

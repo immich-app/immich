@@ -34,16 +34,16 @@
     <FavoriteAction removeFavorite onFavorite={(assetIds) => assetStore.removeAssets(assetIds)} />
     <CreateSharedLink />
     <SelectAllAssets {assetStore} {assetInteractionStore} />
-    <AssetSelectContextMenu icon={mdiPlus} title="Add">
+    <AssetSelectContextMenu icon={mdiPlus} title="Add to...">
       <AddToAlbum />
       <AddToAlbum shared />
     </AssetSelectContextMenu>
-    <DeleteAssets onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)} />
     <AssetSelectContextMenu icon={mdiDotsVertical} title="Menu">
       <DownloadAction menuItem />
-      <ArchiveAction menuItem unarchive={isAllArchive} onArchive={(assetIds) => assetStore.removeAssets(assetIds)} />
       <ChangeDate menuItem />
       <ChangeLocation menuItem />
+      <ArchiveAction menuItem unarchive={isAllArchive} onArchive={(assetIds) => assetStore.removeAssets(assetIds)} />
+      <DeleteAssets menuItem onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)} />
     </AssetSelectContextMenu>
   </AssetSelectControlBar>
 {/if}
