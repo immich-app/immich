@@ -536,7 +536,7 @@ export class LibraryService extends EventEmitter {
   async queueScan(id: string, dto: ScanLibraryDto) {
     const library = await this.findOrFail(id);
     if (library.type !== LibraryType.EXTERNAL) {
-      throw new BadRequestException('Can only refresh external libraries');
+      throw new BadRequestException('Can only scan external libraries');
     }
 
     await this.jobRepository.queue({
@@ -614,7 +614,7 @@ export class LibraryService extends EventEmitter {
   async handleQueueAssetRefresh(job: ILibraryRefreshJob): Promise<JobStatus> {
     const library = await this.repository.get(job.id);
     if (!library || library.type !== LibraryType.EXTERNAL) {
-      this.logger.warn('Can only refresh external libraries');
+      this.logger.warn('Can only scan external libraries');
       return JobStatus.FAILED;
     }
 
