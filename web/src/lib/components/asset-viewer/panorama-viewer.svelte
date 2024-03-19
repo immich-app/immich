@@ -2,11 +2,11 @@
   import { serveFile, type AssetResponseDto } from '@immich/sdk';
   import { fade } from 'svelte/transition';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
-
+  import { getKey } from '$lib/utils';
   export let asset: AssetResponseDto;
 
   const loadAssetData = async () => {
-    const data = await serveFile({ id: asset.id, isWeb: false, isThumb: false });
+    const data = await serveFile({ id: asset.id, isWeb: false, isThumb: false, key: getKey() });
     return URL.createObjectURL(data);
   };
 </script>
