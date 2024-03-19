@@ -26,7 +26,6 @@ export interface IAccessRepository {
 
   library: {
     checkOwnerAccess(userId: string, libraryIds: Set<string>): Promise<Set<string>>;
-    checkPartnerAccess(userId: string, partnerIds: Set<string>): Promise<Set<string>>;
   };
 
   timeline: {

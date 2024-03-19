@@ -466,7 +466,7 @@ export type CreateLibraryDto = {
     isVisible?: boolean;
     isWatched?: boolean;
     name?: string;
-    ownerId?: string;
+    ownerId: string;
     "type": LibraryType;
 };
 export type UpdateLibraryDto = {
@@ -491,7 +491,7 @@ export type ValidateLibraryDto = {
 };
 export type ValidateLibraryImportPathResponseDto = {
     importPath: string;
-    isValid?: boolean;
+    isValid: boolean;
     message?: string;
 };
 export type ValidateLibraryResponseDto = {
