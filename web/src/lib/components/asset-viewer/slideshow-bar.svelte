@@ -25,6 +25,16 @@
   let timer: NodeJS.Timeout;
   let isOverControls = false;
 
+  $: {
+    if (progressBar && asset.type === AssetTypeEnum.Image) {
+      if ($slideshowPlaying) {
+        progressBar.play();
+      } else {
+        progressBar.pause();
+      }
+    }
+  }
+
   let unsubscribeRestart: () => void;
   let unsubscribeStop: () => void;
 
@@ -77,20 +87,6 @@
     }
     onNext();
   };
-
-  const handlePlaySlideshow = () => {
-    if ($slideshowPlaying) {
-      if (asset.type === AssetTypeEnum.Image) {
-        progressBar.pause();
-      }
-      $slideshowPlaying = false;
-    } else {
-      if (asset.type === AssetTypeEnum.Image) {
-        progressBar.play();
-      }
-      $slideshowPlaying = true;
-    }
-  };
 </script>
 
 <svelte:window on:mousemove={resetTimer} />
@@ -107,7 +103,7 @@
     <CircleIconButton
       buttonSize="50"
       icon={$slideshowPlaying ? mdiPause : mdiPlay}
-      on:click={handlePlaySlideshow}
+      on:click={() => ($slideshowPlaying ? ($slideshowPlaying = false) : ($slideshowPlaying = true))}
       title={$slideshowPlaying ? 'Pause' : 'Play'}
     />
     <CircleIconButton buttonSize="50" icon={mdiChevronLeft} on:click={onPrevious} title="Previous" />
