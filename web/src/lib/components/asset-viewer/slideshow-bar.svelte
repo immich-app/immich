@@ -131,8 +131,9 @@
   autoplay
   hidden={!$showProgressBar}
   duration={$slideshowDelay}
-  bind:isPlaying={$slideshowPlaying}
   bind:this={progressBar}
   bind:status={progressBarStatus}
-  on:done={handleDone}
+  onDone={handleDone}
+  onPlaying={() => ($slideshowPlaying = true)}
+  onPaused={() => ($slideshowPlaying = false)}
 />
