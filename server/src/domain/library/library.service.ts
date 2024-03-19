@@ -643,40 +643,40 @@ export class LibraryService extends EventEmitter {
       this.assetRepository.getWith(pagination, WithProperty.IS_ONLINE, job.id),
     );
 
-    let crawledAssetPaths: string[] = [];
-
-    let crawlCounter = 0;
     let crawlDone = false;
     let existingAssetsDone = false;
+    let crawlCounter = 0;
     let existingAssetCounter = 0;
 
-    const scanNextAssetPage = async () => {
-      if (!existingAssetsDone) {
-        const existingAssetPage = await existingAssets.next();
-        existingAssetsDone = existingAssetPage.done ?? true;
+    const checkNextAssetPageForOffline = async () => {
+      const existingAssetPage = await existingAssets.next();
+      existingAssetsDone = existingAssetPage.done ?? true;
 
-        if (existingAssetPage.value) {
-          existingAssetCounter += existingAssetPage.value.length;
-          this.logger.log(
-            `Queuing online check of ${existingAssetPage.value.length} asset(s) in library ${library.id}...`,
-          );
-          await this.jobRepository.queueAll(
-            existingAssetPage.value.map((asset) => ({
-              name: JobName.LIBRARY_CHECK_OFFLINE,
-              data: { id: asset.id },
-            })),
-          );
-        }
+      if (existingAssetPage.value) {
+        existingAssetCounter += existingAssetPage.value.length;
+        this.logger.log(
+          `Queuing online check of ${existingAssetPage.value.length} asset(s) in library ${library.id}...`,
+        );
+        await this.jobRepository.queueAll(
+          existingAssetPage.value.map((asset) => ({
+            name: JobName.LIBRARY_CHECK_OFFLINE,
+            data: { id: asset.id },
+          })),
+        );
       }
     };
+
+    let crawledAssetPaths: string[] = [];
 
     while (!crawlDone) {
       const crawlResult = await crawledAssets.next();
 
       crawlDone = crawlResult.done ?? true;
 
-      crawledAssetPaths.push(crawlResult.value);
-      crawlCounter++;
+      if (!crawlDone) {
+        crawledAssetPaths.push(crawlResult.value);
+        crawlCounter++;
+      }
 
       if (crawledAssetPaths.length % LIBRARY_SCAN_BATCH_SIZE === 0 || crawlDone) {
         this.logger.log(`Queueing scan of ${crawledAssetPaths.length} asset path(s) in library ${library.id}...`);
@@ -684,14 +684,16 @@ export class LibraryService extends EventEmitter {
         await this.scanAssets(job.id, crawledAssetPaths, library.ownerId, job.refreshAllFiles ?? false);
         crawledAssetPaths = [];
 
-        // Interweave the queuing of offline checks with the asset scanning (if any)
-        await scanNextAssetPage();
+        if (!existingAssetsDone) {
+          // Interweave the queuing of offline checks with the asset scanning (if any)
+          await checkNextAssetPageForOffline();
+        }
       }
     }
 
     // If there are any remaining assets to check for offline status, do so
     while (!existingAssetsDone) {
-      await scanNextAssetPage();
+      await checkNextAssetPageForOffline();
     }
 
     this.logger.log(

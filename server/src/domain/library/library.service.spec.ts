@@ -169,12 +169,14 @@ describe(LibraryService.name, () => {
   });
 
   describe('handleQueueAssetRefresh', () => {
-    it('should queue new assets', async () => {
+    it('should queue refresh of a new asset', async () => {
       const mockLibraryJob: ILibraryRefreshJob = {
         id: libraryStub.externalLibrary1.id,
         refreshModifiedFiles: false,
         refreshAllFiles: false,
       };
+
+      assetMock.getWith.mockResolvedValue({ items: [], hasNextPage: false });
 
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
       // eslint-disable-next-line @typescript-eslint/require-await
@@ -205,6 +207,7 @@ describe(LibraryService.name, () => {
         refreshAllFiles: true,
       };
 
+      assetMock.getWith.mockResolvedValue({ items: [], hasNextPage: false });
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
       // eslint-disable-next-line @typescript-eslint/require-await
       storageMock.walk.mockImplementation(async function* generator() {
