@@ -88,7 +88,7 @@
 
   const onInput: FormEventHandler<HTMLInputElement> = (event) => {
     openDropdown();
-    searchQuery = (event.target as HTMLInputElement).value;
+    searchQuery = event.currentTarget.value;
     selectedIndex = undefined;
     optionRefs[0]?.scrollIntoView({ block: 'nearest' });
   };
