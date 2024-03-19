@@ -6,7 +6,9 @@
   let dragStartTarget: EventTarget | null = null;
 
   const handleDragEnter = (e: DragEvent) => {
-    dragStartTarget = e.target;
+    if (e.dataTransfer && e.dataTransfer.types.includes('Files')) {
+      dragStartTarget = e.target;
+    }
   };
 </script>
 
