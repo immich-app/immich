@@ -291,21 +291,8 @@ export class AssetRepository implements IAssetRepository {
     await this.repository.restore({ id: In(ids) });
   }
 
-  async update(asset: AssetUpdateOptions): Promise<AssetEntity> {
+  async update(asset: AssetUpdateOptions): Promise<void> {
     await this.repository.update(asset.id, asset);
-    return this.repository.findOneOrFail({
-      where: { id: asset.id },
-      relations: {
-        exifInfo: true,
-        owner: true,
-        smartInfo: true,
-        tags: true,
-        faces: {
-          person: true,
-        },
-      },
-      withDeleted: true,
-    });
   }
 
   async remove(asset: AssetEntity): Promise<void> {

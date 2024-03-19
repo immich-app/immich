@@ -553,14 +553,14 @@ describe(AssetService.name, () => {
 
     it('should update the asset', async () => {
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
-      assetMock.update.mockResolvedValue(assetStub.image);
+      assetMock.getById.mockResolvedValue(assetStub.image);
       await sut.update(authStub.admin, 'asset-1', { isFavorite: true });
       expect(assetMock.update).toHaveBeenCalledWith({ id: 'asset-1', isFavorite: true });
     });
 
     it('should update the exif description', async () => {
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
-      assetMock.update.mockResolvedValue(assetStub.image);
+      assetMock.getById.mockResolvedValue(assetStub.image);
       await sut.update(authStub.admin, 'asset-1', { description: 'Test description' });
       expect(assetMock.upsertExif).toHaveBeenCalledWith({ assetId: 'asset-1', description: 'Test description' });
     });
