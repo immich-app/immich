@@ -22,8 +22,8 @@ class ExifPeople extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final peopleProvider =
         ref.watch(assetPeopleNotifierProvider(asset).notifier);
-    final people = ref.watch(assetPeopleNotifierProvider(asset));
-    final double imageSize = math.min(context.width / 3, 150);
+    final people = ref.watch(assetPeopleNotifierProvider(asset)).value?.where((p) => !p.isHidden);
+    final double imageSize = math.min(context.width / 3, 120);
 
     showPersonNameEditModel(
       String personId,
@@ -40,12 +40,12 @@ class ExifPeople extends ConsumerWidget {
       });
     }
 
-    if (people.value?.isEmpty ?? true) {
+    if (people?.isEmpty ?? true) {
       // Empty list or loading
       return Container();
     }
 
-    final curatedPeople = people.value
+    final curatedPeople = people
             ?.map((p) => CuratedContent(id: p.id, label: p.name))
             .toList() ??
         [];
