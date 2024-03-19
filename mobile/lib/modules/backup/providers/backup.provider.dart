@@ -365,7 +365,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       await updateServerInfo();
       await _updateBackupAssetCount();
     } else {
-      // !TODO! HANDLE THIS CASER
       log.warning("cannot get backup info - background backup is in progress!");
     }
   }
