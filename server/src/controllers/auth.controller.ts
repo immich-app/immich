@@ -2,6 +2,7 @@ import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Req, 
 import { ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { IMMICH_ACCESS_COOKIE, IMMICH_AUTH_TYPE_COOKIE, IMMICH_IS_AUTHENTICATED } from 'src/domain/auth/auth.constant';
+import { AuthService, LoginDetails } from 'src/domain/auth/auth.service';
 import {
   AuthDeviceResponseDto,
   AuthDto,
@@ -11,9 +12,8 @@ import {
   LogoutResponseDto,
   SignUpDto,
   ValidateAccessTokenResponseDto,
-} from 'src/domain/auth/auth.dto';
-import { AuthService, LoginDetails } from 'src/domain/auth/auth.service';
-import { UserResponseDto, mapUser } from 'src/domain/user/response-dto/user-response.dto';
+} from 'src/dtos/auth.dto';
+import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
 import { Auth, Authenticated, GetLoginDetails, PublicRoute } from 'src/middleware/auth.guard';
 import { UUIDParamDto } from 'src/validation';
 

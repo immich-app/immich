@@ -1,10 +1,9 @@
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { when } from 'jest-when';
-import { AssetService, UploadFieldName } from 'src/domain/asset/asset.service';
-import { AssetJobName } from 'src/domain/asset/dto/asset-ids.dto';
-import { AssetStatsResponseDto } from 'src/domain/asset/dto/asset-statistics.dto';
-import { mapAsset } from 'src/domain/asset/response-dto/asset-response.dto';
+import { AssetService } from 'src/domain/asset/asset.service';
 import { JobName } from 'src/domain/job/job.constants';
+import { mapAsset } from 'src/dtos/asset-response.dto';
+import { AssetJobName, AssetStatsResponseDto, UploadFieldName } from 'src/dtos/asset.dto';
 import { AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { IAssetStackRepository } from 'src/interfaces/asset-stack.repository';
 import { AssetStats, IAssetRepository, TimeBucketSize } from 'src/interfaces/asset.repository';

@@ -1,7 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { when } from 'jest-when';
-import { DownloadResponseDto } from 'src/domain/download/download.dto';
 import { DownloadService } from 'src/domain/download/download.service';
+import { DownloadResponseDto } from 'src/dtos/download.dto';
 import { IAssetRepository } from 'src/interfaces/asset.repository';
 import { IStorageRepository } from 'src/interfaces/storage.repository';
 import { CacheControl, ImmichFileResponse } from 'src/utils';

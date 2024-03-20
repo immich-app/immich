@@ -13,7 +13,7 @@ import {
   VAAPIConfig,
   VP9Config,
 } from 'src/domain/media/media.util';
-import { SystemConfigFFmpegDto } from 'src/domain/system-config/dto/system-config-ffmpeg.dto';
+import { SystemConfigFFmpegDto } from 'src/dtos/system-config-ffmpeg.dto';
 import { AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { AssetPathType } from 'src/entities/move.entity';
 import {

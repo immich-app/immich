@@ -1,8 +1,8 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { BulkIdsDto } from 'src/domain/asset/response-dto/asset-ids-response.dto';
-import { AuthDto } from 'src/domain/auth/auth.dto';
 import { TrashService } from 'src/domain/trash/trash.service';
+import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
+import { AuthDto } from 'src/dtos/auth.dto';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 
 @ApiTags('Trash')

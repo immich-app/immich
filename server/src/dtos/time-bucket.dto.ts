@@ -44,3 +44,11 @@ export class TimeBucketAssetDto extends TimeBucketDto {
   @IsString()
   timeBucket!: string;
 }
+
+export class TimeBucketResponseDto {
+  @ApiProperty({ type: 'string' })
+  timeBucket!: string;
+
+  @ApiProperty({ type: 'integer' })
+  count!: number;
+}

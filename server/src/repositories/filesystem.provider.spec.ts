@@ -1,5 +1,5 @@
 import mockfs from 'mock-fs';
-import { CrawlOptionsDto } from 'src/domain/library/library.dto';
+import { CrawlOptionsDto } from 'src/dtos/library.dto';
 import { FilesystemProvider } from 'src/repositories/filesystem.provider';
 
 interface Test {

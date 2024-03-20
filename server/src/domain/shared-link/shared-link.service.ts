@@ -1,14 +1,16 @@
 import { BadRequestException, ForbiddenException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { AccessCore, Permission } from 'src/cores/access.core';
-import { AssetIdsDto } from 'src/domain/asset/dto/asset-ids.dto';
-import { AssetIdErrorReason, AssetIdsResponseDto } from 'src/domain/asset/response-dto/asset-ids-response.dto';
-import { AuthDto } from 'src/domain/auth/auth.dto';
+import { AssetIdErrorReason, AssetIdsResponseDto } from 'src/dtos/asset-ids.response.dto';
+import { AssetIdsDto } from 'src/dtos/asset.dto';
+import { AuthDto } from 'src/dtos/auth.dto';
 import {
+  SharedLinkCreateDto,
+  SharedLinkEditDto,
+  SharedLinkPasswordDto,
   SharedLinkResponseDto,
   mapSharedLink,
   mapSharedLinkWithoutMetadata,
-} from 'src/domain/shared-link/shared-link-response.dto';
-import { SharedLinkCreateDto, SharedLinkEditDto, SharedLinkPasswordDto } from 'src/domain/shared-link/shared-link.dto';
+} from 'src/dtos/shared-link.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { SharedLinkEntity, SharedLinkType } from 'src/entities/shared-link.entity';
 import { IAccessRepository } from 'src/interfaces/access.repository';

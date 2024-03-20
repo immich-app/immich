@@ -1,15 +1,15 @@
 import { Body, Controller, Get, HttpStatus, Post, Redirect, Req, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
+import { AuthService, LoginDetails } from 'src/domain/auth/auth.service';
 import {
   AuthDto,
   LoginResponseDto,
   OAuthAuthorizeResponseDto,
   OAuthCallbackDto,
   OAuthConfigDto,
-} from 'src/domain/auth/auth.dto';
-import { AuthService, LoginDetails } from 'src/domain/auth/auth.service';
-import { UserResponseDto } from 'src/domain/user/response-dto/user-response.dto';
+} from 'src/dtos/auth.dto';
+import { UserResponseDto } from 'src/dtos/user.dto';
 import { Auth, Authenticated, GetLoginDetails, PublicRoute } from 'src/middleware/auth.guard';
 
 @ApiTags('OAuth')

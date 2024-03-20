@@ -1,15 +1,15 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
+import { ActivityService } from 'src/domain/activity/activity.service';
 import {
   ActivityCreateDto,
   ActivityDto,
   ActivityResponseDto,
   ActivitySearchDto,
   ActivityStatisticsResponseDto,
-} from 'src/domain/activity/activity.dto';
-import { ActivityService } from 'src/domain/activity/activity.service';
-import { AuthDto } from 'src/domain/auth/auth.dto';
+} from 'src/dtos/activity.dto';
+import { AuthDto } from 'src/dtos/auth.dto';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { UUIDParamDto } from 'src/validation';
 

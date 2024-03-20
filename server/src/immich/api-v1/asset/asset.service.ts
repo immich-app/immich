@@ -7,10 +7,10 @@ import {
 } from '@nestjs/common';
 import { AccessCore, Permission } from 'src/cores/access.core';
 import { UploadFile } from 'src/domain/asset/asset.service';
-import { AssetResponseDto, mapAsset } from 'src/domain/asset/response-dto/asset-response.dto';
-import { AuthDto } from 'src/domain/auth/auth.dto';
 import { mimeTypes } from 'src/domain/domain.constant';
 import { JobName } from 'src/domain/job/job.constants';
+import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
+import { AuthDto } from 'src/dtos/auth.dto';
 import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { LibraryType } from 'src/entities/library.entity';
 import { IAssetRepositoryV1 } from 'src/immich/api-v1/asset/asset-repository';

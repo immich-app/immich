@@ -1,8 +1,8 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { FeatureFlag, SystemConfigCore } from 'src/cores/system-config.core';
-import { mapAsset } from 'src/domain/asset/response-dto/asset-response.dto';
 import { ConcurrentQueueName, JobCommand, JobName, QueueName } from 'src/domain/job/job.constants';
-import { AllJobStatusResponseDto, JobCommandDto, JobStatusDto } from 'src/domain/job/job.dto';
+import { mapAsset } from 'src/dtos/asset-response.dto';
+import { AllJobStatusResponseDto, JobCommandDto, JobStatusDto } from 'src/dtos/job.dto';
 import { AssetType } from 'src/entities/asset.entity';
 import { ImmichLogger } from 'src/infra/logger';
 import { IAssetRepository } from 'src/interfaces/asset.repository';

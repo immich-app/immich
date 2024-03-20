@@ -1,8 +1,8 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { BulkIdErrorReason } from 'src/domain/asset/response-dto/asset-ids-response.dto';
 import { JobName } from 'src/domain/job/job.constants';
-import { PersonResponseDto, mapFaces, mapPerson } from 'src/domain/person/person.dto';
 import { PersonService } from 'src/domain/person/person.service';
+import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto';
+import { PersonResponseDto, mapFaces, mapPerson } from 'src/dtos/person.dto';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { Colorspace, SystemConfigKey } from 'src/entities/system-config.entity';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.repository';

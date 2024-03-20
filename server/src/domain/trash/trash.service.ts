@@ -1,9 +1,9 @@
 import { Inject } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { AccessCore, Permission } from 'src/cores/access.core';
-import { BulkIdsDto } from 'src/domain/asset/response-dto/asset-ids-response.dto';
-import { AuthDto } from 'src/domain/auth/auth.dto';
 import { JOBS_ASSET_PAGINATION_SIZE, JobName } from 'src/domain/job/job.constants';
+import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
+import { AuthDto } from 'src/dtos/auth.dto';
 import { IAccessRepository } from 'src/interfaces/access.repository';
 import { IAssetRepository } from 'src/interfaces/asset.repository';
 import { ClientEvent, ICommunicationRepository } from 'src/interfaces/communication.repository';

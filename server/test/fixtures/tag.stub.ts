@@ -1,4 +1,4 @@
-import { TagResponseDto } from 'src/domain/tag/tag-response.dto';
+import { TagResponseDto } from 'src/dtos/tag.dto';
 import { TagEntity, TagType } from 'src/entities/tag.entity';
 import { userStub } from 'test/fixtures/user.stub';
 

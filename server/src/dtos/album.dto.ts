@@ -1,9 +1,87 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { AssetResponseDto, mapAsset } from 'src/domain/asset/response-dto/asset-response.dto';
-import { AuthDto } from 'src/domain/auth/auth.dto';
-import { UserResponseDto, mapUser } from 'src/domain/user/response-dto/user-response.dto';
+import { ArrayNotEmpty, IsEnum, IsString } from 'class-validator';
+import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
+import { AuthDto } from 'src/dtos/auth.dto';
+import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
 import { AlbumEntity, AssetOrder } from 'src/entities/album.entity';
-import { Optional } from 'src/validation';
+import { Optional, ValidateBoolean, ValidateUUID } from 'src/validation';
+
+export class AlbumInfoDto {
+  @ValidateBoolean({ optional: true })
+  withoutAssets?: boolean;
+}
+
+export class AddUsersDto {
+  @ValidateUUID({ each: true })
+  @ArrayNotEmpty()
+  sharedUserIds!: string[];
+}
+
+export class CreateAlbumDto {
+  @IsString()
+  @ApiProperty()
+  albumName!: string;
+
+  @IsString()
+  @Optional()
+  description?: string;
+
+  @ValidateUUID({ optional: true, each: true })
+  sharedWithUserIds?: string[];
+
+  @ValidateUUID({ optional: true, each: true })
+  assetIds?: string[];
+}
+
+export class UpdateAlbumDto {
+  @Optional()
+  @IsString()
+  albumName?: string;
+
+  @Optional()
+  @IsString()
+  description?: string;
+
+  @ValidateUUID({ optional: true })
+  albumThumbnailAssetId?: string;
+
+  @ValidateBoolean({ optional: true })
+  isActivityEnabled?: boolean;
+
+  @IsEnum(AssetOrder)
+  @Optional()
+  @ApiProperty({ enum: AssetOrder, enumName: 'AssetOrder' })
+  order?: AssetOrder;
+}
+
+export class GetAlbumsDto {
+  @ValidateBoolean({ optional: true })
+  /**
+   * true: only shared albums
+   * false: only non-shared own albums
+   * undefined: shared and owned albums
+   */
+  shared?: boolean;
+
+  /**
+   * Only returns albums that contain the asset
+   * Ignores the shared parameter
+   * undefined: get all albums
+   */
+  @ValidateUUID({ optional: true })
+  assetId?: string;
+}
+
+export class AlbumCountResponseDto {
+  @ApiProperty({ type: 'integer' })
+  owned!: number;
+
+  @ApiProperty({ type: 'integer' })
+  shared!: number;
+
+  @ApiProperty({ type: 'integer' })
+  notShared!: number;
+}
 
 export class AlbumResponseDto {
   id!: string;
@@ -73,14 +151,3 @@ export const mapAlbum = (entity: AlbumEntity, withAssets: boolean, auth?: AuthDt
 
 export const mapAlbumWithAssets = (entity: AlbumEntity) => mapAlbum(entity, true);
 export const mapAlbumWithoutAssets = (entity: AlbumEntity) => mapAlbum(entity, false);
-
-export class AlbumCountResponseDto {
-  @ApiProperty({ type: 'integer' })
-  owned!: number;
-
-  @ApiProperty({ type: 'integer' })
-  shared!: number;
-
-  @ApiProperty({ type: 'integer' })
-  notShared!: number;
-}

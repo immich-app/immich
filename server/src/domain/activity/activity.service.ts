@@ -10,8 +10,8 @@ import {
   ReactionLevel,
   ReactionType,
   mapActivity,
-} from 'src/domain/activity/activity.dto';
-import { AuthDto } from 'src/domain/auth/auth.dto';
+} from 'src/dtos/activity.dto';
+import { AuthDto } from 'src/dtos/auth.dto';
 import { ActivityEntity } from 'src/entities/activity.entity';
 import { IAccessRepository } from 'src/interfaces/access.repository';
 import { IActivityRepository } from 'src/interfaces/activity.repository';

@@ -2,13 +2,13 @@ import { BadRequestException, Inject, Injectable, NotFoundException } from '@nes
 import { AccessCore, Permission } from 'src/cores/access.core';
 import { StorageCore } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
-import { BulkIdErrorReason, BulkIdResponseDto } from 'src/domain/asset/response-dto/asset-ids-response.dto';
-import { AssetResponseDto, mapAsset } from 'src/domain/asset/response-dto/asset-response.dto';
-import { AuthDto } from 'src/domain/auth/auth.dto';
 import { mimeTypes } from 'src/domain/domain.constant';
 import { JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from 'src/domain/job/job.constants';
 import { IBaseJob, IDeferrableJob, IEntityJob } from 'src/domain/job/job.interface';
 import { FACE_THUMBNAIL_SIZE } from 'src/domain/media/media.constant';
+import { BulkIdErrorReason, BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto';
+import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
+import { AuthDto } from 'src/dtos/auth.dto';
 import {
   AssetFaceResponseDto,
   AssetFaceUpdateDto,
@@ -23,7 +23,7 @@ import {
   PersonUpdateDto,
   mapFaces,
   mapPerson,
-} from 'src/domain/person/person.dto';
+} from 'src/dtos/person.dto';
 import { PersonPathType } from 'src/entities/move.entity';
 import { PersonEntity } from 'src/entities/person.entity';
 import { ImmichLogger } from 'src/infra/logger';

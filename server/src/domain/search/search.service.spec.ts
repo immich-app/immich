@@ -1,6 +1,6 @@
-import { mapAsset } from 'src/domain/asset/response-dto/asset-response.dto';
-import { SearchDto } from 'src/domain/search/dto/search.dto';
 import { SearchService } from 'src/domain/search/search.service';
+import { mapAsset } from 'src/dtos/asset-response.dto';
+import { SearchDto } from 'src/dtos/search.dto';
 import { SystemConfigKey } from 'src/entities/system-config.entity';
 import { IAssetRepository } from 'src/interfaces/asset.repository';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.repository';

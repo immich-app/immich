@@ -3,8 +3,6 @@ import { OnEvent } from '@nestjs/event-emitter';
 import { instanceToPlain } from 'class-transformer';
 import _ from 'lodash';
 import { SystemConfigCore } from 'src/cores/system-config.core';
-import { SystemConfigDto, mapConfig } from 'src/domain/system-config/dto/system-config.dto';
-import { SystemConfigTemplateStorageOptionDto } from 'src/domain/system-config/response-dto/system-config-template-storage-option.dto';
 import {
   supportedDayTokens,
   supportedHourTokens,
@@ -15,6 +13,8 @@ import {
   supportedWeekTokens,
   supportedYearTokens,
 } from 'src/domain/system-config/system-config.constants';
+import { SystemConfigTemplateStorageOptionDto } from 'src/dtos/system-config-storage-template.dto';
+import { SystemConfigDto, mapConfig } from 'src/dtos/system-config.dto';
 import { LogLevel, SystemConfig } from 'src/entities/system-config.entity';
 import { ImmichLogger } from 'src/infra/logger';
 import {

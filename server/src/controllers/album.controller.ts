@@ -1,14 +1,17 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { AlbumCountResponseDto, AlbumResponseDto } from 'src/domain/album/album-response.dto';
 import { AlbumService } from 'src/domain/album/album.service';
-import { AddUsersDto } from 'src/domain/album/dto/album-add-users.dto';
-import { CreateAlbumDto } from 'src/domain/album/dto/album-create.dto';
-import { UpdateAlbumDto } from 'src/domain/album/dto/album-update.dto';
-import { AlbumInfoDto } from 'src/domain/album/dto/album.dto';
-import { GetAlbumsDto } from 'src/domain/album/dto/get-albums.dto';
-import { BulkIdResponseDto, BulkIdsDto } from 'src/domain/asset/response-dto/asset-ids-response.dto';
-import { AuthDto } from 'src/domain/auth/auth.dto';
+import {
+  AddUsersDto,
+  AlbumCountResponseDto,
+  AlbumInfoDto,
+  AlbumResponseDto,
+  CreateAlbumDto,
+  GetAlbumsDto,
+  UpdateAlbumDto,
+} from 'src/dtos/album.dto';
+import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
+import { AuthDto } from 'src/dtos/auth.dto';
 import { Auth, Authenticated, SharedLinkRoute } from 'src/middleware/auth.guard';
 import { ParseMeUUIDPipe, UUIDParamDto } from 'src/validation';
 

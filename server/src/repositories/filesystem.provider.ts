@@ -5,7 +5,7 @@ import { constants, createReadStream, existsSync, mkdirSync } from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { mimeTypes } from 'src/domain/domain.constant';
-import { CrawlOptionsDto } from 'src/domain/library/library.dto';
+import { CrawlOptionsDto } from 'src/dtos/library.dto';
 import { Instrumentation } from 'src/infra/instrumentation';
 import { ImmichLogger } from 'src/infra/logger';
 import {

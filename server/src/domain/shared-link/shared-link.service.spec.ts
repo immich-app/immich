@@ -1,7 +1,7 @@
 import { BadRequestException, ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import _ from 'lodash';
-import { AssetIdErrorReason } from 'src/domain/asset/response-dto/asset-ids-response.dto';
 import { SharedLinkService } from 'src/domain/shared-link/shared-link.service';
+import { AssetIdErrorReason } from 'src/dtos/asset-ids.response.dto';
 import { SharedLinkType } from 'src/entities/shared-link.entity';
 import { ICryptoRepository } from 'src/interfaces/crypto.repository';
 import { ISharedLinkRepository } from 'src/interfaces/shared-link.repository';

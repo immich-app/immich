@@ -1,5 +1,6 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { LibraryService } from 'src/domain/library/library.service';
 import {
   CreateLibraryDto,
   LibraryResponseDto,
@@ -9,8 +10,7 @@ import {
   UpdateLibraryDto,
   ValidateLibraryDto,
   ValidateLibraryResponseDto,
-} from 'src/domain/library/library.dto';
-import { LibraryService } from 'src/domain/library/library.service';
+} from 'src/dtos/library.dto';
 import { AdminRoute, Authenticated } from 'src/middleware/auth.guard';
 import { UUIDParamDto } from 'src/validation';
 

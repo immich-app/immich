@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { LibraryStatsResponseDto } from 'src/domain/library/library.dto';
+import { LibraryStatsResponseDto } from 'src/dtos/library.dto';
 import { LibraryEntity, LibraryType } from 'src/entities/library.entity';
 import { Instrumentation } from 'src/infra/instrumentation';
 import { ILibraryRepository } from 'src/interfaces/library.repository';

@@ -1,9 +1,81 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IsEnum, IsString } from 'class-validator';
 import _ from 'lodash';
-import { AlbumResponseDto, mapAlbumWithoutAssets } from 'src/domain/album/album-response.dto';
-import { AssetResponseDto, mapAsset } from 'src/domain/asset/response-dto/asset-response.dto';
+import { AlbumResponseDto, mapAlbumWithoutAssets } from 'src/dtos/album.dto';
+import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { SharedLinkEntity, SharedLinkType } from 'src/entities/shared-link.entity';
+import { Optional, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
 
+export class SharedLinkCreateDto {
+  @IsEnum(SharedLinkType)
+  @ApiProperty({ enum: SharedLinkType, enumName: 'SharedLinkType' })
+  type!: SharedLinkType;
+
+  @ValidateUUID({ each: true, optional: true })
+  assetIds?: string[];
+
+  @ValidateUUID({ optional: true })
+  albumId?: string;
+
+  @IsString()
+  @Optional()
+  description?: string;
+
+  @IsString()
+  @Optional()
+  password?: string;
+
+  @ValidateDate({ optional: true, nullable: true })
+  expiresAt?: Date | null = null;
+
+  @ValidateBoolean({ optional: true })
+  allowUpload?: boolean;
+
+  @ValidateBoolean({ optional: true })
+  allowDownload?: boolean = true;
+
+  @ValidateBoolean({ optional: true })
+  showMetadata?: boolean = true;
+}
+
+export class SharedLinkEditDto {
+  @Optional()
+  description?: string;
+
+  @Optional()
+  password?: string;
+
+  @Optional({ nullable: true })
+  expiresAt?: Date | null;
+
+  @Optional()
+  allowUpload?: boolean;
+
+  @ValidateBoolean({ optional: true })
+  allowDownload?: boolean;
+
+  @ValidateBoolean({ optional: true })
+  showMetadata?: boolean;
+
+  /**
+   * Few clients cannot send null to set the expiryTime to never.
+   * Setting this flag and not sending expiryAt is considered as null instead.
+   * Clients that can send null values can ignore this.
+   */
+  @ValidateBoolean({ optional: true })
+  changeExpiryTime?: boolean;
+}
+
+export class SharedLinkPasswordDto {
+  @IsString()
+  @Optional()
+  @ApiProperty({ example: 'password' })
+  password?: string;
+
+  @IsString()
+  @Optional()
+  token?: string;
+}
 export class SharedLinkResponseDto {
   id!: string;
   description!: string | null;

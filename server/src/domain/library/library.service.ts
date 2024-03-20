@@ -22,7 +22,7 @@ import {
   ValidateLibraryImportPathResponseDto,
   ValidateLibraryResponseDto,
   mapLibrary,
-} from 'src/domain/library/library.dto';
+} from 'src/dtos/library.dto';
 import { AssetType } from 'src/entities/asset.entity';
 import { LibraryEntity, LibraryType } from 'src/entities/library.entity';
 import { ImmichLogger } from 'src/infra/logger';

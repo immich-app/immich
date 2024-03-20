@@ -6,7 +6,7 @@ import { load as loadYaml } from 'js-yaml';
 import * as _ from 'lodash';
 import { Subject } from 'rxjs';
 import { QueueName } from 'src/domain/job/job.constants';
-import { SystemConfigDto } from 'src/domain/system-config/dto/system-config.dto';
+import { SystemConfigDto } from 'src/dtos/system-config.dto';
 import {
   AudioCodec,
   CQMode,

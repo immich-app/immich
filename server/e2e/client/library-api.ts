@@ -1,4 +1,4 @@
-import { CreateLibraryDto, LibraryResponseDto, ScanLibraryDto } from 'src/domain/library/library.dto';
+import { CreateLibraryDto, LibraryResponseDto, ScanLibraryDto } from 'src/dtos/library.dto';
 import request from 'supertest';
 
 export const libraryApi = {

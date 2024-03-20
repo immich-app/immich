@@ -1,10 +1,10 @@
 import { Body, Controller, HttpCode, HttpStatus, Next, Param, Post, Res, StreamableFile } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
-import { AssetIdsDto } from 'src/domain/asset/dto/asset-ids.dto';
-import { AuthDto } from 'src/domain/auth/auth.dto';
-import { DownloadInfoDto, DownloadResponseDto } from 'src/domain/download/download.dto';
 import { DownloadService } from 'src/domain/download/download.service';
+import { AssetIdsDto } from 'src/dtos/asset.dto';
+import { AuthDto } from 'src/dtos/auth.dto';
+import { DownloadInfoDto, DownloadResponseDto } from 'src/dtos/download.dto';
 import { asStreamableFile, sendFile } from 'src/immich/app.utils';
 import { Auth, Authenticated, FileResponse, SharedLinkRoute } from 'src/middleware/auth.guard';
 import { UUIDParamDto } from 'src/validation';
