@@ -41,6 +41,7 @@
   let searchQuery = selectedOption?.label || '';
   let selectedIndex: number | undefined;
   let optionRefs: HTMLElement[] = [];
+  let input: HTMLInputElement;
   const inputId = `combobox-${id}`;
   const listboxId = `listbox-${id}`;
 
@@ -102,7 +103,7 @@
   };
 
   const onClear = () => {
-    deactivate();
+    input?.focus();
     selectedOption = undefined;
     searchQuery = '';
     dispatch('select', selectedOption);
@@ -114,6 +115,15 @@
   class="relative w-full dark:text-gray-300 text-gray-700 text-base"
   use:clickOutside={{ onOutclick: deactivate }}
   use:focusChange={{ onFocusOut: deactivate }}
+  use:shortcuts={[
+    {
+      shortcut: { key: 'Escape' },
+      onShortcut: (event) => {
+        event.stopPropagation();
+        closeDropdown();
+      },
+    },
+  ]}
 >
   <div>
     {#if isActive}
@@ -131,6 +141,7 @@
       aria-controls={listboxId}
       aria-expanded={isOpen}
       autocomplete="off"
+      bind:this={input}
       class:!pl-8={isActive}
       class:!rounded-b-none={isOpen}
       class:cursor-pointer={!isActive}
@@ -187,7 +198,16 @@
       class:pointer-events-none={!selectedOption}
     >
       {#if selectedOption}
-        <IconButton color="transparent-gray" on:click={onClear} title="Clear value">
+        <IconButton
+          color="transparent-gray"
+          on:click={onClear}
+          on:focus={() => {
+            if (!isActive) {
+              activate();
+            }
+          }}
+          title="Clear value"
+        >
           <Icon path={mdiClose} ariaLabel="Clear value" />
         </IconButton>
       {:else if !isOpen}
