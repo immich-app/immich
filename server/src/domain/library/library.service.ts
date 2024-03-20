@@ -511,7 +511,7 @@ export class LibraryService extends EventEmitter {
         fileModifiedAt: stats.mtime,
         localDateTime: stats.mtime,
         type: assetType,
-        originalFileName: parse(assetPath).name,
+        originalFileName: parse(assetPath).base,
         sidecarPath,
         isReadOnly: true,
         isExternal: true,
