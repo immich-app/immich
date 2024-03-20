@@ -1,4 +1,5 @@
 import { sdkMock } from '$lib/__mocks__/sdk.mock';
+import { AbortError } from '$lib/utils';
 import { TimeBucketSize, type AssetResponseDto } from '@immich/sdk';
 import { assetFactory } from '@test-data/factories/asset-factory';
 import { AssetStore, BucketPosition } from './assets.store';
@@ -62,7 +63,15 @@ describe('AssetStore', () => {
         { count: 1, timeBucket: '2024-01-03T00:00:00.000Z' },
         { count: 3, timeBucket: '2024-01-01T00:00:00.000Z' },
       ]);
-      sdkMock.getTimeBucket.mockImplementation(({ timeBucket }) => Promise.resolve(bucketAssets[timeBucket]));
+      sdkMock.getTimeBucket.mockImplementation(async ({ timeBucket }, { signal } = {}) => {
+        // Allow request to be aborted
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        if (signal?.aborted) {
+          throw new AbortError();
+        }
+
+        return bucketAssets[timeBucket];
+      });
       await assetStore.init({ width: 0, height: 0 });
     });
 
@@ -87,16 +96,38 @@ describe('AssetStore', () => {
     });
 
     it('cancels bucket loading', async () => {
-      const abortSpy = vi.spyOn(AbortController.prototype, 'abort');
-      const loadPromise = assetStore.loadBucket('2024-01-01T00:00:00.000Z', BucketPosition.Unknown);
-
       const bucket = assetStore.getBucketByDate('2024-01-01T00:00:00.000Z');
-      expect(bucket).not.toBeNull();
+      const loadPromise = assetStore.loadBucket(bucket!.bucketDate, BucketPosition.Unknown);
 
+      const abortSpy = vi.spyOn(bucket!.cancelToken!, 'abort');
       assetStore.cancelBucket(bucket!);
       expect(abortSpy).toBeCalledTimes(1);
+
       await loadPromise;
       expect(assetStore.getBucketByDate('2024-01-01T00:00:00.000Z')?.assets.length).toEqual(0);
+    });
+
+    it('prevents loading buckets multiple times', async () => {
+      await Promise.all([
+        assetStore.loadBucket('2024-01-01T00:00:00.000Z', BucketPosition.Unknown),
+        assetStore.loadBucket('2024-01-01T00:00:00.000Z', BucketPosition.Unknown),
+      ]);
+      expect(sdkMock.getTimeBucket).toBeCalledTimes(1);
+
+      await assetStore.loadBucket('2024-01-01T00:00:00.000Z', BucketPosition.Unknown);
+      expect(sdkMock.getTimeBucket).toBeCalledTimes(1);
+    });
+
+    it('allows loading a canceled bucket', async () => {
+      const bucket = assetStore.getBucketByDate('2024-01-01T00:00:00.000Z');
+      const loadPromise = assetStore.loadBucket(bucket!.bucketDate, BucketPosition.Unknown);
+
+      assetStore.cancelBucket(bucket!);
+      await loadPromise;
+      expect(bucket?.assets.length).toEqual(0);
+
+      await assetStore.loadBucket(bucket!.bucketDate, BucketPosition.Unknown);
+      expect(bucket!.assets.length).toEqual(3);
     });
   });
 
