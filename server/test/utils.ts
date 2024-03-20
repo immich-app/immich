@@ -6,15 +6,15 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { EventEmitter } from 'node:stream';
 import { Server } from 'node:tls';
+import { ApiModule } from 'src/apps/api.module';
+import { ApiService } from 'src/apps/api.service';
+import { MicroservicesService } from 'src/apps/microservices.service';
 import { QueueName } from 'src/domain/job/job.constants';
-import { AppModule } from 'src/immich/app.module';
-import { AppService } from 'src/immich/app.service';
 import { dataSource } from 'src/infra/database.config';
 import { InfraModule, InfraTestModule } from 'src/infra/infra.module';
 import { IJobRepository, JobItem, JobItemHandler } from 'src/interfaces/job.repository';
 import { IMediaRepository } from 'src/interfaces/media.repository';
 import { StorageEventType } from 'src/interfaces/storage.repository';
-import { AppService as MicroAppService } from 'src/microservices/app.service';
 import { MediaRepository } from 'src/repositories/media.repository';
 import { EntityTarget, ObjectLiteral } from 'typeorm';
 
@@ -106,8 +106,8 @@ let app: INestApplication;
 export const testApp = {
   create: async (): Promise<INestApplication> => {
     const moduleFixture = await Test.createTestingModule({
-      imports: [AppModule],
-      providers: [AppService, MicroAppService],
+      imports: [ApiModule],
+      providers: [ApiService, MicroservicesService],
     })
       .overrideModule(InfraModule)
       .useModule(InfraTestModule)
@@ -120,8 +120,8 @@ export const testApp = {
     app = await moduleFixture.createNestApplication().init();
     await app.listen(0);
     await db.reset();
-    await app.get(AppService).init();
-    await app.get(MicroAppService).init();
+    await app.get(ApiService).init();
+    await app.get(MicroservicesService).init();
 
     const port = app.getHttpServer().address().port;
     const protocol = app instanceof Server ? 'https' : 'http';
@@ -135,7 +135,7 @@ export const testApp = {
   get: (member: any) => app.get(member),
   teardown: async () => {
     if (app) {
-      await app.get(MicroAppService).teardown();
+      await app.get(MicroservicesService).teardown();
       await app.close();
     }
     await db.disconnect();

@@ -2,6 +2,7 @@ import { Module, OnModuleInit, ValidationPipe } from '@nestjs/common';
 import { APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ApiService } from 'src/apps/api.service';
 import { ActivityController } from 'src/controllers/activity.controller';
 import { AlbumController } from 'src/controllers/album.controller';
 import { APIKeyController } from 'src/controllers/api-key.controller';
@@ -29,7 +30,6 @@ import { ExifEntity } from 'src/entities/exif.entity';
 import { AssetRepositoryV1, IAssetRepositoryV1 } from 'src/immich/api-v1/asset/asset-repository';
 import { AssetController as AssetControllerV1 } from 'src/immich/api-v1/asset/asset.controller';
 import { AssetService as AssetServiceV1 } from 'src/immich/api-v1/asset/asset.service';
-import { AppService } from 'src/immich/app.service';
 import { InfraModule } from 'src/infra/infra.module';
 import { AuthGuard } from 'src/middleware/auth.guard';
 import { ErrorInterceptor } from 'src/middleware/error.interceptor';
@@ -73,13 +73,13 @@ import { FileUploadInterceptor } from 'src/middleware/file-upload.interceptor';
     { provide: APP_INTERCEPTOR, useClass: ErrorInterceptor },
     { provide: APP_GUARD, useClass: AuthGuard },
     { provide: IAssetRepositoryV1, useClass: AssetRepositoryV1 },
-    AppService,
+    ApiService,
     AssetServiceV1,
     FileUploadInterceptor,
   ],
 })
-export class AppModule implements OnModuleInit {
-  constructor(private appService: AppService) {}
+export class ApiModule implements OnModuleInit {
+  constructor(private appService: ApiService) {}
 
   async onModuleInit() {
     await this.appService.init();

@@ -1,14 +1,14 @@
 import { Module, OnModuleInit } from '@nestjs/common';
+import { MicroservicesService } from 'src/apps/microservices.service';
 import { DomainModule } from 'src/domain/domain.module';
 import { InfraModule } from 'src/infra/infra.module';
-import { AppService } from 'src/microservices/app.service';
 
 @Module({
   imports: [InfraModule, DomainModule],
-  providers: [AppService],
+  providers: [MicroservicesService],
 })
 export class MicroservicesModule implements OnModuleInit {
-  constructor(private appService: AppService) {}
+  constructor(private appService: MicroservicesService) {}
 
   async onModuleInit() {
     await this.appService.init();
