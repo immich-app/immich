@@ -19,7 +19,7 @@ These metrics come in a variety of forms:
 - Counters, which can only increase. Example: the number of times an endpoint has been called.
 - Gauges, which can increase or decrease within a certain range. Example: CPU utilization.
 - Histograms, where each observation is assigned to a certain number of "buckets". Example: response time, where each bucket is a number of milliseconds. This one is a bit more complicated.
-- Buckets in this case are _cumulative_; that is, an observation is placed not only into the smallest bucket that contains it, but also to all buckets larger than this. For example, if a histogram has three buckets for 1ms, 5ms and 10ms, an observation of 3ms will be bucketed into both 5ms and 10ms.
+  - Buckets in this case are _cumulative_; that is, an observation is placed not only into the smallest bucket that contains it, but also to all buckets larger than this. For example, if a histogram has three buckets for 1ms, 5ms and 10ms, an observation of 3ms will be bucketed into both 5ms and 10ms.
 
 The metrics in immich are grouped into API (endpoint calls and response times), host (memory and CPU utilization), and IO (internal database queries, image processing, and so on). Each group of metrics can be enabled or disabled independently.
 
