@@ -235,28 +235,19 @@ export const selectAllAssets = async (assetStore: AssetStore, assetInteractionSt
   isSelectingAllAssets.set(true);
 
   try {
-    let selectedAssetCount = 1;
-    loadBuckets: for (const bucket of assetStore.buckets) {
+    for (const bucket of assetStore.buckets) {
       await assetStore.loadBucket(bucket.bucketDate, BucketPosition.Unknown);
 
       if (!get(isSelectingAllAssets)) {
         break; // Cancelled
       }
-      for (let i = 0; i < bucket.assets.length; ++i, ++selectedAssetCount) {
-        assetInteractionStore.selectAsset(bucket.assets[i]);
+      assetInteractionStore.selectAssets(bucket.assets);
 
-        if (selectedAssetCount % 2500 === 0) {
-          // Each 2500 assets selected, we use setTimeout to allow the UI to
-          // update. Otherwise, this may cause a long delay between the start of
-          // 'select all' and the effective update of the UI, depending on the
-          // number of assets to select.
-          await delay(0);
-
-          if (!get(isSelectingAllAssets)) {
-            break loadBuckets; // Cancelled
-          }
-        }
-      }
+      // We use setTimeout to allow the UI to update. Otherwise, this may
+      // cause a long delay between the start of 'select all' and the
+      // effective update of the UI, depending on the number of assets
+      // to select
+      await delay(0);
     }
   } catch (error) {
     handleError(error, 'Error selecting all assets');
