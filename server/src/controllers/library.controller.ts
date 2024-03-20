@@ -1,6 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { LibraryService } from 'src/domain/library/library.service';
 import {
   CreateLibraryDto,
   LibraryResponseDto,
@@ -12,6 +11,7 @@ import {
   ValidateLibraryResponseDto,
 } from 'src/dtos/library.dto';
 import { AdminRoute, Authenticated } from 'src/middleware/auth.guard';
+import { LibraryService } from 'src/services/library.service';
 import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('Library')

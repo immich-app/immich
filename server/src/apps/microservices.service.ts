@@ -1,20 +1,20 @@
 import { Injectable } from '@nestjs/common';
-import { AssetService } from 'src/domain/asset/asset.service';
-import { AuditService } from 'src/domain/audit/audit.service';
-import { DatabaseService } from 'src/domain/database/database.service';
 import { JobName } from 'src/domain/job/job.constants';
 import { IDeleteFilesJob } from 'src/domain/job/job.interface';
-import { JobService } from 'src/domain/job/job.service';
-import { LibraryService } from 'src/domain/library/library.service';
-import { MediaService } from 'src/domain/media/media.service';
-import { MetadataService } from 'src/domain/metadata/metadata.service';
-import { PersonService } from 'src/domain/person/person.service';
-import { SmartInfoService } from 'src/domain/smart-info/smart-info.service';
-import { StorageTemplateService } from 'src/domain/storage-template/storage-template.service';
-import { StorageService } from 'src/domain/storage/storage.service';
-import { SystemConfigService } from 'src/domain/system-config/system-config.service';
-import { UserService } from 'src/domain/user/user.service';
 import { otelSDK } from 'src/infra/instrumentation';
+import { AssetService } from 'src/services/asset.service';
+import { AuditService } from 'src/services/audit.service';
+import { DatabaseService } from 'src/services/database.service';
+import { JobService } from 'src/services/job.service';
+import { LibraryService } from 'src/services/library.service';
+import { MediaService } from 'src/services/media.service';
+import { MetadataService } from 'src/services/metadata.service';
+import { PersonService } from 'src/services/person.service';
+import { SmartInfoService } from 'src/services/smart-info.service';
+import { StorageTemplateService } from 'src/services/storage-template.service';
+import { StorageService } from 'src/services/storage.service';
+import { SystemConfigService } from 'src/services/system-config.service';
+import { UserService } from 'src/services/user.service';
 
 @Injectable()
 export class MicroservicesService {

@@ -1,6 +1,6 @@
 import { Command, CommandRunner } from 'nest-commander';
-import { UserService } from 'src/domain/user/user.service';
 import { UserEntity } from 'src/entities/user.entity';
+import { UserService } from 'src/services/user.service';
 
 @Command({
   name: 'list-users',

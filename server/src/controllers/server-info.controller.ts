@@ -1,6 +1,5 @@
 import { Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { ServerInfoService } from 'src/domain/server-info/server-info.service';
 import {
   ServerConfigDto,
   ServerFeaturesDto,
@@ -12,6 +11,7 @@ import {
   ServerVersionResponseDto,
 } from 'src/dtos/server-info.dto';
 import { AdminRoute, Authenticated, PublicRoute } from 'src/middleware/auth.guard';
+import { ServerInfoService } from 'src/services/server-info.service';
 
 @ApiTags('Server Info')
 @Controller('server-info')

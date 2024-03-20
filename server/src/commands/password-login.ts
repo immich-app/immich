@@ -1,5 +1,5 @@
 import { Command, CommandRunner } from 'nest-commander';
-import { SystemConfigService } from 'src/domain/system-config/system-config.service';
+import { SystemConfigService } from 'src/services/system-config.service';
 
 @Command({
   name: 'enable-password-login',

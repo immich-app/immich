@@ -6,7 +6,6 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { AccessCore, Permission } from 'src/cores/access.core';
-import { UploadFile } from 'src/domain/asset/asset.service';
 import { mimeTypes } from 'src/domain/domain.constant';
 import { JobName } from 'src/domain/job/job.constants';
 import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
@@ -36,6 +35,7 @@ import { IJobRepository } from 'src/interfaces/job.repository';
 import { ILibraryRepository } from 'src/interfaces/library.repository';
 import { IStorageRepository } from 'src/interfaces/storage.repository';
 import { IUserRepository } from 'src/interfaces/user.repository';
+import { UploadFile } from 'src/services/asset.service';
 import { CacheControl, ImmichFileResponse, getLivePhotoMotionFilename } from 'src/utils';
 import { QueryFailedError } from 'typeorm';
 

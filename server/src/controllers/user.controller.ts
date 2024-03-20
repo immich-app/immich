@@ -16,13 +16,13 @@ import {
 } from '@nestjs/common';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
-import { UserService } from 'src/domain/user/user.service';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { CreateProfileImageDto, CreateProfileImageResponseDto } from 'src/dtos/user-profile.dto';
 import { CreateUserDto, DeleteUserDto, UpdateUserDto, UserResponseDto } from 'src/dtos/user.dto';
 import { sendFile } from 'src/immich/app.utils';
 import { AdminRoute, Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard';
 import { FileUploadInterceptor, Route } from 'src/middleware/file-upload.interceptor';
+import { UserService } from 'src/services/user.service';
 import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('User')

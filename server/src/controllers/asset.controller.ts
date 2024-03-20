@@ -1,7 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { AssetService } from 'src/domain/asset/asset.service';
-import { SearchService } from 'src/domain/search/search.service';
 import { AssetResponseDto, MemoryLaneResponseDto } from 'src/dtos/asset-response.dto';
 import {
   AssetBulkDeleteDto,
@@ -19,6 +17,8 @@ import { UpdateStackParentDto } from 'src/dtos/stack.dto';
 import { TimeBucketAssetDto, TimeBucketDto, TimeBucketResponseDto } from 'src/dtos/time-bucket.dto';
 import { Auth, Authenticated, SharedLinkRoute } from 'src/middleware/auth.guard';
 import { Route } from 'src/middleware/file-upload.interceptor';
+import { AssetService } from 'src/services/asset.service';
+import { SearchService } from 'src/services/search.service';
 import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('Asset')
