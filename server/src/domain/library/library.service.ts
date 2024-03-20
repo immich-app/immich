@@ -173,7 +173,7 @@ export class LibraryService extends EventEmitter {
             this.logger.debug(`Detected deleted file at ${path} in library ${library.id}`);
             const asset = await this.assetRepository.getByLibraryIdAndOriginalPath(library.id, path);
             if (asset && matcher(path)) {
-              await this.assetRepository.save({ id: asset.id, isOffline: true });
+              await this.assetRepository.update({ id: asset.id, isOffline: true });
             }
             this.emit(StorageEventType.UNLINK, path);
           };
@@ -429,7 +429,7 @@ export class LibraryService extends EventEmitter {
         // Mark asset as offline
         this.logger.debug(`Marking asset as offline: ${assetPath}`);
 
-        await this.assetRepository.save({ id: existingAssetEntity.id, isOffline: true });
+        await this.assetRepository.update({ id: existingAssetEntity.id, isOffline: true });
         return JobStatus.SUCCESS;
       } else {
         // File can't be accessed and does not already exist in db
@@ -462,7 +462,7 @@ export class LibraryService extends EventEmitter {
     if (stats && existingAssetEntity?.isOffline) {
       // File was previously offline but is now online
       this.logger.debug(`Marking previously-offline asset as online: ${assetPath}`);
-      await this.assetRepository.save({ id: existingAssetEntity.id, isOffline: false });
+      await this.assetRepository.update({ id: existingAssetEntity.id, isOffline: false });
       doRefresh = true;
     }
 

@@ -286,19 +286,19 @@ export class StorageCore {
   private savePath(pathType: PathType, id: string, newPath: string) {
     switch (pathType) {
       case AssetPathType.ORIGINAL: {
-        return this.assetRepository.save({ id, originalPath: newPath });
+        return this.assetRepository.update({ id, originalPath: newPath });
       }
       case AssetPathType.JPEG_THUMBNAIL: {
-        return this.assetRepository.save({ id, resizePath: newPath });
+        return this.assetRepository.update({ id, resizePath: newPath });
       }
       case AssetPathType.WEBP_THUMBNAIL: {
-        return this.assetRepository.save({ id, webpPath: newPath });
+        return this.assetRepository.update({ id, webpPath: newPath });
       }
       case AssetPathType.ENCODED_VIDEO: {
-        return this.assetRepository.save({ id, encodedVideoPath: newPath });
+        return this.assetRepository.update({ id, encodedVideoPath: newPath });
       }
       case AssetPathType.SIDECAR: {
-        return this.assetRepository.save({ id, sidecarPath: newPath });
+        return this.assetRepository.update({ id, sidecarPath: newPath });
       }
       case PersonPathType.FACE: {
         return this.personRepository.update({ id, thumbnailPath: newPath });
