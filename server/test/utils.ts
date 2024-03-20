@@ -8,10 +8,10 @@ import { EventEmitter } from 'node:stream';
 import { Server } from 'node:tls';
 import { ApiModule } from 'src/apps/api.module';
 import { ApiService } from 'src/apps/api.service';
+import { AppModule, AppTestModule } from 'src/apps/app.module';
 import { MicroservicesService } from 'src/apps/microservices.service';
 import { QueueName } from 'src/domain/job/job.constants';
 import { dataSource } from 'src/infra/database.config';
-import { InfraModule, InfraTestModule } from 'src/infra/infra.module';
 import { IJobRepository, JobItem, JobItemHandler } from 'src/interfaces/job.repository';
 import { IMediaRepository } from 'src/interfaces/media.repository';
 import { StorageEventType } from 'src/interfaces/storage.repository';
@@ -109,8 +109,8 @@ export const testApp = {
       imports: [ApiModule],
       providers: [ApiService, MicroservicesService],
     })
-      .overrideModule(InfraModule)
-      .useModule(InfraTestModule)
+      .overrideModule(AppModule)
+      .useModule(AppTestModule)
       .overrideProvider(IJobRepository)
       .useClass(JobMock)
       .overrideProvider(IMediaRepository)

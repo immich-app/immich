@@ -1,10 +1,9 @@
 import { Module, OnModuleInit } from '@nestjs/common';
+import { AppModule } from 'src/apps/app.module';
 import { MicroservicesService } from 'src/apps/microservices.service';
-import { DomainModule } from 'src/domain/domain.module';
-import { InfraModule } from 'src/infra/infra.module';
 
 @Module({
-  imports: [InfraModule, DomainModule],
+  imports: [AppModule],
   providers: [MicroservicesService],
 })
 export class MicroservicesModule implements OnModuleInit {
