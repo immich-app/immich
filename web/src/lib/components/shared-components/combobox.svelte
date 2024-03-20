@@ -18,6 +18,7 @@
   import type { FormEventHandler } from 'svelte/elements';
   import { shortcuts } from '$lib/utils/shortcut';
   import { clickOutside } from '$lib/utils/click-outside';
+  import { focusChange } from '$lib/utils/focus-change';
 
   /**
    * Unique identifier for the combobox.
@@ -111,7 +112,8 @@
 <label class="text-sm text-black dark:text-white" class:sr-only={hideLabel} for={inputId}>{label}</label>
 <div
   class="relative w-full dark:text-gray-300 text-gray-700 text-base"
-  use:clickOutside={{ onOutclick: deactivate, onFocusOut: deactivate }}
+  use:clickOutside={{ onOutclick: deactivate }}
+  use:focusChange={{ onFocusOut: deactivate }}
 >
   <div>
     {#if isActive}
