@@ -1,4 +1,4 @@
-import { AuthDto } from 'src/domain/auth/auth.dto';
+import { AuthDto } from 'src/dtos/auth.dto';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
 import { UserTokenEntity } from 'src/entities/user-token.entity';
 import { UserEntity } from 'src/entities/user.entity';

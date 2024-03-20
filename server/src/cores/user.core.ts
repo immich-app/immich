@@ -1,6 +1,6 @@
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import sanitize from 'sanitize-filename';
-import { UserResponseDto } from 'src/domain/user/response-dto/user-response.dto';
+import { UserResponseDto } from 'src/dtos/user.dto';
 import { LibraryType } from 'src/entities/library.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import { ICryptoRepository } from 'src/interfaces/crypto.repository';

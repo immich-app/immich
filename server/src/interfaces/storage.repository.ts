@@ -2,7 +2,7 @@ import { WatchOptions } from 'chokidar';
 import { Stats } from 'node:fs';
 import { FileReadOptions } from 'node:fs/promises';
 import { Readable } from 'node:stream';
-import { CrawlOptionsDto } from 'src/domain/library/library.dto';
+import { CrawlOptionsDto } from 'src/dtos/library.dto';
 
 export interface ImmichReadStream {
   stream: Readable;

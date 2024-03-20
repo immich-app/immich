@@ -1,8 +1,8 @@
-import { AlbumResponseDto } from 'src/domain/album/album-response.dto';
-import { AssetResponseDto } from 'src/domain/asset/response-dto/asset-response.dto';
-import { ExifResponseDto } from 'src/domain/asset/response-dto/exif-response.dto';
-import { SharedLinkResponseDto } from 'src/domain/shared-link/shared-link-response.dto';
-import { mapUser } from 'src/domain/user/response-dto/user-response.dto';
+import { AlbumResponseDto } from 'src/dtos/album.dto';
+import { AssetResponseDto } from 'src/dtos/asset-response.dto';
+import { ExifResponseDto } from 'src/dtos/exif.dto';
+import { SharedLinkResponseDto } from 'src/dtos/shared-link.dto';
+import { mapUser } from 'src/dtos/user.dto';
 import { AssetOrder } from 'src/entities/album.entity';
 import { AssetType } from 'src/entities/asset.entity';
 import { SharedLinkEntity, SharedLinkType } from 'src/entities/shared-link.entity';

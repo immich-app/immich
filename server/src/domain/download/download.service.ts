@@ -1,10 +1,10 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { parse } from 'node:path';
 import { AccessCore, Permission } from 'src/cores/access.core';
-import { AssetIdsDto } from 'src/domain/asset/dto/asset-ids.dto';
-import { AuthDto } from 'src/domain/auth/auth.dto';
 import { mimeTypes } from 'src/domain/domain.constant';
-import { DownloadArchiveInfo, DownloadInfoDto, DownloadResponseDto } from 'src/domain/download/download.dto';
+import { AssetIdsDto } from 'src/dtos/asset.dto';
+import { AuthDto } from 'src/dtos/auth.dto';
+import { DownloadArchiveInfo, DownloadInfoDto, DownloadResponseDto } from 'src/dtos/download.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { IAccessRepository } from 'src/interfaces/access.repository';
 import { IAssetRepository } from 'src/interfaces/asset.repository';

@@ -3,6 +3,8 @@ import { DateTime } from 'luxon';
 import { resolve } from 'node:path';
 import { AccessCore, Permission } from 'src/cores/access.core';
 import { StorageCore, StorageFolder } from 'src/cores/storage.core';
+import { AUDIT_LOG_MAX_DURATION } from 'src/domain/domain.constant';
+import { JOBS_ASSET_PAGINATION_SIZE } from 'src/domain/job/job.constants';
 import {
   AuditDeletesDto,
   AuditDeletesResponseDto,
@@ -10,10 +12,8 @@ import {
   FileChecksumResponseDto,
   FileReportItemDto,
   PathEntityType,
-} from 'src/domain/audit/audit.dto';
-import { AuthDto } from 'src/domain/auth/auth.dto';
-import { AUDIT_LOG_MAX_DURATION } from 'src/domain/domain.constant';
-import { JOBS_ASSET_PAGINATION_SIZE } from 'src/domain/job/job.constants';
+} from 'src/dtos/audit.dto';
+import { AuthDto } from 'src/dtos/auth.dto';
 import { DatabaseAction } from 'src/entities/audit.entity';
 import { AssetPathType, PersonPathType, UserPathType } from 'src/entities/move.entity';
 import { ImmichLogger } from 'src/infra/logger';

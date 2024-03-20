@@ -1,6 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsEnum, IsInt, IsNotEmpty, IsString, Max, Min } from 'class-validator';
+import { AlbumResponseDto } from 'src/dtos/album.dto';
+import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { AssetOrder } from 'src/entities/album.entity';
 import { AssetType } from 'src/entities/asset.entity';
 import { GeodataPlacesEntity } from 'src/entities/geodata-places.entity';
@@ -263,4 +265,131 @@ export function mapPlaces(place: GeodataPlacesEntity): PlacesResponseDto {
     admin1name: place.admin1Name,
     admin2name: place.admin2Name,
   };
+}
+export enum SearchSuggestionType {
+  COUNTRY = 'country',
+  STATE = 'state',
+  CITY = 'city',
+  CAMERA_MAKE = 'camera-make',
+  CAMERA_MODEL = 'camera-model',
+}
+
+export class SearchSuggestionRequestDto {
+  @IsEnum(SearchSuggestionType)
+  @IsNotEmpty()
+  @ApiProperty({ enumName: 'SearchSuggestionType', enum: SearchSuggestionType })
+  type!: SearchSuggestionType;
+
+  @IsString()
+  @Optional()
+  country?: string;
+
+  @IsString()
+  @Optional()
+  state?: string;
+
+  @IsString()
+  @Optional()
+  make?: string;
+
+  @IsString()
+  @Optional()
+  model?: string;
+}
+
+class SearchFacetCountResponseDto {
+  @ApiProperty({ type: 'integer' })
+  count!: number;
+  value!: string;
+}
+
+class SearchFacetResponseDto {
+  fieldName!: string;
+  counts!: SearchFacetCountResponseDto[];
+}
+
+class SearchAlbumResponseDto {
+  @ApiProperty({ type: 'integer' })
+  total!: number;
+  @ApiProperty({ type: 'integer' })
+  count!: number;
+  items!: AlbumResponseDto[];
+  facets!: SearchFacetResponseDto[];
+}
+
+class SearchAssetResponseDto {
+  @ApiProperty({ type: 'integer' })
+  total!: number;
+  @ApiProperty({ type: 'integer' })
+  count!: number;
+  items!: AssetResponseDto[];
+  facets!: SearchFacetResponseDto[];
+  nextPage!: string | null;
+}
+
+export class SearchResponseDto {
+  albums!: SearchAlbumResponseDto;
+  assets!: SearchAssetResponseDto;
+}
+
+class SearchExploreItem {
+  value!: string;
+  data!: AssetResponseDto;
+}
+
+export class SearchExploreResponseDto {
+  fieldName!: string;
+  items!: SearchExploreItem[];
+}
+
+export class MapMarkerDto {
+  @ValidateBoolean({ optional: true })
+  isArchived?: boolean;
+
+  @ValidateBoolean({ optional: true })
+  isFavorite?: boolean;
+
+  @ValidateDate({ optional: true })
+  fileCreatedAfter?: Date;
+
+  @ValidateDate({ optional: true })
+  fileCreatedBefore?: Date;
+
+  @ValidateBoolean({ optional: true })
+  withPartners?: boolean;
+}
+
+export class MemoryLaneDto {
+  @IsInt()
+  @Type(() => Number)
+  @Max(31)
+  @Min(1)
+  @ApiProperty({ type: 'integer' })
+  day!: number;
+
+  @IsInt()
+  @Type(() => Number)
+  @Max(12)
+  @Min(1)
+  @ApiProperty({ type: 'integer' })
+  month!: number;
+}
+export class MapMarkerResponseDto {
+  @ApiProperty()
+  id!: string;
+
+  @ApiProperty({ format: 'double' })
+  lat!: number;
+
+  @ApiProperty({ format: 'double' })
+  lon!: number;
+
+  @ApiProperty()
+  city!: string | null;
+
+  @ApiProperty()
+  state!: string | null;
+
+  @ApiProperty()
+  country!: string | null;
 }

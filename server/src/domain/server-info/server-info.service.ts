@@ -11,7 +11,7 @@ import {
   ServerPingResponse,
   ServerStatsResponseDto,
   UsageByUserDto,
-} from 'src/domain/server-info/server-info.dto';
+} from 'src/dtos/server-info.dto';
 import { SystemMetadataKey } from 'src/entities/system-metadata.entity';
 import { ImmichLogger } from 'src/infra/logger';
 import { ClientEvent, ICommunicationRepository } from 'src/interfaces/communication.repository';

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { readFile } from 'node:fs/promises';
-import { CLIPConfig, ModelConfig, RecognitionConfig } from 'src/domain/smart-info/dto/model-config.dto';
+import { CLIPConfig, ModelConfig, RecognitionConfig } from 'src/dtos/model-config.dto';
 import { Instrumentation } from 'src/infra/instrumentation';
 import {
   CLIPMode,

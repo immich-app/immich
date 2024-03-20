@@ -1,7 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import _ from 'lodash';
 import { AlbumService } from 'src/domain/album/album.service';
-import { BulkIdErrorReason } from 'src/domain/asset/response-dto/asset-ids-response.dto';
+import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto';
 import { IAlbumRepository } from 'src/interfaces/album.repository';
 import { IAssetRepository } from 'src/interfaces/asset.repository';
 import { IUserRepository } from 'src/interfaces/user.repository';

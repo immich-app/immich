@@ -1,5 +1,5 @@
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
-import { AuthDto } from 'src/domain/auth/auth.dto';
+import { AuthDto } from 'src/dtos/auth.dto';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
 import { IAccessRepository } from 'src/interfaces/access.repository';
 import { setDifference, setIsEqual, setUnion } from 'src/utils';

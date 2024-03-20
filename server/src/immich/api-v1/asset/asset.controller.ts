@@ -15,8 +15,8 @@ import {
 } from '@nestjs/common';
 import { ApiBody, ApiConsumes, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
-import { AssetResponseDto } from 'src/domain/asset/response-dto/asset-response.dto';
-import { AuthDto } from 'src/domain/auth/auth.dto';
+import { AssetResponseDto } from 'src/dtos/asset-response.dto';
+import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetService as AssetServiceV1 } from 'src/immich/api-v1/asset/asset.service';
 import { AssetBulkUploadCheckDto } from 'src/immich/api-v1/asset/dto/asset-check.dto';
 import { AssetSearchDto } from 'src/immich/api-v1/asset/dto/asset-search.dto';

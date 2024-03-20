@@ -35,8 +35,8 @@ import {
   SignUpDto,
   mapLoginResponse,
   mapUserToken,
-} from 'src/domain/auth/auth.dto';
-import { UserResponseDto, mapUser } from 'src/domain/user/response-dto/user-response.dto';
+} from 'src/dtos/auth.dto';
+import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
 import { SystemConfig } from 'src/entities/system-config.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import { ImmichLogger } from 'src/infra/logger';

@@ -1,4 +1,4 @@
-import { mapAlbum } from 'src/domain/album/album-response.dto';
+import { mapAlbum } from 'src/dtos/album.dto';
 import { albumStub } from 'test/fixtures/album.stub';
 
 describe('mapAlbum', () => {

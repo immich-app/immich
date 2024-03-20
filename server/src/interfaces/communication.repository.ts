@@ -1,5 +1,5 @@
-import { AssetResponseDto } from 'src/domain/asset/response-dto/asset-response.dto';
-import { ReleaseNotification, ServerVersionResponseDto } from 'src/domain/server-info/server-info.dto';
+import { AssetResponseDto } from 'src/dtos/asset-response.dto';
+import { ReleaseNotification, ServerVersionResponseDto } from 'src/dtos/server-info.dto';
 import { SystemConfig } from 'src/entities/system-config.entity';
 
 export const ICommunicationRepository = 'ICommunicationRepository';

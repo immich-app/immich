@@ -1,10 +1,9 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { AssetIdsDto } from 'src/domain/asset/dto/asset-ids.dto';
-import { AssetIdErrorReason, AssetIdsResponseDto } from 'src/domain/asset/response-dto/asset-ids-response.dto';
-import { AssetResponseDto, mapAsset } from 'src/domain/asset/response-dto/asset-response.dto';
-import { AuthDto } from 'src/domain/auth/auth.dto';
-import { TagResponseDto, mapTag } from 'src/domain/tag/tag-response.dto';
-import { CreateTagDto, UpdateTagDto } from 'src/domain/tag/tag.dto';
+import { AssetIdErrorReason, AssetIdsResponseDto } from 'src/dtos/asset-ids.response.dto';
+import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
+import { AssetIdsDto } from 'src/dtos/asset.dto';
+import { AuthDto } from 'src/dtos/auth.dto';
+import { CreateTagDto, TagResponseDto, UpdateTagDto, mapTag } from 'src/dtos/tag.dto';
 import { ITagRepository } from 'src/interfaces/tag.repository';
 
 @Injectable()

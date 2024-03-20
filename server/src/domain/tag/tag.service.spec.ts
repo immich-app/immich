@@ -1,7 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { when } from 'jest-when';
-import { AssetIdErrorReason } from 'src/domain/asset/response-dto/asset-ids-response.dto';
 import { TagService } from 'src/domain/tag/tag.service';
+import { AssetIdErrorReason } from 'src/dtos/asset-ids.response.dto';
 import { TagType } from 'src/entities/tag.entity';
 import { ITagRepository } from 'src/interfaces/tag.repository';
 import { assetStub } from 'test/fixtures/asset.stub';

@@ -1,19 +1,20 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { FeatureFlag, SystemConfigCore } from 'src/cores/system-config.core';
-import { AssetResponseDto, mapAsset } from 'src/domain/asset/response-dto/asset-response.dto';
-import { AuthDto } from 'src/domain/auth/auth.dto';
-import { PersonResponseDto } from 'src/domain/person/person.dto';
-import { SearchSuggestionRequestDto, SearchSuggestionType } from 'src/domain/search/dto/search-suggestion.dto';
+import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
+import { AuthDto } from 'src/dtos/auth.dto';
+import { PersonResponseDto } from 'src/dtos/person.dto';
 import {
   MetadataSearchDto,
   PlacesResponseDto,
   SearchDto,
   SearchPeopleDto,
   SearchPlacesDto,
+  SearchResponseDto,
+  SearchSuggestionRequestDto,
+  SearchSuggestionType,
   SmartSearchDto,
   mapPlaces,
-} from 'src/domain/search/dto/search.dto';
-import { SearchResponseDto } from 'src/domain/search/response-dto/search-response.dto';
+} from 'src/dtos/search.dto';
 import { AssetOrder } from 'src/entities/album.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { IAssetRepository } from 'src/interfaces/asset.repository';

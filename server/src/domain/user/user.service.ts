@@ -4,17 +4,11 @@ import { randomBytes } from 'node:crypto';
 import { StorageCore, StorageFolder } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { UserCore } from 'src/cores/user.core';
-import { AuthDto } from 'src/domain/auth/auth.dto';
 import { JobName } from 'src/domain/job/job.constants';
 import { IEntityJob } from 'src/domain/job/job.interface';
-import { CreateUserDto } from 'src/domain/user/dto/create-user.dto';
-import { DeleteUserDto } from 'src/domain/user/dto/delete-user.dto';
-import { UpdateUserDto } from 'src/domain/user/dto/update-user.dto';
-import {
-  CreateProfileImageResponseDto,
-  mapCreateProfileImageResponse,
-} from 'src/domain/user/response-dto/create-profile-image-response.dto';
-import { UserResponseDto, mapUser } from 'src/domain/user/response-dto/user-response.dto';
+import { AuthDto } from 'src/dtos/auth.dto';
+import { CreateProfileImageResponseDto, mapCreateProfileImageResponse } from 'src/dtos/user-profile.dto';
+import { CreateUserDto, DeleteUserDto, UpdateUserDto, UserResponseDto, mapUser } from 'src/dtos/user.dto';
 import { UserEntity, UserStatus } from 'src/entities/user.entity';
 import { ImmichLogger } from 'src/infra/logger';
 import { IAlbumRepository } from 'src/interfaces/album.repository';

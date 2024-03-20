@@ -1,19 +1,19 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { AccessCore, Permission } from 'src/cores/access.core';
 import {
+  AddUsersDto,
   AlbumCountResponseDto,
+  AlbumInfoDto,
   AlbumResponseDto,
+  CreateAlbumDto,
+  GetAlbumsDto,
+  UpdateAlbumDto,
   mapAlbum,
   mapAlbumWithAssets,
   mapAlbumWithoutAssets,
-} from 'src/domain/album/album-response.dto';
-import { AddUsersDto } from 'src/domain/album/dto/album-add-users.dto';
-import { CreateAlbumDto } from 'src/domain/album/dto/album-create.dto';
-import { UpdateAlbumDto } from 'src/domain/album/dto/album-update.dto';
-import { AlbumInfoDto } from 'src/domain/album/dto/album.dto';
-import { GetAlbumsDto } from 'src/domain/album/dto/get-albums.dto';
-import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto } from 'src/domain/asset/response-dto/asset-ids-response.dto';
-import { AuthDto } from 'src/domain/auth/auth.dto';
+} from 'src/dtos/album.dto';
+import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
+import { AuthDto } from 'src/dtos/auth.dto';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { UserEntity } from 'src/entities/user.entity';

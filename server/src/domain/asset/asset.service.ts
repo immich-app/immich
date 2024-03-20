@@ -6,25 +6,29 @@ import sanitize from 'sanitize-filename';
 import { AccessCore, Permission } from 'src/cores/access.core';
 import { StorageCore, StorageFolder } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
-import { AssetJobName, AssetJobsDto } from 'src/domain/asset/dto/asset-ids.dto';
-import { UpdateStackParentDto } from 'src/domain/asset/dto/asset-stack.dto';
-import { AssetStatsDto, mapStats } from 'src/domain/asset/dto/asset-statistics.dto';
-import { AssetBulkDeleteDto, AssetBulkUpdateDto, UpdateAssetDto } from 'src/domain/asset/dto/asset.dto';
-import { MapMarkerDto } from 'src/domain/asset/dto/map-marker.dto';
-import { MemoryLaneDto } from 'src/domain/asset/dto/memory-lane.dto';
-import { TimeBucketAssetDto, TimeBucketDto } from 'src/domain/asset/dto/time-bucket.dto';
+import { mimeTypes } from 'src/domain/domain.constant';
+import { JOBS_ASSET_PAGINATION_SIZE, JobName } from 'src/domain/job/job.constants';
+import { IAssetDeletionJob, ISidecarWriteJob } from 'src/domain/job/job.interface';
 import {
   AssetResponseDto,
   MemoryLaneResponseDto,
   SanitizedAssetResponseDto,
   mapAsset,
-} from 'src/domain/asset/response-dto/asset-response.dto';
-import { MapMarkerResponseDto } from 'src/domain/asset/response-dto/map-marker-response.dto';
-import { TimeBucketResponseDto } from 'src/domain/asset/response-dto/time-bucket-response.dto';
-import { AuthDto } from 'src/domain/auth/auth.dto';
-import { mimeTypes } from 'src/domain/domain.constant';
-import { JOBS_ASSET_PAGINATION_SIZE, JobName } from 'src/domain/job/job.constants';
-import { IAssetDeletionJob, ISidecarWriteJob } from 'src/domain/job/job.interface';
+} from 'src/dtos/asset-response.dto';
+import {
+  AssetBulkDeleteDto,
+  AssetBulkUpdateDto,
+  AssetJobName,
+  AssetJobsDto,
+  AssetStatsDto,
+  UpdateAssetDto,
+  UploadFieldName,
+  mapStats,
+} from 'src/dtos/asset.dto';
+import { AuthDto } from 'src/dtos/auth.dto';
+import { MapMarkerDto, MapMarkerResponseDto, MemoryLaneDto } from 'src/dtos/search.dto';
+import { UpdateStackParentDto } from 'src/dtos/stack.dto';
+import { TimeBucketAssetDto, TimeBucketDto, TimeBucketResponseDto } from 'src/dtos/time-bucket.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { LibraryType } from 'src/entities/library.entity';
 import { ImmichLogger } from 'src/infra/logger';
@@ -38,13 +42,6 @@ import { IStorageRepository } from 'src/interfaces/storage.repository';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
 import { IUserRepository } from 'src/interfaces/user.repository';
 import { usePagination } from 'src/utils';
-
-export enum UploadFieldName {
-  ASSET_DATA = 'assetData',
-  LIVE_PHOTO_DATA = 'livePhotoData',
-  SIDECAR_DATA = 'sidecarData',
-  PROFILE_DATA = 'file',
-}
 
 export interface UploadRequest {
   auth: AuthDto | null;
