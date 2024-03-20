@@ -1,22 +1,20 @@
-import {
-  AssetService,
-  AuditService,
-  DatabaseService,
-  IDeleteFilesJob,
-  JobName,
-  JobService,
-  LibraryService,
-  MediaService,
-  MetadataService,
-  PersonService,
-  SmartInfoService,
-  StorageService,
-  StorageTemplateService,
-  SystemConfigService,
-  UserService,
-} from '@app/domain';
-import { otelSDK } from '@app/infra/instrumentation';
 import { Injectable } from '@nestjs/common';
+import { AssetService } from 'src/domain/asset/asset.service';
+import { AuditService } from 'src/domain/audit/audit.service';
+import { DatabaseService } from 'src/domain/database/database.service';
+import { JobName } from 'src/domain/job/job.constants';
+import { IDeleteFilesJob } from 'src/domain/job/job.interface';
+import { JobService } from 'src/domain/job/job.service';
+import { LibraryService } from 'src/domain/library/library.service';
+import { MediaService } from 'src/domain/media/media.service';
+import { MetadataService } from 'src/domain/metadata/metadata.service';
+import { PersonService } from 'src/domain/person/person.service';
+import { SmartInfoService } from 'src/domain/smart-info/smart-info.service';
+import { StorageTemplateService } from 'src/domain/storage-template/storage-template.service';
+import { StorageService } from 'src/domain/storage/storage.service';
+import { SystemConfigService } from 'src/domain/system-config/system-config.service';
+import { UserService } from 'src/domain/user/user.service';
+import { otelSDK } from 'src/infra/instrumentation';
 
 @Injectable()
 export class AppService {

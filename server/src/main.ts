@@ -1,6 +1,6 @@
-import { bootstrap as admin } from './immich-admin/main';
-import { bootstrap as server } from './immich/main';
-import { bootstrap as microservices } from './microservices/main';
+import { bootstrap as admin } from 'src/immich-admin/main';
+import { bootstrap as server } from 'src/immich/main';
+import { bootstrap as microservices } from 'src/microservices/main';
 
 const immichApp = process.argv[2] || process.env.IMMICH_APP;
 

@@ -1,13 +1,15 @@
-import { AssetEntity } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { parse } from 'node:path';
-import { AccessCore, Permission } from '../access';
-import { AssetIdsDto } from '../asset';
-import { AuthDto } from '../auth';
-import { mimeTypes } from '../domain.constant';
-import { CacheControl, HumanReadableSize, ImmichFileResponse, usePagination } from '../domain.util';
-import { IAccessRepository, IAssetRepository, IStorageRepository, ImmichReadStream } from '../repositories';
-import { DownloadArchiveInfo, DownloadInfoDto, DownloadResponseDto } from './download.dto';
+import { AccessCore, Permission } from 'src/cores/access.core';
+import { AssetIdsDto } from 'src/domain/asset/dto/asset-ids.dto';
+import { AuthDto } from 'src/domain/auth/auth.dto';
+import { mimeTypes } from 'src/domain/domain.constant';
+import { DownloadArchiveInfo, DownloadInfoDto, DownloadResponseDto } from 'src/domain/download/download.dto';
+import { AssetEntity } from 'src/infra/entities/asset.entity';
+import { IAccessRepository } from 'src/interfaces/access.repository';
+import { IAssetRepository } from 'src/interfaces/asset.repository';
+import { IStorageRepository, ImmichReadStream } from 'src/interfaces/storage.repository';
+import { CacheControl, HumanReadableSize, ImmichFileResponse, usePagination } from 'src/utils';
 
 @Injectable()
 export class DownloadService {

@@ -1,37 +1,33 @@
-import { UserEntity, UserStatus } from '@app/infra/entities';
 import {
   BadRequestException,
   ForbiddenException,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import {
-  authStub,
-  newAlbumRepositoryMock,
-  newCryptoRepositoryMock,
-  newJobRepositoryMock,
-  newLibraryRepositoryMock,
-  newStorageRepositoryMock,
-  newSystemConfigRepositoryMock,
-  newUserRepositoryMock,
-  systemConfigStub,
-  userStub,
-} from '@test';
 import { when } from 'jest-when';
-import { CacheControl, ImmichFileResponse } from '../domain.util';
-import { JobName } from '../job';
-import {
-  IAlbumRepository,
-  ICryptoRepository,
-  IJobRepository,
-  ILibraryRepository,
-  IStorageRepository,
-  ISystemConfigRepository,
-  IUserRepository,
-} from '../repositories';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { mapUser } from './response-dto';
-import { UserService } from './user.service';
+import { JobName } from 'src/domain/job/job.constants';
+import { UpdateUserDto } from 'src/domain/user/dto/update-user.dto';
+import { mapUser } from 'src/domain/user/response-dto/user-response.dto';
+import { UserService } from 'src/domain/user/user.service';
+import { UserEntity, UserStatus } from 'src/infra/entities/user.entity';
+import { IAlbumRepository } from 'src/interfaces/album.repository';
+import { ICryptoRepository } from 'src/interfaces/crypto.repository';
+import { IJobRepository } from 'src/interfaces/job.repository';
+import { ILibraryRepository } from 'src/interfaces/library.repository';
+import { IStorageRepository } from 'src/interfaces/storage.repository';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
+import { IUserRepository } from 'src/interfaces/user.repository';
+import { CacheControl, ImmichFileResponse } from 'src/utils';
+import { authStub } from 'test/fixtures/auth.stub';
+import { systemConfigStub } from 'test/fixtures/system-config.stub';
+import { userStub } from 'test/fixtures/user.stub';
+import { newAlbumRepositoryMock } from 'test/repositories/album.repository.mock';
+import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
+import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
+import { newLibraryRepositoryMock } from 'test/repositories/library.repository.mock';
+import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
+import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
+import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
 
 const makeDeletedAt = (daysAgo: number) => {
   const deletedAt = new Date();

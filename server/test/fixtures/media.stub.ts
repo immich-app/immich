@@ -1,4 +1,4 @@
-import { AudioStreamInfo, VideoFormat, VideoInfo, VideoStreamInfo } from '@app/domain';
+import { AudioStreamInfo, VideoFormat, VideoInfo, VideoStreamInfo } from 'src/interfaces/media.repository';
 
 const probeStubDefaultFormat: VideoFormat = {
   formatName: 'mov,mp4,m4a,3gp,3g2,mj2',

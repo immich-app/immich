@@ -1,11 +1,12 @@
-import { AuthDto } from '@app/domain/auth/auth.dto';
-import { AssetEntity, AssetFaceEntity, AssetType } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
-import { PersonWithFacesResponseDto, mapFacesWithoutPerson, mapPerson } from '../../person/person.dto';
-import { TagResponseDto, mapTag } from '../../tag';
-import { UserResponseDto, mapUser } from '../../user/response-dto/user-response.dto';
-import { ExifResponseDto, mapExif } from './exif-response.dto';
-import { SmartInfoResponseDto, mapSmartInfo } from './smart-info-response.dto';
+import { ExifResponseDto, mapExif } from 'src/domain/asset/response-dto/exif-response.dto';
+import { SmartInfoResponseDto, mapSmartInfo } from 'src/domain/asset/response-dto/smart-info-response.dto';
+import { AuthDto } from 'src/domain/auth/auth.dto';
+import { PersonWithFacesResponseDto, mapFacesWithoutPerson, mapPerson } from 'src/domain/person/person.dto';
+import { TagResponseDto, mapTag } from 'src/domain/tag/tag-response.dto';
+import { UserResponseDto, mapUser } from 'src/domain/user/response-dto/user-response.dto';
+import { AssetFaceEntity } from 'src/infra/entities/asset-face.entity';
+import { AssetEntity, AssetType } from 'src/infra/entities/asset.entity';
 
 export class SanitizedAssetResponseDto {
   id!: string;

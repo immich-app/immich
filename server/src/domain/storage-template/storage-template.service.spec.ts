@@ -1,34 +1,30 @@
-import {
-  IAlbumRepository,
-  IAssetRepository,
-  ICryptoRepository,
-  IDatabaseRepository,
-  IMoveRepository,
-  IPersonRepository,
-  IStorageRepository,
-  ISystemConfigRepository,
-  IUserRepository,
-  JobStatus,
-  StorageTemplateService,
-  defaults,
-} from '@app/domain';
-import { AssetPathType, SystemConfig, SystemConfigKey } from '@app/infra/entities';
-import {
-  assetStub,
-  newAlbumRepositoryMock,
-  newAssetRepositoryMock,
-  newCryptoRepositoryMock,
-  newDatabaseRepositoryMock,
-  newMoveRepositoryMock,
-  newPersonRepositoryMock,
-  newStorageRepositoryMock,
-  newSystemConfigRepositoryMock,
-  newUserRepositoryMock,
-  userStub,
-} from '@test';
 import { when } from 'jest-when';
 import { Stats } from 'node:fs';
-import { SystemConfigCore } from '../system-config';
+import { SystemConfigCore, defaults } from 'src/cores/system-config.core';
+import { StorageTemplateService } from 'src/domain/storage-template/storage-template.service';
+import { AssetPathType } from 'src/infra/entities/move.entity';
+import { SystemConfig, SystemConfigKey } from 'src/infra/entities/system-config.entity';
+import { IAlbumRepository } from 'src/interfaces/album.repository';
+import { IAssetRepository } from 'src/interfaces/asset.repository';
+import { ICryptoRepository } from 'src/interfaces/crypto.repository';
+import { IDatabaseRepository } from 'src/interfaces/database.repository';
+import { JobStatus } from 'src/interfaces/job.repository';
+import { IMoveRepository } from 'src/interfaces/move.repository';
+import { IPersonRepository } from 'src/interfaces/person.repository';
+import { IStorageRepository } from 'src/interfaces/storage.repository';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
+import { IUserRepository } from 'src/interfaces/user.repository';
+import { assetStub } from 'test/fixtures/asset.stub';
+import { userStub } from 'test/fixtures/user.stub';
+import { newAlbumRepositoryMock } from 'test/repositories/album.repository.mock';
+import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
+import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
+import { newDatabaseRepositoryMock } from 'test/repositories/database.repository.mock';
+import { newMoveRepositoryMock } from 'test/repositories/move.repository.mock';
+import { newPersonRepositoryMock } from 'test/repositories/person.repository.mock';
+import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
+import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
+import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
 
 describe(StorageTemplateService.name, () => {
   let sut: StorageTemplateService;

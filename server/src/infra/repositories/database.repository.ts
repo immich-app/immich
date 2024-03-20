@@ -1,3 +1,10 @@
+import { Injectable } from '@nestjs/common';
+import { InjectDataSource } from '@nestjs/typeorm';
+import AsyncLock from 'async-lock';
+import { Version, VersionType } from 'src/domain/domain.constant';
+import { vectorExt } from 'src/infra/database.config';
+import { Instrumentation } from 'src/infra/instrumentation';
+import { ImmichLogger } from 'src/infra/logger';
 import {
   DatabaseExtension,
   DatabaseLock,
@@ -5,18 +12,10 @@ import {
   VectorExtension,
   VectorIndex,
   VectorUpdateResult,
-  Version,
-  VersionType,
   extName,
-} from '@app/domain';
-import { vectorExt } from '@app/infra/database.config';
-import { Injectable } from '@nestjs/common';
-import { InjectDataSource } from '@nestjs/typeorm';
-import AsyncLock from 'async-lock';
+} from 'src/interfaces/database.repository';
+import { isValidInteger } from 'src/validation';
 import { DataSource, EntityManager, QueryRunner } from 'typeorm';
-import { isValidInteger } from '../infra.utils';
-import { Instrumentation } from '../instrumentation';
-import { ImmichLogger } from '../logger';
 
 @Instrumentation()
 @Injectable()

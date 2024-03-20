@@ -1,16 +1,15 @@
 import { BadRequestException } from '@nestjs/common';
-import {
-  IAccessRepositoryMock,
-  assetStub,
-  authStub,
-  newAccessRepositoryMock,
-  newAssetRepositoryMock,
-  newCommunicationRepositoryMock,
-  newJobRepositoryMock,
-} from '@test';
-import { JobName } from '..';
-import { ClientEvent, IAssetRepository, ICommunicationRepository, IJobRepository } from '../repositories';
-import { TrashService } from './trash.service';
+import { JobName } from 'src/domain/job/job.constants';
+import { TrashService } from 'src/domain/trash/trash.service';
+import { IAssetRepository } from 'src/interfaces/asset.repository';
+import { ClientEvent, ICommunicationRepository } from 'src/interfaces/communication.repository';
+import { IJobRepository } from 'src/interfaces/job.repository';
+import { assetStub } from 'test/fixtures/asset.stub';
+import { authStub } from 'test/fixtures/auth.stub';
+import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
+import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
+import { newCommunicationRepositoryMock } from 'test/repositories/communication.repository.mock';
+import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
 
 describe(TrashService.name, () => {
   let sut: TrashService;

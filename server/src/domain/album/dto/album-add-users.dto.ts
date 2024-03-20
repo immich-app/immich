@@ -1,5 +1,5 @@
 import { ArrayNotEmpty } from 'class-validator';
-import { ValidateUUID } from '../../domain.util';
+import { ValidateUUID } from 'src/validation';
 
 export class AddUsersDto {
   @ValidateUUID({ each: true })

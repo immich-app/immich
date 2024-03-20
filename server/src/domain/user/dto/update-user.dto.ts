@@ -1,8 +1,8 @@
-import { UserAvatarColor } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsEmail, IsEnum, IsNotEmpty, IsNumber, IsPositive, IsString, IsUUID } from 'class-validator';
-import { Optional, ValidateBoolean, toEmail, toSanitized } from '../../domain.util';
+import { UserAvatarColor } from 'src/infra/entities/user.entity';
+import { Optional, ValidateBoolean, toEmail, toSanitized } from 'src/validation';
 
 export class UpdateUserDto {
   @Optional()

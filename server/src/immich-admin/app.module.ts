@@ -1,10 +1,10 @@
-import { DomainModule } from '@app/domain';
-import { InfraModule } from '@app/infra';
 import { Module } from '@nestjs/common';
-import { ListUsersCommand } from './commands/list-users.command';
-import { DisableOAuthLogin, EnableOAuthLogin } from './commands/oauth-login';
-import { DisablePasswordLoginCommand, EnablePasswordLoginCommand } from './commands/password-login';
-import { PromptPasswordQuestions, ResetAdminPasswordCommand } from './commands/reset-admin-password.command';
+import { ListUsersCommand } from 'src/commands/list-users.command';
+import { DisableOAuthLogin, EnableOAuthLogin } from 'src/commands/oauth-login';
+import { DisablePasswordLoginCommand, EnablePasswordLoginCommand } from 'src/commands/password-login';
+import { PromptPasswordQuestions, ResetAdminPasswordCommand } from 'src/commands/reset-admin-password.command';
+import { DomainModule } from 'src/domain/domain.module';
+import { InfraModule } from 'src/infra/infra.module';
 
 @Module({
   imports: [InfraModule, DomainModule],

@@ -1,12 +1,20 @@
-import { AssetEntity, SharedLinkEntity, SharedLinkType } from '@app/infra/entities';
 import { BadRequestException, ForbiddenException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
-import { AccessCore, Permission } from '../access';
-import { AssetIdErrorReason, AssetIdsDto, AssetIdsResponseDto } from '../asset';
-import { AuthDto } from '../auth';
-import { OpenGraphTags } from '../domain.util';
-import { IAccessRepository, ICryptoRepository, ISharedLinkRepository } from '../repositories';
-import { SharedLinkResponseDto, mapSharedLink, mapSharedLinkWithoutMetadata } from './shared-link-response.dto';
-import { SharedLinkCreateDto, SharedLinkEditDto, SharedLinkPasswordDto } from './shared-link.dto';
+import { AccessCore, Permission } from 'src/cores/access.core';
+import { AssetIdsDto } from 'src/domain/asset/dto/asset-ids.dto';
+import { AssetIdErrorReason, AssetIdsResponseDto } from 'src/domain/asset/response-dto/asset-ids-response.dto';
+import { AuthDto } from 'src/domain/auth/auth.dto';
+import {
+  SharedLinkResponseDto,
+  mapSharedLink,
+  mapSharedLinkWithoutMetadata,
+} from 'src/domain/shared-link/shared-link-response.dto';
+import { SharedLinkCreateDto, SharedLinkEditDto, SharedLinkPasswordDto } from 'src/domain/shared-link/shared-link.dto';
+import { AssetEntity } from 'src/infra/entities/asset.entity';
+import { SharedLinkEntity, SharedLinkType } from 'src/infra/entities/shared-link.entity';
+import { IAccessRepository } from 'src/interfaces/access.repository';
+import { ICryptoRepository } from 'src/interfaces/crypto.repository';
+import { ISharedLinkRepository } from 'src/interfaces/shared-link.repository';
+import { OpenGraphTags } from 'src/utils';
 
 @Injectable()
 export class SharedLinkService {

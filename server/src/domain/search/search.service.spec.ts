@@ -1,28 +1,24 @@
-import { SystemConfigKey } from '@app/infra/entities';
-import {
-  assetStub,
-  authStub,
-  newAssetRepositoryMock,
-  newMachineLearningRepositoryMock,
-  newMetadataRepositoryMock,
-  newPartnerRepositoryMock,
-  newPersonRepositoryMock,
-  newSearchRepositoryMock,
-  newSystemConfigRepositoryMock,
-  personStub,
-} from '@test';
-import { mapAsset } from '../asset';
-import {
-  IAssetRepository,
-  IMachineLearningRepository,
-  IMetadataRepository,
-  IPartnerRepository,
-  IPersonRepository,
-  ISearchRepository,
-  ISystemConfigRepository,
-} from '../repositories';
-import { SearchDto } from './dto';
-import { SearchService } from './search.service';
+import { mapAsset } from 'src/domain/asset/response-dto/asset-response.dto';
+import { SearchDto } from 'src/domain/search/dto/search.dto';
+import { SearchService } from 'src/domain/search/search.service';
+import { SystemConfigKey } from 'src/infra/entities/system-config.entity';
+import { IAssetRepository } from 'src/interfaces/asset.repository';
+import { IMachineLearningRepository } from 'src/interfaces/machine-learning.repository';
+import { IMetadataRepository } from 'src/interfaces/metadata.repository';
+import { IPartnerRepository } from 'src/interfaces/partner.repository';
+import { IPersonRepository } from 'src/interfaces/person.repository';
+import { ISearchRepository } from 'src/interfaces/search.repository';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
+import { assetStub } from 'test/fixtures/asset.stub';
+import { authStub } from 'test/fixtures/auth.stub';
+import { personStub } from 'test/fixtures/person.stub';
+import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
+import { newMachineLearningRepositoryMock } from 'test/repositories/machine-learning.repository.mock';
+import { newMetadataRepositoryMock } from 'test/repositories/metadata.repository.mock';
+import { newPartnerRepositoryMock } from 'test/repositories/partner.repository.mock';
+import { newPersonRepositoryMock } from 'test/repositories/person.repository.mock';
+import { newSearchRepositoryMock } from 'test/repositories/search.repository.mock';
+import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
 
 jest.useFakeTimers();
 

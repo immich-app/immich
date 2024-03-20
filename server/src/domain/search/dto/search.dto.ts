@@ -1,8 +1,10 @@
-import { AssetOrder, AssetType, GeodataPlacesEntity } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsEnum, IsInt, IsNotEmpty, IsString, Max, Min } from 'class-validator';
-import { Optional, ValidateBoolean, ValidateDate, ValidateUUID } from '../../domain.util';
+import { AssetOrder } from 'src/infra/entities/album.entity';
+import { AssetType } from 'src/infra/entities/asset.entity';
+import { GeodataPlacesEntity } from 'src/infra/entities/geodata-places.entity';
+import { Optional, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
 
 class BaseSearchDto {
   @ValidateUUID({ optional: true })

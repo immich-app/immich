@@ -9,8 +9,8 @@ import {
   IsString,
   ValidateIf,
 } from 'class-validator';
-import { Optional, ValidateBoolean, ValidateUUID } from '../../domain.util';
-import { BulkIdsDto } from '../response-dto';
+import { BulkIdsDto } from 'src/domain/asset/response-dto/asset-ids-response.dto';
+import { Optional, ValidateBoolean, ValidateUUID } from 'src/validation';
 
 export class DeviceIdDto {
   @IsNotEmpty()

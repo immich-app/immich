@@ -1,26 +1,27 @@
-import { AlbumEntity, AssetEntity, UserEntity } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { AccessCore, Permission } from '../access';
-import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto } from '../asset';
-import { AuthDto } from '../auth';
-import { setUnion } from '../domain.util';
-import {
-  AlbumAssetCount,
-  AlbumInfoOptions,
-  IAccessRepository,
-  IAlbumRepository,
-  IAssetRepository,
-  IJobRepository,
-  IUserRepository,
-} from '../repositories';
+import { AccessCore, Permission } from 'src/cores/access.core';
 import {
   AlbumCountResponseDto,
   AlbumResponseDto,
   mapAlbum,
   mapAlbumWithAssets,
   mapAlbumWithoutAssets,
-} from './album-response.dto';
-import { AddUsersDto, AlbumInfoDto, CreateAlbumDto, GetAlbumsDto, UpdateAlbumDto } from './dto';
+} from 'src/domain/album/album-response.dto';
+import { AddUsersDto } from 'src/domain/album/dto/album-add-users.dto';
+import { CreateAlbumDto } from 'src/domain/album/dto/album-create.dto';
+import { UpdateAlbumDto } from 'src/domain/album/dto/album-update.dto';
+import { AlbumInfoDto } from 'src/domain/album/dto/album.dto';
+import { GetAlbumsDto } from 'src/domain/album/dto/get-albums.dto';
+import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto } from 'src/domain/asset/response-dto/asset-ids-response.dto';
+import { AuthDto } from 'src/domain/auth/auth.dto';
+import { AlbumEntity } from 'src/infra/entities/album.entity';
+import { AssetEntity } from 'src/infra/entities/asset.entity';
+import { UserEntity } from 'src/infra/entities/user.entity';
+import { IAccessRepository } from 'src/interfaces/access.repository';
+import { AlbumAssetCount, AlbumInfoOptions, IAlbumRepository } from 'src/interfaces/album.repository';
+import { IAssetRepository } from 'src/interfaces/asset.repository';
+import { IUserRepository } from 'src/interfaces/user.repository';
+import { setUnion } from 'src/utils';
 
 @Injectable()
 export class AlbumService {
@@ -29,7 +30,6 @@ export class AlbumService {
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
-    @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
   ) {
     this.access = AccessCore.create(accessRepository);

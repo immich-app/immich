@@ -1,27 +1,30 @@
-import { UserEntity, UserStatus } from '@app/infra/entities';
-import { ImmichLogger } from '@app/infra/logger';
 import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { randomBytes } from 'node:crypto';
-import { AuthDto } from '../auth';
-import { CacheControl, ImmichFileResponse } from '../domain.util';
-import { IEntityJob, JobName } from '../job';
+import { StorageCore, StorageFolder } from 'src/cores/storage.core';
+import { SystemConfigCore } from 'src/cores/system-config.core';
+import { UserCore } from 'src/cores/user.core';
+import { AuthDto } from 'src/domain/auth/auth.dto';
+import { JobName } from 'src/domain/job/job.constants';
+import { IEntityJob } from 'src/domain/job/job.interface';
+import { CreateUserDto } from 'src/domain/user/dto/create-user.dto';
+import { DeleteUserDto } from 'src/domain/user/dto/delete-user.dto';
+import { UpdateUserDto } from 'src/domain/user/dto/update-user.dto';
 import {
-  IAlbumRepository,
-  ICryptoRepository,
-  IJobRepository,
-  ILibraryRepository,
-  IStorageRepository,
-  ISystemConfigRepository,
-  IUserRepository,
-  JobStatus,
-  UserFindOptions,
-} from '../repositories';
-import { StorageCore, StorageFolder } from '../storage';
-import { SystemConfigCore } from '../system-config/system-config.core';
-import { CreateUserDto, DeleteUserDto, UpdateUserDto } from './dto';
-import { CreateProfileImageResponseDto, UserResponseDto, mapCreateProfileImageResponse, mapUser } from './response-dto';
-import { UserCore } from './user.core';
+  CreateProfileImageResponseDto,
+  mapCreateProfileImageResponse,
+} from 'src/domain/user/response-dto/create-profile-image-response.dto';
+import { UserResponseDto, mapUser } from 'src/domain/user/response-dto/user-response.dto';
+import { UserEntity, UserStatus } from 'src/infra/entities/user.entity';
+import { ImmichLogger } from 'src/infra/logger';
+import { IAlbumRepository } from 'src/interfaces/album.repository';
+import { ICryptoRepository } from 'src/interfaces/crypto.repository';
+import { IJobRepository, JobStatus } from 'src/interfaces/job.repository';
+import { ILibraryRepository } from 'src/interfaces/library.repository';
+import { IStorageRepository } from 'src/interfaces/storage.repository';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
+import { IUserRepository, UserFindOptions } from 'src/interfaces/user.repository';
+import { CacheControl, ImmichFileResponse } from 'src/utils';
 
 @Injectable()
 export class UserService {

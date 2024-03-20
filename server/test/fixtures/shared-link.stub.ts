@@ -1,9 +1,16 @@
-import { AlbumResponseDto, AssetResponseDto, ExifResponseDto, mapUser, SharedLinkResponseDto } from '@app/domain';
-import { AssetOrder, AssetType, SharedLinkEntity, SharedLinkType, UserEntity } from '@app/infra/entities';
-import { assetStub } from './asset.stub';
-import { authStub } from './auth.stub';
-import { libraryStub } from './library.stub';
-import { userStub } from './user.stub';
+import { AlbumResponseDto } from 'src/domain/album/album-response.dto';
+import { AssetResponseDto } from 'src/domain/asset/response-dto/asset-response.dto';
+import { ExifResponseDto } from 'src/domain/asset/response-dto/exif-response.dto';
+import { SharedLinkResponseDto } from 'src/domain/shared-link/shared-link-response.dto';
+import { mapUser } from 'src/domain/user/response-dto/user-response.dto';
+import { AssetOrder } from 'src/infra/entities/album.entity';
+import { AssetType } from 'src/infra/entities/asset.entity';
+import { SharedLinkEntity, SharedLinkType } from 'src/infra/entities/shared-link.entity';
+import { UserEntity } from 'src/infra/entities/user.entity';
+import { assetStub } from 'test/fixtures/asset.stub';
+import { authStub } from 'test/fixtures/auth.stub';
+import { libraryStub } from 'test/fixtures/library.stub';
+import { userStub } from 'test/fixtures/user.stub';
 
 const today = new Date();
 const tomorrow = new Date();

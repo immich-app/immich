@@ -1,42 +1,33 @@
-import { AssetEntity, AssetType } from '@app/infra/entities';
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
-import {
-  IAccessRepositoryMock,
-  assetStackStub,
-  assetStub,
-  authStub,
-  faceStub,
-  newAccessRepositoryMock,
-  newAssetRepositoryMock,
-  newAssetStackRepositoryMock,
-  newCommunicationRepositoryMock,
-  newJobRepositoryMock,
-  newPartnerRepositoryMock,
-  newStorageRepositoryMock,
-  newSystemConfigRepositoryMock,
-  newUserRepositoryMock,
-  partnerStub,
-  userStub,
-} from '@test';
 import { when } from 'jest-when';
-import { JobName } from '../job';
-import {
-  AssetStats,
-  ClientEvent,
-  IAssetRepository,
-  IAssetStackRepository,
-  ICommunicationRepository,
-  IJobRepository,
-  IPartnerRepository,
-  IStorageRepository,
-  ISystemConfigRepository,
-  IUserRepository,
-  JobItem,
-  TimeBucketSize,
-} from '../repositories';
-import { AssetService, UploadFieldName } from './asset.service';
-import { AssetJobName, AssetStatsResponseDto } from './dto';
-import { mapAsset } from './response-dto';
+import { AssetService, UploadFieldName } from 'src/domain/asset/asset.service';
+import { AssetJobName } from 'src/domain/asset/dto/asset-ids.dto';
+import { AssetStatsResponseDto } from 'src/domain/asset/dto/asset-statistics.dto';
+import { mapAsset } from 'src/domain/asset/response-dto/asset-response.dto';
+import { JobName } from 'src/domain/job/job.constants';
+import { AssetEntity, AssetType } from 'src/infra/entities/asset.entity';
+import { IAssetStackRepository } from 'src/interfaces/asset-stack.repository';
+import { AssetStats, IAssetRepository, TimeBucketSize } from 'src/interfaces/asset.repository';
+import { ClientEvent, ICommunicationRepository } from 'src/interfaces/communication.repository';
+import { IJobRepository, JobItem } from 'src/interfaces/job.repository';
+import { IPartnerRepository } from 'src/interfaces/partner.repository';
+import { IStorageRepository } from 'src/interfaces/storage.repository';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
+import { IUserRepository } from 'src/interfaces/user.repository';
+import { assetStackStub, assetStub } from 'test/fixtures/asset.stub';
+import { authStub } from 'test/fixtures/auth.stub';
+import { faceStub } from 'test/fixtures/face.stub';
+import { partnerStub } from 'test/fixtures/partner.stub';
+import { userStub } from 'test/fixtures/user.stub';
+import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
+import { newAssetStackRepositoryMock } from 'test/repositories/asset-stack.repository.mock';
+import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
+import { newCommunicationRepositoryMock } from 'test/repositories/communication.repository.mock';
+import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
+import { newPartnerRepositoryMock } from 'test/repositories/partner.repository.mock';
+import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
+import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
+import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
 
 const stats: AssetStats = {
   [AssetType.IMAGE]: 10,

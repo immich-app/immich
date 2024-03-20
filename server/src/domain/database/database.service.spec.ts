@@ -1,13 +1,8 @@
-import {
-  DatabaseExtension,
-  DatabaseService,
-  IDatabaseRepository,
-  VectorIndex,
-  Version,
-  VersionType,
-} from '@app/domain';
-import { ImmichLogger } from '@app/infra/logger';
-import { newDatabaseRepositoryMock } from '@test';
+import { DatabaseService } from 'src/domain/database/database.service';
+import { Version, VersionType } from 'src/domain/domain.constant';
+import { ImmichLogger } from 'src/infra/logger';
+import { DatabaseExtension, IDatabaseRepository, VectorIndex } from 'src/interfaces/database.repository';
+import { newDatabaseRepositoryMock } from 'test/repositories/database.repository.mock';
 
 describe(DatabaseService.name, () => {
   let sut: DatabaseService;

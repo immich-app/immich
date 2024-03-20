@@ -1,10 +1,13 @@
-import { TagType } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
-import { assetStub, authStub, newTagRepositoryMock, tagResponseStub, tagStub } from '@test';
 import { when } from 'jest-when';
-import { AssetIdErrorReason } from '../asset';
-import { ITagRepository } from '../repositories';
-import { TagService } from './tag.service';
+import { AssetIdErrorReason } from 'src/domain/asset/response-dto/asset-ids-response.dto';
+import { TagService } from 'src/domain/tag/tag.service';
+import { TagType } from 'src/infra/entities/tag.entity';
+import { ITagRepository } from 'src/interfaces/tag.repository';
+import { assetStub } from 'test/fixtures/asset.stub';
+import { authStub } from 'test/fixtures/auth.stub';
+import { tagResponseStub, tagStub } from 'test/fixtures/tag.stub';
+import { newTagRepositoryMock } from 'test/repositories/tag.repository.mock';
 
 describe(TagService.name, () => {
   let sut: TagService;

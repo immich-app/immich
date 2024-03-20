@@ -1,22 +1,22 @@
-import { SystemConfig } from '@app/infra/entities';
 import { Type } from 'class-transformer';
 import { IsObject, ValidateNested } from 'class-validator';
-import { SystemConfigFFmpegDto } from './system-config-ffmpeg.dto';
-import { SystemConfigJobDto } from './system-config-job.dto';
-import { SystemConfigLibraryDto } from './system-config-library.dto';
-import { SystemConfigLoggingDto } from './system-config-logging.dto';
-import { SystemConfigMachineLearningDto } from './system-config-machine-learning.dto';
-import { SystemConfigMapDto } from './system-config-map.dto';
-import { SystemConfigNewVersionCheckDto } from './system-config-new-version-check.dto';
-import { SystemConfigOAuthDto } from './system-config-oauth.dto';
-import { SystemConfigPasswordLoginDto } from './system-config-password-login.dto';
-import { SystemConfigReverseGeocodingDto } from './system-config-reverse-geocoding.dto';
-import { SystemConfigServerDto } from './system-config-server.dto';
-import { SystemConfigStorageTemplateDto } from './system-config-storage-template.dto';
-import { SystemConfigThemeDto } from './system-config-theme.dto';
-import { SystemConfigThumbnailDto } from './system-config-thumbnail.dto';
-import { SystemConfigTrashDto } from './system-config-trash.dto';
-import { SystemConfigUserDto } from './system-config-user.dto';
+import { SystemConfigFFmpegDto } from 'src/domain/system-config/dto/system-config-ffmpeg.dto';
+import { SystemConfigJobDto } from 'src/domain/system-config/dto/system-config-job.dto';
+import { SystemConfigLibraryDto } from 'src/domain/system-config/dto/system-config-library.dto';
+import { SystemConfigLoggingDto } from 'src/domain/system-config/dto/system-config-logging.dto';
+import { SystemConfigMachineLearningDto } from 'src/domain/system-config/dto/system-config-machine-learning.dto';
+import { SystemConfigMapDto } from 'src/domain/system-config/dto/system-config-map.dto';
+import { SystemConfigNewVersionCheckDto } from 'src/domain/system-config/dto/system-config-new-version-check.dto';
+import { SystemConfigOAuthDto } from 'src/domain/system-config/dto/system-config-oauth.dto';
+import { SystemConfigPasswordLoginDto } from 'src/domain/system-config/dto/system-config-password-login.dto';
+import { SystemConfigReverseGeocodingDto } from 'src/domain/system-config/dto/system-config-reverse-geocoding.dto';
+import { SystemConfigServerDto } from 'src/domain/system-config/dto/system-config-server.dto';
+import { SystemConfigStorageTemplateDto } from 'src/domain/system-config/dto/system-config-storage-template.dto';
+import { SystemConfigThemeDto } from 'src/domain/system-config/dto/system-config-theme.dto';
+import { SystemConfigThumbnailDto } from 'src/domain/system-config/dto/system-config-thumbnail.dto';
+import { SystemConfigTrashDto } from 'src/domain/system-config/dto/system-config-trash.dto';
+import { SystemConfigUserDto } from 'src/domain/system-config/dto/system-config-user.dto';
+import { SystemConfig } from 'src/infra/entities/system-config.entity';
 
 export class SystemConfigDto implements SystemConfig {
   @Type(() => SystemConfigFFmpegDto)

@@ -1,8 +1,8 @@
-import { ActivityEntity } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsNotEmpty, IsString, ValidateIf } from 'class-validator';
-import { Optional, ValidateUUID } from '../domain.util';
-import { UserDto, mapSimpleUser } from '../user/response-dto';
+import { UserDto, mapSimpleUser } from 'src/domain/user/response-dto/user-response.dto';
+import { ActivityEntity } from 'src/infra/entities/activity.entity';
+import { Optional, ValidateUUID } from 'src/validation';
 
 export enum ReactionType {
   COMMENT = 'comment',

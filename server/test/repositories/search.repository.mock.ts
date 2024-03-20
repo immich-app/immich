@@ -1,4 +1,4 @@
-import { ISearchRepository } from '@app/domain';
+import { ISearchRepository } from 'src/interfaces/search.repository';
 
 export const newSearchRepositoryMock = (): jest.Mocked<ISearchRepository> => {
   return {

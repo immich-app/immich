@@ -1,8 +1,8 @@
-import { ISystemMetadataRepository } from '@app/domain/repositories/system-metadata.repository';
 import { InjectRepository } from '@nestjs/typeorm';
+import { SystemMetadata, SystemMetadataEntity } from 'src/infra/entities/system-metadata.entity';
+import { Instrumentation } from 'src/infra/instrumentation';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.repository';
 import { Repository } from 'typeorm';
-import { SystemMetadata, SystemMetadataEntity } from '../entities';
-import { Instrumentation } from '../instrumentation';
 
 @Instrumentation()
 export class SystemMetadataRepository implements ISystemMetadataRepository {

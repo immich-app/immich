@@ -1,26 +1,19 @@
-import { SystemConfig, SystemConfigKey } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
-import {
-  assetStub,
-  newAssetRepositoryMock,
-  newCommunicationRepositoryMock,
-  newJobRepositoryMock,
-  newPersonRepositoryMock,
-  newSystemConfigRepositoryMock,
-} from '@test';
-import {
-  IAssetRepository,
-  ICommunicationRepository,
-  IJobRepository,
-  IPersonRepository,
-  ISystemConfigRepository,
-  JobHandler,
-  JobItem,
-  JobStatus,
-} from '../repositories';
-import { FeatureFlag, SystemConfigCore } from '../system-config/system-config.core';
-import { JobCommand, JobName, QueueName } from './job.constants';
-import { JobService } from './job.service';
+import { FeatureFlag, SystemConfigCore } from 'src/cores/system-config.core';
+import { JobCommand, JobName, QueueName } from 'src/domain/job/job.constants';
+import { JobService } from 'src/domain/job/job.service';
+import { SystemConfig, SystemConfigKey } from 'src/infra/entities/system-config.entity';
+import { IAssetRepository } from 'src/interfaces/asset.repository';
+import { ICommunicationRepository } from 'src/interfaces/communication.repository';
+import { IJobRepository, JobHandler, JobItem, JobStatus } from 'src/interfaces/job.repository';
+import { IPersonRepository } from 'src/interfaces/person.repository';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
+import { assetStub } from 'test/fixtures/asset.stub';
+import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
+import { newCommunicationRepositoryMock } from 'test/repositories/communication.repository.mock';
+import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
+import { newPersonRepositoryMock } from 'test/repositories/person.repository.mock';
+import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
 
 const makeMockHandlers = (status: JobStatus) => {
   const mock = jest.fn().mockResolvedValue(status);

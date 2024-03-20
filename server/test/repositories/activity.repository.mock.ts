@@ -1,4 +1,4 @@
-import { IActivityRepository } from '@app/domain';
+import { IActivityRepository } from 'src/interfaces/activity.repository';
 
 export const newActivityRepositoryMock = (): jest.Mocked<IActivityRepository> => {
   return {

@@ -1,13 +1,3 @@
-import {
-  AuthService,
-  ClientEvent,
-  ICommunicationRepository,
-  InternalEventMap,
-  OnConnectCallback,
-  OnServerEventCallback,
-  ServerEvent,
-} from '@app/domain';
-import { ImmichLogger } from '@app/infra/logger';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   OnGatewayConnection,
@@ -17,7 +7,17 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { Instrumentation } from '../instrumentation';
+import { AuthService } from 'src/domain/auth/auth.service';
+import { Instrumentation } from 'src/infra/instrumentation';
+import { ImmichLogger } from 'src/infra/logger';
+import {
+  ClientEvent,
+  ICommunicationRepository,
+  InternalEventMap,
+  OnConnectCallback,
+  OnServerEventCallback,
+  ServerEvent,
+} from 'src/interfaces/communication.repository';
 
 @Instrumentation()
 @WebSocketGateway({

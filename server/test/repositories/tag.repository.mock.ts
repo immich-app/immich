@@ -1,4 +1,4 @@
-import { ITagRepository } from '@app/domain';
+import { ITagRepository } from 'src/interfaces/tag.repository';
 
 export const newTagRepositoryMock = (): jest.Mocked<ITagRepository> => {
   return {

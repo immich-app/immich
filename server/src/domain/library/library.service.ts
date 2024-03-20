@@ -1,5 +1,3 @@
-import { AssetEntity, AssetType, LibraryType } from '@app/infra/entities';
-import { ImmichLogger } from '@app/infra/logger';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { R_OK } from 'node:constants';
@@ -7,36 +5,17 @@ import { EventEmitter } from 'node:events';
 import { Stats } from 'node:fs';
 import path, { basename, parse } from 'node:path';
 import picomatch from 'picomatch';
-import { AccessCore } from '../access';
-import { mimeTypes } from '../domain.constant';
-import { handlePromiseError, usePagination, validateCronExpression } from '../domain.util';
+import { StorageCore } from 'src/cores/storage.core';
+import { SystemConfigCore } from 'src/cores/system-config.core';
+import { mimeTypes } from 'src/domain/domain.constant';
+import { JOBS_ASSET_PAGINATION_SIZE, JobName } from 'src/domain/job/job.constants';
 import {
   IBaseJob,
   IEntityJob,
   ILibraryFileJob,
   ILibraryOfflineJob,
   ILibraryRefreshJob,
-  JOBS_ASSET_PAGINATION_SIZE,
-  JobName,
-} from '../job';
-import {
-  DatabaseLock,
-  IAccessRepository,
-  IAssetRepository,
-  ICryptoRepository,
-  IDatabaseRepository,
-  IJobRepository,
-  ILibraryRepository,
-  IStorageRepository,
-  ISystemConfigRepository,
-  InternalEvent,
-  InternalEventMap,
-  JobStatus,
-  StorageEventType,
-  WithProperty,
-} from '../repositories';
-import { StorageCore } from '../storage';
-import { SystemConfigCore } from '../system-config';
+} from 'src/domain/job/job.interface';
 import {
   CreateLibraryDto,
   LibraryResponseDto,
@@ -48,21 +27,32 @@ import {
   ValidateLibraryImportPathResponseDto,
   ValidateLibraryResponseDto,
   mapLibrary,
-} from './library.dto';
+} from 'src/domain/library/library.dto';
+import { AssetEntity, AssetType } from 'src/infra/entities/asset.entity';
+import { LibraryType } from 'src/infra/entities/library.entity';
+import { ImmichLogger } from 'src/infra/logger';
+import { IAssetRepository, WithProperty } from 'src/interfaces/asset.repository';
+import { InternalEvent, InternalEventMap } from 'src/interfaces/communication.repository';
+import { ICryptoRepository } from 'src/interfaces/crypto.repository';
+import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.repository';
+import { IJobRepository, JobStatus } from 'src/interfaces/job.repository';
+import { ILibraryRepository } from 'src/interfaces/library.repository';
+import { IStorageRepository, StorageEventType } from 'src/interfaces/storage.repository';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
+import { handlePromiseError, usePagination } from 'src/utils';
+import { validateCronExpression } from 'src/validation';
 
 const LIBRARY_SCAN_BATCH_SIZE = 1000;
 
 @Injectable()
 export class LibraryService extends EventEmitter {
   readonly logger = new ImmichLogger(LibraryService.name);
-  private access: AccessCore;
   private configCore: SystemConfigCore;
   private watchLibraries = false;
   private watchLock = false;
   private watchers: Record<string, () => Promise<void>> = {};
 
   constructor(
-    @Inject(IAccessRepository) accessRepository: IAccessRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
@@ -72,7 +62,6 @@ export class LibraryService extends EventEmitter {
     @Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository,
   ) {
     super();
-    this.access = AccessCore.create(accessRepository);
     this.configCore = SystemConfigCore.create(configRepository);
   }
 

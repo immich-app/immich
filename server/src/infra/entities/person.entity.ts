@@ -1,3 +1,5 @@
+import { AssetFaceEntity } from 'src/infra/entities/asset-face.entity';
+import { UserEntity } from 'src/infra/entities/user.entity';
 import {
   Check,
   Column,
@@ -8,8 +10,6 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { AssetFaceEntity } from './asset-face.entity';
-import { UserEntity } from './user.entity';
 
 @Entity('person')
 @Check(`"birthDate" <= CURRENT_DATE`)

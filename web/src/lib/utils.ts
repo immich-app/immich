@@ -27,7 +27,7 @@ interface UploadRequestOptions {
   onUploadProgress?: (event: ProgressEvent<XMLHttpRequestEventTarget>) => void;
 }
 
-class AbortError extends Error {
+export class AbortError extends Error {
   name = 'AbortError';
 }
 

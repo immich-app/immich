@@ -1,7 +1,7 @@
-import { LogLevel } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum } from 'class-validator';
-import { ValidateBoolean } from '../../domain.util';
+import { LogLevel } from 'src/infra/entities/system-config.entity';
+import { ValidateBoolean } from 'src/validation';
 
 export class SystemConfigLoggingDto {
   @ValidateBoolean()

@@ -1,4 +1,4 @@
-import { ValidateBoolean, ValidateUUID } from '../../domain.util';
+import { ValidateBoolean, ValidateUUID } from 'src/validation';
 
 export class GetAlbumsDto {
   @ValidateBoolean({ optional: true })

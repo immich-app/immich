@@ -1,24 +1,8 @@
-import { AssetPathType, DatabaseAction, PersonPathType, UserPathType } from '@app/infra/entities';
-import { ImmichLogger } from '@app/infra/logger';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { resolve } from 'node:path';
-import { AccessCore, Permission } from '../access';
-import { AuthDto } from '../auth';
-import { AUDIT_LOG_MAX_DURATION } from '../domain.constant';
-import { usePagination } from '../domain.util';
-import { JOBS_ASSET_PAGINATION_SIZE } from '../job';
-import {
-  IAccessRepository,
-  IAssetRepository,
-  IAuditRepository,
-  ICryptoRepository,
-  IPersonRepository,
-  IStorageRepository,
-  IUserRepository,
-  JobStatus,
-} from '../repositories';
-import { StorageCore, StorageFolder } from '../storage';
+import { AccessCore, Permission } from 'src/cores/access.core';
+import { StorageCore, StorageFolder } from 'src/cores/storage.core';
 import {
   AuditDeletesDto,
   AuditDeletesResponseDto,
@@ -26,7 +10,22 @@ import {
   FileChecksumResponseDto,
   FileReportItemDto,
   PathEntityType,
-} from './audit.dto';
+} from 'src/domain/audit/audit.dto';
+import { AuthDto } from 'src/domain/auth/auth.dto';
+import { AUDIT_LOG_MAX_DURATION } from 'src/domain/domain.constant';
+import { JOBS_ASSET_PAGINATION_SIZE } from 'src/domain/job/job.constants';
+import { DatabaseAction } from 'src/infra/entities/audit.entity';
+import { AssetPathType, PersonPathType, UserPathType } from 'src/infra/entities/move.entity';
+import { ImmichLogger } from 'src/infra/logger';
+import { IAccessRepository } from 'src/interfaces/access.repository';
+import { IAssetRepository } from 'src/interfaces/asset.repository';
+import { IAuditRepository } from 'src/interfaces/audit.repository';
+import { ICryptoRepository } from 'src/interfaces/crypto.repository';
+import { JobStatus } from 'src/interfaces/job.repository';
+import { IPersonRepository } from 'src/interfaces/person.repository';
+import { IStorageRepository } from 'src/interfaces/storage.repository';
+import { IUserRepository } from 'src/interfaces/user.repository';
+import { usePagination } from 'src/utils';
 
 @Injectable()
 export class AuditService {

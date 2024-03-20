@@ -1,43 +1,37 @@
+import { Stats } from 'node:fs';
+import { JobName } from 'src/domain/job/job.constants';
+import { MediaService } from 'src/domain/media/media.service';
+import { AssetType } from 'src/infra/entities/asset.entity';
+import { ExifEntity } from 'src/infra/entities/exif.entity';
 import {
-  AssetType,
   AudioCodec,
   Colorspace,
-  ExifEntity,
   SystemConfigKey,
   ToneMapping,
   TranscodeHWAccel,
   TranscodePolicy,
   VideoCodec,
-} from '@app/infra/entities';
-import {
-  assetStub,
-  faceStub,
-  newAssetRepositoryMock,
-  newCryptoRepositoryMock,
-  newJobRepositoryMock,
-  newMediaRepositoryMock,
-  newMoveRepositoryMock,
-  newPersonRepositoryMock,
-  newStorageRepositoryMock,
-  newSystemConfigRepositoryMock,
-  personStub,
-  probeStub,
-} from '@test';
-import { Stats } from 'node:fs';
-import { JobName } from '../job';
-import {
-  IAssetRepository,
-  ICryptoRepository,
-  IJobRepository,
-  IMediaRepository,
-  IMoveRepository,
-  IPersonRepository,
-  IStorageRepository,
-  ISystemConfigRepository,
-  JobStatus,
-  WithoutProperty,
-} from '../repositories';
-import { MediaService } from './media.service';
+} from 'src/infra/entities/system-config.entity';
+import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.repository';
+import { ICryptoRepository } from 'src/interfaces/crypto.repository';
+import { IJobRepository, JobStatus } from 'src/interfaces/job.repository';
+import { IMediaRepository } from 'src/interfaces/media.repository';
+import { IMoveRepository } from 'src/interfaces/move.repository';
+import { IPersonRepository } from 'src/interfaces/person.repository';
+import { IStorageRepository } from 'src/interfaces/storage.repository';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
+import { assetStub } from 'test/fixtures/asset.stub';
+import { faceStub } from 'test/fixtures/face.stub';
+import { probeStub } from 'test/fixtures/media.stub';
+import { personStub } from 'test/fixtures/person.stub';
+import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
+import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
+import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
+import { newMediaRepositoryMock } from 'test/repositories/media.repository.mock';
+import { newMoveRepositoryMock } from 'test/repositories/move.repository.mock';
+import { newPersonRepositoryMock } from 'test/repositories/person.repository.mock';
+import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
+import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
 
 describe(MediaService.name, () => {
   let sut: MediaService;

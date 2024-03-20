@@ -1,17 +1,14 @@
 import { Inject } from '@nestjs/common';
 import { DateTime } from 'luxon';
-import { AccessCore, Permission } from '../access';
-import { BulkIdsDto } from '../asset';
-import { AuthDto } from '../auth';
-import { usePagination } from '../domain.util';
-import { JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
-import {
-  ClientEvent,
-  IAccessRepository,
-  IAssetRepository,
-  ICommunicationRepository,
-  IJobRepository,
-} from '../repositories';
+import { AccessCore, Permission } from 'src/cores/access.core';
+import { BulkIdsDto } from 'src/domain/asset/response-dto/asset-ids-response.dto';
+import { AuthDto } from 'src/domain/auth/auth.dto';
+import { JOBS_ASSET_PAGINATION_SIZE, JobName } from 'src/domain/job/job.constants';
+import { IAccessRepository } from 'src/interfaces/access.repository';
+import { IAssetRepository } from 'src/interfaces/asset.repository';
+import { ClientEvent, ICommunicationRepository } from 'src/interfaces/communication.repository';
+import { IJobRepository } from 'src/interfaces/job.repository';
+import { usePagination } from 'src/utils';
 
 export class TrashService {
   private access: AccessCore;

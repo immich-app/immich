@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum } from 'class-validator';
-import { ValidateUUID } from '../../domain.util';
+import { ValidateUUID } from 'src/validation';
 
 export class AssetIdsDto {
   @ValidateUUID({ each: true })

@@ -1,10 +1,10 @@
-import { IActivityRepository } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { DummyValue, GenerateSql } from 'src/decorators';
+import { ActivityEntity } from 'src/infra/entities/activity.entity';
+import { Instrumentation } from 'src/infra/instrumentation';
+import { IActivityRepository } from 'src/interfaces/activity.repository';
 import { IsNull, Repository } from 'typeorm';
-import { ActivityEntity } from '../entities/activity.entity';
-import { DummyValue, GenerateSql } from '../infra.util';
-import { Instrumentation } from '../instrumentation';
 
 export interface ActivitySearch {
   albumId?: string;

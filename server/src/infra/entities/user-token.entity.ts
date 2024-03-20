@@ -1,5 +1,5 @@
+import { UserEntity } from 'src/infra/entities/user.entity';
 import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
-import { UserEntity } from './user.entity';
 
 @Entity('user_token')
 export class UserTokenEntity {

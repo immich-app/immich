@@ -1,6 +1,6 @@
 import { plainToInstance } from 'class-transformer';
 import { validateSync } from 'class-validator';
-import { CheckExistingAssetsDto } from './check-existing-assets.dto';
+import { CheckExistingAssetsDto } from 'src/immich/api-v1/asset/dto/check-existing-assets.dto';
 
 describe('CheckExistingAssetsDto', () => {
   it('should fail with an empty list', () => {

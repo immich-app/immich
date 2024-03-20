@@ -1,20 +1,10 @@
-import { LogLevel, SystemConfig } from '@app/infra/entities';
-import { ImmichLogger } from '@app/infra/logger';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { instanceToPlain } from 'class-transformer';
 import _ from 'lodash';
-import {
-  ClientEvent,
-  ICommunicationRepository,
-  ISearchRepository,
-  ISystemConfigRepository,
-  InternalEvent,
-  InternalEventMap,
-  ServerEvent,
-} from '../repositories';
-import { SystemConfigDto, mapConfig } from './dto/system-config.dto';
-import { SystemConfigTemplateStorageOptionDto } from './response-dto/system-config-template-storage-option.dto';
+import { SystemConfigCore } from 'src/cores/system-config.core';
+import { SystemConfigDto, mapConfig } from 'src/domain/system-config/dto/system-config.dto';
+import { SystemConfigTemplateStorageOptionDto } from 'src/domain/system-config/response-dto/system-config-template-storage-option.dto';
 import {
   supportedDayTokens,
   supportedHourTokens,
@@ -24,8 +14,18 @@ import {
   supportedSecondTokens,
   supportedWeekTokens,
   supportedYearTokens,
-} from './system-config.constants';
-import { SystemConfigCore } from './system-config.core';
+} from 'src/domain/system-config/system-config.constants';
+import { LogLevel, SystemConfig } from 'src/infra/entities/system-config.entity';
+import { ImmichLogger } from 'src/infra/logger';
+import {
+  ClientEvent,
+  ICommunicationRepository,
+  InternalEvent,
+  InternalEventMap,
+  ServerEvent,
+} from 'src/interfaces/communication.repository';
+import { ISearchRepository } from 'src/interfaces/search.repository';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
 
 @Injectable()
 export class SystemConfigService {

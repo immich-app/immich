@@ -1,4 +1,4 @@
-import { Version, VersionType, mimeTypes } from './domain.constant';
+import { mimeTypes, Version, VersionType } from 'src/domain/domain.constant';
 
 describe('mimeTypes', () => {
   for (const { mimetype, extension } of [

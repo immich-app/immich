@@ -1,21 +1,8 @@
-import { SystemMetadataKey } from '@app/infra/entities';
-import { ImmichLogger } from '@app/infra/logger';
 import { Inject, Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
-import { Version, isDev, mimeTypes, serverVersion } from '../domain.constant';
-import { asHumanReadable } from '../domain.util';
-import {
-  ClientEvent,
-  ICommunicationRepository,
-  IServerInfoRepository,
-  IStorageRepository,
-  ISystemConfigRepository,
-  ISystemMetadataRepository,
-  IUserRepository,
-  UserStatsQueryResponse,
-} from '../repositories';
-import { StorageCore, StorageFolder } from '../storage';
-import { SystemConfigCore } from '../system-config';
+import { StorageCore, StorageFolder } from 'src/cores/storage.core';
+import { SystemConfigCore } from 'src/cores/system-config.core';
+import { Version, isDev, mimeTypes, serverVersion } from 'src/domain/domain.constant';
 import {
   ServerConfigDto,
   ServerFeaturesDto,
@@ -24,7 +11,16 @@ import {
   ServerPingResponse,
   ServerStatsResponseDto,
   UsageByUserDto,
-} from './server-info.dto';
+} from 'src/domain/server-info/server-info.dto';
+import { SystemMetadataKey } from 'src/infra/entities/system-metadata.entity';
+import { ImmichLogger } from 'src/infra/logger';
+import { ClientEvent, ICommunicationRepository } from 'src/interfaces/communication.repository';
+import { IServerInfoRepository } from 'src/interfaces/server-info.repository';
+import { IStorageRepository } from 'src/interfaces/storage.repository';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.repository';
+import { IUserRepository, UserStatsQueryResponse } from 'src/interfaces/user.repository';
+import { asHumanReadable } from 'src/utils';
 
 @Injectable()
 export class ServerInfoService {

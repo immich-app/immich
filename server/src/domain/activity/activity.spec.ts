@@ -1,10 +1,11 @@
 import { BadRequestException } from '@nestjs/common';
-import { authStub, IAccessRepositoryMock, newAccessRepositoryMock } from '@test';
-import { activityStub } from '@test/fixtures/activity.stub';
-import { newActivityRepositoryMock } from '@test/repositories/activity.repository.mock';
-import { IActivityRepository } from '../repositories';
-import { ReactionType } from './activity.dto';
-import { ActivityService } from './activity.service';
+import { ReactionType } from 'src/domain/activity/activity.dto';
+import { ActivityService } from 'src/domain/activity/activity.service';
+import { IActivityRepository } from 'src/interfaces/activity.repository';
+import { activityStub } from 'test/fixtures/activity.stub';
+import { authStub } from 'test/fixtures/auth.stub';
+import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
+import { newActivityRepositoryMock } from 'test/repositories/activity.repository.mock';
 
 describe(ActivityService.name, () => {
   let sut: ActivityService;

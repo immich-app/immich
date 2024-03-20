@@ -229,21 +229,21 @@ export class AssetStore {
   }
 
   async loadBucket(bucketDate: string, position: BucketPosition): Promise<void> {
+    const bucket = this.getBucketByDate(bucketDate);
+    if (!bucket) {
+      return;
+    }
+
+    bucket.position = position;
+
+    if (bucket.cancelToken || bucket.assets.length > 0) {
+      this.emit(false);
+      return;
+    }
+
+    bucket.cancelToken = new AbortController();
+
     try {
-      const bucket = this.getBucketByDate(bucketDate);
-      if (!bucket) {
-        return;
-      }
-
-      bucket.position = position;
-
-      if (bucket.assets.length > 0) {
-        this.emit(false);
-        return;
-      }
-
-      bucket.cancelToken = new AbortController();
-
       const assets = await getTimeBucket(
         {
           ...this.options,
@@ -278,6 +278,8 @@ export class AssetStore {
       this.emit(true);
     } catch (error) {
       handleError(error, 'Failed to load assets');
+    } finally {
+      bucket.cancelToken = null;
     }
   }
 

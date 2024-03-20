@@ -1,25 +1,21 @@
-import { AssetEntity, SystemConfigKey } from '@app/infra/entities';
-import {
-  assetStub,
-  newAssetRepositoryMock,
-  newDatabaseRepositoryMock,
-  newJobRepositoryMock,
-  newMachineLearningRepositoryMock,
-  newSearchRepositoryMock,
-  newSystemConfigRepositoryMock,
-} from '@test';
-import { JobName } from '../job';
-import {
-  IAssetRepository,
-  IDatabaseRepository,
-  IJobRepository,
-  IMachineLearningRepository,
-  ISearchRepository,
-  ISystemConfigRepository,
-  WithoutProperty,
-} from '../repositories';
-import { cleanModelName, getCLIPModelInfo } from './smart-info.constant';
-import { SmartInfoService } from './smart-info.service';
+import { JobName } from 'src/domain/job/job.constants';
+import { cleanModelName, getCLIPModelInfo } from 'src/domain/smart-info/smart-info.constant';
+import { SmartInfoService } from 'src/domain/smart-info/smart-info.service';
+import { AssetEntity } from 'src/infra/entities/asset.entity';
+import { SystemConfigKey } from 'src/infra/entities/system-config.entity';
+import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.repository';
+import { IDatabaseRepository } from 'src/interfaces/database.repository';
+import { IJobRepository } from 'src/interfaces/job.repository';
+import { IMachineLearningRepository } from 'src/interfaces/machine-learning.repository';
+import { ISearchRepository } from 'src/interfaces/search.repository';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
+import { assetStub } from 'test/fixtures/asset.stub';
+import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
+import { newDatabaseRepositoryMock } from 'test/repositories/database.repository.mock';
+import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
+import { newMachineLearningRepositoryMock } from 'test/repositories/machine-learning.repository.mock';
+import { newSearchRepositoryMock } from 'test/repositories/search.repository.mock';
+import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
 
 const asset = {
   id: 'asset-1',

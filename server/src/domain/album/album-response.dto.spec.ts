@@ -1,5 +1,5 @@
-import { albumStub } from '@test';
-import { mapAlbum } from './album-response.dto';
+import { mapAlbum } from 'src/domain/album/album-response.dto';
+import { albumStub } from 'test/fixtures/album.stub';
 
 describe('mapAlbum', () => {
   it('should set start and end dates', () => {

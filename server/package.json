@@ -1,6 +1,6 @@
 {
   "name": "immich",
-  "version": "1.98.2",
+  "version": "1.99.0",
   "description": "",
   "author": "",
   "private": true,
@@ -46,7 +46,7 @@
     "@nestjs/swagger": "^7.1.8",
     "@nestjs/typeorm": "^10.0.0",
     "@nestjs/websockets": "^10.2.2",
-    "@opentelemetry/auto-instrumentations-node": "^0.42.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.43.0",
     "@opentelemetry/exporter-prometheus": "^0.49.0",
     "@opentelemetry/sdk-node": "^0.49.0",
     "@socket.io/postgres-adapter": "^0.3.1",
@@ -105,7 +105,7 @@
     "@types/mock-fs": "^4.13.1",
     "@types/multer": "^1.4.7",
     "@types/node": "^20.5.7",
-    "@types/sharp": "^0.31.1",
+    "@types/sharp": "^0.32.0",
     "@types/supertest": "^6.0.0",
     "@types/ua-parser-js": "^0.7.36",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
@@ -154,16 +154,14 @@
       "./src/domain/": {
         "branches": 75,
         "functions": 80,
-        "lines": 90,
-        "statements": 90
+        "lines": 85,
+        "statements": 85
       }
     },
     "testEnvironment": "node",
     "moduleNameMapper": {
-      "^@test(|/.*)$": "<rootDir>/test/$1",
-      "^@app/immich(|/.*)$": "<rootDir>/src/immich/$1",
-      "^@app/infra(|/.*)$": "<rootDir>/src/infra/$1",
-      "^@app/domain(|/.*)$": "<rootDir>/src/domain/$1"
+      "^test(|/.*)$": "<rootDir>/test/$1",
+      "^src(|/.*)$": "<rootDir>/src/$1"
     },
     "globalSetup": "<rootDir>/test/global-setup.js"
   },

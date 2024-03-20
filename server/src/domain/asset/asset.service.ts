@@ -1,54 +1,43 @@
-import { AssetEntity, LibraryType } from '@app/infra/entities';
-import { ImmichLogger } from '@app/infra/logger';
 import { BadRequestException, Inject } from '@nestjs/common';
 import _ from 'lodash';
 import { DateTime, Duration } from 'luxon';
 import { extname } from 'node:path';
 import sanitize from 'sanitize-filename';
-import { AccessCore, Permission } from '../access';
-import { AuthDto } from '../auth';
-import { mimeTypes } from '../domain.constant';
-import { usePagination } from '../domain.util';
-import { IAssetDeletionJob, ISidecarWriteJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
-import {
-  ClientEvent,
-  IAccessRepository,
-  IAssetRepository,
-  IAssetStackRepository,
-  ICommunicationRepository,
-  IJobRepository,
-  IPartnerRepository,
-  IStorageRepository,
-  ISystemConfigRepository,
-  IUserRepository,
-  JobItem,
-  JobStatus,
-  TimeBucketOptions,
-} from '../repositories';
-import { StorageCore, StorageFolder } from '../storage';
-import { SystemConfigCore } from '../system-config';
-import {
-  AssetBulkDeleteDto,
-  AssetBulkUpdateDto,
-  AssetJobName,
-  AssetJobsDto,
-  AssetStatsDto,
-  MapMarkerDto,
-  MemoryLaneDto,
-  TimeBucketAssetDto,
-  TimeBucketDto,
-  UpdateAssetDto,
-  UpdateStackParentDto,
-  mapStats,
-} from './dto';
+import { AccessCore, Permission } from 'src/cores/access.core';
+import { StorageCore, StorageFolder } from 'src/cores/storage.core';
+import { SystemConfigCore } from 'src/cores/system-config.core';
+import { AssetJobName, AssetJobsDto } from 'src/domain/asset/dto/asset-ids.dto';
+import { UpdateStackParentDto } from 'src/domain/asset/dto/asset-stack.dto';
+import { AssetStatsDto, mapStats } from 'src/domain/asset/dto/asset-statistics.dto';
+import { AssetBulkDeleteDto, AssetBulkUpdateDto, UpdateAssetDto } from 'src/domain/asset/dto/asset.dto';
+import { MapMarkerDto } from 'src/domain/asset/dto/map-marker.dto';
+import { MemoryLaneDto } from 'src/domain/asset/dto/memory-lane.dto';
+import { TimeBucketAssetDto, TimeBucketDto } from 'src/domain/asset/dto/time-bucket.dto';
 import {
   AssetResponseDto,
-  MapMarkerResponseDto,
   MemoryLaneResponseDto,
   SanitizedAssetResponseDto,
-  TimeBucketResponseDto,
   mapAsset,
-} from './response-dto';
+} from 'src/domain/asset/response-dto/asset-response.dto';
+import { MapMarkerResponseDto } from 'src/domain/asset/response-dto/map-marker-response.dto';
+import { TimeBucketResponseDto } from 'src/domain/asset/response-dto/time-bucket-response.dto';
+import { AuthDto } from 'src/domain/auth/auth.dto';
+import { mimeTypes } from 'src/domain/domain.constant';
+import { JOBS_ASSET_PAGINATION_SIZE, JobName } from 'src/domain/job/job.constants';
+import { IAssetDeletionJob, ISidecarWriteJob } from 'src/domain/job/job.interface';
+import { AssetEntity } from 'src/infra/entities/asset.entity';
+import { LibraryType } from 'src/infra/entities/library.entity';
+import { ImmichLogger } from 'src/infra/logger';
+import { IAccessRepository } from 'src/interfaces/access.repository';
+import { IAssetStackRepository } from 'src/interfaces/asset-stack.repository';
+import { IAssetRepository, TimeBucketOptions } from 'src/interfaces/asset.repository';
+import { ClientEvent, ICommunicationRepository } from 'src/interfaces/communication.repository';
+import { IJobRepository, JobItem, JobStatus } from 'src/interfaces/job.repository';
+import { IPartnerRepository } from 'src/interfaces/partner.repository';
+import { IStorageRepository } from 'src/interfaces/storage.repository';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
+import { IUserRepository } from 'src/interfaces/user.repository';
+import { usePagination } from 'src/utils';
 
 export enum UploadFieldName {
   ASSET_DATA = 'assetData',

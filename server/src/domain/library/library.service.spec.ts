@@ -1,45 +1,39 @@
-import { AssetType, LibraryType, SystemConfig, SystemConfigKey, UserEntity } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
-import {
-  IAccessRepositoryMock,
-  assetStub,
-  authStub,
-  libraryStub,
-  makeMockWatcher,
-  newAccessRepositoryMock,
-  newAssetRepositoryMock,
-  newCryptoRepositoryMock,
-  newDatabaseRepositoryMock,
-  newJobRepositoryMock,
-  newLibraryRepositoryMock,
-  newStorageRepositoryMock,
-  newSystemConfigRepositoryMock,
-  systemConfigStub,
-  userStub,
-} from '@test';
 import { when } from 'jest-when';
 import { R_OK } from 'node:constants';
 import { Stats } from 'node:fs';
-import { ILibraryFileJob, ILibraryOfflineJob, ILibraryRefreshJob, JobName } from '../job';
-import {
-  IAssetRepository,
-  ICryptoRepository,
-  IDatabaseRepository,
-  IJobRepository,
-  ILibraryRepository,
-  IStorageRepository,
-  ISystemConfigRepository,
-  JobStatus,
-  StorageEventType,
-} from '../repositories';
-import { SystemConfigCore } from '../system-config/system-config.core';
-import { mapLibrary } from './library.dto';
-import { LibraryService } from './library.service';
+import { SystemConfigCore } from 'src/cores/system-config.core';
+import { JobName } from 'src/domain/job/job.constants';
+import { ILibraryFileJob, ILibraryOfflineJob, ILibraryRefreshJob } from 'src/domain/job/job.interface';
+import { mapLibrary } from 'src/domain/library/library.dto';
+import { LibraryService } from 'src/domain/library/library.service';
+import { AssetType } from 'src/infra/entities/asset.entity';
+import { LibraryType } from 'src/infra/entities/library.entity';
+import { SystemConfig, SystemConfigKey } from 'src/infra/entities/system-config.entity';
+import { UserEntity } from 'src/infra/entities/user.entity';
+import { IAssetRepository } from 'src/interfaces/asset.repository';
+import { ICryptoRepository } from 'src/interfaces/crypto.repository';
+import { IDatabaseRepository } from 'src/interfaces/database.repository';
+import { IJobRepository, JobStatus } from 'src/interfaces/job.repository';
+import { ILibraryRepository } from 'src/interfaces/library.repository';
+import { IStorageRepository, StorageEventType } from 'src/interfaces/storage.repository';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
+import { assetStub } from 'test/fixtures/asset.stub';
+import { authStub } from 'test/fixtures/auth.stub';
+import { libraryStub } from 'test/fixtures/library.stub';
+import { systemConfigStub } from 'test/fixtures/system-config.stub';
+import { userStub } from 'test/fixtures/user.stub';
+import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
+import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
+import { newDatabaseRepositoryMock } from 'test/repositories/database.repository.mock';
+import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
+import { newLibraryRepositoryMock } from 'test/repositories/library.repository.mock';
+import { makeMockWatcher, newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
+import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
 
 describe(LibraryService.name, () => {
   let sut: LibraryService;
 
-  let accessMock: IAccessRepositoryMock;
   let assetMock: jest.Mocked<IAssetRepository>;
   let configMock: jest.Mocked<ISystemConfigRepository>;
   let cryptoMock: jest.Mocked<ICryptoRepository>;
@@ -49,7 +43,6 @@ describe(LibraryService.name, () => {
   let databaseMock: jest.Mocked<IDatabaseRepository>;
 
   beforeEach(() => {
-    accessMock = newAccessRepositoryMock();
     configMock = newSystemConfigRepositoryMock();
     libraryMock = newLibraryRepositoryMock();
     assetMock = newAssetRepositoryMock();
@@ -58,19 +51,7 @@ describe(LibraryService.name, () => {
     storageMock = newStorageRepositoryMock();
     databaseMock = newDatabaseRepositoryMock();
 
-    // Always validate owner access for library.
-    accessMock.library.checkOwnerAccess.mockImplementation((_, libraryIds) => Promise.resolve(libraryIds));
-
-    sut = new LibraryService(
-      accessMock,
-      assetMock,
-      configMock,
-      cryptoMock,
-      jobMock,
-      libraryMock,
-      storageMock,
-      databaseMock,
-    );
+    sut = new LibraryService(assetMock, configMock, cryptoMock, jobMock, libraryMock, storageMock, databaseMock);
 
     databaseMock.tryLock.mockResolvedValue(true);
   });

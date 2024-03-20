@@ -1,4 +1,4 @@
-import { IMetadataRepository } from '@app/domain';
+import { IMetadataRepository } from 'src/interfaces/metadata.repository';
 
 export const newMetadataRepositoryMock = (): jest.Mocked<IMetadataRepository> => {
   return {

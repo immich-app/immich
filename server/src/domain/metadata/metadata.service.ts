@@ -1,5 +1,3 @@
-import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
-import { ImmichLogger } from '@app/infra/logger';
 import { Inject, Injectable } from '@nestjs/common';
 import { ExifDateTime, Tags } from 'exiftool-vendored';
 import { firstDateTime } from 'exiftool-vendored/dist/FirstDateTime';
@@ -8,29 +6,26 @@ import { Duration } from 'luxon';
 import { constants } from 'node:fs/promises';
 import path from 'node:path';
 import { Subscription } from 'rxjs';
-import { handlePromiseError, usePagination } from '../domain.util';
-import { IBaseJob, IEntityJob, ISidecarWriteJob, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
-import {
-  ClientEvent,
-  DatabaseLock,
-  IAlbumRepository,
-  IAssetRepository,
-  ICommunicationRepository,
-  ICryptoRepository,
-  IDatabaseRepository,
-  IJobRepository,
-  IMediaRepository,
-  IMetadataRepository,
-  IMoveRepository,
-  IPersonRepository,
-  IStorageRepository,
-  ISystemConfigRepository,
-  ImmichTags,
-  JobStatus,
-  WithoutProperty,
-} from '../repositories';
-import { StorageCore } from '../storage';
-import { FeatureFlag, SystemConfigCore } from '../system-config';
+import { StorageCore } from 'src/cores/storage.core';
+import { FeatureFlag, SystemConfigCore } from 'src/cores/system-config.core';
+import { JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from 'src/domain/job/job.constants';
+import { IBaseJob, IEntityJob, ISidecarWriteJob } from 'src/domain/job/job.interface';
+import { AssetEntity, AssetType } from 'src/infra/entities/asset.entity';
+import { ExifEntity } from 'src/infra/entities/exif.entity';
+import { ImmichLogger } from 'src/infra/logger';
+import { IAlbumRepository } from 'src/interfaces/album.repository';
+import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.repository';
+import { ClientEvent, ICommunicationRepository } from 'src/interfaces/communication.repository';
+import { ICryptoRepository } from 'src/interfaces/crypto.repository';
+import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.repository';
+import { IJobRepository, JobStatus } from 'src/interfaces/job.repository';
+import { IMediaRepository } from 'src/interfaces/media.repository';
+import { IMetadataRepository, ImmichTags } from 'src/interfaces/metadata.repository';
+import { IMoveRepository } from 'src/interfaces/move.repository';
+import { IPersonRepository } from 'src/interfaces/person.repository';
+import { IStorageRepository } from 'src/interfaces/storage.repository';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
+import { handlePromiseError, usePagination } from 'src/utils';
 
 /** look for a date from these tags (in order) */
 const EXIF_DATE_TAGS: Array<keyof Tags> = [

@@ -1,30 +1,26 @@
-import {
-  IAssetRepository,
-  IJobRepository,
-  ILibraryRepository,
-  IStorageRepository,
-  IUserRepository,
-  JobName,
-} from '@app/domain';
-import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
-import {
-  IAccessRepositoryMock,
-  assetStub,
-  authStub,
-  fileStub,
-  newAccessRepositoryMock,
-  newAssetRepositoryMock,
-  newJobRepositoryMock,
-  newLibraryRepositoryMock,
-  newStorageRepositoryMock,
-  newUserRepositoryMock,
-} from '@test';
 import { when } from 'jest-when';
+import { JobName } from 'src/domain/job/job.constants';
+import { IAssetRepositoryV1 } from 'src/immich/api-v1/asset/asset-repository';
+import { AssetService } from 'src/immich/api-v1/asset/asset.service';
+import { CreateAssetDto } from 'src/immich/api-v1/asset/dto/create-asset.dto';
+import { AssetRejectReason, AssetUploadAction } from 'src/immich/api-v1/asset/response-dto/asset-check-response.dto';
+import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType } from 'src/infra/entities/asset.entity';
+import { ExifEntity } from 'src/infra/entities/exif.entity';
+import { IAssetRepository } from 'src/interfaces/asset.repository';
+import { IJobRepository } from 'src/interfaces/job.repository';
+import { ILibraryRepository } from 'src/interfaces/library.repository';
+import { IStorageRepository } from 'src/interfaces/storage.repository';
+import { IUserRepository } from 'src/interfaces/user.repository';
+import { assetStub } from 'test/fixtures/asset.stub';
+import { authStub } from 'test/fixtures/auth.stub';
+import { fileStub } from 'test/fixtures/file.stub';
+import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
+import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
+import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
+import { newLibraryRepositoryMock } from 'test/repositories/library.repository.mock';
+import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
+import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
 import { QueryFailedError } from 'typeorm';
-import { IAssetRepositoryV1 } from './asset-repository';
-import { AssetService } from './asset.service';
-import { CreateAssetDto } from './dto/create-asset.dto';
-import { AssetRejectReason, AssetUploadAction } from './response-dto/asset-check-response.dto';
 
 const _getCreateAssetDto = (): CreateAssetDto => {
   const createAssetDto = new CreateAssetDto();

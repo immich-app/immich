@@ -1,11 +1,12 @@
-import { ILibraryRepository, LibraryStatsResponseDto } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { DummyValue, GenerateSql } from 'src/decorators';
+import { LibraryStatsResponseDto } from 'src/domain/library/library.dto';
+import { LibraryEntity, LibraryType } from 'src/infra/entities/library.entity';
+import { Instrumentation } from 'src/infra/instrumentation';
+import { ILibraryRepository } from 'src/interfaces/library.repository';
 import { IsNull, Not } from 'typeorm';
 import { Repository } from 'typeorm/repository/Repository.js';
-import { LibraryEntity, LibraryType } from '../entities';
-import { DummyValue, GenerateSql } from '../infra.util';
-import { Instrumentation } from '../instrumentation';
 
 @Instrumentation()
 @Injectable()

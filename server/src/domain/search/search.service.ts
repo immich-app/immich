@@ -1,20 +1,9 @@
-import { AssetEntity, AssetOrder } from '@app/infra/entities';
 import { Inject, Injectable } from '@nestjs/common';
-import { AssetResponseDto, mapAsset } from '../asset';
-import { AuthDto } from '../auth';
-import { PersonResponseDto } from '../person';
-import {
-  IAssetRepository,
-  IMachineLearningRepository,
-  IMetadataRepository,
-  IPartnerRepository,
-  IPersonRepository,
-  ISearchRepository,
-  ISystemConfigRepository,
-  SearchExploreItem,
-  SearchStrategy,
-} from '../repositories';
-import { FeatureFlag, SystemConfigCore } from '../system-config';
+import { FeatureFlag, SystemConfigCore } from 'src/cores/system-config.core';
+import { AssetResponseDto, mapAsset } from 'src/domain/asset/response-dto/asset-response.dto';
+import { AuthDto } from 'src/domain/auth/auth.dto';
+import { PersonResponseDto } from 'src/domain/person/person.dto';
+import { SearchSuggestionRequestDto, SearchSuggestionType } from 'src/domain/search/dto/search-suggestion.dto';
 import {
   MetadataSearchDto,
   PlacesResponseDto,
@@ -23,9 +12,17 @@ import {
   SearchPlacesDto,
   SmartSearchDto,
   mapPlaces,
-} from './dto';
-import { SearchSuggestionRequestDto, SearchSuggestionType } from './dto/search-suggestion.dto';
-import { SearchResponseDto } from './response-dto';
+} from 'src/domain/search/dto/search.dto';
+import { SearchResponseDto } from 'src/domain/search/response-dto/search-response.dto';
+import { AssetOrder } from 'src/infra/entities/album.entity';
+import { AssetEntity } from 'src/infra/entities/asset.entity';
+import { IAssetRepository } from 'src/interfaces/asset.repository';
+import { IMachineLearningRepository } from 'src/interfaces/machine-learning.repository';
+import { IMetadataRepository } from 'src/interfaces/metadata.repository';
+import { IPartnerRepository } from 'src/interfaces/partner.repository';
+import { IPersonRepository } from 'src/interfaces/person.repository';
+import { ISearchRepository, SearchExploreItem, SearchStrategy } from 'src/interfaces/search.repository';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
 
 @Injectable()
 export class SearchService {

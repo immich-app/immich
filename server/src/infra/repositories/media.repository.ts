@@ -1,19 +1,19 @@
+import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
+import fs from 'node:fs/promises';
+import { Writable } from 'node:stream';
+import { promisify } from 'node:util';
+import sharp from 'sharp';
+import { Colorspace } from 'src/infra/entities/system-config.entity';
+import { Instrumentation } from 'src/infra/instrumentation';
+import { ImmichLogger } from 'src/infra/logger';
 import {
   CropOptions,
   IMediaRepository,
   ResizeOptions,
   TranscodeOptions,
   VideoInfo,
-  handlePromiseError,
-} from '@app/domain';
-import { Colorspace } from '@app/infra/entities';
-import { ImmichLogger } from '@app/infra/logger';
-import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
-import fs from 'node:fs/promises';
-import { Writable } from 'node:stream';
-import { promisify } from 'node:util';
-import sharp from 'sharp';
-import { Instrumentation } from '../instrumentation';
+} from 'src/interfaces/media.repository';
+import { handlePromiseError } from 'src/utils';
 
 const probe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
 sharp.concurrency(0);

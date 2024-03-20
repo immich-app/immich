@@ -1,7 +1,7 @@
-import { AssetOrder } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsString } from 'class-validator';
-import { Optional, ValidateBoolean, ValidateUUID } from '../../domain.util';
+import { AssetOrder } from 'src/infra/entities/album.entity';
+import { Optional, ValidateBoolean, ValidateUUID } from 'src/validation';
 
 export class UpdateAlbumDto {
   @Optional()

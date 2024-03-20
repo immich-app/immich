@@ -1,6 +1,6 @@
-import { GitHubRelease, IServerInfoRepository } from '@app/domain';
 import { Injectable } from '@nestjs/common';
-import { Instrumentation } from '../instrumentation';
+import { Instrumentation } from 'src/infra/instrumentation';
+import { GitHubRelease, IServerInfoRepository } from 'src/interfaces/server-info.repository';
 
 @Instrumentation()
 @Injectable()

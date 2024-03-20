@@ -1,4 +1,3 @@
-import { serverVersion } from '@app/domain/domain.constant';
 import { Histogram, MetricOptions, ValueType, metrics } from '@opentelemetry/api';
 import { AsyncLocalStorageContextManager } from '@opentelemetry/context-async-hooks';
 import { PrometheusExporter } from '@opentelemetry/exporter-prometheus';
@@ -14,8 +13,9 @@ import { snakeCase, startCase } from 'lodash';
 import { OpenTelemetryModuleOptions } from 'nestjs-otel/lib/interfaces';
 import { copyMetadataFromFunctionToFunction } from 'nestjs-otel/lib/opentelemetry.utils';
 import { performance } from 'node:perf_hooks';
-import { excludePaths } from './infra.config';
-import { DecorateAll } from './infra.utils';
+import { excludePaths } from 'src/config';
+import { DecorateAll } from 'src/decorators';
+import { serverVersion } from 'src/domain/domain.constant';
 
 let metricsEnabled = process.env.IMMICH_METRICS === 'true';
 const hostMetrics =

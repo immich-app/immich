@@ -1,10 +1,10 @@
-import { IUserTokenRepository } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { DummyValue, GenerateSql } from 'src/decorators';
+import { UserTokenEntity } from 'src/infra/entities/user-token.entity';
+import { Instrumentation } from 'src/infra/instrumentation';
+import { IUserTokenRepository } from 'src/interfaces/user-token.repository';
 import { Repository } from 'typeorm';
-import { UserTokenEntity } from '../entities';
-import { DummyValue, GenerateSql } from '../infra.util';
-import { Instrumentation } from '../instrumentation';
 
 @Instrumentation()
 @Injectable()

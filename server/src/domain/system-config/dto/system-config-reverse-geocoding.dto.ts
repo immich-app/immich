@@ -1,4 +1,4 @@
-import { ValidateBoolean } from '../../domain.util';
+import { ValidateBoolean } from 'src/validation';
 
 export class SystemConfigReverseGeocodingDto {
   @ValidateBoolean()
