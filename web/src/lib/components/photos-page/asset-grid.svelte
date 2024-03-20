@@ -207,7 +207,7 @@
       return;
     }
 
-    if (matchesShortcut(event, { key: 'Shift' })) {
+    if (event.key == 'Shift') {
       event.preventDefault();
       shiftKeyIsDown = true;
     }
@@ -218,7 +218,7 @@
       return;
     }
 
-    if (matchesShortcut(event, { key: 'Shift' })) {
+    if (event.key == 'Shift') {
       event.preventDefault();
       shiftKeyIsDown = false;
     }
