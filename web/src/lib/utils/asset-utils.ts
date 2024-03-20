@@ -236,7 +236,7 @@ export const selectAllAssets = async (assetStore: AssetStore, assetInteractionSt
 
   try {
     let selectedAssetCount = 1;
-    loadBuckets: for (const bucket of get(assetStore).buckets) {
+    loadBuckets: for (const bucket of assetStore.buckets) {
       await assetStore.loadBucket(bucket.bucketDate, BucketPosition.Unknown);
 
       if (!get(isSelectingAllAssets)) {
