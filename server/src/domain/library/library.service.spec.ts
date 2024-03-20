@@ -584,7 +584,7 @@ describe(LibraryService.name, () => {
 
       await expect(sut.handleAssetRefresh(mockLibraryJob)).resolves.toBe(JobStatus.SUCCESS);
 
-      expect(assetMock.save).toHaveBeenCalledWith({ id: assetStub.image.id, isOffline: true });
+      expect(assetMock.update).toHaveBeenCalledWith({ id: assetStub.image.id, isOffline: true });
       expect(jobMock.queue).not.toHaveBeenCalled();
       expect(jobMock.queueAll).not.toHaveBeenCalled();
     });
@@ -602,7 +602,7 @@ describe(LibraryService.name, () => {
 
       await expect(sut.handleAssetRefresh(mockLibraryJob)).resolves.toBe(JobStatus.SUCCESS);
 
-      expect(assetMock.save).toHaveBeenCalledWith({ id: assetStub.offline.id, isOffline: false });
+      expect(assetMock.update).toHaveBeenCalledWith({ id: assetStub.offline.id, isOffline: false });
 
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.METADATA_EXTRACTION,
@@ -631,7 +631,7 @@ describe(LibraryService.name, () => {
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
       assetMock.create.mockResolvedValue(assetStub.image);
 
-      expect(assetMock.save).not.toHaveBeenCalled();
+      expect(assetMock.update).not.toHaveBeenCalled();
 
       await expect(sut.handleAssetRefresh(mockLibraryJob)).resolves.toBe(JobStatus.SUCCESS);
     });
@@ -1257,7 +1257,7 @@ describe(LibraryService.name, () => {
 
         await sut.watchAll();
 
-        expect(assetMock.save).toHaveBeenCalledWith({ id: assetStub.external.id, isOffline: true });
+        expect(assetMock.update).toHaveBeenCalledWith({ id: assetStub.external.id, isOffline: true });
       });
 
       it('should handle an error event', async () => {
