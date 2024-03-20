@@ -1,5 +1,6 @@
 import { when } from 'jest-when';
 import { Stats } from 'node:fs';
+import { SystemConfigCore, defaults } from 'src/cores/system-config.core';
 import { IAlbumRepository } from 'src/domain/repositories/album.repository';
 import { IAssetRepository } from 'src/domain/repositories/asset.repository';
 import { ICryptoRepository } from 'src/domain/repositories/crypto.repository';
@@ -11,7 +12,6 @@ import { IStorageRepository } from 'src/domain/repositories/storage.repository';
 import { ISystemConfigRepository } from 'src/domain/repositories/system-config.repository';
 import { IUserRepository } from 'src/domain/repositories/user.repository';
 import { StorageTemplateService } from 'src/domain/storage-template/storage-template.service';
-import { SystemConfigCore, defaults } from 'src/domain/system-config/system-config.core';
 import { AssetPathType } from 'src/infra/entities/move.entity';
 import { SystemConfig, SystemConfigKey } from 'src/infra/entities/system-config.entity';
 import { assetStub } from 'test/fixtures/asset.stub';

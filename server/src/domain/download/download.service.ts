@@ -1,6 +1,6 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { parse } from 'node:path';
-import { AccessCore, Permission } from 'src/domain/access/access.core';
+import { AccessCore, Permission } from 'src/cores/access.core';
 import { AssetIdsDto } from 'src/domain/asset/dto/asset-ids.dto';
 import { AuthDto } from 'src/domain/auth/auth.dto';
 import { mimeTypes } from 'src/domain/domain.constant';

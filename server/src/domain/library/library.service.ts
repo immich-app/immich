@@ -6,6 +6,8 @@ import { EventEmitter } from 'node:events';
 import { Stats } from 'node:fs';
 import path, { basename, parse } from 'node:path';
 import picomatch from 'picomatch';
+import { StorageCore } from 'src/cores/storage.core';
+import { SystemConfigCore } from 'src/cores/system-config.core';
 import { mimeTypes } from 'src/domain/domain.constant';
 import { JOBS_ASSET_PAGINATION_SIZE, JobName } from 'src/domain/job/job.constants';
 import { IBaseJob, IEntityJob, ILibraryFileJob, ILibraryRefreshJob } from 'src/domain/job/job.interface';
@@ -29,8 +31,6 @@ import { IJobRepository, JobStatus } from 'src/domain/repositories/job.repositor
 import { ILibraryRepository } from 'src/domain/repositories/library.repository';
 import { IStorageRepository, StorageEventType } from 'src/domain/repositories/storage.repository';
 import { ISystemConfigRepository } from 'src/domain/repositories/system-config.repository';
-import { StorageCore } from 'src/domain/storage/storage.core';
-import { SystemConfigCore } from 'src/domain/system-config/system-config.core';
 import { AssetType } from 'src/infra/entities/asset.entity';
 import { LibraryEntity, LibraryType } from 'src/infra/entities/library.entity';
 import { ImmichLogger } from 'src/infra/logger';

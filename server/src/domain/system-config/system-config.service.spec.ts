@@ -1,9 +1,9 @@
 import { BadRequestException } from '@nestjs/common';
+import { defaults } from 'src/cores/system-config.core';
 import { QueueName } from 'src/domain/job/job.constants';
 import { ICommunicationRepository, ServerEvent } from 'src/domain/repositories/communication.repository';
 import { ISearchRepository } from 'src/domain/repositories/search.repository';
 import { ISystemConfigRepository } from 'src/domain/repositories/system-config.repository';
-import { defaults } from 'src/domain/system-config/system-config.core';
 import { SystemConfigService } from 'src/domain/system-config/system-config.service';
 import {
   AudioCodec,

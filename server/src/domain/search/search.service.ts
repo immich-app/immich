@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { FeatureFlag, SystemConfigCore } from 'src/cores/system-config.core';
 import { AssetResponseDto, mapAsset } from 'src/domain/asset/response-dto/asset-response.dto';
 import { AuthDto } from 'src/domain/auth/auth.dto';
 import { PersonResponseDto } from 'src/domain/person/person.dto';
@@ -20,7 +21,6 @@ import {
   mapPlaces,
 } from 'src/domain/search/dto/search.dto';
 import { SearchResponseDto } from 'src/domain/search/response-dto/search-response.dto';
-import { FeatureFlag, SystemConfigCore } from 'src/domain/system-config/system-config.core';
 import { AssetOrder } from 'src/infra/entities/album.entity';
 import { AssetEntity } from 'src/infra/entities/asset.entity';
 

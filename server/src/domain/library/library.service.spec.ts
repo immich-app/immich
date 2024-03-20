@@ -2,6 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 import { when } from 'jest-when';
 import { R_OK } from 'node:constants';
 import { Stats } from 'node:fs';
+import { SystemConfigCore } from 'src/cores/system-config.core';
 import { JobName } from 'src/domain/job/job.constants';
 import { ILibraryFileJob, ILibraryRefreshJob } from 'src/domain/job/job.interface';
 import { mapLibrary } from 'src/domain/library/library.dto';
@@ -13,7 +14,6 @@ import { IJobRepository, JobStatus } from 'src/domain/repositories/job.repositor
 import { ILibraryRepository } from 'src/domain/repositories/library.repository';
 import { IStorageRepository, StorageEventType } from 'src/domain/repositories/storage.repository';
 import { ISystemConfigRepository } from 'src/domain/repositories/system-config.repository';
-import { SystemConfigCore } from 'src/domain/system-config/system-config.core';
 import { AssetType } from 'src/infra/entities/asset.entity';
 import { LibraryType } from 'src/infra/entities/library.entity';
 import { SystemConfig, SystemConfigKey } from 'src/infra/entities/system-config.entity';

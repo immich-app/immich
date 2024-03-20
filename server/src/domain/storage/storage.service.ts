@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { StorageCore, StorageFolder } from 'src/cores/storage.core';
 import { IDeleteFilesJob } from 'src/domain/job/job.interface';
 import { JobStatus } from 'src/domain/repositories/job.repository';
 import { IStorageRepository } from 'src/domain/repositories/storage.repository';
-import { StorageCore, StorageFolder } from 'src/domain/storage/storage.core';
 import { ImmichLogger } from 'src/infra/logger';
 
 @Injectable()

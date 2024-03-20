@@ -2,6 +2,7 @@ import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { instanceToPlain } from 'class-transformer';
 import _ from 'lodash';
+import { SystemConfigCore } from 'src/cores/system-config.core';
 import {
   ClientEvent,
   ICommunicationRepository,
@@ -23,7 +24,6 @@ import {
   supportedWeekTokens,
   supportedYearTokens,
 } from 'src/domain/system-config/system-config.constants';
-import { SystemConfigCore } from 'src/domain/system-config/system-config.core';
 import { LogLevel, SystemConfig } from 'src/infra/entities/system-config.entity';
 import { ImmichLogger } from 'src/infra/logger';
 

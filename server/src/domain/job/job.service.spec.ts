@@ -1,4 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
+import { FeatureFlag, SystemConfigCore } from 'src/cores/system-config.core';
 import { JobCommand, JobName, QueueName } from 'src/domain/job/job.constants';
 import { JobService } from 'src/domain/job/job.service';
 import { IAssetRepository } from 'src/domain/repositories/asset.repository';
@@ -6,7 +7,6 @@ import { ICommunicationRepository } from 'src/domain/repositories/communication.
 import { IJobRepository, JobHandler, JobItem, JobStatus } from 'src/domain/repositories/job.repository';
 import { IPersonRepository } from 'src/domain/repositories/person.repository';
 import { ISystemConfigRepository } from 'src/domain/repositories/system-config.repository';
-import { FeatureFlag, SystemConfigCore } from 'src/domain/system-config/system-config.core';
 import { SystemConfig, SystemConfigKey } from 'src/infra/entities/system-config.entity';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';

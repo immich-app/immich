@@ -5,7 +5,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { AccessCore, Permission } from 'src/domain/access/access.core';
+import { AccessCore, Permission } from 'src/cores/access.core';
 import { UploadFile } from 'src/domain/asset/asset.service';
 import { AssetResponseDto, mapAsset } from 'src/domain/asset/response-dto/asset-response.dto';
 import { AuthDto } from 'src/domain/auth/auth.dto';

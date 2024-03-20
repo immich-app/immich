@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { SystemConfigCore } from 'src/cores/system-config.core';
 import { JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from 'src/domain/job/job.constants';
 import { IBaseJob, IEntityJob } from 'src/domain/job/job.interface';
 import { IAssetRepository, WithoutProperty } from 'src/domain/repositories/asset.repository';
@@ -7,7 +8,6 @@ import { IJobRepository, JobStatus } from 'src/domain/repositories/job.repositor
 import { IMachineLearningRepository } from 'src/domain/repositories/machine-learning.repository';
 import { ISearchRepository } from 'src/domain/repositories/search.repository';
 import { ISystemConfigRepository } from 'src/domain/repositories/system-config.repository';
-import { SystemConfigCore } from 'src/domain/system-config/system-config.core';
 import { ImmichLogger } from 'src/infra/logger';
 import { usePagination } from 'src/utils';
 
