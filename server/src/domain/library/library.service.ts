@@ -479,6 +479,7 @@ export class LibraryService extends EventEmitter {
       sidecarPath = `${assetPath}.xmp`;
     }
 
+    // TODO: device asset id is deprecated, remove it
     const deviceAssetId = `${basename(assetPath)}`.replaceAll(/\s+/g, '');
 
     let assetId;
@@ -573,7 +574,7 @@ export class LibraryService extends EventEmitter {
     return JobStatus.SUCCESS;
   }
 
-  // Check if an asset is has no file, marking it as offline
+  // Check if an asset is has no file or is outside of import paths, marking it as offline
   async handleOfflineCheck(job: IEntityJob): Promise<JobStatus> {
     const asset = await this.assetRepository.getById(job.id);
 
