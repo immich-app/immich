@@ -122,6 +122,7 @@
           ? 'rounded-t-3xl border  border-gray-200 bg-white dark:border-gray-800'
           : 'rounded-3xl border border-transparent bg-gray-200'}"
         placeholder="Search your photos"
+        required
         pattern="^(?!m:$).*$"
         bind:value
         bind:this={input}
