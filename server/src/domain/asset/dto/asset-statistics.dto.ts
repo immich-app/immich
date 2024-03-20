@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ValidateBoolean } from 'src/domain/domain.util';
 import { AssetStats } from 'src/domain/repositories/asset.repository';
 import { AssetType } from 'src/infra/entities/asset.entity';
+import { ValidateBoolean } from 'src/validation';
 
 export class AssetStatsDto {
   @ValidateBoolean({ optional: true })

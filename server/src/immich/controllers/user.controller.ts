@@ -26,8 +26,8 @@ import { UserResponseDto } from 'src/domain/user/response-dto/user-response.dto'
 import { UserService } from 'src/domain/user/user.service';
 import { AdminRoute, Auth, Authenticated, FileResponse } from 'src/immich/app.guard';
 import { sendFile } from 'src/immich/app.utils';
-import { UUIDParamDto } from 'src/immich/controllers/dto/uuid-param.dto';
 import { FileUploadInterceptor, Route } from 'src/immich/interceptors/file-upload.interceptor';
+import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('User')
 @Controller(Route.USER)

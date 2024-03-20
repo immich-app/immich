@@ -29,16 +29,15 @@ import { AssetFileUploadResponseDto } from 'src/immich/api-v1/asset/response-dto
 import { CheckExistingAssetsResponseDto } from 'src/immich/api-v1/asset/response-dto/check-existing-assets-response.dto';
 import { CuratedLocationsResponseDto } from 'src/immich/api-v1/asset/response-dto/curated-locations-response.dto';
 import { CuratedObjectsResponseDto } from 'src/immich/api-v1/asset/response-dto/curated-objects-response.dto';
-import FileNotEmptyValidator from 'src/immich/api-v1/validation/file-not-empty-validator';
 import { Auth, Authenticated, FileResponse, SharedLinkRoute } from 'src/immich/app.guard';
 import { sendFile } from 'src/immich/app.utils';
-import { UUIDParamDto } from 'src/immich/controllers/dto/uuid-param.dto';
 import {
   FileUploadInterceptor,
   ImmichFile,
   Route,
   mapToUploadFile,
 } from 'src/immich/interceptors/file-upload.interceptor';
+import { FileNotEmptyValidator, UUIDParamDto } from 'src/validation';
 
 interface UploadFiles {
   assetData: ImmichFile[];

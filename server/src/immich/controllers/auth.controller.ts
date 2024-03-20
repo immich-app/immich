@@ -15,7 +15,7 @@ import {
 import { AuthService, LoginDetails } from 'src/domain/auth/auth.service';
 import { UserResponseDto, mapUser } from 'src/domain/user/response-dto/user-response.dto';
 import { Auth, Authenticated, GetLoginDetails, PublicRoute } from 'src/immich/app.guard';
-import { UUIDParamDto } from 'src/immich/controllers/dto/uuid-param.dto';
+import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('Authentication')
 @Controller('auth')

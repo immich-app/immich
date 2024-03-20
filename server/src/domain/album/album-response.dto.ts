@@ -1,9 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { AssetResponseDto, mapAsset } from 'src/domain/asset/response-dto/asset-response.dto';
 import { AuthDto } from 'src/domain/auth/auth.dto';
-import { Optional } from 'src/domain/domain.util';
 import { UserResponseDto, mapUser } from 'src/domain/user/response-dto/user-response.dto';
 import { AlbumEntity, AssetOrder } from 'src/infra/entities/album.entity';
+import { Optional } from 'src/validation';
 
 export class AlbumResponseDto {
   id!: string;

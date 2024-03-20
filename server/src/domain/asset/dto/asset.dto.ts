@@ -10,7 +10,7 @@ import {
   ValidateIf,
 } from 'class-validator';
 import { BulkIdsDto } from 'src/domain/asset/response-dto/asset-ids-response.dto';
-import { Optional, ValidateBoolean, ValidateUUID } from 'src/domain/domain.util';
+import { Optional, ValidateBoolean, ValidateUUID } from 'src/validation';
 
 export class DeviceIdDto {
   @IsNotEmpty()

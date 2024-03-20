@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
-import { Optional } from 'src/domain/domain.util';
+import { Optional } from 'src/validation';
 
 export enum SearchSuggestionType {
   COUNTRY = 'country',

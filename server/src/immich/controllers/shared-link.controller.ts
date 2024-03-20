@@ -9,7 +9,7 @@ import { SharedLinkResponseDto } from 'src/domain/shared-link/shared-link-respon
 import { SharedLinkCreateDto, SharedLinkEditDto, SharedLinkPasswordDto } from 'src/domain/shared-link/shared-link.dto';
 import { SharedLinkService } from 'src/domain/shared-link/shared-link.service';
 import { Auth, Authenticated, SharedLinkRoute } from 'src/immich/app.guard';
-import { UUIDParamDto } from 'src/immich/controllers/dto/uuid-param.dto';
+import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('Shared Link')
 @Controller('shared-link')

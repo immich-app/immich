@@ -1,4 +1,4 @@
-import { ValidateBoolean } from 'src/domain/domain.util';
+import { ValidateBoolean } from 'src/validation';
 
 export class AlbumInfoDto {
   @ValidateBoolean({ optional: true })

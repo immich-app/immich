@@ -18,7 +18,7 @@ import {
 import { PersonService } from 'src/domain/person/person.service';
 import { Auth, Authenticated, FileResponse } from 'src/immich/app.guard';
 import { sendFile } from 'src/immich/app.utils';
-import { UUIDParamDto } from 'src/immich/controllers/dto/uuid-param.dto';
+import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('Person')
 @Controller('person')

@@ -1,4 +1,4 @@
-import { ValidateUUID } from 'src/domain/domain.util';
+import { ValidateUUID } from 'src/validation';
 
 export class UpdateStackParentDto {
   @ValidateUUID()

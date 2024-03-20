@@ -1,7 +1,7 @@
 import { Type } from 'class-transformer';
 import { IsObject, IsUrl, ValidateIf, ValidateNested } from 'class-validator';
-import { ValidateBoolean } from 'src/domain/domain.util';
 import { CLIPConfig, RecognitionConfig } from 'src/domain/smart-info/dto/model-config.dto';
+import { ValidateBoolean } from 'src/validation';
 
 export class SystemConfigMachineLearningDto {
   @ValidateBoolean()

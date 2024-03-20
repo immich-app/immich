@@ -9,9 +9,8 @@ import { AlbumInfoDto } from 'src/domain/album/dto/album.dto';
 import { GetAlbumsDto } from 'src/domain/album/dto/get-albums.dto';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/domain/asset/response-dto/asset-ids-response.dto';
 import { AuthDto } from 'src/domain/auth/auth.dto';
-import { ParseMeUUIDPipe } from 'src/immich/api-v1/validation/parse-me-uuid-pipe';
 import { Auth, Authenticated, SharedLinkRoute } from 'src/immich/app.guard';
-import { UUIDParamDto } from 'src/immich/controllers/dto/uuid-param.dto';
+import { ParseMeUUIDPipe, UUIDParamDto } from 'src/validation';
 
 @ApiTags('Album')
 @Controller('album')

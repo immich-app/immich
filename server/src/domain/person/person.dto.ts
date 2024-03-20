@@ -2,9 +2,9 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsArray, IsNotEmpty, IsString, MaxDate, ValidateNested } from 'class-validator';
 import { AuthDto } from 'src/domain/auth/auth.dto';
-import { Optional, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/domain/domain.util';
 import { AssetFaceEntity } from 'src/infra/entities/asset-face.entity';
 import { PersonEntity } from 'src/infra/entities/person.entity';
+import { Optional, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
 
 export class PersonCreateDto {
   /**

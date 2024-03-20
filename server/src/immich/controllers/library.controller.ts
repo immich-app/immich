@@ -12,7 +12,7 @@ import {
 } from 'src/domain/library/library.dto';
 import { LibraryService } from 'src/domain/library/library.service';
 import { AdminRoute, Authenticated } from 'src/immich/app.guard';
-import { UUIDParamDto } from 'src/immich/controllers/dto/uuid-param.dto';
+import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('Library')
 @Controller('library')

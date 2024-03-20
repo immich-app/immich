@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsEmail, IsNotEmpty, IsNumber, IsPositive, IsString } from 'class-validator';
-import { Optional, ValidateBoolean, toEmail, toSanitized } from 'src/domain/domain.util';
+import { Optional, ValidateBoolean, toEmail, toSanitized } from 'src/validation';
 
 export class CreateUserDto {
   @IsEmail({ require_tld: false })
