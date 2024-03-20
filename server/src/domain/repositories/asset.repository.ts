@@ -90,22 +90,20 @@ export type AssetCreate = Pick<
 > &
   Partial<AssetEntity>;
 
-export type AssetWithoutRelations = {
-  [K in keyof Omit<
-    AssetEntity,
-    | 'livePhotoVideo'
-    | 'stack'
-    | 'albums'
-    | 'faces'
-    | 'owner'
-    | 'library'
-    | 'exifInfo'
-    | 'sharedLinks'
-    | 'smartInfo'
-    | 'smartSearch'
-    | 'tags'
-  >]: AssetEntity[K];
-};
+export type AssetWithoutRelations = Omit<
+  AssetEntity,
+  | 'livePhotoVideo'
+  | 'stack'
+  | 'albums'
+  | 'faces'
+  | 'owner'
+  | 'library'
+  | 'exifInfo'
+  | 'sharedLinks'
+  | 'smartInfo'
+  | 'smartSearch'
+  | 'tags'
+>;
 
 export type AssetUpdateOptions = Pick<AssetWithoutRelations, 'id'> & Partial<AssetWithoutRelations>;
 
