@@ -9,7 +9,7 @@ import { AlbumInfoDto } from 'src/domain/album/dto/album.dto';
 import { GetAlbumsDto } from 'src/domain/album/dto/get-albums.dto';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/domain/asset/response-dto/asset-ids-response.dto';
 import { AuthDto } from 'src/domain/auth/auth.dto';
-import { Auth, Authenticated, SharedLinkRoute } from 'src/immich/app.guard';
+import { Auth, Authenticated, SharedLinkRoute } from 'src/middleware/auth.guard';
 import { ParseMeUUIDPipe, UUIDParamDto } from 'src/validation';
 
 @ApiTags('Album')

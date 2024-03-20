@@ -11,7 +11,7 @@ import {
   ServerVersionResponseDto,
 } from 'src/domain/server-info/server-info.dto';
 import { ServerInfoService } from 'src/domain/server-info/server-info.service';
-import { AdminRoute, Authenticated, PublicRoute } from 'src/immich/app.guard';
+import { AdminRoute, Authenticated, PublicRoute } from 'src/middleware/auth.guard';
 
 @ApiTags('Server Info')
 @Controller('server-info')

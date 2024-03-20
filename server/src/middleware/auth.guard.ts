@@ -78,8 +78,8 @@ export interface AuthRequest extends Request {
 }
 
 @Injectable()
-export class AppGuard implements CanActivate {
-  private logger = new ImmichLogger(AppGuard.name);
+export class AuthGuard implements CanActivate {
+  private logger = new ImmichLogger(AuthGuard.name);
 
   constructor(
     private reflector: Reflector,

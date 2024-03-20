@@ -10,7 +10,7 @@ import {
 } from 'src/domain/auth/auth.dto';
 import { AuthService, LoginDetails } from 'src/domain/auth/auth.service';
 import { UserResponseDto } from 'src/domain/user/response-dto/user-response.dto';
-import { Auth, Authenticated, GetLoginDetails, PublicRoute } from 'src/immich/app.guard';
+import { Auth, Authenticated, GetLoginDetails, PublicRoute } from 'src/middleware/auth.guard';
 
 @ApiTags('OAuth')
 @Controller('oauth')

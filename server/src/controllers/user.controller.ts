@@ -24,9 +24,9 @@ import { UpdateUserDto } from 'src/domain/user/dto/update-user.dto';
 import { CreateProfileImageResponseDto } from 'src/domain/user/response-dto/create-profile-image-response.dto';
 import { UserResponseDto } from 'src/domain/user/response-dto/user-response.dto';
 import { UserService } from 'src/domain/user/user.service';
-import { AdminRoute, Auth, Authenticated, FileResponse } from 'src/immich/app.guard';
 import { sendFile } from 'src/immich/app.utils';
-import { FileUploadInterceptor, Route } from 'src/immich/interceptors/file-upload.interceptor';
+import { AdminRoute, Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard';
+import { FileUploadInterceptor, Route } from 'src/middleware/file-upload.interceptor';
 import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('User')

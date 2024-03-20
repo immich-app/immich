@@ -4,7 +4,7 @@ import { SystemConfigDto } from 'src/domain/system-config/dto/system-config.dto'
 import { SystemConfigTemplateStorageOptionDto } from 'src/domain/system-config/response-dto/system-config-template-storage-option.dto';
 import { MapThemeDto } from 'src/domain/system-config/system-config-map-theme.dto';
 import { SystemConfigService } from 'src/domain/system-config/system-config.service';
-import { AdminRoute, Authenticated } from 'src/immich/app.guard';
+import { AdminRoute, Authenticated } from 'src/middleware/auth.guard';
 
 @ApiTags('System Config')
 @Controller('system-config')

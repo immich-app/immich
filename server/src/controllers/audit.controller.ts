@@ -10,7 +10,7 @@ import {
 } from 'src/domain/audit/audit.dto';
 import { AuditService } from 'src/domain/audit/audit.service';
 import { AuthDto } from 'src/domain/auth/auth.dto';
-import { AdminRoute, Auth, Authenticated } from 'src/immich/app.guard';
+import { AdminRoute, Auth, Authenticated } from 'src/middleware/auth.guard';
 
 @ApiTags('Audit')
 @Controller('audit')

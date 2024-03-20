@@ -8,7 +8,7 @@ import {
 } from 'src/domain/api-key/api-key.dto';
 import { APIKeyService } from 'src/domain/api-key/api-key.service';
 import { AuthDto } from 'src/domain/auth/auth.dto';
-import { Auth, Authenticated } from 'src/immich/app.guard';
+import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('API Key')

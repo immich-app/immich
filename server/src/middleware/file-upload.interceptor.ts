@@ -7,8 +7,8 @@ import multer, { StorageEngine, diskStorage } from 'multer';
 import { createHash, randomUUID } from 'node:crypto';
 import { Observable } from 'rxjs';
 import { AssetService, UploadFieldName, UploadFile } from 'src/domain/asset/asset.service';
-import { AuthRequest } from 'src/immich/app.guard';
 import { ImmichLogger } from 'src/infra/logger';
+import { AuthRequest } from 'src/middleware/auth.guard';
 
 export enum Route {
   ASSET = 'asset',

@@ -10,7 +10,7 @@ import {
 } from 'src/domain/activity/activity.dto';
 import { ActivityService } from 'src/domain/activity/activity.service';
 import { AuthDto } from 'src/domain/auth/auth.dto';
-import { Auth, Authenticated } from 'src/immich/app.guard';
+import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('Activity')

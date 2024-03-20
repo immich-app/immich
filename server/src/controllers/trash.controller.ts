@@ -3,7 +3,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { BulkIdsDto } from 'src/domain/asset/response-dto/asset-ids-response.dto';
 import { AuthDto } from 'src/domain/auth/auth.dto';
 import { TrashService } from 'src/domain/trash/trash.service';
-import { Auth, Authenticated } from 'src/immich/app.guard';
+import { Auth, Authenticated } from 'src/middleware/auth.guard';
 
 @ApiTags('Trash')
 @Controller('trash')

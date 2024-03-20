@@ -15,7 +15,7 @@ import {
 import { SearchExploreResponseDto } from 'src/domain/search/response-dto/search-explore.response.dto';
 import { SearchResponseDto } from 'src/domain/search/response-dto/search-response.dto';
 import { SearchService } from 'src/domain/search/search.service';
-import { Auth, Authenticated } from 'src/immich/app.guard';
+import { Auth, Authenticated } from 'src/middleware/auth.guard';
 
 @ApiTags('Search')
 @Controller('search')

@@ -11,7 +11,7 @@ import {
   ValidateLibraryResponseDto,
 } from 'src/domain/library/library.dto';
 import { LibraryService } from 'src/domain/library/library.service';
-import { AdminRoute, Authenticated } from 'src/immich/app.guard';
+import { AdminRoute, Authenticated } from 'src/middleware/auth.guard';
 import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('Library')
