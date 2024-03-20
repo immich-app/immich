@@ -588,7 +588,7 @@ export class LibraryService extends EventEmitter {
       this.logger.verbose(`Asset is still online: ${asset.originalPath}`);
     } else {
       this.logger.debug(`Marking asset as offline: ${asset.originalPath}`);
-      await this.assetRepository.save({ id: asset.id, isOffline: true });
+      await this.assetRepository.update({ id: asset.id, isOffline: true });
     }
 
     return JobStatus.SUCCESS;
