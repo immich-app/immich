@@ -16,7 +16,6 @@ import {
   AssetEntity,
   AssetFaceEntity,
   AssetType,
-  ExifEntity,
   GeodataPlacesEntity,
   SmartInfoEntity,
   SmartSearchEntity,
@@ -49,7 +48,7 @@ export class SearchRepository implements ISearchRepository {
       .ownColumns.map((column) => column.propertyName)
       .filter((propertyName) => propertyName !== 'embedding');
     this.assetsByCityQuery =
-      assetsByCityQuery +
+      assetsByCityCte +
       this.assetRepository
         .createQueryBuilder('asset')
         .innerJoinAndSelect('asset.exifInfo', 'exif')
@@ -324,7 +323,7 @@ export class SearchRepository implements ISearchRepository {
 }
 
 // the performance difference between this and the normal way is too huge to ignore, e.g. 3s vs 4ms
-const assetsByCityQuery = `
+const assetsByCityCte = `
 WITH RECURSIVE cte AS (
   (
     SELECT city, "assetId"
