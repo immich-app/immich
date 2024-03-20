@@ -17,7 +17,7 @@ import { UserService } from 'src/domain/user/user.service';
 import { otelSDK } from 'src/infra/instrumentation';
 
 @Injectable()
-export class AppService {
+export class MicroservicesService {
   constructor(
     private auditService: AuditService,
     private assetService: AssetService,

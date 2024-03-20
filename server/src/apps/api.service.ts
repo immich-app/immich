@@ -35,8 +35,8 @@ const render = (index: string, meta: OpenGraphTags) => {
 };
 
 @Injectable()
-export class AppService {
-  private logger = new ImmichLogger(AppService.name);
+export class ApiService {
+  private logger = new ImmichLogger(ApiService.name);
 
   constructor(
     private authService: AuthService,

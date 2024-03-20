@@ -18,4 +18,4 @@ import { InfraModule } from 'src/infra/infra.module';
     ListUsersCommand,
   ],
 })
-export class AppModule {}
+export class ImmichAdminModule {}

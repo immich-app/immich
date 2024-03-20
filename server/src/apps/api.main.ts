@@ -4,10 +4,10 @@ import { json } from 'body-parser';
 import cookieParser from 'cookie-parser';
 import { existsSync } from 'node:fs';
 import sirv from 'sirv';
+import { ApiModule } from 'src/apps/api.module';
+import { ApiService } from 'src/apps/api.service';
 import { excludePaths } from 'src/config';
 import { WEB_ROOT, envName, isDev, serverVersion } from 'src/domain/domain.constant';
-import { AppModule } from 'src/immich/app.module';
-import { AppService } from 'src/immich/app.service';
 import { useSwagger } from 'src/immich/app.utils';
 import { otelSDK } from 'src/infra/instrumentation';
 import { ImmichLogger } from 'src/infra/logger';
@@ -16,9 +16,9 @@ import { WebSocketAdapter } from 'src/infra/websocket.adapter';
 const logger = new ImmichLogger('ImmichServer');
 const port = Number(process.env.SERVER_PORT) || 3001;
 
-export async function bootstrap() {
+export async function bootstrapApi() {
   otelSDK.start();
-  const app = await NestFactory.create<NestExpressApplication>(AppModule, { bufferLogs: true });
+  const app = await NestFactory.create<NestExpressApplication>(ApiModule, { bufferLogs: true });
 
   app.useLogger(app.get(ImmichLogger));
   app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
@@ -48,7 +48,7 @@ export async function bootstrap() {
       }),
     );
   }
-  app.use(app.get(AppService).ssr(excludePaths));
+  app.use(app.get(ApiService).ssr(excludePaths));
 
   const server = await app.listen(port);
   server.requestTimeout = 30 * 60 * 1000;
