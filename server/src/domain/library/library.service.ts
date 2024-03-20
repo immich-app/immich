@@ -596,6 +596,8 @@ export class LibraryService extends EventEmitter {
     let existsInImportPath = false;
 
     for (const importPath of job.importPaths) {
+      console.warn(importPath);
+      console.warn(asset.originalPath);
       if (asset.originalPath.startsWith(importPath)) {
         existsInImportPath = true;
         break;
@@ -648,7 +650,8 @@ export class LibraryService extends EventEmitter {
         return validation;
       })
       .filter((validation) => validation.isValid)
-      .map((validation) => validation.importPath);
+      .map((validation) => validation.importPath)
+      .map((importPath) => path.normalize(importPath));
 
     const crawledAssets = this.storageRepository.walk({
       pathsToCrawl: validImportPaths,
