@@ -5,6 +5,7 @@ import { SchedulerRegistry } from '@nestjs/schedule';
 import { Job, JobsOptions, Processor, Queue, Worker, WorkerOptions } from 'bullmq';
 import { CronJob, CronTime } from 'cron';
 import { setTimeout } from 'node:timers/promises';
+import { bullConfig } from 'src/config';
 import { JOBS_TO_QUEUE, JobName, QueueName } from 'src/domain/job/job.constants';
 import {
   IJobRepository,
@@ -13,7 +14,6 @@ import {
   QueueCleanType,
   QueueStatus,
 } from 'src/domain/repositories/job.repository';
-import { bullConfig } from 'src/infra/infra.config';
 import { Instrumentation } from 'src/infra/instrumentation';
 import { ImmichLogger } from 'src/infra/logger';
 
