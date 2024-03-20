@@ -12,7 +12,7 @@
   import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
   import { handlePromiseError } from '$lib/utils';
   import { shortcut } from '$lib/utils/shortcut';
-  import { focusChange } from '$lib/utils/focus-change';
+  import { focusOutside } from '$lib/utils/focus-outside';
 
   export let value = '';
   export let grayTheme: boolean;
@@ -95,7 +95,7 @@
   }}
 />
 
-<div class="w-full relative" use:clickOutside={{ onOutclick: onFocusOut }} use:focusChange={{ onFocusOut }}>
+<div class="w-full relative" use:clickOutside={{ onOutclick: onFocusOut }} use:focusOutside={{ onFocusOut }}>
   <form
     draggable="false"
     autocomplete="off"
