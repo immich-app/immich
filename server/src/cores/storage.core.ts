@@ -1,16 +1,16 @@
 import { dirname, join, resolve } from 'node:path';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { APP_MEDIA_LOCATION } from 'src/domain/domain.constant';
-import { IAssetRepository } from 'src/domain/repositories/asset.repository';
-import { ICryptoRepository } from 'src/domain/repositories/crypto.repository';
-import { IMoveRepository } from 'src/domain/repositories/move.repository';
-import { IPersonRepository } from 'src/domain/repositories/person.repository';
-import { IStorageRepository } from 'src/domain/repositories/storage.repository';
-import { ISystemConfigRepository } from 'src/domain/repositories/system-config.repository';
 import { AssetEntity } from 'src/infra/entities/asset.entity';
 import { AssetPathType, PathType, PersonPathType } from 'src/infra/entities/move.entity';
 import { PersonEntity } from 'src/infra/entities/person.entity';
 import { ImmichLogger } from 'src/infra/logger';
+import { IAssetRepository } from 'src/interfaces/asset.repository';
+import { ICryptoRepository } from 'src/interfaces/crypto.repository';
+import { IMoveRepository } from 'src/interfaces/move.repository';
+import { IPersonRepository } from 'src/interfaces/person.repository';
+import { IStorageRepository } from 'src/interfaces/storage.repository';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
 
 export enum StorageFolder {
   ENCODED_VIDEO = 'encoded-video',

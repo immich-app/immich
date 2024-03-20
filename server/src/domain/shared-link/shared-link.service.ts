@@ -3,9 +3,6 @@ import { AccessCore, Permission } from 'src/cores/access.core';
 import { AssetIdsDto } from 'src/domain/asset/dto/asset-ids.dto';
 import { AssetIdErrorReason, AssetIdsResponseDto } from 'src/domain/asset/response-dto/asset-ids-response.dto';
 import { AuthDto } from 'src/domain/auth/auth.dto';
-import { IAccessRepository } from 'src/domain/repositories/access.repository';
-import { ICryptoRepository } from 'src/domain/repositories/crypto.repository';
-import { ISharedLinkRepository } from 'src/domain/repositories/shared-link.repository';
 import {
   SharedLinkResponseDto,
   mapSharedLink,
@@ -14,6 +11,9 @@ import {
 import { SharedLinkCreateDto, SharedLinkEditDto, SharedLinkPasswordDto } from 'src/domain/shared-link/shared-link.dto';
 import { AssetEntity } from 'src/infra/entities/asset.entity';
 import { SharedLinkEntity, SharedLinkType } from 'src/infra/entities/shared-link.entity';
+import { IAccessRepository } from 'src/interfaces/access.repository';
+import { ICryptoRepository } from 'src/interfaces/crypto.repository';
+import { ISharedLinkRepository } from 'src/interfaces/shared-link.repository';
 import { OpenGraphTags } from 'src/utils';
 
 @Injectable()

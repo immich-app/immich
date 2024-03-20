@@ -12,9 +12,9 @@ import {
   mapActivity,
 } from 'src/domain/activity/activity.dto';
 import { AuthDto } from 'src/domain/auth/auth.dto';
-import { IAccessRepository } from 'src/domain/repositories/access.repository';
-import { IActivityRepository } from 'src/domain/repositories/activity.repository';
 import { ActivityEntity } from 'src/infra/entities/activity.entity';
+import { IAccessRepository } from 'src/interfaces/access.repository';
+import { IActivityRepository } from 'src/interfaces/activity.repository';
 
 @Injectable()
 export class ActivityService {

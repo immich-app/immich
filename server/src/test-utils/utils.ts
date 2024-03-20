@@ -7,14 +7,14 @@ import { join } from 'node:path';
 import { EventEmitter } from 'node:stream';
 import { Server } from 'node:tls';
 import { QueueName } from 'src/domain/job/job.constants';
-import { IJobRepository, JobItem, JobItemHandler } from 'src/domain/repositories/job.repository';
-import { IMediaRepository } from 'src/domain/repositories/media.repository';
-import { StorageEventType } from 'src/domain/repositories/storage.repository';
 import { AppModule } from 'src/immich/app.module';
 import { AppService } from 'src/immich/app.service';
 import { dataSource } from 'src/infra/database.config';
 import { InfraModule, InfraTestModule } from 'src/infra/infra.module';
 import { MediaRepository } from 'src/infra/repositories/media.repository';
+import { IJobRepository, JobItem, JobItemHandler } from 'src/interfaces/job.repository';
+import { IMediaRepository } from 'src/interfaces/media.repository';
+import { StorageEventType } from 'src/interfaces/storage.repository';
 import { AppService as MicroAppService } from 'src/microservices/app.service';
 import { EntityTarget, ObjectLiteral } from 'typeorm';
 

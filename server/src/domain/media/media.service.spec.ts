@@ -1,14 +1,6 @@
 import { Stats } from 'node:fs';
 import { JobName } from 'src/domain/job/job.constants';
 import { MediaService } from 'src/domain/media/media.service';
-import { IAssetRepository, WithoutProperty } from 'src/domain/repositories/asset.repository';
-import { ICryptoRepository } from 'src/domain/repositories/crypto.repository';
-import { IJobRepository, JobStatus } from 'src/domain/repositories/job.repository';
-import { IMediaRepository } from 'src/domain/repositories/media.repository';
-import { IMoveRepository } from 'src/domain/repositories/move.repository';
-import { IPersonRepository } from 'src/domain/repositories/person.repository';
-import { IStorageRepository } from 'src/domain/repositories/storage.repository';
-import { ISystemConfigRepository } from 'src/domain/repositories/system-config.repository';
 import { AssetType } from 'src/infra/entities/asset.entity';
 import { ExifEntity } from 'src/infra/entities/exif.entity';
 import {
@@ -20,6 +12,14 @@ import {
   TranscodePolicy,
   VideoCodec,
 } from 'src/infra/entities/system-config.entity';
+import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.repository';
+import { ICryptoRepository } from 'src/interfaces/crypto.repository';
+import { IJobRepository, JobStatus } from 'src/interfaces/job.repository';
+import { IMediaRepository } from 'src/interfaces/media.repository';
+import { IMoveRepository } from 'src/interfaces/move.repository';
+import { IPersonRepository } from 'src/interfaces/person.repository';
+import { IStorageRepository } from 'src/interfaces/storage.repository';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { faceStub } from 'test/fixtures/face.stub';
 import { probeStub } from 'test/fixtures/media.stub';

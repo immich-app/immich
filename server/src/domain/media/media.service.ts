@@ -13,19 +13,6 @@ import {
   VAAPIConfig,
   VP9Config,
 } from 'src/domain/media/media.util';
-import { IAssetRepository, WithoutProperty } from 'src/domain/repositories/asset.repository';
-import { ICryptoRepository } from 'src/domain/repositories/crypto.repository';
-import { IJobRepository, JobItem, JobStatus } from 'src/domain/repositories/job.repository';
-import {
-  AudioStreamInfo,
-  IMediaRepository,
-  VideoCodecHWConfig,
-  VideoStreamInfo,
-} from 'src/domain/repositories/media.repository';
-import { IMoveRepository } from 'src/domain/repositories/move.repository';
-import { IPersonRepository } from 'src/domain/repositories/person.repository';
-import { IStorageRepository } from 'src/domain/repositories/storage.repository';
-import { ISystemConfigRepository } from 'src/domain/repositories/system-config.repository';
 import { SystemConfigFFmpegDto } from 'src/domain/system-config/dto/system-config-ffmpeg.dto';
 import { AssetEntity, AssetType } from 'src/infra/entities/asset.entity';
 import { AssetPathType } from 'src/infra/entities/move.entity';
@@ -38,6 +25,19 @@ import {
   VideoCodec,
 } from 'src/infra/entities/system-config.entity';
 import { ImmichLogger } from 'src/infra/logger';
+import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.repository';
+import { ICryptoRepository } from 'src/interfaces/crypto.repository';
+import { IJobRepository, JobItem, JobStatus } from 'src/interfaces/job.repository';
+import {
+  AudioStreamInfo,
+  IMediaRepository,
+  VideoCodecHWConfig,
+  VideoStreamInfo,
+} from 'src/interfaces/media.repository';
+import { IMoveRepository } from 'src/interfaces/move.repository';
+import { IPersonRepository } from 'src/interfaces/person.repository';
+import { IStorageRepository } from 'src/interfaces/storage.repository';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
 import { usePagination } from 'src/utils';
 
 @Injectable()

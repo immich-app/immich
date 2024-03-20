@@ -14,17 +14,17 @@ import {
 import { AuthDto } from 'src/domain/auth/auth.dto';
 import { AUDIT_LOG_MAX_DURATION } from 'src/domain/domain.constant';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/domain/job/job.constants';
-import { IAccessRepository } from 'src/domain/repositories/access.repository';
-import { IAssetRepository } from 'src/domain/repositories/asset.repository';
-import { IAuditRepository } from 'src/domain/repositories/audit.repository';
-import { ICryptoRepository } from 'src/domain/repositories/crypto.repository';
-import { JobStatus } from 'src/domain/repositories/job.repository';
-import { IPersonRepository } from 'src/domain/repositories/person.repository';
-import { IStorageRepository } from 'src/domain/repositories/storage.repository';
-import { IUserRepository } from 'src/domain/repositories/user.repository';
 import { DatabaseAction } from 'src/infra/entities/audit.entity';
 import { AssetPathType, PersonPathType, UserPathType } from 'src/infra/entities/move.entity';
 import { ImmichLogger } from 'src/infra/logger';
+import { IAccessRepository } from 'src/interfaces/access.repository';
+import { IAssetRepository } from 'src/interfaces/asset.repository';
+import { IAuditRepository } from 'src/interfaces/audit.repository';
+import { ICryptoRepository } from 'src/interfaces/crypto.repository';
+import { JobStatus } from 'src/interfaces/job.repository';
+import { IPersonRepository } from 'src/interfaces/person.repository';
+import { IStorageRepository } from 'src/interfaces/storage.repository';
+import { IUserRepository } from 'src/interfaces/user.repository';
 import { usePagination } from 'src/utils';
 
 @Injectable()

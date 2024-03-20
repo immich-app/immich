@@ -15,8 +15,8 @@ import path, { isAbsolute } from 'node:path';
 import { promisify } from 'node:util';
 import { IMMICH_ACCESS_COOKIE, IMMICH_API_KEY_HEADER, IMMICH_API_KEY_NAME } from 'src/domain/auth/auth.constant';
 import { serverVersion } from 'src/domain/domain.constant';
-import { ImmichReadStream } from 'src/domain/repositories/storage.repository';
 import { ImmichLogger } from 'src/infra/logger';
+import { ImmichReadStream } from 'src/interfaces/storage.repository';
 import { Metadata } from 'src/middleware/auth.guard';
 import { CacheControl, ImmichFileResponse, isConnectionAborted } from 'src/utils';
 

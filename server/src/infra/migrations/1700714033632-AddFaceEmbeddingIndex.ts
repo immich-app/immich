@@ -1,5 +1,5 @@
-import { DatabaseExtension } from 'src/domain/repositories/database.repository';
 import { vectorExt } from 'src/infra/database.config';
+import { DatabaseExtension } from 'src/interfaces/database.repository';
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class AddFaceEmbeddingIndex1700714033632 implements MigrationInterface {

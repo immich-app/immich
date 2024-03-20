@@ -11,12 +11,6 @@ import { AssetResponseDto, mapAsset } from 'src/domain/asset/response-dto/asset-
 import { AuthDto } from 'src/domain/auth/auth.dto';
 import { mimeTypes } from 'src/domain/domain.constant';
 import { JobName } from 'src/domain/job/job.constants';
-import { IAccessRepository } from 'src/domain/repositories/access.repository';
-import { IAssetRepository } from 'src/domain/repositories/asset.repository';
-import { IJobRepository } from 'src/domain/repositories/job.repository';
-import { ILibraryRepository } from 'src/domain/repositories/library.repository';
-import { IStorageRepository } from 'src/domain/repositories/storage.repository';
-import { IUserRepository } from 'src/domain/repositories/user.repository';
 import { IAssetRepositoryV1 } from 'src/immich/api-v1/asset/asset-repository';
 import { AssetBulkUploadCheckDto } from 'src/immich/api-v1/asset/dto/asset-check.dto';
 import { AssetSearchDto } from 'src/immich/api-v1/asset/dto/asset-search.dto';
@@ -36,6 +30,12 @@ import { CuratedObjectsResponseDto } from 'src/immich/api-v1/asset/response-dto/
 import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType } from 'src/infra/entities/asset.entity';
 import { LibraryType } from 'src/infra/entities/library.entity';
 import { ImmichLogger } from 'src/infra/logger';
+import { IAccessRepository } from 'src/interfaces/access.repository';
+import { IAssetRepository } from 'src/interfaces/asset.repository';
+import { IJobRepository } from 'src/interfaces/job.repository';
+import { ILibraryRepository } from 'src/interfaces/library.repository';
+import { IStorageRepository } from 'src/interfaces/storage.repository';
+import { IUserRepository } from 'src/interfaces/user.repository';
 import { CacheControl, ImmichFileResponse, getLivePhotoMotionFilename } from 'src/utils';
 import { QueryFailedError } from 'typeorm';
 

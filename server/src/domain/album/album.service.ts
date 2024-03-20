@@ -14,13 +14,13 @@ import { AlbumInfoDto } from 'src/domain/album/dto/album.dto';
 import { GetAlbumsDto } from 'src/domain/album/dto/get-albums.dto';
 import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto } from 'src/domain/asset/response-dto/asset-ids-response.dto';
 import { AuthDto } from 'src/domain/auth/auth.dto';
-import { IAccessRepository } from 'src/domain/repositories/access.repository';
-import { AlbumAssetCount, AlbumInfoOptions, IAlbumRepository } from 'src/domain/repositories/album.repository';
-import { IAssetRepository } from 'src/domain/repositories/asset.repository';
-import { IUserRepository } from 'src/domain/repositories/user.repository';
 import { AlbumEntity } from 'src/infra/entities/album.entity';
 import { AssetEntity } from 'src/infra/entities/asset.entity';
 import { UserEntity } from 'src/infra/entities/user.entity';
+import { IAccessRepository } from 'src/interfaces/access.repository';
+import { AlbumAssetCount, AlbumInfoOptions, IAlbumRepository } from 'src/interfaces/album.repository';
+import { IAssetRepository } from 'src/interfaces/asset.repository';
+import { IUserRepository } from 'src/interfaces/user.repository';
 import { setUnion } from 'src/utils';
 
 @Injectable()

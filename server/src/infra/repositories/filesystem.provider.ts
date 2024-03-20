@@ -6,6 +6,8 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { mimeTypes } from 'src/domain/domain.constant';
 import { CrawlOptionsDto } from 'src/domain/library/library.dto';
+import { Instrumentation } from 'src/infra/instrumentation';
+import { ImmichLogger } from 'src/infra/logger';
 import {
   DiskUsage,
   IStorageRepository,
@@ -13,9 +15,7 @@ import {
   ImmichZipStream,
   StorageEventType,
   WatchEvents,
-} from 'src/domain/repositories/storage.repository';
-import { Instrumentation } from 'src/infra/instrumentation';
-import { ImmichLogger } from 'src/infra/logger';
+} from 'src/interfaces/storage.repository';
 
 @Instrumentation()
 export class FilesystemProvider implements IStorageRepository {

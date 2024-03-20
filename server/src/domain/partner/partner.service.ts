@@ -2,10 +2,10 @@ import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { AccessCore, Permission } from 'src/cores/access.core';
 import { AuthDto } from 'src/domain/auth/auth.dto';
 import { PartnerResponseDto, UpdatePartnerDto } from 'src/domain/partner/partner.dto';
-import { IAccessRepository } from 'src/domain/repositories/access.repository';
-import { IPartnerRepository, PartnerDirection, PartnerIds } from 'src/domain/repositories/partner.repository';
 import { mapUser } from 'src/domain/user/response-dto/user-response.dto';
 import { PartnerEntity } from 'src/infra/entities/partner.entity';
+import { IAccessRepository } from 'src/interfaces/access.repository';
+import { IPartnerRepository, PartnerDirection, PartnerIds } from 'src/interfaces/partner.repository';
 
 @Injectable()
 export class PartnerService {

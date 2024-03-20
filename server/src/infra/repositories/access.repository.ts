@@ -1,6 +1,5 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
-import { IAccessRepository } from 'src/domain/repositories/access.repository';
 import { ActivityEntity } from 'src/infra/entities/activity.entity';
 import { AlbumEntity } from 'src/infra/entities/album.entity';
 import { AssetFaceEntity } from 'src/infra/entities/asset-face.entity';
@@ -11,6 +10,7 @@ import { PersonEntity } from 'src/infra/entities/person.entity';
 import { SharedLinkEntity } from 'src/infra/entities/shared-link.entity';
 import { UserTokenEntity } from 'src/infra/entities/user-token.entity';
 import { Instrumentation } from 'src/infra/instrumentation';
+import { IAccessRepository } from 'src/interfaces/access.repository';
 import { Brackets, In, Repository } from 'typeorm';
 
 type IActivityAccess = IAccessRepository['activity'];

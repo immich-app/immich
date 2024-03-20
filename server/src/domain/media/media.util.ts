@@ -1,11 +1,3 @@
-import {
-  AudioStreamInfo,
-  BitrateDistribution,
-  TranscodeOptions,
-  VideoCodecHWConfig,
-  VideoCodecSWConfig,
-  VideoStreamInfo,
-} from 'src/domain/repositories/media.repository';
 import { SystemConfigFFmpegDto } from 'src/domain/system-config/dto/system-config-ffmpeg.dto';
 import {
   CQMode,
@@ -14,6 +6,14 @@ import {
   TranscodeTarget,
   VideoCodec,
 } from 'src/infra/entities/system-config.entity';
+import {
+  AudioStreamInfo,
+  BitrateDistribution,
+  TranscodeOptions,
+  VideoCodecHWConfig,
+  VideoCodecSWConfig,
+  VideoStreamInfo,
+} from 'src/interfaces/media.repository';
 
 class BaseConfig implements VideoCodecSWConfig {
   presets = ['veryslow', 'slower', 'slow', 'medium', 'fast', 'faster', 'veryfast', 'superfast', 'ultrafast'];

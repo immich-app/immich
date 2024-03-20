@@ -1,6 +1,11 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import _ from 'lodash';
 import { ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
+import { AssetFaceEntity } from 'src/infra/entities/asset-face.entity';
+import { AssetEntity } from 'src/infra/entities/asset.entity';
+import { PersonEntity } from 'src/infra/entities/person.entity';
+import { asVector, paginate } from 'src/infra/infra.utils';
+import { Instrumentation } from 'src/infra/instrumentation';
 import {
   AssetFaceId,
   IPersonRepository,
@@ -9,12 +14,7 @@ import {
   PersonSearchOptions,
   PersonStatistics,
   UpdateFacesData,
-} from 'src/domain/repositories/person.repository';
-import { AssetFaceEntity } from 'src/infra/entities/asset-face.entity';
-import { AssetEntity } from 'src/infra/entities/asset.entity';
-import { PersonEntity } from 'src/infra/entities/person.entity';
-import { asVector, paginate } from 'src/infra/infra.utils';
-import { Instrumentation } from 'src/infra/instrumentation';
+} from 'src/interfaces/person.repository';
 import { Paginated, PaginationOptions } from 'src/utils';
 import { FindManyOptions, FindOptionsRelations, FindOptionsSelect, In, Repository } from 'typeorm';
 

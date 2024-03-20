@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ITagRepository } from 'src/domain/repositories/tag.repository';
 import { AssetEntity } from 'src/infra/entities/asset.entity';
 import { TagEntity } from 'src/infra/entities/tag.entity';
 import { Instrumentation } from 'src/infra/instrumentation';
+import { ITagRepository } from 'src/interfaces/tag.repository';
 import { Repository } from 'typeorm';
 
 @Instrumentation()

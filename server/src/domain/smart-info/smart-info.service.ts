@@ -2,13 +2,13 @@ import { Inject, Injectable } from '@nestjs/common';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from 'src/domain/job/job.constants';
 import { IBaseJob, IEntityJob } from 'src/domain/job/job.interface';
-import { IAssetRepository, WithoutProperty } from 'src/domain/repositories/asset.repository';
-import { DatabaseLock, IDatabaseRepository } from 'src/domain/repositories/database.repository';
-import { IJobRepository, JobStatus } from 'src/domain/repositories/job.repository';
-import { IMachineLearningRepository } from 'src/domain/repositories/machine-learning.repository';
-import { ISearchRepository } from 'src/domain/repositories/search.repository';
-import { ISystemConfigRepository } from 'src/domain/repositories/system-config.repository';
 import { ImmichLogger } from 'src/infra/logger';
+import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.repository';
+import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.repository';
+import { IJobRepository, JobStatus } from 'src/interfaces/job.repository';
+import { IMachineLearningRepository } from 'src/interfaces/machine-learning.repository';
+import { ISearchRepository } from 'src/interfaces/search.repository';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
 import { usePagination } from 'src/utils';
 
 @Injectable()

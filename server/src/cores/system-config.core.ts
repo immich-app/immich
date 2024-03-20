@@ -6,7 +6,6 @@ import { load as loadYaml } from 'js-yaml';
 import * as _ from 'lodash';
 import { Subject } from 'rxjs';
 import { QueueName } from 'src/domain/job/job.constants';
-import { ISystemConfigRepository } from 'src/domain/repositories/system-config.repository';
 import { SystemConfigDto } from 'src/domain/system-config/dto/system-config.dto';
 import {
   AudioCodec,
@@ -23,6 +22,7 @@ import {
   VideoCodec,
 } from 'src/infra/entities/system-config.entity';
 import { ImmichLogger } from 'src/infra/logger';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
 
 export type SystemConfigValidator = (config: SystemConfig, newConfig: SystemConfig) => void | Promise<void>;
 

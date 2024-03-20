@@ -7,13 +7,6 @@ import { UserCore } from 'src/cores/user.core';
 import { AuthDto } from 'src/domain/auth/auth.dto';
 import { JobName } from 'src/domain/job/job.constants';
 import { IEntityJob } from 'src/domain/job/job.interface';
-import { IAlbumRepository } from 'src/domain/repositories/album.repository';
-import { ICryptoRepository } from 'src/domain/repositories/crypto.repository';
-import { IJobRepository, JobStatus } from 'src/domain/repositories/job.repository';
-import { ILibraryRepository } from 'src/domain/repositories/library.repository';
-import { IStorageRepository } from 'src/domain/repositories/storage.repository';
-import { ISystemConfigRepository } from 'src/domain/repositories/system-config.repository';
-import { IUserRepository, UserFindOptions } from 'src/domain/repositories/user.repository';
 import { CreateUserDto } from 'src/domain/user/dto/create-user.dto';
 import { DeleteUserDto } from 'src/domain/user/dto/delete-user.dto';
 import { UpdateUserDto } from 'src/domain/user/dto/update-user.dto';
@@ -24,6 +17,13 @@ import {
 import { UserResponseDto, mapUser } from 'src/domain/user/response-dto/user-response.dto';
 import { UserEntity, UserStatus } from 'src/infra/entities/user.entity';
 import { ImmichLogger } from 'src/infra/logger';
+import { IAlbumRepository } from 'src/interfaces/album.repository';
+import { ICryptoRepository } from 'src/interfaces/crypto.repository';
+import { IJobRepository, JobStatus } from 'src/interfaces/job.repository';
+import { ILibraryRepository } from 'src/interfaces/library.repository';
+import { IStorageRepository } from 'src/interfaces/storage.repository';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
+import { IUserRepository, UserFindOptions } from 'src/interfaces/user.repository';
 import { CacheControl, ImmichFileResponse } from 'src/utils';
 
 @Injectable()

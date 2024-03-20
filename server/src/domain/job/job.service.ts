@@ -3,13 +3,13 @@ import { FeatureFlag, SystemConfigCore } from 'src/cores/system-config.core';
 import { mapAsset } from 'src/domain/asset/response-dto/asset-response.dto';
 import { ConcurrentQueueName, JobCommand, JobName, QueueName } from 'src/domain/job/job.constants';
 import { AllJobStatusResponseDto, JobCommandDto, JobStatusDto } from 'src/domain/job/job.dto';
-import { IAssetRepository } from 'src/domain/repositories/asset.repository';
-import { ClientEvent, ICommunicationRepository } from 'src/domain/repositories/communication.repository';
-import { IJobRepository, JobHandler, JobItem, JobStatus, QueueCleanType } from 'src/domain/repositories/job.repository';
-import { IPersonRepository } from 'src/domain/repositories/person.repository';
-import { ISystemConfigRepository } from 'src/domain/repositories/system-config.repository';
 import { AssetType } from 'src/infra/entities/asset.entity';
 import { ImmichLogger } from 'src/infra/logger';
+import { IAssetRepository } from 'src/interfaces/asset.repository';
+import { ClientEvent, ICommunicationRepository } from 'src/interfaces/communication.repository';
+import { IJobRepository, JobHandler, JobItem, JobStatus, QueueCleanType } from 'src/interfaces/job.repository';
+import { IPersonRepository } from 'src/interfaces/person.repository';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
 
 @Injectable()
 export class JobService {
