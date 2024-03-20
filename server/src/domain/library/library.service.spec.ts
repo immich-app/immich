@@ -1121,6 +1121,18 @@ describe(LibraryService.name, () => {
       expect(libraryMock.update).toHaveBeenCalledWith(expect.objectContaining({ id: 'library-id' }));
     });
 
+    it('should reject an invalid import path', async () => {
+      libraryMock.update.mockResolvedValue(libraryStub.uploadLibrary1);
+      libraryMock.get.mockResolvedValue(libraryStub.uploadLibrary1);
+      storageMock.stat.mockResolvedValue({
+        isDirectory: () => false,
+      } as Stats);
+
+      await expect(sut.update('library-id', { importPaths: ['/nonexistent'] })).rejects.toThrow(
+        'Invalid import path: Not a directory',
+      );
+    });
+
     it('should re-watch library when updating import paths', async () => {
       libraryMock.update.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
       libraryMock.get.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
