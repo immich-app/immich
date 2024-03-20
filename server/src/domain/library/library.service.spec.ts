@@ -306,7 +306,7 @@ describe(LibraryService.name, () => {
       expect(assetMock.update).toHaveBeenCalledWith({ id: assetStub.external.id, isOffline: true });
     });
 
-    it('should skip an offline asset', async () => {
+    it('should skip an already-offline asset', async () => {
       const mockAssetJob: ILibraryOfflineJob = {
         id: assetStub.external.id,
         importPaths: ['/'],
@@ -318,6 +318,22 @@ describe(LibraryService.name, () => {
 
       const response = await sut.handleOfflineCheck(mockAssetJob);
       expect(response).toBe(JobStatus.SKIPPED);
+
+      expect(assetMock.update).not.toHaveBeenCalled();
+    });
+
+    it('should do nothing if asset is still online', async () => {
+      const mockAssetJob: ILibraryOfflineJob = {
+        id: assetStub.external.id,
+        importPaths: ['/'],
+      };
+
+      assetMock.getById.mockResolvedValue(assetStub.external);
+
+      storageMock.checkFileExists.mockResolvedValue(true);
+
+      const response = await sut.handleOfflineCheck(mockAssetJob);
+      expect(response).toBe(JobStatus.SUCCESS);
 
       expect(assetMock.update).not.toHaveBeenCalled();
     });
