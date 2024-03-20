@@ -90,6 +90,25 @@ export type AssetCreate = Pick<
 > &
   Partial<AssetEntity>;
 
+export type AssetWithoutRelations = Omit<
+  AssetEntity,
+  | 'livePhotoVideo'
+  | 'stack'
+  | 'albums'
+  | 'faces'
+  | 'owner'
+  | 'library'
+  | 'exifInfo'
+  | 'sharedLinks'
+  | 'smartInfo'
+  | 'smartSearch'
+  | 'tags'
+>;
+
+export type AssetUpdateOptions = Pick<AssetWithoutRelations, 'id'> & Partial<AssetWithoutRelations>;
+
+export type AssetUpdateAllOptions = Omit<Partial<AssetWithoutRelations>, 'id'>;
+
 export interface MonthDay {
   day: number;
   month: number;
@@ -138,8 +157,8 @@ export interface IAssetRepository {
   deleteAll(ownerId: string): Promise<void>;
   getAll(pagination: PaginationOptions, options?: AssetSearchOptions): Paginated<AssetEntity>;
   getAllByDeviceId(userId: string, deviceId: string): Promise<string[]>;
-  updateAll(ids: string[], options: Partial<AssetEntity>): Promise<void>;
-  save(asset: Pick<AssetEntity, 'id'> & Partial<AssetEntity>): Promise<AssetEntity>;
+  updateAll(ids: string[], options: Partial<AssetUpdateAllOptions>): Promise<void>;
+  update(asset: AssetUpdateOptions): Promise<void>;
   remove(asset: AssetEntity): Promise<void>;
   softDeleteAll(ids: string[]): Promise<void>;
   restoreAll(ids: string[]): Promise<void>;

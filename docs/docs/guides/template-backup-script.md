@@ -9,8 +9,8 @@ The database is saved to your Immich upload folder in the `database-backup` subd
 ### Prerequisites
 
 - Borg needs to be installed on your server as well as the remote machine. You can find instructions to install Borg [here](https://borgbackup.readthedocs.io/en/latest/installation.html).
-- To run this sript as a non-root user, you should [add your username to the docker group](https://docs.docker.com/engine/install/linux-postinstall/).
-- To run this script non-interactively, set up [passwordless ssh](https://www.redhat.com/sysadmin/passwordless-ssh) to your remote machine from your server.
+- (Optional) To run this sript as a non-root user, you should [add your username to the docker group](https://docs.docker.com/engine/install/linux-postinstall/).
+- To run this script non-interactively, set up [passwordless ssh](https://www.redhat.com/sysadmin/passwordless-ssh) to your remote machine from your server. If you skipped the previous step, make sure this step is done from your root account.
 
 To initialize the borg repository, run the following commands once.
 
@@ -19,16 +19,13 @@ UPLOAD_LOCATION="/path/to/immich/directory"       # Immich database location, as
 BACKUP_PATH="/path/to/local/backup/directory"
 
 mkdir "$UPLOAD_LOCATION/database-backup"
-mkdir "$BACKUP_PATH/immich-borg"
-
 borg init --encryption=none "$BACKUP_PATH/immich-borg"
 
 ## Remote set up
 REMOTE_HOST="remote_host@IP"
 REMOTE_BACKUP_PATH="/path/to/remote/backup/directory"
 
-ssh "$REMOTE_HOST" "mkdir \"$REMOTE_BACKUP_PATH\"/immich-borg"
-ssh "$REMOTE_HOST" "borg init --encryption=none \"$REMOTE_BACKUP_PATH\"/immich-borg"
+borg init --encryption=none "$REMOTE_HOST:$REMOTE_BACKUP_PATH/immich-borg"
 ```
 
 Edit the following script as necessary and add it to your crontab. Note that this script assumes there are no `:`, `@`, or `"` characters in your paths. If these characters exist, you will need to escape and/or rename the paths.
