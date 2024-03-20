@@ -1,11 +1,5 @@
 import { SystemConfigFFmpegDto } from 'src/domain/system-config/dto/system-config-ffmpeg.dto';
-import {
-  CQMode,
-  ToneMapping,
-  TranscodeHWAccel,
-  TranscodeTarget,
-  VideoCodec,
-} from 'src/infra/entities/system-config.entity';
+import { CQMode, ToneMapping, TranscodeHWAccel, TranscodeTarget, VideoCodec } from 'src/entities/system-config.entity';
 import {
   AudioStreamInfo,
   BitrateDistribution,

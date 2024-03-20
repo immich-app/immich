@@ -11,11 +11,11 @@ import { AppModule } from 'src/immich/app.module';
 import { AppService } from 'src/immich/app.service';
 import { dataSource } from 'src/infra/database.config';
 import { InfraModule, InfraTestModule } from 'src/infra/infra.module';
-import { MediaRepository } from 'src/infra/repositories/media.repository';
 import { IJobRepository, JobItem, JobItemHandler } from 'src/interfaces/job.repository';
 import { IMediaRepository } from 'src/interfaces/media.repository';
 import { StorageEventType } from 'src/interfaces/storage.repository';
 import { AppService as MicroAppService } from 'src/microservices/app.service';
+import { MediaRepository } from 'src/repositories/media.repository';
 import { EntityTarget, ObjectLiteral } from 'typeorm';
 
 export const IMMICH_TEST_ASSET_PATH = process.env.IMMICH_TEST_ASSET_PATH as string;

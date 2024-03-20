@@ -1,4 +1,4 @@
-import { ActivityEntity } from 'src/infra/entities/activity.entity';
+import { ActivityEntity } from 'src/entities/activity.entity';
 import { albumStub } from 'test/fixtures/album.stub';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';

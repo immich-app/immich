@@ -28,8 +28,8 @@ import {
   ValidateLibraryResponseDto,
   mapLibrary,
 } from 'src/domain/library/library.dto';
-import { AssetEntity, AssetType } from 'src/infra/entities/asset.entity';
-import { LibraryType } from 'src/infra/entities/library.entity';
+import { AssetType } from 'src/entities/asset.entity';
+import { LibraryEntity, LibraryType } from 'src/entities/library.entity';
 import { ImmichLogger } from 'src/infra/logger';
 import { IAssetRepository, WithProperty } from 'src/interfaces/asset.repository';
 import { InternalEvent, InternalEventMap } from 'src/interfaces/communication.repository';

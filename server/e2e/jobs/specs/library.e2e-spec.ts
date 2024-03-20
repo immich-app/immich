@@ -2,7 +2,7 @@ import { api } from 'e2e/client';
 import fs from 'node:fs';
 import { LibraryController } from 'src/controllers/library.controller';
 import { LoginResponseDto } from 'src/domain/auth/auth.dto';
-import { LibraryType } from 'src/infra/entities/library.entity';
+import { LibraryType } from 'src/entities/library.entity';
 import { IMMICH_TEST_ASSET_PATH, IMMICH_TEST_ASSET_TEMP_PATH, restoreTempFolder, testApp } from 'src/test-utils/utils';
 import request from 'supertest';
 import { errorStub } from 'test/fixtures/error.stub';

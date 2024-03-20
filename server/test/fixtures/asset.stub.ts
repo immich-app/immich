@@ -1,6 +1,6 @@
-import { AssetStackEntity } from 'src/infra/entities/asset-stack.entity';
-import { AssetEntity, AssetType } from 'src/infra/entities/asset.entity';
-import { ExifEntity } from 'src/infra/entities/exif.entity';
+import { AssetStackEntity } from 'src/entities/asset-stack.entity';
+import { AssetEntity, AssetType } from 'src/entities/asset.entity';
+import { ExifEntity } from 'src/entities/exif.entity';
 import { authStub } from 'test/fixtures/auth.stub';
 import { fileStub } from 'test/fixtures/file.stub';
 import { libraryStub } from 'test/fixtures/library.stub';

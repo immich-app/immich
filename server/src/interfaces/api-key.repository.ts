@@ -1,4 +1,4 @@
-import { APIKeyEntity } from 'src/infra/entities/api-key.entity';
+import { APIKeyEntity } from 'src/entities/api-key.entity';
 
 export const IKeyRepository = 'IKeyRepository';
 

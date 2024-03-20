@@ -15,7 +15,7 @@ import {
   supportedWeekTokens,
   supportedYearTokens,
 } from 'src/domain/system-config/system-config.constants';
-import { LogLevel, SystemConfig } from 'src/infra/entities/system-config.entity';
+import { LogLevel, SystemConfig } from 'src/entities/system-config.entity';
 import { ImmichLogger } from 'src/infra/logger';
 import {
   ClientEvent,

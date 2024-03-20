@@ -1,4 +1,4 @@
-import { PartnerEntity } from 'src/infra/entities/partner.entity';
+import { PartnerEntity } from 'src/entities/partner.entity';
 
 export interface PartnerIds {
   sharedById: string;

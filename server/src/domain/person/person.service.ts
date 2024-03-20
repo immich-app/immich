@@ -24,8 +24,8 @@ import {
   mapFaces,
   mapPerson,
 } from 'src/domain/person/person.dto';
-import { PersonPathType } from 'src/infra/entities/move.entity';
-import { PersonEntity } from 'src/infra/entities/person.entity';
+import { PersonPathType } from 'src/entities/move.entity';
+import { PersonEntity } from 'src/entities/person.entity';
 import { ImmichLogger } from 'src/infra/logger';
 import { IAccessRepository } from 'src/interfaces/access.repository';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.repository';

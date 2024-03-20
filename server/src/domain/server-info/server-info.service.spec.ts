@@ -1,6 +1,6 @@
 import { serverVersion } from 'src/domain/domain.constant';
 import { ServerInfoService } from 'src/domain/server-info/server-info.service';
-import { SystemMetadataKey } from 'src/infra/entities/system-metadata.entity';
+import { SystemMetadataKey } from 'src/entities/system-metadata.entity';
 import { ICommunicationRepository } from 'src/interfaces/communication.repository';
 import { IServerInfoRepository } from 'src/interfaces/server-info.repository';
 import { IStorageRepository } from 'src/interfaces/storage.repository';
