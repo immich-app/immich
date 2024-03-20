@@ -50,7 +50,7 @@ import {
   mapLibrary,
 } from './library.dto';
 
-const LIBRARY_SCAN_BATCH_SIZE = 5000;
+const LIBRARY_SCAN_BATCH_SIZE = 1000;
 
 @Injectable()
 export class LibraryService extends EventEmitter {
@@ -656,7 +656,7 @@ export class LibraryService extends EventEmitter {
       exclusionPatterns: library.exclusionPatterns,
     });
 
-    const existingAssets = usePagination(LIBRARY_SCAN_BATCH_SIZE, (pagination) =>
+    const onlineAssets = usePagination(LIBRARY_SCAN_BATCH_SIZE, (pagination) =>
       this.assetRepository.getWith(pagination, WithProperty.IS_ONLINE, job.id),
     );
 
@@ -665,8 +665,8 @@ export class LibraryService extends EventEmitter {
     let crawlCounter = 0;
     let existingAssetCounter = 0;
 
-    const checkNextAssetPageForOffline = async () => {
-      const existingAssetPage = await existingAssets.next();
+    const checkIfOnlineAssetsAreOffline = async () => {
+      const existingAssetPage = await onlineAssets.next();
       existingAssetsDone = existingAssetPage.done ?? true;
 
       if (existingAssetPage.value) {
@@ -703,14 +703,14 @@ export class LibraryService extends EventEmitter {
 
         if (!existingAssetsDone) {
           // Interweave the queuing of offline checks with the asset scanning (if any)
-          await checkNextAssetPageForOffline();
+          await checkIfOnlineAssetsAreOffline();
         }
       }
     }
 
     // If there are any remaining assets to check for offline status, do so
     while (!existingAssetsDone) {
-      await checkNextAssetPageForOffline();
+      await checkIfOnlineAssetsAreOffline();
     }
 
     this.logger.log(
