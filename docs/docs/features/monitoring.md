@@ -75,7 +75,7 @@ So after setting up Prometheus, how do you actually view the metrics? The simple
 
 ## Grafana
 
-For a dedicated tool with nice presentation, you can use Grafana instead. This connects to Prometheus (and possibly other source) for sophisticated data visualization.
+For a dedicated tool with nice presentation, you can use Grafana instead. This connects to Prometheus (and possibly other sources) for sophisticated data visualization.
 
 Setting up Grafana is similar to Prometheus. You can add a service for it:
 
