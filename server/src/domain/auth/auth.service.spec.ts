@@ -1,38 +1,32 @@
-import { UserEntity } from '@app/infra/entities';
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
-import {
-  IAccessRepositoryMock,
-  authStub,
-  keyStub,
-  loginResponseStub,
-  newAccessRepositoryMock,
-  newCryptoRepositoryMock,
-  newKeyRepositoryMock,
-  newLibraryRepositoryMock,
-  newSharedLinkRepositoryMock,
-  newSystemConfigRepositoryMock,
-  newUserRepositoryMock,
-  newUserTokenRepositoryMock,
-  sharedLinkStub,
-  systemConfigStub,
-  userStub,
-  userTokenStub,
-} from '@test';
 import { IncomingHttpHeaders } from 'node:http';
 import { Issuer, generators } from 'openid-client';
 import { Socket } from 'socket.io';
-import {
-  ICryptoRepository,
-  IKeyRepository,
-  ILibraryRepository,
-  ISharedLinkRepository,
-  ISystemConfigRepository,
-  IUserRepository,
-  IUserTokenRepository,
-} from '../repositories';
-import { AuthType } from './auth.constant';
-import { AuthDto, SignUpDto } from './auth.dto';
-import { AuthService } from './auth.service';
+import { AuthType } from 'src/domain/auth/auth.constant';
+import { AuthDto, SignUpDto } from 'src/domain/auth/auth.dto';
+import { AuthService } from 'src/domain/auth/auth.service';
+import { IKeyRepository } from 'src/domain/repositories/api-key.repository';
+import { ICryptoRepository } from 'src/domain/repositories/crypto.repository';
+import { ILibraryRepository } from 'src/domain/repositories/library.repository';
+import { ISharedLinkRepository } from 'src/domain/repositories/shared-link.repository';
+import { ISystemConfigRepository } from 'src/domain/repositories/system-config.repository';
+import { IUserTokenRepository } from 'src/domain/repositories/user-token.repository';
+import { IUserRepository } from 'src/domain/repositories/user.repository';
+import { UserEntity } from 'src/infra/entities/user.entity';
+import { keyStub } from 'test/fixtures/api-key.stub';
+import { authStub, loginResponseStub } from 'test/fixtures/auth.stub';
+import { sharedLinkStub } from 'test/fixtures/shared-link.stub';
+import { systemConfigStub } from 'test/fixtures/system-config.stub';
+import { userTokenStub } from 'test/fixtures/user-token.stub';
+import { userStub } from 'test/fixtures/user.stub';
+import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
+import { newKeyRepositoryMock } from 'test/repositories/api-key.repository.mock';
+import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
+import { newLibraryRepositoryMock } from 'test/repositories/library.repository.mock';
+import { newSharedLinkRepositoryMock } from 'test/repositories/shared-link.repository.mock';
+import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
+import { newUserTokenRepositoryMock } from 'test/repositories/user-token.repository.mock';
+import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
 
 // const token = Buffer.from('my-api-key', 'utf8').toString('base64');
 

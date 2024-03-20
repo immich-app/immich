@@ -1,4 +1,4 @@
-import { SmartInfoEntity } from '@app/infra/entities';
+import { SmartInfoEntity } from 'src/infra/entities/smart-info.entity';
 
 export class SmartInfoResponseDto {
   tags?: string[] | null;

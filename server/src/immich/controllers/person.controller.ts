@@ -1,24 +1,24 @@
+import { Body, Controller, Get, Next, Param, Post, Put, Query, Res } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+import { NextFunction, Response } from 'express';
+import { BulkIdResponseDto } from 'src/domain/asset/response-dto/asset-ids-response.dto';
+import { AssetResponseDto } from 'src/domain/asset/response-dto/asset-response.dto';
+import { AuthDto } from 'src/domain/auth/auth.dto';
 import {
   AssetFaceUpdateDto,
-  AssetResponseDto,
-  AuthDto,
-  BulkIdResponseDto,
   MergePersonDto,
   PeopleResponseDto,
   PeopleUpdateDto,
   PersonCreateDto,
   PersonResponseDto,
   PersonSearchDto,
-  PersonService,
   PersonStatisticsResponseDto,
   PersonUpdateDto,
-} from '@app/domain';
-import { Body, Controller, Get, Next, Param, Post, Put, Query, Res } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
-import { NextFunction, Response } from 'express';
-import { Auth, Authenticated, FileResponse } from '../app.guard';
-import { sendFile } from '../app.utils';
-import { UUIDParamDto } from './dto/uuid-param.dto';
+} from 'src/domain/person/person.dto';
+import { PersonService } from 'src/domain/person/person.service';
+import { Auth, Authenticated, FileResponse } from 'src/immich/app.guard';
+import { sendFile } from 'src/immich/app.utils';
+import { UUIDParamDto } from 'src/immich/controllers/dto/uuid-param.dto';
 
 @ApiTags('Person')
 @Controller('person')

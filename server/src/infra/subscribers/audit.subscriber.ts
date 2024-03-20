@@ -1,5 +1,7 @@
+import { AlbumEntity } from 'src/infra/entities/album.entity';
+import { AssetEntity } from 'src/infra/entities/asset.entity';
+import { AuditEntity, DatabaseAction, EntityType } from 'src/infra/entities/audit.entity';
 import { EntitySubscriberInterface, EventSubscriber, RemoveEvent } from 'typeorm';
-import { AlbumEntity, AssetEntity, AuditEntity, DatabaseAction, EntityType } from '../entities';
 
 @EventSubscriber()
 export class AuditSubscriber implements EntitySubscriberInterface<AssetEntity | AlbumEntity> {

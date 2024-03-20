@@ -1,4 +1,4 @@
-import { AssetResponseDto } from '../../asset';
+import { AssetResponseDto } from 'src/domain/asset/response-dto/asset-response.dto';
 
 class SearchExploreItem {
   value!: string;

@@ -1,6 +1,6 @@
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
-import { UpdateUserDto } from './update-user.dto';
+import { UpdateUserDto } from 'src/domain/user/dto/update-user.dto';
 
 describe('update user DTO', () => {
   it('should allow emails without a tld', async () => {

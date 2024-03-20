@@ -1,7 +1,8 @@
-import { AllJobStatusResponseDto, JobCommandDto, JobIdParamDto, JobService, JobStatusDto } from '@app/domain';
 import { Body, Controller, Get, Param, Put } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Authenticated } from '../app.guard';
+import { AllJobStatusResponseDto, JobCommandDto, JobIdParamDto, JobStatusDto } from 'src/domain/job/job.dto';
+import { JobService } from 'src/domain/job/job.service';
+import { Authenticated } from 'src/immich/app.guard';
 
 @ApiTags('Job')
 @Controller('jobs')

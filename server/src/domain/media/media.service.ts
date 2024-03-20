@@ -1,37 +1,7 @@
-import {
-  AssetEntity,
-  AssetPathType,
-  AssetType,
-  AudioCodec,
-  Colorspace,
-  TranscodeHWAccel,
-  TranscodePolicy,
-  TranscodeTarget,
-  VideoCodec,
-} from '@app/infra/entities';
-import { ImmichLogger } from '@app/infra/logger';
 import { Inject, Injectable, UnsupportedMediaTypeException } from '@nestjs/common';
-import { usePagination } from '../domain.util';
-import { IBaseJob, IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
-import {
-  AudioStreamInfo,
-  IAssetRepository,
-  ICryptoRepository,
-  IJobRepository,
-  IMediaRepository,
-  IMoveRepository,
-  IPersonRepository,
-  IStorageRepository,
-  ISystemConfigRepository,
-  JobItem,
-  JobStatus,
-  VideoCodecHWConfig,
-  VideoStreamInfo,
-  WithoutProperty,
-} from '../repositories';
-import { StorageCore, StorageFolder } from '../storage';
-import { SystemConfigFFmpegDto } from '../system-config';
-import { SystemConfigCore } from '../system-config/system-config.core';
+import { usePagination } from 'src/domain/domain.util';
+import { JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from 'src/domain/job/job.constants';
+import { IBaseJob, IEntityJob } from 'src/domain/job/job.interface';
 import {
   H264Config,
   HEVCConfig,
@@ -41,7 +11,34 @@ import {
   ThumbnailConfig,
   VAAPIConfig,
   VP9Config,
-} from './media.util';
+} from 'src/domain/media/media.util';
+import { IAssetRepository, WithoutProperty } from 'src/domain/repositories/asset.repository';
+import { ICryptoRepository } from 'src/domain/repositories/crypto.repository';
+import { IJobRepository, JobItem, JobStatus } from 'src/domain/repositories/job.repository';
+import {
+  AudioStreamInfo,
+  IMediaRepository,
+  VideoCodecHWConfig,
+  VideoStreamInfo,
+} from 'src/domain/repositories/media.repository';
+import { IMoveRepository } from 'src/domain/repositories/move.repository';
+import { IPersonRepository } from 'src/domain/repositories/person.repository';
+import { IStorageRepository } from 'src/domain/repositories/storage.repository';
+import { ISystemConfigRepository } from 'src/domain/repositories/system-config.repository';
+import { StorageCore, StorageFolder } from 'src/domain/storage/storage.core';
+import { SystemConfigFFmpegDto } from 'src/domain/system-config/dto/system-config-ffmpeg.dto';
+import { SystemConfigCore } from 'src/domain/system-config/system-config.core';
+import { AssetEntity, AssetType } from 'src/infra/entities/asset.entity';
+import { AssetPathType } from 'src/infra/entities/move.entity';
+import {
+  AudioCodec,
+  Colorspace,
+  TranscodeHWAccel,
+  TranscodePolicy,
+  TranscodeTarget,
+  VideoCodec,
+} from 'src/infra/entities/system-config.entity';
+import { ImmichLogger } from 'src/infra/logger';
 
 @Injectable()
 export class MediaService {
@@ -58,7 +55,7 @@ export class MediaService {
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IMoveRepository) moveRepository: IMoveRepository,
-    @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
+    @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
   ) {
     this.configCore = SystemConfigCore.create(configRepository);
     this.storageCore = StorageCore.create(

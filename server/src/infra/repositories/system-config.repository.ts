@@ -1,11 +1,11 @@
-import { ISystemConfigRepository } from '@app/domain';
 import { InjectRepository } from '@nestjs/typeorm';
 import { readFile } from 'node:fs/promises';
+import { ISystemConfigRepository } from 'src/domain/repositories/system-config.repository';
+import { SystemConfigEntity } from 'src/infra/entities/system-config.entity';
+import { DummyValue, GenerateSql } from 'src/infra/infra.util';
+import { Chunked } from 'src/infra/infra.utils';
+import { Instrumentation } from 'src/infra/instrumentation';
 import { In, Repository } from 'typeorm';
-import { SystemConfigEntity } from '../entities';
-import { DummyValue, GenerateSql } from '../infra.util';
-import { Chunked } from '../infra.utils';
-import { Instrumentation } from '../instrumentation';
 
 @Instrumentation()
 export class SystemConfigRepository implements ISystemConfigRepository {

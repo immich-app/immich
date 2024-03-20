@@ -1,6 +1,5 @@
+import { UserEntity } from 'src/infra/entities/user.entity';
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryColumn, UpdateDateColumn } from 'typeorm';
-
-import { UserEntity } from './user.entity';
 
 @Entity('partners')
 export class PartnerEntity {

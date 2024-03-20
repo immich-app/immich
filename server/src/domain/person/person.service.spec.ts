@@ -1,44 +1,37 @@
-import { AssetFaceEntity, Colorspace, SystemConfigKey } from '@app/infra/entities';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import {
-  IAccessRepositoryMock,
-  assetStub,
-  authStub,
-  faceStub,
-  newAccessRepositoryMock,
-  newAssetRepositoryMock,
-  newCryptoRepositoryMock,
-  newJobRepositoryMock,
-  newMachineLearningRepositoryMock,
-  newMediaRepositoryMock,
-  newMoveRepositoryMock,
-  newPersonRepositoryMock,
-  newSearchRepositoryMock,
-  newStorageRepositoryMock,
-  newSystemConfigRepositoryMock,
-  personStub,
-} from '@test';
+import { BulkIdErrorReason } from 'src/domain/asset/response-dto/asset-ids-response.dto';
+import { CacheControl, ImmichFileResponse } from 'src/domain/domain.util';
+import { JobName } from 'src/domain/job/job.constants';
+import { PersonResponseDto, mapFaces, mapPerson } from 'src/domain/person/person.dto';
+import { PersonService } from 'src/domain/person/person.service';
+import { IAssetRepository, WithoutProperty } from 'src/domain/repositories/asset.repository';
+import { ICryptoRepository } from 'src/domain/repositories/crypto.repository';
+import { IJobRepository, JobStatus } from 'src/domain/repositories/job.repository';
+import { IMachineLearningRepository } from 'src/domain/repositories/machine-learning.repository';
+import { IMediaRepository } from 'src/domain/repositories/media.repository';
+import { IMoveRepository } from 'src/domain/repositories/move.repository';
+import { IPersonRepository } from 'src/domain/repositories/person.repository';
+import { FaceSearchResult, ISearchRepository } from 'src/domain/repositories/search.repository';
+import { IStorageRepository } from 'src/domain/repositories/storage.repository';
+import { ISystemConfigRepository } from 'src/domain/repositories/system-config.repository';
+import { AssetFaceEntity } from 'src/infra/entities/asset-face.entity';
+import { Colorspace, SystemConfigKey } from 'src/infra/entities/system-config.entity';
+import { assetStub } from 'test/fixtures/asset.stub';
+import { authStub } from 'test/fixtures/auth.stub';
+import { faceStub } from 'test/fixtures/face.stub';
+import { personStub } from 'test/fixtures/person.stub';
+import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
+import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
+import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
+import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
+import { newMachineLearningRepositoryMock } from 'test/repositories/machine-learning.repository.mock';
+import { newMediaRepositoryMock } from 'test/repositories/media.repository.mock';
+import { newMoveRepositoryMock } from 'test/repositories/move.repository.mock';
+import { newPersonRepositoryMock } from 'test/repositories/person.repository.mock';
+import { newSearchRepositoryMock } from 'test/repositories/search.repository.mock';
+import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
+import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
 import { IsNull } from 'typeorm';
-import { BulkIdErrorReason } from '../asset';
-import { CacheControl, ImmichFileResponse } from '../domain.util';
-import { JobName } from '../job';
-import {
-  FaceSearchResult,
-  IAssetRepository,
-  ICryptoRepository,
-  IJobRepository,
-  IMachineLearningRepository,
-  IMediaRepository,
-  IMoveRepository,
-  IPersonRepository,
-  ISearchRepository,
-  IStorageRepository,
-  ISystemConfigRepository,
-  JobStatus,
-  WithoutProperty,
-} from '../repositories';
-import { PersonResponseDto, mapFaces, mapPerson } from './person.dto';
-import { PersonService } from './person.service';
 
 const responseDto: PersonResponseDto = {
   id: 'person-1',

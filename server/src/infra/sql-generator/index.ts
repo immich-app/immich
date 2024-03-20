@@ -1,33 +1,31 @@
 #!/usr/bin/env node
-import { ISystemConfigRepository } from '@app/domain';
 import { INestApplication } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Test } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { databaseConfig } from '../database.config';
-import { databaseEntities } from '../entities';
-import { GENERATE_SQL_KEY, GenerateSqlQueries } from '../infra.util';
-import {
-  AccessRepository,
-  AlbumRepository,
-  ApiKeyRepository,
-  AssetRepository,
-  AuditRepository,
-  LibraryRepository,
-  MoveRepository,
-  PartnerRepository,
-  PersonRepository,
-  SearchRepository,
-  SharedLinkRepository,
-  SystemConfigRepository,
-  SystemMetadataRepository,
-  TagRepository,
-  UserRepository,
-  UserTokenRepository,
-} from '../repositories';
-import { SqlLogger } from './sql.logger';
+import { ISystemConfigRepository } from 'src/domain/repositories/system-config.repository';
+import { databaseConfig } from 'src/infra/database.config';
+import { databaseEntities } from 'src/infra/entities';
+import { GENERATE_SQL_KEY, GenerateSqlQueries } from 'src/infra/infra.util';
+import { AccessRepository } from 'src/infra/repositories/access.repository';
+import { AlbumRepository } from 'src/infra/repositories/album.repository';
+import { ApiKeyRepository } from 'src/infra/repositories/api-key.repository';
+import { AssetRepository } from 'src/infra/repositories/asset.repository';
+import { AuditRepository } from 'src/infra/repositories/audit.repository';
+import { LibraryRepository } from 'src/infra/repositories/library.repository';
+import { MoveRepository } from 'src/infra/repositories/move.repository';
+import { PartnerRepository } from 'src/infra/repositories/partner.repository';
+import { PersonRepository } from 'src/infra/repositories/person.repository';
+import { SearchRepository } from 'src/infra/repositories/search.repository';
+import { SharedLinkRepository } from 'src/infra/repositories/shared-link.repository';
+import { SystemConfigRepository } from 'src/infra/repositories/system-config.repository';
+import { SystemMetadataRepository } from 'src/infra/repositories/system-metadata.repository';
+import { TagRepository } from 'src/infra/repositories/tag.repository';
+import { UserTokenRepository } from 'src/infra/repositories/user-token.repository';
+import { UserRepository } from 'src/infra/repositories/user.repository';
+import { SqlLogger } from 'src/infra/sql-generator/sql.logger';
 
 const reflector = new Reflector();
 const repositories = [

@@ -1,3 +1,6 @@
+import { AssetEntity } from 'src/infra/entities/asset.entity';
+import { SharedLinkEntity } from 'src/infra/entities/shared-link.entity';
+import { UserEntity } from 'src/infra/entities/user.entity';
 import {
   Column,
   CreateDateColumn,
@@ -10,9 +13,6 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { AssetEntity } from './asset.entity';
-import { SharedLinkEntity } from './shared-link.entity';
-import { UserEntity } from './user.entity';
 
 // ran into issues when importing the enum from `asset.dto.ts`
 export enum AssetOrder {

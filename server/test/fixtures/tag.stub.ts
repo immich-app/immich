@@ -1,6 +1,6 @@
-import { TagResponseDto } from '@app/domain';
-import { TagEntity, TagType } from '@app/infra/entities';
-import { userStub } from './user.stub';
+import { TagResponseDto } from 'src/domain/tag/tag-response.dto';
+import { TagEntity, TagType } from 'src/infra/entities/tag.entity';
+import { userStub } from 'test/fixtures/user.stub';
 
 export const tagStub = {
   tag1: Object.freeze<TagEntity>({

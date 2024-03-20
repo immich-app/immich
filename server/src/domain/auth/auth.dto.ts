@@ -1,7 +1,10 @@
-import { APIKeyEntity, SharedLinkEntity, UserEntity, UserTokenEntity } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
+import { APIKeyEntity } from 'src/infra/entities/api-key.entity';
+import { SharedLinkEntity } from 'src/infra/entities/shared-link.entity';
+import { UserTokenEntity } from 'src/infra/entities/user-token.entity';
+import { UserEntity } from 'src/infra/entities/user.entity';
 
 export class AuthDto {
   user!: UserEntity;

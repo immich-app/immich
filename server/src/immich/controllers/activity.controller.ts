@@ -1,17 +1,17 @@
-import { AuthDto } from '@app/domain';
-import {
-  ActivityDto,
-  ActivitySearchDto,
-  ActivityService,
-  ActivityCreateDto as CreateDto,
-  ActivityResponseDto as ResponseDto,
-  ActivityStatisticsResponseDto as StatsResponseDto,
-} from '@app/domain/activity';
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
-import { Auth, Authenticated } from '../app.guard';
-import { UUIDParamDto } from './dto/uuid-param.dto';
+import {
+  ActivityCreateDto,
+  ActivityDto,
+  ActivityResponseDto,
+  ActivitySearchDto,
+  ActivityStatisticsResponseDto,
+} from 'src/domain/activity/activity.dto';
+import { ActivityService } from 'src/domain/activity/activity.service';
+import { AuthDto } from 'src/domain/auth/auth.dto';
+import { Auth, Authenticated } from 'src/immich/app.guard';
+import { UUIDParamDto } from 'src/immich/controllers/dto/uuid-param.dto';
 
 @ApiTags('Activity')
 @Controller('activity')
@@ -20,21 +20,21 @@ export class ActivityController {
   constructor(private service: ActivityService) {}
 
   @Get()
-  getActivities(@Auth() auth: AuthDto, @Query() dto: ActivitySearchDto): Promise<ResponseDto[]> {
+  getActivities(@Auth() auth: AuthDto, @Query() dto: ActivitySearchDto): Promise<ActivityResponseDto[]> {
     return this.service.getAll(auth, dto);
   }
 
   @Get('statistics')
-  getActivityStatistics(@Auth() auth: AuthDto, @Query() dto: ActivityDto): Promise<StatsResponseDto> {
+  getActivityStatistics(@Auth() auth: AuthDto, @Query() dto: ActivityDto): Promise<ActivityStatisticsResponseDto> {
     return this.service.getStatistics(auth, dto);
   }
 
   @Post()
   async createActivity(
     @Auth() auth: AuthDto,
-    @Body() dto: CreateDto,
+    @Body() dto: ActivityCreateDto,
     @Res({ passthrough: true }) res: Response,
-  ): Promise<ResponseDto> {
+  ): Promise<ActivityResponseDto> {
     const { duplicate, value } = await this.service.create(auth, dto);
     if (duplicate) {
       res.status(HttpStatus.OK);

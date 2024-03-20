@@ -1,16 +1,17 @@
-import { WEB_ROOT, envName, isDev, serverVersion } from '@app/domain';
-import { WebSocketAdapter, excludePaths } from '@app/infra';
-import { otelSDK } from '@app/infra/instrumentation';
-import { ImmichLogger } from '@app/infra/logger';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { json } from 'body-parser';
 import cookieParser from 'cookie-parser';
 import { existsSync } from 'node:fs';
 import sirv from 'sirv';
-import { AppModule } from './app.module';
-import { AppService } from './app.service';
-import { useSwagger } from './app.utils';
+import { WEB_ROOT, envName, isDev, serverVersion } from 'src/domain/domain.constant';
+import { AppModule } from 'src/immich/app.module';
+import { AppService } from 'src/immich/app.service';
+import { useSwagger } from 'src/immich/app.utils';
+import { excludePaths } from 'src/infra/infra.config';
+import { otelSDK } from 'src/infra/instrumentation';
+import { ImmichLogger } from 'src/infra/logger';
+import { WebSocketAdapter } from 'src/infra/websocket.adapter';
 
 const logger = new ImmichLogger('ImmichServer');
 const port = Number(process.env.SERVER_PORT) || 3001;

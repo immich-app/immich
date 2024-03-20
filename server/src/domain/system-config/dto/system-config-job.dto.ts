@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsInt, IsObject, IsPositive, ValidateNested } from 'class-validator';
-import { ConcurrentQueueName, QueueName } from '../../job';
+import { ConcurrentQueueName, QueueName } from 'src/domain/job/job.constants';
 
 export class JobSettingsDto {
   @IsInt()

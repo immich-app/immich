@@ -1,8 +1,9 @@
-import { AssetPathType, EntityType, PathType, PersonPathType, UserPathType } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsArray, IsEnum, IsString, IsUUID, ValidateNested } from 'class-validator';
-import { Optional, ValidateDate, ValidateUUID } from '../domain.util';
+import { Optional, ValidateDate, ValidateUUID } from 'src/domain/domain.util';
+import { EntityType } from 'src/infra/entities/audit.entity';
+import { AssetPathType, PathType, PersonPathType, UserPathType } from 'src/infra/entities/move.entity';
 
 const PathEnum = Object.values({ ...AssetPathType, ...PersonPathType, ...UserPathType });
 

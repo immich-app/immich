@@ -1,31 +1,28 @@
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { AssetService } from 'src/domain/asset/asset.service';
+import { AssetJobsDto } from 'src/domain/asset/dto/asset-ids.dto';
+import { UpdateStackParentDto } from 'src/domain/asset/dto/asset-stack.dto';
+import { AssetStatsDto, AssetStatsResponseDto } from 'src/domain/asset/dto/asset-statistics.dto';
 import {
   AssetBulkDeleteDto,
   AssetBulkUpdateDto,
-  AssetJobsDto,
-  AssetResponseDto,
-  AssetService,
-  AssetStatsDto,
-  AssetStatsResponseDto,
-  AuthDto,
   DeviceIdDto,
-  MapMarkerDto,
-  MapMarkerResponseDto,
-  MemoryLaneDto,
-  MemoryLaneResponseDto,
-  MetadataSearchDto,
   RandomAssetsDto,
-  SearchService,
-  TimeBucketAssetDto,
-  TimeBucketDto,
-  TimeBucketResponseDto,
-  UpdateAssetDto as UpdateDto,
-  UpdateStackParentDto,
-} from '@app/domain';
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { Auth, Authenticated, SharedLinkRoute } from '../app.guard';
-import { Route } from '../interceptors';
-import { UUIDParamDto } from './dto/uuid-param.dto';
+  UpdateAssetDto,
+} from 'src/domain/asset/dto/asset.dto';
+import { MapMarkerDto } from 'src/domain/asset/dto/map-marker.dto';
+import { MemoryLaneDto } from 'src/domain/asset/dto/memory-lane.dto';
+import { TimeBucketAssetDto, TimeBucketDto } from 'src/domain/asset/dto/time-bucket.dto';
+import { AssetResponseDto, MemoryLaneResponseDto } from 'src/domain/asset/response-dto/asset-response.dto';
+import { MapMarkerResponseDto } from 'src/domain/asset/response-dto/map-marker-response.dto';
+import { TimeBucketResponseDto } from 'src/domain/asset/response-dto/time-bucket-response.dto';
+import { AuthDto } from 'src/domain/auth/auth.dto';
+import { MetadataSearchDto } from 'src/domain/search/dto/search.dto';
+import { SearchService } from 'src/domain/search/search.service';
+import { Auth, Authenticated, SharedLinkRoute } from 'src/immich/app.guard';
+import { UUIDParamDto } from 'src/immich/controllers/dto/uuid-param.dto';
+import { Route } from 'src/immich/interceptors/file-upload.interceptor';
 
 @ApiTags('Asset')
 @Controller('assets')
@@ -120,7 +117,11 @@ export class AssetController {
   }
 
   @Put(':id')
-  updateAsset(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto, @Body() dto: UpdateDto): Promise<AssetResponseDto> {
+  updateAsset(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+    @Body() dto: UpdateAssetDto,
+  ): Promise<AssetResponseDto> {
     return this.service.update(auth, id, dto);
   }
 }

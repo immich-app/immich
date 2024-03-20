@@ -1,26 +1,21 @@
-import { DatabaseAction, EntityType } from '@app/infra/entities';
-import {
-  IAccessRepositoryMock,
-  auditStub,
-  authStub,
-  newAccessRepositoryMock,
-  newAssetRepositoryMock,
-  newAuditRepositoryMock,
-  newCryptoRepositoryMock,
-  newPersonRepositoryMock,
-  newStorageRepositoryMock,
-  newUserRepositoryMock,
-} from '@test';
-import {
-  IAssetRepository,
-  IAuditRepository,
-  ICryptoRepository,
-  IPersonRepository,
-  IStorageRepository,
-  IUserRepository,
-  JobStatus,
-} from '../repositories';
-import { AuditService } from './audit.service';
+import { AuditService } from 'src/domain/audit/audit.service';
+import { IAssetRepository } from 'src/domain/repositories/asset.repository';
+import { IAuditRepository } from 'src/domain/repositories/audit.repository';
+import { ICryptoRepository } from 'src/domain/repositories/crypto.repository';
+import { JobStatus } from 'src/domain/repositories/job.repository';
+import { IPersonRepository } from 'src/domain/repositories/person.repository';
+import { IStorageRepository } from 'src/domain/repositories/storage.repository';
+import { IUserRepository } from 'src/domain/repositories/user.repository';
+import { DatabaseAction, EntityType } from 'src/infra/entities/audit.entity';
+import { auditStub } from 'test/fixtures/audit.stub';
+import { authStub } from 'test/fixtures/auth.stub';
+import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
+import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
+import { newAuditRepositoryMock } from 'test/repositories/audit.repository.mock';
+import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
+import { newPersonRepositoryMock } from 'test/repositories/person.repository.mock';
+import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
+import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
 
 describe(AuditService.name, () => {
   let sut: AuditService;

@@ -1,21 +1,17 @@
-import {
-  AddUsersDto,
-  AlbumCountResponseDto,
-  AlbumInfoDto,
-  AlbumResponseDto,
-  AlbumService,
-  AuthDto,
-  BulkIdResponseDto,
-  BulkIdsDto,
-  CreateAlbumDto as CreateDto,
-  GetAlbumsDto,
-  UpdateAlbumDto as UpdateDto,
-} from '@app/domain';
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { ParseMeUUIDPipe } from '../api-v1/validation/parse-me-uuid-pipe';
-import { Auth, Authenticated, SharedLinkRoute } from '../app.guard';
-import { UUIDParamDto } from './dto/uuid-param.dto';
+import { AlbumCountResponseDto, AlbumResponseDto } from 'src/domain/album/album-response.dto';
+import { AlbumService } from 'src/domain/album/album.service';
+import { AddUsersDto } from 'src/domain/album/dto/album-add-users.dto';
+import { CreateAlbumDto } from 'src/domain/album/dto/album-create.dto';
+import { UpdateAlbumDto } from 'src/domain/album/dto/album-update.dto';
+import { AlbumInfoDto } from 'src/domain/album/dto/album.dto';
+import { GetAlbumsDto } from 'src/domain/album/dto/get-albums.dto';
+import { BulkIdResponseDto, BulkIdsDto } from 'src/domain/asset/response-dto/asset-ids-response.dto';
+import { AuthDto } from 'src/domain/auth/auth.dto';
+import { ParseMeUUIDPipe } from 'src/immich/api-v1/validation/parse-me-uuid-pipe';
+import { Auth, Authenticated, SharedLinkRoute } from 'src/immich/app.guard';
+import { UUIDParamDto } from 'src/immich/controllers/dto/uuid-param.dto';
 
 @ApiTags('Album')
 @Controller('album')
@@ -34,7 +30,7 @@ export class AlbumController {
   }
 
   @Post()
-  createAlbum(@Auth() auth: AuthDto, @Body() dto: CreateDto): Promise<AlbumResponseDto> {
+  createAlbum(@Auth() auth: AuthDto, @Body() dto: CreateAlbumDto): Promise<AlbumResponseDto> {
     return this.service.create(auth, dto);
   }
 
@@ -52,7 +48,7 @@ export class AlbumController {
   updateAlbumInfo(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
-    @Body() dto: UpdateDto,
+    @Body() dto: UpdateAlbumDto,
   ): Promise<AlbumResponseDto> {
     return this.service.update(auth, id, dto);
   }

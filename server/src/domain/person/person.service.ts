@@ -1,35 +1,13 @@
-import { PersonEntity } from '@app/infra/entities';
-import { PersonPathType } from '@app/infra/entities/move.entity';
-import { ImmichLogger } from '@app/infra/logger';
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { IsNull } from 'typeorm';
-import { AccessCore, Permission } from '../access';
-import { AssetResponseDto, BulkIdErrorReason, BulkIdResponseDto, mapAsset } from '../asset';
-import { AuthDto } from '../auth';
-import { mimeTypes } from '../domain.constant';
-import { CacheControl, ImmichFileResponse, usePagination } from '../domain.util';
-import { IBaseJob, IDeferrableJob, IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
-import { FACE_THUMBNAIL_SIZE } from '../media';
-import {
-  CropOptions,
-  IAccessRepository,
-  IAssetRepository,
-  ICryptoRepository,
-  IJobRepository,
-  IMachineLearningRepository,
-  IMediaRepository,
-  IMoveRepository,
-  IPersonRepository,
-  ISearchRepository,
-  IStorageRepository,
-  ISystemConfigRepository,
-  JobItem,
-  JobStatus,
-  UpdateFacesData,
-  WithoutProperty,
-} from '../repositories';
-import { StorageCore } from '../storage';
-import { SystemConfigCore } from '../system-config';
+import { AccessCore, Permission } from 'src/domain/access/access.core';
+import { BulkIdErrorReason, BulkIdResponseDto } from 'src/domain/asset/response-dto/asset-ids-response.dto';
+import { AssetResponseDto, mapAsset } from 'src/domain/asset/response-dto/asset-response.dto';
+import { AuthDto } from 'src/domain/auth/auth.dto';
+import { mimeTypes } from 'src/domain/domain.constant';
+import { CacheControl, ImmichFileResponse, usePagination } from 'src/domain/domain.util';
+import { JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from 'src/domain/job/job.constants';
+import { IBaseJob, IDeferrableJob, IEntityJob } from 'src/domain/job/job.interface';
+import { FACE_THUMBNAIL_SIZE } from 'src/domain/media/media.constant';
 import {
   AssetFaceResponseDto,
   AssetFaceUpdateDto,
@@ -44,7 +22,24 @@ import {
   PersonUpdateDto,
   mapFaces,
   mapPerson,
-} from './person.dto';
+} from 'src/domain/person/person.dto';
+import { IAccessRepository } from 'src/domain/repositories/access.repository';
+import { IAssetRepository, WithoutProperty } from 'src/domain/repositories/asset.repository';
+import { ICryptoRepository } from 'src/domain/repositories/crypto.repository';
+import { IJobRepository, JobItem, JobStatus } from 'src/domain/repositories/job.repository';
+import { IMachineLearningRepository } from 'src/domain/repositories/machine-learning.repository';
+import { CropOptions, IMediaRepository } from 'src/domain/repositories/media.repository';
+import { IMoveRepository } from 'src/domain/repositories/move.repository';
+import { IPersonRepository, UpdateFacesData } from 'src/domain/repositories/person.repository';
+import { ISearchRepository } from 'src/domain/repositories/search.repository';
+import { IStorageRepository } from 'src/domain/repositories/storage.repository';
+import { ISystemConfigRepository } from 'src/domain/repositories/system-config.repository';
+import { StorageCore } from 'src/domain/storage/storage.core';
+import { SystemConfigCore } from 'src/domain/system-config/system-config.core';
+import { PersonPathType } from 'src/infra/entities/move.entity';
+import { PersonEntity } from 'src/infra/entities/person.entity';
+import { ImmichLogger } from 'src/infra/logger';
+import { IsNull } from 'typeorm';
 
 @Injectable()
 export class PersonService {
@@ -64,7 +59,7 @@ export class PersonService {
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ISearchRepository) private smartInfoRepository: ISearchRepository,
-    @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
+    @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
   ) {
     this.access = AccessCore.create(accessRepository);
     this.configCore = SystemConfigCore.create(configRepository);

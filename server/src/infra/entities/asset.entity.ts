@@ -1,3 +1,14 @@
+import { AlbumEntity } from 'src/infra/entities/album.entity';
+import { AssetFaceEntity } from 'src/infra/entities/asset-face.entity';
+import { AssetJobStatusEntity } from 'src/infra/entities/asset-job-status.entity';
+import { AssetStackEntity } from 'src/infra/entities/asset-stack.entity';
+import { ExifEntity } from 'src/infra/entities/exif.entity';
+import { LibraryEntity } from 'src/infra/entities/library.entity';
+import { SharedLinkEntity } from 'src/infra/entities/shared-link.entity';
+import { SmartInfoEntity } from 'src/infra/entities/smart-info.entity';
+import { SmartSearchEntity } from 'src/infra/entities/smart-search.entity';
+import { TagEntity } from 'src/infra/entities/tag.entity';
+import { UserEntity } from 'src/infra/entities/user.entity';
 import {
   Column,
   CreateDateColumn,
@@ -13,17 +24,6 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { AlbumEntity } from './album.entity';
-import { AssetFaceEntity } from './asset-face.entity';
-import { AssetJobStatusEntity } from './asset-job-status.entity';
-import { AssetStackEntity } from './asset-stack.entity';
-import { ExifEntity } from './exif.entity';
-import { LibraryEntity } from './library.entity';
-import { SharedLinkEntity } from './shared-link.entity';
-import { SmartInfoEntity } from './smart-info.entity';
-import { SmartSearchEntity } from './smart-search.entity';
-import { TagEntity } from './tag.entity';
-import { UserEntity } from './user.entity';
 
 export const ASSET_CHECKSUM_CONSTRAINT = 'UQ_assets_owner_library_checksum';
 

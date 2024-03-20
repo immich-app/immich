@@ -1,8 +1,10 @@
-import { SystemConfigDto, SystemConfigService, SystemConfigTemplateStorageOptionDto } from '@app/domain';
-import { MapThemeDto } from '@app/domain/system-config/system-config-map-theme.dto';
 import { Body, Controller, Get, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { AdminRoute, Authenticated } from '../app.guard';
+import { SystemConfigDto } from 'src/domain/system-config/dto/system-config.dto';
+import { SystemConfigTemplateStorageOptionDto } from 'src/domain/system-config/response-dto/system-config-template-storage-option.dto';
+import { MapThemeDto } from 'src/domain/system-config/system-config-map-theme.dto';
+import { SystemConfigService } from 'src/domain/system-config/system-config.service';
+import { AdminRoute, Authenticated } from 'src/immich/app.guard';
 
 @ApiTags('System Config')
 @Controller('system-config')

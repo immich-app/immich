@@ -1,20 +1,15 @@
-import { AssetEntity, AssetOrder } from '@app/infra/entities';
 import { Inject, Injectable } from '@nestjs/common';
-import { AssetResponseDto, mapAsset } from '../asset';
-import { AuthDto } from '../auth';
-import { PersonResponseDto } from '../person';
-import {
-  IAssetRepository,
-  IMachineLearningRepository,
-  IMetadataRepository,
-  IPartnerRepository,
-  IPersonRepository,
-  ISearchRepository,
-  ISystemConfigRepository,
-  SearchExploreItem,
-  SearchStrategy,
-} from '../repositories';
-import { FeatureFlag, SystemConfigCore } from '../system-config';
+import { AssetResponseDto, mapAsset } from 'src/domain/asset/response-dto/asset-response.dto';
+import { AuthDto } from 'src/domain/auth/auth.dto';
+import { PersonResponseDto } from 'src/domain/person/person.dto';
+import { IAssetRepository } from 'src/domain/repositories/asset.repository';
+import { IMachineLearningRepository } from 'src/domain/repositories/machine-learning.repository';
+import { IMetadataRepository } from 'src/domain/repositories/metadata.repository';
+import { IPartnerRepository } from 'src/domain/repositories/partner.repository';
+import { IPersonRepository } from 'src/domain/repositories/person.repository';
+import { ISearchRepository, SearchExploreItem, SearchStrategy } from 'src/domain/repositories/search.repository';
+import { ISystemConfigRepository } from 'src/domain/repositories/system-config.repository';
+import { SearchSuggestionRequestDto, SearchSuggestionType } from 'src/domain/search/dto/search-suggestion.dto';
 import {
   MetadataSearchDto,
   PlacesResponseDto,
@@ -23,9 +18,11 @@ import {
   SearchPlacesDto,
   SmartSearchDto,
   mapPlaces,
-} from './dto';
-import { SearchSuggestionRequestDto, SearchSuggestionType } from './dto/search-suggestion.dto';
-import { SearchResponseDto } from './response-dto';
+} from 'src/domain/search/dto/search.dto';
+import { SearchResponseDto } from 'src/domain/search/response-dto/search-response.dto';
+import { FeatureFlag, SystemConfigCore } from 'src/domain/system-config/system-config.core';
+import { AssetOrder } from 'src/infra/entities/album.entity';
+import { AssetEntity } from 'src/infra/entities/asset.entity';
 
 @Injectable()
 export class SearchService {

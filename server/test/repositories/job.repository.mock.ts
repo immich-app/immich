@@ -1,4 +1,4 @@
-import { IJobRepository } from '@app/domain';
+import { IJobRepository } from 'src/domain/repositories/job.repository';
 
 export const newJobRepositoryMock = (): jest.Mocked<IJobRepository> => {
   return {

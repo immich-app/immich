@@ -1,4 +1,4 @@
-import { isDecimalNumber, isNumberInRange, toNumberOrNull } from './numbers';
+import { isDecimalNumber, isNumberInRange, toNumberOrNull } from 'src/microservices/utils/numbers';
 
 describe('checks if a number is a decimal number', () => {
   it('returns false for non-decimal numbers', () => {

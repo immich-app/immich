@@ -1,4 +1,4 @@
-import { SystemMetadata } from '@app/infra/entities';
+import { SystemMetadata } from 'src/infra/entities/system-metadata.entity';
 
 export const ISystemMetadataRepository = 'ISystemMetadataRepository';
 

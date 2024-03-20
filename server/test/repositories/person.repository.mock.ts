@@ -1,4 +1,4 @@
-import { IPersonRepository } from '@app/domain';
+import { IPersonRepository } from 'src/domain/repositories/person.repository';
 
 export const newPersonRepositoryMock = (): jest.Mocked<IPersonRepository> => {
   return {

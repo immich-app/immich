@@ -1,19 +1,15 @@
-import {
-  AssetIdsDto,
-  AssetIdsResponseDto,
-  AuthDto,
-  IMMICH_SHARED_LINK_ACCESS_COOKIE,
-  SharedLinkCreateDto,
-  SharedLinkEditDto,
-  SharedLinkPasswordDto,
-  SharedLinkResponseDto,
-  SharedLinkService,
-} from '@app/domain';
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Req, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
-import { Auth, Authenticated, SharedLinkRoute } from '../app.guard';
-import { UUIDParamDto } from './dto/uuid-param.dto';
+import { AssetIdsDto } from 'src/domain/asset/dto/asset-ids.dto';
+import { AssetIdsResponseDto } from 'src/domain/asset/response-dto/asset-ids-response.dto';
+import { IMMICH_SHARED_LINK_ACCESS_COOKIE } from 'src/domain/auth/auth.constant';
+import { AuthDto } from 'src/domain/auth/auth.dto';
+import { SharedLinkResponseDto } from 'src/domain/shared-link/shared-link-response.dto';
+import { SharedLinkCreateDto, SharedLinkEditDto, SharedLinkPasswordDto } from 'src/domain/shared-link/shared-link.dto';
+import { SharedLinkService } from 'src/domain/shared-link/shared-link.service';
+import { Auth, Authenticated, SharedLinkRoute } from 'src/immich/app.guard';
+import { UUIDParamDto } from 'src/immich/controllers/dto/uuid-param.dto';
 
 @ApiTags('Shared Link')
 @Controller('shared-link')

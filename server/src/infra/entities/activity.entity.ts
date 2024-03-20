@@ -1,3 +1,6 @@
+import { AlbumEntity } from 'src/infra/entities/album.entity';
+import { AssetEntity } from 'src/infra/entities/asset.entity';
+import { UserEntity } from 'src/infra/entities/user.entity';
 import {
   Check,
   Column,
@@ -8,9 +11,6 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { AlbumEntity } from './album.entity';
-import { AssetEntity } from './asset.entity';
-import { UserEntity } from './user.entity';
 
 @Entity('activity')
 @Index('IDX_activity_like', ['assetId', 'userId', 'albumId'], { unique: true, where: '("isLiked" = true)' })

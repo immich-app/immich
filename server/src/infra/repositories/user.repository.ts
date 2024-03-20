@@ -1,10 +1,16 @@
-import { IUserRepository, UserFindOptions, UserListFilter, UserStatsQueryResponse } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import {
+  IUserRepository,
+  UserFindOptions,
+  UserListFilter,
+  UserStatsQueryResponse,
+} from 'src/domain/repositories/user.repository';
+import { AssetEntity } from 'src/infra/entities/asset.entity';
+import { UserEntity } from 'src/infra/entities/user.entity';
+import { DummyValue, GenerateSql } from 'src/infra/infra.util';
+import { Instrumentation } from 'src/infra/instrumentation';
 import { IsNull, Not, Repository } from 'typeorm';
-import { AssetEntity, UserEntity } from '../entities';
-import { DummyValue, GenerateSql } from '../infra.util';
-import { Instrumentation } from '../instrumentation';
 
 @Instrumentation()
 @Injectable()

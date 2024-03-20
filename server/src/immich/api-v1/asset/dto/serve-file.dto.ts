@@ -1,5 +1,5 @@
-import { ValidateBoolean } from '@app/domain';
 import { ApiProperty } from '@nestjs/swagger';
+import { ValidateBoolean } from 'src/domain/domain.util';
 
 export class ServeFileDto {
   @ValidateBoolean({ optional: true })

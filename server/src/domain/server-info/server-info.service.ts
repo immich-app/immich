@@ -1,21 +1,13 @@
-import { SystemMetadataKey } from '@app/infra/entities';
-import { ImmichLogger } from '@app/infra/logger';
 import { Inject, Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
-import { Version, isDev, mimeTypes, serverVersion } from '../domain.constant';
-import { asHumanReadable } from '../domain.util';
-import {
-  ClientEvent,
-  ICommunicationRepository,
-  IServerInfoRepository,
-  IStorageRepository,
-  ISystemConfigRepository,
-  ISystemMetadataRepository,
-  IUserRepository,
-  UserStatsQueryResponse,
-} from '../repositories';
-import { StorageCore, StorageFolder } from '../storage';
-import { SystemConfigCore } from '../system-config';
+import { Version, isDev, mimeTypes, serverVersion } from 'src/domain/domain.constant';
+import { asHumanReadable } from 'src/domain/domain.util';
+import { ClientEvent, ICommunicationRepository } from 'src/domain/repositories/communication.repository';
+import { IServerInfoRepository } from 'src/domain/repositories/server-info.repository';
+import { IStorageRepository } from 'src/domain/repositories/storage.repository';
+import { ISystemConfigRepository } from 'src/domain/repositories/system-config.repository';
+import { ISystemMetadataRepository } from 'src/domain/repositories/system-metadata.repository';
+import { IUserRepository, UserStatsQueryResponse } from 'src/domain/repositories/user.repository';
 import {
   ServerConfigDto,
   ServerFeaturesDto,
@@ -24,7 +16,11 @@ import {
   ServerPingResponse,
   ServerStatsResponseDto,
   UsageByUserDto,
-} from './server-info.dto';
+} from 'src/domain/server-info/server-info.dto';
+import { StorageCore, StorageFolder } from 'src/domain/storage/storage.core';
+import { SystemConfigCore } from 'src/domain/system-config/system-config.core';
+import { SystemMetadataKey } from 'src/infra/entities/system-metadata.entity';
+import { ImmichLogger } from 'src/infra/logger';
 
 @Injectable()
 export class ServerInfoService {

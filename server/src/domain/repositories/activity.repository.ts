@@ -1,5 +1,5 @@
-import { ActivityEntity } from '@app/infra/entities/activity.entity';
-import { ActivitySearch } from '@app/infra/repositories';
+import { ActivityEntity } from 'src/infra/entities/activity.entity';
+import { ActivitySearch } from 'src/infra/repositories/activity.repository';
 
 export const IActivityRepository = 'IActivityRepository';
 

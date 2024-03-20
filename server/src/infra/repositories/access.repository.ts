@@ -1,20 +1,18 @@
-import { IAccessRepository } from '@app/domain';
 import { InjectRepository } from '@nestjs/typeorm';
+import { IAccessRepository } from 'src/domain/repositories/access.repository';
+import { ActivityEntity } from 'src/infra/entities/activity.entity';
+import { AlbumEntity } from 'src/infra/entities/album.entity';
+import { AssetFaceEntity } from 'src/infra/entities/asset-face.entity';
+import { AssetEntity } from 'src/infra/entities/asset.entity';
+import { LibraryEntity } from 'src/infra/entities/library.entity';
+import { PartnerEntity } from 'src/infra/entities/partner.entity';
+import { PersonEntity } from 'src/infra/entities/person.entity';
+import { SharedLinkEntity } from 'src/infra/entities/shared-link.entity';
+import { UserTokenEntity } from 'src/infra/entities/user-token.entity';
+import { DummyValue, GenerateSql } from 'src/infra/infra.util';
+import { ChunkedSet } from 'src/infra/infra.utils';
+import { Instrumentation } from 'src/infra/instrumentation';
 import { Brackets, In, Repository } from 'typeorm';
-import {
-  ActivityEntity,
-  AlbumEntity,
-  AssetEntity,
-  AssetFaceEntity,
-  LibraryEntity,
-  PartnerEntity,
-  PersonEntity,
-  SharedLinkEntity,
-  UserTokenEntity,
-} from '../entities';
-import { DummyValue, GenerateSql } from '../infra.util';
-import { ChunkedSet } from '../infra.utils';
-import { Instrumentation } from '../instrumentation';
 
 type IActivityAccess = IAccessRepository['activity'];
 type IAlbumAccess = IAccessRepository['album'];

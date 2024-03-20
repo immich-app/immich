@@ -9,7 +9,7 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator';
-import { ValidateBoolean, validateCronExpression } from '../../domain.util';
+import { ValidateBoolean, validateCronExpression } from 'src/domain/domain.util';
 
 const isEnabled = (config: SystemConfigLibraryScanDto) => config.enabled;
 

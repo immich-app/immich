@@ -1,24 +1,7 @@
-import { AssetPathType, DatabaseAction, PersonPathType, UserPathType } from '@app/infra/entities';
-import { ImmichLogger } from '@app/infra/logger';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { resolve } from 'node:path';
-import { AccessCore, Permission } from '../access';
-import { AuthDto } from '../auth';
-import { AUDIT_LOG_MAX_DURATION } from '../domain.constant';
-import { usePagination } from '../domain.util';
-import { JOBS_ASSET_PAGINATION_SIZE } from '../job';
-import {
-  IAccessRepository,
-  IAssetRepository,
-  IAuditRepository,
-  ICryptoRepository,
-  IPersonRepository,
-  IStorageRepository,
-  IUserRepository,
-  JobStatus,
-} from '../repositories';
-import { StorageCore, StorageFolder } from '../storage';
+import { AccessCore, Permission } from 'src/domain/access/access.core';
 import {
   AuditDeletesDto,
   AuditDeletesResponseDto,
@@ -26,7 +9,23 @@ import {
   FileChecksumResponseDto,
   FileReportItemDto,
   PathEntityType,
-} from './audit.dto';
+} from 'src/domain/audit/audit.dto';
+import { AuthDto } from 'src/domain/auth/auth.dto';
+import { AUDIT_LOG_MAX_DURATION } from 'src/domain/domain.constant';
+import { usePagination } from 'src/domain/domain.util';
+import { JOBS_ASSET_PAGINATION_SIZE } from 'src/domain/job/job.constants';
+import { IAccessRepository } from 'src/domain/repositories/access.repository';
+import { IAssetRepository } from 'src/domain/repositories/asset.repository';
+import { IAuditRepository } from 'src/domain/repositories/audit.repository';
+import { ICryptoRepository } from 'src/domain/repositories/crypto.repository';
+import { JobStatus } from 'src/domain/repositories/job.repository';
+import { IPersonRepository } from 'src/domain/repositories/person.repository';
+import { IStorageRepository } from 'src/domain/repositories/storage.repository';
+import { IUserRepository } from 'src/domain/repositories/user.repository';
+import { StorageCore, StorageFolder } from 'src/domain/storage/storage.core';
+import { DatabaseAction } from 'src/infra/entities/audit.entity';
+import { AssetPathType, PersonPathType, UserPathType } from 'src/infra/entities/move.entity';
+import { ImmichLogger } from 'src/infra/logger';
 
 @Injectable()
 export class AuditService {

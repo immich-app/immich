@@ -1,6 +1,5 @@
-import { ImmichLogger } from '@app/infra/logger';
 import { Inject, Injectable } from '@nestjs/common';
-import { Version, VersionType } from '../domain.constant';
+import { Version, VersionType } from 'src/domain/domain.constant';
 import {
   DatabaseExtension,
   DatabaseLock,
@@ -8,7 +7,8 @@ import {
   VectorExtension,
   VectorIndex,
   extName,
-} from '../repositories';
+} from 'src/domain/repositories/database.repository';
+import { ImmichLogger } from 'src/infra/logger';
 
 @Injectable()
 export class DatabaseService {

@@ -1,7 +1,8 @@
-import { FeatureFlags, IVersion, type VersionType } from '@app/domain';
 import { ApiProperty, ApiResponseProperty } from '@nestjs/swagger';
 import type { DateTime } from 'luxon';
-import { SystemConfigThemeDto } from '../system-config/dto/system-config-theme.dto';
+import { IVersion, VersionType } from 'src/domain/domain.constant';
+import { SystemConfigThemeDto } from 'src/domain/system-config/dto/system-config-theme.dto';
+import { FeatureFlags } from 'src/domain/system-config/system-config.core';
 
 export class ServerPingResponse {
   @ApiResponseProperty({ type: String, example: 'pong' })

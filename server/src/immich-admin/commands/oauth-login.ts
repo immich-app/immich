@@ -1,5 +1,5 @@
-import { SystemConfigService } from '@app/domain';
 import { Command, CommandRunner } from 'nest-commander';
+import { SystemConfigService } from 'src/domain/system-config/system-config.service';
 
 @Command({
   name: 'enable-oauth-login',

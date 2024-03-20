@@ -1,4 +1,4 @@
-import { ValidateBoolean, ValidateDate } from '../../domain.util';
+import { ValidateBoolean, ValidateDate } from 'src/domain/domain.util';
 
 export class MapMarkerDto {
   @ValidateBoolean({ optional: true })

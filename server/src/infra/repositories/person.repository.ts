@@ -1,21 +1,22 @@
+import { InjectRepository } from '@nestjs/typeorm';
+import _ from 'lodash';
+import { Paginated, PaginationOptions } from 'src/domain/domain.util';
 import {
   AssetFaceId,
   IPersonRepository,
-  Paginated,
-  PaginationOptions,
   PeopleStatistics,
   PersonNameSearchOptions,
   PersonSearchOptions,
   PersonStatistics,
   UpdateFacesData,
-} from '@app/domain';
-import { InjectRepository } from '@nestjs/typeorm';
-import _ from 'lodash';
+} from 'src/domain/repositories/person.repository';
+import { AssetFaceEntity } from 'src/infra/entities/asset-face.entity';
+import { AssetEntity } from 'src/infra/entities/asset.entity';
+import { PersonEntity } from 'src/infra/entities/person.entity';
+import { DummyValue, GenerateSql } from 'src/infra/infra.util';
+import { ChunkedArray, asVector, paginate } from 'src/infra/infra.utils';
+import { Instrumentation } from 'src/infra/instrumentation';
 import { FindManyOptions, FindOptionsRelations, FindOptionsSelect, In, Repository } from 'typeorm';
-import { AssetEntity, AssetFaceEntity, PersonEntity } from '../entities';
-import { DummyValue, GenerateSql } from '../infra.util';
-import { ChunkedArray, asVector, paginate } from '../infra.utils';
-import { Instrumentation } from '../instrumentation';
 
 @Instrumentation()
 export class PersonRepository implements IPersonRepository {

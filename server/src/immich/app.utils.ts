@@ -1,14 +1,3 @@
-import {
-  CacheControl,
-  IMMICH_ACCESS_COOKIE,
-  IMMICH_API_KEY_HEADER,
-  IMMICH_API_KEY_NAME,
-  ImmichFileResponse,
-  ImmichReadStream,
-  isConnectionAborted,
-  serverVersion,
-} from '@app/domain';
-import { ImmichLogger } from '@app/infra/logger';
 import { HttpException, INestApplication, StreamableFile } from '@nestjs/common';
 import {
   DocumentBuilder,
@@ -24,7 +13,12 @@ import { writeFileSync } from 'node:fs';
 import { access, constants } from 'node:fs/promises';
 import path, { isAbsolute } from 'node:path';
 import { promisify } from 'node:util';
-import { Metadata } from './app.guard';
+import { IMMICH_ACCESS_COOKIE, IMMICH_API_KEY_HEADER, IMMICH_API_KEY_NAME } from 'src/domain/auth/auth.constant';
+import { serverVersion } from 'src/domain/domain.constant';
+import { CacheControl, ImmichFileResponse, isConnectionAborted } from 'src/domain/domain.util';
+import { ImmichReadStream } from 'src/domain/repositories/storage.repository';
+import { Metadata } from 'src/immich/app.guard';
+import { ImmichLogger } from 'src/infra/logger';
 
 type SendFile = Parameters<Response['sendFile']>;
 type SendFileOptions = SendFile[1];

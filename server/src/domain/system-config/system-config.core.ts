@@ -1,7 +1,17 @@
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
+import { CronExpression } from '@nestjs/schedule';
+import { plainToInstance } from 'class-transformer';
+import { validate } from 'class-validator';
+import { load as loadYaml } from 'js-yaml';
+import * as _ from 'lodash';
+import { Subject } from 'rxjs';
+import { QueueName } from 'src/domain/job/job.constants';
+import { ISystemConfigRepository } from 'src/domain/repositories/system-config.repository';
+import { SystemConfigDto } from 'src/domain/system-config/dto/system-config.dto';
 import {
   AudioCodec,
-  Colorspace,
   CQMode,
+  Colorspace,
   LogLevel,
   SystemConfig,
   SystemConfigEntity,
@@ -11,18 +21,8 @@ import {
   TranscodeHWAccel,
   TranscodePolicy,
   VideoCodec,
-} from '@app/infra/entities';
-import { ImmichLogger } from '@app/infra/logger';
-import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
-import { CronExpression } from '@nestjs/schedule';
-import { plainToInstance } from 'class-transformer';
-import { validate } from 'class-validator';
-import { load as loadYaml } from 'js-yaml';
-import * as _ from 'lodash';
-import { Subject } from 'rxjs';
-import { QueueName } from '../job/job.constants';
-import { ISystemConfigRepository } from '../repositories';
-import { SystemConfigDto } from './dto';
+} from 'src/infra/entities/system-config.entity';
+import { ImmichLogger } from 'src/infra/logger';
 
 export type SystemConfigValidator = (config: SystemConfig, newConfig: SystemConfig) => void | Promise<void>;
 

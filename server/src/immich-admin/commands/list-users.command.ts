@@ -1,6 +1,6 @@
-import { UserService } from '@app/domain';
 import { Command, CommandRunner } from 'nest-commander';
-import { CLI_USER } from '../constants';
+import { UserService } from 'src/domain/user/user.service';
+import { CLI_USER } from 'src/immich-admin/constants';
 
 @Command({
   name: 'list-users',
