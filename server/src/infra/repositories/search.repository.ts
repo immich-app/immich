@@ -16,6 +16,7 @@ import {
   AssetEntity,
   AssetFaceEntity,
   AssetType,
+  ExifEntity,
   GeodataPlacesEntity,
   SmartInfoEntity,
   SmartSearchEntity,
@@ -34,6 +35,7 @@ import { Instrumentation } from '../instrumentation';
 export class SearchRepository implements ISearchRepository {
   private logger = new ImmichLogger(SearchRepository.name);
   private faceColumns: string[];
+  private uglyQuery: string;
 
   constructor(
     @InjectRepository(SmartInfoEntity) private repository: Repository<SmartInfoEntity>,
@@ -46,6 +48,14 @@ export class SearchRepository implements ISearchRepository {
       .getMetadata(AssetFaceEntity)
       .ownColumns.map((column) => column.propertyName)
       .filter((propertyName) => propertyName !== 'embedding');
+    this.uglyQuery =
+      uglyQuery +
+      this.assetRepository
+        .createQueryBuilder('asset')
+        .innerJoinAndSelect('asset.exifInfo', 'exif')
+        .withDeleted()
+        .getQuery() +
+      ' INNER JOIN cte ON asset.id = cte."assetId"';
   }
 
   async init(modelName: string): Promise<void> {
@@ -224,89 +234,20 @@ export class SearchRepository implements ISearchRepository {
   @GenerateSql({ params: [[DummyValue.UUID]] })
   async getAssetsByCity(userIds: string[]): Promise<AssetEntity[]> {
     // the performance difference between this and the normal way is too huge to ignore, e.g. 3s vs 4ms
-    const rawRes = await this.repository.query(
-      `
-      WITH RECURSIVE cte AS (
-        (
-          SELECT city, "assetId"
-          FROM exif
-          INNER JOIN assets ON exif."assetId" = assets.id
-          WHERE "ownerId" IN ($1) AND "isVisible" = $2 AND "isArchived" = $3 AND type = $4
-          ORDER BY city
-          LIMIT 1
-        )
+    const rawRes = await this.repository.query(this.uglyQuery, [userIds.join(', '), true, false, AssetType.IMAGE]);
 
-        UNION ALL
-        
-        SELECT l.city, l."assetId"
-        FROM cte c
-          , LATERAL (
-          SELECT city, "assetId"
-          FROM exif
-          INNER JOIN assets ON exif."assetId" = assets.id
-          WHERE city > c.city AND "ownerId" IN ($1) AND "isVisible" = $2 AND "isArchived" = $3 AND type = $4
-          ORDER BY city
-          LIMIT 1
-          ) l
-      )
-      SELECT assets.*, exif.*
-      FROM assets
-      INNER JOIN cte ON id = "assetId"
-      INNER JOIN exif ON assets.id = exif."assetId"
-    `,
-      [userIds.join(', '), true, false, AssetType.IMAGE],
-    );
-
-    const items = rawRes.map(
-      ({
-        country,
-        state,
-        city,
-        description,
-        model,
-        make,
-        dateTimeOriginal,
-        exifImageHeight,
-        exifImageWidth,
-        exposureTime,
-        fNumber,
-        fileSizeInByte,
-        focalLength,
-        iso,
-        latitude,
-        lensModel,
-        longitude,
-        modifyDate,
-        projectionType,
-        timeZone,
-        ...assetInfo
-      }: any) =>
-        ({
-          exifInfo: {
-            city,
-            country,
-            dateTimeOriginal,
-            description,
-            exifImageHeight,
-            exifImageWidth,
-            exposureTime,
-            fNumber,
-            fileSizeInByte,
-            focalLength,
-            iso,
-            latitude,
-            lensModel,
-            longitude,
-            make,
-            model,
-            modifyDate,
-            projectionType,
-            state,
-            timeZone,
-          },
-          ...assetInfo,
-        }) as AssetEntity,
-    );
+    const items: AssetEntity[] = [];
+    for (const res of rawRes) {
+      const item = { exifInfo: {} as Record<string, any> } as Record<string, any>;
+      for (const [key, value] of Object.entries(res)) {
+        if (key.startsWith('exif_')) {
+          item.exifInfo[key.replace('exif_', '')] = value;
+        } else {
+          item[key.replace('asset_', '')] = value;
+        }
+      }
+      items.push(item as AssetEntity);
+    }
 
     return items;
   }
@@ -381,3 +322,29 @@ export class SearchRepository implements ISearchRepository {
     return runtimeConfig;
   }
 }
+
+const uglyQuery = `
+WITH RECURSIVE cte AS (
+  (
+    SELECT city, "assetId"
+    FROM exif
+    INNER JOIN assets ON exif."assetId" = assets.id
+    WHERE "ownerId" IN ($1) AND "isVisible" = $2 AND "isArchived" = $3 AND type = $4
+    ORDER BY city
+    LIMIT 1
+  )
+
+  UNION ALL
+  
+  SELECT l.city, l."assetId"
+  FROM cte c
+    , LATERAL (
+    SELECT city, "assetId"
+    FROM exif
+    INNER JOIN assets ON exif."assetId" = assets.id
+    WHERE city > c.city AND "ownerId" IN ($1) AND "isVisible" = $2 AND "isArchived" = $3 AND type = $4
+    ORDER BY city
+    LIMIT 1
+    ) l
+)
+`;
