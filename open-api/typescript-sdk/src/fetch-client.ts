@@ -2204,6 +2204,14 @@ export function search({ clip, motion, page, q, query, recent, size, smart, $typ
         ...opts
     }));
 }
+export function getAssetsByCity(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetResponseDto[];
+    }>("/search/cities", {
+        ...opts
+    }));
+}
 export function getExploreData(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;

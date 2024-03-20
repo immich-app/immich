@@ -115,6 +115,32 @@ export class SearchService {
     return this.mapResponse(items, hasNextPage ? (page + 1).toString() : null);
   }
 
+  async getAssetsByCity(auth: AuthDto): Promise<AssetResponseDto[]> {
+    const userIds = await this.getUserIdsToSearch(auth);
+    const assets = await this.searchRepository.getAssetsByCity(userIds);
+    return assets.map((asset) => mapAsset(asset));
+  }
+
+  getSearchSuggestions(auth: AuthDto, dto: SearchSuggestionRequestDto): Promise<string[]> {
+    switch (dto.type) {
+      case SearchSuggestionType.COUNTRY: {
+        return this.metadataRepository.getCountries(auth.user.id);
+      }
+      case SearchSuggestionType.STATE: {
+        return this.metadataRepository.getStates(auth.user.id, dto.country);
+      }
+      case SearchSuggestionType.CITY: {
+        return this.metadataRepository.getCities(auth.user.id, dto.country, dto.state);
+      }
+      case SearchSuggestionType.CAMERA_MAKE: {
+        return this.metadataRepository.getCameraMakes(auth.user.id, dto.model);
+      }
+      case SearchSuggestionType.CAMERA_MODEL: {
+        return this.metadataRepository.getCameraModels(auth.user.id, dto.make);
+      }
+    }
+  }
+
   // TODO: remove after implementing new search filters
   /** @deprecated */
   async search(auth: AuthDto, dto: SearchDto): Promise<SearchResponseDto> {
@@ -190,25 +216,5 @@ export class SearchService {
         nextPage,
       },
     };
-  }
-
-  async getSearchSuggestions(auth: AuthDto, dto: SearchSuggestionRequestDto): Promise<string[]> {
-    switch (dto.type) {
-      case SearchSuggestionType.COUNTRY: {
-        return this.metadataRepository.getCountries(auth.user.id);
-      }
-      case SearchSuggestionType.STATE: {
-        return this.metadataRepository.getStates(auth.user.id, dto.country);
-      }
-      case SearchSuggestionType.CITY: {
-        return this.metadataRepository.getCities(auth.user.id, dto.country, dto.state);
-      }
-      case SearchSuggestionType.CAMERA_MAKE: {
-        return this.metadataRepository.getCameraMakes(auth.user.id, dto.model);
-      }
-      case SearchSuggestionType.CAMERA_MODEL: {
-        return this.metadataRepository.getCameraModels(auth.user.id, dto.make);
-      }
-    }
   }
 }

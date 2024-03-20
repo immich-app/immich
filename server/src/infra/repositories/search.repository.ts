@@ -15,6 +15,7 @@ import { getCLIPModelInfo } from '@app/domain/smart-info/smart-info.constant';
 import {
   AssetEntity,
   AssetFaceEntity,
+  AssetType,
   GeodataPlacesEntity,
   SmartInfoEntity,
   SmartSearchEntity,
@@ -33,6 +34,7 @@ import { Instrumentation } from '../instrumentation';
 export class SearchRepository implements ISearchRepository {
   private logger = new ImmichLogger(SearchRepository.name);
   private faceColumns: string[];
+  private assetsByCityQuery: string;
 
   constructor(
     @InjectRepository(SmartInfoEntity) private repository: Repository<SmartInfoEntity>,
@@ -45,6 +47,14 @@ export class SearchRepository implements ISearchRepository {
       .getMetadata(AssetFaceEntity)
       .ownColumns.map((column) => column.propertyName)
       .filter((propertyName) => propertyName !== 'embedding');
+    this.assetsByCityQuery =
+      assetsByCityCte +
+      this.assetRepository
+        .createQueryBuilder('asset')
+        .innerJoinAndSelect('asset.exifInfo', 'exif')
+        .withDeleted()
+        .getQuery() +
+      ' INNER JOIN cte ON asset.id = cte."assetId"';
   }
 
   async init(modelName: string): Promise<void> {
@@ -220,6 +230,27 @@ export class SearchRepository implements ISearchRepository {
       .getMany();
   }
 
+  @GenerateSql({ params: [[DummyValue.UUID]] })
+  async getAssetsByCity(userIds: string[]): Promise<AssetEntity[]> {
+    const parameters = [userIds.join(', '), true, false, AssetType.IMAGE];
+    const rawRes = await this.repository.query(this.assetsByCityQuery, parameters);
+
+    const items: AssetEntity[] = [];
+    for (const res of rawRes) {
+      const item = { exifInfo: {} as Record<string, any> } as Record<string, any>;
+      for (const [key, value] of Object.entries(res)) {
+        if (key.startsWith('exif_')) {
+          item.exifInfo[key.replace('exif_', '')] = value;
+        } else {
+          item[key.replace('asset_', '')] = value;
+        }
+      }
+      items.push(item as AssetEntity);
+    }
+
+    return items;
+  }
+
   async upsert(smartInfo: Partial<SmartInfoEntity>, embedding?: Embedding): Promise<void> {
     await this.repository.upsert(smartInfo, { conflictPaths: ['assetId'] });
     if (!smartInfo.assetId || !embedding) {
@@ -290,3 +321,30 @@ export class SearchRepository implements ISearchRepository {
     return runtimeConfig;
   }
 }
+
+// the performance difference between this and the normal way is too huge to ignore, e.g. 3s vs 4ms
+const assetsByCityCte = `
+WITH RECURSIVE cte AS (
+  (
+    SELECT city, "assetId"
+    FROM exif
+    INNER JOIN assets ON exif."assetId" = assets.id
+    WHERE "ownerId" IN ($1) AND "isVisible" = $2 AND "isArchived" = $3 AND type = $4
+    ORDER BY city
+    LIMIT 1
+  )
+
+  UNION ALL
+  
+  SELECT l.city, l."assetId"
+  FROM cte c
+    , LATERAL (
+    SELECT city, "assetId"
+    FROM exif
+    INNER JOIN assets ON exif."assetId" = assets.id
+    WHERE city > c.city AND "ownerId" IN ($1) AND "isVisible" = $2 AND "isArchived" = $3 AND type = $4
+    ORDER BY city
+    LIMIT 1
+    ) l
+)
+`;
