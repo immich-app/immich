@@ -6,9 +6,34 @@ import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { OpenTelemetryModule } from 'nestjs-otel';
 import { bullConfig, bullQueues, immichAppConfig } from 'src/config';
+import { ActivityService } from 'src/domain/activity/activity.service';
+import { AlbumService } from 'src/domain/album/album.service';
+import { APIKeyService } from 'src/domain/api-key/api-key.service';
+import { AssetService } from 'src/domain/asset/asset.service';
+import { AuditService } from 'src/domain/audit/audit.service';
+import { AuthService } from 'src/domain/auth/auth.service';
+import { DatabaseService } from 'src/domain/database/database.service';
+import { DownloadService } from 'src/domain/download/download.service';
+import { JobService } from 'src/domain/job/job.service';
+import { LibraryService } from 'src/domain/library/library.service';
+import { MediaService } from 'src/domain/media/media.service';
+import { MetadataService } from 'src/domain/metadata/metadata.service';
+import { PartnerService } from 'src/domain/partner/partner.service';
+import { PersonService } from 'src/domain/person/person.service';
+import { SearchService } from 'src/domain/search/search.service';
+import { ServerInfoService } from 'src/domain/server-info/server-info.service';
+import { SharedLinkService } from 'src/domain/shared-link/shared-link.service';
+import { SmartInfoService } from 'src/domain/smart-info/smart-info.service';
+import { StorageTemplateService } from 'src/domain/storage-template/storage-template.service';
+import { StorageService } from 'src/domain/storage/storage.service';
+import { SystemConfigService } from 'src/domain/system-config/system-config.service';
+import { TagService } from 'src/domain/tag/tag.service';
+import { TrashService } from 'src/domain/trash/trash.service';
+import { UserService } from 'src/domain/user/user.service';
 import { databaseEntities } from 'src/entities';
 import { databaseConfig } from 'src/infra/database.config';
 import { otelConfig } from 'src/infra/instrumentation';
+import { ImmichLogger } from 'src/infra/logger';
 import { IAccessRepository } from 'src/interfaces/access.repository';
 import { IActivityRepository } from 'src/interfaces/activity.repository';
 import { IAlbumRepository } from 'src/interfaces/album.repository';
@@ -64,7 +89,35 @@ import { TagRepository } from 'src/repositories/tag.repository';
 import { UserTokenRepository } from 'src/repositories/user-token.repository';
 import { UserRepository } from 'src/repositories/user.repository';
 
-const providers: Provider[] = [
+const services: Provider[] = [
+  APIKeyService,
+  ActivityService,
+  AlbumService,
+  AssetService,
+  AuditService,
+  AuthService,
+  DatabaseService,
+  DownloadService,
+  ImmichLogger,
+  JobService,
+  LibraryService,
+  MediaService,
+  MetadataService,
+  PartnerService,
+  PersonService,
+  SearchService,
+  ServerInfoService,
+  SharedLinkService,
+  SmartInfoService,
+  StorageService,
+  StorageTemplateService,
+  SystemConfigService,
+  TagService,
+  TrashService,
+  UserService,
+];
+
+const repositories: Provider[] = [
   { provide: IActivityRepository, useClass: ActivityRepository },
   { provide: IAccessRepository, useClass: AccessRepository },
   { provide: IAlbumRepository, useClass: AlbumRepository },
@@ -92,7 +145,6 @@ const providers: Provider[] = [
   { provide: IMediaRepository, useClass: MediaRepository },
   { provide: IUserRepository, useClass: UserRepository },
   { provide: IUserTokenRepository, useClass: UserTokenRepository },
-  SchedulerRegistry,
 ];
 
 @Global()
@@ -107,10 +159,10 @@ const providers: Provider[] = [
     BullModule.registerQueue(...bullQueues),
     OpenTelemetryModule.forRoot(otelConfig),
   ],
-  providers: [...providers],
-  exports: [...providers, BullModule],
+  providers: [...services, ...repositories, SchedulerRegistry],
+  exports: [...services, ...repositories, BullModule, SchedulerRegistry],
 })
-export class InfraModule {}
+export class AppModule {}
 
 @Global()
 @Module({
@@ -121,7 +173,7 @@ export class InfraModule {}
     TypeOrmModule.forFeature(databaseEntities),
     ScheduleModule,
   ],
-  providers: [...providers],
-  exports: [...providers],
+  providers: [...services, ...repositories, SchedulerRegistry],
+  exports: [...services, ...repositories, SchedulerRegistry],
 })
-export class InfraTestModule {}
+export class AppTestModule {}

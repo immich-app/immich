@@ -3,6 +3,7 @@ import { APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ApiService } from 'src/apps/api.service';
+import { AppModule } from 'src/apps/app.module';
 import { ActivityController } from 'src/controllers/activity.controller';
 import { AlbumController } from 'src/controllers/album.controller';
 import { APIKeyController } from 'src/controllers/api-key.controller';
@@ -24,13 +25,11 @@ import { SystemConfigController } from 'src/controllers/system-config.controller
 import { TagController } from 'src/controllers/tag.controller';
 import { TrashController } from 'src/controllers/trash.controller';
 import { UserController } from 'src/controllers/user.controller';
-import { DomainModule } from 'src/domain/domain.module';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { AssetRepositoryV1, IAssetRepositoryV1 } from 'src/immich/api-v1/asset/asset-repository';
 import { AssetController as AssetControllerV1 } from 'src/immich/api-v1/asset/asset.controller';
 import { AssetService as AssetServiceV1 } from 'src/immich/api-v1/asset/asset.service';
-import { InfraModule } from 'src/infra/infra.module';
 import { AuthGuard } from 'src/middleware/auth.guard';
 import { ErrorInterceptor } from 'src/middleware/error.interceptor';
 import { FileUploadInterceptor } from 'src/middleware/file-upload.interceptor';
@@ -38,8 +37,7 @@ import { FileUploadInterceptor } from 'src/middleware/file-upload.interceptor';
 @Module({
   imports: [
     //
-    InfraModule,
-    DomainModule,
+    AppModule,
     ScheduleModule.forRoot(),
     TypeOrmModule.forFeature([AssetEntity, ExifEntity]),
   ],
