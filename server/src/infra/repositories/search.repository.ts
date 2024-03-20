@@ -35,7 +35,7 @@ import { Instrumentation } from '../instrumentation';
 export class SearchRepository implements ISearchRepository {
   private logger = new ImmichLogger(SearchRepository.name);
   private faceColumns: string[];
-  private uglyQuery: string;
+  private assetsByCityQuery: string;
 
   constructor(
     @InjectRepository(SmartInfoEntity) private repository: Repository<SmartInfoEntity>,
@@ -48,8 +48,8 @@ export class SearchRepository implements ISearchRepository {
       .getMetadata(AssetFaceEntity)
       .ownColumns.map((column) => column.propertyName)
       .filter((propertyName) => propertyName !== 'embedding');
-    this.uglyQuery =
-      uglyQuery +
+    this.assetsByCityQuery =
+      assetsByCityQuery +
       this.assetRepository
         .createQueryBuilder('asset')
         .innerJoinAndSelect('asset.exifInfo', 'exif')
@@ -234,7 +234,12 @@ export class SearchRepository implements ISearchRepository {
   @GenerateSql({ params: [[DummyValue.UUID]] })
   async getAssetsByCity(userIds: string[]): Promise<AssetEntity[]> {
     // the performance difference between this and the normal way is too huge to ignore, e.g. 3s vs 4ms
-    const rawRes = await this.repository.query(this.uglyQuery, [userIds.join(', '), true, false, AssetType.IMAGE]);
+    const rawRes = await this.repository.query(this.assetsByCityQuery, [
+      userIds.join(', '),
+      true,
+      false,
+      AssetType.IMAGE,
+    ]);
 
     const items: AssetEntity[] = [];
     for (const res of rawRes) {
@@ -323,7 +328,7 @@ export class SearchRepository implements ISearchRepository {
   }
 }
 
-const uglyQuery = `
+const assetsByCityQuery = `
 WITH RECURSIVE cte AS (
   (
     SELECT city, "assetId"
