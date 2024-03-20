@@ -4,6 +4,8 @@ import handlebar from 'handlebars';
 import { DateTime } from 'luxon';
 import path from 'node:path';
 import sanitize from 'sanitize-filename';
+import { StorageCore, StorageFolder } from 'src/cores/storage.core';
+import { SystemConfigCore } from 'src/cores/system-config.core';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/domain/job/job.constants';
 import { IEntityJob } from 'src/domain/job/job.interface';
 import { IAlbumRepository } from 'src/domain/repositories/album.repository';
@@ -17,7 +19,6 @@ import { IPersonRepository } from 'src/domain/repositories/person.repository';
 import { IStorageRepository } from 'src/domain/repositories/storage.repository';
 import { ISystemConfigRepository } from 'src/domain/repositories/system-config.repository';
 import { IUserRepository } from 'src/domain/repositories/user.repository';
-import { StorageCore, StorageFolder } from 'src/domain/storage/storage.core';
 import {
   supportedDayTokens,
   supportedHourTokens,
@@ -27,7 +28,6 @@ import {
   supportedWeekTokens,
   supportedYearTokens,
 } from 'src/domain/system-config/system-config.constants';
-import { SystemConfigCore } from 'src/domain/system-config/system-config.core';
 import { AssetEntity, AssetType } from 'src/infra/entities/asset.entity';
 import { AssetPathType } from 'src/infra/entities/move.entity';
 import { SystemConfig } from 'src/infra/entities/system-config.entity';

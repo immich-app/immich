@@ -10,7 +10,9 @@ import cookieParser from 'cookie';
 import { DateTime } from 'luxon';
 import { IncomingHttpHeaders } from 'node:http';
 import { ClientMetadata, Issuer, UserinfoResponse, custom, generators } from 'openid-client';
-import { AccessCore, Permission } from 'src/domain/access/access.core';
+import { AccessCore, Permission } from 'src/cores/access.core';
+import { SystemConfigCore } from 'src/cores/system-config.core';
+import { UserCore } from 'src/cores/user.core';
 import {
   AuthType,
   IMMICH_ACCESS_COOKIE,
@@ -42,9 +44,7 @@ import { ISharedLinkRepository } from 'src/domain/repositories/shared-link.repos
 import { ISystemConfigRepository } from 'src/domain/repositories/system-config.repository';
 import { IUserTokenRepository } from 'src/domain/repositories/user-token.repository';
 import { IUserRepository } from 'src/domain/repositories/user.repository';
-import { SystemConfigCore } from 'src/domain/system-config/system-config.core';
 import { UserResponseDto, mapUser } from 'src/domain/user/response-dto/user-response.dto';
-import { UserCore } from 'src/domain/user/user.core';
 import { SystemConfig } from 'src/infra/entities/system-config.entity';
 import { UserEntity } from 'src/infra/entities/user.entity';
 import { ImmichLogger } from 'src/infra/logger';

@@ -1,4 +1,4 @@
-import { AccessCore } from 'src/domain/access/access.core';
+import { AccessCore } from 'src/cores/access.core';
 import { IAccessRepository } from 'src/domain/repositories/access.repository';
 
 export interface IAccessRepositoryMock {

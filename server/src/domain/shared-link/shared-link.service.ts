@@ -1,5 +1,5 @@
 import { BadRequestException, ForbiddenException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
-import { AccessCore, Permission } from 'src/domain/access/access.core';
+import { AccessCore, Permission } from 'src/cores/access.core';
 import { AssetIdsDto } from 'src/domain/asset/dto/asset-ids.dto';
 import { AssetIdErrorReason, AssetIdsResponseDto } from 'src/domain/asset/response-dto/asset-ids-response.dto';
 import { AuthDto } from 'src/domain/auth/auth.dto';

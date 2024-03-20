@@ -1,5 +1,7 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { AccessCore, Permission } from 'src/domain/access/access.core';
+import { AccessCore, Permission } from 'src/cores/access.core';
+import { StorageCore } from 'src/cores/storage.core';
+import { SystemConfigCore } from 'src/cores/system-config.core';
 import { BulkIdErrorReason, BulkIdResponseDto } from 'src/domain/asset/response-dto/asset-ids-response.dto';
 import { AssetResponseDto, mapAsset } from 'src/domain/asset/response-dto/asset-response.dto';
 import { AuthDto } from 'src/domain/auth/auth.dto';
@@ -33,8 +35,6 @@ import { IPersonRepository, UpdateFacesData } from 'src/domain/repositories/pers
 import { ISearchRepository } from 'src/domain/repositories/search.repository';
 import { IStorageRepository } from 'src/domain/repositories/storage.repository';
 import { ISystemConfigRepository } from 'src/domain/repositories/system-config.repository';
-import { StorageCore } from 'src/domain/storage/storage.core';
-import { SystemConfigCore } from 'src/domain/system-config/system-config.core';
 import { PersonPathType } from 'src/infra/entities/move.entity';
 import { PersonEntity } from 'src/infra/entities/person.entity';
 import { ImmichLogger } from 'src/infra/logger';

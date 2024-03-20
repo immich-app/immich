@@ -1,5 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
+import { StorageCore, StorageFolder } from 'src/cores/storage.core';
+import { SystemConfigCore } from 'src/cores/system-config.core';
 import { Version, isDev, mimeTypes, serverVersion } from 'src/domain/domain.constant';
 import { ClientEvent, ICommunicationRepository } from 'src/domain/repositories/communication.repository';
 import { IServerInfoRepository } from 'src/domain/repositories/server-info.repository';
@@ -16,8 +18,6 @@ import {
   ServerStatsResponseDto,
   UsageByUserDto,
 } from 'src/domain/server-info/server-info.dto';
-import { StorageCore, StorageFolder } from 'src/domain/storage/storage.core';
-import { SystemConfigCore } from 'src/domain/system-config/system-config.core';
 import { SystemMetadataKey } from 'src/infra/entities/system-metadata.entity';
 import { ImmichLogger } from 'src/infra/logger';
 import { asHumanReadable } from 'src/utils';

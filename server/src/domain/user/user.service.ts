@@ -1,6 +1,9 @@
 import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { randomBytes } from 'node:crypto';
+import { StorageCore, StorageFolder } from 'src/cores/storage.core';
+import { SystemConfigCore } from 'src/cores/system-config.core';
+import { UserCore } from 'src/cores/user.core';
 import { AuthDto } from 'src/domain/auth/auth.dto';
 import { JobName } from 'src/domain/job/job.constants';
 import { IEntityJob } from 'src/domain/job/job.interface';
@@ -11,8 +14,6 @@ import { ILibraryRepository } from 'src/domain/repositories/library.repository';
 import { IStorageRepository } from 'src/domain/repositories/storage.repository';
 import { ISystemConfigRepository } from 'src/domain/repositories/system-config.repository';
 import { IUserRepository, UserFindOptions } from 'src/domain/repositories/user.repository';
-import { StorageCore, StorageFolder } from 'src/domain/storage/storage.core';
-import { SystemConfigCore } from 'src/domain/system-config/system-config.core';
 import { CreateUserDto } from 'src/domain/user/dto/create-user.dto';
 import { DeleteUserDto } from 'src/domain/user/dto/delete-user.dto';
 import { UpdateUserDto } from 'src/domain/user/dto/update-user.dto';
@@ -21,7 +22,6 @@ import {
   mapCreateProfileImageResponse,
 } from 'src/domain/user/response-dto/create-profile-image-response.dto';
 import { UserResponseDto, mapUser } from 'src/domain/user/response-dto/user-response.dto';
-import { UserCore } from 'src/domain/user/user.core';
 import { UserEntity, UserStatus } from 'src/infra/entities/user.entity';
 import { ImmichLogger } from 'src/infra/logger';
 import { CacheControl, ImmichFileResponse } from 'src/utils';

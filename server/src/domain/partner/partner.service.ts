@@ -1,5 +1,5 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { AccessCore, Permission } from 'src/domain/access/access.core';
+import { AccessCore, Permission } from 'src/cores/access.core';
 import { AuthDto } from 'src/domain/auth/auth.dto';
 import { PartnerResponseDto, UpdatePartnerDto } from 'src/domain/partner/partner.dto';
 import { IAccessRepository } from 'src/domain/repositories/access.repository';

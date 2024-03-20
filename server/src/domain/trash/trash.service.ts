@@ -1,6 +1,6 @@
 import { Inject } from '@nestjs/common';
 import { DateTime } from 'luxon';
-import { AccessCore, Permission } from 'src/domain/access/access.core';
+import { AccessCore, Permission } from 'src/cores/access.core';
 import { BulkIdsDto } from 'src/domain/asset/response-dto/asset-ids-response.dto';
 import { AuthDto } from 'src/domain/auth/auth.dto';
 import { JOBS_ASSET_PAGINATION_SIZE, JobName } from 'src/domain/job/job.constants';

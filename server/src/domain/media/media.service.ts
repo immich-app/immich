@@ -1,4 +1,6 @@
 import { Inject, Injectable, UnsupportedMediaTypeException } from '@nestjs/common';
+import { StorageCore, StorageFolder } from 'src/cores/storage.core';
+import { SystemConfigCore } from 'src/cores/system-config.core';
 import { JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from 'src/domain/job/job.constants';
 import { IBaseJob, IEntityJob } from 'src/domain/job/job.interface';
 import {
@@ -24,9 +26,7 @@ import { IMoveRepository } from 'src/domain/repositories/move.repository';
 import { IPersonRepository } from 'src/domain/repositories/person.repository';
 import { IStorageRepository } from 'src/domain/repositories/storage.repository';
 import { ISystemConfigRepository } from 'src/domain/repositories/system-config.repository';
-import { StorageCore, StorageFolder } from 'src/domain/storage/storage.core';
 import { SystemConfigFFmpegDto } from 'src/domain/system-config/dto/system-config-ffmpeg.dto';
-import { SystemConfigCore } from 'src/domain/system-config/system-config.core';
 import { AssetEntity, AssetType } from 'src/infra/entities/asset.entity';
 import { AssetPathType } from 'src/infra/entities/move.entity';
 import {
