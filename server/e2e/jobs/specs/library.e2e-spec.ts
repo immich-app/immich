@@ -275,11 +275,11 @@ describe(`${LibraryController.name} (e2e)`, () => {
         expect.arrayContaining([
           expect.objectContaining({
             isOffline: true,
-            originalFileName: 'silver_fir',
+            originalFileName: 'silver_fir.jpg',
           }),
           expect.objectContaining({
             isOffline: false,
-            originalFileName: 'tanners_ridge',
+            originalFileName: 'tanners_ridge.jpg',
           }),
         ]),
       );
