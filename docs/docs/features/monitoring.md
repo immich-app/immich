@@ -5,7 +5,7 @@
 Immich provides a variety of performance metrics to allow for local monitoring and insights. This integration is primarily in the form of Prometheus metrics. However, exporting traces is also possible due to the use of OpenTelemetry instrumentation.
 
 :::note
-This is an opt-in feature intended for you to monitor immich's performance. This data isn't aggregated anywhere beyond what you've configured.
+This is an opt-in feature intended for you to monitor immich's performance. This data isn't sent anywhere beyond what you've configured.
 :::
 
 ## Prometheus
