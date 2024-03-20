@@ -287,7 +287,7 @@ describe(LibraryService.name, () => {
 
       await sut.handleOfflineCheck(mockAssetJob);
 
-      expect(assetMock.save).toHaveBeenCalledWith({ id: assetStub.external.id, isOffline: true });
+      expect(assetMock.update).toHaveBeenCalledWith({ id: assetStub.external.id, isOffline: true });
     });
 
     it('should skip an offline asset', async () => {
@@ -302,7 +302,7 @@ describe(LibraryService.name, () => {
       const response = await sut.handleOfflineCheck(mockAssetJob);
       expect(response).toBe(JobStatus.SKIPPED);
 
-      expect(assetMock.save).not.toHaveBeenCalled();
+      expect(assetMock.update).not.toHaveBeenCalled();
     });
 
     it('should skip a nonexistent asset id', async () => {
@@ -317,7 +317,7 @@ describe(LibraryService.name, () => {
       const response = await sut.handleOfflineCheck(mockAssetJob);
       expect(response).toBe(JobStatus.SKIPPED);
 
-      expect(assetMock.save).not.toHaveBeenCalled();
+      expect(assetMock.update).not.toHaveBeenCalled();
     });
   });
 
