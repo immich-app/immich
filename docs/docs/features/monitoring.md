@@ -25,7 +25,7 @@ The metrics in immich are grouped into API (endpoint calls and response times), 
 
 ### Configuration
 
-Immich will not expose a metrics endpoint by default. To enable this endpoint, you can add the `IMMICH_METRICS=true` environmental variable to your `.env` file. Note that only the server and microservices containers currently use this variable.
+Immich will not expose an endpoint for metrics by default. To enable this endpoint, you can add the `IMMICH_METRICS=true` environmental variable to your `.env` file. Note that only the server and microservices containers currently use this variable.
 
 :::note
 `IMMICH_METRICS` is equivalent to enabling the following three environmental variables: `IMMICH_API_METRICS`, `IMMICH_HOST_METRICS`, and `IMMICH_IO_METRICS`. If you would like to only expose certain kinds of metrics, you can set only those environmental variables to `true`. Explicitly setting the environmental variable for a metric group overrides `IMMICH_METRICS` for that group.
