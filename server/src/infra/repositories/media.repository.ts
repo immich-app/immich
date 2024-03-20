@@ -3,7 +3,6 @@ import fs from 'node:fs/promises';
 import { Writable } from 'node:stream';
 import { promisify } from 'node:util';
 import sharp from 'sharp';
-import { handlePromiseError } from 'src/domain/domain.util';
 import {
   CropOptions,
   IMediaRepository,
@@ -14,6 +13,7 @@ import {
 import { Colorspace } from 'src/infra/entities/system-config.entity';
 import { Instrumentation } from 'src/infra/instrumentation';
 import { ImmichLogger } from 'src/infra/logger';
+import { handlePromiseError } from 'src/utils';
 
 const probe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
 sharp.concurrency(0);

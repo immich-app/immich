@@ -1,7 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { Version, isDev, mimeTypes, serverVersion } from 'src/domain/domain.constant';
-import { asHumanReadable } from 'src/domain/domain.util';
 import { ClientEvent, ICommunicationRepository } from 'src/domain/repositories/communication.repository';
 import { IServerInfoRepository } from 'src/domain/repositories/server-info.repository';
 import { IStorageRepository } from 'src/domain/repositories/storage.repository';
@@ -21,6 +20,7 @@ import { StorageCore, StorageFolder } from 'src/domain/storage/storage.core';
 import { SystemConfigCore } from 'src/domain/system-config/system-config.core';
 import { SystemMetadataKey } from 'src/infra/entities/system-metadata.entity';
 import { ImmichLogger } from 'src/infra/logger';
+import { asHumanReadable } from 'src/utils';
 
 @Injectable()
 export class ServerInfoService {

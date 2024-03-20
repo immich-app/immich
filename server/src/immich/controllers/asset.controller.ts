@@ -21,8 +21,8 @@ import { AuthDto } from 'src/domain/auth/auth.dto';
 import { MetadataSearchDto } from 'src/domain/search/dto/search.dto';
 import { SearchService } from 'src/domain/search/search.service';
 import { Auth, Authenticated, SharedLinkRoute } from 'src/immich/app.guard';
-import { UUIDParamDto } from 'src/immich/controllers/dto/uuid-param.dto';
 import { Route } from 'src/immich/interceptors/file-upload.interceptor';
+import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('Asset')
 @Controller('assets')

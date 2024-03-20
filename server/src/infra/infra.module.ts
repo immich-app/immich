@@ -5,7 +5,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { OpenTelemetryModule } from 'nestjs-otel';
-import { immichAppConfig } from 'src/domain/domain.config';
+import { bullConfig, bullQueues, immichAppConfig } from 'src/config';
 import { IAccessRepository } from 'src/domain/repositories/access.repository';
 import { IActivityRepository } from 'src/domain/repositories/activity.repository';
 import { IAlbumRepository } from 'src/domain/repositories/album.repository';
@@ -35,7 +35,6 @@ import { IUserTokenRepository } from 'src/domain/repositories/user-token.reposit
 import { IUserRepository } from 'src/domain/repositories/user.repository';
 import { databaseConfig } from 'src/infra/database.config';
 import { databaseEntities } from 'src/infra/entities';
-import { bullConfig, bullQueues } from 'src/infra/infra.config';
 import { otelConfig } from 'src/infra/instrumentation';
 import { AccessRepository } from 'src/infra/repositories/access.repository';
 import { ActivityRepository } from 'src/infra/repositories/activity.repository';

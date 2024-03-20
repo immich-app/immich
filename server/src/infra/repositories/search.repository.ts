@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Paginated, PaginationMode, PaginationResult } from 'src/domain/domain.util';
+import { DummyValue, GenerateSql } from 'src/decorators';
 import { DatabaseExtension } from 'src/domain/repositories/database.repository';
 import {
   AssetSearchOptions,
@@ -18,10 +18,11 @@ import { AssetEntity, AssetType } from 'src/infra/entities/asset.entity';
 import { GeodataPlacesEntity } from 'src/infra/entities/geodata-places.entity';
 import { SmartInfoEntity } from 'src/infra/entities/smart-info.entity';
 import { SmartSearchEntity } from 'src/infra/entities/smart-search.entity';
-import { DummyValue, GenerateSql } from 'src/infra/infra.util';
-import { asVector, isValidInteger, paginatedBuilder, searchAssetBuilder } from 'src/infra/infra.utils';
+import { asVector, paginatedBuilder, searchAssetBuilder } from 'src/infra/infra.utils';
 import { Instrumentation } from 'src/infra/instrumentation';
 import { ImmichLogger } from 'src/infra/logger';
+import { Paginated, PaginationMode, PaginationResult } from 'src/utils';
+import { isValidInteger } from 'src/validation';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 
 @Instrumentation()

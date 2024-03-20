@@ -11,7 +11,7 @@ import {
 import { ActivityService } from 'src/domain/activity/activity.service';
 import { AuthDto } from 'src/domain/auth/auth.dto';
 import { Auth, Authenticated } from 'src/immich/app.guard';
-import { UUIDParamDto } from 'src/immich/controllers/dto/uuid-param.dto';
+import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('Activity')
 @Controller('activity')

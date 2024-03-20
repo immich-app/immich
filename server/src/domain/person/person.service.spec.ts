@@ -1,6 +1,5 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { BulkIdErrorReason } from 'src/domain/asset/response-dto/asset-ids-response.dto';
-import { CacheControl, ImmichFileResponse } from 'src/domain/domain.util';
 import { JobName } from 'src/domain/job/job.constants';
 import { PersonResponseDto, mapFaces, mapPerson } from 'src/domain/person/person.dto';
 import { PersonService } from 'src/domain/person/person.service';
@@ -16,6 +15,7 @@ import { IStorageRepository } from 'src/domain/repositories/storage.repository';
 import { ISystemConfigRepository } from 'src/domain/repositories/system-config.repository';
 import { AssetFaceEntity } from 'src/infra/entities/asset-face.entity';
 import { Colorspace, SystemConfigKey } from 'src/infra/entities/system-config.entity';
+import { CacheControl, ImmichFileResponse } from 'src/utils';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { faceStub } from 'test/fixtures/face.stub';

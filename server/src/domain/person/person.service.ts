@@ -4,7 +4,6 @@ import { BulkIdErrorReason, BulkIdResponseDto } from 'src/domain/asset/response-
 import { AssetResponseDto, mapAsset } from 'src/domain/asset/response-dto/asset-response.dto';
 import { AuthDto } from 'src/domain/auth/auth.dto';
 import { mimeTypes } from 'src/domain/domain.constant';
-import { CacheControl, ImmichFileResponse, usePagination } from 'src/domain/domain.util';
 import { JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from 'src/domain/job/job.constants';
 import { IBaseJob, IDeferrableJob, IEntityJob } from 'src/domain/job/job.interface';
 import { FACE_THUMBNAIL_SIZE } from 'src/domain/media/media.constant';
@@ -39,6 +38,7 @@ import { SystemConfigCore } from 'src/domain/system-config/system-config.core';
 import { PersonPathType } from 'src/infra/entities/move.entity';
 import { PersonEntity } from 'src/infra/entities/person.entity';
 import { ImmichLogger } from 'src/infra/logger';
+import { CacheControl, ImmichFileResponse, usePagination } from 'src/utils';
 import { IsNull } from 'typeorm';
 
 @Injectable()

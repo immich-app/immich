@@ -12,9 +12,9 @@ import {
   extName,
 } from 'src/domain/repositories/database.repository';
 import { vectorExt } from 'src/infra/database.config';
-import { isValidInteger } from 'src/infra/infra.utils';
 import { Instrumentation } from 'src/infra/instrumentation';
 import { ImmichLogger } from 'src/infra/logger';
+import { isValidInteger } from 'src/validation';
 import { DataSource, EntityManager, QueryRunner } from 'typeorm';
 
 @Instrumentation()

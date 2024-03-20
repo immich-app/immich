@@ -34,7 +34,6 @@ import {
   mapLoginResponse,
   mapUserToken,
 } from 'src/domain/auth/auth.dto';
-import { HumanReadableSize } from 'src/domain/domain.util';
 import { IAccessRepository } from 'src/domain/repositories/access.repository';
 import { IKeyRepository } from 'src/domain/repositories/api-key.repository';
 import { ICryptoRepository } from 'src/domain/repositories/crypto.repository';
@@ -49,6 +48,7 @@ import { UserCore } from 'src/domain/user/user.core';
 import { SystemConfig } from 'src/infra/entities/system-config.entity';
 import { UserEntity } from 'src/infra/entities/user.entity';
 import { ImmichLogger } from 'src/infra/logger';
+import { HumanReadableSize } from 'src/utils';
 
 export interface LoginDetails {
   isSecure: boolean;

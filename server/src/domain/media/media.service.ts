@@ -1,5 +1,4 @@
 import { Inject, Injectable, UnsupportedMediaTypeException } from '@nestjs/common';
-import { usePagination } from 'src/domain/domain.util';
 import { JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from 'src/domain/job/job.constants';
 import { IBaseJob, IEntityJob } from 'src/domain/job/job.interface';
 import {
@@ -39,6 +38,7 @@ import {
   VideoCodec,
 } from 'src/infra/entities/system-config.entity';
 import { ImmichLogger } from 'src/infra/logger';
+import { usePagination } from 'src/utils';
 
 @Injectable()
 export class MediaService {

@@ -1,4 +1,4 @@
-import { ValidateUUID } from 'src/domain/domain.util';
+import { ValidateUUID } from 'src/validation';
 
 /** @deprecated Use `BulkIdResponseDto` instead */
 export enum AssetIdErrorReason {

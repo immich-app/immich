@@ -12,7 +12,6 @@ import {
 } from 'src/domain/audit/audit.dto';
 import { AuthDto } from 'src/domain/auth/auth.dto';
 import { AUDIT_LOG_MAX_DURATION } from 'src/domain/domain.constant';
-import { usePagination } from 'src/domain/domain.util';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/domain/job/job.constants';
 import { IAccessRepository } from 'src/domain/repositories/access.repository';
 import { IAssetRepository } from 'src/domain/repositories/asset.repository';
@@ -26,6 +25,7 @@ import { StorageCore, StorageFolder } from 'src/domain/storage/storage.core';
 import { DatabaseAction } from 'src/infra/entities/audit.entity';
 import { AssetPathType, PersonPathType, UserPathType } from 'src/infra/entities/move.entity';
 import { ImmichLogger } from 'src/infra/logger';
+import { usePagination } from 'src/utils';
 
 @Injectable()
 export class AuditService {

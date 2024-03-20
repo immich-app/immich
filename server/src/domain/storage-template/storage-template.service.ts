@@ -4,7 +4,6 @@ import handlebar from 'handlebars';
 import { DateTime } from 'luxon';
 import path from 'node:path';
 import sanitize from 'sanitize-filename';
-import { getLivePhotoMotionFilename, usePagination } from 'src/domain/domain.util';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/domain/job/job.constants';
 import { IEntityJob } from 'src/domain/job/job.interface';
 import { IAlbumRepository } from 'src/domain/repositories/album.repository';
@@ -33,6 +32,7 @@ import { AssetEntity, AssetType } from 'src/infra/entities/asset.entity';
 import { AssetPathType } from 'src/infra/entities/move.entity';
 import { SystemConfig } from 'src/infra/entities/system-config.entity';
 import { ImmichLogger } from 'src/infra/logger';
+import { getLivePhotoMotionFilename, usePagination } from 'src/utils';
 
 export interface MoveAssetMetadata {
   storageLabel: string | null;

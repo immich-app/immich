@@ -10,7 +10,6 @@ import { UploadFile } from 'src/domain/asset/asset.service';
 import { AssetResponseDto, mapAsset } from 'src/domain/asset/response-dto/asset-response.dto';
 import { AuthDto } from 'src/domain/auth/auth.dto';
 import { mimeTypes } from 'src/domain/domain.constant';
-import { CacheControl, ImmichFileResponse, getLivePhotoMotionFilename } from 'src/domain/domain.util';
 import { JobName } from 'src/domain/job/job.constants';
 import { IAccessRepository } from 'src/domain/repositories/access.repository';
 import { IAssetRepository } from 'src/domain/repositories/asset.repository';
@@ -37,6 +36,7 @@ import { CuratedObjectsResponseDto } from 'src/immich/api-v1/asset/response-dto/
 import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType } from 'src/infra/entities/asset.entity';
 import { LibraryType } from 'src/infra/entities/library.entity';
 import { ImmichLogger } from 'src/infra/logger';
+import { CacheControl, ImmichFileResponse, getLivePhotoMotionFilename } from 'src/utils';
 import { QueryFailedError } from 'typeorm';
 
 @Injectable()

@@ -1,8 +1,8 @@
-import { Paginated } from 'src/domain/domain.util';
 import { AssetFaceEntity } from 'src/infra/entities/asset-face.entity';
 import { AssetEntity, AssetType } from 'src/infra/entities/asset.entity';
 import { GeodataPlacesEntity } from 'src/infra/entities/geodata-places.entity';
 import { SmartInfoEntity } from 'src/infra/entities/smart-info.entity';
+import { Paginated } from 'src/utils';
 
 export const ISearchRepository = 'ISearchRepository';
 

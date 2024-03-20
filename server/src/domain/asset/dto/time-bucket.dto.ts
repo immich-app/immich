@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
-import { Optional, ValidateBoolean, ValidateUUID } from 'src/domain/domain.util';
 import { TimeBucketSize } from 'src/domain/repositories/asset.repository';
 import { AssetOrder } from 'src/infra/entities/album.entity';
+import { Optional, ValidateBoolean, ValidateUUID } from 'src/validation';
 
 export class TimeBucketDto {
   @IsNotEmpty()

@@ -5,7 +5,6 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { when } from 'jest-when';
-import { CacheControl, ImmichFileResponse } from 'src/domain/domain.util';
 import { JobName } from 'src/domain/job/job.constants';
 import { IAlbumRepository } from 'src/domain/repositories/album.repository';
 import { ICryptoRepository } from 'src/domain/repositories/crypto.repository';
@@ -18,6 +17,7 @@ import { UpdateUserDto } from 'src/domain/user/dto/update-user.dto';
 import { mapUser } from 'src/domain/user/response-dto/user-response.dto';
 import { UserService } from 'src/domain/user/user.service';
 import { UserEntity, UserStatus } from 'src/infra/entities/user.entity';
+import { CacheControl, ImmichFileResponse } from 'src/utils';
 import { authStub } from 'test/fixtures/auth.stub';
 import { systemConfigStub } from 'test/fixtures/system-config.stub';
 import { userStub } from 'test/fixtures/user.stub';

@@ -7,7 +7,7 @@ import { DownloadInfoDto, DownloadResponseDto } from 'src/domain/download/downlo
 import { DownloadService } from 'src/domain/download/download.service';
 import { Auth, Authenticated, FileResponse, SharedLinkRoute } from 'src/immich/app.guard';
 import { asStreamableFile, sendFile } from 'src/immich/app.utils';
-import { UUIDParamDto } from 'src/immich/controllers/dto/uuid-param.dto';
+import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('Download')
 @Controller('download')

@@ -2,7 +2,6 @@ import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundEx
 import { DateTime } from 'luxon';
 import { randomBytes } from 'node:crypto';
 import { AuthDto } from 'src/domain/auth/auth.dto';
-import { CacheControl, ImmichFileResponse } from 'src/domain/domain.util';
 import { JobName } from 'src/domain/job/job.constants';
 import { IEntityJob } from 'src/domain/job/job.interface';
 import { IAlbumRepository } from 'src/domain/repositories/album.repository';
@@ -25,6 +24,7 @@ import { UserResponseDto, mapUser } from 'src/domain/user/response-dto/user-resp
 import { UserCore } from 'src/domain/user/user.core';
 import { UserEntity, UserStatus } from 'src/infra/entities/user.entity';
 import { ImmichLogger } from 'src/infra/logger';
+import { CacheControl, ImmichFileResponse } from 'src/utils';
 
 @Injectable()
 export class UserService {
