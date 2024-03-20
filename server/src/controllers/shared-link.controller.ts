@@ -2,7 +2,6 @@ import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Req, Res
 import { ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { IMMICH_SHARED_LINK_ACCESS_COOKIE } from 'src/domain/auth/auth.constant';
-import { SharedLinkService } from 'src/domain/shared-link/shared-link.service';
 import { AssetIdsResponseDto } from 'src/dtos/asset-ids.response.dto';
 import { AssetIdsDto } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -13,6 +12,7 @@ import {
   SharedLinkResponseDto,
 } from 'src/dtos/shared-link.dto';
 import { Auth, Authenticated, SharedLinkRoute } from 'src/middleware/auth.guard';
+import { SharedLinkService } from 'src/services/shared-link.service';
 import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('Shared Link')

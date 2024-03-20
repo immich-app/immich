@@ -1,10 +1,10 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiQuery, ApiTags } from '@nestjs/swagger';
-import { PartnerService } from 'src/domain/partner/partner.service';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { PartnerResponseDto, UpdatePartnerDto } from 'src/dtos/partner.dto';
 import { PartnerDirection } from 'src/interfaces/partner.repository';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
+import { PartnerService } from 'src/services/partner.service';
 import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('Partner')

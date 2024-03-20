@@ -1,9 +1,9 @@
 import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { APIKeyService } from 'src/domain/api-key/api-key.service';
 import { APIKeyCreateDto, APIKeyCreateResponseDto, APIKeyResponseDto, APIKeyUpdateDto } from 'src/dtos/api-key.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
+import { APIKeyService } from 'src/services/api-key.service';
 import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('API Key')

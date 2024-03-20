@@ -27,4 +27,8 @@
   "cSpell.words": [
     "immich"
   ],
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.patterns": {
+    "*.ts": "${capture}.spec.ts,${capture}.mock.ts"
+  }
 }

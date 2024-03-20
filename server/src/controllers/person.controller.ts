@@ -1,7 +1,6 @@
 import { Body, Controller, Get, Next, Param, Post, Put, Query, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
-import { PersonService } from 'src/domain/person/person.service';
 import { BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -18,6 +17,7 @@ import {
 } from 'src/dtos/person.dto';
 import { sendFile } from 'src/immich/app.utils';
 import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard';
+import { PersonService } from 'src/services/person.service';
 import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('Person')

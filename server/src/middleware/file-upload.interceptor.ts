@@ -6,10 +6,10 @@ import { NextFunction, RequestHandler } from 'express';
 import multer, { StorageEngine, diskStorage } from 'multer';
 import { createHash, randomUUID } from 'node:crypto';
 import { Observable } from 'rxjs';
-import { AssetService, UploadFile } from 'src/domain/asset/asset.service';
 import { UploadFieldName } from 'src/dtos/asset.dto';
 import { ImmichLogger } from 'src/infra/logger';
 import { AuthRequest } from 'src/middleware/auth.guard';
+import { AssetService, UploadFile } from 'src/services/asset.service';
 
 export enum Route {
   ASSET = 'asset',

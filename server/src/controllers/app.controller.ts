@@ -1,7 +1,7 @@
 import { Controller, Get, Header } from '@nestjs/common';
 import { ApiExcludeEndpoint } from '@nestjs/swagger';
-import { SystemConfigService } from 'src/domain/system-config/system-config.service';
 import { PublicRoute } from 'src/middleware/auth.guard';
+import { SystemConfigService } from 'src/services/system-config.service';
 
 @Controller()
 export class AppController {

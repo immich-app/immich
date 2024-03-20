@@ -1,6 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { AlbumService } from 'src/domain/album/album.service';
 import {
   AddUsersDto,
   AlbumCountResponseDto,
@@ -13,6 +12,7 @@ import {
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { Auth, Authenticated, SharedLinkRoute } from 'src/middleware/auth.guard';
+import { AlbumService } from 'src/services/album.service';
 import { ParseMeUUIDPipe, UUIDParamDto } from 'src/validation';
 
 @ApiTags('Album')

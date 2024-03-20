@@ -7,7 +7,6 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { AuthService } from 'src/domain/auth/auth.service';
 import { Instrumentation } from 'src/infra/instrumentation';
 import { ImmichLogger } from 'src/infra/logger';
 import {
@@ -18,6 +17,7 @@ import {
   OnServerEventCallback,
   ServerEvent,
 } from 'src/interfaces/communication.repository';
+import { AuthService } from 'src/services/auth.service';
 
 @Instrumentation()
 @WebSocketGateway({
