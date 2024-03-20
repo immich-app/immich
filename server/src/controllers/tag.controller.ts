@@ -7,7 +7,7 @@ import { AuthDto } from 'src/domain/auth/auth.dto';
 import { TagResponseDto } from 'src/domain/tag/tag-response.dto';
 import { CreateTagDto, UpdateTagDto } from 'src/domain/tag/tag.dto';
 import { TagService } from 'src/domain/tag/tag.service';
-import { Auth, Authenticated } from 'src/immich/app.guard';
+import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('Tag')

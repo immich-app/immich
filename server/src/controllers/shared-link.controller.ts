@@ -8,7 +8,7 @@ import { AuthDto } from 'src/domain/auth/auth.dto';
 import { SharedLinkResponseDto } from 'src/domain/shared-link/shared-link-response.dto';
 import { SharedLinkCreateDto, SharedLinkEditDto, SharedLinkPasswordDto } from 'src/domain/shared-link/shared-link.dto';
 import { SharedLinkService } from 'src/domain/shared-link/shared-link.service';
-import { Auth, Authenticated, SharedLinkRoute } from 'src/immich/app.guard';
+import { Auth, Authenticated, SharedLinkRoute } from 'src/middleware/auth.guard';
 import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('Shared Link')

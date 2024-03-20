@@ -20,8 +20,8 @@ import { TimeBucketResponseDto } from 'src/domain/asset/response-dto/time-bucket
 import { AuthDto } from 'src/domain/auth/auth.dto';
 import { MetadataSearchDto } from 'src/domain/search/dto/search.dto';
 import { SearchService } from 'src/domain/search/search.service';
-import { Auth, Authenticated, SharedLinkRoute } from 'src/immich/app.guard';
-import { Route } from 'src/immich/interceptors/file-upload.interceptor';
+import { Auth, Authenticated, SharedLinkRoute } from 'src/middleware/auth.guard';
+import { Route } from 'src/middleware/file-upload.interceptor';
 import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('Asset')

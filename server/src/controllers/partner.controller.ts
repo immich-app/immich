@@ -4,7 +4,7 @@ import { AuthDto } from 'src/domain/auth/auth.dto';
 import { PartnerResponseDto, UpdatePartnerDto } from 'src/domain/partner/partner.dto';
 import { PartnerService } from 'src/domain/partner/partner.service';
 import { PartnerDirection } from 'src/domain/repositories/partner.repository';
-import { Auth, Authenticated } from 'src/immich/app.guard';
+import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('Partner')

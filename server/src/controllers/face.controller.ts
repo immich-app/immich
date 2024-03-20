@@ -3,7 +3,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { AuthDto } from 'src/domain/auth/auth.dto';
 import { AssetFaceResponseDto, FaceDto, PersonResponseDto } from 'src/domain/person/person.dto';
 import { PersonService } from 'src/domain/person/person.service';
-import { Auth, Authenticated } from 'src/immich/app.guard';
+import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('Face')

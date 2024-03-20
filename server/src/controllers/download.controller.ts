@@ -5,8 +5,8 @@ import { AssetIdsDto } from 'src/domain/asset/dto/asset-ids.dto';
 import { AuthDto } from 'src/domain/auth/auth.dto';
 import { DownloadInfoDto, DownloadResponseDto } from 'src/domain/download/download.dto';
 import { DownloadService } from 'src/domain/download/download.service';
-import { Auth, Authenticated, FileResponse, SharedLinkRoute } from 'src/immich/app.guard';
 import { asStreamableFile, sendFile } from 'src/immich/app.utils';
+import { Auth, Authenticated, FileResponse, SharedLinkRoute } from 'src/middleware/auth.guard';
 import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('Download')

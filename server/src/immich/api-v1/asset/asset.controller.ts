@@ -29,14 +29,9 @@ import { AssetFileUploadResponseDto } from 'src/immich/api-v1/asset/response-dto
 import { CheckExistingAssetsResponseDto } from 'src/immich/api-v1/asset/response-dto/check-existing-assets-response.dto';
 import { CuratedLocationsResponseDto } from 'src/immich/api-v1/asset/response-dto/curated-locations-response.dto';
 import { CuratedObjectsResponseDto } from 'src/immich/api-v1/asset/response-dto/curated-objects-response.dto';
-import { Auth, Authenticated, FileResponse, SharedLinkRoute } from 'src/immich/app.guard';
 import { sendFile } from 'src/immich/app.utils';
-import {
-  FileUploadInterceptor,
-  ImmichFile,
-  Route,
-  mapToUploadFile,
-} from 'src/immich/interceptors/file-upload.interceptor';
+import { Auth, Authenticated, FileResponse, SharedLinkRoute } from 'src/middleware/auth.guard';
+import { FileUploadInterceptor, ImmichFile, Route, mapToUploadFile } from 'src/middleware/file-upload.interceptor';
 import { FileNotEmptyValidator, UUIDParamDto } from 'src/validation';
 
 interface UploadFiles {
