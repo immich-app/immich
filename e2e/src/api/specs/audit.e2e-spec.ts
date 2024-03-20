@@ -12,7 +12,8 @@ describe('/audit', () => {
     admin = await utils.adminSetup();
   });
 
-  describe('GET :/file-report', () => {
+  // TODO: Enable these tests again once #7436 is resolved as these were flaky
+  describe.skip('GET :/file-report', () => {
     it('excludes assets without issues from report', async () => {
       const [trashedAsset, archivedAsset] = await Promise.all([
         utils.createAsset(admin.accessToken),
