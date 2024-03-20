@@ -28,7 +28,7 @@ import {
   ValidateLibraryResponseDto,
   mapLibrary,
 } from 'src/domain/library/library.dto';
-import { AssetType } from 'src/entities/asset.entity';
+import { AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { LibraryEntity, LibraryType } from 'src/entities/library.entity';
 import { ImmichLogger } from 'src/infra/logger';
 import { IAssetRepository, WithProperty } from 'src/interfaces/asset.repository';
