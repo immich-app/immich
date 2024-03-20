@@ -16,7 +16,7 @@ import { SystemConfigThemeDto } from 'src/domain/system-config/dto/system-config
 import { SystemConfigThumbnailDto } from 'src/domain/system-config/dto/system-config-thumbnail.dto';
 import { SystemConfigTrashDto } from 'src/domain/system-config/dto/system-config-trash.dto';
 import { SystemConfigUserDto } from 'src/domain/system-config/dto/system-config-user.dto';
-import { SystemConfig } from 'src/infra/entities/system-config.entity';
+import { SystemConfig } from 'src/entities/system-config.entity';
 
 export class SystemConfigDto implements SystemConfig {
   @Type(() => SystemConfigFFmpegDto)

@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsString } from 'class-validator';
-import { AssetOrder } from 'src/infra/entities/album.entity';
+import { AssetOrder } from 'src/entities/album.entity';
 import { Optional, ValidateBoolean, ValidateUUID } from 'src/validation';
 
 export class UpdateAlbumDto {

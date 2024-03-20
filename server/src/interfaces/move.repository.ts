@@ -1,4 +1,4 @@
-import { MoveEntity, PathType } from 'src/infra/entities/move.entity';
+import { MoveEntity, PathType } from 'src/entities/move.entity';
 
 export const IMoveRepository = 'IMoveRepository';
 

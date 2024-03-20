@@ -5,8 +5,8 @@ import { AuthDto } from 'src/domain/auth/auth.dto';
 import { PersonWithFacesResponseDto, mapFacesWithoutPerson, mapPerson } from 'src/domain/person/person.dto';
 import { TagResponseDto, mapTag } from 'src/domain/tag/tag-response.dto';
 import { UserResponseDto, mapUser } from 'src/domain/user/response-dto/user-response.dto';
-import { AssetFaceEntity } from 'src/infra/entities/asset-face.entity';
-import { AssetEntity, AssetType } from 'src/infra/entities/asset.entity';
+import { AssetFaceEntity } from 'src/entities/asset-face.entity';
+import { AssetEntity, AssetType } from 'src/entities/asset.entity';
 
 export class SanitizedAssetResponseDto {
   id!: string;

@@ -1,7 +1,7 @@
 import { Duration } from 'luxon';
 import { readFileSync } from 'node:fs';
 import { extname, join } from 'node:path';
-import { AssetType } from 'src/infra/entities/asset.entity';
+import { AssetType } from 'src/entities/asset.entity';
 
 export const AUDIT_LOG_MAX_DURATION = Duration.fromObject({ days: 100 });
 export const ONE_HOUR = Duration.fromObject({ hours: 1 });

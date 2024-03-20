@@ -37,8 +37,8 @@ import {
   mapUserToken,
 } from 'src/domain/auth/auth.dto';
 import { UserResponseDto, mapUser } from 'src/domain/user/response-dto/user-response.dto';
-import { SystemConfig } from 'src/infra/entities/system-config.entity';
-import { UserEntity } from 'src/infra/entities/user.entity';
+import { SystemConfig } from 'src/entities/system-config.entity';
+import { UserEntity } from 'src/entities/user.entity';
 import { ImmichLogger } from 'src/infra/logger';
 import { IAccessRepository } from 'src/interfaces/access.repository';
 import { IKeyRepository } from 'src/interfaces/api-key.repository';

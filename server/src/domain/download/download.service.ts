@@ -5,7 +5,7 @@ import { AssetIdsDto } from 'src/domain/asset/dto/asset-ids.dto';
 import { AuthDto } from 'src/domain/auth/auth.dto';
 import { mimeTypes } from 'src/domain/domain.constant';
 import { DownloadArchiveInfo, DownloadInfoDto, DownloadResponseDto } from 'src/domain/download/download.dto';
-import { AssetEntity } from 'src/infra/entities/asset.entity';
+import { AssetEntity } from 'src/entities/asset.entity';
 import { IAccessRepository } from 'src/interfaces/access.repository';
 import { IAssetRepository } from 'src/interfaces/asset.repository';
 import { IStorageRepository, ImmichReadStream } from 'src/interfaces/storage.repository';

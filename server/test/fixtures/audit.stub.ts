@@ -1,4 +1,4 @@
-import { AuditEntity, DatabaseAction, EntityType } from 'src/infra/entities/audit.entity';
+import { AuditEntity, DatabaseAction, EntityType } from 'src/entities/audit.entity';
 import { authStub } from 'test/fixtures/auth.stub';
 
 export const auditStub = {

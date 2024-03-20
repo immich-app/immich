@@ -14,8 +14,8 @@ import {
   mapPlaces,
 } from 'src/domain/search/dto/search.dto';
 import { SearchResponseDto } from 'src/domain/search/response-dto/search-response.dto';
-import { AssetOrder } from 'src/infra/entities/album.entity';
-import { AssetEntity } from 'src/infra/entities/asset.entity';
+import { AssetOrder } from 'src/entities/album.entity';
+import { AssetEntity } from 'src/entities/asset.entity';
 import { IAssetRepository } from 'src/interfaces/asset.repository';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.repository';
 import { IMetadataRepository } from 'src/interfaces/metadata.repository';

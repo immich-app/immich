@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { AssetEntity } from 'src/infra/entities/asset.entity';
+import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetSearchBuilderOptions } from 'src/interfaces/search.repository';
 import { Paginated, PaginatedBuilderOptions, PaginationMode, PaginationOptions, PaginationResult } from 'src/utils';
 import {

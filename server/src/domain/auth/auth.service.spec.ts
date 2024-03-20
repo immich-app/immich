@@ -5,7 +5,7 @@ import { Socket } from 'socket.io';
 import { AuthType } from 'src/domain/auth/auth.constant';
 import { AuthDto, SignUpDto } from 'src/domain/auth/auth.dto';
 import { AuthService } from 'src/domain/auth/auth.service';
-import { UserEntity } from 'src/infra/entities/user.entity';
+import { UserEntity } from 'src/entities/user.entity';
 import { IKeyRepository } from 'src/interfaces/api-key.repository';
 import { ICryptoRepository } from 'src/interfaces/crypto.repository';
 import { ILibraryRepository } from 'src/interfaces/library.repository';

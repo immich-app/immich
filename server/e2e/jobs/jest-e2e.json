@@ -12,11 +12,11 @@
   "collectCoverageFrom": [
     "<rootDir>/src/**/*.(t|j)s",
     "!<rootDir>/src/**/*.spec.(t|s)s",
-    "!<rootDir>/src/infra/migrations/**"
+    "!<rootDir>/src/migrations/**"
   ],
   "coverageDirectory": "./coverage",
   "moduleNameMapper": {
-      "^test(|/.*)$": "<rootDir>/test/$1",
-      "^src(|/.*)$": "<rootDir>/src/$1"
+    "^test(|/.*)$": "<rootDir>/test/$1",
+    "^src(|/.*)$": "<rootDir>/src/$1"
   }
 }

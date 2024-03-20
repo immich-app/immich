@@ -3,8 +3,8 @@ import { BulkIdErrorReason } from 'src/domain/asset/response-dto/asset-ids-respo
 import { JobName } from 'src/domain/job/job.constants';
 import { PersonResponseDto, mapFaces, mapPerson } from 'src/domain/person/person.dto';
 import { PersonService } from 'src/domain/person/person.service';
-import { AssetFaceEntity } from 'src/infra/entities/asset-face.entity';
-import { Colorspace, SystemConfigKey } from 'src/infra/entities/system-config.entity';
+import { AssetFaceEntity } from 'src/entities/asset-face.entity';
+import { Colorspace, SystemConfigKey } from 'src/entities/system-config.entity';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.repository';
 import { ICryptoRepository } from 'src/interfaces/crypto.repository';
 import { IJobRepository, JobStatus } from 'src/interfaces/job.repository';

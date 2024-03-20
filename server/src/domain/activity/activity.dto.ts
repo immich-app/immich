@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsNotEmpty, IsString, ValidateIf } from 'class-validator';
 import { UserDto, mapSimpleUser } from 'src/domain/user/response-dto/user-response.dto';
-import { ActivityEntity } from 'src/infra/entities/activity.entity';
+import { ActivityEntity } from 'src/entities/activity.entity';
 import { Optional, ValidateUUID } from 'src/validation';
 
 export enum ReactionType {

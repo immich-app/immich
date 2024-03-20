@@ -2,7 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 import { FeatureFlag, SystemConfigCore } from 'src/cores/system-config.core';
 import { JobCommand, JobName, QueueName } from 'src/domain/job/job.constants';
 import { JobService } from 'src/domain/job/job.service';
-import { SystemConfig, SystemConfigKey } from 'src/infra/entities/system-config.entity';
+import { SystemConfig, SystemConfigKey } from 'src/entities/system-config.entity';
 import { IAssetRepository } from 'src/interfaces/asset.repository';
 import { ICommunicationRepository } from 'src/interfaces/communication.repository';
 import { IJobRepository, JobHandler, JobItem, JobStatus } from 'src/interfaces/job.repository';

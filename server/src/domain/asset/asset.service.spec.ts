@@ -5,7 +5,7 @@ import { AssetJobName } from 'src/domain/asset/dto/asset-ids.dto';
 import { AssetStatsResponseDto } from 'src/domain/asset/dto/asset-statistics.dto';
 import { mapAsset } from 'src/domain/asset/response-dto/asset-response.dto';
 import { JobName } from 'src/domain/job/job.constants';
-import { AssetEntity, AssetType } from 'src/infra/entities/asset.entity';
+import { AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { IAssetStackRepository } from 'src/interfaces/asset-stack.repository';
 import { AssetStats, IAssetRepository, TimeBucketSize } from 'src/interfaces/asset.repository';
 import { ClientEvent, ICommunicationRepository } from 'src/interfaces/communication.repository';

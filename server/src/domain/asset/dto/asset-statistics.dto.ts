@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { AssetType } from 'src/infra/entities/asset.entity';
+import { AssetType } from 'src/entities/asset.entity';
 import { AssetStats } from 'src/interfaces/asset.repository';
 import { ValidateBoolean } from 'src/validation';
 

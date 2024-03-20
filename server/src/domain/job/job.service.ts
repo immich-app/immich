@@ -3,7 +3,7 @@ import { FeatureFlag, SystemConfigCore } from 'src/cores/system-config.core';
 import { mapAsset } from 'src/domain/asset/response-dto/asset-response.dto';
 import { ConcurrentQueueName, JobCommand, JobName, QueueName } from 'src/domain/job/job.constants';
 import { AllJobStatusResponseDto, JobCommandDto, JobStatusDto } from 'src/domain/job/job.dto';
-import { AssetType } from 'src/infra/entities/asset.entity';
+import { AssetType } from 'src/entities/asset.entity';
 import { ImmichLogger } from 'src/infra/logger';
 import { IAssetRepository } from 'src/interfaces/asset.repository';
 import { ClientEvent, ICommunicationRepository } from 'src/interfaces/communication.repository';

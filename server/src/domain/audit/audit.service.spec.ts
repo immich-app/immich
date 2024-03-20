@@ -1,5 +1,5 @@
 import { AuditService } from 'src/domain/audit/audit.service';
-import { DatabaseAction, EntityType } from 'src/infra/entities/audit.entity';
+import { DatabaseAction, EntityType } from 'src/entities/audit.entity';
 import { IAssetRepository } from 'src/interfaces/asset.repository';
 import { IAuditRepository } from 'src/interfaces/audit.repository';
 import { ICryptoRepository } from 'src/interfaces/crypto.repository';

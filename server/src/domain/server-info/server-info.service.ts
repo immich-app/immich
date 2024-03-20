@@ -12,7 +12,7 @@ import {
   ServerStatsResponseDto,
   UsageByUserDto,
 } from 'src/domain/server-info/server-info.dto';
-import { SystemMetadataKey } from 'src/infra/entities/system-metadata.entity';
+import { SystemMetadataKey } from 'src/entities/system-metadata.entity';
 import { ImmichLogger } from 'src/infra/logger';
 import { ClientEvent, ICommunicationRepository } from 'src/interfaces/communication.repository';
 import { IServerInfoRepository } from 'src/interfaces/server-info.repository';

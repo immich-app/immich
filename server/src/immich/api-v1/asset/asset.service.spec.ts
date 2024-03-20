@@ -1,11 +1,11 @@
 import { when } from 'jest-when';
 import { JobName } from 'src/domain/job/job.constants';
+import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType } from 'src/entities/asset.entity';
+import { ExifEntity } from 'src/entities/exif.entity';
 import { IAssetRepositoryV1 } from 'src/immich/api-v1/asset/asset-repository';
 import { AssetService } from 'src/immich/api-v1/asset/asset.service';
 import { CreateAssetDto } from 'src/immich/api-v1/asset/dto/create-asset.dto';
 import { AssetRejectReason, AssetUploadAction } from 'src/immich/api-v1/asset/response-dto/asset-check-response.dto';
-import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType } from 'src/infra/entities/asset.entity';
-import { ExifEntity } from 'src/infra/entities/exif.entity';
 import { IAssetRepository } from 'src/interfaces/asset.repository';
 import { IJobRepository } from 'src/interfaces/job.repository';
 import { ILibraryRepository } from 'src/interfaces/library.repository';

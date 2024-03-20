@@ -9,7 +9,7 @@ import { JobName } from 'src/domain/job/job.constants';
 import { UpdateUserDto } from 'src/domain/user/dto/update-user.dto';
 import { mapUser } from 'src/domain/user/response-dto/user-response.dto';
 import { UserService } from 'src/domain/user/user.service';
-import { UserEntity, UserStatus } from 'src/infra/entities/user.entity';
+import { UserEntity, UserStatus } from 'src/entities/user.entity';
 import { IAlbumRepository } from 'src/interfaces/album.repository';
 import { ICryptoRepository } from 'src/interfaces/crypto.repository';
 import { IJobRepository } from 'src/interfaces/job.repository';

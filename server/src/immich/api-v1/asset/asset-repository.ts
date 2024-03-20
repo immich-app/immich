@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { AssetEntity } from 'src/entities/asset.entity';
+import { ExifEntity } from 'src/entities/exif.entity';
 import { AssetSearchDto } from 'src/immich/api-v1/asset/dto/asset-search.dto';
 import { CheckExistingAssetsDto } from 'src/immich/api-v1/asset/dto/check-existing-assets.dto';
 import { SearchPropertiesDto } from 'src/immich/api-v1/asset/dto/search-properties.dto';
 import { CuratedLocationsResponseDto } from 'src/immich/api-v1/asset/response-dto/curated-locations-response.dto';
 import { CuratedObjectsResponseDto } from 'src/immich/api-v1/asset/response-dto/curated-objects-response.dto';
-import { AssetEntity } from 'src/infra/entities/asset.entity';
-import { ExifEntity } from 'src/infra/entities/exif.entity';
 import { OptionalBetween } from 'src/infra/infra.utils';
 import { In } from 'typeorm/find-options/operator/In.js';
 import { Repository } from 'typeorm/repository/Repository.js';

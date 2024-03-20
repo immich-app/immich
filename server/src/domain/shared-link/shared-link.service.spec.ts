@@ -2,7 +2,7 @@ import { BadRequestException, ForbiddenException, UnauthorizedException } from '
 import _ from 'lodash';
 import { AssetIdErrorReason } from 'src/domain/asset/response-dto/asset-ids-response.dto';
 import { SharedLinkService } from 'src/domain/shared-link/shared-link.service';
-import { SharedLinkType } from 'src/infra/entities/shared-link.entity';
+import { SharedLinkType } from 'src/entities/shared-link.entity';
 import { ICryptoRepository } from 'src/interfaces/crypto.repository';
 import { ISharedLinkRepository } from 'src/interfaces/shared-link.repository';
 import { albumStub } from 'test/fixtures/album.stub';

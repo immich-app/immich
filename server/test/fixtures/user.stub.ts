@@ -1,4 +1,4 @@
-import { UserAvatarColor, UserEntity } from 'src/infra/entities/user.entity';
+import { UserAvatarColor, UserEntity } from 'src/entities/user.entity';
 import { authStub } from 'test/fixtures/auth.stub';
 
 export const userDto = {

@@ -1,4 +1,4 @@
-import { PersonEntity } from 'src/infra/entities/person.entity';
+import { PersonEntity } from 'src/entities/person.entity';
 import { userStub } from 'test/fixtures/user.stub';
 
 export const personStub = {
