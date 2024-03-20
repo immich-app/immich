@@ -20,7 +20,7 @@ import {
 import { when } from 'jest-when';
 import { R_OK } from 'node:constants';
 import { Stats } from 'node:fs';
-import { IEntityJob, ILibraryFileJob, ILibraryOfflineJob, ILibraryRefreshJob, JobName } from '../job';
+import { ILibraryFileJob, ILibraryOfflineJob, ILibraryRefreshJob, JobName } from '../job';
 import {
   IAssetRepository,
   ICryptoRepository,
