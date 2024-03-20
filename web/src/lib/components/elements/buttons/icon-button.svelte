@@ -9,6 +9,6 @@
   export let title: string | undefined = undefined;
 </script>
 
-<Button size="icon" {color} {title} shadow={false} rounded="full" on:click on:focus>
+<Button size="icon" {color} {title} shadow={false} rounded="full" on:click>
   <slot />
 </Button>

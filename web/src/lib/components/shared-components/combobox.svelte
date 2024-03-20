@@ -104,6 +104,7 @@
 
   const onClear = () => {
     input?.focus();
+    selectedIndex = undefined;
     selectedOption = undefined;
     searchQuery = '';
     dispatch('select', selectedOption);
@@ -198,16 +199,7 @@
       class:pointer-events-none={!selectedOption}
     >
       {#if selectedOption}
-        <IconButton
-          color="transparent-gray"
-          on:click={onClear}
-          on:focus={() => {
-            if (!isActive) {
-              activate();
-            }
-          }}
-          title="Clear value"
-        >
+        <IconButton color="transparent-gray" on:click={onClear} title="Clear value">
           <Icon path={mdiClose} ariaLabel="Clear value" />
         </IconButton>
       {:else if !isOpen}
@@ -231,9 +223,7 @@
           role="option"
           aria-selected={selectedIndex === 0}
           aria-disabled={true}
-          class:bg-gray-100={selectedIndex === 0}
-          class:dark:bg-gray-700={selectedIndex === 0}
-          class="text-left w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-default"
+          class="text-left w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-default aria-selected:bg-gray-100 aria-selected:dark:bg-gray-700"
           id={`${listboxId}-${0}`}
           on:click={() => closeDropdown()}
         >
