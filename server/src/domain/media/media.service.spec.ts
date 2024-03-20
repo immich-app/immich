@@ -205,7 +205,7 @@ describe(MediaService.name, () => {
       assetMock.getByIds.mockResolvedValue([]);
       await sut.handleGenerateJpegThumbnail({ id: assetStub.image.id });
       expect(mediaMock.resize).not.toHaveBeenCalled();
-      expect(assetMock.save).not.toHaveBeenCalledWith();
+      expect(assetMock.update).not.toHaveBeenCalledWith();
     });
 
     it('should skip video thumbnail generation if no video stream', async () => {
@@ -213,7 +213,7 @@ describe(MediaService.name, () => {
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleGenerateJpegThumbnail({ id: assetStub.image.id });
       expect(mediaMock.resize).not.toHaveBeenCalled();
-      expect(assetMock.save).not.toHaveBeenCalledWith();
+      expect(assetMock.update).not.toHaveBeenCalledWith();
     });
 
     it('should generate a thumbnail for an image', async () => {
@@ -227,7 +227,7 @@ describe(MediaService.name, () => {
         quality: 80,
         colorspace: Colorspace.SRGB,
       });
-      expect(assetMock.save).toHaveBeenCalledWith({
+      expect(assetMock.update).toHaveBeenCalledWith({
         id: 'asset-id',
         resizePath: 'upload/thumbs/user-id/as/se/asset-id.jpeg',
       });
@@ -246,7 +246,7 @@ describe(MediaService.name, () => {
         quality: 80,
         colorspace: Colorspace.P3,
       });
-      expect(assetMock.save).toHaveBeenCalledWith({
+      expect(assetMock.update).toHaveBeenCalledWith({
         id: 'asset-id',
         resizePath: 'upload/thumbs/user-id/as/se/asset-id.jpeg',
       });
@@ -271,7 +271,7 @@ describe(MediaService.name, () => {
           twoPass: false,
         },
       );
-      expect(assetMock.save).toHaveBeenCalledWith({
+      expect(assetMock.update).toHaveBeenCalledWith({
         id: 'asset-id',
         resizePath: 'upload/thumbs/user-id/as/se/asset-id.jpeg',
       });
@@ -296,7 +296,7 @@ describe(MediaService.name, () => {
           twoPass: false,
         },
       );
-      expect(assetMock.save).toHaveBeenCalledWith({
+      expect(assetMock.update).toHaveBeenCalledWith({
         id: 'asset-id',
         resizePath: 'upload/thumbs/user-id/as/se/asset-id.jpeg',
       });
@@ -337,7 +337,7 @@ describe(MediaService.name, () => {
       assetMock.getByIds.mockResolvedValue([]);
       await sut.handleGenerateWebpThumbnail({ id: assetStub.image.id });
       expect(mediaMock.resize).not.toHaveBeenCalled();
-      expect(assetMock.save).not.toHaveBeenCalledWith();
+      expect(assetMock.update).not.toHaveBeenCalledWith();
     });
 
     it('should generate a thumbnail', async () => {
@@ -350,7 +350,7 @@ describe(MediaService.name, () => {
         quality: 80,
         colorspace: Colorspace.SRGB,
       });
-      expect(assetMock.save).toHaveBeenCalledWith({
+      expect(assetMock.update).toHaveBeenCalledWith({
         id: 'asset-id',
         webpPath: 'upload/thumbs/user-id/as/se/asset-id.webp',
       });
@@ -370,7 +370,7 @@ describe(MediaService.name, () => {
       quality: 80,
       colorspace: Colorspace.P3,
     });
-    expect(assetMock.save).toHaveBeenCalledWith({
+    expect(assetMock.update).toHaveBeenCalledWith({
       id: 'asset-id',
       webpPath: 'upload/thumbs/user-id/as/se/asset-id.webp',
     });
@@ -397,7 +397,7 @@ describe(MediaService.name, () => {
       await sut.handleGenerateThumbhashThumbnail({ id: assetStub.image.id });
 
       expect(mediaMock.generateThumbhash).toHaveBeenCalledWith('/uploads/user-id/thumbs/path.jpg');
-      expect(assetMock.save).toHaveBeenCalledWith({ id: 'asset-id', thumbhash: thumbhashBuffer });
+      expect(assetMock.update).toHaveBeenCalledWith({ id: 'asset-id', thumbhash: thumbhashBuffer });
     });
   });
 

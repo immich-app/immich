@@ -67,11 +67,11 @@ describe(`${LibraryController.name} (e2e)`, () => {
         expect.arrayContaining([
           expect.objectContaining({
             isOffline: false,
-            originalFileName: 'silver_fir',
+            originalFileName: 'silver_fir.jpg',
           }),
           expect.objectContaining({
             isOffline: false,
-            originalFileName: 'tanners_ridge',
+            originalFileName: 'tanners_ridge.jpg',
           }),
         ]),
       );
@@ -103,10 +103,10 @@ describe(`${LibraryController.name} (e2e)`, () => {
       expect(assets).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            originalFileName: 'el_torcal_rocks',
+            originalFileName: 'el_torcal_rocks.jpg',
           }),
           expect.objectContaining({
-            originalFileName: 'silver_fir',
+            originalFileName: 'silver_fir.jpg',
           }),
         ]),
       );
@@ -143,7 +143,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
 
         expect(assets[0]).toEqual(
           expect.objectContaining({
-            originalFileName: 'el_torcal_rocks',
+            originalFileName: 'el_torcal_rocks.jpg',
             exifInfo: expect.objectContaining({
               dateTimeOriginal: '2023-09-25T08:33:30.880Z',
               exifImageHeight: 534,
@@ -190,7 +190,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
 
         expect(assets[0]).toEqual(
           expect.objectContaining({
-            originalFileName: 'el_torcal_rocks',
+            originalFileName: 'el_torcal_rocks.jpg',
             exifInfo: expect.objectContaining({
               dateTimeOriginal: '2012-08-05T11:39:59.000Z',
             }),
@@ -230,7 +230,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
 
         expect(assets[0]).toEqual(
           expect.objectContaining({
-            originalFileName: 'el_torcal_rocks',
+            originalFileName: 'el_torcal_rocks.jpg',
             exifInfo: expect.objectContaining({
               exifImageHeight: 534,
               exifImageWidth: 800,

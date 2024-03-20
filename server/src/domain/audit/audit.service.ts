@@ -93,27 +93,27 @@ export class AuditService {
 
       switch (pathType) {
         case AssetPathType.ENCODED_VIDEO: {
-          await this.assetRepository.save({ id, encodedVideoPath: pathValue });
+          await this.assetRepository.update({ id, encodedVideoPath: pathValue });
           break;
         }
 
         case AssetPathType.JPEG_THUMBNAIL: {
-          await this.assetRepository.save({ id, resizePath: pathValue });
+          await this.assetRepository.update({ id, resizePath: pathValue });
           break;
         }
 
         case AssetPathType.WEBP_THUMBNAIL: {
-          await this.assetRepository.save({ id, webpPath: pathValue });
+          await this.assetRepository.update({ id, webpPath: pathValue });
           break;
         }
 
         case AssetPathType.ORIGINAL: {
-          await this.assetRepository.save({ id, originalPath: pathValue });
+          await this.assetRepository.update({ id, originalPath: pathValue });
           break;
         }
 
         case AssetPathType.SIDECAR: {
-          await this.assetRepository.save({ id, sidecarPath: pathValue });
+          await this.assetRepository.update({ id, sidecarPath: pathValue });
           break;
         }
 

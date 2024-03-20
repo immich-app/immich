@@ -266,3 +266,111 @@ ORDER BY
   ) ASC
 LIMIT
   20
+
+-- SearchRepository.getAssetsByCity
+WITH RECURSIVE
+  cte AS (
+    (
+      SELECT
+        city,
+        "assetId"
+      FROM
+        exif
+        INNER JOIN assets ON exif."assetId" = assets.id
+      WHERE
+        "ownerId" IN ($1)
+        AND "isVisible" = $2
+        AND "isArchived" = $3
+        AND type = $4
+      ORDER BY
+        city
+      LIMIT
+        1
+    )
+    UNION ALL
+    SELECT
+      l.city,
+      l."assetId"
+    FROM
+      cte c,
+      LATERAL (
+        SELECT
+          city,
+          "assetId"
+        FROM
+          exif
+          INNER JOIN assets ON exif."assetId" = assets.id
+        WHERE
+          city > c.city
+          AND "ownerId" IN ($1)
+          AND "isVisible" = $2
+          AND "isArchived" = $3
+          AND type = $4
+        ORDER BY
+          city
+        LIMIT
+          1
+      ) l
+  )
+SELECT
+  "asset"."id" AS "asset_id",
+  "asset"."deviceAssetId" AS "asset_deviceAssetId",
+  "asset"."ownerId" AS "asset_ownerId",
+  "asset"."libraryId" AS "asset_libraryId",
+  "asset"."deviceId" AS "asset_deviceId",
+  "asset"."type" AS "asset_type",
+  "asset"."originalPath" AS "asset_originalPath",
+  "asset"."resizePath" AS "asset_resizePath",
+  "asset"."webpPath" AS "asset_webpPath",
+  "asset"."thumbhash" AS "asset_thumbhash",
+  "asset"."encodedVideoPath" AS "asset_encodedVideoPath",
+  "asset"."createdAt" AS "asset_createdAt",
+  "asset"."updatedAt" AS "asset_updatedAt",
+  "asset"."deletedAt" AS "asset_deletedAt",
+  "asset"."fileCreatedAt" AS "asset_fileCreatedAt",
+  "asset"."localDateTime" AS "asset_localDateTime",
+  "asset"."fileModifiedAt" AS "asset_fileModifiedAt",
+  "asset"."isFavorite" AS "asset_isFavorite",
+  "asset"."isArchived" AS "asset_isArchived",
+  "asset"."isExternal" AS "asset_isExternal",
+  "asset"."isReadOnly" AS "asset_isReadOnly",
+  "asset"."isOffline" AS "asset_isOffline",
+  "asset"."checksum" AS "asset_checksum",
+  "asset"."duration" AS "asset_duration",
+  "asset"."isVisible" AS "asset_isVisible",
+  "asset"."livePhotoVideoId" AS "asset_livePhotoVideoId",
+  "asset"."originalFileName" AS "asset_originalFileName",
+  "asset"."sidecarPath" AS "asset_sidecarPath",
+  "asset"."stackId" AS "asset_stackId",
+  "exif"."assetId" AS "exif_assetId",
+  "exif"."description" AS "exif_description",
+  "exif"."exifImageWidth" AS "exif_exifImageWidth",
+  "exif"."exifImageHeight" AS "exif_exifImageHeight",
+  "exif"."fileSizeInByte" AS "exif_fileSizeInByte",
+  "exif"."orientation" AS "exif_orientation",
+  "exif"."dateTimeOriginal" AS "exif_dateTimeOriginal",
+  "exif"."modifyDate" AS "exif_modifyDate",
+  "exif"."timeZone" AS "exif_timeZone",
+  "exif"."latitude" AS "exif_latitude",
+  "exif"."longitude" AS "exif_longitude",
+  "exif"."projectionType" AS "exif_projectionType",
+  "exif"."city" AS "exif_city",
+  "exif"."livePhotoCID" AS "exif_livePhotoCID",
+  "exif"."autoStackId" AS "exif_autoStackId",
+  "exif"."state" AS "exif_state",
+  "exif"."country" AS "exif_country",
+  "exif"."make" AS "exif_make",
+  "exif"."model" AS "exif_model",
+  "exif"."lensModel" AS "exif_lensModel",
+  "exif"."fNumber" AS "exif_fNumber",
+  "exif"."focalLength" AS "exif_focalLength",
+  "exif"."iso" AS "exif_iso",
+  "exif"."exposureTime" AS "exif_exposureTime",
+  "exif"."profileDescription" AS "exif_profileDescription",
+  "exif"."colorspace" AS "exif_colorspace",
+  "exif"."bitsPerSample" AS "exif_bitsPerSample",
+  "exif"."fps" AS "exif_fps"
+FROM
+  "assets" "asset"
+  INNER JOIN "exif" "exif" ON "exif"."assetId" = "asset"."id"
+  INNER JOIN cte ON asset.id = cte."assetId"

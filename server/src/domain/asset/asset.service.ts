@@ -324,7 +324,19 @@ export class AssetService {
     const { description, dateTimeOriginal, latitude, longitude, ...rest } = dto;
     await this.updateMetadata({ id, description, dateTimeOriginal, latitude, longitude });
 
-    const asset = await this.assetRepository.save({ id, ...rest });
+    await this.assetRepository.update({ id, ...rest });
+    const asset = await this.assetRepository.getById(id, {
+      exifInfo: true,
+      owner: true,
+      smartInfo: true,
+      tags: true,
+      faces: {
+        person: true,
+      },
+    });
+    if (!asset) {
+      throw new BadRequestException('Asset not found');
+    }
     return mapAsset(asset, { auth });
   }
 

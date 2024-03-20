@@ -161,6 +161,7 @@ Class | Method | HTTP request | Description
 *PersonApi* | [**reassignFaces**](doc//PersonApi.md#reassignfaces) | **PUT** /person/{id}/reassign | 
 *PersonApi* | [**updatePeople**](doc//PersonApi.md#updatepeople) | **PUT** /person | 
 *PersonApi* | [**updatePerson**](doc//PersonApi.md#updateperson) | **PUT** /person/{id} | 
+*SearchApi* | [**getAssetsByCity**](doc//SearchApi.md#getassetsbycity) | **GET** /search/cities | 
 *SearchApi* | [**getExploreData**](doc//SearchApi.md#getexploredata) | **GET** /search/explore | 
 *SearchApi* | [**getSearchSuggestions**](doc//SearchApi.md#getsearchsuggestions) | **GET** /search/suggestions | 
 *SearchApi* | [**search**](doc//SearchApi.md#search) | **GET** /search | 
