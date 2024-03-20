@@ -3,10 +3,10 @@ import fs from 'node:fs';
 import { LibraryController } from 'src/controllers/library.controller';
 import { LoginResponseDto } from 'src/domain/auth/auth.dto';
 import { LibraryType } from 'src/entities/library.entity';
-import { IMMICH_TEST_ASSET_PATH, IMMICH_TEST_ASSET_TEMP_PATH, restoreTempFolder, testApp } from 'src/test-utils/utils';
 import request from 'supertest';
 import { errorStub } from 'test/fixtures/error.stub';
 import { uuidStub } from 'test/fixtures/uuid.stub';
+import { IMMICH_TEST_ASSET_PATH, IMMICH_TEST_ASSET_TEMP_PATH, restoreTempFolder, testApp } from 'test/utils';
 import { utimes } from 'utimes';
 
 describe(`${LibraryController.name} (e2e)`, () => {

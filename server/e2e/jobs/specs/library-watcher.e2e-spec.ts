@@ -13,7 +13,7 @@ import {
   restoreTempFolder,
   testApp,
   waitForEvent,
-} from 'src/test-utils/utils';
+} from 'test/utils';
 
 describe(`Library watcher (e2e)`, () => {
   let server: any;
