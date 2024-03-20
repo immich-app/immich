@@ -20,7 +20,7 @@ import {
 import { when } from 'jest-when';
 import { R_OK } from 'node:constants';
 import { Stats } from 'node:fs';
-import { IEntityJob, ILibraryFileJob, ILibraryRefreshJob, JobName } from '../job';
+import { IEntityJob, ILibraryFileJob, ILibraryOfflineJob, ILibraryRefreshJob, JobName } from '../job';
 import {
   IAssetRepository,
   ICryptoRepository,
@@ -277,8 +277,9 @@ describe(LibraryService.name, () => {
 
   describe('handleOfflineCheck', () => {
     it('should set missing assets offline', async () => {
-      const mockAssetJob: IEntityJob = {
+      const mockAssetJob: ILibraryOfflineJob = {
         id: assetStub.external.id,
+        importPaths: ['/'],
       };
 
       assetMock.getById.mockResolvedValue(assetStub.external);
@@ -290,9 +291,25 @@ describe(LibraryService.name, () => {
       expect(assetMock.update).toHaveBeenCalledWith({ id: assetStub.external.id, isOffline: true });
     });
 
-    it('should skip an offline asset', async () => {
-      const mockAssetJob: IEntityJob = {
+    it('should set an asset outside of import paths as offline', async () => {
+      const mockAssetJob: ILibraryOfflineJob = {
         id: assetStub.external.id,
+        importPaths: ['/data/user2'],
+      };
+
+      assetMock.getById.mockResolvedValue(assetStub.external);
+
+      storageMock.checkFileExists.mockResolvedValue(true);
+
+      await sut.handleOfflineCheck(mockAssetJob);
+
+      expect(assetMock.update).toHaveBeenCalledWith({ id: assetStub.external.id, isOffline: true });
+    });
+
+    it('should skip an offline asset', async () => {
+      const mockAssetJob: ILibraryOfflineJob = {
+        id: assetStub.external.id,
+        importPaths: ['/'],
       };
 
       assetMock.getById.mockResolvedValue(assetStub.offline);
@@ -306,8 +323,9 @@ describe(LibraryService.name, () => {
     });
 
     it('should skip a nonexistent asset id', async () => {
-      const mockAssetJob: IEntityJob = {
+      const mockAssetJob: ILibraryOfflineJob = {
         id: assetStub.external.id,
+        importPaths: ['/'],
       };
 
       assetMock.getById.mockImplementation(() => Promise.resolve(null));

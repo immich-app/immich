@@ -1,4 +1,4 @@
-import { AssetType, LibraryType } from '@app/infra/entities';
+import { AssetEntity, AssetType, LibraryType } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
@@ -10,7 +10,15 @@ import picomatch from 'picomatch';
 import { AccessCore } from '../access';
 import { mimeTypes } from '../domain.constant';
 import { handlePromiseError, usePagination, validateCronExpression } from '../domain.util';
-import { IBaseJob, IEntityJob, ILibraryFileJob, ILibraryRefreshJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
+import {
+  IBaseJob,
+  IEntityJob,
+  ILibraryFileJob,
+  ILibraryOfflineJob,
+  ILibraryRefreshJob,
+  JOBS_ASSET_PAGINATION_SIZE,
+  JobName,
+} from '../job';
 import {
   DatabaseLock,
   IAccessRepository,
@@ -575,7 +583,7 @@ export class LibraryService extends EventEmitter {
   }
 
   // Check if an asset is has no file or is outside of import paths, marking it as offline
-  async handleOfflineCheck(job: IEntityJob): Promise<JobStatus> {
+  async handleOfflineCheck(job: ILibraryOfflineJob): Promise<JobStatus> {
     const asset = await this.assetRepository.getById(job.id);
 
     if (!asset || asset.isOffline) {
@@ -585,7 +593,16 @@ export class LibraryService extends EventEmitter {
 
     const exists = await this.storageRepository.checkFileExists(asset.originalPath, R_OK);
 
-    if (exists) {
+    let existsInImportPath = false;
+
+    for (const importPath of job.importPaths) {
+      if (asset.originalPath.startsWith(importPath)) {
+        existsInImportPath = true;
+        break;
+      }
+    }
+
+    if (exists && existsInImportPath) {
       this.logger.verbose(`Asset is still online: ${asset.originalPath}`);
     } else {
       this.logger.debug(`Marking asset as offline: ${asset.originalPath}`);
@@ -657,9 +674,9 @@ export class LibraryService extends EventEmitter {
           `Queuing online check of ${existingAssetPage.value.length} asset(s) in library ${library.id}...`,
         );
         await this.jobRepository.queueAll(
-          existingAssetPage.value.map((asset) => ({
+          existingAssetPage.value.map((asset: AssetEntity) => ({
             name: JobName.LIBRARY_CHECK_OFFLINE,
-            data: { id: asset.id },
+            data: { id: asset.id, importPaths: validImportPaths },
           })),
         );
       }

@@ -21,6 +21,10 @@ export interface ILibraryRefreshJob extends IEntityJob {
   refreshAllFiles: boolean;
 }
 
+export interface ILibraryOfflineJob extends IEntityJob {
+  importPaths: string[];
+}
+
 export interface IBulkEntityJob extends IBaseJob {
   ids: string[];
 }
