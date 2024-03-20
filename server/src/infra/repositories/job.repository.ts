@@ -7,15 +7,9 @@ import { CronJob, CronTime } from 'cron';
 import { setTimeout } from 'node:timers/promises';
 import { bullConfig } from 'src/config';
 import { JOBS_TO_QUEUE, JobName, QueueName } from 'src/domain/job/job.constants';
-import {
-  IJobRepository,
-  JobCounts,
-  JobItem,
-  QueueCleanType,
-  QueueStatus,
-} from 'src/domain/repositories/job.repository';
 import { Instrumentation } from 'src/infra/instrumentation';
 import { ImmichLogger } from 'src/infra/logger';
+import { IJobRepository, JobCounts, JobItem, QueueCleanType, QueueStatus } from 'src/interfaces/job.repository';
 
 @Instrumentation()
 @Injectable()

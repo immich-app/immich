@@ -8,17 +8,6 @@ import { StorageCore, StorageFolder } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/domain/job/job.constants';
 import { IEntityJob } from 'src/domain/job/job.interface';
-import { IAlbumRepository } from 'src/domain/repositories/album.repository';
-import { IAssetRepository } from 'src/domain/repositories/asset.repository';
-import { InternalEvent, InternalEventMap } from 'src/domain/repositories/communication.repository';
-import { ICryptoRepository } from 'src/domain/repositories/crypto.repository';
-import { DatabaseLock, IDatabaseRepository } from 'src/domain/repositories/database.repository';
-import { JobStatus } from 'src/domain/repositories/job.repository';
-import { IMoveRepository } from 'src/domain/repositories/move.repository';
-import { IPersonRepository } from 'src/domain/repositories/person.repository';
-import { IStorageRepository } from 'src/domain/repositories/storage.repository';
-import { ISystemConfigRepository } from 'src/domain/repositories/system-config.repository';
-import { IUserRepository } from 'src/domain/repositories/user.repository';
 import {
   supportedDayTokens,
   supportedHourTokens,
@@ -32,6 +21,17 @@ import { AssetEntity, AssetType } from 'src/infra/entities/asset.entity';
 import { AssetPathType } from 'src/infra/entities/move.entity';
 import { SystemConfig } from 'src/infra/entities/system-config.entity';
 import { ImmichLogger } from 'src/infra/logger';
+import { IAlbumRepository } from 'src/interfaces/album.repository';
+import { IAssetRepository } from 'src/interfaces/asset.repository';
+import { InternalEvent, InternalEventMap } from 'src/interfaces/communication.repository';
+import { ICryptoRepository } from 'src/interfaces/crypto.repository';
+import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.repository';
+import { JobStatus } from 'src/interfaces/job.repository';
+import { IMoveRepository } from 'src/interfaces/move.repository';
+import { IPersonRepository } from 'src/interfaces/person.repository';
+import { IStorageRepository } from 'src/interfaces/storage.repository';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
+import { IUserRepository } from 'src/interfaces/user.repository';
 import { getLivePhotoMotionFilename, usePagination } from 'src/utils';
 
 export interface MoveAssetMetadata {

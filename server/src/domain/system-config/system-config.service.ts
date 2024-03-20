@@ -3,15 +3,6 @@ import { OnEvent } from '@nestjs/event-emitter';
 import { instanceToPlain } from 'class-transformer';
 import _ from 'lodash';
 import { SystemConfigCore } from 'src/cores/system-config.core';
-import {
-  ClientEvent,
-  ICommunicationRepository,
-  InternalEvent,
-  InternalEventMap,
-  ServerEvent,
-} from 'src/domain/repositories/communication.repository';
-import { ISearchRepository } from 'src/domain/repositories/search.repository';
-import { ISystemConfigRepository } from 'src/domain/repositories/system-config.repository';
 import { SystemConfigDto, mapConfig } from 'src/domain/system-config/dto/system-config.dto';
 import { SystemConfigTemplateStorageOptionDto } from 'src/domain/system-config/response-dto/system-config-template-storage-option.dto';
 import {
@@ -26,6 +17,15 @@ import {
 } from 'src/domain/system-config/system-config.constants';
 import { LogLevel, SystemConfig } from 'src/infra/entities/system-config.entity';
 import { ImmichLogger } from 'src/infra/logger';
+import {
+  ClientEvent,
+  ICommunicationRepository,
+  InternalEvent,
+  InternalEventMap,
+  ServerEvent,
+} from 'src/interfaces/communication.repository';
+import { ISearchRepository } from 'src/interfaces/search.repository';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
 
 @Injectable()
 export class SystemConfigService {

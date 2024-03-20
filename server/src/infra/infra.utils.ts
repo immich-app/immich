@@ -1,6 +1,6 @@
 import _ from 'lodash';
-import { AssetSearchBuilderOptions } from 'src/domain/repositories/search.repository';
 import { AssetEntity } from 'src/infra/entities/asset.entity';
+import { AssetSearchBuilderOptions } from 'src/interfaces/search.repository';
 import { Paginated, PaginatedBuilderOptions, PaginationMode, PaginationOptions, PaginationResult } from 'src/utils';
 import {
   Between,

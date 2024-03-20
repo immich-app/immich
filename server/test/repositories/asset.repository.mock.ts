@@ -1,4 +1,4 @@
-import { IAssetRepository } from 'src/domain/repositories/asset.repository';
+import { IAssetRepository } from 'src/interfaces/asset.repository';
 
 export const newAssetRepositoryMock = (): jest.Mocked<IAssetRepository> => {
   return {

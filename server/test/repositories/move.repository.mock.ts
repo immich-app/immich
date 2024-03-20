@@ -1,4 +1,4 @@
-import { IMoveRepository } from 'src/domain/repositories/move.repository';
+import { IMoveRepository } from 'src/interfaces/move.repository';
 
 export const newMoveRepositoryMock = (): jest.Mocked<IMoveRepository> => {
   return {

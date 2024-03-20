@@ -24,20 +24,20 @@ import {
   mapFaces,
   mapPerson,
 } from 'src/domain/person/person.dto';
-import { IAccessRepository } from 'src/domain/repositories/access.repository';
-import { IAssetRepository, WithoutProperty } from 'src/domain/repositories/asset.repository';
-import { ICryptoRepository } from 'src/domain/repositories/crypto.repository';
-import { IJobRepository, JobItem, JobStatus } from 'src/domain/repositories/job.repository';
-import { IMachineLearningRepository } from 'src/domain/repositories/machine-learning.repository';
-import { CropOptions, IMediaRepository } from 'src/domain/repositories/media.repository';
-import { IMoveRepository } from 'src/domain/repositories/move.repository';
-import { IPersonRepository, UpdateFacesData } from 'src/domain/repositories/person.repository';
-import { ISearchRepository } from 'src/domain/repositories/search.repository';
-import { IStorageRepository } from 'src/domain/repositories/storage.repository';
-import { ISystemConfigRepository } from 'src/domain/repositories/system-config.repository';
 import { PersonPathType } from 'src/infra/entities/move.entity';
 import { PersonEntity } from 'src/infra/entities/person.entity';
 import { ImmichLogger } from 'src/infra/logger';
+import { IAccessRepository } from 'src/interfaces/access.repository';
+import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.repository';
+import { ICryptoRepository } from 'src/interfaces/crypto.repository';
+import { IJobRepository, JobItem, JobStatus } from 'src/interfaces/job.repository';
+import { IMachineLearningRepository } from 'src/interfaces/machine-learning.repository';
+import { CropOptions, IMediaRepository } from 'src/interfaces/media.repository';
+import { IMoveRepository } from 'src/interfaces/move.repository';
+import { IPersonRepository, UpdateFacesData } from 'src/interfaces/person.repository';
+import { ISearchRepository } from 'src/interfaces/search.repository';
+import { IStorageRepository } from 'src/interfaces/storage.repository';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
 import { CacheControl, ImmichFileResponse, usePagination } from 'src/utils';
 import { IsNull } from 'typeorm';
 

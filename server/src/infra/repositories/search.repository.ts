@@ -1,16 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { DatabaseExtension } from 'src/domain/repositories/database.repository';
-import {
-  AssetSearchOptions,
-  Embedding,
-  FaceEmbeddingSearch,
-  FaceSearchResult,
-  ISearchRepository,
-  SearchPaginationOptions,
-  SmartSearchOptions,
-} from 'src/domain/repositories/search.repository';
 import { getCLIPModelInfo } from 'src/domain/smart-info/smart-info.constant';
 import { vectorExt } from 'src/infra/database.config';
 import { AssetFaceEntity } from 'src/infra/entities/asset-face.entity';
@@ -21,6 +11,16 @@ import { SmartSearchEntity } from 'src/infra/entities/smart-search.entity';
 import { asVector, paginatedBuilder, searchAssetBuilder } from 'src/infra/infra.utils';
 import { Instrumentation } from 'src/infra/instrumentation';
 import { ImmichLogger } from 'src/infra/logger';
+import { DatabaseExtension } from 'src/interfaces/database.repository';
+import {
+  AssetSearchOptions,
+  Embedding,
+  FaceEmbeddingSearch,
+  FaceSearchResult,
+  ISearchRepository,
+  SearchPaginationOptions,
+  SmartSearchOptions,
+} from 'src/interfaces/search.repository';
 import { Paginated, PaginationMode, PaginationResult } from 'src/utils';
 import { isValidInteger } from 'src/validation';
 import { Repository, SelectQueryBuilder } from 'typeorm';

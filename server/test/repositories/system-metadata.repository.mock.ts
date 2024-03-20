@@ -1,4 +1,4 @@
-import { ISystemMetadataRepository } from 'src/domain/repositories/system-metadata.repository';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.repository';
 
 export const newSystemMetadataRepositoryMock = (): jest.Mocked<ISystemMetadataRepository> => {
   return {

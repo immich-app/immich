@@ -1,7 +1,7 @@
 import { DatabaseService } from 'src/domain/database/database.service';
 import { Version, VersionType } from 'src/domain/domain.constant';
-import { DatabaseExtension, IDatabaseRepository, VectorIndex } from 'src/domain/repositories/database.repository';
 import { ImmichLogger } from 'src/infra/logger';
+import { DatabaseExtension, IDatabaseRepository, VectorIndex } from 'src/interfaces/database.repository';
 import { newDatabaseRepositoryMock } from 'test/repositories/database.repository.mock';
 
 describe(DatabaseService.name, () => {

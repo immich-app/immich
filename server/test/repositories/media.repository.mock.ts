@@ -1,4 +1,4 @@
-import { IMediaRepository } from 'src/domain/repositories/media.repository';
+import { IMediaRepository } from 'src/interfaces/media.repository';
 
 export const newMediaRepositoryMock = (): jest.Mocked<IMediaRepository> => {
   return {

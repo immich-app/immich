@@ -3,12 +3,6 @@ import { DateTime } from 'luxon';
 import { StorageCore, StorageFolder } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { Version, isDev, mimeTypes, serverVersion } from 'src/domain/domain.constant';
-import { ClientEvent, ICommunicationRepository } from 'src/domain/repositories/communication.repository';
-import { IServerInfoRepository } from 'src/domain/repositories/server-info.repository';
-import { IStorageRepository } from 'src/domain/repositories/storage.repository';
-import { ISystemConfigRepository } from 'src/domain/repositories/system-config.repository';
-import { ISystemMetadataRepository } from 'src/domain/repositories/system-metadata.repository';
-import { IUserRepository, UserStatsQueryResponse } from 'src/domain/repositories/user.repository';
 import {
   ServerConfigDto,
   ServerFeaturesDto,
@@ -20,6 +14,12 @@ import {
 } from 'src/domain/server-info/server-info.dto';
 import { SystemMetadataKey } from 'src/infra/entities/system-metadata.entity';
 import { ImmichLogger } from 'src/infra/logger';
+import { ClientEvent, ICommunicationRepository } from 'src/interfaces/communication.repository';
+import { IServerInfoRepository } from 'src/interfaces/server-info.repository';
+import { IStorageRepository } from 'src/interfaces/storage.repository';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.repository';
+import { IUserRepository, UserStatsQueryResponse } from 'src/interfaces/user.repository';
 import { asHumanReadable } from 'src/utils';
 
 @Injectable()

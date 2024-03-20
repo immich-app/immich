@@ -36,18 +36,18 @@ import {
   mapLoginResponse,
   mapUserToken,
 } from 'src/domain/auth/auth.dto';
-import { IAccessRepository } from 'src/domain/repositories/access.repository';
-import { IKeyRepository } from 'src/domain/repositories/api-key.repository';
-import { ICryptoRepository } from 'src/domain/repositories/crypto.repository';
-import { ILibraryRepository } from 'src/domain/repositories/library.repository';
-import { ISharedLinkRepository } from 'src/domain/repositories/shared-link.repository';
-import { ISystemConfigRepository } from 'src/domain/repositories/system-config.repository';
-import { IUserTokenRepository } from 'src/domain/repositories/user-token.repository';
-import { IUserRepository } from 'src/domain/repositories/user.repository';
 import { UserResponseDto, mapUser } from 'src/domain/user/response-dto/user-response.dto';
 import { SystemConfig } from 'src/infra/entities/system-config.entity';
 import { UserEntity } from 'src/infra/entities/user.entity';
 import { ImmichLogger } from 'src/infra/logger';
+import { IAccessRepository } from 'src/interfaces/access.repository';
+import { IKeyRepository } from 'src/interfaces/api-key.repository';
+import { ICryptoRepository } from 'src/interfaces/crypto.repository';
+import { ILibraryRepository } from 'src/interfaces/library.repository';
+import { ISharedLinkRepository } from 'src/interfaces/shared-link.repository';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
+import { IUserTokenRepository } from 'src/interfaces/user-token.repository';
+import { IUserRepository } from 'src/interfaces/user.repository';
 import { HumanReadableSize } from 'src/utils';
 
 export interface LoginDetails {

@@ -25,18 +25,18 @@ import { AuthDto } from 'src/domain/auth/auth.dto';
 import { mimeTypes } from 'src/domain/domain.constant';
 import { JOBS_ASSET_PAGINATION_SIZE, JobName } from 'src/domain/job/job.constants';
 import { IAssetDeletionJob, ISidecarWriteJob } from 'src/domain/job/job.interface';
-import { IAccessRepository } from 'src/domain/repositories/access.repository';
-import { IAssetStackRepository } from 'src/domain/repositories/asset-stack.repository';
-import { IAssetRepository, TimeBucketOptions } from 'src/domain/repositories/asset.repository';
-import { ClientEvent, ICommunicationRepository } from 'src/domain/repositories/communication.repository';
-import { IJobRepository, JobItem, JobStatus } from 'src/domain/repositories/job.repository';
-import { IPartnerRepository } from 'src/domain/repositories/partner.repository';
-import { IStorageRepository } from 'src/domain/repositories/storage.repository';
-import { ISystemConfigRepository } from 'src/domain/repositories/system-config.repository';
-import { IUserRepository } from 'src/domain/repositories/user.repository';
 import { AssetEntity } from 'src/infra/entities/asset.entity';
 import { LibraryType } from 'src/infra/entities/library.entity';
 import { ImmichLogger } from 'src/infra/logger';
+import { IAccessRepository } from 'src/interfaces/access.repository';
+import { IAssetStackRepository } from 'src/interfaces/asset-stack.repository';
+import { IAssetRepository, TimeBucketOptions } from 'src/interfaces/asset.repository';
+import { ClientEvent, ICommunicationRepository } from 'src/interfaces/communication.repository';
+import { IJobRepository, JobItem, JobStatus } from 'src/interfaces/job.repository';
+import { IPartnerRepository } from 'src/interfaces/partner.repository';
+import { IStorageRepository } from 'src/interfaces/storage.repository';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
+import { IUserRepository } from 'src/interfaces/user.repository';
 import { usePagination } from 'src/utils';
 
 export enum UploadFieldName {

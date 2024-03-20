@@ -4,9 +4,9 @@ import path from 'node:path';
 import { LoginResponseDto } from 'src/domain/auth/auth.dto';
 import { LibraryResponseDto } from 'src/domain/library/library.dto';
 import { LibraryService } from 'src/domain/library/library.service';
-import { StorageEventType } from 'src/domain/repositories/storage.repository';
 import { AssetType } from 'src/infra/entities/asset.entity';
 import { LibraryType } from 'src/infra/entities/library.entity';
+import { StorageEventType } from 'src/interfaces/storage.repository';
 import {
   IMMICH_TEST_ASSET_PATH,
   IMMICH_TEST_ASSET_TEMP_PATH,

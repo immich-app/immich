@@ -14,18 +14,13 @@ import {
   geodataCities500Path,
   geodataDatePath,
 } from 'src/domain/domain.constant';
-import {
-  GeoPoint,
-  IMetadataRepository,
-  ImmichTags,
-  ReverseGeocodeResult,
-} from 'src/domain/repositories/metadata.repository';
-import { ISystemMetadataRepository } from 'src/domain/repositories/system-metadata.repository';
 import { ExifEntity } from 'src/infra/entities/exif.entity';
 import { GeodataPlacesEntity } from 'src/infra/entities/geodata-places.entity';
 import { SystemMetadataKey } from 'src/infra/entities/system-metadata.entity';
 import { Instrumentation } from 'src/infra/instrumentation';
 import { ImmichLogger } from 'src/infra/logger';
+import { GeoPoint, IMetadataRepository, ImmichTags, ReverseGeocodeResult } from 'src/interfaces/metadata.repository';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.repository';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity.js';
 

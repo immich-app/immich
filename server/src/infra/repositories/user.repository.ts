@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DummyValue, GenerateSql } from 'src/decorators';
+import { AssetEntity } from 'src/infra/entities/asset.entity';
+import { UserEntity } from 'src/infra/entities/user.entity';
+import { Instrumentation } from 'src/infra/instrumentation';
 import {
   IUserRepository,
   UserFindOptions,
   UserListFilter,
   UserStatsQueryResponse,
-} from 'src/domain/repositories/user.repository';
-import { AssetEntity } from 'src/infra/entities/asset.entity';
-import { UserEntity } from 'src/infra/entities/user.entity';
-import { Instrumentation } from 'src/infra/instrumentation';
+} from 'src/interfaces/user.repository';
 import { IsNull, Not, Repository } from 'typeorm';
 
 @Instrumentation()

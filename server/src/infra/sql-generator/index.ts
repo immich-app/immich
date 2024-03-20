@@ -6,7 +6,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { GENERATE_SQL_KEY, GenerateSqlQueries } from 'src/decorators';
-import { ISystemConfigRepository } from 'src/domain/repositories/system-config.repository';
 import { databaseConfig } from 'src/infra/database.config';
 import { databaseEntities } from 'src/infra/entities';
 import { AccessRepository } from 'src/infra/repositories/access.repository';
@@ -26,6 +25,7 @@ import { TagRepository } from 'src/infra/repositories/tag.repository';
 import { UserTokenRepository } from 'src/infra/repositories/user-token.repository';
 import { UserRepository } from 'src/infra/repositories/user.repository';
 import { SqlLogger } from 'src/infra/sql-generator/sql.logger';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
 
 const reflector = new Reflector();
 const repositories = [

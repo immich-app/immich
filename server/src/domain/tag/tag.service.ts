@@ -3,9 +3,9 @@ import { AssetIdsDto } from 'src/domain/asset/dto/asset-ids.dto';
 import { AssetIdErrorReason, AssetIdsResponseDto } from 'src/domain/asset/response-dto/asset-ids-response.dto';
 import { AssetResponseDto, mapAsset } from 'src/domain/asset/response-dto/asset-response.dto';
 import { AuthDto } from 'src/domain/auth/auth.dto';
-import { ITagRepository } from 'src/domain/repositories/tag.repository';
 import { TagResponseDto, mapTag } from 'src/domain/tag/tag-response.dto';
 import { CreateTagDto, UpdateTagDto } from 'src/domain/tag/tag.dto';
+import { ITagRepository } from 'src/interfaces/tag.repository';
 
 @Injectable()
 export class TagService {

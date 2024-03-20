@@ -23,17 +23,17 @@ import {
   ValidateLibraryResponseDto,
   mapLibrary,
 } from 'src/domain/library/library.dto';
-import { IAssetRepository, WithProperty } from 'src/domain/repositories/asset.repository';
-import { InternalEvent, InternalEventMap } from 'src/domain/repositories/communication.repository';
-import { ICryptoRepository } from 'src/domain/repositories/crypto.repository';
-import { DatabaseLock, IDatabaseRepository } from 'src/domain/repositories/database.repository';
-import { IJobRepository, JobStatus } from 'src/domain/repositories/job.repository';
-import { ILibraryRepository } from 'src/domain/repositories/library.repository';
-import { IStorageRepository, StorageEventType } from 'src/domain/repositories/storage.repository';
-import { ISystemConfigRepository } from 'src/domain/repositories/system-config.repository';
 import { AssetType } from 'src/infra/entities/asset.entity';
 import { LibraryEntity, LibraryType } from 'src/infra/entities/library.entity';
 import { ImmichLogger } from 'src/infra/logger';
+import { IAssetRepository, WithProperty } from 'src/interfaces/asset.repository';
+import { InternalEvent, InternalEventMap } from 'src/interfaces/communication.repository';
+import { ICryptoRepository } from 'src/interfaces/crypto.repository';
+import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.repository';
+import { IJobRepository, JobStatus } from 'src/interfaces/job.repository';
+import { ILibraryRepository } from 'src/interfaces/library.repository';
+import { IStorageRepository, StorageEventType } from 'src/interfaces/storage.repository';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
 import { handlePromiseError, usePagination } from 'src/utils';
 import { validateCronExpression } from 'src/validation';
 

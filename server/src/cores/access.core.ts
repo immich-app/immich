@@ -1,7 +1,7 @@
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { AuthDto } from 'src/domain/auth/auth.dto';
-import { IAccessRepository } from 'src/domain/repositories/access.repository';
 import { SharedLinkEntity } from 'src/infra/entities/shared-link.entity';
+import { IAccessRepository } from 'src/interfaces/access.repository';
 import { setDifference, setIsEqual, setUnion } from 'src/utils';
 
 export enum Permission {

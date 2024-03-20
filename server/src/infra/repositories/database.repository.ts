@@ -2,6 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import AsyncLock from 'async-lock';
 import { Version, VersionType } from 'src/domain/domain.constant';
+import { vectorExt } from 'src/infra/database.config';
+import { Instrumentation } from 'src/infra/instrumentation';
+import { ImmichLogger } from 'src/infra/logger';
 import {
   DatabaseExtension,
   DatabaseLock,
@@ -10,10 +13,7 @@ import {
   VectorIndex,
   VectorUpdateResult,
   extName,
-} from 'src/domain/repositories/database.repository';
-import { vectorExt } from 'src/infra/database.config';
-import { Instrumentation } from 'src/infra/instrumentation';
-import { ImmichLogger } from 'src/infra/logger';
+} from 'src/interfaces/database.repository';
 import { isValidInteger } from 'src/validation';
 import { DataSource, EntityManager, QueryRunner } from 'typeorm';
 

@@ -1,9 +1,9 @@
 import { BadRequestException } from '@nestjs/common';
 import { JobName } from 'src/domain/job/job.constants';
-import { IAssetRepository } from 'src/domain/repositories/asset.repository';
-import { ClientEvent, ICommunicationRepository } from 'src/domain/repositories/communication.repository';
-import { IJobRepository } from 'src/domain/repositories/job.repository';
 import { TrashService } from 'src/domain/trash/trash.service';
+import { IAssetRepository } from 'src/interfaces/asset.repository';
+import { ClientEvent, ICommunicationRepository } from 'src/interfaces/communication.repository';
+import { IJobRepository } from 'src/interfaces/job.repository';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
