@@ -8,7 +8,7 @@
   import { isSearchEnabled } from '$lib/stores/search.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { deleteAssets } from '$lib/utils/actions';
-  import { matchesShortcut, type ShortcutOptions, shortcuts } from '$lib/utils/shortcut';
+  import { type ShortcutOptions, shortcuts } from '$lib/utils/shortcut';
   import { formatGroupTitle, splitBucketIntoDateGroups } from '$lib/utils/timeline-util';
   import type { AlbumResponseDto, AssetResponseDto } from '@immich/sdk';
   import { DateTime } from 'luxon';
@@ -94,12 +94,14 @@
       { shortcut: { key: 'Escape' }, onShortcut: () => dispatch('escape') },
       { shortcut: { key: '?', shift: true }, onShortcut: () => (showShortcuts = !showShortcuts) },
       { shortcut: { key: '/' }, onShortcut: () => goto(AppRoute.EXPLORE) },
+      { shortcut: { key: 'A', ctrl: true }, onShortcut: () => selectAllAssets(assetStore, assetInteractionStore) },
     ];
 
     if ($isMultiSelectState) {
       shortcuts.push(
         { shortcut: { key: 'Delete' }, onShortcut: onDelete },
         { shortcut: { key: 'Delete', shift: true }, onShortcut: onForceDelete },
+        { shortcut: { key: 'D', ctrl: true }, onShortcut: () => deselectAllAssets() },
       );
     }
 
@@ -203,24 +205,17 @@
 
   let shiftKeyIsDown = false;
 
-  const onKeyDown = async (event: KeyboardEvent) => {
+  const deselectAllAssets = () => {
+    $isSelectingAllAssets = false;
+    assetInteractionStore.clearMultiselect();
+  };
+
+  const onKeyDown = (event: KeyboardEvent) => {
     if ($isSearchEnabled) {
       return;
     }
 
-    // Select All
-    if (matchesShortcut(event, { key: 'A', ctrl: true })) {
-      event.preventDefault();
-      await selectAllAssets(assetStore, assetInteractionStore);
-    }
-    // Deselect All
-    else if (matchesShortcut(event, { key: 'D', ctrl: true })) {
-      event.preventDefault();
-      $isSelectingAllAssets = false;
-      assetInteractionStore.clearMultiselect();
-    }
-    // Start Multi-Selection
-    else if (event.key === 'Shift') {
+    if (event.key === 'Shift') {
       event.preventDefault();
       shiftKeyIsDown = true;
     }
