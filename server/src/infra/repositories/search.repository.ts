@@ -234,12 +234,8 @@ export class SearchRepository implements ISearchRepository {
   @GenerateSql({ params: [[DummyValue.UUID]] })
   async getAssetsByCity(userIds: string[]): Promise<AssetEntity[]> {
     // the performance difference between this and the normal way is too huge to ignore, e.g. 3s vs 4ms
-    const rawRes = await this.repository.query(this.assetsByCityQuery, [
-      userIds.join(', '),
-      true,
-      false,
-      AssetType.IMAGE,
-    ]);
+    const parameters = [userIds.join(', '), true, false, AssetType.IMAGE];
+    const rawRes = await this.repository.query(this.assetsByCityQuery, parameters);
 
     const items: AssetEntity[] = [];
     for (const res of rawRes) {
