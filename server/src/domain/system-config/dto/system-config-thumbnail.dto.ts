@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsEnum, IsInt, Max, Min } from 'class-validator';
-import { Colorspace } from 'src/infra/entities/system-config.entity';
+import { Colorspace } from 'src/entities/system-config.entity';
 
 export class SystemConfigThumbnailDto {
   @IsInt()

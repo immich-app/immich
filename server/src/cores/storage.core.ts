@@ -1,9 +1,9 @@
 import { dirname, join, resolve } from 'node:path';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { APP_MEDIA_LOCATION } from 'src/domain/domain.constant';
-import { AssetEntity } from 'src/infra/entities/asset.entity';
-import { AssetPathType, PathType, PersonPathType } from 'src/infra/entities/move.entity';
-import { PersonEntity } from 'src/infra/entities/person.entity';
+import { AssetEntity } from 'src/entities/asset.entity';
+import { AssetPathType, PathType, PersonPathType } from 'src/entities/move.entity';
+import { PersonEntity } from 'src/entities/person.entity';
 import { ImmichLogger } from 'src/infra/logger';
 import { IAssetRepository } from 'src/interfaces/asset.repository';
 import { ICryptoRepository } from 'src/interfaces/crypto.repository';

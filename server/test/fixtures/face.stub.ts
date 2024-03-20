@@ -1,4 +1,4 @@
-import { AssetFaceEntity } from 'src/infra/entities/asset-face.entity';
+import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { personStub } from 'test/fixtures/person.stub';
 

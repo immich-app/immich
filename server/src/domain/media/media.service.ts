@@ -14,8 +14,8 @@ import {
   VP9Config,
 } from 'src/domain/media/media.util';
 import { SystemConfigFFmpegDto } from 'src/domain/system-config/dto/system-config-ffmpeg.dto';
-import { AssetEntity, AssetType } from 'src/infra/entities/asset.entity';
-import { AssetPathType } from 'src/infra/entities/move.entity';
+import { AssetEntity, AssetType } from 'src/entities/asset.entity';
+import { AssetPathType } from 'src/entities/move.entity';
 import {
   AudioCodec,
   Colorspace,
@@ -23,7 +23,7 @@ import {
   TranscodePolicy,
   TranscodeTarget,
   VideoCodec,
-} from 'src/infra/entities/system-config.entity';
+} from 'src/entities/system-config.entity';
 import { ImmichLogger } from 'src/infra/logger';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.repository';
 import { ICryptoRepository } from 'src/interfaces/crypto.repository';

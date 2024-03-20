@@ -1,7 +1,7 @@
 import { join } from 'node:path';
 import { THUMBNAIL_DIR } from 'src/cores/storage.core';
 import { APP_MEDIA_LOCATION } from 'src/domain/domain.constant';
-import { LibraryEntity, LibraryType } from 'src/infra/entities/library.entity';
+import { LibraryEntity, LibraryType } from 'src/entities/library.entity';
 import { userStub } from 'test/fixtures/user.stub';
 
 export const libraryStub = {

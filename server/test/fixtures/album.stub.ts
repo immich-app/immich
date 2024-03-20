@@ -1,4 +1,4 @@
-import { AlbumEntity, AssetOrder } from 'src/infra/entities/album.entity';
+import { AlbumEntity, AssetOrder } from 'src/entities/album.entity';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { userStub } from 'test/fixtures/user.stub';

@@ -14,8 +14,8 @@ import {
 import { AuthDto } from 'src/domain/auth/auth.dto';
 import { AUDIT_LOG_MAX_DURATION } from 'src/domain/domain.constant';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/domain/job/job.constants';
-import { DatabaseAction } from 'src/infra/entities/audit.entity';
-import { AssetPathType, PersonPathType, UserPathType } from 'src/infra/entities/move.entity';
+import { DatabaseAction } from 'src/entities/audit.entity';
+import { AssetPathType, PersonPathType, UserPathType } from 'src/entities/move.entity';
 import { ImmichLogger } from 'src/infra/logger';
 import { IAccessRepository } from 'src/interfaces/access.repository';
 import { IAssetRepository } from 'src/interfaces/asset.repository';

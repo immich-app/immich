@@ -9,8 +9,8 @@ import {
   mapSharedLinkWithoutMetadata,
 } from 'src/domain/shared-link/shared-link-response.dto';
 import { SharedLinkCreateDto, SharedLinkEditDto, SharedLinkPasswordDto } from 'src/domain/shared-link/shared-link.dto';
-import { AssetEntity } from 'src/infra/entities/asset.entity';
-import { SharedLinkEntity, SharedLinkType } from 'src/infra/entities/shared-link.entity';
+import { AssetEntity } from 'src/entities/asset.entity';
+import { SharedLinkEntity, SharedLinkType } from 'src/entities/shared-link.entity';
 import { IAccessRepository } from 'src/interfaces/access.repository';
 import { ICryptoRepository } from 'src/interfaces/crypto.repository';
 import { ISharedLinkRepository } from 'src/interfaces/shared-link.repository';

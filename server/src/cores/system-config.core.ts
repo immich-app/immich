@@ -20,7 +20,7 @@ import {
   TranscodeHWAccel,
   TranscodePolicy,
   VideoCodec,
-} from 'src/infra/entities/system-config.entity';
+} from 'src/entities/system-config.entity';
 import { ImmichLogger } from 'src/infra/logger';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
 

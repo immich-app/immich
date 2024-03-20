@@ -3,10 +3,10 @@ import { AssetResponseDto } from 'src/domain/asset/response-dto/asset-response.d
 import { ExifResponseDto } from 'src/domain/asset/response-dto/exif-response.dto';
 import { SharedLinkResponseDto } from 'src/domain/shared-link/shared-link-response.dto';
 import { mapUser } from 'src/domain/user/response-dto/user-response.dto';
-import { AssetOrder } from 'src/infra/entities/album.entity';
-import { AssetType } from 'src/infra/entities/asset.entity';
-import { SharedLinkEntity, SharedLinkType } from 'src/infra/entities/shared-link.entity';
-import { UserEntity } from 'src/infra/entities/user.entity';
+import { AssetOrder } from 'src/entities/album.entity';
+import { AssetType } from 'src/entities/asset.entity';
+import { SharedLinkEntity, SharedLinkType } from 'src/entities/shared-link.entity';
+import { UserEntity } from 'src/entities/user.entity';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { libraryStub } from 'test/fixtures/library.stub';

@@ -15,7 +15,7 @@ import {
   mapCreateProfileImageResponse,
 } from 'src/domain/user/response-dto/create-profile-image-response.dto';
 import { UserResponseDto, mapUser } from 'src/domain/user/response-dto/user-response.dto';
-import { UserEntity, UserStatus } from 'src/infra/entities/user.entity';
+import { UserEntity, UserStatus } from 'src/entities/user.entity';
 import { ImmichLogger } from 'src/infra/logger';
 import { IAlbumRepository } from 'src/interfaces/album.repository';
 import { ICryptoRepository } from 'src/interfaces/crypto.repository';

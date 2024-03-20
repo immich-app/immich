@@ -8,7 +8,7 @@ import {
   TranscodeHWAccel,
   TranscodePolicy,
   VideoCodec,
-} from 'src/infra/entities/system-config.entity';
+} from 'src/entities/system-config.entity';
 import { ValidateBoolean } from 'src/validation';
 
 export class SystemConfigFFmpegDto {

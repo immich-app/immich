@@ -1,8 +1,8 @@
 import { JobName } from 'src/domain/job/job.constants';
 import { cleanModelName, getCLIPModelInfo } from 'src/domain/smart-info/smart-info.constant';
 import { SmartInfoService } from 'src/domain/smart-info/smart-info.service';
-import { AssetEntity } from 'src/infra/entities/asset.entity';
-import { SystemConfigKey } from 'src/infra/entities/system-config.entity';
+import { AssetEntity } from 'src/entities/asset.entity';
+import { SystemConfigKey } from 'src/entities/system-config.entity';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.repository';
 import { IDatabaseRepository } from 'src/interfaces/database.repository';
 import { IJobRepository } from 'src/interfaces/job.repository';

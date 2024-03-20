@@ -17,9 +17,9 @@ import {
   supportedWeekTokens,
   supportedYearTokens,
 } from 'src/domain/system-config/system-config.constants';
-import { AssetEntity, AssetType } from 'src/infra/entities/asset.entity';
-import { AssetPathType } from 'src/infra/entities/move.entity';
-import { SystemConfig } from 'src/infra/entities/system-config.entity';
+import { AssetEntity, AssetType } from 'src/entities/asset.entity';
+import { AssetPathType } from 'src/entities/move.entity';
+import { SystemConfig } from 'src/entities/system-config.entity';
 import { ImmichLogger } from 'src/infra/logger';
 import { IAlbumRepository } from 'src/interfaces/album.repository';
 import { IAssetRepository } from 'src/interfaces/asset.repository';

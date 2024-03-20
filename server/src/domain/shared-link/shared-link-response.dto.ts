@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import _ from 'lodash';
 import { AlbumResponseDto, mapAlbumWithoutAssets } from 'src/domain/album/album-response.dto';
 import { AssetResponseDto, mapAsset } from 'src/domain/asset/response-dto/asset-response.dto';
-import { SharedLinkEntity, SharedLinkType } from 'src/infra/entities/shared-link.entity';
+import { SharedLinkEntity, SharedLinkType } from 'src/entities/shared-link.entity';
 
 export class SharedLinkResponseDto {
   id!: string;

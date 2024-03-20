@@ -11,6 +11,8 @@ import { AssetResponseDto, mapAsset } from 'src/domain/asset/response-dto/asset-
 import { AuthDto } from 'src/domain/auth/auth.dto';
 import { mimeTypes } from 'src/domain/domain.constant';
 import { JobName } from 'src/domain/job/job.constants';
+import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType } from 'src/entities/asset.entity';
+import { LibraryType } from 'src/entities/library.entity';
 import { IAssetRepositoryV1 } from 'src/immich/api-v1/asset/asset-repository';
 import { AssetBulkUploadCheckDto } from 'src/immich/api-v1/asset/dto/asset-check.dto';
 import { AssetSearchDto } from 'src/immich/api-v1/asset/dto/asset-search.dto';
@@ -27,8 +29,6 @@ import { AssetFileUploadResponseDto } from 'src/immich/api-v1/asset/response-dto
 import { CheckExistingAssetsResponseDto } from 'src/immich/api-v1/asset/response-dto/check-existing-assets-response.dto';
 import { CuratedLocationsResponseDto } from 'src/immich/api-v1/asset/response-dto/curated-locations-response.dto';
 import { CuratedObjectsResponseDto } from 'src/immich/api-v1/asset/response-dto/curated-objects-response.dto';
-import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType } from 'src/infra/entities/asset.entity';
-import { LibraryType } from 'src/infra/entities/library.entity';
 import { ImmichLogger } from 'src/infra/logger';
 import { IAccessRepository } from 'src/interfaces/access.repository';
 import { IAssetRepository } from 'src/interfaces/asset.repository';

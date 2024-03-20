@@ -1,8 +1,8 @@
 import { Stats } from 'node:fs';
 import { JobName } from 'src/domain/job/job.constants';
 import { MediaService } from 'src/domain/media/media.service';
-import { AssetType } from 'src/infra/entities/asset.entity';
-import { ExifEntity } from 'src/infra/entities/exif.entity';
+import { AssetType } from 'src/entities/asset.entity';
+import { ExifEntity } from 'src/entities/exif.entity';
 import {
   AudioCodec,
   Colorspace,
@@ -11,7 +11,7 @@ import {
   TranscodeHWAccel,
   TranscodePolicy,
   VideoCodec,
-} from 'src/infra/entities/system-config.entity';
+} from 'src/entities/system-config.entity';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.repository';
 import { ICryptoRepository } from 'src/interfaces/crypto.repository';
 import { IJobRepository, JobStatus } from 'src/interfaces/job.repository';

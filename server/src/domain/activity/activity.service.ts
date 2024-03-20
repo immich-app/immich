@@ -12,7 +12,7 @@ import {
   mapActivity,
 } from 'src/domain/activity/activity.dto';
 import { AuthDto } from 'src/domain/auth/auth.dto';
-import { ActivityEntity } from 'src/infra/entities/activity.entity';
+import { ActivityEntity } from 'src/entities/activity.entity';
 import { IAccessRepository } from 'src/interfaces/access.repository';
 import { IActivityRepository } from 'src/interfaces/activity.repository';
 

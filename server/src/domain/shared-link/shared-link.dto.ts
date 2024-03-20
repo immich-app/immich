@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsString } from 'class-validator';
-import { SharedLinkType } from 'src/infra/entities/shared-link.entity';
+import { SharedLinkType } from 'src/entities/shared-link.entity';
 import { Optional, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
 
 export class SharedLinkCreateDto {

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { TagEntity, TagType } from 'src/infra/entities/tag.entity';
+import { TagEntity, TagType } from 'src/entities/tag.entity';
 
 export class TagResponseDto {
   id!: string;

@@ -1,7 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { PartnerResponseDto } from 'src/domain/partner/partner.dto';
 import { PartnerService } from 'src/domain/partner/partner.service';
-import { UserAvatarColor } from 'src/infra/entities/user.entity';
+import { UserAvatarColor } from 'src/entities/user.entity';
 import { IAccessRepository } from 'src/interfaces/access.repository';
 import { IPartnerRepository, PartnerDirection } from 'src/interfaces/partner.repository';
 import { authStub } from 'test/fixtures/auth.stub';

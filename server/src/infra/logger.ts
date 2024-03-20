@@ -1,6 +1,6 @@
 import { ConsoleLogger } from '@nestjs/common';
 import { isLogLevelEnabled } from '@nestjs/common/services/utils/is-log-level-enabled.util';
-import { LogLevel } from 'src/infra/entities/system-config.entity';
+import { LogLevel } from 'src/entities/system-config.entity';
 
 const LOG_LEVELS = [LogLevel.VERBOSE, LogLevel.DEBUG, LogLevel.LOG, LogLevel.WARN, LogLevel.ERROR, LogLevel.FATAL];
 

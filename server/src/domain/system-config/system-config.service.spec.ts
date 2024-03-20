@@ -14,7 +14,7 @@ import {
   TranscodeHWAccel,
   TranscodePolicy,
   VideoCodec,
-} from 'src/infra/entities/system-config.entity';
+} from 'src/entities/system-config.entity';
 import { ImmichLogger } from 'src/infra/logger';
 import { ICommunicationRepository, ServerEvent } from 'src/interfaces/communication.repository';
 import { ISearchRepository } from 'src/interfaces/search.repository';
