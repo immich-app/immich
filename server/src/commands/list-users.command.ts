@@ -1,6 +1,6 @@
 import { Command, CommandRunner } from 'nest-commander';
 import { UserService } from 'src/domain/user/user.service';
-import { CLI_USER } from 'src/immich-admin/constants';
+import { UserEntity } from 'src/infra/entities/user.entity';
 
 @Command({
   name: 'list-users',
@@ -13,7 +13,16 @@ export class ListUsersCommand extends CommandRunner {
 
   async run(): Promise<void> {
     try {
-      const users = await this.userService.getAll(CLI_USER, true);
+      const users = await this.userService.getAll(
+        {
+          user: {
+            id: 'cli',
+            email: 'cli@immich.app',
+            isAdmin: true,
+          } as UserEntity,
+        },
+        true,
+      );
       console.dir(users);
     } catch (error) {
       console.error(error);
