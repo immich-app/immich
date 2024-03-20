@@ -21,7 +21,6 @@ import { MapMarkerResponseDto } from 'src/domain/asset/response-dto/map-marker-r
 import { TimeBucketResponseDto } from 'src/domain/asset/response-dto/time-bucket-response.dto';
 import { AuthDto } from 'src/domain/auth/auth.dto';
 import { mimeTypes } from 'src/domain/domain.constant';
-import { usePagination } from 'src/domain/domain.util';
 import { JOBS_ASSET_PAGINATION_SIZE, JobName } from 'src/domain/job/job.constants';
 import { IAssetDeletionJob, ISidecarWriteJob } from 'src/domain/job/job.interface';
 import { IAccessRepository } from 'src/domain/repositories/access.repository';
@@ -38,6 +37,7 @@ import { SystemConfigCore } from 'src/domain/system-config/system-config.core';
 import { AssetEntity } from 'src/infra/entities/asset.entity';
 import { LibraryType } from 'src/infra/entities/library.entity';
 import { ImmichLogger } from 'src/infra/logger';
+import { usePagination } from 'src/utils';
 
 export enum UploadFieldName {
   ASSET_DATA = 'assetData',

@@ -7,9 +7,9 @@ import {
   NestInterceptor,
 } from '@nestjs/common';
 import { Observable, catchError, throwError } from 'rxjs';
-import { isConnectionAborted } from 'src/domain/domain.util';
 import { routeToErrorMessage } from 'src/immich/app.utils';
 import { ImmichLogger } from 'src/infra/logger';
+import { isConnectionAborted } from 'src/utils';
 
 @Injectable()
 export class ErrorInterceptor implements NestInterceptor {

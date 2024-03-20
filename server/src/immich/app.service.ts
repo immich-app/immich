@@ -6,13 +6,13 @@ import { join } from 'node:path';
 import { AuthService } from 'src/domain/auth/auth.service';
 import { DatabaseService } from 'src/domain/database/database.service';
 import { ONE_HOUR, WEB_ROOT } from 'src/domain/domain.constant';
-import { OpenGraphTags } from 'src/domain/domain.util';
 import { JobService } from 'src/domain/job/job.service';
 import { ServerInfoService } from 'src/domain/server-info/server-info.service';
 import { SharedLinkService } from 'src/domain/shared-link/shared-link.service';
 import { StorageService } from 'src/domain/storage/storage.service';
 import { SystemConfigService } from 'src/domain/system-config/system-config.service';
 import { ImmichLogger } from 'src/infra/logger';
+import { OpenGraphTags } from 'src/utils';
 
 const render = (index: string, meta: OpenGraphTags) => {
   const tags = `

@@ -7,7 +7,6 @@ import { Stats } from 'node:fs';
 import path, { basename, parse } from 'node:path';
 import picomatch from 'picomatch';
 import { mimeTypes } from 'src/domain/domain.constant';
-import { handlePromiseError, usePagination } from 'src/domain/domain.util';
 import { JOBS_ASSET_PAGINATION_SIZE, JobName } from 'src/domain/job/job.constants';
 import { IBaseJob, IEntityJob, ILibraryFileJob, ILibraryRefreshJob } from 'src/domain/job/job.interface';
 import {
@@ -35,6 +34,7 @@ import { SystemConfigCore } from 'src/domain/system-config/system-config.core';
 import { AssetType } from 'src/infra/entities/asset.entity';
 import { LibraryEntity, LibraryType } from 'src/infra/entities/library.entity';
 import { ImmichLogger } from 'src/infra/logger';
+import { handlePromiseError, usePagination } from 'src/utils';
 import { validateCronExpression } from 'src/validation';
 
 const LIBRARY_SCAN_BATCH_SIZE = 5000;

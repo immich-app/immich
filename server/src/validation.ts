@@ -157,3 +157,8 @@ type IValue = { value: string };
 export const toEmail = ({ value }: IValue) => value?.toLowerCase();
 
 export const toSanitized = ({ value }: IValue) => sanitize((value || '').replaceAll('.', ''));
+
+export const isValidInteger = (value: number, options: { min?: number; max?: number }): value is number => {
+  const { min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER } = options;
+  return Number.isInteger(value) && value >= min && value <= max;
+};

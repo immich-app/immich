@@ -1,10 +1,10 @@
-import { Paginated, PaginationOptions } from 'src/domain/domain.util';
 import { ReverseGeocodeResult } from 'src/domain/repositories/metadata.repository';
 import { AssetSearchOptions, SearchExploreItem } from 'src/domain/repositories/search.repository';
 import { AssetOrder } from 'src/infra/entities/album.entity';
 import { AssetJobStatusEntity } from 'src/infra/entities/asset-job-status.entity';
 import { AssetEntity, AssetType } from 'src/infra/entities/asset.entity';
 import { ExifEntity } from 'src/infra/entities/exif.entity';
+import { Paginated, PaginationOptions } from 'src/utils';
 import { FindOptionsRelations, FindOptionsSelect } from 'typeorm';
 
 export type AssetStats = Record<AssetType, number>;

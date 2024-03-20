@@ -6,6 +6,7 @@ import { getName } from 'i18n-iso-countries';
 import { createReadStream, existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import readLine from 'node:readline';
+import { DummyValue, GenerateSql } from 'src/decorators';
 import {
   citiesFile,
   geodataAdmin1Path,
@@ -23,7 +24,6 @@ import { ISystemMetadataRepository } from 'src/domain/repositories/system-metada
 import { ExifEntity } from 'src/infra/entities/exif.entity';
 import { GeodataPlacesEntity } from 'src/infra/entities/geodata-places.entity';
 import { SystemMetadataKey } from 'src/infra/entities/system-metadata.entity';
-import { DummyValue, GenerateSql } from 'src/infra/infra.util';
 import { Instrumentation } from 'src/infra/instrumentation';
 import { ImmichLogger } from 'src/infra/logger';
 import { DataSource, QueryRunner, Repository } from 'typeorm';

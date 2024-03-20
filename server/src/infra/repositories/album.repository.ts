@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import _ from 'lodash';
-import { setUnion } from 'src/domain/domain.util';
+import { Chunked, ChunkedArray, DATABASE_PARAMETER_CHUNK_SIZE, DummyValue, GenerateSql } from 'src/decorators';
 import {
   AlbumAsset,
   AlbumAssetCount,
@@ -12,9 +12,8 @@ import {
 import { dataSource } from 'src/infra/database.config';
 import { AlbumEntity } from 'src/infra/entities/album.entity';
 import { AssetEntity } from 'src/infra/entities/asset.entity';
-import { DATABASE_PARAMETER_CHUNK_SIZE, DummyValue, GenerateSql } from 'src/infra/infra.util';
-import { Chunked, ChunkedArray } from 'src/infra/infra.utils';
 import { Instrumentation } from 'src/infra/instrumentation';
+import { setUnion } from 'src/utils';
 import { DataSource, FindOptionsOrder, FindOptionsRelations, In, IsNull, Not, Repository } from 'typeorm';
 
 @Instrumentation()

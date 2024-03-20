@@ -3,12 +3,12 @@ import { DateTime } from 'luxon';
 import { AccessCore, Permission } from 'src/domain/access/access.core';
 import { BulkIdsDto } from 'src/domain/asset/response-dto/asset-ids-response.dto';
 import { AuthDto } from 'src/domain/auth/auth.dto';
-import { usePagination } from 'src/domain/domain.util';
 import { JOBS_ASSET_PAGINATION_SIZE, JobName } from 'src/domain/job/job.constants';
 import { IAccessRepository } from 'src/domain/repositories/access.repository';
 import { IAssetRepository } from 'src/domain/repositories/asset.repository';
 import { ClientEvent, ICommunicationRepository } from 'src/domain/repositories/communication.repository';
 import { IJobRepository } from 'src/domain/repositories/job.repository';
+import { usePagination } from 'src/utils';
 
 export class TrashService {
   private access: AccessCore;

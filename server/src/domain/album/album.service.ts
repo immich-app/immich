@@ -14,7 +14,6 @@ import { AlbumInfoDto } from 'src/domain/album/dto/album.dto';
 import { GetAlbumsDto } from 'src/domain/album/dto/get-albums.dto';
 import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto } from 'src/domain/asset/response-dto/asset-ids-response.dto';
 import { AuthDto } from 'src/domain/auth/auth.dto';
-import { setUnion } from 'src/domain/domain.util';
 import { IAccessRepository } from 'src/domain/repositories/access.repository';
 import { AlbumAssetCount, AlbumInfoOptions, IAlbumRepository } from 'src/domain/repositories/album.repository';
 import { IAssetRepository } from 'src/domain/repositories/asset.repository';
@@ -22,6 +21,7 @@ import { IUserRepository } from 'src/domain/repositories/user.repository';
 import { AlbumEntity } from 'src/infra/entities/album.entity';
 import { AssetEntity } from 'src/infra/entities/asset.entity';
 import { UserEntity } from 'src/infra/entities/user.entity';
+import { setUnion } from 'src/utils';
 
 @Injectable()
 export class AlbumService {

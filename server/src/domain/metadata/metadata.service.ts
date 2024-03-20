@@ -6,7 +6,6 @@ import { Duration } from 'luxon';
 import { constants } from 'node:fs/promises';
 import path from 'node:path';
 import { Subscription } from 'rxjs';
-import { handlePromiseError, usePagination } from 'src/domain/domain.util';
 import { JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from 'src/domain/job/job.constants';
 import { IBaseJob, IEntityJob, ISidecarWriteJob } from 'src/domain/job/job.interface';
 import { IAlbumRepository } from 'src/domain/repositories/album.repository';
@@ -26,6 +25,7 @@ import { FeatureFlag, SystemConfigCore } from 'src/domain/system-config/system-c
 import { AssetEntity, AssetType } from 'src/infra/entities/asset.entity';
 import { ExifEntity } from 'src/infra/entities/exif.entity';
 import { ImmichLogger } from 'src/infra/logger';
+import { handlePromiseError, usePagination } from 'src/utils';
 
 /** look for a date from these tags (in order) */
 const EXIF_DATE_TAGS: Array<keyof Tags> = [
