@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/search/models/curated_content.dart';
 import 'package:immich_mobile/modules/search/ui/thumbnail_with_info.dart';
@@ -23,7 +24,7 @@ class CuratedPeopleRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const imageSize = 85.0;
+    const imageSize = 70.0;
 
     // Guard empty [content]
     if (content.isEmpty) {
@@ -82,11 +83,11 @@ class CuratedPeopleRow extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.only(top: 8.0),
                       child: Text(
-                        "Add name",
+                        "exif_bottom_sheet_person_add_person",
                         style: context.textTheme.labelLarge?.copyWith(
                           color: context.primaryColor,
                         ),
-                      ),
+                      ).tr(),
                     ),
                   )
                 else

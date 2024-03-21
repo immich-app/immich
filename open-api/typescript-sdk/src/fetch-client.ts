@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.98.2
+ * 1.99.0
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -466,7 +466,7 @@ export type CreateLibraryDto = {
     isVisible?: boolean;
     isWatched?: boolean;
     name?: string;
-    ownerId?: string;
+    ownerId: string;
     "type": LibraryType;
 };
 export type UpdateLibraryDto = {
@@ -491,7 +491,7 @@ export type ValidateLibraryDto = {
 };
 export type ValidateLibraryImportPathResponseDto = {
     importPath: string;
-    isValid?: boolean;
+    isValid: boolean;
     message?: string;
 };
 export type ValidateLibraryResponseDto = {
@@ -2201,6 +2201,14 @@ export function search({ clip, motion, page, q, query, recent, size, smart, $typ
         "type": $type,
         withArchived
     }))}`, {
+        ...opts
+    }));
+}
+export function getAssetsByCity(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetResponseDto[];
+    }>("/search/cities", {
         ...opts
     }));
 }

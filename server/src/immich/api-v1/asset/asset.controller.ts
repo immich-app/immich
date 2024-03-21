@@ -1,4 +1,3 @@
-import { AssetResponseDto, AuthDto } from '@app/domain';
 import {
   Body,
   Controller,
@@ -16,23 +15,24 @@ import {
 } from '@nestjs/common';
 import { ApiBody, ApiConsumes, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
-import { Auth, Authenticated, FileResponse, SharedLinkRoute } from '../../app.guard';
-import { sendFile } from '../../app.utils';
-import { UUIDParamDto } from '../../controllers/dto/uuid-param.dto';
-import { FileUploadInterceptor, ImmichFile, Route, mapToUploadFile } from '../../interceptors';
-import FileNotEmptyValidator from '../validation/file-not-empty-validator';
-import { AssetService as AssetServiceV1 } from './asset.service';
-import { AssetBulkUploadCheckDto } from './dto/asset-check.dto';
-import { AssetSearchDto } from './dto/asset-search.dto';
-import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
-import { CreateAssetDto } from './dto/create-asset.dto';
-import { GetAssetThumbnailDto } from './dto/get-asset-thumbnail.dto';
-import { ServeFileDto } from './dto/serve-file.dto';
-import { AssetBulkUploadCheckResponseDto } from './response-dto/asset-check-response.dto';
-import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
-import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
-import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
-import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
+import { AssetResponseDto } from 'src/dtos/asset-response.dto';
+import { AuthDto } from 'src/dtos/auth.dto';
+import { AssetService as AssetServiceV1 } from 'src/immich/api-v1/asset/asset.service';
+import { AssetBulkUploadCheckDto } from 'src/immich/api-v1/asset/dto/asset-check.dto';
+import { AssetSearchDto } from 'src/immich/api-v1/asset/dto/asset-search.dto';
+import { CheckExistingAssetsDto } from 'src/immich/api-v1/asset/dto/check-existing-assets.dto';
+import { CreateAssetDto } from 'src/immich/api-v1/asset/dto/create-asset.dto';
+import { GetAssetThumbnailDto } from 'src/immich/api-v1/asset/dto/get-asset-thumbnail.dto';
+import { ServeFileDto } from 'src/immich/api-v1/asset/dto/serve-file.dto';
+import { AssetBulkUploadCheckResponseDto } from 'src/immich/api-v1/asset/response-dto/asset-check-response.dto';
+import { AssetFileUploadResponseDto } from 'src/immich/api-v1/asset/response-dto/asset-file-upload-response.dto';
+import { CheckExistingAssetsResponseDto } from 'src/immich/api-v1/asset/response-dto/check-existing-assets-response.dto';
+import { CuratedLocationsResponseDto } from 'src/immich/api-v1/asset/response-dto/curated-locations-response.dto';
+import { CuratedObjectsResponseDto } from 'src/immich/api-v1/asset/response-dto/curated-objects-response.dto';
+import { sendFile } from 'src/immich/app.utils';
+import { Auth, Authenticated, FileResponse, SharedLinkRoute } from 'src/middleware/auth.guard';
+import { FileUploadInterceptor, ImmichFile, Route, mapToUploadFile } from 'src/middleware/file-upload.interceptor';
+import { FileNotEmptyValidator, UUIDParamDto } from 'src/validation';
 
 interface UploadFiles {
   assetData: ImmichFile[];

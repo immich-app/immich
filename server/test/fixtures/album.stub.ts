@@ -1,7 +1,7 @@
-import { AlbumEntity, AssetOrder } from '@app/infra/entities';
-import { assetStub } from './asset.stub';
-import { authStub } from './auth.stub';
-import { userStub } from './user.stub';
+import { AlbumEntity, AssetOrder } from 'src/entities/album.entity';
+import { assetStub } from 'test/fixtures/asset.stub';
+import { authStub } from 'test/fixtures/auth.stub';
+import { userStub } from 'test/fixtures/user.stub';
 
 export const albumStub = {
   empty: Object.freeze<AlbumEntity>({

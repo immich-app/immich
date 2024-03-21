@@ -1,48 +1,42 @@
 import {
-  AccessCore,
-  AssetResponseDto,
-  AuthDto,
-  CacheControl,
-  IAccessRepository,
-  IAssetRepository,
-  IJobRepository,
-  ILibraryRepository,
-  IStorageRepository,
-  IUserRepository,
-  ImmichFileResponse,
-  JobName,
-  Permission,
-  UploadFile,
-  getLivePhotoMotionFilename,
-  mapAsset,
-  mimeTypes,
-} from '@app/domain';
-import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType, LibraryType } from '@app/infra/entities';
-import { ImmichLogger } from '@app/infra/logger';
-import {
   BadRequestException,
   Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { QueryFailedError } from 'typeorm';
-import { IAssetRepositoryV1 } from './asset-repository';
-import { AssetBulkUploadCheckDto } from './dto/asset-check.dto';
-import { AssetSearchDto } from './dto/asset-search.dto';
-import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
-import { CreateAssetDto } from './dto/create-asset.dto';
-import { GetAssetThumbnailDto, GetAssetThumbnailFormatEnum } from './dto/get-asset-thumbnail.dto';
-import { ServeFileDto } from './dto/serve-file.dto';
+import { AccessCore, Permission } from 'src/cores/access.core';
+import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
+import { AuthDto } from 'src/dtos/auth.dto';
+import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType } from 'src/entities/asset.entity';
+import { LibraryType } from 'src/entities/library.entity';
+import { IAssetRepositoryV1 } from 'src/immich/api-v1/asset/asset-repository';
+import { AssetBulkUploadCheckDto } from 'src/immich/api-v1/asset/dto/asset-check.dto';
+import { AssetSearchDto } from 'src/immich/api-v1/asset/dto/asset-search.dto';
+import { CheckExistingAssetsDto } from 'src/immich/api-v1/asset/dto/check-existing-assets.dto';
+import { CreateAssetDto } from 'src/immich/api-v1/asset/dto/create-asset.dto';
+import { GetAssetThumbnailDto, GetAssetThumbnailFormatEnum } from 'src/immich/api-v1/asset/dto/get-asset-thumbnail.dto';
+import { ServeFileDto } from 'src/immich/api-v1/asset/dto/serve-file.dto';
 import {
   AssetBulkUploadCheckResponseDto,
   AssetRejectReason,
   AssetUploadAction,
-} from './response-dto/asset-check-response.dto';
-import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
-import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
-import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
-import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
+} from 'src/immich/api-v1/asset/response-dto/asset-check-response.dto';
+import { AssetFileUploadResponseDto } from 'src/immich/api-v1/asset/response-dto/asset-file-upload-response.dto';
+import { CheckExistingAssetsResponseDto } from 'src/immich/api-v1/asset/response-dto/check-existing-assets-response.dto';
+import { CuratedLocationsResponseDto } from 'src/immich/api-v1/asset/response-dto/curated-locations-response.dto';
+import { CuratedObjectsResponseDto } from 'src/immich/api-v1/asset/response-dto/curated-objects-response.dto';
+import { IAccessRepository } from 'src/interfaces/access.interface';
+import { IAssetRepository } from 'src/interfaces/asset.interface';
+import { IJobRepository, JobName } from 'src/interfaces/job.interface';
+import { ILibraryRepository } from 'src/interfaces/library.interface';
+import { IStorageRepository } from 'src/interfaces/storage.interface';
+import { IUserRepository } from 'src/interfaces/user.interface';
+import { UploadFile } from 'src/services/asset.service';
+import { CacheControl, ImmichFileResponse, getLivePhotoMotionFilename } from 'src/utils/file';
+import { ImmichLogger } from 'src/utils/logger';
+import { mimeTypes } from 'src/utils/mime-types';
+import { QueryFailedError } from 'typeorm';
 
 @Injectable()
 export class AssetService {

@@ -20,7 +20,7 @@
 
   const dispatch = createEventDispatcher<{
     cancel: void;
-    submit: { ownerId: string | null };
+    submit: { ownerId: string };
     delete: void;
   }>();
 

@@ -234,33 +234,9 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     for (AssetPathEntity album in albums) {
       AvailableAlbum availableAlbum = AvailableAlbum(albumEntity: album);
 
-      final assetCountInAlbum = await album.assetCountAsync;
-      if (assetCountInAlbum > 0) {
-        final assetList = await album.getAssetListPaged(page: 0, size: 1);
+      availableAlbums.add(availableAlbum);
 
-        // Even though we check assetCountInAlbum to make sure that there are assets in album
-        // The `getAssetListPaged` method still return empty list and cause not assets get rendered
-        if (assetList.isEmpty) {
-          continue;
-        }
-        final thumbnailAsset = assetList.first;
-        try {
-          final thumbnailData = await thumbnailAsset
-              .thumbnailDataWithSize(const ThumbnailSize(512, 512));
-          availableAlbum =
-              availableAlbum.copyWith(thumbnailData: thumbnailData);
-        } catch (e, stack) {
-          log.severe(
-            "Failed to get thumbnail for album ${album.name}",
-            e,
-            stack,
-          );
-        }
-
-        availableAlbums.add(availableAlbum);
-
-        albumMap[album.id] = album;
-      }
+      albumMap[album.id] = album;
     }
     state = state.copyWith(availableAlbums: availableAlbums);
 

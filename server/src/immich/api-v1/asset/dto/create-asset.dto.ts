@@ -1,6 +1,7 @@
-import { Optional, UploadFieldName, ValidateBoolean, ValidateDate, ValidateUUID } from '@app/domain';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString } from 'class-validator';
+import { UploadFieldName } from 'src/dtos/asset.dto';
+import { Optional, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
 
 export class CreateAssetDto {
   @ValidateUUID({ optional: true })
