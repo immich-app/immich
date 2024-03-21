@@ -43,6 +43,11 @@
       map.setZoom(15);
     }
   }
+  export function removeClipMapMarker() {
+    if (marker) {
+      marker.remove();
+    }
+  }
 
   let map: maplibregl.Map;
   let marker: maplibregl.Marker | null = null;

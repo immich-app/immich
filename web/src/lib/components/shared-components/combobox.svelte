@@ -18,6 +18,7 @@
   import type { FormEventHandler } from 'svelte/elements';
   import { shortcuts } from '$lib/utils/shortcut';
   import { clickOutside } from '$lib/utils/click-outside';
+  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
 
   /**
    * Unique identifier for the combobox.
@@ -28,6 +29,9 @@
   export let options: ComboBoxOption[] = [];
   export let selectedOption: ComboBoxOption | undefined;
   export let placeholder = '';
+  export let enableFiltering: boolean = true;
+  export let showSpinner: boolean = false;
+  export let noResultsMessage = 'No results';
 
   /**
    * Indicates whether or not the dropdown autocomplete list should be visible.
@@ -40,10 +44,15 @@
   let searchQuery = selectedOption?.label || '';
   let selectedIndex: number | undefined;
   let optionRefs: HTMLElement[] = [];
+  let filteredOptions: ComboBoxOption[] = [];
   const inputId = `combobox-${id}`;
   const listboxId = `listbox-${id}`;
 
-  $: filteredOptions = options.filter((option) => option.label.toLowerCase().includes(searchQuery.toLowerCase()));
+  $: {
+    filteredOptions = enableFiltering
+      ? options.filter((option) => option.label.toLowerCase().includes(searchQuery.toLowerCase()))
+      : options;
+  }
 
   $: {
     searchQuery = selectedOption ? selectedOption.label : '';
@@ -51,7 +60,8 @@
 
   const dispatch = createEventDispatcher<{
     select: ComboBoxOption | undefined;
-    click: void;
+    input: string;
+    focusOut: string;
   }>();
 
   const activate = () => {
@@ -90,6 +100,7 @@
     openDropdown();
     searchQuery = event.currentTarget.value;
     selectedIndex = undefined;
+    dispatch('input', searchQuery);
     optionRefs[0]?.scrollIntoView({ block: 'nearest' });
   };
 
@@ -114,6 +125,7 @@
   on:focusout={(e) => {
     if (e.relatedTarget instanceof Node && !e.currentTarget.contains(e.relatedTarget)) {
       deactivate();
+      dispatch('focusOut', searchQuery);
     }
   }}
 >
@@ -196,6 +208,12 @@
         <Icon path={mdiUnfoldMoreHorizontal} ariaHidden={true} />
       {/if}
     </div>
+
+    {#if showSpinner}
+      <div class="absolute right-10 top-0 h-full flex items-center">
+        <LoadingSpinner />
+      </div>
+    {/if}
   </div>
 
   <ul
@@ -219,7 +237,7 @@
           id={`${listboxId}-${0}`}
           on:click={() => closeDropdown()}
         >
-          No results
+          {noResultsMessage}
         </li>
       {/if}
       {#each filteredOptions as option, index (option.label)}

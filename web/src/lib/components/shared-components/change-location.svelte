@@ -4,13 +4,11 @@
   import { timeBeforeShowLoadingSpinner } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
 
-  import { clickOutside } from '$lib/utils/click-outside';
   import LoadingSpinner from './loading-spinner.svelte';
   import { delay } from '$lib/utils/asset-utils';
   import { timeToLoadTheMap } from '$lib/constants';
   import { searchPlaces, type AssetResponseDto, type PlacesResponseDto } from '@immich/sdk';
-  import SearchBar from '../elements/search-bar.svelte';
-  import { listNavigation } from '$lib/utils/list-navigation';
+  import Combobox, { type ComboBoxOption } from '$lib/components/shared-components/combobox.svelte';
 
   export const title = 'Change Location';
   export let asset: AssetResponseDto | undefined = undefined;
@@ -21,13 +19,12 @@
   }
 
   let places: PlacesResponseDto[] = [];
-  let suggestedPlaces: PlacesResponseDto[] = [];
-  let searchWord: string;
+  let suggestedPlaces: ComboBoxOption[] = [];
+  let searchWord: string = '';
   let isSearching = false;
   let showSpinner = false;
-  let suggestionContainer: HTMLDivElement;
-  let hideSuggestion = false;
   let addClipMapMarker: (long: number, lat: number) => void;
+  let removeClipMapMarker: () => void;
 
   const dispatch = createEventDispatcher<{
     cancel: void;
@@ -37,10 +34,11 @@
   $: lat = asset?.exifInfo?.latitude || 0;
   $: lng = asset?.exifInfo?.longitude || 0;
   $: zoom = lat && lng ? 15 : 1;
+  $: noResultsMessage = suggestedPlaces.length === 0 && searchWord === '' ? 'Start typing to search' : 'No results';
 
   $: {
     if (places) {
-      suggestedPlaces = places.slice(0, 5);
+      suggestedPlaces = places.slice(0, 5).map((place) => convertToComboBoxOption(place));
     }
     if (searchWord === '') {
       suggestedPlaces = [];
@@ -63,8 +61,14 @@
     }
   };
 
-  const getLocation = (name: string, admin1Name?: string, admin2Name?: string): string => {
-    return `${name}${admin1Name ? ', ' + admin1Name : ''}${admin2Name ? ', ' + admin2Name : ''}`;
+  const handleUseSuggested = (latitude?: number, longitude?: number) => {
+    if (!latitude || !longitude) {
+      point = null;
+      removeClipMapMarker();
+      return;
+    }
+    point = { lng: longitude, lat: latitude };
+    addClipMapMarker(longitude, latitude);
   };
 
   const handleSearchPlaces = async () => {
@@ -87,10 +91,15 @@
     }
   };
 
-  const handleUseSuggested = (latitude: number, longitude: number) => {
-    hideSuggestion = true;
-    point = { lng: longitude, lat: latitude };
-    addClipMapMarker(longitude, latitude);
+  const getLocation = (name: string, admin1Name?: string, admin2Name?: string): string => {
+    return `${name}${admin1Name ? ', ' + admin1Name : ''}${admin2Name ? ', ' + admin2Name : ''}`;
+  };
+
+  const convertToComboBoxOption = (place: PlacesResponseDto): ComboBoxOption => {
+    return {
+      label: getLocation(place.name, place.admin1name, place.admin2name),
+      value: `${place.latitude},${place.longitude}`,
+    };
   };
 </script>
 
@@ -103,43 +112,39 @@
   onClose={handleCancel}
 >
   <div slot="prompt" class="flex flex-col w-full h-full gap-2">
-    <div
-      class="relative w-64 sm:w-96"
-      use:clickOutside={{ onOutclick: () => (hideSuggestion = true) }}
-      use:listNavigation={suggestionContainer}
-    >
-      <button class="w-full" on:click={() => (hideSuggestion = false)}>
-        <SearchBar
-          placeholder="Search places"
-          bind:name={searchWord}
-          isSearching={showSpinner}
-          on:reset={() => {
+    <div class="w-64 sm:w-96">
+      <Combobox
+        id="aCombobox"
+        label="Search for a city"
+        options={suggestedPlaces}
+        selectedOption={undefined}
+        placeholder="City name"
+        on:select={({ detail }) => {
+          if (!detail) {
+            handleUseSuggested();
+            return;
+          }
+          const [lat, lng] = detail.value.split(',');
+          handleUseSuggested(+lat, +lng);
+        }}
+        on:input={({ detail: query }) => {
+          searchWord = query;
+          void handleSearchPlaces();
+        }}
+        on:focusOut={({ detail: query }) => {
+          searchWord = query;
+          if (query === '') {
             suggestedPlaces = [];
-          }}
-          on:search={handleSearchPlaces}
-          roundedBottom={suggestedPlaces.length === 0 || hideSuggestion}
-        />
-      </button>
-      <div class="absolute z-[99] w-full" id="suggestion" bind:this={suggestionContainer}>
-        {#if !hideSuggestion}
-          {#each suggestedPlaces as place, index}
-            <button
-              class=" flex w-full border-t border-gray-400 dark:border-immich-dark-gray h-14 place-items-center bg-gray-200 p-2 dark:bg-gray-700 hover:bg-gray-300 hover:dark:bg-[#232932] focus:bg-gray-300 focus:dark:bg-[#232932] {index ===
-              suggestedPlaces.length - 1
-                ? 'rounded-b-lg border-b'
-                : ''}"
-              on:click={() => handleUseSuggested(place.latitude, place.longitude)}
-            >
-              <p class="ml-4 text-sm text-gray-700 dark:text-gray-100 truncate">
-                {getLocation(place.name, place.admin1name, place.admin2name)}
-              </p>
-            </button>
-          {/each}
-        {/if}
-      </div>
+          }
+        }}
+        enableFiltering={false}
+        {noResultsMessage}
+        {showSpinner}
+      />
     </div>
-    <label for="datetime">Pick a location</label>
-    <div class="h-[500px] min-h-[300px] w-full">
+    <div class="h-4" />
+    <label for="datetime" class="text-sm text-black dark:text-white">Choose a point on the map</label>
+    <div class="h-[400px] min-h-[300px] w-full">
       {#await import('../shared-components/map/map.svelte')}
         {#await delay(timeToLoadTheMap) then}
           <!-- show the loading spinner only if loading the map takes too much time -->
@@ -164,6 +169,7 @@
             : []}
           {zoom}
           bind:addClipMapMarker
+          bind:removeClipMapMarker
           center={lat && lng ? { lat, lng } : undefined}
           simplified={true}
           clickable={true}
