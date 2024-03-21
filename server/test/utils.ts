@@ -11,9 +11,9 @@ import { ApiService } from 'src/apps/api.service';
 import { AppModule, AppTestModule } from 'src/apps/app.module';
 import { MicroservicesService } from 'src/apps/microservices.service';
 import { dataSource } from 'src/database.config';
-import { IJobRepository, JobItem, JobItemHandler, QueueName } from 'src/interfaces/job.repository';
-import { IMediaRepository } from 'src/interfaces/media.repository';
-import { StorageEventType } from 'src/interfaces/storage.repository';
+import { IJobRepository, JobItem, JobItemHandler, QueueName } from 'src/interfaces/job.interface';
+import { IMediaRepository } from 'src/interfaces/media.interface';
+import { StorageEventType } from 'src/interfaces/storage.interface';
 import { MediaRepository } from 'src/repositories/media.repository';
 import { EntityTarget, ObjectLiteral } from 'typeorm';
 

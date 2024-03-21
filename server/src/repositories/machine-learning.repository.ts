@@ -8,7 +8,7 @@ import {
   ModelType,
   TextModelInput,
   VisionModelInput,
-} from 'src/interfaces/machine-learning.repository';
+} from 'src/interfaces/machine-learning.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
 
 const errorPrefix = 'Machine learning request';

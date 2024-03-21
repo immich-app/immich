@@ -1,4 +1,4 @@
-import { ILibraryRepository } from 'src/interfaces/library.repository';
+import { ILibraryRepository } from 'src/interfaces/library.interface';
 
 export const newLibraryRepositoryMock = (): jest.Mocked<ILibraryRepository> => {
   return {

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { UserTokenEntity } from 'src/entities/user-token.entity';
-import { IUserTokenRepository } from 'src/interfaces/user-token.repository';
+import { IUserTokenRepository } from 'src/interfaces/user-token.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
 import { Repository } from 'typeorm';
 

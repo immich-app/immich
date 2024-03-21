@@ -6,7 +6,7 @@ import {
   VectorExtension,
   VectorIndex,
   extName,
-} from 'src/interfaces/database.repository';
+} from 'src/interfaces/database.interface';
 import { ImmichLogger } from 'src/utils/logger';
 import { Version, VersionType } from 'src/utils/version';
 

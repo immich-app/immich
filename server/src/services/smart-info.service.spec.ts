@@ -1,11 +1,11 @@
 import { AssetEntity } from 'src/entities/asset.entity';
 import { SystemConfigKey } from 'src/entities/system-config.entity';
-import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.repository';
-import { IDatabaseRepository } from 'src/interfaces/database.repository';
-import { IJobRepository, JobName } from 'src/interfaces/job.repository';
-import { IMachineLearningRepository } from 'src/interfaces/machine-learning.repository';
-import { ISearchRepository } from 'src/interfaces/search.repository';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
+import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
+import { IDatabaseRepository } from 'src/interfaces/database.interface';
+import { IJobRepository, JobName } from 'src/interfaces/job.interface';
+import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
+import { ISearchRepository } from 'src/interfaces/search.interface';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 import { SmartInfoService } from 'src/services/smart-info.service';
 import { getCLIPModelInfo } from 'src/utils/misc';
 import { assetStub } from 'test/fixtures/asset.stub';

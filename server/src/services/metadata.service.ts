@@ -10,11 +10,11 @@ import { StorageCore } from 'src/cores/storage.core';
 import { FeatureFlag, SystemConfigCore } from 'src/cores/system-config.core';
 import { AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
-import { IAlbumRepository } from 'src/interfaces/album.repository';
-import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.repository';
-import { ClientEvent, ICommunicationRepository } from 'src/interfaces/communication.repository';
-import { ICryptoRepository } from 'src/interfaces/crypto.repository';
-import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.repository';
+import { IAlbumRepository } from 'src/interfaces/album.interface';
+import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
+import { ClientEvent, ICommunicationRepository } from 'src/interfaces/communication.interface';
+import { ICryptoRepository } from 'src/interfaces/crypto.interface';
+import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
 import {
   IBaseJob,
   IEntityJob,
@@ -24,13 +24,13 @@ import {
   JobName,
   JobStatus,
   QueueName,
-} from 'src/interfaces/job.repository';
-import { IMediaRepository } from 'src/interfaces/media.repository';
-import { IMetadataRepository, ImmichTags } from 'src/interfaces/metadata.repository';
-import { IMoveRepository } from 'src/interfaces/move.repository';
-import { IPersonRepository } from 'src/interfaces/person.repository';
-import { IStorageRepository } from 'src/interfaces/storage.repository';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
+} from 'src/interfaces/job.interface';
+import { IMediaRepository } from 'src/interfaces/media.interface';
+import { IMetadataRepository, ImmichTags } from 'src/interfaces/metadata.interface';
+import { IMoveRepository } from 'src/interfaces/move.interface';
+import { IPersonRepository } from 'src/interfaces/person.interface';
+import { IStorageRepository } from 'src/interfaces/storage.interface';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 import { ImmichLogger } from 'src/utils/logger';
 import { handlePromiseError } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';

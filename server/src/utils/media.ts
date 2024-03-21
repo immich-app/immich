@@ -7,7 +7,7 @@ import {
   VideoCodecHWConfig,
   VideoCodecSWConfig,
   VideoStreamInfo,
-} from 'src/interfaces/media.repository';
+} from 'src/interfaces/media.interface';
 
 class BaseConfig implements VideoCodecSWConfig {
   presets = ['veryslow', 'slower', 'slow', 'medium', 'fast', 'faster', 'veryfast', 'superfast', 'ultrafast'];

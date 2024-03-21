@@ -1,4 +1,4 @@
-import { IDatabaseRepository } from 'src/interfaces/database.repository';
+import { IDatabaseRepository } from 'src/interfaces/database.interface';
 import { Version } from 'src/utils/version';
 
 export const newDatabaseRepositoryMock = (): jest.Mocked<IDatabaseRepository> => {

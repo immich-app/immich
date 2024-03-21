@@ -14,7 +14,7 @@ import { access, constants } from 'node:fs/promises';
 import path, { isAbsolute } from 'node:path';
 import { promisify } from 'node:util';
 import { IMMICH_ACCESS_COOKIE, IMMICH_API_KEY_HEADER, IMMICH_API_KEY_NAME, serverVersion } from 'src/constants';
-import { ImmichReadStream } from 'src/interfaces/storage.repository';
+import { ImmichReadStream } from 'src/interfaces/storage.interface';
 import { Metadata } from 'src/middleware/auth.guard';
 import { CacheControl, ImmichFileResponse } from 'src/utils/file';
 import { ImmichLogger } from 'src/utils/logger';

@@ -1,6 +1,6 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { SystemMetadata, SystemMetadataEntity } from 'src/entities/system-metadata.entity';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.repository';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
 import { Repository } from 'typeorm';
 

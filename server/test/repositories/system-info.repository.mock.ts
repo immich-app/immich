@@ -1,4 +1,4 @@
-import { IServerInfoRepository } from 'src/interfaces/server-info.repository';
+import { IServerInfoRepository } from 'src/interfaces/server-info.interface';
 
 export const newServerInfoRepositoryMock = (): jest.Mocked<IServerInfoRepository> => {
   return {

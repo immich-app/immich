@@ -23,9 +23,9 @@ import {
 } from 'src/dtos/person.dto';
 import { PersonPathType } from 'src/entities/move.entity';
 import { PersonEntity } from 'src/entities/person.entity';
-import { IAccessRepository } from 'src/interfaces/access.repository';
-import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.repository';
-import { ICryptoRepository } from 'src/interfaces/crypto.repository';
+import { IAccessRepository } from 'src/interfaces/access.interface';
+import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
+import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import {
   IBaseJob,
   IDeferrableJob,
@@ -36,14 +36,14 @@ import {
   JobName,
   JobStatus,
   QueueName,
-} from 'src/interfaces/job.repository';
-import { IMachineLearningRepository } from 'src/interfaces/machine-learning.repository';
-import { CropOptions, IMediaRepository } from 'src/interfaces/media.repository';
-import { IMoveRepository } from 'src/interfaces/move.repository';
-import { IPersonRepository, UpdateFacesData } from 'src/interfaces/person.repository';
-import { ISearchRepository } from 'src/interfaces/search.repository';
-import { IStorageRepository } from 'src/interfaces/storage.repository';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
+} from 'src/interfaces/job.interface';
+import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
+import { CropOptions, IMediaRepository } from 'src/interfaces/media.interface';
+import { IMoveRepository } from 'src/interfaces/move.interface';
+import { IPersonRepository, UpdateFacesData } from 'src/interfaces/person.interface';
+import { ISearchRepository } from 'src/interfaces/search.interface';
+import { IStorageRepository } from 'src/interfaces/storage.interface';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 import { CacheControl, ImmichFileResponse } from 'src/utils/file';
 import { ImmichLogger } from 'src/utils/logger';
 import { mimeTypes } from 'src/utils/mime-types';
