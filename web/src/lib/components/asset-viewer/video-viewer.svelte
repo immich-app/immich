@@ -1,6 +1,5 @@
 <script lang="ts">
   import { loopVideo, videoViewerVolume } from '$lib/stores/preferences.store';
-  import { SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { getAssetFileUrl, getAssetThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { ThumbnailFormat } from '@immich/sdk';
@@ -9,12 +8,10 @@
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
 
   export let assetId: string;
-
-  const { slideshowState } = slideshowStore;
+  export let isSlideshowPlaying: boolean;
 
   let isVideoLoading = true;
   const dispatch = createEventDispatcher<{ onVideoEnded: void; onVideoStarted: void }>();
-  console.log($loopVideo, $slideshowState === SlideshowState.PlaySlideshow);
 
   const handleCanPlay = async (event: Event) => {
     try {
@@ -33,7 +30,7 @@
 
 <div transition:fade={{ duration: 150 }} class="flex h-full select-none place-content-center place-items-center">
   <video
-    loop={$loopVideo && $slideshowState !== SlideshowState.PlaySlideshow}
+    loop={$loopVideo && !isSlideshowPlaying}
     autoplay
     playsinline
     controls

@@ -576,6 +576,7 @@
         {:else}
           <VideoViewer
             assetId={previewStackedAsset.id}
+            isSlideshowPlaying={$slideshowState === SlideshowState.PlaySlideshow}
             on:close={closeViewer}
             on:onVideoEnded={handleVideoEnded}
             on:onVideoStarted={handleVideoStarted}
@@ -596,6 +597,7 @@
           {#if shouldPlayMotionPhoto && asset.livePhotoVideoId}
             <VideoViewer
               assetId={asset.livePhotoVideoId}
+              isSlideshowPlaying={$slideshowState === SlideshowState.PlaySlideshow}
               on:close={closeViewer}
               on:onVideoEnded={() => (shouldPlayMotionPhoto = false)}
             />
@@ -609,6 +611,7 @@
         {:else}
           <VideoViewer
             assetId={asset.id}
+            isSlideshowPlaying={$slideshowState === SlideshowState.PlaySlideshow}
             on:close={closeViewer}
             on:onVideoEnded={handleVideoEnded}
             on:onVideoStarted={handleVideoStarted}
