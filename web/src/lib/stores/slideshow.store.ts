@@ -22,6 +22,7 @@ function createSlideshowStore() {
     SlideshowNavigation.DescendingOrder,
   );
   const slideshowState = writable<SlideshowState>(SlideshowState.None);
+
   const showProgressBar = persisted<boolean>('slideshow-show-progressbar', true);
   const slideshowDelay = persisted<number>('slideshow-delay', 5, {});
 

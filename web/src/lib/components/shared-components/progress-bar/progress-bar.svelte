@@ -8,7 +8,7 @@
 <script lang="ts">
   import { handlePromiseError } from '$lib/utils';
 
-  import { onMount } from 'svelte';
+  import { createEventDispatcher, onMount } from 'svelte';
   import { tweened } from 'svelte/motion';
 
   /**
@@ -26,10 +26,6 @@
 
   export let duration = 5;
 
-  export let onDone: () => void;
-  export let onPlaying: (() => void) | undefined = undefined;
-  export let onPaused: (() => void) | undefined = undefined;
-
   const onChange = async () => {
     progress = setDuration(duration);
     await play();
@@ -41,9 +37,15 @@
 
   $: {
     if ($progress === 1) {
-      onDone();
+      dispatch('done');
     }
   }
+
+  const dispatch = createEventDispatcher<{
+    done: void;
+    playing: void;
+    paused: void;
+  }>();
 
   onMount(async () => {
     if (autoplay) {
@@ -53,13 +55,13 @@
 
   export const play = async () => {
     status = ProgressBarStatus.Playing;
-    onPlaying && onPlaying();
+    dispatch('playing');
     await progress.set(1);
   };
 
   export const pause = async () => {
     status = ProgressBarStatus.Paused;
-    onPaused && onPaused();
+    dispatch('paused');
     await progress.set($progress);
   };
 

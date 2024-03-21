@@ -571,7 +571,7 @@
           onSetToFullScreen={() => assetViewerHtmlElement.requestFullscreen()}
           onPrevious={() => navigateAsset('previous')}
           onNext={() => navigateAsset('next')}
-          onClose={handleStopSlideshow}
+          onClose={() => ($slideshowState = SlideshowState.StopSlideshow)}
         />
       </div>
     {/if}

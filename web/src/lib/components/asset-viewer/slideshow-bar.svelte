@@ -116,5 +116,5 @@
   duration={$slideshowDelay}
   bind:this={progressBar}
   bind:status={progressBarStatus}
-  onDone={handleDone}
+  on:done={handleDone}
 />
