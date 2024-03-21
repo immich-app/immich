@@ -1,11 +1,38 @@
 import { BullModule } from '@nestjs/bullmq';
-import { Global, Module, Provider } from '@nestjs/common';
+import { Module, OnModuleInit, Provider, ValidationPipe } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { OpenTelemetryModule } from 'nestjs-otel';
+import { ListUsersCommand } from 'src/commands/list-users.command';
+import { DisableOAuthLogin, EnableOAuthLogin } from 'src/commands/oauth-login';
+import { DisablePasswordLoginCommand, EnablePasswordLoginCommand } from 'src/commands/password-login';
+import { PromptPasswordQuestions, ResetAdminPasswordCommand } from 'src/commands/reset-admin-password.command';
 import { bullConfig, bullQueues, immichAppConfig } from 'src/config';
+import { ActivityController } from 'src/controllers/activity.controller';
+import { AlbumController } from 'src/controllers/album.controller';
+import { APIKeyController } from 'src/controllers/api-key.controller';
+import { AppController } from 'src/controllers/app.controller';
+import { AssetControllerV1 } from 'src/controllers/asset-v1.controller';
+import { AssetController, AssetsController } from 'src/controllers/asset.controller';
+import { AuditController } from 'src/controllers/audit.controller';
+import { AuthController } from 'src/controllers/auth.controller';
+import { DownloadController } from 'src/controllers/download.controller';
+import { FaceController } from 'src/controllers/face.controller';
+import { JobController } from 'src/controllers/job.controller';
+import { LibraryController } from 'src/controllers/library.controller';
+import { OAuthController } from 'src/controllers/oauth.controller';
+import { PartnerController } from 'src/controllers/partner.controller';
+import { PersonController } from 'src/controllers/person.controller';
+import { SearchController } from 'src/controllers/search.controller';
+import { ServerInfoController } from 'src/controllers/server-info.controller';
+import { SharedLinkController } from 'src/controllers/shared-link.controller';
+import { SystemConfigController } from 'src/controllers/system-config.controller';
+import { TagController } from 'src/controllers/tag.controller';
+import { TrashController } from 'src/controllers/trash.controller';
+import { UserController } from 'src/controllers/user.controller';
 import { databaseConfig } from 'src/database.config';
 import { databaseEntities } from 'src/entities';
 import { IAccessRepository } from 'src/interfaces/access.interface';
@@ -36,6 +63,9 @@ import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interf
 import { ITagRepository } from 'src/interfaces/tag.interface';
 import { IUserTokenRepository } from 'src/interfaces/user-token.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
+import { AuthGuard } from 'src/middleware/auth.guard';
+import { ErrorInterceptor } from 'src/middleware/error.interceptor';
+import { FileUploadInterceptor } from 'src/middleware/file-upload.interceptor';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
@@ -67,6 +97,7 @@ import { UserRepository } from 'src/repositories/user.repository';
 import { ActivityService } from 'src/services/activity.service';
 import { AlbumService } from 'src/services/album.service';
 import { APIKeyService } from 'src/services/api-key.service';
+import { ApiService } from 'src/services/api.service';
 import { AssetServiceV1 } from 'src/services/asset-v1.service';
 import { AssetService } from 'src/services/asset.service';
 import { AuditService } from 'src/services/audit.service';
@@ -77,6 +108,7 @@ import { JobService } from 'src/services/job.service';
 import { LibraryService } from 'src/services/library.service';
 import { MediaService } from 'src/services/media.service';
 import { MetadataService } from 'src/services/metadata.service';
+import { MicroservicesService } from 'src/services/microservices.service';
 import { PartnerService } from 'src/services/partner.service';
 import { PersonService } from 'src/services/person.service';
 import { SearchService } from 'src/services/search.service';
@@ -92,7 +124,46 @@ import { UserService } from 'src/services/user.service';
 import { otelConfig } from 'src/utils/instrumentation';
 import { ImmichLogger } from 'src/utils/logger';
 
+const commands = [
+  ResetAdminPasswordCommand,
+  PromptPasswordQuestions,
+  EnablePasswordLoginCommand,
+  DisablePasswordLoginCommand,
+  EnableOAuthLogin,
+  DisableOAuthLogin,
+  ListUsersCommand,
+];
+
+const controllers = [
+  ActivityController,
+  AssetsController,
+  AssetControllerV1,
+  AssetController,
+  AppController,
+  AlbumController,
+  APIKeyController,
+  AuditController,
+  AuthController,
+  DownloadController,
+  FaceController,
+  JobController,
+  LibraryController,
+  OAuthController,
+  PartnerController,
+  SearchController,
+  ServerInfoController,
+  SharedLinkController,
+  SystemConfigController,
+  TagController,
+  TrashController,
+  UserController,
+  PersonController,
+];
+
 const services: Provider[] = [
+  ApiService,
+  MicroservicesService,
+
   APIKeyService,
   ActivityService,
   AlbumService,
@@ -152,33 +223,62 @@ const repositories: Provider[] = [
   { provide: IUserTokenRepository, useClass: UserTokenRepository },
 ];
 
-@Global()
-@Module({
-  imports: [
-    ConfigModule.forRoot(immichAppConfig),
-    EventEmitterModule.forRoot(),
-    TypeOrmModule.forRoot(databaseConfig),
-    TypeOrmModule.forFeature(databaseEntities),
-    ScheduleModule,
-    BullModule.forRoot(bullConfig),
-    BullModule.registerQueue(...bullQueues),
-    OpenTelemetryModule.forRoot(otelConfig),
-  ],
-  providers: [...services, ...repositories, SchedulerRegistry],
-  exports: [...services, ...repositories, BullModule, SchedulerRegistry],
-})
-export class AppModule {}
+const middleware = [
+  FileUploadInterceptor,
+  { provide: APP_PIPE, useValue: new ValidationPipe({ transform: true, whitelist: true }) },
+  { provide: APP_INTERCEPTOR, useClass: ErrorInterceptor },
+  { provide: APP_GUARD, useClass: AuthGuard },
+];
 
-@Global()
+const imports = [
+  BullModule.forRoot(bullConfig),
+  BullModule.registerQueue(...bullQueues),
+  ConfigModule.forRoot(immichAppConfig),
+  EventEmitterModule.forRoot(),
+  OpenTelemetryModule.forRoot(otelConfig),
+  TypeOrmModule.forRoot(databaseConfig),
+  TypeOrmModule.forFeature(databaseEntities),
+];
+
+@Module({
+  imports: [...imports, ScheduleModule.forRoot()],
+  controllers: [...controllers],
+  providers: [...services, ...repositories, ...middleware],
+})
+export class ApiModule implements OnModuleInit {
+  constructor(private service: ApiService) {}
+
+  async onModuleInit() {
+    await this.service.init();
+  }
+}
+
+@Module({
+  imports: [...imports],
+  providers: [...services, ...repositories, SchedulerRegistry],
+})
+export class MicroservicesModule implements OnModuleInit {
+  constructor(private service: MicroservicesService) {}
+
+  async onModuleInit() {
+    await this.service.init();
+  }
+}
+
+@Module({
+  imports: [...imports],
+  providers: [...services, ...repositories, ...commands, SchedulerRegistry],
+})
+export class ImmichAdminModule {}
+
 @Module({
   imports: [
     ConfigModule.forRoot(immichAppConfig),
     EventEmitterModule.forRoot(),
     TypeOrmModule.forRoot(databaseConfig),
     TypeOrmModule.forFeature(databaseEntities),
-    ScheduleModule,
   ],
-  providers: [...services, ...repositories, SchedulerRegistry],
-  exports: [...services, ...repositories, SchedulerRegistry],
+  controllers: [...controllers],
+  providers: [...services, ...repositories, ...middleware, SchedulerRegistry],
 })
 export class AppTestModule {}
