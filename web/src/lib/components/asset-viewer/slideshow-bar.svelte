@@ -3,20 +3,17 @@
   import ProgressBar, { ProgressBarStatus } from '$lib/components/shared-components/progress-bar/progress-bar.svelte';
   import SlideshowSettings from '$lib/components/slideshow-settings.svelte';
   import { SlideshowNavigation, slideshowStore } from '$lib/stores/slideshow.store';
-  import { AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
   import { mdiChevronLeft, mdiChevronRight, mdiClose, mdiCog, mdiFullscreen, mdiPause, mdiPlay } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
   import { fly } from 'svelte/transition';
 
-  export let asset: AssetResponseDto;
   export let isFullScreen: boolean;
   export let onNext = () => {};
   export let onPrevious = () => {};
   export let onClose = () => {};
   export let onSetToFullScreen = () => {};
 
-  const { restartProgress, stopProgress, slideshowDelay, showProgressBar, slideshowNavigation, slideshowPlaying } =
-    slideshowStore;
+  const { restartProgress, stopProgress, slideshowDelay, showProgressBar, slideshowNavigation } = slideshowStore;
 
   let progressBarStatus: ProgressBarStatus;
   let progressBar: ProgressBar;
@@ -24,16 +21,6 @@
   let showControls = true;
   let timer: NodeJS.Timeout;
   let isOverControls = false;
-
-  $: {
-    if (progressBar && asset.type === AssetTypeEnum.Image) {
-      if ($slideshowPlaying) {
-        progressBar.play();
-      } else {
-        progressBar.pause();
-      }
-    }
-  }
 
   let unsubscribeRestart: () => void;
   let unsubscribeStop: () => void;
@@ -58,7 +45,6 @@
     startTimer();
     unsubscribeRestart = restartProgress.subscribe((value) => {
       if (value) {
-        $slideshowPlaying = true;
         progressBar.restart(value);
       }
     });
@@ -100,11 +86,12 @@
     transition:fly={{ duration: 150 }}
   >
     <CircleIconButton buttonSize="50" icon={mdiClose} on:click={onClose} title="Exit Slideshow" />
+
     <CircleIconButton
       buttonSize="50"
-      icon={$slideshowPlaying ? mdiPause : mdiPlay}
-      on:click={() => ($slideshowPlaying ? ($slideshowPlaying = false) : ($slideshowPlaying = true))}
-      title={$slideshowPlaying ? 'Pause' : 'Play'}
+      icon={progressBarStatus === ProgressBarStatus.Paused ? mdiPlay : mdiPause}
+      on:click={() => (progressBarStatus === ProgressBarStatus.Paused ? progressBar.play() : progressBar.pause())}
+      title={progressBarStatus === ProgressBarStatus.Paused ? 'Play' : 'Pause'}
     />
     <CircleIconButton buttonSize="50" icon={mdiChevronLeft} on:click={onPrevious} title="Previous" />
     <CircleIconButton buttonSize="50" icon={mdiChevronRight} on:click={onNext} title="Next" />
@@ -130,6 +117,4 @@
   bind:this={progressBar}
   bind:status={progressBarStatus}
   onDone={handleDone}
-  onPlaying={() => ($slideshowPlaying = true)}
-  onPaused={() => ($slideshowPlaying = false)}
 />

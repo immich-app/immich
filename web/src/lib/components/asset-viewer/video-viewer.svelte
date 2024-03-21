@@ -1,29 +1,16 @@
 <script lang="ts">
   import { videoViewerVolume } from '$lib/stores/preferences.store';
-  import { getAssetFileUrl, getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
+  import { getAssetFileUrl, getAssetThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { ThumbnailFormat } from '@immich/sdk';
   import { createEventDispatcher } from 'svelte';
   import { fade } from 'svelte/transition';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
-  import { slideshowStore } from '$lib/stores/slideshow.store';
-
-  const { slideshowPlaying } = slideshowStore;
 
   export let assetId: string;
-  export let controls: boolean;
 
   let element: HTMLVideoElement | undefined = undefined;
   let isVideoLoading = true;
-
-  $: {
-    if ($slideshowPlaying && element) {
-      handlePromiseError(element.play());
-    }
-    if (!$slideshowPlaying && element) {
-      element.pause();
-    }
-  }
 
   const dispatch = createEventDispatcher<{ onVideoEnded: void; onVideoStarted: void }>();
 
@@ -33,7 +20,6 @@
       video.muted = true;
       await video.play();
       video.muted = false;
-      $slideshowPlaying = true;
       dispatch('onVideoStarted');
     } catch (error) {
       handleError(error, 'Unable to play video');
@@ -48,7 +34,7 @@
     bind:this={element}
     autoplay
     playsinline
-    {controls}
+    controls
     class="h-full object-contain"
     on:canplay={handleCanPlay}
     on:ended={() => dispatch('onVideoEnded')}
