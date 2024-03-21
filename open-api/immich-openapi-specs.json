@@ -4597,6 +4597,41 @@
         ]
       }
     },
+    "/search/cities": {
+      "get": {
+        "operationId": "getAssetsByCity",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AssetResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Search"
+        ]
+      }
+    },
     "/search/explore": {
       "get": {
         "operationId": "getExploreData",
@@ -6503,7 +6538,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.98.2",
+    "version": "1.99.0",
     "contact": {}
   },
   "tags": [],

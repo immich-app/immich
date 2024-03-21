@@ -67,13 +67,19 @@ Once you have a new OAuth client application configured, Immich can be configure
 | Client Secret                                        | string  | (required)           | Required. Client Secret (previous step)                                             |
 | Scope                                                | string  | openid email profile | Full list of scopes to send with the request (space delimited)                      |
 | Signing Algorithm                                    | string  | RS256                | The algorithm used to sign the id token (examples: RS256, HS256)                    |
-| Storage Label Claim                                  | string  | preferred_username   | Claim mapping for the user's storage label                                          |
-| Storage Quota Claim                                  | string  | immich_quota         | Claim mapping for the user's storage                                                |
+| Storage Label Claim                                  | string  | preferred_username   | Claim mapping for the user's storage label**¹**                                     |
+| Storage Quota Claim                                  | string  | immich_quota         | Claim mapping for the user's storage**¹**                                           |
 | Default Storage Quota (GiB)                          | number  | 0                    | Default quota for user without storage quota claim (Enter 0 for unlimited quota)    |
 | Button Text                                          | string  | Login with OAuth     | Text for the OAuth button on the web                                                |
 | Auto Register                                        | boolean | true                 | When true, will automatically register a user the first time they sign in           |
 | [Auto Launch](#auto-launch)                          | boolean | false                | When true, will skip the login page and automatically start the OAuth login process |
 | [Mobile Redirect URI Override](#mobile-redirect-uri) | URL     | (empty)              | Http(s) alternative mobile redirect URI                                             |
+
+:::note Claim Options [1]
+
+Claim is only used on user creation and not synchronized after that.
+
+:::
 
 :::info
 The Issuer URL should look something like the following, and return a valid json document.

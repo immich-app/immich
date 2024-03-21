@@ -1,7 +1,8 @@
-import { APP_MEDIA_LOCATION, THUMBNAIL_DIR } from '@app/domain';
-import { LibraryEntity, LibraryType } from '@app/infra/entities';
 import { join } from 'node:path';
-import { userStub } from './user.stub';
+import { APP_MEDIA_LOCATION } from 'src/constants';
+import { THUMBNAIL_DIR } from 'src/cores/storage.core';
+import { LibraryEntity, LibraryType } from 'src/entities/library.entity';
+import { userStub } from 'test/fixtures/user.stub';
 
 export const libraryStub = {
   uploadLibrary1: Object.freeze<LibraryEntity>({
