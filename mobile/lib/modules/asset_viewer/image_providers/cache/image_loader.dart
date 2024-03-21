@@ -16,8 +16,6 @@ class ImageLoader {
     required ImageCacheManager cache,
     required ImageDecoderCallback decode,
     StreamController<ImageChunkEvent>? chunkEvents,
-    int? height,
-    int? width,
   }) async {
     final headers = {
       'x-immich-user-token': Store.get(StoreKey.accessToken),
@@ -25,10 +23,8 @@ class ImageLoader {
 
     final stream = cache.getImageFile(
       uri,
-      withProgress: true,
+      withProgress: chunkEvents != null,
       headers: headers,
-      maxHeight: height,
-      maxWidth: width,
     );
 
     await for (final result in stream) {
@@ -40,13 +36,9 @@ class ImageLoader {
             expectedTotalBytes: result.totalSize,
           ),
         );
-      }
-
-      if (result is FileInfo) {
+      } else if (result is FileInfo) {
         // We have the file
-        final file = result.file;
-        final bytes = await file.readAsBytes();
-        final buffer = await ui.ImmutableBuffer.fromUint8List(bytes);
+        final buffer = await ui.ImmutableBuffer.fromFilePath(result.file.path);
         final decoded = await decode(buffer);
         return decoded;
       }
