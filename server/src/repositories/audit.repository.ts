@@ -1,6 +1,6 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuditEntity } from 'src/entities/audit.entity';
-import { AuditSearch, IAuditRepository } from 'src/interfaces/audit.repository';
+import { AuditSearch, IAuditRepository } from 'src/interfaces/audit.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
 import { LessThan, MoreThan, Repository } from 'typeorm';
 

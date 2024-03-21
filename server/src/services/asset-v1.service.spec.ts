@@ -1,15 +1,15 @@
 import { when } from 'jest-when';
+import { AssetRejectReason, AssetUploadAction } from 'src/dtos/asset-v1-response.dto';
+import { CreateAssetDto } from 'src/dtos/asset-v1.dto';
 import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
-import { IAssetRepositoryV1 } from 'src/immich/api-v1/asset/asset-repository';
-import { AssetService } from 'src/immich/api-v1/asset/asset.service';
-import { CreateAssetDto } from 'src/immich/api-v1/asset/dto/create-asset.dto';
-import { AssetRejectReason, AssetUploadAction } from 'src/immich/api-v1/asset/response-dto/asset-check-response.dto';
-import { IAssetRepository } from 'src/interfaces/asset.repository';
-import { IJobRepository, JobName } from 'src/interfaces/job.repository';
-import { ILibraryRepository } from 'src/interfaces/library.repository';
-import { IStorageRepository } from 'src/interfaces/storage.repository';
-import { IUserRepository } from 'src/interfaces/user.repository';
+import { IAssetRepositoryV1 } from 'src/interfaces/asset-v1.interface';
+import { IAssetRepository } from 'src/interfaces/asset.interface';
+import { IJobRepository, JobName } from 'src/interfaces/job.interface';
+import { ILibraryRepository } from 'src/interfaces/library.interface';
+import { IStorageRepository } from 'src/interfaces/storage.interface';
+import { IUserRepository } from 'src/interfaces/user.interface';
+import { AssetServiceV1 } from 'src/services/asset-v1.service';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { fileStub } from 'test/fixtures/file.stub';
@@ -60,7 +60,7 @@ const _getAsset_1 = () => {
 };
 
 describe('AssetService', () => {
-  let sut: AssetService;
+  let sut: AssetServiceV1;
   let accessMock: IAccessRepositoryMock;
   let assetRepositoryMockV1: jest.Mocked<IAssetRepositoryV1>;
   let assetMock: jest.Mocked<IAssetRepository>;
@@ -88,7 +88,7 @@ describe('AssetService', () => {
     storageMock = newStorageRepositoryMock();
     userMock = newUserRepositoryMock();
 
-    sut = new AssetService(accessMock, assetRepositoryMockV1, assetMock, jobMock, libraryMock, storageMock, userMock);
+    sut = new AssetServiceV1(accessMock, assetRepositoryMockV1, assetMock, jobMock, libraryMock, storageMock, userMock);
 
     when(assetRepositoryMockV1.get)
       .calledWith(assetStub.livePhotoStillAsset.id)

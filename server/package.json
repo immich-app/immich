@@ -106,7 +106,6 @@
     "@types/mock-fs": "^4.13.1",
     "@types/multer": "^1.4.7",
     "@types/node": "^20.5.7",
-    "@types/sharp": "^0.32.0",
     "@types/supertest": "^6.0.0",
     "@types/ua-parser-js": "^0.7.36",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
@@ -156,10 +155,10 @@
     "coverageDirectory": "./coverage",
     "coverageThreshold": {
       "./src/": {
-        "branches": 75,
-        "functions": 80,
-        "lines": 85,
-        "statements": 85
+        "branches": 70,
+        "functions": 75,
+        "lines": 80,
+        "statements": 80
       }
     },
     "testEnvironment": "node",

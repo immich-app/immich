@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AssetStackEntity } from 'src/entities/asset-stack.entity';
-import { IAssetStackRepository } from 'src/interfaces/asset-stack.repository';
+import { IAssetStackRepository } from 'src/interfaces/asset-stack.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
 import { Repository } from 'typeorm';
 

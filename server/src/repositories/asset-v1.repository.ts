@@ -1,43 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { CuratedLocationsResponseDto, CuratedObjectsResponseDto } from 'src/dtos/asset-v1-response.dto';
+import { AssetSearchDto, CheckExistingAssetsDto, SearchPropertiesDto } from 'src/dtos/asset-v1.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { ExifEntity } from 'src/entities/exif.entity';
-import { AssetSearchDto } from 'src/immich/api-v1/asset/dto/asset-search.dto';
-import { CheckExistingAssetsDto } from 'src/immich/api-v1/asset/dto/check-existing-assets.dto';
-import { SearchPropertiesDto } from 'src/immich/api-v1/asset/dto/search-properties.dto';
-import { CuratedLocationsResponseDto } from 'src/immich/api-v1/asset/response-dto/curated-locations-response.dto';
-import { CuratedObjectsResponseDto } from 'src/immich/api-v1/asset/response-dto/curated-objects-response.dto';
+import { AssetCheck, AssetOwnerCheck, IAssetRepositoryV1 } from 'src/interfaces/asset-v1.interface';
 import { OptionalBetween } from 'src/utils/database';
 import { In } from 'typeorm/find-options/operator/In.js';
 import { Repository } from 'typeorm/repository/Repository.js';
-export interface AssetCheck {
-  id: string;
-  checksum: Buffer;
-}
-
-export interface AssetOwnerCheck extends AssetCheck {
-  ownerId: string;
-}
-
-export interface IAssetRepositoryV1 {
-  get(id: string): Promise<AssetEntity | null>;
-  getLocationsByUserId(userId: string): Promise<CuratedLocationsResponseDto[]>;
-  getDetectedObjectsByUserId(userId: string): Promise<CuratedObjectsResponseDto[]>;
-  getAllByUserId(userId: string, dto: AssetSearchDto): Promise<AssetEntity[]>;
-  getSearchPropertiesByUserId(userId: string): Promise<SearchPropertiesDto[]>;
-  getAssetsByChecksums(userId: string, checksums: Buffer[]): Promise<AssetCheck[]>;
-  getExistingAssets(userId: string, checkDuplicateAssetDto: CheckExistingAssetsDto): Promise<string[]>;
-  getByOriginalPath(originalPath: string): Promise<AssetOwnerCheck | null>;
-}
-
-export const IAssetRepositoryV1 = 'IAssetRepositoryV1';
 
 @Injectable()
 export class AssetRepositoryV1 implements IAssetRepositoryV1 {
-  constructor(
-    @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
-    @InjectRepository(ExifEntity) private exifRepository: Repository<ExifEntity>,
-  ) {}
+  constructor(@InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>) {}
 
   /**
    * Retrieves all assets by user ID.

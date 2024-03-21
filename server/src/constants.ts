@@ -35,6 +35,8 @@ export enum AuthType {
   OAUTH = 'oauth',
 }
 
+export const excludePaths = ['/.well-known/immich', '/custom.css', '/favicon.ico'];
+
 export const FACE_THUMBNAIL_SIZE = 250;
 
 export const supportedYearTokens = ['y', 'yy'];

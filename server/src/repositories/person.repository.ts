@@ -12,7 +12,7 @@ import {
   PersonSearchOptions,
   PersonStatistics,
   UpdateFacesData,
-} from 'src/interfaces/person.repository';
+} from 'src/interfaces/person.interface';
 import { asVector } from 'src/utils/database';
 import { Instrumentation } from 'src/utils/instrumentation';
 import { Paginated, PaginationOptions, paginate } from 'src/utils/pagination';

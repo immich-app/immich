@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { SystemConfigCore } from 'src/cores/system-config.core';
-import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.repository';
-import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.repository';
+import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
+import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
 import {
   IBaseJob,
   IEntityJob,
@@ -10,10 +10,10 @@ import {
   JobName,
   JobStatus,
   QueueName,
-} from 'src/interfaces/job.repository';
-import { IMachineLearningRepository } from 'src/interfaces/machine-learning.repository';
-import { ISearchRepository } from 'src/interfaces/search.repository';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
+} from 'src/interfaces/job.interface';
+import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
+import { ISearchRepository } from 'src/interfaces/search.interface';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 import { ImmichLogger } from 'src/utils/logger';
 import { usePagination } from 'src/utils/pagination';
 

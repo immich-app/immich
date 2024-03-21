@@ -12,7 +12,7 @@ import {
   ImmichZipStream,
   StorageEventType,
   WatchEvents,
-} from 'src/interfaces/storage.repository';
+} from 'src/interfaces/storage.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
 import { ImmichLogger } from 'src/utils/logger';
 import { mimeTypes } from 'src/utils/mime-types';

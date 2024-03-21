@@ -1,4 +1,4 @@
-import { IStorageRepository } from 'src/interfaces/storage.repository';
+import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { StorageService } from 'src/services/storage.service';
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
 

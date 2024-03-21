@@ -28,8 +28,8 @@ import {
   TimeBucketSize,
   WithProperty,
   WithoutProperty,
-} from 'src/interfaces/asset.repository';
-import { AssetSearchOptions, SearchExploreItem } from 'src/interfaces/search.repository';
+} from 'src/interfaces/asset.interface';
+import { AssetSearchOptions, SearchExploreItem } from 'src/interfaces/search.interface';
 import { OptionalBetween, searchAssetBuilder } from 'src/utils/database';
 import { Instrumentation } from 'src/utils/instrumentation';
 import { Paginated, PaginationMode, PaginationOptions, paginate, paginatedBuilder } from 'src/utils/pagination';

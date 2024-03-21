@@ -4,9 +4,9 @@ import { NextFunction, Response } from 'express';
 import { AssetIdsDto } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { DownloadInfoDto, DownloadResponseDto } from 'src/dtos/download.dto';
-import { asStreamableFile, sendFile } from 'src/immich/app.utils';
 import { Auth, Authenticated, FileResponse, SharedLinkRoute } from 'src/middleware/auth.guard';
 import { DownloadService } from 'src/services/download.service';
+import { asStreamableFile, sendFile } from 'src/utils/file';
 import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('Download')

@@ -10,7 +10,7 @@ import {
   ResizeOptions,
   TranscodeOptions,
   VideoInfo,
-} from 'src/interfaces/media.repository';
+} from 'src/interfaces/media.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
 import { ImmichLogger } from 'src/utils/logger';
 import { handlePromiseError } from 'src/utils/misc';

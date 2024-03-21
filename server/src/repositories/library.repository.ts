@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { LibraryStatsResponseDto } from 'src/dtos/library.dto';
 import { LibraryEntity, LibraryType } from 'src/entities/library.entity';
-import { ILibraryRepository } from 'src/interfaces/library.repository';
+import { ILibraryRepository } from 'src/interfaces/library.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
 import { IsNull, Not } from 'typeorm';
 import { Repository } from 'typeorm/repository/Repository.js';

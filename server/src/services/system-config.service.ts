@@ -22,9 +22,9 @@ import {
   InternalEvent,
   InternalEventMap,
   ServerEvent,
-} from 'src/interfaces/communication.repository';
-import { ISearchRepository } from 'src/interfaces/search.repository';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
+} from 'src/interfaces/communication.interface';
+import { ISearchRepository } from 'src/interfaces/search.interface';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 import { ImmichLogger } from 'src/utils/logger';
 
 @Injectable()

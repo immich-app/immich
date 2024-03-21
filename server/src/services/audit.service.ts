@@ -15,14 +15,14 @@ import {
 import { AuthDto } from 'src/dtos/auth.dto';
 import { DatabaseAction } from 'src/entities/audit.entity';
 import { AssetPathType, PersonPathType, UserPathType } from 'src/entities/move.entity';
-import { IAccessRepository } from 'src/interfaces/access.repository';
-import { IAssetRepository } from 'src/interfaces/asset.repository';
-import { IAuditRepository } from 'src/interfaces/audit.repository';
-import { ICryptoRepository } from 'src/interfaces/crypto.repository';
-import { JOBS_ASSET_PAGINATION_SIZE, JobStatus } from 'src/interfaces/job.repository';
-import { IPersonRepository } from 'src/interfaces/person.repository';
-import { IStorageRepository } from 'src/interfaces/storage.repository';
-import { IUserRepository } from 'src/interfaces/user.repository';
+import { IAccessRepository } from 'src/interfaces/access.interface';
+import { IAssetRepository } from 'src/interfaces/asset.interface';
+import { IAuditRepository } from 'src/interfaces/audit.interface';
+import { ICryptoRepository } from 'src/interfaces/crypto.interface';
+import { JOBS_ASSET_PAGINATION_SIZE, JobStatus } from 'src/interfaces/job.interface';
+import { IPersonRepository } from 'src/interfaces/person.interface';
+import { IStorageRepository } from 'src/interfaces/storage.interface';
+import { IUserRepository } from 'src/interfaces/user.interface';
 import { ImmichLogger } from 'src/utils/logger';
 import { usePagination } from 'src/utils/pagination';
 

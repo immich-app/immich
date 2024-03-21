@@ -3,8 +3,8 @@ import { FeatureFlag, SystemConfigCore } from 'src/cores/system-config.core';
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AllJobStatusResponseDto, JobCommandDto, JobStatusDto } from 'src/dtos/job.dto';
 import { AssetType } from 'src/entities/asset.entity';
-import { IAssetRepository } from 'src/interfaces/asset.repository';
-import { ClientEvent, ICommunicationRepository } from 'src/interfaces/communication.repository';
+import { IAssetRepository } from 'src/interfaces/asset.interface';
+import { ClientEvent, ICommunicationRepository } from 'src/interfaces/communication.interface';
 import {
   ConcurrentQueueName,
   IJobRepository,
@@ -15,9 +15,9 @@ import {
   JobStatus,
   QueueCleanType,
   QueueName,
-} from 'src/interfaces/job.repository';
-import { IPersonRepository } from 'src/interfaces/person.repository';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
+} from 'src/interfaces/job.interface';
+import { IPersonRepository } from 'src/interfaces/person.interface';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 import { ImmichLogger } from 'src/utils/logger';
 
 @Injectable()
