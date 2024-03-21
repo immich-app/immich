@@ -1,5 +1,4 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { OnEvent } from '@nestjs/event-emitter';
 import { instanceToPlain } from 'class-transformer';
 import _ from 'lodash';
 import {
@@ -13,6 +12,7 @@ import {
   supportedYearTokens,
 } from 'src/constants';
 import { SystemConfigCore } from 'src/cores/system-config.core';
+import { OnEventInternal } from 'src/decorators';
 import { SystemConfigTemplateStorageOptionDto } from 'src/dtos/system-config-storage-template.dto';
 import { SystemConfigDto, mapConfig } from 'src/dtos/system-config.dto';
 import { LogLevel, SystemConfig } from 'src/entities/system-config.entity';
@@ -61,7 +61,7 @@ export class SystemConfigService {
     return mapConfig(config);
   }
 
-  @OnEvent(InternalEvent.VALIDATE_CONFIG)
+  @OnEventInternal(InternalEvent.VALIDATE_CONFIG)
   validateConfig({ newConfig, oldConfig }: InternalEventMap[InternalEvent.VALIDATE_CONFIG]) {
     if (!_.isEqual(instanceToPlain(newConfig.logging), oldConfig.logging) && this.getEnvLogLevel()) {
       throw new Error('Logging cannot be changed while the environment variable LOG_LEVEL is set.');

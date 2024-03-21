@@ -1,4 +1,6 @@
 import { SetMetadata } from '@nestjs/common';
+import { OnEvent, OnEventType } from '@nestjs/event-emitter';
+import { OnEventOptions } from '@nestjs/event-emitter/dist/interfaces';
 import _ from 'lodash';
 import { setUnion } from 'src/utils/set';
 
@@ -122,3 +124,6 @@ export interface GenerateSqlQueries {
 
 /** Decorator to enable versioning/tracking of generated Sql */
 export const GenerateSql = (...options: GenerateSqlQueries[]) => SetMetadata(GENERATE_SQL_KEY, options);
+
+export const OnEventInternal = (event: OnEventType, options?: OnEventOptions) =>
+  OnEvent(event, { suppressErrors: false, ...options });
