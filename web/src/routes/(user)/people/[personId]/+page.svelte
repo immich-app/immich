@@ -44,7 +44,16 @@
     type AssetResponseDto,
     type PersonResponseDto,
   } from '@immich/sdk';
-  import { mdiArrowLeft, mdiDotsVertical, mdiPlus } from '@mdi/js';
+  import {
+    mdiAccountBoxOutline,
+    mdiAccountMultipleCheckOutline,
+    mdiArrowLeft,
+    mdiCalendarEditOutline,
+    mdiDotsVertical,
+    mdiEyeOffOutline,
+    mdiEyeOutline,
+    mdiPlus,
+  } from '@mdi/js';
   import { onMount } from 'svelte';
   import type { PageData } from './$types';
   import { listNavigation } from '$lib/utils/list-navigation';
@@ -395,18 +404,18 @@
     <AssetSelectControlBar assets={$selectedAssets} clearSelect={() => assetInteractionStore.clearMultiselect()}>
       <CreateSharedLink />
       <SelectAllAssets {assetStore} {assetInteractionStore} />
-      <AssetSelectContextMenu icon={mdiPlus} title="Add">
+      <AssetSelectContextMenu icon={mdiPlus} title="Add to...">
         <AddToAlbum />
         <AddToAlbum shared />
       </AssetSelectContextMenu>
-      <DeleteAssets onAssetDelete={(assetIds) => $assetStore.removeAssets(assetIds)} />
+      <FavoriteAction removeFavorite={isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
       <AssetSelectContextMenu icon={mdiDotsVertical} title="Add">
         <DownloadAction menuItem filename="{data.person.name || 'immich'}.zip" />
-        <FavoriteAction menuItem removeFavorite={isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
-        <ArchiveAction menuItem unarchive={isAllArchive} onArchive={(assetIds) => $assetStore.removeAssets(assetIds)} />
-        <MenuOption text="Fix incorrect match" on:click={handleReassignAssets} />
+        <MenuOption icon={mdiAccountMultipleCheckOutline} text="Fix incorrect match" on:click={handleReassignAssets} />
         <ChangeDate menuItem />
         <ChangeLocation menuItem />
+        <ArchiveAction menuItem unarchive={isAllArchive} onArchive={(assetIds) => $assetStore.removeAssets(assetIds)} />
+        <DeleteAssets menuItem onAssetDelete={(assetIds) => $assetStore.removeAssets(assetIds)} />
       </AssetSelectContextMenu>
     </AssetSelectControlBar>
   {:else}
@@ -414,12 +423,25 @@
       <ControlAppBar showBackButton backIcon={mdiArrowLeft} on:close={() => goto(previousRoute)}>
         <svelte:fragment slot="trailing">
           <AssetSelectContextMenu icon={mdiDotsVertical} title="Menu">
-            <MenuOption text="Change feature photo" on:click={() => (viewMode = ViewMode.SELECT_PERSON)} />
-            <MenuOption text="Set date of birth" on:click={() => (viewMode = ViewMode.BIRTH_DATE)} />
-            <MenuOption text="Merge person" on:click={() => (viewMode = ViewMode.MERGE_PEOPLE)} />
+            <MenuOption
+              text="Select featured photo"
+              icon={mdiAccountBoxOutline}
+              on:click={() => (viewMode = ViewMode.SELECT_PERSON)}
+            />
             <MenuOption
               text={data.person.isHidden ? 'Unhide person' : 'Hide person'}
+              icon={data.person.isHidden ? mdiEyeOutline : mdiEyeOffOutline}
               on:click={() => toggleHidePerson()}
+            />
+            <MenuOption
+              text="Set date of birth"
+              icon={mdiCalendarEditOutline}
+              on:click={() => (viewMode = ViewMode.BIRTH_DATE)}
+            />
+            <MenuOption
+              text="Merge people"
+              icon={mdiAccountMultipleCheckOutline}
+              on:click={() => (viewMode = ViewMode.MERGE_PEOPLE)}
             />
           </AssetSelectContextMenu>
         </svelte:fragment>
@@ -428,13 +450,13 @@
 
     {#if viewMode === ViewMode.SELECT_PERSON}
       <ControlAppBar on:close={() => (viewMode = ViewMode.VIEW_ASSETS)}>
-        <svelte:fragment slot="leading">Select feature photo</svelte:fragment>
+        <svelte:fragment slot="leading">Select featured photo</svelte:fragment>
       </ControlAppBar>
     {/if}
   {/if}
 </header>
 
-<main class="relative h-screen overflow-hidden bg-immich-bg ml-4 pt-[var(--navbar-height)] dark:bg-immich-dark-bg">
+<main class="relative h-screen overflow-hidden bg-immich-bg tall:ml-4 pt-[var(--navbar-height)] dark:bg-immich-dark-bg">
   {#key refreshAssetGrid}
     <AssetGrid
       {assetStore}

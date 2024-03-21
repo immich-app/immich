@@ -1,6 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
 import { defaults } from 'src/cores/system-config.core';
-import { QueueName } from 'src/domain/job/job.constants';
 import {
   AudioCodec,
   CQMode,
@@ -14,11 +13,12 @@ import {
   TranscodePolicy,
   VideoCodec,
 } from 'src/entities/system-config.entity';
-import { ImmichLogger } from 'src/infra/logger';
-import { ICommunicationRepository, ServerEvent } from 'src/interfaces/communication.repository';
-import { ISearchRepository } from 'src/interfaces/search.repository';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
+import { ICommunicationRepository, ServerEvent } from 'src/interfaces/communication.interface';
+import { QueueName } from 'src/interfaces/job.interface';
+import { ISearchRepository } from 'src/interfaces/search.interface';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 import { SystemConfigService } from 'src/services/system-config.service';
+import { ImmichLogger } from 'src/utils/logger';
 import { newCommunicationRepositoryMock } from 'test/repositories/communication.repository.mock';
 import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
 

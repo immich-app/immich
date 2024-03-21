@@ -8,8 +8,6 @@ import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
 import { AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { SmartInfoEntity } from 'src/entities/smart-info.entity';
-import { OptionalBetween, paginate, paginatedBuilder, searchAssetBuilder } from 'src/infra/infra.utils';
-import { Instrumentation } from 'src/infra/instrumentation';
 import {
   AssetBuilderOptions,
   AssetCreate,
@@ -30,9 +28,11 @@ import {
   TimeBucketSize,
   WithProperty,
   WithoutProperty,
-} from 'src/interfaces/asset.repository';
-import { AssetSearchOptions, SearchExploreItem } from 'src/interfaces/search.repository';
-import { Paginated, PaginationMode, PaginationOptions } from 'src/utils';
+} from 'src/interfaces/asset.interface';
+import { AssetSearchOptions, SearchExploreItem } from 'src/interfaces/search.interface';
+import { OptionalBetween, searchAssetBuilder } from 'src/utils/database';
+import { Instrumentation } from 'src/utils/instrumentation';
+import { Paginated, PaginationMode, PaginationOptions, paginate, paginatedBuilder } from 'src/utils/pagination';
 import {
   Brackets,
   FindOptionsRelations,

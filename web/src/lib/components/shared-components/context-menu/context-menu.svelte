@@ -23,12 +23,14 @@
 <div
   transition:slide={{ duration: 200, easing: quintOut }}
   bind:this={menuElement}
-  class="absolute z-10 w-[200px] overflow-hidden rounded-lg shadow-lg"
+  class="absolute z-10 min-w-[200px] w-max max-w-[300px] overflow-hidden rounded-lg shadow-lg"
   style="left: {left}px; top: {top}px;"
   role="menu"
   use:clickOutside
   on:outclick
   on:escape
 >
-  <slot />
+  <div class="flex flex-col rounded-lg">
+    <slot />
+  </div>
 </div>

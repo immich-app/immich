@@ -17,11 +17,11 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { UserEntity } from 'src/entities/user.entity';
-import { IAccessRepository } from 'src/interfaces/access.repository';
-import { AlbumAssetCount, AlbumInfoOptions, IAlbumRepository } from 'src/interfaces/album.repository';
-import { IAssetRepository } from 'src/interfaces/asset.repository';
-import { IUserRepository } from 'src/interfaces/user.repository';
-import { setUnion } from 'src/utils';
+import { IAccessRepository } from 'src/interfaces/access.interface';
+import { AlbumAssetCount, AlbumInfoOptions, IAlbumRepository } from 'src/interfaces/album.interface';
+import { IAssetRepository } from 'src/interfaces/asset.interface';
+import { IUserRepository } from 'src/interfaces/user.interface';
+import { setUnion } from 'src/utils/set';
 
 @Injectable()
 export class AlbumService {

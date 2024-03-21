@@ -1,10 +1,10 @@
 import { BadRequestException } from '@nestjs/common';
 import { when } from 'jest-when';
 import { DownloadResponseDto } from 'src/dtos/download.dto';
-import { IAssetRepository } from 'src/interfaces/asset.repository';
-import { IStorageRepository } from 'src/interfaces/storage.repository';
+import { IAssetRepository } from 'src/interfaces/asset.interface';
+import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { DownloadService } from 'src/services/download.service';
-import { CacheControl, ImmichFileResponse } from 'src/utils';
+import { CacheControl, ImmichFileResponse } from 'src/utils/file';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';

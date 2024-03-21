@@ -1,15 +1,21 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { SystemConfigCore } from 'src/cores/system-config.core';
-import { JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from 'src/domain/job/job.constants';
-import { IBaseJob, IEntityJob } from 'src/domain/job/job.interface';
-import { ImmichLogger } from 'src/infra/logger';
-import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.repository';
-import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.repository';
-import { IJobRepository, JobStatus } from 'src/interfaces/job.repository';
-import { IMachineLearningRepository } from 'src/interfaces/machine-learning.repository';
-import { ISearchRepository } from 'src/interfaces/search.repository';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
-import { usePagination } from 'src/utils';
+import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
+import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
+import {
+  IBaseJob,
+  IEntityJob,
+  IJobRepository,
+  JOBS_ASSET_PAGINATION_SIZE,
+  JobName,
+  JobStatus,
+  QueueName,
+} from 'src/interfaces/job.interface';
+import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
+import { ISearchRepository } from 'src/interfaces/search.interface';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { ImmichLogger } from 'src/utils/logger';
+import { usePagination } from 'src/utils/pagination';
 
 @Injectable()
 export class SmartInfoService {

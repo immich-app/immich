@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Req, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
-import { IMMICH_SHARED_LINK_ACCESS_COOKIE } from 'src/domain/auth/auth.constant';
+import { IMMICH_SHARED_LINK_ACCESS_COOKIE } from 'src/constants';
 import { AssetIdsResponseDto } from 'src/dtos/asset-ids.response.dto';
 import { AssetIdsDto } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';

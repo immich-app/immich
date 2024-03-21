@@ -8,9 +8,6 @@ import path, { basename, parse } from 'node:path';
 import picomatch from 'picomatch';
 import { StorageCore } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
-import { mimeTypes } from 'src/domain/domain.constant';
-import { JOBS_ASSET_PAGINATION_SIZE, JobName } from 'src/domain/job/job.constants';
-import { IBaseJob, IEntityJob, ILibraryFileJob, ILibraryRefreshJob } from 'src/domain/job/job.interface';
 import {
   CreateLibraryDto,
   LibraryResponseDto,
@@ -25,16 +22,27 @@ import {
 } from 'src/dtos/library.dto';
 import { AssetType } from 'src/entities/asset.entity';
 import { LibraryEntity, LibraryType } from 'src/entities/library.entity';
-import { ImmichLogger } from 'src/infra/logger';
-import { IAssetRepository, WithProperty } from 'src/interfaces/asset.repository';
-import { InternalEvent, InternalEventMap } from 'src/interfaces/communication.repository';
-import { ICryptoRepository } from 'src/interfaces/crypto.repository';
-import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.repository';
-import { IJobRepository, JobStatus } from 'src/interfaces/job.repository';
-import { ILibraryRepository } from 'src/interfaces/library.repository';
-import { IStorageRepository, StorageEventType } from 'src/interfaces/storage.repository';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
-import { handlePromiseError, usePagination } from 'src/utils';
+import { IAssetRepository, WithProperty } from 'src/interfaces/asset.interface';
+import { InternalEvent, InternalEventMap } from 'src/interfaces/communication.interface';
+import { ICryptoRepository } from 'src/interfaces/crypto.interface';
+import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
+import {
+  IBaseJob,
+  IEntityJob,
+  IJobRepository,
+  ILibraryFileJob,
+  ILibraryRefreshJob,
+  JOBS_ASSET_PAGINATION_SIZE,
+  JobName,
+  JobStatus,
+} from 'src/interfaces/job.interface';
+import { ILibraryRepository } from 'src/interfaces/library.interface';
+import { IStorageRepository, StorageEventType } from 'src/interfaces/storage.interface';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { ImmichLogger } from 'src/utils/logger';
+import { mimeTypes } from 'src/utils/mime-types';
+import { handlePromiseError } from 'src/utils/misc';
+import { usePagination } from 'src/utils/pagination';
 import { validateCronExpression } from 'src/validation';
 
 const LIBRARY_SCAN_BATCH_SIZE = 5000;

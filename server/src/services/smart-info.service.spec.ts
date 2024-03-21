@@ -1,14 +1,13 @@
-import { JobName } from 'src/domain/job/job.constants';
-import { cleanModelName, getCLIPModelInfo } from 'src/domain/smart-info/smart-info.constant';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { SystemConfigKey } from 'src/entities/system-config.entity';
-import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.repository';
-import { IDatabaseRepository } from 'src/interfaces/database.repository';
-import { IJobRepository } from 'src/interfaces/job.repository';
-import { IMachineLearningRepository } from 'src/interfaces/machine-learning.repository';
-import { ISearchRepository } from 'src/interfaces/search.repository';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
+import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
+import { IDatabaseRepository } from 'src/interfaces/database.interface';
+import { IJobRepository, JobName } from 'src/interfaces/job.interface';
+import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
+import { ISearchRepository } from 'src/interfaces/search.interface';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 import { SmartInfoService } from 'src/services/smart-info.service';
+import { getCLIPModelInfo } from 'src/utils/misc';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
 import { newDatabaseRepositoryMock } from 'test/repositories/database.repository.mock';
@@ -124,16 +123,14 @@ describe(SmartInfoService.name, () => {
     });
   });
 
-  describe('cleanModelName', () => {
-    it('should clean name', () => {
-      expect(cleanModelName('ViT-B-32::openai')).toEqual('ViT-B-32__openai');
-      expect(cleanModelName('M-CLIP/XLM-Roberta-Large-Vit-L-14')).toEqual('XLM-Roberta-Large-Vit-L-14');
-    });
-  });
-
   describe('getCLIPModelInfo', () => {
     it('should return the model info', () => {
       expect(getCLIPModelInfo('ViT-B-32__openai')).toEqual({ dimSize: 512 });
+      expect(getCLIPModelInfo('M-CLIP/XLM-Roberta-Large-Vit-L-14')).toEqual({ dimSize: 768 });
+    });
+
+    it('should clean the model name', () => {
+      expect(getCLIPModelInfo('ViT-B-32::openai')).toEqual({ dimSize: 512 });
     });
 
     it('should throw an error if the model is not present', () => {

@@ -18,6 +18,7 @@
   import type { FormEventHandler } from 'svelte/elements';
   import { shortcuts } from '$lib/utils/shortcut';
   import { clickOutside } from '$lib/utils/click-outside';
+  import { focusOutside } from '$lib/utils/focus-outside';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
 
   /**
@@ -44,6 +45,7 @@
   let searchQuery = selectedOption?.label || '';
   let selectedIndex: number | undefined;
   let optionRefs: HTMLElement[] = [];
+  let input: HTMLInputElement;
   let filteredOptions: ComboBoxOption[] = [];
   const inputId = `combobox-${id}`;
   const listboxId = `listbox-${id}`;
@@ -112,6 +114,8 @@
   };
 
   const onClear = () => {
+    input?.focus();
+    selectedIndex = undefined;
     selectedOption = undefined;
     searchQuery = '';
     dispatch('select', selectedOption);
@@ -122,12 +126,21 @@
 <div
   class="relative w-full dark:text-gray-300 text-gray-700 text-base"
   use:clickOutside={{ onOutclick: deactivate }}
-  on:focusout={(e) => {
-    if (e.relatedTarget instanceof Node && !e.currentTarget.contains(e.relatedTarget)) {
+  use:focusOutside={{
+    onFocusOut: () => {
       deactivate();
       dispatch('focusOut', searchQuery);
-    }
+    },
   }}
+  use:shortcuts={[
+    {
+      shortcut: { key: 'Escape' },
+      onShortcut: (event) => {
+        event.stopPropagation();
+        closeDropdown();
+      },
+    },
+  ]}
 >
   <div>
     {#if isActive}
@@ -145,6 +158,7 @@
       aria-controls={listboxId}
       aria-expanded={isOpen}
       autocomplete="off"
+      bind:this={input}
       class:!pl-8={isActive}
       class:!rounded-b-none={isOpen}
       class:cursor-pointer={!isActive}
@@ -231,9 +245,7 @@
           role="option"
           aria-selected={selectedIndex === 0}
           aria-disabled={true}
-          class:bg-gray-100={selectedIndex === 0}
-          class:dark:bg-gray-700={selectedIndex === 0}
-          class="text-left w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-default"
+          class="text-left w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-default aria-selected:bg-gray-100 aria-selected:dark:bg-gray-700"
           id={`${listboxId}-${0}`}
           on:click={() => closeDropdown()}
         >

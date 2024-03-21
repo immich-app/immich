@@ -1,6 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { ReactionType } from 'src/dtos/activity.dto';
-import { IActivityRepository } from 'src/interfaces/activity.repository';
+import { IActivityRepository } from 'src/interfaces/activity.interface';
 import { ActivityService } from 'src/services/activity.service';
 import { activityStub } from 'test/fixtures/activity.stub';
 import { authStub } from 'test/fixtures/auth.stub';

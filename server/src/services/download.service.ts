@@ -1,15 +1,17 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { parse } from 'node:path';
 import { AccessCore, Permission } from 'src/cores/access.core';
-import { mimeTypes } from 'src/domain/domain.constant';
 import { AssetIdsDto } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { DownloadArchiveInfo, DownloadInfoDto, DownloadResponseDto } from 'src/dtos/download.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { IAccessRepository } from 'src/interfaces/access.repository';
-import { IAssetRepository } from 'src/interfaces/asset.repository';
-import { IStorageRepository, ImmichReadStream } from 'src/interfaces/storage.repository';
-import { CacheControl, HumanReadableSize, ImmichFileResponse, usePagination } from 'src/utils';
+import { IAccessRepository } from 'src/interfaces/access.interface';
+import { IAssetRepository } from 'src/interfaces/asset.interface';
+import { IStorageRepository, ImmichReadStream } from 'src/interfaces/storage.interface';
+import { HumanReadableSize } from 'src/utils/bytes';
+import { CacheControl, ImmichFileResponse } from 'src/utils/file';
+import { mimeTypes } from 'src/utils/mime-types';
+import { usePagination } from 'src/utils/pagination';
 
 @Injectable()
 export class DownloadService {

@@ -1,18 +1,6 @@
 import { Inject, Injectable, UnsupportedMediaTypeException } from '@nestjs/common';
 import { StorageCore, StorageFolder } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
-import { JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from 'src/domain/job/job.constants';
-import { IBaseJob, IEntityJob } from 'src/domain/job/job.interface';
-import {
-  H264Config,
-  HEVCConfig,
-  NVENCConfig,
-  QSVConfig,
-  RKMPPConfig,
-  ThumbnailConfig,
-  VAAPIConfig,
-  VP9Config,
-} from 'src/domain/media/media.util';
 import { SystemConfigFFmpegDto } from 'src/dtos/system-config-ffmpeg.dto';
 import { AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { AssetPathType } from 'src/entities/move.entity';
@@ -24,21 +12,35 @@ import {
   TranscodeTarget,
   VideoCodec,
 } from 'src/entities/system-config.entity';
-import { ImmichLogger } from 'src/infra/logger';
-import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.repository';
-import { ICryptoRepository } from 'src/interfaces/crypto.repository';
-import { IJobRepository, JobItem, JobStatus } from 'src/interfaces/job.repository';
+import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
+import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import {
-  AudioStreamInfo,
-  IMediaRepository,
-  VideoCodecHWConfig,
-  VideoStreamInfo,
-} from 'src/interfaces/media.repository';
-import { IMoveRepository } from 'src/interfaces/move.repository';
-import { IPersonRepository } from 'src/interfaces/person.repository';
-import { IStorageRepository } from 'src/interfaces/storage.repository';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
-import { usePagination } from 'src/utils';
+  IBaseJob,
+  IEntityJob,
+  IJobRepository,
+  JOBS_ASSET_PAGINATION_SIZE,
+  JobItem,
+  JobName,
+  JobStatus,
+  QueueName,
+} from 'src/interfaces/job.interface';
+import { AudioStreamInfo, IMediaRepository, VideoCodecHWConfig, VideoStreamInfo } from 'src/interfaces/media.interface';
+import { IMoveRepository } from 'src/interfaces/move.interface';
+import { IPersonRepository } from 'src/interfaces/person.interface';
+import { IStorageRepository } from 'src/interfaces/storage.interface';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { ImmichLogger } from 'src/utils/logger';
+import {
+  H264Config,
+  HEVCConfig,
+  NVENCConfig,
+  QSVConfig,
+  RKMPPConfig,
+  ThumbnailConfig,
+  VAAPIConfig,
+  VP9Config,
+} from 'src/utils/media';
+import { usePagination } from 'src/utils/pagination';
 
 @Injectable()
 export class MediaService {

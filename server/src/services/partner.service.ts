@@ -4,8 +4,8 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { PartnerResponseDto, UpdatePartnerDto } from 'src/dtos/partner.dto';
 import { mapUser } from 'src/dtos/user.dto';
 import { PartnerEntity } from 'src/entities/partner.entity';
-import { IAccessRepository } from 'src/interfaces/access.repository';
-import { IPartnerRepository, PartnerDirection, PartnerIds } from 'src/interfaces/partner.repository';
+import { IAccessRepository } from 'src/interfaces/access.interface';
+import { IPartnerRepository, PartnerDirection, PartnerIds } from 'src/interfaces/partner.interface';
 
 @Injectable()
 export class PartnerService {

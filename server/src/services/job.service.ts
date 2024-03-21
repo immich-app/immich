@@ -1,15 +1,24 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { FeatureFlag, SystemConfigCore } from 'src/cores/system-config.core';
-import { ConcurrentQueueName, JobCommand, JobName, QueueName } from 'src/domain/job/job.constants';
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AllJobStatusResponseDto, JobCommandDto, JobStatusDto } from 'src/dtos/job.dto';
 import { AssetType } from 'src/entities/asset.entity';
-import { ImmichLogger } from 'src/infra/logger';
-import { IAssetRepository } from 'src/interfaces/asset.repository';
-import { ClientEvent, ICommunicationRepository } from 'src/interfaces/communication.repository';
-import { IJobRepository, JobHandler, JobItem, JobStatus, QueueCleanType } from 'src/interfaces/job.repository';
-import { IPersonRepository } from 'src/interfaces/person.repository';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
+import { IAssetRepository } from 'src/interfaces/asset.interface';
+import { ClientEvent, ICommunicationRepository } from 'src/interfaces/communication.interface';
+import {
+  ConcurrentQueueName,
+  IJobRepository,
+  JobCommand,
+  JobHandler,
+  JobItem,
+  JobName,
+  JobStatus,
+  QueueCleanType,
+  QueueName,
+} from 'src/interfaces/job.interface';
+import { IPersonRepository } from 'src/interfaces/person.interface';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { ImmichLogger } from 'src/utils/logger';
 
 @Injectable()
 export class JobService {

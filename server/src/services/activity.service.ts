@@ -13,8 +13,8 @@ import {
 } from 'src/dtos/activity.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { ActivityEntity } from 'src/entities/activity.entity';
-import { IAccessRepository } from 'src/interfaces/access.repository';
-import { IActivityRepository } from 'src/interfaces/activity.repository';
+import { IAccessRepository } from 'src/interfaces/access.interface';
+import { IActivityRepository } from 'src/interfaces/activity.interface';
 
 @Injectable()
 export class ActivityService {

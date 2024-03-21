@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { APIKeyEntity } from 'src/entities/api-key.entity';
-import { Instrumentation } from 'src/infra/instrumentation';
-import { IKeyRepository } from 'src/interfaces/api-key.repository';
+import { IKeyRepository } from 'src/interfaces/api-key.interface';
+import { Instrumentation } from 'src/utils/instrumentation';
 import { Repository } from 'typeorm';
 
 @Instrumentation()

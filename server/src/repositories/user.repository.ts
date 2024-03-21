@@ -3,13 +3,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { UserEntity } from 'src/entities/user.entity';
-import { Instrumentation } from 'src/infra/instrumentation';
 import {
   IUserRepository,
   UserFindOptions,
   UserListFilter,
   UserStatsQueryResponse,
-} from 'src/interfaces/user.repository';
+} from 'src/interfaces/user.interface';
+import { Instrumentation } from 'src/utils/instrumentation';
 import { IsNull, Not, Repository } from 'typeorm';
 
 @Instrumentation()

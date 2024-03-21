@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { readFile } from 'node:fs/promises';
 import { CLIPConfig, ModelConfig, RecognitionConfig } from 'src/dtos/model-config.dto';
-import { Instrumentation } from 'src/infra/instrumentation';
 import {
   CLIPMode,
   DetectFaceResult,
@@ -9,7 +8,8 @@ import {
   ModelType,
   TextModelInput,
   VisionModelInput,
-} from 'src/interfaces/machine-learning.repository';
+} from 'src/interfaces/machine-learning.interface';
+import { Instrumentation } from 'src/utils/instrumentation';
 
 const errorPrefix = 'Machine learning request';
 

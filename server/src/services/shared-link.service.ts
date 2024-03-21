@@ -13,10 +13,10 @@ import {
 } from 'src/dtos/shared-link.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { SharedLinkEntity, SharedLinkType } from 'src/entities/shared-link.entity';
-import { IAccessRepository } from 'src/interfaces/access.repository';
-import { ICryptoRepository } from 'src/interfaces/crypto.repository';
-import { ISharedLinkRepository } from 'src/interfaces/shared-link.repository';
-import { OpenGraphTags } from 'src/utils';
+import { IAccessRepository } from 'src/interfaces/access.interface';
+import { ICryptoRepository } from 'src/interfaces/crypto.interface';
+import { ISharedLinkRepository } from 'src/interfaces/shared-link.interface';
+import { OpenGraphTags } from 'src/utils/misc';
 
 @Injectable()
 export class SharedLinkService {
