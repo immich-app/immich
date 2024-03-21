@@ -25,11 +25,12 @@ export type NotificationOptions = Partial<Exclude<Notification, 'id'>> & { messa
 
 function createNotificationList() {
   const notificationList = writable<Notification[]>([]);
+  let count = 1;
 
   const show = (options: NotificationOptions) => {
     notificationList.update((currentList) => {
       currentList.push({
-        id: Date.now() + Math.random(),
+        id: count++,
         type: NotificationType.Info,
         action: { type: 'discard' },
         timeout: 3000,
