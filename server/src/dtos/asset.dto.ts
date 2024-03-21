@@ -13,7 +13,7 @@ import {
 } from 'class-validator';
 import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AssetType } from 'src/entities/asset.entity';
-import { AssetStats } from 'src/interfaces/asset.repository';
+import { AssetStats } from 'src/interfaces/asset.interface';
 import { Optional, ValidateBoolean, ValidateUUID } from 'src/validation';
 
 export class DeviceIdDto {

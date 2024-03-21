@@ -14,7 +14,7 @@ import {
   QueueCleanType,
   QueueName,
   QueueStatus,
-} from 'src/interfaces/job.repository';
+} from 'src/interfaces/job.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
 import { ImmichLogger } from 'src/utils/logger';
 

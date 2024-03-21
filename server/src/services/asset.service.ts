@@ -28,10 +28,10 @@ import { UpdateStackParentDto } from 'src/dtos/stack.dto';
 import { TimeBucketAssetDto, TimeBucketDto, TimeBucketResponseDto } from 'src/dtos/time-bucket.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { LibraryType } from 'src/entities/library.entity';
-import { IAccessRepository } from 'src/interfaces/access.repository';
-import { IAssetStackRepository } from 'src/interfaces/asset-stack.repository';
-import { IAssetRepository, TimeBucketOptions } from 'src/interfaces/asset.repository';
-import { ClientEvent, ICommunicationRepository } from 'src/interfaces/communication.repository';
+import { IAccessRepository } from 'src/interfaces/access.interface';
+import { IAssetStackRepository } from 'src/interfaces/asset-stack.interface';
+import { IAssetRepository, TimeBucketOptions } from 'src/interfaces/asset.interface';
+import { ClientEvent, ICommunicationRepository } from 'src/interfaces/communication.interface';
 import {
   IAssetDeletionJob,
   IJobRepository,
@@ -40,11 +40,11 @@ import {
   JobItem,
   JobName,
   JobStatus,
-} from 'src/interfaces/job.repository';
-import { IPartnerRepository } from 'src/interfaces/partner.repository';
-import { IStorageRepository } from 'src/interfaces/storage.repository';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
-import { IUserRepository } from 'src/interfaces/user.repository';
+} from 'src/interfaces/job.interface';
+import { IPartnerRepository } from 'src/interfaces/partner.interface';
+import { IStorageRepository } from 'src/interfaces/storage.interface';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { IUserRepository } from 'src/interfaces/user.interface';
 import { ImmichLogger } from 'src/utils/logger';
 import { mimeTypes } from 'src/utils/mime-types';
 import { usePagination } from 'src/utils/pagination';

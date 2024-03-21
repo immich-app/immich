@@ -8,7 +8,7 @@ import {
   UserFindOptions,
   UserListFilter,
   UserStatsQueryResponse,
-} from 'src/interfaces/user.repository';
+} from 'src/interfaces/user.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
 import { IsNull, Not, Repository } from 'typeorm';
 

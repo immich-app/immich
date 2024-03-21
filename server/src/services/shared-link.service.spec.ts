@@ -2,8 +2,8 @@ import { BadRequestException, ForbiddenException, UnauthorizedException } from '
 import _ from 'lodash';
 import { AssetIdErrorReason } from 'src/dtos/asset-ids.response.dto';
 import { SharedLinkType } from 'src/entities/shared-link.entity';
-import { ICryptoRepository } from 'src/interfaces/crypto.repository';
-import { ISharedLinkRepository } from 'src/interfaces/shared-link.repository';
+import { ICryptoRepository } from 'src/interfaces/crypto.interface';
+import { ISharedLinkRepository } from 'src/interfaces/shared-link.interface';
 import { SharedLinkService } from 'src/services/shared-link.service';
 import { albumStub } from 'test/fixtures/album.stub';
 import { assetStub } from 'test/fixtures/asset.stub';

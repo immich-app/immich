@@ -9,7 +9,7 @@ import { format } from 'sql-formatter';
 import { databaseConfig } from 'src/database.config';
 import { GENERATE_SQL_KEY, GenerateSqlQueries } from 'src/decorators';
 import { databaseEntities } from 'src/entities';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
 import { ApiKeyRepository } from 'src/repositories/api-key.repository';

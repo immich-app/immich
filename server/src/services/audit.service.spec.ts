@@ -1,11 +1,11 @@
 import { DatabaseAction, EntityType } from 'src/entities/audit.entity';
-import { IAssetRepository } from 'src/interfaces/asset.repository';
-import { IAuditRepository } from 'src/interfaces/audit.repository';
-import { ICryptoRepository } from 'src/interfaces/crypto.repository';
-import { JobStatus } from 'src/interfaces/job.repository';
-import { IPersonRepository } from 'src/interfaces/person.repository';
-import { IStorageRepository } from 'src/interfaces/storage.repository';
-import { IUserRepository } from 'src/interfaces/user.repository';
+import { IAssetRepository } from 'src/interfaces/asset.interface';
+import { IAuditRepository } from 'src/interfaces/audit.interface';
+import { ICryptoRepository } from 'src/interfaces/crypto.interface';
+import { JobStatus } from 'src/interfaces/job.interface';
+import { IPersonRepository } from 'src/interfaces/person.interface';
+import { IStorageRepository } from 'src/interfaces/storage.interface';
+import { IUserRepository } from 'src/interfaces/user.interface';
 import { AuditService } from 'src/services/audit.service';
 import { auditStub } from 'test/fixtures/audit.stub';
 import { authStub } from 'test/fixtures/auth.stub';

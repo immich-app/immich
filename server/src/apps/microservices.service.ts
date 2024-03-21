@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { IDeleteFilesJob, JobName } from 'src/interfaces/job.repository';
+import { IDeleteFilesJob, JobName } from 'src/interfaces/job.interface';
 import { AssetService } from 'src/services/asset.service';
 import { AuditService } from 'src/services/audit.service';
 import { DatabaseService } from 'src/services/database.service';

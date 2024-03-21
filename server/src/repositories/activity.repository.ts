@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { ActivityEntity } from 'src/entities/activity.entity';
-import { IActivityRepository } from 'src/interfaces/activity.repository';
+import { IActivityRepository } from 'src/interfaces/activity.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
 import { IsNull, Repository } from 'typeorm';
 

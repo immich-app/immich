@@ -11,7 +11,7 @@ import {
   AlbumAssets,
   AlbumInfoOptions,
   IAlbumRepository,
-} from 'src/interfaces/album.repository';
+} from 'src/interfaces/album.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
 import { setUnion } from 'src/utils/set';
 import { DataSource, FindOptionsOrder, FindOptionsRelations, In, IsNull, Not, Repository } from 'typeorm';

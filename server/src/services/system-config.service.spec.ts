@@ -13,10 +13,10 @@ import {
   TranscodePolicy,
   VideoCodec,
 } from 'src/entities/system-config.entity';
-import { ICommunicationRepository, ServerEvent } from 'src/interfaces/communication.repository';
-import { QueueName } from 'src/interfaces/job.repository';
-import { ISearchRepository } from 'src/interfaces/search.repository';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
+import { ICommunicationRepository, ServerEvent } from 'src/interfaces/communication.interface';
+import { QueueName } from 'src/interfaces/job.interface';
+import { ISearchRepository } from 'src/interfaces/search.interface';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 import { SystemConfigService } from 'src/services/system-config.service';
 import { ImmichLogger } from 'src/utils/logger';
 import { newCommunicationRepositoryMock } from 'test/repositories/communication.repository.mock';

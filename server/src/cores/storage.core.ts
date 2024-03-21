@@ -4,12 +4,12 @@ import { SystemConfigCore } from 'src/cores/system-config.core';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetPathType, PathType, PersonPathType } from 'src/entities/move.entity';
 import { PersonEntity } from 'src/entities/person.entity';
-import { IAssetRepository } from 'src/interfaces/asset.repository';
-import { ICryptoRepository } from 'src/interfaces/crypto.repository';
-import { IMoveRepository } from 'src/interfaces/move.repository';
-import { IPersonRepository } from 'src/interfaces/person.repository';
-import { IStorageRepository } from 'src/interfaces/storage.repository';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
+import { IAssetRepository } from 'src/interfaces/asset.interface';
+import { ICryptoRepository } from 'src/interfaces/crypto.interface';
+import { IMoveRepository } from 'src/interfaces/move.interface';
+import { IPersonRepository } from 'src/interfaces/person.interface';
+import { IStorageRepository } from 'src/interfaces/storage.interface';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 import { ImmichLogger } from 'src/utils/logger';
 
 export enum StorageFolder {

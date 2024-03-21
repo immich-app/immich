@@ -26,12 +26,12 @@ import { AssetFileUploadResponseDto } from 'src/immich/api-v1/asset/response-dto
 import { CheckExistingAssetsResponseDto } from 'src/immich/api-v1/asset/response-dto/check-existing-assets-response.dto';
 import { CuratedLocationsResponseDto } from 'src/immich/api-v1/asset/response-dto/curated-locations-response.dto';
 import { CuratedObjectsResponseDto } from 'src/immich/api-v1/asset/response-dto/curated-objects-response.dto';
-import { IAccessRepository } from 'src/interfaces/access.repository';
-import { IAssetRepository } from 'src/interfaces/asset.repository';
-import { IJobRepository, JobName } from 'src/interfaces/job.repository';
-import { ILibraryRepository } from 'src/interfaces/library.repository';
-import { IStorageRepository } from 'src/interfaces/storage.repository';
-import { IUserRepository } from 'src/interfaces/user.repository';
+import { IAccessRepository } from 'src/interfaces/access.interface';
+import { IAssetRepository } from 'src/interfaces/asset.interface';
+import { IJobRepository, JobName } from 'src/interfaces/job.interface';
+import { ILibraryRepository } from 'src/interfaces/library.interface';
+import { IStorageRepository } from 'src/interfaces/storage.interface';
+import { IUserRepository } from 'src/interfaces/user.interface';
 import { UploadFile } from 'src/services/asset.service';
 import { CacheControl, ImmichFileResponse, getLivePhotoMotionFilename } from 'src/utils/file';
 import { ImmichLogger } from 'src/utils/logger';

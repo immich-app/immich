@@ -14,7 +14,7 @@ import {
   OnConnectCallback,
   OnServerEventCallback,
   ServerEvent,
-} from 'src/interfaces/communication.repository';
+} from 'src/interfaces/communication.interface';
 import { AuthService } from 'src/services/auth.service';
 import { Instrumentation } from 'src/utils/instrumentation';
 import { ImmichLogger } from 'src/utils/logger';

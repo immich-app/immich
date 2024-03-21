@@ -4,7 +4,7 @@ import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AssetIdsDto } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { CreateTagDto, TagResponseDto, UpdateTagDto, mapTag } from 'src/dtos/tag.dto';
-import { ITagRepository } from 'src/interfaces/tag.repository';
+import { ITagRepository } from 'src/interfaces/tag.interface';
 
 @Injectable()
 export class TagService {

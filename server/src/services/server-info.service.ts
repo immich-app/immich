@@ -13,12 +13,12 @@ import {
   UsageByUserDto,
 } from 'src/dtos/server-info.dto';
 import { SystemMetadataKey } from 'src/entities/system-metadata.entity';
-import { ClientEvent, ICommunicationRepository } from 'src/interfaces/communication.repository';
-import { IServerInfoRepository } from 'src/interfaces/server-info.repository';
-import { IStorageRepository } from 'src/interfaces/storage.repository';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.repository';
-import { IUserRepository, UserStatsQueryResponse } from 'src/interfaces/user.repository';
+import { ClientEvent, ICommunicationRepository } from 'src/interfaces/communication.interface';
+import { IServerInfoRepository } from 'src/interfaces/server-info.interface';
+import { IStorageRepository } from 'src/interfaces/storage.interface';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { IUserRepository, UserStatsQueryResponse } from 'src/interfaces/user.interface';
 import { asHumanReadable } from 'src/utils/bytes';
 import { ImmichLogger } from 'src/utils/logger';
 import { mimeTypes } from 'src/utils/mime-types';

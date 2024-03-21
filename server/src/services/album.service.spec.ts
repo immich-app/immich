@@ -1,9 +1,9 @@
 import { BadRequestException } from '@nestjs/common';
 import _ from 'lodash';
 import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto';
-import { IAlbumRepository } from 'src/interfaces/album.repository';
-import { IAssetRepository } from 'src/interfaces/asset.repository';
-import { IUserRepository } from 'src/interfaces/user.repository';
+import { IAlbumRepository } from 'src/interfaces/album.interface';
+import { IAssetRepository } from 'src/interfaces/asset.interface';
+import { IUserRepository } from 'src/interfaces/user.interface';
 import { AlbumService } from 'src/services/album.service';
 import { albumStub } from 'test/fixtures/album.stub';
 import { authStub } from 'test/fixtures/auth.stub';

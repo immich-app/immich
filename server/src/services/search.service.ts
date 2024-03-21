@@ -17,13 +17,13 @@ import {
 } from 'src/dtos/search.dto';
 import { AssetOrder } from 'src/entities/album.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { IAssetRepository } from 'src/interfaces/asset.repository';
-import { IMachineLearningRepository } from 'src/interfaces/machine-learning.repository';
-import { IMetadataRepository } from 'src/interfaces/metadata.repository';
-import { IPartnerRepository } from 'src/interfaces/partner.repository';
-import { IPersonRepository } from 'src/interfaces/person.repository';
-import { ISearchRepository, SearchExploreItem, SearchStrategy } from 'src/interfaces/search.repository';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
+import { IAssetRepository } from 'src/interfaces/asset.interface';
+import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
+import { IMetadataRepository } from 'src/interfaces/metadata.interface';
+import { IPartnerRepository } from 'src/interfaces/partner.interface';
+import { IPersonRepository } from 'src/interfaces/person.interface';
+import { ISearchRepository, SearchExploreItem, SearchStrategy } from 'src/interfaces/search.interface';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 
 @Injectable()
 export class SearchService {

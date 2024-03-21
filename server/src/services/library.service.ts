@@ -22,10 +22,10 @@ import {
 } from 'src/dtos/library.dto';
 import { AssetType } from 'src/entities/asset.entity';
 import { LibraryEntity, LibraryType } from 'src/entities/library.entity';
-import { IAssetRepository, WithProperty } from 'src/interfaces/asset.repository';
-import { InternalEvent, InternalEventMap } from 'src/interfaces/communication.repository';
-import { ICryptoRepository } from 'src/interfaces/crypto.repository';
-import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.repository';
+import { IAssetRepository, WithProperty } from 'src/interfaces/asset.interface';
+import { InternalEvent, InternalEventMap } from 'src/interfaces/communication.interface';
+import { ICryptoRepository } from 'src/interfaces/crypto.interface';
+import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
 import {
   IBaseJob,
   IEntityJob,
@@ -35,10 +35,10 @@ import {
   JOBS_ASSET_PAGINATION_SIZE,
   JobName,
   JobStatus,
-} from 'src/interfaces/job.repository';
-import { ILibraryRepository } from 'src/interfaces/library.repository';
-import { IStorageRepository, StorageEventType } from 'src/interfaces/storage.repository';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
+} from 'src/interfaces/job.interface';
+import { ILibraryRepository } from 'src/interfaces/library.interface';
+import { IStorageRepository, StorageEventType } from 'src/interfaces/storage.interface';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 import { ImmichLogger } from 'src/utils/logger';
 import { mimeTypes } from 'src/utils/mime-types';
 import { handlePromiseError } from 'src/utils/misc';

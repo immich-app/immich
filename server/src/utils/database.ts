@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { AssetSearchBuilderOptions } from 'src/interfaces/search.repository';
+import { AssetSearchBuilderOptions } from 'src/interfaces/search.interface';
 import { Between, IsNull, LessThanOrEqual, MoreThanOrEqual, Not, SelectQueryBuilder } from 'typeorm';
 
 /**

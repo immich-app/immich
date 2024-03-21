@@ -5,7 +5,7 @@ import { LoginResponseDto } from 'src/dtos/auth.dto';
 import { LibraryResponseDto } from 'src/dtos/library.dto';
 import { AssetType } from 'src/entities/asset.entity';
 import { LibraryType } from 'src/entities/library.entity';
-import { StorageEventType } from 'src/interfaces/storage.repository';
+import { StorageEventType } from 'src/interfaces/storage.interface';
 import { LibraryService } from 'src/services/library.service';
 import {
   IMMICH_TEST_ASSET_PATH,

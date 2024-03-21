@@ -12,8 +12,8 @@ import {
   TranscodeTarget,
   VideoCodec,
 } from 'src/entities/system-config.entity';
-import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.repository';
-import { ICryptoRepository } from 'src/interfaces/crypto.repository';
+import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
+import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import {
   IBaseJob,
   IEntityJob,
@@ -23,17 +23,12 @@ import {
   JobName,
   JobStatus,
   QueueName,
-} from 'src/interfaces/job.repository';
-import {
-  AudioStreamInfo,
-  IMediaRepository,
-  VideoCodecHWConfig,
-  VideoStreamInfo,
-} from 'src/interfaces/media.repository';
-import { IMoveRepository } from 'src/interfaces/move.repository';
-import { IPersonRepository } from 'src/interfaces/person.repository';
-import { IStorageRepository } from 'src/interfaces/storage.repository';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
+} from 'src/interfaces/job.interface';
+import { AudioStreamInfo, IMediaRepository, VideoCodecHWConfig, VideoStreamInfo } from 'src/interfaces/media.interface';
+import { IMoveRepository } from 'src/interfaces/move.interface';
+import { IPersonRepository } from 'src/interfaces/person.interface';
+import { IStorageRepository } from 'src/interfaces/storage.interface';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 import { ImmichLogger } from 'src/utils/logger';
 import {
   H264Config,

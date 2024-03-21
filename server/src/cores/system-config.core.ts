@@ -20,8 +20,8 @@ import {
   TranscodePolicy,
   VideoCodec,
 } from 'src/entities/system-config.entity';
-import { QueueName } from 'src/interfaces/job.repository';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
+import { QueueName } from 'src/interfaces/job.interface';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 import { ImmichLogger } from 'src/utils/logger';
 
 export type SystemConfigValidator = (config: SystemConfig, newConfig: SystemConfig) => void | Promise<void>;

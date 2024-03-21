@@ -9,7 +9,7 @@ import { PartnerEntity } from 'src/entities/partner.entity';
 import { PersonEntity } from 'src/entities/person.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
 import { UserTokenEntity } from 'src/entities/user-token.entity';
-import { IAccessRepository } from 'src/interfaces/access.repository';
+import { IAccessRepository } from 'src/interfaces/access.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
 import { Brackets, In, Repository } from 'typeorm';
 

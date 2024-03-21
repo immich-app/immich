@@ -39,14 +39,14 @@ import {
 import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
 import { SystemConfig } from 'src/entities/system-config.entity';
 import { UserEntity } from 'src/entities/user.entity';
-import { IAccessRepository } from 'src/interfaces/access.repository';
-import { IKeyRepository } from 'src/interfaces/api-key.repository';
-import { ICryptoRepository } from 'src/interfaces/crypto.repository';
-import { ILibraryRepository } from 'src/interfaces/library.repository';
-import { ISharedLinkRepository } from 'src/interfaces/shared-link.repository';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
-import { IUserTokenRepository } from 'src/interfaces/user-token.repository';
-import { IUserRepository } from 'src/interfaces/user.repository';
+import { IAccessRepository } from 'src/interfaces/access.interface';
+import { IKeyRepository } from 'src/interfaces/api-key.interface';
+import { ICryptoRepository } from 'src/interfaces/crypto.interface';
+import { ILibraryRepository } from 'src/interfaces/library.interface';
+import { ISharedLinkRepository } from 'src/interfaces/shared-link.interface';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { IUserTokenRepository } from 'src/interfaces/user-token.interface';
+import { IUserRepository } from 'src/interfaces/user.interface';
 import { HumanReadableSize } from 'src/utils/bytes';
 import { ImmichLogger } from 'src/utils/logger';
 

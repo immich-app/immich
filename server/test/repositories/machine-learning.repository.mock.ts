@@ -1,4 +1,4 @@
-import { IMachineLearningRepository } from 'src/interfaces/machine-learning.repository';
+import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
 
 export const newMachineLearningRepositoryMock = (): jest.Mocked<IMachineLearningRepository> => {
   return {
