@@ -13,6 +13,7 @@ import { IActivityRepository } from 'src/interfaces/activity.interface';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IKeyRepository } from 'src/interfaces/api-key.interface';
 import { IAssetStackRepository } from 'src/interfaces/asset-stack.interface';
+import { IAssetRepositoryV1 } from 'src/interfaces/asset-v1.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IAuditRepository } from 'src/interfaces/audit.interface';
 import { ICommunicationRepository } from 'src/interfaces/communication.interface';
@@ -40,6 +41,7 @@ import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
 import { ApiKeyRepository } from 'src/repositories/api-key.repository';
 import { AssetStackRepository } from 'src/repositories/asset-stack.repository';
+import { AssetRepositoryV1 } from 'src/repositories/asset-v1.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { AuditRepository } from 'src/repositories/audit.repository';
 import { CommunicationRepository } from 'src/repositories/communication.repository';
@@ -65,6 +67,7 @@ import { UserRepository } from 'src/repositories/user.repository';
 import { ActivityService } from 'src/services/activity.service';
 import { AlbumService } from 'src/services/album.service';
 import { APIKeyService } from 'src/services/api-key.service';
+import { AssetServiceV1 } from 'src/services/asset-v1.service';
 import { AssetService } from 'src/services/asset.service';
 import { AuditService } from 'src/services/audit.service';
 import { AuthService } from 'src/services/auth.service';
@@ -94,6 +97,7 @@ const services: Provider[] = [
   ActivityService,
   AlbumService,
   AssetService,
+  AssetServiceV1,
   AuditService,
   AuthService,
   DatabaseService,
@@ -122,6 +126,7 @@ const repositories: Provider[] = [
   { provide: IAccessRepository, useClass: AccessRepository },
   { provide: IAlbumRepository, useClass: AlbumRepository },
   { provide: IAssetRepository, useClass: AssetRepository },
+  { provide: IAssetRepositoryV1, useClass: AssetRepositoryV1 },
   { provide: IAssetStackRepository, useClass: AssetStackRepository },
   { provide: IAuditRepository, useClass: AuditRepository },
   { provide: ICommunicationRepository, useClass: CommunicationRepository },

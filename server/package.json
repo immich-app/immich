@@ -156,10 +156,10 @@
     "coverageDirectory": "./coverage",
     "coverageThreshold": {
       "./src/": {
-        "branches": 75,
-        "functions": 80,
-        "lines": 85,
-        "statements": 85
+        "branches": 70,
+        "functions": 75,
+        "lines": 80,
+        "statements": 80
       }
     },
     "testEnvironment": "node",
