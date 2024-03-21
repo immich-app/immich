@@ -10,13 +10,13 @@
   import { mdiCheck, mdiClose } from '@mdi/js';
   import { onMount } from 'svelte';
   import { handleError } from '../../utils/handle-error';
-  import SettingSwitch from '../admin-page/settings/setting-switch.svelte';
   import Button from '../elements/buttons/button.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import Icon from '../elements/icon.svelte';
-  import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
-  import UserAvatar from '../shared-components/user-avatar.svelte';
+  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
+  import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
   import PartnerSelectionModal from './partner-selection-modal.svelte';
+  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
 
   interface PartnerSharing {
     user: UserResponseDto;
@@ -31,8 +31,8 @@
   let removePartnerDto: PartnerResponseDto | null = null;
   let partners: Array<PartnerSharing> = [];
 
-  onMount(() => {
-    refreshPartners();
+  onMount(async () => {
+    await refreshPartners();
   });
 
   const refreshPartners = async () => {
@@ -190,7 +190,7 @@
   <ConfirmDialogue
     title="Stop sharing your photos?"
     prompt="{removePartnerDto.name} will no longer be able to access your photos."
-    on:cancel={() => (removePartnerDto = null)}
-    on:confirm={() => handleRemovePartner()}
+    onClose={() => (removePartnerDto = null)}
+    onConfirm={() => handleRemovePartner()}
   />
 {/if}

@@ -22,7 +22,6 @@
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { mdiDotsVertical, mdiPlus } from '@mdi/js';
-  import UpdatePanel from '$lib/components/shared-components/update-panel.svelte';
   import { user } from '$lib/stores/user.store';
 
   let { isViewing: showAssetViewer } = assetViewingStore;
@@ -62,14 +61,14 @@
     </AssetSelectContextMenu>
     <DeleteAssets
       on:escape={() => (handleEscapeKey = true)}
-      onAssetDelete={(assetId) => assetStore.removeAsset(assetId)}
+      onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)}
     />
     <AssetSelectContextMenu icon={mdiDotsVertical} title="Menu">
-      <FavoriteAction menuItem removeFavorite={isAllFavorite} />
+      <FavoriteAction menuItem removeFavorite={isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
       <DownloadAction menuItem />
-      <ArchiveAction menuItem onArchive={(ids) => assetStore.removeAssets(ids)} />
+      <ArchiveAction menuItem onArchive={(assetIds) => assetStore.removeAssets(assetIds)} />
       {#if $selectedAssets.size > 1}
-        <StackAction onStack={(ids) => assetStore.removeAssets(ids)} />
+        <StackAction onStack={(assetIds) => assetStore.removeAssets(assetIds)} />
       {/if}
       <ChangeDate menuItem />
       <ChangeLocation menuItem />
@@ -89,11 +88,6 @@
     {#if $user.memoriesEnabled}
       <MemoryLane />
     {/if}
-    <EmptyPlaceholder
-      text="CLICK TO UPLOAD YOUR FIRST PHOTO"
-      actionHandler={() => openFileUploadDialog()}
-      slot="empty"
-    />
+    <EmptyPlaceholder text="CLICK TO UPLOAD YOUR FIRST PHOTO" onClick={() => openFileUploadDialog()} slot="empty" />
   </AssetGrid>
 </UserPageLayout>
-<UpdatePanel {assetStore} />

@@ -18,6 +18,7 @@ class CreateLibraryDto {
     this.isVisible,
     this.isWatched,
     this.name,
+    required this.ownerId,
     required this.type,
   });
 
@@ -49,6 +50,8 @@ class CreateLibraryDto {
   ///
   String? name;
 
+  String ownerId;
+
   LibraryType type;
 
   @override
@@ -58,6 +61,7 @@ class CreateLibraryDto {
     other.isVisible == isVisible &&
     other.isWatched == isWatched &&
     other.name == name &&
+    other.ownerId == ownerId &&
     other.type == type;
 
   @override
@@ -68,10 +72,11 @@ class CreateLibraryDto {
     (isVisible == null ? 0 : isVisible!.hashCode) +
     (isWatched == null ? 0 : isWatched!.hashCode) +
     (name == null ? 0 : name!.hashCode) +
+    (ownerId.hashCode) +
     (type.hashCode);
 
   @override
-  String toString() => 'CreateLibraryDto[exclusionPatterns=$exclusionPatterns, importPaths=$importPaths, isVisible=$isVisible, isWatched=$isWatched, name=$name, type=$type]';
+  String toString() => 'CreateLibraryDto[exclusionPatterns=$exclusionPatterns, importPaths=$importPaths, isVisible=$isVisible, isWatched=$isWatched, name=$name, ownerId=$ownerId, type=$type]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -92,6 +97,7 @@ class CreateLibraryDto {
     } else {
     //  json[r'name'] = null;
     }
+      json[r'ownerId'] = this.ownerId;
       json[r'type'] = this.type;
     return json;
   }
@@ -113,6 +119,7 @@ class CreateLibraryDto {
         isVisible: mapValueOfType<bool>(json, r'isVisible'),
         isWatched: mapValueOfType<bool>(json, r'isWatched'),
         name: mapValueOfType<String>(json, r'name'),
+        ownerId: mapValueOfType<String>(json, r'ownerId')!,
         type: LibraryType.fromJson(json[r'type'])!,
       );
     }
@@ -161,6 +168,7 @@ class CreateLibraryDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'ownerId',
     'type',
   };
 }

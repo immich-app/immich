@@ -1,30 +1,31 @@
 .vscode/
+.github/
+.git/
 
 design/
 docker/
 docs/
+e2e/
 fastlane/
 machine-learning/
 misc/
 mobile/
 
-server/node_modules/
+cli/coverage/
+cli/dist/
+cli/node_modules/
+
+open-api/typescript-sdk/build/
+open-api/typescript-sdk/node_modules/
+
 server/coverage/
-server/.reverse-geocoding-dump/
+server/node_modules/
 server/upload/
 server/dist/
+server/www/
+server/test/assets/
 
 web/node_modules/
 web/coverage/
 web/.svelte-kit
 web/build/
-
-cli/node_modules/
-cli/.reverse-geocoding-dump/
-cli/upload/
-cli/dist/
-
-e2e/
-
-open-api/typescript-sdk/node_modules/
-open-api/typescript-sdk/build/

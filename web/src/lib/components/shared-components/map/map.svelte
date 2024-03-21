@@ -2,7 +2,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { Theme } from '$lib/constants';
   import { colorTheme, mapSettings } from '$lib/stores/preferences.store';
-  import { getAssetThumbnailUrl } from '$lib/utils';
+  import { getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { getMapStyle, MapTheme, type MapMarkerResponseDto } from '@immich/sdk';
   import { mdiCog, mdiMapMarker } from '@mdi/js';
   import type { Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
@@ -32,6 +32,17 @@
   export let simplified = false;
   export let clickable = false;
   export let useLocationPin = false;
+  export function addClipMapMarker(lng: number, lat: number) {
+    if (map) {
+      if (marker) {
+        marker.remove();
+      }
+
+      center = { lng, lat };
+      marker = new maplibregl.Marker().setLngLat([lng, lat]).addTo(map);
+      map.setZoom(15);
+    }
+  }
 
   let map: maplibregl.Map;
   let marker: maplibregl.Marker | null = null;
@@ -77,7 +88,7 @@
     }
   }
 
-  type FeaturePoint = Feature<Point, { id: string }>;
+  type FeaturePoint = Feature<Point, { id: string; city: string | null; state: string | null; country: string | null }>;
 
   const asFeature = (marker: MapMarkerResponseDto): FeaturePoint => {
     return {
@@ -85,6 +96,9 @@
       geometry: { type: 'Point', coordinates: [marker.lon, marker.lat] },
       properties: {
         id: marker.id,
+        city: marker.city,
+        state: marker.state,
+        country: marker.country,
       },
     };
   };
@@ -96,6 +110,9 @@
       lat: coords.lat,
       lon: coords.lng,
       id: featurePoint.properties.id,
+      city: featurePoint.properties.city,
+      state: featurePoint.properties.state,
+      country: featurePoint.properties.country,
     };
   };
 </script>
@@ -141,9 +158,7 @@
         applyToClusters
         asButton
         let:feature
-        on:click={(event) => {
-          handleClusterClick(event.detail.feature.properties.cluster_id, map);
-        }}
+        on:click={(event) => handlePromiseError(handleClusterClick(event.detail.feature.properties?.cluster_id, map))}
       >
         <div
           class="rounded-full w-[40px] h-[40px] bg-immich-primary text-immich-gray flex justify-center items-center font-mono font-bold shadow-lg hover:bg-immich-dark-primary transition-all duration-200 hover:text-immich-dark-bg opacity-90"
@@ -156,7 +171,7 @@
         asButton
         let:feature
         on:click={(event) => {
-          $$slots.popup || handleAssetClick(event.detail.feature.properties.id, map);
+          $$slots.popup || handleAssetClick(event.detail.feature.properties?.id, map);
         }}
       >
         {#if useLocationPin}
@@ -169,7 +184,9 @@
           <img
             src={getAssetThumbnailUrl(feature.properties?.id, undefined)}
             class="rounded-full w-[60px] h-[60px] border-2 border-immich-primary shadow-lg hover:border-immich-dark-primary transition-all duration-200 hover:scale-150 object-cover bg-immich-primary"
-            alt={`Image with id ${feature.properties?.id}`}
+            alt={feature.properties?.city && feature.properties.country
+              ? `Map marker for images taken in ${feature.properties.city}, ${feature.properties.country}`
+              : 'Map marker with image'}
           />
         {/if}
         {#if $$slots.popup}

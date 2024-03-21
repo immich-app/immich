@@ -1,4 +1,4 @@
-import { IAssetRepository } from '@app/domain';
+import { IAssetRepository } from 'src/interfaces/asset.interface';
 
 export const newAssetRepositoryMock = (): jest.Mocked<IAssetRepository> => {
   return {
@@ -8,6 +8,7 @@ export const newAssetRepositoryMock = (): jest.Mocked<IAssetRepository> => {
     getByDate: jest.fn(),
     getByDayOfYear: jest.fn(),
     getByIds: jest.fn().mockResolvedValue([]),
+    getByIdsWithAllRelations: jest.fn().mockResolvedValue([]),
     getByAlbumId: jest.fn(),
     getByUserId: jest.fn(),
     getById: jest.fn(),
@@ -18,13 +19,12 @@ export const newAssetRepositoryMock = (): jest.Mocked<IAssetRepository> => {
     getFirstAssetForAlbumId: jest.fn(),
     getLastUpdatedAssetForAlbumId: jest.fn(),
     getAll: jest.fn().mockResolvedValue({ items: [], hasNextPage: false }),
-    getAllByFileCreationDate: jest.fn(),
     getAllByDeviceId: jest.fn(),
     updateAll: jest.fn(),
-    getByLibraryId: jest.fn(),
+    getLibraryAssetPaths: jest.fn(),
     getByLibraryIdAndOriginalPath: jest.fn(),
     deleteAll: jest.fn(),
-    save: jest.fn(),
+    update: jest.fn(),
     remove: jest.fn(),
     findLivePhotoMatch: jest.fn(),
     getMapMarkers: jest.fn(),

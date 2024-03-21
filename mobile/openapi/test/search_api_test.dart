@@ -17,6 +17,11 @@ void main() {
   // final instance = SearchApi();
 
   group('tests for SearchApi', () {
+    //Future<List<AssetResponseDto>> getAssetsByCity() async
+    test('test getAssetsByCity', () async {
+      // TODO
+    });
+
     //Future<List<SearchExploreResponseDto>> getExploreData() async
     test('test getExploreData', () async {
       // TODO
@@ -39,6 +44,11 @@ void main() {
 
     //Future<List<PersonResponseDto>> searchPerson(String name, { bool withHidden }) async
     test('test searchPerson', () async {
+      // TODO
+    });
+
+    //Future<List<PlacesResponseDto>> searchPlaces(String name) async
+    test('test searchPlaces', () async {
       // TODO
     });
 

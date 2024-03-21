@@ -10,6 +10,7 @@
   import justifiedLayout from 'justified-layout';
   import { getAssetRatio } from '$lib/utils/asset-utils';
   import { calculateWidth } from '$lib/utils/timeline-util';
+  import { pushState, replaceState } from '$app/navigation';
 
   const dispatch = createEventDispatcher<{ intersected: { container: HTMLDivElement; position: BucketPosition } }>();
 
@@ -25,17 +26,14 @@
   let currentViewAssetIndex = 0;
   $: isMultiSelectionMode = selectedAssets.size > 0;
 
-  const viewAssetHandler = (event: CustomEvent) => {
-    const { asset }: { asset: AssetResponseDto } = event.detail;
-
+  const viewAssetHandler = (asset: AssetResponseDto) => {
     currentViewAssetIndex = assets.findIndex((a) => a.id == asset.id);
     selectedAsset = assets[currentViewAssetIndex];
     $showAssetViewer = true;
-    pushState(selectedAsset.id);
+    updateAssetState(selectedAsset.id, false);
   };
 
-  const selectAssetHandler = (event: CustomEvent) => {
-    const { asset }: { asset: AssetResponseDto } = event.detail;
+  const selectAssetHandler = (asset: AssetResponseDto) => {
     let temporary = new Set(selectedAssets);
 
     if (selectedAssets.has(asset)) {
@@ -52,7 +50,7 @@
       if (currentViewAssetIndex < assets.length - 1) {
         currentViewAssetIndex++;
         selectedAsset = assets[currentViewAssetIndex];
-        pushState(selectedAsset.id);
+        updateAssetState(selectedAsset.id);
       }
     } catch (error) {
       handleError(error, 'Cannot navigate to the next asset');
@@ -64,22 +62,26 @@
       if (currentViewAssetIndex > 0) {
         currentViewAssetIndex--;
         selectedAsset = assets[currentViewAssetIndex];
-        pushState(selectedAsset.id);
+        updateAssetState(selectedAsset.id);
       }
     } catch (error) {
       handleError(error, 'Cannot navigate to previous asset');
     }
   };
 
-  const pushState = (assetId: string) => {
-    // add a URL to the browser's history
-    // changes the current URL in the address bar but doesn't perform any SvelteKit navigation
-    history.pushState(null, '', `${$page.url.pathname}/photos/${assetId}`);
+  const updateAssetState = (assetId: string, replace = true) => {
+    const route = `${$page.url.pathname}/photos/${assetId}`;
+
+    if (replace) {
+      replaceState(route, {});
+    } else {
+      pushState(route, {});
+    }
   };
 
   const closeViewer = () => {
     $showAssetViewer = false;
-    history.pushState(null, '', `${$page.url.pathname}`);
+    pushState(`${$page.url.pathname}${$page.url.search}`, {});
   };
 
   onDestroy(() => {
@@ -105,6 +107,8 @@
   })();
 </script>
 
+<svelte:window on:popstate|preventDefault={closeViewer} />
+
 {#if assets.length > 0}
   <div class="relative" style="height: {geometry.containerHeight}px;width: {geometry.containerWidth}px ">
     {#each assets as asset, i (i)}
@@ -116,8 +120,8 @@
         <Thumbnail
           {asset}
           readonly={disableAssetSelect}
-          on:click={(e) => (isMultiSelectionMode ? selectAssetHandler(e) : viewAssetHandler(e))}
-          on:select={selectAssetHandler}
+          onClick={(e) => (isMultiSelectionMode ? selectAssetHandler(e) : viewAssetHandler(e))}
+          on:select={(e) => selectAssetHandler(e.detail.asset)}
           on:intersected={(event) =>
             i === Math.max(1, assets.length - 7) ? dispatch('intersected', event.detail) : undefined}
           selected={selectedAssets.has(asset)}

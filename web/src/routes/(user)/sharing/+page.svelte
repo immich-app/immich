@@ -19,7 +19,7 @@
   const createSharedAlbum = async () => {
     try {
       const newAlbum = await createAlbum({ createAlbumDto: { albumName: '' } });
-      goto(`${AppRoute.ALBUMS}/${newAlbum.id}`);
+      await goto(`${AppRoute.ALBUMS}/${newAlbum.id}`);
     } catch (error) {
       handleError(error, 'Unable to create album');
     }
@@ -80,10 +80,10 @@
 
       <div>
         <!-- Share Album List -->
-        <div class="grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))]">
+        <div class="grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))] mt-4 gap-y-4">
           {#each data.sharedAlbums as album, index (album.id)}
             <a data-sveltekit-preload-data="hover" href={`albums/${album.id}`} animate:flip={{ duration: 200 }}>
-              <AlbumCard preload={index < 20} {album} isSharingView showContextMenu={false} />
+              <AlbumCard preload={index < 20} {album} isSharingView />
             </a>
           {/each}
         </div>
@@ -92,7 +92,6 @@
         {#if data.sharedAlbums.length === 0}
           <EmptyPlaceholder
             text="Create a shared album to share photos and videos with people in your network"
-            alt="Empty album list"
             src={empty2Url}
           />
         {/if}

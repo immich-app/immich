@@ -15,9 +15,10 @@ class ImmichLogo extends StatelessWidget {
     return Hero(
       tag: heroTag,
       child: Image(
-        image: const AssetImage('assets/immich-logo-no-outline.png'),
+        image: const AssetImage('assets/immich-logo.png'),
         width: size,
         filterQuality: FilterQuality.high,
+        isAntiAlias: true,
       ),
     );
   }

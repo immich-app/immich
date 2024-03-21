@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "machine-learning"
-version = "1.94.1"
+version = "1.99.0"
 description = ""
 authors = ["Hau Tran <alex.tran1502@gmail.com>"]
 readme = "README.md"
@@ -45,19 +45,24 @@ onnxruntime = "^1.15.0"
 optional = true
 
 [tool.poetry.group.cuda.dependencies]
-onnxruntime-gpu = "^1.15.0"
+onnxruntime-gpu = {version = "^1.17.0", source = "cuda12"}
 
 [tool.poetry.group.openvino]
 optional = true
 
 [tool.poetry.group.openvino.dependencies]
-onnxruntime-openvino = ">=1.15.0,<1.16.0"
+onnxruntime-openvino = "^1.17.1"
 
 [tool.poetry.group.armnn]
 optional = true
 
 [tool.poetry.group.armnn.dependencies]
 onnxruntime = "^1.15.0"
+
+[[tool.poetry.source]]
+name = "cuda12"
+url = "https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/"
+priority = "explicit"
 
 [build-system]
 requires = ["poetry-core"]
@@ -82,10 +87,10 @@ warn_untyped_fields = true
 [tool.ruff]
 line-length = 120
 target-version = "py311"
-select = ["E", "F", "I"]
 
-[tool.ruff.per-file-ignores]
-"test_main.py" = ["F403"]
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+per-file-ignores = { "test_main.py" = ["F403"] }
 
 [tool.black]
 line-length = 120

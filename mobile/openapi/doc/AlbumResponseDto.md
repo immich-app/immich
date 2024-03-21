@@ -19,6 +19,7 @@ Name | Type | Description | Notes
 **id** | **String** |  | 
 **isActivityEnabled** | **bool** |  | 
 **lastModifiedAssetTimestamp** | [**DateTime**](DateTime.md) |  | [optional] 
+**order** | [**AssetOrder**](AssetOrder.md) |  | [optional] 
 **owner** | [**UserResponseDto**](UserResponseDto.md) |  | 
 **ownerId** | **String** |  | 
 **shared** | **bool** |  | 

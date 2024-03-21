@@ -58,6 +58,7 @@ doc/CreateTagDto.md
 doc/CreateUserDto.md
 doc/CuratedLocationsResponseDto.md
 doc/CuratedObjectsResponseDto.md
+doc/DeleteUserDto.md
 doc/DownloadApi.md
 doc/DownloadArchiveInfo.md
 doc/DownloadInfoDto.md
@@ -104,10 +105,12 @@ doc/PeopleResponseDto.md
 doc/PeopleUpdateDto.md
 doc/PeopleUpdateItem.md
 doc/PersonApi.md
+doc/PersonCreateDto.md
 doc/PersonResponseDto.md
 doc/PersonStatisticsResponseDto.md
 doc/PersonUpdateDto.md
 doc/PersonWithFacesResponseDto.md
+doc/PlacesResponseDto.md
 doc/QueueStatusDto.md
 doc/ReactionLevel.md
 doc/ReactionType.md
@@ -159,6 +162,7 @@ doc/SystemConfigTemplateStorageOptionDto.md
 doc/SystemConfigThemeDto.md
 doc/SystemConfigThumbnailDto.md
 doc/SystemConfigTrashDto.md
+doc/SystemConfigUserDto.md
 doc/TagApi.md
 doc/TagResponseDto.md
 doc/TagTypeEnum.md
@@ -181,7 +185,11 @@ doc/UserApi.md
 doc/UserAvatarColor.md
 doc/UserDto.md
 doc/UserResponseDto.md
+doc/UserStatus.md
 doc/ValidateAccessTokenResponseDto.md
+doc/ValidateLibraryDto.md
+doc/ValidateLibraryImportPathResponseDto.md
+doc/ValidateLibraryResponseDto.md
 doc/VideoCodec.md
 git_push.sh
 lib/api.dart
@@ -262,6 +270,7 @@ lib/model/create_tag_dto.dart
 lib/model/create_user_dto.dart
 lib/model/curated_locations_response_dto.dart
 lib/model/curated_objects_response_dto.dart
+lib/model/delete_user_dto.dart
 lib/model/download_archive_info.dart
 lib/model/download_info_dto.dart
 lib/model/download_response_dto.dart
@@ -301,10 +310,12 @@ lib/model/path_type.dart
 lib/model/people_response_dto.dart
 lib/model/people_update_dto.dart
 lib/model/people_update_item.dart
+lib/model/person_create_dto.dart
 lib/model/person_response_dto.dart
 lib/model/person_statistics_response_dto.dart
 lib/model/person_update_dto.dart
 lib/model/person_with_faces_response_dto.dart
+lib/model/places_response_dto.dart
 lib/model/queue_status_dto.dart
 lib/model/reaction_level.dart
 lib/model/reaction_type.dart
@@ -352,6 +363,7 @@ lib/model/system_config_template_storage_option_dto.dart
 lib/model/system_config_theme_dto.dart
 lib/model/system_config_thumbnail_dto.dart
 lib/model/system_config_trash_dto.dart
+lib/model/system_config_user_dto.dart
 lib/model/tag_response_dto.dart
 lib/model/tag_type_enum.dart
 lib/model/thumbnail_format.dart
@@ -371,7 +383,11 @@ lib/model/usage_by_user_dto.dart
 lib/model/user_avatar_color.dart
 lib/model/user_dto.dart
 lib/model/user_response_dto.dart
+lib/model/user_status.dart
 lib/model/validate_access_token_response_dto.dart
+lib/model/validate_library_dto.dart
+lib/model/validate_library_import_path_response_dto.dart
+lib/model/validate_library_response_dto.dart
 lib/model/video_codec.dart
 pubspec.yaml
 test/activity_api_test.dart
@@ -429,6 +445,7 @@ test/create_tag_dto_test.dart
 test/create_user_dto_test.dart
 test/curated_locations_response_dto_test.dart
 test/curated_objects_response_dto_test.dart
+test/delete_user_dto_test.dart
 test/download_api_test.dart
 test/download_archive_info_test.dart
 test/download_info_dto_test.dart
@@ -475,10 +492,12 @@ test/people_response_dto_test.dart
 test/people_update_dto_test.dart
 test/people_update_item_test.dart
 test/person_api_test.dart
+test/person_create_dto_test.dart
 test/person_response_dto_test.dart
 test/person_statistics_response_dto_test.dart
 test/person_update_dto_test.dart
 test/person_with_faces_response_dto_test.dart
+test/places_response_dto_test.dart
 test/queue_status_dto_test.dart
 test/reaction_level_test.dart
 test/reaction_type_test.dart
@@ -530,6 +549,7 @@ test/system_config_template_storage_option_dto_test.dart
 test/system_config_theme_dto_test.dart
 test/system_config_thumbnail_dto_test.dart
 test/system_config_trash_dto_test.dart
+test/system_config_user_dto_test.dart
 test/tag_api_test.dart
 test/tag_response_dto_test.dart
 test/tag_type_enum_test.dart
@@ -552,5 +572,9 @@ test/user_api_test.dart
 test/user_avatar_color_test.dart
 test/user_dto_test.dart
 test/user_response_dto_test.dart
+test/user_status_test.dart
 test/validate_access_token_response_dto_test.dart
+test/validate_library_dto_test.dart
+test/validate_library_import_path_response_dto_test.dart
+test/validate_library_response_dto_test.dart
 test/video_codec_test.dart

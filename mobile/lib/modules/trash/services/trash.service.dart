@@ -25,7 +25,7 @@ class TrashService {
       await _apiService.trashApi.restoreAssets(BulkIdsDto(ids: remoteIds));
       return true;
     } catch (error, stack) {
-      _log.severe("Cannot restore assets ${error.toString()}", error, stack);
+      _log.severe("Cannot restore assets", error, stack);
       return false;
     }
   }
@@ -34,7 +34,7 @@ class TrashService {
     try {
       await _apiService.trashApi.emptyTrash();
     } catch (error, stack) {
-      _log.severe("Cannot empty trash ${error.toString()}", error, stack);
+      _log.severe("Cannot empty trash", error, stack);
     }
   }
 
@@ -42,7 +42,7 @@ class TrashService {
     try {
       await _apiService.trashApi.restoreTrash();
     } catch (error, stack) {
-      _log.severe("Cannot restore trash ${error.toString()}", error, stack);
+      _log.severe("Cannot restore trash", error, stack);
     }
   }
 }

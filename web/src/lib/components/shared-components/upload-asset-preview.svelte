@@ -13,9 +13,9 @@
 
   export let uploadAsset: UploadAsset;
 
-  const handleRetry = (uploadAsset: UploadAsset) => {
+  const handleRetry = async (uploadAsset: UploadAsset) => {
     uploadAssetsStore.removeUploadAsset(uploadAsset.id);
-    fileUploadHandler([uploadAsset.file], uploadAsset.albumId);
+    await fileUploadHandler([uploadAsset.file], uploadAsset.albumId);
   };
 </script>
 
@@ -27,7 +27,7 @@
   <div class="grid grid-cols-[65px_auto_auto]">
     <div class="relative h-[65px]">
       <div in:fade={{ duration: 250 }}>
-        <ImmichLogo class="h-[65px] w-[65px] rounded-bl-lg rounded-tl-lg object-cover p-2" />
+        <ImmichLogo noText class="h-[65px] w-[65px] rounded-bl-lg rounded-tl-lg object-cover p-2" />
       </div>
       <div class="absolute bottom-0 left-0 h-[25px] w-full rounded-bl-md bg-immich-primary/30">
         <p
@@ -45,7 +45,8 @@
       />
 
       <div
-        class="relative mt-[5px] h-[15px] w-full rounded-md bg-gray-300 text-white dark:bg-immich-dark-gray dark:text-black"
+        class="relative mt-[5px] h-[15px] w-full rounded-md bg-gray-300 text-white dark:bg-immich-dark-gray"
+        class:dark:text-black={uploadAsset.state === UploadState.STARTED}
       >
         {#if uploadAsset.state === UploadState.STARTED}
           <div class="h-[15px] rounded-md bg-immich-primary transition-all" style={`width: ${uploadAsset.progress}%`} />

@@ -1,8 +1,10 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:immich_mobile/modules/asset_viewer/image_providers/cache/image_loader.dart';
+import 'package:immich_mobile/modules/asset_viewer/image_providers/cache/remote_image_cache_manager.dart';
 import 'package:openapi/api.dart' as api;
 
 import 'package:flutter/foundation.dart';
@@ -12,36 +14,38 @@ import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 
-/// Our Image Provider HTTP client to make the request
-final _httpClient = HttpClient()..autoUncompress = false;
-
-/// The remote image provider
-class ImmichRemoteImageProvider extends ImageProvider<String> {
+/// The remote image provider for full size remote images
+class ImmichRemoteImageProvider
+    extends ImageProvider<ImmichRemoteImageProvider> {
   /// The [Asset.remoteId] of the asset to fetch
   final String assetId;
 
-  // If this is a thumbnail, we stop at loading the
-  // smallest version of the remote image
-  final bool isThumbnail;
+  /// The image cache manager
+  final ImageCacheManager? cacheManager;
 
   ImmichRemoteImageProvider({
     required this.assetId,
-    this.isThumbnail = false,
+    this.cacheManager,
   });
 
   /// Converts an [ImageProvider]'s settings plus an [ImageConfiguration] to a key
   /// that describes the precise image to load.
   @override
-  Future<String> obtainKey(ImageConfiguration configuration) {
-    return SynchronousFuture('$assetId,$isThumbnail');
+  Future<ImmichRemoteImageProvider> obtainKey(
+    ImageConfiguration configuration,
+  ) {
+    return SynchronousFuture(this);
   }
 
   @override
-  ImageStreamCompleter loadImage(String key, ImageDecoderCallback decode) {
-    final id = key.split(',').first;
+  ImageStreamCompleter loadImage(
+    ImmichRemoteImageProvider key,
+    ImageDecoderCallback decode,
+  ) {
+    final cache = cacheManager ?? RemoteImageCacheManager();
     final chunkEvents = StreamController<ImageChunkEvent>();
     return MultiImageStreamCompleter(
-      codec: _codec(id, decode, chunkEvents),
+      codec: _codec(key, cache, decode, chunkEvents),
       scale: 1.0,
       chunkEvents: chunkEvents.stream,
     );
@@ -61,83 +65,62 @@ class ImmichRemoteImageProvider extends ImageProvider<String> {
 
   // Streams in each stage of the image as we ask for it
   Stream<ui.Codec> _codec(
-    String key,
+    ImmichRemoteImageProvider key,
+    ImageCacheManager cache,
     ImageDecoderCallback decode,
     StreamController<ImageChunkEvent> chunkEvents,
   ) async* {
     // Load a preview to the chunk events
-    if (_loadPreview || isThumbnail) {
+    if (_loadPreview) {
       final preview = getThumbnailUrlForRemoteId(
-        assetId,
+        key.assetId,
         type: api.ThumbnailFormat.WEBP,
       );
 
-      yield await _loadFromUri(
-        Uri.parse(preview),
-        decode,
-        chunkEvents,
+      yield await ImageLoader.loadImageFromCache(
+        preview,
+        cache: cache,
+        decode: decode,
+        chunkEvents: chunkEvents,
       );
-    }
-
-    // Guard thumnbail rendering
-    if (isThumbnail) {
-      await chunkEvents.close();
-      return;
     }
 
     // Load the higher resolution version of the image
     final url = getThumbnailUrlForRemoteId(
-      assetId,
+      key.assetId,
       type: api.ThumbnailFormat.JPEG,
     );
-    final codec = await _loadFromUri(Uri.parse(url), decode, chunkEvents);
+    final codec = await ImageLoader.loadImageFromCache(
+      url,
+      cache: cache,
+      decode: decode,
+      chunkEvents: chunkEvents,
+    );
     yield codec;
 
     // Load the final remote image
     if (_useOriginal) {
       // Load the original image
-      final url = getImageUrlFromId(assetId);
-      final codec = await _loadFromUri(Uri.parse(url), decode, chunkEvents);
+      final url = getImageUrlFromId(key.assetId);
+      final codec = await ImageLoader.loadImageFromCache(
+        url,
+        cache: cache,
+        decode: decode,
+        chunkEvents: chunkEvents,
+      );
       yield codec;
     }
     await chunkEvents.close();
   }
 
-  // Loads the codec from the URI and sends the events to the [chunkEvents] stream
-  Future<ui.Codec> _loadFromUri(
-    Uri uri,
-    ImageDecoderCallback decode,
-    StreamController<ImageChunkEvent> chunkEvents,
-  ) async {
-    final request = await _httpClient.getUrl(uri);
-    request.headers.add(
-      'x-immich-user-token',
-      Store.get(StoreKey.accessToken),
-    );
-    final response = await request.close();
-    // Chunks of the completed image can be shown
-    final data = await consolidateHttpClientResponseBytes(
-      response,
-      onBytesReceived: (cumulative, total) {
-        chunkEvents.add(
-          ImageChunkEvent(
-            cumulativeBytesLoaded: cumulative,
-            expectedTotalBytes: total,
-          ),
-        );
-      },
-    );
-
-    // Decode the response
-    final buffer = await ui.ImmutableBuffer.fromUint8List(data);
-    return decode(buffer);
-  }
-
   @override
   bool operator ==(Object other) {
-    if (other is! ImmichRemoteImageProvider) return false;
     if (identical(this, other)) return true;
-    return assetId == other.assetId;
+    if (other is ImmichRemoteImageProvider) {
+      return assetId == other.assetId;
+    }
+
+    return false;
   }
 
   @override

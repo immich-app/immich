@@ -13,6 +13,7 @@
 
   export let user: UserResponseDto;
   export let canResetPassword = true;
+  export let newPassword: string;
 
   let error: string;
   let success: string;
@@ -34,14 +35,13 @@
 
   const editUser = async () => {
     try {
-      const { id, email, name, storageLabel, externalPath } = user;
+      const { id, email, name, storageLabel } = user;
       await updateUser({
         updateUserDto: {
           id,
           email,
           name,
           storageLabel: storageLabel || '',
-          externalPath: externalPath || '',
           quotaSizeInBytes: quotaSize ? convertToBytes(Number(quotaSize), 'GiB') : null,
         },
       });
@@ -54,12 +54,12 @@
 
   const resetPassword = async () => {
     try {
-      const defaultPassword = 'password';
+      newPassword = generatePassword();
 
       await updateUser({
         updateUserDto: {
           id: user.id,
-          password: defaultPassword,
+          password: newPassword,
           shouldChangePassword: true,
         },
       });
@@ -71,6 +71,23 @@
       isShowResetPasswordConfirmation = false;
     }
   };
+
+  // TODO move password reset server-side
+  function generatePassword(length: number = 16) {
+    let generatedPassword = '';
+
+    const characterSet = '0123456789' + 'abcdefghijklmnopqrstuvwxyz' + 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' + ',.-{}+!#$%/()=?';
+
+    for (let i = 0; i < length; i++) {
+      let randomNumber = crypto.getRandomValues(new Uint32Array(1))[0];
+      randomNumber = randomNumber / 2 ** 32;
+      randomNumber = Math.floor(randomNumber * characterSet.length);
+
+      generatedPassword += characterSet[randomNumber];
+    }
+
+    return generatedPassword;
+  }
 </script>
 
 <div
@@ -126,22 +143,6 @@
       </p>
     </div>
 
-    <div class="m-4 flex flex-col gap-2">
-      <label class="immich-form-label" for="external-path">External Path</label>
-      <input
-        class="immich-form-input"
-        id="external-path"
-        name="external-path"
-        type="text"
-        bind:value={user.externalPath}
-      />
-
-      <p>
-        Note: Absolute path of parent import directory. A user can only import files if they exist at or under this
-        path.
-      </p>
-    </div>
-
     {#if error}
       <p class="ml-4 text-sm text-red-400">{error}</p>
     {/if}
@@ -164,8 +165,8 @@
   <ConfirmDialogue
     title="Reset Password"
     confirmText="Reset"
-    on:confirm={resetPassword}
-    on:cancel={() => (isShowResetPasswordConfirmation = false)}
+    onConfirm={resetPassword}
+    onClose={() => (isShowResetPasswordConfirmation = false)}
   >
     <svelte:fragment slot="prompt">
       <p>

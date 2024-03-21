@@ -30,18 +30,16 @@
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
-  import UpdatePanel from '$lib/components/shared-components/update-panel.svelte';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
-  import { AppRoute, dateFormats } from '$lib/constants';
+  import { AppRoute } from '$lib/constants';
   import { numberOfComments, setNumberOfComments, updateNumberOfComments } from '$lib/stores/activity.store';
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { AssetStore } from '$lib/stores/assets.store';
   import { locale } from '$lib/stores/preferences.store';
-  import { SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
+  import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { user } from '$lib/stores/user.store';
   import { downloadArchive } from '$lib/utils/asset-utils';
-  import { autoGrowHeight } from '$lib/utils/autogrow';
   import { clickOutside } from '$lib/utils/click-outside';
   import { getContextMenuPosition } from '$lib/utils/context-menu';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
@@ -60,6 +58,7 @@
     updateAlbumInfo,
     type ActivityResponseDto,
     type UserResponseDto,
+    AssetOrder,
   } from '@immich/sdk';
   import {
     mdiArrowLeft,
@@ -71,19 +70,21 @@
     mdiPlus,
     mdiShareVariantOutline,
   } from '@mdi/js';
-  import { onMount } from 'svelte';
   import { fly } from 'svelte/transition';
   import type { PageData } from './$types';
+  import AlbumTitle from '$lib/components/album-page/album-title.svelte';
+  import AlbumDescription from '$lib/components/album-page/album-description.svelte';
+  import { handlePromiseError } from '$lib/utils';
+  import AlbumSummary from '$lib/components/album-page/album-summary.svelte';
 
   export let data: PageData;
 
   let { isViewing: showAssetViewer, setAssetId } = assetViewingStore;
-  let { slideshowState, slideshowShuffle } = slideshowStore;
-
-  let album = data.album;
-  let description = album.description;
+  let { slideshowState, slideshowNavigation } = slideshowStore;
 
   $: album = data.album;
+  $: albumId = album.id;
+  $: albumKey = `${albumId}_${albumOrder}`;
 
   $: {
     if (!album.isActivityEnabled && $numberOfComments === 0) {
@@ -105,35 +106,34 @@
 
   let backUrl: string = AppRoute.ALBUMS;
   let viewMode = ViewMode.VIEW;
-  let titleInput: HTMLInputElement;
   let isCreatingSharedAlbum = false;
-  let currentAlbumName = album.albumName;
   let contextMenuPosition: { x: number; y: number } = { x: 0, y: 0 };
   let isShowActivity = false;
   let isLiked: ActivityResponseDto | null = null;
   let reactions: ActivityResponseDto[] = [];
   let globalWidth: number;
   let assetGridWidth: number;
-  let textArea: HTMLTextAreaElement;
+  let albumOrder: AssetOrder | undefined = data.album.order;
 
-  const assetStore = new AssetStore({ albumId: album.id });
+  $: assetStore = new AssetStore({ albumId, order: albumOrder });
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
-  const timelineStore = new AssetStore({ isArchived: false }, album.id);
+  $: timelineStore = new AssetStore({ isArchived: false }, albumId);
   const timelineInteractionStore = createAssetInteractionStore();
   const { selectedAssets: timelineSelected } = timelineInteractionStore;
 
   $: isOwned = $user.id == album.ownerId;
   $: isAllUserOwned = [...$selectedAssets].every((asset) => asset.ownerId === $user.id);
   $: isAllFavorite = [...$selectedAssets].every((asset) => asset.isFavorite);
+  $: isAllArchived = [...$selectedAssets].every((asset) => asset.isArchived);
   $: {
     assetGridWidth = isShowActivity ? globalWidth - (globalWidth < 768 ? 360 : 460) : globalWidth;
   }
   $: showActivityStatus =
     album.sharedUsers.length > 0 && !$showAssetViewer && (album.isActivityEnabled || $numberOfComments > 0);
 
-  $: afterNavigate(({ from }) => {
+  afterNavigate(({ from }) => {
     assetViewingStore.showAssetViewer(false);
 
     let url: string | undefined = from?.url?.pathname;
@@ -148,7 +148,7 @@
 
     backUrl = url || AppRoute.ALBUMS;
 
-    if (backUrl === AppRoute.SHARING && album.sharedUsers.length === 0) {
+    if (backUrl === AppRoute.SHARING && album.sharedUsers.length === 0 && !album.hasSharedLink) {
       isCreatingSharedAlbum = true;
     }
   });
@@ -219,36 +219,21 @@
     isShowActivity = !isShowActivity;
   };
 
-  onMount(async () => {
-    if (album.sharedUsers.length > 0) {
-      getFavorite();
-      getNumberOfComments();
-    }
-  });
-
-  const handleKeypress = async (event: KeyboardEvent) => {
-    if (event.target !== textArea) {
-      return;
-    }
-    const ctrl = event.ctrlKey;
-    switch (event.key) {
-      case 'Enter': {
-        if (ctrl && event.target === textArea) {
-          textArea.blur();
-        }
-      }
-    }
-  };
+  $: if (album.sharedUsers.length > 0) {
+    handlePromiseError(getFavorite());
+    handlePromiseError(getNumberOfComments());
+  }
 
   const handleStartSlideshow = async () => {
-    const asset = $slideshowShuffle ? await assetStore.getRandomAsset() : assetStore.assets[0];
+    const asset =
+      $slideshowNavigation === SlideshowNavigation.Shuffle ? await assetStore.getRandomAsset() : assetStore.assets[0];
     if (asset) {
-      setAssetId(asset.id);
+      await setAssetId(asset.id);
       $slideshowState = SlideshowState.PlaySlideshow;
     }
   };
 
-  const handleEscape = () => {
+  const handleEscape = async () => {
     if (viewMode === ViewMode.SELECT_USERS) {
       viewMode = ViewMode.VIEW;
       return;
@@ -276,37 +261,12 @@
       assetInteractionStore.clearMultiselect();
       return;
     }
-    goto(backUrl);
+    await goto(backUrl);
     return;
   };
 
   const refreshAlbum = async () => {
     album = await getAlbumInfo({ id: album.id, withoutAssets: true });
-  };
-
-  const getDateRange = () => {
-    const { startDate, endDate } = album;
-
-    let start = '';
-    let end = '';
-
-    if (startDate) {
-      start = new Date(startDate).toLocaleDateString($locale, dateFormats.album);
-    }
-
-    if (endDate) {
-      end = new Date(endDate).toLocaleDateString($locale, dateFormats.album);
-    }
-
-    if (startDate && endDate && start !== end) {
-      return `${start} - ${end}`;
-    }
-
-    if (start) {
-      return start;
-    }
-
-    return '';
   };
 
   const handleAddAssets = async () => {
@@ -330,12 +290,6 @@
       viewMode = ViewMode.VIEW;
     } catch (error) {
       handleError(error, 'Error adding assets to album');
-    }
-  };
-
-  const handleRemoveAssets = (assetIds: string[]) => {
-    for (const assetId of assetIds) {
-      assetStore.removeAsset(assetId);
     }
   };
 
@@ -372,7 +326,7 @@
 
   const handleRemoveUser = async (userId: string) => {
     if (userId == 'me' || userId === $user.id) {
-      goto(backUrl);
+      await goto(backUrl);
       return;
     }
 
@@ -391,12 +345,17 @@
   const handleRemoveAlbum = async () => {
     try {
       await deleteAlbum({ id: album.id });
-      goto(backUrl);
+      await goto(backUrl);
     } catch (error) {
       handleError(error, 'Unable to delete album');
     } finally {
       viewMode = ViewMode.VIEW;
     }
+  };
+
+  const handleRemoveAssets = async (assetIds: string[]) => {
+    assetStore.removeAssets(assetIds);
+    await refreshAlbum();
   };
 
   const handleUpdateThumbnail = async (assetId: string) => {
@@ -414,52 +373,11 @@
           albumThumbnailAssetId: assetId,
         },
       });
-
-      notificationController.show({ type: NotificationType.Info, message: 'Updated album cover' });
     } catch (error) {
       handleError(error, 'Unable to update album cover');
     }
   };
-
-  const handleUpdateName = async () => {
-    if (currentAlbumName === album.albumName) {
-      return;
-    }
-
-    try {
-      await updateAlbumInfo({
-        id: album.id,
-        updateAlbumDto: {
-          albumName: album.albumName,
-        },
-      });
-      currentAlbumName = album.albumName;
-      notificationController.show({ type: NotificationType.Info, message: 'New album name has been saved' });
-    } catch (error) {
-      handleError(error, 'Unable to update album name');
-    }
-  };
-
-  const handleUpdateDescription = async () => {
-    if (album.description === description) {
-      return;
-    }
-    try {
-      await updateAlbumInfo({
-        id: album.id,
-        updateAlbumDto: {
-          description,
-        },
-      });
-
-      album.description = description;
-    } catch (error) {
-      handleError(error, 'Error updating album description');
-    }
-  };
 </script>
-
-<svelte:window on:keydown={handleKeypress} />
 
 <div class="flex overflow-hidden" bind:clientWidth={globalWidth}>
   <div class="relative w-full shrink">
@@ -473,15 +391,15 @@
         </AssetSelectContextMenu>
         <AssetSelectContextMenu icon={mdiDotsVertical} title="Menu">
           {#if isAllUserOwned}
-            <FavoriteAction menuItem removeFavorite={isAllFavorite} />
+            <FavoriteAction menuItem removeFavorite={isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
+            <ArchiveAction menuItem unarchive={isAllArchived} onArchive={() => assetStore.triggerUpdate()} />
           {/if}
-          <ArchiveAction menuItem />
           <DownloadAction menuItem filename="{album.albumName}.zip" />
           {#if isOwned || isAllUserOwned}
-            <RemoveFromAlbum menuItem bind:album onRemove={(assetIds) => handleRemoveAssets(assetIds)} />
+            <RemoveFromAlbum menuItem bind:album onRemove={handleRemoveAssets} />
           {/if}
           {#if isAllUserOwned}
-            <DeleteAssets menuItem onAssetDelete={(assetId) => assetStore.removeAsset(assetId)} />
+            <DeleteAssets menuItem onAssetDelete={handleRemoveAssets} />
             <ChangeDate menuItem />
             <ChangeLocation menuItem />
           {/if}
@@ -518,9 +436,7 @@
                   <CircleIconButton title="Album options" on:click={handleOpenAlbumOptions} icon={mdiDotsVertical}>
                     {#if viewMode === ViewMode.ALBUM_OPTIONS}
                       <ContextMenu {...contextMenuPosition}>
-                        {#if album.assetCount !== 0}
-                          <MenuOption on:click={handleStartSlideshow} text="Slideshow" />
-                        {/if}
+                        <MenuOption on:click={handleStartSlideshow} text="Slideshow" />
                         <MenuOption on:click={() => (viewMode = ViewMode.SELECT_THUMBNAIL)} text="Set album cover" />
                         <MenuOption on:click={() => (viewMode = ViewMode.OPTIONS)} text="Options" />
                       </ContextMenu>
@@ -534,7 +450,7 @@
               <Button
                 size="sm"
                 rounded="lg"
-                disabled={album.assetCount == 0}
+                disabled={album.assetCount === 0}
                 on:click={() => (viewMode = ViewMode.SELECT_USERS)}
               >
                 Share
@@ -581,131 +497,110 @@
       class="relative h-screen overflow-hidden bg-immich-bg px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg"
       style={`width:${assetGridWidth}px`}
     >
-      {#if viewMode === ViewMode.SELECT_ASSETS}
-        <AssetGrid assetStore={timelineStore} assetInteractionStore={timelineInteractionStore} isSelectionMode={true} />
-      {:else}
-        <AssetGrid
-          {album}
-          {assetStore}
-          {assetInteractionStore}
-          isShared={album.sharedUsers.length > 0}
-          isSelectionMode={viewMode === ViewMode.SELECT_THUMBNAIL}
-          singleSelect={viewMode === ViewMode.SELECT_THUMBNAIL}
-          on:select={({ detail: asset }) => handleUpdateThumbnail(asset.id)}
-          on:escape={handleEscape}
-        >
-          {#if viewMode !== ViewMode.SELECT_THUMBNAIL}
-            <!-- ALBUM TITLE -->
-            <section class="pt-24">
-              <input
-                on:keydown={(e) => e.key === 'Enter' && titleInput.blur()}
-                on:blur={handleUpdateName}
-                class="w-[99%] border-b-2 border-transparent text-6xl text-immich-primary outline-none transition-all dark:text-immich-dark-primary {isOwned
-                  ? 'hover:border-gray-400'
-                  : 'hover:border-transparent'} bg-immich-bg focus:border-b-2 focus:border-immich-primary focus:outline-none dark:bg-immich-dark-bg dark:focus:border-immich-dark-primary dark:focus:bg-immich-dark-gray"
-                type="text"
-                bind:value={album.albumName}
-                disabled={!isOwned}
-                bind:this={titleInput}
-                title="Edit Title"
-                placeholder="Add a title"
-              />
-
-              <!-- ALBUM SUMMARY -->
-              {#if album.assetCount > 0}
-                <span class="my-4 flex gap-2 text-sm font-medium text-gray-500" data-testid="album-details">
-                  <p class="">{getDateRange()}</p>
-                  <p>·</p>
-                  <p>{album.assetCount} items</p>
-                </span>
-              {/if}
-
-              <!-- ALBUM SHARING -->
-              {#if album.sharedUsers.length > 0 || (album.hasSharedLink && isOwned)}
-                <div class="my-6 flex gap-x-1">
-                  <!-- link -->
-                  {#if album.hasSharedLink && isOwned}
-                    <CircleIconButton
-                      backgroundColor="#d3d3d3"
-                      forceDark
-                      size="20"
-                      icon={mdiLink}
-                      on:click={() => (viewMode = ViewMode.LINK_SHARING)}
-                    />
-                  {/if}
-
-                  <!-- owner -->
-                  <button on:click={() => (viewMode = ViewMode.VIEW_USERS)}>
-                    <UserAvatar user={album.owner} size="md" />
-                  </button>
-
-                  <!-- users -->
-                  {#each album.sharedUsers as user (user.id)}
-                    <button on:click={() => (viewMode = ViewMode.VIEW_USERS)}>
-                      <UserAvatar {user} size="md" />
-                    </button>
-                  {/each}
-
-                  {#if isOwned}
-                    <CircleIconButton
-                      backgroundColor="#d3d3d3"
-                      forceDark
-                      size="20"
-                      icon={mdiPlus}
-                      on:click={() => (viewMode = ViewMode.SELECT_USERS)}
-                      title="Add more users"
-                    />
-                  {/if}
-                </div>
-              {/if}
-              <!-- ALBUM DESCRIPTION -->
-              {#if isOwned}
-                <textarea
-                  class="w-full resize-none overflow-hidden text-black dark:text-white border-b-2 border-transparent border-gray-500 bg-transparent text-base outline-none transition-all focus:border-b-2 focus:border-immich-primary disabled:border-none dark:focus:border-immich-dark-primary hover:border-gray-400"
-                  bind:this={textArea}
-                  bind:value={description}
-                  on:input={() => autoGrowHeight(textArea)}
-                  on:focusout={handleUpdateDescription}
-                  use:autoGrowHeight
-                  placeholder="Add description"
-                />
-              {:else if description}
-                <p class="break-words whitespace-pre-line w-full text-black dark:text-white text-base">{description}</p>
-              {/if}
-            </section>
-          {/if}
-
-          {#if album.assetCount === 0}
-            <section id="empty-album" class=" mt-[200px] flex place-content-center place-items-center">
-              <div class="w-[300px]">
-                <p class="text-xs dark:text-immich-dark-fg">ADD PHOTOS</p>
-                <button
-                  on:click={() => (viewMode = ViewMode.SELECT_ASSETS)}
-                  class="mt-5 flex w-full place-items-center gap-6 rounded-md border bg-immich-bg px-8 py-8 text-immich-fg transition-all hover:bg-gray-100 hover:text-immich-primary dark:border-none dark:bg-immich-dark-gray dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
-                >
-                  <span class="text-text-immich-primary dark:text-immich-dark-primary"
-                    ><Icon path={mdiPlus} size="24" />
-                  </span>
-                  <span class="text-lg">Select photos</span>
-                </button>
-              </div>
-            </section>
-          {/if}
-        </AssetGrid>
-      {/if}
-
-      {#if showActivityStatus}
-        <div class="absolute z-[2] bottom-0 right-0 mb-6 mr-6 justify-self-end">
-          <ActivityStatus
-            disabled={!album.isActivityEnabled}
-            {isLiked}
-            numberOfComments={$numberOfComments}
-            {isShowActivity}
-            on:favorite={handleFavorite}
-            on:openActivityTab={handleOpenAndCloseActivityTab}
+      <!-- Use key because AssetGrid can't deal with changing stores -->
+      {#key albumKey}
+        {#if viewMode === ViewMode.SELECT_ASSETS}
+          <AssetGrid
+            assetStore={timelineStore}
+            assetInteractionStore={timelineInteractionStore}
+            isSelectionMode={true}
           />
-        </div>
-      {/if}
+        {:else}
+          <AssetGrid
+            {album}
+            {assetStore}
+            {assetInteractionStore}
+            isShared={album.sharedUsers.length > 0}
+            isSelectionMode={viewMode === ViewMode.SELECT_THUMBNAIL}
+            singleSelect={viewMode === ViewMode.SELECT_THUMBNAIL}
+            showArchiveIcon
+            on:select={({ detail: asset }) => handleUpdateThumbnail(asset.id)}
+            on:escape={handleEscape}
+          >
+            {#if viewMode !== ViewMode.SELECT_THUMBNAIL}
+              <!-- ALBUM TITLE -->
+              <section class="pt-24">
+                <AlbumTitle id={album.id} albumName={album.albumName} {isOwned} />
+
+                {#if album.assetCount > 0}
+                  <AlbumSummary {album} />
+                {/if}
+
+                <!-- ALBUM SHARING -->
+                {#if album.sharedUsers.length > 0 || (album.hasSharedLink && isOwned)}
+                  <div class="my-3 flex gap-x-1">
+                    <!-- link -->
+                    {#if album.hasSharedLink && isOwned}
+                      <CircleIconButton
+                        backgroundColor="#d3d3d3"
+                        forceDark
+                        size="20"
+                        icon={mdiLink}
+                        on:click={() => (viewMode = ViewMode.LINK_SHARING)}
+                      />
+                    {/if}
+
+                    <!-- owner -->
+                    <button on:click={() => (viewMode = ViewMode.VIEW_USERS)}>
+                      <UserAvatar user={album.owner} size="md" />
+                    </button>
+
+                    <!-- users -->
+                    {#each album.sharedUsers as user (user.id)}
+                      <button on:click={() => (viewMode = ViewMode.VIEW_USERS)}>
+                        <UserAvatar {user} size="md" />
+                      </button>
+                    {/each}
+
+                    {#if isOwned}
+                      <CircleIconButton
+                        backgroundColor="#d3d3d3"
+                        forceDark
+                        size="20"
+                        icon={mdiPlus}
+                        on:click={() => (viewMode = ViewMode.SELECT_USERS)}
+                        title="Add more users"
+                      />
+                    {/if}
+                  </div>
+                {/if}
+                <!-- ALBUM DESCRIPTION -->
+                <AlbumDescription id={album.id} description={album.description} {isOwned} />
+              </section>
+            {/if}
+
+            {#if album.assetCount === 0}
+              <section id="empty-album" class=" mt-[200px] flex place-content-center place-items-center">
+                <div class="w-[300px]">
+                  <p class="text-xs dark:text-immich-dark-fg">ADD PHOTOS</p>
+                  <button
+                    on:click={() => (viewMode = ViewMode.SELECT_ASSETS)}
+                    class="mt-5 flex w-full place-items-center gap-6 rounded-md border bg-immich-bg px-8 py-8 text-immich-fg transition-all hover:bg-gray-100 hover:text-immich-primary dark:border-none dark:bg-immich-dark-gray dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
+                  >
+                    <span class="text-text-immich-primary dark:text-immich-dark-primary"
+                      ><Icon path={mdiPlus} size="24" />
+                    </span>
+                    <span class="text-lg">Select photos</span>
+                  </button>
+                </div>
+              </section>
+            {/if}
+          </AssetGrid>
+        {/if}
+
+        {#if showActivityStatus}
+          <div class="absolute z-[2] bottom-0 right-0 mb-6 mr-6 justify-self-end">
+            <ActivityStatus
+              disabled={!album.isActivityEnabled}
+              {isLiked}
+              numberOfComments={$numberOfComments}
+              {isShowActivity}
+              on:favorite={handleFavorite}
+              on:openActivityTab={handleOpenAndCloseActivityTab}
+            />
+          </div>
+        {/if}
+      {/key}
     </main>
   </div>
   {#if album.sharedUsers.length > 0 && album && isShowActivity && $user && !$showAssetViewer}
@@ -757,8 +652,8 @@
   <ConfirmDialogue
     title="Delete album"
     confirmText="Delete"
-    on:confirm={handleRemoveAlbum}
-    on:cancel={() => (viewMode = ViewMode.VIEW)}
+    onConfirm={handleRemoveAlbum}
+    onClose={() => (viewMode = ViewMode.VIEW)}
   >
     <svelte:fragment slot="prompt">
       <p>Are you sure you want to delete the album <b>{album.albumName}</b>?</p>
@@ -770,14 +665,14 @@
 {#if viewMode === ViewMode.OPTIONS && $user}
   <AlbumOptions
     {album}
+    order={albumOrder}
     user={$user}
+    onChangeOrder={(order) => (albumOrder = order)}
     on:close={() => (viewMode = ViewMode.VIEW)}
     on:toggleEnableActivity={handleToggleEnableActivity}
     on:showSelectSharedUser={() => (viewMode = ViewMode.SELECT_USERS)}
   />
 {/if}
-
-<UpdatePanel {assetStore} />
 
 <style>
   ::placeholder {

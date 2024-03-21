@@ -28,7 +28,6 @@
 </script>
 
 <div class="flex w-full flex-row">
-  <!-- TODO: Device Image -->
   <div class="hidden items-center justify-center pr-2 text-immich-primary dark:text-immich-dark-primary sm:flex">
     {#if device.deviceOS === 'Android'}
       <Icon path={mdiAndroid} size="40" />
@@ -57,7 +56,11 @@
       </span>
       <div class="text-sm">
         <span class="">Last seen</span>
-        <span>{DateTime.fromISO(device.updatedAt).toRelativeCalendar(options)}</span>
+        <span>{DateTime.fromISO(device.updatedAt, { locale: $locale }).toRelativeCalendar(options)}</span>
+        <span class="text-xs text-gray-500 dark:text-gray-400"> - </span>
+        <span class="text-xs text-gray-500 dark:text-gray-400">
+          {DateTime.fromISO(device.updatedAt, { locale: $locale }).toLocaleString(DateTime.DATETIME_MED)}
+        </span>
       </div>
     </div>
     {#if !device.current}

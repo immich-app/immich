@@ -1,4 +1,4 @@
-FROM mambaorg/micromamba:bookworm-slim@sha256:926cac38640709f90f3fef2a3f730733b5c350be612f0d14706be8833b79ad8c as builder
+FROM mambaorg/micromamba:bookworm-slim@sha256:881dbb68d115182b2c12e7e77dc54ea5005fd4e0123ca009d822adb5b0631785 as builder
 
 ENV NODE_ENV=production \
   TRANSFORMERS_CACHE=/cache \

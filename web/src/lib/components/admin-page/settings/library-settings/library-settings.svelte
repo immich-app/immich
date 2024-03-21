@@ -4,10 +4,12 @@
   import { createEventDispatcher } from 'svelte';
   import { fade } from 'svelte/transition';
   import type { SettingsEventType } from '../admin-settings';
-  import SettingAccordion from '../setting-accordion.svelte';
-  import SettingButtonsRow from '../setting-buttons-row.svelte';
-  import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
-  import SettingSwitch from '../setting-switch.svelte';
+  import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
+  import SettingInputField, {
+    SettingInputFieldType,
+  } from '$lib/components/shared-components/settings/setting-input-field.svelte';
+  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
+  import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
@@ -40,28 +42,6 @@
             subtitle="Watch external libraries for file changes"
             bind:checked={config.library.watch.enabled}
           />
-
-          <SettingSwitch
-            title="Use filesystem polling (EXPERIMENTAL)"
-            disabled={disabled || !config.library.watch.enabled}
-            subtitle="Use polling instead of native filesystem watching. This is required for network shares but can be very resource intensive. Use with care!"
-            bind:checked={config.library.watch.usePolling}
-          />
-
-          <SettingInputField
-            inputType={SettingInputFieldType.NUMBER}
-            required={config.library.watch.usePolling}
-            disabled={disabled || !config.library.watch.usePolling || !config.library.watch.enabled}
-            label="Polling interval"
-            bind:value={config.library.watch.interval}
-            isEdited={config.library.watch.interval !== savedConfig.library.watch.interval}
-          >
-            <svelte:fragment slot="desc">
-              <p class="text-sm dark:text-immich-dark-fg">
-                Interval of filesystem polling, in milliseconds. Lower values will result in higher CPU usage.
-              </p>
-            </svelte:fragment>
-          </SettingInputField>
         </div>
 
         <div class="ml-4">

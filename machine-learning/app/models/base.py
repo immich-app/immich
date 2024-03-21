@@ -5,14 +5,11 @@ from pathlib import Path
 from shutil import rmtree
 from typing import Any
 
-import onnx
 import onnxruntime as ort
 from huggingface_hub import snapshot_download
-from onnx.shape_inference import infer_shapes
-from onnx.tools.update_model_dims import update_inputs_outputs_dims
 
 import ann.ann
-from app.models.constants import STATIC_INPUT_PROVIDERS, SUPPORTED_PROVIDERS
+from app.models.constants import SUPPORTED_PROVIDERS
 
 from ..config import get_cache_dir, get_hf_model_name, log, settings
 from ..schemas import ModelRuntime, ModelType
@@ -113,13 +110,6 @@ class InferenceModel(ABC):
             )
             model_path = onnx_path
 
-        if any(provider in STATIC_INPUT_PROVIDERS for provider in self.providers):
-            static_path = model_path.parent / "static_1" / "model.onnx"
-            static_path.parent.mkdir(parents=True, exist_ok=True)
-            if not static_path.is_file():
-                self._convert_to_static(model_path, static_path)
-            model_path = static_path
-
         match model_path.suffix:
             case ".armnn":
                 session = AnnSession(model_path)
@@ -133,42 +123,6 @@ class InferenceModel(ABC):
             case _:
                 raise ValueError(f"Unsupported model file type: {model_path.suffix}")
         return session
-
-    def _convert_to_static(self, source_path: Path, target_path: Path) -> None:
-        inferred = infer_shapes(onnx.load(source_path))
-        inputs = self._get_static_dims(inferred.graph.input)
-        outputs = self._get_static_dims(inferred.graph.output)
-
-        # check_model gets called in update_inputs_outputs_dims and doesn't work for large models
-        check_model = onnx.checker.check_model
-        try:
-
-            def check_model_stub(*args: Any, **kwargs: Any) -> None:
-                pass
-
-            onnx.checker.check_model = check_model_stub
-            updated_model = update_inputs_outputs_dims(inferred, inputs, outputs)
-        finally:
-            onnx.checker.check_model = check_model
-
-        onnx.save(
-            updated_model,
-            target_path,
-            save_as_external_data=True,
-            all_tensors_to_one_file=False,
-            size_threshold=1048576,
-        )
-
-    def _get_static_dims(self, graph_io: Any, dim_size: int = 1) -> dict[str, list[int]]:
-        return {
-            field.name: [
-                d.dim_value if d.HasField("dim_value") else dim_size
-                for shape in field.type.ListFields()
-                if (dim := shape[1].shape.dim)
-                for d in dim
-            ]
-            for field in graph_io
-        }
 
     @property
     def model_type(self) -> ModelType:
@@ -205,6 +159,14 @@ class InferenceModel(ABC):
     def providers_default(self) -> list[str]:
         available_providers = set(ort.get_available_providers())
         log.debug(f"Available ORT providers: {available_providers}")
+        if (openvino := "OpenVINOExecutionProvider") in available_providers:
+            device_ids: list[str] = ort.capi._pybind_state.get_available_openvino_device_ids()
+            log.debug(f"Available OpenVINO devices: {device_ids}")
+
+            gpu_devices = [device_id for device_id in device_ids if device_id.startswith("GPU")]
+            if not gpu_devices:
+                log.warning("No GPU device found in OpenVINO. Falling back to CPU.")
+                available_providers.remove(openvino)
         return [provider for provider in SUPPORTED_PROVIDERS if provider in available_providers]
 
     @property
@@ -224,15 +186,7 @@ class InferenceModel(ABC):
                 case "CPUExecutionProvider" | "CUDAExecutionProvider":
                     option = {"arena_extend_strategy": "kSameAsRequested"}
                 case "OpenVINOExecutionProvider":
-                    try:
-                        device_ids: list[str] = ort.capi._pybind_state.get_available_openvino_device_ids()
-                        log.debug(f"Available OpenVINO devices: {device_ids}")
-                        gpu_devices = [device_id for device_id in device_ids if device_id.startswith("GPU")]
-                        option = {"device_id": gpu_devices[0]} if gpu_devices else {}
-                    except AttributeError as e:
-                        log.warning("Failed to get OpenVINO device IDs. Using default options.")
-                        log.error(e)
-                        option = {}
+                    option = {"device_type": "GPU_FP32", "cache_dir": (self.cache_dir / "openvino").as_posix()}
                 case _:
                     option = {}
             options.append(option)

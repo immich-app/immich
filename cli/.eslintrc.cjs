@@ -19,13 +19,9 @@ module.exports = {
     '@typescript-eslint/no-explicit-any': 'off',
     '@typescript-eslint/no-floating-promises': 'error',
     'unicorn/prefer-module': 'off',
+    'unicorn/prevent-abbreviations': 'off',
+    'unicorn/no-process-exit': 'off',
     curly: 2,
     'prettier/prettier': 0,
-    'unicorn/prevent-abbreviations': [
-      'error',
-      {
-        ignore: ['\\.e2e-spec$', /^ignore/i],
-      },
-    ],
   },
 };

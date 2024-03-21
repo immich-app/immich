@@ -2,7 +2,7 @@
 # - https://immich.app/docs/developer/setup
 # - https://immich.app/docs/developer/troubleshooting
 
-version: "3.8"
+version: '3.8'
 
 name: immich-dev
 
@@ -30,7 +30,7 @@ x-server-build: &server-common
 services:
   immich-server:
     container_name: immich_server
-    command: [ "/usr/src/app/bin/immich-dev", "immich" ]
+    command: ['/usr/src/app/bin/immich-dev', 'immich']
     <<: *server-common
     ports:
       - 3001:3001
@@ -41,7 +41,7 @@ services:
 
   immich-microservices:
     container_name: immich_microservices
-    command: [ "/usr/src/app/bin/immich-dev", "microservices" ]
+    command: ['/usr/src/app/bin/immich-dev', 'microservices']
     <<: *server-common
     # extends:
     #   file: hwaccel.transcoding.yml
@@ -57,7 +57,7 @@ services:
     image: immich-web-dev:latest
     build:
       context: ../web
-    command: [ "/usr/src/app/bin/immich-web" ]
+    command: ['/usr/src/app/bin/immich-web']
     env_file:
       - .env
     ports:
@@ -99,7 +99,7 @@ services:
 
   redis:
     container_name: immich_redis
-    image: redis:6.2-alpine@sha256:51d6c56749a4243096327e3fb964a48ed92254357108449cb6e23999c37773c5
+    image: redis:6.2-alpine@sha256:3fcb624d83a9c478357f16dc173c58ded325ccc5fd2a4375f3916c04cc579f70
 
   database:
     container_name: immich_postgres
@@ -114,6 +114,29 @@ services:
       - ${UPLOAD_LOCATION}/postgres:/var/lib/postgresql/data
     ports:
       - 5432:5432
+  
+  # set IMMICH_METRICS=true in .env to enable metrics
+  # immich-prometheus:
+  #   container_name: immich_prometheus
+  #   ports:
+  #     - 9090:9090
+  #   image: prom/prometheus
+  #   volumes:
+  #     - ./prometheus.yml:/etc/prometheus/prometheus.yml
+  #     - prometheus-data:/prometheus
+
+  # first login uses admin/admin
+  # add data source for http://immich-prometheus:9090 to get started
+  # immich-grafana:
+  #   container_name: immich_grafana
+  #   command: ['./run.sh', '-disable-reporting']
+  #   ports:
+  #     - 3000:3000
+  #   image: grafana/grafana:10.3.3-ubuntu
+  #   volumes:
+  #     - grafana-data:/var/lib/grafana
 
 volumes:
   model-cache:
+  prometheus-data:
+  grafana-data:

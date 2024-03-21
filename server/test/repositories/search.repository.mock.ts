@@ -1,4 +1,4 @@
-import { ISearchRepository } from '@app/domain';
+import { ISearchRepository } from 'src/interfaces/search.interface';
 
 export const newSearchRepositoryMock = (): jest.Mocked<ISearchRepository> => {
   return {
@@ -7,5 +7,8 @@ export const newSearchRepositoryMock = (): jest.Mocked<ISearchRepository> => {
     searchSmart: jest.fn(),
     searchFaces: jest.fn(),
     upsert: jest.fn(),
+    searchPlaces: jest.fn(),
+    getAssetsByCity: jest.fn(),
+    deleteAllSearchEmbeddings: jest.fn(),
   };
 };

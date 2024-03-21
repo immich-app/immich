@@ -299,6 +299,16 @@ abstract class _$AppRouter extends RootStackRouter {
         child: const SettingsPage(),
       );
     },
+    SettingsSubRoute.name: (routeData) {
+      final args = routeData.argsAs<SettingsSubRouteArgs>();
+      return AutoRoutePage<dynamic>(
+        routeData: routeData,
+        child: SettingsSubPage(
+          args.section,
+          key: args.key,
+        ),
+      );
+    },
     SharedLinkEditRoute.name: (routeData) {
       final args = routeData.argsAs<SharedLinkEditRouteArgs>(
           orElse: () => const SharedLinkEditRouteArgs());
@@ -350,9 +360,6 @@ abstract class _$AppRouter extends RootStackRouter {
           key: args.key,
           asset: args.asset,
           isMotionVideo: args.isMotionVideo,
-          onVideoEnded: args.onVideoEnded,
-          onPlaying: args.onPlaying,
-          onPaused: args.onPaused,
           placeholder: args.placeholder,
           showControls: args.showControls,
           hideControlsTimer: args.hideControlsTimer,
@@ -1264,6 +1271,44 @@ class SettingsRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [SettingsSubPage]
+class SettingsSubRoute extends PageRouteInfo<SettingsSubRouteArgs> {
+  SettingsSubRoute({
+    required SettingSection section,
+    Key? key,
+    List<PageRouteInfo>? children,
+  }) : super(
+          SettingsSubRoute.name,
+          args: SettingsSubRouteArgs(
+            section: section,
+            key: key,
+          ),
+          initialChildren: children,
+        );
+
+  static const String name = 'SettingsSubRoute';
+
+  static const PageInfo<SettingsSubRouteArgs> page =
+      PageInfo<SettingsSubRouteArgs>(name);
+}
+
+class SettingsSubRouteArgs {
+  const SettingsSubRouteArgs({
+    required this.section,
+    this.key,
+  });
+
+  final SettingSection section;
+
+  final Key? key;
+
+  @override
+  String toString() {
+    return 'SettingsSubRouteArgs{section: $section, key: $key}';
+  }
+}
+
+/// generated route for
 /// [SharedLinkEditPage]
 class SharedLinkEditRoute extends PageRouteInfo<SharedLinkEditRouteArgs> {
   SharedLinkEditRoute({
@@ -1388,9 +1433,6 @@ class VideoViewerRoute extends PageRouteInfo<VideoViewerRouteArgs> {
     Key? key,
     required Asset asset,
     bool isMotionVideo = false,
-    void Function()? onVideoEnded,
-    void Function()? onPlaying,
-    void Function()? onPaused,
     Widget? placeholder,
     bool showControls = true,
     Duration hideControlsTimer = const Duration(seconds: 5),
@@ -1402,9 +1444,6 @@ class VideoViewerRoute extends PageRouteInfo<VideoViewerRouteArgs> {
             key: key,
             asset: asset,
             isMotionVideo: isMotionVideo,
-            onVideoEnded: onVideoEnded,
-            onPlaying: onPlaying,
-            onPaused: onPaused,
             placeholder: placeholder,
             showControls: showControls,
             hideControlsTimer: hideControlsTimer,
@@ -1424,9 +1463,6 @@ class VideoViewerRouteArgs {
     this.key,
     required this.asset,
     this.isMotionVideo = false,
-    this.onVideoEnded,
-    this.onPlaying,
-    this.onPaused,
     this.placeholder,
     this.showControls = true,
     this.hideControlsTimer = const Duration(seconds: 5),
@@ -1439,12 +1475,6 @@ class VideoViewerRouteArgs {
 
   final bool isMotionVideo;
 
-  final void Function()? onVideoEnded;
-
-  final void Function()? onPlaying;
-
-  final void Function()? onPaused;
-
   final Widget? placeholder;
 
   final bool showControls;
@@ -1455,6 +1485,6 @@ class VideoViewerRouteArgs {
 
   @override
   String toString() {
-    return 'VideoViewerRouteArgs{key: $key, asset: $asset, isMotionVideo: $isMotionVideo, onVideoEnded: $onVideoEnded, onPlaying: $onPlaying, onPaused: $onPaused, placeholder: $placeholder, showControls: $showControls, hideControlsTimer: $hideControlsTimer, showDownloadingIndicator: $showDownloadingIndicator}';
+    return 'VideoViewerRouteArgs{key: $key, asset: $asset, isMotionVideo: $isMotionVideo, placeholder: $placeholder, showControls: $showControls, hideControlsTimer: $hideControlsTimer, showDownloadingIndicator: $showDownloadingIndicator}';
   }
 }

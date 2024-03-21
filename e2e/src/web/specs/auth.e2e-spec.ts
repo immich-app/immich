@@ -1,13 +1,13 @@
-import { test, expect } from '@playwright/test';
-import { apiUtils, dbUtils, webUtils } from 'src/utils';
+import { expect, test } from '@playwright/test';
+import { utils } from 'src/utils';
 
 test.describe('Registration', () => {
-  test.beforeEach(async () => {
-    await dbUtils.reset();
+  test.beforeAll(() => {
+    utils.setApiEndpoint();
   });
 
-  test.afterAll(async () => {
-    await dbUtils.teardown();
+  test.beforeEach(async () => {
+    await utils.resetDatabase();
   });
 
   test('admin registration', async ({ page }) => {
@@ -41,8 +41,8 @@ test.describe('Registration', () => {
   });
 
   test('user registration', async ({ context, page }) => {
-    const loginResponse = await apiUtils.adminSetup();
-    await webUtils.setAuthCookies(context, loginResponse);
+    const admin = await utils.adminSetup();
+    await utils.setAuthCookies(context, admin.accessToken);
 
     // create user
     await page.goto('/admin/user-management');
@@ -64,7 +64,7 @@ test.describe('Registration', () => {
     await page.getByRole('button', { name: 'Login' }).click();
 
     // change password
-    expect(page.getByRole('heading')).toHaveText('Change Password');
+    await expect(page.getByRole('heading')).toHaveText('Change Password');
     await expect(page).toHaveURL('/auth/change-password');
     await page.getByLabel('New Password').fill('new-password');
     await page.getByLabel('Confirm Password').fill('new-password');

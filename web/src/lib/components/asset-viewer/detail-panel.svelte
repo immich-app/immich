@@ -7,8 +7,8 @@
   import { featureFlags } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
   import { websocketEvents } from '$lib/stores/websocket';
-  import { getAssetThumbnailUrl, getPeopleThumbnailUrl, isSharedLink } from '$lib/utils';
-  import { delay, getAssetFilename } from '$lib/utils/asset-utils';
+  import { getAssetThumbnailUrl, getPeopleThumbnailUrl, isSharedLink, handlePromiseError } from '$lib/utils';
+  import { delay } from '$lib/utils/asset-utils';
   import { autoGrowHeight } from '$lib/utils/autogrow';
   import { clickOutside } from '$lib/utils/click-outside';
   import {
@@ -40,6 +40,8 @@
   import ChangeLocation from '../shared-components/change-location.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
+  import { NotificationType, notificationController } from '../shared-components/notification/notification';
+  import { shortcut } from '$lib/utils/shortcut';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
@@ -77,7 +79,7 @@
     originalDescription = description;
   };
 
-  $: handleNewAsset(asset);
+  $: handlePromiseError(handleNewAsset(asset));
 
   $: latlng = (() => {
     const lat = asset.exifInfo?.latitude;
@@ -101,25 +103,8 @@
 
   const dispatch = createEventDispatcher<{
     close: void;
-    descriptionFocusIn: void;
-    descriptionFocusOut: void;
-    click: AlbumResponseDto;
     closeViewer: void;
   }>();
-
-  const handleKeypress = async (event: KeyboardEvent) => {
-    if (event.target !== textArea) {
-      return;
-    }
-    const ctrl = event.ctrlKey;
-    switch (event.key) {
-      case 'Enter': {
-        if (ctrl && event.target === textArea) {
-          handleFocusOut();
-        }
-      }
-    }
-  };
 
   const getMegapixel = (width: number, height: number): number | undefined => {
     const megapixel = Math.round((height * width) / 1_000_000);
@@ -139,19 +124,18 @@
     showEditFaces = false;
   };
 
-  const handleFocusIn = () => {
-    dispatch('descriptionFocusIn');
-  };
-
   const handleFocusOut = async () => {
     textArea.blur();
     if (description === originalDescription) {
       return;
     }
     originalDescription = description;
-    dispatch('descriptionFocusOut');
     try {
       await updateAsset({ id: asset.id, updateAssetDto: { description } });
+      notificationController.show({
+        type: NotificationType.Info,
+        message: 'Asset description has been updated',
+      });
     } catch (error) {
       handleError(error, 'Cannot update the description');
     }
@@ -182,8 +166,6 @@
     }
   }
 </script>
-
-<svelte:window on:keydown={handleKeypress} />
 
 <section class="relative p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
   <div class="flex place-items-center gap-2">
@@ -220,13 +202,16 @@
           class="max-h-[500px]
       w-full resize-none overflow-hidden border-b border-gray-500 bg-transparent text-base text-black outline-none transition-all focus:border-b-2 focus:border-immich-primary disabled:border-none dark:text-white dark:focus:border-immich-dark-primary"
           placeholder={isOwner ? 'Add a description' : ''}
-          on:focusin={handleFocusIn}
           on:focusout={handleFocusOut}
           on:input={() => autoGrowHeight(textArea)}
           bind:value={description}
           use:autoGrowHeight
           use:clickOutside
           on:outclick={handleFocusOut}
+          use:shortcut={{
+            shortcut: { key: 'Enter', ctrl: true },
+            onShortcut: () => handlePromiseError(handleFocusOut()),
+          }}
         />
       {/key}
     </section>
@@ -262,62 +247,58 @@
       <div class="mt-2 flex flex-wrap gap-2">
         {#each people as person, index (person.id)}
           {#if showingHiddenPeople || !person.isHidden}
-            <div
+            <a
               class="w-[90px]"
-              role="button"
-              tabindex={index}
+              href="{AppRoute.PEOPLE}/{person.id}?{QueryParameter.PREVIOUS_ROUTE}={currentAlbum?.id
+                ? `${AppRoute.ALBUMS}/${currentAlbum?.id}`
+                : AppRoute.PHOTOS}"
               on:focus={() => ($boundingBoxesArray = people[index].faces)}
+              on:blur={() => ($boundingBoxesArray = [])}
               on:mouseover={() => ($boundingBoxesArray = people[index].faces)}
               on:mouseleave={() => ($boundingBoxesArray = [])}
+              on:click={() => dispatch('closeViewer')}
             >
-              <a
-                href="{AppRoute.PEOPLE}/{person.id}?{QueryParameter.PREVIOUS_ROUTE}={currentAlbum?.id
-                  ? `${AppRoute.ALBUMS}/${currentAlbum?.id}`
-                  : AppRoute.PHOTOS}"
-                on:click={() => dispatch('closeViewer')}
-              >
-                <div class="relative">
-                  <ImageThumbnail
-                    curve
-                    shadow
-                    url={getPeopleThumbnailUrl(person.id)}
-                    altText={person.name}
-                    title={person.name}
-                    widthStyle="90px"
-                    heightStyle="90px"
-                    thumbhash={null}
-                    hidden={person.isHidden}
-                  />
-                </div>
-                <p class="mt-1 truncate font-medium" title={person.name}>{person.name}</p>
-                {#if person.birthDate}
-                  {@const personBirthDate = DateTime.fromISO(person.birthDate)}
-                  {@const age = Math.floor(DateTime.fromISO(asset.fileCreatedAt).diff(personBirthDate, 'years').years)}
-                  {@const ageInMonths = Math.floor(
-                    DateTime.fromISO(asset.fileCreatedAt).diff(personBirthDate, 'months').months,
-                  )}
-                  {#if age >= 0}
-                    <p
-                      class="font-light"
-                      title={personBirthDate.toLocaleString(
-                        {
-                          month: 'long',
-                          day: 'numeric',
-                          year: 'numeric',
-                        },
-                        { locale: $locale },
-                      )}
-                    >
-                      {#if ageInMonths <= 11}
-                        Age {ageInMonths} months
-                      {:else}
-                        Age {age}
-                      {/if}
-                    </p>
-                  {/if}
+              <div class="relative">
+                <ImageThumbnail
+                  curve
+                  shadow
+                  url={getPeopleThumbnailUrl(person.id)}
+                  altText={person.name}
+                  title={person.name}
+                  widthStyle="90px"
+                  heightStyle="90px"
+                  thumbhash={null}
+                  hidden={person.isHidden}
+                />
+              </div>
+              <p class="mt-1 truncate font-medium" title={person.name}>{person.name}</p>
+              {#if person.birthDate}
+                {@const personBirthDate = DateTime.fromISO(person.birthDate)}
+                {@const age = Math.floor(DateTime.fromISO(asset.fileCreatedAt).diff(personBirthDate, 'years').years)}
+                {@const ageInMonths = Math.floor(
+                  DateTime.fromISO(asset.fileCreatedAt).diff(personBirthDate, 'months').months,
+                )}
+                {#if age >= 0}
+                  <p
+                    class="font-light"
+                    title={personBirthDate.toLocaleString(
+                      {
+                        month: 'long',
+                        day: 'numeric',
+                        year: 'numeric',
+                      },
+                      { locale: $locale },
+                    )}
+                  >
+                    {#if ageInMonths <= 11}
+                      Age {ageInMonths} months
+                    {:else}
+                      Age {age}
+                    {/if}
+                  </p>
                 {/if}
-              </a>
-            </div>
+              {/if}
+            </a>
           {/if}
         {/each}
       </div>
@@ -345,12 +326,10 @@
       {@const assetDateTimeOriginal = DateTime.fromISO(asset.exifInfo.dateTimeOriginal, {
         zone: asset.exifInfo.timeZone ?? undefined,
       })}
-      <div
-        class="flex justify-between place-items-start gap-4 py-4"
-        tabindex="0"
-        role="button"
+      <button
+        type="button"
+        class="flex w-full text-left justify-between place-items-start gap-4 py-4"
         on:click={() => (isOwner ? (isShowChangeDate = true) : null)}
-        on:keydown={(event) => (isOwner ? event.key === 'Enter' && (isShowChangeDate = true) : null)}
         title={isOwner ? 'Edit date' : ''}
         class:hover:dark:text-immich-dark-primary={isOwner}
         class:hover:text-immich-primary={isOwner}
@@ -388,11 +367,11 @@
         </div>
 
         {#if isOwner}
-          <button class="focus:outline-none p-1">
+          <div class="p-1">
             <Icon path={mdiPencil} size="20" />
-          </button>
+          </div>
         {/if}
-      </div>
+      </button>
     {:else if !asset.exifInfo?.dateTimeOriginal && !asset.isReadOnly && isOwner}
       <div class="flex justify-between place-items-start gap-4 py-4">
         <div class="flex gap-4">
@@ -400,9 +379,9 @@
             <Icon path={mdiCalendar} size="24" />
           </div>
         </div>
-        <button class="focus:outline-none p-1">
+        <div class="p-1">
           <Icon path={mdiPencil} size="20" />
-        </button>
+        </div>
       </div>
     {:else if asset.exifInfo?.dateTimeOriginal && asset.isReadOnly}
       {@const assetDateTimeOriginal = DateTime.fromISO(asset.exifInfo.dateTimeOriginal, {
@@ -447,6 +426,7 @@
       {@const assetDateTimeOriginal = asset.exifInfo?.dateTimeOriginal
         ? DateTime.fromISO(asset.exifInfo.dateTimeOriginal, {
             zone: asset.exifInfo.timeZone ?? undefined,
+            locale: $locale,
           })
         : DateTime.now()}
       <ChangeDate
@@ -462,13 +442,11 @@
 
         <div>
           <p class="break-all flex place-items-center gap-2">
+            {asset.originalFileName}
             {#if isOwner}
-              {asset.originalFileName}
-              <button title="Show File Location" on:click={toggleAssetPath}>
+              <button title="Show File Location" on:click={toggleAssetPath} class="-translate-y-[2px]">
                 <Icon path={mdiInformationOutline} />
               </button>
-            {:else}
-              {getAssetFilename(asset)}
             {/if}
           </p>
           <div class="flex gap-2 text-sm">
@@ -522,13 +500,11 @@
     {/if}
 
     {#if asset.exifInfo?.city && !asset.isReadOnly}
-      <div
-        class="flex justify-between place-items-start gap-4 py-4"
+      <button
+        type="button"
+        class="flex w-full text-left justify-between place-items-start gap-4 py-4"
         on:click={() => (isOwner ? (isShowChangeLocation = true) : null)}
-        on:keydown={(event) => (isOwner ? event.key === 'Enter' && (isShowChangeLocation = true) : null)}
-        tabindex="0"
         title={isOwner ? 'Edit location' : ''}
-        role="button"
         class:hover:dark:text-immich-dark-primary={isOwner}
         class:hover:text-immich-primary={isOwner}
       >
@@ -555,14 +531,12 @@
             <Icon path={mdiPencil} size="20" />
           </div>
         {/if}
-      </div>
+      </button>
     {:else if !asset.exifInfo?.city && !asset.isReadOnly && isOwner}
-      <div
-        class="flex justify-between place-items-start gap-4 py-4 rounded-lg hover:dark:text-immich-dark-primary hover:text-immich-primary"
+      <button
+        type="button"
+        class="flex w-full text-left justify-between place-items-start gap-4 py-4 rounded-lg hover:dark:text-immich-dark-primary hover:text-immich-primary"
         on:click={() => (isShowChangeLocation = true)}
-        on:keydown={(event) => event.key === 'Enter' && (isShowChangeLocation = true)}
-        tabindex="0"
-        role="button"
         title="Add location"
       >
         <div class="flex gap-4">
@@ -575,7 +549,7 @@
         <div class="focus:outline-none p-1">
           <Icon path={mdiPencil} size="20" />
         </div>
-      </div>
+      </button>
     {:else if asset.exifInfo?.city && asset.isReadOnly}
       <div class="flex justify-between place-items-start gap-4 py-4">
         <div class="flex gap-4">
@@ -619,7 +593,16 @@
     {:then component}
       <svelte:component
         this={component.default}
-        mapMarkers={[{ lat: latlng.lat, lon: latlng.lng, id: asset.id }]}
+        mapMarkers={[
+          {
+            lat: latlng.lat,
+            lon: latlng.lng,
+            id: asset.id,
+            city: asset.exifInfo?.city ?? null,
+            state: asset.exifInfo?.state ?? null,
+            country: asset.exifInfo?.country ?? null,
+          },
+        ]}
         center={latlng}
         zoom={15}
         simplified
@@ -644,7 +627,7 @@
 {/if}
 
 {#if currentAlbum && currentAlbum.sharedUsers.length > 0 && asset.owner}
-  <section class="px-6 dark:text-immich-dark-fg">
+  <section class="px-6 dark:text-immich-dark-fg mt-4">
     <p class="text-sm">SHARED BY</p>
     <div class="flex gap-4 pt-4">
       <div>
@@ -665,12 +648,7 @@
     <p class="pb-4 text-sm">APPEARS IN</p>
     {#each albums as album}
       <a data-sveltekit-preload-data="hover" href={`/albums/${album.id}`}>
-        <!-- svelte-ignore a11y-no-static-element-interactions -->
-        <div
-          class="flex gap-4 py-2 hover:cursor-pointer"
-          on:click={() => dispatch('click', album)}
-          on:keydown={() => dispatch('click', album)}
-        >
+        <div class="flex gap-4 py-2 hover:cursor-pointer">
           <div>
             <img
               alt={album.albumName}

@@ -8,7 +8,8 @@
   import { AppRoute, QueryParameter } from '$lib/constants';
   import type { Viewport } from '$lib/stores/assets.store';
   import { memoryStore } from '$lib/stores/memory.store';
-  import { getAssetThumbnailUrl } from '$lib/utils';
+  import { getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
+  import { shortcuts } from '$lib/utils/shortcut';
   import { fromLocalDateTime } from '$lib/utils/timeline-util';
   import { ThumbnailFormat, getMemoryLane } from '@immich/sdk';
   import { mdiChevronDown, mdiChevronLeft, mdiChevronRight, mdiChevronUp, mdiPause, mdiPlay } from '@mdi/js';
@@ -59,32 +60,19 @@
   let paused = false;
 
   // Play or pause progress when the paused state changes.
-  $: paused ? pause() : play();
+  $: paused ? handlePromiseError(pause()) : handlePromiseError(play());
 
   // Progress should be paused when it's no longer possible to advance.
   $: paused ||= !canGoForward || galleryInView;
 
   // Advance to the next asset or memory when progress is complete.
-  $: $progress === 1 && toNext();
+  $: $progress === 1 && handlePromiseError(toNext());
 
   // Progress should be resumed when reset and not paused.
-  $: !$progress && !paused && play();
+  $: !$progress && !paused && handlePromiseError(play());
 
   // Progress should be reset when the current memory or asset changes.
-  $: memoryIndex, assetIndex, reset();
-
-  const handleKeyDown = (e: KeyboardEvent) => {
-    if (e.key === 'ArrowRight' && canGoForward) {
-      e.preventDefault();
-      toNext();
-    } else if (e.key === 'ArrowLeft' && canGoBack) {
-      e.preventDefault();
-      toPrevious();
-    } else if (e.key === 'Escape') {
-      e.preventDefault();
-      goto(AppRoute.PHOTOS);
-    }
-  };
+  $: memoryIndex, assetIndex, handlePromiseError(reset());
 
   onMount(async () => {
     if (!$memoryStore) {
@@ -101,7 +89,13 @@
   let galleryInView = false;
 </script>
 
-<svelte:window on:keydown={handleKeyDown} />
+<svelte:window
+  use:shortcuts={[
+    { shortcut: { key: 'ArrowRight' }, onShortcut: () => canGoForward && toNext() },
+    { shortcut: { key: 'ArrowLeft' }, onShortcut: () => canGoBack && toPrevious() },
+    { shortcut: { key: 'Escape' }, onShortcut: () => goto(AppRoute.PHOTOS) },
+  ]}
+/>
 
 <section id="memory-viewer" class="w-full bg-immich-dark-gray" bind:this={memoryWrapper}>
   {#if currentMemory}
@@ -112,7 +106,7 @@
         </p>
       </svelte:fragment>
 
-      {#if !galleryInView}
+      {#if canGoForward}
         <div class="flex place-content-center place-items-center gap-2 overflow-hidden">
           <CircleIconButton icon={paused ? mdiPlay : mdiPause} forceDark on:click={() => (paused = !paused)} />
 
@@ -171,7 +165,7 @@
               <img
                 class="h-full w-full rounded-2xl object-cover"
                 src={getAssetThumbnailUrl(previousMemory.assets[0].id, ThumbnailFormat.Jpeg)}
-                alt=""
+                alt="Previous memory"
                 draggable="false"
               />
             {:else}
@@ -179,7 +173,7 @@
                 class="h-full w-full rounded-2xl object-cover"
                 src="$lib/assets/no-thumbnail.png"
                 sizes="min(271px,186px)"
-                alt=""
+                alt="Previous memory"
                 draggable="false"
               />
             {/if}
@@ -203,7 +197,7 @@
                 transition:fade
                 class="h-full w-full rounded-2xl object-contain transition-all"
                 src={getAssetThumbnailUrl(currentAsset.id, ThumbnailFormat.Jpeg)}
-                alt=""
+                alt={currentAsset.exifInfo?.description}
                 draggable="false"
               />
             {/key}
@@ -244,7 +238,7 @@
               <img
                 class="h-full w-full rounded-2xl object-cover"
                 src={getAssetThumbnailUrl(nextMemory.assets[0].id, ThumbnailFormat.Jpeg)}
-                alt=""
+                alt="Next memory"
                 draggable="false"
               />
             {:else}
@@ -252,7 +246,7 @@
                 class="h-full w-full rounded-2xl object-cover"
                 src="$lib/assets/no-thumbnail.png"
                 sizes="min(271px,186px)"
-                alt=""
+                alt="Next memory"
                 draggable="false"
               />
             {/if}
@@ -268,7 +262,7 @@
       </div>
     </section>
 
-    <!-- GALERY VIEWER -->
+    <!-- GALLERY VIEWER -->
 
     <section class="bg-immich-dark-gray m-4">
       <div

@@ -1,18 +1,14 @@
-import 'dart:io';
-
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:chewie/chewie.dart';
-import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/modules/asset_viewer/models/image_viewer_page_state.model.dart';
-import 'package:immich_mobile/modules/asset_viewer/providers/image_viewer_page_state.provider.dart';
-import 'package:immich_mobile/modules/asset_viewer/ui/video_player_controls.dart';
+import 'package:immich_mobile/modules/asset_viewer/providers/show_controls.provider.dart';
+import 'package:immich_mobile/modules/asset_viewer/providers/video_player_controller_provider.dart';
+import 'package:immich_mobile/modules/asset_viewer/providers/video_player_controls_provider.dart';
+import 'package:immich_mobile/modules/asset_viewer/providers/video_player_value_provider.dart';
+import 'package:immich_mobile/modules/asset_viewer/ui/video_player.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:immich_mobile/shared/models/store.dart';
-import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
-import 'package:photo_manager/photo_manager.dart';
-import 'package:video_player/video_player.dart';
+import 'package:immich_mobile/shared/ui/delayed_loading_indicator.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 @RoutePage()
@@ -21,9 +17,6 @@ class VideoViewerPage extends HookConsumerWidget {
   final Asset asset;
   final bool isMotionVideo;
   final Widget? placeholder;
-  final VoidCallback? onVideoEnded;
-  final VoidCallback? onPlaying;
-  final VoidCallback? onPaused;
   final Duration hideControlsTimer;
   final bool showControls;
   final bool showDownloadingIndicator;
@@ -32,9 +25,6 @@ class VideoViewerPage extends HookConsumerWidget {
     super.key,
     required this.asset,
     this.isMotionVideo = false,
-    this.onVideoEnded,
-    this.onPlaying,
-    this.onPaused,
     this.placeholder,
     this.showControls = true,
     this.hideControlsTimer = const Duration(seconds: 5),
@@ -42,211 +32,135 @@ class VideoViewerPage extends HookConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    if (asset.isLocal && asset.livePhotoVideoId == null) {
-      final AsyncValue<File> videoFile = ref.watch(_fileFamily(asset.local!));
-      return AnimatedSwitcher(
-        duration: const Duration(milliseconds: 200),
-        child: videoFile.when(
-          data: (data) => VideoPlayer(
-            file: data,
-            isMotionVideo: false,
-            onVideoEnded: () {},
-          ),
-          error: (error, stackTrace) => Icon(
-            Icons.image_not_supported_outlined,
-            color: context.primaryColor,
-          ),
-          loading: () => showDownloadingIndicator
-              ? const Center(child: ImmichLoadingIndicator())
-              : Container(),
-        ),
-      );
-    }
-    final downloadAssetStatus =
-        ref.watch(imageViewerStateProvider).downloadAssetStatus;
-    final String videoUrl = isMotionVideo
-        ? '${Store.get(StoreKey.serverEndpoint)}/asset/file/${asset.livePhotoVideoId}'
-        : '${Store.get(StoreKey.serverEndpoint)}/asset/file/${asset.remoteId}';
+  build(BuildContext context, WidgetRef ref) {
+    final controller =
+        ref.watch(videoPlayerControllerProvider(asset: asset)).value;
+    // The last volume of the video used when mute is toggled
+    final lastVolume = useState(0.5);
 
-    return Stack(
-      children: [
-        VideoPlayer(
-          url: videoUrl,
-          accessToken: Store.get(StoreKey.accessToken),
-          isMotionVideo: isMotionVideo,
-          onVideoEnded: onVideoEnded,
-          onPaused: onPaused,
-          onPlaying: onPlaying,
-          placeholder: placeholder,
-          hideControlsTimer: hideControlsTimer,
-          showControls: showControls,
-          showDownloadingIndicator: showDownloadingIndicator,
-        ),
-        AnimatedOpacity(
-          duration: const Duration(milliseconds: 400),
-          opacity: (downloadAssetStatus == DownloadAssetStatus.loading &&
-                  showDownloadingIndicator)
-              ? 1.0
-              : 0.0,
-          child: SizedBox(
-            height: context.height,
-            width: context.width,
-            child: const Center(
-              child: ImmichLoadingIndicator(),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-final _fileFamily =
-    FutureProvider.family<File, AssetEntity>((ref, entity) async {
-  final file = await entity.file;
-  if (file == null) {
-    throw Exception();
-  }
-  return file;
-});
-
-class VideoPlayer extends StatefulWidget {
-  final String? url;
-  final String? accessToken;
-  final File? file;
-  final bool isMotionVideo;
-  final VoidCallback? onVideoEnded;
-  final Duration hideControlsTimer;
-  final bool showControls;
-
-  final Function()? onPlaying;
-  final Function()? onPaused;
-
-  /// The placeholder to show while the video is loading
-  /// usually, a thumbnail of the video
-  final Widget? placeholder;
-
-  final bool showDownloadingIndicator;
-
-  const VideoPlayer({
-    super.key,
-    this.url,
-    this.accessToken,
-    this.file,
-    this.onVideoEnded,
-    required this.isMotionVideo,
-    this.onPlaying,
-    this.onPaused,
-    this.placeholder,
-    this.hideControlsTimer = const Duration(
-      seconds: 5,
-    ),
-    this.showControls = true,
-    this.showDownloadingIndicator = true,
-  });
-
-  @override
-  State<VideoPlayer> createState() => _VideoPlayerState();
-}
-
-class _VideoPlayerState extends State<VideoPlayer> {
-  late VideoPlayerController videoPlayerController;
-  ChewieController? chewieController;
-
-  @override
-  void initState() {
-    super.initState();
-    initializePlayer();
-
-    videoPlayerController.addListener(() {
-      if (videoPlayerController.value.isInitialized) {
-        if (videoPlayerController.value.isPlaying) {
-          WakelockPlus.enable();
-          widget.onPlaying?.call();
-        } else if (!videoPlayerController.value.isPlaying) {
-          WakelockPlus.disable();
-          widget.onPaused?.call();
-        }
-
-        if (videoPlayerController.value.position ==
-            videoPlayerController.value.duration) {
-          WakelockPlus.disable();
-          widget.onVideoEnded?.call();
-        }
+    // When the volume changes, set the volume
+    ref.listen(videoPlayerControlsProvider.select((value) => value.mute),
+        (_, mute) {
+      if (mute) {
+        controller?.setVolume(0.0);
+      } else {
+        controller?.setVolume(lastVolume.value);
       }
     });
-  }
 
-  Future<void> initializePlayer() async {
-    try {
-      videoPlayerController = widget.file == null
-          ? VideoPlayerController.networkUrl(
-              Uri.parse(widget.url!),
-              httpHeaders: {"x-immich-user-token": widget.accessToken ?? ""},
-            )
-          : VideoPlayerController.file(widget.file!);
+    // When the position changes, seek to the position
+    ref.listen(videoPlayerControlsProvider.select((value) => value.position),
+        (_, position) {
+      if (controller == null) {
+        // No seeeking if there is no video
+        return;
+      }
 
-      await videoPlayerController.initialize();
-      _createChewieController();
-      setState(() {});
-    } catch (e) {
-      debugPrint("ERROR initialize video player $e");
+      // Find the position to seek to
+      final Duration seek = controller.value.duration * (position / 100.0);
+      controller.seekTo(seek);
+    });
+
+    // When the custom video controls paus or plays
+    ref.listen(videoPlayerControlsProvider.select((value) => value.pause),
+        (lastPause, pause) {
+      if (pause) {
+        controller?.pause();
+      } else {
+        controller?.play();
+      }
+    });
+
+    // Updates the [videoPlaybackValueProvider] with the current
+    // position and duration of the video from the Chewie [controller]
+    // Also sets the error if there is an error in the playback
+    void updateVideoPlayback() {
+      final videoPlayback = VideoPlaybackValue.fromController(controller);
+      ref.read(videoPlaybackValueProvider.notifier).value = videoPlayback;
+      final state = videoPlayback.state;
+
+      // Enable the WakeLock while the video is playing
+      if (state == VideoPlaybackState.playing) {
+        // Sync with the controls playing
+        WakelockPlus.enable();
+      } else {
+        // Sync with the controls pause
+        WakelockPlus.disable();
+      }
     }
-  }
 
-  _createChewieController() {
-    chewieController = ChewieController(
-      controlsSafeAreaMinimum: const EdgeInsets.only(
-        bottom: 100,
-      ),
-      showOptions: true,
-      showControlsOnInitialize: false,
-      videoPlayerController: videoPlayerController,
-      autoPlay: true,
-      autoInitialize: true,
-      allowFullScreen: false,
-      allowedScreenSleep: false,
-      showControls: widget.showControls && !widget.isMotionVideo,
-      customControls: const VideoPlayerControls(),
-      hideControlsTimer: widget.hideControlsTimer,
+    // Adds and removes the listener to the video player
+    useEffect(
+      () {
+        Future.microtask(
+          () => ref.read(videoPlayerControlsProvider.notifier).reset(),
+        );
+        // Guard no controller
+        if (controller == null) {
+          return null;
+        }
+
+        // Hide the controls
+        // Done in a microtask to avoid setting the state while the is building
+        if (!isMotionVideo) {
+          Future.microtask(() {
+            ref.read(showControlsProvider.notifier).show = false;
+          });
+        }
+
+        // Subscribes to listener
+        controller.addListener(updateVideoPlayback);
+        return () {
+          // Removes listener when we dispose
+          controller.removeListener(updateVideoPlayback);
+          controller.pause();
+        };
+      },
+      [controller],
     );
-  }
 
-  @override
-  void dispose() {
-    super.dispose();
-    videoPlayerController.pause();
-    videoPlayerController.dispose();
-    chewieController?.dispose();
-  }
+    final size = MediaQuery.sizeOf(context);
 
-  @override
-  Widget build(BuildContext context) {
-    if (chewieController?.videoPlayerController.value.isInitialized == true) {
-      return SizedBox(
-        height: context.height,
-        width: context.width,
-        child: Chewie(
-          controller: chewieController!,
-        ),
-      );
-    } else {
-      return SizedBox(
-        height: context.height,
-        width: context.width,
-        child: Center(
-          child: Stack(
-            children: [
-              if (widget.placeholder != null) widget.placeholder!,
-              if (widget.showDownloadingIndicator)
-                const Center(
-                  child: ImmichLoadingIndicator(),
+    return PopScope(
+      onPopInvoked: (pop) {
+        ref.read(videoPlaybackValueProvider.notifier).value =
+            VideoPlaybackValue.uninitialized();
+      },
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 400),
+        child: Stack(
+          children: [
+            Visibility(
+              visible: controller == null,
+              child: Stack(
+                children: [
+                  if (placeholder != null) placeholder!,
+                  const Positioned.fill(
+                    child: Center(
+                      child: DelayedLoadingIndicator(
+                        fadeInDuration: Duration(milliseconds: 500),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (controller != null)
+              SizedBox(
+                height: size.height,
+                width: size.width,
+                child: VideoPlayerViewer(
+                  controller: controller,
+                  isMotionVideo: isMotionVideo,
+                  placeholder: placeholder,
+                  hideControlsTimer: hideControlsTimer,
+                  showControls: showControls,
+                  showDownloadingIndicator: showDownloadingIndicator,
                 ),
-            ],
-          ),
+              ),
+          ],
         ),
-      );
-    }
+      ),
+    );
   }
 }

@@ -1766,6 +1766,14 @@
             }
           },
           {
+            "name": "order",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/AssetOrder"
+            }
+          },
+          {
             "name": "personId",
             "required": false,
             "in": "query",
@@ -1899,6 +1907,14 @@
             "in": "query",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "order",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/AssetOrder"
             }
           },
           {
@@ -2358,6 +2374,7 @@
             "required": false,
             "in": "query",
             "schema": {
+              "format": "uuid",
               "type": "array",
               "items": {
                 "type": "string"
@@ -2463,6 +2480,7 @@
             "required": false,
             "in": "query",
             "schema": {
+              "default": false,
               "type": "boolean"
             }
           },
@@ -3298,8 +3316,17 @@
     },
     "/library": {
       "get": {
-        "operationId": "getLibraries",
-        "parameters": [],
+        "operationId": "getAllLibraries",
+        "parameters": [
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/LibraryType"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
@@ -3386,7 +3413,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -3406,7 +3433,7 @@
         ]
       },
       "get": {
-        "operationId": "getLibraryInfo",
+        "operationId": "getLibrary",
         "parameters": [
           {
             "name": "id",
@@ -3511,7 +3538,7 @@
           }
         ],
         "responses": {
-          "201": {
+          "204": {
             "description": ""
           }
         },
@@ -3556,7 +3583,7 @@
           "required": true
         },
         "responses": {
-          "201": {
+          "204": {
             "description": ""
           }
         },
@@ -3596,6 +3623,58 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/LibraryStatsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Library"
+        ]
+      }
+    },
+    "/library/{id}/validate": {
+      "post": {
+        "operationId": "validate",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ValidateLibraryDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidateLibraryResponseDto"
                 }
               }
             },
@@ -3950,7 +4029,6 @@
             "required": false,
             "in": "query",
             "schema": {
-              "default": false,
               "type": "boolean"
             }
           }
@@ -3985,6 +4063,16 @@
       "post": {
         "operationId": "createPerson",
         "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PersonCreateDto"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "201": {
             "content": {
@@ -4509,6 +4597,41 @@
         ]
       }
     },
+    "/search/cities": {
+      "get": {
+        "operationId": "getAssetsByCity",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AssetResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Search"
+        ]
+      }
+    },
     "/search/explore": {
       "get": {
         "operationId": "getExploreData",
@@ -4559,7 +4682,7 @@
           "required": true
         },
         "responses": {
-          "201": {
+          "200": {
             "content": {
               "application/json": {
                 "schema": {
@@ -4638,6 +4761,50 @@
         ]
       }
     },
+    "/search/places": {
+      "get": {
+        "operationId": "searchPlaces",
+        "parameters": [
+          {
+            "name": "name",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PlacesResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Search"
+        ]
+      }
+    },
     "/search/smart": {
       "post": {
         "operationId": "searchSmart",
@@ -4653,7 +4820,7 @@
           "required": true
         },
         "responses": {
-          "201": {
+          "200": {
             "content": {
               "application/json": {
                 "schema": {
@@ -6287,6 +6454,16 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteUserDto"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "content": {
@@ -6361,7 +6538,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.94.1",
+    "version": "1.99.0",
     "contact": {}
   },
   "tags": [],
@@ -6595,6 +6772,9 @@
           "lastModifiedAssetTimestamp": {
             "format": "date-time",
             "type": "string"
+          },
+          "order": {
+            "$ref": "#/components/schemas/AssetOrder"
           },
           "owner": {
             "$ref": "#/components/schemas/UserResponseDto"
@@ -7435,9 +7615,6 @@
           "isArchived": {
             "type": "boolean"
           },
-          "isExternal": {
-            "type": "boolean"
-          },
           "isFavorite": {
             "type": "boolean"
           },
@@ -7495,11 +7672,16 @@
           "name": {
             "type": "string"
           },
+          "ownerId": {
+            "format": "uuid",
+            "type": "string"
+          },
           "type": {
             "$ref": "#/components/schemas/LibraryType"
           }
         },
         "required": [
+          "ownerId",
           "type"
         ],
         "type": "object"
@@ -7551,10 +7733,6 @@
           "email": {
             "type": "string"
           },
-          "externalPath": {
-            "nullable": true,
-            "type": "string"
-          },
           "memoriesEnabled": {
             "type": "boolean"
           },
@@ -7568,6 +7746,9 @@
             "format": "int64",
             "nullable": true,
             "type": "integer"
+          },
+          "shouldChangePassword": {
+            "type": "boolean"
           },
           "storageLabel": {
             "nullable": true,
@@ -7633,6 +7814,14 @@
           "object",
           "resizePath"
         ],
+        "type": "object"
+      },
+      "DeleteUserDto": {
+        "properties": {
+          "force": {
+            "type": "boolean"
+          }
+        },
         "type": "object"
       },
       "DownloadArchiveInfo": {
@@ -8188,6 +8377,14 @@
       },
       "MapMarkerResponseDto": {
         "properties": {
+          "city": {
+            "nullable": true,
+            "type": "string"
+          },
+          "country": {
+            "nullable": true,
+            "type": "string"
+          },
           "id": {
             "type": "string"
           },
@@ -8198,12 +8395,19 @@
           "lon": {
             "format": "double",
             "type": "number"
+          },
+          "state": {
+            "nullable": true,
+            "type": "string"
           }
         },
         "required": [
+          "city",
+          "country",
           "id",
           "lat",
-          "lon"
+          "lon",
+          "state"
         ],
         "type": "object"
       },
@@ -8333,6 +8537,7 @@
           },
           "personIds": {
             "items": {
+              "format": "uuid",
               "type": "string"
             },
             "type": "array"
@@ -8377,6 +8582,7 @@
             "type": "string"
           },
           "withArchived": {
+            "default": false,
             "type": "boolean"
           },
           "withDeleted": {
@@ -8451,10 +8657,6 @@
           "email": {
             "type": "string"
           },
-          "externalPath": {
-            "nullable": true,
-            "type": "string"
-          },
           "id": {
             "type": "string"
           },
@@ -8489,6 +8691,9 @@
           "shouldChangePassword": {
             "type": "boolean"
           },
+          "status": {
+            "$ref": "#/components/schemas/UserStatus"
+          },
           "storageLabel": {
             "nullable": true,
             "type": "string"
@@ -8503,7 +8708,6 @@
           "createdAt",
           "deletedAt",
           "email",
-          "externalPath",
           "id",
           "isAdmin",
           "name",
@@ -8512,6 +8716,7 @@
           "quotaSizeInBytes",
           "quotaUsageInBytes",
           "shouldChangePassword",
+          "status",
           "storageLabel",
           "updatedAt"
         ],
@@ -8539,6 +8744,9 @@
       },
       "PeopleResponseDto": {
         "properties": {
+          "hidden": {
+            "type": "integer"
+          },
           "people": {
             "items": {
               "$ref": "#/components/schemas/PersonResponseDto"
@@ -8550,6 +8758,7 @@
           }
         },
         "required": [
+          "hidden",
           "people",
           "total"
         ],
@@ -8597,6 +8806,25 @@
         "required": [
           "id"
         ],
+        "type": "object"
+      },
+      "PersonCreateDto": {
+        "properties": {
+          "birthDate": {
+            "description": "Person date of birth.\nNote: the mobile app cannot currently set the birth date to null.",
+            "format": "date",
+            "nullable": true,
+            "type": "string"
+          },
+          "isHidden": {
+            "description": "Person visibility",
+            "type": "boolean"
+          },
+          "name": {
+            "description": "Person name.",
+            "type": "string"
+          }
+        },
         "type": "object"
       },
       "PersonResponseDto": {
@@ -8698,6 +8926,31 @@
         ],
         "type": "object"
       },
+      "PlacesResponseDto": {
+        "properties": {
+          "admin1name": {
+            "type": "string"
+          },
+          "admin2name": {
+            "type": "string"
+          },
+          "latitude": {
+            "type": "number"
+          },
+          "longitude": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "latitude",
+          "longitude",
+          "name"
+        ],
+        "type": "object"
+      },
       "QueueStatusDto": {
         "properties": {
           "isActive": {
@@ -8762,7 +9015,6 @@
       "ScanLibraryDto": {
         "properties": {
           "refreshAllFiles": {
-            "default": false,
             "type": "boolean"
           },
           "refreshModifiedFiles": {
@@ -8944,6 +9196,9 @@
           },
           "trashDays": {
             "type": "integer"
+          },
+          "userDeleteDelay": {
+            "type": "integer"
           }
         },
         "required": [
@@ -8952,7 +9207,8 @@
           "isOnboarded",
           "loginPageMessage",
           "oauthButtonText",
-          "trashDays"
+          "trashDays",
+          "userDeleteDelay"
         ],
         "type": "object"
       },
@@ -9167,7 +9423,6 @@
             "type": "boolean"
           },
           "allowUpload": {
-            "default": false,
             "type": "boolean"
           },
           "assetIds": {
@@ -9383,6 +9638,9 @@
           "isMotion": {
             "type": "boolean"
           },
+          "isNotInAlbum": {
+            "type": "boolean"
+          },
           "isOffline": {
             "type": "boolean"
           },
@@ -9407,6 +9665,13 @@
           },
           "page": {
             "type": "number"
+          },
+          "personIds": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
           },
           "query": {
             "type": "string"
@@ -9445,6 +9710,7 @@
             "type": "string"
           },
           "withArchived": {
+            "default": false,
             "type": "boolean"
           },
           "withDeleted": {
@@ -9505,6 +9771,9 @@
           },
           "trash": {
             "$ref": "#/components/schemas/SystemConfigTrashDto"
+          },
+          "user": {
+            "$ref": "#/components/schemas/SystemConfigUserDto"
           }
         },
         "required": [
@@ -9522,7 +9791,8 @@
           "storageTemplate",
           "theme",
           "thumbnail",
-          "trash"
+          "trash",
+          "user"
         ],
         "type": "object"
       },
@@ -9700,18 +9970,10 @@
         "properties": {
           "enabled": {
             "type": "boolean"
-          },
-          "interval": {
-            "type": "integer"
-          },
-          "usePolling": {
-            "type": "boolean"
           }
         },
         "required": [
-          "enabled",
-          "interval",
-          "usePolling"
+          "enabled"
         ],
         "type": "object"
       },
@@ -9800,6 +10062,9 @@
           "clientSecret": {
             "type": "string"
           },
+          "defaultStorageQuota": {
+            "type": "number"
+          },
           "enabled": {
             "type": "boolean"
           },
@@ -9820,6 +10085,9 @@
           },
           "storageLabelClaim": {
             "type": "string"
+          },
+          "storageQuotaClaim": {
+            "type": "string"
           }
         },
         "required": [
@@ -9828,13 +10096,15 @@
           "buttonText",
           "clientId",
           "clientSecret",
+          "defaultStorageQuota",
           "enabled",
           "issuerUrl",
           "mobileOverrideEnabled",
           "mobileRedirectUri",
           "scope",
           "signingAlgorithm",
-          "storageLabelClaim"
+          "storageLabelClaim",
+          "storageQuotaClaim"
         ],
         "type": "object"
       },
@@ -10006,6 +10276,17 @@
         ],
         "type": "object"
       },
+      "SystemConfigUserDto": {
+        "properties": {
+          "deleteDelay": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "deleteDelay"
+        ],
+        "type": "object"
+      },
       "TagResponseDto": {
         "properties": {
           "id": {
@@ -10109,6 +10390,9 @@
           },
           "isActivityEnabled": {
             "type": "boolean"
+          },
+          "order": {
+            "$ref": "#/components/schemas/AssetOrder"
           }
         },
         "type": "object"
@@ -10201,9 +10485,6 @@
             "$ref": "#/components/schemas/UserAvatarColor"
           },
           "email": {
-            "type": "string"
-          },
-          "externalPath": {
             "type": "string"
           },
           "id": {
@@ -10332,10 +10613,6 @@
           "email": {
             "type": "string"
           },
-          "externalPath": {
-            "nullable": true,
-            "type": "string"
-          },
           "id": {
             "type": "string"
           },
@@ -10367,6 +10644,9 @@
           "shouldChangePassword": {
             "type": "boolean"
           },
+          "status": {
+            "$ref": "#/components/schemas/UserStatus"
+          },
           "storageLabel": {
             "nullable": true,
             "type": "string"
@@ -10381,7 +10661,6 @@
           "createdAt",
           "deletedAt",
           "email",
-          "externalPath",
           "id",
           "isAdmin",
           "name",
@@ -10390,10 +10669,19 @@
           "quotaSizeInBytes",
           "quotaUsageInBytes",
           "shouldChangePassword",
+          "status",
           "storageLabel",
           "updatedAt"
         ],
         "type": "object"
+      },
+      "UserStatus": {
+        "enum": [
+          "active",
+          "removing",
+          "deleted"
+        ],
+        "type": "string"
       },
       "ValidateAccessTokenResponseDto": {
         "properties": {
@@ -10404,6 +10692,53 @@
         "required": [
           "authStatus"
         ],
+        "type": "object"
+      },
+      "ValidateLibraryDto": {
+        "properties": {
+          "exclusionPatterns": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "importPaths": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "ValidateLibraryImportPathResponseDto": {
+        "properties": {
+          "importPath": {
+            "type": "string"
+          },
+          "isValid": {
+            "default": false,
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "importPath",
+          "isValid"
+        ],
+        "type": "object"
+      },
+      "ValidateLibraryResponseDto": {
+        "properties": {
+          "importPaths": {
+            "items": {
+              "$ref": "#/components/schemas/ValidateLibraryImportPathResponseDto"
+            },
+            "type": "array"
+          }
+        },
         "type": "object"
       },
       "VideoCodec": {

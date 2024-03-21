@@ -12,6 +12,7 @@ export interface ReleaseEvent {
 }
 export interface Events {
   on_upload_success: (asset: AssetResponseDto) => void;
+  on_user_delete: (id: string) => void;
   on_asset_delete: (assetId: string) => void;
   on_asset_trash: (assetIds: string[]) => void;
   on_asset_update: (asset: AssetResponseDto) => void;
@@ -47,7 +48,7 @@ websocket
   .on('on_new_release', (releaseVersion) => websocketStore.release.set(releaseVersion))
   .on('connect_error', (e) => console.log('Websocket Connect Error', e));
 
-export const openWebsocketConnection = async () => {
+export const openWebsocketConnection = () => {
   try {
     if (!get(user)) {
       return;

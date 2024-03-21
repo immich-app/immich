@@ -2,77 +2,47 @@
   import { fade } from 'svelte/transition';
   import Icon from '$lib/components/elements/icon.svelte';
   import {
-    ImmichNotification,
+    type Notification,
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
   import { onMount } from 'svelte';
   import { mdiCloseCircleOutline, mdiInformationOutline, mdiWindowClose } from '@mdi/js';
 
-  export let notificationInfo: ImmichNotification;
+  export let notification: Notification;
 
-  let infoPrimaryColor = '#4250AF';
-  let errorPrimaryColor = '#E64132';
-  let warningPrimaryColor = '#D08613';
+  $: icon = notification.type === NotificationType.Error ? mdiCloseCircleOutline : mdiInformationOutline;
 
-  $: icon = notificationInfo.type === NotificationType.Error ? mdiCloseCircleOutline : mdiInformationOutline;
-
-  $: backgroundColor = () => {
-    if (notificationInfo.type === NotificationType.Info) {
-      return '#E0E2F0';
-    }
-
-    if (notificationInfo.type === NotificationType.Error) {
-      return '#FBE8E6';
-    }
-
-    if (notificationInfo.type === NotificationType.Warning) {
-      return '#FFF6DC';
-    }
+  const backgroundColor: Record<NotificationType, string> = {
+    [NotificationType.Info]: '#E0E2F0',
+    [NotificationType.Error]: '#FBE8E6',
+    [NotificationType.Warning]: '#FFF6DC',
   };
 
-  $: borderStyle = () => {
-    if (notificationInfo.type === NotificationType.Info) {
-      return '1px solid #D8DDFF';
-    }
-
-    if (notificationInfo.type === NotificationType.Error) {
-      return '1px solid #F0E8E7';
-    }
-
-    if (notificationInfo.type === NotificationType.Warning) {
-      return '1px solid #FFE6A5';
-    }
+  const borderColor: Record<NotificationType, string> = {
+    [NotificationType.Info]: '#D8DDFF',
+    [NotificationType.Error]: '#F0E8E7',
+    [NotificationType.Warning]: '#FFE6A5',
   };
 
-  $: primaryColor = () => {
-    if (notificationInfo.type === NotificationType.Info) {
-      return infoPrimaryColor;
-    }
-
-    if (notificationInfo.type === NotificationType.Error) {
-      return errorPrimaryColor;
-    }
-
-    if (notificationInfo.type === NotificationType.Warning) {
-      return warningPrimaryColor;
-    }
+  const primaryColor: Record<NotificationType, string> = {
+    [NotificationType.Info]: '#4250AF',
+    [NotificationType.Error]: '#E64132',
+    [NotificationType.Warning]: '#D08613',
   };
-
-  let removeNotificationTimeout: NodeJS.Timeout | undefined;
 
   onMount(() => {
-    removeNotificationTimeout = setTimeout(discard, notificationInfo.timeout);
-    return () => clearTimeout(removeNotificationTimeout);
+    const timeoutId = setTimeout(discard, notification.timeout);
+    return () => clearTimeout(timeoutId);
   });
 
   const discard = () => {
-    notificationController.removeNotificationById(notificationInfo.id);
+    notificationController.removeNotificationById(notification.id);
   };
 
   const handleClick = () => {
-    const action = notificationInfo.action;
-    if (action.type == 'discard') {
+    const action = notification.action;
+    if (action.type === 'discard') {
       discard();
     } else if (action.type == 'link') {
       window.open(action.target);
@@ -83,17 +53,17 @@
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   transition:fade={{ duration: 250 }}
-  style:background-color={backgroundColor()}
-  style:border={borderStyle()}
-  class="z-[999999] mb-4 min-h-[80px] w-[300px] rounded-2xl p-4 shadow-md hover:cursor-pointer"
+  style:background-color={backgroundColor[notification.type]}
+  style:border-color={borderColor[notification.type]}
+  class="border z-[999999] mb-4 min-h-[80px] w-[300px] rounded-2xl p-4 shadow-md hover:cursor-pointer"
   on:click={handleClick}
   on:keydown={handleClick}
 >
   <div class="flex justify-between">
     <div class="flex place-items-center gap-2">
-      <Icon path={icon} color={primaryColor()} size="20" />
-      <h2 style:color={primaryColor()} class="font-medium" data-testid="title">
-        {notificationInfo.type.toString()}
+      <Icon path={icon} color={primaryColor[notification.type]} size="20" />
+      <h2 style:color={primaryColor[notification.type]} class="font-medium" data-testid="title">
+        {notification.type.toString()}
       </h2>
     </div>
     <button on:click|stopPropagation={discard}>
@@ -102,6 +72,6 @@
   </div>
 
   <p class="whitespace-pre-wrap pl-[28px] pr-[16px] text-sm" data-testid="message">
-    {notificationInfo.message}
+    {notification.message}
   </p>
 </div>

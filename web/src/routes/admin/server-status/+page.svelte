@@ -4,19 +4,21 @@
   import { getServerStatistics } from '@immich/sdk';
   import { onDestroy, onMount } from 'svelte';
   import type { PageData } from './$types';
+  import { asyncTimeout } from '$lib/utils';
 
   export let data: PageData;
 
-  let setIntervalHandler: ReturnType<typeof setInterval>;
+  let running = true;
 
   onMount(async () => {
-    setIntervalHandler = setInterval(async () => {
+    while (running) {
       data.stats = await getServerStatistics();
-    }, 5000);
+      await asyncTimeout(5000);
+    }
   });
 
   onDestroy(() => {
-    clearInterval(setIntervalHandler);
+    running = false;
   });
 </script>
 

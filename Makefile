@@ -19,12 +19,9 @@ pull-stage:
 server-e2e-jobs:
 	docker compose -f ./server/e2e/docker-compose.server-e2e.yml up --renew-anon-volumes --abort-on-container-exit --exit-code-from immich-server --remove-orphans --build
 
-server-e2e-api:
-	npm run e2e:api --prefix server
-
 .PHONY: e2e
 e2e:
-	docker compose -f ./docker/docker-compose.e2e.yml up --build -V --remove-orphans
+	docker compose -f ./e2e/docker-compose.yml up --build -V --remove-orphans
 
 prod:
 	docker compose -f ./docker/docker-compose.prod.yml up --build -V --remove-orphans

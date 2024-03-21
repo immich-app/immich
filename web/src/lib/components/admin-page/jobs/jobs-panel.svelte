@@ -48,11 +48,11 @@
     await handleCommand(jobId, dto);
   };
 
-  const onConfirm = () => {
+  const onConfirm = async () => {
     if (!confirmJob) {
       return;
     }
-    handleCommand(confirmJob, { command: JobCommand.Start, force: true });
+    await handleCommand(confirmJob, { command: JobCommand.Start, force: true });
     confirmJob = null;
   };
 
@@ -148,8 +148,8 @@
 {#if confirmJob}
   <ConfirmDialogue
     prompt="Are you sure you want to reprocess all faces? This will also clear named people."
-    on:confirm={onConfirm}
-    on:cancel={() => (confirmJob = null)}
+    {onConfirm}
+    onClose={() => (confirmJob = null)}
   />
 {/if}
 

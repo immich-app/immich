@@ -35,10 +35,10 @@ class SplashScreenPage extends HookConsumerWidget {
             deviceIsOffline = true;
             log.fine("Device seems to be offline upon launch");
           } else {
-            log.severe(e);
+            log.severe("Failed to resolve endpoint", e);
           }
         } catch (e) {
-          log.severe(e);
+          log.severe("Failed to resolve endpoint", e);
         }
 
         try {
@@ -53,7 +53,7 @@ class SplashScreenPage extends HookConsumerWidget {
           ref.read(authenticationProvider.notifier).logout();
 
           log.severe(
-            'Cannot set success login info: $error',
+            'Cannot set success login info',
             error,
             stackTrace,
           );
@@ -96,7 +96,7 @@ class SplashScreenPage extends HookConsumerWidget {
     return const Scaffold(
       body: Center(
         child: Image(
-          image: AssetImage('assets/immich-logo-no-outline.png'),
+          image: AssetImage('assets/immich-logo.png'),
           width: 80,
           filterQuality: FilterQuality.high,
         ),

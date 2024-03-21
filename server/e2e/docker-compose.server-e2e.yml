@@ -12,11 +12,13 @@ services:
     command: ['/usr/src/app/bin/immich-test', 'jobs']
     volumes:
       - /usr/src/app/node_modules
+      - ../test/assets:/usr/src/app/test/assets:ro
     environment:
       - DB_HOSTNAME=database
       - DB_USERNAME=postgres
       - DB_PASSWORD=postgres
       - DB_DATABASE_NAME=e2e_test
+      - IMMICH_METRICS=true
     depends_on:
       - database
 

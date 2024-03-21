@@ -18,6 +18,7 @@ Name | Type | Description | Notes
 **isExternal** | **bool** |  | [optional] 
 **isFavorite** | **bool** |  | [optional] 
 **isMotion** | **bool** |  | [optional] 
+**isNotInAlbum** | **bool** |  | [optional] 
 **isOffline** | **bool** |  | [optional] 
 **isReadOnly** | **bool** |  | [optional] 
 **isVisible** | **bool** |  | [optional] 
@@ -26,6 +27,7 @@ Name | Type | Description | Notes
 **make** | **String** |  | [optional] 
 **model** | **String** |  | [optional] 
 **page** | **num** |  | [optional] 
+**personIds** | **List<String>** |  | [optional] [default to const []]
 **query** | **String** |  | 
 **size** | **num** |  | [optional] 
 **state** | **String** |  | [optional] 
@@ -36,7 +38,7 @@ Name | Type | Description | Notes
 **type** | [**AssetTypeEnum**](AssetTypeEnum.md) |  | [optional] 
 **updatedAfter** | [**DateTime**](DateTime.md) |  | [optional] 
 **updatedBefore** | [**DateTime**](DateTime.md) |  | [optional] 
-**withArchived** | **bool** |  | [optional] 
+**withArchived** | **bool** |  | [optional] [default to false]
 **withDeleted** | **bool** |  | [optional] 
 **withExif** | **bool** |  | [optional] 
 

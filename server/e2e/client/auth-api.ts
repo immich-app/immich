@@ -1,6 +1,7 @@
-import { AuthDeviceResponseDto, LoginCredentialDto, LoginResponseDto, UserResponseDto } from '@app/domain';
-import { adminSignupStub, loginResponseStub, loginStub } from '@test';
+import { LoginResponseDto } from 'src/dtos/auth.dto';
+import { UserResponseDto } from 'src/dtos/user.dto';
 import request from 'supertest';
+import { adminSignupStub, loginResponseStub, loginStub } from 'test/fixtures/auth.stub';
 
 export const authApi = {
   adminSignUp: async (server: any) => {
@@ -18,28 +19,5 @@ export const authApi = {
     expect(status).toBe(201);
 
     return body as LoginResponseDto;
-  },
-  login: async (server: any, dto: LoginCredentialDto) => {
-    const { status, body } = await request(server).post('/auth/login').send(dto);
-
-    expect(status).toEqual(201);
-    expect(body).toMatchObject({ accessToken: expect.any(String) });
-
-    return body as LoginResponseDto;
-  },
-  getAuthDevices: async (server: any, accessToken: string) => {
-    const { status, body } = await request(server).get('/auth/devices').set('Authorization', `Bearer ${accessToken}`);
-
-    expect(body).toEqual(expect.any(Array));
-    expect(status).toBe(200);
-
-    return body as AuthDeviceResponseDto[];
-  },
-  validateToken: async (server: any, accessToken: string) => {
-    const { status, body } = await request(server)
-      .post('/auth/validateToken')
-      .set('Authorization', `Bearer ${accessToken}`);
-    expect(body).toEqual({ authStatus: true });
-    expect(status).toBe(200);
   },
 };

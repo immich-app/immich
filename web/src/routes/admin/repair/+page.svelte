@@ -203,12 +203,7 @@
     <section class="w-full pb-28 sm:w-5/6 md:w-[850px]">
       {#if matches.length + extras.length + orphans.length === 0}
         <div class="w-full">
-          <EmptyPlaceholder
-            fullWidth
-            text="Untracked and missing files will show up here"
-            alt="Empty report"
-            src={empty4Url}
-          />
+          <EmptyPlaceholder fullWidth text="Untracked and missing files will show up here" src={empty4Url} />
         </div>
       {:else}
         <div class="gap-2">
@@ -291,7 +286,7 @@
               <tr class="flex w-full place-items-center p-2 md:p-5">
                 <th class="w-full text-sm font-medium place-items-center flex justify-between" colspan="2">
                   <div class="px-3">
-                    <p>UNTRACKS FILES {extras.length > 0 ? `(${extras.length})` : ''}</p>
+                    <p>UNTRACKED FILES {extras.length > 0 ? `(${extras.length})` : ''}</p>
                     <p class="text-gray-600 dark:text-gray-300 mt-1">
                       These files are not tracked by the application. They can be the results of failed moves,
                       interrupted uploads, or left behind due to a bug

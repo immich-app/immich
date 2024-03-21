@@ -47,6 +47,7 @@
   import { mdiArrowLeft, mdiDotsVertical, mdiPlus } from '@mdi/js';
   import { onMount } from 'svelte';
   import type { PageData } from './$types';
+  import { listNavigation } from '$lib/utils/list-navigation';
 
   export let data: PageData;
 
@@ -95,8 +96,7 @@
    **/
   let searchWord: string;
   let isSearchingPeople = false;
-  let focusedElements: (HTMLButtonElement | null)[] = Array.from({ length: maximumLengthSearchPeople }, () => null);
-  let indexFocus: number | null = null;
+  let suggestionContainer: HTMLDivElement;
 
   const searchPeople = async () => {
     if ((people.length < maximumLengthSearchPeople && name.startsWith(searchWord)) || name === '') {
@@ -122,7 +122,6 @@
   $: {
     if (people) {
       suggestedPeople = name ? searchNameLocal(name, people, 5, data.person.id) : [];
-      indexFocus = null;
     }
   }
 
@@ -143,49 +142,7 @@
     });
   });
 
-  const handleKeyboardPress = (event: KeyboardEvent) => {
-    if (suggestedPeople.length === 0) {
-      return;
-    }
-    if (!$showAssetViewer) {
-      event.stopPropagation();
-      switch (event.key) {
-        case 'ArrowDown': {
-          event.preventDefault();
-          if (indexFocus === null) {
-            indexFocus = 0;
-          } else if (indexFocus === suggestedPeople.length - 1) {
-            indexFocus = 0;
-          } else {
-            indexFocus++;
-          }
-          focusedElements[indexFocus]?.focus();
-          return;
-        }
-        case 'ArrowUp': {
-          if (indexFocus === null) {
-            indexFocus = 0;
-            return;
-          }
-          if (indexFocus === 0) {
-            indexFocus = suggestedPeople.length - 1;
-          } else {
-            indexFocus--;
-          }
-          focusedElements[indexFocus]?.focus();
-
-          return;
-        }
-        case 'Enter': {
-          if (indexFocus !== null) {
-            handleSuggestPeople(suggestedPeople[indexFocus]);
-          }
-        }
-      }
-    }
-  };
-
-  const handleEscape = () => {
+  const handleEscape = async () => {
     if ($showAssetViewer || viewMode === ViewMode.SUGGEST_MERGE) {
       return;
     }
@@ -193,7 +150,7 @@
       assetInteractionStore.clearMultiselect();
       return;
     } else {
-      goto(previousRoute);
+      await goto(previousRoute);
       return;
     }
   };
@@ -235,7 +192,7 @@
         type: NotificationType.Info,
       });
 
-      goto(previousRoute, { replaceState: true });
+      await goto(previousRoute, { replaceState: true });
     } catch (error) {
       handleError(error, 'Unable to hide person');
     }
@@ -244,7 +201,7 @@
   const handleMerge = async (person: PersonResponseDto) => {
     const { assets } = await getPersonStatistics({ id: person.id });
     numberOfAssets = assets;
-    handleGoBack();
+    await handleGoBack();
 
     data.person = person;
 
@@ -292,7 +249,7 @@
         refreshAssetGrid = !refreshAssetGrid;
         return;
       }
-      goto(`${AppRoute.PEOPLE}/${personToBeMergedIn.id}`, { replaceState: true });
+      await goto(`${AppRoute.PEOPLE}/${personToBeMergedIn.id}`, { replaceState: true });
     } catch (error) {
       handleError(error, 'Unable to save name');
     }
@@ -341,7 +298,7 @@
       return;
     }
     if (name === '') {
-      changeName();
+      await changeName();
       return;
     }
 
@@ -366,7 +323,7 @@
       viewMode = ViewMode.SUGGEST_MERGE;
       return;
     }
-    changeName();
+    await changeName();
   };
 
   const handleSetBirthDate = async (birthDate: string) => {
@@ -392,16 +349,15 @@
     }
   };
 
-  const handleGoBack = () => {
+  const handleGoBack = async () => {
     viewMode = ViewMode.VIEW_ASSETS;
     if ($page.url.searchParams.has(QueryParameter.ACTION)) {
       $page.url.searchParams.delete(QueryParameter.ACTION);
-      goto($page.url);
+      await goto($page.url);
     }
   };
 </script>
 
-<svelte:document on:keydown={handleKeyboardPress} />
 {#if viewMode === ViewMode.UNASSIGN_ASSETS}
   <UnMergeFaceSelector
     assetIds={[...$selectedAssets].map((a) => a.id)}
@@ -443,11 +399,11 @@
         <AddToAlbum />
         <AddToAlbum shared />
       </AssetSelectContextMenu>
-      <DeleteAssets onAssetDelete={(assetId) => $assetStore.removeAsset(assetId)} />
+      <DeleteAssets onAssetDelete={(assetIds) => $assetStore.removeAssets(assetIds)} />
       <AssetSelectContextMenu icon={mdiDotsVertical} title="Add">
         <DownloadAction menuItem filename="{data.person.name || 'immich'}.zip" />
-        <FavoriteAction menuItem removeFavorite={isAllFavorite} />
-        <ArchiveAction menuItem unarchive={isAllArchive} onArchive={(ids) => $assetStore.removeAssets(ids)} />
+        <FavoriteAction menuItem removeFavorite={isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
+        <ArchiveAction menuItem unarchive={isAllArchive} onArchive={(assetIds) => $assetStore.removeAssets(assetIds)} />
         <MenuOption text="Fix incorrect match" on:click={handleReassignAssets} />
         <ChangeDate menuItem />
         <ChangeLocation menuItem />
@@ -478,7 +434,7 @@
   {/if}
 </header>
 
-<main class="relative h-screen overflow-hidden bg-immich-bg pt-[var(--navbar-height)] dark:bg-immich-dark-bg">
+<main class="relative h-screen overflow-hidden bg-immich-bg tall:ml-4 pt-[var(--navbar-height)] dark:bg-immich-dark-bg">
   {#key refreshAssetGrid}
     <AssetGrid
       {assetStore}
@@ -491,11 +447,12 @@
       {#if viewMode === ViewMode.VIEW_ASSETS || viewMode === ViewMode.SUGGEST_MERGE || viewMode === ViewMode.BIRTH_DATE}
         <!-- Person information block -->
         <div
-          role="button"
           class="relative w-fit p-4 sm:px-6"
-          use:clickOutside
-          on:outclick={handleCancelEditName}
-          on:escape={handleCancelEditName}
+          use:clickOutside={{
+            onOutclick: handleCancelEditName,
+            onEscape: handleCancelEditName,
+          }}
+          use:listNavigation={suggestionContainer}
         >
           <section class="flex w-64 sm:w-96 place-items-center border-black">
             {#if isEditingName}
@@ -550,26 +507,27 @@
                   </div>
                 </div>
               {:else}
-                {#each suggestedPeople as person, index (person.id)}
-                  <button
-                    bind:this={focusedElements[index]}
-                    class="flex w-full border-t border-gray-400 dark:border-immich-dark-gray h-14 place-items-center bg-gray-200 p-2 dark:bg-gray-700 hover:bg-gray-300 hover:dark:bg-[#232932] focus:bg-gray-300 focus:dark:bg-[#232932] {index ===
-                    suggestedPeople.length - 1
-                      ? 'rounded-b-lg border-b'
-                      : ''}"
-                    on:click={() => handleSuggestPeople(person)}
-                  >
-                    <ImageThumbnail
-                      circle
-                      shadow
-                      url={getPeopleThumbnailUrl(person.id)}
-                      altText={person.name}
-                      widthStyle="2rem"
-                      heightStyle="2rem"
-                    />
-                    <p class="ml-4 text-gray-700 dark:text-gray-100">{person.name}</p>
-                  </button>
-                {/each}
+                <div bind:this={suggestionContainer}>
+                  {#each suggestedPeople as person, index (person.id)}
+                    <button
+                      class="flex w-full border-t border-gray-400 dark:border-immich-dark-gray h-14 place-items-center bg-gray-200 p-2 dark:bg-gray-700 hover:bg-gray-300 hover:dark:bg-[#232932] focus:bg-gray-300 focus:dark:bg-[#232932] {index ===
+                      suggestedPeople.length - 1
+                        ? 'rounded-b-lg border-b'
+                        : ''}"
+                      on:click={() => handleSuggestPeople(person)}
+                    >
+                      <ImageThumbnail
+                        circle
+                        shadow
+                        url={getPeopleThumbnailUrl(person.id)}
+                        altText={person.name}
+                        widthStyle="2rem"
+                        heightStyle="2rem"
+                      />
+                      <p class="ml-4 text-gray-700 dark:text-gray-100">{person.name}</p>
+                    </button>
+                  {/each}
+                </div>
               {/if}
             </div>
           {/if}

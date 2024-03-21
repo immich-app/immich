@@ -50,12 +50,22 @@ import {
   mdiVectorCombine,
   mdiVideo,
   mdiWeb,
+  mdiScaleBalance,
 } from '@mdi/js';
 import Layout from '@theme/Layout';
 import React from 'react';
 import Timeline, { DateType, Item } from '../components/timeline';
 
 const items: Item[] = [
+  {
+    icon: mdiScaleBalance,
+    description: 'Immich switches to AGPLv3 license',
+    title: 'AGPL License',
+    release: 'v1.95.0',
+    tag: 'v1.95.0',
+    date: new Date(2024, 1, 20),
+    dateType: DateType.RELEASE,
+  },
   {
     icon: mdiEyeRefreshOutline,
     description: 'Automatically import files in external libraries when the operating system detects changes.',
@@ -548,7 +558,7 @@ const items: Item[] = [
     title: 'Dark Mode (Web)',
     description: 'Dark mode on the web.',
     release: 'v1.32.0',
-    tag: ' v1.32.0_50-dev',
+    tag: 'v1.32.0_50-dev',
     date: new Date(2022, 9, 14),
     dateType: DateType.RELEASE,
   },
@@ -611,7 +621,7 @@ const items: Item[] = [
     title: 'View Exif',
     description: 'View metadata about assets.',
     release: 'v1.3.0',
-    tag: 'V1.3.0-dev ',
+    tag: 'v1.3.0-dev ',
     date: new Date(2022, 2, 22),
     dateType: DateType.RELEASE,
   },
@@ -620,7 +630,7 @@ const items: Item[] = [
     title: 'Multi Select',
     description: 'Select and execute actions on multiple assets at the same time.',
     release: 'v1.2.0',
-    tag: 'V0.2-dev ',
+    tag: 'v0.2-dev ',
     date: new Date(2022, 1, 8),
     dateType: DateType.RELEASE,
   },

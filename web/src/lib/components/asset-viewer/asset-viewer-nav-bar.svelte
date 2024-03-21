@@ -9,7 +9,6 @@
   import {
     mdiAlertOutline,
     mdiArrowLeft,
-    mdiCloudDownloadOutline,
     mdiContentCopy,
     mdiDeleteOutline,
     mdiDotsVertical,
@@ -20,6 +19,7 @@
     mdiMagnifyPlusOutline,
     mdiMotionPauseOutline,
     mdiPlaySpeed,
+    mdiShareVariantOutline,
   } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
   import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
@@ -32,12 +32,20 @@
   export let isMotionPhotoPlaying = false;
   export let showDownloadButton: boolean;
   export let showDetailButton: boolean;
+  export let showShareButton: boolean;
   export let showSlideshow = false;
   export let hasStackChildren = false;
 
   $: isOwner = asset.ownerId === $user?.id;
 
-  type MenuItemEvent = 'addToAlbum' | 'addToSharedAlbum' | 'asProfileImage' | 'runJob' | 'playSlideShow' | 'unstack';
+  type MenuItemEvent =
+    | 'addToAlbum'
+    | 'addToSharedAlbum'
+    | 'asProfileImage'
+    | 'download'
+    | 'playSlideShow'
+    | 'runJob'
+    | 'unstack';
 
   const dispatch = createEventDispatcher<{
     back: void;
@@ -54,6 +62,7 @@
     runJob: AssetJobName;
     playSlideShow: void;
     unstack: void;
+    showShareModal: void;
   }>();
 
   let contextMenuPosition = { x: 0, y: 0 };
@@ -82,6 +91,14 @@
     <CircleIconButton isOpacity={true} icon={mdiArrowLeft} on:click={() => dispatch('back')} />
   </div>
   <div class="flex w-[calc(100%-3rem)] justify-end gap-2 overflow-hidden text-white">
+    {#if showShareButton}
+      <CircleIconButton
+        isOpacity={true}
+        icon={mdiShareVariantOutline}
+        on:click={() => dispatch('showShareModal')}
+        title="Share"
+      />
+    {/if}
     {#if asset.isOffline}
       <CircleIconButton
         isOpacity={true}
@@ -130,15 +147,6 @@
         }}
       />
     {/if}
-
-    {#if showDownloadButton}
-      <CircleIconButton
-        isOpacity={true}
-        icon={mdiCloudDownloadOutline}
-        on:click={() => dispatch('download')}
-        title="Download"
-      />
-    {/if}
     {#if showDetailButton}
       <CircleIconButton
         isOpacity={true}
@@ -167,6 +175,9 @@
             {#if showSlideshow}
               <MenuOption on:click={() => onMenuClick('playSlideShow')} text="Slideshow" />
             {/if}
+            {#if showDownloadButton}
+              <MenuOption on:click={() => onMenuClick('download')} text="Download" />
+            {/if}
             <MenuOption on:click={() => onMenuClick('addToAlbum')} text="Add to Album" />
             <MenuOption on:click={() => onMenuClick('addToSharedAlbum')} text="Add to Shared Album" />
 
@@ -175,7 +186,9 @@
                 on:click={() => dispatch('toggleArchive')}
                 text={asset.isArchived ? 'Unarchive' : 'Archive'}
               />
-              <MenuOption on:click={() => onMenuClick('asProfileImage')} text="As profile picture" />
+              {#if asset.type === AssetTypeEnum.Image}
+                <MenuOption on:click={() => onMenuClick('asProfileImage')} text="As profile picture" />
+              {/if}
 
               {#if hasStackChildren}
                 <MenuOption on:click={() => onMenuClick('unstack')} text="Un-Stack" />
