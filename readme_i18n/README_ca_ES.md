@@ -18,7 +18,7 @@
 </a>
 <br/>
 <p align="center">
-  <a href="README.md">English</a>
+  <a href="../README.md">English</a>
   <a href="README_ca_ES.md">Español</a>
   <a href="README_fr_FR.md">Français</a>
   <a href="README_it_IT.md">Italiano</a>
