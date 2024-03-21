@@ -3,12 +3,12 @@
   import { AppRoute, AssetAction } from '$lib/constants';
   import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { BucketPosition, type AssetStore, type Viewport } from '$lib/stores/assets.store';
+  import { BucketPosition, isSelectingAllAssets, type AssetStore, type Viewport } from '$lib/stores/assets.store';
   import { locale, showDeleteModal } from '$lib/stores/preferences.store';
   import { isSearchEnabled } from '$lib/stores/search.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { deleteAssets } from '$lib/utils/actions';
-  import { shortcuts, type ShortcutOptions, matchesShortcut } from '$lib/utils/shortcut';
+  import { type ShortcutOptions, shortcuts } from '$lib/utils/shortcut';
   import { formatGroupTitle, splitBucketIntoDateGroups } from '$lib/utils/timeline-util';
   import type { AlbumResponseDto, AssetResponseDto } from '@immich/sdk';
   import { DateTime } from 'luxon';
@@ -20,6 +20,7 @@
   import AssetDateGroup from './asset-date-group.svelte';
   import DeleteAssetDialog from './delete-asset-dialog.svelte';
   import { handlePromiseError } from '$lib/utils';
+  import { selectAllAssets } from '$lib/utils/asset-utils';
 
   export let isSelectionMode = false;
   export let singleSelect = false;
@@ -93,12 +94,14 @@
       { shortcut: { key: 'Escape' }, onShortcut: () => dispatch('escape') },
       { shortcut: { key: '?', shift: true }, onShortcut: () => (showShortcuts = !showShortcuts) },
       { shortcut: { key: '/' }, onShortcut: () => goto(AppRoute.EXPLORE) },
+      { shortcut: { key: 'A', ctrl: true }, onShortcut: () => selectAllAssets(assetStore, assetInteractionStore) },
     ];
 
     if ($isMultiSelectState) {
       shortcuts.push(
         { shortcut: { key: 'Delete' }, onShortcut: onDelete },
         { shortcut: { key: 'Delete', shift: true }, onShortcut: onForceDelete },
+        { shortcut: { key: 'D', ctrl: true }, onShortcut: () => deselectAllAssets() },
       );
     }
 
@@ -202,12 +205,17 @@
 
   let shiftKeyIsDown = false;
 
+  const deselectAllAssets = () => {
+    $isSelectingAllAssets = false;
+    assetInteractionStore.clearMultiselect();
+  };
+
   const onKeyDown = (event: KeyboardEvent) => {
     if ($isSearchEnabled) {
       return;
     }
 
-    if (matchesShortcut(event, { key: 'Shift', shift: true })) {
+    if (event.key === 'Shift') {
       event.preventDefault();
       shiftKeyIsDown = true;
     }
@@ -218,7 +226,7 @@
       return;
     }
 
-    if (matchesShortcut(event, { key: 'Shift', shift: false })) {
+    if (event.key === 'Shift') {
       event.preventDefault();
       shiftKeyIsDown = false;
     }
