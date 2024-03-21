@@ -20,7 +20,7 @@
 
   let places: PlacesResponseDto[] = [];
   let suggestedPlaces: ComboBoxOption[] = [];
-  let searchWord: string = '';
+  let searchQuery: string = '';
   let isSearching = false;
   let showSpinner = false;
   let addClipMapMarker: (long: number, lat: number) => void;
@@ -34,13 +34,13 @@
   $: lat = asset?.exifInfo?.latitude || 0;
   $: lng = asset?.exifInfo?.longitude || 0;
   $: zoom = lat && lng ? 15 : 1;
-  $: noResultsMessage = suggestedPlaces.length === 0 && searchWord === '' ? 'Start typing to search' : 'No results';
+  $: noResultsMessage = suggestedPlaces.length === 0 && searchQuery === '' ? 'Start typing to search' : 'No results';
 
   $: {
     if (places) {
       suggestedPlaces = places.slice(0, 5).map((place) => convertToComboBoxOption(place));
     }
-    if (searchWord === '') {
+    if (searchQuery === '') {
       suggestedPlaces = [];
     }
   }
@@ -49,7 +49,7 @@
 
   const handleCancel = () => dispatch('cancel');
 
-  const handleSelect = (selected: Point) => {
+  const handleClickedPoint = (selected: Point) => {
     point = selected;
   };
 
@@ -61,18 +61,32 @@
     }
   };
 
-  const handleUseSuggested = (latitude?: number, longitude?: number) => {
-    if (!latitude || !longitude) {
-      point = null;
-      removeClipMapMarker();
+  const handleSelect = (event: CustomEvent<ComboBoxOption | undefined>) => {
+    const selectedOption = event.detail;
+    searchQuery = selectedOption?.label ?? '';
+    if (!selectedOption) {
+      modifyMapMarker();
       return;
     }
-    point = { lng: longitude, lat: latitude };
-    addClipMapMarker(longitude, latitude);
+    const [lat, lng] = selectedOption.value.split(',');
+    modifyMapMarker(+lat, +lng);
   };
 
-  const handleSearchPlaces = async () => {
-    if (searchWord === '' || isSearching) {
+  const handleInput = (event: CustomEvent<string>) => {
+    searchQuery = event.detail;
+    void fetchSuggestions();
+  };
+
+  const handleFocusOut = (event: CustomEvent<string>) => {
+    const query = event.detail;
+    searchQuery = query;
+    if (query === '') {
+      suggestedPlaces = [];
+    }
+  };
+
+  const fetchSuggestions = async () => {
+    if (searchQuery === '' || isSearching) {
       return;
     }
 
@@ -80,15 +94,25 @@
     isSearching = true;
     const timeout = setTimeout(() => (showSpinner = true), timeBeforeShowLoadingSpinner);
     try {
-      places = await searchPlaces({ name: searchWord });
+      places = await searchPlaces({ name: searchQuery });
     } catch (error) {
       places = [];
-      handleError(error, "Can't search places");
+      handleError(error, 'Error searching for cities');
     } finally {
       clearTimeout(timeout);
       isSearching = false;
       showSpinner = false;
     }
+  };
+
+  const modifyMapMarker = (latitude?: number, longitude?: number) => {
+    if (!latitude || !longitude) {
+      point = null;
+      removeClipMapMarker();
+      return;
+    }
+    point = { lng: longitude, lat: latitude };
+    addClipMapMarker(longitude, latitude);
   };
 
   const getLocation = (name: string, admin1Name?: string, admin2Name?: string): string => {
@@ -114,29 +138,14 @@
   <div slot="prompt" class="flex flex-col w-full h-full gap-2">
     <div class="w-64 sm:w-96">
       <Combobox
-        id="aCombobox"
+        id="change-location-combobox"
         label="Search for a city"
         options={suggestedPlaces}
         selectedOption={undefined}
         placeholder="City name"
-        on:select={({ detail }) => {
-          if (!detail) {
-            handleUseSuggested();
-            return;
-          }
-          const [lat, lng] = detail.value.split(',');
-          handleUseSuggested(+lat, +lng);
-        }}
-        on:input={({ detail: query }) => {
-          searchWord = query;
-          void handleSearchPlaces();
-        }}
-        on:focusOut={({ detail: query }) => {
-          searchWord = query;
-          if (query === '') {
-            suggestedPlaces = [];
-          }
-        }}
+        on:select={handleSelect}
+        on:input={handleInput}
+        on:focusOut={handleFocusOut}
         enableFiltering={false}
         {noResultsMessage}
         {showSpinner}
@@ -173,7 +182,7 @@
           center={lat && lng ? { lat, lng } : undefined}
           simplified={true}
           clickable={true}
-          on:clickedPoint={({ detail: point }) => handleSelect(point)}
+          on:clickedPoint={({ detail: point }) => handleClickedPoint(point)}
         />
       {/await}
     </div>

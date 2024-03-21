@@ -25,13 +25,37 @@
    * Unique identifier for the combobox.
    */
   export let id: string;
+  /**
+   * Label for the combobox.
+   */
   export let label: string;
-  export let hideLabel = false;
+  /**
+   * Hides the label visually, but keeps it accessible to screen readers.
+   */
+  export let showLabel = true;
+  /**
+   * Options to display in the dropdown.
+   */
   export let options: ComboBoxOption[] = [];
-  export let selectedOption: ComboBoxOption | undefined;
+  /**
+   * Pre-selects an option in the dropdown.
+   */
+  export let selectedOption: ComboBoxOption | undefined = undefined;
+  /**
+   * Placeholder for the text input field.
+   */
   export let placeholder = '';
+  /**
+   * Enable/disable internal filtering of options, based on the inputted text.
+   */
   export let enableFiltering: boolean = true;
+  /**
+   * Show/hide a loading spinner.
+   */
   export let showSpinner: boolean = false;
+  /**
+   * Message to display when no options are available.
+   */
   export let noResultsMessage = 'No results';
 
   /**
@@ -122,7 +146,7 @@
   };
 </script>
 
-<label class="text-sm text-black dark:text-white" class:sr-only={hideLabel} for={inputId}>{label}</label>
+<label class="text-sm text-black dark:text-white" class:sr-only={!showLabel} for={inputId}>{label}</label>
 <div
   class="relative w-full dark:text-gray-300 text-gray-700 text-base"
   use:clickOutside={{ onOutclick: deactivate }}
