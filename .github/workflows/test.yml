@@ -329,14 +329,14 @@ jobs:
 
       - name: Generate new migrations
         continue-on-error: true
-        run: npm run typeorm:migrations:generate ./src/infra/migrations/TestMigration
+        run: npm run typeorm:migrations:generate ./src/migrations/TestMigration
 
       - name: Find file changes
         uses: tj-actions/verify-changed-files@v19
         id: verify-changed-files
         with:
           files: |
-            server/src/infra/migrations/
+            server/src/migrations/
       - name: Verify migration files have not changed
         if: steps.verify-changed-files.outputs.files_changed == 'true'
         run: |
@@ -354,7 +354,7 @@ jobs:
         id: verify-changed-sql-files
         with:
           files: |
-            server/src/infra/sql
+            server/src/queries
 
       - name: Verify SQL files have not changed
         if: steps.verify-changed-sql-files.outputs.files_changed == 'true'

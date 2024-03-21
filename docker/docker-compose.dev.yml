@@ -99,7 +99,7 @@ services:
 
   redis:
     container_name: immich_redis
-    image: redis:6.2-alpine@sha256:51d6c56749a4243096327e3fb964a48ed92254357108449cb6e23999c37773c5
+    image: redis:6.2-alpine@sha256:3fcb624d83a9c478357f16dc173c58ded325ccc5fd2a4375f3916c04cc579f70
 
   database:
     container_name: immich_postgres

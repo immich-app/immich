@@ -92,6 +92,7 @@
       {#if $locale !== undefined}
         <div class="ml-4">
           <SettingCombobox
+            id="custom-locale"
             comboboxPlaceholder="Searching locales..."
             {selectedOption}
             options={getAllLanguages()}
