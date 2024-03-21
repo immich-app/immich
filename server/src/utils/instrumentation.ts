@@ -13,8 +13,7 @@ import { snakeCase, startCase } from 'lodash';
 import { OpenTelemetryModuleOptions } from 'nestjs-otel/lib/interfaces';
 import { copyMetadataFromFunctionToFunction } from 'nestjs-otel/lib/opentelemetry.utils';
 import { performance } from 'node:perf_hooks';
-import { excludePaths } from 'src/config';
-import { serverVersion } from 'src/constants';
+import { excludePaths, serverVersion } from 'src/constants';
 import { DecorateAll } from 'src/decorators';
 
 let metricsEnabled = process.env.IMMICH_METRICS === 'true';

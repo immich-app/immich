@@ -16,22 +16,26 @@ import {
 import { ApiBody, ApiConsumes, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
+import {
+  AssetBulkUploadCheckResponseDto,
+  AssetFileUploadResponseDto,
+  CheckExistingAssetsResponseDto,
+  CuratedLocationsResponseDto,
+  CuratedObjectsResponseDto,
+} from 'src/dtos/asset-v1-response.dto';
+import {
+  AssetBulkUploadCheckDto,
+  AssetSearchDto,
+  CheckExistingAssetsDto,
+  CreateAssetDto,
+  GetAssetThumbnailDto,
+  ServeFileDto,
+} from 'src/dtos/asset-v1.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { AssetService as AssetServiceV1 } from 'src/immich/api-v1/asset/asset.service';
-import { AssetBulkUploadCheckDto } from 'src/immich/api-v1/asset/dto/asset-check.dto';
-import { AssetSearchDto } from 'src/immich/api-v1/asset/dto/asset-search.dto';
-import { CheckExistingAssetsDto } from 'src/immich/api-v1/asset/dto/check-existing-assets.dto';
-import { CreateAssetDto } from 'src/immich/api-v1/asset/dto/create-asset.dto';
-import { GetAssetThumbnailDto } from 'src/immich/api-v1/asset/dto/get-asset-thumbnail.dto';
-import { ServeFileDto } from 'src/immich/api-v1/asset/dto/serve-file.dto';
-import { AssetBulkUploadCheckResponseDto } from 'src/immich/api-v1/asset/response-dto/asset-check-response.dto';
-import { AssetFileUploadResponseDto } from 'src/immich/api-v1/asset/response-dto/asset-file-upload-response.dto';
-import { CheckExistingAssetsResponseDto } from 'src/immich/api-v1/asset/response-dto/check-existing-assets-response.dto';
-import { CuratedLocationsResponseDto } from 'src/immich/api-v1/asset/response-dto/curated-locations-response.dto';
-import { CuratedObjectsResponseDto } from 'src/immich/api-v1/asset/response-dto/curated-objects-response.dto';
-import { sendFile } from 'src/immich/app.utils';
 import { Auth, Authenticated, FileResponse, SharedLinkRoute } from 'src/middleware/auth.guard';
 import { FileUploadInterceptor, ImmichFile, Route, mapToUploadFile } from 'src/middleware/file-upload.interceptor';
+import { AssetServiceV1 } from 'src/services/asset-v1.service';
+import { sendFile } from 'src/utils/file';
 import { FileNotEmptyValidator, UUIDParamDto } from 'src/validation';
 
 interface UploadFiles {
@@ -43,8 +47,8 @@ interface UploadFiles {
 @ApiTags('Asset')
 @Controller(Route.ASSET)
 @Authenticated()
-export class AssetController {
-  constructor(private serviceV1: AssetServiceV1) {}
+export class AssetControllerV1 {
+  constructor(private service: AssetServiceV1) {}
 
   @SharedLinkRoute()
   @Post('upload')
@@ -73,7 +77,7 @@ export class AssetController {
       sidecarFile = mapToUploadFile(_sidecarFile);
     }
 
-    const responseDto = await this.serviceV1.uploadFile(auth, dto, file, livePhotoFile, sidecarFile);
+    const responseDto = await this.service.uploadFile(auth, dto, file, livePhotoFile, sidecarFile);
     if (responseDto.duplicate) {
       res.status(HttpStatus.OK);
     }
@@ -91,7 +95,7 @@ export class AssetController {
     @Param() { id }: UUIDParamDto,
     @Query() dto: ServeFileDto,
   ) {
-    await sendFile(res, next, () => this.serviceV1.serveFile(auth, id, dto));
+    await sendFile(res, next, () => this.service.serveFile(auth, id, dto));
   }
 
   @SharedLinkRoute()
@@ -104,22 +108,22 @@ export class AssetController {
     @Param() { id }: UUIDParamDto,
     @Query() dto: GetAssetThumbnailDto,
   ) {
-    await sendFile(res, next, () => this.serviceV1.serveThumbnail(auth, id, dto));
+    await sendFile(res, next, () => this.service.serveThumbnail(auth, id, dto));
   }
 
   @Get('/curated-objects')
   getCuratedObjects(@Auth() auth: AuthDto): Promise<CuratedObjectsResponseDto[]> {
-    return this.serviceV1.getCuratedObject(auth);
+    return this.service.getCuratedObject(auth);
   }
 
   @Get('/curated-locations')
   getCuratedLocations(@Auth() auth: AuthDto): Promise<CuratedLocationsResponseDto[]> {
-    return this.serviceV1.getCuratedLocation(auth);
+    return this.service.getCuratedLocation(auth);
   }
 
   @Get('/search-terms')
   getAssetSearchTerms(@Auth() auth: AuthDto): Promise<string[]> {
-    return this.serviceV1.getAssetSearchTerm(auth);
+    return this.service.getAssetSearchTerm(auth);
   }
 
   /**
@@ -133,7 +137,7 @@ export class AssetController {
     schema: { type: 'string' },
   })
   getAllAssets(@Auth() auth: AuthDto, @Query() dto: AssetSearchDto): Promise<AssetResponseDto[]> {
-    return this.serviceV1.getAllAssets(auth, dto);
+    return this.service.getAllAssets(auth, dto);
   }
 
   /**
@@ -145,7 +149,7 @@ export class AssetController {
     @Auth() auth: AuthDto,
     @Body() dto: CheckExistingAssetsDto,
   ): Promise<CheckExistingAssetsResponseDto> {
-    return this.serviceV1.checkExistingAssets(auth, dto);
+    return this.service.checkExistingAssets(auth, dto);
   }
 
   /**
@@ -157,6 +161,6 @@ export class AssetController {
     @Auth() auth: AuthDto,
     @Body() dto: AssetBulkUploadCheckDto,
   ): Promise<AssetBulkUploadCheckResponseDto> {
-    return this.serviceV1.bulkUploadCheck(auth, dto);
+    return this.service.bulkUploadCheck(auth, dto);
   }
 }
