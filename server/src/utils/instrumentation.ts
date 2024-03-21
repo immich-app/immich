@@ -14,8 +14,8 @@ import { OpenTelemetryModuleOptions } from 'nestjs-otel/lib/interfaces';
 import { copyMetadataFromFunctionToFunction } from 'nestjs-otel/lib/opentelemetry.utils';
 import { performance } from 'node:perf_hooks';
 import { excludePaths } from 'src/config';
+import { serverVersion } from 'src/constants';
 import { DecorateAll } from 'src/decorators';
-import { serverVersion } from 'src/domain/domain.constant';
 
 let metricsEnabled = process.env.IMMICH_METRICS === 'true';
 const hostMetrics =

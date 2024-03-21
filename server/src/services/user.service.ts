@@ -4,21 +4,19 @@ import { randomBytes } from 'node:crypto';
 import { StorageCore, StorageFolder } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { UserCore } from 'src/cores/user.core';
-import { JobName } from 'src/domain/job/job.constants';
-import { IEntityJob } from 'src/domain/job/job.interface';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { CreateProfileImageResponseDto, mapCreateProfileImageResponse } from 'src/dtos/user-profile.dto';
 import { CreateUserDto, DeleteUserDto, UpdateUserDto, UserResponseDto, mapUser } from 'src/dtos/user.dto';
 import { UserEntity, UserStatus } from 'src/entities/user.entity';
-import { ImmichLogger } from 'src/infra/logger';
 import { IAlbumRepository } from 'src/interfaces/album.repository';
 import { ICryptoRepository } from 'src/interfaces/crypto.repository';
-import { IJobRepository, JobStatus } from 'src/interfaces/job.repository';
+import { IEntityJob, IJobRepository, JobName, JobStatus } from 'src/interfaces/job.repository';
 import { ILibraryRepository } from 'src/interfaces/library.repository';
 import { IStorageRepository } from 'src/interfaces/storage.repository';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
 import { IUserRepository, UserFindOptions } from 'src/interfaces/user.repository';
-import { CacheControl, ImmichFileResponse } from 'src/utils';
+import { CacheControl, ImmichFileResponse } from 'src/utils/file';
+import { ImmichLogger } from 'src/utils/logger';
 
 @Injectable()
 export class UserService {

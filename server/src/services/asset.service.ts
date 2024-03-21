@@ -6,9 +6,6 @@ import sanitize from 'sanitize-filename';
 import { AccessCore, Permission } from 'src/cores/access.core';
 import { StorageCore, StorageFolder } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
-import { mimeTypes } from 'src/domain/domain.constant';
-import { JOBS_ASSET_PAGINATION_SIZE, JobName } from 'src/domain/job/job.constants';
-import { IAssetDeletionJob, ISidecarWriteJob } from 'src/domain/job/job.interface';
 import {
   AssetResponseDto,
   MemoryLaneResponseDto,
@@ -31,17 +28,26 @@ import { UpdateStackParentDto } from 'src/dtos/stack.dto';
 import { TimeBucketAssetDto, TimeBucketDto, TimeBucketResponseDto } from 'src/dtos/time-bucket.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { LibraryType } from 'src/entities/library.entity';
-import { ImmichLogger } from 'src/infra/logger';
 import { IAccessRepository } from 'src/interfaces/access.repository';
 import { IAssetStackRepository } from 'src/interfaces/asset-stack.repository';
 import { IAssetRepository, TimeBucketOptions } from 'src/interfaces/asset.repository';
 import { ClientEvent, ICommunicationRepository } from 'src/interfaces/communication.repository';
-import { IJobRepository, JobItem, JobStatus } from 'src/interfaces/job.repository';
+import {
+  IAssetDeletionJob,
+  IJobRepository,
+  ISidecarWriteJob,
+  JOBS_ASSET_PAGINATION_SIZE,
+  JobItem,
+  JobName,
+  JobStatus,
+} from 'src/interfaces/job.repository';
 import { IPartnerRepository } from 'src/interfaces/partner.repository';
 import { IStorageRepository } from 'src/interfaces/storage.repository';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
 import { IUserRepository } from 'src/interfaces/user.repository';
-import { usePagination } from 'src/utils';
+import { ImmichLogger } from 'src/utils/logger';
+import { mimeTypes } from 'src/utils/mime-types';
+import { usePagination } from 'src/utils/pagination';
 
 export interface UploadRequest {
   auth: AuthDto | null;

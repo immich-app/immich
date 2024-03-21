@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { ActivityEntity } from 'src/entities/activity.entity';
-import { Instrumentation } from 'src/infra/instrumentation';
 import { IActivityRepository } from 'src/interfaces/activity.repository';
+import { Instrumentation } from 'src/utils/instrumentation';
 import { IsNull, Repository } from 'typeorm';
 
 export interface ActivitySearch {

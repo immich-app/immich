@@ -354,7 +354,7 @@ jobs:
         id: verify-changed-sql-files
         with:
           files: |
-            server/src/infra/sql
+            server/src/queries
 
       - name: Verify SQL files have not changed
         if: steps.verify-changed-sql-files.outputs.files_changed == 'true'

@@ -10,9 +10,6 @@ import cookieParser from 'cookie';
 import { DateTime } from 'luxon';
 import { IncomingHttpHeaders } from 'node:http';
 import { ClientMetadata, Issuer, UserinfoResponse, custom, generators } from 'openid-client';
-import { AccessCore, Permission } from 'src/cores/access.core';
-import { SystemConfigCore } from 'src/cores/system-config.core';
-import { UserCore } from 'src/cores/user.core';
 import {
   AuthType,
   IMMICH_ACCESS_COOKIE,
@@ -21,7 +18,10 @@ import {
   IMMICH_IS_AUTHENTICATED,
   LOGIN_URL,
   MOBILE_REDIRECT,
-} from 'src/domain/auth/auth.constant';
+} from 'src/constants';
+import { AccessCore, Permission } from 'src/cores/access.core';
+import { SystemConfigCore } from 'src/cores/system-config.core';
+import { UserCore } from 'src/cores/user.core';
 import {
   AuthDeviceResponseDto,
   AuthDto,
@@ -39,7 +39,6 @@ import {
 import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
 import { SystemConfig } from 'src/entities/system-config.entity';
 import { UserEntity } from 'src/entities/user.entity';
-import { ImmichLogger } from 'src/infra/logger';
 import { IAccessRepository } from 'src/interfaces/access.repository';
 import { IKeyRepository } from 'src/interfaces/api-key.repository';
 import { ICryptoRepository } from 'src/interfaces/crypto.repository';
@@ -48,7 +47,8 @@ import { ISharedLinkRepository } from 'src/interfaces/shared-link.repository';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
 import { IUserTokenRepository } from 'src/interfaces/user-token.repository';
 import { IUserRepository } from 'src/interfaces/user.repository';
-import { HumanReadableSize } from 'src/utils';
+import { HumanReadableSize } from 'src/utils/bytes';
+import { ImmichLogger } from 'src/utils/logger';
 
 export interface LoginDetails {
   isSecure: boolean;

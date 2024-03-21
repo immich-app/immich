@@ -1,7 +1,7 @@
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { PersonEntity } from 'src/entities/person.entity';
-import { Paginated, PaginationOptions } from 'src/utils';
+import { Paginated, PaginationOptions } from 'src/utils/pagination';
 import { FindManyOptions, FindOptionsRelations, FindOptionsSelect } from 'typeorm';
 
 export const IPersonRepository = 'IPersonRepository';

@@ -9,10 +9,10 @@ import {
 import { Reflector } from '@nestjs/core';
 import { ApiBearerAuth, ApiCookieAuth, ApiOkResponse, ApiQuery, ApiSecurity } from '@nestjs/swagger';
 import { Request } from 'express';
-import { IMMICH_API_KEY_NAME } from 'src/domain/auth/auth.constant';
+import { IMMICH_API_KEY_NAME } from 'src/constants';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { ImmichLogger } from 'src/infra/logger';
 import { AuthService, LoginDetails } from 'src/services/auth.service';
+import { ImmichLogger } from 'src/utils/logger';
 import { UAParser } from 'ua-parser-js';
 
 export enum Metadata {

@@ -1,18 +1,7 @@
 import _ from 'lodash';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetSearchBuilderOptions } from 'src/interfaces/search.repository';
-import { Paginated, PaginatedBuilderOptions, PaginationMode, PaginationOptions, PaginationResult } from 'src/utils';
-import {
-  Between,
-  FindManyOptions,
-  IsNull,
-  LessThanOrEqual,
-  MoreThanOrEqual,
-  Not,
-  ObjectLiteral,
-  Repository,
-  SelectQueryBuilder,
-} from 'typeorm';
+import { Between, IsNull, LessThanOrEqual, MoreThanOrEqual, Not, SelectQueryBuilder } from 'typeorm';
 
 /**
  * Allows optional values unlike the regular Between and uses MoreThanOrEqual
@@ -26,47 +15,6 @@ export function OptionalBetween<T>(from?: T, to?: T) {
   } else if (to) {
     return LessThanOrEqual(to);
   }
-}
-
-function paginationHelper<Entity extends ObjectLiteral>(items: Entity[], take: number): PaginationResult<Entity> {
-  const hasNextPage = items.length > take;
-  items.splice(take);
-
-  return { items, hasNextPage };
-}
-
-export async function paginate<Entity extends ObjectLiteral>(
-  repository: Repository<Entity>,
-  { take, skip }: PaginationOptions,
-  searchOptions?: FindManyOptions<Entity>,
-): Paginated<Entity> {
-  const items = await repository.find(
-    _.omitBy(
-      {
-        ...searchOptions,
-        // Take one more item to check if there's a next page
-        take: take + 1,
-        skip,
-      },
-      _.isUndefined,
-    ),
-  );
-
-  return paginationHelper(items, take);
-}
-
-export async function paginatedBuilder<Entity extends ObjectLiteral>(
-  qb: SelectQueryBuilder<Entity>,
-  { take, skip, mode }: PaginatedBuilderOptions,
-): Paginated<Entity> {
-  if (mode === PaginationMode.LIMIT_OFFSET) {
-    qb.limit(take + 1).offset(skip);
-  } else {
-    qb.take(take + 1).skip(skip);
-  }
-
-  const items = await qb.getMany();
-  return paginationHelper(items, take);
 }
 
 export const asVector = (embedding: number[], quote = false) =>

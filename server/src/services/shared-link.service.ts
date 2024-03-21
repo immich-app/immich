@@ -16,7 +16,7 @@ import { SharedLinkEntity, SharedLinkType } from 'src/entities/shared-link.entit
 import { IAccessRepository } from 'src/interfaces/access.repository';
 import { ICryptoRepository } from 'src/interfaces/crypto.repository';
 import { ISharedLinkRepository } from 'src/interfaces/shared-link.repository';
-import { OpenGraphTags } from 'src/utils';
+import { OpenGraphTags } from 'src/utils/misc';
 
 @Injectable()
 export class SharedLinkService {

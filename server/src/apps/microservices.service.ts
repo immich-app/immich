@@ -1,7 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { JobName } from 'src/domain/job/job.constants';
-import { IDeleteFilesJob } from 'src/domain/job/job.interface';
-import { otelSDK } from 'src/infra/instrumentation';
+import { IDeleteFilesJob, JobName } from 'src/interfaces/job.repository';
 import { AssetService } from 'src/services/asset.service';
 import { AuditService } from 'src/services/audit.service';
 import { DatabaseService } from 'src/services/database.service';
@@ -15,6 +13,7 @@ import { StorageTemplateService } from 'src/services/storage-template.service';
 import { StorageService } from 'src/services/storage.service';
 import { SystemConfigService } from 'src/services/system-config.service';
 import { UserService } from 'src/services/user.service';
+import { otelSDK } from 'src/utils/instrumentation';
 
 @Injectable()
 export class MicroservicesService {

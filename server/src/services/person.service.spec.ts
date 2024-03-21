@@ -1,12 +1,11 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { JobName } from 'src/domain/job/job.constants';
 import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto';
 import { PersonResponseDto, mapFaces, mapPerson } from 'src/dtos/person.dto';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { Colorspace, SystemConfigKey } from 'src/entities/system-config.entity';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.repository';
 import { ICryptoRepository } from 'src/interfaces/crypto.repository';
-import { IJobRepository, JobStatus } from 'src/interfaces/job.repository';
+import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.repository';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.repository';
 import { IMediaRepository } from 'src/interfaces/media.repository';
 import { IMoveRepository } from 'src/interfaces/move.repository';
@@ -15,7 +14,7 @@ import { FaceSearchResult, ISearchRepository } from 'src/interfaces/search.repos
 import { IStorageRepository } from 'src/interfaces/storage.repository';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
 import { PersonService } from 'src/services/person.service';
-import { CacheControl, ImmichFileResponse } from 'src/utils';
+import { CacheControl, ImmichFileResponse } from 'src/utils/file';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { faceStub } from 'test/fixtures/face.stub';

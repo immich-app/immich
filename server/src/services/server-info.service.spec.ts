@@ -1,4 +1,4 @@
-import { serverVersion } from 'src/domain/domain.constant';
+import { serverVersion } from 'src/constants';
 import { SystemMetadataKey } from 'src/entities/system-metadata.entity';
 import { ICommunicationRepository } from 'src/interfaces/communication.repository';
 import { IServerInfoRepository } from 'src/interfaces/server-info.repository';

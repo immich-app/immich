@@ -2,7 +2,7 @@ import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { IncomingHttpHeaders } from 'node:http';
 import { Issuer, generators } from 'openid-client';
 import { Socket } from 'socket.io';
-import { AuthType } from 'src/domain/auth/auth.constant';
+import { AuthType } from 'src/constants';
 import { AuthDto, SignUpDto } from 'src/dtos/auth.dto';
 import { UserEntity } from 'src/entities/user.entity';
 import { IKeyRepository } from 'src/interfaces/api-key.repository';

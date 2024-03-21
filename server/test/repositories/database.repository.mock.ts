@@ -1,5 +1,5 @@
-import { Version } from 'src/domain/domain.constant';
 import { IDatabaseRepository } from 'src/interfaces/database.repository';
+import { Version } from 'src/utils/version';
 
 export const newDatabaseRepositoryMock = (): jest.Mocked<IDatabaseRepository> => {
   return {

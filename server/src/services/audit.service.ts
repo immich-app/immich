@@ -1,10 +1,9 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { resolve } from 'node:path';
+import { AUDIT_LOG_MAX_DURATION } from 'src/constants';
 import { AccessCore, Permission } from 'src/cores/access.core';
 import { StorageCore, StorageFolder } from 'src/cores/storage.core';
-import { AUDIT_LOG_MAX_DURATION } from 'src/domain/domain.constant';
-import { JOBS_ASSET_PAGINATION_SIZE } from 'src/domain/job/job.constants';
 import {
   AuditDeletesDto,
   AuditDeletesResponseDto,
@@ -16,16 +15,16 @@ import {
 import { AuthDto } from 'src/dtos/auth.dto';
 import { DatabaseAction } from 'src/entities/audit.entity';
 import { AssetPathType, PersonPathType, UserPathType } from 'src/entities/move.entity';
-import { ImmichLogger } from 'src/infra/logger';
 import { IAccessRepository } from 'src/interfaces/access.repository';
 import { IAssetRepository } from 'src/interfaces/asset.repository';
 import { IAuditRepository } from 'src/interfaces/audit.repository';
 import { ICryptoRepository } from 'src/interfaces/crypto.repository';
-import { JobStatus } from 'src/interfaces/job.repository';
+import { JOBS_ASSET_PAGINATION_SIZE, JobStatus } from 'src/interfaces/job.repository';
 import { IPersonRepository } from 'src/interfaces/person.repository';
 import { IStorageRepository } from 'src/interfaces/storage.repository';
 import { IUserRepository } from 'src/interfaces/user.repository';
-import { usePagination } from 'src/utils';
+import { ImmichLogger } from 'src/utils/logger';
+import { usePagination } from 'src/utils/pagination';
 
 @Injectable()
 export class AuditService {

@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
-import { Instrumentation } from 'src/infra/instrumentation';
 import { ISharedLinkRepository } from 'src/interfaces/shared-link.repository';
+import { Instrumentation } from 'src/utils/instrumentation';
 import { Repository } from 'typeorm';
 
 @Instrumentation()

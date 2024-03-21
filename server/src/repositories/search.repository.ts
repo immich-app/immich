@@ -1,16 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { vectorExt } from 'src/database.config';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { getCLIPModelInfo } from 'src/domain/smart-info/smart-info.constant';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { GeodataPlacesEntity } from 'src/entities/geodata-places.entity';
 import { SmartInfoEntity } from 'src/entities/smart-info.entity';
 import { SmartSearchEntity } from 'src/entities/smart-search.entity';
-import { vectorExt } from 'src/infra/database.config';
-import { asVector, paginatedBuilder, searchAssetBuilder } from 'src/infra/infra.utils';
-import { Instrumentation } from 'src/infra/instrumentation';
-import { ImmichLogger } from 'src/infra/logger';
 import { DatabaseExtension } from 'src/interfaces/database.repository';
 import {
   AssetSearchOptions,
@@ -21,7 +17,11 @@ import {
   SearchPaginationOptions,
   SmartSearchOptions,
 } from 'src/interfaces/search.repository';
-import { Paginated, PaginationMode, PaginationResult } from 'src/utils';
+import { asVector, searchAssetBuilder } from 'src/utils/database';
+import { Instrumentation } from 'src/utils/instrumentation';
+import { ImmichLogger } from 'src/utils/logger';
+import { getCLIPModelInfo } from 'src/utils/misc';
+import { Paginated, PaginationMode, PaginationResult, paginatedBuilder } from 'src/utils/pagination';
 import { isValidInteger } from 'src/validation';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 
