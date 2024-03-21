@@ -1,5 +1,4 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { OnEvent } from '@nestjs/event-emitter';
 import { Trie } from 'mnemonist';
 import { R_OK } from 'node:constants';
 import { EventEmitter } from 'node:events';
@@ -8,6 +7,7 @@ import path, { basename, parse } from 'node:path';
 import picomatch from 'picomatch';
 import { StorageCore } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
+import { OnEventInternal } from 'src/decorators';
 import {
   CreateLibraryDto,
   LibraryResponseDto,
@@ -105,7 +105,7 @@ export class LibraryService extends EventEmitter {
     });
   }
 
-  @OnEvent(InternalEvent.VALIDATE_CONFIG)
+  @OnEventInternal(InternalEvent.VALIDATE_CONFIG)
   validateConfig({ newConfig }: InternalEventMap[InternalEvent.VALIDATE_CONFIG]) {
     const { scan } = newConfig.library;
     if (!validateCronExpression(scan.cronExpression)) {
