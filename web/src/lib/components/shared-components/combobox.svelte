@@ -53,7 +53,6 @@
 
   const dispatch = createEventDispatcher<{
     select: ComboBoxOption | undefined;
-    click: void;
   }>();
 
   const activate = () => {
