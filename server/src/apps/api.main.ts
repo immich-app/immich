@@ -7,11 +7,11 @@ import sirv from 'sirv';
 import { ApiModule } from 'src/apps/api.module';
 import { ApiService } from 'src/apps/api.service';
 import { excludePaths } from 'src/config';
-import { WEB_ROOT, envName, isDev, serverVersion } from 'src/domain/domain.constant';
+import { WEB_ROOT, envName, isDev, serverVersion } from 'src/constants';
 import { useSwagger } from 'src/immich/app.utils';
-import { otelSDK } from 'src/infra/instrumentation';
-import { ImmichLogger } from 'src/infra/logger';
-import { WebSocketAdapter } from 'src/infra/websocket.adapter';
+import { WebSocketAdapter } from 'src/middleware/websocket.adapter';
+import { otelSDK } from 'src/utils/instrumentation';
+import { ImmichLogger } from 'src/utils/logger';
 
 const logger = new ImmichLogger('ImmichServer');
 const port = Number(process.env.SERVER_PORT) || 3001;

@@ -1,4 +1,4 @@
-import { vectorExt } from 'src/infra/database.config';
+import { vectorExt } from 'src/database.config';
 import { DatabaseExtension } from 'src/interfaces/database.repository';
 import { MigrationInterface, QueryRunner } from 'typeorm';
 

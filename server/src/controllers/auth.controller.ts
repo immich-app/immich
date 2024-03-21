@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Req, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
-import { IMMICH_ACCESS_COOKIE, IMMICH_AUTH_TYPE_COOKIE, IMMICH_IS_AUTHENTICATED } from 'src/domain/auth/auth.constant';
+import { IMMICH_ACCESS_COOKIE, IMMICH_AUTH_TYPE_COOKIE, IMMICH_IS_AUTHENTICATED } from 'src/constants';
 import {
   AuthDeviceResponseDto,
   AuthDto,

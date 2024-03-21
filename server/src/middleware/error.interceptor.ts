@@ -8,8 +8,8 @@ import {
 } from '@nestjs/common';
 import { Observable, catchError, throwError } from 'rxjs';
 import { routeToErrorMessage } from 'src/immich/app.utils';
-import { ImmichLogger } from 'src/infra/logger';
-import { isConnectionAborted } from 'src/utils';
+import { ImmichLogger } from 'src/utils/logger';
+import { isConnectionAborted } from 'src/utils/misc';
 
 @Injectable()
 export class ErrorInterceptor implements NestInterceptor {

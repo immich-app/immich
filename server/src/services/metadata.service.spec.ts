@@ -3,7 +3,6 @@ import { when } from 'jest-when';
 import { randomBytes } from 'node:crypto';
 import { Stats } from 'node:fs';
 import { constants } from 'node:fs/promises';
-import { JobName } from 'src/domain/job/job.constants';
 import { AssetType } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { SystemConfigKey } from 'src/entities/system-config.entity';
@@ -12,7 +11,7 @@ import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.reposito
 import { ClientEvent, ICommunicationRepository } from 'src/interfaces/communication.repository';
 import { ICryptoRepository } from 'src/interfaces/crypto.repository';
 import { IDatabaseRepository } from 'src/interfaces/database.repository';
-import { IJobRepository, JobStatus } from 'src/interfaces/job.repository';
+import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.repository';
 import { IMediaRepository } from 'src/interfaces/media.repository';
 import { IMetadataRepository, ImmichTags } from 'src/interfaces/metadata.repository';
 import { IMoveRepository } from 'src/interfaces/move.repository';

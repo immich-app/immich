@@ -7,7 +7,7 @@ import { CheckExistingAssetsDto } from 'src/immich/api-v1/asset/dto/check-existi
 import { SearchPropertiesDto } from 'src/immich/api-v1/asset/dto/search-properties.dto';
 import { CuratedLocationsResponseDto } from 'src/immich/api-v1/asset/response-dto/curated-locations-response.dto';
 import { CuratedObjectsResponseDto } from 'src/immich/api-v1/asset/response-dto/curated-objects-response.dto';
-import { OptionalBetween } from 'src/infra/infra.utils';
+import { OptionalBetween } from 'src/utils/database';
 import { In } from 'typeorm/find-options/operator/In.js';
 import { Repository } from 'typeorm/repository/Repository.js';
 export interface AssetCheck {

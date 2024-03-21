@@ -4,8 +4,6 @@ import { ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { PersonEntity } from 'src/entities/person.entity';
-import { asVector, paginate } from 'src/infra/infra.utils';
-import { Instrumentation } from 'src/infra/instrumentation';
 import {
   AssetFaceId,
   IPersonRepository,
@@ -15,7 +13,9 @@ import {
   PersonStatistics,
   UpdateFacesData,
 } from 'src/interfaces/person.repository';
-import { Paginated, PaginationOptions } from 'src/utils';
+import { asVector } from 'src/utils/database';
+import { Instrumentation } from 'src/utils/instrumentation';
+import { Paginated, PaginationOptions, paginate } from 'src/utils/pagination';
 import { FindManyOptions, FindOptionsRelations, FindOptionsSelect, In, Repository } from 'typeorm';
 
 @Instrumentation()

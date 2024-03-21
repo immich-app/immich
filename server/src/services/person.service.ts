@@ -1,11 +1,8 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { FACE_THUMBNAIL_SIZE } from 'src/constants';
 import { AccessCore, Permission } from 'src/cores/access.core';
 import { StorageCore } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
-import { mimeTypes } from 'src/domain/domain.constant';
-import { JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from 'src/domain/job/job.constants';
-import { IBaseJob, IDeferrableJob, IEntityJob } from 'src/domain/job/job.interface';
-import { FACE_THUMBNAIL_SIZE } from 'src/domain/media/media.constant';
 import { BulkIdErrorReason, BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto';
 import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -26,11 +23,20 @@ import {
 } from 'src/dtos/person.dto';
 import { PersonPathType } from 'src/entities/move.entity';
 import { PersonEntity } from 'src/entities/person.entity';
-import { ImmichLogger } from 'src/infra/logger';
 import { IAccessRepository } from 'src/interfaces/access.repository';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.repository';
 import { ICryptoRepository } from 'src/interfaces/crypto.repository';
-import { IJobRepository, JobItem, JobStatus } from 'src/interfaces/job.repository';
+import {
+  IBaseJob,
+  IDeferrableJob,
+  IEntityJob,
+  IJobRepository,
+  JOBS_ASSET_PAGINATION_SIZE,
+  JobItem,
+  JobName,
+  JobStatus,
+  QueueName,
+} from 'src/interfaces/job.repository';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.repository';
 import { CropOptions, IMediaRepository } from 'src/interfaces/media.repository';
 import { IMoveRepository } from 'src/interfaces/move.repository';
@@ -38,7 +44,10 @@ import { IPersonRepository, UpdateFacesData } from 'src/interfaces/person.reposi
 import { ISearchRepository } from 'src/interfaces/search.repository';
 import { IStorageRepository } from 'src/interfaces/storage.repository';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
-import { CacheControl, ImmichFileResponse, usePagination } from 'src/utils';
+import { CacheControl, ImmichFileResponse } from 'src/utils/file';
+import { ImmichLogger } from 'src/utils/logger';
+import { mimeTypes } from 'src/utils/mime-types';
+import { usePagination } from 'src/utils/pagination';
 import { IsNull } from 'typeorm';
 
 @Injectable()

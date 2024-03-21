@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
+import { isDev, serverVersion } from 'src/constants';
 import { StorageCore, StorageFolder } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
-import { Version, isDev, mimeTypes, serverVersion } from 'src/domain/domain.constant';
 import {
   ServerConfigDto,
   ServerFeaturesDto,
@@ -13,14 +13,16 @@ import {
   UsageByUserDto,
 } from 'src/dtos/server-info.dto';
 import { SystemMetadataKey } from 'src/entities/system-metadata.entity';
-import { ImmichLogger } from 'src/infra/logger';
 import { ClientEvent, ICommunicationRepository } from 'src/interfaces/communication.repository';
 import { IServerInfoRepository } from 'src/interfaces/server-info.repository';
 import { IStorageRepository } from 'src/interfaces/storage.repository';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.repository';
 import { IUserRepository, UserStatsQueryResponse } from 'src/interfaces/user.repository';
-import { asHumanReadable } from 'src/utils';
+import { asHumanReadable } from 'src/utils/bytes';
+import { ImmichLogger } from 'src/utils/logger';
+import { mimeTypes } from 'src/utils/mime-types';
+import { Version } from 'src/utils/version';
 
 @Injectable()
 export class ServerInfoService {

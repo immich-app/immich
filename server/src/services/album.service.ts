@@ -21,7 +21,7 @@ import { IAccessRepository } from 'src/interfaces/access.repository';
 import { AlbumAssetCount, AlbumInfoOptions, IAlbumRepository } from 'src/interfaces/album.repository';
 import { IAssetRepository } from 'src/interfaces/asset.repository';
 import { IUserRepository } from 'src/interfaces/user.repository';
-import { setUnion } from 'src/utils';
+import { setUnion } from 'src/utils/set';
 
 @Injectable()
 export class AlbumService {

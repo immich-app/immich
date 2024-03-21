@@ -16,9 +16,9 @@ const urlOrParts = url
 /* eslint unicorn/prefer-module: "off" -- We can fix this when migrating to ESM*/
 export const databaseConfig: PostgresConnectionOptions = {
   type: 'postgres',
-  entities: [__dirname + '/../entities/*.entity.{js,ts}'],
-  migrations: [__dirname + '/../migrations/*.{js,ts}'],
-  subscribers: [__dirname + '/../subscribers/*.{js,ts}'],
+  entities: [__dirname + '/entities/*.entity.{js,ts}'],
+  migrations: [__dirname + '/migrations/*.{js,ts}'],
+  subscribers: [__dirname + '/subscribers/*.{js,ts}'],
   migrationsRun: false,
   synchronize: false,
   connectTimeoutMS: 10_000, // 10 seconds

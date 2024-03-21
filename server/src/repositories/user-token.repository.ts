@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { UserTokenEntity } from 'src/entities/user-token.entity';
-import { Instrumentation } from 'src/infra/instrumentation';
 import { IUserTokenRepository } from 'src/interfaces/user-token.repository';
+import { Instrumentation } from 'src/utils/instrumentation';
 import { Repository } from 'typeorm';
 
 @Instrumentation()

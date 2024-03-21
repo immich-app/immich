@@ -1,5 +1,4 @@
 import { Stats } from 'node:fs';
-import { JobName } from 'src/domain/job/job.constants';
 import { AssetType } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
 import {
@@ -13,7 +12,7 @@ import {
 } from 'src/entities/system-config.entity';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.repository';
 import { ICryptoRepository } from 'src/interfaces/crypto.repository';
-import { IJobRepository, JobStatus } from 'src/interfaces/job.repository';
+import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.repository';
 import { IMediaRepository } from 'src/interfaces/media.repository';
 import { IMoveRepository } from 'src/interfaces/move.repository';
 import { IPersonRepository } from 'src/interfaces/person.repository';

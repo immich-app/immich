@@ -25,12 +25,12 @@
     "e2e:jobs": "jest --config e2e/jobs/jest-e2e.json --runInBand",
     "typeorm": "typeorm",
     "typeorm:migrations:create": "typeorm migration:create",
-    "typeorm:migrations:generate": "typeorm migration:generate -d ./dist/infra/database.config.js",
-    "typeorm:migrations:run": "typeorm migration:run -d ./dist/infra/database.config.js",
-    "typeorm:migrations:revert": "typeorm migration:revert -d ./dist/infra/database.config.js",
-    "typeorm:schema:drop": "typeorm query -d ./dist/infra/database.config.js 'DROP schema public cascade; CREATE schema public;'",
+    "typeorm:migrations:generate": "typeorm migration:generate -d ./dist/database.config.js",
+    "typeorm:migrations:run": "typeorm migration:run -d ./dist/database.config.js",
+    "typeorm:migrations:revert": "typeorm migration:revert -d ./dist/database.config.js",
+    "typeorm:schema:drop": "typeorm query -d ./dist/database.config.js 'DROP schema public cascade; CREATE schema public;'",
     "typeorm:schema:reset": "npm run typeorm:schema:drop && npm run typeorm:migrations:run",
-    "sql:generate": "node ./dist/infra/sql-generator/"
+    "sql:generate": "node ./dist/utils/sql.js"
   },
   "dependencies": {
     "@babel/runtime": "^7.22.11",
@@ -146,15 +146,16 @@
       "^.+\\.ts$": "ts-jest"
     },
     "collectCoverageFrom": [
-      "<rootDir>/src/**/*.(t|j)s",
-      "!<rootDir>/src/infra/**/*",
-      "!<rootDir>/src/migrations/**/*",
-      "!<rootDir>/src/subscribers/**/*",
-      "!<rootDir>/src/immich/controllers/**/*"
+      "<rootDir>/src/cores/*.(t|j)s",
+      "<rootDir>/src/dtos/*.(t|j)s",
+      "<rootDir>/src/interfaces/*.(t|j)s",
+      "<rootDir>/src/services/*.(t|j)s",
+      "<rootDir>/src/utils/*.(t|j)s",
+      "<rootDir>/src/*.t|j)s"
     ],
     "coverageDirectory": "./coverage",
     "coverageThreshold": {
-      "./src/domain/": {
+      "./src/": {
         "branches": 75,
         "functions": 80,
         "lines": 85,

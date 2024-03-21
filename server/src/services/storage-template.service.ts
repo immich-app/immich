@@ -4,10 +4,6 @@ import handlebar from 'handlebars';
 import { DateTime } from 'luxon';
 import path from 'node:path';
 import sanitize from 'sanitize-filename';
-import { StorageCore, StorageFolder } from 'src/cores/storage.core';
-import { SystemConfigCore } from 'src/cores/system-config.core';
-import { JOBS_ASSET_PAGINATION_SIZE } from 'src/domain/job/job.constants';
-import { IEntityJob } from 'src/domain/job/job.interface';
 import {
   supportedDayTokens,
   supportedHourTokens,
@@ -16,23 +12,26 @@ import {
   supportedSecondTokens,
   supportedWeekTokens,
   supportedYearTokens,
-} from 'src/domain/system-config/system-config.constants';
+} from 'src/constants';
+import { StorageCore, StorageFolder } from 'src/cores/storage.core';
+import { SystemConfigCore } from 'src/cores/system-config.core';
 import { AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { AssetPathType } from 'src/entities/move.entity';
 import { SystemConfig } from 'src/entities/system-config.entity';
-import { ImmichLogger } from 'src/infra/logger';
 import { IAlbumRepository } from 'src/interfaces/album.repository';
 import { IAssetRepository } from 'src/interfaces/asset.repository';
 import { InternalEvent, InternalEventMap } from 'src/interfaces/communication.repository';
 import { ICryptoRepository } from 'src/interfaces/crypto.repository';
 import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.repository';
-import { JobStatus } from 'src/interfaces/job.repository';
+import { IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobStatus } from 'src/interfaces/job.repository';
 import { IMoveRepository } from 'src/interfaces/move.repository';
 import { IPersonRepository } from 'src/interfaces/person.repository';
 import { IStorageRepository } from 'src/interfaces/storage.repository';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
 import { IUserRepository } from 'src/interfaces/user.repository';
-import { getLivePhotoMotionFilename, usePagination } from 'src/utils';
+import { getLivePhotoMotionFilename } from 'src/utils/file';
+import { ImmichLogger } from 'src/utils/logger';
+import { usePagination } from 'src/utils/pagination';
 
 export interface MoveAssetMetadata {
   storageLabel: string | null;

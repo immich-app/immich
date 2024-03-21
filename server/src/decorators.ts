@@ -1,6 +1,6 @@
 import { SetMetadata } from '@nestjs/common';
 import _ from 'lodash';
-import { setUnion } from 'src/utils';
+import { setUnion } from 'src/utils/set';
 
 // PostgreSQL uses a 16-bit integer to indicate the number of bound parameters. This means that the
 // maximum number of parameters is 65535. Any query that tries to bind more than that (e.g. searching

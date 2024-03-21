@@ -5,18 +5,17 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { when } from 'jest-when';
-import { JobName } from 'src/domain/job/job.constants';
 import { UpdateUserDto, mapUser } from 'src/dtos/user.dto';
 import { UserEntity, UserStatus } from 'src/entities/user.entity';
 import { IAlbumRepository } from 'src/interfaces/album.repository';
 import { ICryptoRepository } from 'src/interfaces/crypto.repository';
-import { IJobRepository } from 'src/interfaces/job.repository';
+import { IJobRepository, JobName } from 'src/interfaces/job.repository';
 import { ILibraryRepository } from 'src/interfaces/library.repository';
 import { IStorageRepository } from 'src/interfaces/storage.repository';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
 import { IUserRepository } from 'src/interfaces/user.repository';
 import { UserService } from 'src/services/user.service';
-import { CacheControl, ImmichFileResponse } from 'src/utils';
+import { CacheControl, ImmichFileResponse } from 'src/utils/file';
 import { authStub } from 'test/fixtures/auth.stub';
 import { systemConfigStub } from 'test/fixtures/system-config.stub';
 import { userStub } from 'test/fixtures/user.stub';

@@ -1,14 +1,139 @@
-import { JobName, QueueName } from 'src/domain/job/job.constants';
-import {
-  IAssetDeletionJob,
-  IBaseJob,
-  IDeferrableJob,
-  IDeleteFilesJob,
-  IEntityJob,
-  ILibraryFileJob,
-  ILibraryRefreshJob,
-  ISidecarWriteJob,
-} from 'src/domain/job/job.interface';
+export enum QueueName {
+  THUMBNAIL_GENERATION = 'thumbnailGeneration',
+  METADATA_EXTRACTION = 'metadataExtraction',
+  VIDEO_CONVERSION = 'videoConversion',
+  FACE_DETECTION = 'faceDetection',
+  FACIAL_RECOGNITION = 'facialRecognition',
+  SMART_SEARCH = 'smartSearch',
+  BACKGROUND_TASK = 'backgroundTask',
+  STORAGE_TEMPLATE_MIGRATION = 'storageTemplateMigration',
+  MIGRATION = 'migration',
+  SEARCH = 'search',
+  SIDECAR = 'sidecar',
+  LIBRARY = 'library',
+}
+
+export type ConcurrentQueueName = Exclude<
+  QueueName,
+  QueueName.STORAGE_TEMPLATE_MIGRATION | QueueName.FACIAL_RECOGNITION
+>;
+
+export enum JobCommand {
+  START = 'start',
+  PAUSE = 'pause',
+  RESUME = 'resume',
+  EMPTY = 'empty',
+  CLEAR_FAILED = 'clear-failed',
+}
+
+export enum JobName {
+  // conversion
+  QUEUE_VIDEO_CONVERSION = 'queue-video-conversion',
+  VIDEO_CONVERSION = 'video-conversion',
+
+  // thumbnails
+  QUEUE_GENERATE_THUMBNAILS = 'queue-generate-thumbnails',
+  GENERATE_JPEG_THUMBNAIL = 'generate-jpeg-thumbnail',
+  GENERATE_WEBP_THUMBNAIL = 'generate-webp-thumbnail',
+  GENERATE_THUMBHASH_THUMBNAIL = 'generate-thumbhash-thumbnail',
+  GENERATE_PERSON_THUMBNAIL = 'generate-person-thumbnail',
+
+  // metadata
+  QUEUE_METADATA_EXTRACTION = 'queue-metadata-extraction',
+  METADATA_EXTRACTION = 'metadata-extraction',
+  LINK_LIVE_PHOTOS = 'link-live-photos',
+
+  // user
+  USER_DELETION = 'user-deletion',
+  USER_DELETE_CHECK = 'user-delete-check',
+  USER_SYNC_USAGE = 'user-sync-usage',
+
+  // asset
+  ASSET_DELETION = 'asset-deletion',
+  ASSET_DELETION_CHECK = 'asset-deletion-check',
+
+  // storage template
+  STORAGE_TEMPLATE_MIGRATION = 'storage-template-migration',
+  STORAGE_TEMPLATE_MIGRATION_SINGLE = 'storage-template-migration-single',
+
+  // migration
+  QUEUE_MIGRATION = 'queue-migration',
+  MIGRATE_ASSET = 'migrate-asset',
+  MIGRATE_PERSON = 'migrate-person',
+
+  // facial recognition
+  PERSON_CLEANUP = 'person-cleanup',
+  QUEUE_FACE_DETECTION = 'queue-face-detection',
+  FACE_DETECTION = 'face-detection',
+  QUEUE_FACIAL_RECOGNITION = 'queue-facial-recognition',
+  FACIAL_RECOGNITION = 'facial-recognition',
+
+  // library management
+  LIBRARY_SCAN = 'library-refresh',
+  LIBRARY_SCAN_ASSET = 'library-refresh-asset',
+  LIBRARY_REMOVE_OFFLINE = 'library-remove-offline',
+  LIBRARY_DELETE = 'library-delete',
+  LIBRARY_QUEUE_SCAN_ALL = 'library-queue-all-refresh',
+  LIBRARY_QUEUE_CLEANUP = 'library-queue-cleanup',
+
+  // cleanup
+  DELETE_FILES = 'delete-files',
+  CLEAN_OLD_AUDIT_LOGS = 'clean-old-audit-logs',
+
+  // smart search
+  QUEUE_SMART_SEARCH = 'queue-smart-search',
+  SMART_SEARCH = 'smart-search',
+
+  // XMP sidecars
+  QUEUE_SIDECAR = 'queue-sidecar',
+  SIDECAR_DISCOVERY = 'sidecar-discovery',
+  SIDECAR_SYNC = 'sidecar-sync',
+  SIDECAR_WRITE = 'sidecar-write',
+}
+
+export const JOBS_ASSET_PAGINATION_SIZE = 1000;
+
+export interface IBaseJob {
+  force?: boolean;
+}
+
+export interface IEntityJob extends IBaseJob {
+  id: string;
+  source?: 'upload' | 'sidecar-write';
+}
+
+export interface IAssetDeletionJob extends IEntityJob {
+  fromExternal?: boolean;
+}
+
+export interface ILibraryFileJob extends IEntityJob {
+  ownerId: string;
+  assetPath: string;
+}
+
+export interface ILibraryRefreshJob extends IEntityJob {
+  refreshModifiedFiles: boolean;
+  refreshAllFiles: boolean;
+}
+
+export interface IBulkEntityJob extends IBaseJob {
+  ids: string[];
+}
+
+export interface IDeleteFilesJob extends IBaseJob {
+  files: Array<string | null | undefined>;
+}
+
+export interface ISidecarWriteJob extends IEntityJob {
+  description?: string;
+  dateTimeOriginal?: string;
+  latitude?: number;
+  longitude?: number;
+}
+
+export interface IDeferrableJob extends IEntityJob {
+  deferred?: boolean;
+}
 
 export interface JobCounts {
   active: number;

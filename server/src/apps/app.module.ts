@@ -6,10 +6,8 @@ import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { OpenTelemetryModule } from 'nestjs-otel';
 import { bullConfig, bullQueues, immichAppConfig } from 'src/config';
+import { databaseConfig } from 'src/database.config';
 import { databaseEntities } from 'src/entities';
-import { databaseConfig } from 'src/infra/database.config';
-import { otelConfig } from 'src/infra/instrumentation';
-import { ImmichLogger } from 'src/infra/logger';
 import { IAccessRepository } from 'src/interfaces/access.repository';
 import { IActivityRepository } from 'src/interfaces/activity.repository';
 import { IAlbumRepository } from 'src/interfaces/album.repository';
@@ -88,6 +86,8 @@ import { SystemConfigService } from 'src/services/system-config.service';
 import { TagService } from 'src/services/tag.service';
 import { TrashService } from 'src/services/trash.service';
 import { UserService } from 'src/services/user.service';
+import { otelConfig } from 'src/utils/instrumentation';
+import { ImmichLogger } from 'src/utils/logger';
 
 const services: Provider[] = [
   APIKeyService,

@@ -5,10 +5,10 @@ import { Test } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { format } from 'sql-formatter';
+import { databaseConfig } from 'src/database.config';
 import { GENERATE_SQL_KEY, GenerateSqlQueries } from 'src/decorators';
 import { databaseEntities } from 'src/entities';
-import { databaseConfig } from 'src/infra/database.config';
-import { SqlLogger } from 'src/infra/sql-generator/sql.logger';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
@@ -26,6 +26,30 @@ import { SystemMetadataRepository } from 'src/repositories/system-metadata.repos
 import { TagRepository } from 'src/repositories/tag.repository';
 import { UserTokenRepository } from 'src/repositories/user-token.repository';
 import { UserRepository } from 'src/repositories/user.repository';
+import { Logger } from 'typeorm';
+
+export class SqlLogger implements Logger {
+  queries: string[] = [];
+  errors: Array<{ error: string | Error; query: string }> = [];
+
+  clear() {
+    this.queries = [];
+    this.errors = [];
+  }
+
+  logQuery(query: string) {
+    this.queries.push(format(query, { language: 'postgresql' }));
+  }
+
+  logQueryError(error: string | Error, query: string) {
+    this.errors.push({ error, query });
+  }
+
+  logQuerySlow() {}
+  logSchemaBuild() {}
+  logMigration() {}
+  log() {}
+}
 
 const reflector = new Reflector();
 const repositories = [
@@ -178,7 +202,7 @@ class SqlGenerator {
   }
 }
 
-new SqlGenerator({ targetDir: './src/infra/sql' })
+new SqlGenerator({ targetDir: './src/queries' })
   .run()
   .then(() => {
     console.log('Done');

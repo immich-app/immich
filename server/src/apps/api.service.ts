@@ -3,8 +3,7 @@ import { Cron, CronExpression, Interval } from '@nestjs/schedule';
 import { NextFunction, Request, Response } from 'express';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { ONE_HOUR, WEB_ROOT } from 'src/domain/domain.constant';
-import { ImmichLogger } from 'src/infra/logger';
+import { ONE_HOUR, WEB_ROOT } from 'src/constants';
 import { AuthService } from 'src/services/auth.service';
 import { DatabaseService } from 'src/services/database.service';
 import { JobService } from 'src/services/job.service';
@@ -12,7 +11,8 @@ import { ServerInfoService } from 'src/services/server-info.service';
 import { SharedLinkService } from 'src/services/shared-link.service';
 import { StorageService } from 'src/services/storage.service';
 import { SystemConfigService } from 'src/services/system-config.service';
-import { OpenGraphTags } from 'src/utils';
+import { ImmichLogger } from 'src/utils/logger';
+import { OpenGraphTags } from 'src/utils/misc';
 
 const render = (index: string, meta: OpenGraphTags) => {
   const tags = `

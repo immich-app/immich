@@ -3,8 +3,8 @@ import { ConfigModuleOptions } from '@nestjs/config';
 import { QueueOptions } from 'bullmq';
 import { RedisOptions } from 'ioredis';
 import Joi from 'joi';
-import { QueueName } from 'src/domain/job/job.constants';
 import { LogLevel } from 'src/entities/system-config.entity';
+import { QueueName } from 'src/interfaces/job.repository';
 
 const WHEN_DB_URL_SET = Joi.when('DB_URL', {
   is: Joi.exist(),

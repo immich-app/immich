@@ -1,9 +1,9 @@
 import { NestFactory } from '@nestjs/core';
 import { MicroservicesModule } from 'src/apps/microservices.module';
-import { envName, serverVersion } from 'src/domain/domain.constant';
-import { otelSDK } from 'src/infra/instrumentation';
-import { ImmichLogger } from 'src/infra/logger';
-import { WebSocketAdapter } from 'src/infra/websocket.adapter';
+import { envName, serverVersion } from 'src/constants';
+import { WebSocketAdapter } from 'src/middleware/websocket.adapter';
+import { otelSDK } from 'src/utils/instrumentation';
+import { ImmichLogger } from 'src/utils/logger';
 
 const logger = new ImmichLogger('ImmichMicroservice');
 const port = Number(process.env.MICROSERVICES_PORT) || 3002;

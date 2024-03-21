@@ -5,7 +5,7 @@ After making any changes in the `server/src/entities`, a database migration need
 1. Run the command
 
 ```bash
-npm run typeorm:migrations:generate ./src/infra/<migration-name>
+npm run typeorm:migrations:generate <migration-name>
 ```
 
 2. Check if the migration file makes sense.
