@@ -80,7 +80,6 @@ class _AssetDragRegionState extends State<AssetDragRegion> {
     recognizer.onLongPressMoveUpdate = (details) => _onLongPressMove(details);
     recognizer.onLongPressStart = (details) => _onLongPressStart(details);
     recognizer.onLongPressUp = _onLongPressEnd;
-    recognizer.onLongPressCancel = _onLongPressEnd;
   }
 
   AssetIndex? _getValueKeyAtPositon(Offset position) {
