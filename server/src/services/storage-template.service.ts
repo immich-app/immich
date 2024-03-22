@@ -1,5 +1,4 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { OnEvent } from '@nestjs/event-emitter';
 import handlebar from 'handlebars';
 import { DateTime } from 'luxon';
 import path from 'node:path';
@@ -15,6 +14,7 @@ import {
 } from 'src/constants';
 import { StorageCore, StorageFolder } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
+import { OnEventInternal } from 'src/decorators';
 import { AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { AssetPathType } from 'src/entities/move.entity';
 import { SystemConfig } from 'src/entities/system-config.entity';
@@ -86,7 +86,7 @@ export class StorageTemplateService {
     );
   }
 
-  @OnEvent(InternalEvent.VALIDATE_CONFIG)
+  @OnEventInternal(InternalEvent.VALIDATE_CONFIG)
   validate({ newConfig }: InternalEventMap[InternalEvent.VALIDATE_CONFIG]) {
     try {
       const { compiled } = this.compile(newConfig.storageTemplate.template);

@@ -22,7 +22,7 @@
 <br/>
 
 <p align="center">
-  <a href="README.md">English</a>
+  <a href="../README.md">English</a>
   <a href="README_ca_ES.md">Català</a>
   <a href="README_es_ES.md">Español</a>
   <a href="README_fr_FR.md">Français</a>

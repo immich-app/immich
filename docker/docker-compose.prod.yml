@@ -90,7 +90,7 @@ services:
     command: ['./run.sh', '-disable-reporting']
     ports:
       - 3000:3000
-    image: grafana/grafana:10.4.0-ubuntu@sha256:c1f582b7cc4c1b9805d187b5600ce7879550a12ef6d29571da133c3d3fc67a9c
+    image: grafana/grafana:10.4.1-ubuntu@sha256:65e0e7d0f0b001cb0478bce5093bff917677dc308dd27a0aa4b3ac38e4fd877c
     volumes:
       - grafana-data:/var/lib/grafana
 

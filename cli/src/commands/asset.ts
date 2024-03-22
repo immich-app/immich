@@ -12,11 +12,10 @@ import cliProgress from 'cli-progress';
 import { chunk, zip } from 'lodash-es';
 import { createHash } from 'node:crypto';
 import fs, { createReadStream } from 'node:fs';
-import { access, constants, stat, unlink } from 'node:fs/promises';
+import { access, constants, lstat, stat, unlink } from 'node:fs/promises';
 import os from 'node:os';
-import { basename } from 'node:path';
-import { CrawlService } from 'src/services/crawl.service';
-import { BaseOptions, authenticate } from 'src/utils';
+import path, { basename } from 'node:path';
+import { BaseOptions, authenticate, crawl } from 'src/utils';
 
 const zipDefined = zip as <T, U>(a: T[], b: U[]) => [T, U][];
 
@@ -61,13 +60,34 @@ class Asset {
       throw new Error('File modified at not set');
     }
 
-    // TODO: doesn't xmp replace the file extension? Will need investigation
-    const sideCarPath = `${this.path}.xmp`;
+    // XMP sidecars can come in two filename formats. For a photo named photo.ext, the filenames are photo.ext.xmp and photo.xmp
+    const assetPath = path.parse(this.path);
+    const assetPathWithoutExt = path.join(assetPath.dir, assetPath.name);
+    const sidecarPathWithoutExt = `${assetPathWithoutExt}.xmp`;
+    const sideCarPathWithExt = `${this.path}.xmp`;
+
+    const [sideCarWithExtExists, sideCarWithoutExtExists] = await Promise.all([
+      access(sideCarPathWithExt, constants.R_OK)
+        .then(() => true)
+        .catch(() => false),
+      access(sidecarPathWithoutExt, constants.R_OK)
+        .then(() => true)
+        .catch(() => false),
+    ]);
+
+    let sidecarPath = undefined;
+    if (sideCarWithExtExists) {
+      sidecarPath = sideCarPathWithExt;
+    } else if (sideCarWithoutExtExists) {
+      sidecarPath = sidecarPathWithoutExt;
+    }
+
     let sidecarData: Blob | undefined = undefined;
-    try {
-      await access(sideCarPath, constants.R_OK);
-      sidecarData = new File([await fs.openAsBlob(sideCarPath)], basename(sideCarPath));
-    } catch {}
+    if (sidecarPath) {
+      try {
+        sidecarData = new File([await fs.openAsBlob(sidecarPath)], basename(sidecarPath));
+      } catch {}
+    }
 
     const data: any = {
       assetData: new File([await fs.openAsBlob(this.path)], basename(this.path)),
@@ -94,7 +114,7 @@ class Asset {
     return unlink(this.path);
   }
 
-  public async hash(): Promise<string> {
+  async hash(): Promise<string> {
     const sha1 = (filePath: string) => {
       const hash = createHash('sha1');
       return new Promise<string>((resolve, reject) => {
@@ -113,40 +133,60 @@ class Asset {
   }
 }
 
-class UploadOptionsDto {
-  recursive? = false;
-  exclusionPatterns?: string[] = [];
-  dryRun? = false;
-  skipHash? = false;
-  delete? = false;
-  album? = false;
-  albumName? = '';
-  includeHidden? = false;
-  concurrency? = 4;
+interface UploadOptionsDto {
+  recursive?: boolean;
+  exclusionPatterns?: string[];
+  dryRun?: boolean;
+  skipHash?: boolean;
+  delete?: boolean;
+  album?: boolean;
+  albumName?: string;
+  includeHidden?: boolean;
+  concurrency: number;
 }
 
-export const upload = (paths: string[], baseOptions: BaseOptions, uploadOptions: UploadOptionsDto) =>
-  new UploadCommand().run(paths, baseOptions, uploadOptions);
+export const upload = async (paths: string[], baseOptions: BaseOptions, uploadOptions: UploadOptionsDto) => {
+  await authenticate(baseOptions);
+
+  console.log('Crawling for assets...');
+
+  const inputFiles: string[] = [];
+  for (const pathArgument of paths) {
+    const fileStat = await lstat(pathArgument);
+    if (fileStat.isFile()) {
+      inputFiles.push(pathArgument);
+    }
+  }
+
+  const { image, video } = await getSupportedMediaTypes();
+  const files = await crawl({
+    pathsToCrawl: paths,
+    recursive: uploadOptions.recursive,
+    exclusionPatterns: uploadOptions.exclusionPatterns,
+    includeHidden: uploadOptions.includeHidden,
+    extensions: [...image, ...video],
+  });
+
+  files.push(...inputFiles);
+
+  if (files.length === 0) {
+    console.log('No assets found, exiting');
+    return;
+  }
+
+  return new UploadCommand().run(files, uploadOptions);
+};
 
 // TODO refactor this
 class UploadCommand {
-  public async run(paths: string[], baseOptions: BaseOptions, options: UploadOptionsDto): Promise<void> {
-    await authenticate(baseOptions);
-
-    console.log('Crawling for assets...');
-    const files = await this.getFiles(paths, options);
-
-    if (files.length === 0) {
-      console.log('No assets found, exiting');
-      return;
-    }
-
+  async run(files: string[], options: UploadOptionsDto): Promise<void> {
+    const { concurrency, dryRun } = options;
     const assetsToCheck = files.map((path) => new Asset(path));
 
-    const { newAssets, duplicateAssets } = await this.checkAssets(assetsToCheck, options.concurrency ?? 4);
+    const { newAssets, duplicateAssets } = await this.checkAssets(assetsToCheck, concurrency);
 
     const totalSizeUploaded = await this.upload(newAssets, options);
-    const messageStart = options.dryRun ? 'Would have' : 'Successfully';
+    const messageStart = dryRun ? 'Would have' : 'Successfully';
     if (newAssets.length === 0) {
       console.log('All assets were already uploaded, nothing to do.');
     } else {
@@ -168,7 +208,7 @@ class UploadCommand {
       return;
     }
 
-    if (options.dryRun) {
+    if (dryRun) {
       console.log(`Would now have deleted assets, but skipped due to dry run`);
       return;
     }
@@ -178,7 +218,7 @@ class UploadCommand {
     await this.deleteAssets(newAssets, options);
   }
 
-  public async checkAssets(
+  async checkAssets(
     assetsToCheck: Asset[],
     concurrency: number,
   ): Promise<{ newAssets: Asset[]; duplicateAssets: Asset[]; rejectedAssets: Asset[] }> {
@@ -216,7 +256,7 @@ class UploadCommand {
     return { newAssets, duplicateAssets, rejectedAssets };
   }
 
-  public async upload(assetsToUpload: Asset[], options: UploadOptionsDto): Promise<number> {
+  async upload(assetsToUpload: Asset[], { dryRun, concurrency }: UploadOptionsDto): Promise<number> {
     let totalSize = 0;
 
     // Compute total size first
@@ -224,7 +264,7 @@ class UploadCommand {
       totalSize += asset.fileSize ?? 0;
     }
 
-    if (options.dryRun) {
+    if (dryRun) {
       return totalSize;
     }
 
@@ -239,7 +279,7 @@ class UploadCommand {
 
     let totalSizeUploaded = 0;
     try {
-      for (const assets of chunk(assetsToUpload, options.concurrency)) {
+      for (const assets of chunk(assetsToUpload, concurrency)) {
         const ids = await this.uploadAssets(assets);
         for (const [asset, id] of zipDefined(assets, ids)) {
           asset.id = id;
@@ -258,42 +298,21 @@ class UploadCommand {
     return totalSizeUploaded;
   }
 
-  public async getFiles(paths: string[], options: UploadOptionsDto): Promise<string[]> {
-    const inputFiles: string[] = [];
-    for (const pathArgument of paths) {
-      const fileStat = await fs.promises.lstat(pathArgument);
-      if (fileStat.isFile()) {
-        inputFiles.push(pathArgument);
-      }
-    }
-
-    const files: string[] = await this.crawl(paths, options);
-    files.push(...inputFiles);
-    return files;
-  }
-
-  public async getAlbums(): Promise<Map<string, string>> {
-    const existingAlbums = await getAllAlbums({});
-
-    const albumMapping = new Map<string, string>();
-    for (const album of existingAlbums) {
-      albumMapping.set(album.albumName, album.id);
-    }
-
-    return albumMapping;
-  }
-
-  public async updateAlbums(
+  async updateAlbums(
     assets: Asset[],
     options: UploadOptionsDto,
   ): Promise<{ createdAlbumCount: number; updatedAssetCount: number }> {
+    const { dryRun, concurrency } = options;
+
     if (options.albumName) {
       for (const asset of assets) {
         asset.albumName = options.albumName;
       }
     }
 
-    const existingAlbums = await this.getAlbums();
+    const albums = await getAllAlbums({});
+    const existingAlbums = new Map(albums.map((album) => [album.albumName, album.id]));
+
     const assetsToUpdate = assets.filter(
       (asset): asset is Asset & { albumName: string; id: string } => !!(asset.albumName && asset.id),
     );
@@ -307,7 +326,7 @@ class UploadCommand {
 
     const newAlbums = [...newAlbumsSet];
 
-    if (options.dryRun) {
+    if (dryRun) {
       return { createdAlbumCount: newAlbums.length, updatedAssetCount: assetsToUpdate.length };
     }
 
@@ -320,7 +339,7 @@ class UploadCommand {
     albumCreationProgress.start(newAlbums.length, 0);
 
     try {
-      for (const albumNames of chunk(newAlbums, options.concurrency)) {
+      for (const albumNames of chunk(newAlbums, concurrency)) {
         const newAlbumIds = await Promise.all(
           albumNames.map((albumName: string) => createAlbum({ createAlbumDto: { albumName } }).then((r) => r.id)),
         );
@@ -356,7 +375,7 @@ class UploadCommand {
 
     try {
       for (const [albumId, assets] of albumToAssets.entries()) {
-        for (const assetBatch of chunk(assets, Math.min(1000 * (options.concurrency ?? 4), 65_000))) {
+        for (const assetBatch of chunk(assets, Math.min(1000 * concurrency, 65_000))) {
           await addAssetsToAlbum({ id: albumId, bulkIdsDto: { ids: assetBatch } });
           albumUpdateProgress.increment(assetBatch.length);
         }
@@ -368,7 +387,7 @@ class UploadCommand {
     return { createdAlbumCount: newAlbums.length, updatedAssetCount: assetsToUpdate.length };
   }
 
-  public async deleteAssets(assets: Asset[], options: UploadOptionsDto): Promise<void> {
+  async deleteAssets(assets: Asset[], options: UploadOptionsDto): Promise<void> {
     const deletionProgress = new cliProgress.SingleBar(
       {
         format: 'Deleting local assets | {bar} | {percentage}% | ETA: {eta}s | {value}/{total} assets',
@@ -421,18 +440,6 @@ class UploadCommand {
     const fileRequests = await Promise.all(assets.map((asset) => asset.getUploadFormData()));
     const results = await Promise.all(fileRequests.map((request) => this.uploadAsset(request)));
     return results.map((response) => response.id);
-  }
-
-  private async crawl(paths: string[], options: UploadOptionsDto): Promise<string[]> {
-    const formatResponse = await getSupportedMediaTypes();
-    const crawlService = new CrawlService(formatResponse.image, formatResponse.video);
-
-    return crawlService.crawl({
-      pathsToCrawl: paths,
-      recursive: options.recursive,
-      exclusionPatterns: options.exclusionPatterns,
-      includeHidden: options.includeHidden,
-    });
   }
 
   private async uploadAsset(data: FormData): Promise<{ id: string }> {
