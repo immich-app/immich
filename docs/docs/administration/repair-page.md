@@ -6,7 +6,7 @@ The repair page is designed to give information to the system administrator abou
 
 In this situation, everything is in its place and there is no problem that the system administrator should be aware of.
 
-<img src={require('./img/Repair-page.png').default} title="server statistic" />
+<img src={require('./img/repair-page.png').default} title="server statistic" />
 
 ## Any Other Situation
 
@@ -28,4 +28,4 @@ To get rid of Offline paths you can follow this [guide](/docs/guides/remove-offl
 
 In addition, you can download the information from a page, mark everything (in order to check hashing) and correct the problem if a match is found in the hashing.
 
-<img src={require('./img/Repair-page-1.png').default} title="server statistic" />
+<img src={require('./img/repair-page-1.png').default} title="server statistic" />
