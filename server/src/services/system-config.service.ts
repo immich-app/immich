@@ -13,8 +13,7 @@ import {
 } from 'src/constants';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { OnEventInternal } from 'src/decorators';
-import { SystemConfigTemplateStorageOptionDto } from 'src/dtos/system-config-storage-template.dto';
-import { SystemConfigDto, mapConfig } from 'src/dtos/system-config.dto';
+import { SystemConfigDto, SystemConfigTemplateStorageOptionDto, mapConfig } from 'src/dtos/system-config.dto';
 import { LogLevel, SystemConfig } from 'src/entities/system-config.entity';
 import {
   ClientEvent,
