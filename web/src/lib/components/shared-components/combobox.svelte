@@ -226,7 +226,8 @@
         },
         {
           shortcut: { key: 'Escape' },
-          onShortcut: () => {
+          onShortcut: (event) => {
+            event.stopPropagation();
             closeDropdown();
           },
         },
