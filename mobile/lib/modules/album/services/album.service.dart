@@ -172,8 +172,10 @@ class AlbumService {
 
   /// Checks remote album (owned if `isShared` is false) for changes,
   /// updates the local database and returns `true` if there were any changes
-  Future<bool> refreshRemoteAlbum(
-      {required AlbumResponseDto remote, required Album album}) async {
+  Future<bool> refreshRemoteAlbum({
+    required AlbumResponseDto remote,
+    required Album album,
+  }) async {
     if (!_remoteCompleter.isCompleted) {
       // guard against concurrent calls
       return _remoteCompleter.future;
