@@ -12,11 +12,14 @@ describe('NotificationList component', () => {
   const sut: RenderResult<NotificationList> = render(NotificationList);
 
   beforeAll(() => {
-    vi.useFakeTimers();
+    // https://testing-library.com/docs/svelte-testing-library/faq#why-arent-transition-events-running
+    vi.stubGlobal('requestAnimationFrame', (fn: FrameRequestCallback) => {
+      setTimeout(() => fn(Date.now()), 16);
+    });
   });
 
   afterAll(() => {
-    vi.useRealTimers();
+    vi.unstubAllGlobals();
   });
 
   it('shows a notification when added and closes it automatically after the delay timeout', async () => {
@@ -25,18 +28,14 @@ describe('NotificationList component', () => {
     notificationController.show({
       message: 'Notification',
       type: NotificationType.Info,
-      timeout: 3000,
+      timeout: 1,
     });
 
     await waitFor(() => expect(_getNotificationListElement(sut)).toBeInTheDocument());
+    await waitFor(() => expect(_getNotificationListElement(sut)?.children).toHaveLength(1));
+    expect(get(notificationController.notificationList)).toHaveLength(1);
 
-    expect(_getNotificationListElement(sut)?.children).toHaveLength(1);
-
-    vi.advanceTimersByTime(4000);
-    // due to some weirdness in svelte (or testing-library) need to check if it has been removed from the store to make sure it works.
+    await waitFor(() => expect(_getNotificationListElement(sut)).not.toBeInTheDocument());
     expect(get(notificationController.notificationList)).toHaveLength(0);
-
-    // TODO: investigate why this element is not removed from the DOM even notification list is in fact 0.
-    // await waitFor(() => expect(_getNotificationListElement(sut)).not.toBeInTheDocument());
   });
 });

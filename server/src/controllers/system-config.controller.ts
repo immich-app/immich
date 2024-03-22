@@ -1,10 +1,8 @@
 import { Body, Controller, Get, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { SystemConfigDto } from 'src/domain/system-config/dto/system-config.dto';
-import { SystemConfigTemplateStorageOptionDto } from 'src/domain/system-config/response-dto/system-config-template-storage-option.dto';
-import { MapThemeDto } from 'src/domain/system-config/system-config-map-theme.dto';
-import { SystemConfigService } from 'src/domain/system-config/system-config.service';
+import { MapThemeDto, SystemConfigDto, SystemConfigTemplateStorageOptionDto } from 'src/dtos/system-config.dto';
 import { AdminRoute, Authenticated } from 'src/middleware/auth.guard';
+import { SystemConfigService } from 'src/services/system-config.service';
 
 @ApiTags('System Config')
 @Controller('system-config')

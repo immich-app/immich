@@ -1,9 +1,9 @@
 import { Body, Controller, Get, Next, Param, Post, Put, Query, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
-import { BulkIdResponseDto } from 'src/domain/asset/response-dto/asset-ids-response.dto';
-import { AssetResponseDto } from 'src/domain/asset/response-dto/asset-response.dto';
-import { AuthDto } from 'src/domain/auth/auth.dto';
+import { BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto';
+import { AssetResponseDto } from 'src/dtos/asset-response.dto';
+import { AuthDto } from 'src/dtos/auth.dto';
 import {
   AssetFaceUpdateDto,
   MergePersonDto,
@@ -14,10 +14,10 @@ import {
   PersonSearchDto,
   PersonStatisticsResponseDto,
   PersonUpdateDto,
-} from 'src/domain/person/person.dto';
-import { PersonService } from 'src/domain/person/person.service';
-import { sendFile } from 'src/immich/app.utils';
+} from 'src/dtos/person.dto';
 import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard';
+import { PersonService } from 'src/services/person.service';
+import { sendFile } from 'src/utils/file';
 import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('Person')

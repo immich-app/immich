@@ -7,10 +7,10 @@ import {
   ActivityResponseDto,
   ActivitySearchDto,
   ActivityStatisticsResponseDto,
-} from 'src/domain/activity/activity.dto';
-import { ActivityService } from 'src/domain/activity/activity.service';
-import { AuthDto } from 'src/domain/auth/auth.dto';
+} from 'src/dtos/activity.dto';
+import { AuthDto } from 'src/dtos/auth.dto';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
+import { ActivityService } from 'src/services/activity.service';
 import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('Activity')

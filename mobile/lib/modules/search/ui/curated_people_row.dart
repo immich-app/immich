@@ -24,7 +24,7 @@ class CuratedPeopleRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const imageSize = 70.0;
+    const imageSize = 60.0;
 
     // Guard empty [content]
     if (content.isEmpty) {

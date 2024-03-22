@@ -1,21 +1,21 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { AssetResponseDto } from 'src/domain/asset/response-dto/asset-response.dto';
-import { AuthDto } from 'src/domain/auth/auth.dto';
-import { PersonResponseDto } from 'src/domain/person/person.dto';
-import { SearchSuggestionRequestDto } from 'src/domain/search/dto/search-suggestion.dto';
+import { AssetResponseDto } from 'src/dtos/asset-response.dto';
+import { AuthDto } from 'src/dtos/auth.dto';
+import { PersonResponseDto } from 'src/dtos/person.dto';
 import {
   MetadataSearchDto,
   PlacesResponseDto,
   SearchDto,
+  SearchExploreResponseDto,
   SearchPeopleDto,
   SearchPlacesDto,
+  SearchResponseDto,
+  SearchSuggestionRequestDto,
   SmartSearchDto,
-} from 'src/domain/search/dto/search.dto';
-import { SearchExploreResponseDto } from 'src/domain/search/response-dto/search-explore.response.dto';
-import { SearchResponseDto } from 'src/domain/search/response-dto/search-response.dto';
-import { SearchService } from 'src/domain/search/search.service';
+} from 'src/dtos/search.dto';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
+import { SearchService } from 'src/services/search.service';
 
 @ApiTags('Search')
 @Controller('search')

@@ -1,6 +1,8 @@
 import { SetMetadata } from '@nestjs/common';
+import { OnEvent, OnEventType } from '@nestjs/event-emitter';
+import { OnEventOptions } from '@nestjs/event-emitter/dist/interfaces';
 import _ from 'lodash';
-import { setUnion } from 'src/utils';
+import { setUnion } from 'src/utils/set';
 
 // PostgreSQL uses a 16-bit integer to indicate the number of bound parameters. This means that the
 // maximum number of parameters is 65535. Any query that tries to bind more than that (e.g. searching
@@ -122,3 +124,6 @@ export interface GenerateSqlQueries {
 
 /** Decorator to enable versioning/tracking of generated Sql */
 export const GenerateSql = (...options: GenerateSqlQueries[]) => SetMetadata(GENERATE_SQL_KEY, options);
+
+export const OnEventInternal = (event: OnEventType, options?: OnEventOptions) =>
+  OnEvent(event, { suppressErrors: false, ...options });

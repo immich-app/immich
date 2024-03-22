@@ -1,5 +1,5 @@
-import { LoginResponseDto } from 'src/domain/auth/auth.dto';
-import { UserResponseDto } from 'src/domain/user/response-dto/user-response.dto';
+import { LoginResponseDto } from 'src/dtos/auth.dto';
+import { UserResponseDto } from 'src/dtos/user.dto';
 import request from 'supertest';
 import { adminSignupStub, loginResponseStub, loginStub } from 'test/fixtures/auth.stub';
 

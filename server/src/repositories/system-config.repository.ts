@@ -2,8 +2,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { readFile } from 'node:fs/promises';
 import { Chunked, DummyValue, GenerateSql } from 'src/decorators';
 import { SystemConfigEntity } from 'src/entities/system-config.entity';
-import { Instrumentation } from 'src/infra/instrumentation';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.repository';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { Instrumentation } from 'src/utils/instrumentation';
 import { In, Repository } from 'typeorm';
 
 @Instrumentation()

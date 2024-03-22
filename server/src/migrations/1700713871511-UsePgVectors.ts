@@ -1,5 +1,5 @@
-import { getCLIPModelInfo } from 'src/domain/smart-info/smart-info.constant';
-import { vectorExt } from 'src/infra/database.config';
+import { vectorExt } from 'src/database.config';
+import { getCLIPModelInfo } from 'src/utils/misc';
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class UsePgVectors1700713871511 implements MigrationInterface {

@@ -1,6 +1,6 @@
 import { join } from 'node:path';
+import { APP_MEDIA_LOCATION } from 'src/constants';
 import { THUMBNAIL_DIR } from 'src/cores/storage.core';
-import { APP_MEDIA_LOCATION } from 'src/domain/domain.constant';
 import { LibraryEntity, LibraryType } from 'src/entities/library.entity';
 import { userStub } from 'test/fixtures/user.stub';
 

@@ -9,9 +9,9 @@ import {
   UpdateLibraryDto,
   ValidateLibraryDto,
   ValidateLibraryResponseDto,
-} from 'src/domain/library/library.dto';
-import { LibraryService } from 'src/domain/library/library.service';
+} from 'src/dtos/library.dto';
 import { AdminRoute, Authenticated } from 'src/middleware/auth.guard';
+import { LibraryService } from 'src/services/library.service';
 import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('Library')

@@ -16,17 +16,13 @@ import {
 } from '@nestjs/common';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
-import { AuthDto } from 'src/domain/auth/auth.dto';
-import { CreateProfileImageDto } from 'src/domain/user/dto/create-profile-image.dto';
-import { CreateUserDto } from 'src/domain/user/dto/create-user.dto';
-import { DeleteUserDto } from 'src/domain/user/dto/delete-user.dto';
-import { UpdateUserDto } from 'src/domain/user/dto/update-user.dto';
-import { CreateProfileImageResponseDto } from 'src/domain/user/response-dto/create-profile-image-response.dto';
-import { UserResponseDto } from 'src/domain/user/response-dto/user-response.dto';
-import { UserService } from 'src/domain/user/user.service';
-import { sendFile } from 'src/immich/app.utils';
+import { AuthDto } from 'src/dtos/auth.dto';
+import { CreateProfileImageDto, CreateProfileImageResponseDto } from 'src/dtos/user-profile.dto';
+import { CreateUserDto, DeleteUserDto, UpdateUserDto, UserResponseDto } from 'src/dtos/user.dto';
 import { AdminRoute, Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard';
 import { FileUploadInterceptor, Route } from 'src/middleware/file-upload.interceptor';
+import { UserService } from 'src/services/user.service';
+import { sendFile } from 'src/utils/file';
 import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('User')

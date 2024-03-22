@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { compareSync, hash } from 'bcrypt';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { createReadStream } from 'node:fs';
-import { Instrumentation } from 'src/infra/instrumentation';
-import { ICryptoRepository } from 'src/interfaces/crypto.repository';
+import { ICryptoRepository } from 'src/interfaces/crypto.interface';
+import { Instrumentation } from 'src/utils/instrumentation';
 
 @Instrumentation()
 @Injectable()

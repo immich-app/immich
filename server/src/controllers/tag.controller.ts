@@ -1,13 +1,12 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { AssetIdsDto } from 'src/domain/asset/dto/asset-ids.dto';
-import { AssetIdsResponseDto } from 'src/domain/asset/response-dto/asset-ids-response.dto';
-import { AssetResponseDto } from 'src/domain/asset/response-dto/asset-response.dto';
-import { AuthDto } from 'src/domain/auth/auth.dto';
-import { TagResponseDto } from 'src/domain/tag/tag-response.dto';
-import { CreateTagDto, UpdateTagDto } from 'src/domain/tag/tag.dto';
-import { TagService } from 'src/domain/tag/tag.service';
+import { AssetIdsResponseDto } from 'src/dtos/asset-ids.response.dto';
+import { AssetResponseDto } from 'src/dtos/asset-response.dto';
+import { AssetIdsDto } from 'src/dtos/asset.dto';
+import { AuthDto } from 'src/dtos/auth.dto';
+import { CreateTagDto, TagResponseDto, UpdateTagDto } from 'src/dtos/tag.dto';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
+import { TagService } from 'src/services/tag.service';
 import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('Tag')

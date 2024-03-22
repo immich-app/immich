@@ -1,5 +1,5 @@
-import { vectorExt } from 'src/infra/database.config';
-import { DatabaseExtension } from 'src/interfaces/database.repository';
+import { vectorExt } from 'src/database.config';
+import { DatabaseExtension } from 'src/interfaces/database.interface';
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class AddCLIPEmbeddingIndex1700713994428 implements MigrationInterface {

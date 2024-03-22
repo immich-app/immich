@@ -4,16 +4,16 @@ import { Writable } from 'node:stream';
 import { promisify } from 'node:util';
 import sharp from 'sharp';
 import { Colorspace } from 'src/entities/system-config.entity';
-import { Instrumentation } from 'src/infra/instrumentation';
-import { ImmichLogger } from 'src/infra/logger';
 import {
   CropOptions,
   IMediaRepository,
   ResizeOptions,
   TranscodeOptions,
   VideoInfo,
-} from 'src/interfaces/media.repository';
-import { handlePromiseError } from 'src/utils';
+} from 'src/interfaces/media.interface';
+import { Instrumentation } from 'src/utils/instrumentation';
+import { ImmichLogger } from 'src/utils/logger';
+import { handlePromiseError } from 'src/utils/misc';
 
 const probe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
 sharp.concurrency(0);

@@ -4,10 +4,7 @@ import { glob, globStream } from 'fast-glob';
 import { constants, createReadStream, existsSync, mkdirSync } from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { mimeTypes } from 'src/domain/domain.constant';
-import { CrawlOptionsDto } from 'src/domain/library/library.dto';
-import { Instrumentation } from 'src/infra/instrumentation';
-import { ImmichLogger } from 'src/infra/logger';
+import { CrawlOptionsDto } from 'src/dtos/library.dto';
 import {
   DiskUsage,
   IStorageRepository,
@@ -15,7 +12,10 @@ import {
   ImmichZipStream,
   StorageEventType,
   WatchEvents,
-} from 'src/interfaces/storage.repository';
+} from 'src/interfaces/storage.interface';
+import { Instrumentation } from 'src/utils/instrumentation';
+import { ImmichLogger } from 'src/utils/logger';
+import { mimeTypes } from 'src/utils/mime-types';
 
 @Instrumentation()
 export class FilesystemProvider implements IStorageRepository {

@@ -1,27 +1,24 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { AssetService } from 'src/domain/asset/asset.service';
-import { AssetJobsDto } from 'src/domain/asset/dto/asset-ids.dto';
-import { UpdateStackParentDto } from 'src/domain/asset/dto/asset-stack.dto';
-import { AssetStatsDto, AssetStatsResponseDto } from 'src/domain/asset/dto/asset-statistics.dto';
+import { AssetResponseDto, MemoryLaneResponseDto } from 'src/dtos/asset-response.dto';
 import {
   AssetBulkDeleteDto,
   AssetBulkUpdateDto,
+  AssetJobsDto,
+  AssetStatsDto,
+  AssetStatsResponseDto,
   DeviceIdDto,
   RandomAssetsDto,
   UpdateAssetDto,
-} from 'src/domain/asset/dto/asset.dto';
-import { MapMarkerDto } from 'src/domain/asset/dto/map-marker.dto';
-import { MemoryLaneDto } from 'src/domain/asset/dto/memory-lane.dto';
-import { TimeBucketAssetDto, TimeBucketDto } from 'src/domain/asset/dto/time-bucket.dto';
-import { AssetResponseDto, MemoryLaneResponseDto } from 'src/domain/asset/response-dto/asset-response.dto';
-import { MapMarkerResponseDto } from 'src/domain/asset/response-dto/map-marker-response.dto';
-import { TimeBucketResponseDto } from 'src/domain/asset/response-dto/time-bucket-response.dto';
-import { AuthDto } from 'src/domain/auth/auth.dto';
-import { MetadataSearchDto } from 'src/domain/search/dto/search.dto';
-import { SearchService } from 'src/domain/search/search.service';
+} from 'src/dtos/asset.dto';
+import { AuthDto } from 'src/dtos/auth.dto';
+import { MapMarkerDto, MapMarkerResponseDto, MemoryLaneDto, MetadataSearchDto } from 'src/dtos/search.dto';
+import { UpdateStackParentDto } from 'src/dtos/stack.dto';
+import { TimeBucketAssetDto, TimeBucketDto, TimeBucketResponseDto } from 'src/dtos/time-bucket.dto';
 import { Auth, Authenticated, SharedLinkRoute } from 'src/middleware/auth.guard';
 import { Route } from 'src/middleware/file-upload.interceptor';
+import { AssetService } from 'src/services/asset.service';
+import { SearchService } from 'src/services/search.service';
 import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('Asset')

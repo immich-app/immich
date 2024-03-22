@@ -6,21 +6,15 @@ import { getName } from 'i18n-iso-countries';
 import { createReadStream, existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import readLine from 'node:readline';
+import { citiesFile, geodataAdmin1Path, geodataAdmin2Path, geodataCities500Path, geodataDatePath } from 'src/constants';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import {
-  citiesFile,
-  geodataAdmin1Path,
-  geodataAdmin2Path,
-  geodataCities500Path,
-  geodataDatePath,
-} from 'src/domain/domain.constant';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { GeodataPlacesEntity } from 'src/entities/geodata-places.entity';
 import { SystemMetadataKey } from 'src/entities/system-metadata.entity';
-import { Instrumentation } from 'src/infra/instrumentation';
-import { ImmichLogger } from 'src/infra/logger';
-import { GeoPoint, IMetadataRepository, ImmichTags, ReverseGeocodeResult } from 'src/interfaces/metadata.repository';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.repository';
+import { GeoPoint, IMetadataRepository, ImmichTags, ReverseGeocodeResult } from 'src/interfaces/metadata.interface';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { Instrumentation } from 'src/utils/instrumentation';
+import { ImmichLogger } from 'src/utils/logger';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity.js';
 

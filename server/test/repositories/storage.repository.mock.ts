@@ -1,6 +1,6 @@
 import { WatchOptions } from 'chokidar';
 import { StorageCore } from 'src/cores/storage.core';
-import { IStorageRepository, StorageEventType, WatchEvents } from 'src/interfaces/storage.repository';
+import { IStorageRepository, StorageEventType, WatchEvents } from 'src/interfaces/storage.interface';
 
 interface MockWatcherOptions {
   items?: Array<{ event: 'change' | 'add' | 'unlink' | 'error'; value: string }>;

@@ -1,4 +1,4 @@
-import { ICommunicationRepository } from 'src/interfaces/communication.repository';
+import { ICommunicationRepository } from 'src/interfaces/communication.interface';
 
 export const newCommunicationRepositoryMock = (): jest.Mocked<ICommunicationRepository> => {
   return {

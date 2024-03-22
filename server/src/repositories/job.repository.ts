@@ -6,10 +6,78 @@ import { Job, JobsOptions, Processor, Queue, Worker, WorkerOptions } from 'bullm
 import { CronJob, CronTime } from 'cron';
 import { setTimeout } from 'node:timers/promises';
 import { bullConfig } from 'src/config';
-import { JOBS_TO_QUEUE, JobName, QueueName } from 'src/domain/job/job.constants';
-import { Instrumentation } from 'src/infra/instrumentation';
-import { ImmichLogger } from 'src/infra/logger';
-import { IJobRepository, JobCounts, JobItem, QueueCleanType, QueueStatus } from 'src/interfaces/job.repository';
+import {
+  IJobRepository,
+  JobCounts,
+  JobItem,
+  JobName,
+  QueueCleanType,
+  QueueName,
+  QueueStatus,
+} from 'src/interfaces/job.interface';
+import { Instrumentation } from 'src/utils/instrumentation';
+import { ImmichLogger } from 'src/utils/logger';
+
+export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
+  // misc
+  [JobName.ASSET_DELETION]: QueueName.BACKGROUND_TASK,
+  [JobName.ASSET_DELETION_CHECK]: QueueName.BACKGROUND_TASK,
+  [JobName.USER_DELETE_CHECK]: QueueName.BACKGROUND_TASK,
+  [JobName.USER_DELETION]: QueueName.BACKGROUND_TASK,
+  [JobName.DELETE_FILES]: QueueName.BACKGROUND_TASK,
+  [JobName.CLEAN_OLD_AUDIT_LOGS]: QueueName.BACKGROUND_TASK,
+  [JobName.PERSON_CLEANUP]: QueueName.BACKGROUND_TASK,
+  [JobName.USER_SYNC_USAGE]: QueueName.BACKGROUND_TASK,
+
+  // conversion
+  [JobName.QUEUE_VIDEO_CONVERSION]: QueueName.VIDEO_CONVERSION,
+  [JobName.VIDEO_CONVERSION]: QueueName.VIDEO_CONVERSION,
+
+  // thumbnails
+  [JobName.QUEUE_GENERATE_THUMBNAILS]: QueueName.THUMBNAIL_GENERATION,
+  [JobName.GENERATE_JPEG_THUMBNAIL]: QueueName.THUMBNAIL_GENERATION,
+  [JobName.GENERATE_WEBP_THUMBNAIL]: QueueName.THUMBNAIL_GENERATION,
+  [JobName.GENERATE_THUMBHASH_THUMBNAIL]: QueueName.THUMBNAIL_GENERATION,
+  [JobName.GENERATE_PERSON_THUMBNAIL]: QueueName.THUMBNAIL_GENERATION,
+
+  // metadata
+  [JobName.QUEUE_METADATA_EXTRACTION]: QueueName.METADATA_EXTRACTION,
+  [JobName.METADATA_EXTRACTION]: QueueName.METADATA_EXTRACTION,
+  [JobName.LINK_LIVE_PHOTOS]: QueueName.METADATA_EXTRACTION,
+
+  // storage template
+  [JobName.STORAGE_TEMPLATE_MIGRATION]: QueueName.STORAGE_TEMPLATE_MIGRATION,
+  [JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE]: QueueName.STORAGE_TEMPLATE_MIGRATION,
+
+  // migration
+  [JobName.QUEUE_MIGRATION]: QueueName.MIGRATION,
+  [JobName.MIGRATE_ASSET]: QueueName.MIGRATION,
+  [JobName.MIGRATE_PERSON]: QueueName.MIGRATION,
+
+  // facial recognition
+  [JobName.QUEUE_FACE_DETECTION]: QueueName.FACE_DETECTION,
+  [JobName.FACE_DETECTION]: QueueName.FACE_DETECTION,
+  [JobName.QUEUE_FACIAL_RECOGNITION]: QueueName.FACIAL_RECOGNITION,
+  [JobName.FACIAL_RECOGNITION]: QueueName.FACIAL_RECOGNITION,
+
+  // smart search
+  [JobName.QUEUE_SMART_SEARCH]: QueueName.SMART_SEARCH,
+  [JobName.SMART_SEARCH]: QueueName.SMART_SEARCH,
+
+  // XMP sidecars
+  [JobName.QUEUE_SIDECAR]: QueueName.SIDECAR,
+  [JobName.SIDECAR_DISCOVERY]: QueueName.SIDECAR,
+  [JobName.SIDECAR_SYNC]: QueueName.SIDECAR,
+  [JobName.SIDECAR_WRITE]: QueueName.SIDECAR,
+
+  // Library management
+  [JobName.LIBRARY_SCAN_ASSET]: QueueName.LIBRARY,
+  [JobName.LIBRARY_SCAN]: QueueName.LIBRARY,
+  [JobName.LIBRARY_DELETE]: QueueName.LIBRARY,
+  [JobName.LIBRARY_REMOVE_OFFLINE]: QueueName.LIBRARY,
+  [JobName.LIBRARY_QUEUE_SCAN_ALL]: QueueName.LIBRARY,
+  [JobName.LIBRARY_QUEUE_CLEANUP]: QueueName.LIBRARY,
+};
 
 @Instrumentation()
 @Injectable()

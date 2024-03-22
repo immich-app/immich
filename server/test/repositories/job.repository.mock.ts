@@ -1,4 +1,4 @@
-import { IJobRepository } from 'src/interfaces/job.repository';
+import { IJobRepository } from 'src/interfaces/job.interface';
 
 export const newJobRepositoryMock = (): jest.Mocked<IJobRepository> => {
   return {

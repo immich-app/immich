@@ -1,9 +1,9 @@
 import { Body, Controller, Get, Param, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { AuthDto } from 'src/domain/auth/auth.dto';
-import { AssetFaceResponseDto, FaceDto, PersonResponseDto } from 'src/domain/person/person.dto';
-import { PersonService } from 'src/domain/person/person.service';
+import { AuthDto } from 'src/dtos/auth.dto';
+import { AssetFaceResponseDto, FaceDto, PersonResponseDto } from 'src/dtos/person.dto';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
+import { PersonService } from 'src/services/person.service';
 import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('Face')

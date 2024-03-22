@@ -7,10 +7,10 @@ import {
   FileChecksumResponseDto,
   FileReportDto,
   FileReportFixDto,
-} from 'src/domain/audit/audit.dto';
-import { AuditService } from 'src/domain/audit/audit.service';
-import { AuthDto } from 'src/domain/auth/auth.dto';
+} from 'src/dtos/audit.dto';
+import { AuthDto } from 'src/dtos/auth.dto';
 import { AdminRoute, Auth, Authenticated } from 'src/middleware/auth.guard';
+import { AuditService } from 'src/services/audit.service';
 
 @ApiTags('Audit')
 @Controller('audit')

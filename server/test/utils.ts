@@ -5,17 +5,14 @@ import fs from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { EventEmitter } from 'node:stream';
-import { Server } from 'node:tls';
-import { ApiModule } from 'src/apps/api.module';
-import { ApiService } from 'src/apps/api.service';
-import { MicroservicesService } from 'src/apps/microservices.service';
-import { QueueName } from 'src/domain/job/job.constants';
-import { dataSource } from 'src/infra/database.config';
-import { InfraModule, InfraTestModule } from 'src/infra/infra.module';
-import { IJobRepository, JobItem, JobItemHandler } from 'src/interfaces/job.repository';
-import { IMediaRepository } from 'src/interfaces/media.repository';
-import { StorageEventType } from 'src/interfaces/storage.repository';
+import { AppTestModule } from 'src/app.module';
+import { dataSource } from 'src/database.config';
+import { IJobRepository, JobItem, JobItemHandler, QueueName } from 'src/interfaces/job.interface';
+import { IMediaRepository } from 'src/interfaces/media.interface';
+import { StorageEventType } from 'src/interfaces/storage.interface';
 import { MediaRepository } from 'src/repositories/media.repository';
+import { ApiService } from 'src/services/api.service';
+import { MicroservicesService } from 'src/services/microservices.service';
 import { EntityTarget, ObjectLiteral } from 'typeorm';
 
 export const IMMICH_TEST_ASSET_PATH = process.env.IMMICH_TEST_ASSET_PATH as string;
@@ -105,12 +102,7 @@ let app: INestApplication;
 
 export const testApp = {
   create: async (): Promise<INestApplication> => {
-    const moduleFixture = await Test.createTestingModule({
-      imports: [ApiModule],
-      providers: [ApiService, MicroservicesService],
-    })
-      .overrideModule(InfraModule)
-      .useModule(InfraTestModule)
+    const moduleFixture = await Test.createTestingModule({ imports: [AppTestModule] })
       .overrideProvider(IJobRepository)
       .useClass(JobMock)
       .overrideProvider(IMediaRepository)
@@ -118,14 +110,10 @@ export const testApp = {
       .compile();
 
     app = await moduleFixture.createNestApplication().init();
-    await app.listen(0);
+    await app.get(ApiService).init();
     await db.reset();
     await app.get(ApiService).init();
     await app.get(MicroservicesService).init();
-
-    const port = app.getHttpServer().address().port;
-    const protocol = app instanceof Server ? 'https' : 'http';
-    process.env.IMMICH_INSTANCE_URL = protocol + '://127.0.0.1:' + port;
 
     return app;
   },
