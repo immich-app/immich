@@ -1,5 +1,7 @@
 import { defaults, getMyUserInfo, isHttpError } from '@immich/sdk';
 import { glob } from 'glob';
+import { createHash } from 'node:crypto';
+import { createReadStream } from 'node:fs';
 import { readFile, stat, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import yaml from 'yaml';
@@ -100,7 +102,7 @@ export const crawl = async (options: CrawlOptions): Promise<string[]> => {
   const { extensions: extensionsWithPeriod, recursive, pathsToCrawl, exclusionPatterns, includeHidden } = options;
   const extensions = extensionsWithPeriod.map((extension) => extension.replace('.', ''));
 
-  if (!pathsToCrawl) {
+  if (pathsToCrawl.length === 0) {
     return [];
   }
 
@@ -148,4 +150,14 @@ export const crawl = async (options: CrawlOptions): Promise<string[]> => {
   });
 
   return [...crawledFiles, ...globbedFiles].sort();
+};
+
+export const sha1 = (filepath: string) => {
+  const hash = createHash('sha1');
+  return new Promise<string>((resolve, reject) => {
+    const rs = createReadStream(filepath);
+    rs.on('error', reject);
+    rs.on('data', (chunk) => hash.update(chunk));
+    rs.on('end', () => resolve(hash.digest('hex')));
+  });
 };
