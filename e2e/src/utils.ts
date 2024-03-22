@@ -406,7 +406,7 @@ export const utils = {
 
   cliLogin: async (accessToken: string) => {
     const key = await utils.createApiKey(accessToken);
-    await immichCli(['login-key', app, `${key.secret}`]);
+    await immichCli(['login', app, `${key.secret}`]);
     return key.secret;
   },
 };
