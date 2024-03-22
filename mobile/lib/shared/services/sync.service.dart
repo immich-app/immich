@@ -62,6 +62,15 @@ class SyncService {
   }) =>
       _lock.run(() => _syncRemoteAlbumsToDb(remote, isShared, loadDetails));
 
+  /// Syncs single remote album to the database
+  /// returns `true` if there were any changes
+  Future<bool> syncRemoteAlbumToDb(
+    AlbumResponseDto remote,
+    Album album, {
+    required FutureOr<AlbumResponseDto> Function(AlbumResponseDto) loadDetails,
+  }) =>
+      _lock.run(() => _syncRemoteAlbum(remote, album, [], [], loadDetails));
+
   /// Syncs all device albums and their assets to the database
   /// Returns `true` if there were any changes
   Future<bool> syncLocalAlbumAssetsToDb(
@@ -344,6 +353,8 @@ class SyncService {
     album.name = dto.albumName;
     album.shared = dto.shared;
     album.modifiedAt = dto.updatedAt;
+    album.startDate = dto.startDate;
+    album.endDate = dto.endDate;
     album.lastModifiedAssetTimestamp = originalDto.lastModifiedAssetTimestamp;
     if (album.thumbnail.value?.remoteId != dto.albumThumbnailAssetId) {
       album.thumbnail.value = await _db.assets

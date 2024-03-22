@@ -170,6 +170,30 @@ class AlbumService {
     return changes;
   }
 
+  /// Checks remote album (owned if `isShared` is false) for changes,
+  /// updates the local database and returns `true` if there were any changes
+  Future<bool> refreshRemoteAlbum(
+      {required AlbumResponseDto remote, required Album album}) async {
+    if (!_remoteCompleter.isCompleted) {
+      // guard against concurrent calls
+      return _remoteCompleter.future;
+    }
+    _remoteCompleter = Completer();
+    bool changes = false;
+    try {
+      changes = await _syncService.syncRemoteAlbumToDb(
+        remote,
+        album,
+        loadDetails: (dto) async => dto.assetCount == dto.assets.length
+            ? dto
+            : (await _apiService.albumApi.getAlbumInfo(dto.id)) ?? dto,
+      );
+    } finally {
+      _remoteCompleter.complete(changes);
+    }
+    return changes;
+  }
+
   Future<Album?> createAlbum(
     String albumName,
     Iterable<Asset> assets, [
@@ -243,22 +267,10 @@ class AlbumService {
           }
         }
 
-        AlbumResponseDto? remote = successAssets.isNotEmpty
-            ? await _apiService.albumApi
-                .getAlbumInfo(album.remoteId!, withoutAssets: true)
-            : null;
-        await _db.writeTxn(() async {
-          await album.assets.update(link: successAssets);
-          final a = await _db.albums.get(album.id);
-          if (a != null && remote != null) {
-            a.modifiedAt = remote.updatedAt;
-            a.startDate = remote.startDate;
-            a.endDate = remote.endDate;
-          }
-
-          // trigger watcher
-          await _db.albums.put(a!);
-        });
+        AlbumResponseDto? remote =
+            await _apiService.albumApi.getAlbumInfo(album.remoteId!);
+        if (remote == null) return null;
+        refreshRemoteAlbum(remote: remote, album: album);
 
         return AddAssetsResponse(
           alreadyInAlbum: duplicatedAssets,
@@ -368,20 +380,10 @@ class AlbumService {
           ids: assets.map((asset) => asset.remoteId!).toList(),
         ),
       );
-      AlbumResponseDto? remote = await _apiService.albumApi
-          .getAlbumInfo(album.remoteId!, withoutAssets: true);
-      await _db.writeTxn(() async {
-        await album.assets.update(unlink: assets);
-        final a = await _db.albums.get(album.id);
-        if (a != null && remote != null) {
-          a.modifiedAt = remote.updatedAt;
-          a.startDate = remote.startDate;
-          a.endDate = remote.endDate;
-        }
-        // trigger watcher
-        await _db.albums.put(a!);
-      });
-
+      AlbumResponseDto? remote =
+          await _apiService.albumApi.getAlbumInfo(album.remoteId!);
+      if (remote == null) return false;
+      refreshRemoteAlbum(remote: remote, album: album);
       return true;
     } catch (e) {
       debugPrint("Error deleteAlbum  ${e.toString()}");
