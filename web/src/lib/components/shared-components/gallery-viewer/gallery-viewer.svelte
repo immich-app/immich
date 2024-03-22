@@ -26,17 +26,14 @@
   let currentViewAssetIndex = 0;
   $: isMultiSelectionMode = selectedAssets.size > 0;
 
-  const viewAssetHandler = (event: CustomEvent) => {
-    const { asset }: { asset: AssetResponseDto } = event.detail;
-
+  const viewAssetHandler = (asset: AssetResponseDto) => {
     currentViewAssetIndex = assets.findIndex((a) => a.id == asset.id);
     selectedAsset = assets[currentViewAssetIndex];
     $showAssetViewer = true;
     updateAssetState(selectedAsset.id, false);
   };
 
-  const selectAssetHandler = (event: CustomEvent) => {
-    const { asset }: { asset: AssetResponseDto } = event.detail;
+  const selectAssetHandler = (asset: AssetResponseDto) => {
     let temporary = new Set(selectedAssets);
 
     if (selectedAssets.has(asset)) {
@@ -123,8 +120,8 @@
         <Thumbnail
           {asset}
           readonly={disableAssetSelect}
-          on:click={(e) => (isMultiSelectionMode ? selectAssetHandler(e) : viewAssetHandler(e))}
-          on:select={selectAssetHandler}
+          onClick={(e) => (isMultiSelectionMode ? selectAssetHandler(e) : viewAssetHandler(e))}
+          on:select={(e) => selectAssetHandler(e.detail.asset)}
           on:intersected={(event) =>
             i === Math.max(1, assets.length - 7) ? dispatch('intersected', event.detail) : undefined}
           selected={selectedAssets.has(asset)}

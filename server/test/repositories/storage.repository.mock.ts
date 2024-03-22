@@ -1,5 +1,6 @@
-import { IStorageRepository, StorageCore, WatchEvents } from '@app/domain';
 import { WatchOptions } from 'chokidar';
+import { StorageCore } from 'src/cores/storage.core';
+import { IStorageRepository, StorageEventType, WatchEvents } from 'src/interfaces/storage.interface';
 
 interface MockWatcherOptions {
   items?: Array<{ event: 'change' | 'add' | 'unlink' | 'error'; value: string }>;
@@ -12,19 +13,19 @@ export const makeMockWatcher =
     events.onReady?.();
     for (const item of items || []) {
       switch (item.event) {
-        case 'add': {
+        case StorageEventType.ADD: {
           events.onAdd?.(item.value);
           break;
         }
-        case 'change': {
+        case StorageEventType.CHANGE: {
           events.onChange?.(item.value);
           break;
         }
-        case 'unlink': {
+        case StorageEventType.UNLINK: {
           events.onUnlink?.(item.value);
           break;
         }
-        case 'error': {
+        case StorageEventType.ERROR: {
           events.onError?.(new Error(item.value));
         }
       }
@@ -56,6 +57,7 @@ export const newStorageRepositoryMock = (reset = true): jest.Mocked<IStorageRepo
     readdir: jest.fn(),
     stat: jest.fn(),
     crawl: jest.fn(),
+    walk: jest.fn().mockImplementation(async function* () {}),
     rename: jest.fn(),
     copyFile: jest.fn(),
     utimes: jest.fn(),

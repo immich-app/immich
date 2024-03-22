@@ -1,47 +1,49 @@
 import { LoginResponseDto, PersonResponseDto } from '@immich/sdk';
 import { uuidDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
-import { apiUtils, app, dbUtils } from 'src/utils';
+import { app, utils } from 'src/utils';
 import request from 'supertest';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
-describe('/activity', () => {
+const invalidBirthday = [
+  { birthDate: 'false', response: 'birthDate must be a date string' },
+  { birthDate: '123567', response: 'birthDate must be a date string' },
+  { birthDate: 123_567, response: 'birthDate must be a date string' },
+  { birthDate: new Date(9999, 0, 0).toISOString(), response: ['Birth date cannot be in the future'] },
+];
+
+describe('/person', () => {
   let admin: LoginResponseDto;
   let visiblePerson: PersonResponseDto;
   let hiddenPerson: PersonResponseDto;
   let multipleAssetsPerson: PersonResponseDto;
 
   beforeAll(async () => {
-    apiUtils.setup();
-    await dbUtils.reset();
-    admin = await apiUtils.adminSetup();
-  });
-
-  beforeEach(async () => {
-    await dbUtils.reset(['person']);
+    await utils.resetDatabase();
+    admin = await utils.adminSetup();
 
     [visiblePerson, hiddenPerson, multipleAssetsPerson] = await Promise.all([
-      apiUtils.createPerson(admin.accessToken, {
+      utils.createPerson(admin.accessToken, {
         name: 'visible_person',
       }),
-      apiUtils.createPerson(admin.accessToken, {
+      utils.createPerson(admin.accessToken, {
         name: 'hidden_person',
         isHidden: true,
       }),
-      apiUtils.createPerson(admin.accessToken, {
+      utils.createPerson(admin.accessToken, {
         name: 'multiple_assets_person',
       }),
     ]);
 
-    const asset1 = await apiUtils.createAsset(admin.accessToken);
-    const asset2 = await apiUtils.createAsset(admin.accessToken);
+    const asset1 = await utils.createAsset(admin.accessToken);
+    const asset2 = await utils.createAsset(admin.accessToken);
 
     await Promise.all([
-      dbUtils.createFace({ assetId: asset1.id, personId: visiblePerson.id }),
-      dbUtils.createFace({ assetId: asset1.id, personId: hiddenPerson.id }),
-      dbUtils.createFace({ assetId: asset1.id, personId: multipleAssetsPerson.id }),
-      dbUtils.createFace({ assetId: asset1.id, personId: multipleAssetsPerson.id }),
-      dbUtils.createFace({ assetId: asset2.id, personId: multipleAssetsPerson.id }),
+      utils.createFace({ assetId: asset1.id, personId: visiblePerson.id }),
+      utils.createFace({ assetId: asset1.id, personId: hiddenPerson.id }),
+      utils.createFace({ assetId: asset1.id, personId: multipleAssetsPerson.id }),
+      utils.createFace({ assetId: asset1.id, personId: multipleAssetsPerson.id }),
+      utils.createFace({ assetId: asset2.id, personId: multipleAssetsPerson.id }),
     ]);
   });
 
@@ -142,6 +144,41 @@ describe('/activity', () => {
     });
   });
 
+  describe('POST /person', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(app).post(`/person`);
+      expect(status).toBe(401);
+      expect(body).toEqual(errorDto.unauthorized);
+    });
+
+    for (const { birthDate, response } of invalidBirthday) {
+      it(`should not accept an invalid birth date [${birthDate}]`, async () => {
+        const { status, body } = await request(app)
+          .post(`/person`)
+          .set('Authorization', `Bearer ${admin.accessToken}`)
+          .send({ birthDate });
+        expect(status).toBe(400);
+        expect(body).toEqual(errorDto.badRequest(response));
+      });
+    }
+
+    it('should create a person', async () => {
+      const { status, body } = await request(app)
+        .post(`/person`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({
+          name: 'New Person',
+          birthDate: '1990-01-01T05:00:00.000Z',
+        });
+      expect(status).toBe(201);
+      expect(body).toMatchObject({
+        id: expect.any(String),
+        name: 'New Person',
+        birthDate: '1990-01-01T05:00:00.000Z',
+      });
+    });
+  });
+
   describe('PUT /person/:id', () => {
     it('should require authentication', async () => {
       const { status, body } = await request(app).put(`/person/${uuidDto.notFound}`);
@@ -164,24 +201,16 @@ describe('/activity', () => {
       });
     }
 
-    it('should not accept invalid birth dates', async () => {
-      for (const { birthDate, response } of [
-        { birthDate: false, response: 'Not found or no person.write access' },
-        { birthDate: 'false', response: ['birthDate must be a Date instance'] },
-        {
-          birthDate: '123567',
-          response: 'Not found or no person.write access',
-        },
-        { birthDate: 123_567, response: 'Not found or no person.write access' },
-      ]) {
+    for (const { birthDate, response } of invalidBirthday) {
+      it(`should not accept an invalid birth date [${birthDate}]`, async () => {
         const { status, body } = await request(app)
-          .put(`/person/${uuidDto.notFound}`)
+          .put(`/person/${visiblePerson.id}`)
           .set('Authorization', `Bearer ${admin.accessToken}`)
           .send({ birthDate });
         expect(status).toBe(400);
         expect(body).toEqual(errorDto.badRequest(response));
-      }
-    });
+      });
+    }
 
     it('should update a date of birth', async () => {
       const { status, body } = await request(app)
@@ -193,15 +222,8 @@ describe('/activity', () => {
     });
 
     it('should clear a date of birth', async () => {
-      // TODO ironically this uses the update endpoint to create the person
-      const person = await apiUtils.createPerson(admin.accessToken, {
-        birthDate: new Date('1990-01-01').toISOString(),
-      });
-
-      expect(person.birthDate).toBeDefined();
-
       const { status, body } = await request(app)
-        .put(`/person/${person.id}`)
+        .put(`/person/${visiblePerson.id}`)
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({ birthDate: null });
       expect(status).toBe(200);

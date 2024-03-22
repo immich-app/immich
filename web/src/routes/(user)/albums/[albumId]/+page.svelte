@@ -31,7 +31,7 @@
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
-  import { AppRoute, dateFormats } from '$lib/constants';
+  import { AppRoute } from '$lib/constants';
   import { numberOfComments, setNumberOfComments, updateNumberOfComments } from '$lib/stores/activity.store';
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
@@ -58,22 +58,27 @@
     updateAlbumInfo,
     type ActivityResponseDto,
     type UserResponseDto,
+    AssetOrder,
   } from '@immich/sdk';
   import {
     mdiArrowLeft,
     mdiDeleteOutline,
     mdiDotsVertical,
-    mdiFileImagePlusOutline,
     mdiFolderDownloadOutline,
     mdiLink,
     mdiPlus,
     mdiShareVariantOutline,
+    mdiPresentationPlay,
+    mdiCogOutline,
+    mdiImageOutline,
+    mdiImagePlusOutline,
   } from '@mdi/js';
   import { fly } from 'svelte/transition';
   import type { PageData } from './$types';
   import AlbumTitle from '$lib/components/album-page/album-title.svelte';
   import AlbumDescription from '$lib/components/album-page/album-description.svelte';
   import { handlePromiseError } from '$lib/utils';
+  import AlbumSummary from '$lib/components/album-page/album-summary.svelte';
 
   export let data: PageData;
 
@@ -82,6 +87,7 @@
 
   $: album = data.album;
   $: albumId = album.id;
+  $: albumKey = `${albumId}_${albumOrder}`;
 
   $: {
     if (!album.isActivityEnabled && $numberOfComments === 0) {
@@ -110,9 +116,9 @@
   let reactions: ActivityResponseDto[] = [];
   let globalWidth: number;
   let assetGridWidth: number;
-  let textArea: HTMLTextAreaElement;
+  let albumOrder: AssetOrder | undefined = data.album.order;
 
-  $: assetStore = new AssetStore({ albumId });
+  $: assetStore = new AssetStore({ albumId, order: albumOrder });
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
@@ -145,7 +151,7 @@
 
     backUrl = url || AppRoute.ALBUMS;
 
-    if (backUrl === AppRoute.SHARING && album.sharedUsers.length === 0) {
+    if (backUrl === AppRoute.SHARING && album.sharedUsers.length === 0 && !album.hasSharedLink) {
       isCreatingSharedAlbum = true;
     }
   });
@@ -221,20 +227,6 @@
     handlePromiseError(getNumberOfComments());
   }
 
-  const handleKeypress = (event: KeyboardEvent) => {
-    if (event.target !== textArea) {
-      return;
-    }
-    const ctrl = event.ctrlKey;
-    switch (event.key) {
-      case 'Enter': {
-        if (ctrl && event.target === textArea) {
-          textArea.blur();
-        }
-      }
-    }
-  };
-
   const handleStartSlideshow = async () => {
     const asset =
       $slideshowNavigation === SlideshowNavigation.Shuffle ? await assetStore.getRandomAsset() : assetStore.assets[0];
@@ -278,31 +270,6 @@
 
   const refreshAlbum = async () => {
     album = await getAlbumInfo({ id: album.id, withoutAssets: true });
-  };
-
-  const getDateRange = () => {
-    const { startDate, endDate } = album;
-
-    let start = '';
-    let end = '';
-
-    if (startDate) {
-      start = new Date(startDate).toLocaleDateString($locale, dateFormats.album);
-    }
-
-    if (endDate) {
-      end = new Date(endDate).toLocaleDateString($locale, dateFormats.album);
-    }
-
-    if (startDate && endDate && start !== end) {
-      return `${start} - ${end}`;
-    }
-
-    if (start) {
-      return start;
-    }
-
-    return '';
   };
 
   const handleAddAssets = async () => {
@@ -389,6 +356,11 @@
     }
   };
 
+  const handleRemoveAssets = async (assetIds: string[]) => {
+    assetStore.removeAssets(assetIds);
+    await refreshAlbum();
+  };
+
   const handleUpdateThumbnail = async (assetId: string) => {
     if (viewMode !== ViewMode.SELECT_THUMBNAIL) {
       return;
@@ -410,31 +382,31 @@
   };
 </script>
 
-<svelte:window on:keydown={handleKeypress} />
-
 <div class="flex overflow-hidden" bind:clientWidth={globalWidth}>
   <div class="relative w-full shrink">
     {#if $isMultiSelectState}
       <AssetSelectControlBar assets={$selectedAssets} clearSelect={() => assetInteractionStore.clearMultiselect()}>
         <CreateSharedLink />
         <SelectAllAssets {assetStore} {assetInteractionStore} />
-        <AssetSelectContextMenu icon={mdiPlus} title="Add">
+        <AssetSelectContextMenu icon={mdiPlus} title="Add to...">
           <AddToAlbum />
           <AddToAlbum shared />
         </AssetSelectContextMenu>
+        {#if isAllUserOwned}
+          <FavoriteAction removeFavorite={isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
+        {/if}
         <AssetSelectContextMenu icon={mdiDotsVertical} title="Menu">
-          {#if isAllUserOwned}
-            <FavoriteAction menuItem removeFavorite={isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
-            <ArchiveAction menuItem unarchive={isAllArchived} onArchive={() => assetStore.triggerUpdate()} />
-          {/if}
           <DownloadAction menuItem filename="{album.albumName}.zip" />
-          {#if isOwned || isAllUserOwned}
-            <RemoveFromAlbum menuItem bind:album onRemove={(assetIds) => assetStore.removeAssets(assetIds)} />
-          {/if}
           {#if isAllUserOwned}
-            <DeleteAssets menuItem onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)} />
             <ChangeDate menuItem />
             <ChangeLocation menuItem />
+            <ArchiveAction menuItem unarchive={isAllArchived} onArchive={() => assetStore.triggerUpdate()} />
+          {/if}
+          {#if isOwned || isAllUserOwned}
+            <RemoveFromAlbum menuItem bind:album onRemove={handleRemoveAssets} />
+          {/if}
+          {#if isAllUserOwned}
+            <DeleteAssets menuItem onAssetDelete={handleRemoveAssets} />
           {/if}
         </AssetSelectContextMenu>
       </AssetSelectControlBar>
@@ -443,9 +415,9 @@
         <ControlAppBar showBackButton backIcon={mdiArrowLeft} on:close={() => goto(backUrl)}>
           <svelte:fragment slot="trailing">
             <CircleIconButton
-              title="Add Photos"
+              title="Add photos"
               on:click={() => (viewMode = ViewMode.SELECT_ASSETS)}
-              icon={mdiFileImagePlusOutline}
+              icon={mdiImagePlusOutline}
             />
 
             {#if isOwned}
@@ -453,11 +425,6 @@
                 title="Share"
                 on:click={() => (viewMode = ViewMode.SELECT_USERS)}
                 icon={mdiShareVariantOutline}
-              />
-              <CircleIconButton
-                title="Delete album"
-                on:click={() => (viewMode = ViewMode.CONFIRM_DELETE)}
-                icon={mdiDeleteOutline}
               />
             {/if}
 
@@ -469,11 +436,22 @@
                   <CircleIconButton title="Album options" on:click={handleOpenAlbumOptions} icon={mdiDotsVertical}>
                     {#if viewMode === ViewMode.ALBUM_OPTIONS}
                       <ContextMenu {...contextMenuPosition}>
-                        {#if album.assetCount !== 0}
-                          <MenuOption on:click={handleStartSlideshow} text="Slideshow" />
-                        {/if}
-                        <MenuOption on:click={() => (viewMode = ViewMode.SELECT_THUMBNAIL)} text="Set album cover" />
-                        <MenuOption on:click={() => (viewMode = ViewMode.OPTIONS)} text="Options" />
+                        <MenuOption icon={mdiPresentationPlay} text="Slideshow" on:click={handleStartSlideshow} />
+                        <MenuOption
+                          icon={mdiImageOutline}
+                          text="Select album cover"
+                          on:click={() => (viewMode = ViewMode.SELECT_THUMBNAIL)}
+                        />
+                        <MenuOption
+                          icon={mdiCogOutline}
+                          text="Options"
+                          on:click={() => (viewMode = ViewMode.OPTIONS)}
+                        />
+                        <MenuOption
+                          icon={mdiDeleteOutline}
+                          text="Delete album"
+                          on:click={() => (viewMode = ViewMode.CONFIRM_DELETE)}
+                        />
                       </ContextMenu>
                     {/if}
                   </CircleIconButton>
@@ -485,7 +463,7 @@
               <Button
                 size="sm"
                 rounded="lg"
-                disabled={album.assetCount == 0}
+                disabled={album.assetCount === 0}
                 on:click={() => (viewMode = ViewMode.SELECT_USERS)}
               >
                 Share
@@ -533,7 +511,7 @@
       style={`width:${assetGridWidth}px`}
     >
       <!-- Use key because AssetGrid can't deal with changing stores -->
-      {#key albumId}
+      {#key albumKey}
         {#if viewMode === ViewMode.SELECT_ASSETS}
           <AssetGrid
             assetStore={timelineStore}
@@ -557,13 +535,8 @@
               <section class="pt-24">
                 <AlbumTitle id={album.id} albumName={album.albumName} {isOwned} />
 
-                <!-- ALBUM SUMMARY -->
                 {#if album.assetCount > 0}
-                  <span class="my-2 flex gap-2 text-sm font-medium text-gray-500" data-testid="album-details">
-                    <p class="">{getDateRange()}</p>
-                    <p>·</p>
-                    <p>{album.assetCount} items</p>
-                  </span>
+                  <AlbumSummary {album} />
                 {/if}
 
                 <!-- ALBUM SHARING -->
@@ -692,8 +665,8 @@
   <ConfirmDialogue
     title="Delete album"
     confirmText="Delete"
-    on:confirm={handleRemoveAlbum}
-    on:cancel={() => (viewMode = ViewMode.VIEW)}
+    onConfirm={handleRemoveAlbum}
+    onClose={() => (viewMode = ViewMode.VIEW)}
   >
     <svelte:fragment slot="prompt">
       <p>Are you sure you want to delete the album <b>{album.albumName}</b>?</p>
@@ -705,7 +678,9 @@
 {#if viewMode === ViewMode.OPTIONS && $user}
   <AlbumOptions
     {album}
+    order={albumOrder}
     user={$user}
+    onChangeOrder={(order) => (albumOrder = order)}
     on:close={() => (viewMode = ViewMode.VIEW)}
     on:toggleEnableActivity={handleToggleEnableActivity}
     on:showSelectSharedUser={() => (viewMode = ViewMode.SELECT_USERS)}

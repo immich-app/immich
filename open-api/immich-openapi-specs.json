@@ -1766,6 +1766,14 @@
             }
           },
           {
+            "name": "order",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/AssetOrder"
+            }
+          },
+          {
             "name": "personId",
             "required": false,
             "in": "query",
@@ -1899,6 +1907,14 @@
             "in": "query",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "order",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/AssetOrder"
             }
           },
           {
@@ -2358,6 +2374,7 @@
             "required": false,
             "in": "query",
             "schema": {
+              "format": "uuid",
               "type": "array",
               "items": {
                 "type": "string"
@@ -4012,7 +4029,6 @@
             "required": false,
             "in": "query",
             "schema": {
-              "default": false,
               "type": "boolean"
             }
           }
@@ -4047,6 +4063,16 @@
       "post": {
         "operationId": "createPerson",
         "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PersonCreateDto"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "201": {
             "content": {
@@ -4571,6 +4597,41 @@
         ]
       }
     },
+    "/search/cities": {
+      "get": {
+        "operationId": "getAssetsByCity",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AssetResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Search"
+        ]
+      }
+    },
     "/search/explore": {
       "get": {
         "operationId": "getExploreData",
@@ -4621,7 +4682,7 @@
           "required": true
         },
         "responses": {
-          "201": {
+          "200": {
             "content": {
               "application/json": {
                 "schema": {
@@ -4759,7 +4820,7 @@
           "required": true
         },
         "responses": {
-          "201": {
+          "200": {
             "content": {
               "application/json": {
                 "schema": {
@@ -6393,6 +6454,16 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteUserDto"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "content": {
@@ -6467,7 +6538,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.97.0",
+    "version": "1.99.0",
     "contact": {}
   },
   "tags": [],
@@ -6701,6 +6772,9 @@
           "lastModifiedAssetTimestamp": {
             "format": "date-time",
             "type": "string"
+          },
+          "order": {
+            "$ref": "#/components/schemas/AssetOrder"
           },
           "owner": {
             "$ref": "#/components/schemas/UserResponseDto"
@@ -7607,6 +7681,7 @@
           }
         },
         "required": [
+          "ownerId",
           "type"
         ],
         "type": "object"
@@ -7739,6 +7814,14 @@
           "object",
           "resizePath"
         ],
+        "type": "object"
+      },
+      "DeleteUserDto": {
+        "properties": {
+          "force": {
+            "type": "boolean"
+          }
+        },
         "type": "object"
       },
       "DownloadArchiveInfo": {
@@ -8454,6 +8537,7 @@
           },
           "personIds": {
             "items": {
+              "format": "uuid",
               "type": "string"
             },
             "type": "array"
@@ -8607,6 +8691,9 @@
           "shouldChangePassword": {
             "type": "boolean"
           },
+          "status": {
+            "$ref": "#/components/schemas/UserStatus"
+          },
           "storageLabel": {
             "nullable": true,
             "type": "string"
@@ -8629,6 +8716,7 @@
           "quotaSizeInBytes",
           "quotaUsageInBytes",
           "shouldChangePassword",
+          "status",
           "storageLabel",
           "updatedAt"
         ],
@@ -8718,6 +8806,25 @@
         "required": [
           "id"
         ],
+        "type": "object"
+      },
+      "PersonCreateDto": {
+        "properties": {
+          "birthDate": {
+            "description": "Person date of birth.\nNote: the mobile app cannot currently set the birth date to null.",
+            "format": "date",
+            "nullable": true,
+            "type": "string"
+          },
+          "isHidden": {
+            "description": "Person visibility",
+            "type": "boolean"
+          },
+          "name": {
+            "description": "Person name.",
+            "type": "string"
+          }
+        },
         "type": "object"
       },
       "PersonResponseDto": {
@@ -8908,7 +9015,6 @@
       "ScanLibraryDto": {
         "properties": {
           "refreshAllFiles": {
-            "default": false,
             "type": "boolean"
           },
           "refreshModifiedFiles": {
@@ -9090,6 +9196,9 @@
           },
           "trashDays": {
             "type": "integer"
+          },
+          "userDeleteDelay": {
+            "type": "integer"
           }
         },
         "required": [
@@ -9098,7 +9207,8 @@
           "isOnboarded",
           "loginPageMessage",
           "oauthButtonText",
-          "trashDays"
+          "trashDays",
+          "userDeleteDelay"
         ],
         "type": "object"
       },
@@ -9313,7 +9423,6 @@
             "type": "boolean"
           },
           "allowUpload": {
-            "default": false,
             "type": "boolean"
           },
           "assetIds": {
@@ -9559,6 +9668,7 @@
           },
           "personIds": {
             "items": {
+              "format": "uuid",
               "type": "string"
             },
             "type": "array"
@@ -9661,6 +9771,9 @@
           },
           "trash": {
             "$ref": "#/components/schemas/SystemConfigTrashDto"
+          },
+          "user": {
+            "$ref": "#/components/schemas/SystemConfigUserDto"
           }
         },
         "required": [
@@ -9678,7 +9791,8 @@
           "storageTemplate",
           "theme",
           "thumbnail",
-          "trash"
+          "trash",
+          "user"
         ],
         "type": "object"
       },
@@ -10162,6 +10276,17 @@
         ],
         "type": "object"
       },
+      "SystemConfigUserDto": {
+        "properties": {
+          "deleteDelay": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "deleteDelay"
+        ],
+        "type": "object"
+      },
       "TagResponseDto": {
         "properties": {
           "id": {
@@ -10265,6 +10390,9 @@
           },
           "isActivityEnabled": {
             "type": "boolean"
+          },
+          "order": {
+            "$ref": "#/components/schemas/AssetOrder"
           }
         },
         "type": "object"
@@ -10516,6 +10644,9 @@
           "shouldChangePassword": {
             "type": "boolean"
           },
+          "status": {
+            "$ref": "#/components/schemas/UserStatus"
+          },
           "storageLabel": {
             "nullable": true,
             "type": "string"
@@ -10538,10 +10669,19 @@
           "quotaSizeInBytes",
           "quotaUsageInBytes",
           "shouldChangePassword",
+          "status",
           "storageLabel",
           "updatedAt"
         ],
         "type": "object"
+      },
+      "UserStatus": {
+        "enum": [
+          "active",
+          "removing",
+          "deleted"
+        ],
+        "type": "string"
       },
       "ValidateAccessTokenResponseDto": {
         "properties": {
@@ -10585,7 +10725,8 @@
           }
         },
         "required": [
-          "importPath"
+          "importPath",
+          "isValid"
         ],
         "type": "object"
       },

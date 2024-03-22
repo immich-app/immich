@@ -9,7 +9,7 @@ class ImmichToast {
     required BuildContext context,
     required String msg,
     ToastType toastType = ToastType.info,
-    ToastGravity gravity = ToastGravity.TOP,
+    ToastGravity gravity = ToastGravity.BOTTOM,
     int durationInSecond = 3,
   }) {
     final fToast = FToast();

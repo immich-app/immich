@@ -1,4 +1,4 @@
-import { SystemConfigEntity, SystemConfigKey } from '@app/infra/entities';
+import { SystemConfigEntity, SystemConfigKey } from 'src/entities/system-config.entity';
 
 export const systemConfigStub: Record<string, SystemConfigEntity[]> = {
   defaults: [],
@@ -27,6 +27,7 @@ export const systemConfigStub: Record<string, SystemConfigEntity[]> = {
     { key: SystemConfigKey.OAUTH_AUTO_REGISTER, value: true },
     { key: SystemConfigKey.OAUTH_DEFAULT_STORAGE_QUOTA, value: 1 },
   ],
+  deleteDelay30: [{ key: SystemConfigKey.USER_DELETE_DELAY, value: 30 }],
   libraryWatchEnabled: [{ key: SystemConfigKey.LIBRARY_WATCH_ENABLED, value: true }],
   libraryWatchDisabled: [{ key: SystemConfigKey.LIBRARY_WATCH_ENABLED, value: false }],
 };

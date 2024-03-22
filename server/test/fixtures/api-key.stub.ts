@@ -1,6 +1,6 @@
-import { APIKeyEntity } from '@app/infra/entities';
-import { authStub } from './auth.stub';
-import { userStub } from './user.stub';
+import { APIKeyEntity } from 'src/entities/api-key.entity';
+import { authStub } from 'test/fixtures/auth.stub';
+import { userStub } from 'test/fixtures/user.stub';
 
 export const keyStub = {
   admin: Object.freeze({

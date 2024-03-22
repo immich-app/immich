@@ -1,4 +1,6 @@
 import { notificationController, NotificationType } from '$lib/components/shared-components/notification/notification';
+import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
+import { BucketPosition, isSelectingAllAssets, type AssetStore } from '$lib/stores/assets.store';
 import { downloadManager } from '$lib/stores/download';
 import { downloadRequest, getKey } from '$lib/utils';
 import {
@@ -13,6 +15,7 @@ import {
   type UserResponseDto,
 } from '@immich/sdk';
 import { DateTime } from 'luxon';
+import { get } from 'svelte/store';
 import { handleError } from './handle-error';
 
 export const addAssetsToAlbum = async (albumId: string, assetIds: Array<string>): Promise<BulkIdResponseDto[]> =>
@@ -102,14 +105,14 @@ export const downloadFile = async (asset: AssetResponseDto) => {
   }
   const assets = [
     {
-      filename: `${asset.originalFileName}.${getFilenameExtension(asset.originalPath)}`,
+      filename: asset.originalFileName,
       id: asset.id,
       size: asset.exifInfo?.fileSizeInByte || 0,
     },
   ];
   if (asset.livePhotoVideoId) {
     assets.push({
-      filename: `${asset.originalFileName}.mov`,
+      filename: asset.originalFileName,
       id: asset.livePhotoVideoId,
       size: 0,
     });
@@ -222,6 +225,35 @@ export const getSelectedAssets = (assets: Set<AssetResponseDto>, user: UserRespo
     });
   }
   return ids;
+};
+
+export const selectAllAssets = async (assetStore: AssetStore, assetInteractionStore: AssetInteractionStore) => {
+  if (get(isSelectingAllAssets)) {
+    // Selection is already ongoing
+    return;
+  }
+  isSelectingAllAssets.set(true);
+
+  try {
+    for (const bucket of assetStore.buckets) {
+      await assetStore.loadBucket(bucket.bucketDate, BucketPosition.Unknown);
+
+      if (!get(isSelectingAllAssets)) {
+        break; // Cancelled
+      }
+      assetInteractionStore.selectAssets(bucket.assets);
+
+      // We use setTimeout to allow the UI to update. Otherwise, this may
+      // cause a long delay between the start of 'select all' and the
+      // effective update of the UI, depending on the number of assets
+      // to select
+      await delay(0);
+    }
+  } catch (error) {
+    handleError(error, 'Error selecting all assets');
+  } finally {
+    isSelectingAllAssets.set(false);
+  }
 };
 
 export const delay = async (ms: number) => {

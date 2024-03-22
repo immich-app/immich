@@ -6,7 +6,7 @@
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import { getAlbumInfo, removeAssetFromAlbum, type AlbumResponseDto } from '@immich/sdk';
-  import { mdiDeleteOutline } from '@mdi/js';
+  import { mdiDeleteOutline, mdiImageRemoveOutline } from '@mdi/js';
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
 
@@ -50,7 +50,7 @@
 </script>
 
 {#if menuItem}
-  <MenuOption text="Remove from album" on:click={() => (isShowConfirmation = true)} />
+  <MenuOption text="Remove from album" icon={mdiImageRemoveOutline} on:click={() => (isShowConfirmation = true)} />
 {:else}
   <CircleIconButton title="Remove from album" icon={mdiDeleteOutline} on:click={() => (isShowConfirmation = true)} />
 {/if}
@@ -59,8 +59,8 @@
   <ConfirmDialogue
     title="Remove from {album.albumName}"
     confirmText="Remove"
-    on:confirm={removeFromAlbum}
-    on:cancel={() => (isShowConfirmation = false)}
+    onConfirm={removeFromAlbum}
+    onClose={() => (isShowConfirmation = false)}
   >
     <svelte:fragment slot="prompt">
       <p>

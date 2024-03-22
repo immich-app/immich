@@ -1,4 +1,5 @@
-import { IDatabaseRepository, Version } from '@app/domain';
+import { IDatabaseRepository } from 'src/interfaces/database.interface';
+import { Version } from 'src/utils/version';
 
 export const newDatabaseRepositoryMock = (): jest.Mocked<IDatabaseRepository> => {
   return {
@@ -13,6 +14,7 @@ export const newDatabaseRepositoryMock = (): jest.Mocked<IDatabaseRepository> =>
     shouldReindex: jest.fn(),
     runMigrations: jest.fn(),
     withLock: jest.fn().mockImplementation((_, function_: <R>() => Promise<R>) => function_()),
+    tryLock: jest.fn(),
     isBusy: jest.fn(),
     wait: jest.fn(),
   };

@@ -6,7 +6,9 @@
   let dragStartTarget: EventTarget | null = null;
 
   const handleDragEnter = (e: DragEvent) => {
-    dragStartTarget = e.target;
+    if (e.dataTransfer && e.dataTransfer.types.includes('Files')) {
+      dragStartTarget = e.target;
+    }
   };
 </script>
 
@@ -34,7 +36,7 @@
       e.preventDefault();
     }}
   >
-    <ImmichLogo class="m-16 w-48 animate-bounce" />
+    <ImmichLogo noText class="m-16 w-48 animate-bounce" />
     <div class="text-2xl">Drop files anywhere to upload</div>
   </div>
 {/if}

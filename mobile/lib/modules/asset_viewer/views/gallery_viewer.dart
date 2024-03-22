@@ -15,7 +15,7 @@ import 'package:immich_mobile/modules/asset_viewer/providers/show_controls.provi
 import 'package:immich_mobile/modules/asset_viewer/providers/video_player_value_provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/advanced_bottom_sheet.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/bottom_gallery_bar.dart';
-import 'package:immich_mobile/modules/asset_viewer/ui/exif_bottom_sheet.dart';
+import 'package:immich_mobile/modules/asset_viewer/ui/exif_sheet/exif_bottom_sheet.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/gallery_app_bar.dart';
 import 'package:immich_mobile/modules/asset_viewer/views/video_viewer_page.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
@@ -133,24 +133,27 @@ class GalleryViewerPage extends HookConsumerWidget {
         context: context,
         useSafeArea: true,
         builder: (context) {
-          return Padding(
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.viewInsetsOf(context).bottom,
+          return FractionallySizedBox(
+            heightFactor: 0.75,
+            child: Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.viewInsetsOf(context).bottom,
+              ),
+              child: ref
+                      .watch(appSettingsServiceProvider)
+                      .getSetting<bool>(AppSettingsEnum.advancedTroubleshooting)
+                  ? AdvancedBottomSheet(assetDetail: asset)
+                  : ExifBottomSheet(asset: asset),
             ),
-            child: ref
-                    .watch(appSettingsServiceProvider)
-                    .getSetting<bool>(AppSettingsEnum.advancedTroubleshooting)
-                ? AdvancedBottomSheet(assetDetail: asset)
-                : ExifBottomSheet(asset: asset),
           );
         },
       );
     }
 
     void handleSwipeUpDown(DragUpdateDetails details) {
-      int sensitivity = 15;
-      int dxThreshold = 50;
-      double ratioThreshold = 3.0;
+      const int sensitivity = 15;
+      const int dxThreshold = 50;
+      const double ratioThreshold = 3.0;
 
       if (isZoomed.value) {
         return;
@@ -218,18 +221,19 @@ class GalleryViewerPage extends HookConsumerWidget {
         scrollDirection: Axis.horizontal,
         itemCount: stackElements.length,
         padding: const EdgeInsets.only(
-          left: 10,
-          right: 10,
+          left: 5,
+          right: 5,
           bottom: 30,
         ),
         itemBuilder: (context, index) {
           final assetId = stackElements.elementAt(index).remoteId;
           return Padding(
-            padding: const EdgeInsets.only(right: 10),
+            padding: const EdgeInsets.only(right: 5),
             child: GestureDetector(
               onTap: () => stackIndex.value = index,
               child: Container(
-                width: 40,
+                width: 60,
+                height: 60,
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(6),
@@ -391,7 +395,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                   Visibility(
                     visible: stack.isNotEmpty,
                     child: SizedBox(
-                      height: 40,
+                      height: 80,
                       child: buildStackedChildren(),
                     ),
                   ),

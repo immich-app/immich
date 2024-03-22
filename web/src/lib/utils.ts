@@ -12,6 +12,7 @@ import {
   unlinkOAuthAccount,
   type UserResponseDto,
 } from '@immich/sdk';
+import { mdiCogRefreshOutline, mdiDatabaseRefreshOutline, mdiImageRefreshOutline } from '@mdi/js';
 
 interface DownloadRequestOptions<T = unknown> {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
@@ -27,7 +28,7 @@ interface UploadRequestOptions {
   onUploadProgress?: (event: ProgressEvent<XMLHttpRequestEventTarget>) => void;
 }
 
-class AbortError extends Error {
+export class AbortError extends Error {
   name = 'AbortError';
 }
 
@@ -59,7 +60,7 @@ export const uploadRequest = async <T>(options: UploadRequestOptions): Promise<{
     });
 
     if (onProgress) {
-      xhr.addEventListener('progress', (event) => onProgress(event));
+      xhr.upload.addEventListener('progress', (event) => onProgress(event));
     }
 
     xhr.open('POST', url);
@@ -194,6 +195,16 @@ export const getAssetJobMessage = (job: AssetJobName) => {
   };
 
   return messages[job];
+};
+
+export const getAssetJobIcon = (job: AssetJobName) => {
+  const names: Record<AssetJobName, string> = {
+    [AssetJobName.RefreshMetadata]: mdiDatabaseRefreshOutline,
+    [AssetJobName.RegenerateThumbnail]: mdiImageRefreshOutline,
+    [AssetJobName.TranscodeVideo]: mdiCogRefreshOutline,
+  };
+
+  return names[job];
 };
 
 export const copyToClipboard = async (secret: string) => {

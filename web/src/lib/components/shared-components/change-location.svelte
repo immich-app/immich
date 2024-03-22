@@ -1,7 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import ConfirmDialogue from './confirm-dialogue.svelte';
-  import { maximumLengthSearchPeople, timeBeforeShowLoadingSpinner } from '$lib/constants';
+  import { timeBeforeShowLoadingSpinner } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
 
   import { clickOutside } from '$lib/utils/click-outside';
@@ -10,6 +10,7 @@
   import { timeToLoadTheMap } from '$lib/constants';
   import { searchPlaces, type AssetResponseDto, type PlacesResponseDto } from '@immich/sdk';
   import SearchBar from '../elements/search-bar.svelte';
+  import { listNavigation } from '$lib/utils/list-navigation';
 
   export const title = 'Change Location';
   export let asset: AssetResponseDto | undefined = undefined;
@@ -24,8 +25,7 @@
   let searchWord: string;
   let isSearching = false;
   let showSpinner = false;
-  let focusedElements: (HTMLButtonElement | null)[] = Array.from({ length: maximumLengthSearchPeople }, () => null);
-  let indexFocus: number | null = null;
+  let suggestionContainer: HTMLDivElement;
   let hideSuggestion = false;
   let addClipMapMarker: (long: number, lat: number) => void;
 
@@ -41,7 +41,6 @@
   $: {
     if (places) {
       suggestedPlaces = places.slice(0, 5);
-      indexFocus = null;
     }
     if (searchWord === '') {
       suggestedPlaces = [];
@@ -93,62 +92,22 @@
     point = { lng: longitude, lat: latitude };
     addClipMapMarker(longitude, latitude);
   };
-
-  const handleKeyboardPress = (event: KeyboardEvent) => {
-    if (suggestedPlaces.length === 0) {
-      return;
-    }
-
-    event.stopPropagation();
-    switch (event.key) {
-      case 'ArrowDown': {
-        event.preventDefault();
-        if (indexFocus === null) {
-          indexFocus = 0;
-        } else if (indexFocus === suggestedPlaces.length - 1) {
-          indexFocus = 0;
-        } else {
-          indexFocus++;
-        }
-        focusedElements[indexFocus]?.focus();
-        return;
-      }
-      case 'ArrowUp': {
-        if (indexFocus === null) {
-          indexFocus = 0;
-          return;
-        }
-        if (indexFocus === 0) {
-          indexFocus = suggestedPlaces.length - 1;
-        } else {
-          indexFocus--;
-        }
-        focusedElements[indexFocus]?.focus();
-
-        return;
-      }
-      case 'Enter': {
-        if (indexFocus !== null) {
-          hideSuggestion = true;
-          handleUseSuggested(suggestedPlaces[indexFocus].latitude, suggestedPlaces[indexFocus].longitude);
-        }
-      }
-    }
-  };
 </script>
-
-<svelte:document on:keydown={handleKeyboardPress} />
 
 <ConfirmDialogue
   confirmColor="primary"
   cancelColor="secondary"
   title="Change Location"
   width={800}
-  on:confirm={handleConfirm}
-  on:cancel={handleCancel}
+  onConfirm={handleConfirm}
+  onClose={handleCancel}
 >
   <div slot="prompt" class="flex flex-col w-full h-full gap-2">
-    <div class="relative w-64 sm:w-96" use:clickOutside on:outclick={() => (hideSuggestion = true)}>
+    <div
+      class="relative w-64 sm:w-96"
+      use:clickOutside={{ onOutclick: () => (hideSuggestion = true) }}
+      use:listNavigation={suggestionContainer}
+    >
       <button class="w-full" on:click={() => (hideSuggestion = false)}>
         <SearchBar
           placeholder="Search places"
@@ -161,11 +120,10 @@
           roundedBottom={suggestedPlaces.length === 0 || hideSuggestion}
         />
       </button>
-      <div class="absolute z-[99] w-full" id="suggestion">
+      <div class="absolute z-[99] w-full" id="suggestion" bind:this={suggestionContainer}>
         {#if !hideSuggestion}
           {#each suggestedPlaces as place, index}
             <button
-              bind:this={focusedElements[index]}
               class=" flex w-full border-t border-gray-400 dark:border-immich-dark-gray h-14 place-items-center bg-gray-200 p-2 dark:bg-gray-700 hover:bg-gray-300 hover:dark:bg-[#232932] focus:bg-gray-300 focus:dark:bg-[#232932] {index ===
               suggestedPlaces.length - 1
                 ? 'rounded-b-lg border-b'

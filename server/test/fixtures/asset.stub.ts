@@ -1,8 +1,10 @@
-import { AssetEntity, AssetStackEntity, AssetType, ExifEntity } from '@app/infra/entities';
-import { authStub } from './auth.stub';
-import { fileStub } from './file.stub';
-import { libraryStub } from './library.stub';
-import { userStub } from './user.stub';
+import { AssetStackEntity } from 'src/entities/asset-stack.entity';
+import { AssetEntity, AssetType } from 'src/entities/asset.entity';
+import { ExifEntity } from 'src/entities/exif.entity';
+import { authStub } from 'test/fixtures/auth.stub';
+import { fileStub } from 'test/fixtures/file.stub';
+import { libraryStub } from 'test/fixtures/library.stub';
+import { userStub } from 'test/fixtures/user.stub';
 
 export const assetStackStub = (stackId: string, assets: AssetEntity[]): AssetStackEntity => {
   return {
@@ -16,7 +18,7 @@ export const assetStackStub = (stackId: string, assets: AssetEntity[]): AssetSta
 export const assetStub = {
   noResizePath: Object.freeze<AssetEntity>({
     id: 'asset-id',
-    originalFileName: 'IMG_123',
+    originalFileName: 'IMG_123.jpg',
     deviceAssetId: 'device-asset-id',
     fileModifiedAt: new Date('2023-02-23T05:06:29.716Z'),
     fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
@@ -77,7 +79,7 @@ export const assetStub = {
     livePhotoVideoId: null,
     tags: [],
     sharedLinks: [],
-    originalFileName: 'IMG_456',
+    originalFileName: 'IMG_456.jpg',
     faces: [],
     sidecarPath: null,
     isReadOnly: false,
@@ -522,6 +524,42 @@ export const assetStub = {
     originalFileName: 'asset-id.ext',
     faces: [],
     sidecarPath: '/original/path.ext.xmp',
+    deletedAt: null,
+  }),
+  sidecarWithoutExt: Object.freeze<AssetEntity>({
+    id: 'asset-id',
+    deviceAssetId: 'device-asset-id',
+    fileModifiedAt: new Date('2023-02-23T05:06:29.716Z'),
+    fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
+    owner: userStub.user1,
+    ownerId: 'user-id',
+    deviceId: 'device-id',
+    originalPath: '/original/path.ext',
+    resizePath: '/uploads/user-id/thumbs/path.ext',
+    thumbhash: null,
+    checksum: Buffer.from('file hash', 'utf8'),
+    type: AssetType.IMAGE,
+    webpPath: null,
+    encodedVideoPath: null,
+    createdAt: new Date('2023-02-23T05:06:29.716Z'),
+    updatedAt: new Date('2023-02-23T05:06:29.716Z'),
+    localDateTime: new Date('2023-02-23T05:06:29.716Z'),
+    isFavorite: true,
+    isArchived: false,
+    isReadOnly: false,
+    isExternal: false,
+    isOffline: false,
+    libraryId: 'library-id',
+    library: libraryStub.uploadLibrary1,
+    duration: null,
+    isVisible: true,
+    livePhotoVideo: null,
+    livePhotoVideoId: null,
+    tags: [],
+    sharedLinks: [],
+    originalFileName: 'asset-id.ext',
+    faces: [],
+    sidecarPath: '/original/path.xmp',
     deletedAt: null,
   }),
 

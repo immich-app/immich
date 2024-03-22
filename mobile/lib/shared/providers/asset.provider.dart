@@ -329,7 +329,9 @@ final assetDetailProvider =
   yield await ref.watch(assetServiceProvider).loadExif(asset);
   final db = ref.watch(dbProvider);
   await for (final a in db.assets.watchObject(asset.id)) {
-    if (a != null) yield await ref.watch(assetServiceProvider).loadExif(a);
+    if (a != null) {
+      yield await ref.watch(assetServiceProvider).loadExif(a);
+    }
   }
 });
 

@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.97.0
+ * 1.99.0
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -75,6 +75,7 @@ export type UserResponseDto = {
     quotaSizeInBytes: number | null;
     quotaUsageInBytes: number | null;
     shouldChangePassword: boolean;
+    status: UserStatus;
     storageLabel: string | null;
     updatedAt: string;
 };
@@ -152,6 +153,7 @@ export type AlbumResponseDto = {
     id: string;
     isActivityEnabled: boolean;
     lastModifiedAssetTimestamp?: string;
+    order?: AssetOrder;
     owner: UserResponseDto;
     ownerId: string;
     shared: boolean;
@@ -175,6 +177,7 @@ export type UpdateAlbumDto = {
     albumThumbnailAssetId?: string;
     description?: string;
     isActivityEnabled?: boolean;
+    order?: AssetOrder;
 };
 export type BulkIdsDto = {
     ids: string[];
@@ -463,7 +466,7 @@ export type CreateLibraryDto = {
     isVisible?: boolean;
     isWatched?: boolean;
     name?: string;
-    ownerId?: string;
+    ownerId: string;
     "type": LibraryType;
 };
 export type UpdateLibraryDto = {
@@ -488,7 +491,7 @@ export type ValidateLibraryDto = {
 };
 export type ValidateLibraryImportPathResponseDto = {
     importPath: string;
-    isValid?: boolean;
+    isValid: boolean;
     message?: string;
 };
 export type ValidateLibraryResponseDto = {
@@ -518,6 +521,7 @@ export type PartnerResponseDto = {
     quotaSizeInBytes: number | null;
     quotaUsageInBytes: number | null;
     shouldChangePassword: boolean;
+    status: UserStatus;
     storageLabel: string | null;
     updatedAt: string;
 };
@@ -528,6 +532,15 @@ export type PeopleResponseDto = {
     hidden: number;
     people: PersonResponseDto[];
     total: number;
+};
+export type PersonCreateDto = {
+    /** Person date of birth.
+    Note: the mobile app cannot currently set the birth date to null. */
+    birthDate?: string | null;
+    /** Person visibility */
+    isHidden?: boolean;
+    /** Person name. */
+    name?: string;
 };
 export type PeopleUpdateItem = {
     /** Person date of birth.
@@ -705,6 +718,7 @@ export type ServerConfigDto = {
     loginPageMessage: string;
     oauthButtonText: string;
     trashDays: number;
+    userDeleteDelay: number;
 };
 export type ServerFeaturesDto = {
     configFile: boolean;
@@ -918,6 +932,9 @@ export type SystemConfigTrashDto = {
     days: number;
     enabled: boolean;
 };
+export type SystemConfigUserDto = {
+    deleteDelay: number;
+};
 export type SystemConfigDto = {
     ffmpeg: SystemConfigFFmpegDto;
     job: SystemConfigJobDto;
@@ -934,6 +951,7 @@ export type SystemConfigDto = {
     theme: SystemConfigThemeDto;
     thumbnail: SystemConfigThumbnailDto;
     trash: SystemConfigTrashDto;
+    user: SystemConfigUserDto;
 };
 export type SystemConfigTemplateStorageOptionDto = {
     dayOptions: string[];
@@ -979,6 +997,9 @@ export type CreateProfileImageDto = {
 export type CreateProfileImageResponseDto = {
     profileImagePath: string;
     userId: string;
+};
+export type DeleteUserDto = {
+    force?: boolean;
 };
 export function getActivities({ albumId, assetId, level, $type, userId }: {
     albumId: string;
@@ -1434,12 +1455,13 @@ export function getAssetThumbnail({ format, id, key }: {
         ...opts
     }));
 }
-export function getTimeBucket({ albumId, isArchived, isFavorite, isTrashed, key, personId, size, timeBucket, userId, withPartners, withStacked }: {
+export function getTimeBucket({ albumId, isArchived, isFavorite, isTrashed, key, order, personId, size, timeBucket, userId, withPartners, withStacked }: {
     albumId?: string;
     isArchived?: boolean;
     isFavorite?: boolean;
     isTrashed?: boolean;
     key?: string;
+    order?: AssetOrder;
     personId?: string;
     size: TimeBucketSize;
     timeBucket: string;
@@ -1456,6 +1478,7 @@ export function getTimeBucket({ albumId, isArchived, isFavorite, isTrashed, key,
         isFavorite,
         isTrashed,
         key,
+        order,
         personId,
         size,
         timeBucket,
@@ -1466,12 +1489,13 @@ export function getTimeBucket({ albumId, isArchived, isFavorite, isTrashed, key,
         ...opts
     }));
 }
-export function getTimeBuckets({ albumId, isArchived, isFavorite, isTrashed, key, personId, size, userId, withPartners, withStacked }: {
+export function getTimeBuckets({ albumId, isArchived, isFavorite, isTrashed, key, order, personId, size, userId, withPartners, withStacked }: {
     albumId?: string;
     isArchived?: boolean;
     isFavorite?: boolean;
     isTrashed?: boolean;
     key?: string;
+    order?: AssetOrder;
     personId?: string;
     size: TimeBucketSize;
     userId?: string;
@@ -1487,6 +1511,7 @@ export function getTimeBuckets({ albumId, isArchived, isFavorite, isTrashed, key
         isFavorite,
         isTrashed,
         key,
+        order,
         personId,
         size,
         userId,
@@ -2046,14 +2071,17 @@ export function getAllPeople({ withHidden }: {
         ...opts
     }));
 }
-export function createPerson(opts?: Oazapfts.RequestOpts) {
+export function createPerson({ personCreateDto }: {
+    personCreateDto: PersonCreateDto;
+}, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 201;
         data: PersonResponseDto;
-    }>("/person", {
+    }>("/person", oazapfts.json({
         ...opts,
-        method: "POST"
-    }));
+        method: "POST",
+        body: personCreateDto
+    })));
 }
 export function updatePeople({ peopleUpdateDto }: {
     peopleUpdateDto: PeopleUpdateDto;
@@ -2176,6 +2204,14 @@ export function search({ clip, motion, page, q, query, recent, size, smart, $typ
         ...opts
     }));
 }
+export function getAssetsByCity(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetResponseDto[];
+    }>("/search/cities", {
+        ...opts
+    }));
+}
 export function getExploreData(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -2188,7 +2224,7 @@ export function searchMetadata({ metadataSearchDto }: {
     metadataSearchDto: MetadataSearchDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
-        status: 201;
+        status: 200;
         data: SearchResponseDto;
     }>("/search/metadata", oazapfts.json({
         ...opts,
@@ -2226,7 +2262,7 @@ export function searchSmart({ smartSearchDto }: {
     smartSearchDto: SmartSearchDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
-        status: 201;
+        status: 200;
         data: SearchResponseDto;
     }>("/search/smart", oazapfts.json({
         ...opts,
@@ -2661,16 +2697,18 @@ export function getProfileImage({ id }: {
         ...opts
     }));
 }
-export function deleteUser({ id }: {
+export function deleteUser({ id, deleteUserDto }: {
     id: string;
+    deleteUserDto: DeleteUserDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: UserResponseDto;
-    }>(`/user/${encodeURIComponent(id)}`, {
+    }>(`/user/${encodeURIComponent(id)}`, oazapfts.json({
         ...opts,
-        method: "DELETE"
-    }));
+        method: "DELETE",
+        body: deleteUserDto
+    })));
 }
 export function restoreUser({ id }: {
     id: string;
@@ -2707,6 +2745,11 @@ export enum UserAvatarColor {
     Gray = "gray",
     Amber = "amber"
 }
+export enum UserStatus {
+    Active = "active",
+    Removing = "removing",
+    Deleted = "deleted"
+}
 export enum TagTypeEnum {
     Object = "OBJECT",
     Face = "FACE",
@@ -2717,6 +2760,10 @@ export enum AssetTypeEnum {
     Video = "VIDEO",
     Audio = "AUDIO",
     Other = "OTHER"
+}
+export enum AssetOrder {
+    Asc = "asc",
+    Desc = "desc"
 }
 export enum Error {
     Duplicate = "duplicate",
@@ -2744,10 +2791,6 @@ export enum ThumbnailFormat {
 export enum TimeBucketSize {
     Day = "DAY",
     Month = "MONTH"
-}
-export enum AssetOrder {
-    Asc = "asc",
-    Desc = "desc"
 }
 export enum EntityType {
     Asset = "ASSET",

@@ -1,11 +1,12 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
+import 'package:immich_mobile/modules/settings/ui/settings_slider_list_tile.dart';
+import 'package:immich_mobile/modules/settings/ui/settings_sub_title.dart';
+import 'package:immich_mobile/modules/settings/ui/settings_switch_list_tile.dart';
+import 'package:immich_mobile/modules/settings/utils/app_settings_update_hook.dart';
 
 class LayoutSettings extends HookConsumerWidget {
   const LayoutSettings({
@@ -14,96 +15,27 @@ class LayoutSettings extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final appSettingService = ref.watch(appSettingsServiceProvider);
-
-    final useDynamicLayout = useState(true);
-    final groupBy = useState(GroupAssetsBy.day);
-
-    void switchChanged(bool value) {
-      appSettingService.setSetting(AppSettingsEnum.dynamicLayout, value);
-      useDynamicLayout.value = value;
-      ref.invalidate(appSettingsServiceProvider);
-    }
-
-    void changeGroupValue(GroupAssetsBy? value) {
-      if (value != null) {
-        appSettingService.setSetting(
-          AppSettingsEnum.groupAssetsBy,
-          value.index,
-        );
-        groupBy.value = value;
-        ref.invalidate(appSettingsServiceProvider);
-      }
-    }
-
-    useEffect(
-      () {
-        useDynamicLayout.value =
-            appSettingService.getSetting<bool>(AppSettingsEnum.dynamicLayout);
-        groupBy.value = GroupAssetsBy.values[
-            appSettingService.getSetting<int>(AppSettingsEnum.groupAssetsBy)];
-
-        return null;
-      },
-      [],
-    );
+    final useDynamicLayout = useAppSettingsState(AppSettingsEnum.dynamicLayout);
+    final tilesPerRow = useAppSettingsState(AppSettingsEnum.tilesPerRow);
 
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SwitchListTile.adaptive(
-          activeColor: context.primaryColor,
-          title: Text(
-            "asset_list_layout_settings_dynamic_layout_title",
-            style: context.textTheme.labelLarge,
-          ).tr(),
-          onChanged: switchChanged,
-          value: useDynamicLayout.value,
+        SettingsSubTitle(title: "asset_list_layout_sub_title".tr()),
+        SettingsSwitchListTile(
+          valueNotifier: useDynamicLayout,
+          title: "asset_list_layout_settings_dynamic_layout_title".tr(),
+          onChanged: (_) => ref.invalidate(appSettingsServiceProvider),
         ),
-        const Divider(
-          indent: 18,
-          endIndent: 18,
-        ),
-        ListTile(
-          title: const Text(
-            "asset_list_layout_settings_group_by",
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ).tr(),
-        ),
-        RadioListTile(
-          activeColor: context.primaryColor,
-          title: Text(
-            "asset_list_layout_settings_group_by_month_day",
-            style: context.textTheme.labelLarge,
-          ).tr(),
-          value: GroupAssetsBy.day,
-          groupValue: groupBy.value,
-          onChanged: changeGroupValue,
-          controlAffinity: ListTileControlAffinity.trailing,
-        ),
-        RadioListTile(
-          activeColor: context.primaryColor,
-          title: Text(
-            "asset_list_layout_settings_group_by_month",
-            style: context.textTheme.labelLarge,
-          ).tr(),
-          value: GroupAssetsBy.month,
-          groupValue: groupBy.value,
-          onChanged: changeGroupValue,
-          controlAffinity: ListTileControlAffinity.trailing,
-        ),
-        RadioListTile(
-          activeColor: context.primaryColor,
-          title: Text(
-            "asset_list_layout_settings_group_automatically",
-            style: context.textTheme.labelLarge,
-          ).tr(),
-          value: GroupAssetsBy.auto,
-          groupValue: groupBy.value,
-          onChanged: changeGroupValue,
-          controlAffinity: ListTileControlAffinity.trailing,
+        SettingsSliderListTile(
+          valueNotifier: tilesPerRow,
+          text: 'theme_setting_asset_list_tiles_per_row_title'
+              .tr(args: ["${tilesPerRow.value}"]),
+          label: "${tilesPerRow.value}",
+          maxValue: 6,
+          minValue: 2,
+          noDivisons: 4,
+          onChangeEnd: (_) => ref.invalidate(appSettingsServiceProvider),
         ),
       ],
     );
