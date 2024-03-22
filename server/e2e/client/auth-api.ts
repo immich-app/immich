@@ -1,6 +1,7 @@
-import { LoginResponseDto, UserResponseDto } from '@app/domain';
-import { adminSignupStub, loginResponseStub, loginStub } from '@test';
+import { LoginResponseDto } from 'src/dtos/auth.dto';
+import { UserResponseDto } from 'src/dtos/user.dto';
 import request from 'supertest';
+import { adminSignupStub, loginResponseStub, loginStub } from 'test/fixtures/auth.stub';
 
 export const authApi = {
   adminSignUp: async (server: any) => {

@@ -1,18 +1,11 @@
 import { createObjectURLMock } from '$lib/__mocks__/jsdom-url.mock';
-import sdk, { ThumbnailFormat } from '@immich/sdk';
+import { sdkMock } from '$lib/__mocks__/sdk.mock';
+import { ThumbnailFormat } from '@immich/sdk';
 import { albumFactory } from '@test-data';
 import '@testing-library/jest-dom';
 import { fireEvent, render, waitFor, type RenderResult } from '@testing-library/svelte';
-import type { MockedObject } from 'vitest';
 import AlbumCard from '../album-card.svelte';
 
-vi.mock('@immich/sdk', async (originalImport) => {
-  const module = await originalImport<typeof import('@immich/sdk')>();
-  const mock = { ...module, getAssetThumbnail: vi.fn() };
-  return { ...mock, default: mock };
-});
-
-const sdkMock: MockedObject<typeof sdk> = sdk as MockedObject<typeof sdk>;
 const onShowContextMenu = vi.fn();
 
 describe('AlbumCard component', () => {

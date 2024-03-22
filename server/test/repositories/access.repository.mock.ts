@@ -1,4 +1,5 @@
-import { AccessCore, IAccessRepository } from '@app/domain';
+import { AccessCore } from 'src/cores/access.core';
+import { IAccessRepository } from 'src/interfaces/access.interface';
 
 export interface IAccessRepositoryMock {
   activity: jest.Mocked<IAccessRepository['activity']>;
