@@ -14,7 +14,7 @@ import { createHash } from 'node:crypto';
 import fs, { createReadStream } from 'node:fs';
 import { access, constants, stat, unlink } from 'node:fs/promises';
 import os from 'node:os';
-import { basename } from 'node:path';
+import path, { basename } from 'node:path';
 import { CrawlService } from 'src/services/crawl.service';
 import { BaseOptions, authenticate } from 'src/utils';
 
@@ -61,13 +61,34 @@ class Asset {
       throw new Error('File modified at not set');
     }
 
-    // TODO: doesn't xmp replace the file extension? Will need investigation
-    const sideCarPath = `${this.path}.xmp`;
+    // XMP sidecars can come in two filename formats. For a photo named photo.ext, the filenames are photo.ext.xmp and photo.xmp
+    const assetPath = path.parse(this.path);
+    const assetPathWithoutExt = path.join(assetPath.dir, assetPath.name);
+    const sidecarPathWithoutExt = `${assetPathWithoutExt}.xmp`;
+    const sideCarPathWithExt = `${this.path}.xmp`;
+
+    const [sideCarWithExtExists, sideCarWithoutExtExists] = await Promise.all([
+      access(sideCarPathWithExt, constants.R_OK)
+        .then(() => true)
+        .catch(() => false),
+      access(sidecarPathWithoutExt, constants.R_OK)
+        .then(() => true)
+        .catch(() => false),
+    ]);
+
+    let sidecarPath = undefined;
+    if (sideCarWithExtExists) {
+      sidecarPath = sideCarPathWithExt;
+    } else if (sideCarWithoutExtExists) {
+      sidecarPath = sidecarPathWithoutExt;
+    }
+
     let sidecarData: Blob | undefined = undefined;
-    try {
-      await access(sideCarPath, constants.R_OK);
-      sidecarData = new File([await fs.openAsBlob(sideCarPath)], basename(sideCarPath));
-    } catch {}
+    if (sidecarPath) {
+      try {
+        sidecarData = new File([await fs.openAsBlob(sidecarPath)], basename(sidecarPath));
+      } catch {}
+    }
 
     const data: any = {
       assetData: new File([await fs.openAsBlob(this.path)], basename(this.path)),
