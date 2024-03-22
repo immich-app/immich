@@ -277,12 +277,23 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
       );
       return;
     }
-    final index = widget.renderList.elements.indexWhere(
+
+    // Search for the index of the exact date in the list
+    var index = widget.renderList.elements.indexWhere(
       (e) =>
           e.date.year == date.year &&
           e.date.month == date.month &&
           e.date.day == date.day,
     );
+
+    // If the exact date is not found, the timeline is grouped by month,
+    // thus we search for the month
+    if (index == -1) {
+      index = widget.renderList.elements.indexWhere(
+        (e) => e.date.year == date.year && e.date.month == date.month,
+      );
+    }
+
     if (index != -1 && index < widget.renderList.elements.length) {
       // Not sure why the index is shifted, but it works. :3
       _scrollToIndex(index + 1);
@@ -290,7 +301,7 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
       ImmichToast.show(
         context: context,
         msg:
-            "Scroll To Date (${DateFormat.yMd().format(date)}) failed, index out of bounds. Index: $index, List length: ${widget.renderList.elements.length}",
+            "The date (${DateFormat.yMd().format(date)}) could not be found in the timeline.",
         gravity: ToastGravity.BOTTOM,
         toastType: ToastType.error,
       );
