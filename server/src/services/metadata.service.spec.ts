@@ -8,9 +8,9 @@ import { ExifEntity } from 'src/entities/exif.entity';
 import { SystemConfigKey } from 'src/entities/system-config.entity';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
-import { ClientEvent, ICommunicationRepository } from 'src/interfaces/communication.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IDatabaseRepository } from 'src/interfaces/database.interface';
+import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
 import { IMediaRepository } from 'src/interfaces/media.interface';
 import { IMetadataRepository, ImmichTags } from 'src/interfaces/metadata.interface';
@@ -24,9 +24,9 @@ import { fileStub } from 'test/fixtures/file.stub';
 import { probeStub } from 'test/fixtures/media.stub';
 import { newAlbumRepositoryMock } from 'test/repositories/album.repository.mock';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
-import { newCommunicationRepositoryMock } from 'test/repositories/communication.repository.mock';
 import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
 import { newDatabaseRepositoryMock } from 'test/repositories/database.repository.mock';
+import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
 import { newMediaRepositoryMock } from 'test/repositories/media.repository.mock';
 import { newMetadataRepositoryMock } from 'test/repositories/metadata.repository.mock';
@@ -46,7 +46,7 @@ describe(MetadataService.name, () => {
   let mediaMock: jest.Mocked<IMediaRepository>;
   let personMock: jest.Mocked<IPersonRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
-  let communicationMock: jest.Mocked<ICommunicationRepository>;
+  let eventMock: jest.Mocked<IEventRepository>;
   let databaseMock: jest.Mocked<IDatabaseRepository>;
   let sut: MetadataService;
 
@@ -59,7 +59,7 @@ describe(MetadataService.name, () => {
     metadataMock = newMetadataRepositoryMock();
     moveMock = newMoveRepositoryMock();
     personMock = newPersonRepositoryMock();
-    communicationMock = newCommunicationRepositoryMock();
+    eventMock = newEventRepositoryMock();
     storageMock = newStorageRepositoryMock();
     mediaMock = newMediaRepositoryMock();
     databaseMock = newDatabaseRepositoryMock();
@@ -67,7 +67,7 @@ describe(MetadataService.name, () => {
     sut = new MetadataService(
       albumMock,
       assetMock,
-      communicationMock,
+      eventMock,
       cryptoRepository,
       databaseMock,
       jobMock,
@@ -195,7 +195,7 @@ describe(MetadataService.name, () => {
       await expect(sut.handleLivePhotoLinking({ id: assetStub.livePhotoStillAsset.id })).resolves.toBe(
         JobStatus.SUCCESS,
       );
-      expect(communicationMock.send).toHaveBeenCalledWith(
+      expect(eventMock.clientSend).toHaveBeenCalledWith(
         ClientEvent.ASSET_HIDDEN,
         assetStub.livePhotoMotionAsset.ownerId,
         assetStub.livePhotoMotionAsset.id,

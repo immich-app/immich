@@ -1,13 +1,13 @@
 import { serverVersion } from 'src/constants';
 import { SystemMetadataKey } from 'src/entities/system-metadata.entity';
-import { ICommunicationRepository } from 'src/interfaces/communication.interface';
+import { IEventRepository } from 'src/interfaces/event.interface';
 import { IServerInfoRepository } from 'src/interfaces/server-info.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { ServerInfoService } from 'src/services/server-info.service';
-import { newCommunicationRepositoryMock } from 'test/repositories/communication.repository.mock';
+import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
 import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
 import { newServerInfoRepositoryMock } from 'test/repositories/system-info.repository.mock';
@@ -16,7 +16,7 @@ import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
 
 describe(ServerInfoService.name, () => {
   let sut: ServerInfoService;
-  let communicationMock: jest.Mocked<ICommunicationRepository>;
+  let eventMock: jest.Mocked<IEventRepository>;
   let configMock: jest.Mocked<ISystemConfigRepository>;
   let serverInfoMock: jest.Mocked<IServerInfoRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
@@ -25,20 +25,13 @@ describe(ServerInfoService.name, () => {
 
   beforeEach(() => {
     configMock = newSystemConfigRepositoryMock();
-    communicationMock = newCommunicationRepositoryMock();
+    eventMock = newEventRepositoryMock();
     serverInfoMock = newServerInfoRepositoryMock();
     storageMock = newStorageRepositoryMock();
     userMock = newUserRepositoryMock();
     systemMetadataMock = newSystemMetadataRepositoryMock();
 
-    sut = new ServerInfoService(
-      communicationMock,
-      configMock,
-      userMock,
-      serverInfoMock,
-      storageMock,
-      systemMetadataMock,
-    );
+    sut = new ServerInfoService(eventMock, configMock, userMock, serverInfoMock, storageMock, systemMetadataMock);
   });
 
   it('should work', () => {

@@ -2,7 +2,7 @@ import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { ReleaseNotification, ServerVersionResponseDto } from 'src/dtos/server-info.dto';
 import { SystemConfig } from 'src/entities/system-config.entity';
 
-export const ICommunicationRepository = 'ICommunicationRepository';
+export const IEventRepository = 'IEventRepository';
 
 export enum ClientEvent {
   UPLOAD_SUCCESS = 'on_upload_success',
@@ -17,18 +17,6 @@ export enum ClientEvent {
   SERVER_VERSION = 'on_server_version',
   CONFIG_UPDATE = 'on_config_update',
   NEW_RELEASE = 'on_new_release',
-}
-
-export enum ServerEvent {
-  CONFIG_UPDATE = 'config:update',
-}
-
-export enum InternalEvent {
-  VALIDATE_CONFIG = 'validate_config',
-}
-
-export interface InternalEventMap {
-  [InternalEvent.VALIDATE_CONFIG]: { newConfig: SystemConfig; oldConfig: SystemConfig };
 }
 
 export interface ClientEventMap {
@@ -46,15 +34,39 @@ export interface ClientEventMap {
   [ClientEvent.NEW_RELEASE]: ReleaseNotification;
 }
 
-export type OnConnectCallback = (userId: string) => void | Promise<void>;
-export type OnServerEventCallback = () => Promise<void>;
+export enum ServerEvent {
+  CONFIG_UPDATE = 'config.update',
+  WEBSOCKET_CONNECT = 'websocket.connect',
+}
 
-export interface ICommunicationRepository {
-  send<E extends keyof ClientEventMap>(event: E, userId: string, data: ClientEventMap[E]): void;
-  broadcast<E extends keyof ClientEventMap>(event: E, data: ClientEventMap[E]): void;
-  on(event: 'connect', callback: OnConnectCallback): void;
-  on(event: ServerEvent, callback: OnServerEventCallback): void;
-  sendServerEvent(event: ServerEvent): void;
-  emit<E extends keyof InternalEventMap>(event: E, data: InternalEventMap[E]): boolean;
-  emitAsync<E extends keyof InternalEventMap>(event: E, data: InternalEventMap[E]): Promise<any>;
+export interface ServerEventMap {
+  [ServerEvent.CONFIG_UPDATE]: null;
+  [ServerEvent.WEBSOCKET_CONNECT]: { userId: string };
+}
+
+export enum ServerAsyncEvent {
+  CONFIG_VALIDATE = 'config.validate',
+}
+
+export interface ServerAsyncEventMap {
+  [ServerAsyncEvent.CONFIG_VALIDATE]: { newConfig: SystemConfig; oldConfig: SystemConfig };
+}
+
+export interface IEventRepository {
+  /**
+   * Send to connected clients for a specific user
+   */
+  clientSend<E extends keyof ClientEventMap>(event: E, userId: string, data: ClientEventMap[E]): void;
+  /**
+   * Send to all connected clients
+   */
+  clientBroadcast<E extends keyof ClientEventMap>(event: E, data: ClientEventMap[E]): void;
+  /**
+   * Notify listeners in this and connected processes. Subscribe to an event with `@OnServerEvent`
+   */
+  serverSend<E extends keyof ServerEventMap>(event: E, data: ServerEventMap[E]): boolean;
+  /**
+   * Notify and wait for responses from listeners in this process. Subscribe to an event with `@OnServerEvent`
+   */
+  serverSendAsync<E extends keyof ServerAsyncEventMap>(event: E, data: ServerAsyncEventMap[E]): Promise<any>;
 }
