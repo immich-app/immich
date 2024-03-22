@@ -20,7 +20,7 @@
   import { AppRoute, QueryParameter } from '$lib/constants';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { preventRaceConditionSearchBar } from '$lib/stores/search.store';
-  import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
+  import { shortcut } from '$lib/utils/shortcut';
   import {
     type AssetResponseDto,
     searchSmart,
@@ -37,6 +37,8 @@
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { parseUtcDate } from '$lib/utils/date-time';
+  import { featureFlags } from '$lib/stores/server-config.store';
+  import { handleError } from '$lib/utils/handle-error';
 
   const MAX_ASSET_COUNT = 5000;
   let { isViewing: showAssetViewer } = assetViewingStore;
@@ -52,27 +54,19 @@
   let searchResultAssets: AssetResponseDto[] = [];
   let isLoading = true;
 
-  const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
-
-  const handleKeyboardPress = async (event: KeyboardEvent) => {
-    if (shouldIgnoreShortcut(event)) {
+  const onEscape = () => {
+    if ($showAssetViewer) {
       return;
     }
-    if (!$showAssetViewer) {
-      switch (event.key) {
-        case 'Escape': {
-          if (isMultiSelectionMode) {
-            selectedAssets = new Set();
-            return;
-          }
-          if (!$preventRaceConditionSearchBar) {
-            await goto(previousRoute);
-          }
-          $preventRaceConditionSearchBar = false;
-          return;
-        }
-      }
+
+    if (isMultiSelectionMode) {
+      selectedAssets = new Set();
+      return;
     }
+    if (!$preventRaceConditionSearchBar) {
+      handlePromiseError(goto(previousRoute));
+    }
+    $preventRaceConditionSearchBar = false;
   };
 
   afterNavigate(({ from }) => {
@@ -106,11 +100,12 @@
   type SearchTerms = MetadataSearchDto & Pick<SmartSearchDto, 'query'>;
 
   $: searchQuery = $page.url.searchParams.get(QueryParameter.QUERY);
-  $: terms = ((): SearchTerms => {
-    return searchQuery ? JSON.parse(searchQuery) : {};
-  })();
+  let terms: SearchTerms;
+  $: terms = searchQuery ? JSON.parse(searchQuery) : {};
 
-  $: terms, handlePromiseError(onSearchQueryUpdate());
+  $: if (terms && $featureFlags.loaded) {
+    handlePromiseError(onSearchQueryUpdate());
+  }
 
   async function onSearchQueryUpdate() {
     nextPage = 1;
@@ -132,18 +127,23 @@
       ...terms,
     };
 
-    const { albums, assets } =
-      'query' in searchDto
-        ? await searchSmart({ smartSearchDto: searchDto })
-        : await searchMetadata({ metadataSearchDto: searchDto });
+    try {
+      const { albums, assets } =
+        'query' in searchDto && $featureFlags.smartSearch
+          ? await searchSmart({ smartSearchDto: searchDto })
+          : await searchMetadata({ metadataSearchDto: searchDto });
 
-    searchResultAlbums.push(...albums.items);
-    searchResultAssets.push(...assets.items);
-    searchResultAlbums = searchResultAlbums;
-    searchResultAssets = searchResultAssets;
+      searchResultAlbums.push(...albums.items);
+      searchResultAssets.push(...assets.items);
+      searchResultAlbums = searchResultAlbums;
+      searchResultAssets = searchResultAssets;
 
-    nextPage = assets.nextPage ? Number(assets.nextPage) : null;
-    isLoading = false;
+      nextPage = assets.nextPage ? Number(assets.nextPage) : null;
+    } catch (error) {
+      handleError(error, 'Loading search results failed');
+    } finally {
+      isLoading = false;
+    }
   };
 
   function getHumanReadableDate(dateString: string) {
@@ -201,7 +201,7 @@
   }
 </script>
 
-<svelte:document on:keydown={onKeyboardPress} />
+<svelte:window use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: onEscape }} />
 
 <section>
   {#if isMultiSelectionMode}
@@ -209,18 +209,18 @@
       <AssetSelectControlBar assets={selectedAssets} clearSelect={() => (selectedAssets = new Set())}>
         <CreateSharedLink />
         <CircleIconButton title="Select all" icon={mdiSelectAll} on:click={handleSelectAll} />
-        <AssetSelectContextMenu icon={mdiPlus} title="Add">
+        <AssetSelectContextMenu icon={mdiPlus} title="Add to...">
           <AddToAlbum />
           <AddToAlbum shared />
         </AssetSelectContextMenu>
-        <DeleteAssets {onAssetDelete} />
+        <FavoriteAction removeFavorite={isAllFavorite} onFavorite={triggerAssetUpdate} />
 
         <AssetSelectContextMenu icon={mdiDotsVertical} title="Add">
           <DownloadAction menuItem />
-          <FavoriteAction menuItem removeFavorite={isAllFavorite} onFavorite={triggerAssetUpdate} />
-          <ArchiveAction menuItem unarchive={isAllArchived} onArchive={triggerAssetUpdate} />
           <ChangeDate menuItem />
           <ChangeLocation menuItem />
+          <ArchiveAction menuItem unarchive={isAllArchived} onArchive={triggerAssetUpdate} />
+          <DeleteAssets menuItem {onAssetDelete} />
         </AssetSelectContextMenu>
       </AssetSelectControlBar>
     </div>
@@ -275,16 +275,10 @@
     {#if searchResultAlbums.length > 0}
       <section>
         <div class="ml-6 text-4xl font-medium text-black/70 dark:text-white/80">ALBUMS</div>
-        <div class="grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))]">
+        <div class="grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))] mt-4 gap-y-4">
           {#each searchResultAlbums as album, index (album.id)}
             <a data-sveltekit-preload-data="hover" href={`albums/${album.id}`} animate:flip={{ duration: 200 }}>
-              <AlbumCard
-                preload={index < 20}
-                {album}
-                isSharingView={false}
-                showItemCount={false}
-                showContextMenu={false}
-              />
+              <AlbumCard preload={index < 20} {album} isSharingView={false} showItemCount={false} />
             </a>
           {/each}
         </div>

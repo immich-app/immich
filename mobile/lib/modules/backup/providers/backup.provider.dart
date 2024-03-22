@@ -20,6 +20,7 @@ import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/providers/app_state.provider.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/services/server_info.service.dart';
+import 'package:immich_mobile/utils/backup_progress.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
@@ -40,6 +41,11 @@ class BackupNotifier extends StateNotifier<BackUpState> {
             backupProgress: BackUpProgressEnum.idle,
             allAssetsInDatabase: const [],
             progressInPercentage: 0,
+            progressInFileSize: "0 B / 0 B",
+            progressInFileSpeed: 0,
+            progressInFileSpeeds: const [],
+            progressInFileSpeedUpdateTime: DateTime.now(),
+            progressInFileSpeedUpdateSentBytes: 0,
             cancelToken: CancellationToken(),
             autoBackup: Store.get(StoreKey.autoBackup, false),
             backgroundBackup: Store.get(StoreKey.backgroundBackup, false),
@@ -63,6 +69,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
               fileCreatedAt: DateTime.parse('2020-10-04'),
               fileName: '...',
               fileType: '...',
+              fileSize: 0,
               iCloudAsset: false,
             ),
             iCloudDownloadProgress: 0.0,
@@ -227,33 +234,9 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     for (AssetPathEntity album in albums) {
       AvailableAlbum availableAlbum = AvailableAlbum(albumEntity: album);
 
-      final assetCountInAlbum = await album.assetCountAsync;
-      if (assetCountInAlbum > 0) {
-        final assetList = await album.getAssetListPaged(page: 0, size: 1);
+      availableAlbums.add(availableAlbum);
 
-        // Even though we check assetCountInAlbum to make sure that there are assets in album
-        // The `getAssetListPaged` method still return empty list and cause not assets get rendered
-        if (assetList.isEmpty) {
-          continue;
-        }
-        final thumbnailAsset = assetList.first;
-        try {
-          final thumbnailData = await thumbnailAsset
-              .thumbnailDataWithSize(const ThumbnailSize(512, 512));
-          availableAlbum =
-              availableAlbum.copyWith(thumbnailData: thumbnailData);
-        } catch (e, stack) {
-          log.severe(
-            "Failed to get thumbnail for album ${album.name}",
-            e,
-            stack,
-          );
-        }
-
-        availableAlbums.add(availableAlbum);
-
-        albumMap[album.id] = album;
-      }
+      albumMap[album.id] = album;
     }
     state = state.copyWith(availableAlbums: availableAlbums);
 
@@ -495,6 +478,10 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     state = state.copyWith(
       backupProgress: BackUpProgressEnum.idle,
       progressInPercentage: 0.0,
+      progressInFileSize: "0 B / 0 B",
+      progressInFileSpeed: 0,
+      progressInFileSpeedUpdateTime: DateTime.now(),
+      progressInFileSpeedUpdateSentBytes: 0,
     );
   }
 
@@ -535,6 +522,10 @@ class BackupNotifier extends StateNotifier<BackUpState> {
             .toSet(),
         backupProgress: BackUpProgressEnum.done,
         progressInPercentage: 0.0,
+        progressInFileSize: "0 B / 0 B",
+        progressInFileSpeed: 0,
+        progressInFileSpeedUpdateTime: DateTime.now(),
+        progressInFileSpeedUpdateSentBytes: 0,
       );
       _updatePersistentAlbumsSelection();
     }
@@ -543,8 +534,36 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   }
 
   void _onUploadProgress(int sent, int total) {
+    double lastUploadSpeed = state.progressInFileSpeed;
+    List<double> lastUploadSpeeds = state.progressInFileSpeeds.toList();
+    DateTime lastUpdateTime = state.progressInFileSpeedUpdateTime;
+    int lastSentBytes = state.progressInFileSpeedUpdateSentBytes;
+
+    final now = DateTime.now();
+    final duration = now.difference(lastUpdateTime);
+
+    // Keep the upload speed average span limited, to keep it somewhat relevant
+    if (lastUploadSpeeds.length > 10) {
+      lastUploadSpeeds.removeAt(0);
+    }
+
+    if (duration.inSeconds > 0) {
+      lastUploadSpeeds.add(
+        ((sent - lastSentBytes) / duration.inSeconds).abs().roundToDouble(),
+      );
+
+      lastUploadSpeed = lastUploadSpeeds.average.abs().roundToDouble();
+      lastUpdateTime = now;
+      lastSentBytes = sent;
+    }
+
     state = state.copyWith(
       progressInPercentage: (sent.toDouble() / total.toDouble() * 100),
+      progressInFileSize: humanReadableFileBytesProgress(sent, total),
+      progressInFileSpeed: lastUploadSpeed,
+      progressInFileSpeeds: lastUploadSpeeds,
+      progressInFileSpeedUpdateTime: lastUpdateTime,
+      progressInFileSpeedUpdateSentBytes: lastSentBytes,
     );
   }
 

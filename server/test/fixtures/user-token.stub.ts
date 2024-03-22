@@ -1,5 +1,5 @@
-import { UserTokenEntity } from '@app/infra/entities';
-import { userStub } from './user.stub';
+import { UserTokenEntity } from 'src/entities/user-token.entity';
+import { userStub } from 'test/fixtures/user.stub';
 
 export const userTokenStub = {
   userToken: Object.freeze<UserTokenEntity>({

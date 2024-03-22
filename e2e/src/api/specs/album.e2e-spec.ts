@@ -1,6 +1,7 @@
 import {
   AlbumResponseDto,
   AssetFileUploadResponseDto,
+  AssetOrder,
   LoginResponseDto,
   SharedLinkType,
   deleteUser,
@@ -92,7 +93,7 @@ describe('/album', () => {
       }),
     ]);
 
-    await deleteUser({ id: user3.userId }, { headers: asBearerAuth(admin.accessToken) });
+    await deleteUser({ id: user3.userId, deleteUserDto: {} }, { headers: asBearerAuth(admin.accessToken) });
   });
 
   describe('GET /album', () => {
@@ -353,6 +354,7 @@ describe('/album', () => {
         assetCount: 0,
         owner: expect.objectContaining({ email: user1.userEmail }),
         isActivityEnabled: true,
+        order: AssetOrder.Desc,
       });
     });
   });

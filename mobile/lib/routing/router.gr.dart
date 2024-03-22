@@ -305,6 +305,16 @@ abstract class _$AppRouter extends RootStackRouter {
         child: const SettingsPage(),
       );
     },
+    SettingsSubRoute.name: (routeData) {
+      final args = routeData.argsAs<SettingsSubRouteArgs>();
+      return AutoRoutePage<dynamic>(
+        routeData: routeData,
+        child: SettingsSubPage(
+          args.section,
+          key: args.key,
+        ),
+      );
+    },
     SharedLinkEditRoute.name: (routeData) {
       final args = routeData.argsAs<SharedLinkEditRouteArgs>(
           orElse: () => const SharedLinkEditRouteArgs());
@@ -1278,6 +1288,44 @@ class SettingsRoute extends PageRouteInfo<void> {
   static const String name = 'SettingsRoute';
 
   static const PageInfo<void> page = PageInfo<void>(name);
+}
+
+/// generated route for
+/// [SettingsSubPage]
+class SettingsSubRoute extends PageRouteInfo<SettingsSubRouteArgs> {
+  SettingsSubRoute({
+    required SettingSection section,
+    Key? key,
+    List<PageRouteInfo>? children,
+  }) : super(
+          SettingsSubRoute.name,
+          args: SettingsSubRouteArgs(
+            section: section,
+            key: key,
+          ),
+          initialChildren: children,
+        );
+
+  static const String name = 'SettingsSubRoute';
+
+  static const PageInfo<SettingsSubRouteArgs> page =
+      PageInfo<SettingsSubRouteArgs>(name);
+}
+
+class SettingsSubRouteArgs {
+  const SettingsSubRouteArgs({
+    required this.section,
+    this.key,
+  });
+
+  final SettingSection section;
+
+  final Key? key;
+
+  @override
+  String toString() {
+    return 'SettingsSubRouteArgs{section: $section, key: $key}';
+  }
 }
 
 /// generated route for

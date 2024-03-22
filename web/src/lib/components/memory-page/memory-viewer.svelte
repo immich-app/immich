@@ -9,6 +9,7 @@
   import type { Viewport } from '$lib/stores/assets.store';
   import { memoryStore } from '$lib/stores/memory.store';
   import { getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
+  import { shortcuts } from '$lib/utils/shortcut';
   import { fromLocalDateTime } from '$lib/utils/timeline-util';
   import { ThumbnailFormat, getMemoryLane } from '@immich/sdk';
   import { mdiChevronDown, mdiChevronLeft, mdiChevronRight, mdiChevronUp, mdiPause, mdiPlay } from '@mdi/js';
@@ -73,19 +74,6 @@
   // Progress should be reset when the current memory or asset changes.
   $: memoryIndex, assetIndex, handlePromiseError(reset());
 
-  const handleKeyDown = async (e: KeyboardEvent) => {
-    if (e.key === 'ArrowRight' && canGoForward) {
-      e.preventDefault();
-      await toNext();
-    } else if (e.key === 'ArrowLeft' && canGoBack) {
-      e.preventDefault();
-      await toPrevious();
-    } else if (e.key === 'Escape') {
-      e.preventDefault();
-      await goto(AppRoute.PHOTOS);
-    }
-  };
-
   onMount(async () => {
     if (!$memoryStore) {
       const localTime = new Date();
@@ -101,7 +89,13 @@
   let galleryInView = false;
 </script>
 
-<svelte:window on:keydown={handleKeyDown} />
+<svelte:window
+  use:shortcuts={[
+    { shortcut: { key: 'ArrowRight' }, onShortcut: () => canGoForward && toNext() },
+    { shortcut: { key: 'ArrowLeft' }, onShortcut: () => canGoBack && toPrevious() },
+    { shortcut: { key: 'Escape' }, onShortcut: () => goto(AppRoute.PHOTOS) },
+  ]}
+/>
 
 <section id="memory-viewer" class="w-full bg-immich-dark-gray" bind:this={memoryWrapper}>
   {#if currentMemory}
@@ -112,7 +106,7 @@
         </p>
       </svelte:fragment>
 
-      {#if !galleryInView}
+      {#if canGoForward}
         <div class="flex place-content-center place-items-center gap-2 overflow-hidden">
           <CircleIconButton icon={paused ? mdiPlay : mdiPause} forceDark on:click={() => (paused = !paused)} />
 
@@ -268,7 +262,7 @@
       </div>
     </section>
 
-    <!-- GALERY VIEWER -->
+    <!-- GALLERY VIEWER -->
 
     <section class="bg-immich-dark-gray m-4">
       <div

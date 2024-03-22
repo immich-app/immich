@@ -42,7 +42,6 @@ class ImmichImage extends StatelessWidget {
     if (asset == null) {
       return ImmichRemoteImageProvider(
         assetId: assetId!,
-        isThumbnail: false,
       );
     }
 
@@ -53,7 +52,6 @@ class ImmichImage extends StatelessWidget {
     } else {
       return ImmichRemoteImageProvider(
         assetId: asset.remoteId!,
-        isThumbnail: false,
       );
     }
   }

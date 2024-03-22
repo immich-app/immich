@@ -44,9 +44,19 @@
     type AssetResponseDto,
     type PersonResponseDto,
   } from '@immich/sdk';
-  import { mdiArrowLeft, mdiDotsVertical, mdiPlus } from '@mdi/js';
+  import {
+    mdiAccountBoxOutline,
+    mdiAccountMultipleCheckOutline,
+    mdiArrowLeft,
+    mdiCalendarEditOutline,
+    mdiDotsVertical,
+    mdiEyeOffOutline,
+    mdiEyeOutline,
+    mdiPlus,
+  } from '@mdi/js';
   import { onMount } from 'svelte';
   import type { PageData } from './$types';
+  import { listNavigation } from '$lib/utils/list-navigation';
 
   export let data: PageData;
 
@@ -95,8 +105,7 @@
    **/
   let searchWord: string;
   let isSearchingPeople = false;
-  let focusedElements: (HTMLButtonElement | null)[] = Array.from({ length: maximumLengthSearchPeople }, () => null);
-  let indexFocus: number | null = null;
+  let suggestionContainer: HTMLDivElement;
 
   const searchPeople = async () => {
     if ((people.length < maximumLengthSearchPeople && name.startsWith(searchWord)) || name === '') {
@@ -122,7 +131,6 @@
   $: {
     if (people) {
       suggestedPeople = name ? searchNameLocal(name, people, 5, data.person.id) : [];
-      indexFocus = null;
     }
   }
 
@@ -142,48 +150,6 @@
       }
     });
   });
-
-  const handleKeyboardPress = (event: KeyboardEvent) => {
-    if (suggestedPeople.length === 0) {
-      return;
-    }
-    if (!$showAssetViewer) {
-      event.stopPropagation();
-      switch (event.key) {
-        case 'ArrowDown': {
-          event.preventDefault();
-          if (indexFocus === null) {
-            indexFocus = 0;
-          } else if (indexFocus === suggestedPeople.length - 1) {
-            indexFocus = 0;
-          } else {
-            indexFocus++;
-          }
-          focusedElements[indexFocus]?.focus();
-          return;
-        }
-        case 'ArrowUp': {
-          if (indexFocus === null) {
-            indexFocus = 0;
-            return;
-          }
-          if (indexFocus === 0) {
-            indexFocus = suggestedPeople.length - 1;
-          } else {
-            indexFocus--;
-          }
-          focusedElements[indexFocus]?.focus();
-
-          return;
-        }
-        case 'Enter': {
-          if (indexFocus !== null) {
-            handleSuggestPeople(suggestedPeople[indexFocus]);
-          }
-        }
-      }
-    }
-  };
 
   const handleEscape = async () => {
     if ($showAssetViewer || viewMode === ViewMode.SUGGEST_MERGE) {
@@ -401,7 +367,6 @@
   };
 </script>
 
-<svelte:document on:keydown={handleKeyboardPress} />
 {#if viewMode === ViewMode.UNASSIGN_ASSETS}
   <UnMergeFaceSelector
     assetIds={[...$selectedAssets].map((a) => a.id)}
@@ -439,18 +404,18 @@
     <AssetSelectControlBar assets={$selectedAssets} clearSelect={() => assetInteractionStore.clearMultiselect()}>
       <CreateSharedLink />
       <SelectAllAssets {assetStore} {assetInteractionStore} />
-      <AssetSelectContextMenu icon={mdiPlus} title="Add">
+      <AssetSelectContextMenu icon={mdiPlus} title="Add to...">
         <AddToAlbum />
         <AddToAlbum shared />
       </AssetSelectContextMenu>
-      <DeleteAssets onAssetDelete={(assetIds) => $assetStore.removeAssets(assetIds)} />
+      <FavoriteAction removeFavorite={isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
       <AssetSelectContextMenu icon={mdiDotsVertical} title="Add">
         <DownloadAction menuItem filename="{data.person.name || 'immich'}.zip" />
-        <FavoriteAction menuItem removeFavorite={isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
-        <ArchiveAction menuItem unarchive={isAllArchive} onArchive={(assetIds) => $assetStore.removeAssets(assetIds)} />
-        <MenuOption text="Fix incorrect match" on:click={handleReassignAssets} />
+        <MenuOption icon={mdiAccountMultipleCheckOutline} text="Fix incorrect match" on:click={handleReassignAssets} />
         <ChangeDate menuItem />
         <ChangeLocation menuItem />
+        <ArchiveAction menuItem unarchive={isAllArchive} onArchive={(assetIds) => $assetStore.removeAssets(assetIds)} />
+        <DeleteAssets menuItem onAssetDelete={(assetIds) => $assetStore.removeAssets(assetIds)} />
       </AssetSelectContextMenu>
     </AssetSelectControlBar>
   {:else}
@@ -458,12 +423,25 @@
       <ControlAppBar showBackButton backIcon={mdiArrowLeft} on:close={() => goto(previousRoute)}>
         <svelte:fragment slot="trailing">
           <AssetSelectContextMenu icon={mdiDotsVertical} title="Menu">
-            <MenuOption text="Change feature photo" on:click={() => (viewMode = ViewMode.SELECT_PERSON)} />
-            <MenuOption text="Set date of birth" on:click={() => (viewMode = ViewMode.BIRTH_DATE)} />
-            <MenuOption text="Merge person" on:click={() => (viewMode = ViewMode.MERGE_PEOPLE)} />
+            <MenuOption
+              text="Select featured photo"
+              icon={mdiAccountBoxOutline}
+              on:click={() => (viewMode = ViewMode.SELECT_PERSON)}
+            />
             <MenuOption
               text={data.person.isHidden ? 'Unhide person' : 'Hide person'}
+              icon={data.person.isHidden ? mdiEyeOutline : mdiEyeOffOutline}
               on:click={() => toggleHidePerson()}
+            />
+            <MenuOption
+              text="Set date of birth"
+              icon={mdiCalendarEditOutline}
+              on:click={() => (viewMode = ViewMode.BIRTH_DATE)}
+            />
+            <MenuOption
+              text="Merge people"
+              icon={mdiAccountMultipleCheckOutline}
+              on:click={() => (viewMode = ViewMode.MERGE_PEOPLE)}
             />
           </AssetSelectContextMenu>
         </svelte:fragment>
@@ -472,13 +450,13 @@
 
     {#if viewMode === ViewMode.SELECT_PERSON}
       <ControlAppBar on:close={() => (viewMode = ViewMode.VIEW_ASSETS)}>
-        <svelte:fragment slot="leading">Select feature photo</svelte:fragment>
+        <svelte:fragment slot="leading">Select featured photo</svelte:fragment>
       </ControlAppBar>
     {/if}
   {/if}
 </header>
 
-<main class="relative h-screen overflow-hidden bg-immich-bg pt-[var(--navbar-height)] dark:bg-immich-dark-bg">
+<main class="relative h-screen overflow-hidden bg-immich-bg tall:ml-4 pt-[var(--navbar-height)] dark:bg-immich-dark-bg">
   {#key refreshAssetGrid}
     <AssetGrid
       {assetStore}
@@ -491,11 +469,12 @@
       {#if viewMode === ViewMode.VIEW_ASSETS || viewMode === ViewMode.SUGGEST_MERGE || viewMode === ViewMode.BIRTH_DATE}
         <!-- Person information block -->
         <div
-          role="button"
           class="relative w-fit p-4 sm:px-6"
-          use:clickOutside
-          on:outclick={handleCancelEditName}
-          on:escape={handleCancelEditName}
+          use:clickOutside={{
+            onOutclick: handleCancelEditName,
+            onEscape: handleCancelEditName,
+          }}
+          use:listNavigation={suggestionContainer}
         >
           <section class="flex w-64 sm:w-96 place-items-center border-black">
             {#if isEditingName}
@@ -550,26 +529,27 @@
                   </div>
                 </div>
               {:else}
-                {#each suggestedPeople as person, index (person.id)}
-                  <button
-                    bind:this={focusedElements[index]}
-                    class="flex w-full border-t border-gray-400 dark:border-immich-dark-gray h-14 place-items-center bg-gray-200 p-2 dark:bg-gray-700 hover:bg-gray-300 hover:dark:bg-[#232932] focus:bg-gray-300 focus:dark:bg-[#232932] {index ===
-                    suggestedPeople.length - 1
-                      ? 'rounded-b-lg border-b'
-                      : ''}"
-                    on:click={() => handleSuggestPeople(person)}
-                  >
-                    <ImageThumbnail
-                      circle
-                      shadow
-                      url={getPeopleThumbnailUrl(person.id)}
-                      altText={person.name}
-                      widthStyle="2rem"
-                      heightStyle="2rem"
-                    />
-                    <p class="ml-4 text-gray-700 dark:text-gray-100">{person.name}</p>
-                  </button>
-                {/each}
+                <div bind:this={suggestionContainer}>
+                  {#each suggestedPeople as person, index (person.id)}
+                    <button
+                      class="flex w-full border-t border-gray-400 dark:border-immich-dark-gray h-14 place-items-center bg-gray-200 p-2 dark:bg-gray-700 hover:bg-gray-300 hover:dark:bg-[#232932] focus:bg-gray-300 focus:dark:bg-[#232932] {index ===
+                      suggestedPeople.length - 1
+                        ? 'rounded-b-lg border-b'
+                        : ''}"
+                      on:click={() => handleSuggestPeople(person)}
+                    >
+                      <ImageThumbnail
+                        circle
+                        shadow
+                        url={getPeopleThumbnailUrl(person.id)}
+                        altText={person.name}
+                        widthStyle="2rem"
+                        heightStyle="2rem"
+                      />
+                      <p class="ml-4 text-gray-700 dark:text-gray-100">{person.name}</p>
+                    </button>
+                  {/each}
+                </div>
               {/if}
             </div>
           {/if}

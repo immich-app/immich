@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.98.1
+ * 1.99.0
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -153,6 +153,7 @@ export type AlbumResponseDto = {
     id: string;
     isActivityEnabled: boolean;
     lastModifiedAssetTimestamp?: string;
+    order?: AssetOrder;
     owner: UserResponseDto;
     ownerId: string;
     shared: boolean;
@@ -176,6 +177,7 @@ export type UpdateAlbumDto = {
     albumThumbnailAssetId?: string;
     description?: string;
     isActivityEnabled?: boolean;
+    order?: AssetOrder;
 };
 export type BulkIdsDto = {
     ids: string[];
@@ -464,7 +466,7 @@ export type CreateLibraryDto = {
     isVisible?: boolean;
     isWatched?: boolean;
     name?: string;
-    ownerId?: string;
+    ownerId: string;
     "type": LibraryType;
 };
 export type UpdateLibraryDto = {
@@ -489,7 +491,7 @@ export type ValidateLibraryDto = {
 };
 export type ValidateLibraryImportPathResponseDto = {
     importPath: string;
-    isValid?: boolean;
+    isValid: boolean;
     message?: string;
 };
 export type ValidateLibraryResponseDto = {
@@ -1453,12 +1455,13 @@ export function getAssetThumbnail({ format, id, key }: {
         ...opts
     }));
 }
-export function getTimeBucket({ albumId, isArchived, isFavorite, isTrashed, key, personId, size, timeBucket, userId, withPartners, withStacked }: {
+export function getTimeBucket({ albumId, isArchived, isFavorite, isTrashed, key, order, personId, size, timeBucket, userId, withPartners, withStacked }: {
     albumId?: string;
     isArchived?: boolean;
     isFavorite?: boolean;
     isTrashed?: boolean;
     key?: string;
+    order?: AssetOrder;
     personId?: string;
     size: TimeBucketSize;
     timeBucket: string;
@@ -1475,6 +1478,7 @@ export function getTimeBucket({ albumId, isArchived, isFavorite, isTrashed, key,
         isFavorite,
         isTrashed,
         key,
+        order,
         personId,
         size,
         timeBucket,
@@ -1485,12 +1489,13 @@ export function getTimeBucket({ albumId, isArchived, isFavorite, isTrashed, key,
         ...opts
     }));
 }
-export function getTimeBuckets({ albumId, isArchived, isFavorite, isTrashed, key, personId, size, userId, withPartners, withStacked }: {
+export function getTimeBuckets({ albumId, isArchived, isFavorite, isTrashed, key, order, personId, size, userId, withPartners, withStacked }: {
     albumId?: string;
     isArchived?: boolean;
     isFavorite?: boolean;
     isTrashed?: boolean;
     key?: string;
+    order?: AssetOrder;
     personId?: string;
     size: TimeBucketSize;
     userId?: string;
@@ -1506,6 +1511,7 @@ export function getTimeBuckets({ albumId, isArchived, isFavorite, isTrashed, key
         isFavorite,
         isTrashed,
         key,
+        order,
         personId,
         size,
         userId,
@@ -2198,6 +2204,14 @@ export function search({ clip, motion, page, q, query, recent, size, smart, $typ
         ...opts
     }));
 }
+export function getAssetsByCity(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetResponseDto[];
+    }>("/search/cities", {
+        ...opts
+    }));
+}
 export function getExploreData(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -2210,7 +2224,7 @@ export function searchMetadata({ metadataSearchDto }: {
     metadataSearchDto: MetadataSearchDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
-        status: 201;
+        status: 200;
         data: SearchResponseDto;
     }>("/search/metadata", oazapfts.json({
         ...opts,
@@ -2248,7 +2262,7 @@ export function searchSmart({ smartSearchDto }: {
     smartSearchDto: SmartSearchDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
-        status: 201;
+        status: 200;
         data: SearchResponseDto;
     }>("/search/smart", oazapfts.json({
         ...opts,
@@ -2747,6 +2761,10 @@ export enum AssetTypeEnum {
     Audio = "AUDIO",
     Other = "OTHER"
 }
+export enum AssetOrder {
+    Asc = "asc",
+    Desc = "desc"
+}
 export enum Error {
     Duplicate = "duplicate",
     NoPermission = "no_permission",
@@ -2773,10 +2791,6 @@ export enum ThumbnailFormat {
 export enum TimeBucketSize {
     Day = "DAY",
     Month = "MONTH"
-}
-export enum AssetOrder {
-    Asc = "asc",
-    Desc = "desc"
 }
 export enum EntityType {
     Asset = "ASSET",

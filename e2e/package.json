@@ -1,6 +1,6 @@
 {
   "name": "immich-e2e",
-  "version": "1.98.1",
+  "version": "1.99.0",
   "description": "",
   "main": "index.js",
   "type": "module",
@@ -12,7 +12,8 @@
     "format": "prettier --check .",
     "format:fix": "prettier --write .",
     "lint": "eslint \"src/**/*.ts\" --max-warnings 0",
-    "lint:fix": "npm run lint -- --fix"
+    "lint:fix": "npm run lint -- --fix",
+    "check": "tsc --noEmit"
   },
   "keywords": [],
   "author": "",

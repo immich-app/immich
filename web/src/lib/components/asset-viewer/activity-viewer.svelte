@@ -25,6 +25,7 @@
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import { locale } from '$lib/stores/preferences.store';
+  import { shortcut } from '$lib/utils/shortcut';
 
   const units: Intl.RelativeTimeFormatUnit[] = ['year', 'month', 'week', 'day', 'hour', 'minute', 'second'];
 
@@ -92,14 +93,6 @@
       reactions = await getActivities({ assetId, albumId });
     } catch (error) {
       handleError(error, 'Error when fetching reactions');
-    }
-  };
-
-  const handleEnter = async (event: KeyboardEvent) => {
-    if (event.key === 'Enter') {
-      event.preventDefault();
-      await handleSendComment();
-      return;
     }
   };
 
@@ -295,7 +288,10 @@
               use:autoGrowHeight={'5px'}
               placeholder={disabled ? 'Comments are disabled' : 'Say something'}
               on:input={() => autoGrowHeight(textArea, '5px')}
-              on:keypress={handleEnter}
+              use:shortcut={{
+                shortcut: { key: 'Enter' },
+                onShortcut: () => handleSendComment(),
+              }}
               class="h-[18px] {disabled
                 ? 'cursor-not-allowed'
                 : ''} w-full max-h-56 pr-2 items-center overflow-y-auto leading-4 outline-none resize-none bg-gray-200"

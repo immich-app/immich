@@ -13,12 +13,57 @@ Immich supports multiple users, each with their own library.
 
 <UserCreate />
 
-## Delete a User
+## Set Storage Quota For User
 
-If you need to remove a user from Immich, head to "Administration", where users can be scheduled for deletion. The user account will immediately become disabled and their library and all associated data will be removed after 7 days.
+Admin can specify the storage quota for the user as the instance's admin; once the limit is reached, the user won't be able to upload to the instance anymore.
+
+In order to select a storage quota, click on the pencil icon and enter the storage quota in GiB. You can choose an unlimited quota using the value 0 (default).
+
+:::tip
+The system administrator can see the usage quota percentage of all users in Server Stats page.
+:::
+
+:::info
+External libraries don't take up space from the storage quota.
+:::
+
+<img src={require('./img/user-quota-size.png').default} width="40%" title="Set Quota Size" />
+
+## Set Storage Label For User
+
+The admin can add a custom label for each user, so instead of `upload/{userId}/your-template` it will be `upload/{custom_user_label}/your-template`.  
+To apply a storage template, go to the Administration page -> click on the pencil button next to the user.
+:::note
+To apply the Storage Label to previously uploaded assets, run the Storage Migration Job.
+:::
+
+<img src={require('./img/user-storage-label.png').default} width="40%" title="Delete User" />
 
 ## Password Reset
 
-To reset a user's password, click the pencil icon to edit a user, then click "Reset Password". The user's password will be reset to "password" and they have to change it next time the sign in.
+To reset a user's password, click the pencil icon to edit a user, then click "Reset Password". The user's password will be reset to random password and they have to change it next time the sign in.
 
-![Reset Password](./img/user-management-update.png)
+<img src={require('./img/user-management-update.png').default} width="40%" title="Reset Password" />
+
+## Delete a User
+
+If you need to remove a user from Immich, head to "Administration", where users can be scheduled for deletion. The user account will immediately become disabled and their library and all associated data will be removed after 7 days by default.
+
+<img src={require('./img/delete-user.webp').default} width="40%" title="Delete User" />
+
+### Delete Delay
+
+You can customize the time of the deletion of the users from the Administration -> Settings -> User Settings.
+:::info user deletion job
+The user deletion job runs at midnight to check for users that are ready for deletion. Changes to this setting will be evaluated at the next execution.
+:::
+
+<img src={require('./img/customize-delete-user.png').default} width="80%" title="Customize Delete User" />
+
+### Immediately Remove User
+
+You can choose to delete a user immediately by checking the box
+`Queue user and assets for immediate deletion` in the deletion process, this will immediately remove the user and all assets.
+This cannot be undone and the files cannot be recovered.
+
+<img src={require('./img/immediately-remove-user.png').default} width="40%" title="Customize Delete User" />

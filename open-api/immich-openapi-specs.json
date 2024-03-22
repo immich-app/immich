@@ -1766,6 +1766,14 @@
             }
           },
           {
+            "name": "order",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/AssetOrder"
+            }
+          },
+          {
             "name": "personId",
             "required": false,
             "in": "query",
@@ -1899,6 +1907,14 @@
             "in": "query",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "order",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/AssetOrder"
             }
           },
           {
@@ -2358,6 +2374,7 @@
             "required": false,
             "in": "query",
             "schema": {
+              "format": "uuid",
               "type": "array",
               "items": {
                 "type": "string"
@@ -4580,6 +4597,41 @@
         ]
       }
     },
+    "/search/cities": {
+      "get": {
+        "operationId": "getAssetsByCity",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AssetResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Search"
+        ]
+      }
+    },
     "/search/explore": {
       "get": {
         "operationId": "getExploreData",
@@ -4630,7 +4682,7 @@
           "required": true
         },
         "responses": {
-          "201": {
+          "200": {
             "content": {
               "application/json": {
                 "schema": {
@@ -4768,7 +4820,7 @@
           "required": true
         },
         "responses": {
-          "201": {
+          "200": {
             "content": {
               "application/json": {
                 "schema": {
@@ -6486,7 +6538,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.98.1",
+    "version": "1.99.0",
     "contact": {}
   },
   "tags": [],
@@ -6720,6 +6772,9 @@
           "lastModifiedAssetTimestamp": {
             "format": "date-time",
             "type": "string"
+          },
+          "order": {
+            "$ref": "#/components/schemas/AssetOrder"
           },
           "owner": {
             "$ref": "#/components/schemas/UserResponseDto"
@@ -7626,6 +7681,7 @@
           }
         },
         "required": [
+          "ownerId",
           "type"
         ],
         "type": "object"
@@ -8481,6 +8537,7 @@
           },
           "personIds": {
             "items": {
+              "format": "uuid",
               "type": "string"
             },
             "type": "array"
@@ -9611,6 +9668,7 @@
           },
           "personIds": {
             "items": {
+              "format": "uuid",
               "type": "string"
             },
             "type": "array"
@@ -10332,6 +10390,9 @@
           },
           "isActivityEnabled": {
             "type": "boolean"
+          },
+          "order": {
+            "$ref": "#/components/schemas/AssetOrder"
           }
         },
         "type": "object"
@@ -10664,7 +10725,8 @@
           }
         },
         "required": [
-          "importPath"
+          "importPath",
+          "isValid"
         ],
         "type": "object"
       },

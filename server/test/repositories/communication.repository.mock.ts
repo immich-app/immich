@@ -1,4 +1,4 @@
-import { ICommunicationRepository } from '@app/domain';
+import { ICommunicationRepository } from 'src/interfaces/communication.interface';
 
 export const newCommunicationRepositoryMock = (): jest.Mocked<ICommunicationRepository> => {
   return {
@@ -6,5 +6,7 @@ export const newCommunicationRepositoryMock = (): jest.Mocked<ICommunicationRepo
     broadcast: jest.fn(),
     on: jest.fn(),
     sendServerEvent: jest.fn(),
+    emit: jest.fn(),
+    emitAsync: jest.fn(),
   };
 };
