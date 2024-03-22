@@ -8,44 +8,42 @@ import yaml from 'yaml';
 
 export interface BaseOptions {
   configDirectory: string;
-  apiKey?: string;
-  instanceUrl?: string;
+  key?: string;
+  url?: string;
 }
 
-export interface AuthDto {
-  instanceUrl: string;
-  apiKey: string;
-}
+export type AuthDto = { url: string; key: string };
+type OldAuthDto = { instanceUrl: string; apiKey: string };
 
 export const authenticate = async (options: BaseOptions): Promise<void> => {
-  const { configDirectory: configDir, instanceUrl, apiKey } = options;
+  const { configDirectory: configDir, url, key } = options;
 
   // provided in command
-  if (instanceUrl && apiKey) {
-    await connect(instanceUrl, apiKey);
+  if (url && key) {
+    await connect(url, key);
     return;
   }
 
-  // fallback to file
+  // fallback to auth file
   const config = await readAuthFile(configDir);
-  await connect(config.instanceUrl, config.apiKey);
+  await connect(config.url, config.key);
 };
 
-export const connect = async (instanceUrl: string, apiKey: string): Promise<void> => {
-  const wellKnownUrl = new URL('.well-known/immich', instanceUrl);
+export const connect = async (url: string, key: string): Promise<void> => {
+  const wellKnownUrl = new URL('.well-known/immich', url);
   try {
     const wellKnown = await fetch(wellKnownUrl).then((response) => response.json());
-    const endpoint = new URL(wellKnown.api.endpoint, instanceUrl).toString();
-    if (endpoint !== instanceUrl) {
+    const endpoint = new URL(wellKnown.api.endpoint, url).toString();
+    if (endpoint !== url) {
       console.debug(`Discovered API at ${endpoint}`);
     }
-    instanceUrl = endpoint;
+    url = endpoint;
   } catch {
     // noop
   }
 
-  defaults.baseUrl = instanceUrl;
-  defaults.headers = { 'x-api-key': apiKey };
+  defaults.baseUrl = url;
+  defaults.headers = { 'x-api-key': key };
 
   const [error] = await withError(getMyUserInfo());
   if (isHttpError(error)) {
@@ -69,7 +67,12 @@ export const readAuthFile = async (dir: string) => {
   try {
     const data = await readFile(getAuthFilePath(dir));
     // TODO add class-transform/validation
-    return yaml.parse(data.toString()) as AuthDto;
+    const auth = yaml.parse(data.toString()) as AuthDto | OldAuthDto;
+    const { instanceUrl, apiKey } = auth as OldAuthDto;
+    if (instanceUrl && apiKey) {
+      return { url: instanceUrl, key: apiKey };
+    }
+    return auth as AuthDto;
   } catch (error: Error | any) {
     if (error.code === 'ENOENT' || error.code === 'ENOTDIR') {
       console.log('No auth file exists. Please login first.');

@@ -3,12 +3,12 @@ import { existsSync } from 'node:fs';
 import { mkdir, unlink } from 'node:fs/promises';
 import { BaseOptions, connect, getAuthFilePath, logError, withError, writeAuthFile } from 'src/utils';
 
-export const login = async (instanceUrl: string, apiKey: string, options: BaseOptions) => {
-  console.log(`Logging in to ${instanceUrl}`);
+export const login = async (url: string, key: string, options: BaseOptions) => {
+  console.log(`Logging in to ${url}`);
 
   const { configDirectory: configDir } = options;
 
-  await connect(instanceUrl, apiKey);
+  await connect(url, key);
 
   const [error, userInfo] = await withError(getMyUserInfo());
   if (error) {
@@ -27,7 +27,7 @@ export const login = async (instanceUrl: string, apiKey: string, options: BaseOp
     }
   }
 
-  await writeAuthFile(configDir, { instanceUrl, apiKey });
+  await writeAuthFile(configDir, { url, key });
 
   console.log(`Wrote auth info to ${getAuthFilePath(configDir)}`);
 };
