@@ -170,7 +170,7 @@ class AlbumService {
     return changes;
   }
 
-  /// Checks remote album (owned if `isShared` is false) for changes,
+  /// Checks remote album for changes,
   /// updates the local database and returns `true` if there were any changes
   Future<bool> refreshRemoteAlbum({
     required AlbumResponseDto remote,
