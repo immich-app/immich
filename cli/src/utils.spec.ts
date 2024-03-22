@@ -1,13 +1,30 @@
 import mockfs from 'mock-fs';
-import { CrawlOptions, CrawlService } from './crawl.service';
+import { CrawlOptions, crawl } from 'src/utils';
 
 interface Test {
   test: string;
-  options: CrawlOptions;
+  options: Omit<CrawlOptions, 'extensions'>;
   files: Record<string, boolean>;
 }
 
 const cwd = process.cwd();
+
+const extensions = [
+  '.jpg',
+  '.jpeg',
+  '.png',
+  '.heif',
+  '.heic',
+  '.tif',
+  '.nef',
+  '.webp',
+  '.tiff',
+  '.dng',
+  '.gif',
+  '.mov',
+  '.mp4',
+  '.webm',
+];
 
 const tests: Test[] = [
   {
@@ -251,12 +268,7 @@ const tests: Test[] = [
   },
 ];
 
-describe(CrawlService.name, () => {
-  const sut = new CrawlService(
-    ['.jpg', '.jpeg', '.png', '.heif', '.heic', '.tif', '.nef', '.webp', '.tiff', '.dng', '.gif'],
-    ['.mov', '.mp4', '.webm'],
-  );
-
+describe('crawl', () => {
   afterEach(() => {
     mockfs.restore();
   });
@@ -266,7 +278,7 @@ describe(CrawlService.name, () => {
       it(test, async () => {
         mockfs(Object.fromEntries(Object.keys(files).map((file) => [file, ''])));
 
-        const actual = await sut.crawl(options);
+        const actual = await crawl({ ...options, extensions });
         const expected = Object.entries(files)
           .filter((entry) => entry[1])
           .map(([file]) => file);
