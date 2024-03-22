@@ -55,23 +55,25 @@
   >
     <CreateSharedLink on:escape={() => (handleEscapeKey = true)} />
     <SelectAllAssets {assetStore} {assetInteractionStore} />
-    <AssetSelectContextMenu icon={mdiPlus} title="Add">
+    <AssetSelectContextMenu icon={mdiPlus} title="Add to...">
       <AddToAlbum />
       <AddToAlbum shared />
     </AssetSelectContextMenu>
-    <DeleteAssets
-      on:escape={() => (handleEscapeKey = true)}
-      onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)}
-    />
+    <FavoriteAction removeFavorite={isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
     <AssetSelectContextMenu icon={mdiDotsVertical} title="Menu">
-      <FavoriteAction menuItem removeFavorite={isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
       <DownloadAction menuItem />
-      <ArchiveAction menuItem onArchive={(assetIds) => assetStore.removeAssets(assetIds)} />
       {#if $selectedAssets.size > 1}
         <StackAction onStack={(assetIds) => assetStore.removeAssets(assetIds)} />
       {/if}
       <ChangeDate menuItem />
       <ChangeLocation menuItem />
+      <ArchiveAction menuItem onArchive={(assetIds) => assetStore.removeAssets(assetIds)} />
+      <DeleteAssets
+        menuItem
+        on:escape={() => (handleEscapeKey = true)}
+        onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)}
+      />
+      <hr />
       <AssetJobActions />
     </AssetSelectContextMenu>
   </AssetSelectControlBar>
