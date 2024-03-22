@@ -62,11 +62,11 @@ export interface IEventRepository {
    */
   clientBroadcast<E extends keyof ClientEventMap>(event: E, data: ClientEventMap[E]): void;
   /**
-   * Notify listeners in this and connected processes. Subscribe to an event with `@OnSeverEvent`
+   * Notify listeners in this and connected processes. Subscribe to an event with `@OnServerEvent`
    */
   serverSend<E extends keyof ServerEventMap>(event: E, data: ServerEventMap[E]): boolean;
   /**
-   * Notify and wait for responses from listeners in this process. Subscribe to an event with `@OnSeverEvent`
+   * Notify and wait for responses from listeners in this process. Subscribe to an event with `@OnServerEvent`
    */
   serverSendAsync<E extends keyof ServerAsyncEventMap>(event: E, data: ServerAsyncEventMap[E]): Promise<any>;
 }
