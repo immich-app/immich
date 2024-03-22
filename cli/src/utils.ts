@@ -1,5 +1,6 @@
 import { defaults, getMyUserInfo, isHttpError } from '@immich/sdk';
-import { readFile, writeFile } from 'node:fs/promises';
+import { glob } from 'glob';
+import { readFile, stat, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import yaml from 'yaml';
 
@@ -86,4 +87,65 @@ export const withError = async <T>(promise: Promise<T>): Promise<[Error, undefin
   } catch (error: Error | any) {
     return [error, undefined];
   }
+};
+
+export interface CrawlOptions {
+  pathsToCrawl: string[];
+  recursive?: boolean;
+  includeHidden?: boolean;
+  exclusionPatterns?: string[];
+  extensions: string[];
+}
+export const crawl = async (options: CrawlOptions): Promise<string[]> => {
+  const { extensions: extensionsWithPeriod, recursive, pathsToCrawl, exclusionPatterns, includeHidden } = options;
+  const extensions = extensionsWithPeriod.map((extension) => extension.replace('.', ''));
+
+  if (!pathsToCrawl) {
+    return [];
+  }
+
+  const patterns: string[] = [];
+  const crawledFiles: string[] = [];
+
+  for await (const currentPath of pathsToCrawl) {
+    try {
+      const stats = await stat(currentPath);
+      if (stats.isFile() || stats.isSymbolicLink()) {
+        crawledFiles.push(currentPath);
+      } else {
+        patterns.push(currentPath);
+      }
+    } catch (error: any) {
+      if (error.code === 'ENOENT') {
+        patterns.push(currentPath);
+      } else {
+        throw error;
+      }
+    }
+  }
+
+  let searchPattern: string;
+  if (patterns.length === 1) {
+    searchPattern = patterns[0];
+  } else if (patterns.length === 0) {
+    return crawledFiles;
+  } else {
+    searchPattern = '{' + patterns.join(',') + '}';
+  }
+
+  if (recursive) {
+    searchPattern = searchPattern + '/**/';
+  }
+
+  searchPattern = `${searchPattern}/*.{${extensions.join(',')}}`;
+
+  const globbedFiles = await glob(searchPattern, {
+    absolute: true,
+    nocase: true,
+    nodir: true,
+    dot: includeHidden,
+    ignore: exclusionPatterns,
+  });
+
+  return [...crawledFiles, ...globbedFiles].sort();
 };
