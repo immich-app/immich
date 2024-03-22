@@ -13,7 +13,7 @@ import byteSize from 'byte-size';
 import { Presets, SingleBar } from 'cli-progress';
 import { chunk } from 'lodash-es';
 import { Stats, createReadStream } from 'node:fs';
-import { access, constants, stat, unlink } from 'node:fs/promises';
+import { stat, unlink } from 'node:fs/promises';
 import os from 'node:os';
 import path, { basename } from 'node:path';
 import { BaseOptions, authenticate, crawl, sha1 } from 'src/utils';
@@ -115,7 +115,7 @@ const checkForDuplicates = async (files: string[], { concurrency }: UploadOption
     progressBar.stop();
   }
 
-  console.log(`Found ${newFiles.length} new files and ${duplicates.length} duplicates`);
+  console.log(`Found ${newFiles.length} new files and ${duplicates.length} duplicate${s(duplicates.length)}`);
 
   return { newFiles, duplicates };
 };
@@ -180,7 +180,6 @@ const uploadFile = async (input: string, stats: Stats): Promise<AssetFileUploadR
     // XMP sidecars can come in two filename formats. For a photo named photo.ext, the filenames are photo.ext.xmp and photo.xmp
     [`${noExtension}.xmp`, `${input}.xmp`].map(async (sidecarPath) => {
       try {
-        await access(sidecarPath, constants.R_OK);
         const stats = await stat(sidecarPath);
         return new UploadFile(sidecarPath, stats.size);
       } catch {
