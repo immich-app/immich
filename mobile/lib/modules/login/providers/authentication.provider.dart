@@ -52,8 +52,8 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
       // Resolve API server endpoint from user provided serverUrl
       await _apiService.resolveAndSetEndpoint(serverUrl);
       await _apiService.serverInfoApi.pingServer();
-    } catch (e) {
-      debugPrint('Invalid Server Endpoint Url $e');
+    } catch (error, stack) {
+      _log.severe("Error logging in: ${error.toString()}", error, stack);
       return false;
     }
 
@@ -91,9 +91,9 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
         accessToken: loginResponse.accessToken,
         serverUrl: serverUrl,
       );
-    } catch (e) {
+    } catch (error, stack) {
       HapticFeedback.vibrate();
-      debugPrint("Error logging in $e");
+      _log.severe("Error logging in ${error.toString()}", error, stack);
       return false;
     }
   }
@@ -151,8 +151,8 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
       state = state.copyWith(shouldChangePassword: false);
 
       return true;
-    } catch (e) {
-      debugPrint("Error changing password $e");
+    } catch (error, stack) {
+      _log.severe("Error changing password: ${error.toString()}", error, stack);
       return false;
     }
   }

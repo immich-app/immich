@@ -6,6 +6,7 @@ import 'package:immich_mobile/shared/models/server_info/server_features.model.da
 import 'package:immich_mobile/shared/models/server_info/server_version.model.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
+import 'package:logging/logging.dart';
 
 final serverInfoServiceProvider = Provider(
   (ref) => ServerInfoService(
@@ -14,6 +15,7 @@ final serverInfoServiceProvider = Provider(
 );
 
 class ServerInfoService {
+  final _log = Logger("ServerInfoService");
   final ApiService _apiService;
 
   ServerInfoService(this._apiService);
@@ -24,8 +26,8 @@ class ServerInfoService {
       if (dto != null) {
         return ServerDiskInfo.fromDto(dto);
       }
-    } catch (e) {
-      debugPrint("Error [getServerInfo] ${e.toString()}");
+    } catch (error, stack) {
+      _log.severe("Cannot get server info: ${error.toString()}", error, stack);
     }
     return null;
   }
@@ -36,8 +38,8 @@ class ServerInfoService {
       if (dto != null) {
         return ServerVersion.fromDto(dto);
       }
-    } catch (e) {
-      debugPrint("Error [getServerVersion] ${e.toString()}");
+    } catch (error, stack) {
+      _log.severe("Cannot get server version: ${error.toString()}", error, stack);
     }
     return null;
   }
@@ -48,8 +50,8 @@ class ServerInfoService {
       if (dto != null) {
         return ServerFeatures.fromDto(dto);
       }
-    } catch (e) {
-      debugPrint("Error [getServerFeatures] ${e.toString()}");
+    } catch (error, stack) {
+      _log.severe("Cannot get server features: ${error.toString()}", error, stack);
     }
     return null;
   }
@@ -60,8 +62,8 @@ class ServerInfoService {
       if (dto != null) {
         return ServerConfig.fromDto(dto);
       }
-    } catch (e) {
-      debugPrint("Error [getServerConfig] ${e.toString()}");
+    } catch (error, stack) {
+      _log.severe("Cannot get server config: ${error.toString()}", error, stack);
     }
     return null;
   }
