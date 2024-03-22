@@ -15,6 +15,20 @@ describe(`immich upload`, () => {
     await utils.resetDatabase(['assets', 'albums']);
   });
 
+  describe(`immich upload /path/to/file.jpg`, () => {
+    it('should upload a single file', async () => {
+      const { stderr, stdout, exitCode } = await immichCli(['upload', `${testAssetDir}/albums/nature/silver_fir.jpg`]);
+      expect(stderr).toBe('');
+      expect(stdout.split('\n')).toEqual(
+        expect.arrayContaining([expect.stringContaining('Successfully uploaded 1 asset')]),
+      );
+      expect(exitCode).toBe(0);
+
+      const assets = await getAllAssets({}, { headers: asKeyAuth(key) });
+      expect(assets.length).toBe(1);
+    });
+  });
+
   describe('immich upload --recursive', () => {
     it('should upload a folder recursively', async () => {
       const { stderr, stdout, exitCode } = await immichCli(['upload', `${testAssetDir}/albums/nature/`, '--recursive']);
