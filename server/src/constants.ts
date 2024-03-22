@@ -3,6 +3,8 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { Version } from 'src/utils/version';
 
+export const SALT_ROUNDS = 10;
+
 const { version } = JSON.parse(readFileSync('./package.json', 'utf8'));
 export const serverVersion = Version.fromString(version);
 
