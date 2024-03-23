@@ -104,7 +104,6 @@ describe(SmartInfoService.name, () => {
     });
 
     it('should save the returned objects', async () => {
-      searchMock.upsert.mockResolvedValue();
       machineMock.encodeImage.mockResolvedValue([0.01, 0.02, 0.03]);
 
       await sut.handleEncodeClip({ id: asset.id });
@@ -114,12 +113,7 @@ describe(SmartInfoService.name, () => {
         { imagePath: 'path/to/resize.ext' },
         { enabled: true, modelName: 'ViT-B-32__openai' },
       );
-      expect(searchMock.upsert).toHaveBeenCalledWith(
-        {
-          assetId: 'asset-1',
-        },
-        [0.01, 0.02, 0.03],
-      );
+      expect(searchMock.upsert).toHaveBeenCalledWith('asset-1', [0.01, 0.02, 0.03]);
     });
   });
 
