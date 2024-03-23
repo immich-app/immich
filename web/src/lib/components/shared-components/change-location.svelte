@@ -97,7 +97,7 @@
       places = await searchPlaces({ name: searchQuery });
     } catch (error) {
       places = [];
-      handleError(error, 'Error searching for cities');
+      handleError(error, "Can't search places");
     } finally {
       clearTimeout(timeout);
       isSearching = false;
