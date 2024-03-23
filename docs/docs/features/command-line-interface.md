@@ -101,13 +101,13 @@ Note that the above options can read from environment variables as well.
 You begin by authenticating to your Immich server.
 
 ```bash
-immich login-key [url] [key]
+immich login [url] [key]
 ```
 
 For instance,
 
 ```bash
-immich login-key http://192.168.1.216:2283/api HFEJ38DNSDUEG
+immich login http://192.168.1.216:2283/api HFEJ38DNSDUEG
 ```
 
 This will store your credentials in a `auth.yml` file in the configuration directory which defaults to `~/.config/`. The directory can be set with the `-d` option or the environment variable `IMMICH_CONFIG_DIR`. Please keep the file secure, either by performing the logout command after you are done, or deleting it manually.
