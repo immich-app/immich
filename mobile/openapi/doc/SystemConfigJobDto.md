@@ -9,6 +9,7 @@ import 'package:openapi/api.dart';
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **backgroundTask** | [**JobSettingsDto**](JobSettingsDto.md) |  | 
+**duplicateDetection** | [**JobSettingsDto**](JobSettingsDto.md) |  | 
 **faceDetection** | [**JobSettingsDto**](JobSettingsDto.md) |  | 
 **library_** | [**JobSettingsDto**](JobSettingsDto.md) |  | 
 **metadataExtraction** | [**JobSettingsDto**](JobSettingsDto.md) |  | 

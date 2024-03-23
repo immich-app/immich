@@ -29,6 +29,7 @@ class JobName {
   static const faceDetection = JobName._(r'faceDetection');
   static const facialRecognition = JobName._(r'facialRecognition');
   static const smartSearch = JobName._(r'smartSearch');
+  static const duplicateDetection = JobName._(r'duplicateDetection');
   static const backgroundTask = JobName._(r'backgroundTask');
   static const storageTemplateMigration = JobName._(r'storageTemplateMigration');
   static const migration = JobName._(r'migration');
@@ -45,6 +46,7 @@ class JobName {
     faceDetection,
     facialRecognition,
     smartSearch,
+    duplicateDetection,
     backgroundTask,
     storageTemplateMigration,
     migration,
@@ -96,6 +98,7 @@ class JobNameTypeTransformer {
         case r'faceDetection': return JobName.faceDetection;
         case r'facialRecognition': return JobName.facialRecognition;
         case r'smartSearch': return JobName.smartSearch;
+        case r'duplicateDetection': return JobName.duplicateDetection;
         case r'backgroundTask': return JobName.backgroundTask;
         case r'storageTemplateMigration': return JobName.storageTemplateMigration;
         case r'migration': return JobName.migration;

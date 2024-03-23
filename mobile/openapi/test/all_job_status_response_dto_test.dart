@@ -21,6 +21,11 @@ void main() {
       // TODO
     });
 
+    // JobStatusDto duplicateDetection
+    test('to test the property `duplicateDetection`', () async {
+      // TODO
+    });
+
     // JobStatusDto faceDetection
     test('to test the property `faceDetection`', () async {
       // TODO
