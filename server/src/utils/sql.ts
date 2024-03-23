@@ -19,6 +19,7 @@ import { LibraryRepository } from 'src/repositories/library.repository';
 import { MoveRepository } from 'src/repositories/move.repository';
 import { PartnerRepository } from 'src/repositories/partner.repository';
 import { PersonRepository } from 'src/repositories/person.repository';
+import { PrismaRepository } from 'src/repositories/prisma.repository';
 import { SearchRepository } from 'src/repositories/search.repository';
 import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
 import { SystemConfigRepository } from 'src/repositories/system-config.repository';
@@ -62,6 +63,7 @@ const repositories = [
   MoveRepository,
   PartnerRepository,
   PersonRepository,
+  PrismaRepository,
   SharedLinkRepository,
   SearchRepository,
   SystemConfigRepository,

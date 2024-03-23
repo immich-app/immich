@@ -71,6 +71,18 @@ async function bootstrapApi() {
   logger.log(`Immich Server is listening on ${await app.getUrl()} [v${serverVersion}] [${envName}] `);
 }
 
+declare global {
+  interface BigInt {
+    toJSON(): number | string;
+  }
+}
+
+const MAX_SAFE_INTEGER = BigInt(Number.MAX_SAFE_INTEGER);
+
+BigInt.prototype.toJSON = function () {
+  return this.valueOf() > MAX_SAFE_INTEGER ? this.toString() : Number(this.valueOf());
+};
+
 const immichApp = process.argv[2] || process.env.IMMICH_APP;
 
 if (process.argv[2] === immichApp) {

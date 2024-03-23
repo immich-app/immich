@@ -308,13 +308,7 @@ export class PersonService {
       return JobStatus.SKIPPED;
     }
 
-    const relations = {
-      exifInfo: true,
-      faces: {
-        person: false,
-      },
-    };
-    const [asset] = await this.assetRepository.getByIds([id], relations);
+    const [asset] = await this.assetRepository.getByIds([id], { exifInfo: true, faces: true });
     if (!asset || !asset.resizePath || asset.faces?.length > 0) {
       return JobStatus.FAILED;
     }

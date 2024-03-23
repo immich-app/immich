@@ -17,6 +17,7 @@
     "esModuleInterop": true,
     "preserveWatchOutput": true,
     "baseUrl": "./",
+    "noErrorTruncation": true,
   },
   "exclude": [
     "dist",

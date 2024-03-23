@@ -341,7 +341,7 @@ export class AssetServiceV1 {
       isArchived: dto.isArchived ?? false,
       duration: dto.duration || null,
       isVisible: dto.isVisible ?? true,
-      livePhotoVideo: livePhotoAssetId === null ? null : ({ id: livePhotoAssetId } as AssetEntity),
+      livePhotoVideoId: livePhotoAssetId,
       originalFileName: file.originalName,
       sidecarPath: sidecarPath || null,
       isReadOnly: dto.isReadOnly ?? false,
