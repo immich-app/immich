@@ -86,6 +86,9 @@ export enum JobName {
   // smart search
   QUEUE_SMART_SEARCH = 'queue-smart-search',
   SMART_SEARCH = 'smart-search',
+
+  // duplicate detection
+  QUEUE_DUPLICATE_DETECTION = 'queue-duplicate-detection',
   DUPLICATE_DETECTION = 'duplicate-detection',
 
   // XMP sidecars
@@ -213,6 +216,9 @@ export type JobItem =
   // Smart Search
   | { name: JobName.QUEUE_SMART_SEARCH; data: IBaseJob }
   | { name: JobName.SMART_SEARCH; data: IEntityJob }
+
+  // Duplicate Detection
+  | { name: JobName.QUEUE_DUPLICATE_DETECTION; data: IBaseJob }
   | { name: JobName.DUPLICATE_DETECTION; data: IEntityJob }
 
   // Filesystem

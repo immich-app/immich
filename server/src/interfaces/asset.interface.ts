@@ -40,6 +40,7 @@ export enum WithoutProperty {
   ENCODED_VIDEO = 'encoded-video',
   EXIF = 'exif',
   SMART_SEARCH = 'smart-search',
+  DUPLICATE = 'duplicate',
   OBJECT_TAGS = 'object-tags',
   FACES = 'faces',
   PERSON = 'person',

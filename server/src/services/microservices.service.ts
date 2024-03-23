@@ -55,6 +55,7 @@ export class MicroservicesService {
       [JobName.USER_SYNC_USAGE]: () => this.userService.handleUserSyncUsage(),
       [JobName.QUEUE_SMART_SEARCH]: (data) => this.smartInfoService.handleQueueEncodeClip(data),
       [JobName.SMART_SEARCH]: (data) => this.smartInfoService.handleEncodeClip(data),
+      [JobName.QUEUE_DUPLICATE_DETECTION]: (data) => this.searchService.handleQueueSearchDuplicates(data),
       [JobName.DUPLICATE_DETECTION]: (data) => this.searchService.handleSearchDuplicates(data),
       [JobName.STORAGE_TEMPLATE_MIGRATION]: () => this.storageTemplateService.handleMigration(),
       [JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE]: (data) => this.storageTemplateService.handleMigrationSingle(data),

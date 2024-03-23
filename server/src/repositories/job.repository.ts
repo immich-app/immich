@@ -64,6 +64,9 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   // smart search
   [JobName.QUEUE_SMART_SEARCH]: QueueName.SMART_SEARCH,
   [JobName.SMART_SEARCH]: QueueName.SMART_SEARCH,
+
+  // duplicate detection
+  [JobName.QUEUE_DUPLICATE_DETECTION]: QueueName.DUPLICATE_DETECTION,
   [JobName.DUPLICATE_DETECTION]: QueueName.DUPLICATE_DETECTION,
 
   // XMP sidecars
