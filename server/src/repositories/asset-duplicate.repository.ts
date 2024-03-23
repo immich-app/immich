@@ -11,14 +11,14 @@ import { Repository } from 'typeorm';
 export class AssetDuplicateRepository implements IAssetDuplicateRepository {
   constructor(@InjectRepository(AssetDuplicateEntity) private repository: Repository<AssetDuplicateEntity>) {}
 
-  async create(duplicateId: string, assetIds: string[]) {
+  async create(id: string, assetIds: string[]) {
     await this.repository.manager.transaction(async (manager) => {
       await manager.upsert(
         AssetDuplicateEntity,
-        assetIds.map((assetId) => ({ duplicateId, assetId })),
+        assetIds.map((assetId) => ({ id, assetId })),
         ['assetId'],
       );
-      await manager.update(AssetEntity, assetIds, { duplicateId });
+      await manager.update(AssetEntity, assetIds, { duplicateId: id });
     });
   }
 

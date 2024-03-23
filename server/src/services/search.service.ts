@@ -183,24 +183,36 @@ export class SearchService {
 
   async handleSearchDuplicates({ id }: IEntityJob): Promise<JobStatus> {
     const { machineLearning } = await this.configCore.getConfig();
-    if (!machineLearning.enabled || !machineLearning.clip.enabled) {
+
+    const asset = await this.assetRepository.getById(id);
+    if (!asset) {
+      this.logger.error(`Asset ${id} not found`);
+      return JobStatus.FAILED;
+    }
+
+    if (!asset.isVisible) {
+      this.logger.debug(`Asset ${id} is not visible, skipping`);
+      await this.assetRepository.upsertJobStatus({
+        assetId: asset.id,
+        duplicatesDetectedAt: new Date(),
+      });
       return JobStatus.SKIPPED;
     }
 
-    const asset = await this.assetRepository.getById(id, { smartSearch: true });
-
-    if (!asset?.isVisible || asset.duplicateId) {
+    if (asset.duplicateId) {
+      this.logger.debug(`Asset ${id} already has a duplicateId, skipping`);
       return JobStatus.SKIPPED;
     }
 
-    if (!asset?.previewPath || !asset.smartSearch?.embedding) {
+    if (!asset.previewPath) {
+      this.logger.warn(`Asset ${id} is missing preview image`);
       return JobStatus.FAILED;
     }
 
     const duplicateAssets = await this.searchRepository.searchDuplicates({
-      userIds: [asset.ownerId],
-      embedding: asset.smartSearch.embedding,
+      assetId: asset.id,
       maxDistance: machineLearning.clip.duplicateThreshold,
+      userIds: [asset.ownerId],
     });
 
     if (duplicateAssets.length > 0) {
@@ -217,7 +229,7 @@ export class SearchService {
 
     await this.assetRepository.upsertJobStatus({
       assetId: asset.id,
-      facesRecognizedAt: new Date(),
+      duplicatesDetectedAt: new Date(),
     });
 
     return JobStatus.SUCCESS;
