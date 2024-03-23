@@ -293,7 +293,7 @@ You may need to add mount points or docker volumes for the following internal co
 - `immich-microservices:/usr/src/app/.reverse-geocoding-dump`
 - `immich-machine-learning:/.config`
 - `immich-machine-learning:/.cache`
-- `immich-machine-learning:/cache`
+- `redis:/data`
 
 The non-root user/group needs read/write access to the volume mounts, including `UPLOAD_LOCATION`.
 
