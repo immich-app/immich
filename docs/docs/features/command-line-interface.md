@@ -1,6 +1,6 @@
 # The Immich CLI
 
-Immich has a CLI that allows you to perform certain actions from the command line. This CLI replaces the [legacy CLI](https://github.com/immich-app/CLI) that was previously available. The CLI is hosted in the [cli folder of the the main Immich github repository](https://github.com/immich-app/immich/tree/main/cli).
+Immich has a command line interface (CLI) that allows you to perform certain actions from the command line.
 
 ## Features
 
