@@ -50,7 +50,6 @@ export const SystemConfigKey = {
   JOB_VIDEO_CONVERSION_CONCURRENCY: 'job.videoConversion.concurrency',
   JOB_FACE_DETECTION_CONCURRENCY: 'job.faceDetection.concurrency',
   JOB_SMART_SEARCH_CONCURRENCY = 'job.smartSearch.concurrency',
-  JOB_DUPLICATE_DETECTION_CONCURRENCY = 'job.duplicateDetection.concurrency',
   JOB_BACKGROUND_TASK_CONCURRENCY: 'job.backgroundTask.concurrency',
   JOB_SEARCH_CONCURRENCY: 'job.search.concurrency',
   JOB_SIDECAR_CONCURRENCY: 'job.sidecar.concurrency',

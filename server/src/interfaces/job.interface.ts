@@ -17,7 +17,7 @@ export enum QueueName {
 
 export type ConcurrentQueueName = Exclude<
   QueueName,
-  QueueName.STORAGE_TEMPLATE_MIGRATION | QueueName.FACIAL_RECOGNITION
+  QueueName.STORAGE_TEMPLATE_MIGRATION | QueueName.FACIAL_RECOGNITION | QueueName.DUPLICATE_DETECTION
 >;
 
 export enum JobCommand {

@@ -21,11 +21,6 @@ void main() {
       // TODO
     });
 
-    // JobSettingsDto duplicateDetection
-    test('to test the property `duplicateDetection`', () async {
-      // TODO
-    });
-
     // JobSettingsDto faceDetection
     test('to test the property `faceDetection`', () async {
       // TODO
