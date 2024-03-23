@@ -290,7 +290,6 @@ Immich components are typically deployed using docker. To see logs for deployed 
 You can change the user in the container by setting the `user` argument in `docker-compose.yml` for each service.
 You may need to add mount points or docker volumes for the following internal container paths:
 
-- `immich-microservices:/usr/src/app/.reverse-geocoding-dump`
 - `immich-machine-learning:/.config`
 - `immich-machine-learning:/.cache`
 - `redis:/data`
