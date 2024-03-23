@@ -410,6 +410,7 @@ export type JobStatusDto = {
 };
 export type AllJobStatusResponseDto = {
     backgroundTask: JobStatusDto;
+    duplicateDetection: JobStatusDto;
     faceDetection: JobStatusDto;
     facialRecognition: JobStatusDto;
     library: JobStatusDto;
@@ -895,6 +896,7 @@ export type JobSettingsDto = {
 };
 export type SystemConfigJobDto = {
     backgroundTask: JobSettingsDto;
+    duplicateDetection: JobSettingsDto;
     faceDetection: JobSettingsDto;
     library: JobSettingsDto;
     metadataExtraction: JobSettingsDto;
@@ -922,6 +924,7 @@ export type SystemConfigLoggingDto = {
     level: LogLevel;
 };
 export type ClipConfig = {
+    duplicateThreshold: number;
     enabled: boolean;
     mode?: CLIPMode;
     modelName: string;
@@ -2876,6 +2879,7 @@ export enum JobName {
     FaceDetection = "faceDetection",
     FacialRecognition = "facialRecognition",
     SmartSearch = "smartSearch",
+    DuplicateDetection = "duplicateDetection",
     BackgroundTask = "backgroundTask",
     StorageTemplateMigration = "storageTemplateMigration",
     Migration = "migration",
