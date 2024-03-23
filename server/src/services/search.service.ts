@@ -17,19 +17,29 @@ import {
 import { AssetOrder } from 'src/entities/album.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { IAssetDuplicateRepository } from 'src/interfaces/asset-duplicate.interface';
-import { IAssetRepository } from 'src/interfaces/asset.interface';
+import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
-import { IEntityJob, JobStatus } from 'src/interfaces/job.interface';
+import {
+  IBaseJob,
+  IEntityJob,
+  IJobRepository,
+  JOBS_ASSET_PAGINATION_SIZE,
+  JobName,
+  JobStatus,
+} from 'src/interfaces/job.interface';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
 import { IMetadataRepository } from 'src/interfaces/metadata.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { ISearchRepository, SearchExploreItem } from 'src/interfaces/search.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { ImmichLogger } from 'src/utils/logger';
+import { usePagination } from 'src/utils/pagination';
 
 @Injectable()
 export class SearchService {
+  private logger = new ImmichLogger(SearchService.name);
   private configCore: SystemConfigCore;
 
   constructor(
@@ -43,6 +53,7 @@ export class SearchService {
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(IAssetDuplicateRepository) private assetDuplicateRepository: IAssetDuplicateRepository,
+    @Inject(IJobRepository) private jobRepository: IJobRepository,
   ) {
     this.logger.setContext(SearchService.name);
     this.configCore = SystemConfigCore.create(configRepository, logger);
@@ -149,19 +160,41 @@ export class SearchService {
     }
   }
 
+  async handleQueueSearchDuplicates({ force }: IBaseJob): Promise<JobStatus> {
+    const { machineLearning } = await this.configCore.getConfig();
+    if (!machineLearning.enabled || !machineLearning.clip.enabled) {
+      return JobStatus.SKIPPED;
+    }
+
+    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
+      return force
+        ? this.assetRepository.getAll(pagination)
+        : this.assetRepository.getWithout(pagination, WithoutProperty.DUPLICATE);
+    });
+
+    for await (const assets of assetPagination) {
+      await this.jobRepository.queueAll(
+        assets.map((asset) => ({ name: JobName.DUPLICATE_DETECTION, data: { id: asset.id } })),
+      );
+    }
+
+    return JobStatus.SUCCESS;
+  }
+
   async handleSearchDuplicates({ id }: IEntityJob): Promise<JobStatus> {
     const { machineLearning } = await this.configCore.getConfig();
     if (!machineLearning.enabled || !machineLearning.clip.enabled) {
       return JobStatus.SKIPPED;
     }
 
-    const asset = await this.assetRepository.getById(id, { smartSearch: { embedding: true } });
-    if (!asset?.previewPath || !asset.smartSearch?.embedding) {
-      return JobStatus.FAILED;
+    const asset = await this.assetRepository.getById(id, { smartSearch: true });
+
+    if (!asset?.isVisible || asset.duplicateId) {
+      return JobStatus.SKIPPED;
     }
 
-    if (asset.duplicateId) {
-      return JobStatus.SKIPPED;
+    if (!asset?.previewPath || !asset.smartSearch?.embedding) {
+      return JobStatus.FAILED;
     }
 
     const duplicateAssets = await this.searchRepository.searchDuplicates({
@@ -170,17 +203,22 @@ export class SearchService {
       maxDistance: machineLearning.clip.duplicateThreshold,
     });
 
-    if (duplicateAssets.length === 0) {
-      return JobStatus.SUCCESS;
+    if (duplicateAssets.length > 0) {
+      this.logger.debug(`Found ${duplicateAssets.length} duplicates for asset ${asset.id}`);
+
+      let duplicateId = duplicateAssets.find((duplicate) => duplicate.duplicateId)?.duplicateId;
+      duplicateId ??= this.cryptoRepository.randomUUID();
+
+      const duplicateAssetIds = duplicateAssets.map((duplicate) => duplicate.assetId);
+      duplicateAssetIds.push(asset.id);
+
+      await this.assetDuplicateRepository.create(duplicateId, duplicateAssetIds);
     }
 
-    let duplicateId = duplicateAssets.find((duplicate) => duplicate.duplicateId)?.duplicateId;
-    duplicateId ??= this.cryptoRepository.randomUUID();
-
-    const duplicateAssetIds = duplicateAssets.map((duplicate) => duplicate.assetId);
-    duplicateAssetIds.push(asset.id);
-
-    await this.assetDuplicateRepository.create(duplicateId, duplicateAssetIds);
+    await this.assetRepository.upsertJobStatus({
+      assetId: asset.id,
+      facesRecognizedAt: new Date(),
+    });
 
     return JobStatus.SUCCESS;
   }

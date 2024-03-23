@@ -116,6 +116,11 @@ export class JobService {
         return this.jobRepository.queue({ name: JobName.QUEUE_SMART_SEARCH, data: { force } });
       }
 
+      case QueueName.DUPLICATE_DETECTION: {
+        await this.configCore.requireFeature(FeatureFlag.SMART_SEARCH);
+        return this.jobRepository.queue({ name: JobName.QUEUE_DUPLICATE_DETECTION, data: { force } });
+      }
+
       case QueueName.METADATA_EXTRACTION: {
         return this.jobRepository.queue({ name: JobName.QUEUE_METADATA_EXTRACTION, data: { force } });
       }
