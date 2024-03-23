@@ -21,7 +21,7 @@ In any other situation, there are 3 different options that can appear:
 - OFFLINE PATHS - These files are the result of manually deleting files in the upload library or a failed file move in the past (losing track of a file).
 
 :::tip
-To get rid of Offline paths you can follow this [guide](/docs/guides/remove-offline-paths.md)
+To get rid of Offline paths you can follow this [guide](/docs/guides/remove-offline-files.md)
 :::
 
 - UNTRACKED FILES - These files are not tracked by the application. They can be the result of failed moves, interrupted uploads, or left behind due to a bug.
