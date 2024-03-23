@@ -55,15 +55,17 @@ Command line interface for Immich
 
 Options:
   -V, --version                       output the version number
-  -d, --config-directory <directory>  Configuration directory where auth.yml will be stored (default: "/Users/taapiti2/.config/immich/", env:
+  -d, --config-directory <directory>  Configuration directory where auth.yml will be stored (default: "~/.config/immich/", env:
                                       IMMICH_CONFIG_DIR)
+  -u, --url [url]                     Immich server URL (env: IMMICH_INSTANCE_URL)
+  -k, --key [key]                     Immich API key (env: IMMICH_API_KEY)
   -h, --help                          display help for command
 
 Commands:
-  upload [options] [paths...]         Upload assets
-  server-info                         Display server information
-  login-key <url> <key>               Login using an API key
+  login|login-key <url> <key>         Login using an API key
   logout                              Remove stored credentials
+  server-info                         Display server information
+  upload [options] [paths...]         Upload assets
   help [command]                      display help for command
 ```
 
@@ -72,7 +74,7 @@ Commands:
 The upload command supports the following options:
 
 ```
-Usage: immich upload [options] [paths...]
+Usage: immich upload [paths...] [options]
 
 Upload assets
 
@@ -81,7 +83,7 @@ Arguments:
 
 Options:
   -r, --recursive             Recursive (default: false, env: IMMICH_RECURSIVE)
-  -i, --ignore [paths...]     Paths to ignore (env: IMMICH_IGNORE_PATHS)
+  -i, --ignore [paths...]     Paths to ignore (default: [], env: IMMICH_IGNORE_PATHS)
   -h, --skip-hash             Don't hash files before upload (default: false, env: IMMICH_SKIP_HASH)
   -H, --include-hidden        Include hidden folders (default: false, env: IMMICH_INCLUDE_HIDDEN)
   -a, --album                 Automatically create albums based on folder name (default: false, env: IMMICH_AUTO_CREATE_ALBUM)
