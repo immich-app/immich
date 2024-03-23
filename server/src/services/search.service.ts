@@ -168,7 +168,7 @@ export class SearchService {
 
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
       return force
-        ? this.assetRepository.getAll(pagination)
+        ? this.assetRepository.getAll(pagination, { isVisible: true })
         : this.assetRepository.getWithout(pagination, WithoutProperty.DUPLICATE);
     });
 
