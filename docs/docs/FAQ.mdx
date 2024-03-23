@@ -288,7 +288,12 @@ Immich components are typically deployed using docker. To see logs for deployed 
 ### How can I run Immich as a non-root user?
 
 You can change the user in the container by setting the `user` argument in `docker-compose.yml` for each service.
-You may need to add an additional volume to `immich-microservices` that mounts internally to `/usr/src/app/.reverse-geocoding-dump`.
+You may need to add mount points or docker volumes for the following internal container paths:
+
+- `immich-microservices:/usr/src/app/.reverse-geocoding-dump`
+- `immich-machine-learning:/.config`
+- `immich-machine-learning:/.cache`
+- `immich-machine-learning:/cache`
 
 The non-root user/group needs read/write access to the volume mounts, including `UPLOAD_LOCATION`.
 
