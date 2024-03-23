@@ -23,6 +23,7 @@
   let searchQuery: string = '';
   let isSearching = false;
   let showSpinner = false;
+  let selectedOption: ComboBoxOption | undefined = undefined;
   let addClipMapMarker: (long: number, lat: number) => void;
   let removeClipMapMarker: () => void;
 
@@ -51,6 +52,9 @@
 
   const handleClickedPoint = (selected: Point) => {
     point = selected;
+    selectedOption = undefined;
+    suggestedPlaces = [];
+    searchQuery = '';
   };
 
   const handleConfirm = () => {
@@ -138,16 +142,16 @@
   <div slot="prompt" class="flex flex-col w-full h-full gap-2">
     <div class="w-64 sm:w-96">
       <Combobox
+        bind:selectedOption
+        enableFiltering={false}
         id="change-location-combobox"
         label="Search for a city"
-        options={suggestedPlaces}
-        selectedOption={undefined}
-        placeholder="City name"
-        on:select={handleSelect}
-        on:input={handleInput}
-        on:focusOut={handleFocusOut}
-        enableFiltering={false}
         {noResultsMessage}
+        on:focusOut={handleFocusOut}
+        on:input={handleInput}
+        on:select={handleSelect}
+        options={suggestedPlaces}
+        placeholder="City name"
         {showSpinner}
       />
     </div>
