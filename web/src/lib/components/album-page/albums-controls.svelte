@@ -2,7 +2,7 @@
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import Dropdown from '$lib/components/elements/dropdown.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { AlbumViewMode, albumViewSettings } from '$lib/stores/preferences.store';
+  import { AlbumFilter, AlbumViewMode, albumViewSettings } from '$lib/stores/preferences.store';
   import {
     mdiArrowDownThin,
     mdiArrowUpThin,
@@ -12,6 +12,7 @@
   } from '@mdi/js';
   import { sortByOptions, type Sort, handleCreateAlbum } from '$lib/components/album-page/albums-list.svelte';
   import SearchBar from '$lib/components/elements/search-bar.svelte';
+  import GroupTab from '$lib/components/elements/group-tab.svelte';
 
   export let searchAlbum: string;
 
@@ -25,6 +26,13 @@
   };
 </script>
 
+<div class="hidden lg:block">
+  <GroupTab
+    filters={Object.keys(AlbumFilter)}
+    selected={$albumViewSettings.filter}
+    onSelect={(selected) => ($albumViewSettings.filter = selected)}
+  />
+</div>
 <div class="hidden lg:block lg:w-40 xl:w-60 2xl:w-80 h-10">
   <SearchBar placeholder="Search albums" bind:name={searchAlbum} isSearching={false} />
 </div>

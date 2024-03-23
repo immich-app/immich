@@ -1,5 +1,5 @@
 <script lang="ts" context="module">
-  import { AlbumViewMode, albumViewSettings } from '$lib/stores/preferences.store';
+  import { AlbumFilter, AlbumViewMode, albumViewSettings } from '$lib/stores/preferences.store';
   import { goto } from '$app/navigation';
   import { AppRoute } from '$lib/constants';
   import { createAlbum, deleteAlbum, type AlbumResponseDto } from '@immich/sdk';
@@ -119,9 +119,11 @@
   import { handleError } from '$lib/utils/handle-error';
   import type { ContextMenuPosition } from '$lib/utils/context-menu';
 
-  export let albums: AlbumResponseDto[];
+  export let ownedAlbums: AlbumResponseDto[];
+  export let sharedAlbums: AlbumResponseDto[];
   export let searchAlbum: string;
 
+  let albums: AlbumResponseDto[] = [];
   let shouldShowEditAlbumForm = false;
   let selectedAlbum: AlbumResponseDto;
   let albumToDelete: AlbumResponseDto | null;
@@ -131,13 +133,27 @@
   $: {
     for (const key of sortByOptions) {
       if (key.title === $albumViewSettings.sortBy) {
-        albums = key.sortFn(key.sortDesc, albums);
-        $albumViewSettings.sortDesc = key.sortDesc; // "Save" sortDesc
+        if ($albumViewSettings.filter === AlbumFilter.All) {
+          albums = key.sortFn(
+            key.sortDesc,
+            [...sharedAlbums, ...ownedAlbums].filter(
+              (item, index, self) => index === self.findIndex((t) => t.id === item.id),
+            ),
+          );
+        }
+        if ($albumViewSettings.filter === AlbumFilter.Owned) {
+          albums = key.sortFn(key.sortDesc, ownedAlbums);
+        }
+        if ($albumViewSettings.filter === AlbumFilter.Shared) {
+          albums = key.sortFn(key.sortDesc, sharedAlbums);
+        }
+        $albumViewSettings.sortDesc = key.sortDesc;
         $albumViewSettings.sortBy = key.title;
         break;
       }
     }
   }
+
   $: isShowContextMenu = !!contextMenuTargetAlbum;
   $: albumsFiltered = albums.filter((album) => album.albumName.toLowerCase().includes(searchAlbum.toLowerCase()));
 
@@ -159,7 +175,7 @@
 
   async function handleDeleteAlbum(albumToDelete: AlbumResponseDto): Promise<void> {
     await deleteAlbum({ id: albumToDelete.id });
-    albums = albums.filter(({ id }) => id !== albumToDelete.id);
+    ownedAlbums = ownedAlbums.filter(({ id }) => id !== albumToDelete.id);
   }
 
   const chooseAlbumToDelete = (album: AlbumResponseDto) => {
@@ -194,7 +210,7 @@
   };
 
   const removeAlbumsIfEmpty = async () => {
-    for (const album of albums) {
+    for (const album of ownedAlbums) {
       if (album.assetCount == 0 && album.albumName == '') {
         try {
           await handleDeleteAlbum(album);
@@ -211,7 +227,7 @@
       message: 'Album infos updated',
       type: NotificationType.Info,
     });
-    albums[albums.findIndex((x) => x.id === selectedAlbum.id)] = selectedAlbum;
+    ownedAlbums[ownedAlbums.findIndex((x) => x.id === selectedAlbum.id)] = selectedAlbum;
   };
 </script>
 

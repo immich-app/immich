@@ -1,17 +1,13 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import empty2Url from '$lib/assets/empty-2.svg';
-  import AlbumCard from '$lib/components/album-page/album-card.svelte';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
   import { AppRoute } from '$lib/constants';
   import { createAlbum } from '@immich/sdk';
   import { mdiLink, mdiPlusBoxOutline } from '@mdi/js';
-  import { flip } from 'svelte/animate';
-  import { handleError } from '../../../lib/utils/handle-error';
+  import { handleError } from '$lib/utils/handle-error';
   import type { PageData } from './$types';
 
   export let data: PageData;
@@ -69,33 +65,6 @@
           {/each}
         </div>
       </div>
-
-      <hr class="mb-4 dark:border-immich-dark-gray" />
     {/if}
-
-    <div class="mb-6 mt-2">
-      <div>
-        <p class="mb-4 font-medium dark:text-immich-dark-fg">Albums</p>
-      </div>
-
-      <div>
-        <!-- Share Album List -->
-        <div class="grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))] mt-4 gap-y-4">
-          {#each data.sharedAlbums as album, index (album.id)}
-            <a data-sveltekit-preload-data="hover" href={`albums/${album.id}`} animate:flip={{ duration: 200 }}>
-              <AlbumCard preload={index < 20} {album} isSharingView />
-            </a>
-          {/each}
-        </div>
-
-        <!-- Empty List -->
-        {#if data.sharedAlbums.length === 0}
-          <EmptyPlaceholder
-            text="Create a shared album to share photos and videos with people in your network"
-            src={empty2Url}
-          />
-        {/if}
-      </div>
-    </div>
-  </div>
-</UserPageLayout>
+  </div></UserPageLayout
+>
