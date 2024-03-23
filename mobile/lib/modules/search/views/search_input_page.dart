@@ -1,6 +1,10 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 
@@ -10,6 +14,123 @@ class SearchInputPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final selectedPlace = useState('');
+
+    showPeoplePicker() {}
+
+    showPlacePicker() {
+      final countries = ['United States', 'Canada', 'Mexico'];
+      final cities = [
+        'New York',
+        'Los Angeles',
+        'San Francisco',
+        'Chicago',
+        'New York',
+        'Los Angeles',
+        'San Francisco',
+        'Chicago',
+        'New York',
+        'Los Angeles',
+        'San Francisco',
+        'Chicago',
+        'New York',
+        'Los Angeles',
+        'San Francisco',
+        'Chicago'
+      ];
+      final states = ['NY', 'CA', 'CA', 'IL'];
+      showModalBottomSheet(
+        context: context,
+        builder: (BuildContext context) {
+          return Column(
+            children: [
+              const Text('Select a place'),
+              Expanded(
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: ListWheelScrollView(
+                        itemExtent: 60,
+                        diameterRatio: 2,
+                        onSelectedItemChanged: (value) {
+                          HapticFeedback.selectionClick();
+                        },
+                        children: List.generate(
+                          countries.length,
+                          (index) {
+                            return Container(
+                              color: Colors.blue[500],
+                              width: double.infinity,
+                              child: Text(
+                                countries[index],
+                                style: context.textTheme.bodyLarge,
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: ListWheelScrollView(
+                        itemExtent: 60,
+                        diameterRatio: 2,
+                        onSelectedItemChanged: (value) {
+                          HapticFeedback.selectionClick();
+                        },
+                        children: List.generate(
+                          cities.length,
+                          (index) {
+                            return Container(
+                              color: Colors.red[500],
+                              width: double.infinity,
+                              child: Text(
+                                cities[index],
+                                style: context.textTheme.bodyLarge,
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: ListWheelScrollView(
+                        itemExtent: 60,
+                        diameterRatio: 2,
+                        onSelectedItemChanged: (value) {
+                          HapticFeedback.selectionClick();
+                        },
+                        children: List.generate(
+                          states.length,
+                          (index) {
+                            return Container(
+                              color: Colors.green[200],
+                              width: double.infinity,
+                              child: Text(
+                                states[index],
+                                style: context.textTheme.bodyLarge,
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          );
+        },
+      );
+    }
+
+    showCameraPicker() {}
+
+    showDatePicker() {}
+
+    showMediaTypePicker() {}
+
+    showDisplayOptionPicker() {}
+
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: true,
@@ -47,12 +168,18 @@ class SearchInputPage extends HookConsumerWidget {
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.only(left: 16),
                 children: [
-                  SearchFilterChip(onTap: () {}, label: 'People'),
-                  SearchFilterChip(onTap: () {}, label: 'Places'),
-                  SearchFilterChip(onTap: () {}, label: 'Camera'),
-                  SearchFilterChip(onTap: () {}, label: 'Date'),
-                  SearchFilterChip(onTap: () {}, label: 'Media Type'),
-                  SearchFilterChip(onTap: () {}, label: 'Display Options'),
+                  SearchFilterChip(onTap: showPeoplePicker, label: 'People'),
+                  SearchFilterChip(onTap: showPlacePicker, label: 'Places'),
+                  SearchFilterChip(onTap: showCameraPicker, label: 'Camera'),
+                  SearchFilterChip(onTap: showDatePicker, label: 'Date'),
+                  SearchFilterChip(
+                    onTap: showMediaTypePicker,
+                    label: 'Media Type',
+                  ),
+                  SearchFilterChip(
+                    onTap: showDisplayOptionPicker,
+                    label: 'Display Options',
+                  ),
                 ],
               ),
             ),
