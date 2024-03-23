@@ -1,7 +1,6 @@
 <script lang="ts">
   export let filters: string[];
   export let selected: string;
-
   export let onSelect: (selected: string) => void;
 </script>
 

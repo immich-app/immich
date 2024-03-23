@@ -26,20 +26,20 @@
   };
 </script>
 
-<div class="hidden lg:block">
+<div class="hidden xl:block">
   <GroupTab
     filters={Object.keys(AlbumFilter)}
     selected={$albumViewSettings.filter}
     onSelect={(selected) => ($albumViewSettings.filter = selected)}
   />
 </div>
-<div class="hidden lg:block lg:w-40 xl:w-60 2xl:w-80 h-10">
+<div class="hidden xl:block xl:w-60 2xl:w-80 h-10">
   <SearchBar placeholder="Search albums" bind:name={searchAlbum} isSearching={false} />
 </div>
 <LinkButton on:click={handleCreateAlbum}>
   <div class="flex place-items-center gap-2 text-sm">
     <Icon path={mdiPlusBoxOutline} size="18" />
-    Create album
+    <p class="hidden md:block">Create album</p>
   </div>
 </LinkButton>
 

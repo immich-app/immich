@@ -118,6 +118,8 @@
   import AlbumsTable from '$lib/components/album-page/albums-table.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import type { ContextMenuPosition } from '$lib/utils/context-menu';
+  import GroupTab from '$lib/components/elements/group-tab.svelte';
+  import SearchBar from '$lib/components/elements/search-bar.svelte';
 
   export let ownedAlbums: AlbumResponseDto[];
   export let sharedAlbums: AlbumResponseDto[];
@@ -133,20 +135,28 @@
   $: {
     for (const key of sortByOptions) {
       if (key.title === $albumViewSettings.sortBy) {
-        if ($albumViewSettings.filter === AlbumFilter.All) {
-          albums = key.sortFn(
-            key.sortDesc,
-            [...sharedAlbums, ...ownedAlbums].filter(
-              (item, index, self) => index === self.findIndex((t) => t.id === item.id),
-            ),
-          );
+        switch ($albumViewSettings.filter) {
+          case AlbumFilter.All: {
+            albums = key.sortFn(
+              key.sortDesc,
+              [...sharedAlbums, ...ownedAlbums].filter(
+                (album, index, self) => index === self.findIndex((item) => album.id === item.id),
+              ),
+            );
+            break;
+          }
+
+          case AlbumFilter.Owned: {
+            albums = key.sortFn(key.sortDesc, ownedAlbums);
+            break;
+          }
+
+          case AlbumFilter.Shared: {
+            albums = key.sortFn(key.sortDesc, sharedAlbums);
+            break;
+          }
         }
-        if ($albumViewSettings.filter === AlbumFilter.Owned) {
-          albums = key.sortFn(key.sortDesc, ownedAlbums);
-        }
-        if ($albumViewSettings.filter === AlbumFilter.Shared) {
-          albums = key.sortFn(key.sortDesc, sharedAlbums);
-        }
+
         $albumViewSettings.sortDesc = key.sortDesc;
         $albumViewSettings.sortBy = key.title;
         break;
@@ -243,6 +253,18 @@
 
 {#if albums.length > 0}
   <!-- Album Card -->
+  <div class=" block xl:hidden">
+    <div class="w-fit dark:text-immich-dark-fg py-2">
+      <GroupTab
+        filters={Object.keys(AlbumFilter)}
+        selected={$albumViewSettings.filter}
+        onSelect={(selected) => ($albumViewSettings.filter = selected)}
+      />
+    </div>
+    <div class="w-60">
+      <SearchBar placeholder="Search albums" bind:name={searchAlbum} isSearching={false} />
+    </div>
+  </div>
   {#if $albumViewSettings.view === AlbumViewMode.Cover}
     <div class="grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))] mt-4 gap-y-4">
       {#each albumsFiltered as album, index (album.id)}
