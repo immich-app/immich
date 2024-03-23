@@ -10,7 +10,6 @@ import { SmartSearchEntity } from 'src/entities/smart-search.entity';
 import { DatabaseExtension } from 'src/interfaces/database.interface';
 import {
   AssetSearchOptions,
-  Embedding,
   FaceEmbeddingSearch,
   FaceSearchResult,
   ISearchRepository,
