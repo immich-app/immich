@@ -298,6 +298,13 @@ export class JobService {
         break;
       }
 
+      case JobName.SMART_SEARCH: {
+        if (item.data.source === 'upload') {
+          await this.jobRepository.queue({ name: JobName.DUPLICATE_DETECTION, data: item.data });
+        }
+        break;
+      }
+
       case JobName.USER_DELETION: {
         this.eventRepository.clientBroadcast(ClientEvent.USER_DELETE, item.data.id);
         break;

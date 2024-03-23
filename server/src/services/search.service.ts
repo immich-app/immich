@@ -16,8 +16,11 @@ import {
 } from 'src/dtos/search.dto';
 import { AssetOrder } from 'src/entities/album.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
+import { IAssetDuplicateRepository } from 'src/interfaces/asset-duplicate.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
+import { ICryptoRepository } from 'src/interfaces/crypto.interface';
+import { IEntityJob, JobStatus } from 'src/interfaces/job.interface';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
 import { IMetadataRepository } from 'src/interfaces/metadata.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
@@ -38,6 +41,8 @@ export class SearchService {
     @Inject(IPartnerRepository) private partnerRepository: IPartnerRepository,
     @Inject(IMetadataRepository) private metadataRepository: IMetadataRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
+    @Inject(IAssetDuplicateRepository) private assetDuplicateRepository: IAssetDuplicateRepository,
   ) {
     this.logger.setContext(SearchService.name);
     this.configCore = SystemConfigCore.create(configRepository, logger);
@@ -142,6 +147,42 @@ export class SearchService {
         return this.metadataRepository.getCameraModels(auth.user.id, dto.make);
       }
     }
+  }
+
+  async handleSearchDuplicates({ id }: IEntityJob): Promise<JobStatus> {
+    const { machineLearning } = await this.configCore.getConfig();
+    if (!machineLearning.enabled || !machineLearning.clip.enabled) {
+      return JobStatus.SKIPPED;
+    }
+
+    const asset = await this.assetRepository.getById(id, { smartSearch: { embedding: true } });
+    if (!asset?.previewPath || !asset.smartSearch?.embedding) {
+      return JobStatus.FAILED;
+    }
+
+    if (asset.duplicateId) {
+      return JobStatus.SKIPPED;
+    }
+
+    const duplicateAssets = await this.searchRepository.searchDuplicates({
+      userIds: [asset.ownerId],
+      embedding: asset.smartSearch.embedding,
+      maxDistance: machineLearning.clip.duplicateThreshold,
+    });
+
+    if (duplicateAssets.length === 0) {
+      return JobStatus.SUCCESS;
+    }
+
+    let duplicateId = duplicateAssets.find((duplicate) => duplicate.duplicateId)?.duplicateId;
+    duplicateId ??= this.cryptoRepository.randomUUID();
+
+    const duplicateAssetIds = duplicateAssets.map((duplicate) => duplicate.assetId);
+    duplicateAssetIds.push(asset.id);
+
+    await this.assetDuplicateRepository.create(duplicateId, duplicateAssetIds);
+
+    return JobStatus.SUCCESS;
   }
 
   private async getUserIdsToSearch(auth: AuthDto): Promise<string[]> {

@@ -56,6 +56,7 @@ export const defaults = Object.freeze<SystemConfig>({
     [QueueName.METADATA_EXTRACTION]: { concurrency: 5 },
     [QueueName.FACE_DETECTION]: { concurrency: 2 },
     [QueueName.SEARCH]: { concurrency: 5 },
+    [QueueName.DUPLICATE_DETECTION]: { concurrency: 5 },
     [QueueName.SIDECAR]: { concurrency: 5 },
     [QueueName.LIBRARY]: { concurrency: 5 },
     [QueueName.MIGRATION]: { concurrency: 5 },
@@ -73,6 +74,7 @@ export const defaults = Object.freeze<SystemConfig>({
     clip: {
       enabled: true,
       modelName: 'ViT-B-32__openai',
+      duplicateThreshold: 0.01,
     },
     facialRecognition: {
       enabled: true,
