@@ -108,7 +108,6 @@ export interface SearchExifOptions {
 export interface SearchEmbeddingOptions {
   embedding: Embedding;
   userIds: string[];
-  maxDistance?: number;
 }
 
 export interface SearchPeopleOptions {
@@ -150,6 +149,13 @@ export type SmartSearchOptions = SearchDateOptions &
 export interface FaceEmbeddingSearch extends SearchEmbeddingOptions {
   hasPerson?: boolean;
   numResults: number;
+  maxDistance?: number;
+}
+
+export interface AssetDuplicateSearch {
+  assetId: string;
+  userIds: string[];
+  maxDistance?: number;
 }
 
 export interface FaceSearchResult {
@@ -167,7 +173,7 @@ export interface ISearchRepository {
   init(modelName: string): Promise<void>;
   searchMetadata(pagination: SearchPaginationOptions, options: AssetSearchOptions): Paginated<AssetEntity>;
   searchSmart(pagination: SearchPaginationOptions, options: SmartSearchOptions): Paginated<AssetEntity>;
-  searchDuplicates(options: SearchEmbeddingOptions): Promise<AssetDuplicateResult[]>;
+  searchDuplicates(options: AssetDuplicateSearch): Promise<AssetDuplicateResult[]>;
   searchFaces(search: FaceEmbeddingSearch): Promise<FaceSearchResult[]>;
   upsert(assetId: string, embedding: number[]): Promise<void>;
   searchPlaces(placeName: string): Promise<GeodataPlacesEntity[]>;

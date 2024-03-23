@@ -11,11 +11,11 @@ import { DatabaseExtension } from 'src/interfaces/database.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import {
   AssetDuplicateResult,
+  AssetDuplicateSearch,
   AssetSearchOptions,
   FaceEmbeddingSearch,
   FaceSearchResult,
   ISearchRepository,
-  SearchEmbeddingOptions,
   SearchPaginationOptions,
   SmartSearchOptions,
 } from 'src/interfaces/search.interface';
@@ -156,25 +156,27 @@ export class SearchRepository implements ISearchRepository {
       },
     ],
   })
-  searchDuplicates({ embedding, maxDistance, userIds }: SearchEmbeddingOptions): Promise<AssetDuplicateResult[]> {
+  searchDuplicates({ assetId, maxDistance, userIds }: AssetDuplicateSearch): Promise<AssetDuplicateResult[]> {
     const cte = this.assetRepository.createQueryBuilder('asset');
     cte
-      .select('asset.id', 'assetId')
-      .addSelect('asset.duplicateId')
-      .addSelect('search.embedding <=> :embedding', 'distance')
+      .select('search.assetId', 'assetId')
+      .addSelect('asset.duplicateId', 'duplicateId')
+      .addSelect(`(SELECT embedding FROM smart_search WHERE "assetId" = :assetId) <=> search.embedding`, 'distance')
       .innerJoin('asset.smartSearch', 'search')
       .where('asset.ownerId IN (:...userIds )')
-      .orderBy('asset.embedding <=> :embedding')
+      .andWhere('asset.id != :assetId', { assetId })
+      .orderBy('search.embedding <=> (SELECT embedding FROM smart_search WHERE "assetId" = :assetId)')
       .limit(64)
-      .setParameters({ embedding: asVector(embedding), userIds });
+      .setParameters({ assetId, userIds });
 
-    const builder = this.assetRepository
-      .createQueryBuilder('asset')
+    const builder = this.assetRepository.manager
+      .createQueryBuilder()
       .addCommonTableExpression(cte, 'cte')
-      .select('cte.*')
-      .where('cte.distance <= :maxDistance', { maxDistance });
+      .from('cte', 'res')
+      .select('res.*')
+      .where('res.distance <= :maxDistance', { maxDistance });
 
-    return builder.getMany() as any as Promise<AssetDuplicateResult[]>;
+    return builder.getRawMany() as any as Promise<AssetDuplicateResult[]>;
   }
 
   @GenerateSql({
