@@ -16,6 +16,7 @@ import { StorageService } from 'src/services/storage.service';
 import { SystemConfigService } from 'src/services/system-config.service';
 import { UserService } from 'src/services/user.service';
 import { otelSDK } from 'src/utils/instrumentation';
+import { SearchService } from './search.service';
 
 @Injectable()
 export class MicroservicesService {
@@ -35,6 +36,7 @@ export class MicroservicesService {
     private storageTemplateService: StorageTemplateService,
     private storageService: StorageService,
     private userService: UserService,
+    private searchService: SearchService,
   ) {}
 
   async init() {
@@ -53,6 +55,7 @@ export class MicroservicesService {
       [JobName.USER_SYNC_USAGE]: () => this.userService.handleUserSyncUsage(),
       [JobName.QUEUE_SMART_SEARCH]: (data) => this.smartInfoService.handleQueueEncodeClip(data),
       [JobName.SMART_SEARCH]: (data) => this.smartInfoService.handleEncodeClip(data),
+      [JobName.DUPLICATE_DETECTION]: (data) => this.searchService.handleSearchDuplicates(data),
       [JobName.STORAGE_TEMPLATE_MIGRATION]: () => this.storageTemplateService.handleMigration(),
       [JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE]: (data) => this.storageTemplateService.handleMigrationSingle(data),
       [JobName.QUEUE_MIGRATION]: () => this.mediaService.handleQueueMigration(),
