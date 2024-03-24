@@ -22,12 +22,12 @@ import {
   CheckExistingAssetsDto,
   CreateAssetDto,
   GetAssetThumbnailDto,
+  GetAssetThumbnailFormatEnum,
   ServeFileDto,
 } from 'src/dtos/asset-v1.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { LibraryType } from 'src/entities/library.entity';
-import { ImageFormat } from 'src/entities/system-config.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAssetRepositoryV1 } from 'src/interfaces/asset-v1.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
@@ -244,15 +244,15 @@ export class AssetServiceV1 {
     };
   }
 
-  private getThumbnailPath(asset: AssetEntity, format: ImageFormat) {
+  private getThumbnailPath(asset: AssetEntity, format: GetAssetThumbnailFormatEnum) {
     switch (format) {
-      case ImageFormat.WEBP: {
+      case GetAssetThumbnailFormatEnum.WEBP: {
         if (asset.thumbnailPath) {
           return asset.thumbnailPath;
         }
         this.logger.warn(`WebP thumbnail requested but not found for asset ${asset.id}, falling back to JPEG`);
       }
-      case ImageFormat.JPEG: {
+      case GetAssetThumbnailFormatEnum.JPEG: {
         if (!asset.previewPath) {
           throw new NotFoundException(`No thumbnail found for asset ${asset.id}`);
         }

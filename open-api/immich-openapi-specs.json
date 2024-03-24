@@ -10348,8 +10348,8 @@
       },
       "ThumbnailFormat": {
         "enum": [
-          "jpeg",
-          "webp"
+          "JPEG",
+          "WEBP"
         ],
         "type": "string"
       },

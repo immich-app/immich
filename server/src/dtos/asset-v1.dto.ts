@@ -113,17 +113,22 @@ export class CreateAssetDto {
   [UploadFieldName.SIDECAR_DATA]?: any;
 }
 
+export enum GetAssetThumbnailFormatEnum {
+  JPEG = 'JPEG',
+  WEBP = 'WEBP',
+}
+
 export class GetAssetThumbnailDto {
   @Optional()
-  @IsEnum(ImageFormat)
+  @IsEnum(GetAssetThumbnailFormatEnum)
   @ApiProperty({
     type: String,
-    enum: ImageFormat,
-    default: ImageFormat.WEBP,
+    enum: GetAssetThumbnailFormatEnum,
+    default: GetAssetThumbnailFormatEnum.WEBP,
     required: false,
     enumName: 'ThumbnailFormat',
   })
-  format: ImageFormat = ImageFormat.WEBP;
+  format: GetAssetThumbnailFormatEnum = GetAssetThumbnailFormatEnum.WEBP;
 }
 
 export class SearchPropertiesDto {

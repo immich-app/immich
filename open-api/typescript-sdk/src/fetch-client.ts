@@ -2790,8 +2790,8 @@ export enum AssetJobName {
     TranscodeVideo = "transcode-video"
 }
 export enum ThumbnailFormat {
-    Jpeg = "jpeg",
-    Webp = "webp"
+    Jpeg = "JPEG",
+    Webp = "WEBP"
 }
 export enum EntityType {
     Asset = "ASSET",
