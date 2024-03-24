@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/modules/search/ui/search_filter/display_option_picker.dart';
 import 'package:immich_mobile/modules/search/ui/search_filter/filter_bottom_sheet_scaffold.dart';
 import 'package:immich_mobile/modules/search/ui/search_filter/media_type_picker.dart';
 import 'package:immich_mobile/modules/search/ui/search_filter/search_filter_chip.dart';
@@ -54,7 +55,21 @@ class SearchInputPage extends HookConsumerWidget {
       );
     }
 
-    showDisplayOptionPicker() {}
+    showDisplayOptionPicker() {
+      showFilterBottomSheet(
+        context: context,
+        child: FilterBottomSheetScaffold(
+          title: 'Select media type',
+          onSearch: () {},
+          onClear: () {},
+          child: DisplayOptionPicker(
+            onSelect: (value) {
+              debugPrint("Selected media type: $value");
+            },
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
