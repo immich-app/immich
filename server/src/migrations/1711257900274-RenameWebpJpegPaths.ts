@@ -13,6 +13,16 @@ export class RenameWebpJpegPaths1711257900274 implements MigrationInterface {
       SET key = 'image.thumbnailSize'
       WHERE key = 'thumbnail.webpSize'`,
     );
+    await queryRunner.query(
+      `UPDATE system_config
+      SET key = 'image.quality'
+      WHERE key = 'thumbnail.quality'`,
+    );
+    await queryRunner.query(
+      `UPDATE system_config
+      SET key = 'image.colorspace'
+      WHERE key = 'thumbnail.colorspace'`,
+    );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
@@ -26,6 +36,16 @@ export class RenameWebpJpegPaths1711257900274 implements MigrationInterface {
       `UPDATE system_config
       SET key = 'thumbnail.webpSize'
       WHERE key = 'image.thumbnailSize'`,
+    );
+    await queryRunner.query(
+      `UPDATE system_config
+      SET key = 'thumbnail.quality'
+      WHERE key = 'image.quality'`,
+    );
+    await queryRunner.query(
+      `UPDATE system_config
+      SET key = 'thumbnail.colorspace'
+      WHERE key = 'image.colorspace'`,
     );
   }
 }
