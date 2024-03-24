@@ -164,10 +164,11 @@ export class SearchRepository implements ISearchRepository {
       .addSelect(`(SELECT embedding FROM smart_search WHERE "assetId" = :assetId) <=> search.embedding`, 'distance')
       .innerJoin('asset.smartSearch', 'search')
       .where('asset.ownerId IN (:...userIds )')
-      .andWhere('asset.id != :assetId', { assetId })
+      .andWhere('asset.id != :assetId')
+      .andWhere('asset.isVisible = :isVisible')
       .orderBy('search.embedding <=> (SELECT embedding FROM smart_search WHERE "assetId" = :assetId)')
       .limit(64)
-      .setParameters({ assetId, userIds });
+      .setParameters({ assetId, isVisible: true, userIds });
 
     const builder = this.assetRepository.manager
       .createQueryBuilder()

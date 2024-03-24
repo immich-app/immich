@@ -4,21 +4,25 @@ import { AssetDuplicateEntity } from 'src/entities/asset-duplicate.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { IAssetDuplicateRepository } from 'src/interfaces/asset-duplicate.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 
 @Instrumentation()
 @Injectable()
 export class AssetDuplicateRepository implements IAssetDuplicateRepository {
   constructor(@InjectRepository(AssetDuplicateEntity) private repository: Repository<AssetDuplicateEntity>) {}
 
-  async create(id: string, assetIds: string[]) {
+  async upsert(id: string, assetIds: string[], oldDuplicateIds: string[] = []): Promise<void> {
     await this.repository.manager.transaction(async (manager) => {
       await manager.upsert(
         AssetDuplicateEntity,
         assetIds.map((assetId) => ({ id, assetId })),
         ['assetId'],
       );
-      await manager.update(AssetEntity, assetIds, { duplicateId: id });
+      if (oldDuplicateIds.length > 0) {
+        await manager.update(AssetDuplicateEntity, { id: In(oldDuplicateIds) }, { id });
+      }
+      await manager.update(AssetEntity, { id: In(assetIds) }, { duplicateId: id });
+      await manager.update(AssetEntity, { duplicateId: In(oldDuplicateIds) }, { duplicateId: id }); // TODO: cascade should handle this, but it doesn't seem to
     });
   }
 
