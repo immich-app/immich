@@ -1,11 +1,13 @@
 # System Settings
 
-The System Settings page is the page that is visible only to the server administrator, through the page you can manage the global settings that will affect all users.
+On the system settings page, the administrator can manage global settings for the Immich instance.
 
-:::info
-In any case of change, you can always return to the default settings by clicking the `Reset to default` button.
+:::note
+Viewing and modifying the system settings is restricted to the Administrator.
+:::
 
-If you have made a change and want to return to the previous settings before the new change, you can click the `Reset` button to the right of the `Save` button.
+:::tip
+You can always return to the default settings by clicking the `Reset to default` button.
 :::
 
 ## Job Settings
@@ -89,17 +91,21 @@ Immich supports [Reverse Geocoding](/docs/features/reverse-geocoding) using data
 
 ## OAuth Authentication
 
-Immich supports OAuth Authentication, since this part is long and contains many details, we separated it from this page, you can read more [here](/docs/administration/oauth).
+Immich supports OAuth Authentication. Read more about this feature and its configuration [here](/docs/administration/oauth).
 
 ## Password Authentication
 
-The administrator can choose to disable the username and password globally, which will mean that **no one**, including the system administrator, will be able to log into Immich until the configuration is activated through the [Server CLI](/docs/administration/server-commands).
+The administrator can choose to disable login with username and password for the entire instance. This means that **no one**, including the system administrator, will be able to log using this method. If [OAuth Authentication](/docs/administration/oauth) is also disabled, no users will be able to login using **any** method. Changing this setting does not affect existing sessions, just new login attempts.
+
+:::tip
+You can always use the [Server CLI](/docs/administration/server-commands) to re-enable password login.
+:::
 
 ## Server Settings
 
 ### External Domain
 
-Add the option to set the instance's "external domain" when constructing the shared link URL to copy to the clipboard.
+When set, will override the domain name used when viewing and copying a shared link.
 
 ### Welcome Message
 
@@ -107,7 +113,7 @@ The administrator can set a custom message on the login screen (the message will
 
 ## Storage Template
 
-Immich supports the storage template option, since this section contains a lot of information, we split it into another page, read more [here](/docs/administration/storage-template).
+Immich supports a custom [Storage Template](/docs/administration/storage-template). Learn more about this feature and its configuration [here](/docs/administration/storage-template).
 
 ## Theme Settings
 
@@ -115,9 +121,9 @@ You can write custom CSS that will get loaded in the web application for all use
 
 For example:
 
-```CSS title='CSS'
-  p {
-  color: green
+```css title='Custom CSS'
+p {
+  color: green;
 }
 ```
 
@@ -160,7 +166,7 @@ The system administrator can choose to delete users through the administration p
 
 ## Version Check
 
-Enable/disable the new version notification, when this option is enabled period requests to GitHub to check for new releases.
+When this option is enabled the `immich-server` will periodically make requests to GitHub to check for new releases.
 
 ## Video Transcoding Settings
 
