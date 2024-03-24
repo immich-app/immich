@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { ArrayNotEmpty, IsArray, IsEnum, IsInt, IsNotEmpty, IsString, IsUUID, ValidateNested } from 'class-validator';
 import { UploadFieldName } from 'src/dtos/asset.dto';
+import { ImageFormat } from 'src/entities/system-config.entity';
 import { Optional, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
 
 export class AssetBulkUploadCheckItem {
@@ -112,22 +113,17 @@ export class CreateAssetDto {
   [UploadFieldName.SIDECAR_DATA]?: any;
 }
 
-export enum GetAssetThumbnailFormatEnum {
-  JPEG = 'JPEG',
-  WEBP = 'WEBP',
-}
-
 export class GetAssetThumbnailDto {
   @Optional()
-  @IsEnum(GetAssetThumbnailFormatEnum)
+  @IsEnum(ImageFormat)
   @ApiProperty({
     type: String,
-    enum: GetAssetThumbnailFormatEnum,
-    default: GetAssetThumbnailFormatEnum.WEBP,
+    enum: ImageFormat,
+    default: ImageFormat.WEBP,
     required: false,
     enumName: 'ThumbnailFormat',
   })
-  format: GetAssetThumbnailFormatEnum = GetAssetThumbnailFormatEnum.WEBP;
+  format: ImageFormat = ImageFormat.WEBP;
 }
 
 export class SearchPropertiesDto {

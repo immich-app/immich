@@ -2102,7 +2102,7 @@
             }
           },
           {
-            "name": "resizePath",
+            "name": "previewPath",
             "required": false,
             "in": "query",
             "schema": {
@@ -2140,6 +2140,14 @@
             "in": "query",
             "schema": {
               "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "thumbnailPath",
+            "required": false,
+            "in": "query",
+            "schema": {
               "type": "string"
             }
           },
@@ -2184,14 +2192,6 @@
             "in": "query",
             "schema": {
               "format": "date-time",
-              "type": "string"
-            }
-          },
-          {
-            "name": "webpPath",
-            "required": false,
-            "in": "query",
-            "schema": {
               "type": "string"
             }
           },
@@ -7784,7 +7784,7 @@
           "id": {
             "type": "string"
           },
-          "resizePath": {
+          "previewPath": {
             "type": "string"
           }
         },
@@ -7793,7 +7793,7 @@
           "deviceAssetId",
           "deviceId",
           "id",
-          "resizePath"
+          "previewPath"
         ],
         "type": "object"
       },
@@ -7811,7 +7811,7 @@
           "object": {
             "type": "string"
           },
-          "resizePath": {
+          "previewPath": {
             "type": "string"
           }
         },
@@ -7820,7 +7820,7 @@
           "deviceId",
           "id",
           "object",
-          "resizePath"
+          "previewPath"
         ],
         "type": "object"
       },
@@ -8113,6 +8113,13 @@
           "pathValue"
         ],
         "type": "object"
+      },
+      "ImageFormat": {
+        "enum": [
+          "jpeg",
+          "webp"
+        ],
+        "type": "string"
       },
       "JobCommand": {
         "enum": [
@@ -8555,7 +8562,7 @@
             },
             "type": "array"
           },
-          "resizePath": {
+          "previewPath": {
             "type": "string"
           },
           "size": {
@@ -8570,6 +8577,9 @@
           },
           "takenBefore": {
             "format": "date-time",
+            "type": "string"
+          },
+          "thumbnailPath": {
             "type": "string"
           },
           "trashedAfter": {
@@ -8589,9 +8599,6 @@
           },
           "updatedBefore": {
             "format": "date-time",
-            "type": "string"
-          },
-          "webpPath": {
             "type": "string"
           },
           "withArchived": {
@@ -8746,8 +8753,8 @@
       "PathType": {
         "enum": [
           "original",
-          "jpeg_thumbnail",
-          "webp_thumbnail",
+          "preview",
+          "thumbnail",
           "encoded_video",
           "sidecar",
           "face",
@@ -9743,6 +9750,9 @@
           "ffmpeg": {
             "$ref": "#/components/schemas/SystemConfigFFmpegDto"
           },
+          "image": {
+            "$ref": "#/components/schemas/SystemConfigThumbnailDto"
+          },
           "job": {
             "$ref": "#/components/schemas/SystemConfigJobDto"
           },
@@ -9779,9 +9789,6 @@
           "theme": {
             "$ref": "#/components/schemas/SystemConfigThemeDto"
           },
-          "thumbnail": {
-            "$ref": "#/components/schemas/SystemConfigThumbnailDto"
-          },
           "trash": {
             "$ref": "#/components/schemas/SystemConfigTrashDto"
           },
@@ -9791,6 +9798,7 @@
         },
         "required": [
           "ffmpeg",
+          "image",
           "job",
           "library",
           "logging",
@@ -9803,7 +9811,6 @@
           "server",
           "storageTemplate",
           "theme",
-          "thumbnail",
           "trash",
           "user"
         ],
@@ -10256,21 +10263,29 @@
           "colorspace": {
             "$ref": "#/components/schemas/Colorspace"
           },
-          "jpegSize": {
+          "previewFormat": {
+            "$ref": "#/components/schemas/ImageFormat"
+          },
+          "previewSize": {
             "type": "integer"
           },
           "quality": {
             "type": "integer"
           },
-          "webpSize": {
+          "thumbnailFormat": {
+            "$ref": "#/components/schemas/ImageFormat"
+          },
+          "thumbnailSize": {
             "type": "integer"
           }
         },
         "required": [
           "colorspace",
-          "jpegSize",
+          "previewFormat",
+          "previewSize",
           "quality",
-          "webpSize"
+          "thumbnailFormat",
+          "thumbnailSize"
         ],
         "type": "object"
       },
@@ -10333,8 +10348,8 @@
       },
       "ThumbnailFormat": {
         "enum": [
-          "JPEG",
-          "WEBP"
+          "jpeg",
+          "webp"
         ],
         "type": "string"
       },

@@ -242,14 +242,14 @@ export type CuratedLocationsResponseDto = {
     deviceAssetId: string;
     deviceId: string;
     id: string;
-    resizePath: string;
+    previewPath: string;
 };
 export type CuratedObjectsResponseDto = {
     deviceAssetId: string;
     deviceId: string;
     id: string;
     "object": string;
-    resizePath: string;
+    previewPath: string;
 };
 export type CheckExistingAssetsDto = {
     deviceAssetIds: string[];
@@ -640,17 +640,17 @@ export type MetadataSearchDto = {
     originalPath?: string;
     page?: number;
     personIds?: string[];
-    resizePath?: string;
+    previewPath?: string;
     size?: number;
     state?: string;
     takenAfter?: string;
     takenBefore?: string;
+    thumbnailPath?: string;
     trashedAfter?: string;
     trashedBefore?: string;
     "type"?: AssetTypeEnum;
     updatedAfter?: string;
     updatedBefore?: string;
-    webpPath?: string;
     withArchived?: boolean;
     withDeleted?: boolean;
     withExif?: boolean;
@@ -827,6 +827,14 @@ export type SystemConfigFFmpegDto = {
     transcode: TranscodePolicy;
     twoPass: boolean;
 };
+export type SystemConfigThumbnailDto = {
+    colorspace: Colorspace;
+    previewFormat: ImageFormat;
+    previewSize: number;
+    quality: number;
+    thumbnailFormat: ImageFormat;
+    thumbnailSize: number;
+};
 export type JobSettingsDto = {
     concurrency: number;
 };
@@ -919,12 +927,6 @@ export type SystemConfigStorageTemplateDto = {
 export type SystemConfigThemeDto = {
     customCss: string;
 };
-export type SystemConfigThumbnailDto = {
-    colorspace: Colorspace;
-    jpegSize: number;
-    quality: number;
-    webpSize: number;
-};
 export type SystemConfigTrashDto = {
     days: number;
     enabled: boolean;
@@ -934,6 +936,7 @@ export type SystemConfigUserDto = {
 };
 export type SystemConfigDto = {
     ffmpeg: SystemConfigFFmpegDto;
+    image: SystemConfigThumbnailDto;
     job: SystemConfigJobDto;
     library: SystemConfigLibraryDto;
     logging: SystemConfigLoggingDto;
@@ -946,7 +949,6 @@ export type SystemConfigDto = {
     server: SystemConfigServerDto;
     storageTemplate: SystemConfigStorageTemplateDto;
     theme: SystemConfigThemeDto;
-    thumbnail: SystemConfigThumbnailDto;
     trash: SystemConfigTrashDto;
     user: SystemConfigUserDto;
 };
@@ -1497,7 +1499,7 @@ export function updateAsset({ id, updateAssetDto }: {
         body: updateAssetDto
     })));
 }
-export function searchAssets({ checksum, city, country, createdAfter, createdBefore, deviceAssetId, deviceId, encodedVideoPath, id, isArchived, isEncoded, isExternal, isFavorite, isMotion, isNotInAlbum, isOffline, isReadOnly, isVisible, lensModel, libraryId, make, model, order, originalFileName, originalPath, page, personIds, resizePath, size, state, takenAfter, takenBefore, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, webpPath, withArchived, withDeleted, withExif, withPeople, withStacked }: {
+export function searchAssets({ checksum, city, country, createdAfter, createdBefore, deviceAssetId, deviceId, encodedVideoPath, id, isArchived, isEncoded, isExternal, isFavorite, isMotion, isNotInAlbum, isOffline, isReadOnly, isVisible, lensModel, libraryId, make, model, order, originalFileName, originalPath, page, personIds, previewPath, size, state, takenAfter, takenBefore, thumbnailPath, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, withArchived, withDeleted, withExif, withPeople, withStacked }: {
     checksum?: string;
     city?: string;
     country?: string;
@@ -1525,17 +1527,17 @@ export function searchAssets({ checksum, city, country, createdAfter, createdBef
     originalPath?: string;
     page?: number;
     personIds?: string[];
-    resizePath?: string;
+    previewPath?: string;
     size?: number;
     state?: string;
     takenAfter?: string;
     takenBefore?: string;
+    thumbnailPath?: string;
     trashedAfter?: string;
     trashedBefore?: string;
     $type?: AssetTypeEnum;
     updatedAfter?: string;
     updatedBefore?: string;
-    webpPath?: string;
     withArchived?: boolean;
     withDeleted?: boolean;
     withExif?: boolean;
@@ -1573,17 +1575,17 @@ export function searchAssets({ checksum, city, country, createdAfter, createdBef
         originalPath,
         page,
         personIds,
-        resizePath,
+        previewPath,
         size,
         state,
         takenAfter,
         takenBefore,
+        thumbnailPath,
         trashedAfter,
         trashedBefore,
         "type": $type,
         updatedAfter,
         updatedBefore,
-        webpPath,
         withArchived,
         withDeleted,
         withExif,
@@ -2788,8 +2790,8 @@ export enum AssetJobName {
     TranscodeVideo = "transcode-video"
 }
 export enum ThumbnailFormat {
-    Jpeg = "JPEG",
-    Webp = "WEBP"
+    Jpeg = "jpeg",
+    Webp = "webp"
 }
 export enum EntityType {
     Asset = "ASSET",
@@ -2802,8 +2804,8 @@ export enum PathEntityType {
 }
 export enum PathType {
     Original = "original",
-    JpegThumbnail = "jpeg_thumbnail",
-    WebpThumbnail = "webp_thumbnail",
+    Preview = "preview",
+    Thumbnail = "thumbnail",
     EncodedVideo = "encoded_video",
     Sidecar = "sidecar",
     Face = "face",
@@ -2885,6 +2887,14 @@ export enum TranscodePolicy {
     Required = "required",
     Disabled = "disabled"
 }
+export enum Colorspace {
+    Srgb = "srgb",
+    P3 = "p3"
+}
+export enum ImageFormat {
+    Jpeg = "jpeg",
+    Webp = "webp"
+}
 export enum LogLevel {
     Verbose = "verbose",
     Debug = "debug",
@@ -2900,10 +2910,6 @@ export enum CLIPMode {
 export enum ModelType {
     FacialRecognition = "facial-recognition",
     Clip = "clip"
-}
-export enum Colorspace {
-    Srgb = "srgb",
-    P3 = "p3"
 }
 export enum MapTheme {
     Light = "light",

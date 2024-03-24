@@ -659,8 +659,8 @@ describe(AssetService.name, () => {
             name: JobName.DELETE_FILES,
             data: {
               files: [
-                assetWithFace.webpPath,
-                assetWithFace.resizePath,
+                assetWithFace.thumbnailPath,
+                assetWithFace.previewPath,
                 assetWithFace.encodedVideoPath,
                 assetWithFace.sidecarPath,
                 assetWithFace.originalPath,
@@ -743,8 +743,8 @@ describe(AssetService.name, () => {
             name: JobName.DELETE_FILES,
             data: {
               files: [
-                assetStub.external.webpPath,
-                assetStub.external.resizePath,
+                assetStub.external.thumbnailPath,
+                assetStub.external.previewPath,
                 assetStub.external.encodedVideoPath,
                 assetStub.external.sidecarPath,
               ],
@@ -826,9 +826,7 @@ describe(AssetService.name, () => {
     it('should run the refresh thumbnails job', async () => {
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
       await sut.run(authStub.admin, { assetIds: ['asset-1'], name: AssetJobName.REGENERATE_THUMBNAIL }),
-        expect(jobMock.queueAll).toHaveBeenCalledWith([
-          { name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: 'asset-1' } },
-        ]);
+        expect(jobMock.queueAll).toHaveBeenCalledWith([{ name: JobName.GENERATE_THUMBNAIL, data: { id: 'asset-1' } }]);
     });
 
     it('should run the transcode video', async () => {

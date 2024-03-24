@@ -22,12 +22,12 @@ import {
   CheckExistingAssetsDto,
   CreateAssetDto,
   GetAssetThumbnailDto,
-  GetAssetThumbnailFormatEnum,
   ServeFileDto,
 } from 'src/dtos/asset-v1.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { LibraryType } from 'src/entities/library.entity';
+import { ImageFormat } from 'src/entities/system-config.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAssetRepositoryV1 } from 'src/interfaces/asset-v1.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
@@ -244,19 +244,19 @@ export class AssetServiceV1 {
     };
   }
 
-  private getThumbnailPath(asset: AssetEntity, format: GetAssetThumbnailFormatEnum) {
+  private getThumbnailPath(asset: AssetEntity, format: ImageFormat) {
     switch (format) {
-      case GetAssetThumbnailFormatEnum.WEBP: {
-        if (asset.webpPath) {
-          return asset.webpPath;
+      case ImageFormat.WEBP: {
+        if (asset.thumbnailPath) {
+          return asset.thumbnailPath;
         }
         this.logger.warn(`WebP thumbnail requested but not found for asset ${asset.id}, falling back to JPEG`);
       }
-      case GetAssetThumbnailFormatEnum.JPEG: {
-        if (!asset.resizePath) {
+      case ImageFormat.JPEG: {
+        if (!asset.previewPath) {
           throw new NotFoundException(`No thumbnail found for asset ${asset.id}`);
         }
-        return asset.resizePath;
+        return asset.previewPath;
       }
     }
   }
@@ -268,12 +268,12 @@ export class AssetServiceV1 {
      * Serve file viewer on the web
      */
     if (dto.isWeb && mimeType != 'image/gif') {
-      if (!asset.resizePath) {
+      if (!asset.previewPath) {
         this.logger.error('Error serving IMAGE asset for web');
         throw new InternalServerErrorException(`Failed to serve image asset for web`, 'ServeFile');
       }
 
-      return asset.resizePath;
+      return asset.previewPath;
     }
 
     /**
@@ -283,15 +283,15 @@ export class AssetServiceV1 {
       return asset.originalPath;
     }
 
-    if (asset.webpPath && asset.webpPath.length > 0) {
-      return asset.webpPath;
+    if (asset.thumbnailPath && asset.thumbnailPath.length > 0) {
+      return asset.thumbnailPath;
     }
 
-    if (!asset.resizePath) {
-      throw new Error('resizePath not set');
+    if (!asset.previewPath) {
+      throw new Error('previewPath not set');
     }
 
-    return asset.resizePath;
+    return asset.previewPath;
   }
 
   private async getLibraryId(auth: AuthDto, libraryId?: string) {

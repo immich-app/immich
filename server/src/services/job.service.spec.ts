@@ -279,7 +279,7 @@ describe(JobService.name, () => {
       },
       {
         item: { name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: { id: 'asset-1', source: 'upload' } },
-        jobs: [JobName.GENERATE_JPEG_THUMBNAIL],
+        jobs: [JobName.GENERATE_THUMBNAIL],
       },
       {
         item: { name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: { id: 'asset-1' } },
@@ -290,13 +290,13 @@ describe(JobService.name, () => {
         jobs: [],
       },
       {
-        item: { name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: 'asset-1' } },
-        jobs: [JobName.GENERATE_WEBP_THUMBNAIL, JobName.GENERATE_THUMBHASH_THUMBNAIL],
+        item: { name: JobName.GENERATE_THUMBNAIL, data: { id: 'asset-1' } },
+        jobs: [JobName.GENERATE_PREVIEW, JobName.GENERATE_THUMBHASH_THUMBNAIL],
       },
       {
-        item: { name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: 'asset-1', source: 'upload' } },
+        item: { name: JobName.GENERATE_THUMBNAIL, data: { id: 'asset-1', source: 'upload' } },
         jobs: [
-          JobName.GENERATE_WEBP_THUMBNAIL,
+          JobName.GENERATE_PREVIEW,
           JobName.GENERATE_THUMBHASH_THUMBNAIL,
           JobName.SMART_SEARCH,
           JobName.FACE_DETECTION,
@@ -304,9 +304,9 @@ describe(JobService.name, () => {
         ],
       },
       {
-        item: { name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: 'asset-live-image', source: 'upload' } },
+        item: { name: JobName.GENERATE_THUMBNAIL, data: { id: 'asset-live-image', source: 'upload' } },
         jobs: [
-          JobName.GENERATE_WEBP_THUMBNAIL,
+          JobName.GENERATE_PREVIEW,
           JobName.GENERATE_THUMBHASH_THUMBNAIL,
           JobName.SMART_SEARCH,
           JobName.FACE_DETECTION,
@@ -329,7 +329,7 @@ describe(JobService.name, () => {
 
     for (const { item, jobs } of tests) {
       it(`should queue ${jobs.length} jobs when a ${item.name} job finishes successfully`, async () => {
-        if (item.name === JobName.GENERATE_JPEG_THUMBNAIL && item.data.source === 'upload') {
+        if (item.name === JobName.GENERATE_THUMBNAIL && item.data.source === 'upload') {
           if (item.data.id === 'asset-live-image') {
             assetMock.getByIds.mockResolvedValue([assetStub.livePhotoStillAsset]);
           } else {
