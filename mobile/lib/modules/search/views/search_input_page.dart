@@ -37,7 +37,32 @@ class SearchInputPage extends HookConsumerWidget {
 
     showCameraPicker() {}
 
-    showDatePicker() {}
+    showDatePicker() async {
+      final firstDate = DateTime(1900);
+      final lastDate = DateTime.now();
+
+      final date = await showDateRangePicker(
+        context: context,
+        firstDate: firstDate,
+        lastDate: lastDate,
+        currentDate: DateTime.now(),
+        initialDateRange: DateTimeRange(
+          start: DateTime.now().subtract(const Duration(days: 2)),
+          end: lastDate,
+        ),
+        helpText: 'Select a date range',
+        cancelText: 'Cancel',
+        confirmText: 'Select',
+        saveText: 'Save',
+        errorFormatText: 'Invalid date format',
+        errorInvalidText: 'Invalid date',
+        fieldStartHintText: 'Start date',
+        fieldEndHintText: 'End date',
+        initialEntryMode: DatePickerEntryMode.input,
+      );
+
+      debugPrint("Pick: $date");
+    }
 
     showMediaTypePicker() {
       showFilterBottomSheet(
@@ -59,12 +84,12 @@ class SearchInputPage extends HookConsumerWidget {
       showFilterBottomSheet(
         context: context,
         child: FilterBottomSheetScaffold(
-          title: 'Select media type',
+          title: 'Display options',
           onSearch: () {},
           onClear: () {},
           child: DisplayOptionPicker(
             onSelect: (value) {
-              debugPrint("Selected media type: $value");
+              debugPrint("Selected display options: $value");
             },
           ),
         ),

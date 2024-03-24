@@ -10,55 +10,50 @@ enum DisplayOption {
 class DisplayOptionPicker extends HookWidget {
   const DisplayOptionPicker({super.key, required this.onSelect});
 
-  final Function(Set<DisplayOption>) onSelect;
+  final Function(Map<DisplayOption, bool>) onSelect;
 
   @override
   Widget build(BuildContext context) {
-    final selectedDisplayOption = useState<Set<DisplayOption>>({});
+    final options = useState<Map<DisplayOption, bool>>({
+      DisplayOption.notInAlbum: false,
+      DisplayOption.favorite: false,
+      DisplayOption.archive: false,
+    });
 
     return ListView(
       shrinkWrap: true,
       children: [
         CheckboxListTile(
           title: const Text('Not in album'),
-          value: selectedDisplayOption.value.contains(DisplayOption.notInAlbum),
+          value: options.value[DisplayOption.notInAlbum],
           onChanged: (bool? value) {
-            if (value != null && value) {
-              selectedDisplayOption.value.add(DisplayOption.notInAlbum);
-              selectedDisplayOption.value = selectedDisplayOption.value;
-            } else {
-              selectedDisplayOption.value.remove(DisplayOption.notInAlbum);
-              selectedDisplayOption.value = selectedDisplayOption.value;
-            }
-            onSelect(selectedDisplayOption.value);
+            options.value = {
+              ...options.value,
+              DisplayOption.notInAlbum: value!,
+            };
+            onSelect(options.value);
           },
         ),
         CheckboxListTile(
           title: const Text('Favorite'),
-          value: selectedDisplayOption.value.contains(DisplayOption.favorite),
+          value: options.value[DisplayOption.favorite],
           onChanged: (value) {
-            if (value != null && value) {
-              selectedDisplayOption.value.add(DisplayOption.favorite);
-              selectedDisplayOption.value = selectedDisplayOption.value;
-            } else {
-              selectedDisplayOption.value.remove(DisplayOption.favorite);
-              selectedDisplayOption.value = selectedDisplayOption.value;
-            }
-            onSelect(selectedDisplayOption.value);
+            options.value = {
+              ...options.value,
+              DisplayOption.favorite: value!,
+            };
+            onSelect(options.value);
           },
         ),
         CheckboxListTile(
           title: const Text('Archive'),
-          value: selectedDisplayOption.value.contains(DisplayOption.archive),
+          value: options.value[DisplayOption.archive],
           onChanged: (value) {
-            if (value != null && value) {
-              selectedDisplayOption.value.add(DisplayOption.archive);
-              selectedDisplayOption.value = selectedDisplayOption.value;
-            } else {
-              selectedDisplayOption.value.remove(DisplayOption.archive);
-              selectedDisplayOption.value = selectedDisplayOption.value;
-            }
-            onSelect(selectedDisplayOption.value);
+            options.value = {
+              ...options.value,
+              DisplayOption.archive: value!,
+            };
+            onSelect(options.value);
           },
         ),
       ],
