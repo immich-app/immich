@@ -472,7 +472,7 @@ export class AssetService {
         }
 
         case AssetJobName.REGENERATE_THUMBNAIL: {
-          jobs.push({ name: JobName.GENERATE_THUMBNAIL, data: { id } });
+          jobs.push({ name: JobName.GENERATE_PREVIEW, data: { id } });
           break;
         }
 

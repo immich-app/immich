@@ -83,11 +83,11 @@ export class MediaService {
 
       for (const asset of assets) {
         if (!asset.previewPath || force) {
-          jobs.push({ name: JobName.GENERATE_THUMBNAIL, data: { id: asset.id } });
+          jobs.push({ name: JobName.GENERATE_PREVIEW, data: { id: asset.id } });
           continue;
         }
         if (!asset.thumbnailPath) {
-          jobs.push({ name: JobName.GENERATE_PREVIEW, data: { id: asset.id } });
+          jobs.push({ name: JobName.GENERATE_THUMBNAIL, data: { id: asset.id } });
         }
         if (!asset.thumbhash) {
           jobs.push({ name: JobName.GENERATE_THUMBHASH_THUMBNAIL, data: { id: asset.id } });
