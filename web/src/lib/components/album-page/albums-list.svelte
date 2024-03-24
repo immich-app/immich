@@ -156,7 +156,7 @@
             break;
           }
 
-          default:
+          default: {
             albums = key.sortFn(
               key.sortDesc,
               [...sharedAlbums, ...ownedAlbums].filter(
@@ -164,6 +164,7 @@
               ),
             );
             break;
+          }
         }
 
         $albumViewSettings.sortDesc = key.sortDesc;
