@@ -7,6 +7,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/search/ui/search_filter/display_option_picker.dart';
 import 'package:immich_mobile/modules/search/ui/search_filter/filter_bottom_sheet_scaffold.dart';
 import 'package:immich_mobile/modules/search/ui/search_filter/media_type_picker.dart';
+import 'package:immich_mobile/modules/search/ui/search_filter/people_picker.dart';
 import 'package:immich_mobile/modules/search/ui/search_filter/search_filter_chip.dart';
 import 'package:immich_mobile/modules/search/ui/search_filter/search_filter_utils.dart';
 
@@ -23,14 +24,17 @@ class SearchInputPage extends HookConsumerWidget {
     showPeoplePicker() {
       showFilterBottomSheet(
         context: context,
-        child: FilterBottomSheetScaffold(
-          title: 'Select media type',
-          onSearch: () {},
-          onClear: () {},
-          child: MediaTypePicker(
-            onSelect: (value) {
-              debugPrint("Selected media type: $value");
-            },
+        isScrollControlled: true,
+        child: FractionallySizedBox(
+          heightFactor: 0.8,
+          child: FilterBottomSheetScaffold(
+            title: 'Select people',
+            expanded: true,
+            onSearch: () {},
+            onClear: () {},
+            child: PeoplePicker(
+              onTap: (value) {},
+            ),
           ),
         ),
       );

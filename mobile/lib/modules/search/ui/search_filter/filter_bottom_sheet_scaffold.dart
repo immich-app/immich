@@ -8,8 +8,10 @@ class FilterBottomSheetScaffold extends StatelessWidget {
     required this.onSearch,
     required this.onClear,
     required this.title,
+    this.expanded,
   });
 
+  final bool? expanded;
   final String title;
   final Widget child;
   final Function() onSearch;
@@ -17,6 +19,13 @@ class FilterBottomSheetScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    buildChildWidget() {
+      if (expanded != null && expanded == true) {
+        return Expanded(child: child);
+      }
+      return child;
+    }
+
     return SafeArea(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -28,7 +37,7 @@ class FilterBottomSheetScaffold extends StatelessWidget {
               style: context.textTheme.headlineSmall,
             ),
           ),
-          child,
+          buildChildWidget(),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(

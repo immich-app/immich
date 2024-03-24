@@ -1,13 +1,75 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/search/providers/people.provider.dart';
+import 'package:immich_mobile/shared/models/store.dart' as local_store;
+import 'package:immich_mobile/utils/image_url_builder.dart';
 
 class PeoplePicker extends HookConsumerWidget {
-  const PeoplePicker({super.key});
+  const PeoplePicker({super.key, required this.onTap});
+
+  final Function(Set<String>) onTap;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    var imageSize = 45.0;
     final people = ref.watch(getAllPeopleProvider);
+    final headers = {
+      "x-immich-user-token":
+          local_store.Store.get(local_store.StoreKey.accessToken),
+    };
+    final selectedPeople = useState<Set<String>>({});
 
-    return Container();
+    return people.widgetWhen(
+      onData: (people) {
+        return ListView.builder(
+          shrinkWrap: true,
+          itemCount: people.length,
+          padding: const EdgeInsets.all(8),
+          itemBuilder: (context, index) {
+            final person = people[index];
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 2.0),
+              child: ListTile(
+                title: Text(
+                  person.label,
+                  style: context.textTheme.bodyLarge,
+                ),
+                leading: SizedBox(
+                  height: imageSize,
+                  child: Material(
+                    shape: const CircleBorder(side: BorderSide.none),
+                    elevation: 3,
+                    child: CircleAvatar(
+                      maxRadius: imageSize / 2,
+                      backgroundImage: NetworkImage(
+                        getFaceThumbnailUrl(person.id),
+                        headers: headers,
+                      ),
+                    ),
+                  ),
+                ),
+                onTap: () {
+                  if (selectedPeople.value.contains(person.id)) {
+                    selectedPeople.value.remove(person.id);
+                  } else {
+                    selectedPeople.value.add(person.id);
+                  }
+
+                  selectedPeople.value = {...selectedPeople.value};
+                  onTap(selectedPeople.value);
+                },
+                selected: selectedPeople.value.contains(person.id),
+                selectedTileColor: context.primaryColor.withOpacity(0.2),
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(15)),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 }
