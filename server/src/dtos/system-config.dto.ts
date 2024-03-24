@@ -386,7 +386,7 @@ export class SystemConfigThemeDto {
   customCss!: string;
 }
 
-class SystemConfigThumbnailDto {
+class SystemConfigImageDto {
   @IsEnum(ImageFormat)
   @ApiProperty({ enumName: 'ImageFormat', enum: ImageFormat })
   thumbnailFormat!: ImageFormat;
@@ -489,10 +489,10 @@ export class SystemConfigDto implements SystemConfig {
   @IsObject()
   job!: SystemConfigJobDto;
 
-  @Type(() => SystemConfigThumbnailDto)
+  @Type(() => SystemConfigImageDto)
   @ValidateNested()
   @IsObject()
-  image!: SystemConfigThumbnailDto;
+  image!: SystemConfigImageDto;
 
   @Type(() => SystemConfigTrashDto)
   @ValidateNested()
