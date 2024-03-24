@@ -114,7 +114,7 @@ The default configuration looks like this:
     "hashVerificationEnabled": true,
     "template": "{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}"
   },
-  "thumbnail": {
+  "image": {
     "thumbnailFormat": "webp",
     "thumbnailSize": 250,
     "previewFormat": "jpeg",
