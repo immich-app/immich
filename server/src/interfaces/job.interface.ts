@@ -33,8 +33,8 @@ export enum JobName {
 
   // thumbnails
   QUEUE_GENERATE_THUMBNAILS = 'queue-generate-thumbnails',
-  GENERATE_THUMBNAIL = 'generate-thumbnail',
   GENERATE_PREVIEW = 'generate-preview',
+  GENERATE_THUMBNAIL = 'generate-thumbnail',
   GENERATE_THUMBHASH = 'generate-thumbhash',
   GENERATE_PERSON_THUMBNAIL = 'generate-person-thumbnail',
 
@@ -160,8 +160,8 @@ export type JobItem =
 
   // Thumbnails
   | { name: JobName.QUEUE_GENERATE_THUMBNAILS; data: IBaseJob }
-  | { name: JobName.GENERATE_THUMBNAIL; data: IEntityJob }
   | { name: JobName.GENERATE_PREVIEW; data: IEntityJob }
+  | { name: JobName.GENERATE_THUMBNAIL; data: IEntityJob }
   | { name: JobName.GENERATE_THUMBHASH; data: IEntityJob }
 
   // User
