@@ -200,7 +200,11 @@ export class JobService {
   }
 
   private isConcurrentQueue(name: QueueName): name is ConcurrentQueueName {
-    return ![QueueName.FACIAL_RECOGNITION, QueueName.STORAGE_TEMPLATE_MIGRATION].includes(name);
+    return ![
+      QueueName.FACIAL_RECOGNITION,
+      QueueName.STORAGE_TEMPLATE_MIGRATION,
+      QueueName.DUPLICATE_DETECTION,
+    ].includes(name);
   }
 
   async handleNightlyJobs() {
