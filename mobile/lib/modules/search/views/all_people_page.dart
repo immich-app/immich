@@ -12,7 +12,7 @@ class AllPeoplePage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final curatedPeople = ref.watch(getCuratedPeopleProvider);
+    final curatedPeople = ref.watch(getAllPeopleProvider);
 
     return Scaffold(
       appBar: AppBar(

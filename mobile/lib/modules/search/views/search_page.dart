@@ -30,7 +30,7 @@ class SearchPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isSearchEnabled = ref.watch(searchPageStateProvider).isSearchEnabled;
     final curatedLocation = ref.watch(getCuratedLocationProvider);
-    final curatedPeople = ref.watch(getCuratedPeopleProvider);
+    final curatedPeople = ref.watch(getAllPeopleProvider);
     final isMapEnabled =
         ref.watch(serverInfoProvider.select((v) => v.serverFeatures.map));
     double imageSize = math.min(context.width / 3, 150);

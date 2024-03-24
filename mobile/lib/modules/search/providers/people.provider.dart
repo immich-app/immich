@@ -8,12 +8,12 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'people.provider.g.dart';
 
 @riverpod
-Future<List<CuratedContent>> getCuratedPeople(
-  GetCuratedPeopleRef ref,
+Future<List<CuratedContent>> getAllPeople(
+  GetAllPeopleRef ref,
 ) async {
   final PersonService personService = ref.read(personServiceProvider);
 
-  final curatedPeople = await personService.getCuratedPeople();
+  final curatedPeople = await personService.getAllPeople();
 
   return curatedPeople
       .map((p) => CuratedContent(id: p.id, label: p.name))
@@ -44,7 +44,7 @@ Future<bool> updatePersonName(
   final person = await personService.updateName(personId, updatedName);
 
   if (person != null && person.name == updatedName) {
-    ref.invalidate(getCuratedPeopleProvider);
+    ref.invalidate(getAllPeopleProvider);
     return true;
   }
   return false;

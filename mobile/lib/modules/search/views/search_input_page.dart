@@ -20,7 +20,21 @@ class SearchInputPage extends HookConsumerWidget {
 
     search({required bool isSmartSearch}) {}
 
-    showPeoplePicker() {}
+    showPeoplePicker() {
+      showFilterBottomSheet(
+        context: context,
+        child: FilterBottomSheetScaffold(
+          title: 'Select media type',
+          onSearch: () {},
+          onClear: () {},
+          child: MediaTypePicker(
+            onSelect: (value) {
+              debugPrint("Selected media type: $value");
+            },
+          ),
+        ),
+      );
+    }
 
     showPlacePicker() {
       showModalBottomSheet(
