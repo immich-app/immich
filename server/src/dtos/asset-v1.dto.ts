@@ -2,7 +2,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { ArrayNotEmpty, IsArray, IsEnum, IsInt, IsNotEmpty, IsString, IsUUID, ValidateNested } from 'class-validator';
 import { UploadFieldName } from 'src/dtos/asset.dto';
-import { ImageFormat } from 'src/entities/system-config.entity';
 import { Optional, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
 
 export class AssetBulkUploadCheckItem {
