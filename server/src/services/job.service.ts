@@ -262,7 +262,7 @@ export class JobService {
       case JobName.GENERATE_PREVIEW: {
         const jobs: JobItem[] = [
           { name: JobName.GENERATE_THUMBNAIL, data: item.data },
-          { name: JobName.GENERATE_THUMBHASH_THUMBNAIL, data: item.data },
+          { name: JobName.GENERATE_THUMBHASH, data: item.data },
         ];
 
         if (item.data.source === 'upload') {

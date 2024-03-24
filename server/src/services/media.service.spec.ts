@@ -185,7 +185,7 @@ describe(MediaService.name, () => {
       expect(assetMock.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.THUMBNAIL);
       expect(jobMock.queueAll).toHaveBeenCalledWith([
         {
-          name: JobName.GENERATE_THUMBHASH_THUMBNAIL,
+          name: JobName.GENERATE_THUMBHASH,
           data: { id: assetStub.image.id },
         },
       ]);

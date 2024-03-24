@@ -90,7 +90,7 @@ export class MediaService {
           jobs.push({ name: JobName.GENERATE_THUMBNAIL, data: { id: asset.id } });
         }
         if (!asset.thumbhash) {
-          jobs.push({ name: JobName.GENERATE_THUMBHASH_THUMBNAIL, data: { id: asset.id } });
+          jobs.push({ name: JobName.GENERATE_THUMBHASH, data: { id: asset.id } });
         }
       }
 
