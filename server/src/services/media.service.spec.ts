@@ -79,7 +79,7 @@ describe(MediaService.name, () => {
       expect(assetMock.getWithout).not.toHaveBeenCalled();
       expect(jobMock.queueAll).toHaveBeenCalledWith([
         {
-          name: JobName.GENERATE_THUMBNAIL,
+          name: JobName.GENERATE_PREVIEW,
           data: { id: assetStub.image.id },
         },
       ]);
@@ -137,7 +137,7 @@ describe(MediaService.name, () => {
       expect(assetMock.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.THUMBNAIL);
       expect(jobMock.queueAll).toHaveBeenCalledWith([
         {
-          name: JobName.GENERATE_THUMBNAIL,
+          name: JobName.GENERATE_PREVIEW,
           data: { id: assetStub.image.id },
         },
       ]);
@@ -161,7 +161,7 @@ describe(MediaService.name, () => {
       expect(assetMock.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.THUMBNAIL);
       expect(jobMock.queueAll).toHaveBeenCalledWith([
         {
-          name: JobName.GENERATE_PREVIEW,
+          name: JobName.GENERATE_THUMBNAIL,
           data: { id: assetStub.image.id },
         },
       ]);

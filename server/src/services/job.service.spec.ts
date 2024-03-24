@@ -290,13 +290,13 @@ describe(JobService.name, () => {
         jobs: [],
       },
       {
-        item: { name: JobName.GENERATE_THUMBNAIL, data: { id: 'asset-1' } },
-        jobs: [JobName.GENERATE_PREVIEW, JobName.GENERATE_THUMBHASH_THUMBNAIL],
+        item: { name: JobName.GENERATE_PREVIEW, data: { id: 'asset-1' } },
+        jobs: [JobName.GENERATE_THUMBNAIL, JobName.GENERATE_THUMBHASH_THUMBNAIL],
       },
       {
-        item: { name: JobName.GENERATE_THUMBNAIL, data: { id: 'asset-1', source: 'upload' } },
+        item: { name: JobName.GENERATE_PREVIEW, data: { id: 'asset-1', source: 'upload' } },
         jobs: [
-          JobName.GENERATE_PREVIEW,
+          JobName.GENERATE_THUMBNAIL,
           JobName.GENERATE_THUMBHASH_THUMBNAIL,
           JobName.SMART_SEARCH,
           JobName.FACE_DETECTION,
@@ -304,9 +304,9 @@ describe(JobService.name, () => {
         ],
       },
       {
-        item: { name: JobName.GENERATE_THUMBNAIL, data: { id: 'asset-live-image', source: 'upload' } },
+        item: { name: JobName.GENERATE_PREVIEW, data: { id: 'asset-live-image', source: 'upload' } },
         jobs: [
-          JobName.GENERATE_PREVIEW,
+          JobName.GENERATE_THUMBNAIL,
           JobName.GENERATE_THUMBHASH_THUMBNAIL,
           JobName.SMART_SEARCH,
           JobName.FACE_DETECTION,
