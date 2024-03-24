@@ -22,6 +22,7 @@ import {
   AudioCodec,
   CQMode,
   Colorspace,
+  ImageFormat,
   LogLevel,
   SystemConfig,
   ToneMapping,
@@ -386,17 +387,25 @@ export class SystemConfigThemeDto {
 }
 
 class SystemConfigThumbnailDto {
-  @IsInt()
-  @Min(1)
-  @Type(() => Number)
-  @ApiProperty({ type: 'integer' })
-  webpSize!: number;
+  @IsEnum(ImageFormat)
+  @ApiProperty({ enumName: 'ImageFormat', enum: ImageFormat })
+  thumbnailFormat!: ImageFormat;
 
   @IsInt()
   @Min(1)
   @Type(() => Number)
   @ApiProperty({ type: 'integer' })
-  jpegSize!: number;
+  thumbnailSize!: number;
+
+  @IsEnum(ImageFormat)
+  @ApiProperty({ enumName: 'ImageFormat', enum: ImageFormat })
+  previewFormat!: ImageFormat;
+
+  @IsInt()
+  @Min(1)
+  @Type(() => Number)
+  @ApiProperty({ type: 'integer' })
+  previewSize!: number;
 
   @IsInt()
   @Min(1)
@@ -483,7 +492,7 @@ export class SystemConfigDto implements SystemConfig {
   @Type(() => SystemConfigThumbnailDto)
   @ValidateNested()
   @IsObject()
-  thumbnail!: SystemConfigThumbnailDto;
+  image!: SystemConfigThumbnailDto;
 
   @Type(() => SystemConfigTrashDto)
   @ValidateNested()

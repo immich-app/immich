@@ -277,6 +277,7 @@ Class | Method | HTTP request | Description
  - [FileReportDto](doc//FileReportDto.md)
  - [FileReportFixDto](doc//FileReportFixDto.md)
  - [FileReportItemDto](doc//FileReportItemDto.md)
+ - [ImageFormat](doc//ImageFormat.md)
  - [JobCommand](doc//JobCommand.md)
  - [JobCommandDto](doc//JobCommandDto.md)
  - [JobCountsDto](doc//JobCountsDto.md)

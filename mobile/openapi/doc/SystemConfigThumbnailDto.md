@@ -9,9 +9,11 @@ import 'package:openapi/api.dart';
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **colorspace** | [**Colorspace**](Colorspace.md) |  | 
-**jpegSize** | **int** |  | 
+**previewFormat** | [**ImageFormat**](ImageFormat.md) |  | 
+**previewSize** | **int** |  | 
 **quality** | **int** |  | 
-**webpSize** | **int** |  | 
+**thumbnailFormat** | [**ImageFormat**](ImageFormat.md) |  | 
+**thumbnailSize** | **int** |  | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

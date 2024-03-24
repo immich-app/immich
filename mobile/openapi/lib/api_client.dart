@@ -304,6 +304,8 @@ class ApiClient {
           return FileReportFixDto.fromJson(value);
         case 'FileReportItemDto':
           return FileReportItemDto.fromJson(value);
+        case 'ImageFormat':
+          return ImageFormatTypeTransformer().decode(value);
         case 'JobCommand':
           return JobCommandTypeTransformer().decode(value);
         case 'JobCommandDto':

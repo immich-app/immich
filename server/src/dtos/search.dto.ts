@@ -163,12 +163,12 @@ export class MetadataSearchDto extends BaseSearchDto {
   @IsString()
   @IsNotEmpty()
   @Optional()
-  resizePath?: string;
+  previewPath?: string;
 
   @IsString()
   @IsNotEmpty()
   @Optional()
-  webpPath?: string;
+  thumbnailPath?: string;
 
   @IsString()
   @IsNotEmpty()

@@ -21,8 +21,13 @@ void main() {
       // TODO
     });
 
-    // int jpegSize
-    test('to test the property `jpegSize`', () async {
+    // ImageFormat previewFormat
+    test('to test the property `previewFormat`', () async {
+      // TODO
+    });
+
+    // int previewSize
+    test('to test the property `previewSize`', () async {
       // TODO
     });
 
@@ -31,8 +36,13 @@ void main() {
       // TODO
     });
 
-    // int webpSize
-    test('to test the property `webpSize`', () async {
+    // ImageFormat thumbnailFormat
+    test('to test the property `thumbnailFormat`', () async {
+      // TODO
+    });
+
+    // int thumbnailSize
+    test('to test the property `thumbnailSize`', () async {
       // TODO
     });
 

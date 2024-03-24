@@ -23,13 +23,13 @@ class ThumbnailFormat {
 
   String toJson() => value;
 
-  static const JPEG = ThumbnailFormat._(r'JPEG');
-  static const WEBP = ThumbnailFormat._(r'WEBP');
+  static const jpeg = ThumbnailFormat._(r'jpeg');
+  static const webp = ThumbnailFormat._(r'webp');
 
   /// List of all possible values in this [enum][ThumbnailFormat].
   static const values = <ThumbnailFormat>[
-    JPEG,
-    WEBP,
+    jpeg,
+    webp,
   ];
 
   static ThumbnailFormat? fromJson(dynamic value) => ThumbnailFormatTypeTransformer().decode(value);
@@ -68,8 +68,8 @@ class ThumbnailFormatTypeTransformer {
   ThumbnailFormat? decode(dynamic data, {bool allowNull = true}) {
     if (data != null) {
       switch (data) {
-        case r'JPEG': return ThumbnailFormat.JPEG;
-        case r'WEBP': return ThumbnailFormat.WEBP;
+        case r'jpeg': return ThumbnailFormat.jpeg;
+        case r'webp': return ThumbnailFormat.webp;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');
