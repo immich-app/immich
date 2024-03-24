@@ -218,13 +218,13 @@ export class SearchService {
     if (duplicateAssets.length > 0) {
       this.logger.debug(`Found ${duplicateAssets.length} duplicates for asset ${asset.id}`);
 
-      let duplicateId = duplicateAssets.find((duplicate) => duplicate.duplicateId)?.duplicateId;
-      duplicateId ??= this.cryptoRepository.randomUUID();
+      const duplicateIds = duplicateAssets.map((duplicate) => duplicate.duplicateId).filter(Boolean);
+      const duplicateId = duplicateIds[0] || this.cryptoRepository.randomUUID();
 
       const duplicateAssetIds = duplicateAssets.map((duplicate) => duplicate.assetId);
       duplicateAssetIds.push(asset.id);
 
-      await this.assetDuplicateRepository.create(duplicateId, duplicateAssetIds);
+      await this.assetDuplicateRepository.upsert(duplicateId, duplicateAssetIds, duplicateIds);
     }
 
     await this.assetRepository.upsertJobStatus({
