@@ -279,7 +279,7 @@ describe(JobService.name, () => {
       },
       {
         item: { name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: { id: 'asset-1', source: 'upload' } },
-        jobs: [JobName.GENERATE_THUMBNAIL],
+        jobs: [JobName.GENERATE_PREVIEW],
       },
       {
         item: { name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: { id: 'asset-1' } },
@@ -329,7 +329,7 @@ describe(JobService.name, () => {
 
     for (const { item, jobs } of tests) {
       it(`should queue ${jobs.length} jobs when a ${item.name} job finishes successfully`, async () => {
-        if (item.name === JobName.GENERATE_THUMBNAIL && item.data.source === 'upload') {
+        if (item.name === JobName.GENERATE_PREVIEW && item.data.source === 'upload') {
           if (item.data.id === 'asset-live-image') {
             assetMock.getByIds.mockResolvedValue([assetStub.livePhotoStillAsset]);
           } else {
