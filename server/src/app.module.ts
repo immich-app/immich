@@ -51,6 +51,7 @@ import { ILibraryRepository } from 'src/interfaces/library.interface';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
 import { IMediaRepository } from 'src/interfaces/media.interface';
 import { IMetadataRepository } from 'src/interfaces/metadata.interface';
+import { IMetricRepository } from 'src/interfaces/metric.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
@@ -83,6 +84,7 @@ import { LibraryRepository } from 'src/repositories/library.repository';
 import { MachineLearningRepository } from 'src/repositories/machine-learning.repository';
 import { MediaRepository } from 'src/repositories/media.repository';
 import { MetadataRepository } from 'src/repositories/metadata.repository';
+import { MetricRepository } from 'src/repositories/metric.repository';
 import { MoveRepository } from 'src/repositories/move.repository';
 import { PartnerRepository } from 'src/repositories/partner.repository';
 import { PersonRepository } from 'src/repositories/person.repository';
@@ -123,8 +125,6 @@ import { TrashService } from 'src/services/trash.service';
 import { UserService } from 'src/services/user.service';
 import { otelConfig } from 'src/utils/instrumentation';
 import { ImmichLogger } from 'src/utils/logger';
-import { IMetricRepository } from 'src/interfaces/metric.interface';
-import { MetricRepository } from 'src/repositories/metric.repository';
 
 const commands = [
   ResetAdminPasswordCommand,
