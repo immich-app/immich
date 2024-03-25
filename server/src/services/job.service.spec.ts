@@ -1,5 +1,4 @@
 import { BadRequestException } from '@nestjs/common';
-import { MetricService } from 'nestjs-otel';
 import { FeatureFlag, SystemConfigCore } from 'src/cores/system-config.core';
 import { SystemConfig, SystemConfigKey } from 'src/entities/system-config.entity';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
