@@ -20,7 +20,6 @@ import {
 import { IMetricRepository } from 'src/interfaces/metric.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
-import { jobMetrics } from 'src/utils/instrumentation';
 import { ImmichLogger } from 'src/utils/logger';
 
 @Injectable()
