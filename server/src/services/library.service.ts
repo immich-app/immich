@@ -574,7 +574,7 @@ export class LibraryService extends EventEmitter {
     return JobStatus.SUCCESS;
   }
 
-  // Check if an asset is has no file or is outside of import paths, marking it as offline
+  // Check if an asset has no file or is outside of import paths, marking it as offline
   async handleOfflineCheck(job: ILibraryOfflineJob): Promise<JobStatus> {
     const asset = await this.assetRepository.getById(job.id);
 
@@ -585,16 +585,9 @@ export class LibraryService extends EventEmitter {
 
     const exists = await this.storageRepository.checkFileExists(asset.originalPath, R_OK);
 
-    let existsInImportPath = false;
+    const isInPath = job.importPaths.find((path) => asset.originalPath.startsWith(path));
 
-    for (const importPath of job.importPaths) {
-      if (asset.originalPath.startsWith(importPath)) {
-        existsInImportPath = true;
-        break;
-      }
-    }
-
-    if (exists && existsInImportPath) {
+    if (exists && isInPath) {
       this.logger.verbose(`Asset is still online: ${asset.originalPath}`);
     } else {
       this.logger.debug(`Marking asset as offline: ${asset.originalPath}`);
@@ -629,7 +622,7 @@ export class LibraryService extends EventEmitter {
     this.logger.log(`Refreshing library: ${job.id}`);
 
     const pathValidation = await Promise.all(
-      library.importPaths.map(async (importPath) => await this.validateImportPath(importPath)),
+      library.importPaths.map((importPath) => this.validateImportPath(importPath)),
     );
 
     const validImportPaths = pathValidation
