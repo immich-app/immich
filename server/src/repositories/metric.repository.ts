@@ -31,28 +31,28 @@ class MetricGroupRepository implements IMetricGroupRepository {
   }
 }
 
-class ApiMetricRepository extends MetricGroupRepository implements IMetricGroupRepository {
+class ApiMetricRepository extends MetricGroupRepository {
   constructor(metricService: MetricService) {
     super(metricService);
     this.configure({ enabled: apiMetrics });
   }
 }
 
-class HostMetricRepository extends MetricGroupRepository implements IMetricGroupRepository {
+class HostMetricRepository extends MetricGroupRepository {
   constructor(metricService: MetricService) {
     super(metricService);
     this.configure({ enabled: hostMetrics });
   }
 }
 
-class JobMetricRepository extends MetricGroupRepository implements IMetricGroupRepository {
+class JobMetricRepository extends MetricGroupRepository {
   constructor(metricService: MetricService) {
     super(metricService);
     this.configure({ enabled: jobMetrics });
   }
 }
 
-class RepoMetricRepository extends MetricGroupRepository implements IMetricGroupRepository {
+class RepoMetricRepository extends MetricGroupRepository {
   constructor(metricService: MetricService) {
     super(metricService);
     this.configure({ enabled: repoMetrics });
