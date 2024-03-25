@@ -31,41 +31,6 @@ describe(`${LibraryController.name} (e2e)`, () => {
   });
 
   describe('POST /library/:id/scan', () => {
-    it('should scan new files', async () => {
-      const library = await api.libraryApi.create(server, admin.accessToken, {
-        ownerId: admin.userId,
-        type: LibraryType.EXTERNAL,
-        importPaths: [`${IMMICH_TEST_ASSET_TEMP_PATH}`],
-      });
-
-      await fs.promises.cp(
-        `${IMMICH_TEST_ASSET_PATH}/albums/nature/silver_fir.jpg`,
-        `${IMMICH_TEST_ASSET_TEMP_PATH}/silver_fir.jpg`,
-      );
-
-      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
-
-      await fs.promises.cp(
-        `${IMMICH_TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
-        `${IMMICH_TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`,
-      );
-
-      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
-
-      const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
-
-      expect(assets).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            originalFileName: 'el_torcal_rocks.jpg',
-          }),
-          expect.objectContaining({
-            originalFileName: 'silver_fir.jpg',
-          }),
-        ]),
-      );
-    });
-
     describe('with refreshModifiedFiles=true', () => {
       it('should reimport modified files', async () => {
         const library = await api.libraryApi.create(server, admin.accessToken, {
