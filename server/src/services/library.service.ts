@@ -625,7 +625,7 @@ export class LibraryService extends EventEmitter {
       library.importPaths.map((importPath) => this.validateImportPath(importPath)),
     );
 
-    let validImportPaths: string[] = [];
+    const validImportPaths: string[] = [];
 
     for (const validation of pathValidation) {
       if (validation.isValid) {
