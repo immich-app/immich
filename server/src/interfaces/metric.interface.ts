@@ -10,7 +10,7 @@ export interface IMetricGroupRepository {
   addToCounter(name: string, value: number, options?: MetricOptions): void;
   addToGauge(name: string, value: number, options?: MetricOptions): void;
   addToHistogram(name: string, value: number, options?: MetricOptions): void;
-  configure(options: MetricGroupOptions): void;
+  configure(options: MetricGroupOptions): this;
 }
 
 export interface IMetricRepository {

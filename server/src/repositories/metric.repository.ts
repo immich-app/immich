@@ -26,50 +26,23 @@ class MetricGroupRepository implements IMetricGroupRepository {
     }
   }
 
-  configure(options: MetricGroupOptions): void {
+  configure(options: MetricGroupOptions): this {
     this.enabled = options.enabled;
-  }
-}
-
-class ApiMetricRepository extends MetricGroupRepository {
-  constructor(metricService: MetricService) {
-    super(metricService);
-    this.configure({ enabled: apiMetrics });
-  }
-}
-
-class HostMetricRepository extends MetricGroupRepository {
-  constructor(metricService: MetricService) {
-    super(metricService);
-    this.configure({ enabled: hostMetrics });
-  }
-}
-
-class JobMetricRepository extends MetricGroupRepository {
-  constructor(metricService: MetricService) {
-    super(metricService);
-    this.configure({ enabled: jobMetrics });
-  }
-}
-
-class RepoMetricRepository extends MetricGroupRepository {
-  constructor(metricService: MetricService) {
-    super(metricService);
-    this.configure({ enabled: repoMetrics });
+    return this;
   }
 }
 
 @Injectable()
 export class MetricRepository implements IMetricRepository {
-  api: ApiMetricRepository;
-  host: HostMetricRepository;
-  jobs: JobMetricRepository;
-  repo: RepoMetricRepository;
+  api: MetricGroupRepository;
+  host: MetricGroupRepository;
+  jobs: MetricGroupRepository;
+  repo: MetricGroupRepository;
 
   constructor(metricService: MetricService) {
-    this.api = new ApiMetricRepository(metricService);
-    this.host = new HostMetricRepository(metricService);
-    this.jobs = new JobMetricRepository(metricService);
-    this.repo = new RepoMetricRepository(metricService);
+    this.api = new MetricGroupRepository(metricService).configure({ enabled: apiMetrics });
+    this.host = new MetricGroupRepository(metricService).configure({ enabled: hostMetrics });
+    this.jobs = new MetricGroupRepository(metricService).configure({ enabled: jobMetrics });
+    this.repo = new MetricGroupRepository(metricService).configure({ enabled: repoMetrics });
   }
 }
