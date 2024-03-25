@@ -6,6 +6,7 @@
   export type RenderedOption = {
     title: string;
     icon?: string;
+    disabled?: boolean;
   };
 </script>
 
@@ -33,6 +34,7 @@
   export let showMenu = false;
   export let controlable = false;
   export let hideTextOnSmallScreen = true;
+  export let title: string | undefined = undefined;
 
   export let render: (item: T) => string | RenderedOption = String;
 
@@ -61,6 +63,7 @@
         return {
           title: renderedOption.title,
           icon: renderedOption.icon,
+          disabled: renderedOption.disabled,
         };
       }
     }
@@ -69,9 +72,9 @@
   $: renderedSelectedOption = renderOption(selectedOption);
 </script>
 
-<div id="dropdown-button" use:clickOutside on:outclick={handleClickOutside} on:escape={handleClickOutside}>
+<div use:clickOutside on:outclick={handleClickOutside} on:escape={handleClickOutside}>
   <!-- BUTTON TITLE -->
-  <LinkButton on:click={() => (showMenu = true)} fullwidth>
+  <LinkButton on:click={() => (showMenu = true)} fullwidth {title}>
     <div class="flex place-items-center gap-2 text-sm">
       {#if renderedSelectedOption?.icon}
         <Icon path={renderedSelectedOption.icon} size="18" />
@@ -88,9 +91,11 @@
     >
       {#each options as option (option)}
         {@const renderedOption = renderOption(option)}
+        {@const buttonStyle = renderedOption.disabled ? '' : 'transition-all hover:bg-gray-300 dark:hover:bg-gray-800'}
         <button
-          class="grid grid-cols-[20px,1fr] place-items-center p-2 transition-all hover:bg-gray-300 dark:hover:bg-gray-800"
-          on:click={() => handleSelectOption(option)}
+          class="grid grid-cols-[20px,1fr] place-items-center p-2 disabled:opacity-40 {buttonStyle}"
+          disabled={renderedOption.disabled}
+          on:click={() => !renderedOption.disabled && handleSelectOption(option)}
         >
           {#if isEqual(selectedOption, option)}
             <div class="text-immich-primary dark:text-immich-dark-primary">
