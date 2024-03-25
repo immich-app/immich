@@ -41,4 +41,8 @@ export class CryptoRepository implements ICryptoRepository {
       stream.on('end', () => resolve(hash.digest()));
     });
   }
+
+  newPassword(bytes: number) {
+    return randomBytes(bytes).toString('base64').replaceAll(/\W/g, '');
+  }
 }

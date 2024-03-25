@@ -31,7 +31,7 @@ import { LibraryType } from 'src/entities/library.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAssetStackRepository } from 'src/interfaces/asset-stack.interface';
 import { IAssetRepository, TimeBucketOptions } from 'src/interfaces/asset.interface';
-import { ClientEvent, ICommunicationRepository } from 'src/interfaces/communication.interface';
+import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
 import {
   IAssetDeletionJob,
   IJobRepository,
@@ -75,7 +75,7 @@ export class AssetService {
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
-    @Inject(ICommunicationRepository) private communicationRepository: ICommunicationRepository,
+    @Inject(IEventRepository) private eventRepository: IEventRepository,
     @Inject(IPartnerRepository) private partnerRepository: IPartnerRepository,
     @Inject(IAssetStackRepository) private assetStackRepository: IAssetStackRepository,
   ) {
@@ -395,7 +395,7 @@ export class AssetService {
       .flatMap((stack) => (stack ? [stack] : []))
       .filter((stack) => stack.assets.length < 2);
     await Promise.all(stacksToDelete.map((as) => this.assetStackRepository.delete(as.id)));
-    this.communicationRepository.send(ClientEvent.ASSET_STACK_UPDATE, auth.user.id, ids);
+    this.eventRepository.clientSend(ClientEvent.ASSET_STACK_UPDATE, auth.user.id, ids);
   }
 
   async handleAssetDeletionCheck(): Promise<JobStatus> {
@@ -454,7 +454,7 @@ export class AssetService {
 
     await this.assetRepository.remove(asset);
     await this.userRepository.updateUsage(asset.ownerId, -(asset.exifInfo?.fileSizeInByte || 0));
-    this.communicationRepository.send(ClientEvent.ASSET_DELETE, asset.ownerId, id);
+    this.eventRepository.clientSend(ClientEvent.ASSET_DELETE, asset.ownerId, id);
 
     // TODO refactor this to use cascades
     if (asset.livePhotoVideoId) {
@@ -482,7 +482,7 @@ export class AssetService {
       await this.jobRepository.queueAll(ids.map((id) => ({ name: JobName.ASSET_DELETION, data: { id } })));
     } else {
       await this.assetRepository.softDeleteAll(ids);
-      this.communicationRepository.send(ClientEvent.ASSET_TRASH, auth.user.id, ids);
+      this.eventRepository.clientSend(ClientEvent.ASSET_TRASH, auth.user.id, ids);
     }
   }
 
@@ -513,7 +513,7 @@ export class AssetService {
       primaryAssetId: newParentId,
     });
 
-    this.communicationRepository.send(ClientEvent.ASSET_STACK_UPDATE, auth.user.id, [
+    this.eventRepository.clientSend(ClientEvent.ASSET_STACK_UPDATE, auth.user.id, [
       ...childIds,
       newParentId,
       oldParentId,

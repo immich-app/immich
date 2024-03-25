@@ -34,7 +34,6 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.22.11",
-    "@immich/cli": "^2.0.7",
     "@nestjs/bullmq": "^10.0.1",
     "@nestjs/common": "^10.2.2",
     "@nestjs/config": "^3.0.0",

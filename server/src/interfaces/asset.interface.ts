@@ -140,7 +140,6 @@ export const IAssetRepository = 'IAssetRepository';
 
 export interface IAssetRepository {
   create(asset: AssetCreate): Promise<AssetEntity>;
-  getByDate(ownerId: string, date: Date): Promise<AssetEntity[]>;
   getByIds(
     ids: string[],
     relations?: FindOptionsRelations<AssetEntity>,
