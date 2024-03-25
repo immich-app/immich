@@ -29,8 +29,11 @@ class PeoplePicker extends HookConsumerWidget {
           padding: const EdgeInsets.all(8),
           itemBuilder: (context, index) {
             final person = people[index];
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 2.0),
+            return Card(
+              elevation: 0,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(15)),
+              ),
               child: ListTile(
                 title: Text(
                   person.label,
