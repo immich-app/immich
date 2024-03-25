@@ -1,8 +1,9 @@
+import { Inject } from '@nestjs/common';
 import { MetricService } from 'nestjs-otel';
 import { CustomMetricOptions, IMetricRepository } from 'src/interfaces/metric.interface';
 
 export class MetricRepository implements IMetricRepository {
-  constructor(private readonly metricService: MetricService) {}
+  constructor(@Inject(MetricService) private readonly metricService: MetricService) {}
 
   addToCounter(name: string, value: number, options?: CustomMetricOptions): void {
     if (options?.enabled === false) {

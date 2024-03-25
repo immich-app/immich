@@ -165,7 +165,6 @@ const controllers = [
 const services: Provider[] = [
   ApiService,
   MicroservicesService,
-
   APIKeyService,
   ActivityService,
   AlbumService,
