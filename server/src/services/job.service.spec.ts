@@ -1,4 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
+import { MetricService } from 'nestjs-otel';
 import { FeatureFlag, SystemConfigCore } from 'src/cores/system-config.core';
 import { SystemConfig, SystemConfigKey } from 'src/entities/system-config.entity';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
@@ -12,6 +13,7 @@ import {
   JobStatus,
   QueueName,
 } from 'src/interfaces/job.interface';
+import { IMetricRepository } from 'src/interfaces/metric.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 import { JobService } from 'src/services/job.service';
@@ -19,6 +21,7 @@ import { assetStub } from 'test/fixtures/asset.stub';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
 import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
+import { newMetricRepositoryMock } from 'test/repositories/metric.repository.mock';
 import { newPersonRepositoryMock } from 'test/repositories/person.repository.mock';
 import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
 
@@ -37,6 +40,7 @@ describe(JobService.name, () => {
   let eventMock: jest.Mocked<IEventRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
   let personMock: jest.Mocked<IPersonRepository>;
+  let metricMock: jest.Mocked<IMetricRepository>;
 
   beforeEach(() => {
     assetMock = newAssetRepositoryMock();
@@ -44,7 +48,8 @@ describe(JobService.name, () => {
     eventMock = newEventRepositoryMock();
     jobMock = newJobRepositoryMock();
     personMock = newPersonRepositoryMock();
-    sut = new JobService(assetMock, eventMock, jobMock, configMock, personMock);
+    metricMock = newMetricRepositoryMock();
+    sut = new JobService(assetMock, eventMock, jobMock, configMock, personMock, metricMock);
   });
 
   it('should work', () => {

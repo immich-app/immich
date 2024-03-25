@@ -1,4 +1,6 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { snakeCase } from 'lodash';
+import { MetricService } from 'nestjs-otel';
 import { FeatureFlag, SystemConfigCore } from 'src/cores/system-config.core';
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AllJobStatusResponseDto, JobCommandDto, JobStatusDto } from 'src/dtos/job.dto';
@@ -16,8 +18,10 @@ import {
   QueueCleanType,
   QueueName,
 } from 'src/interfaces/job.interface';
+import { IMetricRepository } from 'src/interfaces/metric.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { jobMetrics } from 'src/utils/instrumentation';
 import { ImmichLogger } from 'src/utils/logger';
 
 @Injectable()
@@ -31,6 +35,7 @@ export class JobService {
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IPersonRepository) private personRepository: IPersonRepository,
+    @Inject(IMetricRepository) private metricRepository: IMetricRepository,
   ) {
     this.configCore = SystemConfigCore.create(configRepository);
   }
@@ -91,6 +96,8 @@ export class JobService {
     if (isActive) {
       throw new BadRequestException(`Job is already running`);
     }
+
+    this.metricRepository.addToCounter(`immich.queues.${snakeCase(name)}.started`, 1), { enabled: jobMetrics };
 
     switch (name) {
       case QueueName.VIDEO_CONVERSION: {
@@ -156,14 +163,21 @@ export class JobService {
       this.jobRepository.addHandler(queueName, concurrency, async (item: JobItem): Promise<void> => {
         const { name, data } = item;
 
+        const queueMetric = `immich.queues.${snakeCase(queueName)}.active`;
+        this.metricRepository.updateGauge(queueMetric, 1, { enabled: jobMetrics });
+
         try {
           const handler = jobHandlers[name];
           const status = await handler(data);
+          const jobMetric = `immich.jobs.${name.replaceAll('-', '_')}.${status}`;
+          this.metricRepository.addToCounter(jobMetric, 1, { enabled: jobMetrics });
           if (status === JobStatus.SUCCESS || status == JobStatus.SKIPPED) {
             await this.onDone(item);
           }
         } catch (error: Error | any) {
           this.logger.error(`Unable to run job handler (${queueName}/${name}): ${error}`, error?.stack, data);
+        } finally {
+          this.metricRepository.updateGauge(queueMetric, -1, { enabled: jobMetrics });
         }
       });
     }
