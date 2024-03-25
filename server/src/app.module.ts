@@ -78,7 +78,6 @@ import { AuditRepository } from 'src/repositories/audit.repository';
 import { CryptoRepository } from 'src/repositories/crypto.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
 import { EventRepository } from 'src/repositories/event.repository';
-import { FilesystemProvider } from 'src/repositories/filesystem.provider';
 import { JobRepository } from 'src/repositories/job.repository';
 import { LibraryRepository } from 'src/repositories/library.repository';
 import { MachineLearningRepository } from 'src/repositories/machine-learning.repository';
@@ -91,6 +90,7 @@ import { PersonRepository } from 'src/repositories/person.repository';
 import { SearchRepository } from 'src/repositories/search.repository';
 import { ServerInfoRepository } from 'src/repositories/server-info.repository';
 import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
+import { StorageRepository } from 'src/repositories/storage.repository';
 import { SystemConfigRepository } from 'src/repositories/system-config.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { TagRepository } from 'src/repositories/tag.repository';
@@ -216,7 +216,7 @@ const repositories: Provider[] = [
   { provide: IServerInfoRepository, useClass: ServerInfoRepository },
   { provide: ISharedLinkRepository, useClass: SharedLinkRepository },
   { provide: ISearchRepository, useClass: SearchRepository },
-  { provide: IStorageRepository, useClass: FilesystemProvider },
+  { provide: IStorageRepository, useClass: StorageRepository },
   { provide: ISystemConfigRepository, useClass: SystemConfigRepository },
   { provide: ISystemMetadataRepository, useClass: SystemMetadataRepository },
   { provide: ITagRepository, useClass: TagRepository },
