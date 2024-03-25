@@ -42,6 +42,7 @@
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import { shortcut } from '$lib/utils/shortcut';
+  import { getShortDateRange } from '$lib/utils/date-time';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
@@ -648,7 +649,7 @@
     <p class="pb-4 text-sm">APPEARS IN</p>
     {#each albums as album}
       <a data-sveltekit-preload-data="hover" href={`/albums/${album.id}`}>
-        <div class="flex gap-4 py-2 hover:cursor-pointer">
+        <div class="flex gap-4 py-2 hover:cursor-pointer items-center">
           <div>
             <img
               alt={album.albumName}
@@ -661,11 +662,20 @@
 
           <div class="mb-auto mt-auto">
             <p class="dark:text-immich-dark-primary">{album.albumName}</p>
-            <div class="flex gap-2 text-sm">
-              <p>{album.assetCount} items</p>
-              {#if album.shared}
-                <p>· Shared</p>
+            <div class="flex flex-col gap-0 text-sm">
+              {#if album.startDate && album.endDate}
+                <div>
+                  <p class="capitalize">
+                    {getShortDateRange(album.startDate, album.endDate)}
+                  </p>
+                </div>
               {/if}
+              <div>
+                <p>{album.assetCount} items</p>
+                {#if album.shared}
+                  <p>· Shared</p>
+                {/if}
+              </div>
             </div>
           </div>
         </div>
