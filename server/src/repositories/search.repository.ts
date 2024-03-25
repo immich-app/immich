@@ -225,7 +225,7 @@ export class SearchRepository implements ISearchRepository {
       .getMany();
   }
 
-  @GenerateSql({ params: [[DummyValue.UUID]] })
+  @GenerateSql({ params: [[DummyValue.UUID, DummyValue.UUID]] })
   async getAssetsByCity(userIds: string[]): Promise<AssetEntity[]> {
     const parameters = [userIds, true, false, AssetType.IMAGE];
     const rawRes = await this.repository.query(this.assetsByCityQuery, parameters);
