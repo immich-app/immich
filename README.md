@@ -131,6 +131,10 @@ If you feel like this is the right cause and the app is something you are seeing
 
 ## Star History
 
-<a href="https://star-history.com/#immich-app/immich">
-  <img src="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" alt="Star History Chart" width="100%" />
+<a href="https://star-history.com/#immich-app/immich&Date">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" width="100%" />
+ </picture>
 </a>
