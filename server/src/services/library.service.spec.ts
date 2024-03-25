@@ -3,7 +3,6 @@ import { when } from 'jest-when';
 import { R_OK } from 'node:constants';
 import { Stats } from 'node:fs';
 import { SystemConfigCore } from 'src/cores/system-config.core';
-import { ILibraryOfflineJob } from 'src/domain/job/job.interface';
 import { mapLibrary } from 'src/dtos/library.dto';
 import { AssetType } from 'src/entities/asset.entity';
 import { LibraryType } from 'src/entities/library.entity';
@@ -12,7 +11,14 @@ import { UserEntity } from 'src/entities/user.entity';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IDatabaseRepository } from 'src/interfaces/database.interface';
-import { IJobRepository, ILibraryFileJob, ILibraryRefreshJob, JobName, JobStatus } from 'src/interfaces/job.interface';
+import {
+  IJobRepository,
+  ILibraryFileJob,
+  ILibraryOfflineJob,
+  ILibraryRefreshJob,
+  JobName,
+  JobStatus,
+} from 'src/interfaces/job.interface';
 import { ILibraryRepository } from 'src/interfaces/library.interface';
 import { IStorageRepository, StorageEventType } from 'src/interfaces/storage.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
