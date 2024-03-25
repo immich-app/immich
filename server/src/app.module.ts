@@ -279,6 +279,7 @@ export class ImmichAdminModule {}
     EventEmitterModule.forRoot(),
     TypeOrmModule.forRoot(databaseConfig),
     TypeOrmModule.forFeature(databaseEntities),
+    OpenTelemetryModule.forRoot(otelConfig),
   ],
   controllers: [...controllers],
   providers: [...services, ...repositories, ...middleware, SchedulerRegistry],
