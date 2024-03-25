@@ -96,7 +96,7 @@ export class JobService {
       throw new BadRequestException(`Job is already running`);
     }
 
-    this.metricRepository.jobs.addToCounter(`immich.queues.${snakeCase(name)}.started`, 1), { enabled: jobMetrics };
+    this.metricRepository.jobs.addToCounter(`immich.queues.${snakeCase(name)}.started`, 1);
 
     switch (name) {
       case QueueName.VIDEO_CONVERSION: {
