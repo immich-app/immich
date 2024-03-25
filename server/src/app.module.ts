@@ -123,6 +123,8 @@ import { TrashService } from 'src/services/trash.service';
 import { UserService } from 'src/services/user.service';
 import { otelConfig } from 'src/utils/instrumentation';
 import { ImmichLogger } from 'src/utils/logger';
+import { IMetricRepository } from 'src/interfaces/metric.interface';
+import { MetricRepository } from 'src/repositories/metric.repository';
 
 const commands = [
   ResetAdminPasswordCommand,
@@ -208,6 +210,7 @@ const repositories: Provider[] = [
   { provide: IKeyRepository, useClass: ApiKeyRepository },
   { provide: IMachineLearningRepository, useClass: MachineLearningRepository },
   { provide: IMetadataRepository, useClass: MetadataRepository },
+  { provide: IMetricRepository, useClass: MetricRepository },
   { provide: IMoveRepository, useClass: MoveRepository },
   { provide: IPartnerRepository, useClass: PartnerRepository },
   { provide: IPersonRepository, useClass: PersonRepository },
