@@ -57,11 +57,25 @@ class SearchInputPage extends HookConsumerWidget {
     showCameraPicker() {
       showFilterBottomSheet(
         context: context,
+        isScrollControlled: true,
+        isDismissible: false,
         child: FilterBottomSheetScaffold(
           title: 'Select camera type',
           onSearch: () {},
           onClear: () {},
-          child: const CameraPicker(),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16.0),
+            child: Container(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: CameraPicker(
+                onSelected: (value) {
+                  debugPrint("camera selected: $value");
+                },
+              ),
+            ),
+          ),
         ),
       );
     }
@@ -126,6 +140,7 @@ class SearchInputPage extends HookConsumerWidget {
     }
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         automaticallyImplyLeading: true,
         leading: IconButton(

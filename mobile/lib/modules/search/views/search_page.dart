@@ -136,6 +136,13 @@ class SearchPage extends HookConsumerWidget {
           context.pushRoute(const SearchInputRoute());
         },
         child: Card(
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: const BorderSide(
+              color: Color.fromARGB(255, 225, 225, 225),
+            ),
+          ),
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Padding(
             padding: const EdgeInsets.symmetric(
@@ -151,7 +158,7 @@ class SearchPage extends HookConsumerWidget {
                   style: context.textTheme.bodyLarge?.copyWith(
                     color:
                         context.isDarkTheme ? Colors.white70 : Colors.black54,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w400,
                   ),
                 ),
               ],
