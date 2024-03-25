@@ -404,7 +404,6 @@
                           <MenuOption on:click={() => onScanSettingClicked()} text="Scan Settings" />
                           <hr />
                           <MenuOption on:click={() => onScanNewLibraryClicked()} text="Scan New Library Files" />
-
                           <MenuOption
                             on:click={() => onScanAllLibraryFilesClicked()}
                             text="Re-scan All Library Files"

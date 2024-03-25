@@ -625,16 +625,15 @@ export class LibraryService extends EventEmitter {
       library.importPaths.map((importPath) => this.validateImportPath(importPath)),
     );
 
-    const validImportPaths = pathValidation
-      .map((validation) => {
-        if (!validation.isValid) {
-          this.logger.error(`Skipping invalid import path: ${validation.importPath}. Reason: ${validation.message}`);
-        }
-        return validation;
-      })
-      .filter((validation) => validation.isValid)
-      .map((validation) => validation.importPath)
-      .map((importPath) => path.normalize(importPath));
+    let validImportPaths: string[] = [];
+
+    for (const validation of pathValidation) {
+      if (validation.isValid) {
+        validImportPaths.push(path.normalize(validation.importPath));
+      } else {
+        this.logger.error(`Skipping invalid import path: ${validation.importPath}. Reason: ${validation.message}`);
+      }
+    }
 
     const crawledAssets = this.storageRepository.walk({
       pathsToCrawl: validImportPaths,
