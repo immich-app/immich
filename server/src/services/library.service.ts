@@ -20,7 +20,7 @@ import {
   mapLibrary,
 } from 'src/dtos/library.dto';
 import { AssetEntity, AssetType } from 'src/entities/asset.entity';
-import { LibraryEntity, LibraryType } from 'src/entities/library.entity';
+import { LibraryType } from 'src/entities/library.entity';
 import { IAssetRepository, WithProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
@@ -30,6 +30,7 @@ import {
   IEntityJob,
   IJobRepository,
   ILibraryFileJob,
+  ILibraryOfflineJob,
   ILibraryRefreshJob,
   JOBS_ASSET_PAGINATION_SIZE,
   JobName,

@@ -112,6 +112,10 @@ export interface ILibraryFileJob extends IEntityJob {
   assetPath: string;
 }
 
+export interface ILibraryOfflineJob extends IEntityJob {
+  importPaths: string[];
+}
+
 export interface ILibraryRefreshJob extends IEntityJob {
   refreshModifiedFiles: boolean;
   refreshAllFiles: boolean;
