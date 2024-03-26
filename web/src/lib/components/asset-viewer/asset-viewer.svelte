@@ -191,6 +191,7 @@
   }
 
   onMount(async () => {
+    console.log(sharedLink);
     slideshowStateUnsubscribe = slideshowState.subscribe((value) => {
       if (value === SlideshowState.PlaySlideshow) {
         slideshowHistory.reset();

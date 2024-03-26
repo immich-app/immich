@@ -99,6 +99,6 @@
     </ControlAppBar>
   {/if}
   <section class="my-[160px] mx-4" bind:clientHeight={viewport.height} bind:clientWidth={viewport.width}>
-    <GalleryViewer {assets} bind:selectedAssets {viewport} />
+    <GalleryViewer {assets} bind:selectedAssets {viewport} {sharedLink} />
   </section>
 </section>
