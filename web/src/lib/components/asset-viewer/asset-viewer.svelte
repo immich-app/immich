@@ -1,20 +1,10 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import Icon from '$lib/components/elements/icon.svelte';
   import { AppRoute, AssetAction, ProjectionType } from '$lib/constants';
-  import { updateNumberOfComments } from '$lib/stores/activity.store';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import type { AssetStore } from '$lib/stores/assets.store';
   import { isShowDetail, showDeleteModal } from '$lib/stores/preferences.store';
-  import { featureFlags } from '$lib/stores/server-config.store';
-  import { SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
-  import { stackAssetsStore } from '$lib/stores/stacked-asset.store';
   import { user } from '$lib/stores/user.store';
   import { getAssetJobMessage, isSharedLink, handlePromiseError } from '$lib/utils';
   import { addAssetsToAlbum, downloadFile } from '$lib/utils/asset-utils';
-  import { handleError } from '$lib/utils/handle-error';
-  import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
-  import { SlideshowHistory } from '$lib/utils/slideshow-history';
   import {
     AssetJobName,
     AssetTypeEnum,
@@ -34,20 +24,16 @@
     type AssetResponseDto,
     type SharedLinkResponseDto,
   } from '@immich/sdk';
-  import { mdiChevronLeft, mdiChevronRight, mdiImageBrokenVariant } from '@mdi/js';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import { fly } from 'svelte/transition';
-  import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
   import DeleteAssetDialog from '../photos-page/delete-asset-dialog.svelte';
   import AlbumSelectionModal from '../shared-components/album-selection-modal.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import ProfileImageCropper from '../shared-components/profile-image-cropper.svelte';
-  import ActivityStatus from './activity-status.svelte';
-  import ActivityViewer from './activity-viewer.svelte';
   import AssetViewerNavBar from './asset-viewer-nav-bar.svelte';
   import DetailPanel from './detail-panel.svelte';
   import NavigationArea from './navigation-area.svelte';
-<<<<<<< HEAD
+
   import { browser } from '$app/environment';
   import PhotoEditor from './photo-editor/photo-editor.svelte';
   import { handleError } from '$lib/utils/handle-error';
@@ -64,10 +50,8 @@
   import ActivityStatus from './activity-status.svelte';
   import { updateNumberOfComments } from '$lib/stores/activity.store';
   import { SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
-=======
   import PanoramaViewer from './panorama-viewer.svelte';
   import PhotoViewer from './photo-viewer.svelte';
->>>>>>> origin/main
   import SlideshowBar from './slideshow-bar.svelte';
   import VideoViewer from './video-viewer.svelte';
 
@@ -197,12 +181,10 @@
       handlePromiseError(getNumberOfComments());
     }
   }
-<<<<<<< HEAD
   let shouldShowPhotoEditor = false;
 
   const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo);
-=======
->>>>>>> origin/main
+
 
   onMount(async () => {
     slideshowStateUnsubscribe = slideshowState.subscribe((value) => {

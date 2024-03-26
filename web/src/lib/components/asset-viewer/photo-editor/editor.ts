@@ -1,10 +1,10 @@
 import type { ratio, filter, edit } from './types';
-import { ratios, mode } from './types';
+import { ratios, type mode } from './types';
 
 import { presets } from './presets';
 import { Render } from './render';
 
-import { api, AssetResponseDto } from '@api';
+import { serveFile, uploadFile, updateAssets, type AssetResponseDto } from '@immich/sdk';
 
 type presetName = keyof typeof presets;
 type partialFilter = Partial<filter>;
@@ -357,11 +357,8 @@ export class Editor {
     console.log('loadThumb');
 
     try {
-      const { data } = await api.assetApi.serveFile(
-        { id: this.asset.id, isThumb: true, isWeb: true },
-        {
-          responseType: 'blob',
-        },
+      const data = await serveFile(
+        { id: this.asset.id, isThumb: true, isWeb: true }
       );
 
       if (!(data instanceof Blob)) {
@@ -381,11 +378,8 @@ export class Editor {
   private async loadAsset() {
     console.log('loadAsset');
     try {
-      const { data } = await api.assetApi.serveFile(
+      const data = await serveFile(
         { id: this.asset.id },
-        {
-          responseType: 'blob',
-        },
       );
 
       if (!(data instanceof Blob)) {
@@ -453,12 +447,12 @@ export class Editor {
       lastModified: new Date().getTime(),
     });
 
-    const { data } = await api.assetApi.uploadFile({
+    const data = await uploadFile({createAssetDto:{
       assetData: assetData,
       deviceAssetId: this.asset.deviceAssetId,
       deviceId: this.asset.deviceId,
       fileCreatedAt: this.asset.fileCreatedAt,
-      fileModifiedAt: new Date().toUTCString(),
+      fileModifiedAt: new Date().toUTCString(),},
     });
 
     if (!data) {
@@ -466,7 +460,7 @@ export class Editor {
     }
 
     const id = data.id;
-    const stackData = await api.assetApi.updateAssets({
+    const stackData = await updateAssets({
       assetBulkUpdateDto: {
         ids: [id],
         stackParentId: this.asset.id,
