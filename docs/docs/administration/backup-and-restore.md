@@ -51,6 +51,44 @@ gc "C:\path\to\backup\dump.sql" | docker exec -i immich_postgres psql -U postgre
 docker compose up -d    # Start remainder of Immich apps
 ```
 
+### Scheduling backups with Powershell
+```powershell title='Scheduled Backup example'
+# Define variables
+$backupDir = "C:\immich\library\db_dumps"
+$sevenZipPath = "C:\Program Files\7-Zip\7z.exe"  # Adjust the path to 7z.exe as necessary
+$date = Get-Date -Format "yyyy-MM-dd"
+$dayOfWeek = (Get-Date).DayOfWeek
+$backupFileDaily = "$backupDir\backup_daily_$date.sql.gz"
+$backupFileWeekly = "$backupDir\backup_weekly_$date.sql.gz"
+
+# Ensure the backup directory exists
+if (-Not (Test-Path $backupDir)) {
+    New-Item -ItemType Directory -Path $backupDir
+}
+
+# Run docker command to dump and compress database
+docker exec -t immich_postgres pg_dumpall -c -U postgres | gzip > $backupFileDaily
+
+# Compress using 7zip for further compression (if needed)
+& $sevenZipPath a "$backupFileDaily.7z" $backupFileDaily
+Remove-Item $backupFileDaily  # Remove gzip file after compressing with 7zip
+
+# Copy a weekly backup on the specified day (e.g., Sunday)
+if ($dayOfWeek -eq 'Sunday') {
+		Copy-Item "${backupFileDaily}.7z" "${backupFileWeekly}.7z"
+}
+
+# Cleanup: Keep only the 7 most recent daily backups and 7 most recent weekly backups
+Get-ChildItem "$backupDir\backup_daily_*.7z" | Sort-Object LastWriteTime -Descending | Select-Object -Skip 7 | Remove-Item
+Get-ChildItem "$backupDir\backup_weekly_*.7z" | Sort-Object LastWriteTime -Descending | Select-Object -Skip 7 | Remove-Item
+```
+This script will keep the most recent 7 daily backups and 7 weeks of saved backups.
+
+Save as a Powershell script ie: `backup_database.ps1` and schedule to run daily with Task Scheduler.
+
+`schtasks /create /tn "Daily Database Backup" /tr "powershell.exe -ExecutionPolicy Bypass -File '<PATH_TO_SCRIPT>'" /sc daily /st 00:00`
+
+
 </TabItem>
 </Tabs>
 
