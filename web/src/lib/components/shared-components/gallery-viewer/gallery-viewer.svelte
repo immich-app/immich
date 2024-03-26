@@ -19,7 +19,7 @@
   export let disableAssetSelect = false;
   export let showArchiveIcon = false;
   export let viewport: Viewport;
-  export let sharedLink: SharedLinkResponseDto | undefined;
+  export let sharedLink: SharedLinkResponseDto | undefined = undefined;
 
   let { isViewing: showAssetViewer } = assetViewingStore;
 

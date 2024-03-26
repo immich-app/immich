@@ -32,7 +32,7 @@
   export let isShared = false;
   export let album: AlbumResponseDto | null = null;
   export let isShowDeleteConfirmation = false;
-  export let sharedLink: SharedLinkResponseDto | undefined;
+  export let sharedLink: SharedLinkResponseDto | undefined = undefined;
 
   $: isTrashEnabled = $featureFlags.loaded && $featureFlags.trash;
 
