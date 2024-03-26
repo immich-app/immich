@@ -47,8 +47,8 @@
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { Editor } from './editor';
   import { presets } from './presets';
-  import type { AssetResponseDto } from '@api';
   import type { mode as modeType } from './types';
+  import type { AssetResponseDto } from '@immich/sdk';
 
   const dispatch = createEventDispatcher();
 
@@ -114,11 +114,7 @@
     const x: number = event.detail.deltaX;
     let a = angleSlider.offsetLeft - x;
 
-    if (a < 0) {
-      a = Math.max(a, (-125 / 49) * 45);
-    } else {
-      a = Math.min(a, (125 / 49) * 45);
-    }
+    a = a < 0 ? Math.max(a, (-125 / 49) * 45) : Math.min(a, (125 / 49) * 45);
 
     console.log('a', a);
 

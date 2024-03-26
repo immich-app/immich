@@ -215,7 +215,7 @@ export class Editor {
    * This method performs various calculations and transformations to update the editor's state.
    * @throws {Error} If there is no crop wrapper element.
    */
-  private async update() {
+  private update() {
     console.log('update');
     console.log(this.edit);
 
@@ -300,7 +300,7 @@ export class Editor {
       } else {
         throw new Error('Failed to load data');
       }
-      await this.update();
+      this.update();
     } catch (error) {
       throw new Error('Failed to load data: ' + error);
     }
@@ -322,36 +322,35 @@ export class Editor {
         return 1;
       }
       case 'original': {
-        (this.edit.angleOffset % 180 !== 0) ?
-          (return (1 / originalAspect))
-        :
+        if (this.edit.angleOffset % 180 !== 0) {
+          return (1 / originalAspect)
+        }
         return originalAspect
       }
-    }
       case '16_9': {
-      return 16 / 9;
-    }
+        return 16 / 9;
+      }
       case '9_16': {
-      return 9 / 16;
-    }
+        return 9 / 16;
+      }
       case '5_4': {
-      return 5 / 4;
-    }
+        return 5 / 4;
+      }
       case '4_5': {
-      return 4 / 5;
-    }
+        return 4 / 5;
+      }
       case '4_3': {
-      return 4 / 3;
-    }
+        return 4 / 3;
+      }
       case '3_4': {
-      return 3 / 4;
-    }
+        return 3 / 4;
+      }
       case '3_2': {
-      return 3 / 2;
-    }
+        return 3 / 2;
+      }
       case '2_3': {
-      return 2 / 3;
-    }
+        return 2 / 3;
+      }
       default: {
         return originalAspect;
       }
@@ -363,82 +362,82 @@ export class Editor {
    * @throws {Error} If failed to load thumb data.
    */
   private async loadThumb() {
-  console.log('loadThumb');
+    console.log('loadThumb');
 
-  try {
-    const data = await serveFile(
-      { id: this.asset.id, isThumb: true, isWeb: true }
-    );
+    try {
+      const data = await serveFile(
+        { id: this.asset.id, isThumb: true, isWeb: true }
+      );
 
-    if (!(data instanceof Blob)) {
+      if (!(data instanceof Blob)) {
+        throw new TypeError('Failed to load thumb data');
+      }
+
+      this.thumbData = data;
+    } catch {
       throw new Error('Failed to load thumb data');
     }
-
-    this.thumbData = data;
-  } catch {
-    throw new Error('Failed to load thumb data');
   }
-}
 
   /**
    * Downloads the asset data from the server and assigns it to the `assetData` property.
    * @throws {Error} If failed to load asset data.
    */
   private async loadAsset() {
-  console.log('loadAsset');
-  try {
-    const data = await serveFile(
-      { id: this.asset.id },
-    );
+    console.log('loadAsset');
+    try {
+      const data = await serveFile(
+        { id: this.asset.id },
+      );
 
-    if (!(data instanceof Blob)) {
+      if (!(data instanceof Blob)) {
+        throw new TypeError('Failed to load asset data');
+      }
+      this.assetData = data;
+    } catch {
       throw new Error('Failed to load asset data');
     }
-    this.assetData = data;
-  } catch {
-    throw new Error('Failed to load asset data');
   }
-}
 
   /**
    * Saves the current edit state and adds it to the history.
    */
   public save() {
-  console.log('save');
-  console.log(this);
-  console.log(this.history);
+    console.log('save');
+    console.log(this);
+    console.log(this.history);
 
-  if (!this.history) {
-    throw new Error('No history');
+    if (!this.history) {
+      throw new Error('No history');
+    }
+
+    const edit = structuredClone(this.edit);
+    this.history.push(edit);
+    this.historyIndex++;
+    this.updateHtml();
   }
-
-  const edit = structuredClone(this.edit);
-  this.history.push(edit);
-  this.historyIndex++;
-  this.updateHtml();
-}
 
   /**
    * Renders the photo editor.
    * @returns A promise that resolves when the rendering is complete.
    */
   public async render() {
-  console.log('render');
+    console.log('render');
 
-  const name = this.asset.originalFileName;
-  const asset = this.assetData;
+    const name = this.asset.originalFileName;
+    const asset = this.assetData;
 
-  this.edit.crop = {
-    width: this.cropElement.offsetWidth,
-    height: this.cropElement.offsetHeight,
-  };
-  if (!asset) {
-    throw new Error('No asset data');
+    this.edit.crop = {
+      width: this.cropElement.offsetWidth,
+      height: this.cropElement.offsetHeight,
+    };
+    if (!asset) {
+      throw new Error('No asset data');
+    }
+
+    const render = new Render(name, asset, this.edit, this.imageWrapper);
+    return await render.start();
   }
-
-  const render = new Render(name, asset, this.edit, this.imageWrapper);
-  return await render.start();
-}
 
   /**
    * Uploads a blob to the server.
@@ -448,40 +447,40 @@ export class Editor {
    * @throws Error if the file upload fails.
    */
   public async upload(blob: Blob) {
-  console.log('upload');
+    console.log('upload');
 
-  const fileType = blob.type.split('/')[1];
+    const fileType = blob.type.split('/')[1];
 
-  const assetData = new File([blob], this.asset.originalFileName + '.' + fileType, {
-    lastModified: new Date().getTime(),
-  });
+    const assetData = new File([blob], this.asset.originalFileName + '.' + fileType, {
+      lastModified: Date.now(),
+    });
 
-  const data = await uploadFile({
-    createAssetDto: {
-      assetData: assetData,
-      deviceAssetId: this.asset.deviceAssetId,
-      deviceId: this.asset.deviceId,
-      fileCreatedAt: this.asset.fileCreatedAt,
-      fileModifiedAt: new Date().toUTCString(),
-    },
-  });
+    const data = await uploadFile({
+      createAssetDto: {
+        assetData: assetData,
+        deviceAssetId: this.asset.deviceAssetId,
+        deviceId: this.asset.deviceId,
+        fileCreatedAt: this.asset.fileCreatedAt,
+        fileModifiedAt: new Date().toUTCString(),
+      },
+    });
 
-  if (!data) {
-    throw new Error('Failed to upload file');
+    if (!data) {
+      throw new Error('Failed to upload file');
+    }
+
+    const id = data.id;
+    const stackData = await updateAssets({
+      assetBulkUpdateDto: {
+        ids: [id],
+        stackParentId: this.asset.id,
+      },
+    });
+
+    if (!stackData) {
+      throw new Error('Failed to link file');
+    }
   }
-
-  const id = data.id;
-  const stackData = await updateAssets({
-    assetBulkUpdateDto: {
-      ids: [id],
-      stackParentId: this.asset.id,
-    },
-  });
-
-  if (!stackData) {
-    throw new Error('Failed to link file');
-  }
-}
 
   /**
    * Undo the previous edit action.
@@ -490,16 +489,16 @@ export class Editor {
    * @throws {Error} No more history to undo
    */
   public undo() {
-  console.log('undo');
+    console.log('undo');
 
-  if (this.historyIndex < 1) {
-    throw new Error('No more history');
+    if (this.historyIndex < 1) {
+      throw new Error('No more history');
+    }
+    this.historyIndex--;
+    this.edit = structuredClone(this.history[this.historyIndex]);
+
+    this.update();
   }
-  this.historyIndex--;
-  this.edit = structuredClone(this.history[this.historyIndex]);
-
-  this.update();
-}
 
   /**
    * Redo the previous edit action.
@@ -508,16 +507,16 @@ export class Editor {
    * @throws {Error} No more history to redo
    */
   public redo() {
-  console.log('redo');
+    console.log('redo');
 
-  if (this.historyIndex >= this.history.length - 1) {
-    throw new Error('No more history');
+    if (this.historyIndex >= this.history.length - 1) {
+      throw new Error('No more history');
+    }
+    this.historyIndex++;
+    this.edit = structuredClone(this.history[this.historyIndex]);
+
+    this.update();
   }
-  this.historyIndex++;
-  this.edit = structuredClone(this.history[this.historyIndex]);
-
-  this.update();
-}
 
   /**
    * Clear the edit history.
@@ -526,19 +525,20 @@ export class Editor {
    * @throws {Error} History is empty
    */
   public clear() {
-  console.log('clear');
+    console.log('clear');
 
-  if (this.history.length < 1) {
-    throw new Error('No history'); //History must not be empty
-  }
+    if (this.history.length === 0) {
+      throw new Error('No history'); //History must not be empty
+    }
 
-  if (this.history.length < 2) {
-    return;
+    if (this.
+      history.length < 2) {
+      return;
+    }
+    this.history.splice(1, this.history.length - 1, structuredClone(this.edit));
+    this.historyIndex = 1;
+    this.updateHtml();
   }
-  this.history.splice(1, this.history.length - 1, structuredClone(this.edit));
-  this.historyIndex = 1;
-  this.updateHtml();
-}
 
   //TODO: decide if we want to clear the history or not
   /**
@@ -548,33 +548,33 @@ export class Editor {
    * @throws {Error} History is empty
    */
   public reset() {
-  console.log('reset');
+    console.log('reset');
 
-  if (this.history.length < 1) {
-    throw new Error('No history'); //History must not be empty
+    if (this.history.length === 0) {
+      throw new Error('No history'); //History must not be empty
+    }
+    this.edit = structuredClone(this.history[0]);
+    this.historyIndex = 0;
+    this.history.splice(1, this.history.length - 1);
+
+    this.update();
   }
-  this.edit = structuredClone(this.history[0]);
-  this.historyIndex = 0;
-  this.history.splice(1, this.history.length - 1);
-
-  this.update();
-}
 
   public getAngle() {
-  return this.edit.angle;
-}
+    return this.edit.angle;
+  }
 
   /**
    * Rotates the photo by 90 degrees.
    */
   public rotate90() {
-  console.log('rotate90');
+    console.log('rotate90');
 
-  this.edit.angleOffset += 90;
-  this.edit.angleOffset %= 360;
+    this.edit.angleOffset += 90;
+    this.edit.angleOffset %= 360;
 
-  this.update();
-}
+    this.update();
+  }
 
   /**
    * Rotates the photo by the specified angle.
@@ -584,15 +584,15 @@ export class Editor {
    * @throws {Error} If the angle is invalid (not between -45 and 45).
    */
   public rotate(angle = 0) {
-  console.log('rotate');
+    console.log('rotate');
 
-  if (!(angle >= -45 && angle <= 45)) {
-    throw new Error('Invalid angle'); //Angle must be between -45 and 45
+    if (!(angle >= -45 && angle <= 45)) {
+      throw new Error('Invalid angle'); //Angle must be between -45 and 45
+    }
+
+    this.edit.angle = angle;
+    this.update();
   }
-
-  this.edit.angle = angle;
-  this.update();
-}
 
   /**
    * Flips the photo horizontally and/or vertically.
@@ -603,23 +603,23 @@ export class Editor {
    * @throws {Error} If both x and y are false.
    */
   public flip(x: boolean, y: boolean) {
-  if (!x && !y) {
-    throw new Error('Invalid flip'); //At least one of x and y must be true
+    if (!x && !y) {
+      throw new Error('Invalid flip'); //At least one of x and y must be true
+    }
+
+    if (x) {
+      console.log('flipX');
+
+      this.edit.flipX = !this.edit.flipX;
+    }
+    if (y) {
+      console.log('flipY');
+
+      this.edit.flipY = !this.edit.flipY;
+    }
+
+    this.update();
   }
-
-  if (x) {
-    console.log('flipX');
-
-    this.edit.flipX = !this.edit.flipX;
-  }
-  if (y) {
-    console.log('flipY');
-
-    this.edit.flipY = !this.edit.flipY;
-  }
-
-  this.update();
-}
 
   /**
    * Downloads a blob as a file with the specified name.
@@ -628,14 +628,14 @@ export class Editor {
    * @param name - The name of the downloaded file.
    */
   public download(blob: Blob, name: string) {
-  console.log('download');
-  window.setTimeout(() => {
-    const link = document.createElement('a');
-    link.download = name;
-    link.href = URL.createObjectURL(blob);
-    link.click();
-  }, 0);
-}
+    console.log('download');
+    window.setTimeout(() => {
+      const link = document.createElement('a');
+      link.download = name;
+      link.href = URL.createObjectURL(blob);
+      link.click();
+    }, 0);
+  }
 
   /**
    * Zooms the photo editor by the specified scale.
@@ -645,35 +645,35 @@ export class Editor {
    * @throws {Error} if the scale is invalid when wheel is true.
    */
   public zoom(scale: number, wheel = false) {
-  console.log('zoom');
+    console.log('zoom');
 
-  console.log(this.options);
-  console.log(this);
+    console.log(this.options);
+    console.log(this);
 
-  if (wheel && !(scale == -1 || scale == 1)) {
-    throw new Error('Invalid zoom'); //Scale must be 1 or -1 when wheel is true
-  }
-
-  if (wheel) {
-    this.edit.zoom += this.options.zoomSpeed * 5 * scale;
-  } else {
-    if (scale > 1) {
-      this.edit.zoom += this.options.zoomSpeed * scale;
-    } else {
-      this.edit.zoom -= this.options.zoomSpeed / scale;
+    if (wheel && !(scale == -1 || scale == 1)) {
+      throw new Error('Invalid zoom'); //Scale must be 1 or -1 when wheel is true
     }
+
+    if (wheel) {
+      this.edit.zoom += this.options.zoomSpeed * 5 * scale;
+    } else {
+      if (scale > 1) {
+        this.edit.zoom += this.options.zoomSpeed * scale;
+      } else {
+        this.edit.zoom -= this.options.zoomSpeed / scale;
+      }
+    }
+
+    if (this.edit.zoom > this.options.maxZoom) {
+      this.edit.zoom = this.options.maxZoom;
+    } else if (this.edit.zoom < this.options.minZoom) {
+      this.edit.zoom = this.options.minZoom;
+    }
+
+    console.log(this.edit.zoom);
+
+    this.update();
   }
-
-  if (this.edit.zoom > this.options.maxZoom) {
-    this.edit.zoom = this.options.maxZoom;
-  } else if (this.edit.zoom < this.options.minZoom) {
-    this.edit.zoom = this.options.minZoom;
-  }
-
-  console.log(this.edit.zoom);
-
-  this.update();
-}
 
   /**
    * Calculates the maximum X and Y coordinates based on the current editor settings.
@@ -681,37 +681,37 @@ export class Editor {
    * @returns An array containing the maximum X and Y coordinates.
    */
   private maxXY() {
-  const imageWrapper = this.imageWrapper;
-  const crop = this.cropElement;
-  const edit = this.edit;
-  const angleOffset = edit.angleOffset;
-  const angle = edit.angle;
+    const imageWrapper = this.imageWrapper;
+    const crop = this.cropElement;
+    const edit = this.edit;
+    const angleOffset = edit.angleOffset;
+    const angle = edit.angle;
 
-  // Get crop element width and height
-  const cropWidth = crop.offsetWidth;
-  const cropHeight = crop.offsetHeight;
-  const cropDiagonal = Math.sqrt(cropWidth * cropWidth + cropHeight * cropHeight);
+    // Get crop element width and height
+    const cropWidth = crop.offsetWidth;
+    const cropHeight = crop.offsetHeight;
+    const cropDiagonal = Math.hypot(cropWidth, cropHeight);
 
-  // Get img element width and height
-  const imgWrapperWidth = imageWrapper.offsetWidth;
-  const imgWrapperHeight = imageWrapper.offsetHeight;
+    // Get img element width and height
+    const imgWrapperWidth = imageWrapper.offsetWidth;
+    const imgWrapperHeight = imageWrapper.offsetHeight;
 
-  let totalAngle = Math.abs(Math.abs(angle) - angleOffset);
+    let totalAngle = Math.abs(Math.abs(angle) - angleOffset);
 
-  if (angleOffset == 180) {
-    totalAngle *= -1;
+    if (angleOffset == 180) {
+      totalAngle *= -1;
+    }
+
+    const beta = 90 - (Math.asin(cropWidth / cropDiagonal) * 180) / Math.PI;
+
+    const nih = Math.abs(Math.sin(((Math.abs(beta) + totalAngle) * Math.PI) / 180) * cropDiagonal);
+    const niw = Math.abs(Math.cos(((Math.abs(beta) - totalAngle) * Math.PI) / 180) * cropDiagonal);
+
+    const maxX = (imgWrapperWidth * edit.zoom - niw) / (2 * edit.zoom);
+    const maxY = (imgWrapperHeight * edit.zoom - nih) / (2 * edit.zoom);
+
+    return [maxX, maxY];
   }
-
-  const beta = 90 - (Math.asin(cropWidth / cropDiagonal) * 180) / Math.PI;
-
-  const nih = Math.abs(Math.sin(((Math.abs(beta) + totalAngle) * Math.PI) / 180) * cropDiagonal);
-  const niw = Math.abs(Math.cos(((Math.abs(beta) - totalAngle) * Math.PI) / 180) * cropDiagonal);
-
-  const maxX = (imgWrapperWidth * edit.zoom - niw) / (2 * edit.zoom);
-  const maxY = (imgWrapperHeight * edit.zoom - nih) / (2 * edit.zoom);
-
-  return [maxX, maxY];
-}
 
   /**
    * Translates the photo editor view by the specified delta values.
@@ -720,67 +720,67 @@ export class Editor {
    * @param y - The amount to translate along the y-axis.
    */
   public pan(x: number, y: number) {
-  console.log('pan');
-  console.log('x: ' + x);
-  console.log('y: ' + y);
+    console.log('pan');
+    console.log('x: ' + x);
+    console.log('y: ' + y);
 
-  const angleOffset = this.edit.angleOffset;
-  const [maxX, maxY] = this.maxXY();
+    const angleOffset = this.edit.angleOffset;
+    const [maxX, maxY] = this.maxXY();
 
-  if (angleOffset === 90) {
-    const tmp = x;
-    x = -y;
-    y = tmp;
+    if (angleOffset === 90) {
+      const tmp = x;
+      x = -y;
+      y = tmp;
+    }
+
+    if (angleOffset === 270) {
+      const tmp = x;
+      x = -y;
+      y = tmp;
+    }
+
+    if (angleOffset === 180 || angleOffset === 270) {
+      x = -x;
+      y = -y;
+    }
+
+    if (x > maxX) {
+      x = maxX;
+    } else if (x < -maxX) {
+      x = -maxX;
+    }
+
+    if (y > maxY) {
+      y = maxY;
+    } else if (y < -maxY) {
+      y = -maxY;
+    }
+
+    this.edit.translate = {
+      x: x,
+      y: y,
+    };
+
+    console.log(this.edit.translate);
+
+    this.update();
   }
-
-  if (angleOffset === 270) {
-    const tmp = x;
-    x = -y;
-    y = tmp;
-  }
-
-  if (angleOffset === 180 || angleOffset === 270) {
-    x = -x;
-    y = -y;
-  }
-
-  if (x > maxX) {
-    x = maxX;
-  } else if (x < -maxX) {
-    x = -maxX;
-  }
-
-  if (y > maxY) {
-    y = maxY;
-  } else if (y < -maxY) {
-    y = -maxY;
-  }
-
-  this.edit.translate = {
-    x: x,
-    y: y,
-  };
-
-  console.log(this.edit.translate);
-
-  this.update();
-}
 
   public canUndo() {
-  return this.historyIndex > 0;
-}
+    return this.historyIndex > 0;
+  }
 
   public canRedo() {
-  return this.historyIndex < this.history.length - 1;
-}
+    return this.historyIndex < this.history.length - 1;
+  }
 
   public getRatioString() {
-  return this.edit.aspectRatio;
-}
+    return this.edit.aspectRatio;
+  }
 
   public getFilter() {
-  return structuredClone(this.edit.filter);
-}
+    return structuredClone(this.edit.filter);
+  }
 
   /**
    * Sets the aspect ratio for the photo editor.
@@ -789,24 +789,24 @@ export class Editor {
    * @throws Error if there is no image or if the ratio is invalid.
    */
   public ratio(ratio: ratio) {
-  console.log('ratio');
+    console.log('ratio');
 
-  if (!this.image) {
-    throw new Error('No image');
-  }
-
-  if (this.edit.angleOffset === 90 || this.edit.angleOffset === 270) {
-    const t = ratio.split('_').reverse().join('_');
-    if (ratios.indexOf(t) < 0) {
-      throw new Error('Invalid ratio');
+    if (!this.image) {
+      throw new Error('No image');
     }
-    ratio = t;
+
+    if (this.edit.angleOffset === 90 || this.edit.angleOffset === 270) {
+      const t = ratio.split('_').reverse().join('_');
+      if (!ratios.includes(t)) {
+        throw new Error('Invalid ratio');
+      }
+      ratio = t;
+    }
+
+    this.edit.aspectRatio = ratio;
+
+    this.update();
   }
-
-  this.edit.aspectRatio = ratio;
-
-  this.update();
-}
 
   /**
    * Applies the specified filter to the photo editor.
@@ -815,70 +815,70 @@ export class Editor {
    * @throws Error if the filter object is invalid / is empty.
    */
   public filter(filter: partialFilter) {
-  console.log('filter');
+    console.log('filter');
 
-  if (Object.keys(filter).length === 0) {
-    throw new Error('Invalid filter');
-  }
+    if (Object.keys(filter).length === 0) {
+      throw new Error('Invalid filter');
+    }
 
-  const blur = filter.blur;
-  const brightness = filter.brightness;
-  const contrast = filter.contrast;
-  const grayscale = filter.grayscale;
-  const hueRotate = filter.hueRotate;
-  const invert = filter.invert;
-  const opacity = filter.opacity;
-  const saturation = filter.saturation;
-  const sepia = filter.sepia;
+    const blur = filter.blur;
+    const brightness = filter.brightness;
+    const contrast = filter.contrast;
+    const grayscale = filter.grayscale;
+    const hueRotate = filter.hueRotate;
+    const invert = filter.invert;
+    const opacity = filter.opacity;
+    const saturation = filter.saturation;
+    const sepia = filter.sepia;
 
-  if (blur !== undefined && blur >= 0 && blur <= 1) {
-    this.edit.filter.blur = blur;
-  }
-  if (brightness !== undefined && brightness >= 0 && brightness <= 2) {
-    this.edit.filter.brightness = brightness;
-  }
-  if (contrast !== undefined && contrast >= 0 && contrast <= 2) {
-    this.edit.filter.contrast = contrast;
-  }
-  if (grayscale !== undefined && grayscale >= 0 && grayscale <= 1) {
-    this.edit.filter.grayscale = grayscale;
-  }
-  if (hueRotate !== undefined && hueRotate >= 0 && hueRotate <= 2) {
-    this.edit.filter.hueRotate = hueRotate;
-  }
-  if (invert !== undefined && invert >= 0 && invert <= 1) {
-    this.edit.filter.invert = invert;
-  }
-  if (opacity !== undefined && opacity >= 0 && opacity <= 1) {
-    this.edit.filter.opacity = opacity;
-  }
-  if (saturation !== undefined && saturation >= 0 && saturation <= 2) {
-    this.edit.filter.saturation = saturation;
-  }
-  if (sepia !== undefined && sepia >= 0 && sepia <= 1) {
-    this.edit.filter.sepia = sepia;
-  }
+    if (blur !== undefined && blur >= 0 && blur <= 1) {
+      this.edit.filter.blur = blur;
+    }
+    if (brightness !== undefined && brightness >= 0 && brightness <= 2) {
+      this.edit.filter.brightness = brightness;
+    }
+    if (contrast !== undefined && contrast >= 0 && contrast <= 2) {
+      this.edit.filter.contrast = contrast;
+    }
+    if (grayscale !== undefined && grayscale >= 0 && grayscale <= 1) {
+      this.edit.filter.grayscale = grayscale;
+    }
+    if (hueRotate !== undefined && hueRotate >= 0 && hueRotate <= 2) {
+      this.edit.filter.hueRotate = hueRotate;
+    }
+    if (invert !== undefined && invert >= 0 && invert <= 1) {
+      this.edit.filter.invert = invert;
+    }
+    if (opacity !== undefined && opacity >= 0 && opacity <= 1) {
+      this.edit.filter.opacity = opacity;
+    }
+    if (saturation !== undefined && saturation >= 0 && saturation <= 2) {
+      this.edit.filter.saturation = saturation;
+    }
+    if (sepia !== undefined && sepia >= 0 && sepia <= 1) {
+      this.edit.filter.sepia = sepia;
+    }
 
-  if (this.isWithout(this.edit.filter)) {
-    this.edit.filterName = 'without';
-  }
+    if (this.isWithout(this.edit.filter)) {
+      this.edit.filterName = 'without';
+    }
 
-  this.update();
-}
+    this.update();
+  }
 
   private isWithout(filter: filter) {
-  return (
-    filter.blur === 0 &&
-    filter.brightness === 1 &&
-    filter.contrast === 1 &&
-    filter.grayscale === 0 &&
-    filter.hueRotate === 1 &&
-    filter.invert === 0 &&
-    filter.opacity === 1 &&
-    filter.saturation === 1 &&
-    filter.sepia === 0
-  );
-}
+    return (
+      filter.blur === 0 &&
+      filter.brightness === 1 &&
+      filter.contrast === 1 &&
+      filter.grayscale === 0 &&
+      filter.hueRotate === 1 &&
+      filter.invert === 0 &&
+      filter.opacity === 1 &&
+      filter.saturation === 1 &&
+      filter.sepia === 0
+    );
+  }
 
   /**
    * Applies a preset filter to the photo editor.
@@ -886,20 +886,20 @@ export class Editor {
    * @param name - The name of the preset filter to apply.
    */
   public preset(name: presetName) {
-  console.log('preset');
+    console.log('preset');
 
-  const preset = presets[name];
-  this.edit.filterName = name;
-  this.filter(preset);
-}
+    const preset = presets[name];
+    this.edit.filterName = name;
+    this.filter(preset);
+  }
 
   /**
    * Gets the preset filter name applied in the photo editor.
    * @returns The name of the preset filter.
    */
   public getPreset() {
-  return this.edit.filterName;
-}
+    return this.edit.filterName;
+  }
 
   /**
    * Retrieves the thumbnail data.
@@ -907,9 +907,9 @@ export class Editor {
    * @throws Error if no thumbnail data is available.
    */
   public getThumbData() {
-  if (!this.thumbData) {
-    throw new Error('No thumb data');
+    if (!this.thumbData) {
+      throw new Error('No thumb data');
+    }
+    return this.thumbData;
   }
-  return this.thumbData;
-}
 }

@@ -35,9 +35,9 @@
     const img = new Image();
     const thumbUrl = URL.createObjectURL(new Blob([thumbData]));
     img.src = thumbUrl;
-    img.onload = () => {
+    img.addEventListener('load', () => {
       imgElement.src = img.src;
-    };
+    });
     const filter = presets[title.toLowerCase()];
 
     imgElement.style.filter = `blur(${filter.blur * 10}px) brightness(${filter.brightness}) contrast(${

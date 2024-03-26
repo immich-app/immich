@@ -25,7 +25,7 @@ export class Render {
     console.log('imgWidth', imgWidth);
     console.log('imgHeight', imgHeight);
 
-    const d = Math.sqrt(imgWidth * imgWidth + imgHeight * imgHeight);
+    const d = Math.hypot(imgWidth, imgHeight);
     const dx = -imgWidth / 2;
     const dy = -imgHeight / 2;
 
@@ -187,13 +187,15 @@ export class Render {
     // TODO: Support more image types
 
     switch (this.assetBlob.type) {
-      case 'image/jpeg':
+      case 'image/jpeg': {
         //exifBlob = await copyExifWithoutOrientation(assetBlob, blob);
         exifBlob = await copyExif(this.assetBlob, blob);
         break;
-      default:
+      }
+      default: {
         exifBlob = blob;
         break;
+      }
     }
 
     if (!exifBlob) {
@@ -226,35 +228,43 @@ export class Render {
    */
   private getRatio = (ratio: ratio, originalAspect: number) => {
     switch (ratio) {
-      case 'free':
+      case 'free': {
         // free ratio selection
         return 0;
-      case 'square':
+      }
+      case 'square': {
         return 1;
-      case 'original':
-        if (this.edit.angleOffset % 180 !== 0) {
-          return 1 / originalAspect;
-        } else {
-          return originalAspect;
-        }
-      case '16_9':
+      }
+      case 'original': {
+        return this.edit.angleOffset % 180 === 0 ? originalAspect : 1 / originalAspect;
+      }
+      case '16_9': {
         return 16 / 9;
-      case '9_16':
+      }
+      case '9_16': {
         return 9 / 16;
-      case '5_4':
+      }
+      case '5_4': {
         return 5 / 4;
-      case '4_5':
+      }
+      case '4_5': {
         return 4 / 5;
-      case '4_3':
+      }
+      case '4_3': {
         return 4 / 3;
-      case '3_4':
+      }
+      case '3_4': {
         return 3 / 4;
-      case '3_2':
+      }
+      case '3_2': {
         return 3 / 2;
-      case '2_3':
+      }
+      case '2_3': {
         return 2 / 3;
-      default:
+      }
+      default: {
         return originalAspect;
+      }
     }
   };
 
@@ -262,15 +272,15 @@ export class Render {
     const img = new Image();
     img.src = URL.createObjectURL(this.assetBlob);
     await new Promise((resolve) => {
-      img.onload = (event) => {
+      img.addEventListener('load', (event) => {
         resolve(event);
-      };
+      });
     });
 
     const imgWidth = img.width;
     const imgHeight = img.height;
 
-    const d = Math.sqrt(imgWidth * imgWidth + imgHeight * imgHeight);
+    const d = Math.hypot(imgWidth, imgHeight);
     const dx = -imgWidth / 2;
     const dy = -imgHeight / 2;
 

@@ -43,6 +43,7 @@
     "eslint-plugin-svelte": "^2.35.1",
     "eslint-plugin-unicorn": "^51.0.1",
     "factory.ts": "^1.4.1",
+    "jsdom": "^24.0.0",
     "postcss": "^8.4.35",
     "prettier": "^3.2.5",
     "prettier-plugin-organize-imports": "^3.2.4",
@@ -69,9 +70,9 @@
     "handlebars": "^4.7.8",
     "justified-layout": "^4.1.0",
     "lodash-es": "^4.17.21",
-    "svelte-hammer": "^0.1.7",
     "luxon": "^3.4.4",
     "socket.io-client": "^4.7.4",
+    "svelte-hammer": "^0.1.7",
     "svelte-local-storage-store": "^0.6.4",
     "svelte-maplibre": "^0.8.1",
     "thumbhash": "^0.1.1"

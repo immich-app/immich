@@ -32,15 +32,13 @@
     const img = new Image();
     img.src = URL.createObjectURL(assetBlob);
     await new Promise((resolve) => {
-      img.onload = (event) => {
-        resolve(event);
-      };
+      img.addEventListener('load', resolve);
     });
 
     const imgWidth = img.width;
     const imgHeight = img.height;
 
-    const d = Math.sqrt(imgWidth * imgWidth + imgHeight * imgHeight);
+    const d = Math.hypot(imgWidth, imgHeight);
     const dx = -imgWidth / 2;
     const dy = -imgHeight / 2;
 
@@ -150,7 +148,7 @@
     };
   };
 
-  const downloadImage = async (canvas: HTMLCanvasElement) => {
+  const downloadImage = (canvas: HTMLCanvasElement) => {
     window.setTimeout(async () => {
       let exifBlob: Blob | null = null;
 
@@ -176,13 +174,15 @@
       // TODO: Support more image types
 
       switch (assetBlob.type) {
-        case 'image/jpeg':
+        case 'image/jpeg': {
           //exifBlob = await copyExifWithoutOrientation(assetBlob, blob);
           exifBlob = await copyExif(assetBlob, blob);
           break;
-        default:
+        }
+        default: {
           exifBlob = blob;
           break;
+        }
       }
 
       const dataURL = URL.createObjectURL(exifBlob);

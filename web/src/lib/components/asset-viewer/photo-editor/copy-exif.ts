@@ -12,47 +12,47 @@ const copyExif = async (originalAsset: Blob, newBlob: Blob): Promise<Blob> => {
 
 const retrieveExif = (imageBlob: Blob): Promise<Blob> => {
   return new Promise((resolve, reject) => {
-    const reader = new FileReader();
+    imageBlob.arrayBuffer()
+      .then((buffer) => {
 
-    reader.addEventListener('load', (event) => {
-      const buffer = event.target?.result as ArrayBuffer;
-      const dataView = new DataView(buffer);
-      let offset = 0;
+        const dataView = new DataView(buffer);
+        let offset = 0;
 
-      // Check if the image is a valid JPEG
-      if (dataView.getUint16(offset) !== 0xffd8) {
-        return reject('Not a valid JPEG');
-      }
-
-      offset += 2;
-
-      let found = false;
-
-      //TODO: Use some kind of validation to make sure we don't get stuck in an infinite loop
-      while (!found) {
-        const marker = dataView.getUint16(offset);
-
-        // Break if we've reached the start of the image data
-        if (marker === 0xffda) {
-          break;
+        // Check if the image is a valid JPEG
+        if (dataView.getUint16(offset) !== 0xFF_D8) {
+          return reject('Not a valid JPEG');
         }
 
-        const size = dataView.getUint16(offset + 2);
+        offset += 2;
 
-        // If we've found the EXIF data, return it
-        if (marker === 0xffe1 && dataView.getUint32(offset + 4) === 0x45786966) {
-          found = true;
-          return resolve(new Blob([imageBlob.slice(offset, offset + 2 + size)]));
+        let found = false;
+
+        //TODO: Use some kind of validation to make sure we don't get stuck in an infinite loop
+        while (!found) {
+          const marker = dataView.getUint16(offset);
+
+          // Break if we've reached the start of the image data
+          if (marker === 0xFF_DA) {
+            break;
+          }
+
+          const size = dataView.getUint16(offset + 2);
+
+          // If we've found the EXIF data, return it
+          if (marker === 0xFF_E1 && dataView.getUint32(offset + 4) === 0x45_78_69_66) {
+            found = true;
+            return resolve(new Blob([imageBlob.slice(offset, offset + 2 + size)]));
+          }
+
+          offset += 2 + size;
         }
 
-        offset += 2 + size;
-      }
-
-      // If there's no EXIF data, return an empty blob
-      return new Blob();
-    });
-    return imageBlob.arrayBuffer();
+        // If there's no EXIF data, return an empty blob
+        return resolve(new Blob());
+      })
+      .catch((error) => {
+        return reject(error);
+      });
   });
-};
-
+}
 export default copyExif;
