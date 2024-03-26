@@ -20,7 +20,6 @@ import {
 import { IMetricRepository } from 'src/interfaces/metric.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
-import { jobMetrics } from 'src/utils/instrumentation';
 import { ImmichLogger } from 'src/utils/logger';
 
 @Injectable()
@@ -96,7 +95,7 @@ export class JobService {
       throw new BadRequestException(`Job is already running`);
     }
 
-    this.metricRepository.addToCounter(`immich.queues.${snakeCase(name)}.started`, 1), { enabled: jobMetrics };
+    this.metricRepository.jobs.addToCounter(`immich.queues.${snakeCase(name)}.started`, 1);
 
     switch (name) {
       case QueueName.VIDEO_CONVERSION: {
@@ -163,20 +162,20 @@ export class JobService {
         const { name, data } = item;
 
         const queueMetric = `immich.queues.${snakeCase(queueName)}.active`;
-        this.metricRepository.updateGauge(queueMetric, 1, { enabled: jobMetrics });
+        this.metricRepository.jobs.addToGauge(queueMetric, 1);
 
         try {
           const handler = jobHandlers[name];
           const status = await handler(data);
           const jobMetric = `immich.jobs.${name.replaceAll('-', '_')}.${status}`;
-          this.metricRepository.addToCounter(jobMetric, 1, { enabled: jobMetrics });
+          this.metricRepository.jobs.addToCounter(jobMetric, 1);
           if (status === JobStatus.SUCCESS || status == JobStatus.SKIPPED) {
             await this.onDone(item);
           }
         } catch (error: Error | any) {
           this.logger.error(`Unable to run job handler (${queueName}/${name}): ${error}`, error?.stack, data);
         } finally {
-          this.metricRepository.updateGauge(queueMetric, -1, { enabled: jobMetrics });
+          this.metricRepository.jobs.addToGauge(queueMetric, -1);
         }
       });
     }
