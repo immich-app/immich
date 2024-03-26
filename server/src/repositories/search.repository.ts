@@ -225,9 +225,9 @@ export class SearchRepository implements ISearchRepository {
       .getMany();
   }
 
-  @GenerateSql({ params: [[DummyValue.UUID]] })
+  @GenerateSql({ params: [[DummyValue.UUID, DummyValue.UUID]] })
   async getAssetsByCity(userIds: string[]): Promise<AssetEntity[]> {
-    const parameters = [userIds.join(', '), true, false, AssetType.IMAGE];
+    const parameters = [userIds, true, false, AssetType.IMAGE];
     const rawRes = await this.repository.query(this.assetsByCityQuery, parameters);
 
     const items: AssetEntity[] = [];
@@ -315,7 +315,7 @@ WITH RECURSIVE cte AS (
     SELECT city, "assetId"
     FROM exif
     INNER JOIN assets ON exif."assetId" = assets.id
-    WHERE "ownerId" IN ($1) AND "isVisible" = $2 AND "isArchived" = $3 AND type = $4
+    WHERE "ownerId" = ANY('$1'::uuid[]) AND "isVisible" = $2 AND "isArchived" = $3 AND type = $4
     ORDER BY city
     LIMIT 1
   )
@@ -328,7 +328,7 @@ WITH RECURSIVE cte AS (
     SELECT city, "assetId"
     FROM exif
     INNER JOIN assets ON exif."assetId" = assets.id
-    WHERE city > c.city AND "ownerId" IN ($1) AND "isVisible" = $2 AND "isArchived" = $3 AND type = $4
+    WHERE city > c.city AND "ownerId" = ANY('$1'::uuid[]) AND "isVisible" = $2 AND "isArchived" = $3 AND type = $4
     ORDER BY city
     LIMIT 1
     ) l

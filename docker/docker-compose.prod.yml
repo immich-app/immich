@@ -1,5 +1,3 @@
-version: '3.8'
-
 name: immich-prod
 
 x-server-build: &server-common

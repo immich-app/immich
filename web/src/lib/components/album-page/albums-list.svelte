@@ -155,6 +155,16 @@
             albums = key.sortFn(key.sortDesc, sharedAlbums);
             break;
           }
+
+          default: {
+            albums = key.sortFn(
+              key.sortDesc,
+              [...sharedAlbums, ...ownedAlbums].filter(
+                (album, index, self) => index === self.findIndex((item) => album.id === item.id),
+              ),
+            );
+            break;
+          }
         }
 
         $albumViewSettings.sortDesc = key.sortDesc;
@@ -253,8 +263,8 @@
 
 {#if albums.length > 0}
   <!-- Album Card -->
-  <div class=" block xl:hidden">
-    <div class="w-fit dark:text-immich-dark-fg py-2">
+  <div class="xl:hidden">
+    <div class="w-fit h-14 dark:text-immich-dark-fg py-2">
       <GroupTab
         filters={Object.keys(AlbumFilter)}
         selected={$albumViewSettings.filter}
