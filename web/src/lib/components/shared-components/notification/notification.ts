@@ -18,7 +18,14 @@ export type Notification = {
 
 type DiscardAction = { type: 'discard' };
 type NoopAction = { type: 'noop' };
-type LinkAction = { type: 'link'; target: string };
+
+export type LinkAction = {
+  type: 'link';
+  target: string;
+  newTab?: boolean;
+  button?: string;
+};
+
 export type NotificationAction = DiscardAction | NoopAction | LinkAction;
 
 export type NotificationOptions = Partial<Exclude<Notification, 'id'>> & { message: string };

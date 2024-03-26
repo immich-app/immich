@@ -2,16 +2,20 @@
   import { fade } from 'svelte/transition';
   import Icon from '$lib/components/elements/icon.svelte';
   import {
+    type LinkAction,
     type Notification,
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
   import { onMount } from 'svelte';
   import { mdiCloseCircleOutline, mdiInformationOutline, mdiWindowClose } from '@mdi/js';
+  import { goto } from '$app/navigation';
 
   export let notification: Notification;
 
   $: icon = notification.type === NotificationType.Error ? mdiCloseCircleOutline : mdiInformationOutline;
+
+  $: button = notification.action?.type === 'link' && notification.action.button ? notification.action.button : null;
 
   const backgroundColor: Record<NotificationType, string> = {
     [NotificationType.Info]: '#E0E2F0',
@@ -31,6 +35,12 @@
     [NotificationType.Warning]: '#D08613',
   };
 
+  const buttonStyle: Record<NotificationType, string> = {
+    [NotificationType.Info]: 'text-white bg-immich-primary hover:bg-immich-primary/75',
+    [NotificationType.Error]: 'text-white bg-immich-error hover:bg-immich-error/75',
+    [NotificationType.Warning]: 'text-white bg-immich-warning hover:bg-immich-warning/75',
+  };
+
   onMount(() => {
     const timeoutId = setTimeout(discard, notification.timeout);
     return () => clearTimeout(timeoutId);
@@ -40,12 +50,28 @@
     notificationController.removeNotificationById(notification.id);
   };
 
-  const handleClick = () => {
+  const handleClick = async () => {
     const action = notification.action;
     if (action.type === 'discard') {
       discard();
-    } else if (action.type == 'link') {
+    } else if (action.type == 'link' && !action.button) {
+      await goToLink(action);
+    }
+  };
+
+  const handleButtonClick = async () => {
+    const action = notification.action;
+    if (action.type === 'link') {
+      await goToLink(action);
+    }
+  };
+
+  const goToLink = async (action: LinkAction) => {
+    if (action.newTab) {
       window.open(action.target);
+    } else {
+      discard();
+      await goto(action.target);
     }
   };
 </script>
@@ -55,7 +81,7 @@
   transition:fade={{ duration: 250 }}
   style:background-color={backgroundColor[notification.type]}
   style:border-color={borderColor[notification.type]}
-  class="border z-[999999] mb-4 min-h-[80px] w-[300px] rounded-2xl p-4 shadow-md hover:cursor-pointer"
+  class="border z-[999999] mb-4 min-h-[80px] w-[300px] rounded-2xl p-4 shadow-md {button ? '' : 'hover:cursor-pointer'}"
   on:click={handleClick}
   on:keydown={handleClick}
 >
@@ -74,4 +100,15 @@
   <p class="whitespace-pre-wrap pl-[28px] pr-[16px] text-sm" data-testid="message">
     {notification.message}
   </p>
+
+  {#if button}
+    <p class="pl-[28px] mt-2.5 text-sm">
+      <button
+        class="{buttonStyle[notification.type]} rounded px-3 pt-1.5 pb-1 transition-all duration-200"
+        on:click={handleButtonClick}
+      >
+        {button}
+      </button>
+    </p>
+  {/if}
 </div>

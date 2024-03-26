@@ -1,15 +1,16 @@
-import { notificationController, NotificationType } from '$lib/components/shared-components/notification/notification';
+import { NotificationType, notificationController } from '$lib/components/shared-components/notification/notification';
+import { AppRoute } from '$lib/constants';
 import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
 import { BucketPosition, isSelectingAllAssets, type AssetStore } from '$lib/stores/assets.store';
 import { downloadManager } from '$lib/stores/download';
 import { downloadRequest, getKey } from '$lib/utils';
 import {
   addAssetsToAlbum as addAssets,
+  createAlbum,
   defaults,
   getDownloadInfo,
   type AssetResponseDto,
   type AssetTypeEnum,
-  type BulkIdResponseDto,
   type DownloadInfoDto,
   type DownloadResponseDto,
   type UserResponseDto,
@@ -18,20 +19,56 @@ import { DateTime } from 'luxon';
 import { get } from 'svelte/store';
 import { handleError } from './handle-error';
 
-export const addAssetsToAlbum = async (albumId: string, assetIds: Array<string>): Promise<BulkIdResponseDto[]> =>
-  addAssets({
+export const addAssetsToAlbum = async (albumId: string, assetIds: string[]) => {
+  const result = await addAssets({
     id: albumId,
-    bulkIdsDto: { ids: assetIds },
+    bulkIdsDto: {
+      ids: assetIds,
+    },
     key: getKey(),
-  }).then((results) => {
-    const count = results.filter(({ success }) => success).length;
+  });
+  const count = result.filter(({ success }) => success).length;
+  notificationController.show({
+    type: NotificationType.Info,
+    timeout: 5000,
+    message:
+      count > 0
+        ? `Added ${count} asset${count === 1 ? '' : 's'} to the album`
+        : `Asset${assetIds.length === 1 ? ' was' : 's were'} already part of the album`,
+    action: {
+      type: 'link',
+      button: 'Show Album',
+      target: `${AppRoute.ALBUMS}/${albumId}`,
+    },
+  });
+};
+
+export const addAssetsToNewAlbum = async (albumName: string, assetIds: string[]) => {
+  try {
+    const album = await createAlbum({
+      createAlbumDto: {
+        albumName,
+        assetIds,
+      },
+    });
     notificationController.show({
       type: NotificationType.Info,
-      message: `Added ${count} asset${count === 1 ? '' : 's'}`,
+      timeout: 5000,
+      message: `Added ${assetIds.length} asset${assetIds.length === 1 ? '' : 's'} to new album`,
+      action: {
+        type: 'link',
+        button: 'Show Album',
+        target: `${AppRoute.ALBUMS}/${album.id}`,
+      },
     });
-
-    return results;
-  });
+    return album;
+  } catch {
+    notificationController.show({
+      type: NotificationType.Error,
+      message: 'Failed to create album',
+    });
+  }
+};
 
 export const downloadBlob = (data: Blob, filename: string) => {
   const url = URL.createObjectURL(data);
