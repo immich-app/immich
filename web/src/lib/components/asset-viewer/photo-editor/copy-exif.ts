@@ -49,10 +49,9 @@ const retrieveExif = (imageBlob: Blob): Promise<Blob> => {
       }
 
       // If there's no EXIF data, return an empty blob
-      return resolve(new Blob());
+      return new Blob();
     });
-
-    reader.readAsArrayBuffer(imageBlob);
+    return imageBlob.arrayBuffer();
   });
 };
 

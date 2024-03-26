@@ -10,11 +10,7 @@
 
   let rangeValue = 0;
 
-  $: if (type) {
-    rangeValue = (value / 2) * 100;
-  } else {
-    rangeValue = value * 100;
-  }
+  $: type ? (rangeValue = (value / 2) * 100) : (rangeValue = value * 100);
 
   $: value, renderProgress();
 
@@ -28,21 +24,15 @@
     }
 
     const progress = rangeValue;
-    if (type) {
-      value = (progress * 2) / 100;
-    } else {
-      value = Number(progress) / 100;
-    }
+    type ? (value = (progress * 2) / 100) : (value = Number(progress) / 100);
 
     const progressPercent = (progress / 100) * 100;
     let progressColor;
 
     if (type) {
-      if (progress <= 50) {
-        progressColor = `linear-gradient(90deg, #373737 ${progressPercent}%, #adcbfa ${progressPercent}%, #adcbfa 50%,#373737 50%)`;
-      } else {
-        progressColor = `linear-gradient(90deg, #373737 50%, #adcbfa 50%, #adcbfa ${progressPercent}%, #373737 ${progressPercent}%)`;
-      }
+      progress <= 50
+        ? (progressColor = `linear-gradient(90deg, #373737 ${progressPercent}%, #adcbfa ${progressPercent}%, #adcbfa 50%,#373737 50%)`)
+        : (progressColor = `linear-gradient(90deg, #373737 50%, #adcbfa 50%, #adcbfa ${progressPercent}%, #373737 ${progressPercent}%)`);
     } else {
       progressColor = `linear-gradient(90deg, #adcbfa ${progressPercent}%,#373737 ${progressPercent}%)`;
     }

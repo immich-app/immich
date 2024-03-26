@@ -2,7 +2,7 @@
   import 'context-filter-polyfill'; // polyfill for canvas filters
   //import copyExifWithoutOrientation from './copyExifWithoutOrientation';
 
-  import copyExif from './copyExif';
+  import copyExif from './copy-exif';
 
   export let isRendering = false;
   export let assetName: string;

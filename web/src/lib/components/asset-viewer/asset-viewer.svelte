@@ -2,15 +2,12 @@
   import { goto } from '$app/navigation';
   import { AppRoute, AssetAction, ProjectionType } from '$lib/constants';
   import { isShowDetail, showDeleteModal } from '$lib/stores/preferences.store';
-  import { user } from '$lib/stores/user.store';
   import { getAssetJobMessage, isSharedLink, handlePromiseError } from '$lib/utils';
   import { addAssetsToAlbum, downloadFile } from '$lib/utils/asset-utils';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { stackAssetsStore } from '$lib/stores/stacked-asset.store';
   import { user } from '$lib/stores/user.store';
-  import { getAssetJobMessage, isSharedLink, handlePromiseError } from '$lib/utils';
-  import { addAssetsToAlbum, downloadFile } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { shortcuts } from '$lib/utils/shortcut';
   import { SlideshowHistory } from '$lib/utils/slideshow-history';
@@ -43,22 +40,15 @@
   import DetailPanel from './detail-panel.svelte';
   import NavigationArea from './navigation-area.svelte';
 
-  import { browser } from '$app/environment';
   import PhotoEditor from './photo-editor/photo-editor.svelte';
-  import { handleError } from '$lib/utils/handle-error';
   import type { AssetStore } from '$lib/stores/assets.store';
-  import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { SlideshowHistory } from '$lib/utils/slideshow-history';
-  import { featureFlags } from '$lib/stores/server-config.store';
   import { mdiChevronLeft, mdiChevronRight, mdiImageBrokenVariant } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
   import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
-  import { stackAssetsStore } from '$lib/stores/stacked-asset.store';
   import ActivityViewer from './activity-viewer.svelte';
   import ActivityStatus from './activity-status.svelte';
   import { updateNumberOfComments } from '$lib/stores/activity.store';
-  import { SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import PanoramaViewer from './panorama-viewer.svelte';
   import PhotoViewer from './photo-viewer.svelte';
   import SlideshowBar from './slideshow-bar.svelte';
@@ -203,9 +193,6 @@
     }
   }
   let shouldShowPhotoEditor = false;
-
-  const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo);
-
 
   onMount(async () => {
     slideshowStateUnsubscribe = slideshowState.subscribe((value) => {

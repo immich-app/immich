@@ -110,6 +110,7 @@
   <div class="flex w-[calc(100%-3rem)] justify-end gap-2 overflow-hidden text-white">
     {#if showEditButton}
       <CircleIconButton isOpacity={true} icon={mdiTune} title="Edit" on:click={() => dispatch('edit')} />
+    {/if}
     {#if showShareButton}
       <CircleIconButton
         isOpacity={true}
