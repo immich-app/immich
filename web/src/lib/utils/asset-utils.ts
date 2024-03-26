@@ -38,7 +38,7 @@ export const addAssetsToAlbum = async (albumId: string, assetIds: string[]) => {
         : `Asset${assetIds.length === 1 ? ' was' : 's were'} already part of the album`,
     action: {
       type: 'link',
-      button: 'Show Album',
+      button: 'View Album',
       target: `${AppRoute.ALBUMS}/${albumId}`,
     },
   });
@@ -60,7 +60,7 @@ export const addAssetsToNewAlbum = async (albumName: string, assetIds: string[])
       html: true,
       action: {
         type: 'link',
-        button: 'Show Album',
+        button: 'View Album',
         target: `${AppRoute.ALBUMS}/${album.id}`,
       },
     });
