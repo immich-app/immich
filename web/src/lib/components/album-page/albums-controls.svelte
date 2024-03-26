@@ -26,7 +26,7 @@
   };
 </script>
 
-<div class="hidden xl:block">
+<div class="hidden xl:block h-10">
   <GroupTab
     filters={Object.keys(AlbumFilter)}
     selected={$albumViewSettings.filter}
