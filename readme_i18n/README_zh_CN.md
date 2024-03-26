@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-<img src="design/immich-logo-stacked-light.svg" width="300" title="Login With Custom URL">
+<img src="../design/immich-logo-stacked-light.svg" width="300" title="Login With Custom URL">
 </p>
 <h3 align="center">Immich - 高性能的自托管照片和视频备份方案</h3>
 <p align="center">  
@@ -17,7 +17,7 @@
 </p>
 <br/>
 <a href="https://immich.app">
-<img src="design/immich-screenshots.png" title="界面截图">
+<img src="../design/immich-screenshots.png" title="界面截图">
 </a>
 <br/>
 
@@ -73,17 +73,22 @@
 规格: 甲骨文免费虚拟机套餐——阿姆斯特丹 4核 2.4Ghz ARM64 CPU, 24GB RAM。
 ```
 
+## 活跃度
+![活跃度](https://repobeats.axiom.co/api/embed/9e86d9dc3ddd137161f2f6d2e758d7863b1789cb.svg "Repobeats analytics image")
+
 # 功能特性
+
 
 | 功能特性                                    | 移动端 | 网页端 |
 |---------------------------------------------|--------|--------|
 | 上传并查看照片和视频                        | 是     | 是     |
 | 软件运行时自动备份                          | 是     | N/A    |
+| 忽略重复的项目                              | 是     | 是     |
 | 选择需要备份的相册                          | 是     | N/A    |
 | 下载照片和视频到本地                        | 是     | 是     |
 | 多用户支持                                  | 是     | 是     |
 | 相册与共享相册                              | 是     | 是     |
-| 可拖动的快速导航栏                          | 是     | 是     |
+| 可拖动的快速滚动条                          | 是     | 是     |
 | 支持RAW格式                                 | 是     | 是     |
 | 元数据视图（EXIF、地图）                    | 是     | 是     |
 | 通过元数据、对象、人脸和标签进行搜索        | 是     | 是     |
@@ -93,6 +98,7 @@
 | OAuth 支持                                  | 是     | 是     |
 | API Keys                                    | N/A    | 是     |
 | 实况照片备份和查看                          | 是     | 是     |
+| 支持360度全景图显示                         | 否     | 是     |
 | 用户自定义存储结构                          | 是     | 是     |
 | 公共分享                                    | 否     | 是     |
 | 归档与收藏功能                              | 是     | 是     |
@@ -103,7 +109,6 @@
 | 离线支持                                    | 是     | 否     |
 | 只读相册                                    | 是     | 是     |
 | 照片堆叠                                    | 是     | 是     |
-
 
 # 支持本项目
 
@@ -125,4 +130,14 @@
 ## 贡献者
 <a href="https://github.com/alextran1502/immich/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=immich-app/immich" width="100%"/>
+</a>
+
+## Star增长曲线
+
+<a href="https://star-history.com/#immich-app/immich&Date">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" width="100%" />
+ </picture>
 </a>
