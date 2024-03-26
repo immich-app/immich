@@ -29,6 +29,27 @@ class SearchService {
     }
   }
 
+  Future<List<String>?> getSearchSuggestions(
+    SearchSuggestionType type, {
+    String? country,
+    String? state,
+    String? make,
+    String? model,
+  }) async {
+    try {
+      return await _apiService.searchApi.getSearchSuggestions(
+        type,
+        country: country,
+        state: state,
+        make: make,
+        model: model,
+      );
+    } catch (e) {
+      debugPrint("[ERROR] [getSearchSuggestions] ${e.toString()}");
+      return [];
+    }
+  }
+
   Future<List<Asset>?> searchAsset(
     String searchTerm, {
     bool smartSearch = true,

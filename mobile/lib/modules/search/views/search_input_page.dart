@@ -7,6 +7,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/search/ui/search_filter/camera_picker.dart';
 import 'package:immich_mobile/modules/search/ui/search_filter/display_option_picker.dart';
 import 'package:immich_mobile/modules/search/ui/search_filter/filter_bottom_sheet_scaffold.dart';
+import 'package:immich_mobile/modules/search/ui/search_filter/location_picker.dart';
 import 'package:immich_mobile/modules/search/ui/search_filter/media_type_picker.dart';
 import 'package:immich_mobile/modules/search/ui/search_filter/people_picker.dart';
 import 'package:immich_mobile/modules/search/ui/search_filter/search_filter_chip.dart';
@@ -41,16 +42,29 @@ class SearchInputPage extends HookConsumerWidget {
       );
     }
 
-    showPlacePicker() {
-      showModalBottomSheet(
+    showLocationPicker() {
+      showFilterBottomSheet(
         context: context,
-        builder: (BuildContext context) {
-          return const Column(
-            children: [
-              Text('Select a place'),
-            ],
-          );
-        },
+        isScrollControlled: true,
+        isDismissible: false,
+        child: FilterBottomSheetScaffold(
+          title: 'Select location',
+          onSearch: () {},
+          onClear: () {},
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16.0),
+            child: Container(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: LocationPicker(
+                onSelected: (value) {
+                  debugPrint("camera selected: $value");
+                },
+              ),
+            ),
+          ),
+        ),
       );
     }
 
@@ -177,7 +191,10 @@ class SearchInputPage extends HookConsumerWidget {
                 padding: const EdgeInsets.only(left: 16),
                 children: [
                   SearchFilterChip(onTap: showPeoplePicker, label: 'People'),
-                  SearchFilterChip(onTap: showPlacePicker, label: 'Places'),
+                  SearchFilterChip(
+                    onTap: showLocationPicker,
+                    label: 'Location',
+                  ),
                   SearchFilterChip(onTap: showCameraPicker, label: 'Camera'),
                   SearchFilterChip(onTap: showDatePicker, label: 'Date'),
                   SearchFilterChip(
