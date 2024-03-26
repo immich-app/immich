@@ -621,17 +621,14 @@ export class LibraryService extends EventEmitter {
 
     this.logger.log(`Refreshing library: ${job.id}`);
 
-    const pathValidation = await Promise.all(
-      library.importPaths.map((importPath) => this.validateImportPath(importPath)),
-    );
-
     const validImportPaths: string[] = [];
 
-    for (const validation of pathValidation) {
+    for (const importPath in library.importPaths) {
+      const validation = await this.validateImportPath(importPath);
       if (validation.isValid) {
         validImportPaths.push(path.normalize(validation.importPath));
       } else {
-        this.logger.error(`Skipping invalid import path: ${validation.importPath}. Reason: ${validation.message}`);
+        this.logger.error(`Skipping invalid import path: ${importPath}. Reason: ${validation.message}`);
       }
     }
 
