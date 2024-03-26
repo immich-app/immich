@@ -2,20 +2,17 @@
   import { fade } from 'svelte/transition';
   import Icon from '$lib/components/elements/icon.svelte';
   import {
-    type LinkAction,
     type Notification,
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
   import { onMount } from 'svelte';
   import { mdiCloseCircleOutline, mdiInformationOutline, mdiWindowClose } from '@mdi/js';
-  import { goto } from '$app/navigation';
 
   export let notification: Notification;
 
   $: icon = notification.type === NotificationType.Error ? mdiCloseCircleOutline : mdiInformationOutline;
-
-  $: button = notification.action?.type === 'link' && notification.action.button ? notification.action.button : null;
+  $: hoverStyle = notification.action.type === 'discard' ? 'hover:cursor-pointer' : '';
 
   const backgroundColor: Record<NotificationType, string> = {
     [NotificationType.Info]: '#E0E2F0',
@@ -50,28 +47,17 @@
     notificationController.removeNotificationById(notification.id);
   };
 
-  const handleClick = async () => {
-    const action = notification.action;
-    if (action.type === 'discard') {
+  const handleClick = () => {
+    if (notification.action.type === 'discard') {
       discard();
-    } else if (action.type == 'link' && !action.button) {
-      await goToLink(action);
     }
   };
 
-  const handleButtonClick = async () => {
-    const action = notification.action;
-    if (action.type === 'link') {
-      await goToLink(action);
-    }
-  };
-
-  const goToLink = async (action: LinkAction) => {
-    if (action.newTab) {
-      window.open(action.target);
-    } else {
+  const handleButtonClick = () => {
+    const button = notification.button;
+    if (button) {
       discard();
-      await goto(action.target);
+      return notification.button?.onClick();
     }
   };
 </script>
@@ -81,7 +67,7 @@
   transition:fade={{ duration: 250 }}
   style:background-color={backgroundColor[notification.type]}
   style:border-color={borderColor[notification.type]}
-  class="border z-[999999] mb-4 min-h-[80px] w-[300px] rounded-2xl p-4 shadow-md {button ? '' : 'hover:cursor-pointer'}"
+  class="border z-[999999] mb-4 min-h-[80px] w-[300px] rounded-2xl p-4 shadow-md {hoverStyle}"
   on:click={handleClick}
   on:keydown={handleClick}
 >
@@ -106,13 +92,13 @@
     {/if}
   </p>
 
-  {#if button}
+  {#if notification.button}
     <p class="pl-[28px] mt-2.5 text-sm">
       <button
         class="{buttonStyle[notification.type]} rounded px-3 pt-1.5 pb-1 transition-all duration-200"
         on:click={handleButtonClick}
       >
-        {button}
+        {notification.button.text}
       </button>
     </p>
   {/if}

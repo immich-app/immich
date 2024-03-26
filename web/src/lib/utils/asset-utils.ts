@@ -1,3 +1,4 @@
+import { goto } from '$app/navigation';
 import { NotificationType, notificationController } from '$lib/components/shared-components/notification/notification';
 import { AppRoute } from '$lib/constants';
 import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
@@ -36,10 +37,11 @@ export const addAssetsToAlbum = async (albumId: string, assetIds: string[]) => {
       count > 0
         ? `Added ${count} asset${count === 1 ? '' : 's'} to the album`
         : `Asset${assetIds.length === 1 ? ' was' : 's were'} already part of the album`,
-    action: {
-      type: 'link',
-      button: 'View Album',
-      target: `${AppRoute.ALBUMS}/${albumId}`,
+    button: {
+      text: 'View Album',
+      onClick() {
+        return goto(`${AppRoute.ALBUMS}/${albumId}`);
+      },
     },
   });
 };
@@ -58,10 +60,11 @@ export const addAssetsToNewAlbum = async (albumName: string, assetIds: string[])
       timeout: 5000,
       message: `Added ${assetIds.length} asset${assetIds.length === 1 ? '' : 's'} to ${displayName}`,
       html: true,
-      action: {
-        type: 'link',
-        button: 'View Album',
-        target: `${AppRoute.ALBUMS}/${album.id}`,
+      button: {
+        text: 'View Album',
+        onClick() {
+          return goto(`${AppRoute.ALBUMS}/${album.id}`);
+        },
       },
     });
     return album;

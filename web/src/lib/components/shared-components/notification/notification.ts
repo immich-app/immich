@@ -6,6 +6,11 @@ export enum NotificationType {
   Warning = 'Warning',
 }
 
+export type NotificationButton = {
+  text: string;
+  onClick: () => unknown;
+};
+
 export type Notification = {
   id: number;
   type: NotificationType;
@@ -17,6 +22,7 @@ export type Notification = {
   html?: boolean;
   /** The action to take when the notification is clicked */
   action: NotificationAction;
+  button?: NotificationButton;
   /** Timeout in miliseconds */
   timeout: number;
 };
@@ -31,7 +37,7 @@ export type LinkAction = {
   button?: string;
 };
 
-export type NotificationAction = DiscardAction | NoopAction | LinkAction;
+export type NotificationAction = DiscardAction | NoopAction;
 
 export type NotificationOptions = Partial<Exclude<Notification, 'id'>> & { message: string };
 
@@ -44,7 +50,9 @@ function createNotificationList() {
       currentList.push({
         id: count++,
         type: NotificationType.Info,
-        action: { type: 'discard' },
+        action: {
+          type: options.button ? 'noop' : 'discard',
+        },
         timeout: 3000,
         ...options,
       });
