@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/modules/search/providers/search_filter.provider.dart';
+import 'package:openapi/api.dart';
 
 class CameraPicker extends HookConsumerWidget {
   const CameraPicker({super.key, required this.onSelected});
@@ -13,23 +15,18 @@ class CameraPicker extends HookConsumerWidget {
     final selectedMake = useState<String?>(null);
     final selectedModel = useState<String?>(null);
 
-    final make = [
-      const DropdownMenuEntry(value: "Nikon", label: 'Nikon'),
-      const DropdownMenuEntry(value: "Canon", label: 'Canon'),
-      const DropdownMenuEntry(value: "Sony", label: 'Sony'),
-      const DropdownMenuEntry(value: "Fujifilm", label: 'Fujifilm'),
-      const DropdownMenuEntry(value: "Panasonic", label: 'Panasonic'),
-      const DropdownMenuEntry(value: "Olympus", label: 'Olympus'),
-    ];
+    final make = ref.watch(
+      getSearchSuggestionsProvider(
+        SearchSuggestionType.cameraMake,
+      ),
+    );
 
-    final models = [
-      const DropdownMenuEntry(value: "D3500", label: "D3500"),
-      const DropdownMenuEntry(value: "D5600", label: "D5600"),
-      const DropdownMenuEntry(value: "D7500", label: "D7500"),
-      const DropdownMenuEntry(value: "D780", label: "D780"),
-      const DropdownMenuEntry(value: "D850", label: "D850"),
-      const DropdownMenuEntry(value: "D6", label: "D6"),
-    ];
+    final models = ref.watch(
+      getSearchSuggestionsProvider(
+        SearchSuggestionType.cameraModel,
+        make: selectedMake.value,
+      ),
+    );
 
     final inputDecorationTheme = InputDecorationTheme(
       border: OutlineInputBorder(
@@ -53,10 +50,20 @@ class CameraPicker extends HookConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           DropdownMenu(
-            dropdownMenuEntries: make,
+            dropdownMenuEntries: switch (make) {
+              AsyncError() => [],
+              AsyncData(:final value) => value
+                  .map(
+                    (e) => DropdownMenuEntry(
+                      value: e,
+                      label: e,
+                    ),
+                  )
+                  .toList(),
+              _ => [],
+            },
             width: context.width * 0.45,
             menuHeight: 400,
-            initialSelection: make.first,
             label: const Text('Make'),
             inputDecorationTheme: inputDecorationTheme,
             menuStyle: menuStyle,
@@ -72,10 +79,20 @@ class CameraPicker extends HookConsumerWidget {
             },
           ),
           DropdownMenu(
-            dropdownMenuEntries: models,
+            dropdownMenuEntries: switch (models) {
+              AsyncError() => [],
+              AsyncData(:final value) => value
+                  .map(
+                    (e) => DropdownMenuEntry(
+                      value: e,
+                      label: e,
+                    ),
+                  )
+                  .toList(),
+              _ => [],
+            },
             width: context.width * 0.45,
             menuHeight: 400,
-            initialSelection: models.first,
             label: const Text('Model'),
             inputDecorationTheme: inputDecorationTheme,
             menuStyle: menuStyle,
