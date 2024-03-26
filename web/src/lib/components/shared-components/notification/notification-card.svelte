@@ -98,7 +98,12 @@
   </div>
 
   <p class="whitespace-pre-wrap pl-[28px] pr-[16px] text-sm" data-testid="message">
-    {notification.message}
+    {#if notification.html}
+      <!-- eslint-disable-next-line svelte/no-at-html-tags -->
+      {@html notification.message}
+    {:else}
+      {notification.message}
+    {/if}
   </p>
 
   {#if button}

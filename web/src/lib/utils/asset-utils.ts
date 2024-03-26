@@ -4,6 +4,7 @@ import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store'
 import { BucketPosition, isSelectingAllAssets, type AssetStore } from '$lib/stores/assets.store';
 import { downloadManager } from '$lib/stores/download';
 import { downloadRequest, getKey } from '$lib/utils';
+import { encodeHTMLSpecialChars } from '$lib/utils/string-utils';
 import {
   addAssetsToAlbum as addAssets,
   createAlbum,
@@ -51,10 +52,12 @@ export const addAssetsToNewAlbum = async (albumName: string, assetIds: string[])
         assetIds,
       },
     });
+    const displayName = albumName ? `<b>${encodeHTMLSpecialChars(albumName)}</b>` : 'new album';
     notificationController.show({
       type: NotificationType.Info,
       timeout: 5000,
-      message: `Added ${assetIds.length} asset${assetIds.length === 1 ? '' : 's'} to new album`,
+      message: `Added ${assetIds.length} asset${assetIds.length === 1 ? '' : 's'} to ${displayName}`,
+      html: true,
       action: {
         type: 'link',
         button: 'Show Album',

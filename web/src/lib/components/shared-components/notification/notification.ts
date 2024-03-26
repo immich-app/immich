@@ -10,6 +10,11 @@ export type Notification = {
   id: number;
   type: NotificationType;
   message: string;
+  /**
+   * Allow HTML to be inserted within the message. Make sure to verify/encode
+   * variables that may be interpoalted into 'message'
+   */
+  html?: boolean;
   /** The action to take when the notification is clicked */
   action: NotificationAction;
   /** Timeout in miliseconds */
