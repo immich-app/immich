@@ -3,13 +3,14 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 
 class MediaTypePicker extends HookWidget {
-  const MediaTypePicker({super.key, required this.onSelect});
+  const MediaTypePicker({super.key, required this.onSelect, this.filter});
 
   final Function(AssetType) onSelect;
+  final AssetType? filter;
 
   @override
   Widget build(BuildContext context) {
-    final selectedMediaType = useState(AssetType.other);
+    final selectedMediaType = useState(filter ?? AssetType.other);
 
     return ListView(
       shrinkWrap: true,

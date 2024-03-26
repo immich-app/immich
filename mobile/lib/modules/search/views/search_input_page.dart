@@ -13,6 +13,7 @@ import 'package:immich_mobile/modules/search/ui/search_filter/media_type_picker.
 import 'package:immich_mobile/modules/search/ui/search_filter/people_picker.dart';
 import 'package:immich_mobile/modules/search/ui/search_filter/search_filter_chip.dart';
 import 'package:immich_mobile/modules/search/ui/search_filter/search_filter_utils.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
 
 @RoutePage()
 class SearchInputPage extends HookConsumerWidget {
@@ -31,8 +32,12 @@ class SearchInputPage extends HookConsumerWidget {
           isArchive: false,
           isFavorite: false,
         ),
+        mediaType: AssetType.other,
       ),
     );
+
+    final dateRangeCurrentFilterWidget = useState<Widget?>(null);
+    final cameraCurrentFilterWidget = useState<Widget?>(null);
 
     search() {
       debugPrint("Search this");
@@ -85,25 +90,41 @@ class SearchInputPage extends HookConsumerWidget {
     }
 
     showCameraPicker() {
+      handleOnSelect(Map<String, String?> value) {
+        filter.value = filter.value.copyWith(
+          camera: SearchCameraFilter(
+            make: value['make'],
+            model: value['model'],
+          ),
+        );
+
+        cameraCurrentFilterWidget.value = Text(
+          '${value['make'] ?? ''} ${value['model'] ?? ''}',
+          style: context.textTheme.labelLarge,
+        );
+      }
+
+      handleClear() {
+        filter.value = filter.value.copyWith(
+          camera: SearchCameraFilter(),
+        );
+
+        cameraCurrentFilterWidget.value = null;
+      }
+
       showFilterBottomSheet(
         context: context,
         isScrollControlled: true,
         isDismissible: false,
         child: FilterBottomSheetScaffold(
           title: 'Select camera type',
-          onSearch: () => search(),
-          onClear: () {},
+          onSearch: search,
+          onClear: handleClear,
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 16.0),
-            child: Container(
-              padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom,
-              ),
-              child: CameraPicker(
-                onSelected: (value) {
-                  debugPrint("camera selected: $value");
-                },
-              ),
+            child: CameraPicker(
+              onSelect: handleOnSelect,
+              filter: filter.value.camera,
             ),
           ),
         ),
@@ -120,8 +141,8 @@ class SearchInputPage extends HookConsumerWidget {
         lastDate: lastDate,
         currentDate: DateTime.now(),
         initialDateRange: DateTimeRange(
-          start: DateTime.now().subtract(const Duration(days: 2)),
-          end: lastDate,
+          start: filter.value.date.takenAfter ?? lastDate,
+          end: filter.value.date.takenBefore ?? lastDate,
         ),
         helpText: 'Select a date range',
         cancelText: 'Cancel',
@@ -134,27 +155,92 @@ class SearchInputPage extends HookConsumerWidget {
         initialEntryMode: DatePickerEntryMode.input,
       );
 
-      debugPrint("Pick: $date");
+      if (date == null) {
+        filter.value = filter.value.copyWith(
+          date: SearchDateFilter(),
+        );
+
+        dateRangeCurrentFilterWidget.value = null;
+        return;
+      }
+
+      filter.value = filter.value.copyWith(
+        date: SearchDateFilter(
+          takenAfter: date.start,
+          takenBefore: date.end.add(
+            const Duration(
+              hours: 23,
+              minutes: 59,
+              seconds: 59,
+            ),
+          ),
+        ),
+      );
+
+      // If date range is less than 24 hours, set the end date to the end of the day
+      if (date.end.difference(date.start).inHours < 24) {
+        dateRangeCurrentFilterWidget.value = Text(
+          date.start.toLocal().toIso8601String().split('T').first,
+          style: context.textTheme.labelLarge,
+        );
+      } else {
+        dateRangeCurrentFilterWidget.value = Text(
+          '${date.start.toLocal().toIso8601String().split('T').first} to ${date.end.toLocal().toIso8601String().split('T').first}',
+          style: context.textTheme.labelLarge,
+        );
+      }
+
+      search();
     }
 
+    // MEDIA PICKER
     showMediaTypePicker() {
+      handleOnSelected(AssetType assetType) {
+        filter.value = filter.value.copyWith(
+          mediaType: assetType,
+        );
+      }
+
+      handleClear() {
+        filter.value = filter.value.copyWith(
+          mediaType: AssetType.other,
+        );
+      }
+
       showFilterBottomSheet(
         context: context,
         child: FilterBottomSheetScaffold(
           title: 'Select media type',
-          onSearch: () {},
-          onClear: () {},
+          onSearch: search,
+          onClear: handleClear,
           child: MediaTypePicker(
-            onSelect: (value) {
-              debugPrint("Selected media type: $value");
-            },
+            onSelect: handleOnSelected,
+            filter: filter.value.mediaType,
           ),
         ),
       );
     }
 
+    buildAssetTypeFilter() {
+      switch (filter.value.mediaType) {
+        case AssetType.image:
+          return Text(
+            'Image',
+            style: context.textTheme.labelLarge,
+          );
+        case AssetType.video:
+          return Text(
+            'Video',
+            style: context.textTheme.labelLarge,
+          );
+        case _:
+          return null;
+      }
+    }
+
+    // DISPLAY OPTION
     showDisplayOptionPicker() {
-      handleOnSelected(Map<DisplayOption, bool> value) {
+      handleOnSelect(Map<DisplayOption, bool> value) {
         value.forEach((key, value) {
           switch (key) {
             case DisplayOption.notInAlbum:
@@ -182,7 +268,7 @@ class SearchInputPage extends HookConsumerWidget {
         });
       }
 
-      handleClearDisplayOption() {
+      handleClear() {
         filter.value = filter.value.copyWith(
           display: SearchDisplayFilters(
             isNotInAlbum: false,
@@ -197,9 +283,9 @@ class SearchInputPage extends HookConsumerWidget {
         child: FilterBottomSheetScaffold(
           title: 'Display options',
           onSearch: search,
-          onClear: handleClearDisplayOption,
+          onClear: handleClear,
           child: DisplayOptionPicker(
-            onSelect: handleOnSelected,
+            onSelect: handleOnSelect,
             filter: filter.value.display,
           ),
         ),
@@ -228,7 +314,7 @@ class SearchInputPage extends HookConsumerWidget {
 
       return Text(
         filters.join(', '),
-        style: TextStyle(color: context.primaryColor),
+        style: context.textTheme.labelLarge,
       );
     }
 
@@ -269,18 +355,36 @@ class SearchInputPage extends HookConsumerWidget {
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 children: [
-                  SearchFilterChip(onTap: showPeoplePicker, label: 'People'),
                   SearchFilterChip(
+                    icon: Icons.people_alt_rounded,
+                    onTap: showPeoplePicker,
+                    label: 'People',
+                  ),
+                  SearchFilterChip(
+                    icon: Icons.location_pin,
                     onTap: showLocationPicker,
                     label: 'Location',
                   ),
-                  SearchFilterChip(onTap: showCameraPicker, label: 'Camera'),
-                  SearchFilterChip(onTap: showDatePicker, label: 'Date'),
                   SearchFilterChip(
-                    onTap: showMediaTypePicker,
-                    label: 'Media Type',
+                    icon: Icons.camera_alt_rounded,
+                    onTap: showCameraPicker,
+                    label: 'Camera',
+                    currentFilter: cameraCurrentFilterWidget.value,
                   ),
                   SearchFilterChip(
+                    icon: Icons.date_range_rounded,
+                    onTap: showDatePicker,
+                    label: 'Date',
+                    currentFilter: dateRangeCurrentFilterWidget.value,
+                  ),
+                  SearchFilterChip(
+                    icon: Icons.video_collection_outlined,
+                    onTap: showMediaTypePicker,
+                    label: 'Media Type',
+                    currentFilter: buildAssetTypeFilter(),
+                  ),
+                  SearchFilterChip(
+                    icon: Icons.display_settings_outlined,
                     onTap: showDisplayOptionPicker,
                     label: 'Display Options',
                     currentFilter: buildDisplayOptionFilter(),

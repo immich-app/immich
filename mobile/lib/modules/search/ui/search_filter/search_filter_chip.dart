@@ -5,11 +5,13 @@ class SearchFilterChip extends StatelessWidget {
   final String label;
   final Function() onTap;
   final Widget? currentFilter;
+  final IconData icon;
 
   const SearchFilterChip({
     super.key,
     required this.label,
     required this.onTap,
+    required this.icon,
     this.currentFilter,
   });
 
@@ -29,6 +31,11 @@ class SearchFilterChip extends StatelessWidget {
                 const EdgeInsets.symmetric(vertical: 2.0, horizontal: 14.0),
             child: Row(
               children: [
+                Icon(
+                  icon,
+                  size: 18,
+                ),
+                const SizedBox(width: 4.0),
                 currentFilter!,
               ],
             ),
@@ -46,11 +53,12 @@ class SearchFilterChip extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 14.0),
           child: Row(
             children: [
-              Text(label),
-              const Icon(
-                Icons.arrow_drop_down,
-                size: 24,
+              Icon(
+                icon,
+                size: 18,
               ),
+              const SizedBox(width: 4.0),
+              Text(label),
             ],
           ),
         ),

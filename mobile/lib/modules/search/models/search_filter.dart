@@ -2,6 +2,7 @@
 import 'dart:convert';
 
 import 'package:collection/collection.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
 
 class SearchLocationFilter {
   String? country;
@@ -240,6 +241,9 @@ class SearchFilter {
   SearchDateFilter date;
   SearchDisplayFilters display;
 
+  // Enum
+  AssetType mediaType;
+
   SearchFilter({
     this.context,
     this.filename,
@@ -248,6 +252,7 @@ class SearchFilter {
     required this.camera,
     required this.date,
     required this.display,
+    required this.mediaType,
   });
 
   SearchFilter copyWith({
@@ -258,6 +263,7 @@ class SearchFilter {
     SearchCameraFilter? camera,
     SearchDateFilter? date,
     SearchDisplayFilters? display,
+    AssetType? mediaType,
   }) {
     return SearchFilter(
       context: context ?? this.context,
@@ -267,26 +273,13 @@ class SearchFilter {
       camera: camera ?? this.camera,
       date: date ?? this.date,
       display: display ?? this.display,
+      mediaType: mediaType ?? this.mediaType,
     );
   }
 
-  Map<String, dynamic> toMap() {
-    return <String, dynamic>{
-      'context': context,
-      'filename': filename,
-      'personIds': personIds.toList(),
-      'location': location.toMap(),
-      'camera': camera.toMap(),
-      'date': date.toMap(),
-      'display': display.toMap(),
-    };
-  }
-
-  String toJson() => json.encode(toMap());
-
   @override
   String toString() {
-    return 'SearchFilter(context: $context, filename: $filename, personIds: $personIds, location: $location, camera: $camera, date: $date, display: $display)';
+    return 'SearchFilter(context: $context, filename: $filename, personIds: $personIds, location: $location, camera: $camera, date: $date, display: $display, mediaType: $mediaType)';
   }
 
   @override
@@ -300,7 +293,8 @@ class SearchFilter {
         other.location == location &&
         other.camera == camera &&
         other.date == date &&
-        other.display == display;
+        other.display == display &&
+        other.mediaType == mediaType;
   }
 
   @override
@@ -311,6 +305,7 @@ class SearchFilter {
         location.hashCode ^
         camera.hashCode ^
         date.hashCode ^
-        display.hashCode;
+        display.hashCode ^
+        mediaType.hashCode;
   }
 }
