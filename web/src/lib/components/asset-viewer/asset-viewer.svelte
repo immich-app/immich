@@ -1,17 +1,13 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import Icon from '$lib/components/elements/icon.svelte';
   import { AppRoute, AssetAction, ProjectionType } from '$lib/constants';
-  import { updateNumberOfComments } from '$lib/stores/activity.store';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import type { AssetStore } from '$lib/stores/assets.store';
   import { isShowDetail, showDeleteModal } from '$lib/stores/preferences.store';
+  import { getAssetJobMessage, isSharedLink, handlePromiseError } from '$lib/utils';
+  import { addAssetsToAlbum, downloadFile } from '$lib/utils/asset-utils';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { stackAssetsStore } from '$lib/stores/stacked-asset.store';
   import { user } from '$lib/stores/user.store';
-  import { getAssetJobMessage, isSharedLink, handlePromiseError } from '$lib/utils';
-  import { addAssetsToAlbum, downloadFile } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { shortcuts } from '$lib/utils/shortcut';
   import { SlideshowHistory } from '$lib/utils/slideshow-history';
@@ -34,19 +30,25 @@
     type AssetResponseDto,
     type SharedLinkResponseDto,
   } from '@immich/sdk';
-  import { mdiChevronLeft, mdiChevronRight, mdiImageBrokenVariant } from '@mdi/js';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import { fly } from 'svelte/transition';
-  import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
   import DeleteAssetDialog from '../photos-page/delete-asset-dialog.svelte';
   import AlbumSelectionModal from '../shared-components/album-selection-modal.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import ProfileImageCropper from '../shared-components/profile-image-cropper.svelte';
-  import ActivityStatus from './activity-status.svelte';
-  import ActivityViewer from './activity-viewer.svelte';
   import AssetViewerNavBar from './asset-viewer-nav-bar.svelte';
   import DetailPanel from './detail-panel.svelte';
   import NavigationArea from './navigation-area.svelte';
+
+  import PhotoEditor from './photo-editor/photo-editor.svelte';
+  import type { AssetStore } from '$lib/stores/assets.store';
+  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import { mdiChevronLeft, mdiChevronRight, mdiImageBrokenVariant } from '@mdi/js';
+  import Icon from '$lib/components/elements/icon.svelte';
+  import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
+  import ActivityViewer from './activity-viewer.svelte';
+  import ActivityStatus from './activity-status.svelte';
+  import { updateNumberOfComments } from '$lib/stores/activity.store';
   import PanoramaViewer from './panorama-viewer.svelte';
   import PhotoViewer from './photo-viewer.svelte';
   import SlideshowBar from './slideshow-bar.svelte';
@@ -190,6 +192,7 @@
       handlePromiseError(getNumberOfComments());
     }
   }
+  let shouldShowPhotoEditor = false;
 
   onMount(async () => {
     slideshowStateUnsubscribe = slideshowState.subscribe((value) => {
@@ -422,6 +425,7 @@
     }
   };
 
+  $: console.log(shouldShowPhotoEditor);
   const handleRunJob = async (name: AssetJobName) => {
     try {
       await runAssetJobs({ assetJobsDto: { assetIds: [asset.id], name } });
@@ -547,8 +551,9 @@
         on:toggleArchive={toggleArchive}
         on:asProfileImage={() => (isShowProfileImageCrop = true)}
         on:runJob={({ detail: job }) => handleRunJob(job)}
-        on:playSlideShow={() => ($slideshowState = SlideshowState.PlaySlideshow)}
+        on:playSlideShow={handlePlaySlideshow}
         on:unstack={handleUnstack}
+        on:edit={() => (shouldShowPhotoEditor = true)}
         on:showShareModal={() => (isShowShareModal = true)}
       />
     </div>
@@ -742,6 +747,9 @@
     />
   {/if}
 
+  {#if shouldShowPhotoEditor}
+    <PhotoEditor {asset} on:close={() => (shouldShowPhotoEditor = false)} />
+  {/if}
   {#if isShowProfileImageCrop}
     <ProfileImageCropper {asset} on:close={() => (isShowProfileImageCrop = false)} />
   {/if}

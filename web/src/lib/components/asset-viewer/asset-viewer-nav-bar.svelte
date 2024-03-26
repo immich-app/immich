@@ -29,6 +29,7 @@
     mdiMagnifyPlusOutline,
     mdiMotionPauseOutline,
     mdiPlaySpeed,
+    mdiTune,
     mdiPresentationPlay,
     mdiShareVariantOutline,
   } from '@mdi/js';
@@ -43,6 +44,7 @@
   export let showMotionPlayButton: boolean;
   export let isMotionPhotoPlaying = false;
   export let showDownloadButton: boolean;
+  export let showEditButton = true;
   export let showDetailButton: boolean;
   export let showShareButton: boolean;
   export let showSlideshow = false;
@@ -76,6 +78,7 @@
     runJob: AssetJobName;
     playSlideShow: void;
     unstack: void;
+    edit: void;
     showShareModal: void;
   }>();
 
@@ -105,6 +108,9 @@
     <CircleIconButton isOpacity={true} icon={mdiArrowLeft} on:click={() => dispatch('back')} />
   </div>
   <div class="flex w-[calc(100%-3rem)] justify-end gap-2 overflow-hidden text-white">
+    {#if showEditButton}
+      <CircleIconButton isOpacity={true} icon={mdiTune} title="Edit" on:click={() => dispatch('edit')} />
+    {/if}
     {#if showShareButton}
       <CircleIconButton
         isOpacity={true}
