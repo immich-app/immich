@@ -12,9 +12,9 @@ const copyExif = async (originalAsset: Blob, newBlob: Blob): Promise<Blob> => {
 
 const retrieveExif = (imageBlob: Blob): Promise<Blob> => {
   return new Promise((resolve, reject) => {
-    imageBlob.arrayBuffer()
+    imageBlob
+      .arrayBuffer()
       .then((buffer) => {
-
         const dataView = new DataView(buffer);
         let offset = 0;
 
@@ -54,5 +54,5 @@ const retrieveExif = (imageBlob: Blob): Promise<Blob> => {
         return reject(error);
       });
   });
-}
+};
 export default copyExif;

@@ -1,10 +1,10 @@
-import type { ratio, filter, edit } from './types';
+import type { edit, filter, ratio } from './types';
 import { ratios, type mode } from './types';
 
 import { presets } from './presets';
 import { Render } from './render';
 
-import { serveFile, uploadFile, updateAssets, type AssetResponseDto } from '@immich/sdk';
+import { serveFile, updateAssets, uploadFile, type AssetResponseDto } from '@immich/sdk';
 
 type presetName = keyof typeof presets;
 type partialFilter = Partial<filter>;
@@ -83,14 +83,13 @@ export class Editor {
 
     this.history.push(structuredClone(this.edit));
 
-    options ?
-      (this.options = options)
-      :
-      (this.options = {
+    options
+      ? (this.options = options)
+      : (this.options = {
         zoomSpeed: 0.02,
         maxZoom: 5,
         minZoom: 1,
-      })
+      });
     this.mode = 'crop';
   }
 
@@ -323,9 +322,9 @@ export class Editor {
       }
       case 'original': {
         if (this.edit.angleOffset % 180 !== 0) {
-          return (1 / originalAspect)
+          return 1 / originalAspect;
         }
-        return originalAspect
+        return originalAspect;
       }
       case '16_9': {
         return 16 / 9;
@@ -365,9 +364,7 @@ export class Editor {
     console.log('loadThumb');
 
     try {
-      const data = await serveFile(
-        { id: this.asset.id, isThumb: true, isWeb: true }
-      );
+      const data = await serveFile({ id: this.asset.id, isThumb: true, isWeb: true });
 
       if (!(data instanceof Blob)) {
         throw new TypeError('Failed to load thumb data');
@@ -386,9 +383,7 @@ export class Editor {
   private async loadAsset() {
     console.log('loadAsset');
     try {
-      const data = await serveFile(
-        { id: this.asset.id },
-      );
+      const data = await serveFile({ id: this.asset.id });
 
       if (!(data instanceof Blob)) {
         throw new TypeError('Failed to load asset data');
@@ -531,8 +526,7 @@ export class Editor {
       throw new Error('No history'); //History must not be empty
     }
 
-    if (this.
-      history.length < 2) {
+    if (this.history.length < 2) {
       return;
     }
     this.history.splice(1, this.history.length - 1, structuredClone(this.edit));
