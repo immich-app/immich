@@ -15,7 +15,6 @@
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
-  import UpdatePanel from '$lib/components/shared-components/update-panel.svelte';
   import { AppRoute } from '$lib/constants';
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { AssetStore } from '$lib/stores/assets.store';
@@ -66,8 +65,8 @@
 {#if $isMultiSelectState}
   <AssetSelectControlBar assets={$selectedAssets} clearSelect={() => assetInteractionStore.clearMultiselect()}>
     <SelectAllAssets {assetStore} {assetInteractionStore} />
-    <DeleteAssets force onAssetDelete={(assetId) => assetStore.removeAsset(assetId)} />
-    <RestoreAssets onRestore={(ids) => assetStore.removeAssets(ids)} />
+    <DeleteAssets force onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)} />
+    <RestoreAssets onRestore={(assetIds) => assetStore.removeAssets(assetIds)} />
   </AssetSelectControlBar>
 {/if}
 
@@ -77,13 +76,13 @@
       <LinkButton on:click={handleRestoreTrash}>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiHistory} size="18" />
-          Restore All
+          Restore all
         </div>
       </LinkButton>
       <LinkButton on:click={() => (isShowEmptyConfirmation = true)}>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiDeleteOutline} size="18" />
-          Empty Trash
+          Empty trash
         </div>
       </LinkButton>
     </div>
@@ -92,12 +91,7 @@
       <p class="font-medium text-gray-500/60 dark:text-gray-300/60 p-4">
         Trashed items will be permanently deleted after {$serverConfig.trashDays} days.
       </p>
-      <EmptyPlaceholder
-        text="Trashed photos and videos will show up here."
-        alt="Empty trash can"
-        slot="empty"
-        src={empty3Url}
-      />
+      <EmptyPlaceholder text="Trashed photos and videos will show up here." src={empty3Url} slot="empty" />
     </AssetGrid>
   </UserPageLayout>
 {/if}
@@ -106,8 +100,8 @@
   <ConfirmDialogue
     title="Empty Trash"
     confirmText="Empty"
-    on:confirm={handleEmptyTrash}
-    on:cancel={() => (isShowEmptyConfirmation = false)}
+    onConfirm={handleEmptyTrash}
+    onClose={() => (isShowEmptyConfirmation = false)}
   >
     <svelte:fragment slot="prompt">
       <p>Are you sure you want to empty the trash? This will remove all the assets in trash permanently from Immich.</p>
@@ -115,4 +109,3 @@
     </svelte:fragment>
   </ConfirmDialogue>
 {/if}
-<UpdatePanel {assetStore} />

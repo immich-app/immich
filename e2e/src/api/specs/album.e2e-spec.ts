@@ -1,13 +1,14 @@
 import {
   AlbumResponseDto,
   AssetFileUploadResponseDto,
+  AssetOrder,
   LoginResponseDto,
   SharedLinkType,
   deleteUser,
 } from '@immich/sdk';
 import { createUserDto, uuidDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
-import { apiUtils, app, asBearerAuth, dbUtils } from 'src/utils';
+import { app, asBearerAuth, utils } from 'src/utils';
 import request from 'supertest';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
@@ -29,49 +30,48 @@ describe('/album', () => {
   let user3: LoginResponseDto; // deleted
 
   beforeAll(async () => {
-    apiUtils.setup();
-    await dbUtils.reset();
+    await utils.resetDatabase();
 
-    admin = await apiUtils.adminSetup();
+    admin = await utils.adminSetup();
 
     [user1, user2, user3] = await Promise.all([
-      apiUtils.userSetup(admin.accessToken, createUserDto.user1),
-      apiUtils.userSetup(admin.accessToken, createUserDto.user2),
-      apiUtils.userSetup(admin.accessToken, createUserDto.user3),
+      utils.userSetup(admin.accessToken, createUserDto.user1),
+      utils.userSetup(admin.accessToken, createUserDto.user2),
+      utils.userSetup(admin.accessToken, createUserDto.user3),
     ]);
 
     [user1Asset1, user1Asset2] = await Promise.all([
-      apiUtils.createAsset(user1.accessToken),
-      apiUtils.createAsset(user1.accessToken),
+      utils.createAsset(user1.accessToken, { isFavorite: true }),
+      utils.createAsset(user1.accessToken),
     ]);
 
     const albums = await Promise.all([
       // user 1
-      apiUtils.createAlbum(user1.accessToken, {
+      utils.createAlbum(user1.accessToken, {
         albumName: user1SharedUser,
         sharedWithUserIds: [user2.userId],
         assetIds: [user1Asset1.id],
       }),
-      apiUtils.createAlbum(user1.accessToken, {
+      utils.createAlbum(user1.accessToken, {
         albumName: user1SharedLink,
         assetIds: [user1Asset1.id],
       }),
-      apiUtils.createAlbum(user1.accessToken, {
+      utils.createAlbum(user1.accessToken, {
         albumName: user1NotShared,
         assetIds: [user1Asset1.id, user1Asset2.id],
       }),
 
       // user 2
-      apiUtils.createAlbum(user2.accessToken, {
+      utils.createAlbum(user2.accessToken, {
         albumName: user2SharedUser,
         sharedWithUserIds: [user1.userId],
         assetIds: [user1Asset1.id],
       }),
-      apiUtils.createAlbum(user2.accessToken, { albumName: user2SharedLink }),
-      apiUtils.createAlbum(user2.accessToken, { albumName: user2NotShared }),
+      utils.createAlbum(user2.accessToken, { albumName: user2SharedLink }),
+      utils.createAlbum(user2.accessToken, { albumName: user2NotShared }),
 
       // user 3
-      apiUtils.createAlbum(user3.accessToken, {
+      utils.createAlbum(user3.accessToken, {
         albumName: 'Deleted',
         sharedWithUserIds: [user1.userId],
       }),
@@ -82,21 +82,18 @@ describe('/album', () => {
 
     await Promise.all([
       // add shared link to user1SharedLink album
-      apiUtils.createSharedLink(user1.accessToken, {
+      utils.createSharedLink(user1.accessToken, {
         type: SharedLinkType.Album,
         albumId: user1Albums[1].id,
       }),
       // add shared link to user2SharedLink album
-      apiUtils.createSharedLink(user2.accessToken, {
+      utils.createSharedLink(user2.accessToken, {
         type: SharedLinkType.Album,
         albumId: user2Albums[1].id,
       }),
     ]);
 
-    await deleteUser(
-      { id: user3.userId },
-      { headers: asBearerAuth(admin.accessToken) },
-    );
+    await deleteUser({ id: user3.userId, deleteUserDto: {} }, { headers: asBearerAuth(admin.accessToken) });
   });
 
   describe('GET /album', () => {
@@ -111,9 +108,7 @@ describe('/album', () => {
         .get('/album?shared=invalid')
         .set('Authorization', `Bearer ${user1.accessToken}`);
       expect(status).toEqual(400);
-      expect(body).toEqual(
-        errorDto.badRequest(['shared must be a boolean value']),
-      );
+      expect(body).toEqual(errorDto.badRequest(['shared must be a boolean value']));
     });
 
     it('should reject an invalid assetId param', async () => {
@@ -122,6 +117,17 @@ describe('/album', () => {
         .set('Authorization', `Bearer ${user1.accessToken}`);
       expect(status).toEqual(400);
       expect(body).toEqual(errorDto.badRequest(['assetId must be a UUID']));
+    });
+
+    it("should not show other users' favorites", async () => {
+      const { status, body } = await request(app)
+        .get(`/album/${user1Albums[0].id}?withoutAssets=false`)
+        .set('Authorization', `Bearer ${user2.accessToken}`);
+      expect(status).toEqual(200);
+      expect(body).toEqual({
+        ...user1Albums[0],
+        assets: [expect.objectContaining({ isFavorite: false })],
+      });
     });
 
     it('should not return shared albums with a deleted owner', async () => {
@@ -153,9 +159,7 @@ describe('/album', () => {
     });
 
     it('should return the album collection including owned and shared', async () => {
-      const { status, body } = await request(app)
-        .get('/album')
-        .set('Authorization', `Bearer ${user1.accessToken}`);
+      const { status, body } = await request(app).get('/album').set('Authorization', `Bearer ${user1.accessToken}`);
       expect(status).toBe(200);
       expect(body).toHaveLength(3);
       expect(body).toEqual(
@@ -250,9 +254,7 @@ describe('/album', () => {
 
   describe('GET /album/:id', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).get(
-        `/album/${user1Albums[0].id}`,
-      );
+      const { status, body } = await request(app).get(`/album/${user1Albums[0].id}`);
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
     });
@@ -265,7 +267,7 @@ describe('/album', () => {
       expect(status).toBe(200);
       expect(body).toEqual({
         ...user1Albums[0],
-        assets: [expect.objectContaining(user1Albums[0].assets[0])],
+        assets: [expect.objectContaining({ id: user1Albums[0].assets[0].id })],
       });
     });
 
@@ -277,7 +279,7 @@ describe('/album', () => {
       expect(status).toBe(200);
       expect(body).toEqual({
         ...user2Albums[0],
-        assets: [expect.objectContaining(user2Albums[0].assets[0])],
+        assets: [expect.objectContaining({ id: user2Albums[0].assets[0].id })],
       });
     });
 
@@ -289,7 +291,7 @@ describe('/album', () => {
       expect(status).toBe(200);
       expect(body).toEqual({
         ...user1Albums[0],
-        assets: [expect.objectContaining(user1Albums[0].assets[0])],
+        assets: [expect.objectContaining({ id: user1Albums[0].assets[0].id })],
       });
     });
 
@@ -326,9 +328,7 @@ describe('/album', () => {
 
   describe('POST /album', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app)
-        .post('/album')
-        .send({ albumName: 'New album' });
+      const { status, body } = await request(app).post('/album').send({ albumName: 'New album' });
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
     });
@@ -354,43 +354,38 @@ describe('/album', () => {
         assetCount: 0,
         owner: expect.objectContaining({ email: user1.userEmail }),
         isActivityEnabled: true,
+        order: AssetOrder.Desc,
       });
     });
   });
 
   describe('PUT /album/:id/assets', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).put(
-        `/album/${user1Albums[0].id}/assets`,
-      );
+      const { status, body } = await request(app).put(`/album/${user1Albums[0].id}/assets`);
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
     });
 
     it('should be able to add own asset to own album', async () => {
-      const asset = await apiUtils.createAsset(user1.accessToken);
+      const asset = await utils.createAsset(user1.accessToken);
       const { status, body } = await request(app)
         .put(`/album/${user1Albums[0].id}/assets`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({ ids: [asset.id] });
 
       expect(status).toBe(200);
-      expect(body).toEqual([
-        expect.objectContaining({ id: asset.id, success: true }),
-      ]);
+      expect(body).toEqual([expect.objectContaining({ id: asset.id, success: true })]);
     });
 
     it('should be able to add own asset to shared album', async () => {
-      const asset = await apiUtils.createAsset(user1.accessToken);
+      const asset = await utils.createAsset(user1.accessToken);
       const { status, body } = await request(app)
         .put(`/album/${user2Albums[0].id}/assets`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({ ids: [asset.id] });
 
       expect(status).toBe(200);
-      expect(body).toEqual([
-        expect.objectContaining({ id: asset.id, success: true }),
-      ]);
+      expect(body).toEqual([expect.objectContaining({ id: asset.id, success: true })]);
     });
   });
 
@@ -404,7 +399,7 @@ describe('/album', () => {
     });
 
     it('should update an album', async () => {
-      const album = await apiUtils.createAlbum(user1.accessToken, {
+      const album = await utils.createAlbum(user1.accessToken, {
         albumName: 'New album',
       });
       const { status, body } = await request(app)
@@ -473,9 +468,7 @@ describe('/album', () => {
         .send({ ids: [user1Asset1.id] });
 
       expect(status).toBe(200);
-      expect(body).toEqual([
-        expect.objectContaining({ id: user1Asset1.id, success: true }),
-      ]);
+      expect(body).toEqual([expect.objectContaining({ id: user1Asset1.id, success: true })]);
     });
 
     it('should be able to remove own asset from shared album', async () => {
@@ -485,9 +478,7 @@ describe('/album', () => {
         .send({ ids: [user1Asset1.id] });
 
       expect(status).toBe(200);
-      expect(body).toEqual([
-        expect.objectContaining({ id: user1Asset1.id, success: true }),
-      ]);
+      expect(body).toEqual([expect.objectContaining({ id: user1Asset1.id, success: true })]);
     });
   });
 
@@ -495,15 +486,13 @@ describe('/album', () => {
     let album: AlbumResponseDto;
 
     beforeEach(async () => {
-      album = await apiUtils.createAlbum(user1.accessToken, {
+      album = await utils.createAlbum(user1.accessToken, {
         albumName: 'testAlbum',
       });
     });
 
     it('should require authentication', async () => {
-      const { status, body } = await request(app)
-        .put(`/album/${user1Albums[0].id}/users`)
-        .send({ sharedUserIds: [] });
+      const { status, body } = await request(app).put(`/album/${user1Albums[0].id}/users`).send({ sharedUserIds: [] });
 
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);

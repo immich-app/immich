@@ -1,52 +1,38 @@
 <script lang="ts">
-  import { api } from '$lib/api';
   import Icon from '$lib/components/elements/icon.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { user } from '$lib/stores/user.store';
   import { getAssetThumbnailUrl } from '$lib/utils';
-  import { ThumbnailFormat, getUserById, type AlbumResponseDto } from '@immich/sdk';
+  import { ThumbnailFormat, getAssetThumbnail, getUserById, type AlbumResponseDto } from '@immich/sdk';
   import { mdiDotsVertical } from '@mdi/js';
-  import { createEventDispatcher, onMount } from 'svelte';
-  import { getContextMenuPosition } from '../../utils/context-menu';
+  import { onMount } from 'svelte';
+  import { getContextMenuPosition, type ContextMenuPosition } from '../../utils/context-menu';
   import IconButton from '../elements/buttons/icon-button.svelte';
-  import type { OnClick, OnShowContextMenu } from './album-card';
 
   export let album: AlbumResponseDto;
   export let isSharingView = false;
   export let showItemCount = true;
-  export let showContextMenu = true;
   export let preload = false;
-  let showVerticalDots = false;
+  export let onShowContextMenu: ((position: ContextMenuPosition) => void) | undefined = undefined;
 
   $: imageData = album.albumThumbnailAssetId
     ? getAssetThumbnailUrl(album.albumThumbnailAssetId, ThumbnailFormat.Webp)
     : null;
 
-  const dispatchClick = createEventDispatcher<OnClick>();
-  const dispatchShowContextMenu = createEventDispatcher<OnShowContextMenu>();
-
-  const loadHighQualityThumbnail = async (thubmnailId: string | null) => {
-    if (thubmnailId == undefined) {
+  const loadHighQualityThumbnail = async (assetId: string | null) => {
+    if (!assetId) {
       return;
     }
 
-    const { data } = await api.assetApi.getAssetThumbnail(
-      {
-        id: thubmnailId,
-        format: ThumbnailFormat.Jpeg,
-      },
-      {
-        responseType: 'blob',
-      },
-    );
-
-    if (data instanceof Blob) {
-      return URL.createObjectURL(data);
-    }
+    const data = await getAssetThumbnail({ id: assetId, format: ThumbnailFormat.Jpeg });
+    return URL.createObjectURL(data);
   };
 
-  const showAlbumContextMenu = (e: MouseEvent) =>
-    dispatchShowContextMenu('showalbumcontextmenu', getContextMenuPosition(e));
+  const showAlbumContextMenu = (e: MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    onShowContextMenu?.(getContextMenuPosition(e));
+  };
 
   onMount(async () => {
     imageData = (await loadHighQualityThumbnail(album.albumThumbnailAssetId)) || null;
@@ -55,25 +41,17 @@
   const getAlbumOwnerInfo = () => getUserById({ id: album.ownerId });
 </script>
 
-<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
-  class="group relative mt-4 rounded-2xl border-[1px] border-transparent p-5 hover:cursor-pointer hover:bg-gray-100 hover:border-gray-200 dark:hover:border-gray-800 dark:hover:bg-gray-900"
-  on:click={() => dispatchClick('click', album)}
-  on:keydown={() => dispatchClick('click', album)}
-  on:mouseenter={() => (showVerticalDots = true)}
-  on:mouseleave={() => (showVerticalDots = false)}
+  class="group relative rounded-2xl border border-transparent p-5 hover:bg-gray-100 hover:border-gray-200 dark:hover:border-gray-800 dark:hover:bg-gray-900"
   data-testid="album-card"
 >
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
-  {#if showContextMenu}
+  {#if onShowContextMenu}
     <div
-      id={`icon-${album.id}`}
-      class="absolute right-6 top-6 z-10"
-      on:click|stopPropagation|preventDefault={showAlbumContextMenu}
-      class:hidden={!showVerticalDots}
+      id="icon-{album.id}"
+      class="absolute right-6 top-6 z-10 opacity-0 group-hover:opacity-100 focus-within:opacity-100"
       data-testid="context-button-parent"
     >
-      <IconButton color="transparent-primary">
+      <IconButton color="transparent-primary" title="Show album options" on:click={showAlbumContextMenu}>
         <Icon path={mdiDotsVertical} size="20" class="icon-white-drop-shadow text-white" />
       </IconButton>
     </div>
@@ -84,7 +62,7 @@
       <img
         loading={preload ? 'eager' : 'lazy'}
         src={imageData}
-        alt={album.id}
+        alt={album.albumName}
         class="z-0 h-full w-full rounded-xl object-cover transition-all duration-300 hover:shadow-lg"
         data-testid="album-image"
         draggable="false"
@@ -94,7 +72,7 @@
         loading={preload ? 'eager' : 'lazy'}
         src="$lib/assets/no-thumbnail.png"
         sizes="min(271px,186px)"
-        alt={album.id}
+        alt={album.albumName}
         class="z-0 h-full w-full rounded-xl object-cover transition-all duration-300 hover:shadow-lg"
         data-testid="album-image"
         draggable="false"

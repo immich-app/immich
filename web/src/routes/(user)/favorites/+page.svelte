@@ -18,7 +18,6 @@
   import { AssetStore } from '$lib/stores/assets.store';
   import type { PageData } from './$types';
   import { mdiDotsVertical, mdiPlus } from '@mdi/js';
-  import UpdatePanel from '$lib/components/shared-components/update-panel.svelte';
 
   export let data: PageData;
 
@@ -32,30 +31,25 @@
 <!-- Multiselection mode app bar -->
 {#if $isMultiSelectState}
   <AssetSelectControlBar assets={$selectedAssets} clearSelect={() => assetInteractionStore.clearMultiselect()}>
-    <FavoriteAction removeFavorite onFavorite={(ids) => assetStore.removeAssets(ids)} />
+    <FavoriteAction removeFavorite onFavorite={(assetIds) => assetStore.removeAssets(assetIds)} />
     <CreateSharedLink />
     <SelectAllAssets {assetStore} {assetInteractionStore} />
-    <AssetSelectContextMenu icon={mdiPlus} title="Add">
+    <AssetSelectContextMenu icon={mdiPlus} title="Add to...">
       <AddToAlbum />
       <AddToAlbum shared />
     </AssetSelectContextMenu>
-    <DeleteAssets onAssetDelete={(assetId) => assetStore.removeAsset(assetId)} />
     <AssetSelectContextMenu icon={mdiDotsVertical} title="Menu">
       <DownloadAction menuItem />
-      <ArchiveAction menuItem unarchive={isAllArchive} onArchive={(ids) => assetStore.removeAssets(ids)} />
       <ChangeDate menuItem />
       <ChangeLocation menuItem />
+      <ArchiveAction menuItem unarchive={isAllArchive} onArchive={(assetIds) => assetStore.removeAssets(assetIds)} />
+      <DeleteAssets menuItem onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)} />
     </AssetSelectContextMenu>
   </AssetSelectControlBar>
 {/if}
 
 <UserPageLayout hideNavbar={$isMultiSelectState} title={data.meta.title} scrollbar={false}>
   <AssetGrid {assetStore} {assetInteractionStore} removeAction={AssetAction.UNFAVORITE}>
-    <EmptyPlaceholder
-      text="Add favorites to quickly find your best pictures and videos"
-      alt="Empty favorites"
-      slot="empty"
-    />
+    <EmptyPlaceholder text="Add favorites to quickly find your best pictures and videos" slot="empty" />
   </AssetGrid>
 </UserPageLayout>
-<UpdatePanel {assetStore} />

@@ -2,6 +2,11 @@
   // Necessary for eslint
   /* eslint-disable @typescript-eslint/no-explicit-any */
   type T = any;
+
+  export type RenderedOption = {
+    title: string;
+    icon?: string;
+  };
 </script>
 
 <script lang="ts" generics="T">
@@ -25,16 +30,11 @@
 
   export let options: T[];
   export let selectedOption = options[0];
-
-  export let render: (item: T) => string | RenderedOption = String;
-
-  type RenderedOption = {
-    title: string;
-    icon?: string;
-  };
-
   export let showMenu = false;
   export let controlable = false;
+  export let hideTextOnSmallScreen = true;
+
+  export let render: (item: T) => string | RenderedOption = String;
 
   const handleClickOutside = () => {
     if (!controlable) {
@@ -76,14 +76,14 @@
       {#if renderedSelectedOption?.icon}
         <Icon path={renderedSelectedOption.icon} size="18" />
       {/if}
-      <p class="hidden sm:block">{renderedSelectedOption.title}</p>
+      <p class={hideTextOnSmallScreen ? 'hidden sm:block' : ''}>{renderedSelectedOption.title}</p>
     </div>
   </LinkButton>
 
   <!-- DROP DOWN MENU -->
   {#if showMenu}
     <div
-      transition:fly={{ y: -30, x: 30, duration: 100 }}
+      transition:fly={{ y: -30, duration: 250 }}
       class="text-md fixed z-50 flex min-w-[250px] max-h-[70vh] overflow-y-auto immich-scrollbar flex-col rounded-2xl bg-gray-100 py-2 text-black shadow-lg dark:bg-gray-700 dark:text-white {className}"
     >
       {#each options as option (option)}

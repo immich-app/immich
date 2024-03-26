@@ -27,6 +27,7 @@ Name | Type | Description | Notes
 **make** | **String** |  | [optional] 
 **model** | **String** |  | [optional] 
 **page** | **num** |  | [optional] 
+**personIds** | **List<String>** |  | [optional] [default to const []]
 **query** | **String** |  | 
 **size** | **num** |  | [optional] 
 **state** | **String** |  | [optional] 

@@ -5,6 +5,15 @@
   import { user } from '$lib/stores/user.store';
   import { getAssetJobMessage, isSharedLink, handlePromiseError } from '$lib/utils';
   import { addAssetsToAlbum, downloadFile } from '$lib/utils/asset-utils';
+  import { featureFlags } from '$lib/stores/server-config.store';
+  import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
+  import { stackAssetsStore } from '$lib/stores/stacked-asset.store';
+  import { user } from '$lib/stores/user.store';
+  import { getAssetJobMessage, isSharedLink, handlePromiseError } from '$lib/utils';
+  import { addAssetsToAlbum, downloadFile } from '$lib/utils/asset-utils';
+  import { handleError } from '$lib/utils/handle-error';
+  import { shortcuts } from '$lib/utils/shortcut';
+  import { SlideshowHistory } from '$lib/utils/slideshow-history';
   import {
     AssetJobName,
     AssetTypeEnum,
@@ -54,9 +63,11 @@
   import PhotoViewer from './photo-viewer.svelte';
   import SlideshowBar from './slideshow-bar.svelte';
   import VideoViewer from './video-viewer.svelte';
+  import CreateSharedLinkModal from '$lib/components/shared-components/create-share-link-modal/create-shared-link-modal.svelte';
 
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
+  export let preloadAssets: AssetResponseDto[] = [];
   export let showNavigation = true;
   export let sharedLink: SharedLinkResponseDto | undefined = undefined;
   $: isTrashEnabled = $featureFlags.trash;
@@ -70,7 +81,7 @@
   const {
     restartProgress: restartSlideshowProgress,
     stopProgress: stopSlideshowProgress,
-    slideshowShuffle,
+    slideshowNavigation,
     slideshowState,
   } = slideshowStore;
 
@@ -84,11 +95,13 @@
   let appearsInAlbums: AlbumResponseDto[] = [];
   let isShowAlbumPicker = false;
   let isShowDeleteConfirmation = false;
+  let isShowShareModal = false;
   let addToSharedAlbum = true;
   let shouldPlayMotionPhoto = false;
   let isShowProfileImageCrop = false;
   let shouldShowDownloadButton = sharedLink ? sharedLink.allowDownload : !asset.isOffline;
   let shouldShowDetailButton = asset.hasMetadata;
+  let shouldShowShareModal = !asset.isTrashed;
   let canCopyImagesToClipboard: boolean;
   let slideshowStateUnsubscribe: () => void;
   let shuffleSlideshowUnsubscribe: () => void;
@@ -96,6 +109,9 @@
   let isShowActivity = false;
   let isLiked: ActivityResponseDto | null = null;
   let numberOfComments: number;
+  let fullscreenElement: Element;
+
+  $: isFullScreen = fullscreenElement !== null;
 
   $: {
     if (asset.stackCount && asset.stack) {
@@ -103,6 +119,11 @@
       $stackAssetsStore = [...$stackAssetsStore, asset].sort(
         (a, b) => new Date(b.fileCreatedAt).getTime() - new Date(a.fileCreatedAt).getTime(),
       );
+
+      // if its a stack, add the next stack image in addition to the next asset
+      if (asset.stackCount > 1) {
+        preloadAssets.push($stackAssetsStore[1]);
+      }
     }
 
     if (!$stackAssetsStore.map((a) => a.id).includes(asset.id)) {
@@ -197,8 +218,8 @@
       }
     });
 
-    shuffleSlideshowUnsubscribe = slideshowShuffle.subscribe((value) => {
-      if (value) {
+    shuffleSlideshowUnsubscribe = slideshowNavigation.subscribe((value) => {
+      if (value === SlideshowNavigation.Shuffle) {
         slideshowHistory.reset();
         slideshowHistory.queue(asset.id);
       }
@@ -254,64 +275,9 @@
     isShowActivity = !isShowActivity;
   };
 
-  const handleKeypress = async (event: KeyboardEvent) => {
-    if (shouldIgnoreShortcut(event)) {
-      return;
-    }
-
-    const key = event.key;
-    const shiftKey = event.shiftKey;
-    const ctrlKey = event.ctrlKey;
-
-    if (ctrlKey) {
-      return;
-    }
-
-    switch (key) {
-      case 'a':
-      case 'A': {
-        if (shiftKey) {
-          await toggleArchive();
-        }
-        return;
-      }
-      case 'ArrowLeft': {
-        navigateAssetBackward();
-        return;
-      }
-      case 'ArrowRight': {
-        await navigateAssetForward();
-        return;
-      }
-      case 'd':
-      case 'D': {
-        if (shiftKey) {
-          await downloadFile(asset);
-        }
-        return;
-      }
-      case 'Delete': {
-        await trashOrDelete(shiftKey);
-        return;
-      }
-      case 'Escape': {
-        if (isShowDeleteConfirmation) {
-          isShowDeleteConfirmation = false;
-          return;
-        }
-        closeViewer();
-        return;
-      }
-      case 'f': {
-        await toggleFavorite();
-        return;
-      }
-      case 'i': {
-        isShowActivity = false;
-        $isShowDetail = !$isShowDetail;
-        return;
-      }
-    }
+  const toggleDetailPanel = () => {
+    isShowActivity = false;
+    $isShowDetail = !$isShowDetail;
   };
 
   const handleCloseViewer = () => {
@@ -337,13 +303,16 @@
     $restartSlideshowProgress = true;
   };
 
-  const navigateAssetForward = async (e?: Event) => {
-    if ($slideshowState === SlideshowState.PlaySlideshow && $slideshowShuffle) {
-      return slideshowHistory.next() || navigateAssetRandom();
+  const navigateAsset = async (order: 'previous' | 'next', e?: Event) => {
+    if ($slideshowState === SlideshowState.PlaySlideshow && $slideshowNavigation === SlideshowNavigation.Shuffle) {
+      return (order === 'previous' ? slideshowHistory.previous() : slideshowHistory.next()) || navigateAssetRandom();
     }
 
     if ($slideshowState === SlideshowState.PlaySlideshow && assetStore) {
-      const hasNext = await assetStore.getNextAssetId(asset.id);
+      const hasNext =
+        order === 'previous'
+          ? await assetStore.getPreviousAssetId(asset.id)
+          : await assetStore.getNextAssetId(asset.id);
       if (hasNext) {
         $restartSlideshowProgress = true;
       } else {
@@ -352,21 +321,7 @@
     }
 
     e?.stopPropagation();
-    dispatch('next');
-  };
-
-  const navigateAssetBackward = (e?: Event) => {
-    if ($slideshowState === SlideshowState.PlaySlideshow && $slideshowShuffle) {
-      slideshowHistory.previous();
-      return;
-    }
-
-    if ($slideshowState === SlideshowState.PlaySlideshow) {
-      $restartSlideshowProgress = true;
-    }
-
-    e?.stopPropagation();
-    dispatch('previous');
+    dispatch(order);
   };
 
   const showDetailInfoHandler = () => {
@@ -512,7 +467,7 @@
 
   const handleVideoEnded = async () => {
     if ($slideshowState === SlideshowState.PlaySlideshow) {
-      await navigateAssetForward();
+      await navigateAsset('next');
     }
   };
 
@@ -563,7 +518,21 @@
   };
 </script>
 
-<svelte:window on:keydown={handleKeypress} />
+<svelte:window
+  use:shortcuts={[
+    { shortcut: { key: 'a', shift: true }, onShortcut: toggleArchive },
+    { shortcut: { key: 'ArrowLeft' }, onShortcut: () => navigateAsset('previous') },
+    { shortcut: { key: 'ArrowRight' }, onShortcut: () => navigateAsset('next') },
+    { shortcut: { key: 'd', shift: true }, onShortcut: () => downloadFile(asset) },
+    { shortcut: { key: 'Delete' }, onShortcut: () => trashOrDelete(false) },
+    { shortcut: { key: 'Delete', shift: true }, onShortcut: () => trashOrDelete(true) },
+    { shortcut: { key: 'Escape' }, onShortcut: closeViewer },
+    { shortcut: { key: 'f' }, onShortcut: toggleFavorite },
+    { shortcut: { key: 'i' }, onShortcut: toggleDetailPanel },
+  ]}
+/>
+
+<svelte:document bind:fullscreenElement />
 
 <section
   id="immich-asset-viewer"
@@ -582,6 +551,7 @@
         showDetailButton={shouldShowDetailButton}
         showSlideshow={!!assetStore}
         hasStackChildren={$stackAssetsStore.length > 0}
+        showShareButton={shouldShowShareModal}
         on:back={closeViewer}
         on:showDetail={showDetailInfoHandler}
         on:download={() => downloadFile(asset)}
@@ -597,13 +567,16 @@
         on:playSlideShow={handlePlaySlideshow}
         on:unstack={handleUnstack}
         on:edit={() => (shouldShowPhotoEditor = true)}
+        on:showShareModal={() => (isShowShareModal = true)}
       />
     </div>
   {/if}
 
   {#if $slideshowState === SlideshowState.None && showNavigation}
     <div class="z-[1001] column-span-1 col-start-1 row-span-1 row-start-2 mb-[60px] justify-self-start">
-      <NavigationArea on:click={navigateAssetBackward}><Icon path={mdiChevronLeft} size="36" /></NavigationArea>
+      <NavigationArea onClick={(e) => navigateAsset('previous', e)} label="View previous asset">
+        <Icon path={mdiChevronLeft} size="36" ariaHidden />
+      </NavigationArea>
     </div>
   {/if}
 
@@ -612,9 +585,11 @@
     {#if $slideshowState != SlideshowState.None}
       <div class="z-[1000] absolute w-full flex">
         <SlideshowBar
-          on:prev={navigateAssetBackward}
-          on:next={navigateAssetForward}
-          on:close={() => ($slideshowState = SlideshowState.StopSlideshow)}
+          {isFullScreen}
+          onSetToFullScreen={() => assetViewerHtmlElement.requestFullscreen()}
+          onPrevious={() => navigateAsset('previous')}
+          onNext={() => navigateAsset('next')}
+          onClose={() => ($slideshowState = SlideshowState.StopSlideshow)}
         />
       </div>
     {/if}
@@ -622,7 +597,7 @@
     {#if previewStackedAsset}
       {#key previewStackedAsset.id}
         {#if previewStackedAsset.type === AssetTypeEnum.Image}
-          <PhotoViewer asset={previewStackedAsset} on:close={closeViewer} haveFadeTransition={false} />
+          <PhotoViewer asset={previewStackedAsset} {preloadAssets} on:close={closeViewer} haveFadeTransition={false} />
         {:else}
           <VideoViewer
             assetId={previewStackedAsset.id}
@@ -654,7 +629,7 @@
                 .endsWith('.insp'))}
             <PanoramaViewer {asset} />
           {:else}
-            <PhotoViewer {asset} on:close={closeViewer} />
+            <PhotoViewer {asset} {preloadAssets} on:close={closeViewer} />
           {/if}
         {:else}
           <VideoViewer
@@ -685,7 +660,7 @@
         class="z-[1005] flex place-item-center place-content-center absolute bottom-0 w-full col-span-4 col-start-1 mb-1 overflow-x-auto horizontal-scrollbar"
       >
         <div class="relative w-full whitespace-nowrap transition-all">
-          {#each $stackAssetsStore as stackedAsset (stackedAsset.id)}
+          {#each $stackAssetsStore as stackedAsset, index (stackedAsset.id)}
             <div
               class="{stackedAsset.id == asset.id
                 ? '-translate-y-[1px]'
@@ -696,7 +671,10 @@
                   ? 'bg-transparent border-2 border-white'
                   : 'bg-gray-700/40'} inline-block hover:bg-transparent"
                 asset={stackedAsset}
-                on:click={() => (asset = stackedAsset)}
+                onClick={() => {
+                  asset = stackedAsset;
+                  preloadAssets = index + 1 >= $stackAssetsStore.length ? [] : [$stackAssetsStore[index + 1]];
+                }}
                 on:mouse-event={(e) => handleStackedAssetMouseEvent(e, stackedAsset)}
                 readonly
                 thumbnailSize={stackedAsset.id == asset.id ? 65 : 60}
@@ -717,7 +695,9 @@
 
   {#if $slideshowState === SlideshowState.None && showNavigation}
     <div class="z-[1001] col-span-1 col-start-4 row-span-1 row-start-2 mb-[60px] justify-self-end">
-      <NavigationArea on:click={navigateAssetForward}><Icon path={mdiChevronRight} size="36" /></NavigationArea>
+      <NavigationArea onClick={(e) => navigateAsset('next', e)} label="View next asset">
+        <Icon path={mdiChevronRight} size="36" ariaHidden />
+      </NavigationArea>
     </div>
   {/if}
 
@@ -785,6 +765,10 @@
   {/if}
   {#if isShowProfileImageCrop}
     <ProfileImageCropper {asset} on:close={() => (isShowProfileImageCrop = false)} />
+  {/if}
+
+  {#if isShowShareModal}
+    <CreateSharedLinkModal assetIds={[asset.id]} on:close={() => (isShowShareModal = false)} />
   {/if}
 </section>
 

@@ -9,7 +9,7 @@ import {
 } from '@immich/sdk';
 import { createUserDto, uuidDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
-import { apiUtils, app, asBearerAuth, dbUtils } from 'src/utils';
+import { app, asBearerAuth, utils } from 'src/utils';
 import request from 'supertest';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
@@ -20,18 +20,14 @@ describe('/activity', () => {
   let album: AlbumResponseDto;
 
   const createActivity = (dto: ActivityCreateDto, accessToken?: string) =>
-    create(
-      { activityCreateDto: dto },
-      { headers: asBearerAuth(accessToken || admin.accessToken) },
-    );
+    create({ activityCreateDto: dto }, { headers: asBearerAuth(accessToken || admin.accessToken) });
 
   beforeAll(async () => {
-    apiUtils.setup();
-    await dbUtils.reset();
+    await utils.resetDatabase();
 
-    admin = await apiUtils.adminSetup();
-    nonOwner = await apiUtils.userSetup(admin.accessToken, createUserDto.user1);
-    asset = await apiUtils.createAsset(admin.accessToken);
+    admin = await utils.adminSetup();
+    nonOwner = await utils.userSetup(admin.accessToken, createUserDto.user1);
+    asset = await utils.createAsset(admin.accessToken);
     album = await createAlbum(
       {
         createAlbumDto: {
@@ -45,7 +41,7 @@ describe('/activity', () => {
   });
 
   beforeEach(async () => {
-    await dbUtils.reset(['activity']);
+    await utils.resetDatabase(['activity']);
   });
 
   describe('GET /activity', () => {
@@ -56,13 +52,9 @@ describe('/activity', () => {
     });
 
     it('should require an albumId', async () => {
-      const { status, body } = await request(app)
-        .get('/activity')
-        .set('Authorization', `Bearer ${admin.accessToken}`);
+      const { status, body } = await request(app).get('/activity').set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toEqual(400);
-      expect(body).toEqual(
-        errorDto.badRequest(expect.arrayContaining(['albumId must be a UUID'])),
-      );
+      expect(body).toEqual(errorDto.badRequest(expect.arrayContaining(['albumId must be a UUID'])));
     });
 
     it('should reject an invalid albumId', async () => {
@@ -71,9 +63,7 @@ describe('/activity', () => {
         .query({ albumId: uuidDto.invalid })
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toEqual(400);
-      expect(body).toEqual(
-        errorDto.badRequest(expect.arrayContaining(['albumId must be a UUID'])),
-      );
+      expect(body).toEqual(errorDto.badRequest(expect.arrayContaining(['albumId must be a UUID'])));
     });
 
     it('should reject an invalid assetId', async () => {
@@ -82,9 +72,7 @@ describe('/activity', () => {
         .query({ albumId: uuidDto.notFound, assetId: uuidDto.invalid })
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toEqual(400);
-      expect(body).toEqual(
-        errorDto.badRequest(expect.arrayContaining(['assetId must be a UUID'])),
-      );
+      expect(body).toEqual(errorDto.badRequest(expect.arrayContaining(['assetId must be a UUID'])));
     });
 
     it('should start off empty', async () => {
@@ -160,9 +148,7 @@ describe('/activity', () => {
     });
 
     it('should filter by userId', async () => {
-      const [reaction] = await Promise.all([
-        createActivity({ albumId: album.id, type: ReactionType.Like }),
-      ]);
+      const [reaction] = await Promise.all([createActivity({ albumId: album.id, type: ReactionType.Like })]);
 
       const response1 = await request(app)
         .get('/activity')
@@ -215,9 +201,7 @@ describe('/activity', () => {
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({ albumId: uuidDto.invalid });
       expect(status).toEqual(400);
-      expect(body).toEqual(
-        errorDto.badRequest(expect.arrayContaining(['albumId must be a UUID'])),
-      );
+      expect(body).toEqual(errorDto.badRequest(expect.arrayContaining(['albumId must be a UUID'])));
     });
 
     it('should require a comment when type is comment', async () => {
@@ -226,12 +210,7 @@ describe('/activity', () => {
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({ albumId: uuidDto.notFound, type: 'comment', comment: null });
       expect(status).toEqual(400);
-      expect(body).toEqual(
-        errorDto.badRequest([
-          'comment must be a string',
-          'comment should not be empty',
-        ]),
-      );
+      expect(body).toEqual(errorDto.badRequest(['comment must be a string', 'comment should not be empty']));
     });
 
     it('should add a comment to an album', async () => {
@@ -271,9 +250,7 @@ describe('/activity', () => {
     });
 
     it('should return a 200 for a duplicate like on the album', async () => {
-      const [reaction] = await Promise.all([
-        createActivity({ albumId: album.id, type: ReactionType.Like }),
-      ]);
+      const [reaction] = await Promise.all([createActivity({ albumId: album.id, type: ReactionType.Like })]);
 
       const { status, body } = await request(app)
         .post('/activity')
@@ -356,9 +333,7 @@ describe('/activity', () => {
 
   describe('DELETE /activity/:id', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).delete(
-        `/activity/${uuidDto.notFound}`,
-      );
+      const { status, body } = await request(app).delete(`/activity/${uuidDto.notFound}`);
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
     });
@@ -420,9 +395,7 @@ describe('/activity', () => {
         .set('Authorization', `Bearer ${nonOwner.accessToken}`);
 
       expect(status).toBe(400);
-      expect(body).toEqual(
-        errorDto.badRequest('Not found or no activity.delete access'),
-      );
+      expect(body).toEqual(errorDto.badRequest('Not found or no activity.delete access'));
     });
 
     it('should let a non-owner remove their own comment', async () => {

@@ -1,0 +1,16 @@
+.DS_Store
+node_modules
+/build
+/package
+.env
+.env.*
+!.env.example
+*.md
+*.json
+coverage
+dist
+
+# Ignore files for PNPM, NPM and YARN
+pnpm-lock.yaml
+package-lock.json
+yarn.lock

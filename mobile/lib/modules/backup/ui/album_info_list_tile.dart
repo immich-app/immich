@@ -11,46 +11,25 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 
 class AlbumInfoListTile extends HookConsumerWidget {
-  final Uint8List? imageData;
-  final AvailableAlbum albumInfo;
+  final AvailableAlbum album;
 
-  const AlbumInfoListTile({super.key, this.imageData, required this.albumInfo});
+  const AlbumInfoListTile({super.key, required this.album});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final bool isSelected =
-        ref.watch(backupProvider).selectedBackupAlbums.contains(albumInfo);
+        ref.watch(backupProvider).selectedBackupAlbums.contains(album);
     final bool isExcluded =
-        ref.watch(backupProvider).excludedBackupAlbums.contains(albumInfo);
-
-    ColorFilter selectedFilter = ColorFilter.mode(
-      context.primaryColor.withAlpha(100),
-      BlendMode.darken,
-    );
-    ColorFilter excludedFilter =
-        ColorFilter.mode(Colors.red.withAlpha(75), BlendMode.darken);
-    ColorFilter unselectedFilter =
-        const ColorFilter.mode(Colors.black, BlendMode.color);
-
+        ref.watch(backupProvider).excludedBackupAlbums.contains(album);
     var assetCount = useState(0);
 
     useEffect(
       () {
-        albumInfo.assetCount.then((value) => assetCount.value = value);
+        album.assetCount.then((value) => assetCount.value = value);
         return null;
       },
-      [albumInfo],
+      [album],
     );
-
-    buildImageFilter() {
-      if (isSelected) {
-        return selectedFilter;
-      } else if (isExcluded) {
-        return excludedFilter;
-      } else {
-        return unselectedFilter;
-      }
-    }
 
     buildTileColor() {
       if (isSelected) {
@@ -66,19 +45,38 @@ class AlbumInfoListTile extends HookConsumerWidget {
       }
     }
 
+    buildIcon() {
+      if (isSelected) {
+        return const Icon(
+          Icons.check_circle_rounded,
+          color: Colors.green,
+        );
+      }
+
+      if (isExcluded) {
+        return const Icon(
+          Icons.remove_circle_rounded,
+          color: Colors.red,
+        );
+      }
+
+      return Icon(
+        Icons.circle,
+        color: context.isDarkTheme ? Colors.grey[400] : Colors.black45,
+      );
+    }
+
     return GestureDetector(
       onDoubleTap: () {
         HapticFeedback.selectionClick();
 
         if (isExcluded) {
           // Remove from exclude album list
-          ref
-              .read(backupProvider.notifier)
-              .removeExcludedAlbumForBackup(albumInfo);
+          ref.read(backupProvider.notifier).removeExcludedAlbumForBackup(album);
         } else {
           // Add to exclude album list
 
-          if (albumInfo.id == 'isAll' || albumInfo.name == 'Recents') {
+          if (album.id == 'isAll' || album.name == 'Recents') {
             ImmichToast.show(
               context: context,
               msg: 'Cannot exclude album contains all assets',
@@ -88,9 +86,7 @@ class AlbumInfoListTile extends HookConsumerWidget {
             return;
           }
 
-          ref
-              .read(backupProvider.notifier)
-              .addExcludedAlbumForBackup(albumInfo);
+          ref.read(backupProvider.notifier).addExcludedAlbumForBackup(album);
         }
       },
       child: ListTile(
@@ -99,33 +95,14 @@ class AlbumInfoListTile extends HookConsumerWidget {
         onTap: () {
           HapticFeedback.selectionClick();
           if (isSelected) {
-            ref.read(backupProvider.notifier).removeAlbumForBackup(albumInfo);
+            ref.read(backupProvider.notifier).removeAlbumForBackup(album);
           } else {
-            ref.read(backupProvider.notifier).addAlbumForBackup(albumInfo);
+            ref.read(backupProvider.notifier).addAlbumForBackup(album);
           }
         },
-        leading: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: SizedBox(
-            height: 80,
-            width: 80,
-            child: ColorFiltered(
-              colorFilter: buildImageFilter(),
-              child: Image(
-                width: double.infinity,
-                height: double.infinity,
-                image: imageData != null
-                    ? MemoryImage(imageData!)
-                    : const AssetImage(
-                        'assets/immich-logo-no-outline.png',
-                      ) as ImageProvider,
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-        ),
+        leading: buildIcon(),
         title: Text(
-          albumInfo.name,
+          album.name,
           style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.bold,
@@ -135,7 +112,7 @@ class AlbumInfoListTile extends HookConsumerWidget {
         trailing: IconButton(
           onPressed: () {
             context.pushRoute(
-              AlbumPreviewRoute(album: albumInfo.albumEntity),
+              AlbumPreviewRoute(album: album.albumEntity),
             );
           },
           icon: Icon(

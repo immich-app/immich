@@ -42,7 +42,6 @@ class ImmichImage extends StatelessWidget {
     if (asset == null) {
       return ImmichRemoteImageProvider(
         assetId: assetId!,
-        isThumbnail: false,
       );
     }
 
@@ -53,14 +52,15 @@ class ImmichImage extends StatelessWidget {
     } else {
       return ImmichRemoteImageProvider(
         assetId: asset.remoteId!,
-        isThumbnail: false,
       );
     }
   }
 
+  // Whether to use the local asset image provider or a remote one
   static bool useLocal(Asset asset) =>
       !asset.isRemote ||
       asset.isLocal && !Store.get(StoreKey.preferRemoteImage, false);
+
   @override
   Widget build(BuildContext context) {
     if (asset == null) {

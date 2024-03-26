@@ -5,12 +5,15 @@ import 'dart:math';
 import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/collection_extensions.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/scroll_notifier.provider.dart';
+import 'package:immich_mobile/modules/home/ui/asset_grid/asset_drag_region.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/thumbnail_image.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/thumbnail_placeholder.dart';
+import 'package:immich_mobile/modules/home/ui/control_bottom_app_bar.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
@@ -73,6 +76,8 @@ class ImmichAssetGridView extends StatefulWidget {
 
 class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
   final ItemScrollController _itemScrollController = ItemScrollController();
+  final ScrollOffsetController _scrollOffsetController =
+      ScrollOffsetController();
   final ItemPositionsListener _itemPositionsListener =
       ItemPositionsListener.create();
 
@@ -82,6 +87,12 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
   bool _scrolling = false;
   final Set<Asset> _selectedAssets =
       LinkedHashSet(equals: (a, b) => a.id == b.id, hashCode: (a) => a.id);
+
+  bool _dragging = false;
+  int? _dragAnchorAssetIndex;
+  int? _dragAnchorSectionIndex;
+  final Set<Asset> _draggedAssets =
+      HashSet(equals: (a, b) => a.id == b.id, hashCode: (a) => a.id);
 
   Set<Asset> _getSelectedAssets() {
     return Set.from(_selectedAssets);
@@ -93,20 +104,26 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
 
   void _selectAssets(List<Asset> assets) {
     setState(() {
+      if (_dragging) {
+        _draggedAssets.addAll(assets);
+      }
       _selectedAssets.addAll(assets);
       _callSelectionListener(true);
     });
   }
 
   void _deselectAssets(List<Asset> assets) {
+    final assetsToDeselect = assets.where(
+      (a) =>
+          widget.canDeselect ||
+          !(widget.preselectedAssets?.contains(a) ?? false),
+    );
+
     setState(() {
-      _selectedAssets.removeAll(
-        assets.where(
-          (a) =>
-              widget.canDeselect ||
-              !(widget.preselectedAssets?.contains(a) ?? false),
-        ),
-      );
+      _selectedAssets.removeAll(assetsToDeselect);
+      if (_dragging) {
+        _draggedAssets.removeAll(assetsToDeselect);
+      }
       _callSelectionListener(_selectedAssets.isNotEmpty);
     });
   }
@@ -114,6 +131,10 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
   void _deselectAll() {
     setState(() {
       _selectedAssets.clear();
+      _dragAnchorAssetIndex = null;
+      _dragAnchorSectionIndex = null;
+      _draggedAssets.clear();
+      _dragging = false;
       if (!widget.canDeselect &&
           widget.preselectedAssets != null &&
           widget.preselectedAssets!.isNotEmpty) {
@@ -142,6 +163,7 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
       showStorageIndicator: widget.showStorageIndicator,
       selectedAssets: _selectedAssets,
       selectionActive: widget.selectionActive,
+      sectionIndex: index,
       section: section,
       margin: widget.margin,
       renderList: widget.renderList,
@@ -199,6 +221,7 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
       itemBuilder: _itemBuilder,
       itemPositionsListener: _itemPositionsListener,
       itemScrollController: _itemScrollController,
+      scrollOffsetController: _scrollOffsetController,
       itemCount: widget.renderList.elements.length +
           (widget.topWidget != null ? 1 : 0),
       addRepaintBoundaries: true,
@@ -253,6 +276,7 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
     if (widget.visibleItemsListener != null) {
       _itemPositionsListener.itemPositions.removeListener(_positionListener);
     }
+    _itemPositionsListener.itemPositions.removeListener(_hapticsListener);
     super.dispose();
   }
 
@@ -308,6 +332,107 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
     );
   }
 
+  void _setDragStartIndex(AssetIndex index) {
+    setState(() {
+      _dragAnchorAssetIndex = index.rowIndex;
+      _dragAnchorSectionIndex = index.sectionIndex;
+      _dragging = true;
+    });
+  }
+
+  void _stopDrag() {
+    setState(() {
+      _dragging = false;
+      _draggedAssets.clear();
+    });
+  }
+
+  void _dragDragScroll(ScrollDirection direction) {
+    _scrollOffsetController.animateScroll(
+      offset: direction == ScrollDirection.forward ? 175 : -175,
+      duration: const Duration(milliseconds: 125),
+    );
+  }
+
+  void _handleDragAssetEnter(AssetIndex index) {
+    if (_dragAnchorSectionIndex == null || _dragAnchorAssetIndex == null) {
+      return;
+    }
+
+    final dragAnchorSectionIndex = _dragAnchorSectionIndex!;
+    final dragAnchorAssetIndex = _dragAnchorAssetIndex!;
+
+    late final int startSectionIndex;
+    late final int startSectionAssetIndex;
+    late final int endSectionIndex;
+    late final int endSectionAssetIndex;
+
+    if (index.sectionIndex < dragAnchorSectionIndex) {
+      startSectionIndex = index.sectionIndex;
+      startSectionAssetIndex = index.rowIndex;
+      endSectionIndex = dragAnchorSectionIndex;
+      endSectionAssetIndex = dragAnchorAssetIndex;
+    } else if (index.sectionIndex > dragAnchorSectionIndex) {
+      startSectionIndex = dragAnchorSectionIndex;
+      startSectionAssetIndex = dragAnchorAssetIndex;
+      endSectionIndex = index.sectionIndex;
+      endSectionAssetIndex = index.rowIndex;
+    } else {
+      startSectionIndex = dragAnchorSectionIndex;
+      endSectionIndex = dragAnchorSectionIndex;
+
+      // If same section, assign proper start / end asset Index
+      if (dragAnchorAssetIndex < index.rowIndex) {
+        startSectionAssetIndex = dragAnchorAssetIndex;
+        endSectionAssetIndex = index.rowIndex;
+      } else {
+        startSectionAssetIndex = index.rowIndex;
+        endSectionAssetIndex = dragAnchorAssetIndex;
+      }
+    }
+
+    final selectedAssets = <Asset>{};
+    var currentSectionIndex = startSectionIndex;
+    while (currentSectionIndex < endSectionIndex) {
+      final section =
+          widget.renderList.elements.elementAtOrNull(currentSectionIndex);
+      if (section == null) continue;
+
+      final sectionAssets =
+          widget.renderList.loadAssets(section.offset, section.count);
+
+      if (currentSectionIndex == startSectionIndex) {
+        selectedAssets.addAll(
+          sectionAssets.slice(startSectionAssetIndex, sectionAssets.length),
+        );
+      } else {
+        selectedAssets.addAll(sectionAssets);
+      }
+
+      currentSectionIndex += 1;
+    }
+
+    final section = widget.renderList.elements.elementAtOrNull(endSectionIndex);
+    if (section != null) {
+      final sectionAssets =
+          widget.renderList.loadAssets(section.offset, section.count);
+      if (startSectionIndex == endSectionIndex) {
+        selectedAssets.addAll(
+          sectionAssets.slice(startSectionAssetIndex, endSectionAssetIndex + 1),
+        );
+      } else {
+        selectedAssets.addAll(
+          sectionAssets.slice(0, endSectionAssetIndex + 1),
+        );
+      }
+    }
+
+    _deselectAssets(_draggedAssets.toList());
+    _draggedAssets.clear();
+    _draggedAssets.addAll(selectedAssets);
+    _selectAssets(_draggedAssets.toList());
+  }
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -315,7 +440,16 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
       onPopInvoked: (didPop) => !didPop ? _deselectAll() : null,
       child: Stack(
         children: [
-          _buildAssetGrid(),
+          AssetDragRegion(
+            onStart: _setDragStartIndex,
+            onAssetEnter: _handleDragAssetEnter,
+            onEnd: _stopDrag,
+            onScroll: _dragDragScroll,
+            onScrollStart: () => WidgetsBinding.instance.addPostFrameCallback(
+              (_) => controlBottomAppBarNotifier.minimize(),
+            ),
+            child: _buildAssetGrid(),
+          ),
           if (widget.showMultiSelectIndicator && widget.selectionActive)
             _buildMultiSelectIndicator(),
         ],
@@ -361,6 +495,7 @@ class _PlaceholderRow extends StatelessWidget {
 /// A section for the render grid
 class _Section extends StatelessWidget {
   final RenderAssetGridElement section;
+  final int sectionIndex;
   final Set<Asset> selectedAssets;
   final bool scrolling;
   final double margin;
@@ -377,6 +512,7 @@ class _Section extends StatelessWidget {
 
   const _Section({
     required this.section,
+    required this.sectionIndex,
     required this.scrolling,
     required this.margin,
     required this.assetsPerRow,
@@ -435,6 +571,8 @@ class _Section extends StatelessWidget {
                     )
                   : _AssetRow(
                       key: ValueKey(i),
+                      rowStartIndex: i * assetsPerRow,
+                      sectionIndex: sectionIndex,
                       assets: assetsToRender.nestedSlice(
                         i * assetsPerRow,
                         min((i + 1) * assetsPerRow, section.count),
@@ -522,6 +660,8 @@ class _Title extends StatelessWidget {
 /// The row of assets
 class _AssetRow extends StatelessWidget {
   final List<Asset> assets;
+  final int rowStartIndex;
+  final int sectionIndex;
   final Set<Asset> selectedAssets;
   final int absoluteOffset;
   final double width;
@@ -539,6 +679,8 @@ class _AssetRow extends StatelessWidget {
 
   const _AssetRow({
     super.key,
+    required this.rowStartIndex,
+    required this.sectionIndex,
     required this.assets,
     required this.absoluteOffset,
     required this.width,
@@ -594,18 +736,22 @@ class _AssetRow extends StatelessWidget {
             bottom: margin,
             right: last ? 0.0 : margin,
           ),
-          child: ThumbnailImage(
-            asset: asset,
-            index: absoluteOffset + index,
-            loadAsset: renderList.loadAsset,
-            totalAssets: renderList.totalAssets,
-            multiselectEnabled: selectionActive,
-            isSelected: isSelectionActive && selectedAssets.contains(asset),
-            onSelect: () => onSelect?.call(asset),
-            onDeselect: () => onDeselect?.call(asset),
-            showStorageIndicator: showStorageIndicator,
-            heroOffset: heroOffset,
-            showStack: showStack,
+          child: AssetIndexWrapper(
+            rowIndex: rowStartIndex + index,
+            sectionIndex: sectionIndex,
+            child: ThumbnailImage(
+              asset: asset,
+              index: absoluteOffset + index,
+              loadAsset: renderList.loadAsset,
+              totalAssets: renderList.totalAssets,
+              multiselectEnabled: selectionActive,
+              isSelected: isSelectionActive && selectedAssets.contains(asset),
+              onSelect: () => onSelect?.call(asset),
+              onDeselect: () => onDeselect?.call(asset),
+              showStorageIndicator: showStorageIndicator,
+              heroOffset: heroOffset,
+              showStack: showStack,
+            ),
           ),
         );
       }).toList(),

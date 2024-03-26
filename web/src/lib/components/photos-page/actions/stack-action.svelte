@@ -8,6 +8,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { updateAssets } from '@immich/sdk';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
+  import { mdiImageMultipleOutline } from '@mdi/js';
 
   export let onStack: OnStack | undefined;
 
@@ -55,4 +56,4 @@
   };
 </script>
 
-<MenuOption text="Stack" on:click={handleStack} />
+<MenuOption text="Stack" icon={mdiImageMultipleOutline} on:click={handleStack} />

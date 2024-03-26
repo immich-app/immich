@@ -2,26 +2,47 @@
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import ProgressBar, { ProgressBarStatus } from '$lib/components/shared-components/progress-bar/progress-bar.svelte';
   import SlideshowSettings from '$lib/components/slideshow-settings.svelte';
-  import { slideshowStore } from '$lib/stores/slideshow.store';
-  import { mdiChevronLeft, mdiChevronRight, mdiClose, mdiCog, mdiPause, mdiPlay } from '@mdi/js';
-  import { createEventDispatcher, onDestroy, onMount } from 'svelte';
+  import { SlideshowNavigation, slideshowStore } from '$lib/stores/slideshow.store';
+  import { mdiChevronLeft, mdiChevronRight, mdiClose, mdiCog, mdiFullscreen, mdiPause, mdiPlay } from '@mdi/js';
+  import { onDestroy, onMount } from 'svelte';
+  import { fly } from 'svelte/transition';
 
-  const { restartProgress, stopProgress, slideshowDelay, showProgressBar } = slideshowStore;
+  export let isFullScreen: boolean;
+  export let onNext = () => {};
+  export let onPrevious = () => {};
+  export let onClose = () => {};
+  export let onSetToFullScreen = () => {};
+
+  const { restartProgress, stopProgress, slideshowDelay, showProgressBar, slideshowNavigation } = slideshowStore;
 
   let progressBarStatus: ProgressBarStatus;
   let progressBar: ProgressBar;
   let showSettings = false;
+  let showControls = true;
+  let timer: NodeJS.Timeout;
+  let isOverControls = false;
 
   let unsubscribeRestart: () => void;
   let unsubscribeStop: () => void;
 
-  const dispatch = createEventDispatcher<{
-    next: void;
-    prev: void;
-    close: void;
-  }>();
+  const resetTimer = () => {
+    clearTimeout(timer);
+    document.body.style.cursor = '';
+    showControls = true;
+    startTimer();
+  };
+
+  const startTimer = () => {
+    timer = setTimeout(() => {
+      if (!isOverControls) {
+        showControls = false;
+        document.body.style.cursor = 'none';
+      }
+    }, 10_000);
+  };
 
   onMount(() => {
+    startTimer();
     unsubscribeRestart = restartProgress.subscribe((value) => {
       if (value) {
         progressBar.restart(value);
@@ -44,21 +65,47 @@
       unsubscribeStop();
     }
   });
+
+  const handleDone = () => {
+    if ($slideshowNavigation === SlideshowNavigation.AscendingOrder) {
+      onPrevious();
+      return;
+    }
+    onNext();
+  };
 </script>
 
-<div class="m-4 flex gap-2">
-  <CircleIconButton buttonSize="50" icon={mdiClose} on:click={() => dispatch('close')} title="Exit Slideshow" />
-  <CircleIconButton
-    buttonSize="50"
-    icon={progressBarStatus === ProgressBarStatus.Paused ? mdiPlay : mdiPause}
-    on:click={() => (progressBarStatus === ProgressBarStatus.Paused ? progressBar.play() : progressBar.pause())}
-    title={progressBarStatus === ProgressBarStatus.Paused ? 'Play' : 'Pause'}
-  />
-  <CircleIconButton buttonSize="50" icon={mdiChevronLeft} on:click={() => dispatch('prev')} title="Previous" />
-  <CircleIconButton buttonSize="50" icon={mdiChevronRight} on:click={() => dispatch('next')} title="Next" />
-  <CircleIconButton buttonSize="50" icon={mdiCog} on:click={() => (showSettings = !showSettings)} title="Next" />
-</div>
+<svelte:window on:mousemove={resetTimer} />
 
+{#if showControls}
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
+  <div
+    class="m-4 flex gap-2"
+    on:mouseenter={() => (isOverControls = true)}
+    on:mouseleave={() => (isOverControls = false)}
+    transition:fly={{ duration: 150 }}
+  >
+    <CircleIconButton buttonSize="50" icon={mdiClose} on:click={onClose} title="Exit Slideshow" />
+
+    <CircleIconButton
+      buttonSize="50"
+      icon={progressBarStatus === ProgressBarStatus.Paused ? mdiPlay : mdiPause}
+      on:click={() => (progressBarStatus === ProgressBarStatus.Paused ? progressBar.play() : progressBar.pause())}
+      title={progressBarStatus === ProgressBarStatus.Paused ? 'Play' : 'Pause'}
+    />
+    <CircleIconButton buttonSize="50" icon={mdiChevronLeft} on:click={onPrevious} title="Previous" />
+    <CircleIconButton buttonSize="50" icon={mdiChevronRight} on:click={onNext} title="Next" />
+    <CircleIconButton buttonSize="50" icon={mdiCog} on:click={() => (showSettings = !showSettings)} title="Next" />
+    {#if !isFullScreen}
+      <CircleIconButton
+        buttonSize="50"
+        icon={mdiFullscreen}
+        on:click={onSetToFullScreen}
+        title="Set Slideshow to fullscreen"
+      />
+    {/if}
+  </div>
+{/if}
 {#if showSettings}
   <SlideshowSettings onClose={() => (showSettings = false)} />
 {/if}
@@ -69,5 +116,5 @@
   duration={$slideshowDelay}
   bind:this={progressBar}
   bind:status={progressBarStatus}
-  on:done={() => dispatch('next')}
+  on:done={handleDone}
 />

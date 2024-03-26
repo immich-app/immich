@@ -1,4 +1,4 @@
-version: "3.8"
+version: '3.8'
 
 name: immich-e2e
 
@@ -14,8 +14,10 @@ x-server-build: &server-common
     - DB_DATABASE_NAME=immich
     - REDIS_HOSTNAME=redis
     - IMMICH_MACHINE_LEARNING_ENABLED=false
+    - IMMICH_METRICS=true
   volumes:
     - upload:/usr/src/app/upload
+    - ../server/test/assets:/data/assets
   depends_on:
     - redis
     - database
@@ -23,18 +25,18 @@ x-server-build: &server-common
 services:
   immich-server:
     container_name: immich-e2e-server
-    command: [ "./start.sh", "immich" ]
+    command: ['./start.sh', 'immich']
     <<: *server-common
     ports:
       - 2283:3001
 
   immich-microservices:
     container_name: immich-e2e-microservices
-    command: [ "./start.sh", "microservices" ]
+    command: ['./start.sh', 'microservices']
     <<: *server-common
 
   redis:
-    image: redis:6.2-alpine@sha256:51d6c56749a4243096327e3fb964a48ed92254357108449cb6e23999c37773c5
+    image: redis:6.2-alpine@sha256:3fcb624d83a9c478357f16dc173c58ded325ccc5fd2a4375f3916c04cc579f70
 
   database:
     image: tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:90724186f0a3517cf6914295b5ab410db9ce23190a2d9d0b9dd6463e3fa298f0

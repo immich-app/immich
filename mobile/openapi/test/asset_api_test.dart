@@ -95,12 +95,12 @@ void main() {
       // TODO
     });
 
-    //Future<List<AssetResponseDto>> getTimeBucket(TimeBucketSize size, String timeBucket, { String albumId, bool isArchived, bool isFavorite, bool isTrashed, String key, String personId, String userId, bool withPartners, bool withStacked }) async
+    //Future<List<AssetResponseDto>> getTimeBucket(TimeBucketSize size, String timeBucket, { String albumId, bool isArchived, bool isFavorite, bool isTrashed, String key, AssetOrder order, String personId, String userId, bool withPartners, bool withStacked }) async
     test('test getTimeBucket', () async {
       // TODO
     });
 
-    //Future<List<TimeBucketResponseDto>> getTimeBuckets(TimeBucketSize size, { String albumId, bool isArchived, bool isFavorite, bool isTrashed, String key, String personId, String userId, bool withPartners, bool withStacked }) async
+    //Future<List<TimeBucketResponseDto>> getTimeBuckets(TimeBucketSize size, { String albumId, bool isArchived, bool isFavorite, bool isTrashed, String key, AssetOrder order, String personId, String userId, bool withPartners, bool withStacked }) async
     test('test getTimeBuckets', () async {
       // TODO
     });
@@ -135,7 +135,7 @@ void main() {
       // TODO
     });
 
-    //Future<AssetFileUploadResponseDto> uploadFile(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String key, String duration, bool isArchived, bool isExternal, bool isFavorite, bool isOffline, bool isReadOnly, bool isVisible, String libraryId, MultipartFile livePhotoData, MultipartFile sidecarData }) async
+    //Future<AssetFileUploadResponseDto> uploadFile(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String key, String duration, bool isArchived, bool isFavorite, bool isOffline, bool isReadOnly, bool isVisible, String libraryId, MultipartFile livePhotoData, MultipartFile sidecarData }) async
     test('test uploadFile', () async {
       // TODO
     });

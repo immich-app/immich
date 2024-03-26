@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
@@ -11,8 +12,17 @@ import 'package:immich_mobile/modules/home/ui/upload_dialog.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/ui/drag_sheet.dart';
 import 'package:immich_mobile/shared/models/album.dart';
+import 'package:immich_mobile/utils/draggable_scroll_controller.dart';
 
-class ControlBottomAppBar extends ConsumerWidget {
+final controlBottomAppBarNotifier = ControlBottomAppBarNotifier();
+
+class ControlBottomAppBarNotifier with ChangeNotifier {
+  void minimize() {
+    notifyListeners();
+  }
+}
+
+class ControlBottomAppBar extends HookConsumerWidget {
   final void Function(bool shareLocal) onShare;
   final void Function()? onFavorite;
   final void Function()? onArchive;
@@ -64,6 +74,25 @@ class ControlBottomAppBar extends ConsumerWidget {
     final albums = ref.watch(albumProvider).where((a) => a.isRemote).toList();
     final sharedAlbums = ref.watch(sharedAlbumProvider);
     const bottomPadding = 0.20;
+    final scrollController = useDraggableScrollController();
+
+    void minimize() {
+      scrollController.animateTo(
+        bottomPadding,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
+
+    useEffect(
+      () {
+        controlBottomAppBarNotifier.addListener(minimize);
+        return () {
+          controlBottomAppBarNotifier.removeListener(minimize);
+        };
+      },
+      [],
+    );
 
     void showForceDeleteDialog(
       Function(bool) deleteCb, {
@@ -226,7 +255,7 @@ class ControlBottomAppBar extends ConsumerWidget {
         if (selectionAssetState.hasLocal)
           ControlBoxButton(
             iconData: Icons.backup_outlined,
-            label: "Upload",
+            label: "control_bottom_app_bar_upload".tr(),
             onPressed: enabled
                 ? () => showDialog(
                       context: context,
@@ -242,6 +271,7 @@ class ControlBottomAppBar extends ConsumerWidget {
     }
 
     return DraggableScrollableSheet(
+      controller: scrollController,
       initialChildSize: hasRemote ? 0.35 : bottomPadding,
       minChildSize: bottomPadding,
       maxChildSize: hasRemote ? 0.65 : bottomPadding,

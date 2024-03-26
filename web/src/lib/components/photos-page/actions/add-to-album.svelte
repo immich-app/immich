@@ -11,6 +11,7 @@
   import { createAlbum, type AlbumResponseDto } from '@immich/sdk';
   import { getMenuContext } from '../asset-select-context-menu.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
+  import { mdiImageAlbum, mdiShareVariantOutline } from '@mdi/js';
 
   export let shared = false;
   let showAlbumPicker = false;
@@ -53,7 +54,11 @@
   };
 </script>
 
-<MenuOption on:click={() => (showAlbumPicker = true)} text={shared ? 'Add to Shared Album' : 'Add to Album'} />
+<MenuOption
+  on:click={() => (showAlbumPicker = true)}
+  text={shared ? 'Add to shared album' : 'Add to album'}
+  icon={shared ? mdiShareVariantOutline : mdiImageAlbum}
+/>
 
 {#if showAlbumPicker}
   <AlbumSelectionModal

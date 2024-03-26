@@ -1,6 +1,7 @@
-import { LoginCredentialDto, LoginResponseDto, UserResponseDto } from '@app/domain';
-import { adminSignupStub, loginResponseStub, loginStub } from '@test';
+import { LoginResponseDto } from 'src/dtos/auth.dto';
+import { UserResponseDto } from 'src/dtos/user.dto';
 import request from 'supertest';
+import { adminSignupStub, loginResponseStub, loginStub } from 'test/fixtures/auth.stub';
 
 export const authApi = {
   adminSignUp: async (server: any) => {
@@ -16,14 +17,6 @@ export const authApi = {
     expect(body).toEqual(loginResponseStub.admin.response);
     expect(body).toMatchObject({ accessToken: expect.any(String) });
     expect(status).toBe(201);
-
-    return body as LoginResponseDto;
-  },
-  login: async (server: any, dto: LoginCredentialDto) => {
-    const { status, body } = await request(server).post('/auth/login').send(dto);
-
-    expect(status).toEqual(201);
-    expect(body).toMatchObject({ accessToken: expect.any(String) });
 
     return body as LoginResponseDto;
   },

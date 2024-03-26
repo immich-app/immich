@@ -1,21 +1,22 @@
 <script lang="ts">
-  import { api } from '$lib/api';
   import { photoViewer } from '$lib/stores/assets.store';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
-  import { getKey, handlePromiseError } from '$lib/utils';
+  import { downloadRequest, getAssetFileUrl, handlePromiseError } from '$lib/utils';
   import { isWebCompatibleImage } from '$lib/utils/asset-utils';
   import { getBoundingBox } from '$lib/utils/people-utils';
-  import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
-  import { type AssetResponseDto } from '@immich/sdk';
+  import { shortcuts } from '$lib/utils/shortcut';
+  import { type AssetResponseDto, AssetTypeEnum } from '@immich/sdk';
   import { useZoomImageWheel } from '@zoom-image/svelte';
   import { onDestroy, onMount } from 'svelte';
   import { fade } from 'svelte/transition';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
+  import { getAltText } from '$lib/utils/thumbnail-util';
 
   export let asset: AssetResponseDto;
+  export let preloadAssets: AssetResponseDto[] | null = null;
   export let element: HTMLDivElement | undefined = undefined;
   export let haveFadeTransition = true;
 
@@ -25,6 +26,9 @@
   let hasZoomed = false;
   let copyImageToClipboard: (source: string) => Promise<Blob>;
   let canCopyImagesToClipboard: () => boolean;
+  let imageLoaded: boolean = false;
+
+  const loadOriginalByDefault = $alwaysLoadOriginalFile && isWebCompatibleImage(asset);
 
   $: if (imgElement) {
     createZoomImageWheel(imgElement, {
@@ -39,6 +43,9 @@
     const module = await import('copy-image-clipboard');
     copyImageToClipboard = module.copyImageToClipboard;
     canCopyImagesToClipboard = module.canCopyImagesToClipboard;
+
+    imageLoaded = false;
+    await loadAssetData({ loadOriginal: loadOriginalByDefault });
   });
 
   onDestroy(() => {
@@ -51,33 +58,29 @@
       abortController?.abort();
       abortController = new AbortController();
 
-      const { data } = await api.assetApi.serveFile(
-        { id: asset.id, isThumb: false, isWeb: !loadOriginal, key: getKey() },
-        {
-          responseType: 'blob',
-          signal: abortController.signal,
-        },
-      );
+      // TODO: Use sdk once it supports signals
+      const { data } = await downloadRequest({
+        url: getAssetFileUrl(asset.id, !loadOriginal, false),
+        signal: abortController.signal,
+      });
 
-      if (!(data instanceof Blob)) {
+      assetData = URL.createObjectURL(data);
+      imageLoaded = true;
+
+      if (!preloadAssets) {
         return;
       }
 
-      assetData = URL.createObjectURL(data);
+      for (const preloadAsset of preloadAssets) {
+        if (preloadAsset.type === AssetTypeEnum.Image) {
+          await downloadRequest({
+            url: getAssetFileUrl(preloadAsset.id, !loadOriginal, false),
+            signal: abortController.signal,
+          });
+        }
+      }
     } catch {
-      // Do nothing
-    }
-  };
-
-  const handleKeypress = async (event: KeyboardEvent) => {
-    if (shouldIgnoreShortcut(event)) {
-      return;
-    }
-    if (window.getSelection()?.type === 'Range') {
-      return;
-    }
-    if ((event.metaKey || event.ctrlKey) && event.key === 'c') {
-      await doCopy();
+      imageLoaded = false;
     }
   };
 
@@ -123,24 +126,38 @@
       handlePromiseError(loadAssetData({ loadOriginal: true }));
     }
   });
+
+  const onCopyShortcut = () => {
+    if (window.getSelection()?.type === 'Range') {
+      return;
+    }
+    handlePromiseError(doCopy());
+  };
 </script>
 
-<svelte:window on:keydown={handleKeypress} on:copyImage={doCopy} on:zoomImage={doZoomImage} />
+<svelte:window
+  on:copyImage={doCopy}
+  on:zoomImage={doZoomImage}
+  use:shortcuts={[
+    { shortcut: { key: 'c', ctrl: true }, onShortcut: onCopyShortcut },
+    { shortcut: { key: 'c', meta: true }, onShortcut: onCopyShortcut },
+  ]}
+/>
 
 <div
   bind:this={element}
   transition:fade={{ duration: haveFadeTransition ? 150 : 0 }}
   class="flex h-full select-none place-content-center place-items-center"
 >
-  {#await loadAssetData({ loadOriginal: $alwaysLoadOriginalFile ? isWebCompatibleImage(asset) : false })}
+  {#if !imageLoaded}
     <LoadingSpinner />
-  {:then}
+  {:else}
     <div bind:this={imgElement} class="h-full w-full">
       <img
         bind:this={$photoViewer}
         transition:fade={{ duration: haveFadeTransition ? 150 : 0 }}
         src={assetData}
-        alt={asset.id}
+        alt={getAltText(asset)}
         class="h-full w-full object-contain"
         draggable="false"
       />
@@ -151,5 +168,5 @@
         />
       {/each}
     </div>
-  {/await}
+  {/if}
 </div>
