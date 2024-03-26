@@ -4,7 +4,7 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import type { BucketPosition, Viewport } from '$lib/stores/assets.store';
   import { handleError } from '$lib/utils/handle-error';
-  import { type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
+  import { type AssetResponseDto } from '@immich/sdk';
   import { createEventDispatcher, onDestroy } from 'svelte';
   import AssetViewer from '../../asset-viewer/asset-viewer.svelte';
   import justifiedLayout from 'justified-layout';
@@ -19,7 +19,6 @@
   export let disableAssetSelect = false;
   export let showArchiveIcon = false;
   export let viewport: Viewport;
-  export let sharedLink: SharedLinkResponseDto | undefined = undefined;
 
   let { isViewing: showAssetViewer } = assetViewingStore;
 
@@ -138,7 +137,6 @@
 <!-- Overlay Asset Viewer -->
 {#if $showAssetViewer}
   <AssetViewer
-    {sharedLink}
     asset={selectedAsset}
     on:previous={navigateAssetBackward}
     on:next={navigateAssetForward}

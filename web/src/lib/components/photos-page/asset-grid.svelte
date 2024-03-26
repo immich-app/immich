@@ -10,7 +10,7 @@
   import { deleteAssets } from '$lib/utils/actions';
   import { type ShortcutOptions, shortcuts } from '$lib/utils/shortcut';
   import { formatGroupTitle, splitBucketIntoDateGroups } from '$lib/utils/timeline-util';
-  import type { AlbumResponseDto, AssetResponseDto, SharedLinkResponseDto } from '@immich/sdk';
+  import type { AlbumResponseDto, AssetResponseDto } from '@immich/sdk';
   import { DateTime } from 'luxon';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import IntersectionObserver from '../asset-viewer/intersection-observer.svelte';
@@ -32,7 +32,6 @@
   export let isShared = false;
   export let album: AlbumResponseDto | null = null;
   export let isShowDeleteConfirmation = false;
-  export let sharedLink: SharedLinkResponseDto | undefined = undefined;
 
   $: isTrashEnabled = $featureFlags.loaded && $featureFlags.trash;
 
@@ -456,7 +455,6 @@
       <AssetViewer.default
         {withStacked}
         {assetStore}
-        {sharedLink}
         asset={$viewingAsset}
         preloadAssets={$preloadAssets}
         {isShared}
