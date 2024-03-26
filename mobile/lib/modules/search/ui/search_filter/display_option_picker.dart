@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:immich_mobile/modules/search/models/search_filter.dart';
 
 enum DisplayOption {
   notInAlbum,
@@ -8,16 +9,21 @@ enum DisplayOption {
 }
 
 class DisplayOptionPicker extends HookWidget {
-  const DisplayOptionPicker({super.key, required this.onSelect});
+  const DisplayOptionPicker({
+    super.key,
+    required this.onSelect,
+    this.filter,
+  });
 
   final Function(Map<DisplayOption, bool>) onSelect;
+  final SearchDisplayFilters? filter;
 
   @override
   Widget build(BuildContext context) {
     final options = useState<Map<DisplayOption, bool>>({
-      DisplayOption.notInAlbum: false,
-      DisplayOption.favorite: false,
-      DisplayOption.archive: false,
+      DisplayOption.notInAlbum: filter?.isNotInAlbum ?? false,
+      DisplayOption.favorite: filter?.isFavorite ?? false,
+      DisplayOption.archive: filter?.isArchive ?? false,
     });
 
     return ListView(

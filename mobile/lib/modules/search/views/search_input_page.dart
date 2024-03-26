@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/modules/search/models/search_filter.dart';
 import 'package:immich_mobile/modules/search/ui/search_filter/camera_picker.dart';
 import 'package:immich_mobile/modules/search/ui/search_filter/display_option_picker.dart';
 import 'package:immich_mobile/modules/search/ui/search_filter/filter_bottom_sheet_scaffold.dart';
@@ -19,9 +20,24 @@ class SearchInputPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final selectedPlace = useState('');
+    final filter = useState<SearchFilter>(
+      SearchFilter(
+        personIds: {},
+        location: SearchLocationFilter(),
+        camera: SearchCameraFilter(),
+        date: SearchDateFilter(),
+        display: SearchDisplayFilters(
+          isNotInAlbum: false,
+          isArchive: false,
+          isFavorite: false,
+        ),
+      ),
+    );
 
-    search({required bool isSmartSearch}) {}
+    search() {
+      debugPrint("Search this");
+      debugPrint(filter.value.toString());
+    }
 
     showPeoplePicker() {
       showFilterBottomSheet(
@@ -75,7 +91,7 @@ class SearchInputPage extends HookConsumerWidget {
         isDismissible: false,
         child: FilterBottomSheetScaffold(
           title: 'Select camera type',
-          onSearch: () {},
+          onSearch: () => search(),
           onClear: () {},
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 16.0),
@@ -138,18 +154,81 @@ class SearchInputPage extends HookConsumerWidget {
     }
 
     showDisplayOptionPicker() {
+      handleOnSelected(Map<DisplayOption, bool> value) {
+        value.forEach((key, value) {
+          switch (key) {
+            case DisplayOption.notInAlbum:
+              filter.value = filter.value.copyWith(
+                display: filter.value.display.copyWith(
+                  isNotInAlbum: value,
+                ),
+              );
+              break;
+            case DisplayOption.archive:
+              filter.value = filter.value.copyWith(
+                display: filter.value.display.copyWith(
+                  isArchive: value,
+                ),
+              );
+              break;
+            case DisplayOption.favorite:
+              filter.value = filter.value.copyWith(
+                display: filter.value.display.copyWith(
+                  isFavorite: value,
+                ),
+              );
+              break;
+          }
+        });
+      }
+
+      handleClearDisplayOption() {
+        filter.value = filter.value.copyWith(
+          display: SearchDisplayFilters(
+            isNotInAlbum: false,
+            isArchive: false,
+            isFavorite: false,
+          ),
+        );
+      }
+
       showFilterBottomSheet(
         context: context,
         child: FilterBottomSheetScaffold(
           title: 'Display options',
-          onSearch: () {},
-          onClear: () {},
+          onSearch: search,
+          onClear: handleClearDisplayOption,
           child: DisplayOptionPicker(
-            onSelect: (value) {
-              debugPrint("Selected display options: $value");
-            },
+            onSelect: handleOnSelected,
+            filter: filter.value.display,
           ),
         ),
+      );
+    }
+
+    buildDisplayOptionFilter() {
+      final display = filter.value.display;
+      final filters = <String>[];
+
+      if (!display.isArchive && !display.isFavorite && !display.isNotInAlbum) {
+        return null;
+      }
+
+      if (display.isNotInAlbum) {
+        filters.add('Not in album');
+      }
+
+      if (display.isFavorite) {
+        filters.add('Favorite');
+      }
+
+      if (display.isArchive) {
+        filters.add('Archive');
+      }
+
+      return Text(
+        filters.join(', '),
+        style: TextStyle(color: context.primaryColor),
       );
     }
 
@@ -188,7 +267,7 @@ class SearchInputPage extends HookConsumerWidget {
               child: ListView(
                 shrinkWrap: true,
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.only(left: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 children: [
                   SearchFilterChip(onTap: showPeoplePicker, label: 'People'),
                   SearchFilterChip(
@@ -204,6 +283,7 @@ class SearchInputPage extends HookConsumerWidget {
                   SearchFilterChip(
                     onTap: showDisplayOptionPicker,
                     label: 'Display Options',
+                    currentFilter: buildDisplayOptionFilter(),
                   ),
                 ],
               ),
