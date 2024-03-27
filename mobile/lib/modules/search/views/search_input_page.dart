@@ -38,6 +38,7 @@ class SearchInputPage extends HookConsumerWidget {
 
     final dateRangeCurrentFilterWidget = useState<Widget?>(null);
     final cameraCurrentFilterWidget = useState<Widget?>(null);
+    final locationCurrentFilterWidget = useState<Widget?>(null);
 
     search() {
       debugPrint("Search this");
@@ -56,7 +57,9 @@ class SearchInputPage extends HookConsumerWidget {
             onSearch: () {},
             onClear: () {},
             child: PeoplePicker(
-              onTap: (value) {},
+              onTap: (value) {
+                print("people picker value: $value");
+              },
             ),
           ),
         ),
@@ -64,14 +67,50 @@ class SearchInputPage extends HookConsumerWidget {
     }
 
     showLocationPicker() {
+      handleOnSelect(Map<String, String?> value) {
+        filter.value = filter.value.copyWith(
+          location: SearchLocationFilter(
+            country: value['country'],
+            city: value['city'],
+            state: value['state'],
+          ),
+        );
+
+        final locationText = <String>[];
+        if (value['country'] != null) {
+          locationText.add(value['country']!);
+        }
+
+        if (value['state'] != null) {
+          locationText.add(value['state']!);
+        }
+
+        if (value['city'] != null) {
+          locationText.add(value['city']!);
+        }
+
+        locationCurrentFilterWidget.value = Text(
+          locationText.join(', '),
+          style: context.textTheme.labelLarge,
+        );
+      }
+
+      handleClear() {
+        filter.value = filter.value.copyWith(
+          location: SearchLocationFilter(),
+        );
+
+        locationCurrentFilterWidget.value = null;
+      }
+
       showFilterBottomSheet(
         context: context,
         isScrollControlled: true,
         isDismissible: false,
         child: FilterBottomSheetScaffold(
           title: 'Select location',
-          onSearch: () {},
-          onClear: () {},
+          onSearch: search,
+          onClear: handleClear,
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 16.0),
             child: Container(
@@ -79,9 +118,8 @@ class SearchInputPage extends HookConsumerWidget {
                 bottom: MediaQuery.of(context).viewInsets.bottom,
               ),
               child: LocationPicker(
-                onSelected: (value) {
-                  debugPrint("camera selected: $value");
-                },
+                onSelected: handleOnSelect,
+                filter: filter.value.location,
               ),
             ),
           ),
@@ -364,6 +402,7 @@ class SearchInputPage extends HookConsumerWidget {
                     icon: Icons.location_pin,
                     onTap: showLocationPicker,
                     label: 'Location',
+                    currentFilter: locationCurrentFilterWidget.value,
                   ),
                   SearchFilterChip(
                     icon: Icons.camera_alt_rounded,
