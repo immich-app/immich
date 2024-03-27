@@ -14,7 +14,7 @@
   {#if text}
     {#if icon}
       <p class="flex gap-2">
-        <Icon path={icon} size="18" />
+        <Icon path={icon} ariaHidden={true} size="18" />
         {text}
       </p>
     {:else}
