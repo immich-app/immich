@@ -10,7 +10,7 @@
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { stackAssetsStore } from '$lib/stores/stacked-asset.store';
   import { user } from '$lib/stores/user.store';
-  import { getAssetJobMessage, isSharedLink, handlePromiseError } from '$lib/utils';
+  import { getAssetJobMessage, isSharedLink, handlePromiseError, getKey } from '$lib/utils';
   import { addAssetsToAlbum, downloadFile } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { shortcuts } from '$lib/utils/shortcut';
@@ -33,6 +33,7 @@
     type AlbumResponseDto,
     type AssetResponseDto,
     type SharedLinkResponseDto,
+    getMySharedLink,
   } from '@immich/sdk';
   import { mdiChevronLeft, mdiChevronRight, mdiImageBrokenVariant } from '@mdi/js';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
@@ -87,7 +88,7 @@
   let addToSharedAlbum = true;
   let shouldPlayMotionPhoto = false;
   let isShowProfileImageCrop = false;
-  let shouldShowDownloadButton = sharedLink ? sharedLink.allowDownload : !asset.isOffline;
+  $: shouldShowDownloadButton = sharedLink ? sharedLink.allowDownload : !asset.isOffline;
   let shouldShowDetailButton = asset.hasMetadata;
   let shouldShowShareModal = !asset.isTrashed;
   let canCopyImagesToClipboard: boolean;
@@ -192,6 +193,10 @@
   }
 
   onMount(async () => {
+    if (isSharedLink()) {
+      sharedLink = await getMySharedLink({ key: getKey() });
+    }
+
     slideshowStateUnsubscribe = slideshowState.subscribe((value) => {
       if (value === SlideshowState.PlaySlideshow) {
         slideshowHistory.reset();
