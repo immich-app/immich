@@ -3,7 +3,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
   import { memoryStore } from '$lib/stores/memory.store';
-  import { getAssetThumbnailUrl } from '$lib/utils';
+  import { getAssetThumbnailUrl, memoryLaneTitle } from '$lib/utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { ThumbnailFormat, getMemoryLane } from '@immich/sdk';
   import { mdiChevronLeft, mdiChevronRight } from '@mdi/js';
@@ -66,7 +66,7 @@
       </div>
     {/if}
     <div class="inline-block" bind:offsetWidth={innerWidth}>
-      {#each $memoryStore as memory, index (memory.years)}
+      {#each $memoryStore as memory, index (memory.yearsAgo)}
         <button
           class="memory-card relative mr-8 inline-block aspect-video h-[215px] rounded-xl"
           on:click={() => goto(`${AppRoute.MEMORY}?${QueryParameter.MEMORY_INDEX}=${index}`)}
@@ -78,8 +78,7 @@
             draggable="false"
           />
           <p class="absolute bottom-2 left-4 z-10 text-lg text-white">
-            {memory.years}
-            {memory.years ? 'years' : 'year'} since...
+            {memoryLaneTitle(memory.yearsAgo)}
           </p>
           <div
             class="absolute left-0 top-0 z-0 h-full w-full rounded-xl bg-gradient-to-t from-black/40 via-transparent to-transparent transition-all hover:bg-black/20"

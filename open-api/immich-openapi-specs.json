@@ -8430,14 +8430,14 @@
             "deprecated": true,
             "type": "string"
           },
-          "years": {
+          "yearsAgo": {
             "type": "number"
           }
         },
         "required": [
           "assets",
           "title",
-          "years"
+          "yearsAgo"
         ],
         "type": "object"
       },

@@ -176,22 +176,22 @@ export class AssetService {
     const assets = await this.assetRepository.getByDayOfYear(userIds, dto);
     const groups: Record<number, AssetEntity[]> = {};
     for (const asset of assets) {
-      const years = currentYear - asset.localDateTime.getFullYear();
-      if (!groups[years]) {
-        groups[years] = [];
+      const yearsAgo = currentYear - asset.localDateTime.getFullYear();
+      if (!groups[yearsAgo]) {
+        groups[yearsAgo] = [];
       }
-      groups[years].push(asset);
+      groups[yearsAgo].push(asset);
     }
 
     return Object.keys(groups)
       .map(Number)
       .sort()
-      .filter((years) => years > 0)
-      .map((years) => ({
-        years,
+      .filter((yearsAgo) => yearsAgo > 0)
+      .map((yearsAgo) => ({
+        yearsAgo,
         // TODO move this to clients
-        title: `${years} year${years > 1 ? 's' : ''} since...`,
-        assets: groups[years].map((asset) => mapAsset(asset, { auth })),
+        title: `${yearsAgo} year${yearsAgo > 1 ? 's' : ''} since...`,
+        assets: groups[yearsAgo].map((asset) => mapAsset(asset, { auth })),
       }));
   }
 

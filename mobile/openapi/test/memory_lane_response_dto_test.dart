@@ -26,8 +26,8 @@ void main() {
       // TODO
     });
 
-    // num years
-    test('to test the property `years`', () async {
+    // num yearsAgo
+    test('to test the property `yearsAgo`', () async {
       // TODO
     });
 
