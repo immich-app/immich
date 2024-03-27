@@ -188,6 +188,8 @@ export class AssetService {
       .sort()
       .filter((years) => years > 0)
       .map((years) => ({
+        years,
+        // TODO move this to clients
         title: `${years} year${years > 1 ? 's' : ''} since...`,
         assets: groups[years].map((asset) => mapAsset(asset, { auth })),
       }));

@@ -66,7 +66,7 @@
       </div>
     {/if}
     <div class="inline-block" bind:offsetWidth={innerWidth}>
-      {#each $memoryStore as memory, index (memory.title)}
+      {#each $memoryStore as memory, index (memory.years)}
         <button
           class="memory-card relative mr-8 inline-block aspect-video h-[215px] rounded-xl"
           on:click={() => goto(`${AppRoute.MEMORY}?${QueryParameter.MEMORY_INDEX}=${index}`)}
@@ -77,7 +77,10 @@
             alt={`Memory Lane ${getAltText(memory.assets[0])}`}
             draggable="false"
           />
-          <p class="absolute bottom-2 left-4 z-10 text-lg text-white">{memory.title}</p>
+          <p class="absolute bottom-2 left-4 z-10 text-lg text-white">
+            {memory.years}
+            {memory.years ? 'years' : 'year'} since...
+          </p>
           <div
             class="absolute left-0 top-0 z-0 h-full w-full rounded-xl bg-gradient-to-t from-black/40 via-transparent to-transparent transition-all hover:bg-black/20"
           />

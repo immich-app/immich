@@ -131,7 +131,9 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
 }
 
 export class MemoryLaneResponseDto {
+  @ApiProperty({ deprecated: true })
   title!: string;
+  years!: number;
   assets!: AssetResponseDto[];
 }
 

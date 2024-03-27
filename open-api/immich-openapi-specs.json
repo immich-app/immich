@@ -8427,12 +8427,17 @@
             "type": "array"
           },
           "title": {
+            "deprecated": true,
             "type": "string"
+          },
+          "years": {
+            "type": "number"
           }
         },
         "required": [
           "assets",
-          "title"
+          "title",
+          "years"
         ],
         "type": "object"
       },
