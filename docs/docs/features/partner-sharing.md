@@ -9,7 +9,6 @@ Partner sharing include:
 - You are at the mercy of the partners' actions (as it should be) on the asset they own. If the partner decides to delete or archive an asset belonging to them, it will not be displayed on your timeline.
 - The location where your photos were taken.
 - You can view partners' media and add them to an album. No other actions are allowed on those assets.
-- Facial data is not shared (yet)
 - The search result doesn't include partners' assets (yet)
 - You cannot favorite partners' assets (yet)
 
@@ -20,7 +19,9 @@ unless you share them with them through partner sharing from your user.
 
 ## Add Partner
 
-- Partner sharing may result in displaying duplicate assets on the main timeline. We would like to address this soon.
+:::note Duplicates
+Partner sharing may result in displaying duplicate assets on the main timeline.
+:::
 
 <img src={require('./img/partner-sharing-1.png').default} width="70%" title='Add Partner 1' />
 
@@ -38,7 +39,7 @@ Accessing the shared library can be done from the Sharing page.
 For sharing a specific set of assets, you can use the shared album feature of Immich.
 :::
 
-## Partner sharing on the main timeline
+## View partner's photo and video on your timeline
 
 to enable parter-shared photos to be displayed in the main timeline. This feature can be enabled on a per-partner basis and can be viewed and updated on both the web and mobile app.
 
