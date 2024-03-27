@@ -15,30 +15,36 @@ class MemoryLaneResponseDto {
   MemoryLaneResponseDto({
     this.assets = const [],
     required this.title,
+    required this.years,
   });
 
   List<AssetResponseDto> assets;
 
   String title;
 
+  num years;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is MemoryLaneResponseDto &&
     _deepEquality.equals(other.assets, assets) &&
-    other.title == title;
+    other.title == title &&
+    other.years == years;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (assets.hashCode) +
-    (title.hashCode);
+    (title.hashCode) +
+    (years.hashCode);
 
   @override
-  String toString() => 'MemoryLaneResponseDto[assets=$assets, title=$title]';
+  String toString() => 'MemoryLaneResponseDto[assets=$assets, title=$title, years=$years]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'assets'] = this.assets;
       json[r'title'] = this.title;
+      json[r'years'] = this.years;
     return json;
   }
 
@@ -52,6 +58,7 @@ class MemoryLaneResponseDto {
       return MemoryLaneResponseDto(
         assets: AssetResponseDto.listFromJson(json[r'assets']),
         title: mapValueOfType<String>(json, r'title')!,
+        years: num.parse('${json[r'years']}'),
       );
     }
     return null;
@@ -101,6 +108,7 @@ class MemoryLaneResponseDto {
   static const requiredKeys = <String>{
     'assets',
     'title',
+    'years',
   };
 }
 
