@@ -93,7 +93,7 @@ export class AssetRepository implements IAssetRepository {
         },
       )
       .leftJoinAndSelect('entity.exifInfo', 'exifInfo')
-      .orderBy('entity.localDateTime', 'DESC')
+      .orderBy('entity.localDateTime', 'ASC')
       .getMany();
   }
 

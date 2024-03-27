@@ -307,13 +307,17 @@ describe(AssetService.name, () => {
       jest.useRealTimers();
     });
 
-    it('should set the title correctly', async () => {
+    it('should group the assets correctly', async () => {
+      const image1 = { ...assetStub.image, localDateTime: new Date(2023, 1, 15, 0, 0, 0) };
+      const image2 = { ...assetStub.image, localDateTime: new Date(2023, 1, 15, 1, 0, 0) };
+      const image3 = { ...assetStub.image, localDateTime: new Date(2015, 1, 15) };
+
       partnerMock.getAll.mockResolvedValue([]);
-      assetMock.getByDayOfYear.mockResolvedValue([assetStub.image, assetStub.imageFrom2015]);
+      assetMock.getByDayOfYear.mockResolvedValue([image1, image2, image3]);
 
       await expect(sut.getMemoryLane(authStub.admin, { day: 15, month: 1 })).resolves.toEqual([
-        { title: '1 year since...', assets: [mapAsset(assetStub.image)] },
-        { title: '9 years since...', assets: [mapAsset(assetStub.imageFrom2015)] },
+        { yearsAgo: 1, title: '1 year since...', assets: [mapAsset(image1), mapAsset(image2)] },
+        { yearsAgo: 9, title: '9 years since...', assets: [mapAsset(image3)] },
       ]);
 
       expect(assetMock.getByDayOfYear.mock.calls).toEqual([[[authStub.admin.user.id], { day: 15, month: 1 }]]);
@@ -321,6 +325,7 @@ describe(AssetService.name, () => {
 
     it('should get memories with partners with inTimeline enabled', async () => {
       partnerMock.getAll.mockResolvedValue([partnerStub.user1ToAdmin1]);
+      assetMock.getByDayOfYear.mockResolvedValue([]);
 
       await sut.getMemoryLane(authStub.admin, { day: 15, month: 1 });
 
