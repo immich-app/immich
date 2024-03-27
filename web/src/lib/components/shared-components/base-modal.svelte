@@ -56,7 +56,7 @@
           </slot>
         </div>
 
-        <CircleIconButton on:click={() => dispatch('close')} icon={mdiClose} size={'20'} />
+        <CircleIconButton on:click={() => dispatch('close')} icon={mdiClose} size={'20'} title="Close" />
       </div>
 
       <div>

@@ -545,6 +545,7 @@
                     <!-- link -->
                     {#if album.hasSharedLink && isOwned}
                       <CircleIconButton
+                        title="Create link to share "
                         backgroundColor="#d3d3d3"
                         forceDark
                         size="20"
