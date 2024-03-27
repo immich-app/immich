@@ -328,6 +328,11 @@ class GalleryViewerPage extends HookConsumerWidget {
                     onTapDown: (_, __, ___) {
                       ref.read(showControlsProvider.notifier).toggle();
                     },
+                    onLongPressStart: (_, __, ___) {
+                      if (asset().livePhotoVideoId != null) {
+                        isPlayingMotionVideo.value = true;
+                      }
+                    },
                     imageProvider: provider,
                     heroAttributes: PhotoViewHeroAttributes(
                       tag: isFromDto

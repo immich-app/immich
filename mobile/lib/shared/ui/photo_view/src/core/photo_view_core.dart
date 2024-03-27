@@ -9,6 +9,7 @@ import 'package:immich_mobile/shared/ui/photo_view/photo_view.dart'
         PhotoViewImageDragEndCallback,
         PhotoViewImageDragStartCallback,
         PhotoViewImageDragUpdateCallback,
+        PhotoViewImageLongPressStartCallback,
         ScaleStateCycle;
 import 'package:immich_mobile/shared/ui/photo_view/src/controller/photo_view_controller.dart';
 import 'package:immich_mobile/shared/ui/photo_view/src/controller/photo_view_controller_delegate.dart';
@@ -37,6 +38,7 @@ class PhotoViewCore extends StatefulWidget {
     required this.onDragEnd,
     required this.onDragUpdate,
     required this.onScaleEnd,
+    required this.onLongPressStart,
     required this.gestureDetectorBehavior,
     required this.controller,
     required this.scaleBoundaries,
@@ -61,6 +63,7 @@ class PhotoViewCore extends StatefulWidget {
     this.onDragEnd,
     this.onDragUpdate,
     this.onScaleEnd,
+    this.onLongPressStart,
     this.gestureDetectorBehavior,
     required this.controller,
     required this.scaleBoundaries,
@@ -94,6 +97,8 @@ class PhotoViewCore extends StatefulWidget {
   final PhotoViewImageDragStartCallback? onDragStart;
   final PhotoViewImageDragEndCallback? onDragEnd;
   final PhotoViewImageDragUpdateCallback? onDragUpdate;
+
+  final PhotoViewImageLongPressStartCallback? onLongPressStart;
 
   final HitTestBehavior? gestureDetectorBehavior;
   final bool tightMode;
@@ -372,6 +377,9 @@ class PhotoViewCoreState extends State<PhotoViewCore>
                 : null,
             onTapDown: widget.onTapDown != null
                 ? (details) => widget.onTapDown!(context, details, value)
+                : null,
+            onLongPressStart: widget.onLongPressStart != null
+                ? (details) => widget.onLongPressStart!(context, details, value)
                 : null,
             child: child,
           );
