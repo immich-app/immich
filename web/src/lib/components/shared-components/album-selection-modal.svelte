@@ -5,6 +5,7 @@
   import { createEventDispatcher, onMount } from 'svelte';
   import AlbumListItem from '../asset-viewer/album-list-item.svelte';
   import BaseModal from './base-modal.svelte';
+  import { normalizeSearchString } from '$lib/utils/string-utils';
 
   let albums: AlbumResponseDto[] = [];
   let recentAlbums: AlbumResponseDto[] = [];
@@ -30,7 +31,7 @@
     filteredAlbums =
       search.length > 0 && albums.length > 0
         ? albums.filter((album) => {
-            return album.albumName.toLowerCase().includes(search.toLowerCase());
+            return normalizeSearchString(album.albumName).includes(normalizeSearchString(search));
           })
         : albums;
   }
@@ -84,7 +85,7 @@
             <Icon path={mdiPlus} size="30" />
           </div>
           <p class="">
-            New {shared ? 'Shared ' : ''}Album {#if search.length > 0}<b>{search}</b>{/if}
+            New Album {#if search.length > 0}<b>{search}</b>{/if}
           </p>
         </button>
         {#if filteredAlbums.length > 0}

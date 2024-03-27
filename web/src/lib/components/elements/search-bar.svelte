@@ -20,8 +20,8 @@
 
 <div
   class="flex items-center text-sm {roundedBottom
-    ? 'rounded-lg'
-    : 'rounded-t-lg'} bg-gray-100 p-2 dark:bg-gray-700 gap-2 place-items-center h-full"
+    ? 'rounded-2xl'
+    : 'rounded-t-lg'} bg-gray-200 p-2 dark:bg-immich-dark-gray gap-2 place-items-center h-full"
 >
   <button type="button" on:click={() => dispatch('search', { force: true })}>
     <div class="w-fit">
@@ -31,7 +31,7 @@
   <!-- svelte-ignore a11y-autofocus -->
   <input
     autofocus
-    class="w-full gap-2 bg-gray-100 dark:bg-gray-700 dark:text-white"
+    class="w-full gap-2 bg-gray-200 dark:bg-immich-dark-gray dark:text-white"
     type="text"
     {placeholder}
     bind:value={name}

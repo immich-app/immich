@@ -229,21 +229,21 @@ export class AssetStore {
   }
 
   async loadBucket(bucketDate: string, position: BucketPosition): Promise<void> {
+    const bucket = this.getBucketByDate(bucketDate);
+    if (!bucket) {
+      return;
+    }
+
+    bucket.position = position;
+
+    if (bucket.cancelToken || bucket.assets.length > 0) {
+      this.emit(false);
+      return;
+    }
+
+    bucket.cancelToken = new AbortController();
+
     try {
-      const bucket = this.getBucketByDate(bucketDate);
-      if (!bucket) {
-        return;
-      }
-
-      bucket.position = position;
-
-      if (bucket.assets.length > 0) {
-        this.emit(false);
-        return;
-      }
-
-      bucket.cancelToken = new AbortController();
-
       const assets = await getTimeBucket(
         {
           ...this.options,
@@ -278,6 +278,8 @@ export class AssetStore {
       this.emit(true);
     } catch (error) {
       handleError(error, 'Failed to load assets');
+    } finally {
+      bucket.cancelToken = null;
     }
   }
 
@@ -429,7 +431,6 @@ export class AssetStore {
 
   removeAssets(ids: string[]) {
     const idSet = new Set(ids);
-    this.assets = this.assets.filter((asset) => !idSet.has(asset.id));
 
     // Iterate in reverse to allow array splicing.
     for (let index = this.buckets.length - 1; index >= 0; index--) {
@@ -441,16 +442,13 @@ export class AssetStore {
         }
 
         bucket.assets.splice(index_, 1);
-        bucket.bucketCount = bucket.assets.length;
-        if (bucket.bucketCount === 0) {
+        if (bucket.assets.length === 0) {
           this.buckets.splice(index, 1);
         }
-
-        delete this.assetToBucket[asset.id];
       }
     }
 
-    this.emit(false);
+    this.emit(true);
   }
 
   async getPreviousAssetId(assetId: string): Promise<string | null> {
@@ -521,4 +519,4 @@ export class AssetStore {
   }
 }
 
-export const isSelectAllCancelled = writable(false);
+export const isSelectingAllAssets = writable(false);

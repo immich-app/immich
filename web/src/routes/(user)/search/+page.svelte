@@ -37,6 +37,8 @@
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { parseUtcDate } from '$lib/utils/date-time';
+  import { featureFlags } from '$lib/stores/server-config.store';
+  import { handleError } from '$lib/utils/handle-error';
 
   const MAX_ASSET_COUNT = 5000;
   let { isViewing: showAssetViewer } = assetViewingStore;
@@ -98,11 +100,12 @@
   type SearchTerms = MetadataSearchDto & Pick<SmartSearchDto, 'query'>;
 
   $: searchQuery = $page.url.searchParams.get(QueryParameter.QUERY);
-  $: terms = ((): SearchTerms => {
-    return searchQuery ? JSON.parse(searchQuery) : {};
-  })();
+  let terms: SearchTerms;
+  $: terms = searchQuery ? JSON.parse(searchQuery) : {};
 
-  $: terms, handlePromiseError(onSearchQueryUpdate());
+  $: if (terms && $featureFlags.loaded) {
+    handlePromiseError(onSearchQueryUpdate());
+  }
 
   async function onSearchQueryUpdate() {
     nextPage = 1;
@@ -124,18 +127,23 @@
       ...terms,
     };
 
-    const { albums, assets } =
-      'query' in searchDto
-        ? await searchSmart({ smartSearchDto: searchDto })
-        : await searchMetadata({ metadataSearchDto: searchDto });
+    try {
+      const { albums, assets } =
+        'query' in searchDto && $featureFlags.smartSearch
+          ? await searchSmart({ smartSearchDto: searchDto })
+          : await searchMetadata({ metadataSearchDto: searchDto });
 
-    searchResultAlbums.push(...albums.items);
-    searchResultAssets.push(...assets.items);
-    searchResultAlbums = searchResultAlbums;
-    searchResultAssets = searchResultAssets;
+      searchResultAlbums.push(...albums.items);
+      searchResultAssets.push(...assets.items);
+      searchResultAlbums = searchResultAlbums;
+      searchResultAssets = searchResultAssets;
 
-    nextPage = assets.nextPage ? Number(assets.nextPage) : null;
-    isLoading = false;
+      nextPage = assets.nextPage ? Number(assets.nextPage) : null;
+    } catch (error) {
+      handleError(error, 'Loading search results failed');
+    } finally {
+      isLoading = false;
+    }
   };
 
   function getHumanReadableDate(dateString: string) {
@@ -201,18 +209,18 @@
       <AssetSelectControlBar assets={selectedAssets} clearSelect={() => (selectedAssets = new Set())}>
         <CreateSharedLink />
         <CircleIconButton title="Select all" icon={mdiSelectAll} on:click={handleSelectAll} />
-        <AssetSelectContextMenu icon={mdiPlus} title="Add">
+        <AssetSelectContextMenu icon={mdiPlus} title="Add to...">
           <AddToAlbum />
           <AddToAlbum shared />
         </AssetSelectContextMenu>
-        <DeleteAssets {onAssetDelete} />
+        <FavoriteAction removeFavorite={isAllFavorite} onFavorite={triggerAssetUpdate} />
 
         <AssetSelectContextMenu icon={mdiDotsVertical} title="Add">
           <DownloadAction menuItem />
-          <FavoriteAction menuItem removeFavorite={isAllFavorite} onFavorite={triggerAssetUpdate} />
-          <ArchiveAction menuItem unarchive={isAllArchived} onArchive={triggerAssetUpdate} />
           <ChangeDate menuItem />
           <ChangeLocation menuItem />
+          <ArchiveAction menuItem unarchive={isAllArchived} onArchive={triggerAssetUpdate} />
+          <DeleteAssets menuItem {onAssetDelete} />
         </AssetSelectContextMenu>
       </AssetSelectControlBar>
     </div>
