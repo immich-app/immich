@@ -13,7 +13,7 @@ export class APIKeyService {
   ) {}
 
   async create(auth: AuthDto, dto: APIKeyCreateDto): Promise<APIKeyCreateResponseDto> {
-    const secret = this.crypto.randomBytes(32).toString('base64').replaceAll(/\W/g, '');
+    const secret = this.crypto.newPassword(32);
     const entity = await this.repository.create({
       key: this.crypto.hashSha256(secret),
       name: dto.name || 'API Key',

@@ -4,7 +4,8 @@ import { beforeAll, describe, expect, it } from 'vitest';
 describe(`immich server-info`, () => {
   beforeAll(async () => {
     await utils.resetDatabase();
-    await utils.cliLogin();
+    const admin = await utils.adminSetup();
+    await utils.cliLogin(admin.accessToken);
   });
 
   it('should return the server info', async () => {

@@ -1,13 +1,12 @@
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import sanitize from 'sanitize-filename';
+import { SALT_ROUNDS } from 'src/constants';
 import { UserResponseDto } from 'src/dtos/user.dto';
 import { LibraryType } from 'src/entities/library.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { ILibraryRepository } from 'src/interfaces/library.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
-
-const SALT_ROUNDS = 10;
 
 let instance: UserCore | null;
 

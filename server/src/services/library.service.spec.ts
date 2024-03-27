@@ -127,10 +127,10 @@ describe(LibraryService.name, () => {
     });
   });
 
-  describe('validateConfig', () => {
+  describe('onValidateConfig', () => {
     it('should allow a valid cron expression', () => {
       expect(() =>
-        sut.validateConfig({
+        sut.onValidateConfig({
           newConfig: { library: { scan: { cronExpression: '0 0 * * *' } } } as SystemConfig,
           oldConfig: {} as SystemConfig,
         }),
@@ -139,7 +139,7 @@ describe(LibraryService.name, () => {
 
     it('should fail for an invalid cron expression', () => {
       expect(() =>
-        sut.validateConfig({
+        sut.onValidateConfig({
           newConfig: { library: { scan: { cronExpression: 'foo' } } } as SystemConfig,
           oldConfig: {} as SystemConfig,
         }),
