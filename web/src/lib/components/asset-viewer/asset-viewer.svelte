@@ -1,7 +1,6 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { AppRoute, AssetAction, ProjectionType } from '$lib/constants';
+  import { AssetAction, ProjectionType } from '$lib/constants';
   import { updateNumberOfComments } from '$lib/stores/activity.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import type { AssetStore } from '$lib/stores/assets.store';
@@ -11,7 +10,7 @@
   import { stackAssetsStore } from '$lib/stores/stacked-asset.store';
   import { user } from '$lib/stores/user.store';
   import { getAssetJobMessage, isSharedLink, handlePromiseError } from '$lib/utils';
-  import { addAssetsToAlbum, downloadFile } from '$lib/utils/asset-utils';
+  import { addAssetsToAlbum, addAssetsToNewAlbum, downloadFile } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { shortcuts } from '$lib/utils/shortcut';
   import { SlideshowHistory } from '$lib/utils/slideshow-history';
@@ -20,7 +19,6 @@
     AssetTypeEnum,
     ReactionType,
     createActivity,
-    createAlbum,
     deleteActivity,
     deleteAssets,
     getActivities,
@@ -390,8 +388,7 @@
   const handleAddToNewAlbum = async (albumName: string) => {
     isShowAlbumPicker = false;
 
-    const album = await createAlbum({ createAlbumDto: { albumName, assetIds: [asset.id] } });
-    await goto(`${AppRoute.ALBUMS}/${album.id}`);
+    await addAssetsToNewAlbum(albumName, [asset.id]);
   };
 
   const handleAddToAlbum = async (album: AlbumResponseDto) => {
