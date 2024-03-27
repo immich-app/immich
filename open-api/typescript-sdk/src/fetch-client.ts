@@ -273,6 +273,7 @@ export type MapMarkerResponseDto = {
 export type MemoryLaneResponseDto = {
     assets: AssetResponseDto[];
     title: string;
+    yearsAgo: number;
 };
 export type UpdateStackParentDto = {
     newParentId: string;

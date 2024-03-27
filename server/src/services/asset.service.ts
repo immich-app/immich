@@ -174,20 +174,25 @@ export class AssetService {
     userIds.push(...partnersIds);
 
     const assets = await this.assetRepository.getByDayOfYear(userIds, dto);
+    const groups: Record<number, AssetEntity[]> = {};
+    for (const asset of assets) {
+      const yearsAgo = currentYear - asset.localDateTime.getFullYear();
+      if (!groups[yearsAgo]) {
+        groups[yearsAgo] = [];
+      }
+      groups[yearsAgo].push(asset);
+    }
 
-    return _.chain(assets)
-      .filter((asset) => asset.localDateTime.getFullYear() < currentYear)
-      .map((asset) => {
-        const years = currentYear - asset.localDateTime.getFullYear();
-
-        return {
-          title: `${years} year${years > 1 ? 's' : ''} since...`,
-          asset: mapAsset(asset, { auth }),
-        };
-      })
-      .groupBy((asset) => asset.title)
-      .map((items, title) => ({ title, assets: items.map(({ asset }) => asset) }))
-      .value();
+    return Object.keys(groups)
+      .map(Number)
+      .sort()
+      .filter((yearsAgo) => yearsAgo > 0)
+      .map((yearsAgo) => ({
+        yearsAgo,
+        // TODO move this to clients
+        title: `${yearsAgo} year${yearsAgo > 1 ? 's' : ''} since...`,
+        assets: groups[yearsAgo].map((asset) => mapAsset(asset, { auth })),
+      }));
   }
 
   private async timeBucketChecks(auth: AuthDto, dto: TimeBucketDto) {

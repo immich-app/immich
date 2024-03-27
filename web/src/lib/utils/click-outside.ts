@@ -43,12 +43,12 @@ export function clickOutside(node: HTMLElement, options: Options = {}): ActionRe
   };
 
   document.addEventListener('click', handleClick, true);
-  document.addEventListener('keydown', handleKey, false);
+  node.addEventListener('keydown', handleKey, false);
 
   return {
     destroy() {
       document.removeEventListener('click', handleClick, true);
-      document.removeEventListener('keydown', handleKey, false);
+      node.removeEventListener('keydown', handleKey, false);
     },
   };
 }
