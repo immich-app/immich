@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.98.2
+ * 1.100.0
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -273,6 +273,7 @@ export type MapMarkerResponseDto = {
 export type MemoryLaneResponseDto = {
     assets: AssetResponseDto[];
     title: string;
+    yearsAgo: number;
 };
 export type UpdateStackParentDto = {
     newParentId: string;
@@ -2201,6 +2202,14 @@ export function search({ clip, motion, page, q, query, recent, size, smart, $typ
         "type": $type,
         withArchived
     }))}`, {
+        ...opts
+    }));
+}
+export function getAssetsByCity(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetResponseDto[];
+    }>("/search/cities", {
         ...opts
     }));
 }

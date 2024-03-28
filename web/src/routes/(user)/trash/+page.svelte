@@ -76,13 +76,13 @@
       <LinkButton on:click={handleRestoreTrash}>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiHistory} size="18" />
-          Restore All
+          Restore all
         </div>
       </LinkButton>
       <LinkButton on:click={() => (isShowEmptyConfirmation = true)}>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiDeleteOutline} size="18" />
-          Empty Trash
+          Empty trash
         </div>
       </LinkButton>
     </div>

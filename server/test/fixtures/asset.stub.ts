@@ -1,8 +1,10 @@
-import { AssetEntity, AssetStackEntity, AssetType, ExifEntity } from '@app/infra/entities';
-import { authStub } from './auth.stub';
-import { fileStub } from './file.stub';
-import { libraryStub } from './library.stub';
-import { userStub } from './user.stub';
+import { AssetStackEntity } from 'src/entities/asset-stack.entity';
+import { AssetEntity, AssetType } from 'src/entities/asset.entity';
+import { ExifEntity } from 'src/entities/exif.entity';
+import { authStub } from 'test/fixtures/auth.stub';
+import { fileStub } from 'test/fixtures/file.stub';
+import { libraryStub } from 'test/fixtures/library.stub';
+import { userStub } from 'test/fixtures/user.stub';
 
 export const assetStackStub = (stackId: string, assets: AssetEntity[]): AssetStackEntity => {
   return {

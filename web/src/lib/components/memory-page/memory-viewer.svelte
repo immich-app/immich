@@ -8,7 +8,7 @@
   import { AppRoute, QueryParameter } from '$lib/constants';
   import type { Viewport } from '$lib/stores/assets.store';
   import { memoryStore } from '$lib/stores/memory.store';
-  import { getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
+  import { getAssetThumbnailUrl, handlePromiseError, memoryLaneTitle } from '$lib/utils';
   import { shortcuts } from '$lib/utils/shortcut';
   import { fromLocalDateTime } from '$lib/utils/timeline-util';
   import { ThumbnailFormat, getMemoryLane } from '@immich/sdk';
@@ -102,7 +102,7 @@
     <ControlAppBar on:close={() => goto(AppRoute.PHOTOS)} forceDark>
       <svelte:fragment slot="leading">
         <p class="text-lg">
-          {currentMemory.title}
+          {memoryLaneTitle(currentMemory.yearsAgo)}
         </p>
       </svelte:fragment>
 
@@ -181,7 +181,7 @@
             {#if previousMemory}
               <div class="absolute bottom-4 right-4 text-left text-white">
                 <p class="text-xs font-semibold text-gray-200">PREVIOUS</p>
-                <p class="text-xl">{previousMemory.title}</p>
+                <p class="text-xl">{memoryLaneTitle(previousMemory.yearsAgo)}</p>
               </div>
             {/if}
           </button>
@@ -254,7 +254,7 @@
             {#if nextMemory}
               <div class="absolute bottom-4 left-4 text-left text-white">
                 <p class="text-xs font-semibold text-gray-200">UP NEXT</p>
-                <p class="text-xl">{nextMemory.title}</p>
+                <p class="text-xl">{memoryLaneTitle(nextMemory.yearsAgo)}</p>
               </div>
             {/if}
           </button>

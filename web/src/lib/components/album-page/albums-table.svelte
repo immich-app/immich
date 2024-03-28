@@ -8,6 +8,7 @@
   import type { Sort } from '$lib/components/album-page/albums-list.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { dateFormats } from '$lib/constants';
+  import { user } from '$lib/stores/user.store';
 
   export let albumsFiltered: AlbumResponseDto[];
   export let sortByOptions: Sort[];
@@ -66,18 +67,20 @@
           >
         </a>
         <td class="text-md hidden text-ellipsis text-center 2xl:block xl:w-[15%] 2xl:w-[12%]">
-          <button
-            on:click|stopPropagation={() => onAlbumToEdit(album)}
-            class="rounded-full z-1 bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
-          >
-            <Icon path={mdiPencilOutline} size="16" />
-          </button>
-          <button
-            on:click|stopPropagation={() => onChooseAlbumToDelete(album)}
-            class="rounded-full z-1 bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
-          >
-            <Icon path={mdiTrashCanOutline} size="16" />
-          </button>
+          {#if $user.id === album.ownerId}
+            <button
+              on:click|stopPropagation={() => onAlbumToEdit(album)}
+              class="rounded-full z-1 bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
+            >
+              <Icon path={mdiPencilOutline} size="16" />
+            </button>
+            <button
+              on:click|stopPropagation={() => onChooseAlbumToDelete(album)}
+              class="rounded-full z-1 bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
+            >
+              <Icon path={mdiTrashCanOutline} size="16" />
+            </button>
+          {/if}
         </td>
       </tr>
     {/each}
