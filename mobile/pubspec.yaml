@@ -52,7 +52,7 @@ dependencies:
   isar_flutter_libs: ^3.1.0+1
   permission_handler: ^11.2.0
   device_info_plus: ^9.1.1
-  connectivity_plus: ^5.0.2
+  connectivity_plus: ^6.0.0
   wakelock_plus: ^1.1.4
   flutter_local_notifications: ^16.3.2
   timezone: ^0.9.2
