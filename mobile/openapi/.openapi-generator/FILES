@@ -169,6 +169,7 @@ doc/TagTypeEnum.md
 doc/ThumbnailFormat.md
 doc/TimeBucketResponseDto.md
 doc/TimeBucketSize.md
+doc/TimelineApi.md
 doc/ToneMapping.md
 doc/TranscodeHWAccel.md
 doc/TranscodePolicy.md
@@ -211,6 +212,7 @@ lib/api/server_info_api.dart
 lib/api/shared_link_api.dart
 lib/api/system_config_api.dart
 lib/api/tag_api.dart
+lib/api/timeline_api.dart
 lib/api/trash_api.dart
 lib/api/user_api.dart
 lib/api_client.dart
@@ -556,6 +558,7 @@ test/tag_type_enum_test.dart
 test/thumbnail_format_test.dart
 test/time_bucket_response_dto_test.dart
 test/time_bucket_size_test.dart
+test/timeline_api_test.dart
 test/tone_mapping_test.dart
 test/transcode_hw_accel_test.dart
 test/transcode_policy_test.dart
