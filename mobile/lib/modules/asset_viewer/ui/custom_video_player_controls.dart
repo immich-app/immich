@@ -23,8 +23,9 @@ class CustomVideoPlayerControls extends HookConsumerWidget {
       hideTimerDuration,
       () {
         final state = ref.read(videoPlaybackValueProvider).state;
-        // Do not hide on paused
-        if (state != VideoPlaybackState.paused) {
+        // Do not hide on paused or initializing
+        if (state != VideoPlaybackState.paused &&
+            state != VideoPlaybackState.initializing) {
           ref.read(showControlsProvider.notifier).show = false;
         }
       },

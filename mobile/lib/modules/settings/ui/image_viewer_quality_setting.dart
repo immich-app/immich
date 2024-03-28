@@ -16,7 +16,7 @@ class ImageViewerQualitySetting extends HookWidget {
   Widget build(BuildContext context) {
     final isPreview = useAppSettingsState(AppSettingsEnum.loadPreview);
     final isOriginal = useAppSettingsState(AppSettingsEnum.loadOriginal);
-
+    final autoPlayVideos = useAppSettingsState(AppSettingsEnum.autoPlayVideos);
     final viewerSettings = [
       ListTile(
         title: Text(
@@ -33,6 +33,11 @@ class ImageViewerQualitySetting extends HookWidget {
         valueNotifier: isOriginal,
         title: "setting_image_viewer_original_title".tr(),
         subtitle: "setting_image_viewer_original_subtitle".tr(),
+      ),
+      SettingsSwitchListTile(
+        valueNotifier: autoPlayVideos,
+        title: "setting_image_viewer_auto_play_videos_title".tr(),
+        subtitle: "setting_image_viewer_auto_play_videos_subtitle".tr(),
       ),
     ];
 

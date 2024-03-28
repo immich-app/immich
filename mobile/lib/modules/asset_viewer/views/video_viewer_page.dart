@@ -20,6 +20,7 @@ class VideoViewerPage extends HookConsumerWidget {
   final Duration hideControlsTimer;
   final bool showControls;
   final bool showDownloadingIndicator;
+  final bool autoPlayVideo;
 
   const VideoViewerPage({
     super.key,
@@ -29,6 +30,7 @@ class VideoViewerPage extends HookConsumerWidget {
     this.showControls = true,
     this.hideControlsTimer = const Duration(seconds: 5),
     this.showDownloadingIndicator = true,
+    this.autoPlayVideo = true,
   });
 
   @override
@@ -102,7 +104,8 @@ class VideoViewerPage extends HookConsumerWidget {
 
         // Hide the controls
         // Done in a microtask to avoid setting the state while the is building
-        if (!isMotionVideo) {
+        // Don't hide the controls if autoplay is disabled
+        if (!isMotionVideo && autoPlayVideo) {
           Future.microtask(() {
             ref.read(showControlsProvider.notifier).show = false;
           });
@@ -156,6 +159,7 @@ class VideoViewerPage extends HookConsumerWidget {
                   hideControlsTimer: hideControlsTimer,
                   showControls: showControls,
                   showDownloadingIndicator: showDownloadingIndicator,
+                  autoPlayVideo: autoPlayVideo,
                 ),
               ),
           ],
