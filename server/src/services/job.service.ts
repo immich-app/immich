@@ -1,10 +1,11 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { snakeCase } from 'lodash';
 import { FeatureFlag, SystemConfigCore } from 'src/cores/system-config.core';
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AllJobStatusResponseDto, JobCommandDto, JobStatusDto } from 'src/dtos/job.dto';
 import { AssetType } from 'src/entities/asset.entity';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { ClientEvent, ICommunicationRepository } from 'src/interfaces/communication.interface';
+import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
 import {
   ConcurrentQueueName,
   IJobRepository,
@@ -16,6 +17,7 @@ import {
   QueueCleanType,
   QueueName,
 } from 'src/interfaces/job.interface';
+import { IMetricRepository } from 'src/interfaces/metric.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 import { ImmichLogger } from 'src/utils/logger';
@@ -27,10 +29,11 @@ export class JobService {
 
   constructor(
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
-    @Inject(ICommunicationRepository) private communicationRepository: ICommunicationRepository,
+    @Inject(IEventRepository) private eventRepository: IEventRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IPersonRepository) private personRepository: IPersonRepository,
+    @Inject(IMetricRepository) private metricRepository: IMetricRepository,
   ) {
     this.configCore = SystemConfigCore.create(configRepository);
   }
@@ -91,6 +94,8 @@ export class JobService {
     if (isActive) {
       throw new BadRequestException(`Job is already running`);
     }
+
+    this.metricRepository.jobs.addToCounter(`immich.queues.${snakeCase(name)}.started`, 1);
 
     switch (name) {
       case QueueName.VIDEO_CONVERSION: {
@@ -156,14 +161,21 @@ export class JobService {
       this.jobRepository.addHandler(queueName, concurrency, async (item: JobItem): Promise<void> => {
         const { name, data } = item;
 
+        const queueMetric = `immich.queues.${snakeCase(queueName)}.active`;
+        this.metricRepository.jobs.addToGauge(queueMetric, 1);
+
         try {
           const handler = jobHandlers[name];
           const status = await handler(data);
+          const jobMetric = `immich.jobs.${name.replaceAll('-', '_')}.${status}`;
+          this.metricRepository.jobs.addToCounter(jobMetric, 1);
           if (status === JobStatus.SUCCESS || status == JobStatus.SKIPPED) {
             await this.onDone(item);
           }
         } catch (error: Error | any) {
           this.logger.error(`Unable to run job handler (${queueName}/${name}): ${error}`, error?.stack, data);
+        } finally {
+          this.metricRepository.jobs.addToGauge(queueMetric, -1);
         }
       });
     }
@@ -219,7 +231,7 @@ export class JobService {
         if (item.data.source === 'sidecar-write') {
           const [asset] = await this.assetRepository.getByIdsWithAllRelations([item.data.id]);
           if (asset) {
-            this.communicationRepository.send(ClientEvent.ASSET_UPDATE, asset.ownerId, mapAsset(asset));
+            this.eventRepository.clientSend(ClientEvent.ASSET_UPDATE, asset.ownerId, mapAsset(asset));
           }
         }
         await this.jobRepository.queue({ name: JobName.LINK_LIVE_PHOTOS, data: item.data });
@@ -242,7 +254,7 @@ export class JobService {
         const { id } = item.data;
         const person = await this.personRepository.getById(id);
         if (person) {
-          this.communicationRepository.send(ClientEvent.PERSON_THUMBNAIL, person.ownerId, person.id);
+          this.eventRepository.clientSend(ClientEvent.PERSON_THUMBNAIL, person.ownerId, person.id);
         }
         break;
       }
@@ -279,13 +291,13 @@ export class JobService {
 
         // Only live-photo motion part will be marked as not visible immediately on upload. Skip notifying clients
         if (asset && asset.isVisible) {
-          this.communicationRepository.send(ClientEvent.UPLOAD_SUCCESS, asset.ownerId, mapAsset(asset));
+          this.eventRepository.clientSend(ClientEvent.UPLOAD_SUCCESS, asset.ownerId, mapAsset(asset));
         }
         break;
       }
 
       case JobName.USER_DELETION: {
-        this.communicationRepository.broadcast(ClientEvent.USER_DELETE, item.data.id);
+        this.eventRepository.clientBroadcast(ClientEvent.USER_DELETE, item.data.id);
         break;
       }
     }

@@ -9,12 +9,12 @@
 </p>
 
 <p align="center">
-<img src="design/immich-logo-stacked-light.svg" width="300" title="Login mit eigener URL">
+<img src="../design/immich-logo-stacked-light.svg" width="300" title="Login mit eigener URL">
 </p>
 <h3 align="center">Immich - Hoch performante, selbst gehostete Backup-Lösung für Fotos und Videos</h3>
 <br/>
 <a href="https://immich.app">
-<img src="design/immich-screenshots.png" title="Haupt-Screenshot">
+<img src="../design/immich-screenshots.png" title="Haupt-Screenshot">
 </a>
 <br/>
 <p align="center">

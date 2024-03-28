@@ -7,7 +7,7 @@ import path, { basename, parse } from 'node:path';
 import picomatch from 'picomatch';
 import { StorageCore } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
-import { OnEventInternal } from 'src/decorators';
+import { OnServerEvent } from 'src/decorators';
 import {
   CreateLibraryDto,
   LibraryResponseDto,
@@ -23,9 +23,9 @@ import {
 import { AssetType } from 'src/entities/asset.entity';
 import { LibraryEntity, LibraryType } from 'src/entities/library.entity';
 import { IAssetRepository, WithProperty } from 'src/interfaces/asset.interface';
-import { InternalEvent, InternalEventMap } from 'src/interfaces/communication.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
+import { ServerAsyncEvent, ServerAsyncEventMap } from 'src/interfaces/event.interface';
 import {
   IBaseJob,
   IEntityJob,
@@ -105,8 +105,8 @@ export class LibraryService extends EventEmitter {
     });
   }
 
-  @OnEventInternal(InternalEvent.VALIDATE_CONFIG)
-  validateConfig({ newConfig }: InternalEventMap[InternalEvent.VALIDATE_CONFIG]) {
+  @OnServerEvent(ServerAsyncEvent.CONFIG_VALIDATE)
+  onValidateConfig({ newConfig }: ServerAsyncEventMap[ServerAsyncEvent.CONFIG_VALIDATE]) {
     const { scan } = newConfig.library;
     if (!validateCronExpression(scan.cronExpression)) {
       throw new Error(`Invalid cron expression ${scan.cronExpression}`);
