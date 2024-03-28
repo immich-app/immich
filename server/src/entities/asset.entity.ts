@@ -24,6 +24,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { AssetDuplicateEntity } from './asset-duplicate.entity';
 
 export const ASSET_CHECKSUM_CONSTRAINT = 'UQ_assets_owner_library_checksum';
 
@@ -168,6 +169,13 @@ export class AssetEntity {
 
   @OneToOne(() => AssetJobStatusEntity, (jobStatus) => jobStatus.asset, { nullable: true })
   jobStatus?: AssetJobStatusEntity;
+
+  @Column({ nullable: true })
+  duplicateId?: string | null;
+
+  @ManyToOne(() => AssetDuplicateEntity, { nullable: true, onDelete: 'SET NULL', onUpdate: 'CASCADE' })
+  @JoinColumn({ name: 'duplicateId' })
+  duplicates?: AssetDuplicateEntity | null;
 }
 
 export enum AssetType {

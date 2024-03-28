@@ -17,16 +17,29 @@ import {
 } from 'src/dtos/search.dto';
 import { AssetOrder } from 'src/entities/album.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { IAssetRepository } from 'src/interfaces/asset.interface';
+import { IAssetDuplicateRepository } from 'src/interfaces/asset-duplicate.interface';
+import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
+import { ICryptoRepository } from 'src/interfaces/crypto.interface';
+import {
+  IBaseJob,
+  IEntityJob,
+  IJobRepository,
+  JOBS_ASSET_PAGINATION_SIZE,
+  JobName,
+  JobStatus,
+} from 'src/interfaces/job.interface';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
 import { IMetadataRepository } from 'src/interfaces/metadata.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { ISearchRepository, SearchExploreItem, SearchStrategy } from 'src/interfaces/search.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { ImmichLogger } from 'src/utils/logger';
+import { usePagination } from 'src/utils/pagination';
 
 @Injectable()
 export class SearchService {
+  private logger = new ImmichLogger(SearchService.name);
   private configCore: SystemConfigCore;
 
   constructor(
@@ -37,6 +50,9 @@ export class SearchService {
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IPartnerRepository) private partnerRepository: IPartnerRepository,
     @Inject(IMetadataRepository) private metadataRepository: IMetadataRepository,
+    @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
+    @Inject(IAssetDuplicateRepository) private assetDuplicateRepository: IAssetDuplicateRepository,
+    @Inject(IJobRepository) private jobRepository: IJobRepository,
   ) {
     this.configCore = SystemConfigCore.create(configRepository);
   }
@@ -137,6 +153,81 @@ export class SearchService {
         return this.metadataRepository.getCameraModels(auth.user.id, dto.make);
       }
     }
+  }
+
+  async handleQueueSearchDuplicates({ force }: IBaseJob): Promise<JobStatus> {
+    const { machineLearning } = await this.configCore.getConfig();
+    if (!machineLearning.enabled || !machineLearning.clip.enabled) {
+      return JobStatus.SKIPPED;
+    }
+
+    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
+      return force
+        ? this.assetRepository.getAll(pagination, { isVisible: true })
+        : this.assetRepository.getWithout(pagination, WithoutProperty.DUPLICATE);
+    });
+
+    for await (const assets of assetPagination) {
+      await this.jobRepository.queueAll(
+        assets.map((asset) => ({ name: JobName.DUPLICATE_DETECTION, data: { id: asset.id } })),
+      );
+    }
+
+    return JobStatus.SUCCESS;
+  }
+
+  async handleSearchDuplicates({ id }: IEntityJob): Promise<JobStatus> {
+    const { machineLearning } = await this.configCore.getConfig();
+
+    const asset = await this.assetRepository.getById(id);
+    if (!asset) {
+      this.logger.error(`Asset ${id} not found`);
+      return JobStatus.FAILED;
+    }
+
+    if (!asset.isVisible) {
+      this.logger.debug(`Asset ${id} is not visible, skipping`);
+      await this.assetRepository.upsertJobStatus({
+        assetId: asset.id,
+        duplicatesDetectedAt: new Date(),
+      });
+      return JobStatus.SKIPPED;
+    }
+
+    if (asset.duplicateId) {
+      this.logger.debug(`Asset ${id} already has a duplicateId, skipping`);
+      return JobStatus.SKIPPED;
+    }
+
+    if (!asset.resizePath) {
+      this.logger.debug(`Asset ${id} is missing preview image`);
+      return JobStatus.FAILED;
+    }
+
+    const duplicateAssets = await this.searchRepository.searchDuplicates({
+      assetId: asset.id,
+      maxDistance: machineLearning.clip.duplicateThreshold,
+      userIds: [asset.ownerId],
+    });
+
+    if (duplicateAssets.length > 0) {
+      this.logger.debug(`Found ${duplicateAssets.length} duplicates for asset ${asset.id}`);
+
+      const duplicateIds = duplicateAssets.map((duplicate) => duplicate.duplicateId).filter(Boolean);
+      const duplicateId = duplicateIds[0] || this.cryptoRepository.randomUUID();
+
+      const duplicateAssetIds = duplicateAssets.map((duplicate) => duplicate.assetId);
+      duplicateAssetIds.push(asset.id);
+
+      await this.assetDuplicateRepository.upsert(duplicateId, duplicateAssetIds, duplicateIds);
+    }
+
+    await this.assetRepository.upsertJobStatus({
+      assetId: asset.id,
+      duplicatesDetectedAt: new Date(),
+    });
+
+    return JobStatus.SUCCESS;
   }
 
   // TODO: remove after implementing new search filters

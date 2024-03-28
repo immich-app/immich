@@ -16,6 +16,11 @@ void main() {
   // final instance = CLIPConfig();
 
   group('test CLIPConfig', () {
+    // double duplicateThreshold
+    test('to test the property `duplicateThreshold`', () async {
+      // TODO
+    });
+
     // bool enabled
     test('to test the property `enabled`', () async {
       // TODO

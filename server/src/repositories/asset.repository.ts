@@ -347,6 +347,18 @@ export class AssetRepository implements IAssetRepository {
         break;
       }
 
+      case WithoutProperty.DUPLICATE: {
+        where = {
+          resizePath: Not(IsNull()),
+          isVisible: true,
+          smartSearch: true,
+          jobStatus: {
+            duplicatesDetectedAt: IsNull(),
+          },
+        };
+        break;
+      }
+
       case WithoutProperty.OBJECT_TAGS: {
         relations = {
           smartInfo: true,

@@ -39,7 +39,7 @@ export enum SystemConfigKey {
   JOB_METADATA_EXTRACTION_CONCURRENCY = 'job.metadataExtraction.concurrency',
   JOB_VIDEO_CONVERSION_CONCURRENCY = 'job.videoConversion.concurrency',
   JOB_FACE_DETECTION_CONCURRENCY = 'job.faceDetection.concurrency',
-  JOB_CLIP_ENCODING_CONCURRENCY = 'job.smartSearch.concurrency',
+  JOB_SMART_SEARCH_CONCURRENCY = 'job.smartSearch.concurrency',
   JOB_BACKGROUND_TASK_CONCURRENCY = 'job.backgroundTask.concurrency',
   JOB_STORAGE_TEMPLATE_MIGRATION_CONCURRENCY = 'job.storageTemplateMigration.concurrency',
   JOB_SEARCH_CONCURRENCY = 'job.search.concurrency',
@@ -208,6 +208,7 @@ export interface SystemConfig {
     clip: {
       enabled: boolean;
       modelName: string;
+      duplicateThreshold: number;
     };
     facialRecognition: {
       enabled: boolean;

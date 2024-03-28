@@ -9,6 +9,7 @@ import 'package:openapi/api.dart';
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **backgroundTask** | [**JobStatusDto**](JobStatusDto.md) |  | 
+**duplicateDetection** | [**JobStatusDto**](JobStatusDto.md) |  | 
 **faceDetection** | [**JobStatusDto**](JobStatusDto.md) |  | 
 **facialRecognition** | [**JobStatusDto**](JobStatusDto.md) |  | 
 **library_** | [**JobStatusDto**](JobStatusDto.md) |  | 

@@ -88,6 +88,12 @@
       subtitle: 'Run machine learning on assets to support smart search',
       disabled: !$featureFlags.smartSearch,
     },
+    [JobName.DuplicateDetection]: {
+      icon: mdiImageSearch,
+      title: getJobName(JobName.DuplicateDetection),
+      subtitle: 'Run machine learning on assets to detect near-duplicate images',
+      disabled: !$featureFlags.smartSearch,
+    },
     [JobName.FaceDetection]: {
       icon: mdiFaceRecognition,
       title: getJobName(JobName.FaceDetection),

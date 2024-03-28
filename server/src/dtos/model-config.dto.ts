@@ -23,6 +23,13 @@ export class CLIPConfig extends ModelConfig {
   @Optional()
   @ApiProperty({ enumName: 'CLIPMode', enum: CLIPMode })
   mode?: CLIPMode;
+
+  @IsNumber()
+  @Min(0.01)
+  @Max(0.1)
+  @Type(() => Number)
+  @ApiProperty({ type: 'number', format: 'float' })
+  duplicateThreshold!: number;
 }
 
 export class RecognitionConfig extends ModelConfig {

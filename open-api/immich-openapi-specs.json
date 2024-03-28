@@ -6823,6 +6823,9 @@
           "backgroundTask": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
+          "duplicateDetection": {
+            "$ref": "#/components/schemas/JobStatusDto"
+          },
           "faceDetection": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
@@ -6859,6 +6862,7 @@
         },
         "required": [
           "backgroundTask",
+          "duplicateDetection",
           "faceDetection",
           "facialRecognition",
           "library",
@@ -7471,6 +7475,10 @@
       },
       "CLIPConfig": {
         "properties": {
+          "duplicateThreshold": {
+            "format": "float",
+            "type": "number"
+          },
           "enabled": {
             "type": "boolean"
           },
@@ -7485,6 +7493,7 @@
           }
         },
         "required": [
+          "duplicateThreshold",
           "enabled",
           "modelName"
         ],
@@ -8170,6 +8179,7 @@
           "faceDetection",
           "facialRecognition",
           "smartSearch",
+          "duplicateDetection",
           "backgroundTask",
           "storageTemplateMigration",
           "migration",

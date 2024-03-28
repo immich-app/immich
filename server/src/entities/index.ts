@@ -20,12 +20,14 @@ import { SystemMetadataEntity } from 'src/entities/system-metadata.entity';
 import { TagEntity } from 'src/entities/tag.entity';
 import { UserTokenEntity } from 'src/entities/user-token.entity';
 import { UserEntity } from 'src/entities/user.entity';
+import { AssetDuplicateEntity } from 'src/entities/asset-duplicate.entity';
 
 export const databaseEntities = [
   ActivityEntity,
   AlbumEntity,
   APIKeyEntity,
   AssetEntity,
+  AssetDuplicateEntity,
   AssetStackEntity,
   AssetFaceEntity,
   AssetJobStatusEntity,

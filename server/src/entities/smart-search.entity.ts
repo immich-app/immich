@@ -15,6 +15,7 @@ export class SmartSearchEntity {
     type: 'float4',
     array: true,
     select: false,
+    transformer: { from: (v) => JSON.parse(v), to: (v) => v },
   })
   embedding!: number[];
 }

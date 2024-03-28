@@ -125,6 +125,8 @@ import { TrashService } from 'src/services/trash.service';
 import { UserService } from 'src/services/user.service';
 import { otelConfig } from 'src/utils/instrumentation';
 import { ImmichLogger } from 'src/utils/logger';
+import { IAssetDuplicateRepository } from 'src/interfaces/asset-duplicate.interface';
+import { AssetDuplicateRepository } from 'src/repositories/asset-duplicate.repository';
 
 const commands = [
   ResetAdminPasswordCommand,
@@ -199,6 +201,7 @@ const repositories: Provider[] = [
   { provide: IAlbumRepository, useClass: AlbumRepository },
   { provide: IAssetRepository, useClass: AssetRepository },
   { provide: IAssetRepositoryV1, useClass: AssetRepositoryV1 },
+  { provide: IAssetDuplicateRepository, useClass: AssetDuplicateRepository },
   { provide: IAssetStackRepository, useClass: AssetStackRepository },
   { provide: IAuditRepository, useClass: AuditRepository },
   { provide: ICryptoRepository, useClass: CryptoRepository },
