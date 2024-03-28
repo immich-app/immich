@@ -22,7 +22,7 @@ class MemoryLaneResponseDto {
 
   String title;
 
-  num yearsAgo;
+  int yearsAgo;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is MemoryLaneResponseDto &&
@@ -58,7 +58,7 @@ class MemoryLaneResponseDto {
       return MemoryLaneResponseDto(
         assets: AssetResponseDto.listFromJson(json[r'assets']),
         title: mapValueOfType<String>(json, r'title')!,
-        yearsAgo: num.parse('${json[r'yearsAgo']}'),
+        yearsAgo: mapValueOfType<int>(json, r'yearsAgo')!,
       );
     }
     return null;

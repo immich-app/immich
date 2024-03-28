@@ -8431,7 +8431,7 @@
             "type": "string"
           },
           "yearsAgo": {
-            "type": "number"
+            "type": "integer"
           }
         },
         "required": [
