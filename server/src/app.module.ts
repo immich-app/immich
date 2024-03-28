@@ -31,6 +31,7 @@ import { ServerInfoController } from 'src/controllers/server-info.controller';
 import { SharedLinkController } from 'src/controllers/shared-link.controller';
 import { SystemConfigController } from 'src/controllers/system-config.controller';
 import { TagController } from 'src/controllers/tag.controller';
+import { TimelineController } from 'src/controllers/timeline.controller';
 import { TrashController } from 'src/controllers/trash.controller';
 import { UserController } from 'src/controllers/user.controller';
 import { databaseConfig } from 'src/database.config';
@@ -121,6 +122,7 @@ import { StorageTemplateService } from 'src/services/storage-template.service';
 import { StorageService } from 'src/services/storage.service';
 import { SystemConfigService } from 'src/services/system-config.service';
 import { TagService } from 'src/services/tag.service';
+import { TimelineService } from 'src/services/timeline.service';
 import { TrashService } from 'src/services/trash.service';
 import { UserService } from 'src/services/user.service';
 import { otelConfig } from 'src/utils/instrumentation';
@@ -157,6 +159,7 @@ const controllers = [
   SharedLinkController,
   SystemConfigController,
   TagController,
+  TimelineController,
   TrashController,
   UserController,
   PersonController,
@@ -189,6 +192,7 @@ const services: Provider[] = [
   StorageTemplateService,
   SystemConfigService,
   TagService,
+  TimelineService,
   TrashService,
   UserService,
 ];
