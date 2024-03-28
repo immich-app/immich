@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/constants/immich_colors.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -55,27 +56,27 @@ class _MemoryEpilogueState extends State<MemoryEpilogue>
                 ),
                 const SizedBox(height: 16.0),
                 Text(
-                  'All caught up',
+                  "memories_all_caught_up",
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                         color: Colors.white,
                       ),
-                ),
+                ).tr(),
                 const SizedBox(height: 16.0),
                 Text(
-                  'Check back tomorrow for more memories',
+                  "memories_check_back_tomorrow",
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Colors.white,
                       ),
-                ),
+                ).tr(),
                 const SizedBox(height: 16.0),
                 TextButton(
                   onPressed: widget.onStartOver,
                   child: Text(
-                    'Start Over',
+                    "memories_start_over",
                     style: context.textTheme.displayMedium?.copyWith(
                       color: immichDarkThemePrimaryColor,
                     ),
-                  ),
+                  ).tr(),
                 ),
               ],
             ),
@@ -106,11 +107,11 @@ class _MemoryEpilogueState extends State<MemoryEpilogue>
                     ),
                   ),
                   Text(
-                    'Swipe up to close',
+                    "memories_swipe_to_close",
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: Colors.white,
                         ),
-                  ),
+                  ).tr(),
                 ],
               ),
             ),
