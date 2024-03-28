@@ -5,14 +5,15 @@ While not the officially recommended method, it is possible to run Immich using 
 Example:
 
 ```
-DB_URL='postgresql://immichdbusername:immichdbpassword@postgreshost:postgresport/immichdatabasename
+DB_URL='postgresql://immichdbusername:immichdbpassword@postgreshost:postgresport/immichdatabasename'
 
 # require a SSL connection to Postgres
-# DB_URL='postgresql://immichdbusername:immichdbpassword@postgreshost:postgresport/immichdatabasename?sslmode=require
+# DB_URL='postgresql://immichdbusername:immichdbpassword@postgreshost:postgresport/immichdatabasename?sslmode=require'
 
 # require a SSL connection, but don't enforce checking the certificate name
-# DB_URL='postgresql://immichdbusername:immichdbpassword@postgreshost:postgresport/immichdatabasename?sslmode=require&sslmode=no-verify
+# DB_URL='postgresql://immichdbusername:immichdbpassword@postgreshost:postgresport/immichdatabasename?sslmode=require&sslmode=no-verify'
 ```
+
 :::note
 Viewing and modifying the system settings is restricted to the Administrator.
 :::
