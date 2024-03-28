@@ -8,7 +8,7 @@ While not the officially recommended method, it is possible to run Immich using 
 By default, Immich expects superuser permission on the Postgres database.
 :::
 
-Example:
+### .env setup
 
 ```
 DB_URL='postgresql://immichdbusername:immichdbpassword@postgreshost:postgresport/immichdatabasename'
