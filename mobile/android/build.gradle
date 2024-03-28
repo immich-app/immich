@@ -1,10 +1,10 @@
 buildscript {
-    ext.kotlin_version = '1.8.20'
-    ext.kotlin_coroutines_version = '1.7.1'
-    ext.work_version = '2.7.1'
+    ext.kotlin_version = '1.9.23'
+    ext.kotlin_coroutines_version = '1.8.0'
+    ext.work_version = '2.9.0'
     ext.concurrent_version = '1.1.0'
-    ext.guava_version = '33.0.0-android'
-    ext.glide_version = '4.14.2'
+    ext.guava_version = '33.1.0-android'
+    ext.glide_version = '4.16.0'
     repositories {
         google()
         mavenCentral()
