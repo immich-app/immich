@@ -22,7 +22,7 @@ DB_URL='postgresql://immichdbusername:immichdbpassword@postgreshost:postgresport
 
 ## Standalone Postgres without superuser permissions
 
-Immich can run with a standalone Postgres server, without superuser permissions, by following the below instructions to prepare the database.
+Immich can run with a standalone Postgres server, without superuser permissions, by following the below instructions at the `psql` prompt to prepare the database.
 
 ```sql title="Setup Postgres for Immich"
 \c <immichdatabasename>
