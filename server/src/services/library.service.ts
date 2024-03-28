@@ -457,6 +457,12 @@ export class LibraryService extends EventEmitter {
       // Asset base filename is invalid.
       // This cleans up an old bug where the file extension wasn't handled properly in previous versions
       // We can likely remove this check in the second half of 2024
+      console.warn(
+        assetPath
+      );
+      console.warn(
+        existingAssetEntity.originalFileName
+      );
       this.logger.debug(
         `Asset is missing file extension, re-importing: ${assetPath}. Current incorrect filename: ${existingAssetEntity.originalFileName}.`,
       );
@@ -529,7 +535,6 @@ export class LibraryService extends EventEmitter {
       await this.assetRepository.updateAll([existingAssetEntity.id], {
         fileCreatedAt: stats.mtime,
         fileModifiedAt: stats.mtime,
-        localDateTime: stats.mtime,
         originalFileName: parse(assetPath).name,
       });
     } else {

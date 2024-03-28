@@ -501,7 +501,7 @@ describe(LibraryService.name, () => {
       const mockLibraryJob: ILibraryFileJob = {
         id: libraryStub.externalLibrary1.id,
         ownerId: mockUser.id,
-        assetPath: '/data/user1/photo.jpg',
+        assetPath: assetStub.image.originalPath,
         force: false,
       };
 
@@ -651,6 +651,7 @@ describe(LibraryService.name, () => {
       expect(assetMock.updateAll).toHaveBeenCalledWith([assetStub.image.id], {
         fileCreatedAt: new Date('2023-01-01'),
         fileModifiedAt: new Date('2023-01-01'),
+        originalFileName: assetStub.image.originalFileName,
       });
     });
 
