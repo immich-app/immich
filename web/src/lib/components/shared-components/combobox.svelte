@@ -19,16 +19,44 @@
   import { shortcuts } from '$lib/utils/shortcut';
   import { clickOutside } from '$lib/utils/click-outside';
   import { focusOutside } from '$lib/utils/focus-outside';
+  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
 
   /**
    * Unique identifier for the combobox.
    */
   export let id: string;
+  /**
+   * Label for the combobox.
+   */
   export let label: string;
-  export let hideLabel = false;
+  /**
+   * Hides the label visually, but keeps it accessible to screen readers.
+   */
+  export let showLabel = true;
+  /**
+   * Options to display in the dropdown.
+   */
   export let options: ComboBoxOption[] = [];
-  export let selectedOption: ComboBoxOption | undefined;
+  /**
+   * Pre-selects an option in the dropdown.
+   */
+  export let selectedOption: ComboBoxOption | undefined = undefined;
+  /**
+   * Placeholder for the text input field.
+   */
   export let placeholder = '';
+  /**
+   * Enable/disable internal filtering of options, based on the inputted text.
+   */
+  export let enableFiltering: boolean = true;
+  /**
+   * Show/hide a loading spinner.
+   */
+  export let showSpinner: boolean = false;
+  /**
+   * Message to display when no options are available.
+   */
+  export let noResultsMessage = 'No results';
 
   /**
    * Indicates whether or not the dropdown autocomplete list should be visible.
@@ -42,10 +70,15 @@
   let selectedIndex: number | undefined;
   let optionRefs: HTMLElement[] = [];
   let input: HTMLInputElement;
+  let filteredOptions: ComboBoxOption[] = [];
   const inputId = `combobox-${id}`;
   const listboxId = `listbox-${id}`;
 
-  $: filteredOptions = options.filter((option) => option.label.toLowerCase().includes(searchQuery.toLowerCase()));
+  $: {
+    filteredOptions = enableFiltering
+      ? options.filter((option) => option.label.toLowerCase().includes(searchQuery.toLowerCase()))
+      : options;
+  }
 
   $: {
     searchQuery = selectedOption ? selectedOption.label : '';
@@ -53,6 +86,8 @@
 
   const dispatch = createEventDispatcher<{
     select: ComboBoxOption | undefined;
+    input: string;
+    focusOut: string;
   }>();
 
   const activate = () => {
@@ -91,6 +126,7 @@
     openDropdown();
     searchQuery = event.currentTarget.value;
     selectedIndex = undefined;
+    dispatch('input', searchQuery);
     optionRefs[0]?.scrollIntoView({ block: 'nearest' });
   };
 
@@ -110,11 +146,16 @@
   };
 </script>
 
-<label class="text-sm text-black dark:text-white" class:sr-only={hideLabel} for={inputId}>{label}</label>
+<label class="text-sm text-black dark:text-white" class:sr-only={!showLabel} for={inputId}>{label}</label>
 <div
   class="relative w-full dark:text-gray-300 text-gray-700 text-base"
   use:clickOutside={{ onOutclick: deactivate }}
-  use:focusOutside={{ onFocusOut: deactivate }}
+  use:focusOutside={{
+    onFocusOut: () => {
+      deactivate();
+      dispatch('focusOut', searchQuery);
+    },
+  }}
   use:shortcuts={[
     {
       shortcut: { key: 'Escape' },
@@ -206,6 +247,12 @@
         <Icon path={mdiUnfoldMoreHorizontal} ariaHidden={true} />
       {/if}
     </div>
+
+    {#if showSpinner}
+      <div class="absolute right-10 top-0 h-full flex items-center">
+        <LoadingSpinner />
+      </div>
+    {/if}
   </div>
 
   <ul
@@ -227,7 +274,7 @@
           id={`${listboxId}-${0}`}
           on:click={() => closeDropdown()}
         >
-          No results
+          {noResultsMessage}
         </li>
       {/if}
       {#each filteredOptions as option, index (option.label)}

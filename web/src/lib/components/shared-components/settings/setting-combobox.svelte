@@ -35,7 +35,7 @@
     <Combobox
       {id}
       label={title}
-      hideLabel={true}
+      showLabel={false}
       {selectedOption}
       {options}
       placeholder={comboboxPlaceholder}

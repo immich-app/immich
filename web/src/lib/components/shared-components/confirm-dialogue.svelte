@@ -36,7 +36,7 @@
       </h1>
     </div>
     <div>
-      <div class="text-md px-4 py-5 text-center">
+      <div class="text-md px-4 py-5">
         <slot name="prompt">
           <p>{prompt}</p>
         </slot>

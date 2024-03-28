@@ -7,7 +7,7 @@
     role="status"
     style:height="{size}px"
     style:width="{size}px"
-    class="animate-spin fill-immich-primary text-gray-400 dark:text-gray-600"
+    class="animate-spin fill-immich-primary text-gray-400 dark:text-gray-200"
     viewBox="0 0 100 101"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
