@@ -569,6 +569,26 @@ describe(LibraryService.name, () => {
       });
     });
 
+    it('should import an asset that is missing a file extension', async () => {
+      // This tests for the case where the file extension is missing from the asset path.
+      // This happened in previous versions of Immich
+      const mockLibraryJob: ILibraryFileJob = {
+        id: libraryStub.externalLibrary1.id,
+        ownerId: mockUser.id,
+        assetPath: '/data/user1/photo.jpg',
+        force: false,
+      };
+
+      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.missingFileExtension);
+
+      await expect(sut.handleAssetRefresh(mockLibraryJob)).resolves.toBe(JobStatus.SUCCESS);
+
+      expect(assetMock.updateAll).toHaveBeenCalledWith(
+        [assetStub.missingFileExtension.id],
+        expect.objectContaining({ originalPath: '/data/user1/photo.jpg' }),
+      );
+    });
+
     it('should set a missing asset to offline', async () => {
       storageMock.stat.mockRejectedValue(new Error('Path not found'));
 

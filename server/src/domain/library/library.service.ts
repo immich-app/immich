@@ -454,6 +454,14 @@ export class LibraryService extends EventEmitter {
         `File modification time has changed, re-importing asset: ${assetPath}. Old mtime: ${existingAssetEntity.fileModifiedAt}. New mtime: ${stats.mtime}`,
       );
       doRefresh = true;
+    } else if (existingAssetEntity.originalFileName !== parse(assetPath).base) {
+      // Asset base filename is invalid.
+      // This cleans up an old bug where the file extension wasn't handled properly in previous versions
+      // We can likely remove this check in the second half of 2024
+      this.logger.debug(
+        `Asset is missing file extension, re-importing: ${assetPath}. Current incorrect filename: ${existingAssetEntity.originalFileName}.`,
+      );
+      doRefresh = true;
     } else if (!job.force && stats && !existingAssetEntity.isOffline) {
       // Asset exists on disk and in db and mtime has not changed. Also, we are not forcing refresn. Therefore, do nothing
       this.logger.debug(`Asset already exists in database and on disk, will not import: ${assetPath}`);
@@ -522,6 +530,8 @@ export class LibraryService extends EventEmitter {
       await this.assetRepository.updateAll([existingAssetEntity.id], {
         fileCreatedAt: stats.mtime,
         fileModifiedAt: stats.mtime,
+        localDateTime: stats.mtime,
+        originalFileName: parse(assetPath).name,
       });
     } else {
       // Not importing and not refreshing, do nothing
