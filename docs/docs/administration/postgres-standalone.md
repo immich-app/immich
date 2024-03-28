@@ -26,10 +26,12 @@ Immich can run with a standalone Postgres server, without superuser permissions,
 
 ```sql title="Setup Postgres for Immich"
 \c <immichdatabasename>
+BEGIN;
 ALTER DATABASE <immichdatabasename> OWNER TO <immichdbusername>;
-CREATE EXTENSION IF NOT EXISTS vectors;
-CREATE EXTENSION IF NOT EXISTS earthdistance CASCADE;
+CREATE EXTENSION vectors;
+CREATE EXTENSION earthdistance CASCADE;
 ALTER DATABASE <immichdatabasename> SET search_path TO "$user", public, vectors;
 GRANT USAGE ON SCHEMA vectors TO <immichdbusername>;
 GRANT SELECT ON TABLE pg_vector_index_stat to <immichdbusername>;
+COMMIT;
 ```
