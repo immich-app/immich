@@ -46,7 +46,7 @@ class AssetNotifier extends StateNotifier<bool> {
       _getAllAssetInProgress = true;
       state = true;
       if (clear) {
-        await clearAssetsAndAlbums(_db);
+        await DBUtils.clearAssetsAndAlbums(_db);
         log.info("Manual refresh requested, cleared assets and albums from db");
       }
       final bool newRemote = await _assetService.refreshRemoteAssets();
@@ -82,7 +82,7 @@ class AssetNotifier extends StateNotifier<bool> {
   }
 
   Future<void> clearAllAsset() {
-    return clearAssetsAndAlbums(_db);
+    return DBUtils.clearAssetsAndAlbums(_db);
   }
 
   Future<void> onNewAssetUploaded(Asset newAsset) async {

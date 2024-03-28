@@ -112,9 +112,8 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
           );
 
       await Future.wait([
-        clearAssetsAndAlbums(_db),
-        Store.delete(StoreKey.currentUser),
-        Store.delete(StoreKey.accessToken),
+        DBUtils.clearAssetsAndAlbums(_db),
+        DBUtils.clearUsers(_db),
       ]);
       _ref.invalidate(albumProvider);
       _ref.invalidate(sharedAlbumProvider);
