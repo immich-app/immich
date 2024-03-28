@@ -72,6 +72,7 @@ export enum JobName {
   LIBRARY_SCAN = 'library-refresh',
   LIBRARY_SCAN_ASSET = 'library-refresh-asset',
   LIBRARY_REMOVE_OFFLINE = 'library-remove-offline',
+  LIBRARY_CHECK_OFFLINE = 'library-check-offline',
   LIBRARY_DELETE = 'library-delete',
   LIBRARY_QUEUE_SCAN_ALL = 'library-queue-all-refresh',
   LIBRARY_QUEUE_CLEANUP = 'library-queue-cleanup',
@@ -109,6 +110,10 @@ export interface IAssetDeletionJob extends IEntityJob {
 export interface ILibraryFileJob extends IEntityJob {
   ownerId: string;
   assetPath: string;
+}
+
+export interface ILibraryOfflineJob extends IEntityJob {
+  importPaths: string[];
 }
 
 export interface ILibraryRefreshJob extends IEntityJob {
@@ -216,6 +221,7 @@ export type JobItem =
   | { name: JobName.LIBRARY_REMOVE_OFFLINE; data: IEntityJob }
   | { name: JobName.LIBRARY_DELETE; data: IEntityJob }
   | { name: JobName.LIBRARY_QUEUE_SCAN_ALL; data: IBaseJob }
+  | { name: JobName.LIBRARY_CHECK_OFFLINE; data: IEntityJob }
   | { name: JobName.LIBRARY_QUEUE_CLEANUP; data: IBaseJob };
 
 export enum JobStatus {

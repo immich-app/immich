@@ -281,20 +281,6 @@ WHERE
 GROUP BY
   "libraries"."id"
 
--- LibraryRepository.getOnlineAssetPaths
-SELECT
-  "assets"."originalPath" AS "assets_originalPath"
-FROM
-  "libraries" "library"
-  INNER JOIN "assets" "assets" ON "assets"."libraryId" = "library"."id"
-  AND ("assets"."deletedAt" IS NULL)
-WHERE
-  (
-    "library"."id" = $1
-    AND "assets"."isOffline" = false
-  )
-  AND ("library"."deletedAt" IS NULL)
-
 -- LibraryRepository.getAssetIds
 SELECT
   "assets"."id" AS "assets_id"

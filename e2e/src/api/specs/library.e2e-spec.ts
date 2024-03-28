@@ -474,10 +474,10 @@ describe('/library', () => {
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest('Can only refresh external libraries'));
+      expect(body).toEqual(errorDto.badRequest('Can only scan external libraries'));
     });
 
-    it('should scan external library', async () => {
+    it('should scan an external library', async () => {
       const library = await utils.createLibrary(admin.accessToken, {
         ownerId: admin.userId,
         type: LibraryType.External,
