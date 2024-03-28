@@ -8,6 +8,10 @@ While not the officially recommended method, it is possible to run Immich using 
 By default, Immich expects superuser permission on the Postgres database.
 :::
 
+:::tip
+This method is recommended for users that have some baseline level of familiarity with Postgres and the Linux command line. If you do not have these, we recommend using the default setup with a separate Postgres container.
+:::
+
 ### .env setup
 
 ```
@@ -23,6 +27,10 @@ DB_URL='postgresql://immichdbusername:immichdbpassword@postgreshost:postgresport
 ## Standalone Postgres without superuser permissions
 
 Immich can run with a standalone Postgres server, without superuser permissions, by following the below instructions at the `psql` prompt to prepare the database.
+
+:::tip
+Before running these commands, you will need to install the version of vecto.rs as currently used by Immich to your system. You will also need to add `shared_preload_libraries = 'vectors.so'` to your `postgresql.conf`
+:::
 
 ```sql title="Setup Postgres for Immich"
 \c <immichdatabasename>
