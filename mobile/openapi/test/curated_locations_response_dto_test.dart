@@ -36,8 +36,8 @@ void main() {
       // TODO
     });
 
-    // String resizePath
-    test('to test the property `resizePath`', () async {
+    // String previewPath
+    test('to test the property `previewPath`', () async {
       // TODO
     });
 

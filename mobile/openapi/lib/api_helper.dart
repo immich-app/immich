@@ -79,6 +79,9 @@ String parameterToString(dynamic value) {
   if (value is EntityType) {
     return EntityTypeTypeTransformer().encode(value).toString();
   }
+  if (value is ImageFormat) {
+    return ImageFormatTypeTransformer().encode(value).toString();
+  }
   if (value is JobCommand) {
     return JobCommandTypeTransformer().encode(value).toString();
   }

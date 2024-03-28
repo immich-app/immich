@@ -25,10 +25,10 @@
     <form autocomplete="off" on:submit|preventDefault>
       <div class="ml-4 mt-4 flex flex-col gap-4">
         <SettingSelect
-          label="SMALL THUMBNAIL RESOLUTION"
+          label="THUMBNAIL RESOLUTION"
           desc="Used when viewing groups of photos (main timeline, album view, etc.). Higher resolutions can preserve more detail but take longer to encode, have larger file sizes, and can reduce app responsiveness."
           number
-          bind:value={config.thumbnail.webpSize}
+          bind:value={config.image.thumbnailSize}
           options={[
             { value: 1080, text: '1080p' },
             { value: 720, text: '720p' },
@@ -37,15 +37,15 @@
             { value: 200, text: '200p' },
           ]}
           name="resolution"
-          isEdited={config.thumbnail.webpSize !== savedConfig.thumbnail.webpSize}
+          isEdited={config.image.thumbnailSize !== savedConfig.image.thumbnailSize}
           {disabled}
         />
 
         <SettingSelect
-          label="LARGE THUMBNAIL RESOLUTION"
+          label="PREVIEW RESOLUTION"
           desc="Used when viewing a single photo and for machine learning. Higher resolutions can preserve more detail but take longer to encode, have larger file sizes, and can reduce app responsiveness."
           number
-          bind:value={config.thumbnail.jpegSize}
+          bind:value={config.image.previewSize}
           options={[
             { value: 2160, text: '4K' },
             { value: 1440, text: '1440p' },
@@ -53,31 +53,31 @@
             { value: 720, text: '720p' },
           ]}
           name="resolution"
-          isEdited={config.thumbnail.jpegSize !== savedConfig.thumbnail.jpegSize}
+          isEdited={config.image.previewSize !== savedConfig.image.previewSize}
           {disabled}
         />
 
         <SettingInputField
           inputType={SettingInputFieldType.NUMBER}
           label="QUALITY"
-          desc="Thumbnail quality from 1-100. Higher is better for quality but produces larger files."
-          bind:value={config.thumbnail.quality}
-          isEdited={config.thumbnail.quality !== savedConfig.thumbnail.quality}
+          desc="Image quality from 1-100. Higher is better for quality but produces larger files."
+          bind:value={config.image.quality}
+          isEdited={config.image.quality !== savedConfig.image.quality}
         />
 
         <SettingSwitch
           title="PREFER WIDE GAMUT"
           subtitle="Use Display P3 for thumbnails. This better preserves the vibrance of images with wide colorspaces, but images may appear differently on old devices with an old browser version. sRGB images are kept as sRGB to avoid color shifts."
-          checked={config.thumbnail.colorspace === Colorspace.P3}
-          on:toggle={(e) => (config.thumbnail.colorspace = e.detail ? Colorspace.P3 : Colorspace.Srgb)}
-          isEdited={config.thumbnail.colorspace !== savedConfig.thumbnail.colorspace}
+          checked={config.image.colorspace === Colorspace.P3}
+          on:toggle={(e) => (config.image.colorspace = e.detail ? Colorspace.P3 : Colorspace.Srgb)}
+          isEdited={config.image.colorspace !== savedConfig.image.colorspace}
         />
       </div>
 
       <div class="ml-4">
         <SettingButtonsRow
-          on:reset={({ detail }) => dispatch('reset', { ...detail, configKeys: ['thumbnail'] })}
-          on:save={() => dispatch('save', { thumbnail: config.thumbnail })}
+          on:reset={({ detail }) => dispatch('reset', { ...detail, configKeys: ['image'] })}
+          on:save={() => dispatch('save', { image: config.image })}
           showResetToDefault={!isEqual(savedConfig, defaultConfig)}
           {disabled}
         />

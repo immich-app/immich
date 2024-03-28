@@ -44,13 +44,13 @@ const _getAsset_1 = () => {
   asset_1.deviceId = 'device_id_1';
   asset_1.type = AssetType.VIDEO;
   asset_1.originalPath = 'fake_path/asset_1.jpeg';
-  asset_1.resizePath = '';
+  asset_1.previewPath = '';
   asset_1.fileModifiedAt = new Date('2022-06-19T23:41:36.910Z');
   asset_1.fileCreatedAt = new Date('2022-06-19T23:41:36.910Z');
   asset_1.updatedAt = new Date('2022-06-19T23:41:36.910Z');
   asset_1.isFavorite = false;
   asset_1.isArchived = false;
-  asset_1.webpPath = '';
+  asset_1.thumbnailPath = '';
   asset_1.encodedVideoPath = '';
   asset_1.duration = '0:00:00.000000';
   asset_1.exifInfo = new ExifEntity();

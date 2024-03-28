@@ -31,7 +31,7 @@ export class CheckExistingAssetsResponseDto {
 export class CuratedLocationsResponseDto {
   id!: string;
   city!: string;
-  resizePath!: string;
+  previewPath!: string;
   deviceAssetId!: string;
   deviceId!: string;
 }
@@ -39,7 +39,7 @@ export class CuratedLocationsResponseDto {
 export class CuratedObjectsResponseDto {
   id!: string;
   object!: string;
-  resizePath!: string;
+  previewPath!: string;
   deviceAssetId!: string;
   deviceId!: string;
 }

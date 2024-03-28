@@ -645,7 +645,7 @@ describe(PersonService.name, () => {
       expect(machineLearningMock.detectFaces).toHaveBeenCalledWith(
         'http://immich-machine-learning:3003',
         {
-          imagePath: assetStub.image.resizePath,
+          imagePath: assetStub.image.previewPath,
         },
         {
           enabled: true,

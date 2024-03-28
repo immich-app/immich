@@ -17,7 +17,7 @@ class CuratedLocationsResponseDto {
     required this.deviceAssetId,
     required this.deviceId,
     required this.id,
-    required this.resizePath,
+    required this.previewPath,
   });
 
   String city;
@@ -28,7 +28,7 @@ class CuratedLocationsResponseDto {
 
   String id;
 
-  String resizePath;
+  String previewPath;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is CuratedLocationsResponseDto &&
@@ -36,7 +36,7 @@ class CuratedLocationsResponseDto {
     other.deviceAssetId == deviceAssetId &&
     other.deviceId == deviceId &&
     other.id == id &&
-    other.resizePath == resizePath;
+    other.previewPath == previewPath;
 
   @override
   int get hashCode =>
@@ -45,10 +45,10 @@ class CuratedLocationsResponseDto {
     (deviceAssetId.hashCode) +
     (deviceId.hashCode) +
     (id.hashCode) +
-    (resizePath.hashCode);
+    (previewPath.hashCode);
 
   @override
-  String toString() => 'CuratedLocationsResponseDto[city=$city, deviceAssetId=$deviceAssetId, deviceId=$deviceId, id=$id, resizePath=$resizePath]';
+  String toString() => 'CuratedLocationsResponseDto[city=$city, deviceAssetId=$deviceAssetId, deviceId=$deviceId, id=$id, previewPath=$previewPath]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -56,7 +56,7 @@ class CuratedLocationsResponseDto {
       json[r'deviceAssetId'] = this.deviceAssetId;
       json[r'deviceId'] = this.deviceId;
       json[r'id'] = this.id;
-      json[r'resizePath'] = this.resizePath;
+      json[r'previewPath'] = this.previewPath;
     return json;
   }
 
@@ -72,7 +72,7 @@ class CuratedLocationsResponseDto {
         deviceAssetId: mapValueOfType<String>(json, r'deviceAssetId')!,
         deviceId: mapValueOfType<String>(json, r'deviceId')!,
         id: mapValueOfType<String>(json, r'id')!,
-        resizePath: mapValueOfType<String>(json, r'resizePath')!,
+        previewPath: mapValueOfType<String>(json, r'previewPath')!,
       );
     }
     return null;
@@ -124,7 +124,7 @@ class CuratedLocationsResponseDto {
     'deviceAssetId',
     'deviceId',
     'id',
-    'resizePath',
+    'previewPath',
   };
 }
 

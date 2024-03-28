@@ -117,8 +117,8 @@ export interface SearchPathOptions {
   encodedVideoPath?: string;
   originalFileName?: string;
   originalPath?: string;
-  resizePath?: string;
-  webpPath?: string;
+  previewPath?: string;
+  thumbnailPath?: string;
 }
 
 export interface SearchExifOptions {

@@ -13,7 +13,7 @@
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
   import StorageTemplateSettings from '$lib/components/admin-page/settings/storage-template/storage-template-settings.svelte';
   import ThemeSettings from '$lib/components/admin-page/settings/theme/theme-settings.svelte';
-  import ThumbnailSettings from '$lib/components/admin-page/settings/thumbnail/thumbnail-settings.svelte';
+  import ImageSettings from '$lib/components/admin-page/settings/image/image-settings.svelte';
   import TrashSettings from '$lib/components/admin-page/settings/trash-settings/trash-settings.svelte';
   import UserSettings from '$lib/components/admin-page/settings/user-settings/user-settings.svelte';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
@@ -43,7 +43,7 @@
     | typeof ServerSettings
     | typeof StorageTemplateSettings
     | typeof ThemeSettings
-    | typeof ThumbnailSettings
+    | typeof ImageSettings
     | typeof TrashSettings
     | typeof NewVersionCheckSettings
     | typeof FFmpegSettings
@@ -64,6 +64,12 @@
     subtitle: string;
     key: string;
   }> = [
+    {
+      item: ImageSettings,
+      title: 'Image Settings',
+      subtitle: 'Manage the quality and resolution of generated images',
+      key: 'image',
+    },
     {
       item: JobSettings,
       title: 'Job Settings',
@@ -123,12 +129,6 @@
       title: 'Theme Settings',
       subtitle: 'Manage customization of the Immich web interface',
       key: 'theme',
-    },
-    {
-      item: ThumbnailSettings,
-      title: 'Thumbnail Settings',
-      subtitle: 'Manage the resolution of thumbnail sizes',
-      key: 'thumbnail',
     },
     {
       item: TrashSettings,

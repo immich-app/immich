@@ -247,16 +247,16 @@ export class AssetServiceV1 {
   private getThumbnailPath(asset: AssetEntity, format: GetAssetThumbnailFormatEnum) {
     switch (format) {
       case GetAssetThumbnailFormatEnum.WEBP: {
-        if (asset.webpPath) {
-          return asset.webpPath;
+        if (asset.thumbnailPath) {
+          return asset.thumbnailPath;
         }
         this.logger.warn(`WebP thumbnail requested but not found for asset ${asset.id}, falling back to JPEG`);
       }
       case GetAssetThumbnailFormatEnum.JPEG: {
-        if (!asset.resizePath) {
+        if (!asset.previewPath) {
           throw new NotFoundException(`No thumbnail found for asset ${asset.id}`);
         }
-        return asset.resizePath;
+        return asset.previewPath;
       }
     }
   }
@@ -268,12 +268,12 @@ export class AssetServiceV1 {
      * Serve file viewer on the web
      */
     if (dto.isWeb && mimeType != 'image/gif') {
-      if (!asset.resizePath) {
+      if (!asset.previewPath) {
         this.logger.error('Error serving IMAGE asset for web');
         throw new InternalServerErrorException(`Failed to serve image asset for web`, 'ServeFile');
       }
 
-      return asset.resizePath;
+      return asset.previewPath;
     }
 
     /**
@@ -283,15 +283,15 @@ export class AssetServiceV1 {
       return asset.originalPath;
     }
 
-    if (asset.webpPath && asset.webpPath.length > 0) {
-      return asset.webpPath;
+    if (asset.thumbnailPath && asset.thumbnailPath.length > 0) {
+      return asset.thumbnailPath;
     }
 
-    if (!asset.resizePath) {
-      throw new Error('resizePath not set');
+    if (!asset.previewPath) {
+      throw new Error('previewPath not set');
     }
 
-    return asset.resizePath;
+    return asset.previewPath;
   }
 
   private async getLibraryId(auth: AuthDto, libraryId?: string) {

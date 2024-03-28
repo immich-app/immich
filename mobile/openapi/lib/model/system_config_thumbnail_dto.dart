@@ -14,43 +14,55 @@ class SystemConfigThumbnailDto {
   /// Returns a new [SystemConfigThumbnailDto] instance.
   SystemConfigThumbnailDto({
     required this.colorspace,
-    required this.jpegSize,
+    required this.previewFormat,
+    required this.previewSize,
     required this.quality,
-    required this.webpSize,
+    required this.thumbnailFormat,
+    required this.thumbnailSize,
   });
 
   Colorspace colorspace;
 
-  int jpegSize;
+  ImageFormat previewFormat;
+
+  int previewSize;
 
   int quality;
 
-  int webpSize;
+  ImageFormat thumbnailFormat;
+
+  int thumbnailSize;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigThumbnailDto &&
     other.colorspace == colorspace &&
-    other.jpegSize == jpegSize &&
+    other.previewFormat == previewFormat &&
+    other.previewSize == previewSize &&
     other.quality == quality &&
-    other.webpSize == webpSize;
+    other.thumbnailFormat == thumbnailFormat &&
+    other.thumbnailSize == thumbnailSize;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (colorspace.hashCode) +
-    (jpegSize.hashCode) +
+    (previewFormat.hashCode) +
+    (previewSize.hashCode) +
     (quality.hashCode) +
-    (webpSize.hashCode);
+    (thumbnailFormat.hashCode) +
+    (thumbnailSize.hashCode);
 
   @override
-  String toString() => 'SystemConfigThumbnailDto[colorspace=$colorspace, jpegSize=$jpegSize, quality=$quality, webpSize=$webpSize]';
+  String toString() => 'SystemConfigThumbnailDto[colorspace=$colorspace, previewFormat=$previewFormat, previewSize=$previewSize, quality=$quality, thumbnailFormat=$thumbnailFormat, thumbnailSize=$thumbnailSize]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'colorspace'] = this.colorspace;
-      json[r'jpegSize'] = this.jpegSize;
+      json[r'previewFormat'] = this.previewFormat;
+      json[r'previewSize'] = this.previewSize;
       json[r'quality'] = this.quality;
-      json[r'webpSize'] = this.webpSize;
+      json[r'thumbnailFormat'] = this.thumbnailFormat;
+      json[r'thumbnailSize'] = this.thumbnailSize;
     return json;
   }
 
@@ -63,9 +75,11 @@ class SystemConfigThumbnailDto {
 
       return SystemConfigThumbnailDto(
         colorspace: Colorspace.fromJson(json[r'colorspace'])!,
-        jpegSize: mapValueOfType<int>(json, r'jpegSize')!,
+        previewFormat: ImageFormat.fromJson(json[r'previewFormat'])!,
+        previewSize: mapValueOfType<int>(json, r'previewSize')!,
         quality: mapValueOfType<int>(json, r'quality')!,
-        webpSize: mapValueOfType<int>(json, r'webpSize')!,
+        thumbnailFormat: ImageFormat.fromJson(json[r'thumbnailFormat'])!,
+        thumbnailSize: mapValueOfType<int>(json, r'thumbnailSize')!,
       );
     }
     return null;
@@ -114,9 +128,11 @@ class SystemConfigThumbnailDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'colorspace',
-    'jpegSize',
+    'previewFormat',
+    'previewSize',
     'quality',
-    'webpSize',
+    'thumbnailFormat',
+    'thumbnailSize',
   };
 }
 

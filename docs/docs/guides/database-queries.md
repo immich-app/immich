@@ -45,7 +45,7 @@ SELECT * FROM "assets" JOIN "exif" ON "assets"."id" = "exif"."assetId" WHERE "ex
 ```
 
 ```sql title="Without thumbnails"
-SELECT * FROM "assets" WHERE "assets"."resizePath" IS NULL OR "assets"."webpPath" IS NULL;
+SELECT * FROM "assets" WHERE "assets"."previewPath" IS NULL OR "assets"."thumbnailPath" IS NULL;
 ```
 
 ```sql title="By type"
