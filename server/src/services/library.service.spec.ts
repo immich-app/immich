@@ -554,7 +554,7 @@ describe(LibraryService.name, () => {
       const mockLibraryJob: ILibraryFileJob = {
         id: libraryStub.externalLibrary1.id,
         ownerId: mockUser.id,
-        assetPath: '/data/user1/photo.jpg',
+        assetPath: assetStub.missingFileExtension.originalPath,
         force: false,
       };
 
@@ -639,7 +639,7 @@ describe(LibraryService.name, () => {
       const mockLibraryJob: ILibraryFileJob = {
         id: assetStub.image.id,
         ownerId: assetStub.hasFileExtension.ownerId,
-        assetPath: '/data/user1/photo.jpg',
+        assetPath: assetStub.hasFileExtension.originalPath,
         force: true,
       };
 
@@ -651,7 +651,7 @@ describe(LibraryService.name, () => {
       expect(assetMock.updateAll).toHaveBeenCalledWith([assetStub.hasFileExtension.id], {
         fileCreatedAt: new Date('2023-01-01'),
         fileModifiedAt: new Date('2023-01-01'),
-        originalFileName: assetStub.image.originalFileName,
+        originalFileName: assetStub.hasFileExtension.originalFileName,
       });
     });
 

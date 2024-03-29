@@ -529,7 +529,7 @@ export class LibraryService extends EventEmitter {
       await this.assetRepository.updateAll([existingAssetEntity.id], {
         fileCreatedAt: stats.mtime,
         fileModifiedAt: stats.mtime,
-        originalFileName: parse(assetPath).name,
+        originalFileName: parse(assetPath).base,
       });
     } else {
       // Not importing and not refreshing, do nothing
