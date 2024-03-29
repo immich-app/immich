@@ -26,7 +26,7 @@ DB_URL='postgresql://immichdbusername:immichdbpassword@postgreshost:postgresport
 
 ## Standalone Postgres without superuser permissions
 
-Immich can run with a standalone Postgres server, without superuser permissions, by following the below instructions at the `psql` prompt to prepare the database.
+Immich can run without superuser permissions by following the below instructions at the `psql` prompt to prepare the database.
 
 :::tip
 Before running these commands, you will need to install the version of vecto.rs as currently used by Immich to your system. You will also need to add `shared_preload_libraries = 'vectors.so'` to your `postgresql.conf`
