@@ -33,6 +33,10 @@ export enum Permission {
   TIMELINE_READ = 'timeline.read',
   TIMELINE_DOWNLOAD = 'timeline.download',
 
+  MEMORY_READ = 'memory.read',
+  MEMORY_WRITE = 'memory.write',
+  MEMORY_DELETE = 'memory.delete',
+
   PERSON_READ = 'person.read',
   PERSON_WRITE = 'person.write',
   PERSON_MERGE = 'person.merge',
@@ -257,6 +261,18 @@ export class AccessCore {
 
       case Permission.TIMELINE_DOWNLOAD: {
         return ids.has(auth.user.id) ? new Set([auth.user.id]) : new Set();
+      }
+
+      case Permission.MEMORY_READ: {
+        return this.repository.memory.checkOwnerAccess(auth.user.id, ids);
+      }
+
+      case Permission.MEMORY_WRITE: {
+        return this.repository.memory.checkOwnerAccess(auth.user.id, ids);
+      }
+
+      case Permission.MEMORY_DELETE: {
+        return this.repository.memory.checkOwnerAccess(auth.user.id, ids);
       }
 
       case Permission.PERSON_READ: {

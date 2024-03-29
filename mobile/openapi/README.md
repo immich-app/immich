@@ -140,6 +140,13 @@ Class | Method | HTTP request | Description
 *LibraryApi* | [**scanLibrary**](doc//LibraryApi.md#scanlibrary) | **POST** /library/{id}/scan | 
 *LibraryApi* | [**updateLibrary**](doc//LibraryApi.md#updatelibrary) | **PUT** /library/{id} | 
 *LibraryApi* | [**validate**](doc//LibraryApi.md#validate) | **POST** /library/{id}/validate | 
+*MemoryApi* | [**addMemoryAssets**](doc//MemoryApi.md#addmemoryassets) | **PUT** /memories/{id}/assets | 
+*MemoryApi* | [**createMemory**](doc//MemoryApi.md#creatememory) | **POST** /memories | 
+*MemoryApi* | [**deleteMemory**](doc//MemoryApi.md#deletememory) | **DELETE** /memories/{id} | 
+*MemoryApi* | [**getMemory**](doc//MemoryApi.md#getmemory) | **GET** /memories/{id} | 
+*MemoryApi* | [**removeMemoryAssets**](doc//MemoryApi.md#removememoryassets) | **DELETE** /memories/{id}/assets | 
+*MemoryApi* | [**searchMemories**](doc//MemoryApi.md#searchmemories) | **GET** /memories | 
+*MemoryApi* | [**updateMemory**](doc//MemoryApi.md#updatememory) | **PUT** /memories/{id} | 
 *OAuthApi* | [**finishOAuth**](doc//OAuthApi.md#finishoauth) | **POST** /oauth/callback | 
 *OAuthApi* | [**linkOAuthAccount**](doc//OAuthApi.md#linkoauthaccount) | **POST** /oauth/link | 
 *OAuthApi* | [**redirectOAuthToMobile**](doc//OAuthApi.md#redirectoauthtomobile) | **GET** /oauth/mobile-redirect | 
@@ -293,7 +300,11 @@ Class | Method | HTTP request | Description
  - [LogoutResponseDto](doc//LogoutResponseDto.md)
  - [MapMarkerResponseDto](doc//MapMarkerResponseDto.md)
  - [MapTheme](doc//MapTheme.md)
+ - [MemoryCreateDto](doc//MemoryCreateDto.md)
  - [MemoryLaneResponseDto](doc//MemoryLaneResponseDto.md)
+ - [MemoryResponseDto](doc//MemoryResponseDto.md)
+ - [MemoryType](doc//MemoryType.md)
+ - [MemoryUpdateDto](doc//MemoryUpdateDto.md)
  - [MergePersonDto](doc//MergePersonDto.md)
  - [MetadataSearchDto](doc//MetadataSearchDto.md)
  - [ModelType](doc//ModelType.md)

@@ -11,6 +11,7 @@ import { DownloadService } from 'src/services/download.service';
 import { JobService } from 'src/services/job.service';
 import { LibraryService } from 'src/services/library.service';
 import { MediaService } from 'src/services/media.service';
+import { MemoryService } from 'src/services/memory.service';
 import { MetadataService } from 'src/services/metadata.service';
 import { MicroservicesService } from 'src/services/microservices.service';
 import { PartnerService } from 'src/services/partner.service';
@@ -42,6 +43,7 @@ export const services = [
   JobService,
   LibraryService,
   MediaService,
+  MemoryService,
   MetadataService,
   PartnerService,
   PersonService,

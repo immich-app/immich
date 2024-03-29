@@ -90,7 +90,12 @@ doc/LoginResponseDto.md
 doc/LogoutResponseDto.md
 doc/MapMarkerResponseDto.md
 doc/MapTheme.md
+doc/MemoryApi.md
+doc/MemoryCreateDto.md
 doc/MemoryLaneResponseDto.md
+doc/MemoryResponseDto.md
+doc/MemoryType.md
+doc/MemoryUpdateDto.md
 doc/MergePersonDto.md
 doc/MetadataSearchDto.md
 doc/ModelType.md
@@ -205,6 +210,7 @@ lib/api/download_api.dart
 lib/api/face_api.dart
 lib/api/job_api.dart
 lib/api/library_api.dart
+lib/api/memory_api.dart
 lib/api/o_auth_api.dart
 lib/api/partner_api.dart
 lib/api/person_api.dart
@@ -301,7 +307,11 @@ lib/model/login_response_dto.dart
 lib/model/logout_response_dto.dart
 lib/model/map_marker_response_dto.dart
 lib/model/map_theme.dart
+lib/model/memory_create_dto.dart
 lib/model/memory_lane_response_dto.dart
+lib/model/memory_response_dto.dart
+lib/model/memory_type.dart
+lib/model/memory_update_dto.dart
 lib/model/merge_person_dto.dart
 lib/model/metadata_search_dto.dart
 lib/model/model_type.dart
@@ -481,7 +491,12 @@ test/login_response_dto_test.dart
 test/logout_response_dto_test.dart
 test/map_marker_response_dto_test.dart
 test/map_theme_test.dart
+test/memory_api_test.dart
+test/memory_create_dto_test.dart
 test/memory_lane_response_dto_test.dart
+test/memory_response_dto_test.dart
+test/memory_type_test.dart
+test/memory_update_dto_test.dart
 test/merge_person_dto_test.dart
 test/metadata_search_dto_test.dart
 test/model_type_test.dart

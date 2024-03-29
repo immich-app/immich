@@ -9,6 +9,7 @@ import { AuditEntity } from 'src/entities/audit.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { GeodataPlacesEntity } from 'src/entities/geodata-places.entity';
 import { LibraryEntity } from 'src/entities/library.entity';
+import { MemoryEntity } from 'src/entities/memory.entity';
 import { MoveEntity } from 'src/entities/move.entity';
 import { PartnerEntity } from 'src/entities/partner.entity';
 import { PersonEntity } from 'src/entities/person.entity';
@@ -32,6 +33,7 @@ export const entities = [
   AuditEntity,
   ExifEntity,
   GeodataPlacesEntity,
+  MemoryEntity,
   MoveEntity,
   PartnerEntity,
   PersonEntity,
