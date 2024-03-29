@@ -14,6 +14,7 @@ import 'package:immich_mobile/modules/search/ui/search_filter/people_picker.dart
 import 'package:immich_mobile/modules/search/ui/search_filter/search_filter_chip.dart';
 import 'package:immich_mobile/modules/search/ui/search_filter/search_filter_utils.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:openapi/api.dart';
 
 @RoutePage()
 class SearchInputPage extends HookConsumerWidget {
@@ -23,7 +24,7 @@ class SearchInputPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final filter = useState<SearchFilter>(
       SearchFilter(
-        personIds: {},
+        people: {},
         location: SearchLocationFilter(),
         camera: SearchCameraFilter(),
         date: SearchDateFilter(),
@@ -36,9 +37,12 @@ class SearchInputPage extends HookConsumerWidget {
       ),
     );
 
+    final peopleCurrentFilterWidget = useState<Widget?>(null);
     final dateRangeCurrentFilterWidget = useState<Widget?>(null);
     final cameraCurrentFilterWidget = useState<Widget?>(null);
     final locationCurrentFilterWidget = useState<Widget?>(null);
+    final mediaTypeCurrentFilterWidget = useState<Widget?>(null);
+    final displayOptionCurrentFilterWidget = useState<Widget?>(null);
 
     search() {
       debugPrint("Search this");
@@ -46,6 +50,23 @@ class SearchInputPage extends HookConsumerWidget {
     }
 
     showPeoplePicker() {
+      handleOnSelect(Set<PersonResponseDto> value) {
+        filter.value = filter.value.copyWith(
+          people: value,
+        );
+
+        peopleCurrentFilterWidget.value = Text(
+          value.map((e) => e.name != '' ? e.name : "No name").join(', '),
+          style: context.textTheme.labelLarge,
+        );
+      }
+
+      handleClear() {
+        filter.value = filter.value.copyWith(
+          people: {},
+        );
+      }
+
       showFilterBottomSheet(
         context: context,
         isScrollControlled: true,
@@ -54,12 +75,11 @@ class SearchInputPage extends HookConsumerWidget {
           child: FilterBottomSheetScaffold(
             title: 'Select people',
             expanded: true,
-            onSearch: () {},
-            onClear: () {},
+            onSearch: search,
+            onClear: handleClear,
             child: PeoplePicker(
-              onTap: (value) {
-                print("people picker value: $value");
-              },
+              onSelect: handleOnSelect,
+              filter: filter.value.people,
             ),
           ),
         ),
@@ -237,12 +257,19 @@ class SearchInputPage extends HookConsumerWidget {
         filter.value = filter.value.copyWith(
           mediaType: assetType,
         );
+
+        mediaTypeCurrentFilterWidget.value = Text(
+          assetType == AssetType.image ? 'Image' : 'Video',
+          style: context.textTheme.labelLarge,
+        );
       }
 
       handleClear() {
         filter.value = filter.value.copyWith(
           mediaType: AssetType.other,
         );
+
+        mediaTypeCurrentFilterWidget.value = null;
       }
 
       showFilterBottomSheet(
@@ -259,26 +286,11 @@ class SearchInputPage extends HookConsumerWidget {
       );
     }
 
-    buildAssetTypeFilter() {
-      switch (filter.value.mediaType) {
-        case AssetType.image:
-          return Text(
-            'Image',
-            style: context.textTheme.labelLarge,
-          );
-        case AssetType.video:
-          return Text(
-            'Video',
-            style: context.textTheme.labelLarge,
-          );
-        case _:
-          return null;
-      }
-    }
-
     // DISPLAY OPTION
     showDisplayOptionPicker() {
       handleOnSelect(Map<DisplayOption, bool> value) {
+        final filterText = <String>[];
+
         value.forEach((key, value) {
           switch (key) {
             case DisplayOption.notInAlbum:
@@ -287,6 +299,7 @@ class SearchInputPage extends HookConsumerWidget {
                   isNotInAlbum: value,
                 ),
               );
+              if (value) filterText.add('Not in album');
               break;
             case DisplayOption.archive:
               filter.value = filter.value.copyWith(
@@ -294,6 +307,7 @@ class SearchInputPage extends HookConsumerWidget {
                   isArchive: value,
                 ),
               );
+              if (value) filterText.add('Archive');
               break;
             case DisplayOption.favorite:
               filter.value = filter.value.copyWith(
@@ -301,9 +315,15 @@ class SearchInputPage extends HookConsumerWidget {
                   isFavorite: value,
                 ),
               );
+              if (value) filterText.add('Favorite');
               break;
           }
         });
+
+        displayOptionCurrentFilterWidget.value = Text(
+          filterText.join(', '),
+          style: context.textTheme.labelLarge,
+        );
       }
 
       handleClear() {
@@ -314,6 +334,8 @@ class SearchInputPage extends HookConsumerWidget {
             isFavorite: false,
           ),
         );
+
+        displayOptionCurrentFilterWidget.value = null;
       }
 
       showFilterBottomSheet(
@@ -327,32 +349,6 @@ class SearchInputPage extends HookConsumerWidget {
             filter: filter.value.display,
           ),
         ),
-      );
-    }
-
-    buildDisplayOptionFilter() {
-      final display = filter.value.display;
-      final filters = <String>[];
-
-      if (!display.isArchive && !display.isFavorite && !display.isNotInAlbum) {
-        return null;
-      }
-
-      if (display.isNotInAlbum) {
-        filters.add('Not in album');
-      }
-
-      if (display.isFavorite) {
-        filters.add('Favorite');
-      }
-
-      if (display.isArchive) {
-        filters.add('Archive');
-      }
-
-      return Text(
-        filters.join(', '),
-        style: context.textTheme.labelLarge,
       );
     }
 
@@ -397,6 +393,7 @@ class SearchInputPage extends HookConsumerWidget {
                     icon: Icons.people_alt_rounded,
                     onTap: showPeoplePicker,
                     label: 'People',
+                    currentFilter: peopleCurrentFilterWidget.value,
                   ),
                   SearchFilterChip(
                     icon: Icons.location_pin,
@@ -420,13 +417,13 @@ class SearchInputPage extends HookConsumerWidget {
                     icon: Icons.video_collection_outlined,
                     onTap: showMediaTypePicker,
                     label: 'Media Type',
-                    currentFilter: buildAssetTypeFilter(),
+                    currentFilter: mediaTypeCurrentFilterWidget.value,
                   ),
                   SearchFilterChip(
                     icon: Icons.display_settings_outlined,
                     onTap: showDisplayOptionPicker,
                     label: 'Display Options',
-                    currentFilter: buildDisplayOptionFilter(),
+                    currentFilter: displayOptionCurrentFilterWidget.value,
                   ),
                 ],
               ),

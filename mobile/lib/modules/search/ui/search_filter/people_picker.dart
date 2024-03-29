@@ -6,11 +6,14 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/search/providers/people.provider.dart';
 import 'package:immich_mobile/shared/models/store.dart' as local_store;
 import 'package:immich_mobile/utils/image_url_builder.dart';
+import 'package:openapi/api.dart';
 
 class PeoplePicker extends HookConsumerWidget {
-  const PeoplePicker({super.key, required this.onTap});
+  const PeoplePicker({super.key, required this.onSelect, this.filter});
 
-  final Function(Set<String>) onTap;
+  final Function(Set<PersonResponseDto>) onSelect;
+  final Set<PersonResponseDto>? filter;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     var imageSize = 45.0;
@@ -19,7 +22,7 @@ class PeoplePicker extends HookConsumerWidget {
       "x-immich-user-token":
           local_store.Store.get(local_store.StoreKey.accessToken),
     };
-    final selectedPeople = useState<Set<String>>({});
+    final selectedPeople = useState<Set<PersonResponseDto>>(filter ?? {});
 
     return people.widgetWhen(
       onData: (people) {
@@ -36,7 +39,7 @@ class PeoplePicker extends HookConsumerWidget {
               ),
               child: ListTile(
                 title: Text(
-                  person.label,
+                  person.name,
                   style: context.textTheme.bodyLarge,
                 ),
                 leading: SizedBox(
@@ -54,16 +57,16 @@ class PeoplePicker extends HookConsumerWidget {
                   ),
                 ),
                 onTap: () {
-                  if (selectedPeople.value.contains(person.id)) {
-                    selectedPeople.value.remove(person.id);
+                  if (selectedPeople.value.contains(person)) {
+                    selectedPeople.value.remove(person);
                   } else {
-                    selectedPeople.value.add(person.id);
+                    selectedPeople.value.add(person);
                   }
 
                   selectedPeople.value = {...selectedPeople.value};
-                  onTap(selectedPeople.value);
+                  onSelect(selectedPeople.value);
                 },
-                selected: selectedPeople.value.contains(person.id),
+                selected: selectedPeople.value.contains(person),
                 selectedTileColor: context.primaryColor.withOpacity(0.2),
                 shape: const RoundedRectangleBorder(
                   borderRadius: BorderRadius.all(Radius.circular(15)),

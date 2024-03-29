@@ -84,7 +84,10 @@ class SearchPage extends HookConsumerWidget {
               top: 8,
             ),
             child: CuratedPeopleRow(
-              content: people.take(12).toList(),
+              content: people
+                  .map((e) => CuratedContent(label: e.name, id: e.id))
+                  .take(12)
+                  .toList(),
               onTap: (content, index) {
                 context.pushRoute(
                   PersonResultRoute(

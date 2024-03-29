@@ -6,12 +6,12 @@ part of 'people.provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$getAllPeopleHash() => r'9b78b9b5af7e0231211c63568f27dd26fd83b6b5';
+String _$getAllPeopleHash() => r'4eff6666be5a74710d1e8587e01d8154310d85bd';
 
 /// See also [getAllPeople].
 @ProviderFor(getAllPeople)
 final getAllPeopleProvider =
-    AutoDisposeFutureProvider<List<CuratedContent>>.internal(
+    AutoDisposeFutureProvider<List<PersonResponseDto>>.internal(
   getAllPeople,
   name: r'getAllPeopleProvider',
   debugGetCreateSourceHash:
@@ -20,7 +20,7 @@ final getAllPeopleProvider =
   allTransitiveDependencies: null,
 );
 
-typedef GetAllPeopleRef = AutoDisposeFutureProviderRef<List<CuratedContent>>;
+typedef GetAllPeopleRef = AutoDisposeFutureProviderRef<List<PersonResponseDto>>;
 String _$personAssetsHash() => r'1d6eff5ca3aa630b58c4dad9516193b21896984d';
 
 /// Copied from Dart SDK

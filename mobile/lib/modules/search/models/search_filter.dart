@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:collection/collection.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:openapi/api.dart';
 
 class SearchLocationFilter {
   String? country;
@@ -235,7 +236,7 @@ class SearchDisplayFilters {
 class SearchFilter {
   String? context;
   String? filename;
-  Set<String> personIds;
+  Set<PersonResponseDto> people;
   SearchLocationFilter location;
   SearchCameraFilter camera;
   SearchDateFilter date;
@@ -247,7 +248,7 @@ class SearchFilter {
   SearchFilter({
     this.context,
     this.filename,
-    required this.personIds,
+    required this.people,
     required this.location,
     required this.camera,
     required this.date,
@@ -258,7 +259,7 @@ class SearchFilter {
   SearchFilter copyWith({
     String? context,
     String? filename,
-    Set<String>? personIds,
+    Set<PersonResponseDto>? people,
     SearchLocationFilter? location,
     SearchCameraFilter? camera,
     SearchDateFilter? date,
@@ -268,7 +269,7 @@ class SearchFilter {
     return SearchFilter(
       context: context ?? this.context,
       filename: filename ?? this.filename,
-      personIds: personIds ?? this.personIds,
+      people: people ?? this.people,
       location: location ?? this.location,
       camera: camera ?? this.camera,
       date: date ?? this.date,
@@ -279,7 +280,7 @@ class SearchFilter {
 
   @override
   String toString() {
-    return 'SearchFilter(context: $context, filename: $filename, personIds: $personIds, location: $location, camera: $camera, date: $date, display: $display, mediaType: $mediaType)';
+    return 'SearchFilter(context: $context, filename: $filename, people: $people, location: $location, camera: $camera, date: $date, display: $display, mediaType: $mediaType)';
   }
 
   @override
@@ -289,7 +290,7 @@ class SearchFilter {
 
     return other.context == context &&
         other.filename == filename &&
-        setEquals(other.personIds, personIds) &&
+        setEquals(other.people, people) &&
         other.location == location &&
         other.camera == camera &&
         other.date == date &&
@@ -301,7 +302,7 @@ class SearchFilter {
   int get hashCode {
     return context.hashCode ^
         filename.hashCode ^
-        personIds.hashCode ^
+        people.hashCode ^
         location.hashCode ^
         camera.hashCode ^
         date.hashCode ^
