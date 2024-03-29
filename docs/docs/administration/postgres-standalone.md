@@ -24,7 +24,7 @@ DB_URL='postgresql://immichdbusername:immichdbpassword@postgreshost:postgresport
 # DB_URL='postgresql://immichdbusername:immichdbpassword@postgreshost:postgresport/immichdatabasename?sslmode=require&sslmode=no-verify'
 ```
 
-## Standalone Postgres without superuser permissions
+## Without superuser permissions
 
 Immich can run without superuser permissions by following the below instructions at the `psql` prompt to prepare the database.
 
