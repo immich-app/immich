@@ -51,7 +51,7 @@ class SearchService {
     }
   }
 
-  Future<SearchResponseDto?> search(SearchFilter filter, int page) async {
+  Future<List<Asset>?> search(SearchFilter filter, int page) async {
     try {
       SearchResponseDto? response;
       AssetTypeEnum? type;
@@ -101,7 +101,12 @@ class SearchService {
         );
       }
 
-      return response;
+      if (response == null) {
+        return null;
+      }
+
+      return _db.assets
+          .getAllByRemoteId(response.assets.items.map((e) => e.id));
     } catch (error) {
       debugPrint("Error [search] $error");
     }
