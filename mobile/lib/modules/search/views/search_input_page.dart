@@ -1,10 +1,12 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/search/models/search_filter.dart';
+import 'package:immich_mobile/modules/search/providers/paginated_search.provider.dart';
 import 'package:immich_mobile/modules/search/ui/search_filter/camera_picker.dart';
 import 'package:immich_mobile/modules/search/ui/search_filter/display_option_picker.dart';
 import 'package:immich_mobile/modules/search/ui/search_filter/filter_bottom_sheet_scaffold.dart';
@@ -14,6 +16,7 @@ import 'package:immich_mobile/modules/search/ui/search_filter/people_picker.dart
 import 'package:immich_mobile/modules/search/ui/search_filter/search_filter_chip.dart';
 import 'package:immich_mobile/modules/search/ui/search_filter/search_filter_utils.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/ui/asset_grid/multiselect_grid.dart';
 import 'package:openapi/api.dart';
 
 @RoutePage()
@@ -44,9 +47,11 @@ class SearchInputPage extends HookConsumerWidget {
     final mediaTypeCurrentFilterWidget = useState<Widget?>(null);
     final displayOptionCurrentFilterWidget = useState<Widget?>(null);
 
-    search() {
-      debugPrint("Search this");
-      debugPrint(filter.value.toString());
+    final searchProvider = ref.watch(paginatedSearchProvider);
+
+    search() async {
+      ref.watch(paginatedSearchProvider.notifier).clear();
+      ref.watch(paginatedSearchProvider.notifier).getNextPage(filter.value, 1);
     }
 
     showPeoplePicker() {
@@ -65,6 +70,8 @@ class SearchInputPage extends HookConsumerWidget {
         filter.value = filter.value.copyWith(
           people: {},
         );
+
+        peopleCurrentFilterWidget.value = null;
       }
 
       showFilterBottomSheet(
@@ -352,6 +359,31 @@ class SearchInputPage extends HookConsumerWidget {
       );
     }
 
+    handleTextSubmitted(String value) {
+      filter.value = filter.value.copyWith(
+        context: value,
+      );
+
+      search();
+    }
+
+    buildSearchResult() {
+      return switch (searchProvider) {
+        AsyncData() => Expanded(
+            child: MultiselectGrid(
+              renderListProvider: paginatedSearchRenderListProvider,
+              archiveEnabled: true,
+              deleteEnabled: true,
+              editEnabled: true,
+              favoriteEnabled: true,
+              stackEnabled: false,
+            ),
+          ),
+        AsyncError(:final error) => Text('Error: $error'),
+        _ => const Center(child: CircularProgressIndicator()),
+      };
+    }
+
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
@@ -375,10 +407,10 @@ class SearchInputPage extends HookConsumerWidget {
               borderSide: BorderSide(color: Colors.transparent),
             ),
           ),
-          onSubmitted: (value) {},
+          onSubmitted: handleTextSubmitted,
         ),
       ),
-      body: ListView(
+      body: Column(
         children: [
           Padding(
             padding: const EdgeInsets.only(top: 12.0),
@@ -429,6 +461,7 @@ class SearchInputPage extends HookConsumerWidget {
               ),
             ),
           ),
+          buildSearchResult(),
         ],
       ),
     );

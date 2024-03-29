@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/search/models/search_filter.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
@@ -48,6 +49,63 @@ class SearchService {
       debugPrint("[ERROR] [getSearchSuggestions] ${e.toString()}");
       return [];
     }
+  }
+
+  Future<SearchResponseDto?> search(SearchFilter filter, int page) async {
+    try {
+      SearchResponseDto? response;
+      AssetTypeEnum? type;
+      if (filter.mediaType == AssetType.image) {
+        type = AssetTypeEnum.IMAGE;
+      } else if (filter.mediaType == AssetType.video) {
+        type = AssetTypeEnum.VIDEO;
+      }
+
+      if (filter.context != null && filter.context!.isNotEmpty) {
+        response = await _apiService.searchApi.searchSmart(
+          SmartSearchDto(
+            query: filter.context!,
+            country: filter.location.country,
+            state: filter.location.state,
+            city: filter.location.city,
+            make: filter.camera.make,
+            model: filter.camera.model,
+            takenAfter: filter.date.takenAfter,
+            takenBefore: filter.date.takenBefore,
+            isArchived: filter.display.isArchive,
+            isFavorite: filter.display.isFavorite,
+            isNotInAlbum: filter.display.isNotInAlbum,
+            personIds: filter.people.map((e) => e.id).toList(),
+            type: type,
+            page: page,
+          ),
+        );
+      } else {
+        response = await _apiService.searchApi.searchMetadata(
+          MetadataSearchDto(
+            originalFileName: filter.filename,
+            country: filter.location.country,
+            state: filter.location.state,
+            city: filter.location.city,
+            make: filter.camera.make,
+            model: filter.camera.model,
+            takenAfter: filter.date.takenAfter,
+            takenBefore: filter.date.takenBefore,
+            isArchived: filter.display.isArchive,
+            isFavorite: filter.display.isFavorite,
+            isNotInAlbum: filter.display.isNotInAlbum,
+            personIds: filter.people.map((e) => e.id).toList(),
+            type: type,
+            page: page,
+          ),
+        );
+      }
+
+      return response;
+    } catch (error) {
+      debugPrint("Error [search] $error");
+    }
+    return null;
   }
 
   Future<List<Asset>?> searchAsset(
