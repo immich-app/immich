@@ -286,11 +286,11 @@ export async function stackAssets(assets: Array<AssetResponseDto>, onStack: (ds:
       await updateAssets({ assetBulkUpdateDto: { ids, stackParentId: parent.id } });
     }
 
-    let childrenCount = parent.stackCount ?? 0;
+    let childrenCount = parent.stackCount || 1;
     for (const asset of children) {
-      asset.stackParentId = parent?.id;
+      asset.stackParentId = parent.id;
       // Add grand-children's count to new parent
-      childrenCount += asset.stackCount == null ? 1 : asset.stackCount + 1;
+      childrenCount += asset.stackCount || 1;
       // Reset children stack info
       asset.stackCount = null;
       asset.stack = [];
