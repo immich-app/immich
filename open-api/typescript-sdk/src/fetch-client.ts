@@ -2422,13 +2422,15 @@ export function getConfigDefaults(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
-export function getMapStyle({ theme }: {
+export function getMapStyle({ key, theme }: {
+    key?: string;
     theme: MapTheme;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: object;
     }>(`/system-config/map/style.json${QS.query(QS.explode({
+        key,
         theme
     }))}`, {
         ...opts
