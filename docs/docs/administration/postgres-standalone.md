@@ -2,7 +2,7 @@
 
 ## Specifying the connection URL
 
-While not the officially recommended method, it is possible to run Immich using an already-existing Postgres server by specifying `DB_URL` in the `.env` file.
+While not officially recommended, it is possible to run Immich using a pre-existing Postgres server by specifying `DB_URL` in the `.env` file.
 
 :::note
 By default, Immich expects superuser permission on the Postgres database.
