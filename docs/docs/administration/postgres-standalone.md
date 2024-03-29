@@ -35,6 +35,7 @@ DB_URL='postgresql://immichdbusername:immichdbpassword@postgreshost:postgresport
 Immich can run without superuser permissions by following the below instructions at the `psql` prompt to prepare the database.
 
 ```sql title="Set up Postgres for Immich"
+CREATE DATABASE <immichdatabasename>;
 \c <immichdatabasename>
 BEGIN;
 ALTER DATABASE <immichdatabasename> OWNER TO <immichdbusername>;
