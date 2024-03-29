@@ -2,11 +2,11 @@
   import Icon from '$lib/components/elements/icon.svelte';
 
   export let icon: string;
+  export let title: string;
   export let backgroundColor = '';
   export let hoverColor = '#e2e7e9';
   export let padding = '3';
   export let size = '24';
-  export let title: string;
   export let isOpacity = false;
   export let forceDark = false;
   export let hideMobile = false;
