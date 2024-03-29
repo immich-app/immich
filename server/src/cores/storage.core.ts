@@ -115,7 +115,7 @@ export class StorageCore {
   }
 
   static isImmichPath(path: string) {
-    return resolve(path) === (resolve(APP_MEDIA_LOCATION));
+    return resolve(path) === resolve(APP_MEDIA_LOCATION);
   }
 
   static isGeneratedAsset(path: string) {
