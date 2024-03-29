@@ -18,8 +18,8 @@ import { ImmichLogger } from 'src/utils/logger';
 import { mimeTypes } from 'src/utils/mime-types';
 
 @Instrumentation()
-export class FilesystemProvider implements IStorageRepository {
-  private logger = new ImmichLogger(FilesystemProvider.name);
+export class StorageRepository implements IStorageRepository {
+  private logger = new ImmichLogger(StorageRepository.name);
 
   readdir(folder: string): Promise<string[]> {
     return fs.readdir(folder);

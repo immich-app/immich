@@ -182,7 +182,12 @@
       {#if !asset.isReadOnly || !asset.isExternal}
         <CircleIconButton isOpacity={true} icon={mdiDeleteOutline} on:click={() => dispatch('delete')} title="Delete" />
       {/if}
-      <div use:clickOutside on:outclick={() => (isShowAssetOptions = false)}>
+      <div
+        use:clickOutside={{
+          onOutclick: () => (isShowAssetOptions = false),
+          onEscape: () => (isShowAssetOptions = false),
+        }}
+      >
         <CircleIconButton isOpacity={true} icon={mdiDotsVertical} on:click={showOptionsMenu} title="More" />
         {#if isShowAssetOptions}
           <ContextMenu {...contextMenuPosition} direction="left">

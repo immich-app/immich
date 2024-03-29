@@ -127,10 +127,10 @@ describe(LibraryService.name, () => {
     });
   });
 
-  describe('validateConfig', () => {
+  describe('onValidateConfig', () => {
     it('should allow a valid cron expression', () => {
       expect(() =>
-        sut.validateConfig({
+        sut.onValidateConfig({
           newConfig: { library: { scan: { cronExpression: '0 0 * * *' } } } as SystemConfig,
           oldConfig: {} as SystemConfig,
         }),
@@ -139,7 +139,7 @@ describe(LibraryService.name, () => {
 
     it('should fail for an invalid cron expression', () => {
       expect(() =>
-        sut.validateConfig({
+        sut.onValidateConfig({
           newConfig: { library: { scan: { cronExpression: 'foo' } } } as SystemConfig,
           oldConfig: {} as SystemConfig,
         }),
@@ -501,17 +501,17 @@ describe(LibraryService.name, () => {
       const mockLibraryJob: ILibraryFileJob = {
         id: libraryStub.externalLibrary1.id,
         ownerId: mockUser.id,
-        assetPath: '/data/user1/photo.jpg',
+        assetPath: assetStub.hasFileExtension.originalPath,
         force: false,
       };
 
       storageMock.stat.mockResolvedValue({
         size: 100,
-        mtime: assetStub.image.fileModifiedAt,
+        mtime: assetStub.hasFileExtension.fileModifiedAt,
         ctime: new Date('2023-01-01'),
       } as Stats);
 
-      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
+      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.hasFileExtension);
 
       await expect(sut.handleAssetRefresh(mockLibraryJob)).resolves.toBe(JobStatus.SKIPPED);
 
@@ -546,6 +546,26 @@ describe(LibraryService.name, () => {
           id: assetStub.image.id,
         },
       });
+    });
+
+    it('should import an asset that is missing a file extension', async () => {
+      // This tests for the case where the file extension is missing from the asset path.
+      // This happened in previous versions of Immich
+      const mockLibraryJob: ILibraryFileJob = {
+        id: libraryStub.externalLibrary1.id,
+        ownerId: mockUser.id,
+        assetPath: assetStub.missingFileExtension.originalPath,
+        force: false,
+      };
+
+      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.missingFileExtension);
+
+      await expect(sut.handleAssetRefresh(mockLibraryJob)).resolves.toBe(JobStatus.SUCCESS);
+
+      expect(assetMock.updateAll).toHaveBeenCalledWith(
+        [assetStub.missingFileExtension.id],
+        expect.objectContaining({ originalFileName: 'photo.jpg' }),
+      );
     });
 
     it('should set a missing asset to offline', async () => {
@@ -618,19 +638,20 @@ describe(LibraryService.name, () => {
     it('should refresh an existing asset if forced', async () => {
       const mockLibraryJob: ILibraryFileJob = {
         id: assetStub.image.id,
-        ownerId: assetStub.image.ownerId,
-        assetPath: '/data/user1/photo.jpg',
+        ownerId: assetStub.hasFileExtension.ownerId,
+        assetPath: assetStub.hasFileExtension.originalPath,
         force: true,
       };
 
-      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
-      assetMock.create.mockResolvedValue(assetStub.image);
+      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.hasFileExtension);
+      assetMock.create.mockResolvedValue(assetStub.hasFileExtension);
 
       await expect(sut.handleAssetRefresh(mockLibraryJob)).resolves.toBe(JobStatus.SUCCESS);
 
-      expect(assetMock.updateAll).toHaveBeenCalledWith([assetStub.image.id], {
+      expect(assetMock.updateAll).toHaveBeenCalledWith([assetStub.hasFileExtension.id], {
         fileCreatedAt: new Date('2023-01-01'),
         fileModifiedAt: new Date('2023-01-01'),
+        originalFileName: assetStub.hasFileExtension.originalFileName,
       });
     });
 

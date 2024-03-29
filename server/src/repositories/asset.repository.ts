@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DateTime } from 'luxon';
 import path from 'node:path';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import { AssetOrder } from 'src/entities/album.entity';
@@ -76,41 +75,6 @@ export class AssetRepository implements IAssetRepository {
     return this.repository.save(asset);
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, DummyValue.DATE] })
-  getByDate(ownerId: string, date: Date): Promise<AssetEntity[]> {
-    // For reference of a correct approach although slower
-
-    // let builder = this.repository
-    //   .createQueryBuilder('asset')
-    //   .leftJoin('asset.exifInfo', 'exifInfo')
-    //   .where('asset.ownerId = :ownerId', { ownerId })
-    //   .andWhere(
-    //     `coalesce(date_trunc('day', asset."fileCreatedAt", "exifInfo"."timeZone") at TIME ZONE "exifInfo"."timeZone", date_trunc('day', asset."fileCreatedAt")) IN (:date)`,
-    //     { date },
-    //   )
-    //   .andWhere('asset.isVisible = true')
-    //   .andWhere('asset.isArchived = false')
-    //   .orderBy('asset.fileCreatedAt', 'DESC');
-
-    // return builder.getMany();
-
-    return this.repository.find({
-      where: {
-        ownerId,
-        isVisible: true,
-        isArchived: false,
-        resizePath: Not(IsNull()),
-        fileCreatedAt: OptionalBetween(date, DateTime.fromJSDate(date).plus({ day: 1 }).toJSDate()),
-      },
-      relations: {
-        exifInfo: true,
-      },
-      order: {
-        fileCreatedAt: 'DESC',
-      },
-    });
-  }
-
   @GenerateSql({ params: [DummyValue.UUID, { day: 1, month: 1 }] })
   getByDayOfYear(ownerIds: string[], { day, month }: MonthDay): Promise<AssetEntity[]> {
     return this.repository
@@ -129,7 +93,7 @@ export class AssetRepository implements IAssetRepository {
         },
       )
       .leftJoinAndSelect('entity.exifInfo', 'exifInfo')
-      .orderBy('entity.localDateTime', 'DESC')
+      .orderBy('entity.localDateTime', 'ASC')
       .getMany();
   }
 

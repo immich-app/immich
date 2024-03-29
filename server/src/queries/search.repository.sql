@@ -278,7 +278,7 @@ WITH RECURSIVE
         exif
         INNER JOIN assets ON exif."assetId" = assets.id
       WHERE
-        "ownerId" IN ($1)
+        "ownerId" = ANY ('$1'::uuid [])
         AND "isVisible" = $2
         AND "isArchived" = $3
         AND type = $4
@@ -302,7 +302,7 @@ WITH RECURSIVE
           INNER JOIN assets ON exif."assetId" = assets.id
         WHERE
           city > c.city
-          AND "ownerId" IN ($1)
+          AND "ownerId" = ANY ('$1'::uuid [])
           AND "isVisible" = $2
           AND "isArchived" = $3
           AND type = $4

@@ -1,5 +1,3 @@
-version: '3.8'
-
 #
 # WARNING: Make sure to use the docker-compose.yml of the current release:
 #

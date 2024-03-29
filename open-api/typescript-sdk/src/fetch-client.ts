@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.99.0
+ * 1.100.0
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -273,6 +273,7 @@ export type MapMarkerResponseDto = {
 export type MemoryLaneResponseDto = {
     assets: AssetResponseDto[];
     title: string;
+    yearsAgo: number;
 };
 export type UpdateStackParentDto = {
     newParentId: string;
@@ -282,10 +283,6 @@ export type AssetStatsResponseDto = {
     images: number;
     total: number;
     videos: number;
-};
-export type TimeBucketResponseDto = {
-    count: number;
-    timeBucket: string;
 };
 export type CreateAssetDto = {
     assetData: Blob;
@@ -970,6 +967,10 @@ export type CreateTagDto = {
 export type UpdateTagDto = {
     name?: string;
 };
+export type TimeBucketResponseDto = {
+    count: number;
+    timeBucket: string;
+};
 export type CreateUserDto = {
     email: string;
     memoriesEnabled?: boolean;
@@ -1451,72 +1452,6 @@ export function getAssetThumbnail({ format, id, key }: {
     }>(`/asset/thumbnail/${encodeURIComponent(id)}${QS.query(QS.explode({
         format,
         key
-    }))}`, {
-        ...opts
-    }));
-}
-export function getTimeBucket({ albumId, isArchived, isFavorite, isTrashed, key, order, personId, size, timeBucket, userId, withPartners, withStacked }: {
-    albumId?: string;
-    isArchived?: boolean;
-    isFavorite?: boolean;
-    isTrashed?: boolean;
-    key?: string;
-    order?: AssetOrder;
-    personId?: string;
-    size: TimeBucketSize;
-    timeBucket: string;
-    userId?: string;
-    withPartners?: boolean;
-    withStacked?: boolean;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: AssetResponseDto[];
-    }>(`/asset/time-bucket${QS.query(QS.explode({
-        albumId,
-        isArchived,
-        isFavorite,
-        isTrashed,
-        key,
-        order,
-        personId,
-        size,
-        timeBucket,
-        userId,
-        withPartners,
-        withStacked
-    }))}`, {
-        ...opts
-    }));
-}
-export function getTimeBuckets({ albumId, isArchived, isFavorite, isTrashed, key, order, personId, size, userId, withPartners, withStacked }: {
-    albumId?: string;
-    isArchived?: boolean;
-    isFavorite?: boolean;
-    isTrashed?: boolean;
-    key?: string;
-    order?: AssetOrder;
-    personId?: string;
-    size: TimeBucketSize;
-    userId?: string;
-    withPartners?: boolean;
-    withStacked?: boolean;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: TimeBucketResponseDto[];
-    }>(`/asset/time-buckets${QS.query(QS.explode({
-        albumId,
-        isArchived,
-        isFavorite,
-        isTrashed,
-        key,
-        order,
-        personId,
-        size,
-        userId,
-        withPartners,
-        withStacked
     }))}`, {
         ...opts
     }));
@@ -2594,6 +2529,72 @@ export function tagAssets({ id, assetIdsDto }: {
         body: assetIdsDto
     })));
 }
+export function getTimeBucket({ albumId, isArchived, isFavorite, isTrashed, key, order, personId, size, timeBucket, userId, withPartners, withStacked }: {
+    albumId?: string;
+    isArchived?: boolean;
+    isFavorite?: boolean;
+    isTrashed?: boolean;
+    key?: string;
+    order?: AssetOrder;
+    personId?: string;
+    size: TimeBucketSize;
+    timeBucket: string;
+    userId?: string;
+    withPartners?: boolean;
+    withStacked?: boolean;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetResponseDto[];
+    }>(`/timeline/bucket${QS.query(QS.explode({
+        albumId,
+        isArchived,
+        isFavorite,
+        isTrashed,
+        key,
+        order,
+        personId,
+        size,
+        timeBucket,
+        userId,
+        withPartners,
+        withStacked
+    }))}`, {
+        ...opts
+    }));
+}
+export function getTimeBuckets({ albumId, isArchived, isFavorite, isTrashed, key, order, personId, size, userId, withPartners, withStacked }: {
+    albumId?: string;
+    isArchived?: boolean;
+    isFavorite?: boolean;
+    isTrashed?: boolean;
+    key?: string;
+    order?: AssetOrder;
+    personId?: string;
+    size: TimeBucketSize;
+    userId?: string;
+    withPartners?: boolean;
+    withStacked?: boolean;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: TimeBucketResponseDto[];
+    }>(`/timeline/buckets${QS.query(QS.explode({
+        albumId,
+        isArchived,
+        isFavorite,
+        isTrashed,
+        key,
+        order,
+        personId,
+        size,
+        userId,
+        withPartners,
+        withStacked
+    }))}`, {
+        ...opts
+    }));
+}
 export function emptyTrash(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText("/trash/empty", {
         ...opts,
@@ -2788,10 +2789,6 @@ export enum ThumbnailFormat {
     Jpeg = "JPEG",
     Webp = "WEBP"
 }
-export enum TimeBucketSize {
-    Day = "DAY",
-    Month = "MONTH"
-}
 export enum EntityType {
     Asset = "ASSET",
     Album = "ALBUM"
@@ -2909,4 +2906,8 @@ export enum Colorspace {
 export enum MapTheme {
     Light = "light",
     Dark = "dark"
+}
+export enum TimeBucketSize {
+    Day = "DAY",
+    Month = "MONTH"
 }

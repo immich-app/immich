@@ -31,6 +31,7 @@ import { ServerInfoController } from 'src/controllers/server-info.controller';
 import { SharedLinkController } from 'src/controllers/shared-link.controller';
 import { SystemConfigController } from 'src/controllers/system-config.controller';
 import { TagController } from 'src/controllers/tag.controller';
+import { TimelineController } from 'src/controllers/timeline.controller';
 import { TrashController } from 'src/controllers/trash.controller';
 import { UserController } from 'src/controllers/user.controller';
 import { databaseConfig } from 'src/database.config';
@@ -43,14 +44,15 @@ import { IAssetStackRepository } from 'src/interfaces/asset-stack.interface';
 import { IAssetRepositoryV1 } from 'src/interfaces/asset-v1.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IAuditRepository } from 'src/interfaces/audit.interface';
-import { ICommunicationRepository } from 'src/interfaces/communication.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IDatabaseRepository } from 'src/interfaces/database.interface';
+import { IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository } from 'src/interfaces/job.interface';
 import { ILibraryRepository } from 'src/interfaces/library.interface';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
 import { IMediaRepository } from 'src/interfaces/media.interface';
 import { IMetadataRepository } from 'src/interfaces/metadata.interface';
+import { IMetricRepository } from 'src/interfaces/metric.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
@@ -74,21 +76,22 @@ import { AssetStackRepository } from 'src/repositories/asset-stack.repository';
 import { AssetRepositoryV1 } from 'src/repositories/asset-v1.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { AuditRepository } from 'src/repositories/audit.repository';
-import { CommunicationRepository } from 'src/repositories/communication.repository';
 import { CryptoRepository } from 'src/repositories/crypto.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
-import { FilesystemProvider } from 'src/repositories/filesystem.provider';
+import { EventRepository } from 'src/repositories/event.repository';
 import { JobRepository } from 'src/repositories/job.repository';
 import { LibraryRepository } from 'src/repositories/library.repository';
 import { MachineLearningRepository } from 'src/repositories/machine-learning.repository';
 import { MediaRepository } from 'src/repositories/media.repository';
 import { MetadataRepository } from 'src/repositories/metadata.repository';
+import { MetricRepository } from 'src/repositories/metric.repository';
 import { MoveRepository } from 'src/repositories/move.repository';
 import { PartnerRepository } from 'src/repositories/partner.repository';
 import { PersonRepository } from 'src/repositories/person.repository';
 import { SearchRepository } from 'src/repositories/search.repository';
 import { ServerInfoRepository } from 'src/repositories/server-info.repository';
 import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
+import { StorageRepository } from 'src/repositories/storage.repository';
 import { SystemConfigRepository } from 'src/repositories/system-config.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { TagRepository } from 'src/repositories/tag.repository';
@@ -119,6 +122,7 @@ import { StorageTemplateService } from 'src/services/storage-template.service';
 import { StorageService } from 'src/services/storage.service';
 import { SystemConfigService } from 'src/services/system-config.service';
 import { TagService } from 'src/services/tag.service';
+import { TimelineService } from 'src/services/timeline.service';
 import { TrashService } from 'src/services/trash.service';
 import { UserService } from 'src/services/user.service';
 import { otelConfig } from 'src/utils/instrumentation';
@@ -155,6 +159,7 @@ const controllers = [
   SharedLinkController,
   SystemConfigController,
   TagController,
+  TimelineController,
   TrashController,
   UserController,
   PersonController,
@@ -163,7 +168,6 @@ const controllers = [
 const services: Provider[] = [
   ApiService,
   MicroservicesService,
-
   APIKeyService,
   ActivityService,
   AlbumService,
@@ -188,6 +192,7 @@ const services: Provider[] = [
   StorageTemplateService,
   SystemConfigService,
   TagService,
+  TimelineService,
   TrashService,
   UserService,
 ];
@@ -200,21 +205,22 @@ const repositories: Provider[] = [
   { provide: IAssetRepositoryV1, useClass: AssetRepositoryV1 },
   { provide: IAssetStackRepository, useClass: AssetStackRepository },
   { provide: IAuditRepository, useClass: AuditRepository },
-  { provide: ICommunicationRepository, useClass: CommunicationRepository },
   { provide: ICryptoRepository, useClass: CryptoRepository },
   { provide: IDatabaseRepository, useClass: DatabaseRepository },
+  { provide: IEventRepository, useClass: EventRepository },
   { provide: IJobRepository, useClass: JobRepository },
   { provide: ILibraryRepository, useClass: LibraryRepository },
   { provide: IKeyRepository, useClass: ApiKeyRepository },
   { provide: IMachineLearningRepository, useClass: MachineLearningRepository },
   { provide: IMetadataRepository, useClass: MetadataRepository },
+  { provide: IMetricRepository, useClass: MetricRepository },
   { provide: IMoveRepository, useClass: MoveRepository },
   { provide: IPartnerRepository, useClass: PartnerRepository },
   { provide: IPersonRepository, useClass: PersonRepository },
   { provide: IServerInfoRepository, useClass: ServerInfoRepository },
   { provide: ISharedLinkRepository, useClass: SharedLinkRepository },
   { provide: ISearchRepository, useClass: SearchRepository },
-  { provide: IStorageRepository, useClass: FilesystemProvider },
+  { provide: IStorageRepository, useClass: StorageRepository },
   { provide: ISystemConfigRepository, useClass: SystemConfigRepository },
   { provide: ISystemMetadataRepository, useClass: SystemMetadataRepository },
   { provide: ITagRepository, useClass: TagRepository },
@@ -277,6 +283,7 @@ export class ImmichAdminModule {}
     EventEmitterModule.forRoot(),
     TypeOrmModule.forRoot(databaseConfig),
     TypeOrmModule.forFeature(databaseEntities),
+    OpenTelemetryModule.forRoot(otelConfig),
   ],
   controllers: [...controllers],
   providers: [...services, ...repositories, ...middleware, SchedulerRegistry],

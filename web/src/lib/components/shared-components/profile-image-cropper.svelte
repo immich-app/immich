@@ -71,7 +71,7 @@
   };
 </script>
 
-<BaseModal on:close>
+<BaseModal on:close on:escape>
   <svelte:fragment slot="title">
     <span class="flex place-items-center gap-2">
       <p class="font-medium">Set profile picture</p>
