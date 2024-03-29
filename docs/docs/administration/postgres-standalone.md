@@ -13,7 +13,7 @@ Running with a pre-existing Postgres server can unlock powerful administrative f
 You must install pgvecto.rs using their [instructions](https://docs.pgvecto.rs/getting-started/installation.html). After installation, add `shared_preload_libraries = 'vectors.so'` to your `postgresql.conf`. If you already have some `shared_preload_libraries` set, you can separate each extension with a comma. For example, `shared_preload_libraries = 'pg_stat_statements, vectors.so'`.
 
 :::note
-Make sure the installed version of pgvecto.rs matches the version of Immich you are running, which may not always be the most recent one. For example, if you Immich version used the database image `tensorchord/pgvecto-rs:pg14-v0.2.0`, you must install `pgvecto.rs 0.2.0`.
+Make sure the installed version of pgvecto.rs is compatible with your version of Immich. For example, if your Immich version uses the dedicated database image `tensorchord/pgvecto-rs:pg14-v0.2.1`, you must install pgvecto.rs `>= 0.2.1, < 0.3.0`.
 :::
 
 ## Specifying the connection URL
@@ -32,6 +32,8 @@ DB_URL='postgresql://immichdbusername:immichdbpassword@postgreshost:postgresport
 
 ## Without superuser permissions
 
+### Initial installation
+
 Immich can run without superuser permissions by following the below instructions at the `psql` prompt to prepare the database.
 
 ```sql title="Set up Postgres for Immich"
@@ -43,6 +45,11 @@ CREATE EXTENSION vectors;
 CREATE EXTENSION earthdistance CASCADE;
 ALTER DATABASE <immichdatabasename> SET search_path TO "$user", public, vectors;
 GRANT USAGE ON SCHEMA vectors TO <immichdbusername>;
+
 GRANT SELECT ON TABLE pg_vector_index_stat to <immichdbusername>;
 COMMIT;
 ```
+
+### Updating pgvecto.rs
+
+When installing a new version of pgvecto.rs, you will need to manually update the extension by connecting to the Immich database and running `ALTER EXTENSION vectors UPDATE;`.
