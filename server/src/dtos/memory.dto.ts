@@ -1,10 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsObject } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsEnum, IsInt, IsObject, IsPositive, ValidateNested } from 'class-validator';
 import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { MemoryEntity, MemoryType } from 'src/entities/memory.entity';
 import { ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
-
-type MemoryData = any;
 
 class MemoryBaseDto {
   @ValidateBoolean({ optional: true })
@@ -13,6 +12,14 @@ class MemoryBaseDto {
   @ValidateDate({ optional: true })
   seenAt?: Date;
 }
+
+class OnThisDayDto {
+  @IsInt()
+  @IsPositive()
+  year!: number;
+}
+
+type MemoryData = OnThisDayDto;
 
 export class MemoryUpdateDto extends MemoryBaseDto {
   @ValidateDate({ optional: true })
@@ -25,6 +32,18 @@ export class MemoryCreateDto extends MemoryBaseDto {
   type!: MemoryType;
 
   @IsObject()
+  @ValidateNested()
+  @Type((options) => {
+    switch (options?.object.type) {
+      case MemoryType.ON_THIS_DAY: {
+        return OnThisDayDto;
+      }
+
+      default: {
+        return Object;
+      }
+    }
+  })
   data!: MemoryData;
 
   @ValidateDate()

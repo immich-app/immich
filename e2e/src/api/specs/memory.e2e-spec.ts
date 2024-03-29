@@ -60,6 +60,22 @@ describe('/memories', () => {
       expect(body).toEqual(errorDto.unauthorized);
     });
 
+    it('should validate data when type is on this day', async () => {
+      const { status, body } = await request(app)
+        .post('/memories')
+        .set('Authorization', `Bearer ${user.accessToken}`)
+        .send({
+          type: 'on_this_day',
+          data: {},
+          memoryAt: new Date(2021).toISOString(),
+        });
+
+      expect(status).toBe(400);
+      expect(body).toEqual(
+        errorDto.badRequest(['data.year must be a positive number', 'data.year must be an integer number']),
+      );
+    });
+
     it('should create a new memory', async () => {
       const { status, body } = await request(app)
         .post('/memories')
