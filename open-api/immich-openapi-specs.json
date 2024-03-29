@@ -5349,6 +5349,14 @@
         "operationId": "getMapStyle",
         "parameters": [
           {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "theme",
             "required": true,
             "in": "query",
