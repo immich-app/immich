@@ -1,4 +1,4 @@
-# Preparing up a standalone Postgres server
+# Preparing a pre-existing Postgres server
 
 ## Specifying the connection URL
 
