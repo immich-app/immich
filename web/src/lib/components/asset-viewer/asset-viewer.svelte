@@ -1,26 +1,24 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { AppRoute, AssetAction, ProjectionType } from '$lib/constants';
+  import { AssetAction, ProjectionType } from '$lib/constants';
   import { updateNumberOfComments } from '$lib/stores/activity.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import type { AssetStore } from '$lib/stores/assets.store';
   import { isShowDetail, showDeleteModal } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
-  import { SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
+  import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { stackAssetsStore } from '$lib/stores/stacked-asset.store';
   import { user } from '$lib/stores/user.store';
   import { getAssetJobMessage, isSharedLink, handlePromiseError } from '$lib/utils';
-  import { addAssetsToAlbum, downloadFile } from '$lib/utils/asset-utils';
+  import { addAssetsToAlbum, addAssetsToNewAlbum, downloadFile } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
+  import { shortcuts } from '$lib/utils/shortcut';
   import { SlideshowHistory } from '$lib/utils/slideshow-history';
   import {
     AssetJobName,
     AssetTypeEnum,
     ReactionType,
     createActivity,
-    createAlbum,
     deleteActivity,
     deleteAssets,
     getActivities,
@@ -51,9 +49,12 @@
   import PhotoViewer from './photo-viewer.svelte';
   import SlideshowBar from './slideshow-bar.svelte';
   import VideoViewer from './video-viewer.svelte';
+  import CreateSharedLinkModal from '$lib/components/shared-components/create-share-link-modal/create-shared-link-modal.svelte';
+  import FocusTrap from '$lib/components/shared-components/focus-trap.svelte';
 
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
+  export let preloadAssets: AssetResponseDto[] = [];
   export let showNavigation = true;
   export let sharedLink: SharedLinkResponseDto | undefined = undefined;
   $: isTrashEnabled = $featureFlags.trash;
@@ -67,7 +68,7 @@
   const {
     restartProgress: restartSlideshowProgress,
     stopProgress: stopSlideshowProgress,
-    slideshowShuffle,
+    slideshowNavigation,
     slideshowState,
   } = slideshowStore;
 
@@ -81,11 +82,13 @@
   let appearsInAlbums: AlbumResponseDto[] = [];
   let isShowAlbumPicker = false;
   let isShowDeleteConfirmation = false;
+  let isShowShareModal = false;
   let addToSharedAlbum = true;
   let shouldPlayMotionPhoto = false;
   let isShowProfileImageCrop = false;
   let shouldShowDownloadButton = sharedLink ? sharedLink.allowDownload : !asset.isOffline;
   let shouldShowDetailButton = asset.hasMetadata;
+  let shouldShowShareModal = !asset.isTrashed;
   let canCopyImagesToClipboard: boolean;
   let slideshowStateUnsubscribe: () => void;
   let shuffleSlideshowUnsubscribe: () => void;
@@ -93,6 +96,9 @@
   let isShowActivity = false;
   let isLiked: ActivityResponseDto | null = null;
   let numberOfComments: number;
+  let fullscreenElement: Element;
+
+  $: isFullScreen = fullscreenElement !== null;
 
   $: {
     if (asset.stackCount && asset.stack) {
@@ -100,6 +106,11 @@
       $stackAssetsStore = [...$stackAssetsStore, asset].sort(
         (a, b) => new Date(b.fileCreatedAt).getTime() - new Date(a.fileCreatedAt).getTime(),
       );
+
+      // if its a stack, add the next stack image in addition to the next asset
+      if (asset.stackCount > 1) {
+        preloadAssets.push($stackAssetsStore[1]);
+      }
     }
 
     if (!$stackAssetsStore.map((a) => a.id).includes(asset.id)) {
@@ -190,8 +201,8 @@
       }
     });
 
-    shuffleSlideshowUnsubscribe = slideshowShuffle.subscribe((value) => {
-      if (value) {
+    shuffleSlideshowUnsubscribe = slideshowNavigation.subscribe((value) => {
+      if (value === SlideshowNavigation.Shuffle) {
         slideshowHistory.reset();
         slideshowHistory.queue(asset.id);
       }
@@ -247,64 +258,9 @@
     isShowActivity = !isShowActivity;
   };
 
-  const handleKeypress = async (event: KeyboardEvent) => {
-    if (shouldIgnoreShortcut(event)) {
-      return;
-    }
-
-    const key = event.key;
-    const shiftKey = event.shiftKey;
-    const ctrlKey = event.ctrlKey;
-
-    if (ctrlKey) {
-      return;
-    }
-
-    switch (key) {
-      case 'a':
-      case 'A': {
-        if (shiftKey) {
-          await toggleArchive();
-        }
-        return;
-      }
-      case 'ArrowLeft': {
-        navigateAssetBackward();
-        return;
-      }
-      case 'ArrowRight': {
-        await navigateAssetForward();
-        return;
-      }
-      case 'd':
-      case 'D': {
-        if (shiftKey) {
-          await downloadFile(asset);
-        }
-        return;
-      }
-      case 'Delete': {
-        await trashOrDelete(shiftKey);
-        return;
-      }
-      case 'Escape': {
-        if (isShowDeleteConfirmation) {
-          isShowDeleteConfirmation = false;
-          return;
-        }
-        closeViewer();
-        return;
-      }
-      case 'f': {
-        await toggleFavorite();
-        return;
-      }
-      case 'i': {
-        isShowActivity = false;
-        $isShowDetail = !$isShowDetail;
-        return;
-      }
-    }
+  const toggleDetailPanel = () => {
+    isShowActivity = false;
+    $isShowDetail = !$isShowDetail;
   };
 
   const handleCloseViewer = () => {
@@ -330,13 +286,16 @@
     $restartSlideshowProgress = true;
   };
 
-  const navigateAssetForward = async (e?: Event) => {
-    if ($slideshowState === SlideshowState.PlaySlideshow && $slideshowShuffle) {
-      return slideshowHistory.next() || navigateAssetRandom();
+  const navigateAsset = async (order: 'previous' | 'next', e?: Event) => {
+    if ($slideshowState === SlideshowState.PlaySlideshow && $slideshowNavigation === SlideshowNavigation.Shuffle) {
+      return (order === 'previous' ? slideshowHistory.previous() : slideshowHistory.next()) || navigateAssetRandom();
     }
 
     if ($slideshowState === SlideshowState.PlaySlideshow && assetStore) {
-      const hasNext = await assetStore.getNextAssetId(asset.id);
+      const hasNext =
+        order === 'previous'
+          ? await assetStore.getPreviousAssetId(asset.id)
+          : await assetStore.getNextAssetId(asset.id);
       if (hasNext) {
         $restartSlideshowProgress = true;
       } else {
@@ -345,21 +304,7 @@
     }
 
     e?.stopPropagation();
-    dispatch('next');
-  };
-
-  const navigateAssetBackward = (e?: Event) => {
-    if ($slideshowState === SlideshowState.PlaySlideshow && $slideshowShuffle) {
-      slideshowHistory.previous();
-      return;
-    }
-
-    if ($slideshowState === SlideshowState.PlaySlideshow) {
-      $restartSlideshowProgress = true;
-    }
-
-    e?.stopPropagation();
-    dispatch('previous');
+    dispatch(order);
   };
 
   const showDetailInfoHandler = () => {
@@ -444,8 +389,7 @@
   const handleAddToNewAlbum = async (albumName: string) => {
     isShowAlbumPicker = false;
 
-    const album = await createAlbum({ createAlbumDto: { albumName, assetIds: [asset.id] } });
-    await goto(`${AppRoute.ALBUMS}/${album.id}`);
+    await addAssetsToNewAlbum(albumName, [asset.id]);
   };
 
   const handleAddToAlbum = async (album: AlbumResponseDto) => {
@@ -504,7 +448,7 @@
 
   const handleVideoEnded = async () => {
     if ($slideshowState === SlideshowState.PlaySlideshow) {
-      await navigateAssetForward();
+      await navigateAsset('next');
     }
   };
 
@@ -555,226 +499,271 @@
   };
 </script>
 
-<svelte:window on:keydown={handleKeypress} />
+<svelte:window
+  use:shortcuts={[
+    { shortcut: { key: 'a', shift: true }, onShortcut: toggleArchive },
+    { shortcut: { key: 'ArrowLeft' }, onShortcut: () => navigateAsset('previous') },
+    { shortcut: { key: 'ArrowRight' }, onShortcut: () => navigateAsset('next') },
+    { shortcut: { key: 'd', shift: true }, onShortcut: () => downloadFile(asset) },
+    { shortcut: { key: 'Delete' }, onShortcut: () => trashOrDelete(false) },
+    { shortcut: { key: 'Delete', shift: true }, onShortcut: () => trashOrDelete(true) },
+    { shortcut: { key: 'Escape' }, onShortcut: closeViewer },
+    { shortcut: { key: 'f' }, onShortcut: toggleFavorite },
+    { shortcut: { key: 'i' }, onShortcut: toggleDetailPanel },
+  ]}
+/>
 
-<section
-  id="immich-asset-viewer"
-  class="fixed left-0 top-0 z-[1001] grid h-screen w-screen grid-cols-4 grid-rows-[64px_1fr] overflow-hidden bg-black"
->
-  <!-- Top navigation bar -->
-  {#if $slideshowState === SlideshowState.None}
-    <div class="z-[1002] col-span-4 col-start-1 row-span-1 row-start-1 transition-transform">
-      <AssetViewerNavBar
-        {asset}
-        isMotionPhotoPlaying={shouldPlayMotionPhoto}
-        showCopyButton={canCopyImagesToClipboard && asset.type === AssetTypeEnum.Image}
-        showZoomButton={asset.type === AssetTypeEnum.Image}
-        showMotionPlayButton={!!asset.livePhotoVideoId}
-        showDownloadButton={shouldShowDownloadButton}
-        showDetailButton={shouldShowDetailButton}
-        showSlideshow={!!assetStore}
-        hasStackChildren={$stackAssetsStore.length > 0}
-        on:back={closeViewer}
-        on:showDetail={showDetailInfoHandler}
-        on:download={() => downloadFile(asset)}
-        on:delete={() => trashOrDelete()}
-        on:favorite={toggleFavorite}
-        on:addToAlbum={() => openAlbumPicker(false)}
-        on:addToSharedAlbum={() => openAlbumPicker(true)}
-        on:playMotionPhoto={() => (shouldPlayMotionPhoto = true)}
-        on:stopMotionPhoto={() => (shouldPlayMotionPhoto = false)}
-        on:toggleArchive={toggleArchive}
-        on:asProfileImage={() => (isShowProfileImageCrop = true)}
-        on:runJob={({ detail: job }) => handleRunJob(job)}
-        on:playSlideShow={() => ($slideshowState = SlideshowState.PlaySlideshow)}
-        on:unstack={handleUnstack}
-      />
-    </div>
-  {/if}
+<svelte:document bind:fullscreenElement />
 
-  {#if $slideshowState === SlideshowState.None && showNavigation}
-    <div class="z-[1001] column-span-1 col-start-1 row-span-1 row-start-2 mb-[60px] justify-self-start">
-      <NavigationArea on:click={navigateAssetBackward}><Icon path={mdiChevronLeft} size="36" /></NavigationArea>
-    </div>
-  {/if}
-
-  <!-- Asset Viewer -->
-  <div class="z-[1000] relative col-start-1 col-span-4 row-start-1 row-span-full" bind:this={assetViewerHtmlElement}>
-    {#if $slideshowState != SlideshowState.None}
-      <div class="z-[1000] absolute w-full flex">
-        <SlideshowBar
-          on:prev={navigateAssetBackward}
-          on:next={navigateAssetForward}
-          on:close={() => ($slideshowState = SlideshowState.StopSlideshow)}
+<FocusTrap>
+  <section
+    id="immich-asset-viewer"
+    class="fixed left-0 top-0 z-[1001] grid h-screen w-screen grid-cols-4 grid-rows-[64px_1fr] overflow-hidden bg-black"
+  >
+    <!-- Top navigation bar -->
+    {#if $slideshowState === SlideshowState.None}
+      <div class="z-[1002] col-span-4 col-start-1 row-span-1 row-start-1 transition-transform">
+        <AssetViewerNavBar
+          {asset}
+          isMotionPhotoPlaying={shouldPlayMotionPhoto}
+          showCopyButton={canCopyImagesToClipboard && asset.type === AssetTypeEnum.Image}
+          showZoomButton={asset.type === AssetTypeEnum.Image}
+          showMotionPlayButton={!!asset.livePhotoVideoId}
+          showDownloadButton={shouldShowDownloadButton}
+          showDetailButton={shouldShowDetailButton}
+          showSlideshow={!!assetStore}
+          hasStackChildren={$stackAssetsStore.length > 0}
+          showShareButton={shouldShowShareModal}
+          on:back={closeViewer}
+          on:showDetail={showDetailInfoHandler}
+          on:download={() => downloadFile(asset)}
+          on:delete={() => trashOrDelete()}
+          on:favorite={toggleFavorite}
+          on:addToAlbum={() => openAlbumPicker(false)}
+          on:addToSharedAlbum={() => openAlbumPicker(true)}
+          on:playMotionPhoto={() => (shouldPlayMotionPhoto = true)}
+          on:stopMotionPhoto={() => (shouldPlayMotionPhoto = false)}
+          on:toggleArchive={toggleArchive}
+          on:asProfileImage={() => (isShowProfileImageCrop = true)}
+          on:runJob={({ detail: job }) => handleRunJob(job)}
+          on:playSlideShow={() => ($slideshowState = SlideshowState.PlaySlideshow)}
+          on:unstack={handleUnstack}
+          on:showShareModal={() => (isShowShareModal = true)}
         />
       </div>
     {/if}
 
-    {#if previewStackedAsset}
-      {#key previewStackedAsset.id}
-        {#if previewStackedAsset.type === AssetTypeEnum.Image}
-          <PhotoViewer asset={previewStackedAsset} on:close={closeViewer} haveFadeTransition={false} />
-        {:else}
-          <VideoViewer
-            assetId={previewStackedAsset.id}
-            on:close={closeViewer}
-            on:onVideoEnded={handleVideoEnded}
-            on:onVideoStarted={handleVideoStarted}
-          />
-        {/if}
-      {/key}
-    {:else}
-      {#key asset.id}
-        {#if !asset.resized}
-          <div class="flex h-full w-full justify-center">
-            <div
-              class="px-auto flex aspect-square h-full items-center justify-center bg-gray-100 dark:bg-immich-dark-gray"
-            >
-              <Icon path={mdiImageBrokenVariant} size="25%" />
-            </div>
-          </div>
-        {:else if asset.type === AssetTypeEnum.Image}
-          {#if shouldPlayMotionPhoto && asset.livePhotoVideoId}
-            <VideoViewer
-              assetId={asset.livePhotoVideoId}
-              on:close={closeViewer}
-              on:onVideoEnded={() => (shouldPlayMotionPhoto = false)}
-            />
-          {:else if asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR || (asset.originalPath && asset.originalPath
-                .toLowerCase()
-                .endsWith('.insp'))}
-            <PanoramaViewer {asset} />
-          {:else}
-            <PhotoViewer {asset} on:close={closeViewer} />
-          {/if}
-        {:else}
-          <VideoViewer
-            assetId={asset.id}
-            on:close={closeViewer}
-            on:onVideoEnded={handleVideoEnded}
-            on:onVideoStarted={handleVideoStarted}
-          />
-        {/if}
-        {#if $slideshowState === SlideshowState.None && isShared && ((album && album.isActivityEnabled) || numberOfComments > 0)}
-          <div class="z-[9999] absolute bottom-0 right-0 mb-6 mr-6 justify-self-end">
-            <ActivityStatus
-              disabled={!album?.isActivityEnabled}
-              {isLiked}
-              {numberOfComments}
-              {isShowActivity}
-              on:favorite={handleFavorite}
-              on:openActivityTab={handleOpenActivity}
-            />
-          </div>
-        {/if}
-      {/key}
-    {/if}
-
-    {#if $stackAssetsStore.length > 0 && withStacked}
-      <div
-        id="stack-slideshow"
-        class="z-[1005] flex place-item-center place-content-center absolute bottom-0 w-full col-span-4 col-start-1 mb-1 overflow-x-auto horizontal-scrollbar"
-      >
-        <div class="relative w-full whitespace-nowrap transition-all">
-          {#each $stackAssetsStore as stackedAsset (stackedAsset.id)}
-            <div
-              class="{stackedAsset.id == asset.id
-                ? '-translate-y-[1px]'
-                : '-translate-y-0'} inline-block px-1 transition-transform"
-            >
-              <Thumbnail
-                class="{stackedAsset.id == asset.id
-                  ? 'bg-transparent border-2 border-white'
-                  : 'bg-gray-700/40'} inline-block hover:bg-transparent"
-                asset={stackedAsset}
-                on:click={() => (asset = stackedAsset)}
-                on:mouse-event={(e) => handleStackedAssetMouseEvent(e, stackedAsset)}
-                readonly
-                thumbnailSize={stackedAsset.id == asset.id ? 65 : 60}
-                showStackedIcon={false}
-              />
-
-              {#if stackedAsset.id == asset.id}
-                <div class="w-full flex place-items-center place-content-center">
-                  <div class="w-2 h-2 bg-white rounded-full flex mt-[2px]" />
-                </div>
-              {/if}
-            </div>
-          {/each}
-        </div>
+    {#if $slideshowState === SlideshowState.None && showNavigation}
+      <div class="z-[1001] column-span-1 col-start-1 row-span-1 row-start-2 mb-[60px] justify-self-start">
+        <NavigationArea onClick={(e) => navigateAsset('previous', e)} label="View previous asset">
+          <Icon path={mdiChevronLeft} size="36" ariaHidden />
+        </NavigationArea>
       </div>
     {/if}
-  </div>
 
-  {#if $slideshowState === SlideshowState.None && showNavigation}
-    <div class="z-[1001] col-span-1 col-start-4 row-span-1 row-start-2 mb-[60px] justify-self-end">
-      <NavigationArea on:click={navigateAssetForward}><Icon path={mdiChevronRight} size="36" /></NavigationArea>
+    <!-- Asset Viewer -->
+    <div class="z-[1000] relative col-start-1 col-span-4 row-start-1 row-span-full" bind:this={assetViewerHtmlElement}>
+      {#if $slideshowState != SlideshowState.None}
+        <div class="z-[1000] absolute w-full flex">
+          <SlideshowBar
+            {isFullScreen}
+            onSetToFullScreen={() => assetViewerHtmlElement.requestFullscreen()}
+            onPrevious={() => navigateAsset('previous')}
+            onNext={() => navigateAsset('next')}
+            onClose={() => ($slideshowState = SlideshowState.StopSlideshow)}
+          />
+        </div>
+      {/if}
+
+      {#if previewStackedAsset}
+        {#key previewStackedAsset.id}
+          {#if previewStackedAsset.type === AssetTypeEnum.Image}
+            <PhotoViewer
+              asset={previewStackedAsset}
+              {preloadAssets}
+              on:close={closeViewer}
+              haveFadeTransition={false}
+            />
+          {:else}
+            <VideoViewer
+              assetId={previewStackedAsset.id}
+              on:close={closeViewer}
+              on:onVideoEnded={handleVideoEnded}
+              on:onVideoStarted={handleVideoStarted}
+            />
+          {/if}
+        {/key}
+      {:else}
+        {#key asset.id}
+          {#if !asset.resized}
+            <div class="flex h-full w-full justify-center">
+              <div
+                class="px-auto flex aspect-square h-full items-center justify-center bg-gray-100 dark:bg-immich-dark-gray"
+              >
+                <Icon path={mdiImageBrokenVariant} size="25%" />
+              </div>
+            </div>
+          {:else if asset.type === AssetTypeEnum.Image}
+            {#if shouldPlayMotionPhoto && asset.livePhotoVideoId}
+              <VideoViewer
+                assetId={asset.livePhotoVideoId}
+                on:close={closeViewer}
+                on:onVideoEnded={() => (shouldPlayMotionPhoto = false)}
+              />
+            {:else if asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR || (asset.originalPath && asset.originalPath
+                  .toLowerCase()
+                  .endsWith('.insp'))}
+              <PanoramaViewer {asset} />
+            {:else}
+              <PhotoViewer {asset} {preloadAssets} on:close={closeViewer} />
+            {/if}
+          {:else}
+            <VideoViewer
+              assetId={asset.id}
+              on:close={closeViewer}
+              on:onVideoEnded={handleVideoEnded}
+              on:onVideoStarted={handleVideoStarted}
+            />
+          {/if}
+          {#if $slideshowState === SlideshowState.None && isShared && ((album && album.isActivityEnabled) || numberOfComments > 0)}
+            <div class="z-[9999] absolute bottom-0 right-0 mb-6 mr-6 justify-self-end">
+              <ActivityStatus
+                disabled={!album?.isActivityEnabled}
+                {isLiked}
+                {numberOfComments}
+                {isShowActivity}
+                on:favorite={handleFavorite}
+                on:openActivityTab={handleOpenActivity}
+              />
+            </div>
+          {/if}
+        {/key}
+      {/if}
+
+      {#if $stackAssetsStore.length > 0 && withStacked}
+        <div
+          id="stack-slideshow"
+          class="z-[1005] flex place-item-center place-content-center absolute bottom-0 w-full col-span-4 col-start-1 mb-1 overflow-x-auto horizontal-scrollbar"
+        >
+          <div class="relative w-full whitespace-nowrap transition-all">
+            {#each $stackAssetsStore as stackedAsset, index (stackedAsset.id)}
+              <div
+                class="{stackedAsset.id == asset.id
+                  ? '-translate-y-[1px]'
+                  : '-translate-y-0'} inline-block px-1 transition-transform"
+              >
+                <Thumbnail
+                  class="{stackedAsset.id == asset.id
+                    ? 'bg-transparent border-2 border-white'
+                    : 'bg-gray-700/40'} inline-block hover:bg-transparent"
+                  asset={stackedAsset}
+                  onClick={() => {
+                    asset = stackedAsset;
+                    preloadAssets = index + 1 >= $stackAssetsStore.length ? [] : [$stackAssetsStore[index + 1]];
+                  }}
+                  on:mouse-event={(e) => handleStackedAssetMouseEvent(e, stackedAsset)}
+                  readonly
+                  thumbnailSize={stackedAsset.id == asset.id ? 65 : 60}
+                  showStackedIcon={false}
+                />
+
+                {#if stackedAsset.id == asset.id}
+                  <div class="w-full flex place-items-center place-content-center">
+                    <div class="w-2 h-2 bg-white rounded-full flex mt-[2px]" />
+                  </div>
+                {/if}
+              </div>
+            {/each}
+          </div>
+        </div>
+      {/if}
     </div>
-  {/if}
 
-  {#if $slideshowState === SlideshowState.None && $isShowDetail}
-    <div
-      transition:fly={{ duration: 150 }}
-      id="detail-panel"
-      class="z-[1002] row-start-1 row-span-4 w-[360px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg"
-      translate="yes"
-    >
-      <DetailPanel
+    {#if $slideshowState === SlideshowState.None && showNavigation}
+      <div class="z-[1001] col-span-1 col-start-4 row-span-1 row-start-2 mb-[60px] justify-self-end">
+        <NavigationArea onClick={(e) => navigateAsset('next', e)} label="View next asset">
+          <Icon path={mdiChevronRight} size="36" ariaHidden />
+        </NavigationArea>
+      </div>
+    {/if}
+
+    {#if $slideshowState === SlideshowState.None && $isShowDetail}
+      <div
+        transition:fly={{ duration: 150 }}
+        id="detail-panel"
+        class="z-[1002] row-start-1 row-span-4 w-[360px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg"
+        translate="yes"
+      >
+        <DetailPanel
+          {asset}
+          currentAlbum={album}
+          albums={appearsInAlbums}
+          on:close={() => ($isShowDetail = false)}
+          on:closeViewer={handleCloseViewer}
+        />
+      </div>
+    {/if}
+
+    {#if isShared && album && isShowActivity && $user}
+      <div
+        transition:fly={{ duration: 150 }}
+        id="activity-panel"
+        class="z-[1002] row-start-1 row-span-5 w-[360px] md:w-[460px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg"
+        translate="yes"
+      >
+        <ActivityViewer
+          user={$user}
+          disabled={!album.isActivityEnabled}
+          assetType={asset.type}
+          albumOwnerId={album.ownerId}
+          albumId={album.id}
+          assetId={asset.id}
+          {isLiked}
+          bind:reactions
+          on:addComment={handleAddComment}
+          on:deleteComment={handleRemoveComment}
+          on:deleteLike={() => (isLiked = null)}
+          on:close={() => (isShowActivity = false)}
+        />
+      </div>
+    {/if}
+
+    {#if isShowAlbumPicker}
+      <AlbumSelectionModal
+        shared={addToSharedAlbum}
+        on:newAlbum={({ detail }) => handleAddToNewAlbum(detail)}
+        on:album={({ detail }) => handleAddToAlbum(detail)}
+        on:close={() => (isShowAlbumPicker = false)}
+        on:escape={() => (isShowAlbumPicker = false)}
+      />
+    {/if}
+
+    {#if isShowDeleteConfirmation}
+      <DeleteAssetDialog
+        size={1}
+        on:cancel={() => (isShowDeleteConfirmation = false)}
+        on:escape={() => (isShowDeleteConfirmation = false)}
+        on:confirm={() => deleteAsset()}
+      />
+    {/if}
+
+    {#if isShowProfileImageCrop}
+      <ProfileImageCropper
         {asset}
-        currentAlbum={album}
-        albums={appearsInAlbums}
-        on:close={() => ($isShowDetail = false)}
-        on:closeViewer={handleCloseViewer}
+        on:close={() => (isShowProfileImageCrop = false)}
+        on:escape={() => (isShowProfileImageCrop = false)}
       />
-    </div>
-  {/if}
+    {/if}
 
-  {#if isShared && album && isShowActivity && $user}
-    <div
-      transition:fly={{ duration: 150 }}
-      id="activity-panel"
-      class="z-[1002] row-start-1 row-span-5 w-[360px] md:w-[460px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg"
-      translate="yes"
-    >
-      <ActivityViewer
-        user={$user}
-        disabled={!album.isActivityEnabled}
-        assetType={asset.type}
-        albumOwnerId={album.ownerId}
-        albumId={album.id}
-        assetId={asset.id}
-        {isLiked}
-        bind:reactions
-        on:addComment={handleAddComment}
-        on:deleteComment={handleRemoveComment}
-        on:deleteLike={() => (isLiked = null)}
-        on:close={() => (isShowActivity = false)}
+    {#if isShowShareModal}
+      <CreateSharedLinkModal
+        assetIds={[asset.id]}
+        on:close={() => (isShowShareModal = false)}
+        on:escape={() => (isShowShareModal = false)}
       />
-    </div>
-  {/if}
-
-  {#if isShowAlbumPicker}
-    <AlbumSelectionModal
-      shared={addToSharedAlbum}
-      on:newAlbum={({ detail }) => handleAddToNewAlbum(detail)}
-      on:album={({ detail }) => handleAddToAlbum(detail)}
-      on:close={() => (isShowAlbumPicker = false)}
-    />
-  {/if}
-
-  {#if isShowDeleteConfirmation}
-    <DeleteAssetDialog
-      size={1}
-      on:cancel={() => (isShowDeleteConfirmation = false)}
-      on:escape={() => (isShowDeleteConfirmation = false)}
-      on:confirm={() => deleteAsset()}
-    />
-  {/if}
-
-  {#if isShowProfileImageCrop}
-    <ProfileImageCropper {asset} on:close={() => (isShowProfileImageCrop = false)} />
-  {/if}
-</section>
+    {/if}
+  </section>
+</FocusTrap>
 
 <style>
   #immich-asset-viewer {

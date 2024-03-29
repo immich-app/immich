@@ -1,8 +1,8 @@
 ARG DEVICE=cpu
 
-FROM python:3.11-bookworm@sha256:8e697181d24bd77cc4251fdd37e4cdd6d725c5de2ed63b9bc8db77357400c5e2 as builder-cpu
+FROM python:3.11-bookworm@sha256:991e20a11120277e977cadbc104e7a9b196a68a346597879821b19034285a403 as builder-cpu
 
-FROM openvino/ubuntu22_runtime:2023.1.0@sha256:002842a9005ba01543b7169ff6f14ecbec82287f09c4d1dd37717f0a8e8754a7 as builder-openvino
+FROM openvino/ubuntu22_runtime:2023.3.0@sha256:176646df619032ea6c10faf842867119c393e7497b7f88b5e307e932a0fd5aa8 as builder-openvino
 USER root
 RUN apt-get update && apt-get install -y --no-install-recommends python3-dev
 
@@ -21,10 +21,12 @@ FROM builder-${DEVICE} as builder
 
 ARG DEVICE
 ENV PYTHONDONTWRITEBYTECODE=1 \
-  PYTHONUNBUFFERED=1 \
-  PIP_NO_CACHE_DIR=true \
-  VIRTUAL_ENV="/opt/venv" \
-  PATH="/opt/venv/bin:${PATH}"
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=true \
+    VIRTUAL_ENV="/opt/venv" \
+    PATH="/opt/venv/bin:${PATH}"
+
+RUN apt-get update && apt-get install -y --no-install-recommends g++
 
 RUN pip install --upgrade pip && pip install poetry
 RUN poetry config installer.max-workers 10 && \
@@ -34,12 +36,12 @@ RUN python3 -m venv /opt/venv
 COPY poetry.lock pyproject.toml ./
 RUN poetry install --sync --no-interaction --no-ansi --no-root --with ${DEVICE} --without dev
 
-FROM python:3.11-slim-bookworm@sha256:ce81dc539f0aedc9114cae640f8352fad83d37461c24a3615b01f081d0c0583a as prod-cpu
+FROM python:3.11-slim-bookworm@sha256:a2eb07f336e4f194358382611b4fea136c632b40baa6314cb27a366deeaf0144 as prod-cpu
 
-FROM openvino/ubuntu22_runtime:2023.1.0@sha256:002842a9005ba01543b7169ff6f14ecbec82287f09c4d1dd37717f0a8e8754a7 as prod-openvino
+FROM openvino/ubuntu22_runtime:2023.3.0@sha256:176646df619032ea6c10faf842867119c393e7497b7f88b5e307e932a0fd5aa8 as prod-openvino
 USER root
 
-FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04@sha256:85fb7ac694079fff1061a0140fd5b5a641997880e12112d92589c3bbb1e8b7ca as prod-cuda
+FROM nvidia/cuda:12.2.2-cudnn8-runtime-ubuntu22.04@sha256:2d913b09e6be8387e1a10976933642c73c840c0b735f0bf3c28d97fc9bc422e0 as prod-cuda
 
 COPY --from=builder-cuda /usr/local/bin/python3 /usr/local/bin/python3
 COPY --from=builder-cuda /usr/local/lib/python3.11 /usr/local/lib/python3.11
@@ -56,14 +58,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends ocl-icd-libopen
     mkdir /opt/armnn
 
 COPY --from=builder-armnn \
-      /opt/armnn/libarmnn.so.?? \
-      /opt/armnn/libarmnnOnnxParser.so.?? \
-      /opt/armnn/libarmnnDeserializer.so.?? \
-      /opt/armnn/libarmnnTfLiteParser.so.?? \
-      /opt/armnn/libprotobuf.so.?.??.?.? \
-      /opt/ann/libann.s[o] \
-      /opt/ann/build.sh \
-      /opt/armnn/
+    /opt/armnn/libarmnn.so.?? \
+    /opt/armnn/libarmnnOnnxParser.so.?? \
+    /opt/armnn/libarmnnDeserializer.so.?? \
+    /opt/armnn/libarmnnTfLiteParser.so.?? \
+    /opt/armnn/libprotobuf.so.?.??.?.? \
+    /opt/ann/libann.s[o] \
+    /opt/ann/build.sh \
+    /opt/armnn/
 
 FROM prod-${DEVICE} as prod
 
@@ -73,11 +75,12 @@ RUN apt-get update && \
 
 WORKDIR /usr/src/app
 ENV NODE_ENV=production \
-  TRANSFORMERS_CACHE=/cache \
-  PYTHONDONTWRITEBYTECODE=1 \
-  PYTHONUNBUFFERED=1 \
-  PATH="/opt/venv/bin:$PATH" \
-  PYTHONPATH=/usr/src
+    TRANSFORMERS_CACHE=/cache \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PATH="/opt/venv/bin:$PATH" \
+    PYTHONPATH=/usr/src \
+    DEVICE=${DEVICE}
 
 # prevent core dumps
 RUN echo "hard core 0" >> /etc/security/limits.conf && \

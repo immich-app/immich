@@ -6,57 +6,56 @@ export enum NotificationType {
   Warning = 'Warning',
 }
 
-export class ImmichNotification {
-  id = Date.now() + Math.random();
-  type!: NotificationType;
-  message!: string;
-  action!: NotificationAction;
-  timeout = 3000;
-}
+export type NotificationButton = {
+  text: string;
+  onClick: () => unknown;
+};
+
+export type Notification = {
+  id: number;
+  type: NotificationType;
+  message: string;
+  /**
+   * Allow HTML to be inserted within the message. Make sure to verify/encode
+   * variables that may be interpoalted into 'message'
+   */
+  html?: boolean;
+  /** The action to take when the notification is clicked */
+  action: NotificationAction;
+  button?: NotificationButton;
+  /** Timeout in miliseconds */
+  timeout: number;
+};
 
 type DiscardAction = { type: 'discard' };
 type NoopAction = { type: 'noop' };
-type LinkAction = { type: 'link'; target: string };
-export type NotificationAction = DiscardAction | NoopAction | LinkAction;
 
-export class ImmichNotificationDto {
-  /**
-   * Notification type
-   * @type {NotificationType} [Info, Error]
-   */
-  type: NotificationType = NotificationType.Info;
+export type NotificationAction = DiscardAction | NoopAction;
 
-  /**
-   * Notification message
-   */
-  message = '';
-
-  /**
-   * Timeout in miliseconds
-   */
-  timeout?: number;
-
-  /**
-   * The action to take when the notification is clicked
-   */
-  action?: NotificationAction;
-}
+export type NotificationOptions = Partial<Exclude<Notification, 'id'>> & { message: string };
 
 function createNotificationList() {
-  const notificationList = writable<ImmichNotification[]>([]);
+  const notificationList = writable<Notification[]>([]);
+  let count = 1;
 
-  const show = (notificationInfo: ImmichNotificationDto) => {
-    const newNotification = new ImmichNotification();
-    newNotification.message = notificationInfo.message;
-    newNotification.type = notificationInfo.type;
-    newNotification.timeout = notificationInfo.timeout || 3000;
-    newNotification.action = notificationInfo.action || { type: 'discard' };
+  const show = (options: NotificationOptions) => {
+    notificationList.update((currentList) => {
+      currentList.push({
+        id: count++,
+        type: NotificationType.Info,
+        action: {
+          type: options.button ? 'noop' : 'discard',
+        },
+        timeout: 3000,
+        ...options,
+      });
 
-    notificationList.update((currentList) => [...currentList, newNotification]);
+      return currentList;
+    });
   };
 
   const removeNotificationById = (id: number) => {
-    notificationList.update((currentList) => currentList.filter((n) => n.id != id));
+    notificationList.update((currentList) => currentList.filter((n) => n.id !== id));
   };
 
   return {

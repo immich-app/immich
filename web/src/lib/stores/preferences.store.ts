@@ -70,6 +70,7 @@ export interface AlbumViewSettings {
   sortBy: string;
   sortDesc: boolean;
   view: string;
+  filter: string;
 }
 
 export interface SidebarSettings {
@@ -87,12 +88,21 @@ export enum AlbumViewMode {
   List = 'List',
 }
 
+export enum AlbumFilter {
+  All = 'All',
+  Owned = 'Owned',
+  Shared = 'Shared',
+}
+
 export const albumViewSettings = persisted<AlbumViewSettings>('album-view-settings', {
   sortBy: 'Most recent photo',
   sortDesc: true,
   view: AlbumViewMode.Cover,
+  filter: AlbumFilter.All,
 });
 
 export const showDeleteModal = persisted<boolean>('delete-confirm-dialog', true, {});
 
 export const alwaysLoadOriginalFile = persisted<boolean>('always-load-original-file', false, {});
+
+export const playVideoThumbnailOnHover = persisted<boolean>('play-video-thumbnail-on-hover', true, {});

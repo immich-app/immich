@@ -1,15 +1,19 @@
-import { LibraryResponseDto, LibraryService, LoginResponseDto } from '@app/domain';
-import { AssetType, LibraryType } from '@app/infra/entities';
+import { api } from 'e2e/client';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { LoginResponseDto } from 'src/dtos/auth.dto';
+import { LibraryResponseDto } from 'src/dtos/library.dto';
+import { AssetType } from 'src/entities/asset.entity';
+import { LibraryType } from 'src/entities/library.entity';
+import { StorageEventType } from 'src/interfaces/storage.interface';
+import { LibraryService } from 'src/services/library.service';
 import {
   IMMICH_TEST_ASSET_PATH,
   IMMICH_TEST_ASSET_TEMP_PATH,
   restoreTempFolder,
   testApp,
   waitForEvent,
-} from '../../../src/test-utils/utils';
-import { api } from '../../client';
+} from 'test/utils';
 
 describe(`Library watcher (e2e)`, () => {
   let server: any;
@@ -33,7 +37,7 @@ describe(`Library watcher (e2e)`, () => {
   });
 
   afterEach(async () => {
-    await libraryService.unwatchAll();
+    await libraryService.teardown();
   });
 
   afterAll(async () => {
@@ -46,6 +50,7 @@ describe(`Library watcher (e2e)`, () => {
     describe('Single import path', () => {
       beforeEach(async () => {
         await api.libraryApi.create(server, admin.accessToken, {
+          ownerId: admin.userId,
           type: LibraryType.EXTERNAL,
           importPaths: [`${IMMICH_TEST_ASSET_TEMP_PATH}`],
         });
@@ -57,7 +62,7 @@ describe(`Library watcher (e2e)`, () => {
           `${IMMICH_TEST_ASSET_TEMP_PATH}/file.jpg`,
         );
 
-        await waitForEvent(libraryService, 'add');
+        await waitForEvent(libraryService, StorageEventType.ADD);
 
         const afterAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
         expect(afterAssets.length).toEqual(1);
@@ -84,10 +89,7 @@ describe(`Library watcher (e2e)`, () => {
           `${IMMICH_TEST_ASSET_TEMP_PATH}/file5.jPg`,
         );
 
-        await waitForEvent(libraryService, 'add');
-        await waitForEvent(libraryService, 'add');
-        await waitForEvent(libraryService, 'add');
-        await waitForEvent(libraryService, 'add');
+        await waitForEvent(libraryService, StorageEventType.ADD, 4);
 
         const afterAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
         expect(afterAssets.length).toEqual(4);
@@ -99,7 +101,7 @@ describe(`Library watcher (e2e)`, () => {
           `${IMMICH_TEST_ASSET_TEMP_PATH}/file.jpg`,
         );
 
-        await waitForEvent(libraryService, 'add');
+        await waitForEvent(libraryService, StorageEventType.ADD);
 
         const originalAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
         expect(originalAssets.length).toEqual(1);
@@ -109,7 +111,7 @@ describe(`Library watcher (e2e)`, () => {
           `${IMMICH_TEST_ASSET_TEMP_PATH}/file.jpg`,
         );
 
-        await waitForEvent(libraryService, 'change');
+        await waitForEvent(libraryService, StorageEventType.CHANGE);
 
         const afterAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
         expect(afterAssets).toEqual([
@@ -136,6 +138,7 @@ describe(`Library watcher (e2e)`, () => {
         await fs.mkdir(`${IMMICH_TEST_ASSET_TEMP_PATH}/dir3`, { recursive: true });
 
         await api.libraryApi.create(server, admin.accessToken, {
+          ownerId: admin.userId,
           type: LibraryType.EXTERNAL,
           importPaths: [
             `${IMMICH_TEST_ASSET_TEMP_PATH}/dir1`,
@@ -161,9 +164,7 @@ describe(`Library watcher (e2e)`, () => {
           `${IMMICH_TEST_ASSET_TEMP_PATH}/dir3/file4.jpg`,
         );
 
-        await waitForEvent(libraryService, 'add');
-        await waitForEvent(libraryService, 'add');
-        await waitForEvent(libraryService, 'add');
+        await waitForEvent(libraryService, StorageEventType.ADD, 3);
 
         const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
         expect(assets.length).toEqual(3);
@@ -175,14 +176,14 @@ describe(`Library watcher (e2e)`, () => {
           `${IMMICH_TEST_ASSET_TEMP_PATH}/dir1/file.jpg`,
         );
 
-        await waitForEvent(libraryService, 'add');
+        await waitForEvent(libraryService, StorageEventType.ADD);
 
         const addedAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
         expect(addedAssets.length).toEqual(1);
 
         await fs.unlink(`${IMMICH_TEST_ASSET_TEMP_PATH}/dir1/file.jpg`);
 
-        await waitForEvent(libraryService, 'unlink');
+        await waitForEvent(libraryService, StorageEventType.UNLINK);
 
         const afterAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
         expect(afterAssets[0].isOffline).toEqual(true);
@@ -195,6 +196,7 @@ describe(`Library watcher (e2e)`, () => {
 
     beforeEach(async () => {
       library = await api.libraryApi.create(server, admin.accessToken, {
+        ownerId: admin.userId,
         type: LibraryType.EXTERNAL,
         importPaths: [
           `${IMMICH_TEST_ASSET_TEMP_PATH}/dir1`,
@@ -208,7 +210,7 @@ describe(`Library watcher (e2e)`, () => {
       await fs.mkdir(`${IMMICH_TEST_ASSET_TEMP_PATH}/dir3`, { recursive: true });
     });
 
-    it('should use an updated import paths', async () => {
+    it('should use an updated import path', async () => {
       await fs.mkdir(`${IMMICH_TEST_ASSET_TEMP_PATH}/dir4`, { recursive: true });
 
       await api.libraryApi.setImportPaths(server, admin.accessToken, library.id, [
@@ -220,7 +222,7 @@ describe(`Library watcher (e2e)`, () => {
         `${IMMICH_TEST_ASSET_TEMP_PATH}/dir4/file.jpg`,
       );
 
-      await waitForEvent(libraryService, 'add');
+      await waitForEvent(libraryService, StorageEventType.ADD);
 
       const afterAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
       expect(afterAssets.length).toEqual(1);

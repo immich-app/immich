@@ -11,6 +11,8 @@
   import type { MetadataSearchDto, SmartSearchDto } from '@immich/sdk';
   import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
   import { handlePromiseError } from '$lib/utils';
+  import { shortcut } from '$lib/utils/shortcut';
+  import { focusOutside } from '$lib/utils/focus-outside';
 
   export let value = '';
   export let grayTheme: boolean;
@@ -84,7 +86,16 @@
   };
 </script>
 
-<div class="w-full relative" use:clickOutside on:outclick={onFocusOut} on:escape={onFocusOut}>
+<svelte:window
+  use:shortcut={{
+    shortcut: { key: 'Escape' },
+    onShortcut: () => {
+      onFocusOut();
+    },
+  }}
+/>
+
+<div class="w-full relative" use:clickOutside={{ onOutclick: onFocusOut }} use:focusOutside={{ onFocusOut }}>
   <form
     draggable="false"
     autocomplete="off"
@@ -97,7 +108,7 @@
       <div class="absolute inset-y-0 left-0 flex items-center pl-6">
         <div class="dark:text-immich-dark-fg/75">
           <button class="flex items-center">
-            <Icon path={mdiMagnify} size="1.5em" />
+            <Icon ariaLabel="search" path={mdiMagnify} size="1.5em" />
           </button>
         </div>
       </div>
@@ -106,7 +117,9 @@
         name="q"
         class="w-full {grayTheme
           ? 'dark:bg-immich-dark-gray'
-          : 'dark:bg-immich-dark-bg'} px-14 py-4 text-immich-fg/75 dark:text-immich-dark-fg {showHistory || showFilter
+          : 'dark:bg-immich-dark-bg'} px-14 py-4 text-immich-fg/75 dark:text-immich-dark-fg {(showHistory &&
+          $savedSearchTerms.length > 0) ||
+        showFilter
           ? 'rounded-t-3xl border  border-gray-200 bg-white dark:border-gray-800'
           : 'rounded-3xl border border-transparent bg-gray-200'}"
         placeholder="Search your photos"
@@ -115,7 +128,14 @@
         bind:value
         bind:this={input}
         on:click={onFocusIn}
+        on:focus={onFocusIn}
         disabled={showFilter}
+        use:shortcut={{
+          shortcut: { key: 'Escape' },
+          onShortcut: () => {
+            onFocusOut();
+          },
+        }}
       />
 
       <div class="absolute inset-y-0 {showClearIcon ? 'right-14' : 'right-5'} flex items-center pl-6 transition-all">
@@ -132,13 +152,13 @@
           type="reset"
           class="rounded-full p-2 hover:bg-immich-primary/5 active:bg-immich-primary/10 dark:text-immich-dark-fg/75 dark:hover:bg-immich-dark-primary/25 dark:active:bg-immich-dark-primary/[.35]"
         >
-          <Icon path={mdiClose} size="1.5em" />
+          <Icon ariaLabel="clear" path={mdiClose} size="1.5em" />
         </button>
       </div>
     {/if}
 
     <!-- SEARCH HISTORY BOX -->
-    {#if showHistory}
+    {#if showHistory && $savedSearchTerms.length > 0}
       <SearchHistoryBox
         on:clearAllSearchTerms={clearAllSearchTerms}
         on:clearSearchTerm={({ detail: searchTerm }) => clearSearchTerm(searchTerm)}

@@ -21,7 +21,7 @@
   const handleClose = () => dispatch('close');
 </script>
 
-<FullScreenModal on:clickOutside={handleClose} on:escape={handleClose}>
+<FullScreenModal onClose={handleClose}>
   <div
     class="flex w-96 max-w-lg flex-col gap-8 rounded-3xl border bg-white p-8 shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray"
   >

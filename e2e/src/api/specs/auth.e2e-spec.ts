@@ -1,19 +1,15 @@
 import { LoginResponseDto, getAuthDevices, login, signUpAdmin } from '@immich/sdk';
 import { loginDto, signupDto, uuidDto } from 'src/fixtures';
 import { deviceDto, errorDto, loginResponseDto, signupResponseDto } from 'src/responses';
-import { apiUtils, app, asBearerAuth, dbUtils } from 'src/utils';
+import { app, asBearerAuth, utils } from 'src/utils';
 import request from 'supertest';
-import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 const { name, email, password } = signupDto.admin;
 
 describe(`/auth/admin-sign-up`, () => {
-  beforeAll(() => {
-    apiUtils.setup();
-  });
-
   beforeEach(async () => {
-    await dbUtils.reset();
+    await utils.resetDatabase();
   });
 
   describe('POST /auth/admin-sign-up', () => {
@@ -84,7 +80,7 @@ describe('/auth/*', () => {
   let admin: LoginResponseDto;
 
   beforeEach(async () => {
-    await dbUtils.reset();
+    await utils.resetDatabase();
     await signUpAdmin({ signUpDto: signupDto.admin });
     admin = await login({ loginCredentialDto: loginDto.admin });
   });

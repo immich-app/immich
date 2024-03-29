@@ -10,23 +10,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  server-e2e-api:
-    name: Server (e2e-api)
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./server
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Run npm install
-        run: npm ci
-
-      - name: Run e2e tests
-        run: npm run e2e:api
-
   server-e2e-jobs:
     name: Server (e2e-jobs)
     runs-on: ubuntu-latest
@@ -108,16 +91,12 @@ jobs:
         with:
           node-version: 20
 
-      - name: Run setup typescript-sdk
+      - name: Setup typescript-sdk
         run: npm ci && npm run build
         working-directory: ./open-api/typescript-sdk
 
-      - name: Run npm install (cli)
+      - name: Install deps
         run: npm ci
-
-      - name: Run npm install (server)
-        run: npm ci
-        working-directory: ./server
 
       - name: Run linter
         run: npm run lint
@@ -211,6 +190,10 @@ jobs:
 
       - name: Run formatter
         run: npm run format
+        if: ${{ !cancelled() }}
+
+      - name: Run tsc
+        run: npm run check
         if: ${{ !cancelled() }}
 
       - name: Install Playwright Browsers
@@ -346,14 +329,14 @@ jobs:
 
       - name: Generate new migrations
         continue-on-error: true
-        run: npm run typeorm:migrations:generate ./src/infra/migrations/TestMigration
+        run: npm run typeorm:migrations:generate ./src/migrations/TestMigration
 
       - name: Find file changes
         uses: tj-actions/verify-changed-files@v19
         id: verify-changed-files
         with:
           files: |
-            server/src/infra/migrations/
+            server/src/migrations/
       - name: Verify migration files have not changed
         if: steps.verify-changed-files.outputs.files_changed == 'true'
         run: |
@@ -371,7 +354,7 @@ jobs:
         id: verify-changed-sql-files
         with:
           files: |
-            server/src/infra/sql
+            server/src/queries
 
       - name: Verify SQL files have not changed
         if: steps.verify-changed-sql-files.outputs.files_changed == 'true'

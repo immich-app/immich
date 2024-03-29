@@ -20,7 +20,7 @@ The recommended way to backup and restore the Immich database is to use the `pg_
 <Tabs>
   <TabItem value="Linux system based Backup" label="Linux system based Backup" default>
 
-```bash title='Bash'
+```bash title='Backup'
 docker exec -t immich_postgres pg_dumpall -c -U postgres | gzip > "/path/to/backup/dump.sql.gz"
 ```
 
@@ -101,7 +101,7 @@ Some storage locations are impacted by the Storage Template. See below for more 
   <TabItem value="Storage Template Off (Default)." label="Storage Template Off (Default)." default>
 
 :::note
-`UPLOAD_LOCATION/library` folder is not used by default on new machines running version 1.92.0. These are if the system administrator activated the storage template engine, for [more info](https://github.com/immich-app/immich/releases#:~:text=the%20partner%E2%80%99s%20assets.-,Hardening%20storage%20template,-We%20have%20further).
+`UPLOAD_LOCATION/library` folder is not used by default on new machines running version 1.92.0. These are if the system administrator activated the storage template engine, for [more info](https://github.com/immich-app/immich/releases/tag/v1.92.0#:~:text=the%20partner%E2%80%99s%20assets.-,Hardening%20storage%20template).
 :::
 
 **1. User-Specific Folders:**

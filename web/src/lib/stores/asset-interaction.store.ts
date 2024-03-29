@@ -3,6 +3,7 @@ import { derived, writable } from 'svelte/store';
 
 export interface AssetInteractionStore {
   selectAsset: (asset: AssetResponseDto) => void;
+  selectAssets: (assets: AssetResponseDto[]) => void;
   removeAssetFromMultiselectGroup: (asset: AssetResponseDto) => void;
   addGroupToMultiselectGroup: (group: string) => void;
   removeGroupFromMultiselectGroup: (group: string) => void;
@@ -76,6 +77,13 @@ export function createAssetInteractionStore(): AssetInteractionStore {
     selectedAssets.set(_selectedAssets);
   };
 
+  const selectAssets = (assets: AssetResponseDto[]) => {
+    for (const asset of assets) {
+      _selectedAssets.add(asset);
+    }
+    selectedAssets.set(_selectedAssets);
+  };
+
   const removeAssetFromMultiselectGroup = (asset: AssetResponseDto) => {
     _selectedAssets.delete(asset);
     selectedAssets.set(_selectedAssets);
@@ -123,6 +131,7 @@ export function createAssetInteractionStore(): AssetInteractionStore {
 
   return {
     selectAsset,
+    selectAssets,
     removeAssetFromMultiselectGroup,
     addGroupToMultiselectGroup,
     removeGroupFromMultiselectGroup,

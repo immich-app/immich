@@ -1,4 +1,4 @@
-import { IAuditRepository } from '@app/domain';
+import { IAuditRepository } from 'src/interfaces/audit.interface';
 
 export const newAuditRepositoryMock = (): jest.Mocked<IAuditRepository> => {
   return {

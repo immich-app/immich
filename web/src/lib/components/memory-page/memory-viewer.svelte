@@ -8,7 +8,8 @@
   import { AppRoute, QueryParameter } from '$lib/constants';
   import type { Viewport } from '$lib/stores/assets.store';
   import { memoryStore } from '$lib/stores/memory.store';
-  import { getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
+  import { getAssetThumbnailUrl, handlePromiseError, memoryLaneTitle } from '$lib/utils';
+  import { shortcuts } from '$lib/utils/shortcut';
   import { fromLocalDateTime } from '$lib/utils/timeline-util';
   import { ThumbnailFormat, getMemoryLane } from '@immich/sdk';
   import { mdiChevronDown, mdiChevronLeft, mdiChevronRight, mdiChevronUp, mdiPause, mdiPlay } from '@mdi/js';
@@ -73,19 +74,6 @@
   // Progress should be reset when the current memory or asset changes.
   $: memoryIndex, assetIndex, handlePromiseError(reset());
 
-  const handleKeyDown = async (e: KeyboardEvent) => {
-    if (e.key === 'ArrowRight' && canGoForward) {
-      e.preventDefault();
-      await toNext();
-    } else if (e.key === 'ArrowLeft' && canGoBack) {
-      e.preventDefault();
-      await toPrevious();
-    } else if (e.key === 'Escape') {
-      e.preventDefault();
-      await goto(AppRoute.PHOTOS);
-    }
-  };
-
   onMount(async () => {
     if (!$memoryStore) {
       const localTime = new Date();
@@ -101,18 +89,24 @@
   let galleryInView = false;
 </script>
 
-<svelte:window on:keydown={handleKeyDown} />
+<svelte:window
+  use:shortcuts={[
+    { shortcut: { key: 'ArrowRight' }, onShortcut: () => canGoForward && toNext() },
+    { shortcut: { key: 'ArrowLeft' }, onShortcut: () => canGoBack && toPrevious() },
+    { shortcut: { key: 'Escape' }, onShortcut: () => goto(AppRoute.PHOTOS) },
+  ]}
+/>
 
 <section id="memory-viewer" class="w-full bg-immich-dark-gray" bind:this={memoryWrapper}>
   {#if currentMemory}
     <ControlAppBar on:close={() => goto(AppRoute.PHOTOS)} forceDark>
       <svelte:fragment slot="leading">
         <p class="text-lg">
-          {currentMemory.title}
+          {memoryLaneTitle(currentMemory.yearsAgo)}
         </p>
       </svelte:fragment>
 
-      {#if !galleryInView}
+      {#if canGoForward}
         <div class="flex place-content-center place-items-center gap-2 overflow-hidden">
           <CircleIconButton icon={paused ? mdiPlay : mdiPause} forceDark on:click={() => (paused = !paused)} />
 
@@ -171,7 +165,7 @@
               <img
                 class="h-full w-full rounded-2xl object-cover"
                 src={getAssetThumbnailUrl(previousMemory.assets[0].id, ThumbnailFormat.Jpeg)}
-                alt=""
+                alt="Previous memory"
                 draggable="false"
               />
             {:else}
@@ -179,7 +173,7 @@
                 class="h-full w-full rounded-2xl object-cover"
                 src="$lib/assets/no-thumbnail.png"
                 sizes="min(271px,186px)"
-                alt=""
+                alt="Previous memory"
                 draggable="false"
               />
             {/if}
@@ -187,7 +181,7 @@
             {#if previousMemory}
               <div class="absolute bottom-4 right-4 text-left text-white">
                 <p class="text-xs font-semibold text-gray-200">PREVIOUS</p>
-                <p class="text-xl">{previousMemory.title}</p>
+                <p class="text-xl">{memoryLaneTitle(previousMemory.yearsAgo)}</p>
               </div>
             {/if}
           </button>
@@ -203,7 +197,7 @@
                 transition:fade
                 class="h-full w-full rounded-2xl object-contain transition-all"
                 src={getAssetThumbnailUrl(currentAsset.id, ThumbnailFormat.Jpeg)}
-                alt=""
+                alt={currentAsset.exifInfo?.description}
                 draggable="false"
               />
             {/key}
@@ -244,7 +238,7 @@
               <img
                 class="h-full w-full rounded-2xl object-cover"
                 src={getAssetThumbnailUrl(nextMemory.assets[0].id, ThumbnailFormat.Jpeg)}
-                alt=""
+                alt="Next memory"
                 draggable="false"
               />
             {:else}
@@ -252,7 +246,7 @@
                 class="h-full w-full rounded-2xl object-cover"
                 src="$lib/assets/no-thumbnail.png"
                 sizes="min(271px,186px)"
-                alt=""
+                alt="Next memory"
                 draggable="false"
               />
             {/if}
@@ -260,7 +254,7 @@
             {#if nextMemory}
               <div class="absolute bottom-4 left-4 text-left text-white">
                 <p class="text-xs font-semibold text-gray-200">UP NEXT</p>
-                <p class="text-xl">{nextMemory.title}</p>
+                <p class="text-xl">{memoryLaneTitle(nextMemory.yearsAgo)}</p>
               </div>
             {/if}
           </button>
@@ -268,7 +262,7 @@
       </div>
     </section>
 
-    <!-- GALERY VIEWER -->
+    <!-- GALLERY VIEWER -->
 
     <section class="bg-immich-dark-gray m-4">
       <div

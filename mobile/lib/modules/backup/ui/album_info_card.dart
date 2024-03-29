@@ -11,17 +11,16 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 
 class AlbumInfoCard extends HookConsumerWidget {
-  final Uint8List? imageData;
-  final AvailableAlbum albumInfo;
+  final AvailableAlbum album;
 
-  const AlbumInfoCard({super.key, this.imageData, required this.albumInfo});
+  const AlbumInfoCard({super.key, required this.album});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final bool isSelected =
-        ref.watch(backupProvider).selectedBackupAlbums.contains(albumInfo);
+        ref.watch(backupProvider).selectedBackupAlbums.contains(album);
     final bool isExcluded =
-        ref.watch(backupProvider).excludedBackupAlbums.contains(albumInfo);
+        ref.watch(backupProvider).excludedBackupAlbums.contains(album);
     final isDarkTheme = context.isDarkTheme;
 
     ColorFilter selectedFilter = ColorFilter.mode(
@@ -82,9 +81,9 @@ class AlbumInfoCard extends HookConsumerWidget {
         HapticFeedback.selectionClick();
 
         if (isSelected) {
-          ref.read(backupProvider.notifier).removeAlbumForBackup(albumInfo);
+          ref.read(backupProvider.notifier).removeAlbumForBackup(album);
         } else {
-          ref.read(backupProvider.notifier).addAlbumForBackup(albumInfo);
+          ref.read(backupProvider.notifier).addAlbumForBackup(album);
         }
       },
       onDoubleTap: () {
@@ -92,13 +91,11 @@ class AlbumInfoCard extends HookConsumerWidget {
 
         if (isExcluded) {
           // Remove from exclude album list
-          ref
-              .read(backupProvider.notifier)
-              .removeExcludedAlbumForBackup(albumInfo);
+          ref.read(backupProvider.notifier).removeExcludedAlbumForBackup(album);
         } else {
           // Add to exclude album list
 
-          if (albumInfo.id == 'isAll' || albumInfo.name == 'Recents') {
+          if (album.id == 'isAll' || album.name == 'Recents') {
             ImmichToast.show(
               context: context,
               msg: 'Cannot exclude album contains all assets',
@@ -108,9 +105,7 @@ class AlbumInfoCard extends HookConsumerWidget {
             return;
           }
 
-          ref
-              .read(backupProvider.notifier)
-              .addExcludedAlbumForBackup(albumInfo);
+          ref.read(backupProvider.notifier).addExcludedAlbumForBackup(album);
         }
       },
       child: Card(
@@ -136,14 +131,12 @@ class AlbumInfoCard extends HookConsumerWidget {
                 children: [
                   ColorFiltered(
                     colorFilter: buildImageFilter(),
-                    child: Image(
+                    child: const Image(
                       width: double.infinity,
                       height: double.infinity,
-                      image: imageData != null
-                          ? MemoryImage(imageData!)
-                          : const AssetImage(
-                              'assets/immich-logo-no-outline.png',
-                            ) as ImageProvider,
+                      image: AssetImage(
+                        'assets/immich-logo.png',
+                      ),
                       fit: BoxFit.cover,
                     ),
                   ),
@@ -168,7 +161,7 @@ class AlbumInfoCard extends HookConsumerWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          albumInfo.name,
+                          album.name,
                           style: TextStyle(
                             fontSize: 14,
                             color: context.primaryColor,
@@ -182,7 +175,7 @@ class AlbumInfoCard extends HookConsumerWidget {
                               if (snapshot.hasData) {
                                 return Text(
                                   snapshot.data.toString() +
-                                      (albumInfo.isAll
+                                      (album.isAll
                                           ? " (${'backup_all'.tr()})"
                                           : ""),
                                   style: TextStyle(
@@ -193,7 +186,7 @@ class AlbumInfoCard extends HookConsumerWidget {
                               }
                               return const Text("0");
                             }),
-                            future: albumInfo.assetCount,
+                            future: album.assetCount,
                           ),
                         ),
                       ],
@@ -202,7 +195,7 @@ class AlbumInfoCard extends HookConsumerWidget {
                   IconButton(
                     onPressed: () {
                       context.pushRoute(
-                        AlbumPreviewRoute(album: albumInfo.albumEntity),
+                        AlbumPreviewRoute(album: album.albumEntity),
                       );
                     },
                     icon: Icon(

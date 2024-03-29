@@ -1,5 +1,3 @@
-version: '3.8'
-
 name: immich-prod
 
 x-server-build: &server-common
@@ -56,7 +54,7 @@ services:
 
   redis:
     container_name: immich_redis
-    image: redis:6.2-alpine@sha256:51d6c56749a4243096327e3fb964a48ed92254357108449cb6e23999c37773c5
+    image: redis:6.2-alpine@sha256:3fcb624d83a9c478357f16dc173c58ded325ccc5fd2a4375f3916c04cc579f70
     restart: always
 
   database:
@@ -73,5 +71,28 @@ services:
     ports:
       - 5432:5432
 
+  # set IMMICH_METRICS=true in .env to enable metrics
+  immich-prometheus:
+    container_name: immich_prometheus
+    ports:
+      - 9090:9090
+    image: prom/prometheus@sha256:5ccad477d0057e62a7cd1981ffcc43785ac10c5a35522dc207466ff7e7ec845f
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+
+  # first login uses admin/admin
+  # add data source for http://immich-prometheus:9090 to get started
+  immich-grafana:
+    container_name: immich_grafana
+    command: ['./run.sh', '-disable-reporting']
+    ports:
+      - 3000:3000
+    image: grafana/grafana:10.4.1-ubuntu@sha256:65e0e7d0f0b001cb0478bce5093bff917677dc308dd27a0aa4b3ac38e4fd877c
+    volumes:
+      - grafana-data:/var/lib/grafana
+
 volumes:
   model-cache:
+  prometheus-data:
+  grafana-data:

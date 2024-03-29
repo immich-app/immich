@@ -9,7 +9,7 @@ import {
 } from '@immich/sdk';
 import { createUserDto, uuidDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
-import { apiUtils, app, asBearerAuth, dbUtils } from 'src/utils';
+import { app, asBearerAuth, utils } from 'src/utils';
 import request from 'supertest';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
@@ -23,12 +23,11 @@ describe('/activity', () => {
     create({ activityCreateDto: dto }, { headers: asBearerAuth(accessToken || admin.accessToken) });
 
   beforeAll(async () => {
-    apiUtils.setup();
-    await dbUtils.reset();
+    await utils.resetDatabase();
 
-    admin = await apiUtils.adminSetup();
-    nonOwner = await apiUtils.userSetup(admin.accessToken, createUserDto.user1);
-    asset = await apiUtils.createAsset(admin.accessToken);
+    admin = await utils.adminSetup();
+    nonOwner = await utils.userSetup(admin.accessToken, createUserDto.user1);
+    asset = await utils.createAsset(admin.accessToken);
     album = await createAlbum(
       {
         createAlbumDto: {
@@ -42,7 +41,7 @@ describe('/activity', () => {
   });
 
   beforeEach(async () => {
-    await dbUtils.reset(['activity']);
+    await utils.resetDatabase(['activity']);
   });
 
   describe('GET /activity', () => {

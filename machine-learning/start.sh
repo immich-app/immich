@@ -1,10 +1,13 @@
 #!/usr/bin/env sh
 
 lib_path="/usr/lib/$(arch)-linux-gnu/libmimalloc.so.2"
-export LD_PRELOAD="$lib_path"
-export LD_BIND_NOW=1
+# mimalloc seems to increase memory usage dramatically with openvino, need to investigate
+if ! [ "$DEVICE" = "openvino" ]; then 
+	export LD_PRELOAD="$lib_path"
+	export LD_BIND_NOW=1
+fi
 
-: "${MACHINE_LEARNING_HOST:=0.0.0.0}"
+: "${MACHINE_LEARNING_HOST:=[::]}"
 : "${MACHINE_LEARNING_PORT:=3003}"
 : "${MACHINE_LEARNING_WORKERS:=1}"
 : "${MACHINE_LEARNING_WORKER_TIMEOUT:=120}"

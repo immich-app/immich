@@ -3,6 +3,7 @@
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
   import type { OnStack } from '$lib/utils/actions';
   import { stackAssets } from '$lib/utils/asset-utils';
+  import { mdiImageMultipleOutline } from '@mdi/js';
 
   export let onStack: OnStack | undefined;
 
@@ -16,4 +17,4 @@
   };
 </script>
 
-<MenuOption text="Stack" on:click={handleStack} />
+<MenuOption text="Stack" icon={mdiImageMultipleOutline} on:click={handleStack} />

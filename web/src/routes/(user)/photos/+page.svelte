@@ -55,23 +55,25 @@
   >
     <CreateSharedLink on:escape={() => (handleEscapeKey = true)} />
     <SelectAllAssets {assetStore} {assetInteractionStore} />
-    <AssetSelectContextMenu icon={mdiPlus} title="Add">
+    <AssetSelectContextMenu icon={mdiPlus} title="Add to...">
       <AddToAlbum />
       <AddToAlbum shared />
     </AssetSelectContextMenu>
-    <DeleteAssets
-      on:escape={() => (handleEscapeKey = true)}
-      onAssetDelete={(assetId) => assetStore.removeAsset(assetId)}
-    />
+    <FavoriteAction removeFavorite={isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
     <AssetSelectContextMenu icon={mdiDotsVertical} title="Menu">
-      <FavoriteAction menuItem removeFavorite={isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
       <DownloadAction menuItem />
-      <ArchiveAction menuItem onArchive={(ids) => assetStore.removeAssets(ids)} />
       {#if $selectedAssets.size > 1}
-        <StackAction onStack={(ids) => assetStore.removeAssets(ids)} />
+        <StackAction onStack={(assetIds) => assetStore.removeAssets(assetIds)} />
       {/if}
       <ChangeDate menuItem />
       <ChangeLocation menuItem />
+      <ArchiveAction menuItem onArchive={(assetIds) => assetStore.removeAssets(assetIds)} />
+      <DeleteAssets
+        menuItem
+        on:escape={() => (handleEscapeKey = true)}
+        onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)}
+      />
+      <hr />
       <AssetJobActions />
     </AssetSelectContextMenu>
   </AssetSelectControlBar>
@@ -88,10 +90,6 @@
     {#if $user.memoriesEnabled}
       <MemoryLane />
     {/if}
-    <EmptyPlaceholder
-      text="CLICK TO UPLOAD YOUR FIRST PHOTO"
-      actionHandler={() => openFileUploadDialog()}
-      slot="empty"
-    />
+    <EmptyPlaceholder text="CLICK TO UPLOAD YOUR FIRST PHOTO" onClick={() => openFileUploadDialog()} slot="empty" />
   </AssetGrid>
 </UserPageLayout>
