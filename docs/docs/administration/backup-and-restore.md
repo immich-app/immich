@@ -20,7 +20,7 @@ The recommended way to backup and restore the Immich database is to use the `pg_
 <Tabs>
   <TabItem value="Linux system based Backup" label="Linux system based Backup" default>
 
-```bash title='Bash'
+```bash title='Backup'
 docker exec -t immich_postgres pg_dumpall -c -U postgres | gzip > "/path/to/backup/dump.sql.gz"
 ```
 
