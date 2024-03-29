@@ -6,7 +6,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/settings/ui/advanced_settings.dart';
 import 'package:immich_mobile/modules/settings/ui/asset_list_settings/asset_list_settings.dart';
 import 'package:immich_mobile/modules/settings/ui/backup_settings/backup_settings.dart';
-import 'package:immich_mobile/modules/settings/ui/image_viewer_quality_setting.dart';
+import 'package:immich_mobile/modules/settings/ui/asset_viewer_settings/asset_viewer_settings.dart';
 import 'package:immich_mobile/modules/settings/ui/notification_setting.dart';
 import 'package:immich_mobile/modules/settings/ui/preference_settings/preference_setting.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -30,7 +30,7 @@ enum SettingSection {
         SettingSection.preferences => const PreferenceSetting(),
         SettingSection.backup => const BackupSettings(),
         SettingSection.timeline => const AssetListSettings(),
-        SettingSection.viewer => const ImageViewerQualitySetting(),
+        SettingSection.viewer => const AssetViewerSettings(),
         SettingSection.advanced => const AdvancedSettings(),
       };
 
