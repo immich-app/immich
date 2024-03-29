@@ -4,6 +4,10 @@ While not officially recommended, it is possible to run Immich using a pre-exist
 
 By default, Immich expects superuser permission on the Postgres database and requires certain extensions to be installed. This guide outlines the steps required to prepare a pre-existing Postgres server to be used by Immich.
 
+:::tip
+Running with a pre-existing Postgres server can unlock powerful administrative features, including logical replication, data page checksums, and streaming write-ahead log backups using programs like pgBackRest or Barman.
+:::
+
 ## Prerequisites
 
 You must install pgvecto.rs using their [instructions](https://docs.pgvecto.rs/getting-started/installation.html). After installation, add `shared_preload_libraries = 'vectors.so'` to your `postgresql.conf`. If you already have some `shared_preload_libraries` set, you can separate each extension with a comma. For example, `shared_preload_libraries = 'pg_stat_statements, vectors.so'`.
