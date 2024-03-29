@@ -32,7 +32,7 @@ Immich can run with a standalone Postgres server, without superuser permissions,
 Before running these commands, you will need to install the version of vecto.rs as currently used by Immich to your system. You will also need to add `shared_preload_libraries = 'vectors.so'` to your `postgresql.conf`
 :::
 
-```sql title="Setup Postgres for Immich"
+```sql title="Set up Postgres for Immich"
 \c <immichdatabasename>
 BEGIN;
 ALTER DATABASE <immichdatabasename> OWNER TO <immichdbusername>;
