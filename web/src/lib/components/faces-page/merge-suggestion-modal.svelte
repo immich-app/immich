@@ -40,7 +40,7 @@
           Merge People - {title}
         </h1>
         <div class="p-2">
-          <CircleIconButton icon={mdiClose} on:click={() => dispatch('close')} />
+          <CircleIconButton title="Close" icon={mdiClose} on:click={() => dispatch('close')} />
         </div>
       </div>
 
@@ -57,6 +57,7 @@
           </div>
           <div class="mx-0.5 flex md:mx-2">
             <CircleIconButton
+              title="Swap merge direction"
               icon={mdiMerge}
               on:click={() => ([personMerge1, personMerge2] = [personMerge2, personMerge1])}
             />

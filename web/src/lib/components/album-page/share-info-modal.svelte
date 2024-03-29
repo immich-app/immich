@@ -97,6 +97,7 @@
             {#if isOwned}
               <div>
                 <CircleIconButton
+                  title="Options"
                   on:click={(event) => showContextMenu(event, user)}
                   icon={mdiDotsVertical}
                   backgroundColor="transparent"
