@@ -380,6 +380,7 @@ class SearchInputPage extends HookConsumerWidget {
                 editEnabled: true,
                 favoriteEnabled: true,
                 stackEnabled: false,
+                emptyIndicator: const SizedBox(),
               ),
             ),
           ),
