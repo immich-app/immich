@@ -501,17 +501,17 @@ describe(LibraryService.name, () => {
       const mockLibraryJob: ILibraryFileJob = {
         id: libraryStub.externalLibrary1.id,
         ownerId: mockUser.id,
-        assetPath: assetStub.image.originalPath,
+        assetPath: assetStub.hasFileExtension.originalPath,
         force: false,
       };
 
       storageMock.stat.mockResolvedValue({
         size: 100,
-        mtime: assetStub.image.fileModifiedAt,
+        mtime: assetStub.hasFileExtension.fileModifiedAt,
         ctime: new Date('2023-01-01'),
       } as Stats);
 
-      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
+      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.hasFileExtension);
 
       await expect(sut.handleAssetRefresh(mockLibraryJob)).resolves.toBe(JobStatus.SKIPPED);
 
@@ -564,7 +564,7 @@ describe(LibraryService.name, () => {
 
       expect(assetMock.updateAll).toHaveBeenCalledWith(
         [assetStub.missingFileExtension.id],
-        expect.objectContaining({ originalPath: '/data/user1/photo.jpg' }),
+        expect.objectContaining({ originalFileName: 'photo.jpg' }),
       );
     });
 
@@ -638,17 +638,17 @@ describe(LibraryService.name, () => {
     it('should refresh an existing asset if forced', async () => {
       const mockLibraryJob: ILibraryFileJob = {
         id: assetStub.image.id,
-        ownerId: assetStub.image.ownerId,
+        ownerId: assetStub.hasFileExtension.ownerId,
         assetPath: '/data/user1/photo.jpg',
         force: true,
       };
 
-      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
-      assetMock.create.mockResolvedValue(assetStub.image);
+      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.hasFileExtension);
+      assetMock.create.mockResolvedValue(assetStub.hasFileExtension);
 
       await expect(sut.handleAssetRefresh(mockLibraryJob)).resolves.toBe(JobStatus.SUCCESS);
 
-      expect(assetMock.updateAll).toHaveBeenCalledWith([assetStub.image.id], {
+      expect(assetMock.updateAll).toHaveBeenCalledWith([assetStub.hasFileExtension.id], {
         fileCreatedAt: new Date('2023-01-01'),
         fileModifiedAt: new Date('2023-01-01'),
         originalFileName: assetStub.image.originalFileName,
