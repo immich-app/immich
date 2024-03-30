@@ -28,7 +28,14 @@ The `Format` column represents the MIME type, for example `image/jpeg` or `video
 
 ## Video formats
 
-| Extension         | Supported?           | Notes                                            |
-| :---------------- | :----------------:   | :----------------------------------------------- |
-| `IMMICH_VERSION`  | :white_check_mark:   | `release`                                        |
-| `No`              | :x:                  |                                                  |
+| Format    | Extension(s)                  | Supported?           | Notes                                            |
+| :-------- | :---------------------------- | :----------------:   | :----------------------------------------------- |
+| `3GPP`    | `.3gp`                        | :white_check_mark:   |                                                  |
+| `AVI`     | `.avi`                        | :white_check_mark:   |                                                  |
+| `FLV`     | `.flv`                        | :white_check_mark:   |                                                  |
+| `MP2T`    | `.mts` `.m2ts`                | :white_check_mark:   |                                                  |
+| `M4V`     | `.m4v`                        | :white_check_mark:   |                                                  |
+| `QUICKTIME`     | `.mov`                        | :white_check_mark:   |                                                  |
+| `FLV`     | `.flv`                        | :white_check_mark:   |                                                  |
+| `FLV`     | `.flv`                        | :white_check_mark:   |                                                  |
+
