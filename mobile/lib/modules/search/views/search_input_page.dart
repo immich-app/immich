@@ -24,6 +24,8 @@ class SearchInputPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isContextualSearch = useState(true);
+    final textSearchController = useTextEditingController();
     final filter = useState<SearchFilter>(
       SearchFilter(
         people: {},
@@ -39,6 +41,8 @@ class SearchInputPage extends HookConsumerWidget {
       ),
     );
 
+    final previousFilter = useState(filter.value);
+
     final peopleCurrentFilterWidget = useState<Widget?>(null);
     final dateRangeCurrentFilterWidget = useState<Widget?>(null);
     final cameraCurrentFilterWidget = useState<Widget?>(null);
@@ -51,11 +55,17 @@ class SearchInputPage extends HookConsumerWidget {
     final searchResultCount = useState(0);
 
     search() async {
+      if (filter.value == previousFilter.value) return;
+
       ref.watch(paginatedSearchProvider.notifier).clear();
+
       currentPage.value = 1;
+
       final searchResult = await ref
           .watch(paginatedSearchProvider.notifier)
           .getNextPage(filter.value, currentPage.value);
+      previousFilter.value = filter.value;
+
       searchResultCount.value = searchResult.length;
     }
 
@@ -85,6 +95,7 @@ class SearchInputPage extends HookConsumerWidget {
         );
 
         peopleCurrentFilterWidget.value = null;
+        search();
       }
 
       showFilterBottomSheet(
@@ -141,6 +152,7 @@ class SearchInputPage extends HookConsumerWidget {
         );
 
         locationCurrentFilterWidget.value = null;
+        search();
       }
 
       showFilterBottomSheet(
@@ -188,6 +200,7 @@ class SearchInputPage extends HookConsumerWidget {
         );
 
         cameraCurrentFilterWidget.value = null;
+        search();
       }
 
       showFilterBottomSheet(
@@ -239,6 +252,7 @@ class SearchInputPage extends HookConsumerWidget {
         );
 
         dateRangeCurrentFilterWidget.value = null;
+        search();
         return;
       }
 
@@ -290,6 +304,7 @@ class SearchInputPage extends HookConsumerWidget {
         );
 
         mediaTypeCurrentFilterWidget.value = null;
+        search();
       }
 
       showFilterBottomSheet(
@@ -356,6 +371,7 @@ class SearchInputPage extends HookConsumerWidget {
         );
 
         displayOptionCurrentFilterWidget.value = null;
+        search();
       }
 
       showFilterBottomSheet(
@@ -373,9 +389,14 @@ class SearchInputPage extends HookConsumerWidget {
     }
 
     handleTextSubmitted(String value) {
-      filter.value = filter.value.copyWith(
-        context: value,
-      );
+      if (isContextualSearch.value) {
+        filter.value = filter.value.copyWith(
+          context: value,
+          filename: '',
+        );
+      } else {
+        filter.value = filter.value.copyWith(filename: value, context: '');
+      }
 
       search();
     }
@@ -416,17 +437,32 @@ class SearchInputPage extends HookConsumerWidget {
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
         automaticallyImplyLeading: true,
+        actions: [
+          IconButton(
+            icon: isContextualSearch.value
+                ? const Icon(Icons.file_present_outlined)
+                : const Icon(Icons.image_search_rounded),
+            onPressed: () {
+              isContextualSearch.value = !isContextualSearch.value;
+              textSearchController.clear();
+            },
+          ),
+        ],
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded),
           onPressed: () {
             context.router.pop();
           },
         ),
         title: TextField(
+          controller: textSearchController,
           decoration: InputDecoration(
-            hintText: 'search_bar_hint'.tr(),
+            hintText: isContextualSearch.value
+                ? 'Sunrise on the beach'
+                : 'File name or extension',
             hintStyle: context.textTheme.bodyLarge?.copyWith(
               color: context.themeData.colorScheme.onSurface.withOpacity(0.75),
+              fontWeight: FontWeight.w500,
             ),
             enabledBorder: const UnderlineInputBorder(
               borderSide: BorderSide(color: Colors.transparent),

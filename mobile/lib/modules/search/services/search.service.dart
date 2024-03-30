@@ -78,6 +78,7 @@ class SearchService {
             personIds: filter.people.map((e) => e.id).toList(),
             type: type,
             page: page,
+            size: 1000,
           ),
         );
       } else {
@@ -97,6 +98,7 @@ class SearchService {
             personIds: filter.people.map((e) => e.id).toList(),
             type: type,
             page: page,
+            size: 1000,
           ),
         );
       }
