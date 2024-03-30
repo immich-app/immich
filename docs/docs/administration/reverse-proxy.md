@@ -8,22 +8,30 @@ Below is an example config for nginx. Make sure to include `client_max_body_size
 
 ```nginx
 server {
-    server_name <snip>
+    server_name <snip>;
 
+    # allow large file uploads
     client_max_body_size 50000M;
+
+    # Set headers
+    proxy_set_header Host              $http_host;
+    proxy_set_header X-Real-IP         $remote_addr;
+    proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+
+    # enable websockets: http://nginx.org/en/docs/http/websocket.html
+    proxy_http_version 1.1;
+    proxy_set_header   Upgrade    $http_upgrade;
+    proxy_set_header   Connection "upgrade";
+    proxy_redirect     off;
+
+    # Wait for longer before timeout, for Repair page
+    proxy_read_timeout 600s;
+    proxy_send_timeout 600s;
+    send_timeout       600s;
 
     location / {
         proxy_pass http://<snip>:2283;
-        proxy_set_header Host              $http_host;
-        proxy_set_header X-Real-IP         $remote_addr;
-        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-
-        # http://nginx.org/en/docs/http/websocket.html
-        proxy_http_version 1.1;
-        proxy_set_header   Upgrade    $http_upgrade;
-        proxy_set_header   Connection "upgrade";
-        proxy_redirect off;
     }
 }
 ```
