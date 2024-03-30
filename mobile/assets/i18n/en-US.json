@@ -511,5 +511,13 @@
   "version_announcement_overlay_title": "New Server Version Available \uD83C\uDF89",
   "viewer_remove_from_stack": "Remove from Stack",
   "viewer_stack_use_as_main_asset": "Use as Main Asset",
-  "viewer_unstack": "Un-Stack"
+  "viewer_unstack": "Un-Stack",
+  "overnight_upload_inprogress": "Uploading",
+  "overnight_upload_stop": "Stop Upload",
+  "overnight_upload_title": "Over Night Upload",
+  "overnight_upload_description": "Immich will run background backup with a darkened screen",
+  "overnight_upload_prereq": "Make sure the device is:",
+  "overnight_upload_wifi": "Connected to WiFi",
+  "overnight_upload_charger": "Connected to Charger",
+  "overnight_upload_start": "Start Overnight Upload"
 }

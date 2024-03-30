@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:auto_route/auto_route.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -140,17 +141,17 @@ class _BackupInProgress extends HookWidget {
                   color: Colors.grey[850],
                 ),
                 Text(
-                  "Uploading",
+                  "overnight_upload_inprogress",
                   style: context.textTheme.titleLarge
                       ?.copyWith(color: Colors.grey[800]),
-                ),
+                ).tr(),
                 const SizedBox(height: 10),
                 ElevatedButton(
                   style: ButtonStyle(
                     backgroundColor: MaterialStatePropertyAll(Colors.grey[850]),
                   ),
                   onPressed: onClick,
-                  child: const Text("Stop Upload"),
+                  child: const Text("overnight_upload_stop").tr(),
                 ),
               ],
             ),
@@ -169,7 +170,7 @@ class _OvernightInfo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Over Night upload")),
+      appBar: AppBar(title: const Text("overnight_upload_title").tr()),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -191,14 +192,14 @@ class _OvernightInfo extends StatelessWidget {
                 children: [
                   const Text(
                     textAlign: TextAlign.center,
-                    "Immich will run background backup with a darkened screen",
-                  ),
+                    "overnight_upload_description",
+                  ).tr(),
                   const SizedBox(height: 10),
                   const Text(
                     textAlign: TextAlign.center,
-                    "Make sure the device is:",
+                    "overnight_upload_prereq",
                     maxLines: 5,
-                  ),
+                  ).tr(),
                   const SizedBox(height: 10),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -209,7 +210,7 @@ class _OvernightInfo extends StatelessWidget {
                         size: context.width * (context.isMobile ? 0.07 : 0.03),
                       ),
                       const SizedBox(width: 10),
-                      const Text("Connected to WiFi"),
+                      const Text("overnight_upload_wifi").tr(),
                     ],
                   ),
                   const SizedBox(height: 10),
@@ -222,7 +223,7 @@ class _OvernightInfo extends StatelessWidget {
                         size: context.width * (context.isMobile ? 0.07 : 0.03),
                       ),
                       const SizedBox(width: 10),
-                      const Text("Connected to charger"),
+                      const Text("overnight_upload_charger").tr(),
                     ],
                   ),
                 ],
@@ -238,7 +239,7 @@ class _OvernightInfo extends StatelessWidget {
             padding: EdgeInsets.only(bottom: context.height * 0.1),
             child: ElevatedButton(
               onPressed: onClick,
-              child: const Text("Start Overnight Upload"),
+              child: const Text("overnight_upload_start").tr(),
             ),
           ),
         ],
