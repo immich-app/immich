@@ -36,6 +36,6 @@ The `Format` column represents the MIME type, for example `image/jpeg` or `video
 | `MP2T`    | `.mts` `.m2ts`                | :white_check_mark:   |                                                  |
 | `M4V`     | `.m4v`                        | :white_check_mark:   |                                                  |
 | `QUICKTIME`     | `.mov`                        | :white_check_mark:   |                                                  |
-| `FLV`     | `.flv`                        | :white_check_mark:   |                                                  |
-| `FLV`     | `.flv`                        | :white_check_mark:   |                                                  |
+| `X-MATROSKA`     | `.mkv`                        | :white_check_mark:   |                                                  |
+| `MP4`     | `.mp4` `.insv`                        | :white_check_mark:   |                                                  |
 
