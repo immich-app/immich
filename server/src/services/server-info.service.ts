@@ -3,6 +3,7 @@ import { DateTime } from 'luxon';
 import { isDev, serverVersion } from 'src/constants';
 import { StorageCore, StorageFolder } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
+import { OnServerEvent } from 'src/decorators';
 import {
   ServerConfigDto,
   ServerFeaturesDto,
@@ -13,7 +14,7 @@ import {
   UsageByUserDto,
 } from 'src/dtos/server-info.dto';
 import { SystemMetadataKey } from 'src/entities/system-metadata.entity';
-import { ClientEvent, ICommunicationRepository } from 'src/interfaces/communication.interface';
+import { ClientEvent, IEventRepository, ServerEvent, ServerEventMap } from 'src/interfaces/event.interface';
 import { IServerInfoRepository } from 'src/interfaces/server-info.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
@@ -32,7 +33,7 @@ export class ServerInfoService {
   private releaseVersionCheckedAt: DateTime | null = null;
 
   constructor(
-    @Inject(ICommunicationRepository) private communicationRepository: ICommunicationRepository,
+    @Inject(IEventRepository) private eventRepository: IEventRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(IServerInfoRepository) private repository: IServerInfoRepository,
@@ -40,8 +41,9 @@ export class ServerInfoService {
     @Inject(ISystemMetadataRepository) private readonly systemMetadataRepository: ISystemMetadataRepository,
   ) {
     this.configCore = SystemConfigCore.create(configRepository);
-    this.communicationRepository.on('connect', (userId) => this.handleConnect(userId));
   }
+
+  onConnect() {}
 
   async init(): Promise<void> {
     await this.handleVersionCheck();
@@ -169,8 +171,9 @@ export class ServerInfoService {
     return true;
   }
 
-  private handleConnect(userId: string) {
-    this.communicationRepository.send(ClientEvent.SERVER_VERSION, userId, serverVersion);
+  @OnServerEvent(ServerEvent.WEBSOCKET_CONNECT)
+  onWebsocketConnection({ userId }: ServerEventMap[ServerEvent.WEBSOCKET_CONNECT]) {
+    this.eventRepository.clientSend(ClientEvent.SERVER_VERSION, userId, serverVersion);
     this.newReleaseNotification(userId);
   }
 
@@ -184,7 +187,7 @@ export class ServerInfoService {
     };
 
     userId
-      ? this.communicationRepository.send(event, userId, payload)
-      : this.communicationRepository.broadcast(event, payload);
+      ? this.eventRepository.clientSend(event, userId, payload)
+      : this.eventRepository.clientBroadcast(event, payload);
   }
 }

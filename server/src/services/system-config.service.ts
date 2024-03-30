@@ -12,17 +12,16 @@ import {
   supportedYearTokens,
 } from 'src/constants';
 import { SystemConfigCore } from 'src/cores/system-config.core';
-import { OnEventInternal } from 'src/decorators';
-import { SystemConfigTemplateStorageOptionDto } from 'src/dtos/system-config-storage-template.dto';
-import { SystemConfigDto, mapConfig } from 'src/dtos/system-config.dto';
+import { OnServerEvent } from 'src/decorators';
+import { SystemConfigDto, SystemConfigTemplateStorageOptionDto, mapConfig } from 'src/dtos/system-config.dto';
 import { LogLevel, SystemConfig } from 'src/entities/system-config.entity';
 import {
   ClientEvent,
-  ICommunicationRepository,
-  InternalEvent,
-  InternalEventMap,
+  IEventRepository,
+  ServerAsyncEvent,
+  ServerAsyncEventMap,
   ServerEvent,
-} from 'src/interfaces/communication.interface';
+} from 'src/interfaces/event.interface';
 import { ISearchRepository } from 'src/interfaces/search.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 import { ImmichLogger } from 'src/utils/logger';
@@ -34,11 +33,10 @@ export class SystemConfigService {
 
   constructor(
     @Inject(ISystemConfigRepository) private repository: ISystemConfigRepository,
-    @Inject(ICommunicationRepository) private communicationRepository: ICommunicationRepository,
+    @Inject(IEventRepository) private eventRepository: IEventRepository,
     @Inject(ISearchRepository) private smartInfoRepository: ISearchRepository,
   ) {
     this.core = SystemConfigCore.create(repository);
-    this.communicationRepository.on(ServerEvent.CONFIG_UPDATE, () => this.handleConfigUpdate());
     this.core.config$.subscribe((config) => this.setLogLevel(config));
   }
 
@@ -61,8 +59,8 @@ export class SystemConfigService {
     return mapConfig(config);
   }
 
-  @OnEventInternal(InternalEvent.VALIDATE_CONFIG)
-  validateConfig({ newConfig, oldConfig }: InternalEventMap[InternalEvent.VALIDATE_CONFIG]) {
+  @OnServerEvent(ServerAsyncEvent.CONFIG_VALIDATE)
+  onValidateConfig({ newConfig, oldConfig }: ServerAsyncEventMap[ServerAsyncEvent.CONFIG_VALIDATE]) {
     if (!_.isEqual(instanceToPlain(newConfig.logging), oldConfig.logging) && this.getEnvLogLevel()) {
       throw new Error('Logging cannot be changed while the environment variable LOG_LEVEL is set.');
     }
@@ -72,7 +70,10 @@ export class SystemConfigService {
     const oldConfig = await this.core.getConfig();
 
     try {
-      await this.communicationRepository.emitAsync(InternalEvent.VALIDATE_CONFIG, { newConfig: dto, oldConfig });
+      await this.eventRepository.serverSendAsync(ServerAsyncEvent.CONFIG_VALIDATE, {
+        newConfig: dto,
+        oldConfig,
+      });
     } catch (error) {
       this.logger.warn(`Unable to save system config due to a validation error: ${error}`);
       throw new BadRequestException(error instanceof Error ? error.message : error);
@@ -80,8 +81,8 @@ export class SystemConfigService {
 
     const newConfig = await this.core.updateConfig(dto);
 
-    this.communicationRepository.broadcast(ClientEvent.CONFIG_UPDATE, {});
-    this.communicationRepository.sendServerEvent(ServerEvent.CONFIG_UPDATE);
+    this.eventRepository.clientBroadcast(ClientEvent.CONFIG_UPDATE, {});
+    this.eventRepository.serverSend(ServerEvent.CONFIG_UPDATE, null);
 
     if (oldConfig.machineLearning.clip.modelName !== newConfig.machineLearning.clip.modelName) {
       await this.smartInfoRepository.init(newConfig.machineLearning.clip.modelName);
@@ -91,7 +92,7 @@ export class SystemConfigService {
 
   // this is only used by the cli on config change, and it's not actually needed anymore
   async refreshConfig() {
-    this.communicationRepository.sendServerEvent(ServerEvent.CONFIG_UPDATE);
+    this.eventRepository.serverSend(ServerEvent.CONFIG_UPDATE, null);
     await this.core.refreshConfig();
     return true;
   }
@@ -127,7 +128,8 @@ export class SystemConfigService {
     return theme.customCss;
   }
 
-  private async handleConfigUpdate() {
+  @OnServerEvent(ServerEvent.CONFIG_UPDATE)
+  async onConfigUpdate() {
     await this.core.refreshConfig();
   }
 

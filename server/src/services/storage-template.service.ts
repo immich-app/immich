@@ -14,15 +14,15 @@ import {
 } from 'src/constants';
 import { StorageCore, StorageFolder } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
-import { OnEventInternal } from 'src/decorators';
+import { OnServerEvent } from 'src/decorators';
 import { AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { AssetPathType } from 'src/entities/move.entity';
 import { SystemConfig } from 'src/entities/system-config.entity';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { InternalEvent, InternalEventMap } from 'src/interfaces/communication.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
+import { ServerAsyncEvent, ServerAsyncEventMap } from 'src/interfaces/event.interface';
 import { IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobStatus } from 'src/interfaces/job.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
@@ -86,8 +86,8 @@ export class StorageTemplateService {
     );
   }
 
-  @OnEventInternal(InternalEvent.VALIDATE_CONFIG)
-  validate({ newConfig }: InternalEventMap[InternalEvent.VALIDATE_CONFIG]) {
+  @OnServerEvent(ServerAsyncEvent.CONFIG_VALIDATE)
+  onValidateConfig({ newConfig }: ServerAsyncEventMap[ServerAsyncEvent.CONFIG_VALIDATE]) {
     try {
       const { compiled } = this.compile(newConfig.storageTemplate.template);
       this.render(compiled, {

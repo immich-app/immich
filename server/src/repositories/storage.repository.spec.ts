@@ -1,6 +1,6 @@
 import mockfs from 'mock-fs';
 import { CrawlOptionsDto } from 'src/dtos/library.dto';
-import { FilesystemProvider } from 'src/repositories/filesystem.provider';
+import { StorageRepository } from 'src/repositories/storage.repository';
 
 interface Test {
   test: string;
@@ -179,11 +179,11 @@ const tests: Test[] = [
   },
 ];
 
-describe(FilesystemProvider.name, () => {
-  let sut: FilesystemProvider;
+describe(StorageRepository.name, () => {
+  let sut: StorageRepository;
 
   beforeEach(() => {
-    sut = new FilesystemProvider();
+    sut = new StorageRepository();
   });
 
   afterEach(() => {

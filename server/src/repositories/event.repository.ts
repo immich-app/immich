@@ -8,13 +8,12 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import {
-  ClientEvent,
-  ICommunicationRepository,
-  InternalEventMap,
-  OnConnectCallback,
-  OnServerEventCallback,
+  ClientEventMap,
+  IEventRepository,
+  ServerAsyncEventMap,
   ServerEvent,
-} from 'src/interfaces/communication.interface';
+  ServerEventMap,
+} from 'src/interfaces/event.interface';
 import { AuthService } from 'src/services/auth.service';
 import { Instrumentation } from 'src/utils/instrumentation';
 import { ImmichLogger } from 'src/utils/logger';
@@ -25,14 +24,8 @@ import { ImmichLogger } from 'src/utils/logger';
   path: '/api/socket.io',
   transports: ['websocket'],
 })
-export class CommunicationRepository
-  implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, ICommunicationRepository
-{
-  private logger = new ImmichLogger(CommunicationRepository.name);
-  private onConnectCallbacks: OnConnectCallback[] = [];
-  private onServerEventCallbacks: Record<ServerEvent, OnServerEventCallback[]> = {
-    [ServerEvent.CONFIG_UPDATE]: [],
-  };
+export class EventRepository implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, IEventRepository {
+  private logger = new ImmichLogger(EventRepository.name);
 
   @WebSocketServer()
   private server?: Server;
@@ -46,27 +39,14 @@ export class CommunicationRepository
     this.logger.log('Initialized websocket server');
 
     for (const event of Object.values(ServerEvent)) {
-      server.on(event, async () => {
+      if (event === ServerEvent.WEBSOCKET_CONNECT) {
+        continue;
+      }
+
+      server.on(event, (data: unknown) => {
         this.logger.debug(`Server event: ${event} (receive)`);
-        const callbacks = this.onServerEventCallbacks[event];
-        for (const callback of callbacks) {
-          await callback();
-        }
+        this.eventEmitter.emit(event, data);
       });
-    }
-  }
-
-  on(event: 'connect' | ServerEvent, callback: OnConnectCallback | OnServerEventCallback) {
-    switch (event) {
-      case 'connect': {
-        this.onConnectCallbacks.push(callback);
-        break;
-      }
-
-      default: {
-        this.onServerEventCallbacks[event].push(callback as OnServerEventCallback);
-        break;
-      }
     }
   }
 
@@ -75,9 +55,7 @@ export class CommunicationRepository
       this.logger.log(`Websocket Connect:    ${client.id}`);
       const auth = await this.authService.validate(client.request.headers, {});
       await client.join(auth.user.id);
-      for (const callback of this.onConnectCallbacks) {
-        await callback(auth.user.id);
-      }
+      this.serverSend(ServerEvent.WEBSOCKET_CONNECT, { userId: auth.user.id });
     } catch (error: Error | any) {
       this.logger.error(`Websocket connection error: ${error}`, error?.stack);
       client.emit('error', 'unauthorized');
@@ -90,24 +68,21 @@ export class CommunicationRepository
     await client.leave(client.nsp.name);
   }
 
-  send(event: ClientEvent, userId: string, data: any) {
+  clientSend<E extends keyof ClientEventMap>(event: E, userId: string, data: ClientEventMap[E]) {
     this.server?.to(userId).emit(event, data);
   }
 
-  broadcast(event: ClientEvent, data: any) {
+  clientBroadcast<E extends keyof ClientEventMap>(event: E, data: ClientEventMap[E]) {
     this.server?.emit(event, data);
   }
 
-  sendServerEvent(event: ServerEvent) {
+  serverSend<E extends keyof ServerEventMap>(event: E, data: ServerEventMap[E]) {
     this.logger.debug(`Server event: ${event} (send)`);
-    this.server?.serverSideEmit(event);
-  }
-
-  emit<E extends keyof InternalEventMap>(event: E, data: InternalEventMap[E]): boolean {
+    this.server?.serverSideEmit(event, data);
     return this.eventEmitter.emit(event, data);
   }
 
-  emitAsync<E extends keyof InternalEventMap, R = any[]>(event: E, data: InternalEventMap[E]): Promise<R> {
+  serverSendAsync<E extends keyof ServerAsyncEventMap, R = any[]>(event: E, data: ServerAsyncEventMap[E]): Promise<R> {
     return this.eventEmitter.emitAsync(event, data) as Promise<R>;
   }
 }

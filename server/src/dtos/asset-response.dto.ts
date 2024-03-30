@@ -131,7 +131,12 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
 }
 
 export class MemoryLaneResponseDto {
+  @ApiProperty({ deprecated: true })
   title!: string;
+
+  @ApiProperty({ type: 'integer' })
+  yearsAgo!: number;
+
   assets!: AssetResponseDto[];
 }
 
