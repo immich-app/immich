@@ -518,10 +518,7 @@ describe(AlbumService.name, () => {
         updatedAt: expect.any(Date),
         albumThumbnailAssetId: 'asset-1',
       });
-      expect(albumMock.addAssets).toHaveBeenCalledWith({
-        albumId: 'album-123',
-        assetIds: ['asset-1', 'asset-2', 'asset-3'],
-      });
+      expect(albumMock.addAssetIds).toHaveBeenCalledWith('album-123', ['asset-1', 'asset-2', 'asset-3']);
     });
 
     it('should not set the thumbnail if the album has one already', async () => {
@@ -539,7 +536,7 @@ describe(AlbumService.name, () => {
         updatedAt: expect.any(Date),
         albumThumbnailAssetId: 'asset-id',
       });
-      expect(albumMock.addAssets).toHaveBeenCalled();
+      expect(albumMock.addAssetIds).toHaveBeenCalled();
     });
 
     it('should allow a shared user to add assets', async () => {
@@ -561,10 +558,7 @@ describe(AlbumService.name, () => {
         updatedAt: expect.any(Date),
         albumThumbnailAssetId: 'asset-1',
       });
-      expect(albumMock.addAssets).toHaveBeenCalledWith({
-        albumId: 'album-123',
-        assetIds: ['asset-1', 'asset-2', 'asset-3'],
-      });
+      expect(albumMock.addAssetIds).toHaveBeenCalledWith('album-123', ['asset-1', 'asset-2', 'asset-3']);
     });
 
     it('should allow a shared link user to add assets', async () => {
@@ -586,10 +580,7 @@ describe(AlbumService.name, () => {
         updatedAt: expect.any(Date),
         albumThumbnailAssetId: 'asset-1',
       });
-      expect(albumMock.addAssets).toHaveBeenCalledWith({
-        albumId: 'album-123',
-        assetIds: ['asset-1', 'asset-2', 'asset-3'],
-      });
+      expect(albumMock.addAssetIds).toHaveBeenCalledWith('album-123', ['asset-1', 'asset-2', 'asset-3']);
 
       expect(accessMock.album.checkSharedLinkAccess).toHaveBeenCalledWith(
         authStub.adminSharedLink.sharedLink?.id,
@@ -665,23 +656,23 @@ describe(AlbumService.name, () => {
 
   describe('removeAssets', () => {
     it('should allow the owner to remove assets', async () => {
-      accessMock.album.checkOwnerAccess.mockResolvedValueOnce(new Set(['album-123']));
-      accessMock.album.checkOwnerAccess.mockResolvedValueOnce(new Set(['asset-id']));
+      accessMock.album.checkOwnerAccess.mockResolvedValue(new Set(['album-123']));
+      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-id']));
       albumMock.getById.mockResolvedValue(_.cloneDeep(albumStub.oneAsset));
-      albumMock.getAssetIds.mockResolvedValueOnce(new Set(['asset-id']));
+      albumMock.getAssetIds.mockResolvedValue(new Set(['asset-id']));
 
       await expect(sut.removeAssets(authStub.admin, 'album-123', { ids: ['asset-id'] })).resolves.toEqual([
         { success: true, id: 'asset-id' },
       ]);
 
       expect(albumMock.update).toHaveBeenCalledWith({ id: 'album-123', updatedAt: expect.any(Date) });
-      expect(albumMock.removeAssets).toHaveBeenCalledWith('album-123', ['asset-id']);
+      expect(albumMock.removeAssetIds).toHaveBeenCalledWith('album-123', ['asset-id']);
     });
 
     it('should skip assets not in the album', async () => {
       accessMock.album.checkOwnerAccess.mockResolvedValue(new Set(['album-123']));
       albumMock.getById.mockResolvedValue(_.cloneDeep(albumStub.empty));
-      albumMock.getAssetIds.mockResolvedValueOnce(new Set());
+      albumMock.getAssetIds.mockResolvedValue(new Set());
 
       await expect(sut.removeAssets(authStub.admin, 'album-123', { ids: ['asset-id'] })).resolves.toEqual([
         { success: false, id: 'asset-id', error: BulkIdErrorReason.NOT_FOUND },
@@ -693,7 +684,7 @@ describe(AlbumService.name, () => {
     it('should skip assets without user permission to remove', async () => {
       accessMock.album.checkSharedAlbumAccess.mockResolvedValue(new Set(['album-123']));
       albumMock.getById.mockResolvedValue(_.cloneDeep(albumStub.oneAsset));
-      albumMock.getAssetIds.mockResolvedValueOnce(new Set(['asset-id']));
+      albumMock.getAssetIds.mockResolvedValue(new Set(['asset-id']));
 
       await expect(sut.removeAssets(authStub.admin, 'album-123', { ids: ['asset-id'] })).resolves.toEqual([
         {
@@ -707,10 +698,10 @@ describe(AlbumService.name, () => {
     });
 
     it('should reset the thumbnail if it is removed', async () => {
-      accessMock.album.checkOwnerAccess.mockResolvedValueOnce(new Set(['album-123']));
-      accessMock.album.checkOwnerAccess.mockResolvedValueOnce(new Set(['asset-id']));
+      accessMock.album.checkOwnerAccess.mockResolvedValue(new Set(['album-123']));
+      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-id']));
       albumMock.getById.mockResolvedValue(_.cloneDeep(albumStub.twoAssets));
-      albumMock.getAssetIds.mockResolvedValueOnce(new Set(['asset-id']));
+      albumMock.getAssetIds.mockResolvedValue(new Set(['asset-id']));
 
       await expect(sut.removeAssets(authStub.admin, 'album-123', { ids: ['asset-id'] })).resolves.toEqual([
         { success: true, id: 'asset-id' },

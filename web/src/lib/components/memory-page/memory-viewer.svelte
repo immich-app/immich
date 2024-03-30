@@ -108,7 +108,12 @@
 
       {#if canGoForward}
         <div class="flex place-content-center place-items-center gap-2 overflow-hidden">
-          <CircleIconButton icon={paused ? mdiPlay : mdiPause} forceDark on:click={() => (paused = !paused)} />
+          <CircleIconButton
+            title={paused ? 'Play memories' : 'Pause memories'}
+            icon={paused ? mdiPlay : mdiPause}
+            forceDark
+            on:click={() => (paused = !paused)}
+          />
 
           {#each currentMemory.assets as _, index}
             <button
@@ -144,7 +149,7 @@
         class:opacity-100={galleryInView}
       >
         <button on:click={() => memoryWrapper.scrollIntoView({ behavior: 'smooth' })} disabled={!galleryInView}>
-          <CircleIconButton icon={mdiChevronUp} backgroundColor="white" forceDark />
+          <CircleIconButton title="Hide gallery" icon={mdiChevronUp} backgroundColor="white" forceDark />
         </button>
       </div>
     {/if}
@@ -204,13 +209,23 @@
             <!-- CONTROL BUTTONS -->
             {#if canGoBack}
               <div class="absolute top-1/2 left-0 ml-4">
-                <CircleIconButton icon={mdiChevronLeft} backgroundColor="#202123" on:click={toPrevious} />
+                <CircleIconButton
+                  title="Previous memory"
+                  icon={mdiChevronLeft}
+                  backgroundColor="#202123"
+                  on:click={toPrevious}
+                />
               </div>
             {/if}
 
             {#if canGoForward}
               <div class="absolute top-1/2 right-0 mr-4">
-                <CircleIconButton icon={mdiChevronRight} backgroundColor="#202123" on:click={toNext} />
+                <CircleIconButton
+                  title="Next memory"
+                  icon={mdiChevronRight}
+                  backgroundColor="#202123"
+                  on:click={toNext}
+                />
               </div>
             {/if}
 
@@ -271,7 +286,7 @@
         class:opacity-100={!galleryInView}
       >
         <button on:click={() => memoryGallery.scrollIntoView({ behavior: 'smooth' })}>
-          <CircleIconButton icon={mdiChevronDown} backgroundColor="white" forceDark />
+          <CircleIconButton title="Show gallery" icon={mdiChevronDown} backgroundColor="white" forceDark />
         </button>
       </div>
 

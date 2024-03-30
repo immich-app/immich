@@ -107,6 +107,7 @@ export class PersonRepository implements IPersonRepository {
 
   @GenerateSql({ params: [DummyValue.UUID] })
   getFaceById(id: string): Promise<AssetFaceEntity> {
+    // TODO return null instead of find or fail
     return this.assetFaceRepository.findOneOrFail({
       where: { id },
       relations: {

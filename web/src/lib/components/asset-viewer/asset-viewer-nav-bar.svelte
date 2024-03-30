@@ -102,7 +102,7 @@
   class="z-[1001] flex h-16 place-items-center justify-between bg-gradient-to-b from-black/40 px-3 transition-transform duration-200"
 >
   <div class="text-white">
-    <CircleIconButton isOpacity={true} icon={mdiArrowLeft} on:click={() => dispatch('back')} />
+    <CircleIconButton isOpacity={true} icon={mdiArrowLeft} title="Go back" on:click={() => dispatch('back')} />
   </div>
   <div class="flex w-[calc(100%-3rem)] justify-end gap-2 overflow-hidden text-white">
     {#if showShareButton}
