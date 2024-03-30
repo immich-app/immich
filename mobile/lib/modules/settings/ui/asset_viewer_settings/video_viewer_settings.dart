@@ -14,17 +14,17 @@ class VideoViewerSettings extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final useAutoloopVideo = useAppSettingsState(AppSettingsEnum.autoloopVideo);
+    final useLoopVideo = useAppSettingsState(AppSettingsEnum.loopVideo);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SettingsSubTitle(title: "Videos".tr()),
         SettingsSwitchListTile(
-          valueNotifier: useAutoloopVideo,
-          title: "Autoloop".tr(),
+          valueNotifier: useLoopVideo,
+          title: "Looping".tr(),
           subtitle:
-              "Enable to automatically loop videos in the detail viewer.".tr(),
+              "Enable to automatically loop a video in the detail viewer.".tr(),
           onChanged: (_) => ref.invalidate(appSettingsServiceProvider),
         ),
       ],
