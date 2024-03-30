@@ -216,6 +216,12 @@ abstract class _$AppRouter extends RootStackRouter {
         ),
       );
     },
+    OvernightUploadRoute.name: (routeData) {
+      return AutoRoutePage<dynamic>(
+        routeData: routeData,
+        child: const OvernightUploadPage(),
+      );
+    },
     PartnerDetailRoute.name: (routeData) {
       final args = routeData.argsAs<PartnerDetailRouteArgs>();
       return AutoRoutePage<dynamic>(
@@ -986,6 +992,20 @@ class MemoryRouteArgs {
   String toString() {
     return 'MemoryRouteArgs{memories: $memories, memoryIndex: $memoryIndex, key: $key}';
   }
+}
+
+/// generated route for
+/// [OvernightUploadPage]
+class OvernightUploadRoute extends PageRouteInfo<void> {
+  const OvernightUploadRoute({List<PageRouteInfo>? children})
+      : super(
+          OvernightUploadRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'OvernightUploadRoute';
+
+  static const PageInfo<void> page = PageInfo<void>(name);
 }
 
 /// generated route for

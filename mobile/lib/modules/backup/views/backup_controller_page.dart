@@ -268,6 +268,14 @@ class BackupControllerPage extends HookConsumerWidget {
           ),
         ),
         actions: [
+          if (Platform.isIOS)
+            IconButton(
+              onPressed: () => context.pushRoute(const OvernightUploadRoute()),
+              splashRadius: 24,
+              icon: const Icon(
+                Icons.bedtime_outlined,
+              ),
+            ),
           Padding(
             padding: const EdgeInsets.only(right: 8.0),
             child: IconButton(
