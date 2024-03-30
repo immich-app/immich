@@ -17,6 +17,7 @@ class ImageViewerQualitySetting extends HookWidget {
     final isPreview = useAppSettingsState(AppSettingsEnum.loadPreview);
     final isOriginal = useAppSettingsState(AppSettingsEnum.loadOriginal);
     final autoPlayVideos = useAppSettingsState(AppSettingsEnum.autoPlayVideos);
+
     final viewerSettings = [
       ListTile(
         title: Text(

@@ -60,7 +60,7 @@ enum AppSettingsEnum<T> {
   autoPlayVideos<bool>(
     StoreKey.autoPlayVideos,
     "autoPlayVideos",
-    false,
+    true,
   ),
   ;
 
