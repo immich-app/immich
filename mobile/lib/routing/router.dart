@@ -225,6 +225,7 @@ class AppRouter extends _$AppRouter {
       page: SearchInputRoute.page,
       guards: [_authGuard, _duplicateGuard],
       transitionsBuilder: TransitionsBuilders.noTransition,
+    ),
     AutoRoute(
       page: OvernightUploadRoute.page,
       guards: [_authGuard, _duplicateGuard],

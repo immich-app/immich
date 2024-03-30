@@ -101,6 +101,8 @@ class _BackupInProgress extends HookWidget {
 
     void onAnimationStateChange(AnimationStatus status) {
       if (status == AnimationStatus.completed) {
+        /// This is used to force a rebuild of the widget to call the randomizeAlignment() method
+        /// through the useEffect hook which takes care of animating the icon to the new alignment
         reset.value = !reset.value;
       }
     }
@@ -122,6 +124,9 @@ class _BackupInProgress extends HookWidget {
       [],
     );
 
+    /// The following effect is called on each rebuild of the widget and handles the starts the animation
+    /// This is also called on screen orientation change and handles updating the alignment and size of the icon
+    /// accordingly
     useEffect(() {
       randomizeAlignment();
       return null;
