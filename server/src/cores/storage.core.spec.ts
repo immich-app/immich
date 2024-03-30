@@ -1,5 +1,5 @@
 import { resolve } from 'node:path';
-import { StorageCore } from 'src/cores/storage.core'; // Asegúrate de que la ruta es correcta
+import { StorageCore } from 'src/cores/storage.core';
 
 jest.mock('src/constants', () => ({
   APP_MEDIA_LOCATION: '/photos',
@@ -8,7 +8,7 @@ jest.mock('src/constants', () => ({
 describe('StorageCore', () => {
   describe('isImmichPath', () => {
     it('should return true for APP_MEDIA_LOCATION path', () => {
-      const immichPath = resolve('/photos/');
+      const immichPath = resolve('/photos');
       expect(StorageCore.isImmichPath(immichPath)).toBe(true);
     });
 
