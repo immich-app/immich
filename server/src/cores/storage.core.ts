@@ -115,10 +115,12 @@ export class StorageCore {
   }
 
   static isImmichPath(path: string) {
-    const normalizedPath = resolve(path).endsWith('/') ? resolve(path) : `${resolve(path)}/`;
-    const normalizedAppMediaLocation = resolve(APP_MEDIA_LOCATION).endsWith('/')
-      ? resolve(APP_MEDIA_LOCATION)
-      : `${resolve(APP_MEDIA_LOCATION)}/`;
+    const resolvedPath = resolve(path);
+    const resolvedAppMediaLocation = resolve(APP_MEDIA_LOCATION);
+    const normalizedPath = resolvedPath.endsWith('/') ? resolvedPath : resolvedPath + '/';
+    const normalizedAppMediaLocation = resolvedAppMediaLocation.endsWith('/')
+      ? resolvedAppMediaLocation
+      : resolvedAppMediaLocation + '/';
     return normalizedPath.startsWith(normalizedAppMediaLocation);
   }
 
