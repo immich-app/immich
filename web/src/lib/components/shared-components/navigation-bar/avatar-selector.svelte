@@ -25,14 +25,14 @@
           SELECT AVATAR COLOR
         </h1>
         <div>
-          <CircleIconButton icon={mdiClose} on:click={() => dispatch('close')} />
+          <CircleIconButton icon={mdiClose} title="Close" on:click={() => dispatch('close')} />
         </div>
       </div>
       <div class="flex items-center justify-center p-4 mt-4">
         <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
           {#each colors as color}
             <button on:click={() => dispatch('choose', color)}>
-              <UserAvatar {user} {color} size="xl" showProfileImage={false} />
+              <UserAvatar label={color} {user} {color} size="xl" showProfileImage={false} />
             </button>
           {/each}
         </div>

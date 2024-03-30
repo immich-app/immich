@@ -12,9 +12,9 @@ import { AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
-import { ClientEvent, ICommunicationRepository } from 'src/interfaces/communication.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
+import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
 import {
   IBaseJob,
   IEntityJob,
@@ -105,7 +105,7 @@ export class MetadataService {
   constructor(
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
-    @Inject(ICommunicationRepository) private communicationRepository: ICommunicationRepository,
+    @Inject(IEventRepository) private eventRepository: IEventRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
@@ -185,7 +185,7 @@ export class MetadataService {
     await this.albumRepository.removeAsset(motionAsset.id);
 
     // Notify clients to hide the linked live photo asset
-    this.communicationRepository.send(ClientEvent.ASSET_HIDDEN, motionAsset.ownerId, motionAsset.id);
+    this.eventRepository.clientSend(ClientEvent.ASSET_HIDDEN, motionAsset.ownerId, motionAsset.id);
 
     return JobStatus.SUCCESS;
   }

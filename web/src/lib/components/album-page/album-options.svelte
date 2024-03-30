@@ -61,7 +61,7 @@
         <div class="flex items-center">
           <h1 class="px-4 w-full self-center font-medium text-immich-primary dark:text-immich-dark-primary">Options</h1>
           <div>
-            <CircleIconButton icon={mdiClose} on:click={() => dispatch('close')} />
+            <CircleIconButton icon={mdiClose} title="Close" on:click={() => dispatch('close')} />
           </div>
         </div>
 

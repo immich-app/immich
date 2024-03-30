@@ -13,13 +13,13 @@ import {
   TranscodePolicy,
   VideoCodec,
 } from 'src/entities/system-config.entity';
-import { ICommunicationRepository, ServerEvent } from 'src/interfaces/communication.interface';
+import { IEventRepository, ServerEvent } from 'src/interfaces/event.interface';
 import { QueueName } from 'src/interfaces/job.interface';
 import { ISearchRepository } from 'src/interfaces/search.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 import { SystemConfigService } from 'src/services/system-config.service';
 import { ImmichLogger } from 'src/utils/logger';
-import { newCommunicationRepositoryMock } from 'test/repositories/communication.repository.mock';
+import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
 import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
 
 const updates: SystemConfigEntity[] = [
@@ -152,14 +152,14 @@ const updatedConfig = Object.freeze<SystemConfig>({
 describe(SystemConfigService.name, () => {
   let sut: SystemConfigService;
   let configMock: jest.Mocked<ISystemConfigRepository>;
-  let communicationMock: jest.Mocked<ICommunicationRepository>;
+  let eventMock: jest.Mocked<IEventRepository>;
   let smartInfoMock: jest.Mocked<ISearchRepository>;
 
   beforeEach(() => {
     delete process.env.IMMICH_CONFIG_FILE;
     configMock = newSystemConfigRepositoryMock();
-    communicationMock = newCommunicationRepositoryMock();
-    sut = new SystemConfigService(configMock, communicationMock, smartInfoMock);
+    eventMock = newEventRepositoryMock();
+    sut = new SystemConfigService(configMock, eventMock, smartInfoMock);
   });
 
   it('should work', () => {
@@ -330,8 +330,8 @@ describe(SystemConfigService.name, () => {
 
       await expect(sut.updateConfig(updatedConfig)).resolves.toEqual(updatedConfig);
 
-      expect(communicationMock.broadcast).toHaveBeenCalled();
-      expect(communicationMock.sendServerEvent).toHaveBeenCalledWith(ServerEvent.CONFIG_UPDATE);
+      expect(eventMock.clientBroadcast).toHaveBeenCalled();
+      expect(eventMock.serverSend).toHaveBeenCalledWith(ServerEvent.CONFIG_UPDATE, null);
       expect(configMock.saveAll).toHaveBeenCalledWith(updates);
     });
 

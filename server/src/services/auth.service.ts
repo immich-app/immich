@@ -146,7 +146,6 @@ export class AuthService {
 
   async adminSignUp(dto: SignUpDto): Promise<UserResponseDto> {
     const adminUser = await this.userRepository.getAdmin();
-
     if (adminUser) {
       throw new BadRequestException('The server already has an admin');
     }
@@ -427,7 +426,7 @@ export class AuthService {
   }
 
   private async createLoginResponse(user: UserEntity, authType: AuthType, loginDetails: LoginDetails) {
-    const key = this.cryptoRepository.randomBytes(32).toString('base64').replaceAll(/\W/g, '');
+    const key = this.cryptoRepository.newPassword(32);
     const token = this.cryptoRepository.hashSha256(key);
 
     await this.userTokenRepository.create({

@@ -27,7 +27,7 @@ describe(APIKeyService.name, () => {
         name: 'Test Key',
         userId: authStub.admin.user.id,
       });
-      expect(cryptoMock.randomBytes).toHaveBeenCalled();
+      expect(cryptoMock.newPassword).toHaveBeenCalled();
       expect(cryptoMock.hashSha256).toHaveBeenCalled();
     });
 
@@ -41,7 +41,7 @@ describe(APIKeyService.name, () => {
         name: 'API Key',
         userId: authStub.admin.user.id,
       });
-      expect(cryptoMock.randomBytes).toHaveBeenCalled();
+      expect(cryptoMock.newPassword).toHaveBeenCalled();
       expect(cryptoMock.hashSha256).toHaveBeenCalled();
     });
   });

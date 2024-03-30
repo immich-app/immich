@@ -1,7 +1,7 @@
 import { Inject, Injectable, UnsupportedMediaTypeException } from '@nestjs/common';
 import { StorageCore, StorageFolder } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
-import { SystemConfigFFmpegDto } from 'src/dtos/system-config-ffmpeg.dto';
+import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
 import { AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { AssetPathType } from 'src/entities/move.entity';
 import {
