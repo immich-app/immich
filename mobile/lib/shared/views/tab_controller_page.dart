@@ -162,11 +162,11 @@ class TabControllerPage extends HookConsumerWidget {
 
     final multiselectEnabled = ref.watch(multiselectProvider);
     return AutoTabsRouter(
-      routes: [
-        const HomeRoute(),
+      routes: const [
+        HomeRoute(),
         SearchRoute(),
-        const SharingRoute(),
-        const LibraryRoute(),
+        SharingRoute(),
+        LibraryRoute(),
       ],
       duration: const Duration(milliseconds: 600),
       transitionBuilder: (context, child, animation) => FadeTransition(
