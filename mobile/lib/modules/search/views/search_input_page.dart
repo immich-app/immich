@@ -391,10 +391,10 @@ class SearchInputPage extends HookConsumerWidget {
       if (isContextualSearch.value) {
         filter.value = filter.value.copyWith(
           context: value,
-          filename: '',
+          filename: null,
         );
       } else {
-        filter.value = filter.value.copyWith(filename: value, context: '');
+        filter.value = filter.value.copyWith(filename: value, context: null);
       }
 
       search();

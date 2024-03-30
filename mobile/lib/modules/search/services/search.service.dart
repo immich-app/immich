@@ -84,7 +84,10 @@ class SearchService {
       } else {
         response = await _apiService.searchApi.searchMetadata(
           MetadataSearchDto(
-            originalFileName: filter.filename,
+            originalFileName:
+                filter.filename != null && filter.filename!.isNotEmpty
+                    ? filter.filename
+                    : null,
             country: filter.location.country,
             state: filter.location.state,
             city: filter.location.city,
