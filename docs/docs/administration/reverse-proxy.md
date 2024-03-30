@@ -4,11 +4,11 @@ Users can deploy a custom reverse proxy that forwards requests to Immich. This w
 
 ### Nginx example config
 
-Below is an example config for nginx. Make sure to include `client_max_body_size 50000M;` also in a `http` block in `/etc/nginx/nginx.conf`.
+Below is an example config for nginx. Make sure to set `public_url` to the front-facing URL of your instance, and `backend_url` to the path of the Immich server.
 
 ```nginx
 server {
-    server_name <snip>;
+    server_name <public_url>;
 
     # allow large file uploads
     client_max_body_size 50000M;
@@ -31,7 +31,7 @@ server {
     send_timeout       600s;
 
     location / {
-        proxy_pass http://<snip>:2283;
+        proxy_pass http://<backend_url>:2283;
     }
 }
 ```
