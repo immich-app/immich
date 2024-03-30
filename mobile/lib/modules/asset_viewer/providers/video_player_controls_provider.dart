@@ -35,10 +35,10 @@ class VideoPlayerControls extends StateNotifier<VideoPlaybackControls> {
     state = value;
   }
 
-  void reset() {
+  void reset([bool pause = false]) {
     state = VideoPlaybackControls(
       position: 0,
-      pause: false,
+      pause: pause,
       mute: false,
     );
   }

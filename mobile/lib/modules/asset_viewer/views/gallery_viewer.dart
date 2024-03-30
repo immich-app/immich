@@ -58,8 +58,10 @@ class GalleryViewerPage extends HookConsumerWidget {
     final settings = ref.watch(appSettingsServiceProvider);
     final isLoadPreview = useState(AppSettingsEnum.loadPreview.defaultValue);
     final isLoadOriginal = useState(AppSettingsEnum.loadOriginal.defaultValue);
-    final shouldAutoPlay =
-        useState(AppSettingsEnum.autoPlayVideos.defaultValue);
+    final autoPlay = ref.read(
+      appSettingsServiceProvider
+          .select((s) => s.getSetting(AppSettingsEnum.autoPlayVideos)),
+    );
     final isZoomed = useState(false);
     final isPlayingVideo = useState(false);
     final localPosition = useState<Offset?>(null);
@@ -82,7 +84,6 @@ class GalleryViewerPage extends HookConsumerWidget {
         ? currentAsset
         : stackElements.elementAt(stackIndex.value);
 
-    final isMotionPhoto = asset.livePhotoVideoId != null;
     // Listen provider to prevent autoDispose when navigating to other routes from within the gallery page
     ref.listen(currentAssetProvider, (_, __) {});
     useEffect(
@@ -91,7 +92,8 @@ class GalleryViewerPage extends HookConsumerWidget {
         Future.microtask(
           () => ref.read(currentAssetProvider.notifier).set(asset),
         );
-        isPlayingVideo.value = isMotionPhoto && shouldAutoPlay.value;
+        isPlayingVideo.value = (autoPlay && !asset.isImage) ||
+            (autoPlay && asset.livePhotoVideoId != null);
         return null;
       },
       [asset],
@@ -103,8 +105,6 @@ class GalleryViewerPage extends HookConsumerWidget {
             settings.getSetting<bool>(AppSettingsEnum.loadPreview);
         isLoadOriginal.value =
             settings.getSetting<bool>(AppSettingsEnum.loadOriginal);
-        shouldAutoPlay.value =
-            settings.getSetting<bool>(AppSettingsEnum.autoPlayVideos);
         return null;
       },
       [],
@@ -365,7 +365,6 @@ class GalleryViewerPage extends HookConsumerWidget {
                     child: VideoViewerPage(
                       key: ValueKey(a),
                       asset: a,
-                      isMotionVideo: a.livePhotoVideoId != null,
                       placeholder: Image(
                         image: provider,
                         fit: BoxFit.contain,
@@ -373,7 +372,6 @@ class GalleryViewerPage extends HookConsumerWidget {
                         width: context.width,
                         alignment: Alignment.center,
                       ),
-                      autoPlayVideo: shouldAutoPlay.value,
                     ),
                   );
                 }
@@ -410,7 +408,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                     showStack: showStack,
                     stackIndex: stackIndex.value,
                     asset: asset,
-                    showVideoPlayerControls: !asset.isImage && !isMotionPhoto,
+                    showVideoPlayerControls: !asset.isImage,
                   ),
                 ],
               ),

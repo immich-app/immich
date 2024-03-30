@@ -359,7 +359,6 @@ abstract class _$AppRouter extends RootStackRouter {
         child: VideoViewerPage(
           key: args.key,
           asset: args.asset,
-          isMotionVideo: args.isMotionVideo,
           placeholder: args.placeholder,
           showControls: args.showControls,
           hideControlsTimer: args.hideControlsTimer,
@@ -1432,7 +1431,6 @@ class VideoViewerRoute extends PageRouteInfo<VideoViewerRouteArgs> {
   VideoViewerRoute({
     Key? key,
     required Asset asset,
-    bool isMotionVideo = false,
     Widget? placeholder,
     bool showControls = true,
     Duration hideControlsTimer = const Duration(seconds: 5),
@@ -1443,7 +1441,6 @@ class VideoViewerRoute extends PageRouteInfo<VideoViewerRouteArgs> {
           args: VideoViewerRouteArgs(
             key: key,
             asset: asset,
-            isMotionVideo: isMotionVideo,
             placeholder: placeholder,
             showControls: showControls,
             hideControlsTimer: hideControlsTimer,
@@ -1462,7 +1459,6 @@ class VideoViewerRouteArgs {
   const VideoViewerRouteArgs({
     this.key,
     required this.asset,
-    this.isMotionVideo = false,
     this.placeholder,
     this.showControls = true,
     this.hideControlsTimer = const Duration(seconds: 5),
@@ -1472,8 +1468,6 @@ class VideoViewerRouteArgs {
   final Key? key;
 
   final Asset asset;
-
-  final bool isMotionVideo;
 
   final Widget? placeholder;
 
@@ -1485,6 +1479,6 @@ class VideoViewerRouteArgs {
 
   @override
   String toString() {
-    return 'VideoViewerRouteArgs{key: $key, asset: $asset, isMotionVideo: $isMotionVideo, placeholder: $placeholder, showControls: $showControls, hideControlsTimer: $hideControlsTimer, showDownloadingIndicator: $showDownloadingIndicator}';
+    return 'VideoViewerRouteArgs{key: $key, asset: $asset, placeholder: $placeholder, showControls: $showControls, hideControlsTimer: $hideControlsTimer, showDownloadingIndicator: $showDownloadingIndicator}';
   }
 }

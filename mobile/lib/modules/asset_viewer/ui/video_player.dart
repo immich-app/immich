@@ -7,22 +7,20 @@ import 'package:video_player/video_player.dart';
 
 class VideoPlayerViewer extends HookConsumerWidget {
   final VideoPlayerController controller;
-  final bool isMotionVideo;
   final Widget? placeholder;
   final Duration hideControlsTimer;
   final bool showControls;
   final bool showDownloadingIndicator;
-  final bool autoPlayVideo;
+  final bool autoPlay;
 
   const VideoPlayerViewer({
     super.key,
     required this.controller,
-    required this.isMotionVideo,
     this.placeholder,
     required this.hideControlsTimer,
     required this.showControls,
     required this.showDownloadingIndicator,
-    this.autoPlayVideo = true,
+    this.autoPlay = true,
   });
 
   @override
@@ -36,11 +34,9 @@ class VideoPlayerViewer extends HookConsumerWidget {
       customControls: CustomVideoPlayerControls(
         hideTimerDuration: hideControlsTimer,
       ),
-      showControls: showControls && !isMotionVideo,
+      showControls: showControls,
       hideControlsTimer: hideControlsTimer,
-      // Always auto play motion pictures, this component isn't rendered when the motion pictures are not playing
-      // If it's a regular video, use the autoPlayVideo parameter
-      autoPlay: isMotionVideo || autoPlayVideo,
+      autoPlay: autoPlay,
     );
 
     return Chewie(

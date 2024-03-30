@@ -7,6 +7,8 @@ import 'package:immich_mobile/modules/asset_viewer/providers/video_player_contro
 import 'package:immich_mobile/modules/asset_viewer/providers/video_player_controls_provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/video_player_value_provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/video_player.dart';
+import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
+import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/delayed_loading_indicator.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
@@ -15,28 +17,30 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 // ignore: must_be_immutable
 class VideoViewerPage extends HookConsumerWidget {
   final Asset asset;
-  final bool isMotionVideo;
   final Widget? placeholder;
   final Duration hideControlsTimer;
   final bool showControls;
   final bool showDownloadingIndicator;
-  final bool autoPlayVideo;
 
   const VideoViewerPage({
     super.key,
     required this.asset,
-    this.isMotionVideo = false,
     this.placeholder,
     this.showControls = true,
     this.hideControlsTimer = const Duration(seconds: 5),
     this.showDownloadingIndicator = true,
-    this.autoPlayVideo = true,
   });
 
   @override
   build(BuildContext context, WidgetRef ref) {
     final controller =
         ref.watch(videoPlayerControllerProvider(asset: asset)).value;
+    final isMotionVideo = asset.livePhotoVideoId != null;
+    final autoPlay = ref.read(
+      appSettingsServiceProvider
+          .select((s) => s.getSetting(AppSettingsEnum.autoPlayVideos)),
+    );
+
     // The last volume of the video used when mute is toggled
     final lastVolume = useState(0.5);
 
@@ -86,6 +90,9 @@ class VideoViewerPage extends HookConsumerWidget {
         // Sync with the controls playing
         WakelockPlus.enable();
       } else {
+        if (state == VideoPlaybackState.completed) {
+          ref.read(videoPlayerControlsProvider.notifier).pause();
+        }
         // Sync with the controls pause
         WakelockPlus.disable();
       }
@@ -95,7 +102,7 @@ class VideoViewerPage extends HookConsumerWidget {
     useEffect(
       () {
         Future.microtask(
-          () => ref.read(videoPlayerControlsProvider.notifier).reset(),
+          () => ref.read(videoPlayerControlsProvider.notifier).reset(!autoPlay),
         );
         // Guard no controller
         if (controller == null) {
@@ -105,18 +112,18 @@ class VideoViewerPage extends HookConsumerWidget {
         // Hide the controls
         // Done in a microtask to avoid setting the state while the is building
         // Don't hide the controls if autoplay is disabled
-        if (!isMotionVideo && autoPlayVideo) {
-          Future.microtask(() {
-            ref.read(showControlsProvider.notifier).show = false;
-          });
+        if (!isMotionVideo && autoPlay) {
+          Future.microtask(
+            () => ref.read(showControlsProvider.notifier).show = false,
+          );
         }
 
+        /// Reset state of controller and controls to new video to update video controls
+        Future.microtask(updateVideoPlayback);
         // Subscribes to listener
         controller.addListener(updateVideoPlayback);
         return () {
-          // Removes listener when we dispose
           controller.removeListener(updateVideoPlayback);
-          controller.pause();
         };
       },
       [controller],
@@ -154,12 +161,11 @@ class VideoViewerPage extends HookConsumerWidget {
                 width: size.width,
                 child: VideoPlayerViewer(
                   controller: controller,
-                  isMotionVideo: isMotionVideo,
                   placeholder: placeholder,
                   hideControlsTimer: hideControlsTimer,
-                  showControls: showControls,
+                  showControls: !isMotionVideo && showControls,
                   showDownloadingIndicator: showDownloadingIndicator,
-                  autoPlayVideo: autoPlayVideo,
+                  autoPlay: isMotionVideo || autoPlay,
                 ),
               ),
           ],
