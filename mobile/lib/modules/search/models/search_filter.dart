@@ -290,7 +290,7 @@ class SearchFilter {
 
     return other.context == context &&
         other.filename == filename &&
-        setEquals(other.people, people) &&
+        other.people == people &&
         other.location == location &&
         other.camera == camera &&
         other.date == date &&
