@@ -33,7 +33,7 @@ The `Format` column represents the MIME type, for example `image/jpeg` or `video
 | `3GPP`    | `.3gp`                        | :white_check_mark:   |                                                  |
 | `AVI`     | `.avi`                        | :white_check_mark:   |                                                  |
 | `FLV`     | `.flv`                        | :white_check_mark:   |                                                  |
-| `M4V`     | `.m4v`                        | :white_check_mark:   |                                                  |
+| `M4V`     | `.m4v`                        | :white_check_mark:   | MIME type is `x-m4v'                             |
 | `MATROSKA`   | `.mkv`                     | :white_check_mark:   | MIME type is `x-matroska`                        |
 | `MP2T`    | `.mts` `.m2ts`                | :white_check_mark:   |                                                  |
 | `MP4`     | `.mp4` `.insv`                | :white_check_mark:   |                                                  |
