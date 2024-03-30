@@ -1,18 +1,23 @@
-import { LoginResponseDto } from '@immich/sdk';
+import { AssetFileUploadResponseDto, LoginResponseDto, SharedLinkType, getConfig } from '@immich/sdk';
 import { createUserDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
-import { app, utils } from 'src/utils';
+import { app, asBearerAuth, utils } from 'src/utils';
 import request from 'supertest';
 import { beforeAll, describe, expect, it } from 'vitest';
+
+const getSystemConfig = (accessToken: string) => getConfig({ headers: asBearerAuth(accessToken) });
 
 describe('/system-config', () => {
   let admin: LoginResponseDto;
   let nonAdmin: LoginResponseDto;
+  let asset: AssetFileUploadResponseDto;
 
   beforeAll(async () => {
     await utils.resetDatabase();
     admin = await utils.adminSetup();
     nonAdmin = await utils.userSetup(admin.accessToken, createUserDto.user1);
+
+    asset = await utils.createAsset(admin.accessToken);
   });
 
   describe('GET /system-config/map/style.json', () => {
@@ -20,6 +25,19 @@ describe('/system-config', () => {
       const { status, body } = await request(app).get('/system-config/map/style.json');
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
+    });
+
+    it('should allow shared link access', async () => {
+      const sharedLink = await utils.createSharedLink(admin.accessToken, {
+        type: SharedLinkType.Individual,
+        assetIds: [asset.id],
+      });
+      const { status, body } = await request(app)
+        .get(`/system-config/map/style.json?key=${sharedLink.key}`)
+        .query({ theme: 'dark' });
+
+      expect(status).toBe(200);
+      expect(body).toEqual(expect.objectContaining({ id: 'immich-map-dark' }));
     });
 
     it('should throw an error if a theme is not light or dark', async () => {
@@ -58,6 +76,27 @@ describe('/system-config', () => {
         .set('Authorization', `Bearer ${nonAdmin.accessToken}`);
       expect(status).toBe(200);
       expect(body).toEqual(expect.objectContaining({ id: 'immich-map-dark' }));
+    });
+  });
+
+  describe('PUT /system-config', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(app).put('/system-config');
+      expect(status).toBe(401);
+      expect(body).toEqual(errorDto.unauthorized);
+    });
+
+    it('should reject an invalid config entry', async () => {
+      const { status, body } = await request(app)
+        .put('/system-config')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({
+          ...(await getSystemConfig(admin.accessToken)),
+          storageTemplate: { enabled: true, hashVerificationEnabled: true, template: '{{foo}}' },
+        });
+
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest(expect.stringContaining('Invalid storage template')));
     });
   });
 });

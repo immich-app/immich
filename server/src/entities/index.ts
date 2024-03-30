@@ -21,7 +21,7 @@ import { TagEntity } from 'src/entities/tag.entity';
 import { UserTokenEntity } from 'src/entities/user-token.entity';
 import { UserEntity } from 'src/entities/user.entity';
 
-export const databaseEntities = [
+export const entities = [
   ActivityEntity,
   AlbumEntity,
   APIKeyEntity,

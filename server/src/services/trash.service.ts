@@ -5,7 +5,7 @@ import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { ClientEvent, ICommunicationRepository } from 'src/interfaces/communication.interface';
+import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JOBS_ASSET_PAGINATION_SIZE, JobName } from 'src/interfaces/job.interface';
 import { usePagination } from 'src/utils/pagination';
 
@@ -16,7 +16,7 @@ export class TrashService {
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
-    @Inject(ICommunicationRepository) private communicationRepository: ICommunicationRepository,
+    @Inject(IEventRepository) private eventRepository: IEventRepository,
   ) {
     this.access = AccessCore.create(accessRepository);
   }
@@ -60,6 +60,6 @@ export class TrashService {
     }
 
     await this.assetRepository.restoreAll(ids);
-    this.communicationRepository.send(ClientEvent.ASSET_RESTORE, auth.user.id, ids);
+    this.eventRepository.clientSend(ClientEvent.ASSET_RESTORE, auth.user.id, ids);
   }
 }

@@ -1,5 +1,8 @@
 import { SetMetadata } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
+import { OnEventOptions } from '@nestjs/event-emitter/dist/interfaces';
 import _ from 'lodash';
+import { ServerAsyncEvent, ServerEvent } from 'src/interfaces/event.interface';
 import { setUnion } from 'src/utils/set';
 
 // PostgreSQL uses a 16-bit integer to indicate the number of bound parameters. This means that the
@@ -122,3 +125,6 @@ export interface GenerateSqlQueries {
 
 /** Decorator to enable versioning/tracking of generated Sql */
 export const GenerateSql = (...options: GenerateSqlQueries[]) => SetMetadata(GENERATE_SQL_KEY, options);
+
+export const OnServerEvent = (event: ServerEvent | ServerAsyncEvent, options?: OnEventOptions) =>
+  OnEvent(event, { suppressErrors: false, ...options });

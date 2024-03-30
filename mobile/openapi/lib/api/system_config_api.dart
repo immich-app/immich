@@ -102,7 +102,9 @@ class SystemConfigApi {
   /// Parameters:
   ///
   /// * [MapTheme] theme (required):
-  Future<Response> getMapStyleWithHttpInfo(MapTheme theme,) async {
+  ///
+  /// * [String] key:
+  Future<Response> getMapStyleWithHttpInfo(MapTheme theme, { String? key, }) async {
     // ignore: prefer_const_declarations
     final path = r'/system-config/map/style.json';
 
@@ -113,6 +115,9 @@ class SystemConfigApi {
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
+    if (key != null) {
+      queryParams.addAll(_queryParams('', 'key', key));
+    }
       queryParams.addAll(_queryParams('', 'theme', theme));
 
     const contentTypes = <String>[];
@@ -132,8 +137,10 @@ class SystemConfigApi {
   /// Parameters:
   ///
   /// * [MapTheme] theme (required):
-  Future<Object?> getMapStyle(MapTheme theme,) async {
-    final response = await getMapStyleWithHttpInfo(theme,);
+  ///
+  /// * [String] key:
+  Future<Object?> getMapStyle(MapTheme theme, { String? key, }) async {
+    final response = await getMapStyleWithHttpInfo(theme,  key: key, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

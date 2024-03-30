@@ -10,7 +10,9 @@
   export let assetId: string;
   export let isSlideshowPlaying: boolean;
 
+  let element: HTMLVideoElement | undefined = undefined;
   let isVideoLoading = true;
+
   const dispatch = createEventDispatcher<{ onVideoEnded: void; onVideoStarted: void }>();
 
   const handleCanPlay = async (event: Event) => {
@@ -30,6 +32,7 @@
 
 <div transition:fade={{ duration: 150 }} class="flex h-full select-none place-content-center place-items-center">
   <video
+    bind:this={element}
     loop={$loopVideo && !isSlideshowPlaying}
     autoplay
     playsinline

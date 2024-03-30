@@ -19,7 +19,7 @@ const program = new Command()
       .default(defaultConfigDirectory),
   )
   .addOption(new Option('-u, --url [url]', 'Immich server URL').env('IMMICH_INSTANCE_URL'))
-  .addOption(new Option('-k, --key [apiKey]', 'Immich API key').env('IMMICH_API_KEY'));
+  .addOption(new Option('-k, --key [key]', 'Immich API key').env('IMMICH_API_KEY'));
 
 program
   .command('login')

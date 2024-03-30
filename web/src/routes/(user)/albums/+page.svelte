@@ -13,5 +13,5 @@
   <div class="flex place-items-center gap-2" slot="buttons">
     <AlbumsControls bind:searchAlbum />
   </div>
-  <Albums albums={data.albums} {searchAlbum} />
+  <Albums ownedAlbums={data.albums} {searchAlbum} sharedAlbums={data.sharedAlbums} />
 </UserPageLayout>

@@ -98,7 +98,7 @@ export class SmartInfoService {
       await this.databaseRepository.wait(DatabaseLock.CLIPDimSize);
     }
 
-    await this.repository.upsert({ assetId: asset.id }, clipEmbedding);
+    await this.repository.upsert(asset.id, clipEmbedding);
 
     return JobStatus.SUCCESS;
   }

@@ -404,10 +404,9 @@ export const utils = {
       },
     ]),
 
-  cliLogin: async () => {
-    const admin = await utils.adminSetup();
-    const key = await utils.createApiKey(admin.accessToken);
-    await immichCli(['login-key', app, `${key.secret}`]);
+  cliLogin: async (accessToken: string) => {
+    const key = await utils.createApiKey(accessToken);
+    await immichCli(['login', app, `${key.secret}`]);
     return key.secret;
   },
 };

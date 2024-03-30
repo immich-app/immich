@@ -18,17 +18,17 @@
 </a>
 <br/>
 <p align="center">
-  <a href="README_ca_ES.md">Català</a>
-  <a href="README_es_ES.md">Español</a>
-  <a href="README_fr_FR.md">Français</a>
-  <a href="README_it_IT.md">Italiano</a>
-  <a href="README_ja_JP.md">日本語</a>
-  <a href="README_ko_KR.md">한국어</a>
-  <a href="README_de_DE.md">Deutsch</a>
-  <a href="README_nl_NL.md">Nederlands</a>
-  <a href="README_tr_TR.md">Türkçe</a>
-  <a href="README_zh_CN.md">中文</a>
-  <a href="README_ru_RU.md">Русский</a>
+  <a href="readme_i18n/README_ca_ES.md">Català</a>
+  <a href="readme_i18n/README_es_ES.md">Español</a>
+  <a href="readme_i18n/README_fr_FR.md">Français</a>
+  <a href="readme_i18n/README_it_IT.md">Italiano</a>
+  <a href="readme_i18n/README_ja_JP.md">日本語</a>
+  <a href="readme_i18n/README_ko_KR.md">한국어</a>
+  <a href="readme_i18n/README_de_DE.md">Deutsch</a>
+  <a href="readme_i18n/README_nl_NL.md">Nederlands</a>
+  <a href="readme_i18n/README_tr_TR.md">Türkçe</a>
+  <a href="readme_i18n/README_zh_CN.md">中文</a>
+  <a href="readme_i18n/README_ru_RU.md">Русский</a>
 </p>
 
 ## Disclaimer
@@ -131,6 +131,10 @@ If you feel like this is the right cause and the app is something you are seeing
 
 ## Star History
 
-<a href="https://star-history.com/#immich-app/immich">
-  <img src="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" alt="Star History Chart" width="100%" />
+<a href="https://star-history.com/#immich-app/immich&Date">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" width="100%" />
+ </picture>
 </a>

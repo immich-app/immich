@@ -1,6 +1,5 @@
 import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { DateTime } from 'luxon';
-import { randomBytes } from 'node:crypto';
 import { StorageCore, StorageFolder } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { UserCore } from 'src/cores/user.core';
@@ -26,7 +25,7 @@ export class UserService {
 
   constructor(
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
-    @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
+    @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ILibraryRepository) libraryRepository: ILibraryRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
@@ -132,7 +131,7 @@ export class UserService {
     }
 
     const providedPassword = await ask(mapUser(admin));
-    const password = providedPassword || randomBytes(24).toString('base64').replaceAll(/\W/g, '');
+    const password = providedPassword || this.cryptoRepository.newPassword(24);
 
     await this.userCore.updateUser(admin, admin.id, { password });
 
