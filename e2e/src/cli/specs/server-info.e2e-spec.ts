@@ -11,13 +11,16 @@ describe(`immich server-info`, () => {
   it('should return the server info', async () => {
     const { stderr, stdout, exitCode } = await immichCli(['server-info']);
     expect(stdout.split('\n')).toEqual([
-      expect.stringContaining('Server Version:'),
-      expect.stringContaining('Image Types:'),
-      expect.stringContaining('Video Types:'),
-      'Statistics:',
-      '  Images: 0',
-      '  Videos: 0',
-      '  Total: 0',
+      expect.stringContaining('Server Info (via admin@immich.cloud'),
+      '  Url: http://127.0.0.1:2283/api',
+      expect.stringContaining('Version:'),
+      '  Formats:',
+      expect.stringContaining('Images:'),
+      expect.stringContaining('Videos:'),
+      '  Statistics:',
+      '    Images: 0',
+      '    Videos: 0',
+      '    Total: 0',
     ]);
     expect(stderr).toBe('');
     expect(exitCode).toBe(0);

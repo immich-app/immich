@@ -84,7 +84,7 @@ export class AccessCore {
    *
    * @returns Set<string>
    */
-  async checkAccess(auth: AuthDto, permission: Permission, ids: Set<string> | string[]) {
+  async checkAccess(auth: AuthDto, permission: Permission, ids: Set<string> | string[]): Promise<Set<string>> {
     const idSet = Array.isArray(ids) ? new Set(ids) : ids;
     if (idSet.size === 0) {
       return new Set();
@@ -97,7 +97,11 @@ export class AccessCore {
     return this.checkAccessOther(auth, permission, idSet);
   }
 
-  private async checkAccessSharedLink(sharedLink: SharedLinkEntity, permission: Permission, ids: Set<string>) {
+  private async checkAccessSharedLink(
+    sharedLink: SharedLinkEntity,
+    permission: Permission,
+    ids: Set<string>,
+  ): Promise<Set<string>> {
     const sharedLinkId = sharedLink.id;
 
     switch (permission) {
@@ -140,7 +144,7 @@ export class AccessCore {
     }
   }
 
-  private async checkAccessOther(auth: AuthDto, permission: Permission, ids: Set<string>) {
+  private async checkAccessOther(auth: AuthDto, permission: Permission, ids: Set<string>): Promise<Set<string>> {
     switch (permission) {
       // uses album id
       case Permission.ACTIVITY_CREATE: {

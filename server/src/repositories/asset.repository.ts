@@ -75,7 +75,7 @@ export class AssetRepository implements IAssetRepository {
     return this.repository.save(asset);
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, { day: 1, month: 1 }] })
+  @GenerateSql({ params: [[DummyValue.UUID], { day: 1, month: 1 }] })
   getByDayOfYear(ownerIds: string[], { day, month }: MonthDay): Promise<AssetEntity[]> {
     return this.repository
       .createQueryBuilder('entity')
@@ -93,7 +93,7 @@ export class AssetRepository implements IAssetRepository {
         },
       )
       .leftJoinAndSelect('entity.exifInfo', 'exifInfo')
-      .orderBy('entity.localDateTime', 'DESC')
+      .orderBy('entity.localDateTime', 'ASC')
       .getMany();
   }
 
@@ -159,7 +159,7 @@ export class AssetRepository implements IAssetRepository {
     return this.getAll(pagination, { ...options, userIds: [userId] });
   }
 
-  @GenerateSql({ params: [[DummyValue.UUID]] })
+  @GenerateSql({ params: [{ take: 1, skip: 0 }, DummyValue.UUID] })
   getLibraryAssetPaths(pagination: PaginationOptions, libraryId: string): Paginated<AssetPathEntity> {
     return paginate(this.repository, pagination, {
       select: { id: true, originalPath: true, isOffline: true },

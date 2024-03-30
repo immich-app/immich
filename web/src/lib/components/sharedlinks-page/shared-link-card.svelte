@@ -168,9 +168,9 @@
 
   <div class="flex flex-auto flex-col place-content-center place-items-end text-right">
     <div class="flex">
-      <CircleIconButton icon={mdiDelete} on:click={() => dispatch('delete')} />
-      <CircleIconButton icon={mdiCircleEditOutline} on:click={() => dispatch('edit')} />
-      <CircleIconButton icon={mdiContentCopy} on:click={() => dispatch('copy')} />
+      <CircleIconButton title="Delete link" icon={mdiDelete} on:click={() => dispatch('delete')} />
+      <CircleIconButton title="Edit link" icon={mdiCircleEditOutline} on:click={() => dispatch('edit')} />
+      <CircleIconButton title="Copy link" icon={mdiContentCopy} on:click={() => dispatch('copy')} />
     </div>
   </div>
 </div>

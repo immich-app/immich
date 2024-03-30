@@ -266,7 +266,7 @@
                   title={orphan.pathValue}
                 >
                   <td on:click={() => copyToClipboard(orphan.pathValue)}>
-                    <CircleIconButton icon={mdiContentCopy} size="18" />
+                    <CircleIconButton title="Copy file path" icon={mdiContentCopy} size="18" />
                   </td>
                   <td class="truncate text-sm font-mono text-left" title={orphan.pathValue}>
                     {orphan.pathValue}
@@ -306,7 +306,7 @@
                   title={extra.filename}
                 >
                   <td on:click={() => copyToClipboard(extra.filename)}>
-                    <CircleIconButton icon={mdiContentCopy} size="18" />
+                    <CircleIconButton title="Copy file path" icon={mdiContentCopy} size="18" />
                   </td>
                   <td class="w-full text-md text-ellipsis flex justify-between pr-5">
                     <span class="text-ellipsis grow truncate font-mono text-sm pr-5" title={extra.filename}

@@ -436,6 +436,8 @@ export class LibraryService extends EventEmitter {
       doRefresh = true;
     }
 
+    const originalFileName = parse(assetPath).base;
+
     if (!existingAssetEntity) {
       // This asset is new to us, read it from disk
       this.logger.debug(`Importing new asset: ${assetPath}`);
@@ -444,6 +446,12 @@ export class LibraryService extends EventEmitter {
       // File modification time has changed since last time we checked, re-read from disk
       this.logger.debug(
         `File modification time has changed, re-importing asset: ${assetPath}. Old mtime: ${existingAssetEntity.fileModifiedAt}. New mtime: ${stats.mtime}`,
+      );
+      doRefresh = true;
+    } else if (existingAssetEntity.originalFileName !== originalFileName) {
+      // TODO: We can likely remove this check in the second half of 2024 when all assets have likely been re-imported by all users
+      this.logger.debug(
+        `Asset is missing file extension, re-importing: ${assetPath}. Current incorrect filename: ${existingAssetEntity.originalFileName}.`,
       );
       doRefresh = true;
     } else if (!job.force && stats && !existingAssetEntity.isOffline) {
@@ -504,7 +512,7 @@ export class LibraryService extends EventEmitter {
         fileModifiedAt: stats.mtime,
         localDateTime: stats.mtime,
         type: assetType,
-        originalFileName: parse(assetPath).base,
+        originalFileName,
         sidecarPath,
         isReadOnly: true,
         isExternal: true,
@@ -515,6 +523,7 @@ export class LibraryService extends EventEmitter {
       await this.assetRepository.updateAll([existingAssetEntity.id], {
         fileCreatedAt: stats.mtime,
         fileModifiedAt: stats.mtime,
+        originalFileName,
       });
     } else {
       // Not importing and not refreshing, do nothing
