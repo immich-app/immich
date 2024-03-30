@@ -286,7 +286,6 @@ class SearchFilter {
   @override
   bool operator ==(covariant SearchFilter other) {
     if (identical(this, other)) return true;
-    final setEquals = const DeepCollectionEquality().equals;
 
     return other.context == context &&
         other.filename == filename &&
