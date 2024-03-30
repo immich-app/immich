@@ -1,9 +1,9 @@
 # Supported formats
 
-Immich supports a number of image and video formats, the most common of which are outlined here. For the full list, you can refer to the [Immich source code](https://github.com/immich-app/immich/blob/main/server/src/utils/mime-types.ts).
+Immich supports a number of image and video formats, the most common of which are outlined here.
 
 :::note
-The `Format` column represents the MIME type, for example `image/jpeg` or `video/mp4`.
+For the full list, you can refer to the [Immich source code](https://github.com/immich-app/immich/blob/main/server/src/utils/mime-types.ts).
 :::
 
 ## Image formats
@@ -16,7 +16,7 @@ The `Format` column represents the MIME type, for example `image/jpeg` or `video
 | `HEIC`    | `.heic`                       | :white_check_mark:   |                                                  |
 | `HEIF`    | `.heif`                       | :white_check_mark:   |                                                  |
 | `JPEG`    | `.jpeg` `.jpg` `.jpe` `.insp` | :white_check_mark:   |                                                  |
-| `JPEG XL`     | `.jxl`                        | :white_check_mark:   | MIME type is `JXL`                          |
+| `JPEG XL`     | `.jxl`                        | :white_check_mark:   |                                          |
 | `PNG`     | `.png`                        | :white_check_mark:   |                                                  |
 | `PSD`     | `.psd`                        | :white_check_mark:   | Adobe Photoshop                                  |
 | `RAW`     | `.raw`                        | :white_check_mark:   |                                                  |
@@ -33,14 +33,14 @@ The `Format` column represents the MIME type, for example `image/jpeg` or `video
 | `3GPP`    | `.3gp`                        | :white_check_mark:   |                                                  |
 | `AVI`     | `.avi`                        | :white_check_mark:   |                                                  |
 | `FLV`     | `.flv`                        | :white_check_mark:   |                                                  |
-| `M4V`     | `.m4v`                        | :white_check_mark:   | MIME type is `x-m4v`                             |
-| `MATROSKA`   | `.mkv`                     | :white_check_mark:   | MIME type is `x-matroska`                        |
+| `M4V`     | `.m4v`                        | :white_check_mark:   |                              |
+| `MATROSKA`   | `.mkv`                     | :white_check_mark:   |                         |
 | `MP2T`    | `.mts` `.m2ts`                | :white_check_mark:   |                                                  |
 | `MP4`     | `.mp4` `.insv`                | :white_check_mark:   |                                                  |
 | `MPEG`    | `.mpg` `.mpeg`                | :white_check_mark:   |                                                  |
 | `QUICKTIME`     | `.mov`                  | :white_check_mark:   |                                                  |
 | `WEBM`    | `.webm`                       | :white_check_mark:   |                                                  |
-| `WMV`     | `.wmv`                        | :white_check_mark:   | MIME type is `x-ms-wmv`                          |
+| `WMV`     | `.wmv`                        | :white_check_mark:   |                           |
 
 
 
