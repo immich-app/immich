@@ -6,18 +6,6 @@ import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'paginated_search.provider.g.dart';
-// @riverpod
-// Future<SearchResponseDto?> search(
-//   SearchRef ref,
-//   SearchFilter filter,
-//   int page,
-// ) async {
-//   final SearchService service = ref.read(searchServiceProvider);
-
-//   final response = await service.search(filter, page);
-
-//   return response;
-// }
 
 @riverpod
 class PaginatedSearch extends _$PaginatedSearch {
@@ -33,7 +21,7 @@ class PaginatedSearch extends _$PaginatedSearch {
     return [];
   }
 
-  Future<void> getNextPage(SearchFilter filter, int nextPage) async {
+  Future<List<Asset>> getNextPage(SearchFilter filter, int nextPage) async {
     state = const AsyncValue.loading();
 
     final newState = await AsyncValue.guard(() async {
@@ -47,6 +35,8 @@ class PaginatedSearch extends _$PaginatedSearch {
     state = newState.valueOrNull == null
         ? const AsyncValue.data([])
         : AsyncValue.data(newState.value!);
+
+    return newState.valueOrNull ?? [];
   }
 
   clear() {

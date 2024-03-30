@@ -1,8 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -48,11 +46,25 @@ class SearchInputPage extends HookConsumerWidget {
     final mediaTypeCurrentFilterWidget = useState<Widget?>(null);
     final displayOptionCurrentFilterWidget = useState<Widget?>(null);
 
+    final currentPage = useState(1);
     final searchProvider = ref.watch(paginatedSearchProvider);
+    final searchResultCount = useState(0);
 
     search() async {
       ref.watch(paginatedSearchProvider.notifier).clear();
-      ref.watch(paginatedSearchProvider.notifier).getNextPage(filter.value, 1);
+      currentPage.value = 1;
+      final searchResult = await ref
+          .watch(paginatedSearchProvider.notifier)
+          .getNextPage(filter.value, currentPage.value);
+      searchResultCount.value = searchResult.length;
+    }
+
+    loadMoreSearchResult() async {
+      currentPage.value += 1;
+      final searchResult = await ref
+          .watch(paginatedSearchProvider.notifier)
+          .getNextPage(filter.value, currentPage.value);
+      searchResultCount.value = searchResult.length;
     }
 
     showPeoplePicker() {
@@ -373,13 +385,13 @@ class SearchInputPage extends HookConsumerWidget {
         AsyncData() => Expanded(
             child: Padding(
               padding: const EdgeInsets.only(top: 8.0),
-              child: NotificationListener(
+              child: NotificationListener<ScrollEndNotification>(
                 onNotification: (notification) {
-                  if (notification is ScrollEndNotification) {
-                    final metrics = notification.metrics;
-                    if (metrics.pixels >= metrics.maxScrollExtent) {
-                      print("reach the end");
-                    }
+                  final metrics = notification.metrics;
+                  final shouldLoadMore = searchResultCount.value > 75;
+                  if (metrics.pixels >= metrics.maxScrollExtent &&
+                      shouldLoadMore) {
+                    loadMoreSearchResult();
                   }
                   return true;
                 },
