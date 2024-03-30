@@ -142,8 +142,10 @@ class SearchPage extends HookConsumerWidget {
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
-            side: const BorderSide(
-              color: Color.fromARGB(255, 225, 225, 225),
+            side: BorderSide(
+              color: context.isDarkTheme
+                  ? Colors.grey[800]!
+                  : const Color.fromARGB(255, 225, 225, 225),
             ),
           ),
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),

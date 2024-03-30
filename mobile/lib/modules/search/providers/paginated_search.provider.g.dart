@@ -24,7 +24,7 @@ final paginatedSearchRenderListProvider =
 
 typedef PaginatedSearchRenderListRef
     = AutoDisposeProviderRef<AsyncValue<RenderList>>;
-String _$paginatedSearchHash() => r'b0d73a43914823d6511f0c1d2c96da09bb2fff80';
+String _$paginatedSearchHash() => r'2aec3f3a3025c132ad7a82c435ed30b455de56f5';
 
 /// See also [PaginatedSearch].
 @ProviderFor(PaginatedSearch)
