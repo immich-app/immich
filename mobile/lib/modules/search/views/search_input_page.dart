@@ -373,14 +373,25 @@ class SearchInputPage extends HookConsumerWidget {
         AsyncData() => Expanded(
             child: Padding(
               padding: const EdgeInsets.only(top: 8.0),
-              child: MultiselectGrid(
-                renderListProvider: paginatedSearchRenderListProvider,
-                archiveEnabled: true,
-                deleteEnabled: true,
-                editEnabled: true,
-                favoriteEnabled: true,
-                stackEnabled: false,
-                emptyIndicator: const SizedBox(),
+              child: NotificationListener(
+                onNotification: (notification) {
+                  if (notification is ScrollEndNotification) {
+                    final metrics = notification.metrics;
+                    if (metrics.pixels >= metrics.maxScrollExtent) {
+                      print("reach the end");
+                    }
+                  }
+                  return true;
+                },
+                child: MultiselectGrid(
+                  renderListProvider: paginatedSearchRenderListProvider,
+                  archiveEnabled: true,
+                  deleteEnabled: true,
+                  editEnabled: true,
+                  favoriteEnabled: true,
+                  stackEnabled: false,
+                  emptyIndicator: const SizedBox(),
+                ),
               ),
             ),
           ),
