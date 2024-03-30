@@ -20,6 +20,7 @@ class VideoViewerPage extends HookConsumerWidget {
   final Duration hideControlsTimer;
   final bool showControls;
   final bool showDownloadingIndicator;
+  final bool loopVideo;
 
   const VideoViewerPage({
     super.key,
@@ -29,6 +30,7 @@ class VideoViewerPage extends HookConsumerWidget {
     this.showControls = true,
     this.hideControlsTimer = const Duration(seconds: 5),
     this.showDownloadingIndicator = true,
+    this.loopVideo = false,
   });
 
   @override
@@ -156,6 +158,7 @@ class VideoViewerPage extends HookConsumerWidget {
                   hideControlsTimer: hideControlsTimer,
                   showControls: showControls,
                   showDownloadingIndicator: showDownloadingIndicator,
+                  loopVideo: loopVideo,
                 ),
               ),
           ],

@@ -17,6 +17,7 @@ ChewieController useChewieController({
   bool allowFullScreen = false,
   bool allowedScreenSleep = false,
   bool showControls = true,
+  bool loopVideo = false,
   Widget? customControls,
   Widget? placeholder,
   Duration hideControlsTimer = const Duration(seconds: 1),
@@ -36,6 +37,7 @@ ChewieController useChewieController({
       hideControlsTimer: hideControlsTimer,
       showControlsOnInitialize: showControlsOnInitialize,
       showControls: showControls,
+      loopVideo: loopVideo,
       allowedScreenSleep: allowedScreenSleep,
       onPlaying: onPlaying,
       onPaused: onPaused,
@@ -53,6 +55,7 @@ class _ChewieControllerHook extends Hook<ChewieController> {
   final bool allowFullScreen;
   final bool allowedScreenSleep;
   final bool showControls;
+  final bool loopVideo;
   final Widget? customControls;
   final Widget? placeholder;
   final Duration hideControlsTimer;
@@ -71,6 +74,7 @@ class _ChewieControllerHook extends Hook<ChewieController> {
     this.allowFullScreen = false,
     this.allowedScreenSleep = false,
     this.showControls = true,
+    this.loopVideo = false,
     this.customControls,
     this.placeholder,
     this.hideControlsTimer = const Duration(seconds: 3),
@@ -94,6 +98,7 @@ class _ChewieControllerHookState
     allowFullScreen: hook.allowFullScreen,
     allowedScreenSleep: hook.allowedScreenSleep,
     showControls: hook.showControls,
+    looping: hook.loopVideo,
     customControls: hook.customControls,
     placeholder: hook.placeholder,
     hideControlsTimer: hook.hideControlsTimer,
