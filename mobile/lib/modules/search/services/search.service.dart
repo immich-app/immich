@@ -115,27 +115,6 @@ class SearchService {
     return null;
   }
 
-  Future<List<Asset>?> searchAsset(
-    String searchTerm, {
-    bool smartSearch = true,
-  }) async {
-    // TODO search in local DB: 1. when offline, 2. to find local assets
-    try {
-      final SearchResponseDto? results = await _apiService.searchApi.search(
-        query: searchTerm,
-        smart: smartSearch,
-      );
-      if (results == null) {
-        return null;
-      }
-      // TODO local DB might be out of date; add assets not yet in DB?
-      return _db.assets.getAllByRemoteId(results.assets.items.map((e) => e.id));
-    } catch (e) {
-      debugPrint("[ERROR] [searchAsset] ${e.toString()}");
-      return null;
-    }
-  }
-
   Future<List<CuratedLocationsResponseDto>?> getCuratedLocation() async {
     try {
       var locations = await _apiService.assetApi.getCuratedLocations();

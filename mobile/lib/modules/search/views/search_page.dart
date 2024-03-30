@@ -2,7 +2,6 @@ import 'dart:math' as math;
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -13,7 +12,6 @@ import 'package:immich_mobile/modules/search/ui/curated_people_row.dart';
 import 'package:immich_mobile/modules/search/ui/curated_places_row.dart';
 import 'package:immich_mobile/modules/search/ui/person_name_edit_form.dart';
 import 'package:immich_mobile/modules/search/ui/search_row_title.dart';
-import 'package:immich_mobile/modules/search/ui/search_suggestion_list.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_app_bar.dart';
@@ -22,13 +20,10 @@ import 'package:immich_mobile/shared/ui/scaffold_error_body.dart';
 @RoutePage()
 // ignore: must_be_immutable
 class SearchPage extends HookConsumerWidget {
-  SearchPage({super.key});
-
-  FocusNode searchFocusNode = FocusNode();
+  const SearchPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isSearchEnabled = ref.watch(searchPageStateProvider).isSearchEnabled;
     final curatedLocation = ref.watch(getCuratedLocationProvider);
     final curatedPeople = ref.watch(getAllPeopleProvider);
     final isMapEnabled =
@@ -41,25 +36,6 @@ class SearchPage extends HookConsumerWidget {
     );
 
     Color categoryIconColor = context.isDarkTheme ? Colors.white : Colors.black;
-
-    useEffect(
-      () {
-        searchFocusNode = FocusNode();
-        return () => searchFocusNode.dispose();
-      },
-      [],
-    );
-
-    onSearchSubmitted(String searchTerm) async {
-      searchFocusNode.unfocus();
-      ref.watch(searchPageStateProvider.notifier).disableSearch();
-
-      context.pushRoute(
-        SearchResultRoute(
-          searchTerm: searchTerm,
-        ),
-      );
-    }
 
     showNameEditModel(
       String personId,
@@ -121,13 +97,7 @@ class SearchPage extends HookConsumerWidget {
                 )
                 .toList(),
             imageSize: imageSize,
-            onTap: (content, index) {
-              context.pushRoute(
-                SearchResultRoute(
-                  searchTerm: 'm:${content.label}',
-                ),
-              );
-            },
+            onTap: (content, index) {},
           ),
         ),
       );
@@ -243,11 +213,7 @@ class SearchPage extends HookConsumerWidget {
                   Icons.screenshot,
                   color: categoryIconColor,
                 ),
-                onTap: () => context.pushRoute(
-                  SearchResultRoute(
-                    searchTerm: 'screenshots',
-                  ),
-                ),
+                onTap: () {},
               ),
               const CategoryDivider(),
               ListTile(
@@ -257,11 +223,7 @@ class SearchPage extends HookConsumerWidget {
                   Icons.photo_camera_front_outlined,
                   color: categoryIconColor,
                 ),
-                onTap: () => context.pushRoute(
-                  SearchResultRoute(
-                    searchTerm: 'selfies',
-                  ),
-                ),
+                onTap: () {},
               ),
               const CategoryDivider(),
               ListTile(
@@ -287,8 +249,6 @@ class SearchPage extends HookConsumerWidget {
               ),
             ],
           ),
-          if (isSearchEnabled)
-            SearchSuggestionList(onSubmitted: onSearchSubmitted),
         ],
       ),
     );

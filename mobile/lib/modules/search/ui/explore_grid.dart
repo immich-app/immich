@@ -56,9 +56,7 @@ class ExploreGrid extends StatelessWidget {
                       personName: content.label,
                     ),
                   )
-                : context.pushRoute(
-                    SearchResultRoute(searchTerm: 'm:${content.label}'),
-                  );
+                : null;
           },
         );
       },

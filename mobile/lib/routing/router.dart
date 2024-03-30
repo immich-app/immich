@@ -44,7 +44,6 @@ import 'package:immich_mobile/modules/search/views/curated_location_page.dart';
 import 'package:immich_mobile/modules/search/views/person_result_page.dart';
 import 'package:immich_mobile/modules/search/views/recently_added_page.dart';
 import 'package:immich_mobile/modules/search/views/search_page.dart';
-import 'package:immich_mobile/modules/search/views/search_result_page.dart';
 import 'package:immich_mobile/modules/settings/views/settings_page.dart';
 import 'package:immich_mobile/routing/auth_guard.dart';
 import 'package:immich_mobile/routing/custom_transition_builders.dart';
@@ -125,10 +124,6 @@ class AppRouter extends _$AppRouter {
     AutoRoute(
       page: BackupControllerRoute.page,
       guards: [_authGuard, _duplicateGuard, _backupPermissionGuard],
-    ),
-    AutoRoute(
-      page: SearchResultRoute.page,
-      guards: [_authGuard, _duplicateGuard],
     ),
     AutoRoute(
       page: CuratedLocationRoute.page,
