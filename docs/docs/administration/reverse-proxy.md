@@ -54,7 +54,7 @@ immich.example.org {
 
 Below is an example config for Apache2 site configuration.
 
-```
+```ApacheConf
 <VirtualHost *:80>
    ServerName <snip>
    ProxyRequests Off
