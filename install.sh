@@ -1,38 +1,34 @@
 #!/usr/bin/env bash
 
-echo "Starting Immich installation..."
-
-ip_address=$(hostname -I | awk '{print $1}')
-
-create_immich_directory() {
+create_immich_directory() { local -r Tgt='./immich-app'
   echo "Creating Immich directory..."
-  mkdir -p ./immich-app
-  cd ./immich-app || exit
+  mkdir -p "$Tgt"
+  cd "$Tgt" || exit
 }
 
 download_docker_compose_file() {
   echo "Downloading docker-compose.yml..."
-  curl -L https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml -o ./docker-compose.yml >/dev/null 2>&1
+  "${Curl[@]}" "$RepoUrl"/docker-compose.yml -o ./docker-compose.yml
 }
 
 download_dot_env_file() {
   echo "Downloading .env file..."
-  curl -L https://github.com/immich-app/immich/releases/latest/download/example.env -o ./.env >/dev/null 2>&1
+  "${Curl[@]}" "$RepoUrl"/example.env -o ./.env
 }
 
-start_docker_compose() {
+start_docker_compose() { local -a docker_bin
   echo "Starting Immich's docker containers"
 
   if docker compose >/dev/null 2>&1; then
-    docker_bin="docker compose"
+    docker_bin=(docker compose)
   elif docker-compose >/dev/null 2>&1; then
-    docker_bin="docker-compose"
+    docker_bin=(docker-compose)
   else
     echo "Cannot find \`docker compose\` or \`docker-compose\`."
     exit 1
   fi
 
-  if $docker_bin up --remove-orphans -d; then
+  if "${docker_bin[@]}" up --remove-orphans -d; then
     show_friendly_message
     exit 0
   else
@@ -56,7 +52,18 @@ show_friendly_message() {
 }
 
 # MAIN
-create_immich_directory
-download_docker_compose_file
-download_dot_env_file
-start_docker_compose
+main() {
+  echo "Starting Immich installation..."
+  local -ra Curl=(curl -fsSL)
+  local -r RepoUrl='https://github.com/immich-app/immich/releases/latest/download'
+  local ip_address
+  ip_address=$(hostname -I | awk '{print $1}')
+
+  create_immich_directory || { echo 'error creating Immich directory'; return 10; }
+  download_docker_compose_file || { echo 'error downloading Docker Compose file'; return 11; }
+  download_dot_env_file || { echo 'error downloading .env'; return 12; }
+  start_docker_compose || return 13
+  return 0; }
+
+main
+exit
