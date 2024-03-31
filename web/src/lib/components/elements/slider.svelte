@@ -1,8 +1,11 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
 
+  export let id: string;
   export let checked = false;
   export let disabled = false;
+
+  let isFocused = false;
 
   const dispatch = createEventDispatcher<{ toggle: boolean }>();
   const onToggle = (event: Event) => dispatch('toggle', (event.target as HTMLInputElement).checked);
@@ -10,17 +13,20 @@
 
 <label class="relative inline-block h-[10px] w-[36px] flex-none">
   <input
+    {id}
     class="disabled::cursor-not-allowed h-0 w-0 opacity-0"
     type="checkbox"
     bind:checked
     on:click={onToggle}
+    on:focus={() => (isFocused = true)}
+    on:blur={() => (isFocused = false)}
     {disabled}
   />
 
   {#if disabled}
-    <span class="slider slider-disabled cursor-not-allowed" />
+    <span class="slider slider-disabled cursor-not-allowed" class:focused={isFocused} />
   {:else}
-    <span class="slider slider-enabled cursor-pointer" />
+    <span class="slider slider-enabled cursor-pointer" class:focused={isFocused} />
   {/if}
 </label>
 
@@ -32,9 +38,14 @@
     right: 0;
     bottom: 0;
     background-color: #ccc;
-    -webkit-transition: 0.4s;
-    transition: 0.4s;
+    -webkit-transition: transform 0.4s;
+    transition: transform 0.4s;
     border-radius: 34px;
+  }
+
+  .slider.focused,
+  .slider.focused:before {
+    outline: 3px solid;
   }
 
   input:disabled {
@@ -50,8 +61,8 @@
     right: 0px;
     bottom: -4px;
     background-color: gray;
-    -webkit-transition: 0.4s;
-    transition: 0.4s;
+    -webkit-transition: transform 0.4s;
+    transition: transform 0.4s;
     border-radius: 50%;
   }
 
