@@ -147,13 +147,13 @@ Other machine learning parameters can be tuned from the admin UI.
 
 ## Prometheus
 
-| Variable                       | Description                                                        | Default | Services              |
-| :----------------------------- | :----------------------------------------------------------------- | :-----: | :-------------------- |
-| `IMMICH_METRICS`<sup>\*1</sup> | Toggle all metrics                                                 |         | server, microservices |
-| `IMMICH_API_METRICS`           | Toggle metrics for endpoints and response times                    |         | server, microservices |
-| `IMMICH_HOST_METRICS`          | Toggle metrics for CPU and memory utilization for host and process |         | server, microservices |
-| `IMMICH_IO_METRICS`            | Toggle metrics for database queries, image processing, etc.        |         | server, microservices |
-| `IMMICH_JOB_METRICS`           | Toggle metrics for jobs and queues                                 |         | server, microservices |
+| Variable                       | Description                                                                                   | Default | Services              |
+| :----------------------------- | :-------------------------------------------------------------------------------------------- | :-----: | :-------------------- |
+| `IMMICH_METRICS`<sup>\*1</sup> | Toggle all metrics (one of [`true`, `false`])                                                 |         | server, microservices |
+| `IMMICH_API_METRICS`           | Toggle metrics for endpoints and response times (one of [`true`, `false`])                    |         | server, microservices |
+| `IMMICH_HOST_METRICS`          | Toggle metrics for CPU and memory utilization for host and process (one of [`true`, `false`]) |         | server, microservices |
+| `IMMICH_IO_METRICS`            | Toggle metrics for database queries, image processing, etc. (one of [`true`, `false`])        |         | server, microservices |
+| `IMMICH_JOB_METRICS`           | Toggle metrics for jobs and queues (one of [`true`, `false`])                                 |         | server, microservices |
 
 \*1: Overridden for a metric group when its corresponding environmental variable is set.
 
