@@ -351,21 +351,6 @@ abstract class _$AppRouter extends RootStackRouter {
         child: const TrashPage(),
       );
     },
-    VideoViewerRoute.name: (routeData) {
-      final args = routeData.argsAs<VideoViewerRouteArgs>();
-      return AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: VideoViewerPage(
-          key: args.key,
-          asset: args.asset,
-          isMotionVideo: args.isMotionVideo,
-          placeholder: args.placeholder,
-          showControls: args.showControls,
-          hideControlsTimer: args.hideControlsTimer,
-          showDownloadingIndicator: args.showDownloadingIndicator,
-        ),
-      );
-    },
   };
 }
 
@@ -1409,67 +1394,4 @@ class TrashRoute extends PageRouteInfo<void> {
   static const String name = 'TrashRoute';
 
   static const PageInfo<void> page = PageInfo<void>(name);
-}
-
-/// generated route for
-/// [VideoViewerPage]
-class VideoViewerRoute extends PageRouteInfo<VideoViewerRouteArgs> {
-  VideoViewerRoute({
-    Key? key,
-    required Asset asset,
-    bool isMotionVideo = false,
-    Widget? placeholder,
-    bool showControls = true,
-    Duration hideControlsTimer = const Duration(seconds: 5),
-    bool showDownloadingIndicator = true,
-    List<PageRouteInfo>? children,
-  }) : super(
-          VideoViewerRoute.name,
-          args: VideoViewerRouteArgs(
-            key: key,
-            asset: asset,
-            isMotionVideo: isMotionVideo,
-            placeholder: placeholder,
-            showControls: showControls,
-            hideControlsTimer: hideControlsTimer,
-            showDownloadingIndicator: showDownloadingIndicator,
-          ),
-          initialChildren: children,
-        );
-
-  static const String name = 'VideoViewerRoute';
-
-  static const PageInfo<VideoViewerRouteArgs> page =
-      PageInfo<VideoViewerRouteArgs>(name);
-}
-
-class VideoViewerRouteArgs {
-  const VideoViewerRouteArgs({
-    this.key,
-    required this.asset,
-    this.isMotionVideo = false,
-    this.placeholder,
-    this.showControls = true,
-    this.hideControlsTimer = const Duration(seconds: 5),
-    this.showDownloadingIndicator = true,
-  });
-
-  final Key? key;
-
-  final Asset asset;
-
-  final bool isMotionVideo;
-
-  final Widget? placeholder;
-
-  final bool showControls;
-
-  final Duration hideControlsTimer;
-
-  final bool showDownloadingIndicator;
-
-  @override
-  String toString() {
-    return 'VideoViewerRouteArgs{key: $key, asset: $asset, isMotionVideo: $isMotionVideo, placeholder: $placeholder, showControls: $showControls, hideControlsTimer: $hideControlsTimer, showDownloadingIndicator: $showDownloadingIndicator}';
-  }
 }
