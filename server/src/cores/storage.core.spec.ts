@@ -8,17 +8,17 @@ jest.mock('src/constants', () => ({
 describe('StorageCore', () => {
   describe('isImmichPath', () => {
     it('should return true for APP_MEDIA_LOCATION path', () => {
-      const immichPath = resolve('/photos');
+      const immichPath = '/photos';
       expect(StorageCore.isImmichPath(immichPath)).toBe(true);
     });
 
     it('should return true for paths within the APP_MEDIA_LOCATION', () => {
-      const immichPath = resolve('/photos/new/');
+      const immichPath = '/photos/new/';
       expect(StorageCore.isImmichPath(immichPath)).toBe(true);
     });
 
     it('should return false for paths outside the APP_MEDIA_LOCATION and same starts', () => {
-      const nonImmichPath = resolve('/photos_new');
+      const nonImmichPath = '/photos_new';
       expect(StorageCore.isImmichPath(nonImmichPath)).toBe(false);
     });
 
