@@ -41,7 +41,7 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 | `IMMICH_REVERSE_GEOCODING_ROOT` | Path of reverse geocoding dump directory     | `/usr/src/resources` | microservices                                |
 
 :::tip
-`TZ` should be set to `TZ identifier` from [this list](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List). For example, `TZ="Etc/UTC"`.
+`TZ` should be set to a `TZ identifier` from [this list](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List). For example, `TZ="Etc/UTC"`.
 
 `TZ` is only used by `exiftool`, which is present in the microservices container, as a fallback in case the timezone cannot be determined from the image metadata.
 :::
