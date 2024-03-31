@@ -45,7 +45,7 @@
 
   $: timelineY = element?.scrollTop || 0;
   $: isEmpty = $assetStore.initialized && $assetStore.buckets.length === 0;
-  $: idsSelectedAssets = [...$selectedAssets].filter((a) => !a.isExternal).map((a) => a.id);
+  $: idsSelectedAssets = [...$selectedAssets].filter((a) => !a.isReadOnly).map((a) => a.id);
 
   const dispatch = createEventDispatcher<{ select: AssetResponseDto; escape: void }>();
 

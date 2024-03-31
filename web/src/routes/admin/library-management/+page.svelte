@@ -116,9 +116,9 @@
     }
   }
 
-  const handleCreate = async (ownerId: string) => {
+  const handleCreate = async (ownerId: string, isReadOnly: boolean) => {
     try {
-      const createdLibrary = await createLibrary({ createLibraryDto: { ownerId, type: LibraryType.External } });
+      const createdLibrary = await createLibrary({ createLibraryDto: { ownerId, type: LibraryType.External,  isReadOnly} });
 
       notificationController.show({
         message: `Created library: ${createdLibrary.name}`,
@@ -309,7 +309,7 @@
 
 {#if toCreateLibrary}
   <LibraryUserPickerForm
-    on:submit={({ detail }) => handleCreate(detail.ownerId)}
+    on:submit={({ detail }) => handleCreate(detail.ownerId, detail.isReadOnly)}
     on:cancel={() => (toCreateLibrary = false)}
   />
 {/if}

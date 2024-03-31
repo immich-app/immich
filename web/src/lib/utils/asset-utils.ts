@@ -258,9 +258,9 @@ export const getAssetType = (type: AssetTypeEnum) => {
 };
 
 export const getSelectedAssets = (assets: Set<AssetResponseDto>, user: UserResponseDto | null): string[] => {
-  const ids = [...assets].filter((a) => !a.isExternal && user && a.ownerId === user.id).map((a) => a.id);
+  const ids = [...assets].filter((a) => !a.isReadOnly && user && a.ownerId === user.id).map((a) => a.id);
 
-  const numberOfIssues = [...assets].filter((a) => a.isExternal || (user && a.ownerId !== user.id)).length;
+  const numberOfIssues = [...assets].filter((a) => a.isReadOnly || (user && a.ownerId !== user.id)).length;
   if (numberOfIssues > 0) {
     notificationController.show({
       message: `Can't change metadata of ${numberOfIssues} asset${numberOfIssues > 1 ? 's' : ''}`,

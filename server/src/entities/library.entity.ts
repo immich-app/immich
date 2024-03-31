@@ -33,6 +33,9 @@ export class LibraryEntity {
   @Column()
   type!: LibraryType;
 
+  @Column({ type: 'boolean', default: true })
+  isReadOnly!: boolean;
+
   @Column('text', { array: true })
   importPaths!: string[];
 

@@ -19,6 +19,9 @@ export class CreateLibraryDto {
   @ValidateBoolean({ optional: true })
   isVisible?: boolean;
 
+  @ValidateBoolean({ optional: true })
+  isReadOnly?: boolean;
+
   @Optional()
   @IsString({ each: true })
   @IsNotEmpty({ each: true })
@@ -45,6 +48,9 @@ export class UpdateLibraryDto {
 
   @ValidateBoolean({ optional: true })
   isVisible?: boolean;
+
+  @ValidateBoolean({ optional: true })
+  isReadOnly?: boolean;
 
   @Optional()
   @IsString({ each: true })
@@ -121,6 +127,8 @@ export class LibraryResponseDto {
   @ApiProperty({ enumName: 'LibraryType', enum: LibraryType })
   type!: LibraryType;
 
+  isReadOnly!: boolean;
+
   @ApiProperty({ type: 'integer' })
   assetCount!: number;
 
@@ -156,6 +164,7 @@ export function mapLibrary(entity: LibraryEntity): LibraryResponseDto {
     id: entity.id,
     ownerId: entity.ownerId,
     type: entity.type,
+    isReadOnly: entity.isReadOnly,
     name: entity.name,
     createdAt: entity.createdAt,
     updatedAt: entity.updatedAt,

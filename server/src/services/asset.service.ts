@@ -429,7 +429,6 @@ export class AssetService {
       faces: {
         person: true,
       },
-      library: true,
       stack: { assets: true },
       exifInfo: true,
     });
@@ -438,8 +437,7 @@ export class AssetService {
       return JobStatus.FAILED;
     }
 
-    // Ignore requests that are not from external library job but is for an external asset
-    if (!fromExternal && (!asset.library || asset.library.type === LibraryType.EXTERNAL)) {
+    if (asset.isReadOnly) {
       return JobStatus.SKIPPED;
     }
 
@@ -471,9 +469,7 @@ export class AssetService {
       files.push(asset.originalPath);
     }
 
-    if (!asset.isReadOnly) {
-      await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files } });
-    }
+    await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files } });
 
     return JobStatus.SUCCESS;
   }

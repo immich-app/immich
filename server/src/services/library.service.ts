@@ -254,6 +254,7 @@ export class LibraryService extends EventEmitter {
         if (!dto.name) {
           dto.name = 'New External Library';
         }
+        dto.isReadOnly ??= true;
         break;
       }
       case LibraryType.UPLOAD: {
@@ -269,6 +270,10 @@ export class LibraryService extends EventEmitter {
         if (dto.isWatched) {
           throw new BadRequestException('Upload libraries cannot be watched');
         }
+        dto.isReadOnly ??= false;
+        if (dto.isReadOnly) {
+          throw new BadRequestException('Upload libraries cannot be readonly');
+        }
         break;
       }
     }
@@ -277,6 +282,7 @@ export class LibraryService extends EventEmitter {
       ownerId: dto.ownerId,
       name: dto.name,
       type: dto.type,
+      isReadOnly: dto.isReadOnly,
       importPaths: dto.importPaths ?? [],
       exclusionPatterns: dto.exclusionPatterns ?? [],
       isVisible: dto.isVisible ?? true,
@@ -512,7 +518,7 @@ export class LibraryService extends EventEmitter {
         type: assetType,
         originalFileName: parse(assetPath).base,
         sidecarPath,
-        isReadOnly: true,
+        isReadOnly: library!.isReadOnly,
         isExternal: true,
       });
       assetId = addedAsset.id;

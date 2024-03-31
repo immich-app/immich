@@ -8,8 +8,10 @@
   import { getAllUsers } from '@immich/sdk';
   import { user } from '$lib/stores/user.store';
   import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
+  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
 
   let ownerId: string = $user.id;
+  let isReadOnly = true;
 
   let userOptions: { value: string; text: string }[] = [];
 
@@ -20,12 +22,12 @@
 
   const dispatch = createEventDispatcher<{
     cancel: void;
-    submit: { ownerId: string };
+    submit: { ownerId: string, isReadOnly: boolean };
     delete: void;
   }>();
 
   const handleCancel = () => dispatch('cancel');
-  const handleSubmit = () => dispatch('submit', { ownerId });
+  const handleSubmit = () => dispatch('submit', { ownerId, isReadOnly });
 </script>
 
 <FullScreenModal onClose={handleCancel}>
@@ -43,7 +45,10 @@
       <p class="p-5 text-sm">NOTE: This cannot be changed later!</p>
 
       <SettingSelect bind:value={ownerId} options={userOptions} name="user" />
-
+      <SettingSwitch title="Read Only"
+            subtitle="Disable deletion and modification"
+            bind:checked={isReadOnly}
+          />
       <div class="mt-8 flex w-full gap-4 px-4">
         <Button color="gray" fullwidth on:click={() => handleCancel()}>Cancel</Button>
 

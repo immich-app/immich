@@ -7663,6 +7663,9 @@
             },
             "type": "array"
           },
+          "isReadOnly": {
+            "type": "boolean"
+          },
           "isVisible": {
             "type": "boolean"
           },
@@ -8229,6 +8232,9 @@
             },
             "type": "array"
           },
+          "isReadOnly": {
+            "type": "boolean"
+          },
           "name": {
             "type": "string"
           },
@@ -8254,6 +8260,7 @@
           "exclusionPatterns",
           "id",
           "importPaths",
+          "isReadOnly",
           "name",
           "ownerId",
           "refreshedAt",
@@ -10438,6 +10445,9 @@
               "type": "string"
             },
             "type": "array"
+          },
+          "isReadOnly": {
+            "type": "boolean"
           },
           "isVisible": {
             "type": "boolean"
