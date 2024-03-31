@@ -48,12 +48,12 @@ class PaginatedSearch extends _$PaginatedSearch {
 AsyncValue<RenderList> paginatedSearchRenderList(
   PaginatedSearchRenderListRef ref,
 ) {
-  final search = ref.watch(paginatedSearchProvider);
+  final assets = ref.watch(paginatedSearchProvider).value;
 
-  if (search.hasValue && search.value != null) {
+  if (assets != null) {
     return ref.watch(
       renderListProviderWithGrouping(
-        (search.value!, GroupAssetsBy.none),
+        (assets, GroupAssetsBy.none),
       ),
     );
   } else {

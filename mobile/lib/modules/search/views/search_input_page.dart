@@ -470,7 +470,7 @@ class SearchInputPage extends HookConsumerWidget {
         actions: [
           IconButton(
             icon: isContextualSearch.value
-                ? const Icon(Icons.file_present_outlined)
+                ? const Icon(Icons.abc_rounded)
                 : const Icon(Icons.image_search_rounded),
             onPressed: () {
               isContextualSearch.value = !isContextualSearch.value;
