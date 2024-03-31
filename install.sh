@@ -58,6 +58,7 @@ EOF
 main() {
   echo "Starting Immich installation..."
   local -ra Curl=(curl -fsSL)
+  ! command -v curl >/dev/null && { echo 'no curl binary found; please install curl and try again'; return 1; }
   local -r RepoUrl='https://github.com/immich-app/immich/releases/latest/download'
   local ip_address
   ip_address=$(hostname -I | awk '{print $1}')
