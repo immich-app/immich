@@ -2,8 +2,12 @@
 
 create_immich_directory() { local -r Tgt='./immich-app'
   echo "Creating Immich directory..."
-  mkdir -p "$Tgt"
-  cd "$Tgt" || exit
+  if [[ -e "$Tgt" ]]; then
+    echo "Found existing directory $Tgt, will overwrite YAML files"
+  else
+    mkdir -p "$Tgt" || return
+  fi 
+  cd "$Tgt" || return
 }
 
 download_docker_compose_file() {
@@ -25,30 +29,29 @@ start_docker_compose() { local -a docker_bin
     docker_bin=(docker-compose)
   else
     echo "Cannot find \`docker compose\` or \`docker-compose\`."
-    exit 1
+    return 1
   fi
 
-  if "${docker_bin[@]}" up --remove-orphans -d; then
-    show_friendly_message
-    exit 0
-  else
+  if ! "${docker_bin[@]}" up --remove-orphans -d; then
     echo "Could not start. Check for errors above."
-    exit 1
+    return 1
   fi
+  show_friendly_message
 }
 
 show_friendly_message() {
-  echo "Successfully deployed Immich!"
-  echo "You can access the website at http://$ip_address:2283 and the server URL for the mobile app is http://$ip_address:2283/api"
-  echo "---------------------------------------------------"
-  echo "If you want to configure custom information of the server, including the database, Redis information, or the backup (or upload) location, etc. 
+  cat << EOF
+Successfully deployed Immich!
+You can access the website at http://$ip_address:2283 and the server URL for the mobile app is http://$ip_address:2283/api
+---------------------------------------------------
+If you want to configure custom information of the server, including the database, Redis information, or the backup (or upload) location, etc. 
   
   1. First bring down the containers with the command 'docker-compose down' in the immich-app directory, 
   
   2. Then change the information that fits your needs in the '.env' file, 
   
-  3. Finally, bring the containers back up with the command 'docker-compose up --remove-orphans -d' in the immich-app directory"
-
+  3. Finally, bring the containers back up with the command 'docker-compose up --remove-orphans -d' in the immich-app directory
+EOF
 }
 
 # MAIN
