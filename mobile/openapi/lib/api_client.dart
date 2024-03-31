@@ -434,6 +434,8 @@ class ApiClient {
           return SystemConfigDto.fromJson(value);
         case 'SystemConfigFFmpegDto':
           return SystemConfigFFmpegDto.fromJson(value);
+        case 'SystemConfigImageDto':
+          return SystemConfigImageDto.fromJson(value);
         case 'SystemConfigJobDto':
           return SystemConfigJobDto.fromJson(value);
         case 'SystemConfigLibraryDto':
@@ -464,8 +466,6 @@ class ApiClient {
           return SystemConfigTemplateStorageOptionDto.fromJson(value);
         case 'SystemConfigThemeDto':
           return SystemConfigThemeDto.fromJson(value);
-        case 'SystemConfigThumbnailDto':
-          return SystemConfigThumbnailDto.fromJson(value);
         case 'SystemConfigTrashDto':
           return SystemConfigTrashDto.fromJson(value);
         case 'SystemConfigUserDto':

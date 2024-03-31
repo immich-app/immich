@@ -33,7 +33,7 @@ class SystemConfigDto {
 
   SystemConfigFFmpegDto ffmpeg;
 
-  SystemConfigThumbnailDto image;
+  SystemConfigImageDto image;
 
   SystemConfigJobDto job;
 
@@ -135,7 +135,7 @@ class SystemConfigDto {
 
       return SystemConfigDto(
         ffmpeg: SystemConfigFFmpegDto.fromJson(json[r'ffmpeg'])!,
-        image: SystemConfigThumbnailDto.fromJson(json[r'image'])!,
+        image: SystemConfigImageDto.fromJson(json[r'image'])!,
         job: SystemConfigJobDto.fromJson(json[r'job'])!,
         library_: SystemConfigLibraryDto.fromJson(json[r'library'])!,
         logging: SystemConfigLoggingDto.fromJson(json[r'logging'])!,

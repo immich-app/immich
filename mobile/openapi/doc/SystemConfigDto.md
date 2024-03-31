@@ -9,7 +9,7 @@ import 'package:openapi/api.dart';
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **ffmpeg** | [**SystemConfigFFmpegDto**](SystemConfigFFmpegDto.md) |  | 
-**image** | [**SystemConfigThumbnailDto**](SystemConfigThumbnailDto.md) |  | 
+**image** | [**SystemConfigImageDto**](SystemConfigImageDto.md) |  | 
 **job** | [**SystemConfigJobDto**](SystemConfigJobDto.md) |  | 
 **library_** | [**SystemConfigLibraryDto**](SystemConfigLibraryDto.md) |  | 
 **logging** | [**SystemConfigLoggingDto**](SystemConfigLoggingDto.md) |  | 

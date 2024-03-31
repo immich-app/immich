@@ -242,14 +242,14 @@ export type CuratedLocationsResponseDto = {
     deviceAssetId: string;
     deviceId: string;
     id: string;
-    previewPath: string;
+    resizePath: string;
 };
 export type CuratedObjectsResponseDto = {
     deviceAssetId: string;
     deviceId: string;
     id: string;
     "object": string;
-    previewPath: string;
+    resizePath: string;
 };
 export type CheckExistingAssetsDto = {
     deviceAssetIds: string[];
@@ -641,6 +641,7 @@ export type MetadataSearchDto = {
     page?: number;
     personIds?: string[];
     previewPath?: string;
+    resizePath?: string;
     size?: number;
     state?: string;
     takenAfter?: string;
@@ -651,6 +652,7 @@ export type MetadataSearchDto = {
     "type"?: AssetTypeEnum;
     updatedAfter?: string;
     updatedBefore?: string;
+    webpPath?: string;
     withArchived?: boolean;
     withDeleted?: boolean;
     withExif?: boolean;
@@ -827,7 +829,7 @@ export type SystemConfigFFmpegDto = {
     transcode: TranscodePolicy;
     twoPass: boolean;
 };
-export type SystemConfigThumbnailDto = {
+export type SystemConfigImageDto = {
     colorspace: Colorspace;
     previewFormat: ImageFormat;
     previewSize: number;
@@ -936,7 +938,7 @@ export type SystemConfigUserDto = {
 };
 export type SystemConfigDto = {
     ffmpeg: SystemConfigFFmpegDto;
-    image: SystemConfigThumbnailDto;
+    image: SystemConfigImageDto;
     job: SystemConfigJobDto;
     library: SystemConfigLibraryDto;
     logging: SystemConfigLoggingDto;
@@ -1499,7 +1501,7 @@ export function updateAsset({ id, updateAssetDto }: {
         body: updateAssetDto
     })));
 }
-export function searchAssets({ checksum, city, country, createdAfter, createdBefore, deviceAssetId, deviceId, encodedVideoPath, id, isArchived, isEncoded, isExternal, isFavorite, isMotion, isNotInAlbum, isOffline, isReadOnly, isVisible, lensModel, libraryId, make, model, order, originalFileName, originalPath, page, personIds, previewPath, size, state, takenAfter, takenBefore, thumbnailPath, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, withArchived, withDeleted, withExif, withPeople, withStacked }: {
+export function searchAssets({ checksum, city, country, createdAfter, createdBefore, deviceAssetId, deviceId, encodedVideoPath, id, isArchived, isEncoded, isExternal, isFavorite, isMotion, isNotInAlbum, isOffline, isReadOnly, isVisible, lensModel, libraryId, make, model, order, originalFileName, originalPath, page, personIds, previewPath, resizePath, size, state, takenAfter, takenBefore, thumbnailPath, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, webpPath, withArchived, withDeleted, withExif, withPeople, withStacked }: {
     checksum?: string;
     city?: string;
     country?: string;
@@ -1528,6 +1530,7 @@ export function searchAssets({ checksum, city, country, createdAfter, createdBef
     page?: number;
     personIds?: string[];
     previewPath?: string;
+    resizePath?: string;
     size?: number;
     state?: string;
     takenAfter?: string;
@@ -1538,6 +1541,7 @@ export function searchAssets({ checksum, city, country, createdAfter, createdBef
     $type?: AssetTypeEnum;
     updatedAfter?: string;
     updatedBefore?: string;
+    webpPath?: string;
     withArchived?: boolean;
     withDeleted?: boolean;
     withExif?: boolean;
@@ -1576,6 +1580,7 @@ export function searchAssets({ checksum, city, country, createdAfter, createdBef
         page,
         personIds,
         previewPath,
+        resizePath,
         size,
         state,
         takenAfter,
@@ -1586,6 +1591,7 @@ export function searchAssets({ checksum, city, country, createdAfter, createdBef
         "type": $type,
         updatedAfter,
         updatedBefore,
+        webpPath,
         withArchived,
         withDeleted,
         withExif,

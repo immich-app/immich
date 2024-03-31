@@ -163,6 +163,18 @@ export class MetadataSearchDto extends BaseSearchDto {
   @IsString()
   @IsNotEmpty()
   @Optional()
+  @ApiProperty({ deprecated: true })
+  resizePath?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @Optional()
+  @ApiProperty({ deprecated: true })
+  webpPath?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @Optional()
   previewPath?: string;
 
   @IsString()

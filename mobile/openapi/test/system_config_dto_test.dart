@@ -21,7 +21,7 @@ void main() {
       // TODO
     });
 
-    // SystemConfigThumbnailDto image
+    // SystemConfigImageDto image
     test('to test the property `image`', () async {
       // TODO
     });

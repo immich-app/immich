@@ -2110,6 +2110,15 @@
             }
           },
           {
+            "name": "resizePath",
+            "required": false,
+            "in": "query",
+            "deprecated": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "size",
             "required": false,
             "in": "query",
@@ -2192,6 +2201,15 @@
             "in": "query",
             "schema": {
               "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "webpPath",
+            "required": false,
+            "in": "query",
+            "deprecated": true,
+            "schema": {
               "type": "string"
             }
           },
@@ -7784,7 +7802,7 @@
           "id": {
             "type": "string"
           },
-          "previewPath": {
+          "resizePath": {
             "type": "string"
           }
         },
@@ -7793,7 +7811,7 @@
           "deviceAssetId",
           "deviceId",
           "id",
-          "previewPath"
+          "resizePath"
         ],
         "type": "object"
       },
@@ -7811,7 +7829,7 @@
           "object": {
             "type": "string"
           },
-          "previewPath": {
+          "resizePath": {
             "type": "string"
           }
         },
@@ -7820,7 +7838,7 @@
           "deviceId",
           "id",
           "object",
-          "previewPath"
+          "resizePath"
         ],
         "type": "object"
       },
@@ -8565,6 +8583,10 @@
           "previewPath": {
             "type": "string"
           },
+          "resizePath": {
+            "deprecated": true,
+            "type": "string"
+          },
           "size": {
             "type": "number"
           },
@@ -8599,6 +8621,10 @@
           },
           "updatedBefore": {
             "format": "date-time",
+            "type": "string"
+          },
+          "webpPath": {
+            "deprecated": true,
             "type": "string"
           },
           "withArchived": {
@@ -9751,7 +9777,7 @@
             "$ref": "#/components/schemas/SystemConfigFFmpegDto"
           },
           "image": {
-            "$ref": "#/components/schemas/SystemConfigThumbnailDto"
+            "$ref": "#/components/schemas/SystemConfigImageDto"
           },
           "job": {
             "$ref": "#/components/schemas/SystemConfigJobDto"
@@ -9906,6 +9932,37 @@
           "tonemap",
           "transcode",
           "twoPass"
+        ],
+        "type": "object"
+      },
+      "SystemConfigImageDto": {
+        "properties": {
+          "colorspace": {
+            "$ref": "#/components/schemas/Colorspace"
+          },
+          "previewFormat": {
+            "$ref": "#/components/schemas/ImageFormat"
+          },
+          "previewSize": {
+            "type": "integer"
+          },
+          "quality": {
+            "type": "integer"
+          },
+          "thumbnailFormat": {
+            "$ref": "#/components/schemas/ImageFormat"
+          },
+          "thumbnailSize": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "colorspace",
+          "previewFormat",
+          "previewSize",
+          "quality",
+          "thumbnailFormat",
+          "thumbnailSize"
         ],
         "type": "object"
       },
@@ -10255,37 +10312,6 @@
         },
         "required": [
           "customCss"
-        ],
-        "type": "object"
-      },
-      "SystemConfigThumbnailDto": {
-        "properties": {
-          "colorspace": {
-            "$ref": "#/components/schemas/Colorspace"
-          },
-          "previewFormat": {
-            "$ref": "#/components/schemas/ImageFormat"
-          },
-          "previewSize": {
-            "type": "integer"
-          },
-          "quality": {
-            "type": "integer"
-          },
-          "thumbnailFormat": {
-            "$ref": "#/components/schemas/ImageFormat"
-          },
-          "thumbnailSize": {
-            "type": "integer"
-          }
-        },
-        "required": [
-          "colorspace",
-          "previewFormat",
-          "previewSize",
-          "quality",
-          "thumbnailFormat",
-          "thumbnailSize"
         ],
         "type": "object"
       },

@@ -17,7 +17,7 @@ class CuratedObjectsResponseDto {
     required this.deviceId,
     required this.id,
     required this.object,
-    required this.previewPath,
+    required this.resizePath,
   });
 
   String deviceAssetId;
@@ -28,7 +28,7 @@ class CuratedObjectsResponseDto {
 
   String object;
 
-  String previewPath;
+  String resizePath;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is CuratedObjectsResponseDto &&
@@ -36,7 +36,7 @@ class CuratedObjectsResponseDto {
     other.deviceId == deviceId &&
     other.id == id &&
     other.object == object &&
-    other.previewPath == previewPath;
+    other.resizePath == resizePath;
 
   @override
   int get hashCode =>
@@ -45,10 +45,10 @@ class CuratedObjectsResponseDto {
     (deviceId.hashCode) +
     (id.hashCode) +
     (object.hashCode) +
-    (previewPath.hashCode);
+    (resizePath.hashCode);
 
   @override
-  String toString() => 'CuratedObjectsResponseDto[deviceAssetId=$deviceAssetId, deviceId=$deviceId, id=$id, object=$object, previewPath=$previewPath]';
+  String toString() => 'CuratedObjectsResponseDto[deviceAssetId=$deviceAssetId, deviceId=$deviceId, id=$id, object=$object, resizePath=$resizePath]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -56,7 +56,7 @@ class CuratedObjectsResponseDto {
       json[r'deviceId'] = this.deviceId;
       json[r'id'] = this.id;
       json[r'object'] = this.object;
-      json[r'previewPath'] = this.previewPath;
+      json[r'resizePath'] = this.resizePath;
     return json;
   }
 
@@ -72,7 +72,7 @@ class CuratedObjectsResponseDto {
         deviceId: mapValueOfType<String>(json, r'deviceId')!,
         id: mapValueOfType<String>(json, r'id')!,
         object: mapValueOfType<String>(json, r'object')!,
-        previewPath: mapValueOfType<String>(json, r'previewPath')!,
+        resizePath: mapValueOfType<String>(json, r'resizePath')!,
       );
     }
     return null;
@@ -124,7 +124,7 @@ class CuratedObjectsResponseDto {
     'deviceId',
     'id',
     'object',
-    'previewPath',
+    'resizePath',
   };
 }
 

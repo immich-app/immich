@@ -933,6 +933,8 @@ class AssetApi {
   ///
   /// * [String] previewPath:
   ///
+  /// * [String] resizePath:
+  ///
   /// * [num] size:
   ///
   /// * [String] state:
@@ -953,6 +955,8 @@ class AssetApi {
   ///
   /// * [DateTime] updatedBefore:
   ///
+  /// * [String] webpPath:
+  ///
   /// * [bool] withArchived:
   ///
   /// * [bool] withDeleted:
@@ -962,7 +966,7 @@ class AssetApi {
   /// * [bool] withPeople:
   ///
   /// * [bool] withStacked:
-  Future<Response> searchAssetsWithHttpInfo({ String? checksum, String? city, String? country, DateTime? createdAfter, DateTime? createdBefore, String? deviceAssetId, String? deviceId, String? encodedVideoPath, String? id, bool? isArchived, bool? isEncoded, bool? isExternal, bool? isFavorite, bool? isMotion, bool? isNotInAlbum, bool? isOffline, bool? isReadOnly, bool? isVisible, String? lensModel, String? libraryId, String? make, String? model, AssetOrder? order, String? originalFileName, String? originalPath, num? page, List<String>? personIds, String? previewPath, num? size, String? state, DateTime? takenAfter, DateTime? takenBefore, String? thumbnailPath, DateTime? trashedAfter, DateTime? trashedBefore, AssetTypeEnum? type, DateTime? updatedAfter, DateTime? updatedBefore, bool? withArchived, bool? withDeleted, bool? withExif, bool? withPeople, bool? withStacked, }) async {
+  Future<Response> searchAssetsWithHttpInfo({ String? checksum, String? city, String? country, DateTime? createdAfter, DateTime? createdBefore, String? deviceAssetId, String? deviceId, String? encodedVideoPath, String? id, bool? isArchived, bool? isEncoded, bool? isExternal, bool? isFavorite, bool? isMotion, bool? isNotInAlbum, bool? isOffline, bool? isReadOnly, bool? isVisible, String? lensModel, String? libraryId, String? make, String? model, AssetOrder? order, String? originalFileName, String? originalPath, num? page, List<String>? personIds, String? previewPath, String? resizePath, num? size, String? state, DateTime? takenAfter, DateTime? takenBefore, String? thumbnailPath, DateTime? trashedAfter, DateTime? trashedBefore, AssetTypeEnum? type, DateTime? updatedAfter, DateTime? updatedBefore, String? webpPath, bool? withArchived, bool? withDeleted, bool? withExif, bool? withPeople, bool? withStacked, }) async {
     // ignore: prefer_const_declarations
     final path = r'/assets';
 
@@ -1057,6 +1061,9 @@ class AssetApi {
     if (previewPath != null) {
       queryParams.addAll(_queryParams('', 'previewPath', previewPath));
     }
+    if (resizePath != null) {
+      queryParams.addAll(_queryParams('', 'resizePath', resizePath));
+    }
     if (size != null) {
       queryParams.addAll(_queryParams('', 'size', size));
     }
@@ -1086,6 +1093,9 @@ class AssetApi {
     }
     if (updatedBefore != null) {
       queryParams.addAll(_queryParams('', 'updatedBefore', updatedBefore));
+    }
+    if (webpPath != null) {
+      queryParams.addAll(_queryParams('', 'webpPath', webpPath));
     }
     if (withArchived != null) {
       queryParams.addAll(_queryParams('', 'withArchived', withArchived));
@@ -1175,6 +1185,8 @@ class AssetApi {
   ///
   /// * [String] previewPath:
   ///
+  /// * [String] resizePath:
+  ///
   /// * [num] size:
   ///
   /// * [String] state:
@@ -1195,6 +1207,8 @@ class AssetApi {
   ///
   /// * [DateTime] updatedBefore:
   ///
+  /// * [String] webpPath:
+  ///
   /// * [bool] withArchived:
   ///
   /// * [bool] withDeleted:
@@ -1204,8 +1218,8 @@ class AssetApi {
   /// * [bool] withPeople:
   ///
   /// * [bool] withStacked:
-  Future<List<AssetResponseDto>?> searchAssets({ String? checksum, String? city, String? country, DateTime? createdAfter, DateTime? createdBefore, String? deviceAssetId, String? deviceId, String? encodedVideoPath, String? id, bool? isArchived, bool? isEncoded, bool? isExternal, bool? isFavorite, bool? isMotion, bool? isNotInAlbum, bool? isOffline, bool? isReadOnly, bool? isVisible, String? lensModel, String? libraryId, String? make, String? model, AssetOrder? order, String? originalFileName, String? originalPath, num? page, List<String>? personIds, String? previewPath, num? size, String? state, DateTime? takenAfter, DateTime? takenBefore, String? thumbnailPath, DateTime? trashedAfter, DateTime? trashedBefore, AssetTypeEnum? type, DateTime? updatedAfter, DateTime? updatedBefore, bool? withArchived, bool? withDeleted, bool? withExif, bool? withPeople, bool? withStacked, }) async {
-    final response = await searchAssetsWithHttpInfo( checksum: checksum, city: city, country: country, createdAfter: createdAfter, createdBefore: createdBefore, deviceAssetId: deviceAssetId, deviceId: deviceId, encodedVideoPath: encodedVideoPath, id: id, isArchived: isArchived, isEncoded: isEncoded, isExternal: isExternal, isFavorite: isFavorite, isMotion: isMotion, isNotInAlbum: isNotInAlbum, isOffline: isOffline, isReadOnly: isReadOnly, isVisible: isVisible, lensModel: lensModel, libraryId: libraryId, make: make, model: model, order: order, originalFileName: originalFileName, originalPath: originalPath, page: page, personIds: personIds, previewPath: previewPath, size: size, state: state, takenAfter: takenAfter, takenBefore: takenBefore, thumbnailPath: thumbnailPath, trashedAfter: trashedAfter, trashedBefore: trashedBefore, type: type, updatedAfter: updatedAfter, updatedBefore: updatedBefore, withArchived: withArchived, withDeleted: withDeleted, withExif: withExif, withPeople: withPeople, withStacked: withStacked, );
+  Future<List<AssetResponseDto>?> searchAssets({ String? checksum, String? city, String? country, DateTime? createdAfter, DateTime? createdBefore, String? deviceAssetId, String? deviceId, String? encodedVideoPath, String? id, bool? isArchived, bool? isEncoded, bool? isExternal, bool? isFavorite, bool? isMotion, bool? isNotInAlbum, bool? isOffline, bool? isReadOnly, bool? isVisible, String? lensModel, String? libraryId, String? make, String? model, AssetOrder? order, String? originalFileName, String? originalPath, num? page, List<String>? personIds, String? previewPath, String? resizePath, num? size, String? state, DateTime? takenAfter, DateTime? takenBefore, String? thumbnailPath, DateTime? trashedAfter, DateTime? trashedBefore, AssetTypeEnum? type, DateTime? updatedAfter, DateTime? updatedBefore, String? webpPath, bool? withArchived, bool? withDeleted, bool? withExif, bool? withPeople, bool? withStacked, }) async {
+    final response = await searchAssetsWithHttpInfo( checksum: checksum, city: city, country: country, createdAfter: createdAfter, createdBefore: createdBefore, deviceAssetId: deviceAssetId, deviceId: deviceId, encodedVideoPath: encodedVideoPath, id: id, isArchived: isArchived, isEncoded: isEncoded, isExternal: isExternal, isFavorite: isFavorite, isMotion: isMotion, isNotInAlbum: isNotInAlbum, isOffline: isOffline, isReadOnly: isReadOnly, isVisible: isVisible, lensModel: lensModel, libraryId: libraryId, make: make, model: model, order: order, originalFileName: originalFileName, originalPath: originalPath, page: page, personIds: personIds, previewPath: previewPath, resizePath: resizePath, size: size, state: state, takenAfter: takenAfter, takenBefore: takenBefore, thumbnailPath: thumbnailPath, trashedAfter: trashedAfter, trashedBefore: trashedBefore, type: type, updatedAfter: updatedAfter, updatedBefore: updatedBefore, webpPath: webpPath, withArchived: withArchived, withDeleted: withDeleted, withExif: withExif, withPeople: withPeople, withStacked: withStacked, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

@@ -156,6 +156,11 @@ void main() {
       // TODO
     });
 
+    // String resizePath
+    test('to test the property `resizePath`', () async {
+      // TODO
+    });
+
     // num size
     test('to test the property `size`', () async {
       // TODO
@@ -203,6 +208,11 @@ void main() {
 
     // DateTime updatedBefore
     test('to test the property `updatedBefore`', () async {
+      // TODO
+    });
+
+    // String webpPath
+    test('to test the property `webpPath`', () async {
       // TODO
     });
 
