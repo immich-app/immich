@@ -9,8 +9,8 @@ SELECT
   "entity"."deviceId" AS "entity_deviceId",
   "entity"."type" AS "entity_type",
   "entity"."originalPath" AS "entity_originalPath",
-  "entity"."resizePath" AS "entity_resizePath",
-  "entity"."webpPath" AS "entity_webpPath",
+  "entity"."previewPath" AS "entity_previewPath",
+  "entity"."thumbnailPath" AS "entity_thumbnailPath",
   "entity"."thumbhash" AS "entity_thumbhash",
   "entity"."encodedVideoPath" AS "entity_encodedVideoPath",
   "entity"."createdAt" AS "entity_createdAt",
@@ -67,7 +67,7 @@ WHERE
     "entity"."ownerId" IN ($1)
     AND "entity"."isVisible" = true
     AND "entity"."isArchived" = false
-    AND "entity"."resizePath" IS NOT NULL
+    AND "entity"."previewPath" IS NOT NULL
     AND EXTRACT(
       DAY
       FROM
