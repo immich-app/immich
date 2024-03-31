@@ -62,6 +62,5 @@ Below is an example config for Apache2 site configuration.
    ProxyPass / http://127.0.0.1:2283/ timeout=600 upgrade=websocket
    ProxyPassReverse / http://127.0.0.1:2283/
    ProxyPreserveHost On
-
 </VirtualHost>
 ```
