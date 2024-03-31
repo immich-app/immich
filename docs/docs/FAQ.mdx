@@ -253,7 +253,7 @@ The initial backup is the most intensive due to the number of jobs running. The 
 
 ### Can I limit the amount of CPU and RAM usage?
 
-By default, a container has no resource constraints and can use as much of a given resource as the host's kernel scheduler allows. To limit this, you can add the following to the `docker.compose.yml` block of any containers that you want to have limited resources.
+By default, a container has no resource constraints and can use as much of a given resource as the host's kernel scheduler allows. To limit this, you can add the following to the `docker-compose.yml` block of any containers that you want to have limited resources.
 ```yaml
     deploy:
       resources:
