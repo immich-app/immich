@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -19,7 +21,9 @@ import 'package:openapi/api.dart';
 
 @RoutePage()
 class SearchInputPage extends HookConsumerWidget {
-  const SearchInputPage({super.key});
+  const SearchInputPage({super.key, this.prefilter});
+
+  final SearchFilter? prefilter;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -27,16 +31,17 @@ class SearchInputPage extends HookConsumerWidget {
     final textSearchController = useTextEditingController();
     final filter = useState<SearchFilter>(
       SearchFilter(
-        people: {},
-        location: SearchLocationFilter(),
-        camera: SearchCameraFilter(),
-        date: SearchDateFilter(),
-        display: SearchDisplayFilters(
-          isNotInAlbum: false,
-          isArchive: false,
-          isFavorite: false,
-        ),
-        mediaType: AssetType.other,
+        people: prefilter?.people ?? {},
+        location: prefilter?.location ?? SearchLocationFilter(),
+        camera: prefilter?.camera ?? SearchCameraFilter(),
+        date: prefilter?.date ?? SearchDateFilter(),
+        display: prefilter?.display ??
+            SearchDisplayFilters(
+              isNotInAlbum: false,
+              isArchive: false,
+              isFavorite: false,
+            ),
+        mediaType: prefilter?.mediaType ?? AssetType.other,
       ),
     );
 
@@ -54,7 +59,7 @@ class SearchInputPage extends HookConsumerWidget {
     final searchResultCount = useState(0);
 
     search() async {
-      if (filter.value == previousFilter.value) return;
+      if (prefilter == null && filter.value == previousFilter.value) return;
 
       ref.watch(paginatedSearchProvider.notifier).clear();
 
@@ -67,6 +72,32 @@ class SearchInputPage extends HookConsumerWidget {
 
       searchResultCount.value = searchResult.length;
     }
+
+    searchPrefilter() {
+      if (prefilter != null) {
+        Future.delayed(
+          Duration.zero,
+          () {
+            search();
+
+            if (prefilter!.location.city != null) {
+              locationCurrentFilterWidget.value = Text(
+                prefilter!.location.city!,
+                style: context.textTheme.labelLarge,
+              );
+            }
+          },
+        );
+      }
+    }
+
+    useEffect(
+      () {
+        searchPrefilter();
+        return null;
+      },
+      [],
+    );
 
     loadMoreSearchResult() async {
       currentPage.value += 1;

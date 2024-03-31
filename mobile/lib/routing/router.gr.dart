@@ -256,9 +256,14 @@ abstract class _$AppRouter extends RootStackRouter {
       );
     },
     SearchInputRoute.name: (routeData) {
+      final args = routeData.argsAs<SearchInputRouteArgs>(
+          orElse: () => const SearchInputRouteArgs());
       return AutoRoutePage<dynamic>(
         routeData: routeData,
-        child: const SearchInputPage(),
+        child: SearchInputPage(
+          key: args.key,
+          prefilter: args.prefilter,
+        ),
       );
     },
     SearchRoute.name: (routeData) {
@@ -1108,16 +1113,40 @@ class RecentlyAddedRoute extends PageRouteInfo<void> {
 
 /// generated route for
 /// [SearchInputPage]
-class SearchInputRoute extends PageRouteInfo<void> {
-  const SearchInputRoute({List<PageRouteInfo>? children})
-      : super(
+class SearchInputRoute extends PageRouteInfo<SearchInputRouteArgs> {
+  SearchInputRoute({
+    Key? key,
+    SearchFilter? prefilter,
+    List<PageRouteInfo>? children,
+  }) : super(
           SearchInputRoute.name,
+          args: SearchInputRouteArgs(
+            key: key,
+            prefilter: prefilter,
+          ),
           initialChildren: children,
         );
 
   static const String name = 'SearchInputRoute';
 
-  static const PageInfo<void> page = PageInfo<void>(name);
+  static const PageInfo<SearchInputRouteArgs> page =
+      PageInfo<SearchInputRouteArgs>(name);
+}
+
+class SearchInputRouteArgs {
+  const SearchInputRouteArgs({
+    this.key,
+    this.prefilter,
+  });
+
+  final Key? key;
+
+  final SearchFilter? prefilter;
+
+  @override
+  String toString() {
+    return 'SearchInputRouteArgs{key: $key, prefilter: $prefilter}';
+  }
 }
 
 /// generated route for

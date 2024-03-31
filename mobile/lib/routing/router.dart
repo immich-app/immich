@@ -31,6 +31,7 @@ import 'package:immich_mobile/modules/login/views/change_password_page.dart';
 import 'package:immich_mobile/modules/login/views/login_page.dart';
 import 'package:immich_mobile/modules/onboarding/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/modules/onboarding/views/permission_onboarding_page.dart';
+import 'package:immich_mobile/modules/search/models/search_filter.dart';
 import 'package:immich_mobile/modules/settings/views/settings_sub_page.dart';
 import 'package:immich_mobile/modules/search/views/search_input_page.dart';
 import 'package:immich_mobile/modules/shared_link/models/shared_link.dart';

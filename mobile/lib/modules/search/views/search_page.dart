@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -6,6 +7,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/search/models/curated_content.dart';
+import 'package:immich_mobile/modules/search/models/search_filter.dart';
 import 'package:immich_mobile/modules/search/providers/people.provider.dart';
 import 'package:immich_mobile/modules/search/providers/search_page_state.provider.dart';
 import 'package:immich_mobile/modules/search/ui/curated_people_row.dart';
@@ -13,6 +15,7 @@ import 'package:immich_mobile/modules/search/ui/curated_places_row.dart';
 import 'package:immich_mobile/modules/search/ui/person_name_edit_form.dart';
 import 'package:immich_mobile/modules/search/ui/search_row_title.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_app_bar.dart';
 import 'package:immich_mobile/shared/ui/scaffold_error_body.dart';
@@ -97,7 +100,26 @@ class SearchPage extends HookConsumerWidget {
                 )
                 .toList(),
             imageSize: imageSize,
-            onTap: (content, index) {},
+            onTap: (content, index) {
+              context.pushRoute(
+                SearchInputRoute(
+                  prefilter: SearchFilter(
+                    people: {},
+                    location: SearchLocationFilter(
+                      city: content.label,
+                    ),
+                    camera: SearchCameraFilter(),
+                    date: SearchDateFilter(),
+                    display: SearchDisplayFilters(
+                      isNotInAlbum: false,
+                      isArchive: false,
+                      isFavorite: false,
+                    ),
+                    mediaType: AssetType.other,
+                  ),
+                ),
+              );
+            },
           ),
         ),
       );
@@ -106,7 +128,7 @@ class SearchPage extends HookConsumerWidget {
     buildSearchButton() {
       return GestureDetector(
         onTap: () {
-          context.pushRoute(const SearchInputRoute());
+          context.pushRoute(SearchInputRoute());
         },
         child: Card(
           elevation: 0,
@@ -205,27 +227,6 @@ class SearchPage extends HookConsumerWidget {
                   ),
                 ).tr(),
               ),
-              ListTile(
-                title:
-                    Text('search_page_screenshots', style: categoryTitleStyle)
-                        .tr(),
-                leading: Icon(
-                  Icons.screenshot,
-                  color: categoryIconColor,
-                ),
-                onTap: () {},
-              ),
-              const CategoryDivider(),
-              ListTile(
-                title:
-                    Text('search_page_selfies', style: categoryTitleStyle).tr(),
-                leading: Icon(
-                  Icons.photo_camera_front_outlined,
-                  color: categoryIconColor,
-                ),
-                onTap: () {},
-              ),
-              const CategoryDivider(),
               ListTile(
                 title:
                     Text('search_page_videos', style: categoryTitleStyle).tr(),
