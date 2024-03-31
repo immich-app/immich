@@ -1,4 +1,3 @@
-import { resolve } from 'node:path';
 import { StorageCore } from 'src/cores/storage.core';
 
 jest.mock('src/constants', () => ({
