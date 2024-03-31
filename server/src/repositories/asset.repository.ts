@@ -171,6 +171,7 @@ export class AssetRepository implements IAssetRepository {
   getByLibraryIdAndOriginalPath(libraryId: string, originalPath: string): Promise<AssetEntity | null> {
     return this.repository.findOne({
       where: { library: { id: libraryId }, originalPath: originalPath },
+      withDeleted: true,
     });
   }
 
