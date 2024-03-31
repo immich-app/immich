@@ -5,7 +5,7 @@ create_immich_directory() { local -r Tgt='./immich-app'
   if [[ -e "$Tgt" ]]; then
     echo "Found existing directory $Tgt, will overwrite YAML files"
   else
-    mkdir -p "$Tgt" || return
+    mkdir "$Tgt" || return
   fi 
   cd "$Tgt" || return
 }
