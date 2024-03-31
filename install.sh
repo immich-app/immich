@@ -62,7 +62,7 @@ EOF
 main() {
   echo "Starting Immich installation..."
   local -ra Curl=(curl -fsSL)
-  command -v curl >/dev/null || { echo 'no curl binary found; please install curl and try again'; return 1; }
+  command -v curl >/dev/null || { echo 'no curl binary found; please install curl and try again'; return 14; }
   local -r RepoUrl='https://github.com/immich-app/immich/releases/latest/download'
 
   create_immich_directory || { echo 'error creating Immich directory'; return 10; }
