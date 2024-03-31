@@ -50,11 +50,11 @@ You can access the website at http://$ip_address:2283 and the server URL for the
 ---------------------------------------------------
 If you want to configure custom information of the server, including the database, Redis information, or the backup (or upload) location, etc. 
   
-  1. First bring down the containers with the command 'docker-compose down' in the immich-app directory, 
+  1. First bring down the containers with the command '${docker_bin[@]} down' in the immich-app directory, 
   
   2. Then change the information that fits your needs in the '.env' file, 
   
-  3. Finally, bring the containers back up with the command 'docker-compose up --remove-orphans -d' in the immich-app directory
+  3. Finally, bring the containers back up with the command '${docker_bin[@]} up --remove-orphans -d' in the immich-app directory
 EOF
 }
 
