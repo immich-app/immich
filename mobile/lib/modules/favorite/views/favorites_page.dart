@@ -15,7 +15,7 @@ class FavoritesPage extends HookConsumerWidget {
     AppBar buildAppBar() {
       return AppBar(
         leading: IconButton(
-          onPressed: () => context.popRoute(),
+          onPressed: () => context.maybePop(),
           icon: const Icon(Icons.arrow_back_ios_rounded),
         ),
         centerTitle: true,

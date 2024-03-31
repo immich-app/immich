@@ -120,7 +120,7 @@ class BottomGalleryBar extends ConsumerWidget {
         if (isDeleted && isParent) {
           if (totalAssets == 1) {
             // Handle only one asset
-            context.popRoute();
+            context.maybePop();
           } else {
             // Go to next page otherwise
             controller.nextPage(
@@ -191,7 +191,7 @@ class BottomGalleryBar extends ConsumerWidget {
                               stackElements.elementAt(stackIndex),
                             );
                         ctx.pop();
-                        context.popRoute();
+                        context.maybePop();
                       },
                       title: const Text(
                         "viewer_stack_use_as_main_asset",
@@ -218,7 +218,7 @@ class BottomGalleryBar extends ConsumerWidget {
                           childrenToRemove: [asset],
                         );
                         ctx.pop();
-                        context.popRoute();
+                        context.maybePop();
                       } else {
                         await ref.read(assetStackServiceProvider).updateStack(
                           asset,
@@ -246,7 +246,7 @@ class BottomGalleryBar extends ConsumerWidget {
                             childrenToRemove: stack,
                           );
                       ctx.pop();
-                      context.popRoute();
+                      context.maybePop();
                     },
                     title: const Text(
                       "viewer_unstack",
@@ -277,7 +277,7 @@ class BottomGalleryBar extends ConsumerWidget {
     handleArchive() {
       ref.read(assetProvider.notifier).toggleArchive([asset]);
       if (isParent) {
-        context.popRoute();
+        context.maybePop();
         return;
       }
       removeAssetFromStack();

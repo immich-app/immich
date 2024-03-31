@@ -15,7 +15,7 @@ class AllVideosPage extends HookConsumerWidget {
       appBar: AppBar(
         title: const Text('all_videos_page_title').tr(),
         leading: IconButton(
-          onPressed: () => context.popRoute(),
+          onPressed: () => context.maybePop(),
           icon: const Icon(Icons.arrow_back_ios_rounded),
         ),
       ),

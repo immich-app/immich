@@ -174,7 +174,7 @@ class GalleryViewerPage extends HookConsumerWidget {
 
       final ratio = d.dy / max(d.dx.abs(), 1);
       if (d.dy > sensitivity && ratio > ratioThreshold) {
-        context.popRoute();
+        context.maybePop();
       } else if (d.dy < -sensitivity && ratio < -ratioThreshold) {
         showInfo();
       }

@@ -143,7 +143,7 @@ class TrashPage extends HookConsumerWidget {
       return AppBar(
         leading: IconButton(
           onPressed: !selectionEnabledHook.value
-              ? () => context.popRoute()
+              ? () => context.maybePop()
               : () {
                   selectionEnabledHook.value = false;
                   selection.value = {};

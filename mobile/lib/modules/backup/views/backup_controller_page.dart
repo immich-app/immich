@@ -260,7 +260,7 @@ class BackupControllerPage extends HookConsumerWidget {
         leading: IconButton(
           onPressed: () {
             ref.watch(websocketProvider.notifier).listenUploadEvent();
-            context.popRoute(true);
+            context.maybePop(true);
           },
           splashRadius: 24,
           icon: const Icon(

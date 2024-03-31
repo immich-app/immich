@@ -176,7 +176,7 @@ class PermissionOnboardingPage extends HookConsumerWidget {
                 ),
                 TextButton(
                   child: const Text('permission_onboarding_back').tr(),
-                  onPressed: () => context.popRoute(),
+                  onPressed: () => context.maybePop(),
                 ),
               ],
             ),

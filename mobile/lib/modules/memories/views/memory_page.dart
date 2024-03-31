@@ -153,7 +153,7 @@ class MemoryPage extends HookConsumerWidget {
           final offset = notification.metrics.pixels;
           if (isEpiloguePage &&
               (offset > notification.metrics.maxScrollExtent + 150)) {
-            context.popRoute();
+            context.maybePop();
             return true;
           }
         }
@@ -256,7 +256,7 @@ class MemoryPage extends HookConsumerWidget {
                               // auto_route doesn't invoke pop scope, so
                               // turn off full screen mode here
                               // https://github.com/Milad-Akarie/auto_route_library/issues/1799
-                              context.popRoute();
+                              context.maybePop();
                               SystemChrome.setEnabledSystemUIMode(
                                 SystemUiMode.edgeToEdge,
                               );

@@ -184,7 +184,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
-          onPressed: () => context.popRoute(null),
+          onPressed: () => context.maybePop(null),
         ),
         centerTitle: true,
         title: Text("translated_text_options".tr()),
