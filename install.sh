@@ -42,6 +42,8 @@ start_docker_compose() { local -a docker_bin
 }
 
 show_friendly_message() {
+  local ip_address
+  ip_address=$(hostname -I | awk '{print $1}')
   cat << EOF
 Successfully deployed Immich!
 You can access the website at http://$ip_address:2283 and the server URL for the mobile app is http://$ip_address:2283/api
@@ -62,8 +64,6 @@ main() {
   local -ra Curl=(curl -fsSL)
   ! command -v curl >/dev/null && { echo 'no curl binary found; please install curl and try again'; return 1; }
   local -r RepoUrl='https://github.com/immich-app/immich/releases/latest/download'
-  local ip_address
-  ip_address=$(hostname -I | awk '{print $1}')
 
   create_immich_directory || { echo 'error creating Immich directory'; return 10; }
   download_docker_compose_file || { echo 'error downloading Docker Compose file'; return 11; }
