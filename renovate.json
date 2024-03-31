@@ -64,6 +64,6 @@
     }
   ],
   "ignorePaths": ["mobile/openapi/pubspec.yaml"],
-  "ignoreDeps": ["http", "intl"],
+  "ignoreDeps": ["http", "intl", "package_info_plus", "share_plus", "device_info_plus", "connectivity_plus", "wakelock_plus"],
   "labels": ["dependencies", "renovate"]
 }
