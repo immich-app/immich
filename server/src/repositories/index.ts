@@ -12,6 +12,7 @@ import { IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository } from 'src/interfaces/job.interface';
 import { ILibraryRepository } from 'src/interfaces/library.interface';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
+import { IMailRepository } from 'src/interfaces/mail.interface';
 import { IMediaRepository } from 'src/interfaces/media.interface';
 import { IMemoryRepository } from 'src/interfaces/memory.interface';
 import { IMetadataRepository } from 'src/interfaces/metadata.interface';
@@ -42,6 +43,7 @@ import { EventRepository } from 'src/repositories/event.repository';
 import { JobRepository } from 'src/repositories/job.repository';
 import { LibraryRepository } from 'src/repositories/library.repository';
 import { MachineLearningRepository } from 'src/repositories/machine-learning.repository';
+import { MailRepository } from 'src/repositories/mail.repository';
 import { MediaRepository } from 'src/repositories/media.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
 import { MetadataRepository } from 'src/repositories/metadata.repository';
@@ -74,6 +76,7 @@ export const repositories = [
   { provide: ILibraryRepository, useClass: LibraryRepository },
   { provide: IKeyRepository, useClass: ApiKeyRepository },
   { provide: IMachineLearningRepository, useClass: MachineLearningRepository },
+  { provide: IMailRepository, useClass: MailRepository },
   { provide: IMemoryRepository, useClass: MemoryRepository },
   { provide: IMetadataRepository, useClass: MetadataRepository },
   { provide: IMetricRepository, useClass: MetricRepository },
