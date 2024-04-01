@@ -26,6 +26,8 @@ import { newLibraryRepositoryMock } from 'test/repositories/library.repository.m
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
 import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
 import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
+import {INotificationRepository} from "../interfaces/notification.interface";
+import {newNotificationRepositoryMock} from "../../test/repositories/notification.repository.mock";
 
 const makeDeletedAt = (daysAgo: number) => {
   const deletedAt = new Date();
@@ -43,6 +45,7 @@ describe(UserService.name, () => {
   let libraryMock: jest.Mocked<ILibraryRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
   let configMock: jest.Mocked<ISystemConfigRepository>;
+  let notificationMock: jest.Mocked<INotificationRepository>;
 
   beforeEach(() => {
     albumMock = newAlbumRepositoryMock();
@@ -52,8 +55,9 @@ describe(UserService.name, () => {
     libraryMock = newLibraryRepositoryMock();
     storageMock = newStorageRepositoryMock();
     userMock = newUserRepositoryMock();
+    notificationMock = newNotificationRepositoryMock();
 
-    sut = new UserService(albumMock, cryptoRepositoryMock, jobMock, libraryMock, storageMock, configMock, userMock);
+    sut = new UserService(albumMock, cryptoRepositoryMock, jobMock, libraryMock, storageMock, configMock, userMock, notificationMock);
 
     when(userMock.get).calledWith(authStub.admin.user.id, {}).mockResolvedValue(userStub.admin);
     when(userMock.get).calledWith(authStub.admin.user.id, { withDeleted: true }).mockResolvedValue(userStub.admin);

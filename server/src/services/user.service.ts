@@ -11,6 +11,11 @@ import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IEntityJob, IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
 import { ILibraryRepository } from 'src/interfaces/library.interface';
+import {
+  INotificationRepository,
+  NotificationName,
+  UserCreatedNotification,
+} from 'src/interfaces/notification.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 import { IUserRepository, UserFindOptions } from 'src/interfaces/user.interface';
@@ -31,6 +36,7 @@ export class UserService {
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
+    @Inject(INotificationRepository) private notificationRepository: INotificationRepository,
   ) {
     this.userCore = UserCore.create(cryptoRepository, libraryRepository, userRepository);
     this.configCore = SystemConfigCore.create(configRepository);
@@ -55,7 +61,17 @@ export class UserService {
   }
 
   create(createUserDto: CreateUserDto): Promise<UserResponseDto> {
-    return this.userCore.createUser(createUserDto).then(mapUser);
+    return this.userCore.createUser(createUserDto).then((userEntity: UserEntity) => {
+      const userDto = mapUser(userEntity);
+
+      // QUESTION: Should we do this here or in `user.core.ts`?
+      return this.notificationRepository
+        .notify<UserCreatedNotification>(NotificationName.NOTIFY_USER_INVITE, {
+          user: userDto,
+          tempPassword: userEntity.shouldChangePassword ? createUserDto.password : undefined,
+        })
+        .then(() => userDto);
+    });
   }
 
   async update(auth: AuthDto, dto: UpdateUserDto): Promise<UserResponseDto> {
