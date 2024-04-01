@@ -15,7 +15,6 @@ Hardware and software requirements for Immich
 Immich requires the command `docker compose` - the similarly named `docker-compose` is [deprecated](https://docs.docker.com/compose/migrate/) and is no longer compatible with Immich.
 :::
 
-:::
 :::info Podman
 You can also use Podman to run the application. However, additional configuration might be required.
 :::
