@@ -6,22 +6,21 @@ import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
+from functools import partial
 from typing import Any, AsyncGenerator, Callable, Iterator
-from zipfile import BadZipFile
 
 import orjson
 from fastapi import Depends, FastAPI, Form, HTTPException, UploadFile
 from fastapi.responses import ORJSONResponse
-from onnxruntime.capi.onnxruntime_pybind11_state import InvalidProtobuf, NoSuchFile
 from starlette.formparsers import MultiPartParser
-
-from app.models.base import InferenceModel
 
 from .config import PreloadModelData, log, settings
 from .models.cache import ModelCache
 from .schemas import (
     MessageResponse,
+    ModelTask,
     ModelType,
+    Predictor,
     TextResponse,
 )
 
@@ -63,12 +62,21 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
         gc.collect()
 
 
-async def preload_models(preload_models: PreloadModelData) -> None:
-    log.info(f"Preloading models: {preload_models}")
-    if preload_models.clip is not None:
-        await load(await model_cache.get(preload_models.clip, ModelType.CLIP))
-    if preload_models.facial_recognition is not None:
-        await load(await model_cache.get(preload_models.facial_recognition, ModelType.FACIAL_RECOGNITION))
+async def preload_models(preload: PreloadModelData) -> None:
+    log.info(f"Preloading models: {preload}")
+    if preload.clip is not None:
+        model = await model_cache.get(preload.clip, ModelType.TEXTUAL, ModelTask.SEARCH)
+        await load(model)
+
+        model = await model_cache.get(preload.clip, ModelType.VISUAL, ModelTask.SEARCH)
+        await load(model)
+
+    if preload.facial_recognition is not None:
+        model = await model_cache.get(preload.facial_recognition, ModelType.DETECTION, ModelTask.FACIAL_RECOGNITION)
+        await load(model)
+
+        model = await model_cache.get(preload.facial_recognition, ModelType.RECOGNITION, ModelTask.FACIAL_RECOGNITION)
+        await load(model)
 
 
 def update_state() -> Iterator[None]:
@@ -98,6 +106,7 @@ def ping() -> str:
 async def predict(
     model_name: str = Form(alias="modelName"),
     model_type: ModelType = Form(alias="modelType"),
+    model_task: ModelTask = Form(alias="modelTask"),
     options: str = Form(default="{}"),
     text: str | None = Form(default=None),
     image: UploadFile | None = None,
@@ -113,39 +122,30 @@ async def predict(
     except orjson.JSONDecodeError:
         raise HTTPException(400, f"Invalid options JSON: {options}")
 
-    model = await load(await model_cache.get(model_name, model_type, ttl=settings.model_ttl, **kwargs))
-    model.configure(**kwargs)
-    outputs = await run(model.predict, inputs)
+    model = await model_cache.get(model_name, model_type, model_task, ttl=settings.model_ttl, **kwargs)
+    model = await load(model)
+    outputs = await run(model.predict, inputs, **kwargs)
     return ORJSONResponse(outputs)
 
 
-async def run(func: Callable[..., Any], inputs: Any) -> Any:
+async def run(func: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
     if thread_pool is None:
-        return func(inputs)
-    return await asyncio.get_running_loop().run_in_executor(thread_pool, func, inputs)
+        return func(*args, **kwargs)
+    partial_func = partial(func, *args, **kwargs)
+    return await asyncio.get_running_loop().run_in_executor(thread_pool, partial_func)
 
 
-async def load(model: InferenceModel) -> InferenceModel:
+async def load(model: Predictor) -> Predictor:
     if model.loaded:
         return model
 
-    def _load(model: InferenceModel) -> None:
+    def _load(model: Predictor) -> Predictor:
         with lock:
             model.load()
+        return model
 
-    try:
-        await run(_load, model)
-        return model
-    except (OSError, InvalidProtobuf, BadZipFile, NoSuchFile):
-        log.warning(
-            (
-                f"Failed to load {model.model_type.replace('_', ' ')} model '{model.model_name}'."
-                "Clearing cache and retrying."
-            )
-        )
-        model.clear_cache()
-        await run(_load, model)
-        return model
+    await run(_load, model)
+    return model
 
 
 async def idle_shutdown_task() -> None:

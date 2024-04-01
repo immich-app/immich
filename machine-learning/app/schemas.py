@@ -3,7 +3,7 @@ from typing import Any, Protocol, TypedDict, TypeGuard
 
 import numpy as np
 import numpy.typing as npt
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class StrEnum(str, Enum):
@@ -28,26 +28,60 @@ class BoundingBox(TypedDict):
     y2: int
 
 
-class ModelType(StrEnum):
-    CLIP = "clip"
+class ModelTask(StrEnum):
     FACIAL_RECOGNITION = "facial-recognition"
+    SEARCH = "clip"
 
 
-class ModelRuntime(StrEnum):
-    ONNX = "onnx"
+class ModelType(StrEnum):
+    DETECTION = "detection"
+    PIPELINE = "pipeline"
+    RECOGNITION = "recognition"
+    TEXTUAL = "textual"
+    VISUAL = "visual"
+
+
+class ModelFormat(StrEnum):
     ARMNN = "armnn"
+    ONNX = "onnx"
+
+
+class ModelSource(StrEnum):
+    INSIGHTFACE = "insightface"
+    MCLIP = "mclip"
+    OPENCLIP = "openclip"
+
+
+class ModelSession(Protocol):
+    def run(
+        self,
+        output_names: list[str] | None,
+        input_feed: dict[str, npt.NDArray[np.float32]] | dict[str, npt.NDArray[np.int32]],
+        run_options: Any = None,
+    ) -> list[npt.NDArray[np.float32]]: ...
+
+
+class Predictor(Protocol):
+    loaded: bool
+
+    def load(self) -> None: ...
+
+    def predict(self, inputs: Any, **model_kwargs: Any) -> Any: ...
 
 
 class HasProfiling(Protocol):
     profiling: dict[str, float]
 
 
-class Face(TypedDict):
-    boundingBox: BoundingBox
-    embedding: npt.NDArray[np.float32]
-    imageWidth: int
-    imageHeight: int
+class DetectedFace(TypedDict):
+    box: BoundingBox
     score: float
+    landmarks: npt.NDArray[np.float32] | None
+
+
+class RecognizedFace(TypedDict):
+    box: BoundingBox
+    embedding: npt.NDArray[np.float32]
 
 
 def has_profiling(obj: Any) -> TypeGuard[HasProfiling]:
