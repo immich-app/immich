@@ -79,7 +79,7 @@
       canvas2.height,
     );
 
-    downloadImage(canvas2);
+    await downloadImage(canvas2);
   };
 
   const createCanvas = (width: number, height: number): HTMLCanvasElement => {
@@ -148,52 +148,55 @@
     };
   };
 
-  const downloadImage = (canvas: HTMLCanvasElement) => {
-    window.setTimeout(async () => {
-      let exifBlob: Blob | null = null;
+  const downloadImage = async (canvas: HTMLCanvasElement) => {
+    let exifBlob: Blob | null = null;
 
-      const blob: Blob | null = await new Promise((resolve) => {
-        canvas.toBlob(
-          (blob) => {
-            if (blob) {
-              resolve(blob);
-            }
-          },
-          assetBlob.type,
-          1,
-        );
-      });
+    const blob: Blob | null = await new Promise((resolve) => {
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            resolve(blob);
+          }
+        },
+        assetBlob.type,
+        1,
+      );
+    });
 
-      if (!blob) {
-        isRendering = false;
-        // Error handling
-        return;
-      }
-
-      // Copy exif data for supported image types
-      // TODO: Support more image types
-
-      switch (assetBlob.type) {
-        case 'image/jpeg': {
-          //exifBlob = await copyExifWithoutOrientation(assetBlob, blob);
-          exifBlob = await copyExif(assetBlob, blob);
-          break;
-        }
-        default: {
-          exifBlob = blob;
-          break;
-        }
-      }
-
-      const dataURL = URL.createObjectURL(exifBlob);
-      const link = document.createElement('a');
-      link.href = dataURL;
-      link.download = assetName;
-      link.click();
-
-      console.log('currentEdit', currentEdit());
-
+    if (!blob) {
       isRendering = false;
-    }, 0);
+      // Error handling
+      return;
+    }
+
+    // Copy exif data for supported image types
+    // TODO: Support more image types
+
+    switch (assetBlob.type) {
+      case 'image/jpeg': {
+        //exifBlob = await copyExifWithoutOrientation(assetBlob, blob);
+        exifBlob = await copyExif(assetBlob, blob);
+        break;
+      }
+      default: {
+        exifBlob = blob;
+        break;
+      }
+    }
+    window.setTimeout(
+      (exifBlob: Blob) => {
+        const dataURL = URL.createObjectURL(exifBlob);
+        const link = document.createElement('a');
+        link.href = dataURL;
+        link.download = assetName;
+        link.click();
+
+        console.log('currentEdit', currentEdit());
+
+        isRendering = false;
+      },
+      0,
+      exifBlob,
+    );
   };
 </script>
