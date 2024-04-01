@@ -358,6 +358,32 @@ class SystemConfigServerDto {
   loginPageMessage!: string;
 }
 
+export class SystemConfigSmtpTransportDto {
+  @IsString()
+  host!: string;
+  @IsNumber()
+  port!: number;
+  @IsString()
+  username!: string;
+  @IsString()
+  password!: string;
+}
+
+export class SystemConfigSmtpDefaultsDto {
+  @IsString()
+  from!: string;
+}
+export class SystemConfigSmtpDto {
+  @Type(() => SystemConfigSmtpTransportDto)
+  @ValidateNested()
+  @IsObject()
+  transport!: SystemConfigSmtpTransportDto;
+  @Type(() => SystemConfigSmtpDefaultsDto)
+  @ValidateNested()
+  @IsObject()
+  defaults!: SystemConfigSmtpDefaultsDto;
+}
+
 class SystemConfigStorageTemplateDto {
   @ValidateBoolean()
   enabled!: boolean;
@@ -513,6 +539,11 @@ export class SystemConfigDto implements SystemConfig {
   @ValidateNested()
   @IsObject()
   server!: SystemConfigServerDto;
+
+  @Type(() => SystemConfigSmtpDto)
+  @ValidateNested()
+  @IsObject()
+  smtp!: SystemConfigSmtpDto;
 
   @Type(() => SystemConfigUserDto)
   @ValidateNested()

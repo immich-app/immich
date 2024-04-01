@@ -10244,6 +10244,9 @@
           "server": {
             "$ref": "#/components/schemas/SystemConfigServerDto"
           },
+          "smtp": {
+            "$ref": "#/components/schemas/SystemConfigSmtpDto"
+          },
           "storageTemplate": {
             "$ref": "#/components/schemas/SystemConfigStorageTemplateDto"
           },
@@ -10270,6 +10273,7 @@
           "passwordLogin",
           "reverseGeocoding",
           "server",
+          "smtp",
           "storageTemplate",
           "theme",
           "trash",
@@ -10654,6 +10658,55 @@
         "required": [
           "externalDomain",
           "loginPageMessage"
+        ],
+        "type": "object"
+      },
+      "SystemConfigSmtpDefaultsDto": {
+        "properties": {
+          "from": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "from"
+        ],
+        "type": "object"
+      },
+      "SystemConfigSmtpDto": {
+        "properties": {
+          "defaults": {
+            "$ref": "#/components/schemas/SystemConfigSmtpDefaultsDto"
+          },
+          "transport": {
+            "$ref": "#/components/schemas/SystemConfigSmtpTransportDto"
+          }
+        },
+        "required": [
+          "defaults",
+          "transport"
+        ],
+        "type": "object"
+      },
+      "SystemConfigSmtpTransportDto": {
+        "properties": {
+          "host": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "port": {
+            "type": "number"
+          },
+          "username": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "host",
+          "password",
+          "port",
+          "username"
         ],
         "type": "object"
       },

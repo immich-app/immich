@@ -95,6 +95,13 @@ export enum SystemConfigKey {
   SERVER_EXTERNAL_DOMAIN = 'server.externalDomain',
   SERVER_LOGIN_PAGE_MESSAGE = 'server.loginPageMessage',
 
+  SMTP_TRANSPORT = 'smtp.transport.',
+  SMTP_TRANSPORT_HOST = 'smtp.transport.host',
+  SMTP_TRANSPORT_PORT = 'smtp.transport.port',
+  SMTP_TRANSPORT_USERNAME = 'smtp.transport.username',
+  SMTP_TRANSPORT_PASSWORD = 'smtp.transport.password',
+  SMTP_DEFAULTS_FROM = 'smtp.defaults.from',
+
   STORAGE_TEMPLATE_ENABLED = 'storageTemplate.enabled',
   STORAGE_TEMPLATE_HASH_VERIFICATION_ENABLED = 'storageTemplate.hashVerificationEnabled',
   STORAGE_TEMPLATE = 'storageTemplate.template',
@@ -284,6 +291,17 @@ export interface SystemConfig {
   server: {
     externalDomain: string;
     loginPageMessage: string;
+  };
+  smtp: {
+    transport: {
+      host: string;
+      port: number;
+      username: string;
+      password: string;
+    };
+    defaults: {
+      from: string;
+    };
   };
   user: {
     deleteDelay: number;
