@@ -4,7 +4,7 @@ set -o pipefail
 
 create_immich_directory() { local -r Tgt='./immich-app'
   echo "Creating Immich directory..."
-  if [[ -e "$Tgt" ]]; then
+  if [[ -e $Tgt ]]; then
     echo "Found existing directory $Tgt, will overwrite YAML files"
   else
     mkdir "$Tgt" || return
@@ -22,19 +22,21 @@ download_dot_env_file() {
   "${Curl[@]}" "$RepoUrl"/example.env -o ./.env
 }
 
-start_docker_compose() { local -a docker_bin
+start_docker_compose() {
   echo "Starting Immich's docker containers"
 
-  if docker compose >/dev/null 2>&1; then
-    docker_bin=(docker compose)
-  elif docker-compose >/dev/null 2>&1; then
-    docker_bin=(docker-compose)
-  else
-    echo "Cannot find \`docker compose\` or \`docker-compose\`."
+  if ! docker compose >/dev/null 2>&1; then
+    echo "failed to find 'docker compose'"
     return 1
+    # docker_bin=(docker compose)
+#  elif docker-compose >/dev/null 2>&1; then
+#    docker_bin=(docker-compose)
+#  else
+#    echo "Cannot find 'docker compose'." # or \`docker-compose\`."
+#    return 1
   fi
 
-  if ! "${docker_bin[@]}" up --remove-orphans -d; then
+  if ! docker compose up --remove-orphans -d; then
     echo "Could not start. Check for errors above."
     return 1
   fi
@@ -50,11 +52,11 @@ You can access the website at http://$ip_address:2283 and the server URL for the
 ---------------------------------------------------
 If you want to configure custom information of the server, including the database, Redis information, or the backup (or upload) location, etc. 
   
-  1. First bring down the containers with the command '${docker_bin[@]} down' in the immich-app directory, 
+  1. First bring down the containers with the command 'docker compose down' in the immich-app directory, 
   
   2. Then change the information that fits your needs in the '.env' file, 
   
-  3. Finally, bring the containers back up with the command '${docker_bin[@]} up --remove-orphans -d' in the immich-app directory
+  3. Finally, bring the containers back up with the command 'docker compose up --remove-orphans -d' in the immich-app directory
 EOF
 }
 
