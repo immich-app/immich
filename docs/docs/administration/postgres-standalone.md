@@ -1,4 +1,4 @@
-# Preparing a pre-existing Postgres server
+# Pre-existing Postgres
 
 While not officially recommended, it is possible to run Immich using a pre-existing Postgres server. To use this setup, you should have a baseline level of familiarity with Postgres and the Linux command line. If you do not have these, we recommend using the default setup with a dedicated Postgres container.
 
@@ -45,7 +45,7 @@ CREATE EXTENSION vectors;
 CREATE EXTENSION earthdistance CASCADE;
 ALTER DATABASE <immichdatabasename> SET search_path TO "$user", public, vectors;
 GRANT USAGE ON SCHEMA vectors TO <immichdbusername>;
-GRANT SELECT ON TABLE pg_vector_index_stat to <immichdbusername>;
+ALTER DEFAULT PRIVILEGES IN SCHEMA vectors GRANT SELECT ON TABLES TO <immichdbusername>;
 COMMIT;
 ```
 
