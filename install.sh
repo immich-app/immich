@@ -28,12 +28,6 @@ start_docker_compose() {
   if ! docker compose >/dev/null 2>&1; then
     echo "failed to find 'docker compose'"
     return 1
-    # docker_bin=(docker compose)
-#  elif docker-compose >/dev/null 2>&1; then
-#    docker_bin=(docker-compose)
-#  else
-#    echo "Cannot find 'docker compose'." # or \`docker-compose\`."
-#    return 1
   fi
 
   if ! docker compose up --remove-orphans -d; then
