@@ -57,15 +57,22 @@ EOF
 # MAIN
 main() {
   echo "Starting Immich installation..."
-  local -ra Curl=(curl -fsSL)
-  command -v curl >/dev/null || { echo 'no curl binary found; please install curl and try again'; return 14; }
   local -r RepoUrl='https://github.com/immich-app/immich/releases/latest/download'
+  local -a Curl
+  if command -v curl >/dev/null; then
+    Curl=(curl -fsSL)
+  else
+    echo 'no curl binary found; please install curl and try again'
+    return 14
+  fi
 
   create_immich_directory || { echo 'error creating Immich directory'; return 10; }
   download_docker_compose_file || { echo 'error downloading Docker Compose file'; return 11; }
   download_dot_env_file || { echo 'error downloading .env'; return 12; }
-  start_docker_compose || return 13
+  start_docker_compose || { echo 'error starting Docker'; return 13; }
   return 0; }
 
 main
-exit
+Exit=$?
+[[ $Exit == 0 ]] || echo "There was an error installing Immich. Exit code: $Exit. Please provide these logs when asking for assistance."
+exit "$Exit"
