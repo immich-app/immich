@@ -56,4 +56,4 @@ A remote reverse proxy like [Cloudflare](https://www.cloudflare.com/learning/cdn
 ### Cons
 
 - Complex configuration
-- Depending on your configuration, both the Immich web interface and API may be exposed to the internet. Immich is under very active developement and the existence of severe security vulnerabilities cannot be ruled out.
+- Depending on your configuration, both the Immich web interface and API may be exposed to the internet. Immich is under very active development and the existence of severe security vulnerabilities cannot be ruled out.
