@@ -286,7 +286,15 @@
     $restartSlideshowProgress = true;
   };
 
-  const navigateAsset = async (order: 'previous' | 'next', e?: Event) => {
+  const navigateAsset = async (order?: 'previous' | 'next', e?: Event) => {
+    if (!order) {
+      if ($slideshowState === SlideshowState.PlaySlideshow) {
+        order = $slideshowNavigation === SlideshowNavigation.AscendingOrder ? 'previous' : 'next';
+      } else {
+        return;
+      }
+    }
+
     if ($slideshowState === SlideshowState.PlaySlideshow && $slideshowNavigation === SlideshowNavigation.Shuffle) {
       return (order === 'previous' ? slideshowHistory.previous() : slideshowHistory.next()) || navigateAssetRandom();
     }
@@ -446,12 +454,6 @@
     }
   };
 
-  const handleVideoEnded = async () => {
-    if ($slideshowState === SlideshowState.PlaySlideshow) {
-      await navigateAsset('next');
-    }
-  };
-
   const handlePlaySlideshow = async () => {
     try {
       await assetViewerHtmlElement.requestFullscreen();
@@ -464,6 +466,7 @@
   const handleStopSlideshow = async () => {
     try {
       if (document.fullscreenElement) {
+        document.body.style.cursor = '';
         await document.exitFullscreen();
       }
     } catch (error) {
@@ -588,7 +591,7 @@
             <VideoViewer
               assetId={previewStackedAsset.id}
               on:close={closeViewer}
-              on:onVideoEnded={handleVideoEnded}
+              on:onVideoEnded={() => navigateAsset()}
               on:onVideoStarted={handleVideoStarted}
             />
           {/if}
@@ -621,7 +624,7 @@
             <VideoViewer
               assetId={asset.id}
               on:close={closeViewer}
-              on:onVideoEnded={handleVideoEnded}
+              on:onVideoEnded={() => navigateAsset()}
               on:onVideoStarted={handleVideoStarted}
             />
           {/if}

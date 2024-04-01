@@ -115,7 +115,13 @@ export class StorageCore {
   }
 
   static isImmichPath(path: string) {
-    return resolve(path).startsWith(resolve(APP_MEDIA_LOCATION));
+    const resolvedPath = resolve(path);
+    const resolvedAppMediaLocation = resolve(APP_MEDIA_LOCATION);
+    const normalizedPath = resolvedPath.endsWith('/') ? resolvedPath : resolvedPath + '/';
+    const normalizedAppMediaLocation = resolvedAppMediaLocation.endsWith('/')
+      ? resolvedAppMediaLocation
+      : resolvedAppMediaLocation + '/';
+    return normalizedPath.startsWith(normalizedAppMediaLocation);
   }
 
   static isGeneratedAsset(path: string) {
