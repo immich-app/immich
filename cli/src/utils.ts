@@ -15,21 +15,25 @@ export interface BaseOptions {
 export type AuthDto = { url: string; key: string };
 type OldAuthDto = { instanceUrl: string; apiKey: string };
 
-export const authenticate = async (options: BaseOptions): Promise<void> => {
+export const authenticate = async (options: BaseOptions): Promise<AuthDto> => {
   const { configDirectory: configDir, url, key } = options;
 
   // provided in command
   if (url && key) {
-    await connect(url, key);
-    return;
+    return connect(url, key);
   }
 
   // fallback to auth file
   const config = await readAuthFile(configDir);
-  await connect(config.url, config.key);
+  const auth = await connect(config.url, config.key);
+  if (auth.url !== config.url) {
+    await writeAuthFile(configDir, auth);
+  }
+
+  return auth;
 };
 
-export const connect = async (url: string, key: string): Promise<void> => {
+export const connect = async (url: string, key: string) => {
   const wellKnownUrl = new URL('.well-known/immich', url);
   try {
     const wellKnown = await fetch(wellKnownUrl).then((response) => response.json());
@@ -50,6 +54,8 @@ export const connect = async (url: string, key: string): Promise<void> => {
     logError(error, 'Failed to connect to server');
     process.exit(1);
   }
+
+  return { url, key };
 };
 
 export const logError = (error: unknown, message: string) => {

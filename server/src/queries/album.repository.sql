@@ -590,7 +590,7 @@ DELETE FROM "albums_assets_assets"
 WHERE
   "albums_assets_assets"."assetsId" = $1
 
--- AlbumRepository.removeAssets
+-- AlbumRepository.removeAssetIds
 DELETE FROM "albums_assets_assets"
 WHERE
   (
@@ -646,7 +646,7 @@ WHERE
 LIMIT
   1
 
--- AlbumRepository.addAssets
+-- AlbumRepository.addAssetIds
 INSERT INTO
   "albums_assets_assets" ("albumsId", "assetsId")
 VALUES

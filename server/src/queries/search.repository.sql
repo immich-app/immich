@@ -254,15 +254,15 @@ WHERE
   OR f_unaccent ("admin1Name") %>> f_unaccent ($1)
   OR f_unaccent ("alternateNames") %>> f_unaccent ($1)
 ORDER BY
-  COALESCE(f_unaccent (name) <->>> f_unaccent ($1), 0) + COALESCE(
+  COALESCE(f_unaccent (name) <->>> f_unaccent ($1), 0.1) + COALESCE(
     f_unaccent ("admin2Name") <->>> f_unaccent ($1),
-    0
+    0.1
   ) + COALESCE(
     f_unaccent ("admin1Name") <->>> f_unaccent ($1),
-    0
+    0.1
   ) + COALESCE(
     f_unaccent ("alternateNames") <->>> f_unaccent ($1),
-    0
+    0.1
   ) ASC
 LIMIT
   20
@@ -278,7 +278,7 @@ WITH RECURSIVE
         exif
         INNER JOIN assets ON exif."assetId" = assets.id
       WHERE
-        "ownerId" = ANY ('$1'::uuid [])
+        "ownerId" = ANY ($1::uuid [])
         AND "isVisible" = $2
         AND "isArchived" = $3
         AND type = $4
@@ -302,7 +302,7 @@ WITH RECURSIVE
           INNER JOIN assets ON exif."assetId" = assets.id
         WHERE
           city > c.city
-          AND "ownerId" = ANY ('$1'::uuid [])
+          AND "ownerId" = ANY ($1::uuid [])
           AND "isVisible" = $2
           AND "isArchived" = $3
           AND type = $4

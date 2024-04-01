@@ -31,7 +31,9 @@ import 'package:immich_mobile/modules/login/views/change_password_page.dart';
 import 'package:immich_mobile/modules/login/views/login_page.dart';
 import 'package:immich_mobile/modules/onboarding/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/modules/onboarding/views/permission_onboarding_page.dart';
+import 'package:immich_mobile/modules/search/models/search_filter.dart';
 import 'package:immich_mobile/modules/settings/views/settings_sub_page.dart';
+import 'package:immich_mobile/modules/search/views/search_input_page.dart';
 import 'package:immich_mobile/modules/shared_link/models/shared_link.dart';
 import 'package:immich_mobile/modules/shared_link/views/shared_link_edit_page.dart';
 import 'package:immich_mobile/modules/shared_link/views/shared_link_page.dart';
@@ -43,7 +45,6 @@ import 'package:immich_mobile/modules/search/views/curated_location_page.dart';
 import 'package:immich_mobile/modules/search/views/person_result_page.dart';
 import 'package:immich_mobile/modules/search/views/recently_added_page.dart';
 import 'package:immich_mobile/modules/search/views/search_page.dart';
-import 'package:immich_mobile/modules/search/views/search_result_page.dart';
 import 'package:immich_mobile/modules/settings/views/settings_page.dart';
 import 'package:immich_mobile/routing/auth_guard.dart';
 import 'package:immich_mobile/routing/custom_transition_builders.dart';
@@ -124,10 +125,6 @@ class AppRouter extends _$AppRouter {
     AutoRoute(
       page: BackupControllerRoute.page,
       guards: [_authGuard, _duplicateGuard, _backupPermissionGuard],
-    ),
-    AutoRoute(
-      page: SearchResultRoute.page,
-      guards: [_authGuard, _duplicateGuard],
     ),
     AutoRoute(
       page: CuratedLocationRoute.page,
@@ -222,6 +219,11 @@ class AppRouter extends _$AppRouter {
     AutoRoute(
       page: BackupOptionsRoute.page,
       guards: [_authGuard, _duplicateGuard],
+    ),
+    CustomRoute(
+      page: SearchInputRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+      transitionsBuilder: TransitionsBuilders.noTransition,
     ),
   ];
 }

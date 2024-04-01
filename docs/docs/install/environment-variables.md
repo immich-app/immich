@@ -41,11 +41,9 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 | `IMMICH_REVERSE_GEOCODING_ROOT` | Path of reverse geocoding dump directory     | `/usr/src/resources` | microservices                                |
 
 :::tip
+`TZ` should be set to a `TZ identifier` from [this list](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List). For example, `TZ="Etc/UTC"`.
 
-`TZ` is only used by the `exiftool` as a fallback in case the timezone cannot be determined from the image metadata.
-
-`exiftool` is only present in the microservices container.
-
+`TZ` is only used by `exiftool`, which is present in the microservices container, as a fallback in case the timezone cannot be determined from the image metadata.
 :::
 
 ## Ports
@@ -146,6 +144,18 @@ Redis (Sentinel) URL example JSON before encoding:
 Other machine learning parameters can be tuned from the admin UI.
 
 :::
+
+## Prometheus
+
+| Variable                       | Description                                                                                   | Default | Services              |
+| :----------------------------- | :-------------------------------------------------------------------------------------------- | :-----: | :-------------------- |
+| `IMMICH_METRICS`<sup>\*1</sup> | Toggle all metrics (one of [`true`, `false`])                                                 |         | server, microservices |
+| `IMMICH_API_METRICS`           | Toggle metrics for endpoints and response times (one of [`true`, `false`])                    |         | server, microservices |
+| `IMMICH_HOST_METRICS`          | Toggle metrics for CPU and memory utilization for host and process (one of [`true`, `false`]) |         | server, microservices |
+| `IMMICH_IO_METRICS`            | Toggle metrics for database queries, image processing, etc. (one of [`true`, `false`])        |         | server, microservices |
+| `IMMICH_JOB_METRICS`           | Toggle metrics for jobs and queues (one of [`true`, `false`])                                 |         | server, microservices |
+
+\*1: Overridden for a metric group when its corresponding environmental variable is set.
 
 ## Docker Secrets
 

@@ -9,12 +9,12 @@
 </p>
 
 <p align="center">
-<img src="design/immich-logo-stacked-light.svg" width="300" title="Iniciar sessió amb URL personalitzada">
+<img src="../design/immich-logo-stacked-light.svg" width="300" title="Iniciar sessió amb URL personalitzada">
 </p>
 <h3 align="center">Immich - Solució de còpia de seguretat d'alta rendiment per a fotos i vídeos auto-allotjada</h3>
 <br/>
 <a href="https://immich.app">
-<img src="design/immich-screenshots.png" title="Captura de pantalla principal">
+<img src="../design/immich-screenshots.png" title="Captura de pantalla principal">
 </a>
 <br/>
 <p align="center">

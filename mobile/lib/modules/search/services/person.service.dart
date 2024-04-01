@@ -20,7 +20,7 @@ class PersonService {
 
   PersonService(this._apiService, this._db);
 
-  Future<List<PersonResponseDto>> getCuratedPeople() async {
+  Future<List<PersonResponseDto>> getAllPeople() async {
     try {
       final peopleResponseDto = await _apiService.personApi.getAllPeople();
       return peopleResponseDto?.people ?? [];
