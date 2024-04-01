@@ -631,16 +631,11 @@ export class LibraryService extends EventEmitter {
     this.logger.log(`Refreshing library: ${job.id}`);
 
     const validImportPaths: string[] = [];
-    console.warn('importPaths', library.importPaths);
-    console.warn('importPaths', library.importPaths[0]);
 
     for (const importPath of library.importPaths) {
-      console.warn('importPath', importPath);
-
       const validation = await this.validateImportPath(importPath);
       if (validation.isValid) {
         validImportPaths.push(path.normalize(importPath));
-        console.warn('validImportPaths', importPath);
       } else {
         this.logger.error(`Skipping invalid import path: ${importPath}. Reason: ${validation.message}`);
       }
