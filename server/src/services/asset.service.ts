@@ -184,7 +184,7 @@ export class AssetService {
 
     return Object.keys(groups)
       .map(Number)
-      .sort()
+      .sort((a, b) => a - b)
       .filter((yearsAgo) => yearsAgo > 0)
       .map((yearsAgo) => ({
         yearsAgo,
