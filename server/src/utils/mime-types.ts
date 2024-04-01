@@ -56,6 +56,7 @@ const profile: Record<string, string[]> = Object.fromEntries(
 
 const video: Record<string, string[]> = {
   '.3gp': ['video/3gpp'],
+  '.3gpp': ['video/3gpp'],
   '.avi': ['video/avi', 'video/msvideo', 'video/vnd.avi', 'video/x-msvideo'],
   '.flv': ['video/x-flv'],
   '.insv': ['video/mp4'],
@@ -64,6 +65,8 @@ const video: Record<string, string[]> = {
   '.mkv': ['video/x-matroska'],
   '.mov': ['video/quicktime'],
   '.mp4': ['video/mp4'],
+  '.mpe': ['video/mpeg'],
+  '.mpeg': ['video/mpeg'],
   '.mpg': ['video/mpeg'],
   '.mts': ['video/mp2t'],
   '.webm': ['video/webm'],

@@ -39,7 +39,7 @@ import { makeRandomImage } from 'src/generators';
 import request from 'supertest';
 
 type CliResponse = { stdout: string; stderr: string; exitCode: number | null };
-type EventType = 'assetUpload' | 'assetDelete' | 'userDelete';
+type EventType = 'assetUpload' | 'assetUpdate' | 'assetDelete' | 'userDelete';
 type WaitOptions = { event: EventType; id?: string; total?: number; timeout?: number };
 type AdminSetupOptions = { onboarding?: boolean };
 type AssetData = { bytes?: Buffer; filename: string };
@@ -82,6 +82,7 @@ let client: pg.Client | null = null;
 
 const events: Record<EventType, Set<string>> = {
   assetUpload: new Set<string>(),
+  assetUpdate: new Set<string>(),
   assetDelete: new Set<string>(),
   userDelete: new Set<string>(),
 };
@@ -185,6 +186,7 @@ export const utils = {
       websocket
         .on('connect', () => resolve(websocket))
         .on('on_upload_success', (data: AssetResponseDto) => onEvent({ event: 'assetUpload', id: data.id }))
+        .on('on_asset_update', (data: AssetResponseDto) => onEvent({ event: 'assetUpdate', id: data.id }))
         .on('on_asset_delete', (assetId: string) => onEvent({ event: 'assetDelete', id: assetId }))
         .on('on_user_delete', (userId: string) => onEvent({ event: 'userDelete', id: userId }))
         .connect();
