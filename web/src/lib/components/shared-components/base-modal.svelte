@@ -65,15 +65,13 @@
       tabindex="-1"
     >
       <div class="flex place-items-center justify-between px-5 py-3">
-        <div class="flex items-center">
+        <div class="flex gap-2 place-items-center">
           {#if showLogo}
-            <ImmichLogo noText={true} width={24} />
-            <div class="w-2" />
+            <ImmichLogo noText={true} width={32} />
           {:else if icon}
-            <Icon path={icon} size={24} ariaHidden={true} class="text-immich-primary dark:text-immich-dark-primary" />
-            <div class="w-2" />
+            <Icon path={icon} size={32} ariaHidden={true} class="text-immich-primary dark:text-immich-dark-primary" />
           {/if}
-          <h1 id={`${id}-title`} class="text-xl font-medium text-immich-primary dark:text-immich-dark-primary mt-1">
+          <h1 id={`${id}-title`} class="text-lg mt-[2px]">
             {title}
           </h1>
         </div>
