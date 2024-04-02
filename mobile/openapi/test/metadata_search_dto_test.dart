@@ -151,6 +151,11 @@ void main() {
       // TODO
     });
 
+    // String previewPath
+    test('to test the property `previewPath`', () async {
+      // TODO
+    });
+
     // String resizePath
     test('to test the property `resizePath`', () async {
       // TODO
@@ -173,6 +178,11 @@ void main() {
 
     // DateTime takenBefore
     test('to test the property `takenBefore`', () async {
+      // TODO
+    });
+
+    // String thumbnailPath
+    test('to test the property `thumbnailPath`', () async {
       // TODO
     });
 

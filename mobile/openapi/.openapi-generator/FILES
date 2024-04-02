@@ -72,6 +72,7 @@ doc/FileChecksumResponseDto.md
 doc/FileReportDto.md
 doc/FileReportFixDto.md
 doc/FileReportItemDto.md
+doc/ImageFormat.md
 doc/JobApi.md
 doc/JobCommand.md
 doc/JobCommandDto.md
@@ -89,7 +90,12 @@ doc/LoginResponseDto.md
 doc/LogoutResponseDto.md
 doc/MapMarkerResponseDto.md
 doc/MapTheme.md
+doc/MemoryApi.md
+doc/MemoryCreateDto.md
 doc/MemoryLaneResponseDto.md
+doc/MemoryResponseDto.md
+doc/MemoryType.md
+doc/MemoryUpdateDto.md
 doc/MergePersonDto.md
 doc/MetadataSearchDto.md
 doc/ModelType.md
@@ -145,6 +151,7 @@ doc/SmartSearchDto.md
 doc/SystemConfigApi.md
 doc/SystemConfigDto.md
 doc/SystemConfigFFmpegDto.md
+doc/SystemConfigImageDto.md
 doc/SystemConfigJobDto.md
 doc/SystemConfigLibraryDto.md
 doc/SystemConfigLibraryScanDto.md
@@ -160,7 +167,6 @@ doc/SystemConfigServerDto.md
 doc/SystemConfigStorageTemplateDto.md
 doc/SystemConfigTemplateStorageOptionDto.md
 doc/SystemConfigThemeDto.md
-doc/SystemConfigThumbnailDto.md
 doc/SystemConfigTrashDto.md
 doc/SystemConfigUserDto.md
 doc/TagApi.md
@@ -204,6 +210,7 @@ lib/api/download_api.dart
 lib/api/face_api.dart
 lib/api/job_api.dart
 lib/api/library_api.dart
+lib/api/memory_api.dart
 lib/api/o_auth_api.dart
 lib/api/partner_api.dart
 lib/api/person_api.dart
@@ -284,6 +291,7 @@ lib/model/file_checksum_response_dto.dart
 lib/model/file_report_dto.dart
 lib/model/file_report_fix_dto.dart
 lib/model/file_report_item_dto.dart
+lib/model/image_format.dart
 lib/model/job_command.dart
 lib/model/job_command_dto.dart
 lib/model/job_counts_dto.dart
@@ -299,7 +307,11 @@ lib/model/login_response_dto.dart
 lib/model/logout_response_dto.dart
 lib/model/map_marker_response_dto.dart
 lib/model/map_theme.dart
+lib/model/memory_create_dto.dart
 lib/model/memory_lane_response_dto.dart
+lib/model/memory_response_dto.dart
+lib/model/memory_type.dart
+lib/model/memory_update_dto.dart
 lib/model/merge_person_dto.dart
 lib/model/metadata_search_dto.dart
 lib/model/model_type.dart
@@ -348,6 +360,7 @@ lib/model/smart_info_response_dto.dart
 lib/model/smart_search_dto.dart
 lib/model/system_config_dto.dart
 lib/model/system_config_f_fmpeg_dto.dart
+lib/model/system_config_image_dto.dart
 lib/model/system_config_job_dto.dart
 lib/model/system_config_library_dto.dart
 lib/model/system_config_library_scan_dto.dart
@@ -363,7 +376,6 @@ lib/model/system_config_server_dto.dart
 lib/model/system_config_storage_template_dto.dart
 lib/model/system_config_template_storage_option_dto.dart
 lib/model/system_config_theme_dto.dart
-lib/model/system_config_thumbnail_dto.dart
 lib/model/system_config_trash_dto.dart
 lib/model/system_config_user_dto.dart
 lib/model/tag_response_dto.dart
@@ -461,6 +473,7 @@ test/file_checksum_response_dto_test.dart
 test/file_report_dto_test.dart
 test/file_report_fix_dto_test.dart
 test/file_report_item_dto_test.dart
+test/image_format_test.dart
 test/job_api_test.dart
 test/job_command_dto_test.dart
 test/job_command_test.dart
@@ -478,7 +491,12 @@ test/login_response_dto_test.dart
 test/logout_response_dto_test.dart
 test/map_marker_response_dto_test.dart
 test/map_theme_test.dart
+test/memory_api_test.dart
+test/memory_create_dto_test.dart
 test/memory_lane_response_dto_test.dart
+test/memory_response_dto_test.dart
+test/memory_type_test.dart
+test/memory_update_dto_test.dart
 test/merge_person_dto_test.dart
 test/metadata_search_dto_test.dart
 test/model_type_test.dart
@@ -534,6 +552,7 @@ test/smart_search_dto_test.dart
 test/system_config_api_test.dart
 test/system_config_dto_test.dart
 test/system_config_f_fmpeg_dto_test.dart
+test/system_config_image_dto_test.dart
 test/system_config_job_dto_test.dart
 test/system_config_library_dto_test.dart
 test/system_config_library_scan_dto_test.dart
@@ -549,7 +568,6 @@ test/system_config_server_dto_test.dart
 test/system_config_storage_template_dto_test.dart
 test/system_config_template_storage_option_dto_test.dart
 test/system_config_theme_dto_test.dart
-test/system_config_thumbnail_dto_test.dart
 test/system_config_trash_dto_test.dart
 test/system_config_user_dto_test.dart
 test/tag_api_test.dart

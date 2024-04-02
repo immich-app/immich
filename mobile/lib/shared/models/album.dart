@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/models/user.dart';
+import 'package:immich_mobile/utils/datetime_comparison.dart';
 import 'package:isar/isar.dart';
 import 'package:openapi/api.dart';
 import 'package:photo_manager/photo_manager.dart';
@@ -72,21 +73,18 @@ class Album {
   @override
   bool operator ==(other) {
     if (other is! Album) return false;
-
-    final lastModifiedAssetTimestampIsSetAndEqual =
-        lastModifiedAssetTimestamp != null &&
-                other.lastModifiedAssetTimestamp != null
-            ? lastModifiedAssetTimestamp!
-                .isAtSameMomentAs(other.lastModifiedAssetTimestamp!)
-            : true;
-
     return id == other.id &&
         remoteId == other.remoteId &&
         localId == other.localId &&
         name == other.name &&
         createdAt.isAtSameMomentAs(other.createdAt) &&
         modifiedAt.isAtSameMomentAs(other.modifiedAt) &&
-        lastModifiedAssetTimestampIsSetAndEqual &&
+        isAtSameMomentAs(startDate, other.startDate) &&
+        isAtSameMomentAs(endDate, other.endDate) &&
+        isAtSameMomentAs(
+          lastModifiedAssetTimestamp,
+          other.lastModifiedAssetTimestamp,
+        ) &&
         shared == other.shared &&
         activityEnabled == other.activityEnabled &&
         owner.value == other.owner.value &&
@@ -104,6 +102,8 @@ class Album {
       name.hashCode ^
       createdAt.hashCode ^
       modifiedAt.hashCode ^
+      startDate.hashCode ^
+      endDate.hashCode ^
       lastModifiedAssetTimestamp.hashCode ^
       shared.hashCode ^
       activityEnabled.hashCode ^
