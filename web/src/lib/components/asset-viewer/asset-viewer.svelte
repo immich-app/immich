@@ -11,7 +11,7 @@
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { stackAssetsStore } from '$lib/stores/stacked-asset.store';
   import { user } from '$lib/stores/user.store';
-  import { getAssetJobMessage, getKey, handlePromiseError, isSharedLink } from '$lib/utils';
+  import { getAssetJobMessage, getSharedLink, handlePromiseError, isSharedLink } from '$lib/utils';
   import { addAssetsToAlbum, addAssetsToNewAlbum, downloadFile } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { shortcuts } from '$lib/utils/shortcut';
@@ -26,14 +26,12 @@
     getActivities,
     getActivityStatistics,
     getAllAlbums,
-    getMySharedLink,
     runAssetJobs,
     updateAsset,
     updateAssets,
     type ActivityResponseDto,
     type AlbumResponseDto,
     type AssetResponseDto,
-    type SharedLinkResponseDto,
   } from '@immich/sdk';
   import { mdiChevronLeft, mdiChevronRight, mdiImageBrokenVariant } from '@mdi/js';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
@@ -57,7 +55,6 @@
   export let asset: AssetResponseDto;
   export let preloadAssets: AssetResponseDto[] = [];
   export let showNavigation = true;
-  export let sharedLink: SharedLinkResponseDto | undefined = undefined;
   $: isTrashEnabled = $featureFlags.trash;
   export let withStacked = false;
   export let isShared = false;
@@ -87,7 +84,8 @@
   let addToSharedAlbum = true;
   let shouldPlayMotionPhoto = false;
   let isShowProfileImageCrop = false;
-  $: shouldShowDownloadButton = sharedLink ? sharedLink.allowDownload : !asset.isOffline;
+  let sharedLink = getSharedLink();
+  let shouldShowDownloadButton = sharedLink ? sharedLink.allowDownload : !asset.isOffline;
   let shouldShowDetailButton = asset.hasMetadata;
   let shouldShowShareModal = !asset.isTrashed;
   let canCopyImagesToClipboard: boolean;
@@ -192,10 +190,6 @@
   }
 
   onMount(async () => {
-    if (isSharedLink()) {
-      sharedLink = await getMySharedLink({ key: getKey() });
-    }
-
     slideshowStateUnsubscribe = slideshowState.subscribe((value) => {
       if (value === SlideshowState.PlaySlideshow) {
         slideshowHistory.reset();
