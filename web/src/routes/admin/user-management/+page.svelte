@@ -21,7 +21,14 @@
   import { asByteUnitString } from '$lib/utils/byte-units';
   import { copyToClipboard } from '$lib/utils';
   import { UserStatus, getAllUsers, type UserResponseDto } from '@immich/sdk';
-  import { mdiClose, mdiContentCopy, mdiDeleteRestore, mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
+  import {
+    mdiAccountEditOutline,
+    mdiClose,
+    mdiContentCopy,
+    mdiDeleteRestore,
+    mdiPencilOutline,
+    mdiTrashCanOutline,
+  } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { onMount } from 'svelte';
   import type { PageData } from './$types';
@@ -116,13 +123,23 @@
   <section id="setting-content" class="flex place-content-center sm:mx-4">
     <section class="w-full pb-28 lg:w-[850px]">
       {#if shouldShowCreateUserForm}
-        <FullScreenModal onClose={() => (shouldShowCreateUserForm = false)}>
+        <FullScreenModal
+          id="create-new-user"
+          title="Create new user"
+          showLogo
+          onClose={() => (shouldShowCreateUserForm = false)}
+        >
           <CreateUserForm on:submit={onUserCreated} on:cancel={() => (shouldShowCreateUserForm = false)} />
         </FullScreenModal>
       {/if}
 
       {#if shouldShowEditUserForm}
-        <FullScreenModal onClose={() => (shouldShowEditUserForm = false)}>
+        <FullScreenModal
+          id="edit-user"
+          title="Edit user"
+          icon={mdiAccountEditOutline}
+          onClose={() => (shouldShowEditUserForm = false)}
+        >
           <EditUserForm
             user={selectedUser}
             bind:newPassword

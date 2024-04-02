@@ -12,7 +12,7 @@
   import SearchBar from '../elements/search-bar.svelte';
   import { listNavigation } from '$lib/utils/list-navigation';
 
-  export const title = 'Change Location';
+  export const title = 'Change location';
   export let asset: AssetResponseDto | undefined = undefined;
 
   interface Point {
@@ -97,7 +97,7 @@
 <ConfirmDialogue
   confirmColor="primary"
   cancelColor="secondary"
-  title="Change Location"
+  {title}
   width={800}
   onConfirm={handleConfirm}
   onClose={handleCancel}

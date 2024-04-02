@@ -1,15 +1,12 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import { AppRoute } from '$lib/constants';
   import { serverInfo } from '$lib/stores/server-info.store';
   import { convertFromBytes, convertToBytes } from '$lib/utils/byte-converter';
   import { handleError } from '$lib/utils/handle-error';
   import { updateUser, type UserResponseDto } from '@immich/sdk';
-  import { mdiAccountEditOutline, mdiClose } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
   import Button from '../elements/buttons/button.svelte';
-  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import FocusTrap from '$lib/components/shared-components/focus-trap.svelte';
 
   export let user: UserResponseDto;
@@ -95,17 +92,6 @@
   <div
     class="relative max-h-screen w-[500px] max-w-[95vw] overflow-y-auto rounded-3xl border bg-immich-bg p-4 py-8 shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg"
   >
-    <div class="absolute top-0 right-0 px-2 py-2 h-fit">
-      <CircleIconButton title="Close" icon={mdiClose} on:click={() => dispatch('close')} />
-    </div>
-
-    <div
-      class="flex flex-col place-content-center place-items-center gap-4 px-4 text-immich-primary dark:text-immich-dark-primary"
-    >
-      <Icon path={mdiAccountEditOutline} size="4em" />
-      <h1 class="text-2xl font-medium text-immich-primary dark:text-immich-dark-primary">Edit user</h1>
-    </div>
-
     <form on:submit|preventDefault={editUser} autocomplete="off">
       <div class="m-4 flex flex-col gap-2">
         <label class="immich-form-label" for="email">Email</label>
