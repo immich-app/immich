@@ -336,8 +336,16 @@ class ApiClient {
           return MapMarkerResponseDto.fromJson(value);
         case 'MapTheme':
           return MapThemeTypeTransformer().decode(value);
+        case 'MemoryCreateDto':
+          return MemoryCreateDto.fromJson(value);
         case 'MemoryLaneResponseDto':
           return MemoryLaneResponseDto.fromJson(value);
+        case 'MemoryResponseDto':
+          return MemoryResponseDto.fromJson(value);
+        case 'MemoryType':
+          return MemoryTypeTypeTransformer().decode(value);
+        case 'MemoryUpdateDto':
+          return MemoryUpdateDto.fromJson(value);
         case 'MergePersonDto':
           return MergePersonDto.fromJson(value);
         case 'MetadataSearchDto':

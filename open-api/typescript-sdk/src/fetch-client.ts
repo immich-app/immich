@@ -494,6 +494,32 @@ export type ValidateLibraryImportPathResponseDto = {
 export type ValidateLibraryResponseDto = {
     importPaths?: ValidateLibraryImportPathResponseDto[];
 };
+export type MemoryResponseDto = {
+    assets: AssetResponseDto[];
+    createdAt: string;
+    data: object;
+    deletedAt?: string;
+    id: string;
+    isSaved: boolean;
+    memoryAt: string;
+    ownerId: string;
+    seenAt?: string;
+    "type": Type2;
+    updatedAt: string;
+};
+export type MemoryCreateDto = {
+    assetIds?: string[];
+    data: object;
+    isSaved?: boolean;
+    memoryAt: string;
+    seenAt?: string;
+    "type": MemoryType;
+};
+export type MemoryUpdateDto = {
+    isSaved?: boolean;
+    memoryAt?: string;
+    seenAt?: string;
+};
 export type OAuthConfigDto = {
     redirectUri: string;
 };
@@ -1908,6 +1934,83 @@ export function validate({ id, validateLibraryDto }: {
         body: validateLibraryDto
     })));
 }
+export function searchMemories(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: MemoryResponseDto[];
+    }>("/memories", {
+        ...opts
+    }));
+}
+export function createMemory({ memoryCreateDto }: {
+    memoryCreateDto: MemoryCreateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: MemoryResponseDto;
+    }>("/memories", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: memoryCreateDto
+    })));
+}
+export function deleteMemory({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/memories/${encodeURIComponent(id)}`, {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+export function getMemory({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: MemoryResponseDto;
+    }>(`/memories/${encodeURIComponent(id)}`, {
+        ...opts
+    }));
+}
+export function updateMemory({ id, memoryUpdateDto }: {
+    id: string;
+    memoryUpdateDto: MemoryUpdateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: MemoryResponseDto;
+    }>(`/memories/${encodeURIComponent(id)}`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: memoryUpdateDto
+    })));
+}
+export function removeMemoryAssets({ id, bulkIdsDto }: {
+    id: string;
+    bulkIdsDto: BulkIdsDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: BulkIdResponseDto[];
+    }>(`/memories/${encodeURIComponent(id)}/assets`, oazapfts.json({
+        ...opts,
+        method: "DELETE",
+        body: bulkIdsDto
+    })));
+}
+export function addMemoryAssets({ id, bulkIdsDto }: {
+    id: string;
+    bulkIdsDto: BulkIdsDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: BulkIdResponseDto[];
+    }>(`/memories/${encodeURIComponent(id)}/assets`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: bulkIdsDto
+    })));
+}
 export function startOAuth({ oAuthConfigDto }: {
     oAuthConfigDto: OAuthConfigDto;
 }, opts?: Oazapfts.RequestOpts) {
@@ -2841,6 +2944,12 @@ export enum JobCommand {
 export enum LibraryType {
     Upload = "UPLOAD",
     External = "EXTERNAL"
+}
+export enum Type2 {
+    OnThisDay = "on_this_day"
+}
+export enum MemoryType {
+    OnThisDay = "on_this_day"
 }
 export enum SearchSuggestionType {
     Country = "country",
