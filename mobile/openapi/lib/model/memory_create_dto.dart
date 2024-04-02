@@ -23,7 +23,7 @@ class MemoryCreateDto {
 
   List<String> assetIds;
 
-  Object data;
+  OnThisDayDto data;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -97,7 +97,7 @@ class MemoryCreateDto {
         assetIds: json[r'assetIds'] is Iterable
             ? (json[r'assetIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        data: mapValueOfType<Object>(json, r'data')!,
+        data: OnThisDayDto.fromJson(json[r'data'])!,
         isSaved: mapValueOfType<bool>(json, r'isSaved'),
         memoryAt: mapDateTime(json, r'memoryAt', r'')!,
         seenAt: mapDateTime(json, r'seenAt', r''),

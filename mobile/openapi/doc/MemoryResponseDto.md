@@ -10,7 +10,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **assets** | [**List<AssetResponseDto>**](AssetResponseDto.md) |  | [default to const []]
 **createdAt** | [**DateTime**](DateTime.md) |  | 
-**data** | [**Object**](.md) |  | 
+**data** | [**OnThisDayDto**](OnThisDayDto.md) |  | 
 **deletedAt** | [**DateTime**](DateTime.md) |  | [optional] 
 **id** | **String** |  | 
 **isSaved** | **bool** |  | 

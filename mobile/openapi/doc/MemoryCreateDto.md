@@ -9,7 +9,7 @@ import 'package:openapi/api.dart';
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **assetIds** | **List<String>** |  | [optional] [default to const []]
-**data** | [**Object**](.md) |  | 
+**data** | [**OnThisDayDto**](OnThisDayDto.md) |  | 
 **isSaved** | **bool** |  | [optional] 
 **memoryAt** | [**DateTime**](DateTime.md) |  | 
 **seenAt** | [**DateTime**](DateTime.md) |  | [optional] 
