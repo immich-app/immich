@@ -264,7 +264,6 @@
   };
 
   const handleCloseViewer = () => {
-    $isShowDetail = false;
     closeViewer();
   };
 
