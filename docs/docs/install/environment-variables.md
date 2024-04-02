@@ -41,11 +41,9 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 | `IMMICH_REVERSE_GEOCODING_ROOT` | Path of reverse geocoding dump directory     | `/usr/src/resources` | microservices                                |
 
 :::tip
+`TZ` should be set to a `TZ identifier` from [this list](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List). For example, `TZ="Etc/UTC"`.
 
-`TZ` is only used by the `exiftool` as a fallback in case the timezone cannot be determined from the image metadata.
-
-`exiftool` is only present in the microservices container.
-
+`TZ` is only used by `exiftool`, which is present in the microservices container, as a fallback in case the timezone cannot be determined from the image metadata.
 :::
 
 ## Ports
@@ -147,6 +145,18 @@ Other machine learning parameters can be tuned from the admin UI.
 
 :::
 
+## Prometheus
+
+| Variable                       | Description                                                                                   | Default | Services              |
+| :----------------------------- | :-------------------------------------------------------------------------------------------- | :-----: | :-------------------- |
+| `IMMICH_METRICS`<sup>\*1</sup> | Toggle all metrics (one of [`true`, `false`])                                                 |         | server, microservices |
+| `IMMICH_API_METRICS`           | Toggle metrics for endpoints and response times (one of [`true`, `false`])                    |         | server, microservices |
+| `IMMICH_HOST_METRICS`          | Toggle metrics for CPU and memory utilization for host and process (one of [`true`, `false`]) |         | server, microservices |
+| `IMMICH_IO_METRICS`            | Toggle metrics for database queries, image processing, etc. (one of [`true`, `false`])        |         | server, microservices |
+| `IMMICH_JOB_METRICS`           | Toggle metrics for jobs and queues (one of [`true`, `false`])                                 |         | server, microservices |
+
+\*1: Overridden for a metric group when its corresponding environmental variable is set.
+
 ## Docker Secrets
 
 The following variables support the use of [Docker secrets](https://docs.docker.com/engine/swarm/secrets/) for additional security.
@@ -154,13 +164,14 @@ The following variables support the use of [Docker secrets](https://docs.docker.
 To use any of these, replace the regular environment variable with the equivalent `_FILE` environment variable. The value of
 the `_FILE` variable should be set to the path of a file containing the variable value.
 
-|  Regular Variable  | Equivalent Docker Secrets '\_FILE' Variable |
-| :----------------: | :-----------------------------------------: |
-|   `DB_HOSTNAME`    |      `DB_HOSTNAME_FILE`<sup>\*1</sup>       |
-| `DB_DATABASE_NAME` |    `DB_DATABASE_NAME_FILE`<sup>\*1</sup>    |
-|   `DB_USERNAME`    |      `DB_USERNAME_FILE`<sup>\*1</sup>       |
-|   `DB_PASSWORD`    |      `DB_PASSWORD_FILE`<sup>\*1</sup>       |
-|  `REDIS_PASSWORD`  |     `REDIS_PASSWORD_FILE`<sup>\*2</sup>     |
+| Regular Variable   | Equivalent Docker Secrets '\_FILE' Variable |
+| :----------------- | :------------------------------------------ |
+| `DB_HOSTNAME`      | `DB_HOSTNAME_FILE`<sup>\*1</sup>            |
+| `DB_DATABASE_NAME` | `DB_DATABASE_NAME_FILE`<sup>\*1</sup>       |
+| `DB_USERNAME`      | `DB_USERNAME_FILE`<sup>\*1</sup>            |
+| `DB_PASSWORD`      | `DB_PASSWORD_FILE`<sup>\*1</sup>            |
+| `DB_URL`           | `DB_URL_FILE`<sup>\*1</sup>                 |
+| `REDIS_PASSWORD`   | `REDIS_PASSWORD_FILE`<sup>\*2</sup>         |
 
 \*1: See the [official documentation](https://github.com/docker-library/docs/tree/master/postgres#docker-secrets) for
 details on how to use Docker Secrets in the Postgres image.

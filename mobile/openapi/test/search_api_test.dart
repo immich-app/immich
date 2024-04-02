@@ -17,6 +17,11 @@ void main() {
   // final instance = SearchApi();
 
   group('tests for SearchApi', () {
+    //Future<List<AssetResponseDto>> getAssetsByCity() async
+    test('test getAssetsByCity', () async {
+      // TODO
+    });
+
     //Future<List<SearchExploreResponseDto>> getExploreData() async
     test('test getExploreData', () async {
       // TODO

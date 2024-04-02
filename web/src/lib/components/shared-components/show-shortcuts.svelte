@@ -25,6 +25,7 @@
     actions: [
       { key: ['f'], action: 'Favorite or unfavorite photo' },
       { key: ['i'], action: 'Show or hide info' },
+      { key: ['s'], action: 'Stack selected photos' },
       { key: ['⇧', 'a'], action: 'Archive or unarchive photo' },
       { key: ['⇧', 'd'], action: 'Download' },
       { key: ['Space'], action: 'Play or pause video' },
@@ -44,7 +45,7 @@
       <div class="relative px-4 pt-4">
         <h1 class="px-4 py-4 font-medium text-immich-primary dark:text-immich-dark-primary">Keyboard Shortcuts</h1>
         <div class="absolute inset-y-0 right-0 px-4 py-4">
-          <CircleIconButton icon={mdiClose} on:click={() => dispatch('close')} />
+          <CircleIconButton title="Close" icon={mdiClose} on:click={() => dispatch('close')} />
         </div>
       </div>
 

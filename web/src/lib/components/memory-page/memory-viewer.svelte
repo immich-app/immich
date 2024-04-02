@@ -8,7 +8,7 @@
   import { AppRoute, QueryParameter } from '$lib/constants';
   import type { Viewport } from '$lib/stores/assets.store';
   import { memoryStore } from '$lib/stores/memory.store';
-  import { getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
+  import { getAssetThumbnailUrl, handlePromiseError, memoryLaneTitle } from '$lib/utils';
   import { shortcuts } from '$lib/utils/shortcut';
   import { fromLocalDateTime } from '$lib/utils/timeline-util';
   import { ThumbnailFormat, getMemoryLane } from '@immich/sdk';
@@ -102,13 +102,18 @@
     <ControlAppBar on:close={() => goto(AppRoute.PHOTOS)} forceDark>
       <svelte:fragment slot="leading">
         <p class="text-lg">
-          {currentMemory.title}
+          {memoryLaneTitle(currentMemory.yearsAgo)}
         </p>
       </svelte:fragment>
 
       {#if canGoForward}
         <div class="flex place-content-center place-items-center gap-2 overflow-hidden">
-          <CircleIconButton icon={paused ? mdiPlay : mdiPause} forceDark on:click={() => (paused = !paused)} />
+          <CircleIconButton
+            title={paused ? 'Play memories' : 'Pause memories'}
+            icon={paused ? mdiPlay : mdiPause}
+            forceDark
+            on:click={() => (paused = !paused)}
+          />
 
           {#each currentMemory.assets as _, index}
             <button
@@ -144,7 +149,7 @@
         class:opacity-100={galleryInView}
       >
         <button on:click={() => memoryWrapper.scrollIntoView({ behavior: 'smooth' })} disabled={!galleryInView}>
-          <CircleIconButton icon={mdiChevronUp} backgroundColor="white" forceDark />
+          <CircleIconButton title="Hide gallery" icon={mdiChevronUp} backgroundColor="white" forceDark />
         </button>
       </div>
     {/if}
@@ -181,7 +186,7 @@
             {#if previousMemory}
               <div class="absolute bottom-4 right-4 text-left text-white">
                 <p class="text-xs font-semibold text-gray-200">PREVIOUS</p>
-                <p class="text-xl">{previousMemory.title}</p>
+                <p class="text-xl">{memoryLaneTitle(previousMemory.yearsAgo)}</p>
               </div>
             {/if}
           </button>
@@ -204,13 +209,23 @@
             <!-- CONTROL BUTTONS -->
             {#if canGoBack}
               <div class="absolute top-1/2 left-0 ml-4">
-                <CircleIconButton icon={mdiChevronLeft} backgroundColor="#202123" on:click={toPrevious} />
+                <CircleIconButton
+                  title="Previous memory"
+                  icon={mdiChevronLeft}
+                  backgroundColor="#202123"
+                  on:click={toPrevious}
+                />
               </div>
             {/if}
 
             {#if canGoForward}
               <div class="absolute top-1/2 right-0 mr-4">
-                <CircleIconButton icon={mdiChevronRight} backgroundColor="#202123" on:click={toNext} />
+                <CircleIconButton
+                  title="Next memory"
+                  icon={mdiChevronRight}
+                  backgroundColor="#202123"
+                  on:click={toNext}
+                />
               </div>
             {/if}
 
@@ -254,7 +269,7 @@
             {#if nextMemory}
               <div class="absolute bottom-4 left-4 text-left text-white">
                 <p class="text-xs font-semibold text-gray-200">UP NEXT</p>
-                <p class="text-xl">{nextMemory.title}</p>
+                <p class="text-xl">{memoryLaneTitle(nextMemory.yearsAgo)}</p>
               </div>
             {/if}
           </button>
@@ -271,7 +286,7 @@
         class:opacity-100={!galleryInView}
       >
         <button on:click={() => memoryGallery.scrollIntoView({ behavior: 'smooth' })}>
-          <CircleIconButton icon={mdiChevronDown} backgroundColor="white" forceDark />
+          <CircleIconButton title="Show gallery" icon={mdiChevronDown} backgroundColor="white" forceDark />
         </button>
       </div>
 

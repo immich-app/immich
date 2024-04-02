@@ -64,11 +64,14 @@
     mdiArrowLeft,
     mdiDeleteOutline,
     mdiDotsVertical,
-    mdiFileImagePlusOutline,
     mdiFolderDownloadOutline,
     mdiLink,
     mdiPlus,
     mdiShareVariantOutline,
+    mdiPresentationPlay,
+    mdiCogOutline,
+    mdiImageOutline,
+    mdiImagePlusOutline,
   } from '@mdi/js';
   import { fly } from 'svelte/transition';
   import type { PageData } from './$types';
@@ -148,7 +151,7 @@
 
     backUrl = url || AppRoute.ALBUMS;
 
-    if (backUrl === AppRoute.SHARING && album.sharedUsers.length === 0) {
+    if (backUrl === AppRoute.SHARING && album.sharedUsers.length === 0 && !album.hasSharedLink) {
       isCreatingSharedAlbum = true;
     }
   });
@@ -385,23 +388,25 @@
       <AssetSelectControlBar assets={$selectedAssets} clearSelect={() => assetInteractionStore.clearMultiselect()}>
         <CreateSharedLink />
         <SelectAllAssets {assetStore} {assetInteractionStore} />
-        <AssetSelectContextMenu icon={mdiPlus} title="Add">
+        <AssetSelectContextMenu icon={mdiPlus} title="Add to...">
           <AddToAlbum />
           <AddToAlbum shared />
         </AssetSelectContextMenu>
+        {#if isAllUserOwned}
+          <FavoriteAction removeFavorite={isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
+        {/if}
         <AssetSelectContextMenu icon={mdiDotsVertical} title="Menu">
+          <DownloadAction menuItem filename="{album.albumName}.zip" />
           {#if isAllUserOwned}
-            <FavoriteAction menuItem removeFavorite={isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
+            <ChangeDate menuItem />
+            <ChangeLocation menuItem />
             <ArchiveAction menuItem unarchive={isAllArchived} onArchive={() => assetStore.triggerUpdate()} />
           {/if}
-          <DownloadAction menuItem filename="{album.albumName}.zip" />
           {#if isOwned || isAllUserOwned}
             <RemoveFromAlbum menuItem bind:album onRemove={handleRemoveAssets} />
           {/if}
           {#if isAllUserOwned}
             <DeleteAssets menuItem onAssetDelete={handleRemoveAssets} />
-            <ChangeDate menuItem />
-            <ChangeLocation menuItem />
           {/if}
         </AssetSelectContextMenu>
       </AssetSelectControlBar>
@@ -410,9 +415,9 @@
         <ControlAppBar showBackButton backIcon={mdiArrowLeft} on:close={() => goto(backUrl)}>
           <svelte:fragment slot="trailing">
             <CircleIconButton
-              title="Add Photos"
+              title="Add photos"
               on:click={() => (viewMode = ViewMode.SELECT_ASSETS)}
-              icon={mdiFileImagePlusOutline}
+              icon={mdiImagePlusOutline}
             />
 
             {#if isOwned}
@@ -420,11 +425,6 @@
                 title="Share"
                 on:click={() => (viewMode = ViewMode.SELECT_USERS)}
                 icon={mdiShareVariantOutline}
-              />
-              <CircleIconButton
-                title="Delete album"
-                on:click={() => (viewMode = ViewMode.CONFIRM_DELETE)}
-                icon={mdiDeleteOutline}
               />
             {/if}
 
@@ -436,9 +436,22 @@
                   <CircleIconButton title="Album options" on:click={handleOpenAlbumOptions} icon={mdiDotsVertical}>
                     {#if viewMode === ViewMode.ALBUM_OPTIONS}
                       <ContextMenu {...contextMenuPosition}>
-                        <MenuOption on:click={handleStartSlideshow} text="Slideshow" />
-                        <MenuOption on:click={() => (viewMode = ViewMode.SELECT_THUMBNAIL)} text="Set album cover" />
-                        <MenuOption on:click={() => (viewMode = ViewMode.OPTIONS)} text="Options" />
+                        <MenuOption icon={mdiPresentationPlay} text="Slideshow" on:click={handleStartSlideshow} />
+                        <MenuOption
+                          icon={mdiImageOutline}
+                          text="Select album cover"
+                          on:click={() => (viewMode = ViewMode.SELECT_THUMBNAIL)}
+                        />
+                        <MenuOption
+                          icon={mdiCogOutline}
+                          text="Options"
+                          on:click={() => (viewMode = ViewMode.OPTIONS)}
+                        />
+                        <MenuOption
+                          icon={mdiDeleteOutline}
+                          text="Delete album"
+                          on:click={() => (viewMode = ViewMode.CONFIRM_DELETE)}
+                        />
                       </ContextMenu>
                     {/if}
                   </CircleIconButton>
@@ -532,6 +545,7 @@
                     <!-- link -->
                     {#if album.hasSharedLink && isOwned}
                       <CircleIconButton
+                        title="Create link to share "
                         backgroundColor="#d3d3d3"
                         forceDark
                         size="20"

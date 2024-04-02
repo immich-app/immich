@@ -1,9 +1,16 @@
-import { AlbumResponseDto, AssetResponseDto, ExifResponseDto, mapUser, SharedLinkResponseDto } from '@app/domain';
-import { AssetOrder, AssetType, SharedLinkEntity, SharedLinkType, UserEntity } from '@app/infra/entities';
-import { assetStub } from './asset.stub';
-import { authStub } from './auth.stub';
-import { libraryStub } from './library.stub';
-import { userStub } from './user.stub';
+import { AlbumResponseDto } from 'src/dtos/album.dto';
+import { AssetResponseDto } from 'src/dtos/asset-response.dto';
+import { ExifResponseDto } from 'src/dtos/exif.dto';
+import { SharedLinkResponseDto } from 'src/dtos/shared-link.dto';
+import { mapUser } from 'src/dtos/user.dto';
+import { AssetOrder } from 'src/entities/album.entity';
+import { AssetType } from 'src/entities/asset.entity';
+import { SharedLinkEntity, SharedLinkType } from 'src/entities/shared-link.entity';
+import { UserEntity } from 'src/entities/user.entity';
+import { assetStub } from 'test/fixtures/asset.stub';
+import { authStub } from 'test/fixtures/auth.stub';
+import { libraryStub } from 'test/fixtures/library.stub';
+import { userStub } from 'test/fixtures/user.stub';
 
 const today = new Date();
 const tomorrow = new Date();
@@ -192,7 +199,7 @@ export const sharedLinkStub = {
           deviceId: 'device_id_1',
           type: AssetType.VIDEO,
           originalPath: 'fake_path/jpeg',
-          resizePath: '',
+          previewPath: '',
           checksum: Buffer.from('file hash', 'utf8'),
           fileModifiedAt: today,
           fileCreatedAt: today,
@@ -212,7 +219,7 @@ export const sharedLinkStub = {
             objects: ['a', 'b', 'c'],
             asset: null as any,
           },
-          webpPath: '',
+          thumbnailPath: '',
           thumbhash: null,
           encodedVideoPath: '',
           duration: null,

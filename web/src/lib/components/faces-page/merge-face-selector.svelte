@@ -135,7 +135,12 @@
                 </div>
                 {#if selectedPeople.length === 1}
                   <div class="absolute bottom-2">
-                    <CircleIconButton icon={mdiSwapHorizontal} size="24" on:click={handleSwapPeople} />
+                    <CircleIconButton
+                      title="Swap merge direction"
+                      icon={mdiSwapHorizontal}
+                      size="24"
+                      on:click={handleSwapPeople}
+                    />
                   </div>
                 {/if}
               </div>

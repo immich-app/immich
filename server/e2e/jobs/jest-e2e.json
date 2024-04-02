@@ -12,13 +12,11 @@
   "collectCoverageFrom": [
     "<rootDir>/src/**/*.(t|j)s",
     "!<rootDir>/src/**/*.spec.(t|s)s",
-    "!<rootDir>/src/infra/migrations/**"
+    "!<rootDir>/src/migrations/**"
   ],
   "coverageDirectory": "./coverage",
   "moduleNameMapper": {
-    "^@test(|/.*)$": "<rootDir>/test/$1",
-    "^@app/immich(|/.*)$": "<rootDir>/src/immich/$1",
-    "^@app/infra(|/.*)$": "<rootDir>/src/infra/$1",
-    "^@app/domain(|/.*)$": "<rootDir>/src/domain/$1"
+    "^test(|/.*)$": "<rootDir>/test/$1",
+    "^src(|/.*)$": "<rootDir>/src/$1"
   }
 }

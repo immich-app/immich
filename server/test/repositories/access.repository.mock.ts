@@ -1,4 +1,5 @@
-import { AccessCore, IAccessRepository } from '@app/domain';
+import { AccessCore } from 'src/cores/access.core';
+import { IAccessRepository } from 'src/interfaces/access.interface';
 
 export interface IAccessRepositoryMock {
   activity: jest.Mocked<IAccessRepository['activity']>;
@@ -7,6 +8,7 @@ export interface IAccessRepositoryMock {
   authDevice: jest.Mocked<IAccessRepository['authDevice']>;
   library: jest.Mocked<IAccessRepository['library']>;
   timeline: jest.Mocked<IAccessRepository['timeline']>;
+  memory: jest.Mocked<IAccessRepository['memory']>;
   person: jest.Mocked<IAccessRepository['person']>;
   partner: jest.Mocked<IAccessRepository['partner']>;
 }
@@ -46,6 +48,10 @@ export const newAccessRepositoryMock = (reset = true): IAccessRepositoryMock => 
 
     timeline: {
       checkPartnerAccess: jest.fn().mockResolvedValue(new Set()),
+    },
+
+    memory: {
+      checkOwnerAccess: jest.fn().mockResolvedValue(new Set()),
     },
 
     person: {

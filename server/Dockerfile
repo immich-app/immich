@@ -1,5 +1,5 @@
 # dev build
-FROM ghcr.io/immich-app/base-server-dev:20240312@sha256:3cb168dd87a2b412b25c512ec638a1e7f362e1d3eb8dd19a38d92d4a7c47999c as dev
+FROM ghcr.io/immich-app/base-server-dev:20240326@sha256:d945aba864051b30888617f36446f86b72c4bc7ad6476b9dd2aaa0c4c4e3c945 as dev
 
 RUN apt-get install --no-install-recommends -yqq tini
 WORKDIR /usr/src/app
@@ -24,7 +24,7 @@ RUN npm prune --omit=dev --omit=optional
 COPY --from=dev /usr/src/app/node_modules/@img ./node_modules/@img
 
 # web build
-FROM node:iron-alpine3.18@sha256:a02826c7340c37a29179152723190bcc3044f933c925f3c2d78abb20f794de3f as web
+FROM node:iron-alpine3.18@sha256:fa5d3cf51725bd42d32e67917623038539dbe720dab082f590785c001eb4dfef as web
 
 WORKDIR /usr/src/open-api/typescript-sdk
 COPY open-api/typescript-sdk/package*.json open-api/typescript-sdk/tsconfig*.json ./
@@ -40,7 +40,7 @@ RUN npm run build
 
 
 # prod build
-FROM ghcr.io/immich-app/base-server-prod:20240312@sha256:8359fb1acc56580f2b4835e273293fdaa99d273b210892e1485fc6f1e47cf2bb
+FROM ghcr.io/immich-app/base-server-prod:20240326@sha256:28ad98fed8d746b5f92de49ff776cfdff7399df163ebeda2f37a01f473965841
 
 WORKDIR /usr/src/app
 ENV NODE_ENV=production \
@@ -53,7 +53,7 @@ COPY --from=web /usr/src/app/build ./www
 COPY server/resources resources
 COPY server/package.json server/package-lock.json ./
 COPY server/start*.sh ./
-RUN npm link && npm cache clean --force
+RUN npm link && npm install -g @immich/cli && npm cache clean --force
 COPY LICENSE /licenses/LICENSE.txt
 COPY LICENSE /LICENSE
 ENV PATH="${PATH}:/usr/src/app/bin"

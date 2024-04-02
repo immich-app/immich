@@ -26,7 +26,7 @@ class ExifPeople extends ConsumerWidget {
         .watch(assetPeopleNotifierProvider(asset))
         .value
         ?.where((p) => !p.isHidden);
-    final double imageSize = math.min(context.width / 3, 120);
+    final double imageSize = math.min(context.width / 3, 150);
 
     showPersonNameEditModel(
       String personId,

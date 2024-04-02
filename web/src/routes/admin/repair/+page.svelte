@@ -250,7 +250,7 @@
                   <div class="px-3">
                     <p>OFFLINE PATHS {orphans.length > 0 ? `(${orphans.length})` : ''}</p>
                     <p class="text-gray-600 dark:text-gray-300 mt-1">
-                      These files are the results of manually deletion of the default upload library
+                      These results may be due to manual deletion of files in the default upload library
                     </p>
                   </div>
                 </th>
@@ -266,7 +266,7 @@
                   title={orphan.pathValue}
                 >
                   <td on:click={() => copyToClipboard(orphan.pathValue)}>
-                    <CircleIconButton icon={mdiContentCopy} size="18" />
+                    <CircleIconButton title="Copy file path" icon={mdiContentCopy} size="18" />
                   </td>
                   <td class="truncate text-sm font-mono text-left" title={orphan.pathValue}>
                     {orphan.pathValue}
@@ -306,7 +306,7 @@
                   title={extra.filename}
                 >
                   <td on:click={() => copyToClipboard(extra.filename)}>
-                    <CircleIconButton icon={mdiContentCopy} size="18" />
+                    <CircleIconButton title="Copy file path" icon={mdiContentCopy} size="18" />
                   </td>
                   <td class="w-full text-md text-ellipsis flex justify-between pr-5">
                     <span class="text-ellipsis grow truncate font-mono text-sm pr-5" title={extra.filename}

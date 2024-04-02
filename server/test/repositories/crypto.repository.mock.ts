@@ -1,4 +1,4 @@
-import { ICryptoRepository } from '@app/domain';
+import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 
 export const newCryptoRepositoryMock = (): jest.Mocked<ICryptoRepository> => {
   return {
@@ -9,5 +9,6 @@ export const newCryptoRepositoryMock = (): jest.Mocked<ICryptoRepository> => {
     hashSha256: jest.fn().mockImplementation((input) => `${input} (hashed)`),
     hashSha1: jest.fn().mockImplementation((input) => Buffer.from(`${input.toString()} (hashed)`)),
     hashFile: jest.fn().mockImplementation((input) => `${input} (file-hashed)`),
+    newPassword: jest.fn().mockReturnValue(Buffer.from('random-bytes').toString('base64')),
   };
 };

@@ -4,7 +4,13 @@
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { getContextMenuPosition } from '$lib/utils/context-menu';
   import { type PersonResponseDto } from '@immich/sdk';
-  import { mdiDotsVertical } from '@mdi/js';
+  import {
+    mdiAccountEditOutline,
+    mdiAccountMultipleCheckOutline,
+    mdiCalendarEditOutline,
+    mdiDotsVertical,
+    mdiEyeOffOutline,
+  } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import IconButton from '../elements/buttons/icon-button.svelte';
@@ -83,10 +89,18 @@
 {#if showContextMenu}
   <Portal target="body">
     <ContextMenu {...contextMenuPosition} on:outclick={() => onMenuExit()}>
-      <MenuOption on:click={() => onMenuClick('hide-person')} text="Hide Person" />
-      <MenuOption on:click={() => onMenuClick('change-name')} text="Change name" />
-      <MenuOption on:click={() => onMenuClick('set-birth-date')} text="Set date of birth" />
-      <MenuOption on:click={() => onMenuClick('merge-people')} text="Merge People" />
+      <MenuOption on:click={() => onMenuClick('hide-person')} icon={mdiEyeOffOutline} text="Hide person" />
+      <MenuOption on:click={() => onMenuClick('change-name')} icon={mdiAccountEditOutline} text="Change name" />
+      <MenuOption
+        on:click={() => onMenuClick('set-birth-date')}
+        icon={mdiCalendarEditOutline}
+        text="Set date of birth"
+      />
+      <MenuOption
+        on:click={() => onMenuClick('merge-people')}
+        icon={mdiAccountMultipleCheckOutline}
+        text="Merge people"
+      />
     </ContextMenu>
   </Portal>
 {/if}

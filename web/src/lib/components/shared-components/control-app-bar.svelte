@@ -5,7 +5,7 @@
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import { fly } from 'svelte/transition';
   import { mdiClose } from '@mdi/js';
-  import { isSelectAllCancelled } from '$lib/stores/assets.store';
+  import { isSelectingAllAssets } from '$lib/stores/assets.store';
 
   export let showBackButton = true;
   export let backIcon = mdiClose;
@@ -31,7 +31,7 @@
   };
 
   const handleClose = () => {
-    $isSelectAllCancelled = true;
+    $isSelectingAllAssets = false;
     dispatch('close');
   };
 
@@ -58,6 +58,7 @@
     <div class="flex place-items-center gap-6 justify-self-start dark:text-immich-dark-fg">
       {#if showBackButton}
         <CircleIconButton
+          title="Close"
           on:click={handleClose}
           icon={backIcon}
           backgroundColor={'transparent'}

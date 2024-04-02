@@ -66,13 +66,7 @@
 </script>
 
 {#if !selectedRemoveUser}
-  <BaseModal on:close={() => dispatch('close')}>
-    <svelte:fragment slot="title">
-      <span class="flex place-items-center gap-2">
-        <p class="font-medium text-immich-fg dark:text-immich-dark-fg">Options</p>
-      </span>
-    </svelte:fragment>
-
+  <BaseModal id="share-info-modal" title="Options" on:close>
     <section class="immich-scrollbar max-h-[400px] overflow-y-auto pb-4">
       <div class="flex w-full place-items-center justify-between gap-4 p-5">
         <div class="flex place-items-center gap-4">
@@ -97,6 +91,7 @@
             {#if isOwned}
               <div>
                 <CircleIconButton
+                  title="Options"
                   on:click={(event) => showContextMenu(event, user)}
                   icon={mdiDotsVertical}
                   backgroundColor="transparent"

@@ -1,5 +1,5 @@
 <script lang="ts" context="module">
-  import { AlbumViewMode, albumViewSettings } from '$lib/stores/preferences.store';
+  import { AlbumFilter, AlbumViewMode, albumViewSettings } from '$lib/stores/preferences.store';
   import { goto } from '$app/navigation';
   import { AppRoute } from '$lib/constants';
   import { createAlbum, deleteAlbum, type AlbumResponseDto } from '@immich/sdk';
@@ -118,10 +118,14 @@
   import AlbumsTable from '$lib/components/album-page/albums-table.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import type { ContextMenuPosition } from '$lib/utils/context-menu';
+  import GroupTab from '$lib/components/elements/group-tab.svelte';
+  import SearchBar from '$lib/components/elements/search-bar.svelte';
 
-  export let albums: AlbumResponseDto[];
+  export let ownedAlbums: AlbumResponseDto[];
+  export let sharedAlbums: AlbumResponseDto[];
   export let searchAlbum: string;
 
+  let albums: AlbumResponseDto[] = [];
   let shouldShowEditAlbumForm = false;
   let selectedAlbum: AlbumResponseDto;
   let albumToDelete: AlbumResponseDto | null;
@@ -131,13 +135,45 @@
   $: {
     for (const key of sortByOptions) {
       if (key.title === $albumViewSettings.sortBy) {
-        albums = key.sortFn(key.sortDesc, albums);
-        $albumViewSettings.sortDesc = key.sortDesc; // "Save" sortDesc
+        switch ($albumViewSettings.filter) {
+          case AlbumFilter.All: {
+            albums = key.sortFn(
+              key.sortDesc,
+              [...sharedAlbums, ...ownedAlbums].filter(
+                (album, index, self) => index === self.findIndex((item) => album.id === item.id),
+              ),
+            );
+            break;
+          }
+
+          case AlbumFilter.Owned: {
+            albums = key.sortFn(key.sortDesc, ownedAlbums);
+            break;
+          }
+
+          case AlbumFilter.Shared: {
+            albums = key.sortFn(key.sortDesc, sharedAlbums);
+            break;
+          }
+
+          default: {
+            albums = key.sortFn(
+              key.sortDesc,
+              [...sharedAlbums, ...ownedAlbums].filter(
+                (album, index, self) => index === self.findIndex((item) => album.id === item.id),
+              ),
+            );
+            break;
+          }
+        }
+
+        $albumViewSettings.sortDesc = key.sortDesc;
         $albumViewSettings.sortBy = key.title;
         break;
       }
     }
   }
+
   $: isShowContextMenu = !!contextMenuTargetAlbum;
   $: albumsFiltered = albums.filter((album) => album.albumName.toLowerCase().includes(searchAlbum.toLowerCase()));
 
@@ -159,7 +195,7 @@
 
   async function handleDeleteAlbum(albumToDelete: AlbumResponseDto): Promise<void> {
     await deleteAlbum({ id: albumToDelete.id });
-    albums = albums.filter(({ id }) => id !== albumToDelete.id);
+    ownedAlbums = ownedAlbums.filter(({ id }) => id !== albumToDelete.id);
   }
 
   const chooseAlbumToDelete = (album: AlbumResponseDto) => {
@@ -194,7 +230,7 @@
   };
 
   const removeAlbumsIfEmpty = async () => {
-    for (const album of albums) {
+    for (const album of ownedAlbums) {
       if (album.assetCount == 0 && album.albumName == '') {
         try {
           await handleDeleteAlbum(album);
@@ -211,7 +247,7 @@
       message: 'Album infos updated',
       type: NotificationType.Info,
     });
-    albums[albums.findIndex((x) => x.id === selectedAlbum.id)] = selectedAlbum;
+    ownedAlbums[ownedAlbums.findIndex((x) => x.id === selectedAlbum.id)] = selectedAlbum;
   };
 </script>
 
@@ -227,6 +263,18 @@
 
 {#if albums.length > 0}
   <!-- Album Card -->
+  <div class="xl:hidden">
+    <div class="w-fit h-14 dark:text-immich-dark-fg py-2">
+      <GroupTab
+        filters={Object.keys(AlbumFilter)}
+        selected={$albumViewSettings.filter}
+        onSelect={(selected) => ($albumViewSettings.filter = selected)}
+      />
+    </div>
+    <div class="w-60">
+      <SearchBar placeholder="Search albums" bind:name={searchAlbum} isSearching={false} />
+    </div>
+  </div>
   {#if $albumViewSettings.view === AlbumViewMode.Cover}
     <div class="grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))] mt-4 gap-y-4">
       {#each albumsFiltered as album, index (album.id)}

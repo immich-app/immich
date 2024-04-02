@@ -4,33 +4,28 @@
   "minimumReleaseAge": "5 days",
   "packageRules": [
     {
-      "matchFileNames": ["cli/**"],
-      "groupName": "@immich/cli",
-      "matchUpdateTypes": ["minor", "patch"],
-      "schedule": "on tuesday"
-    },
-    {
-      "matchFileNames": ["docs/**"],
-      "groupName": "docs",
-      "matchUpdateTypes": ["minor", "patch"],
-      "schedule": "on tuesday"
-    },
-    {
-      "matchFileNames": ["mobile/**"],
-      "groupName": "mobile",
-      "matchUpdateTypes": ["minor", "patch"],
-      "schedule": "on tuesday"
-    },
-    {
-      "matchFileNames": ["server/**"],
-      "groupName": "server",
+      "matchFileNames": [
+        "cli/**",
+        "docs/**",
+        "e2e/**",
+        "open-api/**",
+        "server/**",
+        "web/**"
+      ],
+      "groupName": "typescript-projects",
       "matchUpdateTypes": ["minor", "patch"],
       "excludePackagePrefixes": ["exiftool", "reflect-metadata"],
       "schedule": "on tuesday"
     },
     {
-      "matchFileNames": ["open-api/**"],
-      "groupName": "open-api",
+      "matchFileNames": ["machine-learning/**"],
+      "groupName": "machine-learning",
+      "rangeStrategy": "in-range-only",
+      "schedule": "on tuesday"
+    },
+    {
+      "matchFileNames": ["mobile/**"],
+      "groupName": "mobile",
       "matchUpdateTypes": ["minor", "patch"],
       "schedule": "on tuesday"
     },
@@ -43,18 +38,6 @@
       "groupName": "svelte",
       "matchUpdateTypes": ["major"],
       "matchPackagePrefixes": ["@sveltejs"],
-      "schedule": "on tuesday"
-    },
-    {
-      "matchFileNames": ["web/**"],
-      "groupName": "web",
-      "matchUpdateTypes": ["minor", "patch"],
-      "schedule": "on tuesday"
-    },
-    {
-      "matchFileNames": ["machine-learning/**"],
-      "groupName": "machine-learning",
-      "rangeStrategy": "in-range-only",
       "schedule": "on tuesday"
     },
     {
@@ -81,9 +64,6 @@
     }
   ],
   "ignorePaths": ["mobile/openapi/pubspec.yaml"],
-  "ignoreDeps": [
-    "http",
-    "intl"
-  ],
+  "ignoreDeps": ["http", "intl"],
   "labels": ["dependencies", "renovate"]
 }

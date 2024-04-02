@@ -2,7 +2,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { Theme } from '$lib/constants';
   import { colorTheme, mapSettings } from '$lib/stores/preferences.store';
-  import { getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
+  import { getAssetThumbnailUrl, getKey, handlePromiseError } from '$lib/utils';
   import { getMapStyle, MapTheme, type MapMarkerResponseDto } from '@immich/sdk';
   import { mdiCog, mdiMapMarker } from '@mdi/js';
   import type { Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
@@ -50,6 +50,7 @@
   $: style = (() =>
     getMapStyle({
       theme: ($mapSettings.allowDarkMode ? $colorTheme.value : Theme.LIGHT) as unknown as MapTheme,
+      key: getKey(),
     }) as Promise<StyleSpecification>)();
 
   const dispatch = createEventDispatcher<{
