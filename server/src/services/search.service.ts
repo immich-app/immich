@@ -217,7 +217,7 @@ export class SearchService {
       userIds: [asset.ownerId],
     });
 
-    const duplicateAssetIds = [asset.id];
+    const assetIds = [asset.id];
 
     if (duplicateAssets.length > 0) {
       this.logger.debug(
@@ -227,13 +227,13 @@ export class SearchService {
       const duplicateIds = duplicateAssets.map((duplicate) => duplicate.duplicateId).filter(Boolean);
       const duplicateId = duplicateIds[0] || this.cryptoRepository.randomUUID();
 
-      duplicateAssetIds.push(...duplicateAssets.map((duplicate) => duplicate.assetId));
+      assetIds.push(...duplicateAssets.map((duplicate) => duplicate.assetId));
 
-      await this.assetDuplicateRepository.upsert(duplicateId, duplicateAssetIds, duplicateIds);
+      await this.assetDuplicateRepository.upsert(duplicateId, assetIds, duplicateIds);
     }
 
     const duplicatesDetectedAt = new Date();
-    await this.assetRepository.upsertJobStatus(duplicateAssetIds.map((assetId) => ({ assetId, duplicatesDetectedAt })));
+    await this.assetRepository.upsertJobStatus(assetIds.map((assetId) => ({ assetId, duplicatesDetectedAt })));
 
     return JobStatus.SUCCESS;
   }
