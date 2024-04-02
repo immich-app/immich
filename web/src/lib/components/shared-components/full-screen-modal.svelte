@@ -28,7 +28,7 @@
     class="fixed left-0 top-0 z-[9990] flex h-screen w-screen place-content-center place-items-center bg-black/40"
   >
     <div
-      class="z-[9999] max-w-[95vw] overflow-y-auto rounded-2xl p-4 py-8 bg-immich-bg shadow-md dark:bg-immich-dark-gray dark:text-immich-dark-fg immich-scrollbar"
+      class="z-[9999] max-w-[95vw] max-h-[95vh] overflow-y-auto rounded-2xl p-4 py-8 bg-immich-bg shadow-md dark:bg-immich-dark-gray dark:text-immich-dark-fg immich-scrollbar"
       use:clickOutside={{ onOutclick: onClose, onEscape: onClose }}
       tabindex="-1"
     >
