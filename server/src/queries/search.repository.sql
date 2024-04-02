@@ -35,6 +35,7 @@ FROM
       "asset"."originalFileName" AS "asset_originalFileName",
       "asset"."sidecarPath" AS "asset_sidecarPath",
       "asset"."stackId" AS "asset_stackId",
+      "asset"."duplicateId" AS "asset_duplicateId",
       "stack"."id" AS "stack_id",
       "stack"."primaryAssetId" AS "stack_primaryAssetId",
       "stackedAssets"."id" AS "stackedAssets_id",
@@ -64,7 +65,8 @@ FROM
       "stackedAssets"."livePhotoVideoId" AS "stackedAssets_livePhotoVideoId",
       "stackedAssets"."originalFileName" AS "stackedAssets_originalFileName",
       "stackedAssets"."sidecarPath" AS "stackedAssets_sidecarPath",
-      "stackedAssets"."stackId" AS "stackedAssets_stackId"
+      "stackedAssets"."stackId" AS "stackedAssets_stackId",
+      "stackedAssets"."duplicateId" AS "stackedAssets_duplicateId"
     FROM
       "assets" "asset"
       LEFT JOIN "exif" "exifInfo" ON "exifInfo"."assetId" = "asset"."id"
@@ -129,6 +131,7 @@ SELECT
   "asset"."originalFileName" AS "asset_originalFileName",
   "asset"."sidecarPath" AS "asset_sidecarPath",
   "asset"."stackId" AS "asset_stackId",
+  "asset"."duplicateId" AS "asset_duplicateId",
   "stack"."id" AS "stack_id",
   "stack"."primaryAssetId" AS "stack_primaryAssetId",
   "stackedAssets"."id" AS "stackedAssets_id",
@@ -158,7 +161,8 @@ SELECT
   "stackedAssets"."livePhotoVideoId" AS "stackedAssets_livePhotoVideoId",
   "stackedAssets"."originalFileName" AS "stackedAssets_originalFileName",
   "stackedAssets"."sidecarPath" AS "stackedAssets_sidecarPath",
-  "stackedAssets"."stackId" AS "stackedAssets_stackId"
+  "stackedAssets"."stackId" AS "stackedAssets_stackId",
+  "stackedAssets"."duplicateId" AS "stackedAssets_duplicateId"
 FROM
   "assets" "asset"
   LEFT JOIN "exif" "exifInfo" ON "exifInfo"."assetId" = "asset"."id"
@@ -184,6 +188,49 @@ ORDER BY
 LIMIT
   101
 COMMIT
+
+-- SearchRepository.searchDuplicates
+WITH
+  "cte" AS (
+    SELECT
+      "asset"."duplicateId" AS "duplicateId",
+      "search"."assetId" AS "assetId",
+      (
+        SELECT
+          embedding
+        FROM
+          smart_search
+        WHERE
+          "assetId" = $1
+      ) <= > "search"."embedding" AS "distance"
+    FROM
+      "assets" "asset"
+      INNER JOIN "smart_search" "search" ON "search"."assetId" = "asset"."id"
+    WHERE
+      (
+        "asset"."ownerId" IN ($2)
+        AND "asset"."id" != $1
+        AND "asset"."isVisible" = $3
+      )
+      AND ("asset"."deletedAt" IS NULL)
+    ORDER BY
+      "search"."embedding" <= > (
+        SELECT
+          embedding
+        FROM
+          smart_search
+        WHERE
+          "assetId" = $1
+      ) ASC
+    LIMIT
+      64
+  )
+SELECT
+  res.*
+FROM
+  "cte" "res"
+WHERE
+  res.distance <= $4
 
 -- SearchRepository.searchFaces
 START TRANSACTION
@@ -337,6 +384,7 @@ SELECT
   "asset"."originalFileName" AS "asset_originalFileName",
   "asset"."sidecarPath" AS "asset_sidecarPath",
   "asset"."stackId" AS "asset_stackId",
+  "asset"."duplicateId" AS "asset_duplicateId",
   "exif"."assetId" AS "exif_assetId",
   "exif"."description" AS "exif_description",
   "exif"."exifImageWidth" AS "exif_exifImageWidth",
