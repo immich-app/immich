@@ -200,7 +200,7 @@
           disabled={!isOwner || isSharedLink()}
           bind:this={textArea}
           class="max-h-[500px]
-      w-full resize-none overflow-hidden border-b border-gray-500 bg-transparent text-base text-black outline-none transition-all focus:border-b-2 focus:border-immich-primary disabled:border-none dark:text-white dark:focus:border-immich-dark-primary"
+      w-full resize-none border-b border-gray-500 bg-transparent text-base text-black outline-none transition-all focus:border-b-2 focus:border-immich-primary disabled:border-none dark:text-white dark:focus:border-immich-dark-primary immich-scrollbar"
           placeholder={isOwner ? 'Add a description' : ''}
           on:focusout={handleFocusOut}
           on:input={() => autoGrowHeight(textArea)}
