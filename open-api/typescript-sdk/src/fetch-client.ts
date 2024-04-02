@@ -494,10 +494,13 @@ export type ValidateLibraryImportPathResponseDto = {
 export type ValidateLibraryResponseDto = {
     importPaths?: ValidateLibraryImportPathResponseDto[];
 };
+export type OnThisDayDto = {
+    year: number;
+};
 export type MemoryResponseDto = {
     assets: AssetResponseDto[];
     createdAt: string;
-    data: object;
+    data: OnThisDayDto;
     deletedAt?: string;
     id: string;
     isSaved: boolean;
@@ -509,7 +512,7 @@ export type MemoryResponseDto = {
 };
 export type MemoryCreateDto = {
     assetIds?: string[];
-    data: object;
+    data: OnThisDayDto;
     isSaved?: boolean;
     memoryAt: string;
     seenAt?: string;
