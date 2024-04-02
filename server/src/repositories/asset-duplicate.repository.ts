@@ -22,7 +22,7 @@ export class AssetDuplicateRepository implements IAssetDuplicateRepository {
         await manager.update(AssetDuplicateEntity, { id: In(oldDuplicateIds) }, { id });
       }
       await manager.update(AssetEntity, { id: In(assetIds) }, { duplicateId: id });
-      await manager.update(AssetEntity, { duplicateId: In(oldDuplicateIds) }, { duplicateId: id }); // TODO: cascade should handle this, but it doesn't seem to
+      await manager.update(AssetEntity, { duplicateId: In(oldDuplicateIds) }, { duplicateId: id });
     });
   }
 

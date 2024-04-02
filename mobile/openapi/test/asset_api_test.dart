@@ -50,6 +50,11 @@ void main() {
       // TODO
     });
 
+    //Future<List<AssetResponseDto>> getAssetDuplicates() async
+    test('test getAssetDuplicates', () async {
+      // TODO
+    });
+
     //Future<AssetResponseDto> getAssetInfo(String id, { String key }) async
     test('test getAssetInfo', () async {
       // TODO

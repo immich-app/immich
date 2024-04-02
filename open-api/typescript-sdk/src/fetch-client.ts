@@ -1403,6 +1403,14 @@ export function getAllUserAssetsByDeviceId({ deviceId }: {
         ...opts
     }));
 }
+export function getAssetDuplicates(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetResponseDto[];
+    }>("/asset/duplicates", {
+        ...opts
+    }));
+}
 /**
  * Checks if multiple assets exist on the server and returns all existing - used by background backup
  */

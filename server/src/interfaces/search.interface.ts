@@ -154,6 +154,7 @@ export interface FaceEmbeddingSearch extends SearchEmbeddingOptions {
 
 export interface AssetDuplicateSearch {
   assetId: string;
+  embedding: Embedding;
   userIds: string[];
   maxDistance?: number;
 }

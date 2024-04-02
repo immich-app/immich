@@ -184,7 +184,11 @@ export class SearchService {
   async handleSearchDuplicates({ id }: IEntityJob): Promise<JobStatus> {
     const { machineLearning } = await this.configCore.getConfig();
 
-    const asset = await this.assetRepository.getById(id);
+    const [asset] = await this.assetRepository.getByIds(
+      [id],
+      { smartSearch: true },
+      { smartSearch: { assetId: true, embedding: true } },
+    );
     if (!asset) {
       this.logger.error(`Asset ${id} not found`);
       return JobStatus.FAILED;
@@ -192,10 +196,6 @@ export class SearchService {
 
     if (!asset.isVisible) {
       this.logger.debug(`Asset ${id} is not visible, skipping`);
-      await this.assetRepository.upsertJobStatus({
-        assetId: asset.id,
-        duplicatesDetectedAt: new Date(),
-      });
       return JobStatus.SKIPPED;
     }
 
@@ -209,28 +209,35 @@ export class SearchService {
       return JobStatus.FAILED;
     }
 
+    if (!asset.smartSearch?.embedding) {
+      this.logger.debug(`Asset ${id} is missing embedding`);
+      return JobStatus.FAILED;
+    }
+
     const duplicateAssets = await this.searchRepository.searchDuplicates({
       assetId: asset.id,
+      embedding: asset.smartSearch.embedding,
       maxDistance: machineLearning.clip.duplicateThreshold,
       userIds: [asset.ownerId],
     });
 
+    const duplicateAssetIds = [asset.id];
+
     if (duplicateAssets.length > 0) {
-      this.logger.debug(`Found ${duplicateAssets.length} duplicates for asset ${asset.id}`);
+      this.logger.debug(
+        `Found ${duplicateAssets.length} duplicate${duplicateAssets.length === 1 ? '' : 's'} for asset ${asset.id}`,
+      );
 
       const duplicateIds = duplicateAssets.map((duplicate) => duplicate.duplicateId).filter(Boolean);
       const duplicateId = duplicateIds[0] || this.cryptoRepository.randomUUID();
 
-      const duplicateAssetIds = duplicateAssets.map((duplicate) => duplicate.assetId);
-      duplicateAssetIds.push(asset.id);
+      duplicateAssetIds.push(...duplicateAssets.map((duplicate) => duplicate.assetId));
 
       await this.assetDuplicateRepository.upsert(duplicateId, duplicateAssetIds, duplicateIds);
     }
 
-    await this.assetRepository.upsertJobStatus({
-      assetId: asset.id,
-      duplicatesDetectedAt: new Date(),
-    });
+    const duplicatesDetectedAt = new Date();
+    await this.assetRepository.upsertJobStatus(duplicateAssetIds.map((assetId) => ({ assetId, duplicatesDetectedAt })));
 
     return JobStatus.SUCCESS;
   }

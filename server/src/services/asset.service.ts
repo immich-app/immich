@@ -272,6 +272,11 @@ export class AssetService {
     return data;
   }
 
+  async getDuplicates(auth: AuthDto): Promise<AssetResponseDto[]> {
+    const res = await this.assetRepository.getDuplicates({ userIds: [auth.user.id] });
+    return res.map((a) => mapAsset(a, { auth }));
+  }
+
   async update(auth: AuthDto, id: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {
     await this.access.requirePermission(auth, Permission.ASSET_UPDATE, id);
 

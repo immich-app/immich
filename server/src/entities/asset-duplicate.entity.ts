@@ -4,7 +4,7 @@ import { Entity, Index, JoinColumn, OneToMany, PrimaryColumn } from 'typeorm';
 @Entity('asset_duplicates')
 @Index('asset_duplicates_assetId_uindex', ['assetId'], { unique: true })
 export class AssetDuplicateEntity {
-  @OneToMany(() => AssetEntity, (asset) => asset.duplicates)
+  @OneToMany(() => AssetEntity, (asset) => asset.duplicates, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   @JoinColumn({ name: 'assetId', referencedColumnName: 'id' })
   assets!: AssetEntity;
 
