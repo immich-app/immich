@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import Welcome from 'src/../emails/welcome';
 import { IDeleteFilesJob, JobName } from 'src/interfaces/job.interface';
 import { AssetService } from 'src/services/asset.service';
 import { AuditService } from 'src/services/audit.service';
@@ -39,7 +40,7 @@ export class MicroservicesService {
     await this.databaseService.init();
     await this.configService.init();
     await this.libraryService.init();
-    await this.mailService.init([]);
+    await this.mailService.init([{ name: 'welcome', component: Welcome }]);
     await this.jobService.init({
       [JobName.ASSET_DELETION]: (data) => this.assetService.handleAssetDeletion(data),
       [JobName.ASSET_DELETION_CHECK]: () => this.assetService.handleAssetDeletionCheck(),
