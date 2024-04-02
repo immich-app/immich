@@ -68,4 +68,16 @@ export class AlbumEntity {
 
   @Column({ type: 'varchar', default: AssetOrder.DESC })
   order!: AssetOrder;
+
+  @ManyToMany(() => AlbumEntity)
+  @JoinTable({
+    name: 'sub_albums',
+  })
+  parentAlbums!: AlbumEntity[];
+
+  @ManyToMany(() => AlbumEntity)
+  @JoinTable({
+    name: 'sub_albums',
+  })
+  childAlbums!: AlbumEntity[];
 }
