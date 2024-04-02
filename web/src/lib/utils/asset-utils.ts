@@ -274,8 +274,7 @@ export const getSelectedAssets = (assets: Set<AssetResponseDto>, user: UserRespo
 export async function stackAssets(assets: Array<AssetResponseDto>, onStack: (ds: string[]) => void) {
   try {
     const parent = assets.at(0);
-
-    if (parent == undefined) {
+    if (!parent) {
       return;
     }
 
