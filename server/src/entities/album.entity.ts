@@ -10,6 +10,7 @@ import {
   ManyToMany,
   ManyToOne,
   OneToMany,
+  PrimaryColumn,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -68,4 +69,21 @@ export class AlbumEntity {
 
   @Column({ type: 'varchar', default: AssetOrder.DESC })
   order!: AssetOrder;
+
+  @ManyToMany(() => AlbumEntity, (album) => album.parentAlbums)
+  @JoinTable({ name: 'sub_albums', joinColumn: { name: 'childId' }, inverseJoinColumn: { name: 'parentId' } })
+  parentAlbums!: AlbumEntity[];
+
+  @ManyToMany(() => AlbumEntity, (album) => album.childAlbums)
+  @JoinTable({ name: 'sub_albums', joinColumn: { name: 'parentId' }, inverseJoinColumn: { name: 'childId' } })
+  childAlbums!: AlbumEntity[];
+}
+
+@Entity('sub_albums')
+export class SubAlbumEntity {
+  @PrimaryColumn()
+  parentId!: string;
+
+  @PrimaryColumn()
+  childId!: string;
 }
