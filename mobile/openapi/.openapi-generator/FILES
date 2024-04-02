@@ -72,6 +72,7 @@ doc/FileChecksumResponseDto.md
 doc/FileReportDto.md
 doc/FileReportFixDto.md
 doc/FileReportItemDto.md
+doc/ImageFormat.md
 doc/JobApi.md
 doc/JobCommand.md
 doc/JobCommandDto.md
@@ -145,6 +146,7 @@ doc/SmartSearchDto.md
 doc/SystemConfigApi.md
 doc/SystemConfigDto.md
 doc/SystemConfigFFmpegDto.md
+doc/SystemConfigImageDto.md
 doc/SystemConfigJobDto.md
 doc/SystemConfigLibraryDto.md
 doc/SystemConfigLibraryScanDto.md
@@ -160,7 +162,6 @@ doc/SystemConfigServerDto.md
 doc/SystemConfigStorageTemplateDto.md
 doc/SystemConfigTemplateStorageOptionDto.md
 doc/SystemConfigThemeDto.md
-doc/SystemConfigThumbnailDto.md
 doc/SystemConfigTrashDto.md
 doc/SystemConfigUserDto.md
 doc/TagApi.md
@@ -284,6 +285,7 @@ lib/model/file_checksum_response_dto.dart
 lib/model/file_report_dto.dart
 lib/model/file_report_fix_dto.dart
 lib/model/file_report_item_dto.dart
+lib/model/image_format.dart
 lib/model/job_command.dart
 lib/model/job_command_dto.dart
 lib/model/job_counts_dto.dart
@@ -348,6 +350,7 @@ lib/model/smart_info_response_dto.dart
 lib/model/smart_search_dto.dart
 lib/model/system_config_dto.dart
 lib/model/system_config_f_fmpeg_dto.dart
+lib/model/system_config_image_dto.dart
 lib/model/system_config_job_dto.dart
 lib/model/system_config_library_dto.dart
 lib/model/system_config_library_scan_dto.dart
@@ -363,7 +366,6 @@ lib/model/system_config_server_dto.dart
 lib/model/system_config_storage_template_dto.dart
 lib/model/system_config_template_storage_option_dto.dart
 lib/model/system_config_theme_dto.dart
-lib/model/system_config_thumbnail_dto.dart
 lib/model/system_config_trash_dto.dart
 lib/model/system_config_user_dto.dart
 lib/model/tag_response_dto.dart
@@ -461,6 +463,7 @@ test/file_checksum_response_dto_test.dart
 test/file_report_dto_test.dart
 test/file_report_fix_dto_test.dart
 test/file_report_item_dto_test.dart
+test/image_format_test.dart
 test/job_api_test.dart
 test/job_command_dto_test.dart
 test/job_command_test.dart
@@ -534,6 +537,7 @@ test/smart_search_dto_test.dart
 test/system_config_api_test.dart
 test/system_config_dto_test.dart
 test/system_config_f_fmpeg_dto_test.dart
+test/system_config_image_dto_test.dart
 test/system_config_job_dto_test.dart
 test/system_config_library_dto_test.dart
 test/system_config_library_scan_dto_test.dart
@@ -549,7 +553,6 @@ test/system_config_server_dto_test.dart
 test/system_config_storage_template_dto_test.dart
 test/system_config_template_storage_option_dto_test.dart
 test/system_config_theme_dto_test.dart
-test/system_config_thumbnail_dto_test.dart
 test/system_config_trash_dto_test.dart
 test/system_config_user_dto_test.dart
 test/tag_api_test.dart

@@ -10,6 +10,7 @@ import {
   AudioCodec,
   CQMode,
   Colorspace,
+  ImageFormat,
   LogLevel,
   SystemConfig,
   SystemConfigEntity,
@@ -112,9 +113,11 @@ export const defaults = Object.freeze<SystemConfig>({
     hashVerificationEnabled: true,
     template: '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
   },
-  thumbnail: {
-    webpSize: 250,
-    jpegSize: 1440,
+  image: {
+    thumbnailFormat: ImageFormat.WEBP,
+    thumbnailSize: 250,
+    previewFormat: ImageFormat.JPEG,
+    previewSize: 1440,
     quality: 80,
     colorspace: Colorspace.P3,
   },

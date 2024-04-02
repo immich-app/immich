@@ -2102,9 +2102,18 @@
             }
           },
           {
+            "name": "previewPath",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "resizePath",
             "required": false,
             "in": "query",
+            "deprecated": true,
             "schema": {
               "type": "string"
             }
@@ -2140,6 +2149,14 @@
             "in": "query",
             "schema": {
               "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "thumbnailPath",
+            "required": false,
+            "in": "query",
+            "schema": {
               "type": "string"
             }
           },
@@ -2191,6 +2208,7 @@
             "name": "webpPath",
             "required": false,
             "in": "query",
+            "deprecated": true,
             "schema": {
               "type": "string"
             }
@@ -8114,6 +8132,13 @@
         ],
         "type": "object"
       },
+      "ImageFormat": {
+        "enum": [
+          "jpeg",
+          "webp"
+        ],
+        "type": "string"
+      },
       "JobCommand": {
         "enum": [
           "start",
@@ -8555,7 +8580,11 @@
             },
             "type": "array"
           },
+          "previewPath": {
+            "type": "string"
+          },
           "resizePath": {
+            "deprecated": true,
             "type": "string"
           },
           "size": {
@@ -8570,6 +8599,9 @@
           },
           "takenBefore": {
             "format": "date-time",
+            "type": "string"
+          },
+          "thumbnailPath": {
             "type": "string"
           },
           "trashedAfter": {
@@ -8592,6 +8624,7 @@
             "type": "string"
           },
           "webpPath": {
+            "deprecated": true,
             "type": "string"
           },
           "withArchived": {
@@ -8746,8 +8779,8 @@
       "PathType": {
         "enum": [
           "original",
-          "jpeg_thumbnail",
-          "webp_thumbnail",
+          "preview",
+          "thumbnail",
           "encoded_video",
           "sidecar",
           "face",
@@ -9743,6 +9776,9 @@
           "ffmpeg": {
             "$ref": "#/components/schemas/SystemConfigFFmpegDto"
           },
+          "image": {
+            "$ref": "#/components/schemas/SystemConfigImageDto"
+          },
           "job": {
             "$ref": "#/components/schemas/SystemConfigJobDto"
           },
@@ -9779,9 +9815,6 @@
           "theme": {
             "$ref": "#/components/schemas/SystemConfigThemeDto"
           },
-          "thumbnail": {
-            "$ref": "#/components/schemas/SystemConfigThumbnailDto"
-          },
           "trash": {
             "$ref": "#/components/schemas/SystemConfigTrashDto"
           },
@@ -9791,6 +9824,7 @@
         },
         "required": [
           "ffmpeg",
+          "image",
           "job",
           "library",
           "logging",
@@ -9803,7 +9837,6 @@
           "server",
           "storageTemplate",
           "theme",
-          "thumbnail",
           "trash",
           "user"
         ],
@@ -9899,6 +9932,37 @@
           "tonemap",
           "transcode",
           "twoPass"
+        ],
+        "type": "object"
+      },
+      "SystemConfigImageDto": {
+        "properties": {
+          "colorspace": {
+            "$ref": "#/components/schemas/Colorspace"
+          },
+          "previewFormat": {
+            "$ref": "#/components/schemas/ImageFormat"
+          },
+          "previewSize": {
+            "type": "integer"
+          },
+          "quality": {
+            "type": "integer"
+          },
+          "thumbnailFormat": {
+            "$ref": "#/components/schemas/ImageFormat"
+          },
+          "thumbnailSize": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "colorspace",
+          "previewFormat",
+          "previewSize",
+          "quality",
+          "thumbnailFormat",
+          "thumbnailSize"
         ],
         "type": "object"
       },
@@ -10248,29 +10312,6 @@
         },
         "required": [
           "customCss"
-        ],
-        "type": "object"
-      },
-      "SystemConfigThumbnailDto": {
-        "properties": {
-          "colorspace": {
-            "$ref": "#/components/schemas/Colorspace"
-          },
-          "jpegSize": {
-            "type": "integer"
-          },
-          "quality": {
-            "type": "integer"
-          },
-          "webpSize": {
-            "type": "integer"
-          }
-        },
-        "required": [
-          "colorspace",
-          "jpegSize",
-          "quality",
-          "webpSize"
         ],
         "type": "object"
       },
