@@ -48,13 +48,13 @@ export class MailRepository implements IMailRepository {
     });
   }
 
-  // queueSendEmailEmail(template: string, options: MailOptions): Promise<void> {
-  //   return this.jobRepository.queue({
-  //     name: JobName.NOTIFY_SEND_EMAIL,
-  //     data: {
-  //       template,
-  //       options,
-  //     },
-  //   });
-  // }
+  queueSendEmailEmail(template: string, options: MailOptions): Promise<void> {
+    return this.jobRepository.queue({
+      name: JobName.NOTIFY_SEND_EMAIL,
+      data: {
+        template,
+        options,
+      },
+    });
+  }
 }

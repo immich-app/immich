@@ -1,3 +1,5 @@
+import { MailOptions } from "src/interfaces/mail.interface";
+
 export enum QueueName {
   THUMBNAIL_GENERATION = 'thumbnailGeneration',
   METADATA_EXTRACTION = 'metadataExtraction',
@@ -11,6 +13,7 @@ export enum QueueName {
   SEARCH = 'search',
   SIDECAR = 'sidecar',
   LIBRARY = 'library',
+  NOTIFICATION = 'notifications',
 }
 
 export type ConcurrentQueueName = Exclude<
@@ -89,6 +92,9 @@ export enum JobName {
   SIDECAR_DISCOVERY = 'sidecar-discovery',
   SIDECAR_SYNC = 'sidecar-sync',
   SIDECAR_WRITE = 'sidecar-write',
+
+  // Notification
+  NOTIFY_SEND_EMAIL = 'notification-email-send',
 }
 
 export const JOBS_ASSET_PAGINATION_SIZE = 1000;
@@ -133,6 +139,11 @@ export interface ISidecarWriteJob extends IEntityJob {
 
 export interface IDeferrableJob extends IEntityJob {
   deferred?: boolean;
+}
+
+export interface IEmailJob extends IBaseJob {
+  template: string;
+  options: MailOptions;
 }
 
 export interface JobCounts {
@@ -216,7 +227,10 @@ export type JobItem =
   | { name: JobName.LIBRARY_REMOVE_OFFLINE; data: IEntityJob }
   | { name: JobName.LIBRARY_DELETE; data: IEntityJob }
   | { name: JobName.LIBRARY_QUEUE_SCAN_ALL; data: IBaseJob }
-  | { name: JobName.LIBRARY_QUEUE_CLEANUP; data: IBaseJob };
+  | { name: JobName.LIBRARY_QUEUE_CLEANUP; data: IBaseJob }
+
+  // Notification
+  | { name: JobName.NOTIFY_SEND_EMAIL; data: IEmailJob };
 
 export enum JobStatus {
   SUCCESS = 'success',

@@ -7172,6 +7172,9 @@
           "migration": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
+          "notifications": {
+            "$ref": "#/components/schemas/JobStatusDto"
+          },
           "search": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
@@ -7198,6 +7201,7 @@
           "library",
           "metadataExtraction",
           "migration",
+          "notifications",
           "search",
           "sidecar",
           "smartSearch",
@@ -8516,7 +8520,8 @@
           "migration",
           "search",
           "sidecar",
-          "library"
+          "library",
+          "notifications"
         ],
         "type": "string"
       },
@@ -10422,6 +10427,9 @@
           "migration": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
+          "notifications": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
           "search": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
@@ -10444,6 +10452,7 @@
           "library",
           "metadataExtraction",
           "migration",
+          "notifications",
           "search",
           "sidecar",
           "smartSearch",

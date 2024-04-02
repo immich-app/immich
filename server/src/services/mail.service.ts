@@ -5,10 +5,11 @@ import { SystemConfigCore } from 'src/cores/system-config.core';
 import { OnServerEvent } from 'src/decorators';
 import { SystemConfigSmtpDto } from 'src/dtos/system-config.dto';
 import { ServerAsyncEvent, ServerAsyncEventMap } from 'src/interfaces/event.interface';
+import { IMailRepository, TemplateAdapter, TemplateRegistry } from 'src/interfaces/mail.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 import { ReactMailAdapter } from 'src/react-mail.adapter';
 import { ImmichLogger } from 'src/utils/logger';
-import { IMailRepository, TemplateAdapter, TemplateRegistry } from '../interfaces/mail.interface';
+import { IEmailJob, JobStatus } from '../interfaces/job.interface';
 
 @Injectable()
 export class MailService extends EventEmitter {
@@ -74,18 +75,18 @@ export class MailService extends EventEmitter {
     });
   }
 
-  // async handleQueueSendEmail({ template, options }: IEmailJob): Promise<JobStatus> {
-  //   this.logger.debug('Cleaning up any pending email');
-  //
-  //   if (!this.transporter) throw new Error('SMTP transporter is not available to send email!');
-  //
-  //   const response = await this.repository.sendRawEmail(this.transporter, { template, ...options });
-  //   if (!response) {
-  //     return JobStatus.FAILED;
-  //   }
-  //
-  //   this.logger.log(`Sent mail with id: ${response.messageId} status: ${response.response}`);
-  //
-  //   return JobStatus.SUCCESS;
-  // }
+  async handleQueueSendEmail({ template, options }: IEmailJob): Promise<JobStatus> {
+    this.logger.debug('Cleaning up any pending email');
+
+    if (!this.transporter) throw new Error('SMTP transporter is not available to send email!');
+
+    const response = await this.repository.sendRawEmail(this.transporter, { template, ...options });
+    if (!response) {
+      return JobStatus.FAILED;
+    }
+
+    this.logger.log(`Sent mail with id: ${response.messageId} status: ${response.response}`);
+
+    return JobStatus.SUCCESS;
+  }
 }

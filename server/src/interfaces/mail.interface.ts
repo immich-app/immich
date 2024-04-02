@@ -53,5 +53,5 @@ export interface IMailRepository {
   /**
    * Send an email with specified template and options. Queue the Job.
    */
-  // queueSendEmailEmail(template: string, options: MailOptions): Promise<void>;
+  queueSendEmailEmail(template: string, options: MailOptions): Promise<void>;
 }

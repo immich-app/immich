@@ -5,6 +5,7 @@ import { AuditService } from 'src/services/audit.service';
 import { DatabaseService } from 'src/services/database.service';
 import { JobService } from 'src/services/job.service';
 import { LibraryService } from 'src/services/library.service';
+import { MailService } from 'src/services/mail.service';
 import { MediaService } from 'src/services/media.service';
 import { MetadataService } from 'src/services/metadata.service';
 import { PersonService } from 'src/services/person.service';
@@ -31,12 +32,14 @@ export class MicroservicesService {
     private storageService: StorageService,
     private userService: UserService,
     private databaseService: DatabaseService,
+    private mailService: MailService,
   ) {}
 
   async init() {
     await this.databaseService.init();
     await this.configService.init();
     await this.libraryService.init();
+    await this.mailService.init([]);
     await this.jobService.init({
       [JobName.ASSET_DELETION]: (data) => this.assetService.handleAssetDeletion(data),
       [JobName.ASSET_DELETION_CHECK]: () => this.assetService.handleAssetDeletionCheck(),
@@ -77,6 +80,7 @@ export class MicroservicesService {
       [JobName.LIBRARY_REMOVE_OFFLINE]: (data) => this.libraryService.handleOfflineRemoval(data),
       [JobName.LIBRARY_QUEUE_SCAN_ALL]: (data) => this.libraryService.handleQueueAllScan(data),
       [JobName.LIBRARY_QUEUE_CLEANUP]: () => this.libraryService.handleQueueCleanup(),
+      [JobName.NOTIFY_SEND_EMAIL]: (data) => this.mailService.handleQueueSendEmail(data),
     });
 
     await this.metadataService.init();

@@ -42,6 +42,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     [QueueName.MIGRATION]: { concurrency: 5 },
     [QueueName.THUMBNAIL_GENERATION]: { concurrency: 5 },
     [QueueName.VIDEO_CONVERSION]: { concurrency: 1 },
+    [QueueName.NOTIFICATION]: { concurrency: 5 },
   },
   ffmpeg: {
     crf: 30,
@@ -149,6 +150,14 @@ const updatedConfig = Object.freeze<SystemConfig>({
   },
   user: {
     deleteDelay: 15,
+  },
+  smtp: {
+    transport: '',
+    from: '',
+    host: '',
+    port: 25,
+    username: '',
+    password: '',
   },
 });
 
