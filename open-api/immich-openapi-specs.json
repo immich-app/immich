@@ -8769,7 +8769,7 @@
             "type": "array"
           },
           "data": {
-            "$ref": "#/components/schemas/OnThisDayDto"
+            "type": "object"
           },
           "isSaved": {
             "type": "boolean"
@@ -8829,7 +8829,7 @@
             "type": "string"
           },
           "data": {
-            "$ref": "#/components/schemas/OnThisDayDto"
+            "type": "object"
           },
           "deletedAt": {
             "format": "date-time",
@@ -9107,17 +9107,6 @@
         },
         "required": [
           "redirectUri"
-        ],
-        "type": "object"
-      },
-      "OnThisDayDto": {
-        "properties": {
-          "year": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "year"
         ],
         "type": "object"
       },
