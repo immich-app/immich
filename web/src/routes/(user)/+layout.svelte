@@ -22,8 +22,27 @@
       await fileUploadHandler(filesArray, albumId);
     }
   };
+
+  const pasteHandler = async ({ clipboardData }: ClipboardEvent) => {
+    const files = clipboardData?.files;
+    if (!files) {
+      return;
+    }
+
+    const filesArray: File[] = Array.from<File>(files);
+    albumId = ($page.route.id === '/(user)/albums/[albumId]' || undefined) && $page.params.albumId;
+
+    const isShare = $page.route.id === '/(user)/share/[key]' || undefined;
+    if (isShare) {
+      dragAndDropFilesStore.set({ isDragging: true, files: filesArray });
+    } else {
+      await fileUploadHandler(filesArray, albumId);
+    }
+  };
 </script>
 
-<slot {albumId} />
+<div on:paste={pasteHandler}>
+  <slot {albumId} />
+</div>
 
 <UploadCover {dropHandler} />
