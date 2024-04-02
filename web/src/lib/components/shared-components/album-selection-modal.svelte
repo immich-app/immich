@@ -43,17 +43,16 @@
   const handleNew = () => {
     dispatch('newAlbum', search.length > 0 ? search : '');
   };
+
+  const getTitle = () => {
+    if (shared) {
+      return 'Add to shared album';
+    }
+    return 'Add to album';
+  };
 </script>
 
-<BaseModal on:close on:escape>
-  <svelte:fragment slot="title">
-    <span class="flex place-items-center gap-2">
-      <p class="font-medium">
-        Add to {shared ? 'Shared ' : ''}Album
-      </p>
-    </span>
-  </svelte:fragment>
-
+<BaseModal id="album-selection-modal" title={getTitle()} on:close>
   <div class="mb-2 flex max-h-[400px] flex-col">
     {#if loading}
       {#each { length: 3 } as _}
@@ -69,11 +68,9 @@
         </div>
       {/each}
     {:else}
-      <!-- svelte-ignore a11y-autofocus -->
       <input
         class="border-b-4 border-immich-bg bg-immich-bg px-6 py-2 text-2xl focus:border-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:focus:border-immich-dark-primary"
         placeholder="Search"
-        autofocus
         bind:value={search}
       />
       <div class="immich-scrollbar overflow-y-auto">
