@@ -184,11 +184,7 @@ export class SearchService {
   async handleSearchDuplicates({ id }: IEntityJob): Promise<JobStatus> {
     const { machineLearning } = await this.configCore.getConfig();
 
-    const [asset] = await this.assetRepository.getByIds(
-      [id],
-      { smartSearch: true },
-      { smartSearch: { assetId: true, embedding: true } },
-    );
+    const asset = await this.assetRepository.getById(id, { smartSearch: true });
     if (!asset) {
       this.logger.error(`Asset ${id} not found`);
       return JobStatus.FAILED;
