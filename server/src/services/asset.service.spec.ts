@@ -311,13 +311,15 @@ describe(AssetService.name, () => {
       const image1 = { ...assetStub.image, localDateTime: new Date(2023, 1, 15, 0, 0, 0) };
       const image2 = { ...assetStub.image, localDateTime: new Date(2023, 1, 15, 1, 0, 0) };
       const image3 = { ...assetStub.image, localDateTime: new Date(2015, 1, 15) };
+      const image4 = { ...assetStub.image, localDateTime: new Date(2009, 1, 15) };
 
       partnerMock.getAll.mockResolvedValue([]);
-      assetMock.getByDayOfYear.mockResolvedValue([image1, image2, image3]);
+      assetMock.getByDayOfYear.mockResolvedValue([image1, image2, image3, image4]);
 
       await expect(sut.getMemoryLane(authStub.admin, { day: 15, month: 1 })).resolves.toEqual([
         { yearsAgo: 1, title: '1 year since...', assets: [mapAsset(image1), mapAsset(image2)] },
         { yearsAgo: 9, title: '9 years since...', assets: [mapAsset(image3)] },
+        { yearsAgo: 15, title: '15 years since...', assets: [mapAsset(image4)] },
       ]);
 
       expect(assetMock.getByDayOfYear.mock.calls).toEqual([[[authStub.admin.user.id], { day: 15, month: 1 }]]);
