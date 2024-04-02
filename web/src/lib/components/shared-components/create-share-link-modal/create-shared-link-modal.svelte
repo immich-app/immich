@@ -237,11 +237,11 @@
     {#if !sharedLink}
       {#if editingLink}
         <div class="flex justify-end">
-          <Button size="sm" rounded="lg" on:click={handleEditLink}>Confirm</Button>
+          <Button size="sm" on:click={handleEditLink}>Confirm</Button>
         </div>
       {:else}
         <div class="flex justify-end">
-          <Button size="sm" rounded="lg" on:click={handleCreateSharedLink}>Create link</Button>
+          <Button size="sm" on:click={handleCreateSharedLink}>Create link</Button>
         </div>
       {/if}
     {:else}
