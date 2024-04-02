@@ -664,6 +664,7 @@
 
 {#if viewMode === ViewMode.CONFIRM_DELETE}
   <ConfirmDialogue
+    id="delete-album-modal"
     title="Delete album"
     confirmText="Delete"
     onConfirm={handleRemoveAlbum}

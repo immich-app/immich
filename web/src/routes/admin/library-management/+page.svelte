@@ -300,6 +300,7 @@
 
 {#if confirmDeleteLibrary}
   <ConfirmDialogue
+    id="warning-modal"
     title="Warning!"
     prompt="Are you sure you want to delete this library? This will delete all {deleteAssetCount} contained assets from Immich and cannot be undone. Files will remain on disk."
     onConfirm={handleDelete}

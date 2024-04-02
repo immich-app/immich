@@ -109,7 +109,7 @@
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
-  import { mdiDeleteOutline } from '@mdi/js';
+  import { mdiDeleteOutline, mdiImageAlbum } from '@mdi/js';
   import { orderBy } from 'lodash-es';
   import { onMount } from 'svelte';
   import { flip } from 'svelte/animate';
@@ -252,7 +252,12 @@
 </script>
 
 {#if shouldShowEditAlbumForm}
-  <FullScreenModal onClose={() => (shouldShowEditAlbumForm = false)}>
+  <FullScreenModal
+    id="edit-album-modal"
+    title="Edit album"
+    icon={mdiImageAlbum}
+    onClose={() => (shouldShowEditAlbumForm = false)}
+  >
     <EditAlbumForm
       album={selectedAlbum}
       on:editSuccess={() => successModifyAlbum()}
@@ -317,7 +322,8 @@
 
 {#if albumToDelete}
   <ConfirmDialogue
-    title="Delete Album"
+    id="delete-album-modal"
+    title="Delete album"
     confirmText="Delete"
     onConfirm={deleteSelectedAlbum}
     onClose={() => (albumToDelete = null)}
