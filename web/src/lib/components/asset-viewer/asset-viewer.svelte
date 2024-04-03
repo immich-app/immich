@@ -264,7 +264,6 @@
   };
 
   const handleCloseViewer = () => {
-    $isShowDetail = false;
     closeViewer();
   };
 
@@ -737,7 +736,6 @@
         on:newAlbum={({ detail }) => handleAddToNewAlbum(detail)}
         on:album={({ detail }) => handleAddToAlbum(detail)}
         on:close={() => (isShowAlbumPicker = false)}
-        on:escape={() => (isShowAlbumPicker = false)}
       />
     {/if}
 
@@ -751,19 +749,11 @@
     {/if}
 
     {#if isShowProfileImageCrop}
-      <ProfileImageCropper
-        {asset}
-        on:close={() => (isShowProfileImageCrop = false)}
-        on:escape={() => (isShowProfileImageCrop = false)}
-      />
+      <ProfileImageCropper {asset} on:close={() => (isShowProfileImageCrop = false)} />
     {/if}
 
     {#if isShowShareModal}
-      <CreateSharedLinkModal
-        assetIds={[asset.id]}
-        on:close={() => (isShowShareModal = false)}
-        on:escape={() => (isShowShareModal = false)}
-      />
+      <CreateSharedLinkModal assetIds={[asset.id]} on:close={() => (isShowShareModal = false)} />
     {/if}
   </section>
 </FocusTrap>

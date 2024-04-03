@@ -399,7 +399,7 @@ export class AssetService {
       await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: asset.livePhotoVideoId } });
     }
 
-    const files = [asset.webpPath, asset.resizePath, asset.encodedVideoPath, asset.sidecarPath];
+    const files = [asset.thumbnailPath, asset.previewPath, asset.encodedVideoPath, asset.sidecarPath];
     if (!fromExternal) {
       files.push(asset.originalPath);
     }
@@ -472,7 +472,7 @@ export class AssetService {
         }
 
         case AssetJobName.REGENERATE_THUMBNAIL: {
-          jobs.push({ name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id } });
+          jobs.push({ name: JobName.GENERATE_PREVIEW, data: { id } });
           break;
         }
 

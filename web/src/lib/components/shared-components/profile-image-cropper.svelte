@@ -71,12 +71,7 @@
   };
 </script>
 
-<BaseModal on:close on:escape>
-  <svelte:fragment slot="title">
-    <span class="flex place-items-center gap-2">
-      <p class="font-medium">Set profile picture</p>
-    </span>
-  </svelte:fragment>
+<BaseModal id="profile-image-cropper" title="Set profile picture" on:close>
   <div class="flex place-items-center items-center justify-center">
     <div
       class="relative flex aspect-square w-1/2 overflow-hidden rounded-full border-4 border-immich-primary bg-immich-dark-primary dark:border-immich-dark-primary dark:bg-immich-primary"

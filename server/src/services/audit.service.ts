@@ -95,13 +95,13 @@ export class AuditService {
           break;
         }
 
-        case AssetPathType.JPEG_THUMBNAIL: {
-          await this.assetRepository.update({ id, resizePath: pathValue });
+        case AssetPathType.PREVIEW: {
+          await this.assetRepository.update({ id, previewPath: pathValue });
           break;
         }
 
-        case AssetPathType.WEBP_THUMBNAIL: {
-          await this.assetRepository.update({ id, webpPath: pathValue });
+        case AssetPathType.THUMBNAIL: {
+          await this.assetRepository.update({ id, thumbnailPath: pathValue });
           break;
         }
 
@@ -174,8 +174,8 @@ export class AuditService {
     const orphans: FileReportItemDto[] = [];
     for await (const assets of pagination) {
       assetCount += assets.length;
-      for (const { id, originalPath, resizePath, encodedVideoPath, webpPath, isExternal, checksum } of assets) {
-        for (const file of [originalPath, resizePath, encodedVideoPath, webpPath]) {
+      for (const { id, originalPath, previewPath, encodedVideoPath, thumbnailPath, isExternal, checksum } of assets) {
+        for (const file of [originalPath, previewPath, encodedVideoPath, thumbnailPath]) {
           track(file);
         }
 
@@ -191,14 +191,14 @@ export class AuditService {
         ) {
           orphans.push({ ...entity, pathType: AssetPathType.ORIGINAL, pathValue: originalPath });
         }
-        if (resizePath && !hasFile(thumbFiles, resizePath)) {
-          orphans.push({ ...entity, pathType: AssetPathType.JPEG_THUMBNAIL, pathValue: resizePath });
+        if (previewPath && !hasFile(thumbFiles, previewPath)) {
+          orphans.push({ ...entity, pathType: AssetPathType.PREVIEW, pathValue: previewPath });
         }
-        if (webpPath && !hasFile(thumbFiles, webpPath)) {
-          orphans.push({ ...entity, pathType: AssetPathType.WEBP_THUMBNAIL, pathValue: webpPath });
+        if (thumbnailPath && !hasFile(thumbFiles, thumbnailPath)) {
+          orphans.push({ ...entity, pathType: AssetPathType.THUMBNAIL, pathValue: thumbnailPath });
         }
         if (encodedVideoPath && !hasFile(videoFiles, encodedVideoPath)) {
-          orphans.push({ ...entity, pathType: AssetPathType.WEBP_THUMBNAIL, pathValue: encodedVideoPath });
+          orphans.push({ ...entity, pathType: AssetPathType.THUMBNAIL, pathValue: encodedVideoPath });
         }
       }
     }

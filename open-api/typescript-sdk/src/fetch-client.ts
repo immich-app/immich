@@ -494,6 +494,35 @@ export type ValidateLibraryImportPathResponseDto = {
 export type ValidateLibraryResponseDto = {
     importPaths?: ValidateLibraryImportPathResponseDto[];
 };
+export type OnThisDayDto = {
+    year: number;
+};
+export type MemoryResponseDto = {
+    assets: AssetResponseDto[];
+    createdAt: string;
+    data: OnThisDayDto;
+    deletedAt?: string;
+    id: string;
+    isSaved: boolean;
+    memoryAt: string;
+    ownerId: string;
+    seenAt?: string;
+    "type": Type2;
+    updatedAt: string;
+};
+export type MemoryCreateDto = {
+    assetIds?: string[];
+    data: OnThisDayDto;
+    isSaved?: boolean;
+    memoryAt: string;
+    seenAt?: string;
+    "type": MemoryType;
+};
+export type MemoryUpdateDto = {
+    isSaved?: boolean;
+    memoryAt?: string;
+    seenAt?: string;
+};
 export type OAuthConfigDto = {
     redirectUri: string;
 };
@@ -640,11 +669,13 @@ export type MetadataSearchDto = {
     originalPath?: string;
     page?: number;
     personIds?: string[];
+    previewPath?: string;
     resizePath?: string;
     size?: number;
     state?: string;
     takenAfter?: string;
     takenBefore?: string;
+    thumbnailPath?: string;
     trashedAfter?: string;
     trashedBefore?: string;
     "type"?: AssetTypeEnum;
@@ -827,6 +858,14 @@ export type SystemConfigFFmpegDto = {
     transcode: TranscodePolicy;
     twoPass: boolean;
 };
+export type SystemConfigImageDto = {
+    colorspace: Colorspace;
+    previewFormat: ImageFormat;
+    previewSize: number;
+    quality: number;
+    thumbnailFormat: ImageFormat;
+    thumbnailSize: number;
+};
 export type JobSettingsDto = {
     concurrency: number;
 };
@@ -919,12 +958,6 @@ export type SystemConfigStorageTemplateDto = {
 export type SystemConfigThemeDto = {
     customCss: string;
 };
-export type SystemConfigThumbnailDto = {
-    colorspace: Colorspace;
-    jpegSize: number;
-    quality: number;
-    webpSize: number;
-};
 export type SystemConfigTrashDto = {
     days: number;
     enabled: boolean;
@@ -934,6 +967,7 @@ export type SystemConfigUserDto = {
 };
 export type SystemConfigDto = {
     ffmpeg: SystemConfigFFmpegDto;
+    image: SystemConfigImageDto;
     job: SystemConfigJobDto;
     library: SystemConfigLibraryDto;
     logging: SystemConfigLoggingDto;
@@ -946,7 +980,6 @@ export type SystemConfigDto = {
     server: SystemConfigServerDto;
     storageTemplate: SystemConfigStorageTemplateDto;
     theme: SystemConfigThemeDto;
-    thumbnail: SystemConfigThumbnailDto;
     trash: SystemConfigTrashDto;
     user: SystemConfigUserDto;
 };
@@ -1497,7 +1530,7 @@ export function updateAsset({ id, updateAssetDto }: {
         body: updateAssetDto
     })));
 }
-export function searchAssets({ checksum, city, country, createdAfter, createdBefore, deviceAssetId, deviceId, encodedVideoPath, id, isArchived, isEncoded, isExternal, isFavorite, isMotion, isNotInAlbum, isOffline, isReadOnly, isVisible, lensModel, libraryId, make, model, order, originalFileName, originalPath, page, personIds, resizePath, size, state, takenAfter, takenBefore, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, webpPath, withArchived, withDeleted, withExif, withPeople, withStacked }: {
+export function searchAssets({ checksum, city, country, createdAfter, createdBefore, deviceAssetId, deviceId, encodedVideoPath, id, isArchived, isEncoded, isExternal, isFavorite, isMotion, isNotInAlbum, isOffline, isReadOnly, isVisible, lensModel, libraryId, make, model, order, originalFileName, originalPath, page, personIds, previewPath, resizePath, size, state, takenAfter, takenBefore, thumbnailPath, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, webpPath, withArchived, withDeleted, withExif, withPeople, withStacked }: {
     checksum?: string;
     city?: string;
     country?: string;
@@ -1525,11 +1558,13 @@ export function searchAssets({ checksum, city, country, createdAfter, createdBef
     originalPath?: string;
     page?: number;
     personIds?: string[];
+    previewPath?: string;
     resizePath?: string;
     size?: number;
     state?: string;
     takenAfter?: string;
     takenBefore?: string;
+    thumbnailPath?: string;
     trashedAfter?: string;
     trashedBefore?: string;
     $type?: AssetTypeEnum;
@@ -1573,11 +1608,13 @@ export function searchAssets({ checksum, city, country, createdAfter, createdBef
         originalPath,
         page,
         personIds,
+        previewPath,
         resizePath,
         size,
         state,
         takenAfter,
         takenBefore,
+        thumbnailPath,
         trashedAfter,
         trashedBefore,
         "type": $type,
@@ -1898,6 +1935,83 @@ export function validate({ id, validateLibraryDto }: {
         ...opts,
         method: "POST",
         body: validateLibraryDto
+    })));
+}
+export function searchMemories(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: MemoryResponseDto[];
+    }>("/memories", {
+        ...opts
+    }));
+}
+export function createMemory({ memoryCreateDto }: {
+    memoryCreateDto: MemoryCreateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: MemoryResponseDto;
+    }>("/memories", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: memoryCreateDto
+    })));
+}
+export function deleteMemory({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/memories/${encodeURIComponent(id)}`, {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+export function getMemory({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: MemoryResponseDto;
+    }>(`/memories/${encodeURIComponent(id)}`, {
+        ...opts
+    }));
+}
+export function updateMemory({ id, memoryUpdateDto }: {
+    id: string;
+    memoryUpdateDto: MemoryUpdateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: MemoryResponseDto;
+    }>(`/memories/${encodeURIComponent(id)}`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: memoryUpdateDto
+    })));
+}
+export function removeMemoryAssets({ id, bulkIdsDto }: {
+    id: string;
+    bulkIdsDto: BulkIdsDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: BulkIdResponseDto[];
+    }>(`/memories/${encodeURIComponent(id)}/assets`, oazapfts.json({
+        ...opts,
+        method: "DELETE",
+        body: bulkIdsDto
+    })));
+}
+export function addMemoryAssets({ id, bulkIdsDto }: {
+    id: string;
+    bulkIdsDto: BulkIdsDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: BulkIdResponseDto[];
+    }>(`/memories/${encodeURIComponent(id)}/assets`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: bulkIdsDto
     })));
 }
 export function startOAuth({ oAuthConfigDto }: {
@@ -2802,8 +2916,8 @@ export enum PathEntityType {
 }
 export enum PathType {
     Original = "original",
-    JpegThumbnail = "jpeg_thumbnail",
-    WebpThumbnail = "webp_thumbnail",
+    Preview = "preview",
+    Thumbnail = "thumbnail",
     EncodedVideo = "encoded_video",
     Sidecar = "sidecar",
     Face = "face",
@@ -2833,6 +2947,12 @@ export enum JobCommand {
 export enum LibraryType {
     Upload = "UPLOAD",
     External = "EXTERNAL"
+}
+export enum Type2 {
+    OnThisDay = "on_this_day"
+}
+export enum MemoryType {
+    OnThisDay = "on_this_day"
 }
 export enum SearchSuggestionType {
     Country = "country",
@@ -2885,6 +3005,14 @@ export enum TranscodePolicy {
     Required = "required",
     Disabled = "disabled"
 }
+export enum Colorspace {
+    Srgb = "srgb",
+    P3 = "p3"
+}
+export enum ImageFormat {
+    Jpeg = "jpeg",
+    Webp = "webp"
+}
 export enum LogLevel {
     Verbose = "verbose",
     Debug = "debug",
@@ -2900,10 +3028,6 @@ export enum CLIPMode {
 export enum ModelType {
     FacialRecognition = "facial-recognition",
     Clip = "clip"
-}
-export enum Colorspace {
-    Srgb = "srgb",
-    P3 = "p3"
 }
 export enum MapTheme {
     Light = "light",

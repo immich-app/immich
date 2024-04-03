@@ -1,11 +1,11 @@
 import { Writable } from 'node:stream';
-import { TranscodeTarget, VideoCodec } from 'src/entities/system-config.entity';
+import { ImageFormat, TranscodeTarget, VideoCodec } from 'src/entities/system-config.entity';
 
 export const IMediaRepository = 'IMediaRepository';
 
 export interface ResizeOptions {
   size: number;
-  format: 'webp' | 'jpeg';
+  format: ImageFormat;
   colorspace: string;
   quality: number;
 }

@@ -24,8 +24,8 @@ export class MoveEntity {
 
 export enum AssetPathType {
   ORIGINAL = 'original',
-  JPEG_THUMBNAIL = 'jpeg_thumbnail',
-  WEBP_THUMBNAIL = 'webp_thumbnail',
+  PREVIEW = 'preview',
+  THUMBNAIL = 'thumbnail',
   ENCODED_VIDEO = 'encoded_video',
   SIDECAR = 'sidecar',
 }

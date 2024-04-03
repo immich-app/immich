@@ -143,20 +143,16 @@
       handleError(error, 'Failed to edit shared link');
     }
   };
+
+  const getTitle = () => {
+    if (editingLink) {
+      return 'Edit link';
+    }
+    return 'Create link to share';
+  };
 </script>
 
-<BaseModal on:close={() => dispatch('close')} on:escape={() => dispatch('escape')}>
-  <svelte:fragment slot="title">
-    <span class="flex place-items-center gap-2">
-      <Icon path={mdiLink} size={24} />
-      {#if editingLink}
-        <p class="font-medium text-immich-fg dark:text-immich-dark-fg">Edit link</p>
-      {:else}
-        <p class="font-medium text-immich-fg dark:text-immich-dark-fg">Create link to share</p>
-      {/if}
-    </span>
-  </svelte:fragment>
-
+<BaseModal id="create-shared-link-modal" title={getTitle()} icon={mdiLink} on:close>
   <section class="mx-6 mb-6">
     {#if shareType === SharedLinkType.Album}
       {#if !editingLink}
@@ -249,11 +245,11 @@
     {#if !sharedLink}
       {#if editingLink}
         <div class="flex justify-end">
-          <Button size="sm" rounded="lg" on:click={handleEditLink}>Confirm</Button>
+          <Button size="sm" on:click={handleEditLink}>Confirm</Button>
         </div>
       {:else}
         <div class="flex justify-end">
-          <Button size="sm" rounded="lg" on:click={handleCreateSharedLink}>Create link</Button>
+          <Button size="sm" on:click={handleCreateSharedLink}>Create link</Button>
         </div>
       {/if}
     {:else}

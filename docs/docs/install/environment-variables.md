@@ -164,13 +164,14 @@ The following variables support the use of [Docker secrets](https://docs.docker.
 To use any of these, replace the regular environment variable with the equivalent `_FILE` environment variable. The value of
 the `_FILE` variable should be set to the path of a file containing the variable value.
 
-|  Regular Variable  | Equivalent Docker Secrets '\_FILE' Variable |
-| :----------------: | :-----------------------------------------: |
-|   `DB_HOSTNAME`    |      `DB_HOSTNAME_FILE`<sup>\*1</sup>       |
-| `DB_DATABASE_NAME` |    `DB_DATABASE_NAME_FILE`<sup>\*1</sup>    |
-|   `DB_USERNAME`    |      `DB_USERNAME_FILE`<sup>\*1</sup>       |
-|   `DB_PASSWORD`    |      `DB_PASSWORD_FILE`<sup>\*1</sup>       |
-|  `REDIS_PASSWORD`  |     `REDIS_PASSWORD_FILE`<sup>\*2</sup>     |
+| Regular Variable   | Equivalent Docker Secrets '\_FILE' Variable |
+| :----------------- | :------------------------------------------ |
+| `DB_HOSTNAME`      | `DB_HOSTNAME_FILE`<sup>\*1</sup>            |
+| `DB_DATABASE_NAME` | `DB_DATABASE_NAME_FILE`<sup>\*1</sup>       |
+| `DB_USERNAME`      | `DB_USERNAME_FILE`<sup>\*1</sup>            |
+| `DB_PASSWORD`      | `DB_PASSWORD_FILE`<sup>\*1</sup>            |
+| `DB_URL`           | `DB_URL_FILE`<sup>\*1</sup>                 |
+| `REDIS_PASSWORD`   | `REDIS_PASSWORD_FILE`<sup>\*2</sup>         |
 
 \*1: See the [official documentation](https://github.com/docker-library/docs/tree/master/postgres#docker-secrets) for
 details on how to use Docker Secrets in the Postgres image.
