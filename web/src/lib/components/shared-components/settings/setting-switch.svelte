@@ -34,6 +34,7 @@
     </div>
 
     <label class="text-sm dark:text-immich-dark-fg" for={sliderId}>{subtitle}</label>
+    <slot />
   </div>
 
   <Slider id={sliderId} bind:checked {disabled} on:toggle={({ detail }) => onToggle(detail)} />
