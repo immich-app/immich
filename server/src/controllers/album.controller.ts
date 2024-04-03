@@ -6,6 +6,7 @@ import {
   AlbumInfoDto,
   AlbumResponseDto,
   CreateAlbumDto,
+  CreateSubAlbumDto,
   GetAlbumsDto,
   UpdateAlbumDto,
 } from 'src/dtos/album.dto';
@@ -95,5 +96,24 @@ export class AlbumController {
     @Param('userId', new ParseMeUUIDPipe({ version: '4' })) userId: string,
   ) {
     return this.service.removeUser(auth, id, userId);
+  }
+
+  @Post('sub-album')
+  createSubAlbum(@Auth() auth: AuthDto, @Body() dto: CreateSubAlbumDto) {
+    // TODO
+  }
+
+  @Delete(':id/sub-album/:childAlbumId')
+  removeSubAlbum(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+    @Param('childAlbumId', new ParseMeUUIDPipe({ version: '4' })) childAlbumId: string,
+  ) {
+    // TODO
+  }
+
+  @Get(':id/sub-album')
+  getAlbumTree(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto) {
+    // TODO
   }
 }

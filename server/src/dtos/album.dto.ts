@@ -116,6 +116,14 @@ export class AlbumResponseDto {
   childAlbums?: SubAlbumResponseDto[];
 }
 
+export class CreateSubAlbumDto {
+  @IsString()
+  parentId!: string;
+
+  @ValidateUUID()
+  childrenId!: string;
+}
+
 export const mapAlbum = (entity: AlbumEntity, withAssets: boolean, auth?: AuthDto): AlbumResponseDto => {
   const sharedUsers: UserResponseDto[] = [];
 

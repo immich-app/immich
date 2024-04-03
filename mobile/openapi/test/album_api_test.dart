@@ -32,6 +32,11 @@ void main() {
       // TODO
     });
 
+    //Future createSubAlbum(CreateSubAlbumDto createSubAlbumDto) async
+    test('test createSubAlbum', () async {
+      // TODO
+    });
+
     //Future deleteAlbum(String id) async
     test('test deleteAlbum', () async {
       // TODO
@@ -47,6 +52,11 @@ void main() {
       // TODO
     });
 
+    //Future getAlbumTree(String id) async
+    test('test getAlbumTree', () async {
+      // TODO
+    });
+
     //Future<List<AlbumResponseDto>> getAllAlbums({ String assetId, bool shared }) async
     test('test getAllAlbums', () async {
       // TODO
@@ -54,6 +64,11 @@ void main() {
 
     //Future<List<BulkIdResponseDto>> removeAssetFromAlbum(String id, BulkIdsDto bulkIdsDto) async
     test('test removeAssetFromAlbum', () async {
+      // TODO
+    });
+
+    //Future removeSubAlbum(String childAlbumId, String id) async
+    test('test removeSubAlbum', () async {
       // TODO
     });
 

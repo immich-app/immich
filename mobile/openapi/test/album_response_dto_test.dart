@@ -36,6 +36,11 @@ void main() {
       // TODO
     });
 
+    // List<SubAlbumResponseDto> childAlbums (default value: const [])
+    test('to test the property `childAlbums`', () async {
+      // TODO
+    });
+
     // DateTime createdAt
     test('to test the property `createdAt`', () async {
       // TODO
@@ -83,6 +88,11 @@ void main() {
 
     // String ownerId
     test('to test the property `ownerId`', () async {
+      // TODO
+    });
+
+    // List<SubAlbumResponseDto> parentAlbums (default value: const [])
+    test('to test the property `parentAlbums`', () async {
       // TODO
     });
 

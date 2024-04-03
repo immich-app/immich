@@ -54,6 +54,7 @@ doc/Colorspace.md
 doc/CreateAlbumDto.md
 doc/CreateLibraryDto.md
 doc/CreateProfileImageResponseDto.md
+doc/CreateSubAlbumDto.md
 doc/CreateTagDto.md
 doc/CreateUserDto.md
 doc/CuratedLocationsResponseDto.md
@@ -149,6 +150,7 @@ doc/SharedLinkType.md
 doc/SignUpDto.md
 doc/SmartInfoResponseDto.md
 doc/SmartSearchDto.md
+doc/SubAlbumResponseDto.md
 doc/SystemConfigApi.md
 doc/SystemConfigDto.md
 doc/SystemConfigFFmpegDto.md
@@ -276,6 +278,7 @@ lib/model/cq_mode.dart
 lib/model/create_album_dto.dart
 lib/model/create_library_dto.dart
 lib/model/create_profile_image_response_dto.dart
+lib/model/create_sub_album_dto.dart
 lib/model/create_tag_dto.dart
 lib/model/create_user_dto.dart
 lib/model/curated_locations_response_dto.dart
@@ -360,6 +363,7 @@ lib/model/shared_link_type.dart
 lib/model/sign_up_dto.dart
 lib/model/smart_info_response_dto.dart
 lib/model/smart_search_dto.dart
+lib/model/sub_album_response_dto.dart
 lib/model/system_config_dto.dart
 lib/model/system_config_f_fmpeg_dto.dart
 lib/model/system_config_image_dto.dart
@@ -457,6 +461,7 @@ test/cq_mode_test.dart
 test/create_album_dto_test.dart
 test/create_library_dto_test.dart
 test/create_profile_image_response_dto_test.dart
+test/create_sub_album_dto_test.dart
 test/create_tag_dto_test.dart
 test/create_user_dto_test.dart
 test/curated_locations_response_dto_test.dart
@@ -552,6 +557,7 @@ test/shared_link_type_test.dart
 test/sign_up_dto_test.dart
 test/smart_info_response_dto_test.dart
 test/smart_search_dto_test.dart
+test/sub_album_response_dto_test.dart
 test/system_config_api_test.dart
 test/system_config_dto_test.dart
 test/system_config_f_fmpeg_dto_test.dart

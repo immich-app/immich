@@ -141,11 +141,17 @@ export type AssetResponseDto = {
     "type": AssetTypeEnum;
     updatedAt: string;
 };
+export type SubAlbumResponseDto = {
+    albumName: string;
+    albumThumbnailAssetId: string | null;
+    id: string;
+};
 export type AlbumResponseDto = {
     albumName: string;
     albumThumbnailAssetId: string | null;
     assetCount: number;
     assets: AssetResponseDto[];
+    childAlbums?: SubAlbumResponseDto[];
     createdAt: string;
     description: string;
     endDate?: string;
@@ -156,6 +162,7 @@ export type AlbumResponseDto = {
     order?: AssetOrder;
     owner: UserResponseDto;
     ownerId: string;
+    parentAlbums?: SubAlbumResponseDto[];
     shared: boolean;
     sharedUsers: UserResponseDto[];
     startDate?: string;
@@ -171,6 +178,10 @@ export type AlbumCountResponseDto = {
     notShared: number;
     owned: number;
     shared: number;
+};
+export type CreateSubAlbumDto = {
+    childrenId: string;
+    parentId: string;
 };
 export type UpdateAlbumDto = {
     albumName?: string;
@@ -1123,6 +1134,15 @@ export function getAlbumCount(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
+export function createSubAlbum({ createSubAlbumDto }: {
+    createSubAlbumDto: CreateSubAlbumDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/album/sub-album", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: createSubAlbumDto
+    })));
+}
 export function deleteAlbum({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
@@ -1187,6 +1207,22 @@ export function addAssetsToAlbum({ id, key, bulkIdsDto }: {
         method: "PUT",
         body: bulkIdsDto
     })));
+}
+export function getAlbumTree({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/album/${encodeURIComponent(id)}/sub-album`, {
+        ...opts
+    }));
+}
+export function removeSubAlbum({ childAlbumId, id }: {
+    childAlbumId: string;
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/album/${encodeURIComponent(id)}/sub-album/${encodeURIComponent(childAlbumId)}`, {
+        ...opts,
+        method: "DELETE"
+    }));
 }
 export function removeUserFromAlbum({ id, userId }: {
     id: string;

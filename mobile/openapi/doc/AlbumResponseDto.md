@@ -12,6 +12,7 @@ Name | Type | Description | Notes
 **albumThumbnailAssetId** | **String** |  | 
 **assetCount** | **int** |  | 
 **assets** | [**List<AssetResponseDto>**](AssetResponseDto.md) |  | [default to const []]
+**childAlbums** | [**List<SubAlbumResponseDto>**](SubAlbumResponseDto.md) |  | [optional] [default to const []]
 **createdAt** | [**DateTime**](DateTime.md) |  | 
 **description** | **String** |  | 
 **endDate** | [**DateTime**](DateTime.md) |  | [optional] 
@@ -22,6 +23,7 @@ Name | Type | Description | Notes
 **order** | [**AssetOrder**](AssetOrder.md) |  | [optional] 
 **owner** | [**UserResponseDto**](UserResponseDto.md) |  | 
 **ownerId** | **String** |  | 
+**parentAlbums** | [**List<SubAlbumResponseDto>**](SubAlbumResponseDto.md) |  | [optional] [default to const []]
 **shared** | **bool** |  | 
 **sharedUsers** | [**List<UserResponseDto>**](UserResponseDto.md) |  | [default to const []]
 **startDate** | [**DateTime**](DateTime.md) |  | [optional] 

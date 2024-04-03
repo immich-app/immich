@@ -178,6 +178,45 @@ class AlbumApi {
     return null;
   }
 
+  /// Performs an HTTP 'POST /album/sub-album' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [CreateSubAlbumDto] createSubAlbumDto (required):
+  Future<Response> createSubAlbumWithHttpInfo(CreateSubAlbumDto createSubAlbumDto,) async {
+    // ignore: prefer_const_declarations
+    final path = r'/album/sub-album';
+
+    // ignore: prefer_final_locals
+    Object? postBody = createSubAlbumDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [CreateSubAlbumDto] createSubAlbumDto (required):
+  Future<void> createSubAlbum(CreateSubAlbumDto createSubAlbumDto,) async {
+    final response = await createSubAlbumWithHttpInfo(createSubAlbumDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
   /// Performs an HTTP 'DELETE /album/{id}' operation and returns the [Response].
   /// Parameters:
   ///
@@ -322,6 +361,46 @@ class AlbumApi {
     return null;
   }
 
+  /// Performs an HTTP 'GET /album/{id}/sub-album' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<Response> getAlbumTreeWithHttpInfo(String id,) async {
+    // ignore: prefer_const_declarations
+    final path = r'/album/{id}/sub-album'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<void> getAlbumTree(String id,) async {
+    final response = await getAlbumTreeWithHttpInfo(id,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
   /// Performs an HTTP 'GET /album' operation and returns the [Response].
   /// Parameters:
   ///
@@ -438,6 +517,51 @@ class AlbumApi {
 
     }
     return null;
+  }
+
+  /// Performs an HTTP 'DELETE /album/{id}/sub-album/{childAlbumId}' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [String] childAlbumId (required):
+  ///
+  /// * [String] id (required):
+  Future<Response> removeSubAlbumWithHttpInfo(String childAlbumId, String id,) async {
+    // ignore: prefer_const_declarations
+    final path = r'/album/{id}/sub-album/{childAlbumId}'
+      .replaceAll('{childAlbumId}', childAlbumId)
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [String] childAlbumId (required):
+  ///
+  /// * [String] id (required):
+  Future<void> removeSubAlbum(String childAlbumId, String id,) async {
+    final response = await removeSubAlbumWithHttpInfo(childAlbumId, id,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
   }
 
   /// Performs an HTTP 'DELETE /album/{id}/user/{userId}' operation and returns the [Response].

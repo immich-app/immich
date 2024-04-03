@@ -272,6 +272,8 @@ class ApiClient {
           return CreateLibraryDto.fromJson(value);
         case 'CreateProfileImageResponseDto':
           return CreateProfileImageResponseDto.fromJson(value);
+        case 'CreateSubAlbumDto':
+          return CreateSubAlbumDto.fromJson(value);
         case 'CreateTagDto':
           return CreateTagDto.fromJson(value);
         case 'CreateUserDto':
@@ -440,6 +442,8 @@ class ApiClient {
           return SmartInfoResponseDto.fromJson(value);
         case 'SmartSearchDto':
           return SmartSearchDto.fromJson(value);
+        case 'SubAlbumResponseDto':
+          return SubAlbumResponseDto.fromJson(value);
         case 'SystemConfigDto':
           return SystemConfigDto.fromJson(value);
         case 'SystemConfigFFmpegDto':

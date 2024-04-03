@@ -332,6 +332,41 @@
         ]
       }
     },
+    "/album/sub-album": {
+      "post": {
+        "operationId": "createSubAlbum",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSubAlbumDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Album"
+        ]
+      }
+    },
     "/album/{id}": {
       "delete": {
         "operationId": "deleteAlbum",
@@ -570,6 +605,84 @@
                 }
               }
             },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Album"
+        ]
+      }
+    },
+    "/album/{id}/sub-album": {
+      "get": {
+        "operationId": "getAlbumTree",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Album"
+        ]
+      }
+    },
+    "/album/{id}/sub-album/{childAlbumId}": {
+      "delete": {
+        "operationId": "removeSubAlbum",
+        "parameters": [
+          {
+            "name": "childAlbumId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
             "description": ""
           }
         },
@@ -7083,6 +7196,12 @@
             },
             "type": "array"
           },
+          "childAlbums": {
+            "items": {
+              "$ref": "#/components/schemas/SubAlbumResponseDto"
+            },
+            "type": "array"
+          },
           "createdAt": {
             "format": "date-time",
             "type": "string"
@@ -7115,6 +7234,12 @@
           },
           "ownerId": {
             "type": "string"
+          },
+          "parentAlbums": {
+            "items": {
+              "$ref": "#/components/schemas/SubAlbumResponseDto"
+            },
+            "type": "array"
           },
           "shared": {
             "type": "boolean"
@@ -8044,6 +8169,22 @@
         "required": [
           "profileImagePath",
           "userId"
+        ],
+        "type": "object"
+      },
+      "CreateSubAlbumDto": {
+        "properties": {
+          "childrenId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "parentId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "childrenId",
+          "parentId"
         ],
         "type": "object"
       },
@@ -10203,6 +10344,26 @@
         },
         "required": [
           "query"
+        ],
+        "type": "object"
+      },
+      "SubAlbumResponseDto": {
+        "properties": {
+          "albumName": {
+            "type": "string"
+          },
+          "albumThumbnailAssetId": {
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "albumName",
+          "albumThumbnailAssetId",
+          "id"
         ],
         "type": "object"
       },
