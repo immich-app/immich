@@ -28,9 +28,7 @@
   />
 
   {#if disabled}
-    <span
-      class="slider slider-disabled cursor-not-allowed peer-focus-visible:outline before:peer-focus-visible:outline"
-    />
+    <span class="slider slider-disabled cursor-not-allowed" />
   {:else}
     <span class="slider slider-enabled cursor-pointer peer-focus-visible:outline before:peer-focus-visible:outline" />
   {/if}
