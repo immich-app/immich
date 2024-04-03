@@ -8,8 +8,6 @@
   export let checked = false;
   export let disabled = false;
 
-  let isFocused = false;
-
   const dispatch = createEventDispatcher<{ toggle: boolean }>();
   const onToggle = (event: Event) => dispatch('toggle', (event.target as HTMLInputElement).checked);
 </script>
@@ -17,19 +15,19 @@
 <label class="relative inline-block h-[10px] w-[36px] flex-none">
   <input
     {id}
-    class="disabled::cursor-not-allowed h-0 w-0 opacity-0"
+    class="disabled::cursor-not-allowed h-0 w-0 opacity-0 peer"
     type="checkbox"
     bind:checked
     on:click={onToggle}
-    on:focus={() => (isFocused = true)}
-    on:blur={() => (isFocused = false)}
     {disabled}
   />
 
   {#if disabled}
-    <span class="slider slider-disabled cursor-not-allowed" class:focused={isFocused} />
+    <span
+      class="slider slider-disabled cursor-not-allowed peer-focus-visible:outline before:peer-focus-visible:outline"
+    />
   {:else}
-    <span class="slider slider-enabled cursor-pointer" class:focused={isFocused} />
+    <span class="slider slider-enabled cursor-pointer peer-focus-visible:outline before:peer-focus-visible:outline" />
   {/if}
 </label>
 
@@ -44,11 +42,6 @@
     -webkit-transition: transform 0.4s;
     transition: transform 0.4s;
     border-radius: 34px;
-  }
-
-  .slider.focused,
-  .slider.focused:before {
-    outline: 3px solid;
   }
 
   input:disabled {
