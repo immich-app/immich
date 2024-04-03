@@ -28,9 +28,13 @@
   />
 
   {#if disabled}
-    <span class="slider slider-disabled cursor-not-allowed" />
+    <span
+      class="slider slider-disabled cursor-not-allowed border border-transparent before:border before:border-transparent"
+    />
   {:else}
-    <span class="slider slider-enabled cursor-pointer peer-focus-visible:outline before:peer-focus-visible:outline" />
+    <span
+      class="slider slider-enabled cursor-pointer border-2 border-transparent before:border-2 before:border-transparent peer-focus-visible:outline before:peer-focus-visible:outline peer-focus-visible:dark:outline-gray-200 before:peer-focus-visible:dark:outline-gray-200 peer-focus-visible:outline-gray-600 before:peer-focus-visible:outline-gray-600 peer-focus-visible:dark:border-black before:peer-focus-visible:dark:border-black peer-focus-visible:border-white before:peer-focus-visible:border-white"
+    />
   {/if}
 </label>
 
@@ -56,9 +60,9 @@
     content: '';
     height: 20px;
     width: 20px;
-    left: 0px;
+    left: -2px;
     right: 0px;
-    bottom: -4px;
+    bottom: -6px;
     background-color: gray;
     -webkit-transition: transform 0.4s;
     transition: transform 0.4s;
