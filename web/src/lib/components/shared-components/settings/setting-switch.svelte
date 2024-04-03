@@ -12,6 +12,7 @@
   export let isEdited = false;
 
   $: sliderId = `${id}-slider`;
+  $: subtitleId = subtitle ? `${id}-subtitle` : undefined;
 
   const dispatch = createEventDispatcher<{ toggle: boolean }>();
   const onToggle = (isChecked: boolean) => dispatch('toggle', isChecked);
@@ -33,9 +34,17 @@
       {/if}
     </div>
 
-    <label class="text-sm dark:text-immich-dark-fg" for={sliderId}>{subtitle}</label>
+    {#if subtitle}
+      <p id={subtitleId} class="text-sm dark:text-immich-dark-fg">{subtitle}</p>
+    {/if}
     <slot />
   </div>
 
-  <Slider id={sliderId} bind:checked {disabled} on:toggle={({ detail }) => onToggle(detail)} />
+  <Slider
+    id={sliderId}
+    bind:checked
+    {disabled}
+    on:toggle={({ detail }) => onToggle(detail)}
+    ariaDescribedBy={subtitleId}
+  />
 </div>
