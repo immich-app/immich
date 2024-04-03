@@ -17,10 +17,10 @@ If this should not work, try running `docker compose up -d --force-recreate`.
 
 ## Docker Compose
 
-| Variable          | Description           |  Default  | Services                                            |
-| :---------------- | :-------------------- | :-------: | :-------------------------------------------------- |
-| `IMMICH_VERSION`  | Image tags            | `release` | server, microservices, machine learning             |
-| `UPLOAD_LOCATION` | Host Path for uploads |           | server, microservices                               |
+| Variable          | Description           |  Default  | Services                                |
+| :---------------- | :-------------------- | :-------: | :-------------------------------------- |
+| `IMMICH_VERSION`  | Image tags            | `release` | server, microservices, machine learning |
+| `UPLOAD_LOCATION` | Host Path for uploads |           | server, microservices                   |
 
 :::tip
 
@@ -30,15 +30,15 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 
 ## General
 
-| Variable                        | Description                                  |       Default        | Services                                     |
-| :------------------------------ | :------------------------------------------- | :------------------: | :------------------------------------------- |
-| `TZ`                            | Timezone                                     |                      | microservices                                |
-| `NODE_ENV`                      | Environment (production, development)        |     `production`     | server, microservices, machine learning      |
-| `LOG_LEVEL`                     | Log Level (verbose, debug, log, warn, error) |        `log`         | server, microservices, machine learning      |
-| `IMMICH_MEDIA_LOCATION`         | Media Location                               |      `./upload`      | server, microservices                        |
-| `IMMICH_CONFIG_FILE`            | Path to config file                          |                      | server, microservices                        |
-| `IMMICH_WEB_ROOT`               | Path of root index.html                      |  `/usr/src/app/www`  | server                                       |
-| `IMMICH_REVERSE_GEOCODING_ROOT` | Path of reverse geocoding dump directory     | `/usr/src/resources` | microservices                                |
+| Variable                        | Description                                  |       Default        | Services                                |
+| :------------------------------ | :------------------------------------------- | :------------------: | :-------------------------------------- |
+| `TZ`                            | Timezone                                     |                      | microservices                           |
+| `NODE_ENV`                      | Environment (production, development)        |     `production`     | server, microservices, machine learning |
+| `LOG_LEVEL`                     | Log Level (verbose, debug, log, warn, error) |        `log`         | server, microservices, machine learning |
+| `IMMICH_MEDIA_LOCATION`         | Media Location                               |      `./upload`      | server, microservices                   |
+| `IMMICH_CONFIG_FILE`            | Path to config file                          |                      | server, microservices                   |
+| `IMMICH_WEB_ROOT`               | Path of root index.html                      |  `/usr/src/app/www`  | server                                  |
+| `IMMICH_REVERSE_GEOCODING_ROOT` | Path of reverse geocoding dump directory     | `/usr/src/resources` | microservices                           |
 
 :::tip
 `TZ` should be set to a `TZ identifier` from [this list](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List). For example, `TZ="Etc/UTC"`.
