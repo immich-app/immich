@@ -82,7 +82,7 @@
 
   export let data: PageData;
 
-  let { isViewing: showAssetViewer, setAssetId } = assetViewingStore;
+  let { isViewing: showAssetViewer, setAsset } = assetViewingStore;
   let { slideshowState, slideshowNavigation } = slideshowStore;
 
   $: album = data.album;
@@ -231,7 +231,7 @@
     const asset =
       $slideshowNavigation === SlideshowNavigation.Shuffle ? await assetStore.getRandomAsset() : assetStore.assets[0];
     if (asset) {
-      await setAssetId(asset.id);
+      setAsset(asset);
       $slideshowState = SlideshowState.PlaySlideshow;
     }
   };
