@@ -416,7 +416,8 @@ export class AV1Config extends BaseConfig {
   }
 
   getThreadOptions() {
-    return [`-svtav1-params lp=${this.config.threads}`];
+    return [];
+    // return [`-svtav1-params lp=${this.config.threads}`]; // THIS WILL OVERWRITE PREVIOUS SVTAV1-PARAMS! Can't be used multiple times.
   }
 }
 
