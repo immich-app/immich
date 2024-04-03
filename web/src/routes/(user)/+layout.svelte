@@ -41,8 +41,8 @@
   };
 </script>
 
-<div on:paste={pasteHandler}>
-  <slot {albumId} />
-</div>
+<slot {albumId} />
 
 <UploadCover {dropHandler} />
+
+<svelte:window on:paste={pasteHandler} />
