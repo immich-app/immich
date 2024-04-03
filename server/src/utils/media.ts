@@ -259,7 +259,7 @@ export class BaseHWConfig extends BaseConfig implements VideoCodecHWConfig {
   }
 
   getSupportedCodecs() {
-    return [VideoCodec.H264, VideoCodec.HEVC, VideoCodec.VP9, VideoCodec.AV1];
+    return [VideoCodec.H264, VideoCodec.HEVC];
   }
 
   validateDevices(devices: string[]) {
@@ -417,7 +417,7 @@ export class AV1Config extends BaseConfig {
 
   getThreadOptions() {
     return [];
-    // return [`-svtav1-params lp=${this.config.threads}`]; // THIS WILL OVERWRITE PREVIOUS SVTAV1-PARAMS! Can't be used multiple times.
+    // return [`-svtav1-params lp=${this.config.threads}`]; // THIS WOULD OVERWRITE PREVIOUS SVTAV1-PARAMS! Can't be used multiple times.
   }
 }
 
@@ -491,6 +491,10 @@ export class NVENCConfig extends BaseHWConfig {
     return [];
   }
 
+  getSupportedCodecs() {
+    return [VideoCodec.H264, VideoCodec.HEVC];
+  }
+
   getRefs() {
     const bframes = this.getBFrames();
     if (bframes > 0 && bframes < 3 && this.config.refs < 3) {
@@ -550,6 +554,10 @@ export class QSVConfig extends BaseHWConfig {
       options.push(`-maxrate ${bitrates.max}${bitrates.unit}`, `-bufsize ${bitrates.max * 2}${bitrates.unit}`);
     }
     return options;
+  }
+
+  getSupportedCodecs() {
+    return [VideoCodec.H264, VideoCodec.HEVC, VideoCodec.VP9];
   }
 
   // recommended from https://github.com/intel/media-delivery/blob/master/doc/benchmarks/intel-iris-xe-max-graphics/intel-iris-xe-max-graphics.md
