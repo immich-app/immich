@@ -630,6 +630,10 @@ export class VAAPIConfig extends BaseHWConfig {
     return options;
   }
 
+  getSupportedCodecs() {
+    return [VideoCodec.H264, VideoCodec.HEVC, VideoCodec.VP9];
+  }
+
   useCQP() {
     return this.config.cqMode !== CQMode.ICQ || this.config.targetVideoCodec === VideoCodec.VP9;
   }
