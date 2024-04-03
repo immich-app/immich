@@ -416,7 +416,7 @@ export class AV1Config extends BaseConfig {
   }
 
   getThreadOptions() {
-    return []; // TODO: Implement SVT's --lp option (set with svtav1-params) - Currently always uses all threads
+    return [`-svtav1-params lp=${this.config.threads}`];
   }
 }
 
