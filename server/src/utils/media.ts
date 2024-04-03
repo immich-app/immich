@@ -259,7 +259,7 @@ export class BaseHWConfig extends BaseConfig implements VideoCodecHWConfig {
   }
 
   getSupportedCodecs() {
-    return [VideoCodec.H264, VideoCodec.HEVC, VideoCodec.VP9];
+    return [VideoCodec.H264, VideoCodec.HEVC, VideoCodec.VP9, VideoCodec.AV1];
   }
 
   validateDevices(devices: string[]) {
@@ -391,6 +391,32 @@ export class VP9Config extends BaseConfig {
 
   getThreadOptions() {
     return ['-row-mt 1', ...super.getThreadOptions()];
+  }
+}
+
+export class AV1Config extends BaseConfig {
+  getPresetOptions() {
+    const speed = this.getPresetIndex() + 4; // Use 4 as slowest, giving us an effective range of 4-12 which is far more useful than 0-8
+    if (speed >= 0) {
+      return [`-preset ${speed}`];
+    }
+    return [];
+  }
+
+  getBitrateOptions() {
+    const bitrates = this.getBitrateDistribution();
+    if (bitrates.max > 0) {
+      return [
+        `-crf ${this.config.crf}`,
+        `-svtav1-params mbr=${bitrates.max}${bitrates.unit}`, // Wrapping the params in quotes breaks them for some reason, so don't do that
+      ];
+    } else {
+      return [`-crf ${this.config.crf}`];
+    }
+  }
+
+  getThreadOptions() {
+    return []; // TODO: Implement SVT's --lp option (set with svtav1-params) - Currently always uses all threads
   }
 }
 

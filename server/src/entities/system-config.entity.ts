@@ -131,6 +131,7 @@ export enum VideoCodec {
   H264 = 'h264',
   HEVC = 'hevc',
   VP9 = 'vp9',
+  AV1 = 'av1',
 }
 
 export enum AudioCodec {

@@ -40,6 +40,7 @@ import {
   ThumbnailConfig,
   VAAPIConfig,
   VP9Config,
+  AV1Config,
 } from 'src/utils/media';
 import { usePagination } from 'src/utils/pagination';
 
@@ -432,6 +433,9 @@ export class MediaService {
       }
       case VideoCodec.VP9: {
         return new VP9Config(config);
+      }
+      case VideoCodec.AV1: {
+        return new AV1Config(config);
       }
       default: {
         throw new UnsupportedMediaTypeException(`Codec '${config.targetVideoCodec}' is unsupported`);
