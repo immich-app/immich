@@ -1666,6 +1666,15 @@
         "operationId": "getAssetThumbnail",
         "parameters": [
           {
+            "name": "c",
+            "required": false,
+            "in": "query",
+            "description": "Cache-buster, usually set to checksum",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "format",
             "required": false,
             "in": "query",
@@ -1850,6 +1859,67 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AssetResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Asset"
+        ]
+      }
+    },
+    "/asset/{id}/upload": {
+      "put": {
+        "operationId": "updateFile",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAssetDataDto"
+              }
+            }
+          },
+          "description": "Asset Upload Information",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetFileUploadResponseDto"
                 }
               }
             },
@@ -10884,6 +10954,47 @@
             "$ref": "#/components/schemas/AssetOrder"
           }
         },
+        "type": "object"
+      },
+      "UpdateAssetDataDto": {
+        "properties": {
+          "assetData": {
+            "format": "binary",
+            "type": "string"
+          },
+          "deviceAssetId": {
+            "type": "string"
+          },
+          "deviceId": {
+            "type": "string"
+          },
+          "duration": {
+            "type": "string"
+          },
+          "fileCreatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "fileModifiedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "livePhotoData": {
+            "format": "binary",
+            "type": "string"
+          },
+          "sidecarData": {
+            "format": "binary",
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetData",
+          "deviceAssetId",
+          "deviceId",
+          "fileCreatedAt",
+          "fileModifiedAt"
+        ],
         "type": "object"
       },
       "UpdateAssetDto": {

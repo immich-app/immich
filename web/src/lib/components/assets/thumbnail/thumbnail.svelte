@@ -180,7 +180,7 @@
 
         {#if asset.resized}
           <ImageThumbnail
-            url={getAssetThumbnailUrl(asset.id, format)}
+            url={getAssetThumbnailUrl(asset.id, format, asset.checksum)}
             altText={getAltText(asset)}
             widthStyle="{width}px"
             heightStyle="{height}px"

@@ -112,6 +112,37 @@ export class CreateAssetDto {
   [UploadFieldName.SIDECAR_DATA]?: any;
 }
 
+export class UpdateAssetDataDto {
+  @IsNotEmpty()
+  @IsString()
+  deviceAssetId!: string;
+
+  @IsNotEmpty()
+  @IsString()
+  deviceId!: string;
+
+  @ValidateDate()
+  fileCreatedAt!: Date;
+
+  @ValidateDate()
+  fileModifiedAt!: Date;
+
+  @Optional()
+  @IsString()
+  duration?: string;
+
+  // The properties below are added to correctly generate the API docs
+  // and client SDKs. Validation should be handled in the controller.
+  @ApiProperty({ type: 'string', format: 'binary' })
+  [UploadFieldName.ASSET_DATA]!: any;
+
+  @ApiProperty({ type: 'string', format: 'binary', required: false })
+  [UploadFieldName.LIVE_PHOTO_DATA]?: any;
+
+  @ApiProperty({ type: 'string', format: 'binary', required: false })
+  [UploadFieldName.SIDECAR_DATA]?: any;
+}
+
 export enum GetAssetThumbnailFormatEnum {
   JPEG = 'JPEG',
   WEBP = 'WEBP',
@@ -128,6 +159,13 @@ export class GetAssetThumbnailDto {
     enumName: 'ThumbnailFormat',
   })
   format: GetAssetThumbnailFormatEnum = GetAssetThumbnailFormatEnum.WEBP;
+
+  @Optional()
+  @ApiProperty({
+    description: 'Cache-buster, usually set to checksum',
+    required: false,
+  })
+  c?: string;
 }
 
 export class SearchPropertiesDto {

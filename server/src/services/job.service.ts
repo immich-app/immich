@@ -244,7 +244,7 @@ export class JobService {
       }
 
       case JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE: {
-        if (item.data.source === 'upload') {
+        if (item.data.source === 'upload' || item.data.source === 'clone') {
           await this.jobRepository.queue({ name: JobName.GENERATE_PREVIEW, data: item.data });
         }
         break;

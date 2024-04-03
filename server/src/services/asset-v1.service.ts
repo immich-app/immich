@@ -5,6 +5,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
+import fs from 'node:fs/promises';
 import { AccessCore, Permission } from 'src/cores/access.core';
 import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import {
@@ -24,6 +25,7 @@ import {
   GetAssetThumbnailDto,
   GetAssetThumbnailFormatEnum,
   ServeFileDto,
+  UpdateAssetDataDto,
 } from 'src/dtos/asset-v1.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType } from 'src/entities/asset.entity';
@@ -31,6 +33,7 @@ import { LibraryType } from 'src/entities/library.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAssetRepositoryV1 } from 'src/interfaces/asset-v1.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
+import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName } from 'src/interfaces/job.interface';
 import { ILibraryRepository } from 'src/interfaces/library.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
@@ -55,6 +58,7 @@ export class AssetServiceV1 {
     @Inject(ILibraryRepository) private libraryRepository: ILibraryRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
+    @Inject(IEventRepository) private eventRepository: IEventRepository,
   ) {
     this.access = AccessCore.create(accessRepository);
   }
@@ -89,6 +93,82 @@ export class AssetServiceV1 {
       await this.userRepository.updateUsage(auth.user.id, (livePhotoFile?.size || 0) + file.size);
 
       return { id: asset.id, duplicate: false };
+    } catch (error: any) {
+      // clean up files
+      await this.jobRepository.queue({
+        name: JobName.DELETE_FILES,
+        data: { files: [file.originalPath, livePhotoFile?.originalPath, sidecarFile?.originalPath] },
+      });
+
+      // handle duplicates with a success response
+      if (error instanceof QueryFailedError && (error as any).constraint === ASSET_CHECKSUM_CONSTRAINT) {
+        const checksums = [file.checksum, livePhotoFile?.checksum].filter((checksum): checksum is Buffer => !!checksum);
+        const [duplicate] = await this.assetRepositoryV1.getAssetsByChecksums(auth.user.id, checksums);
+        return { id: duplicate.id, duplicate: true };
+      }
+
+      this.logger.error(`Error uploading file ${error}`, error?.stack);
+      throw error;
+    }
+  }
+
+  public async updateFile(
+    auth: AuthDto,
+    dto: UpdateAssetDataDto,
+    id: string,
+    file: UploadFile,
+    livePhotoFile?: UploadFile,
+    sidecarFile?: UploadFile,
+  ): Promise<AssetFileUploadResponseDto> {
+    try {
+      const existingAssetEntity = await this.assetRepositoryV1.get(id);
+      if (!existingAssetEntity) {
+        throw new NotFoundException('Asset does not exist');
+      }
+      let existingLivePhotoAsset;
+
+      if (livePhotoFile) {
+        livePhotoFile = {
+          ...livePhotoFile,
+          originalName: getLivePhotoMotionFilename(file.originalName, livePhotoFile.originalName),
+        };
+      }
+
+      let livePhotoAsset: AssetEntity | null = null;
+
+      const libraryId = await this.getLibraryId(auth);
+      await this.access.requirePermission(auth, Permission.ASSET_UPLOAD, libraryId);
+      this.requireQuota(auth, file.size);
+      if (livePhotoFile) {
+        if (existingAssetEntity.livePhotoVideoId) {
+          existingLivePhotoAsset = await this.assetRepositoryV1.get(existingAssetEntity.livePhotoVideoId);
+        }
+        const livePhotoDto = { ...dto, assetType: AssetType.VIDEO, isVisible: false, libraryId };
+        if (existingLivePhotoAsset) {
+          await this.update(auth, existingLivePhotoAsset, livePhotoDto, livePhotoFile);
+        } else {
+          const livePhotoDto = { ...dto, assetType: AssetType.VIDEO, isVisible: false, libraryId };
+          livePhotoAsset = await this.create(auth, livePhotoDto, livePhotoFile);
+        }
+      }
+
+      await this.update(
+        auth,
+        existingAssetEntity,
+        { ...dto, libraryId },
+        file,
+        livePhotoAsset?.id || (existingAssetEntity.livePhotoVideoId ?? undefined),
+        sidecarFile?.originalPath,
+      );
+
+      // now, clone the original, and immediately put it in the trash
+      const cloned = await this.clone(existingAssetEntity);
+      await this.assetRepository.softDeleteAll([cloned.id]);
+      this.eventRepository.clientSend(ClientEvent.ASSET_TRASH, auth.user.id, [cloned.id]);
+
+      await this.userRepository.updateUsage(auth.user.id, (livePhotoFile?.size || 0) + file.size);
+
+      return { id: id, duplicate: false };
     } catch (error: any) {
       // clean up files
       await this.jobRepository.queue({
@@ -315,6 +395,31 @@ export class AssetServiceV1 {
     return library.id;
   }
 
+  private async clone(asset: AssetEntity): Promise<AssetEntity> {
+    const created = await this.assetRepository.create({
+      ownerId: asset.ownerId,
+      originalPath: asset.originalPath,
+      originalFileName: asset.originalFileName,
+      libraryId: asset.libraryId,
+      deviceAssetId: asset.deviceAssetId,
+      deviceId: asset.deviceId,
+      type: asset.type,
+      checksum: asset.checksum,
+      fileCreatedAt: asset.fileCreatedAt,
+      localDateTime: asset.localDateTime,
+      fileModifiedAt: asset.fileModifiedAt,
+    });
+
+    if (created.sidecarPath) {
+      await this.storageRepository.utimes(created.sidecarPath, new Date(), new Date(created.fileModifiedAt));
+    }
+    const { size } = await fs.stat(created.originalPath);
+    await this.storageRepository.utimes(created.originalPath, new Date(), new Date(created.fileModifiedAt));
+    await this.assetRepository.upsertExif({ assetId: created.id, fileSizeInByte: size });
+    await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: created.id, source: 'clone' } });
+    return created;
+  }
+
   private async create(
     auth: AuthDto,
     dto: CreateAssetDto & { libraryId: string },
@@ -356,6 +461,46 @@ export class AssetServiceV1 {
     await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: asset.id, source: 'upload' } });
 
     return asset;
+  }
+  private async update(
+    auth: AuthDto,
+    existingEntity: AssetEntity,
+    dto: UpdateAssetDataDto & { libraryId: string },
+    file: UploadFile,
+    livePhotoAssetId?: string,
+    sidecarPath?: string,
+  ): Promise<void> {
+    await this.assetRepository.update({
+      id: existingEntity.id,
+      ownerId: auth.user.id,
+      libraryId: dto.libraryId,
+
+      checksum: file.checksum,
+      originalPath: file.originalPath,
+
+      deviceAssetId: dto.deviceAssetId,
+      deviceId: dto.deviceId,
+
+      fileCreatedAt: dto.fileCreatedAt,
+      fileModifiedAt: dto.fileModifiedAt,
+      localDateTime: dto.fileCreatedAt,
+
+      type: mimeTypes.assetType(file.originalPath),
+      duration: dto.duration || null,
+      originalFileName: file.originalName,
+      livePhotoVideo: livePhotoAssetId ? ({ id: livePhotoAssetId } as AssetEntity) : null,
+      sidecarPath: sidecarPath || null,
+    });
+
+    if (sidecarPath) {
+      await this.storageRepository.utimes(sidecarPath, new Date(), new Date(dto.fileModifiedAt));
+    }
+    await this.storageRepository.utimes(file.originalPath, new Date(), new Date(dto.fileModifiedAt));
+    await this.assetRepository.upsertExif({ assetId: existingEntity.id, fileSizeInByte: file.size });
+    await this.jobRepository.queue({
+      name: JobName.METADATA_EXTRACTION,
+      data: { id: existingEntity.id, source: 'upload' },
+    });
   }
 
   private requireQuota(auth: AuthDto, size: number) {

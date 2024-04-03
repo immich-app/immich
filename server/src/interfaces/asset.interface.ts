@@ -109,7 +109,8 @@ export type AssetWithoutRelations = Omit<
   | 'tags'
 >;
 
-export type AssetUpdateOptions = Pick<AssetWithoutRelations, 'id'> & Partial<AssetWithoutRelations>;
+export type AssetUpdateOptions = Pick<AssetWithoutRelations, 'id'> &
+  Partial<AssetWithoutRelations & Pick<AssetEntity, 'livePhotoVideo'>>;
 
 export type AssetUpdateAllOptions = Omit<Partial<AssetWithoutRelations>, 'id'>;
 

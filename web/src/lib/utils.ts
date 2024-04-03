@@ -162,9 +162,15 @@ export const getAssetFileUrl = (...[assetId, isWeb, isThumb]: [string, boolean, 
   return createUrl(path, { isThumb, isWeb, key: getKey() });
 };
 
-export const getAssetThumbnailUrl = (...[assetId, format]: [string, ThumbnailFormat | undefined]) => {
+export const getAssetThumbnailUrl = (
+  ...[assetId, format, checksum]:
+    | [assetId: string, format: ThumbnailFormat]
+    | [assetId: string, format: ThumbnailFormat, checksum: string]
+) => {
+  // checksum (optional) is used as a cache-buster param, since thumbs are
+  // served with static resource cache headers
   const path = `/asset/thumbnail/${assetId}`;
-  return createUrl(path, { format, key: getKey() });
+  return createUrl(path, { format, key: getKey(), c: checksum });
 };
 
 export const getProfileImageUrl = (...[userId]: [string]) => {

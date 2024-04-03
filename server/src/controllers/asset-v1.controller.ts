@@ -8,6 +8,7 @@ import {
   Param,
   ParseFilePipe,
   Post,
+  Put,
   Query,
   Res,
   UploadedFiles,
@@ -30,11 +31,13 @@ import {
   CreateAssetDto,
   GetAssetThumbnailDto,
   ServeFileDto,
+  UpdateAssetDataDto,
 } from 'src/dtos/asset-v1.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { Auth, Authenticated, FileResponse, SharedLinkRoute } from 'src/middleware/auth.guard';
 import { FileUploadInterceptor, ImmichFile, Route, mapToUploadFile } from 'src/middleware/file-upload.interceptor';
 import { AssetServiceV1 } from 'src/services/asset-v1.service';
+import { UploadFile } from 'src/services/asset.service';
 import { sendFile } from 'src/utils/file';
 import { FileNotEmptyValidator, UUIDParamDto } from 'src/validation';
 
@@ -42,6 +45,19 @@ interface UploadFiles {
   assetData: ImmichFile[];
   livePhotoData?: ImmichFile[];
   sidecarData: ImmichFile[];
+}
+
+function getFile(files: UploadFiles, property: 'assetData' | 'livePhotoData' | 'sidecarData') {
+  const file = files[property]?.[0];
+  return file ? mapToUploadFile(file) : file;
+}
+
+function getFiles(files: UploadFiles) {
+  return {
+    file: getFile(files, 'assetData') as UploadFile,
+    livePhotoFile: getFile(files, 'livePhotoData'),
+    sidecarFile: getFile(files, 'sidecarData'),
+  };
 }
 
 @ApiTags('Asset')
@@ -64,24 +80,34 @@ export class AssetControllerV1 {
     @Body() dto: CreateAssetDto,
     @Res({ passthrough: true }) res: Response,
   ): Promise<AssetFileUploadResponseDto> {
-    const file = mapToUploadFile(files.assetData[0]);
-    const _livePhotoFile = files.livePhotoData?.[0];
-    const _sidecarFile = files.sidecarData?.[0];
-    let livePhotoFile;
-    if (_livePhotoFile) {
-      livePhotoFile = mapToUploadFile(_livePhotoFile);
-    }
-
-    let sidecarFile;
-    if (_sidecarFile) {
-      sidecarFile = mapToUploadFile(_sidecarFile);
-    }
-
+    const { file, livePhotoFile, sidecarFile } = getFiles(files);
     const responseDto = await this.service.uploadFile(auth, dto, file, livePhotoFile, sidecarFile);
     if (responseDto.duplicate) {
       res.status(HttpStatus.OK);
     }
+    return responseDto;
+  }
 
+  @SharedLinkRoute()
+  @Put(':id/upload')
+  @UseInterceptors(FileUploadInterceptor)
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'Asset Upload Information',
+    type: UpdateAssetDataDto,
+  })
+  async updateFile(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+    @UploadedFiles(new ParseFilePipe({ validators: [new FileNotEmptyValidator(['assetData'])] })) files: UploadFiles,
+    @Body() dto: UpdateAssetDataDto,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<AssetFileUploadResponseDto> {
+    const { file, livePhotoFile, sidecarFile } = getFiles(files);
+    const responseDto = await this.service.updateFile(auth, dto, id, file, livePhotoFile, sidecarFile);
+    if (responseDto.duplicate) {
+      res.status(HttpStatus.OK);
+    }
     return responseDto;
   }
 
