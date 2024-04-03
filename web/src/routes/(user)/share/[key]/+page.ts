@@ -1,4 +1,4 @@
-import { getAssetThumbnailUrl } from '$lib/utils';
+import { getAssetThumbnailUrl, setSharedLink } from '$lib/utils';
 import { authenticate } from '$lib/utils/auth';
 import { ThumbnailFormat, getMySharedLink, isHttpError } from '@immich/sdk';
 import type { PageLoad } from './$types';
@@ -9,6 +9,7 @@ export const load = (async ({ params }) => {
 
   try {
     const sharedLink = await getMySharedLink({ key });
+    setSharedLink(sharedLink);
     const assetCount = sharedLink.assets.length;
     const assetId = sharedLink.album?.albumThumbnailAssetId || sharedLink.assets[0]?.id;
 

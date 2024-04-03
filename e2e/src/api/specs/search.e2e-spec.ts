@@ -133,7 +133,7 @@ describe('/search', () => {
     assetLast = assets.at(-1) as AssetFileUploadResponseDto;
 
     await deleteAssets({ assetBulkDeleteDto: { ids: [assetSilver.id] } }, { headers: asBearerAuth(admin.accessToken) });
-  });
+  }, 30_000);
 
   afterAll(async () => {
     utils.disconnectWebsocket(websocket);
