@@ -24,6 +24,11 @@ export interface AlbumAssets {
   assetIds: string[];
 }
 
+export interface NestedAlbums {
+  parents: AlbumEntity[];
+  children: AlbumEntity[];
+}
+
 export interface IAlbumRepository extends IBulkAsset {
   getById(id: string, options: AlbumInfoOptions): Promise<AlbumEntity | null>;
   getByIds(ids: string[]): Promise<AlbumEntity[]>;
@@ -45,4 +50,8 @@ export interface IAlbumRepository extends IBulkAsset {
   update(album: Partial<AlbumEntity>): Promise<AlbumEntity>;
   delete(album: AlbumEntity): Promise<void>;
   updateThumbnails(): Promise<number | undefined>;
+
+  createNestedAlbum(parentId: string, childId: string): Promise<AlbumEntity>;
+  removeNestedAlbum(parentId: string, childId: string): Promise<AlbumEntity>;
+  getNestedAlbums(id: string): Promise<NestedAlbums>;
 }

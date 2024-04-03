@@ -7,6 +7,7 @@ import {
   AlbumResponseDto,
   CreateAlbumDto,
   GetAlbumsDto,
+  NestedAlbumResponseDto as NestedAlbumsResponseDto,
   UpdateAlbumDto,
   mapAlbum,
   mapAlbumWithAssets,
@@ -264,6 +265,33 @@ export class AlbumService {
       updatedAt: new Date(),
       sharedUsers: album.sharedUsers.filter((user) => user.id !== userId),
     });
+  }
+
+  async createNestedAlbum(auth: AuthDto, parentId: string, childId: string): Promise<AlbumResponseDto> {
+    await this.access.requirePermission(auth, Permission.ALBUM_UPDATE, parentId);
+
+    const nestedAlbum = await this.albumRepository.createNestedAlbum(parentId, childId);
+
+    return mapAlbumWithoutAssets(nestedAlbum);
+  }
+
+  async removeNestedAlbum(auth: AuthDto, parentId: string, childId: string): Promise<AlbumResponseDto> {
+    await this.access.requirePermission(auth, Permission.ALBUM_UPDATE, parentId);
+
+    const deletedNestedAlbum = await this.albumRepository.removeNestedAlbum(parentId, childId);
+
+    return mapAlbumWithoutAssets(deletedNestedAlbum);
+  }
+
+  async getNestedAlbums(auth: AuthDto, id: string): Promise<NestedAlbumsResponseDto> {
+    await this.access.requirePermission(auth, Permission.ALBUM_READ, id);
+
+    const { parents, children } = await this.albumRepository.getNestedAlbums(id);
+
+    return {
+      parents: parents.length > 0 ? parents.map(mapAlbumWithoutAssets) : [],
+      children: children.length > 0 ? children.map(mapAlbumWithoutAssets) : [],
+    };
   }
 
   private async findOrFail(id: string, options: AlbumInfoOptions) {

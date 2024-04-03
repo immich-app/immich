@@ -6,8 +6,9 @@ import {
   AlbumInfoDto,
   AlbumResponseDto,
   CreateAlbumDto,
-  CreateSubAlbumDto,
+  CreateNestedAlbumDto,
   GetAlbumsDto,
+  NestedAlbumResponseDto,
   UpdateAlbumDto,
 } from 'src/dtos/album.dto';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
@@ -98,22 +99,22 @@ export class AlbumController {
     return this.service.removeUser(auth, id, userId);
   }
 
-  @Post('sub-album')
-  createSubAlbum(@Auth() auth: AuthDto, @Body() dto: CreateSubAlbumDto) {
-    // TODO
+  @Post('nested-album')
+  createNestedAlbum(@Auth() auth: AuthDto, @Body() dto: CreateNestedAlbumDto): Promise<AlbumResponseDto> {
+    return this.service.createNestedAlbum(auth, dto.parentId, dto.childId);
   }
 
-  @Delete(':id/sub-album/:childAlbumId')
-  removeSubAlbum(
+  @Delete(':id/nested-album/:childAlbumId')
+  removeNestedAlbum(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
     @Param('childAlbumId', new ParseMeUUIDPipe({ version: '4' })) childAlbumId: string,
-  ) {
-    // TODO
+  ): Promise<AlbumResponseDto> {
+    return this.service.removeNestedAlbum(auth, id, childAlbumId);
   }
 
-  @Get(':id/sub-album')
-  getAlbumTree(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto) {
-    // TODO
+  @Get(':id/nested-album')
+  getNestedAlbums(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<NestedAlbumResponseDto> {
+    return this.service.getNestedAlbums(auth, id);
   }
 }

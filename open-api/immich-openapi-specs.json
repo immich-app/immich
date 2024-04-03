@@ -332,15 +332,15 @@
         ]
       }
     },
-    "/album/sub-album": {
+    "/album/nested-album": {
       "post": {
-        "operationId": "createSubAlbum",
+        "operationId": "createNestedAlbum",
         "parameters": [],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateSubAlbumDto"
+                "$ref": "#/components/schemas/CreateNestedAlbumDto"
               }
             }
           },
@@ -348,6 +348,13 @@
         },
         "responses": {
           "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlbumResponseDto"
+                }
+              }
+            },
             "description": ""
           }
         },
@@ -624,9 +631,9 @@
         ]
       }
     },
-    "/album/{id}/sub-album": {
+    "/album/{id}/nested-album": {
       "get": {
-        "operationId": "getAlbumTree",
+        "operationId": "getNestedAlbums",
         "parameters": [
           {
             "name": "id",
@@ -640,6 +647,13 @@
         ],
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NestedAlbumResponseDto"
+                }
+              }
+            },
             "description": ""
           }
         },
@@ -659,9 +673,9 @@
         ]
       }
     },
-    "/album/{id}/sub-album/{childAlbumId}": {
+    "/album/{id}/nested-album/{childAlbumId}": {
       "delete": {
-        "operationId": "removeSubAlbum",
+        "operationId": "removeNestedAlbum",
         "parameters": [
           {
             "name": "childAlbumId",
@@ -683,6 +697,13 @@
         ],
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlbumResponseDto"
+                }
+              }
+            },
             "description": ""
           }
         },
@@ -7196,12 +7217,6 @@
             },
             "type": "array"
           },
-          "childAlbums": {
-            "items": {
-              "$ref": "#/components/schemas/SubAlbumResponseDto"
-            },
-            "type": "array"
-          },
           "createdAt": {
             "format": "date-time",
             "type": "string"
@@ -7234,12 +7249,6 @@
           },
           "ownerId": {
             "type": "string"
-          },
-          "parentAlbums": {
-            "items": {
-              "$ref": "#/components/schemas/SubAlbumResponseDto"
-            },
-            "type": "array"
           },
           "shared": {
             "type": "boolean"
@@ -8145,6 +8154,22 @@
         ],
         "type": "object"
       },
+      "CreateNestedAlbumDto": {
+        "properties": {
+          "childId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "parentId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "childId",
+          "parentId"
+        ],
+        "type": "object"
+      },
       "CreateProfileImageDto": {
         "properties": {
           "file": {
@@ -8169,22 +8194,6 @@
         "required": [
           "profileImagePath",
           "userId"
-        ],
-        "type": "object"
-      },
-      "CreateSubAlbumDto": {
-        "properties": {
-          "childrenId": {
-            "format": "uuid",
-            "type": "string"
-          },
-          "parentId": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "childrenId",
-          "parentId"
         ],
         "type": "object"
       },
@@ -9217,6 +9226,27 @@
           "clip"
         ],
         "type": "string"
+      },
+      "NestedAlbumResponseDto": {
+        "properties": {
+          "children": {
+            "items": {
+              "$ref": "#/components/schemas/AlbumResponseDto"
+            },
+            "type": "array"
+          },
+          "parents": {
+            "items": {
+              "$ref": "#/components/schemas/AlbumResponseDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "children",
+          "parents"
+        ],
+        "type": "object"
       },
       "OAuthAuthorizeResponseDto": {
         "properties": {
@@ -10344,26 +10374,6 @@
         },
         "required": [
           "query"
-        ],
-        "type": "object"
-      },
-      "SubAlbumResponseDto": {
-        "properties": {
-          "albumName": {
-            "type": "string"
-          },
-          "albumThumbnailAssetId": {
-            "nullable": true,
-            "type": "string"
-          },
-          "id": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "albumName",
-          "albumThumbnailAssetId",
-          "id"
         ],
         "type": "object"
       },

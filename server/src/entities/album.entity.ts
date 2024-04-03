@@ -73,9 +73,9 @@ export class AlbumEntity {
 
 @Entity('nested_albums')
 export class NestedAlbumEntity {
-  @PrimaryColumn()
+  @PrimaryColumn('uuid')
   parentId!: string;
 
-  @PrimaryColumn()
+  @PrimaryColumn('uuid')
   childId!: string;
 }

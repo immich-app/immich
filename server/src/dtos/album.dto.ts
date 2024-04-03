@@ -83,12 +83,6 @@ export class AlbumCountResponseDto {
   notShared!: number;
 }
 
-export class SubAlbumResponseDto {
-  id!: string;
-  albumName!: string;
-  albumThumbnailAssetId!: string | null;
-}
-
 export class AlbumResponseDto {
   id!: string;
   ownerId!: string;
@@ -111,17 +105,22 @@ export class AlbumResponseDto {
   @Optional()
   @ApiProperty({ enumName: 'AssetOrder', enum: AssetOrder })
   order?: AssetOrder;
-
-  parentAlbums?: SubAlbumResponseDto[];
-  childAlbums?: SubAlbumResponseDto[];
 }
 
-export class CreateSubAlbumDto {
+export class CreateNestedAlbumDto {
   @IsString()
   parentId!: string;
 
   @ValidateUUID()
-  childrenId!: string;
+  childId!: string;
+}
+
+export class NestedAlbumResponseDto {
+  @ApiProperty()
+  parents!: AlbumResponseDto[];
+
+  @ApiProperty()
+  children!: AlbumResponseDto[];
 }
 
 export const mapAlbum = (entity: AlbumEntity, withAssets: boolean, auth?: AuthDto): AlbumResponseDto => {

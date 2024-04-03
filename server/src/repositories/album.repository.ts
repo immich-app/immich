@@ -3,9 +3,15 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import _ from 'lodash';
 import { dataSource } from 'src/database.config';
 import { Chunked, ChunkedArray, DATABASE_PARAMETER_CHUNK_SIZE, DummyValue, GenerateSql } from 'src/decorators';
-import { AlbumEntity } from 'src/entities/album.entity';
+import { AlbumEntity, NestedAlbumEntity } from 'src/entities/album.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { AlbumAsset, AlbumAssetCount, AlbumInfoOptions, IAlbumRepository } from 'src/interfaces/album.interface';
+import {
+  AlbumAsset,
+  AlbumAssetCount,
+  AlbumInfoOptions,
+  IAlbumRepository,
+  NestedAlbums,
+} from 'src/interfaces/album.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
 import { setUnion } from 'src/utils/set';
 import { DataSource, FindOptionsOrder, FindOptionsRelations, In, IsNull, Not, Repository } from 'typeorm';
@@ -16,6 +22,7 @@ export class AlbumRepository implements IAlbumRepository {
   constructor(
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
     @InjectRepository(AlbumEntity) private repository: Repository<AlbumEntity>,
+    @InjectRepository(NestedAlbumEntity) private nestedAlbumRepository: Repository<NestedAlbumEntity>,
     @InjectDataSource() private dataSource: DataSource,
   ) {}
 
@@ -330,5 +337,49 @@ export class AlbumRepository implements IAlbumRepository {
     const result = await updateAlbums.execute();
 
     return result.affected;
+  }
+
+  @GenerateSql()
+  async createNestedAlbum(parentId: string, childId: string): Promise<AlbumEntity> {
+    const nestedAlbum = new NestedAlbumEntity();
+    nestedAlbum.parentId = parentId;
+    nestedAlbum.childId = childId;
+
+    await this.nestedAlbumRepository.save(nestedAlbum);
+
+    return this.repository.findOneOrFail({
+      where: { id: childId },
+    });
+  }
+
+  @GenerateSql()
+  async removeNestedAlbum(parentId: string, childId: string): Promise<AlbumEntity> {
+    await this.nestedAlbumRepository.delete({ parentId, childId });
+
+    return this.repository.findOneOrFail({
+      where: { id: childId },
+    });
+  }
+
+  @GenerateSql()
+  async getNestedAlbums(id: string): Promise<NestedAlbums> {
+    const children = await this.repository
+      .createQueryBuilder('albums')
+      .innerJoin('nested_albums', 'nested', 'nested.childId = albums.id')
+      .leftJoinAndSelect('albums.owner', 'owner')
+      .where('nested.parentId = :id', { id })
+      .getMany();
+
+    const parents = await this.repository
+      .createQueryBuilder('albums')
+      .innerJoin('nested_albums', 'nested', 'nested.parentId = albums.id')
+      .leftJoinAndSelect('albums.owner', 'owner')
+      .where('nested.childId = :id', { id })
+      .getMany();
+
+    return {
+      parents,
+      children,
+    };
   }
 }
