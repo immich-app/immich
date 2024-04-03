@@ -1,5 +1,5 @@
 import { ActivityEntity } from 'src/entities/activity.entity';
-import { AlbumEntity, SubAlbumEntity } from 'src/entities/album.entity';
+import { AlbumEntity, NestedAlbumEntity } from 'src/entities/album.entity';
 import { APIKeyEntity } from 'src/entities/api-key.entity';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
@@ -40,7 +40,7 @@ export const entities = [
   SharedLinkEntity,
   SmartInfoEntity,
   SmartSearchEntity,
-  SubAlbumEntity,
+  NestedAlbumEntity,
   SystemConfigEntity,
   SystemMetadataEntity,
   TagEntity,

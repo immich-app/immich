@@ -163,16 +163,6 @@ export const mapAlbum = (entity: AlbumEntity, withAssets: boolean, auth?: AuthDt
     assetCount: entity.assets?.length || 0,
     isActivityEnabled: entity.isActivityEnabled,
     order: entity.order,
-    parentAlbums: entity.parentAlbums?.map((album) => ({
-      id: album.id,
-      albumName: album.albumName,
-      albumThumbnailAssetId: album.albumThumbnailAssetId,
-    })),
-    childAlbums: entity.childAlbums?.map((album) => ({
-      id: album.id,
-      albumName: album.albumName,
-      albumThumbnailAssetId: album.albumThumbnailAssetId,
-    })),
   };
 };
 

@@ -69,37 +69,13 @@ export class AlbumEntity {
 
   @Column({ type: 'varchar', default: AssetOrder.DESC })
   order!: AssetOrder;
-
-  @ManyToMany(() => AlbumEntity, (album) => album.parentAlbums)
-  @JoinTable({
-    name: 'sub_albums',
-    joinColumn: { name: 'childId' },
-    inverseJoinColumn: { name: 'parentId' },
-    synchronize: false,
-  })
-  parentAlbums!: AlbumEntity[];
-
-  @ManyToMany(() => AlbumEntity, (album) => album.childAlbums)
-  @JoinTable({
-    name: 'sub_albums',
-    joinColumn: { name: 'parentId' },
-    inverseJoinColumn: { name: 'childId' },
-    synchronize: false,
-  })
-  childAlbums!: AlbumEntity[];
 }
 
-@Entity('sub_albums', { synchronize: false })
-export class SubAlbumEntity {
+@Entity('nested_albums')
+export class NestedAlbumEntity {
   @PrimaryColumn()
   parentId!: string;
 
   @PrimaryColumn()
   childId!: string;
-
-  @ManyToOne(() => AlbumEntity, (album) => album.childAlbums, { onDelete: 'CASCADE' })
-  parent!: AlbumEntity;
-
-  @ManyToOne(() => AlbumEntity, (album) => album.parentAlbums, { onDelete: 'CASCADE' })
-  child!: AlbumEntity;
 }
