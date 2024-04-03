@@ -58,7 +58,7 @@
         onOutclick: () => dispatch('close'),
         onEscape: () => dispatch('close'),
       }}
-      class="max-h-[800px] min-h-[200px] w-[450px] overflow-y-auto rounded-lg bg-immich-bg shadow-md dark:bg-immich-dark-gray dark:text-immich-dark-fg immich-scrollbar"
+      class="max-h-[95vh] min-h-[200px] w-[450px] overflow-y-auto rounded-lg bg-immich-bg shadow-md dark:bg-immich-dark-gray dark:text-immich-dark-fg immich-scrollbar"
       tabindex="-1"
     >
       <ModalHeader {id} {title} {showLogo} {icon} on:close />
