@@ -11,7 +11,7 @@
   export let disabled = false;
   export let isEdited = false;
 
-  const sliderId = `${id}-slider`;
+  $: sliderId = `${id}-slider`;
 
   const dispatch = createEventDispatcher<{ toggle: boolean }>();
   const onToggle = (isChecked: boolean) => dispatch('toggle', isChecked);
