@@ -59,7 +59,27 @@ FROM
       "AlbumEntity__AlbumEntity_sharedLinks"."allowUpload" AS "AlbumEntity__AlbumEntity_sharedLinks_allowUpload",
       "AlbumEntity__AlbumEntity_sharedLinks"."allowDownload" AS "AlbumEntity__AlbumEntity_sharedLinks_allowDownload",
       "AlbumEntity__AlbumEntity_sharedLinks"."showExif" AS "AlbumEntity__AlbumEntity_sharedLinks_showExif",
-      "AlbumEntity__AlbumEntity_sharedLinks"."albumId" AS "AlbumEntity__AlbumEntity_sharedLinks_albumId"
+      "AlbumEntity__AlbumEntity_sharedLinks"."albumId" AS "AlbumEntity__AlbumEntity_sharedLinks_albumId",
+      "AlbumEntity__AlbumEntity_parentAlbums"."id" AS "AlbumEntity__AlbumEntity_parentAlbums_id",
+      "AlbumEntity__AlbumEntity_parentAlbums"."ownerId" AS "AlbumEntity__AlbumEntity_parentAlbums_ownerId",
+      "AlbumEntity__AlbumEntity_parentAlbums"."albumName" AS "AlbumEntity__AlbumEntity_parentAlbums_albumName",
+      "AlbumEntity__AlbumEntity_parentAlbums"."description" AS "AlbumEntity__AlbumEntity_parentAlbums_description",
+      "AlbumEntity__AlbumEntity_parentAlbums"."createdAt" AS "AlbumEntity__AlbumEntity_parentAlbums_createdAt",
+      "AlbumEntity__AlbumEntity_parentAlbums"."updatedAt" AS "AlbumEntity__AlbumEntity_parentAlbums_updatedAt",
+      "AlbumEntity__AlbumEntity_parentAlbums"."deletedAt" AS "AlbumEntity__AlbumEntity_parentAlbums_deletedAt",
+      "AlbumEntity__AlbumEntity_parentAlbums"."albumThumbnailAssetId" AS "AlbumEntity__AlbumEntity_parentAlbums_albumThumbnailAssetId",
+      "AlbumEntity__AlbumEntity_parentAlbums"."isActivityEnabled" AS "AlbumEntity__AlbumEntity_parentAlbums_isActivityEnabled",
+      "AlbumEntity__AlbumEntity_parentAlbums"."order" AS "AlbumEntity__AlbumEntity_parentAlbums_order",
+      "AlbumEntity__AlbumEntity_childAlbums"."id" AS "AlbumEntity__AlbumEntity_childAlbums_id",
+      "AlbumEntity__AlbumEntity_childAlbums"."ownerId" AS "AlbumEntity__AlbumEntity_childAlbums_ownerId",
+      "AlbumEntity__AlbumEntity_childAlbums"."albumName" AS "AlbumEntity__AlbumEntity_childAlbums_albumName",
+      "AlbumEntity__AlbumEntity_childAlbums"."description" AS "AlbumEntity__AlbumEntity_childAlbums_description",
+      "AlbumEntity__AlbumEntity_childAlbums"."createdAt" AS "AlbumEntity__AlbumEntity_childAlbums_createdAt",
+      "AlbumEntity__AlbumEntity_childAlbums"."updatedAt" AS "AlbumEntity__AlbumEntity_childAlbums_updatedAt",
+      "AlbumEntity__AlbumEntity_childAlbums"."deletedAt" AS "AlbumEntity__AlbumEntity_childAlbums_deletedAt",
+      "AlbumEntity__AlbumEntity_childAlbums"."albumThumbnailAssetId" AS "AlbumEntity__AlbumEntity_childAlbums_albumThumbnailAssetId",
+      "AlbumEntity__AlbumEntity_childAlbums"."isActivityEnabled" AS "AlbumEntity__AlbumEntity_childAlbums_isActivityEnabled",
+      "AlbumEntity__AlbumEntity_childAlbums"."order" AS "AlbumEntity__AlbumEntity_childAlbums_order"
     FROM
       "albums" "AlbumEntity"
       LEFT JOIN "users" "AlbumEntity__AlbumEntity_owner" ON "AlbumEntity__AlbumEntity_owner"."id" = "AlbumEntity"."ownerId"
@@ -72,6 +92,16 @@ FROM
         "AlbumEntity__AlbumEntity_sharedUsers"."deletedAt" IS NULL
       )
       LEFT JOIN "shared_links" "AlbumEntity__AlbumEntity_sharedLinks" ON "AlbumEntity__AlbumEntity_sharedLinks"."albumId" = "AlbumEntity"."id"
+      LEFT JOIN "sub_albums" "AlbumEntity_AlbumEntity__AlbumEntity_parentAlbums" ON "AlbumEntity_AlbumEntity__AlbumEntity_parentAlbums"."childId" = "AlbumEntity"."id"
+      LEFT JOIN "albums" "AlbumEntity__AlbumEntity_parentAlbums" ON "AlbumEntity__AlbumEntity_parentAlbums"."id" = "AlbumEntity_AlbumEntity__AlbumEntity_parentAlbums"."parentId"
+      AND (
+        "AlbumEntity__AlbumEntity_parentAlbums"."deletedAt" IS NULL
+      )
+      LEFT JOIN "sub_albums" "AlbumEntity_AlbumEntity__AlbumEntity_childAlbums" ON "AlbumEntity_AlbumEntity__AlbumEntity_childAlbums"."parentId" = "AlbumEntity"."id"
+      LEFT JOIN "albums" "AlbumEntity__AlbumEntity_childAlbums" ON "AlbumEntity__AlbumEntity_childAlbums"."id" = "AlbumEntity_AlbumEntity__AlbumEntity_childAlbums"."childId"
+      AND (
+        "AlbumEntity__AlbumEntity_childAlbums"."deletedAt" IS NULL
+      )
     WHERE
       ((("AlbumEntity"."id" = $1)))
       AND ("AlbumEntity"."deletedAt" IS NULL)
