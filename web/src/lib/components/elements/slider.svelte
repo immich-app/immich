@@ -1,6 +1,9 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
 
+  /**
+   * Unique identifier for the checkbox element, used to associate labels with the input element.
+   */
   export let id: string;
   export let checked = false;
   export let disabled = false;
