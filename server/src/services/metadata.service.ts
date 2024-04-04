@@ -412,6 +412,9 @@ export class MetadataService {
             'base64',
           )} already exists in the repository`,
         );
+
+        await this.assetRepository.update({ id: motionAsset.id, isVisible: false });
+        await this.assetRepository.update({ id: asset.id, livePhotoVideoId: motionAsset.id });
       } else {
         // We create a UUID in advance so that each extracted video can have a unique filename
         // (allowing us to delete old ones if necessary)
