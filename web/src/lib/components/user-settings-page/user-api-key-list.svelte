@@ -81,7 +81,7 @@
 
 {#if newKey}
   <APIKeyForm
-    title="New API Key"
+    title="New API key"
     submitText="Create"
     apiKey={newKey}
     on:submit={({ detail }) => handleCreate(detail)}
@@ -95,6 +95,7 @@
 
 {#if editKey}
   <APIKeyForm
+    title="API key"
     submitText="Save"
     apiKey={editKey}
     on:submit={({ detail }) => handleUpdate(detail)}
