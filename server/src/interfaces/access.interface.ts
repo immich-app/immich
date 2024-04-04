@@ -32,6 +32,10 @@ export interface IAccessRepository {
     checkPartnerAccess(userId: string, partnerIds: Set<string>): Promise<Set<string>>;
   };
 
+  memory: {
+    checkOwnerAccess(userId: string, memoryIds: Set<string>): Promise<Set<string>>;
+  };
+
   person: {
     checkFaceOwnerAccess(userId: string, assetFaceId: Set<string>): Promise<Set<string>>;
     checkOwnerAccess(userId: string, personIds: Set<string>): Promise<Set<string>>;

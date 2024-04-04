@@ -4,6 +4,7 @@ import { SystemConfigCore } from 'src/cores/system-config.core';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetPathType, PathType, PersonPathType } from 'src/entities/move.entity';
 import { PersonEntity } from 'src/entities/person.entity';
+import { ImageFormat } from 'src/entities/system-config.entity';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
@@ -34,7 +35,8 @@ export interface MoveRequest {
   };
 }
 
-type GeneratedAssetPath = AssetPathType.JPEG_THUMBNAIL | AssetPathType.WEBP_THUMBNAIL | AssetPathType.ENCODED_VIDEO;
+export type GeneratedImageType = AssetPathType.PREVIEW | AssetPathType.THUMBNAIL;
+export type GeneratedAssetType = GeneratedImageType | AssetPathType.ENCODED_VIDEO;
 
 let instance: StorageCore | null;
 
@@ -94,12 +96,8 @@ export class StorageCore {
     return StorageCore.getNestedPath(StorageFolder.THUMBNAILS, person.ownerId, `${person.id}.jpeg`);
   }
 
-  static getLargeThumbnailPath(asset: AssetEntity) {
-    return StorageCore.getNestedPath(StorageFolder.THUMBNAILS, asset.ownerId, `${asset.id}.jpeg`);
-  }
-
-  static getSmallThumbnailPath(asset: AssetEntity) {
-    return StorageCore.getNestedPath(StorageFolder.THUMBNAILS, asset.ownerId, `${asset.id}.webp`);
+  static getImagePath(asset: AssetEntity, type: GeneratedImageType, format: ImageFormat) {
+    return StorageCore.getNestedPath(StorageFolder.THUMBNAILS, asset.ownerId, `${asset.id}-${type}.${format}`);
   }
 
   static getEncodedVideoPath(asset: AssetEntity) {
@@ -128,34 +126,23 @@ export class StorageCore {
     return path.startsWith(THUMBNAIL_DIR) || path.startsWith(ENCODED_VIDEO_DIR);
   }
 
-  async moveAssetFile(asset: AssetEntity, pathType: GeneratedAssetPath) {
-    const { id: entityId, resizePath, webpPath, encodedVideoPath } = asset;
-    switch (pathType) {
-      case AssetPathType.JPEG_THUMBNAIL: {
-        return this.moveFile({
-          entityId,
-          pathType,
-          oldPath: resizePath,
-          newPath: StorageCore.getLargeThumbnailPath(asset),
-        });
-      }
-      case AssetPathType.WEBP_THUMBNAIL: {
-        return this.moveFile({
-          entityId,
-          pathType,
-          oldPath: webpPath,
-          newPath: StorageCore.getSmallThumbnailPath(asset),
-        });
-      }
-      case AssetPathType.ENCODED_VIDEO: {
-        return this.moveFile({
-          entityId,
-          pathType,
-          oldPath: encodedVideoPath,
-          newPath: StorageCore.getEncodedVideoPath(asset),
-        });
-      }
-    }
+  async moveAssetImage(asset: AssetEntity, pathType: GeneratedImageType, format: ImageFormat) {
+    const { id: entityId, previewPath, thumbnailPath } = asset;
+    return this.moveFile({
+      entityId,
+      pathType,
+      oldPath: pathType === AssetPathType.PREVIEW ? previewPath : thumbnailPath,
+      newPath: StorageCore.getImagePath(asset, AssetPathType.THUMBNAIL, format),
+    });
+  }
+
+  async moveAssetVideo(asset: AssetEntity) {
+    return this.moveFile({
+      entityId: asset.id,
+      pathType: AssetPathType.ENCODED_VIDEO,
+      oldPath: asset.encodedVideoPath,
+      newPath: StorageCore.getEncodedVideoPath(asset),
+    });
   }
 
   async movePersonFile(person: PersonEntity, pathType: PersonPathType) {
@@ -294,11 +281,11 @@ export class StorageCore {
       case AssetPathType.ORIGINAL: {
         return this.assetRepository.update({ id, originalPath: newPath });
       }
-      case AssetPathType.JPEG_THUMBNAIL: {
-        return this.assetRepository.update({ id, resizePath: newPath });
+      case AssetPathType.PREVIEW: {
+        return this.assetRepository.update({ id, previewPath: newPath });
       }
-      case AssetPathType.WEBP_THUMBNAIL: {
-        return this.assetRepository.update({ id, webpPath: newPath });
+      case AssetPathType.THUMBNAIL: {
+        return this.assetRepository.update({ id, thumbnailPath: newPath });
       }
       case AssetPathType.ENCODED_VIDEO: {
         return this.assetRepository.update({ id, encodedVideoPath: newPath });

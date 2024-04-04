@@ -83,7 +83,7 @@ export class AssetRepository implements IAssetRepository {
         `entity.ownerId IN (:...ownerIds)
       AND entity.isVisible = true
       AND entity.isArchived = false
-      AND entity.resizePath IS NOT NULL
+      AND entity.previewPath IS NOT NULL
       AND EXTRACT(DAY FROM entity.localDateTime AT TIME ZONE 'UTC') = :day
       AND EXTRACT(MONTH FROM entity.localDateTime AT TIME ZONE 'UTC') = :month`,
         {
@@ -302,10 +302,10 @@ export class AssetRepository implements IAssetRepository {
     switch (property) {
       case WithoutProperty.THUMBNAIL: {
         where = [
-          { resizePath: IsNull(), isVisible: true },
-          { resizePath: '', isVisible: true },
-          { webpPath: IsNull(), isVisible: true },
-          { webpPath: '', isVisible: true },
+          { previewPath: IsNull(), isVisible: true },
+          { previewPath: '', isVisible: true },
+          { thumbnailPath: IsNull(), isVisible: true },
+          { thumbnailPath: '', isVisible: true },
           { thumbhash: IsNull(), isVisible: true },
         ];
         break;
@@ -339,7 +339,7 @@ export class AssetRepository implements IAssetRepository {
         };
         where = {
           isVisible: true,
-          resizePath: Not(IsNull()),
+          previewPath: Not(IsNull()),
           smartSearch: {
             embedding: IsNull(),
           },
@@ -352,7 +352,7 @@ export class AssetRepository implements IAssetRepository {
           smartInfo: true,
         };
         where = {
-          resizePath: Not(IsNull()),
+          previewPath: Not(IsNull()),
           isVisible: true,
           smartInfo: {
             tags: IsNull(),
@@ -367,7 +367,7 @@ export class AssetRepository implements IAssetRepository {
           jobStatus: true,
         };
         where = {
-          resizePath: Not(IsNull()),
+          previewPath: Not(IsNull()),
           isVisible: true,
           faces: {
             assetId: IsNull(),
@@ -385,7 +385,7 @@ export class AssetRepository implements IAssetRepository {
           faces: true,
         };
         where = {
-          resizePath: Not(IsNull()),
+          previewPath: Not(IsNull()),
           isVisible: true,
           faces: {
             assetId: Not(IsNull()),

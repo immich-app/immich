@@ -18,7 +18,7 @@ import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.r
 
 const asset = {
   id: 'asset-1',
-  resizePath: 'path/to/resize.ext',
+  previewPath: 'path/to/resize.ext',
 } as AssetEntity;
 
 describe(SmartInfoService.name, () => {
@@ -94,7 +94,7 @@ describe(SmartInfoService.name, () => {
     });
 
     it('should skip assets without a resize path', async () => {
-      const asset = { resizePath: '' } as AssetEntity;
+      const asset = { previewPath: '' } as AssetEntity;
       assetMock.getByIds.mockResolvedValue([asset]);
 
       await sut.handleEncodeClip({ id: asset.id });
