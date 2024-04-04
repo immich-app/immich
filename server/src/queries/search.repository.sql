@@ -14,8 +14,8 @@ FROM
       "asset"."deviceId" AS "asset_deviceId",
       "asset"."type" AS "asset_type",
       "asset"."originalPath" AS "asset_originalPath",
-      "asset"."resizePath" AS "asset_resizePath",
-      "asset"."webpPath" AS "asset_webpPath",
+      "asset"."previewPath" AS "asset_previewPath",
+      "asset"."thumbnailPath" AS "asset_thumbnailPath",
       "asset"."thumbhash" AS "asset_thumbhash",
       "asset"."encodedVideoPath" AS "asset_encodedVideoPath",
       "asset"."createdAt" AS "asset_createdAt",
@@ -45,8 +45,8 @@ FROM
       "stackedAssets"."deviceId" AS "stackedAssets_deviceId",
       "stackedAssets"."type" AS "stackedAssets_type",
       "stackedAssets"."originalPath" AS "stackedAssets_originalPath",
-      "stackedAssets"."resizePath" AS "stackedAssets_resizePath",
-      "stackedAssets"."webpPath" AS "stackedAssets_webpPath",
+      "stackedAssets"."previewPath" AS "stackedAssets_previewPath",
+      "stackedAssets"."thumbnailPath" AS "stackedAssets_thumbnailPath",
       "stackedAssets"."thumbhash" AS "stackedAssets_thumbhash",
       "stackedAssets"."encodedVideoPath" AS "stackedAssets_encodedVideoPath",
       "stackedAssets"."createdAt" AS "stackedAssets_createdAt",
@@ -110,8 +110,8 @@ SELECT
   "asset"."deviceId" AS "asset_deviceId",
   "asset"."type" AS "asset_type",
   "asset"."originalPath" AS "asset_originalPath",
-  "asset"."resizePath" AS "asset_resizePath",
-  "asset"."webpPath" AS "asset_webpPath",
+  "asset"."previewPath" AS "asset_previewPath",
+  "asset"."thumbnailPath" AS "asset_thumbnailPath",
   "asset"."thumbhash" AS "asset_thumbhash",
   "asset"."encodedVideoPath" AS "asset_encodedVideoPath",
   "asset"."createdAt" AS "asset_createdAt",
@@ -141,8 +141,8 @@ SELECT
   "stackedAssets"."deviceId" AS "stackedAssets_deviceId",
   "stackedAssets"."type" AS "stackedAssets_type",
   "stackedAssets"."originalPath" AS "stackedAssets_originalPath",
-  "stackedAssets"."resizePath" AS "stackedAssets_resizePath",
-  "stackedAssets"."webpPath" AS "stackedAssets_webpPath",
+  "stackedAssets"."previewPath" AS "stackedAssets_previewPath",
+  "stackedAssets"."thumbnailPath" AS "stackedAssets_thumbnailPath",
   "stackedAssets"."thumbhash" AS "stackedAssets_thumbhash",
   "stackedAssets"."encodedVideoPath" AS "stackedAssets_encodedVideoPath",
   "stackedAssets"."createdAt" AS "stackedAssets_createdAt",
@@ -254,15 +254,15 @@ WHERE
   OR f_unaccent ("admin1Name") %>> f_unaccent ($1)
   OR f_unaccent ("alternateNames") %>> f_unaccent ($1)
 ORDER BY
-  COALESCE(f_unaccent (name) <->>> f_unaccent ($1), 0) + COALESCE(
+  COALESCE(f_unaccent (name) <->>> f_unaccent ($1), 0.1) + COALESCE(
     f_unaccent ("admin2Name") <->>> f_unaccent ($1),
-    0
+    0.1
   ) + COALESCE(
     f_unaccent ("admin1Name") <->>> f_unaccent ($1),
-    0
+    0.1
   ) + COALESCE(
     f_unaccent ("alternateNames") <->>> f_unaccent ($1),
-    0
+    0.1
   ) ASC
 LIMIT
   20
@@ -278,7 +278,7 @@ WITH RECURSIVE
         exif
         INNER JOIN assets ON exif."assetId" = assets.id
       WHERE
-        "ownerId" = ANY ('$1'::uuid [])
+        "ownerId" = ANY ($1::uuid [])
         AND "isVisible" = $2
         AND "isArchived" = $3
         AND type = $4
@@ -302,7 +302,7 @@ WITH RECURSIVE
           INNER JOIN assets ON exif."assetId" = assets.id
         WHERE
           city > c.city
-          AND "ownerId" = ANY ('$1'::uuid [])
+          AND "ownerId" = ANY ($1::uuid [])
           AND "isVisible" = $2
           AND "isArchived" = $3
           AND type = $4
@@ -320,8 +320,8 @@ SELECT
   "asset"."deviceId" AS "asset_deviceId",
   "asset"."type" AS "asset_type",
   "asset"."originalPath" AS "asset_originalPath",
-  "asset"."resizePath" AS "asset_resizePath",
-  "asset"."webpPath" AS "asset_webpPath",
+  "asset"."previewPath" AS "asset_previewPath",
+  "asset"."thumbnailPath" AS "asset_thumbnailPath",
   "asset"."thumbhash" AS "asset_thumbhash",
   "asset"."encodedVideoPath" AS "asset_encodedVideoPath",
   "asset"."createdAt" AS "asset_createdAt",

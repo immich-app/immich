@@ -6,23 +6,21 @@ part of 'people.provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$getCuratedPeopleHash() => r'2a534553812abe69abce2c2e41aa62b8de16e9d0';
+String _$getAllPeopleHash() => r'4eff6666be5a74710d1e8587e01d8154310d85bd';
 
-/// See also [getCuratedPeople].
-@ProviderFor(getCuratedPeople)
-final getCuratedPeopleProvider =
-    AutoDisposeFutureProvider<List<CuratedContent>>.internal(
-  getCuratedPeople,
-  name: r'getCuratedPeopleProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$getCuratedPeopleHash,
+/// See also [getAllPeople].
+@ProviderFor(getAllPeople)
+final getAllPeopleProvider =
+    AutoDisposeFutureProvider<List<PersonResponseDto>>.internal(
+  getAllPeople,
+  name: r'getAllPeopleProvider',
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product') ? null : _$getAllPeopleHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
-typedef GetCuratedPeopleRef
-    = AutoDisposeFutureProviderRef<List<CuratedContent>>;
+typedef GetAllPeopleRef = AutoDisposeFutureProviderRef<List<PersonResponseDto>>;
 String _$personAssetsHash() => r'1d6eff5ca3aa630b58c4dad9516193b21896984d';
 
 /// Copied from Dart SDK
@@ -172,7 +170,7 @@ class _PersonAssetsProviderElement
   String get personId => (origin as PersonAssetsProvider).personId;
 }
 
-String _$updatePersonNameHash() => r'c7179a7cc558669c3b30b03fbca7782a42f2b6fd';
+String _$updatePersonNameHash() => r'7145aaaf6fc38fdafe3a283ebf3d3f4fd0774cd2';
 
 /// See also [updatePersonName].
 @ProviderFor(updatePersonName)

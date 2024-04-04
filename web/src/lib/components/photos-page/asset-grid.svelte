@@ -18,6 +18,7 @@
   import Scrollbar from '../shared-components/scrollbar/scrollbar.svelte';
   import ShowShortcuts from '../shared-components/show-shortcuts.svelte';
   import AssetDateGroup from './asset-date-group.svelte';
+  import { stackAssets } from '$lib/utils/asset-utils';
   import DeleteAssetDialog from './delete-asset-dialog.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { selectAllAssets } from '$lib/utils/asset-utils';
@@ -85,6 +86,13 @@
     handlePromiseError(trashOrDelete(true));
   };
 
+  const onStackAssets = async () => {
+    await stackAssets(Array.from($selectedAssets), (ids) => {
+      assetStore.removeAssets(ids);
+      dispatch('escape');
+    });
+  };
+
   $: shortcutList = (() => {
     if ($isSearchEnabled || $showAssetViewer) {
       return [];
@@ -102,6 +110,7 @@
         { shortcut: { key: 'Delete' }, onShortcut: onDelete },
         { shortcut: { key: 'Delete', shift: true }, onShortcut: onForceDelete },
         { shortcut: { key: 'D', ctrl: true }, onShortcut: () => deselectAllAssets() },
+        { shortcut: { key: 's' }, onShortcut: () => onStackAssets() },
       );
     }
 
@@ -128,26 +137,22 @@
   }
 
   const handlePrevious = async () => {
-    const previousAsset = await assetStore.getPreviousAssetId($viewingAsset.id);
+    const previousAsset = await assetStore.getPreviousAsset($viewingAsset.id);
 
     if (previousAsset) {
-      const preloadId = await assetStore.getPreviousAssetId(previousAsset);
-      preloadId
-        ? await assetViewingStore.setAssetId(previousAsset, [preloadId])
-        : await assetViewingStore.setAssetId(previousAsset);
+      const preloadAsset = await assetStore.getPreviousAsset(previousAsset.id);
+      assetViewingStore.setAsset(previousAsset, preloadAsset ? [preloadAsset] : []);
     }
 
     return !!previousAsset;
   };
 
   const handleNext = async () => {
-    const nextAsset = await assetStore.getNextAssetId($viewingAsset.id);
+    const nextAsset = await assetStore.getNextAsset($viewingAsset.id);
 
     if (nextAsset) {
-      const preloadId = await assetStore.getNextAssetId(nextAsset);
-      preloadId
-        ? await assetViewingStore.setAssetId(nextAsset, [preloadId])
-        : await assetViewingStore.setAssetId(nextAsset);
+      const preloadAsset = await assetStore.getNextAsset(nextAsset.id);
+      assetViewingStore.setAsset(nextAsset, preloadAsset ? [preloadAsset] : []);
     }
 
     return !!nextAsset;

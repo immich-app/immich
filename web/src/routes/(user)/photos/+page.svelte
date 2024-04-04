@@ -53,7 +53,7 @@
     assets={$selectedAssets}
     clearSelect={() => assetInteractionStore.clearMultiselect()}
   >
-    <CreateSharedLink on:escape={() => (handleEscapeKey = true)} />
+    <CreateSharedLink />
     <SelectAllAssets {assetStore} {assetInteractionStore} />
     <AssetSelectContextMenu icon={mdiPlus} title="Add to...">
       <AddToAlbum />

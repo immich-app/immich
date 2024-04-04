@@ -196,6 +196,20 @@ WHERE
   )
   AND ("LibraryEntity"."deletedAt" IS NULL)
 
+-- AccessRepository.memory.checkOwnerAccess
+SELECT
+  "MemoryEntity"."id" AS "MemoryEntity_id"
+FROM
+  "memories" "MemoryEntity"
+WHERE
+  (
+    (
+      ("MemoryEntity"."id" IN ($1))
+      AND ("MemoryEntity"."ownerId" = $2)
+    )
+  )
+  AND ("MemoryEntity"."deletedAt" IS NULL)
+
 -- AccessRepository.person.checkOwnerAccess
 SELECT
   "PersonEntity"."id" AS "PersonEntity_id"

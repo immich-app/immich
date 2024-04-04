@@ -12,6 +12,7 @@ import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/services/hash.service.dart';
 import 'package:immich_mobile/utils/async_mutex.dart';
 import 'package:immich_mobile/extensions/collection_extensions.dart';
+import 'package:immich_mobile/utils/datetime_comparison.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
@@ -343,8 +344,13 @@ class SyncService {
 
     album.name = dto.albumName;
     album.shared = dto.shared;
+    album.createdAt = dto.createdAt;
     album.modifiedAt = dto.updatedAt;
+    album.startDate = dto.startDate;
+    album.endDate = dto.endDate;
     album.lastModifiedAssetTimestamp = originalDto.lastModifiedAssetTimestamp;
+    album.shared = dto.shared;
+    album.activityEnabled = dto.isActivityEnabled;
     if (album.thumbnail.value?.remoteId != dto.albumThumbnailAssetId) {
       album.thumbnail.value = await _db.assets
           .where()
@@ -863,12 +869,10 @@ bool _hasAlbumResponseDtoChanged(AlbumResponseDto dto, Album a) {
       dto.shared != a.shared ||
       dto.sharedUsers.length != a.sharedUsers.length ||
       !dto.updatedAt.isAtSameMomentAs(a.modifiedAt) ||
-      (dto.lastModifiedAssetTimestamp == null &&
-          a.lastModifiedAssetTimestamp != null) ||
-      (dto.lastModifiedAssetTimestamp != null &&
-          a.lastModifiedAssetTimestamp == null) ||
-      (dto.lastModifiedAssetTimestamp != null &&
-          a.lastModifiedAssetTimestamp != null &&
-          !dto.lastModifiedAssetTimestamp!
-              .isAtSameMomentAs(a.lastModifiedAssetTimestamp!));
+      !isAtSameMomentAs(dto.startDate, a.startDate) ||
+      !isAtSameMomentAs(dto.endDate, a.endDate) ||
+      !isAtSameMomentAs(
+        dto.lastModifiedAssetTimestamp,
+        a.lastModifiedAssetTimestamp,
+      );
 }

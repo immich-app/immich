@@ -14,7 +14,6 @@ import {
 import { AuthDto } from 'src/dtos/auth.dto';
 import { MapMarkerDto, MapMarkerResponseDto, MemoryLaneDto, MetadataSearchDto } from 'src/dtos/search.dto';
 import { UpdateStackParentDto } from 'src/dtos/stack.dto';
-import { TimeBucketAssetDto, TimeBucketDto, TimeBucketResponseDto } from 'src/dtos/time-bucket.dto';
 import { Auth, Authenticated, SharedLinkRoute } from 'src/middleware/auth.guard';
 import { Route } from 'src/middleware/file-upload.interceptor';
 import { AssetService } from 'src/services/asset.service';
@@ -69,18 +68,6 @@ export class AssetController {
   @Get('statistics')
   getAssetStatistics(@Auth() auth: AuthDto, @Query() dto: AssetStatsDto): Promise<AssetStatsResponseDto> {
     return this.service.getStatistics(auth, dto);
-  }
-
-  @Authenticated({ isShared: true })
-  @Get('time-buckets')
-  getTimeBuckets(@Auth() auth: AuthDto, @Query() dto: TimeBucketDto): Promise<TimeBucketResponseDto[]> {
-    return this.service.getTimeBuckets(auth, dto);
-  }
-
-  @Authenticated({ isShared: true })
-  @Get('time-bucket')
-  getTimeBucket(@Auth() auth: AuthDto, @Query() dto: TimeBucketAssetDto): Promise<AssetResponseDto[]> {
-    return this.service.getTimeBucket(auth, dto) as Promise<AssetResponseDto[]>;
   }
 
   @Post('jobs')

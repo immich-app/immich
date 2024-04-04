@@ -12,6 +12,7 @@ export type ShortcutOptions<T = HTMLElement> = {
   shortcut: Shortcut;
   ignoreInputFields?: boolean;
   onShortcut: (event: KeyboardEvent & { currentTarget: T }) => unknown;
+  preventDefault?: boolean;
 };
 
 export const shouldIgnoreShortcut = (event: KeyboardEvent): boolean => {
@@ -53,13 +54,15 @@ export const shortcuts = <T extends HTMLElement>(
   function onKeydown(event: KeyboardEvent) {
     const ignoreShortcut = shouldIgnoreShortcut(event);
 
-    for (const { shortcut, onShortcut, ignoreInputFields = true } of options) {
+    for (const { shortcut, onShortcut, ignoreInputFields = true, preventDefault = true } of options) {
       if (ignoreInputFields && ignoreShortcut) {
         continue;
       }
 
       if (matchesShortcut(event, shortcut)) {
-        event.preventDefault();
+        if (preventDefault) {
+          event.preventDefault();
+        }
         onShortcut(event as KeyboardEvent & { currentTarget: T });
         return;
       }

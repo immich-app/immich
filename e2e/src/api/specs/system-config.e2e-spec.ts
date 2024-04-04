@@ -1,4 +1,4 @@
-import { LoginResponseDto, getConfig } from '@immich/sdk';
+import { AssetFileUploadResponseDto, LoginResponseDto, SharedLinkType, getConfig } from '@immich/sdk';
 import { createUserDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
 import { app, asBearerAuth, utils } from 'src/utils';
@@ -10,11 +10,14 @@ const getSystemConfig = (accessToken: string) => getConfig({ headers: asBearerAu
 describe('/system-config', () => {
   let admin: LoginResponseDto;
   let nonAdmin: LoginResponseDto;
+  let asset: AssetFileUploadResponseDto;
 
   beforeAll(async () => {
     await utils.resetDatabase();
     admin = await utils.adminSetup();
     nonAdmin = await utils.userSetup(admin.accessToken, createUserDto.user1);
+
+    asset = await utils.createAsset(admin.accessToken);
   });
 
   describe('GET /system-config/map/style.json', () => {
@@ -22,6 +25,19 @@ describe('/system-config', () => {
       const { status, body } = await request(app).get('/system-config/map/style.json');
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
+    });
+
+    it('should allow shared link access', async () => {
+      const sharedLink = await utils.createSharedLink(admin.accessToken, {
+        type: SharedLinkType.Individual,
+        assetIds: [asset.id],
+      });
+      const { status, body } = await request(app)
+        .get(`/system-config/map/style.json?key=${sharedLink.key}`)
+        .query({ theme: 'dark' });
+
+      expect(status).toBe(200);
+      expect(body).toEqual(expect.objectContaining({ id: 'immich-map-dark' }));
     });
 
     it('should throw an error if a theme is not light or dark', async () => {

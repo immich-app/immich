@@ -245,7 +245,7 @@ export class JobService {
 
       case JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE: {
         if (item.data.source === 'upload') {
-          await this.jobRepository.queue({ name: JobName.GENERATE_JPEG_THUMBNAIL, data: item.data });
+          await this.jobRepository.queue({ name: JobName.GENERATE_PREVIEW, data: item.data });
         }
         break;
       }
@@ -259,10 +259,10 @@ export class JobService {
         break;
       }
 
-      case JobName.GENERATE_JPEG_THUMBNAIL: {
+      case JobName.GENERATE_PREVIEW: {
         const jobs: JobItem[] = [
-          { name: JobName.GENERATE_WEBP_THUMBNAIL, data: item.data },
-          { name: JobName.GENERATE_THUMBHASH_THUMBNAIL, data: item.data },
+          { name: JobName.GENERATE_THUMBNAIL, data: item.data },
+          { name: JobName.GENERATE_THUMBHASH, data: item.data },
         ];
 
         if (item.data.source === 'upload') {
@@ -282,7 +282,7 @@ export class JobService {
         break;
       }
 
-      case JobName.GENERATE_WEBP_THUMBNAIL: {
+      case JobName.GENERATE_THUMBNAIL: {
         if (item.data.source !== 'upload') {
           break;
         }

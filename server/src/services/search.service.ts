@@ -76,6 +76,9 @@ export class SearchService {
       checksum = Buffer.from(dto.checksum, encoding);
     }
 
+    dto.previewPath ??= dto.resizePath;
+    dto.thumbnailPath ??= dto.webpPath;
+
     const page = dto.page ?? 1;
     const size = dto.size || 250;
     const enumToOrder = { [AssetOrder.ASC]: 'ASC', [AssetOrder.DESC]: 'DESC' } as const;

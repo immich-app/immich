@@ -33,6 +33,9 @@ final ThemeData base = ThemeData(
 final ThemeData immichLightTheme = ThemeData(
   useMaterial3: true,
   brightness: Brightness.light,
+  colorScheme: ColorScheme.fromSeed(
+    seedColor: Colors.indigo,
+  ),
   primarySwatch: Colors.indigo,
   primaryColor: Colors.indigo,
   hintColor: Colors.indigo,
@@ -158,6 +161,10 @@ final ThemeData immichDarkTheme = ThemeData(
   brightness: Brightness.dark,
   primarySwatch: Colors.indigo,
   primaryColor: immichDarkThemePrimaryColor,
+  colorScheme: ColorScheme.fromSeed(
+    seedColor: immichDarkThemePrimaryColor,
+    brightness: Brightness.dark,
+  ),
   scaffoldBackgroundColor: immichDarkBackgroundColor,
   hintColor: Colors.grey[600],
   fontFamily: 'Overpass',
