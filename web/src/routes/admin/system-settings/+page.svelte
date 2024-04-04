@@ -10,6 +10,7 @@
   import OAuthSettings from '$lib/components/admin-page/settings/oauth/oauth-settings.svelte';
   import PasswordLoginSettings from '$lib/components/admin-page/settings/password-login/password-login-settings.svelte';
   import ServerSettings from '$lib/components/admin-page/settings/server/server-settings.svelte';
+  import SmtpSettings from '$lib/components/admin-page/settings/smtp/smtp-settings.svelte';
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
   import StorageTemplateSettings from '$lib/components/admin-page/settings/storage-template/storage-template-settings.svelte';
   import ThemeSettings from '$lib/components/admin-page/settings/theme/theme-settings.svelte';
@@ -41,6 +42,7 @@
     | typeof OAuthSettings
     | typeof PasswordLoginSettings
     | typeof ServerSettings
+    | typeof SmtpSettings
     | typeof StorageTemplateSettings
     | typeof ThemeSettings
     | typeof ImageSettings
@@ -117,6 +119,12 @@
       title: 'Server Settings',
       subtitle: 'Manage server settings',
       key: 'server',
+    },
+    {
+      item: SmtpSettings,
+      title: 'SMTP Settings',
+      subtitle: 'Manage SMTP notification settings',
+      key: 'smtp',
     },
     {
       item: StorageTemplateSettings,
