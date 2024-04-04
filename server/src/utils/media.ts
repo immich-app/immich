@@ -405,19 +405,21 @@ export class AV1Config extends BaseConfig {
 
   getBitrateOptions() {
     const bitrates = this.getBitrateDistribution();
-    if (bitrates.max > 0) {
-      return [
-        `-crf ${this.config.crf}`,
-        `-svtav1-params mbr=${bitrates.max}${bitrates.unit}`, // Wrapping the params in quotes breaks them for some reason, so don't do that
-      ];
-    } else {
-      return [`-crf ${this.config.crf}`];
+    const svtparams = [];
+    if (this.config.threads > 0) {
+      svtparams.push(`lp=${this.config.threads}`)
     }
+    if (bitrates.max > 0) {
+      svtparams.push(`mbr=${bitrates.max}${bitrates.unit}`)
+    }
+    return [
+      `-crf ${this.config.crf}`,
+      `-svtav1-params ${svtparams.join(':')}`
+    ];
   }
 
   getThreadOptions() {
-    return [];
-    // return [`-svtav1-params lp=${this.config.threads}`]; // THIS WOULD OVERWRITE PREVIOUS SVTAV1-PARAMS! Can't be used multiple times.
+    return []; // Already set above with svtav1-params
   }
 }
 
@@ -489,10 +491,6 @@ export class NVENCConfig extends BaseHWConfig {
 
   getThreadOptions() {
     return [];
-  }
-
-  getSupportedCodecs() {
-    return [VideoCodec.H264, VideoCodec.HEVC];
   }
 
   getRefs() {
