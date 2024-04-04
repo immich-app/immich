@@ -404,18 +404,19 @@ export class AV1Config extends BaseConfig {
   }
 
   getBitrateOptions() {
+    const options = [`-crf ${this.config.crf}`];
     const bitrates = this.getBitrateDistribution();
     const svtparams = [];
     if (this.config.threads > 0) {
-      svtparams.push(`lp=${this.config.threads}`)
+      svtparams.push(`lp=${this.config.threads}`);
     }
     if (bitrates.max > 0) {
-      svtparams.push(`mbr=${bitrates.max}${bitrates.unit}`)
+      svtparams.push(`mbr=${bitrates.max}${bitrates.unit}`);
     }
-    return [
-      `-crf ${this.config.crf}`,
-      `-svtav1-params ${svtparams.join(':')}`
-    ];
+    if (svtparams.length > 0) {
+      options.push(`-svtav1-params ${svtparams.join(':')}`);
+    }
+    return options;
   }
 
   getThreadOptions() {
