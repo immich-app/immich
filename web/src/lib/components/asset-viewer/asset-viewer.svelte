@@ -62,7 +62,7 @@
 
   let reactions: ActivityResponseDto[] = [];
 
-  const { setAssetId } = assetViewingStore;
+  const { setAsset } = assetViewingStore;
   const {
     restartProgress: restartSlideshowProgress,
     stopProgress: stopSlideshowProgress,
@@ -193,7 +193,7 @@
     slideshowStateUnsubscribe = slideshowState.subscribe((value) => {
       if (value === SlideshowState.PlaySlideshow) {
         slideshowHistory.reset();
-        slideshowHistory.queue(asset.id);
+        slideshowHistory.queue(asset);
         handlePromiseError(handlePlaySlideshow());
       } else if (value === SlideshowState.StopSlideshow) {
         handlePromiseError(handleStopSlideshow());
@@ -203,7 +203,7 @@
     shuffleSlideshowUnsubscribe = slideshowNavigation.subscribe((value) => {
       if (value === SlideshowNavigation.Shuffle) {
         slideshowHistory.reset();
-        slideshowHistory.queue(asset.id);
+        slideshowHistory.queue(asset);
       }
     });
 
@@ -278,9 +278,9 @@
       return;
     }
 
-    slideshowHistory.queue(asset.id);
+    slideshowHistory.queue(asset);
 
-    await setAssetId(asset.id);
+    setAsset(asset);
     $restartSlideshowProgress = true;
   };
 
@@ -299,9 +299,7 @@
 
     if ($slideshowState === SlideshowState.PlaySlideshow && assetStore) {
       const hasNext =
-        order === 'previous'
-          ? await assetStore.getPreviousAssetId(asset.id)
-          : await assetStore.getNextAssetId(asset.id);
+        order === 'previous' ? await assetStore.getPreviousAsset(asset.id) : await assetStore.getNextAsset(asset.id);
       if (hasNext) {
         $restartSlideshowProgress = true;
       } else {
@@ -441,8 +439,8 @@
 
   let assetViewerHtmlElement: HTMLElement;
 
-  const slideshowHistory = new SlideshowHistory((assetId: string) => {
-    handlePromiseError(setAssetId(assetId));
+  const slideshowHistory = new SlideshowHistory((asset) => {
+    setAsset(asset);
     $restartSlideshowProgress = true;
   });
 
