@@ -12,6 +12,9 @@ import {
   OneToMany,
   PrimaryColumn,
   PrimaryGeneratedColumn,
+  Tree,
+  TreeChildren,
+  TreeParent,
   UpdateDateColumn,
 } from 'typeorm';
 
@@ -22,6 +25,7 @@ export enum AssetOrder {
 }
 
 @Entity('albums')
+@Tree('closure-table')
 export class AlbumEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
@@ -69,6 +73,12 @@ export class AlbumEntity {
 
   @Column({ type: 'varchar', default: AssetOrder.DESC })
   order!: AssetOrder;
+
+  @TreeChildren()
+  children!: AlbumEntity[];
+
+  @TreeParent()
+  parents!: AlbumEntity[];
 }
 
 @Entity('nested_albums')

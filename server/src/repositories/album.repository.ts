@@ -14,7 +14,16 @@ import {
 } from 'src/interfaces/album.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
 import { setUnion } from 'src/utils/set';
-import { DataSource, FindOptionsOrder, FindOptionsRelations, In, IsNull, Not, Repository } from 'typeorm';
+import {
+  DataSource,
+  FindOptionsOrder,
+  FindOptionsRelations,
+  In,
+  IsNull,
+  Not,
+  Repository,
+  TreeRepository,
+} from 'typeorm';
 
 @Instrumentation()
 @Injectable()
@@ -23,6 +32,7 @@ export class AlbumRepository implements IAlbumRepository {
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
     @InjectRepository(AlbumEntity) private repository: Repository<AlbumEntity>,
     @InjectRepository(NestedAlbumEntity) private nestedAlbumRepository: Repository<NestedAlbumEntity>,
+    @InjectRepository(AlbumEntity) private albumTreeRepository: TreeRepository<AlbumEntity>,
     @InjectDataSource() private dataSource: DataSource,
   ) {}
 
@@ -363,6 +373,13 @@ export class AlbumRepository implements IAlbumRepository {
 
   @GenerateSql()
   async getNestedAlbums(id: string): Promise<NestedAlbums> {
+    const album = await this.repository.findOneOrFail({ where: { id } });
+    const ancestor = await this.albumTreeRepository.findAncestorsTree(album);
+    console.log('Parents', ancestor);
+    console.log('-----------------');
+    const desc = await this.albumTreeRepository.findDescendantsTree(album);
+    console.log('Children', desc);
+
     const children = await this.repository
       .createQueryBuilder('albums')
       .innerJoin('nested_albums', 'nested', 'nested.childId = albums.id')
