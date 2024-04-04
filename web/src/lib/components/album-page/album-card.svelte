@@ -51,7 +51,7 @@
     </p>
 
     {#if showDateRange && album.startDate && album.endDate}
-      <p class="flex text-sm dark:text-immich-dark-fg capitalize" data-testid="album-details">
+      <p class="flex text-sm dark:text-immich-dark-fg capitalize">
         {getShortDateRange(album.startDate, album.endDate)}
       </p>
     {/if}
