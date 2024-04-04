@@ -124,7 +124,7 @@
     <section class="w-full pb-28 lg:w-[850px]">
       {#if shouldShowCreateUserForm}
         <FullScreenModal
-          id="create-new-user"
+          id="create-new-user-modal"
           title="Create new user"
           showLogo
           onClose={() => (shouldShowCreateUserForm = false)}
@@ -135,7 +135,7 @@
 
       {#if shouldShowEditUserForm}
         <FullScreenModal
-          id="edit-user"
+          id="edit-user-modal"
           title="Edit user"
           icon={mdiAccountEditOutline}
           onClose={() => (shouldShowEditUserForm = false)}
@@ -170,40 +170,38 @@
       {/if}
 
       {#if shouldShowPasswordResetSuccess}
-        <FullScreenModal onClose={() => (shouldShowPasswordResetSuccess = false)}>
-          <ConfirmDialogue
-            title="Password Reset Success"
-            confirmText="Done"
-            onConfirm={() => (shouldShowPasswordResetSuccess = false)}
-            onClose={() => (shouldShowPasswordResetSuccess = false)}
-            hideCancelButton={true}
-            confirmColor="green"
-          >
-            <svelte:fragment slot="prompt">
-              <div class="flex flex-col gap-4">
-                <p>The user's password has been reset:</p>
+        <ConfirmDialogue
+          title="Password reset success"
+          confirmText="Done"
+          onConfirm={() => (shouldShowPasswordResetSuccess = false)}
+          onClose={() => (shouldShowPasswordResetSuccess = false)}
+          hideCancelButton={true}
+          confirmColor="green"
+        >
+          <svelte:fragment slot="prompt">
+            <div class="flex flex-col gap-4">
+              <p>The user's password has been reset:</p>
 
-                <div class="flex justify-center gap-2">
-                  <code
-                    class="rounded-md bg-gray-200 px-2 py-1 font-bold text-immich-primary dark:text-immich-dark-primary dark:bg-gray-700"
-                  >
-                    {newPassword}
-                  </code>
-                  <LinkButton on:click={() => copyToClipboard(newPassword)} title="Copy password">
-                    <div class="flex place-items-center gap-2 text-sm">
-                      <Icon path={mdiContentCopy} size="18" />
-                    </div>
-                  </LinkButton>
-                </div>
-
-                <p>
-                  Please provide the temporary password to the user and inform them they will need to change the
-                  password at their next login.
-                </p>
+              <div class="flex justify-center gap-2">
+                <code
+                  class="rounded-md bg-gray-200 px-2 py-1 font-bold text-immich-primary dark:text-immich-dark-primary dark:bg-gray-700"
+                >
+                  {newPassword}
+                </code>
+                <LinkButton on:click={() => copyToClipboard(newPassword)} title="Copy password">
+                  <div class="flex place-items-center gap-2 text-sm">
+                    <Icon path={mdiContentCopy} size="18" />
+                  </div>
+                </LinkButton>
               </div>
-            </svelte:fragment>
-          </ConfirmDialogue>
-        </FullScreenModal>
+
+              <p>
+                Please provide the temporary password to the user and inform them they will need to change the password
+                at their next login.
+              </p>
+            </div>
+          </svelte:fragment>
+        </ConfirmDialogue>
       {/if}
 
       <table class="my-5 w-full text-left">
