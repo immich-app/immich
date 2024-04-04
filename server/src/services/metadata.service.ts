@@ -413,8 +413,11 @@ export class MetadataService {
           )} already exists in the repository`,
         );
 
-        await this.assetRepository.update({ id: motionAsset.id, isVisible: false });
-        await this.assetRepository.update({ id: asset.id, livePhotoVideoId: motionAsset.id });
+        // Hide the motion photo video asset if it's not already hidden to prepare for linking
+        if (motionAsset.isVisible) {
+          await this.assetRepository.update({ id: motionAsset.id, isVisible: false });
+          this.logger.log(`Hid existing motion photo video asset (${motionAsset.id})`);
+        }
       } else {
         // We create a UUID in advance so that each extracted video can have a unique filename
         // (allowing us to delete old ones if necessary)
@@ -441,11 +444,13 @@ export class MetadataService {
         this.storageCore.ensureFolders(motionPath);
         await this.storageRepository.writeFile(motionAsset.originalPath, video);
         await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: motionAsset.id } });
-        await this.assetRepository.update({ id: asset.id, livePhotoVideoId: motionAsset.id });
+      }
 
+      if (asset.livePhotoVideoId !== motionAsset.id) {
+        await this.assetRepository.update({ id: asset.id, livePhotoVideoId: motionAsset.id });
         // If the asset already had an associated livePhotoVideo, delete it, because
         // its checksum doesn't match the checksum of the motionAsset we just extracted
-        // (if it did, getByChecksum() would've returned non-null)
+        // (if it did, getByChecksum() would've returned a motionAsset with the same ID as livePhotoVideoId)
         if (asset.livePhotoVideoId) {
           await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: asset.livePhotoVideoId } });
           this.logger.log(`Removed old motion photo video asset (${asset.livePhotoVideoId})`);
