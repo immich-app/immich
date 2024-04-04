@@ -137,26 +137,22 @@
   }
 
   const handlePrevious = async () => {
-    const previousAsset = await assetStore.getPreviousAssetId($viewingAsset.id);
+    const previousAsset = await assetStore.getPreviousAsset($viewingAsset.id);
 
     if (previousAsset) {
-      const preloadId = await assetStore.getPreviousAssetId(previousAsset);
-      preloadId
-        ? await assetViewingStore.setAssetId(previousAsset, [preloadId])
-        : await assetViewingStore.setAssetId(previousAsset);
+      const preloadAsset = await assetStore.getPreviousAsset(previousAsset.id);
+      assetViewingStore.setAsset(previousAsset, preloadAsset ? [preloadAsset] : []);
     }
 
     return !!previousAsset;
   };
 
   const handleNext = async () => {
-    const nextAsset = await assetStore.getNextAssetId($viewingAsset.id);
+    const nextAsset = await assetStore.getNextAsset($viewingAsset.id);
 
     if (nextAsset) {
-      const preloadId = await assetStore.getNextAssetId(nextAsset);
-      preloadId
-        ? await assetViewingStore.setAssetId(nextAsset, [preloadId])
-        : await assetViewingStore.setAssetId(nextAsset);
+      const preloadAsset = await assetStore.getNextAsset(nextAsset.id);
+      assetViewingStore.setAsset(nextAsset, preloadAsset ? [preloadAsset] : []);
     }
 
     return !!nextAsset;
