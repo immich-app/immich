@@ -16,16 +16,15 @@ import { useSwagger } from 'src/utils/misc';
 
 async function bootstrapMicroservices() {
   const logger = new ImmichLogger('ImmichMicroservice');
-  const port = Number(process.env.MICROSERVICES_PORT) || 3002;
 
   otelSDK.start();
-  const app = await NestFactory.create(MicroservicesModule, { bufferLogs: true });
+  const app = await NestFactory.createMicroservice(MicroservicesModule, { bufferLogs: true });
   app.useLogger(app.get(ImmichLogger));
   app.useWebSocketAdapter(new WebSocketAdapter(app));
 
-  await app.listen(port);
+  await app.listen();
 
-  logger.log(`Immich Microservices is listening on ${await app.getUrl()} [v${serverVersion}] [${envName}] `);
+  logger.log(`Immich Microservices is running [v${serverVersion}] [${envName}] `);
 }
 
 async function bootstrapApi() {

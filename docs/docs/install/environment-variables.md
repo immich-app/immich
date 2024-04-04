@@ -51,7 +51,6 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 | Variable                | Description           |  Default  | Services         |
 | :---------------------- | :-------------------- | :-------: | :--------------- |
 | `SERVER_PORT`           | Server Port           |  `3001`   | server           |
-| `MICROSERVICES_PORT`    | Microservices Port    |  `3002`   | microservices    |
 | `MACHINE_LEARNING_HOST` | Machine Learning Host | `0.0.0.0` | machine learning |
 | `MACHINE_LEARNING_PORT` | Machine Learning Port |  `3003`   | machine learning |
 
