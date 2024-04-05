@@ -33,7 +33,7 @@
   import SearchBar from '$lib/components/elements/search-bar.svelte';
   import GroupTab from '$lib/components/elements/group-tab.svelte';
   import { createAlbumAndRedirect, collapseAllAlbumGroups, expandAllAlbumGroups } from '$lib/utils/album-utils';
-  import { fade, fly } from 'svelte/transition';
+  import { fly } from 'svelte/transition';
 
   export let albumGroups: string[];
   export let searchQuery: string;
