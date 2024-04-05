@@ -65,7 +65,7 @@ class HashService {
         });
 
         _log.warning(
-          "Failed to get file for asset ${assetEntities[i].id} - $fileName, skipping",
+          "Failed to get file for asset ${assetEntities[i].id}, name: $fileName, created on: ${assetEntities[i].createDateTime}, skipping",
         );
         continue;
       }
