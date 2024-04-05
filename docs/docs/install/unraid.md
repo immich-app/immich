@@ -27,7 +27,7 @@ For more information about setting up the community image see [here](https://git
 
 :::info
 
-- Guide was written using Unraid v6.11.1
+- Guide was written using Unraid v6.12.10
 - Requires you to have installed the plugin: [Docker Compose Manager](https://forums.unraid.net/topic/114415-plugin-docker-compose-manager/)
 - An Unraid share created for your images
 - There has been a [report](https://forums.unraid.net/topic/130006-errortraps-traps-node27707-trap-invalid-opcode-ip14fcfc8d03c0-sp7fff32889dd8-more/#comment-1189395) of this not working if your Unraid server doesn't support AVX _(e.g. using a T610)_
@@ -46,7 +46,7 @@ alt="Select Plugins > Compose.Manager > Add New Stack > Label it Immich"
 />
 
 3.  Select the cog ⚙️ next to Immich then click "**Edit Stack**"
-4.  Click "**Compose File**" and then paste the entire contents of the [Immich Docker Compose](https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml) file into the Unraid editor
+4.  Click "**Compose File**" and then paste the entire contents of the [Immich Docker Compose](https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml) file into the Unraid editor. Replace any text that may be in the text area by default.
     <details >
         <summary>Using an existing Postgres container? Click me! Otherwise proceed to step 5.</summary>
         <ul>
@@ -107,8 +107,8 @@ alt="Go to Docker Tab and visit the address listed next to immich-web"
 />
 
 <details >
-    <summary>Using the Unraid Docker Folders plugin? Click me! Otherwise you're complete!</summary>
-    <p>If you are using the Docker Folders plugin go the Docker tab and select "<b>New Folder</b>".<br />Label it <i>"Immich"</i> and use the logo from the <a href="https://immich.app/">Immich homepage</a> <i>(right click the logo, "Save As", and reupload to Unraid)</i><br />Then simply select all the Immich related containers before clicking "<b>Submit</b>"</p>
+    <summary>Using the FolderView plugin for organizing your Docker containers? Click me! Otherwise you're complete!</summary>
+    <p>If you are using the FolderView plugin go the Docker tab and select "<b>New Folder</b>".<br />Label it <i>"Immich"</i> and use this URL as the logo: https://raw.githubusercontent.com/immich-app/immich/main/design/immich-logo.png<br/>Then simply select all the Immich related containers before clicking "<b>Submit</b>"</p>
     <img
         src={require('./img/unraid07.webp').default}
         width="80%"
