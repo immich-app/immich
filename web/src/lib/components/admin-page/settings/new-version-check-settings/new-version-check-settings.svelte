@@ -21,7 +21,7 @@
       <div class="ml-4 mt-4">
         <SettingSwitch
           title="ENABLED"
-          subtitle="Enable period requests to GitHub to check for new releases"
+          subtitle="Enable periodic requests to GitHub to check for new releases"
           bind:checked={config.newVersionCheck.enabled}
           {disabled}
         />

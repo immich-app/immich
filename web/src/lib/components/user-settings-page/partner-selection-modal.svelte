@@ -3,7 +3,6 @@
   import { createEventDispatcher, onMount } from 'svelte';
   import Button from '../elements/buttons/button.svelte';
   import BaseModal from '../shared-components/base-modal.svelte';
-  import ImmichLogo from '../shared-components/immich-logo.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
 
   export let user: UserResponseDto;
@@ -33,14 +32,7 @@
   };
 </script>
 
-<BaseModal on:close={() => dispatch('close')}>
-  <svelte:fragment slot="title">
-    <span class="flex place-items-center gap-2">
-      <ImmichLogo noText width={36} />
-      <p class="font-medium">Add partner</p>
-    </span>
-  </svelte:fragment>
-
+<BaseModal id="partner-selection-modal" title="Add partner" showLogo on:close>
   <div class="immich-scrollbar max-h-[300px] overflow-y-auto">
     {#if availableUsers.length > 0}
       {#each availableUsers as user}

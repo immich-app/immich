@@ -6,20 +6,31 @@ export enum NotificationType {
   Warning = 'Warning',
 }
 
+export type NotificationButton = {
+  text: string;
+  onClick: () => unknown;
+};
+
 export type Notification = {
   id: number;
   type: NotificationType;
   message: string;
+  /**
+   * Allow HTML to be inserted within the message. Make sure to verify/encode
+   * variables that may be interpoalted into 'message'
+   */
+  html?: boolean;
   /** The action to take when the notification is clicked */
   action: NotificationAction;
+  button?: NotificationButton;
   /** Timeout in miliseconds */
   timeout: number;
 };
 
 type DiscardAction = { type: 'discard' };
 type NoopAction = { type: 'noop' };
-type LinkAction = { type: 'link'; target: string };
-export type NotificationAction = DiscardAction | NoopAction | LinkAction;
+
+export type NotificationAction = DiscardAction | NoopAction;
 
 export type NotificationOptions = Partial<Exclude<Notification, 'id'>> & { message: string };
 
@@ -32,7 +43,9 @@ function createNotificationList() {
       currentList.push({
         id: count++,
         type: NotificationType.Info,
-        action: { type: 'discard' },
+        action: {
+          type: options.button ? 'noop' : 'discard',
+        },
         timeout: 3000,
         ...options,
       });

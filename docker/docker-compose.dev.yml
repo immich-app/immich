@@ -2,8 +2,6 @@
 # - https://immich.app/docs/developer/setup
 # - https://immich.app/docs/developer/troubleshooting
 
-version: '3.8'
-
 name: immich-dev
 
 x-server-build: &server-common

@@ -12,6 +12,7 @@ import {
   JobStatus,
   QueueName,
 } from 'src/interfaces/job.interface';
+import { IMetricRepository } from 'src/interfaces/metric.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 import { JobService } from 'src/services/job.service';
@@ -19,6 +20,7 @@ import { assetStub } from 'test/fixtures/asset.stub';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
 import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
+import { newMetricRepositoryMock } from 'test/repositories/metric.repository.mock';
 import { newPersonRepositoryMock } from 'test/repositories/person.repository.mock';
 import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
 
@@ -37,6 +39,7 @@ describe(JobService.name, () => {
   let eventMock: jest.Mocked<IEventRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
   let personMock: jest.Mocked<IPersonRepository>;
+  let metricMock: jest.Mocked<IMetricRepository>;
 
   beforeEach(() => {
     assetMock = newAssetRepositoryMock();
@@ -44,7 +47,8 @@ describe(JobService.name, () => {
     eventMock = newEventRepositoryMock();
     jobMock = newJobRepositoryMock();
     personMock = newPersonRepositoryMock();
-    sut = new JobService(assetMock, eventMock, jobMock, configMock, personMock);
+    metricMock = newMetricRepositoryMock();
+    sut = new JobService(assetMock, eventMock, jobMock, configMock, personMock, metricMock);
   });
 
   it('should work', () => {
@@ -275,7 +279,7 @@ describe(JobService.name, () => {
       },
       {
         item: { name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: { id: 'asset-1', source: 'upload' } },
-        jobs: [JobName.GENERATE_JPEG_THUMBNAIL],
+        jobs: [JobName.GENERATE_PREVIEW],
       },
       {
         item: { name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: { id: 'asset-1' } },
@@ -286,24 +290,24 @@ describe(JobService.name, () => {
         jobs: [],
       },
       {
-        item: { name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: 'asset-1' } },
-        jobs: [JobName.GENERATE_WEBP_THUMBNAIL, JobName.GENERATE_THUMBHASH_THUMBNAIL],
+        item: { name: JobName.GENERATE_PREVIEW, data: { id: 'asset-1' } },
+        jobs: [JobName.GENERATE_THUMBNAIL, JobName.GENERATE_THUMBHASH],
       },
       {
-        item: { name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: 'asset-1', source: 'upload' } },
+        item: { name: JobName.GENERATE_PREVIEW, data: { id: 'asset-1', source: 'upload' } },
         jobs: [
-          JobName.GENERATE_WEBP_THUMBNAIL,
-          JobName.GENERATE_THUMBHASH_THUMBNAIL,
+          JobName.GENERATE_THUMBNAIL,
+          JobName.GENERATE_THUMBHASH,
           JobName.SMART_SEARCH,
           JobName.FACE_DETECTION,
           JobName.VIDEO_CONVERSION,
         ],
       },
       {
-        item: { name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: 'asset-live-image', source: 'upload' } },
+        item: { name: JobName.GENERATE_PREVIEW, data: { id: 'asset-live-image', source: 'upload' } },
         jobs: [
-          JobName.GENERATE_WEBP_THUMBNAIL,
-          JobName.GENERATE_THUMBHASH_THUMBNAIL,
+          JobName.GENERATE_THUMBNAIL,
+          JobName.GENERATE_THUMBHASH,
           JobName.SMART_SEARCH,
           JobName.FACE_DETECTION,
           JobName.VIDEO_CONVERSION,
@@ -325,7 +329,7 @@ describe(JobService.name, () => {
 
     for (const { item, jobs } of tests) {
       it(`should queue ${jobs.length} jobs when a ${item.name} job finishes successfully`, async () => {
-        if (item.name === JobName.GENERATE_JPEG_THUMBNAIL && item.data.source === 'upload') {
+        if (item.name === JobName.GENERATE_PREVIEW && item.data.source === 'upload') {
           if (item.data.id === 'asset-live-image') {
             assetMock.getByIds.mockResolvedValue([assetStub.livePhotoStillAsset]);
           } else {

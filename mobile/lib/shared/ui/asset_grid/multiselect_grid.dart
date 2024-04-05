@@ -43,6 +43,7 @@ class MultiselectGrid extends HookConsumerWidget {
     this.editEnabled = false,
     this.unarchive = false,
     this.unfavorite = false,
+    this.emptyIndicator,
   });
 
   final ProviderListenable<AsyncValue<RenderList>> renderListProvider;
@@ -57,12 +58,12 @@ class MultiselectGrid extends HookConsumerWidget {
   final bool favoriteEnabled;
   final bool unfavorite;
   final bool editEnabled;
-
+  final Widget? emptyIndicator;
   Widget buildDefaultLoadingIndicator() =>
       const Center(child: ImmichLoadingIndicator());
 
   Widget buildEmptyIndicator() =>
-      const Center(child: Text("No assets to show"));
+      emptyIndicator ?? const Center(child: Text("No assets to show"));
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
