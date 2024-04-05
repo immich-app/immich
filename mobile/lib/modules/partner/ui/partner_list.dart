@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -28,15 +29,17 @@ class PartnerList extends HookConsumerWidget {
       ),
       leading: userAvatar(context, p, radius: 24),
       title: Text(
-        "${p.name}'s photos",
+        "partner_list_user_photos",
         style: context.textTheme.labelLarge,
-      ),
+      ).tr(namedArgs: {
+        'user': p.name,
+      }),
       trailing: Text(
-        "View all",
+        "partner_list_view_all",
         style: context.textTheme.labelLarge?.copyWith(
           color: context.primaryColor,
         ),
-      ),
+      ).tr(),
       onTap: () => context.pushRoute((PartnerDetailRoute(partner: p))),
     );
   }
