@@ -78,7 +78,9 @@ class VideoViewerPage extends HookConsumerWidget {
     // Also sets the error if there is an error in the playback
     void updateVideoPlayback() {
       final videoPlayback = VideoPlaybackValue.fromController(controller);
-      ref.read(videoPlaybackValueProvider.notifier).value = videoPlayback;
+      if (!loopVideo) {
+        ref.read(videoPlaybackValueProvider.notifier).value = videoPlayback;
+      }
       final state = videoPlayback.state;
 
       // Enable the WakeLock while the video is playing
