@@ -36,7 +36,7 @@ Typically Immich expects superuser permission in the database, which you can gra
 
 ## Without superuser permission
 
-:::warning
+:::caution
 This method is recommended for **advanced users only** and often requires manual intervention when updating Immich.
 :::
 
