@@ -46,7 +46,7 @@ alt="Select Plugins > Compose.Manager > Add New Stack > Label it Immich"
 />
 
 3.  Select the cog ⚙️ next to Immich then click "**Edit Stack**"
-4.  Click "**Compose File**" and then paste the entire contents of the [Immich Docker Compose](https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml) file into the Unraid editor. Replace any text that may be in the text area by default.
+4.  Click "**Compose File**" and then paste the entire contents of the [Immich Docker Compose](https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml) file into the Unraid editor. Remove any text that may be in the text area by default.
     <details >
         <summary>Using an existing Postgres container? Click me! Otherwise proceed to step 5.</summary>
         <ul>
