@@ -48,7 +48,11 @@ class SharedLinkEditPage extends HookConsumerWidget {
           return Row(
             children: [
               const Text(
-                "Public album | ",
+                'shared_link_public_album',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ).tr(),
+              const Text(
+                " | ",
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               Text(
@@ -66,7 +70,11 @@ class SharedLinkEditPage extends HookConsumerWidget {
           return Row(
             children: [
               const Text(
-                "Individual shared | ",
+                'shared_link_individual_shared',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ).tr(),
+              const Text(
+                " | ",
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               Expanded(

@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -68,7 +69,7 @@ class CameraPicker extends HookConsumerWidget {
             },
             width: context.width * 0.45,
             menuHeight: 400,
-            label: const Text('Make'),
+            label: const Text('search_filter_camera_make').tr(),
             inputDecorationTheme: inputDecorationTheme,
             controller: makeTextController,
             menuStyle: menuStyle,
@@ -98,7 +99,7 @@ class CameraPicker extends HookConsumerWidget {
             },
             width: context.width * 0.45,
             menuHeight: 400,
-            label: const Text('Model'),
+            label: const Text('search_filter_camera_model').tr(),
             inputDecorationTheme: inputDecorationTheme,
             controller: modelTextController,
             menuStyle: menuStyle,
