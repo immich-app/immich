@@ -19,12 +19,11 @@ class VideoViewerSettings extends HookConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SettingsSubTitle(title: "Videos".tr()),
+        SettingsSubTitle(title: "setting_video_viewer_title".tr()),
         SettingsSwitchListTile(
           valueNotifier: useLoopVideo,
-          title: "Looping".tr(),
-          subtitle:
-              "Enable to automatically loop a video in the detail viewer.".tr(),
+          title: "setting_video_viewer_looping_title".tr(),
+          subtitle: "setting_video_viewer_looping_subtitle".tr(),
           onChanged: (_) => ref.invalidate(appSettingsServiceProvider),
         ),
       ],

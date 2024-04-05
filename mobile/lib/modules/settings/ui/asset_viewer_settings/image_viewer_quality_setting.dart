@@ -21,7 +21,7 @@ class ImageViewerQualitySetting extends HookConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SettingsSubTitle(title: "Images".tr()),
+        SettingsSubTitle(title: "setting_image_viewer_title".tr()),
         ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 20),
           title: Text(
