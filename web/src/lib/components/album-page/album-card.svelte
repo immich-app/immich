@@ -65,7 +65,7 @@
       {/if}
 
       {#if (showOwner || album.shared) && showItemCount}
-        <p>·</p>
+        <p>•</p>
       {/if}
 
       {#if showOwner}
