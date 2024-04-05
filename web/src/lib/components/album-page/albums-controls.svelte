@@ -33,6 +33,7 @@
   import SearchBar from '$lib/components/elements/search-bar.svelte';
   import GroupTab from '$lib/components/elements/group-tab.svelte';
   import { createAlbumAndRedirect, collapseAllAlbumGroups, expandAllAlbumGroups } from '$lib/utils/album-utils';
+  import { fade, fly } from 'svelte/transition';
 
   export let albumGroups: string[];
   export let searchQuery: string;
@@ -136,25 +137,27 @@
 />
 
 {#if getSelectedAlbumGroupOption($albumViewSettings) !== AlbumGroupBy.None}
-  <!-- Expand Album Groups -->
-  <div class="hidden xl:flex gap-0">
-    <div class="block">
-      <LinkButton title="Expand all" on:click={() => expandAllAlbumGroups()}>
-        <div class="flex place-items-center gap-2 text-sm">
-          <Icon path={mdiUnfoldMoreHorizontal} size="18" />
-        </div>
-      </LinkButton>
-    </div>
+  <span in:fly={{ x: -50, duration: 250 }}>
+    <!-- Expand Album Groups -->
+    <div class="hidden xl:flex gap-0">
+      <div class="block">
+        <LinkButton title="Expand all" on:click={() => expandAllAlbumGroups()}>
+          <div class="flex place-items-center gap-2 text-sm">
+            <Icon path={mdiUnfoldMoreHorizontal} size="18" />
+          </div>
+        </LinkButton>
+      </div>
 
-    <!-- Collapse Album Groups -->
-    <div class="block">
-      <LinkButton title="Collapse all" on:click={() => collapseAllAlbumGroups(albumGroups)}>
-        <div class="flex place-items-center gap-2 text-sm">
-          <Icon path={mdiUnfoldLessHorizontal} size="18" />
-        </div>
-      </LinkButton>
+      <!-- Collapse Album Groups -->
+      <div class="block">
+        <LinkButton title="Collapse all" on:click={() => collapseAllAlbumGroups(albumGroups)}>
+          <div class="flex place-items-center gap-2 text-sm">
+            <Icon path={mdiUnfoldLessHorizontal} size="18" />
+          </div>
+        </LinkButton>
+      </div>
     </div>
-  </div>
+  </span>
 {/if}
 
 <!-- Cover/List Display Toggle -->

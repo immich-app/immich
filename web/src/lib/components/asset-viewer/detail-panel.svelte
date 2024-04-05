@@ -42,7 +42,6 @@
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import { shortcut } from '$lib/utils/shortcut';
-  import { getShortDateRange } from '$lib/utils/date-time';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
@@ -663,17 +662,10 @@
           <div class="mb-auto mt-auto">
             <p class="dark:text-immich-dark-primary">{album.albumName}</p>
             <div class="flex flex-col gap-0 text-sm">
-              {#if album.startDate && album.endDate}
-                <div>
-                  <p class="capitalize">
-                    {getShortDateRange(album.startDate, album.endDate)}
-                  </p>
-                </div>
-              {/if}
               <div>
-                <p>{album.assetCount} items</p>
+                <span>{album.assetCount} items</span>
                 {#if album.shared}
-                  <p>· Shared</p>
+                  <span> • Shared</span>
                 {/if}
               </div>
             </div>
