@@ -32,9 +32,13 @@ DB_URL='postgresql://immichdbusername:immichdbpassword@postgreshost:postgresport
 
 ## With superuser permission
 
-Typically Immich expects superuser permission in the database, which you can grant by running `ALTER USER <immichdbusername> WITH SUPERUSER;`. If you prefer not to grant superuser permissions, follow the insturctions in the next section.
+Typically Immich expects superuser permission in the database, which you can grant by running `ALTER USER <immichdbusername> WITH SUPERUSER;` at the `psql` console. If you prefer not to grant superuser permissions, follow the insturctions in the next section.
 
 ## Without superuser permission
+
+:::warning
+This method is recommended for **advanced users only** and often requires manual intervention when updating Immich.
+:::
 
 Immich can run without superuser permissions by following the below instructions at the `psql` prompt to prepare the database.
 
