@@ -31,9 +31,11 @@ class PartnerList extends HookConsumerWidget {
       title: Text(
         "partner_list_user_photos",
         style: context.textTheme.labelLarge,
-      ).tr(namedArgs: {
-        'user': p.name,
-      }),
+      ).tr(
+        namedArgs: {
+          'user': p.name,
+        },
+      ),
       trailing: Text(
         "partner_list_view_all",
         style: context.textTheme.labelLarge?.copyWith(
