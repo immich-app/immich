@@ -9,6 +9,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { getMySharedLink, SharedLinkType } from '@immich/sdk';
   import type { PageData } from './$types';
+  import { setSharedLink } from '$lib/utils';
 
   export let data: PageData;
   let { sharedLink, passwordRequired, sharedLinkKey: key, meta } = data;
@@ -19,6 +20,7 @@
   const handlePasswordSubmit = async () => {
     try {
       sharedLink = await getMySharedLink({ password, key });
+      setSharedLink(sharedLink);
       passwordRequired = false;
       isOwned = $user ? $user.id === sharedLink.userId : false;
       title = (sharedLink.album ? sharedLink.album.albumName : 'Public Share') + ' - Immich';

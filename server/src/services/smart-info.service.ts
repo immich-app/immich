@@ -83,13 +83,13 @@ export class SmartInfoService {
       return JobStatus.FAILED;
     }
 
-    if (!asset.resizePath) {
+    if (!asset.previewPath) {
       return JobStatus.FAILED;
     }
 
     const clipEmbedding = await this.machineLearning.encodeImage(
       machineLearning.url,
-      { imagePath: asset.resizePath },
+      { imagePath: asset.previewPath },
       machineLearning.clip,
     );
 

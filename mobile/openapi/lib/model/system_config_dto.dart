@@ -14,6 +14,7 @@ class SystemConfigDto {
   /// Returns a new [SystemConfigDto] instance.
   SystemConfigDto({
     required this.ffmpeg,
+    required this.image,
     required this.job,
     required this.library_,
     required this.logging,
@@ -26,12 +27,13 @@ class SystemConfigDto {
     required this.server,
     required this.storageTemplate,
     required this.theme,
-    required this.thumbnail,
     required this.trash,
     required this.user,
   });
 
   SystemConfigFFmpegDto ffmpeg;
+
+  SystemConfigImageDto image;
 
   SystemConfigJobDto job;
 
@@ -57,8 +59,6 @@ class SystemConfigDto {
 
   SystemConfigThemeDto theme;
 
-  SystemConfigThumbnailDto thumbnail;
-
   SystemConfigTrashDto trash;
 
   SystemConfigUserDto user;
@@ -66,6 +66,7 @@ class SystemConfigDto {
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigDto &&
     other.ffmpeg == ffmpeg &&
+    other.image == image &&
     other.job == job &&
     other.library_ == library_ &&
     other.logging == logging &&
@@ -78,7 +79,6 @@ class SystemConfigDto {
     other.server == server &&
     other.storageTemplate == storageTemplate &&
     other.theme == theme &&
-    other.thumbnail == thumbnail &&
     other.trash == trash &&
     other.user == user;
 
@@ -86,6 +86,7 @@ class SystemConfigDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (ffmpeg.hashCode) +
+    (image.hashCode) +
     (job.hashCode) +
     (library_.hashCode) +
     (logging.hashCode) +
@@ -98,16 +99,16 @@ class SystemConfigDto {
     (server.hashCode) +
     (storageTemplate.hashCode) +
     (theme.hashCode) +
-    (thumbnail.hashCode) +
     (trash.hashCode) +
     (user.hashCode);
 
   @override
-  String toString() => 'SystemConfigDto[ffmpeg=$ffmpeg, job=$job, library_=$library_, logging=$logging, machineLearning=$machineLearning, map=$map, newVersionCheck=$newVersionCheck, oauth=$oauth, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, server=$server, storageTemplate=$storageTemplate, theme=$theme, thumbnail=$thumbnail, trash=$trash, user=$user]';
+  String toString() => 'SystemConfigDto[ffmpeg=$ffmpeg, image=$image, job=$job, library_=$library_, logging=$logging, machineLearning=$machineLearning, map=$map, newVersionCheck=$newVersionCheck, oauth=$oauth, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, server=$server, storageTemplate=$storageTemplate, theme=$theme, trash=$trash, user=$user]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'ffmpeg'] = this.ffmpeg;
+      json[r'image'] = this.image;
       json[r'job'] = this.job;
       json[r'library'] = this.library_;
       json[r'logging'] = this.logging;
@@ -120,7 +121,6 @@ class SystemConfigDto {
       json[r'server'] = this.server;
       json[r'storageTemplate'] = this.storageTemplate;
       json[r'theme'] = this.theme;
-      json[r'thumbnail'] = this.thumbnail;
       json[r'trash'] = this.trash;
       json[r'user'] = this.user;
     return json;
@@ -135,6 +135,7 @@ class SystemConfigDto {
 
       return SystemConfigDto(
         ffmpeg: SystemConfigFFmpegDto.fromJson(json[r'ffmpeg'])!,
+        image: SystemConfigImageDto.fromJson(json[r'image'])!,
         job: SystemConfigJobDto.fromJson(json[r'job'])!,
         library_: SystemConfigLibraryDto.fromJson(json[r'library'])!,
         logging: SystemConfigLoggingDto.fromJson(json[r'logging'])!,
@@ -147,7 +148,6 @@ class SystemConfigDto {
         server: SystemConfigServerDto.fromJson(json[r'server'])!,
         storageTemplate: SystemConfigStorageTemplateDto.fromJson(json[r'storageTemplate'])!,
         theme: SystemConfigThemeDto.fromJson(json[r'theme'])!,
-        thumbnail: SystemConfigThumbnailDto.fromJson(json[r'thumbnail'])!,
         trash: SystemConfigTrashDto.fromJson(json[r'trash'])!,
         user: SystemConfigUserDto.fromJson(json[r'user'])!,
       );
@@ -198,6 +198,7 @@ class SystemConfigDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'ffmpeg',
+    'image',
     'job',
     'library',
     'logging',
@@ -210,7 +211,6 @@ class SystemConfigDto {
     'server',
     'storageTemplate',
     'theme',
-    'thumbnail',
     'trash',
     'user',
   };

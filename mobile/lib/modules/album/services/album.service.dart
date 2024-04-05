@@ -243,12 +243,7 @@ class AlbumService {
           }
         }
 
-        await _db.writeTxn(() async {
-          await album.assets.update(link: successAssets);
-          final a = await _db.albums.get(album.id);
-          // trigger watcher
-          await _db.albums.put(a!);
-        });
+        await _updateAssets(album.id, add: successAssets);
 
         return AddAssetsResponse(
           alreadyInAlbum: duplicatedAssets,
@@ -257,9 +252,26 @@ class AlbumService {
       }
     } catch (e) {
       debugPrint("Error addAdditionalAssetToAlbum  ${e.toString()}");
-      return null;
     }
     return null;
+  }
+
+  Future<void> _updateAssets(
+    int albumId, {
+    Iterable<Asset> add = const [],
+    Iterable<Asset> remove = const [],
+  }) {
+    return _db.writeTxn(() async {
+      final album = await _db.albums.get(albumId);
+      if (album == null) return;
+      await album.assets.update(link: add, unlink: remove);
+      album.startDate =
+          await album.assets.filter().fileCreatedAtProperty().min();
+      album.endDate = await album.assets.filter().fileCreatedAtProperty().max();
+      album.lastModifiedAssetTimestamp =
+          await album.assets.filter().updatedAtProperty().max();
+      await _db.albums.put(album);
+    });
   }
 
   Future<bool> addAdditionalUserToAlbum(
@@ -342,7 +354,7 @@ class AlbumService {
       await _apiService.albumApi.removeUserFromAlbum(album.remoteId!, "me");
       return true;
     } catch (e) {
-      debugPrint("Error deleteAlbum  ${e.toString()}");
+      debugPrint("Error leaveAlbum ${e.toString()}");
       return false;
     }
   }
@@ -352,24 +364,25 @@ class AlbumService {
     Iterable<Asset> assets,
   ) async {
     try {
-      await _apiService.albumApi.removeAssetFromAlbum(
+      final response = await _apiService.albumApi.removeAssetFromAlbum(
         album.remoteId!,
         BulkIdsDto(
           ids: assets.map((asset) => asset.remoteId!).toList(),
         ),
       );
-      await _db.writeTxn(() async {
-        await album.assets.update(unlink: assets);
-        final a = await _db.albums.get(album.id);
-        // trigger watcher
-        await _db.albums.put(a!);
-      });
-
-      return true;
+      if (response != null) {
+        final toRemove = response.every((e) => e.success)
+            ? assets
+            : response
+                .where((e) => e.success)
+                .map((e) => assets.firstWhere((a) => a.remoteId == e.id));
+        await _updateAssets(album.id, remove: toRemove);
+        return true;
+      }
     } catch (e) {
-      debugPrint("Error deleteAlbum  ${e.toString()}");
-      return false;
+      debugPrint("Error removeAssetFromAlbum ${e.toString()}");
     }
+    return false;
   }
 
   Future<bool> removeUserFromAlbum(
@@ -413,7 +426,7 @@ class AlbumService {
 
       return true;
     } catch (e) {
-      debugPrint("Error deleteAlbum  ${e.toString()}");
+      debugPrint("Error changeTitleAlbum  ${e.toString()}");
       return false;
     }
   }

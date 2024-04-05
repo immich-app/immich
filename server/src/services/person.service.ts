@@ -23,6 +23,7 @@ import {
 } from 'src/dtos/person.dto';
 import { PersonPathType } from 'src/entities/move.entity';
 import { PersonEntity } from 'src/entities/person.entity';
+import { ImageFormat } from 'src/entities/system-config.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
@@ -315,17 +316,17 @@ export class PersonService {
       },
     };
     const [asset] = await this.assetRepository.getByIds([id], relations);
-    if (!asset || !asset.resizePath || asset.faces?.length > 0) {
+    if (!asset || !asset.previewPath || asset.faces?.length > 0) {
       return JobStatus.FAILED;
     }
 
     const faces = await this.machineLearningRepository.detectFaces(
       machineLearning.url,
-      { imagePath: asset.resizePath },
+      { imagePath: asset.previewPath },
       machineLearning.facialRecognition,
     );
 
-    this.logger.debug(`${faces.length} faces detected in ${asset.resizePath}`);
+    this.logger.debug(`${faces.length} faces detected in ${asset.previewPath}`);
     this.logger.verbose(faces.map((face) => ({ ...face, embedding: `vector(${face.embedding.length})` })));
 
     if (faces.length > 0) {
@@ -470,7 +471,7 @@ export class PersonService {
   }
 
   async handleGeneratePersonThumbnail(data: IEntityJob): Promise<JobStatus> {
-    const { machineLearning, thumbnail } = await this.configCore.getConfig();
+    const { machineLearning, image } = await this.configCore.getConfig();
     if (!machineLearning.enabled || !machineLearning.facialRecognition.enabled) {
       return JobStatus.SKIPPED;
     }
@@ -496,7 +497,7 @@ export class PersonService {
     } = face;
 
     const [asset] = await this.assetRepository.getByIds([assetId]);
-    if (!asset?.resizePath) {
+    if (!asset?.previewPath) {
       return JobStatus.FAILED;
     }
     this.logger.verbose(`Cropping face for person: ${person.id}`);
@@ -527,12 +528,12 @@ export class PersonService {
       height: newHalfSize * 2,
     };
 
-    const croppedOutput = await this.mediaRepository.crop(asset.resizePath, cropOptions);
+    const croppedOutput = await this.mediaRepository.crop(asset.previewPath, cropOptions);
     const thumbnailOptions = {
-      format: 'jpeg',
+      format: ImageFormat.JPEG,
       size: FACE_THUMBNAIL_SIZE,
-      colorspace: thumbnail.colorspace,
-      quality: thumbnail.quality,
+      colorspace: image.colorspace,
+      quality: image.quality,
     } as const;
 
     await this.mediaRepository.resize(croppedOutput, thumbnailPath, thumbnailOptions);
