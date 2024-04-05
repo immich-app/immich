@@ -46,6 +46,9 @@ class BackUpState {
   /// All assets from the selected albums that have been backup
   final Set<String> selectedAlbumsBackupAssetsIds;
 
+  /// All assets from the selected albums that have errored on backup
+  final Set<String> selectedAlbumsBackupErrorAssetsIds;
+
   // Current Backup Asset
   final CurrentUploadAsset currentUploadAsset;
 
@@ -71,6 +74,7 @@ class BackUpState {
     required this.excludedBackupAlbums,
     required this.allUniqueAssets,
     required this.selectedAlbumsBackupAssetsIds,
+    required this.selectedAlbumsBackupErrorAssetsIds,
     required this.currentUploadAsset,
   });
 
@@ -96,6 +100,7 @@ class BackUpState {
     Set<AvailableAlbum>? excludedBackupAlbums,
     Set<AssetEntity>? allUniqueAssets,
     Set<String>? selectedAlbumsBackupAssetsIds,
+    Set<String>? selectedAlbumsBackupErrorAssetsIds,
     CurrentUploadAsset? currentUploadAsset,
   }) {
     return BackUpState(
@@ -125,13 +130,15 @@ class BackUpState {
       allUniqueAssets: allUniqueAssets ?? this.allUniqueAssets,
       selectedAlbumsBackupAssetsIds:
           selectedAlbumsBackupAssetsIds ?? this.selectedAlbumsBackupAssetsIds,
+      selectedAlbumsBackupErrorAssetsIds:
+          selectedAlbumsBackupErrorAssetsIds ?? this.selectedAlbumsBackupErrorAssetsIds,
       currentUploadAsset: currentUploadAsset ?? this.currentUploadAsset,
     );
   }
 
   @override
   String toString() {
-    return 'BackUpState(backupProgress: $backupProgress, allAssetsInDatabase: $allAssetsInDatabase, progressInPercentage: $progressInPercentage, progressInFileSize: $progressInFileSize, progressInFileSpeed: $progressInFileSpeed, progressInFileSpeeds: $progressInFileSpeeds, progressInFileSpeedUpdateTime: $progressInFileSpeedUpdateTime, progressInFileSpeedUpdateSentBytes: $progressInFileSpeedUpdateSentBytes, iCloudDownloadProgress: $iCloudDownloadProgress, cancelToken: $cancelToken, serverInfo: $serverInfo, autoBackup: $autoBackup, backgroundBackup: $backgroundBackup, backupRequireWifi: $backupRequireWifi, backupRequireCharging: $backupRequireCharging, backupTriggerDelay: $backupTriggerDelay, availableAlbums: $availableAlbums, selectedBackupAlbums: $selectedBackupAlbums, excludedBackupAlbums: $excludedBackupAlbums, allUniqueAssets: $allUniqueAssets, selectedAlbumsBackupAssetsIds: $selectedAlbumsBackupAssetsIds, currentUploadAsset: $currentUploadAsset)';
+    return 'BackUpState(backupProgress: $backupProgress, allAssetsInDatabase: $allAssetsInDatabase, progressInPercentage: $progressInPercentage, progressInFileSize: $progressInFileSize, progressInFileSpeed: $progressInFileSpeed, progressInFileSpeeds: $progressInFileSpeeds, progressInFileSpeedUpdateTime: $progressInFileSpeedUpdateTime, progressInFileSpeedUpdateSentBytes: $progressInFileSpeedUpdateSentBytes, iCloudDownloadProgress: $iCloudDownloadProgress, cancelToken: $cancelToken, serverInfo: $serverInfo, autoBackup: $autoBackup, backgroundBackup: $backgroundBackup, backupRequireWifi: $backupRequireWifi, backupRequireCharging: $backupRequireCharging, backupTriggerDelay: $backupTriggerDelay, availableAlbums: $availableAlbums, selectedBackupAlbums: $selectedBackupAlbums, excludedBackupAlbums: $excludedBackupAlbums, allUniqueAssets: $allUniqueAssets, selectedAlbumsBackupAssetsIds: $selectedAlbumsBackupAssetsIds, selectedAlbumsBackupErrorAssetsIds: $selectedAlbumsBackupErrorAssetsIds, currentUploadAsset: $currentUploadAsset)';
   }
 
   @override

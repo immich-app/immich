@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:cancellation_token_http/http.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -353,8 +354,29 @@ class BackupService {
             ),
           );
 
-          var response =
-              await httpClient.send(req, cancellationToken: cancelToken);
+          StreamedResponse response;
+
+          try {
+            response = await httpClient.send(req, cancellationToken: cancelToken);
+          } catch (err) {
+            debugPrint(
+              "Error(network) uploading ${entity.id} | $originalFileName | Created on ${entity.createDateTime} | $err",
+            );
+
+            errorCb(
+              ErrorUploadAsset(
+                asset: entity,
+                id: entity.id,
+                fileCreatedAt: entity.createDateTime,
+                fileName: originalFileName,
+                fileType: _getAssetType(entity.type),
+                errorMessage: err.toString(),
+              ),
+            );
+
+            anyErrors = true;
+            continue;
+          }
 
           if (response.statusCode == 200) {
             // asset is a duplicate (already exists on the server)
@@ -365,12 +387,22 @@ class BackupService {
             uploadSuccessCb(entity.id, deviceId, false);
           } else {
             var data = await response.stream.bytesToString();
-            var error = jsonDecode(data);
-            var errorMessage = error['message'] ?? error['error'];
+            String errorMessage;
 
-            debugPrint(
-              "Error(${error['statusCode']}) uploading ${entity.id} | $originalFileName | Created on ${entity.createDateTime} | ${error['error']}",
-            );
+            try {
+              var error = jsonDecode(data);
+              errorMessage = error['message'] ?? error['error'];
+              debugPrint(
+                "Error(${error['statusCode']}) uploading ${entity.id} | $originalFileName | Created on ${entity.createDateTime} | ${error['error']}",
+              );
+            } catch (err) {
+              // server returned invalid response
+              debugPrint(
+                "Error(HTTP ${response.statusCode}) uploading ${entity.id} | $originalFileName | Created on ${entity.createDateTime} | $data",
+              );
+
+              errorMessage = "HTTP ${response.statusCode}: $data";
+            }
 
             errorCb(
               ErrorUploadAsset(

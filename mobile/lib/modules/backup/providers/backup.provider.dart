@@ -64,6 +64,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
             excludedBackupAlbums: const {},
             allUniqueAssets: const {},
             selectedAlbumsBackupAssetsIds: const {},
+            selectedAlbumsBackupErrorAssetsIds: const {},
             currentUploadAsset: CurrentUploadAsset(
               id: '...',
               fileCreatedAt: DateTime.parse('2020-10-04'),
@@ -406,7 +407,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   /// Invoke backup process
   Future<void> startBackupProcess() async {
     debugPrint("Start backup process");
-    assert(state.backupProgress == BackUpProgressEnum.idle);
+    assert(state.backupProgress == BackUpProgressEnum.idle || state.backupProgress == BackUpProgressEnum.done);
     state = state.copyWith(backupProgress: BackUpProgressEnum.inProgress);
 
     await getBackupInfo();
@@ -463,7 +464,11 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   }
 
   void _onBackupError(ErrorUploadAsset errorAssetInfo) {
+    state = state.copyWith(
+      selectedAlbumsBackupErrorAssetsIds: {...state.selectedAlbumsBackupErrorAssetsIds, errorAssetInfo.id },
+    );
     ref.watch(errorBackupListProvider.notifier).add(errorAssetInfo);
+    _checkBackupFinished();
   }
 
   void _onSetCurrentBackupAsset(CurrentUploadAsset currentUploadAsset) {
@@ -506,8 +511,14 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       );
     }
 
+    _checkBackupFinished();
+
+    updateServerInfo();
+  }
+
+  void _checkBackupFinished() {
     if (state.allUniqueAssets.length -
-            state.selectedAlbumsBackupAssetsIds.length ==
+            state.selectedAlbumsBackupAssetsIds.length - state.selectedAlbumsBackupErrorAssetsIds.length ==
         0) {
       final latestAssetBackup =
           state.allUniqueAssets.map((e) => e.modifiedDateTime).reduce(
@@ -529,8 +540,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       );
       _updatePersistentAlbumsSelection();
     }
-
-    updateServerInfo();
   }
 
   void _onUploadProgress(int sent, int total) {

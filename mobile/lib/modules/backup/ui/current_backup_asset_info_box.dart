@@ -36,6 +36,8 @@ class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
         ref.watch(backupProvider).iCloudDownloadProgress;
     final isShowThumbnail = useState(false);
 
+    var inProgress = !{ BackUpProgressEnum.done, BackUpProgressEnum.idle }.contains(ref.watch(backupProvider).backupProgress);
+
     String formatUploadFileSpeed(double uploadFileSpeed) {
       if (uploadFileSpeed < 1024) {
         return '${uploadFileSpeed.toStringAsFixed(2)} B/s';
@@ -277,7 +279,15 @@ class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
           ),
           secondChild: GestureDetector(
             onTap: () => isShowThumbnail.value = true,
-            child: Icon(
+            child: inProgress ? const SizedBox(
+              width: 30,
+              height: 30,
+              child: Center(child: SizedBox(
+                width: 25,
+                height: 25,
+                child: CircularProgressIndicator(),
+              ),),
+            ): Icon(
               Icons.image_outlined,
               color: context.primaryColor,
               size: 30,
@@ -300,10 +310,10 @@ class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
         ),
         subtitle: Column(
           children: [
-            if (Platform.isIOS) buildiCloudDownloadProgerssBar(),
-            buildUploadProgressBar(),
-            buildUploadStats(),
-            Padding(
+            if (inProgress && Platform.isIOS) buildiCloudDownloadProgerssBar(),
+            if (inProgress) buildUploadProgressBar(),
+            if (inProgress) buildUploadStats(),
+            if (inProgress) Padding(
               padding: const EdgeInsets.only(top: 8.0),
               child: buildAssetInfoTable(),
             ),
