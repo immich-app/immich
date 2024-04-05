@@ -30,9 +30,11 @@ DB_URL='postgresql://immichdbusername:immichdbpassword@postgreshost:postgresport
 # DB_URL='postgresql://immichdbusername:immichdbpassword@postgreshost:postgresport/immichdatabasename?sslmode=require&sslmode=no-verify'
 ```
 
-## Without superuser permissions
+## With superuser permission
 
-### Initial installation
+Typically Immich expects superuser permission in the database, which you can grant by running `ALTER USER <immichdbusername> WITH SUPERUSER;`. If you prefer not to grant superuser permissions, follow the insturctions in the next section.
+
+## Without superuser permission
 
 Immich can run without superuser permissions by following the below instructions at the `psql` prompt to prepare the database.
 
@@ -48,6 +50,12 @@ GRANT USAGE ON SCHEMA vectors TO <immichdbusername>;
 ALTER DEFAULT PRIVILEGES IN SCHEMA vectors GRANT SELECT ON TABLES TO <immichdbusername>;
 COMMIT;
 ```
+
+### Common errors
+
+#### Permission denied for view
+
+If you get the error `driverError: error: permission denied for view pg_vector_index_stat`, you can fix this by connecting to the Immich database and running `GRANT SELECT ON TABLE pg_vector_index_stat to <immichdbusername>;`.
 
 ### Updating pgvecto.rs
 
