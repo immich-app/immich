@@ -45,6 +45,13 @@ class MapSettingsSheet extends HookConsumerWidget {
                     .read(mapStateNotifierProvider.notifier)
                     .switchIncludeArchived(includeArchive),
               ),
+              MapSettingsListTile(
+                title: "map_settings_include_show_partners",
+                selected: mapState.withPartners,
+                onChanged: (withPartners) => ref
+                    .read(mapStateNotifierProvider.notifier)
+                    .switchwithPartners(withPartners),
+              ),
               MapTimeDropDown(
                 relativeTime: mapState.relativeTime,
                 onTimeChange: (time) => ref

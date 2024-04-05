@@ -12,6 +12,7 @@ Future<List<MapMarker>> mapMarkers(MapMarkersRef ref) async {
   DateTime? fileCreatedAfter;
   bool? isFavorite;
   bool? isIncludeArchived;
+  bool? iswithPartners;
 
   if (mapState.relativeTime != 0) {
     fileCreatedAfter =
@@ -26,9 +27,14 @@ Future<List<MapMarker>> mapMarkers(MapMarkersRef ref) async {
     isIncludeArchived = false;
   }
 
+  if (mapState.withPartners) {
+    iswithPartners = true;
+  }
+
   final markers = await service.getMapMarkers(
     isFavorite: isFavorite,
     withArchived: isIncludeArchived,
+    withPartners: iswithPartners,
     fileCreatedAfter: fileCreatedAfter,
   );
 
