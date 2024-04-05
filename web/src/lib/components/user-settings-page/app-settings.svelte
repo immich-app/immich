@@ -122,7 +122,7 @@
       <div class="ml-4">
         <SettingSwitch
           title="Loop videos"
-          subtitle="This will autoloop a video."
+          subtitle="Enable to automatically loop a video in the detail viewer."
           bind:checked={$loopVideo}
           on:toggle={() => ($loopVideo = !$loopVideo)}
         />
