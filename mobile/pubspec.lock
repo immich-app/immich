@@ -1238,6 +1238,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.2.3"
+  restart_app:
+    dependency: "direct main"
+    description:
+      name: restart_app
+      sha256: b37daeb1c02fcab30e19d9e30b6fdd215bd53577efd927042eb77cf6f09daadb
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.2.1"
   riverpod:
     dependency: transitive
     description:

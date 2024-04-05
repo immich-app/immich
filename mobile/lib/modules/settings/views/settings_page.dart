@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:immich_mobile/constants/locales.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/settings/ui/advanced_settings.dart';
 import 'package:immich_mobile/modules/settings/ui/asset_list_settings/asset_list_settings.dart';
@@ -10,12 +11,14 @@ import 'package:immich_mobile/modules/settings/ui/image_viewer_quality_setting.d
 import 'package:immich_mobile/modules/settings/ui/notification_setting.dart';
 import 'package:immich_mobile/modules/settings/ui/preference_settings/preference_setting.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:restart_app/restart_app.dart';
 
 enum SettingSection {
   notifications(
     'setting_notifications_title',
     Icons.notifications_none_rounded,
   ),
+  languages('setting_languages_title', Icons.language),
   preferences('preferences_settings_title', Icons.interests_outlined),
   backup('backup_controller_page_backup', Icons.cloud_upload_outlined),
   timeline('asset_list_settings_title', Icons.auto_awesome_mosaic_outlined),
@@ -27,6 +30,7 @@ enum SettingSection {
 
   Widget get widget => switch (this) {
         SettingSection.notifications => const NotificationSetting(),
+        SettingSection.languages => const LanguageSettings(),
         SettingSection.preferences => const PreferenceSetting(),
         SettingSection.backup => const BackupSettings(),
         SettingSection.timeline => const AssetListSettings(),
@@ -35,6 +39,24 @@ enum SettingSection {
       };
 
   const SettingSection(this.title, this.icon);
+}
+
+class LanguageSettings extends StatelessWidget {
+  const LanguageSettings({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return DropdownMenu(
+      dropdownMenuEntries: localeWithLanguageName
+          .map(
+            (locale) => DropdownMenuEntry(
+              value: locale.values.first,
+              label: locale.keys.first,
+            ),
+          )
+          .toList(),
+    );
+  }
 }
 
 @RoutePage()

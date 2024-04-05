@@ -40,4 +40,44 @@ const List<Locale> locales = [
   Locale('sl', 'SI'),
 ];
 
+const List<Map<String, Locale>> localeWithLanguageName = [
+  // Default locale
+  {'English (US)': Locale('en', 'US')},
+  // Additional locales
+  {'German (DE)': Locale('de', 'DE')},
+  {'': Locale('da', 'DK')},
+  {'Italian (IT)': Locale('it', 'IT')},
+  {'': Locale('es', 'ES')},
+  {'': Locale('vi', 'VN')},
+  {'': Locale('fr', 'CA')},
+  {'': Locale('fr', 'FR')},
+  {'': Locale('ja', 'JP')},
+  {'': Locale('pl', 'PL')},
+  {'': Locale('fi', 'FI')},
+  {'': Locale('pt', 'PT')},
+  {'': Locale('cs', 'CZ')},
+  {'': Locale('uk', 'UA')},
+  {'': Locale('ru', 'RU')},
+  {'': Locale('zh', 'CN')},
+  {'': Locale('sk', 'SK')},
+  {'Dutch (NL)': Locale('nl', 'NL')},
+  {'': Locale('nb', 'NO')},
+  {'': Locale('sv', 'SE')},
+  {'': Locale('mn', 'MN')},
+  {'': Locale('ko', 'KR')},
+  {'': Locale('sr', 'Latn')},
+  {'': Locale('sr', 'Cyrl')},
+  {'': Locale('hi', 'IN')},
+  {'': Locale('es', 'PE')},
+  {'': Locale('es', 'MX')},
+  {'': Locale('es', 'US')},
+  {'': Locale('sv', 'FI')},
+  {'': Locale('ca', 'CA')},
+  {'': Locale('hu', 'HU')},
+  {'': Locale('lv', 'LV')},
+  {'': Locale('zh', 'Hans')},
+  {'': Locale('th', 'TH')},
+  {'': Locale('sl', 'SI')},
+];
+
 const String translationsPath = 'assets/i18n';
