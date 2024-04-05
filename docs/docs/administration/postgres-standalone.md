@@ -51,12 +51,12 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA vectors GRANT SELECT ON TABLES TO <immichdbus
 COMMIT;
 ```
 
+### Updating pgvecto.rs
+
+When installing a new version of pgvecto.rs, you will need to manually update the extension by connecting to the Immich database and running `ALTER EXTENSION vectors UPDATE;`.
+
 ### Common errors
 
 #### Permission denied for view
 
 If you get the error `driverError: error: permission denied for view pg_vector_index_stat`, you can fix this by connecting to the Immich database and running `GRANT SELECT ON TABLE pg_vector_index_stat to <immichdbusername>;`.
-
-### Updating pgvecto.rs
-
-When installing a new version of pgvecto.rs, you will need to manually update the extension by connecting to the Immich database and running `ALTER EXTENSION vectors UPDATE;`.
