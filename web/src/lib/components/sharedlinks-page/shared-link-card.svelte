@@ -1,20 +1,13 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
   import { AppRoute } from '$lib/constants';
-  import { getAssetThumbnailUrl } from '$lib/utils';
-  import {
-    SharedLinkType,
-    ThumbnailFormat,
-    getAssetInfo,
-    type AssetResponseDto,
-    type SharedLinkResponseDto,
-  } from '@immich/sdk';
+  import { SharedLinkType, type SharedLinkResponseDto } from '@immich/sdk';
   import { mdiCircleEditOutline, mdiContentCopy, mdiDelete, mdiOpenInNew } from '@mdi/js';
   import * as luxon from 'luxon';
   import { createEventDispatcher } from 'svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
-  import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { locale } from '$lib/stores/preferences.store';
+  import AlbumCover from '$lib/components/album-page/album-cover.svelte';
 
   export let link: SharedLinkResponseDto;
 
@@ -24,18 +17,6 @@
     copy: void;
     edit: void;
   }>();
-
-  const getThumbnail = async (): Promise<AssetResponseDto> => {
-    let assetId = '';
-
-    if (link.album?.albumThumbnailAssetId) {
-      assetId = link.album.albumThumbnailAssetId;
-    } else if (link.assets.length > 0) {
-      assetId = link.assets[0].id;
-    }
-
-    return getAssetInfo({ id: assetId });
-  };
 
   const getCountDownExpirationDate = () => {
     if (!link.expiresAt) {
@@ -70,28 +51,7 @@
   class="flex w-full gap-4 border-b border-gray-200 py-4 transition-all hover:border-immich-primary dark:border-gray-600 dark:text-immich-gray dark:hover:border-immich-dark-primary"
 >
   <div>
-    {#if link?.album?.albumThumbnailAssetId || link.assets.length > 0}
-      {#await getThumbnail()}
-        <LoadingSpinner />
-      {:then asset}
-        <img
-          id={asset.id}
-          src={getAssetThumbnailUrl(asset.id, ThumbnailFormat.Webp)}
-          alt={asset.id}
-          class="h-[100px] w-[100px] rounded-lg object-cover"
-          loading="lazy"
-          draggable="false"
-        />
-      {/await}
-    {:else}
-      <enhanced:img
-        src="$lib/assets/no-thumbnail.png"
-        alt={'Album without assets'}
-        class="h-[100px] w-[100px] rounded-lg object-cover"
-        loading="lazy"
-        draggable="false"
-      />
-    {/if}
+    <AlbumCover album={link?.album} css="h-[100px] w-[100px] transition-all duration-300 hover:shadow-lg" />
   </div>
 
   <div class="flex flex-col justify-between">
