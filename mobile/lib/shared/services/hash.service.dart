@@ -56,8 +56,16 @@ class HashService {
       }
       final file = await assetEntities[i].originFile;
       if (file == null) {
+        final fileName = await assetEntities[i].titleAsync.catchError((error) {
+          _log.warning(
+            "Failed to get title for asset ${assetEntities[i].id}",
+          );
+
+          return "";
+        });
+
         _log.warning(
-          "Failed to get file for asset ${assetEntities[i].id}, skipping",
+          "Failed to get file for asset ${assetEntities[i].id}, name: $fileName, created on: ${assetEntities[i].createDateTime}, skipping",
         );
         continue;
       }

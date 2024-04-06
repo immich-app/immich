@@ -32,6 +32,7 @@
   const dispatch = createEventDispatcher<{
     close: void;
     escape: void;
+    created: void;
   }>();
 
   const expiredDateOption: ImmichDropDownOption = {
@@ -78,6 +79,7 @@
         },
       });
       sharedLink = makeSharedLinkUrl($serverConfig.externalDomain, data.key);
+      dispatch('created');
     } catch (error) {
       handleError(error, 'Failed to create shared link');
     }

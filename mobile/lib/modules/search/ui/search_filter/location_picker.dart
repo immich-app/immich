@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -79,7 +80,7 @@ class LocationPicker extends HookConsumerWidget {
           },
           menuHeight: 400,
           width: context.width * 0.9,
-          label: const Text('Country'),
+          label: const Text('search_filter_location_country').tr(),
           inputDecorationTheme: inputDecorationTheme,
           menuStyle: menuStyle,
           controller: countryTextController,
@@ -112,7 +113,7 @@ class LocationPicker extends HookConsumerWidget {
           },
           menuHeight: 400,
           width: context.width * 0.9,
-          label: const Text('State'),
+          label: const Text('search_filter_location_state').tr(),
           inputDecorationTheme: inputDecorationTheme,
           menuStyle: menuStyle,
           controller: stateTextController,
@@ -145,7 +146,7 @@ class LocationPicker extends HookConsumerWidget {
           },
           menuHeight: 400,
           width: context.width * 0.9,
-          label: const Text('City'),
+          label: const Text('search_filter_location_city').tr(),
           inputDecorationTheme: inputDecorationTheme,
           menuStyle: menuStyle,
           controller: cityTextController,
