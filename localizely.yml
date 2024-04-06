@@ -76,3 +76,19 @@ download:
       locale_code: zh-Hans
     - file: mobile/assets/i18n/th-TH.json
       locale_code: th-TH
+    - file: mobile/assets/i18n/lt-LT.json
+      locale_code: lt-LT
+    - file: mobile/assets/i18n/el-GR.json
+      locale_code: el-GR
+    - file: mobile/assets/i18n/fr-CA.json
+      locale_code: fr-CA
+    - file: mobile/assets/i18n/es-US.json
+      locale_code: es-US
+    - file: mobile/assets/i18n/sl-SI.json
+      locale_code: sl-SI
+    - file: mobile/assets/i18n/ar-JO.json
+      locale_code: ar-JO
+    - file: mobile/assets/i18n/he-IL.json
+      locale_code: he-IL
+    - file: mobile/assets/i18n/ro-RO.json
+      locale_code: ro-RO
