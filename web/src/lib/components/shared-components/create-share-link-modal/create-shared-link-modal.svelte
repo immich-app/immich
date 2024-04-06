@@ -32,6 +32,7 @@
   const dispatch = createEventDispatcher<{
     close: void;
     escape: void;
+    created: void;
   }>();
 
   const expiredDateOption: ImmichDropDownOption = {
@@ -78,6 +79,7 @@
         },
       });
       sharedLink = makeSharedLinkUrl($serverConfig.externalDomain, data.key);
+      dispatch('created');
     } catch (error) {
       handleError(error, 'Failed to create shared link');
     }
@@ -197,25 +199,33 @@
         </div>
 
         <div class="my-3">
-          <SettingSwitch bind:checked={enablePassword} title={'Require password'} />
+          <SettingSwitch id="require-password" bind:checked={enablePassword} title={'Require password'} />
         </div>
 
         <div class="my-3">
-          <SettingSwitch bind:checked={showMetadata} title={'Show metadata'} />
+          <SettingSwitch id="show-metadata" bind:checked={showMetadata} title={'Show metadata'} />
         </div>
 
         <div class="my-3">
-          <SettingSwitch bind:checked={allowDownload} title={'Allow public user to download'} />
+          <SettingSwitch
+            id="allow-public-download"
+            bind:checked={allowDownload}
+            title={'Allow public user to download'}
+          />
         </div>
 
         <div class="my-3">
-          <SettingSwitch bind:checked={allowUpload} title={'Allow public user to upload'} />
+          <SettingSwitch id="allow-public-upload" bind:checked={allowUpload} title={'Allow public user to upload'} />
         </div>
 
         <div class="text-sm">
           {#if editingLink}
             <p class="immich-form-label my-2">
-              <SettingSwitch bind:checked={shouldChangeExpirationTime} title={'Change expiration time'} />
+              <SettingSwitch
+                id="change-expiration-time"
+                bind:checked={shouldChangeExpirationTime}
+                title={'Change expiration time'}
+              />
             </p>
           {:else}
             <p class="immich-form-label my-2">Expire after</p>
