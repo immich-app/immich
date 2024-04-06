@@ -152,6 +152,7 @@ class BackupControllerPage extends HookConsumerWidget {
             backgroundColor: Colors.red[300],
             minimumSize: minimumSize,
             shape: shape,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),
           onPressed: () {
             if (backupState.backupProgress ==
@@ -248,6 +249,7 @@ class BackupControllerPage extends HookConsumerWidget {
           shape: shape,
           disabledBackgroundColor:
               context.isDarkTheme ? Colors.grey[700] : Colors.grey[400],
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         ),
         child: const Text(
           "backup_controller_page_start_backup",
@@ -429,7 +431,7 @@ class BackupControllerPage extends HookConsumerWidget {
                       children: [
                         Positioned(
                           child: Padding(
-                            padding: const EdgeInsets.only(top: 20),
+                            padding: const EdgeInsets.only(top: 16),
                             child: Container(
                               decoration: BoxDecoration(
                                 color: context.isDarkTheme
