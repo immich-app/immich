@@ -412,7 +412,10 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       state.backupProgress == BackUpProgressEnum.idle ||
           state.backupProgress == BackUpProgressEnum.done,
     );
-    state = state.copyWith(backupProgress: BackUpProgressEnum.inProgress);
+    state = state.copyWith(
+      backupProgress: BackUpProgressEnum.inProgress,
+      selectedAlbumsBackupErrorAssetsIds: const {},
+    );
 
     await getBackupInfo();
 
@@ -527,6 +530,8 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   }
 
   void _checkBackupFinished() {
+    debugPrint(
+        "check finished ${state.allUniqueAssets.length - state.selectedAlbumsBackupAssetsIds.length - state.selectedAlbumsBackupErrorAssetsIds.length == 0} ${state.allUniqueAssets.length} ${state.selectedAlbumsBackupAssetsIds.length} ${state.selectedAlbumsBackupErrorAssetsIds.length}");
     if (state.allUniqueAssets.length -
             state.selectedAlbumsBackupAssetsIds.length -
             state.selectedAlbumsBackupErrorAssetsIds.length ==

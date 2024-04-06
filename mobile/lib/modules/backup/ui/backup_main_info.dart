@@ -31,25 +31,28 @@ class BackupMainInfo extends HookConsumerWidget {
     var hasAnyAlbum = backupState.selectedBackupAlbums.isNotEmpty;
 
     Widget buildErrorChip() {
-      return ActionChip(
-        avatar: Icon(
-          Icons.info,
-          color: Colors.red[400],
-        ),
-        elevation: 1,
-        visualDensity: VisualDensity.compact,
-        label: Text(
-          "backup_controller_page_failed",
-          style: TextStyle(
+      return Padding(
+        padding: const EdgeInsets.only(top: 12),
+        child: ActionChip(
+          avatar: Icon(
+            Icons.info,
             color: Colors.red[400],
-            fontWeight: FontWeight.bold,
-            fontSize: 11,
           ),
-        ).tr(
-          args: [ref.watch(errorBackupListProvider).length.toString()],
+          elevation: 1,
+          visualDensity: VisualDensity.compact,
+          label: Text(
+            "backup_controller_page_failed",
+            style: TextStyle(
+              color: Colors.red[400],
+              fontWeight: FontWeight.bold,
+              fontSize: 11,
+            ),
+          ).tr(
+            args: [ref.watch(errorBackupListProvider).length.toString()],
+          ),
+          backgroundColor: Colors.white,
+          onPressed: () => context.pushRoute(const FailedBackupStatusRoute()),
         ),
-        backgroundColor: Colors.white,
-        onPressed: () => context.pushRoute(const FailedBackupStatusRoute()),
       );
     }
 
