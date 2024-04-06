@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/locales.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/settings/ui/advanced_settings.dart';
@@ -41,20 +42,28 @@ enum SettingSection {
   const SettingSection(this.title, this.icon);
 }
 
-class LanguageSettings extends StatelessWidget {
+class LanguageSettings extends HookConsumerWidget {
   const LanguageSettings({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currentLocale = context.locale;
+    final textController = useTextEditingController(
+      text: locales.keys.firstWhere(
+        (countryName) => locales[countryName] == currentLocale,
+      ),
+    );
+
     return DropdownMenu(
-      dropdownMenuEntries: locales
+      dropdownMenuEntries: locales.keys
           .map(
-            (locale) => DropdownMenuEntry(
-              value: locale.values.first,
-              label: locale.keys.first,
+            (countryName) => DropdownMenuEntry(
+              value: locales[countryName],
+              label: countryName,
             ),
           )
           .toList(),
+      controller: textController,
     );
   }
 }
