@@ -128,13 +128,13 @@ class MapStateNotifier extends _$MapStateNotifier {
     );
   }
 
-  void switchwithPartners(bool iswithPartners) {
+  void switchWithPartners(bool isWithPartners) {
     ref.read(appSettingsServiceProvider).setSetting(
       AppSettingsEnum.mapwithPartners,
-      iswithPartners,
+      isWithPartners,
     );
     state = state.copyWith(
-      withPartners: iswithPartners,
+      withPartners: isWithPartners,
       shouldRefetchMarkers: true,
     );
   }

@@ -50,7 +50,7 @@ class MapSettingsSheet extends HookConsumerWidget {
                 selected: mapState.withPartners,
                 onChanged: (withPartners) => ref
                     .read(mapStateNotifierProvider.notifier)
-                    .switchwithPartners(withPartners),
+                    .switchWithPartners(withPartners),
               ),
               MapTimeDropDown(
                 relativeTime: mapState.relativeTime,
