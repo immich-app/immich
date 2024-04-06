@@ -451,6 +451,7 @@ export class MetadataService {
         // If the asset already had an associated livePhotoVideo, delete it, because
         // its checksum doesn't match the checksum of the motionAsset we just extracted
         // (if it did, getByChecksum() would've returned a motionAsset with the same ID as livePhotoVideoId)
+        // note asset.livePhotoVideoId is not motionAsset.id yet
         if (asset.livePhotoVideoId) {
           await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: asset.livePhotoVideoId } });
           this.logger.log(`Removed old motion photo video asset (${asset.livePhotoVideoId})`);
