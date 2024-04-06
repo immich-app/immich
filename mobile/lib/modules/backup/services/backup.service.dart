@@ -357,7 +357,8 @@ class BackupService {
           StreamedResponse response;
 
           try {
-            response = await httpClient.send(req, cancellationToken: cancelToken);
+            response =
+                await httpClient.send(req, cancellationToken: cancelToken);
           } catch (err) {
             debugPrint(
               "Error(network) uploading ${entity.id} | $originalFileName | Created on ${entity.createDateTime} | $err",

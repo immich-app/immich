@@ -53,6 +53,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
             backupRequireCharging:
                 Store.get(StoreKey.backupRequireCharging, false),
             backupTriggerDelay: Store.get(StoreKey.backupTriggerDelay, 5000),
+            lastBackupTimestamp: Store.tryGet(StoreKey.lastBackupTimestamp),
             serverInfo: const ServerDiskInfo(
               diskAvailable: "0",
               diskSize: "0",
@@ -407,7 +408,10 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   /// Invoke backup process
   Future<void> startBackupProcess() async {
     debugPrint("Start backup process");
-    assert(state.backupProgress == BackUpProgressEnum.idle || state.backupProgress == BackUpProgressEnum.done);
+    assert(
+      state.backupProgress == BackUpProgressEnum.idle ||
+          state.backupProgress == BackUpProgressEnum.done,
+    );
     state = state.copyWith(backupProgress: BackUpProgressEnum.inProgress);
 
     await getBackupInfo();
@@ -451,6 +455,9 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         _onSetCurrentBackupAsset,
         _onBackupError,
       );
+      var timestamp = DateTime.now();
+      Store.put(StoreKey.lastBackupTimestamp, timestamp);
+      state = state.copyWith(lastBackupTimestamp: timestamp);
       await notifyBackgroundServiceCanRun();
     } else {
       openAppSettings();
@@ -465,7 +472,10 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
   void _onBackupError(ErrorUploadAsset errorAssetInfo) {
     state = state.copyWith(
-      selectedAlbumsBackupErrorAssetsIds: {...state.selectedAlbumsBackupErrorAssetsIds, errorAssetInfo.id },
+      selectedAlbumsBackupErrorAssetsIds: {
+        ...state.selectedAlbumsBackupErrorAssetsIds,
+        errorAssetInfo.id,
+      },
     );
     ref.watch(errorBackupListProvider.notifier).add(errorAssetInfo);
     _checkBackupFinished();
@@ -518,7 +528,8 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
   void _checkBackupFinished() {
     if (state.allUniqueAssets.length -
-            state.selectedAlbumsBackupAssetsIds.length - state.selectedAlbumsBackupErrorAssetsIds.length ==
+            state.selectedAlbumsBackupAssetsIds.length -
+            state.selectedAlbumsBackupErrorAssetsIds.length ==
         0) {
       final latestAssetBackup =
           state.allUniqueAssets.map((e) => e.modifiedDateTime).reduce(

@@ -164,6 +164,7 @@ enum StoreKey<T> {
   serverEndpoint<String>(12, type: String),
   autoBackup<bool>(13, type: bool),
   backgroundBackup<bool>(14, type: bool),
+  lastBackupTimestamp<DateTime>(15, type: DateTime),
   // user settings from [AppSettingsEnum] below:
   loadPreview<bool>(100, type: bool),
   loadOriginal<bool>(101, type: bool),

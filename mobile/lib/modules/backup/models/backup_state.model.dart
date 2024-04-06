@@ -34,6 +34,7 @@ class BackUpState {
   final bool backupRequireWifi;
   final bool backupRequireCharging;
   final int backupTriggerDelay;
+  final DateTime? lastBackupTimestamp;
 
   /// All available albums on the device
   final List<AvailableAlbum> availableAlbums;
@@ -69,6 +70,7 @@ class BackUpState {
     required this.backupRequireWifi,
     required this.backupRequireCharging,
     required this.backupTriggerDelay,
+    required this.lastBackupTimestamp,
     required this.availableAlbums,
     required this.selectedBackupAlbums,
     required this.excludedBackupAlbums,
@@ -95,6 +97,7 @@ class BackUpState {
     bool? backupRequireWifi,
     bool? backupRequireCharging,
     int? backupTriggerDelay,
+    DateTime? lastBackupTimestamp,
     List<AvailableAlbum>? availableAlbums,
     Set<AvailableAlbum>? selectedBackupAlbums,
     Set<AvailableAlbum>? excludedBackupAlbums,
@@ -124,14 +127,15 @@ class BackUpState {
       backupRequireCharging:
           backupRequireCharging ?? this.backupRequireCharging,
       backupTriggerDelay: backupTriggerDelay ?? this.backupTriggerDelay,
+      lastBackupTimestamp: lastBackupTimestamp ?? this.lastBackupTimestamp,
       availableAlbums: availableAlbums ?? this.availableAlbums,
       selectedBackupAlbums: selectedBackupAlbums ?? this.selectedBackupAlbums,
       excludedBackupAlbums: excludedBackupAlbums ?? this.excludedBackupAlbums,
       allUniqueAssets: allUniqueAssets ?? this.allUniqueAssets,
       selectedAlbumsBackupAssetsIds:
           selectedAlbumsBackupAssetsIds ?? this.selectedAlbumsBackupAssetsIds,
-      selectedAlbumsBackupErrorAssetsIds:
-          selectedAlbumsBackupErrorAssetsIds ?? this.selectedAlbumsBackupErrorAssetsIds,
+      selectedAlbumsBackupErrorAssetsIds: selectedAlbumsBackupErrorAssetsIds ??
+          this.selectedAlbumsBackupErrorAssetsIds,
       currentUploadAsset: currentUploadAsset ?? this.currentUploadAsset,
     );
   }
