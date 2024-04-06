@@ -107,13 +107,13 @@
   </div>
 
   {#if error}
-    <p class="ml-4 text-sm text-red-400">{error}</p>
+    <p class="text-sm text-red-400">{error}</p>
   {/if}
 
   {#if success}
-    <p class="ml-4 text-sm text-immich-primary">{success}</p>
+    <p class="text-sm text-immich-primary">{success}</p>
   {/if}
-  <div class="flex w-full gap-4 p-4">
+  <div class="flex w-full gap-4 pt-4">
     <Button color="gray" fullwidth on:click={() => dispatch('cancel')}>Cancel</Button>
     <Button type="submit" disabled={isCreatingUser} fullwidth>Create</Button>
   </div>
