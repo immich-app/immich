@@ -31,6 +31,7 @@ import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { IUserRepository } from 'src/interfaces/user.interface';
 import { ImmichLogger } from 'src/utils/logger';
 import { handlePromiseError } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
@@ -115,6 +116,7 @@ export class MetadataService {
     @Inject(IPersonRepository) personRepository: IPersonRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
+    @Inject(IUserRepository) private userRepository: IUserRepository,
   ) {
     this.configCore = SystemConfigCore.create(configRepository);
     this.storageCore = StorageCore.create(
@@ -440,6 +442,7 @@ export class MetadataService {
           deviceAssetId: 'NONE',
           deviceId: 'NONE',
         });
+        await this.userRepository.updateUsage(asset.ownerId, video.length);
 
         this.storageCore.ensureFolders(motionPath);
         await this.storageRepository.writeFile(motionAsset.originalPath, video);
