@@ -66,6 +66,7 @@
         />
 
         <SettingSwitch
+          id="prefer-wide-gamut"
           title="PREFER WIDE GAMUT"
           subtitle="Use Display P3 for thumbnails. This better preserves the vibrance of images with wide colorspaces, but images may appear differently on old devices with an old browser version. sRGB images are kept as sRGB to avoid color shifts."
           checked={config.image.colorspace === Colorspace.P3}

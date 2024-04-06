@@ -31,10 +31,10 @@
       on:submit|preventDefault={() => dispatch('save', settings)}
       class="flex flex-col gap-4 text-immich-primary dark:text-immich-dark-primary"
     >
-      <SettingSwitch title="Allow dark mode" bind:checked={settings.allowDarkMode} />
-      <SettingSwitch title="Only favorites" bind:checked={settings.onlyFavorites} />
-      <SettingSwitch title="Include archived" bind:checked={settings.includeArchived} />
-      <SettingSwitch title="Include shared with me" bind:checked={settings.withPartners} />
+      <SettingSwitch id="allow-dark-mode" title="Allow dark mode" bind:checked={settings.allowDarkMode} />
+      <SettingSwitch id="only-favorites" title="Only favorites" bind:checked={settings.onlyFavorites} />
+      <SettingSwitch id="include-archived" title="Include archived" bind:checked={settings.includeArchived} />
+      <SettingSwitch id="include-shared-with-me" title="Include shared with me" bind:checked={settings.withPartners} />
       {#if customDateRange}
         <div in:fly={{ y: 10, duration: 200 }} class="flex flex-col gap-4">
           <div class="flex items-center justify-between gap-8">
