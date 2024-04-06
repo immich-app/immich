@@ -69,34 +69,34 @@
 </script>
 
 <form on:submit|preventDefault={registerUser} autocomplete="off">
-  <div class="m-4 flex flex-col gap-2">
+  <div class="my-4 flex flex-col gap-2">
     <label class="immich-form-label" for="email">Email</label>
     <input class="immich-form-input" id="email" bind:value={email} type="email" required />
   </div>
 
-  <div class="m-4 flex flex-col gap-2">
+  <div class="my-4 flex flex-col gap-2">
     <label class="immich-form-label" for="password">Password</label>
     <PasswordField id="password" bind:password autocomplete="new-password" />
   </div>
 
-  <div class="m-4 flex flex-col gap-2">
+  <div class="my-4 flex flex-col gap-2">
     <label class="immich-form-label" for="confirmPassword">Confirm Password</label>
     <PasswordField id="confirmPassword" bind:password={confirmPassword} autocomplete="new-password" />
   </div>
 
-  <div class="m-4 flex place-items-center justify-between gap-2">
+  <div class="my-4 flex place-items-center justify-between gap-2">
     <label class="text-sm dark:text-immich-dark-fg" for="require-password-change">
       Require user to change password on first login
     </label>
     <Slider id="require-password-change" bind:checked={shouldChangePassword} />
   </div>
 
-  <div class="m-4 flex flex-col gap-2">
+  <div class="my-4 flex flex-col gap-2">
     <label class="immich-form-label" for="name">Name</label>
     <input class="immich-form-input" id="name" bind:value={name} type="text" required />
   </div>
 
-  <div class="m-4 flex flex-col gap-2">
+  <div class="my-4 flex flex-col gap-2">
     <label class="flex items-center gap-2 immich-form-label" for="quotaSize">
       Quota Size (GiB)
       {#if quotaSizeWarning}

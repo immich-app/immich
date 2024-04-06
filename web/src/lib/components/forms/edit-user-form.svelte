@@ -88,17 +88,17 @@
 </script>
 
 <form on:submit|preventDefault={editUser} autocomplete="off">
-  <div class="m-4 flex flex-col gap-2">
+  <div class="my-4 flex flex-col gap-2">
     <label class="immich-form-label" for="email">Email</label>
     <input class="immich-form-input" id="email" name="email" type="email" bind:value={user.email} />
   </div>
 
-  <div class="m-4 flex flex-col gap-2">
+  <div class="my-4 flex flex-col gap-2">
     <label class="immich-form-label" for="name">Name</label>
     <input class="immich-form-input" id="name" name="name" type="text" required bind:value={user.name} />
   </div>
 
-  <div class="m-4 flex flex-col gap-2">
+  <div class="my-4 flex flex-col gap-2">
     <label class="flex items-center gap-2 immich-form-label" for="quotaSize"
       >Quota Size (GiB) {#if quotaSizeWarning}
         <p class="text-red-400 text-sm">You set a quota higher than the disk size</p>
@@ -108,7 +108,7 @@
     <p>Note: Enter 0 for unlimited quota</p>
   </div>
 
-  <div class="m-4 flex flex-col gap-2">
+  <div class="my-4 flex flex-col gap-2">
     <label class="immich-form-label" for="storage-label">Storage Label</label>
     <input
       class="immich-form-input"
@@ -131,7 +131,7 @@
   {#if success}
     <p class="ml-4 text-sm text-immich-primary">{success}</p>
   {/if}
-  <div class="mt-8 flex w-full gap-4 px-4">
+  <div class="mt-8 flex w-full gap-4">
     {#if canResetPassword}
       <Button color="light-red" fullwidth on:click={() => (isShowResetPasswordConfirmation = true)}
         >Reset password</Button
