@@ -78,6 +78,7 @@
                 />
               {/if}
               <SettingSwitch
+                id="comments-likes"
                 title="Comments & likes"
                 subtitle="Let others respond"
                 checked={album.isActivityEnabled}
