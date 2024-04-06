@@ -1,51 +1,6 @@
 import 'dart:ui';
 
-const List<Locale> locales = [
-  // Default locale
-  Locale('en', 'US'),
-  // Additional locales
-  Locale('ar', 'JO'), // Arabic (Jordan)
-  Locale('ca', 'CA'), // Catalan
-  Locale('cs', 'CZ'), // Czech
-  Locale('da', 'DK'), // Danish
-  Locale('de', 'DE'), // German
-  Locale('el', 'GR'), // Greek (GR)
-  Locale('es', 'ES'), // Spanish (ES)
-  Locale('es', 'MX'), // Spanish (MX)
-  Locale('es', 'PE'), // Spanish (PE)
-  Locale('es', 'US'), // Spanish (US)
-  Locale('fi', 'FI'), // Finnish
-  Locale('fr', 'CA'), // French (CA)
-  Locale('fr', 'FR'), // French
-  Locale('he', 'IL'), // Hebrew (IL)
-  Locale('hi', 'IN'), // Hindi
-  Locale('hu', 'HU'), // Hungarian
-  Locale('it', 'IT'), // Italian
-  Locale('ja', 'JP'), // Japanese
-  Locale('ko', 'KR'), // Korean
-  Locale('lt', 'LT'), // Lithuanian
-  Locale('lv', 'LV'), // Latvian
-  Locale('mn', 'MN'), // Mongolian
-  Locale('nb', 'NO'), // Norwegian Bokmål
-  Locale('nl', 'NL'), // Dutch
-  Locale('pl', 'PL'), // Polish
-  Locale('pt', 'PT'), // Portuguese
-  Locale('ro', 'RO'), // Romanian (RO)
-  Locale('ru', 'RU'), // Russian
-  Locale('sk', 'SK'), // Slovak
-  Locale('sl', 'SI'), // Slovenian
-  Locale('sr', 'Cyrl'), // Serbian Cyrillic
-  Locale('sr', 'Latn'), // Serbian Latin
-  Locale('sv', 'FI'), // Swedish (FI)
-  Locale('sv', 'SE'), // Swedish (SE)
-  Locale('th', 'TH'), // Thai (TH)
-  Locale('uk', 'UA'), // Ukrainian (UA)
-  Locale('vi', 'VN'), // Vietnamese (VN)
-  Locale('zh', 'CN'), // Chinese (CN)
-  Locale('zh', 'Hans'), // Chinese Simplified
-];
-
-const List<Map<String, Locale>> localeWithLanguageName = [
+const List<Map<String, Locale>> locales = [
   // Default locale
   {'English (US)': Locale('en', 'US')},
   // Additional locales

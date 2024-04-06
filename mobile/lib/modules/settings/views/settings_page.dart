@@ -47,7 +47,7 @@ class LanguageSettings extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DropdownMenu(
-      dropdownMenuEntries: localeWithLanguageName
+      dropdownMenuEntries: locales
           .map(
             (locale) => DropdownMenuEntry(
               value: locale.values.first,
