@@ -56,7 +56,7 @@
       aria-labelledby={titleId}
     >
       <ModalHeader id={titleId} {title} {showLogo} {icon} on:close={() => onClose?.()} />
-      <div class="p-4 pt-0">
+      <div class="p-5 pt-0">
         <slot />
       </div>
     </div>
