@@ -37,7 +37,7 @@ class BackupControllerPage extends HookConsumerWidget {
             backupState.selectedAlbumsBackupAssetsIds.length ==
         0;
     var inProgress = !{BackUpProgressEnum.done, BackUpProgressEnum.idle}
-        .contains(ref.watch(backupProvider).backupProgress);
+        .contains(backupState.backupProgress);
     var currentUser = Store.get(StoreKey.currentUser);
 
     useEffect(
@@ -171,10 +171,6 @@ class BackupControllerPage extends HookConsumerWidget {
         );
       }
 
-      if (!didGetBackupInfo.value) {
-        return Container();
-      }
-
       if (backupState.backupProgress == BackUpProgressEnum.inBackground) {
         return OutlinedButton(
           onPressed: () => showDialog(
@@ -213,6 +209,10 @@ class BackupControllerPage extends HookConsumerWidget {
             ],
           ),
         );
+      }
+
+      if (!didGetBackupInfo.value) {
+        return Container();
       }
 
       if (fullyBackedUp) {
@@ -296,8 +296,8 @@ class BackupControllerPage extends HookConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: (didGetBackupInfo.value || inProgress)
               ? [
-                  buildSelectedAlbumName(),
-                  buildExcludedAlbumName(),
+                  if (didGetBackupInfo.value) buildSelectedAlbumName(),
+                  if (didGetBackupInfo.value) buildExcludedAlbumName(),
                   const SizedBox(height: 10),
                   SizedBox(
                     height: 32,
@@ -421,6 +421,8 @@ class BackupControllerPage extends HookConsumerWidget {
                     showError: () =>
                         context.pushRoute(const FailedBackupStatusRoute()),
                     inProgress: inProgress,
+                    inBackground: backupState.backupProgress ==
+                        BackUpProgressEnum.inBackground,
                   ),
                   Expanded(
                     child: Stack(

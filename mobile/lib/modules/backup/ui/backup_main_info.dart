@@ -16,6 +16,7 @@ class BackupMainInfo extends HookConsumerWidget {
   final VoidCallback showError;
   final bool loaded;
   final bool inProgress;
+  final bool inBackground;
 
   const BackupMainInfo({
     super.key,
@@ -24,6 +25,7 @@ class BackupMainInfo extends HookConsumerWidget {
     required this.showError,
     required this.loaded,
     required this.inProgress,
+    required this.inBackground,
   });
 
   @override
@@ -166,6 +168,59 @@ class BackupMainInfo extends HookConsumerWidget {
       );
     }
 
+    List<Widget> buildContent() {
+      if (!loaded) {
+        return [const CircularProgressIndicator()];
+      }
+
+      if (!hasAnyAlbum) {
+        return [
+          Text(
+            "backup_controller_page_no_albums_selected_header",
+            style: context.textTheme.titleLarge,
+            textAlign: TextAlign.center,
+          ).tr(),
+          const Text(
+            "backup_controller_page_no_albums_selected_body",
+            textAlign: TextAlign.center,
+          ).tr(),
+          const SizedBox(height: 28),
+          ElevatedButton(
+            onPressed: selectAlbum,
+            child: const Text(
+              "backup_controller_page_select",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+            ).tr(),
+          ),
+        ];
+      }
+
+      return [
+        Text(
+          "${backupState.selectedAlbumsBackupAssetsIds.length}/${backupState.allUniqueAssets.length}",
+          style: context.textTheme.titleLarge,
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          "backup_controller_page_asset_backed_up",
+        ).tr(),
+        const SizedBox(height: 28),
+        inProgress
+            ? buildProgress()
+            : Text(
+                backupState.lastBackupTimestamp == null
+                    ? "backup_controller_page_never_backed_up".tr()
+                    : backupState.lastBackupTimestamp!.timeAgo(),
+                style: context.textTheme.bodyMedium?.copyWith(
+                  color: context.textTheme.bodyMedium?.color?.withOpacity(0.75),
+                ),
+              ),
+        if (ref.watch(errorBackupListProvider).isNotEmpty) buildErrorChip(),
+      ];
+    }
+
     return AnimatedSize(
       duration: const Duration(milliseconds: 200),
       curve: Easing.standard,
@@ -177,58 +232,7 @@ class BackupMainInfo extends HookConsumerWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.end,
-              children: !loaded
-                  ? [
-                      const CircularProgressIndicator(),
-                    ]
-                  : hasAnyAlbum
-                      ? [
-                          Text(
-                            "${backupState.selectedAlbumsBackupAssetsIds.length}/${backupState.allUniqueAssets.length}",
-                            style: context.textTheme.titleLarge,
-                          ),
-                          const SizedBox(height: 8),
-                          const Text(
-                            "backup_controller_page_asset_backed_up",
-                          ).tr(),
-                          const SizedBox(height: 28),
-                          inProgress
-                              ? buildProgress()
-                              : Text(
-                                  backupState.lastBackupTimestamp == null
-                                      ? "backup_controller_page_never_backed_up"
-                                          .tr()
-                                      : backupState.lastBackupTimestamp!
-                                          .timeAgo(),
-                                  style: context.textTheme.bodyMedium?.copyWith(
-                                    color: context.textTheme.bodyMedium?.color
-                                        ?.withOpacity(0.75),
-                                  ),
-                                ),
-                          if (ref.watch(errorBackupListProvider).isNotEmpty)
-                            buildErrorChip(),
-                        ]
-                      : [
-                          Text(
-                            "backup_controller_page_no_albums_selected_header",
-                            style: context.textTheme.titleLarge,
-                            textAlign: TextAlign.center,
-                          ).tr(),
-                          const Text(
-                            "backup_controller_page_no_albums_selected_body",
-                            textAlign: TextAlign.center,
-                          ).tr(),
-                          const SizedBox(height: 28),
-                          ElevatedButton(
-                            onPressed: selectAlbum,
-                            child: const Text(
-                              "backup_controller_page_select",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ).tr(),
-                          ),
-                        ],
+              children: buildContent(),
             ),
           ],
         ),
