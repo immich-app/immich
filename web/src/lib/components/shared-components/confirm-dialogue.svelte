@@ -31,7 +31,7 @@
     </slot>
   </div>
 
-  <div class="mt-4 flex flex-col sm:flex-row w-full gap-4 px-4">
+  <div class="mt-4 flex flex-col sm:flex-row w-full gap-4">
     {#if !hideCancelButton}
       <Button color={cancelColor} fullwidth on:click={onClose}>
         {cancelText}

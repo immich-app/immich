@@ -465,13 +465,13 @@
   {#if showChangeNameModal}
     <FullScreenModal id="change-name-modal" title="Change name" onClose={() => (showChangeNameModal = false)}>
       <form on:submit|preventDefault={submitNameChange} autocomplete="off">
-        <div class="m-4 flex flex-col gap-2">
+        <div class="flex flex-col gap-2">
           <label class="immich-form-label" for="name">Name</label>
           <!-- svelte-ignore a11y-autofocus -->
           <input class="immich-form-input" id="name" name="name" type="text" bind:value={personName} autofocus />
         </div>
 
-        <div class="mt-8 flex w-full gap-4 px-4">
+        <div class="mt-8 flex w-full gap-4">
           <Button
             color="gray"
             fullwidth

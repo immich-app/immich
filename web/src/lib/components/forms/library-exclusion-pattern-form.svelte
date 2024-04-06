@@ -35,14 +35,14 @@
   onClose={handleCancel}
 >
   <form on:submit|preventDefault={() => handleSubmit()} autocomplete="off">
-    <p class="p-5 text-sm">
+    <p class="py-5 text-sm">
       Exclusion patterns lets you ignore files and folders when scanning your library. This is useful if you have
       folders that contain files you don't want to import, such as RAW files.
       <br /><br />
       Add exclusion patterns. Globbing using *, **, and ? is supported. To ignore all files in any directory named "Raw",
       use "**/Raw/**". To ignore all files ending in ".tif", use "**/*.tif". To ignore an absolute path, use "/path/to/ignore".
     </p>
-    <div class="m-4 flex flex-col gap-2">
+    <div class="my-4 flex flex-col gap-2">
       <label class="immich-form-label" for="exclusionPattern">Pattern</label>
       <input
         class="immich-form-input"
@@ -52,7 +52,7 @@
         bind:value={exclusionPattern}
       />
     </div>
-    <div class="mt-8 flex w-full gap-4 px-4">
+    <div class="mt-8 flex w-full gap-4">
       <Button color="gray" fullwidth on:click={() => handleCancel()}>Cancel</Button>
       {#if isEditing}
         <Button color="red" fullwidth on:click={() => dispatch('delete')}>Delete</Button>
@@ -60,7 +60,7 @@
 
       <Button type="submit" disabled={!canSubmit} fullwidth>{submitText}</Button>
     </div>
-    <div class="mt-8 flex w-full gap-4 px-4">
+    <div class="mt-8 flex w-full gap-4">
       {#if isDuplicate}
         <p class="text-red-500 text-sm">This exclusion pattern already exists.</p>
       {/if}

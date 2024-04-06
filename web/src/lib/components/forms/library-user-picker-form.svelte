@@ -38,7 +38,7 @@
 
     <SettingSelect bind:value={ownerId} options={userOptions} name="user" />
 
-    <div class="mt-8 flex w-full gap-4 px-4">
+    <div class="mt-8 flex w-full gap-4">
       <Button color="gray" fullwidth on:click={() => handleCancel()}>Cancel</Button>
 
       <Button type="submit" fullwidth>Create</Button>
