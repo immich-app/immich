@@ -63,6 +63,7 @@
           desc="Image quality from 1-100. Higher is better for quality but produces larger files."
           bind:value={config.image.quality}
           isEdited={config.image.quality !== savedConfig.image.quality}
+          {disabled}
         />
 
         <SettingSwitch
@@ -72,6 +73,7 @@
           checked={config.image.colorspace === Colorspace.P3}
           on:toggle={(e) => (config.image.colorspace = e.detail ? Colorspace.P3 : Colorspace.Srgb)}
           isEdited={config.image.colorspace !== savedConfig.image.colorspace}
+          {disabled}
         />
       </div>
 
