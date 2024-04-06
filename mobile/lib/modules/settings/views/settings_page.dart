@@ -97,11 +97,8 @@ class LanguageSettings extends HookConsumerWidget {
           onPressed: selectedLocale.value == currentLocale
               ? null
               : () {
-                  final newLocale = locales[textController.text];
-                  if (newLocale != null) {
-                    context.setLocale(newLocale);
-                    // Restart.restartApp();
-                  }
+                  context.setLocale(selectedLocale.value);
+                  Restart.restartApp();
                 },
           child: const Text('setting_languages_apply').tr(),
         ),

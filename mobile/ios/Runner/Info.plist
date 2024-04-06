@@ -120,5 +120,13 @@
     <true />
     <key>io.flutter.embedded_views_preview</key>
     <true />
+    <key>CFBundleTypeRole</key>
+    <string>Editor</string>
+    <key>CFBundleURLName</key>
+    <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+    <key>CFBundleURLSchemes</key>
+    <array>
+      <string>immich</string>
+    </array>
   </dict>
 </plist>
