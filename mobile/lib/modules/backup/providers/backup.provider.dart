@@ -530,8 +530,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   }
 
   void _checkBackupFinished() {
-    debugPrint(
-        "check finished ${state.allUniqueAssets.length - state.selectedAlbumsBackupAssetsIds.length - state.selectedAlbumsBackupErrorAssetsIds.length == 0} ${state.allUniqueAssets.length} ${state.selectedAlbumsBackupAssetsIds.length} ${state.selectedAlbumsBackupErrorAssetsIds.length}");
     if (state.allUniqueAssets.length -
             state.selectedAlbumsBackupAssetsIds.length -
             state.selectedAlbumsBackupErrorAssetsIds.length ==
