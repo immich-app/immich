@@ -451,7 +451,7 @@ export class AssetStore {
     this.emit(true);
   }
 
-  async getPreviousAssetId(assetId: string): Promise<string | null> {
+  async getPreviousAsset(assetId: string): Promise<AssetResponseDto | null> {
     const info = this.getBucketInfoForAssetId(assetId);
     if (!info) {
       return null;
@@ -460,7 +460,7 @@ export class AssetStore {
     const { bucket, assetIndex, bucketIndex } = info;
 
     if (assetIndex !== 0) {
-      return bucket.assets[assetIndex - 1].id;
+      return bucket.assets[assetIndex - 1];
     }
 
     if (bucketIndex === 0) {
@@ -469,10 +469,10 @@ export class AssetStore {
 
     const previousBucket = this.buckets[bucketIndex - 1];
     await this.loadBucket(previousBucket.bucketDate, BucketPosition.Unknown);
-    return previousBucket.assets.at(-1)?.id || null;
+    return previousBucket.assets.at(-1) || null;
   }
 
-  async getNextAssetId(assetId: string): Promise<string | null> {
+  async getNextAsset(assetId: string): Promise<AssetResponseDto | null> {
     const info = this.getBucketInfoForAssetId(assetId);
     if (!info) {
       return null;
@@ -481,7 +481,7 @@ export class AssetStore {
     const { bucket, assetIndex, bucketIndex } = info;
 
     if (assetIndex !== bucket.assets.length - 1) {
-      return bucket.assets[assetIndex + 1].id;
+      return bucket.assets[assetIndex + 1];
     }
 
     if (bucketIndex === this.buckets.length - 1) {
@@ -490,7 +490,7 @@ export class AssetStore {
 
     const nextBucket = this.buckets[bucketIndex + 1];
     await this.loadBucket(nextBucket.bucketDate, BucketPosition.Unknown);
-    return nextBucket.assets[0]?.id || null;
+    return nextBucket.assets[0] || null;
   }
 
   triggerUpdate() {

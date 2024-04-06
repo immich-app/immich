@@ -30,7 +30,7 @@ class MemoryResponseDto {
 
   DateTime createdAt;
 
-  Object data;
+  OnThisDayDto data;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -126,7 +126,7 @@ class MemoryResponseDto {
       return MemoryResponseDto(
         assets: AssetResponseDto.listFromJson(json[r'assets']),
         createdAt: mapDateTime(json, r'createdAt', r'')!,
-        data: mapValueOfType<Object>(json, r'data')!,
+        data: OnThisDayDto.fromJson(json[r'data'])!,
         deletedAt: mapDateTime(json, r'deletedAt', r''),
         id: mapValueOfType<String>(json, r'id')!,
         isSaved: mapValueOfType<bool>(json, r'isSaved')!,

@@ -6872,7 +6872,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.100.0",
+    "version": "1.101.0",
     "contact": {}
   },
   "tags": [],
@@ -8769,7 +8769,7 @@
             "type": "array"
           },
           "data": {
-            "type": "object"
+            "$ref": "#/components/schemas/OnThisDayDto"
           },
           "isSaved": {
             "type": "boolean"
@@ -8829,7 +8829,7 @@
             "type": "string"
           },
           "data": {
-            "type": "object"
+            "$ref": "#/components/schemas/OnThisDayDto"
           },
           "deletedAt": {
             "format": "date-time",
@@ -9107,6 +9107,17 @@
         },
         "required": [
           "redirectUri"
+        ],
+        "type": "object"
+      },
+      "OnThisDayDto": {
+        "properties": {
+          "year": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "year"
         ],
         "type": "object"
       },
