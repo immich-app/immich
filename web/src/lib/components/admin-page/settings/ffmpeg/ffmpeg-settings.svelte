@@ -349,7 +349,7 @@
         <SettingButtonsRow
           on:reset={({ detail }) => dispatch('reset', { ...detail, configKeys: ['ffmpeg'] })}
           on:save={() => dispatch('save', { ffmpeg: config.ffmpeg })}
-          showResetToDefault={!isEqual(savedConfig.ffmpeg, defaultConfig)}
+          showResetToDefault={!isEqual(savedConfig.ffmpeg, defaultConfig.ffmpeg)}
           {disabled}
         />
       </div>
