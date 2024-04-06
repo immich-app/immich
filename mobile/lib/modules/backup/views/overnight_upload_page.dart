@@ -50,12 +50,9 @@ class OvernightUploadPage extends HookConsumerWidget {
       [],
     );
 
-    return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 500),
-      child: isInProgress
-          ? _BackupInProgress(stopBackup)
-          : _OvernightInfo(startBackup),
-    );
+    return isInProgress
+        ? _BackupInProgress(stopBackup)
+        : _OvernightInfo(startBackup);
   }
 }
 
