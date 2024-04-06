@@ -56,13 +56,20 @@ class UploadFile extends File {
 export const upload = async (paths: string[], baseOptions: BaseOptions, options: UploadOptionsDto) => {
   await authenticate(baseOptions);
 
-  const files = await scan(paths, options);
-  if (files.length === 0) {
+  const scanFiles = await scan(paths, options);
+  if (scanFiles.length === 0) {
     console.log('No files found, exiting');
     return;
   }
 
-  const { newFiles, duplicates } = await checkForDuplicates(files, options);
+  let newFiles;
+  let duplicates: Asset[] = [];
+
+  if (options.skipHash) {
+    newFiles = scanFiles;
+  } else {
+    ({ newFiles, duplicates } = await checkForDuplicates(scanFiles, options));
+  }
 
   const newAssets = await uploadFiles(newFiles, options);
   await updateAlbums([...newAssets, ...duplicates], options);
