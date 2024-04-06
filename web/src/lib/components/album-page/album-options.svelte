@@ -51,7 +51,7 @@
 </script>
 
 <FullScreenModal id="album-options-modal" title="Options" onClose={() => dispatch('close')}>
-  <div class=" items-center justify-center p-4 w-full">
+  <div class="items-center justify-center">
     <div class="py-2">
       <h2 class="text-gray text-sm mb-2">SETTINGS</h2>
       <div class="grid p-2 gap-y-2">
@@ -64,6 +64,7 @@
           />
         {/if}
         <SettingSwitch
+          id="comments-likes"
           title="Comments & likes"
           subtitle="Let others respond"
           checked={album.isActivityEnabled}

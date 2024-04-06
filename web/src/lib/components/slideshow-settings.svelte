@@ -38,7 +38,7 @@
       selectedOption={options[$slideshowNavigation]}
       onToggle={(option) => handleToggle(option)}
     />
-    <SettingSwitch title="Show Progress Bar" bind:checked={$showProgressBar} />
+    <SettingSwitch id="show-progress-bar" title="Show Progress Bar" bind:checked={$showProgressBar} />
     <SettingInputField
       inputType={SettingInputFieldType.NUMBER}
       label="Duration"
@@ -46,7 +46,6 @@
       min={1}
       bind:value={$slideshowDelay}
     />
-
     <Button class="w-full" color="gray" on:click={onClose}>Done</Button>
   </div>
 </FullScreenModal>

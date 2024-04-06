@@ -85,10 +85,10 @@
   </div>
 
   <div class="m-4 flex place-items-center justify-between gap-2">
-    <label class="text-sm dark:text-immich-dark-fg" for="Require user to change password on first login">
+    <label class="text-sm dark:text-immich-dark-fg" for="require-password-change">
       Require user to change password on first login
     </label>
-    <Slider bind:checked={shouldChangePassword} />
+    <Slider id="require-password-change" bind:checked={shouldChangePassword} />
   </div>
 
   <div class="m-4 flex flex-col gap-2">
