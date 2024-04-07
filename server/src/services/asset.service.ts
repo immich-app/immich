@@ -400,13 +400,11 @@ export class AssetService {
     }
 
     const files = [asset.thumbnailPath, asset.previewPath, asset.encodedVideoPath, asset.sidecarPath];
-    if (!fromExternal) {
+    if (!fromExternal && !asset.isReadOnly) {
       files.push(asset.originalPath);
     }
 
-    if (!asset.isReadOnly) {
-      await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files } });
-    }
+    await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files } });
 
     return JobStatus.SUCCESS;
   }
