@@ -22,6 +22,7 @@ type Join<T extends string[], D extends string> = T extends []
       : string;
 
 // dot notation matches path in `SystemConfig`
+// TODO: migrate to key value per section
 export const SystemConfigKey = {
   FFMPEG_CRF: 'ffmpeg.crf',
   FFMPEG_THREADS: 'ffmpeg.threads',
