@@ -167,8 +167,10 @@ export class MediaService {
   }
 
   async handleGeneratePreview({ id }: IEntityJob): Promise<JobStatus> {
-    const { image } = await this.configCore.getConfig();
-    const [asset] = await this.assetRepository.getByIds([id], { exifInfo: true });
+    const [{ image }, [asset]] = await Promise.all([
+      this.configCore.getConfig(),
+      this.assetRepository.getByIds([id], { exifInfo: true }),
+    ]);
     if (!asset) {
       return JobStatus.FAILED;
     }
@@ -217,8 +219,10 @@ export class MediaService {
   }
 
   async handleGenerateThumbnail({ id }: IEntityJob): Promise<JobStatus> {
-    const { image } = await this.configCore.getConfig();
-    const [asset] = await this.assetRepository.getByIds([id], { exifInfo: true });
+    const [{ image }, [asset]] = await Promise.all([
+      this.configCore.getConfig(),
+      this.assetRepository.getByIds([id], { exifInfo: true }),
+    ]);
     if (!asset) {
       return JobStatus.FAILED;
     }
