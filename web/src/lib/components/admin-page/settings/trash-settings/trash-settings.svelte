@@ -45,7 +45,7 @@
         <SettingButtonsRow
           on:reset={({ detail }) => dispatch('reset', { ...detail, configKeys: ['trash'] })}
           on:save={() => dispatch('save', { trash: config.trash })}
-          showResetToDefault={!isEqual(savedConfig, defaultConfig)}
+          showResetToDefault={!isEqual(savedConfig.trash, defaultConfig.trash)}
           {disabled}
         />
       </div>

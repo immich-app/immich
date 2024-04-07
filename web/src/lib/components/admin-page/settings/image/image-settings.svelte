@@ -81,7 +81,7 @@
         <SettingButtonsRow
           on:reset={({ detail }) => dispatch('reset', { ...detail, configKeys: ['image'] })}
           on:save={() => dispatch('save', { image: config.image })}
-          showResetToDefault={!isEqual(savedConfig, defaultConfig)}
+          showResetToDefault={!isEqual(savedConfig.image, defaultConfig.image)}
           {disabled}
         />
       </div>
