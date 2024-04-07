@@ -343,27 +343,23 @@ export class ThumbnailConfig extends BaseConfig {
 
 export class H264Config extends BaseConfig {
   getThreadOptions() {
-    if (this.config.threads <= 0) {
-      return [];
+    const options = super.getThreadOptions();
+    if (this.config.threads === 1) {
+      options.push('-x264-params frame-threads=1:pools=none');
     }
-    return [
-      ...super.getThreadOptions(),
-      '-x264-params "pools=none"',
-      `-x264-params "frame-threads=${this.config.threads}"`,
-    ];
+
+    return options;
   }
 }
 
 export class HEVCConfig extends BaseConfig {
   getThreadOptions() {
-    if (this.config.threads <= 0) {
-      return [];
+    const options = super.getThreadOptions();
+    if (this.config.threads === 1) {
+      options.push('-x265-params frame-threads=1:pools=none');
     }
-    return [
-      ...super.getThreadOptions(),
-      '-x265-params "pools=none"',
-      `-x265-params "frame-threads=${this.config.threads}"`,
-    ];
+
+    return options;
   }
 }
 

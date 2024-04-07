@@ -1091,9 +1091,9 @@ describe(MediaService.name, () => {
       );
     });
 
-    it('should disable thread pooling for h264 if thread limit is above 0', async () => {
+    it('should disable thread pooling for h264 if thread limit is 1', async () => {
       mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
-      configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_THREADS, value: 2 }]);
+      configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_THREADS, value: 1 }]);
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mediaMock.transcode).toHaveBeenCalledWith(
@@ -1111,9 +1111,8 @@ describe(MediaService.name, () => {
             '-v verbose',
             '-vf scale=-2:720,format=yuv420p',
             '-preset ultrafast',
-            '-threads 2',
-            '-x264-params "pools=none"',
-            '-x264-params "frame-threads=2"',
+            '-threads 1',
+            '-x264-params frame-threads=1:pools=none',
             '-crf 23',
           ],
           twoPass: false,
@@ -1148,10 +1147,10 @@ describe(MediaService.name, () => {
       );
     });
 
-    it('should disable thread pooling for hevc if thread limit is above 0', async () => {
+    it('should disable thread pooling for hevc if thread limit is 1', async () => {
       mediaMock.probe.mockResolvedValue(probeStub.videoStreamVp9);
       configMock.load.mockResolvedValue([
-        { key: SystemConfigKey.FFMPEG_THREADS, value: 2 },
+        { key: SystemConfigKey.FFMPEG_THREADS, value: 1 },
         { key: SystemConfigKey.FFMPEG_TARGET_VIDEO_CODEC, value: VideoCodec.HEVC },
       ]);
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
@@ -1172,9 +1171,8 @@ describe(MediaService.name, () => {
             '-v verbose',
             '-vf scale=-2:720,format=yuv420p',
             '-preset ultrafast',
-            '-threads 2',
-            '-x265-params "pools=none"',
-            '-x265-params "frame-threads=2"',
+            '-threads 1',
+            '-x265-params frame-threads=1:pools=none',
             '-crf 23',
           ],
           twoPass: false,
