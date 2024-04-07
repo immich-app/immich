@@ -26,8 +26,7 @@
       <div class="ml-4 mt-4 flex flex-col gap-4">
         <SettingSelect
           label="THUMBNAIL FORMAT"
-          desc="WebP is preferred as it generally produces smaller files than JPEG."
-          number
+          desc="WebP produces smaller files than JPEG, but is slower to encode."
           bind:value={config.image.thumbnailFormat}
           options={[
             { value: ImageFormat.Jpeg, text: 'JPEG' },
@@ -57,8 +56,7 @@
 
         <SettingSelect
           label="PREVIEW FORMAT"
-          desc="WebP is preferred as it generally produces smaller files than JPEG."
-          number
+          desc="WebP produces smaller files than JPEG, but is slower to encode."
           bind:value={config.image.previewFormat}
           options={[
             { value: ImageFormat.Jpeg, text: 'JPEG' },
