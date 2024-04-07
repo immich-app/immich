@@ -372,7 +372,7 @@ export class AssetService {
     }
 
     // Ignore requests that are not from external library job but is for an external asset
-    if (!fromExternal && (!asset.library || asset.library.type === LibraryType.EXTERNAL)) {
+    if (!fromExternal && asset.isExternal) {
       return JobStatus.SKIPPED;
     }
 
@@ -396,11 +396,15 @@ export class AssetService {
 
     // TODO refactor this to use cascades
     if (asset.livePhotoVideoId) {
-      await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: asset.livePhotoVideoId } });
+      await this.jobRepository.queue({
+        name: JobName.ASSET_DELETION,
+        data: { id: asset.livePhotoVideoId, fromExternal },
+      });
     }
 
     const files = [asset.thumbnailPath, asset.previewPath, asset.encodedVideoPath, asset.sidecarPath];
-    if (!fromExternal) {
+    // Delete the original file unless it is an external file
+    if (!asset.isExternal) {
       files.push(asset.originalPath);
     }
 
